@@ -202,6 +202,9 @@
   "gaspressurevalve-info-threshold": "Pressure Threshold: {0}%",
   "gaspressurevalve-info-overflow": "Overflowing {0:F1} m³ of Gas",
 
+  "structure-missing-header": "Structure incomplete — still need:",
+  "structure-missing-line": "  {0} × {1}",
+
   "smokestack-info-consuming": "Consuming {0:F1} m³ of Gas",
   "smokestack-complete": "Smoke Stack structure is complete!",
   "heatsink-info-temp": "Temperature: {0:F1} °C",
