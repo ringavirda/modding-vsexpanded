@@ -661,7 +661,11 @@ public class BlockEntityBessemerControl : BlockEntityMultiblockStructure
       return false;
     }
 
-    if (!HasSpawnMaterials(byPlayer))
+    // Creative builders get the vessel for free — no gears/rods needed.
+    bool isCreative =
+      byPlayer.WorldData?.CurrentGameMode == EnumGameMode.Creative;
+
+    if (!isCreative && !HasSpawnMaterials(byPlayer))
     {
       error = Lang.Get(
         "smex:bessemer-err-materials",
@@ -681,7 +685,8 @@ public class BlockEntityBessemerControl : BlockEntityMultiblockStructure
     )
       be.LinkControl(Pos);
 
-    ConsumeSpawnMaterials(byPlayer);
+    if (!isCreative)
+      ConsumeSpawnMaterials(byPlayer);
     return true;
   }
 

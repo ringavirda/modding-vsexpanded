@@ -26,18 +26,21 @@
                 "type": "item",
                 "code": "metalplate-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 24
               },
               {
                 "type": "item",
                 "code": "metalnailsandstrips-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 24
               },
               {
                 "type": "item",
                 "code": "rod-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 12
               }
             ],
@@ -49,17 +52,19 @@
                 "type": "item",
                 "code": "metalplate-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 4
               },
               {
                 "type": "block",
-                "code": "smex:gaspipe-straight-*",
+                "code": "smex:gaspipe-straight-ns",
                 "quantity": 3
               },
               {
                 "type": "item",
                 "code": "metalnailsandstrips-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 6
               }
             ],
@@ -101,18 +106,21 @@
                 "type": "item",
                 "code": "metalplate-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 12
               },
               {
                 "type": "item",
                 "code": "metalnailsandstrips-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 12
               },
               {
                 "type": "item",
                 "code": "rod-*",
                 "allowedVariants": ["iron", "steel"],
+                "storeWildCard": "metal",
                 "quantity": 6
               }
             ],
