@@ -229,7 +229,8 @@ public class CustomBlockToolMold : BlockToolMold
     }
     else
     {
-      var many = Attributes["drops"].AsObject<JsonItemStack[]>(null, Code.Domain);
+      var many = Attributes["drops"]
+        .AsObject<JsonItemStack[]>(null, Code.Domain);
       if (many != null)
         templates.AddRange(many);
     }

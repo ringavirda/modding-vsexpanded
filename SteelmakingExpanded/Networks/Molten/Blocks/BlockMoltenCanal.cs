@@ -270,11 +270,11 @@ public class BlockMoltenCanal : BlockNetworkNode
         ActionLangCode = "smex:blockhelp-canal-unseal",
         MouseButton = EnumMouseButton.Right,
         Itemstacks = _chiselStacks ??=
-        [
-          .. world.SearchItems(new AssetLocation("chisel-*")).Select(i =>
-            new ItemStack(i)
-          ),
-        ],
+          [
+            .. world
+              .SearchItems(new AssetLocation("chisel-*"))
+              .Select(i => new ItemStack(i)),
+          ],
       }
       : new WorldInteraction
       {

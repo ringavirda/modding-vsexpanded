@@ -279,7 +279,10 @@ public class GasNetwork : BlockNetwork
       int airOpen = 0;
       for (int i = 0; i < openFaces.Length; i++)
       {
-        if (blockAccessor.GetBlock(pos.AddCopy(openFaces[i])).FirstCodePart() == "air")
+        if (
+          blockAccessor.GetBlock(pos.AddCopy(openFaces[i])).FirstCodePart()
+          == "air"
+        )
           openFaces[airOpen++] = openFaces[i];
       }
       if (airOpen == 0)

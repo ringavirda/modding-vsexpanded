@@ -214,7 +214,10 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode
 
   private void RefreshOpenConnectorFaces()
   {
-    if (Api?.World?.BlockAccessor == null || Block is not BlockNetworkNode netBlock)
+    if (
+      Api?.World?.BlockAccessor == null
+      || Block is not BlockNetworkNode netBlock
+    )
     {
       OpenConnectorFaces = null;
       return;

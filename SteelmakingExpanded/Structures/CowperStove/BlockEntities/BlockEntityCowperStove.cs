@@ -44,8 +44,10 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     base.Initialize(api);
 
     var attr = Block?.Attributes;
-    _factorAnthracite = attr?["heatingSpeedAnthracite"]?.AsFloat(0.0128f) ?? 0.0128f;
-    _factorOtherCoal = attr?["heatingSpeedOtherCoal"]?.AsFloat(0.0085f) ?? 0.0085f;
+    _factorAnthracite =
+      attr?["heatingSpeedAnthracite"]?.AsFloat(0.0128f) ?? 0.0128f;
+    _factorOtherCoal =
+      attr?["heatingSpeedOtherCoal"]?.AsFloat(0.0085f) ?? 0.0085f;
     _factorDefault = attr?["heatingSpeedDefault"]?.AsFloat(0.0064f) ?? 0.0064f;
     _coolingSpeedExhaust = attr?["coolingSpeedExhaust"]?.AsFloat(0.3f) ?? 0.3f;
     _coolingSpeedAir = attr?["coolingSpeedAir"]?.AsFloat(0.0005f) ?? 0.0005f;

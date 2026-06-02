@@ -182,8 +182,7 @@ public class BlockMoltenCanalTap : BlockMoltenCanal
     if (
       world.Side == EnumAppSide.Server
       && byPlayer is not { WorldData.CurrentGameMode: EnumGameMode.Creative }
-      && world.BlockAccessor.GetBlockEntity(pos)
-        is BlockEntityMoltenCanalTap be
+      && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanalTap be
       && be.HasContent
     )
     {
