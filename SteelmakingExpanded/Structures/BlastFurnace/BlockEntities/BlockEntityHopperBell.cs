@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using SteelmakingExpanded.Compat;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -326,7 +327,7 @@ public class BlockEntityHopperBell : BlockEntity
     stack.Collectible.Code.Path.Equals("blastmix");
 
   private bool IsIronOre(ItemStack stack) =>
-    stack.Collectible.Code.Path.StartsWith("crushed-iron");
+    IronOreCompat.IsCrushedIronOre(stack.Collectible.Code.Path);
 
   private bool IsCoke(ItemStack stack) =>
     stack.Collectible.Code.Path.Equals("crushed-coke");

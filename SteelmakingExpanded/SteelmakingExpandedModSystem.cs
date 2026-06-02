@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using BlockNetworkLib;
+using SteelmakingExpanded.Compat;
 using SteelmakingExpanded.Networks.Gas;
 using SteelmakingExpanded.Networks.Gas.BlockEntities;
 using SteelmakingExpanded.Networks.Gas.Blocks;
@@ -184,6 +185,9 @@ public class SteelmakingExpandedModSystem : ModSystem
     // Load gameplay tunables from ModConfig/smex.json (writes defaults on first
     // run). Done before any block entity is constructed so the values apply.
     SmexValues.Load(api);
+
+    // Register other mod's iron ore types.
+    IronOreCompat.Init(api);
 
     // Blocks
     RegisterBlock<BlockBlastFurnaceDoor>(api);

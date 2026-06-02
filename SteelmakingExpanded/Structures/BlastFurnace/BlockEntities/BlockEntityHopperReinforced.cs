@@ -1,4 +1,5 @@
 using System.Text;
+using SteelmakingExpanded.Compat;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -156,7 +157,7 @@ public class ItemSlotBlastFurnace : ItemSlotSurvival
     // it can be fed straight back into the bell hopper's magazine.
     if (
       AllowedType == "iron"
-      && (path.StartsWith("crushed-iron") || path.Equals("blastmix"))
+      && (IronOreCompat.IsCrushedIronOre(path) || path.Equals("blastmix"))
     )
       return base.CanTakeFrom(sourceSlot, priority);
     if (AllowedType == "coke" && path.Equals("crushed-coke"))
