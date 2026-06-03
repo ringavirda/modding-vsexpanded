@@ -16,12 +16,32 @@ namespace SteelmakingExpanded.Networks.Molten.BlockEntities;
 /// </summary>
 public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
 {
+  private bool _isPouring;
+
   /// <summary>Whether the tap is actively draining the network into its content.</summary>
-  public bool IsPouring { get; private set; } = false;
+  public bool IsPouring
+  {
+    get => _isPouring;
+    private set
+    {
+      if (_isPouring == value)
+        return;
+      _isPouring = value;
+      // Open/closed flips IsConnectionBroken, so re-walk the graph to sever the tap
+      // from (or rejoin it to) the run. No-op off-server / before Initialize, where
+      // base.Initialize's AddNode registers with the correct broken-state instead.
+      ResyncNetworkNode();
+    }
+  }
 
   // The tap is a drain fitting — its cell must keep delivering to the parked
   // barrel/mold, so it never clogs like a plain canal run.
   protected override bool SolidifiesWhenCold => false;
+
+  // A closed tap severs itself from the run (it's a single-connector leaf) so no
+  // metal flows into its own cell — IsPouring otherwise only gates the tap's own
+  // draining into parked content, leaving the cell to keep filling from the network.
+  public override bool IsConnectionBroken() => base.IsConnectionBroken() || !IsPouring;
 
   /// <summary> Canal tap by itself has low capacity. </summary>
   public override int MaxUnitCapacity =>
@@ -262,7 +282,6 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
       ) ?? SmexValues.BarrelDefaultMaxUnits;
     IsBarrel = true;
     IsMold = false;
-    IsPouring = true;
   }
 
   /// <summary>Removes the parked barrel and returns it, preserving its contents in <c>blockEntityAttributes</c>.</summary>
@@ -314,7 +333,6 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
       ) ?? SmexValues.MoldDefaultUnits;
     IsMold = true;
     IsBarrel = false;
-    IsPouring = true;
   }
 
   /// <summary>Removes the parked mold and returns it, preserving any cast metal in <c>blockEntityAttributes</c>.</summary>
@@ -348,7 +366,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   /// <summary>Toggles whether the tap drains the network into its parked content.</summary>
   public void TryTogglePouring()
   {
-    IsPouring = !IsPouring;
+    IsPouring = !IsPouring; // setter re-walks the network on change
     SmexSounds.Play(Api, Pos, SmexSounds.Latch, 0.7f);
     MarkDirty(true);
   }

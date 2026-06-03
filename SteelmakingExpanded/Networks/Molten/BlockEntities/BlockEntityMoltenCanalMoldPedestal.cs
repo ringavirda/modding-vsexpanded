@@ -19,12 +19,32 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   /// <summary>Whether a mold is currently placed on the pedestal.</summary>
   public bool IsMold { get; set; } = false;
 
+  private bool _isPouring = true;
+
   /// <summary>Whether the pedestal is actively filling the mold from the network.</summary>
-  public bool IsPouring { get; private set; } = true;
+  public bool IsPouring
+  {
+    get => _isPouring;
+    private set
+    {
+      if (_isPouring == value)
+        return;
+      _isPouring = value;
+      // Open/closed flips IsConnectionBroken, so re-walk the graph to sever the
+      // pedestal from (or rejoin it to) the run. No-op off-server / before
+      // Initialize, where base.Initialize's AddNode registers the right state.
+      ResyncNetworkNode();
+    }
+  }
 
   // The pedestal is a drain fitting — its cell must keep delivering to the mold,
   // so it never clogs like a plain canal run.
   protected override bool SolidifiesWhenCold => false;
+
+  // A closed pedestal severs itself from the run (it's a single-connector leaf) so
+  // no metal flows into its cell — IsPouring otherwise only gates its own draining
+  // into the mold, leaving the cell to keep filling from the network.
+  public override bool IsConnectionBroken() => base.IsConnectionBroken() || !IsPouring;
 
   /// <summary>The placed mold item, or <c>null</c> when empty.</summary>
   public ItemStack? MoldStack { get; private set; }

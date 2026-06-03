@@ -141,6 +141,20 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode
       return;
     Sealed = sealedState;
 
+    ResyncNetworkNode();
+    RefreshOpenConnectorFaces();
+    MarkDirty(true);
+  }
+
+  /// <summary>
+  /// Re-walks the network graph at this position so a change to
+  /// <see cref="IsConnectionBroken"/> (seal, tap close, …) splits or rejoins the
+  /// run immediately instead of waiting for the next placement/break.
+  /// <c>RemoveNode</c> runs fracture detection; <c>AddNode</c> re-merges (or, for a
+  /// now-broken node, isolates it). Server-side only.
+  /// </summary>
+  protected void ResyncNetworkNode()
+  {
     if (
       Api?.Side == EnumAppSide.Server
       && NetworkSystem != null
@@ -150,9 +164,6 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode
       NetworkSystem.RemoveNode(ba, Pos);
       NetworkSystem.AddNode(ba, Pos, NetworkType);
     }
-
-    RefreshOpenConnectorFaces();
-    MarkDirty(true);
   }
   #endregion
 
