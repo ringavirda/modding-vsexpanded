@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace SteelmakingExpanded.Migration;
+namespace BlockMigrationLib;
 
 /// <summary>
 /// Optional companion to <see cref="IBlockCodeMigration"/>. Implement it on the same

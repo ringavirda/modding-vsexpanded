@@ -7,7 +7,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace SteelmakingExpanded.Migration;
+namespace BlockMigrationLib;
 
 /// <summary>
 /// Generic, server-side world migrator for renamed/re-variantted blocks. Collects every

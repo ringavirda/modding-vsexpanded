@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace SteelmakingExpanded.Migration;
+namespace BlockMigrationLib;
 
 /// <summary>
 /// Declares how block codes from an older version of the mod should be rewritten to

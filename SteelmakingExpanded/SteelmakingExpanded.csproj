@@ -57,4 +57,10 @@
       Link="BlockNetworkLib\%(RecursiveDir)%(Filename)%(Extension)"
     />
   </ItemGroup>
+  <ItemGroup>
+    <Compile
+      Include="..\BlockMigrationLib\**\*.cs"
+      Link="BlockMigrationLib\%(RecursiveDir)%(Filename)%(Extension)"
+    />
+  </ItemGroup>
 </Project>
