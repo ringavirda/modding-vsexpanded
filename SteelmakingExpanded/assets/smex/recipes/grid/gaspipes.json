@@ -120,7 +120,7 @@
     }
   },
   {
-    "name": "Gas Passthrough",
+    "name": "Gas Passthrough (Straight)",
     "ingredientPattern": "B_B,BPB,B_B",
     "ingredients": {
       "B": {
@@ -142,6 +142,31 @@
     "output": {
       "type": "block",
       "code": "smex:gaspipe-passthrough-ns"
+    }
+  },
+  {
+    "name": "Gas Passthrough (Bend)",
+    "ingredientPattern": "BPB,P_B,B_B",
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "P": {
+        "type": "block",
+        "code": "smex:gaspipe-straight-*",
+        "quantity": 1
+      }
+    },
+    "allowedVariants": {
+      "metal": ["iron", "steel"]
+    },
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "smex:gaspipe-passthroughbend-nw"
     }
   },
   {

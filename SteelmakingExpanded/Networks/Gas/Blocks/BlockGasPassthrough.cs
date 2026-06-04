@@ -12,9 +12,17 @@ namespace SteelmakingExpanded.Networks.Gas.Blocks;
 public class BlockGasPassthrough : BlockGasPipe
 {
   public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new() { { "passthrough", ["ns", "we", "ud"] } };
+    new()
+    {
+      { "passthrough", ["ns", "we", "ud"] },
+      {
+        "passthroughbend",
+        ["nw", "se", "en", "ws", "un", "us", "uw", "ue", "dn", "ds", "dw", "de"]
+      },
+    };
 
-  protected override string GetFallbackOrientation(string? type) => "ns";
+  protected override string GetFallbackOrientation(string? type) =>
+    type == "passthroughbend" ? "nw" : "ns";
 
   public override bool CanAttachBlockAt(
     IBlockAccessor world,

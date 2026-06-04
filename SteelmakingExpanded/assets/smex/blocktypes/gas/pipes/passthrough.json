@@ -25,15 +25,15 @@
   ],
   "shapebytype": {
     "*-passthrough-ns": {
-      "base": "smex:gas/pipes/passthrough",
+      "base": "smex:gas/pipes/passthrough-straight",
       "rotateY": 0
     },
     "*-passthrough-we": {
-      "base": "smex:gas/pipes/passthrough",
+      "base": "smex:gas/pipes/passthrough-straight",
       "rotateY": 90
     },
     "*-passthrough-ud": {
-      "base": "smex:gas/pipes/passthrough",
+      "base": "smex:gas/pipes/passthrough-straight",
       "rotateX": 90
     }
   },
