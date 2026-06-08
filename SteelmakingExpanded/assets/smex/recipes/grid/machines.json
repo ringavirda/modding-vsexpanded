@@ -136,7 +136,7 @@
         "code": "game:metalnailsandstrips-{metal}",
         "quantity": 4
       },
-      "A": {"type":"block", "code": "game:woodenaxle-ns", "quantity": 1},
+      "A": {"type":"block", "code": "game:woodenaxle-ud", "quantity": 1},
       "S": { "type": "block", "code": "game:supportbeam-*", "quantity": 4 },
       "R": { "type": "item", "code": "game:rod-{metal}", "quantity": 4 },
       "P": { "type": "block", "code": "smex:gaspipe-straight*", "quantity": 1 },

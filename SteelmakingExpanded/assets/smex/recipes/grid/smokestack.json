@@ -1,11 +1,11 @@
 {
   "name": "Smoke Stack Intake",
-  "ingredientPattern": "BHB,BPB,BNB",
+  "ingredientPattern": "BHB,_P_,BNB",
   "ingredients": {
     "B": {
       "type": "item",
       "code": "game:refractorybrick-fired-{tier}",
-      "quantity": 2
+      "quantity": 4
     },
     "N": {
       "type": "item",
