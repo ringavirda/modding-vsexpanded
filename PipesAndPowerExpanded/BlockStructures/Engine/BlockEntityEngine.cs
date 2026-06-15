@@ -5,6 +5,7 @@ using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -445,7 +446,10 @@ public abstract class BlockEntityEngine : BlockEntity
     dsc.AppendLine(Lang.Get("ppex:engine-info-clock-" + ClockState));
     if (IsRunning)
       dsc.AppendLine(
-        Lang.Get("ppex:engine-info-steam", ExMeasure.FlowRate(RunSteamRate, "F0"))
+        Lang.Get(
+          "ppex:engine-info-steam",
+          ExMeasure.FlowRate(RunSteamRate, "F0")
+        )
       );
     if (_overPressureSeconds > 0f)
       dsc.AppendLine(

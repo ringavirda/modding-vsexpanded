@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 
 namespace SteelmakingExpanded.BlockStructures.BlastFurnace.Blocks;

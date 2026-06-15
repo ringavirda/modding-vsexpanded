@@ -1,7 +1,7 @@
 using System;
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.EntityRegistry;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;

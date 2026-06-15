@@ -11,14 +11,16 @@
   "refractory-tier3": "Refractory Tier 3",
 
   "command-exmod-desc": "Fallenstar's Expanded mods settings",
+  "command-exmod-help": "Fallenstar's Expanded mods settings. Use a sub-command (see /help exmod); available options depend on which Expanded mods are installed.",
   "command-pref-current": "{0}: {1}",
   "command-pref-set": "{0} set to {1}.",
   "command-pref-invalid": "Unknown value '{0}' for {1}. Options: {2}.",
 
-  "command-measure-desc": "Show or set the display unit system (metric/imperial)",
-  "pref-measure-label": "Display units",
-  "pref-measure-metric": "Metric (L, atm, °C)",
-  "pref-measure-imperial": "Imperial (gal, psi, °F)",
+  "command-network-desc": "Visualise block networks (pipes, molten canals, …)",
+  "command-network-hi-desc": "Highlight every network block, coloured per network",
+  "command-network-unhi-desc": "Stop highlighting network blocks",
+  "network-hi-on": "Network highlighting enabled - each network has its own colour; updates live.",
+  "network-hi-off": "Network highlighting disabled.",
 
   "game:placefailure-exlib-noorientation": "Cannot connect to the neighbouring blocks - no valid orientation here."
 }

@@ -1,5 +1,5 @@
-using ExpandedLib.EntityRegistry;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

@@ -44,6 +44,11 @@ public class BlockNetworkModSystem : ModSystem
     );
   }
 
+  /// <summary>Every live network instance (server-side; the client graph is empty since
+  /// <see cref="AddNode"/>/<see cref="RemoveNode"/> only run on the server). Used by the network
+  /// highlight visualisation to enumerate per-network membership.</summary>
+  public IEnumerable<BlockNetwork> AllNetworks => _networks.Values;
+
   /// <summary>Returns the network that owns <paramref name="pos"/>, or <c>null</c>.</summary>
   public BlockNetwork? GetNetworkAt(BlockPos pos) =>
     _posToNetwork.TryGetValue(pos, out Guid id)

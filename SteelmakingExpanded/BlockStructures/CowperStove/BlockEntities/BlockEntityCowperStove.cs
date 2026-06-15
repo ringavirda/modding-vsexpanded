@@ -1,8 +1,8 @@
 using System.Text;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
-using ExpandedLib.EntityRegistry;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;

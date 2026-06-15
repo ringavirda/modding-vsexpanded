@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using ExpandedLib.Helpers;
 
 namespace ExpandedLib.Registries.Preferences;
 
@@ -30,8 +29,8 @@ public interface IExPreference
   /// <see cref="Options"/>.</summary>
   string Default { get; }
 
-  /// <summary>Applies a stored value to the live client state (e.g. sets
-  /// <see cref="ExMeasure.System"/>). Called for the local player on join and whenever the player
-  /// changes the setting. <paramref name="value"/> is always one of <see cref="Options"/>.</summary>
+  /// <summary>Applies a stored value to the live client state (e.g. the owning mod's active display
+  /// unit system). Called for the local player on join and whenever the player changes the setting.
+  /// <paramref name="value"/> is always one of <see cref="Options"/>.</summary>
   void Apply(string value);
 }

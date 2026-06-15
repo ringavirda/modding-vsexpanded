@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Preferences;
 using Vintagestory.API.Common;
 
 namespace ExpandedLib.Registries.Preferences;
@@ -19,10 +18,9 @@ public class ExPreferencesConfig
 
 /// <summary>
 /// Shared, generic store for per-player client-side display preferences used by every Expanded mod
-/// (currently the metric/imperial unit system - see <see cref="MeasurePreference"/>). Preference
-/// definitions register themselves through <see cref="PreferenceRegistry"/>; this class persists
-/// each player's choices in <c>exmod.json</c> and applies them to live client state via
-/// <see cref="IExPreference.Apply"/>.
+/// (e.g. ppex's metric/imperial unit system). Preference definitions register themselves through
+/// <see cref="PreferenceRegistry"/>; this class persists each player's choices in <c>exmod.json</c>
+/// and applies them to live client state via <see cref="IExPreference.Apply"/>.
 /// <para>
 /// Preferences are per-player and client-side (the look-at HUD and handbook render on the client),
 /// so a client loads the config on startup, applies the local player's saved choices on join and

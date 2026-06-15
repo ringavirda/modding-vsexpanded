@@ -1,9 +1,9 @@
-using ExpandedLib.Helpers;
 using HarmonyLib;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace ExpandedLib.Patches;
+namespace PipesAndPowerExpanded.Patches;
 
 /// <summary>
 /// Makes handbook page text follow the active <see cref="ExMeasure.System"/>: plain metric unit

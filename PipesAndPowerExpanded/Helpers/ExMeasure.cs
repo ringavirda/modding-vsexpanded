@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace ExpandedLib.Helpers;
+namespace PipesAndPowerExpanded.Helpers;
 
 /// <summary>
 /// The unit system used when formatting measurements for the look-at HUD / block info / handbook.
@@ -18,15 +18,14 @@ public enum MeasurementSystem
 }
 
 /// <summary>
-/// Shared display-unit helper for every Expanded mod. All gameplay values are stored and
-/// calculated in metric (litres, atm, °C); these methods convert a metric value into a
-/// player-facing string in the currently active <see cref="System"/>, so block-info / handbook
-/// code can stay unit-agnostic.
+/// Shared display-unit helper for the steam/pipe machinery (used by ppex and, through its dependency
+/// on ppex, smex). All gameplay values are stored and calculated in metric (litres, atm, °C); these
+/// methods convert a metric value into a player-facing string in the currently active
+/// <see cref="System"/>, so block-info / handbook code can stay unit-agnostic.
 /// <para>
 /// <see cref="System"/> is a per-player, client-side preference: it is driven by
-/// <see cref="Preferences.MeasurePreference"/> and persisted through
-/// <see cref="Registries.Preferences.ExPreferences"/> (the generic preferences store), applied for the local
-/// player on join and changed via <c>/exmod measure</c>.
+/// <see cref="Preferences.MeasurePreference"/> and persisted through the library's generic
+/// preferences store, applied for the local player on join and changed via <c>/exmod measure</c>.
 /// </para>
 /// </summary>
 public static class ExMeasure

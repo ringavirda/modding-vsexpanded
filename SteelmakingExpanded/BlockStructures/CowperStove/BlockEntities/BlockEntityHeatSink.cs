@@ -1,6 +1,6 @@
 using System.Text;
-using ExpandedLib.EntityRegistry;
-using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -67,7 +67,10 @@ public class BlockEntityHeatSink : BlockEntity
   {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(
-      Lang.Get("smex:heatsink-info-temp", ExMeasure.Temperature(Temperature, "F1"))
+      Lang.Get(
+        "smex:heatsink-info-temp",
+        ExMeasure.Temperature(Temperature, "F1")
+      )
     );
   }
 

@@ -1,6 +1,11 @@
 {
   "game:tabname-ppex": "Pipes & Power",
 
+  "command-measure-desc": "Show or set the display unit system (metric/imperial)",
+  "pref-measure-label": "Display units",
+  "pref-measure-metric": "Metric (L, atm, °C)",
+  "pref-measure-imperial": "Imperial (gal, psi, °F)",
+
   "block-pipe-straight*": "Piping (Straight)",
   "block-pipe-bend*": "Piping (Bend)",
   "block-pipe-tjunction*": "Piping (T-Junction)",

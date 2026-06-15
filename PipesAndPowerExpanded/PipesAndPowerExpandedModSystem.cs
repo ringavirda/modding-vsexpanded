@@ -1,6 +1,8 @@
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries.Preferences;
 using HarmonyLib;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using Vintagestory.API.Client;
@@ -48,7 +50,14 @@ public class PipesAndPowerExpandedModSystem : ModSystem
   }
 
   #region Creative category
-  public override void StartClientSide(ICoreClientAPI api) =>
+  public override void StartClientSide(ICoreClientAPI api)
+  {
     ExCreativeTabs.EnsureTab(Mod.Info.ModID);
+
+    // Register ppex's display preferences (the metric/imperial unit system) into the library's
+    // shared store, then build their /exmod sub-commands. exlib loads/persists/applies the values.
+    PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
+    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
+  }
   #endregion
 }

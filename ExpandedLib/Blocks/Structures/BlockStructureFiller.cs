@@ -1,5 +1,5 @@
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

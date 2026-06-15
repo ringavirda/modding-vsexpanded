@@ -4,6 +4,7 @@ using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using PipesAndPowerExpanded.BlockNetworkPipe;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -1006,10 +1007,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
       dsc.AppendLine(Lang.Get("ppex:boiler-info-heating", HeatProgress * 100f));
     else if (_waterVolume < MinBoilWater)
       dsc.AppendLine(
-        Lang.Get(
-          "ppex:boiler-info-needswater",
-          ExMeasure.Volume(MinBoilWater)
-        )
+        Lang.Get("ppex:boiler-info-needswater", ExMeasure.Volume(MinBoilWater))
       );
     else
       dsc.AppendLine(Lang.Get("ppex:boiler-info-idle"));

@@ -19,7 +19,11 @@
     },
     "width": 3,
     "height": 1,
-    "output": { "type": "block", "code": "smex:slagpathslab-free", "quantity": 1 }
+    "output": {
+      "type": "block",
+      "code": "smex:slagpathslab-free",
+      "quantity": 1
+    }
   },
   {
     "name": "Slag Path Stairs",
@@ -31,6 +35,10 @@
     },
     "width": 2,
     "height": 2,
-    "output": { "type": "block", "code": "smex:slagpathstairs-up-north-free", "quantity": 1 }
+    "output": {
+      "type": "block",
+      "code": "smex:slagpathstairs-up-north-free",
+      "quantity": 1
+    }
   }
 ]

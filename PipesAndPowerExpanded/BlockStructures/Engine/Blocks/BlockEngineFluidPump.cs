@@ -1,6 +1,6 @@
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.EntityRegistry;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using Vintagestory.API.MathTools;
 
 namespace PipesAndPowerExpanded.BlockStructures.Engine.Blocks;

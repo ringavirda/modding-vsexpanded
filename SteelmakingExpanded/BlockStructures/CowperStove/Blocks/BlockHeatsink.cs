@@ -1,4 +1,4 @@
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;

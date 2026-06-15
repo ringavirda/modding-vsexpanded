@@ -1,4 +1,4 @@
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 
 namespace PipesAndPowerExpanded.BlockStructures.Boiler.BlockEntities;
 

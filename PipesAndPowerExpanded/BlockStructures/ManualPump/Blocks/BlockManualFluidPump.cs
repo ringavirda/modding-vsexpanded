@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
-using ExpandedLib.EntityRegistry;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockStructures.ManualPump.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

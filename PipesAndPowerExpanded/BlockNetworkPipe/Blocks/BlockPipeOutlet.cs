@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

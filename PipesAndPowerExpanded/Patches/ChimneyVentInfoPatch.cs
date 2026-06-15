@@ -1,8 +1,8 @@
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
 using HarmonyLib;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;

@@ -2,7 +2,10 @@
   "code": "slagpathstairs",
   "class": "BlockStairs",
   "behaviors": [
-    { "name": "WrenchOrientable", "properties": { "baseCode": "slagpathstairs-up-*-{cover}" } }
+    {
+      "name": "WrenchOrientable",
+      "properties": { "baseCode": "slagpathstairs-up-*-{cover}" }
+    }
   ],
   "behaviorsByType": {
     "*-snow": [{ "name": "BreakSnowFirst" }]
@@ -25,14 +28,38 @@
     "inContainerTexture": { "base": "game:block/stone/gravel/phyllite" }
   },
   "shapebytype": {
-    "*-up-north-free": { "base": "game:block/basic/stairs/stonepath-stairs-free", "rotateY": 0 },
-    "*-up-west-free": { "base": "game:block/basic/stairs/stonepath-stairs-free", "rotateY": 90 },
-    "*-up-south-free": { "base": "game:block/basic/stairs/stonepath-stairs-free", "rotateY": 180 },
-    "*-up-east-free": { "base": "game:block/basic/stairs/stonepath-stairs-free", "rotateY": 270 },
-    "*-up-north-snow": { "base": "game:block/basic/stairs/stonepath-stairs-snow", "rotateY": 0 },
-    "*-up-west-snow": { "base": "game:block/basic/stairs/stonepath-stairs-snow", "rotateY": 90 },
-    "*-up-south-snow": { "base": "game:block/basic/stairs/stonepath-stairs-snow", "rotateY": 180 },
-    "*-up-east-snow": { "base": "game:block/basic/stairs/stonepath-stairs-snow", "rotateY": 270 }
+    "*-up-north-free": {
+      "base": "game:block/basic/stairs/stonepath-stairs-free",
+      "rotateY": 0
+    },
+    "*-up-west-free": {
+      "base": "game:block/basic/stairs/stonepath-stairs-free",
+      "rotateY": 90
+    },
+    "*-up-south-free": {
+      "base": "game:block/basic/stairs/stonepath-stairs-free",
+      "rotateY": 180
+    },
+    "*-up-east-free": {
+      "base": "game:block/basic/stairs/stonepath-stairs-free",
+      "rotateY": 270
+    },
+    "*-up-north-snow": {
+      "base": "game:block/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 0
+    },
+    "*-up-west-snow": {
+      "base": "game:block/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 90
+    },
+    "*-up-south-snow": {
+      "base": "game:block/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 180
+    },
+    "*-up-east-snow": {
+      "base": "game:block/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 270
+    }
   },
   "textures": {
     "normal1": {
@@ -108,7 +135,12 @@
     "*-up-*": [
       { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 0.4375, "z2": 1 },
       {
-        "x1": 0, "y1": 0.4375, "z1": 0.5, "x2": 1, "y2": 0.9375, "z2": 1,
+        "x1": 0,
+        "y1": 0.4375,
+        "z1": 0.5,
+        "x2": 1,
+        "y2": 0.9375,
+        "z2": 1,
         "rotateYByType": {
           "*-north-*": 180,
           "*-east-*": 90,

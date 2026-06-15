@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 
 namespace PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 

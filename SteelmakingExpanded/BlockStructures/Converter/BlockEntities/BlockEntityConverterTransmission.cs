@@ -1,4 +1,4 @@
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;

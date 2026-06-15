@@ -1,5 +1,5 @@
 using System.Text;
-using ExpandedLib.EntityRegistry;
+using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.Compat;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
