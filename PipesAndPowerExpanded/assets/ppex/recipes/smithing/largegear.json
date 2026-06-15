@@ -1,0 +1,25 @@
+{
+  "ingredient": {
+    "type": "item",
+    "code": "game:ingot-*",
+    "name": "metal",
+    "allowedVariants": ["iron", "steel"]
+  },
+  "name": "largegear",
+  "pattern": [
+    [
+      "__######__",
+      "_########_",
+      "###____###",
+      "##_#__#_##",
+      "##__##__##",
+      "##__##__##",
+      "##_#__#_##",
+      "###____###",
+      "_########_",
+      "__######__"
+    ]
+  ],
+  "code": "largegear-{metal}",
+  "output": { "type": "item", "code": "ppex:largegear-{metal}", "stacksize": 1 }
+}

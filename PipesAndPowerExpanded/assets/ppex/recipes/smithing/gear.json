@@ -1,0 +1,41 @@
+[
+  {
+    "ingredient": {
+      "type": "item",
+      "code": "game:ingot-*",
+      "name": "metal",
+      "allowedVariants": ["iron", "steel"]
+    },
+    "name": "2 gears",
+    "pattern": [
+      ["_#_#__#_#_", "##########", "_#_#__#_#_", "##########", "_#_#__#_#_"]
+    ],
+    "code": "2gears-{metal}",
+    "output": { "type": "item", "code": "ppex:gear-{metal}", "stacksize": 2 }
+  },
+  {
+    "ingredient": {
+      "type": "item",
+      "code": "game:ingot-*",
+      "name": "metal",
+      "allowedVariants": ["iron", "steel"]
+    },
+    "name": "4 gears",
+    "pattern": [
+      [
+        "_#_#__#_#_",
+        "##########",
+        "_#_#__#_#_",
+        "##########",
+        "_#_#__#_#_",
+        "_#_#__#_#_",
+        "##########",
+        "_#_#__#_#_",
+        "##########",
+        "_#_#__#_#_"
+      ]
+    ],
+    "code": "4gears-{metal}",
+    "output": { "type": "item", "code": "ppex:gear-{metal}", "stacksize": 4 }
+  }
+]

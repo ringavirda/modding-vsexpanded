@@ -26,9 +26,17 @@ public class SmexConfig : IExVersionedConfig
   /// </summary>
   public static readonly ExConfigMigration[] Migrations =
   [
-    // Example - delete or adapt per release:
-    // new() { FromVersion = "0.9.1", ToVersion = "0.9.2", ResetFields =
-    //   [nameof(MoltenFlowRate), nameof(MoltenCooldownSpeed)] },
+    // 0.9.2: the converter vessel now costs a single smithable large gear (8 rods)
+    // instead of 4 rusty gears (12 rods) - push the rebalanced counts to existing configs.
+    new()
+    {
+      ToVersion = "0.9.2",
+      ResetFields =
+      [
+        nameof(BessemerRequiredGears),
+        nameof(BessemerRequiredRods),
+      ],
+    },
   ];
 
   #region Molten system
@@ -72,11 +80,11 @@ public class SmexConfig : IExVersionedConfig
   /// <summary>Seconds the pour/fill lever must be held before the converter commits the action.</summary>
   public float BessemerPourHoldSeconds { get; set; } = 1f;
 
-  /// <summary>Rusty gears consumed to spawn the converter vessel.</summary>
-  public int BessemerRequiredGears { get; set; } = 4;
+  /// <summary>Large gears consumed to spawn the converter vessel.</summary>
+  public int BessemerRequiredGears { get; set; } = 1;
 
   /// <summary>Iron/steel rods consumed to spawn the converter vessel.</summary>
-  public int BessemerRequiredRods { get; set; } = 12;
+  public int BessemerRequiredRods { get; set; } = 8;
   #endregion
 
   #region Air blower / blast

@@ -304,5 +304,67 @@
       "type": "block",
       "code": "ppex:pipe-pressurevalve-sn-{metal}"
     }
+  },
+  {
+    "name": "Piping (Valve)",
+    "ingredientPattern": "_H_,GPL,_L_",
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-*-{metal}",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 2
+      }
+    },
+    "allowedVariants": {
+      "metal": ["iron", "steel"]
+    },
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-valve-sn-{metal}"
+    }
+  },
+  {
+    "name": "Piping (Pressure Valve)",
+    "ingredientPattern": "_H_,LPL,G_G",
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-*-{metal}",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 2
+      }
+    },
+    "allowedVariants": {
+      "metal": ["iron", "steel"]
+    },
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-pressurevalve-sn-{metal}"
+    }
   }
 ]

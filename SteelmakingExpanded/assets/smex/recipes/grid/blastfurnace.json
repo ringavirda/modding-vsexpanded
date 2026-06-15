@@ -161,5 +161,40 @@
       "type": "block",
       "code": "smex:hopperbell"
     }
+  },
+  {
+    "name": "Bell Hopper",
+    "ingredientPattern": "GHG,PSP,SPS",
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-{metal}",
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-{metal}",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 4
+      }
+    },
+    "allowedVariants": {
+      "metal": ["iron", "steel"]
+    },
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "smex:hopperbell"
+    }
   }
 ]

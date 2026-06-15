@@ -1,0 +1,32 @@
+{
+  "code": "largegear",
+  "variantgroups": [
+    { "code": "metal", "states": ["iron", "steel"] }
+  ],
+  "shape": { "base": "game:block/machine/jonas/steamengine/gear24" },
+  "textures": {
+    "rusty-iron": { "base": "game:block/metal/ingot/{metal}" },
+    "gold": { "base": "game:block/metal/ingot/{metal}" }
+  },
+  "creativeinventory": { "general": ["*"], "items": ["*"], "ppex": ["*"] },
+  "maxstacksize": 16,
+  "materialDensity": 7870,
+  "guiTransform": {
+    "translation": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 145, "y": 13, "z": 0 },
+    "origin": { "x": 0.47, "y": 0.2, "z": 0.5 },
+    "scale": 2.5
+  },
+  "tpHandTransform": {
+    "translation": { "x": -0.4, "y": 0.2, "z": -0.39 },
+    "rotation": { "x": 4, "y": 103, "z": 73 },
+    "origin": { "x": 0.5, "y": 0.0625, "z": 0.5 },
+    "scale": 1
+  },
+  "groundTransform": {
+    "translation": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "origin": { "x": 0.39, "y": 0, "z": 0.47 },
+    "scale": 5
+  }
+}

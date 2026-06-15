@@ -118,5 +118,50 @@
       "type": "block",
       "code": "smex:converter-intake-north"
     }
+  },
+  {
+    "name": "Converter Transmission",
+    "ingredientPattern": "HPR,AGP,NPR",
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-{metal}",
+        "quantity": 12
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-{metal}",
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-{metal}",
+        "quantity": 8
+      },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 16
+      },
+      "A": {
+        "type": "block",
+        "code": "game:woodenaxle-ns",
+        "quantity": 1
+      }
+    },
+    "allowedVariants": {
+      "metal": ["iron", "steel"]
+    },
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "smex:convertertransmission-north"
+    }
   }
 ]

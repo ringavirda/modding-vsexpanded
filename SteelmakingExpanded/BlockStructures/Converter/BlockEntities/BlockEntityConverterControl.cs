@@ -697,8 +697,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   }
 
   // Spawn materials are drawn from the hotbar only (the player presents them), unlike engine repairs.
+  // The converter vessel is gated on a smithable iron/steel large gear so it stays
+  // buildable in worlds where looted rusty gears can't be obtained.
   private static bool IsSpawnGear(ItemStack stack) =>
-    stack.Collectible?.Code?.ToString() == "game:gear-rusty";
+    stack.Collectible?.Code?.ToString()
+      is "ppex:largegear-iron"
+        or "ppex:largegear-steel";
 
   private static bool IsSpawnRod(ItemStack stack) =>
     stack.Collectible?.Code?.ToString() is "game:rod-iron" or "game:rod-steel";

@@ -1,6 +1,11 @@
 {
   "game:tabname-ppex": "Pipes & Power",
 
+  "item-gear-iron": "Iron Gear",
+  "item-gear-steel": "Steel Gear",
+  "item-largegear-iron": "Iron Large Gear",
+  "item-largegear-steel": "Steel Large Gear",
+
   "command-measure-desc": "Show or set the display unit system (metric/imperial)",
   "pref-measure-label": "Display units",
   "pref-measure-metric": "Metric (L, atm, °C)",
