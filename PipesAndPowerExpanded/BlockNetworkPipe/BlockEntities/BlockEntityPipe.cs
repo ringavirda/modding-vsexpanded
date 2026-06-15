@@ -253,6 +253,7 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode
       OpeningsCount = tree.GetInt("openings"),
       FlowRate = tree.GetFloat("flow"),
       Pressure = tree.GetFloat("pressure"),
+      FeedPressure = tree.GetFloat("feedPressure"),
     };
   }
 
@@ -270,6 +271,7 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode
       tree.SetInt("openings", s.OpeningsCount);
       tree.SetFloat("flow", s.FlowRate);
       tree.SetFloat("pressure", s.Pressure);
+      tree.SetFloat("feedPressure", s.FeedPressure);
     }
   }
 

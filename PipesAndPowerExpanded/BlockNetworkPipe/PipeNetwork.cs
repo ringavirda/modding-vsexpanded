@@ -31,8 +31,14 @@ public class PipeNetworkState
   public string MediumType { get; set; } = "";
 
   /// <summary>Pressure in atm - for a gas, <c>Volume / MaxVolume</c> (uncapped); for a
-  /// liquid, the value set by the pump.</summary>
+  /// liquid, the fill ratio while below capacity, jumping to <see cref="FeedPressure"/> once
+  /// brim-full (a liquid can't be packed past <see cref="MaxVolume"/>).</summary>
   public float Pressure { get; set; }
+
+  /// <summary>Pump-commanded feed pressure (atm) for a liquid run - the engine inlet steam
+  /// pressure scaled by efficiency. Realised as the run's <see cref="Pressure"/> only once the
+  /// line is brim-full; below capacity the pressure tracks the fill ratio. Unused for gas.</summary>
+  public float FeedPressure { get; set; }
 
   /// <summary>Number of open-ended connectors (leaks) on the network.</summary>
   public int OpeningsCount { get; set; } = 0;
@@ -74,6 +80,19 @@ public class PipeNetworkState
     float currentVolume,
     float maxVolume
   ) => maxVolume > 0f ? currentVolume / maxVolume : 0f;
+
+  /// <summary>Liquid pressure (atm): the fill ratio (<c>Volume / MaxVolume</c>, like a gas)
+  /// while below capacity, jumping to the pump-set <paramref name="feedPressure"/> once the run
+  /// is brim-full - a liquid can't be packed past <see cref="MaxVolume"/>, so a full line carries
+  /// whatever pressure the pump drives it to.</summary>
+  public static float ComputeLiquidPressure(
+    float currentVolume,
+    float maxVolume,
+    float feedPressure
+  ) =>
+    maxVolume <= 0f ? 0f
+    : currentVolume >= maxVolume - 0.001f ? feedPressure
+    : currentVolume / maxVolume;
 }
 
 /// <summary>
@@ -299,10 +318,22 @@ public class PipeNetwork : BlockNetwork
     if (!PipeNetworkState.MediaCompatible(State.MediumType, "Water"))
       return false;
     State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
+    // Record the pump's commanded pressure; it's realised as the run's pressure only once the
+    // line is brim-full (below that the pressure tracks the fill ratio).
+    State.FeedPressure = setPressure;
 
     float actual = Math.Min(volume, State.MaxVolume - State.Volume);
     if (actual <= 0f)
+    {
+      // Already brim-full - no more water fits, but keep the pressure in step with the
+      // (possibly changed) feed pressure.
+      State.Pressure = PipeNetworkState.ComputeLiquidPressure(
+        State.Volume,
+        State.MaxVolume,
+        setPressure
+      );
       return false;
+    }
 
     float total = State.Volume + actual;
     if (total > 0)
@@ -311,7 +342,11 @@ public class PipeNetwork : BlockNetwork
 
     State.MediumType = "Water";
     State.Volume = total;
-    State.Pressure = setPressure;
+    State.Pressure = PipeNetworkState.ComputeLiquidPressure(
+      total,
+      State.MaxVolume,
+      setPressure
+    );
     _producedAccum += actual;
     BroadcastUpdate(blockAccessor);
     return true;
@@ -350,8 +385,15 @@ public class PipeNetwork : BlockNetwork
     {
       State.Volume -= available;
       _consumedAccum += available;
-      if (State.Volume <= 0f)
-        State.Pressure = 0f;
+      // Draining drops the line below brim-full, so its pressure falls back to the fill ratio.
+      State.Pressure =
+        State.Volume <= 0f
+          ? 0f
+          : PipeNetworkState.ComputeLiquidPressure(
+            State.Volume,
+            State.MaxVolume,
+            State.FeedPressure
+          );
       BroadcastUpdate(blockAccessor);
     }
     return available;
@@ -396,11 +438,13 @@ public class PipeNetwork : BlockNetwork
         State = otherPipe.State;
       State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
       State.Volume = Math.Min(State.Volume, State.MaxVolume);
-      if (!State.IsLiquid)
-        State.Pressure = PipeNetworkState.ComputeGasPressure(
+      State.Pressure = State.IsLiquid
+        ? PipeNetworkState.ComputeLiquidPressure(
           State.Volume,
-          State.MaxVolume
-        );
+          State.MaxVolume,
+          State.FeedPressure
+        )
+        : PipeNetworkState.ComputeGasPressure(State.Volume, State.MaxVolume);
       return;
     }
 
@@ -428,9 +472,25 @@ public class PipeNetwork : BlockNetwork
     }
 
     State.Volume = Math.Min(total, State.MaxVolume);
-    State.Pressure = State.IsLiquid
-      ? Math.Max(State.Pressure, otherPipe.State.Pressure)
-      : PipeNetworkState.ComputeGasPressure(State.Volume, State.MaxVolume);
+    if (State.IsLiquid)
+    {
+      // Keep the stronger pump's feed pressure, then derive the run's pressure from the
+      // combined fill.
+      State.FeedPressure = Math.Max(
+        State.FeedPressure,
+        otherPipe.State.FeedPressure
+      );
+      State.Pressure = PipeNetworkState.ComputeLiquidPressure(
+        State.Volume,
+        State.MaxVolume,
+        State.FeedPressure
+      );
+    }
+    else
+      State.Pressure = PipeNetworkState.ComputeGasPressure(
+        State.Volume,
+        State.MaxVolume
+      );
   }
 
   public override void OnSplitFragment(
@@ -464,8 +524,13 @@ public class PipeNetwork : BlockNetwork
       Volume = frag,
       Temperature = origPipe.State.Temperature,
       MediumType = origPipe.State.MediumType,
+      FeedPressure = origPipe.State.FeedPressure,
       Pressure = liquid
-        ? origPipe.State.Pressure
+        ? PipeNetworkState.ComputeLiquidPressure(
+          frag,
+          maxVolume,
+          origPipe.State.FeedPressure
+        )
         : PipeNetworkState.ComputeGasPressure(frag, maxVolume),
     };
   }
@@ -504,18 +569,19 @@ public class PipeNetwork : BlockNetwork
     bool liquid = State.IsLiquid;
 
     State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
-    // Gas pressure is the volume ratio; a liquid's pressure is pump-set, so leave it.
-    if (!liquid)
-    {
-      float newPressure = PipeNetworkState.ComputeGasPressure(
+    // Gas pressure is the volume ratio; a liquid's is the fill ratio until brim-full, then the
+    // pump-set feed pressure.
+    float newPressure = liquid
+      ? PipeNetworkState.ComputeLiquidPressure(
         State.Volume,
-        State.MaxVolume
-      );
-      if (Math.Abs(State.Pressure - newPressure) > 0.02f)
-      {
-        State.Pressure = newPressure;
-        changed = true;
-      }
+        State.MaxVolume,
+        State.FeedPressure
+      )
+      : PipeNetworkState.ComputeGasPressure(State.Volume, State.MaxVolume);
+    if (Math.Abs(State.Pressure - newPressure) > 0.02f)
+    {
+      State.Pressure = newPressure;
+      changed = true;
     }
 
     if (Math.Abs(State.FlowRate - _smoothedFlow) > 0.01f)

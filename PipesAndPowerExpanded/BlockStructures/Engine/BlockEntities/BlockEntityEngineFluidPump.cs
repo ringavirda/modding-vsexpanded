@@ -37,7 +37,6 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
     PipeNetwork? bottomNet = ConnectedNetwork(BlockFacing.DOWN);
     PipeNetwork? leftNet = ConnectedNetwork(LeftFace);
 
-    // The intake is the generator; without one the pump runs and does nothing.
     BlockEntityFluidIntake? intake = FindIntake(bottomNet);
     SetDrawing(intake != null);
     if (intake == null)
@@ -45,8 +44,7 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
 
     float pressure =
       (Engine?.InletPressure ?? 0f) * PpexValues.SteamEngineEfficiency;
-    // Output scales with the engine's absolute power, so a stronger engine pumps more.
-    float amount = PpexValues.PumpWaterPerSecond * power * dt;
+    float amount = PpexValues.PumpWaterPerSecond * 3 * power * dt;
 
     float move = Math.Min(amount, OutputFreeCapacity(leftNet));
     float drawn = bottomNet?.TryConsumeLiquid(move, ba) ?? 0f;
