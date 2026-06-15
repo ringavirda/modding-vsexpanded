@@ -9,7 +9,7 @@ using Vintagestory.API.Config;
 namespace PipesAndPowerExpanded.Commands;
 
 /// <summary>
-/// Attaches <c>/exmod measure [metric|imperial]</c> to the library's shared <c>/exmod</c> root:
+/// Attaches <c>.exmod measure [metric|imperial]</c> to the library's shared <c>.exmod</c> root:
 /// shows or (with an argument) sets the per-player display unit system, validating against the
 /// preference's options and persisting through <see cref="ExPreferences"/>. The preference itself and
 /// its effect on the active display unit system live in <see cref="MeasurePreference"/>. Client-only,

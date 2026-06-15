@@ -7,7 +7,7 @@ using Vintagestory.API.Config;
 namespace ExpandedLib.Commands;
 
 /// <summary>
-/// Adds <c>/exmod network hi</c> and <c>/exmod network unhi</c>: toggles the transparent,
+/// Adds <c>.exmod network hi</c> and <c>.exmod network unhi</c>: toggles the transparent,
 /// per-network coloured highlight of every block network (see <see cref="NetworkHighlightModSystem"/>)
 /// so a player can see which blocks share a network and where a run is broken. Client-side; the
 /// command just flips the toggle and the server (which owns the graph) pushes the highlight.

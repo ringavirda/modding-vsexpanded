@@ -55,7 +55,7 @@ public class PipesAndPowerExpandedModSystem : ModSystem
     ExCreativeTabs.EnsureTab(Mod.Info.ModID);
 
     // Register ppex's display preferences (the metric/imperial unit system) into the library's
-    // shared store, then build their /exmod sub-commands. exlib loads/persists/applies the values.
+    // shared store, then build their .exmod sub-commands. exlib loads/persists/applies the values.
     PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
     CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
   }

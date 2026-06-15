@@ -5,7 +5,7 @@ namespace ExpandedLib.Registries.Commands;
 /// <summary>
 /// A chat sub-command that attaches itself to an existing top-level command rather than creating its
 /// own. Lets a dependent mod hang options off a shared command (e.g. ppex's <c>measure</c> under the
-/// library's <c>/exmod</c> root) without that command having to know its options up front.
+/// library's <c>.exmod</c> root) without that command having to know its options up front.
 /// <para>
 /// Each implementation carries a <see cref="CommandRegisterAttribute"/>'s sub-command counterpart
 /// (<see cref="SubCommandRegisterAttribute"/>) and is discovered by

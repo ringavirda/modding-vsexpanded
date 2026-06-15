@@ -4,6 +4,7 @@ using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Preferences;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Server;
 
 namespace ExpandedLib;
 
@@ -16,7 +17,7 @@ namespace ExpandedLib;
 /// On the client it owns the generic per-player display-preferences store
 /// (<see cref="Registries.Preferences.ExPreferences"/>): it loads the per-player <c>exmod.json</c>
 /// and applies each player's saved choices on join. The preference <em>definitions</em> themselves
-/// (and their <c>/exmod</c> sub-commands) live in the dependent mods - e.g. ppex owns the
+/// (and their <c>.exmod</c> sub-commands) live in the dependent mods - e.g. ppex owns the
 /// metric/imperial unit preference - so a mod that only needs the library's framework pulls in none
 /// of that.
 /// </para>
@@ -53,8 +54,15 @@ public class ExpandedLibModSystem : ModSystem
     api.Event.LevelFinalize += () =>
       ExPreferences.ApplyForPlayer(api.World.Player.PlayerUID);
 
-    // Register the library's own client commands: the shared /exmod root and its network-highlight
+    // Register the library's own client commands: the shared .exmod root and its network-highlight
     // sub-command. Dependent mods attach their own sub-commands to the same root.
+    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
+  }
+
+  public override void StartServerSide(ICoreServerAPI api)
+  {
+    // Register the server-side counterpart: the universal exmod root surfaces here as /exmod.
+    // Sub-commands that declare a server side attach to it; the current ones are all client-only.
     CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
   }
 }

@@ -24,7 +24,7 @@ public class ExPreferencesConfig
 /// <para>
 /// Preferences are per-player and client-side (the look-at HUD and handbook render on the client),
 /// so a client loads the config on startup, applies the local player's saved choices on join and
-/// updates them through the <c>/exmod</c> command.
+/// updates them through the <c>.exmod</c> command.
 /// </para>
 /// </summary>
 public static class ExPreferences
@@ -86,7 +86,7 @@ public static class ExPreferences
   }
 
   /// <summary>Stores and persists a player's choice and applies it to live client state. Call
-  /// client-side for the local player (the <c>/exmod</c> command does this).</summary>
+  /// client-side for the local player (the <c>.exmod</c> command does this).</summary>
   public static void SetForPlayer(string playerUid, string key, string value)
   {
     if (!_config.Players.TryGetValue(playerUid, out var prefs))

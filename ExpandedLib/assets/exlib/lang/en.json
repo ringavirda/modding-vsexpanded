@@ -10,8 +10,10 @@
   "refractory-tier2": "Refractory Tier 2",
   "refractory-tier3": "Refractory Tier 3",
 
-  "command-exmod-desc": "Exlib base command, it has only network highlight functionality on it's own. Other mods can extend this command with their functionality.",
-  "command-exmod-help": "Use a sub-command (see /help exmod). Available options depend on which mods are installed and what subcommands those add.",
+  "command-exmod-desc-client": "Exlib client-side base command (.exmod). Has only network highlighting on its own; other mods extend it with their client-side options.",
+  "command-exmod-help-client": "Client-side command - runs locally on your machine. Use a sub-command (see .help exmod). Available options depend on which mods are installed and what subcommands those add.",
+  "command-exmod-desc-server": "Exlib server-side base command (/exmod). A shared root other mods extend with their server-side options.",
+  "command-exmod-help-server": "Server-side command - runs on the world host. Use a sub-command (see /help exmod). Available options depend on which mods are installed and what subcommands those add.",
   "command-pref-current": "{0}: {1}",
   "command-pref-set": "{0} set to {1}.",
   "command-pref-invalid": "Unknown value '{0}' for {1}. Options: {2}.",

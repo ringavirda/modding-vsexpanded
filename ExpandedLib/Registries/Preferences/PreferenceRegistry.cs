@@ -16,7 +16,7 @@ public static class PreferenceRegistry
   /// Registers every <see cref="PreferenceRegisterAttribute"/>-decorated
   /// <see cref="IExPreference"/> in <paramref name="asm"/> (default: the calling mod's own
   /// assembly) with <see cref="ExPreferences"/>. Call from <c>ModSystem.StartClientSide</c>
-  /// after <see cref="ExPreferences.LoadConfig"/> and before the <c>/exmod</c> command registers,
+  /// after <see cref="ExPreferences.LoadConfig"/> and before the <c>.exmod</c> command registers,
   /// since the command builds a sub-command per registered preference.
   /// </summary>
   public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null)

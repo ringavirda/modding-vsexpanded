@@ -9,7 +9,7 @@ namespace PipesAndPowerExpanded.Preferences;
 /// library's generic <see cref="IExPreference"/> contract: <see cref="Apply"/> sets the active
 /// <see cref="ExMeasure.System"/> that every block-info / handbook formatter reads. The simulation
 /// always runs in metric; this only changes how values are displayed. Registered (and persisted)
-/// through the library's preferences store; its <c>/exmod measure</c> sub-command is built by
+/// through the library's preferences store; its <c>.exmod measure</c> sub-command is built by
 /// <see cref="Commands.MeasureSubCommand"/>.
 /// <para>
 /// Lang keys (ppex domain): <c>command-measure-desc</c>, <c>pref-measure-label</c>,

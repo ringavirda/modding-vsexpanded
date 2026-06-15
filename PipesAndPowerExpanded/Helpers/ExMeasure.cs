@@ -25,7 +25,7 @@ public enum MeasurementSystem
 /// <para>
 /// <see cref="System"/> is a per-player, client-side preference: it is driven by
 /// <see cref="Preferences.MeasurePreference"/> and persisted through the library's generic
-/// preferences store, applied for the local player on join and changed via <c>/exmod measure</c>.
+/// preferences store, applied for the local player on join and changed via <c>.exmod measure</c>.
 /// </para>
 /// </summary>
 public static class ExMeasure

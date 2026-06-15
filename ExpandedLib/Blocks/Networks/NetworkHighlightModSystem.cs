@@ -8,7 +8,7 @@ using Vintagestory.API.Server;
 
 namespace ExpandedLib.Blocks.Networks;
 
-/// <summary>Toggle request sent client→server when a player runs <c>/exmod network hi|unhi</c>.</summary>
+/// <summary>Toggle request sent client→server when a player runs <c>.exmod network hi|unhi</c>.</summary>
 [ProtoContract]
 public class NetworkHighlightRequest
 {
@@ -20,7 +20,7 @@ public class NetworkHighlightRequest
 /// Server-driven visualisation of every <see cref="BlockNetwork"/>: each network's blocks are
 /// highlighted with transparent coloured cubes (one colour per network), so a player can see at a
 /// glance which blocks share a network and where a run is broken. Toggled per-player with
-/// <c>/exmod network hi</c> / <c>/exmod network unhi</c> (the command lives client-side; this system
+/// <c>.exmod network hi</c> / <c>.exmod network unhi</c> (the command lives client-side; this system
 /// carries the request to the server, which owns the graph - see <see cref="BlockEntityNetworkNode"/>,
 /// where add/remove only run server-side).
 /// <para>
@@ -51,7 +51,7 @@ public class NetworkHighlightModSystem : ModSystem
       .RegisterMessageType<NetworkHighlightRequest>();
   }
 
-  /// <summary>Called by the <c>/exmod network</c> command to switch this client's highlight on/off
+  /// <summary>Called by the <c>.exmod network</c> command to switch this client's highlight on/off
   /// (the server does the work and pushes the highlight back).</summary>
   public void SetEnabled(bool enable) =>
     _clientChannel?.SendPacket(new NetworkHighlightRequest { Enable = enable });

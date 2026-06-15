@@ -11,7 +11,7 @@ namespace ExpandedLib.Registries.Commands;
 /// mod system.
 /// <para>
 /// <see cref="Side"/> gates when the command is registered. Display/HUD commands such as
-/// <c>/exmod measure</c> are client-only preferences, so they declare
+/// <c>.exmod measure</c> are client-only preferences, so they declare
 /// <see cref="EnumAppSide.Client"/>; the registry skips them on the other side.
 /// </para>
 /// </summary>
