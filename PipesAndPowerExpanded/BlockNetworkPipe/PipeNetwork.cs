@@ -403,6 +403,18 @@ public class PipeNetwork : BlockNetwork
 
   #region Merge / Split
 
+  /// <summary>
+  /// The most a pool may hold when its nodes are merged or split. A liquid can't be packed past
+  /// <see cref="PipeNetworkState.MaxVolume"/> (1 atm). A gas is compressible: it may sit above
+  /// 1 atm up to the weakest pipe's burst rating, so a re-walk (e.g. a valve toggling) must keep
+  /// that over-pressure instead of dumping the run back down to 1 atm.
+  /// </summary>
+  private float PoolVolumeCeiling(
+    bool liquid,
+    float maxVolume,
+    IBlockAccessor world
+  ) => liquid ? maxVolume : ComputeMinBurstPressure(world) * maxVolume;
+
   public override void OnMerge(BlockNetwork other, IBlockAccessor world)
   {
     if (other is not PipeNetwork otherPipe)
@@ -419,7 +431,10 @@ public class PipeNetwork : BlockNetwork
     {
       State = otherPipe.State;
       State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
-      State.Volume = Math.Min(State.Volume, State.MaxVolume);
+      State.Volume = Math.Min(
+        State.Volume,
+        PoolVolumeCeiling(State.IsLiquid, State.MaxVolume, world)
+      );
       return;
     }
 
@@ -437,7 +452,10 @@ public class PipeNetwork : BlockNetwork
       if (otherPipe.State.Volume > State.Volume)
         State = otherPipe.State;
       State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
-      State.Volume = Math.Min(State.Volume, State.MaxVolume);
+      State.Volume = Math.Min(
+        State.Volume,
+        PoolVolumeCeiling(State.IsLiquid, State.MaxVolume, world)
+      );
       State.Pressure = State.IsLiquid
         ? PipeNetworkState.ComputeLiquidPressure(
           State.Volume,
@@ -471,7 +489,10 @@ public class PipeNetwork : BlockNetwork
         );
     }
 
-    State.Volume = Math.Min(total, State.MaxVolume);
+    State.Volume = Math.Min(
+      total,
+      PoolVolumeCeiling(State.IsLiquid, State.MaxVolume, world)
+    );
     if (State.IsLiquid)
     {
       // Keep the stronger pump's feed pressure, then derive the run's pressure from the
@@ -506,9 +527,12 @@ public class PipeNetwork : BlockNetwork
 
     int origCount = Math.Max(1, original.Nodes.Count);
     float maxVolume = Nodes.Count * PpexValues.LitresPerPipe;
+    bool liquid = origPipe.State.IsLiquid;
+    // Each fragment keeps its proportional share of the volume, which preserves the run's
+    // pressure (a gas fragment may carry over-pressure, so cap at the burst ceiling, not 1 atm).
     float frag = Math.Min(
       origPipe.State.Volume / origCount * Nodes.Count,
-      maxVolume
+      PoolVolumeCeiling(liquid, maxVolume, world)
     );
 
     if (frag <= 0f)
@@ -516,8 +540,6 @@ public class PipeNetwork : BlockNetwork
       State = null;
       return;
     }
-
-    bool liquid = origPipe.State.IsLiquid;
     State = new PipeNetworkState
     {
       MaxVolume = maxVolume,

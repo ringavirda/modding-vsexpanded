@@ -130,23 +130,60 @@ public class BlockEntityPressureValve : BlockEntityPipe
     var ba = Api.World.BlockAccessor;
     float temp = inState.Temperature;
     string gasType = inState.MediumType;
+    float inPressure = inState.Volume / inState.MaxVolume;
 
-    // Push the overflow into the output run. A sealed run takes the whole excess up to its
-    // burst ceiling; a leaking run can't be pressurised past 1 atm, so feed it only the
-    // trickle its open ends shed (bypassLeakCap lifts the 1-atm cap for exactly that).
     if (outNet != null)
     {
       // Branch on the network, not State - a never-charged run has a null State (created
       // lazily on first production) and would be mistaken for an open end.
       bool leaking = outNet.State?.IsLeaking ?? false;
-      float push = leaking ? Math.Min(excess, PpexValues.GasLeakRate) : excess;
+
+      // A leaking output can't hold pressure, so feed it only the trickle its open ends shed
+      // and let that flow straight through (bypassLeakCap lifts the 1-atm cap for exactly that).
+      if (leaking)
+      {
+        float vent = outNet.ProduceGasMeasured(
+          Math.Min(excess, PpexValues.GasLeakRate),
+          temp,
+          gasType,
+          ba,
+          maxOutputPressure: float.MaxValue,
+          bypassLeakCap: true
+        );
+        if (vent > 0f)
+          inNet!.TryConsumeGas(vent, ba);
+        return vent;
+      }
+
+      // A pressure-relief valve only flows DOWNHILL: gas may cross only while the output run
+      // sits below the input pressure. Otherwise (e.g. the output branch's own pressure has
+      // built past the input) it would keep pumping that loop ever higher until its pipes burst.
+      float outMax = outNet.Nodes.Count * PpexValues.LitresPerPipe;
+      if (outMax <= 0f)
+        return 0f;
+      float outVol = outNet.State?.Volume ?? 0f;
+      float outPressure = outVol / outMax;
+      if (outPressure >= inPressure - 0.001f)
+        return 0f;
+
+      // Move just enough to equalise the two runs' pressures - the relief settles where they
+      // balance - but never more than the excess above the gate (so the input is never drawn
+      // below the gate, and the blowers can keep topping it up). Capping the output ceiling at
+      // the input pressure double-guards against ever driving the output above the input.
+      float equalise =
+        (outMax * inState.Volume - inState.MaxVolume * outVol)
+        / (inState.MaxVolume + outMax);
+      float toMove = Math.Min(excess, equalise);
+      if (toMove <= 0f)
+        return 0f;
+
       float accepted = outNet.ProduceGasMeasured(
-        push,
+        toMove,
         temp,
         gasType,
         ba,
-        maxOutputPressure: float.MaxValue,
-        bypassLeakCap: leaking
+        maxOutputPressure: inPressure,
+        bypassLeakCap: false
       );
       if (accepted > 0f)
         inNet!.TryConsumeGas(accepted, ba);
