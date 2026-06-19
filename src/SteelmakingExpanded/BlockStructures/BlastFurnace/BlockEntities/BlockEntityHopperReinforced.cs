@@ -19,6 +19,14 @@ public class BlockEntityHopperReinforced : BlockEntityContainer
 {
   private InventoryGeneric _inventory;
 
+  // The open inventory dialog (client-side only; null when closed).
+  private GuiDialogHopper? _invDialog;
+
+  // Block-entity packet ids for the open/close handshake, matching the vanilla
+  // openable-container protocol (see OnReceivedClientPacket).
+  private const int PacketIdOpen = 1000;
+  private const int PacketIdClose = 1001;
+
   // Cached, untranslated mesh of the blast-mix contents pile (built lazily client-side).
   private MeshData? _contentsBaseMesh;
 
@@ -50,31 +58,91 @@ public class BlockEntityHopperReinforced : BlockEntityContainer
     if (byPlayer.Entity.Controls.CtrlKey)
     {
       if (
-        Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
-        is BlockEntityHopperBell bell
+        Api.Side == EnumAppSide.Server
+        && Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
+          is BlockEntityHopperBell bell
       )
       {
-        if (Api.Side == EnumAppSide.Server)
-        {
-          bell.IsDropping = !bell.IsDropping;
-          bell.MarkDirty(true);
-        }
+        bell.IsDropping = !bell.IsDropping;
+        bell.MarkDirty(true);
       }
       return;
     }
 
+    // The dialog lives entirely on the client. The server opens/closes the inventory
+    // and applies slot moves through the open/close/slot packets handled in
+    // OnReceivedClientPacket - without that handshake the server never registers the
+    // clicks, so the client and server inventories silently diverge.
     if (Api.Side == EnumAppSide.Client)
+      ToggleDialog((ICoreClientAPI)Api, byPlayer);
+  }
+
+  private void ToggleDialog(ICoreClientAPI capi, IPlayer byPlayer)
+  {
+    if (_invDialog != null)
     {
-      var dialog = new GuiDialogHopper(
-        Lang.Get("smex:hopper-dialog-title"),
-        Inventory,
-        Pos,
-        (ICoreClientAPI)Api
-      );
-      dialog.TryOpen();
+      _invDialog.TryClose();
+      return;
     }
-    else
-      byPlayer.InventoryManager.OpenInventory(Inventory);
+
+    _invDialog = new GuiDialogHopper(
+      Lang.Get("smex:hopper-dialog-title"),
+      Inventory,
+      Pos,
+      capi
+    );
+    _invDialog.OnClosed += () =>
+    {
+      _invDialog = null;
+      capi.Network.SendBlockEntityPacket(Pos, PacketIdClose);
+    };
+    _invDialog.TryOpen();
+
+    capi.Network.SendPacketClient(Inventory.Open(byPlayer));
+    capi.Network.SendBlockEntityPacket(Pos, PacketIdOpen);
+  }
+
+  /// <summary>
+  /// Server-side handling of the inventory dialog packets. The base
+  /// <see cref="BlockEntityContainer"/> does not route these, so slot moves from the
+  /// dialog grid would otherwise be dropped, leaving the server inventory out of sync
+  /// with what the player sees. Mirrors the vanilla openable-container protocol.
+  /// </summary>
+  public override void OnReceivedClientPacket(
+    IPlayer player,
+    int packetid,
+    byte[] data
+  )
+  {
+    if (packetid == PacketIdClose)
+    {
+      player.InventoryManager?.CloseInventory(Inventory);
+      return;
+    }
+
+    if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
+    {
+      Api.World.Logger.Audit(
+        "Player {0} sent a hopper inventory packet to {1} without claim access. Rejected.",
+        player.PlayerName,
+        Pos
+      );
+      return;
+    }
+
+    if (packetid < 1000)
+    {
+      Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
+      return;
+    }
+
+    if (packetid == PacketIdOpen)
+    {
+      player.InventoryManager?.OpenInventory(Inventory);
+      return;
+    }
+
+    base.OnReceivedClientPacket(player, packetid, data);
   }
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)

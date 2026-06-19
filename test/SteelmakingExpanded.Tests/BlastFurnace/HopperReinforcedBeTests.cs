@@ -51,6 +51,21 @@ public class HopperReinforcedBeTests
     return player;
   }
 
+  /// <summary>A player whose land-claim access to the hopper is granted or denied.</summary>
+  private static IPlayer AccessPlayer(TestWorld world, bool granted)
+  {
+    var player = Substitute.For<IPlayer>();
+    player.PlayerName.Returns("tester");
+    world
+      .World.Claims.TryAccess(
+        player,
+        Arg.Any<BlockPos>(),
+        Arg.Any<EnumBlockAccessFlags>()
+      )
+      .Returns(granted);
+    return player;
+  }
+
   #region Slot layout
 
   [Theory]
@@ -81,13 +96,59 @@ public class HopperReinforcedBeTests
     var world = new TestWorld();
     var hopper = Hopper(world, new BlockPos(0, 16, 0));
     var bell = BellBelow(world, hopper);
+    Assert.True(bell.IsDropping); // dropping is on by default now
+
+    hopper.OnInteract(CtrlPlayer()); // ctrl + right-click stops the drop
     Assert.False(bell.IsDropping);
 
-    hopper.OnInteract(CtrlPlayer()); // ctrl + right-click starts the drop
+    hopper.OnInteract(CtrlPlayer()); // and again restarts it
     Assert.True(bell.IsDropping);
+  }
 
-    hopper.OnInteract(CtrlPlayer()); // and again stops it
-    Assert.False(bell.IsDropping);
+  #endregion
+
+  #region Inventory packet handshake (server-side)
+
+  // The dialog lives on the client and forwards every slot move as a block-entity packet.
+  // Without OnReceivedClientPacket routing those, the server never registers the clicks and
+  // the two inventories silently diverge (the reported "item reappears in my hotbar" bug).
+  // The slot-move path itself runs through the inventory's network util, which the headless
+  // harness can't stand up, so these pin the open/close + claim-guard handshake around it.
+
+  [Fact]
+  public void Open_packet_opens_the_inventory_on_the_server()
+  {
+    var world = new TestWorld();
+    var hopper = Hopper(world, new BlockPos(0, 16, 0));
+    var player = AccessPlayer(world, granted: true);
+
+    hopper.OnReceivedClientPacket(player, 1000, null!);
+
+    player.InventoryManager.Received().OpenInventory(hopper.Inventory);
+  }
+
+  [Fact]
+  public void Close_packet_closes_the_inventory_on_the_server()
+  {
+    var world = new TestWorld();
+    var hopper = Hopper(world, new BlockPos(0, 16, 0));
+    var player = AccessPlayer(world, granted: true);
+
+    hopper.OnReceivedClientPacket(player, 1001, null!);
+
+    player.InventoryManager.Received().CloseInventory(hopper.Inventory);
+  }
+
+  [Fact]
+  public void Open_packet_is_rejected_without_claim_access()
+  {
+    var world = new TestWorld();
+    var hopper = Hopper(world, new BlockPos(0, 16, 0));
+    var player = AccessPlayer(world, granted: false);
+
+    hopper.OnReceivedClientPacket(player, 1000, null!);
+
+    player.InventoryManager.DidNotReceive().OpenInventory(Arg.Any<IInventory>());
   }
 
   #endregion

@@ -45,6 +45,48 @@ public class BellHopperTests
     inv[slot].Itemstack = new ItemStack(item, count);
   }
 
+  #region Default state
+
+  [Fact]
+  public void A_freshly_placed_bell_hopper_is_dropping_by_default()
+  {
+    // Dropping is on out of the box so a newly built furnace feeds itself without the
+    // player first discovering the Ctrl + right-click toggle.
+    var bell = Bell(new TestWorld(), new BlockPos(0, 16, 0));
+    Assert.True(bell.IsDropping);
+  }
+
+  [Fact]
+  public void Dropping_defaults_on_when_a_saved_tree_omits_the_flag()
+  {
+    var world = new TestWorld();
+    var bell = Bell(world, new BlockPos(0, 16, 0));
+    ReflectionHelpers.SetField(bell, "_isDropping", false);
+
+    bell.FromTreeAttributes(new TreeAttribute(), world.World); // legacy tree, no key
+
+    Assert.True(bell.IsDropping);
+  }
+
+  [Fact]
+  public void An_explicitly_stopped_bell_stays_stopped_across_a_reload()
+  {
+    // The new default must not override a hopper the player deliberately switched off.
+    var world = new TestWorld();
+    var src = Bell(world, new BlockPos(0, 16, 0));
+    src.IsDropping = false;
+
+    var tree = new TreeAttribute();
+    src.ToTreeAttributes(tree);
+
+    var dst = Bell(world, new BlockPos(0, 16, 0));
+    dst.FromTreeAttributes(tree, world.World);
+
+    Assert.False(dst.IsDropping);
+  }
+
+  #endregion
+
   #region Persistence
 
   [Fact]

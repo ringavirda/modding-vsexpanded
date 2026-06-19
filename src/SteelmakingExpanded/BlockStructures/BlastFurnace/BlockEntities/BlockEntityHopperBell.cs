@@ -22,7 +22,9 @@ public class BlockEntityHopperBell : BlockEntity
   private long _tickId;
   private Item? _blastMixItem;
   private int _blastMixMagazine = 0;
-  private bool _isDropping = false;
+  // Dropping is on by default so a freshly built furnace feeds itself without the
+  // player having to discover the Ctrl + right-click toggle first.
+  private bool _isDropping = true;
 
   /// <summary>Blast mix currently buffered in the hopper's internal magazine.</summary>
   public int BlastMixMagazine => _blastMixMagazine;
@@ -84,7 +86,7 @@ public class BlockEntityHopperBell : BlockEntity
     base.FromTreeAttributes(tree, worldForResolving);
     int oldMagazine = _blastMixMagazine;
     _blastMixMagazine = tree.GetInt("blastMixMagazine");
-    IsDropping = tree.GetBool("isDropping", false);
+    IsDropping = tree.GetBool("isDropping", true);
 
     // The reinforced hopper above renders its contents pile from our magazine level,
     // so nudge it to re-tessellate whenever that level changes on the client.
