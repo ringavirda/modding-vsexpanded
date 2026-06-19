@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Helpers;
-using ExpandedLib.Machines;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;

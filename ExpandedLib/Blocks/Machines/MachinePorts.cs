@@ -2,7 +2,7 @@ using ExpandedLib.Blocks.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace ExpandedLib.Machines;
+namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
 /// Network-port access shared by every fixed machine that reads or feeds a block network through a

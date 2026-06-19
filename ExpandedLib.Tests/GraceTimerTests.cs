@@ -1,4 +1,4 @@
-using ExpandedLib.Machines;
+using ExpandedLib.Blocks.Machines;
 using Vintagestory.API.Datastructures;
 using Xunit;
 

@@ -2,7 +2,7 @@ using ExpandedLib.Blocks.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace ExpandedLib.Machines;
+namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
 /// Base for any block entity that does periodic server-side production work, whether or not it is a

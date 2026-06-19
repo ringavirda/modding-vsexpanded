@@ -1,7 +1,7 @@
 using System;
 using Vintagestory.API.Datastructures;
 
-namespace ExpandedLib.Machines;
+namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
 /// A reusable "hold a condition for N seconds, then fire once" accumulator - the hysteresis idiom
