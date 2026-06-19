@@ -41,6 +41,11 @@ public sealed class SteelSubCommand : IExSubCommand
         Lang.Get(domain + ":command-steel-status", LevelLabel(domain))
       );
 
+    if (level == SmexValues.RecipeLevel)
+      return TextCommandResult.Success(
+        Lang.Get(domain + ":command-steel-retain", LevelLabel(domain))
+      );
+
     SmexValues.Edit(c => c.RecipeLevel = level);
     return TextCommandResult.Success(
       Lang.Get(domain + ":command-steel-set", LevelLabel(domain))

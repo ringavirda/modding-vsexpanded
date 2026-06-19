@@ -267,6 +267,7 @@
 
   "command-steel-desc": "Show or set the steelmaking recipe cost level (normal/cheap). Per-recipe numbers are in smex_recipes.json; takes effect on the next world reload.",
   "command-steel-status": "Steel recipe costs: {0}.",
+  "command-steel-retain": "Recipe costs are already at {0}.",
   "command-steel-set": "Steel recipe costs set to {0}. Reload the world to apply.",
   "recipe-level-normal": "normal",
   "recipe-level-cheap": "cheap",

@@ -9,6 +9,7 @@
   "command-measure-desc": "Show or set the display unit system (metric/imperial)",
   "command-steam-desc": "Show or set the steam-machine recipe cost level (normal/cheap). Per-recipe numbers are in ppex_recipes.json; takes effect on the next world reload.",
   "command-steam-status": "Steam recipe costs: {0}.",
+  "command-steam-retain": "Steam recipe costs are already at {0}.",
   "command-steam-set": "Steam recipe costs set to {0}. Reload the world to apply.",
   "recipe-level-normal": "normal",
   "recipe-level-cheap": "cheap",

@@ -42,6 +42,11 @@ public sealed class SteamSubCommand : IExSubCommand
         Lang.Get(domain + ":command-steam-status", LevelLabel(domain))
       );
 
+    if (level == PpexValues.RecipeLevel)
+      return TextCommandResult.Success(
+        Lang.Get(domain + ":command-steam-retain", LevelLabel(domain))
+      );
+
     PpexValues.Edit(c => c.RecipeLevel = level);
     return TextCommandResult.Success(
       Lang.Get(domain + ":command-steam-set", LevelLabel(domain))

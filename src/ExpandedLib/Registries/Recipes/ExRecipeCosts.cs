@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.Util;
 
 namespace ExpandedLib.Registries.Recipes;
@@ -208,11 +207,20 @@ public static class ExRecipeCosts
   )
   {
     var map = new Dictionary<string, int>();
-    var recipe = GridRecipesFor(api, output).FirstOrDefault();
-    if (recipe?.ResolvedIngredients != null)
-      foreach (var ing in recipe.ResolvedIngredients)
-        if (ing?.Code != null && !ing.IsTool)
-          map[ing.Code.ToString()] = ing.Quantity;
+
+    foreach (var recipe in GridRecipesFor(api, output))
+    {
+      if (recipe.Ingredients != null)
+        foreach (var ing in recipe.Ingredients.Values)
+          if (ing?.Code != null && !ing.IsTool)
+            map[ing.Code.ToString()] = ing.Quantity;
+
+      if (recipe.ResolvedIngredients != null)
+        foreach (var ing in recipe.ResolvedIngredients)
+          if (ing?.Code != null && !ing.IsTool)
+            map[ing.Code.ToString()] = ing.Quantity;
+    }
+
     return map;
   }
 
@@ -237,12 +245,18 @@ public static class ExRecipeCosts
   {
     if (ingredients == null)
       return;
+
     foreach (var ing in ingredients)
+    {
       if (
         ing?.Code != null
         && costs.TryGetValue(ing.Code.ToString(), out int q)
       )
+      {
         ing.Quantity = q;
+        ing.ResolvedItemStack?.StackSize = q;
+      }
+    }
   }
 
   #endregion

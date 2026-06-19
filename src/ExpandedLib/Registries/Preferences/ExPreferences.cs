@@ -31,7 +31,7 @@ public static class ExPreferences
 {
   /// <summary>Config file name, written under the game's <c>ModConfig</c> folder. Shared by all
   /// preferences (the file holds one entry per player, each with one value per preference).</summary>
-  public const string ConfigFileName = "exmod.json";
+  public const string ConfigFileName = "exmod_preferences.json";
 
   private static readonly Dictionary<string, IExPreference> _registered = new();
   private static ExPreferencesConfig _config = new();

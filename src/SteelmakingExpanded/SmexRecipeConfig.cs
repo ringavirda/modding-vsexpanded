@@ -48,6 +48,8 @@ public class SmexRecipeConfig : IExVersionedConfig
       // Grid recipes for the steelmaking machines / components.
       ["airblower-grid"] = Grid("smex:engineairblower-*"),
       ["convertercontrol-grid"] = Grid("smex:convertercontrol-*"),
+      ["convertertransmission-grid"] = Grid("smex:convertertransmission-*"),
+      ["converterintake-grid"] = Grid("smex:converter-intake-*"),
       ["blastfurnacedoor-grid"] = Grid("smex:blastfurnacedoor"),
       ["cowperstove-grid"] = Grid("smex:cowperstove-intake-*"),
       ["smokestack-grid"] = Grid("smex:smokestack-intake-*"),
