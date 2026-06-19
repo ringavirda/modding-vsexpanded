@@ -30,6 +30,15 @@ public partial class BlockPipe : BlockNetworkNode
       _ => PpexValues.IronPipeBurstPressure,
     };
 
+  /// <summary>
+  /// Whether this pipe takes part in over-pressure failure. Only a plain pipe segment - the four
+  /// structural variants of the base <see cref="BlockPipe"/> class (straight/bend/tjunction/
+  /// xjunction) - bursts and caps a run's pressure. Every specialised pipe (valve, outlet,
+  /// passthrough, tuyere, …) is a subclass and is exempt: it neither bursts nor limits the
+  /// pressure, so a new subclass is non-bursting by default unless it deliberately opts back in.
+  /// </summary>
+  public virtual bool CanBurst => GetType() == typeof(BlockPipe);
+
   public override Dictionary<string, string[]> AllowedOrientations { get; } =
     new()
     {

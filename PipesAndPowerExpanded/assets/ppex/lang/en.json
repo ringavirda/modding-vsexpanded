@@ -39,7 +39,7 @@
   "block-enginempgenerator-*": "Mechanical Power Generator",
   "block-manualfluidpump-*": "Manual Fluid Pump",
 
-  "brickname-fire": "Fire Brick",
+  "brickname-fire": "Fireclay Brick",
   "brickname-black": "Black Brick",
   "brickname-brown": "Brown Brick",
   "brickname-cream": "Cream Brick",
@@ -77,6 +77,9 @@
   "pipe-info-overpressure": "Over pressure!",
   "pipe-info-empty": "Empty",
   "pipe-medium-water": "Water",
+  "pipe-medium-air": "Air",
+  "pipe-medium-steam": "Steam",
+  "pipe-medium-exhaust": "Exhaust",
 
   "chimney-info-venting": "Venting pipe network: {0} of gas",
   "chimney-info-idle": "Capping pipe network (no gas to vent)",

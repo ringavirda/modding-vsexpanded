@@ -873,7 +873,7 @@ public class PipeNetwork : BlockNetwork
   {
     float minBurst = float.MaxValue;
     foreach (var pos in Nodes)
-      if (world.GetBlock(pos) is BlockPipe p)
+      if (world.GetBlock(pos) is BlockPipe p && p.CanBurst)
         minBurst = Math.Min(minBurst, p.BurstPressure);
     return minBurst;
   }
@@ -894,7 +894,7 @@ public class PipeNetwork : BlockNetwork
 
     foreach (var pos in Nodes)
     {
-      if (world.GetBlock(pos) is not BlockPipe pipe)
+      if (world.GetBlock(pos) is not BlockPipe pipe || !pipe.CanBurst)
         continue;
 
       if (State.Pressure >= pipe.BurstPressure - 0.001f)

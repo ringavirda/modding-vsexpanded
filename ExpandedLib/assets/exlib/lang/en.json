@@ -3,8 +3,8 @@
 
   "blockhelp-rotate": "Rotate",
 
-  "blockname-prefixed": "{0} {1}",
   "blockname-suffixed": "{0} ({1})",
+  "blockname-listsep": ", ",
 
   "refractory-tier1": "Refractory Tier 1",
   "refractory-tier2": "Refractory Tier 2",
