@@ -1,0 +1,17 @@
+{
+  "//": "Mutation testing for the exlib simulation core. Run from this folder: `dotnet stryker`.",
+  "//gate": "Use --break-at <pct> in CI to fail below a mutation-score floor once it is raised.",
+  "//limitation": "Only exlib is mutated here. ppex/smex use Roslyn source generators (ExpandedLib.Generators), which Stryker's in-memory recompilation cannot reproduce ('Internal error due to compile error'). Mutation-test those by temporarily disabling the generator ProjectReference, or keep their guarantees on the integration/property tests.",
+  "stryker-config": {
+    "project": "ExpandedLib.csproj",
+    "test-projects": ["ExpandedLib.Tests.csproj"],
+    "mutate": [
+      "**/Blocks/Networks/*.cs",
+      "**/Blocks/Machines/*.cs",
+      "**/Helpers/ExOrientation.cs",
+      "**/Registries/Config/ExConfigRegister.cs"
+    ],
+    "reporters": ["html", "cleartext"],
+    "thresholds": { "high": 80, "low": 60, "break": 0 }
+  }
+}

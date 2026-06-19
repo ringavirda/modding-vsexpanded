@@ -59,8 +59,19 @@ jobs:
       - name: Restore
         run: dotnet restore VintageStory.sln
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          dotnet test ExpandedLib.Tests/ExpandedLib.Tests.csproj --no-restore -c Debug
-          dotnet test PipesAndPowerExpanded.Tests/PipesAndPowerExpanded.Tests.csproj --no-restore -c Debug
-          dotnet test SteelmakingExpanded.Tests/SteelmakingExpanded.Tests.csproj --no-restore -c Debug
+          dotnet tool install -g dotnet-coverage
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet-coverage collect -f cobertura -o coverage.xml \
+            "dotnet test VintageStory.sln --no-restore -c Debug"
+
+      - name: Coverage gate (mod assemblies)
+        run: python3 test/scripts/coverage_gate.py coverage.xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml

@@ -50,7 +50,7 @@ public class BuildContext : FrostingContext
     foreach (var folder in ProjectFolders)
     {
       var modInfo = context.DeserializeJsonFromFile<ModInfo>(
-        $"../{folder}/modinfo.json"
+        $"../../src/{folder}/modinfo.json"
       );
       Projects.Add(new ModProject(folder, modInfo.ModID, modInfo.Version));
     }
@@ -67,7 +67,7 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext>
 
     foreach (var project in context.Projects)
     {
-      var jsonFiles = context.GetFiles($"../{project.Folder}/assets/**/*.json");
+      var jsonFiles = context.GetFiles($"../../src/{project.Folder}/assets/**/*.json");
       foreach (var file in jsonFiles)
       {
         try
@@ -94,7 +94,7 @@ public sealed class BuildTask : FrostingTask<BuildContext>
   {
     foreach (var project in context.Projects)
     {
-      string csproj = $"../{project.Folder}/{project.Folder}.csproj";
+      string csproj = $"../../src/{project.Folder}/{project.Folder}.csproj";
       context.DotNetClean(
         csproj,
         new DotNetCleanSettings { Configuration = context.BuildConfiguration }
@@ -122,21 +122,21 @@ public sealed class PackageTask : FrostingTask<BuildContext>
       context.EnsureDirectoryExists(releaseDir);
 
       context.CopyFiles(
-        $"../{project.Folder}/bin/{context.BuildConfiguration}/Mods/mod/publish/*",
+        $"../../src/{project.Folder}/bin/{context.BuildConfiguration}/Mods/mod/publish/*",
         releaseDir
       );
-      if (context.DirectoryExists($"../{project.Folder}/assets"))
+      if (context.DirectoryExists($"../../src/{project.Folder}/assets"))
         context.CopyDirectory(
-          $"../{project.Folder}/assets",
+          $"../../src/{project.Folder}/assets",
           $"{releaseDir}/assets"
         );
       context.CopyFile(
-        $"../{project.Folder}/modinfo.json",
+        $"../../src/{project.Folder}/modinfo.json",
         $"{releaseDir}/modinfo.json"
       );
-      if (context.FileExists($"../{project.Folder}/modicon.png"))
+      if (context.FileExists($"../../src/{project.Folder}/modicon.png"))
         context.CopyFile(
-          $"../{project.Folder}/modicon.png",
+          $"../../src/{project.Folder}/modicon.png",
           $"{releaseDir}/modicon.png"
         );
 

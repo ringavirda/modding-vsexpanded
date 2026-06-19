@@ -25,13 +25,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Mocking framework for faking the game's big API interfaces in BE/unit tests. -->
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Copy exlib.dll + ppex.dll into the test bin so the runner loads them headlessly; their
-         VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
-    <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj" />
-    <ProjectReference Include="..\PipesAndPowerExpanded\PipesAndPowerExpanded.csproj" />
+    <!-- Copy exlib.dll into the test bin so the runner can load it headlessly (the game is not
+         present to provide it). It is a normal managed assembly; its VS deps are resolved by
+         VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
+    <ProjectReference Include="..\..\src\ExpandedLib\ExpandedLib.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
   </ItemGroup>
 </Project>

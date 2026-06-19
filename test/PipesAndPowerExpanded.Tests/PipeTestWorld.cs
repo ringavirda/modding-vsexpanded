@@ -23,7 +23,7 @@ internal static class ModuleInit
 /// requires the exact type), pipe runs registered with the graph, and loose <see cref="PipeNetwork"/>
 /// instances for pool/merge math that does not depend on a burst ceiling.
 /// </summary>
-internal static class PipeTestWorld
+public static class PipeTestWorld
 {
   /// <summary>Litres a single pipe holds at 1 atm - the value the production code reads from config.</summary>
   public const float LitresPerPipe = 30f;

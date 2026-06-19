@@ -84,6 +84,18 @@ public sealed class TestWorld
     return this;
   }
 
+  /// <summary>
+  /// Runs <paramref name="be"/> through its real <see cref="BlockEntity.Initialize"/> against this
+  /// world's API (so a network node registers itself, captures the manager and schedules its ticks),
+  /// exactly as the placement pipeline would. The block entity must already be <see cref="Place"/>d.
+  /// </summary>
+  public TestWorld Initialize(BlockEntity be)
+  {
+    be.Api = Api;
+    be.Initialize(Api);
+    return this;
+  }
+
   #region Setup
 
   /// <summary>Registers a typed-network factory, exactly as a mod would in <c>ModSystem.Start</c>.</summary>
