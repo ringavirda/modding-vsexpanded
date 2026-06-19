@@ -3,6 +3,7 @@ using System.Text;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.Helpers;
@@ -59,7 +60,6 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   private bool _solidified;
   private string _status = Lang.Get("smex:bessemer-status-idle");
 
-  private BlockNetworkModSystem? _netSystem;
   private BEBehaviorAnimatable? _animatable;
 
   // Sound throttles (world-elapsed ms) for the looping ambience. Filling and pouring are
@@ -74,7 +74,6 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
     _animatable = GetBehavior<BEBehaviorAnimatable>();
 
     // Establish the structure angle up front so GetGlobalPos resolves peripherals on the first
@@ -449,11 +448,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       return 0f;
     // Only draw blast from a network whose pipe presents a connector back at the intake face.
     if (
-      _netSystem?.GetConnectedNetworkAcross(
-        Api.World.BlockAccessor,
-        intakePos,
-        intake.ConnectorFace
-      )
+      this.NetworkSystem()
+        ?.GetConnectedNetworkAcross(
+          Api.World.BlockAccessor,
+          intakePos,
+          intake.ConnectorFace
+        )
       is not PipeNetwork pipeNet
     )
       return 0f;

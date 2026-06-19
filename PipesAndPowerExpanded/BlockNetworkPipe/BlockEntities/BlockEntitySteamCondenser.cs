@@ -1,6 +1,7 @@
 using System;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
@@ -20,7 +21,6 @@ namespace PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 public class BlockEntitySteamCondenser : BlockEntity
 {
   private long _tickId;
-  private BlockNetworkModSystem? _netSystem;
 
   // Client-display mirror, synced via the tree.
   private bool _condensing;
@@ -30,18 +30,13 @@ public class BlockEntitySteamCondenser : BlockEntity
   /// <summary>The pipe network across one of the condenser's connector faces, or <c>null</c> when
   /// the adjacent pipe has no connector facing back.</summary>
   private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
-    _netSystem?.GetConnectedNetworkAcross(
-      Api.World.BlockAccessor,
-      Pos,
-      connectorFace
-    ) as PipeNetwork;
+    this.ConnectedNetwork<PipeNetwork>(connectorFace);
 
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
     if (api.Side == EnumAppSide.Server)
     {
-      _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
       _tickId = RegisterGameTickListener(OnTick, 1000);
     }
   }

@@ -1,6 +1,7 @@
 using System;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
@@ -23,8 +24,6 @@ namespace PipesAndPowerExpanded.BlockStructures.ManualPump.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityManualFluidPump : BlockEntity
 {
-  private BlockNetworkModSystem? _netSystem;
-
   // --- Synced run state (server-authoritative, mirrored to clients for animation/sound) ---
   /// <summary>True while a player is actively cranking the pump (holding right-click).</summary>
   private bool _pumping;
@@ -65,7 +64,6 @@ public class BlockEntityManualFluidPump : BlockEntity
       // Nobody is holding the button right after load, so ignore any persisted run state.
       _pumping = false;
       _drawingWater = false;
-      _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
       _serverTickId = RegisterGameTickListener(OnServerTick, 1000);
     }
     else
@@ -161,11 +159,7 @@ public class BlockEntityManualFluidPump : BlockEntity
   /// <summary>The pipe network across one of the pump's connector faces (only when a pipe there
   /// faces back), or <c>null</c>.</summary>
   private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
-    _netSystem?.GetConnectedNetworkAcross(
-      Api.World.BlockAccessor,
-      Pos,
-      connectorFace
-    ) as PipeNetwork;
+    this.ConnectedNetwork<PipeNetwork>(connectorFace);
 
   /// <summary>The first fluid intake on <paramref name="net"/> that can currently draw water, or <c>null</c>.</summary>
   private BlockEntityFluidIntake? FindIntake(PipeNetwork? net)

@@ -38,14 +38,9 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
   private float _maxTemperature;
   private float _intakeVolume;
 
-  private BlockNetworkModSystem? _netSystem;
-
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-
-    if (api.Side == EnumAppSide.Server)
-      _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
 
     _factorAnthracite = SmexValues.CowperHeatingSpeedAnthracite;
     _factorOtherCoal = SmexValues.CowperHeatingSpeedOtherCoal;
@@ -98,14 +93,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     var consumedExhaustVol = 0f;
     float inputExhaustTemp = 20f;
     bool isReceivingExhaust = false;
-    if (
-      _netSystem?.GetConnectedNetworkAcross(
-        Api.World.BlockAccessor,
-        Pos,
-        _connectorFace
-      )
-      is PipeNetwork exhaustNet
-    )
+    if (ConnectedNetwork<PipeNetwork>(_connectorFace) is { } exhaustNet)
     {
       inputExhaustTemp = exhaustNet.State?.Temperature ?? 20f;
       consumedExhaustVol = exhaustNet.TryConsumeGas(

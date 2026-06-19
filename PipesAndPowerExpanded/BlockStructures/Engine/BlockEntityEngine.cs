@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
 using PipesAndPowerExpanded.Helpers;
@@ -23,7 +24,7 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine;
 /// uses the <c>idlemp</c>/<c>cyclemp</c> animations, a blower/pump (or nothing) uses
 /// <c>idle</c>/<c>cyclepump</c>. Per-variant stats are supplied through the virtual hooks below.
 /// </summary>
-public abstract class BlockEntityEngine : BlockEntity
+public abstract class BlockEntityEngine : BlockEntityProductionMachine
 {
   private BEBehaviorAnimatable? _animatable;
   private BEBehaviorRightClickConstructable? _rcc;
@@ -53,9 +54,6 @@ public abstract class BlockEntityEngine : BlockEntity
 
   /// <summary>Set true while the engine is driving its sub-machine (cycle animation).</summary>
   private bool _running;
-
-  private long _engineTickId;
-  private BlockNetworkModSystem? _netSystem;
 
   #region Per-variant stats
 
@@ -91,15 +89,15 @@ public abstract class BlockEntityEngine : BlockEntity
 
   #region Break / repair
 
-  /// <summary>Seconds the engine has run above its band (drives the break; reset when back in band).</summary>
-  private float _overPressureSeconds;
+  /// <summary>Holds the seconds the engine has run above its band (drives the break; reset when back in band).</summary>
+  private GraceTimer _overPressure;
 
   /// <summary>True once the engine has burst from sustained over-pressure; it can't run until repaired.</summary>
   public bool IsBroken { get; private set; }
 
   /// <summary>Seconds of over-pressure left before the engine breaks (for the HUD warning).</summary>
   public float OverPressureRemaining =>
-    Math.Max(0f, PpexValues.EngineOverPressureSeconds - _overPressureSeconds);
+    _overPressure.Remaining(PpexValues.EngineOverPressureSeconds);
 
   /// <summary>Clears the broken state (called by the block's wrench repair).</summary>
   public void Repair()
@@ -107,7 +105,7 @@ public abstract class BlockEntityEngine : BlockEntity
     if (!IsBroken)
       return;
     IsBroken = false;
-    _overPressureSeconds = 0f;
+    _overPressure.Reset();
     MarkDirty(true);
   }
 
@@ -119,7 +117,7 @@ public abstract class BlockEntityEngine : BlockEntity
     _running = false;
     // Clear the timer so the broken engine stops venting the warning plume (the client vent is
     // gated on this > 0, and the broken tick returns early without resetting it otherwise).
-    _overPressureSeconds = 0f;
+    _overPressure.Reset();
     if (Api is { Side: EnumAppSide.Server })
     {
       // A burst erupts in steam plus a muffled explosion (server particles replicate to clients).
@@ -196,16 +194,9 @@ public abstract class BlockEntityEngine : BlockEntity
 
   private BlockEngine? EngineBlock => Block as BlockEngine;
 
-  /// <summary>
-  /// The pipe network across one of the engine's connector faces, or <c>null</c> when the
-  /// adjacent pipe has no connector facing back. Used for the steam inlet and water outlet.
-  /// </summary>
-  private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
-    _netSystem?.GetConnectedNetworkAcross(
-      Api.World.BlockAccessor,
-      Pos,
-      connectorFace
-    ) as PipeNetwork;
+  /// <summary>The production tick runs once construction is finished (a broken engine still ticks
+  /// to keep its power zeroed and to render the break, so the gate is construction, not running).</summary>
+  protected override bool CanRunProduction => IsConstructed;
 
   /// <summary>The attached sub-machine block entity at the engine's sub-machine cell, if any.</summary>
   public BlockEntityEngineSubmachine? SubmachineBE =>
@@ -236,19 +227,14 @@ public abstract class BlockEntityEngine : BlockEntity
       // while the engine is straining over pressure.
       _engineClientTickId = RegisterGameTickListener(OnEngineClientTick, 50);
     }
-
-    if (api.Side == EnumAppSide.Server)
-    {
-      _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-      _engineTickId = RegisterGameTickListener(OnEngineTick, 1000);
-    }
+    // The server production tick is registered by the base (BlockEntityProductionMachine).
   }
 
   #region Power
 
-  private void OnEngineTick(float dt)
+  protected override void OnProductionTick(float dt)
   {
-    if (!IsConstructed || EngineBlock == null)
+    if (EngineBlock == null)
       return;
 
     var ba = Api.World.BlockAccessor;
@@ -265,28 +251,28 @@ public abstract class BlockEntityEngine : BlockEntity
       return;
     }
 
-    var inlet = ConnectedNetwork(EngineBlock.SteamInletFace);
+    var inlet = ConnectedNetwork<PipeNetwork>(EngineBlock.SteamInletFace);
     float pressure =
       inlet?.State?.MediumType == "Steam" ? inlet.State.Pressure : 0f;
     InletPressure = pressure;
 
     // Over-pressure damage: running the engine above its band wears it out; sustained
     // long enough it bursts and must be repaired. Back inside the band, it recovers.
-    if (pressure > BreakPressure)
+    bool overPressure = pressure > BreakPressure;
+    bool wasCounting = _overPressure.IsCounting;
+    if (
+      _overPressure.Update(
+        overPressure,
+        dt,
+        PpexValues.EngineOverPressureSeconds
+      )
+    )
     {
-      _overPressureSeconds += dt;
-      MarkDirty(true);
-      if (_overPressureSeconds >= PpexValues.EngineOverPressureSeconds)
-      {
-        Break();
-        return;
-      }
+      Break();
+      return;
     }
-    else if (_overPressureSeconds > 0f)
-    {
-      _overPressureSeconds = 0f;
-      MarkDirty(true);
-    }
+    if (overPressure || wasCounting != _overPressure.IsCounting)
+      MarkDirty(true); // refresh the HUD countdown / clear it on recovery
 
     // Fixed steam draw while engaged - inlet pressure only gates on/off. Power scales with
     // the steam the network can actually supply, so a starved line yields less power.
@@ -325,7 +311,7 @@ public abstract class BlockEntityEngine : BlockEntity
   /// </summary>
   private void OutputCondensate(float amount, IBlockAccessor ba)
   {
-    var outNet = ConnectedNetwork(EngineBlock!.WaterOutletFace);
+    var outNet = ConnectedNetwork<PipeNetwork>(EngineBlock!.WaterOutletFace);
     bool piped = outNet?.TryProduceLiquid(amount, 90f, 0f, ba) == true;
     if (!piped)
       SpawnWaterSpill();
@@ -366,8 +352,7 @@ public abstract class BlockEntityEngine : BlockEntity
       UnregisterGameTickListener(_submachineWatchId);
     if (_engineClientTickId != 0)
       UnregisterGameTickListener(_engineClientTickId);
-    if (_engineTickId != 0)
-      UnregisterGameTickListener(_engineTickId);
+    // The server production tick is owned and torn down by the base.
     DisposeGearHum();
   }
 
@@ -391,7 +376,7 @@ public abstract class BlockEntityEngine : BlockEntity
     tree.SetFloat("availPower", AvailablePower);
     tree.SetFloat("inletPressure", InletPressure);
     tree.SetBool("broken", IsBroken);
-    tree.SetFloat("overPressure", _overPressureSeconds);
+    _overPressure.ToTree(tree, "overPressure");
   }
 
   public override void FromTreeAttributes(
@@ -408,7 +393,7 @@ public abstract class BlockEntityEngine : BlockEntity
     AvailablePower = tree.GetFloat("availPower");
     InletPressure = tree.GetFloat("inletPressure");
     IsBroken = tree.GetBool("broken");
-    _overPressureSeconds = tree.GetFloat("overPressure");
+    _overPressure.FromTree(tree, "overPressure");
     if (Api is ICoreClientAPI && _animatorReady)
     {
       // Breaking/repairing swaps the rendered mesh (piston subtree on/off).
@@ -451,7 +436,7 @@ public abstract class BlockEntityEngine : BlockEntity
           ExMeasure.FlowRate(RunSteamRate, "F0")
         )
       );
-    if (_overPressureSeconds > 0f)
+    if (_overPressure.IsCounting)
       dsc.AppendLine(
         Lang.Get("ppex:engine-info-overpressure", OverPressureRemaining)
       );
@@ -763,7 +748,7 @@ public abstract class BlockEntityEngine : BlockEntity
     // Straining over break pressure: vent a constant hard plume (a "back off" warning),
     // independent of stroke timing. Throttled so the 50ms tick doesn't flood particles.
     if (
-      _overPressureSeconds > 0f
+      _overPressure.IsCounting
       && Api.World.ElapsedMilliseconds - _overSteamMs >= 200
     )
     {

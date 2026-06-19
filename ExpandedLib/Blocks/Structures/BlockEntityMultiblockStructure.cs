@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -18,13 +19,13 @@ namespace ExpandedLib.Blocks.Structures;
 /// completed or broken, and a production tick that fires only while complete.
 /// Subclasses supply the orientation logic, production behavior, and status messages.
 /// </summary>
-public abstract class BlockEntityMultiblockStructure : BlockEntity
+public abstract class BlockEntityMultiblockStructure
+  : BlockEntityProductionMachine
 {
   protected MultiblockStructure? _structure;
   protected MultiblockStructure? _highlightedStructure;
   protected int _currentAngle = -1;
   private long _completionTickId;
-  private long _productionTickId;
 
   /// <summary>Whether every block of the multiblock structure is currently in place.</summary>
   public bool StructureComplete { get; protected set; }
@@ -32,20 +33,20 @@ public abstract class BlockEntityMultiblockStructure : BlockEntity
   /// <summary>Interval (ms) of the structure-completion monitor tick.</summary>
   protected virtual int CompletionTickMs => 3000;
 
-  /// <summary>Interval (ms) of the production tick (runs only while complete).</summary>
-  protected virtual int ProductionTickMs => 1000;
+  /// <summary>The production tick runs only while the structure is complete.</summary>
+  protected override bool CanRunProduction => StructureComplete;
+
+  /// <summary>Register the production tick on load only if the structure is already complete;
+  /// the monitor tick starts/stops it across completion transitions.</summary>
+  protected override bool AutoStartProduction => StructureComplete;
 
   public override void Initialize(ICoreAPI api)
   {
+    // Base registers the production tick (only when already complete, via AutoStartProduction).
     base.Initialize(api);
+    // The monitor tick runs unconditionally to detect both completion and breakage.
     if (api.Side == EnumAppSide.Server)
-    {
-      // The monitor tick runs unconditionally to detect both completion and breakage; the
-      // production tick runs only while complete (and OnProductionTick re-guards on it anyway).
       StartMonitorTick();
-      if (StructureComplete)
-        StartProductionTick();
-    }
   }
 
   /// <summary>Starts both the completion monitor and the production tick.</summary>
@@ -62,24 +63,6 @@ public abstract class BlockEntityMultiblockStructure : BlockEntity
         OnMonitorStructureTick,
         CompletionTickMs
       );
-  }
-
-  protected void StartProductionTick()
-  {
-    if (_productionTickId == 0 && Api.Side == EnumAppSide.Server)
-      _productionTickId = RegisterGameTickListener(
-        OnProductionTick,
-        ProductionTickMs
-      );
-  }
-
-  protected void StopProductionTick()
-  {
-    if (_productionTickId != 0)
-    {
-      UnregisterGameTickListener(_productionTickId);
-      _productionTickId = 0;
-    }
   }
 
   /// <summary>Stops both ticks (used on block removal).</summary>
@@ -119,9 +102,6 @@ public abstract class BlockEntityMultiblockStructure : BlockEntity
 
   /// <summary>Called when a previously complete structure becomes incomplete. Default: no-op.</summary>
   protected virtual void OnStructureLost() { }
-
-  /// <summary>Per-tick production logic; runs server-side only while the structure is complete.</summary>
-  protected abstract void OnProductionTick(float dt);
 
   /// <summary>Recomputes the structure's rotation/angle from the block orientation.</summary>
   protected abstract void UpdateStructureRotation();

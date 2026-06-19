@@ -1,6 +1,7 @@
 using System;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -18,9 +19,8 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine;
 /// needs an <c>Animatable</c> behavior with <c>idle</c>/<c>cycle</c> animations plus a
 /// <see cref="DoWork"/> implementation.
 /// </summary>
-public abstract class BlockEntityEngineSubmachine : BlockEntity
+public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
 {
-  protected BlockNetworkModSystem? NetSystem;
   private BEBehaviorAnimatable? _animatable;
   private long _tickId;
   private bool _animatorReady;
@@ -60,15 +60,11 @@ public abstract class BlockEntityEngineSubmachine : BlockEntity
 
   public override void Initialize(ICoreAPI api)
   {
+    // The base registers the server production tick; this sub-machine adds the client visuals.
     base.Initialize(api);
     EnginePos = FindEngine();
 
-    if (api.Side == EnumAppSide.Server)
-    {
-      NetSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-      _tickId = RegisterGameTickListener(OnServerTick, 1000);
-    }
-    else
+    if (api.Side == EnumAppSide.Client)
     {
       _animatable = GetBehavior<BEBehaviorAnimatable>();
       InitAnimator();
@@ -130,11 +126,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntity
   /// adjacent pipe has no connector facing back.
   /// </summary>
   protected PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
-    NetSystem?.GetConnectedNetworkAcross(
-      Api.World.BlockAccessor,
-      Pos,
-      connectorFace
-    ) as PipeNetwork;
+    this.ConnectedNetwork<PipeNetwork>(connectorFace);
 
   /// <summary>Locates the engine that owns this sub-machine cell (assumes aligned orientation).</summary>
   private BlockPos? FindEngine()
@@ -165,14 +157,11 @@ public abstract class BlockEntityEngineSubmachine : BlockEntity
   /// <summary>Per-second server work, scaled by <paramref name="power"/> (0..max).</summary>
   protected abstract void DoWork(float power, float dt);
 
-  private void OnServerTick(float dt)
-  {
-    EnginePos ??= FindEngine();
-    var engine = Engine;
-    if (engine == null)
-      return;
-    DoWork(engine.AvailablePower, dt);
-  }
+  /// <summary>The sub-machine works whenever it has found its master engine.</summary>
+  protected override bool CanRunProduction => Engine != null;
+
+  protected override void OnProductionTick(float dt) =>
+    DoWork(Engine!.AvailablePower, dt);
 
   // Mirror the engine's cycle animation; re-apply on a run-state flip or meaningful speed change.
   private void OnClientAnimTick(float dt)

@@ -43,6 +43,15 @@ public sealed class TestWorld
   /// <summary>The calendar; <see cref="AdvanceDays"/> moves <c>TotalDays</c> for evaporation tests.</summary>
   public IGameCalendar Calendar { get; }
 
+  /// <summary>
+  /// A server-side core API wired to this world (mod loader resolves <see cref="Networks"/>, event
+  /// API captures block-entity tick listeners). Assign it to a block entity's <c>Api</c> (or via
+  /// <see cref="Attach"/>) so it can resolve networks and register production ticks headlessly.
+  /// </summary>
+  public ICoreServerAPI Api { get; }
+
+  private readonly List<System.Action<float>> _beTickCallbacks = new();
+
   /// <summary>Item stacks spawned by the simulation (e.g. a bursting pipe dropping its materials).</summary>
   public List<ItemStack> Drops { get; } = new();
 
@@ -56,6 +65,8 @@ public sealed class TestWorld
 
     Accessor = BuildAccessor();
     World = BuildWorld();
+    Api = BuildApi();
+    World.Api.Returns(Api);
 
     // The manager normally captures the server world in StartServerSide, which we deliberately
     // do not call (it would also register a real tick listener). Prime it directly.
@@ -64,6 +75,13 @@ public sealed class TestWorld
       nameof(Networks.ServerWorld),
       World
     );
+  }
+
+  /// <summary>Links <paramref name="be"/> to this world's API so it can resolve networks and ticks.</summary>
+  public TestWorld Attach(BlockEntity be)
+  {
+    be.Api = Api;
+    return this;
   }
 
   #region Setup
@@ -143,6 +161,15 @@ public sealed class TestWorld
         net.OnTick(Accessor, 1f, Networks);
   }
 
+  /// <summary>Fires every block-entity server tick listener registered through <see cref="Api"/>
+  /// (i.e. via <c>BlockEntity.RegisterGameTickListener</c>), <paramref name="times"/> times.</summary>
+  public void FireBlockEntityTicks(float dt = 1f, int times = 1)
+  {
+    for (int i = 0; i < times; i++)
+      foreach (var cb in _beTickCallbacks.ToList())
+        cb(dt);
+  }
+
   /// <summary>Moves the calendar forward without ticking, for calendar-driven effects (evaporation).</summary>
   public void AdvanceDays(double days)
   {
@@ -199,6 +226,45 @@ public sealed class TestWorld
       )
       .Do(ci => Drops.Add(ci.Arg<ItemStack>()));
     return w;
+  }
+
+  private ICoreServerAPI BuildApi()
+  {
+    var api = Substitute.For<ICoreServerAPI>();
+    // A block entity's Api field is typed ICoreAPI, so it reads the base-interface World/Event/
+    // ModLoader members - which ICoreServerAPI re-declares with `new`. Configure both views.
+    var coreApi = (ICoreAPI)api;
+
+    api.Side.Returns(EnumAppSide.Server);
+    api.World.Returns(World);
+    coreApi.World.Returns(World);
+
+    var modLoader = Substitute.For<IModLoader>();
+    modLoader.GetModSystem<BlockNetworkModSystem>().Returns(Networks);
+    api.ModLoader.Returns(modLoader);
+    coreApi.ModLoader.Returns(modLoader);
+
+    var events = Substitute.For<IServerEventAPI>();
+    api.Event.Returns(events);
+    coreApi.Event.Returns(events);
+
+    // Capture the position-scoped server tick listeners block entities register, so the test can
+    // pump them via FireBlockEntityTicks. (BlockEntity.RegisterGameTickListener forwards to this.)
+    events
+      .RegisterGameTickListener(
+        Arg.Any<System.Action<float>>(),
+        Arg.Any<BlockPos>(),
+        Arg.Any<System.Action<System.Exception>>(),
+        Arg.Any<int>(),
+        Arg.Any<int>()
+      )
+      .Returns(ci =>
+      {
+        _beTickCallbacks.Add(ci.Arg<System.Action<float>>());
+        return (long)_beTickCallbacks.Count;
+      });
+
+    return api;
   }
 
   private Block? GetByCode(AssetLocation? code) =>

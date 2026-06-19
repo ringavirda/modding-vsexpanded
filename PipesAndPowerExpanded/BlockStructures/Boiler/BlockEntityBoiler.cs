@@ -3,6 +3,7 @@ using System.Reflection;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Client;
@@ -157,9 +158,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
       // Keep the water level / glow current despite push-based state syncing.
       _clientTickId = RegisterGameTickListener(OnClientTick, 250);
     }
-
-    if (api.Side == EnumAppSide.Server)
-      _netSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
+    // The base (BlockEntityProductionMachine) registers the server production tick.
   }
 
   /// <summary>
@@ -179,22 +178,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
   protected override string GetCompleteMessage() =>
     Lang.Get("ppex:structure-complete");
 
-  private BlockNetworkModSystem? _netSystem;
   private BlockBoiler? BoilerBlock => Block as BlockBoiler;
-
-  private PipeNetwork? NetworkAt(BlockPos pos) =>
-    _netSystem?.GetNetworkAt(pos) as PipeNetwork;
-
-  /// <summary>
-  /// The pipe network across one of the boiler's connector faces, or <c>null</c> when the
-  /// adjacent pipe has no connector facing back - so it never draws from an unplumbed line.
-  /// </summary>
-  private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
-    _netSystem?.GetConnectedNetworkAcross(
-      Api.World.BlockAccessor,
-      Pos,
-      connectorFace
-    ) as PipeNetwork;
 
   /// <summary>Per-variant animator cache key (also the shape selector); unique per block code + side.</summary>
   protected virtual string AnimCacheKey => Block.Code.Path;
@@ -325,11 +309,11 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
 
   #region Production
 
-  /// <summary>Seconds the boiler has sat fully choked while still boiling (drives the explosion).</summary>
-  private float _overpressureSeconds;
+  /// <summary>Grace timer: how long the boiler has sat at its output ceiling while still boiling (drives the explosion).</summary>
+  private GraceTimer _overpressure;
 
-  /// <summary>Seconds the boiler has sat choked - fire lit but its exhaust outlet backed up so it can't expel exhaust (drives snuffing the fuel pile).</summary>
-  private float _chokedSeconds;
+  /// <summary>Grace timer: how long the boiler has sat choked - fire lit but its exhaust outlet backed up (drives snuffing the fuel pile).</summary>
+  private GraceTimer _chokeTimer;
 
   /// <summary>Whether the boiler is currently choked (can't expel exhaust). Synced for the HUD line.</summary>
   private bool _choked;
@@ -352,7 +336,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
 
     PipeNetwork? exhaustNet =
       BoilerBlock != null
-        ? NetworkAt(BoilerBlock.ExhaustOutletWorldPos(Pos))
+        ? NetworkAt<PipeNetwork>(BoilerBlock.ExhaustOutletWorldPos(Pos))
         : null;
     bool draughtBlocked =
       (exhaustNet?.State?.Pressure ?? 0f)
@@ -362,23 +346,16 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     // Fire lit but exhaust outlet backed up to the vent cap = choked: combustion gas can't
     // escape. Sit choked too long and the fuel pile is snuffed (like a blocked flue).
     _choked = fireOn && draughtBlocked;
-    if (_choked)
+    if (
+      _chokeTimer.Update(_choked, dt, PpexValues.BoilerChokeExtinguishSeconds)
+    )
     {
-      _chokedSeconds += dt;
-      if (_chokedSeconds >= PpexValues.BoilerChokeExtinguishSeconds)
-      {
-        pile?.Extinguish();
-        ExSounds.Play(Api, fuelPos, ExSounds.Extinguish, 0.7f);
-        _chokedSeconds = 0f;
-        _choked = false;
-      }
-    }
-    else
-    {
-      _chokedSeconds = 0f;
+      pile?.Extinguish();
+      ExSounds.Play(Api, fuelPos, ExSounds.Extinguish, 0.7f);
+      _choked = false;
     }
 
-    PipeNetwork? waterNet = ConnectedNetwork(BlockFacing.DOWN);
+    PipeNetwork? waterNet = ConnectedNetwork<PipeNetwork>(BlockFacing.DOWN);
     if (waterNet != null && _waterVolume < MaxWaterIntakeFill)
     {
       float feedPressure = waterNet.State?.Pressure ?? 0f;
@@ -456,7 +433,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     if (LidOpen)
     {
       VentExcessSteam(dt);
-      _overpressureSeconds = 0f;
+      _overpressure.Reset();
       _steamLeaking = false; // steam vents through the lid, not the outlet
     }
     else
@@ -465,21 +442,21 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
       // jetting out instead of pressurising - that drives the leak particles.
       _steamLeaking = _state != BoilerState.Idle && PushSteam(ba, dt);
 
-      if (
+      bool overPressure =
         _state == BoilerState.Boiling
         && burning
-        && InternalPressure >= MaxOutputPressure
+        && InternalPressure >= MaxOutputPressure;
+      if (
+        _overpressure.Update(
+          overPressure,
+          dt,
+          PpexValues.BoilerOverpressureSeconds
+        )
       )
       {
-        _overpressureSeconds += dt;
-        if (_overpressureSeconds >= PpexValues.BoilerOverpressureSeconds)
-        {
-          Explode();
-          return;
-        }
+        Explode();
+        return;
       }
-      else if (_overpressureSeconds > 0f)
-        _overpressureSeconds = 0f;
     }
 
     if (burning && exhaustNet != null)
@@ -550,7 +527,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
       return leaked > 0f;
     }
 
-    PipeNetwork? steamNet = NetworkAt(pipePos);
+    PipeNetwork? steamNet = NetworkAt<PipeNetwork>(pipePos);
     if (steamNet == null)
       return false;
 
@@ -1005,7 +982,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     tree.SetBool("lidOpen", LidOpen);
     tree.SetBool("burning", _burning);
     tree.SetBool("steamLeaking", _steamLeaking);
-    tree.SetFloat("overpressure", _overpressureSeconds);
+    _overpressure.ToTree(tree, "overpressure");
     tree.SetBool("choked", _choked);
   }
 
@@ -1028,7 +1005,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     // Lid pose is push-based: replay it whenever the synced state flips.
     if (Api?.Side == EnumAppSide.Client && prevLidOpen != LidOpen)
       ApplyPose();
-    _overpressureSeconds = tree.GetFloat("overpressure");
+    _overpressure.FromTree(tree, "overpressure");
     _choked = tree.GetBool("choked");
   }
 
@@ -1090,14 +1067,11 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     if (_choked)
       dsc.AppendLine(Lang.Get("ppex:boiler-info-choked"));
 
-    if (_overpressureSeconds > 0f)
+    if (_overpressure.IsCounting)
       dsc.AppendLine(
         Lang.Get(
           "ppex:boiler-info-overpressure",
-          Math.Max(
-            0f,
-            PpexValues.BoilerOverpressureSeconds - _overpressureSeconds
-          )
+          _overpressure.Remaining(PpexValues.BoilerOverpressureSeconds)
         )
       );
   }
