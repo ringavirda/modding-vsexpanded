@@ -9,9 +9,10 @@
     "hit": "game:block/anvil",
     "walk": "game:walk/stone"
   },
-  "requiredMiningTier": 5,
+  "requiredMiningTier": 4,
   "resistance": 45.0,
   "maxstacksize": 1,
+  "drops": [],
   "attributes": {
     "fillerOffsets": [
       { "x": -1, "y": -1, "z": -1 },

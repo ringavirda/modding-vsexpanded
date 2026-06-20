@@ -254,6 +254,22 @@ public class BlockEntityConverterBessemer : BlockEntity
 
   #endregion
 
+  #region Chisel-out (forwarded to the control)
+
+  /// <summary>True when the vessel holds a solidified charge (see the control).</summary>
+  public bool HasSolidifiedCharge => GetControl()?.HasSolidifiedCharge ?? false;
+
+  /// <summary>True when the solidified charge has cooled to the chisellable (hardened) threshold.</summary>
+  public bool ChargeIsHardened => GetControl()?.ChargeIsHardened ?? false;
+
+  /// <summary>True when a small hardened residue can be chiselled out instead of breaking the vessel.</summary>
+  public bool CanChiselOut() => GetControl()?.CanChiselOut() ?? false;
+
+  /// <summary>Server-side: chips the hardened residue out via the control; null when not chiselable.</summary>
+  public ItemStack? ChiselOutContent() => GetControl()?.ChiselOutContent();
+
+  #endregion
+
   #region HUD
 
   /// <summary>

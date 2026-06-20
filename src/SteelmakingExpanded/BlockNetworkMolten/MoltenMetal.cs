@@ -56,8 +56,11 @@ public static class MoltenMetal
     if (item == null)
       return null;
     var stack = new ItemStack(item, 1);
-    SetCooldownSpeed(stack, cooldownSpeed ?? SmexValues.MoltenCooldownSpeed);
+    // SetTemperature first: it creates the "temperature" tree that SetCooldownSpeed writes into. On
+    // a fresh stack that tree doesn't exist yet, so setting the cooldown before it silently no-ops -
+    // which left the cooldownSpeed argument dead for every caller until this ordering fix.
     SetTemperature(world, stack, temperature);
+    SetCooldownSpeed(stack, cooldownSpeed ?? SmexValues.MoltenCooldownSpeed);
     return stack;
   }
 

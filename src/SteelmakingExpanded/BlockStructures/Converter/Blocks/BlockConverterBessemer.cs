@@ -1,26 +1,41 @@
 using System;
+using System.Linq;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 
 /// <summary>
 /// The 3×3×3 converter vessel block. Construction is driven by the
 /// RightClickConstructable block-entity behavior; this block scatters any
-/// solidified charge when broken with a steel-tier pickaxe.
+/// solidified charge when broken with an iron-tier pickaxe.
+/// <para>
+/// Implements <see cref="IFillerInteractionTarget"/> so a small hardened residue (one that
+/// solidified mid-pour) can be chiselled out of the upper-rear <c>(0,1,1)</c> footprint cell with a
+/// chisel + hammer, rather than forcing the player to break the whole vessel.
+/// </para>
 /// </summary>
 [BlockRegister]
-public partial class BlockConverterBessemer : Block, IFillerHost
+public partial class BlockConverterBessemer
+  : Block,
+    IFillerHost,
+    IFillerInteractionTarget
 {
+  // The footprint cell (north-orientation offset from the vessel principal) that exposes the
+  // chisel-out interaction - the upper-rear hatch, matching the player-facing hint.
+  private static readonly Vec3i ChiselFillerOffset = new(0, 1, 1);
+
   // RMB construction and its build prompts are routed to the
   // RightClickConstructable block-entity behaviour by the "BlockEntityInteract"
   // block behaviour declared in the block JSON.
 
-  // The converter is welded steel - breaking it needs a steel-tier pickaxe.
+  // The converter is welded plate over a refractory lining - breaking it needs an iron-tier pickaxe.
   // The actual mining requirement is enforced via "requiredMiningTier" in the
   // block JSON; here we just scatter whatever solidified charge it held.
   public override void OnBlockBroken(
@@ -72,6 +87,143 @@ public partial class BlockConverterBessemer : Block, IFillerHost
     if (solidifiedDrops != null && world.Side == EnumAppSide.Server)
       world.SpawnItemEntity(solidifiedDrops, pos.ToVec3d().Add(0.5, 0.5, 0.5));
   }
+
+  #region Chisel-out interaction (IFillerInteractionTarget)
+
+  // Every footprint cell forwards interaction to this principal block. We single out the (0,1,1)
+  // hatch cell for the chisel-out and forward everything else to the normal construction handling.
+  public bool OnFillerInteractStart(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  )
+  {
+    if (
+      IsChiselCell(principalSel.Position, clickedCell)
+      && TryChiselOut(world, byPlayer, principalSel.Position)
+    )
+      return true;
+    return OnBlockInteractStart(world, byPlayer, principalSel);
+  }
+
+  public bool OnFillerInteractStep(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  ) => OnBlockInteractStep(secondsUsed, world, byPlayer, principalSel);
+
+  public void OnFillerInteractStop(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  ) => OnBlockInteractStop(secondsUsed, world, byPlayer, principalSel);
+
+  public WorldInteraction[] GetFillerInteractionHelp(
+    IWorldAccessor world,
+    BlockSelection principalSel,
+    IPlayer forPlayer,
+    BlockPos clickedCell
+  )
+  {
+    WorldInteraction[] baseHelp =
+      GetPlacedBlockInteractionHelp(world, principalSel, forPlayer) ?? [];
+
+    // The chisel hint shows only on the hatch cell, and only once the residue is small + hardened.
+    if (
+      IsChiselCell(principalSel.Position, clickedCell)
+      && world.BlockAccessor.GetBlockEntity(principalSel.Position)
+        is BlockEntityConverterBessemer be
+      && be.CanChiselOut()
+    )
+      return
+      [
+        .. baseHelp,
+        new WorldInteraction
+        {
+          ActionLangCode = "smex:blockhelp-bessemer-chiselresidue",
+          MouseButton = EnumMouseButton.Right,
+          Itemstacks = _chiselStacks ??=
+            [
+              .. world
+                .SearchItems(new AssetLocation("chisel-*"))
+                .Select(i => new ItemStack(i)),
+            ],
+        },
+      ];
+
+    return baseHelp;
+  }
+
+  private bool IsChiselCell(BlockPos principalPos, BlockPos clickedCell)
+  {
+    int angle = ExOrientation.AngleFromSide(Variant["side"]);
+    Vec3i r = ExOrientation.RotateOffset(ChiselFillerOffset, angle);
+    return clickedCell.Equals(principalPos.AddCopy(r.X, r.Y, r.Z));
+  }
+
+  // Chisel in hand + hammer in the off-hand chips a hardened residue out of the vessel - mirrors the
+  // molten-canal clear. Returns true when this owns the click (so it isn't forwarded to construction).
+  private bool TryChiselOut(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockPos principalPos
+  )
+  {
+    if (
+      world.BlockAccessor.GetBlockEntity(principalPos)
+        is not BlockEntityConverterBessemer be
+      || !be.HasSolidifiedCharge
+    )
+      return false; // nothing solidified here - let the click fall through to construction handling
+
+    ItemSlot? activeSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
+    ItemStack? held = activeSlot?.Itemstack;
+    ItemStack? offhand = byPlayer.Entity?.LeftHandItemSlot?.Itemstack;
+    if (!IsTool(held, EnumTool.Chisel) || !IsTool(offhand, EnumTool.Hammer))
+      return false; // not chiselling - fall through
+
+    // The player is actively trying to chisel a solidified charge: own the click and explain why if
+    // it can't be chipped out yet.
+    if (!be.CanChiselOut())
+    {
+      if (world.Side == EnumAppSide.Server)
+        (byPlayer as IServerPlayer)?.SendIngameError(
+          be.ChargeIsHardened ? "smex-bessemertoofull" : "smex-bessemertoohot"
+        );
+      return true;
+    }
+
+    if (world.Side == EnumAppSide.Server)
+    {
+      ItemStack? recovered = be.ChiselOutContent();
+      if (
+        recovered != null
+        && !byPlayer.InventoryManager.TryGiveItemstack(recovered)
+      )
+        world.SpawnItemEntity(
+          recovered,
+          principalPos.ToVec3d().Add(0.5, 0.6, 0.5)
+        );
+
+      if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
+        held!.Collectible.DamageItem(world, byPlayer.Entity, activeSlot, 2);
+
+      ExSounds.Play(world.Api, principalPos, ExSounds.StoneCrush, 0.8f);
+    }
+    return true;
+  }
+
+  private static bool IsTool(ItemStack? stack, EnumTool tool) =>
+    stack?.Collectible?.Tool == tool;
+
+  private static ItemStack[]? _chiselStacks;
+
+  #endregion
 
 #if !GAME_GE_1_22
   // Legacy lacks the vanilla IInteractableWithHelp path, so surface the construction help here.

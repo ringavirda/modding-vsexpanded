@@ -45,6 +45,16 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   private static float PowerSpeedThreshold =>
     SmexValues.BessemerPowerSpeedThreshold;
 
+  // The charge cools slower inside the insulated vessel than loose molten metal does: scale the
+  // molten-system cooldown speed by the configurable coefficient (0.5 ⇒ cools twice as slowly), so
+  // a finished heat gives the player time to pour before it solidifies.
+  private static float ContentCooldownSpeed =>
+    SmexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
+
+  // Below this fraction of capacity a hardened residue is small enough to chisel out (rather than
+  // breaking the whole converter to salvage it).
+  private static float ChiselMaxFraction => SmexValues.BessemerChiselMaxFraction;
+
   private const string IronCode = "game:ingot-iron";
   private const string SteelCode = "game:ingot-steel";
   #endregion
@@ -155,7 +165,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
     if (_solidified)
     {
-      SetStatus(Lang.Get("smex:bessemer-status-solidified"));
+      SetStatus(SolidifiedStatus());
       return;
     }
 
@@ -224,7 +234,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   {
     if (_solidified)
     {
-      SetStatus(Lang.Get("smex:bessemer-status-solidified"));
+      SetStatus(SolidifiedStatus());
       return;
     }
 
@@ -273,7 +283,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     if (drained <= 0f)
       return;
 
-    _content ??= MoltenMetal.CreateStack(Api.World, type, temp);
+    _content ??= MoltenMetal.CreateStack(
+      Api.World,
+      type,
+      temp,
+      ContentCooldownSpeed
+    );
     if (_content == null)
       return;
 
@@ -307,7 +322,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
     if (_solidified)
     {
-      SetStatus(Lang.Get("smex:bessemer-status-solidified"));
+      SetStatus(SolidifiedStatus());
       return;
     }
 
@@ -364,7 +379,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   private void CompleteRefining()
   {
     float temp = MoltenMetal.GetTemperature(Api.World, _content!);
-    ItemStack? steelStack = MoltenMetal.CreateStack(Api.World, SteelCode, temp);
+    ItemStack? steelStack = MoltenMetal.CreateStack(
+      Api.World,
+      SteelCode,
+      temp,
+      ContentCooldownSpeed
+    );
     if (steelStack == null)
       return;
     _content = steelStack;
@@ -752,13 +772,22 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
   private ItemStack? BuildSolidifiedDrops()
   {
-    // Recover ~part of the charge as metal bits, or slag for non-metal charges.
+    // Breaking the vessel mangles part of the charge: drop a random few units less than chiselling
+    // would recover.
     int randLoss = Random.Shared.Next(3) * 5;
     int remaining = _contentUnits - randLoss;
     if (remaining <= 0)
       remaining = _contentUnits;
+    return BuildRecoveryDrops(remaining);
+  }
 
-    int count = Math.Max(1, remaining / 5);
+  /// <summary>
+  /// Builds the metal-bit recovery stack for <paramref name="units"/> of the current charge (5 units
+  /// per bit), carrying the charge temperature; falls back to slag for a non-metal charge.
+  /// </summary>
+  private ItemStack? BuildRecoveryDrops(int units)
+  {
+    int count = Math.Max(1, units / 5);
     var loc = MoltenNetwork.SolidDropLocation(_content!.Collectible.Code);
     Item? item = Api.World.GetItem(loc);
     if (item == null)
@@ -766,8 +795,67 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       Item? slag = Api.World.GetItem(new AssetLocation("smex:slag"));
       return slag != null ? new ItemStack(slag, count) : null;
     }
-    return new ItemStack(item, count);
+    var drop = new ItemStack(item, count);
+    MoltenMetal.SetTemperature(
+      Api.World,
+      drop,
+      MoltenMetal.GetTemperature(Api.World, _content!)
+    );
+    return drop;
   }
+
+  #endregion
+
+  #region Chisel-out (small hardened residue)
+
+  /// <summary>True when a solidified charge is present (latched below the melting point).</summary>
+  public bool HasSolidifiedCharge =>
+    _solidified && _content != null && _contentUnits > 0;
+
+  /// <summary>True when the charge has cooled below the hardened (chisellable) threshold.</summary>
+  public bool ChargeIsHardened =>
+    _content != null
+    && _contentUnits > 0
+    && MoltenMetal.IsHardened(Api.World, _content);
+
+  /// <summary>
+  /// True when a small, fully-hardened residue can be chiselled out of the vessel - rather than
+  /// having to break the whole converter to recover a charge that solidified mid-pour. Requires the
+  /// charge solidified, cooled to hardened, and below <see cref="ChiselMaxFraction"/> of capacity.
+  /// </summary>
+  public bool CanChiselOut() =>
+    HasSolidifiedCharge
+    && ChargeIsHardened
+    && _contentUnits < ChiselMaxFraction * CapacityUnits;
+
+  /// <summary>
+  /// Server-side: chips the hardened residue out of the vessel, returns the recovered metal-bit drop
+  /// (full amount, no break loss), and clears the charge. Returns <c>null</c> off-server or when the
+  /// charge is not chiselable.
+  /// </summary>
+  public ItemStack? ChiselOutContent()
+  {
+    if (Api?.Side != EnumAppSide.Server || !CanChiselOut())
+      return null;
+
+    ItemStack? recovered = BuildRecoveryDrops(_contentUnits);
+    _content = null;
+    _contentUnits = 0;
+    _processSeconds = 0f;
+    _solidified = false;
+    SyncConverter();
+    MarkDirty(true);
+    return recovered;
+  }
+
+  // A solidified charge small enough to chisel out points the player at the chisel; otherwise tell
+  // them to break the vessel to salvage it.
+  private string SolidifiedStatus() =>
+    Lang.Get(
+      CanChiselOut()
+        ? "smex:bessemer-status-chiselout"
+        : "smex:bessemer-status-solidified"
+    );
 
   #endregion
 

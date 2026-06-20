@@ -202,6 +202,16 @@ public class SmexConfig : IExVersionedConfig
 
   /// <summary>Minimum geared mechanical speed for the converter to count as powered.</summary>
   public float BessemerPowerSpeedThreshold { get; set; } = 0.1f;
+
+  /// <summary>Multiplier on the converter charge's cooldown speed (vs <see cref="MoltenCooldownSpeed"/>).
+  /// Below 1 the bath holds its heat longer, giving the player more time to pour before it solidifies
+  /// (0.5 ⇒ half the molten-system rate, i.e. cools twice as slowly).</summary>
+  public float BessemerCooldownCoefficient { get; set; } = 0.5f;
+
+  /// <summary>Fraction of the converter capacity below which a hardened (cooled) charge can be chiselled
+  /// out of the vessel instead of breaking the whole structure. A residue at or above this is salvaged
+  /// by breaking it.</summary>
+  public float BessemerChiselMaxFraction { get; set; } = 0.2f;
   #endregion
 
   #region Hopper bell (blast-mix maker)
