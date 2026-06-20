@@ -50,3 +50,159 @@ see the git history.
 - Fixed **recipe item variants** and the **vanilla crushed-ore ratio** (EM compat).
 - Fixed the **converter transmission recipe** rod requirements.
 - Assorted localization issues.
+
+## [0.9.1] - 2026-06-14
+
+### Changed
+
+- **Source-generator refactor:** block and item JSON attributes are now baked into
+  generated class members instead of hand-written accessors.
+- Block-info lines display measurements in the player's chosen unit system.
+- The **structure filler** mirrors the block-info of the principal block it belongs to.
+- Updated several block descriptions.
+
+### Fixed
+
+- Corrected the **Bessemer converter's mechanical resistance**.
+
+## [0.9.0] - 2026-06-13
+
+The **Steam Mechanics** release - steelmaking integrated with the new steam-power
+system (split out into Pipes and Power Expanded; see its 0.5.0). Steel can now be
+produced via the steam chain.
+
+### Added
+
+- **Slag and slag-path** blocks - waste output from the new processes - with several
+  variants.
+- **Brick variants** for the molten canals.
+- **Tool molds became proper `smex` items**, and the migration system now also
+  migrates items held in inventories (not just placed blocks).
+
+### Changed
+
+- **Rebalanced recipes** and added world migrations for older saves.
+
+### Fixed
+
+- Right-click construction now handles **wildcard ingredients** correctly and shows
+  the **correct names for missing materials** while building.
+- Quad-rod tool-mold fixes.
+
+## [0.8.7] - 2026-06-08
+
+### Fixed
+
+- Mold recipes were missing their **domain**.
+- Several **uncraftable recipes** and **recipe conflicts**.
+- Valves **constantly rotating** in some situations.
+- Possible **client crash** from the unsafe vanilla incomplete-structure highlight,
+  resolved by reimplementing it safely.
+- The molten network **ignored input temperature** on repeated pouring.
+- Canals containing metal or solidified metal can **no longer be wrench-rotated**.
+- **Blast furnace:** retains its internal state when melting stops, and no longer
+  pours when not melting.
+- Could incorrectly **seal solidified canals**.
+- Assorted renderer issues.
+
+## [0.8.6] - 2026-06-04
+
+### Added
+
+- **World-migration system** for updating old blocks to new variants (moved into the
+  compiled library).
+- **Brick variants** for the full-pipe blocks, with migration of existing blocks.
+- More **cowper-stove and smoke-stack** variants; the bottom of the smoke stack now
+  requires **refractory bricks**.
+
+### Fixed
+
+- Full-network blocks could not be rotated into all orientations.
+- The valve animator ignored the **X component** of the rotation matrix.
+- Added overlays to prevent **transparent-texture rendering** artifacts.
+
+## [0.8.5] - 2026-06-04
+
+### Added
+
+- **Passthrough bend** variant.
+
+### Fixed
+
+- Crash from the **blast door** not dropping the correct block entity (duplicated
+  vanilla `Block.GetDrops`).
+- Some recipes did not return the correct **default block variants**.
+
+## [0.8.4] - 2026-06-03
+
+### Added
+
+- **Lighting** for canals and barrels that hold molten contents.
+
+### Changed
+
+- Raised the default **Bessemer process temperature** so the melt does not solidify
+  too fast.
+- Removed the ability to **chisel out non-hardened metal**.
+
+### Fixed
+
+- The **Bessemer converter** now respects the global melting config.
+- Rendered **molten surfaces** now re-render to reflect temperature changes.
+- **Taps and pedestals** now actually sever the network connection when closed.
+- The converter now respects the **input tap state**.
+- Valve animation for **rotated valves**; valves used the wrong **interaction sound**.
+
+## [0.8.3] - 2026-06-03
+
+### Added
+
+- **Rewrote the molten network** to simulate molten-iron flow between cells, with
+  tuned default flow values.
+- **Extensible iron-ore compat system**.
+
+### Changed
+
+- Updated **Bessemer converter** animation and sound.
+- More forgiving **cowper-stove** defaults.
+
+### Fixed
+
+- Handbook formatting.
+
+## [0.8.2] - 2026-06-02
+
+### Changed
+
+- **Centralized the mod config** into a single JSON file.
+
+### Fixed
+
+- Cowper-stove issues.
+
+## [0.8.1] - 2026-06-02
+
+### Added
+
+- **Construction costs** shown in the handbook.
+- **Specific interaction sounds** for all blocks.
+- Multiblock structures now **log the missing block** in chat while building.
+
+### Changed
+
+- The **Bessemer converter** can be placed without cost in creative.
+- Corrected the **iron hatch door's** name.
+
+### Fixed
+
+- Crash when **breaking a solidified Bessemer converter** (JSON wildcard issue).
+- **Blast-furnace** solidified-drop amount.
+- **Bessemer-converter and blast-furnace** global-position translation.
+
+## [0.8.0] - 2026-06-01
+
+### Added
+
+- **First public release.** The Steelmaking Expanded mod: blast furnace, Bessemer
+  converter, cowper stove, smoke stack, molten canals and tool molds, with their gas
+  and molten block networks.

@@ -61,3 +61,47 @@ see the git history.
 - Non-pipe network blocks could incorrectly burst.
 - Block display-name ordering and assorted localization issues.
 - `/exmod config` value display formatting.
+
+## [0.6.0] - 2026-06-16
+
+### Added
+
+- **Command framework.** A shared `/exmod` (server) and `.exmod` (client) command
+  root, with a server-side version and privilege handling, so dependent mods hang
+  their sub-commands off one root.
+- **Measurement helpers** (metric/imperial) and a **per-player preference registry**,
+  with a handbook patch that converts displayed measurements to the player's units.
+- **Network-highlight** subcommand and a **base surface renderer**.
+- **Source generators** that bake block/item JSON attributes into generated class
+  members.
+- **Config migrations** from older versions.
+
+### Changed
+
+- The **structure filler** mirrors the principal block's block-info.
+
+## [0.5.1] - 2026-06-14
+
+### Changed
+
+- The **migration system** now also covers items held in inventories, not just placed
+  blocks.
+
+### Fixed
+
+- **Right-click-constructable** wildcard handling and the names shown for missing
+  materials.
+
+## [0.5.0] - 2026-06-13
+
+The first standalone release of the shared library, extracted from Steelmaking
+Expanded (internal `0.1.0` groundwork promoted to `0.5.0`).
+
+### Added
+
+- **Block-network framework** (nodes, connectors, graph) backing gas pipes and molten
+  canals.
+- **Multiblock structure framework** with right-click construction.
+- **Attribute-driven registration** for blocks, items and behaviors.
+- **World-migration system** for updating old blocks.
+- Shared **particle, sound and orientation** catalogues and helpers.

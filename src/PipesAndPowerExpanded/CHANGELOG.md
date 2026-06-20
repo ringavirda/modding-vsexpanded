@@ -41,3 +41,54 @@ see the git history.
 - **Handbook**: command strings displayed incorrectly, and measurement units did not
   refresh mid-session after a `.exmod measure` change.
 - Block display-name ordering and assorted localization issues.
+
+## [0.6.2] - 2026-06-18
+
+### Added
+
+- The **handbook now documents** the mod's chat commands.
+
+The boiler bucket-draining and localizable measurement-unit work from this cycle are
+listed under 0.6.3 above.
+
+## [0.6.1] - 2026-06-16
+
+### Added
+
+- **Craftable iron and steel gears** for the machine recipes.
+
+### Changed
+
+- Tuned **steam-engine power scaling**.
+
+### Fixed
+
+- The **fluid network** now displays pressures below 1 atm; corrected engine power
+  calculation.
+
+## [0.6.0] - 2026-06-14
+
+### Changed
+
+- Build and packaging maintenance (resolved Cake build warnings) ahead of the new
+  publish pipeline.
+
+## [0.5.1] - 2026-06-14
+
+### Added
+
+- **Manual hand-cranked fluid pump** - an engine-free water pump.
+
+## [0.5.0] - 2026-06-13
+
+The first release of **Pipes and Power Expanded**, split out from Steelmaking
+Expanded as the home of the new steam-power system.
+
+### Added
+
+- **Unified pipe network** carrying gas, steam or water, with network-wide pressure
+  and temperature.
+- **Boilers** and **steam engines** (Watt and Cornish).
+- **Sub-machines** driven by the engines: a water pump and an air blower.
+- **Gas/pressure valves**, a directional **pressure-relief valve**, and a **condenser**.
+- **Mechanical-power integration** so engines can drive vanilla MP machines.
