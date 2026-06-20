@@ -171,6 +171,11 @@ public class SteelmakingExpandedModSystem : ModSystem
     // Load gameplay tunables from ModConfig/smex_values.json (writes defaults on first
     // run). Done before any block entity is constructed so the values apply.
     SmexValues.Load(api);
+    // Drive the exlib RCC salvage ratio for the bessemer converter from the (live) config.
+    ExpandedLib.Blocks.Construction.ExRccSettings.RegisterBrokenDropsRatio(
+      Mod.Info.ModID,
+      () => SmexValues.RccBrokenDropsRatio
+    );
     // The steelmaking recipe cost catalogue (smex_recipes.json).
     SmexRecipeValues.Load(api);
     // Register this mod's recipe-cost profile so exlib's shared apply pass and the generic

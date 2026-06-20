@@ -37,8 +37,10 @@ public static class MoltenChisel
 
   /// <summary>True when the player holds a chisel in the active hand and a hammer in the off-hand.</summary>
   public static bool HasChiselAndHammer(IPlayer byPlayer) =>
-    IsTool(byPlayer.InventoryManager?.ActiveHotbarSlot?.Itemstack, EnumTool.Chisel)
-    && IsTool(byPlayer.Entity?.LeftHandItemSlot?.Itemstack, EnumTool.Hammer);
+    IsTool(
+      byPlayer.InventoryManager?.ActiveHotbarSlot?.Itemstack,
+      EnumTool.Chisel
+    ) && IsTool(byPlayer.Entity?.LeftHandItemSlot?.Itemstack, EnumTool.Hammer);
 
   /// <summary>
   /// The metal-bit recovery stack for <paramref name="units"/> of the metal <paramref name="metalCode"/>
@@ -104,12 +106,23 @@ public static class MoltenChisel
     if (world.Side == EnumAppSide.Server)
     {
       ItemStack? recovered = target.ChiselOut();
-      if (recovered != null && !byPlayer.InventoryManager.TryGiveItemstack(recovered))
+      if (
+        recovered != null
+        && !byPlayer.InventoryManager.TryGiveItemstack(recovered)
+      )
         world.SpawnItemEntity(recovered, pos.ToVec3d().Add(0.5, yOffset, 0.5));
 
       ItemSlot? slot = byPlayer.InventoryManager.ActiveHotbarSlot;
-      if (damageChisel && byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
-        slot?.Itemstack?.Collectible.DamageItem(world, byPlayer.Entity, slot, 2);
+      if (
+        damageChisel
+        && byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative
+      )
+        slot?.Itemstack?.Collectible.DamageItem(
+          world,
+          byPlayer.Entity,
+          slot,
+          2
+        );
 
       ExSounds.Play(world.Api, pos, sound, 0.8f);
     }
@@ -120,7 +133,10 @@ public static class MoltenChisel
   private static ItemStack[]? _chiselStacks;
 
   /// <summary>The "chip out the solidified metal" interaction hint, advertising every chisel item.</summary>
-  public static WorldInteraction ChiselHelp(IWorldAccessor world, string langCode) =>
+  public static WorldInteraction ChiselHelp(
+    IWorldAccessor world,
+    string langCode
+  ) =>
     new()
     {
       ActionLangCode = langCode,

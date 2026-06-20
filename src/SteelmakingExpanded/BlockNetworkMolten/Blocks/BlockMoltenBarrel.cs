@@ -390,7 +390,9 @@ public partial class BlockMoltenBarrel : Block
     }
 
     if (isHardened)
-      result.Add(MoltenChisel.ChiselHelp(world, "smex:blockhelp-barrel-chisel"));
+      result.Add(
+        MoltenChisel.ChiselHelp(world, "smex:blockhelp-barrel-chisel")
+      );
 
     return result.ToArray();
   }

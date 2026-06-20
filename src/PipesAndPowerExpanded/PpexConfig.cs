@@ -134,8 +134,12 @@ public class PpexConfig : IExVersionedConfig
   public float BoilerBlastResistanceThreshold { get; set; } = 20f;
 
   /// <summary>Fraction (0..1) of the boiler's construction materials scattered as salvage when it
-  /// bursts - less forgiving than mining it intact (the JSON <c>brokenDropsRatio</c>).</summary>
+  /// bursts - less forgiving than mining it intact (see <see cref="RccBrokenDropsRatio"/>).</summary>
   public float BoilerExplosionDropRatio { get; set; } = 0.4f;
+
+  /// <summary>Fraction (0..1) of an engine/boiler's construction materials recovered when it is mined
+  /// intact - the right-click-construction salvage ratio. Player-tunable; applied live on the next break.</summary>
+  public float RccBrokenDropsRatio { get; set; } = 0.8f;
 
   /// <summary>Internal steam (L/s) an open lid vents to atmosphere.</summary>
   public float BoilerLidVentRate { get; set; } = 200f;

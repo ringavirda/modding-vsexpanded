@@ -275,6 +275,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   bool IChiselableMolten.CanChiselOut => CanChiselOut();
   string? IChiselableMolten.ChiselBlockedError =>
     ChargeIsHardened ? "smex-bessemertoofull" : "smex-bessemertoohot";
+
   ItemStack? IChiselableMolten.ChiselOut() => ChiselOutContent();
 
   #endregion

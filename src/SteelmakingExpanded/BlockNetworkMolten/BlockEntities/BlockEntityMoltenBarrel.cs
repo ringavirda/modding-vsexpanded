@@ -185,7 +185,11 @@ public class BlockEntityMoltenBarrel
   private void OnServerTick()
   {
     if (MetalContent != null && CurrentUnitAmount > 0)
-      MoltenMetal.SyncCooldownSpeed(Api.World, MetalContent, ContentCooldownSpeed);
+      MoltenMetal.SyncCooldownSpeed(
+        Api.World,
+        MetalContent,
+        ContentCooldownSpeed
+      );
     UpdateGlow();
   }
 

@@ -173,7 +173,11 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     // Keep the cast mold's cooldown rate in step with the live config (before the pour gate) so a
     // `/exmod config smex MoltenCooldownSpeed ...` change affects metal already cast in the mold.
     if (IsMold && MoldMetalContent != null && MoldCurrentUnits > 0)
-      MoltenMetal.SyncCooldownSpeed(Api.World, MoldMetalContent, MoldCooldownSpeed);
+      MoltenMetal.SyncCooldownSpeed(
+        Api.World,
+        MoldMetalContent,
+        MoldCooldownSpeed
+      );
 
     // The pedestal drains its own cell (where the run delivers metal) into the mold.
     if (

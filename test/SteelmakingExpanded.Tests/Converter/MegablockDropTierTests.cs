@@ -11,8 +11,8 @@ namespace SteelmakingExpanded.Tests;
 /// (blocks are configured by hand, not from assets). Reads the shipped block JSON directly and pins:
 /// the Bessemer converter and the boilers must NOT drop themselves (control-spawned / built in place,
 /// not a placeable frame) and must scatter 80% of their construction cost; the craftable engines keep
-/// their frame-recovery self-drop; and the retuned pickaxe tiers (converter = iron, engines/boilers =
-/// bronze).
+/// their frame-recovery self-drop; and the pickaxe tiers (converter + steel Lancashire boiler = iron;
+/// engines + iron Cornish boiler = bronze).
 /// </summary>
 public class MegablockDropTierTests
 {
@@ -48,10 +48,16 @@ public class MegablockDropTierTests
   }
 
   [Fact]
-  public void Bessemer_converter_scatters_80_percent_of_its_construction_cost()
+  public void Bessemer_converter_salvage_ratio_defaults_to_80_percent()
   {
-    JsonElement rcc = Constructable(Block(Bessemer));
-    Assert.Equal(0.8, rcc.GetProperty("brokenDropsRatio").GetDouble(), 3);
+    // The salvage fraction moved off the block JSON to the player-tunable config (smex
+    // RccBrokenDropsRatio); the behaviour reads it live via ExRccSettings, so the JSON no longer
+    // carries brokenDropsRatio and the default lives on the config.
+    Assert.Equal(0.8f, new SmexConfig().RccBrokenDropsRatio, 3);
+    Assert.False(
+      Constructable(Block(Bessemer)).TryGetProperty("brokenDropsRatio", out _),
+      "brokenDropsRatio must no longer live in the block JSON (moved to config)"
+    );
   }
 
   [Fact]
@@ -140,7 +146,8 @@ public class MegablockDropTierTests
       {
         string code = ing.GetProperty("code").GetString()!;
         totals[code] =
-          totals.GetValueOrDefault(code) + ing.GetProperty("quantity").GetInt32();
+          totals.GetValueOrDefault(code)
+          + ing.GetProperty("quantity").GetInt32();
       }
     }
     return totals;
@@ -148,16 +155,37 @@ public class MegablockDropTierTests
 
   #endregion
 
-  #region Engines + boilers (shared: bronze tier, 80% salvage)
+  #region Engines + boilers (shared: mining tier, 80% salvage)
 
+  // Bronze tier: both engines and the iron Cornish boiler. The steel Lancashire boiler is welded steel
+  // like the converter, so it takes an iron pickaxe - pinned separately.
   [Theory]
   [InlineData(Watt)]
   [InlineData(EngineCornish)]
-  [InlineData(Lancashire)]
   [InlineData(BoilerCornish)]
-  public void Engines_and_boilers_need_a_bronze_tier_pickaxe(string path)
+  public void Engines_and_the_cornish_boiler_need_a_bronze_tier_pickaxe(
+    string path
+  )
   {
     Assert.Equal(BronzeTier, MiningTier(Block(path)));
+  }
+
+  [Fact]
+  public void Lancashire_boiler_needs_an_iron_tier_pickaxe()
+  {
+    Assert.Equal(IronTier, MiningTier(Block(Lancashire)));
+  }
+
+  [Fact]
+  public void Engine_and_boiler_salvage_ratio_defaults_to_80_percent()
+  {
+    // The salvage fraction moved off the block JSON to the player-tunable config (ppex
+    // RccBrokenDropsRatio), shared by every ppex engine/boiler and read live via ExRccSettings.
+    Assert.Equal(
+      0.8f,
+      new PipesAndPowerExpanded.PpexConfig().RccBrokenDropsRatio,
+      3
+    );
   }
 
   [Theory]
@@ -165,14 +193,11 @@ public class MegablockDropTierTests
   [InlineData(EngineCornish)]
   [InlineData(Lancashire)]
   [InlineData(BoilerCornish)]
-  public void Engines_and_boilers_scatter_80_percent_of_construction_cost(
-    string path
-  )
+  public void Engines_and_boilers_no_longer_carry_a_json_drop_ratio(string path)
   {
-    Assert.Equal(
-      0.8,
-      Constructable(Block(path)).GetProperty("brokenDropsRatio").GetDouble(),
-      3
+    Assert.False(
+      Constructable(Block(path)).TryGetProperty("brokenDropsRatio", out _),
+      $"{path} brokenDropsRatio must move to config (ppex RccBrokenDropsRatio)"
     );
   }
 

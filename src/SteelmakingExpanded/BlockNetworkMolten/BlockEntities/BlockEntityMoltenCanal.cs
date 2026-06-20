@@ -346,6 +346,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   bool IChiselableMolten.HasChiselableContent => Solidified;
   bool IChiselableMolten.CanChiselOut => Solidified && IsHardened;
   string? IChiselableMolten.ChiselBlockedError => "smex-canaltoohot";
+
   ItemStack? IChiselableMolten.ChiselOut() => ClearSolidified();
 
   /// <summary>

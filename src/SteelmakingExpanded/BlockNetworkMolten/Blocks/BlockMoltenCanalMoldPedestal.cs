@@ -181,7 +181,10 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
     result.Add(toggle);
 
     // A clogged (solidified, hardened) pedestal cell is chipped clear like a canal - advertise it.
-    WorldInteraction? chisel = ChiselClearInteraction(world, selection.Position);
+    WorldInteraction? chisel = ChiselClearInteraction(
+      world,
+      selection.Position
+    );
     if (chisel != null)
       result.Add(chisel);
 

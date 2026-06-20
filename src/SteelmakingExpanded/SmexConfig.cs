@@ -225,6 +225,10 @@ public class SmexConfig : IExVersionedConfig
   /// out of the vessel instead of breaking the whole structure. A residue at or above this is salvaged
   /// by breaking it.</summary>
   public float BessemerChiselMaxFraction { get; set; } = 0.2f;
+
+  /// <summary>Fraction (0..1) of the converter's construction materials recovered when its vessel is
+  /// broken - the right-click-construction salvage ratio. Player-tunable; applied live on the next break.</summary>
+  public float RccBrokenDropsRatio { get; set; } = 0.8f;
   #endregion
 
   #region Hopper bell (blast-mix maker)

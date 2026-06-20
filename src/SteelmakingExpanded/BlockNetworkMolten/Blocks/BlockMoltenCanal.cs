@@ -330,7 +330,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
     BlockPos pos
   ) =>
     world.BlockAccessor.GetBlockEntity(pos)
-    is BlockEntityMoltenCanal { Solidified: true, IsHardened: true }
+      is BlockEntityMoltenCanal { Solidified: true, IsHardened: true }
       ? MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-clearsolidified")
       : null;
 
@@ -361,7 +361,11 @@ public partial class BlockMoltenCanal : BlockNetworkNode
 
     // A sealed canal can always be unsealed (with a chisel).
     if (be is { Sealed: true })
-      return [.. baseHelp, MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-unseal")];
+      return
+      [
+        .. baseHelp,
+        MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-unseal"),
+      ];
 
     // The seal hint only shows when sealing is actually possible: this cell and its neighbours
     // are empty. A cell holding (or sitting next to) metal - liquid or solidified - won't advertise it.

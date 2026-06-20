@@ -23,7 +23,6 @@
     {
       "name": "ExRightClickConstructable",
       "properties": {
-        "brokenDropsRatio": 0.8,
         "stages": [
           {
             "addElements": ["Root/Base"]

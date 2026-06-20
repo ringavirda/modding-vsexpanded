@@ -25,6 +25,11 @@ public class PipesAndPowerExpandedModSystem : ModSystem
   {
     // Load gameplay tunables from ModConfig/ppex_values.json (writes defaults on first run).
     PpexValues.Load(api);
+    // Drive the exlib RCC salvage ratio for our engines/boilers from the (live) config.
+    ExpandedLib.Blocks.Construction.ExRccSettings.RegisterBrokenDropsRatio(
+      Mod.Info.ModID,
+      () => PpexValues.RccBrokenDropsRatio
+    );
     // The steam-machine recipe cost catalogue (ppex_recipes.json).
     PpexRecipeValues.Load(api);
     // Register this mod's recipe-cost profile so exlib's shared apply pass and the generic

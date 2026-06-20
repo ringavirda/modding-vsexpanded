@@ -42,16 +42,26 @@ public class ExRightClickConstructable(BlockEntity blockentity)
     }
   }
 
+  // The salvage fraction, taken from the owning mod's (player-tunable) config when it registered one,
+  // else the JSON/default brokenDropsRatio. Read live so a /exmod config change applies immediately.
+  private float EffectiveBrokenDropsRatio =>
+    ExRccSettings.BrokenDropsRatio(Block.Code.Domain) ?? brokenDropsRatio;
+
   /// <summary>
   /// Replaces vanilla's break handler (which scatters the off-by-one <c>rcc.GetDrops</c>) so a broken
-  /// structure refunds all completed stages at <c>brokenDropsRatio</c>. Null-safe on the breaker (an
-  /// explosion-broken structure still drops its salvage), unlike the vanilla override.
+  /// structure refunds all completed stages at the configured salvage fraction. Null-safe on the breaker
+  /// (an explosion-broken structure still drops its salvage), unlike the vanilla override.
   /// </summary>
   public override void OnBlockBroken(IPlayer? byPlayer = null)
   {
     if (byPlayer?.WorldData.CurrentGameMode == EnumGameMode.Creative)
       return;
-    foreach (var drop in GetConstructionDrops(brokenDropsRatio, Api.World.Rand))
+    foreach (
+      var drop in GetConstructionDrops(
+        EffectiveBrokenDropsRatio,
+        Api.World.Rand
+      )
+    )
       Api.World.SpawnItemEntity(drop, Pos, null);
   }
 }
@@ -136,10 +146,17 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
       );
   }
 
+  // The salvage fraction, taken from the owning mod's (player-tunable) config when it registered one,
+  // else the JSON/default brokenDropsRatio. Read live so a /exmod config change applies immediately.
+  private float EffectiveBrokenDropsRatio =>
+    ExRccSettings.BrokenDropsRatio(Block.Code.Domain) ?? brokenDropsRatio;
+
   public override void OnBlockBroken(IPlayer? byPlayer = null)
   {
     if (byPlayer?.WorldData.CurrentGameMode != EnumGameMode.Creative)
-      foreach (var drop in rcc.GetDrops(brokenDropsRatio, Api.World.Rand))
+      foreach (
+        var drop in rcc.GetDrops(EffectiveBrokenDropsRatio, Api.World.Rand)
+      )
         Api.World.SpawnItemEntity(drop, Pos.ToVec3d());
   }
 

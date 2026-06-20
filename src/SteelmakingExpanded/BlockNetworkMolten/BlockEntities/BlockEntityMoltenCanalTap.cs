@@ -376,7 +376,11 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     // fixed slow rate by design, so it is left alone) - this runs every tick, before the pour gate, so
     // a `/exmod config smex MoltenCooldownSpeed ...` change affects metal already cast in the mold.
     if (IsMold && MoldMetalContent != null && MoldCurrentUnits > 0)
-      MoltenMetal.SyncCooldownSpeed(Api.World, MoldMetalContent, MoldCooldownSpeed);
+      MoltenMetal.SyncCooldownSpeed(
+        Api.World,
+        MoldMetalContent,
+        MoldCooldownSpeed
+      );
 
     // The tap drains its own cell (where the run delivers metal) into the parked barrel/mold.
     if (!IsPouring || !HasMoltenMetal)

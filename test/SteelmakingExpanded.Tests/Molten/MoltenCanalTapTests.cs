@@ -163,7 +163,10 @@ public class MoltenCanalTapTests
   private static void PrimeDrainSpeed(
     BlockEntityMoltenCanalTap be,
     float speed
-  ) => be.Block.Attributes = new JsonObject(new JObject { ["drainSpeed"] = speed });
+  ) =>
+    be.Block.Attributes = new JsonObject(
+      new JObject { ["drainSpeed"] = speed }
+    );
 
   [Fact]
   public void OnServerTick_drains_cell_metal_into_a_parked_barrel()
