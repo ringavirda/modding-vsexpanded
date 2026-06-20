@@ -123,7 +123,8 @@ public sealed class BuildTask : FrostingTask<BuildContext>
     {
       string csproj = $"../../src/{project.Folder}/{project.Folder}.csproj";
       // Wipe the whole bin so stale per-version outputs can't leak into a package.
-      string binDir = $"../../src/{project.Folder}/bin/{context.BuildConfiguration}";
+      string binDir =
+        $"../../src/{project.Folder}/bin/{context.BuildConfiguration}";
       context.EnsureDirectoryExists(binDir);
       context.CleanDirectory(binDir);
 
@@ -137,7 +138,10 @@ public sealed class BuildTask : FrostingTask<BuildContext>
             Framework = target.Tfm,
             // -p:Legacy=true makes the mod multi-target so the legacy TFMs exist; harmless for the
             // current one (it stays the flat, non-legacy output).
-            MSBuildSettings = new DotNetMSBuildSettings().WithProperty("Legacy", "true"),
+            MSBuildSettings = new DotNetMSBuildSettings().WithProperty(
+              "Legacy",
+              "true"
+            ),
           }
         );
       }
@@ -165,13 +169,21 @@ public sealed class PackageTask : FrostingTask<BuildContext>
 
         context.CopyFiles($"{context.PublishDir(project, target)}/*", stageDir);
         if (context.DirectoryExists($"../../src/{project.Folder}/assets"))
-          context.CopyDirectory($"../../src/{project.Folder}/assets", $"{stageDir}/assets");
+          context.CopyDirectory(
+            $"../../src/{project.Folder}/assets",
+            $"{stageDir}/assets"
+          );
         if (context.FileExists($"../../src/{project.Folder}/modicon.png"))
-          context.CopyFile($"../../src/{project.Folder}/modicon.png", $"{stageDir}/modicon.png");
+          context.CopyFile(
+            $"../../src/{project.Folder}/modicon.png",
+            $"{stageDir}/modicon.png"
+          );
 
         // Authoritative modinfo: the source declares the current game version, so point the game
         // dependency at this target's version (no-op for the current one).
-        string modinfo = File.ReadAllText($"../../src/{project.Folder}/modinfo.json")
+        string modinfo = File.ReadAllText(
+            $"../../src/{project.Folder}/modinfo.json"
+          )
           .Replace(
             $"\"game\": \"{BuildContext.SourceGameVersion}\"",
             $"\"game\": \"{target.GameVersion}\""

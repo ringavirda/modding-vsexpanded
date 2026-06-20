@@ -281,7 +281,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
@@ -325,7 +333,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
@@ -369,7 +385,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
@@ -413,7 +437,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
@@ -457,7 +489,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
@@ -501,7 +541,15 @@
         "type": "block",
         "code": "game:brickcourse-four-running-*",
         "name": "brick",
-        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },

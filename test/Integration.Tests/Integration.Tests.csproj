@@ -2,7 +2,8 @@
   <PropertyGroup>
     <!-- net10 (1.22) by default; -p:Legacy=true also tests net8.0 (1.21) + net7.0 (1.20). The
          scripts/run-tests.* helper (and the "Test: …" VS Code tasks) run each version separately. -->
-    <TargetFramework Condition="'$(Legacy)' != 'true'">$(CurrentGameTfm)</TargetFramework>
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
     <TargetFrameworks Condition="'$(Legacy)' == 'true'"
       >$(AllGameTfms)</TargetFrameworks>
     <LangVersion>14</LangVersion>

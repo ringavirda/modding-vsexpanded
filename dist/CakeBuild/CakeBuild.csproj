@@ -18,7 +18,8 @@
   <!-- Resolve the game install the same way the mod builds do: the VINTAGE_STORY env-var override if
        set, else the in-repo install provisioned into .game/1.22 (see scripts/provision-game.*). -->
   <PropertyGroup>
-    <CakeGamePath Condition="'$(VINTAGE_STORY)' != ''">$(VINTAGE_STORY)</CakeGamePath>
+    <CakeGamePath Condition="'$(VINTAGE_STORY)' != ''"
+      >$(VINTAGE_STORY)</CakeGamePath>
     <CakeGamePath Condition="'$(CakeGamePath)' == ''"
       >$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../.game/1.22'))</CakeGamePath>
   </PropertyGroup>

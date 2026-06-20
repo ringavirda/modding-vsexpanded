@@ -3,8 +3,10 @@
     <!-- Primary build is the current game version, single-target. Opt into the older versions
          with -p:Legacy=true; both the primary TFM and the full legacy set come from the manifest
          in ../Directory.Build.props (add a version there, not here). -->
-    <TargetFramework Condition="'$(Legacy)' != 'true'">$(CurrentGameTfm)</TargetFramework>
-    <TargetFrameworks Condition="'$(Legacy)' == 'true'">$(AllGameTfms)</TargetFrameworks>
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
     <LangVersion>14</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath
@@ -65,14 +67,10 @@
        wrong code wouldn't resolve and would crash the handbook (vanilla GetHeldItemInfo
        dereferences an unresolved crushed stack without a null-check). Gated on the version
        threshold the rename landed at, so a newer version inherits the right side automatically. -->
-  <ItemGroup
-    Condition="'$(GameVer)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))"
-  >
+  <ItemGroup Condition="'$(GameVer)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))">
     <Content Remove="assets\smex\patches\compat\em\nugget-crushing-galena-legacy.json" />
   </ItemGroup>
-  <ItemGroup
-    Condition="'$(GameVer)' != '' and !$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))"
-  >
+  <ItemGroup Condition="'$(GameVer)' != '' and !$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))">
     <Content Remove="assets\smex\patches\compat\em\nugget-crushing-galena.json" />
   </ItemGroup>
 

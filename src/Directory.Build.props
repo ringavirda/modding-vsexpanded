@@ -49,7 +49,8 @@
   <PropertyGroup>
     <_GameTfm>$(TargetFramework)</_GameTfm>
     <_GameTfm Condition="'$(_GameTfm)' == ''">$(CurrentGameTfm)</_GameTfm>
-    <IsCurrentGame Condition="'$(_GameTfm)' == '$(CurrentGameTfm)'">true</IsCurrentGame>
+    <IsCurrentGame Condition="'$(_GameTfm)' == '$(CurrentGameTfm)'"
+      >true</IsCurrentGame>
   </PropertyGroup>
 
   <!-- Per-version facts: game version floor + the .game/<slug> folder it provisions into + the env
@@ -72,11 +73,14 @@
 
   <!-- Capability-threshold compile constants: GAME_GE_<ver> for every version <= the one built. -->
   <PropertyGroup Condition="'$(GameVer)' != ''">
-    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.20'))"
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.20'))"
       >$(DefineConstants);GAME_GE_1_20</DefineConstants>
-    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.21'))"
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.21'))"
       >$(DefineConstants);GAME_GE_1_21</DefineConstants>
-    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))"
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))"
       >$(DefineConstants);GAME_GE_1_22</DefineConstants>
   </PropertyGroup>
   <!-- =================== end VERSION MANIFEST =================== -->
@@ -105,8 +109,10 @@
   <!-- Version to auto-provision: the primary tracks the latest patch (pass the major.minor series so
        provision-game resolves it); the legacy targets pin the series .0 floor. -->
   <PropertyGroup>
-    <_ProvisionVersion Condition="'$(IsCurrentGame)' == 'true'">$(GameSlug)</_ProvisionVersion>
-    <_ProvisionVersion Condition="'$(IsCurrentGame)' != 'true'">$(GameVer)</_ProvisionVersion>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' == 'true'"
+      >$(GameSlug)</_ProvisionVersion>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' != 'true'"
+      >$(GameVer)</_ProvisionVersion>
   </PropertyGroup>
 
   <!-- Expose the install env-var name and the .game/<slug> folder to runtime code (the test harness
@@ -133,12 +139,18 @@
     Name="_AutoProvisionGame"
     Condition="'$(GameSlug)' != '' and '$(_GamePathEnv)' == '' and !Exists('$(GamePath)\VintagestoryAPI.dll')"
   >
-    <Message Importance="high"
-      Text="Vintage Story $(_ProvisionVersion) not found - provisioning server binaries into .game\$(GameSlug) ..." />
-    <Exec Condition="$([MSBuild]::IsOSPlatform('Windows'))"
-      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\provision-game.ps1&quot; -Version $(_ProvisionVersion) -Kind server" />
-    <Exec Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
-      Command="bash &quot;$(MSBuildThisFileDirectory)../scripts/provision-game.sh&quot; -Version $(_ProvisionVersion) -Kind server" />
+    <Message
+      Importance="high"
+      Text="Vintage Story $(_ProvisionVersion) not found - provisioning server binaries into .game\$(GameSlug) ..."
+    />
+    <Exec
+      Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\provision-game.ps1&quot; -Version $(_ProvisionVersion) -Kind server"
+    />
+    <Exec
+      Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="bash &quot;$(MSBuildThisFileDirectory)../scripts/provision-game.sh&quot; -Version $(_ProvisionVersion) -Kind server"
+    />
   </Target>
 
   <!-- Fail clearly (instead of a cryptic CS1705 assembly-version mismatch) if, after the auto-provision

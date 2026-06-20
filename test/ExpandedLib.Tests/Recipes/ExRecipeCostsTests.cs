@@ -37,7 +37,10 @@ public class ExRecipeCostsTests
   {
     var recipe = new GridRecipe
     {
-      Output = new CraftingRecipeIngredient { Code = new AssetLocation(output) },
+      Output = new CraftingRecipeIngredient
+      {
+        Code = new AssetLocation(output),
+      },
     };
     SetResolvedIngredients(recipe, ings);
     return recipe;

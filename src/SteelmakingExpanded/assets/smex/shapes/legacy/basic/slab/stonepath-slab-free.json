@@ -1,29 +1,30 @@
 {
-	"editor": {
-		"allAngles": false,
-		"entityTextureMode": false
-	},
-	"textureWidth": 16,
-	"textureHeight": 16,
-	"textureSizes": {
-		"normal1": [16,16]
-	},
-	"textures": {
-		"normal1": "game:block/stone/path/normal1"
-	},
-	"elements": [
-		{
-			"name": "Cube2",
-			"from": [ -0.01, -1.0, -0.01 ],
-			"to": [ 16.01, 7.0, 16.01 ],
-			"rotationOrigin": [ 0.0, -1.0, 0.0 ],
-			"faces": {
-				"north": { "texture": "#normal1", "uv": [ 0.0, 7.5, 16.0, 15.5 ] },
-				"east": { "texture": "#normal1", "uv": [ 0.0, 8.0, 16.0, 16.0 ] },
-				"south": { "texture": "#normal1", "uv": [ 0.0, 8.0, 16.0, 16.0 ] },
-				"west": { "texture": "#normal1", "uv": [ 0.0, 8.0, 16.0, 16.0 ] },
-				"up": { "texture": "#normal1", "uv": [ 0.0, 0.0, 16.0, 16.0 ] },
-				"down": { "texture": "#normal1", "uv": [ 0.0, 0.0, 16.0, 16.0 ] }
-			}
-		}
-	]}
+  "editor": {
+    "allAngles": false,
+    "entityTextureMode": false
+  },
+  "textureWidth": 16,
+  "textureHeight": 16,
+  "textureSizes": {
+    "normal1": [16, 16]
+  },
+  "textures": {
+    "normal1": "game:block/stone/path/normal1"
+  },
+  "elements": [
+    {
+      "name": "Cube2",
+      "from": [-0.01, -1.0, -0.01],
+      "to": [16.01, 7.0, 16.01],
+      "rotationOrigin": [0.0, -1.0, 0.0],
+      "faces": {
+        "north": { "texture": "#normal1", "uv": [0.0, 7.5, 16.0, 15.5] },
+        "east": { "texture": "#normal1", "uv": [0.0, 8.0, 16.0, 16.0] },
+        "south": { "texture": "#normal1", "uv": [0.0, 8.0, 16.0, 16.0] },
+        "west": { "texture": "#normal1", "uv": [0.0, 8.0, 16.0, 16.0] },
+        "up": { "texture": "#normal1", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#normal1", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    }
+  ]
+}

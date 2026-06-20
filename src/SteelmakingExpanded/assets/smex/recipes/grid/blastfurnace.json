@@ -8,7 +8,13 @@
         "code": "game:refractorybrick-fired-tier3",
         "quantity": 4
       },
-      "R": { "type": "item", "code": "game:rod-*", "name": "metal", "allowedVariants": ["iron", "steel"], "quantity": 2 },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 2
+      },
       "N": {
         "type": "item",
         "code": "game:metalnailsandstrips-*",
@@ -16,7 +22,13 @@
         "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
-      "P": { "type": "item", "code": "game:metalplate-*", "name": "metal", "allowedVariants": ["iron", "steel"], "quantity": 2 }
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 2
+      }
     },
     "width": 3,
     "height": 3,

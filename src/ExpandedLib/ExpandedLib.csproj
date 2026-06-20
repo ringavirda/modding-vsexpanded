@@ -3,8 +3,10 @@
     <!-- Primary build is the current game version, single-target. Opt into the older versions
          with -p:Legacy=true; both the primary TFM and the full legacy set come from the manifest
          in ../Directory.Build.props (add a version there, not here). -->
-    <TargetFramework Condition="'$(Legacy)' != 'true'">$(CurrentGameTfm)</TargetFramework>
-    <TargetFrameworks Condition="'$(Legacy)' == 'true'">$(AllGameTfms)</TargetFrameworks>
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
     <LangVersion>14</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <!-- The current version keeps the flat output path; legacy TFMs get their own subfolder so the

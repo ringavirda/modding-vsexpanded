@@ -70,8 +70,17 @@
       "label": "Test: latest (1.22)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "latest"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "latest"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/run-tests.ps1",
+        "-Version",
+        "latest"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/run-tests.sh", "latest"]
+      },
       "group": "test",
       "problemMatcher": []
     },
@@ -79,8 +88,17 @@
       "label": "Test: 1.21 (legacy)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "1.21"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.21"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/run-tests.ps1",
+        "-Version",
+        "1.21"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.21"]
+      },
       "group": "test",
       "problemMatcher": []
     },
@@ -88,8 +106,17 @@
       "label": "Test: 1.20 (legacy)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "1.20"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.20"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/run-tests.ps1",
+        "-Version",
+        "1.20"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.20"]
+      },
       "group": "test",
       "problemMatcher": []
     },
@@ -97,8 +124,17 @@
       "label": "Test: all versions (parallel)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "all"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "all"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/run-tests.ps1",
+        "-Version",
+        "all"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/run-tests.sh", "all"]
+      },
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": []
     },
@@ -106,7 +142,12 @@
       "label": "Test: coverage (latest + gate)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Coverage"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/run-tests.ps1",
+        "-Coverage"
+      ],
       "group": "test",
       "problemMatcher": []
     },
@@ -114,24 +155,51 @@
       "label": "provision-dotnet (latest)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "latest"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "latest"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "-Version",
+        "latest"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "latest"]
+      },
       "problemMatcher": []
     },
     {
       "label": "provision-dotnet (1.21)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "1.21"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.21"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "-Version",
+        "1.21"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.21"]
+      },
       "problemMatcher": []
     },
     {
       "label": "provision-dotnet (1.20)",
       "type": "process",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "1.20"],
-      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.20"] },
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "-Version",
+        "1.20"
+      ],
+      "linux": {
+        "command": "bash",
+        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.20"]
+      },
       "problemMatcher": []
     },
     {

@@ -2,7 +2,8 @@
   <PropertyGroup>
     <!-- net10 (1.22) by default; opt into legacy game APIs with -p:Legacy=true to also test on
          net8.0 (1.21) and net7.0 (1.20). $(GamePath) per TFM comes from ../Directory.Build.props. -->
-    <TargetFramework Condition="'$(Legacy)' != 'true'">$(CurrentGameTfm)</TargetFramework>
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
     <TargetFrameworks Condition="'$(Legacy)' == 'true'"
       >$(AllGameTfms)</TargetFrameworks>
     <!-- A single-TFM build keeps the stable flat output path; multi-target must append the TFM to
