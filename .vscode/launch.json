@@ -2,13 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Steelmaking Expanded",
+      "name": "Steelmaking Expanded (latest)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "launch-prep (smex)",
-      "program": "${workspaceFolder}/bin/game-1.22/Vintagestory.dll",
-      "args": ["--tracelog", "--addModPath", "${workspaceFolder}/bin/Mods"],
+      "program": "${workspaceFolder}/.game/1.22/Vintagestory.dll",
+      "args": [
+        "--tracelog",
+        "--dataPath",
+        "${workspaceFolder}/.gamedata",
+        "--addModPath",
+        "${workspaceFolder}/bin/Mods"
+      ],
       "cwd": "${workspaceFolder}",
+      "env": { "DOTNET_ROOT": "${workspaceFolder}/.dotnet" },
       "stopAtEntry": false,
       "console": "internalConsole",
       "requireExactSource": false
@@ -18,13 +25,16 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "launch-prep (smex 1.21)",
-      "program": "${workspaceFolder}/bin/game-1.21/Vintagestory.dll",
+      "program": "${workspaceFolder}/.game/1.21/Vintagestory.dll",
       "args": [
         "--tracelog",
+        "--dataPath",
+        "${workspaceFolder}/.gamedata",
         "--addModPath",
         "${workspaceFolder}/bin/Mods-1.21"
       ],
       "cwd": "${workspaceFolder}",
+      "env": { "DOTNET_ROOT": "${workspaceFolder}/.dotnet" },
       "stopAtEntry": false,
       "console": "internalConsole",
       "requireExactSource": false
@@ -34,13 +44,16 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "launch-prep (smex 1.20)",
-      "program": "${workspaceFolder}/bin/game-1.20/Vintagestory.dll",
+      "program": "${workspaceFolder}/.game/1.20/Vintagestory.dll",
       "args": [
         "--tracelog",
+        "--dataPath",
+        "${workspaceFolder}/.gamedata",
         "--addModPath",
         "${workspaceFolder}/bin/Mods-1.20"
       ],
       "cwd": "${workspaceFolder}",
+      "env": { "DOTNET_ROOT": "${workspaceFolder}/.dotnet" },
       "stopAtEntry": false,
       "console": "internalConsole",
       "requireExactSource": false

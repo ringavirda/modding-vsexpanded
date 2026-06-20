@@ -15,25 +15,27 @@ namespace ExpandedLib.Testing;
 ///
 /// The install is chosen by the game version this assembly was compiled for, so legacy test runs
 /// load the right version's DLLs. Rather than a per-TFM <c>#if</c> ladder, the build stamps the
-/// matching env-var name (<c>VINTAGE_STORY</c> / <c>VINTAGE_STORY_121</c> / …) into the assembly as
-/// <c>[AssemblyMetadata("GameInstallEnv")]</c> from the version manifest in
-/// <c>src/Directory.Build.props</c>, so adding a game version needs no change here. The path comes
-/// from that environment variable, or - mirroring the props - the gitignored repo-root <c>.env</c>
-/// file when the variable isn't set in the environment (the legacy vars usually live only there).
+/// version's env-var name (<c>VINTAGE_STORY</c> / <c>VINTAGE_STORY_121</c> / …) and folder slug
+/// (<c>1.22</c> / <c>1.21</c> / …) into the assembly as
+/// <c>[AssemblyMetadata("GameInstallEnv")]</c> / <c>[AssemblyMetadata("GameSlug")]</c> from the
+/// version manifest in <c>src/Directory.Build.props</c>, so adding a game version needs no change
+/// here. The path is resolved exactly as the build resolves <c>$(GamePath)</c>: the env-var override
+/// if set, otherwise the in-repo install provisioned into <c>.game/&lt;slug&gt;</c> (found by walking
+/// up from the test output directory to the repo root).
 /// </summary>
 public static class VsAssemblyResolver
 {
   private static readonly object Gate = new();
   private static bool _registered;
 
-  /// <summary>Name of the environment variable pointing at the matching install, stamped by the
-  /// build from the version manifest. Falls back to the primary install var if absent.</summary>
-  private static readonly string InstallKey =
+  private static readonly string? InstallKey = Metadata("GameInstallEnv");
+  private static readonly string? GameSlug = Metadata("GameSlug");
+
+  private static string? Metadata(string key) =>
     typeof(VsAssemblyResolver)
       .Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-      .FirstOrDefault(a => a.Key == "GameInstallEnv")
-      ?.Value
-    ?? "VINTAGE_STORY";
+      .FirstOrDefault(a => a.Key == key)
+      ?.Value;
 
   /// <summary>Idempotently hooks <see cref="AppDomain.AssemblyResolve"/> to probe the game folders.</summary>
   public static void Register()
@@ -66,37 +68,36 @@ public static class VsAssemblyResolver
     };
   }
 
-  /// <summary>The install path for this TFM: the <see cref="InstallKey"/> environment variable if set,
-  /// otherwise its value from the repo-root <c>.env</c> file (found by walking up from the test
-  /// output directory). Null when neither yields a value.</summary>
+  /// <summary>The install path for this TFM: the <see cref="InstallKey"/> environment variable if set
+  /// (the override CI uses), otherwise the in-repo install at <c>.game/&lt;slug&gt;</c>, found by
+  /// walking up from the test output directory to the repo root. Null when neither yields a path.</summary>
   private static string? ResolveInstallPath()
   {
-    string? fromEnv = Environment.GetEnvironmentVariable(InstallKey);
-    if (!string.IsNullOrEmpty(fromEnv))
-      return fromEnv;
-    return ReadFromDotEnv(InstallKey);
+    if (!string.IsNullOrEmpty(InstallKey))
+    {
+      string? fromEnv = Environment.GetEnvironmentVariable(InstallKey);
+      if (!string.IsNullOrEmpty(fromEnv))
+        return fromEnv;
+    }
+    return FindRepoGameInstall();
   }
 
-  private static string? ReadFromDotEnv(string key)
+  /// <summary>Walks up from the test output directory looking for a provisioned
+  /// <c>.game/&lt;slug&gt;</c> that carries the game assemblies. Null if the slug is unknown or no
+  /// such folder exists up the tree.</summary>
+  private static string? FindRepoGameInstall()
   {
+    if (string.IsNullOrEmpty(GameSlug))
+      return null;
     for (
       DirectoryInfo? dir = new(AppContext.BaseDirectory);
       dir != null;
       dir = dir.Parent
     )
     {
-      string envPath = Path.Combine(dir.FullName, ".env");
-      if (!File.Exists(envPath))
-        continue;
-      foreach (string line in File.ReadAllLines(envPath))
-      {
-        int eq = line.IndexOf('=');
-        if (eq <= 0)
-          continue;
-        if (line[..eq].Trim() == key)
-          return line[(eq + 1)..].Trim();
-      }
-      return null; // .env found but no such key
+      string candidate = Path.Combine(dir.FullName, ".game", GameSlug);
+      if (File.Exists(Path.Combine(candidate, "VintagestoryAPI.dll")))
+        return candidate;
     }
     return null;
   }

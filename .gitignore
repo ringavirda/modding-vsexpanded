@@ -378,8 +378,16 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Local environment file holding machine-specific install paths (see .env.example)
-.env
+# Downloaded Vintage Story installs (per version) + cached archives, provisioned by
+# scripts/provision-game.* - never committed.
+/.game/
+
+# Vintage Story data dir (saves, configs, logs) the game generates under the repo via --dataPath.
+/.gamedata/
+
+# Self-contained .NET (SDK + runtimes) provisioned by scripts/provision-dotnet.* for clones that
+# don't have the required .NET 7/8/10 installed system-wide.
+/.dotnet/
 
 # VS Code files for those working on multiple tools
 .vscode/*

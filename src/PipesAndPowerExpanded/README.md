@@ -44,9 +44,10 @@ and multiblock-structure frameworks.
 
 ## Building
 
-Requires the .NET SDK and a Vintage Story install with the `VINTAGE_STORY` environment
-variable pointing at it:
+Requires only the .NET SDK - provision the game binaries into the repo first (see the
+[root README](../../README.md#building)), then build:
 
 ```sh
+scripts/provision-game.sh -Version 1.22.0   # or scripts/provision-game.ps1 on Windows
 dotnet build PipesAndPowerExpanded/PipesAndPowerExpanded.csproj
 ```

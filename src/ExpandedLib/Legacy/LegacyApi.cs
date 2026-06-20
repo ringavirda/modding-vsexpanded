@@ -56,11 +56,13 @@ public static class LegacyApi
     public EvolvingNatFloat Value => evolve!;
   }
 
-#if !GAME_GE_1_21
   extension(MultiblockStructure structure)
   {
-    /// <summary>In 1.20 the transformed offsets list is private and only valid after
-    /// <c>InitForUse()</c> has run; read it reflectively. (Public from 1.21 on.)</summary>
+    /// <summary>On the 1.20.0 and 1.21.0 floors the transformed-offsets list is a private field
+    /// (only valid after <c>InitForUse()</c> has run); read it reflectively. It became public in
+    /// 1.22 (and later 1.20.x/1.21.x patches) - hence the whole-legacy <c>!GAME_GE_1_22</c> guard
+    /// on this file, and the Public+NonPublic lookup so the read still works when a mod built
+    /// against the floor runs on a patched build where the field is public.</summary>
     public List<BlockOffsetAndNumber>? TransformedOffsets =>
       (List<BlockOffsetAndNumber>?)TransformedOffsetsField.GetValue(structure);
   }
@@ -68,8 +70,7 @@ public static class LegacyApi
   private static readonly FieldInfo TransformedOffsetsField =
     typeof(MultiblockStructure).GetField(
       "TransformedOffsets",
-      BindingFlags.NonPublic | BindingFlags.Instance
+      BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
     )!;
-#endif
 }
 #endif

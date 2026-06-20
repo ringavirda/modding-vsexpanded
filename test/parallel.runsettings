@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default test settings (wired in via <RunSettingsFilePath> in test/Directory.Build.props).
+     MaxCpuCount=0 lets the runner execute the test assemblies in parallel across all cores - with the
+     test projects multi-targeting every game version, that means 1.22 + 1.21 + 1.20 run concurrently.
+     Within each assembly, xunit.runner.json adds test-collection parallelism. -->
+<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>0</MaxCpuCount>
+  </RunConfiguration>
+</RunSettings>

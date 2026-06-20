@@ -5,12 +5,16 @@
     "ingredients": {
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 12
       },
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
       "H": {
@@ -20,12 +24,11 @@
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 8
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -40,12 +43,16 @@
     "ingredients": {
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 12
       },
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
       "H": {
@@ -55,7 +62,9 @@
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 8
       },
       "G": {
@@ -68,9 +77,6 @@
         "code": "game:woodenaxle-ud",
         "quantity": 1
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -85,12 +91,16 @@
     "ingredients": {
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 16
       },
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
       "H": {
@@ -100,7 +110,9 @@
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 8
       },
       "L": {
@@ -108,9 +120,6 @@
         "code": "ppex:pipe-straight*",
         "quantity": 1
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -125,12 +134,16 @@
     "ingredients": {
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 12
       },
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
       "H": {
@@ -140,7 +153,9 @@
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 8
       },
       "G": {
@@ -153,9 +168,6 @@
         "code": "game:woodenaxle-ud",
         "quantity": 1
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,

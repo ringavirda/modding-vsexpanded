@@ -5,12 +5,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 2
       },
       "G": {
@@ -23,9 +27,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -40,12 +41,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "R": {
         "type": "item",
-        "code": "game:rod-{metal}",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 2
       },
       "G": {
@@ -58,9 +63,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,

@@ -8,20 +8,22 @@ on:
   workflow_dispatch:
     inputs:
       vs_version:
-        description: "Vintage Story version to build/test against"
+        description: "Vintage Story version (full patch, or major.minor for the latest patch)"
         required: false
-        default: "1.22.0"
+        default: "1.22"
 
 # Primary pipeline: builds + tests the mods against the CURRENT game version (the non-legacy
 # target), with coverage and the coverage gate. The older game versions are covered by a separate
 # workflow (tests-legacy.yml) so the two run as independent checks.
 #
 # The build references the game assemblies (VintagestoryAPI.dll, VSSurvivalMod.dll, VSEssentials.dll
-# and the Lib/*.dll), and the headless test harness resolves them at runtime from $VINTAGE_STORY.
-# Those assemblies ship in the freely-downloadable dedicated-server archive, so CI fetches that and
-# points VINTAGE_STORY at it - no game install or licence needed.
+# and the Lib/*.dll), and the headless test harness resolves them at runtime. scripts/provision-game.sh
+# fetches the freely-downloadable dedicated-server archive (which carries those assemblies) into
+# .game/<slug> - the same in-repo location the build/resolver default to - so no env var, game install
+# or licence is needed.
 env:
-  VS_VERSION: ${{ github.event.inputs.vs_version || '1.22.0' }}
+  # Primary tracks the latest patch of the current series (legacy pins .0 - see tests-legacy.yml).
+  VS_VERSION: ${{ github.event.inputs.vs_version || '1.22' }}
 
 jobs:
   test:
@@ -36,29 +38,15 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Cache Vintage Story server assemblies
+      - name: Cache Vintage Story install
         id: cache-vs
         uses: actions/cache@v4
         with:
-          path: vs_server
-          key: vs-server-${{ env.VS_VERSION }}
+          path: .game
+          key: vs-game-${{ env.VS_VERSION }}
 
-      - name: Download Vintage Story server assemblies
-        if: steps.cache-vs.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p vs_server
-          url="https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${VS_VERSION}.tar.gz"
-          echo "Downloading $url"
-          curl -fsSL "$url" -o vs_server.tar.gz
-          tar -xzf vs_server.tar.gz -C vs_server
-          # Sanity-check the assemblies the build/tests need are present.
-          for f in VintagestoryAPI.dll Mods/VSSurvivalMod.dll Mods/VSEssentials.dll \
-                   Lib/0Harmony.dll Lib/Newtonsoft.Json.dll Lib/cairo-sharp.dll; do
-            test -f "vs_server/$f" || { echo "missing $f"; exit 1; }
-          done
-
-      - name: Export VINTAGE_STORY
-        run: echo "VINTAGE_STORY=$GITHUB_WORKSPACE/vs_server" >> "$GITHUB_ENV"
+      - name: Provision Vintage Story (server assemblies)
+        run: bash scripts/provision-game.sh -Version "$VS_VERSION" -Kind server
 
       - name: Restore
         run: dotnet restore VintageStory.sln
@@ -71,7 +59,7 @@ jobs:
             "dotnet test VintageStory.sln --no-restore -c Debug"
 
       - name: Coverage gate (mod assemblies)
-        run: python3 test/scripts/coverage_gate.py coverage.xml
+        run: python3 scripts/coverage_gate.py coverage.xml
 
       - name: Upload coverage report
         if: always()

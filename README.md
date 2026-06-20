@@ -64,14 +64,65 @@ concrete network owns its typed state and rules.
 
 ## Building
 
-Requires the .NET SDK and a Vintage Story install with the `VINTAGE_STORY`
-environment variable pointing at it (the `.csproj` files reference game DLLs from
-there).
+### Prerequisites
+
+The repo bootstraps almost everything itself. You only need, up front:
+
+- **Git** and **PowerShell 7+** (`pwsh`) on Windows, or **bash** on Linux/macOS.
+- A **.NET 10 SDK** on PATH (see `global.json`) is recommended for normal `dotnet build`.
+  If it (or any required runtime) is missing, the test runner downloads a self-contained
+  .NET into `.dotnet/` and uses it — so a clone with no .NET at all can still run the tests.
+
+Everything else is fetched on demand into gitignored folders:
+
+- **Game binaries** → `.game/<version>` (`scripts/provision-game.*`).
+- **.NET runtimes** the game versions need (net10/net8/net7, incl. the Windows Desktop
+  runtime) → `.dotnet/` (`scripts/provision-dotnet.*`). Each Vintage Story version is pinned
+  to one .NET major and won't roll forward, and the legacy test hosts need those runtimes —
+  so a fork that only has .NET 10 still gets 8/7 provisioned automatically.
+
+### Build
 
 ```sh
+# Build/test: the dedicated-server archive (a plain zip/tarball - no installer) is enough.
+# -Version takes a full patch (1.22.3) or a major.minor series (1.22 -> latest patch).
+pwsh scripts/provision-game.ps1 -Version 1.22     # Windows
+scripts/provision-game.sh       -Version 1.22     # Linux/macOS
+
 dotnet build SteelmakingExpanded/SteelmakingExpanded.csproj   # builds all three mods
 ./build.ps1   # or ./build.sh - full Cake build, produces packaged release zips
 ```
 
-If you use VS Code, a launch config is included - just set the `VINTAGE_STORY` env
-var to your game install path.
+### Testing
+
+`dotnet test` runs the latest (1.22) suite. To run a version separately (the VS Code
+"Test: …" tasks do the same), or all of them in parallel:
+
+```sh
+pwsh scripts/run-tests.ps1 -Version latest      # or 1.21 / 1.20 / all
+scripts/run-tests.sh latest                     # Linux/macOS
+pwsh scripts/run-tests.ps1 -Coverage            # latest + coverage gate (needs Python)
+```
+
+Each run builds the test projects for that version (auto-provisioning its game binaries
+and, if missing, its .NET runtime) and executes the projects in parallel.
+
+To actually **launch** the game (the GUI client) add `-Kind client`. On Windows the
+client only ships as an Inno Setup installer, so this runs a silent install into
+`.game/<version>`; on Linux/macOS it's a plain client tarball. Because every VS
+installer shares one uninstall id, the Windows client install snapshots and restores
+the existing "Vintage Story" Add/Remove-Programs entry so it never clobbers a
+machine-wide install. If an earlier run already broke that entry, repoint it with:
+
+```powershell
+scripts/fix-vs-registry.ps1 -InstallDir "D:\Path\To\Vintagestory"
+```
+
+If you already have a game install you'd rather use, set the `VINTAGE_STORY`
+environment variable to it and the build/launch will use that instead.
+
+If you use VS Code, the included launch config provisions the client, builds, stages
+the mods, and runs the game automatically - with all saves and configs written under a
+single shared `.gamedata/` in the repo (both `.game/` and `.gamedata/` are gitignored).
+The primary launch config tracks the latest patch of the current series; the legacy
+(1.21 / 1.20) configs pin the series `.0` floor.

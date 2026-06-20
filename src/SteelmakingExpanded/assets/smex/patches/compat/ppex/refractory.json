@@ -210,7 +210,9 @@
       "ingredients": {
         "B": {
           "type": "item",
-          "code": "game:refractorybrick-fired-{tier}",
+          "code": "game:refractorybrick-fired-*",
+          "name": "tier",
+          "allowedVariants": ["tier1", "tier2", "tier3"],
           "quantity": 2
         },
         "P": {
@@ -218,9 +220,6 @@
           "code": "ppex:pipe-straight-*",
           "quantity": 1
         }
-      },
-      "allowedVariants": {
-        "tier": ["tier1", "tier2", "tier3"]
       },
       "width": 3,
       "height": 3,
@@ -241,7 +240,9 @@
       "ingredients": {
         "B": {
           "type": "item",
-          "code": "game:refractorybrick-fired-{tier}",
+          "code": "game:refractorybrick-fired-*",
+          "name": "tier",
+          "allowedVariants": ["tier1", "tier2", "tier3"],
           "quantity": 2
         },
         "P": {
@@ -249,9 +250,6 @@
           "code": "ppex:pipe-straight-*",
           "quantity": 1
         }
-      },
-      "allowedVariants": {
-        "tier": ["tier1", "tier2", "tier3"]
       },
       "width": 3,
       "height": 3,
@@ -272,7 +270,9 @@
       "ingredients": {
         "B": {
           "type": "item",
-          "code": "game:refractorybrick-fired-{tier}",
+          "code": "game:refractorybrick-fired-*",
+          "name": "tier",
+          "allowedVariants": ["tier1", "tier2", "tier3"],
           "quantity": 2
         },
         "P": {
@@ -287,13 +287,11 @@
         },
         "N": {
           "type": "item",
-          "code": "game:metalnailsandstrips-{metal}",
+          "code": "game:metalnailsandstrips-*",
+          "name": "metal",
+          "allowedVariants": ["iron", "steel"],
           "quantity": 2
         }
-      },
-      "allowedVariants": {
-        "tier": ["tier1", "tier2", "tier3"],
-        "metal": ["iron", "steel"]
       },
       "width": 3,
       "height": 3,

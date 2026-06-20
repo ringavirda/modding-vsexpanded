@@ -279,15 +279,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 2,
@@ -324,15 +323,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 2,
@@ -369,15 +367,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 2,
@@ -414,15 +411,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 3,
@@ -459,15 +455,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 2,
@@ -504,15 +499,14 @@
     "ingredients": {
       "B": {
         "type": "block",
-        "code": "game:brickcourse-four-running-{brick}",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": ["black", "brown", "cream", "gray", "orange", "red", "tan"],
         "quantity": 1
       },
       "F": { "type": "item", "code": "game:clay-fire", "quantity": 2 },
       "H": { "type": "item", "code": "game:hammer-*", "isTool": true },
       "K": { "type": "item", "code": "game:chisel-*", "isTool": true }
-    },
-    "allowedVariants": {
-      "brick": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
     },
     "width": 3,
     "height": 2,

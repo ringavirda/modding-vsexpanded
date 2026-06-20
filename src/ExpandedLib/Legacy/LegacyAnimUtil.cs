@@ -65,13 +65,16 @@ public static class LegacyAnimUtil
         }
       }
 
-      Dictionary<string, ShapeElement> elements =
-        shape.CollectAndResolveReferences(api.World.Logger, nameForLogging);
+      // Resolve via the API present on the legacy floor (1.20.0 / 1.21.0): the void
+      // ResolveReferences + the params-only ResolveAndFindJoints. The Dictionary-returning
+      // CollectAndResolveReferences / Dictionary ResolveAndFindJoints overload only arrived in 1.21
+      // (and later 1.20.x patches), so using them would break on a clean 1.20.0. This mirrors the
+      // 1.20.0 vanilla BlockEntityAnimationUtil.CreateMesh exactly.
+      shape.ResolveReferences(api.World.Logger, nameForLogging);
       shape.CacheInvTransforms();
       shape.ResolveAndFindJoints(
         api.World.Logger,
         nameForLogging,
-        elements,
         Array.Empty<string>()
       );
 

@@ -5,7 +5,8 @@
     below is the ONLY place to edit when the version set changes.
 
     To ADD a version: append its TFM to $(AllGameTfms), add a per-version PropertyGroup (game
-    version + install env var), and add one GAME_GE_<ver> line in the capability-constants block.
+    version + folder slug + install env var), and add one GAME_GE_<ver> line in the
+    capability-constants block.
     To PROMOTE a new primary (e.g. when 1.22 becomes legacy and 1.23 arrives): point
     $(CurrentGameTfm)/$(CurrentGameVer) at the new row (leaving the old one in $(AllGameTfms)).
 
@@ -34,9 +35,14 @@
   -->
 
   <!-- ===================== VERSION MANIFEST (edit only this region) ===================== -->
+  <!-- GameVer is the game-version FLOOR each TFM supports - the .0 of the series - and is stamped
+       into the legacy output modinfo. The mods are kept source-compatible with that .0 release (so
+       a player on any patch of the series can run them); the legacy shims target the .0 API surface.
+       (The GAME_GE_* thresholds below compare on major.minor, so the patch component is irrelevant
+       there.) -->
   <PropertyGroup>
     <CurrentGameTfm>net10.0</CurrentGameTfm>
-    <CurrentGameVer>1.22</CurrentGameVer>
+    <CurrentGameVer>1.22.0</CurrentGameVer>
     <AllGameTfms>net7.0;net8.0;net10.0</AllGameTfms>
   </PropertyGroup>
 
@@ -46,17 +52,21 @@
     <IsCurrentGame Condition="'$(_GameTfm)' == '$(CurrentGameTfm)'">true</IsCurrentGame>
   </PropertyGroup>
 
-  <!-- Per-version facts: game version string + the env var naming its install. One block per TFM. -->
+  <!-- Per-version facts: game version floor + the .game/<slug> folder it provisions into + the env
+       var that can override the install location. One per TFM. -->
   <PropertyGroup Condition="'$(_GameTfm)' == 'net10.0'">
-    <GameVer>1.22</GameVer>
+    <GameVer>1.22.0</GameVer>
+    <GameSlug>1.22</GameSlug>
     <GameInstallEnv>VINTAGE_STORY</GameInstallEnv>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_GameTfm)' == 'net8.0'">
-    <GameVer>1.21</GameVer>
+    <GameVer>1.21.0</GameVer>
+    <GameSlug>1.21</GameSlug>
     <GameInstallEnv>VINTAGE_STORY_121</GameInstallEnv>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_GameTfm)' == 'net7.0'">
-    <GameVer>1.20</GameVer>
+    <GameVer>1.20.0</GameVer>
+    <GameSlug>1.20</GameSlug>
     <GameInstallEnv>VINTAGE_STORY_120</GameInstallEnv>
   </PropertyGroup>
 
@@ -74,33 +84,39 @@
   <!-- Game version stamped into the legacy output modinfo (current keeps the authored value). -->
   <PropertyGroup>
     <GameVersion Condition="'$(IsCurrentGame)' != 'true' and '$(GameVer)' != ''"
-      >$(GameVer).0</GameVersion>
+      >$(GameVer)</GameVersion>
   </PropertyGroup>
 
-  <!-- Pull the install paths from .env when the matching env var isn't already set, so legacy
-       builds work straight from the file (dotnet/MSBuild don't read .env on their own). -->
-  <PropertyGroup>
-    <_DotEnvPath>$(MSBuildThisFileDirectory)..\.env</_DotEnvPath>
-    <_DotEnv Condition="Exists('$(_DotEnvPath)')"
-      >$([System.IO.File]::ReadAllText('$(_DotEnvPath)'))</_DotEnv>
-  </PropertyGroup>
-
-  <!-- $(GamePath) = the install for THIS TFM: its env var if set, else that var's value from .env.
-       Both look the var up by the name in $(GameInstallEnv), so there are no per-version branches. -->
+  <!-- $(GamePath) = the install for THIS TFM. Priority:
+         1. An explicit env-var override (its name is in $(GameInstallEnv)) - used by CI and by anyone
+            pointing the build at an external install.
+         2. Otherwise the in-repo install provisioned into .game/<slug> by scripts/provision-game.*
+       Both the env-var name and the slug come from the manifest above, so there are no per-version
+       branches and no machine-specific .env file to maintain. -->
   <PropertyGroup Condition="'$(GameInstallEnv)' != ''">
-    <GamePath Condition="'$(GamePath)' == ''"
-      >$([System.Environment]::GetEnvironmentVariable('$(GameInstallEnv)'))</GamePath>
-
-    <_EnvLineMatch Condition="'$(GamePath)' == '' and '$(_DotEnv)' != ''"
-      >$([System.Text.RegularExpressions.Regex]::Match($(_DotEnv), `(?m)^\s*$(GameInstallEnv)\s*=\s*[^\r\n]+`))</_EnvLineMatch>
-    <GamePath Condition="'$(GamePath)' == '' and '$(_EnvLineMatch)' != ''"
-      >$([System.Text.RegularExpressions.Regex]::Replace($(_EnvLineMatch), `^\s*$(GameInstallEnv)\s*=\s*`, ``))</GamePath>
+    <!-- The raw env-var value (empty when there's no override): lets the auto-provision target tell an
+         external install (leave alone) from the default in-repo .game/<slug> (safe to populate). -->
+    <_GamePathEnv>$([System.Environment]::GetEnvironmentVariable('$(GameInstallEnv)'))</_GamePathEnv>
+    <GamePath Condition="'$(GamePath)' == ''">$(_GamePathEnv)</GamePath>
+    <GamePath Condition="'$(GamePath)' == '' and '$(GameSlug)' != ''"
+      >$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\.game\$(GameSlug)'))</GamePath>
   </PropertyGroup>
 
-  <!-- Expose the install env-var name to runtime code (the test harness assembly resolver) so it
-       loads the matching version's assemblies without its own per-TFM #if ladder. -->
+  <!-- Version to auto-provision: the primary tracks the latest patch (pass the major.minor series so
+       provision-game resolves it); the legacy targets pin the series .0 floor. -->
+  <PropertyGroup>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' == 'true'">$(GameSlug)</_ProvisionVersion>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' != 'true'">$(GameVer)</_ProvisionVersion>
+  </PropertyGroup>
+
+  <!-- Expose the install env-var name and the .game/<slug> folder to runtime code (the test harness
+       assembly resolver) so it loads the matching version's assemblies without its own per-TFM #if
+       ladder - resolving the same way the build does (env override first, else the in-repo install). -->
   <ItemGroup Condition="'$(GameInstallEnv)' != ''">
     <AssemblyMetadata Include="GameInstallEnv" Value="$(GameInstallEnv)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(GameSlug)' != ''">
+    <AssemblyMetadata Include="GameSlug" Value="$(GameSlug)" />
   </ItemGroup>
 
   <!-- The pre-current game APIs have less complete nullable-reference annotations, so passing null
@@ -110,16 +126,32 @@
     <NoWarn>$(NoWarn);CS8625</NoWarn>
   </PropertyGroup>
 
-  <!-- Fail clearly (instead of a cryptic CS1705 assembly-version mismatch) when a legacy build
-       can't find its game install because the env var / .env entry is missing. -->
+  <!-- Auto-provision the SERVER binaries into .game/<slug> when they're missing and no env override is
+       set, so a fresh `dotnet build` / `dotnet test` works seamlessly with no manual step. The playable
+       client is never fetched here - only the launch tasks pull it (provision-game ... -Kind client). -->
   <Target
-    Name="_CheckLegacyGamePath"
+    Name="_AutoProvisionGame"
+    Condition="'$(GameSlug)' != '' and '$(_GamePathEnv)' == '' and !Exists('$(GamePath)\VintagestoryAPI.dll')"
+  >
+    <Message Importance="high"
+      Text="Vintage Story $(_ProvisionVersion) not found - provisioning server binaries into .game\$(GameSlug) ..." />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\provision-game.ps1&quot; -Version $(_ProvisionVersion) -Kind server" />
+    <Exec Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="bash &quot;$(MSBuildThisFileDirectory)../scripts/provision-game.sh&quot; -Version $(_ProvisionVersion) -Kind server" />
+  </Target>
+
+  <!-- Fail clearly (instead of a cryptic CS1705 assembly-version mismatch) if, after the auto-provision
+       attempt, the binaries still aren't there (e.g. offline, or an env override pointing nowhere). -->
+  <Target
+    Name="_CheckGamePath"
     BeforeTargets="ResolveAssemblyReferences"
-    Condition="'$(IsCurrentGame)' != 'true' and '$(GameInstallEnv)' != ''"
+    DependsOnTargets="_AutoProvisionGame"
+    Condition="'$(GamePath)' != ''"
   >
     <Error
       Condition="!Exists('$(GamePath)\VintagestoryAPI.dll')"
-      Text="Legacy build for $(TargetFramework) (VintageStory $(GameVer)) can't find its game install (GamePath='$(GamePath)'). Set the $(GameInstallEnv) environment variable or its entry in the repo-root .env file - see .env.example."
+      Text="Can't find the Vintage Story $(GameVer) install (GamePath='$(GamePath)'). Provision it with 'pwsh scripts/provision-game.ps1 -Version $(_ProvisionVersion) -Kind server' (Windows) or 'scripts/provision-game.sh -Version $(_ProvisionVersion) -Kind server' (Linux/macOS), or set the $(GameInstallEnv) environment variable to an existing install."
     />
   </Target>
 </Project>

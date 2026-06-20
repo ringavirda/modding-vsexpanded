@@ -8,16 +8,15 @@
         "code": "game:refractorybrick-fired-tier3",
         "quantity": 4
       },
-      "R": { "type": "item", "code": "game:rod-{metal}", "quantity": 2 },
+      "R": { "type": "item", "code": "game:rod-*", "name": "metal", "allowedVariants": ["iron", "steel"], "quantity": 2 },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 4
       },
-      "P": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 2 }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
+      "P": { "type": "item", "code": "game:metalplate-*", "name": "metal", "allowedVariants": ["iron", "steel"], "quantity": 2 }
     },
     "width": 3,
     "height": 3,
@@ -42,7 +41,9 @@
       },
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -55,9 +56,6 @@
         "code": "game:chisel-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -103,12 +101,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "S": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -116,9 +118,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -133,12 +132,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "S": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -151,9 +154,6 @@
         "code": "game:gear-rusty",
         "quantity": 4
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -168,12 +168,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "S": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -186,9 +190,6 @@
         "code": "ppex:gear-*",
         "quantity": 4
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,

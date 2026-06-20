@@ -85,7 +85,7 @@
   >
     <WriteLinesToFile
       File="$(OutDir)modinfo.json"
-      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;$(CurrentGameVer).0&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
+      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;$(CurrentGameVer)&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
       Overwrite="true"
     />
   </Target>

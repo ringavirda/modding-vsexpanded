@@ -11,10 +11,10 @@ on:
 # -p:Legacy=true against each version's target framework. Kept separate from the primary Tests
 # workflow so the current-version build and the legacy builds report as independent checks.
 #
-# Each matrix entry fetches the matching freely-downloadable dedicated-server archive and points
-# that version's install env var at it (the build reads it for $(GamePath); the headless test
-# harness resolves the game assemblies from the same var at runtime). No coverage gate here - the
-# gate floors track the current build (see tests.yml).
+# Each matrix entry provisions the matching freely-downloadable dedicated-server archive into
+# .game/<slug> - the in-repo location the build reads for $(GamePath) and the headless test harness
+# resolves assemblies from at runtime. No coverage gate here - the gate floors track the current
+# build (see tests.yml).
 #
 # Adding a game version means a row HERE and in the src/Directory.Build.props manifest (CI YAML
 # can't read MSBuild) - the only place the version list is duplicated.
@@ -25,14 +25,14 @@ jobs:
     name: ${{ matrix.game }} (${{ matrix.tfm }})
     strategy:
       fail-fast: false
+      # The .0 of each legacy series - the floor the mods stay source-compatible with. Keep in sync
+      # with the manifest in src/Directory.Build.props.
       matrix:
         include:
           - game: "1.21.0"
             tfm: net8.0
-            install_env: VINTAGE_STORY_121
           - game: "1.20.0"
             tfm: net7.0
-            install_env: VINTAGE_STORY_120
 
     steps:
       - name: Checkout
@@ -47,28 +47,15 @@ jobs:
             8.0.x
             10.0.x
 
-      - name: Cache Vintage Story server assemblies
+      - name: Cache Vintage Story install
         id: cache-vs
         uses: actions/cache@v4
         with:
-          path: vs_server
-          key: vs-server-${{ matrix.game }}
+          path: .game
+          key: vs-game-${{ matrix.game }}
 
-      - name: Download Vintage Story server assemblies
-        if: steps.cache-vs.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p vs_server
-          url="https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${{ matrix.game }}.tar.gz"
-          echo "Downloading $url"
-          curl -fsSL "$url" -o vs_server.tar.gz
-          tar -xzf vs_server.tar.gz -C vs_server
-          for f in VintagestoryAPI.dll Mods/VSSurvivalMod.dll Mods/VSEssentials.dll \
-                   Lib/0Harmony.dll Lib/Newtonsoft.Json.dll Lib/cairo-sharp.dll; do
-            test -f "vs_server/$f" || { echo "missing $f"; exit 1; }
-          done
-
-      - name: Point the install env var at the server folder
-        run: echo "${{ matrix.install_env }}=$GITHUB_WORKSPACE/vs_server" >> "$GITHUB_ENV"
+      - name: Provision Vintage Story (server assemblies)
+        run: bash scripts/provision-game.sh -Version "${{ matrix.game }}" -Kind server
 
       - name: Test (legacy ${{ matrix.tfm }})
         env:

@@ -59,27 +59,102 @@
       ],
       "problemMatcher": "$msCompile"
     },
+
+    // ----------------------------------------------------------------------------------------
+    // Test runners - separate, independently-runnable targets per game version. Each builds the
+    // test projects for that version (auto-provisioning its game binaries on demand) and runs the
+    // suite; projects run in parallel. "Test: all" runs every version concurrently. Pick one from
+    // "Run Test Task", or run any via "Run Task".
+    // ----------------------------------------------------------------------------------------
     {
-      "label": "link-game (1.22)",
+      "label": "Test: latest (1.22)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "latest"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "latest"] },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: 1.21 (legacy)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "1.21"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.21"] },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: 1.20 (legacy)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "1.20"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.20"] },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: all versions (parallel)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Version", "all"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/run-tests.sh", "all"] },
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: coverage (latest + gate)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/run-tests.ps1", "-Coverage"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "provision-dotnet (latest)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "latest"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "latest"] },
+      "problemMatcher": []
+    },
+    {
+      "label": "provision-dotnet (1.21)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "1.21"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.21"] },
+      "problemMatcher": []
+    },
+    {
+      "label": "provision-dotnet (1.20)",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-NoProfile", "-File", "${workspaceFolder}/scripts/provision-dotnet.ps1", "-Version", "1.20"],
+      "linux": { "command": "bash", "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.20"] },
+      "problemMatcher": []
+    },
+    {
+      "label": "provision-game (1.22)",
       "type": "process",
       "command": "pwsh",
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/link-game.ps1",
-        "-Key",
-        "VINTAGE_STORY",
-        "-Link",
-        "bin/game-1.22"
+        "${workspaceFolder}/scripts/provision-game.ps1",
+        "-Version",
+        "1.22",
+        "-Kind",
+        "client"
       ],
       "linux": {
         "command": "bash",
         "args": [
-          "${workspaceFolder}/scripts/link-game.sh",
-          "-Key",
-          "VINTAGE_STORY",
-          "-Link",
-          "bin/game-1.22"
+          "${workspaceFolder}/scripts/provision-game.sh",
+          "-Version",
+          "1.22.0",
+          "-Kind",
+          "client"
         ]
       },
       "problemMatcher": []
@@ -88,18 +163,19 @@
       "label": "launch-prep (smex)",
       "dependsOrder": "sequence",
       "dependsOn": [
+        "provision-dotnet (latest)",
+        "provision-game (1.22)",
         "build-smex",
-        "stage-mods (exlib, ppex, smex)",
-        "link-game (1.22)"
+        "stage-mods (exlib, ppex, smex)"
       ],
       "problemMatcher": []
     },
 
     // ----------------------------------------------------------------------------------------
     // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
-    // Install paths come from VINTAGE_STORY_121 / VINTAGE_STORY_120 in the environment, or from
-    // the repo-root .env file (see .env.example) - both builds and launch read them from there.
-    // build-smex pulls exlib + ppex via project references, so a single build covers the chain.
+    // Each version is provisioned into .game/<slug> by scripts/provision-game.* (no machine-wide
+    // install needed); the build and launch read it from there. build-smex pulls exlib + ppex via
+    // project references, so a single build covers the chain.
     // ----------------------------------------------------------------------------------------
     {
       "label": "build-exlib (1.21)",
@@ -204,51 +280,51 @@
       "problemMatcher": []
     },
     {
-      "label": "link-game (1.21)",
+      "label": "provision-game (1.21)",
       "type": "process",
       "command": "pwsh",
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/link-game.ps1",
-        "-Key",
-        "VINTAGE_STORY_121",
-        "-Link",
-        "bin/game-1.21"
+        "${workspaceFolder}/scripts/provision-game.ps1",
+        "-Version",
+        "1.21.0",
+        "-Kind",
+        "client"
       ],
       "linux": {
         "command": "bash",
         "args": [
-          "${workspaceFolder}/scripts/link-game.sh",
-          "-Key",
-          "VINTAGE_STORY_121",
-          "-Link",
-          "bin/game-1.21"
+          "${workspaceFolder}/scripts/provision-game.sh",
+          "-Version",
+          "1.21.0",
+          "-Kind",
+          "client"
         ]
       },
       "problemMatcher": []
     },
     {
-      "label": "link-game (1.20)",
+      "label": "provision-game (1.20)",
       "type": "process",
       "command": "pwsh",
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/link-game.ps1",
-        "-Key",
-        "VINTAGE_STORY_120",
-        "-Link",
-        "bin/game-1.20"
+        "${workspaceFolder}/scripts/provision-game.ps1",
+        "-Version",
+        "1.20.0",
+        "-Kind",
+        "client"
       ],
       "linux": {
         "command": "bash",
         "args": [
-          "${workspaceFolder}/scripts/link-game.sh",
-          "-Key",
-          "VINTAGE_STORY_120",
-          "-Link",
-          "bin/game-1.20"
+          "${workspaceFolder}/scripts/provision-game.sh",
+          "-Version",
+          "1.20.0",
+          "-Kind",
+          "client"
         ]
       },
       "problemMatcher": []
@@ -257,9 +333,10 @@
       "label": "launch-prep (smex 1.21)",
       "dependsOrder": "sequence",
       "dependsOn": [
+        "provision-dotnet (1.21)",
+        "provision-game (1.21)",
         "build-smex (1.21)",
-        "stage-mods 1.21 (exlib, ppex, smex)",
-        "link-game (1.21)"
+        "stage-mods 1.21 (exlib, ppex, smex)"
       ],
       "problemMatcher": []
     },
@@ -267,9 +344,10 @@
       "label": "launch-prep (smex 1.20)",
       "dependsOrder": "sequence",
       "dependsOn": [
+        "provision-dotnet (1.20)",
+        "provision-game (1.20)",
         "build-smex (1.20)",
-        "stage-mods 1.20 (exlib, ppex, smex)",
-        "link-game (1.20)"
+        "stage-mods 1.20 (exlib, ppex, smex)"
       ],
       "problemMatcher": []
     }

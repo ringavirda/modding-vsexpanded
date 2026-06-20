@@ -4,8 +4,20 @@
     src/, so legacy test runs (-p:Legacy=true) compile against the matching 1.21 (net8.0) / 1.20
     (net7.0) API and fall back to 1.22 (net10.0) otherwise. Importing the src props gives the test
     csprojs $(GamePath)/$(GameVersion) per TFM plus the missing-install guard and the legacy CS8625
-    suppression. The runtime VsAssemblyResolver picks the matching install the same way (env var or
-    repo-root .env) so the headless run loads the right version's assemblies.
+    suppression. The runtime VsAssemblyResolver picks the matching install the same way (env-var
+    override, else the in-repo .game/<slug>) so the headless run loads the right version's assemblies.
   -->
   <Import Project="$(MSBuildThisFileDirectory)..\src\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Run the test assemblies in parallel across all cores (xunit.runner.json adds within-assembly
+         collection parallelism). Applied automatically by `dotnet test` / the IDE runner. The
+         scripts/run-tests.* helper runs the per-version suites concurrently on top of this. -->
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)parallel.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json"
+      CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

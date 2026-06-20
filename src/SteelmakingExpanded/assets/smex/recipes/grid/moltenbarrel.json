@@ -2,17 +2,16 @@
   "name": "Molten Barrel",
   "ingredientPattern": "PHP,PCP,PNP",
   "ingredients": {
-    "P": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+    "P": { "type": "item", "code": "game:metalplate-*", "name": "metal", "allowedVariants": ["iron", "steel"], "quantity": 1 },
     "C": { "type": "item", "code": "game:clay-fire", "quantity": 4 },
     "N": {
       "type": "item",
-      "code": "game:metalnailsandstrips-{metal}",
+      "code": "game:metalnailsandstrips-*",
+      "name": "metal",
+      "allowedVariants": ["iron", "steel"],
       "quantity": 4
     },
     "H": { "type": "item", "code": "game:hammer-*", "isTool": true }
-  },
-  "allowedVariants": {
-    "metal": ["iron", "steel"]
   },
   "width": 3,
   "height": 3,

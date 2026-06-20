@@ -5,12 +5,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -18,9 +22,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 1,
@@ -36,12 +37,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -49,9 +54,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 2,
     "height": 3,
@@ -66,12 +68,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -79,9 +85,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -96,12 +99,16 @@
     "ingredients": {
       "P": {
         "type": "item",
-        "code": "game:metalplate-{metal}",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -109,9 +116,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -126,7 +130,18 @@
     "ingredients": {
       "B": {
         "type": "item",
-        "code": "game:burnedbrick-{brick}",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 2
       },
       "P": {
@@ -139,18 +154,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "brick": [
-        "fire",
-        "black",
-        "brown",
-        "cream",
-        "gray",
-        "orange",
-        "red",
-        "tan"
-      ]
     },
     "width": 3,
     "height": 3,
@@ -165,7 +168,18 @@
     "ingredients": {
       "B": {
         "type": "item",
-        "code": "game:burnedbrick-{brick}",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 2
       },
       "P": {
@@ -178,18 +192,6 @@
         "code": "game:hammer-*",
         "isTool": true
       }
-    },
-    "allowedVariants": {
-      "brick": [
-        "fire",
-        "black",
-        "brown",
-        "cream",
-        "gray",
-        "orange",
-        "red",
-        "tan"
-      ]
     },
     "width": 3,
     "height": 3,
@@ -204,7 +206,18 @@
     "ingredients": {
       "B": {
         "type": "item",
-        "code": "game:burnedbrick-{brick}",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
         "quantity": 2
       },
       "P": {
@@ -219,22 +232,11 @@
       },
       "N": {
         "type": "item",
-        "code": "game:metalnailsandstrips-{metal}",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 2
       }
-    },
-    "allowedVariants": {
-      "brick": [
-        "fire",
-        "black",
-        "brown",
-        "cream",
-        "gray",
-        "orange",
-        "red",
-        "tan"
-      ],
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -249,7 +251,9 @@
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "ppex:pipe-straight-*-{metal}",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -257,15 +261,18 @@
         "code": "game:hammer-*",
         "isTool": true
       },
-      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 1
+      },
       "G": {
         "type": "item",
         "code": "game:gear-rusty",
         "quantity": 2
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -280,7 +287,9 @@
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "ppex:pipe-straight-*-{metal}",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -288,15 +297,18 @@
         "code": "game:hammer-*",
         "isTool": true
       },
-      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 1
+      },
       "G": {
         "type": "item",
         "code": "game:gear-rusty",
         "quantity": 2
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -311,7 +323,9 @@
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "ppex:pipe-straight-*-{metal}",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -319,15 +333,18 @@
         "code": "game:hammer-*",
         "isTool": true
       },
-      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 1
+      },
       "G": {
         "type": "item",
         "code": "ppex:gear-*",
         "quantity": 2
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
@@ -342,7 +359,9 @@
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "ppex:pipe-straight-*-{metal}",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
         "quantity": 1
       },
       "H": {
@@ -350,15 +369,18 @@
         "code": "game:hammer-*",
         "isTool": true
       },
-      "L": { "type": "item", "code": "game:metalplate-{metal}", "quantity": 1 },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": ["iron", "steel"],
+        "quantity": 1
+      },
       "G": {
         "type": "item",
         "code": "ppex:gear-*",
         "quantity": 2
       }
-    },
-    "allowedVariants": {
-      "metal": ["iron", "steel"]
     },
     "width": 3,
     "height": 3,
