@@ -33,14 +33,16 @@ failure modes; all gameplay numbers live in `ModConfig/ppex.json` (see `PpexValu
 
 - `BlockNetworkPipe/` - the unified pipe network (`PipeNetwork`), pipe/valve/intake/
   condenser blocks and block entities.
-- `BlockStructures/` - boiler and engine mega-block machines (multiblock structure +
-  right-click construction + animation).
+- `BlockStructures/` - boiler, engine and manual-pump mega-block machines (multiblock
+  structure + right-click construction + animation).
+- `Commands/` - `.exmod` sub-commands (the metric/imperial `measure` unit toggle).
+- `Preferences/` - the per-player display-unit preference definition.
 - `Patches/` - Harmony patches into vanilla (chimney look-at info).
 - `BlockMigrations/` - save migrations for renamed block codes.
 - `assets/ppex/` - blocktypes, shapes, recipes, lang, handbook pages.
 
-Depends on [Expanded Library](../ExpandedLib/README.md) (`exlib`) for the block-network
-and multiblock-structure frameworks.
+Depends on [Expanded Library](../ExpandedLib/README.md) (`exlib`) for the block-network,
+multiblock-structure, config, command and recipe-cost frameworks.
 
 ## Building
 
@@ -49,5 +51,5 @@ Requires only the .NET SDK - provision the game binaries into the repo first (se
 
 ```sh
 scripts/provision-game.sh -Version 1.22.0   # or scripts/provision-game.ps1 on Windows
-dotnet build PipesAndPowerExpanded/PipesAndPowerExpanded.csproj
+dotnet build src/PipesAndPowerExpanded/PipesAndPowerExpanded.csproj
 ```

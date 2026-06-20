@@ -4,22 +4,26 @@ A monorepo of three [Vintage Story](https://www.vintagestory.at/) mods that toge
 add an industrial-era production chain - pipe networks, steam power, bulk iron and
 steel making:
 
-| Mod                                                       | modid   | What it is                                                                                                   |
-| --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
-| [Expanded Library](ExpandedLib/README.md)                 | `exlib` | Shared framework: block networks, multiblock structures, entity registry, save migrations, common helpers.    |
-| [Pipes and Power Expanded](PipesAndPowerExpanded/README.md) | `ppex`  | Pipe networks (gas + water), boilers, steam engines and their sub-machines (MP generator, fluid pump).        |
-| [Steelmaking Expanded](SteelmakingExpanded/README.md)     | `smex`  | Blast furnace, cowper stoves, molten-metal canals and casting, Bessemer converter. Depends on both above.     |
+| Mod                                                             | modid   | What it is                                                                                                   |
+| --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| [Expanded Library](src/ExpandedLib/README.md)                   | `exlib` | Shared framework: block networks, multiblock structures, registries (entities/commands/config), save migrations, common helpers. |
+| [Pipes and Power Expanded](src/PipesAndPowerExpanded/README.md) | `ppex`  | Pipe networks (gas + water), boilers, steam engines and their sub-machines (MP generator, fluid pump).        |
+| [Steelmaking Expanded](src/SteelmakingExpanded/README.md)       | `smex`  | Blast furnace, cowper stoves, molten-metal canals and casting, Bessemer converter. Depends on both above.     |
 
 ## Repository layout
 
-| Path                      | Purpose                                                                |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `ExpandedLib/`            | The `exlib` framework mod (C# + minimal assets).                       |
-| `PipesAndPowerExpanded/`  | The `ppex` mod: pipe network + steam machinery.                        |
-| `SteelmakingExpanded/`    | The `smex` mod: the iron/steel chain.                                  |
-| `docs/`                   | Diagrams, screenshots, moddb listing sources.                          |
-| `CakeBuild/`              | Cake build script project that packages release zips.                  |
-| `VintageStory.sln`        | Solution tying the projects together.                                  |
+| Path                            | Purpose                                                                |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| `src/ExpandedLib/`              | The `exlib` framework mod (C# + minimal assets).                       |
+| `src/ExpandedLib.Generators/`   | Roslyn source generators (config value accessors, block-attribute bakers). |
+| `src/PipesAndPowerExpanded/`    | The `ppex` mod: pipe network + steam machinery.                        |
+| `src/SteelmakingExpanded/`      | The `smex` mod: the iron/steel chain.                                  |
+| `src/Directory.Build.props`     | Shared MSBuild config + the supported-game-version manifest.           |
+| `test/`                         | Headless xUnit test projects (per-mod unit tests + cross-mod integration). |
+| `scripts/`                      | Game/.NET provisioning, mod staging, test runners.                     |
+| `docs/`                         | Diagrams, screenshots, moddb listing + handbook sources.              |
+| `dist/CakeBuild/`               | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
+| `VintageStory.sln`              | Solution tying the projects together.                                  |
 
 `smex` project-references `exlib` and `ppex` (with `Private=false`), so players install
 all three mods separately; the network manager identity lives in `exlib` only.
@@ -39,12 +43,15 @@ Code is organized by **feature**, and within each feature by Vintage Story's
 - **`BlockMigrations/`** in each mod = `IBlockCodeMigration` implementations that
   rewrite old block codes when variants change between versions (the framework in
   `exlib` discovers them by reflection and applies them as chunks load).
-- Registration is attribute-driven: decorate a class with `[EntityRegister]` and
-  `EntityRegistry.RegisterAll` picks it up.
-- Gameplay tunables live in `PpexValues.cs` / `SmexValues.cs`, loaded from
-  `ModConfig/ppex.json` / `ModConfig/smex.json`.
+- Registration is attribute-driven: decorate a class with the kind-specific
+  `[BlockRegister]` / `[ItemRegister]` / `[BlockEntityRegister]` /
+  `[BlockBehaviorRegister]` (etc.) attribute and `EntityRegistry.RegisterAll` picks it
+  up. Chat commands use `[CommandRegister]` / `[SubCommandRegister]` the same way.
+- Gameplay tunables live in `PpexValues` / `SmexValues` (the static accessors are
+  source-generated from the config classes), persisted to `ModConfig/ppex.json` /
+  `ModConfig/smex.json` and editable live with `/exmod config`.
 
-## Network system (`ExpandedLib/BlockNetworks/`)
+## Network system (`src/ExpandedLib/Blocks/Networks/`)
 
 Both the pipe and molten systems are instances of one generic block-network framework.
 A network is a connected graph of same-type nodes; the library owns the **graph-level**
@@ -89,8 +96,8 @@ Everything else is fetched on demand into gitignored folders:
 pwsh scripts/provision-game.ps1 -Version 1.22     # Windows
 scripts/provision-game.sh       -Version 1.22     # Linux/macOS
 
-dotnet build SteelmakingExpanded/SteelmakingExpanded.csproj   # builds all three mods
-./build.ps1   # or ./build.sh - full Cake build, produces packaged release zips
+dotnet build src/SteelmakingExpanded/SteelmakingExpanded.csproj   # builds all three mods
+dotnet run --project dist/CakeBuild   # full Cake build: per-game-version release zips in dist/Releases/
 ```
 
 ### Testing

@@ -30,8 +30,12 @@ live in `ModConfig/smex.json` (see `SmexValues.cs`).
 
 ## Code layout
 
-- `BlockNetworkMolten/` - the molten-metal network, canal/tap/pedestal/barrel blocks.
-- `BlockStructures/` - blast furnace, cowper stove, smoke stack, Bessemer converter.
+- `BlockNetworkMolten/` - the molten-metal network, canal/tap/pedestal/barrel blocks,
+  and the shared molten-chiselling behaviour.
+- `BlockStructures/` - blast furnace, cowper stove, smoke stack, Bessemer converter
+  and the air-blower engine sub-machine.
+- `Molds/` - the tool-mold blocks and their config-gated enable/disable.
+- `Commands/` - server `/exmod` sub-commands (the `molds` toggle).
 - `Patches/` - Harmony patches into vanilla (tool mold filled-mold flow + held
   rendering, mold rack spill rule, coal pile blast-mix burn-to-slag).
 - `Compat/` - other-mod compatibility (extra crushed-iron-ore item codes).
@@ -45,5 +49,5 @@ Requires only the .NET SDK - provision the game binaries into the repo first (se
 
 ```sh
 scripts/provision-game.sh -Version 1.22.0   # or scripts/provision-game.ps1 on Windows
-dotnet build SteelmakingExpanded/SteelmakingExpanded.csproj
+dotnet build src/SteelmakingExpanded/SteelmakingExpanded.csproj
 ```
