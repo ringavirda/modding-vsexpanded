@@ -1,6 +1,6 @@
 [
   {
-    "comment": "EM absent: make iron-group nugget crushing 1:1 using EM's convention (stacksize:1, no quantity). Cassiterite/chromite/ilmenite stay at vanilla 0.33, matching how EM treats those secondary ores. When EM is present it already does exactly this, so these ops are gated off. Galena lives in its own per-version file (nugget-crushing-galena[-legacy].json) because the vanilla crushed variant it points at was renamed leadoxide -> galena in 1.22.",
+    "comment": "EM absent: make iron-group nugget crushing 1:1 (quantity avg 1, crushedStack stacksize 1). Cassiterite/chromite/ilmenite stay at vanilla 0.33, matching how EM treats those secondary ores. When EM is present it already does exactly this, so these ops are gated off. The quantity field is REQUIRED: vanilla CollectibleObject.GetHeldItemInfo reads crushingProps.Quantity.avg with no null-check, so omitting it NREs every tooltip (and breaks the pulverizer). Galena lives in its own per-version file (nugget-crushing-galena[-legacy].json) because the vanilla crushed variant it points at was renamed leadoxide -> galena in 1.22.",
     "file": "game:itemtypes/resource/nugget.json",
     "op": "replace",
     "path": "/crushingPropsByType/nugget-limonite",
@@ -10,6 +10,7 @@
         "code": "game:crushed-iron",
         "stacksize": 1
       },
+      "quantity": { "avg": 1 },
       "hardnessTier": 3
     },
     "side": "Server",
@@ -25,6 +26,7 @@
         "code": "game:crushed-iron",
         "stacksize": 1
       },
+      "quantity": { "avg": 1 },
       "hardnessTier": 3
     },
     "side": "Server",
@@ -40,6 +42,7 @@
         "code": "game:crushed-iron",
         "stacksize": 1
       },
+      "quantity": { "avg": 1 },
       "hardnessTier": 3
     },
     "side": "Server",
