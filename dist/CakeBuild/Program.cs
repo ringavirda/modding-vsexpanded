@@ -172,9 +172,14 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         context.EnsureDirectoryExists(stageDir);
 
         context.CopyFiles($"{context.PublishDir(project, target)}/*", stageDir);
-        if (context.DirectoryExists($"../../src/{project.Folder}/assets"))
+        // Copy assets from the per-target PUBLISH output, NOT from raw source: the csproj applies
+        // per-game-version `Content Remove` filtering (e.g. legacy-only patches whose crushed codes
+        // don't resolve on newer versions), and only the publish output reflects it. Copying source
+        // assets here bypassed that and shipped both versions' files into every package, which
+        // crashed clients on world-load when the wrong patch referenced a non-existent stack.
+        if (context.DirectoryExists($"{context.PublishDir(project, target)}/assets"))
           context.CopyDirectory(
-            $"../../src/{project.Folder}/assets",
+            $"{context.PublishDir(project, target)}/assets",
             $"{stageDir}/assets"
           );
         if (context.FileExists($"../../src/{project.Folder}/modicon.png"))

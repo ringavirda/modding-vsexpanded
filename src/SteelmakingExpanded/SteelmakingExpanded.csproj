@@ -62,18 +62,6 @@
     </Content>
   </ItemGroup>
 
-  <!-- The galena nugget crushes to a vanilla "crushed" variant that was renamed between game
-       versions (leadoxide before 1.22 -> galena from 1.22), so ship only the matching patch. The
-       wrong code wouldn't resolve and would crash the handbook (vanilla GetHeldItemInfo
-       dereferences an unresolved crushed stack without a null-check). Gated on the version
-       threshold the rename landed at, so a newer version inherits the right side automatically. -->
-  <ItemGroup Condition="'$(GameVer)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))">
-    <Content Remove="assets\smex\patches\compat\em\nugget-crushing-galena-legacy.json" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(GameVer)' != '' and !$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))">
-    <Content Remove="assets\smex\patches\compat\em\nugget-crushing-galena.json" />
-  </ItemGroup>
-
   <!-- Stamp the matching game version into the output modinfo for legacy builds; no-op on the
        current version (its modinfo already carries $(CurrentGameVer).0). -->
   <Target
