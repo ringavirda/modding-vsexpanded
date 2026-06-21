@@ -339,7 +339,7 @@
       },
       "A": {
         "type": "block",
-        "code": "game:woodenaxle-ns",
+        "code": "game:woodenaxle-ud",
         "quantity": 1
       },
       "H": {
@@ -550,7 +550,7 @@
       },
       "A": {
         "type": "block",
-        "code": "game:woodenaxle-ns",
+        "code": "game:woodenaxle-ud",
         "quantity": 1
       },
       "H": {
