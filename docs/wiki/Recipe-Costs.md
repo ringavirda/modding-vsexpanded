@@ -29,7 +29,7 @@ public sealed class RecipeProfile
 ```
 
 `Levels` is the selectable list in display order (first = authored baseline). `DerivedLevels` maps
-a level name to a scale factor applied to `normal` (each ingredient floored at 1) — so `cheap` at
+a level name to a scale factor applied to `normal` (each ingredient floored at 1) - so `cheap` at
 `0.5` is half cost, auto-filled, no hand authoring.
 
 ## Catalogue entries
@@ -101,15 +101,15 @@ public static class ExRecipeCosts
 ```
 
 - `EnsureNormalExtracted` auto-fills the `normal` profile from the live recipes for entries that
-  lack it (returns `true` if anything changed → persist).
+  lack it (returns `true` if anything changed -> persist).
 - `EnsureScaledLevel` fills a profile by scaling `normal` by `factor` (floored at 1), skipping
   entries with explicit pinned costs.
 - `Reconcile` repairs a hand-edited catalogue: restores deleted entries, fixes structural fields,
-  restores pinned defaults, clamps quantities to ≥1.
+  restores pinned defaults, clamps quantities to >=1.
 - `Apply` writes a named profile into the live grid ingredient/output counts and RCC stage costs.
 
 ## Related pages
 
-- [Config System](Config-System) — store the active level and edit it with `/exmod config`.
-- [Construction (RCC)](Construction) — `rcc`-type entries adjust construction stage costs.
-- [Commands](Commands) — `/exmod recipes`.
+- [Config System](Config-System) - store the active level and edit it with `/exmod config`.
+- [Construction (RCC)](Construction) - `rcc`-type entries adjust construction stage costs.
+- [Commands](Commands) - `/exmod recipes`.

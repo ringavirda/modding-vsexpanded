@@ -13,7 +13,7 @@ Write a POCO implementing `IExVersionedConfig` and tag it `[ExConfigRegister]`:
 [ExConfigRegister(
     "ppex_values.json",                 // file name under ModConfig/
     "ppex",                             // owning mod id (logging + version tracking)
-    LegacyFileNames = ["ppex.json"],    // former names — auto-renamed on load
+    LegacyFileNames = ["ppex.json"],    // former names - auto-renamed on load
     Manageable = true                   // expose to /exmod config
 )]
 public class PpexConfig : IExVersionedConfig
@@ -36,7 +36,7 @@ public class PpexConfig : IExVersionedConfig
 }
 ```
 
-The marker interface is tiny — it just lets the store track and migrate the file:
+The marker interface is tiny - it just lets the store track and migrate the file:
 
 ```csharp
 public interface IExVersionedConfig
@@ -47,7 +47,7 @@ public interface IExVersionedConfig
 
 ## Using the generated accessor
 
-The generator emits `PpexValues` (the name is the type name with `Config` → `Values`; override
+The generator emits `PpexValues` (the name is the type name with `Config` -> `Values`; override
 with `AccessorName`). You get:
 
 ```csharp
@@ -97,7 +97,7 @@ bounds) and on load (file values out of bounds reset to the coded default). Nume
 
 When you change a default and want existing players to pick it up, declare a migration. On load,
 if the file's stamped version is below a migration's `ToVersion` and you're now at or past it, the
-named fields reset to their coded defaults — everything else the player tuned is preserved.
+named fields reset to their coded defaults - everything else the player tuned is preserved.
 
 ```csharp
 public sealed class ExConfigMigration
@@ -121,7 +121,7 @@ automatically.
 ## Legacy file names
 
 `LegacyFileNames` preserves player configs across a rename. On load, if the current file is absent
-but a legacy name exists, the first match is renamed to the current name — players keep their
+but a legacy name exists, the first match is renamed to the current name - players keep their
 settings.
 
 ## Live editing: `Manageable`
@@ -189,11 +189,11 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
 }
 ```
 
-But the generator path is recommended — adding a property is then a one-line change with the
+But the generator path is recommended - adding a property is then a one-line change with the
 getter, validation and command wiring all emitted for you.
 
 ## Related pages
 
-- [Source Generators](Source-Generators) — exactly what `[ExConfigRegister]` emits.
-- [Commands](Commands) — the `/exmod config` sub-command.
-- [Recipe Costs](Recipe-Costs) — a `RecipeLevel` string in config drives the recipe profile.
+- [Source Generators](Source-Generators) - exactly what `[ExConfigRegister]` emits.
+- [Commands](Commands) - the `/exmod config` sub-command.
+- [Recipe Costs](Recipe-Costs) - a `RecipeLevel` string in config drives the recipe profile.

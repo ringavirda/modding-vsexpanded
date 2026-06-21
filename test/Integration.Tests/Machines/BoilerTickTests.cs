@@ -111,4 +111,34 @@ public class BoilerTickTests
 
     Assert.Equal(BoilerState.Idle, rig.State);
   }
+
+  // Re-use regression (the cowper lesson generalized): a boiler is fired, shut down, and re-fired
+  // repeatedly. Shutdown deliberately LEAVES leftover steam in the vessel (it condenses back to water
+  // in Idle), so a re-fire happens against a dirty, steam-laden vessel. That residual steam must not
+  // latch the boiler out of operation - re-lighting with enough water must reach Heating again. Every
+  // other boiler test runs a single forward leg from primed state; none re-fires after a shutdown.
+  [Fact]
+  public void A_boiler_re_fires_after_a_shutdown_despite_leftover_steam()
+  {
+    // Run to Boiling, snuff the fire, and tick past the grace so it shuts down to Idle - with steam
+    // still in the vessel.
+    var rig = new BoilerRig()
+      .SetState(BoilerState.Boiling)
+      .SetWater(300f)
+      .SetSteam(200f)
+      .SetShutdownSeconds(PpexValues.BoilerShutdownDelaySeconds)
+      .ExtinguishFire();
+    rig.Tick();
+    Assert.Equal(BoilerState.Idle, rig.State);
+    Assert.True(
+      rig.SteamVolume > 0f,
+      "precondition: leftover steam remains in the vessel after shutdown"
+    );
+
+    // Re-light and top the water back up: the second heat must reach Heating again - the residual
+    // steam must not block the re-fire.
+    rig.RelightFire().SetWater(300f).Tick();
+
+    Assert.Equal(BoilerState.Heating, rig.State);
+  }
 }

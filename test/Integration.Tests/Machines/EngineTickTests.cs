@@ -97,6 +97,45 @@ public class EngineTickTests
     Assert.True(eng.Engine.AvailablePower > 0f, "a repaired engine runs again");
   }
 
+  // Re-use regression (the cowper lesson generalized): the burst path is reached through a sticky
+  // IsBroken latch plus an over-pressure accumulator, and Repair() must clear BOTH so the next
+  // over-pressure episode starts clean. Without a reset, a repaired engine would re-break on the very
+  // first over-pressure tick (or, if the latch leaked the other way, never break again). Every other
+  // engine test either reflection-flips IsBroken or runs a single break - none crosses break→repair→
+  // over-pressure-again to prove the cycle resets.
+  [Fact]
+  public void Repairing_resets_the_over_pressure_timer_so_a_single_tick_does_not_re_break()
+  {
+    var (scene, eng) = NewEngine();
+
+    // Break it: prime the timer to just under the threshold so one over-pressure tick trips it.
+    var primed = new GraceTimer();
+    primed.Update(
+      true,
+      PpexValues.EngineOverPressureSeconds - 0.5f,
+      float.MaxValue
+    );
+    ReflectionHelpers.SetField(eng.Engine, "_overPressure", primed);
+    eng.SetInletPressure(4.5f); // above the 4 atm break pressure
+    scene.Step();
+    Assert.True(eng.Engine.IsBroken, "precondition: sustained over-pressure broke it");
+
+    // Repair, then run ONE more over-pressure tick. If repair left the accumulator dirty this single
+    // tick would re-break instantly; a clean reset means it must take the full grace again.
+    eng.Engine.Repair();
+    eng.SetInletPressure(4.5f);
+    scene.Step();
+
+    Assert.False(
+      eng.Engine.IsBroken,
+      "a single over-pressure tick must not re-break a just-repaired engine"
+    );
+    Assert.True(
+      eng.Engine.OverPressureRemaining > 1f,
+      $"the over-pressure grace should have reset on repair, was {eng.Engine.OverPressureRemaining}"
+    );
+  }
+
   [Fact]
   public void Power_state_round_trips_through_the_tree()
   {

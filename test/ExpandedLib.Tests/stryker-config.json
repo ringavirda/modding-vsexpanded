@@ -1,7 +1,8 @@
 {
-  "//": "Mutation testing for the exlib simulation core. Run from this folder: `dotnet stryker`.",
+  "//": "Mutation testing for the exlib simulation core. Run from this folder, PINNING the framework: `dotnet stryker --target-framework net10.0` (required post-legacy: csprojs read TargetFramework from the $(CurrentGameTfm)/$(AllGameTfms) MSBuild vars, which Stryker's analyzer can't expand → 'No project found').",
   "//gate": "Use --break-at <pct> in CI to fail below a mutation-score floor once it is raised.",
-  "//limitation": "Only exlib is mutated here. ppex/smex use Roslyn source generators (ExpandedLib.Generators), which Stryker's in-memory recompilation cannot reproduce ('Internal error due to compile error'). Mutation-test those by temporarily disabling the generator ProjectReference, or keep their guarantees on the integration/property tests.",
+  "//scope-it": "Run ONE small file at a time, e.g. `--mutate **/Blocks/Machines/GraceTimer.cs` (58% as of 2026-06-21). At a LARGE mutate scope (hundreds of mutants) Stryker's per-test coverage attribution degrades in this repo's custom-OutDir/TFM build (per-mutant time collapses to ~0.1s and mutants default to Survived) - the whole-config score under-reports badly. Trust scoped runs only.",
+  "//limitation": "Only exlib (the leaf project) mutates cleanly. ppex/smex use the ExpandedLib.Generators Roslyn generator, which Stryker's in-memory recompile can't run ('Internal error due to compile error', CS0535 on generated partial members). Materializing the generated *.g.cs + disabling the generator gets ppex to BUILD, but its single big files (e.g. PipeNetwork.cs, 203 mutants) then hit the same at-scale attribution collapse. Keep ppex/smex guarantees on the integration/property tests + a manual mutant check (revert the guard, confirm the regression test goes red).",
   "stryker-config": {
     "project": "ExpandedLib.csproj",
     "test-projects": ["ExpandedLib.Tests.csproj"],

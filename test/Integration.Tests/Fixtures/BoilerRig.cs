@@ -113,4 +113,11 @@ internal sealed class BoilerRig
     ReflectionHelpers.SetField(Pile, "burning", false);
     return this;
   }
+
+  /// <summary>Re-lights the firebox (the inverse of <see cref="ExtinguishFire"/>) for a re-fire cycle.</summary>
+  public BoilerRig RelightFire()
+  {
+    ReflectionHelpers.SetField(Pile, "burning", true);
+    return this;
+  }
 }

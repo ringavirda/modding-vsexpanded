@@ -48,19 +48,19 @@ A client-side sub-command casts `api` to `ICoreClientAPI` and is gated with
 `[SubCommandRegister(Side = EnumAppSide.Client)]`. The registry creates the `exmod` parent if it
 doesn't exist yet, so order between mods doesn't matter.
 
-Register your sub-commands with `CommandRegistry.RegisterAll(api, Mod, GetType().Assembly)` — see
+Register your sub-commands with `CommandRegistry.RegisterAll(api, Mod, GetType().Assembly)` - see
 **[Registries](Registries)**.
 
 ## VTML pitfall in command output
 
 Chat output is rendered as **VTML**. A literal `<` opens a tag and silently eats the rest of the
 message, so a usage string like `Usage: /exmod config <mod>` truncates at `<mod>`. Use square
-brackets instead — `Usage: /exmod config [mod]` — in any command-result or usage text. (Vanilla's
+brackets instead - `Usage: /exmod config [mod]` - in any command-result or usage text. (Vanilla's
 `<hk>` is a hotkey-code tag and renders `?` for command strings, so don't use it to wrap commands;
 prefer `<strong>`.)
 
 ## Related pages
 
-- [Registries](Registries) — `IExCommand` / `IExSubCommand` and `CommandRegistry`.
-- [Config System](Config-System) — what `/exmod config` edits.
-- [Recipe Costs](Recipe-Costs) — what `/exmod recipes` switches.
+- [Registries](Registries) - `IExCommand` / `IExSubCommand` and `CommandRegistry`.
+- [Config System](Config-System) - what `/exmod config` edits.
+- [Recipe Costs](Recipe-Costs) - what `/exmod recipes` switches.

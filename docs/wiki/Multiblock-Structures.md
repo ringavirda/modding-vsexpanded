@@ -4,11 +4,11 @@
 build-outline projection (ctrl+shift+right-click), crash-safe incomplete-part highlighting, and a
 shared invisible **filler** block that gives a single-cell mega-block real per-cell collision.
 
-There are two independent tools here — use one or both:
+There are two independent tools here - use one or both:
 
-1. **The filler system** — make one logical block occupy several world cells with solid
+1. **The filler system** - make one logical block occupy several world cells with solid
    collision/selection, while all interaction routes back to the controller block.
-2. **`BlockEntityMultiblockStructure`** — a base block entity that monitors whether a designed
+2. **`BlockEntityMultiblockStructure`** - a base block entity that monitors whether a designed
    multiblock pattern is complete, runs production only while complete, and shows a build outline
    of missing parts.
 
@@ -155,7 +155,7 @@ public class BlockEntityBlastFurnace : BlockEntityMultiblockStructure
 
 The actual pattern (which cells must be which blocks) is a vanilla **`multiblockStructure`**
 JSON definition referenced by your block. `SetStructureAngle` loads that JSON, calls the engine's
-`InitForUse` at the right angle, and clears any stale projection — this is the canonical body for
+`InitForUse` at the right angle, and clears any stale projection - this is the canonical body for
 `UpdateStructureRotation`. The monitor tick re-checks completeness on `CompletionTickMs` and fires
 `OnStructureCompleted` / `OnStructureLost` on transitions.
 
@@ -184,6 +184,6 @@ resolves to no block, so the base falls back to a neutral tint instead of crashi
 
 ## Related pages
 
-- [Production Machines](Production-Machines) — the tick lifecycle this builds on.
-- [Block Networks](Block-Networks) — a structure that is also a network node must call `AddNode`/`RemoveNode` itself.
-- [Helpers & Renderers](Helpers-and-Renderers) — `ExOrientation` for the rotation math; `SurfaceRenderer` for fluid surfaces.
+- [Production Machines](Production-Machines) - the tick lifecycle this builds on.
+- [Block Networks](Block-Networks) - a structure that is also a network node must call `AddNode`/`RemoveNode` itself.
+- [Helpers & Renderers](Helpers-and-Renderers) - `ExOrientation` for the rotation math; `SurfaceRenderer` for fluid surfaces.

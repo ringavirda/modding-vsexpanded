@@ -77,7 +77,7 @@ public sealed class Scene
 }
 ```
 
-Flow: `Network(...)` → `Block`/`Node`/`Machine`/`Fill(...)` → `Build()` once → `Step(...)` → query
+Flow: `Network(...)` -> `Block`/`Node`/`Machine`/`Fill(...)` -> `Build()` once -> `Step(...)` -> query
 with `NetworkAt<T>` / `EntityAt<T>`.
 
 ## `SceneDiagram`
@@ -108,7 +108,7 @@ Resolves the install from `[AssemblyMetadata("GameInstallEnv")]` (env var such a
 `VINTAGE_STORY_121`) or by walking up to `.game/<slug>` (slug from `[AssemblyMetadata("GameSlug")]`,
 e.g. `1.22`). Probes the install root, `Lib/` and `Mods/`. Call from a `[ModuleInitializer]` before
 any test type loads. The harness itself also has an internal module initializer that calls it, but
-your test project should call it (plus `TestLang.Init`) explicitly — that is the established pattern.
+your test project should call it (plus `TestLang.Init`) explicitly - that is the established pattern.
 
 ## `TestLang`
 
@@ -145,7 +145,7 @@ public static class TestBlocks
 ```
 
 Assigns `Code` and `BlockId`, populates `VariantStrict` from the pairs, and wraps it in a relaxed
-dictionary (absent keys return `null` instead of throwing). Returns the block for chaining — this
+dictionary (absent keys return `null` instead of throwing). Returns the block for chaining - this
 is how you build blocks without the asset-load pipeline.
 
 ```csharp
@@ -165,7 +165,7 @@ public sealed class StubNetwork : BlockNetwork
 {
     public StubNetwork(BlockNetworkModSystem system, string networkType = "test");
     public override string NetworkType { get; }
-    public string? Tag { get; set; }   // arbitrary marker that survives merge/split/inherit — assert state propagation
+    public string? Tag { get; set; }   // arbitrary marker that survives merge/split/inherit - assert state propagation
     public override void OnMerge(BlockNetwork other, IBlockAccessor world);
     public override void OnSplitFragment(BlockNetwork original, IBlockAccessor world);
     public override void InheritStateFrom(BlockNetwork source);
@@ -218,7 +218,7 @@ public sealed class SeverableNode : BlockEntityNetworkNode
 {
     public bool Broken { get; set; }
     public override string NetworkType { get; set; }
-    public override bool IsConnectionBroken();   // returns Broken — graph severs here when true
+    public override bool IsConnectionBroken();   // returns Broken - graph severs here when true
 }
 ```
 
@@ -233,5 +233,5 @@ reference to the mod under test.
 
 ## Related pages
 
-- [Testing Harness](Testing-Harness) — setup, module initializer, worked examples.
-- [Block Networks](Block-Networks) — the real types these doubles stand in for.
+- [Testing Harness](Testing-Harness) - setup, module initializer, worked examples.
+- [Block Networks](Block-Networks) - the real types these doubles stand in for.

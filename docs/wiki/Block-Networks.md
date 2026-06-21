@@ -17,7 +17,7 @@ type the same way.
 
 The mental model: **blocks** expose connector faces, **block entities** are graph nodes, the
 **manager** maintains the graph and hands each connected component a **`BlockNetwork`** instance
-that carries your gameplay state (pressure, fluid, temperature…).
+that carries your gameplay state (pressure, fluid, temperature...).
 
 ## Registering a network type
 
@@ -60,7 +60,7 @@ surrounding network blocks (`TryPlaceBlock`), recomputes on neighbour change
 
 ### Orientation convention
 
-`Orientation` is the concatenation of single-character face codes the node connects on —
+`Orientation` is the concatenation of single-character face codes the node connects on -
 `"ns"` (north+south), `"we"`, `"ud"` (up+down), `"nswe"` (all four horizontals). The variant
 group that drives placement is **`orientation`** (singular); a mis-named variant group silently
 breaks placement and wrenching, so keep it exactly that.
@@ -109,7 +109,7 @@ public virtual void OnNetworkUpdate(object? state);     // network pushes its la
 public virtual bool IsConnectionBroken();               // return true to dynamically sever the graph here
 public virtual void OnOpenConnectorsChanged(BlockFacing[] openFaces);  // open faces (leaks) changed
 
-// State persistence hooks — override these to round-trip your typed network state:
+// State persistence hooks - override these to round-trip your typed network state:
 protected virtual bool IsNetworkStateMeaningful(object? state);
 protected virtual object? DeserializeNetworkState(ITreeAttribute tree);
 protected virtual void SerializeNetworkState(ITreeAttribute tree, object? state);
@@ -130,7 +130,7 @@ public HashSet<BlockPos> Nodes { get; }                 // every position in thi
 public BlockPos? RootPos { get; set; }                  // for root-anchored networks; else null
 public object? State { get; protected set; }            // your typed state object
 
-public virtual void RestoreState(object? state);        // injected on world load — cast to your type
+public virtual void RestoreState(object? state);        // injected on world load - cast to your type
 public void BroadcastUpdate(IBlockAccessor world);      // push State to every node's OnNetworkUpdate
 
 public virtual bool CanMerge(BlockNetwork other, IBlockAccessor world);   // veto a merge (default: allow)
@@ -138,7 +138,7 @@ public abstract void OnMerge(BlockNetwork other, IBlockAccessor world);   // com
 public abstract void OnSplitFragment(BlockNetwork original, IBlockAccessor world);  // split state after fracture
 public abstract void OnTick(IBlockAccessor world, float dt, BlockNetworkModSystem manager);  // per-tick sim
 public virtual void InheritStateFrom(BlockNetwork source);   // preserve state across rebuilds
-public virtual void OnTopologyChanged();                // Nodes changed — drop caches here
+public virtual void OnTopologyChanged();                // Nodes changed - drop caches here
 
 protected virtual void OnBeforeBroadcast(IBlockAccessor world);  // update derived state before broadcast
 protected virtual object? GetStatePayload();            // the object actually sent in a broadcast
@@ -146,12 +146,12 @@ protected virtual object? GetStatePayload();            // the object actually s
 
 The contract you must satisfy when state is conserved (fluid, gas, charge):
 
-- **`OnMerge`** — fold `other`'s state into this network (sum volumes, average temperature…).
-- **`OnSplitFragment`** — when a fracture produces a new fragment, distribute the original's
+- **`OnMerge`** - fold `other`'s state into this network (sum volumes, average temperature...).
+- **`OnSplitFragment`** - when a fracture produces a new fragment, distribute the original's
   state into it (usually proportional to node count). Clamp to physical ceilings: over-pressure
   is legitimate up to a burst limit, so cap at the burst ceiling, not at nominal capacity, or
   every re-walk dumps the run.
-- **`OnTopologyChanged`** — invalidate any cached aggregates after the node set changes.
+- **`OnTopologyChanged`** - invalidate any cached aggregates after the node set changes.
 
 ## Manager API (`BlockNetworkModSystem`)
 
@@ -177,7 +177,7 @@ public static bool IsCompatibleNetworkBlockAt(IBlockAccessor world, BlockPos pos
 
 `BlockEntityNetworkNode` calls `AddNode`/`RemoveNode` for you. **A block entity that is *not* a
 `BlockEntityNetworkNode`** (e.g. a multiblock structure that also acts as a node) must call
-`AddNode`/`RemoveNode` itself — only the dedicated base does it automatically.
+`AddNode`/`RemoveNode` itself - only the dedicated base does it automatically.
 
 ## Connectors vs. nodes
 
@@ -204,7 +204,7 @@ public interface INetworkConnector       // implemented by the BLOCK (anything a
 ```
 
 A **node** is a full graph participant. A **connector** is anything a pipe will connect to,
-including fixed machine ports that are *not* nodes — a boiler's steam outlet, an engine's intake.
+including fixed machine ports that are *not* nodes - a boiler's steam outlet, an engine's intake.
 Such ports read/write the network in the cell on the **far side** of their connector face; see
 [Production Machines](Production-Machines) for the `MachinePorts` helpers that do exactly that.
 
@@ -212,11 +212,11 @@ Such ports read/write the network in the cell on the **far side** of their conne
 
 `NetworkHighlightModSystem` renders every live network in its own transparent colour, toggled
 per player with `.exmod network hi` / `.exmod network unhi`. The graph is server-only, so this is
-a client→server request plus server-side `HighlightBlocks`, polled every 250 ms for live updates.
+a client->server request plus server-side `HighlightBlocks`, polled every 250 ms for live updates.
 See [Commands](Commands).
 
 ## Related pages
 
-- [Production Machines](Production-Machines) — fixed machines that tap a network through a port.
-- [Multiblock Structures](Multiblock-Structures) — big machines that are also nodes.
-- [Testing Harness](Testing-Harness) — `StubNetwork` / `TestNetworkBlock` exercise the graph headlessly.
+- [Production Machines](Production-Machines) - fixed machines that tap a network through a port.
+- [Multiblock Structures](Multiblock-Structures) - big machines that are also nodes.
+- [Testing Harness](Testing-Harness) - `StubNetwork` / `TestNetworkBlock` exercise the graph headlessly.

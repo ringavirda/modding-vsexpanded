@@ -178,8 +178,14 @@ public class PipeNetwork : BlockNetwork
   )
   {
     State ??= new PipeNetworkState();
-    // A run already carrying water rejects gas - one medium per network.
-    if (!PipeNetworkState.MediaCompatible(State.MediumType, gasType))
+    // A run already carrying water rejects gas - one medium per network. But a physically empty
+    // run (Volume <= 0) only keeps its old medium label as a display ghost during the brief
+    // empty-clear delay (see OnTick); a new medium must be free to re-claim those empty pipes
+    // rather than being latched out until the label clears.
+    if (
+      State.Volume > 0f
+      && !PipeNetworkState.MediaCompatible(State.MediumType, gasType)
+    )
       return false;
     State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
 
@@ -314,8 +320,14 @@ public class PipeNetwork : BlockNetwork
   )
   {
     State ??= new PipeNetworkState();
-    // A run already carrying gas rejects water - one medium per network.
-    if (!PipeNetworkState.MediaCompatible(State.MediumType, "Water"))
+    // A run already carrying gas rejects water - one medium per network. A physically empty run
+    // (Volume <= 0) only keeps its old gas label as a display ghost during the empty-clear delay,
+    // so let water re-claim those empty pipes rather than latching the stale label (mirror of the
+    // guard in TryProduceGas).
+    if (
+      State.Volume > 0f
+      && !PipeNetworkState.MediaCompatible(State.MediumType, "Water")
+    )
       return false;
     State.MaxVolume = Nodes.Count * PpexValues.LitresPerPipe;
     // Record the pump's commanded pressure; it's realised as the run's pressure only once the

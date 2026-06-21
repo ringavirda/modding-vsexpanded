@@ -2,7 +2,7 @@
 
 `ExpandedLib.Testing` (`exlib.testing`) is a headless xUnit harness that loads the **real** Vintage
 Story assemblies and lets you unit- and integration-test network and block-entity logic with plain
-`dotnet test` — no game launch, no rendering, no world save. It fakes the server world with
+`dotnet test` - no game launch, no rendering, no world save. It fakes the server world with
 NSubstitute, runs the real `BlockNetworkModSystem`, and ticks block entities and networks in
 process.
 
@@ -11,16 +11,16 @@ every public type and signature.
 
 ## What it gives you
 
-- `TestWorld` — an in-memory block/BE store with a live network manager and faked
+- `TestWorld` - an in-memory block/BE store with a live network manager and faked
   `IServerWorldAccessor` / `IBlockAccessor` / `ICoreServerAPI`.
-- `Scene` + `SceneDiagram` — a fluent builder and an ASCII-layout parser, so multi-network setups
+- `Scene` + `SceneDiagram` - a fluent builder and an ASCII-layout parser, so multi-network setups
   read like diagrams.
-- `VsAssemblyResolver` — resolves the game DLLs at runtime from your install or the in-repo
+- `VsAssemblyResolver` - resolves the game DLLs at runtime from your install or the in-repo
   `.game/<slug>` folder.
-- `TestLang` — a minimal `Lang` so production code can call `Lang.Get()`.
+- `TestLang` - a minimal `Lang` so production code can call `Lang.Get()`.
 - Test doubles (`StubNetwork`, `TestNetworkBlock`, `CapturingNode`, `SeverableNode`) for exercising
   the graph without real gameplay state.
-- `ReflectionHelpers` / `TestBlocks` — prime private fields and configure bare blocks without the
+- `ReflectionHelpers` / `TestBlocks` - prime private fields and configure bare blocks without the
   asset pipeline.
 
 ## Setting up a test project
@@ -63,11 +63,11 @@ Reference the harness, xUnit, the test SDK and NSubstitute, plus the game API DL
 The harness is a developer library, not a NuGet package and not a game mod. Two ways to use it
 from a separate mod repo:
 
-**A — Reference from source (recommended if you might tweak it).** Add `ExpandedLib.Testing` (and
+**A - Reference from source (recommended if you might tweak it).** Add `ExpandedLib.Testing` (and
 `ExpandedLib`) as a git submodule or sibling checkout and `ProjectReference` the `.csproj`s, exactly
 as above. You track upstream changes and can debug into the harness.
 
-**B — The release bundle.** Each [GitHub release](https://github.com/ringavirda/modding-vsexpanded/releases)
+**B - The release bundle.** Each [GitHub release](https://github.com/ringavirda/modding-vsexpanded/releases)
 ships `exlib-testing_<version>.zip` (versioned in lockstep with exlib) containing
 `ExpandedLib.Testing.dll` + `exlib.dll` (built for the current game version, 1.22 / net10.0). Drop
 both into your repo and reference them with copy-local off, supplying the rest yourself:
@@ -92,17 +92,17 @@ both into your repo and reference them with copy-local off, supplying the rest y
 </ItemGroup>
 ```
 
-The bundle deliberately omits the game assemblies (proprietary — you provide them) and `NSubstitute`
+The bundle deliberately omits the game assemblies (proprietary - you provide them) and `NSubstitute`
 (pull it from NuGet so its own transitive deps resolve). The module initializer below is required
 either way.
 
-> Only the current game version is bundled. To target 1.20 / 1.21 test runs, use option **A** —
+> Only the current game version is bundled. To target 1.20 / 1.21 test runs, use option **A** -
 > the harness multi-targets `net8.0`/`net7.0` from source under `-p:Legacy=true`.
 
 ## The required module initializer
 
 The game assemblies must be resolvable **before any test type is instantiated**, and `Lang.Get`
-must work. Do both from a `[ModuleInitializer]` — it fires before the runner discovers test types:
+must work. Do both from a `[ModuleInitializer]` - it fires before the runner discovers test types:
 
 ```csharp
 using System.Runtime.CompilerServices;
@@ -195,10 +195,10 @@ Assert.Equal(300f, water, 3);
 - **Legacy targets.** The harness multi-targets `net8.0`/`net7.0` under `-p:Legacy=true` and
   branches on `#if GAME_GE_1_22` for the tick-listener signature change, so the same tests run on
   1.20/1.21 too.
-- **Burst/realism.** Some behaviours (e.g. pipe burst) need a real concrete block, not a stub —
+- **Burst/realism.** Some behaviours (e.g. pipe burst) need a real concrete block, not a stub -
   the doubles are for graph topology, your own network/node types bring the gameplay semantics.
 
 ## Related pages
 
-- [Testing API Reference](Testing-API-Reference) — every public type and signature.
-- [Block Networks](Block-Networks) — the system under test.
+- [Testing API Reference](Testing-API-Reference) - every public type and signature.
+- [Block Networks](Block-Networks) - the system under test.

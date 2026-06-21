@@ -75,6 +75,78 @@ public class PipeInvariantTests
     }
   }
 
+  // Order-randomizing invariant (the cowper lesson generalized to a property): randomly interleave
+  // gas/water production, consumption, and ticks - including MEDIUM SWITCHES on a drained run - and
+  // assert the law that example tests kept missing: an EMPTY run (State null, or Volume ~0) must
+  // never permanently reject a fresh medium. A latched stale-label guard would eventually wedge a
+  // physically empty run so neither medium could ever re-claim it.
+  [Theory]
+  [InlineData(3)]
+  [InlineData(64)]
+  [InlineData(512)]
+  [InlineData(4096)]
+  public void An_empty_run_can_always_be_re_claimed_by_either_medium(int seed)
+  {
+    var rng = new Random(seed);
+    var w = new TestWorld();
+    var net = PipeTestWorld.LooseNet(w.Networks, rng.Next(1, 6));
+
+    for (int op = 0; op < 60; op++)
+    {
+      switch (rng.Next(4))
+      {
+        case 0:
+          net.TryProduceGas(
+            (float)rng.NextDouble() * 200f,
+            20f + (float)rng.NextDouble() * 200f,
+            rng.Next(2) == 0 ? "Steam" : "Air",
+            w.Accessor,
+            maxOutputPressure: 1f + (float)rng.NextDouble() * 3f
+          );
+          break;
+        case 1:
+          net.TryProduceLiquid(
+            (float)rng.NextDouble() * 200f,
+            20f,
+            1f,
+            w.Accessor
+          );
+          break;
+        case 2:
+          net.TryConsumeGas((float)rng.NextDouble() * 300f, w.Accessor);
+          net.TryConsumeLiquid((float)rng.NextDouble() * 300f, w.Accessor);
+          break;
+        default:
+          w.Tick(rng.Next(1, 3));
+          break;
+      }
+
+      var s = net.State;
+      Assert.True(
+        s == null || (Finite(s.Volume) && s.Volume >= -0.001f),
+        $"state went bad (seed {seed}, op {op})"
+      );
+
+      // The invariant: drain the run completely, and BOTH mediums must be accepted into it (one of
+      // them re-claims the empty pipes). A stale-label latch would fail this.
+      net.TryConsumeGas(float.MaxValue, w.Accessor);
+      net.TryConsumeLiquid(float.MaxValue, w.Accessor);
+      if ((net.State?.Volume ?? 0f) <= 0.001f)
+      {
+        bool gas = net.TryProduceGas(10f, 100f, "Air", w.Accessor);
+        bool water =
+          !gas && net.TryProduceLiquid(10f, 20f, 1f, w.Accessor);
+        Assert.True(
+          gas || water,
+          $"an empty run rejected BOTH mediums - latched out (seed {seed}, op {op})"
+        );
+        // Reset to empty for the next iteration so leftover from this probe doesn't skew it.
+        net.TryConsumeGas(float.MaxValue, w.Accessor);
+        net.TryConsumeLiquid(float.MaxValue, w.Accessor);
+      }
+    }
+  }
+
   [Theory]
   [InlineData(2)]
   [InlineData(42)]

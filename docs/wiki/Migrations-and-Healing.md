@@ -2,14 +2,14 @@
 
 Two server-side `ModSystem`s in `exlib` keep old saves working when your blocks change: a
 **migrator** that rewrites renamed/removed block codes, and a **healer** that recreates block
-entities that were lost while their block survived. Both are auto-discovered — you implement an
+entities that were lost while their block survived. Both are auto-discovered - you implement an
 interface (or just let the healer run) and exlib does the chunk sweeping.
 
 ## Block migrations
 
 `BlockMigrationModSystem` collects every `IBlockCodeMigration` and `IBlockRemoval` implementation
 (public parameterless constructor, auto-discovered) into one table and applies it as chunk columns
-load — and rewrites matching stacks in containers and player inventories too. Because it matches on
+load - and rewrites matching stacks in containers and player inventories too. Because it matches on
 `Block.Code`, both renumbered ids and missing-block placeholders are handled.
 
 ### Rename / re-variant a block
@@ -30,7 +30,7 @@ public class PipeRenameMigration : IBlockCodeMigration
     public IEnumerable<(AssetLocation, AssetLocation)> GetRemaps(ICoreServerAPI api)
     {
         yield return (new("ppex:pipe-iron-ns"), new("ppex:pipe-straight-iron-ns"));
-        // Return the full set unconditionally — pairs whose old or new code is absent in this
+        // Return the full set unconditionally - pairs whose old or new code is absent in this
         // world are skipped, so a superset is safe.
     }
 }
@@ -50,7 +50,7 @@ public interface IBlockEntityMigration
 }
 ```
 
-Mutate `newBlockEntity` directly — it is marked dirty for you. `oldState` is `null` if the old
+Mutate `newBlockEntity` directly - it is marked dirty for you. `oldState` is `null` if the old
 block had no BE.
 
 ### Remove a block entirely
@@ -64,7 +64,7 @@ public interface IBlockRemoval
 ```
 
 Removals delete the block in place **and** strip matching items from containers and player
-inventories. You can read config to decide what to purge — the table is built once at startup.
+inventories. You can read config to decide what to purge - the table is built once at startup.
 
 ## Block-entity healing
 
@@ -86,11 +86,11 @@ also exposed through the **`/exmod heal`** command for a manual pass. Its scope 
 types carrying `[BlockEntityRegister]`, so it never touches vanilla or foreign BEs. Recreated BEs
 start from default state; multiblock anchors re-detect their structure on the next monitor tick.
 
-> You get healing for free for any `[BlockEntityRegister]` block — no interface to implement. The
+> You get healing for free for any `[BlockEntityRegister]` block - no interface to implement. The
 > only thing to be aware of is that a healed BE starts empty, so anything you can't reconstruct
 > from the block alone (an inventory) is lost; healing restores *function*, not prior contents.
 
 ## Related pages
 
-- [Registries](Registries) — `[BlockEntityRegister]` is what scopes the healer.
-- [Commands](Commands) — `/exmod heal`.
+- [Registries](Registries) - `[BlockEntityRegister]` is what scopes the healer.
+- [Commands](Commands) - `/exmod heal`.

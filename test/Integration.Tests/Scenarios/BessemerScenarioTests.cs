@@ -53,6 +53,38 @@ public class BessemerScenarioTests
     Assert.Equal("game:ingot-steel", rig.Output.CellMetalType);
   }
 
+  // Re-use regression (the cowper lesson generalized): a converter is RE-USED for many heats. Every
+  // other test runs a single charge→refine→pour from a fresh rig, so none crosses the second-heat
+  // path - where leftover steel from the first heat could latch the type-mismatch guard and refuse a
+  // fresh iron charge. A finished, poured converter must accept and refine a brand-new iron charge.
+  [Fact]
+  public void A_second_iron_heat_can_be_charged_and_refined_after_pouring_the_first()
+  {
+    var rig = new ConverterRig();
+
+    // First heat: iron → steel → poured out, emptying the vessel.
+    rig.PourIronToInput(50);
+    rig.Fill();
+    rig.FastForwardToAlmostDone();
+    rig.ChargeBlast(3f);
+    rig.Refine();
+    Assert.Equal("game:ingot-steel", rig.ContentCode);
+    rig.Pour();
+    Assert.Equal(0, rig.ContentUnits); // vessel emptied - no leftover steel
+
+    // Second heat: a fresh iron charge must fill (the emptied vessel claims iron cleanly, no stale
+    // steel type-mismatch) and refine to steel again.
+    rig.PourIronToInput(50);
+    rig.Fill();
+    Assert.Equal(50, rig.ContentUnits);
+    Assert.Equal("game:ingot-iron", rig.ContentCode);
+
+    rig.FastForwardToAlmostDone();
+    rig.ChargeBlast(3f);
+    rig.Refine();
+    Assert.Equal("game:ingot-steel", rig.ContentCode);
+  }
+
   #endregion
 
   #region Blast dependency

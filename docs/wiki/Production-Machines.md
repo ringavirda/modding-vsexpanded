@@ -2,7 +2,7 @@
 
 `Blocks/Machines/` gives any block entity a clean periodic-work lifecycle, plus helpers for
 reading and feeding [block networks](Block-Networks) through connector faces. This is **not**
-multiblock-only — engines, sub-machines, furnaces and converters all build on it.
+multiblock-only - engines, sub-machines, furnaces and converters all build on it.
 
 ## `BlockEntityProductionMachine`
 
@@ -51,7 +51,7 @@ The tick is stopped automatically in `OnBlockRemoved` and `OnBlockUnloaded`.
 
 ## Machine ports
 
-A fixed machine is usually **not** a network node — it's a `INetworkConnector` whose outlet/intake
+A fixed machine is usually **not** a network node - it's a `INetworkConnector` whose outlet/intake
 face touches a pipe. The network it interacts with lives in the cell on the **far side** of that
 face. `MachinePorts` are extension methods that resolve it:
 
@@ -79,11 +79,11 @@ neighbour across `connectorFace` actually exposes a matching connector back. The
 are exposed as `protected` methods directly on `BlockEntityProductionMachine` for convenience.
 
 > Air blower, engine, boiler outlet and converter intake are all `INetworkConnector` ports, not
-> nodes — they read/write the network in the adjacent cell rather than being part of the graph.
+> nodes - they read/write the network in the adjacent cell rather than being part of the graph.
 
 ## `GraceTimer`
 
-A reusable "hold a condition for N seconds, then fire once" accumulator — hysteresis for
+A reusable "hold a condition for N seconds, then fire once" accumulator - hysteresis for
 over-pressure, choke, burst grace and similar one-shot thresholds.
 
 ```csharp
@@ -115,5 +115,5 @@ Persist it with `ToTree`/`FromTree` so a near-burst boiler doesn't reset its gra
 
 ## Related pages
 
-- [Block Networks](Block-Networks) — what `ConnectedNetwork<TNet>` returns.
-- [Multiblock Structures](Multiblock-Structures) — `BlockEntityMultiblockStructure` extends this base.
+- [Block Networks](Block-Networks) - what `ConnectedNetwork<TNet>` returns.
+- [Multiblock Structures](Multiblock-Structures) - `BlockEntityMultiblockStructure` extends this base.

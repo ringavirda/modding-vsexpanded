@@ -296,6 +296,61 @@ public class MoltenCanalMetalApiTests
 
   #endregion
 
+  #region Re-use: refill after chiselling out a plug
+
+  // The cowper lesson generalized to the canal: a cell's life cycle is pour → harden → chisel out →
+  // pour again. Every other test stops at one of those steps; none crosses chisel→refill, where a
+  // stale Solidified latch or leftover temperature from the first plug could poison the refill.
+  [Fact]
+  public void A_chiselled_out_cell_accepts_a_fresh_pour_and_rejoins_the_run()
+  {
+    var world = NewWorld();
+    var be = Canal(world);
+
+    // Pour iron in cold, let it harden, then chisel it out (the solidify→chisel half of the cycle).
+    be.PushMetal(20, Metal(world, Iron, 300f), world.World);
+    UpdateThermal(be, world);
+    Assert.True(be.Solidified);
+    Assert.True(be.IsConnectionBroken()); // a hardened plug severs the run
+
+    Assert.NotNull(be.ClearSolidified());
+    Assert.False(be.Solidified);
+    Assert.True(be.IsCellEmpty);
+
+    // Refill the chiselled cell: it must accept fresh molten metal at the NEW pour's temperature
+    // (no blend with the cleared plug's residue) and rejoin the network.
+    int accepted = be.PushMetal(20, Metal(world, Iron, 1450f), world.World);
+
+    Assert.Equal(20, accepted);
+    Assert.Equal(1450f, be.CellTemperature, 0); // fresh temperature, not blended with the old plug
+    Assert.False(be.IsConnectionBroken()); // connectivity restored
+    Assert.True(be.HasMoltenMetal);
+  }
+
+  // A chiselled cell may even be repurposed for a DIFFERENT metal - the type guard keys off the live
+  // cell content, which the chisel cleared, so the old type must not linger and reject the new pour.
+  [Fact]
+  public void A_chiselled_out_cell_accepts_a_different_metal()
+  {
+    var world = NewWorld();
+    var be = Canal(world);
+
+    be.PushMetal(20, Metal(world, Iron, 300f), world.World);
+    UpdateThermal(be, world);
+    be.ClearSolidified();
+
+    int accepted = be.PushMetal(
+      20,
+      Metal(world, "game:ingot-copper", 1200f),
+      world.World
+    );
+
+    Assert.Equal(20, accepted);
+    Assert.Equal("game:ingot-copper", be.CellMetalType);
+  }
+
+  #endregion
+
   #region EnsureMetalStack (post-load rebuild)
 
   [Fact]

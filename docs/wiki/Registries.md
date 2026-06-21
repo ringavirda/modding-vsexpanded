@@ -2,7 +2,7 @@
 
 exlib registration is **attribute-driven**: tag a class, and a single `RegisterAll` call in your
 `ModSystem` finds and registers every tagged class by reflection. No hand-maintained lists. There
-are four registry families — entities, commands, preferences, and [config](Config-System) — plus
+are four registry families - entities, commands, preferences, and [config](Config-System) - plus
 [recipe profiles](Recipe-Costs). This page covers entities, commands and preferences.
 
 The reflection scan tolerates partial load failures (`ReflectionScan.GetCandidateTypes`), so one
@@ -64,7 +64,7 @@ public override void Start(ICoreAPI api)
 ```
 
 > Marking a registered block `partial` lets the [attribute generator](Source-Generators) surface
-> its JSON `attributes` as typed members — see that page.
+> its JSON `attributes` as typed members - see that page.
 
 ## Command registration
 
@@ -190,6 +190,6 @@ public override void StartClientSide(ICoreClientAPI api)
 
 ## Related pages
 
-- [Config System](Config-System) — `[ExConfigRegister]` and the generated value accessor.
-- [Source Generators](Source-Generators) — what `partial` blocks and config classes generate.
-- [Commands](Commands) — the shared `/exmod` root.
+- [Config System](Config-System) - `[ExConfigRegister]` and the generated value accessor.
+- [Source Generators](Source-Generators) - what `partial` blocks and config classes generate.
+- [Commands](Commands) - the shared `/exmod` root.

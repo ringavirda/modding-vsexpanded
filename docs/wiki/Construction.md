@@ -8,7 +8,7 @@ their build materials.
 
 Per-block construction state and logic. On **1.22** it is a thin subclass of vanilla
 `BEBehaviorRightClickConstructable`; on **1.20 / 1.21** it is a full reimplementation. Either way
-you register it under the behaviour name `"ExRightClickConstructable"` (no mod prefix — exlib owns
+you register it under the behaviour name `"ExRightClickConstructable"` (no mod prefix - exlib owns
 that JSON name on all versions), so your block JSON is version-agnostic.
 
 ```jsonc
@@ -30,11 +30,11 @@ public static WorldInteraction[] AppendConstructionHelp(IWorldAccessor world, Bl
 ```
 
 `GetConstructionDrops(ratio, rand)` returns the materials this block would scatter at the given
-fraction of consumed stacks, summed across **every completed stage** — use it to salvage a
+fraction of consumed stacks, summed across **every completed stage** - use it to salvage a
 partially built or finished construction when it is broken.
 
 > **Rendering caveat.** The RCC behaviour draws no mesh of its own. A constructable block needs a
-> companion animator with an always-on idle animation to be visible — without it the block is
+> companion animator with an always-on idle animation to be visible - without it the block is
 > invisible mid-construction.
 
 > **Wildcard ingredients.** Stages with wildcard `requireStacks` ingredients must set
@@ -66,10 +66,10 @@ Then in your block's `OnBlockBroken`, scatter `GetConstructionDrops(ratio, rand)
 > materials from its own `OnBlockBroken`, and `Block.GetDrops` returns nothing. A custom salvage
 > ratio for, say, a burst boiler needs to call back into the protected `rcc.GetDrops(ratio, rand)`
 > via reflection. Note also that a mega-block's frame self-drop is controlled by overriding
-> `GetDrops` to return `[]` on the controller — JSON `drops: []` is **not** honoured for variant
+> `GetDrops` to return `[]` on the controller - JSON `drops: []` is **not** honoured for variant
 > blocks.
 
 ## Related pages
 
-- [Config System](Config-System) — back the salvage ratio with a live-editable value.
-- [Recipe Costs](Recipe-Costs) — RCC stage costs are also adjustable per cost profile.
+- [Config System](Config-System) - back the salvage ratio with a live-editable value.
+- [Recipe Costs](Recipe-Costs) - RCC stage costs are also adjustable per cost profile.

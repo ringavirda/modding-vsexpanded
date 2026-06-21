@@ -4,7 +4,7 @@ A grab-bag of static helpers in `Helpers/` and a renderer base in `Renderers/`, 
 family so you don't rebuild rotation math, particle/sound catalogues, inventory counting or fluid
 surfaces inline. Everything here is reusable from a consuming mod.
 
-## `ExOrientation` — rotation math
+## `ExOrientation` - rotation math
 
 Single source of truth for horizontal rotation. Use these instead of hand-rolled angle switches.
 
@@ -24,13 +24,13 @@ public static class ExOrientation
 }
 ```
 
-`WorldPosFromAttr` is the canonical "JSON offset → world position": `origin + RotateOffset(ReadOffset(node), angle)`.
+`WorldPosFromAttr` is the canonical "JSON offset -> world position": `origin + RotateOffset(ReadOffset(node), angle)`.
 `RotateBoxes` returns copies (unchanged for angle 0), so cache the result rather than recomputing
 each frame. `AllowedOrientations`-style lookups should likewise be cached props.
 
-## `ExParticles` — particle catalogue
+## `ExParticles` - particle catalogue
 
-Named colour presets plus a configurable core and high-level effect helpers — don't build
+Named colour presets plus a configurable core and high-level effect helpers - don't build
 `SimpleParticleProperties` inline.
 
 ```csharp
@@ -65,7 +65,7 @@ public static class ExParticles
 }
 ```
 
-## `ExSounds` — sound catalogue
+## `ExSounds` - sound catalogue
 
 `AssetLocation` constants for every sound the family reuses (many repurposed vanilla sounds), plus
 play helpers with the side-gating done right.
@@ -93,7 +93,7 @@ public static class ExSounds
 `Play*` (server) vs `PlayLocal`/`PlayLoop` (no side gate, client-safe) is the distinction to get
 right; `CreateLoop` returns the `ILoadedSound` for you to start/stop/dispose.
 
-## `ExInventory` — counting & consuming items
+## `ExInventory` - counting & consuming items
 
 ```csharp
 public static class ExInventory
@@ -106,7 +106,7 @@ public static class ExInventory
 ```
 
 `Take`/`TakeHotbar` remove up to `quantity` matching items and return how many were actually taken
-— useful for machine build/operation costs.
+- useful for machine build/operation costs.
 
 ## `ExItems`, `ExCreativeTabs`, `ExBlockNames`
 
@@ -127,7 +127,7 @@ public static class ExBlockNames
 }
 ```
 
-## `ExContentGate` — disabling content
+## `ExContentGate` - disabling content
 
 Config-gated "turn this content off": hide collectibles from creative + handbook and strip their
 recipes. Each method returns how many it affected.
@@ -145,10 +145,10 @@ Clearing a block's creative tabs and stacks also removes it from the handbook, s
 `HideFromCreativeAndHandbook` does both. Pair it with a config toggle for "disable X" features
 (e.g. `smex` tool-mold gating behind `/exmod molds`).
 
-## `SurfaceRenderer` — flat fluid surfaces
+## `SurfaceRenderer` - flat fluid surfaces
 
 `Renderers/SurfaceRenderer` is an `IRenderer` base for drawing a flat, textured horizontal surface
-(a liquid line) inside a block — water tanks, molten canals. It owns the quad geometry built from
+(a liquid line) inside a block - water tanks, molten canals. It owns the quad geometry built from
 footprint boxes and the standard-shader plumbing; subclasses supply tint, height and texture.
 
 ```csharp
@@ -184,5 +184,5 @@ mesh per box and lets `SelectMeshIndex` pick the cross-section by fill level.
 
 ## Related pages
 
-- [Multiblock Structures](Multiblock-Structures) — `ExOrientation` drives `SetStructureAngle`.
-- [Config System](Config-System) — back `ExContentGate` toggles with a live config value.
+- [Multiblock Structures](Multiblock-Structures) - `ExOrientation` drives `SetStructureAngle`.
+- [Config System](Config-System) - back `ExContentGate` toggles with a live config value.

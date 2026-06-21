@@ -40,13 +40,13 @@ plain `ProjectReference`:
 </ItemGroup>
 ```
 
-If you build your mod outside this repo, reference the shipped `ExpandedLib.dll` (the same DLL
-players install) with `<Private>false</Private>` so you don't bundle a second copy.
+If you build your mod outside this repo, reference the shipped `exlib.dll` (the same DLL players
+install) with `<Private>false</Private>` so you don't bundle a second copy.
 
 > **One library identity.** In this monorepo only **one** mod assembly physically contains
 > `ExpandedLib` (it is compiled into `ppex.dll`), and the other mods project-reference it so the
 > network-manager and registries are a single identity at runtime. If you ship your own mod
-> separately you simply depend on the installed `exlib` mod — there is exactly one `exlib` in a
+> separately you simply depend on the installed `exlib` mod - there is exactly one `exlib` in a
 > running game.
 
 ## 3. Register your content
@@ -80,13 +80,13 @@ public class YourModSystem : ModSystem
 
 Because blocks are singletons, marking the class `partial` lets the
 **[attribute source generator](Source-Generators)** surface the block's JSON `attributes` as
-typed C# members on the same class — no `Attributes["..."].AsFloat()` boilerplate.
+typed C# members on the same class - no `Attributes["..."].AsFloat()` boilerplate.
 
 See **[Registries](Registries)** for every attribute and the full registration story.
 
 ## 4. Pick the system you need
 
-| You want to… | Read |
+| You want to... | Read |
 | --- | --- |
 | Build pipes / wires / canals (anything that connects into a network) | [Block Networks](Block-Networks) |
 | Build a multi-cell machine (furnace, boiler) with completion + build outline | [Multiblock Structures](Multiblock-Structures) |
