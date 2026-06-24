@@ -3,8 +3,8 @@ using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using PipesAndPowerExpanded.Tests;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using SteelmakingExpanded.BlockStructures.BlastFurnace;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.BlastFurnace;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -41,7 +41,7 @@ internal sealed class BlastFurnaceRig
       Pos = _pos,
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacedoor-north",
+        "iwex:blastfurnacedoor-north",
         1,
         ("side", "north")
       ),
@@ -78,7 +78,7 @@ internal sealed class BlastFurnaceRig
     var inv = new InventoryGeneric(1, "coalpile", "test", World.Api, null);
     var blastmix = new Item
     {
-      Code = new AssetLocation("smex", "blastmix"),
+      Code = new AssetLocation("iwex", "blastmix"),
       ItemId = 4242,
     };
     inv[0].Itemstack = new ItemStack(blastmix, units);
@@ -131,7 +131,7 @@ internal sealed class BlastFurnaceRig
       Pos = tapPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacetap-north",
+        "iwex:blastfurnacetap-north",
         30,
         ("side", "north")
       ),

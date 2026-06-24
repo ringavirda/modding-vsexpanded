@@ -1,7 +1,7 @@
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -32,7 +32,7 @@ public class BlastFurnaceTapTests
       Pos = new BlockPos(0, 12, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacetap-north",
+        "iwex:blastfurnacetap-north",
         1,
         ("side", "north")
       ),

@@ -65,13 +65,9 @@ public class SmexConfig : IExVersionedConfig
   // IronworkingExpanded.IwexConfig / IwexValues. The bessemer charge cooldown still reads the base
   // IwexValues.MoltenCooldownSpeed and scales it by BessemerCooldownCoefficient below.
 
-  #region Blastmix
-  /// <summary>Blast-mix units that must be loaded into the hearth before the furnace can fire.</summary>
-  public int BlastMixRequiredToFire { get; set; } = 320;
-
-  /// <summary>Burn time (seconds) granted by a blast-mix charge burning in a coal pile.</summary>
-  public int BlastmixBurnTime { get; set; } = 300;
-  #endregion
+  // The blast-mix / blast-furnace / hopper tunables (BlastMixRequiredToFire, BlastmixBurnTime, all
+  // Bf*, TuyereIntakeVolume, all Hopper*) moved to the foundational iwex mod along with the blast
+  // furnace subsystem itself - see IronworkingExpanded.IwexConfig / IwexValues.
 
   #region Bessemer converter
   /// <summary>Seconds the pour/fill lever must be held before the converter commits the action.</summary>
@@ -122,47 +118,6 @@ public class SmexConfig : IExVersionedConfig
   public float CowperIntakeVolume { get; set; } = 24f;
   #endregion
 
-  #region Blast furnace
-  /// <summary>Maximum hearth temperature (°C) without a hot-blast boost.</summary>
-  public float BfNaturalMaxTemp { get; set; } = 1420f;
-
-  /// <summary>Maximum hearth temperature (°C) when fed hot blast above the boost threshold.</summary>
-  public float BfBoostedMaxTemp { get; set; } = 1740f;
-
-  /// <summary>Hot-blast temperature (°C) at or above which the furnace reaches its boosted max temp.</summary>
-  public float BfBlastBoostThreshold { get; set; } = 800f;
-
-  /// <summary>Temperature (°C) the hearth must reach (and hold) to start melting iron.</summary>
-  public float BfIronMeltingPoint { get; set; } = 1482f;
-
-  /// <summary>Maximum molten iron (units) the furnace can hold before stalling.</summary>
-  public float BfMaxMoltenIron { get; set; } = 2400f;
-
-  /// <summary>Maximum molten slag (units) the furnace can hold before stalling.</summary>
-  public float BfMaxMoltenSlag { get; set; } = 600f;
-
-  /// <summary>Seconds a fired furnace burns before it extinguishes.</summary>
-  public int BfMaxFuelBurnTime { get; set; } = 1200;
-
-  /// <summary>Seconds above the melting point before the furnace transitions to the melting phase.</summary>
-  public float BfMeltStartDelay { get; set; } = 300f;
-
-  /// <summary>Seconds between melt cycles while melting.</summary>
-  public float BfMeltIntervalSec { get; set; } = 10f;
-
-  /// <summary>Molten iron (units) produced per melt cycle.</summary>
-  public float BfIronPerMeltCycle { get; set; } = 60f;
-
-  /// <summary>Molten slag (units) produced per melt cycle.</summary>
-  public float BfSlagPerMeltCycle { get; set; } = 10f;
-
-  /// <summary>Blast-mix consumed per melt cycle.</summary>
-  public int BfBlastMixPerMeltCycle { get; set; } = 16;
-
-  /// <summary>Air/blast (L/s) the blast furnace draws through each tuyere.</summary>
-  public float TuyereIntakeVolume { get; set; } = 12f;
-  #endregion
-
   #region Bessemer converter
   /// <summary>Molten-metal capacity (units) of the converter vessel.</summary>
   public int BessemerConverterCapacity { get; set; } = 1200;
@@ -194,26 +149,6 @@ public class SmexConfig : IExVersionedConfig
   /// <summary>Fraction (0..1) of the converter's construction materials recovered when its vessel is
   /// broken - the right-click-construction salvage ratio. Player-tunable; applied live on the next break.</summary>
   public float RccBrokenDropsRatio { get; set; } = 0.8f;
-  #endregion
-
-  #region Hopper bell (blast-mix maker)
-  /// <summary>Items the hopper magazine can buffer.</summary>
-  public int HopperMaxMagazineCapacity { get; set; } = 48;
-
-  /// <summary>Iron ore consumed per blast-mix batch.</summary>
-  public int HopperIronOreRequired { get; set; } = 12;
-
-  /// <summary>Coke consumed per blast-mix batch.</summary>
-  public int HopperCokeRequired { get; set; } = 3;
-
-  /// <summary>Lime consumed per blast-mix batch.</summary>
-  public int HopperLimeRequired { get; set; } = 1;
-
-  /// <summary>Blast-mix produced per batch.</summary>
-  public int HopperBlastmixProduced { get; set; } = 16;
-
-  /// <summary>Blast-mix dropped per output pulse.</summary>
-  public int HopperDropAmount { get; set; } = 4;
   #endregion
 
   #region Smoke stack

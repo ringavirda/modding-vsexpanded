@@ -1,6 +1,7 @@
 using ExpandedLib.Testing;
 using SteelmakingExpanded;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -20,7 +21,7 @@ public class BellHopperTests
     var be = new BlockEntityHopperBell
     {
       Pos = pos,
-      Block = TestBlocks.Configure(new Block(), "smex:hopperbell", 90),
+      Block = TestBlocks.Configure(new Block(), "iwex:hopperbell", 90),
     };
     world.Place(pos, be.Block, be);
     world.Attach(be);
@@ -34,7 +35,7 @@ public class BellHopperTests
   {
     var be = new BlockEntityHopperReinforced
     {
-      Block = TestBlocks.Configure(new Block(), "smex:hopperreinforced", 91),
+      Block = TestBlocks.Configure(new Block(), "iwex:hopperreinforced", 91),
     };
     var pos = bellPos.UpCopy();
     world.Place(pos, be.Block, be);
@@ -138,19 +139,19 @@ public class BellHopperTests
       hopper.Inventory,
       0,
       "game:crushed-iron",
-      SmexValues.HopperIronOreRequired
+      IwexValues.HopperIronOreRequired
     );
     Put(
       hopper.Inventory,
       2,
       "game:crushed-coke",
-      SmexValues.HopperCokeRequired
+      IwexValues.HopperCokeRequired
     );
-    Put(hopper.Inventory, 3, "game:lime", SmexValues.HopperLimeRequired);
+    Put(hopper.Inventory, 3, "game:lime", IwexValues.HopperLimeRequired);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 
-    Assert.Equal(SmexValues.HopperBlastmixProduced, bell.BlastMixMagazine);
+    Assert.Equal(IwexValues.HopperBlastmixProduced, bell.BlastMixMagazine);
     Assert.True(hopper.Inventory[0].Empty); // iron consumed
     Assert.True(hopper.Inventory[2].Empty); // coke consumed
     Assert.True(hopper.Inventory[3].Empty); // lime consumed
@@ -169,13 +170,13 @@ public class BellHopperTests
       hopper.Inventory,
       0,
       "game:crushed-iron",
-      SmexValues.HopperIronOreRequired
+      IwexValues.HopperIronOreRequired
     );
     Put(
       hopper.Inventory,
       2,
       "game:crushed-coke",
-      SmexValues.HopperCokeRequired
+      IwexValues.HopperCokeRequired
     );
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
@@ -193,7 +194,7 @@ public class BellHopperTests
     var hopper = HopperAbove(world, bellPos);
 
     // Reclaimed blastmix sitting in an iron slot feeds 1:1 into the magazine.
-    Put(hopper.Inventory, 0, "smex:blastmix", 8);
+    Put(hopper.Inventory, 0, "iwex:blastmix", 8);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 

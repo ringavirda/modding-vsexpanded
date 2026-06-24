@@ -1,6 +1,6 @@
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockStructures.BlastFurnace;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.BlastFurnace;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -31,7 +31,7 @@ public class BlastFurnaceTests
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacedoor-north",
+        "iwex:blastfurnacedoor-north",
         1,
         ("side", "north")
       ),

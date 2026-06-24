@@ -1,0 +1,27 @@
+{
+  "code": "hopperbell",
+  "class": "iwex.BlockHopperBell",
+  "entityclass": "iwex.BlockEntityHopperBell",
+  "behaviors": [{ "name": "Lockable" }],
+  "creativeinventory": {
+    "general": ["*"],
+    "iwex": ["*"]
+  },
+  "blockmaterial": "Metal",
+  "maxstacksize": 1,
+  "lightAbsorption": 0,
+  "shape": { "base": "iwex:blastfurnace/hopper-bell" },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "resistance": 1.75,
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  }
+}

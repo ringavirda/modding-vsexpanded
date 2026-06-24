@@ -5,7 +5,6 @@ using ExpandedLib.Registries.Recipes;
 using HarmonyLib;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
-using SteelmakingExpanded.Compat;
 using SteelmakingExpanded.Molds;
 using SteelmakingExpanded.Patches;
 using Vintagestory.API.Client;
@@ -191,12 +190,10 @@ public class SteelmakingExpandedModSystem : ModSystem
       }
     );
 
-    // Register other mod's iron ore types.
-    IronOreCompat.Init(api);
-
-    // Harmony patches that extend the vanilla tool mold, mold rack and coal pile
-    // (filled-mold handling and blast-mix burn-to-slag) without replacing their
-    // registered classes, so other mods touching those blocks can coexist.
+    // Harmony patches that extend the vanilla tool mold and mold rack (filled-mold handling)
+    // without replacing their registered classes, so other mods touching those blocks can coexist.
+    // (The iron-ore compat registration and the coal-pile blast-mix burn-to-slag patch moved to the
+    // foundational iwex mod along with the blast furnace subsystem.)
     if (!Harmony.HasAnyPatches(Mod.Info.ModID))
     {
       _harmony = new Harmony(Mod.Info.ModID);

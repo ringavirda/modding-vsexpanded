@@ -1,5 +1,5 @@
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
-using SteelmakingExpanded.Compat;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.Compat;
 using Vintagestory.API.Common;
 using Xunit;
 
@@ -60,7 +60,7 @@ public class HopperSlotTests
   {
     var iron = Slot("iron");
     Assert.True(iron.CanTakeFrom(Source("game:crushed-iron")));
-    Assert.True(iron.CanTakeFrom(Source("smex:blastmix")));
+    Assert.True(iron.CanTakeFrom(Source("iwex:blastmix")));
   }
 
   [Fact]
@@ -84,7 +84,7 @@ public class HopperSlotTests
   {
     var lime = Slot("lime");
     Assert.True(lime.CanTakeFrom(Source("game:lime")));
-    Assert.False(lime.CanTakeFrom(Source("smex:blastmix")));
+    Assert.False(lime.CanTakeFrom(Source("iwex:blastmix")));
   }
 
   #endregion

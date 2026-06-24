@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockStructures.BlastFurnace;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded;
+using IronworkingExpanded.BlockStructures.BlastFurnace;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -31,7 +32,7 @@ public class BlastFurnaceLifecycleTests
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacedoor-north",
+        "iwex:blastfurnacedoor-north",
         1,
         ("side", "north")
       ),
@@ -56,7 +57,7 @@ public class BlastFurnaceLifecycleTests
     var inv = new InventoryGeneric(1, "coalpile", "test", world.Api, null);
     var blastmix = new Item
     {
-      Code = new AssetLocation("smex", "blastmix"),
+      Code = new AssetLocation("iwex", "blastmix"),
       ItemId = 4242,
     };
     inv[0].Itemstack = new ItemStack(blastmix, units);
@@ -117,7 +118,7 @@ public class BlastFurnaceLifecycleTests
     ReflectionHelpers.SetField(
       be,
       "_moltenIron",
-      SmexValues.BfMaxMoltenIron - 10f
+      IwexValues.BfMaxMoltenIron - 10f
     );
 
     ReflectionHelpers.Invoke(
@@ -129,7 +130,7 @@ public class BlastFurnaceLifecycleTests
       10f
     );
 
-    Assert.Equal(SmexValues.BfMaxMoltenIron, Iron(be), 1); // capped, not 2450
+    Assert.Equal(IwexValues.BfMaxMoltenIron, Iron(be), 1); // capped, not 2450
   }
 
   [Fact]
@@ -165,13 +166,13 @@ public class BlastFurnaceLifecycleTests
     var pile = BlastmixPile(
       world,
       new BlockPos(0, 13, 0),
-      SmexValues.BlastMixRequiredToFire
+      IwexValues.BlastMixRequiredToFire
     );
 
     object[] args = { Piles((pile.Pos, pile)), false };
     int count = (int)ReflectionHelpers.Invoke(be, "GetBlastMixCount", args)!;
 
-    Assert.Equal(SmexValues.BlastMixRequiredToFire, count);
+    Assert.Equal(IwexValues.BlastMixRequiredToFire, count);
     Assert.True((bool)args[1], "a hearth at the threshold should read as full"); // out isFull
   }
 
@@ -198,7 +199,7 @@ public class BlastFurnaceLifecycleTests
   {
     var world = NewWorld();
     world.Register(
-      TestBlocks.Configure(new Block(), "smex:solidifiediron", 70)
+      TestBlocks.Configure(new Block(), "iwex:solidifiediron", 70)
     );
     var be = Furnace(world); // no hearth piles -> the slag-conversion walk is a no-op
     ReflectionHelpers.SetProperty(
@@ -215,7 +216,7 @@ public class BlastFurnaceLifecycleTests
 
     // A solidified-iron block was left in the hearth for the player to mine out.
     var ironBlock = world.World.GetBlock(
-      new AssetLocation("smex", "solidifiediron")
+      new AssetLocation("iwex", "solidifiediron")
     )!;
     var placedAt = (BlockPos)
       ReflectionHelpers.Invoke(be, "GetGlobalPos", 0, -2, 2)!;

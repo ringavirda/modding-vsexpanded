@@ -1,6 +1,7 @@
 using ExpandedLib.Testing;
 using SteelmakingExpanded;
-using SteelmakingExpanded.BlockStructures.BlastFurnace;
+using IronworkingExpanded;
+using IronworkingExpanded.BlockStructures.BlastFurnace;
 using Vintagestory.API.MathTools;
 using Xunit;
 
@@ -23,13 +24,13 @@ public class BlastFurnaceScenarioTests
     var rig = new BlastFurnaceRig()
       .FeedBlast(950f)
       .SetState(BlastFurnaceState.Firing)
-      .SetTemp(SmexValues.BfNaturalMaxTemp);
+      .SetTemp(IwexValues.BfNaturalMaxTemp);
 
     rig.Tick(30); // hot blast pushes the boosted ceiling well above the melt point
 
     Assert.True(
-      rig.Temp > SmexValues.BfIronMeltingPoint,
-      $"hot blast should drive the furnace past {SmexValues.BfIronMeltingPoint} C, was {rig.Temp}"
+      rig.Temp > IwexValues.BfIronMeltingPoint,
+      $"hot blast should drive the furnace past {IwexValues.BfIronMeltingPoint} C, was {rig.Temp}"
     );
   }
 
@@ -40,7 +41,7 @@ public class BlastFurnaceScenarioTests
       .FeedBlast()
       .SetState(BlastFurnaceState.Firing)
       .SetTemp(1600f)
-      .SetSecondsAboveMelting(SmexValues.BfMeltStartDelay - 1f); // about to cross the soak time
+      .SetSecondsAboveMelting(IwexValues.BfMeltStartDelay - 1f); // about to cross the soak time
 
     rig.Tick(1);
 
@@ -58,7 +59,7 @@ public class BlastFurnaceScenarioTests
       .FeedBlast()
       .SetState(BlastFurnaceState.Melting)
       .SetTemp(1600f)
-      .SetMeltSeconds(SmexValues.BfMeltIntervalSec - 1f); // a melt cycle completes this tick
+      .SetMeltSeconds(IwexValues.BfMeltIntervalSec - 1f); // a melt cycle completes this tick
 
     rig.Tick(1);
 
@@ -98,7 +99,7 @@ public class BlastFurnaceScenarioTests
     // (1420 C), so it cools out of Melting and reverts to Firing once it's been cold long enough.
     var rig = new BlastFurnaceRig()
       .SetState(BlastFurnaceState.Melting)
-      .SetTemp(SmexValues.BfIronMeltingPoint - 2f)
+      .SetTemp(IwexValues.BfIronMeltingPoint - 2f)
       .CutBlast();
     ReflectionHelpers.SetField(rig.Furnace, "_belowMeltingSeconds", 29f);
 
@@ -117,7 +118,7 @@ public class BlastFurnaceScenarioTests
   [Fact]
   public void A_live_config_change_to_the_melt_delay_applies_without_a_reload()
   {
-    float original = SmexValues.BfMeltStartDelay;
+    float original = IwexValues.BfMeltStartDelay;
     try
     {
       var rig = new BlastFurnaceRig()
@@ -125,7 +126,7 @@ public class BlastFurnaceScenarioTests
         .SetState(BlastFurnaceState.Firing);
 
       // Admin shortens the soak time mid-session.
-      SmexValues.Edit(c => c.BfMeltStartDelay = 30f);
+      IwexValues.Edit(c => c.BfMeltStartDelay = 30f);
       rig.Tick(1);
 
       Assert.Equal(
@@ -136,7 +137,7 @@ public class BlastFurnaceScenarioTests
     }
     finally
     {
-      SmexValues.Edit(c => c.BfMeltStartDelay = original);
+      IwexValues.Edit(c => c.BfMeltStartDelay = original);
     }
   }
 

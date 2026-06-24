@@ -12,12 +12,6 @@
   "block-toolmold-*-fired-doubleingot": "Double ingot ceramic mold",
   "block-toolmold-*-fired-quadrod": "Quad rod ceramic mold",
 
-  "block-blastfurnacedoor": "Blast Furnace Door",
-  "block-hopperbell": "Bell Hopper",
-  "block-hopperreinforced": "Reinforced Hopper",
-  "block-blastfurnace-tuyere*": "Tuyere",
-  "block-blastfurnacetap*": "Molten Metal Tap",
-
   "block-cowperstove-intake*": "Cowper Stove Intake",
   "block-cowperstoveheatsink*": "Heat Sink",
 
@@ -28,14 +22,7 @@
   "block-converterbessemer*": "Bessemer Converter",
   "block-converter-intake*": "Bessemer Gas Intake",
 
-  "blockdesc-blastfurnacedoor*": "The iron door of the blast furnace.",
-  "blockdesc-hopperreinforced*": "Combines crushed ores into blast mix for the bell hopper below.",
-  "blockdesc-hopperbell*": "Drips stockpiled blast mix down into the furnace shaft.",
-  "blockdesc-blastfurnace-tuyere*": "A hot blast intake for the furnace shaft.",
-  "blockdesc-blastfurnacetap*": "Drains the furnace's molten reservoir into a canal below.",
-  "blockdesc-slag*": "A block of solidified slag from the blast furnace.\n",
   "blockdesc-slagpath*": "A sturdy road paved with crushed blast furnace slag.\n",
-  "blockdesc-solidifiediron*": "Iron that cooled and hardened before it could be tapped or poured.\n",
 
   "blockdesc-cowperstove-intake*": "The intake face of a cowper stove.",
   "blockdesc-cowperstoveheatsink*": "Stores reclaimed exhaust heat.",
@@ -47,7 +34,6 @@
   "blockdesc-convertertransmission*": "Uses axle's mechanical power to rotate the vessesl.",
   "blockdesc-converter-intake*": "The converter's air intake.",
 
-  "itemdesc-blastmix*": "The blast furnace's charge.",
   "itemdesc-slag*": "A by-product tapped from the blast furnace. ",
   "itemdesc-powderedslag*": "Ground slag, future mortar or fertilizer.",
 
@@ -89,43 +75,15 @@
   "brickname-red": "Red Brick",
   "brickname-tan": "Tan Brick",
 
-  "block-blastmix": "Blast Mix",
-  "item-blastmix": "Blast Mix",
-  "block-slag": "Solidified Slag",
   "block-slagpath-*": "Slag Path",
   "block-slagpathslab-*": "Slag Path Slab",
   "block-slagpathstairs-*": "Slag Path Stairs",
   "item-slag": "Slag",
   "item-powderedslag": "Powdered Slag",
-  "block-solidifiediron": "Solidified Iron",
-  "solidifiediron-info-count": "Iron bits: {0}",
-  "slag-info-count": "Slag: {0}",
 
-  "blockhelp-tap-toggle": "Toggle tap pouring",
   "blockhelp-bessemer-chiselresidue": "Chisel out solidified residue",
-  "blockhelp-hopper-open": "Open hopper inventory",
-  "blockhelp-hopper-toggle": "Toggle blastmix dropping",
   "blockhelp-pressurevalve-cycle": "Cycle pressure threshold",
   "blockhelp-mulblock-struc-show": "Show multiblock structure",
-
-  "bf-info-incomplete": "Structure is incomplete!",
-  "bf-info-mixloaded": "Blast Mix loaded: {0} / {1}",
-  "bf-info-state": "State: {0}",
-  "bf-state-idle": "Idle",
-  "bf-state-firing": "Firing",
-  "bf-state-melting": "Melting",
-  "bf-info-temp": "Internal Temp: {0}",
-  "bf-info-molteniron": "Molten Iron: {0:F0} / {1:F0}",
-  "bf-info-moltenslag": "Molten Slag: {0:F0} / {1:F0}",
-  "bf-info-meltingin": "Melting progress: {0}%",
-  "bf-info-extinguishingin": "Extinguishing in {0}s...",
-  "bf-info-doorclosed": "Door must be closed for firing!",
-  "bf-info-exhaustfull": "Exhaust network is full! Production halted.",
-  "bf-info-needsmix": "Blast Furnace needs more blast mix to fire!",
-  "bf-info-partiallylit": "Piles are partially lit. Waiting for the fire to spread...",
-  "bf-info-ready": "Blast Furnace is ready! Ignite the blast mix inside and close the door.",
-  "bf-error-incomplete": "Structure is not complete. {0} blocks are missing or incorrect.",
-  "bf-error-complete": "Blast Furnace structure is complete!",
 
   "rcc-ingredient-metalplate": "Iron or Steel Plate",
   "rcc-ingredient-rod": "Iron or Steel Rod",
@@ -133,11 +91,6 @@
 
   "structure-incomplete": "Structure incomplete!",
   "structure-incomplete-count": "Structure is not complete. {0} blocks are missing or incorrect.",
-
-  "tap-state": "Tap is {0}",
-  "tap-open": "Open",
-  "tap-closed": "Closed",
-  "tap-err-nocanal": "No canal start found below the tap!",
 
   "bessemer-status-idle": "Idle",
   "bessemer-status-notbuilt": "Converter not built",
@@ -177,17 +130,6 @@
   "cowperstove-status-exhaustmix": "Cannot heat up, exhaust mixes with the air!",
   "cowperstove-status-heatingup": "Heating Up!",
   "cowperstove-status-heating": "Heating {0}",
-
-  "hopper-info-bell": "Bell Hopper: {0}",
-  "hopper-state-dropping": "Dropping",
-  "hopper-state-stopped": "Stopped",
-  "hopper-info-magazine": "Blast Mix Magazine: {0} / {1}",
-  "hopper-info-furnacefull": "Furnace is full!",
-  "hopper-info-nobell": "No Bell Hopper below",
-  "hopper-dialog-title": "Reinforced Hopper",
-  "hopper-slot-iron": "Iron",
-  "hopper-slot-coke": "Coke",
-  "hopper-slot-flux": "Flux",
 
   "metalstate-liquid": "liquid",
   "metalstate-hardened": "hardened",

@@ -48,10 +48,12 @@ public class SmexRecipeConfig : IExVersionedConfig
         Match = "smex:converterbessemer-*",
       },
 
-      // Blast furnace + converter machine grid recipes.
-      ["blastfurnace-tuyere-grid"] = Grid("smex:blastfurnace-tuyere-*"),
-      ["blastfurnacedoor-grid"] = Grid("smex:blastfurnacedoor"),
-      ["blastfurnacetap-grid"] = Grid("smex:blastfurnacetap-*"),
+      // Blast furnace + converter machine grid recipes. The blast-furnace blocks moved to the iwex
+      // domain with the blast furnace subsystem; the cost catalogue matches them by their new iwex:
+      // output codes (kept in this profile for a single steelmaking recipe-cost switch).
+      ["blastfurnace-tuyere-grid"] = Grid("iwex:blastfurnace-tuyere-*"),
+      ["blastfurnacedoor-grid"] = Grid("iwex:blastfurnacedoor"),
+      ["blastfurnacetap-grid"] = Grid("iwex:blastfurnacetap-*"),
       ["converter-intake-grid"] = Grid("smex:converter-intake-*"),
       ["convertercontrol-grid"] = Grid("smex:convertercontrol-*"),
       ["convertertransmission-grid"] = Grid("smex:convertertransmission-*"),
@@ -60,9 +62,10 @@ public class SmexRecipeConfig : IExVersionedConfig
       ["engineairblower-grid"] = Grid("smex:engineairblower-*"),
       ["smokestack-intake-grid"] = Grid("smex:smokestack-intake-*"),
 
-      // Hoppers + molten transport.
-      ["hopperbell-grid"] = Grid("smex:hopperbell"),
-      ["hopperreinforced-grid"] = Grid("smex:hopperreinforced"),
+      // Hoppers + molten transport. The hoppers moved to the iwex domain with the blast furnace
+      // subsystem; matched by their new iwex: output codes.
+      ["hopperbell-grid"] = Grid("iwex:hopperbell"),
+      ["hopperreinforced-grid"] = Grid("iwex:hopperreinforced"),
       // Molten transport blocks (canals/taps/barrel) moved to the iwex domain with the molten
       // subsystem; the cost catalogue matches them by their new iwex: output codes.
       ["moltenbarrel-grid"] = Grid("iwex:moltenbarrel"),

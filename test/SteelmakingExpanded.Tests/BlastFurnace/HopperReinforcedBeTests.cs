@@ -1,6 +1,6 @@
 using ExpandedLib.Testing;
 using NSubstitute;
-using SteelmakingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -24,7 +24,7 @@ public class HopperReinforcedBeTests
     var be = new BlockEntityHopperReinforced
     {
       Pos = pos,
-      Block = TestBlocks.Configure(new Block(), "smex:hopperreinforced", 91),
+      Block = TestBlocks.Configure(new Block(), "iwex:hopperreinforced", 91),
     };
     world.Place(pos, be.Block, be);
     world.Attach(be);
@@ -40,7 +40,7 @@ public class HopperReinforcedBeTests
     var bell = new BlockEntityHopperBell
     {
       Pos = pos,
-      Block = TestBlocks.Configure(new Block(), "smex:hopperbell", 90),
+      Block = TestBlocks.Configure(new Block(), "iwex:hopperbell", 90),
     };
     world.Place(pos, bell.Block, bell);
     world.Attach(bell);
