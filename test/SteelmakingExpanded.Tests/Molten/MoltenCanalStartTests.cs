@@ -1,6 +1,7 @@
+using IronworkingExpanded;
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -53,7 +54,7 @@ public class MoltenCanalStartTests
   {
     var world = NewWorld();
     Assert.Equal(
-      SmexValues.CanalDefaultUnitCapacity * 2,
+      IwexValues.CanalDefaultUnitCapacity * 2,
       Start(world).MaxUnitCapacity
     );
   }

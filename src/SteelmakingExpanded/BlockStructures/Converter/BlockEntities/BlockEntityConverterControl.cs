@@ -7,8 +7,9 @@ using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.Helpers;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -49,7 +50,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   // molten-system cooldown speed by the configurable coefficient (0.5 ⇒ cools twice as slowly), so
   // a finished heat gives the player time to pour before it solidifies.
   private static float ContentCooldownSpeed =>
-    SmexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
+    IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
 
   // Below this fraction of capacity a hardened residue is small enough to chisel out (rather than
   // breaking the whole converter to salvage it).

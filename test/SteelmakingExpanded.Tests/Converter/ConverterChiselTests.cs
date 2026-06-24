@@ -1,6 +1,7 @@
+using IronworkingExpanded;
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Common;
@@ -77,7 +78,7 @@ public class ConverterChiselTests
   }
 
   private static float ExpectedSlowedCooldown =>
-    SmexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
+    IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
 
   #region Cooldown coefficient
 
@@ -116,7 +117,7 @@ public class ConverterChiselTests
     // 0.5 x the molten-system rate, the spec'd default (cools twice as slowly inside the vessel).
     Assert.Equal(0.5f, SmexValues.BessemerCooldownCoefficient, 3);
     Assert.Equal(
-      SmexValues.MoltenCooldownSpeed * 0.5f,
+      IwexValues.MoltenCooldownSpeed * 0.5f,
       ExpectedSlowedCooldown,
       3
     );
@@ -142,7 +143,7 @@ public class ConverterChiselTests
       ReflectionHelpers.Invoke(be, "SyncContentCooldown");
 
       Assert.Equal(
-        SmexValues.MoltenCooldownSpeed * 10f,
+        IwexValues.MoltenCooldownSpeed * 10f,
         CooldownSpeedOf(content),
         3
       );

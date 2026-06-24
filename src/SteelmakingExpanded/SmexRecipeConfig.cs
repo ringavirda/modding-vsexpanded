@@ -63,15 +63,17 @@ public class SmexRecipeConfig : IExVersionedConfig
       // Hoppers + molten transport.
       ["hopperbell-grid"] = Grid("smex:hopperbell"),
       ["hopperreinforced-grid"] = Grid("smex:hopperreinforced"),
-      ["moltenbarrel-grid"] = Grid("smex:moltenbarrel"),
-      ["moltencanal-start-grid"] = Grid("smex:moltencanal-start-*"),
-      ["moltencanal-straight-grid"] = Grid("smex:moltencanal-straight-*"),
-      ["moltencanal-bend-grid"] = Grid("smex:moltencanal-bend-*"),
-      ["moltencanal-tjunction-grid"] = Grid("smex:moltencanal-tjunction-*"),
-      ["moltencanal-xjunction-grid"] = Grid("smex:moltencanal-xjunction-*"),
-      ["moltencanal-tap-grid"] = Grid("smex:moltencanal-tap-*"),
+      // Molten transport blocks (canals/taps/barrel) moved to the iwex domain with the molten
+      // subsystem; the cost catalogue matches them by their new iwex: output codes.
+      ["moltenbarrel-grid"] = Grid("iwex:moltenbarrel"),
+      ["moltencanal-start-grid"] = Grid("iwex:moltencanal-start-*"),
+      ["moltencanal-straight-grid"] = Grid("iwex:moltencanal-straight-*"),
+      ["moltencanal-bend-grid"] = Grid("iwex:moltencanal-bend-*"),
+      ["moltencanal-tjunction-grid"] = Grid("iwex:moltencanal-tjunction-*"),
+      ["moltencanal-xjunction-grid"] = Grid("iwex:moltencanal-xjunction-*"),
+      ["moltencanal-tap-grid"] = Grid("iwex:moltencanal-tap-*"),
       ["moltencanal-moldpedestal-grid"] = Grid(
-        "smex:moltencanal-moldpedestal-*"
+        "iwex:moltencanal-moldpedestal-*"
       ),
 
       // Slag paths.

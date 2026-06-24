@@ -3,14 +3,14 @@ using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.Blocks;
+using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for the canal tap: pours the network's liquid metal into whatever
@@ -50,7 +50,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
 
   /// <summary> Canal tap by itself has low capacity. </summary>
   public override int MaxUnitCapacity =>
-    (int)Math.Ceiling(SmexValues.CanalDefaultUnitCapacity / 2.0);
+    (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0);
 
   #region Barrel content
   /// <summary>Whether a barrel is parked under the tap.</summary>
@@ -64,7 +64,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
 
   /// <summary>Capacity of the parked barrel, in units.</summary>
   public int BarrelMaxUnits { get; private set; } =
-    SmexValues.BarrelDefaultMaxUnits;
+    IwexValues.BarrelDefaultMaxUnits;
   #endregion
 
   #region Mold content (large molds only - anvil, helve hammer)
@@ -81,7 +81,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   public int MoldCurrentUnits { get; private set; }
 
   /// <summary>The parked mold's capacity, in units.</summary>
-  public int MoldMaxUnits { get; private set; } = SmexValues.MoldDefaultUnits;
+  public int MoldMaxUnits { get; private set; } = IwexValues.MoldDefaultUnits;
   #endregion
 
   // Molds sit on the floor (bottom) of the tap block. Kept as a single knob so
@@ -106,14 +106,14 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   // Current network drain speed (units/tick). Read live so the config fallback applies immediately
   // when the block JSON sets no explicit drainSpeed; the block attribute itself is a cheap parsed read.
   private float DrainSpeed =>
-    Block.Attributes?["drainSpeed"].AsFloat(SmexValues.CanalDefaultDrainSpeed)
-    ?? SmexValues.CanalDefaultDrainSpeed;
+    Block.Attributes?["drainSpeed"].AsFloat(IwexValues.CanalDefaultDrainSpeed)
+    ?? IwexValues.CanalDefaultDrainSpeed;
 
   // Cooldown rate for metal cast in the parked mold: the molten-system base scaled by the tap's mold
   // coefficient (mirrors the converter's charge cooldown). The parked barrel cools at a fixed slow
   // rate by design and is unaffected. Read live so a config change applies immediately.
   private static float MoldCooldownSpeed =>
-    SmexValues.MoltenCooldownSpeed * SmexValues.TapMoldCooldownCoefficient;
+    IwexValues.MoltenCooldownSpeed * IwexValues.TapMoldCooldownCoefficient;
 
   public override void Initialize(ICoreAPI api)
   {
@@ -165,7 +165,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     if (IsBarrel)
     {
       contentBlock = capi.World.GetBlock(
-        new AssetLocation("smex:moltenbarrel")
+        new AssetLocation("iwex:moltenbarrel")
       );
       key = "barrel";
       content = BarrelMetalContent;
@@ -294,7 +294,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   {
     IsBarrel = false;
     var barrelBlock = Api.World.GetBlock(
-      new AssetLocation("smex:moltenbarrel")
+      new AssetLocation("iwex:moltenbarrel")
     );
     var stack = new ItemStack(barrelBlock);
     MoltenContents.Write(
@@ -305,7 +305,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     );
     BarrelMetalContent = null;
     BarrelCurrentUnits = 0;
-    BarrelMaxUnits = SmexValues.BarrelDefaultMaxUnits;
+    BarrelMaxUnits = IwexValues.BarrelDefaultMaxUnits;
     return stack;
   }
 
@@ -327,8 +327,8 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
 
     MoldMaxUnits =
       MoldStack.Block?.Attributes?["requiredUnits"].AsInt(
-        SmexValues.MoldDefaultUnits
-      ) ?? SmexValues.MoldDefaultUnits;
+        IwexValues.MoldDefaultUnits
+      ) ?? IwexValues.MoldDefaultUnits;
     IsMold = true;
     IsBarrel = false;
   }
@@ -349,7 +349,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     MoldStack = null;
     MoldMetalContent = null;
     MoldCurrentUnits = 0;
-    MoldMaxUnits = SmexValues.MoldDefaultUnits;
+    MoldMaxUnits = IwexValues.MoldDefaultUnits;
     _moldMesh = null;
     _tessellatedMoldCode = null;
     return stack;
@@ -517,7 +517,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     BarrelCurrentUnits = tree.GetInt("barrelCurrentUnits");
     BarrelMaxUnits = tree.GetInt(
       "barrelMaxUnits",
-      SmexValues.BarrelDefaultMaxUnits
+      IwexValues.BarrelDefaultMaxUnits
     );
 
     IsMold = tree.GetBool("isMold");
@@ -526,7 +526,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     MoldMetalContent = tree.GetItemstack("moldContents");
     MoldMetalContent?.ResolveBlockOrItem(worldForResolving);
     MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
-    MoldMaxUnits = tree.GetInt("moldMaxUnits", SmexValues.MoldDefaultUnits);
+    MoldMaxUnits = tree.GetInt("moldMaxUnits", IwexValues.MoldDefaultUnits);
 
     if (IsBarrel != wasBarrel || IsMold != wasMold)
     {
@@ -545,7 +545,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     if (IsBarrel)
       AppendContentInfo(
         dsc,
-        Lang.Get("smex:canal-label-barrel"),
+        Lang.Get("iwex:canal-label-barrel"),
         BarrelMetalContent,
         BarrelCurrentUnits,
         BarrelMaxUnits
@@ -553,18 +553,18 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     else if (IsMold)
       AppendContentInfo(
         dsc,
-        Lang.Get("smex:canal-label-mold"),
+        Lang.Get("iwex:canal-label-mold"),
         MoldMetalContent,
         MoldCurrentUnits,
         MoldMaxUnits
       );
     else
-      dsc.AppendLine(Lang.Get("smex:canal-info-empty"));
+      dsc.AppendLine(Lang.Get("iwex:canal-info-empty"));
 
     dsc.AppendLine(
       Lang.Get(
-        "smex:canal-pouring",
-        Lang.Get(IsPouring ? "smex:state-on" : "smex:state-off")
+        "iwex:canal-pouring",
+        Lang.Get(IsPouring ? "iwex:state-on" : "iwex:state-off")
       )
     );
   }
@@ -579,7 +579,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   {
     if (content == null || currentUnits <= 0)
     {
-      dsc.AppendLine(Lang.Get("smex:canal-content-empty", label));
+      dsc.AppendLine(Lang.Get("iwex:canal-content-empty", label));
       return;
     }
 
@@ -587,14 +587,14 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     string state = Lang.Get(
       MoltenMetal.StateOf(Api.World, content) switch
       {
-        MoltenState.Liquid => "smex:metalstate-liquid",
-        MoltenState.Hardened => "smex:metalstate-hardened",
-        _ => "smex:metalstate-cooling",
+        MoltenState.Liquid => "iwex:metalstate-liquid",
+        MoltenState.Hardened => "iwex:metalstate-hardened",
+        _ => "iwex:metalstate-cooling",
       }
     );
     dsc.AppendLine(
       Lang.Get(
-        "smex:canal-content",
+        "iwex:canal-content",
         label,
         currentUnits,
         maxUnits,
@@ -621,7 +621,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
       if (_barrelMesh == null)
       {
         Shape? barrelShape = Api.Assets.Get<Shape>(
-          new AssetLocation("smex:shapes/molten/barrel.json")
+          new AssetLocation("iwex:shapes/molten/barrel.json")
         );
         if (barrelShape != null)
           tesselator.TesselateShape(Block, barrelShape, out _barrelMesh);

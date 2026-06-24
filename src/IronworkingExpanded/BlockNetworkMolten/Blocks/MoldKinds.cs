@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// Classifies tool molds by where they can be cast: small molds sit on the

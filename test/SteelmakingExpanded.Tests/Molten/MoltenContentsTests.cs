@@ -1,4 +1,4 @@
-using SteelmakingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Xunit;

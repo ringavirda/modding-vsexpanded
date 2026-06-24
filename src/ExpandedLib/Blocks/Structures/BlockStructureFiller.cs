@@ -64,6 +64,31 @@ public partial class BlockStructureFiller : Block, INetworkConnector
     return false;
   }
 
+  // A footprint cell the mega-block only partially fills (e.g. a slab) carries its own boxes on
+  // the BE; a plain full-cube cell carries none and falls back to the JSON box. Selection matches
+  // collision so the player can't target solid-looking empty space above a partial cell.
+  public override Cuboidf[] GetCollisionBoxes(
+    IBlockAccessor blockAccessor,
+    BlockPos pos
+  ) =>
+    blockAccessor.GetBlockEntity(pos) is BlockEntityStructureFiller
+    {
+      CollisionBoxes: { Length: > 0 } boxes,
+    }
+      ? boxes
+      : base.GetCollisionBoxes(blockAccessor, pos);
+
+  public override Cuboidf[] GetSelectionBoxes(
+    IBlockAccessor blockAccessor,
+    BlockPos pos
+  ) =>
+    blockAccessor.GetBlockEntity(pos) is BlockEntityStructureFiller
+    {
+      CollisionBoxes: { Length: > 0 } boxes,
+    }
+      ? boxes
+      : base.GetSelectionBoxes(blockAccessor, pos);
+
   /// <summary>
   /// Inherits the principal's interaction sounds so the invisible footprint sounds like the block
   /// it stands in for (otherwise hitting/walking on a filler is silent).

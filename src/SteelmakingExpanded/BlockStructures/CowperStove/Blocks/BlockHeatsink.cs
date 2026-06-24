@@ -1,5 +1,5 @@
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

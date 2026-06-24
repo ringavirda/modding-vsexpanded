@@ -1,0 +1,24 @@
+{
+  "code": "burden",
+  "class": "iwex.ItemBurden",
+  "maxstacksize": 128,
+  "shape": { "base": "game:item/resource/crushed/normal" },
+  "textures": { "quartz": { "base": "game:block/coal/orecoalmix" } },
+  "heldTpIdleAnimation": "holdbothhands",
+  "heldRightReadyAnimation": "holdbothhands",
+  "materialDensity": 300,
+  "combustibleProps": {
+    "burnTemperature": 600,
+    "burnDuration": 1500
+  },
+  "creativeinventory": {
+    "general": ["*"],
+    "items": ["*"],
+    "iwex": ["*"]
+  },
+  "guiTransform": {
+    "translation": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": -45, "z": 0 },
+    "scale": 2.3
+  }
+}

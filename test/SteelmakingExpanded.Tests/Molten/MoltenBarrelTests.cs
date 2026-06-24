@@ -1,6 +1,7 @@
+using IronworkingExpanded;
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -157,7 +158,7 @@ public class MoltenBarrelTests
   public void The_barrel_cooldown_coefficient_defaults_to_one()
   {
     // Ships as a no-op multiplier (1x the molten-system rate); admins can slow the barrel down.
-    Assert.Equal(1f, SmexValues.BarrelCooldownCoefficient, 3);
+    Assert.Equal(1f, IwexValues.BarrelCooldownCoefficient, 3);
   }
 
   [Fact]
@@ -169,7 +170,7 @@ public class MoltenBarrelTests
     be.ReceiveLiquidMetal(Metal(world, Iron, 1300f), ref amount, 1300f);
 
     Assert.Equal(
-      SmexValues.MoltenCooldownSpeed * SmexValues.BarrelCooldownCoefficient,
+      IwexValues.MoltenCooldownSpeed * IwexValues.BarrelCooldownCoefficient,
       CooldownSpeedOf(be.MetalContent!),
       3
     );
@@ -185,21 +186,21 @@ public class MoltenBarrelTests
     int amount = 20;
     be.ReceiveLiquidMetal(Metal(world, Iron, 1300f), ref amount, 1300f);
 
-    float original = SmexValues.BarrelCooldownCoefficient;
+    float original = IwexValues.BarrelCooldownCoefficient;
     try
     {
-      SmexValues.Edit(c => c.BarrelCooldownCoefficient = 5f);
+      IwexValues.Edit(c => c.BarrelCooldownCoefficient = 5f);
       ReflectionHelpers.Invoke(be, "OnServerTick");
 
       Assert.Equal(
-        SmexValues.MoltenCooldownSpeed * 5f,
+        IwexValues.MoltenCooldownSpeed * 5f,
         CooldownSpeedOf(be.MetalContent!),
         3
       );
     }
     finally
     {
-      SmexValues.Edit(c => c.BarrelCooldownCoefficient = original);
+      IwexValues.Edit(c => c.BarrelCooldownCoefficient = original);
     }
   }
 

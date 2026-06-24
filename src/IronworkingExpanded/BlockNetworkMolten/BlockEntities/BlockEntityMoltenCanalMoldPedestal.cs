@@ -3,15 +3,14 @@ using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.Blocks;
-using SteelmakingExpanded.Molds;
+using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for the mold pedestal: a canal node that holds one small tool mold
@@ -61,16 +60,16 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   public int MoldCurrentUnits { get; private set; }
 
   /// <summary>The placed mold's capacity in units.</summary>
-  public int MoldMaxUnits { get; private set; } = SmexValues.MoldDefaultUnits;
+  public int MoldMaxUnits { get; private set; } = IwexValues.MoldDefaultUnits;
 
   /// <summary> Mold pedestal by itself has low capacity. </summary>
   public override int MaxUnitCapacity =>
-    (int)Math.Ceiling(SmexValues.CanalDefaultUnitCapacity / 2.0);
+    (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0);
 
   // Cooldown rate for metal cast in the mold: the molten-system base scaled by the pedestal's mold
   // coefficient (mirrors the converter's charge cooldown). Read live so a config change applies now.
   private static float MoldCooldownSpeed =>
-    SmexValues.MoltenCooldownSpeed * SmexValues.MoldPedestalCooldownCoefficient;
+    IwexValues.MoltenCooldownSpeed * IwexValues.MoldPedestalCooldownCoefficient;
 
   /// <summary>Toggles whether the pedestal fills its mold from the network.</summary>
   public void TryTogglePouring()
@@ -129,8 +128,8 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
     MoldMaxUnits =
       MoldStack.Block?.Attributes?["requiredUnits"].AsInt(
-        SmexValues.MoldDefaultUnits
-      ) ?? SmexValues.MoldDefaultUnits;
+        IwexValues.MoldDefaultUnits
+      ) ?? IwexValues.MoldDefaultUnits;
     IsMold = true;
   }
 
@@ -150,7 +149,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     MoldStack = null;
     MoldMetalContent = null;
     MoldCurrentUnits = 0;
-    MoldMaxUnits = SmexValues.MoldDefaultUnits;
+    MoldMaxUnits = IwexValues.MoldDefaultUnits;
     return stack;
   }
 
@@ -163,7 +162,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     // A mold whose type a server admin disabled (/exmod molds ... off) is purged from the pedestal
     // on load - the world-block/inventory copies are removed by the shared migration sweep, but a
     // pedestal's mold is stored outside any inventory, so clear it here.
-    if (IsMold && MoldGating.IsToolMoldDisabled(MoldStack?.Collectible?.Code))
+    if (IsMold && ExMoldGate.IsToolMoldDisabled(MoldStack?.Collectible?.Code))
     {
       RemoveMold();
       MarkDirty(true);
@@ -373,7 +372,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     MoldMetalContent = tree.GetItemstack("moldContents");
     MoldMetalContent?.ResolveBlockOrItem(worldForResolving);
     MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
-    MoldMaxUnits = tree.GetInt("moldMaxUnits", SmexValues.MoldDefaultUnits);
+    MoldMaxUnits = tree.GetInt("moldMaxUnits", IwexValues.MoldDefaultUnits);
     UpdateRenderer();
   }
 
@@ -387,34 +386,34 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
     dsc.AppendLine(
       Lang.Get(
-        "smex:canal-pouring",
-        Lang.Get(IsPouring ? "smex:state-on" : "smex:state-off")
+        "iwex:canal-pouring",
+        Lang.Get(IsPouring ? "iwex:state-on" : "iwex:state-off")
       )
     );
 
     if (!IsMold)
     {
-      dsc.AppendLine(Lang.Get("smex:moldpedestal-nomold"));
+      dsc.AppendLine(Lang.Get("iwex:moldpedestal-nomold"));
       return;
     }
 
     if (MoldMetalContent == null || MoldCurrentUnits <= 0)
     {
-      dsc.AppendLine(Lang.Get("smex:mold-empty"));
+      dsc.AppendLine(Lang.Get("iwex:mold-empty"));
       return;
     }
 
     string state = Lang.Get(
       MoltenMetal.StateOf(Api.World, MoldMetalContent) switch
       {
-        MoltenState.Liquid => "smex:metalstate-liquid",
-        MoltenState.Hardened => "smex:metalstate-hardened",
-        _ => "smex:metalstate-cooling",
+        MoltenState.Liquid => "iwex:metalstate-liquid",
+        MoltenState.Hardened => "iwex:metalstate-hardened",
+        _ => "iwex:metalstate-cooling",
       }
     );
     dsc.AppendLine(
       Lang.Get(
-        "smex:mold-content",
+        "iwex:mold-content",
         MoldCurrentUnits,
         MoldMaxUnits,
         MoltenMetal.DisplayName(MoldMetalContent.Collectible.Code.ToString()),

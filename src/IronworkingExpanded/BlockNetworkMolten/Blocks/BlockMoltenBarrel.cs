@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// A portable barrel that stores liquid metal. Poured into from a canal tap (or a
@@ -317,14 +317,14 @@ public partial class BlockMoltenBarrel : Block
 
     if (currentUnits <= 0)
     {
-      dsc.AppendLine(Lang.Get("smex:moltenbarrel-info-empty", maxUnits));
+      dsc.AppendLine(Lang.Get("iwex:moltenbarrel-info-empty", maxUnits));
       return;
     }
 
     if (metalContent == null)
     {
       dsc.AppendLine(
-        Lang.Get("smex:moltenbarrel-info-units", currentUnits, maxUnits)
+        Lang.Get("iwex:moltenbarrel-info-units", currentUnits, maxUnits)
       );
       return;
     }
@@ -332,15 +332,15 @@ public partial class BlockMoltenBarrel : Block
     string state = Lang.Get(
       MoltenMetal.StateOf(world, metalContent) switch
       {
-        MoltenState.Liquid => "smex:metalstate-liquid",
-        MoltenState.Hardened => "smex:metalstate-hardened",
-        _ => "smex:metalstate-soft",
+        MoltenState.Liquid => "iwex:metalstate-liquid",
+        MoltenState.Hardened => "iwex:metalstate-hardened",
+        _ => "iwex:metalstate-soft",
       }
     );
 
     dsc.AppendLine(
       Lang.Get(
-        "smex:moltenbarrel-info-content",
+        "iwex:moltenbarrel-info-content",
         currentUnits,
         maxUnits,
         MoltenMetal.DisplayName(metalContent.Collectible.Code.ToString()),
@@ -371,7 +371,7 @@ public partial class BlockMoltenBarrel : Block
     {
       new()
       {
-        ActionLangCode = "smex:blockhelp-barrel-pickup",
+        ActionLangCode = "iwex:blockhelp-barrel-pickup",
         MouseButton = EnumMouseButton.Right,
         HotKeyCode = "sneak",
       },
@@ -382,7 +382,7 @@ public partial class BlockMoltenBarrel : Block
       result.Add(
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-barrel-pour",
+          ActionLangCode = "iwex:blockhelp-barrel-pour",
           MouseButton = EnumMouseButton.Right,
           Itemstacks = _smeltedCrucibles,
         }
@@ -391,7 +391,7 @@ public partial class BlockMoltenBarrel : Block
 
     if (isHardened)
       result.Add(
-        MoltenChisel.ChiselHelp(world, "smex:blockhelp-barrel-chisel")
+        MoltenChisel.ChiselHelp(world, "iwex:blockhelp-barrel-chisel")
       );
 
     return result.ToArray();

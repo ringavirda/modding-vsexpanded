@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// Canal tap: pours the network's liquid metal downward into a molten barrel or a
@@ -27,7 +27,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     base.OnLoaded(api);
 
     var list = new List<ItemStack>();
-    var barrel = api.World.GetBlock(new AssetLocation("smex:moltenbarrel"));
+    var barrel = api.World.GetBlock(new AssetLocation("iwex:moltenbarrel"));
     if (barrel != null)
       list.Add(new ItemStack(barrel));
     foreach (var block in api.World.Blocks)
@@ -113,7 +113,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
         }
         else if (heldStack.Block is BlockToolMold)
         {
-          (byPlayer as IServerPlayer)?.SendIngameError("smex-moldtoosmall");
+          (byPlayer as IServerPlayer)?.SendIngameError("iwex-moldtoosmall");
           return false;
         }
         else
@@ -168,7 +168,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     {
       new()
       {
-        ActionLangCode = "smex:blockhelp-canal-togglepour",
+        ActionLangCode = "iwex:blockhelp-canal-togglepour",
         MouseButton = EnumMouseButton.Right,
         HotKeyCode = "sprint",
       },
@@ -182,7 +182,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
       result.Add(
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-tap-placecontent",
+          ActionLangCode = "iwex:blockhelp-tap-placecontent",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
           Itemstacks = _acceptedContents,
@@ -194,7 +194,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
       result.Add(
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-tap-removecontent",
+          ActionLangCode = "iwex:blockhelp-tap-removecontent",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
         }

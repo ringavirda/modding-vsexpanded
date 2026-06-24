@@ -22,9 +22,9 @@
         "smex:convertertransmission*": 2,
         "smex:converterbessemer*": 3,
         "smex:converter-intake*": 4,
-        "smex:moltencanal-tap*": 5,
-        "smex:moltencanal-start*": 6,
-        "smex:moltencanal-straight*": 7,
+        "iwex:moltencanal-tap*": 5,
+        "iwex:moltencanal-start*": 6,
+        "iwex:moltencanal-straight*": 7,
         "exlib:structurefiller": 8
       },
       "offsets": [

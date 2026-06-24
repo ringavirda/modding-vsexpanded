@@ -1,11 +1,10 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Recipes;
 using HarmonyLib;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.Blocks;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using SteelmakingExpanded.Compat;
 using SteelmakingExpanded.Molds;
 using SteelmakingExpanded.Patches;
@@ -211,12 +210,12 @@ public class SteelmakingExpandedModSystem : ModSystem
     // declared in this assembly.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
 
-    // The molten-metal network. The unified "pipe" network is registered by ppex.
-    var netManager = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-    netManager.RegisterNetworkType(
-      "molten",
-      () => new MoltenNetwork(netManager)
-    );
+    // The molten-metal network now lives in (and is registered by) the foundational iwex mod, which
+    // loads first; smex only consumes it. The unified "pipe" network is registered by ppex.
+
+    // Expose smex's tool-mold availability gate to iwex's mold pedestal (which can't reference smex)
+    // so a config-disabled mold is purged from a pedestal on load.
+    ExMoldGate.RegisterIsDisabled(MoldGating.IsToolMoldDisabled);
   }
 
   #endregion

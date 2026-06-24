@@ -4,7 +4,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten;
+namespace IronworkingExpanded.BlockNetworkMolten;
 
 /// <summary>
 /// Coarse thermal state of a metal stack relative to its melting point.
@@ -60,7 +60,7 @@ public static class MoltenMetal
     // a fresh stack that tree doesn't exist yet, so setting the cooldown before it silently no-ops -
     // which left the cooldownSpeed argument dead for every caller until this ordering fix.
     SetTemperature(world, stack, temperature);
-    SetCooldownSpeed(stack, cooldownSpeed ?? SmexValues.MoltenCooldownSpeed);
+    SetCooldownSpeed(stack, cooldownSpeed ?? IwexValues.MoltenCooldownSpeed);
     return stack;
   }
 
@@ -89,7 +89,7 @@ public static class MoltenMetal
   )
   {
     SetTemperature(world, stack, GetTemperature(world, stack));
-    SetCooldownSpeed(stack, cooldownSpeed ?? SmexValues.MoltenCooldownSpeed);
+    SetCooldownSpeed(stack, cooldownSpeed ?? IwexValues.MoltenCooldownSpeed);
   }
 
   /// <summary>Sets the stack temperature without delaying the cooldown (the mod-wide convention).</summary>
@@ -149,7 +149,7 @@ public static class MoltenMetal
   public static string DisplayName(string metalItemCode)
   {
     if (metalItemCode.Length == 0)
-      return Lang.Get("smex:metal-unknown");
+      return Lang.Get("iwex:metal-unknown");
     string path = new AssetLocation(metalItemCode).Path;
     string name = path.StartsWith("ingot-") ? path[6..] : path;
     return name.Length > 0 ? char.ToUpper(name[0]) + name[1..] : name;
@@ -158,6 +158,6 @@ public static class MoltenMetal
   /// <summary>"Cold" below room temperature, otherwise the rounded "650°C" form.</summary>
   public static string FormatTemperature(float temperature) =>
     temperature < 21f
-      ? Lang.Get("smex:metalstate-cold")
+      ? Lang.Get("iwex:metalstate-cold")
       : ExMeasure.Temperature(temperature);
 }

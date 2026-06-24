@@ -3,7 +3,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten;
+namespace IronworkingExpanded.BlockNetworkMolten;
 
 /// <summary>
 /// Renders the glowing liquid-metal surface inside canals, taps, pedestals and

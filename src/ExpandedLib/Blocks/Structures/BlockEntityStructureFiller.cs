@@ -26,6 +26,14 @@ public class BlockEntityStructureFiller : BlockEntity
   public bool AllowAttach { get; set; }
 
   /// <summary>
+  /// Per-cell collision/selection boxes (already rotated into the placed orientation), or
+  /// <c>null</c> when this cell is a plain full cube. Set from the principal's <c>fillerOffsets</c>
+  /// <c>collisionBox</c>/<c>collisionBoxes</c> so a footprint cell can be a slab or any partial
+  /// shape. Read by <see cref="BlockStructureFiller.GetCollisionBoxes"/>/<c>GetSelectionBoxes</c>.
+  /// </summary>
+  public Cuboidf[]? CollisionBoxes { get; set; }
+
+  /// <summary>
   /// Single-char face code of the network port this cell exposes, or null for a plain filler. Lets
   /// a principal turn one footprint cell into a fixed connector (e.g. the boiler's steam outlet).
   /// </summary>
@@ -42,6 +50,21 @@ public class BlockEntityStructureFiller : BlockEntity
     tree.SetInt("cy", Principal?.Y ?? -1);
     tree.SetInt("cz", Principal?.Z ?? -1);
     tree.SetBool("allowAttach", AllowAttach);
+    if (CollisionBoxes is { Length: > 0 })
+    {
+      var flat = new float[CollisionBoxes.Length * 6];
+      for (int i = 0; i < CollisionBoxes.Length; i++)
+      {
+        Cuboidf b = CollisionBoxes[i];
+        flat[i * 6 + 0] = b.X1;
+        flat[i * 6 + 1] = b.Y1;
+        flat[i * 6 + 2] = b.Z1;
+        flat[i * 6 + 3] = b.X2;
+        flat[i * 6 + 4] = b.Y2;
+        flat[i * 6 + 5] = b.Z2;
+      }
+      tree["cboxes"] = new FloatArrayAttribute(flat);
+    }
     if (PortFace != null && PortNetworkType != null)
     {
       tree.SetString("portFace", PortFace);
@@ -61,8 +84,29 @@ public class BlockEntityStructureFiller : BlockEntity
     Principal =
       cx == -1 && cy == -1 && cz == -1 ? null : new BlockPos(cx, cy, cz);
     AllowAttach = tree.GetBool("allowAttach", false);
+    CollisionBoxes =
+      tree["cboxes"] is FloatArrayAttribute { value.Length: >= 6 } fa
+        ? ReadFlatBoxes(fa.value)
+        : null;
     PortFace = tree.GetString("portFace", null);
     PortNetworkType = tree.GetString("portNet", null);
+  }
+
+  /// <summary>Rebuilds the cuboid array from the flattened 6-floats-per-box save form.</summary>
+  private static Cuboidf[] ReadFlatBoxes(float[] flat)
+  {
+    int n = flat.Length / 6;
+    var boxes = new Cuboidf[n];
+    for (int i = 0; i < n; i++)
+      boxes[i] = new Cuboidf(
+        flat[i * 6 + 0],
+        flat[i * 6 + 1],
+        flat[i * 6 + 2],
+        flat[i * 6 + 3],
+        flat[i * 6 + 4],
+        flat[i * 6 + 5]
+      );
+    return boxes;
   }
 
   /// <summary>Reroutes the HUD readout to the principal block entity.</summary>

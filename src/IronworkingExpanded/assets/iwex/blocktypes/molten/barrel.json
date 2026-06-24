@@ -1,7 +1,7 @@
 {
   "code": "moltenbarrel",
-  "class": "smex.BlockMoltenBarrel",
-  "entityClass": "smex.BlockEntityMoltenBarrel",
+  "class": "iwex.BlockMoltenBarrel",
+  "entityClass": "iwex.BlockEntityMoltenBarrel",
   "maxStackSize": 1,
   "storageFlags": 2,
   "blockmaterial": "Metal",
@@ -13,7 +13,7 @@
   },
   "creativeinventory": {
     "general": ["*"],
-    "smex": ["*"]
+    "iwex": ["*"]
   },
   "heldTpIdleAnimation": "holdbothhandslarge",
   "attributes": {
@@ -23,7 +23,7 @@
     "fillQuadsByLevel": [{ "x1": 4, "z1": 4, "x2": 12, "z2": 12 }]
   },
   "behaviors": [{ "name": "Lockable" }, { "name": "UnstableFalling" }],
-  "shape": { "base": "smex:molten/barrel" },
+  "shape": { "base": "iwex:molten/barrel" },
   "sidesolid": { "all": false },
   "sideopaque": { "all": false },
   "tpHandTransform": {

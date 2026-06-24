@@ -2,7 +2,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten;
+namespace IronworkingExpanded.BlockNetworkMolten;
 
 /// <summary>
 /// Shared mesh work for the molten-canal family. Currently the open-end cap: the canal,
@@ -13,7 +13,7 @@ namespace SteelmakingExpanded.BlockNetworkMolten;
 public static class MoltenMeshes
 {
   private static readonly AssetLocation EndCapShapeLoc = new(
-    "smex:shapes/molten/canal/end.json"
+    "iwex:shapes/molten/canal/end.json"
   );
 
   /// <summary>Y rotation (degrees) that points the end-cap shape at <paramref name="face"/> (authored facing south).</summary>

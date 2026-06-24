@@ -12,9 +12,9 @@
     { "code": "tooltype", "states": ["plate", "doubleingot", "quadrod"] }
   ],
   "shapebytype": {
-    "*-plate": { "base": "smex:molten/molds/plate", "rotateY": 90 },
-    "*-doubleingot": { "base": "smex:molten/molds/doubleingot", "rotateY": 90 },
-    "*-quadrod": { "base": "smex:molten/molds/quadrod", "rotateY": 90 }
+    "*-plate": { "base": "iwex:molten/molds/plate", "rotateY": 90 },
+    "*-doubleingot": { "base": "iwex:molten/molds/doubleingot", "rotateY": 90 },
+    "*-quadrod": { "base": "iwex:molten/molds/quadrod", "rotateY": 90 }
   },
   "textures": { "all": { "base": "game:block/clay/{color}clay" } },
   "attributes": {

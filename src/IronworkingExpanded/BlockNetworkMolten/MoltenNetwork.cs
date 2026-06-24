@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten;
+namespace IronworkingExpanded.BlockNetworkMolten;
 
 /// <summary>
 /// Concrete <see cref="BlockNetwork"/> for the molten-canal system. Each canal block
@@ -186,7 +186,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     foreach (var c in cells)
       c.EnsureMetalStack(world);
 
-    int maxFlow = SmexValues.MoltenFlowRate;
+    int maxFlow = IwexValues.MoltenFlowRate;
     foreach (var a in cells)
     {
       if (a.Sealed || a.Solidified || a.Block is not BlockNetworkNode aNode)
@@ -251,7 +251,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     // (pedestal/tap), which takes the final sub-minimum dregs so a run can empty completely.
     var transfer = diff > maxFlow ? maxFlow : diff;
     if (
-      transfer < SmexValues.MoltenMinFlowAmount
+      transfer < IwexValues.MoltenMinFlowAmount
       && receiver is not BlockEntityMoltenCanalMoldPedestal
       && receiver is not BlockEntityMoltenCanalTap
     )

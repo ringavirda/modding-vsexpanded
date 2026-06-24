@@ -1,7 +1,7 @@
 {
   "code": "moltencanal",
-  "class": "smex.BlockMoltenCanal",
-  "entityClass": "smex.BlockEntityMoltenCanal",
+  "class": "iwex.BlockMoltenCanal",
+  "entityClass": "iwex.BlockEntityMoltenCanal",
   "blockmaterial": "Ceramic",
   "sounds": {
     "walk": "game:walk/stone",
@@ -16,7 +16,7 @@
   "maxstacksize": 8,
   "creativeinventory": {
     "general": ["*-straight-*-ns"],
-    "smex": ["*-straight-*-ns"]
+    "iwex": ["*-straight-*-ns"]
   },
   "attributes": {
     "fillHeight": 1,
@@ -50,10 +50,10 @@
   ],
   "shapebytype": {
     "*-straight-*-ns": {
-      "base": "smex:molten/canal/straight"
+      "base": "iwex:molten/canal/straight"
     },
     "*-straight-*-we": {
-      "base": "smex:molten/canal/straight",
+      "base": "iwex:molten/canal/straight",
       "rotateY": 90
     }
   },

@@ -1,0 +1,110 @@
+{
+  "code": "bunker",
+  "class": "iwex.BlockOreBunker",
+  "entityClass": "iwex.BlockEntityOreBunker",
+  "blockmaterial": "Ceramic",
+  "requiredMiningTier": 0,
+  "resistance": 3.5,
+  "maxstacksize": 1,
+  "drops": [],
+
+  "attributes": {
+    "fillerOffsets": [
+      { "x": 1, "y": 0, "z": 0 },
+      { "x": 2, "y": 0, "z": 0 },
+      { "x": 0, "y": 0, "z": 1 },
+      { "x": 1, "y": 0, "z": 1 },
+      { "x": 2, "y": 0, "z": 1 },
+      { "x": 0, "y": 0, "z": 2 },
+      { "x": 1, "y": 0, "z": 2 },
+      { "x": 2, "y": 0, "z": 2 },
+      { "x": 0, "y": 0, "z": 3 },
+      { "x": 1, "y": 0, "z": 3 },
+      { "x": 2, "y": 0, "z": 3 },
+      { "x": 0, "y": 0, "z": 4 },
+      { "x": 1, "y": 0, "z": 4 },
+      { "x": 2, "y": 0, "z": 4 },
+      { "x": 0, "y": 0, "z": 5 },
+      { "x": 1, "y": 0, "z": 5 },
+      { "x": 2, "y": 0, "z": 5 }
+    ]
+  },
+
+  "behaviors": [
+    { "name": "HorizontalOrientable" },
+    { "name": "BlockEntityInteract" }
+  ],
+
+  "entityBehaviors": [
+    { "name": "Animatable" },
+    {
+      "name": "ExRightClickConstructable",
+      "properties": {
+        "stages": [
+          {
+            "addElements": ["Root/Base"]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:burnedbrick-{brick}",
+                "name": "iwex:rcc-ingredient-brick",
+                "quantity": 24
+              }
+            ],
+            "addElements": ["Root/Walls"]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:burnedbrick-{brick}",
+                "name": "iwex:rcc-ingredient-brick",
+                "quantity": 8
+              }
+            ],
+            "addElements": ["Root/InputBase"]
+          }
+        ]
+      }
+    }
+  ],
+
+  "variantgroups": [
+    { "code": "brick", "states": ["black", "brown", "cream", "gray", "orange", "red", "tan"] },
+    { "code": "side", "loadFromProperties": "abstract/horizontalorientation" }
+  ],
+
+  "creativeinventory": {
+    "general": ["*-north"],
+    "iwex": ["*-north"]
+  },
+
+  "shape": {
+    "base": "iwex:ore/bunker",
+    "rotateYByType": {
+      "*-north": 0,
+      "*-east": 270,
+      "*-south": 180,
+      "*-west": 90
+    },
+    "selectiveElements": ["Root/Base/*"]
+  },
+
+  "textures": {
+    "fire1": { "base": "game:block/clay/brick/four/running/{brick}1" }
+  },
+
+  "selectionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 1, "z2": 1 },
+  "collisionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 1, "z2": 1 },
+  "sidesolid": { "all": false },
+  "sideopaque": { "all": false },
+
+  "sounds": {
+    "place": "game:block/ceramicplace",
+    "break": "game:block/ceramic",
+    "hit": "game:block/ceramic",
+    "walk": "game:walk/stone"
+  }
+}

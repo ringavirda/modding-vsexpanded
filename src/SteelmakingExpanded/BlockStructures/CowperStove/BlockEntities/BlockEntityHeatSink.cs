@@ -37,7 +37,7 @@ public class BlockEntityHeatSink : BlockEntity
 
   // The shared incandescence scale (canals, barrels, heat sink all glow alike).
   private static byte GetLightLevel(float temp) =>
-    BlockNetworkMolten.MoltenMetal.GlowLevel(temp);
+    IronworkingExpanded.BlockNetworkMolten.MoltenMetal.GlowLevel(temp);
 
   public override void ToTreeAttributes(ITreeAttribute tree)
   {

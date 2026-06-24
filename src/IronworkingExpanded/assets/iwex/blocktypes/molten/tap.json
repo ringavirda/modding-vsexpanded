@@ -1,7 +1,7 @@
 {
   "code": "moltencanal",
-  "class": "smex.BlockMoltenCanalTap",
-  "entityClass": "smex.BlockEntityMoltenCanalTap",
+  "class": "iwex.BlockMoltenCanalTap",
+  "entityClass": "iwex.BlockEntityMoltenCanalTap",
   "blockmaterial": "Stone",
   "sounds": {
     "walk": "game:walk/stone",
@@ -15,7 +15,7 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": ["*-tap-s"],
-    "smex": ["*-tap-s"]
+    "iwex": ["*-tap-s"]
   },
   "attributes": {
     "fillHeight": 1,
@@ -36,18 +36,18 @@
   ],
   "shapebytype": {
     "*-tap-n": {
-      "base": "smex:molten/canal/tap"
+      "base": "iwex:molten/canal/tap"
     },
     "*-tap-w": {
-      "base": "smex:molten/canal/tap",
+      "base": "iwex:molten/canal/tap",
       "rotateY": 90
     },
     "*-tap-s": {
-      "base": "smex:molten/canal/tap",
+      "base": "iwex:molten/canal/tap",
       "rotateY": 180
     },
     "*-tap-e": {
-      "base": "smex:molten/canal/tap",
+      "base": "iwex:molten/canal/tap",
       "rotateY": 270
     }
   },

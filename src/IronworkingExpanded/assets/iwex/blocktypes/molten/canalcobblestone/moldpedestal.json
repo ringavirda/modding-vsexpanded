@@ -1,7 +1,7 @@
 {
   "code": "moltencanal",
-  "class": "smex.BlockMoltenCanalMoldPedestal",
-  "entityClass": "smex.BlockEntityMoltenCanalMoldPedestal",
+  "class": "iwex.BlockMoltenCanalMoldPedestal",
+  "entityClass": "iwex.BlockEntityMoltenCanalMoldPedestal",
   "blockmaterial": "Stone",
   "sounds": {
     "walk": "game:walk/stone",
@@ -15,7 +15,7 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": ["*-moldpedestal-*-s"],
-    "smex": ["*-moldpedestal-*-s"]
+    "iwex": ["*-moldpedestal-*-s"]
   },
   "attributes": {
     "fillStart": 14,
@@ -39,18 +39,18 @@
   "skipVariants": ["*-halite-*", "*-scoria-*", "*-tuff-*", "*-travertine-*"],
   "shapebytype": {
     "*-moldpedestal-*-n": {
-      "base": "smex:molten/canal/moldpedestal"
+      "base": "iwex:molten/canal/moldpedestal"
     },
     "*-moldpedestal-*-w": {
-      "base": "smex:molten/canal/moldpedestal",
+      "base": "iwex:molten/canal/moldpedestal",
       "rotateY": 90
     },
     "*-moldpedestal-*-s": {
-      "base": "smex:molten/canal/moldpedestal",
+      "base": "iwex:molten/canal/moldpedestal",
       "rotateY": 180
     },
     "*-moldpedestal-*-e": {
-      "base": "smex:molten/canal/moldpedestal",
+      "base": "iwex:molten/canal/moldpedestal",
       "rotateY": 270
     }
   },

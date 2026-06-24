@@ -7,7 +7,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for the molten-canal start. Acts as the network's
@@ -22,7 +22,7 @@ public class BlockEntityMoltenCanalStart
 {
   /// <summary> Start block by itself has higher capacity. </summary>
   public override int MaxUnitCapacity =>
-    SmexValues.CanalDefaultUnitCapacity * 2;
+    IwexValues.CanalDefaultUnitCapacity * 2;
 
   // Throttle for the molten-pour sound as metal enters here.
   private long _lastPourSoundMs;
@@ -149,6 +149,6 @@ public class BlockEntityMoltenCanalStart
 
     // Live feedback while metal is flowing in; the tally self-clears after a few idle seconds.
     if (_pourTally > 0)
-      dsc.AppendLine(Lang.Get("smex:canalstart-pouredtally", _pourTally));
+      dsc.AppendLine(Lang.Get("iwex:canalstart-pouredtally", _pourTally));
   }
 }

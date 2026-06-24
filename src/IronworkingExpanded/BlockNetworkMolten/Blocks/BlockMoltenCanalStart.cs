@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// The canal network's anchor block. Acts as an <see cref="BlockEntityMoltenCanalStart"/>
@@ -116,7 +116,7 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
       .. baseHelp,
       new WorldInteraction
       {
-        ActionLangCode = "smex:blockhelp-canalstart-pour",
+        ActionLangCode = "iwex:blockhelp-canalstart-pour",
         MouseButton = EnumMouseButton.Right,
         Itemstacks = _smeltedCrucibles,
       },

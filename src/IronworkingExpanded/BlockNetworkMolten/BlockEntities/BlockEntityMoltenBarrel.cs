@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.Blocks;
+using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -11,7 +11,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for the molten barrel. Stores up to <see cref="MaxUnitAmount"/> units
@@ -39,7 +39,7 @@ public class BlockEntityMoltenBarrel
   // Cooldown rate for the stored metal: the molten-system base scaled by the barrel's coefficient
   // (mirrors the converter's charge cooldown). Read live so a config change applies immediately.
   private static float ContentCooldownSpeed =>
-    SmexValues.MoltenCooldownSpeed * SmexValues.BarrelCooldownCoefficient;
+    IwexValues.MoltenCooldownSpeed * IwexValues.BarrelCooldownCoefficient;
 
   /// <summary>Temperature (°C) of the stored metal, or 0 when empty.</summary>
   public float Temperature =>
@@ -404,7 +404,7 @@ public class BlockEntityMoltenBarrel
 
     if (MetalContent == null || CurrentUnitAmount <= 0)
     {
-      dsc.AppendLine(Lang.Get("smex:moltenbarrel-info-empty", MaxUnitAmount));
+      dsc.AppendLine(Lang.Get("iwex:moltenbarrel-info-empty", MaxUnitAmount));
       return;
     }
 
@@ -412,14 +412,14 @@ public class BlockEntityMoltenBarrel
     string state = Lang.Get(
       MoltenMetal.StateOf(Api.World, MetalContent) switch
       {
-        MoltenState.Liquid => "smex:metalstate-liquid",
-        MoltenState.Hardened => "smex:metalstate-hardened",
-        _ => "smex:metalstate-soft",
+        MoltenState.Liquid => "iwex:metalstate-liquid",
+        MoltenState.Hardened => "iwex:metalstate-hardened",
+        _ => "iwex:metalstate-soft",
       }
     );
     dsc.AppendLine(
       Lang.Get(
-        "smex:moltenbarrel-info-units-state",
+        "iwex:moltenbarrel-info-units-state",
         CurrentUnitAmount,
         MaxUnitAmount,
         state,

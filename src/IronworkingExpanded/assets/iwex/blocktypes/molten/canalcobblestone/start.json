@@ -1,7 +1,7 @@
 {
   "code": "moltencanal",
-  "class": "smex.BlockMoltenCanalStart",
-  "entityClass": "smex.BlockEntityMoltenCanalStart",
+  "class": "iwex.BlockMoltenCanalStart",
+  "entityClass": "iwex.BlockEntityMoltenCanalStart",
   "blockmaterial": "Stone",
   "sounds": {
     "walk": "game:walk/stone",
@@ -15,7 +15,7 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": ["*-start-*-s"],
-    "smex": ["*-start-*-s"]
+    "iwex": ["*-start-*-s"]
   },
   "attributes": {
     "fillHeight": 1,
@@ -38,18 +38,18 @@
   "skipVariants": ["*-halite-*", "*-scoria-*", "*-tuff-*", "*-travertine-*"],
   "shapebytype": {
     "*-start-*-s": {
-      "base": "smex:molten/canal/start"
+      "base": "iwex:molten/canal/start"
     },
     "*-start-*-w": {
-      "base": "smex:molten/canal/start",
+      "base": "iwex:molten/canal/start",
       "rotateY": 270
     },
     "*-start-*-n": {
-      "base": "smex:molten/canal/start",
+      "base": "iwex:molten/canal/start",
       "rotateY": 180
     },
     "*-start-*-e": {
-      "base": "smex:molten/canal/start",
+      "base": "iwex:molten/canal/start",
       "rotateY": 90
     }
   },

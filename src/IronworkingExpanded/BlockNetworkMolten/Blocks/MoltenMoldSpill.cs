@@ -3,7 +3,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// Shared rule: a tool mold holding still-molten (liquid) metal may only be
@@ -14,7 +14,7 @@ namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
 public static class MoltenMoldSpill
 {
   /// <summary>Spill notification code, resolved client-side from "game:ingameerror-{code}".</summary>
-  public const string ErrorCode = "smex-moltenspill";
+  public const string ErrorCode = "iwex-moltenspill";
 
   /// <summary>
   /// If <paramref name="slot"/> holds a tool mold with molten metal, strips its
@@ -47,7 +47,7 @@ public static class MoltenMoldSpill
   }
 
   /// <summary>Error code for refusing to hand over a liquid mold into occupied hands.</summary>
-  public const string NeedEmptyHandsCode = "smex-needemptyhands";
+  public const string NeedEmptyHandsCode = "iwex-needemptyhands";
 
   /// <summary>
   /// True when <paramref name="contents"/>/<paramref name="units"/> describe metal

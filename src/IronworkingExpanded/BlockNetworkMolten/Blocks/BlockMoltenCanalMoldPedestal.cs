@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// Mold pedestal: a canal endpoint that holds a small tool mold and fills it from
@@ -99,7 +99,7 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
 
       if (!MoldKinds.FitsPedestal(heldSlot.Itemstack.Block))
       {
-        (byPlayer as IServerPlayer)?.SendIngameError("smex-moldtoolarge");
+        (byPlayer as IServerPlayer)?.SendIngameError("iwex-moldtoolarge");
         return false;
       }
 
@@ -153,7 +153,7 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
 
     var toggle = new WorldInteraction
     {
-      ActionLangCode = "smex:blockhelp-canal-togglepour",
+      ActionLangCode = "iwex:blockhelp-canal-togglepour",
       MouseButton = EnumMouseButton.Right,
       HotKeyCode = "sprint",
     };
@@ -163,7 +163,7 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
       result.Add(
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-pedestal-placemold",
+          ActionLangCode = "iwex:blockhelp-pedestal-placemold",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
           Itemstacks = _acceptedMolds,
@@ -173,7 +173,7 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
       result.Add(
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-pedestal-removemold",
+          ActionLangCode = "iwex:blockhelp-pedestal-removemold",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
         }

@@ -9,6 +9,7 @@
   "dependencies": {
     "game": "1.22.0",
     "exlib": "0.1.0",
-    "ppex": "0.1.0"
+    "ppex": "0.1.0",
+    "iwex": "0.1.0"
   }
 }

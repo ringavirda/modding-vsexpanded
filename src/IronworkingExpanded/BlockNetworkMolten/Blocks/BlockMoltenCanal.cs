@@ -3,13 +3,13 @@ using System.Linq;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.Blocks;
+namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
 /// The base molten-canal block: a self-orienting node of the "molten" network that
@@ -156,7 +156,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
         drops =
         [
           .. drops,
-          new ItemStack(clay, SmexValues.CanalUnsealClayRefund),
+          new ItemStack(clay, IwexValues.CanalUnsealClayRefund),
         ];
     }
 
@@ -192,10 +192,10 @@ public partial class BlockMoltenCanal : BlockNetworkNode
   /// <list type="bullet">
   /// <item>Any solidified canal: chisel in hand + hammer in the off-hand chips the
   /// hardened metal out, recovering bits and restoring the run to working order.</item>
-  /// <item>Straight canal + <see cref="SmexValues.CanalSealClayCost"/> fire clay:
+  /// <item>Straight canal + <see cref="IwexValues.CanalSealClayCost"/> fire clay:
   /// seals it into a flow-blocking separator.</item>
   /// <item>Sealed straight canal + chisel: breaks the seal and refunds
-  /// <see cref="SmexValues.CanalUnsealClayRefund"/> fire clay.</item>
+  /// <see cref="IwexValues.CanalUnsealClayRefund"/> fire clay.</item>
   /// </list>
   /// </summary>
   public override bool OnBlockInteractStart(
@@ -234,7 +234,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
 
     if (!be.Sealed)
     {
-      if (!IsFireClay(held) || held!.StackSize < SmexValues.CanalSealClayCost)
+      if (!IsFireClay(held) || held!.StackSize < IwexValues.CanalSealClayCost)
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
       // Only seal a fully drained section: this cell AND its connector-face neighbours must be
@@ -242,7 +242,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
       if (!CanSeal(world, blockSel.Position, be))
       {
         if (world.Side == EnumAppSide.Server)
-          (byPlayer as IServerPlayer)?.SendIngameError("smex-canalnotempty");
+          (byPlayer as IServerPlayer)?.SendIngameError("iwex-canalnotempty");
         return false;
       }
 
@@ -251,7 +251,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
         be.SetSealed(true);
         if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
         {
-          activeSlot!.TakeOut(SmexValues.CanalSealClayCost);
+          activeSlot!.TakeOut(IwexValues.CanalSealClayCost);
           activeSlot.MarkDirty();
         }
         ExSounds.Play(world.Api, blockSel.Position, ExSounds.Build, 0.8f);
@@ -271,7 +271,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
         Item? clay = world.GetItem(FireClayCode);
         if (clay != null)
         {
-          var refund = new ItemStack(clay, SmexValues.CanalUnsealClayRefund);
+          var refund = new ItemStack(clay, IwexValues.CanalUnsealClayRefund);
           if (!byPlayer.InventoryManager.TryGiveItemstack(refund))
             world.SpawnItemEntity(
               refund,
@@ -331,7 +331,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
   ) =>
     world.BlockAccessor.GetBlockEntity(pos)
       is BlockEntityMoltenCanal { Solidified: true, IsHardened: true }
-      ? MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-clearsolidified")
+      ? MoltenChisel.ChiselHelp(world, "iwex:blockhelp-canal-clearsolidified")
       : null;
 
   public override WorldInteraction[] GetPlacedBlockInteractionHelp(
@@ -353,7 +353,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
       return
       [
         .. baseHelp,
-        MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-clearsolidified"),
+        MoltenChisel.ChiselHelp(world, "iwex:blockhelp-canal-clearsolidified"),
       ];
 
     if (Type != "straight")
@@ -364,7 +364,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
       return
       [
         .. baseHelp,
-        MoltenChisel.ChiselHelp(world, "smex:blockhelp-canal-unseal"),
+        MoltenChisel.ChiselHelp(world, "iwex:blockhelp-canal-unseal"),
       ];
 
     // The seal hint only shows when sealing is actually possible: this cell and its neighbours
@@ -375,7 +375,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
         .. baseHelp,
         new WorldInteraction
         {
-          ActionLangCode = "smex:blockhelp-canal-seal",
+          ActionLangCode = "iwex:blockhelp-canal-seal",
           MouseButton = EnumMouseButton.Right,
           Itemstacks =
             (_fireClayStacks ??= ResolveFireClayStacks(world)).Length > 0
@@ -391,7 +391,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode
   {
     Item? clay = world.GetItem(FireClayCode);
     return clay != null
-      ? [new ItemStack(clay, SmexValues.CanalSealClayCost)]
+      ? [new ItemStack(clay, IwexValues.CanalSealClayCost)]
       : [];
   }
   #endregion

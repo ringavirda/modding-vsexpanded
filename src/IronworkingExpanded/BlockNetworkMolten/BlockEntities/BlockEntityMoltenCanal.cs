@@ -4,14 +4,14 @@ using System.Text;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.Helpers;
-using SteelmakingExpanded.BlockNetworkMolten.Blocks;
+using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for all molten-canal blocks. Each block is a self-contained
@@ -31,7 +31,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   }
 
   /// <summary>This cell's metal capacity, in units (from the block's <c>maxUnits</c> attribute).</summary>
-  public virtual int MaxUnitCapacity => SmexValues.CanalDefaultUnitCapacity;
+  public virtual int MaxUnitCapacity => IwexValues.CanalDefaultUnitCapacity;
 
   /// <summary>Units of liquid (or, once latched, solidified) metal held by this cell.</summary>
   public int CellAmount { get; protected set; }
@@ -254,7 +254,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
     MoltenMetal.SetTemperature(world, _cellMetalStack, temp);
     MoltenMetal.SetCooldownSpeed(
       _cellMetalStack,
-      SmexValues.MoltenCooldownSpeed
+      IwexValues.MoltenCooldownSpeed
     );
   }
 
@@ -263,7 +263,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   /// hot metal poured over an already-full cell, so a continuously-fed fitting stays molten instead
   /// of plugging. Returns true if raised. Server-side.
   /// </summary>
-  internal bool SoakHeat(IWorldAccessor world, float incomingTemp)
+  public bool SoakHeat(IWorldAccessor world, float incomingTemp)
   {
     if (
       CellAmount <= 0f
@@ -345,7 +345,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   // threshold, and (unlike the bessemer) there's no size cap, so "too hot" is the only blocked state.
   bool IChiselableMolten.HasChiselableContent => Solidified;
   bool IChiselableMolten.CanChiselOut => Solidified && IsHardened;
-  string? IChiselableMolten.ChiselBlockedError => "smex-canaltoohot";
+  string? IChiselableMolten.ChiselBlockedError => "iwex-canaltoohot";
 
   ItemStack? IChiselableMolten.ChiselOut() => ClearSolidified();
 
@@ -407,7 +407,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
     RefreshOpenConnectorFaces();
 
     var baseShapeLoc = new AssetLocation(
-      $"smex:shapes/molten/canal/{Block?.Variant["type"]}.json"
+      $"iwex:shapes/molten/canal/{Block?.Variant["type"]}.json"
     );
     Shape baseShape = Api.Assets.Get<Shape>(baseShapeLoc);
     if (baseShape != null)
@@ -655,14 +655,14 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
     base.GetBlockInfo(forPlayer, dsc);
 
     if (Sealed)
-      dsc.AppendLine(Lang.Get("smex:canal-sealed"));
+      dsc.AppendLine(Lang.Get("iwex:canal-sealed"));
 
     if (Solidified)
     {
       string solidMetalName = MoltenMetal.DisplayName(CellMetalType);
       dsc.AppendLine(
         Lang.Get(
-          "smex:canal-solidified",
+          "iwex:canal-solidified",
           CellAmount,
           MaxUnitCapacity,
           solidMetalName,
@@ -672,14 +672,14 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
       // Hot solid plug: still glowing, too hot to chip out. Tell the player to
       // wait for it to cool below the chisellable (hardened) threshold.
       dsc.AppendLine(
-        Lang.Get(IsHardened ? "smex:canal-chiselready" : "smex:canal-cooling")
+        Lang.Get(IsHardened ? "iwex:canal-chiselready" : "iwex:canal-cooling")
       );
       return;
     }
 
     if (CellAmount <= 0f)
     {
-      dsc.AppendLine(Lang.Get("smex:canal-empty"));
+      dsc.AppendLine(Lang.Get("iwex:canal-empty"));
     }
     else
     {
@@ -687,14 +687,14 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
       string state = Lang.Get(
         CellState switch
         {
-          MoltenState.Liquid => "smex:metalstate-liquid",
-          MoltenState.Hardened => "smex:metalstate-hardened",
-          _ => "smex:metalstate-cooling",
+          MoltenState.Liquid => "iwex:metalstate-liquid",
+          MoltenState.Hardened => "iwex:metalstate-hardened",
+          _ => "iwex:metalstate-cooling",
         }
       );
       dsc.AppendLine(
         Lang.Get(
-          "smex:canal-content2",
+          "iwex:canal-content2",
           CellAmount,
           MaxUnitCapacity,
           metalName,

@@ -1,7 +1,9 @@
+using IronworkingExpanded;
 using System;
+using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
-using SteelmakingExpanded.BlockNetworkMolten;
-using SteelmakingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -82,6 +84,11 @@ public class MoltenMoldPedestalTests
     be.AddMold(new ItemStack(moldBlock));
     Assert.True(be.IsMold);
 
+    // The pedestal (now in iwex) routes its disable check through ExMoldGate; smex wires this
+    // predicate in its ModSystem.Start, which the test harness doesn't run, so register it here.
+    ExMoldGate.RegisterIsDisabled(
+      SteelmakingExpanded.Molds.MoldGating.IsToolMoldDisabled
+    );
     try
     {
       SteelmakingExpanded.Molds.MoldGating.SetEnabled("plate", false);
@@ -118,7 +125,7 @@ public class MoltenMoldPedestalTests
   {
     var world = NewWorld();
     Assert.Equal(
-      (int)Math.Ceiling(SmexValues.CanalDefaultUnitCapacity / 2.0),
+      (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0),
       Pedestal(world).MaxUnitCapacity
     );
   }

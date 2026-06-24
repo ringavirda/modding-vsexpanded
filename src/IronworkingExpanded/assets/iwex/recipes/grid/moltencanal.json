@@ -38,7 +38,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-straight-{rock}-ns",
+      "code": "iwex:moltencanal-straight-{rock}-ns",
       "quantity": 1
     }
   },
@@ -81,7 +81,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-bend-{rock}-nw",
+      "code": "iwex:moltencanal-bend-{rock}-nw",
       "quantity": 1
     }
   },
@@ -124,7 +124,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-tjunction-{rock}-esw",
+      "code": "iwex:moltencanal-tjunction-{rock}-esw",
       "quantity": 1
     }
   },
@@ -167,7 +167,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-xjunction-{rock}-nswe",
+      "code": "iwex:moltencanal-xjunction-{rock}-nswe",
       "quantity": 1
     }
   },
@@ -210,7 +210,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-start-{rock}-s",
+      "code": "iwex:moltencanal-start-{rock}-s",
       "quantity": 1
     }
   },
@@ -253,7 +253,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-moldpedestal-{rock}-s",
+      "code": "iwex:moltencanal-moldpedestal-{rock}-s",
       "quantity": 1
     }
   },
@@ -269,7 +269,7 @@
     "height": 1,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-tap-s",
+      "code": "iwex:moltencanal-tap-s",
       "quantity": 1
     }
   },
@@ -300,7 +300,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-straight-{brick}-ns",
+      "code": "iwex:moltencanal-straight-{brick}-ns",
       "quantity": 1
     }
   },
@@ -321,7 +321,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-straight-fire-ns",
+      "code": "iwex:moltencanal-straight-fire-ns",
       "quantity": 1
     }
   },
@@ -352,7 +352,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-bend-{brick}-nw",
+      "code": "iwex:moltencanal-bend-{brick}-nw",
       "quantity": 1
     }
   },
@@ -373,7 +373,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-bend-fire-nw",
+      "code": "iwex:moltencanal-bend-fire-nw",
       "quantity": 1
     }
   },
@@ -404,7 +404,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-tjunction-{brick}-esw",
+      "code": "iwex:moltencanal-tjunction-{brick}-esw",
       "quantity": 1
     }
   },
@@ -425,7 +425,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-tjunction-fire-esw",
+      "code": "iwex:moltencanal-tjunction-fire-esw",
       "quantity": 1
     }
   },
@@ -456,7 +456,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-xjunction-{brick}-nswe",
+      "code": "iwex:moltencanal-xjunction-{brick}-nswe",
       "quantity": 1
     }
   },
@@ -477,7 +477,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-xjunction-fire-nswe",
+      "code": "iwex:moltencanal-xjunction-fire-nswe",
       "quantity": 1
     }
   },
@@ -508,7 +508,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-start-{brick}-s",
+      "code": "iwex:moltencanal-start-{brick}-s",
       "quantity": 1
     }
   },
@@ -529,7 +529,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-start-fire-s",
+      "code": "iwex:moltencanal-start-fire-s",
       "quantity": 1
     }
   },
@@ -560,7 +560,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-moldpedestal-{brick}-s",
+      "code": "iwex:moltencanal-moldpedestal-{brick}-s",
       "quantity": 1
     }
   },
@@ -581,7 +581,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:moltencanal-moldpedestal-fire-s",
+      "code": "iwex:moltencanal-moldpedestal-fire-s",
       "quantity": 1
     }
   }

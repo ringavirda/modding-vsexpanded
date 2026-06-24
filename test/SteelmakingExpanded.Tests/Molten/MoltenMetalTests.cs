@@ -1,4 +1,4 @@
-using SteelmakingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
@@ -48,7 +48,7 @@ public class MoltenMetalTests
   public void FormatTemperature_reads_cold_below_room_temperature()
   {
     // Below 21 C it prints the "cold" label (here the echoed lang key), not a number.
-    Assert.Equal("smex:metalstate-cold", MoltenMetal.FormatTemperature(15f));
+    Assert.Equal("iwex:metalstate-cold", MoltenMetal.FormatTemperature(15f));
   }
 
   [Fact]
