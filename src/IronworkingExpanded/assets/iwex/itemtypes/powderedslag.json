@@ -7,7 +7,7 @@
   },
   "creativeinventory": {
     "general": ["*"],
-    "smex": ["*"]
+    "iwex": ["*"]
   },
   "materialDensity": 500,
   "attributes": {

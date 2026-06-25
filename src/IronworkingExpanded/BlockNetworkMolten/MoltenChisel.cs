@@ -65,7 +65,7 @@ public static class MoltenChisel
     {
       if (!slagFallback)
         return null;
-      Item? slag = world.GetItem(new AssetLocation("smex:slag"));
+      Item? slag = world.GetItem(new AssetLocation("iwex:slag"));
       return slag != null ? new ItemStack(slag, count) : null;
     }
     var drop = new ItemStack(item, count);

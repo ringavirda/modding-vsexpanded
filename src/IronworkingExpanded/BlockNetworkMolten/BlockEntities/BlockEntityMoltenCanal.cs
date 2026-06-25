@@ -310,7 +310,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
     byte oldGlow = GlowLightLevel;
     float temp = MoltenMetal.GetTemperature(world, _cellMetalStack);
 
-    // Re-stamp the live cooldown rate each tick so a `/exmod config smex MoltenCooldownSpeed ...`
+    // Re-stamp the live cooldown rate each tick so a `/exmod config iwex MoltenCooldownSpeed ...`
     // change applies to metal already standing in this cell, not just to the next pour. SetStackTemperature
     // rebases the cooldown baseline to the current temperature (see MoltenMetal.SyncCooldownSpeed), so an
     // unchanged rate is a no-op and a changed rate takes effect from this tick forward.

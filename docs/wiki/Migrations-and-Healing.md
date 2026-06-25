@@ -66,6 +66,24 @@ public interface IBlockRemoval
 Removals delete the block in place **and** strip matching items from containers and player
 inventories. You can read config to decide what to purge - the table is built once at startup.
 
+### Rename / move a (non-block) item
+
+Items are never placed in the world, so they only live in inventories, containers and ground
+storage. Implement `IItemCodeMigration` to rewrite their stacks there:
+
+```csharp
+public interface IItemCodeMigration
+{
+    string Name { get; }
+    IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(ICoreServerAPI api);
+}
+```
+
+`BlockMigrationModSystem` discovers these alongside the block migrations and keeps a separate item
+table. When a held stack matches, the replacement is chosen by the stack's class - so a code that
+exists as **both** a block and an item (e.g. `slag`) migrates each independently and never turns one
+into the other.
+
 ## Block-entity healing
 
 `BlockEntityHealModSystem` repairs **orphaned block entities**: a block that is still placed but

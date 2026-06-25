@@ -18,7 +18,7 @@ public partial class BlockSlag : Block
   {
     if (worldMap.BlockAccessor.GetBlockEntity(pos) is BlockEntitySlag be)
     {
-      Item? slagItem = worldMap.GetItem(new AssetLocation("smex", "slag"));
+      Item? slagItem = worldMap.GetItem(new AssetLocation("iwex", "slag"));
       if (slagItem != null && be.SlagCount > 0)
       {
         // Randomize the drop slightly (e.g. 80-100% of the original mix)

@@ -3,25 +3,25 @@
     "name": "Slag Path",
     "ingredientPattern": "L,S",
     "ingredients": {
-      "L": { "type": "item", "code": "smex:slag", "quantity": 4 },
+      "L": { "type": "item", "code": "iwex:slag", "quantity": 4 },
       "S": { "type": "block", "code": "game:gravel-*" }
     },
     "width": 1,
     "height": 2,
-    "output": { "type": "block", "code": "smex:slagpath-free", "quantity": 2 }
+    "output": { "type": "block", "code": "iwex:slagpath-free", "quantity": 2 }
   },
   {
     "name": "Slag Path Slab",
     "ingredientPattern": "LSL",
     "ingredients": {
-      "L": { "type": "item", "code": "smex:slag", "quantity": 1 },
+      "L": { "type": "item", "code": "iwex:slag", "quantity": 1 },
       "S": { "type": "block", "code": "game:gravel-*" }
     },
     "width": 3,
     "height": 1,
     "output": {
       "type": "block",
-      "code": "smex:slagpathslab-free",
+      "code": "iwex:slagpathslab-free",
       "quantity": 1
     }
   },
@@ -29,15 +29,15 @@
     "name": "Slag Path Stairs",
     "ingredientPattern": "LM,S_",
     "ingredients": {
-      "L": { "type": "item", "code": "smex:slag", "quantity": 3 },
-      "M": { "type": "item", "code": "smex:slag", "quantity": 1 },
+      "L": { "type": "item", "code": "iwex:slag", "quantity": 3 },
+      "M": { "type": "item", "code": "iwex:slag", "quantity": 1 },
       "S": { "type": "block", "code": "game:gravel-*" }
     },
     "width": 2,
     "height": 2,
     "output": {
       "type": "block",
-      "code": "smex:slagpathstairs-up-north-free",
+      "code": "iwex:slagpathstairs-up-north-free",
       "quantity": 1
     }
   }

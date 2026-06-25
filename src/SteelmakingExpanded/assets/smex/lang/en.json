@@ -22,7 +22,6 @@
   "block-converterbessemer*": "Bessemer Converter",
   "block-converter-intake*": "Bessemer Gas Intake",
 
-  "blockdesc-slagpath*": "A sturdy road paved with crushed blast furnace slag.\n",
 
   "blockdesc-cowperstove-intake*": "The intake face of a cowper stove.",
   "blockdesc-cowperstoveheatsink*": "Stores reclaimed exhaust heat.",
@@ -34,8 +33,6 @@
   "blockdesc-convertertransmission*": "Uses axle's mechanical power to rotate the vessesl.",
   "blockdesc-converter-intake*": "The converter's air intake.",
 
-  "itemdesc-slag*": "A by-product tapped from the blast furnace. ",
-  "itemdesc-powderedslag*": "Ground slag, future mortar or fertilizer.",
 
   "blockhelp-bessemer-spawn": "Place converter vessel",
   "blockhelp-bessemer-normal": "Set to normal",
@@ -75,11 +72,6 @@
   "brickname-red": "Red Brick",
   "brickname-tan": "Tan Brick",
 
-  "block-slagpath-*": "Slag Path",
-  "block-slagpathslab-*": "Slag Path Slab",
-  "block-slagpathstairs-*": "Slag Path Stairs",
-  "item-slag": "Slag",
-  "item-powderedslag": "Powdered Slag",
 
   "blockhelp-bessemer-chiselresidue": "Chisel out solidified residue",
   "blockhelp-pressurevalve-cycle": "Cycle pressure threshold",

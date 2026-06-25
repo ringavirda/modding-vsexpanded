@@ -29,35 +29,35 @@
   },
   "shapebytype": {
     "*-up-north-free": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-free",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-free",
       "rotateY": 0
     },
     "*-up-west-free": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-free",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-free",
       "rotateY": 90
     },
     "*-up-south-free": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-free",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-free",
       "rotateY": 180
     },
     "*-up-east-free": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-free",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-free",
       "rotateY": 270
     },
     "*-up-north-snow": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-snow",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-snow",
       "rotateY": 0
     },
     "*-up-west-snow": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-snow",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-snow",
       "rotateY": 90
     },
     "*-up-south-snow": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-snow",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-snow",
       "rotateY": 180
     },
     "*-up-east-snow": {
-      "base": "smex:legacy/basic/stairs/stonepath-stairs-snow",
+      "base": "iwex:legacy/basic/stairs/stonepath-stairs-snow",
       "rotateY": 270
     }
   },
@@ -117,7 +117,7 @@
   "creativeinventory": {
     "general": ["*-up-north-free"],
     "decorative": ["*-up-north-free"],
-    "smex": ["*-up-north-free"]
+    "iwex": ["*-up-north-free"]
   },
   "blockmaterial": "Gravel",
   "replaceable": 900,

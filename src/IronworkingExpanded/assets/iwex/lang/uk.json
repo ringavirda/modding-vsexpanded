@@ -1,4 +1,12 @@
 {
+  "item-slag": "Шлак",
+  "itemdesc-slag*": "Побічний продукт, що зливається з доменної печі. ",
+  "item-powderedslag": "Мелений шлак",
+  "itemdesc-powderedslag*": "Мелений шлак, майбутній розчин або добриво.",
+  "block-slagpath-*": "Шлакова доріжка",
+  "block-slagpathslab-*": "Шлакова плита",
+  "block-slagpathstairs-*": "Шлакові сходи",
+  "blockdesc-slagpath*": "Міцна дорога, мощена подрібненим доменним шлаком.\n",
   "block-moltencanal-start*": "Канал розплаву (початок)",
   "block-moltencanal-straight*": "Канал розплаву (прямий)",
   "block-moltencanal-bend*": "Канал розплаву (поворот)",

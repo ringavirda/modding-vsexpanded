@@ -144,7 +144,7 @@ public static class MoltenMetal
 
   /// <summary>
   /// Human-readable metal name from an item code:
-  /// "game:ingot-iron" → "Iron", "smex:slag" → "Slag".
+  /// "game:ingot-iron" → "Iron", "iwex:slag" → "Slag".
   /// </summary>
   public static string DisplayName(string metalItemCode)
   {

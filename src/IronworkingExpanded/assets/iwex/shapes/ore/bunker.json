@@ -1527,8 +1527,8 @@
       "name": "idle",
       "code": "idle",
       "quantityframes": 10,
-      "onActivityStopped": "EaseOut",
-      "onAnimationEnd": "EaseOut",
+      "onActivityStopped": "Stop",
+      "onAnimationEnd": "Repeat",
       "keyframes": [
         {
           "frame": 0,

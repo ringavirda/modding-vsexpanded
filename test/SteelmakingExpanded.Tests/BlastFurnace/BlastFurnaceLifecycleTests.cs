@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.BlastFurnace;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnace;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -21,7 +21,7 @@ public class BlastFurnaceLifecycleTests
   {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
-    world.RegisterItem("smex:slag");
+    world.RegisterItem("iwex:slag");
     return world;
   }
 
@@ -205,13 +205,13 @@ public class BlastFurnaceLifecycleTests
     ReflectionHelpers.SetProperty(
       be,
       nameof(be.State),
-      BlastFurnaceState.Melting
+      FurnaceState.Melting
     );
     ReflectionHelpers.SetField(be, "_moltenIron", 50f);
 
     ReflectionHelpers.Invoke(be, "Extinguish");
 
-    Assert.Equal(BlastFurnaceState.Idle, be.State);
+    Assert.Equal(FurnaceState.Idle, be.State);
     Assert.Equal(0f, Iron(be), 3); // the molten pool is gone
 
     // A solidified-iron block was left in the hearth for the player to mine out.

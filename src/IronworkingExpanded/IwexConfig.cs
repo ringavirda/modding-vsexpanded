@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ExpandedLib.Registries.Config;
 using Vintagestory.API.Common;
 
@@ -134,4 +135,92 @@ public class IwexConfig : IExVersionedConfig
   /// <summary>Blast-mix dropped per output pulse.</summary>
   public int HopperDropAmount { get; set; } = 4;
   #endregion
+
+  #region Ore bunker
+  /// <summary>Maximum burden (units) a finished ore bunker can hold across all grades.</summary>
+  public int BunkerMaxBurden { get; set; } = 1152;
+  #endregion
+
+  #region Ore mixer
+  /// <summary>Maximum raw input units (iron + flux + coke combined) the mixer holds in one batch.</summary>
+  public int MixerMaxRaw { get; set; } = 512;
+
+  /// <summary>
+  /// Seconds to mix a <b>full</b> batch when the rotor turns at (or below) <see cref="MixerMinSpeed"/>.
+  /// Mixing time scales linearly with how full the mixer is, so a part-full batch mixes proportionally
+  /// faster.
+  /// </summary>
+  public float MixerFullMixSecondsSlow { get; set; } = 30f;
+
+  /// <summary>Seconds to mix a <b>full</b> batch when the rotor turns at (or above) <see cref="MixerMaxSpeed"/>.</summary>
+  public float MixerFullMixSecondsFast { get; set; } = 10f;
+
+  /// <summary>Axle speed at/below which mixing runs at its slowest (<see cref="MixerFullMixSecondsSlow"/>).</summary>
+  public float MixerMinSpeed { get; set; } = 0.5f;
+
+  /// <summary>Axle speed at/above which mixing runs at its fastest (<see cref="MixerFullMixSecondsFast"/>).</summary>
+  public float MixerMaxSpeed { get; set; } = 1.5f;
+
+  /// <summary>
+  /// Fuel (carbon) value of one charcoal added to the mixer, relative to one coke (= 1.0). Charcoal is
+  /// a poorer reductant than coke, so it counts for less: at the default 0.5 it takes two charcoal to
+  /// match one coke - the pre-19th-century charcoal-burden trade-off.
+  /// </summary>
+  public float MixerCharcoalFuelValue { get; set; } = 0.5f;
+
+  /// <summary>Burden units the mixer drains into the container below per second while the lids are open.</summary>
+  public float MixerDrainPerSecond { get; set; } = 8f;
+  #endregion
+
+  #region Burden grades
+  /// <summary>
+  /// Named burden grades, matched by composition band. The ore mixer reports the first profile whose
+  /// iron/flux/fuel fraction bands all contain the current mix (so order them most-specific first);
+  /// any mix outside every band is "off-spec" and can be reloaded into an empty mixer to adjust.
+  /// Extend or retune freely in <c>iwex_values.json</c> - this is the single source of grade truth,
+  /// shared by the burden tooltip and the mixer block info. Fractions are 0..1 of the total mix.
+  /// </summary>
+  public List<BurdenProfile> BurdenProfiles { get; set; } =
+    [
+      // All valid grades need a flux floor for proper slagging; the fuel fraction sets the grade.
+      new()
+      {
+        Key = "lowcoke",
+        MinFlux = 0.05f,
+        MaxFuel = 0.15f,
+      },
+      new()
+      {
+        Key = "standard",
+        MinFlux = 0.05f,
+        MinFuel = 0.15f,
+        MaxFuel = 0.25f,
+      },
+      new()
+      {
+        Key = "highcoke",
+        MinFlux = 0.05f,
+        MinFuel = 0.25f,
+      },
+    ];
+  #endregion
+}
+
+/// <summary>
+/// One named burden grade: a lang-keyed label (<c>iwex:burden-profile-{Key}</c>) plus inclusive
+/// composition bands (fractions 0..1 of the total mix). A <c>BurdenMix</c> matches when each of its
+/// iron/flux/fuel fractions falls within the corresponding band. Pure data - the classifier lives in
+/// <see cref="Items.Burden"/>.
+/// </summary>
+public class BurdenProfile
+{
+  /// <summary>Grade key; the mixer/tooltip show <c>iwex:burden-profile-{Key}</c>.</summary>
+  public string Key { get; set; } = "";
+
+  public float MinIron { get; set; }
+  public float MaxIron { get; set; } = 1f;
+  public float MinFlux { get; set; }
+  public float MaxFlux { get; set; } = 1f;
+  public float MinFuel { get; set; }
+  public float MaxFuel { get; set; } = 1f;
 }

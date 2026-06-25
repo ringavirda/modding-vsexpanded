@@ -10,23 +10,23 @@
 
   "attributes": {
     "fillerOffsets": [
-      { "x": 1, "y": 0, "z": 0 },
-      { "x": 2, "y": 0, "z": 0 },
+      { "x": 1, "y": 0, "z": 0, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 0, "allowAttach": true },
       { "x": 0, "y": 0, "z": 1 },
-      { "x": 1, "y": 0, "z": 1 },
-      { "x": 2, "y": 0, "z": 1 },
+      { "x": 1, "y": 0, "z": 1, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 1, "allowAttach": true },
       { "x": 0, "y": 0, "z": 2 },
-      { "x": 1, "y": 0, "z": 2 },
-      { "x": 2, "y": 0, "z": 2 },
+      { "x": 1, "y": 0, "z": 2, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 2, "allowAttach": true },
       { "x": 0, "y": 0, "z": 3 },
-      { "x": 1, "y": 0, "z": 3 },
-      { "x": 2, "y": 0, "z": 3 },
+      { "x": 1, "y": 0, "z": 3, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 3, "allowAttach": true },
       { "x": 0, "y": 0, "z": 4 },
-      { "x": 1, "y": 0, "z": 4 },
-      { "x": 2, "y": 0, "z": 4 },
+      { "x": 1, "y": 0, "z": 4, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 4, "allowAttach": true },
       { "x": 0, "y": 0, "z": 5 },
-      { "x": 1, "y": 0, "z": 5 },
-      { "x": 2, "y": 0, "z": 5 }
+      { "x": 1, "y": 0, "z": 5, "allowAttach": true },
+      { "x": -1, "y": 0, "z": 5, "allowAttach": true }
     ]
   },
 
@@ -42,6 +42,17 @@
       "properties": {
         "stages": [
           {
+            "addElements": ["Root/InputBase"]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:burnedbrick-{brick}",
+                "name": "iwex:rcc-ingredient-brick",
+                "quantity": 8
+              }
+            ],
             "addElements": ["Root/Base"]
           },
           {
@@ -54,17 +65,6 @@
               }
             ],
             "addElements": ["Root/Walls"]
-          },
-          {
-            "requireStacks": [
-              {
-                "type": "item",
-                "code": "game:burnedbrick-{brick}",
-                "name": "iwex:rcc-ingredient-brick",
-                "quantity": 8
-              }
-            ],
-            "addElements": ["Root/InputBase"]
           }
         ]
       }
@@ -72,7 +72,10 @@
   ],
 
   "variantgroups": [
-    { "code": "brick", "states": ["black", "brown", "cream", "gray", "orange", "red", "tan"] },
+    {
+      "code": "brick",
+      "states": ["black", "brown", "cream", "gray", "orange", "red", "tan"]
+    },
     { "code": "side", "loadFromProperties": "abstract/horizontalorientation" }
   ],
 
@@ -84,16 +87,19 @@
   "shape": {
     "base": "iwex:ore/bunker",
     "rotateYByType": {
-      "*-north": 0,
-      "*-east": 270,
-      "*-south": 180,
-      "*-west": 90
+      "*-north": 180,
+      "*-east": 90,
+      "*-south": 0,
+      "*-west": 270
     },
-    "selectiveElements": ["Root/Base/*"]
+    "selectiveElements": ["Root/InputBase/*"]
   },
 
   "textures": {
-    "fire1": { "base": "game:block/clay/brick/four/running/{brick}1" }
+    "fire1": {
+      "base": "game:block/clay/brick/four/running/cream1",
+      "overlays": ["game:block/clay/brick/four/running/{brick}1"]
+    }
   },
 
   "selectionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 1, "z2": 1 },

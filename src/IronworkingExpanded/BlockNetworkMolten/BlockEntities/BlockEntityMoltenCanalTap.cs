@@ -374,7 +374,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   {
     // Keep the parked mold's cooldown rate in step with the live config (the parked barrel cools at a
     // fixed slow rate by design, so it is left alone) - this runs every tick, before the pour gate, so
-    // a `/exmod config smex MoltenCooldownSpeed ...` change affects metal already cast in the mold.
+    // a `/exmod config iwex MoltenCooldownSpeed ...` change affects metal already cast in the mold.
     if (IsMold && MoldMetalContent != null && MoldCurrentUnits > 0)
       MoltenMetal.SyncCooldownSpeed(
         Api.World,

@@ -180,7 +180,7 @@ public class BlockEntityMoltenBarrel
   }
 
   // Server tick: keep the stored metal's cooldown rate in step with the live config so a
-  // `/exmod config smex MoltenCooldownSpeed ...` change affects metal already in the barrel,
+  // `/exmod config iwex MoltenCooldownSpeed ...` change affects metal already in the barrel,
   // then fade the incandescent glow as it cools.
   private void OnServerTick()
   {

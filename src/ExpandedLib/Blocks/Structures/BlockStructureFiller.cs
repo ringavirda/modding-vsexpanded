@@ -4,6 +4,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
+using Vintagestory.GameContent.Mechanics;
 
 namespace ExpandedLib.Blocks.Structures;
 
@@ -16,7 +17,7 @@ namespace ExpandedLib.Blocks.Structures;
 /// <c>BlockMPMultiblockGear</c>.
 /// </summary>
 [BlockRegister]
-public partial class BlockStructureFiller : Block, INetworkConnector
+public partial class BlockStructureFiller : Block, INetworkConnector, IMechanicalPowerBlock
 {
   // INetworkConnector: a plain filler is inert (type ""), but a principal can turn one cell into
   // a fixed port by setting PortFace/PortNetworkType on its BE (e.g. the boiler's steam outlet).
@@ -38,6 +39,48 @@ public partial class BlockStructureFiller : Block, INetworkConnector
   ) =>
     world.GetBlockEntity(pos) is BlockEntityStructureFiller be
     && be.PortFace == face.Code[0].ToString();
+
+  // IMechanicalPowerBlock: a footprint cell becomes a mechanical-power intake when its
+  // fillerOffsets entry hosts an MP behaviour (e.g. exlib.BEBehaviorMPFillerPort) with a connector
+  // face - the parallel of the pipe-port support above, but for the vanilla MP network, which
+  // discovers power by asking the BLOCK at each cell whether it accepts an axle on a given face.
+  private static BEBehaviorMPBase? MpBehaviorAt(IBlockAccessor world, BlockPos pos) =>
+    world.GetBlockEntity(pos)?.GetBehavior<BEBehaviorMPBase>();
+
+  public bool HasMechPowerConnectorAt(
+    IWorldAccessor world,
+    BlockPos pos,
+    BlockFacing face
+#if GAME_GE_1_22
+    ,
+    BlockMPBase forBlock
+#endif
+  )
+  {
+    if (
+      world.BlockAccessor.GetBlockEntity(pos)
+        is not BlockEntityStructureFiller be
+      || be.GetBehavior<BEBehaviorMPBase>() == null
+      || be.HostedBehaviors == null
+    )
+      return false;
+    // A mechanical axle couples along an axis, so a port declared on one face accepts a connection on
+    // that face OR its opposite (both ends of the axle line) - letting the player run an axle straight
+    // through the cell and attach from either side.
+    foreach (FillerBehavior b in be.HostedBehaviors)
+      if (
+        b.ConnectorFace != null
+        && (b.ConnectorFace == face || b.ConnectorFace.Opposite == face)
+      )
+        return true;
+    return false;
+  }
+
+  public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face) { }
+
+  /// <summary>The MP network of the hosted port behaviour at this cell, or null when the cell hosts none.</summary>
+  public MechanicalNetwork? GetNetwork(IWorldAccessor world, BlockPos pos) =>
+    MpBehaviorAt(world.BlockAccessor, pos)?.Network;
 
   // Fillers are solid so they collide, but by default aren't an attachment surface (else
   // torches/vines/slabs could hang on the invisible footprint). A cell opts back in via its

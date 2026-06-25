@@ -35,12 +35,13 @@ public record GameTarget(string Tfm, string GameVersion, bool IsCurrent);
 
 public class BuildContext : FrostingContext
 {
-  // Build order matters: exlib first (the shared lib both mods reference), then ppex
-  // (referenced by smex), then smex.
+  // Build order matters: exlib first (the shared lib every mod references), then ppex, then iwex
+  // (the foundational ironmaking mod, referenced by smex), then smex.
   public static readonly string[] ProjectFolders =
   [
     "ExpandedLib",
     "PipesAndPowerExpanded",
+    "IronworkingExpanded",
     "SteelmakingExpanded",
   ];
 

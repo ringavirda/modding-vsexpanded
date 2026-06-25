@@ -28,7 +28,7 @@ public class MoltenMetalTests
   [Theory]
   [InlineData("game:ingot-iron", "Iron")] // ingot- prefix dropped, capitalised
   [InlineData("game:ingot-steel", "Steel")]
-  [InlineData("smex:slag", "Slag")] // non-ingot path used verbatim
+  [InlineData("iwex:slag", "Slag")] // non-ingot path used verbatim
   [InlineData("game:metalbit-copper", "Metalbit-copper")]
   public void DisplayName_strips_ingot_prefix_and_capitalises(
     string code,

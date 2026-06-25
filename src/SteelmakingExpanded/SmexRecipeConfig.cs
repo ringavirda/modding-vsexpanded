@@ -79,9 +79,10 @@ public class SmexRecipeConfig : IExVersionedConfig
         "iwex:moltencanal-moldpedestal-*"
       ),
 
-      // Slag paths.
-      ["slagpath-grid"] = Grid("smex:slagpath-*"),
-      ["slagpathslab-grid"] = Grid("smex:slagpathslab-*"),
-      ["slagpathstairs-grid"] = Grid("smex:slagpathstairs-*"),
+      // Slag paths (relocated to the iwex domain with the ironmaking split; cost catalogue still lives
+      // here and matches them by their new iwex: output codes, same as the molten entries above).
+      ["slagpath-grid"] = Grid("iwex:slagpath-*"),
+      ["slagpathslab-grid"] = Grid("iwex:slagpathslab-*"),
+      ["slagpathstairs-grid"] = Grid("iwex:slagpathstairs-*"),
     };
 }

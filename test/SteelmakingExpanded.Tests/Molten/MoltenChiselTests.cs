@@ -19,7 +19,7 @@ public class MoltenChiselTests
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:metalbit-iron");
-    world.RegisterItem("smex:slag");
+    world.RegisterItem("iwex:slag");
     return world;
   }
 
@@ -92,7 +92,7 @@ public class MoltenChiselTests
     );
 
     Assert.NotNull(drop);
-    Assert.Equal("smex:slag", drop!.Collectible.Code.ToString());
+    Assert.Equal("iwex:slag", drop!.Collectible.Code.ToString());
     Assert.Equal(4, drop.StackSize);
   }
 }

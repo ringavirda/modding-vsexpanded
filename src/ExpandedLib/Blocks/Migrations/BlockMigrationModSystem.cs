@@ -11,10 +11,11 @@ using Vintagestory.API.Server;
 namespace ExpandedLib.Blocks.Migrations;
 
 /// <summary>
-/// Generic, server-side world migrator for renamed/re-variantted blocks - and a purger for ones a
-/// mod wants gone. Collects every <see cref="IBlockCodeMigration"/> and <see cref="IBlockRemoval"/>
-/// in all loaded assemblies into one legacy-code → action table and applies it to matching blocks as
-/// chunk columns load. It matches on <see cref="Block.Code"/> (not a precomputed id, since the engine
+/// Generic, server-side world migrator for renamed/re-variantted blocks and items - and a purger for
+/// ones a mod wants gone. Collects every <see cref="IBlockCodeMigration"/>,
+/// <see cref="IItemCodeMigration"/> and <see cref="IBlockRemoval"/> in all loaded assemblies into
+/// legacy-code → action tables and applies them to matching blocks as chunk columns load (items, which
+/// are never placed, are rewritten wherever they are held as stacks). It matches on <see cref="Block.Code"/> (not a precomputed id, since the engine
 /// renumbers ids on load) so it also catches the missing-block placeholders the engine keeps for
 /// removed codes.
 /// <para>
@@ -37,6 +38,15 @@ public class BlockMigrationModSystem : ModSystem
     IBlockEntityMigration? BlockEntityMigration
   );
 
+  /// <summary>One resolved item-stack rewrite (<see cref="IItemCodeMigration"/>): the replacement
+  /// item to swap in for a legacy item code. Items are never in the world voxel grid, so this only
+  /// applies to held stacks.</summary>
+  private readonly record struct ItemRemapEntry(
+    Item NewItem,
+    AssetLocation OldCode,
+    AssetLocation NewCode
+  );
+
   private ICoreServerAPI _sapi = null!;
 
   /// <summary>Log prefix, e.g. "[smex]" / "[ppex]" - the owning mod's id.</summary>
@@ -45,6 +55,12 @@ public class BlockMigrationModSystem : ModSystem
   // Legacy block code -> replacement, merged across all discovered migrations. Keyed by code
   // (not id) because the engine can renumber block ids on load.
   private readonly Dictionary<AssetLocation, RemapEntry> _remap = [];
+
+  // Legacy item code -> replacement item, for stacks held in inventories/containers (items are never
+  // placed in the world). Kept separate from _remap so a code that is both a block and an item (e.g.
+  // slag) maps each independently; RemapInventory picks the table by the stack's class.
+  private readonly Dictionary<AssetLocation, ItemRemapEntry> _itemRemap = [];
+
   private bool _initialized;
 
   // Only the server owns world block data; the client has nothing to migrate.
@@ -71,7 +87,7 @@ public class BlockMigrationModSystem : ModSystem
       BuildRemapTable();
       _initialized = true;
     }
-    return _remap.Count > 0;
+    return _remap.Count > 0 || _itemRemap.Count > 0;
   }
 
   private void SweepLoadedChunks()
@@ -185,9 +201,10 @@ public class BlockMigrationModSystem : ModSystem
   }
 
   /// <summary>
-  /// Rewrites every item stack in <paramref name="inv"/> whose block is a migration source
-  /// to the replacement block, preserving stack size and attributes (e.g. a filled mold's
-  /// stored contents). Returns how many slots changed.
+  /// Rewrites every item stack in <paramref name="inv"/> whose collectible is a migration source to
+  /// its replacement, preserving stack size and attributes (e.g. a filled mold's stored contents).
+  /// Block stacks use the block table (and can be removed); item stacks use the item table. A code
+  /// that is both a block and an item is resolved by the stack's class. Returns how many slots changed.
   /// </summary>
   private int RemapInventory(IInventory inv)
   {
@@ -195,22 +212,33 @@ public class BlockMigrationModSystem : ModSystem
     foreach (ItemSlot slot in inv)
     {
       ItemStack? stack = slot.Itemstack;
-      if (
-        stack?.Collectible?.Code == null
-        || !_remap.TryGetValue(stack.Collectible.Code, out RemapEntry entry)
-      )
+      if (stack?.Collectible?.Code == null)
         continue;
 
-      // A removal: drop the stack from the slot entirely.
-      if (entry.NewBlock == null)
+      bool isBlock = stack.Class == EnumItemClass.Block;
+      ItemStack? replacement;
+
+      if (isBlock)
       {
-        slot.Itemstack = null;
-        slot.MarkDirty();
-        changed++;
-        continue;
+        if (!_remap.TryGetValue(stack.Collectible.Code, out RemapEntry entry))
+          continue;
+        // A removal: drop the stack from the slot entirely.
+        if (entry.NewBlock == null)
+        {
+          slot.Itemstack = null;
+          slot.MarkDirty();
+          changed++;
+          continue;
+        }
+        replacement = new ItemStack(entry.NewBlock, stack.StackSize);
+      }
+      else
+      {
+        if (!_itemRemap.TryGetValue(stack.Collectible.Code, out ItemRemapEntry entry))
+          continue;
+        replacement = new ItemStack(entry.NewItem, stack.StackSize);
       }
 
-      ItemStack replacement = new(entry.NewBlock, stack.StackSize);
       if (stack.Attributes is { Count: > 0 })
         replacement.Attributes = stack.Attributes.Clone();
       slot.Itemstack = replacement;
@@ -354,6 +382,54 @@ public class BlockMigrationModSystem : ModSystem
         _sapi.Logger.Notification(
           Tag + " Removal '{0}': {1} block code(s) marked for purge.",
           removal.Name,
+          count
+        );
+    }
+
+    // Item migrations: rewrites for held stacks only (items are never in the world voxel grid).
+    foreach (IItemCodeMigration migration in Discover<IItemCodeMigration>())
+    {
+      int count = 0;
+      foreach (var (oldCode, newCode) in migration.GetRemaps(_sapi))
+      {
+        // Old code must resolve as an item in this world (missing-item placeholder included).
+        if (_sapi.World.GetItem(oldCode) == null)
+          continue;
+
+        Item? newItem = _sapi.World.GetItem(newCode);
+        if (newItem == null || newItem.ItemId == 0)
+        {
+          _sapi.Logger.Warning(
+            Tag
+              + " Item migration '{0}': replacement item '{1}' is not registered; skipping.",
+            migration.Name,
+            newCode
+          );
+          continue;
+        }
+
+        if (
+          _itemRemap.TryGetValue(oldCode, out ItemRemapEntry existing)
+          && !existing.NewCode.Equals(newCode)
+        )
+        {
+          _sapi.Logger.Warning(
+            Tag
+              + " Item migration '{0}' remaps {1} but it is already mapped elsewhere; keeping the first mapping.",
+            migration.Name,
+            oldCode
+          );
+          continue;
+        }
+
+        _itemRemap[oldCode] = new ItemRemapEntry(newItem, oldCode, newCode);
+        count++;
+      }
+
+      if (count > 0)
+        _sapi.Logger.Notification(
+          Tag + " Item migration '{0}': {1} legacy item code(s) found to update.",
+          migration.Name,
           count
         );
     }

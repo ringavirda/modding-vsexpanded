@@ -33,7 +33,7 @@ public partial class ItemBurden : Item
         "iwex:burden-composition",
         (int)Math.Round(mix.IronFrac * 100),
         (int)Math.Round(mix.FluxFrac * 100),
-        (int)Math.Round(mix.CokeFrac * 100)
+        (int)Math.Round(mix.FuelFrac * 100)
       )
     );
     dsc.AppendLine(Lang.Get(Burden.ProfileLangKey(mix)));

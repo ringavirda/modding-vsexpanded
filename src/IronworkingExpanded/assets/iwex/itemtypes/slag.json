@@ -7,17 +7,17 @@
   },
   "creativeinventory": {
     "general": ["*"],
-    "smex": ["*"]
+    "iwex": ["*"]
   },
   "materialDensity": 800,
   "grindingProps": {
-    "groundStack": { "type": "item", "code": "smex:powderedslag" }
+    "groundStack": { "type": "item", "code": "iwex:powderedslag" }
   },
   "combustibleProps": {
     "meltingPoint": 720
   },
   "attributes": {
-    "shatteredStack": { "type": "item", "code": "smex:slag" }
+    "shatteredStack": { "type": "item", "code": "iwex:slag" }
   },
   "guiTransform": {
     "translation": { "x": 0, "y": 0, "z": 0 },

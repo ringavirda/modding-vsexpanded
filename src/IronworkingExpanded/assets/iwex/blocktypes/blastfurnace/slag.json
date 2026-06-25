@@ -25,6 +25,6 @@
     "meltingPoint": 720,
     "meltingDuration": 30,
     "smeltedRatio": 1,
-    "smeltedStack": { "type": "item", "code": "smex:slag" }
+    "smeltedStack": { "type": "item", "code": "iwex:slag" }
   }
 }

@@ -46,7 +46,7 @@ public static class BlastmixPiles
 
     int amount = pile.inventory[0].StackSize;
     Block? slagBlock = pile.Api.World.GetBlock(
-      new AssetLocation("smex", "slag")
+      new AssetLocation("iwex", "slag")
     );
     if (slagBlock == null)
       return;

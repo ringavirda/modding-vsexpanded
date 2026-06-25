@@ -1,5 +1,5 @@
 {
-  "code": "slagpathslab",
+  "code": "slagpath",
   "behaviors": [{ "name": "Lockable" }],
   "behaviorsByType": {
     "*-snow": [{ "name": "BreakSnowFirst" }]
@@ -8,12 +8,12 @@
   "attributes": {
     "reinforcable": true,
     "mapColorCode": "road",
-    "liquidBarrierOnSides": [0.5, 0.5, 0.5, 0.5],
+    "liquidBarrierOnSides": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
     "inContainerTexture": { "base": "game:block/stone/gravel/phyllite" }
   },
-  "shape": { "base": "smex:legacy/basic/slab/stonepath-slab-{cover}" },
+  "shape": { "base": "game:block/basic/cube-lowered-{cover}" },
   "textures": {
-    "normal1": {
+    "all": {
       "base": "game:block/stone/gravel/phyllite",
       "overlays": ["game:block/overlay/pebble1"],
       "alternates": [
@@ -68,7 +68,7 @@
   "creativeinventory": {
     "general": ["*-free"],
     "decorative": ["*-free"],
-    "smex": ["*-free"]
+    "iwex": ["*-free"]
   },
   "blockmaterial": "Gravel",
   "replaceable": 900,
@@ -79,21 +79,20 @@
     "down": true
   },
   "sidesolid": {
-    "all": false,
-    "down": true
+    "all": true,
+    "up": false
   },
-  "selectionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 0.4375, "z2": 1 },
-  "collisionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 0.4375, "z2": 1 },
+  "selectionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 0.9375, "z2": 1 },
+  "collisionbox": { "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 0.9375, "z2": 1 },
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldRightReadyAnimation": "heldblockready",
   "heldTpUseAnimation": "twohandplaceblock",
   "tpHandTransform": {
-    "translation": { "x": -1.49, "y": -0.22, "z": -0.7 },
-    "rotation": { "x": 6, "y": 16, "z": 98 },
-    "origin": { "x": 0.5, "y": 0.25, "z": 0.5 },
+    "translation": { "x": -1.23, "y": -0.91, "z": -0.8 },
+    "rotation": { "x": -2, "y": 25, "z": -78 },
     "scale": 0.4
   },
-  "drops": [{ "type": "block", "code": "slagpathslab-free" }],
+  "drops": [{ "type": "block", "code": "slagpath-free" }],
   "sounds": {
     "place": "game:block/gravel",
     "breakByType": {

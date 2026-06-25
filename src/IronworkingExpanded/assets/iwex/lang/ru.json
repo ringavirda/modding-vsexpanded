@@ -1,4 +1,12 @@
 {
+  "item-slag": "Шлак",
+  "itemdesc-slag*": "Побочный продукт, сливаемый из доменной печи. ",
+  "item-powderedslag": "Молотый шлак",
+  "itemdesc-powderedslag*": "Молотый шлак - будущий раствор или удобрение.",
+  "block-slagpath-*": "Шлаковая дорожка",
+  "block-slagpathslab-*": "Шлаковая плита",
+  "block-slagpathstairs-*": "Шлаковые ступени",
+  "blockdesc-slagpath*": "Прочная дорога, мощённая дроблёным доменным шлаком.\n",
   "block-moltencanal-start*": "Канал расплава (начало)",
   "block-moltencanal-straight*": "Канал расплава (прямой)",
   "block-moltencanal-bend*": "Канал расплава (поворот)",

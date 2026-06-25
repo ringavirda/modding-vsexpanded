@@ -3,8 +3,8 @@ using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using PipesAndPowerExpanded.Tests;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using IronworkingExpanded.BlockStructures.BlastFurnace;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnace;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -33,7 +33,7 @@ internal sealed class BlastFurnaceRig
   {
     World = new TestWorld();
     World.RegisterItem("game:ingot-iron", 1500f);
-    World.RegisterItem("smex:slag");
+    World.RegisterItem("iwex:slag");
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
     Furnace = new BlockEntityBlastFurnace
@@ -184,7 +184,7 @@ internal sealed class BlastFurnaceRig
 
   #region Fast-forward + accessors
 
-  public BlastFurnaceRig SetState(BlastFurnaceState s)
+  public BlastFurnaceRig SetState(FurnaceState s)
   {
     ReflectionHelpers.SetProperty(Furnace, nameof(Furnace.State), s);
     return this;
@@ -214,7 +214,7 @@ internal sealed class BlastFurnaceRig
     return this;
   }
 
-  public BlastFurnaceState State => Furnace.State;
+  public FurnaceState State => Furnace.State;
   public float Temp =>
     (float)ReflectionHelpers.GetField(Furnace, "_internalTemp")!;
   public float MoltenIron =>

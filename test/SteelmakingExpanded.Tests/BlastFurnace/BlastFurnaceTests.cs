@@ -1,6 +1,6 @@
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.BlastFurnace;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnace;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -20,7 +20,7 @@ public class BlastFurnaceTests
   {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
-    world.RegisterItem("smex:slag");
+    world.RegisterItem("iwex:slag");
     return world;
   }
 
@@ -48,7 +48,7 @@ public class BlastFurnaceTests
   [Fact]
   public void Defaults_to_idle()
   {
-    Assert.Equal(BlastFurnaceState.Idle, Furnace(NewWorld()).State);
+    Assert.Equal(FurnaceState.Idle, Furnace(NewWorld()).State);
   }
 
   [Fact]
@@ -58,12 +58,12 @@ public class BlastFurnaceTests
     ReflectionHelpers.SetProperty(
       be,
       nameof(be.State),
-      BlastFurnaceState.Firing
+      FurnaceState.Firing
     );
 
     ReflectionHelpers.Invoke(be, "TransitionToMelting");
 
-    Assert.Equal(BlastFurnaceState.Melting, be.State);
+    Assert.Equal(FurnaceState.Melting, be.State);
     Assert.Equal(0f, (float)ReflectionHelpers.GetField(be, "_meltSeconds")!, 3);
   }
 
@@ -74,14 +74,14 @@ public class BlastFurnaceTests
     ReflectionHelpers.SetProperty(
       be,
       nameof(be.State),
-      BlastFurnaceState.Melting
+      FurnaceState.Melting
     );
     ReflectionHelpers.SetField(be, "_internalTemp", 1500f);
     // No molten iron, so the solidified-iron drop branch is skipped.
 
     ReflectionHelpers.Invoke(be, "Extinguish");
 
-    Assert.Equal(BlastFurnaceState.Idle, be.State);
+    Assert.Equal(FurnaceState.Idle, be.State);
     Assert.Equal(
       20f,
       (float)ReflectionHelpers.GetField(be, "_internalTemp")!,
@@ -118,7 +118,7 @@ public class BlastFurnaceTests
       ReflectionHelpers.Invoke(be, "CreateMoltenStack", "slag", 8, 1300f);
 
     Assert.NotNull(stack);
-    Assert.Equal("smex:slag", stack!.Collectible.Code.ToString());
+    Assert.Equal("iwex:slag", stack!.Collectible.Code.ToString());
   }
 
   [Fact]
@@ -145,7 +145,7 @@ public class BlastFurnaceTests
     ReflectionHelpers.SetProperty(
       src,
       nameof(src.State),
-      BlastFurnaceState.Melting
+      FurnaceState.Melting
     );
     ReflectionHelpers.SetProperty(src, nameof(src.IsChoked), true);
     ReflectionHelpers.SetField(src, "_internalTemp", 1456f);
@@ -160,7 +160,7 @@ public class BlastFurnaceTests
     var dst = Furnace(world);
     dst.FromTreeAttributes(tree, world.World);
 
-    Assert.Equal(BlastFurnaceState.Melting, dst.State);
+    Assert.Equal(FurnaceState.Melting, dst.State);
     Assert.True(dst.IsChoked);
     Assert.Equal(
       1456f,

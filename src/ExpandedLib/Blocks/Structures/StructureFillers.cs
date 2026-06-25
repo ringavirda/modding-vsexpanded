@@ -18,18 +18,21 @@ namespace ExpandedLib.Blocks.Structures;
 public readonly record struct FillerOffset(
   Vec3i Offset,
   bool AllowAttach,
-  Cuboidf[]? CollisionBoxes
+  Cuboidf[]? CollisionBoxes,
+  FillerBehavior[]? Behaviors = null
 );
 
 /// <summary>
 /// A resolved world-space filler cell carrying its per-cell attachment flag and, when
 /// the cell is only partially filled, its collision/selection boxes already rotated
-/// into the placed orientation.
+/// into the placed orientation. <see cref="Behaviors"/> carry their connector face
+/// already rotated to match.
 /// </summary>
 public readonly record struct FillerCell(
   BlockPos Pos,
   bool AllowAttach,
-  Cuboidf[]? CollisionBoxes
+  Cuboidf[]? CollisionBoxes,
+  FillerBehavior[]? Behaviors = null
 );
 
 /// <summary>
@@ -67,12 +70,51 @@ public static class StructureFillers
         new FillerOffset(
           new Vec3i(entry["x"].AsInt(), entry["y"].AsInt(), entry["z"].AsInt()),
           entry["allowAttach"].AsBool(false),
-          ReadBoxes(entry)
+          ReadBoxes(entry),
+          ReadBehaviors(entry)
         )
       );
     }
     return result;
   }
+
+  /// <summary>
+  /// Reads a cell's optional <c>behaviors</c> array: each entry is
+  /// <c>{ "code": "&lt;registered class&gt;", "face": "&lt;north-orientation face&gt;"?, "properties": {…}? }</c>.
+  /// The face is the connector direction in the block's north layout and is rotated into the placed
+  /// orientation by <see cref="FootprintCells"/>; omit it for a behaviour that needs no connector.
+  /// Returns null when the cell declares none.
+  /// </summary>
+  private static FillerBehavior[]? ReadBehaviors(JsonObject entry)
+  {
+    if (!entry["behaviors"].Exists)
+      return null;
+    var nodes = entry["behaviors"].AsArray();
+    if (nodes == null || nodes.Length == 0)
+      return null;
+
+    var list = new List<FillerBehavior>(nodes.Length);
+    foreach (var node in nodes)
+    {
+      string? code = node["code"].AsString();
+      if (string.IsNullOrEmpty(code))
+        continue;
+      list.Add(
+        new FillerBehavior(
+          code,
+          ParseFace(node["face"].AsString()),
+          node["properties"].Exists ? node["properties"] : null
+        )
+      );
+    }
+    return list.Count > 0 ? [.. list] : null;
+  }
+
+  /// <summary>Resolves a face name ("north"/"n"…) to a <see cref="BlockFacing"/>, or null when absent.</summary>
+  private static BlockFacing? ParseFace(string? face) =>
+    string.IsNullOrEmpty(face)
+      ? null
+      : BlockFacing.FromCode(face) ?? BlockFacing.FromFirstLetter(face[0]);
 
   /// <summary>
   /// Reads a cell's optional partial-fill cuboids: <c>collisionBoxes</c> (array) takes precedence,
@@ -119,11 +161,36 @@ public static class StructureFillers
         new FillerCell(
           principalPos.AddCopy(r.X, r.Y, r.Z),
           off.AllowAttach,
-          boxes
+          boxes,
+          RotateBehaviorFaces(off.Behaviors, angle)
         )
       );
     }
     return cells;
+  }
+
+  /// <summary>
+  /// Rotates each declared behaviour's north-orientation connector face into the placed orientation
+  /// (the behaviour's other config is orientation-independent and passes through unchanged). Returns
+  /// the same array reference when there is nothing to rotate.
+  /// </summary>
+  private static FillerBehavior[]? RotateBehaviorFaces(
+    FillerBehavior[]? behaviors,
+    int angle
+  )
+  {
+    if (behaviors == null || behaviors.Length == 0)
+      return behaviors;
+    var rotated = new FillerBehavior[behaviors.Length];
+    for (int i = 0; i < behaviors.Length; i++)
+    {
+      FillerBehavior b = behaviors[i];
+      rotated[i] =
+        b.ConnectorFace == null
+          ? b
+          : b with { ConnectorFace = ExOrientation.RotateFacing(b.ConnectorFace, angle) };
+    }
+    return rotated;
   }
 
   /// <summary>True when every cell is free (air or replaceable) so fillers can be placed.</summary>
@@ -169,6 +236,9 @@ public static class StructureFillers
         be.Principal = principalPos.Copy();
         be.AllowAttach = cell.AllowAttach;
         be.CollisionBoxes = cell.CollisionBoxes;
+        // Stores and (re)creates the hosted behaviours now that the principal link is set, so an MP
+        // port joins the network immediately at placement rather than waiting for the next reload.
+        be.SetHostedBehaviors(cell.Behaviors);
         be.MarkDirty(true);
       }
     }
