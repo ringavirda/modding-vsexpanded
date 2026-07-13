@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Fluids;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
@@ -61,6 +62,7 @@ public class ExpandedLibModSystem : ModSystem
   public override void AssetsFinalize(ICoreAPI api)
   {
     MetalCatalogueLoader.Load(api);
+    ExLiquids.Load(api);
   }
 
   public override void StartClientSide(ICoreClientAPI api)

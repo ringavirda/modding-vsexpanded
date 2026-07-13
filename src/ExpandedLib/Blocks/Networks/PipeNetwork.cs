@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -21,13 +22,20 @@ public class PipeNetwork : BlockNetwork
   // Null in a bare-constructed network (e.g. tests) → every open end is a leak, nothing vents.
   private readonly IPipeVentStrategy? _vent;
 
+  // The medium policy (compatibility / priority) - the same injection seam as the vent strategy.
+  // Defaults to the shared ExLiquids taxonomy, which always knows the four built-ins, so a
+  // bare-constructed network (tests) behaves identically to a registered one.
+  private readonly IMediumTaxonomy _taxonomy;
+
   public PipeNetwork(
     BlockNetworkModSystem system,
-    IPipeVentStrategy? vent = null
+    IPipeVentStrategy? vent = null,
+    IMediumTaxonomy? taxonomy = null
   )
     : base(system)
   {
     _vent = vent;
+    _taxonomy = taxonomy ?? ExLiquids.Taxonomy;
   }
 
   /// <summary>
@@ -98,10 +106,7 @@ public class PipeNetwork : BlockNetwork
     // run (Volume <= 0) only keeps its old medium label as a display ghost during the brief
     // empty-clear delay (see OnTick); a new medium must be free to re-claim those empty pipes
     // rather than being latched out until the label clears.
-    if (
-      State.Volume > 0f
-      && !PipeNetworkState.MediaCompatible(State.MediumType, gasType)
-    )
+    if (State.Volume > 0f && !_taxonomy.Compatible(State.MediumType, gasType))
       return false;
     State.MaxVolume = Nodes.Count * ExlibValues.LitresPerPipe;
 
@@ -132,10 +137,7 @@ public class PipeNetwork : BlockNetwork
       if (State.Volume <= 0)
         State.MediumType = gasType;
       else if (actualVolume > 0)
-        State.MediumType = PipeNetworkState.GetHigherPriorityGas(
-          State.MediumType,
-          gasType
-        );
+        State.MediumType = _taxonomy.HigherPriority(State.MediumType, gasType);
 
       if (actualVolume > 0)
       {
@@ -153,10 +155,7 @@ public class PipeNetwork : BlockNetwork
     // Network is at its choke - only upgrade the gas type if needed.
     if (State.MediumType != gasType)
     {
-      string upgraded = PipeNetworkState.GetHigherPriorityGas(
-        State.MediumType,
-        gasType
-      );
+      string upgraded = _taxonomy.HigherPriority(State.MediumType, gasType);
       if (upgraded != State.MediumType)
       {
         State.MediumType = upgraded;
@@ -240,10 +239,7 @@ public class PipeNetwork : BlockNetwork
     // (Volume <= 0) only keeps its old gas label as a display ghost during the empty-clear delay,
     // so let water re-claim those empty pipes rather than latching the stale label (mirror of the
     // guard in TryProduceGas).
-    if (
-      State.Volume > 0f
-      && !PipeNetworkState.MediaCompatible(State.MediumType, "Water")
-    )
+    if (State.Volume > 0f && !_taxonomy.Compatible(State.MediumType, "Water"))
       return false;
     State.MaxVolume = Nodes.Count * ExlibValues.LitresPerPipe;
     // Record the pump's commanded pressure; it's realised as the run's pressure only once the
@@ -370,12 +366,7 @@ public class PipeNetwork : BlockNetwork
 
     // Incompatible media (gas joined to water) can't blend - the larger run wins, the
     // smaller's content is discarded.
-    if (
-      !PipeNetworkState.MediaCompatible(
-        State.MediumType,
-        otherPipe.State.MediumType
-      )
-    )
+    if (!_taxonomy.Compatible(State.MediumType, otherPipe.State.MediumType))
     {
       if (otherPipe.State.Volume > State.Volume)
         State = otherPipe.State;
@@ -411,7 +402,7 @@ public class PipeNetwork : BlockNetwork
       if (State.Volume <= 0)
         State.MediumType = otherPipe.State.MediumType;
       else if (otherPipe.State.Volume > 0)
-        State.MediumType = PipeNetworkState.GetHigherPriorityGas(
+        State.MediumType = _taxonomy.HigherPriority(
           State.MediumType,
           otherPipe.State.MediumType
         );

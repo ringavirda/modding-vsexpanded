@@ -225,22 +225,72 @@ Single medium per network, unified state pool. Used for **water** (intake->boile
 Pressure + one network-wide temperature. Connectors read the adjacent cell;
 valves sever/flow; pressure valves overflow.
 
+The **medium set is data-driven** *(live)*: each medium is a `LiquidDef` in the exlib liquid taxonomy
+(code, gas/liquid phase, merge priority, boil/condense points), so a mod adds one by shipping a JSON
+entry - the built-in four (Air / Steam / Exhaust / Water) reproduce the old hardcoded behaviour exactly.
+The **Lights/Fuel/Colors add-on** (Stage IIb) registers the distillation fractions - coal tar, benzene,
+kerosene, crude oil, the acids, ... - as further media (gas *or* liquid) that ride the very same pipes,
+condensers, valves and tanks. The **condense machinery is the boiler's** (steam->water), generalised to
+every fraction (Sec 6, distillation).
+
 ### 5.3 Mechanical-power (MP) network *(live)*
 Constant-power generator model: `speed = power_budget / total_load`; a machine stalls past ~2x its
 rated load and stops past that *(live)*. Sources: waterwheel (Stage I), engine flywheel sub-machines
 (Stage II+). Loads: helve hammers, rolling mill, steam hammer lift, boring machine, wire extruder, ore
-crusher.
+crusher, and an **MP water pump / MP blower** (below).
 
 **Engine power ratings (kW, shown in block-info).** One **helve hammer** draws **~1 kW** at nominal
 speed (~ 0.125 MP-load units -> display rule **1 load unit ~ 8 kW**):
 
-| Engine | Rated power | Nominal load |
-|---|---|---|
-| Watt engine (LP) | **~4 kW** | 4 helve hammers at rated speed |
-| Cornish engine (HP) | **~4 kW** nominal, throttleable higher | 4 helve hammers; more MP per litre than Watt |
-| Tandem Corliss (HP+LP) | **~36 kW** | 36 helve hammers without slowing - the line/generator prime mover |
+| Engine | Tier / role | Rated power | Drives |
+|---|---|---|---|
+| **Watt engine** | LP, generalist | **~4 kW** | **any one** sub-machine (pump / blower / flywheel); the LP starter |
+| **Cornish engine** | HP, **pump/blow specialist** | **~4 kW** (manual throttle) | a pump **or** blower at full efficiency; the **deep-lift** pump engine (gates deep wells) |
+| **Horizontal (Corliss) engine** | HP, **MP specialist** *(new)* | **~8 kW** | the **flywheel only - cannot pump/blow**; the efficient mill / line-shaft engine |
+| **Large Cornish pumping engine** | HP, large pump/blow | (scaled Cornish) | one **large** pump or blower (heavy blast / boiler feed / deepest wells) |
+| **Tandem Corliss** | HP, large MP | **~36 kW** | the heavy flywheel -> large MP / generator; the plant prime mover |
 
 These are constant-power *budgets*; load past ~2x the rating still stalls the engine.
+
+**Two HP lineages (the key power lever).** The HP tier splits into a **pumping/blowing** line and a
+**rotary/MP** line, each a base engine plus a scaled-up counterpart - so you build the engine your job
+needs, not one engine for everything:
+
+- **Pump/blow line: Cornish -> Large Cornish.** The single-acting beam-and-plunger Cornish engine is built
+  for the pumping/blowing stroke - efficient driving a pump or blower, and the **only HP engine that lifts
+  from depth** (historically *the* deep-mine pumping engine). It *can* turn a flywheel for MP, but with
+  **no governor** it draws fixed steam regardless of load, so it is **wasteful at MP** - possible, not
+  efficient.
+- **Rotary/MP line: Horizontal (Corliss) -> Tandem Corliss.** The horizontal mill engine is rotary-only -
+  it **cannot pump or blow** (no plunger/beam) - but its **Corliss valve gear + governor** (steam follows
+  load, below) make it the **efficient MP producer**: more MP per litre than a Cornish turning the same
+  flywheel. The **Tandem Corliss** is its tandem-**compound** scale-up (HP+LP cylinders inline, most
+  efficient) - the line / generator prime mover.
+
+So Cornish + Large Cornish are the **pump/blast** engines and Horizontal Corliss + Tandem Corliss the
+**MP/electric** engines - two clean base->large ladders, not one do-everything engine. (Slight liberty:
+real beam engines *could* be built rotative; the mod specialises them for a clear power-vs-pumping choice.)
+
+**Two ways to drive a pump or blower (dedicated vs MP - fewer engines vs more efficient).** A water pump
+or air blower comes in two forms, a historical *and* gameplay trade:
+
+- **Dedicated sub-machine** (engine-attached, *(live)*): direct-coupled to one engine, **most efficient**
+  (full L/s per litre of steam) and **highest lift/pressure**, but **one engine per pump/blower**. The
+  high-throughput / deep-well / blast-furnace route (a blowing engine was always a big direct-coupled
+  engine; the deep-lift **Cornish** pump is this form).
+- **MP-driven** (an MP-network load like the hammer/mill, *new*): a pump or blower belted off the
+  **shared MP line**, so **one flywheel engine can drive MP tools + a pump + a blower at once** - **fewer
+  engines to build**. But it draws from the shared MP budget (competes with the hammers) and carries
+  transmission loss, so it is **less efficient and lower-pressure**: fine for **shallow wells, a fluid
+  tank top-up or a small tuyere**, but it **cannot feed a big furnace's blast or lift a deep well** (those
+  need the dedicated sub-machine / Cornish).
+
+Both are period-correct - 19th-c. workshops belted pumps and blowers off a line shaft, while big works ran
+dedicated direct-coupled pumping and blowing engines. So a **small setup** runs everything off one engine
++ MP (the MP pump/blower, minimal engines); a **big line** builds dedicated sub-machines where throughput
+or lift demands. This is the same efficiency-vs-flexibility flavour as the two engine lineages, one layer
+down. (It also means the fluid-pump sub-machine is *not* mandatory for water - MP can cover modest water -
+so a dedicated pump becomes a deliberate choice for bulk/deep needs, and stays essential for oil.)
 
 **Steam couples in as the budget (reconciliation with Sec 6).** The kW ratings above are the *nominal*
 budgets at rated steam. Under the responsive steam chain (Sec 6), the **boiler's delivered pressure sets
@@ -249,9 +299,9 @@ across load. So an underfed boiler simply **lowers the budget** (weaker engine, 
 rather than contradicting the `speed = budget / load` math - the two models are one chain:
 **pressure -> budget -> speed/load**.
 
-**Governor model - Corliss only.** The **Tandem Corliss** is the *only* engine with a governor
-(centrifugal governor + rotating cut-off valves); its **steam draw scales with delivered power** -
-least at idle, most at full power:
+**Governor model - the Corliss MP lineage.** The **Horizontal Corliss and Tandem Corliss** carry a
+governor (centrifugal governor + rotating cut-off valves); their **steam draw scales with delivered
+power** - least at idle, most at full power:
 
 - **No load -> max speed, minimum steam** (governor cuts steam off early).
 - **Rising load -> slows, torque rises, steam draw climbs** (longer valve cut-off). Power = torque x
@@ -260,13 +310,15 @@ least at idle, most at full power:
 - **Demand beyond max power -> the engine stalls and stops**, killing everything downstream - no soft
   brownout.
 
-Its governed budget feeds **both the MP network and a generator at once**, so an electrical over-draw
-can stall the Corliss and drop its MP line too.
+The **Tandem Corliss**'s governed budget feeds **both the MP network and a generator at once**, so an
+electrical over-draw can stall it and drop its MP line too.
 
 **Watt and Cornish have no governor** - they draw a *constant* steam rate regardless of load (the
-Cornish's "throttle" is a **manual** level with fixed draw per setting). The constant-power
-speed-vs-load curve and overload stall still apply; only the steam-follows-load efficiency is the
-Corliss's advantage.
+Cornish's "throttle" is a **manual** setting with fixed draw). This is exactly **why a Cornish is
+wasteful at MP**: at partial load it keeps burning full steam while a governed Horizontal Corliss cuts
+off early - so the steam-follows-load efficiency gap between the two HP lineages **emerges** from the
+governor, not a flat modifier. The constant-power speed-vs-load curve and overload stall apply to every
+engine.
 
 ### 5.4 Electrical networks - AC transmission + DC consumption *(new, Stage V)*
 
@@ -421,6 +473,65 @@ behaviour **emergent**:
 Three chains emerge: **heat** (fuel -> boiler -> engine -> blower -> furnace + cowper buff), **electric**
 (engine -> alternator -> circuit sag -> arc), and the **regenerator feedback** (exhaust -> checker bricks
 -> hotter blast/flame -> hotter exhaust - which must be warmed up first).
+
+### Distillation & phase change (the general still)
+
+The boiler's **water -> steam** conversion *(live)* is the simplest case of a single mechanism the whole
+liquid line reuses: **heat a liquid, boil off its volatile fractions in ascending boiling-point order,
+and condense each one back to a liquid at a cooler collection stage.** Steam is just the one fraction
+water throws off; a **fractionating still** does the same to a *mixture* (coal tar, crude oil), tapping
+several fractions from one charge. It is the liquid analog of the furnace heat balance above - same "gate
+efficiency, not possibility" spirit - and it runs entirely on the **live medium taxonomy** (Sec 5.2): a
+liquid is a `LiquidDef` with a **boiling point**, vapour rising off the charge is that liquid's **gas
+phase**, and it **condenses back to liquid at the band its `condensesTo`/`condenseBelow` defines** -
+exactly the water<->steam machinery, generalised.
+
+**The model (mass-conserving, band-gated).** A still holds a **charge** of a source liquid and runs the
+Sec-6 heat balance to a **column temperature**. As the temperature climbs it crosses each fraction's
+**boil band** in order (light -> heavy):
+
+```
+while  T_column >= boil(fraction):  fraction boils -> rises as vapour -> condenses at its stage -> tapped as liquid
+residue (never boils in range)   :  stays in the pot  ->  the bottom product (pitch / petroleum coke)
+```
+
+- **One component (the boiler).** Water has a single boil band (~100 degC); above it water -> steam,
+  condensing back to water at the condenser. Nothing new - this *is* the live boiler, re-labelled.
+- **Many components (the still).** Coal tar and crude oil are **mixtures**; the still steps the column up
+  through the bands and taps **light fraction, then middle, then heavy**, leaving the **non-volatile
+  residue** (pitch, petroleum coke) in the pot. Higher column temperature drives off more fractions; stop
+  early and the heavy ends stay with the residue - a real tradeoff (over-distil for more light product but
+  a smaller, harder residue).
+- **No composition vectors - distillation recipes.** Rather than track per-litre mixture ratios,
+  distillation is a set of **recipes keyed to temperature bands** (`source + band -> fraction (+ remaining
+  source)`), the same mass-conserving, config-tunable pattern as smelting: 1 u in -> 1 u across the
+  fractions + residue, no hidden loss (the fraction *split* is the tunable, the total is fixed).
+  Block-info shows the current band, the next fraction's threshold and the fractions tapped so far - the
+  liquid twin of the furnace temp readout.
+
+**Machine - the distillation still (a dedicated structure, not the boiler).** Distilling a *mixture* is
+its own **multiblock structure** - a built **vertical still / fractionating column**, sibling to the ladle
+and boiler and kept **separate from the boiler** (which only ever boils its single water charge to steam).
+The player builds it to a **height that sets how many fractions it can split**: a short **pot still**
+takes one or two cuts (early kerosene / a single tar fraction), a tall **column still** the full
+light -> middle -> heavy -> residue set. It is raised by the standard in-world projection (Sec 10), and
+all its I/O reuses live blocks:
+
+- **Charge in** - the source liquid, fed by pipe / canal / barrel.
+- **Heat** - the same heat sources as the furnaces (Sec 6): a **coke firebox** for the hot cuts, or a
+  **steam jacket** off a boiler for the low-temperature ones (the still is a *consumer* of the boiler's
+  steam, never the boiler itself).
+- **One vapour take-off per fraction stage** - each an ordinary gas-medium pipe run that **condenses at a
+  condenser block** to that fraction's liquid (Sec 5.2); more stages up the column = more, finer cuts.
+- **Residue tap** at the bottom - the non-volatile bottom product (coal-tar pitch / petroleum coke).
+
+Because every fraction is just another pipe medium, the existing gas/liquid pipe, condenser, valve and
+tank blocks carry the whole chemistry with **no new network** - the **only** new pieces are the still
+structure itself and the fraction `LiquidDef`s, shipped by the Lights/Fuel/Colors add-on (Sec 14) over
+exlib's live liquid taxonomy, which already owns the boil/condense machinery. One still structure runs
+**any** distillation recipe by its charge, so the "tar still" and "oil still" (Stage IIb) are the *same*
+built still fed coal tar or crude oil - as the ladle is one structure that mixes any alloy. A machine card
+is in Sec 8.
 
 ### Stage I - Mass iron production (IMEX, early 19th c.)
 *Rapid iron parts + large cast components, cheap to set up, no steel required. Waterwheel MP only.*
@@ -595,6 +706,236 @@ system, one age earlier:
 The steam path is more efficient but needs a boiler. Greenhouse kept above the cold threshold -> crops
 continue through winter. **No config softening - installing the mod is the opt-in.**
 
+### Stage IIb - Coal & petroleum chemistry (PPEX "Lights, Fuel & Colors" add-on)
+*Turn the coke oven's tar byproduct and a new petroleum resource into **lights, fuels and colours** -
+lamp oil, dyes, a coal-stretching fuel and the **electrode feedstock the Stage V arc furnace needs**. A
+pure chemistry branch running on the distillation mechanism (Sec 6) and the liquid network (Sec 5.2),
+gated only by having a coke oven / an oil find - independent of the steel spine. Two feedstocks, one
+still, converging on the arc-furnace electrode.*
+
+**Coal tar (coke-oven byproduct -> dyes & pitch).** The coke oven / gasworks (Stage I/II) already vents
+**coal gas**; the same destructive distillation of coal also yields **coal tar**, a heavy liquid -
+captured now instead of left cosmetic. Distilling it opens the synthetic-**colour** chemistry that
+launched the real chemical industry.
+
+| Process | Machine | Input -> Output |
+|---|---|---|
+| Coke coal | **Coke oven / gasworks** *(extended)* | coal -> coke + **coal gas** + **coal tar** (liquid byproduct, piped/barrelled to the still) |
+| Distil tar | **Tar still** (fractionating, Sec 6) | coal tar -> **light oil (benzene)** + **creosote oil** + residue **coal-tar pitch** |
+| Nitrate | **Nitrator** (stirred, cooled) | benzene + **nitric acid** (+ sulfuric acid catalyst) -> **nitrobenzene** |
+| Reduce | **Reduction vat** | nitrobenzene + **iron filings** + acid (Bechamp reduction) -> **aniline** (+ iron-oxide sludge -> reuse on the puddling bed) |
+| Dye | **Dye works** | aniline + oxidiser -> **aniline dyes** (mauveine / magenta / ... - the synthetic-colour payoff, Sec 12) |
+
+- **Coal-tar pitch** is the arc-electrode binder (below) and a **waterproofing / roofing** material;
+  **creosote** preserves wood (treated beams/rails/sleepers resist rot - a bulk payoff).
+- The **aniline dye chain is the historically huge civic/trade payoff** (Perkin's mauveine, 1856 -
+  synthetic dyes were the first big chemical industry): a spectrum of **fast, vivid dyes** for
+  cloth/wool/leather beyond the vanilla natural pigments, and a high-value trade good. It reuses the mod's
+  **sulfuric acid** (Stage IIIa acid plant) and a **nitric acid** source.
+- **Nitric acid**: a small **acid still** retorts **saltpetre (niter) + sulfuric acid -> nitric acid**
+  (the classic route) - tying the dye branch to the same acid plant that serves Stage V electrolysis.
+- The **Bechamp reduction** (nitrobenzene + iron + acid -> aniline) is a nice tie to the iron line - it
+  consumes iron filings and returns iron oxide that goes back onto the puddling bed (Stage I).
+
+**Synthetic dyes cover the vanilla palette (faster + bulk).** The aniline/coal-tar route is a **drop-in
+alternative to vanilla barrel dyes, converging on the same `game:dye-*` items** - not a parallel system.
+It wins on **throughput** (the still cracks bulk tar/oil into litres of colorant per cycle, no 8-hour
+sealed-barrel foraging), **input cost** (byproduct coke-oven tar + pumped crude vs hand-gathered plants
+and rare crushed lapis/cinnabar), and **gate removal** (red and blue no longer need the mineral pigments).
+It keeps vanilla's mass-conservation contract exactly: the colorant tints a carrier, **output litres ==
+carrier litres** (the colorant is not counted), so it never yields more matter. Each aromatic fraction is
+the chromophore; the oxidiser / mordant / acid each dye needs is sourced from EM (or a standalone
+fallback, below).
+
+| Vanilla colour | Synthetic dye | From (coal-tar precursor -> dye) |
+|---|---|---|
+| purple | mauveine | benzene/toluene -> aniline -> oxidise (Perkin 1856) |
+| red | alizarin (Turkey red) | anthracene -> anthraquinone -> sulfonate -> alkali-fuse - **no cinnabar** (1869) |
+| woad (blue) | synthetic indigo | benzene -> aniline -> indigo; a **vat dye, no mordant** (matches woad; ends on `dye-woad`, exactly like EM's indigo) |
+| blue | aniline blue | benzene -> aniline -> rosaniline -> +aniline - **no lapis** (1861) |
+| yellow | picric acid | phenol -> trinitrate (converges on EM's `powdered-ore-picricacid`) |
+| green | malachite green | toluene -> benzaldehyde + aniline -> dimethylaniline (1877) |
+| orange | azo orange | aniline -> diazotise -> couple with naphthol - **one step** (vanilla needs yellow+onion) |
+| pink | magenta / fuchsine | benzene/toluene -> aniline -> oxidise |
+| black | aniline black | benzene -> aniline -> oxidatively polymerise (feeds vanilla ink; 1863) |
+| **brown** *(new)* | Bismarck brown | benzene -> dinitro -> diamine -> diazo self-couple - the **first commercially successful azo dye** (1863); vanilla has NO brown dye |
+| gray | *(stays vanilla)* | the retained iron-corrosion route (rusty gear / scraps) - a clean neutral gray is better mineral than organic |
+| white | *(stays mineral)* | **no organic white exists in period** - keep vanilla borax / EM whites (a called-out liberty) |
+
+So **9 colours get a strong coal-tar route + a brand-new brown**; gray stays on the vanilla iron route and
+white stays mineral. Every colour still ends on the vanilla `game:dye-*` family through EM's existing
+mordant/barrel framework, so mineral and synthetic colours share one dyeing verb and output family.
+
+**Reagents (EM-integrated, standalone fallback).** The colorant is only half of each dye; the
+**oxidisers, mordants and acids** come from the wider chemistry - the main EM plug-in point:
+
+- **Oxidisers:** **manganese dioxide** (`em:powdered-ore-manganesedioxide`), **saltpetre**, or
+  **nitrobenzene itself** (the mod-produced Coupier oxidant for fuchsine / aniline blue). Do **not** assume
+  a dichromate - EM's chromite chain makes chromium *oxide* (a green pigment), not a dichromate.
+- **Mordants:** the existing `game:diluted{alum,chromite,cassiterite}portion` cloth-mordant set (alum for
+  Turkey red; chrome / tin shift shade).
+- **Acids:** **sulfuric** (SMEX SO2 acid plant) for sulfonation + the mixed-acid nitration; **nitric** from
+  the acid still (niter + sulfuric). Nitric/hydrochloric are **disabled-by-default vanilla variants** - so
+  **the add-on itself patches in the nitric variant it produces**, and diazotisation uses **sulfuric**
+  (period-valid) rather than depending on hydrochloric; iron-sulfate (iron-gall gray) is EM-only/optional.
+- **Self-contained; EM is optional enrichment, never a hard dependency.** Most reagents are already
+  **vanilla** (the `game:diluted{alum,chromite,cassiterite}` mordants, saltpetre, sulfuric) or **ours**
+  (nitric, nitrobenzene, the organic colorants), so the dye line runs **standalone**. The only genuinely
+  EM-flavoured reagent is a manganese-dioxide oxidiser - which we either ship ourselves (a simple MnO2
+  item) or take from EM. When EM *is* present (it is popular - many players will have it), **converge** on
+  its items (`em:powdered-ore-manganesedioxide` / `-picricacid`, its mineral-pigment siblings) instead of
+  adding duplicates; EM's own dye routes already end on the same `game:dye-*`, so the two mesh cleanly.
+
+**The gasworks (coal gas + tar + ammonia, a structure train).** The basic Stage-II gas tier just vents
+coal gas as a coke-oven byproduct; the add-on builds the real 19th-c. **gasworks** - a *train* of
+distinct multiblock structures that carbonises coal **gas-primary** and captures every stream. It is
+destructive distillation (coal heated with **no air**, in retorts), not combustion:
+
+| Train step | Structure | Does |
+|---|---|---|
+| Carbonise | **Retort house** (multiblock: horizontal fireclay **retorts** over a coke-fired **burning chamber**) | coal sealed in the retorts, heated *externally* by burning coke -> **raw coal gas** + **coke** (raked from the retort ends) + **coal tar** + **ammoniacal liquor** |
+| Seal + first drop | **Hydraulic main** | the retort standpipes dip into a water-sealed trough: seals each retort and drops out the first **tar + liquor** |
+| Cool | **Condenser towers** | cool the gas -> condense more **tar + ammoniacal liquor** (to the still / ammonia line) |
+| Draw | **Exhauster** (steam-driven) | a pump holding slight suction on the retorts, pushing gas down the train (ties to the steam network, Sec 5.3) |
+| Clean | **Purifier** (iron-oxide / lime boxes) | strips **H2S (sulfur)** + CO2 -> **clean coal gas**; spent oxide regenerates in air; recovered **sulfur feeds the sulfuric-acid plant** (Stage IIIa) |
+| Store | **Gasometer** (Stage II) | low-pressure telescoping holder -> the gas lamps (Stage II lighting) |
+
+So one plant yields **four** streams: **coal gas** (lighting), **coal tar** (-> still -> dyes/pitch),
+**ammoniacal liquor** (-> **ammonia**: farm fertiliser + a nitrogen feed for the acid/dye line) and
+**sulfur** (-> sulfuric acid) - coke is the fuel-and-iron byproduct. Mass-conserving; the stream split is
+the tunable. (The plain coke oven stays the *coke*-primary route with gas/tar as minor byproducts; the
+gasworks is the *gas-and-chemistry*-primary iconic build - same carbonisation, inverse emphasis.)
+
+**Petroleum (a new liquid resource -> lamp fuel & the coke extender).** Crude oil is the branch's **one
+new resource** (mirroring wolframite as HSS's one new ore): a prospected underground **oil reservoir**
+tapped by a derrick (detailed below), config-gated for rarity.
+
+| Process | Machine | Input -> Output |
+|---|---|---|
+| Extract | **Oil derrick / pump** | worldgen **crude oil** seep -> **crude oil** on the liquid network (reuses the fluid pump, Sec 5.3) |
+| Distil oil | **Oil still** (fractionating, Sec 6) | crude oil -> **naphtha** (light solvent) + **kerosene** + **lubricating oil** + residue **petroleum coke** |
+| Calcine | **Calciner** (or the still's hot stage) | green petroleum coke -> **calcined petroleum coke** (volatiles driven off) |
+
+- **Kerosene** fuels **lanterns** - a **static lantern** (bright, long-burning room light, well past the
+  vanilla oil lamp) and a **wearable lantern** (helmet/hand lamp for mining, brighter and far
+  longer-lasting than a torch) - a portable-**light** payoff *decades before* electric bulbs (real:
+  kerosene lamps, 1850s+). Lubricating oil is an optional machine-upkeep / wear-reducer flavour item.
+- **Calcined petroleum coke** has two jobs: **(1) coke extender** - blended into the blast/cupola charge
+  it **stretches coal** (each part replaces a part of coke, cutting coal consumption per pig), and **(2)
+  electrode feedstock** (below).
+
+**The oil field (extraction, modelled on aquifer wells).** Crude oil is pumped from an underground
+**reservoir**, built the way the **Hydrate mod** does water aquifers (the mod the user is basing oil on) -
+with one deliberate twist: **oil does not recharge**.
+
+- **Reservoir = a prospectable underground deposit.** A per-region **oil-reservoir rating** is worldgen'd
+  into deep **sedimentary / shale** layers (deeper + right rock = richer), **found with the prospecting
+  pick / on the map** exactly as ore and Hydrate's aquifers are. Unlike a water aquifer it **does not
+  recharge** - oil is finite: the reservoir **depletes** as it is pumped and the well eventually runs
+  **dry** (historical - gushers ran out), so a field is a *spread* of wells, not one forever-tap. Rating
+  is **shared across all wells** drawing the same reservoir (diminishing returns per extra derrick), just
+  as Hydrate splits an aquifer among its wellsprings.
+- **Derrick (drill + pump), depth-gated by the pump engine.** Build a **derrick** over the site and
+  **drill** the borehole down (cable-tool percussion; the derrick is the drilling *and* pumping frame).
+  Lift then follows the **pump-engine tier** (Sec 5.3) - **no dedicated oil engine**, the same lift ladder
+  as everything else: a **hand / walking-beam pump** taps **shallow** reservoirs, the **Cornish pumping
+  engine** reaches **deep** ones (historically *the* deep-mine pump), the **Large Cornish** the
+  **deepest**. Because richer reservoirs sit deeper (Hydrate's aquifer rating climbs with depth, and oil
+  is modelled the same), **deep oil is HP-gated** - a natural progression that reuses the Cornish's
+  pump-specialist role. Output **crude L/day** scales with the reservoir rating and the pump, draining the
+  reservoir as it runs.
+- **Onto the liquid network.** Pumped crude enters the **liquid pipe network** (a `LiquidDef` medium) ->
+  **oil storage tanks** (the fluid tank, Sec 8) -> the **still**.
+
+**Treating the cuts.** Raw distillate fractions are **washed** before use - kerosene especially was
+**acid-treated (sulfuric) then caustic-washed (lye / soda ash)** to burn clean and safe in a lamp. A
+**treatment agitator** (tank + stir) does it, consuming a little **sulfuric acid** + **lye** (both already
+in the mod) -> lamp-grade kerosene + a cosmetic acid-sludge / spent-caustic residue. Untreated kerosene
+still burns, just dimmer / sootier - an efficiency gate, not a block.
+
+**Electrode manufacture (closes the Stage V arc-furnace gap).** The arc furnace's electrodes were an open
+gap in the Stage V spec; the two chemistry lines close it - and deliberately **converge**, so the endgame
+furnace pulls on *both* the coal and the oil branch.
+
+| Process | Machine | Input -> Output |
+|---|---|---|
+| Mix paste | **Electrode press** | **calcined petroleum coke** (aggregate) + **coal-tar pitch** (binder) -> **electrode paste** -> pressed **green electrode** |
+| Bake | **Baking furnace** (Sec 6 heat balance) | green electrode -> **baked carbon electrode** (optional higher tier: graphitised -> lower-resistance **graphite electrode**) |
+
+- The **arc furnace consumes electrodes** as a wear consumable (like drill bits / dies, Sec 13): a
+  **three-phase** furnace burns **three electrodes**, each depleting with arc-hours; a spent one is
+  replaced in-world (sneak + RMB). Electrodes are the arc furnace's ongoing **running cost beyond power** -
+  the coal-and-oil chemistry is what keeps it fed, so Stage V leans on this add-on when present.
+
+**Everything rides the live liquid network.** Coal tar, benzene, nitrobenzene, aniline, crude oil,
+naphtha, kerosene, lube oil and the acids are all just **`LiquidDef` media** (Sec 5.2): light/volatile
+fractions travel as **gas media** and condense at a condenser; the heavier liquids move as **liquid media**
+in pipes, canals or barrels. No new network type - the medium taxonomy and the distillation mechanism
+(Sec 6) carry the whole branch, and the fraction definitions ship as this add-on's `config/liquids.json`.
+
+**Expanded uses - every fraction earns its keep.** No cut dead-ends as unsellable residue; each output has
+a real sink in a system the mod already has (farmland N/P/K, perishables, tool/machine wear, the Sec-6
+heat balance, the decor set, Stage V). All are **mass-conserving** and each is a soft **efficiency/quality
+gate, not a hard block**.
+
+- **Explosives & mining (a *higher* tier that converges, not a parallel system).** Vanilla already ships
+  `game:blastingpowder` -> `game:bomb-{ore,stone,scrap}`, and EM already routes picric acid into that same
+  powder - so the chemistry adds **stronger charges on the existing framework**: **toluene -> TNT** (stable
+  to store; 1863) and **nitric + glycerin -> dynamite** (breaks large rock; Nobel 1867) as premium mining
+  charges, and **phenol -> picric** feeding the *existing* `em:powdered-ore-picricacid -> blastingpowder`
+  route (never a duplicate).
+- **Antiseptics & medicine.** **phenol -> carbolic dressing** (a stronger, infection-suppressing heal;
+  Lister 1867) and **-> salicylic acid / aspirin** (fever/pain + a food-preservative dose; Bayer 1897);
+  **cresols -> farm / stable disinfectant** (raises husbandry; keeps the medical / puddling station at full
+  rate); **petroleum jelly -> burn salve + rust coat** (heals burns; coats stored tools/plate; Vaseline 1872).
+- **Farming & fertiliser (ties the coke oven + acid plant to crops).** **sulfuric + crushed bone ->
+  superphosphate** (farmland phosphorus; Lawes 1842, the first artificial fertiliser); **ammonia (gasworks
+  liquor) + sulfuric -> ammonium sulfate** (farmland nitrogen); **kerosene emulsion / naphthalene -> pest
+  spray + granary fumigant**; **ammonia -> refrigeration** (an ice machine slows spoilage year-round; Linde 1876).
+- **Construction, waterproofing & road.** **coal-tar pitch + gravel -> asphalt paving** (a durable surface
+  block beside lime-kiln concrete); **pitch -> sealant / caulk** (waterproof a tank/barrel, or line a molten
+  canal to cut heat loss - coal-tar pitch is a **new mod item**, distinct from vanilla's pine-tar glue);
+  **creosote -> rot-proof sleepers / pilings** (a superior treated-wood tier; Bethell 1838); **pitch + waste
+  coal fines (steam crusher) -> fuel briquettes** (binds lost crusher dust into fuel - a mass-conservation loop).
+- **Wax & candles.** **paraffin wax -> bulk candles** (a cheap manufactured light, freeing beeswax; Young
+  1850) and **-> waxed paper / waterproof cloth** (slows food spoilage, waterproofs cloth, insulates Stage-V wiring).
+- **Lubricants & upkeep (the heavy cut's concrete loop).** **lubricating oil -> machine lubrication**
+  (greased engines/mills hold throughput and wear slowly; run dry -> efficiency loss; surplus burns in the
+  heat balance, so no heavy cut is stranded) and **-> oil-quench bath + cutting oil** (crack-free die/bit
+  hardening + longer boring-machine bit life).
+- **Solvents & decor.** **benzene / xylene -> parts-wash degreaser** (strips scale/grease off dies and bits,
+  slowing tooling wear); **xylene + aniline pigment -> block paint** (recolours the cast-iron / concrete
+  decor set in the whole dye palette - dyes become a *construction* payoff, not just cloth).
+- **Lighting & power.** **naphtha -> gas-main enrichment** (brighter lamps; Lowe 1875); **coal gas -> gas
+  engine (Otto / Lenoir)** as a **small, niche** boiler-free early drive (low kW, gas-pressure-gated,
+  limited scaling - it *complements*, never supplants, the Stage-II steam spine); **coal gas + quicklime ->
+  limelight** (an extra-bright directional beam).
+- **Metallurgy & the electric endgame.** **calcined petroleum coke -> steel recarburiser** (raise carbon
+  after an over-blow, or carburise the arc furnace's ingot iron - carbon into metal, mass-conserved) and
+  **-> graphite** (Acheson 1896: dry lubricant + crucible-liner / mould facing, off the electrode feedstock).
+- **Minor luxury sinks.** toluene -> **saccharin** (sweetener trade good) + **sodium benzoate** (preservative);
+  nitric -> **metal pickling / bluing** + precious-metal parting. *(Phenolic-resin insulators need
+  formaldehyde and sit at ~1907 - an explicit out-of-window cosmetic liberty, off any hard dependency.)*
+
+New media/items this implies (beyond the current set): coal-tar **toluene / xylene / phenol / cresols**
+(liquid media) + **naphthalene / anthracene** (solid heavy cuts); petroleum **paraffin wax / petroleum
+jelly**; one new colorant **`dye-brown`** (Bismarck brown). Most downstream products (explosives,
+medicines, fertilisers, paving, candles, greases) map onto vanilla/EM systems rather than adding new media.
+
+> **Historical grounding.** This branch is the real birth of the chemical industry, and it slots exactly
+> into the mod's ~1850-1900 window (correctly ordered, like the Sec 4 metallurgy timeline). **Coal-gas
+> lighting** dates to the 1810s; **coal tar** was its problem byproduct until distillation turned it to
+> profit. **Benzene** was drawn from coal tar (Hofmann / Mansfield, 1840s); **nitrobenzene** to 1834
+> (Mitscherlich) and the **iron-and-acid reduction to aniline** to Bechamp (1854). **Perkin's mauveine
+> (1856)** - the first synthetic dye - launched the German dye giants (BASF / Bayer / Hoechst, 1860s-70s),
+> squarely alongside **Bessemer (1856)**. On the oil side, **Drake's well (1859)** made **kerosene** the
+> world's lamp fuel through the 1860s-80s, *before* the electric bulb. **Calcined petroleum coke + coal-tar
+> pitch** is exactly how carbon electrodes are made, feeding the **Heroult arc furnace (~1900)**; the
+> higher-tier **graphite electrode** matches Acheson's graphitising process (1896) - so the branch lands
+> correctly ordered with Stage V. Deliberate liberties (few and small): the **wearable kerosene lamp**
+> (period miners ran oil / safety lamps, then carbide ~1900) and a **one-step "dye works"** abstraction
+> over the real per-dye chemistry.
+
 ### Stage III - Mass steel production (SMEX, mid 19th c.)
 *Industrial steel. Needs Stage-II steam (air + power). Adds the billet pipeline.*
 
@@ -653,6 +994,28 @@ never stalls. One hot-blast furnace (~45 u/s) fills a 4800 u Bessemer in ~107 s 
   (144 L/s out)**; needs **3 smoke stacks**, and the cowper throughput cap is removed so **2 cowpers**
   preheat its full blast (Stage IV).
 
+**Blast pressure tiers the blowers (which blower feeds which furnace).** Flow (L/s) fills the tuyeres;
+**blast pressure** decides whether a *low-coke* charge can reach its melt line - so the blower is a real
+tier gate keyed to the heat balance (Sec 6: blast pressure -> combustion intensity -> T_in; an underblown
+furnace runs cooler):
+
+- **Mechanical (twin-tub) blower** - low pressure, MP-driven (waterwheel from Stage I). Feeds the
+  **cold-blast furnace** (high-coke, tolerant of a soft blast). It **can** blow a hot-blast furnace, but at
+  low pressure a low-coke charge never clears the melt line - so even with charged cowpers it still behaves
+  like cold blast (high coke, no efficiency gain). "Gate efficiency, not possibility": it works, you just
+  don't get the hot-blast payoff. Stacking more twin-tub blowers adds **flow, not pressure**, so it never
+  unlocks the low-coke blow.
+- **Air blower sub-machine** (engine-driven, Stage II) - the higher pressure that lets the **hot-blast
+  furnace** run its **low-coke, high-rate** blow (with charged cowpers). The intended hot-blast blower;
+  one blower = one 2-tuyere furnace (48 L/s).
+- **Heavy blower** (Large Cornish, Stage IV) - the highest pressure + volume, for the **large furnace**
+  (6 tuyeres, 144 L/s): built as **one Large Cornish blower, or an array of smaller sub-machine blowers**
+  reaching that pressure and combined flow. Below that, the big low-coke furnace stays cold.
+
+So: the twin-tub blower is the **cold-blast tier**; hot blast wants the steam sub-machine blower's
+pressure; the large furnace wants the Large Cornish (or a blower array). **Flow scales *within* a pressure
+tier** (more tuyeres -> more blowers); **pressure gates *across* tiers** (cold -> hot -> large).
+
 ### Stage IIIa - Mass copper production (SMEX add-on)
 
 | Process | Machine | Input -> Output |
@@ -683,7 +1046,8 @@ pot up.)
 | Process | Machine | Input -> Output |
 |---|---|---|
 | Raise HP steam | **Lancashire boiler** | water + fuel -> **HP steam** (~8-12 atm); needs **hadfield plating + rolled pipe** |
-| HP power | **Cornish engine** | HP steam -> MP; **throttleable**; more MP per litre than Watt; cylinder needs **hadfield steel** |
+| HP pump/blow | **Cornish engine** | HP steam -> an efficient **pump or blower**; the **deep-lift** pump engine (deep wells); can turn a flywheel for MP but ungoverned -> **inefficient at MP**; cylinder needs **hadfield steel** |
+| HP rotary power | **Horizontal (Corliss) engine** | HP steam -> **MP** (Corliss governor, steam follows load -> **efficient**, more MP/litre than a Cornish); **cannot pump or blow**; the mill / line-shaft engine; cylinder needs **hadfield steel** |
 | Big pump/blast | **Large Cornish pumping engine** (~3wx6t) | HP steam -> **one large sub-machine**: heavy air blower @ ~160 L/s **or** heavy fluid pump @ ~36 L/s (the large furnace needs **both -> two large engines**). 6 tuyeres = 144 L/s, the blower runs ~16 L/s over to *build* pressure; the pump (~2.16x standard) feeds the boiler bank |
 | Line power | **Tandem Corliss horizontal engine** | HP+LP steam (tandem-compound, cylinders inline) -> **heavy flywheel** -> large MP / generator drive |
 | Crush hard ore | **Steam ore crusher** (HP) | HP jaws crush **chromite & wolframite** (LP can't) -> gates the **HSS** elements; also crushes **hardened steel scrap** for arc recycling (Sec 3, Stage V) |
@@ -767,6 +1131,12 @@ the Tandem Corliss can drive (~36 kW each); output is `36 kW x coil efficiency`:
   engines.** Three-phase isn't only about total power: splitting ~86 kW across three conductors is **the
   only way to carry that current** - a single line would melt even heavy cable. A genuine power-plant
   build (3 engines + 3 alternators + synchroniser), the real endgame gate.
+- **Electrodes are the arc furnace's running cost.** Beyond power, a three-phase furnace burns **three
+  carbon electrodes** that deplete with arc-hours and are replaced in-world. They are made in the
+  **Lights/Fuel/Colors add-on** (Stage IIb) from **calcined petroleum coke + coal-tar pitch** - so the
+  endgame furnace leans on the coal-and-oil chemistry branch. **Without that add-on installed**, the arc
+  furnace falls back to a **simpler charcoal/coke carbon electrode** (higher wear, lower conductivity) so
+  Stage V is never hard-blocked - the chemistry electrode is the *good* electrode, not the only one.
 
 > **Realism note.** A *dynamo* is a DC machine (integral commutator); an *alternator* is an AC machine
 > (slip rings) - genuinely different builds. The Heroult arc furnace (~1900) **is** a three-phase AC
@@ -822,6 +1192,8 @@ key industrial components (full list in Sec 11). "Exists" = present in current p
 | Watt engine | II | megablock + sub-machine | LP steam | bedplate, bored cylinder sleeve, conrod, flywheel, brass bearings | steam -> MP / pump / blower (**~4 kW = 4 helve hammers**) | Exists |
 | Fluid pump | II | RCC megablock (sub-machine) | engine | cast pump body, valve body | engine -> water @16.67 L/s | Exists |
 | Air blower | II | RCC megablock (sub-machine) | engine | cast fan, ducting | engine -> air @48 L/s | Exists |
+| MP water pump | II | megablock | MP (load) | cast pump body, gears | MP -> water, **lower L/s + lift** than the sub-machine pump; the flexible **fewer-engines** route (shallow wells / tank top-up only) | Planned |
+| Mechanical (twin-tub) blower | I | megablock | MP (waterwheel+) | twin bellows tubs, rocking beam, axle gear | MP -> **low-pressure** air; the **cold-blast furnace** blower (and a general MP blower for small tuyeres / tank-fed uses); **can't unlock the hot-blast low-coke blow** (blower tiers, above) | Planned |
 | Fluid tank | II | megablock | - (storage) | cast/steel plate, valve body | pipe water -> **bulk buffer**; pump refills periodically, consumers draw continuously | Planned |
 | Mechanical sprinkler | II | block (floor/ceiling) | - (pipe-fed) | brass nozzle, cast body | timed: waters soil in a **3-block radius below** to 100 % moisture then **stops**; **wrench-set interval** to next top-up (Stage II) | Planned |
 | Gasholder | II | megablock (telescoping) | - (low-P store) | sheet iron/steel, guide frame | **coal-gas buffer** at near-atmospheric pressure; lamps stay lit when the source idles (gas analog of the fluid tank); **normal full-pipe I/O** | Planned |
@@ -832,6 +1204,20 @@ key industrial components (full list in Sec 11). "Exists" = present in current p
 | Pneumatic tube | II | block (on a face) | air pressure | sheet, fittings | **abstracted** item transport: solids move at a gated throughput, **no visible item** (like fluid in a pipe) - long-range bulk | Planned |
 | Radiator (sm/lg) | IIa | block / megablock | steam | cast radiator section | steam -> room heat + hot water | Planned |
 | Passthrough wall / chimney | IIa | blocks | - | brick / sheet | exhaust -> room heat -> vent | Planned |
+| Distillation still | IIb | multiblock (vertical column; **height = number of cuts**) | fuel firebox / steam jacket | refractory, copper column, condenser coils | liquid charge -> fractions (each vapour condenses to its own tapped liquid) + **residue** (pitch / pet coke); **batch, charge-driven** - the *same* still for coal tar or crude oil (Sec 6) | Planned |
+| Gasworks retort house | IIb | multiblock (horizontal fireclay retorts + coke burning chamber) | fuel (coke, external heat) | fireclay retorts, refractory, cast standpipes | coal (no air) -> **coal gas + coke + coal tar + ammoniacal liquor** (destructive distillation, gas-primary) | Planned |
+| Hydraulic main + condensers | IIb | multiblock (water-sealed trough + condenser towers) | - (cooling) | cast trough, condenser pipe, sheet | raw gas -> cooled gas + dropped **tar + ammoniacal liquor** (to still / ammonia line) | Planned |
+| Gas exhauster | IIb | megablock (sub-machine) | engine (steam) | cast pump body, valves | holds suction on the retorts + pushes gas down the train | Planned |
+| Gas purifier | IIb | multiblock (iron-oxide / lime boxes) | - (process) | cast boxes, iron-oxide / lime | strips **H2S + CO2** -> clean coal gas; spent oxide regenerates in air; recovered **sulfur -> acid plant** | Planned |
+| Oil derrick | IIb | megablock (tall derrick) | pump per depth (Sec 5.3) | timber/iron frame, drill string, pump | drills the borehole + pumps **crude oil** up (hand/walking-beam -> Cornish -> Large Cornish by depth); crude -> liquid network -> oil tanks; **reservoir depletes** | Planned |
+| Treatment agitator | IIb | megablock (tank + stir) | MP / manual stir | cast tank, stirrer, valves | fraction + **sulfuric + lye** wash -> clean lamp-grade kerosene (+ cosmetic sludge); untreated burns dimmer (efficiency gate) | Planned |
+| Acid still | IIb | multiblock (retort + condenser) | fuel | stoneware retort, condenser | **niter + sulfuric -> nitric acid** (the add-on patches in the nitric variant it produces) | Planned |
+| Nitrator | IIb | multiblock (stirred, cooled vessel) | - (cooled process) | lead-lined vessel, stirrer | benzene/phenol/toluene + **nitric + sulfuric** -> nitro-products (nitrobenzene for aniline; picric; TNT feed) | Planned |
+| Reduction vat | IIb | multiblock (vat) | - (process) | cast vat, stirrer | nitrobenzene + **iron filings + acid** (Bechamp) -> **aniline** (+ iron oxide -> puddling bed) | Planned |
+| Dye works | IIb | multiblock (open flowing vat) | - (pipe-fed) | cast vat, taps | pump colorant (aniline / alizarin / indigo / azo) + **oxidiser + mordant** in -> **tap coloured `game:dye-*` out**; a flowing vat, no 8-h seal (faster + bulk vs the vanilla barrel) | Planned |
+| Calciner | IIb | multiblock (rotary / shaft) | fuel | refractory | green petroleum coke -> **calcined pet coke** (volatiles off) -> coke extender + electrode feedstock | Planned |
+| Electrode press | IIb | megablock | MP | cast press, die | **calcined pet coke + coal-tar pitch** -> paste -> pressed **green electrode** | Planned |
+| Electrode baking furnace | IIb/V | multiblock | fuel (high heat, Sec 6) | refractory | green electrode -> **baked carbon electrode** (graphitised = lower-resistance graphite tier) | Planned |
 | Steam ore crusher | III / IV | megablock | LP / HP steam (MP-driven jaws) | bedplate, hardened (hadfield) jaws | mass nugget/stone -> crushed ore; **LP** = iron/soft ores + stone/lime + Mn, **HP** = hard ores (**chromite, wolframite**) + hardened scrap - a **hardness gate** + bulk pulverizer alternative (Sec 3) | Planned |
 | Cowper stove | III | megablock | air + exhaust | refractory, checker brick | cold air + exhaust -> hot blast; **delivered blast temp = checker-brick charge** (alternating heat/blow cycle, Sec 6) | Exists |
 | Hot-blast furnace | III | multiblock (existing furnace) | hot blast (2 tuyeres @ 24 L/s) | refractory, heavy plate | low-coke mix + hot blast -> molten pig (~45 u/s); **2 exhaust outlets @ 24 L/s** -> cowpers + smoke stack | Exists |
@@ -843,7 +1229,8 @@ key industrial components (full list in Sec 11). "Exists" = present in current p
 | Pierce-Smith converter | IIIa | multiblock | air + MP | refractory, heavy plate | matte + air -> molten/blister copper | Planned |
 | Acid plant (lead-chamber) | IIIa | multiblock (chambers) | fuel/process | lead-lined chambers | **captured SO2** (smelter fume from roasting sulfide ore) + water -> **sulfuric acid** in bulk (for Stage V electrolysis/batteries) | Planned |
 | Lancashire boiler | IV | megablock + multiblock (RCC) | fuel + water | **hadfield** plating, rolled pipe, cap, injector | water + fuel -> HP steam | Exists |
-| Cornish engine | IV | megablock + sub-machine | HP steam | **hadfield** cylinder, bedplate, conrod, flywheel, bearings | HP steam -> MP (**~4 kW nominal, throttleable**) | Exists |
+| Cornish engine | IV | megablock + sub-machine | HP steam | **hadfield** cylinder, beam, plunger, bedplate, bearings | HP steam -> an efficient **pump or blower**; the **deep-lift** pump engine (deep wells); *can* turn a flywheel for MP but ungoverned -> **inefficient at MP** (~4 kW) | Exists |
+| Horizontal (Corliss) engine | IV | megablock + sub-machine | HP steam | **hadfield** cylinder, Corliss valve gear, governor, heavy flywheel | HP steam -> **MP** (governor = steam follows load -> **efficient**, more MP/litre than a Cornish); **cannot pump/blow**; the mill / line-shaft engine (~8 kW) | Planned |
 | Large Cornish pumping engine | IV | megablock (~3wx6t) | HP steam | hadfield cylinder, heavy beam, heavy flywheel | HP steam -> **one large sub-machine**: heavy blower @ ~160 L/s **or** heavy pump @ ~36 L/s (large furnace needs **two** engines, one each) | Planned |
 | Tandem Corliss engine | IV | megablock + sub-machine | HP+LP steam | hadfield cylinders x2, heavy flywheel | steam -> large MP / generator (**~36 kW = 36 helve hammers**) | Planned |
 | Open-hearth furnace | IV | multiblock (hearth + regenerative chambers) | fuel + regenerated air (no bath air-blast) | refractory, checker brick, heavy plate | pig + **bulk scrap** + flux -> **low-N steel** (~50 ppm); slow, time scales with scrap; low-N + scrap-recycle gate (boiler plate / pressure parts / HSS feedstock) | Planned |
@@ -1211,14 +1598,21 @@ Industrialization must reward more than "more machines":
    manhole covers, stairs, riveted plating; wrought-iron gates/fences; sheet-metal roofing/cladding;
    **functional cast radiators** (IIa); pipes as visible plumbing; stoves; **gas (Stage II) then electric
    (Stage V) street/interior lamps**; signage.
-3. **Lighting, two tiers.** **Gas lamps** (coal gas, Stage II) light a base decades before electricity;
-   **electric bulbs** (Stage V) are the late-game civic payoff. Both buffer-backed (gasholder / battery),
-   so a settlement stays lit.
+3. **Lighting, three tiers + portable.** **Gas lamps** (coal gas, Stage II) and later **electric bulbs**
+   (Stage V) are the fixed civic lighting, both buffer-backed (gasholder / battery). The **kerosene
+   lantern** (Stage IIb) adds **portable** light - a bright static room lamp and a **wearable** miner's
+   lamp - well before electricity. A settlement stays lit across all three.
 4. **Bulk building materials (cement/concrete).** The lime kiln + optional ground slag -> **cement /
    concrete** for mass structural and decorative blocks (foundations, paving, cast-concrete fixtures) -
    a high-volume base-building payoff beyond metal parts.
 5. **Tools, armor, trade.** Crucible/HSS for better tools; plates for armor; finished components as
    high-value trade goods.
+6. **Synthetic chemistry (Lights, Fuel & Colors add-on, Stage IIb).** **Aniline dyes** - vivid, fast
+   synthetic colours for cloth/wool/leather far beyond the vanilla natural pigments, and a high-value
+   trade good (the branch's headline payoff). **Kerosene** lamp fuel + **lubricating oil**; **calcined
+   petroleum coke** as a coke extender that stretches coal in the furnaces; **creosote** for rot-proof
+   timber and **coal-tar pitch** for waterproofing/roofing. The same branch produces the **arc-furnace
+   electrodes** the Stage V endgame runs on.
 
 ---
 
@@ -1249,9 +1643,10 @@ profile - the machine shop makes its own tooling.
 | **IMEX - Crucible add-on** | Stage Ia | IMEX |
 | **PPEX (Pipes & Power Expanded)** | Stage II + IV steam/power, pipe & MP networks, gas lighting, fluid tank/sprinklers, logistics (elevator/tube) | exlib |
 | **PPEX - Heating add-on** | Stage IIa (separate, opt-in, punishing) | PPEX |
+| **PPEX - Lights/Fuel/Colors add-on** | Stage IIb coal + petroleum chemistry: distillation still, coal tar -> **aniline dyes** (full vanilla palette) + pitch, crude oil -> **kerosene lanterns** + coke extender, **arc-furnace electrodes**, + the expanded-uses set | PPEX (liquid net + still), IMEX (coke oven / coal tar), SMEX-Copper (acids); **EM optional** (dye oxidisers/mordants + mineral-pigment convergence; standalone fallback if absent) |
 | **SMEX (Steelmaking Expanded)** | Stage III-IV steel: Bessemer + ladle + billet pipeline + **open hearth (low-N steel)** | exlib, PPEX (needs steam) |
 | **SMEX - Copper add-on** | Stage IIIa + sulfuric-acid plant (SO2 capture) | SMEX |
-| **PPEX + SMEX - Electric add-on** | Stage V dynamo/alternator/electrolysis/arc/HSS | PPEX(IV) + SMEX(III) |
+| **PPEX + SMEX - Electric add-on** | Stage V dynamo/alternator/electrolysis/arc/HSS (good electrodes from Lights/Fuel/Colors; charcoal-carbon fallback if absent) | PPEX(IV) + SMEX(III) |
 
 Tech-tree order (materials gate construction): cast iron -> Stage II engines; steam -> Stage III hot
 blast/Bessemer; hadfield + rolled pipe -> Stage IV HP boilers/engines; Stage IV power + pure copper ->
@@ -1269,7 +1664,9 @@ Spine first, branches independent:
    logistics (bucket elevator / pneumatic tube), component-gated builds.
 3. **Stage III** - hot blast + Bessemer + **billet pipeline** (rolling mill(s), steam hammer, ladle) +
    **LP steam crusher** (mass ore + Mn for hadfield).
-4. **Branches, any order:** Ia crucible / IIa heating / IIIa copper.
+4. **Branches, any order:** Ia crucible / IIa heating / **IIb chemistry (lights, fuel & colours)** / IIIa
+   copper. **IIb** wants a coke oven (I) for coal tar + the acid plant (IIIa) for the dye line; it pays off
+   in dyes, kerosene lanterns and a coke extender, and supplies the *good* Stage V arc electrodes.
 5. **Stage IV** - HP steam, large engine + large blast furnace + **HP crusher** (chromite/wolframite for HSS)
    + **open hearth** (low-N steel for boilers + HSS feedstock + bulk scrap recycling).
 6. **Stage V** - electrical network, dynamo (DC) -> alternator (AC), electrolysis, arc furnace, HSS.
@@ -1295,8 +1692,15 @@ Design is decided; these are **numbers/feel to tune in playtest**, not open mech
   power->delivered pressure, blower flow->engine power; ambient/seasonal `T_loss` (and the winter on/off
   config gate) + insulated-canal cooldown factor. All tunable; the model must gate efficiency, not
   possibility.
-- LP vs HP pressure bands and the MP/litre efficiency gap between Watt and Cornish engines.
-- Engine kW ratings (Watt/Cornish ~4 kW; Corliss ~36 kW) and the load-unit->kW display scale (~8 kW/unit).
+- LP vs HP pressure bands, and the **two-HP-lineage efficiency split**: the Cornish's full pump/blow
+  efficiency vs its **ungoverned-MP penalty**, against the governed **Horizontal Corliss**'s MP efficiency
+  (how much more MP/litre the governor buys). Also whether the Cornish's MP is a soft penalty or the
+  Horizontal is the only practical HP MP source.
+- Engine kW ratings (Watt/Cornish ~4 kW; **Horizontal Corliss ~8 kW**; Tandem Corliss ~36 kW) and the
+  load-unit->kW display scale (~8 kW/unit).
+- **Oil-well depth gate:** the reservoir depth bands vs pump-engine lift (hand/walking-beam = shallow,
+  Cornish = deep, Large Cornish = deepest), the reservoir **depletion** rate (non-recharging) and its
+  rating->crude-L/day curve, and how many derricks share a reservoir before diminishing returns bite.
 - Large-engine output (~160 L/s blower, ~36 L/s pump) vs 6-tuyere demand (144 L/s); exhaust balance
   (4 outlets x 36 = 144 L/s, 3 smoke stacks, 2 cowpers); cowper throughput-cap removal.
 - Generator output - dynamo (DC) and alternator (AC), ~36 kW x coil efficiency (~20 % impure -> ~7.2 kW /
@@ -1349,3 +1753,23 @@ Design is decided; these are **numbers/feel to tune in playtest**, not open mech
   ground-slag** by mass (slag is the cheap bulk filler).
 - Solid logistics: pneumatic-tube throughput, bucket-elevator / skip-hoist lift rate (must meet or beat
   furnace charge consumption), and the ore-mixer bunker -> furnace feed rate.
+- **Coal & petroleum chemistry (Stage IIb, all tunable):** distillation **boil-band temperatures** and
+  the **fraction split** per source (coal tar -> benzene / creosote / pitch; crude oil -> naphtha /
+  kerosene / lube / petroleum coke) + the still's heat-balance curve; **coal-tar yield** per unit coal
+  (coke-oven byproduct); crude-oil **worldgen** rarity and derrick/pump extract rate; the
+  nitration/reduction/dye **conversion ratios** and acid consumption (nitric = niter + sulfuric; sulfuric
+  from the IIIa plant); **kerosene lantern** burn rate + brightness/radius (static vs wearable) and fuel
+  per refill; **calcined petroleum coke** coke-replacement ratio (coal saved per part) and calcining
+  energy; **electrode** carbon per unit (pet-coke : pitch mix), bake energy, and **arc-hours per
+  electrode** (the arc furnace's consumable rate) vs the charcoal-carbon fallback's higher wear/resistance.
+- **Synthetic dyes & EM integration (Stage IIb, tunable):** the throughput/cost advantage over the vanilla
+  8-h barrel (litres of colorant per still cycle, dye-works vat rate); which **oxidiser** each dye uses
+  (MnO2 / saltpetre / nitrobenzene - NOT a dichromate unless one is added) and mordant (alum/chrome/tin);
+  the **EM soft-dep** boundary (converge on `em:powdered-ore-*` pigments/oxidisers + `game:diluted*`
+  mordants when present vs a minimal standalone oxidiser+alum baseline); the fact that the add-on must
+  **patch in the nitric acid variant** it produces and that **diazotisation uses sulfuric** (no HCl
+  dependency). Plus the **expanded-uses** balance: explosives as a *higher tier converging on
+  `game:blastingpowder`/`bomb-*`* (not a parallel system); the gas engine kept a **small niche** vs the
+  Stage-II steam spine; fertiliser N/P boosts; medicine heal/preservative magnitudes; and the deliberate
+  liberties (organic **white** impossible -> stays mineral; **gray** stays the vanilla iron route;
+  phenolic resin needs formaldehyde + is ~1907 -> out-of-window cosmetic only).

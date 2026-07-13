@@ -1,3 +1,5 @@
+using ExpandedLib.Fluids;
+
 namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
@@ -41,30 +43,13 @@ public class PipeNetworkState
   /// </summary>
   public float FlowRate { get; set; } = 0f;
 
-  /// <summary>Whether the network currently carries a liquid (water) rather than a gas.</summary>
-  public bool IsLiquid => MediumType == "Water";
+  /// <summary>Whether the network currently carries a liquid rather than a gas. Resolved through the
+  /// shared <see cref="ExLiquids.Taxonomy"/> (the four built-ins are always seeded), so a mod-added
+  /// liquid reads correctly - not just the old hardcoded <c>== "Water"</c>.</summary>
+  public bool IsLiquid => ExLiquids.Taxonomy.IsLiquid(MediumType);
 
   /// <summary>Whether the network has any open-ended connectors.</summary>
   public bool IsLeaking => OpeningsCount > 0;
-
-  /// <summary>Whether <paramref name="medium"/> can be produced into a run currently
-  /// carrying <paramref name="current"/> - same family only (gases mix; water is its own
-  /// medium), or an empty run that hasn't claimed a medium yet.</summary>
-  public static bool MediaCompatible(string current, string medium) =>
-    current.Length == 0 || (current == "Water") == (medium == "Water");
-
-  /// <summary>
-  /// Returns the higher-priority gas of two types when gas runs merge
-  /// (Exhaust &gt; Air). Steam ranks with Air (it is just hot Air-pool content).
-  /// </summary>
-  public static string GetHigherPriorityGas(string type1, string type2)
-  {
-    if (type1 == "Exhaust" || type2 == "Exhaust")
-      return "Exhaust";
-    if (type1 == "Steam" || type2 == "Steam")
-      return "Steam";
-    return "Air";
-  }
 
   /// <summary>Gas pressure (atm) for a given pool state.</summary>
   public static float ComputeGasPressure(float currentVolume, float maxVolume) =>

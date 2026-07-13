@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Fluids;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using Xunit;
 
@@ -37,6 +38,8 @@ public class PipeNetworkStateMathTests
       3
     );
 
+  // The medium compatibility / priority helpers moved off PipeNetworkState into the injected
+  // ExLiquids taxonomy (always seeded with the four built-ins); the behaviour is unchanged.
   [Theory]
   [InlineData("", "Air", true)] // empty run accepts anything
   [InlineData("", "Water", true)]
@@ -44,21 +47,20 @@ public class PipeNetworkStateMathTests
   [InlineData("Air", "Water", false)] // gas run rejects water
   [InlineData("Water", "Air", false)] // water run rejects gas
   [InlineData("Water", "Water", true)]
-  public void MediaCompatible_same_family_only(
+  public void Media_compatible_same_family_only(
     string current,
     string medium,
     bool expected
-  ) =>
-    Assert.Equal(expected, PipeNetworkState.MediaCompatible(current, medium));
+  ) => Assert.Equal(expected, ExLiquids.Taxonomy.Compatible(current, medium));
 
   [Theory]
   [InlineData("Air", "Air", "Air")]
   [InlineData("Air", "Steam", "Steam")]
   [InlineData("Steam", "Exhaust", "Exhaust")]
   [InlineData("Air", "Exhaust", "Exhaust")]
-  public void GetHigherPriorityGas_ranks_exhaust_over_steam_over_air(
+  public void Higher_priority_ranks_exhaust_over_steam_over_air(
     string a,
     string b,
     string expected
-  ) => Assert.Equal(expected, PipeNetworkState.GetHigherPriorityGas(a, b));
+  ) => Assert.Equal(expected, ExLiquids.Taxonomy.HigherPriority(a, b));
 }
