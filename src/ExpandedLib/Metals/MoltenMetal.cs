@@ -142,17 +142,12 @@ public static class MoltenMetal
       : (byte)0;
 
   /// <summary>
-  /// Human-readable metal name from an item code:
-  /// "game:ingot-iron" → "Iron", "iwex:slag" → "Slag".
+  /// Human-readable metal name from an item code ("game:ingot-iron" → "Iron", "iwex:slag" → "Slag").
+  /// Delegates to <see cref="MetalRegistry.DisplayName"/>, the single source of truth: it honours a
+  /// registered metal's localization key and otherwise applies this strip-and-capitalise convention.
   /// </summary>
-  public static string DisplayName(string metalItemCode)
-  {
-    if (metalItemCode.Length == 0)
-      return Lang.Get("exlib:metal-unknown");
-    string path = new AssetLocation(metalItemCode).Path;
-    string name = path.StartsWith("ingot-") ? path[6..] : path;
-    return name.Length > 0 ? char.ToUpper(name[0]) + name[1..] : name;
-  }
+  public static string DisplayName(string metalItemCode) =>
+    MetalRegistry.DisplayName(metalItemCode);
 
   /// <summary>
   /// Formats a molten temperature for display. Defaults to a metric <c>"650 °C"</c> form; a consumer

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.Furnace;
 using IronworkingExpanded.Patches;
@@ -71,12 +72,10 @@ public class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
   private ItemStack? CreateMoltenStack(string metalCode, int units, float temp)
   {
-    // Use the item codes the molten network/molds expect downstream: iron as game:ingot-iron,
-    // slag as iwex:slag.
-    AssetLocation loc =
-      metalCode == "slag"
-        ? new AssetLocation("iwex", "slag")
-        : new AssetLocation("game", $"ingot-{metalCode}");
+    // The molten network/molds expect the registry's item code per metal (iron game:ingot-iron, slag
+    // iwex:slag). MetalRegistry.MoltenItemOf resolves the short token, falling back to the
+    // game:ingot-<code> convention for a metal that ships no explicit entry.
+    AssetLocation loc = MetalRegistry.MoltenItemOf(metalCode);
 
     Item? item = Api.World.GetItem(loc);
     if (item == null)

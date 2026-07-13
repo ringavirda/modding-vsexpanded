@@ -59,8 +59,10 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   private static float ChiselMaxFraction =>
     SmexValues.BessemerChiselMaxFraction;
 
-  private const string IronCode = "game:ingot-iron";
-  private const string SteelCode = "game:ingot-steel";
+  // The molten item codes for the bessemer's input/output metals, resolved through the shared registry
+  // (a mod could redirect "iron"/"steel"); both follow the game:ingot-<code> convention today.
+  private static string IronCode => MetalRegistry.MoltenItemOf("iron").ToString();
+  private static string SteelCode => MetalRegistry.MoltenItemOf("steel").ToString();
   #endregion
 
   #region Operational + charge state

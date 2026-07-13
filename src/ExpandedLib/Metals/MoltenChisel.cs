@@ -45,9 +45,10 @@ public static class MoltenChisel
   /// <summary>
   /// The metal-bit recovery stack for <paramref name="units"/> of the metal <paramref name="metalCode"/>
   /// at <paramref name="temperature"/> °C - <paramref name="unitsPerBit"/> units per bit, mapped to the
-  /// solid drop code via <see cref="SolidDropLocation"/>. When the solid item doesn't
-  /// resolve it falls back to slag (if <paramref name="slagFallback"/>) or returns <c>null</c>. Shared by
-  /// every chisel/break drop path so the bit ratio and temperature handling live in one place.
+  /// solid drop code via <see cref="MetalRegistry.SolidDropOf"/>. When the solid item doesn't
+  /// resolve it falls back to the metal's recovery item (if <paramref name="slagFallback"/>, via
+  /// <see cref="MetalRegistry.FallbackOf"/>) or returns <c>null</c>. Shared by every chisel/break drop
+  /// path so the bit ratio and temperature handling live in one place.
   /// </summary>
   public static ItemStack? BuildRecovery(
     IWorldAccessor world,
@@ -59,29 +60,18 @@ public static class MoltenChisel
   )
   {
     int count = Math.Max(1, units / unitsPerBit);
-    AssetLocation loc = SolidDropLocation(metalCode);
+    AssetLocation loc = MetalRegistry.SolidDropOf(metalCode);
     Item? item = world.GetItem(loc);
     if (item == null)
     {
       if (!slagFallback)
         return null;
-      Item? slag = world.GetItem(new AssetLocation("iwex:slag"));
+      Item? slag = world.GetItem(MetalRegistry.FallbackOf(metalCode));
       return slag != null ? new ItemStack(slag, count) : null;
     }
     var drop = new ItemStack(item, count);
     MoltenMetal.SetTemperature(world, drop, temperature);
     return drop;
-  }
-
-  /// <summary>Maps a molten metal item to its solid drop ("game:ingot-iron" → "game:metalbit-iron"); non-ingot items drop as themselves.</summary>
-  internal static AssetLocation SolidDropLocation(AssetLocation metalItemLoc)
-  {
-    if (metalItemLoc.Path.StartsWith("ingot-"))
-      return new AssetLocation(
-        metalItemLoc.Domain,
-        "metalbit-" + metalItemLoc.Path[6..]
-      );
-    return metalItemLoc;
   }
 
   /// <summary>

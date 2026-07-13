@@ -1,3 +1,4 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using IronworkingExpanded.BlockStructures.Furnace;
@@ -21,6 +22,10 @@ public class BlastFurnaceTests
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
     world.RegisterItem("iwex:slag");
+    // The furnace resolves the "slag" short token through MetalRegistry, which the game populates from
+    // assets/iwex/config/metals/slag.json at AssetsFinalize. The headless harness runs no asset load,
+    // so register the same mapping here (iron/steel need none - they follow the game:ingot convention).
+    MetalRegistry.Register(new MetalDef { Code = "slag", MoltenItem = "iwex:slag" });
     return world;
   }
 
