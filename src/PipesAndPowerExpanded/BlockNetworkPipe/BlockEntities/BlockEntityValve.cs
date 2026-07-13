@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -21,8 +22,7 @@ public class BlockEntityValve : BlockEntityPipe
 {
   private bool _open;
 
-  private BEBehaviorAnimatable? _animatable;
-  private bool _animatorReady;
+  private ToggleAnimator? _toggle;
   private string? _animatorOrientation;
 
   /// <summary>Whether the valve is currently open (letting the run flow through it).</summary>
@@ -36,19 +36,17 @@ public class BlockEntityValve : BlockEntityPipe
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-
-    if (api is ICoreClientAPI capi && _animatable != null)
-    {
-      InitAnimator(capi);
-      ApplyValvePose();
-    }
+    _toggle = new ToggleAnimator(this, BuildAnimator);
+    _toggle.Initialize(ApplyValvePose);
     if (!_open)
       Pressure = 0f;
   }
 
-  private void InitAnimator(ICoreClientAPI capi)
+  // Non-RCC animated block: load the shape + drive the full X/Y/Z rotation, through the shared toggle
+  // helper (which owns the null-animator ready-guard). A failed shape resolve degrades to "not ready".
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
   {
+    var capi = (ICoreClientAPI)Api;
     Shape? shape = capi
       .Assets.TryGet(
         Block
@@ -61,7 +59,7 @@ public class BlockEntityValve : BlockEntityPipe
       return;
 
     // Rotation is applied by the renderer (per-orientation), not baked into the mesh.
-    _animatable?.animUtil.InitializeAnimator(
+    animatable.animUtil.InitializeAnimator(
       "gasvalve-" + Block.Variant["orientation"],
       shape,
       capi.Tesselator.GetTextureSource(Block),
@@ -71,7 +69,7 @@ public class BlockEntityValve : BlockEntityPipe
     // AnimatableRenderer only honours the Y rotation; rotateX/Z are dropped, so the vertical
     // valve variants (ud/du, pipe along rotateX=90) rendered the "open" pose flat while the
     // static mesh stayed vertical. Drive the full rotation through CustomTransform instead.
-    if (_animatable?.animUtil.renderer is { } renderer)
+    if (animatable.animUtil.renderer is { } renderer)
       renderer.CustomTransform = BuildShapeRotationTransform(
         Block.Shape.rotateX,
         Block.Shape.rotateY,
@@ -79,7 +77,6 @@ public class BlockEntityValve : BlockEntityPipe
       );
 
     _animatorOrientation = Block.Variant["orientation"];
-    _animatorReady = true;
   }
 
   /// <summary>
@@ -118,18 +115,14 @@ public class BlockEntityValve : BlockEntityPipe
   {
     base.OnExchanged(block);
 
-    if (Api is ICoreClientAPI capi && _animatable != null)
+    if (Api is ICoreClientAPI && _toggle != null)
     {
       // Only re-init on a real orientation change. A network re-walk can re-exchange to an
       // equivalent variant (ns<->sn); re-initing each time would reset the "open" pose.
-      if (
-        _animatorReady
-        && _animatorOrientation == block.Variant["orientation"]
-      )
+      if (_toggle.Ready && _animatorOrientation == block.Variant["orientation"])
         return;
 
-      _animatorReady = false;
-      InitAnimator(capi);
+      _toggle.Rebuild();
       ApplyValvePose();
     }
   }
@@ -173,22 +166,22 @@ public class BlockEntityValve : BlockEntityPipe
 
   private void ApplyValvePose()
   {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-
-    if (_open)
-      _animatable.animUtil.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "open",
-          Code = "open",
-          AnimationSpeed = 2.5f,
-          EaseInSpeed = 8f,
-          EaseOutSpeed = 8f,
-        }.Init()
-      );
-    else
-      _animatable.animUtil.StopAnimation("open");
+    _toggle?.Pose(util =>
+    {
+      if (_open)
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "open",
+            Code = "open",
+            AnimationSpeed = 2.5f,
+            EaseInSpeed = 8f,
+            EaseOutSpeed = 8f,
+          }.Init()
+        );
+      else
+        util.StopAnimation("open");
+    });
   }
 
   #endregion

@@ -56,12 +56,17 @@ public sealed class TestWorld
   public ICoreServerAPI Api { get; }
 
   private readonly Dictionary<long, TickListener> _tickListeners = new();
+
+  // Sim-time (ms) accrued toward each listener's next fire, for interval-aware advancing
+  // (AdvanceBlockEntityTime). Remainders carry across calls so two sub-interval advances still cross
+  // the boundary. FireBlockEntityTicks ignores this and fires every listener regardless.
+  private readonly Dictionary<long, int> _tickAccumMs = new();
   private long _nextListenerId;
 
   /// <summary>A captured block-entity tick listener: its callback and the interval (ms) it asked for.
-  /// The interval is recorded for interval-aware ticking; <see cref="FireBlockEntityTicks"/> fires
-  /// every live listener regardless. Keyed by a real unique id so
-  /// <c>UnregisterGameTickListener</c> can drop a torn-down block entity's listener.</summary>
+  /// The interval feeds interval-aware ticking (<see cref="AdvanceBlockEntityTime"/>);
+  /// <see cref="FireBlockEntityTicks"/> fires every live listener regardless. Keyed by a real unique id
+  /// so <c>UnregisterGameTickListener</c> can drop a torn-down block entity's listener.</summary>
   private readonly record struct TickListener(
     System.Action<float> Callback,
     int IntervalMs
@@ -224,6 +229,31 @@ public sealed class TestWorld
 
   #endregion
 
+  #region Neighbours
+
+  /// <summary>
+  /// Fires <see cref="Block.OnNeighbourBlockChange"/> on each of the six blocks adjacent to
+  /// <paramref name="changedPos"/>, exactly as the engine does right after a block is placed, broken or
+  /// exchanged at that cell (each neighbour is told its own position and the position that changed).
+  /// Empty cells resolve to <see cref="Air"/>, whose base implementation is a no-op, so only real
+  /// neighbours react. This is <b>opt-in</b>: the low-level <see cref="Place"/>/<c>SetBlock</c>/
+  /// <c>ExchangeBlock</c>/<c>BreakBlock</c> helpers deliberately do NOT auto-fire it, because doing so
+  /// would make an isolated network node self-break and reorientations recurse across the graph suite.
+  /// Call it when a test needs to exercise neighbour-driven reactions - a network node re-checking its
+  /// support and self-breaking, a canal updating its end connectors, an intake re-syncing orientation.
+  /// </summary>
+  public TestWorld NotifyNeighbours(BlockPos changedPos)
+  {
+    foreach (BlockFacing face in BlockFacing.ALLFACES)
+    {
+      BlockPos nPos = changedPos.AddCopy(face);
+      GetBlock(nPos).OnNeighbourBlockChange(World, nPos, changedPos);
+    }
+    return this;
+  }
+
+  #endregion
+
   #region Time
 
   /// <summary>
@@ -245,6 +275,39 @@ public sealed class TestWorld
     for (int i = 0; i < times; i++)
       foreach (var listener in _tickListeners.Values.ToList())
         listener.Callback(dt);
+  }
+
+  /// <summary>
+  /// Advances block-entity sim time by <paramref name="totalMs"/> ms, firing each registered listener
+  /// once per whole interval that elapses - honouring the interval each block entity asked for at
+  /// <c>RegisterGameTickListener</c>. A 1000 ms listener fires twice over 2500 ms; a 250 ms listener
+  /// fires ten times; each callback receives <c>dt = interval / 1000</c> s. Remainders carry across
+  /// calls, so two 600 ms advances still cross a 1000 ms boundary once. Unlike
+  /// <see cref="FireBlockEntityTicks"/> (which fires every listener a fixed number of times regardless
+  /// of interval), this lets a scene with block entities on different intervals be advanced faithfully,
+  /// and interval-gated behaviour be asserted. A listener that unregisters itself mid-advance stops
+  /// receiving further fires this call.
+  /// </summary>
+  public void AdvanceBlockEntityTime(int totalMs)
+  {
+    // Snapshot: a listener may unregister (or a block entity may register a new one) while firing.
+    foreach (long id in _tickListeners.Keys.ToList())
+    {
+      if (!_tickListeners.TryGetValue(id, out TickListener listener))
+        continue; // already removed by an earlier callback this pass
+      int interval = System.Math.Max(1, listener.IntervalMs);
+      int accum = _tickAccumMs.TryGetValue(id, out int a) ? a : 0;
+      accum += totalMs;
+      float dt = interval / 1000f;
+      while (accum >= interval && _tickListeners.ContainsKey(id))
+      {
+        accum -= interval;
+        listener.Callback(dt);
+      }
+      // The listener may have been torn down by its own callback; only keep live remainders.
+      if (_tickListeners.ContainsKey(id))
+        _tickAccumMs[id] = accum;
+    }
   }
 
   /// <summary>Moves the calendar forward without ticking, for calendar-driven effects (evaporation).</summary>
@@ -471,7 +534,12 @@ public sealed class TestWorld
     // discarded block entity keep ticking and mask double-tick bugs after a reload.
     events
       .When(x => x.UnregisterGameTickListener(Arg.Any<long>()))
-      .Do(ci => _tickListeners.Remove(ci.Arg<long>()));
+      .Do(ci =>
+      {
+        long id = ci.Arg<long>();
+        _tickListeners.Remove(id);
+        _tickAccumMs.Remove(id);
+      });
 
     return api;
   }
@@ -485,6 +553,7 @@ public sealed class TestWorld
   {
     long id = ++_nextListenerId;
     _tickListeners[id] = new TickListener(callback, intervalMs);
+    _tickAccumMs[id] = 0;
     return id;
   }
 
@@ -496,8 +565,30 @@ public sealed class TestWorld
       _blockEntities.Remove(pos);
       return;
     }
-    if (_blocksById.TryGetValue(id, out var b))
-      _blocks[pos] = b;
+    if (!_blocksById.TryGetValue(id, out var b))
+      return;
+    _blocks[pos] = b;
+
+    // Engine parity: placing a block that declares an entity class (re)creates its block entity, so a
+    // caller that swaps a block and then reads its block entity - as the migrator's ReplaceBlock does
+    // to hand over the old entity's saved tree - finds the new block's BE right after the swap. Only
+    // acts when a factory is registered for the class (opt-in via RegisterBlockEntityFactory), so the
+    // graph-only network tests that never register one are unaffected. A BE already matching the new
+    // block is kept; a stale one (different block) is replaced.
+    if (
+      b.EntityClass is { } entityClass
+      && (
+        !_blockEntities.TryGetValue(pos, out var existing)
+        || existing.Block != b
+      )
+    )
+    {
+      // A block-changing SetBlock replaces the old block entity; tear the stale one down first (as
+      // the engine's chunk unload does - unregistering its tick listeners) so it cannot linger as a
+      // zombie that keeps ticking, mirroring the faithful DoBreak teardown.
+      existing?.OnBlockUnloaded();
+      DoSpawnBlockEntity(entityClass, pos);
+    }
   }
 
   private void DoSpawnBlockEntity(string classname, BlockPos pos)

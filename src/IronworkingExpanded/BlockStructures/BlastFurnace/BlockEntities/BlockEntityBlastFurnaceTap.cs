@@ -1,4 +1,5 @@
 using System.Text;
+using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -21,25 +22,22 @@ public class BlockEntityBlastFurnaceTap : BlockEntity
   /// <summary>Whether the tap is currently open and pouring.</summary>
   public bool IsPouring { get; private set; } = false;
 
-  private BEBehaviorAnimatable? _animatable;
-  private bool _animatorReady;
+  private ToggleAnimator? _toggle;
 
   #region Lifecycle
 
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-
-    if (api is ICoreClientAPI capi && _animatable != null)
-    {
-      InitAnimator(capi);
-      ApplyPourPose();
-    }
+    _toggle = new ToggleAnimator(this, BuildAnimator);
+    _toggle.Initialize(ApplyPourPose);
   }
 
-  private void InitAnimator(ICoreClientAPI capi)
+  // Non-RCC animated block: load the shape and initialise the animator through the shared toggle helper,
+  // which owns the null-animator ready-guard (a failed shape resolve degrades to "not ready", no pose).
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
   {
+    var capi = (ICoreClientAPI)Api;
     Shape? shape = capi
       .Assets.TryGet(
         Block
@@ -51,13 +49,12 @@ public class BlockEntityBlastFurnaceTap : BlockEntity
     if (shape == null)
       return;
 
-    _animatable?.animUtil.InitializeAnimator(
+    animatable.animUtil.InitializeAnimator(
       "blastfurnacetap-" + Block.Variant["side"],
       shape,
       capi.Tesselator.GetTextureSource(Block),
       new Vec3f(0, Block.Shape.rotateY, 0)
     );
-    _animatorReady = true;
   }
 
   /// <summary>Toggles the tap open/closed and updates its pour pose.</summary>
@@ -69,22 +66,22 @@ public class BlockEntityBlastFurnaceTap : BlockEntity
 
   private void ApplyPourPose()
   {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-
-    if (IsPouring)
-      _animatable.animUtil.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "open",
-          Code = "open",
-          AnimationSpeed = 1.5f,
-          EaseInSpeed = 6f,
-          EaseOutSpeed = 6f,
-        }.Init()
-      );
-    else
-      _animatable.animUtil.StopAnimation("open");
+    _toggle?.Pose(util =>
+    {
+      if (IsPouring)
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "open",
+            Code = "open",
+            AnimationSpeed = 1.5f,
+            EaseInSpeed = 6f,
+            EaseOutSpeed = 6f,
+          }.Init()
+        );
+      else
+        util.StopAnimation("open");
+    });
   }
 
   #endregion

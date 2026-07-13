@@ -28,12 +28,11 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   private bool _solidified;
   private int _chargeUnits;
 
-  private BEBehaviorAnimatable? _animatable;
-  private ExRightClickConstructable? _rcc;
-  private bool _animatorReady;
+  // Owns the RCC-suppressed-mesh animator triad (shared by every constructed mega-block).
+  private ConstructedAnimator? _animator;
 
   /// <summary>True once the player has finished the construction stages.</summary>
-  public bool IsConstructed => _rcc?.IsComplete ?? false;
+  public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   /// <summary>Whether the mirrored charge has solidified inside the vessel.</summary>
   public bool IsSolidified => _solidified;
@@ -43,70 +42,23 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-    _rcc = GetBehavior<ExRightClickConstructable>();
-
-    if (api is ICoreClientAPI && _animatable != null)
-    {
-      // Re-render whenever the construction stage adds/removes elements.
-      if (_rcc != null)
-        _rcc.OnShapeChanged += OnConstructShapeChanged;
-
-      RebuildAnimator(_rcc?.shape?.SelectiveElements);
-      ApplyPose();
-    }
+    // The animator (and IsConstructed) is resolved on both sides; it only builds/poses on the client.
+    _animator = new ConstructedAnimator(this, () => AnimCacheKey);
+    _animator.Initialize(ApplyPose);
   }
 
   private string AnimCacheKey => "converterbessemer-" + Block.Variant["side"];
 
   public override void OnBlockRemoved()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     base.OnBlockRemoved();
   }
 
   public override void OnBlockUnloaded()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     base.OnBlockUnloaded();
-  }
-
-  private void OnConstructShapeChanged(CompositeShape cs)
-  {
-    RebuildAnimator(cs?.SelectiveElements);
-    ApplyPose();
-  }
-
-  /// <summary>
-  /// (Re)builds the animator to render exactly the currently-built elements (only the mesh is
-  /// filtered to <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape).
-  /// </summary>
-  private void RebuildAnimator(string[]? selectiveElements)
-  {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    // CreateMesh resolves a FRESH shape each call; reusing one re-maps UVs into atlas space and
-    // stretches textures. Rotation is applied by the renderer, not baked into the mesh.
-    MeshData meshData = _animatable.animUtil.CreateMesh(
-      AnimCacheKey,
-      null,
-      out Shape resolvedShape,
-      null,
-      new TesselationMetaData { SelectiveElements = selectiveElements }
-    );
-
-    _animatable.animUtil.InitializeAnimator(
-      AnimCacheKey,
-      meshData,
-      resolvedShape,
-      new Vec3f(0, Block.Shape.rotateY, 0)
-    );
-    // A failed shape resolve leaves animUtil.animator null; only mark ready when it exists, so
-    // ApplyPose never poses a null animator (vanilla GetBlockInfo would NRE). Same guard as boiler/engine.
-    _animatorReady = _animatable.animUtil.animator != null;
   }
 
   #endregion
@@ -211,37 +163,34 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
       ExOrientation.AngleFromSide(Block.Variant["side"])
     );
 
-  private void ApplyPose()
-  {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-
-    var util = _animatable.animUtil;
-    util.StopAnimation("idle");
-    util.StopAnimation("filling");
-    util.StopAnimation("pouring");
-
-    // Pose tilts only apply once the vessel is built; during construction it
-    // simply renders the partial mesh at rest via "idle".
-    string code = (IsConstructed ? _opState : ConverterOpState.Normal) switch
+  private void ApplyPose() =>
+    _animator?.Pose(util =>
     {
-      ConverterOpState.Filling => "filling",
-      ConverterOpState.Pouring => "pouring",
-      _ => "idle",
-    };
+      util.StopAnimation("idle");
+      util.StopAnimation("filling");
+      util.StopAnimation("pouring");
 
-    util.StartAnimation(
-      new AnimationMetaData
+      // Pose tilts only apply once the vessel is built; during construction it
+      // simply renders the partial mesh at rest via "idle".
+      string code = (IsConstructed ? _opState : ConverterOpState.Normal) switch
       {
-        Animation = code,
-        Code = code,
-        // The whole vessel tilts - slow and heavy. Idle just holds it visible.
-        AnimationSpeed = code == "idle" ? 1f : 0.3f,
-        EaseInSpeed = 3f,
-        EaseOutSpeed = 3f,
-      }.Init()
-    );
-  }
+        ConverterOpState.Filling => "filling",
+        ConverterOpState.Pouring => "pouring",
+        _ => "idle",
+      };
+
+      util.StartAnimation(
+        new AnimationMetaData
+        {
+          Animation = code,
+          Code = code,
+          // The whole vessel tilts - slow and heavy. Idle just holds it visible.
+          AnimationSpeed = code == "idle" ? 1f : 0.3f,
+          EaseInSpeed = 3f,
+          EaseOutSpeed = 3f,
+        }.Init()
+      );
+    });
 
   #endregion
 

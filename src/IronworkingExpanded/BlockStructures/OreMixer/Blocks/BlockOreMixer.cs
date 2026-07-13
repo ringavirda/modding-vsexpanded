@@ -19,65 +19,17 @@ namespace IronworkingExpanded.BlockStructures.OreMixer.Blocks;
 /// </summary>
 [BlockRegister]
 public partial class BlockOreMixer
-  : Block,
+  : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget
 {
-  /// <summary>Structure/filler rotation, paired with the JSON <c>rotateYByType</c> (north 0 … west 90).</summary>
-  private int Angle => ExOrientation.AngleFromSide(Variant["side"]);
+  /// <summary>Structure/filler rotation, paired with the JSON <c>rotateYByType</c> (north 0 … west 90).
+  /// Also the BE's port-cell resolution angle.</summary>
+  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);
 
-  /// <summary>The structure-filler rotation angle, for the BE's port-cell resolution.</summary>
-  public int StructureAngle => Angle;
+  #region Drops
 
-  #region Placement / filler footprint
-
-  public override bool CanPlaceBlock(
-    IWorldAccessor world,
-    IPlayer byPlayer,
-    BlockSelection blockSel,
-    ref string failureCode
-  )
-  {
-    if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
-      return false;
-
-    var cells = StructureFillers.FootprintCells(this, blockSel.Position, Angle);
-    if (!StructureFillers.CanPlace(world, cells))
-    {
-      failureCode = "notenoughspace";
-      return false;
-    }
-    return true;
-  }
-
-  public override void OnBlockPlaced(
-    IWorldAccessor world,
-    BlockPos blockPos,
-    ItemStack? byItemStack = null
-  )
-  {
-    base.OnBlockPlaced(world, blockPos, byItemStack);
-    StructureFillers.PlaceFillers(
-      world,
-      blockPos,
-      StructureFillers.FootprintCells(this, blockPos, Angle)
-    );
-  }
-
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  )
-  {
-    StructureFillers.RemoveFillers(
-      world,
-      pos,
-      StructureFillers.FootprintCells(this, pos, Angle)
-    );
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
-  }
+  // Placement, the filler footprint and break-time filler removal are handled by BlockFilledMegastructure.
 
   // A broken mixer returns only its construction materials (scattered by the RightClickConstructable
   // behaviour), never the mixer block itself.

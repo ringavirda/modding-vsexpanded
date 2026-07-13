@@ -16,7 +16,7 @@ namespace PipesAndPowerExpanded.BlockStructures.Boiler;
 /// collision); construction is driven by the RightClickConstructable behavior in the block JSON.
 /// </summary>
 public abstract class BlockBoiler
-  : Block,
+  : BlockFilledMegastructure,
     INetworkConnector,
     IFillerInteractionTarget
 {
@@ -26,7 +26,7 @@ public abstract class BlockBoiler
     (ExOrientation.AngleFromSide(Variant["side"]) + 180) % 360;
 
   /// <summary>The structure/filler rotation angle, for multiblockStructure verification.</summary>
-  public int StructureAngle => Angle;
+  public override int StructureAngle => Angle;
 
   // Water draws through a pipe on the bottom face; steam and exhaust leave via their outlet cells.
   public string NetworkType => "pipe";
@@ -78,50 +78,14 @@ public abstract class BlockBoiler
 
   /// <summary>Removes the boiler's reserved filler footprint (used by the explosion path).</summary>
   public void RemoveStructure(IWorldAccessor world, BlockPos pos) =>
-    StructureFillers.RemoveFillers(
-      world,
-      pos,
-      StructureFillers.FootprintCells((IFillerHost)this, pos, Angle)
-    );
+    StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
 
-  public override bool CanPlaceBlock(
+  // Placement, the filler footprint and break-time filler removal are handled by
+  // BlockFilledMegastructure; the boiler only adds its steam port right after the fillers land.
+  protected override void OnFootprintPlaced(
     IWorldAccessor world,
-    IPlayer byPlayer,
-    BlockSelection blockSel,
-    ref string failureCode
-  )
-  {
-    if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
-      return false;
-
-    // Refuse placement unless the whole volume is clear, else the fillers fail to spawn.
-    var cells = StructureFillers.FootprintCells(
-      (IFillerHost)this,
-      blockSel.Position,
-      Angle
-    );
-    if (!StructureFillers.CanPlace(world, cells))
-    {
-      failureCode = "notenoughspace";
-      return false;
-    }
-    return true;
-  }
-
-  public override void OnBlockPlaced(
-    IWorldAccessor world,
-    BlockPos blockPos,
-    ItemStack? byItemStack = null
-  )
-  {
-    base.OnBlockPlaced(world, blockPos, byItemStack);
-    StructureFillers.PlaceFillers(
-      world,
-      blockPos,
-      StructureFillers.FootprintCells((IFillerHost)this, blockPos, Angle)
-    );
-    MarkSteamPort(world, blockPos);
-  }
+    BlockPos blockPos
+  ) => MarkSteamPort(world, blockPos);
 
   /// <summary>
   /// Turns the steam-connector filler cell (<see cref="SteamPipeWorldPos"/>) into an upward "pipe"
@@ -141,23 +105,6 @@ public abstract class BlockBoiler
       be.PortNetworkType = NetworkType; // "pipe"
       be.MarkDirty(true);
     }
-  }
-
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  )
-  {
-    // Clear the reserved volume first so no invisible solid cells are left behind.
-    StructureFillers.RemoveFillers(
-      world,
-      pos,
-      StructureFillers.FootprintCells((IFillerHost)this, pos, Angle)
-    );
-
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
   }
 
   // A broken boiler returns only its construction materials (scattered by the RightClickConstructable

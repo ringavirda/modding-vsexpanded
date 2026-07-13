@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using ExpandedLib.Registries;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
 
 namespace ExpandedLib.Blocks.Healing;
 
@@ -32,42 +29,20 @@ namespace ExpandedLib.Blocks.Healing;
 /// Scope is restricted to types carrying <see cref="BlockEntityRegisterAttribute"/> (the same
 /// attribute every BE in this mod family is registered through), so vanilla and third-party block
 /// entities are never touched. This lives in exlib and so covers every dependent mod (smex, ppex)
-/// automatically.
+/// automatically. The chunk-column walk itself lives in
+/// <see cref="ChunkColumnSweeperModSystem"/>, shared with the block migrator.
 /// </para>
 /// </summary>
-public class BlockEntityHealModSystem : ModSystem
+public class BlockEntityHealModSystem : ChunkColumnSweeperModSystem
 {
-  private ICoreServerAPI _sapi = null!;
-
-  /// <summary>Log prefix, e.g. "[exlib]" - the owning mod's id.</summary>
-  private string Tag => "[" + Mod.Info.ModID + "]";
-
   // Block ids whose block declares an entityClass that resolves to one of our
   // [BlockEntityRegister] types. Built lazily, once the world's block list exists.
   private readonly HashSet<int> _healableBlockIds = [];
-  private bool _initialized;
-
-  // Only the server owns world block/BE data; the client has nothing to heal.
-  public override bool ShouldLoad(EnumAppSide side) =>
-    side == EnumAppSide.Server;
-
-  public override void StartServerSide(ICoreServerAPI api)
-  {
-    _sapi = api;
-    // Spawn-area chunks are already loaded before this event is wired up, so sweep them once at
-    // RunGame and handle every column that loads afterwards via the event.
-    api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, SweepLoadedChunks);
-    api.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
-  }
 
   /// <summary>Builds the healable block-id set on first use; returns false if this world has none.</summary>
-  private bool EnsureInitialized()
+  protected override bool BuildWork()
   {
-    if (!_initialized)
-    {
-      BuildHealableSet();
-      _initialized = true;
-    }
+    BuildHealableSet();
     return _healableBlockIds.Count > 0;
   }
 
@@ -138,101 +113,34 @@ public class BlockEntityHealModSystem : ModSystem
     return types;
   }
 
-  private void SweepLoadedChunks()
-  {
-    int total = HealLoadedChunks();
-    if (total > 0)
-      _sapi.Logger.Notification(
-        Tag
-          + " Startup sweep recreated {0} orphaned block entit(ies) across loaded chunks.",
-        total
-      );
-  }
+  // Cheap pre-reject: only our watched block ids can carry an orphanable BE.
+  protected override bool ShouldVisit(int blockId) =>
+    _healableBlockIds.Contains(blockId);
+
+  protected override int VisitCell(IBlockAccessor ba, BlockPos pos, int blockId) =>
+    HealOrphanAt(ba, pos) ? 1 : 0;
+
+  protected override void OnColumnStreamedIn(int chunkX, int chunkZ, int healed) =>
+    _sapi.Logger.Notification(
+      Tag + " Recreated {0} orphaned block entit(ies) in chunk column {1},{2}.",
+      healed,
+      chunkX,
+      chunkZ
+    );
+
+  protected override void OnStartupSweepComplete(int total) =>
+    _sapi.Logger.Notification(
+      Tag
+        + " Startup sweep recreated {0} orphaned block entit(ies) across loaded chunks.",
+      total
+    );
 
   /// <summary>
   /// Sweeps every currently loaded chunk and recreates any orphaned block entities, returning how
-  /// many were healed. Used by the startup sweep and the <c>/exmod heal</c> admin command (which lets
-  /// an op fix orphans in already-loaded chunks without a world reload).
+  /// many were healed. Used by the <c>/exmod heal</c> admin command (which lets an op fix orphans in
+  /// already-loaded chunks without a world reload); the startup sweep runs the same walk via the base.
   /// </summary>
-  public int HealLoadedChunks()
-  {
-    if (!EnsureInitialized())
-      return 0;
-
-    int chunksTall = _sapi.WorldManager.MapSizeY / GlobalConstants.ChunkSize;
-    int total = 0;
-
-    foreach (
-      long index2d in _sapi.WorldManager.AllLoadedMapchunks.Keys.ToArray()
-    )
-    {
-      Vec2i coord = _sapi.WorldManager.MapChunkPosFromChunkIndex2D(index2d);
-      for (int cy = 0; cy < chunksTall; cy++)
-        total += ScanChunk(
-          coord.X,
-          cy,
-          coord.Y,
-          _sapi.WorldManager.GetChunk(coord.X, cy, coord.Y)
-        );
-    }
-
-    return total;
-  }
-
-  private void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
-  {
-    // No watched block types in this world: nothing can orphan, so stop listening entirely.
-    if (!EnsureInitialized())
-    {
-      _sapi.Event.ChunkColumnLoaded -= OnChunkColumnLoaded;
-      return;
-    }
-
-    int healed = 0;
-    for (int cy = 0; cy < chunks.Length; cy++)
-      healed += ScanChunk(chunkCoord.X, cy, chunkCoord.Y, chunks[cy]);
-
-    if (healed > 0)
-      _sapi.Logger.Notification(
-        Tag
-          + " Recreated {0} orphaned block entit(ies) in chunk column {1},{2}.",
-        healed,
-        chunkCoord.X,
-        chunkCoord.Y
-      );
-  }
-
-  /// <summary>Scans one chunk section and recreates any watched block's missing block entity.</summary>
-  private int ScanChunk(int chunkX, int chunkY, int chunkZ, IWorldChunk? chunk)
-  {
-    if (chunk == null)
-      return 0;
-    chunk.Unpack();
-    IChunkBlocks data = chunk.Data;
-    int len = data.Length;
-
-    const int cs = GlobalConstants.ChunkSize;
-    IBlockAccessor ba = _sapi.World.BlockAccessor;
-    int healed = 0;
-
-    for (int i = 0; i < len; i++)
-    {
-      int id = data[i];
-      if (id == 0 || !_healableBlockIds.Contains(id))
-        continue;
-
-      // index3d layout: ((y * cs) + z) * cs + x
-      int x = i % cs;
-      int z = i / cs % cs;
-      int y = i / (cs * cs);
-      BlockPos pos = new(chunkX * cs + x, chunkY * cs + y, chunkZ * cs + z);
-
-      if (HealOrphanAt(ba, pos))
-        healed++;
-    }
-
-    return healed;
-  }
+  public int HealLoadedChunks() => SweepAllLoadedChunks();
 
   /// <summary>
   /// If the block at <paramref name="pos"/> declares an <see cref="Block.EntityClass"/> but has no

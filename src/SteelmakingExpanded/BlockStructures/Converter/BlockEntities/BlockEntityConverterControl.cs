@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
@@ -72,7 +73,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   private bool _solidified;
   private string _status = Lang.Get("smex:bessemer-status-idle");
 
-  private BEBehaviorAnimatable? _animatable;
+  private ToggleAnimator? _toggle;
 
   // Sound throttles (world-elapsed ms) for the looping ambience. Filling and pouring are
   // mutually exclusive, so they share _lastMoltenSoundMs.
@@ -86,33 +87,39 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
 
     // Establish the structure angle up front so GetGlobalPos resolves peripherals on the first
     // production tick (which can fire before the slower completion tick).
     UpdateStructureRotation();
 
-    if (api is ICoreClientAPI capi && _animatable != null)
-    {
-      Shape? shape = capi
-        .Assets.TryGet(
-          Block
-            .Shape.Base.Clone()
-            .WithPathPrefixOnce("shapes/")
-            .WithPathAppendixOnce(".json")
-        )
-        ?.ToObject<Shape>();
-      if (shape != null)
-        // Rotation is applied only by the renderer, not baked into the mesh (InitializeShapeAnd-
-        // Animator does both and would rotate the control 180° off).
-        _animatable.animUtil.InitializeAnimator(
-          "bessemercontrol-" + Block.Variant["side"],
-          shape,
-          capi.Tesselator.GetTextureSource(Block),
-          new Vec3f(0, Block.Shape.rotateY, 0)
-        );
-      ApplyControlPose();
-    }
+    _toggle = new ToggleAnimator(this, BuildAnimator);
+    _toggle.Initialize(ApplyControlPose);
+  }
+
+  // Non-RCC animated block: load the shape and initialise the animator through the shared toggle helper,
+  // which owns the null-animator ready-guard (a failed shape resolve degrades to "not ready", no pose).
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
+  {
+    var capi = (ICoreClientAPI)Api;
+    Shape? shape = capi
+      .Assets.TryGet(
+        Block
+          .Shape.Base.Clone()
+          .WithPathPrefixOnce("shapes/")
+          .WithPathAppendixOnce(".json")
+      )
+      ?.ToObject<Shape>();
+    if (shape == null)
+      return;
+
+    // Rotation is applied only by the renderer, not baked into the mesh (InitializeShapeAnd-
+    // Animator does both and would rotate the control 180° off).
+    animatable.animUtil.InitializeAnimator(
+      "bessemercontrol-" + Block.Variant["side"],
+      shape,
+      capi.Tesselator.GetTextureSource(Block),
+      new Vec3f(0, Block.Shape.rotateY, 0)
+    );
   }
 
   #endregion
@@ -876,29 +883,29 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
   private void ApplyControlPose()
   {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    _animatable.animUtil.StopAnimation("filling");
-    _animatable.animUtil.StopAnimation("pouring");
-
-    string? code = OpState switch
+    _toggle?.Pose(util =>
     {
-      ConverterOpState.Filling => "filling",
-      ConverterOpState.Pouring => "pouring",
-      _ => null,
-    };
-    if (code != null)
-      _animatable.animUtil.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = code,
-          Code = code,
-          AnimationSpeed = 3.0f, // lever pull - quick
-          EaseInSpeed = 8f,
-          EaseOutSpeed = 8f,
-        }.Init()
-      );
+      util.StopAnimation("filling");
+      util.StopAnimation("pouring");
+
+      string? code = OpState switch
+      {
+        ConverterOpState.Filling => "filling",
+        ConverterOpState.Pouring => "pouring",
+        _ => null,
+      };
+      if (code != null)
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = code,
+            Code = code,
+            AnimationSpeed = 3.0f, // lever pull - quick
+            EaseInSpeed = 8f,
+            EaseOutSpeed = 8f,
+          }.Init()
+        );
+    });
   }
 
   private void SyncConverter()

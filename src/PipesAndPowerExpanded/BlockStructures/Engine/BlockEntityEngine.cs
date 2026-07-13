@@ -27,9 +27,10 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine;
 /// </summary>
 public abstract class BlockEntityEngine : BlockEntityProductionMachine
 {
-  private BEBehaviorAnimatable? _animatable;
-  private ExRightClickConstructable? _rcc;
-  private bool _animatorReady;
+  // Owns the animator + construction (RCC) lifecycle shared by every constructed mega-block. The
+  // engine feeds it a state-dependent cache key (broken vs intact) and drives its own broken-aware
+  // rebuilds through RebuildEngineAnimator; the helper owns the null-animator ready-guard.
+  private ConstructedAnimator? _animator;
 
   // The sub-machine sits two cells away (not a neighbour), so it never reaches us through
   // OnNeighbourBlockChange. A light client poll re-poses when the attached type changes.
@@ -44,11 +45,6 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   // MP variant: the generator pushes this "axle is turning" flag each frame; ApplyPose reads
   // it to choose cyclemp vs idlemp. See DriveMpCycleFrame.
   private bool _mpTurning;
-
-  // Forward-accumulated cyclemp frame + last axle angle, so we advance by the rotation
-  // MAGNITUDE each frame. See DriveMpCycleFrame for why the signed angle can't be used.
-  private float _mpCycleFrame;
-  private float _lastDriveAngle;
 
   // Constant low planetary-gear hum from the gear housing while the engine runs (client only).
   private ILoadedSound? _gearSound;
@@ -144,7 +140,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   #endregion
 
   /// <summary>True once the player has finished the construction stages.</summary>
-  public bool IsConstructed => _rcc?.IsComplete ?? false;
+  public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   /// <summary>Available mechanical power (0..<see cref="MaxPower"/>), from inlet steam pressure.</summary>
   public float AvailablePower { get; private set; }
@@ -211,17 +207,21 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-    _rcc = GetBehavior<ExRightClickConstructable>();
+    // The broken engine renders a distinct "-broken" cache key (piston subtree burst off), so the
+    // key is state-dependent; the shared helper reads it through this Func on each (re)build.
+    _animator = new ConstructedAnimator(this, EngineCacheKey);
+    _animator.Initialize(ApplyPose);
 
-    if (api is ICoreClientAPI && _animatable != null)
+    if (api is ICoreClientAPI && _animator.AnimUtil != null)
     {
-      if (_rcc != null)
-        _rcc.OnShapeChanged += OnConstructShapeChanged;
-
-      RebuildAnimator(_rcc?.shape?.SelectiveElements);
+      // Loaded already-broken: the helper's first build used the intact construction elements, so
+      // re-render without the burst-off piston subtree and re-pose against the fresh animator.
+      if (IsBroken)
+      {
+        RebuildEngineAnimator();
+        ApplyPose();
+      }
       _lastMp = IsMpGenerator();
-      ApplyPose();
 
       _submachineWatchId = RegisterGameTickListener(OnSubmachineWatch, 500);
       // Fast client tick: per-stroke piston sounds (keyframe crossings) + cylinder steam
@@ -347,8 +347,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   /// <summary>Shared teardown for removal and unload (the two paths are identical).</summary>
   private void Cleanup()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     if (_submachineWatchId != 0)
       UnregisterGameTickListener(_submachineWatchId);
     if (_engineClientTickId != 0)
@@ -395,12 +394,12 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
     InletPressure = tree.GetFloat("inletPressure");
     IsBroken = tree.GetBool("broken");
     _overPressure.FromTree(tree, "overPressure");
-    if (Api is ICoreClientAPI && _animatorReady)
+    if (Api is ICoreClientAPI && _animator is { Ready: true })
     {
       // Breaking/repairing swaps the rendered mesh (piston subtree on/off).
       if (wasBroken != IsBroken)
       {
-        RebuildAnimator(_rcc?.shape?.SelectiveElements);
+        RebuildEngineAnimator();
         ApplyPose();
       }
       // Re-pose on the client when the running state OR speed arrives so the cycle plays at
@@ -443,43 +442,20 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
       );
   }
 
-  private void OnConstructShapeChanged(CompositeShape cs)
-  {
-    RebuildAnimator(cs?.SelectiveElements);
-    ApplyPose();
-  }
+  /// <summary>Animator cache key for the current state: a broken engine renders a distinct
+  /// "-broken" mesh (the piston/cylinder subtree burst off), so it can't collide with the intact
+  /// one. The shared helper reads this on every (re)build.</summary>
+  private string EngineCacheKey() =>
+    IsBroken ? AnimCacheKey + "-broken" : AnimCacheKey;
 
-  private void RebuildAnimator(string[]? selectiveElements)
-  {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    // A broken engine renders without its piston/cylinder subtree (it has burst off);
-    // a distinct cache key keeps the broken and intact meshes from colliding.
-    bool broken = IsBroken;
-    string[]? elements = broken
-      ? GetBrokenSelectiveElements()
-      : selectiveElements;
-    string cacheKey = broken ? AnimCacheKey + "-broken" : AnimCacheKey;
-
-    MeshData meshData = _animatable.animUtil.CreateMesh(
-      cacheKey,
-      null,
-      out Shape resolvedShape,
-      null,
-      new TesselationMetaData { SelectiveElements = elements }
+  /// <summary>(Re)builds the animator through the shared helper, choosing the broken vs intact
+  /// selective-element set (the helper matches the cache key via <see cref="EngineCacheKey"/>).
+  /// Construction-stage re-tessellation goes through the helper directly (never while broken);
+  /// this engine-owned rebuild covers the break/repair mesh swap the helper can't know about.</summary>
+  private void RebuildEngineAnimator() =>
+    _animator?.Rebuild(
+      IsBroken ? GetBrokenSelectiveElements() : _animator.Rcc?.shape?.SelectiveElements
     );
-
-    _animatable.animUtil.InitializeAnimator(
-      cacheKey,
-      meshData,
-      resolvedShape,
-      new Vec3f(0, Block.Shape.rotateY, 0)
-    );
-    // A failed shape resolve leaves animUtil.animator null; only mark ready when it truly
-    // exists, so StartAnimation never poses a null animator (vanilla GetBlockInfo would NRE).
-    _animatorReady = _animatable.animUtil.animator != null;
-  }
 
   /// <summary>Element whose subtree is hidden while the engine is broken (the piston + part of the cylinder).</summary>
   protected virtual string[] BrokenHiddenElements => ["Cube21", "Piston"];
@@ -595,12 +571,17 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   /// cycle, so the beam/piston motion stays locked to the visible axle at any speed and keeps
   /// cycling while the flywheel coasts. Pushed every render frame by
   /// <see cref="BlockEntityEngineMpGenerator"/>; <paramref name="angleRad"/> is the axle's render
-  /// angle (0..2π, the axle's render angle), <paramref name="turning"/> whether the network moves.
-  /// We accumulate the signed delta so the cycle follows the axle's direction - see the body.
+  /// angle (0..2π), <paramref name="turning"/> whether the network moves. The frame is locked to the
+  /// axle's ABSOLUTE angle (not an accumulated delta) so the beam sits at a fixed, correct phase
+  /// relative to the visible crank - see the body.
   /// </summary>
   public void DriveMpCycleFrame(bool turning, float angleRad)
   {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
+    if (
+      Api is not ICoreClientAPI
+      || _animator is not { Ready: true }
+      || _animator.AnimUtil?.animator is not { } animator
+    )
       return;
 
     // Switch idlemp <-> cyclemp only on a state flip (ApplyPose reads _mpTurning).
@@ -608,62 +589,55 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
     {
       _mpTurning = turning;
       ApplyPose();
-      // Reset the baseline so the first frame after (re)start doesn't jump by a stale delta.
-      _lastDriveAngle = angleRad;
     }
     if (!turning)
       return;
 
-    var st = _animatable.animUtil.animator?.GetAnimationState("cyclemp");
+    var st = animator.GetAnimationState("cyclemp");
     if (st?.Animation == null)
       return;
-    int total = st.Animation.QuantityFrames;
 
-    // Advance by the SIGNED rotation so the engine cycle follows the axle's visible direction - when
-    // the axle reverses (orientation flip / driven the other way) the cycle plays backwards too,
-    // instead of always cranking forward. The caller passes the axle's render angle, whose signed
-    // per-frame delta matches what the player sees the axle do.
-    float delta = GameMath.AngleRadDistance(_lastDriveAngle, angleRad);
-    _lastDriveAngle = angleRad;
-    _mpCycleFrame = GameMath.Mod(
-      _mpCycleFrame + delta / GameMath.TWOPI * total,
-      total
+    // Lock the beam directly to the axle's ABSOLUTE angle (one revolution = one cycle) so its phase is
+    // deterministic, not the arbitrary offset the old delta-accumulation left. The rod's big-end is
+    // pinned to the crank, so it co-rotates with the visible crankshaft: both rest connected at frame 0
+    // / axle-angle 0, then the beam tracks the axle's angle from there (same direction, zero offset).
+    st.CurrentFrame = MPAnim.FrameFromAngle(
+      angleRad,
+      st.Animation.QuantityFrames
     );
-    st.CurrentFrame = _mpCycleFrame;
   }
 
   private void ApplyPose()
   {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
+    _animator?.Pose(util =>
+    {
+      util.StopAnimation("idlepump");
+      util.StopAnimation("idlemp");
+      util.StopAnimation("cyclepump");
+      util.StopAnimation("cyclemp");
 
-    var util = _animatable.animUtil;
-    util.StopAnimation("idlepump");
-    util.StopAnimation("idlemp");
-    util.StopAnimation("cyclepump");
-    util.StopAnimation("cyclemp");
+      bool mp = IsMpGenerator();
+      var (run, speed) = CyclePose();
+      string code = run
+        ? (mp ? "cyclemp" : "cyclepump")
+        : (mp ? "idlemp" : "idlepump");
 
-    bool mp = IsMpGenerator();
-    var (run, speed) = CyclePose();
-    string code = run
-      ? (mp ? "cyclemp" : "cyclepump")
-      : (mp ? "idlemp" : "idlepump");
+      util.StartAnimation(
+        new AnimationMetaData
+        {
+          Animation = code,
+          Code = code,
+          AnimationSpeed = run ? speed : 1f,
+          EaseInSpeed = 3f,
+          EaseOutSpeed = 3f,
+        }.Init()
+      );
 
-    util.StartAnimation(
-      new AnimationMetaData
-      {
-        Animation = code,
-        Code = code,
-        AnimationSpeed = run ? speed : 1f,
-        EaseInSpeed = 3f,
-        EaseOutSpeed = 3f,
-      }.Init()
-    );
-
-    // Start the sub-machine's cycle from the same call so the two start together; it then
-    // phase-locks via CycleAnimProgress. No-op for the MP generator (its motion is the axle,
-    // which instead drives our pose above).
-    SubmachineBE?.SyncAnimation(run, speed);
+      // Start the sub-machine's cycle from the same call so the two start together; it then
+      // phase-locks via CycleAnimProgress. No-op for the MP generator (its motion is the axle,
+      // which instead drives our pose above).
+      SubmachineBE?.SyncAnimation(run, speed);
+    });
   }
 
   /// <summary>
@@ -684,7 +658,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
   {
     if (
       Api is not ICoreClientAPI
-      || _animatable?.animUtil?.animator is not { } animator
+      || _animator?.AnimUtil?.animator is not { } animator
     )
       return (0f, 0);
     string code = IsMpGenerator() ? "cyclemp" : "cyclepump";

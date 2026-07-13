@@ -21,7 +21,7 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine;
 /// with the block.
 /// </summary>
 public abstract class BlockEngine
-  : Block,
+  : BlockFilledMegastructure,
     INetworkConnector,
     IFillerInteractionTarget
 {
@@ -39,6 +39,9 @@ public abstract class BlockEngine
   // body points AWAY from the player. Everything lining up with the visible body (fillers,
   // connectors, sub-machine, gear housing) lives in this +180 "body" frame.
   protected int BodyAngle => (Angle + 180) % 360;
+
+  /// <summary>The structure/filler rotation angle - the engine's footprint lives in the body frame.</summary>
+  public override int StructureAngle => BodyAngle;
 
   public string NetworkType => "pipe";
 
@@ -160,43 +163,14 @@ public abstract class BlockEngine
   // default. CylinderVentPos still rotates the horizontal part by the body angle.
   private Vec3d ReadVentOffset() => DefaultCylinderVent;
 
-  public override bool CanPlaceBlock(
+  // Placement, the filler footprint and break-time filler removal are handled by
+  // BlockFilledMegastructure; the engine only snaps an already-present sub-machine (built before the
+  // engine) to the matching facing once the fillers land.
+  protected override void OnFootprintPlaced(
     IWorldAccessor world,
-    IPlayer byPlayer,
-    BlockSelection blockSel,
-    ref string failureCode
+    BlockPos blockPos
   )
   {
-    if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
-      return false;
-
-    var cells = StructureFillers.FootprintCells(
-      (IFillerHost)this,
-      blockSel.Position,
-      BodyAngle
-    );
-    if (!StructureFillers.CanPlace(world, cells))
-    {
-      failureCode = "notenoughspace";
-      return false;
-    }
-    return true;
-  }
-
-  public override void OnBlockPlaced(
-    IWorldAccessor world,
-    BlockPos blockPos,
-    ItemStack? byItemStack = null
-  )
-  {
-    base.OnBlockPlaced(world, blockPos, byItemStack);
-    StructureFillers.PlaceFillers(
-      world,
-      blockPos,
-      StructureFillers.FootprintCells((IFillerHost)this, blockPos, BodyAngle)
-    );
-
-    // Snap an already-present sub-machine (built before the engine) to the matching facing.
     if (world.Side == EnumAppSide.Server)
       ReorientSubmachine(world, blockPos);
   }
@@ -220,21 +194,6 @@ public abstract class BlockEngine
       return;
     ba.ExchangeBlock(target.BlockId, subPos);
     ba.MarkBlockDirty(subPos);
-  }
-
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  )
-  {
-    StructureFillers.RemoveFillers(
-      world,
-      pos,
-      StructureFillers.FootprintCells((IFillerHost)this, pos, BodyAngle)
-    );
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
   }
 
   #region Repair

@@ -5136,6 +5136,24 @@
           }
         },
         {
+          "frame": 14,
+          "elements": {
+            "Rotor": { "rotationX": 90.0, "rotationY": 0.0, "rotationZ": 0.0 }
+          }
+        },
+        {
+          "frame": 29,
+          "elements": {
+            "Rotor": { "rotationX": 180.0, "rotationY": 0.0, "rotationZ": 0.0 }
+          }
+        },
+        {
+          "frame": 44,
+          "elements": {
+            "Rotor": { "rotationX": 270.0, "rotationY": 0.0, "rotationZ": 0.0 }
+          }
+        },
+        {
           "frame": 59,
           "elements": {
             "Rotor": { "rotationX": 360.0, "rotationY": 0.0, "rotationZ": 0.0 }

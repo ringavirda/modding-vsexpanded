@@ -25,13 +25,18 @@ namespace ExpandedLib.Blocks.Migrations;
 /// (container BEs, player inventories) is rewritten or stripped too, migrations preserving stack size
 /// and attributes.
 /// </para>
+/// <para>
+/// The chunk-column walk itself (the RunGame sweep, the <c>ChunkColumnLoaded</c> subscription and the
+/// <c>((y * cs) + z) * cs + x</c> decode) lives in <see cref="ChunkColumnSweeperModSystem"/>, shared
+/// with the orphaned-BE healer.
+/// </para>
 /// </summary>
-public class BlockMigrationModSystem : ModSystem
+public class BlockMigrationModSystem : ChunkColumnSweeperModSystem
 {
   /// <summary>One resolved action for a given legacy block code. A null
   /// <see cref="NewBlock"/> means "remove" (delete the block / drop the item stack); otherwise it is
   /// the replacement to swap in.</summary>
-  private readonly record struct RemapEntry(
+  internal readonly record struct RemapEntry(
     Block? NewBlock,
     AssetLocation OldCode,
     AssetLocation? NewCode,
@@ -41,164 +46,95 @@ public class BlockMigrationModSystem : ModSystem
   /// <summary>One resolved item-stack rewrite (<see cref="IItemCodeMigration"/>): the replacement
   /// item to swap in for a legacy item code. Items are never in the world voxel grid, so this only
   /// applies to held stacks.</summary>
-  private readonly record struct ItemRemapEntry(
+  internal readonly record struct ItemRemapEntry(
     Item NewItem,
     AssetLocation OldCode,
     AssetLocation NewCode
   );
 
-  private ICoreServerAPI _sapi = null!;
-
-  /// <summary>Log prefix, e.g. "[smex]" / "[ppex]" - the owning mod's id.</summary>
-  private string Tag => "[" + Mod.Info.ModID + "]";
-
   // Legacy block code -> replacement, merged across all discovered migrations. Keyed by code
   // (not id) because the engine can renumber block ids on load.
-  private readonly Dictionary<AssetLocation, RemapEntry> _remap = [];
+  internal readonly Dictionary<AssetLocation, RemapEntry> _remap = [];
 
   // Legacy item code -> replacement item, for stacks held in inventories/containers (items are never
   // placed in the world). Kept separate from _remap so a code that is both a block and an item (e.g.
   // slag) maps each independently; RemapInventory picks the table by the stack's class.
-  private readonly Dictionary<AssetLocation, ItemRemapEntry> _itemRemap = [];
+  internal readonly Dictionary<AssetLocation, ItemRemapEntry> _itemRemap = [];
 
-  private bool _initialized;
-
-  // Only the server owns world block data; the client has nothing to migrate.
-  public override bool ShouldLoad(EnumAppSide side) =>
-    side == EnumAppSide.Server;
-
-  public override void StartServerSide(ICoreServerAPI api)
+  protected override void OnStartedServer(ICoreServerAPI api)
   {
-    _sapi = api;
-    // Spawn-area chunks are already loaded before this event is wired up, so sweep them once at
-    // RunGame and handle every column that loads afterwards via the event.
-    api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, SweepLoadedChunks);
-    api.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
     // Migrated blocks can also sit as item stacks in a player's inventory (the chunk scan never
     // sees those), so remap them on join.
     api.Event.PlayerJoin += OnPlayerJoin;
   }
 
-  /// <summary>Builds the remap table on first use; returns false if nothing to migrate.</summary>
-  private bool EnsureInitialized()
+  /// <summary>Builds the remap tables on first use; returns false if nothing in this world matches.</summary>
+  protected override bool BuildWork()
   {
-    if (!_initialized)
-    {
-      BuildRemapTable();
-      _initialized = true;
-    }
+    BuildRemapTable();
     return _remap.Count > 0 || _itemRemap.Count > 0;
   }
 
-  private void SweepLoadedChunks()
+  /// <summary>Matches one placed cell against the block remap table and rewrites it if it hits.</summary>
+  protected override int VisitCell(IBlockAccessor ba, BlockPos pos, int blockId)
   {
-    if (!EnsureInitialized())
-      return;
-
-    int chunksTall = _sapi.WorldManager.MapSizeY / GlobalConstants.ChunkSize;
-    int total = 0;
-
-    // Copy the keys: ReplaceBlock mutates chunks, so don't enumerate the live dictionary.
-    foreach (
-      long index2d in _sapi.WorldManager.AllLoadedMapchunks.Keys.ToArray()
+    // Resolve the live block and match on its code, so renumbered ids and missing-block
+    // placeholders are both handled.
+    Block block = _sapi.World.GetBlock(blockId);
+    if (
+      block?.Code == null
+      || !_remap.TryGetValue(block.Code, out RemapEntry entry)
     )
-    {
-      Vec2i coord = _sapi.WorldManager.MapChunkPosFromChunkIndex2D(index2d);
-      int migrated = 0;
-      for (int cy = 0; cy < chunksTall; cy++)
-        migrated += ScanChunk(
-          coord.X,
-          cy,
-          coord.Y,
-          _sapi.WorldManager.GetChunk(coord.X, cy, coord.Y)
-        );
-
-      if (migrated > 0)
-        LogColumn(migrated, coord.X, coord.Y);
-      total += migrated;
-    }
-
-    if (total > 0)
-      _sapi.Logger.Notification(
-        Tag
-          + " Startup migration sweep updated {0} block(s) across loaded chunks.",
-        total
-      );
-  }
-
-  private void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
-  {
-    if (!EnsureInitialized())
-    {
-      // Nothing in this world matches any migration - stop listening entirely.
-      _sapi.Event.ChunkColumnLoaded -= OnChunkColumnLoaded;
-      return;
-    }
-
-    int migrated = 0;
-    for (int cy = 0; cy < chunks.Length; cy++)
-      migrated += ScanChunk(chunkCoord.X, cy, chunkCoord.Y, chunks[cy]);
-
-    if (migrated > 0)
-      LogColumn(migrated, chunkCoord.X, chunkCoord.Y);
-  }
-
-  /// <summary>Scans one chunk section and rewrites every block matched by a migration.</summary>
-  private int ScanChunk(int chunkX, int chunkY, int chunkZ, IWorldChunk? chunk)
-  {
-    if (chunk == null)
       return 0;
-    chunk.Unpack();
-    IChunkBlocks data = chunk.Data;
-    int len = data.Length;
 
-    const int cs = GlobalConstants.ChunkSize;
-    IBlockAccessor ba = _sapi.World.BlockAccessor;
+    ReplaceBlock(ba, pos, entry);
+    return 1;
+  }
+
+  /// <summary>
+  /// Rewrites migrated blocks held as item stacks in this chunk's container block entities (chests,
+  /// ground storage, mold racks) - stacks the voxel loop never sees.
+  /// </summary>
+  protected override int VisitChunkEntities(IWorldChunk chunk)
+  {
+    if (chunk.BlockEntities == null)
+      return 0;
+
     int migrated = 0;
-
-    for (int i = 0; i < len; i++)
-    {
-      int id = data[i];
-      if (id == 0)
-        continue;
-
-      // Resolve the live block and match on its code, so renumbered ids and missing-block
-      // placeholders are both handled.
-      Block block = _sapi.World.GetBlock(id);
-      if (
-        block?.Code == null
-        || !_remap.TryGetValue(block.Code, out RemapEntry entry)
-      )
-        continue;
-
-      // index3d layout: ((y * cs) + z) * cs + x
-      int x = i % cs;
-      int z = i / cs % cs;
-      int y = i / (cs * cs);
-
-      BlockPos pos = new(chunkX * cs + x, chunkY * cs + y, chunkZ * cs + z);
-
-      ReplaceBlock(ba, pos, entry);
-      migrated++;
-    }
-
-    // Container BEs (chests, ground storage, mold racks) can store migrated blocks as item stacks
-    // the voxel loop didn't see, so scan their slots too. Snapshot the values first - ReplaceBlock
-    // above may have mutated this dictionary.
-    if (chunk.BlockEntities != null)
-      foreach (BlockEntity be in chunk.BlockEntities.Values.ToArray())
-        if (be is IBlockEntityContainer { Inventory: { } inv })
+    // Snapshot the values first - VisitCell's ReplaceBlock may have mutated this collection.
+    foreach (BlockEntity be in chunk.BlockEntities.Values.ToArray())
+      if (be is IBlockEntityContainer { Inventory: { } inv })
+      {
+        int n = RemapInventory(inv);
+        if (n > 0)
         {
-          int n = RemapInventory(inv);
-          if (n > 0)
-          {
-            be.MarkDirty(true);
-            migrated += n;
-          }
+          be.MarkDirty(true);
+          migrated += n;
         }
+      }
 
     return migrated;
   }
+
+  private void LogColumn(int migrated, int chunkX, int chunkZ) =>
+    _sapi.Logger.Notification(
+      Tag + " Migrated {0} block(s)/stack(s) in chunk column {1},{2}.",
+      migrated,
+      chunkX,
+      chunkZ
+    );
+
+  protected override void OnColumnSwept(int chunkX, int chunkZ, int migrated) =>
+    LogColumn(migrated, chunkX, chunkZ);
+
+  protected override void OnColumnStreamedIn(int chunkX, int chunkZ, int migrated) =>
+    LogColumn(migrated, chunkX, chunkZ);
+
+  protected override void OnStartupSweepComplete(int total) =>
+    _sapi.Logger.Notification(
+      Tag + " Startup migration sweep updated {0} block(s) across loaded chunks.",
+      total
+    );
 
   /// <summary>
   /// Rewrites every item stack in <paramref name="inv"/> whose collectible is a migration source to
@@ -206,7 +142,7 @@ public class BlockMigrationModSystem : ModSystem
   /// Block stacks use the block table (and can be removed); item stacks use the item table. A code
   /// that is both a block and an item is resolved by the stack's class. Returns how many slots changed.
   /// </summary>
-  private int RemapInventory(IInventory inv)
+  internal int RemapInventory(IInventory inv)
   {
     int changed = 0;
     foreach (ItemSlot slot in inv)
@@ -251,6 +187,8 @@ public class BlockMigrationModSystem : ModSystem
   /// <summary>Remaps any migrated blocks a joining player is carrying as item stacks.</summary>
   private void OnPlayerJoin(IServerPlayer player)
   {
+    // Shares the base's single-build guard with the chunk sweep, so joining before any column loads
+    // still builds the tables (and only once).
     if (!EnsureInitialized())
       return;
 
@@ -289,14 +227,6 @@ public class BlockMigrationModSystem : ModSystem
         player.PlayerName
       );
   }
-
-  private void LogColumn(int migrated, int chunkX, int chunkZ) =>
-    _sapi.Logger.Notification(
-      Tag + " Migrated {0} block(s)/stack(s) in chunk column {1},{2}.",
-      migrated,
-      chunkX,
-      chunkZ
-    );
 
   private void BuildRemapTable()
   {
@@ -440,7 +370,7 @@ public class BlockMigrationModSystem : ModSystem
   /// <c>SetBlock</c>; one that handles BE state captures the old entity's tree first and applies it
   /// to the new entity afterwards.
   /// </summary>
-  private void ReplaceBlock(IBlockAccessor ba, BlockPos pos, RemapEntry entry)
+  internal void ReplaceBlock(IBlockAccessor ba, BlockPos pos, RemapEntry entry)
   {
     // A removal: delete the block (and its entity) outright.
     if (entry.NewBlock == null)

@@ -45,10 +45,10 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     new Vec3i(1, 1, 0),
   ];
 
-  private BEBehaviorAnimatable? _animatable;
-  private ExRightClickConstructable? _rcc;
+  // Owns the RCC-suppressed-mesh animator triad (shared by every constructed mega-block). See
+  // ConstructedAnimator: it holds the _animatorReady null-guard so a pose can never NRE.
+  private ConstructedAnimator? _animator;
   private ICoreClientAPI? _capi;
-  private bool _animatorReady;
 
   // Visual heap of the charge/finished burden inside the bowl: a flat ore surface rising with how
   // full the mixer is. Client only.
@@ -88,7 +88,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   public int RenderRange => 64;
 
   /// <summary>True once the player has finished the construction stages.</summary>
-  public bool IsConstructed => _rcc?.IsComplete ?? false;
+  public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   private int Angle => (Block as BlockOreMixer)?.StructureAngle ?? 0;
 
@@ -97,8 +97,9 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-    _rcc = GetBehavior<ExRightClickConstructable>();
+    // The animator (and IsConstructed) is resolved on both sides; it only builds/poses on the client.
+    _animator = new ConstructedAnimator(this, () => AnimCacheKey);
+    _animator.Initialize(ApplyPose);
 
     if (api.Side == EnumAppSide.Server)
     {
@@ -110,13 +111,6 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     if (api is ICoreClientAPI capi)
     {
       _capi = capi;
-      if (_animatable != null)
-      {
-        if (_rcc != null)
-          _rcc.OnShapeChanged += OnConstructShapeChanged;
-        RebuildAnimator(_rcc?.shape?.SelectiveElements);
-        ApplyPose();
-      }
       // Drives the rotor's cycle frame off the axle angle every render frame.
       capi.Event.RegisterRenderer(this, EnumRenderStage.Before, "iwex-mixer-rotor");
 
@@ -179,8 +173,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
 
   public void Dispose()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     _capi?.Event.UnregisterRenderer(this, EnumRenderStage.Before);
     _oreRenderer?.Dispose();
     _oreRenderer = null;
@@ -191,51 +184,20 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     }
   }
 
-  private void OnConstructShapeChanged(CompositeShape cs)
-  {
-    RebuildAnimator(cs?.SelectiveElements);
-    ApplyPose();
-  }
-
-  /// <summary>(Re)builds the animator to render exactly the currently-built elements (mesh filtered to
-  /// <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape).</summary>
-  private void RebuildAnimator(string[]? selectiveElements)
-  {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    MeshData meshData = _animatable.animUtil.CreateMesh(
-      AnimCacheKey,
-      null,
-      out Shape resolvedShape,
-      null,
-      new TesselationMetaData { SelectiveElements = selectiveElements }
-    );
-
-    _animatable.animUtil.InitializeAnimator(
-      AnimCacheKey,
-      meshData,
-      resolvedShape,
-      new Vec3f(0, Block.Shape.rotateY, 0)
-    );
-    _animatorReady = _animatable.animUtil.animator != null;
-  }
-
   /// <summary>Holds the mixer visible via the permanent idle pose, then reflects the current lid state.</summary>
   private void ApplyPose()
   {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-
-    _animatable.animUtil.StartAnimation(
-      new AnimationMetaData
-      {
-        Animation = "idle",
-        Code = "idle",
-        AnimationSpeed = 1f,
-        EaseInSpeed = 3f,
-        EaseOutSpeed = 3f,
-      }.Init()
+    _animator?.Pose(util =>
+      util.StartAnimation(
+        new AnimationMetaData
+        {
+          Animation = "idle",
+          Code = "idle",
+          AnimationSpeed = 1f,
+          EaseInSpeed = 3f,
+          EaseOutSpeed = 3f,
+        }.Init()
+      )
     );
     UpdateLidPose();
   }
@@ -248,8 +210,8 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
   {
     if (
-      !_animatorReady
-      || _animatable?.animUtil?.animator is not { } animator
+      _animator is not { Ready: true }
+      || _animator.AnimUtil is not { animator: { } animator } util
     )
       return;
 
@@ -265,7 +227,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
         // the manual CurrentFrame writes below would have no visible effect (the rotor wouldn't turn).
         // The frame is then overwritten each render frame to phase-lock it to the axle - the same
         // pattern the steam engine uses for its cyclemp animation (BlockEntityEngine.DriveMpCycleFrame).
-        _animatable.animUtil.StartAnimation(
+        util.StartAnimation(
           new AnimationMetaData
           {
             Animation = "cycle",
@@ -277,7 +239,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
         );
       }
       else
-        _animatable.animUtil.StopAnimation("cycle");
+        util.StopAnimation("cycle");
     }
 
     if (!turning || port == null)
@@ -290,8 +252,19 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     // Map the axle's ABSOLUTE angle straight to the rotor frame: the rotor lines up with the axle
     // (not just spins at the same rate) and the loop is seamless. A full-turn cycle animation
     // (0deg -> 360deg) makes this an exact phase match.
+    //
+    // The `cycle` clip is authored in the north frame, so the rotor co-rotates with the driving axle
+    // only after correcting for the placed orientation. TWO things flip the rotor's world spin relative
+    // to the axle: the axle's per-axis AxisSign (X-axis axles render reversed vs Z), AND the 180deg
+    // model rotation between opposite orientations (north<->south, west<->east) that mirrors the rotor
+    // mesh's world spin for a fixed clip direction. PortFacing can't distinguish a 0deg mixer from a
+    // 180deg one - both expose W/E ports, so an axle from the west reads PortFacing=WEST at either - so
+    // the sign is taken from the unambiguous structure angle: negate at north(0)/east(270), keep at
+    // west(90)/south(180). All four orientations were confirmed against the axle in-game.
+    int structAngle = GameMath.Mod(Angle, 360);
+    float rotorSign = structAngle is 0 or 270 ? -1f : 1f;
     state.CurrentFrame = MPAnim.FrameFromAngle(
-      port.CurrentAngleRad,
+      rotorSign * port.CurrentAngleRad,
       state.Animation.QuantityFrames
     );
   }
@@ -672,24 +645,23 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   }
 
   /// <summary>Plays or clears the lid-open pose to match <see cref="_draining"/> (client visual).</summary>
-  private void UpdateLidPose()
-  {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-    if (_draining)
-      _animatable.animUtil.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "open",
-          Code = "open",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 3f,
-          EaseOutSpeed = 3f,
-        }.Init()
-      );
-    else
-      _animatable.animUtil.StopAnimation("open");
-  }
+  private void UpdateLidPose() =>
+    _animator?.Pose(util =>
+    {
+      if (_draining)
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "open",
+            Code = "open",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 3f,
+            EaseOutSpeed = 3f,
+          }.Init()
+        );
+      else
+        util.StopAnimation("open");
+    });
 
   #endregion
 

@@ -17,76 +17,23 @@ namespace IronworkingExpanded.BlockStructures.OreBunker.Blocks;
 /// </summary>
 [BlockRegister]
 public partial class BlockOreBunker
-  : Block,
+  : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget
 {
   /// <summary>
   /// Structure/filler rotation, paired with the JSON <c>rotateYByType</c>. The +180 keeps the footprint
   /// flush with the model, whose shape is authored facing the opposite way from the orientation
-  /// convention (so a placed bunker extends away from the player, not into them).
+  /// convention (so a placed bunker extends away from the player, not into them). Also rotates the BE's
+  /// render/collision boxes (multiblock-structure verification).
   /// </summary>
-  private int Angle => ExOrientation.AngleFromSide(Variant["side"]) + 180;
+  public override int StructureAngle =>
+    ExOrientation.AngleFromSide(Variant["side"]) + 180;
 
-  /// <summary>The structure-filler rotation angle, for multiblock-structure verification.</summary>
-  public int StructureAngle => Angle;
+  #region Drops
 
-  #region Placement / filler footprint
-
-  public override bool CanPlaceBlock(
-    IWorldAccessor world,
-    IPlayer byPlayer,
-    BlockSelection blockSel,
-    ref string failureCode
-  )
-  {
-    if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
-      return false;
-
-    // Refuse placement unless the whole volume is clear, else the fillers fail to spawn.
-    var cells = StructureFillers.FootprintCells(
-      this,
-      blockSel.Position,
-      Angle
-    );
-    if (!StructureFillers.CanPlace(world, cells))
-    {
-      failureCode = "notenoughspace";
-      return false;
-    }
-    return true;
-  }
-
-  public override void OnBlockPlaced(
-    IWorldAccessor world,
-    BlockPos blockPos,
-    ItemStack? byItemStack = null
-  )
-  {
-    base.OnBlockPlaced(world, blockPos, byItemStack);
-    StructureFillers.PlaceFillers(
-      world,
-      blockPos,
-      StructureFillers.FootprintCells(this, blockPos, Angle)
-    );
-  }
-
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  )
-  {
-    // Clear the reserved volume first so no invisible solid cells are left behind. The stored
-    // contents are spilled by the BlockEntityContainer base in the following base call.
-    StructureFillers.RemoveFillers(
-      world,
-      pos,
-      StructureFillers.FootprintCells(this, pos, Angle)
-    );
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
-  }
+  // Placement, the filler footprint and break-time filler removal are handled by
+  // BlockFilledMegastructure; the container BE spills its stored contents in the base break call.
 
   // A broken bunker returns only its construction materials (scattered by the RightClickConstructable
   // behaviour) plus its stored contents (spilled by the container BE), never the bunker block itself.

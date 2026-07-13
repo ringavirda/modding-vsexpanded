@@ -28,9 +28,9 @@ namespace PipesAndPowerExpanded.BlockStructures.Boiler;
 /// </summary>
 public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
 {
-  private BEBehaviorAnimatable? _animatable;
-  private ExRightClickConstructable? _rcc;
-  private bool _animatorReady;
+  // Owns the RCC-suppressed-mesh animator triad (shared by every constructed mega-block); the boiler
+  // additionally swaps in its own renderer via the onAnimatorBuilt hook (see SwapBoilerRenderer).
+  private ConstructedAnimator? _animator;
 
   // Client-side in-vessel water surface + a tick to keep its state fresh.
   private BoilerWaterRenderer? _waterRenderer;
@@ -69,7 +69,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
   #endregion
 
   /// <summary>True once the player has finished the construction stages.</summary>
-  public bool IsConstructed => _rcc?.IsComplete ?? false;
+  public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   /// <summary>True only when the boiler may operate (built and structure complete).</summary>
   public bool IsOperational => IsConstructed && StructureComplete;
@@ -144,17 +144,13 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    _animatable = GetBehavior<BEBehaviorAnimatable>();
-    _rcc = GetBehavior<ExRightClickConstructable>();
+    // The animator (and IsConstructed) is resolved on both sides; it only builds/poses on the client.
+    // The boiler swaps in its own renderer after each build via SwapBoilerRenderer.
+    _animator = new ConstructedAnimator(this, () => AnimCacheKey, SwapBoilerRenderer);
+    _animator.Initialize(ApplyPose);
 
-    if (api is ICoreClientAPI capi && _animatable != null)
+    if (api is ICoreClientAPI capi)
     {
-      if (_rcc != null)
-        _rcc.OnShapeChanged += OnConstructShapeChanged;
-
-      RebuildAnimator(_rcc?.shape?.SelectiveElements);
-      ApplyPose();
-
       InitWaterRenderer(capi);
       // Keep the water level / glow current despite push-based state syncing.
       _clientTickId = RegisterGameTickListener(OnClientTick, 250);
@@ -186,8 +182,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
 
   public override void OnBlockRemoved()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     DisposeClient();
     // Base stops the monitor/production ticks and clears any structure projection.
     base.OnBlockRemoved();
@@ -195,8 +190,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
 
   public override void OnBlockUnloaded()
   {
-    if (_rcc != null)
-      _rcc.OnShapeChanged -= OnConstructShapeChanged;
+    _animator?.Dispose();
     DisposeClient();
     base.OnBlockUnloaded();
   }
@@ -212,105 +206,71 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     _waterRenderer = null;
   }
 
-  private void OnConstructShapeChanged(CompositeShape cs)
-  {
-    RebuildAnimator(cs?.SelectiveElements);
-    ApplyPose();
-  }
-
   /// <summary>
-  /// (Re)builds the animator to render exactly the currently-built elements. A fresh shape
-  /// is loaded each call (reusing one re-maps UVs into atlas space and stretches textures).
+  /// Swaps vanilla's renderer for one that lights the vessel from a body cell rather than the
+  /// firebox-adjacent master cell (see <see cref="BoilerAnimatableRenderer"/>). Run by the animator
+  /// helper after each (re)build - before the pose, so the ShouldRender seeding below sees the same
+  /// active-animation state the old inline swap did.
   /// </summary>
-  private void RebuildAnimator(string[]? selectiveElements)
+  private void SwapBoilerRenderer(BlockEntityAnimationUtil util, MeshData meshData)
   {
-    if (Api is not ICoreClientAPI capi || _animatable == null)
+    if (Api is not ICoreClientAPI capi || BoilerBlock == null)
       return;
 
-    MeshData meshData = _animatable.animUtil.CreateMesh(
-      AnimCacheKey,
-      null,
-      out Shape resolvedShape,
-      null,
-      new TesselationMetaData { SelectiveElements = selectiveElements }
-    );
-
-    var rotation = new Vec3f(0, Block.Shape.rotateY, 0);
-    _animatable.animUtil.InitializeAnimator(
-      AnimCacheKey,
-      meshData,
-      resolvedShape,
-      rotation
-    );
-    // A failed shape resolve leaves animUtil.animator null; only mark ready when it truly
-    // exists, so ApplyPose never queues an idle animation against a null animator (vanilla
-    // GetBlockInfo would then NRE under extendedDebugInfo).
-    _animatorReady = _animatable.animUtil.animator != null;
-
-    // Swap vanilla's renderer for one that lights the vessel from a body cell rather than
-    // the firebox-adjacent master cell (see BoilerAnimatableRenderer).
-    if (_animatorReady && BoilerBlock != null)
+    util.renderer?.Dispose();
+    util.renderer = new BoilerAnimatableRenderer(
+      capi,
+      Pos.ToVec3d(),
+      new Vec3f(0, Block.Shape.rotateY, 0),
+      util.animator!,
+      util.activeAnimationsByAnimCode,
+      meshData
+    )
     {
-      var util = _animatable.animUtil;
-      util.renderer?.Dispose();
-      util.renderer = new BoilerAnimatableRenderer(
-        capi,
-        Pos.ToVec3d(),
-        rotation,
-        util.animator!,
-        util.activeAnimationsByAnimCode,
-        meshData
-      )
+      LightPos = BoilerBlock.LightSampleWorldPos(Pos).ToVec3d(),
+      // Seed visibility from whether a pose is already running. 1.22's AnimatableRenderer
+      // ctor does this itself; the legacy (1.20/1.21) ctor leaves ShouldRender false and only
+      // flips it via OnAnimationsStateChange, which StartAnimation skips when the pose ("idle")
+      // is already active. Without this, a rebuild on each construction step births an invisible
+      // renderer and the vessel mesh vanishes after the first step.
+      ShouldRender = util.activeAnimationsByAnimCode.Count > 0,
+    };
+  }
+
+  private void ApplyPose() =>
+    _animator?.Pose(util =>
+    {
+      // Animatable only draws while an animation runs. "idle" holds the built mesh at rest;
+      // "lidopen" holds it with the lid open. Both drive the lid, so swap based on lid state.
+      if (LidOpen)
       {
-        LightPos = BoilerBlock.LightSampleWorldPos(Pos).ToVec3d(),
-        // Seed visibility from whether a pose is already running. 1.22's AnimatableRenderer
-        // ctor does this itself; the legacy (1.20/1.21) ctor leaves ShouldRender false and only
-        // flips it via OnAnimationsStateChange, which StartAnimation skips when the pose ("idle")
-        // is already active. Without this, a rebuild on each construction step (OnConstructShape
-        // Changed) births an invisible renderer and the vessel mesh vanishes after the first step.
-        ShouldRender = util.activeAnimationsByAnimCode.Count > 0,
-      };
-    }
-  }
-
-  private void ApplyPose()
-  {
-    if (Api is not ICoreClientAPI || _animatable == null || !_animatorReady)
-      return;
-
-    var util = _animatable.animUtil;
-
-    // Animatable only draws while an animation runs. "idle" holds the built mesh at rest;
-    // "lidopen" holds it with the lid open. Both drive the lid, so swap based on lid state.
-    if (LidOpen)
-    {
-      util.StopAnimation("idle");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "lidopen",
-          Code = "lidopen",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 6f,
-          EaseOutSpeed = 6f,
-        }.Init()
-      );
-    }
-    else
-    {
-      util.StopAnimation("lidopen");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "idle",
-          Code = "idle",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 6f,
-          EaseOutSpeed = 6f,
-        }.Init()
-      );
-    }
-  }
+        util.StopAnimation("idle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "lidopen",
+            Code = "lidopen",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 6f,
+            EaseOutSpeed = 6f,
+          }.Init()
+        );
+      }
+      else
+      {
+        util.StopAnimation("lidopen");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "idle",
+            Code = "idle",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 6f,
+            EaseOutSpeed = 6f,
+          }.Init()
+        );
+      }
+    });
 
   #endregion
 
@@ -687,7 +647,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
   /// if the behavior is missing (never throws).
   /// </summary>
   private ItemStack[] ConstructionMaterialDrops(float ratio) =>
-    _rcc?.GetConstructionDrops(ratio, Api.World.Rand) ?? [];
+    _animator?.Rcc?.GetConstructionDrops(ratio, Api.World.Rand) ?? [];
 
   /// <summary>
   /// Breaks every block within <paramref name="radius"/> of <paramref name="center"/> below

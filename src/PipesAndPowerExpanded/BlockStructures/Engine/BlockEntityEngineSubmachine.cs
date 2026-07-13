@@ -1,4 +1,5 @@
 using System;
+using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
@@ -21,9 +22,8 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine;
 /// </summary>
 public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
 {
-  private BEBehaviorAnimatable? _animatable;
+  private ToggleAnimator? _toggle;
   private long _tickId;
-  private bool _animatorReady;
   private bool _animRunning;
   private float _animSpeed = 1f;
 
@@ -63,16 +63,15 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
     // The base registers the server production tick; this sub-machine adds the client visuals.
     base.Initialize(api);
     EnginePos = FindEngine();
+    _toggle = new ToggleAnimator(this, BuildAnimator);
 
     if (api.Side == EnumAppSide.Client)
     {
-      _animatable = GetBehavior<BEBehaviorAnimatable>();
-      InitAnimator();
       // Hold the rest pose immediately; the poll switches to cycle if the engine already runs.
       var engine = Engine;
       _animRunning = engine?.IsRunning ?? false;
       _animSpeed = engine?.AnimationSpeed ?? 1f;
-      ApplyAnim(_animRunning, _animSpeed);
+      _toggle.Initialize(() => ApplyAnim(_animRunning, _animSpeed));
       _tickId = RegisterGameTickListener(OnClientAnimTick, 500);
       // Fast watch for the per-stroke piston sounds (keyframe crossings).
       _keyframeTickId = RegisterGameTickListener(OnKeyframeTick, 50);
@@ -85,7 +84,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   /// </summary>
   private void OnKeyframeTick(float dt)
   {
-    if (!_animRunning || _animatable?.animUtil?.animator is not { } animator)
+    if (!_animRunning || _toggle?.AnimUtil?.animator is not { } animator)
     {
       _lastCycleFrame = -1f;
       return;
@@ -186,28 +185,25 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   protected virtual void OnClientStateTick(float dt) { }
 
   /// <summary>
-  /// Builds the animator from the block's shape. Leaves <see cref="_animatorReady"/> false if the
-  /// shape fails to resolve, so we never pose a null animator (vanilla GetBlockInfo would NRE).
+  /// Builds the animator from the block's shape, through the shared toggle helper (which owns the
+  /// null-animator ready-guard - a shape that fails to resolve leaves it not-ready, so we never pose
+  /// a null animator and vanilla GetBlockInfo can't NRE).
   /// </summary>
-  private void InitAnimator()
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
   {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    MeshData meshData = _animatable.animUtil.CreateMesh(
+    MeshData meshData = animatable.animUtil.CreateMesh(
       Block.Code.Path,
       null,
       out Shape resolvedShape,
       null,
       new TesselationMetaData()
     );
-    _animatable.animUtil.InitializeAnimator(
+    animatable.animUtil.InitializeAnimator(
       Block.Code.Path,
       meshData,
       resolvedShape,
       new Vec3f(0, Block.Shape.rotateY, 0)
     );
-    _animatorReady = _animatable.animUtil.animator != null;
   }
 
   /// <summary>
@@ -216,39 +212,38 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   /// </summary>
   protected virtual void ApplyAnim(bool running, float speed)
   {
-    if (_animatable == null || !_animatorReady)
-      return;
-
-    var util = _animatable.animUtil;
-    if (running)
+    _toggle?.Pose(util =>
     {
-      util.StopAnimation("idle");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "cycle",
-          Code = "cycle",
-          AnimationSpeed = speed,
-          EaseInSpeed = 3f,
-          EaseOutSpeed = 3f,
-        }.Init()
-      );
-      PhaseLockToEngine();
-    }
-    else
-    {
-      util.StopAnimation("cycle");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "idle",
-          Code = "idle",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 3f,
-          EaseOutSpeed = 3f,
-        }.Init()
-      );
-    }
+      if (running)
+      {
+        util.StopAnimation("idle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "cycle",
+            Code = "cycle",
+            AnimationSpeed = speed,
+            EaseInSpeed = 3f,
+            EaseOutSpeed = 3f,
+          }.Init()
+        );
+        PhaseLockToEngine();
+      }
+      else
+      {
+        util.StopAnimation("cycle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "idle",
+            Code = "idle",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 3f,
+            EaseOutSpeed = 3f,
+          }.Init()
+        );
+      }
+    });
   }
 
   /// <summary>
@@ -271,7 +266,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   private void PhaseLockToEngine()
   {
     if (
-      _animatable?.animUtil?.animator is not { } animator
+      _toggle?.AnimUtil?.animator is not { } animator
       || Engine is not { } engine
     )
       return;
@@ -293,8 +288,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
     EnginePos = null;
     if (Api is ICoreClientAPI)
     {
-      _animatorReady = false;
-      InitAnimator();
+      _toggle?.Rebuild();
       ApplyAnim(_animRunning, _animSpeed);
     }
   }

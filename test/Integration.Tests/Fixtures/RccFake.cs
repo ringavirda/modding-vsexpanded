@@ -11,8 +11,13 @@ namespace PipesAndPowerExpanded.Tests;
 /// <see cref="BEBehaviorRightClickConstructable"/>, so its <c>IsComplete</c> is
 /// <c>rcc.CurrentCompletedStage == rcc.Stages.Length - 1</c> off the inherited <c>rcc</c> field and
 /// isn't virtual; a real instance is built with a single, already-completed stage and dropped into
-/// the entity's private <c>_rcc</c> field (typed <see cref="ExRightClickConstructable"/>). Re-apply
+/// the private <c>_rcc</c> field (typed <see cref="ExRightClickConstructable"/>). Re-apply
 /// after a real <c>Initialize</c> (which re-reads <c>_rcc</c> from the absent behaviors and clears it).
+/// <para>
+/// The machines that share the <see cref="ConstructedAnimator"/> helper (boiler, migrated ore machines,
+/// converter vessel) hold <c>_rcc</c> on that composed helper rather than on the entity itself, so the
+/// fake is set there when present; the not-yet-migrated ones (the engine) still hold it directly.
+/// </para>
 /// </summary>
 internal static class RccFake
 {
@@ -36,6 +41,18 @@ internal static class RccFake
 #endif
     var rcc = new ExRightClickConstructable(be);
     ReflectionHelpers.SetField(rcc, "rcc", construction);
-    ReflectionHelpers.SetField(be, "_rcc", rcc);
+
+    // A machine that composes the ConstructedAnimator helper keeps _rcc on that helper; a not-yet-
+    // migrated one (the engine) holds it directly. The rigs fake state WITHOUT running Initialize, so
+    // the helper may be absent - create a bare one (its cache key is never used off the render path)
+    // and plant the completed rcc into it.
+    if (ReflectionHelpers.TryGetField(be, "_animator", out object? existing))
+    {
+      object animator = existing ?? new ConstructedAnimator(be, () => "");
+      ReflectionHelpers.SetField(be, "_animator", animator);
+      ReflectionHelpers.SetField(animator, "_rcc", rcc);
+    }
+    else
+      ReflectionHelpers.SetField(be, "_rcc", rcc);
   }
 }

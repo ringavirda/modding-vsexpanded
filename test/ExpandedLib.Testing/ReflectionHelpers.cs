@@ -46,6 +46,26 @@ public static class ReflectionHelpers
   public static object? GetField(object target, string fieldName) =>
     FindField(target.GetType(), fieldName).GetValue(target);
 
+  /// <summary>Reads a (possibly non-public) instance field if it exists, walking up the type hierarchy;
+  /// returns false (rather than throwing) when no such field is declared anywhere on the type.</summary>
+  public static bool TryGetField(object target, string fieldName, out object? value)
+  {
+    for (Type? t = target.GetType(); t != null; t = t.BaseType)
+    {
+      FieldInfo? f = t.GetField(
+        fieldName,
+        BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
+      );
+      if (f != null)
+      {
+        value = f.GetValue(target);
+        return true;
+      }
+    }
+    value = null;
+    return false;
+  }
+
   /// <summary>Invokes a (possibly non-public) instance method, walking up the type hierarchy.</summary>
   public static object? Invoke(
     object target,

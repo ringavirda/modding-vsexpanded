@@ -78,9 +78,21 @@ public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
     bool sneak = byPlayer.Entity.Controls.ShiftKey;
     bool opposite = byPlayer.Entity.Controls.CtrlKey;
     if (!sneak && !opposite)
-      return be.Solidified
-        ? base.OnBlockInteractStart(world, byPlayer, blockSel)
-        : false;
+    {
+      if (!be.Solidified)
+        return false;
+      // Route straight to the shared chisel ritual. Deferring to base would land in
+      // BlockMoltenCanalTap.OnBlockInteractStart, whose `is not BlockEntityMoltenCanalTap` guard rejects
+      // this pedestal's BE (a BlockEntityMoltenCanal, a sibling of the tap BE - the pedestal block extends
+      // the tap block, but the BEs don't) and silently drops the chisel-out.
+      return MoltenChisel.TryChisel(
+          world,
+          byPlayer,
+          blockSel.Position,
+          be,
+          ExSounds.StoneCrush
+        ) != ChiselOutcome.NotChiseling;
+    }
 
     if (world.Side == EnumAppSide.Client)
       return true;

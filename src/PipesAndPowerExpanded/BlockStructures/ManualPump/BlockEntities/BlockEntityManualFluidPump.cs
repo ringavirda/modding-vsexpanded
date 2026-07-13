@@ -1,5 +1,6 @@
 using ExpandedLib;
 using System;
+using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
@@ -38,8 +39,7 @@ public class BlockEntityManualFluidPump : BlockEntity
   private long _serverTickId;
 
   // --- Client animation + sound ---
-  private BEBehaviorAnimatable? _animatable;
-  private bool _animatorReady;
+  private ToggleAnimator? _toggle;
   private bool _animPumping;
   private long _clientTickId;
   private ILoadedSound? _grindSound;
@@ -69,9 +69,8 @@ public class BlockEntityManualFluidPump : BlockEntity
     }
     else
     {
-      _animatable = GetBehavior<BEBehaviorAnimatable>();
-      InitAnimator();
-      ApplyAnim(_pumping);
+      _toggle = new ToggleAnimator(this, BuildAnimator);
+      _toggle.Initialize(() => ApplyAnim(_pumping));
       _animPumping = _pumping;
       _clientTickId = RegisterGameTickListener(OnClientTick, 250);
     }
@@ -200,28 +199,25 @@ public class BlockEntityManualFluidPump : BlockEntity
   }
 
   /// <summary>
-  /// Builds the animator from the block's shape. Leaves <see cref="_animatorReady"/> false if the
-  /// shape fails to resolve, so a pose is never queued against a null animator (vanilla NREs).
+  /// Builds the animator from the block's shape, through the shared toggle helper (which owns the
+  /// null-animator ready-guard - a shape that fails to resolve leaves it not-ready, so a pose is never
+  /// queued against a null animator and vanilla GetBlockInfo can't NRE).
   /// </summary>
-  private void InitAnimator()
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
   {
-    if (Api is not ICoreClientAPI || _animatable == null)
-      return;
-
-    MeshData meshData = _animatable.animUtil.CreateMesh(
+    MeshData meshData = animatable.animUtil.CreateMesh(
       Block.Code.Path,
       null,
       out Shape resolvedShape,
       null,
       new TesselationMetaData()
     );
-    _animatable.animUtil.InitializeAnimator(
+    animatable.animUtil.InitializeAnimator(
       Block.Code.Path,
       meshData,
       resolvedShape,
       new Vec3f(0, Block.Shape.rotateY, 0)
     );
-    _animatorReady = _animatable.animUtil.animator != null;
   }
 
   /// <summary>
@@ -230,38 +226,37 @@ public class BlockEntityManualFluidPump : BlockEntity
   /// </summary>
   private void ApplyAnim(bool running)
   {
-    if (_animatable == null || !_animatorReady)
-      return;
-
-    var util = _animatable.animUtil;
-    if (running)
+    _toggle?.Pose(util =>
     {
-      util.StopAnimation("idle");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "cycle",
-          Code = "cycle",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 1f,
-          EaseOutSpeed = 5f,
-        }.Init()
-      );
-    }
-    else
-    {
-      util.StopAnimation("cycle");
-      util.StartAnimation(
-        new AnimationMetaData
-        {
-          Animation = "idle",
-          Code = "idle",
-          AnimationSpeed = 1f,
-          EaseInSpeed = 1f,
-          EaseOutSpeed = 5f,
-        }.Init()
-      );
-    }
+      if (running)
+      {
+        util.StopAnimation("idle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "cycle",
+            Code = "cycle",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 1f,
+            EaseOutSpeed = 5f,
+          }.Init()
+        );
+      }
+      else
+      {
+        util.StopAnimation("cycle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "idle",
+            Code = "idle",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 1f,
+            EaseOutSpeed = 5f,
+          }.Init()
+        );
+      }
+    });
   }
 
   /// <summary>

@@ -1,11 +1,9 @@
 using System;
-using System.Linq;
+using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Registries.Entities;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.GameContent.Mechanics;
 
 namespace PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
 
@@ -15,13 +13,12 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
 /// constant-power source off the engine's <see cref="BlockEntityEngine.MpPowerBudget"/>, so the
 /// network settles at <c>speed = budget / load</c>: the rated speed at the rated load, slower
 /// under heavier loads. In its natural (north) orientation the axle couples on the north/south faces.
+/// The static body render + per-axis rotation sense are handled by <see cref="BEBehaviorMPSubmachineBase"/>.
 /// </summary>
 [BlockEntityBehaviorRegister]
 public class BEBehaviorEngineMPGenerator(BlockEntity blockentity)
-  : BEBehaviorMPBase(blockentity)
+  : BEBehaviorMPSubmachineBase(blockentity)
 {
-  private MeshData? _baseMesh;
-
   public override void Initialize(ICoreAPI api, JsonObject properties)
   {
     base.Initialize(api, properties);
@@ -39,7 +36,7 @@ public class BEBehaviorEngineMPGenerator(BlockEntity blockentity)
   /// </summary>
   public void OnOrientationChanged()
   {
-    _baseMesh = null;
+    ResetBaseMesh();
     SetOrientations();
     if (Api.Side == EnumAppSide.Server && OutFacingForNetworkDiscovery != null)
     {
@@ -75,62 +72,14 @@ public class BEBehaviorEngineMPGenerator(BlockEntity blockentity)
     return torque;
   }
 
-  public override void SetOrientations()
-  {
-    // Seed discovery from the BACK of the axis (south/west). The discovery direction drives
-    // vanilla's IsRotationReversed, so the far end reverses the whole shaft's rendered spin to
-    // match the engine's beam linkage (the near end turned it the opposite way).
-    OutFacingForNetworkDiscovery = Block.Variant["side"] switch
+  protected override BlockFacing ResolveDiscoveryFace() =>
+    // Seed discovery from the BACK of the axis (south/west). The discovery direction drives vanilla's
+    // IsRotationReversed, so the far end reverses the whole shaft's rendered spin to match the engine's
+    // beam linkage (the near end turned it the opposite way).
+    Block.Variant["side"] switch
     {
       "north" or "south" => BlockFacing.SOUTH,
       "east" or "west" => BlockFacing.WEST,
       _ => BlockFacing.SOUTH,
     };
-
-    // Single sign per axis matching the vanilla axle convention, so the rendered axle co-rotates
-    // with the connected line instead of fighting it.
-    AxisSign =
-      OutFacingForNetworkDiscovery.Axis == EnumAxis.X ? [-1, 0, 0] : [0, 0, -1];
-  }
-
-  protected override CompositeShape GetShape() =>
-    new()
-    {
-      Base = Block.Shape.Base.Clone(),
-      SelectiveElements = ["Axle*"],
-      rotateY = Block.Shape.rotateY,
-      InsertBakedTextures = true,
-    };
-
-  public override bool OnTesselation(
-    ITerrainMeshPool mesher,
-    ITesselatorAPI tesselator
-  )
-  {
-    if (_baseMesh == null)
-    {
-      AssetLocation shapeLoc = Block
-        .Shape.Base.WithPathPrefixOnce("shapes/")
-        .WithPathAppendixOnce(".json");
-      Shape? shape = Api.Assets.TryGet(shapeLoc)?.ToObject<Shape>();
-      if (shape != null)
-      {
-        Shape baseShape = shape.Clone();
-        baseShape.Elements = baseShape
-          .Elements.Where(e => !e.Name?.StartsWith("Axle") ?? true)
-          .ToArray();
-        tesselator.TesselateShape(Block, baseShape, out _baseMesh);
-
-        float rotY = Block.Shape.rotateY * GameMath.DEG2RAD;
-        if (rotY != 0 && _baseMesh != null)
-          _baseMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0, rotY, 0);
-      }
-    }
-
-    if (_baseMesh != null)
-      mesher.AddMeshData(_baseMesh);
-
-    base.OnTesselation(mesher, tesselator);
-    return true;
-  }
 }
