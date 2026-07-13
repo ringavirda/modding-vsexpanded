@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Preferences;
@@ -47,6 +48,19 @@ public class ExpandedLibModSystem : ModSystem
       Mod.Info.ModID,
       "structurefiller"
     );
+  }
+
+  /// <summary>
+  /// After the asset-patch pipeline has merged all mods' JSON (and before recipe/world finalize),
+  /// populate the shared metal catalogue from the loaded metal worldproperties + every domain's
+  /// <c>config/metals</c>. Runs on both sides (the <c>config</c>/<c>worldproperties</c> categories are
+  /// Universal); consumers read back convention values for any metal not enriched here, so a partial
+  /// load never regresses. Fires exactly once - exlib ships as its own dll, so this ModSystem loads
+  /// singly regardless of how many dependent mods are installed.
+  /// </summary>
+  public override void AssetsFinalize(ICoreAPI api)
+  {
+    MetalCatalogueLoader.Load(api);
   }
 
   public override void StartClientSide(ICoreClientAPI api)

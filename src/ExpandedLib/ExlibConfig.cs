@@ -68,5 +68,10 @@ public class ExlibConfig : IExVersionedConfig
 
   /// <summary>Below this temperature (°C) hot metal emits no incandescent block light.</summary>
   public float MetalGlowMinTemp { get; set; } = 500f;
+
+  /// <summary>Item code recovered when a molten metal's solid drop cannot be resolved (the shared
+  /// recovery fallback, historically <c>iwex:slag</c>). A metal may override it per-entry in its
+  /// <c>MetalDef</c>. Harmless when the item is absent - the chisel/break drop guards a null resolve.</summary>
+  public string MetalRecoveryFallback { get; set; } = "iwex:slag";
   #endregion
 }

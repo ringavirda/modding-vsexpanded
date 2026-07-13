@@ -26,6 +26,11 @@ public sealed class ExKeyedRegistry<T>
   /// <summary>Registers (or replaces) an item under its derived code.</summary>
   public void Register(T item) => _items[_key(item)] = item;
 
+  /// <summary>Drops every registered item. Asset-backed catalogues (metals/liquids) repopulate on each
+  /// <c>AssetsFinalize</c>, so they clear first to avoid accumulating stale entries across world reloads
+  /// in one process; also gives unit tests a clean slate on a process-wide store.</summary>
+  public void Clear() => _items.Clear();
+
   /// <summary>Looks up an item by code (case-insensitive); <c>false</c> when none is registered.</summary>
   public bool TryGet(string code, out T item) =>
     _items.TryGetValue(code, out item!);
