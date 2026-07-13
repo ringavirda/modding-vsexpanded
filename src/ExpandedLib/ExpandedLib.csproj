@@ -27,6 +27,13 @@
       <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- The engine's object loader casts every blocktypes/ asset to the concrete
+         Vintagestory.Common.Asset, so code-first definition injection (Definitions/) must construct
+         real Asset instances - a custom IAsset throws InvalidCastException. -->
+    <Reference Include="VintagestoryLib">
+      <HintPath>$(GamePath)/VintagestoryLib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="VGameContent">
       <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
       <Private>false</Private>

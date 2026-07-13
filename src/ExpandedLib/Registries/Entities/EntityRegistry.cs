@@ -33,8 +33,7 @@ public static class EntityRegistry
       if (attr == null)
         continue;
 
-      string baseKey = attr.Code ?? type.Name;
-      string key = attr.PrefixModId ? $"{modId}.{baseKey}" : baseKey;
+      string key = KeyFor(modId, type, attr);
 
       switch (attr)
       {
@@ -74,6 +73,28 @@ public static class EntityRegistry
           break;
       }
     }
+  }
+
+  /// <summary>
+  /// The registry key a <see cref="RegisterAttribute"/>-decorated <paramref name="type"/> is
+  /// registered under - <c>{modId}.{Code ?? ClassName}</c>, or the bare key when
+  /// <see cref="RegisterAttribute.PrefixModId"/> is false. This is the SINGLE source for the
+  /// class-string↔type binding, shared with the code-first definition builder (<c>ExBlockDef</c>'s
+  /// type-safe <c>Class&lt;T&gt;()</c>) so a class rename can never desync the two. Returns
+  /// <c>{modId}.{ClassName}</c> as the convention default when <paramref name="type"/> carries no
+  /// register attribute.
+  /// </summary>
+  public static string KeyFor(string modId, Type type) =>
+    KeyFor(
+      modId,
+      type,
+      type.GetCustomAttributes().OfType<RegisterAttribute>().FirstOrDefault()
+    );
+
+  private static string KeyFor(string modId, Type type, RegisterAttribute? attr)
+  {
+    string baseKey = attr?.Code ?? type.Name;
+    return (attr?.PrefixModId ?? true) ? $"{modId}.{baseKey}" : baseKey;
   }
 
   /// <summary>Logs a warning and returns false when <paramref name="type"/> does not derive from the

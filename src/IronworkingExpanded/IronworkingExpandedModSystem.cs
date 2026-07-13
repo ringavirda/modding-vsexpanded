@@ -5,6 +5,7 @@ using ExpandedLib.Registries.Entities;
 using HarmonyLib;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.Compat;
+using IronworkingExpanded.Definitions;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -49,6 +50,10 @@ public class IronworkingExpandedModSystem : ModSystem
 
     // Auto-register every [BlockRegister]/[ItemRegister]/[BlockEntityRegister]/etc. declared here.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
+
+    // Register this mod's code-first block definitions. Runs in the Start phase, before the server's
+    // AssetsLoaded phase injects them as synthetic blocktype assets (see IwexDefinitions).
+    IwexDefinitions.RegisterAll();
 
     // The molten-metal network. iwex loads before smex, so the network type exists before any
     // dependent mod (smex) needs it. The unified "pipe" network is registered by ppex.
