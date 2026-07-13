@@ -7,6 +7,7 @@ using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 

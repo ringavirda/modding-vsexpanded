@@ -59,8 +59,6 @@
   "iwex:metalstate-hardened": "затвердевший",
   "iwex:metalstate-soft": "мягкий",
   "iwex:metalstate-cooling": "остывающий",
-  "iwex:metalstate-cold": "холодный",
-  "iwex:metal-unknown": "неизвестно",
   "iwex:state-on": "вкл",
   "iwex:state-off": "выкл",
   "game:ingameerror-iwex-moltenspill": "Расплавленный металл вылился из формы!",

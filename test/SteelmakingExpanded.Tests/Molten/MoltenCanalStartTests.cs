@@ -6,6 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 

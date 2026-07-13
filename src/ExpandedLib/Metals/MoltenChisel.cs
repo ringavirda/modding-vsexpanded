@@ -6,7 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace IronworkingExpanded.BlockNetworkMolten;
+namespace ExpandedLib.Metals;
 
 /// <summary>What a chisel + hammer click resolved to on an <see cref="IChiselableMolten"/> holder.</summary>
 public enum ChiselOutcome

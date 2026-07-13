@@ -1,11 +1,13 @@
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Preferences;
 using ExpandedLib.Registries.Recipes;
 using HarmonyLib;
 using PipesAndPowerExpanded.BlockNetworkPipe;
+using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -92,6 +94,10 @@ public class PipesAndPowerExpandedModSystem : ModSystem
     // shared store, then build their .exmod sub-commands. exlib loads/persists/applies the values.
     PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
     CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
+
+    // exlib's shared molten-metal display keeps only a metric default; route it through this mod's
+    // measurement-preference formatter so barrel/canal/converter temperatures honour metric/imperial.
+    MoltenMetal.TemperatureFormatter = c => ExMeasure.Temperature(c);
     // The recipe cost level is applied centrally by exlib (ExRecipeProfiles) on both sides.
   }
   #endregion

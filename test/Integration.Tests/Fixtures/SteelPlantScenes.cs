@@ -10,6 +10,7 @@ using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 

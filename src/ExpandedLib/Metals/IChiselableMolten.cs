@@ -1,6 +1,6 @@
 using Vintagestory.API.Common;
 
-namespace IronworkingExpanded.BlockNetworkMolten;
+namespace ExpandedLib.Metals;
 
 /// <summary>
 /// A block entity that holds molten metal which, once solidified and cooled, can be chipped out with a

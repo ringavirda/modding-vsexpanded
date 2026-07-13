@@ -9,6 +9,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
+using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 

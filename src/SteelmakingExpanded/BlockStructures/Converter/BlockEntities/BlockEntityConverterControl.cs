@@ -18,6 +18,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 using Vintagestory.GameContent.Mechanics;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 

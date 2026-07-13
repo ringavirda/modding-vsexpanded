@@ -6,6 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 
@@ -36,8 +37,7 @@ public class BlockEntityHeatSink : BlockEntity
   }
 
   // The shared incandescence scale (canals, barrels, heat sink all glow alike).
-  private static byte GetLightLevel(float temp) =>
-    IronworkingExpanded.BlockNetworkMolten.MoltenMetal.GlowLevel(temp);
+  private static byte GetLightLevel(float temp) => MoltenMetal.GlowLevel(temp);
 
   public override void ToTreeAttributes(ITreeAttribute tree)
   {

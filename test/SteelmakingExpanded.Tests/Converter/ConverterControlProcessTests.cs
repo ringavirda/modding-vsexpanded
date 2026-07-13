@@ -6,6 +6,7 @@ using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 

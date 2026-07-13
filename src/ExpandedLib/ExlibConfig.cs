@@ -54,5 +54,19 @@ public class ExlibConfig : IExVersionedConfig
   /// <summary>Minimum metal (units) that must move across a canal connection for any flow that tick
   /// (stops sub-unit dribbles).</summary>
   public int MoltenMinFlowAmount { get; set; } = 10;
+
+  /// <summary>Default VS time-based cooldown speed stamped on a molten carrier stack when a caller
+  /// gives none. Each mod may still pass its own rate (e.g. a per-container coefficient).</summary>
+  public float MoltenCooldownDefault { get; set; } = 24f;
+
+  /// <summary>Fraction of the melting point above which a metal stack counts as liquid (flows).</summary>
+  public float MetalLiquidThreshold { get; set; } = 0.8f;
+
+  /// <summary>Fraction of the melting point below which a metal stack counts as fully hardened
+  /// (chisellable).</summary>
+  public float MetalHardenedThreshold { get; set; } = 0.3f;
+
+  /// <summary>Below this temperature (°C) hot metal emits no incandescent block light.</summary>
+  public float MetalGlowMinTemp { get; set; } = 500f;
   #endregion
 }

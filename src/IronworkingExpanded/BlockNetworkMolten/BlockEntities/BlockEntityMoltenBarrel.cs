@@ -10,6 +10,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
+using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 

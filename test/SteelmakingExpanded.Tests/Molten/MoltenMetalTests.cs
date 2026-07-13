@@ -1,5 +1,6 @@
 using IronworkingExpanded.BlockNetworkMolten;
 using Xunit;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 
@@ -48,13 +49,14 @@ public class MoltenMetalTests
   public void FormatTemperature_reads_cold_below_room_temperature()
   {
     // Below 21 C it prints the "cold" label (here the echoed lang key), not a number.
-    Assert.Equal("iwex:metalstate-cold", MoltenMetal.FormatTemperature(15f));
+    Assert.Equal("exlib:metalstate-cold", MoltenMetal.FormatTemperature(15f));
   }
 
   [Fact]
   public void FormatTemperature_prints_the_rounded_value_when_warm()
   {
-    // ExMeasure.Temperature in the default metric system prints "650 <unit>".
+    // With no formatter injected (ppex wires its metric/imperial ExMeasure in-game), the exlib
+    // default prints the metric "650 °C" form.
     Assert.StartsWith("650 ", MoltenMetal.FormatTemperature(650f));
   }
 }

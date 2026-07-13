@@ -13,6 +13,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded;
 

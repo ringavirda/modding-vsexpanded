@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace IronworkingExpanded.BlockNetworkMolten;
+namespace ExpandedLib.Metals;
 
 /// <summary>
 /// The single definition of how a carried barrel / tool-mold item round-trips its metal

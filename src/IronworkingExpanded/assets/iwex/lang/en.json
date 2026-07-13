@@ -166,8 +166,6 @@
   "iwex:metalstate-hardened": "hardened",
   "iwex:metalstate-soft": "soft",
   "iwex:metalstate-cooling": "cooling",
-  "iwex:metalstate-cold": "cold",
-  "iwex:metal-unknown": "unknown",
   "iwex:state-on": "on",
   "iwex:state-off": "off",
 

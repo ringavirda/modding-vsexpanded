@@ -1,10 +1,9 @@
-using PipesAndPowerExpanded.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace IronworkingExpanded.BlockNetworkMolten;
+namespace ExpandedLib.Metals;
 
 /// <summary>
 /// Coarse thermal state of a metal stack relative to its melting point.
@@ -30,13 +29,13 @@ public enum MoltenState
 public static class MoltenMetal
 {
   /// <summary>Fraction of the melting point above which metal counts as liquid.</summary>
-  public const float LiquidThreshold = 0.8f;
+  public static float LiquidThreshold => ExlibValues.MetalLiquidThreshold;
 
   /// <summary>Fraction of the melting point below which metal counts as fully hardened.</summary>
-  public const float HardenedThreshold = 0.3f;
+  public static float HardenedThreshold => ExlibValues.MetalHardenedThreshold;
 
   /// <summary>Below this temperature (°C) hot metal emits no block light.</summary>
-  public const float GlowMinTemp = 500f;
+  public static float GlowMinTemp => ExlibValues.MetalGlowMinTemp;
 
   /// <summary>
   /// Creates a single-item temperature carrier for <paramref name="itemCode"/> at
@@ -60,7 +59,7 @@ public static class MoltenMetal
     // a fresh stack that tree doesn't exist yet, so setting the cooldown before it silently no-ops -
     // which left the cooldownSpeed argument dead for every caller until this ordering fix.
     SetTemperature(world, stack, temperature);
-    SetCooldownSpeed(stack, cooldownSpeed ?? IwexValues.MoltenCooldownSpeed);
+    SetCooldownSpeed(stack, cooldownSpeed ?? ExlibValues.MoltenCooldownDefault);
     return stack;
   }
 
@@ -89,7 +88,7 @@ public static class MoltenMetal
   )
   {
     SetTemperature(world, stack, GetTemperature(world, stack));
-    SetCooldownSpeed(stack, cooldownSpeed ?? IwexValues.MoltenCooldownSpeed);
+    SetCooldownSpeed(stack, cooldownSpeed ?? ExlibValues.MoltenCooldownDefault);
   }
 
   /// <summary>Sets the stack temperature without delaying the cooldown (the mod-wide convention).</summary>
@@ -149,15 +148,24 @@ public static class MoltenMetal
   public static string DisplayName(string metalItemCode)
   {
     if (metalItemCode.Length == 0)
-      return Lang.Get("iwex:metal-unknown");
+      return Lang.Get("exlib:metal-unknown");
     string path = new AssetLocation(metalItemCode).Path;
     string name = path.StartsWith("ingot-") ? path[6..] : path;
     return name.Length > 0 ? char.ToUpper(name[0]) + name[1..] : name;
   }
 
-  /// <summary>"Cold" below room temperature, otherwise the rounded "650°C" form.</summary>
+  /// <summary>
+  /// Formats a molten temperature for display. Defaults to a metric <c>"650 °C"</c> form; a consumer
+  /// that owns a measurement-preference system (ppex) assigns <see cref="TemperatureFormatter"/> at
+  /// startup to route it through unit conversion. Kept injectable so exlib carries no dependency on a
+  /// downstream mod's formatter (the simulation stays metric).
+  /// </summary>
+  public static System.Func<float, string> TemperatureFormatter { get; set; } =
+    t => $"{t:F0} °C";
+
+  /// <summary>"Cold" below room temperature, otherwise the formatted temperature.</summary>
   public static string FormatTemperature(float temperature) =>
     temperature < 21f
-      ? Lang.Get("iwex:metalstate-cold")
-      : ExMeasure.Temperature(temperature);
+      ? Lang.Get("exlib:metalstate-cold")
+      : TemperatureFormatter(temperature);
 }
