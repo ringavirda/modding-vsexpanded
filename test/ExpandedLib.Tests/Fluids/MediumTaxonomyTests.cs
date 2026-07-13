@@ -103,6 +103,110 @@ public class MediumTaxonomyTests
   }
   #endregion
 
+  #region Vaporisation + the temp-independent phase-change pair (the general-still substrate)
+  [Fact]
+  public void Water_vaporises_to_steam_only_at_or_above_its_boil_point()
+  {
+    // The mirror of condensation: gates at/above the boil point (condensation gates below the dew point).
+    Assert.True(
+      ExLiquids.Taxonomy.TryVaporisation("Water", 100f, out string target, out _)
+    );
+    Assert.Equal("Steam", target);
+
+    Assert.True(ExLiquids.Taxonomy.TryVaporisation("Water", 130f, out _, out _)); // above boil
+    Assert.False(ExLiquids.Taxonomy.TryVaporisation("Water", 99f, out _, out _)); // below boil
+    Assert.False(ExLiquids.Taxonomy.TryVaporisation("Steam", 200f, out _, out _)); // a gas has no boil pair
+    Assert.False(ExLiquids.Taxonomy.TryVaporisation("Air", 500f, out _, out _)); // no vaporisesTo
+  }
+
+  [Fact]
+  public void Water_and_steam_are_reciprocal_phase_change_partners()
+  {
+    // The seeded pair: Water boils to Steam, Steam condenses to Water. The general still reads exactly
+    // this data per fraction; the boiler is its degenerate single-fraction case.
+    Assert.True(
+      ExLiquids.Taxonomy.VaporisationTarget("Water", out string gas, out _)
+    );
+    Assert.Equal("Steam", gas);
+    Assert.True(
+      ExLiquids.Taxonomy.CondensationTarget("Steam", out string liquid, out _)
+    );
+    Assert.Equal("Water", liquid);
+  }
+
+  [Fact]
+  public void CondensationTarget_is_temperature_independent()
+  {
+    // An active condenser supplies its own cooling, so the pair lookup must NOT gate on the gas's
+    // current temperature - a 150C steam line still condenses (exactly what the condenser BE relies on,
+    // and what a temp-gated lookup would wrongly refuse).
+    Assert.True(
+      ExLiquids.Taxonomy.CondensationTarget("Steam", out string target, out _)
+    );
+    Assert.Equal("Water", target);
+    Assert.False(ExLiquids.Taxonomy.TryCondensation("Steam", 150f, out _, out _));
+  }
+
+  [Fact]
+  public void Builtin_phase_change_leaves_the_volume_factor_to_the_caller()
+  {
+    // The built-ins leave the factor 0 (null in the def) so exlib carries no ppex expansion constant;
+    // consumers fall back to their own default (the condenser to PpexValues.SteamExpansionFactor).
+    ExLiquids.Taxonomy.CondensationTarget("Steam", out _, out float condFactor);
+    ExLiquids.Taxonomy.VaporisationTarget("Water", out _, out float vapFactor);
+    Assert.Equal(0f, condFactor);
+    Assert.Equal(0f, vapFactor);
+  }
+
+  [Fact]
+  public void A_fraction_can_ship_its_own_phase_change_pair_and_factor()
+  {
+    // A distillation add-on registers a fraction with an explicit boil/condense pair + factor; a still
+    // reads them straight from the taxonomy, no code change - the substrate the staged plan builds on.
+    ExLiquids.Register(
+      new LiquidDef
+      {
+        Code = "Benzene",
+        Phase = LiquidPhase.Liquid,
+        VaporisesTo = "BenzeneVapour",
+        BoilPointC = 80f,
+        VaporiseVolumeFactor = 12f,
+      }
+    );
+    ExLiquids.Register(
+      new LiquidDef
+      {
+        Code = "BenzeneVapour",
+        Phase = LiquidPhase.Gas,
+        CondensesTo = "Benzene",
+        CondenseBelowC = 80f,
+        CondenseVolumeFactor = 12f,
+      }
+    );
+
+    Assert.True(
+      ExLiquids.Taxonomy.TryVaporisation(
+        "Benzene",
+        90f,
+        out string gas,
+        out float vf
+      )
+    );
+    Assert.Equal("BenzeneVapour", gas);
+    Assert.Equal(12f, vf);
+    Assert.True(
+      ExLiquids.Taxonomy.TryCondensation(
+        "BenzeneVapour",
+        70f,
+        out string liq,
+        out float cf
+      )
+    );
+    Assert.Equal("Benzene", liq);
+    Assert.Equal(12f, cf);
+  }
+  #endregion
+
   #region Registry mechanics + JSON binding
   [Fact]
   public void SeedDefaults_registers_the_four_builtins()
@@ -124,7 +228,8 @@ public class MediumTaxonomyTests
   {
     const string json =
       @"{ ""code"": ""liquid"", ""liquids"": [
-          { ""code"": ""Oil"", ""phase"": ""liquid"", ""priority"": 0 },
+          { ""code"": ""Oil"", ""phase"": ""liquid"", ""priority"": 0,
+            ""vaporisesTo"": ""OilVapour"", ""boilPointC"": 300, ""vaporiseVolumeFactor"": 8 },
           { ""code"": ""Steam"", ""phase"": ""gas"", ""priority"": 10,
             ""condensesTo"": ""Water"", ""condenseBelowC"": 100 } ] }";
 
@@ -134,6 +239,9 @@ public class MediumTaxonomyTests
     Assert.Equal(2, cat.Liquids!.Count);
     Assert.Equal("Oil", cat.Liquids[0].Code);
     Assert.Equal(LiquidPhase.Liquid, cat.Liquids[0].Phase); // "liquid" → Liquid (case-insensitive)
+    Assert.Equal("OilVapour", cat.Liquids[0].VaporisesTo);
+    Assert.Equal(300f, cat.Liquids[0].BoilPointC);
+    Assert.Equal(8f, cat.Liquids[0].VaporiseVolumeFactor);
     Assert.Equal(LiquidPhase.Gas, cat.Liquids[1].Phase);
     Assert.Equal("Water", cat.Liquids[1].CondensesTo);
     Assert.Equal(100f, cat.Liquids[1].CondenseBelowC);

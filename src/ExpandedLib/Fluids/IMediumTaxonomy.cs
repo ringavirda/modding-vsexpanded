@@ -22,11 +22,43 @@ public interface IMediumTaxonomy
   string HigherPriority(string a, string b);
 
   /// <summary>
-  /// Whether <paramref name="code"/> condenses at <paramref name="tempC"/>. On <c>true</c>,
-  /// <paramref name="target"/> is the resulting medium and <paramref name="volumeFactor"/> the volume
+  /// The condensation partner of <paramref name="code"/>, independent of temperature - for an
+  /// <b>active</b> device that supplies the cooling itself (a condenser cools regardless of the gas's
+  /// current temperature) and so decides <i>when</i> to change phase. On <c>true</c>,
+  /// <paramref name="target"/> is the resulting liquid and <paramref name="volumeFactor"/> the volume
   /// multiplier (0 when the def leaves it to the caller's own default).
   /// </summary>
+  bool CondensationTarget(string code, out string target, out float volumeFactor);
+
+  /// <summary>
+  /// The vaporisation partner of <paramref name="code"/>, independent of temperature - the mirror of
+  /// <see cref="CondensationTarget"/> for an <b>active</b> device that supplies the heat (a still pot /
+  /// the boiler boils its charge). On <c>true</c>, <paramref name="target"/> is the resulting gas and
+  /// <paramref name="volumeFactor"/> the volume multiplier (0 = the caller's own default).
+  /// </summary>
+  bool VaporisationTarget(string code, out string target, out float volumeFactor);
+
+  /// <summary>
+  /// Whether <paramref name="code"/> condenses at <paramref name="tempC"/> - the temperature-gated
+  /// form of <see cref="CondensationTarget"/> for <b>passive</b> phase change (a cold pipe, a still
+  /// column below its dew point). On <c>true</c>, <paramref name="target"/> is the resulting medium
+  /// and <paramref name="volumeFactor"/> the volume multiplier (0 = the caller's own default).
+  /// </summary>
   bool TryCondensation(
+    string code,
+    float tempC,
+    out string target,
+    out float volumeFactor
+  );
+
+  /// <summary>
+  /// Whether <paramref name="code"/> boils at <paramref name="tempC"/> - the temperature-gated mirror
+  /// of <see cref="TryCondensation"/> (gates at/above the boil point rather than below the dew point),
+  /// for <b>passive</b> vaporisation in a still column. Generalises the boiler's water → steam step to
+  /// every distillation fraction. On <c>true</c>, <paramref name="target"/> is the resulting gas and
+  /// <paramref name="volumeFactor"/> the volume multiplier (0 = the caller's own default).
+  /// </summary>
+  bool TryVaporisation(
     string code,
     float tempC,
     out string target,

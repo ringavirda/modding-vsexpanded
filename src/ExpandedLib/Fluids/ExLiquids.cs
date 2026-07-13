@@ -58,7 +58,14 @@ public static class ExLiquids
       new LiquidDef { Code = "Exhaust", Phase = LiquidPhase.Gas, Priority = 20 }
     );
     Register(
-      new LiquidDef { Code = "Water", Phase = LiquidPhase.Liquid, Priority = 0 }
+      new LiquidDef
+      {
+        Code = "Water",
+        Phase = LiquidPhase.Liquid,
+        Priority = 0,
+        VaporisesTo = "Steam",
+        BoilPointC = 100f,
+      }
     );
   }
 
@@ -111,9 +118,8 @@ public static class ExLiquids
     public string HigherPriority(string a, string b) =>
       PriorityOf(b) > PriorityOf(a) ? b : a;
 
-    public bool TryCondensation(
+    public bool CondensationTarget(
       string code,
-      float tempC,
       out string target,
       out float volumeFactor
     )
@@ -125,10 +131,72 @@ public static class ExLiquids
         || string.IsNullOrEmpty(d.CondensesTo)
       )
         return false;
-      if (d.CondenseBelowC.HasValue && tempC >= d.CondenseBelowC.Value)
-        return false;
       target = d.CondensesTo!;
       volumeFactor = d.CondenseVolumeFactor ?? 0f;
+      return true;
+    }
+
+    public bool VaporisationTarget(
+      string code,
+      out string target,
+      out float volumeFactor
+    )
+    {
+      target = "";
+      volumeFactor = 0f;
+      if (
+        !_defs.TryGet(code, out LiquidDef d)
+        || string.IsNullOrEmpty(d.VaporisesTo)
+      )
+        return false;
+      target = d.VaporisesTo!;
+      volumeFactor = d.VaporiseVolumeFactor ?? 0f;
+      return true;
+    }
+
+    // Passive condensation: the temp-independent pair, gated below the dew point.
+    public bool TryCondensation(
+      string code,
+      float tempC,
+      out string target,
+      out float volumeFactor
+    )
+    {
+      if (!CondensationTarget(code, out target, out volumeFactor))
+        return false;
+      if (
+        _defs.TryGet(code, out LiquidDef d)
+        && d.CondenseBelowC.HasValue
+        && tempC >= d.CondenseBelowC.Value
+      )
+      {
+        target = "";
+        volumeFactor = 0f;
+        return false;
+      }
+      return true;
+    }
+
+    // Passive vaporisation: the mirror of TryCondensation, gated at/above the boil point.
+    public bool TryVaporisation(
+      string code,
+      float tempC,
+      out string target,
+      out float volumeFactor
+    )
+    {
+      if (!VaporisationTarget(code, out target, out volumeFactor))
+        return false;
+      if (
+        _defs.TryGet(code, out LiquidDef d)
+        && d.BoilPointC.HasValue
+        && tempC < d.BoilPointC.Value
+      )
+      {
+        target = "";
+        volumeFactor = 0f;
+        return false;
+      }
       return true;
     }
 

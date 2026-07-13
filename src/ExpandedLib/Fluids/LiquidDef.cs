@@ -32,6 +32,20 @@ public class LiquidDef
   /// <summary>Volume multiplier applied on condensation; null = the consumer's own default
   /// (ppex's steam-expansion factor). Kept out of exlib so the library carries no ppex dependency.</summary>
   public float? CondenseVolumeFactor { get; set; }
+
+  /// <summary>Gas-phase target a still/boiler boils this liquid into (Water → "Steam") - the mirror
+  /// of <see cref="CondensesTo"/>; null = does not boil to a carried medium. The pair (Water↔Steam,
+  /// fraction↔vapour) makes the boiler the degenerate single-fraction case of the general still.</summary>
+  public string? VaporisesTo { get; set; }
+
+  /// <summary>Boil only at or above this temperature (°C); null = temperature-independent. The mirror
+  /// of <see cref="CondenseBelowC"/> (that gates below, this gates at/above).</summary>
+  public float? BoilPointC { get; set; }
+
+  /// <summary>Volume multiplier applied on vaporisation; null = the consumer's own default (a still's
+  /// own expansion factor). Mirror of <see cref="CondenseVolumeFactor"/>; kept out of exlib so the
+  /// library carries no ppex/add-on dependency.</summary>
+  public float? VaporiseVolumeFactor { get; set; }
 }
 
 /// <summary>The <c>config/liquids.json</c> file shape: a wrapper carrying the medium entries

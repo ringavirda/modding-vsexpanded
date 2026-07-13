@@ -2,6 +2,7 @@ using ExpandedLib;
 using System;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
@@ -83,7 +84,11 @@ public class BlockEntitySteamCondenser : BlockEntity
     PipeNetwork? wa = CanTakeWater(netA) ? netA : null;
     PipeNetwork? wb = CanTakeWater(netB) ? netB : null;
 
-    bool steam = HasSteam(steamNet);
+    bool steam = HasCondensableGas(steamNet, out float rawFactor);
+    // Litres of condensate = gas drawn / expansion factor; the medium def may override the factor,
+    // else fall back to ppex's own steam-expansion default (exlib carries no ppex constant).
+    float condenseFactor =
+      rawFactor > 0f ? rawFactor : PpexValues.SteamExpansionFactor;
     float steamTemp = steam
       ? steamNet!.State!.Temperature
       : PpexValues.BoilingPoint;
@@ -95,7 +100,7 @@ public class BlockEntitySteamCondenser : BlockEntity
         return false;
       float looped =
         steamNet!.TryConsumeGas(PpexValues.CondenserSteamPerSecond * dt, ba)
-        / PpexValues.SteamExpansionFactor;
+        / condenseFactor;
       if (looped <= 0f)
         return false;
       InjectWater(wa, looped, steamTemp, wa.State?.Pressure ?? 0f, ba);
@@ -151,7 +156,7 @@ public class BlockEntitySteamCondenser : BlockEntity
         PpexValues.CondenserSteamPerSecond * dt,
         ba
       );
-      condensed = used / PpexValues.SteamExpansionFactor;
+      condensed = used / condenseFactor;
     }
 
     // No outlet piped: the water line backs up and leaks out the open outlet face. Drain
@@ -229,10 +234,25 @@ public class BlockEntitySteamCondenser : BlockEntity
       || net.State.MediumType.Length == 0
     );
 
-  private static bool HasSteam(PipeNetwork? net) =>
-    net?.State != null
-    && net.State.MediumType == "Steam"
-    && net.State.Volume > 0f;
+  /// <summary>Whether <paramref name="net"/> carries a gas that condenses into a liquid (steam today;
+  /// any future condensable vapour a still routes through a condenser). The medium's condensation
+  /// volume factor is returned in <paramref name="volumeFactor"/> (0 = use the caller's own default).
+  /// Reading the phase change from the taxonomy keeps the condenser medium-agnostic - it no longer
+  /// hardcodes "Steam" / the steam-expansion factor.</summary>
+  private static bool HasCondensableGas(
+    PipeNetwork? net,
+    out float volumeFactor
+  )
+  {
+    volumeFactor = 0f;
+    if (net?.State is not { Volume: > 0f } s || s.IsLiquid)
+      return false;
+    return ExLiquids.Taxonomy.CondensationTarget(
+      s.MediumType,
+      out _,
+      out volumeFactor
+    );
+  }
 
   public override void OnBlockRemoved()
   {
