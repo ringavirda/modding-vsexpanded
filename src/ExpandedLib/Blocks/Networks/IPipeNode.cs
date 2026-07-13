@@ -1,4 +1,4 @@
-namespace PipesAndPowerExpanded.BlockNetworkPipe;
+namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
 /// A block entity that participates in the pipe network as an addressable node: gas or

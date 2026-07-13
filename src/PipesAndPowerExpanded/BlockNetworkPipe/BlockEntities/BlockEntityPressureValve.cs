@@ -1,3 +1,5 @@
+using ExpandedLib.Blocks.Networks;
+using ExpandedLib;
 using System;
 using System.Text;
 using ExpandedLib.Helpers;
@@ -143,7 +145,7 @@ public class BlockEntityPressureValve : BlockEntityPipe
       if (leaking)
       {
         float vent = outNet.ProduceGasMeasured(
-          Math.Min(excess, PpexValues.GasLeakRate),
+          Math.Min(excess, ExlibValues.GasLeakRate),
           temp,
           gasType,
           ba,
@@ -158,7 +160,7 @@ public class BlockEntityPressureValve : BlockEntityPipe
       // A pressure-relief valve only flows DOWNHILL: gas may cross only while the output run
       // sits below the input pressure. Otherwise (e.g. the output branch's own pressure has
       // built past the input) it would keep pumping that loop ever higher until its pipes burst.
-      float outMax = outNet.Nodes.Count * PpexValues.LitresPerPipe;
+      float outMax = outNet.Nodes.Count * ExlibValues.LitresPerPipe;
       if (outMax <= 0f)
         return 0f;
       float outVol = outNet.State?.Volume ?? 0f;
@@ -193,7 +195,7 @@ public class BlockEntityPressureValve : BlockEntityPipe
     // No output network - the valve face is an open end, so vent to atmosphere at the fixed
     // open-end leak rate (a chimney is needed to vent in bulk).
     float vented = inNet!.TryConsumeGas(
-      Math.Min(excess, PpexValues.GasLeakRate),
+      Math.Min(excess, ExlibValues.GasLeakRate),
       ba
     );
     if (vented > 0f)
@@ -242,7 +244,7 @@ public class BlockEntityPressureValve : BlockEntityPipe
     if (outNet != null)
     {
       float free =
-        outNet.Nodes.Count * PpexValues.LitresPerPipe
+        outNet.Nodes.Count * ExlibValues.LitresPerPipe
         - (outNet.State?.Volume ?? 0f);
       float move = Math.Min(inState.Volume, free);
       if (move <= 0f)
@@ -254,7 +256,7 @@ public class BlockEntityPressureValve : BlockEntityPipe
     }
 
     float spilled = inNet!.TryConsumeLiquid(
-      Math.Min(inState.Volume, PpexValues.LiquidLeakRate),
+      Math.Min(inState.Volume, ExlibValues.LiquidLeakRate),
       ba
     );
     if (spilled > 0f)

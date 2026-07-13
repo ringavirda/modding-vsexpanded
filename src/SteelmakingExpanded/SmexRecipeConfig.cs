@@ -12,7 +12,11 @@ namespace SteelmakingExpanded;
 /// active level is chosen by <c>/exmod steel &lt;level&gt;</c> (stored in
 /// <see cref="SmexConfig.RecipeLevel"/>) and applied on the next world reload.
 /// </summary>
-[ExConfigRegister("smex_recipes.json", "smex")]
+[ExConfigRegister(
+  "ex_recipes.json",
+  "smex",
+  LegacyFileNames = new string[] { "smex_recipes.json" }
+)]
 public class SmexRecipeConfig : IExVersionedConfig
 {
   public string? ConfigVersion { get; set; }

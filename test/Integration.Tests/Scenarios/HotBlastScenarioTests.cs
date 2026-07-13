@@ -1,3 +1,5 @@
+using ExpandedLib.Blocks.Networks;
+using ExpandedLib;
 using ExpandedLib.Testing;
 using PipesAndPowerExpanded;
 using PipesAndPowerExpanded.BlockNetworkPipe;
@@ -89,7 +91,7 @@ public class HotBlastScenarioTests
 
     // No sink: the exhaust accumulates well past the main's 1-atm capacity (the backed-up,
     // furnace-choking condition the stack exists to prevent).
-    float maxVolume = net.Nodes.Count * PpexValues.LitresPerPipe;
+    float maxVolume = net.Nodes.Count * ExlibValues.LitresPerPipe;
     Assert.True(
       net.State!.Volume > maxVolume,
       $"the unvented main should back up over-pressure, was {net.State!.Volume} of {maxVolume} L"

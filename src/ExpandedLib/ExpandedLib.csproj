@@ -71,6 +71,16 @@
     </Content>
   </ItemGroup>
 
+  <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's
+       [ExConfigRegister]. Compile-time only (Analyzer), ships nothing. -->
+  <ItemGroup>
+    <ProjectReference
+      Include="..\ExpandedLib.Generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
   <!-- Stamp the matching game version into the output modinfo for legacy builds, so the mod
        isn't rejected by the older game's version-dependency check. $(GameVersion) is only set
        for the legacy TFMs (../Directory.Build.props), so this is a no-op for the 1.22 build. -->
@@ -81,7 +91,7 @@
   >
     <WriteLinesToFile
       File="$(OutDir)modinfo.json"
-      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;1.22.0&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
+      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;$(CurrentGameVer)&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
       Overwrite="true"
     />
   </Target>

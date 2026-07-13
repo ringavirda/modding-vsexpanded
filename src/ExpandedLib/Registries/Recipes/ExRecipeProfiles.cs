@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 
@@ -13,21 +12,20 @@ namespace ExpandedLib.Registries.Recipes;
 /// </summary>
 public static class ExRecipeProfiles
 {
-  private static readonly Dictionary<string, RecipeProfile> _profiles = new(
-    StringComparer.OrdinalIgnoreCase
+  private static readonly ExKeyedRegistry<RecipeProfile> _profiles = new(
+    p => p.Code
   );
 
   /// <summary>Registers (or replaces) a mod's profile. Call once from the mod's <c>Start</c>, after its
   /// config/catalogue stores have loaded.</summary>
-  public static void Register(RecipeProfile profile) =>
-    _profiles[profile.Code] = profile;
+  public static void Register(RecipeProfile profile) => _profiles.Register(profile);
 
   /// <summary>Looks up a registered profile by mod code (case-insensitive).</summary>
   public static bool TryGet(string code, out RecipeProfile profile) =>
-    _profiles.TryGetValue(code, out profile!);
+    _profiles.TryGet(code, out profile);
 
   /// <summary>The registered mod codes, for listing in the command.</summary>
-  public static IReadOnlyCollection<string> Codes => _profiles.Keys;
+  public static IReadOnlyCollection<string> Codes => _profiles.Codes;
 
   /// <summary>Runs the apply pipeline for every registered profile. exlib calls this from its
   /// <c>StartServerSide</c>/<c>StartClientSide</c> (after all mods registered in their <c>Start</c>),

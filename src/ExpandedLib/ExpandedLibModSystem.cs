@@ -32,6 +32,11 @@ public class ExpandedLibModSystem : ModSystem
 {
   public override void Start(ICoreAPI api)
   {
+    // Load the library's own gameplay tunables (chiefly the block-network constants the concrete
+    // networks that live in this assembly read). Before this runs the accessor already holds the
+    // coded defaults, so reads are always safe.
+    ExlibValues.Load(api);
+
     // Auto-register the library's [BlockRegister]/[BlockEntityRegister]/[BlockBehaviorRegister] classes (filler block + entity, the
     // MultiblockStructure behaviour) under the exlib domain.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);

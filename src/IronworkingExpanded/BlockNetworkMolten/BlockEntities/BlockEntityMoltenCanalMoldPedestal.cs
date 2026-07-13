@@ -66,6 +66,9 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   public override int MaxUnitCapacity =>
     (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0);
 
+  /// <summary>A drain fitting: takes the final sub-minimum dregs so a run can empty completely.</summary>
+  public override bool AcceptsSubMinimumFlow => true;
+
   // Cooldown rate for metal cast in the mold: the molten-system base scaled by the pedestal's mold
   // coefficient (mirrors the converter's charge cooldown). Read live so a config change applies now.
   private static float MoldCooldownSpeed =>

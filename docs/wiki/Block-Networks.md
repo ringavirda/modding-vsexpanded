@@ -1,9 +1,16 @@
 # Block Networks
 
 `Blocks/Networks/` is a generic connected-graph framework: self-orienting node blocks, live
-network instances with merge/fracture handling, and a single manager `ModSystem`. `ppex`
-registers a `"pipe"` network on it; `smex` a `"molten"` network. You register your own network
-type the same way.
+network instances with merge/fracture handling, and a single manager `ModSystem`. It also ships
+the two concrete networks the mods use - the `PipeNetwork` (gas + water, registered as `"pipe"` by
+`ppex`) and the `MoltenNetwork` (metal canals, registered as `"molten"` by `iwex`) - so all three
+mods share one implementation. Each mod just registers the type and supplies its own
+content-specific pieces through the seams below. You register your own network type the same way.
+
+Network tunables (litres per pipe, leak/evaporation rates, over-pressure grace, molten flow rate
+and minimum) live in exlib's own config, `ExlibValues` (`ModConfig/exlib_values.json`,
+`/exmod config exlib …`), since the network code that reads them lives here now. Content-specific
+numbers (pipe burst pressures, chimney draw rate, molten cooldown) stay in each mod's own config.
 
 ## The pieces
 
@@ -27,12 +34,28 @@ Once, during `ModSystem.Start`, give the manager a factory for your network type
 public override void Start(ICoreAPI api)
 {
     var networks = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-    networks.RegisterNetworkType("pipe", () => new PipeNetwork());
+    // ppex's pipe: the vent strategy is optional content (the vanilla-chimney gas draw).
+    networks.RegisterNetworkType("pipe", () => new PipeNetwork(networks, new PpexChimneyVent()));
+    // iwex's molten canals need no extra pieces beyond the IMoltenCell block entities.
+    networks.RegisterNetworkType("molten", () => new MoltenNetwork(networks));
 }
 ```
 
-The manager creates one `PipeNetwork` per connected component and calls into it as the topology
-and clock advance.
+The manager creates one network per connected component and calls into it as the topology
+and clock advance. The factory runs once **per** network instance, so anything the network needs
+per-run (e.g. the chimney-vent's sound-throttle state) can be created fresh in the factory.
+
+### Concrete-network seams
+
+Because `PipeNetwork` / `MoltenNetwork` live in exlib, they reach content-specific behaviour
+through small interfaces the mods implement, never by naming a mod's block type:
+
+| Seam | Implemented by | Role |
+| --- | --- | --- |
+| `IMoltenCell` | the canal block entities | Per-cell metal state + capability flags (`IsFlowSource`, `AcceptsSubMinimumFlow`) the molten flow driver reads. |
+| `IBurstablePipe` | `BlockPipe` | `{ CanBurst, BurstPressure }` - the pipe network walks nodes for the weakest burst rating. |
+| `IPipeVentStrategy` | `PpexChimneyVent` | Optional gas-vent (chimney) classification + draw, injected at `RegisterNetworkType`. |
+| `INetworkNode.OnLeak` | `BlockEntityPipe` (override) | Leak feedback (particles/sound) for a node on a leaking run; default no-op. |
 
 ## Defining a node block
 
@@ -191,6 +214,7 @@ public interface INetworkNode            // implemented by the block ENTITY (a g
     string NetworkType { get; }
     bool HasConnectorAt(BlockFacing face);
     void OnOpenConnectorsChanged(BlockFacing[] openFaces);
+    void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity);  // leak feedback; default no-op
     void OnNetworkUpdate(object? state);
 }
 

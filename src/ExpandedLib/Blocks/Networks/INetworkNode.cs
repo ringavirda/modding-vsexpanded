@@ -32,6 +32,14 @@ public interface INetworkNode
   void OnOpenConnectorsChanged(BlockFacing[] openFaces);
 
   /// <summary>
+  /// Called by the pipe network tick for a node sitting on the leaking (open-ended) boundary of a
+  /// pressurised/flooded run, so it can emit its own leak feedback (particles / sound).
+  /// <paramref name="isLiquid"/> tells water from gas; <paramref name="intensity"/> is a 0-based
+  /// density scale. Default implementations no-op; a pipe overrides it to spray leak particles.
+  /// </summary>
+  void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity);
+
+  /// <summary>
   /// Receives the latest network state so clients can update their display.
   /// </summary>
   void OnNetworkUpdate(object? state);

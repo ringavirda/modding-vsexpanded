@@ -67,23 +67,13 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   public void Load(ICoreAPI api)
   {
     _api = api;
-    ExConfigFiles.RenameLegacy(api, _modId, _fileName, LegacyFileNames);
+    var doc = ExConfigDocument.ForFile(api, _fileName);
+    // One-time carry-over of the old per-mod file into this mod's section (no-op once it exists).
+    doc.FoldLegacy(_modId, LegacyFileNames);
 
-    TConfig config;
-    try
-    {
-      config = api.LoadModConfig<TConfig>(_fileName) ?? new TConfig();
-    }
-    catch (Exception e)
-    {
-      api.Logger.Error(
-        "[{0}] Failed to read {1}; using defaults. {2}",
-        _modId,
-        _fileName,
-        e
-      );
-      config = new TConfig();
-    }
+    // GetSection already falls back to null (→ coded defaults) on a missing or unreadable section, so
+    // a corrupt file or a fresh install starts from defaults without throwing.
+    TConfig config = doc.GetSection<TConfig>(_modId) ?? new TConfig();
 
     string current =
       api.ModLoader.GetMod(_modId)?.Info?.Version ?? string.Empty;
@@ -125,7 +115,12 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
       bool bad =
         AsNumber(value) is double n
           ? !InNumericRange(p, n)
-          : value is null && p.PropertyType == typeof(string);
+          // Any reference-typed value the player nulled out (a string, but also a collection like a
+          // recipe/profile catalogue) is restored to its coded default - a null there would NRE the
+          // code that reads it. Guarded on a non-null default so a legitimately-optional null is left.
+          : value is null
+            && !p.PropertyType.IsValueType
+            && p.GetValue(defaults) != null;
 
       if (bad)
       {
@@ -217,13 +212,17 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   /// toggle) can persist a change made through <see cref="Config"/>.</summary>
   public void Save()
   {
+    if (_api == null)
+      return;
     try
     {
-      _api?.StoreModConfig(Config, _fileName);
+      var doc = ExConfigDocument.ForFile(_api, _fileName);
+      doc.SetSection(_modId, Config);
+      doc.Flush();
     }
     catch (Exception e)
     {
-      _api?.Logger.Warning(
+      _api.Logger.Warning(
         "[{0}] Could not write {1}. {2}",
         _modId,
         _fileName,

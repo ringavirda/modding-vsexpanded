@@ -45,7 +45,7 @@ public static class MoltenChisel
   /// <summary>
   /// The metal-bit recovery stack for <paramref name="units"/> of the metal <paramref name="metalCode"/>
   /// at <paramref name="temperature"/> °C - <paramref name="unitsPerBit"/> units per bit, mapped to the
-  /// solid drop code via <see cref="MoltenNetwork.SolidDropLocation"/>. When the solid item doesn't
+  /// solid drop code via <see cref="SolidDropLocation"/>. When the solid item doesn't
   /// resolve it falls back to slag (if <paramref name="slagFallback"/>) or returns <c>null</c>. Shared by
   /// every chisel/break drop path so the bit ratio and temperature handling live in one place.
   /// </summary>
@@ -59,7 +59,7 @@ public static class MoltenChisel
   )
   {
     int count = Math.Max(1, units / unitsPerBit);
-    AssetLocation loc = MoltenNetwork.SolidDropLocation(metalCode);
+    AssetLocation loc = SolidDropLocation(metalCode);
     Item? item = world.GetItem(loc);
     if (item == null)
     {
@@ -71,6 +71,17 @@ public static class MoltenChisel
     var drop = new ItemStack(item, count);
     MoltenMetal.SetTemperature(world, drop, temperature);
     return drop;
+  }
+
+  /// <summary>Maps a molten metal item to its solid drop ("game:ingot-iron" → "game:metalbit-iron"); non-ingot items drop as themselves.</summary>
+  internal static AssetLocation SolidDropLocation(AssetLocation metalItemLoc)
+  {
+    if (metalItemLoc.Path.StartsWith("ingot-"))
+      return new AssetLocation(
+        metalItemLoc.Domain,
+        "metalbit-" + metalItemLoc.Path[6..]
+      );
+    return metalItemLoc;
   }
 
   /// <summary>

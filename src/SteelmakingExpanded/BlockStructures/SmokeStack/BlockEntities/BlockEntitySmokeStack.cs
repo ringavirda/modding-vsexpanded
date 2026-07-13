@@ -65,6 +65,9 @@ public class BlockEntitySmokeStack
   /// <inheritdoc/>
   public void OnOpenConnectorsChanged(BlockFacing[] openFaces) { }
 
+  /// <summary>No-op: the smoke stack draws gas through <see cref="TryConsume"/>, it doesn't leak.</summary>
+  public void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity) { }
+
   /// <summary>No-op: the stack reads the network API directly and caches no local state.</summary>
   public void OnNetworkUpdate(object? state) { }
 
@@ -271,9 +274,10 @@ public class BlockEntitySmokeStack
     base.FromTreeAttributes(tree, worldForResolving);
     _lastConsumedAmount = tree.GetFloat("lastConsumedAmount");
     Orientation = tree.GetString("orientation");
-    string? json = tree.GetString("possibleOrientations");
-    if (json != null)
-      PossibleOrientations = JsonSerializer.Deserialize<string[]>(json) ?? [];
+    PossibleOrientations = ExTree.SafeDeserialize(
+      tree.GetString("possibleOrientations"),
+      PossibleOrientations
+    );
   }
 
   #endregion

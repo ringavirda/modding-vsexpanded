@@ -1,3 +1,5 @@
+using ExpandedLib.Blocks.Networks;
+using ExpandedLib;
 using System;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
@@ -84,7 +86,7 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
   private static float OutputFreeCapacity(PipeNetwork? net) =>
     net == null
       ? 0f
-      : net.Nodes.Count * PpexValues.LitresPerPipe - (net.State?.Volume ?? 0f);
+      : net.Nodes.Count * ExlibValues.LitresPerPipe - (net.State?.Volume ?? 0f);
 
   /// <summary>
   /// Runs a watering trickle loop while the pump is actually drawing water, on top of the

@@ -56,21 +56,27 @@ Code is organized by **feature**, and within each feature by Vintage Story's
 
 ## Network system (`src/ExpandedLib/Blocks/Networks/`)
 
-Both the pipe and molten systems are instances of one generic block-network framework.
-A network is a connected graph of same-type nodes; the library owns the **graph-level**
-work (membership, merge on join, fracture on break, per-tick dispatch) while each
-concrete network owns its typed state and rules.
+Both the pipe and molten systems are instances of one generic block-network framework -
+and both concrete networks (`PipeNetwork`, `MoltenNetwork`) now live in `exlib` alongside
+the framework, so all three mods share one implementation. A network is a connected graph
+of same-type nodes; the library owns the **graph-level** work (membership, merge on join,
+fracture on break, per-tick dispatch) *and* the concrete simulations, while each mod
+registers the type and supplies only its content-specific pieces through small seams.
 
 - `INetworkNode` - the block-entity-facing contract: connector faces, network type,
-  open/leaking faces, state pushes.
+  open/leaking faces (`OnLeak`), state pushes.
 - `BlockNetworkNode` - the `Block` base for self-orienting nodes (placement
   orientation, wrench rotation, variant-aware display names).
 - `BlockEntityNetworkNode` - the `BlockEntity` base that registers/unregisters with
   the manager and persists state.
-- `BlockNetwork` - the abstract live-network instance (`PipeNetwork`,
-  `MoltenNetwork`).
-- `BlockNetworkModSystem` - the graph manager; concrete types register a factory via
-  `RegisterNetworkType("pipe", …)` during `ModSystem.Start`.
+- `BlockNetwork` - the abstract live-network instance; `PipeNetwork` and `MoltenNetwork`
+  are its concrete subclasses, in `exlib`.
+- `BlockNetworkModSystem` - the graph manager; a mod registers a factory via
+  `RegisterNetworkType("pipe", () => new PipeNetwork(mgr, new PpexChimneyVent()))`
+  during `ModSystem.Start`.
+- Content seams so the exlib networks never name a mod's block type: `IMoltenCell`
+  (canal cells), `IBurstablePipe` (pipe burst rating), `IPipeVentStrategy` (chimney
+  draw). Network tunables live in exlib's own `ExlibValues` config.
 
 ## Building
 

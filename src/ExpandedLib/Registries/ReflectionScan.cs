@@ -1,12 +1,14 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Vintagestory.API.Common;
 
 namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Shared reflection helper for the attribute-driven registries
-/// (<see cref="Entities.EntityRegistry"/>, <see cref="Commands.CommandRegistry"/>).
+/// (<see cref="Entities.EntityRegistry"/>, <see cref="Commands.CommandRegistry"/>,
+/// <see cref="Preferences.PreferenceRegistry"/>).
 /// </summary>
 public static class ReflectionScan
 {
@@ -29,5 +31,36 @@ public static class ReflectionScan
         .Types.Where(t => t is { IsClass: true, IsAbstract: false })
         .ToArray()!;
     }
+  }
+
+  /// <summary>
+  /// Validates that <paramref name="type"/> is assignable to <typeparamref name="T"/> and, if so,
+  /// activates it via its parameterless constructor. On a mismatch (a mis-applied register attribute)
+  /// logs one consistent warning and returns <c>false</c> so the caller skips it rather than throwing -
+  /// the single primitive the activating registries (commands, sub-commands, preferences) previously
+  /// hand-rolled with drifting warning text.
+  /// </summary>
+  public static bool TryActivate<T>(
+    ICoreAPI api,
+    string modId,
+    Type type,
+    out T instance
+  )
+    where T : class
+  {
+    if (!typeof(T).IsAssignableFrom(type))
+    {
+      api.Logger.Warning(
+        "[{0}] {1} is marked for registration but does not implement {2}; skipped.",
+        modId,
+        type.FullName,
+        typeof(T).Name
+      );
+      instance = null!;
+      return false;
+    }
+
+    instance = (T)Activator.CreateInstance(type)!;
+    return true;
   }
 }

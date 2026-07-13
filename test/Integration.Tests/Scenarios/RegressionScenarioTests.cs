@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Networks;
 using System.Linq;
 using ExpandedLib.Testing;
 using PipesAndPowerExpanded.BlockNetworkPipe;

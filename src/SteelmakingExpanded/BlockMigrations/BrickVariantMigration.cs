@@ -6,12 +6,18 @@ using Vintagestory.API.Server;
 namespace SteelmakingExpanded.BlockMigrations;
 
 /// <summary>
-/// Migrates blocks that gained a brick/refractory-tier variantgroup. The cowper-stove and
-/// smoke-stack intakes originally used codes without that group (e.g.
-/// <c>smex:cowperstove-intake-s</c>); adding the group changed those codes, so old placements
-/// load as missing-block placeholders. Each is rewritten to the tier3 variant of the same base
-/// and orientation. (The pipe passthrough/outlet that also gained the group have since moved to
-/// the ppex mod; their migration lives in <c>PipeMigration</c> there.)
+/// Migrates the smoke-stack intake, which gained a brick/refractory-tier variantgroup. It originally
+/// used a code without that group (e.g. <c>smex:smokestack-intake-s</c>); adding the group changed the
+/// code, so old placements load as missing-block placeholders. Each is rewritten to the tier3 variant
+/// of the same base and orientation.
+/// <para>
+/// The cowper-stove intake also gained the group, but its orientation was later switched to the
+/// side-word form (<c>-north</c>/<c>-south</c>/…) by <see cref="PpexMigration"/>, so a tier3-<em>letter</em>
+/// target here no longer resolves - that remap was dead (skipped every startup) and has been removed.
+/// If a pre-tier <c>cowperstove-intake-&lt;letter&gt;</c> placement is ever found in an old world, the fix
+/// is a direct letter→side-word remap, not this dead intermediate. The pipe passthrough/outlet that also
+/// gained the group have since moved to the ppex mod; their migration lives in <c>PipeMigration</c> there.
+/// </para>
 /// </summary>
 public class BrickVariantMigration : IBlockCodeMigration
 {
@@ -27,7 +33,6 @@ public class BrickVariantMigration : IBlockCodeMigration
 
   private static readonly Entry[] Entries =
   [
-    new("cowperstove-intake", "tier3", ["n", "s", "w", "e"]),
     new("smokestack-intake", "tier3", ["n", "s", "w", "e"]),
   ];
 

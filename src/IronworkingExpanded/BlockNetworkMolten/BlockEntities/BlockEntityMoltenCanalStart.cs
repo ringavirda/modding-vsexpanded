@@ -24,6 +24,9 @@ public class BlockEntityMoltenCanalStart
   public override int MaxUnitCapacity =>
     IwexValues.CanalDefaultUnitCapacity * 2;
 
+  /// <summary>The canal start seeds the flow: the distance-from-start BFS roots here.</summary>
+  public override bool IsFlowSource => true;
+
   // Throttle for the molten-pour sound as metal enters here.
   private long _lastPourSoundMs;
 

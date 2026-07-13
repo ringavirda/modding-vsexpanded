@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Testing;
 using PipesAndPowerExpanded.BlockNetworkPipe;

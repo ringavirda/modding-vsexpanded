@@ -11,9 +11,9 @@ namespace SteelmakingExpanded;
 /// value is reset to its default on load). Accessed through <see cref="SmexValues"/>, not directly.
 /// </summary>
 [ExConfigRegister(
-  "smex_values.json",
+  "ex_values.json",
   "smex",
-  LegacyFileNames = new string[] { "smex.json" },
+  LegacyFileNames = new string[] { "smex_values.json", "smex.json" },
   Manageable = true
 )]
 public class SmexConfig : IExVersionedConfig

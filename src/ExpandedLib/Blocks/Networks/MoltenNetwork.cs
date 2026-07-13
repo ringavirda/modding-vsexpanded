@@ -1,32 +1,25 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace IronworkingExpanded.BlockNetworkMolten;
+namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
 /// Concrete <see cref="BlockNetwork"/> for the molten-canal system. Each canal block
-/// (<see cref="BlockEntityMoltenCanal"/>) owns its own metal; the network only provides
-/// connectivity plus the per-tick driver that flows metal cell-to-cell (level-equalisation) and
-/// runs each cell's cooling. Because cells own their metal, merge/split need no redistribution.
+/// (an <see cref="IMoltenCell"/>) owns its own metal; the network only provides connectivity plus the
+/// per-tick driver that flows metal cell-to-cell (level-equalisation) and runs each cell's cooling.
+/// Because cells own their metal, merge/split need no redistribution.
+/// <para>
+/// The driver works over the <see cref="IMoltenCell"/> contract and the block-network graph, so the
+/// concrete canal / start / tap / pedestal block entities live in their content mod (iwex) while this
+/// framework code lives in exlib. Positions come from the network's own <see cref="BlockNetwork.Nodes"/>
+/// set, paired with each resolved cell.
+/// </para>
 /// </summary>
 public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
 {
   public override string NetworkType => "molten";
-
-  /// <summary>Maps a molten metal item to its solid drop ("game:ingot-iron" → "game:metalbit-iron"); non-ingot items drop as themselves.</summary>
-  internal static AssetLocation SolidDropLocation(AssetLocation metalItemLoc)
-  {
-    if (metalItemLoc.Path.StartsWith("ingot-"))
-      return new AssetLocation(
-        metalItemLoc.Domain,
-        "metalbit-" + metalItemLoc.Path[6..]
-      );
-    return metalItemLoc;
-  }
 
   // Resolved once from the first loaded node's BE (a network never moves between worlds).
   private IWorldAccessor? _world;
@@ -67,7 +60,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
   /// </summary>
   private Dictionary<BlockPos, int> GetDistanceFromStart(
     IBlockAccessor blockAccessor,
-    List<BlockEntityMoltenCanal> cells
+    List<(BlockPos Pos, IMoltenCell Cell)> cells
   )
   {
     var sig = ComputeTopologySignature(cells);
@@ -81,11 +74,11 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
 
   /// <summary>
   /// Order-independent fingerprint of the cells that drive the distance map: cell
-  /// count plus XOR-folded hashes of all cell positions and of the start-cell
-  /// positions. Any add, removal, or start↔plain swap changes at least one term.
+  /// count plus XOR-folded hashes of all cell positions and of the flow-source
+  /// positions. Any add, removal, or source↔plain swap changes at least one term.
   /// </summary>
   private static (int, long, long) ComputeTopologySignature(
-    List<BlockEntityMoltenCanal> cells
+    List<(BlockPos Pos, IMoltenCell Cell)> cells
   )
   {
     long posHash = 0;
@@ -96,7 +89,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
         (long)((uint)c.Pos.GetHashCode() * 0x9E3779B97F4A7C15UL)
       );
       posHash ^= h;
-      if (c is BlockEntityMoltenCanalStart)
+      if (c.Cell.IsFlowSource)
         startHash ^= h;
     }
     return (cells.Count, posHash, startHash);
@@ -104,18 +97,18 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
 
   /// <summary>
   /// Multi-source BFS over the canal graph that maps each cell to its hop
-  /// distance from the nearest <see cref="BlockEntityMoltenCanalStart"/>. Cells
-  /// unreachable from any start (e.g. a startless run) are simply absent.
+  /// distance from the nearest flow source. Cells unreachable from any source
+  /// (e.g. a sourceless run) are simply absent.
   /// </summary>
   private Dictionary<BlockPos, int> BuildDistanceFromStart(
     IBlockAccessor blockAccessor,
-    List<BlockEntityMoltenCanal> cells
+    List<(BlockPos Pos, IMoltenCell Cell)> cells
   )
   {
     var dist = new Dictionary<BlockPos, int>(cells.Count);
     var queue = new Queue<BlockPos>();
     foreach (var c in cells)
-      if (c is BlockEntityMoltenCanalStart)
+      if (c.Cell.IsFlowSource)
       {
         dist[c.Pos] = 0;
         queue.Enqueue(c.Pos);
@@ -125,7 +118,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     {
       BlockPos cur = queue.Dequeue();
       int next = dist[cur] + 1;
-      if (blockAccessor.GetBlockEntity(cur)?.Block is not BlockNetworkNode node)
+      if (blockAccessor.GetBlock(cur) is not BlockNetworkNode node)
         continue;
 
       foreach (var face in BlockFacing.HORIZONTALS)
@@ -135,7 +128,7 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
         BlockPos npos = cur.AddCopy(face);
         if (!Nodes.Contains(npos) || dist.ContainsKey(npos))
           continue;
-        if (blockAccessor.GetBlockEntity(npos) is not BlockEntityMoltenCanal)
+        if (blockAccessor.GetBlockEntity(npos) is not IMoltenCell)
           continue;
         dist[npos] = next;
         queue.Enqueue(npos);
@@ -145,13 +138,13 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
   }
 
   /// <summary>
-  /// Orders cells for the flow pass: greater distance from the start first, so
-  /// metal is driven from the farthest cells back toward the start. Position
-  /// breaks ties (including cells unreachable from a start, treated as farthest).
+  /// Orders cells for the flow pass: greater distance from the source first, so
+  /// metal is driven from the farthest cells back toward the source. Position
+  /// breaks ties (including cells unreachable from a source, treated as farthest).
   /// </summary>
   private static int CompareFlowOrder(
-    BlockEntityMoltenCanal x,
-    BlockEntityMoltenCanal y,
+    (BlockPos Pos, IMoltenCell Cell) x,
+    (BlockPos Pos, IMoltenCell Cell) y,
     Dictionary<BlockPos, int> dist
   )
   {
@@ -172,24 +165,28 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     if (world == null)
       return;
 
-    var cells = new List<BlockEntityMoltenCanal>(Nodes.Count);
+    var cells = new List<(BlockPos Pos, IMoltenCell Cell)>(Nodes.Count);
     foreach (var pos in Nodes)
-      if (blockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal c)
-        cells.Add(c);
+      if (blockAccessor.GetBlockEntity(pos) is IMoltenCell c)
+        cells.Add((pos, c));
     if (cells.Count == 0)
       return;
 
-    // Order cells by graph distance from the start, farthest first, so metal drains toward the
-    // start a wavefront at a time rather than in arbitrary positional order.
+    // Order cells by graph distance from the source, farthest first, so metal drains toward the
+    // source a wavefront at a time rather than in arbitrary positional order.
     var distFromStart = GetDistanceFromStart(blockAccessor, cells);
     cells.Sort((x, y) => CompareFlowOrder(x, y, distFromStart));
     foreach (var c in cells)
-      c.EnsureMetalStack(world);
+      c.Cell.EnsureMetalStack(world);
 
-    int maxFlow = IwexValues.MoltenFlowRate;
+    int maxFlow = ExlibValues.MoltenFlowRate;
     foreach (var a in cells)
     {
-      if (a.Sealed || a.Solidified || a.Block is not BlockNetworkNode aNode)
+      if (
+        a.Cell.Sealed
+        || a.Cell.Solidified
+        || blockAccessor.GetBlock(a.Pos) is not BlockNetworkNode aNode
+      )
         continue;
 
       foreach (var face in BlockFacing.HORIZONTALS)
@@ -199,28 +196,29 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
         BlockPos npos = a.Pos.AddCopy(face);
         if (!Nodes.Contains(npos))
           continue;
-        if (blockAccessor.GetBlockEntity(npos) is not BlockEntityMoltenCanal b)
+        if (blockAccessor.GetBlockEntity(npos) is not IMoltenCell bCell)
           continue;
-        if (b.Sealed || b.Solidified)
+        var b = (Pos: npos, Cell: bCell);
+        if (b.Cell.Sealed || b.Cell.Solidified)
           continue;
         // Drive each undirected edge exactly once, from the cell farther from
-        // the start (ties broken by position).
+        // the source (ties broken by position).
         if (CompareFlowOrder(a, b, distFromStart) >= 0)
           continue;
 
-        FlowEdge(a, b, maxFlow, world);
+        FlowEdge(a.Cell, b.Cell, maxFlow, world);
       }
     }
 
     // Thermal pass: cool / solidify each cell.
     foreach (var c in cells)
-      c.UpdateThermal(world);
+      c.Cell.UpdateThermal(world);
   }
 
   /// <summary>Moves metal across one connection toward equal fill ratio, capped at <paramref name="maxFlow"/> units.</summary>
   private static void FlowEdge(
-    BlockEntityMoltenCanal aNode,
-    BlockEntityMoltenCanal bNode,
+    IMoltenCell aNode,
+    IMoltenCell bNode,
     int maxFlow,
     IWorldAccessor world
   )
@@ -235,8 +233,8 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
       return;
 
     bool aIsGiver = aNode.CellAmount > bNode.CellAmount;
-    BlockEntityMoltenCanal giver = aIsGiver ? aNode : bNode;
-    BlockEntityMoltenCanal receiver = aIsGiver ? bNode : aNode;
+    IMoltenCell giver = aIsGiver ? aNode : bNode;
+    IMoltenCell receiver = aIsGiver ? bNode : aNode;
     if (giver.CellAmount <= 0f)
       return;
 
@@ -251,9 +249,8 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     // (pedestal/tap), which takes the final sub-minimum dregs so a run can empty completely.
     var transfer = diff > maxFlow ? maxFlow : diff;
     if (
-      transfer < IwexValues.MoltenMinFlowAmount
-      && receiver is not BlockEntityMoltenCanalMoldPedestal
-      && receiver is not BlockEntityMoltenCanalTap
+      transfer < ExlibValues.MoltenMinFlowAmount
+      && !receiver.AcceptsSubMinimumFlow
     )
       return;
 

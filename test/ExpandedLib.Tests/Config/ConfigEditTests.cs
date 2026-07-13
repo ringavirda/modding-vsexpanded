@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using ExpandedLib.Registries.Config;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -236,55 +237,71 @@ public class ConfigEditTests
     Assert.Equal(0.9f, store.Config.Ratio, 3); // within [0, 1] - kept
     Assert.Equal(7, store.Config.Count);
   }
+
+  [Fact]
+  public void Load_restores_a_nulled_collection_to_its_default()
+  {
+    using var dir = new TempModConfig();
+    // A hand-edited file that nulled out a non-string reference value (e.g. a recipe/profile
+    // catalogue) must be repaired, not left to NRE the code that reads it.
+    var bad = new EditableConfig { NotEditable = null! };
+
+    var store = new ExConfigRegister<EditableConfig>("c.json", "fakemod");
+    store.Load(FakeApiLoading(bad));
+
+    Assert.Equal([1, 2, 3], store.Config.NotEditable);
+  }
   #endregion
 
-  #region Legacy file rename
+  #region Legacy file fold
   [Fact]
-  public void Load_renames_a_present_legacy_file_to_the_current_name()
+  public void Load_folds_a_present_legacy_file_into_its_section()
   {
     using var dir = new TempModConfig();
-    File.WriteAllText(dir.Path("old.json"), "{}");
+    File.WriteAllText(dir.Path("old.json"), "{ \"Count\": 7 }");
 
-    var store = new ExConfigRegister<EditableConfig>("new.json", "fakemod")
+    var store = new ExConfigRegister<EditableConfig>("ex.json", "fakemod")
     {
       LegacyFileNames = ["old.json"],
     };
     store.Load(FakeApi());
 
-    Assert.True(File.Exists(dir.Path("new.json")));
-    Assert.False(File.Exists(dir.Path("old.json")));
+    Assert.Equal(7, store.Config.Count); // the legacy value was absorbed into the section
+    Assert.False(File.Exists(dir.Path("old.json"))); // renamed away...
+    Assert.True(File.Exists(dir.Path("old.json.migrated"))); // ...but kept, reversibly
   }
 
   [Fact]
-  public void Load_leaves_legacy_file_alone_when_current_file_exists()
+  public void Load_leaves_legacy_file_alone_when_the_section_already_exists()
   {
     using var dir = new TempModConfig();
     File.WriteAllText(dir.Path("old.json"), "{}");
-    File.WriteAllText(dir.Path("new.json"), "{}");
 
-    var store = new ExConfigRegister<EditableConfig>("new.json", "fakemod")
+    var store = new ExConfigRegister<EditableConfig>("ex.json", "fakemod")
     {
       LegacyFileNames = ["old.json"],
     };
-    store.Load(FakeApi());
+    // The shared document already carries this mod's section, so there is nothing to fold.
+    store.Load(FakeApiLoading(new EditableConfig()));
 
     Assert.True(File.Exists(dir.Path("old.json"))); // untouched
+    Assert.False(File.Exists(dir.Path("old.json.migrated")));
   }
 
   [Fact]
-  public void Load_with_no_legacy_names_is_a_noop()
+  public void Load_with_no_legacy_names_folds_nothing()
   {
     using var dir = new TempModConfig();
 
-    var store = new ExConfigRegister<EditableConfig>("new.json", "fakemod");
-    store.Load(FakeApi()); // must not throw or create anything
+    var store = new ExConfigRegister<EditableConfig>("ex.json", "fakemod");
+    store.Load(FakeApi()); // must not throw or touch the filesystem
 
-    Assert.False(File.Exists(dir.Path("new.json")));
+    Assert.False(File.Exists(dir.Path("ex.json")));
   }
   #endregion
 
   /// <summary>A fake API whose <c>LoadModConfig</c> returns null (so Load falls back to defaults) and
-  /// whose mod version resolves; the legacy rename runs against the real filesystem via GamePaths.</summary>
+  /// whose mod version resolves; the legacy fold runs against the real filesystem via GamePaths.</summary>
   private static ICoreAPI FakeApi() => FakeApiLoading(null);
 
   /// <summary>As <see cref="FakeApi"/>, but <c>LoadModConfig</c> returns <paramref name="loaded"/> - so a
@@ -293,7 +310,12 @@ public class ConfigEditTests
   {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
-    api.LoadModConfig<EditableConfig>(Arg.Any<string>()).Returns(loaded);
+    // The store reads its "fakemod" section from the shared mod-sectioned document.
+    JObject? doc =
+      loaded == null
+        ? null
+        : new JObject { ["fakemod"] = JObject.FromObject(loaded) };
+    api.LoadModConfig<JObject>(Arg.Any<string>()).Returns(doc);
 
     var mod = Substitute.For<Mod>();
     typeof(Mod)

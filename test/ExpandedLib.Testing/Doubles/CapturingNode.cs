@@ -21,6 +21,9 @@ public sealed class CapturingNode : BlockEntity, INetworkNode
   /// <summary>The most recent open-connector face set, or <c>null</c> if never notified.</summary>
   public BlockFacing[]? LastOpenFaces { get; private set; }
 
+  /// <summary>The most recent leaking face set delivered by <see cref="OnLeak"/>, or <c>null</c>.</summary>
+  public BlockFacing[]? LastLeakFaces { get; private set; }
+
   public string? Orientation { get; set; }
   public string[] PossibleOrientations { get; set; } = [];
   public string NetworkType { get; set; } = "test";
@@ -30,6 +33,9 @@ public sealed class CapturingNode : BlockEntity, INetworkNode
 
   public void OnOpenConnectorsChanged(BlockFacing[] openFaces) =>
     LastOpenFaces = openFaces;
+
+  public void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity) =>
+    LastLeakFaces = leakingFaces;
 
   public void OnNetworkUpdate(object? state)
   {

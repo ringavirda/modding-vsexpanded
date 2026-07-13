@@ -52,6 +52,9 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   public override int MaxUnitCapacity =>
     (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0);
 
+  /// <summary>A drain fitting: takes the final sub-minimum dregs so a run can empty completely.</summary>
+  public override bool AcceptsSubMinimumFlow => true;
+
   #region Barrel content
   /// <summary>Whether a barrel is parked under the tap.</summary>
   public bool IsBarrel { get; set; } = false;

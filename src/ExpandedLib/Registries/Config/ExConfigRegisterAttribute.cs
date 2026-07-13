@@ -18,7 +18,7 @@ namespace ExpandedLib.Registries.Config;
 /// <code>
 /// [ExConfig("ppex.json", "ppex")]
 /// public class PpexConfig : IExVersionedConfig { /* properties */ }
-/// // generates: PpexValues.Load(api), PpexValues.LitresPerPipe, ...
+/// // generates: PpexValues.Load(api), PpexValues.BoilingPoint, ...
 /// </code>
 /// </example>
 [AttributeUsage(

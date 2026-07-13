@@ -1,3 +1,4 @@
+using ExpandedLib;
 using System;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
@@ -182,7 +183,7 @@ public class BlockEntityManualFluidPump : BlockEntity
   private static float OutputFreeCapacity(PipeNetwork? net) =>
     net == null
       ? 0f
-      : net.Nodes.Count * PpexValues.LitresPerPipe - (net.State?.Volume ?? 0f);
+      : net.Nodes.Count * ExlibValues.LitresPerPipe - (net.State?.Volume ?? 0f);
 
   #endregion
 

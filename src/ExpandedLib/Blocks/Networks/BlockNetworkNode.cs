@@ -121,8 +121,18 @@ public abstract class BlockNetworkNode
 
     if (block != null)
     {
-      block.DoPlaceBlock(world, byPlayer, blockSel, itemstack);
-      return true;
+      bool placedVariant = block.DoPlaceBlock(
+        world,
+        byPlayer,
+        blockSel,
+        itemstack
+      );
+      // Honour the result: a refused variant place never reaches OnBlockPlaced (which consumes the
+      // entry), so drop it here too - reporting success and leaking the store entry (as before) both
+      // grow the static store for every refused placement.
+      if (!placedVariant)
+        _tempOrientationsStore.TryRemove(blockSel.Position, out _);
+      return placedVariant;
     }
 
     bool placed = base.TryPlaceBlock(

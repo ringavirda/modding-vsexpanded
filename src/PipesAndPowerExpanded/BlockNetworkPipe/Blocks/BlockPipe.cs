@@ -9,7 +9,7 @@ namespace PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 /// orientation tables shared by every straight/bend/junction variant.
 /// </summary>
 [BlockRegister]
-public partial class BlockPipe : BlockNetworkNode
+public partial class BlockPipe : BlockNetworkNode, IBurstablePipe
 {
   public override string NetworkType => "pipe";
 

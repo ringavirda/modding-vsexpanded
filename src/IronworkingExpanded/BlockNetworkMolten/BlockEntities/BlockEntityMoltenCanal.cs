@@ -21,7 +21,10 @@ namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 /// metal drops below the melting point, blocking flow until chiselled or broken.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
+public class BlockEntityMoltenCanal
+  : BlockEntityNetworkNode,
+    IChiselableMolten,
+    IMoltenCell
 {
   #region Network
   public override string NetworkType
@@ -32,6 +35,13 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
 
   /// <summary>This cell's metal capacity, in units (from the block's <c>maxUnits</c> attribute).</summary>
   public virtual int MaxUnitCapacity => IwexValues.CanalDefaultUnitCapacity;
+
+  /// <summary>Plain canals are not a flow source; the start cell overrides this to <c>true</c>.</summary>
+  public virtual bool IsFlowSource => false;
+
+  /// <summary>Plain canals require the minimum per-tick transfer; drain fittings (tap, mold pedestal)
+  /// override this to <c>true</c> so a run can empty its final sub-minimum dregs into them.</summary>
+  public virtual bool AcceptsSubMinimumFlow => false;
 
   /// <summary>Units of liquid (or, once latched, solidified) metal held by this cell.</summary>
   public int CellAmount { get; protected set; }
@@ -182,7 +192,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
       world
     );
 
-  internal int PushMetalRaw(
+  public int PushMetalRaw(
     int amount,
     string type,
     float temperature,
@@ -281,7 +291,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   }
 
   /// <summary>Rebuilds the server temperature carrier after a world load (To/FromTreeAttributes only persist type + temperature).</summary>
-  internal void EnsureMetalStack(IWorldAccessor world)
+  public void EnsureMetalStack(IWorldAccessor world)
   {
     if (
       _cellMetalStack != null
@@ -302,7 +312,7 @@ public class BlockEntityMoltenCanal : BlockEntityNetworkNode, IChiselableMolten
   /// VS time-based decay and latches <see cref="Solidified"/> once the metal drops
   /// below its melting point. Driven by <see cref="MoltenNetwork.OnTick"/>.
   /// </summary>
-  internal void UpdateThermal(IWorldAccessor world)
+  public void UpdateThermal(IWorldAccessor world)
   {
     if (CellAmount <= 0f || _cellMetalStack == null)
       return;

@@ -482,6 +482,7 @@ public class BlockMigrationModSystem : ModSystem
   private static IEnumerable<T> Discover<T>()
     where T : class
   {
+    var found = new List<Type>();
     foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
     {
       Type[] types;
@@ -502,8 +503,18 @@ public class BlockMigrationModSystem : ModSystem
           || t.GetConstructor(Type.EmptyTypes) == null
         )
           continue;
-        yield return (T)Activator.CreateInstance(t)!;
+        found.Add(t);
       }
     }
+
+    // Deterministic order so the "keep the first mapping" conflict resolution above is stable across
+    // runs - AppDomain.GetAssemblies() order is not guaranteed, so first-seen-wins was previously
+    // load-order dependent.
+    foreach (
+      var t in found
+        .OrderBy(t => t.Assembly.FullName, StringComparer.Ordinal)
+        .ThenBy(t => t.FullName, StringComparer.Ordinal)
+    )
+      yield return (T)Activator.CreateInstance(t)!;
   }
 }

@@ -30,17 +30,9 @@ public static class PreferenceRegistry
       if (attr == null)
         continue;
 
-      if (!typeof(IExPreference).IsAssignableFrom(type))
-      {
-        api.Logger.Warning(
-          "[{0}] PreferenceRegistry: {1} has [PreferenceRegister] but does not implement IExPreference; skipped.",
-          modId,
-          type.FullName
-        );
+      if (!ReflectionScan.TryActivate<IExPreference>(api, modId, type, out var pref))
         continue;
-      }
 
-      var pref = (IExPreference)Activator.CreateInstance(type)!;
       ExPreferences.Register(pref);
     }
   }

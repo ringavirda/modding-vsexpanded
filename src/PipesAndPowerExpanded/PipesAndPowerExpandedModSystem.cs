@@ -59,9 +59,14 @@ public class PipesAndPowerExpandedModSystem : ModSystem
     // registers its own classes. Here we only register ppex's own content.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
 
-    // The unified pipe network (gas + liquid pools).
+    // The unified pipe network (gas + liquid pools). Each network gets its own chimney-vent
+    // strategy (ppex content: the vanilla-chimney gas draw), so the network core in exlib stays
+    // free of ppex block/particle knowledge.
     var netManager = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-    netManager.RegisterNetworkType("pipe", () => new PipeNetwork(netManager));
+    netManager.RegisterNetworkType(
+      "pipe",
+      () => new PipeNetwork(netManager, new PpexChimneyVent())
+    );
   }
 
   public override void Dispose()

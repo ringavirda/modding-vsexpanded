@@ -11,7 +11,12 @@ namespace IronworkingExpanded;
 /// below are used when the file is missing or a key is absent (and any NaN/infinite/negative value
 /// is reset to its default on load). Accessed through <see cref="IwexValues"/>, not directly.
 /// </summary>
-[ExConfigRegister("iwex_values.json", "iwex", Manageable = true)]
+[ExConfigRegister(
+  "ex_values.json",
+  "iwex",
+  LegacyFileNames = new string[] { "iwex_values.json" },
+  Manageable = true
+)]
 public class IwexConfig : IExVersionedConfig
 {
   /// <summary>Mod version that last wrote this file; drives the <see cref="Migrations"/> resets.
@@ -37,11 +42,9 @@ public class IwexConfig : IExVersionedConfig
   /// Below 1 the cast holds its heat longer; 1 = the base molten rate. Applied live.</summary>
   public float MoldPedestalCooldownCoefficient { get; set; } = 1f;
 
-  /// <summary>Max metal (units) flowing across one canal connection per second; balance against <see cref="MoltenCooldownSpeed"/>.</summary>
-  public int MoltenFlowRate { get; set; } = 50;
-
-  /// <summary>Minimum metal (units) that must move across a canal connection for any flow that tick (stops sub-unit dribbles).</summary>
-  public int MoltenMinFlowAmount { get; set; } = 10;
+  // MoltenFlowRate and MoltenMinFlowAmount moved to exlib's config (ExlibValues) now that the
+  // MoltenNetwork class lives in exlib - the per-connection flow driver is framework code. The
+  // cooldown values above stay here: they're read by iwex's MoltenMetal/canal cells.
 
   /// <summary>Default per-canal-block capacity (units) when a block sets no <c>maxUnits</c> attribute.</summary>
   public int CanalDefaultUnitCapacity { get; set; } = 50;

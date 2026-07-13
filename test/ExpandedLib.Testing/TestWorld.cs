@@ -4,6 +4,7 @@ using System.Linq;
 using ExpandedLib.Blocks.Networks;
 using NSubstitute;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
@@ -54,7 +55,17 @@ public sealed class TestWorld
   /// </summary>
   public ICoreServerAPI Api { get; }
 
-  private readonly List<System.Action<float>> _beTickCallbacks = new();
+  private readonly Dictionary<long, TickListener> _tickListeners = new();
+  private long _nextListenerId;
+
+  /// <summary>A captured block-entity tick listener: its callback and the interval (ms) it asked for.
+  /// The interval is recorded for interval-aware ticking; <see cref="FireBlockEntityTicks"/> fires
+  /// every live listener regardless. Keyed by a real unique id so
+  /// <c>UnregisterGameTickListener</c> can drop a torn-down block entity's listener.</summary>
+  private readonly record struct TickListener(
+    System.Action<float> Callback,
+    int IntervalMs
+  );
 
   /// <summary>Item stacks spawned by the simulation (e.g. a bursting pipe dropping its materials).</summary>
   public List<ItemStack> Drops { get; } = new();
@@ -232,8 +243,8 @@ public sealed class TestWorld
   public void FireBlockEntityTicks(float dt = 1f, int times = 1)
   {
     for (int i = 0; i < times; i++)
-      foreach (var cb in _beTickCallbacks.ToList())
-        cb(dt);
+      foreach (var listener in _tickListeners.Values.ToList())
+        listener.Callback(dt);
   }
 
   /// <summary>Moves the calendar forward without ticking, for calendar-driven effects (evaporation).</summary>
@@ -244,6 +255,68 @@ public sealed class TestWorld
   }
 
   private void PushCalendar() => Calendar.TotalDays.Returns(_totalDays);
+
+  #endregion
+
+  #region Lifecycle
+
+  /// <summary>
+  /// Models a save → chunk-unload → reload of the block entity at <paramref name="pos"/>: serialises its
+  /// real <c>ToTreeAttributes</c> bytes, tears the live instance down (unregistering its tick listeners,
+  /// exactly as the engine does on unload) while leaving the block placed, then rebuilds a <b>fresh</b>
+  /// instance of the same class and drives <c>FromTreeAttributes</c> → <c>Initialize</c> - the sequence a
+  /// loaded-from-disk block entity actually goes through, and where reload bugs (stale-pool bursts,
+  /// dropped mid-cycle state, phantom graph nodes) surface. Returns the new instance; the old one is
+  /// discarded. Tick after this to exercise the first post-reload tick.
+  /// </summary>
+  public BlockEntity? Reload(BlockPos pos)
+  {
+    BlockEntity? old = GetBlockEntity(pos);
+    if (old == null)
+      return null;
+
+    Block block = GetBlock(pos);
+
+    var tree = new TreeAttribute();
+    old.ToTreeAttributes(tree);
+
+    // Unload the live instance (unregisters its listeners; a network node keeps its graph node, as
+    // the base OnBlockUnloaded does not RemoveNode), then drop it - the block stays placed.
+    old.OnBlockUnloaded();
+    _blockEntities.Remove(pos);
+
+    BlockEntity fresh = NewBlockEntityLike(old, block);
+    fresh.Pos = pos.Copy();
+    fresh.Block = block;
+    fresh.Api = Api;
+    _blockEntities[pos] = fresh;
+    fresh.FromTreeAttributes(tree, World);
+    fresh.Initialize(Api);
+    return fresh;
+  }
+
+  /// <summary>
+  /// Models a chunk unload of the block entity at <paramref name="pos"/>: runs its real
+  /// <c>OnBlockUnloaded</c> (which unregisters its tick listeners - now honoured by the fake event API,
+  /// so it truly stops ticking) and drops the instance while leaving the block placed. Use to assert a
+  /// machine's teardown, or that a "stopped" listener no longer fires.
+  /// </summary>
+  public void Unload(BlockPos pos)
+  {
+    GetBlockEntity(pos)?.OnBlockUnloaded();
+    _blockEntities.Remove(pos);
+  }
+
+  /// <summary>Creates a fresh block entity of the same class the engine would instantiate on load:
+  /// a registered factory for the block's entity class if one exists (see
+  /// <see cref="RegisterBlockEntityFactory"/>), otherwise the type's parameterless constructor.</summary>
+  private BlockEntity NewBlockEntityLike(BlockEntity old, Block block)
+  {
+    string? classname = block?.EntityClass ?? old.Block?.EntityClass;
+    if (classname != null && _beFactories.TryGetValue(classname, out var factory))
+      return factory();
+    return (BlockEntity)Activator.CreateInstance(old.GetType())!;
+  }
 
   #endregion
 
@@ -381,11 +454,7 @@ public sealed class TestWorld
         Arg.Any<int>(),
         Arg.Any<int>()
       )
-      .Returns(ci =>
-      {
-        _beTickCallbacks.Add(ci.Arg<System.Action<float>>());
-        return (long)_beTickCallbacks.Count;
-      });
+      .Returns(ci => AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(3)));
 #else
     events
       .RegisterGameTickListener(
@@ -394,12 +463,15 @@ public sealed class TestWorld
         Arg.Any<int>(),
         Arg.Any<int>()
       )
-      .Returns(ci =>
-      {
-        _beTickCallbacks.Add(ci.Arg<System.Action<float>>());
-        return (long)_beTickCallbacks.Count;
-      });
+      .Returns(ci => AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(2)));
 #endif
+
+    // Honour UnregisterGameTickListener so a torn-down block entity (Reload/Unload/OnBlockRemoved)
+    // actually stops ticking. The real event API removes it; leaving this a no-op would let a
+    // discarded block entity keep ticking and mask double-tick bugs after a reload.
+    events
+      .When(x => x.UnregisterGameTickListener(Arg.Any<long>()))
+      .Do(ci => _tickListeners.Remove(ci.Arg<long>()));
 
     return api;
   }
@@ -408,6 +480,13 @@ public sealed class TestWorld
     code != null && _blocksByCode.TryGetValue(code.ToString(), out var b)
       ? b
       : null;
+
+  private long AddTickListener(System.Action<float> callback, int intervalMs)
+  {
+    long id = ++_nextListenerId;
+    _tickListeners[id] = new TickListener(callback, intervalMs);
+    return id;
+  }
 
   private void DoSetBlock(int id, BlockPos pos)
   {
@@ -443,6 +522,15 @@ public sealed class TestWorld
 
   private void DoBreak(BlockPos pos)
   {
+    // Route through the real break lifecycle so a block entity drops its contents and, crucially,
+    // runs OnBlockRemoved - which unregisters its tick listeners and (for a network node) calls
+    // RemoveNode. The old stub skipped this, so a "forgot to RemoveNode" regression left a phantom
+    // graph node that no test could see.
+    if (_blockEntities.TryGetValue(pos, out var be))
+    {
+      be.OnBlockBroken();
+      be.OnBlockRemoved();
+    }
     _blocks.Remove(pos);
     _blockEntities.Remove(pos);
   }

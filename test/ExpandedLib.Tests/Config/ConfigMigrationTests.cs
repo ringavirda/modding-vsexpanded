@@ -1,4 +1,5 @@
 using ExpandedLib.Registries.Config;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;
 using Xunit;
@@ -45,17 +46,23 @@ public class ConfigMigrationTests
   {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
-    api.LoadModConfig<FakeConfig>(FileName).Returns(stored);
+
+    // The store now reads/writes its "fakemod" section of a shared mod-sectioned document.
+    JObject? doc =
+      stored == null
+        ? null
+        : new JObject { [ModId] = JObject.FromObject(stored) };
+    api.LoadModConfig<JObject>(FileName).Returns(doc);
 
     var modLoader = Substitute.For<IModLoader>();
     modLoader.GetMod(ModId).Returns(FakeMod(runningVersion));
     api.ModLoader.Returns(modLoader);
 
-    FakeConfig? captured = null;
-    api.When(a => a.StoreModConfig(Arg.Any<FakeConfig>(), FileName))
-      .Do(ci => captured = ci.Arg<FakeConfig>());
+    JObject? captured = null;
+    api.When(a => a.StoreModConfig(Arg.Any<JObject>(), FileName))
+      .Do(ci => captured = ci.Arg<JObject>());
 
-    return (api, () => captured);
+    return (api, () => captured?[ModId]?.ToObject<FakeConfig>());
   }
 
   private static ExConfigRegister<FakeConfig> Store(
@@ -216,7 +223,7 @@ public class ConfigMigrationTests
   {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
-    api.LoadModConfig<FakeConfig>(FileName)
+    api.LoadModConfig<JObject>(FileName)
       .Returns(_ => throw new System.Exception("corrupt json"));
     var modLoader = Substitute.For<IModLoader>();
     modLoader.GetMod(ModId).Returns(FakeMod("1.0.0"));

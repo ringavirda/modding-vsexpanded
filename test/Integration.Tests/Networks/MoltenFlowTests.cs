@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Testing;
 using NSubstitute;
 using IronworkingExpanded.BlockNetworkMolten;

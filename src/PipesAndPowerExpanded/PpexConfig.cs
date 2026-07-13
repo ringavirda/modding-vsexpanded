@@ -14,9 +14,9 @@ namespace PipesAndPowerExpanded;
 /// </para>
 /// </summary>
 [ExConfigRegister(
-  "ppex_values.json",
+  "ex_values.json",
   "ppex",
-  LegacyFileNames = new string[] { "ppex.json" },
+  LegacyFileNames = new string[] { "ppex_values.json", "ppex.json" },
   Manageable = true
 )]
 public class PpexConfig : IExVersionedConfig
@@ -40,9 +40,11 @@ public class PpexConfig : IExVersionedConfig
   ];
 
   #region Pipes
-  /// <summary>Litres a single pipe holds at 1 atm (both the gas and water pools).</summary>
-  [ExConfigRange(1, 1_000_000)] // pipe capacity divides pressure - must stay positive
-  public float LitresPerPipe { get; set; } = 30f;
+  // The generic pipe-network constants (LitresPerPipe, GasLeakRate, LiquidLeakRate,
+  // EvaporationLitresPerDay, PipeOverpressureSeconds) moved to exlib's own config now that the
+  // PipeNetwork class lives in exlib - read them through ExlibValues. The values below are
+  // ppex-content-specific: pipe material strength, the water/steam phase temperature, and the
+  // vanilla-chimney draw rate the ppex chimney-vent strategy uses.
 
   /// <summary>Per-material pipe burst pressure (atm) - the weakest pipe limits a run.</summary>
   public float IronPipeBurstPressure { get; set; } = 5.0f;
@@ -54,20 +56,6 @@ public class PpexConfig : IExVersionedConfig
   /// <summary>Gas (L/s) a vanilla chimney draws from the network when capping the top
   /// connector of a passthrough / passthrough-bend / outlet block.</summary>
   public float ChimneyGasDrawRate { get; set; } = 16.0f;
-
-  /// <summary>Gas (L/s) bled per open-ended pipe connector (leak) - only the volume above
-  /// the network's 1 atm capacity is vented, so a leaking run can never build pressure.</summary>
-  public float GasLeakRate { get; set; } = 8.0f;
-
-  /// <summary>Seconds a pipe run may sit at its weakest pipe's burst pressure (nowhere to
-  /// vent) before a pipe lets go - mirrors the boiler over-pressure grace.</summary>
-  public float PipeOverpressureSeconds { get; set; } = 30f;
-
-  /// <summary>Liquid (L/s) drained from the network per open-ended pipe connector (leak).</summary>
-  public float LiquidLeakRate { get; set; } = 10.0f;
-
-  /// <summary>Water (L) lost to natural evaporation per in-game day (boiler pool and pipe water pool). 100 L over 2 days = 50 L/day.</summary>
-  public float EvaporationLitresPerDay { get; set; } = 50f;
   #endregion
 
   #region Steam

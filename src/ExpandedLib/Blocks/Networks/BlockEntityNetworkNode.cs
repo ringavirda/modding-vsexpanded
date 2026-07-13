@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -68,9 +69,10 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
     base.FromTreeAttributes(tree, worldForResolving);
     NetworkType = tree.GetString("networkType", null);
     Orientation = tree.GetString("orientation");
-    string? json = tree.GetString("possibleOrientations");
-    PossibleOrientations =
-      json != null ? JsonSerializer.Deserialize<string[]>(json) ?? [] : [];
+    PossibleOrientations = ExTree.SafeDeserialize<string[]>(
+      tree.GetString("possibleOrientations"),
+      []
+    );
     _savedNetworkState = DeserializeNetworkState(tree);
   }
 
@@ -128,6 +130,13 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
 
   /// <inheritdoc/>
   public virtual void OnOpenConnectorsChanged(BlockFacing[] openFaces) { }
+
+  /// <inheritdoc/>
+  public virtual void OnLeak(
+    BlockFacing[] leakingFaces,
+    bool isLiquid,
+    float intensity
+  ) { }
 
   /// <inheritdoc/>
   public abstract string NetworkType { get; set; }

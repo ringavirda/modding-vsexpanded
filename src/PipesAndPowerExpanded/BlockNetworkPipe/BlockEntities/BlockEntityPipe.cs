@@ -179,6 +179,19 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode
     ExSounds.SplashSound(Api.World, Pos);
   }
 
+  /// <summary>The pipe's leak feedback: water sprays out an open end like a poured bucket, gas wisps out.</summary>
+  public override void OnLeak(
+    BlockFacing[] leakingFaces,
+    bool isLiquid,
+    float intensity
+  )
+  {
+    if (isLiquid)
+      SpawnLiquidLeak(leakingFaces, intensity);
+    else
+      SpawnGasLeak(leakingFaces, intensity);
+  }
+
   #endregion
 
   #region Network updates

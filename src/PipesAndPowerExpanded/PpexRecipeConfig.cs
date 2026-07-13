@@ -13,7 +13,11 @@ namespace PipesAndPowerExpanded;
 /// then set any specific number. The active level is chosen by <c>/exmod steam &lt;level&gt;</c>
 /// (stored in <see cref="PpexConfig.RecipeLevel"/>) and applied on the next world reload.
 /// </summary>
-[ExConfigRegister("ppex_recipes.json", "ppex")]
+[ExConfigRegister(
+  "ex_recipes.json",
+  "ppex",
+  LegacyFileNames = new string[] { "ppex_recipes.json" }
+)]
 public class PpexRecipeConfig : IExVersionedConfig
 {
   public string? ConfigVersion { get; set; }

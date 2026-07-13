@@ -38,17 +38,9 @@ public static class CommandRegistry
         if (attr.Side != EnumAppSide.Universal && attr.Side != api.Side)
           continue;
 
-        if (!typeof(IExCommand).IsAssignableFrom(type))
-        {
-          api.Logger.Warning(
-            "[{0}] CommandRegistry: {1} has [CommandRegister] but does not implement IExCommand; skipped.",
-            modId,
-            type.FullName
-          );
+        if (!ReflectionScan.TryActivate<IExCommand>(api, modId, type, out var command))
           continue;
-        }
 
-        var command = (IExCommand)Activator.CreateInstance(type)!;
         command.Register(api, mod);
         continue;
       }
@@ -59,17 +51,9 @@ public static class CommandRegistry
         if (subAttr.Side != EnumAppSide.Universal && subAttr.Side != api.Side)
           continue;
 
-        if (!typeof(IExSubCommand).IsAssignableFrom(type))
-        {
-          api.Logger.Warning(
-            "[{0}] CommandRegistry: {1} has [SubCommandRegister] but does not implement IExSubCommand; skipped.",
-            modId,
-            type.FullName
-          );
+        if (!ReflectionScan.TryActivate<IExSubCommand>(api, modId, type, out var sub))
           continue;
-        }
 
-        var sub = (IExSubCommand)Activator.CreateInstance(type)!;
         // Resolve the shared parent (creating it if this is the first sub-command to attach).
         IChatCommand parent = api.ChatCommands.GetOrCreate(sub.ParentName);
         sub.Register(api, mod, parent);

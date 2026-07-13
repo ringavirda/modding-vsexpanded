@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace ExpandedLib.Registries.Config;
@@ -11,19 +10,18 @@ namespace ExpandedLib.Registries.Config;
 /// </summary>
 public static class ExConfigProfiles
 {
-  private static readonly Dictionary<string, IExConfigAccess> _configs = new(
-    StringComparer.OrdinalIgnoreCase
+  private static readonly ExKeyedRegistry<IExConfigAccess> _configs = new(
+    c => c.ModId
   );
 
   /// <summary>Registers (or replaces) a mod's manageable config store. Called from the generated
   /// accessor's <c>Load</c> for any config marked <c>Manageable</c>.</summary>
-  public static void Register(IExConfigAccess config) =>
-    _configs[config.ModId] = config;
+  public static void Register(IExConfigAccess config) => _configs.Register(config);
 
   /// <summary>Looks up a registered config by mod id (case-insensitive).</summary>
   public static bool TryGet(string code, out IExConfigAccess config) =>
-    _configs.TryGetValue(code, out config!);
+    _configs.TryGet(code, out config);
 
   /// <summary>The registered mod ids, for listing in the command.</summary>
-  public static IReadOnlyCollection<string> Codes => _configs.Keys;
+  public static IReadOnlyCollection<string> Codes => _configs.Codes;
 }

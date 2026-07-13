@@ -7,10 +7,11 @@ using Vintagestory.API.Config;
 namespace ExpandedLib.Registries.Config;
 
 /// <summary>
-/// Shared helpers for the on-disk config files under the game's <c>ModConfig</c> folder. Used by both
-/// the generic <see cref="ExConfigRegister{TConfig}"/> store and the bespoke per-player preferences
-/// store, so renaming a config in a new release carries a player's existing file over instead of
-/// silently regenerating defaults.
+/// Shared helpers for the on-disk config files under the game's <c>ModConfig</c> folder. Used by the
+/// bespoke per-player preferences store to carry a renamed file over instead of silently regenerating
+/// defaults. (The generic <see cref="ExConfigRegister{TConfig}"/> store now folds its legacy per-mod
+/// files into the shared <see cref="ExConfigDocument"/> sections instead of renaming - see
+/// <see cref="ExConfigDocument.FoldLegacy"/>.)
 /// </summary>
 public static class ExConfigFiles
 {
