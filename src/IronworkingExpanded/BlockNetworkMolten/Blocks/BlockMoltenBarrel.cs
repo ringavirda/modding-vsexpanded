@@ -356,14 +356,14 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 
     if (currentUnits <= 0)
     {
-      dsc.AppendLine(Lang.Get("iwex:moltenbarrel-info-empty", maxUnits));
+      dsc.AppendLine(Lang.Get(IwexLang.MoltenbarrelInfoEmpty, maxUnits));
       return;
     }
 
     if (metalContent == null)
     {
       dsc.AppendLine(
-        Lang.Get("iwex:moltenbarrel-info-units", currentUnits, maxUnits)
+        Lang.Get(IwexLang.MoltenbarrelInfoUnits, currentUnits, maxUnits)
       );
       return;
     }

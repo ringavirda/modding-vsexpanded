@@ -78,8 +78,14 @@
     </Content>
   </ItemGroup>
 
+  <!-- Lang files fed to ExLangKeyGenerator (compile-time typed {Domain}Lang key constants). -->
+  <ItemGroup>
+    <AdditionalFiles Include="assets\**\lang\en.json" />
+  </ItemGroup>
+
   <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's
-       [ExConfigRegister]. Compile-time only (Analyzer), ships nothing. -->
+       [ExConfigRegister]; ExLangKeyGenerator emits the ExlibLang key constants. Compile-time
+       only (Analyzer), ships nothing. -->
   <ItemGroup>
     <ProjectReference
       Include="..\ExpandedLib.Generators\ExpandedLib.Generators.csproj"

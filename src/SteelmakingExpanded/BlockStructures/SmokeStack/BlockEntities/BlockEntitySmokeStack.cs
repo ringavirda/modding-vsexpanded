@@ -153,10 +153,10 @@ public class BlockEntitySmokeStack
   }
 
   protected override string GetIncompleteMessage(int missingCount) =>
-    Lang.Get("smex:structure-incomplete-count", missingCount);
+    Lang.Get(SmexLang.StructureIncompleteCount, missingCount);
 
   protected override string GetCompleteMessage() =>
-    Lang.Get("smex:smokestack-complete");
+    Lang.Get(SmexLang.SmokestackComplete);
 
   #endregion
 
@@ -240,7 +240,7 @@ public class BlockEntitySmokeStack
   {
     if (!StructureComplete)
     {
-      dsc.AppendLine(Lang.Get("smex:structure-incomplete"));
+      dsc.AppendLine(Lang.Get(SmexLang.StructureIncomplete));
       return;
     }
     dsc.AppendLine(

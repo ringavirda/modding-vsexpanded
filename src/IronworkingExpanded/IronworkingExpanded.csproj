@@ -76,11 +76,9 @@
     />
   </Target>
 
-  <!-- Block/item type JSON fed to the attribute source generator (compile-time read of their
-       "attributes"), in addition to being copied as content above. -->
+  <!-- Lang files fed to ExLangKeyGenerator (compile-time typed {Domain}Lang key constants). -->
   <ItemGroup>
-    <AdditionalFiles Include="assets\**\blocktypes\**\*.json" />
-    <AdditionalFiles Include="assets\**\itemtypes\**\*.json" />
+    <AdditionalFiles Include="assets\**\lang\en.json" />
   </ItemGroup>
 
   <!--

@@ -423,7 +423,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine
 
     if (IsBroken)
     {
-      dsc.AppendLine(Lang.Get("ppex:engine-info-broken"));
+      dsc.AppendLine(Lang.Get(PpexLang.EngineInfoBroken));
       return;
     }
 

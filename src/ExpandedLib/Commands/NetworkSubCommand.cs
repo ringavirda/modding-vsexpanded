@@ -29,7 +29,7 @@ public sealed class NetworkSubCommand : IExSubCommand
       .HandleWith(_ =>
       {
         highlight.SetEnabled(true);
-        return TextCommandResult.Success(Lang.Get("exlib:network-hi-on"));
+        return TextCommandResult.Success(Lang.Get(ExlibLang.NetworkHiOn));
       })
       .EndSubCommand()
       .BeginSubCommand("unhi")
@@ -37,7 +37,7 @@ public sealed class NetworkSubCommand : IExSubCommand
       .HandleWith(_ =>
       {
         highlight.SetEnabled(false);
-        return TextCommandResult.Success(Lang.Get("exlib:network-hi-off"));
+        return TextCommandResult.Success(Lang.Get(ExlibLang.NetworkHiOff));
       })
       .EndSubCommand()
       .EndSubCommand();
