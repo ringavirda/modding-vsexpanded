@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Blocks.Structures;
@@ -19,14 +20,20 @@ namespace ExpandedLib.Blocks.Structures;
 /// self-drop - leaving that choice to each block.
 /// </para>
 /// <para>
-/// It does NOT declare <see cref="IFillerHost"/> itself: the footprint offsets come from the JSON attribute
-/// source generator's <c>FillerOffsets</c> member, emitted on the concrete class, so a concrete subclass adds
-/// <c>IFillerHost</c> to its declaration and this base casts <c>this</c> to it (exactly as the old hand-rolled
-/// bases did). The cast is safe because every concrete leaf declares the interface.
+/// It implements <see cref="IFillerHost"/> here with a single runtime accessor that reads the block's own
+/// <c>fillerOffsets</c> attribute. That attribute is populated the same way whether it comes from a JSON
+/// file (the not-yet-migrated blocks) or a code-first <see cref="ExpandedLib.Definitions.ExBlockDef"/>
+/// injected as a synthetic asset - so a mega-block no longer depends on the JSON-scanning attribute source
+/// generator for its footprint (the generator's collision-avoidance sees this member and stops emitting a
+/// per-class one). This is the "runtime reads the same record" half of the code-first generator inversion.
 /// </para>
 /// </summary>
-public abstract class BlockFilledMegastructure : Block
+public abstract class BlockFilledMegastructure : Block, IFillerHost
 {
+  /// <summary>The block's <c>fillerOffsets</c> attribute (from JSON or the injected code-first def), or
+  /// null if none. One accessor for every mega-block, replacing the per-class generated member.</summary>
+  public virtual JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
+
   /// <summary>
   /// Rotation applied to the north-orientation footprint offsets to reach the placed orientation. Some
   /// blocks offset this by 180° so the body is raised AWAY from the player (matching their JSON

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.OreBunker.BlockEntities;
@@ -12,17 +13,94 @@ namespace IronworkingExpanded.BlockStructures.OreBunker.Blocks;
 /// <summary>
 /// The ore/blast-mix storage bunker mega-block. Occupies one grid cell (the principal) but renders
 /// across a 3×1×6 footprint reserved with invisible structure fillers (real per-cell collision);
-/// construction is driven by the RightClickConstructable behavior in the block JSON. The brick
+/// construction is driven by the RightClickConstructable behavior authored on this class. The brick
 /// <c>brick</c> variant only swaps the wall texture, so all colours share this one class.
 /// </summary>
 [BlockRegister]
 public partial class BlockOreBunker
   : BlockFilledMegastructure,
     IFillerHost,
-    IFillerInteractionTarget
+    IFillerInteractionTarget,
+    IExBlockDefProvider
 {
+  #region Code-first definition
+
+  /// <summary>The bunker blocktype, authored in C# (migrated from ore/bunker.json). The footprint is a
+  /// <b>computed</b> 3-wide × 6-deep floor (<see cref="StructureFootprint.Rectangle"/>) and the
+  /// construction sequence is a typed stage table - the data-table win of code-first for a machine.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [Bunker(domain)];
+
+  private static ExBlockDef Bunker(string domain) =>
+    ExBlockDef
+      .Create(domain, "bunker", "ore/bunker")
+      .Class<BlockOreBunker>()
+      .EntityClass<BlockEntityOreBunker>()
+      .Material(EnumBlockMaterial.Ceramic)
+      .MiningTier(0)
+      .Resistance(3.5f)
+      .MaxStackSize(1)
+      .NoDrops()
+      .FillerOffsets(StructureFootprint.Rectangle(halfWidth: 1, depth: 6))
+      .Behavior("HorizontalOrientable")
+      .Behavior("BlockEntityInteract")
+      .EntityBehavior("Animatable")
+      .Construction(c =>
+        c.Stage(s => s.AddElements("Root/InputBase"))
+          .Stage(s =>
+            s.Require(
+                "game:burnedbrick-{brick}",
+                8,
+                "iwex:rcc-ingredient-brick"
+              )
+              .AddElements("Root/Base")
+          )
+          .Stage(s =>
+            s.Require(
+                "game:burnedbrick-{brick}",
+                24,
+                "iwex:rcc-ingredient-brick"
+              )
+              .AddElements("Root/Walls")
+          )
+      )
+      .VariantGroup(
+        "brick",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      )
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .CreativeTab("general", "*-north")
+      .CreativeTab("iwex", "*-north")
+      .Shape("iwex:ore/bunker")
+      .ShapeRotateYByType("*-north", 180)
+      .ShapeRotateYByType("*-east", 90)
+      .ShapeRotateYByType("*-south", 0)
+      .ShapeRotateYByType("*-west", 270)
+      .ShapeSelectiveElements("Root/InputBase/*")
+      .Texture(
+        "fire1",
+        "game:block/clay/brick/four/running/cream1",
+        "game:block/clay/brick/four/running/{brick}1"
+      )
+      .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f)
+      .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
+      .SideSolid(false)
+      .SideOpaque(false)
+      .Sound("place", "game:block/ceramicplace")
+      .Sound("break", "game:block/ceramic")
+      .Sound("hit", "game:block/ceramic")
+      .Sound("walk", "game:walk/stone");
+
+  #endregion
+
   /// <summary>
-  /// Structure/filler rotation, paired with the JSON <c>rotateYByType</c>. The +180 keeps the footprint
+  /// Structure/filler rotation, paired with the shape <c>rotateYByType</c>. The +180 keeps the footprint
   /// flush with the model, whose shape is authored facing the opposite way from the orientation
   /// convention (so a placed bunker extends away from the player, not into them). Also rotates the BE's
   /// render/collision boxes (multiblock-structure verification).

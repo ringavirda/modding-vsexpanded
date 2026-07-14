@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using ExpandedLib.Definitions;
 using Vintagestory.API.Common;
 
 namespace ExpandedLib.Registries.Entities;
@@ -73,6 +74,11 @@ public static class EntityRegistry
           break;
       }
     }
+
+    // Discover and register any co-located code-first block definitions in this assembly, so a block
+    // authoring its own def (IExBlockDefProvider) has it registered next to the class registration -
+    // no separate central list or explicit registration call.
+    ExDefinitions.DiscoverAndRegister(modId, asm);
   }
 
   /// <summary>

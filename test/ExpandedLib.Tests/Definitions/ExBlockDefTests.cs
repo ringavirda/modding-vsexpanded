@@ -197,5 +197,237 @@ public class ExBlockDefTests
     Assert.Equal("iwex", loc.Domain);
     Assert.Equal("blocktypes/solidifiediron.json", loc.Path);
   }
+
+  [Fact]
+  public void A_distinct_asset_name_separates_the_path_from_the_shared_code()
+  {
+    // Several pipe defs share code "pipe" but need unique asset paths.
+    ExBlockDef def = ExBlockDef.Create("ppex", "pipe", "pipes/straight");
+    Assert.Equal("pipe", (string?)def.ToJson()["code"]);
+    Assert.Equal("blocktypes/pipes/straight.json", def.Location.Path);
+    Assert.Equal("ppex", def.Location.Domain);
+  }
+  #endregion
+
+  #region Variant blocks (groups / *ByType / behaviors / physics)
+
+  [BlockBehaviorRegister]
+  private sealed class FakeBehavior(Block block) : BlockBehavior(block);
+
+  [BlockEntityBehaviorRegister]
+  private sealed class FakeEntityBehavior(BlockEntity be)
+    : BlockEntityBehavior(be);
+
+  [Fact]
+  public void VariantGroup_appends_ordered_code_and_states_entries()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .VariantGroup("type", "straight")
+      .VariantGroup("material", "iron", "steel")
+      .ToJson();
+
+    var groups = (JArray)json["variantgroups"]!;
+    Assert.Equal(2, groups.Count);
+    Assert.Equal("type", (string?)groups[0]!["code"]); // order preserved
+    Assert.Equal(["straight"], groups[0]!["states"]!.ToObject<string[]>()!);
+    Assert.Equal("material", (string?)groups[1]!["code"]);
+    Assert.Equal(["iron", "steel"], groups[1]!["states"]!.ToObject<string[]>()!);
+  }
+
+  [Fact]
+  public void VariantGroupFromProperties_emits_a_loadFromProperties_entry()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .ToJson();
+    var group = (JObject)((JArray)json["variantgroups"]!)[0]!;
+    Assert.Equal("side", (string?)group["code"]);
+    Assert.Equal(
+      "abstract/horizontalorientation",
+      (string?)group["loadFromProperties"]
+    );
+  }
+
+  [Fact]
+  public void ShapeByType_emits_base_plus_only_the_set_rotations()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .ShapeByType("*-ns-*", "ppex:pipes/straight")
+      .ShapeByType("*-we-*", "ppex:pipes/straight", rotateY: 90)
+      .ShapeByType("*-ud-*", "ppex:pipes/straight", rotateX: 90)
+      .ToJson();
+
+    var byType = (JObject)json["shapebytype"]!;
+    Assert.Equal("ppex:pipes/straight", (string?)byType["*-ns-*"]!["base"]);
+    Assert.Null(byType["*-ns-*"]!["rotateY"]); // unset rotations are omitted
+    Assert.Equal(90, (int)byType["*-we-*"]!["rotateY"]!);
+    Assert.Null(byType["*-we-*"]!["rotateX"]);
+    Assert.Equal(90, (int)byType["*-ud-*"]!["rotateX"]!);
+  }
+
+  [Fact]
+  public void TextureByType_maps_a_wildcard_to_a_texture_key_base()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .TextureByType("*-iron", "iron4", "game:block/metal/sheet-plain/iron4")
+      .TextureByType("*-steel", "iron4", "game:block/metal/sheet-plain/steel4")
+      .ToJson();
+
+    Assert.Equal(
+      "game:block/metal/sheet-plain/iron4",
+      (string?)json["texturesByType"]!["*-iron"]!["iron4"]!["base"]
+    );
+    Assert.Equal(
+      "game:block/metal/sheet-plain/steel4",
+      (string?)json["texturesByType"]!["*-steel"]!["iron4"]!["base"]
+    );
+  }
+
+  [Fact]
+  public void Behavior_by_name_and_by_type_append_name_entries()
+  {
+    JObject json = ExBlockDef
+      .Create("ppex", "c")
+      .Behavior("Lockable")
+      .Behavior<FakeBehavior>()
+      .ToJson();
+
+    var behaviors = (JArray)json["behaviors"]!;
+    Assert.Equal("Lockable", (string?)behaviors[0]!["name"]);
+    // Typed overload resolves the registered {modid}.{ClassName} key, same as the class binding.
+    Assert.Equal("ppex.FakeBehavior", (string?)behaviors[1]!["name"]);
+  }
+
+  [Fact]
+  public void EntityBehavior_by_name_and_by_type_append_entityBehaviors_entries()
+  {
+    JObject json = ExBlockDef
+      .Create("ppex", "c")
+      .EntityBehavior("Animatable")
+      .EntityBehavior<FakeEntityBehavior>()
+      .ToJson();
+
+    var behaviors = (JArray)json["entityBehaviors"]!;
+    Assert.Equal("Animatable", (string?)behaviors[0]!["name"]);
+    Assert.Equal("ppex.FakeEntityBehavior", (string?)behaviors[1]!["name"]);
+  }
+
+  [Fact]
+  public void SoundByTool_nests_a_per_tool_hit_and_break_override()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Sound("place", "game:block/ceramicplace")
+      .SoundByTool(
+        EnumTool.Pickaxe,
+        "game:block/rock-hit-pickaxe",
+        "game:block/rock-break-pickaxe"
+      )
+      .ToJson();
+
+    Assert.Equal("game:block/ceramicplace", (string?)json["sounds"]!["place"]);
+    var pick = json["sounds"]!["byTool"]!["Pickaxe"]!;
+    Assert.Equal("game:block/rock-hit-pickaxe", (string?)pick["hit"]);
+    Assert.Equal("game:block/rock-break-pickaxe", (string?)pick["break"]);
+  }
+
+  [Fact]
+  public void TextureByType_emits_overlays_when_supplied()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .TextureByType(
+        "*",
+        "front1",
+        "game:block/clay/brick/four/running/cream1",
+        "game:block/clay/brick/four/running/{brick}1"
+      )
+      .ToJson();
+
+    var tex = json["texturesByType"]!["*"]!["front1"]!;
+    Assert.Equal(
+      "game:block/clay/brick/four/running/cream1",
+      (string?)tex["base"]
+    );
+    Assert.Equal(
+      ["game:block/clay/brick/four/running/{brick}1"],
+      tex["overlays"]!.ToObject<string[]>()!
+    );
+  }
+
+  [Fact]
+  public void Collision_and_selection_boxes_emit_cuboid_arrays()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
+      .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
+      .ToJson();
+
+    var box = (JObject)((JArray)json["collisionboxes"]!)[0]!;
+    Assert.Equal(0.3125f, (float)box["x1"]!);
+    Assert.Equal(0f, (float)box["z1"]!);
+    Assert.Equal(1f, (float)box["z2"]!);
+    Assert.Single((JArray)json["selectionboxes"]!);
+  }
+
+  [Fact]
+  public void Handbook_sets_the_attributes_handbook_groupBy()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Handbook("pipe-straight-*", "pipe-bend-*")
+      .ToJson();
+    Assert.Equal(
+      ["pipe-straight-*", "pipe-bend-*"],
+      json["attributes"]!["handbook"]!["groupBy"]!.ToObject<string[]>()!
+    );
+  }
+
+  [Fact]
+  public void VariantStates_reads_a_groups_explicit_states_back()
+  {
+    ExBlockDef def = ExBlockDef
+      .Create("d", "c")
+      .VariantGroup("type", "straight")
+      .VariantGroup("orientation", "ns", "we", "ud");
+
+    Assert.Equal(["straight"], def.VariantStates("type"));
+    Assert.Equal(["ns", "we", "ud"], def.VariantStates("orientation"));
+    Assert.Empty(def.VariantStates("material")); // absent group -> empty
+  }
+
+  [Fact]
+  public void VariantStates_is_empty_for_a_worldproperty_sourced_group()
+  {
+    ExBlockDef def = ExBlockDef
+      .Create("d", "c")
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation");
+    Assert.Empty(def.VariantStates("side"));
+  }
+
+  [Fact]
+  public void Render_and_side_flags_emit_the_expected_keys()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .RenderPass("OpaqueNoCull")
+      .FaceCullMode("NeverCull")
+      .LightAbsorption(0)
+      .SideSolid(false)
+      .SideOpaque(false)
+      .ToJson();
+
+    Assert.Equal("OpaqueNoCull", (string?)json["renderpass"]);
+    Assert.Equal("NeverCull", (string?)json["faceCullMode"]);
+    Assert.Equal(0, (int)json["lightAbsorption"]!);
+    Assert.False((bool)json["sidesolid"]!["all"]!);
+    Assert.False((bool)json["sideopaque"]!["all"]!);
+  }
+
   #endregion
 }

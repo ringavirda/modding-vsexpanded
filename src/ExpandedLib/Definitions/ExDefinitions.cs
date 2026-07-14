@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using ExpandedLib.Registries;
 using Vintagestory.API.Common;
@@ -26,6 +28,70 @@ public static class ExDefinitions
 
   /// <summary>Drops every registered definition (used by tests to isolate the static registry).</summary>
   public static void Clear() => _blocks.Clear();
+
+  /// <summary>
+  /// Builds a <c>type -&gt; orientation states</c> map from a class's code-first defs - the single
+  /// source a block derives its runtime <c>AllowedOrientations</c> from, so the orientation list lives
+  /// only in the variant groups (never a hand-kept duplicate that drifts). Defs without a single
+  /// <c>type</c> state (e.g. a worldproperty-oriented block) are skipped.
+  /// </summary>
+  public static Dictionary<string, string[]> OrientationMap(
+    IEnumerable<ExBlockDef> defs
+  )
+  {
+    var map = new Dictionary<string, string[]>();
+    foreach (ExBlockDef d in defs)
+    {
+      string[] types = d.VariantStates("type");
+      if (types.Length == 1)
+        map[types[0]] = d.VariantStates("orientation");
+    }
+    return map;
+  }
+
+  /// <summary>
+  /// Scans <paramref name="asm"/> for <see cref="IExBlockDefProvider"/> classes and registers each
+  /// one's co-located definition (built for <paramref name="domain"/>, the mod id). Called from
+  /// <see cref="Registries.Entities.EntityRegistry.RegisterAll"/> so a mod's block defs are discovered
+  /// alongside its class registration. Returns how many were registered.
+  /// </summary>
+  public static int DiscoverAndRegister(string domain, Assembly asm)
+  {
+    int count = 0;
+    foreach (Type type in ReflectionScan.GetCandidateTypes(asm))
+      foreach (ExBlockDef def in DefinitionsOf(type, domain))
+      {
+        RegisterBlock(def);
+        count++;
+      }
+    return count;
+  }
+
+  /// <summary>
+  /// The code-first defs a <paramref name="type"/> declares itself, or empty when it declares none.
+  /// Used both by discovery and by a block deriving runtime tables from its own def
+  /// (<c>ExDefinitions.OrientationMap(DefinitionsOf(GetType(), domain))</c>).
+  /// <para>
+  /// DeclaredOnly matters: several blocks subclass a def-providing base (the special pipes extend
+  /// BlockPipe), and without it a derived class would return the base's inherited defs. A class
+  /// contributes only the defs it declares itself.
+  /// </para>
+  /// </summary>
+  public static IEnumerable<ExBlockDef> DefinitionsOf(Type type, string domain)
+  {
+    if (!typeof(IExBlockDefProvider).IsAssignableFrom(type))
+      return [];
+
+    // The static abstract Definitions is implemented as a public static method on the concrete class.
+    MethodInfo? define = type.GetMethod(
+      nameof(IExBlockDefProvider.Definitions),
+      BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly,
+      binder: null,
+      types: [typeof(string)],
+      modifiers: null
+    );
+    return define?.Invoke(null, [domain]) as IEnumerable<ExBlockDef> ?? [];
+  }
 
   /// <summary>
   /// Serializes every registered block definition to the synthetic assets the loader consumes:

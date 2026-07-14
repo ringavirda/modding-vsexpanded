@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
@@ -17,8 +18,43 @@ namespace PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 [BlockRegister]
 public partial class BlockPressureValve : BlockValve
 {
-  public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new() { { "pressurevalve", ["ns", "we", "ud", "sn", "ew", "du"] } };
+  /// <summary>The pressure-valve blocktype, authored in C# (migrated from pipes/pressurevalve.json).
+  /// AllowedOrientations/fallback are derived from it by the base <see cref="BlockPipe"/>.</summary>
+  public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [PressureValve(domain)];
+
+  private static ExBlockDef PressureValve(string domain) =>
+    ExBlockDef
+      .Create(domain, "pipe", "pipes/pressurevalve")
+      .Class<BlockPressureValve>()
+      .EntityClass<BlockEntityPressureValve>()
+      .Material(EnumBlockMaterial.Metal)
+      .Sound("place", "game:block/anvil")
+      .Sound("break", "game:block/anvil")
+      .Sound("hit", "game:block/anvil")
+      .Sound("walk", "game:walk/stone")
+      .MaxStackSize(1)
+      .CreativeTab("general", "*-pressurevalve-sn-*")
+      .CreativeTab("ppex", "*-pressurevalve-sn-*")
+      .Behavior("Lockable")
+      .VariantGroup("type", "pressurevalve")
+      .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
+      .VariantGroup("material", "iron", "steel")
+      .ShapeByType("*-pressurevalve-ns-*", "ppex:pipes/pressurevalve")
+      .ShapeByType("*-pressurevalve-we-*", "ppex:pipes/pressurevalve", rotateY: 90)
+      .ShapeByType("*-pressurevalve-ud-*", "ppex:pipes/pressurevalve", rotateX: 90)
+      .ShapeByType("*-pressurevalve-sn-*", "ppex:pipes/pressurevalve", rotateY: 180)
+      .ShapeByType("*-pressurevalve-ew-*", "ppex:pipes/pressurevalve", rotateY: -90)
+      .ShapeByType("*-pressurevalve-du-*", "ppex:pipes/pressurevalve", rotateX: -90)
+      .TextureByType("*-iron", "iron4", "game:block/metal/sheet-plain/iron4")
+      .TextureByType("*-steel", "iron4", "game:block/metal/sheet-plain/steel4")
+      .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
+      .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
+      .RenderPass("OpaqueNoCull")
+      .FaceCullMode("NeverCull")
+      .LightAbsorption(0)
+      .SideSolid(false)
+      .SideOpaque(false);
 
   public override bool IsNetworkEndPoint => true;
 
