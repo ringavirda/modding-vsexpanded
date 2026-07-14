@@ -1,0 +1,27 @@
+{
+  "ingredientPattern": "B",
+  "width": 1,
+  "height": 1,
+  "output": {
+    "type": "block",
+    "code": "iwex:bunker-{brick}-north",
+    "quantity": 1
+  },
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:burnedbrick-*",
+      "name": "brick",
+      "allowedVariants": [
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      ],
+      "quantity": 8
+    }
+  }
+}

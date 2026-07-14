@@ -20,14 +20,39 @@ public static class ExDefinitions
     d.Location.ToString()
   );
 
+  private static readonly ExKeyedRegistry<ExItemDef> _items = new(d =>
+    d.Location.ToString()
+  );
+
+  private static readonly ExKeyedRegistry<ExRecipeDef> _recipes = new(d =>
+    d.Location.ToString()
+  );
+
   /// <summary>Registers (or replaces) a code-first block definition.</summary>
   public static void RegisterBlock(ExBlockDef def) => _blocks.Register(def);
+
+  /// <summary>Registers (or replaces) a code-first item definition.</summary>
+  public static void RegisterItem(ExItemDef def) => _items.Register(def);
+
+  /// <summary>Registers (or replaces) a code-first recipe file.</summary>
+  public static void RegisterRecipe(ExRecipeDef def) => _recipes.Register(def);
 
   /// <summary>Every registered block definition.</summary>
   public static IReadOnlyCollection<ExBlockDef> Blocks => _blocks.Values;
 
+  /// <summary>Every registered item definition.</summary>
+  public static IReadOnlyCollection<ExItemDef> Items => _items.Values;
+
+  /// <summary>Every registered recipe file.</summary>
+  public static IReadOnlyCollection<ExRecipeDef> Recipes => _recipes.Values;
+
   /// <summary>Drops every registered definition (used by tests to isolate the static registry).</summary>
-  public static void Clear() => _blocks.Clear();
+  public static void Clear()
+  {
+    _blocks.Clear();
+    _items.Clear();
+    _recipes.Clear();
+  }
 
   /// <summary>
   /// Builds a <c>type -&gt; orientation states</c> map from a class's code-first defs - the single
@@ -55,42 +80,86 @@ public static class ExDefinitions
   /// <see cref="Registries.Entities.EntityRegistry.RegisterAll"/> so a mod's block defs are discovered
   /// alongside its class registration. Returns how many were registered.
   /// </summary>
-  public static int DiscoverAndRegister(string domain, Assembly asm)
+  public static int DiscoverAndRegister(string domain, Assembly asm) =>
+    Discover<ExBlockDef>(domain, asm, typeof(IExBlockDefProvider), RegisterBlock);
+
+  /// <summary>
+  /// Item-side sibling of <see cref="DiscoverAndRegister"/>: scans <paramref name="asm"/> for
+  /// <see cref="IExItemDefProvider"/> classes and registers each one's co-located definition(s).
+  /// Returns how many were registered.
+  /// </summary>
+  public static int DiscoverAndRegisterItems(string domain, Assembly asm) =>
+    Discover<ExItemDef>(domain, asm, typeof(IExItemDefProvider), RegisterItem);
+
+  /// <summary>
+  /// Recipe-side sibling of <see cref="DiscoverAndRegister"/>: scans <paramref name="asm"/> for
+  /// <see cref="IExRecipeDefProvider"/> classes and registers each one's co-located recipe file(s).
+  /// Returns how many were registered.
+  /// </summary>
+  public static int DiscoverAndRegisterRecipes(string domain, Assembly asm) =>
+    Discover<ExRecipeDef>(domain, asm, typeof(IExRecipeDefProvider), RegisterRecipe);
+
+  // Discovers every concrete implementor of <paramref name="providerInterface"/> in the assembly and
+  // registers each def its static `Definitions(string)` factory returns - the one scan-and-register loop the
+  // three public passes above share (differ only by provider interface, def type and target registry). The
+  // provider interface is passed as a Type, not a type argument, because it carries a `static abstract` member
+  // (which bars it from being a generic type argument, CS8920) and only a reflective assignability check needs it.
+  private static int Discover<TDef>(
+    string domain,
+    Assembly asm,
+    Type providerInterface,
+    Action<TDef> register
+  )
+    where TDef : IExDef
   {
     int count = 0;
     foreach (Type type in ReflectionScan.GetCandidateTypes(asm))
-      foreach (ExBlockDef def in DefinitionsOf(type, domain))
+      foreach (TDef def in DefinitionsOf<TDef>(type, domain, providerInterface))
       {
-        RegisterBlock(def);
+        register(def);
         count++;
       }
     return count;
   }
 
   /// <summary>
-  /// The code-first defs a <paramref name="type"/> declares itself, or empty when it declares none.
+  /// The code-first block defs a <paramref name="type"/> declares itself, or empty when it declares none.
   /// Used both by discovery and by a block deriving runtime tables from its own def
   /// (<c>ExDefinitions.OrientationMap(DefinitionsOf(GetType(), domain))</c>).
-  /// <para>
-  /// DeclaredOnly matters: several blocks subclass a def-providing base (the special pipes extend
-  /// BlockPipe), and without it a derived class would return the base's inherited defs. A class
-  /// contributes only the defs it declares itself.
-  /// </para>
   /// </summary>
-  public static IEnumerable<ExBlockDef> DefinitionsOf(Type type, string domain)
+  public static IEnumerable<ExBlockDef> DefinitionsOf(Type type, string domain) =>
+    DefinitionsOf<ExBlockDef>(type, domain, typeof(IExBlockDefProvider));
+
+  /// <summary>The item-side sibling of <see cref="DefinitionsOf"/> (via <see cref="IExItemDefProvider"/>).</summary>
+  public static IEnumerable<ExItemDef> ItemDefinitionsOf(Type type, string domain) =>
+    DefinitionsOf<ExItemDef>(type, domain, typeof(IExItemDefProvider));
+
+  /// <summary>The recipe-side sibling of <see cref="DefinitionsOf"/> (via <see cref="IExRecipeDefProvider"/>).</summary>
+  public static IEnumerable<ExRecipeDef> RecipeDefinitionsOf(Type type, string domain) =>
+    DefinitionsOf<ExRecipeDef>(type, domain, typeof(IExRecipeDefProvider));
+
+  // The defs a type DECLARES itself via its provider interface's static `Definitions(string)` factory, or
+  // empty when it declares none. DeclaredOnly matters: several blocks subclass a def-providing base (the
+  // special pipes extend BlockPipe), and without it a derived class would return the base's inherited defs -
+  // a class contributes only the defs it declares itself. All three provider interfaces name the factory
+  // "Definitions", so one generic lookup serves them all.
+  private static IEnumerable<TDef> DefinitionsOf<TDef>(
+    Type type,
+    string domain,
+    Type providerInterface
+  )
   {
-    if (!typeof(IExBlockDefProvider).IsAssignableFrom(type))
+    if (!providerInterface.IsAssignableFrom(type))
       return [];
 
-    // The static abstract Definitions is implemented as a public static method on the concrete class.
     MethodInfo? define = type.GetMethod(
-      nameof(IExBlockDefProvider.Definitions),
+      "Definitions",
       BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly,
       binder: null,
       types: [typeof(string)],
       modifiers: null
     );
-    return define?.Invoke(null, [domain]) as IEnumerable<ExBlockDef> ?? [];
+    return define?.Invoke(null, [domain]) as IEnumerable<TDef> ?? [];
   }
 
   /// <summary>
@@ -102,9 +171,29 @@ public static class ExDefinitions
   /// </summary>
   public static IEnumerable<(AssetLocation location, IAsset asset)> BuildBlockAssets(
     IAssetOrigin origin
+  ) => BuildAssets(_blocks.Values, origin);
+
+  /// <summary>Item-side sibling of <see cref="BuildBlockAssets"/>: one
+  /// <c>{domain}:itemtypes/{code}.json</c> synthetic asset per registered item def.</summary>
+  public static IEnumerable<(AssetLocation location, IAsset asset)> BuildItemAssets(
+    IAssetOrigin origin
+  ) => BuildAssets(_items.Values, origin);
+
+  /// <summary>Recipe-side sibling of <see cref="BuildBlockAssets"/>: one
+  /// <c>{domain}:recipes/{category}/{name}.json</c> synthetic asset per registered recipe file.</summary>
+  public static IEnumerable<(AssetLocation location, IAsset asset)> BuildRecipeAssets(
+    IAssetOrigin origin
+  ) => BuildAssets(_recipes.Values, origin);
+
+  // Serializes each def to a synthetic asset at its own Location - the one serialize-and-wrap loop the three
+  // public Build* passes share (blocks/items/recipes differ only by which registry feeds it, and IExDef's
+  // covariant Location/ToJson lets them flow through together).
+  private static IEnumerable<(AssetLocation location, IAsset asset)> BuildAssets(
+    IEnumerable<IExDef> defs,
+    IAssetOrigin origin
   )
   {
-    foreach (ExBlockDef def in _blocks.Values)
+    foreach (IExDef def in defs)
     {
       // Parameterless ToString() (indented JSON) - the payload only needs to be valid JSON for the
       // loader to parse; whitespace is irrelevant. Avoids the Formatting overload, which the game's

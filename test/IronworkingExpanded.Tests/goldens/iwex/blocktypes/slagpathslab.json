@@ -1,0 +1,193 @@
+{
+  "code": "slagpathslab",
+  "attributes": {
+    "reinforcable": true,
+    "mapColorCode": "road",
+    "inContainerTexture": {
+      "base": "game:block/stone/gravel/phyllite"
+    },
+    "liquidBarrierOnSides": [
+      0.5,
+      0.5,
+      0.5,
+      0.5
+    ]
+  },
+  "resistanceByType": {
+    "*-snow": 0.2,
+    "*-free": 2.4
+  },
+  "behaviorsByType": {
+    "*-snow": [
+      {
+        "name": "BreakSnowFirst"
+      }
+    ]
+  },
+  "blockmaterial": "Gravel",
+  "replaceable": 900,
+  "lightAbsorption": 99,
+  "sideopaque": {
+    "all": false,
+    "down": true
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "sounds": {
+    "place": "game:block/gravel",
+    "breakByType": {
+      "*-snow": "game:block/snow",
+      "*-free": "game:block/gravel"
+    },
+    "hitByType": {
+      "*-snow": "game:block/snow",
+      "*-free": "game:block/gravel"
+    },
+    "walk": "game:walk/gravel"
+  },
+  "creativeinventory": {
+    "general": [
+      "*-free"
+    ],
+    "decorative": [
+      "*-free"
+    ],
+    "iwex": [
+      "*-free"
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "cover",
+      "states": [
+        "free",
+        "snow"
+      ]
+    }
+  ],
+  "shape": {
+    "base": "iwex:legacy/basic/slab/stonepath-slab-{cover}"
+  },
+  "textures": {
+    "normal1": {
+      "base": "game:block/stone/gravel/phyllite",
+      "overlays": [
+        "game:block/overlay/pebble1"
+      ],
+      "alternates": [
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble2"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble3"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble4"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble5"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble6"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble7"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble8"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble9"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble10"
+          ]
+        },
+        {
+          "base": "game:block/stone/gravel/phyllite",
+          "overlays": [
+            "game:block/overlay/pebble11"
+          ]
+        }
+      ]
+    }
+  },
+  "walkspeedmultiplier": 1.3,
+  "faceCullMode": "FlushExceptTop",
+  "sidesolid": {
+    "all": false,
+    "down": true
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 0.4375,
+    "z2": 1.0
+  },
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 0.4375,
+    "z2": 1.0
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.49,
+      "y": -0.22,
+      "z": -0.7
+    },
+    "rotation": {
+      "x": 6,
+      "y": 16,
+      "z": 98
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.25,
+      "z": 0.5
+    },
+    "scale": 0.4
+  },
+  "drops": [
+    {
+      "type": "block",
+      "code": "slagpathslab-free"
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "code": "bunker",
+  "class": "iwex.BlockOreBunker",
+  "entityClass": "iwex.BlockEntityOreBunker",
+  "blockmaterial": "Ceramic",
+  "requiredMiningTier": 0,
+  "resistance": 3.5,
+  "maxstacksize": 1,
+  "drops": [],
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 0,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 1,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 1,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 2
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 2,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 2,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 3
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 3,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 3,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 4
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 4,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 4,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 5
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 5,
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 5,
+        "allowAttach": true
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "HorizontalOrientable"
+    },
+    {
+      "name": "BlockEntityInteract"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    },
+    {
+      "name": "ExRightClickConstructable",
+      "properties": {
+        "stages": [
+          {
+            "addElements": [
+              "Root/InputBase"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:burnedbrick-{brick}",
+                "quantity": 8,
+                "name": "iwex:rcc-ingredient-brick"
+              }
+            ],
+            "addElements": [
+              "Root/Base"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:burnedbrick-{brick}",
+                "quantity": 24,
+                "name": "iwex:rcc-ingredient-brick"
+              }
+            ],
+            "addElements": [
+              "Root/Walls"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "brick",
+      "states": [
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      ]
+    },
+    {
+      "code": "side",
+      "loadFromProperties": "abstract/horizontalorientation"
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-north"
+    ],
+    "iwex": [
+      "*-north"
+    ]
+  },
+  "shape": {
+    "base": "iwex:ore/bunker",
+    "rotateYByType": {
+      "*-north": 180,
+      "*-east": 90,
+      "*-south": 0,
+      "*-west": 270
+    },
+    "selectiveElements": [
+      "Root/InputBase/*"
+    ]
+  },
+  "textures": {
+    "fire1": {
+      "base": "game:block/clay/brick/four/running/cream1",
+      "overlays": [
+        "game:block/clay/brick/four/running/{brick}1"
+      ]
+    }
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "sounds": {
+    "place": "game:block/ceramicplace",
+    "break": "game:block/ceramic",
+    "hit": "game:block/ceramic",
+    "walk": "game:walk/stone"
+  }
+}

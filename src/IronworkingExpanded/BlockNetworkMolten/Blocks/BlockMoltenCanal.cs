@@ -25,20 +25,9 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
 {
   public override string NetworkType => "molten";
 
-  /// <summary>The mod id, used to build the code-first defs when deriving runtime tables from them.</summary>
-  protected const string Domain = "iwex";
-
-  private Dictionary<string, string[]>? _allowedOrientations;
-
-  /// <summary>
-  /// Derived from THIS block's own code-first defs (resolved by its runtime type), so the orientation
-  /// states live once - in the variant groups - and every canal endpoint subclass (start/tap/moldpedestal)
-  /// inherits the right map with no duplicated list. Cached on first read.
-  /// </summary>
-  public override Dictionary<string, string[]> AllowedOrientations =>
-    _allowedOrientations ??= ExDefinitions.OrientationMap(
-      ExDefinitions.DefinitionsOf(GetType(), Domain)
-    );
+  // AllowedOrientations is inherited from BlockNetworkNode, which derives it from this block's own code-first
+  // defs (resolved by runtime type) - so every canal endpoint subclass (start/tap/moldpedestal) gets the right
+  // map with no duplicated list.
 
   #region Code-first definition
 
@@ -242,15 +231,8 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
 
   #endregion
 
-  /// <summary>A type's default orientation is the first state it lists (which matches every canal shape's
-  /// fallback), so this is derived from the defs too - only the start block overrides it (it defaults
-  /// south, not to its first-listed north).</summary>
-  protected override string GetFallbackOrientation(string? type) =>
-    type != null
-    && AllowedOrientations.TryGetValue(type, out string[]? states)
-    && states.Length > 0
-      ? states[0]
-      : "ns";
+  // GetFallbackOrientation (first-listed state, else "ns") is inherited from BlockNetworkNode; only the start
+  // block overrides it (it defaults south, not to its first-listed north).
 
   /// <summary>
   /// Disables wrench rotation (and the hint) while the cell holds liquid metal or has solidified -

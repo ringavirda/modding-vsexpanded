@@ -1,0 +1,443 @@
+[
+  {
+    "name": "Piping (Straight)",
+    "ingredientPattern": "HPN",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-straight-ns-{metal}",
+      "quantity": 2
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (Bend)",
+    "ingredientPattern": "_H,NP,_N",
+    "width": 2,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-bend-nw-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (TJunction)",
+    "ingredientPattern": "_H_,NPN,_N_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-tjunction-uns-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (XJunction)",
+    "ingredientPattern": "HN_,NPN,_N_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-xjunction-nswe-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Pipe Passthrough (Straight)",
+    "ingredientPattern": "BHB,BPB,B_B",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-passthrough-{brick}-ns"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-*",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Pipe Passthrough (Bend)",
+    "ingredientPattern": "BPB,PHB,B_B",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-passthroughbend-{brick}-nw"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-*",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Pipe Outlet",
+    "ingredientPattern": "BHB,BNB,BPB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-outlet-{brick}-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-*",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Piping (Valve)",
+    "ingredientPattern": "_H_,GPL,_L_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-valve-sn-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "G": {
+        "type": "item",
+        "code": "game:gear-rusty",
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Piping (Pressure Valve)",
+    "ingredientPattern": "_H_,LPL,G_G",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-pressurevalve-sn-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "G": {
+        "type": "item",
+        "code": "game:gear-rusty",
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Piping (Valve)",
+    "ingredientPattern": "_H_,GPL,_L_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-valve-sn-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Piping (Pressure Valve)",
+    "ingredientPattern": "_H_,LPL,G_G",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "ppex:pipe-pressurevalve-sn-{metal}"
+    },
+    "ingredients": {
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight-ns-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "L": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 2
+      }
+    }
+  }
+]

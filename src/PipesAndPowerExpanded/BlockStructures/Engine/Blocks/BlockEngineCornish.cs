@@ -59,106 +59,34 @@ public partial class BlockEngineCornish
       .Construction(c =>
         c.Stage(s => s.AddElements("Root/Cylinder"))
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                12,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                12,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 12)
+              .RequireMetalRod(domain, 12)
               .Require("game:burnedbrick-fire", 36)
               .AddElements("Root/BeamSupport")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                16,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                8,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 16)
+              .RequireMetalRod(domain, 8)
               .AddElements("Root/Beam")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                8,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                6,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 8)
+              .RequireMetalRod(domain, 6)
               .AddElements("Root/Piston")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                6,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "metalnailsandstrips-*",
-                6,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 6)
+              .RequireMetalNails(domain, 6)
               .AddElements("Root/ControlPiston")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                4,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                8,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 4)
+              .RequireMetalRod(domain, 8)
               .AddElements("Root/ControlPistonSteam")
           )
           .Stage(s =>
-            s.Require(
-                "rod-*",
-                8,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "metalnailsandstrips-*",
-                8,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalRod(domain, 8)
+              .RequireMetalNails(domain, 8)
               .AddElements("Root/Rod")
           )
       );

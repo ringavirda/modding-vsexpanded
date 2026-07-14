@@ -75,10 +75,13 @@ public static class EntityRegistry
       }
     }
 
-    // Discover and register any co-located code-first block definitions in this assembly, so a block
-    // authoring its own def (IExBlockDefProvider) has it registered next to the class registration -
-    // no separate central list or explicit registration call.
+    // Discover and register any co-located code-first block/item/recipe definitions in this assembly, so a
+    // block, item or recipe authoring its own def (IExBlockDefProvider / IExItemDefProvider /
+    // IExRecipeDefProvider) has it registered next to the class registration - no separate central list or
+    // explicit registration call.
     ExDefinitions.DiscoverAndRegister(modId, asm);
+    ExDefinitions.DiscoverAndRegisterItems(modId, asm);
+    ExDefinitions.DiscoverAndRegisterRecipes(modId, asm);
   }
 
   /// <summary>

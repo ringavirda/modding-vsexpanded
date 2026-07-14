@@ -34,14 +34,7 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
       .SideSolid(false)
       .SideOpaque(false);
 
-  private Dictionary<string, string[]>? _allowedOrientations;
-
-  // Derived from the def's variant groups (the orientation states live once, in the def).
-  public override Dictionary<string, string[]> AllowedOrientations =>
-    _allowedOrientations ??= ExDefinitions.OrientationMap(
-      ExDefinitions.DefinitionsOf(GetType(), "ppex")
-    );
-
+  // AllowedOrientations is inherited from BlockNetworkNode (derived from this block's own def's variant groups).
   // Intentionally "s" - the intake defaults to facing south, not the first-listed orientation.
   protected override string GetFallbackOrientation(string? type) => "s";
 

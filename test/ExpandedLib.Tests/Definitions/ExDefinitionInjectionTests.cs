@@ -118,4 +118,101 @@ public class ExDefinitionInjectionTests
     Assert.Empty(ExDefinitions.BuildBlockAssets(new ExDefinitionOrigin()));
   }
   #endregion
+
+  #region Items (the sibling registry + BuildItemAssets pipeline)
+  [Fact]
+  public void Registering_an_item_makes_it_enumerable()
+  {
+    var def = ExItemDef.Create("iwex", "slag");
+    ExDefinitions.RegisterItem(def);
+    Assert.Single(ExDefinitions.Items);
+    Assert.Same(def, ExDefinitions.Items.Single());
+  }
+
+  [Fact]
+  public void Re_registering_the_same_item_location_replaces_rather_than_duplicates()
+  {
+    ExDefinitions.RegisterItem(ExItemDef.Create("iwex", "slag"));
+    var replacement = ExItemDef.Create("iwex", "slag").MaxStackSize(99);
+    ExDefinitions.RegisterItem(replacement);
+
+    Assert.Single(ExDefinitions.Items);
+    Assert.Same(replacement, ExDefinitions.Items.Single());
+  }
+
+  [Fact]
+  public void BuildItemAssets_emits_one_asset_per_def_at_its_itemtypes_location_with_its_json()
+  {
+    var def = ExItemDef.Create("iwex", "slag").MaxStackSize(64);
+    ExDefinitions.RegisterItem(def);
+
+    var built = ExDefinitions.BuildItemAssets(new ExDefinitionOrigin()).ToList();
+
+    Assert.Single(built);
+    var (location, asset) = built[0];
+    Assert.Equal(def.Location, location);
+    Assert.Equal("iwex", location.Domain);
+    Assert.Equal("itemtypes/slag.json", location.Path);
+    // The item pipeline produces the same concrete engine Asset the object loader casts to for itemtypes.
+    Assert.Equal("Vintagestory.Common.Asset", asset.GetType().FullName);
+    Assert.True(JToken.DeepEquals(def.ToJson(), asset.ToObject<JObject>()));
+  }
+
+  [Fact]
+  public void BuildItemAssets_is_empty_when_nothing_is_registered()
+  {
+    Assert.Empty(ExDefinitions.BuildItemAssets(new ExDefinitionOrigin()));
+  }
+
+  [Fact]
+  public void Clear_drops_blocks_items_and_recipes_together()
+  {
+    ExDefinitions.RegisterBlock(ExBlockDef.Create("iwex", "solidifiediron"));
+    ExDefinitions.RegisterItem(ExItemDef.Create("iwex", "slag"));
+    ExDefinitions.RegisterRecipe(ExRecipeDef.Create("ppex", "grid", "pipes"));
+
+    ExDefinitions.Clear();
+
+    Assert.Empty(ExDefinitions.Blocks);
+    Assert.Empty(ExDefinitions.Items);
+    Assert.Empty(ExDefinitions.Recipes);
+  }
+  #endregion
+
+  #region Recipes (the sibling registry + BuildRecipeAssets pipeline)
+  [Fact]
+  public void Registering_a_recipe_makes_it_enumerable()
+  {
+    var def = ExRecipeDef.Create("ppex", "grid", "pipes");
+    ExDefinitions.RegisterRecipe(def);
+    Assert.Single(ExDefinitions.Recipes);
+    Assert.Same(def, ExDefinitions.Recipes.Single());
+  }
+
+  [Fact]
+  public void BuildRecipeAssets_emits_one_asset_per_file_at_its_recipes_location_with_its_json()
+  {
+    var def = ExRecipeDef
+      .Create("ppex", "grid", "pipes")
+      .Grid(r => r.Name("Straight").Pattern("P").Size(1, 1).OutputBlock("ppex:pipe-straight-ns-{metal}"));
+    ExDefinitions.RegisterRecipe(def);
+
+    var built = ExDefinitions.BuildRecipeAssets(new ExDefinitionOrigin()).ToList();
+
+    Assert.Single(built);
+    var (location, asset) = built[0];
+    Assert.Equal(def.Location, location);
+    Assert.Equal("ppex", location.Domain);
+    Assert.Equal("recipes/grid/pipes.json", location.Path);
+    Assert.Equal("Vintagestory.Common.Asset", asset.GetType().FullName);
+    // A recipe file is a JSON ARRAY; the loader reads it via ToObject<JArray>. It must round-trip exactly.
+    Assert.True(JToken.DeepEquals(def.ToJson(), asset.ToObject<JArray>()));
+  }
+
+  [Fact]
+  public void BuildRecipeAssets_is_empty_when_nothing_is_registered()
+  {
+    Assert.Empty(ExDefinitions.BuildRecipeAssets(new ExDefinitionOrigin()));
+  }
+  #endregion
 }

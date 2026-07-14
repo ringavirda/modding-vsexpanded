@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -698,14 +699,30 @@ public abstract class BlockNetworkNode
   /// <summary>Identifies which block network type this block belongs to (e.g. "gas", "molten").</summary>
   public abstract string NetworkType { get; }
 
-  /// <summary>
-  /// Maps shape-type strings (e.g. "straight", "bend") to their valid orientation strings.
-  /// Used for placement, wrench rotation, and collision-box pre-computation.
-  /// </summary>
-  public abstract Dictionary<string, string[]> AllowedOrientations { get; }
+  private Dictionary<string, string[]>? _allowedOrientations;
 
-  /// <summary>Returns the default orientation for drops/handbook entries for the given type.</summary>
-  protected abstract string GetFallbackOrientation(string? type);
+  /// <summary>
+  /// Maps shape-type strings (e.g. "straight", "bend") to their valid orientation strings - used for
+  /// placement, wrench rotation, and collision-box pre-computation. Derived by default from THIS block's own
+  /// code-first defs (resolved by runtime type, so every network-node subclass gets the right map from its own
+  /// variant groups), cached on first read - the orientation states live once, in the def, with no hand-kept
+  /// duplicate table that drifts. A block whose orientation isn't a type→orientation variant pair can override.
+  /// </summary>
+  public virtual Dictionary<string, string[]> AllowedOrientations =>
+    _allowedOrientations ??= ExDefinitions.OrientationMap(
+      ExDefinitions.DefinitionsOf(GetType(), Code?.Domain ?? "")
+    );
+
+  /// <summary>The default orientation for drops/handbook entries for a <paramref name="type"/> - by default the
+  /// first state the type lists in <see cref="AllowedOrientations"/> (falling back to "ns" when the type is
+  /// absent), which matches every canal/pipe shape. A block with a fixed default facing (a fluid intake or
+  /// canal start defaults south) overrides.</summary>
+  protected virtual string GetFallbackOrientation(string? type) =>
+    type != null
+    && AllowedOrientations.TryGetValue(type, out string[]? states)
+    && states.Length > 0
+      ? states[0]
+      : "ns";
 
   /// <summary>
   /// When <c>true</c>, this node acts as a fixed endpoint and is excluded from the

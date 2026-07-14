@@ -1,0 +1,173 @@
+{
+  "code": "mixer",
+  "class": "iwex.BlockOreMixer",
+  "entityClass": "iwex.BlockEntityOreMixer",
+  "blockmaterial": "Metal",
+  "requiredMiningTier": 0,
+  "resistance": 4.5,
+  "maxstacksize": 1,
+  "drops": [],
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "behaviors": [
+          {
+            "code": "exlib.BEBehaviorMPFillerPort",
+            "face": "west"
+          }
+        ],
+        "allowAttach": true
+      },
+      {
+        "x": -1,
+        "y": 1,
+        "z": 0,
+        "behaviors": [
+          {
+            "code": "exlib.BEBehaviorMPFillerPort",
+            "face": "west"
+          }
+        ],
+        "allowAttach": true
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0,
+        "behaviors": [
+          {
+            "code": "exlib.BEBehaviorMPFillerPort",
+            "face": "west"
+          }
+        ],
+        "allowAttach": true
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "HorizontalOrientable"
+    },
+    {
+      "name": "BlockEntityInteract"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    },
+    {
+      "name": "ExRightClickConstructable",
+      "properties": {
+        "stages": [
+          {
+            "addElements": [
+              "Root/LowerCasing",
+              "Root/Support"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 6,
+                "name": "iwex:rcc-ingredient-ironcasing"
+              }
+            ],
+            "addElements": [
+              "Root/UpperCasing"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "ppex:gear-iron",
+                "quantity": 2,
+                "name": "iwex:rcc-ingredient-rotorgears"
+              },
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 2,
+                "name": "iwex:rcc-ingredient-rotorshaft"
+              }
+            ],
+            "addElements": [
+              "Root/Rotor"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "side",
+      "loadFromProperties": "abstract/horizontalorientation"
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-north"
+    ],
+    "iwex": [
+      "*-north"
+    ]
+  },
+  "shape": {
+    "base": "iwex:ore/mixer",
+    "rotateYByType": {
+      "*-north": 0,
+      "*-east": 270,
+      "*-south": 180,
+      "*-west": 90
+    },
+    "selectiveElements": [
+      "Root/LowerCasing/*",
+      "Root/Support/*"
+    ]
+  },
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/metal",
+    "hit": "game:block/metal",
+    "walk": "game:walk/stone"
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

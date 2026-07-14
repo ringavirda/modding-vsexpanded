@@ -29,7 +29,7 @@ namespace ExpandedLib.Definitions;
 /// <see cref="Raw"/> (an arbitrary token), so nothing the JSON can express is unrepresentable.
 /// </para>
 /// </summary>
-public sealed class ExBlockDef
+public sealed class ExBlockDef : IExDef
 {
   private readonly string _domain;
   private readonly string _code;
@@ -816,6 +816,10 @@ public sealed class ExBlockDef
 
   /// <summary>The built blocktype JSON (a defensive clone, safe to mutate/serialize).</summary>
   public JObject ToJson() => (JObject)_root.DeepClone();
+
+  // Explicit IExDef surface: the interface returns the base JToken; the public ToJson keeps the more precise
+  // JObject its callers rely on (implicit interface implementation can't covary the return type).
+  JToken IExDef.ToJson() => ToJson();
 
   private ExBlockDef Set(string key, JToken value)
   {

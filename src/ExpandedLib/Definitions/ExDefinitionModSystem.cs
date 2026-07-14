@@ -31,19 +31,47 @@ public class ExDefinitionModSystem : ModSystem
       return;
 
     var origin = new ExDefinitionOrigin();
-    int count = 0;
-    foreach (
-      var (location, asset) in ExDefinitions.BuildBlockAssets(origin)
-    )
+
+    int blocks = 0;
+    foreach (var (location, asset) in ExDefinitions.BuildBlockAssets(origin))
     {
       api.Assets.Add(location, asset);
-      count++;
+      blocks++;
     }
 
-    if (count > 0)
+    // itemtypes is a server-side category read by the same object loader (AssetsLoaded 0.2), so items
+    // inject identically to blocks - one synthetic itemtypes/ asset each, before the loader consumes them.
+    int items = 0;
+    foreach (var (location, asset) in ExDefinitions.BuildItemAssets(origin))
+    {
+      api.Assets.Add(location, asset);
+      items++;
+    }
+
+    // recipes/{category}/ are server-side categories read by the survival recipe loaders, which run AFTER the
+    // object loader (they resolve block/item codes the object loader has just built) - so injecting here at
+    // 0.04 places the recipe files in the index well before any recipe loader consumes them.
+    int recipes = 0;
+    foreach (var (location, asset) in ExDefinitions.BuildRecipeAssets(origin))
+    {
+      api.Assets.Add(location, asset);
+      recipes++;
+    }
+
+    if (blocks > 0)
       api.Logger.Notification(
         "[exlib] Injected {0} code-first block definition(s).",
-        count
+        blocks
+      );
+    if (items > 0)
+      api.Logger.Notification(
+        "[exlib] Injected {0} code-first item definition(s).",
+        items
+      );
+    if (recipes > 0)
+      api.Logger.Notification(
+        "[exlib] Injected {0} code-first recipe file(s).",
+        recipes
       );
   }
 }

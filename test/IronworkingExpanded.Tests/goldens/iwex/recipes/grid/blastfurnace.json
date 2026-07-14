@@ -1,0 +1,243 @@
+[
+  {
+    "name": "Blast Furnace Door",
+    "ingredientPattern": "BRP,BN_,BRP",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:blastfurnacedoor"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 4
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 4
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Molten Metal Tap",
+    "ingredientPattern": "BPH,BFC,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:blastfurnacetap-south"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 12
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "C": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Tuyere",
+    "ingredientPattern": "BHB,BCB,BPB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:blastfurnace-tuyere-s"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "P": {
+        "type": "block",
+        "code": "ppex:pipe-straight*"
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "C": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Reinforced Hopper",
+    "ingredientPattern": "_H_,PSP,SPS",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:hopperreinforced"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Bell Hopper",
+    "ingredientPattern": "GHG,PSP,SPS",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:hopperbell"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "G": {
+        "type": "item",
+        "code": "game:gear-rusty",
+        "quantity": 4
+      }
+    }
+  },
+  {
+    "name": "Bell Hopper",
+    "ingredientPattern": "GHG,PSP,SPS",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:hopperbell"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "G": {
+        "type": "item",
+        "code": "ppex:gear-*",
+        "quantity": 4
+      }
+    }
+  }
+]

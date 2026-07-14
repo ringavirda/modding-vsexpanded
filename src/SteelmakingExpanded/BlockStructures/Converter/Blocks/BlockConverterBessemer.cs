@@ -91,45 +91,15 @@ public partial class BlockConverterBessemer
         .Construction(c =>
           c.Stage(s => s.AddElements("Root/GearShaft"))
             .Stage(s =>
-              s.Require(
-                  "metalplate-*",
-                  24,
-                  "smex:rcc-ingredient-metalplate",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
-                .Require(
-                  "metalnailsandstrips-*",
-                  24,
-                  "smex:rcc-ingredient-nailsandstrips",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
-                .Require(
-                  "rod-*",
-                  12,
-                  "smex:rcc-ingredient-rod",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
+              s.RequireMetalPlate(domain, 24)
+                .RequireMetalNails(domain, 24)
+                .RequireMetalRod(domain, 12)
                 .AddElements("Root/BottomIron")
             )
             .Stage(s =>
-              s.Require(
-                  "metalplate-*",
-                  4,
-                  "smex:rcc-ingredient-metalplate",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
+              s.RequireMetalPlate(domain, 4)
                 .Require("ppex:pipe-straight-ns-{metal}", 3, type: "block")
-                .Require(
-                  "metalnailsandstrips-*",
-                  6,
-                  "smex:rcc-ingredient-nailsandstrips",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
+                .RequireMetalNails(domain, 6)
                 .AddElements("Root/GasIntake")
             )
             .Stage(s =>
@@ -143,27 +113,9 @@ public partial class BlockConverterBessemer
                 .AddElements("Root/UpRefractory")
             )
             .Stage(s =>
-              s.Require(
-                  "metalplate-*",
-                  12,
-                  "smex:rcc-ingredient-metalplate",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
-                .Require(
-                  "metalnailsandstrips-*",
-                  12,
-                  "smex:rcc-ingredient-nailsandstrips",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
-                .Require(
-                  "rod-*",
-                  6,
-                  "smex:rcc-ingredient-rod",
-                  storeWildCard: "metal",
-                  allowedVariants: ["iron", "steel"]
-                )
+              s.RequireMetalPlate(domain, 12)
+                .RequireMetalNails(domain, 12)
+                .RequireMetalRod(domain, 6)
                 .AddElements("Root/UpIron")
             )
             .Stage(s =>

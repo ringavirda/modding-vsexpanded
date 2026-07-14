@@ -128,69 +128,21 @@ public partial class BlockBoilerCornish
       .Construction(c =>
         c.Stage(s => s.AddElements("Root/Base"))
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                6,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "metalnailsandstrips-*",
-                4,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 6)
+              .RequireMetalNails(domain, 4)
               .Require("game:burnedbrick-fire", 8)
               .AddElements("Root/BaseExtension")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                8,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                4,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "metalnailsandstrips-*",
-                4,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 8)
+              .RequireMetalRod(domain, 4)
+              .RequireMetalNails(domain, 4)
               .AddElements("Root/Flues")
           )
           .Stage(s =>
-            s.Require(
-                "metalplate-*",
-                8,
-                "ppex:rcc-ingredient-metalplate",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "metalnailsandstrips-*",
-                8,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
-              .Require(
-                "rod-*",
-                4,
-                "ppex:rcc-ingredient-rod",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+            s.RequireMetalPlate(domain, 8)
+              .RequireMetalNails(domain, 8)
+              .RequireMetalRod(domain, 4)
               .Require("game:burnedbrick-fire", 36)
               .AddElements("Root/Casing")
           )

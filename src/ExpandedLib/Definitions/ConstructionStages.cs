@@ -98,5 +98,38 @@ public sealed class ConstructionStage
     return this;
   }
 
+  /// <summary>Requires iron/steel metal plate (<c>metalplate-*</c>, stored under the <c>metal</c> wildcard so
+  /// later stages/drops resolve to the same metal) - the mega-block RCC ingredient repeated across every
+  /// steam/steel machine. The missing-material hint key is <c>{domain}:rcc-ingredient-metalplate</c>.</summary>
+  public ConstructionStage RequireMetalPlate(string domain, int quantity) =>
+    RequireMetal(domain, "metalplate-*", "metalplate", quantity);
+
+  /// <summary>Requires iron/steel nails &amp; strips (<c>metalnailsandstrips-*</c>, stored under the
+  /// <c>metal</c> wildcard); hint key <c>{domain}:rcc-ingredient-nailsandstrips</c>.</summary>
+  public ConstructionStage RequireMetalNails(string domain, int quantity) =>
+    RequireMetal(domain, "metalnailsandstrips-*", "nailsandstrips", quantity);
+
+  /// <summary>Requires an iron/steel metal rod (<c>rod-*</c>, stored under the <c>metal</c> wildcard); hint
+  /// key <c>{domain}:rcc-ingredient-rod</c>.</summary>
+  public ConstructionStage RequireMetalRod(string domain, int quantity) =>
+    RequireMetal(domain, "rod-*", "rod", quantity);
+
+  // The shared iron/steel metal-ingredient shape every steam/steel mega-block's build stages repeat:
+  // a metal-captured wildcard code stored under "metal", limited to iron/steel, with the conventional
+  // rcc-ingredient hint key. Reproduces the exact JSON the hand-written Require calls emitted.
+  private ConstructionStage RequireMetal(
+    string domain,
+    string code,
+    string kind,
+    int quantity
+  ) =>
+    Require(
+      code,
+      quantity,
+      $"{domain}:rcc-ingredient-{kind}",
+      storeWildCard: "metal",
+      allowedVariants: ["iron", "steel"]
+    );
+
   internal JObject Build() => _stage;
 }

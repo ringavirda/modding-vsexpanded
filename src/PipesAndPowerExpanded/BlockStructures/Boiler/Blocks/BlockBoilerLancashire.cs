@@ -140,37 +140,19 @@ public partial class BlockBoilerLancashire
         c.Stage(s => s.AddElements("Root/Base"))
           .Stage(s =>
             s.Require("metalplate-steel", 10)
-              .Require(
-                "metalnailsandstrips-*",
-                8,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+              .RequireMetalNails(domain, 8)
               .Require("game:burnedbrick-fire", 12)
               .AddElements("Root/BaseExtension")
           )
           .Stage(s =>
             s.Require("metalplate-steel", 8)
               .Require("rod-steel", 4)
-              .Require(
-                "metalnailsandstrips-*",
-                8,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+              .RequireMetalNails(domain, 8)
               .AddElements("Root/Flues")
           )
           .Stage(s =>
             s.Require("metalplate-steel", 16)
-              .Require(
-                "metalnailsandstrips-*",
-                8,
-                "ppex:rcc-ingredient-nailsandstrips",
-                storeWildCard: "metal",
-                allowedVariants: ["iron", "steel"]
-              )
+              .RequireMetalNails(domain, 8)
               .Require("rod-steel", 6)
               .Require("game:burnedbrick-fire", 48)
               .AddElements("Root/Casing")

@@ -16,9 +16,6 @@ public partial class BlockPipe : BlockNetworkNode, IBurstablePipe, IExBlockDefPr
 {
   public override string NetworkType => "pipe";
 
-  /// <summary>The mod id, used to build the code-first defs when deriving runtime tables from them.</summary>
-  protected const string Domain = "ppex";
-
   #region Code-first definitions
 
   /// <summary>
@@ -181,24 +178,7 @@ public partial class BlockPipe : BlockNetworkNode, IBurstablePipe, IExBlockDefPr
   /// </summary>
   public virtual bool CanBurst => GetType() == typeof(BlockPipe);
 
-  private Dictionary<string, string[]>? _allowedOrientations;
-
-  /// <summary>
-  /// Derived from THIS block's own code-first defs (resolved by its runtime type), so the orientation
-  /// states live once - in the variant groups - and every pipe subclass inherits the right map with no
-  /// duplicated list. Cached on first read.
-  /// </summary>
-  public override Dictionary<string, string[]> AllowedOrientations =>
-    _allowedOrientations ??= ExDefinitions.OrientationMap(
-      ExDefinitions.DefinitionsOf(GetType(), Domain)
-    );
-
-  /// <summary>A type's default orientation is the first state it lists - which matches every pipe
-  /// variant's fallback, so this is derived too instead of a hand-kept table.</summary>
-  protected override string GetFallbackOrientation(string? type) =>
-    type != null
-    && AllowedOrientations.TryGetValue(type, out string[]? states)
-    && states.Length > 0
-      ? states[0]
-      : "ns";
+  // AllowedOrientations + GetFallbackOrientation are inherited from BlockNetworkNode, which derives both from
+  // this block's own code-first defs (resolved by runtime type) - so every pipe subclass gets the right map
+  // with no duplicated list and no hand-kept fallback table.
 }
