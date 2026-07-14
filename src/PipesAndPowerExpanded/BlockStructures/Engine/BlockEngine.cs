@@ -2,11 +2,13 @@ using System;
 using System.Linq;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using PipesAndPowerExpanded.BlockStructures.Engine.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
@@ -62,6 +64,13 @@ public abstract class BlockEngine
   /// <summary>The rotated facing the condensed water exits through (local-east).</summary>
   public BlockFacing WaterOutletFace =>
     ExOrientation.RotateFacing(BlockFacing.EAST, Angle);
+
+  // The engine placement geometry (IEngineGeometry), read at runtime from the block's own attributes
+  // (file or injected def alike). These replace the per-leaf generated members so the values live once,
+  // in the def; the concrete Watt/Cornish satisfy IEngineGeometry via these inherited accessors. Left
+  // nullable so the coded Default*Offset below still applies when the block carries no attributes (tests).
+  public JsonObject? SubmachineOffset => Attributes?["submachineOffset"];
+  public JsonObject? GearHousingOffset => Attributes?["gearHousingOffset"];
 
   /// <summary>Default sub-machine cell (local {0,0,2}) when <c>submachineOffset</c> is unset.</summary>
   private static readonly Vec3i DefaultSubmachineOffset = new(0, 0, 2);
@@ -195,6 +204,37 @@ public abstract class BlockEngine
     ba.ExchangeBlock(target.BlockId, subPos);
     ba.MarkBlockDirty(subPos);
   }
+
+  #region Code-first definition
+
+  /// <summary>
+  /// The surface shared by both steam-engine mega-blocks (Watt/Cornish): metal material + sounds, mining
+  /// tier/resistance, the HorizontalOrientable + BlockEntityInteract behaviors, the Animatable entity
+  /// behavior, the sub-machine/gear-housing offsets, the side variant group, the body-frame shape spin
+  /// (+180) with the cylinder selective elements, and the full cube collision. The caller binds its own
+  /// <c>class</c>/<c>entityClass</c>, its own filler footprint (each engine's beam column differs), and its
+  /// staged construction table.
+  /// </summary>
+  protected static ExBlockDef EngineShell(ExBlockDef def, string shapeBase) =>
+    def.Material(EnumBlockMaterial.Metal)
+      .MetalSounds()
+      .MiningTier(3)
+      .Resistance(45.0f)
+      .MaxStackSize(1)
+      .Behavior("HorizontalOrientable")
+      .Behavior("BlockEntityInteract")
+      .EntityBehavior("Animatable")
+      .Attribute("submachineOffset", new { x = 0, y = 0, z = 2 })
+      .Attribute("gearHousingOffset", new { x = 0, y = 3, z = 1 })
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .CreativeCommon("*-north")
+      .ShapeSpunPerOrientation(shapeBase, 180)
+      .ShapeSelectiveElements("Root/Cylinder/*")
+      .SingleSelectionBox(0, 0, 0, 1, 1, 1)
+      .SingleCollisionBox(0, 0, 0, 1, 1, 1)
+      .NonSolid();
+
+  #endregion
 
   #region Repair
 

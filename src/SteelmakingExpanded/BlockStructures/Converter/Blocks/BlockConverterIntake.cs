@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
@@ -14,8 +16,28 @@ namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 /// orientable so it can be aligned with the control block.
 /// </summary>
 [BlockRegister]
-public partial class BlockConverterIntake : Block, INetworkConnector
+public partial class BlockConverterIntake
+  : Block,
+    INetworkConnector,
+    IExBlockDefProvider
 {
+  /// <summary>The converter blast-intake blocktype, authored in C# (migrated from converter/intake.json).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "converter", "converter/intake")
+        .Class<BlockConverterIntake>()
+        .Behavior("HorizontalOrientable")
+        .Material(EnumBlockMaterial.Metal)
+        .MetalSounds()
+        .MaxStackSize(1)
+        .CreativeCommon("*-north")
+        .VariantGroup("type", "intake")
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .ShapeByTypeSpunPerOrientation("smex:converter/intake")
+        .NonSolid(),
+    ];
+
   public string NetworkType => "pipe";
 
   /// <summary>

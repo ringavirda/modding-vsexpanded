@@ -75,7 +75,8 @@ public sealed class ConstructionStage
     int quantity,
     string? name = null,
     string type = "item",
-    string? storeWildCard = null
+    string? storeWildCard = null,
+    string[]? allowedVariants = null
   )
   {
     var ingredient = new JObject
@@ -86,6 +87,8 @@ public sealed class ConstructionStage
     };
     if (name != null)
       ingredient["name"] = name;
+    if (allowedVariants != null)
+      ingredient["allowedVariants"] = new JArray(allowedVariants);
     if (storeWildCard != null)
       ingredient["storeWildCard"] = storeWildCard;
 

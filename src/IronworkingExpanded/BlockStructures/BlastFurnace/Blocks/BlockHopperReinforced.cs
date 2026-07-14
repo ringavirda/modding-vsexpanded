@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Client;
@@ -13,8 +15,51 @@ namespace IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
 /// bell hopper below.
 /// </summary>
 [BlockRegister]
-public partial class BlockHopperReinforced : Block
+public partial class BlockHopperReinforced : Block, IExBlockDefProvider
 {
+  /// <summary>The reinforced hopper blocktype, authored in C# (migrated from blastfurnace/hopperreinforced.json).
+  /// Its vanilla Container attributes (inventory class, faces, slots, open/tumble sounds) are authored as one
+  /// merged attributes object.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "hopperreinforced", "blastfurnace/hopperreinforced")
+        .Class<BlockHopperReinforced>()
+        .EntityClass("iwex.BlockEntityHopperReinforced")
+        .Behavior("Lockable")
+        .Behavior("Container")
+        .Attributes(
+          new
+          {
+            inventoryClassName = "hopperreinforced",
+            pullFaces = new string[] { },
+            acceptFromFaces = new[] { "up" },
+            pushFaces = new[] { "down" },
+            quantitySlots = 8,
+            openSound = new
+            {
+              path = "block/hopperopen",
+              pitch = new { avg = 1.0, @var = 0.25 },
+            },
+            tumbleSound = new
+            {
+              path = "block/hoppertumble",
+              pitch = new { avg = 1.0, @var = 0.25 },
+              range = 8,
+              volume = new { avg = 0.5, @var = 0.0 },
+            },
+          }
+        )
+        .CreativeCommon("*")
+        .Material(EnumBlockMaterial.Metal)
+        .MaxStackSize(1)
+        .LightAbsorption(0)
+        .Shape("iwex:blastfurnace/hopper-reinforced")
+        .NonSolid()
+        .Resistance(1.75f)
+        .MetalSounds(),
+    ];
+
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,

@@ -123,7 +123,9 @@ public class MoltenCanalTapTests
     Assert.False(be.IsMold);
     Assert.True(be.HasContent);
     Assert.Equal(20, be.BarrelCurrentUnits);
-    Assert.Equal(BlockMoltenBarrel.MaxUnits, be.BarrelMaxUnits);
+    // The test barrel is a plain Block double (no injected maxUnits attribute), so the tap reads the
+    // config-default capacity - the same 800 the block's MaxUnits accessor would return in-game.
+    Assert.Equal(IwexValues.BarrelDefaultMaxUnits, be.BarrelMaxUnits);
     Assert.NotNull(be.BarrelMetalContent);
   }
 

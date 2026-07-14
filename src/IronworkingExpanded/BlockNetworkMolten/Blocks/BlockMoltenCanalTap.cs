@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
@@ -21,6 +22,48 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
 {
   // Barrel + large molds (anvil, helve hammer) that can be cast in the tap.
   private ItemStack[]? _acceptedContents;
+
+  #region Code-first definition
+
+  /// <summary>The canal tap blocktype, authored in C# (migrated from molten/tap.json). A single-skin
+  /// endpoint (its own burned-clay + metal-sheet textures, not the brick/cobble skins), so it is authored
+  /// directly rather than through the shared canal-family surface.</summary>
+  public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "moltencanal", "molten/tap")
+        .Class<BlockMoltenCanalTap>()
+        .EntityClass("iwex.BlockEntityMoltenCanalTap")
+        .Material(EnumBlockMaterial.Stone)
+        .Sound("walk", "game:walk/stone")
+        .SoundByTool(
+          EnumTool.Pickaxe,
+          "game:block/rock-hit-pickaxe",
+          "game:block/rock-break-pickaxe"
+        )
+        .MaxStackSize(1)
+        .CreativeCommon("*-tap-s")
+        .Attribute("fillHeight", 1)
+        .Attribute("fillStart", 14)
+        .Attribute("fillQuadsByLevel", new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 5 } })
+        .Handbook("moltencanal-tap-*")
+        .Texture("burned", "game:block/clay/vessel/sides/burned")
+        .Texture("steel3", "game:block/metal/riveted/steel3")
+        .Texture("iron3", "game:block/metal/sheet-plain/iron3")
+        .Texture("steel32", "game:block/metal/sheet-plain/steel3")
+        .Behavior("Lockable")
+        .VariantGroup("type", "tap")
+        .VariantGroup("orientation", "n", "w", "s", "e")
+        .ShapeByType("*-tap-n", "iwex:molten/canal/tap")
+        .ShapeByType("*-tap-w", "iwex:molten/canal/tap", rotateY: 90)
+        .ShapeByType("*-tap-s", "iwex:molten/canal/tap", rotateY: 180)
+        .ShapeByType("*-tap-e", "iwex:molten/canal/tap", rotateY: 270)
+        .CollisionBox(0.0625f, 0.0625f, 0f, 0.9375f, 0.9375f, 0.9375f)
+        .SelectionBox(0.0625f, 0.0625f, 0f, 0.9375f, 0.9375f, 0.9375f)
+        .NonSolid(),
+    ];
+
+  #endregion
 
   public override void OnLoaded(ICoreAPI api)
   {
@@ -231,15 +274,8 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
   }
 
-  public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new() { { "tap", ["n", "s", "w", "e"] } };
-
-  protected override string GetFallbackOrientation(string? type) =>
-    type switch
-    {
-      "tap" => "n",
-      _ => "n",
-    };
+  // AllowedOrientations + GetFallbackOrientation are derived from the def's variant group (base
+  // BlockMoltenCanal); the tap's first-listed orientation "n" is also its fallback, so neither is overridden.
 
   protected override void GetRotations(
     string orientation,

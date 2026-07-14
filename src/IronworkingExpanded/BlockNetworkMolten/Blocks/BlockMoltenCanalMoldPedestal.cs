@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
@@ -19,8 +21,46 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 [BlockRegister]
 public partial class BlockMoltenCanalMoldPedestal : BlockMoltenCanalTap
 {
-  public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new() { { "moldpedestal", ["n", "s", "w", "e"] } };
+  #region Code-first definition
+
+  // The mold pedestal's separate cast-mold fill geometry, read at runtime from the block's own attributes
+  // (file or injected def alike) - replacing the JSON-scanned generated members. (The pedestal's OWN canal
+  // fill uses the base FillStart/FillHeight/FillQuadsByLevel accessors.)
+  public JsonObject? MoldFillQuadsByLevel => Attributes?["moldFillQuadsByLevel"];
+  public int MoldFillStart => Attributes?["moldFillStart"].AsInt(12) ?? 12;
+  public int MoldFillHeight => Attributes?["moldFillHeight"].AsInt(1) ?? 1;
+
+  /// <summary>The two mold-pedestal blocktypes (fire-brick + cobblestone skin), authored in C# (migrated
+  /// from molten/canalbrick/moldpedestal.json + molten/canalcobblestone/moldpedestal.json) off the shared
+  /// canal-family surface, plus the separate <c>moldFill*</c> geometry for the cast mold it holds.</summary>
+  public static new IEnumerable<ExBlockDef> Definitions(string domain)
+  {
+    foreach (CanalSkin skin in CanalSkins)
+      yield return CanalFamilyDef(
+          domain,
+          $"molten/{skin.Folder}/moldpedestal",
+          skin,
+          "moldpedestal",
+          1,
+          "*-moldpedestal-*-s",
+          ["n", "w", "s", "e"],
+          new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 5 } },
+          "iwex:molten/canal/moldpedestal",
+          [
+            ("*-moldpedestal-*-n", null),
+            ("*-moldpedestal-*-w", 90),
+            ("*-moldpedestal-*-s", 180),
+            ("*-moldpedestal-*-e", 270),
+          ]
+        )
+        .Attribute("moldFillStart", 12)
+        .Attribute("moldFillHeight", 1)
+        .Attribute("moldFillQuadsByLevel", new[] { new { x1 = 2, z1 = 2, x2 = 14, z2 = 14 } })
+        .Class<BlockMoltenCanalMoldPedestal>()
+        .EntityClass("iwex.BlockEntityMoltenCanalMoldPedestal");
+  }
+
+  #endregion
 
   private ItemStack[]? _acceptedMolds;
 

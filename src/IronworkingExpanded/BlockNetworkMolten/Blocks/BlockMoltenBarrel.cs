@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using ExpandedLib.Metals;
@@ -19,13 +21,49 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 /// be chiselled out. Sneak + right-click picks the barrel up with its contents.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenBarrel : Block
+public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 {
   private MeshData? _barrelBaseMesh;
 
   // Cached item list for the pour interaction help, populated on load. (The chisel list is shared
   // through MoltenChisel.ChiselHelp.)
   private ItemStack[] _smeltedCrucibles = [];
+
+  #region Code-first definition
+
+  // Fill geometry + capacity read at runtime from the block's own attributes (file or injected def
+  // alike), replacing the JSON-scanned generated members - so the values live once, in the def.
+  public int MaxUnits => Attributes?["maxUnits"].AsInt(800) ?? 800;
+  public int FillStart => Attributes?["fillStart"].AsInt(2) ?? 2;
+  public int FillHeight => Attributes?["fillHeight"].AsInt(8) ?? 8;
+  public JsonObject? FillQuadsByLevel => Attributes?["fillQuadsByLevel"];
+
+  /// <summary>The molten barrel blocktype, authored in C# (migrated from molten/barrel.json). A
+  /// portable metal vessel that stores liquid metal and can be carried in a backpack.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "moltenbarrel", "molten/barrel")
+        .Class<BlockMoltenBarrel>()
+        .EntityClass("iwex.BlockEntityMoltenBarrel")
+        .MaxStackSize(1)
+        .StorageFlags(2)
+        .Material(EnumBlockMaterial.Metal)
+        .MetalSounds()
+        .CreativeCommon("*")
+        .HeldTpIdleAnimation("holdbothhandslarge")
+        .Attribute("maxUnits", 800)
+        .Attribute("fillHeight", 8)
+        .Attribute("fillStart", 2)
+        .Attribute("fillQuadsByLevel", new[] { new { x1 = 4, z1 = 4, x2 = 12, z2 = 12 } })
+        .Behavior("Lockable")
+        .Behavior("UnstableFalling")
+        .Shape("iwex:molten/barrel")
+        .NonSolid()
+        .TpHandTransform(-0.8, -1, -0.55, 20, 14, -90, 0.75),
+    ];
+
+  #endregion
 
   public override void OnLoaded(ICoreAPI api)
   {

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Common;
@@ -11,8 +13,29 @@ namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 /// in its natural (north) orientation; the connector follows the "side" variant.
 /// </summary>
 [BlockRegister]
-public partial class BlockConverterTransmission : Block, IMechanicalPowerBlock
+public partial class BlockConverterTransmission
+  : Block,
+    IMechanicalPowerBlock,
+    IExBlockDefProvider
 {
+  /// <summary>The converter MP-transmission blocktype, authored in C# (migrated from converter/transmission.json).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "convertertransmission", "converter/transmission")
+        .Class<BlockConverterTransmission>()
+        .EntityClass("smex.BlockEntityConverterTransmission")
+        .EntityBehavior("smex.BEBehaviorMPConverterTransmission")
+        .Material(EnumBlockMaterial.Metal)
+        .MetalSounds()
+        .MaxStackSize(1)
+        .CreativeCommon("*-north")
+        .Behavior("HorizontalOrientable")
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .ShapeByTypeSpunPerOrientation("smex:converter/transmission", offset: 180)
+        .NonSolid(),
+    ];
+
   private BlockFacing ConnectorFace =>
     Variant["side"] switch
     {

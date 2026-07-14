@@ -34,10 +34,7 @@ public partial class BlockSolidifiedIron : Block, IExBlockDefProvider
         .MaxStackSize(8)
         .MiningTier(5)
         .MineTool(EnumTool.Pickaxe)
-        .Sound("place", "game:block/anvil")
-        .Sound("break", "game:block/anvil")
-        .Sound("hit", "game:block/anvil")
-        .Sound("walk", "game:walk/stone"),
+        .MetalSounds(),
     ];
 
   public override ItemStack[] GetDrops(

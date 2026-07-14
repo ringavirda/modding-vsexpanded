@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
+using PipesAndPowerExpanded.BlockStructures.Boiler.BlockEntities;
 
 namespace PipesAndPowerExpanded.BlockStructures.Boiler.Blocks;
 
@@ -11,4 +14,166 @@ namespace PipesAndPowerExpanded.BlockStructures.Boiler.Blocks;
 public partial class BlockBoilerLancashire
   : BlockBoiler,
     IFillerHost,
-    IBoilerGeometry { }
+    IBoilerGeometry,
+    IExBlockDefProvider
+{
+  /// <summary>The Lancashire boiler blocktype, authored in C# (migrated from boiler/lancashire.json). Its
+  /// filler footprint and structure map are drawn as ASCII layer diagrams; the geometry offsets are plain
+  /// attributes; the build sequence is a typed stage table.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [Lancashire(domain)];
+
+  private static ExBlockDef Lancashire(string domain) =>
+    BoilerShell(
+        ExBlockDef
+          .Create(domain, "boilerlancashire", "boiler/lancashire")
+          .Class<BlockBoilerLancashire>()
+          .EntityClass<BlockEntityBoilerLancashire>(),
+        "ppex:boiler/lancashire"
+      )
+      .MiningTier(4)
+      .Attributes(
+        new
+        {
+          steamConnectorOffset = new { x = 0, y = 1, z = 4 },
+          lidOffset = new { x = 0, y = 1, z = 1 },
+          fuelOffset = new { x = 0, y = 0, z = -1 },
+          explosionCenterOffset = new { x = 0, y = 1, z = 3 },
+          lightSampleOffset = new { x = 0, y = 1, z = 3 },
+          exhaustOutletOffset = new { x = 0, y = 1, z = 6 },
+          waterRendererBox = new
+          {
+            x1 = -14,
+            y1 = 2,
+            z1 = 2,
+            x2 = 30,
+            y2 = 30,
+            z2 = 94,
+          },
+        }
+      )
+      .FillerOffsets(
+        StructureFootprint.Layout(f =>
+          f.Origin(-1, 0)
+            .Layer(
+              0,
+              """
+              + O +
+              + + +
+              + + +
+              + + +
+              + + +
+              + + +
+              """
+            )
+            .Layer(
+              1,
+              """
+              # + #
+              # + #
+              # + #
+              # + #
+              # + #
+              # + #
+              """
+            )
+        )
+      )
+      .MultiblockLayout(s =>
+        s.Origin(-1, -2)
+          .Legend('#', "exlib:structurefiller")
+          .Legend('L', "ppex:boilerlancashire*")
+          .Legend('p', "ppex:pipe-passthrough-fire-*")
+          .Legend('B', "ppex:pipe-passthroughbend-fire-u*")
+          .Legend('b', "game:claybricks-good-fire")
+          .Legend('a', "game:air*")
+          .Legend('c', "@(air|coalpile)")
+          .Legend('d', "game:cokeovendoor*")
+          .Legend('o', "ppex:pipe-outlet-fire-u")
+          .Layer(
+            1,
+            """
+            . b .
+            . b .
+            # # #
+            # # #
+            # # #
+            # # #
+            # # #
+            # # #
+            . o .
+            . b .
+            """
+          )
+          .Layer(
+            0,
+            """
+            b d b
+            b c b
+            # L #
+            # # #
+            # # #
+            # # #
+            # # #
+            # # #
+            b a b
+            b b b
+            """
+          )
+          .Layer(
+            -1,
+            """
+            b p b
+            b p b
+            b B b
+            b b b
+            b b b
+            b b b
+            b b b
+            b b b
+            b b b
+            b b b
+            """
+          )
+      )
+      .Construction(c =>
+        c.Stage(s => s.AddElements("Root/Base"))
+          .Stage(s =>
+            s.Require("metalplate-steel", 10)
+              .Require(
+                "metalnailsandstrips-*",
+                8,
+                "ppex:rcc-ingredient-nailsandstrips",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require("game:burnedbrick-fire", 12)
+              .AddElements("Root/BaseExtension")
+          )
+          .Stage(s =>
+            s.Require("metalplate-steel", 8)
+              .Require("rod-steel", 4)
+              .Require(
+                "metalnailsandstrips-*",
+                8,
+                "ppex:rcc-ingredient-nailsandstrips",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/Flues")
+          )
+          .Stage(s =>
+            s.Require("metalplate-steel", 16)
+              .Require(
+                "metalnailsandstrips-*",
+                8,
+                "ppex:rcc-ingredient-nailsandstrips",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require("rod-steel", 6)
+              .Require("game:burnedbrick-fire", 48)
+              .AddElements("Root/Casing")
+          )
+      );
+}

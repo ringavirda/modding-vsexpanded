@@ -1,15 +1,31 @@
 using System;
 using System.Collections.Generic;
+using ExpandedLib.Definitions;
 
 namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
-/// One north-orientation footprint cell for a mega-block, authored in C#: the offset from the principal
-/// and whether other blocks may attach to the filler placed there. This is the typed source the code-first
-/// <c>fillerOffsets</c> attribute is serialized from (<see cref="ExpandedLib.Definitions.ExBlockDef.FillerOffsets"/>),
-/// so a footprint can be <b>computed and validated</b> in C# instead of hand-typing a coordinate array.
+/// One behaviour hosted by a footprint filler cell: a block-entity behaviour code plus, optionally, the block
+/// face it exposes a connector on. This is how a filler cell becomes a live port - e.g. a
+/// <c>exlib.BEBehaviorMPFillerPort</c> on <c>west</c> turns the cell into a mechanical-power intake so an axle
+/// on that face drives the principal. Serialized as <c>{ code[, face] }</c> in a cell's <c>behaviors</c> array.
 /// </summary>
-public readonly record struct FillerCellSpec(int X, int Y, int Z, bool AllowAttach = false);
+public readonly record struct FillerBehaviorSpec(string Code, string? Face = null);
+
+/// <summary>
+/// One north-orientation footprint cell for a mega-block, authored in C#: the offset from the principal, whether
+/// other blocks may attach to the filler placed there, and any per-cell hosted <see cref="FillerBehaviorSpec"/>
+/// behaviours (MP/pipe ports). This is the typed source the code-first <c>fillerOffsets</c> attribute is
+/// serialized from (<see cref="ExpandedLib.Definitions.ExBlockDef.FillerOffsets"/>), so a footprint can be
+/// <b>computed and validated</b> in C# instead of hand-typing a coordinate array.
+/// </summary>
+public readonly record struct FillerCellSpec(
+  int X,
+  int Y,
+  int Z,
+  bool AllowAttach = false,
+  IReadOnlyList<FillerBehaviorSpec>? Behaviors = null
+);
 
 /// <summary>
 /// Computes mega-block footprints (the <c>fillerOffsets</c> tables) from a compact description instead of
@@ -43,6 +59,20 @@ public static class StructureFootprint
 
     Validate(cells);
     return cells;
+  }
+
+  /// <summary>
+  /// Builds a footprint from ASCII layer diagrams (the same drawing model as the multiblock DSL): one
+  /// <c>Layer</c> per Y level, cells marked solid or attach-allowing. By default <c>'#'</c> is a plain filler
+  /// and <c>'+'</c> a filler other blocks may attach to; register more with <see cref="FillerLayoutBuilder.Solid"/>
+  /// / <see cref="FillerLayoutBuilder.Attach"/>. The principal origin <c>(0,0,0)</c> is skipped if drawn, and the
+  /// result is validated (no duplicate cell). This expresses an irregular footprint the way you'd sketch it.
+  /// </summary>
+  public static IReadOnlyList<FillerCellSpec> Layout(Action<FillerLayoutBuilder> configure)
+  {
+    var builder = new FillerLayoutBuilder();
+    configure(builder);
+    return builder.Build();
   }
 
   /// <summary>Column offsets from the centre out: <c>0, +1, -1, +2, -2, …</c> up to <paramref name="halfWidth"/>.</summary>

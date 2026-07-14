@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.OreMixer.BlockEntities;
@@ -21,8 +22,73 @@ namespace IronworkingExpanded.BlockStructures.OreMixer.Blocks;
 public partial class BlockOreMixer
   : BlockFilledMegastructure,
     IFillerHost,
-    IFillerInteractionTarget
+    IFillerInteractionTarget,
+    IExBlockDefProvider
 {
+  #region Code-first definition
+
+  // The mechanical-power intake behaviour hosted by each upper footprint cell: an axle on the (rotation-relative)
+  // west face drives the rotor. The same spec on all three top cells.
+  private static readonly FillerBehaviorSpec MpPortWest =
+    new("exlib.BEBehaviorMPFillerPort", "west");
+
+  /// <summary>The ore-mixer blocktype, authored in C# (migrated from blocktypes/ore/mixer.json). A one-cell
+  /// principal rendered across a 3×2 footprint of invisible fillers; the two lower-side cells are plain, the three
+  /// upper cells each host an MP power port (<see cref="MpPortWest"/>) and allow attachment. Built through a
+  /// 3-stage RightClickConstructable; the per-orientation shape rotation is derived (north 0 … west 90).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "mixer", "ore/mixer")
+        .Class<BlockOreMixer>()
+        .EntityClass<BlockEntityOreMixer>()
+        .Material(EnumBlockMaterial.Metal)
+        .MiningTier(0)
+        .Resistance(4.5f)
+        .MaxStackSize(1)
+        .NoDrops()
+        .FillerOffsets(
+          [
+            new FillerCellSpec(-1, 0, 0),
+            new FillerCellSpec(1, 0, 0),
+            new FillerCellSpec(0, 1, 0, AllowAttach: true, Behaviors: [MpPortWest]),
+            new FillerCellSpec(-1, 1, 0, AllowAttach: true, Behaviors: [MpPortWest]),
+            new FillerCellSpec(1, 1, 0, AllowAttach: true, Behaviors: [MpPortWest]),
+          ]
+        )
+        .Behavior("HorizontalOrientable")
+        .Behavior("BlockEntityInteract")
+        .EntityBehavior("Animatable")
+        .Construction(c =>
+          c.Stage(s => s.AddElements("Root/LowerCasing", "Root/Support"))
+            .Stage(s =>
+              s.Require("game:ingot-iron", 6, "iwex:rcc-ingredient-ironcasing")
+                .AddElements("Root/UpperCasing")
+            )
+            .Stage(s =>
+              s.Require("ppex:gear-iron", 2, "iwex:rcc-ingredient-rotorgears")
+                .Require("game:ingot-iron", 2, "iwex:rcc-ingredient-rotorshaft")
+                .AddElements("Root/Rotor")
+            )
+        )
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .CreativeCommon("*-north")
+        .ShapeSpunPerOrientation("iwex:ore/mixer")
+        .ShapeSelectiveElements("Root/LowerCasing/*", "Root/Support/*")
+        .Sounds(
+          "game:block/anvil",
+          "game:block/metal",
+          "game:block/metal",
+          "game:walk/stone"
+        )
+        .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f)
+        .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
+        .SideSolid(false)
+        .SideOpaque(false),
+    ];
+
+  #endregion
+
   /// <summary>Structure/filler rotation, paired with the JSON <c>rotateYByType</c> (north 0 … west 90).
   /// Also the BE's port-cell resolution angle.</summary>
   public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);

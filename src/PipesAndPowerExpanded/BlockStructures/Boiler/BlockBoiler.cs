@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -18,8 +19,21 @@ namespace PipesAndPowerExpanded.BlockStructures.Boiler;
 public abstract class BlockBoiler
   : BlockFilledMegastructure,
     INetworkConnector,
-    IFillerInteractionTarget
+    IFillerInteractionTarget,
+    IBoilerGeometry
 {
+  // The boiler geometry offsets, read at runtime from the block's own attributes (populated from the JSON
+  // file or the injected code-first def alike). Implemented here so the concrete Lancashire/Cornish leaves
+  // inherit one copy instead of each carrying a generated one - and so a leaf can drop its blocktype JSON
+  // without losing these accessors (the "runtime reads the same record" side of the code-first inversion).
+  public JsonObject? FuelOffset => Attributes?["fuelOffset"];
+  public JsonObject? ExhaustOutletOffset => Attributes?["exhaustOutletOffset"];
+  public JsonObject? LidOffset => Attributes?["lidOffset"];
+  public JsonObject? SteamConnectorOffset => Attributes?["steamConnectorOffset"];
+  public JsonObject? LightSampleOffset => Attributes?["lightSampleOffset"];
+  public JsonObject? ExplosionCenterOffset => Attributes?["explosionCenterOffset"];
+  public JsonObject? WaterRendererBox => Attributes?["waterRendererBox"];
+
   // The body extends along local +z; offset the angle 180° so HorizontalOrientable raises it
   // AWAY from the player. rotateYByType is offset to match, keeping visual/fillers/connectors aligned.
   private int Angle =>
@@ -33,33 +47,56 @@ public abstract class BlockBoiler
 
   public bool HasConnectorAt(BlockFacing face) => face == BlockFacing.DOWN;
 
-  /// <summary>The concrete boiler's generated offset accessors (Lancashire/Cornish implement it).</summary>
-  private IBoilerGeometry Geo => (IBoilerGeometry)this;
+  /// <summary>This boiler's geometry offsets (implemented on the base above; the leaves inherit them).</summary>
+  private IBoilerGeometry Geo => this;
 
-  private BlockPos OffsetWorldPos(
-    BlockPos boilerPos,
-    JsonObject? offsetNode,
-    Vec3i fallback
-  ) => ExOrientation.WorldPosFromAttr(boilerPos, offsetNode, fallback, Angle);
+  /// <summary>
+  /// The shared code-first surface both boiler variants carry (material, sounds, break resistance, the
+  /// multiblock/orientable/interact behaviors, the Animatable entity behavior, the side variant group, the
+  /// one base shape spun per orientation, and the non-solid flags). Each leaf's <c>Definitions</c> starts
+  /// here and overlays only what differs: mining tier, geometry offsets, filler footprint, structure map and
+  /// construction stages. Authored once instead of copied into both boiler defs.
+  /// </summary>
+  protected static ExBlockDef BoilerShell(ExBlockDef def, string shapeBase) =>
+    def.Material(EnumBlockMaterial.Metal)
+      .MetalSounds()
+      .Resistance(45f)
+      .MaxStackSize(1)
+      .NoDrops()
+      .Behavior("MultiblockStructure")
+      .Behavior("HorizontalOrientable")
+      .Behavior("BlockEntityInteract")
+      .EntityBehavior("Animatable")
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .CreativeCommon("*-north")
+      .ShapeSpunPerOrientation(shapeBase)
+      .ShapeSelectiveElements("Root/Base/*")
+      .NonSolid();
+
+  // Each offset value lives solely in the def attribute (both boiler variants author all of them, pinned by
+  // the parity tests), so there is no hand-kept fallback to drift from it - a missing attribute resolves to
+  // the origin rather than a stale guess.
+  private BlockPos OffsetWorldPos(BlockPos boilerPos, JsonObject? offsetNode) =>
+    ExOrientation.WorldPosFromAttr(boilerPos, offsetNode, Vec3i.Zero, Angle);
 
   /// <summary>World cell of the firebox slot.</summary>
   public BlockPos FuelWorldPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.FuelOffset, new Vec3i(0, 0, -1));
+    OffsetWorldPos(boilerPos, Geo.FuelOffset);
 
   /// <summary>World cell of the exhaust gas outlet.</summary>
   public BlockPos ExhaustOutletWorldPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.ExhaustOutletOffset, new Vec3i(0, 1, 4));
+    OffsetWorldPos(boilerPos, Geo.ExhaustOutletOffset);
 
   /// <summary>World cell of the filler that carries the access lid.</summary>
   public BlockPos LidWorldPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.LidOffset, new Vec3i(0, 1, 0));
+    OffsetWorldPos(boilerPos, Geo.LidOffset);
 
   /// <summary>
   /// World cell of the steam connector (the port filler atop the body); the steam pipe attaches
   /// in the cell directly above it.
   /// </summary>
   public BlockPos SteamPipeWorldPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.SteamConnectorOffset, new Vec3i(0, 1, 2));
+    OffsetWorldPos(boilerPos, Geo.SteamConnectorOffset);
 
   /// <summary>
   /// World cell the animated vessel mesh is lit from. Vanilla lights the whole footprint from
@@ -67,14 +104,14 @@ public abstract class BlockBoiler
   /// sample at a body cell instead. Read from <c>lightSampleOffset</c>, rotated by angle.
   /// </summary>
   public BlockPos LightSampleWorldPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.LightSampleOffset, new Vec3i(0, 1, 2));
+    OffsetWorldPos(boilerPos, Geo.LightSampleOffset);
 
   /// <summary>
   /// World cell at the footprint centre, where the burst explosion is centred so it goes off
   /// inside the boiler. Read from <c>explosionCenterOffset</c>, rotated by angle.
   /// </summary>
   public BlockPos ExplosionCenterPos(BlockPos boilerPos) =>
-    OffsetWorldPos(boilerPos, Geo.ExplosionCenterOffset, new Vec3i(0, 1, 1));
+    OffsetWorldPos(boilerPos, Geo.ExplosionCenterOffset);
 
   /// <summary>Removes the boiler's reserved filler footprint (used by the explosion path).</summary>
   public void RemoveStructure(IWorldAccessor world, BlockPos pos) =>

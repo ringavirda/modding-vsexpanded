@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
@@ -12,8 +14,27 @@ namespace SteelmakingExpanded.BlockStructures.CowperStove.Blocks;
 /// Always drops/picks as the canonical north variant.
 /// </summary>
 [BlockRegister]
-public partial class BlockHeatSink : Block
+public partial class BlockHeatSink : Block, IExBlockDefProvider
 {
+  /// <summary>The cowper-stove heat-sink blocktype, authored in C# (migrated from cowperstove/heatsink.json).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "cowperstoveheatsink", "cowperstove/heatsink")
+        .Class<BlockHeatSink>()
+        .EntityClass("smex.BlockEntityHeatSink")
+        .Shape("smex:cowperstove/heatsink")
+        .Material(EnumBlockMaterial.Metal)
+        .MetalSounds()
+        .MaxStackSize(4)
+        .LightAbsorption(99)
+        .CreativeCommon("*-north")
+        .Behavior("HorizontalOrientable")
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .ShapeByTypeSpunPerOrientation("smex:cowperstove/heatsink")
+        .NonSolid(),
+    ];
+
   public override byte[] GetLightHsv(
     IBlockAccessor blockAccessor,
     BlockPos pos,

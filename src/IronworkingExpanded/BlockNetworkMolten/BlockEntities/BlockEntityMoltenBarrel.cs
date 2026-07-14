@@ -31,9 +31,9 @@ public class BlockEntityMoltenBarrel
   /// <summary>Units of metal currently held.</summary>
   public int CurrentUnitAmount = 0;
 
-  /// <summary>Maximum units this barrel can hold. Baked at compile time from the block JSON's
-  /// <c>maxUnits</c> attribute by the attribute source generator - no runtime JSON read.</summary>
-  public int MaxUnitAmount = BlockMoltenBarrel.MaxUnits;
+  /// <summary>Maximum units this barrel can hold. Set from the block's <c>maxUnits</c> attribute in
+  /// <see cref="Initialize"/>; the config default covers the pre-init window.</summary>
+  public int MaxUnitAmount = IwexValues.BarrelDefaultMaxUnits;
 
   private MoltenRenderer? _renderer;
 
@@ -163,7 +163,9 @@ public class BlockEntityMoltenBarrel
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
-    // MaxUnitAmount is the generated BlockMoltenBarrel.MaxUnits const (from the JSON) - no read here.
+    // Adopt the barrel's authored capacity (from the injected def's attributes) now that Block is resolved.
+    if (Block is BlockMoltenBarrel barrel)
+      MaxUnitAmount = barrel.MaxUnits;
 
     if (api.Side == EnumAppSide.Client)
     {
@@ -201,8 +203,8 @@ public class BlockEntityMoltenBarrel
       barrel.FillQuadsByLevel,
       new Cuboidf(4f, 0f, 4f, 12f, 16f, 12f)
     );
-    float fillStartY = BlockMoltenBarrel.FillStart / 16f;
-    float fillHeightLevels = BlockMoltenBarrel.FillHeight;
+    float fillStartY = barrel.FillStart / 16f;
+    float fillHeightLevels = barrel.FillHeight;
 
     _renderer = new MoltenRenderer(
       Pos,

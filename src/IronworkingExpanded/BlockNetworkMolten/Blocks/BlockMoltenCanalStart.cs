@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -17,15 +18,41 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
   // Smelted crucibles cached once on load, used only for the pour interaction help.
   private ItemStack[] _smeltedCrucibles = [];
 
-  public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new() { { "start", ["n", "s", "w", "e"] } };
+  /// <summary>The two start blocktypes (fire-brick + cobblestone skin), authored in C# (migrated from
+  /// molten/canalbrick/start.json + molten/canalcobblestone/start.json) off the shared canal-family
+  /// surface. <c>new</c> hides the base's canal-shape defs so discovery + the derived AllowedOrientations
+  /// see only the start block's own defs.</summary>
+  public static new IEnumerable<ExBlockDef> Definitions(string domain)
+  {
+    foreach (CanalSkin skin in CanalSkins)
+      yield return CanalFamilyDef(
+          domain,
+          $"molten/{skin.Folder}/start",
+          skin,
+          "start",
+          1,
+          "*-start-*-s",
+          ["n", "w", "s", "e"],
+          new[]
+          {
+            new { x1 = 5, z1 = 5, x2 = 11, z2 = 11 },
+            new { x1 = 7, z1 = 11, x2 = 9, z2 = 16 },
+          },
+          "iwex:molten/canal/start",
+          [
+            ("*-start-*-s", null),
+            ("*-start-*-w", 270),
+            ("*-start-*-n", 180),
+            ("*-start-*-e", 90),
+          ]
+        )
+        .Class<BlockMoltenCanalStart>()
+        .EntityClass("iwex.BlockEntityMoltenCanalStart");
+  }
 
-  protected override string GetFallbackOrientation(string? type) =>
-    type switch
-    {
-      "start" => "s",
-      _ => "s",
-    };
+  // AllowedOrientations is derived from the def's variant group (base BlockMoltenCanal). Only the fallback
+  // is overridden: the start defaults to facing south (toward the pour), not to its first-listed north.
+  protected override string GetFallbackOrientation(string? type) => "s";
 
   public override void OnLoaded(ICoreAPI api)
   {

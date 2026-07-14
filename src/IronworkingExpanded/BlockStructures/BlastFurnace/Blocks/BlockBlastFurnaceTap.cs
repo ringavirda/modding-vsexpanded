@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
@@ -16,8 +18,36 @@ namespace IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
 /// beneath the spout.
 /// </summary>
 [BlockRegister]
-public partial class BlockBlastFurnaceTap : Block
+public partial class BlockBlastFurnaceTap : Block, IExBlockDefProvider
 {
+  /// <summary>The blast-furnace molten tap blocktype, authored in C# (migrated from blastfurnace/tap.json).
+  /// An Animatable, horizontally orientable ceramic spout.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "blastfurnacetap", "blastfurnace/tap")
+        .Class<BlockBlastFurnaceTap>()
+        .EntityClass("iwex.BlockEntityBlastFurnaceTap")
+        .EntityBehavior("Animatable")
+        .Material(EnumBlockMaterial.Ceramic)
+        .MaxStackSize(1)
+        .Behavior("HorizontalOrientable")
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .ShapeByTypeSpunPerOrientation("iwex:blastfurnace/tap", 0)
+        .CreativeCommon("*-south")
+        .Replaceable(400)
+        .Resistance(3.5f)
+        .LightAbsorption(3)
+        .Sound("walk", "walk/stone")
+        .Sound("place", "block/ceramicplace")
+        .SoundByTool(
+          EnumTool.Pickaxe,
+          "block/rock-hit-pickaxe",
+          "block/rock-break-pickaxe"
+        )
+        .NonSolid(),
+    ];
+
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,

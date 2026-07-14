@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockStructures.ManualPump.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace PipesAndPowerExpanded.BlockStructures.ManualPump.Blocks;
@@ -23,9 +25,38 @@ public partial class BlockManualFluidPump
   : Block,
     INetworkConnector,
     IFillerInteractionTarget,
-    IFillerHost
+    IFillerHost,
+    IExBlockDefProvider
 {
   public string NetworkType => "pipe";
+
+  #region Code-first definition
+
+  // The single-cell filler footprint (the crank cell above), read at runtime from the block's own
+  // attributes (file or injected def alike) - replacing the generated member so the value lives once,
+  // in the def. Satisfies IFillerHost, which StructureFillers.FootprintCells reads.
+  public JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
+
+  /// <summary>The manual (hand-cranked) fluid pump blocktype, authored in C# (migrated from
+  /// manualfluidpump.json). A two-cell-tall horizontally orientable pipe connector with an invisible
+  /// filler reserving the crank cell above.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "manualfluidpump")
+        .Class<BlockManualFluidPump>()
+        .EntityClass<BlockEntityManualFluidPump>()
+        .Behavior("HorizontalOrientable")
+        .EntityBehavior("Animatable")
+        .Material(EnumBlockMaterial.Metal)
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .CreativeCommon("*-north")
+        .FillerOffsets([new FillerCellSpec(0, 1, 0)])
+        .ShapeByTypeSpunPerOrientation("ppex:manualfluidpump", 0)
+        .NonSolid(),
+    ];
+
+  #endregion
 
   /// <summary>Horizontal placement angle (north 0, west 90, south 180, east 270).</summary>
   private int Angle => ExOrientation.AngleFromSide(Variant["side"]);

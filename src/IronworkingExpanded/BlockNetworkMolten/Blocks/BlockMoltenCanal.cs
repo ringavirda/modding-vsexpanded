@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using ExpandedLib.Metals;
@@ -19,27 +21,236 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 /// solidified-metal drops, and spill sounds on break.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenCanal : BlockNetworkNode
+public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
 {
   public override string NetworkType => "molten";
 
-  public override Dictionary<string, string[]> AllowedOrientations { get; } =
-    new()
-    {
-      { "straight", ["ns", "we"] },
-      { "bend", ["nw", "se", "en", "ws"] },
-      { "tjunction", ["nes", "esw", "swn", "wne"] },
-      { "xjunction", ["nswe"] },
-    };
+  /// <summary>The mod id, used to build the code-first defs when deriving runtime tables from them.</summary>
+  protected const string Domain = "iwex";
 
+  private Dictionary<string, string[]>? _allowedOrientations;
+
+  /// <summary>
+  /// Derived from THIS block's own code-first defs (resolved by its runtime type), so the orientation
+  /// states live once - in the variant groups - and every canal endpoint subclass (start/tap/moldpedestal)
+  /// inherits the right map with no duplicated list. Cached on first read.
+  /// </summary>
+  public override Dictionary<string, string[]> AllowedOrientations =>
+    _allowedOrientations ??= ExDefinitions.OrientationMap(
+      ExDefinitions.DefinitionsOf(GetType(), Domain)
+    );
+
+  #region Code-first definition
+
+  // The fill-geometry attributes read at runtime from the block's own attributes (file or injected def
+  // alike), replacing the JSON-scanned generated members - so the values live once, in the def.
+  public JsonObject? FillQuadsByLevel => Attributes?["fillQuadsByLevel"];
+  public int FillStart => Attributes?["fillStart"].AsInt(14) ?? 14;
+  public int FillHeight => Attributes?["fillHeight"].AsInt(1) ?? 1;
+
+  /// <summary>The molten-canal blocktypes, authored in C# (migrated from molten/canalbrick/* and
+  /// molten/canalcobblestone/*). One class backs 8 files: the 4 canal shapes (straight/bend/tjunction/
+  /// xjunction) each in a fire-brick and a cobblestone skin.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain)
+  {
+    foreach (CanalSkin skin in CanalSkins)
+      foreach (CanalTypeSpec type in CanalTypes)
+        yield return CanalDef(domain, skin, type);
+  }
+
+  // Protected so the endpoint subclasses (start/moldpedestal), which share the fire-brick + cobblestone
+  // skins, reuse the exact same material/sounds/texture/variant surface instead of re-declaring it.
+  protected sealed record CanalSkin(
+    string Folder,
+    EnumBlockMaterial Material,
+    bool HasPlaceSound,
+    System.Action<ExBlockDef> Variants,
+    System.Action<ExBlockDef> Texture
+  );
+
+  private sealed record CanalTypeSpec(
+    string Type,
+    int MaxStack,
+    string[] Orientations,
+    string CreativeSelector,
+    object FillQuads,
+    (string Wildcard, int? RotateY)[] Shapes
+  );
+
+  protected static readonly CanalSkin[] CanalSkins =
+  [
+    new(
+      "canalbrick",
+      EnumBlockMaterial.Ceramic,
+      HasPlaceSound: true,
+      Variants: d =>
+        d.VariantGroup(
+          "brick",
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ),
+      Texture: d =>
+        d.Texture(
+          "granite1",
+          "game:block/clay/brick/four/running/cream1",
+          "game:block/clay/brick/four/running/{brick}1"
+        )
+    ),
+    new(
+      "canalcobblestone",
+      EnumBlockMaterial.Stone,
+      HasPlaceSound: false,
+      Variants: d =>
+        d.VariantGroupFromProperties("rock", "block/rockwithdeposit")
+          .SkipVariants("*-halite-*", "*-scoria-*", "*-tuff-*", "*-travertine-*"),
+      Texture: d =>
+        d.Texture("granite1", "game:block/stone/cobblestone/{rock}1")
+    ),
+  ];
+
+  private static readonly CanalTypeSpec[] CanalTypes =
+  [
+    new(
+      "straight",
+      8,
+      ["ns", "we"],
+      "*-straight-*-ns",
+      new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 16 } },
+      [("*-straight-*-ns", null), ("*-straight-*-we", 90)]
+    ),
+    new(
+      "bend",
+      4,
+      ["nw", "se", "en", "ws"],
+      "*-bend-*-nw",
+      new[]
+      {
+        new { x1 = 7, z1 = 0, x2 = 9, z2 = 9 },
+        new { x1 = 0, z1 = 7, x2 = 7, z2 = 9 },
+      },
+      [
+        ("*-bend-*-nw", null),
+        ("*-bend-*-en", 270),
+        ("*-bend-*-se", 180),
+        ("*-bend-*-ws", 90),
+      ]
+    ),
+    new(
+      "tjunction",
+      4,
+      ["nes", "esw", "swn", "wne"],
+      "*-tjunction-*-esw",
+      new[]
+      {
+        new { x1 = 0, z1 = 7, x2 = 16, z2 = 9 },
+        new { x1 = 7, z1 = 0, x2 = 9, z2 = 7 },
+      },
+      [
+        ("*-tjunction-*-wne", null),
+        ("*-tjunction-*-nes", 270),
+        ("*-tjunction-*-esw", 180),
+        ("*-tjunction-*-swn", 90),
+      ]
+    ),
+    new(
+      "xjunction",
+      4,
+      ["nswe"],
+      "*-xjunction-*-nswe",
+      new[]
+      {
+        new { x1 = 0, z1 = 7, x2 = 16, z2 = 9 },
+        new { x1 = 7, z1 = 0, x2 = 9, z2 = 7 },
+        new { x1 = 7, z1 = 9, x2 = 9, z2 = 16 },
+      },
+      [("*-xjunction-*-nswe", null)]
+    ),
+  ];
+
+  private static ExBlockDef CanalDef(
+    string domain,
+    CanalSkin skin,
+    CanalTypeSpec type
+  ) =>
+    CanalFamilyDef(
+        domain,
+        $"molten/{skin.Folder}/{type.Type}",
+        skin,
+        type.Type,
+        type.MaxStack,
+        type.CreativeSelector,
+        type.Orientations,
+        type.FillQuads,
+        $"iwex:molten/canal/{type.Type}",
+        type.Shapes
+      )
+      .Class<BlockMoltenCanal>()
+      .EntityClass("iwex.BlockEntityMoltenCanal");
+
+  /// <summary>
+  /// Builds the surface shared by every canal-family blocktype - a canal shape OR a start/moldpedestal
+  /// endpoint: the skin's material/sounds/texture/variant plus the common fill geometry, handbook grouping,
+  /// Lockable behavior, orientation group, per-orientation shapes and non-solid flags. The caller binds its
+  /// own <c>class</c>/<c>entityClass</c> (they differ per endpoint) and adds any extra attributes (the mold
+  /// pedestal's separate mold fill). Authored once instead of copied across the start/moldpedestal defs.
+  /// </summary>
+  protected static ExBlockDef CanalFamilyDef(
+    string domain,
+    string assetName,
+    CanalSkin skin,
+    string type,
+    int maxStack,
+    string creativeSelector,
+    string[] orientations,
+    object fillQuads,
+    string shapeBase,
+    (string Wildcard, int? RotateY)[] shapes
+  )
+  {
+    var def = ExBlockDef
+      .Create(domain, "moltencanal", assetName)
+      .Material(skin.Material)
+      .Sound("walk", "game:walk/stone");
+    if (skin.HasPlaceSound)
+      def.Sound("place", "game:block/ceramicplace");
+    def.SoundByTool(
+        EnumTool.Pickaxe,
+        "game:block/rock-hit-pickaxe",
+        "game:block/rock-break-pickaxe"
+      )
+      .MaxStackSize(maxStack)
+      .CreativeCommon(creativeSelector)
+      .Attribute("fillHeight", 1)
+      .Attribute("fillStart", 14)
+      .Attribute("fillQuadsByLevel", fillQuads)
+      .Handbook($"moltencanal-{type}-*")
+      .Behavior("Lockable")
+      .VariantGroup("type", type);
+    skin.Variants(def);
+    def.VariantGroup("orientation", orientations);
+    skin.Texture(def);
+    foreach ((string wildcard, int? rotateY) in shapes)
+      def.ShapeByType(wildcard, shapeBase, rotateY: rotateY);
+    return def.NonSolid();
+  }
+
+  #endregion
+
+  /// <summary>A type's default orientation is the first state it lists (which matches every canal shape's
+  /// fallback), so this is derived from the defs too - only the start block overrides it (it defaults
+  /// south, not to its first-listed north).</summary>
   protected override string GetFallbackOrientation(string? type) =>
-    type switch
-    {
-      "bend" => "nw",
-      "tjunction" => "nes",
-      "xjunction" => "nswe",
-      _ => "ns",
-    };
+    type != null
+    && AllowedOrientations.TryGetValue(type, out string[]? states)
+    && states.Length > 0
+      ? states[0]
+      : "ns";
 
   /// <summary>
   /// Disables wrench rotation (and the hint) while the cell holds liquid metal or has solidified -

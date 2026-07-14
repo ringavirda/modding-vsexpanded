@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
+using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
 using Xunit;
@@ -258,8 +259,8 @@ public class PipeDefinitionParityTests
     JObject actual = Def(type).ToJson();
 
     Assert.True(
-      SemanticEquals(expected, actual),
-      $"{type} pipe code-first def diverged from the migrated JSON:\n{actual}"
+      DefinitionParity.Equal(expected, actual, out string normalized),
+      $"{type} pipe code-first def diverged from the migrated JSON:\n{normalized}"
     );
   }
 
@@ -304,29 +305,4 @@ public class PipeDefinitionParityTests
       _ => throw new System.ArgumentOutOfRangeException(nameof(name), name),
     };
 
-  // DeepEquals but numeric-type-agnostic (a hand-written "0" vs the builder's 0f), matching how the
-  // game parses blocktype coordinates.
-  private static bool SemanticEquals(JToken a, JToken b) =>
-    JToken.DeepEquals(Normalize(a), Normalize(b));
-
-  private static JToken Normalize(JToken token)
-  {
-    switch (token)
-    {
-      case JObject obj:
-        var no = new JObject();
-        foreach (JProperty p in obj.Properties())
-          no[p.Name] = Normalize(p.Value);
-        return no;
-      case JArray arr:
-        var na = new JArray();
-        foreach (JToken item in arr)
-          na.Add(Normalize(item));
-        return na;
-      case JValue { Type: JTokenType.Integer or JTokenType.Float } v:
-        return new JValue(v.Value<double>());
-      default:
-        return token.DeepClone();
-    }
-  }
 }

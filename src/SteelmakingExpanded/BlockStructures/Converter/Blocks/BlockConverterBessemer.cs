@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using ExpandedLib.Metals;
 
@@ -25,8 +28,158 @@ namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 public partial class BlockConverterBessemer
   : Block,
     IFillerHost,
-    IFillerInteractionTarget
+    IFillerInteractionTarget,
+    IExBlockDefProvider
 {
+  #region Code-first definition
+
+  // The 3x3x3 footprint and the chisel-hatch offset, read at runtime from the block's own attributes
+  // (file or injected def alike) - replacing the generated members so the values live once, in the def.
+  public JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
+  public JsonObject? ChiselOffset => Attributes?["chiselOffset"];
+
+  /// <summary>The Bessemer converter vessel blocktype, authored in C# (migrated from converter/bessemer.json).
+  /// A control-spawned 3x3x3 mega-block: raised through a 7-stage right-click construction, it never drops
+  /// itself and reserves its whole cube with invisible fillers. Not in creative (the control block spawns it).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "converterbessemer", "converter/bessemer")
+        .Class<BlockConverterBessemer>()
+        .EntityClass("smex.BlockEntityConverterBessemer")
+        .Material(EnumBlockMaterial.Metal)
+        .MetalSounds()
+        .MiningTier(4)
+        .Resistance(45.0f)
+        .MaxStackSize(1)
+        .NoDrops()
+        .Attribute("chiselOffset", new { x = 0, y = 1, z = 0 })
+        // The full 3x3x3 cube (x/y/z in -1..1) around the principal, minus the origin (the vessel cell) and
+        // the upper-rear-left (-1,1,0) gap. Drawn as three floor plans (rows +Z, cols +X, top-left = (-1,-1)).
+        .FillerOffsets(
+          StructureFootprint.Layout(f =>
+            f.Origin(-1, -1)
+              .Layer(
+                -1,
+                """
+                # # #
+                # # #
+                # # #
+                """
+              )
+              .Layer(
+                0,
+                """
+                # # #
+                # O #
+                # # #
+                """
+              )
+              .Layer(
+                1,
+                """
+                # # #
+                . # #
+                # # #
+                """
+              )
+          )
+        )
+        .Behavior("HorizontalOrientable")
+        .Behavior("BlockEntityInteract")
+        .EntityBehavior("Animatable")
+        .Construction(c =>
+          c.Stage(s => s.AddElements("Root/GearShaft"))
+            .Stage(s =>
+              s.Require(
+                  "metalplate-*",
+                  24,
+                  "smex:rcc-ingredient-metalplate",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .Require(
+                  "metalnailsandstrips-*",
+                  24,
+                  "smex:rcc-ingredient-nailsandstrips",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .Require(
+                  "rod-*",
+                  12,
+                  "smex:rcc-ingredient-rod",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .AddElements("Root/BottomIron")
+            )
+            .Stage(s =>
+              s.Require(
+                  "metalplate-*",
+                  4,
+                  "smex:rcc-ingredient-metalplate",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .Require("ppex:pipe-straight-ns-{metal}", 3, type: "block")
+                .Require(
+                  "metalnailsandstrips-*",
+                  6,
+                  "smex:rcc-ingredient-nailsandstrips",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .AddElements("Root/GasIntake")
+            )
+            .Stage(s =>
+              s.Require("refractorybrick-fired-tier3", 60)
+                .Require("game:clay-fire", 48)
+                .AddElements("Root/BottomRefractory")
+            )
+            .Stage(s =>
+              s.Require("refractorybrick-fired-tier3", 24)
+                .Require("game:clay-fire", 24)
+                .AddElements("Root/UpRefractory")
+            )
+            .Stage(s =>
+              s.Require(
+                  "metalplate-*",
+                  12,
+                  "smex:rcc-ingredient-metalplate",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .Require(
+                  "metalnailsandstrips-*",
+                  12,
+                  "smex:rcc-ingredient-nailsandstrips",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .Require(
+                  "rod-*",
+                  6,
+                  "smex:rcc-ingredient-rod",
+                  storeWildCard: "metal",
+                  allowedVariants: ["iron", "steel"]
+                )
+                .AddElements("Root/UpIron")
+            )
+            .Stage(s =>
+              s.Require("game:clay-fire", 12).AddElements("Root/InputLining")
+            )
+        )
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .ShapeSpunPerOrientation("smex:converter/bessemer", 0)
+        .ShapeSelectiveElements("Root/GearShaft/*")
+        .SingleSelectionBox(-0.5f, -0.5f, -0.5f, 1.5f, 2f, 1.5f)
+        .SingleCollisionBox(-0.5f, -0.5f, -0.5f, 1.5f, 2f, 1.5f)
+        .NonSolid(),
+    ];
+
+  #endregion
+
   // RMB construction and its build prompts are routed to the
   // RightClickConstructable block-entity behaviour by the "BlockEntityInteract"
   // block behaviour declared in the block JSON.

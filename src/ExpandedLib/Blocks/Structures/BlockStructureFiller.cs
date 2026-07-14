@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -17,8 +19,39 @@ namespace ExpandedLib.Blocks.Structures;
 /// <c>BlockMPMultiblockGear</c>.
 /// </summary>
 [BlockRegister]
-public partial class BlockStructureFiller : Block, INetworkConnector, IMechanicalPowerBlock
+public partial class BlockStructureFiller
+  : Block,
+    INetworkConnector,
+    IMechanicalPowerBlock,
+    IExBlockDefProvider
 {
+  #region Code-first definition
+
+  /// <summary>The structure-filler blocktype, authored in C# (migrated from blocktypes/structurefiller.json). The
+  /// invisible, solid, un-drawn placeholder every mega-block reserves its footprint with: hidden from the handbook,
+  /// a <c>json</c> drawtype over an empty shape, full-cube collision, no drops.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "structurefiller")
+        .Class<BlockStructureFiller>()
+        .EntityClass<BlockEntityStructureFiller>()
+        .HandbookExclude()
+        .Material(EnumBlockMaterial.Metal)
+        .Shape("exlib:block/empty")
+        .DrawType("json")
+        .SideSolid(true)
+        .SideOpaque(false)
+        .LightAbsorption(0)
+        .Replaceable(500)
+        .Resistance(45.0f)
+        .NoDrops()
+        .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
+        .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f),
+    ];
+
+  #endregion
+
   // INetworkConnector: a plain filler is inert (type ""), but a principal can turn one cell into
   // a fixed port by setting PortFace/PortNetworkType on its BE (e.g. the boiler's steam outlet).
   // The position-less members are the inert fallback; the network system uses the position-aware

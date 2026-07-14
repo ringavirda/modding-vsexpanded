@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
@@ -13,8 +15,72 @@ namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 /// state once complete.
 /// </summary>
 [BlockRegister]
-public partial class BlockConverterControl : Block
+public partial class BlockConverterControl : Block, IExBlockDefProvider
 {
+  #region Code-first definition
+
+  /// <summary>The converter-control blocktype, authored in C# (migrated from converter/control.json). The
+  /// <c>multiblockStructure</c> table is authored via <see cref="MultiblockBuilder"/> - named block numbers,
+  /// a <c>Fill</c>ed body, bespoke tap/canal cells, and build-time validation that every offset resolves to
+  /// a declared number with no duplicate cell (the data-table win for a machine with a structure map).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [Control(domain)];
+
+  private static ExBlockDef Control(string domain) =>
+    ExBlockDef
+      .Create(domain, "convertercontrol", "converter/control")
+      .Class<BlockConverterControl>()
+      .EntityClass<BlockEntityConverterControl>()
+      .EntityBehavior("Animatable")
+      .Material(EnumBlockMaterial.Metal)
+      .MetalSounds()
+      .MaxStackSize(1)
+      .CreativeTab("general", "*-north")
+      .CreativeTab("smex", "*-north")
+      .Multiblock(m =>
+        m.Number("smex:convertercontrol*", 1)
+          .Number("smex:convertertransmission*", 2)
+          .Number("smex:converterbessemer*", 3)
+          .Number("smex:converter-intake*", 4)
+          .Number("iwex:moltencanal-tap*", 5)
+          .Number("iwex:moltencanal-start*", 6)
+          .Number("iwex:moltencanal-straight*", 7)
+          .Number("exlib:structurefiller", 8)
+          // control + transmission below it
+          .At(0, 0, 0, 1)
+          .At(0, -1, 0, 2)
+          // z=1 body (all filler)
+          .Fill(-1, -1, 1, 1, 1, 1, 8)
+          // z=2 body: filler, with the bessemer at the centre and the tap cell (1,1,2) left for below
+          .At(-1, -1, 2, 8)
+          .At(0, -1, 2, 8)
+          .At(1, -1, 2, 8)
+          .At(-1, 0, 2, 8)
+          .At(0, 0, 2, 3)
+          .At(1, 0, 2, 8)
+          .At(-1, 1, 2, 8)
+          .At(0, 1, 2, 8)
+          // z=3 body (all filler)
+          .Fill(-1, -1, 3, 1, 1, 3, 8)
+          // intake spout, then the tap + canal run
+          .At(0, 0, 4, 4)
+          .At(1, 1, 2, 5)
+          .At(2, 1, 2, 7)
+          .At(1, -2, 2, 6)
+          .At(2, -2, 2, 7)
+      )
+      .Behavior("MultiblockStructure")
+      .Behavior("HorizontalOrientable")
+      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .ShapeByType("*-north", "smex:converter/control", rotateY: 0)
+      .ShapeByType("*-east", "smex:converter/control", rotateY: 270)
+      .ShapeByType("*-south", "smex:converter/control", rotateY: 180)
+      .ShapeByType("*-west", "smex:converter/control", rotateY: 90)
+      .SideSolid(false)
+      .SideOpaque(false);
+
+  #endregion
+
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,

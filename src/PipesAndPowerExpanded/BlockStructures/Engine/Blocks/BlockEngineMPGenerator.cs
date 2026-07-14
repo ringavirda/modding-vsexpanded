@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
 using Vintagestory.API.Common;
@@ -14,8 +16,25 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine.Blocks;
 [BlockRegister]
 public partial class BlockEngineMPGenerator
   : BlockEngineSubmachine,
-    IMechanicalPowerBlock
+    IMechanicalPowerBlock,
+    IExBlockDefProvider
 {
+  /// <summary>The MP-generator sub-machine blocktype, authored in C# (migrated from engine/mpgenerator.json).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "enginempgenerator", "engine/mpgenerator")
+        .Class<BlockEngineMPGenerator>()
+        .EntityClass("ppex.BlockEntityEngineMpGenerator")
+        .Behavior("HorizontalOrientable")
+        .EntityBehavior("ppex.BEBehaviorEngineMPGenerator")
+        .Material(EnumBlockMaterial.Metal)
+        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .CreativeCommon("*-north")
+        .ShapeByTypeSpunPerOrientation("ppex:engine/mpgenerator")
+        .NonSolid(),
+    ];
+
   private bool IsXAxis => Variant["side"] is "east" or "west";
 
   public bool HasMechPowerConnectorAt(

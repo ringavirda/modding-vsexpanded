@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
@@ -7,8 +9,41 @@ namespace IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
 
 /// <summary>Solidified slag block left when blast mix finishes burning; drops slag items scaled to its stored count.</summary>
 [BlockRegister]
-public partial class BlockSlag : Block
+public partial class BlockSlag : Block, IExBlockDefProvider
 {
+  /// <summary>The solidified-slag blocktype, authored in C# (migrated from blastfurnace/slag.json). Smeltable
+  /// back into slag items via its combustibleProps.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "slag", "blastfurnace/slag")
+        .Class<BlockSlag>()
+        .EntityClass("iwex.BlockEntitySlag")
+        .Material(EnumBlockMaterial.Stone)
+        .CreativeCommon("*")
+        .Shape("game:block/basic/cube")
+        .TextureAll("game:block/stone/gravel/phyllite")
+        .Resistance(3.0f)
+        .MaxStackSize(64)
+        .MiningTier(2)
+        .MineTool(EnumTool.Pickaxe)
+        .Sounds(
+          "game:block/stone",
+          "game:block/stone",
+          "game:block/stone",
+          "game:walk/stone"
+        )
+        .CombustibleProps(
+          new
+          {
+            meltingPoint = 720,
+            meltingDuration = 30,
+            smeltedRatio = 1,
+            smeltedStack = new { type = "item", code = "iwex:slag" },
+          }
+        ),
+    ];
+
   public override ItemStack[] GetDrops(
     IWorldAccessor worldMap,
     BlockPos pos,

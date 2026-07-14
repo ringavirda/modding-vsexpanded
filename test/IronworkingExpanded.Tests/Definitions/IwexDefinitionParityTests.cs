@@ -1,5 +1,6 @@
 using System.Linq;
 using ExpandedLib.Definitions;
+using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
 using IronworkingExpanded.BlockStructures.OreBunker.Blocks;
 using Newtonsoft.Json.Linq;
@@ -48,8 +49,8 @@ public class IwexDefinitionParityTests
     JObject actual = BlockSolidifiedIron.Definitions("iwex").Single().ToJson();
 
     Assert.True(
-      JToken.DeepEquals(expected, actual),
-      "solidifiediron code-first def diverged from the migrated JSON:\n" + actual
+      DefinitionParity.Equal(expected, actual, out string normalized),
+      "solidifiediron code-first def diverged from the migrated JSON:\n" + normalized
     );
   }
 
@@ -175,8 +176,8 @@ public class IwexDefinitionParityTests
     JObject actual = BlockOreBunker.Definitions("iwex").Single().ToJson();
 
     Assert.True(
-      SemanticEquals(expected, actual),
-      "bunker code-first def diverged from the migrated JSON:\n" + actual
+      DefinitionParity.Equal(expected, actual, out string normalized),
+      "bunker code-first def diverged from the migrated JSON:\n" + normalized
     );
   }
 
@@ -197,31 +198,5 @@ public class IwexDefinitionParityTests
       ExDefinitions.Blocks,
       d => d is { Code: "bunker", Domain: "iwex" }
     );
-  }
-
-  // DeepEquals but numeric-type-agnostic (the hand-written "0"/"1" box coords vs the builder's 0f/1f, and
-  // int x/y/z vs any float), matching how the game parses blocktype numbers.
-  private static bool SemanticEquals(JToken a, JToken b) =>
-    JToken.DeepEquals(Normalize(a), Normalize(b));
-
-  private static JToken Normalize(JToken token)
-  {
-    switch (token)
-    {
-      case JObject obj:
-        var no = new JObject();
-        foreach (JProperty p in obj.Properties())
-          no[p.Name] = Normalize(p.Value);
-        return no;
-      case JArray arr:
-        var na = new JArray();
-        foreach (JToken item in arr)
-          na.Add(Normalize(item));
-        return na;
-      case JValue { Type: JTokenType.Integer or JTokenType.Float } v:
-        return new JValue(v.Value<double>());
-      default:
-        return token.DeepClone();
-    }
   }
 }

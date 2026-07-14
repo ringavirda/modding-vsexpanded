@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
@@ -11,8 +12,26 @@ namespace IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
 /// mix and drops it into the furnace.
 /// </summary>
 [BlockRegister]
-public partial class BlockHopperBell : Block
+public partial class BlockHopperBell : Block, IExBlockDefProvider
 {
+  /// <summary>The bell hopper blocktype, authored in C# (migrated from blastfurnace/hopperbell.json).</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+      ExBlockDef
+        .Create(domain, "hopperbell", "blastfurnace/hopperbell")
+        .Class<BlockHopperBell>()
+        .EntityClass("iwex.BlockEntityHopperBell")
+        .Behavior("Lockable")
+        .CreativeCommon("*")
+        .Material(EnumBlockMaterial.Metal)
+        .MaxStackSize(1)
+        .LightAbsorption(0)
+        .Shape("iwex:blastfurnace/hopper-bell")
+        .NonSolid()
+        .Resistance(1.75f)
+        .MetalSounds(),
+    ];
+
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,

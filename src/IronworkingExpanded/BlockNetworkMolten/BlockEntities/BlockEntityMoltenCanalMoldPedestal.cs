@@ -259,8 +259,8 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
       pedestal.MoldFillQuadsByLevel,
       new Cuboidf(7f, 0f, 0f, 9f, 16f, 5f)
     );
-    float fillStartY = BlockMoltenCanalMoldPedestal.MoldFillStart / 16f;
-    float fillHeightLevels = BlockMoltenCanalMoldPedestal.MoldFillHeight;
+    float fillStartY = pedestal.MoldFillStart / 16f;
+    float fillHeightLevels = pedestal.MoldFillHeight;
     float rotY = (pedestal.Shape?.rotateY ?? 0f) * GameMath.DEG2RAD;
 
     _moldRenderer = new MoltenRenderer(

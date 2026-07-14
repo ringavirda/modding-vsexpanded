@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using Newtonsoft.Json.Linq;
@@ -187,6 +188,26 @@ public class ExBlockDefTests
       .ToJson();
     Assert.Equal(42, (int)json["someFutureField"]!);
   }
+
+  [Fact]
+  public void Raw_from_a_poco_sets_a_top_level_object_for_root_transforms()
+  {
+    // The object overload - for the block-root transforms whose shape varies per block (here: no rotation).
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Raw(
+        "guiTransform",
+        new
+        {
+          translation = new { x = 0, y = 3, z = 0 },
+          scale = 1.33,
+        }
+      )
+      .ToJson();
+    Assert.Equal(3, (int)json["guiTransform"]!["translation"]!["y"]!);
+    Assert.Equal(1.33, (double)json["guiTransform"]!["scale"]!);
+    Assert.Null(json["guiTransform"]!["rotation"]);
+  }
   #endregion
 
   #region Location
@@ -300,6 +321,123 @@ public class ExBlockDefTests
     Assert.Equal("Lockable", (string?)behaviors[0]!["name"]);
     // Typed overload resolves the registered {modid}.{ClassName} key, same as the class binding.
     Assert.Equal("ppex.FakeBehavior", (string?)behaviors[1]!["name"]);
+  }
+
+  [Fact]
+  public void Behavior_with_properties_appends_a_name_and_properties_entry()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Behavior("GroundStorable", new { layout = "SingleCenter" })
+      .ToJson();
+
+    var behavior = (JObject)((JArray)json["behaviors"]!)[0]!;
+    Assert.Equal("GroundStorable", (string?)behavior["name"]);
+    Assert.Equal("SingleCenter", (string?)behavior["properties"]!["layout"]);
+  }
+
+  [Fact]
+  public void VariantGroupFromProperties_codeless_omits_the_code_key()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .VariantGroupFromProperties("game:abstract/horizontalorientation")
+      .ToJson();
+
+    var group = (JObject)((JArray)json["variantgroups"]!)[0]!;
+    Assert.Null(group["code"]);
+    Assert.Equal("game:abstract/horizontalorientation", (string?)group["loadFromProperties"]);
+  }
+
+  [Fact]
+  public void SoundByType_accumulates_a_typed_byType_map_under_sounds()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .SoundByType("break", "*-snow", "game:block/snow")
+      .SoundByType("break", "*-free", "game:block/gravel")
+      .ToJson();
+
+    var breakByType = (JObject)json["sounds"]!["breakByType"]!;
+    Assert.Equal("game:block/snow", (string?)breakByType["*-snow"]);
+    Assert.Equal("game:block/gravel", (string?)breakByType["*-free"]);
+  }
+
+  [Fact]
+  public void Drop_appends_entries_with_an_optional_quantity()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Drop("block", "slagpath-free")
+      .Drop("item", "game:rod-iron", quantity: 4)
+      .ToJson();
+
+    var drops = (JArray)json["drops"]!;
+    Assert.Equal("slagpath-free", (string?)drops[0]!["code"]);
+    Assert.Null(drops[0]!["quantity"]);
+    Assert.Equal(4, (int)drops[1]!["quantity"]!);
+  }
+
+  [Fact]
+  public void SideSolid_from_a_poco_sets_per_face_flags()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .SideSolid(new { all = true, up = false })
+      .ToJson();
+
+    Assert.True((bool)json["sidesolid"]!["all"]!);
+    Assert.False((bool)json["sidesolid"]!["up"]!);
+  }
+
+  [Fact]
+  public void WalkSpeedMultiplier_emits_a_double_matching_the_parsed_json_value()
+  {
+    // 1.3 has no exact float representation; the double path must equal JSON-parsed 1.3 (a float would not).
+    JObject json = ExBlockDef.Create("d", "c").WalkSpeedMultiplier(1.3).ToJson();
+    Assert.Equal(JToken.Parse("1.3"), json["walkspeedmultiplier"]);
+  }
+
+  [Fact]
+  public void HandbookExclude_sets_the_top_level_handbook_exclude_flag()
+  {
+    JObject json = ExBlockDef.Create("d", "c").HandbookExclude().ToJson();
+    Assert.True((bool)json["handbook"]!["exclude"]!);
+    Assert.Null(json["attributes"]); // top-level handbook, NOT attributes.handbook
+  }
+
+  [Fact]
+  public void DrawType_sets_the_drawtype_key()
+  {
+    JObject json = ExBlockDef.Create("d", "c").DrawType("json").ToJson();
+    Assert.Equal("json", (string?)json["drawtype"]);
+  }
+
+  [Fact]
+  public void FillerOffsets_emits_per_cell_hosted_behaviors()
+  {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .FillerOffsets(
+        [
+          new FillerCellSpec(-1, 0, 0),
+          new FillerCellSpec(
+            0,
+            1,
+            0,
+            AllowAttach: true,
+            Behaviors: [new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west")]
+          ),
+        ]
+      )
+      .ToJson();
+
+    var cells = (JArray)json["attributes"]!["fillerOffsets"]!;
+    Assert.Null(cells[0]!["behaviors"]); // a plain cell emits no behaviors key
+    var port = (JObject)((JArray)cells[1]!["behaviors"]!)[0]!;
+    Assert.Equal("exlib.BEBehaviorMPFillerPort", (string?)port["code"]);
+    Assert.Equal("west", (string?)port["face"]);
+    Assert.True((bool)cells[1]!["allowAttach"]!);
   }
 
   [Fact]

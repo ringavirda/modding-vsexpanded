@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockStructures.Engine.BlockEntities;
@@ -21,8 +23,146 @@ namespace PipesAndPowerExpanded.BlockStructures.Engine.Blocks;
 public partial class BlockEngineCornish
   : BlockEngine,
     IFillerHost,
-    IEngineGeometry
+    IEngineGeometry,
+    IExBlockDefProvider
 {
+  /// <summary>The Cornish engine blocktype, authored in C# (migrated from engine/cornish.json) off the
+  /// shared <see cref="BlockEngine.EngineShell"/>, adding only its seven-stage construction table.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [Cornish(domain)];
+
+  private static ExBlockDef Cornish(string domain) =>
+    EngineShell(
+        ExBlockDef
+          .Create(domain, "enginecornish", "engine/cornish")
+          .Class<BlockEngineCornish>()
+          .EntityClass<BlockEntityEngineCornish>(),
+        "ppex:engine/cornish"
+      )
+      // The beam column reserved beside the engine, drawn as a front elevation of the x=0 plane (rows are
+      // Y from 3 down to 0, columns are Z 0..2). The bottom row's gaps are the engine cell itself (z=0) and
+      // the sub-machine cell (z=2). Authored per-engine because each engine's column differs.
+      .FillerOffsets(
+        StructureFootprint.Layout(f =>
+          f.Origin(0, 3)
+            .Slice(
+              0,
+              """
+              # # #
+              # # #
+              # # #
+              O # .
+              """
+            )
+        )
+      )
+      .Construction(c =>
+        c.Stage(s => s.AddElements("Root/Cylinder"))
+          .Stage(s =>
+            s.Require(
+                "metalplate-*",
+                12,
+                "ppex:rcc-ingredient-metalplate",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "rod-*",
+                12,
+                "ppex:rcc-ingredient-rod",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require("game:burnedbrick-fire", 36)
+              .AddElements("Root/BeamSupport")
+          )
+          .Stage(s =>
+            s.Require(
+                "metalplate-*",
+                16,
+                "ppex:rcc-ingredient-metalplate",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "rod-*",
+                8,
+                "ppex:rcc-ingredient-rod",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/Beam")
+          )
+          .Stage(s =>
+            s.Require(
+                "metalplate-*",
+                8,
+                "ppex:rcc-ingredient-metalplate",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "rod-*",
+                6,
+                "ppex:rcc-ingredient-rod",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/Piston")
+          )
+          .Stage(s =>
+            s.Require(
+                "metalplate-*",
+                6,
+                "ppex:rcc-ingredient-metalplate",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "metalnailsandstrips-*",
+                6,
+                "ppex:rcc-ingredient-nailsandstrips",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/ControlPiston")
+          )
+          .Stage(s =>
+            s.Require(
+                "metalplate-*",
+                4,
+                "ppex:rcc-ingredient-metalplate",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "rod-*",
+                8,
+                "ppex:rcc-ingredient-rod",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/ControlPistonSteam")
+          )
+          .Stage(s =>
+            s.Require(
+                "rod-*",
+                8,
+                "ppex:rcc-ingredient-rod",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .Require(
+                "metalnailsandstrips-*",
+                8,
+                "ppex:rcc-ingredient-nailsandstrips",
+                storeWildCard: "metal",
+                allowedVariants: ["iron", "steel"]
+              )
+              .AddElements("Root/Rod")
+          )
+      );
+
   protected override RepairItem[] RepairItems =>
     [
       new(["metalplate-steel"], 4, "steel plate"),

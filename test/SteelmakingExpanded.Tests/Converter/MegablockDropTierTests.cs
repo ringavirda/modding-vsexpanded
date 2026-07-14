@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using PipesAndPowerExpanded.BlockStructures.Boiler.Blocks;
+using PipesAndPowerExpanded.BlockStructures.Engine.Blocks;
+using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
@@ -228,13 +232,8 @@ public class MegablockDropTierTests
 
   private static JsonElement Block(string repoRelativePath)
   {
-    string full = Path.Combine(
-      RepoRoot(),
-      repoRelativePath.Replace('/', Path.DirectorySeparatorChar)
-    );
-    Assert.True(File.Exists(full), $"missing asset: {full}");
     using var doc = JsonDocument.Parse(
-      File.ReadAllText(full),
+      BlockJson(repoRelativePath),
       new JsonDocumentOptions
       {
         CommentHandling = JsonCommentHandling.Skip,
@@ -242,6 +241,34 @@ public class MegablockDropTierTests
       }
     );
     return doc.RootElement.Clone();
+  }
+
+  // Every mega-block in this guard is now code-first (no shipped JSON), so read its authored def - the single
+  // source of truth - instead of a file. Reading the def here keeps this guard honest through the migration: it
+  // pins the same drop/tier/cost the game will load.
+  private static string BlockJson(string repoRelativePath) =>
+    repoRelativePath switch
+    {
+      Lancashire =>
+        BlockBoilerLancashire.Definitions("ppex").Single().ToJson().ToString(),
+      BoilerCornish =>
+        BlockBoilerCornish.Definitions("ppex").Single().ToJson().ToString(),
+      Watt => BlockEngineWatt.Definitions("ppex").Single().ToJson().ToString(),
+      EngineCornish =>
+        BlockEngineCornish.Definitions("ppex").Single().ToJson().ToString(),
+      Bessemer =>
+        BlockConverterBessemer.Definitions("smex").Single().ToJson().ToString(),
+      _ => ReadAssetFile(repoRelativePath),
+    };
+
+  private static string ReadAssetFile(string repoRelativePath)
+  {
+    string full = Path.Combine(
+      RepoRoot(),
+      repoRelativePath.Replace('/', Path.DirectorySeparatorChar)
+    );
+    Assert.True(File.Exists(full), $"missing asset: {full}");
+    return File.ReadAllText(full);
   }
 
   private static string RepoRoot()

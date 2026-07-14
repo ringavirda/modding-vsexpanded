@@ -287,8 +287,10 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
       MoltenContents.BarrelUnitsKey,
       Api.World
     );
-    // The parked stack is a molten barrel - its capacity is the generated const (baked from JSON).
-    BarrelMaxUnits = BlockMoltenBarrel.MaxUnits;
+    // The parked stack is a molten barrel - read its authored capacity off the block instance.
+    BarrelMaxUnits =
+      (barrelStack.Block as BlockMoltenBarrel)?.MaxUnits
+      ?? IwexValues.BarrelDefaultMaxUnits;
     IsBarrel = true;
     IsMold = false;
   }

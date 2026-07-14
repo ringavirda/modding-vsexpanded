@@ -550,8 +550,8 @@ public class BlockEntityMoltenCanal
       canal.FillQuadsByLevel,
       new Cuboidf(7f, 0f, 0f, 9f, 16f, 16f)
     );
-    float fillStartY = BlockMoltenCanal.FillStart / 16f;
-    float fillHeightLevels = BlockMoltenCanal.FillHeight;
+    float fillStartY = canal.FillStart / 16f;
+    float fillHeightLevels = canal.FillHeight;
     float rotY = (Block.Shape?.rotateY ?? 0f) * GameMath.DEG2RAD;
 
     _renderer = new MoltenRenderer(
