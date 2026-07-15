@@ -113,13 +113,32 @@ public static class MoltenMetal
     stack.Collectible.GetMeltingPoint(world, null, new DummySlot(stack));
 
   /// <summary>Classifies the stack against its melting point (liquid / cooling / hardened).</summary>
-  public static MoltenState StateOf(IWorldAccessor world, ItemStack stack)
+  public static MoltenState StateOf(IWorldAccessor world, ItemStack stack) =>
+    Classify(
+      GetTemperature(world, stack),
+      MeltingPointOf(world, stack),
+      stack.Collectible.Code
+    );
+
+  /// <summary>
+  /// Classifies a metal at <paramref name="temperature"/> (°C) against its
+  /// <paramref name="meltingPoint"/> using the thresholds registered for
+  /// <paramref name="moltenItem"/> - a <see cref="MetalDef"/>'s per-metal
+  /// <c>liquidThreshold</c>/<c>hardenedThreshold</c> when it ships them, otherwise the global
+  /// <see cref="ExlibValues"/> defaults (so an unregistered metal classifies exactly as before this
+  /// per-metal wiring). Pure and world-free: the stack-based <see cref="StateOf"/> and the canal
+  /// cell (which tracks its own temperature, not a live stack) share this single primitive, so a
+  /// registered metal's thresholds apply at every classification site.
+  /// </summary>
+  public static MoltenState Classify(
+    float temperature,
+    float meltingPoint,
+    AssetLocation moltenItem
+  )
   {
-    float temp = GetTemperature(world, stack);
-    float meltPoint = MeltingPointOf(world, stack);
-    if (temp > LiquidThreshold * meltPoint)
+    if (temperature > MetalRegistry.LiquidThresholdOf(moltenItem) * meltingPoint)
       return MoltenState.Liquid;
-    if (temp < HardenedThreshold * meltPoint)
+    if (temperature < MetalRegistry.HardenedThresholdOf(moltenItem) * meltingPoint)
       return MoltenState.Hardened;
     return MoltenState.Cooling;
   }

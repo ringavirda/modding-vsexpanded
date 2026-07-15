@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
@@ -34,7 +35,7 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode
   public string Medium { get; protected set; } = "";
 
   /// <summary>Whether this pipe's network currently carries water rather than a gas.</summary>
-  public bool IsLiquid => Medium == "Water";
+  public bool IsLiquid => ExLiquids.Taxonomy.IsLiquid(Medium);
 
   /// <summary>Pressure (atm) of this pipe's network, cached from the last broadcast - the volume
   /// ratio for a gas, or the pump-set pressure for a water line.</summary>

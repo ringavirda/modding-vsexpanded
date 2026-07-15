@@ -486,18 +486,45 @@ public class PipeNetwork : BlockNetwork
     BlockNetworkModSystem manager
   )
   {
+    // Fold the between-tick produce/consume peaks into this tick's instantaneous flow, reset the
+    // accumulators, and refresh the once-per-tick weakest-pipe rating (picks up chunk load/unload;
+    // producer calls between ticks reuse it at O(1)). Done before the empty-State bail so a drained
+    // run still clears its accumulators.
     float instantFlow = Math.Max(_producedAccum, _consumedAccum);
     _producedAccum = 0f;
     _consumedAccum = 0f;
-
-    // Refresh the weakest-pipe rating once per tick (picks up chunk load/unload); producer
-    // calls between ticks reuse it at O(1).
     _minBurstCache = null;
 
     if (State == null)
       return;
 
-    // Smooth the displayed throughput and track how long the run has been genuinely idle.
+    SmoothFlow(instantFlow, dt);
+
+    // State is non-null here and is cleared only by ClearIfEmptyAndIdle (last, just before the
+    // broadcast); the passes up to it mutate this same instance. The per-tick working set - the
+    // dirty flag, medium, open-connector tallies and leak-particle fractions - lives in `pass`.
+    PipeNetworkState state = State;
+    var pass = new TickPass { Liquid = state.IsLiquid };
+
+    RecomputePressureAndFlow(state, pass);
+    ComputeLeakFractions(state, pass);
+    ClassifyOpenings(blockAccessor, manager, state, pass);
+    ApplyVentDraw(manager, state, pass);
+    ApplyLeakLoss(dt, state, pass);
+    ApplyEvaporation(manager, state, pass);
+    RepressureAfterVentLeak(state, pass);
+    ApplyPassiveCooling(state, pass);
+    ClearIfEmptyAndIdle(state, pass);
+
+    if (pass.Changed)
+      BroadcastUpdate(blockAccessor);
+
+    TickOverpressureAndBurst(blockAccessor, manager, dt);
+  }
+
+  /// <summary>Smooths the displayed throughput (EMA) and tracks how long the run has been idle.</summary>
+  private void SmoothFlow(float instantFlow, float dt)
+  {
     _smoothedFlow += (instantFlow - _smoothedFlow) * FlowSmoothingAlpha;
     if (_smoothedFlow < 0.01f)
       _smoothedFlow = 0f;
@@ -505,56 +532,67 @@ public class PipeNetwork : BlockNetwork
       _secondsSinceFlow = 0f;
     else
       _secondsSinceFlow += dt;
+  }
 
-    bool changed = false;
-    bool liquid = State.IsLiquid;
-
-    State.MaxVolume = Nodes.Count * ExlibValues.LitresPerPipe;
+  /// <summary>Refreshes the broadcast max-volume, pressure and (smoothed) flow rate from the node set.</summary>
+  private void RecomputePressureAndFlow(PipeNetworkState state, TickPass pass)
+  {
+    state.MaxVolume = Nodes.Count * ExlibValues.LitresPerPipe;
     // Gas pressure is the volume ratio; a liquid's is the fill ratio until brim-full, then the
     // pump-set feed pressure.
-    float newPressure = liquid
+    float newPressure = pass.Liquid
       ? PipeNetworkState.ComputeLiquidPressure(
-        State.Volume,
-        State.MaxVolume,
-        State.FeedPressure
+        state.Volume,
+        state.MaxVolume,
+        state.FeedPressure
       )
-      : PipeNetworkState.ComputeGasPressure(State.Volume, State.MaxVolume);
-    if (Math.Abs(State.Pressure - newPressure) > 0.02f)
+      : PipeNetworkState.ComputeGasPressure(state.Volume, state.MaxVolume);
+    if (Math.Abs(state.Pressure - newPressure) > 0.02f)
     {
-      State.Pressure = newPressure;
-      changed = true;
+      state.Pressure = newPressure;
+      pass.Changed = true;
     }
 
-    if (Math.Abs(State.FlowRate - _smoothedFlow) > 0.01f)
+    if (Math.Abs(state.FlowRate - _smoothedFlow) > 0.01f)
     {
-      State.FlowRate = _smoothedFlow;
-      changed = true;
+      state.FlowRate = _smoothedFlow;
+      pass.Changed = true;
     }
+  }
 
-    // Particle density for any open-end leaks this tick, scaled by the network-total leak
-    // rate (NOT the opening count): gas wisps ramp over 1→8 L/s, water spray over 1→5 L/s.
+  /// <summary>Particle density for any open-end leaks this tick, scaled by the network-total leak
+  /// rate (NOT the opening count): gas wisps ramp over 1→8 L/s, water spray over 1→5 L/s.</summary>
+  private void ComputeLeakFractions(PipeNetworkState state, TickPass pass)
+  {
     float gasLeakRate = Math.Min(
-      Math.Max(0f, State.Volume - State.MaxVolume),
+      Math.Max(0f, state.Volume - state.MaxVolume),
       ExlibValues.GasLeakRate
     );
-    float gasLeakFrac = Math.Clamp(
+    pass.GasLeakFrac = Math.Clamp(
       (gasLeakRate - 1f) / (ExlibValues.GasLeakRate - 1f),
       0f,
       4f
     );
-    float waterLeakFrac = Math.Clamp((State.Volume - 1f) / 4f, 0f, 1f);
+    pass.WaterLeakFrac = Math.Clamp((state.Volume - 1f) / 4f, 0f, 1f);
+  }
 
-    // Single pass: detect and classify open connectors - a chimney on the TOP connector of a
-    // passthrough/outlet is a gas vent (not a leak), an air-exposed end is a leak; count
-    // consumers too.
-    int consumers = 0;
-    int totalLeaks = 0;
-    var chimneyVents = new List<BlockPos>();
+  /// <summary>
+  /// Single pass over the nodes: detect and classify open connectors - a chimney on the TOP connector
+  /// of a passthrough/outlet is a gas vent (not a leak), an air-exposed end is a leak - counting the
+  /// consumers, firing each leaking node's spray/open-connector hooks, and refreshing the openings count.
+  /// </summary>
+  private void ClassifyOpenings(
+    IBlockAccessor blockAccessor,
+    BlockNetworkModSystem manager,
+    PipeNetworkState state,
+    TickPass pass
+  )
+  {
     foreach (var pos in Nodes)
     {
       var be = blockAccessor.GetBlockEntity(pos);
       if (be is IPipeNode)
-        consumers++;
+        pass.Consumers++;
 
       if (blockAccessor.GetBlock(pos) is not BlockNetworkNode node)
         continue;
@@ -587,7 +625,7 @@ public class PipeNetwork : BlockNetwork
           )
         )
         {
-          chimneyVents.Add(ventPos);
+          pass.ChimneyVents.Add(ventPos);
           continue;
         }
         if (neighbour.FirstCodePart() == "air")
@@ -596,115 +634,148 @@ public class PipeNetwork : BlockNetwork
       if (airOpen == 0)
         continue;
 
-      totalLeaks += airOpen;
+      pass.TotalLeaks += airOpen;
 
       BlockFacing[] leakFaces =
         airOpen == openFaces.Length ? openFaces : openFaces[..airOpen];
-      if (be is INetworkNode nodeEntity && State.Volume > 0)
+      if (be is INetworkNode nodeEntity && state.Volume > 0)
       {
         // A pipe overrides OnLeak to spray leak particles (water sprays out like a poured bucket, gas
         // wisps out); every other node takes the default no-op. Nodes also get the open-connectors
         // hook they may react to.
         nodeEntity.OnLeak(
           leakFaces,
-          liquid,
-          liquid ? waterLeakFrac : gasLeakFrac
+          pass.Liquid,
+          pass.Liquid ? pass.WaterLeakFrac : pass.GasLeakFrac
         );
         nodeEntity.OnOpenConnectorsChanged(leakFaces);
       }
     }
 
-    if (State.OpeningsCount != totalLeaks)
+    if (state.OpeningsCount != pass.TotalLeaks)
     {
-      State.OpeningsCount = totalLeaks;
-      changed = true;
+      state.OpeningsCount = pass.TotalLeaks;
+      pass.Changed = true;
     }
+  }
 
-    // Vent draw (gas only) - the content mod's strategy pulls gas out through any vents (chimneys)
-    // and plays the venting feedback. A network with no strategy vents nothing.
-    float vented = _vent?.Vent(chimneyVents, State, liquid, manager) ?? 0f;
+  /// <summary>Vent draw (gas only): the content mod's strategy pulls gas out through any vents
+  /// (chimneys) and plays the feedback. A network with no strategy vents nothing.</summary>
+  private void ApplyVentDraw(
+    BlockNetworkModSystem manager,
+    PipeNetworkState state,
+    TickPass pass
+  )
+  {
+    float vented = _vent?.Vent(pass.ChimneyVents, state, pass.Liquid, manager) ?? 0f;
     if (vented > 0f)
     {
       _consumedAccum += vented;
-      changed = true;
+      pass.Changed = true;
     }
+  }
 
-    // Leak loss - a gas leak is pressure relief (a small FIXED rate regardless of open-end
-    // count, so bulk venting needs a chimney/stack); a water leak drains at a fixed rate.
-    if (totalLeaks > 0 && State.Volume > 0f)
+  /// <summary>Leak loss: a gas leak is pressure relief (a small FIXED rate regardless of open-end
+  /// count, so bulk venting needs a chimney/stack); a water leak drains at a fixed rate.</summary>
+  private void ApplyLeakLoss(float dt, PipeNetworkState state, TickPass pass)
+  {
+    if (pass.TotalLeaks > 0 && state.Volume > 0f)
     {
-      if (liquid)
+      if (pass.Liquid)
       {
-        float lost = Math.Min(State.Volume, ExlibValues.LiquidLeakRate * dt);
-        State.Volume -= lost;
-        if (State.Volume <= 0f)
-          State.Pressure = 0f;
+        float lost = Math.Min(state.Volume, ExlibValues.LiquidLeakRate * dt);
+        state.Volume -= lost;
+        if (state.Volume <= 0f)
+          state.Pressure = 0f;
       }
       else
       {
-        float lost = Math.Min(State.Volume, ExlibValues.GasLeakRate);
-        State.Volume -= lost;
-        if (State.Temperature > 20f)
-          State.Temperature = Math.Max(20f, State.Temperature - 5.0f);
+        float lost = Math.Min(state.Volume, ExlibValues.GasLeakRate);
+        state.Volume -= lost;
+        if (state.Temperature > 20f)
+          state.Temperature = Math.Max(20f, state.Temperature - 5.0f);
       }
-      changed = true;
+      pass.Changed = true;
     }
+  }
 
-    // Natural evaporation of a water run, measured off the calendar so it's independent of
-    // tick cadence and charges nothing for time spent unloaded (same rate as the boiler).
+  /// <summary>Natural evaporation of a water run, measured off the calendar so it is independent of
+  /// tick cadence and charges nothing for time spent unloaded (same rate as the boiler).</summary>
+  private void ApplyEvaporation(
+    BlockNetworkModSystem manager,
+    PipeNetworkState state,
+    TickPass pass
+  )
+  {
     double nowDays = manager.ServerWorld?.Calendar?.TotalDays ?? -1;
     if (nowDays >= 0)
     {
-      if (liquid && _lastEvapDays >= 0 && State.Volume > 0f)
+      if (pass.Liquid && _lastEvapDays >= 0 && state.Volume > 0f)
       {
         float evap = (float)(
           ExlibValues.EvaporationLitresPerDay * (nowDays - _lastEvapDays)
         );
         if (evap > 0f)
         {
-          State.Volume = Math.Max(0f, State.Volume - evap);
-          if (State.Volume <= 0f)
-            State.Pressure = 0f;
-          changed = true;
+          state.Volume = Math.Max(0f, state.Volume - evap);
+          if (state.Volume <= 0f)
+            state.Pressure = 0f;
+          pass.Changed = true;
         }
       }
       _lastEvapDays = nowDays;
     }
+  }
 
-    // Keep the broadcast gas pressure in step after venting / leaking.
-    if (!liquid && (chimneyVents.Count > 0 || totalLeaks > 0))
-      State.Pressure = PipeNetworkState.ComputeGasPressure(
-        State.Volume,
-        State.MaxVolume
+  /// <summary>Keeps the broadcast gas pressure in step after venting / leaking.</summary>
+  private void RepressureAfterVentLeak(PipeNetworkState state, TickPass pass)
+  {
+    if (!pass.Liquid && (pass.ChimneyVents.Count > 0 || pass.TotalLeaks > 0))
+      state.Pressure = PipeNetworkState.ComputeGasPressure(
+        state.Volume,
+        state.MaxVolume
       );
+  }
 
-    // Passive cooling of an idle gas run (no consumers drawing it).
+  /// <summary>Passive cooling of an idle gas run (no consumers drawing it).</summary>
+  private void ApplyPassiveCooling(PipeNetworkState state, TickPass pass)
+  {
     if (
-      !liquid
-      && State.Volume > 0
-      && State.Temperature > 20f
-      && consumers == 0
+      !pass.Liquid
+      && state.Volume > 0
+      && state.Temperature > 20f
+      && pass.Consumers == 0
     )
     {
-      State.Temperature = Math.Max(20f, State.Temperature - 2.0f);
-      changed = true;
+      state.Temperature = Math.Max(20f, state.Temperature - 2.0f);
+      pass.Changed = true;
     }
+  }
 
-    // Clear empty state only once drained AND idle for a few seconds, so a push-and-drain
-    // water line (near 0 L while busy) keeps its "Water" label instead of flickering.
-    if (State.Volume <= 0 && _secondsSinceFlow >= EmptyClearDelaySeconds)
+  /// <summary>Clears empty state only once drained AND idle for a few seconds, so a push-and-drain
+  /// water line (near 0 L while busy) keeps its "Water" label instead of flickering.</summary>
+  private void ClearIfEmptyAndIdle(PipeNetworkState state, TickPass pass)
+  {
+    if (state.Volume <= 0 && _secondsSinceFlow >= EmptyClearDelaySeconds)
     {
       State = null;
       _smoothedFlow = 0f;
-      changed = true;
+      pass.Changed = true;
     }
+  }
 
-    if (changed)
-      BroadcastUpdate(blockAccessor);
-
-    // Over-pressure timer: a sealed, over-fed run sits exactly at its burst pressure with
-    // nowhere to go. Hold there for PipeOverpressureSeconds and a pipe lets go; any relief
-    // dropping the pressure below the rating resets the grace.
+  /// <summary>
+  /// Over-pressure timer + burst: a sealed, over-fed run sits exactly at its burst pressure with
+  /// nowhere to go. Hold there for PipeOverpressureSeconds and a pipe lets go; any relief dropping the
+  /// pressure below the rating resets the grace. Reads the (possibly just-cleared) State and executes
+  /// last so it never mutates the node set while another pass is reading it.
+  /// </summary>
+  private void TickOverpressureAndBurst(
+    IBlockAccessor blockAccessor,
+    BlockNetworkModSystem manager,
+    float dt
+  )
+  {
     bool pressureFailure = false;
     if (State != null)
     {
@@ -728,13 +799,26 @@ public class PipeNetwork : BlockNetwork
         _overpressureSeconds = 0f;
     }
 
-    // Executed last so we never mutate the node set while reading it. Each burst removes a
-    // node (fracturing the run) and drops the pipe's materials.
+    // Each burst removes a node (fracturing the run) and drops the pipe's materials.
     if (State != null && pressureFailure)
     {
       foreach (var pos in CollectBursts(blockAccessor))
         ExecuteBurst(pos, blockAccessor, manager);
     }
+  }
+
+  /// <summary>Per-tick working set threaded through the <see cref="OnTick"/> passes: the dirty flag,
+  /// the captured medium, the open-connector tallies and the leak-particle fractions. Nothing here
+  /// changes the tick order or arithmetic versus the former single-method body.</summary>
+  private sealed class TickPass
+  {
+    public bool Changed;
+    public bool Liquid;
+    public int Consumers;
+    public int TotalLeaks;
+    public readonly List<BlockPos> ChimneyVents = new();
+    public float GasLeakFrac;
+    public float WaterLeakFrac;
   }
 
   // Consulted by every TryProduceGas call, so cache it; only changes with the node set

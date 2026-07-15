@@ -20,6 +20,9 @@
     <!-- Assembly name matches the mod id so the built lib ships as exlib.dll. -->
     <AssemblyName>exlib</AssemblyName>
     <RootNamespace>ExpandedLib</RootNamespace>
+    <!-- This mod's asset domain; the shared globs in ../Directory.Build.props pull in
+         ../../assets/exlib/ (Content + the en.json ExLangKeyGenerator feed). -->
+    <AssetDomain>exlib</AssetDomain>
   </PropertyGroup>
 
   <ItemGroup>
@@ -70,17 +73,6 @@
     <Content Include="modicon.png" Condition="Exists('modicon.png')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="assets\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <!-- Lang files fed to ExLangKeyGenerator (compile-time typed {Domain}Lang key constants). -->
-  <ItemGroup>
-    <AdditionalFiles Include="assets\**\lang\en.json" />
   </ItemGroup>
 
   <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's

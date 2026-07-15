@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
@@ -117,7 +118,7 @@ public class BlockEntitySmokeStack
       : "";
 
   /// <inheritdoc/>
-  public bool IsLiquid => Medium == "Water";
+  public bool IsLiquid => ExLiquids.Taxonomy.IsLiquid(Medium);
 
   /// <inheritdoc/>
   public float Pressure =>

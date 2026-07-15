@@ -64,6 +64,23 @@ public class PipeTickTests
   }
 
   [Fact]
+  public void Idle_sealed_gas_run_cools_two_degrees_per_tick()
+  {
+    // Passive cooling pass: a sealed hot gas run with no consumers drawing it sheds a fixed 2 C per
+    // tick. Pinned across two post-production ticks so it's independent of the exact production temp.
+    var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
+    net.TryProduceGas(45f, 120f, "Steam", w.Accessor);
+
+    w.Tick();
+    float t1 = net.State!.Temperature;
+    w.Tick();
+    float t2 = net.State!.Temperature;
+
+    Assert.True(t1 > 22f, "the run should still be hot after one cooling tick");
+    Assert.Equal(t1 - 2f, t2, 2); // idle gas cools a fixed 2 C/tick (no consumers, no leaks)
+  }
+
+  [Fact]
   public void Sealed_overpressured_run_bursts_after_the_grace_period()
   {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);

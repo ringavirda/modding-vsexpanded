@@ -4,6 +4,7 @@ using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.Helpers;
@@ -438,17 +439,44 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     MarkDirty(true);
   }
 
-  /// <summary>Converts water to steam for one tick (1 L water → <see cref="PpexValues.SteamExpansionFactor"/> L steam).</summary>
+  /// <summary>The boiler's feed liquid - water. Held untagged as <see cref="_waterVolume"/>; named here
+  /// so the water→steam phase change reads its output medium + expansion from the medium taxonomy rather
+  /// than hardcoding them (the boiler is the degenerate single-fraction case of the general still).</summary>
+  private const string FeedLiquid = "Water";
+
+  /// <summary>The gas the feed water boils into, read from <see cref="ExLiquids.Taxonomy"/> (Water →
+  /// Steam today; a mod could retarget it). <paramref name="expansionFactor"/> is the vaporisation
+  /// volume multiplier - 0 when the medium leaves it to the caller, so we fall back to the ppex
+  /// steam-expansion constant. The vaporisation mirror of the condenser's medium-agnostic
+  /// <c>CondensationTarget</c> read, so the boiler no longer hardcodes "Steam" / the expansion factor.</summary>
+  private static string BoiledMedium(out float expansionFactor)
+  {
+    if (
+      ExLiquids.Taxonomy.VaporisationTarget(
+        FeedLiquid,
+        out string gas,
+        out float factor
+      )
+      && gas.Length > 0
+    )
+    {
+      expansionFactor = factor > 0f ? factor : PpexValues.SteamExpansionFactor;
+      return gas;
+    }
+    expansionFactor = PpexValues.SteamExpansionFactor;
+    return "Steam";
+  }
+
+  /// <summary>Converts water to steam for one tick (1 L water → the taxonomy's water-vaporisation
+  /// expansion, <see cref="PpexValues.SteamExpansionFactor"/> by default, L steam).</summary>
   private void BoilStep(float dt)
   {
-    float waterUse = Math.Min(
-      _waterVolume,
-      SteamPerSecond * dt / PpexValues.SteamExpansionFactor
-    );
+    BoiledMedium(out float expansion);
+    float waterUse = Math.Min(_waterVolume, SteamPerSecond * dt / expansion);
     if (waterUse <= 0f)
       return;
     _waterVolume -= waterUse;
-    _steamVolume += waterUse * PpexValues.SteamExpansionFactor;
+    _steamVolume += waterUse * expansion;
   }
 
   /// <summary>
@@ -520,7 +548,7 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     float accepted = steamNet.ProduceGasMeasured(
       transfer,
       SteamTemperature(),
-      "Steam",
+      BoiledMedium(out _),
       ba,
       maxOutputPressure: InternalPressure
     );

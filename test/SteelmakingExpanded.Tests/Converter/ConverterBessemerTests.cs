@@ -1,3 +1,4 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using NSubstitute;
 using SteelmakingExpanded.BlockStructures.Converter;
@@ -97,8 +98,11 @@ public class ConverterBessemerTests
     var ironItem = world.RegisterItem("game:ingot-iron", 1500f);
 
     var control = Control(world, new BlockPos(0, 7, 0));
-    ReflectionHelpers.SetField(control, "_content", new ItemStack(ironItem, 1));
-    ReflectionHelpers.SetField(control, "_contentUnits", 20);
+    ReflectionHelpers.SetField(
+      control,
+      "_charge",
+      MoltenCharge.Of(new ItemStack(ironItem, 1), 20)
+    );
     ReflectionHelpers.SetField(control, "_solidified", true);
 
     var vessel = Vessel(world, new BlockPos(0, 8, 0));
@@ -107,7 +111,7 @@ public class ConverterBessemerTests
     var drops = vessel.CollectBreakDrops();
 
     Assert.NotNull(drops); // a solidified charge scatters recoverable bits
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(control, "_contentUnits")!); // control cleared
+    Assert.Null(ReflectionHelpers.GetField(control, "_charge")); // control cleared
   }
 
   [Fact]

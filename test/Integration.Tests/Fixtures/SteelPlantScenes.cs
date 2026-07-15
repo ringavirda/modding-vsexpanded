@@ -195,15 +195,14 @@ internal sealed class ConverterRig
   }
 
   public int ContentUnits =>
-    (int)ReflectionHelpers.GetField(Control, "_contentUnits")!;
+    (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)?.Units ?? 0;
   public float ProcessSeconds =>
     (float)ReflectionHelpers.GetField(Control, "_processSeconds")!;
   public float BlastVolume => _blast.State?.Volume ?? 0f;
 
   public string ContentCode =>
-    ReflectionHelpers.GetField(Control, "_content") is ItemStack s
-      ? s.Collectible.Code.ToString()
-      : "";
+    (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)
+      ?.MetalCode.ToString() ?? "";
 }
 
 /// <summary>

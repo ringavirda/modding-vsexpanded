@@ -86,6 +86,12 @@ public class ConverterControlProcessTests
     return cell;
   }
 
+  private static MoltenCharge? Charge(BlockEntityConverterControl be) =>
+    ReflectionHelpers.GetField(be, "_charge") as MoltenCharge;
+
+  private static int ChargeUnits(BlockEntityConverterControl be) =>
+    Charge(be)?.Units ?? 0;
+
   #region Filling
 
   [Fact]
@@ -98,7 +104,7 @@ public class ConverterControlProcessTests
 
     ReflectionHelpers.Invoke(be, "TickFilling", 1f);
 
-    Assert.Equal(50, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
+    Assert.Equal(50, ChargeUnits(be));
     Assert.True(input.IsCellEmpty); // drained into the vessel
   }
 
@@ -111,7 +117,7 @@ public class ConverterControlProcessTests
 
     ReflectionHelpers.Invoke(be, "TickFilling", 1f);
 
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
+    Assert.Equal(0, ChargeUnits(be));
   }
 
   #endregion
@@ -124,14 +130,17 @@ public class ConverterControlProcessTests
     var world = NewWorld();
     var be = Control(world);
     var output = PlaceCell(world, be, OutputStartLocal);
-    ReflectionHelpers.SetField(be, "_content", Metal(world, Iron, 1400f));
-    ReflectionHelpers.SetField(be, "_contentUnits", 40);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Iron, 1400f), 40)
+    );
 
     ReflectionHelpers.Invoke(be, "TickPouring", 1f);
 
     Assert.True(output.CellAmount > 0);
     Assert.Equal(Iron, output.CellMetalType);
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
+    Assert.Equal(0, ChargeUnits(be));
   }
 
   #endregion
@@ -143,12 +152,15 @@ public class ConverterControlProcessTests
   {
     var world = NewWorld();
     var be = Control(world);
-    ReflectionHelpers.SetField(be, "_content", Metal(world, Iron, 1400f));
-    ReflectionHelpers.SetField(be, "_contentUnits", 50);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Iron, 1400f), 50)
+    );
 
     ReflectionHelpers.Invoke(be, "CompleteRefining");
 
-    var content = (ItemStack)ReflectionHelpers.GetField(be, "_content")!;
+    var content = Charge(be)!.Stack;
     Assert.Equal(Steel, content.Collectible.Code.ToString());
   }
 
@@ -166,8 +178,11 @@ public class ConverterControlProcessTests
   {
     var world = NewWorld();
     var be = Control(world);
-    ReflectionHelpers.SetField(be, "_content", Metal(world, Iron, temp));
-    ReflectionHelpers.SetField(be, "_contentUnits", 30);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Iron, temp), 30)
+    );
 
     ReflectionHelpers.Invoke(be, "UpdateSolidified");
 

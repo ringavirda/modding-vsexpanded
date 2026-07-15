@@ -132,6 +132,48 @@ public class MetalRegistryTests
   }
 
   [Fact]
+  public void Classify_reads_a_registered_metals_thresholds_over_the_global_default()
+  {
+    // A metal whose liquid threshold is 0.9 (vs the global 0.8) and hardened threshold 0.5 (vs 0.3):
+    // at the same temperature + melting point it classifies differently from an unregistered metal,
+    // proving MoltenMetal.Classify consults the per-metal MetalDef, not just the ExlibValues default.
+    MetalRegistry.Register(
+      new MetalDef
+      {
+        Code = "slag",
+        MoltenItem = "iwex:slag",
+        LiquidThreshold = 0.9f,
+        HardenedThreshold = 0.5f,
+      }
+    );
+    var slag = new AssetLocation("iwex:slag");
+    var iron = new AssetLocation("game:ingot-iron"); // unregistered → global 0.8 / 0.3
+    const float meltPoint = 1000f;
+
+    // 850 °C: above iron's 0.8×1000 liquid line, below slag's 0.9×1000 → iron flows, slag is cooling.
+    Assert.Equal(MoltenState.Liquid, MoltenMetal.Classify(850f, meltPoint, iron));
+    Assert.Equal(MoltenState.Cooling, MoltenMetal.Classify(850f, meltPoint, slag));
+
+    // 400 °C: above iron's 0.3×1000 hardened line, below slag's 0.5×1000 → iron cooling, slag hardened.
+    Assert.Equal(MoltenState.Cooling, MoltenMetal.Classify(400f, meltPoint, iron));
+    Assert.Equal(MoltenState.Hardened, MoltenMetal.Classify(400f, meltPoint, slag));
+  }
+
+  [Fact]
+  public void Classify_of_an_unregistered_metal_uses_the_global_thresholds()
+  {
+    // Belt-and-braces on the fallback: with nothing registered, the strict-liquid boundary matches
+    // the historical StateOf semantics (temp == threshold×meltPoint is NOT liquid).
+    var iron = new AssetLocation("game:ingot-iron");
+    float liquid = ExlibValues.MetalLiquidThreshold;
+    float hardened = ExlibValues.MetalHardenedThreshold;
+
+    Assert.Equal(MoltenState.Liquid, MoltenMetal.Classify(liquid * 1000f + 1f, 1000f, iron));
+    Assert.Equal(MoltenState.Cooling, MoltenMetal.Classify(liquid * 1000f, 1000f, iron));
+    Assert.Equal(MoltenState.Hardened, MoltenMetal.Classify(hardened * 1000f - 1f, 1000f, iron));
+  }
+
+  [Fact]
   public void ResolveByCode_of_a_registered_token_returns_its_molten_item()
   {
     MetalRegistry.Register(new MetalDef { Code = "slag", MoltenItem = "iwex:slag" });

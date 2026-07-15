@@ -31,6 +31,13 @@ public partial class BlockConverterBessemer
     IFillerInteractionTarget,
     IExBlockDefProvider
 {
+  /// <summary>The blocktype base code ("converterbessemer") - the single source of truth the vessel is
+  /// defined under (<see cref="Definitions"/>) and later resolved/animated by, so the control block that
+  /// spawns it (<c>GetConverterBlock</c>) and the animator cache key can't silently drift from the code
+  /// the block registers under. The multiblock/recipe/migration tables keep it literal by design (they
+  /// are hand-curated match catalogues, and typing one code among their siblings would only skew them).</summary>
+  public const string BaseCode = "converterbessemer";
+
   #region Code-first definition
 
   // The 3x3x3 footprint and the chisel-hatch offset, read at runtime from the block's own attributes
@@ -44,7 +51,7 @@ public partial class BlockConverterBessemer
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "converterbessemer", "converter/bessemer")
+        .Create(domain, BaseCode, "converter/bessemer")
         .Class<BlockConverterBessemer>()
         .EntityClass("smex.BlockEntityConverterBessemer")
         .Material(EnumBlockMaterial.Metal)

@@ -95,7 +95,7 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext>
     foreach (var project in context.Projects)
     {
       var jsonFiles = context.GetFiles(
-        $"../../src/{project.Folder}/assets/**/*.json"
+        $"../../assets/{project.ModId}/**/*.json"
       );
       foreach (var file in jsonFiles)
       {

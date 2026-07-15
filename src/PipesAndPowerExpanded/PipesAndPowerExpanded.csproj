@@ -15,6 +15,9 @@
     <OutputPath Condition="'$(OutputPath)' == ''"
       >bin\$(Configuration)\Mods\mod</OutputPath>
     <Nullable>enable</Nullable>
+    <!-- This mod's asset domain; the shared globs in ../Directory.Build.props pull in
+         ../../assets/ppex/ (Content + the en.json ExLangKeyGenerator feed). -->
+    <AssetDomain>ppex</AssetDomain>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,12 +59,6 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="assets\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
   <!-- Stamp the matching game version into the output modinfo for legacy builds; no-op on 1.22. -->
   <Target
     Name="RewriteModinfoGameVersion"
@@ -74,11 +71,6 @@
       Overwrite="true"
     />
   </Target>
-
-  <!-- Lang files fed to ExLangKeyGenerator (compile-time typed {Domain}Lang key constants). -->
-  <ItemGroup>
-    <AdditionalFiles Include="assets\**\lang\en.json" />
-  </ItemGroup>
 
   <!--
     ExpandedLib is its own mod (exlib) with a single runtime type identity (one

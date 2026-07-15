@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using ExpandedLib.Blocks.Construction;
+using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
@@ -36,7 +37,7 @@ namespace IronworkingExpanded.BlockStructures.OreMixer.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityOreMixer : BlockEntity, IRenderer
+public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
 {
   // MP intake cells in the principal's north layout: upper-left couples west, upper-right couples east.
   private static readonly Vec3i[] PortOffsets =
@@ -80,7 +81,6 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   private int _burdenCount;
   private BurdenMix _burdenMix;
 
-  private long _tickId;
   private Item? _burdenItem;
 
   // Render before the opaque pass so the rotor frame is set in step with the axle.
@@ -89,6 +89,11 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
 
   /// <summary>True once the player has finished the construction stages.</summary>
   public bool IsConstructed => _animator?.IsConstructed ?? false;
+
+  // Mixing (while powered) + draining are cheap, so a slow 250 ms production tick is plenty. Gated on
+  // construction by the shared BlockEntityProductionMachine base: an unbuilt mixer idles.
+  protected override int ProductionTickMs => 250;
+  protected override bool CanRunProduction => IsConstructed;
 
   private int Angle => (Block as BlockOreMixer)?.StructureAngle ?? 0;
 
@@ -102,11 +107,8 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     _animator.Initialize(ApplyPose);
 
     if (api.Side == EnumAppSide.Server)
-    {
+      // The production tick (registered by the base) deposits this resolved burden item.
       _burdenItem = api.World.GetItem(new AssetLocation("iwex", "burden"));
-      // Drives mixing (while powered) and draining; cheap, so a slow 250 ms tick is plenty.
-      _tickId = RegisterGameTickListener(OnServerTick, 250);
-    }
 
     if (api is ICoreClientAPI capi)
     {
@@ -177,11 +179,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     _capi?.Event.UnregisterRenderer(this, EnumRenderStage.Before);
     _oreRenderer?.Dispose();
     _oreRenderer = null;
-    if (_tickId != 0)
-    {
-      UnregisterGameTickListener(_tickId);
-      _tickId = 0;
-    }
+    // The production tick is stopped by the base's OnBlockRemoved / OnBlockUnloaded.
   }
 
   /// <summary>Holds the mixer visible via the permanent idle pose, then reflects the current lid state.</summary>
@@ -327,7 +325,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     return IsIronInput(path)
       || IsFluxInput(path)
       || IsFuelInput(path)
-      || IsBurden(stack);
+      || Burden.Is(stack);
   }
 
   /// <summary>
@@ -370,9 +368,6 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
   /// <summary>Coke-equivalent carbon value of one item of the given fuel input.</summary>
   private static float FuelValuePerItem(string path) =>
     IsCharcoalInput(path) ? IwexValues.MixerCharcoalFuelValue : 1f;
-
-  private static bool IsBurden(ItemStack? stack) =>
-    stack?.Collectible?.Code is { Domain: "iwex", Path: "burden" };
 
   /// <summary>
   /// Adds a held crushed-iron / lime / crushed-coke stack to the matching raw part (up to the batch
@@ -433,7 +428,7 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
       return false;
 
     ItemStack? s = slot.Itemstack;
-    if (!IsBurden(s))
+    if (!Burden.Is(s))
       return false;
 
     int space = (int)MathF.Floor(IwexValues.MixerMaxRaw - RawUnits + 1e-4f);
@@ -456,11 +451,8 @@ public class BlockEntityOreMixer : BlockEntity, IRenderer
     return true;
   }
 
-  private void OnServerTick(float dt)
+  protected override void OnProductionTick(float dt)
   {
-    if (!IsConstructed)
-      return;
-
     if (_draining)
     {
       DrainStep(dt);

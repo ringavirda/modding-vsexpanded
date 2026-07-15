@@ -73,10 +73,19 @@ public class ConverterChiselTests
     bool solidified
   )
   {
-    ReflectionHelpers.SetField(be, "_content", Metal(world, Iron, temp));
-    ReflectionHelpers.SetField(be, "_contentUnits", units);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Iron, temp), units)
+    );
     ReflectionHelpers.SetField(be, "_solidified", solidified);
   }
+
+  private static MoltenCharge? Charge(BlockEntityConverterControl be) =>
+    ReflectionHelpers.GetField(be, "_charge") as MoltenCharge;
+
+  private static int ChargeUnits(BlockEntityConverterControl be) =>
+    Charge(be)?.Units ?? 0;
 
   private static float ExpectedSlowedCooldown =>
     IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
@@ -93,7 +102,7 @@ public class ConverterChiselTests
 
     ReflectionHelpers.Invoke(be, "TickFilling", 1f);
 
-    var content = (ItemStack)ReflectionHelpers.GetField(be, "_content")!;
+    var content = Charge(be)!.Stack;
     Assert.Equal(ExpectedSlowedCooldown, CooldownSpeedOf(content), 3);
   }
 
@@ -102,12 +111,15 @@ public class ConverterChiselTests
   {
     var world = NewWorld();
     var be = Control(world);
-    ReflectionHelpers.SetField(be, "_content", Metal(world, Iron, 1700f));
-    ReflectionHelpers.SetField(be, "_contentUnits", 50);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Iron, 1700f), 50)
+    );
 
     ReflectionHelpers.Invoke(be, "CompleteRefining");
 
-    var content = (ItemStack)ReflectionHelpers.GetField(be, "_content")!;
+    var content = Charge(be)!.Stack;
     Assert.Equal(Steel, content.Collectible.Code.ToString());
     Assert.Equal(ExpectedSlowedCooldown, CooldownSpeedOf(content), 3);
   }
@@ -133,8 +145,7 @@ public class ConverterChiselTests
     var world = NewWorld();
     var be = Control(world);
     var content = Metal(world, Iron, 1400f);
-    ReflectionHelpers.SetField(be, "_content", content);
-    ReflectionHelpers.SetField(be, "_contentUnits", 50);
+    ReflectionHelpers.SetField(be, "_charge", MoltenCharge.Of(content, 50));
 
     float original = SmexValues.BessemerCooldownCoefficient;
     try
@@ -281,8 +292,7 @@ public class ConverterChiselTests
     Assert.NotNull(drop);
     Assert.Equal("game:metalbit-iron", drop!.Collectible.Code.ToString());
     Assert.Equal(20, drop.StackSize); // 5 units per bit
-    Assert.Null(ReflectionHelpers.GetField(be, "_content"));
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
+    Assert.Null(ReflectionHelpers.GetField(be, "_charge"));
     Assert.False((bool)ReflectionHelpers.GetField(be, "_solidified")!);
   }
 
@@ -294,7 +304,7 @@ public class ConverterChiselTests
     PrimeCharge(be, world, 800f, 100, solidified: true); // too hot to chisel
 
     Assert.Null(be.ChiselOutContent());
-    Assert.Equal(100, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
+    Assert.Equal(100, ChargeUnits(be));
   }
 
   #endregion

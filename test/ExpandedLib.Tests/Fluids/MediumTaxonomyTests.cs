@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using ExpandedLib.Fluids;
 using Newtonsoft.Json;
 using Xunit;
@@ -246,5 +249,68 @@ public class MediumTaxonomyTests
     Assert.Equal("Water", cat.Liquids[1].CondensesTo);
     Assert.Equal(100f, cat.Liquids[1].CondenseBelowC);
   }
+
+  [Fact]
+  public void The_shipped_liquids_json_reproduces_the_builtin_seed()
+  {
+    // exlib ships assets/exlib/config/liquids.json as the data-authored baseline (the "author a medium
+    // as data" deliverable + a modder template). It re-declares the four built-ins, which SeedDefaults
+    // also seeds in code - so the load-bearing guarantee is that the two never drift: the file must bind
+    // to exactly the seeded set, field-for-field, or a fresh install stops being byte-identical.
+    var seeded = ExLiquids.All.ToDictionary(
+      d => d.Code,
+      StringComparer.OrdinalIgnoreCase
+    );
+
+    string path = Path.Combine(
+      RepoRoot(),
+      "assets",
+      "exlib",
+      "config",
+      "liquids.json"
+    );
+    Assert.True(File.Exists(path), $"shipped liquids.json missing at {path}");
+
+    var cat = JsonConvert.DeserializeObject<LiquidCatalogue>(
+      File.ReadAllText(path)
+    )!;
+    Assert.NotNull(cat.Liquids);
+
+    Assert.Equal(
+      seeded.Keys.OrderBy(k => k, StringComparer.Ordinal),
+      cat.Liquids!.Select(d => d.Code).OrderBy(k => k, StringComparer.Ordinal)
+    );
+
+    foreach (LiquidDef fileDef in cat.Liquids!)
+    {
+      Assert.True(
+        seeded.TryGetValue(fileDef.Code, out LiquidDef seed),
+        $"shipped liquid '{fileDef.Code}' is not one of the seeded built-ins"
+      );
+      Assert.Equal(seed.Phase, fileDef.Phase);
+      Assert.Equal(seed.Priority, fileDef.Priority);
+      Assert.Equal(seed.CondensesTo, fileDef.CondensesTo);
+      Assert.Equal(seed.CondenseBelowC, fileDef.CondenseBelowC);
+      Assert.Equal(seed.CondenseVolumeFactor, fileDef.CondenseVolumeFactor);
+      Assert.Equal(seed.VaporisesTo, fileDef.VaporisesTo);
+      Assert.Equal(seed.BoilPointC, fileDef.BoilPointC);
+      Assert.Equal(seed.VaporiseVolumeFactor, fileDef.VaporiseVolumeFactor);
+    }
+  }
   #endregion
+
+  private static string RepoRoot()
+  {
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (
+      dir != null
+      && !File.Exists(Path.Combine(dir.FullName, "VintageStory.sln"))
+    )
+      dir = dir.Parent;
+    return dir?.FullName
+      ?? throw new InvalidOperationException(
+        "Could not locate the repo root (VintageStory.sln) from "
+          + AppContext.BaseDirectory
+      );
+  }
 }

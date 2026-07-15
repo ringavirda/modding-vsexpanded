@@ -110,6 +110,29 @@ public class BoilerSteamCycleTests
 
   #endregion
 
+  #region Boil step
+
+  [Fact]
+  public void BoilStep_expands_water_into_steam_at_the_taxonomy_resolved_ratio()
+  {
+    // The boiler now reads its water→steam expansion from the medium taxonomy (Water's vaporisation
+    // factor), falling back to the ppex steam-expansion constant when the medium leaves it unset -
+    // which the built-in Water does, so the ratio stays 16:1. Pins that the taxonomy-driven factor
+    // resolves to exactly the conversion the hardcoded constant used to produce (byte-parity).
+    var be = Boiler(
+      water: 100f,
+      steam: 0f,
+      state: BlockEntityBoiler.BoilerState.Boiling
+    );
+    ReflectionHelpers.Invoke(be, "BoilStep", 1f);
+
+    float waterUsed = 100f - Water(be);
+    Assert.True(waterUsed > 0f); // it actually boiled some water
+    Assert.Equal(waterUsed * Expansion, Steam(be), 3); // 16 L steam per 1 L water
+  }
+
+  #endregion
+
   #region Shutdown reset
 
   [Fact]

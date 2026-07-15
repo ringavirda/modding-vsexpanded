@@ -104,11 +104,9 @@ public class BlockEntityMoltenCanal
         Api.World,
         new ItemStack(item)
       );
-      if (_cellTemperature < MoltenMetal.HardenedThreshold * meltPoint)
-        return MoltenState.Hardened;
-      if (_cellTemperature < MoltenMetal.LiquidThreshold * meltPoint)
-        return MoltenState.Cooling;
-      return MoltenState.Liquid;
+      // Shared classifier so this cell honours the metal's registered per-metal thresholds (else the
+      // global defaults) exactly like the stack-based MoltenMetal.StateOf every other fitting uses.
+      return MoltenMetal.Classify(_cellTemperature, meltPoint, item.Code);
     }
   }
 

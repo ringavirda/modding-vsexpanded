@@ -26,10 +26,12 @@ public class LangParityTests
   /// <summary>One case per non-English locale file: (label, englishPath, localePath).</summary>
   public static IEnumerable<object[]> LocaleFiles()
   {
-    string src = Path.Combine(RepoRoot(), "src");
+    // Assets were hoisted out of src/<Mod>/ to a single repo-root assets/ tree; the lang dirs are
+    // now assets/<domain>/lang/. (The /bin/ + /assets/ + /lang/ filters below still hold.)
+    string assets = Path.Combine(RepoRoot(), "assets");
     foreach (
       string enPath in Directory.EnumerateFiles(
-        src,
+        assets,
         "en.json",
         SearchOption.AllDirectories
       )

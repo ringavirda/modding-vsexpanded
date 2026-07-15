@@ -162,9 +162,6 @@ public class BlockEntityOreBunker : BlockEntityContainer
   // its stored composition becomes the unit-weighted average of everything deposited (see
   // <see cref="NormalizeBurden"/>), so a part-coke and a standard load merge into one in-between mix.
 
-  private static bool IsBurden(ItemStack? stack) =>
-    stack?.Collectible?.Code is { Domain: "iwex", Path: "burden" };
-
   // Any crushed-ore item: the vanilla "crushed-*" resource family (crushed iron, copper, ... and the
   // smex crushed coke), plus the modded crushed-iron variants the blast-furnace feed already knows.
   private static bool IsCrushedOre(ItemStack? stack)
@@ -200,7 +197,7 @@ public class BlockEntityOreBunker : BlockEntityContainer
   {
     if (stack?.Collectible?.Code == null)
       return false;
-    bool burden = IsBurden(stack);
+    bool burden = Burden.Is(stack);
     bool ore = !burden && IsCrushedOre(stack);
     if (!burden && !ore)
       return false;
@@ -215,7 +212,7 @@ public class BlockEntityOreBunker : BlockEntityContainer
         continue;
       if (burden)
       {
-        if (!IsBurden(cur) || Burden.ProfileLangKey(Burden.Read(cur)) != incomingGrade)
+        if (!Burden.Is(cur) || Burden.ProfileLangKey(Burden.Read(cur)) != incomingGrade)
           return false;
       }
       else if (cur.Collectible != stack.Collectible)
@@ -244,7 +241,7 @@ public class BlockEntityOreBunker : BlockEntityContainer
     if (budget <= 0)
       return false;
 
-    return IsBurden(incoming)
+    return Burden.Is(incoming)
       ? DepositBurden(fromSlot, budget)
       : DepositOre(fromSlot, budget);
   }
@@ -334,7 +331,7 @@ public class BlockEntityOreBunker : BlockEntityContainer
     int total = 0;
     foreach (ItemSlot slot in _inventory)
     {
-      if (!IsBurden(slot.Itemstack))
+      if (!Burden.Is(slot.Itemstack))
         continue;
       BurdenMix m = Burden.Read(slot.Itemstack);
       int n = slot.StackSize;
@@ -387,7 +384,7 @@ public class BlockEntityOreBunker : BlockEntityContainer
       return;
     Item? item = null;
     foreach (ItemSlot slot in _inventory)
-      if (IsBurden(slot.Itemstack))
+      if (Burden.Is(slot.Itemstack))
       {
         item = (Item)slot.Itemstack!.Collectible;
         break;

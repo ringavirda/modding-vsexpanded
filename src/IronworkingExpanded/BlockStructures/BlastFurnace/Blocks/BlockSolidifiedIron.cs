@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
@@ -48,7 +49,12 @@ public partial class BlockSolidifiedIron : Block, IExBlockDefProvider
       worldMap.BlockAccessor.GetBlockEntity(pos) is BlockEntitySolidifiedIron be
     )
     {
-      Item? bit = worldMap.GetItem(new AssetLocation("game", "metalbit-iron"));
+      // The chipped-out solid for iron via the metal registry (registered SolidDrop else the
+      // ingot-X -> metalbit-X convention = game:metalbit-iron), so a shipped iron MetalDef can
+      // redirect the drop without editing this block.
+      Item? bit = worldMap.GetItem(
+        MetalRegistry.SolidDropOf(MetalRegistry.MoltenItemOf("iron"))
+      );
       if (bit != null && be.IronCount > 0)
       {
         return [new ItemStack(bit, be.IronCount)];

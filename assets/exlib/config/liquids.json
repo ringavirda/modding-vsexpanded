@@ -1,0 +1,20 @@
+{
+  "liquids": [
+    { "code": "Air", "phase": "gas", "priority": 0 },
+    {
+      "code": "Steam",
+      "phase": "gas",
+      "priority": 10,
+      "condensesTo": "Water",
+      "condenseBelowC": 100
+    },
+    { "code": "Exhaust", "phase": "gas", "priority": 20 },
+    {
+      "code": "Water",
+      "phase": "liquid",
+      "priority": 0,
+      "vaporisesTo": "Steam",
+      "boilPointC": 100
+    }
+  ]
+}

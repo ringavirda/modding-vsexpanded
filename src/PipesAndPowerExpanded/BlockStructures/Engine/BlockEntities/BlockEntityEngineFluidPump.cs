@@ -1,5 +1,4 @@
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib;
 using System;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
@@ -39,7 +38,7 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
     PipeNetwork? bottomNet = ConnectedNetwork(BlockFacing.DOWN);
     PipeNetwork? leftNet = ConnectedNetwork(LeftFace);
 
-    BlockEntityFluidIntake? intake = FindIntake(bottomNet);
+    BlockEntityFluidIntake? intake = FluidPumpCore.FindIntake(ba, bottomNet);
     SetDrawing(intake != null);
     if (intake == null)
       return;
@@ -48,7 +47,7 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
       (Engine?.InletPressure ?? 0f) * PpexValues.SteamEngineEfficiency;
     float amount = PpexValues.PumpWaterPerSecond * 3 * power * dt;
 
-    float move = Math.Min(amount, OutputFreeCapacity(leftNet));
+    float move = Math.Min(amount, FluidPumpCore.OutputFreeCapacity(leftNet));
     float drawn = bottomNet?.TryConsumeLiquid(move, ba) ?? 0f;
     if (drawn > 0f)
       leftNet?.TryProduceLiquid(drawn, 20f, pressure, ba);
@@ -64,29 +63,6 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
     _drawingWater = drawing;
     MarkDirty();
   }
-
-  /// <summary>The first fluid intake on <paramref name="net"/> that can currently draw water, or <c>null</c>.</summary>
-  private BlockEntityFluidIntake? FindIntake(PipeNetwork? net)
-  {
-    if (net == null)
-      return null;
-    var ba = Api.World.BlockAccessor;
-    foreach (var p in net.Nodes)
-    {
-      if (
-        ba.GetBlockEntity(p) is BlockEntityFluidIntake intake
-        && intake.CanIntake
-      )
-        return intake;
-    }
-    return null;
-  }
-
-  /// <summary>Litres of water the output network can still accept.</summary>
-  private static float OutputFreeCapacity(PipeNetwork? net) =>
-    net == null
-      ? 0f
-      : net.Nodes.Count * ExlibValues.LitresPerPipe - (net.State?.Volume ?? 0f);
 
   /// <summary>
   /// Runs a watering trickle loop while the pump is actually drawing water, on top of the

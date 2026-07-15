@@ -6,6 +6,7 @@ using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
+using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.Helpers;
 using IronworkingExpanded;
@@ -70,8 +71,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   public ConverterOpState OpState { get; private set; } =
     ConverterOpState.Normal;
 
-  private ItemStack? _content;
-  private int _contentUnits;
+  private MoltenCharge? _charge;
   private float _processSeconds;
   private bool _solidified;
   private string _status = Lang.Get("smex:bessemer-status-idle");
@@ -170,7 +170,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   {
     // Idle while holding the charge; run the bessemer refining process if the
     // charge is molten iron and the gas intake is fed blast.
-    if (_content == null || _contentUnits <= 0)
+    if (_charge == null || _charge.Units <= 0)
     {
       SetStatus(Lang.Get("smex:bessemer-status-empty"));
       return;
@@ -186,7 +186,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     // foreign. Either way stop here so no blast is drawn and no process particles are emitted.
     if (!IsMoltenIron())
     {
-      bool isSteel = _content.Collectible.Code.ToString() == SteelCode;
+      bool isSteel = _charge.MetalCode.ToString() == SteelCode;
       SetStatus(
         Lang.Get(
           isSteel
@@ -267,7 +267,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       return;
     }
 
-    if (_contentUnits >= CapacityUnits)
+    if ((_charge?.Units ?? 0) >= CapacityUnits)
     {
       SetStatus(Lang.Get("smex:bessemer-status-filling-full"));
       return;
@@ -275,15 +275,15 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
     // Only accept a single metal type at a time.
     if (
-      _content != null
-      && _content.Collectible.Code.ToString() != inputCell.CellMetalType
+      _charge != null
+      && _charge.MetalCode.ToString() != inputCell.CellMetalType
     )
     {
       SetStatus(Lang.Get("smex:bessemer-status-filling-mismatch"));
       return;
     }
 
-    int space = CapacityUnits - _contentUnits;
+    int space = CapacityUnits - (_charge?.Units ?? 0);
     int toDrain = Math.Min(inputCell.CellAmount, space);
     if (toDrain <= 0)
       return;
@@ -296,17 +296,18 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     if (drained <= 0f)
       return;
 
-    _content ??= MoltenMetal.CreateStack(
+    _charge ??= MoltenCharge.Create(
       Api.World,
       type,
       temp,
+      0,
       ContentCooldownSpeed
     );
-    if (_content == null)
+    if (_charge == null)
       return;
 
-    MoltenMetal.SetTemperature(Api.World, _content, temp);
-    _contentUnits += (int)drained;
+    _charge.SetTemperature(Api.World, temp);
+    _charge.Units += (int)drained;
     // Molten metal hissing into the vessel.
     ExSounds.PlayThrottled(
       Api,
@@ -320,14 +321,14 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     if (IsMoltenIron())
       _processSeconds = 0f;
     SetStatus(
-      Lang.Get("smex:bessemer-status-filling", _contentUnits, CapacityUnits)
+      Lang.Get("smex:bessemer-status-filling", _charge.Units, CapacityUnits)
     );
     MarkDirty();
   }
 
   private void TickPouring(float dt)
   {
-    if (_content == null || _contentUnits <= 0)
+    if (_charge == null || _charge.Units <= 0)
     {
       SetStatus(Lang.Get("smex:bessemer-status-pouring-empty"));
       return;
@@ -346,24 +347,18 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       return;
     }
 
-    int amount = Math.Min(
-      _contentUnits,
-      Math.Max(1, (int)(CapacityUnits * dt))
-    );
-    float accepted = outputCell.PushMetal(amount, _content, Api.World);
+    int amount = Math.Min(_charge.Units, Math.Max(1, (int)(CapacityUnits * dt)));
+    float accepted = outputCell.PushMetal(amount, _charge.Stack, Api.World);
     if (accepted <= 0f)
     {
       // Output canal full: keep bathing it in our hot content so it stays molten and keeps
       // feeding downstream instead of cooling to a plug. Mirrors the furnace tap's heat soak.
-      outputCell.SoakHeat(
-        Api.World,
-        _content.Collectible.GetTemperature(Api.World, _content)
-      );
+      outputCell.SoakHeat(Api.World, _charge.Temperature(Api.World));
       SetStatus(Lang.Get("smex:bessemer-status-pouring-full"));
       return;
     }
 
-    _contentUnits -= (int)accepted;
+    _charge.Units -= (int)accepted;
     // Molten metal pouring out into the output canal.
     ExSounds.PlayThrottled(
       Api,
@@ -373,17 +368,16 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       1500,
       0.6f
     );
-    if (_contentUnits <= 0)
+    if (_charge.Units <= 0)
     {
-      _contentUnits = 0;
-      _content = null;
+      _charge = null;
       _processSeconds = 0f;
       SetStatus(Lang.Get("smex:bessemer-status-emptied"));
     }
     else
     {
       SetStatus(
-        Lang.Get("smex:bessemer-status-pouring", _contentUnits, CapacityUnits)
+        Lang.Get("smex:bessemer-status-pouring", _charge.Units, CapacityUnits)
       );
     }
     MarkDirty();
@@ -391,16 +385,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
   private void CompleteRefining()
   {
-    float temp = MoltenMetal.GetTemperature(Api.World, _content!);
-    ItemStack? steelStack = MoltenMetal.CreateStack(
-      Api.World,
-      SteelCode,
-      temp,
-      ContentCooldownSpeed
-    );
-    if (steelStack == null)
+    // Re-type the charge iron→steel in place, carrying its current temperature and units.
+    if (
+      _charge == null
+      || !_charge.RetypeTo(Api.World, SteelCode, ContentCooldownSpeed)
+    )
       return;
-    _content = steelStack;
     _processSeconds = ProcessDurationSec;
     SetStatus(Lang.Get("smex:bessemer-status-steelready"));
     MarkDirty();
@@ -418,22 +408,20 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   // and rewriting the rate alone would retro-apply it across that whole idle span).
   private void SyncContentCooldown()
   {
-    if (_content != null)
-      MoltenMetal.SyncCooldownSpeed(Api.World, _content, ContentCooldownSpeed);
+    _charge?.SyncCooldown(Api.World, ContentCooldownSpeed);
   }
 
   private void HoldTemperature(float dt)
   {
-    if (_content == null)
+    if (_charge == null)
       return;
-    float temp = MoltenMetal.GetTemperature(Api.World, _content);
-    float target = Math.Max(temp, ProcessHoldTemp);
-    MoltenMetal.SetTemperature(Api.World, _content, target);
+    float target = Math.Max(_charge.Temperature(Api.World), ProcessHoldTemp);
+    _charge.SetTemperature(Api.World, target);
   }
 
   private void UpdateSolidified()
   {
-    if (_content == null || _contentUnits <= 0)
+    if (_charge == null || _charge.Units <= 0)
     {
       if (_solidified)
       {
@@ -443,9 +431,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
       return;
     }
 
-    bool nowSolid =
-      MoltenMetal.GetTemperature(Api.World, _content)
-      < MoltenMetal.MeltingPointOf(Api.World, _content);
+    bool nowSolid = _charge.IsBelowMeltingPoint(Api.World);
     if (nowSolid != _solidified)
     {
       _solidified = nowSolid;
@@ -573,10 +559,10 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   #region Content queries
 
   private bool IsMoltenIron() =>
-    _content != null
-    && _contentUnits > 0
-    && _content.Collectible.Code.ToString() == IronCode
-    && MoltenMetal.IsLiquid(Api.World, _content);
+    _charge != null
+    && _charge.Units > 0
+    && _charge.MetalCode.ToString() == IronCode
+    && _charge.IsLiquid(Api.World);
 
   private string FormatProgress()
   {
@@ -737,7 +723,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   {
     string side = Block.Variant["side"];
     return Api.World.GetBlock(
-      new AssetLocation("smex:converterbessemer-" + side)
+      new AssetLocation("smex:" + BlockConverterBessemer.BaseCode + "-" + side)
     );
   }
 
@@ -783,11 +769,10 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   public ItemStack? OnConverterBroken()
   {
     ItemStack? drops = null;
-    if (_solidified && _content != null && _contentUnits > 0)
+    if (_solidified && _charge != null && _charge.Units > 0)
       drops = BuildSolidifiedDrops();
 
-    _content = null;
-    _contentUnits = 0;
+    _charge = null;
     _processSeconds = 0f;
     _solidified = false;
     OpState = ConverterOpState.Normal;
@@ -799,10 +784,11 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   {
     // Breaking the vessel mangles part of the charge: drop a random few units less than chiselling
     // would recover.
+    int units = _charge?.Units ?? 0;
     int randLoss = Random.Shared.Next(3) * 5;
-    int remaining = _contentUnits - randLoss;
+    int remaining = units - randLoss;
     if (remaining <= 0)
-      remaining = _contentUnits;
+      remaining = units;
     return BuildRecoveryDrops(remaining);
   }
 
@@ -812,13 +798,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   /// the canal/barrel chisel drops via <see cref="MoltenChisel.BuildRecovery"/>.
   /// </summary>
   private ItemStack? BuildRecoveryDrops(int units) =>
-    MoltenChisel.BuildRecovery(
-      Api.World,
-      _content!.Collectible.Code,
-      MoltenMetal.GetTemperature(Api.World, _content),
-      units,
-      slagFallback: true
-    );
+    _charge?.BuildRecovery(Api.World, units, slagFallback: true);
 
   #endregion
 
@@ -826,13 +806,11 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
   /// <summary>True when a solidified charge is present (latched below the melting point).</summary>
   public bool HasSolidifiedCharge =>
-    _solidified && _content != null && _contentUnits > 0;
+    _solidified && _charge != null && _charge.Units > 0;
 
   /// <summary>True when the charge has cooled below the hardened (chisellable) threshold.</summary>
   public bool ChargeIsHardened =>
-    _content != null
-    && _contentUnits > 0
-    && MoltenMetal.IsHardened(Api.World, _content);
+    _charge != null && _charge.Units > 0 && _charge.IsHardened(Api.World);
 
   /// <summary>
   /// True when a small, fully-hardened residue can be chiselled out of the vessel - rather than
@@ -842,7 +820,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   public bool CanChiselOut() =>
     HasSolidifiedCharge
     && ChargeIsHardened
-    && _contentUnits < ChiselMaxFraction * CapacityUnits;
+    && (_charge?.Units ?? 0) < ChiselMaxFraction * CapacityUnits;
 
   /// <summary>
   /// Server-side: chips the hardened residue out of the vessel, returns the recovered metal-bit drop
@@ -854,9 +832,8 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     if (Api?.Side != EnumAppSide.Server || !CanChiselOut())
       return null;
 
-    ItemStack? recovered = BuildRecoveryDrops(_contentUnits);
-    _content = null;
-    _contentUnits = 0;
+    ItemStack? recovered = BuildRecoveryDrops(_charge?.Units ?? 0);
+    _charge = null;
     _processSeconds = 0f;
     _solidified = false;
     SyncConverter();
@@ -870,7 +847,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   //  - small and fully hardened        -> chisel it out from the upper hatch.
   private string SolidifiedStatus()
   {
-    if (_contentUnits >= ChiselMaxFraction * CapacityUnits)
+    if ((_charge?.Units ?? 0) >= ChiselMaxFraction * CapacityUnits)
       return Lang.Get("smex:bessemer-status-solidified");
 
     return Lang.Get(
@@ -913,7 +890,7 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
 
   private void SyncConverter()
   {
-    GetConverter()?.UpdateMirror(_solidified, _contentUnits, OpState);
+    GetConverter()?.UpdateMirror(_solidified, _charge?.Units ?? 0, OpState);
   }
 
   protected override void OnStructureCompleted() => SyncConverter();
@@ -1012,15 +989,15 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     }
 
     // Only the charge (amount/metal/temp) is unique info; empty/solidified are in the status line.
-    if (_content != null && _contentUnits > 0)
+    if (_charge != null && _charge.Units > 0)
     {
-      float temp = _content.Collectible.GetTemperature(Api.World, _content);
-      string path = _content.Collectible.Code.Path;
+      float temp = _charge.Temperature(Api.World);
+      string path = _charge.MetalCode.Path;
       string metal = path.StartsWith("ingot-") ? path[6..] : path;
       dsc.AppendLine(
         Lang.Get(
           "smex:bessemer-info-charge",
-          _contentUnits,
+          _charge.Units,
           CapacityUnits,
           metal,
           ExMeasure.Temperature(temp)
@@ -1048,8 +1025,8 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   {
     base.ToTreeAttributes(tree);
     tree.SetInt("opState", (int)OpState);
-    tree.SetItemstack("content", _content);
-    tree.SetInt("contentUnits", _contentUnits);
+    tree.SetItemstack("content", _charge?.Stack);
+    tree.SetInt("contentUnits", _charge?.Units ?? 0);
     tree.SetFloat("processSeconds", _processSeconds);
     tree.SetBool("solidified", _solidified);
     tree.SetString("status", _status);
@@ -1063,9 +1040,12 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
     base.FromTreeAttributes(tree, worldForResolving);
     var prevState = OpState;
     OpState = (ConverterOpState)tree.GetInt("opState");
-    _content = tree.GetItemstack("content");
-    _content?.ResolveBlockOrItem(worldForResolving);
-    _contentUnits = tree.GetInt("contentUnits");
+    _charge = MoltenCharge.FromTree(
+      tree,
+      "content",
+      "contentUnits",
+      worldForResolving
+    );
     _processSeconds = tree.GetFloat("processSeconds");
     _solidified = tree.GetBool("solidified");
     _status = tree.GetString("status", Lang.Get("smex:bessemer-status-idle"));

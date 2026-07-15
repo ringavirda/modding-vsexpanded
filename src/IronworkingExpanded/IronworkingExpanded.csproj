@@ -15,6 +15,9 @@
     <OutputPath Condition="'$(OutputPath)' == ''"
       >bin\$(Configuration)\Mods\mod</OutputPath>
     <Nullable>enable</Nullable>
+    <!-- This mod's asset domain; the shared globs in ../Directory.Build.props pull in
+         ../../assets/iwex/ (Content + the en.json ExLangKeyGenerator feed). -->
+    <AssetDomain>iwex</AssetDomain>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,12 +59,6 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="assets\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
   <!-- Stamp the matching game version into the output modinfo for legacy builds; no-op on the
        current version (its modinfo already carries $(CurrentGameVer).0). -->
   <Target
@@ -75,11 +72,6 @@
       Overwrite="true"
     />
   </Target>
-
-  <!-- Lang files fed to ExLangKeyGenerator (compile-time typed {Domain}Lang key constants). -->
-  <ItemGroup>
-    <AdditionalFiles Include="assets\**\lang\en.json" />
-  </ItemGroup>
 
   <!--
     iwex builds on the shared framework in exlib (structure fillers, RCC, registration, single

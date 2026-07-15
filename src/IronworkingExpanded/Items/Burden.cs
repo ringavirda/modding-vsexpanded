@@ -32,6 +32,11 @@ public static class Burden
   private const string FuelKey = "fuel";
   private const string LegacyFuelKey = "coke"; // pre-rename stacks stored the fuel part as "coke"
 
+  /// <summary>True when <paramref name="stack"/> is a burden item (<c>iwex:burden</c>) - the shared
+  /// classifier the mixer and the ore bunker both gate their burden handling on.</summary>
+  public static bool Is(ItemStack? stack) =>
+    stack?.Collectible?.Code is { Domain: "iwex", Path: "burden" };
+
   /// <summary>Stamps the mix parts onto a burden stack (any non-negative parts; read back as fractions).</summary>
   public static void Write(ItemStack stack, BurdenMix mix)
   {

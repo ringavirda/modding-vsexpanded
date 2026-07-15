@@ -1,3 +1,4 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using NSubstitute;
 using SteelmakingExpanded.BlockStructures.Converter;
@@ -17,7 +18,18 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 public class ConverterControlBeTests
 {
-  private static readonly TestWorld ResolveWorld = new();
+  private static readonly TestWorld ResolveWorld = NewResolveWorld();
+
+  private static TestWorld NewResolveWorld()
+  {
+    var w = new TestWorld();
+    w.RegisterItem("game:ingot-iron"); // so a saved charge stack resolves on reload
+    return w;
+  }
+
+  // The charge's units through the reflected MoltenCharge, or 0 when there is no charge.
+  private static int ChargeUnits(BlockEntityConverterControl be) =>
+    (ReflectionHelpers.GetField(be, "_charge") as MoltenCharge)?.Units ?? 0;
 
   private static BlockEntityConverterControl Control(TestWorld? world = null)
   {
@@ -52,7 +64,11 @@ public class ConverterControlBeTests
   {
     var src = Control();
     ReflectionHelpers.SetProperty(src, "OpState", ConverterOpState.Filling);
-    ReflectionHelpers.SetField(src, "_contentUnits", 30);
+    ReflectionHelpers.SetField(
+      src,
+      "_charge",
+      MoltenCharge.Of(IronCharge(ResolveWorld), 30)
+    );
     ReflectionHelpers.SetField(src, "_processSeconds", 12f);
     ReflectionHelpers.SetField(src, "_solidified", true);
 
@@ -63,7 +79,7 @@ public class ConverterControlBeTests
     dst.FromTreeAttributes(tree, ResolveWorld.World);
 
     Assert.Equal(ConverterOpState.Filling, dst.OpState);
-    Assert.Equal(30, (int)ReflectionHelpers.GetField(dst, "_contentUnits")!);
+    Assert.Equal(30, ChargeUnits(dst)); // charge (stack + units) round-trips through the tree
     Assert.Equal(
       12f,
       (float)ReflectionHelpers.GetField(dst, "_processSeconds")!,
@@ -82,16 +98,18 @@ public class ConverterControlBeTests
       .Returns(new Item { Code = new AssetLocation("game:metalbit-iron") });
 
     var be = Control(world);
-    ReflectionHelpers.SetField(be, "_content", IronCharge(world));
-    ReflectionHelpers.SetField(be, "_contentUnits", 20);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(IronCharge(world), 20)
+    );
     ReflectionHelpers.SetField(be, "_solidified", true);
 
     var drops = be.OnConverterBroken();
 
     Assert.NotNull(drops); // a solid plug scatters recoverable bits
     Assert.Equal(ConverterOpState.Normal, be.OpState);
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
-    Assert.Null(ReflectionHelpers.GetField(be, "_content"));
+    Assert.Null(ReflectionHelpers.GetField(be, "_charge")); // charge cleared
   }
 
   [Fact]
@@ -99,14 +117,16 @@ public class ConverterControlBeTests
   {
     var world = new TestWorld();
     var be = Control(world);
-    ReflectionHelpers.SetField(be, "_content", IronCharge(world));
-    ReflectionHelpers.SetField(be, "_contentUnits", 20);
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(IronCharge(world), 20)
+    );
     ReflectionHelpers.SetField(be, "_solidified", false); // still molten - it spills, no solid drop
 
     var drops = be.OnConverterBroken();
 
     Assert.Null(drops);
-    Assert.Equal(0, (int)ReflectionHelpers.GetField(be, "_contentUnits")!);
-    Assert.Null(ReflectionHelpers.GetField(be, "_content"));
+    Assert.Null(ReflectionHelpers.GetField(be, "_charge")); // charge cleared
   }
 }

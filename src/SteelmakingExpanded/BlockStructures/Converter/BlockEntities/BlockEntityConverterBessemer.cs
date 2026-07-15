@@ -3,6 +3,7 @@ using System.Text;
 using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
+using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using IronworkingExpanded.BlockNetworkMolten;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -48,7 +49,8 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
     _animator.Initialize(ApplyPose);
   }
 
-  private string AnimCacheKey => "converterbessemer-" + Block.Variant["side"];
+  private string AnimCacheKey =>
+    BlockConverterBessemer.BaseCode + "-" + Block.Variant["side"];
 
   public override void OnBlockRemoved()
   {

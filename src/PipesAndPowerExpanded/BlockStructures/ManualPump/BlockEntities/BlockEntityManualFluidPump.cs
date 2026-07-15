@@ -1,4 +1,3 @@
-using ExpandedLib;
 using System;
 using ExpandedLib.Blocks.Animation;
 using ExpandedLib.Blocks.Machines;
@@ -136,12 +135,12 @@ public class BlockEntityManualFluidPump : BlockEntity
     PipeNetwork? outputNet = ConnectedNetwork(OutputFace);
 
     // The intake is the generator; with none on the input line the crank turns but moves nothing.
-    BlockEntityFluidIntake? intake = FindIntake(inputNet);
+    BlockEntityFluidIntake? intake = FluidPumpCore.FindIntake(ba, inputNet);
     bool drawing = intake != null;
     if (drawing)
     {
       float amount = PpexValues.ManualPumpWaterPerSecond * dt;
-      float move = Math.Min(amount, OutputFreeCapacity(outputNet));
+      float move = Math.Min(amount, FluidPumpCore.OutputFreeCapacity(outputNet));
       float drawn = inputNet?.TryConsumeLiquid(move, ba) ?? 0f;
       if (drawn > 0f)
         // Hand-cranked head: a fixed 1 atm - enough to lift water into a boiler.
@@ -160,29 +159,6 @@ public class BlockEntityManualFluidPump : BlockEntity
   /// faces back), or <c>null</c>.</summary>
   private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
     this.ConnectedNetwork<PipeNetwork>(connectorFace);
-
-  /// <summary>The first fluid intake on <paramref name="net"/> that can currently draw water, or <c>null</c>.</summary>
-  private BlockEntityFluidIntake? FindIntake(PipeNetwork? net)
-  {
-    if (net == null)
-      return null;
-    var ba = Api.World.BlockAccessor;
-    foreach (var p in net.Nodes)
-    {
-      if (
-        ba.GetBlockEntity(p) is BlockEntityFluidIntake intake
-        && intake.CanIntake
-      )
-        return intake;
-    }
-    return null;
-  }
-
-  /// <summary>Litres of water the output network can still accept.</summary>
-  private static float OutputFreeCapacity(PipeNetwork? net) =>
-    net == null
-      ? 0f
-      : net.Nodes.Count * ExlibValues.LitresPerPipe - (net.State?.Volume ?? 0f);
 
   #endregion
 

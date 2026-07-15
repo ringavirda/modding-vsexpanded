@@ -166,4 +166,27 @@
       Text="Can't find the Vintage Story $(GameVer) install (GamePath='$(GamePath)'). Provision it with 'pwsh scripts/provision-game.ps1 -Version $(_ProvisionVersion) -Kind server' (Windows) or 'scripts/provision-game.sh -Version $(_ProvisionVersion) -Kind server' (Linux/macOS), or set the $(GameInstallEnv) environment variable to an existing install."
     />
   </Target>
+
+  <!--
+    ============================================================================================
+    SHARED MOD ASSET GLOBS. The four mod asset trees live at the repo root (../assets/<domain>/),
+    hoisted out of each src/<Mod>/ so non-code contributors (translators, shape/texture artists)
+    have a single top-level assets/ view and never touch src/. Because domain == mod 1:1, each mod
+    csproj declares its one <AssetDomain> and these two globs pull that domain's tree in:
+      * Content  - packaged into the mod (needs <Link> because the files are OUT of the project
+        cone; without it MSBuild flattens them to the output root instead of assets/<domain>/…).
+      * AdditionalFiles - the en.json feed for ExLangKeyGenerator (compile input, not shipped).
+    Guarded on $(AssetDomain) so this is inert for the non-mod projects that also see this file:
+    ExpandedLib.Generators (under src/) and every test csproj (test/Directory.Build.props imports
+    this one). It is a pure MSBuild relocation - invisible to the game, which only cares about the
+    assets/<domain>/… layout INSIDE the packaged mod.
+    ============================================================================================
+  -->
+  <ItemGroup Condition="'$(AssetDomain)' != ''">
+    <Content Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\**\*">
+      <Link>assets\$(AssetDomain)\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\lang\en.json" />
+  </ItemGroup>
 </Project>
