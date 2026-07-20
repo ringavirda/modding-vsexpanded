@@ -1,7 +1,7 @@
 using ExpandedLib.Testing;
-using SteelmakingExpanded;
 using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using SteelmakingExpanded;
+using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -139,19 +139,19 @@ public class BellHopperTests
       hopper.Inventory,
       0,
       "game:crushed-iron",
-      IwexValues.HopperIronOreRequired
+      SmexValues.HopperIronOreRequired
     );
     Put(
       hopper.Inventory,
       2,
       "game:crushed-coke",
-      IwexValues.HopperCokeRequired
+      SmexValues.HopperCokeRequired
     );
-    Put(hopper.Inventory, 3, "game:lime", IwexValues.HopperLimeRequired);
+    Put(hopper.Inventory, 3, "game:lime", SmexValues.HopperLimeRequired);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 
-    Assert.Equal(IwexValues.HopperBlastmixProduced, bell.BlastMixMagazine);
+    Assert.Equal(SmexValues.HopperBlastmixProduced, bell.BlastMixMagazine);
     Assert.True(hopper.Inventory[0].Empty); // iron consumed
     Assert.True(hopper.Inventory[2].Empty); // coke consumed
     Assert.True(hopper.Inventory[3].Empty); // lime consumed
@@ -170,13 +170,13 @@ public class BellHopperTests
       hopper.Inventory,
       0,
       "game:crushed-iron",
-      IwexValues.HopperIronOreRequired
+      SmexValues.HopperIronOreRequired
     );
     Put(
       hopper.Inventory,
       2,
       "game:crushed-coke",
-      IwexValues.HopperCokeRequired
+      SmexValues.HopperCokeRequired
     );
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);

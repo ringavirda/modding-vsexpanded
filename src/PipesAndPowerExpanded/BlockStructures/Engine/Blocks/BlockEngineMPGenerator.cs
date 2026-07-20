@@ -31,7 +31,7 @@ public partial class BlockEngineMPGenerator
         .Material(EnumBlockMaterial.Metal)
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
         .CreativeCommon("*-north")
-        .ShapeByTypeSpunPerOrientation("ppex:engine/mpgenerator")
+        .ShapeByTypePerOrientation("ppex:engine/mpgenerator")
         .NonSolid(),
     ];
 

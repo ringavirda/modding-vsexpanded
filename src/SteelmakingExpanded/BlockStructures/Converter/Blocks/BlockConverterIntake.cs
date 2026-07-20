@@ -34,7 +34,7 @@ public partial class BlockConverterIntake
         .CreativeCommon("*-north")
         .VariantGroup("type", "intake")
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .ShapeByTypeSpunPerOrientation("smex:converter/intake")
+        .ShapeByTypePerOrientation("smex:converter/intake")
         .NonSolid(),
     ];
 

@@ -36,11 +36,12 @@ Vents spent furnace exhaust after the cowpers have soaked their heat.
 - **Owned numbers (tunable):** vent **48 L/s**.
 - **Footprint / power / IO / rate / status:** megablock / — / gas intake / 48 L/s / *(live)*.
 
-### Hot-blast operation *(live infra; low-coke blow refinements planned)*
+### Hot-blast operation *(live)*
 - **Input → output:** low-coke blast mix + hot blast → molten pig iron.
 - **Mechanic:** the pressurized (engine-driven) blast plus charged cowpers lets a **low-coke** charge clear its melt line for a higher rate at lower coke ratio. Blast **pressure** is the tier gate (see conventions.md: pressure → combustion intensity → T_in); below ~2.5 atm (tunable `BlastPressureThreshold`) the same furnace runs as cold blast. Tuyere/exhaust balance is fixed by `iwex` (2 tuyeres @ 24 L/s = 48 L/s in; 2 exhaust @ 24 L/s = 48 L/s out).
-- **Owned rate (tunable):** ~**45 u/s** (900 u / 20 s) vs the cold-blast ~30 u/s — hotter → shorter melt.
-- **Status:** cowper + smokestack + exhaust cycle *(live)*; the explicit low-coke-ratio bonus curve is *(planned)*.
+- **smex adds no furnace behaviour at all.** The hot furnace is iwex's blast furnace, unmodified — same block entity logic, same tunables, same heat balance. What makes it hot is its **layout** (a shaft with exhaust outlets and a sealed bell top, tier-3 brick) and a **cowper on its blast line**; the preheat term in `T_in` reads the pipe temperature at the tuyere and does the rest. Run the same structure on unheated air, or let the line fall under the pressure threshold, and it behaves as a cold furnace again — no flag, no override, no second copy of the model.
+- **Owned rate:** none. At the shipped calibration a standard burden on 950 °C blast settles at ~1746 °C against the cold furnace's ~1578 °C on high coke, which the melt-margin factor turns into roughly **1.5× the cold-blast rate** (~12 u/s vs ~8 u/s) — the doc's old 45 : 30 ratio, now emergent from the heat balance rather than a `BfHotIronPerMeltCycle` constant.
+- **Status:** cowper + smokestack + exhaust cycle *(live)*; low-coke blow *(live)* — it is what the heat balance produces.
 
 ---
 

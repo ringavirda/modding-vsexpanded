@@ -33,7 +33,6 @@ public class SmexToIwexMigration : IBlockCodeMigration, IBlockEntityMigration
     "moltenbarrel",
     "blastfurnace", // the tuyere block
     "blastfurnacetap",
-    "blastfurnacedoor",
     "hopperbell",
     "hopperreinforced",
     "slag",

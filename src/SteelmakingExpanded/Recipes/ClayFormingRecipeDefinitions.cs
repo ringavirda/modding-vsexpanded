@@ -27,7 +27,11 @@ public class ClayFormingRecipeDefinitions : IExRecipeDefProvider
   private static string[] SolidLayer() => Enumerable.Repeat(Full, 14).ToArray();
 
   // A 14-row layer: solid top rows, then the cavity rows, then solid bottom rows (always summing to 14).
-  private static string[] Layer(string cavityRow, int solidTop, int cavityRows) =>
+  private static string[] Layer(
+    string cavityRow,
+    int solidTop,
+    int cavityRows
+  ) =>
     Enumerable
       .Repeat(Full, solidTop)
       .Concat(Enumerable.Repeat(cavityRow, cavityRows))
@@ -36,9 +40,27 @@ public class ClayFormingRecipeDefinitions : IExRecipeDefProvider
 
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
-      Mold(domain, "platemold", "Plate Mold", "plate", Layer("##__________##", 2, 10)),
-      Mold(domain, "doubleingotmold", "Double Ingot Mold", "doubleingot", Layer("##____##____##", 3, 8)),
-      Mold(domain, "quadrodmold", "Quad Rod Mold", "quadrod", Layer("#__#__##__#__#", 3, 8)),
+      Mold(
+        domain,
+        "platemold",
+        "Plate Mold",
+        "plate",
+        Layer("##__________##", 2, 10)
+      ),
+      Mold(
+        domain,
+        "doubleingotmold",
+        "Double Ingot Mold",
+        "doubleingot",
+        Layer("##____##____##", 3, 8)
+      ),
+      Mold(
+        domain,
+        "quadrodmold",
+        "Quad Rod Mold",
+        "quadrod",
+        Layer("#__#__##__#__#", 3, 8)
+      ),
     ];
 
   private static ExRecipeDef Mold(
@@ -56,7 +78,11 @@ public class ClayFormingRecipeDefinitions : IExRecipeDefProvider
           ingredient = ClayColor,
           pattern = new[] { SolidLayer(), cavityLayer },
           name,
-          output = new { type = "block", code = $"smex:toolmold-{{color}}-raw-{moldType}" },
+          output = new
+          {
+            type = "block",
+            code = $"smex:toolmold-{{color}}-raw-{moldType}",
+          },
         }
       );
 }

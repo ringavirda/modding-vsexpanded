@@ -60,6 +60,12 @@ public class MetalDef
   /// <see cref="ExlibValues.MetalRecoveryFallback"/> (historically <c>iwex:slag</c>).</summary>
   public string? RecoveryFallback { get; set; }
 
+  /// <summary>Domain owning this metal's cast products (the mold's <c>{metal}</c> drops). Null → keep
+  /// the drop template's own domain, i.e. today's substitute-only behaviour. A mod-added metal has no
+  /// <c>game:metalplate-X</c> to resolve into, so its molds must rehome the drop into the mod's domain;
+  /// see <see cref="MetalRegistry.CastProductOf"/>.</summary>
+  public string? CastDomain { get; set; }
+
   /// <summary>Optional inline alloy ratios - exlib can emit the vanilla <c>AlloyRecipe</c> from these so
   /// the ratios are authored once alongside the metal identity.</summary>
   public MetalAlloySpec? Alloy { get; set; }

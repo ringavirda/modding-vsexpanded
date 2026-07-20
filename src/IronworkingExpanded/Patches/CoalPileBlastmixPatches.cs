@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using HarmonyLib;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.Products.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
@@ -35,6 +35,19 @@ public static class BlastmixPiles
     BlockEntityCoalPile pile,
     bool managed
   ) => _states.GetOrCreateValue(pile).Managed = managed;
+
+  /// <summary>
+  /// Hands <paramref name="pile"/> back to its own burn-to-slag countdown when a furnace goes out,
+  /// restarting that countdown from zero. Releasing without the reset is what would quietly undo an
+  /// extinguished furnace's salvage: the pile resumes a timer that has been suspended for the whole
+  /// burn and slags itself moments later, taking the burden the player was told to dig out.
+  /// </summary>
+  public static void ReleaseFromFurnace(BlockEntityCoalPile pile)
+  {
+    var state = _states.GetOrCreateValue(pile);
+    state.Managed = false;
+    state.BurnTimer = 0;
+  }
 
   /// <summary>Replaces a burnt-out blast-mix pile with a solidified-slag block carrying the same count.</summary>
   public static void ConvertToSlag(BlockEntityCoalPile pile)

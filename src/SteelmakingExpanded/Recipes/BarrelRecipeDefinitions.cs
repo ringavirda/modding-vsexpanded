@@ -20,10 +20,25 @@ public class BarrelRecipeDefinitions : IExRecipeDefProvider
             code = "mortarfromslag",
             ingredients = new object[]
             {
-              new { type = "item", code = "game:slakedlimeportion", litres = 1 },
-              new { type = "item", code = "iwex:powderedslag", quantity = 8 },
+              new
+              {
+                type = "item",
+                code = "game:slakedlimeportion",
+                litres = 1,
+              },
+              new
+              {
+                type = "item",
+                code = "iwex:powderedslag",
+                quantity = 8,
+              },
             },
-            output = new { type = "item", code = "game:mortar", stackSize = 4 },
+            output = new
+            {
+              type = "item",
+              code = "game:mortar",
+              stackSize = 4,
+            },
           }
         ),
     ];

@@ -78,16 +78,98 @@ public class IwexConfig : IExVersionedConfig
   public float BlastPressureThreshold { get; set; } = 2.5f;
   #endregion
 
+  #region Blast furnace - heat balance
+  // The furnace has no maximum temperature. It settles wherever the heat it makes and the heat it
+  // loses balance: T_process = T_in - T_loss, floored at ambient. T_in is coke combustion (how rich
+  // the burden is in fuel x how much air actually reaches the tuyeres) plus the preheat a cowper
+  // puts into the blast; T_loss is radiation plus the cold mass of the charge plus a cold day.
+  // That is what makes a cold and a hot blast furnace differ without either of them being a special
+  // case in code: a high-coke burden clears iron's melt line on cold blast, a low-coke burden only
+  // clears it once a cowper is preheating the air. See docs/design/conventions.md.
+
+  /// <summary>Temperature (°C) a lit charge holds on its own, before any coke credit or draught.</summary>
+  public float BfCombustionBaseTemp { get; set; } = 950f;
+
+  /// <summary>Temperature (°C) coke combustion adds at the reference coke ratio with full blast supply.</summary>
+  public float BfCombustionCokeGain { get; set; } = 900f;
+
+  /// <summary>Coke fraction the combustion gain is calibrated at (the "standard" burden grade midpoint).</summary>
+  public float BfReferenceFuelFrac { get; set; } = 0.20f;
+
+  /// <summary>How strongly the combustion gain responds to a coke ratio off <see cref="BfReferenceFuelFrac"/>.</summary>
+  public float BfCokeSensitivity { get; set; } = 0.35f;
+
+  /// <summary>Floor on the coke factor, so even a fuel-starved burden still burns.</summary>
+  public float BfMinFuelFactor { get; set; } = 0.35f;
+
+  /// <summary>Ceiling on the coke factor, so piling in coke has diminishing returns.</summary>
+  public float BfMaxFuelFactor { get; set; } = 1.25f;
+
+  /// <summary>Coke fraction assumed for charge carrying no burden mix (legacy count-only blast mix).
+  /// Keep equal to <see cref="BfReferenceFuelFrac"/>: unstamped charge should read as standard grade.</summary>
+  public float BfDefaultFuelFrac { get; set; } = 0.20f;
+
+  /// <summary>Flux fraction assumed for charge carrying no burden mix, so legacy blast mix grades as
+  /// standard rather than as a flux shortfall. Keep at or above every grade's flux floor.</summary>
+  public float BfDefaultFluxFrac { get; set; } = 0.05f;
+
+  /// <summary>Air factor with no pressurised blast at all - what the stack pulls by natural draught.</summary>
+  public float BfNaturalDraughtFactor { get; set; } = 0.5f;
+
+  /// <summary>Degrees of <c>T_in</c> gained per degree the blast is preheated above ambient. This is
+  /// the whole hot-blast mechanic: only a charged cowper raises the pipe temperature at the tuyere.</summary>
+  public float BfPreheatCoefficient { get; set; } = 0.35f;
+
+  /// <summary>Baseline heat loss (°C) radiated through the stack.</summary>
+  public float BfRadiationLossBase { get; set; } = 120f;
+
+  /// <summary>Heat loss (°C) from cold charge mass with the hearth full to <see cref="BlastMixRequiredToFire"/>.
+  /// A thin charge runs hotter but exhausts sooner - the historically correct trade.</summary>
+  public float BfChargeLossFull { get; set; } = 310f;
+
+  /// <summary>Ambient temperature (°C) the loss term is calibrated at; only colder than this costs heat.</summary>
+  public float BfAmbientReferenceTemp { get; set; } = 20f;
+
+  /// <summary>Heat loss (°C) per degree the ambient sits below <see cref="BfAmbientReferenceTemp"/>.</summary>
+  public float BfAmbientLossPerDegree { get; set; } = 1.0f;
+
+  /// <summary>Ambient temperature (°C) assumed when the climate is unavailable (unloaded chunk, headless).</summary>
+  public float BfAmbientFallbackTemp { get; set; } = 20f;
+
+  /// <summary>How fast (°C/s) the hearth climbs toward its process temperature.</summary>
+  public float BfHeatRatePerSecond { get; set; } = 4f;
+
+  /// <summary>How fast (°C/s) the hearth falls back toward its process temperature.</summary>
+  public float BfCoolRatePerSecond { get; set; } = 4f;
+
+  /// <summary>Degrees of margin above the melt point worth one full <see cref="BfMeltMarginGain"/> step.</summary>
+  public float BfMeltMarginReference { get; set; } = 200f;
+
+  /// <summary>Melt-speed gained per <see cref="BfMeltMarginReference"/> of margin above the melt point.
+  /// Set to 0 for a flat melt rate regardless of how hard the furnace is being blown.</summary>
+  public float BfMeltMarginGain { get; set; } = 0.75f;
+
+  /// <summary>Slowest the melt cycle can run, as a multiple of the nominal rate.</summary>
+  public float BfMeltSpeedMin { get; set; } = 0.5f;
+
+  /// <summary>Fastest the melt cycle can run, as a multiple of the nominal rate.</summary>
+  public float BfMeltSpeedMax { get; set; } = 2.0f;
+  #endregion
+
+  #region Blast furnace - extinguish residue
+  /// <summary>Molten units that freeze into one nugget of the solid product on extinguish.</summary>
+  public float BfUnitsPerSolidNugget { get; set; } = 5f;
+
+  /// <summary>Fraction of a pile's coke that survives at the bottom of the shaft, sitting on the
+  /// tuyeres where the blast burned hardest. 0 = burned to nothing.</summary>
+  public float BfBurnoutFuelRetainedBottom { get; set; } = 0f;
+
+  /// <summary>Fraction of a pile's coke that survives at the top of the shaft, which the blast never
+  /// reached. Everything between is interpolated by height.</summary>
+  public float BfBurnoutFuelRetainedTop { get; set; } = 0.4f;
+  #endregion
+
   #region Blast furnace
-  /// <summary>Maximum hearth temperature (°C) without a hot-blast boost.</summary>
-  public float BfNaturalMaxTemp { get; set; } = 1420f;
-
-  /// <summary>Maximum hearth temperature (°C) when fed hot blast above the boost threshold.</summary>
-  public float BfBoostedMaxTemp { get; set; } = 1740f;
-
-  /// <summary>Hot-blast temperature (°C) at or above which the furnace reaches its boosted max temp.</summary>
-  public float BfBlastBoostThreshold { get; set; } = 800f;
-
   /// <summary>Temperature (°C) the hearth must reach (and hold) to start melting iron.</summary>
   public float BfIronMeltingPoint { get; set; } = 1482f;
 
@@ -117,26 +199,6 @@ public class IwexConfig : IExVersionedConfig
 
   /// <summary>Air/blast (L/s) the blast furnace draws through each tuyere.</summary>
   public float TuyereIntakeVolume { get; set; } = 12f;
-  #endregion
-
-  #region Hopper bell (blast-mix maker)
-  /// <summary>Items the hopper magazine can buffer.</summary>
-  public int HopperMaxMagazineCapacity { get; set; } = 48;
-
-  /// <summary>Iron ore consumed per blast-mix batch.</summary>
-  public int HopperIronOreRequired { get; set; } = 12;
-
-  /// <summary>Coke consumed per blast-mix batch.</summary>
-  public int HopperCokeRequired { get; set; } = 3;
-
-  /// <summary>Lime consumed per blast-mix batch.</summary>
-  public int HopperLimeRequired { get; set; } = 1;
-
-  /// <summary>Blast-mix produced per batch.</summary>
-  public int HopperBlastmixProduced { get; set; } = 16;
-
-  /// <summary>Blast-mix dropped per output pulse.</summary>
-  public int HopperDropAmount { get; set; } = 4;
   #endregion
 
   #region Ore bunker
@@ -184,28 +246,38 @@ public class IwexConfig : IExVersionedConfig
   /// shared by the burden tooltip and the mixer block info. Fractions are 0..1 of the total mix.
   /// </summary>
   public List<BurdenProfile> BurdenProfiles { get; set; } =
-    [
-      // All valid grades need a flux floor for proper slagging; the fuel fraction sets the grade.
-      new()
-      {
-        Key = "lowcoke",
-        MinFlux = 0.05f,
-        MaxFuel = 0.15f,
-      },
-      new()
-      {
-        Key = "standard",
-        MinFlux = 0.05f,
-        MinFuel = 0.15f,
-        MaxFuel = 0.25f,
-      },
-      new()
-      {
-        Key = "highcoke",
-        MinFlux = 0.05f,
-        MinFuel = 0.25f,
-      },
-    ];
+  [
+    // All valid grades need a flux floor for proper slagging; the fuel fraction sets the grade.
+    // "burnedout" comes first and catches burden the furnace already consumed the coke out of, so a
+    // salvaged charge reads "re-coke it" rather than passing for a deliberately low-coke grade. It
+    // keeps the same flux floor as every other grade - ProfileLangKey derives its flux-shortfall
+    // message from the lowest floor in this list, so a profile without one would silence it.
+    new()
+    {
+      Key = "burnedout",
+      MinFlux = 0.05f,
+      MaxFuel = 0.02f,
+    },
+    new()
+    {
+      Key = "lowcoke",
+      MinFlux = 0.05f,
+      MaxFuel = 0.15f,
+    },
+    new()
+    {
+      Key = "standard",
+      MinFlux = 0.05f,
+      MinFuel = 0.15f,
+      MaxFuel = 0.25f,
+    },
+    new()
+    {
+      Key = "highcoke",
+      MinFlux = 0.05f,
+      MinFuel = 0.25f,
+    },
+  ];
   #endregion
 }
 

@@ -1,7 +1,7 @@
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -25,9 +25,9 @@ public class BlastFurnaceTapTests
     return world;
   }
 
-  private static BlockEntityBlastFurnaceTap Tap(TestWorld world)
+  private static BlockEntityMoltenMetalTap Tap(TestWorld world)
   {
-    var be = new BlockEntityBlastFurnaceTap
+    var be = new BlockEntityMoltenMetalTap
     {
       Pos = new BlockPos(0, 12, 0),
       Block = TestBlocks.Configure(
@@ -45,7 +45,7 @@ public class BlastFurnaceTapTests
   /// <summary>Places a canal start in the cell the tap pours into (Pos + side.Opposite, one down).</summary>
   private static BlockEntityMoltenCanalStart CanalBelow(
     TestWorld world,
-    BlockEntityBlastFurnaceTap tap
+    BlockEntityMoltenMetalTap tap
   )
   {
     var facing = BlockFacing.FromCode("north");

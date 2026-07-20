@@ -1,5 +1,5 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Construction;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Testing;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockStructures.Boiler;

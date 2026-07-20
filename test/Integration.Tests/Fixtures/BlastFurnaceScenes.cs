@@ -1,11 +1,14 @@
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Testing;
+using IronworkingExpanded;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnaces;
+using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronworkingExpanded.Items;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using PipesAndPowerExpanded.Tests;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnace;
+using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -23,30 +26,50 @@ namespace SteelmakingExpanded.Tests;
 internal sealed class BlastFurnaceRig
 {
   public readonly TestWorld World;
-  public readonly BlockEntityBlastFurnace Furnace;
+  public readonly BlockEntityBlastFurnaceHot Furnace;
   public BlockEntityMoltenCanalStart? Canal { get; private set; }
 
   private readonly BlockPos _pos = new(0, 16, 0);
   private readonly PipeNetwork[] _tuyeres;
+  private readonly BurdenMix? _burden;
   private float _blastTemp = -1f;
+  private float _blastPressure = 5f;
 
-  public BlastFurnaceRig(int blastMix = 400)
+  /// <summary>
+  /// Where a standard-grade burden settles on cold blast with a full hearth: the furnace's old
+  /// "natural max temp" constant, now a consequence of the heat balance rather than a config key.
+  /// Derived from the live tunables (coke factor 1 at the reference grade, air factor 1 at full
+  /// blast supply, no preheat), so retuning the balance moves the tests with it.
+  /// </summary>
+  public static float ColdBlastCeiling =>
+    IwexValues.BfCombustionBaseTemp
+    + IwexValues.BfCombustionCokeGain
+    - IwexValues.BfRadiationLossBase
+    - IwexValues.BfChargeLossFull;
+
+  /// <param name="blastMix">Charge units loaded into the shaft, split across two piles.</param>
+  /// <param name="burden">
+  /// Composition to stamp on the charge. Null charges the legacy attribute-less <c>iwex:blastmix</c>,
+  /// which the furnace reads as a standard grade - that is what keeps the calibration anchors here
+  /// equal to the furnace's old fixed ceilings.
+  /// </param>
+  public BlastFurnaceRig(int blastMix = 400, BurdenMix? burden = null)
   {
+    _burden = burden;
     World = new TestWorld();
     World.RegisterItem("game:ingot-iron", 1500f);
     World.RegisterItem("iwex:slag");
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
-    Furnace = new BlockEntityBlastFurnace
+    Furnace = new BlockEntityBlastFurnaceHot
     {
       Pos = _pos,
       Block = TestBlocks.Configure(
         new Block(),
-        "iwex:blastfurnacedoor-north",
+        "smex:blastfurnacecore-north",
         1,
         ("side", "north")
       ),
-      BaseAngleRad = 0f,
     };
     World.Place(_pos, Furnace.Block, Furnace);
     World.Attach(Furnace);
@@ -62,14 +85,14 @@ internal sealed class BlastFurnaceRig
     ReflectionHelpers.Invoke(Furnace, "ScanForOutlets");
 
     // Hearth piles holding the blast-mix charge (split across two cells in the hearth box), lit.
-    BlastmixPile(_pos.AddCopy(0, 0, 2), blastMix / 2);
-    BlastmixPile(_pos.AddCopy(0, -1, 2), blastMix - blastMix / 2);
+    BlastmixPile(_pos.AddCopy(0, 3, 0), blastMix / 2);
+    BlastmixPile(_pos.AddCopy(0, 2, 0), blastMix - blastMix / 2);
 
     // Tuyeres: a pipe at each tuyere cell, each its own blast network.
     _tuyeres =
     [
-      Tuyere(_pos.AddCopy(0, -2, 1), 20),
-      Tuyere(_pos.AddCopy(0, -2, 3), 21),
+      Tuyere(_pos.AddCopy(0, 1, -1), 20),
+      Tuyere(_pos.AddCopy(0, 1, 1), 21),
     ];
   }
 
@@ -77,12 +100,14 @@ internal sealed class BlastFurnaceRig
   {
     var pile = new BlockEntityCoalPile { Pos = pos.Copy() };
     var inv = new InventoryGeneric(1, "coalpile", "test", World.Api, null);
-    var blastmix = new Item
+    var charge = new Item
     {
-      Code = new AssetLocation("iwex", "blastmix"),
+      Code = new AssetLocation("iwex", _burden == null ? "blastmix" : "burden"),
       ItemId = 4242,
     };
-    inv[0].Itemstack = new ItemStack(blastmix, units);
+    inv[0].Itemstack = new ItemStack(charge, units);
+    if (_burden != null)
+      Burden.Write(inv[0].Itemstack, _burden.Value);
     ReflectionHelpers.SetField(pile, "inventory", inv);
     ReflectionHelpers.SetField(pile, "burning", true);
     World.Place(
@@ -109,10 +134,15 @@ internal sealed class BlastFurnaceRig
     return (PipeNetwork)World.NetworkAt(pos)!;
   }
 
-  /// <summary>Turns the air blowers on: hot blast (≥800 °C, pressurised) at the tuyeres each tick.</summary>
-  public BlastFurnaceRig FeedBlast(float temp = 950f)
+  /// <summary>
+  /// Turns the air blowers on: air at <paramref name="temp"/> at the tuyeres each tick.
+  /// <paramref name="pressure"/> below <c>BlastPressureThreshold</c> models a line the blowers cannot
+  /// keep up with - the furnace stops counting it as blast at all.
+  /// </summary>
+  public BlastFurnaceRig FeedBlast(float temp = 950f, float pressure = 5f)
   {
     _blastTemp = temp;
+    _blastPressure = pressure;
     return this;
   }
 
@@ -126,8 +156,8 @@ internal sealed class BlastFurnaceRig
   /// <summary>Places an open iron tap below the furnace with a canal start under it.</summary>
   public BlastFurnaceRig WithIronTapAndCanal()
   {
-    BlockPos tapPos = Global(2, -2, 2);
-    var tap = new BlockEntityBlastFurnaceTap
+    BlockPos tapPos = Global(2, 1, 0);
+    var tap = new BlockEntityMoltenMetalTap
     {
       Pos = tapPos.Copy(),
       Block = TestBlocks.Configure(
@@ -174,7 +204,7 @@ internal sealed class BlastFurnaceRig
             _blastTemp,
             "Air",
             World.Accessor,
-            maxOutputPressure: 5f
+            maxOutputPressure: _blastPressure
           );
           net.BroadcastUpdate(World.Accessor); // push Medium/Pressure/Temperature to the tuyere pipes
         }
@@ -218,6 +248,15 @@ internal sealed class BlastFurnaceRig
   public FurnaceState State => Furnace.State;
   public float Temp =>
     (float)ReflectionHelpers.GetField(Furnace, "_internalTemp")!;
+
+  /// <summary>The heat balance the last tick computed - what the furnace is chasing, and why.</summary>
+  public HeatBalance Heat =>
+    (HeatBalance)ReflectionHelpers.GetField(Furnace, "_lastHeatBalance")!;
+
+  /// <summary>Melt-cycle speed multiplier at the current internal temperature.</summary>
+  public float MeltSpeed =>
+    (float)ReflectionHelpers.Invoke(Furnace, "MeltSpeedFactor")!;
+
   public float MoltenIron =>
     (float)ReflectionHelpers.GetField(Furnace, "_moltenIron")!;
   public int CanalIron => Canal?.CellAmount ?? 0;

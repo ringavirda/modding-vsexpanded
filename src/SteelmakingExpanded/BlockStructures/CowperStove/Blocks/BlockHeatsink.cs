@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.CowperStove.Blocks;
 
@@ -31,7 +31,7 @@ public partial class BlockHeatSink : Block, IExBlockDefProvider
         .CreativeCommon("*-north")
         .Behavior("HorizontalOrientable")
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .ShapeByTypeSpunPerOrientation("smex:cowperstove/heatsink")
+        .ShapeByTypePerOrientation("smex:cowperstove/heatsink")
         .NonSolid(),
     ];
 

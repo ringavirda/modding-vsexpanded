@@ -37,6 +37,31 @@ public static class ReflectionHelpers
     setter.Invoke(target, [value]);
   }
 
+  /// <summary>Reads a (possibly non-public) instance property - the getter counterpart of
+  /// <see cref="SetProperty"/>, for asserting on a <c>protected virtual</c> the production code
+  /// exposes as its single source of truth (e.g. a machine's structure-local cell offsets).</summary>
+  public static object? GetProperty(object target, string propertyName)
+  {
+    PropertyInfo prop =
+      target
+        .GetType()
+        .GetProperty(
+          propertyName,
+          BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+        )
+      ?? throw new InvalidOperationException(
+        $"Property '{propertyName}' not found on {target.GetType().Name}."
+      );
+
+    MethodInfo getter =
+      prop.GetGetMethod(nonPublic: true)
+      ?? throw new InvalidOperationException(
+        $"Property '{propertyName}' on {target.GetType().Name} has no getter."
+      );
+
+    return getter.Invoke(target, []);
+  }
+
   /// <summary>Sets a (possibly non-public) instance field, walking up the type hierarchy so a field
   /// declared on a base class is found from a derived instance.</summary>
   public static void SetField(object target, string fieldName, object? value) =>
@@ -48,7 +73,11 @@ public static class ReflectionHelpers
 
   /// <summary>Reads a (possibly non-public) instance field if it exists, walking up the type hierarchy;
   /// returns false (rather than throwing) when no such field is declared anywhere on the type.</summary>
-  public static bool TryGetField(object target, string fieldName, out object? value)
+  public static bool TryGetField(
+    object target,
+    string fieldName,
+    out object? value
+  )
   {
     for (Type? t = target.GetType(); t != null; t = t.BaseType)
     {

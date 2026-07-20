@@ -32,7 +32,7 @@ public partial class BlockConverterTransmission
         .CreativeCommon("*-north")
         .Behavior("HorizontalOrientable")
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .ShapeByTypeSpunPerOrientation("smex:converter/transmission", offset: 180)
+        .ShapeByTypePerOrientation("smex:converter/transmission", offset: 180)
         .NonSolid(),
     ];
 

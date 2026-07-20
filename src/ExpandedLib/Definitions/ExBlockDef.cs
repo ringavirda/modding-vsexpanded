@@ -54,8 +54,11 @@ public sealed class ExBlockDef : IExDef
   /// - needed when several blocktype files share one code (e.g. the pipe class:
   /// <c>Create("ppex", "pipe", "pipes/straight")</c> -&gt; code <c>pipe</c> at
   /// <c>blocktypes/pipes/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
-  public static ExBlockDef Create(string domain, string code, string assetName) =>
-    new(domain, code, assetName);
+  public static ExBlockDef Create(
+    string domain,
+    string code,
+    string assetName
+  ) => new(domain, code, assetName);
 
   /// <summary>The mod id / asset domain this block belongs to.</summary>
   public string Domain => _domain;
@@ -111,7 +114,8 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef Replaceable(int priority) => Set("replaceable", priority);
 
   /// <summary>Sets <c>materialDensity</c> (kg/m³-ish, drives float/sink and shove behaviour).</summary>
-  public ExBlockDef MaterialDensity(int density) => Set("materialDensity", density);
+  public ExBlockDef MaterialDensity(int density) =>
+    Set("materialDensity", density);
 
   /// <summary>Sets <c>heldTpIdleAnimation</c> - the third-person idle animation played while the block is
   /// held (e.g. <c>"holdbothhandslarge"</c> for a two-handed carry).</summary>
@@ -206,7 +210,7 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>The <c>shapebytype</c> form of <see cref="ShapeSpunPerOrientation"/> (one base shape, four
   /// per-orientation rotations) - for a block that keys its shape by the full variant wildcard.</summary>
-  public ExBlockDef ShapeByTypeSpunPerOrientation(string baseShape, int offset = 0)
+  public ExBlockDef ShapeByTypePerOrientation(string baseShape, int offset = 0)
   {
     foreach (string side in HorizontalSides)
       ShapeByType(
@@ -311,13 +315,26 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Sets the four common <c>sounds</c> entries at once - the place/break/hit/walk block almost every
   /// block repeats. Equivalent to four <see cref="Sound"/> calls.</summary>
-  public ExBlockDef Sounds(string place, string breakSound, string hit, string walk) =>
-    Sound("place", place).Sound("break", breakSound).Sound("hit", hit).Sound("walk", walk);
+  public ExBlockDef Sounds(
+    string place,
+    string breakSound,
+    string hit,
+    string walk
+  ) =>
+    Sound("place", place)
+      .Sound("break", breakSound)
+      .Sound("hit", hit)
+      .Sound("walk", walk);
 
   /// <summary>The metal machine sound set (anvil place/break/hit, stone walk) shared by the pipes, boilers,
   /// engines and converters - authored once instead of copied into every def.</summary>
   public ExBlockDef MetalSounds() =>
-    Sounds("game:block/anvil", "game:block/anvil", "game:block/anvil", "game:walk/stone");
+    Sounds(
+      "game:block/anvil",
+      "game:block/anvil",
+      "game:block/anvil",
+      "game:walk/stone"
+    );
 
   /// <summary>Adds a per-tool hit/break sound override under
   /// <c>sounds.byTool.{tool}</c> (e.g. a ceramic pipe that breaks like rock under a pickaxe).</summary>
@@ -382,7 +399,10 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Appends a <c>variantgroups</c> entry sourced from a worldproperty
   /// (<c>loadFromProperties</c>) - the vanilla worldproperty expansion is reused as-is.</summary>
-  public ExBlockDef VariantGroupFromProperties(string code, string propertiesPath)
+  public ExBlockDef VariantGroupFromProperties(
+    string code,
+    string propertiesPath
+  )
   {
     NestedArray("variantgroups")
       .Add(
@@ -471,7 +491,8 @@ public sealed class ExBlockDef : IExDef
         new JObject
         {
           ["name"] = name,
-          ["properties"] = properties as JToken ?? JToken.FromObject(properties),
+          ["properties"] =
+            properties as JToken ?? JToken.FromObject(properties),
         }
       );
     return this;
@@ -480,7 +501,8 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Appends a block behavior by type - resolves to <typeparamref name="T"/>'s registered
   /// <c>{modid}.{ClassName}</c> key (type-safe, for a mod's own behavior).</summary>
   public ExBlockDef Behavior<T>()
-    where T : BlockBehavior => Behavior(EntityRegistry.KeyFor(_domain, typeof(T)));
+    where T : BlockBehavior =>
+    Behavior(EntityRegistry.KeyFor(_domain, typeof(T)));
 
   /// <summary>Appends a block-<b>entity</b> behavior by its registered name (a vanilla behavior, e.g.
   /// <c>"Animatable"</c>).</summary>
@@ -579,7 +601,8 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Sets <c>sideAo</c> (ambient-occlusion contribution) for all faces at once
   /// (<c>{ "all": value }</c>) - e.g. a thin door that shouldn't darken its neighbours.</summary>
-  public ExBlockDef SideAo(bool all) => Set("sideAo", new JObject { ["all"] = all });
+  public ExBlockDef SideAo(bool all) =>
+    Set("sideAo", new JObject { ["all"] = all });
 
   /// <summary>Sets <c>emitSideAo</c> (whether the block casts ambient occlusion onto neighbours) for all faces at
   /// once (<c>{ "all": value }</c>). Distinct from <see cref="SideAo"/> (which controls AO the block RECEIVES).</summary>
@@ -652,7 +675,8 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef Attributes(object poco)
   {
     JObject source =
-      poco as JObject ?? JToken.FromObject(poco) as JObject
+      poco as JObject
+      ?? JToken.FromObject(poco) as JObject
       ?? throw new ArgumentException(
         "Attributes(poco) needs an object with named properties.",
         nameof(poco)

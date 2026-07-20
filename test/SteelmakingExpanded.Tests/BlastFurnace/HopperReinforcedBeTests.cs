@@ -1,6 +1,6 @@
 using ExpandedLib.Testing;
 using NSubstitute;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
+using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;

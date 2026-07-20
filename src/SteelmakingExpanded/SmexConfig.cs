@@ -65,9 +65,25 @@ public class SmexConfig : IExVersionedConfig
   // IronworkingExpanded.IwexConfig / IwexValues. The bessemer charge cooldown still reads the base
   // IwexValues.MoltenCooldownSpeed and scales it by BessemerCooldownCoefficient below.
 
-  // The blast-mix / blast-furnace / hopper tunables (BlastMixRequiredToFire, BlastmixBurnTime, all
-  // Bf*, TuyereIntakeVolume, all Hopper*) moved to the foundational iwex mod along with the blast
-  // furnace subsystem itself - see IronworkingExpanded.IwexConfig / IwexValues.
+  #region Hopper bell (blast-mix maker)
+  /// <summary>Items the hopper magazine can buffer.</summary>
+  public int HopperMaxMagazineCapacity { get; set; } = 48;
+
+  /// <summary>Iron ore consumed per blast-mix batch.</summary>
+  public int HopperIronOreRequired { get; set; } = 12;
+
+  /// <summary>Coke consumed per blast-mix batch.</summary>
+  public int HopperCokeRequired { get; set; } = 3;
+
+  /// <summary>Lime consumed per blast-mix batch.</summary>
+  public int HopperLimeRequired { get; set; } = 1;
+
+  /// <summary>Blast-mix produced per batch.</summary>
+  public int HopperBlastmixProduced { get; set; } = 16;
+
+  /// <summary>Blast-mix dropped per output pulse.</summary>
+  public int HopperDropAmount { get; set; } = 4;
+  #endregion
 
   #region Bessemer converter
   /// <summary>Seconds the pour/fill lever must be held before the converter commits the action.</summary>

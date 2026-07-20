@@ -196,6 +196,106 @@ public class MetalRegistryTests
   }
   #endregion
 
+  #region CastProduct (mold {metal} substitution + domain rehoming)
+  [Theory]
+  [InlineData("game:metalplate-{metal}", "game:ingot-iron", "game:metalplate-iron")]
+  [InlineData("game:rod-{metal}", "game:ingot-steel", "game:rod-steel")]
+  // A carrier with no dash substitutes its whole path, matching LastCodePart() on such an item.
+  [InlineData("game:metalplate-{metal}", "iwex:slag", "game:metalplate-slag")]
+  public void CastProductOf_an_unregistered_metal_only_substitutes_the_token(
+    string template,
+    string molten,
+    string expected
+  )
+  {
+    Assert.Equal(
+      expected,
+      MetalRegistry
+        .CastProductOf(new AssetLocation(template), new AssetLocation(molten))
+        .ToString()
+    );
+  }
+
+  [Fact]
+  public void CastProductOf_rehomes_the_drop_into_the_metals_cast_domain()
+  {
+    // The case cast iron exists for: vanilla's plate mold drops game:metalplate-{metal}, but there is
+    // no game-domain cast-iron plate - the drop has to land in the mod that owns the metal.
+    MetalRegistry.Register(
+      new MetalDef
+      {
+        Code = "castiron",
+        MoltenItem = "iwex:ingot-castiron",
+        CastDomain = "iwex",
+      }
+    );
+
+    Assert.Equal(
+      "iwex:metalplate-castiron",
+      MetalRegistry
+        .CastProductOf(
+          new AssetLocation("game:metalplate-{metal}"),
+          new AssetLocation("iwex:ingot-castiron")
+        )
+        .ToString()
+    );
+  }
+
+  [Fact]
+  public void CastProductOf_rehomes_a_template_that_carries_no_token()
+  {
+    // Domain rehoming is independent of the token: a literal drop code still moves to the cast domain.
+    MetalRegistry.Register(
+      new MetalDef
+      {
+        Code = "castiron",
+        MoltenItem = "iwex:ingot-castiron",
+        CastDomain = "iwex",
+      }
+    );
+
+    Assert.Equal(
+      "iwex:someliteralpart",
+      MetalRegistry
+        .CastProductOf(
+          new AssetLocation("game:someliteralpart"),
+          new AssetLocation("iwex:ingot-castiron")
+        )
+        .ToString()
+    );
+  }
+
+  [Fact]
+  public void CastProductOf_leaves_the_template_instance_untouched()
+  {
+    // Vanilla's stackFromCode mutates the JsonItemStack it is handed; the shared primitive must not,
+    // because callers reuse the parsed template across metals.
+    var template = new AssetLocation("game:metalplate-{metal}");
+    MetalRegistry.CastProductOf(template, new AssetLocation("game:ingot-iron"));
+
+    Assert.Equal("game:metalplate-{metal}", template.ToString());
+  }
+
+  [Fact]
+  public void CastDomainOf_is_null_until_a_def_declares_one()
+  {
+    Assert.Null(MetalRegistry.CastDomainOf(new AssetLocation("game:ingot-iron")));
+
+    MetalRegistry.Register(
+      new MetalDef
+      {
+        Code = "castiron",
+        MoltenItem = "iwex:ingot-castiron",
+        CastDomain = "iwex",
+      }
+    );
+    Assert.Equal(
+      "iwex",
+      MetalRegistry.CastDomainOf(new AssetLocation("iwex:ingot-castiron"))
+    );
+  }
+  #endregion
+
   #region Store mechanics
   [Fact]
   public void Lookup_normalises_the_domain()

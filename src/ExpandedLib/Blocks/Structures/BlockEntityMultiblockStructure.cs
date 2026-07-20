@@ -324,7 +324,7 @@ public abstract class BlockEntityMultiblockStructure
 
   /// <summary>
   /// Resolves a structure block code - which may be a wildcard such as
-  /// "iwex:blastfurnacedoor*" - to a human-readable display name.
+  /// "iwex:blastfurnacecore-*" - to a human-readable display name.
   /// </summary>
   private string ResolveBlockName(AssetLocation wantBlockCode)
   {

@@ -1,7 +1,8 @@
 using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnace;
+using IronworkingExpanded.BlockStructures.Furnaces;
+using IronworkingExpanded.Items;
+using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -25,22 +26,23 @@ public class BlastFurnaceTests
     // The furnace resolves the "slag" short token through MetalRegistry, which the game populates from
     // assets/iwex/config/metals/slag.json at AssetsFinalize. The headless harness runs no asset load,
     // so register the same mapping here (iron/steel need none - they follow the game:ingot convention).
-    MetalRegistry.Register(new MetalDef { Code = "slag", MoltenItem = "iwex:slag" });
+    MetalRegistry.Register(
+      new MetalDef { Code = "slag", MoltenItem = "iwex:slag" }
+    );
     return world;
   }
 
-  private static BlockEntityBlastFurnace Furnace(TestWorld world)
+  private static BlockEntityBlastFurnaceHot Furnace(TestWorld world)
   {
-    var be = new BlockEntityBlastFurnace
+    var be = new BlockEntityBlastFurnaceHot
     {
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "iwex:blastfurnacedoor-north",
+        "smex:blastfurnacecore-north",
         1,
         ("side", "north")
       ),
-      BaseAngleRad = 0f,
     };
     world.Attach(be);
     ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
@@ -60,11 +62,7 @@ public class BlastFurnaceTests
   public void TransitionToMelting_moves_firing_into_melting()
   {
     var be = Furnace(NewWorld());
-    ReflectionHelpers.SetProperty(
-      be,
-      nameof(be.State),
-      FurnaceState.Firing
-    );
+    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Firing);
 
     ReflectionHelpers.Invoke(be, "TransitionToMelting");
 
@@ -76,11 +74,7 @@ public class BlastFurnaceTests
   public void Extinguish_returns_to_idle_and_resets_heat()
   {
     var be = Furnace(NewWorld());
-    ReflectionHelpers.SetProperty(
-      be,
-      nameof(be.State),
-      FurnaceState.Melting
-    );
+    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Melting);
     ReflectionHelpers.SetField(be, "_internalTemp", 1500f);
     // No molten iron, so the solidified-iron drop branch is skipped.
 
@@ -147,11 +141,7 @@ public class BlastFurnaceTests
   {
     var world = NewWorld();
     var src = Furnace(world);
-    ReflectionHelpers.SetProperty(
-      src,
-      nameof(src.State),
-      FurnaceState.Melting
-    );
+    ReflectionHelpers.SetProperty(src, nameof(src.State), FurnaceState.Melting);
     ReflectionHelpers.SetProperty(src, nameof(src.IsChoked), true);
     ReflectionHelpers.SetField(src, "_internalTemp", 1456f);
     ReflectionHelpers.SetField(src, "_moltenIron", 80f);
@@ -183,6 +173,51 @@ public class BlastFurnaceTests
       1
     );
     Assert.Equal(220, (int)ReflectionHelpers.GetField(dst, "_cachedMixCount")!);
+  }
+
+  [Fact]
+  public void The_heat_balance_round_trips_so_the_client_hud_can_read_it()
+  {
+    // GetBlockInfo runs client-side, and the client never walks the charge or reads the pipes. If
+    // the balance did not ride the tree the whole heat readout would print zeroes in game while
+    // every headless test still passed - so the round trip is pinned here.
+    var world = NewWorld();
+    var src = Furnace(world);
+    var balance = new HeatBalance(
+      TIn: 2175.5f,
+      TLoss: 430f,
+      TProcess: 1745.5f,
+      FuelFrac: 0.2f,
+      FuelFactor: 1f,
+      AirFactor: 1f,
+      BlastSupplied: true,
+      BlastTemp: 950f,
+      PreheatGain: 325.5f,
+      ChargeLoss: 310f,
+      AmbientLoss: 0f
+    );
+    ReflectionHelpers.SetField(src, "_lastHeatBalance", balance);
+    ReflectionHelpers.SetField(
+      src,
+      "_chargeMix",
+      new BurdenMix(75f, 5f, 20f)
+    );
+
+    var tree = new TreeAttribute();
+    src.ToTreeAttributes(tree);
+    var dst = Furnace(world);
+    dst.FromTreeAttributes(tree, world.World);
+
+    Assert.Equal(
+      balance,
+      (HeatBalance)ReflectionHelpers.GetField(dst, "_lastHeatBalance")!
+    );
+    Assert.Equal(
+      "iwex:burden-profile-standard",
+      Burden.ProfileLangKey(
+        (BurdenMix)ReflectionHelpers.GetField(dst, "_chargeMix")!
+      )
+    );
   }
 
   #endregion

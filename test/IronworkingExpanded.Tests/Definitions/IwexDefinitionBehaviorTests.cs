@@ -1,8 +1,8 @@
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.BlastFurnace.Blocks;
-using IronworkingExpanded.BlockStructures.OreMixer.Blocks;
+using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
+using IronworkingExpanded.BlockStructures.OreProcessing.Blocks;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -20,32 +20,47 @@ public class IwexDefinitionBehaviorTests
   {
     // The BlockPipe base derives AllowedOrientations from the tuyere's own def; the variant group order
     // [s,n,w,e] carries through and its first state "s" is the fallback (no hand-written tables).
-    var orientations = ExDefinitions.OrientationMap(BlockTuyere.Definitions("iwex"));
+    var orientations = ExDefinitions.OrientationMap(
+      BlockTuyere.Definitions("iwex")
+    );
     Assert.Equal(["s", "n", "w", "e"], orientations["tuyere"]);
   }
 
   [Fact]
-  public void Door_multiblock_covers_all_147_cells()
+  public void Core_multiblock_covers_all_157_cells()
   {
-    JObject def = BlockBlastFurnaceDoor.Definitions("iwex").Single().ToJson();
-    var offsets = (JArray)def["attributes"]!["multiblockStructure"]!["offsets"]!;
-    Assert.Equal(147, offsets.Count);
+    // The door -> core move swaps two cells (the bottom-centre brick becomes the core, the door's
+    // own two cells revert to brick) and adds none, so this count is the primary guard that the
+    // re-originned layout is a pure translation.
+    JObject def = BlockBlastFurnaceCoreCold
+      .Definitions("iwex")
+      .Single()
+      .ToJson();
+    var offsets = (JArray)
+      def["attributes"]!["multiblockStructure"]!["offsets"]!;
+    Assert.Equal(157, offsets.Count);
   }
 
   [Fact]
   public void Mixer_footprint_hosts_three_west_mp_ports()
   {
-    var cells = (JArray)BlockOreMixer.Definitions("iwex").Single().ToJson()["attributes"]!["fillerOffsets"]!;
+    var cells = (JArray)
+      BlockOreMixer.Definitions("iwex").Single().ToJson()["attributes"]![
+        "fillerOffsets"
+      ]!;
     var ports = cells
       .Where(c => c["behaviors"] is JArray)
       .SelectMany(c => (JArray)c["behaviors"]!)
       .ToList();
     Assert.Equal(3, ports.Count);
-    Assert.All(ports, b =>
-    {
-      Assert.Equal("exlib.BEBehaviorMPFillerPort", (string?)b["code"]);
-      Assert.Equal("west", (string?)b["face"]);
-    });
+    Assert.All(
+      ports,
+      b =>
+      {
+        Assert.Equal("exlib.BEBehaviorMPFillerPort", (string?)b["code"]);
+        Assert.Equal("west", (string?)b["face"]);
+      }
+    );
   }
 
   [Fact]
@@ -56,7 +71,9 @@ public class IwexDefinitionBehaviorTests
     // this would pass, hiding a broken port.
     JObject original = BlockOreMixer.Definitions("iwex").Single().ToJson();
     var mutated = (JObject)original.DeepClone();
-    var cell = ((JArray)mutated["attributes"]!["fillerOffsets"]!).First(c => c["behaviors"] is JArray);
+    var cell = ((JArray)mutated["attributes"]!["fillerOffsets"]!).First(c =>
+      c["behaviors"] is JArray
+    );
     cell["behaviors"]![0]!["face"] = "east";
 
     Assert.False(DefinitionParity.Equal(original, mutated));

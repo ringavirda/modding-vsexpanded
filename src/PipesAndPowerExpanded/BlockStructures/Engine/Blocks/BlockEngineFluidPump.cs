@@ -30,7 +30,7 @@ public partial class BlockEngineFluidPump
         .Material(EnumBlockMaterial.Metal)
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
         .CreativeCommon("*-north")
-        .ShapeByTypeSpunPerOrientation("ppex:engine/fluidpump")
+        .ShapeByTypePerOrientation("ppex:engine/fluidpump")
         .NonSolid(),
     ];
 

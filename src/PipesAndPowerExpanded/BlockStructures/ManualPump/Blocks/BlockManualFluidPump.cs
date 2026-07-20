@@ -52,7 +52,7 @@ public partial class BlockManualFluidPump
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
         .CreativeCommon("*-north")
         .FillerOffsets([new FillerCellSpec(0, 1, 0)])
-        .ShapeByTypeSpunPerOrientation("ppex:manualfluidpump", 0)
+        .ShapeByTypePerOrientation("ppex:manualfluidpump", 0)
         .NonSolid(),
     ];
 

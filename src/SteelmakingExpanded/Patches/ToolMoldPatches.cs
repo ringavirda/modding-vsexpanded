@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using HarmonyLib;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
@@ -13,7 +14,6 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Patches;
 
@@ -253,9 +253,15 @@ public static class ToolMoldPatches
   }
 
   /// <summary>
-  /// Whether the metal in <paramref name="be"/> can be cast into this mold's tool. Substitutes the
-  /// metal into the drop code's <c>{metal}</c> placeholder and checks it resolves, to gate the
-  /// finished-casting path so non-castable charges (e.g. slag) skip vanilla's resolver (and its warning).
+  /// Whether the metal in <paramref name="be"/> can be cast into this mold's tool. Resolves each drop
+  /// template for the metal and checks one exists, to gate the finished-casting path so non-castable
+  /// charges (e.g. slag) skip vanilla's resolver (and its warning).
+  /// <para>
+  /// Substitution goes through <see cref="MetalRegistry.CastProductOf"/> so this gate agrees with what
+  /// the mold will actually produce - including a mod-added metal whose products live in its own domain
+  /// (iwex's cast iron), which iwex's <c>ToolMoldCastDomainPatch</c> redirects. Keeping the rule in one
+  /// place is what stops the gate and the product from drifting apart.
+  /// </para>
   /// </summary>
   private static bool CanCastInto(
     BlockToolMold mold,
@@ -266,30 +272,13 @@ public static class ToolMoldPatches
     if (mold.Attributes == null || be.MetalContent?.Collectible == null)
       return false;
 
-    string metal = be.MetalContent.Collectible.LastCodePart();
+    AssetLocation metal = be.MetalContent.Collectible.Code;
 
-    var templates = new List<JsonItemStack>();
-    if (mold.Attributes["drop"].Exists)
+    foreach (var tmpl in ExMoldDrops.Templates(mold))
     {
-      var one = mold.Attributes["drop"]
-        .AsObject<JsonItemStack>(null, mold.Code.Domain);
-      if (one != null)
-        templates.Add(one);
-    }
-    else
-    {
-      var many = mold.Attributes["drops"]
-        .AsObject<JsonItemStack[]>(null, mold.Code.Domain);
-      if (many != null)
-        templates.AddRange(many);
-    }
-
-    foreach (var tmpl in templates)
-    {
-      if (tmpl?.Code == null)
+      if (tmpl.Code == null)
         continue;
-      AssetLocation loc = tmpl.Code.Clone();
-      loc.Path = loc.Path.Replace("{metal}", metal);
+      AssetLocation loc = MetalRegistry.CastProductOf(tmpl.Code, metal);
       bool exists =
         tmpl.Type == EnumItemClass.Block
           ? world.GetBlock(loc) != null

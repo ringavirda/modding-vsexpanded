@@ -1,16 +1,16 @@
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
+using IronworkingExpanded.BlockNetworkMolten;
+using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using PipesAndPowerExpanded.BlockNetworkPipe;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
 using PipesAndPowerExpanded.Tests;
-using IronworkingExpanded.BlockNetworkMolten;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 
@@ -195,14 +195,16 @@ internal sealed class ConverterRig
   }
 
   public int ContentUnits =>
-    (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)?.Units ?? 0;
+    (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)?.Units
+    ?? 0;
   public float ProcessSeconds =>
     (float)ReflectionHelpers.GetField(Control, "_processSeconds")!;
   public float BlastVolume => _blast.State?.Volume ?? 0f;
 
   public string ContentCode =>
-    (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)
-      ?.MetalCode.ToString() ?? "";
+    (
+      ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge
+    )?.MetalCode.ToString() ?? "";
 }
 
 /// <summary>

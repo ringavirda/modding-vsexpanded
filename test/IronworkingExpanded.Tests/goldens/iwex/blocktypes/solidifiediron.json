@@ -28,5 +28,8 @@
     "break": "game:block/anvil",
     "hit": "game:block/anvil",
     "walk": "game:walk/stone"
+  },
+  "attributes": {
+    "metal": "iron"
   }
 }

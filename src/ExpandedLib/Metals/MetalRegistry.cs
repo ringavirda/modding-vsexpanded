@@ -129,9 +129,43 @@ public static class MetalRegistry
   public static float GlowMinTempOf(AssetLocation moltenItem) =>
     (TryGet(moltenItem, out var def) ? def.GlowMinTemp : null)
     ?? ExlibValues.MetalGlowMinTemp;
+
+  /// <summary>Domain owning this metal's cast products (convention: none - the template's own domain).</summary>
+  public static string? CastDomainOf(AssetLocation moltenItem) =>
+    TryGet(moltenItem, out var def) ? def.CastDomain : null;
+
+  /// <summary>
+  /// Resolves a tool-mold drop <paramref name="template"/> for <paramref name="moltenItem"/>: substitutes
+  /// <c>{metal}</c> with the metal's short code, then rehomes the result into the metal's
+  /// <see cref="MetalDef.CastDomain"/> when it declares one. With no <c>CastDomain</c> this is exactly the
+  /// pre-existing vanilla behaviour (substitute only, keep the template's domain), so every game-domain
+  /// metal is unaffected.
+  /// </summary>
+  public static AssetLocation CastProductOf(
+    AssetLocation template,
+    AssetLocation moltenItem
+  )
+  {
+    AssetLocation loc = template.Clone();
+    loc.Path = loc.Path.Replace("{metal}", ShortMetalOf(moltenItem));
+    string? domain = CastDomainOf(moltenItem);
+    if (domain != null)
+      loc.Domain = domain;
+    return loc;
+  }
   #endregion
 
   #region Conventions (the exact pre-registry behaviour)
+  // The token a tool mold substitutes into {metal}. Deliberately mirrors vanilla's own substitution
+  // source - BlockEntityToolMold.stackFromCode uses Collectible.LastCodePart(), NOT MetalDef.Code - so a
+  // metal whose registry code differs from its item suffix still resolves the way the mold does.
+  private static string ShortMetalOf(AssetLocation moltenItem)
+  {
+    string path = moltenItem.Path;
+    int dash = path.LastIndexOf('-');
+    return dash >= 0 ? path[(dash + 1)..] : path;
+  }
+
   private static AssetLocation ConventionSolidDrop(AssetLocation moltenItem) =>
     moltenItem.Path.StartsWith("ingot-")
       ? new AssetLocation(moltenItem.Domain, "metalbit-" + moltenItem.Path[6..])

@@ -1,0 +1,8 @@
+{
+  "code": "castiron",
+  "moltenItem": "iwex:ingot-castiron",
+  "solidDrop": "iwex:metalbit-castiron",
+  "displayLangKey": "iwex:metal-castiron",
+  "castDomain": "iwex",
+  "liquidThreshold": 0.75
+}

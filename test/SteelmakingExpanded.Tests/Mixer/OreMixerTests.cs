@@ -1,8 +1,7 @@
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.OreBunker.BlockEntities;
-using IronworkingExpanded.BlockStructures.OreMixer.BlockEntities;
+using IronworkingExpanded.BlockStructures.OreProcessing.BlockEntities;
 using IronworkingExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

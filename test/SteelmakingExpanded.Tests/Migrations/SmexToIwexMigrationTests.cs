@@ -24,7 +24,6 @@ public class SmexToIwexMigrationTests
     "moltenbarrel",
     "blastfurnace-tuyere-n",
     "blastfurnacetap-north",
-    "blastfurnacedoor",
     "hopperbell",
     "hopperreinforced",
     "slag",

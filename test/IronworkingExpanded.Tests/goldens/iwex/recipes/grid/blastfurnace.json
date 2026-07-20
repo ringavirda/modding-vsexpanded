@@ -1,12 +1,12 @@
 [
   {
-    "name": "Blast Furnace Door",
+    "name": "Blast Furnace Core",
     "ingredientPattern": "BRP,BN_,BRP",
     "width": 3,
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:blastfurnacedoor"
+      "code": "iwex:blastfurnacecore-north"
     },
     "ingredients": {
       "B": {
@@ -53,7 +53,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:blastfurnacetap-south"
+      "code": "iwex:moltenmetaltap-south"
     },
     "ingredients": {
       "B": {
@@ -95,7 +95,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:blastfurnace-tuyere-s"
+      "code": "iwex:tuyere-tuyere-s"
     },
     "ingredients": {
       "B": {
@@ -120,13 +120,13 @@
     }
   },
   {
-    "name": "Reinforced Hopper",
+    "name": "Tall Hopper",
     "ingredientPattern": "_H_,PSP,SPS",
     "width": 3,
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:hopperreinforced"
+      "code": "iwex:hopper-tall"
     },
     "ingredients": {
       "P": {
@@ -153,90 +153,6 @@
         "type": "item",
         "code": "game:hammer-*",
         "isTool": true
-      }
-    }
-  },
-  {
-    "name": "Bell Hopper",
-    "ingredientPattern": "GHG,PSP,SPS",
-    "width": 3,
-    "height": 3,
-    "output": {
-      "type": "block",
-      "code": "iwex:hopperbell"
-    },
-    "ingredients": {
-      "P": {
-        "type": "item",
-        "code": "game:metalplate-*",
-        "name": "metal",
-        "allowedVariants": [
-          "iron",
-          "steel"
-        ],
-        "quantity": 1
-      },
-      "S": {
-        "type": "item",
-        "code": "game:metalnailsandstrips-*",
-        "name": "metal",
-        "allowedVariants": [
-          "iron",
-          "steel"
-        ],
-        "quantity": 1
-      },
-      "H": {
-        "type": "item",
-        "code": "game:hammer-*",
-        "isTool": true
-      },
-      "G": {
-        "type": "item",
-        "code": "game:gear-rusty",
-        "quantity": 4
-      }
-    }
-  },
-  {
-    "name": "Bell Hopper",
-    "ingredientPattern": "GHG,PSP,SPS",
-    "width": 3,
-    "height": 3,
-    "output": {
-      "type": "block",
-      "code": "iwex:hopperbell"
-    },
-    "ingredients": {
-      "P": {
-        "type": "item",
-        "code": "game:metalplate-*",
-        "name": "metal",
-        "allowedVariants": [
-          "iron",
-          "steel"
-        ],
-        "quantity": 1
-      },
-      "S": {
-        "type": "item",
-        "code": "game:metalnailsandstrips-*",
-        "name": "metal",
-        "allowedVariants": [
-          "iron",
-          "steel"
-        ],
-        "quantity": 1
-      },
-      "H": {
-        "type": "item",
-        "code": "game:hammer-*",
-        "isTool": true
-      },
-      "G": {
-        "type": "item",
-        "code": "ppex:gear-*",
-        "quantity": 4
       }
     }
   }

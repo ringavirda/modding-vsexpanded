@@ -1,5 +1,5 @@
-using IronworkingExpanded.BlockStructures.BlastFurnace.BlockEntities;
 using IronworkingExpanded.Compat;
+using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Xunit;
 

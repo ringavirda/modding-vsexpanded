@@ -31,7 +31,7 @@ public partial class BlockEngineAirBlower
         .Material(EnumBlockMaterial.Metal)
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
         .CreativeCommon("*-north")
-        .ShapeByTypeSpunPerOrientation("smex:engine/airblower")
+        .ShapeByTypePerOrientation("smex:engine/airblower")
         .NonSolid(),
     ];
 
