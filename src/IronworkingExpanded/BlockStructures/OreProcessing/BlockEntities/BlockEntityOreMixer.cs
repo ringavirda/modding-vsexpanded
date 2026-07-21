@@ -4,6 +4,7 @@ using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Materials;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.OreProcessing.BlockEntities;
 using IronworkingExpanded.BlockStructures.OreProcessing.Blocks;
@@ -15,6 +16,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace IronworkingExpanded.BlockStructures.OreProcessing.BlockEntities;
@@ -81,7 +83,14 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
   private int _burdenCount;
   private BurdenMix _burdenMix;
 
+  // The burden family this batch is locked to, set by the FIRST family-committing input (iron ore ->
+  // ore burden, scrap metal -> remelt burden) and held until the mixer is completely empty again. While
+  // it is set, the other family's material is refused, so ore and scrap can never be mixed into one
+  // batch and the mixer knows which burden item to stamp on drain. Empty string = unlocked.
+  private string _family = "";
+
   private Item? _burdenItem;
+  private Item? _remeltBurdenItem;
 
   // Render before the opaque pass so the rotor frame is set in step with the axle.
   public double RenderOrder => 0.0;
@@ -107,8 +116,14 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     _animator.Initialize(ApplyPose);
 
     if (api.Side == EnumAppSide.Server)
-      // The production tick (registered by the base) deposits this resolved burden item.
+    {
+      // The production tick (registered by the base) deposits the resolved burden item that matches the
+      // batch family: ore burden for the blast furnace, remelt burden for the cupola.
       _burdenItem = api.World.GetItem(new AssetLocation("iwex", "burden"));
+      _remeltBurdenItem = api.World.GetItem(
+        new AssetLocation("iwex", "remeltburden")
+      );
+    }
 
     if (api is ICoreClientAPI capi)
     {
@@ -314,8 +329,10 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
   public bool IsDraining => _draining;
 
   /// <summary>
-  /// Whether the mixer accepts <paramref name="stack"/> at all: crushed iron / lime / crushed coke /
-  /// charcoal as raw input, or burden to reload (split back into raw so its proportions can be retuned).
+  /// Whether the mixer accepts <paramref name="stack"/> at all: crushed iron ore or scrap metal as the
+  /// primary charge, lime / coke / charcoal as flux and fuel, or a burden of either family to reload
+  /// (split back into raw so its proportions can be retuned). The ore-vs-scrap <b>family</b> is gated
+  /// statefully in <see cref="TryAddInput"/> - the first one added locks the batch.
   /// </summary>
   public static bool AcceptsAsInput(ItemStack? stack)
   {
@@ -323,9 +340,10 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     if (path == null)
       return false;
     return IsIronInput(path)
+      || IsMetalInput(path)
       || IsFluxInput(path)
       || IsFuelInput(path)
-      || Burden.Is(stack);
+      || Burden.IsAny(stack);
   }
 
   /// <summary>
@@ -352,31 +370,48 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
   /// <summary>Mixing progress 0..1 of the current raw charge (0 with no charge).</summary>
   public float MixProgress => TotalRaw <= 0 ? 0f : Math.Min(1f, _mixProgress);
 
+  /// <summary>Iron ore (crushed): the ore-family primary charge.</summary>
   private static bool IsIronInput(string path) =>
     IronOreCompat.IsCrushedIronOre(path);
 
-  private static bool IsFluxInput(string path) => path == "lime";
+  /// <summary>Scrap metal (vanilla iron bits): the remelt-family primary charge. Pig iron joins this in
+  /// a later follow-up; scrap alone is a valid remelt burden today.</summary>
+  private static bool IsMetalInput(string path) =>
+    MaterialRoleRegistry.IsRole(Roles.Scrap, new AssetLocation(path));
 
-  private static bool IsCokeInput(string path) => path == "crushed-coke";
+  private static bool IsFluxInput(string path) =>
+    MaterialRoleRegistry.IsRole(Roles.Flux, new AssetLocation(path));
 
-  private static bool IsCharcoalInput(string path) => path == "charcoal";
-
-  /// <summary>Any carbon reductant: coke or charcoal.</summary>
+  /// <summary>Any carbon reductant: coke or charcoal (the fuel role). Coke is charged as a whole lump
+  /// (vanilla <c>game:coke</c>) now, not the retired mod-added crushed coke.</summary>
   private static bool IsFuelInput(string path) =>
-    IsCokeInput(path) || IsCharcoalInput(path);
+    MaterialRoleRegistry.IsRole(Roles.Fuel, new AssetLocation(path));
 
-  /// <summary>Coke-equivalent carbon value of one item of the given fuel input.</summary>
+  /// <summary>Coke-equivalent carbon value of one item of the given fuel input, read from the fuel
+  /// role's per-item value (coke 2, charcoal 0.5 - authored in <c>materialroles.json</c>). A lump of
+  /// coke is worth 2 (= two of the old crushed-coke units, since a lump used to crush into two), which
+  /// keeps the burden's coke economy identical after the lump swap.</summary>
   private static float FuelValuePerItem(string path) =>
-    IsCharcoalInput(path) ? IwexValues.MixerCharcoalFuelValue : 1f;
+    MaterialRoleRegistry.ValueOf(Roles.Fuel, new AssetLocation(path), 1f);
+
+  /// <summary>The burden family the current batch is locked to (empty = unlocked/empty mixer). Set by
+  /// the first iron-ore or scrap-metal added, so the mixer stamps the right burden and refuses to mix
+  /// ore and scrap together.</summary>
+  public string Family => _family;
 
   /// <summary>
-  /// Adds a held crushed-iron / lime / crushed-coke stack to the matching raw part (up to the batch
-  /// cap), consuming from <paramref name="slot"/>. With <paramref name="wholeStack"/> the whole held
-  /// stack is taken (sneak+right-click); otherwise a single unit (plain right-click). Rejected while a
-  /// finished batch is waiting to drain or the lids are open. Adding material re-opens the batch (it
-  /// must mix again). Server-side.
+  /// Adds a held primary charge (iron ore <b>or</b> scrap metal), flux or fuel to the matching raw part
+  /// (up to the batch cap), consuming from <paramref name="slot"/>. With <paramref name="wholeStack"/>
+  /// the whole held stack is taken (ctrl+right-click); otherwise a single unit. Rejected while a finished
+  /// batch is waiting to drain or the lids are open. The first iron-ore or scrap-metal added locks the
+  /// batch family; adding the other family afterwards is refused (and, with a player, tells them why).
+  /// Adding material re-opens the batch (it must mix again). Server-side.
   /// </summary>
-  public bool TryAddInput(ItemSlot slot, bool wholeStack = true)
+  public bool TryAddInput(
+    ItemSlot slot,
+    bool wholeStack = true,
+    IPlayer? byPlayer = null
+  )
   {
     if (Api.Side != EnumAppSide.Server || _draining || HasReadyBurden)
       return false;
@@ -387,10 +422,22 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
 
     string path = s.Collectible.Code.Path;
     bool iron = IsIronInput(path);
+    bool metal = IsMetalInput(path);
     bool flux = IsFluxInput(path);
     bool fuel = IsFuelInput(path);
-    if (!iron && !flux && !fuel)
+    if (!iron && !metal && !flux && !fuel)
       return false;
+
+    // Iron ore commits the batch to ore burden, scrap metal to remelt burden; flux and fuel are neutral
+    // (both burdens take them). A committing input that conflicts with a locked batch is refused here.
+    string? committing = iron ? Burden.FamilyOre
+      : metal ? Burden.FamilyRemelt
+      : null;
+    if (committing != null && _family.Length > 0 && _family != committing)
+    {
+      (byPlayer as IServerPlayer)?.SendIngameError("iwex-mixer-wrongfamily");
+      return false;
+    }
 
     // Cap by remaining charge VOLUME. Fuel items count for their carbon value (charcoal < coke), so a
     // bowl with little room left takes proportionally more charcoal items than coke.
@@ -403,12 +450,16 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     if (take <= 0)
       return false;
 
-    if (iron)
+    // Iron ore and scrap metal are the same raw slot (the primary charge); the locked family says which.
+    if (iron || metal)
       _iron += take;
     else if (flux)
       _flux += take;
     else
       _fuel += take * perItem;
+
+    if (committing != null)
+      _family = committing;
 
     slot.TakeOut(take);
     slot.MarkDirty();
@@ -419,17 +470,29 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
 
   /// <summary>
   /// Reloads an off-spec (or any) burden stack back into the raw charge, splitting its units into
-  /// iron/flux/coke by the burden's own proportions so a little more material can adjust the grade.
-  /// Only into a mixer that holds no finished burden. Server-side.
+  /// primary/flux/coke by the burden's own proportions so a little more material can adjust the grade.
+  /// The burden's family locks the batch just as a raw primary would, so a remelt burden cannot be
+  /// reloaded into an ore batch (and vice versa). Only into a mixer that holds no finished burden. Server-side.
   /// </summary>
-  public bool TryReloadBurden(ItemSlot slot, bool wholeStack = true)
+  public bool TryReloadBurden(
+    ItemSlot slot,
+    bool wholeStack = true,
+    IPlayer? byPlayer = null
+  )
   {
     if (Api.Side != EnumAppSide.Server || _draining || HasReadyBurden)
       return false;
 
     ItemStack? s = slot.Itemstack;
-    if (!Burden.Is(s))
+    if (!Burden.IsAny(s))
       return false;
+
+    string incoming = Burden.FamilyOf(s);
+    if (_family.Length > 0 && _family != incoming)
+    {
+      (byPlayer as IServerPlayer)?.SendIngameError("iwex-mixer-wrongfamily");
+      return false;
+    }
 
     int space = (int)MathF.Floor(IwexValues.MixerMaxRaw - RawUnits + 1e-4f);
     if (space <= 0)
@@ -443,6 +506,7 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     _iron += iron;
     _flux += flux;
     _fuel += fuel;
+    _family = incoming;
 
     slot.TakeOut(count);
     slot.MarkDirty();
@@ -500,7 +564,11 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
   /// and tests; only acts while draining (set by <see cref="ToggleDrain"/>).</summary>
   public void DrainStep(float dt)
   {
-    if (!HasReadyBurden || _burdenItem == null)
+    // Stamp the burden item that matches the batch family: remelt burden for a scrap batch, ore burden
+    // otherwise. Two distinct items, so the piles below stay legible and never merge.
+    Item? burdenItem =
+      _family == Burden.FamilyRemelt ? _remeltBurdenItem : _burdenItem;
+    if (!HasReadyBurden || burdenItem == null)
     {
       _draining = false;
       MarkDirty(true);
@@ -511,7 +579,7 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
       _burdenCount,
       Math.Max(1, (int)MathF.Ceiling(IwexValues.MixerDrainPerSecond * dt))
     );
-    var stack = new ItemStack(_burdenItem, amount);
+    var stack = new ItemStack(burdenItem, amount);
     Burden.Write(stack, _burdenMix);
 
     int accepted = DepositBelow(stack);
@@ -523,6 +591,7 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     {
       _burdenCount = 0;
       _burdenMix = default;
+      _family = ""; // batch fully drained: the mixer is empty again and unlocked
       _draining = false;
     }
     MarkDirty(true);
@@ -671,6 +740,7 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
     tree.SetFloat("bmIron", _burdenMix.Iron);
     tree.SetFloat("bmFlux", _burdenMix.Flux);
     tree.SetFloat("bmFuel", _burdenMix.Fuel);
+    tree.SetString("family", _family);
   }
 
   public override void FromTreeAttributes(
@@ -690,6 +760,7 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
       tree.GetFloat("bmFlux"),
       tree.GetFloat("bmFuel")
     );
+    _family = tree.GetString("family", "");
     // A client receiving a lid-state change re-applies the pose (animator may not exist yet on load).
     UpdateLidPose();
     // ...and re-heights the visible charge heap to the synced amount.
@@ -719,8 +790,17 @@ public class BlockEntityOreMixer : BlockEntityProductionMachine, IRenderer
 
     if (RawUnits > 0f)
     {
+      // The primary is scrap metal for a remelt batch, iron ore otherwise - label it so the readout
+      // does not call scrap "iron".
       sb.AppendLine(
-        Lang.Get("iwex:mixer-charge", _iron, _flux, (int)MathF.Round(_fuel))
+        Lang.Get(
+          _family == Burden.FamilyRemelt
+            ? "iwex:mixer-charge-remelt"
+            : "iwex:mixer-charge",
+          _iron,
+          _flux,
+          (int)MathF.Round(_fuel)
+        )
       );
       sb.AppendLine(
         Lang.Get("iwex:mixer-grade", Lang.Get(Burden.ProfileLangKey(Mix)))

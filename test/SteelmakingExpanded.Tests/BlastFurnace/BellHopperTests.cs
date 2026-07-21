@@ -134,7 +134,7 @@ public class BellHopperTests
     var bell = Bell(world, bellPos);
     var hopper = HopperAbove(world, bellPos);
 
-    // Exactly one recipe's worth of feed: 12 iron + 3 coke + 1 lime -> 16 blastmix.
+    // Exactly one recipe's worth of feed: 12 iron + (lump) coke + 1 lime -> 16 blastmix.
     Put(
       hopper.Inventory,
       0,
@@ -144,7 +144,7 @@ public class BellHopperTests
     Put(
       hopper.Inventory,
       2,
-      "game:crushed-coke",
+      "game:coke",
       SmexValues.HopperCokeRequired
     );
     Put(hopper.Inventory, 3, "game:lime", SmexValues.HopperLimeRequired);
@@ -175,7 +175,7 @@ public class BellHopperTests
     Put(
       hopper.Inventory,
       2,
-      "game:crushed-coke",
+      "game:coke",
       SmexValues.HopperCokeRequired
     );
 

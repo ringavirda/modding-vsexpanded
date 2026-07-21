@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ExpandedLib.Definitions;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ExpandedLib.Testing;
@@ -38,7 +40,40 @@ public static class DefinitionGoldens
       defs.AddRange(ExDefinitions.ItemDefinitionsOf(type, domain));
       defs.AddRange(ExDefinitions.RecipeDefinitionsOf(type, domain));
     }
+    // The generated metal families have no provider class - they are emitted from the config/metals JSON
+    // at runtime. Feed the emitter the same JSON off the source tree and keep the forms this domain owns,
+    // so a generated ingot/plate/rod/… is golden-checked exactly like a hand-authored def.
+    defs.AddRange(EmittedFamilies(domain));
     return defs;
+  }
+
+  // The metal-family item defs the emitter produces for <paramref name="domain"/>, read from the source
+  // config/metals catalogue (every domain's, since a metal is emitted into the domain its molten item
+  // names, which need not match the folder it ships in).
+  private static IEnumerable<ExItemDef> EmittedFamilies(string domain)
+  {
+    string assetsRoot = SolutionRelative("assets");
+    if (!Directory.Exists(assetsRoot))
+      return [];
+
+    var metals = new List<MetalDef>();
+    foreach (
+      string file in Directory.EnumerateFiles(
+        assetsRoot,
+        "*.json",
+        SearchOption.AllDirectories
+      )
+    )
+    {
+      if (!file.Replace('\\', '/').Contains("/config/metals/"))
+        continue;
+      MetalDef? metal = JsonConvert.DeserializeObject<MetalDef>(
+        File.ReadAllText(file)
+      );
+      if (metal != null)
+        metals.Add(metal);
+    }
+    return MetalFamilyEmitter.Emit(metals).Where(d => d.Domain == domain);
   }
 
   /// <summary>The def's golden path relative to the golden root: <c>{domain}/{Location.Path}</c> (a stable,

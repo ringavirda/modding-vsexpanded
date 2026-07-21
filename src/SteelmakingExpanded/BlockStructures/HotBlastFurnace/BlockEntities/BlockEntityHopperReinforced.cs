@@ -1,4 +1,5 @@
 using System.Text;
+using ExpandedLib.Materials;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.Compat;
 using Vintagestory.API.Client;
@@ -281,16 +282,24 @@ public class ItemSlotBlastFurnace : ItemSlotSurvival
 
     string path = sourceSlot.Itemstack.Collectible.Code.Path;
 
-    // Iron slots also accept reclaimed blastmix (e.g. from broken-up piles), so
-    // it can be fed straight back into the bell hopper's magazine.
+    // Iron slots also accept reclaimed blast mix (the charge role, e.g. from broken-up piles), so it can
+    // be fed straight back into the bell hopper's magazine.
     if (
       AllowedType == "iron"
-      && (IronOreCompat.IsCrushedIronOre(path) || path.Equals("blastmix"))
+      && (
+        IronOreCompat.IsCrushedIronOre(path)
+        || MaterialRoleRegistry.IsRole(Roles.Charge, sourceSlot.Itemstack)
+      )
     )
       return base.CanTakeFrom(sourceSlot, priority);
-    if (AllowedType == "coke" && path.Equals("crushed-coke"))
+    // Coke is now the whole lump (vanilla game:coke); the mod-added crushed coke is retired. Kept an
+    // exact match, not the fuel role, so charcoal (also fuel) cannot feed the blast furnace's coke slot.
+    if (AllowedType == "coke" && path.Equals("coke"))
       return base.CanTakeFrom(sourceSlot, priority);
-    if (AllowedType == "lime" && path.Equals("lime"))
+    if (
+      AllowedType == "lime"
+      && MaterialRoleRegistry.IsRole(Roles.Flux, sourceSlot.Itemstack)
+    )
       return base.CanTakeFrom(sourceSlot, priority);
 
     return false;

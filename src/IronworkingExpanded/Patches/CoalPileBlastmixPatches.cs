@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using ExpandedLib.Materials;
 using HarmonyLib;
 using IronworkingExpanded.BlockStructures.Products.BlockEntities;
 using Vintagestory.API.Common;
@@ -86,7 +87,7 @@ public static class BlastmixPiles
       && pile.inventory != null
       && pile.inventory.Count > 0
       && !pile.inventory[0].Empty
-      && pile.inventory[0].Itemstack?.Collectible.Code.Path == "blastmix"
+      && MaterialRoleRegistry.IsRole(Roles.Charge, pile.inventory[0].Itemstack)
     )
     {
       state.BurnTimer++;

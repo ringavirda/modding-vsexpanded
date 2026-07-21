@@ -336,7 +336,15 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
       float drawn = waterNet.TryConsumeLiquid(request, ba);
       _waterVolume += drawn;
 
-      if (drawn > 0f && feedPressure > 1f && _state == BoilerState.Boiling)
+      // Gate the pressurised-feed steam boost on the same ceiling as BoilStep. Without this it was the
+      // ONE path that lifted steam past MaxOutputPressure every boiling tick, ramping the readout to
+      // "hundreds of atm" over time (the pure-boil path self-bounds because BoilStep stops at the ceiling).
+      if (
+        drawn > 0f
+        && feedPressure > 1f
+        && _state == BoilerState.Boiling
+        && InternalPressure < MaxOutputPressure
+      )
         _steamVolume +=
           drawn * (feedPressure - 1f) * PpexValues.WaterPressureSteamBoost;
     }
@@ -395,6 +403,8 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
           BoilStep(dt);
         break;
     }
+
+    CapSteamToCeiling();
 
     _burning = burning && _state != BoilerState.Idle;
 
@@ -555,6 +565,22 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     if (accepted > 0f)
       _steamVolume = Math.Max(0f, _steamVolume - accepted);
     return false;
+  }
+
+  /// <summary>
+  /// Hard-caps steam so <see cref="InternalPressure"/> can never exceed <see cref="MaxOutputPressure"/>:
+  /// a boiler is a vessel with an implied safety valve, not an unbounded accumulator, so any excess above
+  /// the choke ceiling is discarded (vented). Runs at the end of every production tick. The cap sits AT
+  /// the ceiling, so a genuinely dangerous closed+burning boiler still trips the over-pressure burst grace
+  /// (which fires at <c>&gt;= MaxOutputPressure</c>) - this only bounds the "hundreds of atm" readout and
+  /// kills any single-tick overshoot, it does not remove the explosion.
+  /// </summary>
+  private void CapSteamToCeiling()
+  {
+    float steamCeiling =
+      MaxOutputPressure * Math.Max(1f, Capacity - _waterVolume);
+    if (_steamVolume > steamCeiling)
+      _steamVolume = steamCeiling;
   }
 
   /// <summary>

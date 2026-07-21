@@ -117,15 +117,28 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
       return true;
     }
 
-    ConverterOpState target = ResolveTarget(byPlayer);
-
-    // Pouring is destructive (drains the entire charge), so rather than firing on
-    // the click we begin a hold here and only commit once the pour-hold time has
-    // elapsed in OnBlockInteractStep. Validate up front so the player isn't left
-    // holding a doomed interaction; surface the same error a click would.
-    if (target == ConverterOpState.Pouring)
+    // Steel bits (or any Scrap-role item) in hand charge cold scrap into the vessel rather than
+    // selecting a state - the temperature gate the player loads before (or during) the pig fill.
+    if (be.TryChargeScrap(byPlayer, out string scrapError))
     {
-      if (be.OpState == ConverterOpState.Pouring)
+      if (scrapError.Length == 0)
+        (byPlayer as IClientPlayer)?.TriggerFpAnimation(
+          EnumHandInteract.HeldItemInteract
+        );
+      else if (world.Side == EnumAppSide.Client)
+        (byPlayer as IClientPlayer)?.ShowChatNotification(scrapError);
+      return true;
+    }
+
+    ConverterOpState target = ResolveTarget(be, byPlayer);
+
+    // The deep steel pour is destructive (drains the finished heat), so rather than firing on the click
+    // we begin a hold here and only commit once the pour-hold time has elapsed in OnBlockInteractStep.
+    // The shallow slag skim and the fill/normal tilts are non-destructive and apply immediately. Validate
+    // up front so the player isn't left holding a doomed interaction; surface the same error a click would.
+    if (target == ConverterOpState.SteelPouring)
+    {
+      if (be.OpState == ConverterOpState.SteelPouring)
         return false; // already pouring - nothing to hold for
       if (!be.CanOperate(out string pourError))
       {
@@ -139,7 +152,7 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
       return true; // continue into OnBlockInteractStep
     }
 
-    // Normal / Filling are non-destructive - apply immediately on click.
+    // Normal / Filling / slag skim are non-destructive - apply immediately on click.
     if (be.TrySetState(byPlayer, target, out string error))
     {
       (byPlayer as IClientPlayer)?.TriggerFpAnimation(
@@ -166,12 +179,12 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
     )
       return false;
 
-    // Only the pour action is a held interaction. Stop the moment the player lets
-    // go of sprint, the converter is gone, or it is already pouring.
+    // Only the deep steel pour is a held interaction. Stop the moment the player lets
+    // go of sprint, the converter is gone, or it is already pouring steel.
     if (
       !be.IsConverterPresent()
-      || ResolveTarget(byPlayer) != ConverterOpState.Pouring
-      || be.OpState == ConverterOpState.Pouring
+      || ResolveTarget(be, byPlayer) != ConverterOpState.SteelPouring
+      || be.OpState == ConverterOpState.SteelPouring
     )
       return false;
 
@@ -179,18 +192,26 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
       return true; // keep holding
 
     // Held long enough - commit the pour (TrySetState re-validates internally).
-    be.TrySetState(byPlayer, ConverterOpState.Pouring, out _);
+    be.TrySetState(byPlayer, ConverterOpState.SteelPouring, out _);
     return false;
   }
 
-  // Operational intent from the held modifier keys: Sneak = filling,
-  // Sprint = pouring, plain RMB = normal.
-  private static ConverterOpState ResolveTarget(IPlayer byPlayer)
+  // Operational intent from the held modifier keys. Sneak = fill. Sprint deepens the pour: from the
+  // upright/fill states a sprint skims the floating SLAG off the top (a shallow tilt); a second sprint,
+  // now that the vessel is already slag-pouring, tilts on to the STEEL beneath. Plain RMB returns upright.
+  private static ConverterOpState ResolveTarget(
+    BlockEntityConverterControl be,
+    IPlayer byPlayer
+  )
   {
     var controls = byPlayer.Entity.Controls;
-    return controls.Sneak ? ConverterOpState.Filling
-      : controls.Sprint ? ConverterOpState.Pouring
-      : ConverterOpState.Normal;
+    if (controls.Sneak)
+      return ConverterOpState.Filling;
+    if (controls.Sprint)
+      return be.OpState is ConverterOpState.SlagPouring or ConverterOpState.SteelPouring
+        ? ConverterOpState.SteelPouring
+        : ConverterOpState.SlagPouring;
+    return ConverterOpState.Normal;
   }
 
   public override WorldInteraction[] GetPlacedBlockInteractionHelp(
@@ -223,7 +244,7 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
         .ToArray();
     }
 
-    // Operational phase: state transition hints.
+    // Operational phase: state transition hints + the cold-scrap charge hint.
     return baseHelp
       .Append(
         new WorldInteraction
@@ -248,6 +269,28 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
           MouseButton = EnumMouseButton.Right,
         }
       )
+      .Append(
+        new WorldInteraction
+        {
+          ActionLangCode = "smex:blockhelp-bessemer-scrap",
+          MouseButton = EnumMouseButton.Right,
+          Itemstacks = ScrapHintStacks(world),
+        }
+      )
       .ToArray();
+  }
+
+  // Vanilla iron/steel bits shown in the scrap-charge hint (resolved once, both sides). The classification
+  // the vessel actually uses is the exlib Scrap role, not this list - these are only the help preview.
+  private static ItemStack[] ScrapHintStacks(IWorldAccessor world)
+  {
+    var stacks = new System.Collections.Generic.List<ItemStack>(2);
+    foreach (string code in new[] { "game:metalbit-steel", "game:metalbit-iron" })
+    {
+      Item? item = world.GetItem(new AssetLocation(code));
+      if (item != null)
+        stacks.Add(new ItemStack(item));
+    }
+    return stacks.ToArray();
   }
 }

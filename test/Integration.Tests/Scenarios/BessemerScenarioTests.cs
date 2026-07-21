@@ -1,88 +1,139 @@
+using SteelmakingExpanded;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The capstone steelmaking scenario (handbook bessemer article): molten iron from a canal is charged
-/// into the Bessemer converter, blown with blast drawn off a live gas network to refine it into steel,
-/// and poured back out into the output canal. Exercises the molten input/output cells, the blast gas
-/// network and the converter's refining process together - the final stage of an already-running line.
+/// The capstone steelmaking scenario (handbook bessemer article): molten PIG iron from a canal is
+/// charged into the Bessemer converter, blown with blast drawn off a live gas network to refine it -
+/// carbon falling as the blow proceeds - into Bessemer steel (or, blown on, over-blown to soft iron),
+/// and the steel + its floating slag byproduct poured back out through the shared output cell.
+/// Exercises the molten input/output cells, the blast gas network and the dynamic carbon model together.
 /// </summary>
 public class BessemerScenarioTests
 {
-  #region Full charge → refine → pour cycle
+  #region Full charge → blow → pour cycle
 
   [Fact]
-  public void Molten_iron_is_charged_blown_into_steel_and_poured_to_the_output_canal()
+  public void Molten_pig_is_charged_blown_into_steel_and_poured_to_the_output_canal()
   {
     var rig = new ConverterRig();
 
-    // 1. Fill: the furnace tap pours molten iron into the input canal, the converter draws it in.
-    rig.PourIronToInput(50);
+    // 1. Fill: the furnace tap pours molten pig iron into the input canal, the converter draws it in.
+    rig.PourPigToInput(50);
     rig.Fill();
     Assert.Equal(50, rig.ContentUnits);
     Assert.True(
       rig.Input.IsCellEmpty,
       "the input cell should have drained into the vessel"
     );
-    Assert.Equal("game:ingot-iron", rig.ContentCode);
+    Assert.Contains("pigiron", rig.ContentCode);
 
-    // 2. Refine: with blast flowing the converter boils the carbon out, advancing the process clock
-    //    and drawing real blast off the gas network.
+    // 2. Blow: with blast flowing the converter oxidises the carbon out, so carbon falls and it draws
+    //    real blast off the gas network.
     rig.ChargeBlast(3f);
+    float carbonBefore = rig.Carbon;
     float blastBefore = rig.BlastVolume;
     rig.Refine();
-    Assert.True(rig.ProcessSeconds > 0f, "refining should advance while blown");
+    Assert.True(rig.Carbon < carbonBefore, "the blow should oxidise carbon");
     Assert.True(
       rig.BlastVolume < blastBefore,
-      "refining should consume blast from the network"
+      "the blow should consume blast from the network"
     );
 
-    // 3. Finish the ~5-minute blow (fast-forwarded) - the charge becomes steel.
-    rig.FastForwardToAlmostDone();
-    rig.ChargeBlast(3f);
-    rig.Refine();
-    Assert.Equal("game:ingot-steel", rig.ContentCode);
+    // 3. Finish the blow (fast-forwarded through the carbon math) - the charge becomes Bessemer steel.
+    rig.BlowToSteel();
+    Assert.Contains("bessemersteel", rig.ContentCode);
 
     // 4. Pour: the finished steel drains into the output canal, ready to travel the molten network.
-    rig.Pour();
+    rig.DrainSteel();
     Assert.True(
       rig.Output.CellAmount > 0,
       "the output canal should receive the steel"
     );
-    Assert.Equal("game:ingot-steel", rig.Output.CellMetalType);
+    Assert.Contains("bessemersteel", rig.Output.CellMetalType);
   }
 
-  // Re-use regression (the cowper lesson generalized): a converter is RE-USED for many heats. Every
-  // other test runs a single charge→refine→pour from a fresh rig, so none crosses the second-heat
-  // path - where leftover steel from the first heat could latch the type-mismatch guard and refuse a
-  // fresh iron charge. A finished, poured converter must accept and refine a brand-new iron charge.
   [Fact]
-  public void A_second_iron_heat_can_be_charged_and_refined_after_pouring_the_first()
+  public void The_blow_makes_slag_that_pours_off_the_shallow_tilt_out_the_shared_cell()
+  {
+    var rig = new ConverterRig();
+    rig.ChargePig(100);
+    rig.BlowToSteel();
+
+    // A full blow leaves steel in the charge and a floating slag pool beside it (mass-conserving).
+    Assert.Contains("bessemersteel", rig.ContentCode);
+    Assert.True(rig.SlagUnits > 0f, "the blow should accumulate slag");
+    Assert.True(
+      rig.ContentUnits + rig.SlagUnits <= 100,
+      "steel + slag must never exceed the pig charged"
+    );
+
+    // Shallow tilt (SlagPouring) skims the slag off through the same output cell the steel uses.
+    rig.DrainSlag();
+    Assert.True(rig.Output.CellAmount > 0);
+    Assert.Contains("slag", rig.Output.CellMetalType);
+    Assert.True(rig.SlagUnits < 1f, "the slag should have drained");
+  }
+
+  [Fact]
+  public void Over_blowing_past_the_steel_target_yields_soft_ingot_iron()
+  {
+    var rig = new ConverterRig();
+    rig.PourPigToInput(50);
+    rig.Fill();
+    rig.BlowToSteel();
+    Assert.Contains("bessemersteel", rig.ContentCode);
+
+    // Keep blowing past the over-blow floor - the deliberate route to plain iron now the BF makes pig.
+    rig.OverBlowToIron();
+    Assert.Contains("ingot-iron", rig.ContentCode);
+  }
+
+  // Re-use regression: a converter is RE-USED for many heats. A finished, poured converter must accept
+  // and refine a brand-new pig charge (no stale-steel type-mismatch latching the fill guard).
+  [Fact]
+  public void A_second_pig_heat_can_be_charged_and_refined_after_pouring_the_first()
   {
     var rig = new ConverterRig();
 
-    // First heat: iron → steel → poured out, emptying the vessel.
-    rig.PourIronToInput(50);
+    // First heat: pig → steel → poured out, emptying the vessel.
+    rig.PourPigToInput(50);
     rig.Fill();
-    rig.FastForwardToAlmostDone();
-    rig.ChargeBlast(3f);
-    rig.Refine();
-    Assert.Equal("game:ingot-steel", rig.ContentCode);
-    rig.Pour();
+    rig.BlowToSteel();
+    Assert.Contains("bessemersteel", rig.ContentCode);
+    rig.DrainSteel();
     Assert.Equal(0, rig.ContentUnits); // vessel emptied - no leftover steel
 
-    // Second heat: a fresh iron charge must fill (the emptied vessel claims iron cleanly, no stale
-    // steel type-mismatch) and refine to steel again.
-    rig.PourIronToInput(50);
+    // Second heat: a fresh pig charge must fill cleanly and refine to steel again.
+    rig.PourPigToInput(50);
     rig.Fill();
     Assert.Equal(50, rig.ContentUnits);
-    Assert.Equal("game:ingot-iron", rig.ContentCode);
+    Assert.Contains("pigiron", rig.ContentCode);
 
-    rig.FastForwardToAlmostDone();
-    rig.ChargeBlast(3f);
-    rig.Refine();
-    Assert.Equal("game:ingot-steel", rig.ContentCode);
+    rig.BlowToSteel();
+    Assert.Contains("bessemersteel", rig.ContentCode);
+  }
+
+  #endregion
+
+  #region Cold-scrap temperature gate
+
+  [Fact]
+  public void A_modest_scrap_charge_refines_and_yields_more_steel_than_pig_alone()
+  {
+    var rig = new ConverterRig();
+    rig.ChargePig(100);
+    rig.ChargeScrap(40); // cold steel bits, melted in at the target
+    rig.BlowToSteel();
+
+    Assert.Contains("bessemersteel", rig.ContentCode);
+    // Pig alone would yield ~90 steel (100 × yield); the melted scrap adds to it.
+    int pigOnly = (int)(100 * SmexValues.BessemerSteelYield);
+    Assert.True(
+      rig.ContentUnits > pigOnly,
+      $"scrap should yield more steel than pig alone: {rig.ContentUnits} !> {pigOnly}"
+    );
   }
 
   #endregion
@@ -93,14 +144,14 @@ public class BessemerScenarioTests
   public void Without_blast_the_charge_does_not_refine()
   {
     var rig = new ConverterRig();
-    rig.PourIronToInput(50);
+    rig.PourPigToInput(50);
     rig.Fill();
 
-    float before = rig.ProcessSeconds;
+    float before = rig.Carbon;
     rig.Refine(); // gas network is empty - no blast to draw
 
-    Assert.Equal(before, rig.ProcessSeconds, 3); // the process clock did not advance
-    Assert.Equal("game:ingot-iron", rig.ContentCode); // still raw iron, not steel
+    Assert.Equal(before, rig.Carbon, 4); // carbon did not fall
+    Assert.Contains("pigiron", rig.ContentCode); // still raw pig, not steel
   }
 
   #endregion

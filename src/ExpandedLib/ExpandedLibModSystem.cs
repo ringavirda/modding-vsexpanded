@@ -1,5 +1,6 @@
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Fluids;
+using ExpandedLib.Materials;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
@@ -63,6 +64,9 @@ public class ExpandedLibModSystem : ModSystem
   {
     MetalCatalogueLoader.Load(api);
     ExLiquids.Load(api);
+    // The material-role catalogue (flux/fuel/ore/scrap/charge classification) + its mod-gated code
+    // contributors. Loaded after the metal/liquid registries; exlib ships no role content itself.
+    MaterialRoleLoader.Load(api);
   }
 
   public override void StartClientSide(ICoreClientAPI api)

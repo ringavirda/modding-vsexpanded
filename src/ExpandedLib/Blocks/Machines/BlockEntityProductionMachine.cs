@@ -64,8 +64,17 @@ public abstract class BlockEntityProductionMachine : BlockEntity
     }
   }
 
+  /// <summary>Upper bound on a single production <c>dt</c>, as a multiple of the tick interval. After a
+  /// chunk reload or a server hitch the engine can hand us one oversized catch-up <c>dt</c>; an unclamped
+  /// grace timer (e.g. the boiler over-pressure burst) would leap its whole window in that single step -
+  /// the "detonates right after rejoining" bug. Capping at 2x the interval loses at most ~1 tick of
+  /// simulation on a genuine hitch. (The game-time/away-catch-up work later replaces this with a bounded
+  /// calendar delta; until then this is the floor that keeps every machine safe.)</summary>
+  private const float MaxCatchupTickMultiple = 2f;
+
   private void RunProductionTick(float dt)
   {
+    dt = GameMath.Min(dt, ProductionTickMs / 1000f * MaxCatchupTickMultiple);
     if (CanRunProduction)
       OnProductionTick(dt);
     else

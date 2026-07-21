@@ -12,8 +12,9 @@ namespace IronworkingExpanded.Patches;
 /// mold's drop template from <c>Collectible.LastCodePart()</c> and keeps the template's domain, so the
 /// plate mold's <c>game:metalplate-{metal}</c> resolves to <c>game:metalplate-castiron</c> - an item that
 /// does not and must not exist (a <c>block/metal</c> worldproperty variant would make cast iron
-/// anvil-forgeable; see <see cref="Items.CastIronItemDefinitions"/>). This prefix rehomes the drop into
-/// the metal's <see cref="MetalDef.CastDomain"/> instead, yielding <c>iwex:metalplate-castiron</c>.
+/// anvil-forgeable; see <see cref="MetalFamilyEmitter"/>, which generates the family off the
+/// worldproperty for exactly this reason). This prefix rehomes the drop into the metal's
+/// <see cref="MetalDef.CastDomain"/> instead, yielding <c>iwex:metalplate-castiron</c>.
 /// <para>
 /// Patched on <c>GetMoldedStacks</c> - the single chokepoint every casting path funnels through:
 /// <c>GetStateAwareMoldedStacks</c> (right-click retrieval, and smex's replacement interact flow) and

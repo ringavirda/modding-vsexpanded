@@ -12,12 +12,22 @@ internal sealed class TestProductionMachine : BlockEntityProductionMachine
   public bool Operational = true;
   public int ProductionTicks;
   public int IdleTicks;
+  public float LastProductionDt;
+  public float LastIdleDt;
 
   protected override bool CanRunProduction => Operational;
 
-  protected override void OnProductionTick(float dt) => ProductionTicks++;
+  protected override void OnProductionTick(float dt)
+  {
+    ProductionTicks++;
+    LastProductionDt = dt;
+  }
 
-  protected override void OnIdleProductionTick(float dt) => IdleTicks++;
+  protected override void OnIdleProductionTick(float dt)
+  {
+    IdleTicks++;
+    LastIdleDt = dt;
+  }
 
   /// <summary>Exposes the protected registration so a test can start ticking without full Initialize.</summary>
   public void StartTicking() => StartProductionTick();
@@ -71,4 +81,43 @@ public class ProductionMachineTests
     Assert.Equal(1, machine.ProductionTicks);
     Assert.Equal(1, machine.IdleTicks);
   }
+
+  #region Catch-up dt clamp (rejoin/hitch guard)
+
+  // A chunk reload or server hitch can hand the machine one oversized catch-up dt; the base clamps it
+  // to 2x the tick interval (default 1000ms -> 2s) so a grace timer can't leap its whole window in one
+  // step - the boiler "detonates right after rejoining" class of bug.
+  [Fact]
+  public void Clamps_an_oversized_catchup_dt_to_2x_the_interval()
+  {
+    var (world, machine) = NewMachine();
+
+    world.FireBlockEntityTicks(dt: 3600f); // one hour of catch-up in a single tick
+
+    Assert.Equal(1, machine.ProductionTicks);
+    Assert.Equal(2f, machine.LastProductionDt); // 2 x 1000ms interval, not 3600
+  }
+
+  [Fact]
+  public void Passes_a_normal_dt_through_unclamped()
+  {
+    var (world, machine) = NewMachine();
+
+    world.FireBlockEntityTicks(dt: 1f);
+
+    Assert.Equal(1f, machine.LastProductionDt);
+  }
+
+  [Fact]
+  public void Clamps_the_idle_tick_dt_too()
+  {
+    var (world, machine) = NewMachine();
+    machine.Operational = false;
+
+    world.FireBlockEntityTicks(dt: 3600f);
+
+    Assert.Equal(2f, machine.LastIdleDt);
+  }
+
+  #endregion
 }

@@ -23,9 +23,12 @@ public class ConverterChiselTests
   private const string Iron = "game:ingot-iron";
   private const string Steel = "game:ingot-steel";
 
-  // Iron melts at 1500: hardened below 0.3x = 450, liquid above 0.8x = 1200. Capacity 1200, so the
-  // 20% chisel ceiling is 240 units.
+  // Iron melts at 1500: hardened below 0.3x = 450, liquid above 0.8x = 1200. Capacity 4800, so the
+  // 20% chisel ceiling is 960 units.
   private const float IronMelt = 1500f;
+
+  // Resolved like the control resolves them, for the pig → Bessemer-steel retype test.
+  private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
 
   private static readonly (int x, int y, int z) InputTapLocal = (1, 1, 2);
 
@@ -34,7 +37,12 @@ public class ConverterChiselTests
     var world = new TestWorld();
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem(Steel, IronMelt);
+    world.RegisterItem("game:ingot-pigiron", 1150f);
+    world.RegisterItem("iwex:ingot-pigiron", 1150f);
+    world.RegisterItem("game:ingot-bessemersteel", IronMelt);
+    world.RegisterItem("smex:ingot-bessemersteel", IronMelt);
     world.RegisterItem("game:metalbit-iron");
+    world.RegisterItem("game:metalbit-steel");
     return world;
   }
 
@@ -111,16 +119,18 @@ public class ConverterChiselTests
   {
     var world = NewWorld();
     var be = Control(world);
+    // A pig charge at the carbon target, retyped to Bessemer steel the way the blow does.
     ReflectionHelpers.SetField(
       be,
       "_charge",
-      MoltenCharge.Of(Metal(world, Iron, 1700f), 50)
+      MoltenCharge.Of(Metal(world, Pig, 1700f), 50)
     );
+    ReflectionHelpers.SetField(be, "_pigCharged", 50);
 
-    ReflectionHelpers.Invoke(be, "CompleteRefining");
+    ReflectionHelpers.Invoke(be, "RetypeToSteel");
 
     var content = Charge(be)!.Stack;
-    Assert.Equal(Steel, content.Collectible.Code.ToString());
+    Assert.Contains("bessemersteel", content.Collectible.Code.ToString());
     Assert.Equal(ExpectedSlowedCooldown, CooldownSpeedOf(content), 3);
   }
 
@@ -175,7 +185,7 @@ public class ConverterChiselTests
   {
     var world = NewWorld();
     var be = Control(world);
-    PrimeCharge(be, world, 300f, 100, solidified: true); // hardened (300<450), 100 < 240
+    PrimeCharge(be, world, 300f, 100, solidified: true); // hardened (300<450), 100 < 960
 
     Assert.True(be.CanChiselOut());
   }
@@ -196,7 +206,7 @@ public class ConverterChiselTests
   {
     var world = NewWorld();
     var be = Control(world);
-    PrimeCharge(be, world, 300f, 300, solidified: true); // hardened but 300 >= 240 (20% of 1200)
+    PrimeCharge(be, world, 300f, 1000, solidified: true); // hardened but 1000 >= 960 (20% of 4800)
 
     Assert.True(be.ChargeIsHardened);
     Assert.False(be.CanChiselOut());
@@ -251,7 +261,7 @@ public class ConverterChiselTests
   {
     var world = NewWorld();
     var be = Control(world);
-    PrimeCharge(be, world, 300f, 300, solidified: true); // hardened but 300 >= 240
+    PrimeCharge(be, world, 300f, 1000, solidified: true); // hardened but 1000 >= 960
 
     Assert.Equal("smex:bessemer-status-solidified", SolidifiedStatus(be));
   }

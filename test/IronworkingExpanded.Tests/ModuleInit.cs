@@ -14,5 +14,8 @@ internal static class ModuleInit
   {
     VsAssemblyResolver.Register();
     TestLang.Init();
+    // The mixer/furnace-core classification now reads the shared material-role registry; seed iwex's
+    // roles (the headless stand-in for materialroles.json) so those predicates resolve in unit tests.
+    MaterialRoleSeeds.SeedIwexDefaults();
   }
 }

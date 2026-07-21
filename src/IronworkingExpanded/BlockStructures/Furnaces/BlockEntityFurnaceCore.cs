@@ -4,6 +4,8 @@ using System.Text;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Materials;
+using ExpandedLib.Process;
 using IronworkingExpanded.Items;
 using IronworkingExpanded.Patches;
 using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
@@ -35,6 +37,13 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 
   protected int _cachedMixCount = 0;
   protected bool _cachedIsFull = false;
+
+  // Wrong-family charge in the shaft: it still burns (and burns out), but it blocks the conversion to
+  // molten while present, and the HUD names the mismatch. Cached (and serialized) because GetBlockInfo
+  // runs client-side and the client never walks the charge - the same reason _cachedMixCount rides the tree.
+  protected int _cachedRejectedCount = 0;
+  protected string? _cachedRejectedFamily;
+
   protected List<BlockPos> _gasOutlets = [];
   protected List<BlockPos> _tuyeres = [];
 
@@ -68,7 +77,13 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
   protected float _meltStartDelay;
   protected float _meltIntervalSec;
   protected float _tuyereIntakeVolume;
+  protected float _starvationSupplyFrac;
   protected float _ambientTemp = 20f;
+
+  // Whether the fire is currently starving for air (blast supply under the floor while lit). Rides the
+  // save tree because GetBlockInfo runs client-side and the client never reads the tuyere network - the
+  // same reason _cachedMixCount does - so the HUD can name the stall.
+  protected bool _airStarved;
 
   protected override int CompletionTickMs => 3000;
 
@@ -100,6 +115,15 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 
   /// <summary>Mix floor below which a lit furnace counts a disruption toward extinguish.</summary>
   protected virtual int DisruptionMixFloor => 144;
+
+  /// <summary>
+  /// Whether this furnace needs pressurised blast to stay lit. True for every blown furnace in the mod
+  /// (the cold + hot blast furnace and the cupola all run off a blower through their tuyeres), so a
+  /// tuyere gone dry - a stopped blower, a cut main - starves the fire and, sustained, extinguishes it.
+  /// A future natural-aspirated furnace that draws its own draught overrides this to false to opt out of
+  /// air-starvation entirely (the same shape as the family-gate opt-out).
+  /// </summary>
+  protected virtual bool RequiresBlast => true;
 
   /// <summary>Exhaust volume vented through each gas outlet per tick.</summary>
   protected virtual float ExhaustVolumePerTick => 24f;
@@ -194,6 +218,54 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 
   #endregion
 
+  #region Charge family gate
+
+  // A furnace burns exactly one burden family (the blast furnace: ore burden; the cupola: remelt
+  // burden). Wrong-family charge is a legible mistake, not a silent one: it still lights and burns in
+  // the shaft - and burns out to salvageable spent burden on extinguish, like any charge - but the
+  // furnace will not render molten metal out of it, and the HUD names what it is holding versus what it
+  // burns. Deriving the family from the item's identity (Burden.FamilyOf) keeps the two burdens distinct
+  // items that can never merge into one pile. Every gate below reads the same shaft walk the tick does,
+  // so every route charge can enter a shaft by (hand-placed pile, hopper drop, in-situ regrade, chute)
+  // is covered at the one seam - the charge read - not per entry point.
+
+  /// <summary>Burden families this furnace will convert to molten. Null/empty = unrestricted (the
+  /// pre-gate behaviour), so a furnace that declares no families - or a third-party subclass - is never
+  /// gated. The blast furnace overrides this to ore; the cupola will override it to remelt.</summary>
+  protected virtual IReadOnlyList<string>? AcceptedFamilies => null;
+
+  /// <summary>Item-level charge identity, family-blind: anything the shaft counts as chargeable at all
+  /// (prepared burden of either family, or the legacy count-only blast mix). The family gate is layered
+  /// on top by <see cref="AcceptsCharge"/>; a furnace whose charge is items rather than burden overrides this.</summary>
+  protected virtual bool IsChargeItem(ItemStack? stack) =>
+    Items.Burden.IsAny(stack)
+    || MaterialRoleRegistry.IsRole(Roles.Charge, stack);
+
+  /// <summary>Whether this furnace will actually convert this stack - it is charge, and of an accepted family.</summary>
+  protected bool AcceptsCharge(ItemStack? stack) =>
+    IsChargeItem(stack) && FamilyAccepted(Items.Burden.FamilyOf(stack));
+
+  /// <summary>Whether <paramref name="family"/> is one this furnace burns (unrestricted when it declares none).</summary>
+  protected bool FamilyAccepted(string family)
+  {
+    if (AcceptedFamilies is not { Count: > 0 } fams)
+      return true;
+    foreach (string f in fams)
+      if (f == "*" || f == family)
+        return true;
+    return false;
+  }
+
+  /// <summary>True while wrong-family charge in the shaft is blocking the melt-to-molten conversion.</summary>
+  protected bool ConversionBlocked => _cachedRejectedCount > 0;
+
+  /// <summary>The family token the HUD names as "what this furnace burns" (the first accepted family,
+  /// or "any" when unrestricted).</summary>
+  protected string AcceptedFamilyName =>
+    AcceptedFamilies is { Count: > 0 } fams && fams[0] != "*" ? fams[0] : "any";
+
+  #endregion
+
   #region Abstract method implementations
 
   /// <summary>
@@ -248,6 +320,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     _meltStartDelay = MeltStartDelay;
     _meltIntervalSec = MeltIntervalSec;
     _tuyereIntakeVolume = TuyereIntakeVolume;
+    _starvationSupplyFrac = IwexValues.BfStarvationSupplyFrac;
     _ambientTemp = ReadAmbientTemperature();
   }
 
@@ -317,48 +390,81 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     int mixCount = ReadChargeMix(
       chargeHandle,
       out bool isFull,
-      out BurdenMix mix
+      out BurdenMix mix,
+      out int rejectedCount,
+      out string? rejectedFamily
     );
-    if (_cachedMixCount != mixCount || _cachedIsFull != isFull)
+    if (
+      _cachedMixCount != mixCount
+      || _cachedIsFull != isFull
+      || _cachedRejectedCount != rejectedCount
+      || _cachedRejectedFamily != rejectedFamily
+    )
       dirty = true;
     _cachedMixCount = mixCount;
     _cachedIsFull = isFull;
+    _cachedRejectedCount = rejectedCount;
+    _cachedRejectedFamily = rejectedFamily;
     _chargeMix = mix;
 
     bool tuyeresReceiveExhaust = false;
     float blastTemp = _ambientTemp;
     float blastSupplied = 0f;
 
-    foreach (var pos in _tuyeres)
+    // Air is a consumed reagent, not a sensed one: a lit furnace draws its blast out of the tuyere
+    // network and decrements it. TuyereIntakeVolume is a per-second rate, so the draw scales with dt
+    // for tick-independence (and the demand it is measured against scales the same way). Gated on
+    // State != Idle: an idle furnace is not burning, so it pulls no air - and must not silently bleed
+    // a shared blast main dry while it sits cold.
+    float perTuyereDraw = _tuyereIntakeVolume * dt;
+    if (State != FurnaceState.Idle)
     {
-      if (Api.World.BlockAccessor.GetBlockEntity(pos) is IPipeNode tuyere)
+      foreach (var pos in _tuyeres)
       {
-        float consumed = tuyere.TryConsume(_tuyereIntakeVolume);
-        if (tuyere is BlockEntityPipe pipe)
+        if (Api.World.BlockAccessor.GetBlockEntity(pos) is IPipeNode tuyere)
         {
-          if (pipe.Medium == "Exhaust")
-            tuyeresReceiveExhaust = true;
-
-          if (pipe.Medium == "Air" && pipe.Pressure >= BlastPressureThreshold)
+          float consumed = tuyere.TryConsume(perTuyereDraw);
+          if (tuyere is BlockEntityPipe pipe)
           {
-            blastTemp = Math.Max(blastTemp, pipe.Temperature);
-            // How much air actually arrived, not merely whether a line is attached: an
-            // under-supplied tuyere now slides the furnace back toward natural draught instead of
-            // flipping a boolean. The old code threw this return value away.
-            blastSupplied += consumed;
+            if (pipe.Medium == "Exhaust")
+              tuyeresReceiveExhaust = true;
+
+            if (pipe.Medium == "Air" && pipe.Pressure >= BlastPressureThreshold)
+            {
+              blastTemp = Math.Max(blastTemp, pipe.Temperature);
+              // How much air actually arrived, not merely whether a line is attached: an
+              // under-supplied tuyere slides the furnace back toward natural draught (cooler T_in),
+              // and a near-dry one starves it out entirely (the disruption below).
+              blastSupplied += consumed;
+            }
           }
         }
-      }
-      else
-      {
-        ScanForOutlets();
+        else
+        {
+          ScanForOutlets();
+        }
       }
     }
 
-    float blastDemand = _tuyeres.Count * _tuyereIntakeVolume;
+    float blastDemand = _tuyeres.Count * perTuyereDraw;
     float blastSupplyFrac = blastDemand > 0f ? blastSupplied / blastDemand : 0f;
 
     bool isLiquidCapacityReached = LiquidCapacityReached;
+
+    // A lit furnace that needs blast is starving when the air actually arriving falls under the floor
+    // (a stopped blower, a cut or bled-out main). This is what "not enough air" means mechanically: it
+    // has already cooled T_in toward natural draught via the air factor, and now it also counts toward
+    // extinguish (below). Gated on State != Idle so an idle furnace - which draws no air by design -
+    // never reads as starved.
+    bool airStarved =
+      State != FurnaceState.Idle
+      && RequiresBlast
+      && blastSupplyFrac < _starvationSupplyFrac;
+    if (_airStarved != airStarved)
+    {
+      _airStarved = airStarved;
+      dirty = true;
+    }
 
     if (
       State == FurnaceState.Idle
@@ -388,6 +494,11 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       if (IsChoked)
         disruptionCount++;
       if (isLiquidCapacityReached)
+        disruptionCount++;
+      // Air starvation is one more disruption, not a parallel mechanism: sub-floor blast held for the
+      // extinguish grace (~30 s alone, instant when it compounds another disruption) snuffs the fire
+      // through the same _extinguishSeconds counter and timer reset as every other stall.
+      if (airStarved)
         disruptionCount++;
 
       if (disruptionCount > 0)
@@ -468,7 +579,10 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
         {
           _secondsAboveMelting += dt;
           dirty = true;
-          if (_secondsAboveMelting >= _meltStartDelay)
+          // Wrong-family charge blocks the conversion: the furnace holds at heat, burning its fuel out,
+          // but never crosses into Melting while a rejected pile is in the shaft. The soak timer keeps
+          // accruing so it converts the instant the offending pile is dug out.
+          if (_secondsAboveMelting >= _meltStartDelay && !ConversionBlocked)
           {
             TransitionToMelting();
             return;
@@ -502,7 +616,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
             dirty = true;
           _belowMeltingSeconds = 0;
 
-          if (!isLiquidCapacityReached)
+          // ConversionBlocked also guards the melt cycle: a wrong-family pile dropped into an
+          // already-melting furnace stops new metal being rendered (existing molten still drains).
+          if (!isLiquidCapacityReached && !ConversionBlocked)
           {
             _meltSeconds += dt;
             // The harder the furnace is being blown past the melt line, the faster the burden
@@ -580,12 +696,13 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       * Math.Max(0f, IwexValues.BfAmbientReferenceTemp - _ambientTemp);
 
     float tLoss = IwexValues.BfRadiationLossBase + chargeLoss + ambientLoss;
-    float tProcess = Math.Max(_ambientTemp, tIn - tLoss);
 
-    return new HeatBalance(
+    // The T_process = T_in - T_loss floor (at ambient) and the record shape are the exlib helper's,
+    // shared with the converter; the furnace supplies its coke-combustion T_in/T_loss and contributors.
+    return HeatBalance.Compute(
       tIn,
       tLoss,
-      tProcess,
+      _ambientTemp,
       fuelFrac,
       fuelFactor,
       airFactor,
@@ -635,6 +752,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 
     State = FurnaceState.Idle;
     _internalTemp = 20f;
+    // A dead furnace is off, not starving: clear the flag so the serialized state (and the HUD) does
+    // not report a stall on a cold hearth.
+    _airStarved = false;
 
     ExtinguishResidue();
 
@@ -674,15 +794,19 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
   protected abstract object CollectCharge();
 
   /// <summary>
-  /// Reads the total mix in the charge handle, whether it is full enough to fire, and the summed
-  /// composition of the whole burden column - one walk feeding both the heat balance (which needs the
-  /// coke fraction) and the HUD (which needs the grade). While lit this is also where the furnace
-  /// keeps its charge managed/burning (the side effect the original <c>GetBlastMixCount</c> ran).
+  /// Reads the charge in one walk of the shaft. Returns the total charge count (family-blind: enough of
+  /// <em>anything</em> chargeable lights and burns the furnace), and hands back whether that total is
+  /// full enough to fire, the summed composition of the whole column (so the heat balance and the HUD
+  /// read one coke fraction), and how much of that charge is the <b>wrong family</b> - the count and the
+  /// family token that drive the conversion block and the mismatch HUD line. While lit this is also where
+  /// the furnace keeps its charge managed/burning (the side effect the original <c>GetBlastMixCount</c> ran).
   /// </summary>
   protected abstract int ReadChargeMix(
     object chargeHandle,
     out bool isFull,
-    out BurdenMix mix
+    out BurdenMix mix,
+    out int rejectedCount,
+    out string? rejectedFamily
   );
 
   /// <summary>Returns whether the charge is fully lit (all piles burning), igniting it as needed.</summary>
@@ -760,10 +884,14 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     {
       BlockPos pos = GlobalOf(local);
       Block occupant = Api.World.BlockAccessor.GetBlock(pos);
-      // Free = empty, or the charge pile that was burning there and is now being consumed.
-      if (
-        occupant.Id == 0
-        || occupant.Code?.Path.StartsWith("coalpile") == true
+      // Free = empty, or a charge pile that was being consumed here. A pile holding wrong-family charge
+      // is NOT free: freezing the pool over it would silently destroy the salvage the player is owed
+      // (this furnace never converted that charge, so the metal was made from the accepted charge only).
+      if (occupant.Id == 0)
+        cells.Add(pos);
+      else if (
+        occupant.Code?.Path.StartsWith("coalpile") == true
+        && !PileHoldsRejectedCharge(pos)
       )
         cells.Add(pos);
     }
@@ -783,6 +911,26 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       Api.World.BlockAccessor.SetBlock(solid.BlockId, cells[i]);
       StampSolidProduct(cells[i], nuggets);
     }
+  }
+
+  /// <summary>Whether the coal pile at <paramref name="pos"/> holds charge this furnace refused to
+  /// convert - the pile the solidify walk must not overwrite so the wrong-family salvage survives.</summary>
+  private bool PileHoldsRejectedCharge(BlockPos pos)
+  {
+    if (
+      Api.World.BlockAccessor.GetBlockEntity(pos)
+        is not BlockEntityCoalPile pile
+      || pile.inventory == null
+    )
+      return false;
+    foreach (var slot in pile.inventory)
+      if (
+        !slot.Empty
+        && IsChargeItem(slot.Itemstack)
+        && !AcceptsCharge(slot.Itemstack)
+      )
+        return true;
+    return false;
   }
 
   /// <summary>
@@ -817,9 +965,11 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       bool changed = false;
       foreach (var slot in pile.inventory)
       {
-        // Legacy count-only blast mix carries no composition to burn out; it is left as it is,
-        // still reclaimable through the reinforced hopper, and still never slagged here.
-        if (slot.Empty || !Burden.Is(slot.Itemstack))
+        // Both families burn out the same way: strip the coke, keep the iron/metal + flux as salvage.
+        // Wrong-family charge that a furnace refused to convert is still burned out (not destroyed) -
+        // it is the player's mistake to dig out and re-coke, not the furnace's to eat. Legacy count-only
+        // blast mix carries no composition to burn out; it is left as it is and still never slagged here.
+        if (slot.Empty || !Burden.IsAny(slot.Itemstack))
           continue;
         BurdenMix mix = Burden.Read(slot.Itemstack);
         if (!mix.HasContent)
@@ -866,6 +1016,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     _fuelBurnSeconds = tree.GetFloat("fuelBurnSeconds", 0);
     _cachedMixCount = tree.GetInt("cachedMixCount", 0);
     _cachedIsFull = tree.GetBool("cachedIsFull", false);
+    _cachedRejectedCount = tree.GetInt("cachedRejectedCount", 0);
+    _cachedRejectedFamily = tree.GetString("cachedRejectedFamily", null);
+    _airStarved = tree.GetBool("airStarved", false);
     ReadHeatBalance(tree);
   }
 
@@ -927,6 +1080,10 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     tree.SetFloat("fuelBurnSeconds", _fuelBurnSeconds);
     tree.SetInt("cachedMixCount", _cachedMixCount);
     tree.SetBool("cachedIsFull", _cachedIsFull);
+    tree.SetInt("cachedRejectedCount", _cachedRejectedCount);
+    if (_cachedRejectedFamily != null)
+      tree.SetString("cachedRejectedFamily", _cachedRejectedFamily);
+    tree.SetBool("airStarved", _airStarved);
     WriteHeatBalance(tree);
   }
 
@@ -954,6 +1111,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
           )
         );
 
+        // Named in every state (lit or not): a shaft can read full and still refuse to make metal.
+        AppendWrongBurdenInfo(sb);
+
         if (State != FurnaceState.Idle)
         {
           string stateName = Lang.Get(
@@ -969,6 +1129,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
           else if (
             State == FurnaceState.Firing
             && _internalTemp >= _ironMeltingPoint
+            // A blocked furnace is at heat but will never cross into Melting - the wrong-burden line
+            // above is the honest readout, not a melting-progress bar that would climb to 100% and stall.
+            && !ConversionBlocked
           )
           {
             // Progress toward the Melting phase as a percentage (matches the
@@ -983,6 +1146,11 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
               );
             sb.AppendLine(Lang.Get("iwex:bf-info-meltingin", pct));
           }
+
+          // Name an air-starved stall, the same way the wrong-burden and heat lines name theirs, so the
+          // countdown below reads as a cause (a dead blower, a cut main) and not an unexplained snuffing.
+          if (_airStarved)
+            sb.AppendLine(Lang.Get(IwexLang.BfInfoAirstarved));
 
           if (_extinguishSeconds > 0)
           {
@@ -1016,44 +1184,15 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
   /// </summary>
   private void AppendHeatBalanceInfo(StringBuilder sb)
   {
-    HeatBalance hb = _lastHeatBalance;
-
-    sb.AppendLine(
-      Lang.Get(IwexLang.BfInfoTemp, ExMeasure.Temperature(_internalTemp))
-    );
-    sb.AppendLine(
-      Lang.Get(
-        _internalTemp >= _ironMeltingPoint
-          ? IwexLang.BfInfoHeatok
-          : IwexLang.BfInfoHeatstall,
-        ExMeasure.Temperature(_ironMeltingPoint)
-      )
-    );
-
-    sb.AppendLine(
-      Lang.Get(
-        IwexLang.BfInfoHeatin,
-        ExMeasure.Temperature(hb.TIn),
-        (int)System.Math.Round(hb.FuelFrac * 100f),
-        ExMeasure.Temperature(hb.PreheatGain)
-      )
-    );
-    sb.AppendLine(
-      Lang.Get(
-        IwexLang.BfInfoHeatloss,
-        ExMeasure.Temperature(hb.TLoss),
-        ExMeasure.Temperature(hb.ChargeLoss),
-        ExMeasure.Temperature(hb.AmbientLoss)
-      )
-    );
-
-    sb.AppendLine(
-      Lang.Get(
-        !hb.BlastSupplied ? IwexLang.BfInfoNodraught
-        : hb.IsHotBlast ? IwexLang.BfInfoBlasthot
-        : IwexLang.BfInfoBlastcold,
-        ExMeasure.Temperature(hb.BlastTemp)
-      )
+    // The temperature/threshold/heat-in/heat-loss/blast ledger is the shared exlib formatter (the
+    // converter reuses it with its own keys); the burden grade and melt rate below are the furnace's own.
+    HeatBalanceHud.AppendLedger(
+      sb,
+      _lastHeatBalance,
+      _internalTemp,
+      _ironMeltingPoint,
+      HeatLedgerKeys,
+      FormatTemp
     );
 
     sb.AppendLine(
@@ -1072,6 +1211,22 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       );
   }
 
+  // The furnace's lang keys for the shared ledger, and the measurement formatter it uses. ExMeasure
+  // lives downstream of exlib, so the formatter is handed to the helper rather than referenced by it.
+  private static readonly HeatBalanceLedgerKeys HeatLedgerKeys = new(
+    Temp: IwexLang.BfInfoTemp,
+    HeatOk: IwexLang.BfInfoHeatok,
+    HeatStall: IwexLang.BfInfoHeatstall,
+    HeatIn: IwexLang.BfInfoHeatin,
+    HeatLoss: IwexLang.BfInfoHeatloss,
+    BlastNone: IwexLang.BfInfoNodraught,
+    BlastHot: IwexLang.BfInfoBlasthot,
+    BlastCold: IwexLang.BfInfoBlastcold
+  );
+
+  private static readonly System.Func<float, string> FormatTemp = t =>
+    ExMeasure.Temperature(t);
+
   /// <summary>
   /// Appends the not-lit status line. The generic reasons (exhaust full, needs mix) are handled
   /// here; the subclass supplies the lit-readiness line via <see cref="AppendReadyInfo"/>.
@@ -1089,6 +1244,25 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     // the player is told the salvage needs re-coking instead of re-lighting.
     if (Burden.ProfileLangKey(_chargeMix) == BurnedOutProfileKey)
       sb.AppendLine(Lang.Get(IwexLang.BfInfoBurnedout));
+  }
+
+  /// <summary>
+  /// Names the wrong-family stall: what the shaft is holding, what this furnace burns, and how many
+  /// units will not convert. Shown in every state, because the failure it explains (a full shaft that
+  /// refuses to make metal) reads as a bug otherwise - the same house rule as the heat balance.
+  /// </summary>
+  private void AppendWrongBurdenInfo(StringBuilder sb)
+  {
+    if (_cachedRejectedCount <= 0)
+      return;
+    sb.AppendLine(
+      Lang.Get(
+        IwexLang.BfInfoWrongburden,
+        Lang.Get("iwex:burden-family-" + (_cachedRejectedFamily ?? Items.Burden.FamilyOre)),
+        Lang.Get("iwex:burden-family-" + AcceptedFamilyName),
+        _cachedRejectedCount
+      )
+    );
   }
 
   /// <summary>Grade key a fully burned-out burden classifies as (see <see cref="IwexConfig.BurdenProfiles"/>).</summary>

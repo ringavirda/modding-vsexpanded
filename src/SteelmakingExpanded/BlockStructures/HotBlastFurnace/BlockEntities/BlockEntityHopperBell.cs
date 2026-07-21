@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using ExpandedLib.Helpers;
+using ExpandedLib.Materials;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.Compat;
 using Vintagestory.API.Common;
@@ -259,7 +260,8 @@ public class BlockEntityHopperBell : BlockEntity
         if (slot.Empty)
           return true;
 
-        if (slot.Itemstack.Collectible.Code.Path.Equals("blastmix"))
+        // The pile below can take more only if it already holds our charge (blast mix).
+        if (IsBlastmix(slot.Itemstack))
         {
           if (slot.StackSize + dropAmount <= 16)
             return true;
@@ -322,16 +324,20 @@ public class BlockEntityHopperBell : BlockEntity
     ExParticles.FallingDust(Api.World, Pos);
 
   private bool IsBlastmix(ItemStack stack) =>
-    stack.Collectible.Code.Path.Equals("blastmix");
+    MaterialRoleRegistry.IsRole(Roles.Charge, stack);
 
   private bool IsIronOre(ItemStack stack) =>
     IronOreCompat.IsCrushedIronOre(stack.Collectible.Code.Path);
 
+  // Coke is charged as a whole lump (vanilla game:coke) now; the mod-added crushed coke is retired. One
+  // lump replaces two of the old crushed pieces, which is why HopperCokeRequired was halved to match.
+  // Deliberately an exact match, not the fuel role: the fuel role also covers charcoal, which the blast
+  // furnace's coke feed must not accept.
   private bool IsCoke(ItemStack stack) =>
-    stack.Collectible.Code.Path.Equals("crushed-coke");
+    stack.Collectible.Code.Path.Equals("coke");
 
   private bool IsLime(ItemStack stack) =>
-    stack.Collectible.Code.Path.Equals("lime");
+    MaterialRoleRegistry.IsRole(Roles.Flux, stack);
 
   private static int CountItems(
     InventoryBase inv,

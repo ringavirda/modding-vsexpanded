@@ -1,0 +1,42 @@
+{
+  "name": "Cupola Furnace Core",
+  "ingredientPattern": "BRB,PCP,BRB",
+  "width": 3,
+  "height": 3,
+  "output": {
+    "type": "block",
+    "code": "iwex:cupolafurnacecore-north"
+  },
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:refractorybrick-fired-tier3",
+      "quantity": 4
+    },
+    "R": {
+      "type": "item",
+      "code": "game:rod-*",
+      "name": "metal",
+      "allowedVariants": [
+        "iron",
+        "steel"
+      ],
+      "quantity": 2
+    },
+    "P": {
+      "type": "item",
+      "code": "game:metalplate-*",
+      "name": "metal",
+      "allowedVariants": [
+        "iron",
+        "steel"
+      ],
+      "quantity": 1
+    },
+    "C": {
+      "type": "item",
+      "code": "game:clay-fire",
+      "quantity": 8
+    }
+  }
+}

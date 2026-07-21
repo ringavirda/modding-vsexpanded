@@ -1,4 +1,5 @@
 using ExpandedLib.Metals;
+using ExpandedLib.Process;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Furnaces;
 using IronworkingExpanded.Items;
@@ -173,6 +174,23 @@ public class BlastFurnaceTests
       1
     );
     Assert.Equal(220, (int)ReflectionHelpers.GetField(dst, "_cachedMixCount")!);
+  }
+
+  [Fact]
+  public void The_air_starved_flag_round_trips_so_the_client_hud_can_read_it()
+  {
+    // GetBlockInfo runs client-side and never reads the tuyere network, so the air-starved stall line
+    // has to ride the save tree - the same reason the rejected-charge and mix-count state do.
+    var world = NewWorld();
+    var src = Furnace(world);
+    ReflectionHelpers.SetField(src, "_airStarved", true);
+
+    var tree = new TreeAttribute();
+    src.ToTreeAttributes(tree);
+    var dst = Furnace(world);
+    dst.FromTreeAttributes(tree, world.World);
+
+    Assert.True((bool)ReflectionHelpers.GetField(dst, "_airStarved")!);
   }
 
   [Fact]

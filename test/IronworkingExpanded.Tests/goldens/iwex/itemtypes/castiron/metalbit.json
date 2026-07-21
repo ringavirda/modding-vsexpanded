@@ -17,7 +17,7 @@
   },
   "textures": {
     "ore": {
-      "base": "game:block/metal/tarnished/iron"
+      "base": "iwex:block/metal/castiron"
     }
   },
   "combustibleProps": {

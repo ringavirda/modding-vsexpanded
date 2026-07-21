@@ -14,5 +14,8 @@ internal static class ModuleInit
   {
     VsAssemblyResolver.Register();
     TestLang.Init();
+    // The blast-furnace charge classification now reads the shared material-role registry; seed iwex's
+    // roles (the headless stand-in for materialroles.json) so the scenarios' blast-mix charge resolves.
+    MaterialRoleSeeds.SeedIwexDefaults();
   }
 }

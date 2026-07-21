@@ -69,6 +69,69 @@ public class MetalDef
   /// <summary>Optional inline alloy ratios - exlib can emit the vanilla <c>AlloyRecipe</c> from these so
   /// the ratios are authored once alongside the metal identity.</summary>
   public MetalAlloySpec? Alloy { get; set; }
+
+  // ---- Item-family generation (opt-in; read only by the family emitter, never the molten system) ----
+  // These stay null/false by default so a vanilla/EM metal that already owns game:ingot-iron etc. is
+  // never touched - only a metal that explicitly opts in gets a generated resource/tool family.
+
+  /// <summary>Opt-in switch: when true, exlib generates this metal's derived item family
+  /// (ingot/plate/rod/nails/bits + tools) instead of the mod hand-authoring each itemtype. Default
+  /// <c>false</c> so an unflagged metal - every metal today - is generated for exactly as it was, i.e.
+  /// not at all. Kept off vanilla/EM metals that already ship <c>game:ingot-&lt;code&gt;</c>.</summary>
+  public bool GenerateItemFamily { get; set; }
+
+  /// <summary>Which resource forms to emit when <see cref="GenerateItemFamily"/> is set, as form tokens
+  /// (<c>"ingot"</c>, <c>"plate"</c>, <c>"bits"</c>, <c>"rod"</c>, <c>"nails"</c>). A feedstock lists only
+  /// <c>"ingot"</c>; a full metal lists the build forms its iron-substitution recipes need. Null → the
+  /// emitter's default set.</summary>
+  public List<string>? ItemForms { get; set; }
+
+  /// <summary>The vanilla texture every generated form paints with (e.g.
+  /// <c>"game:block/metal/tarnished/iron"</c>) - one texture across the family, exactly as the
+  /// hand-authored cast-iron defs share <c>tarnished/iron</c>. Null → the emitter's fallback.</summary>
+  public string? TexturePath { get; set; }
+
+  /// <summary>Density (kg/m³) stamped on the generated items (cast iron 7200, vanilla iron 7870). Null →
+  /// the emitter's default.</summary>
+  public int? Density { get; set; }
+
+  /// <summary>Melting point (°C) written into the generated family's <c>combustibleProps</c> - the value
+  /// vanilla's <c>GetMeltingPoint</c> then reports, so it is the SEED that makes
+  /// <see cref="MoltenMetal.MeltingPointOf"/> return the right point with no
+  /// <see cref="MeltingPointOverride"/> needed. Distinct from that override: this authors an item that
+  /// does not exist yet, the override escape-hatches the read of a metal whose item already exists; the
+  /// two never both apply. Null → the emitter's default.</summary>
+  public int? MeltingPoint { get; set; }
+
+  /// <summary>Tool family to generate for this metal, or null for a feedstock that makes no tools (pig
+  /// iron). A named <see cref="MetalToolSpec.Preset"/> supplies the stat baseline; explicit numbers on the
+  /// spec override it.</summary>
+  public MetalToolSpec? Tools { get; set; }
+}
+
+/// <summary>
+/// Tool stats for a generated metal family (<see cref="MetalDef.Tools"/>). A named <see cref="Preset"/>
+/// ("brittle" ≈ gold-tier, "standard", "good", …) fills the baseline durability/attack/mining so a JSON
+/// stays terse; any explicit number here overrides just that stat. The emitter binds these onto the
+/// vanilla tool classes as flat (non-byType) values.
+/// </summary>
+public class MetalToolSpec
+{
+  /// <summary>Named stat baseline ("brittle", "standard", "good", …). Null → the emitter's default preset.</summary>
+  public string? Preset { get; set; }
+
+  /// <summary>Durability override (hits before breaking). Null → the preset's value.</summary>
+  public int? Durability { get; set; }
+
+  /// <summary>Attack-power override. Null → the preset's value.</summary>
+  public float? AttackPower { get; set; }
+
+  /// <summary>Mining-tier override. Null → the preset's value.</summary>
+  public int? MiningTier { get; set; }
+
+  /// <summary>Which tool types to emit ("pickaxe", "axe", "shovel", "hammer", "saw", "knife", "chisel",
+  /// "scythe"). Null → the preset's default set.</summary>
+  public List<string>? ToolTypes { get; set; }
 }
 
 /// <summary>Inline alloy ratios for a <see cref="MetalDef"/> (the vanilla <c>AlloyRecipe</c> shape).</summary>

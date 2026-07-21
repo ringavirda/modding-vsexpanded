@@ -4,6 +4,17 @@
   "entityClass": "iwex.BlockEntityHopperTall",
   "blockmaterial": "Ceramic",
   "maxstacksize": 1,
+  "shape": {
+    "base": "iwex:furnaces/hopper-tall"
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  },
   "attributes": {
     "fillerOffsets": [
       {

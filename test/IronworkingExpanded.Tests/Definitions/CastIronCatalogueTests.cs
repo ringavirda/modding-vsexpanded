@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using IronworkingExpanded.Items;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
@@ -41,12 +41,14 @@ public class CastIronCatalogueTests
 
   private static void RegisterShipped() => MetalRegistry.Register(ShippedDef());
 
-  // The built itemtype JSON for one of the cast-iron defs, by item code.
+  // The cast-iron item family the emitter generates from the shipped metal descriptor - the same set the
+  // runtime injects, built off the same JSON. This is what replaced the hand-authored item defs.
+  private static IEnumerable<ExItemDef> EmittedDefs() =>
+    MetalFamilyEmitter.Emit([ShippedDef()]);
+
+  // The built itemtype JSON for one of the generated cast-iron defs, by item code.
   private static JObject ItemJson(string code) =>
-    CastIronItemDefinitions
-      .Definitions(Domain)
-      .Single(d => d.Code == code)
-      .ToJson();
+    EmittedDefs().Single(d => d.Code == code).ToJson();
 
   #region Metal descriptor <-> item catalogue
   [Fact]
@@ -85,10 +87,7 @@ public class CastIronCatalogueTests
     string code
   )
   {
-    Assert.Contains(
-      CastIronItemDefinitions.Definitions(Domain),
-      d => d.Code == code
-    );
+    Assert.Contains(EmittedDefs(), d => d.Code == code);
   }
 
   [Fact]
@@ -100,25 +99,22 @@ public class CastIronCatalogueTests
     Assert.Equal("iwex:ingot-castiron", molten.ToString());
 
     // Without the shipped def the convention would build game:ingot-castiron, which does not exist.
-    Assert.Contains(
-      CastIronItemDefinitions.Definitions(Domain),
-      d => d.Code == molten.Path
-    );
+    Assert.Contains(EmittedDefs(), d => d.Code == molten.Path);
   }
 
   [Fact]
-  public void SolidDropOf_castiron_resolves_to_a_defined_item()
+  public void SolidDropOf_castiron_yields_the_shared_vanilla_scrap()
   {
     RegisterShipped();
 
+    // Per the metals rule, a mod alloy does NOT ship its own scrap bit: breaking or chiselling cast
+    // iron drops vanilla game:metalbit-iron, a drop shared across the iron alloys rather than a
+    // per-metal metalbit-castiron copy. (The metalbit-castiron RESOURCE item still exists - it is just
+    // no longer what a broken casting sheds.)
     AssetLocation bit = MetalRegistry.SolidDropOf(
       MetalRegistry.MoltenItemOf("castiron")
     );
-    Assert.Equal("iwex:metalbit-castiron", bit.ToString());
-    Assert.Contains(
-      CastIronItemDefinitions.Definitions(Domain),
-      d => d.Code == bit.Path
-    );
+    Assert.Equal("game:metalbit-iron", bit.ToString());
   }
 
   [Fact]
@@ -135,10 +131,37 @@ public class CastIronCatalogueTests
     string metal = (string)block["attributes"]!["metal"]!;
 
     Assert.Equal("castiron", metal);
+    // A dead cupola's residue breaks into the shared vanilla scrap, not a cast-iron-specific bit.
     Assert.Equal(
-      "iwex:metalbit-castiron",
+      "game:metalbit-iron",
       MetalRegistry.SolidDropOf(MetalRegistry.MoltenItemOf(metal)).ToString()
     );
+  }
+
+  [Fact]
+  public void Cast_iron_declares_an_opted_in_generated_family()
+  {
+    // Stage-2's emitter reads these generation fields off the shipped JSON; a regression here silently
+    // drops cast iron out of family generation or mis-stats its brittle tools.
+    MetalDef def = ShippedDef();
+
+    Assert.True(def.GenerateItemFamily);
+    Assert.Equal(7200, def.Density);
+    Assert.Equal(1200, def.MeltingPoint);
+    Assert.Equal("iwex:block/metal/castiron", def.TexturePath);
+    Assert.NotNull(def.Tools);
+    Assert.Equal("brittle", def.Tools!.Preset); // brittle ~ gold-tier durability
+
+    Assert.NotNull(def.ItemForms);
+    // Keeps the legacy ingot/plate/bits codes the cupola + solidified block reference, and adds the
+    // rod/nails the iron-substitution recipes need.
+    Assert.Equal(
+      new[] { "ingot", "plate", "bits", "rod", "nails" },
+      def.ItemForms
+    );
+
+    // The scrap drop is the shared vanilla bit, not a per-metal copy.
+    Assert.Equal("game:metalbit-iron", def.SolidDrop);
   }
   #endregion
 
@@ -156,10 +179,7 @@ public class CastIronCatalogueTests
     );
 
     Assert.Equal("iwex:metalplate-castiron", cast.ToString());
-    Assert.Contains(
-      CastIronItemDefinitions.Definitions(Domain),
-      d => d.Code == cast.Path
-    );
+    Assert.Contains(EmittedDefs(), d => d.Code == cast.Path);
   }
 
   [Fact]

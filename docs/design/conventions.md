@@ -99,7 +99,7 @@ Block-info always shows current T, the threshold and the contributors, so a stal
 "1410 °C, needs 1538 °C — add coke or hot blast", never a silent failure. Per R5 the model gates
 efficiency, not possibility, and every threshold is tunable. Consequences (all emergent, not
 hardcoded): cold-blast vs hot-blast falls out of whether cowpers are charged; melt rate scales with the
-temp margin; the converter's scrap cap emerges from bath freezing past ~20–30 %; an underfed
+temp margin; the converter's scrap cap emerges from bath freezing past ~15–20 %; an underfed
 boiler → weak blower → cold furnace is one loop.
 
 ## Shared simulation model — distillation & phase change (the general still)

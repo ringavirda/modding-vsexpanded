@@ -30,6 +30,6 @@
     "walk": "game:walk/stone"
   },
   "attributes": {
-    "metal": "iron"
+    "metal": "pigiron"
   }
 }

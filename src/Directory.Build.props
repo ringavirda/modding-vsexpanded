@@ -189,4 +189,22 @@
     </Content>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\lang\en.json" />
   </ItemGroup>
+
+  <!--
+    ============================================================================================
+    OPT-IN GAME-DOMAIN OVERRIDE. A mod that sets <ShipGameLangOverride>true</> packs the shared
+    assets/game/ tree (lang overrides that rename vanilla keys - iron -> "wrought iron", steel ->
+    "shear steel"). Only ONE mod may opt in, or the override would ship duplicated; today that is
+    iwex. Mirrors the AssetDomain Content glob above (the <Link> keeps the out-of-cone files under
+    assets\game\ instead of flattening them to the output root). The lang files are pure overrides
+    (no new codes), so no AdditionalFiles feed - ExLangKeyGenerator only consumes the mod's own
+    domain, never game/.
+    ============================================================================================
+  -->
+  <ItemGroup Condition="'$(ShipGameLangOverride)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)..\assets\game\**\*">
+      <Link>assets\game\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

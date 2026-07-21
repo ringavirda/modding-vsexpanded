@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Process;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
@@ -18,9 +19,9 @@ namespace SteelmakingExpanded.Tests;
 /// <summary>
 /// Drives the blast furnace's primary process headlessly (handbook blast-furnace + hot-blast
 /// articles): a charged, lit hearth fed hot blast through its tuyeres climbs past iron's melting
-/// point, enters the Melting phase, turns blast mix into molten iron, and taps it into a canal -
+/// point, enters the Melting phase, turns blast mix into molten pig iron, and taps it into a canal -
 /// the steelmaking line's first stage. Stands up the peripherals the gated <c>OnProductionTick</c>
-/// reads (hearth blast-mix piles, blast-fed tuyeres) and the iron tap + canal, then drives the tick.
+/// reads (hearth blast-mix piles, blast-fed tuyeres) and the metal tap + canal, then drives the tick.
 /// Timers are fast-forwarded so the multi-minute melt is reachable in a test.
 /// </summary>
 internal sealed class BlastFurnaceRig
@@ -32,6 +33,7 @@ internal sealed class BlastFurnaceRig
   private readonly BlockPos _pos = new(0, 16, 0);
   private readonly PipeNetwork[] _tuyeres;
   private readonly BurdenMix? _burden;
+  private readonly string? _chargeCode;
   private float _blastTemp = -1f;
   private float _blastPressure = 5f;
 
@@ -53,11 +55,25 @@ internal sealed class BlastFurnaceRig
   /// which the furnace reads as a standard grade - that is what keeps the calibration anchors here
   /// equal to the furnace's old fixed ceilings.
   /// </param>
-  public BlastFurnaceRig(int blastMix = 400, BurdenMix? burden = null)
+  /// <param name="chargeCode">
+  /// Item path the hearth piles are stamped with (in the iwex domain). Null follows the default:
+  /// <c>blastmix</c> when no burden mix is given, else <c>burden</c>. Pass <c>remeltburden</c> to charge
+  /// the blast furnace with the wrong family and exercise the conversion gate.
+  /// </param>
+  public BlastFurnaceRig(
+    int blastMix = 400,
+    BurdenMix? burden = null,
+    string? chargeCode = null
+  )
   {
     _burden = burden;
+    _chargeCode = chargeCode;
     World = new TestWorld();
-    World.RegisterItem("game:ingot-iron", 1500f);
+    // The metal tap resolves its molten carrier through MetalRegistry: pig iron -> iwex:ingot-pigiron
+    // when the metal is registered, else the game:ingot-pigiron convention. Register BOTH codes so
+    // GetItem resolves whatever the tick asks for, independent of process-wide registry state.
+    World.RegisterItem("iwex:ingot-pigiron", 1500f);
+    World.RegisterItem("game:ingot-pigiron", 1500f);
     World.RegisterItem("iwex:slag");
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
@@ -102,12 +118,16 @@ internal sealed class BlastFurnaceRig
     var inv = new InventoryGeneric(1, "coalpile", "test", World.Api, null);
     var charge = new Item
     {
-      Code = new AssetLocation("iwex", _burden == null ? "blastmix" : "burden"),
+      Code = new AssetLocation(
+        "iwex",
+        _chargeCode ?? (_burden == null ? "blastmix" : "burden")
+      ),
       ItemId = 4242,
     };
-    inv[0].Itemstack = new ItemStack(charge, units);
+    var stack = new ItemStack(charge, units);
+    inv[0].Itemstack = stack;
     if (_burden != null)
-      Burden.Write(inv[0].Itemstack, _burden.Value);
+      Burden.Write(stack, _burden.Value);
     ReflectionHelpers.SetField(pile, "inventory", inv);
     ReflectionHelpers.SetField(pile, "burning", true);
     World.Place(
@@ -191,6 +211,27 @@ internal sealed class BlastFurnaceRig
   private BlockPos Global(int x, int y, int z) =>
     (BlockPos)ReflectionHelpers.Invoke(Furnace, "GetGlobalPos", x, y, z)!;
 
+  /// <summary>
+  /// Charges the tuyere networks with blast once, without ticking the furnace - so a test can set a
+  /// known amount of air in the main and then watch the furnace draw it down (or leave it be while
+  /// idle). Unlike <see cref="FeedBlast"/> this does not arm the per-tick re-feed.
+  /// </summary>
+  public BlastFurnaceRig PrimeBlast(float temp = 950f, float pressure = 5f)
+  {
+    foreach (var net in _tuyeres)
+    {
+      net.TryProduceGas(
+        150f,
+        temp,
+        "Air",
+        World.Accessor,
+        maxOutputPressure: pressure
+      );
+      net.BroadcastUpdate(World.Accessor);
+    }
+    return this;
+  }
+
   /// <summary>Advances the furnace tick <paramref name="ticks"/> times, re-feeding blast each tick.</summary>
   public BlastFurnaceRig Tick(int ticks = 1)
   {
@@ -249,6 +290,22 @@ internal sealed class BlastFurnaceRig
   public float Temp =>
     (float)ReflectionHelpers.GetField(Furnace, "_internalTemp")!;
 
+  /// <summary>Total air (L) sitting in the tuyere networks - what the furnace draws its blast from.</summary>
+  public float TuyereVolume
+  {
+    get
+    {
+      float total = 0f;
+      foreach (var net in _tuyeres)
+        total += net.State?.Volume ?? 0f;
+      return total;
+    }
+  }
+
+  /// <summary>Whether the furnace read as air-starved on the last tick (blast under the floor).</summary>
+  public bool AirStarved =>
+    (bool)ReflectionHelpers.GetField(Furnace, "_airStarved")!;
+
   /// <summary>The heat balance the last tick computed - what the furnace is chasing, and why.</summary>
   public HeatBalance Heat =>
     (HeatBalance)ReflectionHelpers.GetField(Furnace, "_lastHeatBalance")!;
@@ -260,6 +317,9 @@ internal sealed class BlastFurnaceRig
   public float MoltenIron =>
     (float)ReflectionHelpers.GetField(Furnace, "_moltenIron")!;
   public int CanalIron => Canal?.CellAmount ?? 0;
+
+  /// <summary>Full item code of the metal the tap poured into the canal (for the pig-iron assertion).</summary>
+  public string? CanalMetalType => Canal?.CellMetalType;
 
   #endregion
 }

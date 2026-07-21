@@ -63,13 +63,15 @@ public class ConverterControlBeTests
   public void Operational_state_round_trips_through_the_tree()
   {
     var src = Control();
-    ReflectionHelpers.SetProperty(src, "OpState", ConverterOpState.Filling);
+    ReflectionHelpers.SetProperty(src, "OpState", ConverterOpState.SteelPouring);
     ReflectionHelpers.SetField(
       src,
       "_charge",
       MoltenCharge.Of(IronCharge(ResolveWorld), 30)
     );
-    ReflectionHelpers.SetField(src, "_processSeconds", 12f);
+    ReflectionHelpers.SetField(src, "_carbon", 0.031f);
+    ReflectionHelpers.SetField(src, "_scrapUnits", 45);
+    ReflectionHelpers.SetField(src, "_moltenSlag", 12f);
     ReflectionHelpers.SetField(src, "_solidified", true);
 
     var tree = new TreeAttribute();
@@ -78,13 +80,12 @@ public class ConverterControlBeTests
     var dst = Control();
     dst.FromTreeAttributes(tree, ResolveWorld.World);
 
-    Assert.Equal(ConverterOpState.Filling, dst.OpState);
+    Assert.Equal(ConverterOpState.SteelPouring, dst.OpState);
     Assert.Equal(30, ChargeUnits(dst)); // charge (stack + units) round-trips through the tree
-    Assert.Equal(
-      12f,
-      (float)ReflectionHelpers.GetField(dst, "_processSeconds")!,
-      3
-    );
+    // The dynamic-model bookkeeping (carbon, cold scrap, slag pool) rides the tree too.
+    Assert.Equal(0.031f, (float)ReflectionHelpers.GetField(dst, "_carbon")!, 4);
+    Assert.Equal(45, (int)ReflectionHelpers.GetField(dst, "_scrapUnits")!);
+    Assert.Equal(12f, (float)ReflectionHelpers.GetField(dst, "_moltenSlag")!, 2);
     Assert.True((bool)ReflectionHelpers.GetField(dst, "_solidified")!);
   }
 

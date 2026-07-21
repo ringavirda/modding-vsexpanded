@@ -203,9 +203,12 @@ public partial class BlockOreMixer
 
     // Plain right-click adds one; ctrl+right-click adds the whole held stack. (Ctrl, not sneak: a
     // sneak+right-click with a held material is grabbed by vanilla ground-storage placement before the
-    // interaction reaches us.) A held crushed-iron/lime/coke charges the mixer; a held burden reloads it.
+    // interaction reaches us.) A held primary/flux/fuel charges the mixer; a held burden reloads it. The
+    // player is threaded through so a wrong-family add can explain itself in-game.
     bool whole = byPlayer.Entity.Controls.CtrlKey;
-    _ = be.TryAddInput(active, whole) || be.TryReloadBurden(active, whole);
+    _ =
+      be.TryAddInput(active, whole, byPlayer)
+      || be.TryReloadBurden(active, whole, byPlayer);
   }
 
   /// <summary>Principal cell: open or close the dropping lids, telling the player when there's nothing

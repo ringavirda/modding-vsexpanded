@@ -25,8 +25,11 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 internal sealed class ConverterRig
 {
-  private const string Iron = "game:ingot-iron";
-  private const string Steel = "game:ingot-steel";
+  // Resolved the way the control resolves them so what we push matches what it reads, headless registry
+  // (game: convention) or populated (iwex:/smex:) alike.
+  private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
+  private static string Steel =>
+    MetalRegistry.MoltenItemOf("bessemersteel").ToString();
 
   // Structure-local peripheral offsets (mirror the control's private constants).
   private static readonly (int x, int y, int z) InputTapLocal = (1, 1, 2);
@@ -45,9 +48,16 @@ internal sealed class ConverterRig
   public ConverterRig()
   {
     World = new TestWorld();
-    World.RegisterItem(Iron, 1500f);
-    World.RegisterItem(Steel, 1500f);
+    // Both convention and shipped codes, so the resolved token always finds a real item.
+    World.RegisterItem("game:ingot-pigiron", 1150f);
+    World.RegisterItem("iwex:ingot-pigiron", 1150f);
+    World.RegisterItem("game:ingot-bessemersteel", 1500f);
+    World.RegisterItem("smex:ingot-bessemersteel", 1500f);
+    World.RegisterItem("game:ingot-iron", 1500f);
+    World.RegisterItem("game:ingot-slag", 1200f);
+    World.RegisterItem("iwex:slag", 1200f);
     World.RegisterItem("game:metalbit-iron");
+    World.RegisterItem("game:metalbit-steel");
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
     Control = new BlockEntityConverterControl
@@ -150,10 +160,36 @@ internal sealed class ConverterRig
     float temp
   ) => MoltenMetal.CreateStack(world.World, code, temp)!;
 
-  /// <summary>Pours molten iron into the input canal cell (the furnace tap feeding the converter).</summary>
-  public ConverterRig PourIronToInput(int units, float temp = 1700f)
+  /// <summary>Pours molten pig iron into the input canal cell (the blast-furnace tap feeding the converter).</summary>
+  public ConverterRig PourPigToInput(int units, float temp = 1700f)
   {
-    Input.PushMetal(units, MetalStack(World, Iron, temp), World.World);
+    Input.PushMetal(units, MetalStack(World, Pig, temp), World.World);
+    return this;
+  }
+
+  /// <summary>
+  /// Charges <paramref name="units"/> of pig into the vessel, refilling the 50 u input canal cell as many
+  /// times as it takes (one cell only holds a cell's worth), so a heat larger than one canal cell can be
+  /// assembled the way a furnace tap dripping over time would.
+  /// </summary>
+  public ConverterRig ChargePig(int units, float temp = 1700f)
+  {
+    int remaining = units;
+    while (remaining > 0)
+    {
+      int chunk = System.Math.Min(remaining, Input.MaxUnitCapacity);
+      PourPigToInput(chunk, temp);
+      Fill();
+      remaining -= chunk;
+    }
+    return this;
+  }
+
+  /// <summary>Charges cold steel scrap into the vessel (the temperature gate), bypassing the hand interaction.</summary>
+  public ConverterRig ChargeScrap(int units)
+  {
+    int have = (int)ReflectionHelpers.GetField(Control, "_scrapUnits")!;
+    ReflectionHelpers.SetField(Control, "_scrapUnits", have + units);
     return this;
   }
 
@@ -172,19 +208,62 @@ internal sealed class ConverterRig
 
   public ConverterRig Fill() => Invoke("TickFilling");
 
-  /// <summary>One refining tick (consumes blast, holds temperature, advances the process clock).</summary>
+  /// <summary>One blow tick (consumes blast, holds the bath temperature, oxidises carbon).</summary>
   public ConverterRig Refine() => Invoke("TickNormal");
 
-  public ConverterRig Pour() => Invoke("TickPouring");
+  public ConverterRig PourSlag() => Invoke("TickSlagPouring");
 
-  /// <summary>Jumps the refining clock to just before completion so the next <see cref="Refine"/> finishes it.</summary>
-  public ConverterRig FastForwardToAlmostDone()
+  public ConverterRig Pour() => Invoke("TickSteelPouring");
+
+  /// <summary>Pours steel until the charge empties or the output cell stops accepting (bounded).</summary>
+  public ConverterRig DrainSteel(int maxTicks = 20)
   {
-    ReflectionHelpers.SetField(
-      Control,
-      "_processSeconds",
-      SmexValues.BessemerProcessDuration - 0.5f
+    for (int i = 0; i < maxTicks && ContentUnits > 0; i++)
+    {
+      int before = ContentUnits;
+      Pour();
+      if (ContentUnits == before)
+        break; // output full - no more progress
+    }
+    return this;
+  }
+
+  /// <summary>Pours slag until the slag pool empties or the output cell stops accepting (bounded).</summary>
+  public ConverterRig DrainSlag(int maxTicks = 20)
+  {
+    for (int i = 0; i < maxTicks && SlagUnits > 0f; i++)
+    {
+      float before = SlagUnits;
+      PourSlag();
+      if (SlagUnits == before)
+        break;
+    }
+    return this;
+  }
+
+  // Blows exactly the blast that takes the bath's carbon down to `to`, so a scenario reaches a chosen
+  // phase (steel / over-blown iron) without simulating the whole multi-minute blow tick by tick.
+  private void BlowToCarbon(float to)
+  {
+    float carbon = Carbon;
+    float blast = System.Math.Max(
+      0f,
+      (carbon - to) / SmexValues.BessemerCarbonPerBlastLitre
     );
+    ReflectionHelpers.Invoke(Control, "BlowStep", blast);
+  }
+
+  /// <summary>Fully blows the pig charge down into the steel window (mass sheds into slag as it goes).</summary>
+  public ConverterRig BlowToSteel()
+  {
+    BlowToCarbon(SmexValues.BessemerSteelCarbonTarget / 2f);
+    return this;
+  }
+
+  /// <summary>Keeps blowing past the over-blow floor, retyping the steel to soft ingot iron.</summary>
+  public ConverterRig OverBlowToIron()
+  {
+    BlowToCarbon(SmexValues.BessemerOverblowCarbon / 2f);
     return this;
   }
 
@@ -197,8 +276,9 @@ internal sealed class ConverterRig
   public int ContentUnits =>
     (ReflectionHelpers.GetField(Control, "_charge") as MoltenCharge)?.Units
     ?? 0;
-  public float ProcessSeconds =>
-    (float)ReflectionHelpers.GetField(Control, "_processSeconds")!;
+  public float Carbon => (float)ReflectionHelpers.GetField(Control, "_carbon")!;
+  public float SlagUnits =>
+    (float)ReflectionHelpers.GetField(Control, "_moltenSlag")!;
   public float BlastVolume => _blast.State?.Volume ?? 0f;
 
   public string ContentCode =>

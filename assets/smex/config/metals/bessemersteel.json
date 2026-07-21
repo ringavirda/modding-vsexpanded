@@ -1,0 +1,16 @@
+{
+  "code": "bessemersteel",
+  "moltenItem": "smex:ingot-bessemersteel",
+  "solidDrop": "game:metalbit-steel",
+  "displayLangKey": "smex:metal-bessemersteel",
+  "castDomain": "smex",
+  "isAlloy": true,
+  "generateItemFamily": true,
+  "itemForms": ["ingot", "plate", "rod", "nails"],
+  "texturePath": "game:block/metal/ingot/steel",
+  "density": 7820,
+  "meltingPoint": 1500,
+  "tools": {
+    "preset": "good"
+  }
+}

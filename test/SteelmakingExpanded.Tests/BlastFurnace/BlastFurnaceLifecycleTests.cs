@@ -78,9 +78,10 @@ public class BlastFurnaceLifecycleTests
       Code = new AssetLocation("iwex", itemPath),
       ItemId = 4242,
     };
-    inv[0].Itemstack = new ItemStack(charge, units);
+    var stack = new ItemStack(charge, units);
+    inv[0].Itemstack = stack;
     if (mix != null)
-      Burden.Write(inv[0].Itemstack, mix.Value);
+      Burden.Write(stack, mix.Value);
     ReflectionHelpers.SetField(pile, "inventory", inv);
     ReflectionHelpers.SetField(pile, "burning", true);
     world.Place(
@@ -178,7 +179,8 @@ public class BlastFurnaceLifecycleTests
 
   #region Blast-mix accounting
 
-  /// <summary>Runs the charge scan, handing back its two out-parameters.</summary>
+  /// <summary>Runs the charge scan, handing back its out-parameters (isFull + mix; the rejected count
+  /// and family the family gate reads are exercised in the gate tests below).</summary>
   private static int CountCharge(
     BlockEntityBlastFurnaceHot be,
     List<(BlockPos, BlockEntityCoalPile)> piles,
@@ -186,10 +188,10 @@ public class BlastFurnaceLifecycleTests
     out BurdenMix mix
   )
   {
-    object[] args = { piles, false, default(BurdenMix) };
+    object?[] args = { piles, false, default(BurdenMix), 0, null };
     int count = (int)ReflectionHelpers.Invoke(be, "GetBlastMixCount", args)!;
-    isFull = (bool)args[1];
-    mix = (BurdenMix)args[2];
+    isFull = (bool)args[1]!;
+    mix = (BurdenMix)args[2]!;
     return count;
   }
 
@@ -424,6 +426,226 @@ public class BlastFurnaceLifecycleTests
     Assert.Equal(afterFirst.Iron, afterSecond.Iron, 4);
     Assert.Equal(afterFirst.Flux, afterSecond.Flux, 4);
     Assert.True(afterSecond.Fuel >= 0f);
+  }
+
+  #endregion
+
+  #region Burden family gate
+
+  // The blast furnace burns ore burden only. Remelt burden (the cupola's charge) counts toward the burn
+  // - so a mis-loaded shaft still lights and burns out - but is tallied as rejected, which blocks the
+  // conversion and never lets the wrong family become molten iron. These pin the charge-scan half; the
+  // tick-level "never converts / stays Firing" half is in BlastFurnaceScenarioTests.
+
+  /// <summary>A hearth pile of the cupola's remelt burden - the wrong family for a blast furnace.</summary>
+  private static BlockEntityCoalPile RemeltBurdenPile(
+    TestWorld world,
+    BlockPos pos,
+    int units,
+    BurdenMix mix
+  ) => ChargePile(world, pos, "remeltburden", units, mix);
+
+  /// <summary>Runs the charge scan, surfacing the rejected-family count and token too.</summary>
+  private static int CountChargeFull(
+    BlockEntityBlastFurnaceHot be,
+    List<(BlockPos, BlockEntityCoalPile)> piles,
+    out int rejectedCount,
+    out string? rejectedFamily
+  )
+  {
+    object?[] args = { piles, false, default(BurdenMix), 0, null };
+    int count = (int)ReflectionHelpers.Invoke(be, "GetBlastMixCount", args)!;
+    rejectedCount = (int)args[3]!;
+    rejectedFamily = (string?)args[4];
+    return count;
+  }
+
+  [Fact]
+  public void Remelt_burden_is_counted_but_rejected_as_the_wrong_family()
+  {
+    var world = NewWorld();
+    var be = Furnace(world);
+    var pile = RemeltBurdenPile(
+      world,
+      new BlockPos(0, 13, 0),
+      100,
+      new BurdenMix(60f, 5f, 35f)
+    );
+
+    int total = CountChargeFull(
+      be,
+      Piles((pile.Pos, pile)),
+      out int rejected,
+      out string? family
+    );
+
+    Assert.Equal(100, total); // counted family-blind, so the shaft still lights and burns
+    Assert.Equal(100, rejected); // ...but every unit is the wrong family
+    Assert.Equal(Burden.FamilyRemelt, family);
+  }
+
+  [Fact]
+  public void Ore_burden_is_accepted_with_no_rejected_charge()
+  {
+    var world = NewWorld();
+    var be = Furnace(world);
+    var pile = BurdenPile(
+      world,
+      new BlockPos(0, 13, 0),
+      100,
+      new BurdenMix(75f, 5f, 20f)
+    );
+
+    CountChargeFull(
+      be,
+      Piles((pile.Pos, pile)),
+      out int rejected,
+      out string? family
+    );
+
+    Assert.Equal(0, rejected);
+    Assert.Null(family);
+  }
+
+  [Fact]
+  public void A_mixed_shaft_rejects_only_the_wrong_family_pile()
+  {
+    var world = NewWorld();
+    var be = Furnace(world);
+    var ore = BurdenPile(
+      world,
+      new BlockPos(0, 13, 0),
+      200,
+      new BurdenMix(75f, 5f, 20f)
+    );
+    var wrong = RemeltBurdenPile(
+      world,
+      new BlockPos(0, 12, 0),
+      50,
+      new BurdenMix(60f, 5f, 35f)
+    );
+
+    int total = CountChargeFull(
+      be,
+      Piles((ore.Pos, ore), (wrong.Pos, wrong)),
+      out int rejected,
+      out string? family
+    );
+
+    Assert.Equal(250, total); // both piles burn
+    Assert.Equal(50, rejected); // only the remelt pile is rejected
+    Assert.Equal(Burden.FamilyRemelt, family);
+  }
+
+  [Fact]
+  public void Melting_does_not_draw_from_a_wrong_family_pile()
+  {
+    // Defensive: even if the melt cycle is reached, a rejected pile is never eaten (the tick's
+    // conversion block stops the cycle running while any rejected pile is present).
+    var world = NewWorld();
+    var be = Furnace(world);
+    var pile = RemeltBurdenPile(
+      world,
+      new BlockPos(0, 13, 0),
+      100,
+      new BurdenMix(60f, 5f, 35f)
+    );
+
+    ReflectionHelpers.Invoke(
+      be,
+      "ConsumeForMelting",
+      Piles((pile.Pos, pile)),
+      16,
+      60f,
+      10f
+    );
+
+    Assert.Equal(100, Mix(pile)); // the wrong-family charge is untouched
+  }
+
+  [Fact]
+  public void A_wrong_family_charge_burns_out_on_extinguish_not_destroyed()
+  {
+    var world = NewWorld();
+    Block slag = TestBlocks.Configure(new Block(), "iwex:slag", 701);
+    world.Register(slag);
+    var be = Furnace(world);
+    BlockPos bottom = (BlockPos)
+      ReflectionHelpers.Invoke(be, "GetGlobalPos", 0, 1, 0)!;
+    var pile = RemeltBurdenPile(
+      world,
+      bottom,
+      100,
+      new BurdenMix(0.60f, 0.05f, 0.35f)
+    );
+
+    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Melting);
+    ReflectionHelpers.Invoke(be, "Extinguish");
+
+    // Still remelt burden salvage - not slag, not destroyed: metal + flux kept, coke burned out.
+    Assert.NotEqual(slag.BlockId, world.GetBlock(bottom).BlockId);
+    Assert.True(Burden.IsRemelt(pile.inventory[0].Itemstack));
+    BurdenMix left = Burden.Read(pile.inventory[0].Itemstack);
+    Assert.Equal(0.60f, left.Iron, 4);
+    Assert.Equal(0.05f, left.Flux, 4);
+    Assert.Equal(0.35f * IwexValues.BfBurnoutFuelRetainedBottom, left.Fuel, 4);
+  }
+
+  [Fact]
+  public void Extinguishing_does_not_freeze_iron_over_a_wrong_family_pile()
+  {
+    // A furnace holding molten iron from an earlier clean melt, which then took a wrong pile into a
+    // bottom cell, must not overwrite that pile with solid iron - it is the player's salvage.
+    var world = NewWorld();
+    Block iron = TestBlocks.Configure(new Block(), "iwex:solidifiediron", 700);
+    iron.EntityClass = "solidifiediron";
+    world.RegisterBlockEntityFactory(
+      "solidifiediron",
+      () => new BlockEntitySolidifiedIron()
+    );
+    world.Register(iron);
+
+    var be = Furnace(world);
+    BlockPos bottom = (BlockPos)
+      ReflectionHelpers.Invoke(be, "GetGlobalPos", 0, 1, 0)!;
+    var wrong = RemeltBurdenPile(
+      world,
+      bottom,
+      100,
+      new BurdenMix(0.60f, 0.05f, 0.35f)
+    );
+    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Melting);
+    ReflectionHelpers.SetField(be, "_moltenIron", 50f);
+
+    ReflectionHelpers.Invoke(be, "Extinguish");
+
+    Assert.NotEqual(iron.BlockId, world.GetBlock(bottom).BlockId); // pile not overwritten
+    Assert.True(Burden.IsRemelt(wrong.inventory[0].Itemstack)); // salvage survives
+  }
+
+  [Fact]
+  public void The_rejected_charge_state_round_trips_through_the_tree()
+  {
+    // GetBlockInfo runs client-side and never walks the charge, so the mismatch line the HUD prints
+    // has to ride the save tree - the same reason _cachedMixCount does.
+    var world = NewWorld();
+    var src = Furnace(world);
+    ReflectionHelpers.SetField(src, "_cachedRejectedCount", 48);
+    ReflectionHelpers.SetField(src, "_cachedRejectedFamily", Burden.FamilyRemelt);
+
+    var tree = new Vintagestory.API.Datastructures.TreeAttribute();
+    src.ToTreeAttributes(tree);
+    var dst = Furnace(world);
+    dst.FromTreeAttributes(tree, world.World);
+
+    Assert.Equal(
+      48,
+      (int)ReflectionHelpers.GetField(dst, "_cachedRejectedCount")!
+    );
+    Assert.Equal(
+      Burden.FamilyRemelt,
+      (string?)ReflectionHelpers.GetField(dst, "_cachedRejectedFamily")
+    );
   }
 
   #endregion

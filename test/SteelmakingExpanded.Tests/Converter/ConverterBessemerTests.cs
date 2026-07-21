@@ -75,13 +75,13 @@ public class ConverterBessemerTests
     be.UpdateMirror(
       solidified: true,
       chargeUnits: 200,
-      ConverterOpState.Pouring
+      ConverterOpState.SteelPouring
     );
 
     Assert.True(be.IsSolidified);
     Assert.Equal(200, (int)ReflectionHelpers.GetField(be, "_chargeUnits")!);
     Assert.Equal(
-      ConverterOpState.Pouring,
+      ConverterOpState.SteelPouring,
       (ConverterOpState)ReflectionHelpers.GetField(be, "_opState")!
     );
   }

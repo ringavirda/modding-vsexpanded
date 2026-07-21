@@ -1,3 +1,5 @@
+using ExpandedLib.Metals;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 
 namespace ExpandedLib.Definitions;
@@ -31,6 +33,17 @@ public class ExDefinitionModSystem : ModSystem
       return;
 
     var origin = new ExDefinitionOrigin();
+
+    // Register the generated metal-family resource items (ingot/plate/rod/nails/bits per opted-in metal)
+    // so they inject through the same item path below. The catalogue is read DIRECTLY here, not off
+    // MetalRegistry: the registry is populated at AssetsFinalize, AFTER this phase, so at injection time
+    // it is still empty - the emitter must read config/metals itself.
+    foreach (
+      ExItemDef def in MetalFamilyEmitter.Emit(
+        AssetCatalogueLoader.GetMany<MetalDef>(api, "config/metals/")
+      )
+    )
+      ExDefinitions.RegisterItem(def);
 
     int blocks = 0;
     foreach (var (location, asset) in ExDefinitions.BuildBlockAssets(origin))

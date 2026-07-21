@@ -8253,6 +8253,55 @@
       ]
     },
     {
+      "name": "slagpouring",
+      "code": "slagpouring",
+      "quantityframes": 30,
+      "onActivityStopped": "EaseOut",
+      "onAnimationEnd": "Hold",
+      "keyframes": [
+        {
+          "frame": 0,
+          "elements": {
+            "GearShaft": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "BottomIron": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "GasIntake": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "BottomRefractory": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "UpRefractory": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "UpIron": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            },
+            "InputLining": {
+              "rotationX": 0,
+              "rotationY": 0,
+              "rotationZ": 67.5
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "pouring",
       "code": "pouring",
       "quantityframes": 30,

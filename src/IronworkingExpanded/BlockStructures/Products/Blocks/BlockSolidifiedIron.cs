@@ -10,8 +10,8 @@ namespace IronworkingExpanded.BlockStructures.Products.Blocks;
 
 /// <summary>
 /// The frozen melt a furnace leaves behind when it is extinguished mid-heat; breaking it recovers metal
-/// bits scaled to the stored count. Backs BOTH metals - the blast furnaces' iron and the cupola's cast
-/// iron - as two definitions over one class, with the metal supplied as a block attribute.
+/// bits scaled to the stored count. Backs BOTH metals - the blast furnace's pig iron and the cupola's
+/// cast iron - as two definitions over one class, with the metal supplied as a block attribute.
 /// <para>
 /// Deliberately NOT a variant group: <c>VariantGroup("metal", ...)</c> would rename the shipped
 /// <c>iwex:solidifiediron</c> to <c>iwex:solidifiediron-iron</c> and orphan every one already placed in a
@@ -23,8 +23,9 @@ namespace IronworkingExpanded.BlockStructures.Products.Blocks;
 [BlockRegister]
 public partial class BlockSolidifiedIron : Block, IExBlockDefProvider
 {
-  // Metal token for a block saved before the attribute existed - those are all blast-furnace iron.
-  private const string DefaultMetal = "iron";
+  // Metal token for a block saved before the attribute existed - those are all blast-furnace pig iron
+  // (the shipped solidifiediron block is the blast furnace's frozen pig; the cupola's carries castiron).
+  private const string DefaultMetal = "pigiron";
 
   /// <summary>
   /// Code-first blocktype definitions (the iron one migrated verbatim from the former
@@ -33,11 +34,14 @@ public partial class BlockSolidifiedIron : Block, IExBlockDefProvider
   /// </summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
+      // The blast furnace's frozen pig. The block code stays solidifiediron (renaming would orphan
+      // placed blocks); only the metal seam is pig iron. Its bright sheet texture is kept so a dead
+      // blast furnace's residue still reads apart from the cupola's dull cast-iron block at a glance.
       Solid(
         domain,
         "solidifiediron",
         "game:block/metal/sheet-plain/iron5",
-        "iron"
+        "pigiron"
       ),
       // Dull oxide grey against the iron block's bright sheet, so a dead cupola's residue reads as a
       // different material from a dead blast furnace's at a glance (same texture cast iron uses as an
@@ -85,8 +89,8 @@ public partial class BlockSolidifiedIron : Block, IExBlockDefProvider
     )
     {
       // The chipped-out solid for this block's metal via the registry (registered SolidDrop else the
-      // ingot-X -> metalbit-X convention), so cast iron yields iwex:metalbit-castiron and iron yields
-      // game:metalbit-iron with no branch here.
+      // ingot-X -> metalbit-X convention). Both cast iron and pig iron drop game:metalbit-iron - mod
+      // alloys shatter to vanilla bits as scrap (their solidDrop), so there is no branch here.
       string metal =
         Attributes?["metal"].AsString(DefaultMetal) ?? DefaultMetal;
       Item? bit = worldMap.GetItem(

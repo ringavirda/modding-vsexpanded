@@ -167,4 +167,36 @@ public class BoilerSteamCycleTests
   }
 
   #endregion
+
+  #region Steam pressure cap (over-pressure readout guard)
+
+  // Every production tick ends with CapSteamToCeiling, which discards steam above the choke ceiling so
+  // InternalPressure can never read past MaxOutputPressure - the "hundreds of atm" bug. The cap sits AT
+  // the ceiling so a burning, closed boiler still trips the burst grace (fires at >= ceiling).
+  private const float ChokePressure = 5f; // CornishBoilerMaxOutputPressure
+
+  [Fact]
+  public void Capping_discards_steam_above_the_choke_ceiling()
+  {
+    // 5000 L steam over 800-300 = 500 L free space would read 10 atm, double the 5 atm ceiling.
+    var be = Boiler(water: 300f, steam: 5000f);
+
+    ReflectionHelpers.Invoke(be, "CapSteamToCeiling");
+
+    Assert.Equal(ChokePressure, be.InternalPressure, 3);
+    Assert.Equal(ChokePressure * (Capacity - 300f), Steam(be), 3);
+  }
+
+  [Fact]
+  public void Capping_leaves_a_below_ceiling_boiler_untouched()
+  {
+    // 1000 L over 500 L free = 2 atm, well under the 5 atm ceiling - nothing is discarded.
+    var be = Boiler(water: 300f, steam: 1000f);
+
+    ReflectionHelpers.Invoke(be, "CapSteamToCeiling");
+
+    Assert.Equal(1000f, Steam(be), 3);
+  }
+
+  #endregion
 }

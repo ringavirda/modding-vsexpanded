@@ -19,6 +19,7 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       BlastFurnace(domain),
+      Cupola(domain),
       Bunker(domain),
       MoltenBarrel(domain),
       SlagPath(domain),
@@ -69,6 +70,23 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("S", Nails(1))
           .Ingredient("H", Hammer)
           .OutputBlock("iwex:hopper-tall")
+      );
+
+  // The cupola core: refractory brick bound with iron rods over a fire-clay core. A distinct pattern
+  // from the blast-furnace core (full 3x3, fire clay at its heart) so the two furnace anchors never
+  // collide, and cheaper than the blast furnace - the cupola is the smaller re-melter.
+  private static ExRecipeDef Cupola(string domain) =>
+    ExRecipeDef
+      .Create(domain, "grid", "cupola")
+      .GridObject(r =>
+        r.Name("Cupola Furnace Core")
+          .Pattern("BRB,PCP,BRB")
+          .Size(3, 3)
+          .Ingredient("B", Refractory(4))
+          .Ingredient("R", Rod(2))
+          .Ingredient("P", Plate(1))
+          .Ingredient("C", FireClay(8))
+          .OutputBlock("iwex:cupolafurnacecore-north")
       );
 
   // A one-recipe file authored as a lone object: 8 same-colour burned bricks -> an ore bunker of that brick.

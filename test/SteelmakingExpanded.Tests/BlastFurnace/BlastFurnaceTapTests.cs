@@ -25,16 +25,19 @@ public class BlastFurnaceTapTests
     return world;
   }
 
-  private static BlockEntityMoltenMetalTap Tap(TestWorld world)
+  private static BlockEntityMoltenMetalTap Tap(
+    TestWorld world,
+    string side = "north"
+  )
   {
     var be = new BlockEntityMoltenMetalTap
     {
       Pos = new BlockPos(0, 12, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "iwex:blastfurnacetap-north",
+        $"iwex:blastfurnacetap-{side}",
         1,
-        ("side", "north")
+        ("side", side)
       ),
     };
     world.Place(be.Pos, be.Block, be);
@@ -45,10 +48,11 @@ public class BlastFurnaceTapTests
   /// <summary>Places a canal start in the cell the tap pours into (Pos + side.Opposite, one down).</summary>
   private static BlockEntityMoltenCanalStart CanalBelow(
     TestWorld world,
-    BlockEntityMoltenMetalTap tap
+    BlockEntityMoltenMetalTap tap,
+    string side = "north"
   )
   {
-    var facing = BlockFacing.FromCode("north");
+    var facing = BlockFacing.FromCode(side);
     var pos = tap.Pos.AddCopy(facing.Opposite).DownCopy();
     var start = new BlockEntityMoltenCanalStart
     {
@@ -139,6 +143,38 @@ public class BlastFurnaceTapTests
     tap.TogglePouring(); // open, but no canal beneath
 
     Assert.Equal(0, tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f));
+  }
+
+  #endregion
+
+  #region Orientation (pour target tracks the side)
+
+  /// <summary>
+  /// The tap is a plain oriented block, not a multiblock, so it carries no structure offsets - its one
+  /// rotating piece is the pour target, <c>Pos + FromCode(side).Opposite</c> one down. The north case
+  /// above pins the <c>Opposite</c>; this stands the tap up facing each side and confirms the pour lands
+  /// in that side's target cell (four distinct cells: N->+z, S->-z, E->-x, W->+x). A tap that ignored its
+  /// side would keep pouring into north's cell and find no canal at the other three, so every side but
+  /// north would fail.
+  /// </summary>
+  [Theory]
+  [InlineData("north")]
+  [InlineData("south")]
+  [InlineData("east")]
+  [InlineData("west")]
+  public void An_open_tap_pours_into_the_cell_its_side_faces_away_from(
+    string side
+  )
+  {
+    var world = NewWorld();
+    var tap = Tap(world, side);
+    var canal = CanalBelow(world, tap, side);
+    tap.TogglePouring();
+
+    int accepted = tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f);
+
+    Assert.True(accepted > 0);
+    Assert.True(canal.CellAmount > 0);
   }
 
   #endregion

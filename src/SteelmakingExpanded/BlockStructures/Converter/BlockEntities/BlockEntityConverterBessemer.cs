@@ -171,14 +171,17 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
     {
       util.StopAnimation("idle");
       util.StopAnimation("filling");
+      util.StopAnimation("slagpouring");
       util.StopAnimation("pouring");
 
       // Pose tilts only apply once the vessel is built; during construction it
-      // simply renders the partial mesh at rest via "idle".
+      // simply renders the partial mesh at rest via "idle". Slag pours off a SHALLOW tilt (it floats),
+      // the steel from the EXISTING deeper pour tilt beneath it.
       string code = (IsConstructed ? _opState : ConverterOpState.Normal) switch
       {
         ConverterOpState.Filling => "filling",
-        ConverterOpState.Pouring => "pouring",
+        ConverterOpState.SlagPouring => "slagpouring",
+        ConverterOpState.SteelPouring => "pouring",
         _ => "idle",
       };
 

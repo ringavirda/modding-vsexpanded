@@ -16,7 +16,7 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 
 /// <summary>
 /// The blast furnace: a <see cref="BlockEntityFurnaceCore"/> charged with burden piles in its shaft,
-/// producing molten iron and slag through the iron and slag taps.
+/// producing molten pig iron and slag through the metal and slag taps.
 /// <para>
 /// There is exactly one blast furnace in the mod. The cold and the hot furnace are the same machine
 /// running under different conditions, so they are the same class, and the difference between them is
@@ -52,6 +52,36 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   protected override int BlastMixRequiredToFire =>
     IwexValues.BlastMixRequiredToFire;
 
+  // Product identity + per-cycle tunables, exposed as virtuals so the cupola - which is this same
+  // machine run as a scrap re-melter - swaps them for cast iron and its own (slower) cadence while
+  // inheriting the whole melt/drain/residue path. The defaults are the blast furnace's, so its
+  // behaviour (and its goldens) are unchanged.
+
+  /// <summary>Metal token the lower tap pours (resolved through <see cref="MetalRegistry"/>). The
+  /// blast furnace makes molten <b>pig iron</b> (crude high-carbon iron, <c>iwex:ingot-pigiron</c>);
+  /// plain iron is obtained downstream by over-blowing pig in the Bessemer converter. The cupola
+  /// overrides this to cast iron.</summary>
+  protected virtual string MetalProductCode => "pigiron";
+
+  /// <summary>Lang key for the molten-product HUD line (with two <c>{0}/{1}</c> unit args).</summary>
+  protected virtual string MoltenProductInfoLangKey => IwexLang.BfInfoMolteniron;
+
+  /// <summary>Molten product (units) rendered per melt cycle.</summary>
+  protected virtual float ProductPerMeltCycle => IwexValues.BfIronPerMeltCycle;
+
+  /// <summary>Molten slag (units) rendered per melt cycle.</summary>
+  protected virtual float SlagYieldPerMeltCycle => IwexValues.BfSlagPerMeltCycle;
+
+  /// <summary>Charge consumed per melt cycle.</summary>
+  protected virtual int ChargeConsumedPerMeltCycle =>
+    IwexValues.BfBlastMixPerMeltCycle;
+
+  /// <summary>Maximum molten product (units) the furnace holds before stalling.</summary>
+  protected virtual float MaxMoltenProduct => IwexValues.BfMaxMoltenIron;
+
+  /// <summary>Maximum molten slag (units) the furnace holds before stalling.</summary>
+  protected virtual float MaxMoltenSlagPool => IwexValues.BfMaxMoltenSlag;
+
   #endregion
 
   #region Initialization
@@ -64,11 +94,11 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   protected override void CacheAttributes()
   {
     base.CacheAttributes();
-    _ironPerMeltCycle = IwexValues.BfIronPerMeltCycle;
-    _slagPerMeltCycle = IwexValues.BfSlagPerMeltCycle;
-    _blastMixPerMeltCycle = IwexValues.BfBlastMixPerMeltCycle;
-    _maxMoltenIron = IwexValues.BfMaxMoltenIron;
-    _maxMoltenSlag = IwexValues.BfMaxMoltenSlag;
+    _ironPerMeltCycle = ProductPerMeltCycle;
+    _slagPerMeltCycle = SlagYieldPerMeltCycle;
+    _blastMixPerMeltCycle = ChargeConsumedPerMeltCycle;
+    _maxMoltenIron = MaxMoltenProduct;
+    _maxMoltenSlag = MaxMoltenSlagPool;
   }
 
   #endregion
@@ -93,14 +123,19 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
   #endregion
 
-  #region Charge hooks
+  #region Charge family
 
-  /// <summary>
-  /// True for anything the shaft counts as charge: prepared burden, or the legacy count-only blast
-  /// mix that predates it. Both still sit in hearth coal piles; only burden carries a composition.
-  /// </summary>
-  private static bool IsCharge(ItemStack? stack) =>
-    Burden.Is(stack) || stack?.Collectible?.Code?.Path == "blastmix";
+  // The blast furnace burns ore burden only (iron ore + flux + coke). Remelt burden charged into it -
+  // by hand, hopper, or a mis-drained mixer - is rejected: it burns out in the shaft but never renders
+  // molten iron. Cached array per the "AllowedX must be a cached prop" convention.
+  private static readonly string[] _acceptedOre = [Burden.FamilyOre];
+
+  protected override System.Collections.Generic.IReadOnlyList<string>? AcceptedFamilies =>
+    _acceptedOre;
+
+  #endregion
+
+  #region Charge hooks
 
   /// <summary>
   /// Walks the shaft once and returns every coal-pile block entity in it, so all per-tick pile
@@ -134,12 +169,16 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   protected override int ReadChargeMix(
     object chargeHandle,
     out bool isFull,
-    out BurdenMix mix
+    out BurdenMix mix,
+    out int rejectedCount,
+    out string? rejectedFamily
   ) =>
     GetBlastMixCount(
       (List<(BlockPos pos, BlockEntityCoalPile pile)>)chargeHandle,
       out isFull,
-      out mix
+      out mix,
+      out rejectedCount,
+      out rejectedFamily
     );
 
   protected override bool TryIgniteCharge(object chargeHandle)
@@ -203,7 +242,9 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
         continue;
 
       var slot = pileBe.inventory[0];
-      if (slot.Empty || !IsCharge(slot.Itemstack))
+      // Only accepted charge is consumed into metal - never a rejected pile (defensive: the tick's
+      // conversion block already stops the melt cycle while any rejected pile is in the shaft).
+      if (slot.Empty || !AcceptsCharge(slot.Itemstack))
         continue;
 
       int take = Math.Min(slot.StackSize, blastmixToConsume - consumed);
@@ -220,14 +261,19 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   }
 
   /// <summary>
-  /// Totals the charge in the shaft and sums its composition in the same walk. The composition is
-  /// volume-weighted, so a shaft loaded with several grades burns at the column's true average coke
-  /// ratio rather than at whatever the top pile happens to be.
+  /// Totals the charge in the shaft and sums its composition in the same walk. The total and the
+  /// composition are <b>family-blind</b>: a shaft of the wrong burden still lights, burns and reads its
+  /// coke fraction, because a furnace full of the wrong stuff still gets hot (and burns out) - it just
+  /// will not convert. The rejected-family count/token are tracked alongside so the tick can block the
+  /// conversion and the HUD can name the mismatch. The composition is volume-weighted, so a mixed shaft
+  /// burns at the column's true average coke ratio rather than at whatever the top pile happens to be.
   /// </summary>
   private int GetBlastMixCount(
     List<(BlockPos pos, BlockEntityCoalPile pile)> piles,
     out bool isFull,
-    out BurdenMix mix
+    out BurdenMix mix,
+    out int rejectedCount,
+    out string? rejectedFamily
   )
   {
     // Composition assumed for legacy count-only blast mix. Its fuel share must match
@@ -238,6 +284,8 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
     float legacyIron = Math.Max(0f, 1f - legacyFuel - legacyFlux);
 
     int totalMix = 0;
+    int rejected = 0;
+    string? rejectedFam = null;
     float iron = 0f;
     float flux = 0f;
     float fuel = 0f;
@@ -257,13 +305,22 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
       foreach (var slot in pileBe.inventory)
       {
-        if (slot.Empty || !IsCharge(slot.Itemstack))
+        if (slot.Empty || !IsChargeItem(slot.Itemstack))
           continue;
 
         int size = slot.StackSize;
         totalMix += size;
 
-        BurdenMix stackMix = Burden.Is(slot.Itemstack)
+        // Wrong-family charge counts toward the burn (it is real mass burning in the shaft) but is
+        // tallied separately to gate the conversion and drive the HUD. The first rejected pile names
+        // the family shown to the player.
+        if (!AcceptsCharge(slot.Itemstack))
+        {
+          rejected += size;
+          rejectedFam ??= Burden.FamilyOf(slot.Itemstack);
+        }
+
+        BurdenMix stackMix = Burden.IsAny(slot.Itemstack)
           ? Burden.Read(slot.Itemstack)
           : default;
 
@@ -284,6 +341,8 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
     mix = new BurdenMix(iron, flux, fuel);
     isFull = totalMix >= IwexValues.BlastMixRequiredToFire;
+    rejectedCount = rejected;
+    rejectedFamily = rejectedFam;
     return totalMix;
   }
 
@@ -313,7 +372,7 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
     int units = Math.Min(20, (int)_moltenIron);
     ItemStack? ironStack = CreateMoltenStack(
-      "iron",
+      MetalProductCode,
       (int)Math.Ceiling(units * 0.6f),
       _internalTemp
     );
@@ -427,7 +486,7 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   protected override void AppendProductInfo(StringBuilder sb)
   {
     sb.AppendLine(
-      Lang.Get(IwexLang.BfInfoMolteniron, _moltenIron, _maxMoltenIron)
+      Lang.Get(MoltenProductInfoLangKey, _moltenIron, _maxMoltenIron)
     );
     sb.AppendLine(
       Lang.Get(IwexLang.BfInfoMoltenslag, _moltenSlag, _maxMoltenSlag)

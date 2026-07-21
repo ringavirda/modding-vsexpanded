@@ -93,6 +93,14 @@ public class FurnaceGeometryTests
     return be;
   }
 
+  /// <summary>The cupola's block entity, oriented north.</summary>
+  private static BlockEntityCupolaFurnace CupolaFurnace()
+  {
+    var be = new BlockEntityCupolaFurnace { Pos = new BlockPos(0, 16, 0) };
+    Orient(be, "iwex:cupolafurnacecore-north");
+    return be;
+  }
+
   private static void Orient(BlockEntity be, string blockCode)
   {
     var world = new TestWorld();
@@ -263,60 +271,56 @@ public class FurnaceGeometryTests
   #region Cupola
 
   /// <summary>
-  /// The cupola still anchors on its charging hatch - its bottom-centre core lands with
-  /// <c>BlockEntityCupola</c>, in the stage that builds the furnace itself. This pins the frame that
-  /// stage is written against: translate the hatch-anchored layout by the published
-  /// <c>core = hatch - (1, -4, 0)</c> and every cell the cupola block entity will read must already
-  /// be the right kind of cell. If the core does not land on the bottom-layer centre, or the taps and
-  /// tuyere are not where <see cref="BlockCupolaInput"/> advertises, this fails.
+  /// The cupola now anchors on its own bottom-centre core, exactly like the blast furnaces, so its
+  /// block entity's structure-local offsets are read straight off the instance and checked against the
+  /// core's shipped layout (no hatch-frame translation any more). Every cell the cupola reads - its
+  /// single tuyere, its cast-iron and slag taps, its single-column shaft - must land on the matching
+  /// glyph, or the furnace is built but "just does not work".
   /// </summary>
   [Fact]
-  public void Cupola_layout_matches_its_published_core_frame()
+  public void Cupola_offsets_line_up_with_its_layout()
   {
-    var hatchFrame = LayoutOf(BlockCupolaInput.Definitions("iwex").Single());
-    var coreOrigin = new Vec3i(1, -4, 0);
+    var layout = LayoutOf(BlockCupolaFurnaceCore.Definitions("iwex").Single());
+    var be = CupolaFurnace();
 
-    // Re-express the layout with the future core at (0,0,0).
-    var layout = hatchFrame.ToDictionary(
-      kv => new Vec3i(
-        kv.Key.X - coreOrigin.X,
-        kv.Key.Y - coreOrigin.Y,
-        kv.Key.Z - coreOrigin.Z
-      ),
-      kv => kv.Value
-    );
+    // The anchor stands in its own layout, at the layout's origin.
+    AssertCell(layout, new Vec3i(0, 0, 0), "iwex:cupolafurnacecore-*", "anchor");
 
-    // The hatch must sit at the layout's own origin - the old Origin(-3, 0) put it at (-3,0,1),
-    // which left the cupola unbuildable.
-    AssertCell(
-      hatchFrame,
-      new Vec3i(0, 0, 0),
-      "iwex:cupola-input*",
-      "charging hatch"
-    );
+    foreach (Vec3i tuyere in Cells(be, "TuyereCells"))
+      AssertCell(layout, tuyere, "iwex:tuyere*", "tuyere");
 
     AssertCell(
       layout,
-      new Vec3i(0, 0, 0),
-      "game:refractorybricks-good-tier*",
-      "core cell (bottom-layer centre)"
-    );
-    AssertCell(layout, new Vec3i(0, 1, -1), "iwex:tuyere*", "tuyere");
-    AssertCell(
-      layout,
-      new Vec3i(-1, 1, 0),
+      Cell(be, "MetalTapCell"),
       "iwex:moltenmetaltap*",
       "cast-iron tap"
     );
-    AssertCell(layout, new Vec3i(1, 2, 0), "iwex:moltenmetaltap*", "slag tap");
-    AssertCell(layout, new Vec3i(-1, 4, 0), "iwex:cupola-input*", "hatch");
+    AssertCell(
+      layout,
+      Cell(be, "SlagTapCell"),
+      "iwex:moltenmetaltap*",
+      "slag tap"
+    );
+    AssertCell(
+      layout,
+      Cell(be, "ShaftCentre"),
+      "@(air|coalpile)",
+      "shaft centre"
+    );
+    AssertShaftMatchesLayout(layout, be, "cupola");
+  }
 
-    // The shaft is a single column from the core up to the open stack.
-    for (int y = 1; y <= 5; y++)
-      AssertCell(layout, new Vec3i(0, y, 0), "@(air|coalpile)", $"shaft y={y}");
-    AssertCell(layout, new Vec3i(0, 3, 0), "@(air|coalpile)", "shaft centre");
-    foreach (int y in new[] { 6, 7 })
-      AssertCell(layout, new Vec3i(0, y, 0), "game:air", $"stack y={y}");
+  [Fact]
+  public void Cupola_declares_one_tuyere_and_no_exhaust_outlets()
+  {
+    // The cupola is the narrow furnace: a single tuyere, and (like the cold blast furnace) an open top
+    // that is its own stack, so it ships no pipe outlet to point at.
+    var layout = LayoutOf(BlockCupolaFurnaceCore.Definitions("iwex").Single());
+    Assert.DoesNotContain("ppex:pipe-outlet*", layout.Values);
+
+    var be = CupolaFurnace();
+    Assert.Single(Cells(be, "TuyereCells"));
+    Assert.Empty(Cells(be, "GasOutletCells"));
   }
 
   #endregion
@@ -333,7 +337,7 @@ public class FurnaceGeometryTests
     var layout = LayoutOf(
       furnace == "cold"
         ? BlockBlastFurnaceCoreCold.Definitions("iwex").Single()
-        : BlockCupolaInput.Definitions("iwex").Single()
+        : BlockCupolaFurnaceCore.Definitions("iwex").Single()
     );
 
     Assert.DoesNotContain(layout.Values, code => code.Contains("filler-block"));

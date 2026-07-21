@@ -116,6 +116,13 @@ public class IwexConfig : IExVersionedConfig
   /// <summary>Air factor with no pressurised blast at all - what the stack pulls by natural draught.</summary>
   public float BfNaturalDraughtFactor { get; set; } = 0.5f;
 
+  /// <summary>Blast-supply fraction (arrived air / demanded air) below which a lit furnace is
+  /// <b>air-starved</b>: sustained operation under this floor counts a disruption toward extinguish,
+  /// so a dead or too-weak blower snuffs the fire after the extinguish grace. A weak-but-present blast
+  /// (above this floor) keeps a furnace alive-but-cold on natural draught rather than killing it - only
+  /// a near-dry tuyere starves it out. Set to 0 to disable air-starvation extinguish entirely.</summary>
+  public float BfStarvationSupplyFrac { get; set; } = 0.1f;
+
   /// <summary>Degrees of <c>T_in</c> gained per degree the blast is preheated above ambient. This is
   /// the whole hot-blast mechanic: only a charged cowper raises the pipe temperature at the tuyere.</summary>
   public float BfPreheatCoefficient { get; set; } = 0.35f;
@@ -201,9 +208,80 @@ public class IwexConfig : IExVersionedConfig
   public float TuyereIntakeVolume { get; set; } = 12f;
   #endregion
 
+  #region Cupola furnace
+  // The cupola is the same furnace machine as the blast furnace (it inherits the whole
+  // fire/melt/drain/residue core), run as a scrap re-melter: its remelt burden melts into CAST IRON
+  // (1200 C, well below wrought iron's 1482) which drains out the lower tap, slag out the upper.
+  // It is deliberately SLOWER than the blast furnace. RATIO: with CupolaMeltIntervalSec = 2 x
+  // BfMeltIntervalSec at an equal per-cycle yield, the cupola renders at ~half the blast furnace's
+  // nominal throughput, so roughly TWO cupolas keep pace with one blast furnace's pig-iron output.
+  // (The shared melt-speed factor still scales both with superheat, so the effective ratio drifts a
+  // little with how hard each is being blown - this is the nominal design ratio.)
+
+  /// <summary>Temperature (°C) the hearth must reach (and hold) to melt cast iron - the near-eutectic
+  /// remelt point, far below wrought iron's, which is the whole mechanical point of the cupola.</summary>
+  public float CupolaCastIronMeltingPoint { get; set; } = 1200f;
+
+  /// <summary>Maximum molten cast iron (units) the cupola holds before stalling - a smaller reservoir
+  /// than the blast furnace's, matching the smaller furnace.</summary>
+  public float CupolaMaxMoltenCastIron { get; set; } = 1200f;
+
+  /// <summary>Maximum molten slag (units) the cupola holds before stalling.</summary>
+  public float CupolaMaxMoltenSlag { get; set; } = 300f;
+
+  /// <summary>Seconds a fired cupola burns before it extinguishes.</summary>
+  public int CupolaMaxFuelBurnTime { get; set; } = 1200;
+
+  /// <summary>Seconds above the melting point before the cupola transitions to the melting phase.</summary>
+  public float CupolaMeltStartDelay { get; set; } = 240f;
+
+  /// <summary>Seconds between melt cycles while melting. 2x the blast furnace's interval: this is the
+  /// primary "slower than the blast furnace" lever (see the ratio note above).</summary>
+  public float CupolaMeltIntervalSec { get; set; } = 20f;
+
+  /// <summary>Molten cast iron (units) produced per melt cycle. Held equal to the blast furnace's
+  /// per-cycle yield so the slowdown comes cleanly from the doubled interval, not a second lever.</summary>
+  public float CupolaCastIronPerMeltCycle { get; set; } = 60f;
+
+  /// <summary>Molten slag (units) produced per melt cycle.</summary>
+  public float CupolaSlagPerMeltCycle { get; set; } = 8f;
+
+  /// <summary>Remelt burden consumed per melt cycle.</summary>
+  public int CupolaBlastMixPerMeltCycle { get; set; } = 12;
+
+  /// <summary>Remelt burden that must be loaded into the shaft before the cupola can fire - lower than
+  /// the blast furnace's, since the cupola's single-column shaft holds less.</summary>
+  public int CupolaMixRequiredToFire { get; set; } = 160;
+
+  /// <summary>Air/blast (L/s) the cupola draws through its single tuyere.</summary>
+  public float CupolaTuyereIntakeVolume { get; set; } = 12f;
+  #endregion
+
   #region Ore bunker
   /// <summary>Maximum burden (units) a finished ore bunker can hold across all grades.</summary>
   public int BunkerMaxBurden { get; set; } = 1152;
+  #endregion
+
+  #region Tall hopper
+  // The tall hopper is a passthrough burden tank, not storage: burden goes in the top and drips
+  // continuously into the furnace shaft below it. It holds one burden stack (any family) and the
+  // furnace it feeds decides acceptance - the hopper never gates. These values shape the drip.
+
+  /// <summary>Maximum burden (units) the tall hopper's tank holds - one burden stack (the burden item
+  /// stacks to 128, so the default fills exactly one stack).</summary>
+  public int HopperTallCapacity { get; set; } = 128;
+
+  /// <summary>Burden units the tall hopper drips into the shaft each second while it has a target. A
+  /// steady trickle that keeps a shaft charged without dumping the whole tank in one tick.</summary>
+  public int HopperTallDropPerSecond { get; set; } = 8;
+
+  /// <summary>Maximum burden (units) the hopper piles into one shaft coal-pile cell before it moves up
+  /// to the next, so a narrow (single-column) shaft still reaches the fire threshold from few cells.</summary>
+  public int HopperTallPileCap { get; set; } = 128;
+
+  /// <summary>How many cells below the hopper it scans (down each candidate column) to find the shaft
+  /// coal-pile column it charges. Covers a hopper sitting directly over, or beside-and-above, the shaft.</summary>
+  public int HopperTallDropDepth { get; set; } = 8;
   #endregion
 
   #region Ore mixer
@@ -226,12 +304,9 @@ public class IwexConfig : IExVersionedConfig
   /// <summary>Axle speed at/above which mixing runs at its fastest (<see cref="MixerFullMixSecondsFast"/>).</summary>
   public float MixerMaxSpeed { get; set; } = 1.5f;
 
-  /// <summary>
-  /// Fuel (carbon) value of one charcoal added to the mixer, relative to one coke (= 1.0). Charcoal is
-  /// a poorer reductant than coke, so it counts for less: at the default 0.5 it takes two charcoal to
-  /// match one coke - the pre-19th-century charcoal-burden trade-off.
-  /// </summary>
-  public float MixerCharcoalFuelValue { get; set; } = 0.5f;
+  // The mixer's per-item fuel (carbon) values (coke 2, charcoal 0.5) now live on the fuel material-role
+  // in assets/iwex/config/materialroles.json, read via MaterialRoleRegistry.ValueOf - no longer a config
+  // tunable here.
 
   /// <summary>Burden units the mixer drains into the container below per second while the lids are open.</summary>
   public float MixerDrainPerSecond { get; set; } = 8f;

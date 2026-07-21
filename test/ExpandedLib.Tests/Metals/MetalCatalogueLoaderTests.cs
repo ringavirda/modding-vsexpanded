@@ -150,6 +150,69 @@ public class MetalCatalogueLoaderTests
     Assert.Null(def.Media);
     Assert.Null(def.Alloy);
     Assert.False(def.IsAlloy);
+
+    // The item-family generation fields default to "generate nothing" so a metal that ships no such
+    // data (every metal but the opted-in alloys) is untouched by the emitter.
+    Assert.False(def.GenerateItemFamily);
+    Assert.Null(def.ItemForms);
+    Assert.Null(def.TexturePath);
+    Assert.Null(def.Density);
+    Assert.Null(def.MeltingPoint);
+    Assert.Null(def.Tools);
+  }
+
+  [Fact]
+  public void MetalDef_binds_the_item_family_generation_fields()
+  {
+    const string json =
+      @"{
+        ""code"": ""castiron"",
+        ""moltenItem"": ""iwex:ingot-castiron"",
+        ""generateItemFamily"": true,
+        ""itemForms"": [""ingot"", ""plate"", ""rod"", ""nails""],
+        ""texturePath"": ""game:block/metal/tarnished/iron"",
+        ""density"": 7200,
+        ""meltingPoint"": 1200,
+        ""tools"": {
+          ""preset"": ""brittle"",
+          ""durability"": 150,
+          ""attackPower"": 2.5,
+          ""miningTier"": 3,
+          ""toolTypes"": [""pickaxe"", ""hammer""]
+        }
+      }";
+
+    var def = JsonConvert.DeserializeObject<MetalDef>(json)!;
+
+    Assert.True(def.GenerateItemFamily);
+    Assert.Equal(new[] { "ingot", "plate", "rod", "nails" }, def.ItemForms);
+    Assert.Equal("game:block/metal/tarnished/iron", def.TexturePath);
+    Assert.Equal(7200, def.Density);
+    Assert.Equal(1200, def.MeltingPoint);
+    Assert.NotNull(def.Tools);
+    Assert.Equal("brittle", def.Tools!.Preset);
+    Assert.Equal(150, def.Tools.Durability);
+    Assert.Equal(2.5f, def.Tools.AttackPower);
+    Assert.Equal(3, def.Tools.MiningTier);
+    Assert.Equal(new[] { "pickaxe", "hammer" }, def.Tools.ToolTypes);
+  }
+
+  [Fact]
+  public void MetalToolSpec_with_only_a_preset_leaves_the_overrides_null()
+  {
+    // The terse path a "good"/"brittle" metal actually ships: the preset names the stat baseline and
+    // every override stays null for the emitter to fill in - the whole point of having presets.
+    var def = JsonConvert.DeserializeObject<MetalDef>(
+      @"{ ""code"": ""bessemersteel"", ""moltenItem"": ""smex:ingot-bessemersteel"",
+          ""tools"": { ""preset"": ""good"" } }"
+    )!;
+
+    Assert.NotNull(def.Tools);
+    Assert.Equal("good", def.Tools!.Preset);
+    Assert.Null(def.Tools.Durability);
+    Assert.Null(def.Tools.AttackPower);
+    Assert.Null(def.Tools.MiningTier);
+    Assert.Null(def.Tools.ToolTypes);
   }
   #endregion
 

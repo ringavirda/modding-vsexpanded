@@ -1,0 +1,13 @@
+{
+  "code": "pigiron",
+  "moltenItem": "iwex:ingot-pigiron",
+  "solidDrop": "game:metalbit-iron",
+  "displayLangKey": "iwex:metal-pigiron",
+  "castDomain": "iwex",
+  "liquidThreshold": 0.75,
+  "generateItemFamily": true,
+  "itemForms": ["ingot"],
+  "texturePath": "game:block/metal/tarnished/iron",
+  "density": 7000,
+  "meltingPoint": 1150
+}

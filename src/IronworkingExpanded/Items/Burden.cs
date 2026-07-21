@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Vintagestory.API.Common;
 
 namespace IronworkingExpanded.Items;
@@ -32,10 +33,37 @@ public static class Burden
   private const string FuelKey = "fuel";
   private const string LegacyFuelKey = "coke"; // pre-rename stacks stored the fuel part as "coke"
 
-  /// <summary>True when <paramref name="stack"/> is a burden item (<c>iwex:burden</c>) - the shared
-  /// classifier the mixer and the ore bunker both gate their burden handling on.</summary>
-  public static bool Is(ItemStack? stack) =>
+  /// <summary>Burden family for the blast furnace (ore + flux + coke). The default family, so every
+  /// existing burden stack and every legacy blast mix keeps working with no migration.</summary>
+  public const string FamilyOre = "ore";
+
+  /// <summary>Burden family for the cupola (scrap metal + flux + coke, remelted to cast iron).</summary>
+  public const string FamilyRemelt = "remelt";
+
+  /// <summary>True when <paramref name="stack"/> is the ore burden item (<c>iwex:burden</c>) - the
+  /// blast-furnace charge the ore bunker and the blast furnace gate on. Deliberately narrow: the ore
+  /// bunker stores only this family, so broadening it would pool remelt burden into an ore bunker.</summary>
+  public static bool Is([NotNullWhen(true)] ItemStack? stack) =>
     stack?.Collectible?.Code is { Domain: "iwex", Path: "burden" };
+
+  /// <summary>True when <paramref name="stack"/> is the remelt burden item (<c>iwex:remeltburden</c>) -
+  /// the cupola charge.</summary>
+  public static bool IsRemelt([NotNullWhen(true)] ItemStack? stack) =>
+    stack?.Collectible?.Code is { Domain: "iwex", Path: "remeltburden" };
+
+  /// <summary>True for any prepared burden, either family. The furnace core / mixer recognise charge
+  /// through this; the per-furnace family gate then decides which family a given furnace will convert.</summary>
+  public static bool IsAny([NotNullWhen(true)] ItemStack? stack) =>
+    Is(stack) || IsRemelt(stack);
+
+  /// <summary>
+  /// The burden family of a stack, derived from its <b>item identity</b> (which collectible) rather than
+  /// a stamped attribute - so distinct items stay legible and can never accidentally merge piles. Remelt
+  /// burden reads as <see cref="FamilyRemelt"/>; every other charge (ore burden, legacy blast mix) reads
+  /// as <see cref="FamilyOre"/>, which is why an unstamped legacy world keeps loading as ore burden.
+  /// </summary>
+  public static string FamilyOf(ItemStack? stack) =>
+    IsRemelt(stack) ? FamilyRemelt : FamilyOre;
 
   /// <summary>Stamps the mix parts onto a burden stack (any non-negative parts; read back as fractions).</summary>
   public static void Write(ItemStack stack, BurdenMix mix)

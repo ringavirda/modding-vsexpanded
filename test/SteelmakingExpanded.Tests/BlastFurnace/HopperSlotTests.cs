@@ -67,15 +67,17 @@ public class HopperSlotTests
   public void Iron_slot_refuses_coke_and_lime()
   {
     var iron = Slot("iron");
-    Assert.False(iron.CanTakeFrom(Source("game:crushed-coke")));
+    Assert.False(iron.CanTakeFrom(Source("game:coke")));
     Assert.False(iron.CanTakeFrom(Source("game:lime")));
   }
 
   [Fact]
-  public void Coke_slot_takes_only_crushed_coke()
+  public void Coke_slot_takes_only_lump_coke()
   {
+    // Coke is charged as a whole lump now (the mod-added crushed coke is retired).
     var coke = Slot("coke");
-    Assert.True(coke.CanTakeFrom(Source("game:crushed-coke")));
+    Assert.True(coke.CanTakeFrom(Source("game:coke")));
+    Assert.False(coke.CanTakeFrom(Source("game:crushed-coke")));
     Assert.False(coke.CanTakeFrom(Source("game:crushed-iron")));
   }
 
@@ -94,7 +96,7 @@ public class HopperSlotTests
   [Theory]
   [InlineData("crushed-iron", true)]
   [InlineData("crushed-iron-magnetite", true)]
-  [InlineData("crushed-coke", false)]
+  [InlineData("coke", false)]
   [InlineData("lime", false)]
   public void IsCrushedIronOre_matches_the_crushed_iron_prefix(
     string path,

@@ -17,7 +17,7 @@
   },
   "textures": {
     "metal": {
-      "base": "game:block/metal/tarnished/iron"
+      "base": "iwex:block/metal/castiron"
     }
   },
   "combustibleProps": {
@@ -32,7 +32,7 @@
   "attributes": {
     "shatteredStack": {
       "type": "item",
-      "code": "iwex:metalbit-castiron"
+      "code": "game:metalbit-iron"
     }
   },
   "behaviors": [
@@ -43,7 +43,7 @@
         "placeRemoveSound": "game:sounds/block/ingot",
         "stackingModel": "game:block/metal/ingotpile",
         "stackingTextures": {
-          "metal": "game:block/metal/tarnished/iron"
+          "metal": "iwex:block/metal/castiron"
         },
         "modelItemsToStackSizeRatio": 1,
         "upSolid": true,

@@ -1,3 +1,4 @@
+using System.Linq;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
@@ -5,6 +6,7 @@ using IronworkingExpanded.BlockStructures.OreProcessing.BlockEntities;
 using IronworkingExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
@@ -20,28 +22,32 @@ public class OreMixerTests
 {
   private sealed record Inputs(
     Item Iron,
+    Item Metal,
     Item Lime,
     Item Coke,
     Item Charcoal,
-    Item Burden
+    Item Burden,
+    Item Remelt
   );
 
   private static (TestWorld world, BlockEntityOreMixer be, Inputs items) NewMixer()
   {
     var world = new TestWorld();
     var burden = world.RegisterItem("iwex:burden");
+    var remelt = world.RegisterItem("iwex:remeltburden");
     var iron = world.RegisterItem("game:crushed-iron"); // path starts with "crushed-iron"
+    var metal = world.RegisterItem("game:metalbit-iron"); // scrap: the remelt-family primary charge
     var lime = world.RegisterItem("game:lime");
-    var coke = world.RegisterItem("game:crushed-coke");
+    var coke = world.RegisterItem("game:coke"); // lump coke (crushed coke retired)
     var charcoal = world.RegisterItem("game:charcoal");
 
     var block = TestBlocks.Configure(new Block(), "iwex:mixer-north", 80);
     var pos = new BlockPos(0, 5, 0);
     var be = new BlockEntityOreMixer { Pos = pos, Block = block };
     world.Place(pos, block, be);
-    world.Initialize(be); // server: resolves the burden item, registers the (unused here) tick
+    world.Initialize(be); // server: resolves the burden items, registers the (unused here) tick
 
-    return (world, be, new Inputs(iron, lime, coke, charcoal, burden));
+    return (world, be, new Inputs(iron, metal, lime, coke, charcoal, burden, remelt));
   }
 
   private static DummySlot Stack(Item item, int n) => new(new ItemStack(item, n));
@@ -55,10 +61,10 @@ public class OreMixerTests
 
     Assert.True(be.TryAddInput(Stack(items.Iron, 12)));
     be.TryAddInput(Stack(items.Lime, 1));
-    be.TryAddInput(Stack(items.Coke, 3));
+    be.TryAddInput(Stack(items.Coke, 3)); // 3 lump coke -> 6 fuel value (2f each)
 
-    Assert.Equal(16, be.TotalRaw);
-    Assert.Equal(new BurdenMix(12f, 1f, 3f), be.Mix);
+    Assert.Equal(19, be.TotalRaw);
+    Assert.Equal(new BurdenMix(12f, 1f, 6f), be.Mix);
   }
 
   [Fact]
@@ -141,7 +147,7 @@ public class OreMixerTests
     be.AdvanceMixing(1000f, IwexValues.MixerMaxSpeed); // well past the required time
 
     Assert.True(be.HasReadyBurden);
-    Assert.Equal(16, be.ReadyBurden); // count = total raw
+    Assert.Equal(19, be.ReadyBurden); // count = total raw (3 coke -> 6 fuel value)
     Assert.Equal(0, be.TotalRaw); // raw consumed
   }
 
@@ -260,7 +266,7 @@ public class OreMixerTests
     Assert.True(be.ToggleDrain());
     be.DrainStep(100f); // one big slice empties the buffer
 
-    Assert.Equal(16, bunker.TotalContents);
+    Assert.Equal(19, bunker.TotalContents); // 12 iron + 1 flux + 6 fuel (3 lump coke)
     Assert.False(be.HasReadyBurden);
   }
 
@@ -293,7 +299,7 @@ public class OreMixerTests
     Assert.True(be.ToggleDrain());
     be.DrainStep(100f);
 
-    Assert.Equal(16, bunker.TotalContents);
+    Assert.Equal(19, bunker.TotalContents); // 12 iron + 1 flux + 6 fuel (3 lump coke)
     Assert.False(be.HasReadyBurden);
   }
 
@@ -341,12 +347,12 @@ public class OreMixerTests
     Assert.Equal(new BurdenMix(12f, 1f, 3f), be.Mix);
 
     // ...then topped up with coke to shift the proportions, and mixed into a fresh batch.
-    Assert.True(be.TryAddInput(Stack(items.Coke, 8)));
-    Assert.Equal(new BurdenMix(12f, 1f, 11f), be.Mix); // retuned
+    Assert.True(be.TryAddInput(Stack(items.Coke, 8))); // 8 lump coke -> +16 fuel value
+    Assert.Equal(new BurdenMix(12f, 1f, 19f), be.Mix); // retuned
 
     be.AdvanceMixing(1000f, IwexValues.MixerMaxSpeed);
     Assert.True(be.HasReadyBurden);
-    Assert.Equal(24, be.ReadyBurden);
+    Assert.Equal(32, be.ReadyBurden);
   }
 
   #endregion
@@ -360,10 +366,12 @@ public class OreMixerTests
     var stick = world.RegisterItem("game:stick");
 
     Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Iron)));
+    Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Metal)));
     Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Lime)));
     Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Coke)));
     Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Charcoal)));
     Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Burden)));
+    Assert.True(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(items.Remelt)));
     Assert.False(BlockEntityOreMixer.AcceptsAsInput(new ItemStack(stick)));
     Assert.False(BlockEntityOreMixer.AcceptsAsInput(null));
   }
@@ -373,19 +381,20 @@ public class OreMixerTests
   #region Charcoal fuel
 
   [Fact]
-  public void Two_charcoal_count_as_one_coke_of_fuel()
+  public void Two_charcoal_count_as_one_fuel_unit()
   {
     var (_, be, items) = NewMixer();
 
-    be.TryAddInput(Stack(items.Charcoal, 6)); // 6 charcoal -> 3 fuel value
+    be.TryAddInput(Stack(items.Charcoal, 6)); // 6 charcoal -> 3 fuel value (0.5 each)
 
     Assert.Equal(3f, be.Mix.Fuel, 3);
   }
 
   [Fact]
-  public void Charcoal_and_coke_burden_grade_the_same_for_equal_fuel_value()
+  public void Charcoal_charges_the_fuel_part_by_value_not_item_count()
   {
-    // 12 iron + 1 flux + 6 charcoal (=3 fuel) matches 12/1/3 coke - same proportions, same grade.
+    // 12 iron + 1 flux + 6 charcoal (= 3 fuel value at 0.5 each) -> the fuel part is 3, and the batch
+    // volume counts that value, not the six raw charcoal items.
     var (_, be, items) = NewMixer();
     be.TryAddInput(Stack(items.Iron, 12));
     be.TryAddInput(Stack(items.Lime, 1));
@@ -404,6 +413,131 @@ public class OreMixerTests
     Assert.True(be.TryAddInput(Stack(items.Charcoal, 5000)));
     Assert.Equal(IwexValues.MixerMaxRaw, be.TotalRaw);
     Assert.Equal(IwexValues.MixerMaxRaw, be.Mix.Fuel, 1);
+  }
+
+  #endregion
+
+  #region Burden family lock
+
+  [Fact]
+  public void Iron_ore_added_first_locks_the_ore_family_and_refuses_scrap()
+  {
+    var (_, be, items) = NewMixer();
+
+    Assert.True(be.TryAddInput(Stack(items.Iron, 4)));
+    Assert.Equal(Burden.FamilyOre, be.Family);
+
+    // The other primary (scrap metal) is now refused, and nothing is consumed.
+    var scrap = Stack(items.Metal, 4);
+    Assert.False(be.TryAddInput(scrap));
+    Assert.Equal(4, scrap.StackSize);
+    Assert.Equal(4, be.TotalRaw); // still just the iron
+  }
+
+  [Fact]
+  public void Scrap_added_first_locks_the_remelt_family_and_refuses_iron_ore()
+  {
+    var (_, be, items) = NewMixer();
+
+    Assert.True(be.TryAddInput(Stack(items.Metal, 4)));
+    Assert.Equal(Burden.FamilyRemelt, be.Family);
+
+    var ore = Stack(items.Iron, 4);
+    Assert.False(be.TryAddInput(ore));
+    Assert.Equal(4, ore.StackSize);
+    Assert.Equal(4, be.TotalRaw);
+  }
+
+  [Fact]
+  public void Flux_and_fuel_do_not_lock_the_family()
+  {
+    var (_, be, items) = NewMixer();
+
+    // Flux and fuel are taken by both burdens, so they must not commit the batch to a family...
+    Assert.True(be.TryAddInput(Stack(items.Lime, 2)));
+    Assert.True(be.TryAddInput(Stack(items.Coke, 1)));
+    Assert.Equal("", be.Family);
+
+    // ...and either primary can still lock it afterwards (here: scrap -> remelt, then ore refused).
+    Assert.True(be.TryAddInput(Stack(items.Metal, 4)));
+    Assert.Equal(Burden.FamilyRemelt, be.Family);
+    Assert.False(be.TryAddInput(Stack(items.Iron, 4)));
+  }
+
+  [Fact]
+  public void A_scrap_batch_drains_as_remelt_burden()
+  {
+    var (world, be, items) = NewMixer();
+    be.TryAddInput(Stack(items.Metal, 12));
+    be.TryAddInput(Stack(items.Lime, 1));
+    be.TryAddInput(Stack(items.Coke, 1));
+    be.AdvanceMixing(1000f, IwexValues.MixerMaxSpeed);
+
+    // A plain container below (the ore bunker only accepts ore burden, so remelt needs a chest).
+    var chest = ChestBelow(world, be);
+
+    Assert.True(be.ToggleDrain());
+    be.DrainStep(100f);
+
+    ItemSlot filled = chest.Inventory.First(s => !s.Empty);
+    Assert.True(Burden.IsRemelt(filled.Itemstack)); // the remelt item, not ore burden
+    Assert.False(be.HasReadyBurden);
+  }
+
+  [Fact]
+  public void Draining_the_batch_unlocks_the_family_for_the_next_one()
+  {
+    var (world, be, items) = NewMixer();
+    be.TryAddInput(Stack(items.Metal, 8));
+    be.AdvanceMixing(1000f, IwexValues.MixerMaxSpeed);
+
+    var chest = ChestBelow(world, be);
+    be.ToggleDrain();
+    be.DrainStep(100f);
+
+    Assert.False(be.HasReadyBurden);
+    Assert.Equal("", be.Family); // fully drained -> unlocked
+
+    // A fresh ore batch is now allowed.
+    Assert.True(be.TryAddInput(Stack(items.Iron, 4)));
+    Assert.Equal(Burden.FamilyOre, be.Family);
+  }
+
+  [Fact]
+  public void Reloading_a_remelt_burden_locks_the_remelt_family()
+  {
+    var (_, be, items) = NewMixer();
+    var stack = new ItemStack(items.Remelt, 16);
+    Burden.Write(stack, new BurdenMix(12f, 1f, 3f));
+
+    Assert.True(be.TryReloadBurden(new DummySlot(stack)));
+    Assert.Equal(Burden.FamilyRemelt, be.Family);
+    Assert.False(be.TryAddInput(Stack(items.Iron, 4))); // ore now refused
+  }
+
+  private static BeChest ChestBelow(TestWorld world, BlockEntityOreMixer be)
+  {
+    var chest = new BeChest { Pos = be.Pos.DownCopy() };
+    var block = TestBlocks.Configure(new Block(), "game:chest-north", 83);
+    world.Place(be.Pos.DownCopy(), block, chest);
+    world.Initialize(chest); // wires the inventory's Api (LateInitialize), like the bunker test
+    return chest;
+  }
+
+  // A minimal generic container to drain burden into. The mixer's deposit path treats any
+  // BlockEntityContainer with an inventory as a valid drop target (a crate/chest in game).
+  private sealed class BeChest : BlockEntityContainer
+  {
+    private readonly InventoryGeneric _inv = new(9, "testchest", "test", null, null);
+
+    public override InventoryBase Inventory => _inv;
+    public override string InventoryClassName => "testchest";
+
+    public override void Initialize(ICoreAPI api)
+    {
+      base.Initialize(api);
+      _inv.LateInitialize("testchest-" + Pos, api);
+    }
   }
 
   #endregion

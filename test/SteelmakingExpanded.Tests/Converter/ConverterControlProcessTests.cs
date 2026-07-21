@@ -1,26 +1,37 @@
+using System;
+using ExpandedLib.Metals;
+using ExpandedLib.Process;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using SteelmakingExpanded;
 using SteelmakingExpanded.BlockStructures.Converter;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The Bessemer converter's charge-handling process, exercised directly (the full
+/// The Bessemer converter's dynamic charge process, exercised directly (the full
 /// <c>OnProductionTick</c> is gated on four aligned peripherals + a constructed vessel, but the per-
-/// state steps are reachable on their own): filling from the input canal cell, pouring into the
-/// output cell, refining iron into steel, and latching solid below the melting point. Plus the
-/// player-facing operability gate, which must refuse an unbuilt converter.
+/// state steps and the carbon model are reachable on their own): filling molten pig and seeding its
+/// carbon, blowing carbon down to retype pig → Bessemer steel (and past it, over-blow → soft iron),
+/// the mass-conserving slag/steel split, the cold-scrap temperature gate + its emergent freeze cap,
+/// and the split slag/steel pour out the shared output cell.
 /// </summary>
 public class ConverterControlProcessTests
 {
-  private const string Iron = "game:ingot-iron";
-  private const string Steel = "game:ingot-steel";
+  // Resolved the same way the control resolves them, so a headless registry (game: convention) and a
+  // populated one (iwex:/smex:) both line up between what we push and what the control reads.
+  private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
+  private static string Steel =>
+    MetalRegistry.MoltenItemOf("bessemersteel").ToString();
+  private static string Iron => MetalRegistry.MoltenItemOf("iron").ToString();
+  private static string Slag => MetalRegistry.MoltenItemOf("slag").ToString();
+
+  private const float PigMelt = 1150f;
 
   // Structure-local peripheral offsets (mirrors the private constants in the control).
   private static readonly (int x, int y, int z) InputTapLocal = (1, 1, 2);
@@ -29,9 +40,23 @@ public class ConverterControlProcessTests
   private static TestWorld NewWorld()
   {
     var world = new TestWorld();
-    world.RegisterItem(Iron, 1500f);
-    world.RegisterItem(Steel, 1500f);
+    // Register both the convention (game:) and the shipped (iwex:/smex:) codes so the resolved token
+    // resolves to a real item whatever the static MetalRegistry state is under the test runner.
+    foreach (
+      var (code, melt) in new[]
+      {
+        ("game:ingot-pigiron", PigMelt),
+        ("iwex:ingot-pigiron", PigMelt),
+        ("game:ingot-bessemersteel", 1500f),
+        ("smex:ingot-bessemersteel", 1500f),
+        ("game:ingot-iron", 1500f),
+        ("game:ingot-slag", 1200f),
+        ("iwex:slag", 1200f),
+      }
+    )
+      world.RegisterItem(code, melt);
     world.RegisterItem("game:metalbit-iron");
+    world.RegisterItem("game:metalbit-steel");
     return world;
   }
 
@@ -48,7 +73,6 @@ public class ConverterControlProcessTests
       ),
     };
     world.Attach(be);
-    // Establish the structure angle so the peripheral offsets resolve (Initialize would do this).
     ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
     return be;
   }
@@ -56,7 +80,6 @@ public class ConverterControlProcessTests
   private static ItemStack Metal(TestWorld world, string code, float temp) =>
     MoltenMetal.CreateStack(world.World, code, temp)!;
 
-  /// <summary>Places a molten-canal cell at the control's resolved peripheral offset and returns it.</summary>
   private static BlockEntityMoltenCanal PlaceCell(
     TestWorld world,
     BlockEntityConverterControl control,
@@ -92,40 +115,219 @@ public class ConverterControlProcessTests
   private static int ChargeUnits(BlockEntityConverterControl be) =>
     Charge(be)?.Units ?? 0;
 
+  private static string ChargeCode(BlockEntityConverterControl be) =>
+    Charge(be)?.MetalCode.ToString() ?? "";
+
+  private static float CarbonOf(BlockEntityConverterControl be) =>
+    (float)ReflectionHelpers.GetField(be, "_carbon")!;
+
+  private static float SlagOf(BlockEntityConverterControl be) =>
+    (float)ReflectionHelpers.GetField(be, "_moltenSlag")!;
+
+  // Loads a pig charge (units + carbon + the pig-mass yield basis) directly, as a fill would have.
+  private static void GivePig(
+    TestWorld world,
+    BlockEntityConverterControl be,
+    int units,
+    float temp = 1600f
+  )
+  {
+    ReflectionHelpers.SetField(
+      be,
+      "_charge",
+      MoltenCharge.Of(Metal(world, Pig, temp), units)
+    );
+    ReflectionHelpers.SetField(be, "_carbon", SmexValues.BessemerPigCarbonStart);
+    ReflectionHelpers.SetField(be, "_pigCharged", units);
+  }
+
+  // Blows exactly the blast that takes the bath's carbon down to `to`, so a test picks the phase
+  // (still pig / at steel / over-blown) precisely rather than juggling litres.
+  private static void BlowToCarbon(BlockEntityConverterControl be, float to)
+  {
+    float carbon = CarbonOf(be);
+    float blast = Math.Max(
+      0f,
+      (carbon - to) / SmexValues.BessemerCarbonPerBlastLitre
+    );
+    ReflectionHelpers.Invoke(be, "BlowStep", blast);
+  }
+
+  private static HeatBalance HeatBalance(
+    BlockEntityConverterControl be,
+    float airFactor
+  ) =>
+    (HeatBalance)
+      ReflectionHelpers.Invoke(be, "ComputeHeatBalance", airFactor)!;
+
   #region Filling
 
   [Fact]
-  public void TickFilling_draws_molten_metal_from_the_input_cell()
+  public void TickFilling_draws_molten_pig_and_seeds_the_carbon()
   {
     var world = NewWorld();
     var be = Control(world);
     var input = PlaceCell(world, be, InputTapLocal);
-    input.PushMetal(50, Metal(world, Iron, 1400f), world.World);
+    input.PushMetal(50, Metal(world, Pig, 1600f), world.World);
 
     ReflectionHelpers.Invoke(be, "TickFilling", 1f);
 
     Assert.Equal(50, ChargeUnits(be));
     Assert.True(input.IsCellEmpty); // drained into the vessel
-  }
-
-  [Fact]
-  public void TickFilling_does_nothing_when_the_input_cell_is_empty()
-  {
-    var world = NewWorld();
-    var be = Control(world);
-    PlaceCell(world, be, InputTapLocal); // present but empty
-
-    ReflectionHelpers.Invoke(be, "TickFilling", 1f);
-
-    Assert.Equal(0, ChargeUnits(be));
+    // Fresh pig seeds the blow's carbon and records the pig-mass yield basis.
+    Assert.Equal(SmexValues.BessemerPigCarbonStart, CarbonOf(be), 4);
+    Assert.Equal(50, (int)ReflectionHelpers.GetField(be, "_pigCharged")!);
   }
 
   #endregion
 
-  #region Pouring
+  #region The dynamic carbon model
 
   [Fact]
-  public void TickPouring_pushes_the_charge_into_the_output_cell()
+  public void Blowing_to_the_carbon_target_retypes_pig_to_bessemer_steel()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000);
+
+    // Blow down into the steel window (below the target, still above the over-blow floor).
+    BlowToCarbon(
+      be,
+      (SmexValues.BessemerSteelCarbonTarget + SmexValues.BessemerOverblowCarbon)
+        / 2f
+    );
+
+    Assert.Contains("bessemersteel", ChargeCode(be));
+  }
+
+  [Fact]
+  public void Stopping_the_blow_above_the_target_leaves_it_as_pig()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000);
+
+    // A short blow that does not reach the target: still pig, not yet steel.
+    BlowToCarbon(be, SmexValues.BessemerSteelCarbonTarget * 2f);
+
+    Assert.Contains("pigiron", ChargeCode(be));
+  }
+
+  [Fact]
+  public void Blowing_past_the_target_over_blows_the_steel_to_ingot_iron()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000);
+
+    // First reach steel, then keep blowing past the over-blow floor.
+    BlowToCarbon(
+      be,
+      (SmexValues.BessemerSteelCarbonTarget + SmexValues.BessemerOverblowCarbon)
+        / 2f
+    );
+    Assert.Contains("bessemersteel", ChargeCode(be));
+
+    BlowToCarbon(be, SmexValues.BessemerOverblowCarbon / 2f);
+
+    Assert.Equal(Iron, ChargeCode(be)); // soft ingot iron, the deliberate plain-iron path
+  }
+
+  [Fact]
+  public void A_full_blow_conserves_mass_steel_plus_slag_never_exceeding_the_pig()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000);
+
+    // Blow the whole heat down to steel: mass sheds off the charge into slag (+ gas) as it goes.
+    BlowToCarbon(be, SmexValues.BessemerSteelCarbonTarget / 2f);
+
+    int steel = ChargeUnits(be);
+    float slag = SlagOf(be);
+    Assert.Contains("bessemersteel", ChargeCode(be));
+    // R2: never create matter - the gas share is the only thing that left.
+    Assert.True(steel + slag <= 1000, $"steel {steel} + slag {slag} > 1000");
+    // ~90u steel + ~6u slag per 100u pig (the shipped yields), leaving the ~4u gas.
+    Assert.Equal(1000 * SmexValues.BessemerSteelYield, steel, 0f);
+    Assert.Equal(1000 * SmexValues.BessemerSlagYield, slag, 1f);
+  }
+
+  #endregion
+
+  #region Cold steel scrap - the temperature gate
+
+  [Fact]
+  public void Cold_scrap_lowers_the_process_temperature()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 2000);
+
+    float peakNoScrap = HeatBalance(be, 1f).TProcess;
+
+    ReflectionHelpers.SetField(be, "_scrapUnits", 400);
+    float peakWithScrap = HeatBalance(be, 1f).TProcess;
+
+    Assert.True(
+      peakWithScrap < peakNoScrap,
+      $"scrap should lower the peak: {peakWithScrap} !< {peakNoScrap}"
+    );
+  }
+
+  [Fact]
+  public void A_modest_scrap_charge_still_refines_and_yields_extra_steel()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000);
+    ReflectionHelpers.SetField(be, "_scrapUnits", 200);
+
+    // Modest scrap keeps the bath above the refine floor, so the blow completes.
+    Assert.True(HeatBalance(be, 1f).TProcess >= SmexValues.BessemerRefineTemperature);
+
+    BlowToCarbon(be, SmexValues.BessemerSteelCarbonTarget / 2f);
+
+    // The scrap melts into the steel at the target: pig-steel (~900) + scrap-steel (~200 × yield).
+    int expected =
+      (int)(1000 * SmexValues.BessemerSteelYield)
+      + (int)Math.Round(200 * SmexValues.BessemerScrapSteelYield);
+    Assert.Contains("bessemersteel", ChargeCode(be));
+    Assert.Equal(expected, ChargeUnits(be));
+    Assert.True(
+      ChargeUnits(be) > 1000 * SmexValues.BessemerSteelYield,
+      "scrap should yield more steel than pig alone"
+    );
+  }
+
+  [Fact]
+  public void An_excessive_scrap_charge_freezes_the_bath_before_it_refines()
+  {
+    var world = NewWorld();
+    var be = Control(world);
+    GivePig(world, be, 1000, temp: 1600f);
+    // Far past the practical ceiling: the blast cannot keep this much cold mass molten.
+    ReflectionHelpers.SetField(be, "_scrapUnits", 3000);
+
+    HeatBalance hb = HeatBalance(be, 1f);
+    Assert.True(
+      hb.TProcess < PigMelt,
+      $"an excessive scrap charge should drag T_process ({hb.TProcess}) below the melt point"
+    );
+
+    // The blow drives the bath to that frozen equilibrium; the solidify latch then catches it - the
+    // emergent scrap cap reusing the existing solidified/chisel path, no hardcoded limit.
+    ReflectionHelpers.Invoke(be, "HoldBathTemperature", hb.TProcess);
+    ReflectionHelpers.Invoke(be, "UpdateSolidified");
+    Assert.True((bool)ReflectionHelpers.GetField(be, "_solidified")!);
+  }
+
+  #endregion
+
+  #region Split-pour out the shared output cell
+
+  [Fact]
+  public void TickSteelPouring_pushes_the_steel_into_the_output_cell()
   {
     var world = NewWorld();
     var be = Control(world);
@@ -133,35 +335,36 @@ public class ConverterControlProcessTests
     ReflectionHelpers.SetField(
       be,
       "_charge",
-      MoltenCharge.Of(Metal(world, Iron, 1400f), 40)
+      MoltenCharge.Of(Metal(world, Steel, 1600f), 300)
     );
 
-    ReflectionHelpers.Invoke(be, "TickPouring", 1f);
+    ReflectionHelpers.Invoke(be, "TickSteelPouring", 1f);
 
     Assert.True(output.CellAmount > 0);
-    Assert.Equal(Iron, output.CellMetalType);
-    Assert.Equal(0, ChargeUnits(be));
+    Assert.Contains("bessemersteel", output.CellMetalType);
+    Assert.True(ChargeUnits(be) < 300); // drained toward the canal
   }
 
-  #endregion
-
-  #region Refining
-
   [Fact]
-  public void CompleteRefining_turns_the_iron_charge_into_steel()
+  public void TickSlagPouring_pushes_slag_out_of_the_same_output_cell()
   {
     var world = NewWorld();
     var be = Control(world);
+    var output = PlaceCell(world, be, OutputStartLocal);
+    // A steel charge is present (its temperature feeds the slag), with slag floating on top.
     ReflectionHelpers.SetField(
       be,
       "_charge",
-      MoltenCharge.Of(Metal(world, Iron, 1400f), 50)
+      MoltenCharge.Of(Metal(world, Steel, 1600f), 300)
     );
+    ReflectionHelpers.SetField(be, "_moltenSlag", 40f);
 
-    ReflectionHelpers.Invoke(be, "CompleteRefining");
+    ReflectionHelpers.Invoke(be, "TickSlagPouring", 1f);
 
-    var content = Charge(be)!.Stack;
-    Assert.Equal(Steel, content.Collectible.Code.ToString());
+    Assert.True(output.CellAmount > 0);
+    Assert.Contains("slag", output.CellMetalType);
+    Assert.True(SlagOf(be) < 40f); // slag drained, steel untouched
+    Assert.Equal(300, ChargeUnits(be));
   }
 
   #endregion
@@ -169,7 +372,7 @@ public class ConverterControlProcessTests
   #region Solidify latch
 
   [Theory]
-  [InlineData(1600f, false)] // above the 1500 melt point -> stays liquid
+  [InlineData(1600f, false)] // above the 1150 pig melt point -> stays liquid
   [InlineData(300f, true)] // below melt -> latches solid
   public void UpdateSolidified_latches_against_the_melting_point(
     float temp,
@@ -181,7 +384,7 @@ public class ConverterControlProcessTests
     ReflectionHelpers.SetField(
       be,
       "_charge",
-      MoltenCharge.Of(Metal(world, Iron, temp), 30)
+      MoltenCharge.Of(Metal(world, Pig, temp), 30)
     );
 
     ReflectionHelpers.Invoke(be, "UpdateSolidified");
