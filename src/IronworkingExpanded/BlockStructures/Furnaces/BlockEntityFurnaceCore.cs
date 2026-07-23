@@ -29,6 +29,12 @@ namespace IronworkingExpanded.BlockStructures.Furnaces;
 /// </summary>
 public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 {
+  // The furnace runs on game time: on reload it replays the game-time it spent unloaded as bounded
+  // 1-second sub-ticks (its timers all accumulate dt, so a replayed tick is an ordinary one). A furnace
+  // left burning while the player was away has therefore progressed on their return - up to ~10 minutes
+  // of smelting, capped so a long absence neither stalls the server nor leaps a timer.
+  protected override int MaxAwayCatchupSteps => 600;
+
   /// <summary>Whether the exhaust network is full, stalling production.</summary>
   public bool IsChoked { get; protected set; }
 
@@ -821,9 +827,6 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
   /// <summary>Drains the molten products into their taps; sets <paramref name="dirty"/> when state changed.</summary>
   protected abstract void DrainProducts(ref bool dirty);
 
-  /// <summary>Appends the product-specific HUD lines shown while Melting.</summary>
-  protected abstract void AppendProductInfo(StringBuilder sb);
-
   #endregion
 
   #region Extinguish residue
@@ -1089,6 +1092,73 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
 
   #endregion
 
+  #region Component HUD slices
+
+  // The furnace HUD is spread across its functional component blocks: each scans up to this core (its
+  // anchor) and reads the synced state below, showing only its own slice - the taps the pool they drain,
+  // the tall hopper the burden in the shaft - while the core keeps the heat ledger. The formatting and
+  // lang keys live here, with the data, so a component stays a thin caller and the cupola inherits the
+  // split for free. See the survey / docs for the rationale.
+
+  /// <summary>How far a functional component scans to find its core: <see cref="ComponentScanBelow"/>
+  /// cells down (the cold furnace's tall hopper sits six cells above the hearth, the taps one-two),
+  /// <see cref="ComponentScanAbove"/> up, and <see cref="ComponentScanHorizontal"/> out per horizontal
+  /// axis (the taps reach x=+/-2). Generous over the current layouts; <see cref="OwnsCell"/> rejects any
+  /// non-owning core the wider box happens to catch, so the slack is safe.</summary>
+  public const int ComponentScanHorizontal = 3;
+  public const int ComponentScanBelow = 8;
+  public const int ComponentScanAbove = 1;
+
+  /// <summary>World cell of the lower (metal) tap for the placed rotation. A tap compares its own
+  /// position against this to know it is the metal tap - and shows the metal pool rather than the slag.</summary>
+  public BlockPos MetalTapPos
+  {
+    get
+    {
+      EnsureStructureLoaded();
+      return GlobalOf(MetalTapCell);
+    }
+  }
+
+  /// <summary>World cell of the higher (slag) tap for the placed rotation.</summary>
+  public BlockPos SlagTapPos
+  {
+    get
+    {
+      EnsureStructureLoaded();
+      return GlobalOf(SlagTapCell);
+    }
+  }
+
+  /// <summary>
+  /// The tall hopper's slice: the burden loaded in the shaft against the fire threshold, plus the
+  /// wrong-family warning - shown at the hopper the player charges. Silent until the structure is
+  /// complete (an incomplete furnace has no meaningful shaft count).
+  /// </summary>
+  public void AppendShaftChargeInfo(StringBuilder sb)
+  {
+    if (!StructureComplete)
+      return;
+    sb.AppendLine(
+      Lang.Get(
+        "iwex:bf-info-mixloaded",
+        _cachedMixCount,
+        BlastMixRequiredToFire
+      )
+    );
+    // A shaft can read full and still refuse to make metal; name the mismatch beside the count.
+    AppendWrongBurdenInfo(sb);
+  }
+
+  /// <summary>The lower tap's slice: the molten metal pool it drains. No-op on a furnace with no metal
+  /// pool; <see cref="BlockEntities.BlockEntityBlastFurnace"/> overrides it.</summary>
+  public virtual void AppendMoltenMetalInfo(StringBuilder sb) { }
+
+  /// <summary>The upper tap's slice: the molten slag pool it drains. See <see cref="AppendMoltenMetalInfo"/>.</summary>
+  public virtual void AppendMoltenSlagInfo(StringBuilder sb) { }
+
+  #endregion
+
   #region HUD
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
@@ -1103,17 +1173,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
       }
       else
       {
-        sb.AppendLine(
-          Lang.Get(
-            "iwex:bf-info-mixloaded",
-            _cachedMixCount,
-            BlastMixRequiredToFire
-          )
-        );
-
-        // Named in every state (lit or not): a shaft can read full and still refuse to make metal.
-        AppendWrongBurdenInfo(sb);
-
+        // The furnace HUD is spread across its component blocks: the mix-loaded + wrong-burden lines
+        // moved to the tall hopper (the burden slice), and the molten pools to the taps that drain them.
+        // This core keeps only the temperature/threshold/heat-contributor ledger and the lit-state lines.
         if (State != FurnaceState.Idle)
         {
           string stateName = Lang.Get(
@@ -1122,15 +1184,12 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
           sb.AppendLine(Lang.Get("iwex:bf-info-state", stateName));
           AppendHeatBalanceInfo(sb);
 
-          if (State == FurnaceState.Melting)
-          {
-            AppendProductInfo(sb);
-          }
-          else if (
+          if (
             State == FurnaceState.Firing
             && _internalTemp >= _ironMeltingPoint
             // A blocked furnace is at heat but will never cross into Melting - the wrong-burden line
-            // above is the honest readout, not a melting-progress bar that would climb to 100% and stall.
+            // (now at the hopper) is the honest readout, not a melting-progress bar that would climb
+            // to 100% and stall.
             && !ConversionBlocked
           )
           {

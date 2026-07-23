@@ -1,5 +1,6 @@
 using System.Text;
 using ExpandedLib.Blocks.Animation;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -17,12 +18,32 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 /// hand down into the canal start beneath it.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityMoltenMetalTap : BlockEntity
+public class BlockEntityMoltenMetalTap : BlockEntity, IMultiblockComponent
 {
   /// <summary>Whether the tap is currently open and pouring.</summary>
   public bool IsPouring { get; private set; } = false;
 
   private ToggleAnimator? _toggle;
+
+  // Both taps of a furnace are this same block; each scans up to the furnace core it belongs to and
+  // shows the pool it drains - the lower (metal) tap the metal, the upper the slag. Which one a tap is
+  // is decided by comparing its cell against the core's Metal/SlagTapPos, not by any per-tap state.
+  // The same link answers the build-outline projection (ResolveOwningAnchor): a tap on an incomplete
+  // furnace previews it, one with no furnace does nothing.
+  private MultiblockAnchorLink<BlockEntityFurnaceCore>? _anchor;
+
+  /// <summary>The furnace this tap belongs to, resolved by scanning up to the core whose layout owns the
+  /// tap's cell (cached + throttled by the link). Drives both the pool HUD and the shared build outline.</summary>
+  private MultiblockAnchorLink<BlockEntityFurnaceCore> Anchor =>
+    _anchor ??= new MultiblockAnchorLink<BlockEntityFurnaceCore>(
+      this,
+      BlockEntityFurnaceCore.ComponentScanHorizontal,
+      BlockEntityFurnaceCore.ComponentScanBelow,
+      BlockEntityFurnaceCore.ComponentScanAbove
+    );
+
+  /// <inheritdoc/>
+  public BlockEntityMultiblockStructure? ResolveOwningAnchor() => Anchor.Resolve();
 
   #region Lifecycle
 
@@ -119,7 +140,22 @@ public class BlockEntityMoltenMetalTap : BlockEntity
         Lang.Get(IsPouring ? "iwex:tap-open" : "iwex:tap-closed")
       )
     );
+
+    // Resolve the furnace this tap drains and show its pool - metal from the lower tap, slag from the
+    // upper. A bare tap with no furnace (the scan finds no owner) shows only the open/closed line above.
+    if (Anchor.Resolve() is { } core)
+    {
+      if (SamePos(Pos, core.MetalTapPos))
+        core.AppendMoltenMetalInfo(dsc);
+      else if (SamePos(Pos, core.SlagTapPos))
+        core.AppendMoltenSlagInfo(dsc);
+    }
   }
+
+  // Coordinate-only equality: the tap and the core's tap cells share a dimension, so comparing X/Y/Z is
+  // enough and side-steps BlockPos.Equals's dimension field.
+  private static bool SamePos(BlockPos a, BlockPos b) =>
+    a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 
   #endregion
 

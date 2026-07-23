@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.Items;
@@ -27,12 +28,31 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperTall : BlockEntity
+public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent
 {
   // The whole tank is one burden stack (item identity = family, attributes = grade). Null when empty.
   private ItemStack? _tank;
 
   private long _tickId;
+
+  // The hopper feeds the shaft below, so it also surfaces the furnace's burden slice - how much charge
+  // is loaded, and any wrong-family warning. Scans down for the core it drips into (six cells below in
+  // the cold furnace, four in the cupola); silent when the hopper is not over a furnace. The same link
+  // answers the build-outline projection (ResolveOwningAnchor) so the hopper previews an incomplete furnace.
+  private MultiblockAnchorLink<BlockEntityFurnaceCore>? _anchor;
+
+  /// <summary>The furnace this hopper charges, resolved by scanning down to the core whose layout owns the
+  /// hopper's cell (cached + throttled by the link). Drives both the shaft-charge HUD and the build outline.</summary>
+  private MultiblockAnchorLink<BlockEntityFurnaceCore> Anchor =>
+    _anchor ??= new MultiblockAnchorLink<BlockEntityFurnaceCore>(
+      this,
+      BlockEntityFurnaceCore.ComponentScanHorizontal,
+      BlockEntityFurnaceCore.ComponentScanBelow,
+      BlockEntityFurnaceCore.ComponentScanAbove
+    );
+
+  /// <inheritdoc/>
+  public BlockEntityMultiblockStructure? ResolveOwningAnchor() => Anchor.Resolve();
 
   /// <summary>Structure-local candidate columns the drip searches, own column first, then the four
   /// horizontal neighbours - so a hopper sitting directly over the shaft AND one sitting beside-and-above
@@ -322,18 +342,24 @@ public class BlockEntityHopperTall : BlockEntity
     if (_tank == null || _tank.StackSize <= 0)
     {
       dsc.AppendLine(Lang.Get("iwex:hoppertall-empty"));
-      return;
     }
-    dsc.AppendLine(
-      Lang.Get(
-        "iwex:hoppertall-holds",
-        _tank.StackSize,
-        Capacity,
-        _tank.GetName()
-      )
-    );
-    // Which furnace this burden is for, so a mis-loaded hopper reads its mistake before the furnace stalls.
-    dsc.AppendLine(Lang.Get("iwex:burden-for-" + Burden.FamilyOf(_tank)));
+    else
+    {
+      dsc.AppendLine(
+        Lang.Get(
+          "iwex:hoppertall-holds",
+          _tank.StackSize,
+          Capacity,
+          _tank.GetName()
+        )
+      );
+      // Which furnace this burden is for, so a mis-loaded hopper reads its mistake before the furnace stalls.
+      dsc.AppendLine(Lang.Get("iwex:burden-for-" + Burden.FamilyOf(_tank)));
+    }
+
+    // The shaft may hold burden even with the tank empty (the hopper dripped it all down), so this runs
+    // regardless of the tank lines above. Silent until an anchor resolves and its structure is complete.
+    Anchor.Resolve()?.AppendShaftChargeInfo(dsc);
   }
 
   #endregion

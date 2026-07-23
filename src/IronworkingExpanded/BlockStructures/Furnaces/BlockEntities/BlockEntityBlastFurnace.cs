@@ -483,11 +483,30 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
 
   #region HUD product lines
 
-  protected override void AppendProductInfo(StringBuilder sb)
+  // The molten pools are shown at the taps that drain them, not the core: the lower tap surfaces the
+  // metal pool, the upper the slag (the tap picks which by comparing its cell to Metal/SlagTapPos).
+  // Self-gated so a cold or empty tap shows only its open/closed line - the readout appears exactly
+  // when there is metal to pour (while melting, or a pool still draining down after the fire stops).
+
+  public override void AppendMoltenMetalInfo(StringBuilder sb)
   {
+    if (
+      !StructureComplete
+      || (State != FurnaceState.Melting && _moltenIron <= 0f)
+    )
+      return;
     sb.AppendLine(
       Lang.Get(MoltenProductInfoLangKey, _moltenIron, _maxMoltenIron)
     );
+  }
+
+  public override void AppendMoltenSlagInfo(StringBuilder sb)
+  {
+    if (
+      !StructureComplete
+      || (State != FurnaceState.Melting && _moltenSlag <= 0f)
+    )
+      return;
     sb.AppendLine(
       Lang.Get(IwexLang.BfInfoMoltenslag, _moltenSlag, _maxMoltenSlag)
     );

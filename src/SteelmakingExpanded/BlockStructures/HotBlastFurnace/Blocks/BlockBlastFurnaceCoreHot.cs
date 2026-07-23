@@ -26,7 +26,20 @@ public partial class BlockBlastFurnaceCoreHot
       Core(domain, "blastfurnacecore", "blastfurnace/core")
         .Class<BlockBlastFurnaceCoreHot>()
         .EntityClass<BlockEntityBlastFurnaceHot>()
+        // A tier-3 refractory-brick cube: plain brick on the side faces, the orientation marker on the
+        // north face and the "BF/H" (blast furnace, hot) type label on the south, so the anchor reads
+        // apart from the cold core and the cupola - and shows which way it faces - at a glance.
         .Texture("all", "game:block/clay/refractory/tier3/front1")
+        .Texture(
+          "north",
+          "game:block/clay/refractory/tier3/front1",
+          "smex:block/furnace/n"
+        )
+        .Texture(
+          "south",
+          "game:block/clay/refractory/tier3/front1",
+          "smex:block/furnace/bfh"
+        )
         // The furnace footprint, drawn as one top-down cross-section per Y level (rows +Z, cols +X,
         // origin x=-3/z=-2 so the core lands on the layout's own (0,0,0)). y=0 the hearth floor ..
         // y=8 the reinforced charging hopper. Legend: # refractory brick, C the core (origin), T tap,

@@ -1,214 +1,174 @@
+using System;
 using System.Text;
-using ExpandedLib.Materials;
+using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.Compat;
+using IronworkingExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.GameContent;
 
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
 /// <summary>
-/// Block entity for the reinforced hopper: an 8-slot container holding the iron ore,
-/// coke and flux that the bell hopper below consumes to craft blast mix. Right-click
-/// opens its dialog; Ctrl + right-click toggles the bell hopper's dropping.
+/// The reinforced hopper: a small burden tank that sits above the bell hopper and feeds it. It no longer
+/// mixes anything - the ore mixer now stamps the blast-furnace burden, and this is just the loading bunker
+/// the player (or, later, the skip hoist) tops up. A right-click with burden fills the tank, an empty-handed
+/// right-click empties it, and Ctrl + right-click toggles the bell hopper's dropping below.
+/// <para>
+/// A single burden <see cref="ItemStack"/>, so it holds one grade at a time (a mismatched deposit is
+/// refused). Deliberately a much smaller buffer than the tall hopper's tank: it is meant to be skip-hoist
+/// fed rather than hand-loaded to the brim. The bell hopper below pulls from it (<see cref="DrawBurden"/>)
+/// into its own magazine and drips that down the shaft.
+/// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperReinforced : BlockEntityContainer
+public class BlockEntityHopperReinforced : BlockEntity
 {
-  private InventoryGeneric _inventory;
+  // The whole tank is one burden stack (item identity = family, attributes = grade). Null when empty.
+  private ItemStack? _tank;
 
-  // The open inventory dialog (client-side only; null when closed).
-  private GuiDialogHopper? _invDialog;
-
-  // Block-entity packet ids for the open/close handshake, matching the vanilla
-  // openable-container protocol (see OnReceivedClientPacket).
-  private const int PacketIdOpen = 1000;
-  private const int PacketIdClose = 1001;
-
-  // Cached, untranslated mesh of the blast-mix contents pile (built lazily client-side).
+  // Cached, untranslated mesh of the burden contents pile (built lazily client-side).
   private MeshData? _contentsBaseMesh;
 
-  // The contents pile is drawn between these heights (in 1/16 block units) inside the
-  // hopper, scaling with how full the bell hopper's magazine is below.
+  // The contents pile is drawn between these heights (in 1/16 block units) inside the hopper, scaling
+  // with how full the tank is.
   private const float ContentsMinY = 9f;
   private const float ContentsMaxY = 14f;
 
-  public override InventoryBase Inventory => _inventory;
-  public override string InventoryClassName => "hopperreinforced";
+  /// <summary>Burden units currently held (0 when empty). Serialized, so the client HUD/mesh read it.</summary>
+  public int TankCount => _tank?.StackSize ?? 0;
 
-  public BlockEntityHopperReinforced()
-  {
-    _inventory = new InventoryBlastFurnace(8, "hopperreinforced-0", null, null);
-  }
+  /// <summary>The burden stack the tank holds (or null when empty), for the block's break drops. The
+  /// caller must not mutate it - clone first.</summary>
+  public ItemStack? TankContents => _tank;
 
-  public override void Initialize(ICoreAPI api)
-  {
-    base.Initialize(api);
-    _inventory.LateInitialize(
-      InventoryClassName + "-" + Pos.X + "/" + Pos.Y + "/" + Pos.Z,
-      api
-    );
-  }
+  /// <summary>Maximum units the tank holds. Live config; small by design (skip-hoist fed).</summary>
+  public int Capacity => SmexValues.HopperReinforcedCapacity;
 
-  /// <summary>Opens the hopper inventory, or (with Ctrl held) toggles dropping on the bell hopper below.</summary>
-  public void OnInteract(IPlayer byPlayer)
-  {
-    if (byPlayer.Entity.Controls.CtrlKey)
-    {
-      if (
-        Api.Side == EnumAppSide.Server
-        && Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
-          is BlockEntityHopperBell bell
-      )
-      {
-        bell.IsDropping = !bell.IsDropping;
-        bell.MarkDirty(true);
-      }
-      return;
-    }
+  /// <summary>Whether the tank is at capacity.</summary>
+  public bool IsFull => TankCount >= Capacity;
 
-    // The dialog lives entirely on the client. The server opens/closes the inventory
-    // and applies slot moves through the open/close/slot packets handled in
-    // OnReceivedClientPacket - without that handshake the server never registers the
-    // clicks, so the client and server inventories silently diverge.
-    if (Api.Side == EnumAppSide.Client)
-      ToggleDialog((ICoreClientAPI)Api, byPlayer);
-  }
-
-  private void ToggleDialog(ICoreClientAPI capi, IPlayer byPlayer)
-  {
-    if (_invDialog != null)
-    {
-      _invDialog.TryClose();
-      return;
-    }
-
-    _invDialog = new GuiDialogHopper(
-      Lang.Get("smex:hopper-dialog-title"),
-      Inventory,
-      Pos,
-      capi
-    );
-    _invDialog.OnClosed += () =>
-    {
-      _invDialog = null;
-      capi.Network.SendBlockEntityPacket(Pos, PacketIdClose);
-    };
-    _invDialog.TryOpen();
-
-    capi.Network.SendPacketClient(Inventory.Open(byPlayer));
-    capi.Network.SendBlockEntityPacket(Pos, PacketIdOpen);
-  }
+  #region Deposit / withdraw (driven from the block)
 
   /// <summary>
-  /// Server-side handling of the inventory dialog packets. The base
-  /// <see cref="BlockEntityContainer"/> does not route these, so slot moves from the
-  /// dialog grid would otherwise be dropped, leaving the server inventory out of sync
-  /// with what the player sees. Mirrors the vanilla openable-container protocol.
+  /// Whether <paramref name="stack"/> can enter the tank right now: it must be prepared burden of either
+  /// family, and - once the tank holds something - must match what is already in it (same item and grade),
+  /// because one stack cannot carry two grades. An empty tank accepts any single burden.
   /// </summary>
-  public override void OnReceivedClientPacket(
-    IPlayer player,
-    int packetid,
-    byte[] data
-  )
+  public bool Accepts(ItemStack? stack) =>
+    Burden.IsAny(stack) && (_tank == null || IsMergeable(stack));
+
+  /// <summary>
+  /// Moves burden from <paramref name="fromSlot"/> into the tank. With <paramref name="wholeStack"/> it
+  /// takes the whole held stack (ctrl+right-click), otherwise a single unit (plain right-click), each
+  /// capped by the remaining room. Server-side. Returns true when anything moved; false for a foreign or
+  /// mismatched stack, or a full tank - the block turns the mismatch into an in-game error.
+  /// </summary>
+  public bool TryDeposit(ItemSlot fromSlot, bool wholeStack)
   {
-    if (packetid == PacketIdClose)
+    ItemStack? incoming = fromSlot.Itemstack;
+    if (!Accepts(incoming))
+      return false;
+
+    int room = Capacity - TankCount;
+    int take = Math.Min(wholeStack ? fromSlot.StackSize : 1, room);
+    if (take <= 0)
+      return false;
+
+    if (_tank == null)
     {
-      player.InventoryManager?.CloseInventory(Inventory);
-      return;
-    }
-
-    if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
-    {
-      Api.World.Logger.Audit(
-        "Player {0} sent a hopper inventory packet to {1} without claim access. Rejected.",
-        player.PlayerName,
-        Pos
-      );
-      return;
-    }
-
-    if (packetid < 1000)
-    {
-      Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
-      return;
-    }
-
-    if (packetid == PacketIdOpen)
-    {
-      player.InventoryManager?.OpenInventory(Inventory);
-      return;
-    }
-
-    base.OnReceivedClientPacket(player, packetid, data);
-  }
-
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
-    base.GetBlockInfo(forPlayer, dsc);
-
-    if (
-      Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
-      is BlockEntityHopperBell bell
-    )
-    {
-      dsc.AppendLine(
-        Lang.Get(
-          "smex:hopper-info-bell",
-          bell.IsDropping
-            ? Lang.Get("smex:hopper-state-dropping")
-            : Lang.Get("smex:hopper-state-stopped")
-        )
-      );
-      dsc.AppendLine(
-        Lang.Get(
-          "smex:hopper-info-magazine",
-          bell.BlastMixMagazine,
-          bell.MaxMagazineCapacity
-        )
-      );
-
-      if (bell.IsFurnaceFull())
-      {
-        dsc.AppendLine(Lang.Get("smex:hopper-info-furnacefull"));
-      }
+      _tank = incoming!.Clone();
+      _tank.StackSize = take;
     }
     else
     {
-      dsc.AppendLine(Lang.Get("smex:hopper-info-nobell"));
+      _tank.StackSize += take;
+    }
+
+    fromSlot.TakeOut(take);
+    fromSlot.MarkDirty();
+    MarkDirty(true);
+    return true;
+  }
+
+  /// <summary>Empties the tank, handing back the whole burden stack (or null when already empty).</summary>
+  public ItemStack? TryWithdraw()
+  {
+    if (_tank == null || _tank.StackSize <= 0)
+      return null;
+    ItemStack taken = _tank;
+    _tank = null;
+    MarkDirty(true);
+    return taken;
+  }
+
+  /// <summary>The tank's burden stack for a read-only peek (the bell reads its grade before pulling). Do
+  /// not mutate - clone first.</summary>
+  public ItemStack? PeekTank() => _tank;
+
+  /// <summary>Removes up to <paramref name="max"/> burden units from the tank and returns them as a stack
+  /// (its grade preserved), or null when empty. The bell hopper below draws its magazine this way.</summary>
+  public ItemStack? DrawBurden(int max)
+  {
+    if (_tank == null || _tank.StackSize <= 0 || max <= 0)
+      return null;
+
+    int take = Math.Min(max, _tank.StackSize);
+    ItemStack drawn = _tank.Clone();
+    drawn.StackSize = take;
+
+    _tank.StackSize -= take;
+    if (_tank.StackSize <= 0)
+      _tank = null;
+
+    MarkDirty(true);
+    return drawn;
+  }
+
+  /// <summary>Flips the bell hopper below between dropping and stopped (the Ctrl + right-click gesture).
+  /// Server-side.</summary>
+  public void ToggleBellDropping()
+  {
+    if (
+      Api.Side == EnumAppSide.Server
+      && Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
+        is BlockEntityHopperBell bell
+    )
+    {
+      bell.IsDropping = !bell.IsDropping;
+      bell.MarkDirty(true);
     }
   }
 
+  // Same item and same stamped grade - one stack cannot hold two grades, so a different mix (or the other
+  // family) is refused rather than silently pooling into one stack.
+  private bool IsMergeable(ItemStack? stack) =>
+    _tank != null
+    && stack?.Collectible == _tank.Collectible
+    && Burden.Read(stack).Equals(Burden.Read(_tank));
+
+  #endregion
+
+  #region Rendering
+
   /// <summary>
-  /// Draws the blast-mix contents pile on top of the normal hopper mesh, raised
-  /// between <see cref="ContentsMinY"/> and <see cref="ContentsMaxY"/> in proportion
-  /// to how full the bell hopper's magazine is below. The bell re-triggers this
-  /// tessellation whenever its magazine changes.
+  /// Draws the burden contents pile on top of the normal hopper mesh, raised between
+  /// <see cref="ContentsMinY"/> and <see cref="ContentsMaxY"/> in proportion to how full the tank is.
   /// </summary>
   public override bool OnTesselation(
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
   )
   {
-    if (
-      Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
-        is BlockEntityHopperBell bell
-      && bell.BlastMixMagazine > 0
-    )
+    if (TankCount > 0)
     {
       _contentsBaseMesh ??= BuildContentsMesh(tesselator);
       if (_contentsBaseMesh != null)
       {
-        float fill = GameMath.Clamp(
-          (float)bell.BlastMixMagazine / bell.MaxMagazineCapacity,
-          0f,
-          1f
-        );
-        float yOffset =
-          (ContentsMinY + fill * (ContentsMaxY - ContentsMinY)) / 16f;
+        float fill = GameMath.Clamp((float)TankCount / Capacity, 0f, 1f);
+        float yOffset = (ContentsMinY + fill * (ContentsMaxY - ContentsMinY)) / 16f;
 
         MeshData mesh = _contentsBaseMesh.Clone();
         mesh.Translate(0f, yOffset, 0f);
@@ -231,173 +191,74 @@ public class BlockEntityHopperReinforced : BlockEntityContainer
     tesselator.TesselateShape(Block, shape, out MeshData mesh);
     return mesh;
   }
-}
 
-public class InventoryBlastFurnace(
-  int quantitySlots,
-  string className,
-  string? instanceID,
-  ICoreAPI? api
-) : InventoryGeneric(quantitySlots, className, instanceID, api)
-{
-  protected override ItemSlot NewSlot(int i)
-  {
-    if (i == 0 || i == 1 || i == 4 || i == 5)
-      return new ItemSlotBlastFurnace(this, "iron");
-    if (i == 2 || i == 6)
-      return new ItemSlotBlastFurnace(this, "coke");
-    if (i == 3 || i == 7)
-      return new ItemSlotBlastFurnace(this, "lime");
+  #endregion
 
-    return base.NewSlot(i);
-  }
-}
+  #region Serialization
 
-public class ItemSlotBlastFurnace : ItemSlotSurvival
-{
-  public string AllowedType { get; }
-
-  public ItemSlotBlastFurnace(InventoryBase inventory, string allowedType)
-    : base(inventory)
-  {
-    AllowedType = allowedType;
-
-    // The engine automatically handles rendering these hex colors!
-    HexBackgroundColor = allowedType switch
-    {
-      "iron" => "#A05A3C", // Rust Orange
-      "coke" => "#222222", // Dark Charcoal
-      "lime" => "#78A278", // Pale Green
-      _ => null,
-    };
-  }
-
-  public override bool CanTakeFrom(
-    ItemSlot sourceSlot,
-    EnumMergePriority priority = EnumMergePriority.AutoMerge
+  public override void FromTreeAttributes(
+    ITreeAttribute tree,
+    IWorldAccessor worldForResolving
   )
   {
-    if (sourceSlot.Itemstack == null)
-      return base.CanTakeFrom(sourceSlot, priority);
-
-    string path = sourceSlot.Itemstack.Collectible.Code.Path;
-
-    // Iron slots also accept reclaimed blast mix (the charge role, e.g. from broken-up piles), so it can
-    // be fed straight back into the bell hopper's magazine.
-    if (
-      AllowedType == "iron"
-      && (
-        IronOreCompat.IsCrushedIronOre(path)
-        || MaterialRoleRegistry.IsRole(Roles.Charge, sourceSlot.Itemstack)
-      )
-    )
-      return base.CanTakeFrom(sourceSlot, priority);
-    // Coke is now the whole lump (vanilla game:coke); the mod-added crushed coke is retired. Kept an
-    // exact match, not the fuel role, so charcoal (also fuel) cannot feed the blast furnace's coke slot.
-    if (AllowedType == "coke" && path.Equals("coke"))
-      return base.CanTakeFrom(sourceSlot, priority);
-    if (
-      AllowedType == "lime"
-      && MaterialRoleRegistry.IsRole(Roles.Flux, sourceSlot.Itemstack)
-    )
-      return base.CanTakeFrom(sourceSlot, priority);
-
-    return false;
+    base.FromTreeAttributes(tree, worldForResolving);
+    _tank = tree.GetItemstack("tank");
+    _tank?.ResolveBlockOrItem(worldForResolving);
+    // A resolved-away stack (the item no longer exists) or a zero stack reads as empty.
+    if (_tank?.Collectible == null || _tank.StackSize <= 0)
+      _tank = null;
   }
 
-  public override bool CanHold(ItemSlot sourceSlot) => CanTakeFrom(sourceSlot);
-}
-
-public class GuiDialogHopper : GuiDialogBlockEntity
-{
-  public GuiDialogHopper(
-    string dialogTitle,
-    InventoryBase inventory,
-    BlockPos blockEntityPos,
-    ICoreClientAPI capi
-  )
-    : base(dialogTitle, inventory, blockEntityPos, capi)
+  public override void ToTreeAttributes(ITreeAttribute tree)
   {
-    if (IsDuplicate)
-      return;
+    base.ToTreeAttributes(tree);
+    if (_tank != null)
+      tree.SetItemstack("tank", _tank);
+  }
 
-    double colWidth =
-      GuiElementPassiveItemSlot.unscaledSlotSize
-      + GuiElementItemSlotGridBase.unscaledSlotPadding;
+  #endregion
 
-    ElementBounds ironTextBounds = ElementBounds.Fixed(
-      0,
-      GuiStyle.TitleBarHeight,
-      colWidth * 2,
-      15
-    );
-    ElementBounds cokeTextBounds = ElementBounds.Fixed(
-      colWidth * 2,
-      GuiStyle.TitleBarHeight,
-      colWidth,
-      15
-    );
-    ElementBounds limeTextBounds = ElementBounds.Fixed(
-      colWidth * 3,
-      GuiStyle.TitleBarHeight,
-      colWidth,
-      15
-    );
+  #region HUD
 
-    ElementBounds slotGridBounds = ElementStdBounds.SlotGrid(
-      EnumDialogArea.LeftTop,
-      0,
-      GuiStyle.TitleBarHeight + 25,
-      4,
-      2
-    );
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+  {
+    base.GetBlockInfo(forPlayer, dsc);
 
-    ElementBounds bgBounds = ElementBounds.Fill.WithFixedPadding(
-      GuiStyle.ElementToDialogPadding
-    );
-    bgBounds.BothSizing = ElementSizing.FitToChildren;
-
-    ElementBounds dialogBounds =
-      ElementStdBounds.AutosizedMainDialog.WithAlignment(
-        EnumDialogArea.CenterMiddle
+    if (_tank == null || _tank.StackSize <= 0)
+      dsc.AppendLine(Lang.Get("smex:hopper-empty"));
+    else
+      dsc.AppendLine(
+        Lang.Get("smex:hopper-holds", _tank.StackSize, Capacity, _tank.GetName())
       );
 
-    var ironFont = CairoFont
-      .WhiteSmallText()
-      .WithColor([0.8, 0.5, 0.4, 1])
-      .WithOrientation(EnumTextOrientation.Center);
-    var cokeFont = CairoFont
-      .WhiteSmallText()
-      .WithColor([0.7, 0.7, 0.7, 1])
-      .WithOrientation(EnumTextOrientation.Center);
-    var limeFont = CairoFont
-      .WhiteSmallText()
-      .WithColor([0.8, 0.9, 0.8, 1])
-      .WithOrientation(EnumTextOrientation.Center);
-    var infoFont = CairoFont.WhiteSmallText().WithFontSize(14f);
-
-    SingleComposer = capi
-      .Gui.CreateCompo("hopper" + blockEntityPos, dialogBounds)
-      .AddShadedDialogBG(bgBounds, true)
-      .AddDialogTitleBar(dialogTitle, CloseIconPressed)
-      .BeginChildElements(bgBounds)
-      .AddDynamicText(
-        Lang.Get("smex:hopper-slot-iron"),
-        ironFont,
-        ironTextBounds
-      )
-      .AddDynamicText(
-        Lang.Get("smex:hopper-slot-coke"),
-        cokeFont,
-        cokeTextBounds
-      )
-      .AddDynamicText(
-        Lang.Get("smex:hopper-slot-flux"),
-        limeFont,
-        limeTextBounds
-      )
-      .AddItemSlotGrid(inventory, DoSendPacket, 4, slotGridBounds)
-      .EndChildElements()
-      .Compose();
+    if (
+      Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
+      is BlockEntityHopperBell bell
+    )
+    {
+      dsc.AppendLine(
+        Lang.Get(
+          "smex:hopper-info-bell",
+          bell.IsDropping
+            ? Lang.Get("smex:hopper-state-dropping")
+            : Lang.Get("smex:hopper-state-stopped")
+        )
+      );
+      dsc.AppendLine(
+        Lang.Get(
+          "smex:hopper-info-magazine",
+          bell.BlastMixMagazine,
+          bell.MaxMagazineCapacity
+        )
+      );
+      if (bell.IsFurnaceFull())
+        dsc.AppendLine(Lang.Get("smex:hopper-info-furnacefull"));
+    }
+    else
+    {
+      dsc.AppendLine(Lang.Get("smex:hopper-info-nobell"));
+    }
   }
+
+  #endregion
 }

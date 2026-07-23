@@ -1,52 +1,72 @@
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using SteelmakingExpanded;
+using IronworkingExpanded.Items;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The bell hopper crafts blast mix from the iron/coke/flux in the reinforced hopper above into its
-/// internal magazine, then drops it down the furnace shaft. Covers the magazine/dropping persistence,
-/// the furnace-full check, and the crafting recipe (consuming the exact feed into the magazine).
+/// The bell hopper no longer mixes: it pulls ready-made burden from the reinforced tank above into its
+/// magazine and drips that down the furnace shaft. Covers the magazine/dropping persistence, the
+/// furnace-full check, the pull-from-tank feed, and the drip into a shaft pile (grade preserved).
 /// </summary>
 public class BellHopperTests
 {
-  private static BlockEntityHopperBell Bell(TestWorld world, BlockPos pos)
+  private static readonly BlockPos BellPos = new(0, 16, 0);
+
+  private static BlockEntityHopperBell Bell(TestWorld world)
   {
     var be = new BlockEntityHopperBell
     {
-      Pos = pos,
+      Pos = BellPos,
       Block = TestBlocks.Configure(new Block(), "iwex:hopperbell", 90),
     };
-    world.Place(pos, be.Block, be);
+    world.Place(BellPos, be.Block, be);
     world.Attach(be);
     return be;
   }
 
-  private static BlockEntityHopperReinforced HopperAbove(
+  private static (BlockEntityHopperReinforced hopper, Item burden) HopperAbove(
     TestWorld world,
-    BlockPos bellPos
+    Item burden,
+    int units
   )
   {
     var be = new BlockEntityHopperReinforced
     {
+      Pos = BellPos.UpCopy(),
       Block = TestBlocks.Configure(new Block(), "iwex:hopperreinforced", 91),
     };
-    var pos = bellPos.UpCopy();
-    world.Place(pos, be.Block, be);
+    world.Place(be.Pos, be.Block, be);
     world.Attach(be);
-    return be;
+    if (units > 0)
+      be.TryDeposit(new DummySlot(new ItemStack(burden, units)), wholeStack: true);
+    return (be, burden);
   }
 
-  private static void Put(InventoryBase inv, int slot, string code, int count)
+  private static BlockEntityCoalPile CoalPile(
+    TestWorld world,
+    BlockPos pos,
+    Item content,
+    int units
+  )
   {
-    var item = new Item { Code = new AssetLocation(code) };
-    inv[slot].Itemstack = new ItemStack(item, count);
+    var pile = new BlockEntityCoalPile { Pos = pos.Copy() };
+    var inv = new InventoryGeneric(1, "coalpile", "test", world.Api, null);
+    if (units > 0)
+      inv[0].Itemstack = new ItemStack(content, units);
+    ReflectionHelpers.SetField(pile, "inventory", inv);
+    world.Place(
+      pos,
+      TestBlocks.Configure(new Block(), "game:coalpile", 50 + pos.Y),
+      pile
+    );
+    world.Attach(pile);
+    return pile;
   }
 
   #region Default state
@@ -54,9 +74,7 @@ public class BellHopperTests
   [Fact]
   public void A_freshly_placed_bell_hopper_is_dropping_by_default()
   {
-    // Dropping is on out of the box so a newly built furnace feeds itself without the
-    // player first discovering the Ctrl + right-click toggle.
-    var bell = Bell(new TestWorld(), new BlockPos(0, 16, 0));
+    var bell = Bell(new TestWorld());
     Assert.True(bell.IsDropping);
   }
 
@@ -64,7 +82,7 @@ public class BellHopperTests
   public void Dropping_defaults_on_when_a_saved_tree_omits_the_flag()
   {
     var world = new TestWorld();
-    var bell = Bell(world, new BlockPos(0, 16, 0));
+    var bell = Bell(world);
     ReflectionHelpers.SetField(bell, "_isDropping", false);
 
     bell.FromTreeAttributes(new TreeAttribute(), world.World); // legacy tree, no key
@@ -75,15 +93,14 @@ public class BellHopperTests
   [Fact]
   public void An_explicitly_stopped_bell_stays_stopped_across_a_reload()
   {
-    // The new default must not override a hopper the player deliberately switched off.
     var world = new TestWorld();
-    var src = Bell(world, new BlockPos(0, 16, 0));
+    var src = Bell(world);
     src.IsDropping = false;
 
     var tree = new TreeAttribute();
     src.ToTreeAttributes(tree);
 
-    var dst = Bell(world, new BlockPos(0, 16, 0));
+    var dst = Bell(world);
     dst.FromTreeAttributes(tree, world.World);
 
     Assert.False(dst.IsDropping);
@@ -97,14 +114,15 @@ public class BellHopperTests
   public void Magazine_and_dropping_round_trip_through_the_tree()
   {
     var world = new TestWorld();
-    var src = Bell(world, new BlockPos(0, 16, 0));
-    ReflectionHelpers.SetField(src, "_blastMixMagazine", 24);
+    var burden = world.RegisterItem("iwex:burden");
+    var src = Bell(world);
+    ReflectionHelpers.SetField(src, "_magazine", new ItemStack(burden, 24));
     src.IsDropping = true;
 
     var tree = new TreeAttribute();
     src.ToTreeAttributes(tree);
 
-    var dst = Bell(world, new BlockPos(0, 16, 0));
+    var dst = Bell(world);
     dst.FromTreeAttributes(tree, world.World);
 
     Assert.Equal(24, dst.BlastMixMagazine);
@@ -118,88 +136,62 @@ public class BellHopperTests
   [Fact]
   public void IsFurnaceFull_is_false_with_no_coalpile_below()
   {
-    var world = new TestWorld();
-    Assert.False(Bell(world, new BlockPos(0, 16, 0)).IsFurnaceFull());
+    Assert.False(Bell(new TestWorld()).IsFurnaceFull());
   }
 
   #endregion
 
-  #region Crafting
+  #region Feed + drip
 
   [Fact]
-  public void OnServerTick_crafts_blastmix_from_a_full_hopper_into_the_magazine()
+  public void OnServerTick_pulls_burden_from_the_tank_above_into_the_magazine()
   {
     var world = new TestWorld();
-    var bellPos = new BlockPos(0, 16, 0);
-    var bell = Bell(world, bellPos);
-    var hopper = HopperAbove(world, bellPos);
-
-    // Exactly one recipe's worth of feed: 12 iron + (lump) coke + 1 lime -> 16 blastmix.
-    Put(
-      hopper.Inventory,
-      0,
-      "game:crushed-iron",
-      SmexValues.HopperIronOreRequired
-    );
-    Put(
-      hopper.Inventory,
-      2,
-      "game:coke",
-      SmexValues.HopperCokeRequired
-    );
-    Put(hopper.Inventory, 3, "game:lime", SmexValues.HopperLimeRequired);
+    var burden = world.RegisterItem("iwex:burden");
+    var bell = Bell(world);
+    var (hopper, _) = HopperAbove(world, burden, 30);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 
-    Assert.Equal(SmexValues.HopperBlastmixProduced, bell.BlastMixMagazine);
-    Assert.True(hopper.Inventory[0].Empty); // iron consumed
-    Assert.True(hopper.Inventory[2].Empty); // coke consumed
-    Assert.True(hopper.Inventory[3].Empty); // lime consumed
+    Assert.Equal(30, bell.BlastMixMagazine);
+    Assert.Equal(0, hopper.TankCount);
   }
 
   [Fact]
-  public void OnServerTick_crafts_nothing_without_enough_feed()
+  public void OnServerTick_does_nothing_with_an_empty_tank_above()
   {
     var world = new TestWorld();
-    var bellPos = new BlockPos(0, 16, 0);
-    var bell = Bell(world, bellPos);
-    var hopper = HopperAbove(world, bellPos);
-
-    // Iron + coke but no flux -> recipe can't complete.
-    Put(
-      hopper.Inventory,
-      0,
-      "game:crushed-iron",
-      SmexValues.HopperIronOreRequired
-    );
-    Put(
-      hopper.Inventory,
-      2,
-      "game:coke",
-      SmexValues.HopperCokeRequired
-    );
+    var burden = world.RegisterItem("iwex:burden");
+    var bell = Bell(world);
+    HopperAbove(world, burden, 0);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 
     Assert.Equal(0, bell.BlastMixMagazine);
-    Assert.False(hopper.Inventory[0].Empty); // nothing consumed
   }
 
   [Fact]
-  public void OnServerTick_reclaims_loose_blastmix_into_the_magazine()
+  public void OnServerTick_drips_the_pulled_burden_into_the_shaft_pile()
   {
     var world = new TestWorld();
-    var bellPos = new BlockPos(0, 16, 0);
-    var bell = Bell(world, bellPos);
-    var hopper = HopperAbove(world, bellPos);
+    var burden = world.RegisterItem("iwex:burden");
+    var bell = Bell(world);
+    HopperAbove(world, burden, 30);
 
-    // Reclaimed blastmix sitting in an iron slot feeds 1:1 into the magazine.
-    Put(hopper.Inventory, 0, "iwex:blastmix", 8);
+    // A solid floor two below, a burden pile just above it - a valid drop target for the bell.
+    world.Place(
+      BellPos.DownCopy(3),
+      TestBlocks.Configure(new Block(), "game:rock", 40),
+      null
+    );
+    var pile = CoalPile(world, BellPos.DownCopy(2), burden, 4);
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
 
-    Assert.Equal(8, bell.BlastMixMagazine);
-    Assert.True(hopper.Inventory[0].Empty);
+    int drop = SmexValues.HopperDropAmount;
+    Assert.Equal(4 + drop, pile.inventory[0].StackSize); // pile grew by one drip
+    Assert.Equal(30 - drop, bell.BlastMixMagazine); // magazine fell by the same
+    Assert.Equal("burden", pile.inventory[0].Itemstack!.Collectible.Code.Path);
   }
 
   #endregion

@@ -10,7 +10,7 @@ The **low steam-power tier**: it turns iron-age water/fuel into steam, steam int
 
 ppex adds no new network type — it rides exlib's shared graph (see conventions.md § Networks):
 
-- **Pipe (gas *or* water)** *(live)* — single medium per network (R1). ppex ships the **rolled-pipe** material tier (cast-iron/steel) on the same network as iwex's bolted pipes.
+- **Pipe (gas *or* water)** *(live)* — single medium per network (R1). ppex ships the **cast-pipe** material tier (assembled from cast pipe-parts finished on the boring machine) on the same network as iwex's bolted pipes; the top **rolled** tier (Hadfield steel, on smex's rolling mill) is hpex's. All three tiers share one pipe diagram per shape (see [diagram-crafting.md](diagram-crafting.md)).
 - **Mechanical power (MP)** *(live)* — vanilla MP network; ppex drives it from the engine via a flywheel/generator sub-machine, and (planned) from a waterwheel via the mechanical pump.
 
 ---
@@ -37,7 +37,7 @@ All *(live)*. One base pipe blocktype (straight/bend/T/X) plus specialised nodes
 
 | Block | What it is | Key mechanic |
 |---|---|---|
-| **Rolled pipe** (straight/bend/tjunction/xjunction) | the network segment | only a plain segment bursts + caps a run's pressure; burst **iron 5 atm / steel 10 atm** *(tunable)* — the weakest pipe limits the run |
+| **Cast pipe** (straight/bend/tjunction/xjunction) | the network segment | only a plain segment bursts + caps a run's pressure; burst above iwex's bolted, below hpex's rolled *(tunable — the per-tier material/burst split across bolted/cast/rolled is being finalised; was iron 5 atm / steel 10 atm in the old 2-tier model)* — the weakest pipe limits the run |
 | **Pipe outlet** | terminal / machine tap | open connector face; a vanilla chimney capping it draws **16 L/s** gas *(tunable)* |
 | **Pipe passthrough** (+ bend) | in-wall run | passes medium through a wall; the exhaust/heating route (see the Domestic add-on → Climate control) |
 | **Plain valve** | in-line sever | closed = `IsConnectionBroken`, severs the network; toggle re-walks the graph |

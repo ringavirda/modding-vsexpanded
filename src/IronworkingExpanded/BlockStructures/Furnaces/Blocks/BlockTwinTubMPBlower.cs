@@ -16,6 +16,12 @@ public partial class BlockTwinTubMpBlower : BlockPipe, IExBlockDefProvider
         .Create(domain, "twintubmpblower", "furnaces/twintubmpblower")
         .Class<BlockTwinTubMpBlower>()
         .EntityClass("iwex.BlockEntityTwinTubMpBlower")
+        // Carries the shared build-outline behaviour so the projection gesture is wired at every functional
+        // component uniformly. Unlike the tap/tuyere/hopper the blower is NOT a cell of the furnace layout -
+        // it is a pipe-network machine linked to a tuyere by the blast main at unbounded distance - so the
+        // layout-ownership resolver finds no owning anchor from it and the gesture does nothing (the "no
+        // resolvable anchor -> does nothing" contract). It keeps its own MP/pipe HUD.
+        .Behavior("MultiblockStructure")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
         .FillerOffsets(

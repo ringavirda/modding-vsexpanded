@@ -1,0 +1,27 @@
+{
+  "code": "pigchunk",
+  "shape": {
+    "base": "game:item/ore/ungraded/coke"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/tarnished/iron"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 25
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

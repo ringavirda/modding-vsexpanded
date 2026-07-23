@@ -136,6 +136,81 @@ public abstract class BlockEntityMultiblockStructure
     ExOrientation.GlobalPos(Pos, localX, localY, localZ, _currentAngle);
 
   /// <summary>
+  /// Ensures <see cref="_structure"/> and <see cref="_currentAngle"/> are populated. The monitor tick
+  /// primes them server-side; a client-side read that needs the layout - a functional component
+  /// resolving the anchor it belongs to during <c>GetBlockInfo</c> - primes them lazily here, because
+  /// the monitor tick never runs on the client. Idempotent: <see cref="SetStructureAngle"/> is guarded.
+  /// </summary>
+  protected void EnsureStructureLoaded()
+  {
+    if (_structure == null)
+      UpdateStructureRotation();
+  }
+
+  /// <summary>
+  /// Whether <paramref name="worldCell"/> is one of the cells this structure occupies for its placed
+  /// rotation - the target lands on one of the anchor's transformed layout offsets. A functional
+  /// component (tap, hopper, tuyere) uses this to confirm the anchor it scanned up actually owns it,
+  /// which is what disambiguates two adjacent structures whose scan boxes overlap. Reads the same
+  /// <see cref="MultiblockStructure.TransformedOffsets"/> the build-outline highlight walks, and loads
+  /// the layout lazily so it answers on the client too.
+  /// </summary>
+  public bool OwnsCell(BlockPos worldCell)
+  {
+    EnsureStructureLoaded();
+    var offsets = _structure?.TransformedOffsets;
+    if (offsets == null)
+      return false;
+    foreach (var o in offsets)
+      if (
+        Pos.X + o.X == worldCell.X
+        && Pos.Y + o.Y == worldCell.Y
+        && Pos.Z + o.Z == worldCell.Z
+      )
+        return true;
+    return false;
+  }
+
+  /// <summary>
+  /// Scans a bounded box around <paramref name="componentPos"/> for a <typeparamref name="T"/> anchor
+  /// whose structure <see cref="OwnsCell">owns</see> that cell, and returns it - the reverse lookup a
+  /// functional component uses to find the multiblock it is part of. The anchor pushes to its
+  /// components by offset and nothing points back, so the component scans. The box reaches
+  /// <paramref name="below"/> cells down / <paramref name="above"/> up and <paramref name="horizontal"/>
+  /// out on each horizontal axis, sized by the caller to cover its tallest component. Returns null when
+  /// no owning anchor is in range (a component placed before its anchor, or a broken structure) - the
+  /// caller then shows only its own readout. The ownership gate makes the box slack harmless: a wider
+  /// box only turns up more candidates to reject, never a wrong owner.
+  /// </summary>
+  public static T? FindAnchorOwning<T>(
+    IWorldAccessor world,
+    BlockPos componentPos,
+    int horizontal,
+    int below,
+    int above
+  )
+    where T : BlockEntityMultiblockStructure
+  {
+    for (int dy = -below; dy <= above; dy++)
+    for (int dx = -horizontal; dx <= horizontal; dx++)
+    for (int dz = -horizontal; dz <= horizontal; dz++)
+    {
+      BlockPos at = new(
+        componentPos.X + dx,
+        componentPos.Y + dy,
+        componentPos.Z + dz,
+        componentPos.dimension
+      );
+      if (
+        world.BlockAccessor.GetBlockEntity(at) is T anchor
+        && anchor.OwnsCell(componentPos)
+      )
+        return anchor;
+    }
+    return null;
+  }
+
+  /// <summary>
   /// Player interaction entry point (the structure-projection toggle): re-checks completeness,
   /// fires the completed/lost callbacks, and client-side shows the build outline + missing count
   /// or clears it once complete. <see cref="FromTreeAttributes"/> also auto-clears the projection

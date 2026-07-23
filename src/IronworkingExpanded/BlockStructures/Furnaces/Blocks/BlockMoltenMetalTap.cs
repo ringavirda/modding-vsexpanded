@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
@@ -31,6 +32,10 @@ public partial class BlockMoltenMetalTap : Block, IExBlockDefProvider
         .EntityBehavior("Animatable")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
+        // The build-outline projection: a tap is a functional cell of the furnace layout, so a player at the
+        // tap can preview + complete an incomplete furnace. This carries the help line; the interaction is
+        // forwarded explicitly in OnBlockInteractStart below, which overrides without calling base.
+        .Behavior("MultiblockStructure")
         .Behavior("HorizontalOrientable")
         .VariantGroupFromProperties("side", "abstract/horizontalorientation")
         .ShapeByTypePerOrientation("iwex:furnaces/moltenmetaltap", 0)
@@ -54,6 +59,18 @@ public partial class BlockMoltenMetalTap : Block, IExBlockDefProvider
     BlockSelection blockSel
   )
   {
+    // This override handles interaction without calling base, so the MultiblockStructure behaviour's own
+    // click never runs; forward the build-outline gesture to the shared entry point first, so Ctrl+Shift+
+    // right-click previews an incomplete furnace instead of toggling the pour.
+    if (
+      BlockBehaviorMultiblockStructure.TryToggleProjection(
+        world,
+        byPlayer,
+        blockSel.Position
+      )
+    )
+      return true;
+
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is BlockEntityMoltenMetalTap tap

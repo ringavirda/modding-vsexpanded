@@ -105,7 +105,7 @@ Both are thin `BlockEntityFurnaceCore` variants (the base is *live*; these varia
 | Feature | Footprint | Input → Output | Key | Status |
 |---|---|---|---|---|
 | **Mechanical (MP) air blower** | megablock (sub-machine) | MP (waterwheel) → **low-pressure air** into pipes/tuyeres | walking-beam, waterwheel/MP-driven — **this is why iron needs no steam**; feeds the cold-blast furnace and cupola tuyeres. Cannot unlock the hot-blast low-coke blow. Shape authored at `assets/editable/mechanical-blower.json` (idle + cycle anims) | *(planned)* |
-| **Bolted pipe** | block (on the shared exlib pipe network) | gas *or* water segment | the **iron material tier** of pipe (R1, single medium per network); rides the same network as ppex's rolled pipes so iwex never depends on ppex. Connectors read the adjacent cell; valves sever/flow | *(planned)* |
+| **Bolted pipe** | block (on the shared exlib pipe network) | gas *or* water segment | the **iron material tier** of pipe (R1, single medium per network), hand-riveted from plates — the lowest-pressure tier; rides the same network as ppex's cast pipes and hpex's rolled pipes so iwex never depends on them. Connectors read the adjacent cell; valves sever/flow | *(planned)* |
 | **`gear-iron`** | item | — | iron-tier MP transmission gear; iwex's own gear so MP builds don't require ppex/vanilla rusty gears (recipes currently accept `game:gear-rusty` or `ppex:gear-*`) | *(planned)* |
 
 ---

@@ -44,8 +44,8 @@
 
 
   "blockdesc-blastfurnacecore*": "The refractory hearth grate at the base of the hot blast furnace. Build the furnace up from it.",
-  "blockdesc-hopperreinforced*": "Combines crushed ores into blast mix for the bell hopper below.",
-  "blockdesc-hopperbell*": "Drips stockpiled blast mix down into the furnace shaft.",
+  "blockdesc-hopperreinforced*": "Holds blast-furnace burden and feeds it to the bell hopper below.",
+  "blockdesc-hopperbell*": "Drips stockpiled burden down into the furnace shaft.",
 
   "blockdesc-cowperstove-intake*": "The intake face of a cowper stove.",
   "blockdesc-cowperstoveheatsink*": "Stores reclaimed exhaust heat.",
@@ -110,8 +110,10 @@
   "brickname-tan": "Tan Brick",
 
 
-  "blockhelp-hopper-open": "Open hopper inventory",
-  "blockhelp-hopper-toggle": "Toggle blastmix dropping",
+  "blockhelp-hopper-add": "Add one burden",
+  "blockhelp-hopper-addstack": "Add a stack of burden",
+  "blockhelp-hopper-take": "Take burden",
+  "blockhelp-hopper-toggle": "Toggle burden dropping",
 
   "blockhelp-bessemer-chiselresidue": "Chisel out solidified residue",
   "blockhelp-pressurevalve-cycle": "Cycle pressure threshold",
@@ -170,16 +172,15 @@
   "cowperstove-status-heatingup": "Heating Up!",
   "cowperstove-status-heating": "Heating {0}",
 
+  "hopper-empty": "Empty",
+  "hopper-holds": "Holds {0} / {1} {2}",
   "hopper-info-bell": "Bell Hopper: {0}",
   "hopper-state-dropping": "Dropping",
   "hopper-state-stopped": "Stopped",
-  "hopper-info-magazine": "Blast Mix Magazine: {0} / {1}",
+  "hopper-info-magazine": "Burden buffer: {0} / {1}",
   "hopper-info-furnacefull": "Furnace is full!",
   "hopper-info-nobell": "No Bell Hopper below",
-  "hopper-dialog-title": "Reinforced Hopper",
-  "hopper-slot-iron": "Iron",
-  "hopper-slot-coke": "Coke",
-  "hopper-slot-flux": "Flux",
+  "game:ingameerror-smex-hopper-wronggrade": "The hopper already holds a different burden - empty it before adding another.",
 
   "metalstate-liquid": "liquid",
   "metalstate-hardened": "hardened",

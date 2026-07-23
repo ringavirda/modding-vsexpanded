@@ -22,10 +22,31 @@ public partial class BlockBlastFurnaceCoreCold
   /// the core itself sits in, up to y=8 the open stack).</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
-      Core(domain, "blastfurnacecore", "furnaces/blastfurnace-core")
+      Core(
+          domain,
+          "blastfurnacecore",
+          "furnaces/blastfurnace-core",
+          "tier1",
+          "tier2",
+          "tier3"
+        )
         .Class<BlockBlastFurnaceCoreCold>()
         .EntityClass<BlockEntityBlastFurnaceCold>()
-        .Texture("all", "game:block/clay/refractory/tier1/front1")
+        // A refractory-brick cube in whichever tier it was built from ({tier}): plain brick on the side
+        // faces, the orientation marker on the north face and the "BF/C" (blast furnace, cold) type label
+        // on the south, so the anchor reads apart from the hot core and the cupola - and shows which way
+        // it faces - at a glance.
+        .Texture("all", "game:block/clay/refractory/{tier}/front1")
+        .Texture(
+          "north",
+          "game:block/clay/refractory/{tier}/front1",
+          "iwex:block/furnace/n"
+        )
+        .Texture(
+          "south",
+          "game:block/clay/refractory/{tier}/front1",
+          "iwex:block/furnace/bfc"
+        )
         // The furnace footprint, drawn as one top-down cross-section per Y level (rows +Z, cols +X,
         // origin x=-3/z=-2 so the core lands on the layout's own (0,0,0)). y=0 the hearth floor ..
         // y=8 the open top, which IS the cold furnace's chimney - it takes no exhaust outlets.

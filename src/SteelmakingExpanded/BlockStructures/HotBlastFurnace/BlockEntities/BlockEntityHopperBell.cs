@@ -1,9 +1,8 @@
-using System;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Materials;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.Compat;
+using IronworkingExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -13,28 +12,31 @@ using Vintagestory.GameContent;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
 /// <summary>
-/// Block entity for the bell hopper beneath the reinforced hopper. Crafts blast mix
-/// from the iron/coke/flux in the hopper above into an internal magazine, then drops
-/// it into the furnace shaft below while dropping is enabled.
+/// Block entity for the bell hopper beneath the reinforced hopper. It no longer mixes anything: it pulls
+/// the ready-made burden from the reinforced tank above into an internal magazine, then drips that burden
+/// down into the furnace shaft while dropping is enabled. The burden's grade (its blast-mix proportions)
+/// rides along, so the furnace core reads the same charge the ore mixer stamped.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityHopperBell : BlockEntity
 {
   private long _tickId;
-  private Item? _blastMixItem;
-  private int _blastMixMagazine = 0;
 
-  // Dropping is on by default so a freshly built furnace feeds itself without the
-  // player having to discover the Ctrl + right-click toggle first.
+  // The magazine is one burden stack (grade = its attributes), pulled from the tank above and dripped
+  // below. Null when empty.
+  private ItemStack? _magazine;
+
+  // Dropping is on by default so a freshly built furnace feeds itself without the player having to
+  // discover the Ctrl + right-click toggle first.
   private bool _isDropping = true;
 
-  /// <summary>Blast mix currently buffered in the hopper's internal magazine.</summary>
-  public int BlastMixMagazine => _blastMixMagazine;
+  /// <summary>Burden units currently buffered in the magazine.</summary>
+  public int BlastMixMagazine => _magazine?.StackSize ?? 0;
 
-  /// <summary>Maximum blast mix the magazine can hold.</summary>
+  /// <summary>Maximum burden the magazine can hold.</summary>
   public int MaxMagazineCapacity => SmexValues.HopperMaxMagazineCapacity;
 
-  /// <summary>Whether the hopper is dropping blast mix into the furnace.</summary>
+  /// <summary>Whether the hopper is dripping burden into the furnace.</summary>
   public bool IsDropping
   {
     get => _isDropping;
@@ -57,12 +59,8 @@ public class BlockEntityHopperBell : BlockEntity
   {
     base.Initialize(api);
 
-    if (api.Side == EnumAppSide.Server)
-    {
-      _blastMixItem = api.World.GetItem(new AssetLocation("iwex", "blastmix"));
-      if (_isDropping)
-        StartTicking();
-    }
+    if (api.Side == EnumAppSide.Server && _isDropping)
+      StartTicking();
   }
 
   private void StartTicking()
@@ -86,91 +84,74 @@ public class BlockEntityHopperBell : BlockEntity
   )
   {
     base.FromTreeAttributes(tree, worldForResolving);
-    int oldMagazine = _blastMixMagazine;
-    _blastMixMagazine = tree.GetInt("blastMixMagazine");
+    _magazine = tree.GetItemstack("magazine");
+    _magazine?.ResolveBlockOrItem(worldForResolving);
+    if (_magazine?.Collectible == null || _magazine.StackSize <= 0)
+      _magazine = null;
     IsDropping = tree.GetBool("isDropping", true);
-
-    // The reinforced hopper above renders its contents pile from our magazine level,
-    // so nudge it to re-tessellate whenever that level changes on the client.
-    if (oldMagazine != _blastMixMagazine && Api?.Side == EnumAppSide.Client)
-    {
-      Api.World.BlockAccessor.GetBlockEntity(Pos.UpCopy())?.MarkDirty(true);
-    }
   }
 
   public override void ToTreeAttributes(ITreeAttribute tree)
   {
     base.ToTreeAttributes(tree);
-    tree.SetInt("blastMixMagazine", _blastMixMagazine);
+    if (_magazine != null)
+      tree.SetItemstack("magazine", _magazine);
     tree.SetBool("isDropping", IsDropping);
   }
 
   private void OnServerTick(float dt)
   {
+    PullFromTankAbove();
+    DripIntoShaft();
+  }
+
+  // Draw ready-made burden from the reinforced tank above into the magazine, respecting the single-grade
+  // rule (a different grade waits until the magazine drains).
+  private void PullFromTankAbove()
+  {
     if (
       Api.World.BlockAccessor.GetBlockEntity(Pos.UpCopy())
-      is not BlockEntityHopperReinforced topHopper
+      is not BlockEntityHopperReinforced top
     )
       return;
 
-    var inv = topHopper.Inventory;
-    if (inv == null)
+    int space = MaxMagazineCapacity - BlastMixMagazine;
+    if (space <= 0)
       return;
 
-    int ironOreReq = SmexValues.HopperIronOreRequired;
-    int cokeReq = SmexValues.HopperCokeRequired;
-    int limeReq = SmexValues.HopperLimeRequired;
-    int blastmixProd = SmexValues.HopperBlastmixProduced;
-    int dropAmount = SmexValues.HopperDropAmount;
+    ItemStack? peek = top.PeekTank();
+    if (peek == null || (_magazine != null && !IsMergeable(peek)))
+      return;
 
-    // Reclaimed blastmix sitting in the hopper feeds straight into the magazine
-    // (1:1), taking priority over crafting fresh blastmix from ore.
-    int magazineSpace = MaxMagazineCapacity - _blastMixMagazine;
-    if (magazineSpace > 0)
-    {
-      int reclaim = System.Math.Min(magazineSpace, CountItems(inv, IsBlastmix));
-      if (reclaim > 0)
-      {
-        ConsumeItems(inv, IsBlastmix, reclaim);
-        _blastMixMagazine += reclaim;
-        MarkDirty(true);
-      }
-    }
+    ItemStack? drawn = top.DrawBurden(space);
+    if (drawn == null)
+      return;
 
-    while (_blastMixMagazine <= MaxMagazineCapacity - blastmixProd)
-    {
-      if (
-        CountItems(inv, IsIronOre) >= ironOreReq
-        && CountItems(inv, IsCoke) >= cokeReq
-        && CountItems(inv, IsLime) >= limeReq
-      )
-      {
-        ConsumeItems(inv, IsIronOre, ironOreReq);
-        ConsumeItems(inv, IsCoke, cokeReq);
-        ConsumeItems(inv, IsLime, limeReq);
-
-        _blastMixMagazine += blastmixProd;
-        MarkDirty(true);
-      }
-      else
-      {
-        break;
-      }
-    }
-
-    if (_blastMixMagazine >= dropAmount && !IsFurnaceFull())
-    {
-      BlockPos? targetPos = FindBestPileLocation(dropAmount);
-      if (targetPos != null)
-      {
-        DropBlastMix(targetPos, dropAmount);
-        _blastMixMagazine -= dropAmount;
-        MarkDirty(true);
-      }
-    }
+    if (_magazine == null)
+      _magazine = drawn;
+    else
+      _magazine.StackSize += drawn.StackSize;
+    MarkDirty(true);
   }
 
-  /// <summary>Returns <c>true</c> when the furnace shaft below has no room for more blast mix.</summary>
+  private void DripIntoShaft()
+  {
+    int dropAmount = SmexValues.HopperDropAmount;
+    if (_magazine == null || BlastMixMagazine < dropAmount || IsFurnaceFull())
+      return;
+
+    BlockPos? targetPos = FindBestPileLocation(dropAmount);
+    if (targetPos == null)
+      return;
+
+    DropBurden(targetPos, dropAmount);
+    _magazine.StackSize -= dropAmount;
+    if (_magazine.StackSize <= 0)
+      _magazine = null;
+    MarkDirty(true);
+  }
+
+  /// <summary>Returns <c>true</c> when the furnace shaft below has no room for more burden.</summary>
   public bool IsFurnaceFull()
   {
     if (Api == null)
@@ -260,21 +241,18 @@ public class BlockEntityHopperBell : BlockEntity
         if (slot.Empty)
           return true;
 
-        // The pile below can take more only if it already holds our charge (blast mix).
-        if (IsBlastmix(slot.Itemstack))
-        {
-          if (slot.StackSize + dropAmount <= 16)
-            return true;
-        }
+        // The pile below can take more only if it already holds charge (burden).
+        if (IsCharge(slot.Itemstack) && slot.StackSize + dropAmount <= 16)
+          return true;
       }
     }
 
     return false;
   }
 
-  private void DropBlastMix(BlockPos targetPos, int amount)
+  private void DropBurden(BlockPos targetPos, int amount)
   {
-    if (_blastMixItem == null)
+    if (_magazine == null)
       return;
 
     Block blockAtTarget = Api.World.BlockAccessor.GetBlock(targetPos);
@@ -291,89 +269,44 @@ public class BlockEntityHopperBell : BlockEntity
       }
     }
 
-    if (blockAtTarget.Code?.Path.StartsWith("coalpile") == true)
-    {
-      if (
-        Api.World.BlockAccessor.GetBlockEntity(targetPos)
+    if (
+      blockAtTarget.Code?.Path.StartsWith("coalpile") == true
+      && Api.World.BlockAccessor.GetBlockEntity(targetPos)
         is BlockEntityItemPile pileBe
-      )
+    )
+    {
+      var slot = pileBe.inventory[0];
+
+      if (slot.Empty)
       {
-        var slot = pileBe.inventory[0];
-
-        if (slot.Empty)
-        {
-          slot.Itemstack = new ItemStack(_blastMixItem, amount);
-        }
-        else
-        {
-          slot.Itemstack.StackSize += amount;
-        }
-
-        slot.MarkDirty();
-        pileBe.MarkDirty(true);
-
-        Api.World.BlockAccessor.MarkBlockDirty(targetPos);
+        ItemStack drop = _magazine.Clone();
+        drop.StackSize = amount;
+        slot.Itemstack = drop;
       }
+      else
+      {
+        slot.Itemstack.StackSize += amount;
+      }
+
+      slot.MarkDirty();
+      pileBe.MarkDirty(true);
+      Api.World.BlockAccessor.MarkBlockDirty(targetPos);
     }
 
-    SpawnFallingParticles();
+    ExParticles.FallingDust(Api.World, Pos);
     Api.World.PlaySoundAt(ExSounds.StoneCrush, Pos.X, Pos.Y, Pos.Z);
   }
 
-  private void SpawnFallingParticles() =>
-    ExParticles.FallingDust(Api.World, Pos);
+  // Same item and same stamped grade - the magazine holds one grade at a time, mirroring the tank above.
+  private bool IsMergeable(ItemStack stack) =>
+    _magazine != null
+    && stack.Collectible == _magazine.Collectible
+    && Burden.Read(stack).Equals(Burden.Read(_magazine));
 
-  private bool IsBlastmix(ItemStack stack) =>
-    MaterialRoleRegistry.IsRole(Roles.Charge, stack);
-
-  private bool IsIronOre(ItemStack stack) =>
-    IronOreCompat.IsCrushedIronOre(stack.Collectible.Code.Path);
-
-  // Coke is charged as a whole lump (vanilla game:coke) now; the mod-added crushed coke is retired. One
-  // lump replaces two of the old crushed pieces, which is why HopperCokeRequired was halved to match.
-  // Deliberately an exact match, not the fuel role: the fuel role also covers charcoal, which the blast
-  // furnace's coke feed must not accept.
-  private bool IsCoke(ItemStack stack) =>
-    stack.Collectible.Code.Path.Equals("coke");
-
-  private bool IsLime(ItemStack stack) =>
-    MaterialRoleRegistry.IsRole(Roles.Flux, stack);
-
-  private static int CountItems(
-    InventoryBase inv,
-    System.Func<ItemStack, bool> matcher
-  )
-  {
-    int count = 0;
-    foreach (var slot in inv)
-    {
-      if (!slot.Empty && matcher(slot.Itemstack))
-        count += slot.StackSize;
-    }
-    return count;
-  }
-
-  private static void ConsumeItems(
-    InventoryBase inv,
-    System.Func<ItemStack, bool> matcher,
-    int amountToTake
-  )
-  {
-    int remaining = amountToTake;
-    foreach (var slot in inv)
-    {
-      if (slot.Empty || !matcher(slot.Itemstack))
-        continue;
-
-      int taken = Math.Min(remaining, slot.StackSize);
-      slot.TakeOut(taken);
-      slot.MarkDirty();
-
-      remaining -= taken;
-      if (remaining <= 0)
-        break;
-    }
-  }
+  // The shaft pile is charge if it holds burden (either family) or any legacy blast mix still tagged with
+  // the charge role - so the bell tops up a pile it (or the tall hopper) already dripped into.
+  private static bool IsCharge(ItemStack stack) =>
+    Burden.IsAny(stack) || MaterialRoleRegistry.IsRole(Roles.Charge, stack);
 
   public override void OnBlockRemoved()
   {

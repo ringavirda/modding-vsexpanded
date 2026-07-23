@@ -23,21 +23,39 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 public abstract class BlockFurnaceCoreBase : Block
 {
   /// <summary>
-  /// The def fragment every furnace core shares: a vanilla refractory-brick grating (the hearth grate
-  /// the burden column stands on - a plain cube would be indistinguishable from the forty wall bricks
-  /// around it, leaving the player no way to find the anchor while building), oriented by a
-  /// <c>side</c> variant and carrying the build-outline projection. The caller adds its own
-  /// <c>.Class</c>/<c>.EntityClass</c>, brick-tier texture and <c>.MultiblockLayout</c>.
+  /// The def fragment every furnace core shares: a refractory-brick cube oriented by a <c>side</c>
+  /// variant and carrying the build-outline projection. The caller adds its own
+  /// <c>.Class</c>/<c>.EntityClass</c>, brick-tier faces and <c>.MultiblockLayout</c>. The cube's
+  /// north face carries an orientation marker and its south face the furnace-type label (both applied
+  /// by the caller), so the anchor reads apart from the surrounding wall bricks - and tells the builder
+  /// which way it faces - at a glance. That is the job the old visually-distinct grating shape used to
+  /// do; the labelled faces do it better, since they also name the furnace.
   /// </summary>
-  protected static ExBlockDef Core(string domain, string code, string path) =>
-    ExBlockDef
+  protected static ExBlockDef Core(
+    string domain,
+    string code,
+    string path,
+    params string[] brickTiers
+  )
+  {
+    var def = ExBlockDef
       .Create(domain, code, path)
       // Must precede any other right-click consumer so its PreventSubsequent wins.
       .Behavior("MultiblockStructure")
-      .Behavior("HorizontalOrientable")
+      .Behavior("HorizontalOrientable");
+
+    // Refractory-tier variant, declared BEFORE the side group so the code reads {code}-{tier}-{side}
+    // (and the "*-north" creative/recipe selectors still match). Cores that take any refractory brick
+    // pass all three tiers; the tier3-only hot core passes none and stays a single, tier-less block.
+    if (brickTiers.Length > 0)
+      def = def.VariantGroup("tier", brickTiers);
+
+    return def
       .VariantGroupFromProperties("side", "abstract/horizontalorientation")
       .CreativeCommon("*-north")
-      .Shape("game:block/clay/grating")
+      // A plain cube: its per-face texture codes (north/south/east/west/up/down) are what let the
+      // caller stamp the orientation marker and type label onto just the two faces that carry them.
+      .Shape("game:block/basic/cube")
       .Material(EnumBlockMaterial.Ceramic)
       .MaxStackSize(4)
       .Replaceable(700)
@@ -47,4 +65,5 @@ public abstract class BlockFurnaceCoreBase : Block
       .Sound("walk", "game:walk/stone")
       .Sound("place", "game:block/ceramicplace")
       .MaterialDensity(2000);
+  }
 }

@@ -21,13 +21,11 @@
   "item-scythe-castiron": "Cast Iron Scythe",
   "item-ingot-pigiron": "Pig Iron Ingot",
   "itemdesc-ingot-pigiron*": "Crude high-carbon iron straight from the blast furnace, fit only for remelting or converting to steel.",
-
   "item-slag": "Slag",
   "itemdesc-slag*": "A by-product tapped from the blast furnace. ",
   "item-powderedslag": "Powdered Slag",
   "itemdesc-powderedslag*": "Ground slag, future mortar or fertilizer.",
   "game:tabname-iwex": "Ironworking",
-
   "block-bunker-*": "Ore Bunker",
   "blockdesc-bunker-*": "Stores prepared blast-furnace mix or crushed ore - one feedstock at a time. Built from any colour of fired brick (except fire and clinker), which sets its appearance.",
   "iwex:bunker-stored": "Stored: {0} units of {1}",
@@ -35,13 +33,11 @@
   "iwex:bunker-help-add": "Add one (burden or crushed ore)",
   "iwex:bunker-help-add-stack": "Add a stack (burden or crushed ore)",
   "iwex:bunker-help-take": "Take",
-
   "iwex:hoppertall-empty": "Empty. Pour burden into the top.",
   "iwex:hoppertall-holds": "Holds: {0}/{1} units - {2}",
   "iwex:hoppertall-help-add": "Add one burden",
   "iwex:hoppertall-help-addstack": "Add a stack of burden",
   "iwex:hoppertall-help-take": "Take burden",
-
   "block-mixer-*": "Ore Mixer",
   "blockdesc-mixer-*": "Mechanically-driven mixer that blends crushed ore, flux and coke into blast-furnace burden. Drive the rotor with an axle on either side; the burden drains into the container below.",
   "iwex:mixer-empty": "Empty. Add crushed iron or scrap metal, lime and fuel (coke or charcoal).",
@@ -56,7 +52,6 @@
   "iwex:mixer-help-add": "Add one crushed iron / scrap / lime / coke / charcoal (or burden)",
   "iwex:mixer-help-add-stack": "Add a stack",
   "iwex:mixer-help-lid": "Open or close the drain lids",
-
   "block-blastfurnacecore": "Cold Blast Furnace Core",
   "block-tuyere-tuyere*": "Tuyere",
   "block-moltenmetaltap*": "Molten Metal Tap",
@@ -70,8 +65,33 @@
   "block-solidifiediron": "Solidified Pig Iron",
   "block-solidifiedcastiron": "Solidified Cast Iron",
   "block-blastmix": "Blast Mix",
+  "block-designtable-*": "Design Table",
   "item-blastmix": "Blast Mix",
-
+  "item-diagram-*": "Diagram",
+  "item-diagram-pipe-straight": "Straight Pipe Diagram",
+  "item-diagram-pipe-bend": "Pipe Bend Diagram",
+  "item-diagram-pipe-tjunction": "Pipe T-Junction Diagram",
+  "item-diagram-pipe-xjunction": "Pipe Cross Diagram",
+  "item-diagram-molten-straight": "Molten Canal Diagram",
+  "item-diagram-molten-bend": "Canal Bend Diagram",
+  "item-diagram-molten-tjunction": "Canal T-Junction Diagram",
+  "item-diagram-molten-xjunction": "Canal Cross Diagram",
+  "item-diagram-molten-start": "Canal Source Diagram",
+  "item-diagram-molten-tap": "Molten Tap Diagram",
+  "item-diagram-molten-furnacetap": "Furnace Tap Diagram",
+  "item-diagram-molten-moldpedestal": "Mold Pedestal Diagram",
+  "item-diagram-molten-barrel": "Molten Barrel Diagram",
+  "item-diagram-molten-sandbed": "Sand Casting Bed Diagram",
+  "item-diagram-molten-sandcell": "Sand Cell Diagram",
+  "item-diagram-tuyere": "Tuyere Diagram",
+  "item-diagram-bfc": "Cold Blast Core Diagram",
+  "item-diagram-cf": "Cupola Core Diagram",
+  "designtable-title": "Design Table",
+  "designtable-inputs": "Charcoal + Parchment",
+  "designtable-result": "Diagram",
+  "designtable-draw": "Draw",
+  "designtable-desc-generic": "Draft this plan onto parchment. Keep it as a reusable guide when crafting simple parts, or use it to plan a multiblock build.",
+  "blockhelp-designtable-open": "Open drafting table",
   "blockdesc-blastfurnacecore*": "The refractory hearth grate at the base of the cold blast furnace. Build the furnace up from it.",
   "blockdesc-tuyere-tuyere*": "A hot blast intake for the furnace shaft.",
   "blockdesc-moltenmetaltap*": "Drains the furnace's molten reservoir into a canal below.",
@@ -83,12 +103,10 @@
   "blockdesc-solidifiediron*": "Pig iron that cooled and hardened before it could be tapped or poured.\n",
   "blockdesc-solidifiedcastiron*": "Cast iron that froze in the cupola hearth before it could be tapped.\n",
   "itemdesc-blastmix*": "The blast furnace's charge.",
-
   "solidifiedmetal-info-count": "Metal bits: {0}",
   "slag-info-count": "Slag: {0}",
-
   "blockhelp-tap-toggle": "Toggle tap pouring",
-
+  "blockhelp-mulblock-struc-show": "Show multiblock structure",
   "bf-info-incomplete": "Structure is incomplete!",
   "bf-info-mixloaded": "Blast Mix loaded: {0} / {1}",
   "bf-info-state": "State: {0}",
@@ -119,18 +137,15 @@
   "bf-info-ready": "Blast Furnace is ready! Ignite the blast mix inside.",
   "bf-error-incomplete": "Structure is not complete. {0} blocks are missing or incorrect.",
   "bf-error-complete": "Blast Furnace structure is complete!",
-
   "tap-state": "Tap is {0}",
   "tap-open": "Open",
   "tap-closed": "Closed",
   "tap-err-nocanal": "No canal start found below the tap!",
-
   "iwex:rcc-ingredient-brick": "Fired Bricks",
   "iwex:rcc-ingredient-support": "Iron Ingots (support frame)",
   "iwex:rcc-ingredient-ironcasing": "Iron Ingots (casing)",
   "iwex:rcc-ingredient-rotorgears": "Iron Gears (rotor)",
   "iwex:rcc-ingredient-rotorshaft": "Iron Ingots (rotor shaft)",
-
   "item-burden": "Blast Burden",
   "itemdesc-burden": "Prepared blast-furnace charge: iron ore, flux (limestone) and coke mixed in set proportions. Fed to the furnace through the reinforced hopper.",
   "item-remeltburden": "Remelt Burden",
@@ -149,7 +164,6 @@
   "iwex:burden-profile-lowcoke": "Grade: low-fuel iron burden (hot-blast)",
   "iwex:burden-profile-standard": "Grade: standard iron burden",
   "iwex:burden-profile-highcoke": "Grade: high-fuel iron burden (cold-blast)",
-
   "block-moltencanal-start*": "Molten Canal (Start)",
   "block-moltencanal-straight*": "Molten Canal (Straight)",
   "block-moltencanal-bend*": "Molten Canal (Bend)",
@@ -158,7 +172,6 @@
   "block-moltencanal-tap*": "Molten Canal (Tap)",
   "block-moltencanal-moldpedestal*": "Molten Canal (Mold Pedestal)",
   "block-moltenbarrel": "Molten Barrel",
-
   "blockdesc-moltencanal-start*": "The anchor of a molten canal network.",
   "blockdesc-moltencanal-straight*": "Straight molten canal segment.",
   "blockdesc-moltencanal-bend*": "A 90° bend in a molten canal run.",
@@ -167,12 +180,10 @@
   "blockdesc-moltencanal-tap*": "Pours metal out of the far end of a canal.",
   "blockdesc-moltencanal-moldpedestal*": "Fills a mold it from the canal network.",
   "blockdesc-moltenbarrel*": "Bulk storage for liquid metal or slag.",
-
   "iwex:moltenbarrel-info-empty": "Empty (0/{0} units)",
   "iwex:moltenbarrel-info-units": "{0}/{1} units",
   "iwex:moltenbarrel-info-content": "{0}/{1} units of {2}, {3} ({4})",
   "iwex:moltenbarrel-info-units-state": "{0}/{1} units, {2} ({3})",
-
   "iwex:canal-info-empty": "Empty.",
   "iwex:canal-pouring": "Pouring: {0}",
   "iwex:canal-label-barrel": "Barrel",
@@ -186,11 +197,9 @@
   "iwex:canal-empty": "Canal is empty.",
   "iwex:canal-content2": "{0}/{1} of {2}, {3} ({4})",
   "iwex:canalstart-pouredtally": "Poured: {0} units",
-
   "iwex:moldpedestal-nomold": "No mold.",
   "iwex:mold-empty": "Mold: empty",
   "iwex:mold-content": "Mold: {0}/{1} units of {2}, {3} ({4})",
-
   "iwex:blockhelp-canalstart-pour": "Pour molten metal",
   "iwex:blockhelp-canal-seal": "Seal canal",
   "iwex:blockhelp-canal-unseal": "Break seal",
@@ -203,26 +212,32 @@
   "iwex:blockhelp-barrel-pickup": "Pick up barrel",
   "iwex:blockhelp-barrel-pour": "Pour liquid metal",
   "iwex:blockhelp-barrel-chisel": "Chisel out hardened metal",
-
   "iwex:metalstate-liquid": "liquid",
   "iwex:metalstate-hardened": "hardened",
   "iwex:metalstate-soft": "soft",
   "iwex:metalstate-cooling": "cooling",
   "iwex:state-on": "on",
   "iwex:state-off": "off",
-
   "game:ingameerror-iwex-moltenspill": "The molten metal spilled out of the mold!",
   "game:ingameerror-iwex-needemptyhands": "The metal is still liquid! Take the mold with an empty hand.",
   "game:ingameerror-iwex-moldtoosmall": "This mold is used with the mold pedestal.",
   "game:ingameerror-iwex-moldtoolarge": "This mold will not fit on the pedestal.",
   "game:ingameerror-iwex-canaltoohot": "Wait for the metal to harden!",
   "game:ingameerror-iwex-canalnotempty": "Cannot seal while there is metal!",
-
   "game:ingameerror-iwex-mixer-wronginput": "The mixer only takes crushed iron, scrap metal, lime, coke or burden.",
   "game:ingameerror-iwex-mixer-drainfirst": "A finished batch is waiting - drain it before adding more.",
   "game:ingameerror-iwex-mixer-full": "The mixer is full.",
   "game:ingameerror-iwex-mixer-wrongfamily": "Iron ore and scrap metal make different burdens - do not mix them in one batch.",
   "game:ingameerror-iwex-mixer-nothingmixed": "Nothing is mixed yet - charge the mixer and drive the rotor first.",
-
-  "game:ingameerror-iwex-hoppertall-wronggrade": "The hopper already holds a different burden - empty it before adding another."
+  "game:ingameerror-iwex-hoppertall-wronggrade": "The hopper already holds a different burden - empty it before adding another.",
+  "block-sandcastingbed-*": "Sand Casting Bed",
+  "item-pig": "Pig Iron",
+  "item-pigchunk": "Pig Iron Chunk",
+  "item-pigbit": "Pig Iron Bit",
+  "iwex:rcc-ingredient-sand": "Sand",
+  "iwex:castingbed-basin": "Basin: {0} units, {1}",
+  "iwex:castingbed-empty": "The pour basin is empty.",
+  "iwex:castingbed-pigs-ready": "{0} pig(s) ready to collect.",
+  "iwex:castingbed-cooling": "{0} mold(s) still cooling.",
+  "game:ingameerror-iwex-castingbed-toohot": "Wait for the pig to harden before collecting it!"
 }

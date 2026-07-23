@@ -10,6 +10,14 @@
   ],
   "variantgroups": [
     {
+      "code": "tier",
+      "states": [
+        "tier1",
+        "tier2",
+        "tier3"
+      ]
+    },
+    {
       "code": "side",
       "loadFromProperties": "abstract/horizontalorientation"
     }
@@ -23,7 +31,7 @@
     ]
   },
   "shape": {
-    "base": "game:block/clay/grating"
+    "base": "game:block/basic/cube"
   },
   "blockmaterial": "Ceramic",
   "maxstacksize": 4,
@@ -45,7 +53,19 @@
   "entityClass": "iwex.BlockEntityBlastFurnaceCold",
   "textures": {
     "all": {
-      "base": "game:block/clay/refractory/tier1/front1"
+      "base": "game:block/clay/refractory/{tier}/front1"
+    },
+    "north": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iwex:block/furnace/n"
+      ]
+    },
+    "south": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iwex:block/furnace/bfc"
+      ]
     }
   },
   "attributes": {

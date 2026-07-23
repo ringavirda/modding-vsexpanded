@@ -34,6 +34,10 @@ public partial class BlockHopperTall
         .Create(domain, "hopper-tall", "furnaces/hopper-tall")
         .Class<BlockHopperTall>()
         .EntityClass<BlockEntityHopperTall>()
+        // The build-outline projection: the hopper is a functional cell of the furnace layout, so a player
+        // at the hopper can preview + complete an incomplete furnace (the top filler cell routes the gesture
+        // through HandleInteract; the base cell fires this behaviour). Before other rmb consumers.
+        .Behavior("MultiblockStructure")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
         .Shape("iwex:furnaces/hopper-tall")
@@ -103,6 +107,19 @@ public partial class BlockHopperTall
       is not BlockEntityHopperTall be
     )
       return false;
+
+    // The hopper's own cells route here (deposits/withdraws land on the top filler cell). Consume the
+    // build-outline gesture BEFORE the deposit/withdraw path so Ctrl+Shift+right-click previews the
+    // incomplete furnace instead of emptying the tank. The hopper's base cell gets this from the shared
+    // MultiblockStructure behaviour directly; this covers the filler-routed clicks the behaviour never sees.
+    if (
+      BlockBehaviorMultiblockStructure.TryToggleProjection(
+        world,
+        byPlayer,
+        principalSel.Position
+      )
+    )
+      return true;
 
     if (world.Side == EnumAppSide.Server)
     {
@@ -206,6 +223,16 @@ public partial class BlockHopperTall
           MouseButton = EnumMouseButton.Right,
         }
       );
+
+    // While the furnace this hopper charges is still incomplete, offer the build-outline gesture here too
+    // (the base cell shows it via the shared behaviour; the top filler cell routes its help through this).
+    if (
+      world.BlockAccessor.GetBlockEntity(principalSel.Position)
+        is BlockEntityHopperTall hopper
+      && hopper.ResolveOwningAnchor() is { StructureComplete: false }
+    )
+      help.AddRange(BlockBehaviorMultiblockStructure.ProjectionHelp(this));
+
     return [.. help];
   }
 

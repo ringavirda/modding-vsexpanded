@@ -2,6 +2,11 @@
   "code": "hopper-tall",
   "class": "iwex.BlockHopperTall",
   "entityClass": "iwex.BlockEntityHopperTall",
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    }
+  ],
   "blockmaterial": "Ceramic",
   "maxstacksize": 1,
   "shape": {

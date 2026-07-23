@@ -317,7 +317,14 @@ public sealed class TestWorld
     PushCalendar();
   }
 
-  private void PushCalendar() => Calendar.TotalDays.Returns(_totalDays);
+  /// <summary>Moves the calendar forward by game hours without ticking (for away-catch-up tests).</summary>
+  public void AdvanceHours(double hours) => AdvanceDays(hours / 24.0);
+
+  private void PushCalendar()
+  {
+    Calendar.TotalDays.Returns(_totalDays);
+    Calendar.TotalHours.Returns(_totalDays * 24.0);
+  }
 
   #endregion
 

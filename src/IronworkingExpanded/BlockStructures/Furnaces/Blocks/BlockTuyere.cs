@@ -24,6 +24,9 @@ public partial class BlockTuyere : BlockPipe, IExBlockDefProvider
         .EntityClass("iwex.BlockEntityTuyere")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
+        // The build-outline projection: the tuyere is a functional cell of the furnace layout, so a player
+        // at the tuyere can preview + complete an incomplete furnace. Before other rmb consumers (Lockable).
+        .Behavior("MultiblockStructure")
         .Behavior("Lockable")
         .VariantGroup("type", "tuyere")
         .VariantGroup("orientation", "s", "n", "w", "e")

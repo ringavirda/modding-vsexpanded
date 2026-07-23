@@ -1,5 +1,6 @@
 using ExpandedLib.Blocks.Networks;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Blocks.Machines;
@@ -68,11 +69,58 @@ public abstract class BlockEntityProductionMachine : BlockEntity
   /// chunk reload or a server hitch the engine can hand us one oversized catch-up <c>dt</c>; an unclamped
   /// grace timer (e.g. the boiler over-pressure burst) would leap its whole window in that single step -
   /// the "detonates right after rejoining" bug. Capping at 2x the interval loses at most ~1 tick of
-  /// simulation on a genuine hitch. (The game-time/away-catch-up work later replaces this with a bounded
-  /// calendar delta; until then this is the floor that keeps every machine safe.)</summary>
+  /// simulation on a genuine hitch. Away-catch-up (below) replays the unloaded interval as many bounded
+  /// sub-ticks, each still passing through this clamp.</summary>
   private const float MaxCatchupTickMultiple = 2f;
 
+  #region Away catch-up (game time)
+
+  // Calendar time (game hours) of the last simulated tick; -1 until the first tick / a fresh machine.
+  // Persisted, so on reload the gap to "now" is the game time the machine spent unloaded.
+  private double _lastTickHours = -1;
+  private bool _pendingCatchup;
+
+  /// <summary>
+  /// How many bounded sub-ticks a machine replays to catch up the game time it spent unloaded. Default
+  /// <c>0</c> disables away-catch-up (the machine simply resumes, as before). A machine opts in by
+  /// overriding this; the away interval is then simulated as up to this many
+  /// <see cref="AwayCatchupStepSeconds"/> sub-ticks - so the maximum caught-up game time is
+  /// <c>MaxAwayCatchupSteps × AwayCatchupStepSeconds</c> seconds, and a longer absence is capped there
+  /// (never replayed in full, which would both stall the server and risk a grace-timer leap).
+  /// </summary>
+  protected virtual int MaxAwayCatchupSteps => 0;
+
+  /// <summary>Sub-tick length (seconds) used while catching up; defaults to one normal tick, so a
+  /// caught-up step is just another ordinary tick and needs no extra <c>dt</c> robustness.</summary>
+  protected virtual float AwayCatchupStepSeconds => ProductionTickMs / 1000f;
+
   private void RunProductionTick(float dt)
+  {
+    // First tick after a reload: replay the unloaded game-time gap before this real tick.
+    if (_pendingCatchup)
+    {
+      _pendingCatchup = false;
+      RunAwayCatchup();
+    }
+
+    RunOneTick(dt);
+    if (Api?.World != null)
+      _lastTickHours = Api.World.Calendar.TotalHours;
+  }
+
+  private void RunAwayCatchup()
+  {
+    if (MaxAwayCatchupSteps <= 0 || _lastTickHours < 0 || Api?.World == null)
+      return;
+
+    double away = GameTime.SecondsBetween(
+      _lastTickHours,
+      Api.World.Calendar.TotalHours
+    );
+    GameTime.CatchUp(away, AwayCatchupStepSeconds, MaxAwayCatchupSteps, RunOneTick);
+  }
+
+  private void RunOneTick(float dt)
   {
     dt = GameMath.Min(dt, ProductionTickMs / 1000f * MaxCatchupTickMultiple);
     if (CanRunProduction)
@@ -80,6 +128,25 @@ public abstract class BlockEntityProductionMachine : BlockEntity
     else
       OnIdleProductionTick(dt);
   }
+
+  public override void ToTreeAttributes(ITreeAttribute tree)
+  {
+    base.ToTreeAttributes(tree);
+    tree.SetDouble("pm_lastHours", _lastTickHours);
+  }
+
+  public override void FromTreeAttributes(
+    ITreeAttribute tree,
+    IWorldAccessor worldForResolving
+  )
+  {
+    base.FromTreeAttributes(tree, worldForResolving);
+    _lastTickHours = tree.GetDouble("pm_lastHours", -1);
+    // A saved timestamp means this machine was previously simulated, so the gap to now is unloaded time.
+    _pendingCatchup = _lastTickHours >= 0;
+  }
+
+  #endregion
 
   /// <summary>Per-tick production logic; runs server-side only while <see cref="CanRunProduction"/>.</summary>
   protected abstract void OnProductionTick(float dt);

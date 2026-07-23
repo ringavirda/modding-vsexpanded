@@ -24,22 +24,23 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
       MoltenBarrel(domain),
       SlagPath(domain),
       MoltenCanal(domain),
+      DiagramProof(domain),
     ];
 
   private static ExRecipeDef BlastFurnace(string domain) =>
     ExRecipeDef
       .Create(domain, "grid", "blastfurnace")
       .Grid(r =>
-        // Iron bars set in refractory brick - the hearth grate the burden column stands on. Same
-        // pattern and cost the door had, so the auto-filled "normal" recipe-cost baseline is unmoved.
+        // Iron bars set in refractory brick - the hearth grate the burden column stands on. Built from
+        // any refractory tier; the core takes on that tier's brick ({tier} captured off the brick).
         r.Name("Blast Furnace Core")
           .Pattern("BRP,BN_,BRP")
           .Size(3, 3)
-          .Ingredient("B", Refractory(4))
+          .Ingredient("B", RefractoryTiered(4))
           .Ingredient("R", Rod(2))
           .Ingredient("N", Nails(4))
           .Ingredient("P", Plate(2))
-          .OutputBlock("iwex:blastfurnacecore-north")
+          .OutputBlock("iwex:blastfurnacecore-{tier}-north")
       )
       .Grid(r =>
         r.Name("Molten Metal Tap")
@@ -82,11 +83,11 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
         r.Name("Cupola Furnace Core")
           .Pattern("BRB,PCP,BRB")
           .Size(3, 3)
-          .Ingredient("B", Refractory(4))
+          .Ingredient("B", RefractoryTiered(4))
           .Ingredient("R", Rod(2))
           .Ingredient("P", Plate(1))
           .Ingredient("C", FireClay(8))
-          .OutputBlock("iwex:cupolafurnacecore-north")
+          .OutputBlock("iwex:cupolafurnacecore-{tier}-north")
       );
 
   // A one-recipe file authored as a lone object: 8 same-colour burned bricks -> an ore bunker of that brick.
@@ -351,6 +352,31 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
           .OutputBlock("iwex:moltencanal-moldpedestal-fire-s", 1)
       );
 
+  // Phase-2 proof of the diagram-crafting system (docs/design/diagram-crafting.md): the SAME material
+  // pattern (a reusable diagram + cobblestone), the diagram picking the canal shape - what the seven
+  // hand-authored canal patterns above collapse into. The diagram is `.Tool()` (isTool), so it is not
+  // consumed: draw it once, reuse it. Creative-only until the design table can draft diagrams, and it
+  // coexists with the legacy canal recipes for now (Phase 6 migrates them wholesale).
+  private static ExRecipeDef DiagramProof(string domain) =>
+    ExRecipeDef
+      .Create(domain, "grid", "diagram")
+      .Grid(r =>
+        r.Name("Molten Canal (Straight, from diagram)")
+          .Pattern("D,C")
+          .Size(1, 2)
+          .Ingredient("D", i => i.Item("iwex:diagram-molten-straight").Tool())
+          .Ingredient("C", Cobble)
+          .OutputBlock("iwex:moltencanal-straight-{rock}-ns", 1)
+      )
+      .Grid(r =>
+        r.Name("Molten Canal (Bend, from diagram)")
+          .Pattern("D,C")
+          .Size(1, 2)
+          .Ingredient("D", i => i.Item("iwex:diagram-molten-bend").Tool())
+          .Ingredient("C", Cobble)
+          .OutputBlock("iwex:moltencanal-bend-{rock}-nw", 1)
+      );
+
   // The fire-clay + hammer + chisel trio every canal recipe shares (clay quantity varies: 4 for the tap, else 2).
   private static GridRecipeBuilder Fhk(GridRecipeBuilder r, int clayQty) =>
     r.Ingredient("F", FireClay(clayQty))
@@ -409,6 +435,17 @@ public class IwexGridRecipeDefinitions : IExRecipeDefProvider
   private static Func<IngredientBuilder, IngredientBuilder> Refractory(
     int qty
   ) => i => i.Item("game:refractorybrick-fired-tier3").Quantity(qty);
+
+  // The furnace cores accept any refractory tier and take on that tier's brick: capture the tier off the
+  // fired-brick wildcard as {tier} so the crafted core resolves to the matching variant. (The tap/tuyere
+  // fittings keep the fixed tier-3 Refractory helper above.)
+  private static Func<IngredientBuilder, IngredientBuilder> RefractoryTiered(
+    int qty
+  ) =>
+    i =>
+      i.Item("game:refractorybrick-fired-*")
+        .Named("tier", "tier1", "tier2", "tier3")
+        .Quantity(qty);
 
   private static Func<IngredientBuilder, IngredientBuilder> Slag(int qty) =>
     i => i.Item("iwex:slag").Quantity(qty);

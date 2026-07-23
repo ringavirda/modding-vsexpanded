@@ -31,12 +31,31 @@ public partial class BlockCupolaFurnaceCore
   /// by DefinitionParity, so the w-numbering is free.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
-      Core(domain, "cupolafurnacecore", "furnaces/cupola-core")
+      Core(
+          domain,
+          "cupolafurnacecore",
+          "furnaces/cupola-core",
+          "tier1",
+          "tier2",
+          "tier3"
+        )
         .Class<BlockCupolaFurnaceCore>()
         .EntityClass<BlockEntityCupolaFurnace>()
-        // Any refractory tier - the cupola runs cooler than the hot blast furnace. Tier-2 face, so a
-        // built cupola reads apart from a tier-1 cold blast furnace at a glance.
-        .Texture("all", "game:block/clay/refractory/tier2/front1")
+        // A refractory-brick cube in whichever tier it was built from ({tier}): plain brick on the side
+        // faces, the orientation marker on the north face and the "CF" (cupola furnace) type label on the
+        // south, so a built cupola reads apart from the blast-furnace cores - and shows which way it faces
+        // - at a glance.
+        .Texture("all", "game:block/clay/refractory/{tier}/front1")
+        .Texture(
+          "north",
+          "game:block/clay/refractory/{tier}/front1",
+          "iwex:block/furnace/n"
+        )
+        .Texture(
+          "south",
+          "game:block/clay/refractory/{tier}/front1",
+          "iwex:block/furnace/cf"
+        )
         .MultiblockLayout(s =>
           s.Origin(-1, -1)
             .Legend('#', "game:refractorybricks-good-tier*")
@@ -50,57 +69,57 @@ public partial class BlockCupolaFurnaceCore
             .Layer(
               0,
               """
-              # # #
-              # C #
-              # # #
+              # # # #
+              # C # .
+              # # # #
               """
             )
             .Layer(
               1,
               """
-              # Y #
-              T c #
-              # # #
+              # Y # #
+              T c # .
+              # # # #
               """
             )
             .Layer(
               2,
               """
-              # # #
-              # c T
-              # # #
+              # # # #
+              # c T .
+              # # # #
               """
             )
             .Layer(
               3,
               """
-              # # #
-              # c #
-              # # #
+              # # # .
+              # c # .
+              # # # .
               """
             )
             .Layer(
               4,
               """
-              # # #
-              # c H
-              # # #
+              # # # .
+              # c H .
+              # # # .
               """
             )
             .Layer(
               5,
               """
-              # # #
-              # c f
-              # # #
+              # # # .
+              # c f .
+              # # # .
               """
             )
             .Layer(
               6,
               """
-              . # .
-              # a .
-              . # .
+              . # . .
+              # a . .
+              . # . .
               """
             )
         ),

@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Molten Canal (Straight, from diagram)",
+    "ingredientPattern": "D,C",
+    "width": 1,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iwex:moltencanal-straight-{rock}-ns",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-molten-straight",
+        "isTool": true
+      },
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Bend, from diagram)",
+    "ingredientPattern": "D,C",
+    "width": 1,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iwex:moltencanal-bend-{rock}-nw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-molten-bend",
+        "isTool": true
+      },
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      }
+    }
+  }
+]

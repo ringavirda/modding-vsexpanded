@@ -42,7 +42,7 @@ exlib ──▶ iwex ──▶ ppex ──▶ smex ──▶ hpex
 |---|---|---|---|---|
 | **Expanded Library** | `exlib` | framework | network **logic** (Pipe/Molten/MP), definitions, registries, config, helpers, test harness | game |
 | **Ironworking Expanded** | `iwex` | iron (low-tech) | cold blast furnace, molten-canal network, ore bunker/mixer, **mechanical (MP) air blower**, **bolted pipes**, `gear-iron` | exlib |
-| **Pipes & Power Expanded** | `ppex` | low steam power | Cornish boiler + Watt engine, **rolled pipes**, steam pump **+ mechanical MP pump**, MP power, fluid tank/sprinkler | iwex, exlib |
+| **Pipes & Power Expanded** | `ppex` | low steam power | Cornish boiler + Watt engine, **cast pipes**, steam pump **+ mechanical MP pump**, MP power, fluid tank/sprinkler | iwex, exlib |
 | **Steelmaking Expanded** | `smex` | steel | hot blast furnace **+ cowper stoves**, Bessemer, open hearth, ladle, billet/forming | ppex, iwex, exlib |
 | **High Pressure Expanded** | `hpex` | high steam (planned) | HP steam engines/boilers, large-scale/community machines (large blast furnace, large engines) | smex, … |
 | **Electrical Expanded** | `elex` | electric (planned, last) | full-realism AC/DC grid: dynamo, alternator, electrolysis, arc furnace, HSS | hpex, smex, chemistry |
@@ -69,7 +69,7 @@ separate projects):
 smelting → low steam power → steel, all runnable on **water/MP power** (a vanilla waterwheel drives
 the mechanical blower and pump — no steam setup required to make iron). A player who wants to stay
 low-tech simply never installs `hpex` or `elex`. The pipe tiers make this clean: `iwex` ships its own
-**bolted-pipe** tier so it never depends on `ppex`'s **rolled pipes**.
+**bolted-pipe** tier so it never depends on `ppex`'s **cast pipes**.
 
 ---
 
@@ -91,7 +91,7 @@ No hard circular dependencies. See [materials.md](materials.md) for the material
 
 1. **Iron (iwex).** Coke oven, cold blast furnace (waterwheel-blown), cupola + puddling, sand-cast
    pigs, cast/forged components, boring machine.
-2. **Low steam (ppex).** Cornish boiler + Watt engine, blower/pump/flywheel, rolled pipes, fluid
+2. **Low steam (ppex).** Cornish boiler + Watt engine, blower/pump/flywheel, cast pipes, fluid
    tank + sprinklers.
 3. **Steel (smex).** Hot blast + cowpers + Bessemer, ladle, billet/forming shop, open hearth.
 4. **Branches, any order:** crucible / domestic (lights, fuel, colours & climate) / copper.

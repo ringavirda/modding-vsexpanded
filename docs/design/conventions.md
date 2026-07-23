@@ -66,9 +66,12 @@ in exlib; the pipe **blocks** are per-mod tiers.
 - **Molten-canal** *(live)* — per-cell metal, flows cell→cell, end caps recomputed on tesselation. The
   ladle is the only merge/mix point. Owned by [iwex](iwex.md).
 - **Pipe (gas *or* water)** *(live)* — single medium per network (R1). Used for water, steam, compressed
-  air, exhaust, coal gas and the chemistry fractions. Two **material tiers** of pipe block on the same
-  network: **bolted** (iwex, iron) and **rolled** (ppex, steam). Connectors read the adjacent cell;
-  valves sever/flow; pressure valves overflow.
+  air, exhaust, coal gas and the chemistry fractions. **Three material tiers** of pipe block on the same
+  network, ascending burst pressure: **bolted** (iwex — hand-riveted from iron plates), **cast** (ppex —
+  from cast pipe-parts finished on the boring machine), and **rolled** (the HP tier — Hadfield steel rolled
+  on smex's rolling mill, for hpex). All three share **one plan per shape** (the pipe diagrams, see
+  [diagram-crafting.md](diagram-crafting.md)); only the material and the slightly different shape differ.
+  Connectors read the adjacent cell; valves sever/flow; pressure valves overflow.
 - **Mechanical power (MP)** *(live)* — vanilla MP network; drives the mechanical blower (iwex) and
   mechanical pump (ppex) as well as engine sub-machines.
 - **Electrical (AC + DC)** — the [elex](elex.md) tier (planned).

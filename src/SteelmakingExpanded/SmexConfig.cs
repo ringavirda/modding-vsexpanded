@@ -78,25 +78,17 @@ public class SmexConfig : IExVersionedConfig
   // IronworkingExpanded.IwexConfig / IwexValues. The bessemer charge cooldown still reads the base
   // IwexValues.MoltenCooldownSpeed and scales it by BessemerCooldownCoefficient below.
 
-  #region Hopper bell (blast-mix maker)
-  /// <summary>Items the hopper magazine can buffer.</summary>
+  #region Hopper feed (reinforced tank + bell drip)
+  // The reinforced hopper is now a plain burden tank (the ore mixer makes the burden; the hopper no
+  // longer mixes). It is deliberately a SMALL buffer versus the tall hopper's 128 - it is meant to be
+  // fed by the skip-hoist system later, not hand-loaded to the brim.
+  /// <summary>Burden units the reinforced hopper tank holds. Small by design (skip-hoist fed).</summary>
+  public int HopperReinforcedCapacity { get; set; } = 48;
+
+  /// <summary>Burden the bell hopper's magazine can buffer below the reinforced tank.</summary>
   public int HopperMaxMagazineCapacity { get; set; } = 48;
 
-  /// <summary>Iron ore consumed per blast-mix batch.</summary>
-  public int HopperIronOreRequired { get; set; } = 12;
-
-  /// <summary>Coke (lumps) consumed per blast-mix batch. Halved from the old 3 crushed-coke when coke
-  /// became a whole lump: one lump is worth two of the retired crushed pieces, so 2 lumps keep the
-  /// blast-mix coke cost close to what it was (rounded up from 1.5, so it never got cheaper).</summary>
-  public int HopperCokeRequired { get; set; } = 2;
-
-  /// <summary>Lime consumed per blast-mix batch.</summary>
-  public int HopperLimeRequired { get; set; } = 1;
-
-  /// <summary>Blast-mix produced per batch.</summary>
-  public int HopperBlastmixProduced { get; set; } = 16;
-
-  /// <summary>Blast-mix dropped per output pulse.</summary>
+  /// <summary>Burden dropped into the shaft per output pulse.</summary>
   public int HopperDropAmount { get; set; } = 4;
   #endregion
 

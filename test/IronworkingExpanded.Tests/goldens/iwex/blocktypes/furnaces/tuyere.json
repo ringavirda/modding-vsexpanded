@@ -6,6 +6,9 @@
   "maxstacksize": 1,
   "behaviors": [
     {
+      "name": "MultiblockStructure"
+    },
+    {
       "name": "Lockable"
     }
   ],

@@ -1,0 +1,27 @@
+{
+  "code": "pigbit",
+  "shape": {
+    "base": "game:item/nugget"
+  },
+  "textures": {
+    "ore": {
+      "base": "game:block/metal/tarnished/iron"
+    }
+  },
+  "maxstacksize": 128,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 5
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

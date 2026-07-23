@@ -23,7 +23,7 @@
     ]
   },
   "shape": {
-    "base": "game:block/clay/grating"
+    "base": "game:block/basic/cube"
   },
   "blockmaterial": "Ceramic",
   "maxstacksize": 4,
@@ -46,6 +46,18 @@
   "textures": {
     "all": {
       "base": "game:block/clay/refractory/tier3/front1"
+    },
+    "north": {
+      "base": "game:block/clay/refractory/tier3/front1",
+      "overlays": [
+        "smex:block/furnace/n"
+      ]
+    },
+    "south": {
+      "base": "game:block/clay/refractory/tier3/front1",
+      "overlays": [
+        "smex:block/furnace/bfh"
+      ]
     }
   },
   "attributes": {

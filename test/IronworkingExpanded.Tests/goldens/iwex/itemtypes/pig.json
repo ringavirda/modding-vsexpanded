@@ -1,0 +1,29 @@
+{
+  "code": "pig",
+  "class": "iwex.ItemPig",
+  "shape": {
+    "base": "iwex:pig"
+  },
+  "textures": {
+    "iron": {
+      "base": "game:block/metal/tarnished/iron"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 150,
+    "workableTemperature": 0
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

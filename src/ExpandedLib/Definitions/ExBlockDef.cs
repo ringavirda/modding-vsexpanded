@@ -731,6 +731,8 @@ public sealed class ExBlockDef : IExDef
           var behavior = new JObject { ["code"] = b.Code };
           if (b.Face != null)
             behavior["face"] = b.Face;
+          if (b.Properties != null)
+            behavior["properties"] = JToken.FromObject(b.Properties);
           behaviors.Add(behavior);
         }
         entry["behaviors"] = behaviors;

@@ -6,11 +6,18 @@ namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
 /// One behaviour hosted by a footprint filler cell: a block-entity behaviour code plus, optionally, the block
-/// face it exposes a connector on. This is how a filler cell becomes a live port - e.g. a
-/// <c>exlib.BEBehaviorMPFillerPort</c> on <c>west</c> turns the cell into a mechanical-power intake so an axle
-/// on that face drives the principal. Serialized as <c>{ code[, face] }</c> in a cell's <c>behaviors</c> array.
+/// face it exposes a connector on and a <see cref="Properties"/> config blob. This is how a filler cell becomes
+/// a live port - e.g. a <c>exlib.BEBehaviorMPFillerPort</c> on <c>west</c> turns the cell into a mechanical-power
+/// intake so an axle on that face drives the principal - or a stateful cell, e.g. a
+/// <c>exlib.BEBehaviorMoltenCell</c> whose <c>{ capacity, flowSource, drainFitting }</c> vary per footprint cell
+/// (a casting bed's basin / runners / molds). Serialized as <c>{ code[, face][, properties] }</c> in a cell's
+/// <c>behaviors</c> array; <see cref="Properties"/> is any object (an anonymous type reads well).
 /// </summary>
-public readonly record struct FillerBehaviorSpec(string Code, string? Face = null);
+public readonly record struct FillerBehaviorSpec(
+  string Code,
+  string? Face = null,
+  object? Properties = null
+);
 
 /// <summary>
 /// One north-orientation footprint cell for a mega-block, authored in C#: the offset from the principal, whether
