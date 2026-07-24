@@ -16,9 +16,9 @@ namespace ExpandedLib.Registries.Config;
 /// </summary>
 /// <example>
 /// <code>
-/// [ExConfig("ppex.json", "ppex")]
-/// public class PpexConfig : IExVersionedConfig { /* properties */ }
-/// // generates: PpexValues.Load(api), PpexValues.BoilingPoint, ...
+/// [ExConfig("lpex.json", "lpex")]
+/// public class LpexConfig : IExVersionedConfig { /* properties */ }
+/// // generates: LpexValues.Load(api), LpexValues.BoilingPoint, ...
 /// </code>
 /// </example>
 [AttributeUsage(
@@ -28,7 +28,7 @@ namespace ExpandedLib.Registries.Config;
 )]
 public sealed class ExConfigRegisterAttribute : Attribute
 {
-  /// <param name="fileName">Config file name under the game's <c>ModConfig</c> folder (e.g. <c>"ppex.json"</c>).</param>
+  /// <param name="fileName">Config file name under the game's <c>ModConfig</c> folder (e.g. <c>"lpex.json"</c>).</param>
   /// <param name="modId">The owning mod id, used to resolve the running version and tag log lines.</param>
   public ExConfigRegisterAttribute(string fileName, string modId)
   {
@@ -43,7 +43,7 @@ public sealed class ExConfigRegisterAttribute : Attribute
   public string ModId { get; }
 
   /// <summary>Name of the generated accessor class. Defaults to the config type name with a trailing
-  /// <c>Config</c> swapped for <c>Values</c> (e.g. <c>PpexConfig</c> → <c>PpexValues</c>), or the type
+  /// <c>Config</c> swapped for <c>Values</c> (e.g. <c>LpexConfig</c> → <c>LpexValues</c>), or the type
   /// name plus <c>Values</c> when it has no <c>Config</c> suffix.</summary>
   public string? AccessorName { get; set; }
 

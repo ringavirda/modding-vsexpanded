@@ -19,6 +19,7 @@ public sealed class FillerLayoutBuilder
   private int _originA;
   private int _originB;
   private readonly Dictionary<char, bool> _symbols = new() { ['#'] = false, ['+'] = true };
+  private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted = new();
   private readonly List<(int Y, string Grid)> _layers = new();
   private readonly List<(int X, string Grid)> _slices = new();
 
@@ -46,6 +47,30 @@ public sealed class FillerLayoutBuilder
   public FillerLayoutBuilder Attach(char symbol)
   {
     _symbols[symbol] = true;
+    return this;
+  }
+
+  /// <summary>
+  /// Registers a character as an attach-allowing filler cell that <b>hosts</b> <paramref name="behaviors"/>
+  /// on the principal's behalf - the ports a mega-block exposes on a footprint cell (an
+  /// <c>exlib.BEBehaviorMPFillerPort</c> so an axle on that face drives it, a stateful
+  /// <c>exlib.BEBehaviorMoltenCell</c>, …). Without this a footprint that needs one port has to be
+  /// hand-listed cell by cell purely to attach it, which loses the diagram the layout exists to give.
+  /// <code>
+  ///   f.Host('M', new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west"))
+  ///    .Slice(0, """
+  ///              M##
+  ///              0##
+  ///              """);
+  /// </code>
+  /// </summary>
+  public FillerLayoutBuilder Host(
+    char symbol,
+    params FillerBehaviorSpec[] behaviors
+  )
+  {
+    _symbols[symbol] = true;
+    _hosted[symbol] = behaviors;
     return this;
   }
 
@@ -94,7 +119,15 @@ public sealed class FillerLayoutBuilder
           $"Filler layout symbol '{cell.Symbol}' at ({cell.X},{cell.Y},{cell.Z}) is not registered "
             + "(use Solid/Attach, or '#'/'+')."
         );
-      cells.Add(new FillerCellSpec(cell.X, cell.Y, cell.Z, attach));
+      cells.Add(
+        new FillerCellSpec(
+          cell.X,
+          cell.Y,
+          cell.Z,
+          attach,
+          _hosted.TryGetValue(cell.Symbol, out var hosted) ? hosted : null
+        )
+      );
     }
     StructureFootprint.Validate(cells);
     return cells;

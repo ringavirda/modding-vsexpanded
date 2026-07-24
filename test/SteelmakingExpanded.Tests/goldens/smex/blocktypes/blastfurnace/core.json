@@ -67,7 +67,7 @@
         "smex:blastfurnacecore-*": 2,
         "iwex:moltenmetaltap*": 3,
         "iwex:tuyere*": 4,
-        "ppex:pipe-outlet*": 5,
+        "lpex:pipe-outlet*": 5,
         "smex:hopperreinforced*": 6,
         "smex:hopperbell*": 7,
         "@(air|coalpile)": 8,

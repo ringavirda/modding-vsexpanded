@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Networks;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Registries.Entities;
-using PipesAndPowerExpanded.Helpers;
+using ExpandedLib.Helpers;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

@@ -111,7 +111,7 @@
       },
       "P": {
         "type": "block",
-        "code": "ppex:pipe-straight*"
+        "code": "lpex:pipe-straight*"
       },
       "H": {
         "type": "item",

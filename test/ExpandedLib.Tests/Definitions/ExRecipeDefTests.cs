@@ -15,11 +15,11 @@ public class ExRecipeDefTests
   [Fact]
   public void Location_targets_the_recipes_category_folder()
   {
-    ExRecipeDef def = ExRecipeDef.Create("ppex", "grid", "pipes");
-    Assert.Equal("ppex", def.Domain);
+    ExRecipeDef def = ExRecipeDef.Create("lpex", "grid", "pipes");
+    Assert.Equal("lpex", def.Domain);
     Assert.Equal("grid", def.Category);
     Assert.Equal("pipes", def.Code);
-    Assert.Equal("ppex", def.Location.Domain);
+    Assert.Equal("lpex", def.Location.Domain);
     Assert.Equal("recipes/grid/pipes.json", def.Location.Path);
   }
 
@@ -27,7 +27,7 @@ public class ExRecipeDefTests
   public void ToJson_is_an_array_of_the_added_recipes_in_order()
   {
     ExRecipeDef def = ExRecipeDef
-      .Create("ppex", "grid", "x")
+      .Create("lpex", "grid", "x")
       .Grid(r => r.Name("first").Pattern("P").Size(1, 1).OutputItem("game:a"))
       .Grid(r => r.Name("second").Pattern("P").Size(1, 1).OutputItem("game:b"));
 
@@ -44,14 +44,14 @@ public class ExRecipeDefTests
     var recipe = (JObject)
       ((JArray)
         ExRecipeDef
-          .Create("ppex", "grid", "x")
+          .Create("lpex", "grid", "x")
           .Grid(r =>
             r.Name("Piping (Straight)")
               .Pattern("HPN")
               .Size(3, 1)
               .Ingredient("P", i => i.Item("game:metalplate-*").Metal().Quantity(1))
               .Ingredient("H", i => i.Item("game:hammer-*").Tool())
-              .OutputBlock("ppex:pipe-straight-ns-{metal}", 2)
+              .OutputBlock("lpex:pipe-straight-ns-{metal}", 2)
           )
           .ToJson())[0];
 
@@ -65,7 +65,7 @@ public class ExRecipeDefTests
     Assert.Equal(["iron", "steel"], recipe["ingredients"]!["P"]!["allowedVariants"]!.ToObject<string[]>());
     Assert.Equal(1, (int)recipe["ingredients"]!["P"]!["quantity"]!);
     Assert.Equal("block", (string?)recipe["output"]!["type"]);
-    Assert.Equal("ppex:pipe-straight-ns-{metal}", (string?)recipe["output"]!["code"]);
+    Assert.Equal("lpex:pipe-straight-ns-{metal}", (string?)recipe["output"]!["code"]);
     Assert.Equal(2, (int)recipe["output"]!["quantity"]!);
   }
 
@@ -75,7 +75,7 @@ public class ExRecipeDefTests
     var ing = (JObject)
       ((JArray)
         ExRecipeDef
-          .Create("ppex", "grid", "x")
+          .Create("lpex", "grid", "x")
           .Grid(r => r.Pattern("H").Size(1, 1).Ingredient("H", i => i.Item("game:hammer-*").Tool()).OutputItem("game:a"))
           .ToJson())[0]["ingredients"]!["H"]!;
 
@@ -90,11 +90,11 @@ public class ExRecipeDefTests
     var output = (JObject)
       ((JArray)
         ExRecipeDef
-          .Create("ppex", "grid", "x")
-          .Grid(r => r.Pattern("P").Size(1, 1).OutputBlock("ppex:pipe-bend-nw-{metal}"))
+          .Create("lpex", "grid", "x")
+          .Grid(r => r.Pattern("P").Size(1, 1).OutputBlock("lpex:pipe-bend-nw-{metal}"))
           .ToJson())[0]["output"]!;
 
-    Assert.Equal("ppex:pipe-bend-nw-{metal}", (string?)output["code"]);
+    Assert.Equal("lpex:pipe-bend-nw-{metal}", (string?)output["code"]);
     Assert.Null(output["quantity"]);
   }
 

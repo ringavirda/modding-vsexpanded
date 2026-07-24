@@ -52,7 +52,7 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Starts a block definition whose asset <b>path</b> differs from its <paramref name="code"/>
   /// - needed when several blocktype files share one code (e.g. the pipe class:
-  /// <c>Create("ppex", "pipe", "pipes/straight")</c> -&gt; code <c>pipe</c> at
+  /// <c>Create("lpex", "pipe", "pipes/straight")</c> -&gt; code <c>pipe</c> at
   /// <c>blocktypes/pipes/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
   public static ExBlockDef Create(
     string domain,

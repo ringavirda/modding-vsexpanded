@@ -19,7 +19,7 @@ public class ExPreferencesConfig
 
 /// <summary>
 /// Shared, generic store for per-player client-side display preferences used by every Expanded mod
-/// (e.g. ppex's metric/imperial unit system). Preference definitions register themselves through
+/// (e.g. lpex's metric/imperial unit system). Preference definitions register themselves through
 /// <see cref="PreferenceRegistry"/>; this class persists each player's choices in <c>exmod.json</c>
 /// and applies them to live client state via <see cref="IExPreference.Apply"/>.
 /// <para>

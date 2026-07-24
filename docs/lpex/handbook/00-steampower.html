@@ -1,0 +1,43 @@
+<strong>Low Pressure Expanded</strong> lets you generate mechanical power from
+nothing more than boiling water, by laying out pipe networks and bolting
+together modular steam machinery. It is powerful but demanding: the materials
+are expensive and a mismanaged boiler can end in a catastrophic explosion, so
+it is best attempted once you are well established and into the <strong>iron
+age</strong>. Everything you build follows one chain - a water supply feeds a
+boiler, the boiler drives an engine, and the engine turns a single sub-machine
+- and your goal is to close that chain into a loop that feeds itself while it
+burns coal. This article explains the pipes that tie it all together; the
+machines themselves are covered in <a href=\"handbooksearch://steam power
+boilers\">Steam Power: Boilers</a>, <a href=\"handbooksearch://steam power
+engines\">Steam Power: Engines</a> and <a href=\"handbooksearch://steam power
+fittings\">Steam Power: Fittings</a>. <br><br> Any pipes you connect together
+form a single network that shares one pool. A network carries only one medium
+at a time - either a gas (air, exhaust or steam) or water, never both at once
+- and every pipe contributes <strong>30 L</strong> of capacity to the shared
+total. The pressure you see, measured in atmospheres (atm), is simply the
+stored volume divided by that capacity, and the whole network also settles to
+a single temperature. <br><br> The material a pipe is made of decides how much
+pressure it can hold: an <strong>iron</strong> pipe bursts above <strong>5
+atm</strong> while a stronger <strong>steel</strong> pipe holds up to
+<strong>10 atm</strong>, and because the weakest pipe sets the limit for the
+whole run, a single iron section caps an otherwise steel line. An
+over-pressured run survives for a short while before its pipes begin to fail.
+<br><br> Open ends are the other thing to watch. Any pipe connector left
+unconnected bleeds the network - roughly 8 L/s of gas or 10 L/s of water - so
+a leaking run can never build pressure beyond 1 atm, and you should always cap
+a run against a machine port, a valve or an outlet. Even when sealed, standing
+water slowly evaporates from pipes and boilers at about 50 L per day. <br><br>
+Laying pipe is mostly automatic: straights, bends and T- and X-junctions snap
+to face their neighbours as you place them, and if a piece guesses wrong you
+can spin it with a <strong>wrench</strong>. To feed a machine, butt a pipe
+directly against its port face - the boiler outlets, the engine inlets, and
+the pump and intake flanges. <br><br> Two client-side <strong>.exmod</strong>
+commands help while you build. <strong>.exmod network hi</strong> tints every
+networked block, giving each separate network its own translucent colour so
+you can see at a glance which pipes share a run and where a connection has
+broken, and it updates live as you work; <strong>.exmod network unhi</strong>
+turns it back off. <strong>.exmod measure</strong> reports your current
+display units, and <strong>.exmod measure metric</strong> or <strong>.exmod
+measure imperial</strong> switches between litres, atmospheres and degrees
+Celsius and gallons, psi and degrees Fahrenheit - a change to the display
+only, with no effect on the simulation.

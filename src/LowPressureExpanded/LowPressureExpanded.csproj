@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Primary build is the current game version, single-target. Opt into the older versions
+         with -p:Legacy=true; both the primary TFM and the full legacy set come from the manifest
+         in ../Directory.Build.props (add a version there, not here). -->
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
+    <LangVersion>14</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath
+      Condition="'$(IsCurrentGame)' != 'true' and '$(TargetFramework)' != ''"
+      >bin\$(Configuration)\$(TargetFramework)\Mods\mod</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''"
+      >bin\$(Configuration)\Mods\mod</OutputPath>
+    <Nullable>enable</Nullable>
+    <!-- This mod's asset domain; the shared globs in ../Directory.Build.props pull in
+         ../../assets/lpex/ (Content + the en.json ExLangKeyGenerator feed). -->
+    <AssetDomain>lpex</AssetDomain>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="cairo-sharp">
+      <HintPath>$(GamePath)/Lib/cairo-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)/Lib/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="modicon.png" Condition="Exists('modicon.png')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Stamp the matching game version into the output modinfo for legacy builds; no-op on 1.22. -->
+  <Target
+    Name="RewriteModinfoGameVersion"
+    AfterTargets="Build"
+    Condition="'$(GameVersion)' != ''"
+  >
+    <WriteLinesToFile
+      File="$(OutDir)modinfo.json"
+      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;$(CurrentGameVer)&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
+      Overwrite="true"
+    />
+  </Target>
+
+  <!--
+    ExpandedLib (exlib) is the shared framework with a single runtime type identity (one
+    BlockNetworkModSystem, shared network/structure base types). iwex sits below lpex now: it owns
+    the base pipe block + the "pipe" network, so lpex references it for the cast pipe tier + fittings
+    (the dependency that used to run iwex -> lpex is inverted). Reference the built dlls instead of
+    recompiling them. Private=false: the player installs exlib and iwex as separate mods, so neither
+    dll is bundled into lpex's output.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\IronworkingExpanded\IronworkingExpanded.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <!-- Source generator that emits the LpexValues accessor from the [ExConfig] LpexConfig POCO.
+         OutputItemType=Analyzer + ReferenceOutputAssembly=false: compile-time only, ships nothing. -->
+    <ProjectReference
+      Include="..\ExpandedLib.Generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+</Project>

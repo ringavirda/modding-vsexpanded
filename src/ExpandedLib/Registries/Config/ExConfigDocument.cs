@@ -11,7 +11,7 @@ namespace ExpandedLib.Registries.Config;
 /// <summary>
 /// A shared, mod-sectioned config file under <c>ModConfig</c> (e.g. <c>ex_values.json</c> /
 /// <c>ex_recipes.json</c>): one physical file whose top-level keys are mod ids, each holding that mod's
-/// config object. It replaces the per-mod files (<c>ppex_values.json</c>, <c>smex_values.json</c>, …)
+/// config object. It replaces the per-mod files (<c>lpex_values.json</c>, <c>smex_values.json</c>, …)
 /// so the folder does not gain a file per mod. Each <see cref="ExConfigRegister{TConfig}"/> reads and
 /// writes only its own section; a mod's own nested <c>ConfigVersion</c> and migrations are unchanged by
 /// the sharing.
@@ -91,7 +91,7 @@ public sealed class ExConfigDocument
 
   /// <summary>
   /// One-time migration of a legacy per-mod file into this document's <paramref name="modId"/> section:
-  /// if the section is absent and a legacy file (e.g. <c>ppex_values.json</c>) exists under
+  /// if the section is absent and a legacy file (e.g. <c>lpex_values.json</c>) exists under
   /// <c>ModConfig</c>, its contents become the section and the old file is renamed to
   /// <c>&lt;name&gt;.migrated</c> (kept, not deleted, so the carry-over is reversible). No-op once the
   /// section exists, so it never re-runs.

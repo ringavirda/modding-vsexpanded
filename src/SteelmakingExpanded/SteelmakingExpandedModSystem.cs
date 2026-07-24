@@ -23,7 +23,7 @@ namespace SteelmakingExpanded;
 /// global player-side effects (molten-mold burns and spills); registers the molten network
 /// type; applies the Harmony patches that extend the vanilla tool mold / mold rack / coal
 /// pile; and patches a few vanilla collectibles (coke crushing). The pipe network and all
-/// pipe/steam-power content now live in the Pipes and Power Expanded mod (ppex).
+/// pipe/steam-power content now live in the Low Pressure Expanded mod (lpex).
 /// </summary>
 public class SteelmakingExpandedModSystem : ModSystem
 {
@@ -209,7 +209,7 @@ public class SteelmakingExpandedModSystem : ModSystem
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
 
     // The molten-metal network now lives in (and is registered by) the foundational iwex mod, which
-    // loads first; smex only consumes it. The unified "pipe" network is registered by ppex.
+    // loads first; smex only consumes it. The unified "pipe" network is registered by lpex.
 
     // Expose smex's tool-mold availability gate to iwex's mold pedestal (which can't reference smex)
     // so a config-disabled mold is purged from a pedestal on load.

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -739,6 +740,26 @@ public abstract class BlockNetworkNode
     Block neighborBlock,
     BlockFacing face
   ) => false;
+
+  /// <summary>
+  /// Whether this node will physically join <paramref name="neighbour"/>, on top of the geometric
+  /// checks (matching connectors, same network type). Default <c>true</c> - most nodes join anything
+  /// their connectors line up with.
+  /// <para>
+  /// This is where an <em>incompatible joint</em> belongs: two runs can meet face to face, agree on
+  /// network type, and still not be connectable because the physical coupling does not exist (the
+  /// welded octagonal HP pipe against a bolted square one). Refusing here is stronger than hiding the
+  /// connector - the far side reads as an <b>open end</b>, so the run leaks rather than silently
+  /// merging, which is the honest in-world outcome.
+  /// </para>
+  /// <para>
+  /// <b>Implementations must be symmetric.</b> The graph asks from whichever side it is walking, so a
+  /// rule that answers differently depending on direction produces a network that exists in one
+  /// direction only. Compare a shared property (both sides' joint family) rather than testing "am I the
+  /// special one".
+  /// </para>
+  /// </summary>
+  public virtual bool AcceptsNeighbour(Block neighbour) => true;
 
   /// <summary>
   /// Returns <c>true</c> if <see cref="Orientation"/> contains the single-char code

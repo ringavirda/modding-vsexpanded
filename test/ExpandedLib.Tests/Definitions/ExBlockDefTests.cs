@@ -223,10 +223,10 @@ public class ExBlockDefTests
   public void A_distinct_asset_name_separates_the_path_from_the_shared_code()
   {
     // Several pipe defs share code "pipe" but need unique asset paths.
-    ExBlockDef def = ExBlockDef.Create("ppex", "pipe", "pipes/straight");
+    ExBlockDef def = ExBlockDef.Create("lpex", "pipe", "pipes/straight");
     Assert.Equal("pipe", (string?)def.ToJson()["code"]);
     Assert.Equal("blocktypes/pipes/straight.json", def.Location.Path);
-    Assert.Equal("ppex", def.Location.Domain);
+    Assert.Equal("lpex", def.Location.Domain);
   }
   #endregion
 
@@ -276,13 +276,13 @@ public class ExBlockDefTests
   {
     JObject json = ExBlockDef
       .Create("d", "c")
-      .ShapeByType("*-ns-*", "ppex:pipes/straight")
-      .ShapeByType("*-we-*", "ppex:pipes/straight", rotateY: 90)
-      .ShapeByType("*-ud-*", "ppex:pipes/straight", rotateX: 90)
+      .ShapeByType("*-ns-*", "lpex:pipes/straight")
+      .ShapeByType("*-we-*", "lpex:pipes/straight", rotateY: 90)
+      .ShapeByType("*-ud-*", "lpex:pipes/straight", rotateX: 90)
       .ToJson();
 
     var byType = (JObject)json["shapebytype"]!;
-    Assert.Equal("ppex:pipes/straight", (string?)byType["*-ns-*"]!["base"]);
+    Assert.Equal("lpex:pipes/straight", (string?)byType["*-ns-*"]!["base"]);
     Assert.Null(byType["*-ns-*"]!["rotateY"]); // unset rotations are omitted
     Assert.Equal(90, (int)byType["*-we-*"]!["rotateY"]!);
     Assert.Null(byType["*-we-*"]!["rotateX"]);
@@ -312,7 +312,7 @@ public class ExBlockDefTests
   public void Behavior_by_name_and_by_type_append_name_entries()
   {
     JObject json = ExBlockDef
-      .Create("ppex", "c")
+      .Create("lpex", "c")
       .Behavior("Lockable")
       .Behavior<FakeBehavior>()
       .ToJson();
@@ -320,7 +320,7 @@ public class ExBlockDefTests
     var behaviors = (JArray)json["behaviors"]!;
     Assert.Equal("Lockable", (string?)behaviors[0]!["name"]);
     // Typed overload resolves the registered {modid}.{ClassName} key, same as the class binding.
-    Assert.Equal("ppex.FakeBehavior", (string?)behaviors[1]!["name"]);
+    Assert.Equal("lpex.FakeBehavior", (string?)behaviors[1]!["name"]);
   }
 
   [Fact]
@@ -444,14 +444,14 @@ public class ExBlockDefTests
   public void EntityBehavior_by_name_and_by_type_append_entityBehaviors_entries()
   {
     JObject json = ExBlockDef
-      .Create("ppex", "c")
+      .Create("lpex", "c")
       .EntityBehavior("Animatable")
       .EntityBehavior<FakeEntityBehavior>()
       .ToJson();
 
     var behaviors = (JArray)json["entityBehaviors"]!;
     Assert.Equal("Animatable", (string?)behaviors[0]!["name"]);
-    Assert.Equal("ppex.FakeEntityBehavior", (string?)behaviors[1]!["name"]);
+    Assert.Equal("lpex.FakeEntityBehavior", (string?)behaviors[1]!["name"]);
   }
 
   [Fact]

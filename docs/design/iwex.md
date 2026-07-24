@@ -1,6 +1,6 @@
 # Ironworking Expanded (iwex)
 
-The iron / low-tech tier. Depends on **exlib** only. Owns the cold-blast furnace, the molten-canal network, ore handling, the mechanical (MP) air blower, the **bolted** pipe tier and `gear-iron`. Runs entirely on **water/MP power** — a vanilla waterwheel drives the blower, so no steam setup is required to make iron. This mod plus `ppex` (optionally `smex`) is a complete self-contained experience (see [overview.md](overview.md)).
+The iron / low-tech tier. Depends on **exlib** only. Owns the cold-blast furnace, the molten-canal network, ore handling, the mechanical (MP) air blower, the **bolted** pipe tier and `gear-iron`. Runs entirely on **water/MP power** — a vanilla waterwheel drives the blower, so no steam setup is required to make iron. This mod plus `lpex` (optionally `smex`) is a complete self-contained experience (see [overview.md](overview.md)).
 
 Units, invariants (R1–R7), the heat-balance model and the network semantics all live in [conventions.md](conventions.md); the material catalogue (pig / cast / wrought iron compositions, ladle rules) lives in [materials.md](materials.md). This doc cites them and never restates their numbers. Every interaction is in-world and verb-based (R7). Numbers below are iwex-owned machine tunables (via the exlib config system / `ExRecipeCosts`) unless noted.
 
@@ -104,9 +104,9 @@ Both are thin `BlockEntityFurnaceCore` variants (the base is *live*; these varia
 
 | Feature | Footprint | Input → Output | Key | Status |
 |---|---|---|---|---|
-| **Mechanical (MP) air blower** | megablock (sub-machine) | MP (waterwheel) → **low-pressure air** into pipes/tuyeres | walking-beam, waterwheel/MP-driven — **this is why iron needs no steam**; feeds the cold-blast furnace and cupola tuyeres. Cannot unlock the hot-blast low-coke blow. Shape authored at `assets/editable/mechanical-blower.json` (idle + cycle anims) | *(planned)* |
-| **Bolted pipe** | block (on the shared exlib pipe network) | gas *or* water segment | the **iron material tier** of pipe (R1, single medium per network), hand-riveted from plates — the lowest-pressure tier; rides the same network as ppex's cast pipes and hpex's rolled pipes so iwex never depends on them. Connectors read the adjacent cell; valves sever/flow | *(planned)* |
-| **`gear-iron`** | item | — | iron-tier MP transmission gear; iwex's own gear so MP builds don't require ppex/vanilla rusty gears (recipes currently accept `game:gear-rusty` or `ppex:gear-*`) | *(planned)* |
+| **Mechanical (MP) air blower** | megablock (sub-machine) | MP (waterwheel) → **low-pressure air** into pipes/tuyeres | walking-beam, waterwheel/MP-driven — **this is why iron needs no steam**; feeds the cold-blast furnace and cupola tuyeres. Cannot unlock the hot-blast low-coke blow. Shape authored at `assets/editable/shapes/airblower.json` (idle + cycle anims) | *(planned)* |
+| **Bolted pipe** | block (on the shared exlib pipe network) | gas *or* water segment | the **iron material tier** of pipe (R1, single medium per network), hand-riveted from plates — the lowest-pressure tier; rides the same network as lpex's cast pipes and hpex's rolled pipes so iwex never depends on them. Connectors read the adjacent cell; valves sever/flow | *(planned)* |
+| **`gear-iron`** | item | — | iron-tier MP transmission gear; iwex's own gear so MP builds don't require lpex/vanilla rusty gears (recipes currently accept `game:gear-rusty` or `lpex:gear-*`) | *(planned)* |
 
 ---
 

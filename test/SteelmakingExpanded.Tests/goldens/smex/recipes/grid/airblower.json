@@ -73,7 +73,7 @@
       },
       "G": {
         "type": "item",
-        "code": "ppex:gear-*",
+        "code": "lpex:gear-*",
         "quantity": 2
       },
       "H": {

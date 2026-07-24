@@ -13,7 +13,7 @@ namespace IronworkingExpanded.Items;
 /// <para>
 /// A diagram is a <b>plain item</b>: it carries no logic. Crafting is Model A - the diagram is an
 /// ingredient in ordinary grid recipes, reusable via <c>isTool</c> for parts and consumed for structure
-/// cores (added in a later phase). ppex (passthrough / pipe-outlet) and smex (tool molds, the hot-blast
+/// cores (added in a later phase). lpex (passthrough / pipe-outlet) and smex (tool molds, the hot-blast
 /// core) contribute their own diagram variants when those phases land. For now it is creative-only until
 /// the design table can draft it.
 /// </para>

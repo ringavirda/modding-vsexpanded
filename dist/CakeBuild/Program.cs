@@ -35,14 +35,17 @@ public record GameTarget(string Tfm, string GameVersion, bool IsCurrent);
 
 public class BuildContext : FrostingContext
 {
-  // Build order matters: exlib first (the shared lib every mod references), then ppex, then iwex
-  // (the foundational ironmaking mod, referenced by smex), then smex.
+  // Build order matters: exlib first (the shared lib every mod references), then iwex (the
+  // foundational ironmaking mod that owns the base pipe block + networks), then lpex (the low-steam
+  // mod, which depends on iwex), then smex, and finally hpex (the high-pressure leaves, built on
+  // lpex's boiler/engine bases and last in the chain).
   public static readonly string[] ProjectFolders =
   [
     "ExpandedLib",
-    "PipesAndPowerExpanded",
     "IronworkingExpanded",
+    "LowPressureExpanded",
     "SteelmakingExpanded",
+    "HighPressureExpanded",
   ];
 
   // Every supported game version. The legacy ones (IsCurrent=false) build with -p:Legacy=true and

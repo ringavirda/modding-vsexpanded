@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
@@ -50,8 +50,8 @@ public partial class BlockCowperStoveIntake
           s.Origin(-1, 0)
             .Legend('#', "game:refractorybricks-good-tier*")
             .Legend('I', "smex:cowperstove-intake*")
-            .Legend('P', "ppex:pipe-outlet*")
-            .Legend('X', "ppex:pipe-passthrough-*")
+            .Legend('P', "lpex:pipe-outlet*")
+            .Legend('X', "lpex:pipe-passthrough-*")
             .Legend('H', "smex:cowperstoveheatsink*")
             .Legend('D', "game:cokeovendoor*")
             .Legend('a', "game:air")

@@ -11,12 +11,12 @@ Write a POCO implementing `IExVersionedConfig` and tag it `[ExConfigRegister]`:
 
 ```csharp
 [ExConfigRegister(
-    "ppex_values.json",                 // file name under ModConfig/
-    "ppex",                             // owning mod id (logging + version tracking)
-    LegacyFileNames = ["ppex.json"],    // former names - auto-renamed on load
+    "lpex_values.json",                 // file name under ModConfig/
+    "lpex",                             // owning mod id (logging + version tracking)
+    LegacyFileNames = ["lpex.json"],    // former names - auto-renamed on load
     Manageable = true                   // expose to /exmod config
 )]
-public class PpexConfig : IExVersionedConfig
+public class LpexConfig : IExVersionedConfig
 {
     public string? ConfigVersion { get; set; }      // managed for you; stamps the writing mod version
 
@@ -47,17 +47,17 @@ public interface IExVersionedConfig
 
 ## Using the generated accessor
 
-The generator emits `PpexValues` (the name is the type name with `Config` -> `Values`; override
+The generator emits `LpexValues` (the name is the type name with `Config` -> `Values`; override
 with `AccessorName`). You get:
 
 ```csharp
-public static partial class PpexValues
+public static partial class LpexValues
 {
-    public const string ConfigFileName = "ppex_values.json";
+    public const string ConfigFileName = "lpex_values.json";
 
     public static void Load(ICoreAPI api);            // load + migrate + sanitize + write-back (and register if Manageable)
     public static void Save();                        // persist live config
-    public static void Edit(Action<PpexConfig> mutate);   // mutate + save
+    public static void Edit(Action<LpexConfig> mutate);   // mutate + save
 
     public static float  LitresPerPipe { get; }       // one read-only getter per config property
     public static float  PumpWaterPerSecond { get; }
@@ -67,13 +67,13 @@ public static partial class PpexValues
 ```
 
 ```csharp
-public override void Start(ICoreAPI api) => PpexValues.Load(api);   // call once at startup
+public override void Start(ICoreAPI api) => LpexValues.Load(api);   // call once at startup
 
 // Read anywhere:
-float litres = PpexValues.LitresPerPipe;
+float litres = LpexValues.LitresPerPipe;
 
 // Change + persist (typically server-side admin):
-PpexValues.Edit(c => c.RecipeLevel = "cheap");
+LpexValues.Edit(c => c.RecipeLevel = "cheap");
 ```
 
 `Load` is safe on both sides; each reads its local copy. It applies migrations, clamps
@@ -111,7 +111,7 @@ public sealed class ExConfigMigration
 ```csharp
 public static readonly ExConfigMigration[] Migrations =
 [
-    new() { ToVersion = "0.6.0", ResetFields = [nameof(PpexConfig.PumpWaterPerSecond)] },
+    new() { ToVersion = "0.6.0", ResetFields = [nameof(LpexConfig.PumpWaterPerSecond)] },
 ];
 ```
 
@@ -131,9 +131,9 @@ exposing it to the generic command:
 
 ```
 /exmod config                       # list manageable mods
-/exmod config ppex                  # list ppex's editable values
-/exmod config ppex LitresPerPipe    # show current value
-/exmod config ppex LitresPerPipe 40 # set it (immediate, no reload), validated + persisted
+/exmod config lpex                  # list lpex's editable values
+/exmod config lpex LitresPerPipe    # show current value
+/exmod config lpex LitresPerPipe 40 # set it (immediate, no reload), validated + persisted
 ```
 
 Behind the command is a non-generic view over the store:

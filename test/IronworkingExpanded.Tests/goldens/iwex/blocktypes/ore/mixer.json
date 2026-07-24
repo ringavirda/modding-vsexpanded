@@ -96,7 +96,7 @@
             "requireStacks": [
               {
                 "type": "item",
-                "code": "ppex:gear-iron",
+                "code": "lpex:gear-iron",
                 "quantity": 2,
                 "name": "iwex:rcc-ingredient-rotorgears"
               },

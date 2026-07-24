@@ -1,6 +1,6 @@
 # Steelmaking Expanded (smex)
 
-The **steel tier**: hot-blast ironmaking, the Bessemer/open-hearth steel routes, ladle alloying, and the steam forming shop that turns bulk billets into vanilla goods. Depends on `ppex` + `iwex` + `exlib`. Owns the materials **Bessemer steel**, **open-hearth steel**, **ingot iron** and **hadfield steel** (see [materials.md](materials.md)). See [overview.md](overview.md) for the mod map and build order; all units, invariants (R1–R7), the heat-balance model and the distillation model live in [conventions.md](conventions.md) and are cited here, never restated.
+The **steel tier**: hot-blast ironmaking, the Bessemer/open-hearth steel routes, ladle alloying, and the steam forming shop that turns bulk billets into vanilla goods. Depends on `lpex` + `iwex` + `exlib`. Owns the materials **Bessemer steel**, **open-hearth steel**, **ingot iron** and **hadfield steel** (see [materials.md](materials.md)). See [overview.md](overview.md) for the mod map and build order; all units, invariants (R1–R7), the heat-balance model and the distillation model live in [conventions.md](conventions.md) and are cited here, never restated.
 
 Design frame: smex does not add a new blast furnace block. It fits the **cold-blast furnace built in `iwex`** with hot-blast infrastructure (cowpers + smokestack + exhaust outlets) to run it hotter and cheaper, then adds the two steel converters, the ladle, and the forming shop downstream.
 

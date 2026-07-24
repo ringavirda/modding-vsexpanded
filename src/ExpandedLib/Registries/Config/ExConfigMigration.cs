@@ -29,7 +29,7 @@ public sealed class ExConfigMigration
   public string? FromVersion { get; init; }
 
   /// <summary>Config property names to reset to their defaults - use <c>nameof</c> so renames stay in
-  /// sync (e.g. <c>[nameof(PpexConfig.PumpWaterPerSecond)]</c>). Leave null or empty to reset the whole
+  /// sync (e.g. <c>[nameof(LpexConfig.PumpWaterPerSecond)]</c>). Leave null or empty to reset the whole
   /// config to defaults.</summary>
   public string[]? ResetFields { get; init; }
 }

@@ -1,6 +1,6 @@
 using System;
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Metals;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;

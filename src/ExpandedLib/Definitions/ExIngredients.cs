@@ -5,7 +5,7 @@ namespace ExpandedLib.Definitions;
 /// <summary>
 /// The catalogue of vanilla crafting ingredients that recur across every mod's code-first recipe files -
 /// authored ONCE here instead of re-declared as a private factory in each provider (the <c>Hammer</c>/
-/// <c>Plate</c>/<c>Nails</c>/<c>Rod</c>/<c>Gear</c> trio was copy-pasted across the ppex/iwex/smex recipe
+/// <c>Plate</c>/<c>Nails</c>/<c>Rod</c>/<c>Gear</c> trio was copy-pasted across the lpex/iwex/smex recipe
 /// files). Each entry is an <see cref="IngredientBuilder"/> factory in the exact shape
 /// <see cref="GridRecipeBuilder.Ingredient"/> accepts, so a provider references it by name after a
 /// <c>using static ExpandedLib.Definitions.ExIngredients;</c> - e.g. <c>.Ingredient("H", Hammer)</c> (a method
@@ -53,7 +53,7 @@ public static class ExIngredients
     i => i.Item("game:clay-fire").Quantity(qty);
 
   /// <summary>A gear by explicit code - vanilla rusty (<c>game:gear-rusty</c>) or a mod's craftable gear
-  /// (<c>ppex:gear-*</c>). A recipe that accepts either kind emits one entry per gear code.</summary>
+  /// (<c>lpex:gear-*</c>). A recipe that accepts either kind emits one entry per gear code.</summary>
   public static Func<IngredientBuilder, IngredientBuilder> Gear(string code, int qty) =>
     i => i.Item(code).Quantity(qty);
 }

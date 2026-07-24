@@ -109,7 +109,7 @@ public class SmexConfig : IExVersionedConfig
 
   /// <summary>Air (L/s) the blower injects per unit of engine power (Cornish 0.2/0.4/0.8 →
   /// 9.6/19.2/38.4 L/s, Watt 0.3 → 14.4 L/s); output pressure tracks the engine's inlet steam ×
-  /// <see cref="PipesAndPowerExpanded.PpexValues.SteamEngineEfficiency"/>.</summary>
+  /// <see cref="LowPressureExpanded.LpexValues.SteamEngineEfficiency"/>.</summary>
   public float AirBlowerOutputPerSecond { get; set; } = 48f;
   #endregion
 

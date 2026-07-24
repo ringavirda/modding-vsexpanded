@@ -1,4 +1,7 @@
 {
+  "structure-missing-header": "Structure incomplete! Still needed:",
+  "structure-missing-line": "  {0} x {1}",
+
   "block-structurefiller": "Machine",
 
   "blockhelp-rotate": "Rotate",
@@ -12,6 +15,20 @@
 
   "metal-unknown": "unknown",
   "metalstate-cold": "cold",
+
+  "command-measure-desc": "Show or set the display unit system (metric/imperial)",
+  "pref-measure-label": "Display units",
+  "pref-measure-metric": "Metric (L, atm, °C)",
+  "pref-measure-imperial": "Imperial (gal, psi, °F)",
+
+  "unit-litres": "L",
+  "unit-gallons": "gal",
+  "unit-litres-per-second": "L/s",
+  "unit-gallons-per-second": "gal/s",
+  "unit-atm": "atm",
+  "unit-psi": "psi",
+  "unit-celsius": "°C",
+  "unit-fahrenheit": "°F",
 
   "command-exmod-desc-client": "Exlib client-side base command (.exmod). Has only network highlighting on its own; other mods extend it with their client-side options.",
   "command-exmod-help-client": "Client-side command - runs locally on your machine. Use a sub-command (see .help exmod). Available options depend on which mods are installed and what subcommands those add.",

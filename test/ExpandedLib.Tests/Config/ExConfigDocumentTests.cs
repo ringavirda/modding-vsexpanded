@@ -42,24 +42,24 @@ public class ExConfigDocumentTests
       "ex_values.json"
     );
 
-    doc.SetSection("ppex", new Section { Value = 1 });
+    doc.SetSection("lpex", new Section { Value = 1 });
     doc.SetSection("smex", new Section { Value = 2 });
     doc.Flush();
 
-    Assert.Equal(1, saved!["ppex"]!["Value"]!.Value<int>());
+    Assert.Equal(1, saved!["lpex"]!["Value"]!.Value<int>());
     Assert.Equal(2, saved!["smex"]!["Value"]!.Value<int>());
-    Assert.Equal(1, doc.GetSection<Section>("ppex")!.Value);
+    Assert.Equal(1, doc.GetSection<Section>("lpex")!.Value);
     Assert.Equal(2, doc.GetSection<Section>("smex")!.Value);
   }
 
   [Fact]
   public void Reads_an_existing_section_and_returns_null_for_a_missing_one()
   {
-    var existing = new JObject { ["ppex"] = new JObject { ["Value"] = 9 } };
+    var existing = new JObject { ["lpex"] = new JObject { ["Value"] = 9 } };
     var doc = ExConfigDocument.ForFile(FakeApi(existing), "ex_values.json");
 
-    Assert.Equal(9, doc.GetSection<Section>("ppex")!.Value);
-    Assert.True(doc.HasSection("ppex"));
+    Assert.Equal(9, doc.GetSection<Section>("lpex")!.Value);
+    Assert.True(doc.HasSection("lpex"));
     Assert.Null(doc.GetSection<Section>("smex"));
     Assert.False(doc.HasSection("smex"));
   }
@@ -74,18 +74,18 @@ public class ExConfigDocumentTests
 
     // A whole-file parse failure must not take out every section - it degrades to defaults.
     var doc = ExConfigDocument.ForFile(api, "bad.json");
-    Assert.Null(doc.GetSection<Section>("ppex"));
+    Assert.Null(doc.GetSection<Section>("lpex"));
   }
 
   [Fact]
   public void Documents_are_isolated_per_api_instance()
   {
     var d1 = ExConfigDocument.ForFile(FakeApi(null), "ex_values.json");
-    d1.SetSection("ppex", new Section { Value = 1 });
+    d1.SetSection("lpex", new Section { Value = 1 });
 
     // A different API (as each test has) gets its own document, not d1's in-memory state.
     var d2 = ExConfigDocument.ForFile(FakeApi(null), "ex_values.json");
-    Assert.Null(d2.GetSection<Section>("ppex"));
+    Assert.Null(d2.GetSection<Section>("lpex"));
   }
 
   [Fact]

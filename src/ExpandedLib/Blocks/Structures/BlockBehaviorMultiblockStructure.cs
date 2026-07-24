@@ -91,7 +91,7 @@ public class BlockBehaviorMultiblockStructure : BlockBehavior
 
   /// <summary>
   /// The Ctrl+Shift+right-click "show multiblock structure" help line, resolved against
-  /// <paramref name="forBlock"/>'s own domain so each mod shows its own translation (both ppex and smex - and
+  /// <paramref name="forBlock"/>'s own domain so each mod shows its own translation (both lpex and smex - and
   /// iwex - ship <c>blockhelp-mulblock-struc-show</c>). The caller shows it only while the structure is
   /// incomplete.
   /// </summary>

@@ -24,8 +24,8 @@
       "blockNumbers": {
         "game:refractorybricks-good-tier*": 1,
         "smex:cowperstove-intake*": 2,
-        "ppex:pipe-outlet*": 3,
-        "ppex:pipe-passthrough-*": 4,
+        "lpex:pipe-outlet*": 3,
+        "lpex:pipe-passthrough-*": 4,
         "smex:cowperstoveheatsink*": 5,
         "game:cokeovendoor*": 6,
         "game:air": 7,

@@ -75,7 +75,7 @@ reach and how hot a cable runs (see materials.md for the two coppers).
 | **3-phase rectifier** | megablock (AC-driven) | three phase-offset AC lines → one smooth high-power **DC bus** (big electrolysis banks) | *(planned)* |
 | **Synchroniser** | block | matches **frequency + phase** to parallel alternators and share load; synchroscope | *(planned)* |
 | **Battery** (acid / dry cell) | megablock (store) | **DC ↔ stored DC** backup — keeps lamps and low loads lit when the generator is idle (the electric analog of the gasholder) | *(planned)* |
-| **Wire extruder** | megablock | **MP-driven** (needs ppex MP, not electric): copper rod/plate → **wire**, impure or pure; pure wire lowers cable R and **unlocks alternator windings** | *(planned)* |
+| **Wire extruder** | megablock | **MP-driven** (needs lpex MP, not electric): copper rod/plate → **wire**, impure or pure; pure wire lowers cable R and **unlocks alternator windings** | *(planned)* |
 
 ---
 

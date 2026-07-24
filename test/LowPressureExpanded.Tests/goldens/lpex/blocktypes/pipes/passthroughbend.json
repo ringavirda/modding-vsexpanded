@@ -1,0 +1,149 @@
+{
+  "code": "pipe",
+  "class": "lpex.BlockPipePassthrough",
+  "entityClass": "lpex.BlockEntityPipePassthrough",
+  "blockmaterial": "Ceramic",
+  "sounds": {
+    "walk": "game:walk/stone",
+    "place": "game:block/ceramicplace",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-passthroughbend-*-nw"
+    ],
+    "lpex": [
+      "*-passthroughbend-*-nw"
+    ]
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": [
+        "pipe-passthroughbend-*"
+      ]
+    }
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "texturesByType": {
+    "*": {
+      "front1": {
+        "base": "game:block/clay/brick/four/running/cream1",
+        "overlays": [
+          "game:block/clay/brick/four/running/{brick}1"
+        ]
+      }
+    }
+  },
+  "renderpass": "OpaqueNoCull",
+  "faceCullMode": "NeverCull",
+  "lightAbsorption": 0,
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "passthroughbend"
+      ]
+    },
+    {
+      "code": "brick",
+      "states": [
+        "fire",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "nw",
+        "se",
+        "en",
+        "ws",
+        "un",
+        "us",
+        "uw",
+        "ue",
+        "dn",
+        "ds",
+        "dw",
+        "de"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-passthroughbend-*-nw": {
+      "base": "lpex:pipes/passthroughbend"
+    },
+    "*-passthroughbend-*-en": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 270
+    },
+    "*-passthroughbend-*-se": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 180
+    },
+    "*-passthroughbend-*-ws": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 90
+    },
+    "*-passthroughbend-*-dn": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateZ": 90
+    },
+    "*-passthroughbend-*-de": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 270,
+      "rotateZ": 90
+    },
+    "*-passthroughbend-*-ds": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 180,
+      "rotateZ": 90
+    },
+    "*-passthroughbend-*-dw": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 90,
+      "rotateZ": 90
+    },
+    "*-passthroughbend-*-un": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateZ": 270
+    },
+    "*-passthroughbend-*-ue": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 270,
+      "rotateZ": 270
+    },
+    "*-passthroughbend-*-us": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 180,
+      "rotateZ": 270
+    },
+    "*-passthroughbend-*-uw": {
+      "base": "lpex:pipes/passthroughbend",
+      "rotateY": 90,
+      "rotateZ": 270
+    }
+  }
+}

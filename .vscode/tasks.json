@@ -22,7 +22,17 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "stage-mods (exlib, ppex, smex)",
+      "label": "build-hpex",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "stage-mods (all mods)",
       "type": "process",
       "command": "pwsh",
       "args": [
@@ -33,8 +43,9 @@
         "${workspaceFolder}/bin/Mods",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/Mods/mod",
-        "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod"
+        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/Mods/mod",
+        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod",
+        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
       ],
       "linux": {
         "command": "bash",
@@ -44,8 +55,9 @@
           "${workspaceFolder}/bin/Mods",
           "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
           "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/Mods/mod",
-          "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod"
+          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/Mods/mod",
+          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod",
+          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
         ]
       },
       "problemMatcher": []
@@ -236,7 +248,8 @@
         "provision-dotnet (latest)",
         "provision-game (1.22)",
         "build-smex",
-        "stage-mods (exlib, ppex, smex)"
+        "build-hpex",
+        "stage-mods (all mods)"
       ],
       "problemMatcher": []
     },
@@ -244,7 +257,7 @@
     // ----------------------------------------------------------------------------------------
     // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
     // Each version is provisioned into .game/<slug> by scripts/provision-game.* (no machine-wide
-    // install needed); the build and launch read it from there. build-smex pulls exlib + ppex via
+    // install needed); the build and launch read it from there. build-smex pulls exlib + lpex via
     // project references, so a single build covers the chain.
     // ----------------------------------------------------------------------------------------
     {
@@ -266,6 +279,18 @@
       "args": [
         "build",
         "${workspaceFolder}/src/SteelmakingExpanded/SteelmakingExpanded.csproj",
+        "-p:Legacy=true",
+        "-p:TargetFramework=net8.0"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-hpex (1.21)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net8.0"
       ],
@@ -296,7 +321,19 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "stage-mods 1.21 (exlib, ppex, smex)",
+      "label": "build-hpex (1.20)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj",
+        "-p:Legacy=true",
+        "-p:TargetFramework=net7.0"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "stage-mods 1.21 (all mods)",
       "type": "process",
       "command": "pwsh",
       "args": [
@@ -306,9 +343,10 @@
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.21",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
-        "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/net8.0/Mods/mod",
+        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net8.0/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net8.0/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod"
+        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod",
+        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
       ],
       "linux": {
         "command": "bash",
@@ -317,15 +355,16 @@
           "-Dest",
           "${workspaceFolder}/bin/Mods-1.21",
           "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
-          "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/net8.0/Mods/mod",
+          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net8.0/Mods/mod",
           "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net8.0/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod"
+          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod",
+          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
         ]
       },
       "problemMatcher": []
     },
     {
-      "label": "stage-mods 1.20 (exlib, ppex, smex)",
+      "label": "stage-mods 1.20 (all mods)",
       "type": "process",
       "command": "pwsh",
       "args": [
@@ -335,9 +374,10 @@
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.20",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
-        "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/net7.0/Mods/mod",
+        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net7.0/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net7.0/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod"
+        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod",
+        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
       ],
       "linux": {
         "command": "bash",
@@ -346,9 +386,10 @@
           "-Dest",
           "${workspaceFolder}/bin/Mods-1.20",
           "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
-          "ppex=${workspaceFolder}/src/PipesAndPowerExpanded/bin/Debug/net7.0/Mods/mod",
+          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net7.0/Mods/mod",
           "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net7.0/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod"
+          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod",
+          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
         ]
       },
       "problemMatcher": []
@@ -410,7 +451,8 @@
         "provision-dotnet (1.21)",
         "provision-game (1.21)",
         "build-smex (1.21)",
-        "stage-mods 1.21 (exlib, ppex, smex)"
+        "build-hpex (1.21)",
+        "stage-mods 1.21 (all mods)"
       ],
       "problemMatcher": []
     },
@@ -421,7 +463,8 @@
         "provision-dotnet (1.20)",
         "provision-game (1.20)",
         "build-smex (1.20)",
-        "stage-mods 1.20 (exlib, ppex, smex)"
+        "build-hpex (1.20)",
+        "stage-mods 1.20 (all mods)"
       ],
       "problemMatcher": []
     }

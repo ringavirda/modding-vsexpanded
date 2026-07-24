@@ -29,7 +29,7 @@ public class PipeRenameMigration : IBlockCodeMigration
 
     public IEnumerable<(AssetLocation, AssetLocation)> GetRemaps(ICoreServerAPI api)
     {
-        yield return (new("ppex:pipe-iron-ns"), new("ppex:pipe-straight-iron-ns"));
+        yield return (new("lpex:pipe-iron-ns"), new("lpex:pipe-straight-iron-ns"));
         // Return the full set unconditionally - pairs whose old or new code is absent in this
         // world are skipped, so a superset is safe.
     }

@@ -1,4 +1,7 @@
 {
+  "structure-missing-header": "Конструкцію не завершено! Ще потрібно:",
+  "structure-missing-line": "  {0} x {1}",
+
   "block-structurefiller": "Механизм",
 
   "blockhelp-rotate": "Повернути",
@@ -12,6 +15,20 @@
 
   "metal-unknown": "невідомо",
   "metalstate-cold": "холодний",
+
+  "command-measure-desc": "Показати або задати систему відображення одиниць (метрична/імперська)",
+  "pref-measure-label": "Одиниці відображення",
+  "pref-measure-metric": "Метрична (л, атм, °C)",
+  "pref-measure-imperial": "Імперська (гал, psi, °F)",
+
+  "unit-litres": "л",
+  "unit-gallons": "гал",
+  "unit-litres-per-second": "л/с",
+  "unit-gallons-per-second": "гал/с",
+  "unit-atm": "атм",
+  "unit-psi": "psi",
+  "unit-celsius": "°C",
+  "unit-fahrenheit": "°F",
 
   "command-exmod-desc-client": "Клієнтська базова команда Exlib (.exmod). Сама по собі вміє може лише підсвічувати мережі; інші моди розширюють її своїми клієнтськими опціями.",
   "command-exmod-help-client": "Клієнтська команда - виконується локально на вашій машині. Використовуйте підкоманду (див. .help exmod). Доступні опції залежать від встановлених модів і доданих ними підкоманд.",

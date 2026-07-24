@@ -105,7 +105,7 @@ public partial class BlockConverterBessemer
             )
             .Stage(s =>
               s.RequireMetalPlate(domain, 4)
-                .Require("ppex:pipe-straight-ns-{metal}", 3, type: "block")
+                .Require("lpex:pipe-straight-ns-{metal}", 3, type: "block")
                 .RequireMetalNails(domain, 6)
                 .AddElements("Root/GasIntake")
             )

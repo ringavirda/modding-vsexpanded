@@ -1,5 +1,6 @@
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Testing;
+using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;

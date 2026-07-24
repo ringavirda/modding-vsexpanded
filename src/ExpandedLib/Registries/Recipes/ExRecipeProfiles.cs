@@ -8,7 +8,7 @@ namespace ExpandedLib.Registries.Recipes;
 /// process-wide registry of <see cref="RecipeProfile"/>s keyed by mod code. It owns the one apply
 /// pipeline every mod shares (repair → discover → fill levels → persist → apply), so a dependent mod
 /// only registers its catalogue and the generic <c>/exmod recipes &lt;code&gt; &lt;level&gt;</c> command
-/// (and exlib's load-time apply) drive it. Lives in exlib so any mod - not just ppex/smex - can plug in.
+/// (and exlib's load-time apply) drive it. Lives in exlib so any mod - not just lpex/smex - can plug in.
 /// </summary>
 public static class ExRecipeProfiles
 {

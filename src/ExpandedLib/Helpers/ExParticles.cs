@@ -4,7 +4,7 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Helpers;
 
 /// <summary>
-/// Shared catalogue of particle effects for the mod family (ppex + smex), so the look and tuning
+/// Shared catalogue of particle effects for the mod family (lpex + smex), so the look and tuning
 /// live in one place instead of inline <see cref="SimpleParticleProperties"/>. The named presets
 /// are thin wrappers over the configurable <see cref="Spawn"/> primitive (reuse it or
 /// <see cref="RisingPlume"/> for new effects). Methods do no side-checking: spawn on the server to

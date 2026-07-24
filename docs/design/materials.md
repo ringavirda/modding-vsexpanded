@@ -35,7 +35,7 @@ produces it. Numbers here are the single source of truth; mod docs cite them. Se
 > mods' **structural / pressure** steels; tools come from shear / crucible / HSS steel.
 
 **Material-gated power tiers (key lever).** The two steam-power tiers are separated **by construction
-material**, not merely recipe: **LP machinery** (ppex) is built from **cast iron**; **HP machinery**
+material**, not merely recipe: **LP machinery** (lpex) is built from **cast iron**; **HP machinery**
 (hpex — Lancashire boilers, Cornish/Corliss cylinders) can **only** be built from **hadfield steel**.
 
 **Hadfield is the alloying-mechanic introduction** — the first metal that *must* be made by mixing a

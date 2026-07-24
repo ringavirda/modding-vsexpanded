@@ -10,7 +10,7 @@ namespace ExpandedLib.Commands;
 /// it (created via <see cref="Vintagestory.API.Common.IChatCommandApi.GetOrCreate(string)"/> so
 /// sub-commands can attach in any load order); on its own it just prints help. Dependent mods hang
 /// their options off it as <see cref="IExSubCommand"/>s - e.g. exlib's own <c>network</c>
-/// visualisation and ppex's <c>measure</c> unit toggle.
+/// visualisation and lpex's <c>measure</c> unit toggle.
 /// <para>
 /// Registered on <see cref="EnumAppSide.Universal"/>, so it exists on both sides as two independent
 /// commands: <c>.exmod</c> (client-side, runs locally on the player's machine) and <c>/exmod</c>

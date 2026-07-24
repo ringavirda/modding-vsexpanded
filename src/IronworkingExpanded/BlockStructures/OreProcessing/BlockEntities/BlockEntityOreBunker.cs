@@ -5,7 +5,6 @@ using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.OreProcessing.Blocks;
 using IronworkingExpanded.Compat;
 using IronworkingExpanded.Items;
-using IronworkingExpanded.Rendering;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;

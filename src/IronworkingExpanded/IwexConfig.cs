@@ -74,8 +74,62 @@ public class IwexConfig : IExVersionedConfig
   #endregion
 
   #region Air blower / blast
-  /// <summary>Pressure (atm) at or above which air in a pipe network counts as "blast".</summary>
-  public float BlastPressureThreshold { get; set; } = 2.5f;
+  // Blast pressure is NOT a per-furnace constant: it falls out of the burden, the way the heat balance
+  // does. Coke is the permeable skeleton of the charge column - the coarse, non-fusing component that
+  // keeps gas channels open through the stack - so a LEAN burden packs denser, resists the blast more,
+  // and needs a higher pressure to push the same air through it. A rich burden is permeable and blows
+  // easily but eats coke and demands far more air to burn it.
+  //
+  // That is the whole tier gate, and it is a consequence rather than a rule: a mechanically blown iron
+  // furnace can always be brute-forced with a coke-rich burden, but the coke-lean burden that actually
+  // saves fuel needs pressure only the steam tier can raise - and pipes only the steam tier can build.
+  // It is also the historical trade: hot blast's value was cutting coke per ton, and the era that had
+  // it also had blowing engines (and stronger pipe) able to force a denser column.
+
+  /// <summary>Blast pressure (atm) a burden at <see cref="BfReferenceFuelFrac"/> demands. The gate is
+  /// set by where this lands relative to <see cref="BoltedPipeBurstPressure"/> and the blower ceiling.</summary>
+  public float BfBlastPressureAtReference { get; set; } = 2.0f;
+
+  /// <summary>Atmospheres added per unit the coke fraction falls below <see cref="BfReferenceFuelFrac"/>
+  /// (and subtracted per unit above it) - how sharply permeability translates into required pressure.
+  /// At the shipped defaults a 30% coke burden asks 1.25 atm, a standard 20% one asks 2.0, and a 10%
+  /// one asks 2.75 - which is above both the bellows' ceiling AND bolted pipe's burst rating, so the
+  /// lean burden is gated by the blower and by the plumbing at once.</summary>
+  public float BfBlastPressureCokeSensitivity { get; set; } = 7.5f;
+
+  /// <summary>Floor on the derived blast pressure - no burden is so permeable it blows on nothing.</summary>
+  public float BfBlastPressureMin { get; set; } = 1.2f;
+
+  /// <summary>Ceiling on the derived blast pressure, so a near-cokeless charge cannot demand the impossible.</summary>
+  public float BfBlastPressureMax { get; set; } = 6f;
+
+  /// <summary>Lower clamp on the air-draw factor, so even a coke-starved burden still breathes.</summary>
+  public float BfTuyereDrawMinFactor { get; set; } = 0.4f;
+
+  /// <summary>Upper clamp on the air-draw factor, so a coke-packed burden's demand stays blowable.</summary>
+  public float BfTuyereDrawMaxFactor { get; set; } = 1.8f;
+  #endregion
+
+  #region Pipes
+  // iwex owns the base pipe block (the bolted tier) and the "pipe" network registration, so the
+  // pipe-content tunables that used to live in lpex are here now. The generic pipe-network constants
+  // (LitresPerPipe, leak rates, …) live in exlib's own config (ExlibValues); these are content values.
+
+  /// <summary>
+  /// Burst pressure (atm) of a plain bolted (iwex) pipe segment - the weakest pipe limits a run. Higher
+  /// tiers register their own rating (lpex cast 5, hpex rolled 12).
+  /// <para>
+  /// This doubles as the tier's <b>capacity</b>: a network holds <c>burst x pipes x litresPerPipe</c>,
+  /// so the bolted tier is both the low-pressure tier and the small-buffer one. It sits deliberately
+  /// just above what a coke-rich burden demands and below what a lean one does - that gap is the gate.
+  /// </para>
+  /// </summary>
+  public float BoltedPipeBurstPressure { get; set; } = 2.5f;
+
+  /// <summary>Gas (L/s) a vanilla chimney draws from the network when capping the top connector of a
+  /// chimney-ventable fitting (a passthrough / passthrough-bend / outlet). Used by the iwex chimney-vent
+  /// strategy that every "pipe" network carries.</summary>
+  public float ChimneyGasDrawRate { get; set; } = 16.0f;
   #endregion
 
   #region Blast furnace - heat balance
@@ -204,8 +258,11 @@ public class IwexConfig : IExVersionedConfig
   /// <summary>Blast-mix consumed per melt cycle.</summary>
   public int BfBlastMixPerMeltCycle { get; set; } = 16;
 
-  /// <summary>Air/blast (L/s) the blast furnace draws through each tuyere.</summary>
-  public float TuyereIntakeVolume { get; set; } = 12f;
+  /// <summary>Air/blast (L/s) the blast furnace draws through each tuyere <b>at the reference coke
+  /// fraction</b>. The live draw scales with the burden's coke content - air is the oxidant for coke, so
+  /// a rich burden burns more of it and needs more air - clamped by
+  /// <see cref="BfTuyereDrawMinFactor"/>/<see cref="BfTuyereDrawMaxFactor"/>.</summary>
+  public float TuyereIntakeVolume { get; set; } = 14f;
   #endregion
 
   #region Cupola furnace
@@ -310,6 +367,39 @@ public class IwexConfig : IExVersionedConfig
 
   /// <summary>Burden units the mixer drains into the container below per second while the lids are open.</summary>
   public float MixerDrainPerSecond { get; set; } = 8f;
+  #endregion
+
+  #region Recipe balance
+  /// <summary>Active ironworking recipe cost level - <c>"normal"</c> or <c>"cheap"</c>. Toggled in-game
+  /// by <c>/exmod recipes iwex &lt;level&gt;</c>; the per-recipe numbers live in the separate
+  /// <see cref="IwexRecipeConfig"/> catalogue. Applied on the next world reload.</summary>
+  public string RecipeLevel { get; set; } = "normal";
+  #endregion
+
+  #region Twin-tub blower
+  // The iron tier's only air source: a mechanically driven twin-tub bellows feeding the blast main.
+  // Deliberately weaker than the steam tiers' blowers - it makes COLD blast at a pressure that just
+  // clears BlastPressureThreshold, so an iron-age blast furnace runs but never reaches the hot-blast
+  // ceiling. Both output figures are at full axle speed and scale down with it.
+
+  /// <summary>Litres of air per second the blower pushes into its network at <see cref="TwinTubBlowerMaxSpeed"/>.
+  /// The default runs a single two-tuyere blast furnace on a coke-rich burden - the draw a rich burden
+  /// demands is the highest the iron tier ever has to meet.</summary>
+  public float TwinTubBlowerOutputPerSecond { get; set; } = 45f;
+
+  /// <summary>
+  /// Pressure ceiling (atm) the blower can raise its network to. It sits under
+  /// <see cref="BoltedPipeBurstPressure"/> (bellows must not burst the tier's own pipe) and above what a
+  /// coke-rich burden demands, but <b>below what a lean one does</b> - so a mechanical blower can run an
+  /// iron furnace on a fuel-hungry charge and can never run the fuel-efficient charge that needs steam.
+  /// </summary>
+  public float TwinTubBlowerMaxPressure { get; set; } = 2.2f;
+
+  /// <summary>Axle speed at/below which the blower delivers nothing - the bellows barely move.</summary>
+  public float TwinTubBlowerMinSpeed { get; set; } = 0.5f;
+
+  /// <summary>Axle speed at/above which the blower delivers its full <see cref="TwinTubBlowerOutputPerSecond"/>.</summary>
+  public float TwinTubBlowerMaxSpeed { get; set; } = 1.5f;
   #endregion
 
   #region Burden grades

@@ -23,4 +23,15 @@
       CopyToOutputDirectory="PreserveNewest"
     />
   </ItemGroup>
+
+  <!--
+    On the legacy target frameworks, bring exlib's LegacyApi/LegacyAnimUtil extension members into
+    scope across every test assembly, so test code written against the 1.22 API surface compiles
+    unchanged on 1.20/1.21 - the same thing each mod project does with its own LegacyUsings.cs.
+    Without this a test touching a 1.22-only member (e.g. MultiblockStructure.TransformedOffsets)
+    fails the legacy build even though the production code it exercises has a working shim.
+  -->
+  <ItemGroup Condition="'$(IsCurrentGame)' != 'true'">
+    <Using Include="ExpandedLib.Legacy" />
+  </ItemGroup>
 </Project>

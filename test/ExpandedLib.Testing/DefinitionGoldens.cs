@@ -160,7 +160,7 @@ public static class DefinitionGoldens
   public static bool WriteRequested =>
     Environment.GetEnvironmentVariable("EXLIB_WRITE_GOLDENS") == "1";
 
-  /// <summary>Resolves a repo-root-relative path (e.g. <c>test/PipesAndPowerExpanded.Tests/goldens</c>) to an
+  /// <summary>Resolves a repo-root-relative path (e.g. <c>test/LowPressureExpanded.Tests/goldens</c>) to an
   /// absolute path by walking up from the test binary to the solution root - the same source-tree anchor the
   /// lang-parity guard uses, so goldens are read/written in place with no build-output copy.</summary>
   public static string SolutionRelative(string repoRelativePath) =>

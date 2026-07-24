@@ -16,7 +16,7 @@ namespace IronworkingExpanded.BlockStructures.Crafting.Gui;
 /// <para>
 /// The window lives entirely on the client; the block entity applies slot moves and the draft through the
 /// open/close/draft packet handshake (see <see cref="BlockEntities.BlockEntityDesignTable"/>). The diagram
-/// picker enumerates the loaded <c>diagram-*</c> items directly, so plans contributed by other mods (ppex,
+/// picker enumerates the loaded <c>diagram-*</c> items directly, so plans contributed by other mods (lpex,
 /// smex) appear here for free. The setup-guide viewer is a later increment.
 /// </para>
 /// </summary>

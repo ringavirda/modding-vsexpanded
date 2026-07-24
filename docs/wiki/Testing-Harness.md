@@ -119,8 +119,9 @@ internal static class ModuleInit
 }
 ```
 
-Every test project in this repo (`ExpandedLib.Tests`, `PipesAndPowerExpanded.Tests`,
-`SteelmakingExpanded.Tests`, `Integration.Tests`) has exactly this. `VsAssemblyResolver.Register`
+Every test project in this repo (one per mod: `ExpandedLib.Tests`, `IronworkingExpanded.Tests`,
+`LowPressureExpanded.Tests`, `HighPressureExpanded.Tests`, `SteelmakingExpanded.Tests`) has exactly
+this - a module initializer only runs for the assembly that declares it. `VsAssemblyResolver.Register`
 is idempotent and resolves the install via the `[AssemblyMetadata("GameInstallEnv")]` environment
 variable (e.g. `VINTAGE_STORY`) or, failing that, by walking up to `.game/<slug>`.
 
@@ -175,6 +176,45 @@ Assert.Equal(3, net!.Nodes.Count);
 
 `SceneDiagram` maps characters to placement lambdas: columns advance +X, rows advance +Z, and
 `Stack(baseY, layers...)` stacks layers bottom-to-top in +Y.
+
+## Standing up a mega-block with `StructureRig`
+
+A `BlockEntityMultiblockStructure` only runs its production tick while `StructureComplete` is true, and
+that flag is set by the machine's own monitor tick when vanilla's `InCompleteBlockCount` reaches zero.
+The tempting shortcut is to force it:
+
+```csharp
+ReflectionHelpers.SetProperty(be, "StructureComplete", true);   // don't
+```
+
+That asserts the conclusion. The test then passes even when the layout is wrong, the rotation is a
+half-turn out, or the anchor never loaded its attributes - the machine "works" in the test and does
+nothing in game. `StructureRig` builds the footprint instead, and lets the machine complete itself:
+
+```csharp
+var rig = StructureRig.Around(world, furnace, BlockBlastFurnaceCoreHot.Definitions("smex").Single(), angle: 0);
+
+rig.Occupy(rig.Cell(0, 1, -1), tuyereBlock, new BlockEntityTuyere());  // cells the test cares about
+rig.Complete();   // fill the rest, Initialize, and wait for the machine's own monitor tick
+```
+
+- The layout comes from the anchor's **code-first `ExBlockDef`**, so re-authoring a footprint moves its
+  tests with it. `Around` also attaches the def's `attributes` to the placed block, which is what lets
+  the production `UpdateStructureRotation` find the layout (a `TestBlocks.Configure` block has none).
+- `angle` must be the angle the machine derives from its own variant (north 0, west 90, south 180,
+  east 270, plus any per-machine offset - the Bessemer control and cowper stove use `angle + 180`).
+  A wrong angle is not tolerated: the cells land where the machine isn't looking and `Complete` throws
+  with a per-cell breakdown of what each unsatisfied cell wants and what it holds.
+- `Raise()` fills only **empty** cells. A cell you placed yourself is never replaced, even if it does
+  not satisfy the layout - otherwise a fixture could put its tuyere one cell out and still complete,
+  orphaning the block it goes on to assert against. Air-satisfied cells (`@(air|coalpile)` shafts) are
+  left empty on purpose.
+- `AwaitCompletion()` / `Missing` let a test assert the *transitions* - that an unbuilt footprint never
+  completes, or that breaking one cell takes a running machine back out of production.
+
+Place the real functional blocks (tuyeres, taps, outlets) **before** raising, and give them the code
+the layout asks for. A generic pipe behaves identically to a tuyere as a network node but does not
+satisfy an `iwex:tuyere*` cell.
 
 ## Priming private state
 

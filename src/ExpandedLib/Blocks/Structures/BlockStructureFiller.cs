@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

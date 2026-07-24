@@ -48,7 +48,7 @@ public abstract class BlockEntityBlastFurnace : BlockEntityFurnaceCore
   protected override float MeltIntervalSec => IwexValues.BfMeltIntervalSec;
   protected override float TuyereIntakeVolume => IwexValues.TuyereIntakeVolume;
   protected override float BlastPressureThreshold =>
-    IwexValues.BlastPressureThreshold;
+    IwexValues.BfBlastPressureAtReference;
   protected override int BlastMixRequiredToFire =>
     IwexValues.BlastMixRequiredToFire;
 

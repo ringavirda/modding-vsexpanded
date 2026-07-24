@@ -3,7 +3,7 @@
 Diagrams (drawn paper plans) carry the **identity** of a crafted thing as data, so one material recipe
 serves a whole family of shape variants. This is the mod's answer to the 3×3-grid ceiling. Shared rules
 and numbers live in [conventions.md](conventions.md); the mods that own the machines are
-[iwex](iwex.md) (design table) and [ppex](ppex.md) (boring machine).
+[iwex](iwex.md) (design table) and [lpex](lpex.md) (boring machine).
 
 > **How to read this doc.** Nothing here is *(live)* yet — this is the **proposed baseline**, config
 > intent noted where relevant. Numbers appear once (see [conventions.md](conventions.md)); this file
@@ -40,7 +40,7 @@ and numbers live in [conventions.md](conventions.md); the mods that own the mach
   reusable. A diagram used for a **multiblock / megablock structure core** is a **plain consumed
   ingredient**. That flag *is* the rule "structures consume the plan, parts don't" — for free, in the
   existing engine.
-- The **boring machine (ppex)** is the one genuine processing station: insert part(s) + a schematic →
+- The **boring machine (lpex)** is the one genuine processing station: insert part(s) + a schematic →
   machined output, in a window. Same idiom (inputs + diagram → result), but powered and timed rather
   than hand-crafted. Its schematic is an item output, so **reusable** (never consumed).
 - **No progression gates.** Every diagram is freely draftable from the start; the only gate is
@@ -75,7 +75,7 @@ block-info cannot express. The exception is bounded:
   **inclined first-person transform** so the drawing on the top face angles toward the player's camera —
   you can read the plan you are carrying. Exact scale/rotation are **in-game-tuned**, like every held
   transform; there is no headless way to get them right.
-- Each mod defines the diagram variants for the blocks **it** owns (iwex pipes/canals/cores, ppex
+- Each mod defines the diagram variants for the blocks **it** owns (iwex pipes/canals/cores, lpex
   passthroughs/machine schematics, smex molds/hot-core), discovered the same per-mod way as the other
   code-first defs.
 - **Drafting cost is trivial:** a drawing medium (**charcoal or black coal** — both draw in vanilla) +
@@ -93,7 +93,7 @@ megablocks that carry a projection + fillers; no — an `isTool` reusable — fo
 | Family | Diagrams | Makes | Consumed? | Owner |
 |---|---|---|---|---|
 | **Pipe** *(shared plan)* | straight, bend, tjunction, xjunction, outlet | a pipe of each mod's tier | no (tool) | iwex |
-| **Passthrough** | straight, bend | brick-passthrough pipe | no (tool) | ppex |
+| **Passthrough** | straight, bend | brick-passthrough pipe | no (tool) | lpex |
 | **Tuyere** | tuyere | furnace tuyere | no (tool) | iwex |
 | **Molten canal** | straight, bend, tjunction, xjunction, start, tap, furnacetap, moldpedestal, barrel | canal pieces + molten barrel | no (tool) | iwex |
 | **Casting** | sandcell | sand casting cell | no (tool) | iwex |
@@ -105,12 +105,12 @@ The **consumed?** column is not per-diagram data to maintain — it is simply wh
 `.Tool()` or a plain ingredient, decided by whether the output is a structure core.
 
 **Shared plans.** Some diagrams are cross-mod plans, not one mod's property — the **pipe** family is one
-plan used by *every* pipe tier: iwex **bolted** pipe (hand-assembled from plates, lowest pressure), ppex
+plan used by *every* pipe tier: iwex **bolted** pipe (hand-assembled from plates, lowest pressure), lpex
 **cast** pipe (from cast pipe-parts off the boring machine, higher pressure), and future hpex **rolled**
 pipe (Hadfield steel on the rolling mill, highest). The diagram picks the *shape*; each mod's own grid
 recipe + materials pick the *tier* and its pressure, and each tier is its **own block with a slightly
 different shape**. A shared plan lives in the lowest mod that uses it (**iwex**), which the higher mods
-depend on. *(This 3-tier bolted→cast→rolled progression supersedes the 2-tier "bolted iwex / rolled ppex"
+depend on. *(This 3-tier bolted→cast→rolled progression supersedes the 2-tier "bolted iwex / rolled lpex"
 line in [conventions.md](conventions.md) — that doc still needs the update.)*
 
 ---
@@ -122,7 +122,7 @@ Ordinary `ExRecipeDef` grid recipes, one per family, with the diagram as an ingr
 - **Simple block / item** — diagram is a reusable tool:
   `diagram-pipe-straight (tool) + plate + nails → 2 bolted straight pipe` (iwex). Swap the diagram
   variant, get a different pipe *shape* from the same pattern; the diagram is the selector. The **same**
-  `diagram-pipe-straight` also drives ppex's `+ cast pipe-parts → cast straight pipe` and hpex's rolled
+  `diagram-pipe-straight` also drives lpex's `+ cast pipe-parts → cast straight pipe` and hpex's rolled
   tier — one shared plan, each mod's recipe + material choosing the tier.
 - **Structure core** — diagram is consumed:
   `refractory brick + diagram-bfc (consumed) → cold-blast-furnace core`. The crafted core then carries
@@ -171,7 +171,7 @@ office's job.
 
 ---
 
-## The boring machine (ppex)
+## The boring machine (lpex)
 
 The machine-shop counterpart: a **powered** window station that machines cast blanks and simple stock
 into finished parts.
@@ -184,7 +184,7 @@ into finished parts.
   - finishes it into an **engine cylinder** (cylinder + plates + nails → the real, usable part), or
   - bores it into **cast pipe-parts** — which assemble into pipes **faster** than bolted pipe and hold
     **more pressure** (a reward for the casting investment; pressure/throughput numbers live in
-    [ppex.md](ppex.md)).
+    [lpex.md](lpex.md)).
 - This gives casting a downstream purpose and is historically honest: cast rough, machine to spec.
 
 ---
@@ -200,7 +200,7 @@ framework role):
 - **Station window base** — item slots + a selectable list + an info panel + the image/guide viewer —
   parameterised so the design table (hand, draft-only) and the boring machine (powered, process) are
   thin subclasses.
-- Per-mod content: iwex owns the design table + its diagrams; ppex owns the boring machine + machine
+- Per-mod content: iwex owns the design table + its diagrams; lpex owns the boring machine + machine
   schematics; smex contributes mold/hot-core diagrams.
 
 ---
@@ -225,7 +225,7 @@ framework role):
 3. **Design table** — the two-wide block (candles/light) + the station window (draft list + info
    panel). Replaces the temporary diagram path.
 4. **Guide viewer** — ship downscaled setup PNGs + the pan/zoom pane.
-5. **Boring machine (ppex)** — powered station + the cast→machine chain (cylinder → engine cylinder /
+5. **Boring machine (lpex)** — powered station + the cast→machine chain (cylinder → engine cylinder /
    cast pipe-parts).
 6. **Migrate the rest** — canals, molds, and the consumed-diagram cores off their colliding grid
    patterns onto the diagram families.

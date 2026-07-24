@@ -1,7 +1,7 @@
 {
   "code": "twintubmpblower",
-  "class": "iwex.BlockTwinTubMpBlower",
-  "entityClass": "iwex.BlockEntityTwinTubMpBlower",
+  "class": "iwex.BlockTwinTubMPBlower",
+  "entityClass": "iwex.BlockEntityTwinTubMPBlower",
   "behaviors": [
     {
       "name": "MultiblockStructure"
@@ -9,12 +9,62 @@
   ],
   "blockmaterial": "Ceramic",
   "maxstacksize": 1,
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "twintubmpblower"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iwex:furnaces/twintubmpblower",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iwex:furnaces/twintubmpblower",
+      "rotateY": 90
+    },
+    "*-s": {
+      "base": "iwex:furnaces/twintubmpblower",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iwex:furnaces/twintubmpblower",
+      "rotateY": 270
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iwex": [
+      "*-n"
+    ]
+  },
   "attributes": {
     "fillerOffsets": [
       {
         "x": 0,
         "y": 1,
-        "z": 0
+        "z": 0,
+        "behaviors": [
+          {
+            "code": "exlib.BEBehaviorMPFillerPort",
+            "face": "west"
+          }
+        ],
+        "allowAttach": true
       },
       {
         "x": 0,

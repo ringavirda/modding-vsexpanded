@@ -12,11 +12,11 @@ namespace SteelmakingExpanded.BlockMigrations;
 /// of the same base and orientation.
 /// <para>
 /// The cowper-stove intake also gained the group, but its orientation was later switched to the
-/// side-word form (<c>-north</c>/<c>-south</c>/…) by <see cref="PpexMigration"/>, so a tier3-<em>letter</em>
+/// side-word form (<c>-north</c>/<c>-south</c>/…) by <see cref="CowperStoveIntakeOrientationMigration"/>, so a tier3-<em>letter</em>
 /// target here no longer resolves - that remap was dead (skipped every startup) and has been removed.
 /// If a pre-tier <c>cowperstove-intake-&lt;letter&gt;</c> placement is ever found in an old world, the fix
 /// is a direct letter→side-word remap, not this dead intermediate. The pipe passthrough/outlet that also
-/// gained the group have since moved to the ppex mod; their migration lives in <c>PipeMigration</c> there.
+/// gained the group have since moved to the lpex mod; their migration lives in <c>PipeMigration</c> there.
 /// </para>
 /// </summary>
 public class BrickVariantMigration : IBlockCodeMigration

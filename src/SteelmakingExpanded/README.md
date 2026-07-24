@@ -3,7 +3,7 @@
 A [Vintage Story](https://www.vintagestory.at/) mod adding an industrial-era iron and
 steel production chain on top of vanilla metalworking. Requires
 [Expanded Library](../ExpandedLib/README.md) (`exlib`) and
-[Pipes and Power Expanded](../PipesAndPowerExpanded/README.md) (`ppex`).
+[Low Pressure Expanded](../LowPressureExpanded/README.md) (`lpex`).
 
 ## What it adds
 
@@ -12,7 +12,7 @@ steel production chain on top of vanilla metalworking. Requires
   melting point, it pools molten iron and slag.
 - **Hot blast machinery** - cowper stoves that recycle furnace exhaust into scorching
   blast air, a smoke stack that vents the surplus, and a steam-driven air blower
-  (a `ppex` engine sub-machine) that pressurises the line.
+  (a `lpex` engine sub-machine) that pressurises the line.
 - **Molten canal network** - liquid metal is plumbed, not carried: rock-built canals,
   furnace taps, a pouring canal tap, mold pedestals, and molten barrels for bulk
   storage. Metal cools in the canals and solidifies if neglected.

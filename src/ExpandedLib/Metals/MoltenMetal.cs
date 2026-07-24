@@ -1,3 +1,4 @@
+using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -169,13 +170,12 @@ public static class MoltenMetal
     MetalRegistry.DisplayName(metalItemCode);
 
   /// <summary>
-  /// Formats a molten temperature for display. Defaults to a metric <c>"650 °C"</c> form; a consumer
-  /// that owns a measurement-preference system (ppex) assigns <see cref="TemperatureFormatter"/> at
-  /// startup to route it through unit conversion. Kept injectable so exlib carries no dependency on a
-  /// downstream mod's formatter (the simulation stays metric).
+  /// Formats a molten temperature for display, routed through <see cref="ExMeasure.Temperature"/> so it
+  /// honours the player's metric/imperial preference. Kept as an injectable delegate (tests and any
+  /// future consumer can override it); the simulation itself always stays metric.
   /// </summary>
   public static System.Func<float, string> TemperatureFormatter { get; set; } =
-    t => $"{t:F0} °C";
+    t => ExMeasure.Temperature(t);
 
   /// <summary>"Cold" below room temperature, otherwise the formatted temperature.</summary>
   public static string FormatTemperature(float temperature) =>

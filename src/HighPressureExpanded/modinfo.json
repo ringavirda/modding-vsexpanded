@@ -1,0 +1,16 @@
+{
+  "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+  "type": "Code",
+  "modid": "hpex",
+  "name": "High Pressure Expanded",
+  "authors": ["fallenstar"],
+  "description": "High-pressure steam power: the Lancashire boiler and the throttled Cornish engine.",
+  "version": "0.1.0",
+  "dependencies": {
+    "game": "1.22.0",
+    "exlib": "0.1.0",
+    "iwex": "0.1.0",
+    "lpex": "0.1.0",
+    "smex": "0.1.0"
+  }
+}

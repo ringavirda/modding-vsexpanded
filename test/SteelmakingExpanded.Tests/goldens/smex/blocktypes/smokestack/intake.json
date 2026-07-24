@@ -506,18 +506,18 @@
   ],
   "shapebytype": {
     "*-intake-*-s": {
-      "base": "ppex:pipes/outlet"
+      "base": "lpex:pipes/outlet"
     },
     "*-intake-*-e": {
-      "base": "ppex:pipes/outlet",
+      "base": "lpex:pipes/outlet",
       "rotateY": 90
     },
     "*-intake-*-n": {
-      "base": "ppex:pipes/outlet",
+      "base": "lpex:pipes/outlet",
       "rotateY": 180
     },
     "*-intake-*-w": {
-      "base": "ppex:pipes/outlet",
+      "base": "lpex:pipes/outlet",
       "rotateY": 270
     }
   },

@@ -15,7 +15,7 @@ Steelmaking Expanded)!
   sub-command names like `network hi`. **Do not translate command names** - they are typed by the
   player exactly as written.
 
-## Measurements / handbook (ppex & smex)
+## Measurements / handbook (lpex & smex)
 
 ExpandedLib itself has no units or handbook articles. The companion mods **Pipes & Power Expanded**
 and **Steelmaking Expanded** do, and they convert measurements and rewrite handbook text at runtime.

@@ -13,9 +13,9 @@ public class ExKeyedRegistryTests
   public void Registers_and_looks_up_by_derived_code()
   {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
-    reg.Register(new Item("ppex", 1));
+    reg.Register(new Item("lpex", 1));
 
-    Assert.True(reg.TryGet("ppex", out var found));
+    Assert.True(reg.TryGet("lpex", out var found));
     Assert.Equal(1, found.Value);
   }
 

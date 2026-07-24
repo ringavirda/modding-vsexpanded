@@ -6,7 +6,7 @@ namespace SteelmakingExpanded;
 
 /// <summary>
 /// The steelmaking recipe cost catalogue, written to <c>ModConfig/smex_recipes.json</c> alongside the
-/// main <c>smex_values.json</c>. Same shape and behaviour as ppex's catalogue: each entry names a grid recipe
+/// main <c>smex_values.json</c>. Same shape and behaviour as lpex's catalogue: each entry names a grid recipe
 /// (by output) or RCC construction (by block) to manage; the <c>normal</c> level is auto-filled from
 /// the recipes as authored, and the <c>cheap</c> level is scale-filled from it (then editable). The
 /// active level is chosen by <c>/exmod steel &lt;level&gt;</c> (stored in
@@ -52,14 +52,9 @@ public class SmexRecipeConfig : IExVersionedConfig
         Match = "smex:converterbessemer-*",
       },
 
-      // Blast furnace + converter machine grid recipes. The blast-furnace blocks moved to the iwex
-      // domain with the blast furnace subsystem; the cost catalogue matches them by their new iwex:
-      // output codes (kept in this profile for a single steelmaking recipe-cost switch).
-      ["blastfurnace-tuyere-grid"] = Grid("iwex:tuyere-tuyere-*"),
-      // The core carries four "side" variants where the door it replaced had none, so the matcher
-      // needs the trailing wildcard.
-      ["blastfurnacecore-grid"] = Grid("iwex:blastfurnacecore-*"),
-      ["blastfurnacetap-grid"] = Grid("iwex:moltenmetaltap-*"),
+      // Converter + hot-blast machine grid recipes. The iron-tier content this catalogue used to also
+      // cover (blast-furnace components, molten transport, slag paths - all iwex: outputs) moved to
+      // IwexRecipeConfig, so /exmod recipes smex now discounts steelmaking and nothing else.
       ["converter-intake-grid"] = Grid("smex:converter-intake-*"),
       ["convertercontrol-grid"] = Grid("smex:convertercontrol-*"),
       ["convertertransmission-grid"] = Grid("smex:convertertransmission-*"),
@@ -68,27 +63,9 @@ public class SmexRecipeConfig : IExVersionedConfig
       ["engineairblower-grid"] = Grid("smex:engineairblower-*"),
       ["smokestack-intake-grid"] = Grid("smex:smokestack-intake-*"),
 
-      // Hoppers + molten transport. The hoppers came back to smex with the hot blast furnace (the
-      // cold furnace in iwex charges through its own tall hopper instead).
+      // Hoppers. These came back to smex with the hot blast furnace (the cold furnace in iwex charges
+      // through its own tall hopper instead).
       ["hopperbell-grid"] = Grid("smex:hopperbell"),
       ["hopperreinforced-grid"] = Grid("smex:hopperreinforced"),
-      // Molten transport blocks (canals/taps/barrel) moved to the iwex domain with the molten
-      // subsystem; the cost catalogue matches them by their new iwex: output codes.
-      ["moltenbarrel-grid"] = Grid("iwex:moltenbarrel"),
-      ["moltencanal-start-grid"] = Grid("iwex:moltencanal-start-*"),
-      ["moltencanal-straight-grid"] = Grid("iwex:moltencanal-straight-*"),
-      ["moltencanal-bend-grid"] = Grid("iwex:moltencanal-bend-*"),
-      ["moltencanal-tjunction-grid"] = Grid("iwex:moltencanal-tjunction-*"),
-      ["moltencanal-xjunction-grid"] = Grid("iwex:moltencanal-xjunction-*"),
-      ["moltencanal-tap-grid"] = Grid("iwex:moltencanal-tap-*"),
-      ["moltencanal-moldpedestal-grid"] = Grid(
-        "iwex:moltencanal-moldpedestal-*"
-      ),
-
-      // Slag paths (relocated to the iwex domain with the ironmaking split; cost catalogue still lives
-      // here and matches them by their new iwex: output codes, same as the molten entries above).
-      ["slagpath-grid"] = Grid("iwex:slagpath-*"),
-      ["slagpathslab-grid"] = Grid("iwex:slagpathslab-*"),
-      ["slagpathstairs-grid"] = Grid("iwex:slagpathstairs-*"),
     };
 }

@@ -3,7 +3,7 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Locks the exlib network-tunable defaults. These constants moved out of the ppex / iwex configs
+/// Locks the exlib network-tunable defaults. These constants moved out of the lpex / iwex configs
 /// into <see cref="ExlibValues"/> when the concrete <c>PipeNetwork</c> / <c>MoltenNetwork</c> moved
 /// into exlib. The headless network tests and the pipe fixtures' capacity math assume exactly these
 /// numbers, and the config now lives in a different assembly from those tests, so a silent drift

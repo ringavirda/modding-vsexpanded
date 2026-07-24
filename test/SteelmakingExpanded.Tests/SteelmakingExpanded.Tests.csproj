@@ -40,11 +40,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Copy exlib.dll + ppex.dll + smex.dll into the test bin so the runner loads them headlessly;
+    <!-- Copy exlib.dll + lpex.dll + smex.dll into the test bin so the runner loads them headlessly;
          their VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
     <ProjectReference Include="..\..\src\ExpandedLib\ExpandedLib.csproj" />
-    <ProjectReference Include="..\..\src\PipesAndPowerExpanded\PipesAndPowerExpanded.csproj" />
+    <ProjectReference Include="..\..\src\IronworkingExpanded\IronworkingExpanded.csproj" />
+    <ProjectReference Include="..\..\src\LowPressureExpanded\LowPressureExpanded.csproj" />
     <ProjectReference Include="..\..\src\SteelmakingExpanded\SteelmakingExpanded.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
+    <!-- Content-specific fixtures follow the mod chain: the pipe builders come from the iwex suite,
+         the boiler/engine plants from the lpex suite. -->
+    <ProjectReference Include="..\IronworkingExpanded.Tests\IronworkingExpanded.Tests.csproj" />
+    <ProjectReference Include="..\LowPressureExpanded.Tests\LowPressureExpanded.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- The base pipe block + BE live in iwex, and the shared pipe builders in its test project.
+       Expose both project-wide so the many scene/scenario files that build pipe runs do not each
+       need the using (no ambiguity: these names exist only there). -->
+  <ItemGroup>
+    <Using Include="IronworkingExpanded.BlockNetworkPipe.Blocks" />
+    <Using Include="IronworkingExpanded.BlockNetworkPipe.BlockEntities" />
+    <Using Include="IronworkingExpanded.Tests" />
   </ItemGroup>
 </Project>

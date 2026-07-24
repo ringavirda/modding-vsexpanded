@@ -89,7 +89,7 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 
   public List<SmithingRecipe> GetMatchingRecipes(ItemStack stack) =>
     api.GetSmithingRecipes()
-      ?.Where(r => r.Ingredient?.SatisfiesAsIngredient(stack, checkStackSize: true) == true)
+      ?.Where(r => r.Ingredient?.SatisfiesAsIngredient(stack, true) == true)
       .ToList() ?? [];
 
   // Pig iron is brittle - it shatters cold, so it is workable regardless of temperature.

@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Materials;
+using ExpandedLib.Networks;
 using ExpandedLib.Process;
 using IronworkingExpanded.Items;
 using IronworkingExpanded.Patches;
-using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
-using PipesAndPowerExpanded.Helpers;
+using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -107,11 +106,72 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
   /// <summary>Interval (seconds) between melt cycles.</summary>
   protected abstract float MeltIntervalSec { get; }
 
-  /// <summary>Volume drawn from each tuyere per tick.</summary>
+  /// <summary>Volume drawn from each tuyere per second <b>at the reference coke fraction</b>; the live
+  /// draw is <see cref="TuyereDrawFor"/>.</summary>
   protected abstract float TuyereIntakeVolume { get; }
 
-  /// <summary>Air-pressure threshold (atm) a tuyere must read to count as receiving blast.</summary>
+  /// <summary>Air-pressure threshold (atm) a tuyere must read to count as receiving blast <b>at the
+  /// reference coke fraction</b>; the live threshold is <see cref="RequiredBlastPressureFor"/>.</summary>
   protected abstract float BlastPressureThreshold { get; }
+
+  #region Burden-derived blast demand
+
+  // Neither the pressure a furnace needs nor the air it draws is a property of the furnace - both are
+  // properties of what is charged into it, and both come out of the same number: the burden's coke
+  // fraction.
+  //
+  //   AIR: air is the oxidant for coke. A coke-rich burden burns more fuel per ton of iron and needs
+  //        proportionally more air to do it. (Hot blast's real historical value was cutting coke per
+  //        ton - and with it, the blast volume per ton.)
+  //
+  //   PRESSURE: coke is the permeable skeleton of the charge column, the coarse non-fusing component
+  //        that holds gas channels open through the stack. A coke-LEAN burden packs denser, so the
+  //        pressure drop across it is higher and the blast has to be driven harder to get through.
+  //
+  // Together they make the tier gate emergent rather than declared: a mechanically blown furnace can
+  // always be brute-forced with a coke-rich charge (cheap pressure, expensive fuel), while the
+  // coke-lean charge that actually saves fuel demands a pressure only the steam tier can raise and only
+  // the steam tier's pipe can hold. Nothing branches on which furnace this is.
+
+  /// <summary>
+  /// The blast pressure (atm) a burden of <paramref name="mix"/> demands: the reference requirement
+  /// plus whatever its coke shortfall against <see cref="IwexValues.BfReferenceFuelFrac"/> adds, clamped.
+  /// A charge with no burden stamp reads as the default (standard) grade, exactly as the heat balance
+  /// treats it.
+  /// </summary>
+  public float RequiredBlastPressureFor(BurdenMix mix)
+  {
+    float fuelFrac = mix.HasContent
+      ? mix.FuelFrac
+      : IwexValues.BfDefaultFuelFrac;
+    float shortfall = IwexValues.BfReferenceFuelFrac - fuelFrac;
+    return GameMath.Clamp(
+      BlastPressureThreshold + shortfall * IwexValues.BfBlastPressureCokeSensitivity,
+      IwexValues.BfBlastPressureMin,
+      IwexValues.BfBlastPressureMax
+    );
+  }
+
+  /// <summary>
+  /// Air (L/s) each tuyere draws for a burden of <paramref name="mix"/>: the reference draw scaled by
+  /// how the burden's coke fraction compares to the reference, clamped so a starved or packed charge
+  /// still breathes something sane.
+  /// </summary>
+  public float TuyereDrawFor(BurdenMix mix)
+  {
+    float fuelFrac = mix.HasContent
+      ? mix.FuelFrac
+      : IwexValues.BfDefaultFuelFrac;
+    float reference = Math.Max(0.0001f, IwexValues.BfReferenceFuelFrac);
+    float factor = GameMath.Clamp(
+      fuelFrac / reference,
+      IwexValues.BfTuyereDrawMinFactor,
+      IwexValues.BfTuyereDrawMaxFactor
+    );
+    return _tuyereIntakeVolume * factor;
+  }
+
+  #endregion
 
   /// <summary>Hearth mix total at or above which the furnace reads as full (can fire) and for the HUD.</summary>
   protected abstract int BlastMixRequiredToFire { get; }
@@ -422,7 +482,11 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
     // for tick-independence (and the demand it is measured against scales the same way). Gated on
     // State != Idle: an idle furnace is not burning, so it pulls no air - and must not silently bleed
     // a shared blast main dry while it sits cold.
-    float perTuyereDraw = _tuyereIntakeVolume * dt;
+    // Both the draw and the pressure the line must hold come from the charge, not from this furnace -
+    // see the "Burden-derived blast demand" region. Recomputed each tick so re-charging a running
+    // furnace with a different grade immediately changes what its blast main has to deliver.
+    float requiredPressure = RequiredBlastPressureFor(mix);
+    float perTuyereDraw = TuyereDrawFor(mix) * dt;
     if (State != FurnaceState.Idle)
     {
       foreach (var pos in _tuyeres)
@@ -435,7 +499,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure
             if (pipe.Medium == "Exhaust")
               tuyeresReceiveExhaust = true;
 
-            if (pipe.Medium == "Air" && pipe.Pressure >= BlastPressureThreshold)
+            if (pipe.Medium == "Air" && pipe.Pressure >= requiredPressure)
             {
               blastTemp = Math.Max(blastTemp, pipe.Temperature);
               // How much air actually arrived, not merely whether a line is attached: an

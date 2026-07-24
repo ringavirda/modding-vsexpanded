@@ -3,7 +3,7 @@
 
 Parses a cobertura report (produced by `dotnet-coverage collect -f cobertura`) and fails if the
 line coverage of any mod assembly - or the combined total - drops below a floor. The game DLLs are
-instrumented too but irrelevant, so only exlib / ppex / smex are considered.
+instrumented too but irrelevant, so only the mod assemblies listed in FLOORS are considered.
 
 Usage: python scripts/coverage_gate.py <coverage.xml>
 
@@ -16,10 +16,16 @@ import sys
 import xml.etree.ElementTree as ET
 
 # assembly name in the report -> (display, min line %)
+# NOTE: a package missing from this map is silently ungated AND excluded from TOTAL (see main()),
+# so every shipped mod assembly belongs here - add a row when a mod is added.
 FLOORS = {
     "exlib": ("ExpandedLib", 33.0),
-    "PipesAndPowerExpanded": ("ppex", 39.0),
+    "IronworkingExpanded": ("iwex", 25.0),
+    "LowPressureExpanded": ("lpex", 39.0),
     "SteelmakingExpanded": ("smex", 34.0),
+    # hpex is two thin stat-table leaves over lpex's bases; its own line count is small and mostly
+    # covered indirectly through its engine-plant scenarios.
+    "HighPressureExpanded": ("hpex", 25.0),
 }
 TOTAL_FLOOR = 35.0
 

@@ -11,7 +11,10 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 
 declare -A tfms=( [1.22]=net10.0 [1.21]=net8.0 [1.20]=net7.0 )
-projects=(ExpandedLib.Tests PipesAndPowerExpanded.Tests SteelmakingExpanded.Tests Integration.Tests)
+# Every test project, in dependency order (exlib -> iwex -> lpex -> hpex/smex). One per mod: there
+# is no shared cross-mod project, so a test lives with the top mod it touches.
+projects=(ExpandedLib.Tests IronworkingExpanded.Tests LowPressureExpanded.Tests \
+          HighPressureExpanded.Tests SteelmakingExpanded.Tests)
 
 case "$version" in
   latest) wanted=(1.22) ;;
@@ -41,7 +44,7 @@ echo "Using dotnet host: $dotnet_bin"
 mkdir -p "$repo_root/.game/.cache"
 log_dir="$(mktemp -d)"
 
-# Build phase, SERIAL: the test projects share the mod projects (exlib/ppex/smex), so building them
+# Build phase, SERIAL: the test projects share the mod projects (exlib/lpex/smex), so building them
 # concurrently would race on the same intermediate DLLs. Building here also auto-provisions each
 # version's game binaries once. The test phase then runs in parallel with --no-build.
 combos=()

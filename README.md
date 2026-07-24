@@ -1,32 +1,38 @@
 # Fallenstar's Expanded mods
 
-A monorepo of three [Vintage Story](https://www.vintagestory.at/) mods that together
+A monorepo of five [Vintage Story](https://www.vintagestory.at/) mods that together
 add an industrial-era production chain - pipe networks, steam power, bulk iron and
 steel making:
 
 | Mod                                                             | modid   | What it is                                                                                                   |
 | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
 | [Expanded Library](src/ExpandedLib/README.md)                   | `exlib` | Shared framework: block networks, multiblock structures, registries (entities/commands/config), save migrations, common helpers. |
-| [Pipes and Power Expanded](src/PipesAndPowerExpanded/README.md) | `ppex`  | Pipe networks (gas + water), boilers, steam engines and their sub-machines (MP generator, fluid pump).        |
-| [Steelmaking Expanded](src/SteelmakingExpanded/README.md)       | `smex`  | Blast furnace, cowper stoves, molten-metal canals and casting, Bessemer converter. Depends on both above.     |
+| [Ironworking Expanded](src/IronworkingExpanded/README.md)       | `iwex`  | Cold-blast ironmaking: the base (bolted) pipe tier + the `pipe`/`molten` networks, mechanical blowers, ore mixing, blast-furnace charge prep. |
+| [Low Pressure Expanded](src/LowPressureExpanded/README.md) | `lpex`  | Cast pipe tier + fittings, the Cornish boiler, the Watt engine and their sub-machines (MP generator, fluid pump). |
+| [Steelmaking Expanded](src/SteelmakingExpanded/README.md)       | `smex`  | Hot blast furnace, cowper stoves, molten-metal casting, Bessemer converter, air blower.                      |
+| [High Pressure Expanded](src/HighPressureExpanded/README.md)    | `hpex`  | The high-pressure tier: the Lancashire boiler and the throttled Cornish engine.                              |
 
 ## Repository layout
 
 | Path                            | Purpose                                                                |
 | ------------------------------- | ---------------------------------------------------------------------- |
 | `src/ExpandedLib/`              | The `exlib` framework mod (C# + minimal assets).                       |
-| `src/ExpandedLib.Generators/`   | Roslyn source generators (config value accessors, block-attribute bakers). |
-| `src/PipesAndPowerExpanded/`    | The `ppex` mod: pipe network + steam machinery.                        |
-| `src/SteelmakingExpanded/`      | The `smex` mod: the iron/steel chain.                                  |
+| `src/ExpandedLib.Generators/`   | Roslyn source generators (config value accessors, typed lang keys).    |
+| `src/IronworkingExpanded/`      | The `iwex` mod: base pipe tier, networks, cold-blast ironmaking.       |
+| `src/LowPressureExpanded/`      | The `lpex` mod: cast pipes/fittings + low-pressure steam machinery.    |
+| `src/SteelmakingExpanded/`      | The `smex` mod: the steel chain.                                       |
+| `src/HighPressureExpanded/`     | The `hpex` mod: the high-pressure steam leaves.                        |
 | `src/Directory.Build.props`     | Shared MSBuild config + the supported-game-version manifest.           |
+| `assets/<domain>/`              | Each mod's asset tree, hoisted to the repo root (see `<AssetDomain>`). |
 | `test/`                         | Headless xUnit test projects (per-mod unit tests + cross-mod integration). |
 | `scripts/`                      | Game/.NET provisioning, mod staging, test runners.                     |
 | `docs/`                         | Diagrams, screenshots, moddb listing + handbook sources.              |
 | `dist/CakeBuild/`               | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
 | `VintageStory.sln`              | Solution tying the projects together.                                  |
 
-`smex` project-references `exlib` and `ppex` (with `Private=false`), so players install
-all three mods separately; the network manager identity lives in `exlib` only.
+The dependency chain is `exlib -> iwex -> lpex -> smex`, with `hpex` on top of `lpex`
+(a benign diamond: `smex` also references `iwex`). Every reference is `Private=false`,
+so players install each mod separately; the network manager identity lives in `exlib` only.
 
 ## Code conventions
 
@@ -47,21 +53,27 @@ Code is organized by **feature**, and within each feature by Vintage Story's
   `[BlockRegister]` / `[ItemRegister]` / `[BlockEntityRegister]` /
   `[BlockBehaviorRegister]` (etc.) attribute and `EntityRegistry.RegisterAll` picks it
   up. Chat commands use `[CommandRegister]` / `[SubCommandRegister]` the same way.
-- Gameplay tunables live in `PpexValues` / `SmexValues` (the static accessors are
-  source-generated from the config classes), persisted to `ModConfig/ppex_values.json` /
-  `ModConfig/smex_values.json` and editable live with `/exmod config`. Recipe and
-  construction costs live in a separate `ModConfig/{ppex,smex}_recipes.json` catalogue
-  (per-level `normal` / `cheap` numbers), switched with `/exmod recipes` and applied on
-  the next world reload. Both files auto-rename from their pre-`_values` legacy names.
+- Gameplay tunables live in a per-mod `*Values` accessor (`IwexValues`, `LpexValues`,
+  `SmexValues`, `HpexValues` - source-generated from the `[ExConfigRegister]` config
+  classes), persisted as one section per mod in the shared `ModConfig/ex_values.json` and
+  editable live with `/exmod config`. Recipe and construction costs live in the same
+  per-mod-section way in `ModConfig/ex_recipes.json` (per-level `normal` / `cheap`
+  numbers), switched with `/exmod recipes` and applied on the next world reload. Both
+  files auto-fold each mod's pre-merge standalone `*_values.json` / `*_recipes.json`.
 
-## Network system (`src/ExpandedLib/Blocks/Networks/`)
+## Network system (`src/ExpandedLib/Networks/` + `Blocks/Networks/`)
 
 Both the pipe and molten systems are instances of one generic block-network framework -
 and both concrete networks (`PipeNetwork`, `MoltenNetwork`) now live in `exlib` alongside
-the framework, so all three mods share one implementation. A network is a connected graph
+the framework, so every mod shares one implementation. A network is a connected graph
 of same-type nodes; the library owns the **graph-level** work (membership, merge on join,
 fracture on break, per-tick dispatch) *and* the concrete simulations, while each mod
 registers the type and supplies only its content-specific pieces through small seams.
+
+The split follows the repo-wide layout rule (see
+[conventions.md](docs/design/conventions.md#networks)): `Networks/` is the **graph model**, which you
+can reason about with no world loaded; `Blocks/Networks/` is where it meets the engine (`Block`,
+`BlockEntity`, `ModSystem`). Consumers typically import both.
 
 - `INetworkNode` - the block-entity-facing contract: connector faces, network type,
   open/leaking faces (`OnLeak`), state pushes.
@@ -72,7 +84,7 @@ registers the type and supplies only its content-specific pieces through small s
 - `BlockNetwork` - the abstract live-network instance; `PipeNetwork` and `MoltenNetwork`
   are its concrete subclasses, in `exlib`.
 - `BlockNetworkModSystem` - the graph manager; a mod registers a factory via
-  `RegisterNetworkType("pipe", () => new PipeNetwork(mgr, new PpexChimneyVent()))`
+  `RegisterNetworkType("pipe", () => new PipeNetwork(mgr, new LpexChimneyVent()))`
   during `ModSystem.Start`.
 - Content seams so the exlib networks never name a mod's block type: `IMoltenCell`
   (canal cells), `IBurstablePipe` (pipe burst rating), `IPipeVentStrategy` (chimney
@@ -105,7 +117,8 @@ Everything else is fetched on demand into gitignored folders:
 pwsh scripts/provision-game.ps1 -Version 1.22     # Windows
 scripts/provision-game.sh       -Version 1.22     # Linux/macOS
 
-dotnet build src/SteelmakingExpanded/SteelmakingExpanded.csproj   # builds all three mods
+dotnet build VintageStory.sln                                    # builds every mod + the tests
+dotnet build src/HighPressureExpanded/HighPressureExpanded.csproj # or one mod + its dependencies
 dotnet run --project dist/CakeBuild   # full Cake build: per-game-version release zips in dist/Releases/
 ```
 

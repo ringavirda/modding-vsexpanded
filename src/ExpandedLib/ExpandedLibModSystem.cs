@@ -6,6 +6,7 @@ using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Preferences;
 using ExpandedLib.Registries.Recipes;
+using HarmonyLib;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -20,10 +21,11 @@ namespace ExpandedLib;
 /// <para>
 /// On the client it owns the generic per-player display-preferences store
 /// (<see cref="Registries.Preferences.ExPreferences"/>): it loads the per-player <c>exmod.json</c>
-/// and applies each player's saved choices on join. The preference <em>definitions</em> themselves
-/// (and their <c>.exmod</c> sub-commands) live in the dependent mods - e.g. ppex owns the
-/// metric/imperial unit preference - so a mod that only needs the library's framework pulls in none
-/// of that.
+/// and applies each player's saved choices on join. It also owns the <b>measure</b> feature - the
+/// metric/imperial display-unit preference, its <c>.exmod measure</c> sub-command and the handbook
+/// unit-conversion patch - because every mod from iwex up displays litres, atmospheres and
+/// temperatures, so it cannot sensibly belong to any one of them. Dependent mods contribute further
+/// preferences and sub-commands from their own assemblies.
 /// </para>
 /// <para>
 /// The block-network graph manager and the world block-code migrator are separate
@@ -33,6 +35,9 @@ namespace ExpandedLib;
 /// </summary>
 public class ExpandedLibModSystem : ModSystem
 {
+  // Client-side Harmony instance for the handbook unit patch (see StartClientSide).
+  private Harmony? _harmony;
+
   public override void Start(ICoreAPI api)
   {
     // Load the library's own gameplay tunables (chiefly the block-network constants the concrete
@@ -71,10 +76,23 @@ public class ExpandedLibModSystem : ModSystem
 
   public override void StartClientSide(ICoreClientAPI api)
   {
-    // Load the per-player display-preference store (writes the file on first run). The preference
-    // definitions are contributed by the dependent mods in their own StartClientSide; applying on
-    // LevelFinalize (after every mod has started) picks up whatever they registered.
+    // The library's own display preferences - currently the metric/imperial unit system, which lives
+    // here rather than in a consumer because every mod from iwex up displays litres, atmospheres and
+    // temperatures. Registered before the store loads so a saved choice has something to apply to.
+    PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
+
+    // Load the per-player display-preference store (writes the file on first run). Dependent mods
+    // contribute further preferences in their own StartClientSide; applying on LevelFinalize (after
+    // every mod has started) picks up whatever they registered.
     ExPreferences.LoadConfig(api);
+
+    // The handbook unit-conversion patch that makes authored metric prose read in imperial. Client
+    // only, and guarded so it is applied once however many dependent mods are installed.
+    if (!Harmony.HasAnyPatches(Mod.Info.ModID))
+    {
+      _harmony = new Harmony(Mod.Info.ModID);
+      _harmony.PatchAll(GetType().Assembly);
+    }
 
     // Apply the local player's saved choices once the world (and player) are ready.
     api.Event.LevelFinalize += () =>
@@ -97,5 +115,12 @@ public class ExpandedLibModSystem : ModSystem
 
     // Apply every registered mod's selected recipe-cost level to the live (host-authoritative) recipes.
     ExRecipeProfiles.ApplyAll(api);
+  }
+
+  public override void Dispose()
+  {
+    _harmony?.UnpatchAll(Mod.Info.ModID);
+    _harmony = null;
+    base.Dispose();
   }
 }

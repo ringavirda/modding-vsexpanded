@@ -82,6 +82,45 @@ public class StructureFootprintTests
 
   #endregion
 
+  #region Hosted behaviours
+
+  [Fact]
+  public void Host_attaches_behaviours_to_every_cell_drawn_with_its_glyph()
+  {
+    // The twin-tub blower's shape: a 1x2x3 elevation whose upper-rear cell hosts the MP port an axle
+    // couples to. Before Host existed, a footprint needing one port had to be hand-listed cell by cell.
+    var port = new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west");
+    IReadOnlyList<FillerCellSpec> cells = StructureFootprint.Layout(f =>
+      f.Host('M', port)
+        .Origin(0, 1)
+        .Slice(
+          0,
+          """
+          M##
+          0##
+          """
+        )
+    );
+
+    Assert.Equal(5, cells.Count); // 6 drawn cells minus the skipped principal
+    FillerCellSpec hosted = Assert.Single(cells, c => c.Behaviors != null);
+    Assert.Equal((0, 1, 0), (hosted.X, hosted.Y, hosted.Z));
+    Assert.Equal(port, Assert.Single(hosted.Behaviors!));
+    // A hosted cell is attach-allowing by definition - something has to couple to it.
+    Assert.True(hosted.AllowAttach);
+  }
+
+  [Fact]
+  public void A_plain_glyph_hosts_nothing()
+  {
+    IReadOnlyList<FillerCellSpec> cells = StructureFootprint.Layout(f =>
+      f.Slice(0, "0#")
+    );
+    Assert.All(cells, c => Assert.Null(c.Behaviors));
+  }
+
+  #endregion
+
   #region Validation
 
   [Fact]

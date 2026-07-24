@@ -6,7 +6,7 @@ namespace ExpandedLib.Helpers;
 
 /// <summary>
 /// Shared catalogue of sound asset locations and small play helpers used across the mod
-/// family (ppex + smex). All sounds resolve from the vanilla "game" domain (which also
+/// family (lpex + smex). All sounds resolve from the vanilla "game" domain (which also
 /// covers the survival asset folder). Playing on the server replicates to nearby clients;
 /// the helpers do the side-checking where noted.
 /// </summary>

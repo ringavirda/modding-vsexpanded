@@ -33,7 +33,7 @@ sibling files; shared rules and numbers live in [conventions.md](conventions.md)
 The dependency order follows the tech-tree order: **iron → steam → steel → high-pressure → electric**.
 
 ```
-exlib ──▶ iwex ──▶ ppex ──▶ smex ──▶ hpex
+exlib ──▶ iwex ──▶ lpex ──▶ smex ──▶ hpex
                                        ▲
                                 elex ──┘ (also needs smex + chemistry)
 ```
@@ -42,8 +42,8 @@ exlib ──▶ iwex ──▶ ppex ──▶ smex ──▶ hpex
 |---|---|---|---|---|
 | **Expanded Library** | `exlib` | framework | network **logic** (Pipe/Molten/MP), definitions, registries, config, helpers, test harness | game |
 | **Ironworking Expanded** | `iwex` | iron (low-tech) | cold blast furnace, molten-canal network, ore bunker/mixer, **mechanical (MP) air blower**, **bolted pipes**, `gear-iron` | exlib |
-| **Pipes & Power Expanded** | `ppex` | low steam power | Cornish boiler + Watt engine, **cast pipes**, steam pump **+ mechanical MP pump**, MP power, fluid tank/sprinkler | iwex, exlib |
-| **Steelmaking Expanded** | `smex` | steel | hot blast furnace **+ cowper stoves**, Bessemer, open hearth, ladle, billet/forming | ppex, iwex, exlib |
+| **Pipes & Power Expanded** | `lpex` | low steam power | Cornish boiler + Watt engine, **cast pipes**, steam pump **+ mechanical MP pump**, MP power, fluid tank/sprinkler | iwex, exlib |
+| **Steelmaking Expanded** | `smex` | steel | hot blast furnace **+ cowper stoves**, Bessemer, open hearth, ladle, billet/forming | lpex, iwex, exlib |
 | **High Pressure Expanded** | `hpex` | high steam (planned) | HP steam engines/boilers, large-scale/community machines (large blast furnace, large engines) | smex, … |
 | **Electrical Expanded** | `elex` | electric (planned, last) | full-realism AC/DC grid: dynamo, alternator, electrolysis, arc furnace, HSS | hpex, smex, chemistry |
 
@@ -53,7 +53,7 @@ separate projects):
 | Add-on | Parent | Adds |
 |---|---|---|
 | **Crucible** | iwex | crucible-steel furnace (simple multiblock); cementation is **vanilla** — not implemented |
-| **Domestic** (lights, fuel, colours & climate) | ppex | the coal-gas / coal-chemistry complex: **gasification plant** (multiblock), distillation still, oil derrick, benchtop chemistry → gas lighting, kerosene, aniline dyes, and **climate control** (radiator heat + **ammonia refrigeration** cooling); **produces the sulfur/acids** the copper add-on consumes |
+| **Domestic** (lights, fuel, colours & climate) | lpex | the coal-gas / coal-chemistry complex: **gasification plant** (multiblock), distillation still, oil derrick, benchtop chemistry → gas lighting, kerosene, aniline dyes, and **climate control** (radiator heat + **ammonia refrigeration** cooling); **produces the sulfur/acids** the copper add-on consumes |
 | **Copper** | smex | reverberatory furnace, Pierce-Smith converter, **zinc retorts** (no acid plant — sulfur comes from chemistry) |
 
 > The plan's old "IMEX (Ironmaking Expanded)" is this file's `iwex` (Ironworking Expanded). The old
@@ -65,11 +65,11 @@ separate projects):
 
 ## The low-tech combo
 
-`iwex` + `ppex` (optionally + `smex`) is a **complete, self-contained experience**: cold-iron
+`iwex` + `lpex` (optionally + `smex`) is a **complete, self-contained experience**: cold-iron
 smelting → low steam power → steel, all runnable on **water/MP power** (a vanilla waterwheel drives
 the mechanical blower and pump — no steam setup required to make iron). A player who wants to stay
 low-tech simply never installs `hpex` or `elex`. The pipe tiers make this clean: `iwex` ships its own
-**bolted-pipe** tier so it never depends on `ppex`'s **cast pipes**.
+**bolted-pipe** tier so it never depends on `lpex`'s **cast pipes**.
 
 ---
 
@@ -78,7 +78,7 @@ low-tech simply never installs `hpex` or `elex`. The pipe tiers make this clean:
 Construction is gated by **material**, not recipe unlock:
 
 1. **Cast iron** (iwex) → Stage-II engines & LP machinery.
-2. **Steam** (ppex) → hot blast + Bessemer (smex).
+2. **Steam** (lpex) → hot blast + Bessemer (smex).
 3. **Hadfield steel + rolled pipe** (smex) → HP boilers/engines (hpex).
 4. **HP power + pure copper** (hpex + copper) → electric tier (elex).
 
@@ -91,7 +91,7 @@ No hard circular dependencies. See [materials.md](materials.md) for the material
 
 1. **Iron (iwex).** Coke oven, cold blast furnace (waterwheel-blown), cupola + puddling, sand-cast
    pigs, cast/forged components, boring machine.
-2. **Low steam (ppex).** Cornish boiler + Watt engine, blower/pump/flywheel, cast pipes, fluid
+2. **Low steam (lpex).** Cornish boiler + Watt engine, blower/pump/flywheel, cast pipes, fluid
    tank + sprinklers.
 3. **Steel (smex).** Hot blast + cowpers + Bessemer, ladle, billet/forming shop, open hearth.
 4. **Branches, any order:** crucible / domestic (lights, fuel, colours & climate) / copper.

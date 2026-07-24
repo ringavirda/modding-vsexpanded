@@ -232,6 +232,9 @@ _pkginfo.txt
 *.[Cc]ache
 # but keep track of directories ending in .cache
 !?*.[Cc]ache/
+# ...and .lscache, which the pattern above does NOT match (the dot must precede "cache", and here it
+# precedes "lscache"). These are LanguageService per-project caches; two were tracked for months.
+*.lscache
 
 # Others
 ClientBin/

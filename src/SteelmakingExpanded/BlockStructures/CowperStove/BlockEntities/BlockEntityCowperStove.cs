@@ -1,12 +1,12 @@
 using ExpandedLib;
 using System.Text;
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using PipesAndPowerExpanded;
-using PipesAndPowerExpanded.BlockNetworkPipe;
-using PipesAndPowerExpanded.BlockNetworkPipe.BlockEntities;
+using LowPressureExpanded;
+using LowPressureExpanded.BlockNetworkPipe;
+using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;

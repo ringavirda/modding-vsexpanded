@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -427,6 +428,13 @@ public class BlockNetworkModSystem : ModSystem
         != sourceNode.NetworkType
       || !neighbourConn.HasConnectorAt(world, neighbourPos, facing.Opposite)
     )
+      return false;
+
+    // The connectors line up and the network type agrees - but the two may still not physically
+    // couple (see BlockNetworkNode.AcceptsNeighbour). Checked here, the single chokepoint both the
+    // traversal and the open-end/leak scan go through, so a refused joint cannot be connected from
+    // one direction and open from the other.
+    if (!sourceNode.AcceptsNeighbour(neighbourBlock))
       return false;
 
     // Full network nodes carry extra gating (endpoints, severed connections); fixed structure

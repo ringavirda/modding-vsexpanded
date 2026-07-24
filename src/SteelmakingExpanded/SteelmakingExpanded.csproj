@@ -75,16 +75,16 @@
 
   <!--
     smex builds on the shared framework in exlib (network/structure base types, single
-    BlockNetworkModSystem identity), uses ppex's pipe network + pipe blocks directly, and depends
+    BlockNetworkModSystem identity), uses lpex's pipe network + pipe blocks directly, and depends
     on the foundational iwex mod (the molten-metal network + canals/taps/barrels/pedestals live
-    there). Reference the built dlls; Private=false because the player installs exlib, ppex and
+    there). Reference the built dlls; Private=false because the player installs exlib, lpex and
     iwex as their own mods, so none of those dlls is bundled into smex's output.
   -->
   <ItemGroup>
     <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\PipesAndPowerExpanded\PipesAndPowerExpanded.csproj">
+    <ProjectReference Include="..\LowPressureExpanded\LowPressureExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\IronworkingExpanded\IronworkingExpanded.csproj">

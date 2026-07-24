@@ -370,9 +370,11 @@ public abstract class BlockEntityMultiblockStructure
     if (missingByCode.Count == 0)
       return;
 
-    // ExpandedLib ships inside ppex, so the shared report strings live in ppex's lang.
+    // exlib owns these strings: it is its own mod with its own asset domain, so the shared report does
+    // not borrow a consumer's lang file. Going through the generated ExlibLang accessors means a
+    // renamed or deleted key is a compile error rather than a key echoed at the player at runtime.
     var sb = new StringBuilder();
-    sb.Append(Lang.Get("ppex:structure-missing-header"));
+    sb.Append(Lang.Get(ExlibLang.StructureMissingHeader));
 
     foreach (
       var entry in missingByCode
@@ -383,7 +385,7 @@ public abstract class BlockEntityMultiblockStructure
       sb.Append('\n');
       sb.Append(
         Lang.Get(
-          "ppex:structure-missing-line",
+          ExlibLang.StructureMissingLine,
           entry.Value,
           ResolveBlockName(entry.Key)
         )

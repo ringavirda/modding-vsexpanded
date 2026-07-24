@@ -1,8 +1,8 @@
 # High Pressure Expanded (hpex)
 
-**High Pressure Expanded** is the high-pressure steam tier and the large-scale / community machine set. It depends on **smex** (full chain `exlib → iwex → ppex → smex → hpex`); [elex](elex.md) builds on top of it. See [overview.md](overview.md) for the mod map and build order, [conventions.md](conventions.md) for units and invariants (R1–R7), and [materials.md](materials.md) for the material catalogue and the material-gated power-tier rule.
+**High Pressure Expanded** is the high-pressure steam tier and the large-scale / community machine set. It depends on **smex** (full chain `exlib → iwex → lpex → smex → hpex`); [elex](elex.md) builds on top of it. See [overview.md](overview.md) for the mod map and build order, [conventions.md](conventions.md) for units and invariants (R1–R7), and [materials.md](materials.md) for the material catalogue and the material-gated power-tier rule.
 
-**Why it is its own mod.** Most players stay low-tech, so high pressure is deliberately opt-in — a player who never installs hpex still has a complete `iwex + ppex + smex` experience (see overview.md). The large, server-scale and community machines also live cleaner here than bloating smex.
+**Why it is its own mod.** Most players stay low-tech, so high pressure is deliberately opt-in — a player who never installs hpex still has a complete `iwex + lpex + smex` experience (see overview.md). The large, server-scale and community machines also live cleaner here than bloating smex.
 
 **Material gate.** Every hpex machine is built from **hadfield steel** (see materials.md — HP machinery is gated by construction material, not recipe unlock). Finish the steel work first.
 
@@ -10,7 +10,7 @@
 
 ## What "high pressure" is
 
-There is **no separate HP network**. The pipe network is one live pressure pool (R1); "HP" is simply steam carried **above a config pressure threshold**, and each HP machine gates on an **inlet pressure band** rather than a medium. LP machinery (ppex, cast iron) tops out at the low band; HP machinery (hadfield) engages only in the high band (see conventions.md for the atm ranges — LP ≤ ~4–5 atm, HP ~8–12 atm, tunable). Engine output pressure = inlet × efficiency (see conventions.md).
+There is **no separate HP network**. The pipe network is one live pressure pool (R1); "HP" is simply steam carried **above a config pressure threshold**, and each HP machine gates on an **inlet pressure band** rather than a medium. LP machinery (lpex, cast iron) tops out at the low band; HP machinery (hadfield) engages only in the high band (see conventions.md for the atm ranges — LP ≤ ~4–5 atm, HP ~8–12 atm, tunable). Engine output pressure = inlet × efficiency (see conventions.md).
 
 ---
 
@@ -18,7 +18,7 @@ There is **no separate HP network**. The pipe network is one live pressure pool 
 
 **Lancashire boiler** — RCC **megablock** + **multiblock** (projection-gated). The HP boiler: a larger, hadfield-plated pressure vessel that raises steam into the high band. *(live)*
 **Input → Output:** water + fuel → **HP steam**.
-Key mechanic: same shared-tank boiler FSM as the Cornish boiler (see ppex.md), but chokes at a higher output-pressure cap (~12 atm, hpex-owned, tunable); over-pressure past the cap bursts (R5 gates efficiency, not the vessel — the burst is the consequence of ignoring it).
+Key mechanic: same shared-tank boiler FSM as the Cornish boiler (see lpex.md), but chokes at a higher output-pressure cap (~12 atm, hpex-owned, tunable); over-pressure past the cap bursts (R5 gates efficiency, not the vessel — the burst is the consequence of ignoring it).
 Build: 4× hadfield plate + 6× rolled pipe + heavy cap + injector (~3050 u, hadfield; see build table below).
 
 **Cornish engine** — **megablock** + sub-machine. The efficient deep-lift pumping/blowing engine; wrench-throttled control rods (low / normal / high) raise the whole operating band. *(live)*
@@ -32,6 +32,25 @@ Key mechanic: Corliss valve gear + governor — **steam follows load**, so it is
 **Compound / tandem Corliss** — **upgrade tier** of the Corliss engine (inline second cylinder, heavier flywheel), **not** a separate engine. Drives large MP / a generator. *(planned)*
 **Input → Output:** HP (+ LP) steam → **large MP / generator drive**.
 Key mechanic: tandem-compound cylinders reuse exhaust across stages; ~36 kW baseline, tunable — the drive for the elex arc-furnace and alternator banks.
+
+### Feeding the Lancashire *(planned — design settled 2026-07-24)*
+
+Once boiler intake is gated on internal pressure (see [lpex.md](lpex.md) § Boiler feedwater), the HP boiler cannot be run on anything the LP tier owns — and that is arithmetic, not a rule. Boiling a full hand-primed charge down to the floor (800 → 200 L, ×16 expansion into 1000 L of headspace) reaches **9.6 atm**: past the Cornish engine's 5–7 engage band, but short of the 12 atm choke. Solving for a charge that *would* reach 12 atm gives a **negative** starting water level — no prime of any size gets there. The Lancashire must be fed **while running**, and it cannot be hand-fed while running, because manual fill needs the lid open and an open lid vents.
+
+| Feed | Reaches the Lancashire? |
+|---|---|
+| Manual pump / bucket | prime only — locked out as soon as there is pressure |
+| Mechanical MP pump (cast iron) | no — LP material ceiling (materials.md) |
+| Engine fluid pump | only once the Cornish engine is already turning, i.e. above ~5 atm |
+| **Injector** | **yes — from any steam pressure, with nothing moving** |
+
+So an HP plant is commissioned by hand and thereafter needs a live feed, and the injector is the one device covering the whole band, including below engine engagement. It costs steam rather than an engine slot. The block itself is **lpex's** (brass, universal — its delivered pressure is a function of the steam it is given, so it needs no hadfield variant); hpex only depends on it.
+
+The injector runs on the Lancashire's *own* steam, so there is **no bootstrap chain** — a player never needs a second (Cornish) boiler to commission an HP plant. An auxiliary boiler for raising steam remains a legitimate thing to build, as ships' donkey boilers were, but it is a choice.
+
+> An **hadfield mechanical pump** would also clear the band, and is deliberately *not* planned. That is the lever to pull if the injector should stop being the practical HP feed.
+
+> Naming collision to resolve: the Lancashire's build list above already spends an "injector" as a *component*. Either rename that component or let the placeable block be what the build consumes — decide when the block is authored.
 
 ---
 
@@ -49,7 +68,7 @@ Key mechanic: the large furnace needs **both** → **two engines**, one of each 
 
 **HP steam ore crusher** — **megablock**. The high-band variant of the steam ore crusher; HP jaws crush ores the LP crusher can't. *(planned)*
 **Input → Output:** **chromite & wolframite** → crushed **HSS feedstock** (also crushes hardened-steel scrap for arc recycling).
-Key mechanic: a **hardness gate** — LP jaws (ppex/smex) handle iron/soft ores; only HP jaws (hadfield, hpex) crack chromite/wolframite, gating the HSS alloying elements (see materials.md — HSS). ~1400 u build.
+Key mechanic: a **hardness gate** — LP jaws (lpex/smex) handle iron/soft ores; only HP jaws (hadfield, hpex) crack chromite/wolframite, gating the HSS alloying elements (see materials.md — HSS). ~1400 u build.
 
 **Skip hoist** — **megablock** (inclined). The **one surviving transport machine** (all other transport is cut). *(planned)*
 **Input → Output:** bulk solids at the base → lifted to a tall furnace top.
@@ -89,6 +108,10 @@ Footprint uses the block-size vocabulary (block / megablock / multiblock, see co
 
 ## Config knobs (hpex-owned)
 
-The HP pressure threshold, the boiler choke cap, and the Cornish engine's three-band engage/break pressures are config-tunable. They currently live in the ppex config (the live Lancashire boiler + Cornish engine ship there) and are destined to move with the blocks into hpex.
+**Live since 2026-07-24 (reorg-plan Task 2).** The two live machines now ship in this mod, and their tunables sit in the `hpex` section of `ModConfig/ex_values.json` (`HpexConfig`): the Lancashire's stat table (`LancashireBoilerCapacity` / `…MinBoilWater` / `…MaxBoilWater` / `…SteamPerSecond` / `…MaxOutputPressure` = the ~12 atm choke / `…ExplosionRadius`), the Cornish engine's full three-band table (`CornishEngine{Engage,Break}Pressure{Low,Normal,High}`, `…Steam/Power/Water{Low,Normal,High}`, `…MaxPower`, the overclock volume/pitch), and `RccBrokenDropsRatio` (exlib's salvage lookup keys on the broken block's domain, so hpex needs its own).
+
+Everything the two leaves *inherit* stays in `LpexConfig` — the boiler FSM (heat-up, choke, shutdown, exhaust, water intake, lid vent, blast/drop rules) and the engine FSM (`SteamEngineEfficiency`, `EngineOverPressureSeconds`, the MP rating, pump throughput) — because the bases that read them live in lpex.
+
+> There is still **no explicit "HP pressure threshold" field**: "high pressure" is expressed as each machine's own band (the Lancashire's 12 atm choke vs the Cornish engine's 5–8 atm engage band), not a global constant. Add one only if a machine actually needs to ask "is this line HP?".
 
 > *Footnote:* Historically the Cornish/Corliss/Lancashire family (~1840s–1880s) sits after Bessemer and hadfield in the timeline (see materials.md), matching the material gate.

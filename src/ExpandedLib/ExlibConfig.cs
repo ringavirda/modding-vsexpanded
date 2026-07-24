@@ -10,7 +10,7 @@ namespace ExpandedLib;
 /// <para>
 /// These are the constants the framework's own code reads - chiefly the block-network layer
 /// (<see cref="Blocks.Networks.BlockNetwork"/> subclasses live here now, so their tunables do too).
-/// Content-specific numbers stay in each mod's own config (<c>ppex_values.json</c> etc.). All
+/// Content-specific numbers stay in each mod's own config (<c>lpex_values.json</c> etc.). All
 /// gas/liquid volumes are in <b>litres</b>; molten flow is in canal <b>units</b>.
 /// </para>
 /// </summary>

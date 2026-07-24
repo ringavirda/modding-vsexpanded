@@ -1,86 +1,47 @@
-<strong>What is hot blast?</strong> Preheated air under pressure that allows
-chemical processes and smelting occur inside the furnace. For the purposes of
-this production, blast is air under pressure higher than 2.5 atm and temperature
-higher than 800 °C.
-<br><br>
-<strong>Why hot blast?</strong> A raw blast furnace tops out around 1400 °C -
-not enough to melt iron. To push past that you reclaim the heat it throws away
-through exhaust. 
-<br><br>
-<strong>The gas network.</strong> Everything breathes through <a
-href=\"handbooksearch://piping\">pipes</a> (from Pipes and Power Expanded). In
-this situation we will work with gas in three kinds: ordinary <strong>Air</strong>, hot
-<strong>Exhaust</strong> spilling from the furnace, and forced
-<strong>Blast</strong> (pressurized air). You need to setup a few specific
-machines and structures for this to work. For the air/exhaust you will need:
-<br>
-- The <a href=\"handbooksearch://air blower\">Air Blower</a> - a steam-engine
-sub-machine that pressurizes Air into <strong>Blast</strong>. This is what forces
-gas through the cowper stoves and into the furnace through tuyeres. 
-<br>
-- <a href=\"handbooksearch://piping valve\">Valves</a> open and close a line by
-hand - essential for swapping the cowper stoves around and controlling the flow
-inside pipe networks. 
-<br>
-- <a href=\"handbooksearch://pressure valve\">Pressure valves</a> open
-automatically above their gate pressure, allowing overflow to another side
-(input side is marked with copper textured rim). 
-<br>
-- <a href=\"handbooksearch://pipe outlet\">Outlets</a> connect the network to a
-structure's face and are a part of their multiblock footprint.
-<br>
-Each network tracks its gas type, volume and temperature; an open-ended pipe
-leaks. Think carefully how many machines you need so you won't under or over
-supply! 
-<br><br>
-<strong>The Cowper Stove - a heat regenerator.</strong> Pipe the furnace's
-<strong>Exhaust</strong> into a <a href=\"handbooksearch://cowper stove
-intake\">Cowper Stove</a> and it soaks that heat into its heatsink at the core
-(\"charging\"); burning a coal pile inside charges it faster, with anthracite
-fastest. Beware: burning low grades of coal makes the stove itself produce
-exhaust from its main output! 
-<br>
-Once charged, route plain <strong>Blast</strong> through the same stove and
-it pours out scorching hot. Feed that into the furnace tuyeres and the internal
-temperature will start rising again toward ~1700 °C. 
-<br><br>
-<strong>Blocks required (per stove - you want two):</strong> 
-<br>
-- 48 x Refractory Bricks (any tier) 
-<br>
-- 1 x Cowper Stove Intake (the control block) 
-<br>
-- 4 x Heat Sink 
-<br>
-- 2 x Gas Outlet (any refractory)
-<br>
-- 1 x Gas Passthrough (any refractory)
-<br>
-- 1 x Iron Hatch Door 
-<br>
-<i>One slot below the intake is left open for the coal pile that speeds up the
-heat exchange.</i> 
-<br><br>
-A single stove only does one job at a time, and a charged core runs down as you
-draw blast from it. Run <strong>two stoves as a pair</strong>: while one
-<strong>charges</strong> on exhaust, the other <strong>discharges</strong> hot
-blast for the furnace. When the discharging one cools down below 800 °C, swap
-their roles with valves. Keep exhaust and air on separate paths - if they mix
-inside a stove it cannot heat up. 
-<br><br>
-<strong>The Smoke Stack.</strong> A blast furnace produces more exhaust than the
-stoves can swallow. The <a href=\"handbooksearch://smoke stack intake\">Smoke
-Stack</a> vents the surplus to the sky - a backed-up exhaust line chokes and
-extinguishes the furnace, so treat it as the safety valve of the whole system. 
-<br>
-<strong>Blocks required:</strong> 
-<br>
-- 1 x Smoke Stack Intake (the control block) 
-<br>
-- 24 x Refractory Bricks (any tier)
-<br>
-- 36 x Any Bricks
-<br><br>
-<strong>Don't forget about the Stoves!</strong> All of this doesn't operate on
-it's own and you need to keep an eye on the stoves' temperature. Otherwise your
-furnace may stop smelting iron or even extinguish! 
+<strong>Hot blast</strong> is preheated, pressurised air, and it is what lets
+the furnace climb hot enough to actually melt iron. A bare blast furnace tops
+out around 1400 °C, short of iron's melting point; to push past that you
+reclaim the heat the furnace throws away in its exhaust and feed it back in
+through the air. For this to work the air you supply must be both pressurised
+above about 2.5 atm and heated above roughly 800 °C. <br><br> Everything
+breathes through <a href=\"handbooksearch://piping\">pipes</a> from Low
+Pressure Expanded, and here a network carries one of two gases: ordinary
+<strong>air</strong>, and the hot <strong>exhaust</strong> that spills from
+the furnace. A handful of machines move it around. The <a
+href=\"handbooksearch://air blower\">Air Blower</a> is a steam-engine
+sub-machine that pressurises air and forces it through the cowper stoves and
+into the furnace tuyeres. <a href=\"handbooksearch://piping valve\">Valves</a>
+open and close a line by hand, which you will need constantly for swapping the
+cowper stoves over and steering flow through the network, while <a
+href=\"handbooksearch://pressure valve\">pressure valves</a> open by
+themselves above their gate pressure to spill overflow to another side (their
+input side wears a copper-textured rim). <a href=\"handbooksearch://pipe
+outlet\">Outlets</a> connect a network to a structure's face and form part of
+its multiblock footprint. Each network tracks its gas type, volume and
+temperature, and any open-ended pipe leaks, so plan how many machines you run
+carefully to avoid under- or over-supplying. <br><br> The <a
+href=\"handbooksearch://cowper stove intake\">Cowper Stove</a> is a heat
+regenerator, and it is what makes the air hot. Pipe the furnace's exhaust into
+a stove and it soaks that heat into the heatsink at its core - \"charging\" -
+which you can speed up by burning a coal pile inside, fastest of all with
+anthracite; just beware that burning low grades of coal makes the stove itself
+give off exhaust from its main output. Once charged, route plain pressurised
+air through the same stove and it pours out scorching hot, and fed into the
+tuyeres it drives the furnace's internal temperature back up toward about 1700
+°C. Each stove needs 48 refractory bricks of any tier, a cowper stove intake
+as its control block, four heat sinks, two refractory gas outlets, one
+refractory gas passthrough and an iron hatch door, with one slot below the
+intake left open for the coal pile that speeds the exchange. <br><br> A single
+stove can only do one job at a time, and a charged core runs down as you draw
+heat from it, so you run <strong>two stoves as a pair</strong>: while one
+charges on exhaust, the other discharges hot air to the furnace, and when the
+discharging one drops below 800 °C you swap their roles with valves. Keep
+exhaust and air on separate paths, because if they mix inside a stove it
+cannot heat up. <br><br> A blast furnace also makes more exhaust than the
+stoves can swallow, and a backed-up exhaust line will choke and extinguish it,
+so the <a href=\"handbooksearch://smoke stack intake\">Smoke Stack</a> vents
+the surplus to the sky and acts as the safety valve of the whole system. It
+needs a smoke stack intake as its control block, 24 refractory bricks of any
+tier and 36 of any ordinary brick. Above all, keep an eye on the stoves'
+temperature - let them cool and the furnace will stop smelting or go out
+entirely.

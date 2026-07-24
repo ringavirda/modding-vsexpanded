@@ -21,7 +21,7 @@
     <!-- iwex (and ONLY iwex) ships the game-domain lang override that renames vanilla iron ->
          "wrought iron" and steel -> "shear steel" in display names (materials.md: wrought iron =
          game:iron, shear steel = game:steel). The opt-in glob in ../Directory.Build.props packs
-         ../../assets/game/. ppex/smex must NOT set this, or the override would ship duplicated. -->
+         ../../assets/game/. lpex/smex must NOT set this, or the override would ship duplicated. -->
     <ShipGameLangOverride>true</ShipGameLangOverride>
   </PropertyGroup>
 
@@ -79,16 +79,13 @@
   </Target>
 
   <!--
-    iwex builds on the shared framework in exlib (structure fillers, RCC, registration, single
-    BlockNetworkModSystem identity) and uses ppex's mechanical-power / pipe content. Reference both
-    built dlls; Private=false because the player installs exlib and ppex as their own mods, so
-    neither dll is bundled into iwex's output.
+    iwex builds only on the shared framework in exlib (structure fillers, RCC, registration, single
+    BlockNetworkModSystem identity). It owns the base pipe block + the "pipe"/"molten" networks, so it
+    no longer references lpex - the dependency now runs the other way (lpex -> iwex). Private=false
+    because the player installs exlib as its own mod, so its dll is not bundled into iwex's output.
   -->
   <ItemGroup>
     <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\PipesAndPowerExpanded\PipesAndPowerExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>
     <!-- Attribute/config source generators (compile-time only, ship nothing). -->

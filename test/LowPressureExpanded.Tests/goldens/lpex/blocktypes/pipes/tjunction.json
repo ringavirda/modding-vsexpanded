@@ -1,0 +1,160 @@
+{
+  "code": "pipe",
+  "class": "iwex.BlockPipe",
+  "entityClass": "iwex.BlockEntityPipe",
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "maxstacksize": 8,
+  "creativeinventory": {
+    "general": [
+      "*-tjunction-uns"
+    ],
+    "lpex": [
+      "*-tjunction-uns"
+    ]
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": [
+        "pipe-straight-*",
+        "pipe-bend-*",
+        "pipe-tjunction-*",
+        "pipe-xjunction-*"
+      ]
+    }
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "renderpass": "OpaqueNoCull",
+  "faceCullMode": "NeverCull",
+  "lightAbsorption": 0,
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "tjunction"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "uns",
+        "uwe",
+        "dns",
+        "dwe",
+        "nes",
+        "esw",
+        "swn",
+        "wne",
+        "dnu",
+        "deu",
+        "dsu",
+        "dwu"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-tjunction-wne": {
+      "base": "lpex:pipes/tjunction"
+    },
+    "*-tjunction-nes": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 270
+    },
+    "*-tjunction-esw": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 180
+    },
+    "*-tjunction-swn": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 90
+    },
+    "*-tjunction-uwe": {
+      "base": "lpex:pipes/tjunction",
+      "rotateX": 90
+    },
+    "*-tjunction-uns": {
+      "base": "lpex:pipes/tjunction",
+      "rotateX": 90,
+      "rotateZ": 90
+    },
+    "*-tjunction-dwe": {
+      "base": "lpex:pipes/tjunction",
+      "rotateX": 270
+    },
+    "*-tjunction-dns": {
+      "base": "lpex:pipes/tjunction",
+      "rotateX": 270,
+      "rotateZ": 90
+    },
+    "*-tjunction-dnu": {
+      "base": "lpex:pipes/tjunction",
+      "rotateZ": 90
+    },
+    "*-tjunction-deu": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 270,
+      "rotateZ": 90
+    },
+    "*-tjunction-dsu": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 180,
+      "rotateZ": 90
+    },
+    "*-tjunction-dwu": {
+      "base": "lpex:pipes/tjunction",
+      "rotateY": 90,
+      "rotateZ": 90
+    }
+  },
+  "collisionboxes": [
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 1.0,
+      "y2": 0.6875,
+      "z2": 0.6875
+    },
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 0.3125
+    }
+  ],
+  "selectionboxes": [
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 1.0,
+      "y2": 0.6875,
+      "z2": 0.6875
+    },
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 0.3125
+    }
+  ]
+}

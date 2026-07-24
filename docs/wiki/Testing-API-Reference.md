@@ -149,7 +149,7 @@ dictionary (absent keys return `null` instead of throwing). Returns the block fo
 is how you build blocks without the asset-load pipeline.
 
 ```csharp
-var pipe = TestBlocks.Configure(new BlockPipe(), "ppex:pipe-straight-iron-ns", id: 1,
+var pipe = TestBlocks.Configure(new BlockPipe(), "lpex:pipe-straight-iron-ns", id: 1,
     ("material", "iron"), ("type", "straight"), ("orientation", "ns"));
 ```
 

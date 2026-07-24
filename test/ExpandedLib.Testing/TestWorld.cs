@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -401,6 +402,21 @@ public sealed class TestWorld
     // distinct fluid layer place a block whose LiquidCode is set.
     a.GetBlock(Arg.Any<BlockPos>(), Arg.Any<int>())
       .Returns(ci => GetBlock(ci.Arg<BlockPos>()));
+    // Coordinate overloads, including the unchecked GetBlockRaw that vanilla's multiblock code reads
+    // through (MultiblockStructure completeness, the build-outline highlight). Left unwired these
+    // return null and NRE inside engine code, which reads as "the structure never completes".
+    // Obsolete in favour of the BlockPos overload, but engine code still calls it, so the fake must
+    // answer it - the deprecation is the engine's problem, not ours.
+#pragma warning disable CS0618
+    a.GetBlock(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>())
+      .Returns(ci => GetBlock(
+        new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
+      ));
+#pragma warning restore CS0618
+    a.GetBlockRaw(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>())
+      .Returns(ci => GetBlock(
+        new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
+      ));
     a.GetBlockEntity(Arg.Any<BlockPos>())
       .Returns(ci => GetBlockEntity(ci.Arg<BlockPos>()));
 

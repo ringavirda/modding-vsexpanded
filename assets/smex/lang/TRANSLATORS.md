@@ -27,7 +27,7 @@ literal `?`. Command strings like `.exmod measure` are written with `<strong>…
 The simulation always runs in **metric**. Each player chooses how units are *displayed* with
 `.exmod measure metric|imperial`; this changes the display only, never the simulation.
 
-The unit symbols live in the `unit-*` keys (in the **ppex** domain), and you may localize them:
+The unit symbols live in the `unit-*` keys (in the **lpex** domain), and you may localize them:
 
 | key                         | en   | what it is                |
 |-----------------------------|------|---------------------------|
@@ -57,8 +57,8 @@ The unit symbols live in the `unit-*` keys (in the **ppex** domain), and you may
 
   - Ranges and lists are supported and must keep their separators, with the unit once at the end,
     exactly like English: `2-4 атм`, `160-220 °C`, `8 / 16 / 32 л/с`.
-  - **Steelmaking Expanded handbook prose uses ppex's `unit-*` symbols too** (the conversion is
-    shared). Keep the metric symbols in `smex` articles identical to your ppex `unit-*` values
+  - **Steelmaking Expanded handbook prose uses lpex's `unit-*` symbols too** (the conversion is
+    shared). Keep the metric symbols in `smex` articles identical to your lpex `unit-*` values
     (`°C`, `atm`, `L`, `L/s` => your translations of them).
 
 ## handbooksearch links

@@ -16,7 +16,7 @@ public class RecipeCostEntry
   public string Type { get; set; } = "grid";
 
   /// <summary>Wildcard code matched against the grid output / RCC block code (e.g.
-  /// <c>"ppex:enginewatt-*"</c>). Kept separate from the catalogue key so the same block can have
+  /// <c>"lpex:enginewatt-*"</c>). Kept separate from the catalogue key so the same block can have
   /// both a grid entry and an rcc entry under distinct keys.</summary>
   public string Match { get; set; } = "";
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using PipesAndPowerExpanded.BlockNetworkPipe.Blocks;
+using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
 
 namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;

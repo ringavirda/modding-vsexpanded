@@ -1,16 +1,15 @@
 using System;
 using System.Text;
-using ExpandedLib.Blocks.Animation;
+using ExpandedLib.Renderers;
 using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Materials;
 using ExpandedLib.Process;
 using ExpandedLib.Registries.Entities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
-using PipesAndPowerExpanded.BlockNetworkPipe;
-using PipesAndPowerExpanded.Helpers;
+using LowPressureExpanded.BlockNetworkPipe;
 using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
@@ -1054,8 +1053,8 @@ public class BlockEntityConverterControl : BlockEntityMultiblockStructure
   // buildable in worlds where looted rusty gears can't be obtained.
   private static bool IsSpawnGear(ItemStack stack) =>
     stack.Collectible?.Code?.ToString()
-      is "ppex:largegear-iron"
-        or "ppex:largegear-steel";
+      is "lpex:largegear-iron"
+        or "lpex:largegear-steel";
 
   private static bool IsSpawnRod(ItemStack stack) =>
     stack.Collectible?.Code?.ToString() is "game:rod-iron" or "game:rod-steel";

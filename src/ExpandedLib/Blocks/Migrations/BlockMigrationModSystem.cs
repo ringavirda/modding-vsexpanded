@@ -408,7 +408,7 @@ public class BlockMigrationModSystem : ChunkColumnSweeperModSystem
   }
 
   // Scan every loaded assembly for parameterless implementations of T: this system lives in exlib,
-  // but ppex/smex declare their own migrations and removals.
+  // but lpex/smex declare their own migrations and removals.
   private static IEnumerable<T> Discover<T>()
     where T : class
   {

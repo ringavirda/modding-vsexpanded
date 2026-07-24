@@ -66,7 +66,7 @@ public partial class BlockOreMixer
                 .AddElements("Root/UpperCasing")
             )
             .Stage(s =>
-              s.Require("ppex:gear-iron", 2, "iwex:rcc-ingredient-rotorgears")
+              s.Require("lpex:gear-iron", 2, "iwex:rcc-ingredient-rotorgears")
                 .Require("game:ingot-iron", 2, "iwex:rcc-ingredient-rotorshaft")
                 .AddElements("Root/Rotor")
             )

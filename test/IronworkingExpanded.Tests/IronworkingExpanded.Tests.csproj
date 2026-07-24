@@ -13,9 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Private=true (unlike the other test projects, which leave it false). The vstest discoverer
+         probes a test assembly's direct references on disk BEFORE the harness's assembly resolver can
+         run; when VintagestoryAPI is not in the output folder it can silently SKIP the whole assembly
+         ("could not find dependent assembly 'VintagestoryAPI, Version=…'") and report zero tests
+         rather than failing - which is how this project quietly contributed nothing on the legacy
+         lane. Copying the dll in is dev-only output (never shipped) and makes discovery deterministic.
+         TODO: the same fragility likely affects the other suites; roll this out once understood. -->
     <Reference Include="VintagestoryAPI">
       <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
     </Reference>
     <Reference Include="VSSurvivalMod">
       <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
@@ -40,10 +47,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Copy exlib.dll + ppex.dll + iwex.dll into the test bin so the runner loads them headlessly;
-         their VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
+    <!-- Copy exlib.dll + iwex.dll into the test bin so the runner loads them headlessly; their VS
+         deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. iwex is the
+         lowest content mod, so this project references NO other mod - the lpex reference it used to
+         carry was a leftover from before the pipe move inverted the chain, and nothing here used it. -->
     <ProjectReference Include="..\..\src\ExpandedLib\ExpandedLib.csproj" />
-    <ProjectReference Include="..\..\src\PipesAndPowerExpanded\PipesAndPowerExpanded.csproj" />
     <ProjectReference Include="..\..\src\IronworkingExpanded\IronworkingExpanded.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
   </ItemGroup>

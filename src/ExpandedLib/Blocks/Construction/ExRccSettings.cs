@@ -20,7 +20,7 @@ public static class ExRccSettings
   /// <summary>
   /// Registers the salvage fraction (0..1) for broken RCC mega-blocks of <paramref name="domain"/> -
   /// the share of the consumed construction materials scattered on break. Mods call this at startup
-  /// pointing at their config accessor (e.g. <c>() =&gt; PpexValues.RccBrokenDropsRatio</c>).
+  /// pointing at their config accessor (e.g. <c>() =&gt; LpexValues.RccBrokenDropsRatio</c>).
   /// </summary>
   public static void RegisterBrokenDropsRatio(
     string domain,

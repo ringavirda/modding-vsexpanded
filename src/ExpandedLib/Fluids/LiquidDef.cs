@@ -30,7 +30,7 @@ public class LiquidDef
   public float? CondenseBelowC { get; set; }
 
   /// <summary>Volume multiplier applied on condensation; null = the consumer's own default
-  /// (ppex's steam-expansion factor). Kept out of exlib so the library carries no ppex dependency.</summary>
+  /// (lpex's steam-expansion factor). Kept out of exlib so the library carries no lpex dependency.</summary>
   public float? CondenseVolumeFactor { get; set; }
 
   /// <summary>Gas-phase target a still/boiler boils this liquid into (Water → "Steam") - the mirror
@@ -44,7 +44,7 @@ public class LiquidDef
 
   /// <summary>Volume multiplier applied on vaporisation; null = the consumer's own default (a still's
   /// own expansion factor). Mirror of <see cref="CondenseVolumeFactor"/>; kept out of exlib so the
-  /// library carries no ppex/add-on dependency.</summary>
+  /// library carries no lpex/add-on dependency.</summary>
   public float? VaporiseVolumeFactor { get; set; }
 }
 

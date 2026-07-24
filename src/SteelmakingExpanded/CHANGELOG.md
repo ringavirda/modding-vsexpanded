@@ -68,7 +68,7 @@ see the git history.
 ## [0.9.0] - 2026-06-13
 
 The **Steam Mechanics** release - steelmaking integrated with the new steam-power
-system (split out into Pipes and Power Expanded; see its 0.5.0). Steel can now be
+system (split out into Low Pressure Expanded; see its 0.5.0). Steel can now be
 produced via the steam chain.
 
 ### Added

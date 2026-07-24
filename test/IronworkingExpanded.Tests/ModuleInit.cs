@@ -5,7 +5,7 @@ namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// Registers the Vintage Story assembly resolver before any test type (which references the game
-/// assemblies, plus exlib/ppex/iwex) is touched by the runner's reflection-based discovery.
+/// assemblies, plus exlib/lpex/iwex) is touched by the runner's reflection-based discovery.
 /// </summary>
 internal static class ModuleInit
 {

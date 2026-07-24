@@ -161,13 +161,13 @@ public class ExRecipeCostsTests
     world.World.GridRecipes.Returns(
       new List<GridRecipe>
       {
-        GridRecipe("ppex:enginewatt-north", Ing("game:rod-iron", 8)),
+        GridRecipe("lpex:enginewatt-north", Ing("game:rod-iron", 8)),
       }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
     {
-      ["watt-grid"] = new() { Type = "grid", Match = "ppex:enginewatt-*" },
+      ["watt-grid"] = new() { Type = "grid", Match = "lpex:enginewatt-*" },
     };
 
     Assert.True(ExRecipeCosts.EnsureNormalExtracted(world.Api, cat));
@@ -187,12 +187,12 @@ public class ExRecipeCostsTests
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
     world.World.Blocks.Returns(
-      new List<Block> { RccBlock("ppex:enginewatt-north", props) }
+      new List<Block> { RccBlock("lpex:enginewatt-north", props) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
     {
-      ["watt-rcc"] = new() { Type = "rcc", Match = "ppex:enginewatt-*" },
+      ["watt-rcc"] = new() { Type = "rcc", Match = "lpex:enginewatt-*" },
     };
 
     Assert.True(ExRecipeCosts.EnsureNormalExtracted(world.Api, cat));
@@ -211,7 +211,7 @@ public class ExRecipeCostsTests
       ["watt-rcc"] = new()
       {
         Type = "rcc",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new()
         {
           ["cheap"] = new()
@@ -220,11 +220,11 @@ public class ExRecipeCostsTests
           },
         },
       },
-      ["watt-grid"] = new() { Type = "grid", Match = "ppex:enginewatt-*" },
+      ["watt-grid"] = new() { Type = "grid", Match = "lpex:enginewatt-*" },
       ["pipe-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:pipe-straight-*",
+        Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = new() { Quantity = 4 } },
       },
     };
@@ -237,7 +237,7 @@ public class ExRecipeCostsTests
     Assert.True(ExRecipeCosts.Reconcile(live, DefaultCat()));
 
     Assert.True(live.ContainsKey("watt-rcc"));
-    Assert.Equal("ppex:enginewatt-*", live["watt-rcc"].Match);
+    Assert.Equal("lpex:enginewatt-*", live["watt-rcc"].Match);
     Assert.Equal(2, live["watt-rcc"].Profiles["cheap"].Stages!["1"]["plate"]);
   }
 
@@ -258,7 +258,7 @@ public class ExRecipeCostsTests
     Assert.True(ExRecipeCosts.Reconcile(live, DefaultCat()));
 
     Assert.Equal("rcc", live["watt-rcc"].Type); // restored
-    Assert.Equal("ppex:enginewatt-*", live["watt-rcc"].Match); // restored
+    Assert.Equal("lpex:enginewatt-*", live["watt-rcc"].Match); // restored
     Assert.Equal(2, live["watt-rcc"].Profiles["cheap"].Stages!["1"]["plate"]);
   }
 
@@ -271,7 +271,7 @@ public class ExRecipeCostsTests
       ["pipe-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:pipe-straight-*",
+        Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = Grid(("a", 1)) },
       },
     };
@@ -290,7 +290,7 @@ public class ExRecipeCostsTests
       ["watt-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new()
         {
           ["cheap"] = new()
@@ -317,7 +317,7 @@ public class ExRecipeCostsTests
       ["watt-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("a", 3)) }, // intentional edit
       },
       ["my-custom"] = new()
@@ -346,7 +346,7 @@ public class ExRecipeCostsTests
     var plate = Ing("game:metalplate-iron", 4);
     var rod = Ing("game:rod-iron", 8);
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("ppex:enginewatt-north", plate, rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", plate, rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -354,7 +354,7 @@ public class ExRecipeCostsTests
       ["watt-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new()
         {
           ["cheap"] = Grid(("game:metalplate-iron", 2), ("game:rod-iron", 4)),
@@ -372,7 +372,7 @@ public class ExRecipeCostsTests
   public void Applying_a_grid_profile_can_pin_a_doubled_output()
   {
     var world = new TestWorld();
-    var recipe = GridRecipe("ppex:pipe-straight-ns-iron");
+    var recipe = GridRecipe("lpex:pipe-straight-ns-iron");
     recipe.Output!.Quantity = 2; // authored output
     recipe.Output.ResolvedItemStack = new ItemStack { StackSize = 2 };
     world.World.GridRecipes.Returns(new List<GridRecipe> { recipe });
@@ -382,7 +382,7 @@ public class ExRecipeCostsTests
       ["pipe-straight-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:pipe-straight-*",
+        Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = new() { Quantity = 4 } }, // doubled
       },
     };
@@ -406,7 +406,7 @@ public class ExRecipeCostsTests
     var rod = Ing("game:rod-iron", 8);
     rod.ResolvedItemStack = new ItemStack { StackSize = 8 };
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("ppex:enginewatt-north", rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -414,7 +414,7 @@ public class ExRecipeCostsTests
       ["watt-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("game:rod-iron", 4)) },
       },
     };
@@ -434,7 +434,7 @@ public class ExRecipeCostsTests
     {
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
-    var block = RccBlock("ppex:enginewatt-north", props);
+    var block = RccBlock("lpex:enginewatt-north", props);
     world.World.Blocks.Returns(new List<Block> { block });
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -442,7 +442,7 @@ public class ExRecipeCostsTests
       ["watt-rcc"] = new()
       {
         Type = "rcc",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new()
         {
           ["cheap"] = new()
@@ -472,7 +472,7 @@ public class ExRecipeCostsTests
     var world = new TestWorld();
     var rod = Ing("game:rod-iron", 8);
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("ppex:enginewatt-north", rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -480,7 +480,7 @@ public class ExRecipeCostsTests
       ["watt-grid"] = new()
       {
         Type = "grid",
-        Match = "ppex:enginewatt-*",
+        Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("game:rod-iron", 4)) },
       },
     };

@@ -2252,7 +2252,7 @@
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-90" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="Separate SMEX mod (Steelmaking Expanded)&lt;br&gt;Stage III - Mass steel production (mid 19th century)" vertex="1">
           <mxGeometry height="30" width="320" x="20" y="1280" as="geometry" />
         </mxCell>
-        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-92" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="Part of PPEX mod (Pipes and Power Expanded)&lt;br&gt;Stage II - Low steam power (early-mid 19th century)" vertex="1">
+        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-92" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="Part of LPEX mod (Low Pressure Expanded)&lt;br&gt;Stage II - Low steam power (early-mid 19th century)" vertex="1">
           <mxGeometry height="30" width="320" x="20" y="760" as="geometry" />
         </mxCell>
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-103" edge="1" parent="1" source="Q5v_Ab0HL9TnUDys6BRt-93" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="Q5v_Ab0HL9TnUDys6BRt-96">
@@ -2440,7 +2440,7 @@
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-141" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Mixes&lt;b&gt; low coke blast mix&lt;/b&gt;" vertex="1">
           <mxGeometry height="30" width="90" x="680" y="1280" as="geometry" />
         </mxCell>
-        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-142" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="PPEX addition mod&lt;div&gt;Stage IIa - Advanced heating&lt;/div&gt;" vertex="1">
+        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-142" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="LPEX addition mod&lt;div&gt;Stage IIa - Advanced heating&lt;/div&gt;" vertex="1">
           <mxGeometry height="30" width="180" x="1120" y="770" as="geometry" />
         </mxCell>
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-148" edge="1" parent="1" source="Q5v_Ab0HL9TnUDys6BRt-144" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="Q5v_Ab0HL9TnUDys6BRt-147">
@@ -2591,7 +2591,7 @@
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-201" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Molten hadfield steel" vertex="1">
           <mxGeometry height="40" width="120" x="875" y="1700" as="geometry" />
         </mxCell>
-        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-202" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="Part of PPEX mod (Pipes and Power Expanded)&lt;br&gt;Stage IV - High steam power (mid-late 19th century)" vertex="1">
+        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-202" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="Part of LPEX mod (Low Pressure Expanded)&lt;br&gt;Stage IV - High steam power (mid-late 19th century)" vertex="1">
           <mxGeometry height="30" width="320" x="40" y="2000" as="geometry" />
         </mxCell>
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-214" edge="1" parent="1" source="Q5v_Ab0HL9TnUDys6BRt-204" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="Q5v_Ab0HL9TnUDys6BRt-207">
@@ -2826,7 +2826,7 @@
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-268" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
           <mxGeometry height="760" width="840" x="840" y="1960" as="geometry" />
         </mxCell>
-        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-269" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="PPEX and SMEX addition mod&amp;nbsp;&lt;br&gt;Stage V - Electric power (late 19th century)" vertex="1">
+        <mxCell id="Q5v_Ab0HL9TnUDys6BRt-269" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontStyle=1" value="LPEX and SMEX addition mod&amp;nbsp;&lt;br&gt;Stage V - Electric power (late 19th century)" vertex="1">
           <mxGeometry height="30" width="320" x="855" y="1980" as="geometry" />
         </mxCell>
         <mxCell id="Q5v_Ab0HL9TnUDys6BRt-270" parent="1" style="whiteSpace=wrap;html=1;" value="Tandem corliss horizontal engine" vertex="1">

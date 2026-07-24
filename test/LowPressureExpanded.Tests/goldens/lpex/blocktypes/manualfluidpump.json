@@ -1,0 +1,63 @@
+{
+  "code": "manualfluidpump",
+  "class": "lpex.BlockManualFluidPump",
+  "entityClass": "lpex.BlockEntityManualFluidPump",
+  "behaviors": [
+    {
+      "name": "HorizontalOrientable"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "variantgroups": [
+    {
+      "code": "side",
+      "loadFromProperties": "abstract/horizontalorientation"
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-north"
+    ],
+    "lpex": [
+      "*-north"
+    ]
+  },
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    ]
+  },
+  "shapebytype": {
+    "*-north": {
+      "base": "lpex:manualfluidpump",
+      "rotateY": 0
+    },
+    "*-east": {
+      "base": "lpex:manualfluidpump",
+      "rotateY": 270
+    },
+    "*-south": {
+      "base": "lpex:manualfluidpump",
+      "rotateY": 180
+    },
+    "*-west": {
+      "base": "lpex:manualfluidpump",
+      "rotateY": 90
+    }
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

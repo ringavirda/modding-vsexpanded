@@ -28,7 +28,7 @@ namespace ExpandedLib.Blocks.Healing;
 /// <para>
 /// Scope is restricted to types carrying <see cref="BlockEntityRegisterAttribute"/> (the same
 /// attribute every BE in this mod family is registered through), so vanilla and third-party block
-/// entities are never touched. This lives in exlib and so covers every dependent mod (smex, ppex)
+/// entities are never touched. This lives in exlib and so covers every dependent mod (smex, lpex)
 /// automatically. The chunk-column walk itself lives in
 /// <see cref="ChunkColumnSweeperModSystem"/>, shared with the block migrator.
 /// </para>
@@ -97,7 +97,7 @@ public class BlockEntityHealModSystem : ChunkColumnSweeperModSystem
 
   /// <summary>
   /// Scans every loaded assembly for concrete <see cref="BlockEntity"/> types carrying
-  /// <see cref="BlockEntityRegisterAttribute"/>. This system lives in exlib, but smex/ppex declare
+  /// <see cref="BlockEntityRegisterAttribute"/>. This system lives in exlib, but smex/lpex declare
   /// their own block entities, so we look across all assemblies (not just our own).
   /// </summary>
   private static HashSet<Type> CollectRegisteredBlockEntityTypes()

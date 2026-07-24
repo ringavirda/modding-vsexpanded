@@ -67,7 +67,7 @@ public class ExItemDefTests
   public void Texture_and_texture_all_accumulate_under_textures()
   {
     JObject json = ExItemDef
-      .Create("ppex", "largegear")
+      .Create("lpex", "largegear")
       .Texture("rusty-iron", "game:block/metal/ingot/{metal}")
       .Texture("gold", "game:block/metal/ingot/{metal}")
       .ToJson();
@@ -82,7 +82,7 @@ public class ExItemDefTests
   [Fact]
   public void VariantGroup_and_VariantStates_round_trip()
   {
-    ExItemDef def = ExItemDef.Create("ppex", "gear").VariantGroup("metal", "iron", "steel");
+    ExItemDef def = ExItemDef.Create("lpex", "gear").VariantGroup("metal", "iron", "steel");
     Assert.Equal(["iron", "steel"], def.VariantStates("metal"));
 
     var groups = (JArray)def.ToJson()["variantgroups"]!;

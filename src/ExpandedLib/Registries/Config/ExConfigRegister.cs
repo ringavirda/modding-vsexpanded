@@ -47,7 +47,7 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   public IReadOnlyList<string> LegacyFileNames { get; init; } = [];
 
   /// <param name="fileName">Config file name written under the game's <c>ModConfig</c> folder
-  /// (e.g. <c>"ppex.json"</c>).</param>
+  /// (e.g. <c>"lpex.json"</c>).</param>
   /// <param name="modId">The owning mod id - used to resolve the running version and to tag log lines.</param>
   /// <param name="migrations">Version-driven default resets (see <see cref="ExConfigMigration"/>).</param>
   public ExConfigRegister(

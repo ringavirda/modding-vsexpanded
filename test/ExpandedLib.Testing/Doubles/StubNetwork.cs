@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 
 namespace ExpandedLib.Testing.Doubles;

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
+using IronworkingExpanded.BlockStructures.Furnaces;
 using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
@@ -51,7 +52,7 @@ public partial class BlockBlastFurnaceCoreHot
             .Legend('C', "smex:blastfurnacecore-*")
             .Legend('T', "iwex:moltenmetaltap*")
             .Legend('Y', "iwex:tuyere*")
-            .Legend('P', "ppex:pipe-outlet*")
+            .Legend('P', "lpex:pipe-outlet*")
             .Legend('R', "smex:hopperreinforced*")
             .Legend('B', "smex:hopperbell*")
             .Legend('c', "@(air|coalpile)")

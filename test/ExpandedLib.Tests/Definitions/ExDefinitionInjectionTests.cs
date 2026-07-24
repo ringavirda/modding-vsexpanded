@@ -169,7 +169,7 @@ public class ExDefinitionInjectionTests
   {
     ExDefinitions.RegisterBlock(ExBlockDef.Create("iwex", "solidifiediron"));
     ExDefinitions.RegisterItem(ExItemDef.Create("iwex", "slag"));
-    ExDefinitions.RegisterRecipe(ExRecipeDef.Create("ppex", "grid", "pipes"));
+    ExDefinitions.RegisterRecipe(ExRecipeDef.Create("lpex", "grid", "pipes"));
 
     ExDefinitions.Clear();
 
@@ -183,7 +183,7 @@ public class ExDefinitionInjectionTests
   [Fact]
   public void Registering_a_recipe_makes_it_enumerable()
   {
-    var def = ExRecipeDef.Create("ppex", "grid", "pipes");
+    var def = ExRecipeDef.Create("lpex", "grid", "pipes");
     ExDefinitions.RegisterRecipe(def);
     Assert.Single(ExDefinitions.Recipes);
     Assert.Same(def, ExDefinitions.Recipes.Single());
@@ -193,8 +193,8 @@ public class ExDefinitionInjectionTests
   public void BuildRecipeAssets_emits_one_asset_per_file_at_its_recipes_location_with_its_json()
   {
     var def = ExRecipeDef
-      .Create("ppex", "grid", "pipes")
-      .Grid(r => r.Name("Straight").Pattern("P").Size(1, 1).OutputBlock("ppex:pipe-straight-ns-{metal}"));
+      .Create("lpex", "grid", "pipes")
+      .Grid(r => r.Name("Straight").Pattern("P").Size(1, 1).OutputBlock("lpex:pipe-straight-ns-{metal}"));
     ExDefinitions.RegisterRecipe(def);
 
     var built = ExDefinitions.BuildRecipeAssets(new ExDefinitionOrigin()).ToList();
@@ -202,7 +202,7 @@ public class ExDefinitionInjectionTests
     Assert.Single(built);
     var (location, asset) = built[0];
     Assert.Equal(def.Location, location);
-    Assert.Equal("ppex", location.Domain);
+    Assert.Equal("lpex", location.Domain);
     Assert.Equal("recipes/grid/pipes.json", location.Path);
     Assert.Equal("Vintagestory.Common.Asset", asset.GetType().FullName);
     // A recipe file is a JSON ARRAY; the loader reads it via ToObject<JArray>. It must round-trip exactly.
