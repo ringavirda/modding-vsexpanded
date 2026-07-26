@@ -74,4 +74,33 @@ public class ExlibConfig : IExVersionedConfig
   /// <c>MetalDef</c>. Harmless when the item is absent - the chisel/break drop guards a null resolve.</summary>
   public string MetalRecoveryFallback { get; set; } = "iwex:slag";
   #endregion
+
+  #region Mechanical-energy network
+  // The cast-iron energy MP network (docs/design/mp-energy-network.md) models each run as one spinning shaft:
+  // torque on a lumped inertia, dω/dt = (τ_drive − τ_load − τ_fric)/I, with E = 1/2 I ω^2 the stored energy.
+  // These are the framework torque/speed constants the MpEnergyNetwork reads; per-flywheel inertia (its
+  // capacity and spin-up) is content and lives in each mod's config (iwex's FlywheelInertia*). SI units.
+
+  /// <summary>Windage/bearing friction coefficient <c>b</c> (N·m per rad/s) - the speed-proportional drain, so
+  /// an unpowered run winds down. Sets how long a charged flywheel coasts before it needs re-driving.</summary>
+  public float MpFrictionCoeff { get; set; } = 0.05f;
+
+  /// <summary>Standing-resistance torque floor <c>τ_idle</c> (N·m) that any drive must beat just to keep the
+  /// shaft turning. This (with the load) is the threshold below which a drive never spins the flywheel up -
+  /// the "not a battery" gate: no torque over the floor, no accumulation.</summary>
+  [ExConfigRange(0, 1000)]
+  public float MpIdleTorque { get; set; } = 0.5f;
+
+  /// <summary>Burst shaft speed <c>ω_max</c> (rad/s): reservoir capacity is <c>1/2 I ω_max^2</c>, so this caps
+  /// how much energy any inertia can hold and where the governor eases the drive to 0. The weakest flywheel on
+  /// a run sets the real ceiling.</summary>
+  [ExConfigRange(0.1, 1000)] // capacity scales with its square - must stay positive
+  public float MpMaxSpeed { get; set; } = 2f;
+
+  /// <summary>Gear-mesh loss for a transmission coupling, as a fraction of the coupled energy lost <b>per
+  /// second</b> (dt-scaled at the coupling tick). A small drain on power crossing a gear train, so chaining
+  /// transmissions costs a little; 0 = a lossless (idealised) mesh.</summary>
+  [ExConfigRange(0, 1)]
+  public float MpGearMeshLoss { get; set; } = 0.02f;
+  #endregion
 }

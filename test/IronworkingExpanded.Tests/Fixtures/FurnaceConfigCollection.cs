@@ -10,9 +10,8 @@ namespace IronworkingExpanded.Tests;
 /// value in a <c>finally</c> does not help - the window is what races.
 /// <para>
 /// Joining is what serializes: a collection only orders the classes that opt in, so a class that starts
-/// reading <c>ComputeHeatBalance</c> must be added here too. See the same pattern for the mold gate
-/// (<c>SteelmakingExpanded.Tests/Blocks/Molds/MoldGatingCollection.cs</c>) and for
-/// <c>ExMeasure</c> in the exlib suite.
+/// reading <c>ComputeHeatBalance</c> must be added here too. See the same pattern for <c>ExMeasure</c> in
+/// the exlib suite.
 /// </para>
 /// </summary>
 [CollectionDefinition(Name, DisableParallelization = true)]

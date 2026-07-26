@@ -78,6 +78,31 @@ public class StructureLayoutTests
     Assert.Contains(new LayoutCell(0, 1, 1, 'C'), cells); // col1,row1
   }
 
+  [Fact]
+  public void ParseFrontal_maps_rows_down_in_y_and_columns_to_x()
+  {
+    var cells = StructureLayout.ParseFrontal(
+      xLeft: -1,
+      yTop: 2,
+      new List<(int, string)>
+      {
+        (
+          0,
+          """
+          A . B
+          . C .
+          """
+        ),
+      }
+    );
+
+    // A front elevation at z=0: row0 -> y=2 (top), row1 -> y=1; columns run +X from xLeft.
+    Assert.Equal(3, cells.Count);
+    Assert.Contains(new LayoutCell(-1, 2, 0, 'A'), cells); // col0,row0
+    Assert.Contains(new LayoutCell(1, 2, 0, 'B'), cells); // col2,row0
+    Assert.Contains(new LayoutCell(0, 1, 0, 'C'), cells); // col1,row1
+  }
+
   #endregion
 
   #region Multiblock layout
@@ -171,10 +196,40 @@ public class StructureLayoutTests
   }
 
   [Fact]
+  public void FillerLayout_face_reads_a_thin_in_z_disc_in_the_xy_plane()
+  {
+    // A north-facing wheel: the 3x3 disc lies in X-Y at z=0, origin at bottom-centre, hub one up.
+    var cells = StructureFootprint.Layout(f =>
+      f.Origin(-1, 2) // xLeft=-1, yTop=2
+        .Face(
+          0,
+          """
+          # # #
+          # # #
+          # O #
+          """
+        )
+    );
+
+    Assert.Equal(8, cells.Count); // 9 minus the skipped origin
+    Assert.All(cells, c => Assert.Equal(0, c.Z)); // the whole disc is thin in Z
+    Assert.Contains(cells, c => c is { X: 0, Y: 1, Z: 0 }); // hub cell above the origin
+    Assert.DoesNotContain(cells, c => c is { X: 0, Y: 0, Z: 0 }); // origin gap
+  }
+
+  [Fact]
   public void FillerLayout_rejects_mixing_horizontal_layers_and_vertical_slices()
   {
     Assert.Throws<System.InvalidOperationException>(() =>
       StructureFootprint.Layout(f => f.Layer(0, "#").Slice(0, "#"))
+    );
+  }
+
+  [Fact]
+  public void FillerLayout_rejects_mixing_slices_and_faces()
+  {
+    Assert.Throws<System.InvalidOperationException>(() =>
+      StructureFootprint.Layout(f => f.Slice(0, "#").Face(0, "#"))
     );
   }
 

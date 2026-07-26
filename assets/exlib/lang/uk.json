@@ -29,6 +29,11 @@
   "unit-psi": "psi",
   "unit-celsius": "°C",
   "unit-fahrenheit": "°F",
+  "unit-rpm": "об/хв",
+  "unit-kilowatts": "кВт",
+  "unit-horsepower": "к.с.",
+  "unit-kilojoules": "кДж",
+  "unit-megajoules": "МДж",
 
   "command-exmod-desc-client": "Клієнтська базова команда Exlib (.exmod). Сама по собі вміє може лише підсвічувати мережі; інші моди розширюють її своїми клієнтськими опціями.",
   "command-exmod-help-client": "Клієнтська команда - виконується локально на вашій машині. Використовуйте підкоманду (див. .help exmod). Доступні опції залежать від встановлених модів і доданих ними підкоманд.",

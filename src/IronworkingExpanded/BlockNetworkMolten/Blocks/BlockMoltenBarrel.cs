@@ -38,14 +38,19 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
   public int FillHeight => Attributes?["fillHeight"].AsInt(8) ?? 8;
   public JsonObject? FillQuadsByLevel => Attributes?["fillQuadsByLevel"];
 
-  /// <summary>The molten barrel blocktype, authored in C# (migrated from molten/barrel.json). A
-  /// portable metal vessel that stores liquid metal and can be carried in a backpack.</summary>
+  /// <summary>The molten barrel blocktype, authored in C# (migrated from molten/barrel.json). A portable
+  /// metal vessel that stores liquid metal and can be carried in a backpack. Two <c>construction</c>
+  /// variants that behave identically - only their shape and craft differ: <c>bolted</c> is fabricated from
+  /// plates, fire clay and nails; <c>cast</c> is a sand-cast <c>cast-barrel</c> blank lined with fire clay
+  /// (see the sand-casting design doc). Old single-code <c>moltenbarrel</c> worlds are remapped to
+  /// <c>-bolted</c> by <see cref="BlockMigrations.BarrelConstructionMigration"/>.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
         .Create(domain, "moltenbarrel", "molten/barrel")
         .Class<BlockMoltenBarrel>()
         .EntityClass("iwex.BlockEntityMoltenBarrel")
+        .VariantGroup("construction", "bolted", "cast")
         .MaxStackSize(1)
         .StorageFlags(2)
         .Material(EnumBlockMaterial.Metal)
@@ -58,7 +63,8 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
         .Attribute("fillQuadsByLevel", new[] { new { x1 = 4, z1 = 4, x2 = 12, z2 = 12 } })
         .Behavior("Lockable")
         .Behavior("UnstableFalling")
-        .Shape("iwex:molten/barrel")
+        .ShapeByType("*-bolted", "iwex:molten/barrel-bolted")
+        .ShapeByType("*-cast", "iwex:molten/barrel-cast")
         .NonSolid()
         .TpHandTransform(-0.8, -1, -0.55, 20, 14, -90, 0.75),
     ];

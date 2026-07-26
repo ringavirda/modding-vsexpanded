@@ -30,7 +30,9 @@ public class SmexToIwexMigration : IBlockCodeMigration, IBlockEntityMigration
   private static readonly HashSet<string> Relocated =
   [
     "moltencanal", // canalbrick/cobblestone, start/straight/bend/t/x-junction, tap, moldpedestal
-    "moltenbarrel",
+    // "moltenbarrel" is handled by BarrelConstructionMigration instead: its code gained a construction
+    // variant (moltenbarrel -> moltenbarrel-bolted), so smex:moltenbarrel maps straight to the bolted
+    // variant there, in one hop, rather than to the now-dead iwex:moltenbarrel this list would produce.
     "blastfurnace", // the tuyere block
     "blastfurnacetap",
     "hopperbell",

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib;
+using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
@@ -39,6 +40,9 @@ public class BlockEntitySandCastingBed : BlockEntity
   private long _serverTick;
   private long _clientTick;
 
+  // Renders the built brick+sand construction elements (the RCC behaviour suppresses the default mesh).
+  private ConstructedAnimator? _animator;
+
   private BEBehaviorMoltenCell? Basin => GetBehavior<BEBehaviorMoltenCell>();
 
   #region Lifecycle
@@ -50,6 +54,12 @@ public class BlockEntitySandCastingBed : BlockEntity
       _serverTick = RegisterGameTickListener(OnServerTick, 1000);
     else
     {
+      // The bed is static: no pose to apply, so the animator only re-tesselates the built elements.
+      _animator = new ConstructedAnimator(
+        this,
+        () => "sandcastingbed-" + (Block.Variant["side"] ?? "north")
+      );
+      _animator.Initialize(() => { });
       BuildSurfaces((ICoreClientAPI)api);
       _clientTick = RegisterGameTickListener(_ => UpdateSurfaces(), 1000);
     }
@@ -57,12 +67,14 @@ public class BlockEntitySandCastingBed : BlockEntity
 
   public override void OnBlockRemoved()
   {
+    _animator?.Dispose();
     DisposeSurfaces();
     base.OnBlockRemoved();
   }
 
   public override void OnBlockUnloaded()
   {
+    _animator?.Dispose();
     DisposeSurfaces();
     base.OnBlockUnloaded();
   }

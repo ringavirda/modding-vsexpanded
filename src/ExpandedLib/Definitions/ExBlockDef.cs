@@ -711,6 +711,31 @@ public sealed class ExBlockDef : IExDef
   /// load instead of silently clobbering a filler - retiring the block-number class of bugs in C#.</summary>
   public ExBlockDef FillerOffsets(IEnumerable<FillerCellSpec> cells)
   {
+    Nested("attributes")["fillerOffsets"] = SerializeFillerCells(cells);
+    return this;
+  }
+
+  /// <summary>Per-type footprint: sets <c>attributesByType.{typeWildcard}.fillerOffsets</c>, for a mega-block
+  /// whose reserved volume varies by variant (a flywheel's normal 3×3×1 vs large 5×5×2 disc). Accumulates, so
+  /// call once per type wildcard. Same validation/serialization as <see cref="FillerOffsets"/>.</summary>
+  public ExBlockDef FillerOffsetsByType(string typeWildcard, IEnumerable<FillerCellSpec> cells)
+  {
+    if (_root["attributesByType"] is not JObject byType)
+    {
+      byType = new JObject();
+      _root["attributesByType"] = byType;
+    }
+    if (byType[typeWildcard] is not JObject attrs)
+    {
+      attrs = new JObject();
+      byType[typeWildcard] = attrs;
+    }
+    attrs["fillerOffsets"] = SerializeFillerCells(cells);
+    return this;
+  }
+
+  private static JArray SerializeFillerCells(IEnumerable<FillerCellSpec> cells)
+  {
     var list = cells as IReadOnlyList<FillerCellSpec> ?? cells.ToArray();
     StructureFootprint.Validate(list);
 
@@ -741,8 +766,7 @@ public sealed class ExBlockDef : IExDef
         entry["allowAttach"] = true;
       array.Add(entry);
     }
-    Nested("attributes")["fillerOffsets"] = array;
-    return this;
+    return array;
   }
 
   /// <summary>Appends the exlib right-click construction behavior (<c>ExRightClickConstructable</c>) with

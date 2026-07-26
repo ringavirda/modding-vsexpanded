@@ -7,6 +7,7 @@ using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using Xunit;
 using ExpandedLib.Metals;
 
@@ -68,10 +69,9 @@ public class MoltenMoldPedestalTests
   private static void ServerTick(BlockEntityMoltenCanalMoldPedestal be) =>
     ReflectionHelpers.Invoke(be, "OnServerTick", 1f);
 
-  // The paired negative case - a *disabled* mold being purged - needs smex's MoldGating predicate to
-  // be registered into exlib's ExMoldGate, so it lives in the smex suite (which can see both mods):
-  // SteelmakingExpanded.Tests.MoldGatePedestalPurgeTests.
-  #region Disabled-mold purge
+  // The pedestal's ExMoldGate purge is dormant now that the ceramic-mold gating is gone (no disabler is
+  // registered, so nothing is disabled); a placed mold always stays.
+  #region Mold stays on the pedestal
 
   [Fact]
   public void An_enabled_mold_is_left_on_the_pedestal()
@@ -250,6 +250,57 @@ public class MoltenMoldPedestalTests
 
     Assert.NotNull(be.ClearSolidified()); // chiselled clear
     Assert.False(be.Solidified);
+  }
+
+  #endregion
+
+  #region Clay heat gate (ceramic ceiling)
+
+  // A real fired-clay tool mold (BlockToolMold), unlike the plain-Block fixture above, so the gate's
+  // MoldKinds.FitsPedestal type check sees it. "ingot" is a small (pedestal) tool type, not a large one.
+  private static ItemStack ClayMold(TestWorld world)
+  {
+    var block = TestBlocks.Configure(
+      new BlockToolMold(),
+      "game:toolmold-ingot",
+      62,
+      ("tooltype", "ingot")
+    );
+    world.Register(block);
+    return new ItemStack(block);
+  }
+
+  [Fact]
+  public void A_clay_mold_shatters_when_the_run_delivers_iron_hot_metal()
+  {
+    var world = NewWorld();
+    var be = Pedestal(world);
+    be.AddMold(ClayMold(world));
+    Assert.True(be.IsMold);
+
+    // 1400 C is far above the 1100 clay ceiling.
+    be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
+    ServerTick(be);
+
+    Assert.False(be.IsMold); // the clay cracked apart - the mold is gone, not returned
+    Assert.Null(be.MoldStack);
+    Assert.Equal(0, be.MoldCurrentUnits);
+    Assert.Equal(20, be.CellAmount); // nothing poured into the destroyed mold
+  }
+
+  [Fact]
+  public void A_clay_mold_survives_a_sub_ceiling_pour_and_fills()
+  {
+    var world = NewWorld();
+    var be = Pedestal(world);
+    be.AddMold(ClayMold(world));
+
+    // Copper at 1090 C sits below the 1100 ceiling: the clay holds and drains as usual.
+    be.PushMetal(20, Metal(world, "game:ingot-copper", 1090f), world.World);
+    ServerTick(be);
+
+    Assert.True(be.IsMold);
+    Assert.True(be.MoldCurrentUnits > 0);
   }
 
   #endregion

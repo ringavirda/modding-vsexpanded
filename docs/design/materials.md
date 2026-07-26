@@ -94,6 +94,8 @@ furnace carburises, the Bessemer blows it out, cementation adds it back); the me
 | Thin rod | 50 | Wire rod | 25 |
 | Large pipe | 300 | Rolled pipe | 150 |
 | Small tube | 75 | Nail (stamped) | ~3 (batched) |
+| Wrought ball | 100 | **Bloom** (wrought) | ~180 |
+| Skelp | 50 | Slab / cast form | *(R6, cast-sized)* |
 
 ---
 
@@ -125,3 +127,36 @@ targets after a clean blow, and how you carburise the arc furnace's ingot iron.
 **Wrought iron is puddling-only.** Its toughness comes from slag *fibres* worked into a pasty ball and
 elongated by shingling; a fully molten route (Bessemer, arc) can't reproduce that, so an over-blown or
 arc-smelted melt yields **ingot iron** (slag-free, ~0 % C), never wrought iron.
+
+## Semi-finished forms (rolling stock)
+
+The rolling mill's input is a **semi-finished form**, and the line between the tiers is *how the form is
+made*:
+
+- **Wrought bloom = hammer-made.** Wrought iron is never molten, so it can't be cast — it is **consolidated by
+  hammering**. The helve hammer shingles the puddle balls into a **bloom** (~180 u; expelled scale → the oxide
+  loop) by **piling** them on the anvil (the vanilla iron-bloom→ingot / stacked-ingots→plate mechanic reused
+  wholesale). A **9-pig puddling heat → 18 balls → 9 blooms** — a clean batch (see [iwex.md](iwex.md) § Forming).
+  The bloom is the **one generic wrought form**: the *mill* sets the section (flat set → plate, grooved → bar),
+  so there is **no separate wrought slab/billet**. Rolled wrought stock **is vanilla iron**, so bar off the mill
+  is the smith's feedstock — no new material.
+- **Steel slab/bloom/billet = cast.** Only molten steel (Bessemer / open-hearth) can be poured into a form, via
+  the **longcell** sand casting (the continuous-casting shortcut — cast the form directly rather than rolling a
+  big ingot down). One pour yields **1 slab / 2 blooms / 3 billets** (by form size). These are the steel line's
+  rolling stock (see [smex.md](smex.md)).
+
+**Definitions (textbook), and why the form is the product gate** — the form's cross-section pre-commits the
+product family, so a roll set `accepts` only the matching form:
+
+| Form | Section | Rolls into |
+|---|---|---|
+| **Bloom** | square, large | structural shapes, rails (and → billets) |
+| **Billet** | square, small | bars, rods, wire-rod |
+| **Slab** | flat, width ≥ 2× thickness | plate, sheet, strip, **skelp** → rolled pipe |
+
+**Rolling stock ≠ cast components.** A `slab` is *steel stock* to be rolled; a **`castframe`** is a *cast-iron
+structural member* — the I-section machine standard that carries the flywheel, rolling-mill and steam-hammer
+frames (poured, **never rolled**; cast iron's compression strength is exactly what a machine bed wants). The two
+were briefly one shape and are now split. Cast components (castframe, bedplate, cylinder sleeve, cast pipe,
+grate/door, valve body) come off the **sand-casting** stations as near-net parts feeding machine-build recipes —
+they are not semi-finished forms.

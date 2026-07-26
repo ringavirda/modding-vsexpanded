@@ -68,6 +68,44 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
+  public void SetCapacity_overrides_the_declared_capacity_and_clears_back_to_it()
+  {
+    var cell = NewCell(NewWorld(), "{ \"capacity\": 200 }");
+    Assert.Equal(200, cell.MaxUnitCapacity);
+
+    // A rammed mold pattern raises the cavity size at runtime,
+    cell.SetCapacity(136);
+    Assert.Equal(136, cell.MaxUnitCapacity);
+
+    // shake-out drops the override back to the declared capacity.
+    cell.ClearCapacity();
+    Assert.Equal(200, cell.MaxUnitCapacity);
+  }
+
+  [Fact]
+  public void SetCapacity_of_zero_or_less_reverts_to_the_declared_capacity()
+  {
+    var cell = NewCell(NewWorld(), "{ \"capacity\": 200 }");
+    cell.SetCapacity(0);
+    Assert.Equal(200, cell.MaxUnitCapacity);
+  }
+
+  [Fact]
+  public void The_pattern_capacity_override_survives_a_save_round_trip()
+  {
+    var world = NewWorld();
+    var cell = NewCell(world, "{ \"capacity\": 200 }");
+    cell.SetCapacity(297);
+
+    var tree = new TreeAttribute();
+    cell.ToTreeAttributes(tree);
+
+    var restored = NewCell(world, "{ \"capacity\": 200 }");
+    restored.FromTreeAttributes(tree, world.World);
+    Assert.Equal(297, restored.MaxUnitCapacity);
+  }
+
+  [Fact]
   public void Config_defaults_a_plain_cell()
   {
     var cell = NewCell(NewWorld());

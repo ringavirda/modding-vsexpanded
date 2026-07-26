@@ -68,7 +68,7 @@ Per-cell molten metal that flows cell → cell; end caps recompute on tesselatio
 | **Molten barrel** | standalone molten-metal holding vessel | *(live)* |
 
 - Craftable from cobblestone (rock variants), coloured running-brick, or fire-brick; all hammered + chiselled over fire clay.
-- **Sand-mold casting** — reuse the **mold pedestal + caster** with a **"pig" mold variant** (molten pig → 200 u solid pig). No separate sand-mold block. *(planned mold variant)*
+- **Sand casting** is its own station family, not a mold-pedestal variant — the **pig bed** *(live)* casts a canal's heat into pigs, and the **casting cell / long cell** *(planned)* ram a sand mold around a wooden **pattern** to cast iron molds and machine parts. Full spec: [sand-casting.md](sand-casting.md).
 
 ---
 
@@ -82,11 +82,66 @@ Both are thin `BlockEntityFurnaceCore` variants (the base is *live*; these varia
 |---|---|---|
 | pigs **+ iron/steel scrap + crushed iron waste** + coke + cold air → **molten cast iron** → molds → cast components | manual load through a lid; also re-melts off-spec **waste alloy** back to cast iron (materials.md) | *(planned)* |
 
-**Puddling furnace** — multiblock (3-wide hearth), manual (lid throttle + rabbling), **no GUI** (R7). The **only** wrought-iron route (materials.md: wrought is puddling-only).
+**Puddling furnace** — a **reverberatory** multiblock with a **3×1×1 internal hearth** (a fettled cast-iron bed the player works **directly through the door**, the manual-reverberatory idiom), manual (lid throttle + rabbling), **no GUI** (R7). The **only** wrought-iron route (materials.md: wrought is puddling-only).
 
 | Input → Output | Key | Status |
 |---|---|---|
-| 3 crushed-ore **oxide beds** + up to 6 pigs + heat → **wrought-iron balls** (100 u; 6 pigs → 12 balls, mass-conserving R2) | sneak+RMB crushed ore forms the oxide bed; lid regulates temp; **rabble** at the hatch (repeated RMB with the rabbling bar) to ball up the pasty iron, then pull white-hot balls out one by one → helve hammer (vanilla, MP) shingles them to bar/plate | *(planned)* |
+| oxide fettling + **9 pigs** + heat → **wrought-iron balls** (100 u; 9 pigs → 18 balls, mass-conserving R2) | Each of the **3 hearth cells holds 3 pigs** (they nest on their triangular section); sneak+RMB crushed ore / roasted **slag** lays the oxide fettling — **re-fettled each heat** (the closed waste loop); lid regulates temp; **rabble** the pasty iron through the door (repeated RMB with the rabbling bar), then pull the white-hot balls out one by one → helve hammer **shingles** them to **blooms** (§ Forming), *not* straight to bar/plate | *(planned)* |
+
+---
+
+## Forming — reheat furnace + rolling mill *(planned)*
+
+The wrought line's back end: consolidate the puddle balls, bring the stock to rolling heat, and roll it into
+usable stock. **All hot working** — cast iron shatters; wrought iron (and the steel smex later runs through
+the same mill) is worked hot. Rolling is **early**: it is the other half of Cort's 1784 puddling-and-rolling,
+so it lives here, and everything downstream (lpex machines especially) leans on rolled parts.
+
+**Shingle → bloom (pile balls on the anvil).** The **helve hammer** (vanilla, MP) works white-hot balls on the
+anvil exactly as vanilla works an iron bloom into an ingot — you **pile** balls (the same voxel-accumulation as
+stacking ingots for a vanilla plate) and the helve hammers them into a **bloom** (~180 u after slag loss; the
+scale → the oxide loop). Two balls → one bloom, so a 9-pig heat → 18 balls → **9 blooms**. Implementation reuses
+the **vanilla anvil + helve + smithing-recipe pipeline** wholesale: the ball is a `forgable` item (cf.
+`ItemIronBloom`) and shingling is a smithing recipe `2 piled balls → shingledbloom`. The bloom is the
+**generic wrought stock** — the helve only *consolidates*, it never sets the section; the **mill** forms it (its
+flat set flattens the bloom toward plate, a grooved set draws it toward bar). This fixes the old
+"helve → bar/plate" shortcut.
+
+| Machine | Footprint | Power | Input → Output | Key | Status |
+|---|---|---|---|---|---|
+| **Reheat furnace** | multiblock reverberatory | fuel (coke) | cold stock → **hot stock** (rolling temp) | firebox coalpiles + a **direct-worked hearth bed** sized for the largest form (**slab = 2 cells**); a thin variant over the shared `BlockEntityFurnaceCore`; heats on the shared heat balance (R5). The vanilla forge tops out at an ingot — a slab/bloom won't fit, so hot rolling **needs** this | *(planned)* |
+| **Rolling mill** | megablock | **MP** (waterwheel) + flywheel | hot bloom/slab/billet + **roll set** → profiled stock (bar / plate / sheet / strip / rod / nail-rod) | one **two-high** stand; the swappable **roll set** carries a **fixed gap sequence cut along the roll barrel** (widest→narrowest) — the player walks the stock through successive segments, **each RMB = one pass**; **no screw-down**; feed side follows drive rotation; staged glowing work-item render | *(planned)* |
+
+**Rolling mill detail.**
+- **Hot rolling only.** `δ_max = μ²R` — hot (μ≈0.5) takes ~30× the reduction per pass of cold (μ≈0.09), at low
+  force: the only process a water/MP mill can drive. A pass **requires** the work item above a rolling-temp
+  threshold (reheat furnace / residual cast heat). Cold rolling (precision sheet, **thread-rolled bolts**) is
+  an elex-era four-high/powered upgrade.
+- **Roll sets = tooling any mod ships** (the mold-pattern/`MoldSpec` idiom): `{family, accepts:[form], passes,
+  output, minTorque}`. iwex ships **flat** (→ plate/sheet/strip; a **narrow segmented** barrel for billets, plus
+  **wide single-gap** barrels for slab/bloom run as a train), **grooved** (→ rod → wire-rod), **slitting**
+  (→ nail-rod → nails, the early nail mill). smex adds steel sets ([smex.md](smex.md)).
+- **Rolls are cast (chilled cast iron)** — a roll takes steady **compression**, not shock → cast, not forged
+  (the cast-vs-forged rule); harder tiers gate on **torque**, not roll material.
+- **Multi-pass = walk the stock along the barrel, not a screw-down.** A heavy manual two-high isn't re-gapped
+  mid-schedule, so the roll barrel carries a **fixed sequence of gaps** (widest→narrowest); the player passes the
+  work through successive segments, **each RMB = one pass**. `δ_max = μ²R` is enforced by the *geometry* (each
+  segment is one step — you can't skip): the work item carries its **current thickness/form**; the next-narrower
+  segment reduces + re-renders it (the steam-hammer **staged work-item renderer** morphs it), while too-tight a
+  gap **stalls** it (over-reduction overdraws the flywheel). **The product is the thickness you stop at** — a flat
+  set runs 2.0→1.5→1.0→0.5 where **1.0 = plate, 0.5 = sheet**; you pull the stock at the form you want, not always
+  to the end.
+- **Wide stock needs a train, not a wider screw.** Slab/bloom fill the whole barrel → no room for segments, so
+  each **wide roll set is a single gap** (flat-wide 2.0 / 1.5 / 1.0 / 0.5). Reducing wide stock is a **sequence of
+  stands**: swap the wide set between passes (occasional) or build a short **manual train** of fixed-gap mills
+  (throughput) — the period plate-mill hall (`assets/editable/refs/C0229569`). **Automatic / reversing trains are
+  deferred** (too advanced while the rest of the line is hand-fed); trains stay hand-fed for now.
+- **Feed side follows drive rotation.** The mill reads its drive axle's spin and sets the input face from it
+  (clockwise / fed-from-the-right → **south**, counter-clockwise → **north**; output the opposite) — reverse the
+  drive to reverse the mill.
+- **Power** is MP buffered by a **flywheel** ([mp-energy-network.md](mp-energy-network.md)): each pass is an
+  energy pulse the flywheel dumps into the bite; cold stock overdraws it and **stalls** the mill — the
+  keep-it-hot loop the reheat furnace answers.
 
 ---
 
@@ -118,10 +173,14 @@ Both are thin `BlockEntityFurnaceCore` variants (the base is *live*; these varia
 | **Slag** + slag paths/slabs/stairs | blast-furnace byproduct → building material | *(live)* |
 | **Pig** (200 u) | cast at the mold pedestal (pig mold variant); feeds cupola & puddling | *(planned)* |
 | **Coke** | coke-oven fuel output | *(planned)* |
-| **Wrought-iron ball / bits** | puddling output → shingled to bar/plate (= vanilla iron) | *(planned)* |
-| **Cast components** | poured from molten cast iron into component molds (cylinder sleeve, bedplate, cast pipe, grate/door, valve body) | *(planned)* |
+| **Wrought-iron ball** (100 u) | puddling output; helve-shingled to a **bloom** | *(planned)* |
+| **Bloom** (~180 u) | shingled wrought iron; the rolling mill's input stock (= vanilla iron once rolled) | *(planned)* |
+| **Roll set** | swappable, spec-carrying rolling-mill tooling (flat / grooved / slitting; smex adds steel sets) | *(planned)* |
+| **Cast components** | poured from molten cast iron into component molds — **`castframe`** (the I-section machine standard shared by the flywheel / rolling-mill / steam-hammer frames), cylinder sleeve, bedplate, cast pipe, grate/door, valve body | *(planned)* |
 
-Sand-mold is **not** a new item/block — it is the mold-pedestal + caster with a "pig" mold variant (above).
+Cast components come out of the **sand-casting** stations, not the mold pedestal — see
+[sand-casting.md](sand-casting.md) for the cell, the pattern items, and the **iron mold** family that
+replaces the placeholder ceramic tool molds.
 
 ---
 

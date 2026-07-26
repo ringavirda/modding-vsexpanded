@@ -1,0 +1,92 @@
+{
+  "code": "castmold",
+  "class": "iwex.BlockCastMold",
+  "entityClass": "iwex.BlockEntityCastMold",
+  "blockmaterial": "Metal",
+  "resistance": 3.5,
+  "maxstacksize": 16,
+  "lightAbsorption": 0,
+  "variantgroups": [
+    {
+      "code": "tooltype",
+      "states": [
+        "plate",
+        "doubleingot"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-plate": {
+      "base": "iwex:molten/molds/plate",
+      "rotateY": 90
+    },
+    "*-doubleingot": {
+      "base": "iwex:molten/molds/doubleingot",
+      "rotateY": 90
+    }
+  },
+  "textures": {
+    "other": {
+      "base": "iwex:block/metal/castiron"
+    }
+  },
+  "collisionbox": {
+    "x1": 0.0625,
+    "y1": 0.0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.125,
+    "z2": 0.9375
+  },
+  "selectionbox": {
+    "x1": 0.0625,
+    "y1": 0.0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.125,
+    "z2": 0.9375
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  },
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "attributesByType": {
+    "castmold-plate": {
+      "requiredUnits": 200,
+      "fillHeight": 1,
+      "drops": [
+        {
+          "type": "item",
+          "code": "game:metalplate-{metal}"
+        }
+      ]
+    },
+    "castmold-doubleingot": {
+      "requiredUnits": 200,
+      "fillHeight": 1,
+      "drops": [
+        {
+          "type": "item",
+          "code": "game:ingot-{metal}",
+          "quantity": 2
+        }
+      ]
+    }
+  }
+}

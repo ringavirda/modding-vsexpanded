@@ -358,7 +358,7 @@ public class BlockNetworkModSystem : ModSystem
     var open = new List<BlockFacing>();
     foreach (var face in BlockFacing.ALLFACES)
     {
-      if (!node.HasConnectorAt(face))
+      if (!node.HasConnectorAt(world, pos, face))
         continue;
 
       BlockPos nPos = pos.AddCopy(face);
@@ -397,7 +397,7 @@ public class BlockNetworkModSystem : ModSystem
 
     foreach (var face in BlockFacing.ALLFACES)
     {
-      if (node.HasConnectorAt(face))
+      if (node.HasConnectorAt(world, pos, face))
       {
         BlockPos neighborPos = pos.AddCopy(face);
         if (

@@ -1,0 +1,195 @@
+{
+  "code": "transmission",
+  "class": "iwex.BlockTransmission",
+  "entityClass": "iwex.BlockEntityTransmission",
+  "blockmaterial": "Metal",
+  "requiredMiningTier": 0,
+  "resistance": 4.5,
+  "maxstacksize": 1,
+  "drops": [],
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "HorizontalOrientable"
+    },
+    {
+      "name": "BlockEntityInteract"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    },
+    {
+      "name": "ExRightClickConstructable",
+      "properties": {
+        "stages": [
+          {
+            "addElements": [
+              "Base"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "lpex:gear-iron",
+                "quantity": 2,
+                "name": "iwex:rcc-ingredient-transmissiongears"
+              },
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 4,
+                "name": "iwex:rcc-ingredient-transmissionshafts"
+              }
+            ],
+            "addElements": [
+              "MainShafts"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 2,
+                "name": "iwex:rcc-ingredient-transmissionsupport"
+              }
+            ],
+            "addElements": [
+              "SupportShaft"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "x2",
+        "x4",
+        "clutch"
+      ]
+    },
+    {
+      "code": "side",
+      "loadFromProperties": "abstract/horizontalorientation"
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-x2-north",
+      "*-x4-north",
+      "*-clutch-north"
+    ],
+    "iwex": [
+      "*-x2-north",
+      "*-x4-north",
+      "*-clutch-north"
+    ]
+  },
+  "shape": {
+    "selectiveElements": [
+      "Base/*"
+    ]
+  },
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/metal",
+    "hit": "game:block/metal",
+    "walk": "game:walk/stone"
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "shapebytype": {
+    "*-x2-north": {
+      "base": "iwex:mpenergy/transmission-x2",
+      "rotateY": 0
+    },
+    "*-x2-east": {
+      "base": "iwex:mpenergy/transmission-x2",
+      "rotateY": 270
+    },
+    "*-x2-south": {
+      "base": "iwex:mpenergy/transmission-x2",
+      "rotateY": 180
+    },
+    "*-x2-west": {
+      "base": "iwex:mpenergy/transmission-x2",
+      "rotateY": 90
+    },
+    "*-x4-north": {
+      "base": "iwex:mpenergy/transmission-x4",
+      "rotateY": 0
+    },
+    "*-x4-east": {
+      "base": "iwex:mpenergy/transmission-x4",
+      "rotateY": 270
+    },
+    "*-x4-south": {
+      "base": "iwex:mpenergy/transmission-x4",
+      "rotateY": 180
+    },
+    "*-x4-west": {
+      "base": "iwex:mpenergy/transmission-x4",
+      "rotateY": 90
+    },
+    "*-clutch-north": {
+      "base": "iwex:mpenergy/transmission-clutch",
+      "rotateY": 0
+    },
+    "*-clutch-east": {
+      "base": "iwex:mpenergy/transmission-clutch",
+      "rotateY": 270
+    },
+    "*-clutch-south": {
+      "base": "iwex:mpenergy/transmission-clutch",
+      "rotateY": 180
+    },
+    "*-clutch-west": {
+      "base": "iwex:mpenergy/transmission-clutch",
+      "rotateY": 90
+    }
+  }
+}

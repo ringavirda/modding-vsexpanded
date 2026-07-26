@@ -16,12 +16,13 @@ namespace IronworkingExpanded.Tests;
 /// </summary>
 public class SmexToIwexMigrationTests
 {
-  // One registered iwex block per relocated base code, plus a representative multi-variant canal.
+  // One registered iwex block per relocated base code, plus a representative multi-variant canal. The
+  // molten barrel is absent on purpose: its code gained a construction variant, so its smex->iwex leg
+  // moved to BarrelConstructionMigration (see BarrelConstructionMigrationTests).
   private static readonly string[] RelocatedSamples =
   [
     "moltencanal-straight-fire-ns",
     "moltencanal-tap-n",
-    "moltenbarrel",
     "blastfurnace-tuyere-n",
     "blastfurnacetap-north",
     "hopperbell",
@@ -88,12 +89,12 @@ public class SmexToIwexMigrationTests
     var world = WorldWith(
       Block("iwex:bunker-red-north", 100),
       Block("iwex:mixer-north", 101),
-      Block("iwex:moltenbarrel", 102) // a relocated one, for contrast
+      Block("iwex:slag", 102) // a relocated one, for contrast
     );
     var remaps = Remaps(world);
 
-    Assert.Single(remaps); // only the barrel
-    Assert.Contains(new AssetLocation("smex", "moltenbarrel"), remaps.Keys);
+    Assert.Single(remaps); // only the slag
+    Assert.Contains(new AssetLocation("smex", "slag"), remaps.Keys);
     Assert.DoesNotContain(new AssetLocation("smex", "bunker-red-north"), remaps.Keys);
     Assert.DoesNotContain(new AssetLocation("smex", "mixer-north"), remaps.Keys);
   }

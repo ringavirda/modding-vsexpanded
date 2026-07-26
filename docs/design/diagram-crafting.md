@@ -5,9 +5,27 @@ serves a whole family of shape variants. This is the mod's answer to the 3×3-gr
 and numbers live in [conventions.md](conventions.md); the mods that own the machines are
 [iwex](iwex.md) (design table) and [lpex](lpex.md) (boring machine).
 
-> **How to read this doc.** Nothing here is *(live)* yet — this is the **proposed baseline**, config
-> intent noted where relevant. Numbers appear once (see [conventions.md](conventions.md)); this file
-> owns the diagram catalogue and the two station machines.
+> **How to read this doc.** The baseline below is the design; **phases 1–3 are now partly built** (audited
+> 2026-07-26 against code). Numbers appear once (see [conventions.md](conventions.md)); this file owns the
+> diagram catalogue and the two station machines.
+
+> **Implementation status (audited 2026-07-26).** **BUILT:** the `diagram-{type}` item — **iwex only**, 22
+> variants (18 structure + 4 pattern-derived) on the exlib `diag-base` shape, whose `paper` path is now correctly
+> domained; the **design table** (`BlockDesignTable` + `BlockEntityDesignTable.TryDraft` + `GuiDialogDesignTable`,
+> with tests) — so Phase 3 has landed even though this doc said "nothing is live".
+> **PARTIAL:** the design table is a **single cell, not the 2-wide megablock**, its candles are a static
+> `lightHsv` with no particles, it has **no craft recipe** (this — not the patterns — is what actually gates the
+> whole chain to creative), and no guide viewer. Its shape still has **5 undomained `block/…` texture paths** that
+> will resolve against `iwex:` and fail; only `paper` was fixed.
+> **Phase 2 was proven on the wrong family:** only 2 diagram grid recipes exist (`molten-straight`,
+> `molten-bend`) — the **pipe family is untouched** and still uses its 4 hand-authored patterns, so the collision
+> problem this doc exists to solve is unsolved. Counting the 4 diagram→pattern recipes, there are **6** diagram
+> recipes repo-wide, and **every one uses `.Tool()`** — so the "structures consume the plan" half of Model A is
+> entirely unproven; the `bfc`/`cf`/`sandbed` diagrams have items and textures but no recipe consuming them.
+> **NOT BUILT:** the **boring machine** (nothing in lpex), the **exlib station-window base** and the **diagram
+> catalogue** — `GuiDialogDesignTable` lives in iwex and enumerates `capi.World.Items` directly, so the shared
+> spine in § The exlib framework does not exist. `diagramdesc-*` lang keys are **entirely missing** (the info
+> panel shows raw keys for all 22). Textures: **45 drawn / 22 shipped**, 23 orphans.
 
 ---
 
@@ -76,7 +94,7 @@ block-info cannot express. The exception is bounded:
   you can read the plan you are carrying. Exact scale/rotation are **in-game-tuned**, like every held
   transform; there is no headless way to get them right.
 - Each mod defines the diagram variants for the blocks **it** owns (iwex pipes/canals/cores, lpex
-  passthroughs/machine schematics, smex molds/hot-core), discovered the same per-mod way as the other
+  passthroughs/machine schematics/part patterns, smex hot-core), discovered the same per-mod way as the other
   code-first defs.
 - **Drafting cost is trivial:** a drawing medium (**charcoal or black coal** — both draw in vanilla) +
   **parchment** (vanilla's paper-like material) at the design table (see below). No tiers, no unlocks.
@@ -98,7 +116,8 @@ megablocks that carry a projection + fillers; no — an `isTool` reusable — fo
 | **Molten canal** | straight, bend, tjunction, xjunction, start, tap, furnacetap, moldpedestal, barrel | canal pieces + molten barrel | no (tool) | iwex |
 | **Casting** | sandcell | sand casting cell | no (tool) | iwex |
 | **Casting (megablock)** | sandbed | sand casting bed | **yes** | iwex |
-| **Tool molds** | plate, doubleingot | tool molds | no (tool) | smex |
+| **Mold patterns** | mold-plate, mold-doubleingot | the wooden **pattern** a sand mold is rammed around (diagram + knife + log) | no (tool) | iwex |
+| **Mold patterns** (parts) | mold-cylinder, mold-boilerplate, mold-bedplate | patterns for the machine castings lpex consumes; the bedplate takes 2 logs | no (tool) | lpex |
 | **Furnace cores** | bfc, cf, bfh | cold-blast / cupola / hot-blast core | **yes** | iwex / smex |
 
 The **consumed?** column is not per-diagram data to maintain — it is simply whether the recipe uses
@@ -187,6 +206,22 @@ into finished parts.
     [lpex.md](lpex.md)).
 - This gives casting a downstream purpose and is historically honest: cast rough, machine to spec.
 
+### Form & interaction *(shapes authored 2026-07-25)*
+
+- **Two-block-high megablock.** Bottom **principal** block is the main interaction + the menu window; top
+  **filler** block swaps out the **drill head** (a wear/tier part — quench-hardened heads for hard metal,
+  mirroring the shear-die tiers). **Both** blocks report powered/unpowered in their block-info.
+- **MP connection is on the top filler's south face** (default orientation north). The drill **spins while
+  powered** (the sub-machine rotor idiom).
+- **Work is timed and visible.** A craft takes a couple of seconds; a stack (e.g. cylinders → pipe-parts)
+  runs item-by-item and takes proportionally longer. While a job runs, the **background animation plays** —
+  drill down, a few cycles of the top traversing, drill up, down again, repeat — so the player reads it as
+  a machine doing work, not a bare inventory window. Animations are already authored on the boring-machine
+  shape; drive them off the `BlockEntityProductionMachine` job state (start on job begin, loop while
+  processing, stop when the queue drains), the same network-driven pattern as the engine/sub-machine sync.
+- Idle-vs-working and powered-vs-unpowered are distinct: an unpowered machine shows its status and does not
+  animate; a powered idle machine spins the drill but does not run the work cycle.
+
 ---
 
 ## The exlib framework (shared spine)
@@ -201,7 +236,7 @@ framework role):
   parameterised so the design table (hand, draft-only) and the boring machine (powered, process) are
   thin subclasses.
 - Per-mod content: iwex owns the design table + its diagrams; lpex owns the boring machine + machine
-  schematics; smex contributes mold/hot-core diagrams.
+  schematics + part patterns; smex contributes the hot-core diagram.
 
 ---
 

@@ -1,0 +1,206 @@
+{
+  "editor": { "allAngles": false, "entityTextureMode": false },
+  "textureWidth": 16,
+  "textureHeight": 16,
+  "textures": {
+    "iron": "game:block/metal/tarnished/iron",
+    "rivet": "game:block/metal/riveted/iron3",
+    "shaft": "game:block/metal/sheet-plain/iron2"
+  },
+  "elements": [
+    {
+      "comment": "Normal flywheel - fits 3x3x1 (48x48x16). Rim + spokes + central hub/shaft, centred on the disc's hub at (24,24,8) (the footprint-centre cell). Wheel 0.75 blocks thick (z 2..14); shaft along Z. Rim is an octagon ring: 4 straight sides + 4 copies rotated 45deg about the hub.",
+      "name": "RimN",
+      "from": [15.0, 40.0, 2.0],
+      "to": [33.0, 46.0, 14.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimS",
+      "from": [15.0, 2.0, 2.0],
+      "to": [33.0, 8.0, 14.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimE",
+      "from": [40.0, 15.0, 2.0],
+      "to": [46.0, 33.0, 14.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimW",
+      "from": [2.0, 15.0, 2.0],
+      "to": [8.0, 33.0, 14.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimNE",
+      "from": [15.0, 40.0, 2.0],
+      "to": [33.0, 46.0, 14.0],
+      "rotationOrigin": [24.0, 24.0, 8.0],
+      "rotationZ": -45.0,
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimNW",
+      "from": [15.0, 40.0, 2.0],
+      "to": [33.0, 46.0, 14.0],
+      "rotationOrigin": [24.0, 24.0, 8.0],
+      "rotationZ": 45.0,
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimSE",
+      "from": [15.0, 2.0, 2.0],
+      "to": [33.0, 8.0, 14.0],
+      "rotationOrigin": [24.0, 24.0, 8.0],
+      "rotationZ": 45.0,
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "RimSW",
+      "from": [15.0, 2.0, 2.0],
+      "to": [33.0, 8.0, 14.0],
+      "rotationOrigin": [24.0, 24.0, 8.0],
+      "rotationZ": -45.0,
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "comment": "Four spokes from the hub to the rim (thinner than the rim, set back in Z).",
+      "name": "SpokeN",
+      "from": [21.0, 30.0, 5.0],
+      "to": [27.0, 41.0, 11.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "SpokeS",
+      "from": [21.0, 7.0, 5.0],
+      "to": [27.0, 18.0, 11.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "SpokeE",
+      "from": [30.0, 21.0, 5.0],
+      "to": [41.0, 27.0, 11.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "name": "SpokeW",
+      "from": [7.0, 21.0, 5.0],
+      "to": [18.0, 27.0, 11.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 16.0, 16.0] }
+      }
+    },
+    {
+      "comment": "Central hub boss around the shaft, proud of the wheel on both faces.",
+      "name": "Hub",
+      "from": [17.0, 17.0, 0.0],
+      "to": [31.0, 31.0, 16.0],
+      "faces": {
+        "north": { "texture": "#rivet", "uv": [0.0, 0.0, 14.0, 14.0] },
+        "east": { "texture": "#rivet", "uv": [0.0, 0.0, 16.0, 14.0] },
+        "south": { "texture": "#rivet", "uv": [0.0, 0.0, 14.0, 14.0] },
+        "west": { "texture": "#rivet", "uv": [0.0, 0.0, 16.0, 14.0] },
+        "up": { "texture": "#rivet", "uv": [0.0, 0.0, 14.0, 16.0] },
+        "down": { "texture": "#rivet", "uv": [0.0, 0.0, 14.0, 16.0] }
+      }
+    },
+    {
+      "comment": "Through-shaft along Z; pokes 3px out each face as the vanilla-MP bridge stub.",
+      "name": "Shaft",
+      "from": [21.0, 21.0, -3.0],
+      "to": [27.0, 27.0, 19.0],
+      "faces": {
+        "north": { "texture": "#shaft", "uv": [5.0, 5.0, 11.0, 11.0] },
+        "east": { "texture": "#shaft", "uv": [0.0, 0.0, 16.0, 6.0] },
+        "south": { "texture": "#shaft", "uv": [5.0, 5.0, 11.0, 11.0] },
+        "west": { "texture": "#shaft", "uv": [0.0, 0.0, 16.0, 6.0] },
+        "up": { "texture": "#shaft", "uv": [0.0, 0.0, 16.0, 6.0] },
+        "down": { "texture": "#shaft", "uv": [0.0, 0.0, 16.0, 6.0] }
+      }
+    }
+  ]
+}

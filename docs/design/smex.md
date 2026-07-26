@@ -75,22 +75,107 @@ A **single canal-fed vessel** (one block, not a big multiblock) — the alloying
 
 ---
 
-## Steam forming shop — one megablock *(planned)*
+## Steam forming shop *(planned)*
 
-**One megablock anchored on the steam hammer**, with the rolling/shear/draw tooling installed as swappable dies. Delivers the billet pipeline (R4: billets cannot be worked on a vanilla anvil, only here). Billet masses and the stock-item unit economy live in materials.md; stock carries remaining mass in a unit-count attribute (R6), so every cut is exact arithmetic.
+A **cluster of machines**, not one megablock — because rolling is rotary (MP) and hammering is impact (LP);
+you cannot roll on a hammer. The **rolling mill lives in iwex** (it is early — puddling needs it; see
+[iwex.md](iwex.md) § Forming); smex's own anchor is the **steam hammer** for impact ops (shear / stamp /
+open-die forge). What smex *adds* to the rolling side is **steel roll sets**, an **automation upgrade** to the
+mill, and the **cast semi-finished forms** the steel line rolls. Delivers the billet pipeline (R4: billets
+cannot be worked on a vanilla anvil, only in this shop). Stock carries remaining mass in a unit-count
+attribute (R6), so every cut is exact arithmetic; masses live in materials.md.
 
 ```
-Billet (2400u large / 800u small)  --rollers-->  profiled stock (plate/bar/pipe)  --dies-->  discrete vanilla items
+liquid steel --longcell cast--> slab / bloom / billet --reheat--> iwex ROLLING MILL (+ steel roll set) --> steel plate / rail / shape / bar / skelp→pipe / wire-rod
+                                                                   steam hammer (shear / stamp / forge) --> discrete items + heavy forged components
 ```
 
-### Rollers (profile tooling) *(planned)*
-- **Input → output:** billet → profiled stock (forms/reduces, does **not** cut).
-- **Mechanic:** roller type sets the **cross-section family** (flat / grooved / pipe); **gap setting** picks the thickness step within that family, so one roller = one product family. Each pass reduces one gap step; a budget single mill re-feeds, a train pre-sets each stand. *(Owned gap map — flat 5→2: heavy plate/plate/sheet/strip; grooved 5→2: heavy bar/rod/thin rod/wire rod; pipe 5→3: large pipe/rolled pipe/small tube. Tunable.)*
-- **Deferred:** the tandem-train hand-off choreography and the jam mechanic — ship the single-mill budget path first.
+### The steam hammer — the anchor *(design draft, 2026-07-25)*
+
+> **Tier + power (updated 2026-07-26):** this is an **lpex** machine — **LP steam**, cast-iron frame (iwex),
+> **iron dies** — buildable as soon as you have a boiler, *before* steel. The modeled shape is **single-action**
+> (one bottom cylinder pipe: steam lifts the ram, gravity drops it). Steel die-sets are the **smex** upgrade; a
+> separate **HP double-action** hammer (steam on both strokes) is an **hpex** machine for thick/complex work.
+> **Die complexity gate = output thickness:** ≤1 voxel (strips, nails, shear) is LP; ≥2 voxel (tools, complex
+> forgings) needs the HP hammer. **No bootstrap loop:** the whole rolled-plate chain (puddling → helve →
+> rolling mill) is coke/MP-powered, so the first LP boiler is riveted from **MP-rolled narrow plates**, then it
+> powers the hammer; the hammer's wide **shingled-slab → wide-roller** plate is a post-steam upgrade, not a
+> prerequisite. Its **reverse (iron) usage** — faster shingling + wrought slabs — is the *original* Nasmyth use
+> and keeps it useful for a "stay at iron" player. *(Section still filed here; relocate to lpex.md when the
+> forming design settles.)*
+
+The machine everything else installs onto: a **Nasmyth double-frame steam hammer**. Shape drafted at
+`assets/editable/shapes/steam-hammer.json` — cast-iron frame + hammer mass, steel (`iron5`) piston / rod /
+dies / lever; animated off a `Rod` element (the ram assembly hangs from it) with `idle` / `steamup` /
+`leaverdown` / `hammerhit` keyframes, plus a `HandLeaver` + `ControlRod`.
+
+**Footprint — a sparse 3×3 megablock.** Bottom layer full 3×3; middle layer **vslab–block–vslab**; top
+layer a **single centre block**. The top-centre block carries the cylinder and both network faces (standard
+megablock + invisible-filler pattern: fillers give per-cell collision, the top block owns the behaviours):
+- **west face** = LP-steam **inlet** (pipe connector reading the adjacent cell; steam flowing → machine is
+  powered);
+- **east face** = the **"depleted out"** spent-steam vent — spawn exhaust particles here on each blow.
+
+**Animation state machine** (code-driven, nothing to hand-sync):
+- `idle` — no steam, ram parked at the **bottom**;
+- `steamup` — steam present, ram **raised and held**;
+- **operation** — while the player **holds RMB on the lever cell**: play `leaverdown` **and** loop
+  `hammerhit` together, with sparks + spent-steam particles + a piston-stroke sound per cycle; release RMB →
+  stop and ease back to `steamup`. The lever cell is a **behaviour-capable filler** routing the held
+  interaction to the top block's BE, which owns the loop.
+
+**The anvil — a separate DOCKED block** (the canal-tap / molten-barrel idiom, maintainer's call). The hammer
+BE stores an anvil `ItemStack`, tesselates its mesh at the anvil cell in `OnTesselation`, and sneak+RMB
+docks / undocks it — carrying any installed die out with it, exactly as a mold carries its contents. Payoff:
+**anvil variety for free** and a customization hook. Slot layout: **top die on the ram** (`HammerDie`),
+**bottom die on the docked anvil**, the work item between them. **NOT a vanilla `BlockAnvil` variant** —
+vanilla's class carries the free-sculpt hand-smithing voxel mechanic a die machine does not want; make it
+its own block (a die/sow block that can share the anvil look, not its class).
+
+**Dies — forged steel, installable.** A die takes the blow *and* imparts the profile → **forged** (tough),
+not cast (brittle), per the cast-vs-forged rule. Two tiers mirroring the boring-machine bits: plain steel
+for soft stock, **quench-hardened** to shear/stamp hadfield or HSS. Prefer **one "die-set" item** that
+renders in both faces (can't be mismatched) over two independent top/bottom items.
+
+**Visible work item on the anvil — our own renderer, not vanilla's.** Vanilla's anvil renderer is welded to
+the free-sculpt smithing system (`ItemWorkItem` + voxel grid + per-blow player choice); a die machine is
+**deterministic** (stock + die → output), so grafting it fights the design. Build the work-item render with
+the mod's own BE-renderer toolkit (as `MoltenRenderer` / the barrel content mesh / the held-mold surface do):
+- **Staged / morphing stock (preferred):** the docked work item sits on the bottom die, **glowing off its
+  own temperature**, and each `hammerhit` cycle advances it through a few forge stages (raw billet →
+  half-formed → the die's output profile) with sparks + an impact flash. Reads as "metal worked under the
+  hammer", matches the die logic, cheap to build.
+- **True moving voxels (possible, more work):** store a small voxel grid on the BE and carve/stamp it toward
+  the die's target shape each blow, rendered as glowing cubes — closer to vanilla's look, but more work and
+  it slightly implies the shape is sculptable. Reach for it only if the staged version doesn't sell in-game.
+
+**Materials.** Frame + hammer mass + **anvil block = cast iron** (compression members — built from
+`castplate-heavy`, the heavy plate's structural third job alongside the puddling hearth and machining
+stock); piston / rod / dies = steel. **Power:** **LP steam** drives the ram. Rolling is **not** on this
+machine — it is the iwex **rolling mill** (MP), to which smex only adds tooling (below).
+
+**Build order when scheduled:** megablock shell + LP-steam-driven ram (idle → steamup → lever-hold cycle) →
+docked-anvil socket + die-set items + staged work-item renderer.
+
+### Steel roll sets + mill upgrade (for the iwex rolling mill) *(planned)*
+smex does **not** ship a second mill — it ships **roll sets** (spec-carrying tooling) and an **automation
+upgrade** for the one iwex mill (the "one machine, more tooling" rule; a second mill would be a reskin).
+- **Cast semi-finished forms** (the steel line's stock): liquid Bessemer/OH steel → **longcell** sand-cast →
+  **slab / bloom / billet** (the continuous-casting shortcut — cast the form directly; see materials.md). The
+  form's section is the gate (slab = flat, bloom = square, billet = small-square).
+- **Steel roll sets** (cast chilled rolls, higher `minTorque` than the wrought sets): **wide-flat** (slab →
+  steel plate), **shape** (bloom → rail / I-beam / angle), **pipe/skelp** (slab → **skelp** strip → bell-weld
+  → **rolled pipe**, feeding hpex's pipe blocks), **wire** (billet → wire-rod). *(Owned gap/pass maps live
+  with each roll set; tunable.)*
+- **Mill-type upgrade = throughput/automation, orthogonal to roll sets.** The iwex base is a manual **two-high**
+  (re-feed each pass); smex's upgrade makes it **auto-run the pass schedule** (**reversing / three-high**, on
+  the production-machine framework — one flywheel energy-pulse per pass). Four-high / continuous (thin gauge,
+  cold, mass) is elex's. **Deferred:** ship the manual mill first; add the automation upgrade when throughput
+  demands it.
 
 ### Dies (shear / stamp) *(planned)*
 - **Input → output:** profiled stock → discrete items (shear-die divides by item mass); billet → forged heavy components (open die).
-- **Mechanic:** installable dies select the op. **Shearing is the LP exception** — one decisive blow cuts billet stock into plates/rods/pipes from day one. Bulk **stamp/blanking** (nails, rivets, brackets) needs sustained HP-steam energy → that capability lives with hpex. **Batch size = die cavity count** (read off the die mesh). Shearing/stamping hadfield or HSS needs **quench-hardened dies** (mirrors the boring-machine bit tiers).
+- **Mechanic:** installable dies select the op, and **the die's output thickness gates the hammer tier** — **≤1-voxel-high** work (strips, nails, shear, thin brackets) runs on the **LP single-action** hammer (lpex, gravity-drop blow); **≥2-voxel-high** work (tools, complex/thick forgings) needs the **HP double-action** hammer (hpex, steam on both strokes). Shearing is thin → LP from day one. **Batch size = die cavity count** (read off the die mesh). Shearing/stamping hadfield or HSS needs **quench-hardened dies** (mirrors the boring-machine bit tiers).
 
 ### Draw-die (wire) *(planned)*
 - **Input → output:** wire rod → wire.

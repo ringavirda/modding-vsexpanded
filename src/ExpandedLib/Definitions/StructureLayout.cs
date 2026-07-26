@@ -88,6 +88,44 @@ public static class StructureLayout
     return cells;
   }
 
+  /// <summary>
+  /// Parses FRONTAL slices - one 2D grid per Z level drawn as a front elevation (looking along -Z), for a
+  /// structure whose face lies in the X-Y plane and is thin in Z: a north-facing flywheel disc, a hammer's
+  /// A-frame. Within each grid the top row is the highest Y (<paramref name="yTop"/>, decreasing down the
+  /// rows) and each column runs along +X from <paramref name="xLeft"/>; the slice's Z is fixed. Same character
+  /// rules as <see cref="Parse"/> (<c>'.'</c> empty, spaces separators, blank ends trimmed), so it reads like
+  /// the elevation you'd sketch of the thing face-on.
+  /// </summary>
+  public static List<LayoutCell> ParseFrontal(
+    int xLeft,
+    int yTop,
+    IReadOnlyList<(int Z, string Grid)> faces
+  )
+  {
+    var cells = new List<LayoutCell>();
+    foreach ((int z, string grid) in faces)
+    {
+      string[] rows = grid.Replace("\r", "").Split('\n');
+      TrimBlankEnds(rows, out int first, out int last);
+
+      int y = yTop;
+      for (int r = first; r <= last; r++)
+      {
+        int x = xLeft;
+        foreach (char ch in rows[r])
+        {
+          if (ch is ' ' or '\t')
+            continue; // spacer between cells
+          if (ch != '.')
+            cells.Add(new LayoutCell(x, y, z, ch));
+          x++; // '.' and real cells both advance the column (+X)
+        }
+        y--; // each row down the grid is one step lower in Y
+      }
+    }
+    return cells;
+  }
+
   // Indices of the first and last non-blank rows (so surrounding blank lines from a raw string literal don't
   // shift Z). Returns first > last when every row is blank.
   private static void TrimBlankEnds(string[] rows, out int first, out int last)

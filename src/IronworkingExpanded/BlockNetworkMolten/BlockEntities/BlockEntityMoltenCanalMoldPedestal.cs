@@ -9,6 +9,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
@@ -182,6 +183,21 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
         MoldCooldownSpeed
       );
 
+    // The ceramic tier's ceiling: a fired-clay tool mold cannot hold iron-family metal. The instant the
+    // run delivers metal hotter than the clay ceiling, the mold cracks apart. This closes the pedestal
+    // loophole - draining fills the mold directly, bypassing the vanilla CanReceive gate, so without it a
+    // clay mold on an iron run would silently trap the cast (game:metalplate-castiron has no product).
+    // Our own cast-iron molds are a different block class and never satisfy the predicate.
+    if (
+      IsMold
+      && HasMoltenMetal
+      && ClayHeatGate.WouldShatter(MoldStack?.Block, CellTemperature)
+    )
+    {
+      ShatterMold();
+      return;
+    }
+
     // The pedestal drains its own cell (where the run delivers metal) into the mold.
     if (
       !IsMold
@@ -243,6 +259,34 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     MoldMetalContent != null
     && MoldCurrentUnits > 0
     && MoltenMetal.IsHardened(Api.World, MoldMetalContent);
+
+  /// <summary>
+  /// Destroys the clay mold that just took an over-ceiling pour: the fired clay cracks apart, so the mold
+  /// is gone (no drop) and the metal that would have poured is lost - the run keeps the rest of its metal,
+  /// which now has nowhere to go until an iron mold is placed. A crack of sound and an ingame error to
+  /// nearby players make the failure legible rather than a silent void.
+  /// </summary>
+  private void ShatterMold()
+  {
+    IsMold = false;
+    MoldStack = null;
+    MoldMetalContent = null;
+    MoldCurrentUnits = 0;
+    MoldMaxUnits = IwexValues.MoldDefaultUnits;
+
+    ExSounds.Play(Api, Pos, ExSounds.StoneCrush, 0.7f);
+    foreach (
+      IPlayer nearby in Api.World.GetPlayersAround(
+        Pos.ToVec3d().Add(0.5, 0.5, 0.5),
+        8f,
+        8f
+      )
+    )
+      (nearby as IServerPlayer)?.SendIngameError(ClayHeatGate.ShatterErrorCode);
+
+    UpdateRenderer();
+    MarkDirty(true);
+  }
 
   #endregion
 

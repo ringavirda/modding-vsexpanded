@@ -83,4 +83,60 @@ public class ExMeasureTests : System.IDisposable
     ExMeasure.System = MeasurementSystem.Imperial;
     Assert.Equal("no units here", ExMeasure.ConvertMetricText("no units here"));
   }
+
+  #region Mechanical energy (rotation / power / energy)
+
+  [Fact]
+  public void Speed_shows_rad_per_second_as_rpm()
+  {
+    // 2 rad/s · 60/2π = 19.10 -> "19" at F0. RPM is system-independent.
+    Assert.StartsWith("19 ", ExMeasure.Speed(2f));
+  }
+
+  [Fact]
+  public void Metric_power_shows_kilowatts()
+  {
+    ExMeasure.System = MeasurementSystem.Metric;
+    // 3500 W = 3.5 kW.
+    Assert.StartsWith("3.5 ", ExMeasure.Power(3500f));
+  }
+
+  [Fact]
+  public void Imperial_power_converts_watts_to_horsepower()
+  {
+    ExMeasure.System = MeasurementSystem.Imperial;
+    // 1491.4 W / 745.7 = 2.0 hp.
+    Assert.StartsWith("2.0 ", ExMeasure.Power(1491.4f));
+  }
+
+  [Fact]
+  public void Energy_shows_kilojoules()
+  {
+    // 12 400 J = 12.4 kJ.
+    Assert.StartsWith("12.4 ", ExMeasure.Energy(12400f));
+  }
+
+  [Fact]
+  public void Energy_promotes_to_megajoules_past_1000_kj()
+  {
+    // 5 000 000 J = 5000 kJ -> promoted to 5.0 MJ (not "5000.0").
+    Assert.StartsWith("5.0 ", ExMeasure.Energy(5_000_000f));
+  }
+
+  [Fact]
+  public void Charge_shows_percent_and_absolute_energy()
+  {
+    // 5 kJ of a 10 kJ capacity = 50%, plus the energy.
+    Assert.StartsWith("50% (5.0 ", ExMeasure.Charge(5000f, 10000f));
+  }
+
+  [Fact]
+  public void Charge_with_no_capacity_falls_back_to_just_energy()
+  {
+    string s = ExMeasure.Charge(5000f, 0f);
+    Assert.StartsWith("5.0 ", s);
+    Assert.DoesNotContain("%", s);
+  }
+
+  #endregion
 }

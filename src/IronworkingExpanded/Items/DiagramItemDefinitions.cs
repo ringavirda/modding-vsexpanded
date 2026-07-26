@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using ExpandedLib.Definitions;
+using IronworkingExpanded.BlockStructures.Casting;
 
 namespace IronworkingExpanded.Items;
 
@@ -25,7 +27,9 @@ namespace IronworkingExpanded.Items;
 public class DiagramItemDefinitions : IExItemDefProvider
 {
   // Each name is BOTH the variant state and the diag-{name} texture (assets/iwex/textures/item/diagram/).
-  private static readonly string[] Types =
+  // STRUCTURE diagrams - the plans for placeable blocks (pipes, molten canals, the tuyere, the casting
+  // bed/cell, the cold-blast and cupola cores).
+  private static readonly string[] StructureTypes =
   [
     "pipe-straight",
     "pipe-bend",
@@ -46,6 +50,14 @@ public class DiagramItemDefinitions : IExItemDefProvider
     "bfc",
     "cf",
   ];
+
+  // PATTERN/ITEM diagrams - one per sand-casting pattern, drawn as diag-item-{pattern}. Derived from the
+  // pattern list (single source), so a new castable part gets its diagram for free; the "item-" prefix
+  // keeps the two families apart and resolves the diag-item-{pattern} texture through the diag-{type} rule.
+  private static readonly string[] PatternDiagramTypes =
+    [.. PatternItemDefinitions.PatternTypes.Select(t => "item-" + t)];
+
+  private static readonly string[] Types = [.. StructureTypes, .. PatternDiagramTypes];
 
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [

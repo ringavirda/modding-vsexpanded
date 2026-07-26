@@ -42,6 +42,42 @@ public class IwexConfig : IExVersionedConfig
   /// Below 1 the cast holds its heat longer; 1 = the base molten rate. Applied live.</summary>
   public float MoldPedestalCooldownCoefficient { get; set; } = 1f;
 
+  /// <summary>Ambient temperature (°C) the molten system cools toward.</summary>
+  public float MoltenAmbientTemperature { get; set; } = 20f;
+
+  /// <summary>Fraction of a poured metal's temperature the cast-iron mold body soaks up as its own
+  /// heat-sink glow (0..1). Higher = the mold glows brighter/longer off a pour.</summary>
+  public float CastMoldHeatSinkFraction { get; set; } = 0.7f;
+
+  /// <summary>How fast (°C per second) a cast-iron mold body sheds its heat-sink glow toward ambient.</summary>
+  public float CastMoldBodyCooldownPerSecond { get; set; } = 25f;
+
+  /// <summary>
+  /// Pour temperature (°C) above which a fired-clay tool mold shatters instead of casting - the ceramic
+  /// tier's ceiling. Every vanilla casting metal sits below it (tin bronze 950, black bronze / brass
+  /// ~1000, gold 1063, copper 1084) and everything the iron tier adds sits above (cast iron ~1150+,
+  /// wrought iron and steel ~1500), so vanilla progression is untouched and the rule bites only when a
+  /// player tries to pour iron-family metal into clay. Only the SMALL clay molds (those that fit the mold
+  /// pedestal) are gated; the large anvil / helve-hammer molds are cast at iron temperatures and are
+  /// exempt. Our own cast-iron molds are a different block class and never shatter. See
+  /// <see cref="BlockNetworkMolten.Blocks.ClayHeatGate"/>.
+  /// </summary>
+  public float ClayMoldHeatCeiling { get; set; } = 1100f;
+
+  /// <summary>
+  /// Whether the enhanced mold handling (spill a filled mold moved out of hand, burn the hand holding a
+  /// hot one, render/carry the cast) also applies to <b>vanilla clay</b> tool molds. Our own cast molds
+  /// always get it; this opts vanilla molds in too. Toggle live with
+  /// <c>/exmod config iwex EnhanceVanillaMolds true|false</c>.
+  /// </summary>
+  public bool EnhanceVanillaMolds { get; set; } = false;
+
+  /// <summary>Minimum mold-content temperature (°C) that burns a bare-handed player carrying a filled
+  /// mold. Applies to our cast molds always, and to vanilla clay molds when
+  /// <see cref="EnhanceVanillaMolds"/> is on. (Moved here from smex with the mold-safety tick, so the
+  /// cast-mold handling this mod owns works without the steelmaking add-on installed.)</summary>
+  public float MoldBurnMinTemperature { get; set; } = 200f;
+
   // MoltenFlowRate and MoltenMinFlowAmount moved to exlib's config (ExlibValues) now that the
   // MoltenNetwork class lives in exlib - the per-connection flow driver is framework code. The
   // cooldown values above stay here: they're read by iwex's MoltenMetal/canal cells.
@@ -63,6 +99,14 @@ public class IwexConfig : IExVersionedConfig
 
   /// <summary>Fire-clay refunded when breaking a canal seal.</summary>
   public int CanalUnsealClayRefund { get; set; } = 2;
+  #endregion
+
+  #region Sand casting
+  /// <summary>Chance (0..1) that the rammed sand block is returned to the player on shake-out. Green sand is
+  /// reconditioned and reused, so the default is <b>1</b> (always returned - a sand-neutral loop); lower it
+  /// to make sand a slow consumable (a fraction lost each heat) rather than purely ceremonial.</summary>
+  [ExConfigRange(0, 1)]
+  public float SandReturnChance { get; set; } = 1f;
   #endregion
 
   #region Blastmix
@@ -400,6 +444,45 @@ public class IwexConfig : IExVersionedConfig
 
   /// <summary>Axle speed at/above which the blower delivers its full <see cref="TwinTubBlowerOutputPerSecond"/>.</summary>
   public float TwinTubBlowerMaxSpeed { get; set; } = 1.5f;
+  #endregion
+
+  #region Flywheel (mechanical-energy storage)
+  // The flywheel is the signature block of the energy MP network (docs/design/mp-energy-network.md): it
+  // contributes rotational inertia, and the run's reservoir capacity is derived from it (1/2 I omega_max^2,
+  // omega_max = ExlibValues.MpMaxSpeed). Inertia also sets spin-up time. A disc's I scales with R^4 * t, so
+  // the large flywheel (5x5x2, ~1.7x radius and 2x thickness of the normal 3x3x1) holds roughly 15x the
+  // energy and takes ~15x as long to charge - the two levers that make it the heavy-industry buffer.
+
+  /// <summary>Rotational inertia of the normal (3x3x1) flywheel - the reference disc. Its capacity is
+  /// <c>1/2 x this x MpMaxSpeed^2</c> MP.s.</summary>
+  [ExConfigRange(0.01, 1_000_000)] // inertia divides derived speed - must stay positive
+  public float FlywheelInertiaNormal { get; set; } = 10f;
+
+  /// <summary>Rotational inertia of the large (5x5x2) flywheel - ~15x the normal disc (I scales with
+  /// R^4 x thickness), so ~15x the stored energy and spin-up time.</summary>
+  [ExConfigRange(0.01, 1_000_000)]
+  public float FlywheelInertiaLarge { get; set; } = 150f;
+
+  // The flywheel doubles as the vanilla-MP -> energy bridge: an axle (water wheel, windmill, engine)
+  // coupled to its hub feeds the reservoir. This is the iron tier's charge path - mechanical power exists
+  // long before steam. The bridge reads the coupled axle's speed off the hosted MP port and injects a
+  // proportional power; torque is not modelled here (the whole sub-machine ecosystem is speed-driven).
+
+  /// <summary>Drive torque (N.m) the bridge applies to the mpenergy shaft when the coupled axle turns at (or
+  /// above) <see cref="FlywheelBridgeRatedAxleSpeed"/>; scales down linearly below it. At rest this is full
+  /// torque so the bridge can start a load, but below the load + idle resistance the shaft never spins up.</summary>
+  [ExConfigRange(0, 1_000_000)]
+  public float FlywheelBridgeChargePower { get; set; } = 1f;
+
+  /// <summary>Axle speed at/above which the bridge delivers its full <see cref="FlywheelBridgeChargePower"/>.
+  /// Below it the drive torque scales down in proportion (vanilla MP rated speed is ~1).</summary>
+  [ExConfigRange(0.01, 1000)]
+  public float FlywheelBridgeRatedAxleSpeed { get; set; } = 1f;
+
+  /// <summary>Rotational inertia (kg.m^2) a single cast-iron shaft segment adds to its run - the "Buffer" node's
+  /// little rotating mass, so a shaft line rides jitter without a dedicated flywheel. Small vs a flywheel.</summary>
+  [ExConfigRange(0, 1_000_000)]
+  public float ShaftInertia { get; set; } = 0.5f;
   #endregion
 
   #region Burden grades

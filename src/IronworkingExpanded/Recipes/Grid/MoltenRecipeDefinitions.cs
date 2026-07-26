@@ -24,15 +24,26 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
   private static ExRecipeDef MoltenBarrel(string domain) =>
     ExRecipeDef
       .Create(domain, "grid", "moltenbarrel")
-      .GridObject(r =>
-        r.Name("Molten Barrel")
+      // Fabricated route: plates hammered over a fire-clay lining, nailed shut.
+      .Grid(r =>
+        r.Name("Molten Barrel (Bolted)")
           .Pattern("PHP,PCP,PNP")
           .Size(3, 3)
           .Ingredient("P", Plate(1))
           .Ingredient("C", FireClay(4))
           .Ingredient("N", Nails(4))
           .Ingredient("H", Hammer)
-          .OutputBlock("iwex:moltenbarrel")
+          .OutputBlock("iwex:moltenbarrel-bolted")
+      )
+      // Cast route: line a sand-cast cast-barrel blank with fire clay (the vessel's "finish the casting").
+      // Cheaper in bulk than the bolted craft - one blank replaces the six plates and the nails.
+      .Grid(r =>
+        r.Name("Molten Barrel (Cast, lined)")
+          .Pattern("BC")
+          .Size(2, 1)
+          .Ingredient("B", i => i.Item("iwex:cast-barrel").Quantity(1))
+          .Ingredient("C", FireClay(4))
+          .OutputBlock("iwex:moltenbarrel-cast")
       );
 
   private static ExRecipeDef MoltenCanal(string domain) =>
@@ -225,28 +236,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
           .OutputBlock("iwex:moltencanal-moldpedestal-fire-s", 1)
       );
 
-  // The fire-clay + hammer + chisel trio every canal recipe shares (clay quantity varies: 4 for the tap, else 2).
-  private static GridRecipeBuilder Fhk(GridRecipeBuilder r, int clayQty) =>
-    r.Ingredient("F", FireClay(clayQty))
-      .Ingredient("H", Hammer)
-      .Ingredient("K", Chisel);
-
-  private static readonly string[] Bricks =
-  [
-    "black",
-    "brown",
-    "cream",
-    "gray",
-    "orange",
-    "red",
-    "tan",
-  ];
-
-  private static IngredientBuilder RunningBrick(IngredientBuilder i) =>
-    i.Block("game:brickcourse-four-running-*")
-      .Named("brick", Bricks)
-      .Quantity(1);
-
-  private static IngredientBuilder FireBrick(IngredientBuilder i) =>
-    i.Block("game:claybricks-good-fire").Quantity(1);
+  // The Fhk (fire-clay + hammer + chisel) trio, the coloured RunningBrick / FireBrick captures, and the
+  // Bricks palette are shared with the casting-cell craft, so they live in RecipeIngredients (reached via
+  // the file's `using static`).
 }

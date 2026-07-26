@@ -1,0 +1,139 @@
+{
+  "code": "pattern",
+  "shape": {
+    "base": "game:item/plate"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/wood/debarked/{wood}"
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "heavyplate",
+        "moldplate",
+        "molddoubleingot",
+        "castbarrel"
+      ]
+    },
+    {
+      "code": "wood",
+      "states": [
+        "birch",
+        "oak",
+        "maple",
+        "pine",
+        "acacia",
+        "kapok",
+        "baldcypress",
+        "larch",
+        "redwood",
+        "ebony",
+        "walnut",
+        "purpleheart"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "durability": 24,
+  "attributesByType": {
+    "*-heavyplate-*": {
+      "mold": {
+        "size": "cell",
+        "shape": "iwex:casting/cell-filling-heavyplate",
+        "capacity": 160,
+        "cavity": [
+          {
+            "x1": 7,
+            "y1": 4,
+            "z1": 4,
+            "x2": 9,
+            "y2": 14,
+            "z2": 12
+          }
+        ],
+        "output": {
+          "type": "item",
+          "code": "iwex:castplate-heavy"
+        },
+        "minPourTemp": 1150.0
+      }
+    },
+    "*-moldplate-*": {
+      "mold": {
+        "size": "cell",
+        "shape": "iwex:casting/cell-filling-plate",
+        "capacity": 136,
+        "cavity": [
+          {
+            "x1": 3,
+            "y1": 12,
+            "z1": 3,
+            "x2": 13,
+            "y2": 14,
+            "z2": 13
+          }
+        ],
+        "output": {
+          "type": "block",
+          "code": "iwex:castmold-plate"
+        },
+        "minPourTemp": 1150.0
+      }
+    },
+    "*-molddoubleingot-*": {
+      "mold": {
+        "size": "cell",
+        "shape": "iwex:casting/cell-filling-doubleingot",
+        "capacity": 152,
+        "cavity": [
+          {
+            "x1": 3,
+            "y1": 12,
+            "z1": 3,
+            "x2": 13,
+            "y2": 14,
+            "z2": 13
+          }
+        ],
+        "output": {
+          "type": "block",
+          "code": "iwex:castmold-doubleingot"
+        },
+        "minPourTemp": 1150.0
+      }
+    },
+    "*-castbarrel-*": {
+      "mold": {
+        "size": "cell",
+        "shape": "iwex:casting/cell-filling-moltenbarrel",
+        "capacity": 200,
+        "cavity": [
+          {
+            "x1": 4,
+            "y1": 4,
+            "z1": 4,
+            "x2": 12,
+            "y2": 12,
+            "z2": 12
+          }
+        ],
+        "output": {
+          "type": "item",
+          "code": "iwex:cast-barrel"
+        },
+        "minPourTemp": 1150.0
+      }
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

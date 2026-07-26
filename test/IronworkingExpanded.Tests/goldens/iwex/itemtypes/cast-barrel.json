@@ -1,0 +1,22 @@
+{
+  "code": "cast-barrel",
+  "shape": {
+    "base": "iwex:item/cast-barrel"
+  },
+  "maxstacksize": 8,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 200
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

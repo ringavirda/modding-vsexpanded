@@ -361,7 +361,7 @@ public abstract class BlockNetworkNode
   /// stored on the block entity.  Re-registers the node in the network graph with
   /// the new orientation's connector set.
   /// </summary>
-  public void Rotate(EntityAgent byEntity, BlockSelection blockSel, int dir)
+  public virtual void Rotate(EntityAgent byEntity, BlockSelection blockSel, int dir)
   {
     if (Type == null || Orientation == null)
       return;
@@ -767,6 +767,18 @@ public abstract class BlockNetworkNode
   /// </summary>
   public virtual bool HasConnectorAt(BlockFacing face) =>
     Orientation != null && Orientation.Contains(face.Code[0]);
+
+  /// <summary>
+  /// Position-aware connector test (implements the <see cref="INetworkConnector"/> DIM). Defaults to the
+  /// position-less axis answer, so pipes/canals/shafts are unchanged; a node whose connectors depend on
+  /// runtime block-entity state (the bevel gear's per-face gears) overrides this to read the cell. The graph
+  /// traversal (<c>BlockNetworkModSystem.GetConnectedNeighbors</c>) calls this, so an override branches the run.
+  /// </summary>
+  public virtual bool HasConnectorAt(
+    IBlockAccessor world,
+    BlockPos pos,
+    BlockFacing face
+  ) => HasConnectorAt(face);
 
   /// <summary>Returns all block faces that have a network connector, or <c>null</c> if unorientated.</summary>
   public virtual BlockFacing[]? GetConnectorFaces()

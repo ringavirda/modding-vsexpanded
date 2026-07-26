@@ -41,6 +41,10 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   private bool _solidifiesWhenCold = true;
   private float _cooldownSpeed = ExlibValues.MoltenCooldownDefault;
 
+  // A mold rammed into a casting cell sets the cell's capacity from the pattern's spec at runtime; while
+  // set it wins over the declared/config capacity. Persisted so a half-cast cell survives a reload.
+  private int? _patternCapacity;
+
   /// <summary>The principal (controller) block this cell belongs to, or null when hosted standalone.</summary>
   public BlockPos? Principal { get; private set; }
 
@@ -88,7 +92,27 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   public float CellTemperature => _cellTemperature;
 
   /// <inheritdoc/>
-  public int MaxUnitCapacity => _capacity;
+  public int MaxUnitCapacity => _patternCapacity ?? _capacity;
+
+  /// <summary>
+  /// Overrides this cell's capacity at runtime from a rammed mold pattern's spec. Wins over the declared
+  /// and config capacity until <see cref="ClearCapacity"/> is called (on shake-out). The caller guards
+  /// against changing capacity while metal is present.
+  /// </summary>
+  public void SetCapacity(int capacity)
+  {
+    _patternCapacity = capacity > 0 ? capacity : null;
+    Blockentity.MarkDirty();
+  }
+
+  /// <summary>Drops the pattern capacity override, reverting to the declared/config capacity.</summary>
+  public void ClearCapacity()
+  {
+    if (_patternCapacity == null)
+      return;
+    _patternCapacity = null;
+    Blockentity.MarkDirty();
+  }
 
   /// <summary>Hosted cells are never clay-sealed (the seal is a canal-only interaction).</summary>
   public bool Sealed => false;
@@ -325,6 +349,10 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     tree.SetString("mc_type", CellMetalType);
     tree.SetFloat("mc_temp", _cellTemperature);
     tree.SetBool("mc_solid", Solidified);
+    if (_patternCapacity is { } cap)
+      tree.SetInt("mc_patcap", cap);
+    else
+      tree.RemoveAttribute("mc_patcap");
   }
 
   public override void FromTreeAttributes(
@@ -337,6 +365,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     CellMetalType = tree.GetString("mc_type", "");
     _cellTemperature = tree.GetFloat("mc_temp");
     Solidified = tree.GetBool("mc_solid");
+    _patternCapacity = tree.HasAttribute("mc_patcap") ? tree.GetInt("mc_patcap") : null;
     // _cellMetalStack rebuilt lazily server-side in EnsureMetalStack.
 
     // Invariant: an empty cell is never solidified (also scrubs phantom flags from old saves).

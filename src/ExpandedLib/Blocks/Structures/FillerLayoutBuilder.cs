@@ -22,11 +22,13 @@ public sealed class FillerLayoutBuilder
   private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted = new();
   private readonly List<(int Y, string Grid)> _layers = new();
   private readonly List<(int X, string Grid)> _slices = new();
+  private readonly List<(int Z, string Grid)> _faces = new();
 
   /// <summary>Sets the top-left cell of every grid. For horizontal <see cref="Layer"/>s the pair is
-  /// <c>(xLeft, zTop)</c> - the X of the first column and the Z of the first row. For vertical
-  /// <see cref="Slice"/>s it is <c>(zLeft, yTop)</c> - the Z of the first column and the Y of the top row.
-  /// Defaults to <c>(0, 0)</c>. A builder uses layers OR slices, not both.</summary>
+  /// <c>(xLeft, zTop)</c> - the X of the first column and the Z of the first row. For fixed-X vertical
+  /// <see cref="Slice"/>s it is <c>(zLeft, yTop)</c>; for fixed-Z <see cref="Face"/> elevations it is
+  /// <c>(xLeft, yTop)</c> - the X of the first column and the Y of the top row. Defaults to <c>(0, 0)</c>.
+  /// A builder uses layers, slices, OR faces - one kind, since their Origin axes differ.</summary>
   public FillerLayoutBuilder Origin(int a, int b)
   {
     _originA = a;
@@ -91,18 +93,32 @@ public sealed class FillerLayoutBuilder
     return this;
   }
 
+  /// <summary>Adds one vertical Z-level grid (a front elevation looking along -Z; rows run down in -Y from the
+  /// top, columns run +X). This is the natural view for a thin-in-Z, north-facing structure - a flywheel disc,
+  /// a hammer's A-frame - whose face lies in the X-Y plane, which neither the horizontal <see cref="Layer"/>
+  /// nor the fixed-X <see cref="Slice"/> can draw in-plane. Faces may be declared in any Z order.</summary>
+  public FillerLayoutBuilder Face(int z, string grid)
+  {
+    _faces.Add((z, grid));
+    return this;
+  }
+
   internal IReadOnlyList<FillerCellSpec> Build()
   {
-    if (_layers.Count > 0 && _slices.Count > 0)
+    int kinds =
+      (_layers.Count > 0 ? 1 : 0) + (_slices.Count > 0 ? 1 : 0) + (_faces.Count > 0 ? 1 : 0);
+    if (kinds > 1)
       throw new InvalidOperationException(
-        "Filler layout mixes horizontal Layer and vertical Slice grids; the Origin axes differ, so use one "
-          + "or the other in a single footprint."
+        "Filler layout mixes Layer / Slice / Face grids; each uses a different Origin axis pair, so use one "
+          + "kind in a single footprint."
       );
 
     var parsed =
-      _slices.Count > 0
-        ? StructureLayout.ParseVertical(_originA, _originB, _slices)
-        : StructureLayout.Parse(_originA, _originB, _layers);
+      _faces.Count > 0
+        ? StructureLayout.ParseFrontal(_originA, _originB, _faces)
+        : _slices.Count > 0
+          ? StructureLayout.ParseVertical(_originA, _originB, _slices)
+          : StructureLayout.Parse(_originA, _originB, _layers);
 
     var cells = new List<FillerCellSpec>();
     foreach (LayoutCell cell in parsed)

@@ -2,7 +2,9 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
+using IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
@@ -18,6 +20,15 @@ public static class MoltenMoldSpill
   public const string ErrorCode = "iwex-moltenspill";
 
   /// <summary>
+  /// Whether a block gets the enhanced mold handling (spill / burn / carry). Our own
+  /// <see cref="BlockCastMold"/> always does; vanilla clay <c>BlockToolMold</c> only when the server has
+  /// opted in via <c>EnhanceVanillaMolds</c> (<c>/exmod molds vanilla on</c>).
+  /// </summary>
+  public static bool IsHandledMold(Block? block) =>
+    block is BlockCastMold
+    || (IwexValues.EnhanceVanillaMolds && block is BlockToolMold);
+
+  /// <summary>
   /// If <paramref name="slot"/> holds a tool mold with molten metal, strips its
   /// contents and (optionally) notifies the player. Returns true if it spilled.
   /// </summary>
@@ -27,7 +38,7 @@ public static class MoltenMoldSpill
     IServerPlayer? notify
   )
   {
-    if (slot?.Itemstack is not { } stack || stack.Block is not BlockToolMold)
+    if (slot?.Itemstack is not { } stack || !IsHandledMold(stack.Block))
       return false;
 
     var (contents, fill) = MoltenContents.Read(

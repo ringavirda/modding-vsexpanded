@@ -57,6 +57,10 @@ public partial class BlockSandCastingBed
         "exlib.BEBehaviorMoltenCell",
         new JObject { ["capacity"] = 200, ["flowSource"] = true }
       )
+      // The RCC behaviour suppresses the default block mesh, so the built brick+sand stages only render
+      // through a ConstructedAnimator (the ore-bunker/engine idiom). Without Animatable the bed draws
+      // nothing but its molten surfaces. The bed is static, so the animator only tesselates - no anims.
+      .EntityBehavior("Animatable")
       .Construction(c =>
         c.Stage(s =>
             // storeWildCard "brick" captures the fired-brick colour used; the second course and the

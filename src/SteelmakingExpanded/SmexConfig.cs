@@ -113,10 +113,8 @@ public class SmexConfig : IExVersionedConfig
   public float AirBlowerOutputPerSecond { get; set; } = 48f;
   #endregion
 
-  #region Player safety
-  /// <summary>Minimum mold-content temperature (°C) that burns a bare-handed player carrying it.</summary>
-  public float MoldBurnMinTemperature { get; set; } = 200f;
-  #endregion
+  // Mold-carry player safety (the burn temperature) moved to iwex (IwexValues.MoldBurnMinTemperature)
+  // with the mold spill/burn tick, so the cast-iron molds iwex owns are safe to carry without smex.
 
   #region Cowper stove
   /// <summary>Cap (°C) on the cowper stove's internal regenerator temperature.</summary>
@@ -257,21 +255,8 @@ public class SmexConfig : IExVersionedConfig
   public float SmokestackGasIntakeVolume { get; set; } = 48.0f;
   #endregion
 
-  #region Tool molds
-  // Availability of the mod's added casting molds. Disabling one removes its clay-forming recipe
-  // and hides it from creative/the handbook on the next world load, and stops any already-placed
-  // mold of that type from yielding a casting immediately. Toggled in-game by a server admin via
-  // /exmod molds <plate|ingot|rod|all> <on|off>; persisted to smex_values.json.
-
-  /// <summary>Whether the plate mold (casts metal plates) is available.</summary>
-  public bool EnablePlateMold { get; set; } = true;
-
-  /// <summary>Whether the double-ingot mold (casts 2 ingots) is available.</summary>
-  public bool EnableIngotMold { get; set; } = true;
-
-  /// <summary>Whether the quad-rod mold (casts 4 rods) is available.</summary>
-  public bool EnableRodMold { get; set; } = true;
-  #endregion
+  // The ceramic tool molds (and their /exmod molds enable/disable flags) were removed in favour of the
+  // cast-iron molds cast in the sand cell (iwex); see docs/design/sand-casting.md.
 
   #region Recipe balance
   /// <summary>Active steelmaking recipe cost level - <c>"normal"</c> or <c>"cheap"</c>. Toggled

@@ -38,9 +38,13 @@ public static class ExMeasure
   public static MeasurementSystem System { get; set; } =
     MeasurementSystem.Metric;
 
-  // Conversion factors from metric.
+  // Conversion factors from metric / SI.
   private const float LitresToImperialGallons = 0.219969248f; // 1 L = 0.21997 imp gal
   private const float AtmToPsi = 14.6959488f; // 1 atm = 14.696 psi
+  private const float RadPerSecToRpm = 9.549296586f; // 60 / 2π
+  private const float WattsToKilowatts = 0.001f;
+  private const float WattsToHorsepower = 1f / 745.699872f; // 1 mechanical hp = 745.7 W
+  private const float JoulesToKilojoules = 0.001f;
 
   private static bool Imperial => System == MeasurementSystem.Imperial;
 
@@ -113,6 +117,48 @@ public static class ExMeasure
   {
     var (num, unit) = Temp(celsius, format);
     return num + " " + unit;
+  }
+
+  #endregion
+
+  #region Mechanical energy (rotation / power / energy)
+
+  /// <summary>A shaft speed given in rad/s, shown as revolutions per minute, e.g. <c>"480 RPM"</c>. RPM is
+  /// universal, so this does not vary with the display system.</summary>
+  public static string Speed(float radPerSecond, string format = "F0") =>
+    Num(radPerSecond * RadPerSecToRpm, format) + " " + Unit("rpm");
+
+  /// <summary>A power given in watts, e.g. <c>"3.5 kW"</c> or <c>"4.7 hp"</c> (horsepower on the imperial
+  /// setting - period-authentic for engines).</summary>
+  public static string Power(float watts, string format = "F1")
+  {
+    var (num, unit) = Pow(watts, format);
+    return num + " " + unit;
+  }
+
+  /// <summary>An energy given in joules, shown in kJ (promoted to MJ past 1000 kJ so a large flywheel doesn't
+  /// read as "15000 kJ"), e.g. <c>"12.4 kJ"</c> or <c>"1.8 MJ"</c>. Energy stays SI in both display systems.</summary>
+  public static string Energy(float joules, string format = "F1")
+  {
+    float kilojoules = joules * JoulesToKilojoules;
+    return MathF.Abs(kilojoules) >= 1000f
+      ? Num(kilojoules * 0.001f, format) + " " + Unit("megajoules")
+      : Num(kilojoules, format) + " " + Unit("kilojoules");
+  }
+
+  /// <summary>A reservoir charge readout: the fill percentage against a capacity plus the absolute energy,
+  /// e.g. <c>"73% (12.4 kJ)"</c>. A non-positive capacity falls back to just the energy.</summary>
+  public static string Charge(
+    float joules,
+    float capacityJoules,
+    string format = "F1"
+  )
+  {
+    if (capacityJoules <= 0f)
+      return Energy(joules, format);
+    int percent = (int)
+      MathF.Round(Math.Clamp(joules / capacityJoules, 0f, 1f) * 100f);
+    return percent + "% (" + Energy(joules, format) + ")";
   }
 
   #endregion
@@ -256,6 +302,11 @@ public static class ExMeasure
     Imperial
       ? (Num(celsius * 9f / 5f + 32f, format), Unit("fahrenheit"))
       : (Num(celsius, format), Unit("celsius"));
+
+  private static (string num, string unit) Pow(float watts, string format) =>
+    Imperial
+      ? (Num(watts * WattsToHorsepower, format), Unit("horsepower"))
+      : (Num(watts * WattsToKilowatts, format), Unit("kilowatts"));
 
   /// <summary>Localized symbol for a unit, e.g. <c>Unit("litres")</c> → "L" / "л".</summary>
   private static string Unit(string key) => Lang.Get("exlib:unit-" + key);
