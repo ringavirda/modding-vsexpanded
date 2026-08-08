@@ -6,7 +6,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:engineairblower-north"
+      "code": "smex:engineairblower-n"
     },
     "ingredients": {
       "P": {
@@ -48,7 +48,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:engineairblower-north"
+      "code": "smex:engineairblower-n"
     },
     "ingredients": {
       "P": {

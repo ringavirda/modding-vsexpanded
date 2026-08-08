@@ -1,0 +1,24 @@
+{
+  "code": "spurgear",
+  "shape": {
+    "base": "game:item/gear-rusty"
+  },
+  "textures": {
+    "rusty-iron": {
+      "base": "iwex:block/metal/castiron"
+    }
+  },
+  "maxstacksize": 32,
+  "materialDensity": 7200,
+  "attributes": {
+    "materialUnits": 60
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

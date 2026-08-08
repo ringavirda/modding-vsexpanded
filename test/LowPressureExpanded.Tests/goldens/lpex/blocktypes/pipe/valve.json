@@ -49,26 +49,26 @@
   ],
   "shapebytype": {
     "*-valve-ns": {
-      "base": "lpex:pipes/valve"
+      "base": "lpex:pipe/valve"
     },
     "*-valve-we": {
-      "base": "lpex:pipes/valve",
+      "base": "lpex:pipe/valve",
       "rotateY": 90
     },
     "*-valve-ud": {
-      "base": "lpex:pipes/valve",
+      "base": "lpex:pipe/valve",
       "rotateX": 90
     },
     "*-valve-sn": {
-      "base": "lpex:pipes/valve",
+      "base": "lpex:pipe/valve",
       "rotateY": 180
     },
     "*-valve-ew": {
-      "base": "lpex:pipes/valve",
+      "base": "lpex:pipe/valve",
       "rotateY": -90
     },
     "*-valve-du": {
-      "base": "lpex:pipes/valve",
+      "base": "lpex:pipe/valve",
       "rotateX": 90,
       "rotateY": 180
     }

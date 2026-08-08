@@ -19,12 +19,12 @@ namespace SteelmakingExpanded.Tests;
 public class HeatBalanceTests
 {
   private static BlockEntityBlastFurnaceHot HotFurnace() =>
-    Stand(new BlockEntityBlastFurnaceHot(), "smex:blastfurnacecore-north");
+    Stand(new BlockEntityBlastFurnaceHot(), "smex:blastfurnacecore-n");
 
   private static BlockEntityBlastFurnaceCold ColdFurnace() =>
-    Stand(new BlockEntityBlastFurnaceCold(), "iwex:blastfurnacecore-north");
+    Stand(new BlockEntityBlastFurnaceCold(), "iwex:furnace-blastcore-tier1-n");
 
-  // NOTE: two concrete overloads rather than one generic - a `where T : BlockEntity` constraint is
+  // Note: two concrete overloads rather than one generic - a `where T : BlockEntity` constraint is
   // resolved by xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
 
   private static BlockEntityBlastFurnaceHot Stand(
@@ -63,7 +63,11 @@ public class HeatBalanceTests
         new BurdenMix(1f - 0.05f - fuelFrac, 0.05f, fuelFrac),
         1f,
         blastTemp,
-        IwexValues.BlastMixRequiredToFire
+        // The furnace's own capacity, so every row below is the full-charge case - which is what the
+        // parity claim against iwex needs. It passed `IwexValues.BlastMixRequiredToFire` (320) until that
+        // key was deleted; 320 was a fire threshold, not a capacity, and a hot blast furnace holds far
+        // more, so these rows were quietly the "loaded to a quarter" case on both sides of the parity.
+        (int)ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!
       )!;
 
   [Theory]

@@ -34,7 +34,7 @@ public class ManualPumpBeTests
       Pos = pos,
       Block = TestBlocks.Configure(
         new Block(),
-        "lpex:manualfluidpump-north",
+        "lpex:manualfluidpump-n",
         70,
         ("side", "north")
       ),

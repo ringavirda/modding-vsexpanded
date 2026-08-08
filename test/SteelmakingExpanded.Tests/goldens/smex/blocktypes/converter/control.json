@@ -17,10 +17,10 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "smex": [
-      "*-north"
+      "*-n"
     ]
   },
   "attributes": {
@@ -30,9 +30,9 @@
         "smex:convertertransmission*": 2,
         "smex:converterbessemer*": 3,
         "smex:converter-intake*": 4,
-        "iwex:moltencanal-tap*": 5,
-        "iwex:moltencanal-start*": 6,
-        "iwex:moltencanal-straight*": 7,
+        "iwex:molten-canal-tap-*": 5,
+        "iwex:molten-canal-start-*-*": 6,
+        "iwex:molten-canal-straight-*-*": 7,
         "exlib:structurefiller": 8
       },
       "offsets": [
@@ -242,29 +242,34 @@
       "name": "MultiblockStructure"
     },
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shapebytype": {
-    "*-north": {
+    "*-n": {
       "base": "smex:converter/control",
       "rotateY": 0
     },
-    "*-east": {
+    "*-e": {
       "base": "smex:converter/control",
       "rotateY": 270
     },
-    "*-south": {
+    "*-s": {
       "base": "smex:converter/control",
       "rotateY": 180
     },
-    "*-west": {
+    "*-w": {
       "base": "smex:converter/control",
       "rotateY": 90
     }

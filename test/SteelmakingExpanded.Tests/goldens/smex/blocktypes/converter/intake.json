@@ -3,7 +3,7 @@
   "class": "smex.BlockConverterIntake",
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "blockmaterial": "Metal",
@@ -16,10 +16,10 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "smex": [
-      "*-north"
+      "*-n"
     ]
   },
   "variantgroups": [
@@ -31,23 +31,28 @@
     },
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shapebytype": {
-    "*-north": {
+    "*-n": {
       "base": "smex:converter/intake",
       "rotateY": 0
     },
-    "*-east": {
+    "*-e": {
       "base": "smex:converter/intake",
       "rotateY": 270
     },
-    "*-south": {
+    "*-s": {
       "base": "smex:converter/intake",
       "rotateY": 180
     },
-    "*-west": {
+    "*-w": {
       "base": "smex:converter/intake",
       "rotateY": 90
     }

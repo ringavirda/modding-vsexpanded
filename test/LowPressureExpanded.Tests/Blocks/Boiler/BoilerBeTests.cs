@@ -22,7 +22,7 @@ public class BoilerBeTests
       // Base BlockEntity.ToTreeAttributes reads Block.Code, so a placed block is required.
       Block = TestBlocks.Configure(
         new Vintagestory.API.Common.Block(),
-        "lpex:boiler-cornish-north",
+        "lpex:boiler-cornish-n",
         1
       ),
     };

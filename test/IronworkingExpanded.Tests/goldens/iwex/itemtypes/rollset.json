@@ -1,0 +1,131 @@
+{
+  "code": "rollset",
+  "shape": {
+    "base": "game:item/ingot"
+  },
+  "textures": {
+    "all": {
+      "base": "iwex:block/metal/castiron"
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "flat",
+        "flatwide",
+        "grooved",
+        "slitting"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "attributesByType": {
+    "*-flat": {
+      "rollset": {
+        "family": "flat",
+        "accepts": [
+          "bloom",
+          "billet"
+        ],
+        "gaps": [
+          2.0,
+          1.5,
+          1.0,
+          0.5
+        ],
+        "outputs": [
+          {
+            "gap": 1.0,
+            "code": "iwex:rolledplate-iron"
+          },
+          {
+            "gap": 0.5,
+            "code": "iwex:rolledsheet-iron"
+          }
+        ],
+        "barrelWidth": 6.0,
+        "minTorque": 0.2
+      }
+    },
+    "*-flatwide": {
+      "rollset": {
+        "family": "flat",
+        "accepts": [
+          "slab",
+          "bloom"
+        ],
+        "gaps": [
+          2.0,
+          1.5,
+          1.0,
+          0.5
+        ],
+        "outputs": [
+          {
+            "gap": 1.0,
+            "code": "iwex:rolledplate-iron"
+          },
+          {
+            "gap": 0.5,
+            "code": "iwex:rolledsheet-iron"
+          }
+        ],
+        "barrelWidth": 16.0,
+        "minTorque": 0.5
+      }
+    },
+    "*-grooved": {
+      "rollset": {
+        "family": "grooved",
+        "accepts": [
+          "bloom",
+          "billet"
+        ],
+        "gaps": [
+          1.0,
+          0.5
+        ],
+        "outputs": [
+          {
+            "gap": 1.0,
+            "code": "game:rod-iron"
+          },
+          {
+            "gap": 0.5,
+            "code": "iwex:wirerod-iron"
+          }
+        ],
+        "barrelWidth": 16.0,
+        "minTorque": 0.3
+      }
+    },
+    "*-slitting": {
+      "rollset": {
+        "family": "slitting",
+        "accepts": [
+          "plate"
+        ],
+        "gaps": [
+          0.5
+        ],
+        "outputs": [
+          {
+            "gap": 0.5,
+            "code": "iwex:nailrod-iron"
+          }
+        ],
+        "barrelWidth": 16.0,
+        "minTorque": 0.4
+      }
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

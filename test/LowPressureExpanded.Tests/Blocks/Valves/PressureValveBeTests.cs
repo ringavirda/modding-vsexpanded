@@ -1,3 +1,4 @@
+using IronworkingExpanded.Tests;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using LowPressureExpanded.BlockNetworkPipe;
@@ -219,8 +220,8 @@ public class PressureValveBeTests
     var (world, valve, inNet) = VentRig();
 
     // MaxVolume = 2 pipes * 30 L = 60; gate is 1 atm, so >60 L is overflow.
-    inNet.TryProduceGas(
-      120f,
+    PipeTestWorld.Saturate(
+      inNet,
       150f,
       "Steam",
       world.Accessor,

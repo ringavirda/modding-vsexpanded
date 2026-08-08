@@ -48,7 +48,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:steamcondenser-north"
+      "code": "lpex:steamcondenser-n"
     },
     "ingredients": {
       "I": {
@@ -90,7 +90,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "lpex:boilercornish-north"
+      "code": "lpex:boilercornish-n"
     },
     "ingredients": {
       "P": {
@@ -137,7 +137,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginewatt-north"
+      "code": "lpex:enginewatt-n"
     },
     "ingredients": {
       "P": {
@@ -184,7 +184,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginefluidpump-north"
+      "code": "lpex:enginefluidpump-n"
     },
     "ingredients": {
       "P": {
@@ -231,7 +231,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:manualfluidpump-north"
+      "code": "lpex:manualfluidpump-n"
     },
     "ingredients": {
       "P": {
@@ -283,7 +283,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginempgenerator-north"
+      "code": "lpex:enginempgenerator-n"
     },
     "ingredients": {
       "P": {
@@ -330,7 +330,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginewatt-north"
+      "code": "lpex:enginewatt-n"
     },
     "ingredients": {
       "P": {
@@ -377,7 +377,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginefluidpump-north"
+      "code": "lpex:enginefluidpump-n"
     },
     "ingredients": {
       "P": {
@@ -424,7 +424,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:manualfluidpump-north"
+      "code": "lpex:manualfluidpump-n"
     },
     "ingredients": {
       "P": {
@@ -476,7 +476,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:enginempgenerator-north"
+      "code": "lpex:enginempgenerator-n"
     },
     "ingredients": {
       "P": {

@@ -1,0 +1,24 @@
+{
+  "code": "tapcinder",
+  "shape": {
+    "base": "game:item/ore/ungraded/coke"
+  },
+  "textures": {
+    "all": {
+      "base": "iwex:block/slag/slag"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 2500,
+  "tags": [
+    "fettlestock"
+  ],
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

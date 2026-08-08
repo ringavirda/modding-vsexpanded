@@ -17,7 +17,7 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 public class CowperOrientationTests
 {
-  // NOTE: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
+  // Note: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
   // xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
 
   [Theory]
@@ -32,16 +32,16 @@ public class CowperOrientationTests
     AssertPlus180Matrix(
       be,
       BlockCowperStoveIntake.Definitions("smex").Single(),
-      "smex:cowperstove-intake*",
+      SmexBlocks.CowperstoveIntake.Any,
       side,
       [
         (new Vec3i(0, 1, 2), "lpex:pipe-passthrough-*", "air passthrough"),
         (new Vec3i(0, 0, 2), "lpex:pipe-outlet*", "exhaust outlet"),
         (new Vec3i(0, 1, 0), "lpex:pipe-outlet*", "hot-blast outlet"),
-        (new Vec3i(0, 0, 1), "smex:cowperstoveheatsink*", "heat sink y0"),
-        (new Vec3i(0, 1, 1), "smex:cowperstoveheatsink*", "heat sink y1"),
-        (new Vec3i(0, 2, 1), "smex:cowperstoveheatsink*", "heat sink y2"),
-        (new Vec3i(0, 3, 1), "smex:cowperstoveheatsink*", "heat sink y3"),
+        (new Vec3i(0, 0, 1), SmexBlocks.CowperstoveHeatsink.Any, "heat sink y0"),
+        (new Vec3i(0, 1, 1), SmexBlocks.CowperstoveHeatsink.Any, "heat sink y1"),
+        (new Vec3i(0, 2, 1), SmexBlocks.CowperstoveHeatsink.Any, "heat sink y2"),
+        (new Vec3i(0, 3, 1), SmexBlocks.CowperstoveHeatsink.Any, "heat sink y3"),
       ]
     );
   }

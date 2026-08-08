@@ -130,7 +130,7 @@ public class HotBlastScenarioTests
     );
   }
 
-  // Regression (player-reported): the real two-phase cycle is discharge → CLOSE the air valve →
+  // Regression (player-reported): the real two-phase cycle is discharge → close the air valve →
   // recharge from exhaust. Discharging leaves blast air sitting in the passthrough, and closing the
   // valve strands it there (a pressurised run holds well over a pipe's worth). The stove used to read
   // that stranded air as "mixing" and latch shut, refusing to ever recharge. Every other cowper test
@@ -157,7 +157,7 @@ public class HotBlastScenarioTests
     );
   }
 
-  // The mix guard must still fire while air is GENUINELY flowing (both valves open): the stove can't
+  // The mix guard must still fire while air is genuinely flowing (both valves open): the stove can't
   // soak exhaust into the core while air streams through the passthrough, so it must not charge.
   [Fact]
   public void Exhaust_with_air_actively_flowing_is_still_treated_as_mixing()

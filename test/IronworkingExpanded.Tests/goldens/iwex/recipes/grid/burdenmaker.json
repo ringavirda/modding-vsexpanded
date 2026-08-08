@@ -1,0 +1,27 @@
+{
+  "ingredientPattern": "BBB,BBB",
+  "width": 3,
+  "height": 2,
+  "output": {
+    "type": "block",
+    "code": "iwex:burdenmaker-{brick}-n",
+    "quantity": 1
+  },
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:burnedbrick-*",
+      "name": "brick",
+      "allowedVariants": [
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      ],
+      "quantity": 2
+    }
+  }
+}

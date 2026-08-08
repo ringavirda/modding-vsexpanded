@@ -34,7 +34,7 @@ internal sealed class RegulatedEnginePlant
 
     var engineBlock = TestBlocks.Configure(
       new BlockEngineWatt(),
-      "lpex:enginewatt-north",
+      "lpex:enginewatt-n",
       55,
       ("side", "north")
     );
@@ -93,7 +93,7 @@ internal sealed class RegulatedEnginePlant
     BlockPos subPos = engineBlock.SubmachinePos(enginePos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
-      "lpex:enginefluidpump-east",
+      "lpex:enginefluidpump-e",
       61,
       ("side", "east")
     );
@@ -179,7 +179,7 @@ internal sealed class ManualPumpPlant
 
     var pumpBlock = TestBlocks.Configure(
       new Block(),
-      "lpex:manualfluidpump-north",
+      "lpex:manualfluidpump-n",
       62,
       ("side", "north")
     );
@@ -276,7 +276,7 @@ internal sealed class CondenserPlant
 
     var block = TestBlocks.Configure(
       new LowPressureExpanded.BlockNetworkPipe.Blocks.BlockSteamCondenser(),
-      "lpex:steamcondenser-north",
+      "lpex:steamcondenser-n",
       66,
       ("side", "north")
     );
@@ -287,8 +287,8 @@ internal sealed class CondenserPlant
     };
     scene.Machine(pos, block, Condenser); // Initialize registers the condense tick
 
-    // North: the spent-steam line. Cast (lpex) tier - even spent steam runs above the bolted tier's
-    // burst rating, so on bolted pipe this line bursts before it can be condensed.
+    // North: the spent-steam line. Cast (lpex) tier - even spent steam runs above the plated tier's
+    // burst rating, so on plated pipe this line bursts before it can be condensed.
     _steam = pos.AddCopy(BlockFacing.NORTH);
     EnginePlant.Pipe(scene, _steam, "ns", 67, material: "steel");
     scene.Block(_steam.AddCopy(BlockFacing.NORTH), LpexScenes.Cap(68));

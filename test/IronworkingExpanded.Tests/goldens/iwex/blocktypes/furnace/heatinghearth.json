@@ -1,0 +1,106 @@
+{
+  "code": "furnace",
+  "class": "iwex.BlockHeatingHearth",
+  "entityClass": "iwex.BlockEntityHeatingHearth",
+  "blockmaterial": "Metal",
+  "maxstacksize": 1,
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "heatinghearth"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iwex:furnace/heatinghearth",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iwex:furnace/heatinghearth",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iwex:furnace/heatinghearth",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iwex:furnace/heatinghearth",
+      "rotateY": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iwex": [
+      "*-n"
+    ]
+  },
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": -1,
+        "y": 0,
+        "z": -1
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": -1
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": -1
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      }
+    ]
+  },
+  "replaceable": 400,
+  "resistance": 6.0,
+  "lightAbsorption": 0,
+  "sounds": {
+    "walk": "walk/metal",
+    "place": "block/anvil",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "block/rock-hit-pickaxe",
+        "break": "block/rock-break-pickaxe"
+      }
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

@@ -1,7 +1,6 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using LowPressureExpanded.BlockNetworkPipe;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;

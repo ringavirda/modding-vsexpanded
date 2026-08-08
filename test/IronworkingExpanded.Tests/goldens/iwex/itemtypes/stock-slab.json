@@ -1,0 +1,27 @@
+{
+  "code": "stock-slab",
+  "class": "iwex.ItemStockPiece",
+  "shape": {
+    "base": "iwex:forming/stock-slab-30"
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 400,
+    "stockForm": "slab"
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

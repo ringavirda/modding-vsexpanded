@@ -171,7 +171,7 @@ public class BoilerSteamCycleTests
   #region Steam pressure cap (over-pressure readout guard)
 
   // Every production tick ends with CapSteamToCeiling, which discards steam above the choke ceiling so
-  // InternalPressure can never read past MaxOutputPressure - the "hundreds of atm" bug. The cap sits AT
+  // InternalPressure can never read past MaxOutputPressure - the "hundreds of atm" bug. The cap sits at
   // the ceiling so a burning, closed boiler still trips the burst grace (fires at >= ceiling).
   private const float ChokePressure = 5f; // CornishBoilerMaxOutputPressure
 

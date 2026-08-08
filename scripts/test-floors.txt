@@ -1,0 +1,70 @@
+# Minimum test count per suite - the discovery floor.
+#
+# WHY THIS EXISTS. A test assembly that fails to LOAD does not report a failure. xUnit resolves the
+# types of a test class during discovery, before the module initializer registers VsAssemblyResolver,
+# so a single static field whose type is a value type instantiated over a game type (a
+# `ValueTuple` of `Vec3i`, say) makes the whole assembly skip with:
+#
+#     [xUnit.net] Skipping: SteelmakingExpanded.Tests (could not find dependent assembly 'VintagestoryAPI...')
+#     No test is available in ... SteelmakingExpanded.Tests.dll
+#
+# `dotnet test` then exits 0 and prints NO `Passed!`/`Failed!` summary at all, so a runner that only
+# reads the exit code - or greps for `Passed!|Failed!|error` - reports the run as passing with a
+# blank result line. Every test in that suite can disappear and every lane says PASS. That is not
+# hypothetical: it happened to this repo's smex suite (217 tests) and was caught by eye.
+#
+# So both runners parse the `Total:` the summary carries and check it against the floor below. A
+# missing summary is a hard failure in its own right, because that is the shape the load failure has.
+#
+# HOW TO SET A FLOOR. A floor, never an exact count - adding tests must never break the run. Set it
+# a few percent under the current count (~95%), the same ratchet convention scripts/coverage_gate.py
+# uses: low enough not to flap on a refactor that consolidates a few cases, high enough that losing a
+# test CLASS is caught rather than only losing the whole assembly. Raise them as suites grow.
+#
+# ⚠ Deliberately deleting tests below a floor is meant to make the run fail. Lower the floor in the
+# same change, so the deletion is recorded here rather than absorbed silently.
+#
+# Read by BOTH scripts/run-tests.ps1 and scripts/run-tests.sh - it is the one place these numbers
+# live, so the two runners cannot drift apart. A project with no row here is a hard error in both,
+# so adding a test project means adding a row.
+#
+#   <test project name> = <minimum tests the suite must discover>
+
+# BASELINE 2026-08-04 (bash scripts/run-tests.sh 1.21, all green, zero skips):
+#   ExpandedLib.Tests 865 | IronworkingExpanded.Tests 1243 | LowPressureExpanded.Tests 186
+#   HighPressureExpanded.Tests 53 | SteelmakingExpanded.Tests 225        total 2572
+#
+# ⚠ Recorded so that LOWERING a floor has something to justify itself against. The completion plan's
+# later units delete tests on purpose - U5 removes the ore mixer and bunker suites, U2 removes two
+# reflection-based groups - and without a dated anchor a floor drop is indistinguishable from a suite
+# that quietly stopped loading. Update this line whenever you raise the floors, not when you lower them.
+#
+# 2026-08-06, iwex 1565 -> 1521 (-44), LOWERED ON PURPOSE: U5.7 deleted the ore mixer and ore bunker.
+# The 44 are OreMixerTests (30) + OreBunkerTests (9) + Mixer_footprint_hosts_three_west_mp_ports (1) +
+# four golden theory cases (two blocktypes, two recipes). ⓘ This is the drop the anchor above exists
+# for - and the tight floor did exactly its job on the way past: the deletion could not be absorbed
+# silently, it had to be written down here.
+#
+# 2026-08-07, iwex 1531 -> 1529 (-2 net), LOWERED ON PURPOSE: U5.8 collapsed burden's identity. Retired
+# with the family model: `A_codes_family_matches_the_stack_forms` (4 cases) and
+# `A_firebox_declares_no_burden_family_so_it_refuses_none`; the old coke-band grade theory (6) gave way to
+# a flux one (8) plus two new cases. ⚠ A NET figure hides its own halves - the retirements are named here
+# because "1531 -> 1529" would otherwise read as two tests quietly failing to load.
+#
+# 2026-08-07, iwex 1529 -> 1546 (+17), RAISED: U4.1 merged the two frozen-melt blocks into
+# `hearthmetal-{pigiron|castiron}`. The additions are HearthMetalMigrationTests (7), the hearth-cell
+# wildcard theories (+9 rows, including the six that pin the INVERTED `*`-inside-`@()` spelling) and
+# one catalogue case. Floor set ~0.3% under the observed 1551 - a rename wave that drops a test must
+# still show up.
+#
+# 2026-08-07, iwex 1546 -> 1550 (+4), RAISED: U4.2 pinned the tap's pick/drop normalisation -
+# two theory rows, the type-carry case and the three-way canonical-facing pin.
+#
+# 2026-08-07, exlib 822 -> 827 (+5), RAISED: U4.3 added MoltenCellPairTests (6 cases) - two molten
+# cells on one block entity, the key-prefix save contract, and the GetBehavior<T> trap.
+
+ExpandedLib.Tests = 827
+IronworkingExpanded.Tests = 1550
+LowPressureExpanded.Tests = 176
+HighPressureExpanded.Tests = 50
+SteelmakingExpanded.Tests = 213

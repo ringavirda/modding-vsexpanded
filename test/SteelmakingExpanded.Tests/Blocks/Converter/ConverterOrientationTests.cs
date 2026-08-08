@@ -1,3 +1,4 @@
+using IronworkingExpanded;
 using System.Linq;
 using IronworkingExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
@@ -22,7 +23,7 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 public class ConverterOrientationTests
 {
-  // NOTE: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
+  // Note: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
   // xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
 
   [Theory]
@@ -43,8 +44,8 @@ public class ConverterOrientationTests
         (new Vec3i(0, -1, 0), "smex:convertertransmission*", "transmission"),
         (new Vec3i(0, 0, 2), "smex:converterbessemer*", "vessel"),
         (new Vec3i(0, 0, 4), "smex:converter-intake*", "gas intake"),
-        (new Vec3i(1, 1, 2), "iwex:moltencanal-tap*", "input tap"),
-        (new Vec3i(1, -2, 2), "iwex:moltencanal-start*", "output start"),
+        (new Vec3i(1, 1, 2), IwexBlocks.MoltenCanalTap.Any, "input tap"),
+        (new Vec3i(1, -2, 2), IwexBlocks.MoltenCanalBrickStart.Any, "output start"),
       ]
     );
   }

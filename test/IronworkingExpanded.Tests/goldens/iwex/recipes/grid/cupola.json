@@ -5,7 +5,7 @@
   "height": 3,
   "output": {
     "type": "block",
-    "code": "iwex:cupolafurnacecore-{tier}-north"
+    "code": "iwex:furnace-cupolacore-{tier}-n"
   },
   "ingredients": {
     "B": {

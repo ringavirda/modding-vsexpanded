@@ -47,7 +47,7 @@ internal sealed class SmokeStackRig
     {
       Pos = Anchor.Copy(),
       // The layout's origin cell wants "smex:smokestack-intake*", so the anchor must actually wear that
-      // code - a generic "smex:smokestack-north" leaves the structure one cell short forever.
+      // code - a generic "smex:smokestack-n" leaves the structure one cell short forever.
       Block = TestBlocks.Configure(
         new Block(),
         "smex:smokestack-intake-tier3-n",

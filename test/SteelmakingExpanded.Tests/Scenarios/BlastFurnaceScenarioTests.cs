@@ -13,30 +13,43 @@ namespace SteelmakingExpanded.Tests;
 /// charged, lit hearth fed hot blast climbs past iron's melting point, enters the Melting phase,
 /// renders blast mix into molten pig iron, and taps it into a canal - and loses the melt if the blast
 /// is cut. Exercises the gated firing/melting tick with its real peripherals via <see cref="BlastFurnaceRig"/>.
+/// <para>
+/// <b>Every case here used to arrange the machine by assignment</b> - <c>SetState(Melting)</c>, a soak
+/// counter, a melt-cycle counter - and none of them can any more. A shaft furnace recomputes what it is
+/// doing from its charge every tick, so writing the label states a premise the next tick discards: the case
+/// stays green while testing a furnace that was never in the state its own name claims.
+/// <c>State</c> therefore has no setter at all (<c>FurnaceBranchGuards.NoFurnaceExposesASettableState</c>),
+/// and arrangement here is <b>charging and blowing</b> - <see cref="BlastFurnaceRig.HeatSoak"/> runs the
+/// real machine until it is melting and fails loudly if it never gets there.
+/// </para>
 /// </summary>
 public class BlastFurnaceScenarioTests
 {
+  /// <summary>Long enough for a charged, blown furnace to warm its column through and reach the melt line,
+  /// with slack. Waited for, never counted out: what takes the time is the charge warming through, and
+  /// there is no closed form for it.</summary>
+  private const int SoakSeconds = 900;
+
   #region The whole process, emergent
 
-  // Every other test in this file jumps the multi-minute heat-up with the rig's Set* fast-forwards and
-  // invokes OnProductionTick directly, so each asserts one transition in isolation. That is useful and
-  // fast, but it can never catch the process failing to *start* - a furnace whose structure never
-  // completes, whose tick is never registered, or which is never gated on. These two run the machine
-  // the way the server does: the real structure standing, the furnace's own tick listener on the clock,
-  // and nothing invoked by reflection.
+  // These run the machine the way the server does: the real structure standing, the furnace's own tick
+  // listener on the clock, and nothing invoked by reflection. They are what catches the process failing to
+  // *start* - a furnace whose structure never completes, whose tick is never registered, or which is never
+  // gated on.
 
   [Fact]
   public void A_built_and_blown_furnace_reaches_melting_on_its_own()
   {
-    var rig = new BlastFurnaceRig(blastMix: 640).FeedBlast(950f);
+    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast(950f);
 
     // It starts cold, idle, and untouched.
     Assert.True(rig.Furnace.StructureComplete, "the furnace should have completed its own structure");
     Assert.Equal(FurnaceState.Idle, rig.State);
 
-    rig.RunLive(540); // 9 minutes of blown, charged operation
-
-    Assert.Equal(FurnaceState.Melting, rig.State);
+    Assert.True(
+      rig.RunUntil(r => r.State == FurnaceState.Melting, SoakSeconds) > 0,
+      "a charged, blown furnace should reach Melting on its own"
+    );
     Assert.True(
       rig.Temp > IwexValues.BfIronMeltingPoint,
       $"a blown furnace should settle above the melt line, was {rig.Temp} C"
@@ -47,13 +60,14 @@ public class BlastFurnaceScenarioTests
   public void The_headline_process_ends_with_pig_iron_in_the_canal()
   {
     // charge -> hot blast -> molten pig iron -> tapped into a canal, driven only by the clock.
-    var rig = new BlastFurnaceRig(blastMix: 640)
+    var rig = new BlastFurnaceRig(blastMix: 0)
       .WithIronTapAndCanal()
       .FeedBlast(950f);
 
-    rig.RunLive(540);
-
-    Assert.True(rig.CanalIron > 0, "the open tap should have poured metal into the canal");
+    Assert.True(
+      rig.RunUntil(r => r.CanalIron > 0, SoakSeconds) > 0,
+      "the open tap should have poured metal into the canal"
+    );
     Assert.Contains("pigiron", rig.CanalMetalType!);
   }
 
@@ -64,32 +78,53 @@ public class BlastFurnaceScenarioTests
   [Fact]
   public void Hot_blast_drives_the_furnace_past_irons_melting_point()
   {
-    // A lit, firing furnace sat at where cold blast alone would hold it (1420 C, below iron's
-    // 1482 C melt point).
-    var rig = new BlastFurnaceRig()
-      .FeedBlast(950f)
-      .SetState(FurnaceState.Firing)
-      .SetTemp(BlastFurnaceRig.ColdBlastCeiling);
-
-    rig.Tick(30); // preheated blast lifts T_in well past the melt point
+    // No SetTemp any more, and none is needed: the shaft's temperature is the raceway flame, assigned
+    // straight from the heat balance with no chase, so a preheated furnace is at its own T_process within a
+    // tick of lighting. What used to be arranged (a furnace sat at the cold-blast ceiling) is now simply
+    // what the cold rig below reads.
+    var hot = new BlastFurnaceRig().FeedBlast(950f).RunLive(2);
 
     Assert.True(
-      rig.Temp > IwexValues.BfIronMeltingPoint,
-      $"hot blast should drive the furnace past {IwexValues.BfIronMeltingPoint} C, was {rig.Temp}"
+      hot.Temp > IwexValues.BfIronMeltingPoint,
+      $"hot blast should drive the furnace past {IwexValues.BfIronMeltingPoint} C, was {hot.Temp}"
+    );
+
+    // The control: the same furnace on ambient blast holds below the line, so the difference is the
+    // preheat and nothing else.
+    var cold = new BlastFurnaceRig().FeedBlast(20f).RunLive(2);
+    Assert.Equal(0f, cold.Heat.PreheatGain, 1);
+    Assert.True(
+      cold.Temp < hot.Temp,
+      $"an unpreheated furnace should run cooler; cold {cold.Temp} C vs hot {hot.Temp} C"
     );
   }
 
+  /// <summary>
+  /// <b>The flame being over the line is not enough, and this is the case that says so.</b>
+  /// <para>
+  /// The stored machine soaked for <c>FireboxMeltStartDelay</c> and then declared Melting on the furnace's own
+  /// temperature alone. A shaft is not one hot space: the raceway reaches flame temperature within a tick
+  /// of lighting while the burden above is still climbing, so "the furnace is hot enough" and "anything in
+  /// it can melt" are different questions separated by minutes of counter-current warm-through. Reading
+  /// only the machine put a furnace into <c>Melting</c> - HUD, sounds and all - while it rendered nothing.
+  /// </para>
+  /// </summary>
   [Fact]
-  public void Sustained_heat_above_the_melt_point_transitions_to_melting()
+  public void A_furnace_whose_flame_is_over_the_line_is_not_melting_until_its_CHARGE_is()
   {
-    var rig = new BlastFurnaceRig()
-      .FeedBlast()
-      .SetState(FurnaceState.Firing)
-      .SetTemp(1600f)
-      .SetSecondsAboveMelting(IwexValues.BfMeltStartDelay - 1f); // about to cross the soak time
+    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast(950f).RunLive(2);
 
-    rig.Tick(1);
+    // One tick in: the flame is already past iron's melt line...
+    Assert.True(
+      rig.Temp > IwexValues.BfIronMeltingPoint,
+      $"the raceway should be over the line at once, was {rig.Temp} C"
+    );
+    // ...and the furnace is still only Firing, because the charge has not arrived there yet.
+    Assert.Equal(FurnaceState.Firing, rig.State);
+    Assert.Equal(0f, rig.MoltenIron, 3);
 
+    // Given the time the column needs to warm through, it crosses - so this is a delay, not a refusal.
+    rig.HeatSoak(SoakSeconds);
     Assert.Equal(FurnaceState.Melting, rig.State);
   }
 
@@ -100,41 +135,36 @@ public class BlastFurnaceScenarioTests
   [Fact]
   public void Melting_renders_blast_mix_into_molten_pig_iron()
   {
-    var rig = new BlastFurnaceRig()
-      .FeedBlast()
-      .SetState(FurnaceState.Melting)
-      .SetTemp(1600f)
-      .SetMeltSeconds(IwexValues.BfMeltIntervalSec - 1f); // a melt cycle completes this tick
+    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast();
 
-    rig.Tick(1);
-
+    // Waited on the product, not on the label. Entering Melting and having melted something are separate
+    // moments now: the state turns the instant a hot enough band reaches a raceway, and the render happens
+    // on the carbon burnt after that.
     Assert.True(
-      rig.MoltenIron > 0f,
-      "a melt cycle should produce molten pig iron"
+      rig.RunUntil(r => r.MoltenIron > 0f, SoakSeconds) > 0,
+      "a melting furnace should render molten pig iron"
     );
+    Assert.Equal(FurnaceState.Melting, rig.State);
   }
 
   [Fact]
   public void A_melting_furnace_taps_molten_pig_iron_into_the_canal()
   {
-    var rig = new BlastFurnaceRig()
+    var rig = new BlastFurnaceRig(blastMix: 0)
       .FeedBlast()
-      .WithIronTapAndCanal()
-      .SetState(FurnaceState.Melting)
-      .SetTemp(1600f)
-      .SetMoltenIron(100f);
+      .WithIronTapAndCanal();
 
-    rig.Tick(1);
+    Assert.True(
+      rig.RunUntil(r => r.MoltenIron > 0f, SoakSeconds) > 0,
+      "there should be a pool to tap"
+    );
+    rig.RunLive(1);
 
     Assert.True(
       rig.CanalIron > 0,
       "the open tap should pour metal into the canal start"
     );
-    Assert.True(
-      rig.MoltenIron < 100f,
-      "the furnace should give up the tapped metal"
-    );
-    // The blast furnace makes PIG iron now, not plain iron: the metal that reached the canal is
+    // The blast furnace makes pig iron now, not plain iron: the metal that reached the canal is
     // iwex/game:ingot-pigiron, never ingot-iron (plain iron is a Bessemer over-blow product).
     string metal = rig.CanalMetalType!;
     Assert.Contains("pigiron", metal);
@@ -145,21 +175,36 @@ public class BlastFurnaceScenarioTests
 
   #region Losing the blast
 
+  /// <summary>
+  /// <b>A stopped blower throttles the fire; it does not snuff it.</b> With no air arriving the
+  /// combustion term falls to natural draught and the process temperature collapses to ~970 °C, so the
+  /// furnace drops out of Melting - and goes on burning its carbon at half rate, which is a worse outcome
+  /// for the player than going out and the correct one.
+  /// <c>docs/design/layered-charge.md</c> § <i>What sets the rate: the blast</i>.
+  /// </summary>
   [Fact]
   public void Cutting_the_blast_lets_the_melt_fall_back_to_firing()
   {
-    // Melting just below the melt point with the blast cut: with no air arriving the combustion
-    // term falls to natural draught and the furnace's process temperature collapses to ~970 C, so
-    // it cools out of Melting and reverts to Firing once it's been cold long enough.
-    var rig = new BlastFurnaceRig()
-      .SetState(FurnaceState.Melting)
-      .SetTemp(IwexValues.BfIronMeltingPoint - 2f)
-      .CutBlast();
-    ReflectionHelpers.SetField(rig.Furnace, "_belowMeltingSeconds", 29f);
+    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast().HeatSoak(SoakSeconds);
 
-    rig.Tick(1);
+    rig.CutBlast();
+    Assert.True(
+      rig.RunUntil(r => r.State != FurnaceState.Melting, 120) > 0,
+      "an unblown furnace should fall out of Melting"
+    );
+    Assert.Equal(FurnaceState.Firing, rig.State); // fell back, did not go out
 
-    Assert.Equal(FurnaceState.Firing, rig.State);
+    // The carbon is banked here, not before the cut: the burn is whole units carried over ticks
+    // (`_burnCarry`), so on natural draught a column spends one unit every ~50 s and a couple of ticks
+    // buys nothing to measure. What is being asserted is that it is still burning at all.
+    int coke = rig.CokeUnits;
+    rig.RunLive(200);
+
+    Assert.NotEqual(FurnaceState.Idle, rig.State);
+    Assert.True(
+      rig.CokeUnits < coke,
+      $"and it is still burning its carbon; {rig.CokeUnits} vs {coke}"
+    );
   }
 
   #endregion
@@ -171,6 +216,9 @@ public class BlastFurnaceScenarioTests
   // low-coke burden clear the melt line at all (docs/design/smex.md). Neither is a branch in the
   // code - both fall out of the heat balance, which is why they can be asserted on one furnace class
   // by changing only what is charged into it and whether the blast is preheated.
+  //
+  // Each rig is run two seconds rather than being told it is Firing: a charged, blown shaft catches on
+  // its first tick, and the heat balance is only computed by a furnace that is actually alight.
 
   private static readonly BurdenMix HighCoke = new(65f, 5f, 30f);
   private static readonly BurdenMix LowCoke = new(85f, 5f, 10f);
@@ -180,9 +228,7 @@ public class BlastFurnaceScenarioTests
   {
     var rig = new BlastFurnaceRig(burden: HighCoke)
       .FeedBlast(20f) // pressurised, but straight off the blower - no cowper, no preheat
-      .SetState(FurnaceState.Firing);
-
-    rig.Tick(1);
+      .RunLive(2);
 
     Assert.Equal(0f, rig.Heat.PreheatGain, 1); // cold blast really is cold
     Assert.True(
@@ -194,15 +240,9 @@ public class BlastFurnaceScenarioTests
   [Fact]
   public void A_low_coke_burden_needs_hot_blast()
   {
-    var cold = new BlastFurnaceRig(burden: LowCoke)
-      .FeedBlast(20f)
-      .SetState(FurnaceState.Firing);
-    cold.Tick(1);
-
-    var hot = new BlastFurnaceRig(burden: LowCoke)
-      .FeedBlast(950f) // the same furnace, now with a charged cowper on the line
-      .SetState(FurnaceState.Firing);
-    hot.Tick(1);
+    var cold = new BlastFurnaceRig(burden: LowCoke).FeedBlast(20f).RunLive(2);
+    // the same furnace, now with a charged cowper on the line
+    var hot = new BlastFurnaceRig(burden: LowCoke).FeedBlast(950f).RunLive(2);
 
     Assert.True(
       cold.Heat.TProcess < IwexValues.BfIronMeltingPoint,
@@ -223,12 +263,10 @@ public class BlastFurnaceScenarioTests
     // blast mix, which reads as the standard grade, so the demand is the reference pressure.
     var blown = new BlastFurnaceRig()
       .FeedBlast(950f, pressure: IwexValues.BfBlastPressureAtReference * 2f)
-      .SetState(FurnaceState.Firing);
+      .RunLive(2);
     var starved = new BlastFurnaceRig()
       .FeedBlast(950f, pressure: IwexValues.BfBlastPressureAtReference / 2f)
-      .SetState(FurnaceState.Firing);
-    blown.Tick(1);
-    starved.Tick(1);
+      .RunLive(2);
 
     Assert.Equal(1f, blown.Heat.AirFactor, 3);
     Assert.Equal(IwexValues.BfNaturalDraughtFactor, starved.Heat.AirFactor, 3);
@@ -244,14 +282,8 @@ public class BlastFurnaceScenarioTests
   {
     // Cold charge mass is a real heat sink, so topping a furnace up costs temperature. Counter-
     // intuitive enough that the block info has to show it, but it is the historically correct trade.
-    var full = new BlastFurnaceRig(blastMix: 640)
-      .FeedBlast(20f)
-      .SetState(FurnaceState.Firing);
-    var thin = new BlastFurnaceRig(blastMix: 160)
-      .FeedBlast(20f)
-      .SetState(FurnaceState.Firing);
-    full.Tick(1);
-    thin.Tick(1);
+    var full = new BlastFurnaceRig(blastMix: 0).FeedBlast(20f).RunLive(2);
+    var thin = new BlastFurnaceRig(blastMix: 160).FeedBlast(20f).RunLive(2);
 
     Assert.True(
       thin.Heat.TProcess > full.Heat.TProcess,
@@ -264,7 +296,10 @@ public class BlastFurnaceScenarioTests
   public void Melt_rate_scales_with_how_far_past_the_melt_line_the_furnace_runs()
   {
     // Where the docs' "cold ~30 u/s, hot ~45 u/s" comes from: one yield constant, two temperatures.
-    var rig = new BlastFurnaceRig().FeedBlast().SetState(FurnaceState.Melting);
+    // It needs no state at all - MeltSpeedFactor is a pure function of the furnace's own temperature -
+    // which is why the SetState(Melting) that used to arrange it was decoration even before the label
+    // became a read.
+    var rig = new BlastFurnaceRig();
 
     rig.SetTemp(IwexValues.BfIronMeltingPoint);
     float atLine = rig.MeltSpeed;
@@ -282,29 +317,32 @@ public class BlastFurnaceScenarioTests
   #region Air consumption + starvation
 
   // The furnace burns air, it does not merely sense it: a lit furnace draws blast out of the tuyere
-  // network (decrementing it), an idle one leaves the main alone, "not enough air" is an air-limited
-  // combustion that cools T_in, and a fire held below the blast floor starves and - sustained past the
-  // extinguish grace - dies through the same disruption machinery as any other stall.
+  // network (decrementing it), an idle one leaves the main alone, and "not enough air" is an air-limited
+  // combustion that cools T_in and slows the burn.
 
   [Fact]
   public void An_idle_furnace_draws_no_air_but_a_firing_one_does()
   {
-    // Consumption is gated on being lit. A thin-charged (so it will not auto-ignite), idle furnace
-    // primed with a full blast main sits on it and draws nothing - it must not bleed a shared main dry
-    // while cold.
-    var idle = new BlastFurnaceRig(blastMix: 100).PrimeBlast();
+    // Consumption is gated on being lit. An idle furnace primed with a full blast main sits on it and
+    // draws nothing - it must not bleed a shared main dry while cold.
+    //
+    // It is kept idle by having no carbon in it, not by being thinly charged. The quantity threshold
+    // stopped gating ignition when the state became derived: a shaft holding six units of coke per column
+    // lights exactly as a full one does, so `blastMix: 100` - which is what this used to rely on - now
+    // catches on its first tick and the case would have been asserting the opposite of its own name.
+    var idle = new BlastFurnaceRig(blastMix: -1).ChargeWithoutCoke().PrimeBlast();
     float primed = idle.TuyereVolume;
     Assert.True(primed > 0f, "the blast main should be primed with air");
 
     idle.Tick(5); // five idle ticks (PrimeBlast does not arm the per-tick re-feed)
 
-    Assert.Equal(FurnaceState.Idle, idle.State); // thin charge -> never lights
+    Assert.Equal(FurnaceState.Idle, idle.State); // no carbon -> never lights
     Assert.Equal(primed, idle.TuyereVolume, 1); // ...and drew none of the air
 
-    // The same furnace, lit, pulls air out of the tuyeres.
-    var firing = new BlastFurnaceRig(blastMix: 100)
-      .SetState(FurnaceState.Firing)
-      .PrimeBlast();
+    // The same furnace, charged so it lights, pulls air out of the tuyeres.
+    var firing = new BlastFurnaceRig().FeedBlast().RunLive(2);
+    Assert.NotEqual(FurnaceState.Idle, firing.State);
+    firing.PrimeBlast();
     float before = firing.TuyereVolume;
 
     firing.Tick(1);
@@ -323,13 +361,10 @@ public class BlastFurnaceScenarioTests
     // cold (20 C) so no preheat muddies the comparison - the whole difference is the air factor.
     var blown = new BlastFurnaceRig()
       .FeedBlast(20f, pressure: IwexValues.BfBlastPressureAtReference * 2f)
-      .SetState(FurnaceState.Firing);
+      .RunLive(2);
     var starved = new BlastFurnaceRig()
       .FeedBlast(20f, pressure: IwexValues.BfBlastPressureAtReference / 2f)
-      .SetState(FurnaceState.Firing);
-
-    blown.Tick(1);
-    starved.Tick(1);
+      .RunLive(2);
 
     Assert.True(
       starved.Heat.AirFactor < blown.Heat.AirFactor,
@@ -344,50 +379,69 @@ public class BlastFurnaceScenarioTests
   [Fact]
   public void A_furnace_on_good_blast_reaches_melting_and_never_air_starves()
   {
-    // The "with blast, melts" control for the starvation test below: on sustained full blast the furnace
-    // crosses into Melting and stays there well past the window a starved furnace would die in.
-    var rig = new BlastFurnaceRig()
-      .FeedBlast()
-      .SetState(FurnaceState.Firing)
-      .SetTemp(1600f)
-      .SetSecondsAboveMelting(IwexValues.BfMeltStartDelay - 1f);
-
-    rig.Tick(1); // crosses the soak line
-    Assert.Equal(FurnaceState.Melting, rig.State);
+    // The "with blast, melts" control for the starvation case below: on sustained full blast the furnace
+    // crosses into Melting and stays there.
+    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast().HeatSoak(SoakSeconds);
     Assert.False(rig.AirStarved);
 
-    int window = (int)
-      ReflectionHelpers.GetProperty(rig.Furnace, "ExtinguishThresholdDefault")!;
-    rig.Tick(window + 5); // sustained blast keeps it melting, never starving
-
-    Assert.Equal(FurnaceState.Melting, rig.State);
-    Assert.False(rig.AirStarved);
-  }
-
-  [Fact]
-  public void Air_starvation_extinguishes_the_furnace_after_the_grace_window()
-  {
-    // A lit furnace whose blast never reaches pressure (a dead or too-weak blower): the air factor floors
-    // it at natural draught, and the starvation disruption counts up on the shared _extinguishSeconds
-    // timer. One tick of this is the existing under-pressure test (which only checks it runs cooler);
-    // here the grace elapses and it goes out through the same extinguish path as any other stall.
-    var rig = new BlastFurnaceRig()
-      .FeedBlast(pressure: IwexValues.BfBlastPressureAtReference / 2f)
-      .SetState(FurnaceState.Firing);
-    int window = (int)
-      ReflectionHelpers.GetProperty(rig.Furnace, "ExtinguishThresholdDefault")!;
-
-    // Just short of the grace it is starved but hanging on...
-    rig.Tick(window - 1);
-    Assert.Equal(FurnaceState.Firing, rig.State);
-    Assert.True(
-      rig.AirStarved,
-      "a sub-blast furnace should read as air-starved"
+    bool everStarved = false;
+    bool everLeftMelting = false;
+    rig.RunUntil(
+      _ => false,
+      120,
+      r =>
+      {
+        everStarved |= r.AirStarved;
+        everLeftMelting |= r.State != FurnaceState.Melting;
+      }
     );
 
-    // ...one more starved tick tips it over the extinguish threshold.
-    rig.Tick(1);
-    Assert.Equal(FurnaceState.Idle, rig.State);
+    Assert.False(everLeftMelting, "sustained blast should keep it melting");
+    Assert.False(everStarved, "and it should never read as starved");
+  }
+
+  /// <summary>
+  /// <b>This case once asserted the opposite, and the inversion is deliberate.</b> It was
+  /// <c>Air_starvation_extinguishes_the_furnace_after_the_grace_window</c>: a sub-pressure blast counted as
+  /// a disruption, ran up <c>_extinguishSeconds</c>, and snuffed the fire.
+  /// <para>
+  /// There is no extinguish countdown on this branch, and there should not be. Air is the reagent, so what
+  /// a failed blower costs is the <b>rate</b>: the furnace slides to natural draught, burns cooler and
+  /// slower, and renders nothing - it does not die. What genuinely ends a campaign is running out of
+  /// carbon, and a starved furnace takes twice as long to get there.
+  /// </para>
+  /// <para>
+  /// The <b>choke</b> is the failure mode that still kills instantly, and it is the physical opposite:
+  /// a sealed furnace with nowhere to vent. Do not merge the two back together.
+  /// </para>
+  /// </summary>
+  [Fact]
+  public void A_starved_blast_line_throttles_the_furnace_rather_than_extinguishing_it()
+  {
+    var rig = new BlastFurnaceRig(blastMix: 0)
+      .FeedBlast(pressure: IwexValues.BfBlastPressureAtReference / 2f)
+      .RunLive(2);
+
+    Assert.Equal(FurnaceState.Firing, rig.State);
+    Assert.True(rig.AirStarved, "a sub-blast furnace should read as air-starved");
+
+    int coke = rig.CokeUnits;
+    bool everWentOut = false;
+    rig.RunUntil(_ => false, 300, r => everWentOut |= r.State == FurnaceState.Idle);
+
+    Assert.False(
+      everWentOut,
+      "a starved furnace slides to natural draught - it does not go out"
+    );
+    Assert.True(rig.AirStarved);
+    Assert.True(
+      rig.CokeUnits < coke,
+      $"and it is still burning, only slower; {rig.CokeUnits} vs {coke}"
+    );
+    Assert.True(
+      rig.Temp < IwexValues.BfIronMeltingPoint,
+      $"natural draught should sit below the melt line; was {rig.Temp} C"
+    );
   }
 
   #endregion
@@ -396,76 +450,93 @@ public class BlastFurnaceScenarioTests
 
   // The cupola's remelt burden charged into a blast furnace: the shaft still lights and burns (it is
   // real fuel), but the family gate refuses to render it into molten iron. Ore burden in the same rig
-  // converts normally (Melting_renders_blast_mix_into_molten_iron above), so this is the wrong-family
+  // converts normally (Melting_renders_blast_mix_into_molten_pig_iron above), so this is the wrong-family
   // half of "right family melts, wrong family burns but never converts".
+
+  private static readonly BurdenMix Remelt = new(60f, 5f, 35f);
 
   [Fact]
   public void A_blast_furnace_will_not_convert_a_remelt_burden_charge()
   {
     var rig = new BlastFurnaceRig(
-      burden: new BurdenMix(60f, 5f, 35f),
+      blastMix: 0,
+      burden: Remelt,
       chargeCode: "remeltburden"
-    )
-      .FeedBlast()
-      .SetState(FurnaceState.Melting)
-      .SetTemp(1600f)
-      .SetMeltSeconds(IwexValues.BfMeltIntervalSec - 1f); // a melt cycle WOULD complete this tick
+    ).FeedBlast(950f);
 
-    rig.Tick(1);
+    // Run it well past the point the same scene with ore burden is melting and producing.
+    rig.RunLive(SoakSeconds / 2);
 
     Assert.Equal(0f, rig.MoltenIron, 3); // hot and "ready", but the wrong family never converts
   }
 
+  /// <summary>
+  /// Family-blind fullness: the furnace does not silently refuse to light a shaft packed with the wrong
+  /// burden - it lights and burns it out. Only the conversion is gated.
+  /// <para>
+  /// And the <b>label stays honest with it</b>: a furnace that will render nothing is not melting, it is
+  /// burning, so it reads <c>Firing</c> however hot it gets. That used to fall out of the soak transition
+  /// refusing to fire; on the derived branch <c>DeriveState</c> carries the same clause deliberately,
+  /// because otherwise the HUD would show "Melting" over a furnace producing nothing until the player dug
+  /// the offending pile out.
+  /// </para>
+  /// </summary>
   [Fact]
   public void A_wrong_family_shaft_still_reads_full_so_it_lights_and_burns()
   {
-    // Family-blind fullness: the furnace does not silently refuse to light a shaft packed with the
-    // wrong burden - it lights and burns it out. Only the conversion is gated.
     var rig = new BlastFurnaceRig(
-      burden: new BurdenMix(60f, 5f, 35f),
+      blastMix: 0,
+      burden: Remelt,
       chargeCode: "remeltburden"
-    )
-      .FeedBlast()
-      .SetState(FurnaceState.Firing)
-      .SetTemp(1600f)
-      .SetSecondsAboveMelting(IwexValues.BfMeltStartDelay - 1f); // would cross into Melting this tick
+    ).FeedBlast(950f);
 
-    rig.Tick(1);
+    int coke = rig.CokeUnits;
+    bool everMelted = false;
+    rig.RunUntil(_ => false, SoakSeconds / 2, r => everMelted |= r.State == FurnaceState.Melting);
 
-    // The soak completes but the transition is blocked: it stays Firing (burning), never Melting.
-    Assert.Equal(FurnaceState.Firing, rig.State);
+    Assert.Equal(FurnaceState.Firing, rig.State); // lit, burning, never melting
+    Assert.False(everMelted, "a wrong-family shaft must never read as Melting");
+    Assert.True(
+      rig.CokeUnits < coke,
+      $"but it really is burning the charge out; {rig.CokeUnits} vs {coke}"
+    );
   }
 
   #endregion
 
   #region Live config
 
-  // Regression (player-reported): /exmod config smex bfmeltstartdelay 30 used to take effect only
-  // after a relog, because the furnace cached its tunables once at load. The production tick now
-  // re-reads them, so an admin change applies on the next tick without a reload.
+  /// <summary>
+  /// Regression (player-reported): an <c>/exmod config</c> change used to take effect only after a relog,
+  /// because the furnace cached its tunables once at load. The production tick re-reads them, so an admin
+  /// change applies on the next tick without a reload.
+  /// <para>
+  /// It used to watch <c>FireboxMeltStartDelay</c>, which the shaft branch seals to <b>0</b> - the
+  /// counter-current warm-through is itself the soak, so there is no delay left to shorten. The melting point is
+  /// the same fact about the same cache and is one the shaft genuinely reads every tick.
+  /// </para>
+  /// </summary>
   [Fact]
-  public void A_live_config_change_to_the_melt_delay_applies_without_a_reload()
+  public void A_live_config_change_applies_without_a_reload()
   {
-    float original = IwexValues.BfMeltStartDelay;
+    float original = IwexValues.BfIronMeltingPoint;
     try
     {
-      var rig = new BlastFurnaceRig()
-        .FeedBlast()
-        .SetState(FurnaceState.Firing);
+      var rig = new BlastFurnaceRig().FeedBlast().RunLive(2);
 
-      // Admin shortens the soak time mid-session.
-      IwexValues.Edit(c => c.BfMeltStartDelay = 30f);
+      // Admin retunes the melt line mid-session.
+      IwexValues.Edit(c => c.BfIronMeltingPoint = 1234f);
       rig.Tick(1);
 
       Assert.Equal(
-        30f,
-        (float)ReflectionHelpers.GetField(rig.Furnace, "_meltStartDelay")!,
+        1234f,
+        (float)ReflectionHelpers.GetField(rig.Furnace, "_ironMeltingPoint")!,
         3
       );
     }
     finally
     {
-      IwexValues.Edit(c => c.BfMeltStartDelay = original);
+      IwexValues.Edit(c => c.BfIronMeltingPoint = original);
     }
   }
 

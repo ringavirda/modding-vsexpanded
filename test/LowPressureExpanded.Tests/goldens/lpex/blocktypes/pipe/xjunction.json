@@ -1,7 +1,7 @@
 {
   "code": "pipe",
-  "class": "iwex.BlockPipe",
-  "entityClass": "iwex.BlockEntityPipe",
+  "class": "exlib.BlockPipe",
+  "entityClass": "exlib.BlockEntityPipe",
   "blockmaterial": "Metal",
   "sounds": {
     "place": "game:block/anvil",
@@ -60,14 +60,14 @@
   ],
   "shapebytype": {
     "*-xjunction-nswe": {
-      "base": "lpex:pipes/xjunction"
+      "base": "lpex:pipe/xjunction"
     },
     "*-xjunction-nsud": {
-      "base": "lpex:pipes/xjunction",
+      "base": "lpex:pipe/xjunction",
       "rotateZ": 90
     },
     "*-xjunction-weud": {
-      "base": "lpex:pipes/xjunction",
+      "base": "lpex:pipe/xjunction",
       "rotateY": 90,
       "rotateZ": 90
     }

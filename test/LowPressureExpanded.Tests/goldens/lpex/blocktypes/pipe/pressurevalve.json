@@ -44,26 +44,26 @@
   ],
   "shapebytype": {
     "*-pressurevalve-ns": {
-      "base": "lpex:pipes/pressurevalve"
+      "base": "lpex:pipe/pressurevalve"
     },
     "*-pressurevalve-we": {
-      "base": "lpex:pipes/pressurevalve",
+      "base": "lpex:pipe/pressurevalve",
       "rotateY": 90
     },
     "*-pressurevalve-ud": {
-      "base": "lpex:pipes/pressurevalve",
+      "base": "lpex:pipe/pressurevalve",
       "rotateX": 90
     },
     "*-pressurevalve-sn": {
-      "base": "lpex:pipes/pressurevalve",
+      "base": "lpex:pipe/pressurevalve",
       "rotateY": 180
     },
     "*-pressurevalve-ew": {
-      "base": "lpex:pipes/pressurevalve",
+      "base": "lpex:pipe/pressurevalve",
       "rotateY": -90
     },
     "*-pressurevalve-du": {
-      "base": "lpex:pipes/pressurevalve",
+      "base": "lpex:pipe/pressurevalve",
       "rotateX": -90
     }
   },

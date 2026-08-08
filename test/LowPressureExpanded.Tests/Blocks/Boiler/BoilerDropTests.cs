@@ -20,7 +20,7 @@ public class BoilerDropTests
   {
     var block = TestBlocks.Configure(
       new BlockBoilerCornish(),
-      "lpex:boilercornish-north",
+      "lpex:boilercornish-n",
       1,
       ("side", "north")
     );

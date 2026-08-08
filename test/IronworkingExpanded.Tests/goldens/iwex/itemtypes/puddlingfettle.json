@@ -1,0 +1,65 @@
+{
+  "code": "puddlingfettle",
+  "shape": {
+    "base": "game:item/food/flour"
+  },
+  "textures": {
+    "all": {
+      "base": "game:item/resource/crushed/hematite"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 2500,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  },
+  "guiTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 149,
+      "y": 12,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.41,
+      "y": -0.1,
+      "z": 0.8
+    },
+    "scale": 2.54
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.87,
+      "y": -1.25,
+      "z": -0.8
+    },
+    "rotation": {
+      "x": 70,
+      "y": 11,
+      "z": -65
+    },
+    "scale": 0.41
+  },
+  "groundTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0.45,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0.1,
+      "y": 8,
+      "z": -0.1
+    },
+    "scale": 4.5
+  }
+}

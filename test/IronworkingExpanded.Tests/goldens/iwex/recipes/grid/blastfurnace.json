@@ -6,7 +6,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:blastfurnacecore-{tier}-north"
+      "code": "iwex:furnace-blastcore-{tier}-n"
     },
     "ingredients": {
       "B": {
@@ -53,13 +53,13 @@
     }
   },
   {
-    "name": "Molten Metal Tap",
+    "name": "Iron Tap",
     "ingredientPattern": "BPH,BFC,BBB",
     "width": 3,
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:moltenmetaltap-south"
+      "code": "iwex:furnace-irontap-s"
     },
     "ingredients": {
       "B": {
@@ -95,13 +95,45 @@
     }
   },
   {
+    "name": "Slag Tap",
+    "ingredientPattern": "B_H,BFC,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:furnace-slagtap-s"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 12
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "C": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
     "name": "Tuyere",
     "ingredientPattern": "BHB,BCB,BPB",
     "width": 3,
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:tuyere-tuyere-s"
+      "code": "iwex:furnace-tuyere-s"
     },
     "ingredients": {
       "B": {
@@ -111,7 +143,7 @@
       },
       "P": {
         "type": "block",
-        "code": "lpex:pipe-straight*"
+        "code": "iwex:pipe-straight*"
       },
       "H": {
         "type": "item",
@@ -132,7 +164,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:hopper-tall"
+      "code": "iwex:hopper-tall-n"
     },
     "ingredients": {
       "P": {
@@ -146,6 +178,43 @@
         "quantity": 1
       },
       "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Twin Tub Blower",
+    "ingredientPattern": "LPL,PNP,_H_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iwex:furnace-twintubblower-n"
+    },
+    "ingredients": {
+      "L": {
+        "type": "item",
+        "code": "game:leather-normal-plain",
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "quantity": 1
+      },
+      "N": {
         "type": "item",
         "code": "game:metalnailsandstrips-*",
         "name": "metal",

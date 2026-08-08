@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Puddling Fettle",
+    "ingredientPattern": "FFF",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:puddlingfettle",
+      "quantity": 3
+    },
+    "ingredients": {
+      "F": {
+        "type": "item",
+        "tags": [
+          "fettlestock"
+        ],
+        "quantity": 1
+      }
+    }
+  }
+]

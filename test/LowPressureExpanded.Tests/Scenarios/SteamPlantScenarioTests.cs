@@ -1,7 +1,5 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using IronworkingExpanded.Tests;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockStructures.Engine.BlockEntities;
@@ -141,7 +139,7 @@ public class SteamPlantScenarioTests
   {
     var engineBlock = TestBlocks.Configure(
       new BlockEngineWatt(),
-      "lpex:enginewatt-north",
+      "lpex:enginewatt-n",
       60,
       ("side", "north")
     );
@@ -156,7 +154,7 @@ public class SteamPlantScenarioTests
     BlockPos subPos = engineBlock.SubmachinePos(enginePos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
-      "lpex:enginefluidpump-east",
+      "lpex:enginefluidpump-e",
       61,
       ("side", "east")
     );

@@ -1,0 +1,51 @@
+{
+  "code": "caststock",
+  "shape": {
+    "base": "iwex:item/castbillet"
+  },
+  "shapeByType": {
+    "*-billet": {
+      "base": "iwex:item/castbillet"
+    },
+    "*-bloom": {
+      "base": "iwex:item/castbloom"
+    },
+    "*-slab": {
+      "base": "iwex:item/castslab"
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "form",
+      "states": [
+        "billet",
+        "bloom",
+        "slab"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributesByType": {
+    "*-billet": {
+      "materialUnits": 600
+    },
+    "*-bloom": {
+      "materialUnits": 1000
+    },
+    "*-slab": {
+      "materialUnits": 3000
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

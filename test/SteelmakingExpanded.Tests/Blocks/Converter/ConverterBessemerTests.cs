@@ -27,7 +27,7 @@ public class ConverterBessemerTests
       Pos = pos,
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:converterbessemer-north",
+        "smex:converterbessemer-n",
         1,
         ("side", "north")
       ),
@@ -47,7 +47,7 @@ public class ConverterBessemerTests
       Pos = pos,
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:converterbessemercontrol-north",
+        "smex:converterbessemercontrol-n",
         2,
         ("side", "north")
       ),

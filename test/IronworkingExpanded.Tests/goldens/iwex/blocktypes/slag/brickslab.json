@@ -1,0 +1,201 @@
+{
+  "code": "slag-brickslab",
+  "blockmaterial": "Stone",
+  "attributes": {
+    "canChisel": true,
+    "chiselShapeFromCollisionBox": true,
+    "partialAttachableByType": {
+      "*-down": true,
+      "*-up": true
+    },
+    "liquidBarrierOnSidesByType": {
+      "*-down-*": [
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "resistance": 4.0,
+  "mineTool": "pickaxe",
+  "sounds": {
+    "place": "game:block/stone",
+    "walk": "game:walk/stone",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "class": "BlockSlabSnowRemove",
+  "behaviors": [
+    {
+      "name": "OmniRotatable",
+      "properties": {
+        "rotateSides": true,
+        "facing": "block"
+      }
+    },
+    {
+      "name": "WrenchOrientable",
+      "properties": {
+        "baseCode": "slag-brickslab-*-{cover}"
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "rot",
+      "states": [
+        "north",
+        "east",
+        "south",
+        "west",
+        "up",
+        "down"
+      ]
+    },
+    {
+      "code": "cover",
+      "states": [
+        "free",
+        "snow"
+      ]
+    }
+  ],
+  "skipVariants": [
+    "*-up-snow"
+  ],
+  "replaceable": 200,
+  "shapebytype": {
+    "*-snow": {
+      "base": "game:block/basic/slab/snow-slab-{rot}"
+    },
+    "*": {
+      "base": "game:block/basic/slab/slab-{rot}"
+    }
+  },
+  "textures": {
+    "sides": {
+      "base": "iwex:block/slag/slagbrick"
+    }
+  },
+  "sideSolidOpaqueAoByType": {
+    "*-north-*": {
+      "all": false,
+      "north": true
+    },
+    "*-east-*": {
+      "all": false,
+      "east": true
+    },
+    "*-south-*": {
+      "all": false,
+      "south": true
+    },
+    "*-west-*": {
+      "all": false,
+      "west": true
+    },
+    "*-up-*": {
+      "all": false,
+      "up": true
+    },
+    "*-down-*": {
+      "all": false,
+      "down": true
+    }
+  },
+  "sideAo": {
+    "all": true
+  },
+  "emitSideAoByType": {
+    "*-up-*": {
+      "all": false,
+      "up": true
+    },
+    "*-down-*": {
+      "all": false,
+      "down": true
+    },
+    "*": {
+      "all": false
+    }
+  },
+  "collisionbox": {
+    "x1": 0,
+    "y1": 0,
+    "z1": 0,
+    "x2": 1,
+    "y2": 0.5,
+    "z2": 1,
+    "rotateXByType": {
+      "*-north-*": 90,
+      "*-south-*": 270,
+      "*-up-*": 180,
+      "*-down-*": 0
+    },
+    "rotateZByType": {
+      "*-east-*": 90,
+      "*-west-*": 270
+    }
+  },
+  "selectionbox": {
+    "x1": 0,
+    "y1": 0,
+    "z1": 0,
+    "x2": 1,
+    "y2": 0.5,
+    "z2": 1,
+    "rotateXByType": {
+      "*-north-*": 90,
+      "*-south-*": 270,
+      "*-up-*": 180,
+      "*-down-*": 0
+    },
+    "rotateZByType": {
+      "*-east-*": 90,
+      "*-west-*": 270
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-down-free"
+    ],
+    "construction": [
+      "*-down-free"
+    ],
+    "iwex": [
+      "*-down-free"
+    ]
+  },
+  "drops": [
+    {
+      "type": "block",
+      "code": "slag-brickslab-down-free"
+    }
+  ],
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.49,
+      "y": -0.22,
+      "z": -0.7
+    },
+    "rotation": {
+      "x": 6,
+      "y": 16,
+      "z": 98
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.25,
+      "z": 0.5
+    },
+    "scale": 0.4
+  }
+}

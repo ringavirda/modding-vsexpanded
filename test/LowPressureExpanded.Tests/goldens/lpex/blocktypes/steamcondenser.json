@@ -12,38 +12,43 @@
   "maxstacksize": 8,
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "lpex": [
-      "*-north"
+      "*-n"
     ]
   },
   "shapebytype": {
-    "*-north": {
-      "base": "lpex:pipes/steamcondenser",
+    "*-n": {
+      "base": "lpex:steamcondenser",
       "rotateY": 0
     },
-    "*-east": {
-      "base": "lpex:pipes/steamcondenser",
+    "*-e": {
+      "base": "lpex:steamcondenser",
       "rotateY": 270
     },
-    "*-south": {
-      "base": "lpex:pipes/steamcondenser",
+    "*-s": {
+      "base": "lpex:steamcondenser",
       "rotateY": 180
     },
-    "*-west": {
-      "base": "lpex:pipes/steamcondenser",
+    "*-w": {
+      "base": "lpex:steamcondenser",
       "rotateY": 90
     }
   },

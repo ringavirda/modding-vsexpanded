@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Design Table",
+    "ingredientPattern": "CPC,PPP",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iwex:crafting-designtable-n",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "item",
+        "code": "game:candle",
+        "quantity": 1
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "quantity": 1
+      }
+    }
+  }
+]

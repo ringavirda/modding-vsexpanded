@@ -41,10 +41,10 @@ internal sealed class BoilerRig
     World.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
     // The layout's anchor cell wants "lpex:boilercornish*", so the block must wear that code - the
-    // old "lpex:boiler-cornish-north" is one hyphen away and satisfies nothing.
+    // old "lpex:boiler-cornish-n" is one hyphen away and satisfies nothing.
     Block = TestBlocks.Configure(
       new BlockBoilerCornish(),
-      "lpex:boilercornish-north",
+      "lpex:boilercornish-n",
       1,
       ("side", "north")
     );

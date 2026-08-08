@@ -1,0 +1,22 @@
+{
+  "code": "castshell",
+  "shape": {
+    "base": "iwex:item/castshell"
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 600
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

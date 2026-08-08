@@ -6,7 +6,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-straight-{rock}-ns",
+      "code": "iwex:molten-canal-straight-{rock}-ns",
       "quantity": 1
     },
     "ingredients": {
@@ -61,7 +61,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-bend-{rock}-nw",
+      "code": "iwex:molten-canal-bend-{rock}-nw",
       "quantity": 1
     },
     "ingredients": {
@@ -116,7 +116,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-tjunction-{rock}-esw",
+      "code": "iwex:molten-canal-tjunction-{rock}-esw",
       "quantity": 1
     },
     "ingredients": {
@@ -171,7 +171,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-xjunction-{rock}-nswe",
+      "code": "iwex:molten-canal-xjunction-{rock}-nswe",
       "quantity": 1
     },
     "ingredients": {
@@ -226,7 +226,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-start-{rock}-s",
+      "code": "iwex:molten-canal-start-{rock}-s",
       "quantity": 1
     },
     "ingredients": {
@@ -281,7 +281,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-moldpedestal-{rock}-s",
+      "code": "iwex:molten-canal-moldpedestal-{rock}-s",
       "quantity": 1
     },
     "ingredients": {
@@ -336,7 +336,7 @@
     "height": 1,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-tap-s",
+      "code": "iwex:molten-canal-tap-s",
       "quantity": 1
     },
     "ingredients": {
@@ -364,7 +364,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-straight-{brick}-ns",
+      "code": "iwex:molten-canal-straight-{brick}-ns",
       "quantity": 1
     },
     "ingredients": {
@@ -407,7 +407,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-straight-fire-ns",
+      "code": "iwex:molten-canal-straight-fire-ns",
       "quantity": 1
     },
     "ingredients": {
@@ -440,7 +440,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-bend-{brick}-nw",
+      "code": "iwex:molten-canal-bend-{brick}-nw",
       "quantity": 1
     },
     "ingredients": {
@@ -483,7 +483,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-bend-fire-nw",
+      "code": "iwex:molten-canal-bend-fire-nw",
       "quantity": 1
     },
     "ingredients": {
@@ -516,7 +516,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-tjunction-{brick}-esw",
+      "code": "iwex:molten-canal-tjunction-{brick}-esw",
       "quantity": 1
     },
     "ingredients": {
@@ -559,7 +559,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-tjunction-fire-esw",
+      "code": "iwex:molten-canal-tjunction-fire-esw",
       "quantity": 1
     },
     "ingredients": {
@@ -592,7 +592,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-xjunction-{brick}-nswe",
+      "code": "iwex:molten-canal-xjunction-{brick}-nswe",
       "quantity": 1
     },
     "ingredients": {
@@ -635,7 +635,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-xjunction-fire-nswe",
+      "code": "iwex:molten-canal-xjunction-fire-nswe",
       "quantity": 1
     },
     "ingredients": {
@@ -668,7 +668,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-start-{brick}-s",
+      "code": "iwex:molten-canal-start-{brick}-s",
       "quantity": 1
     },
     "ingredients": {
@@ -711,7 +711,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-start-fire-s",
+      "code": "iwex:molten-canal-start-fire-s",
       "quantity": 1
     },
     "ingredients": {
@@ -744,7 +744,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-moldpedestal-{brick}-s",
+      "code": "iwex:molten-canal-moldpedestal-{brick}-s",
       "quantity": 1
     },
     "ingredients": {
@@ -787,7 +787,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-moldpedestal-fire-s",
+      "code": "iwex:molten-canal-moldpedestal-fire-s",
       "quantity": 1
     },
     "ingredients": {

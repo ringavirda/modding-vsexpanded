@@ -4,7 +4,7 @@
   "entityClass": "lpex.BlockEntityEngineFluidPump",
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "entityBehaviors": [
@@ -16,31 +16,36 @@
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "lpex": [
-      "*-north"
+      "*-n"
     ]
   },
   "shapebytype": {
-    "*-north": {
+    "*-n": {
       "base": "lpex:engine/fluidpump",
       "rotateY": 0
     },
-    "*-east": {
+    "*-e": {
       "base": "lpex:engine/fluidpump",
       "rotateY": 270
     },
-    "*-south": {
+    "*-s": {
       "base": "lpex:engine/fluidpump",
       "rotateY": 180
     },
-    "*-west": {
+    "*-w": {
       "base": "lpex:engine/fluidpump",
       "rotateY": 90
     }

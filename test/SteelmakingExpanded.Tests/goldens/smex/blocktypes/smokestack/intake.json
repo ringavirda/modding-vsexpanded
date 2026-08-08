@@ -23,9 +23,9 @@
     "multiblockStructure": {
       "blockNumbers": {
         "game:refractorybricks-good-tier*": 1,
-        "smex:smokestack-intake*": 2,
+        "smex:smokestack-intake-*-*": 2,
         "game:air": 3,
-        "@(claybricks-good-fire|refractorybricks-good-.*|brickcourse-.*-(black|brown|cream|gray|orange|red|tan))": 4
+        "@(claybricks-(good-fire|clinkerrough)|refractorybricks-good-.*|brickcourse-.*)": 4
       },
       "offsets": [
         {
@@ -506,18 +506,18 @@
   ],
   "shapebytype": {
     "*-intake-*-s": {
-      "base": "lpex:pipes/outlet"
+      "base": "lpex:pipe/outlet"
     },
     "*-intake-*-e": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": 90
     },
     "*-intake-*-n": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": 180
     },
     "*-intake-*-w": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": 270
     }
   },

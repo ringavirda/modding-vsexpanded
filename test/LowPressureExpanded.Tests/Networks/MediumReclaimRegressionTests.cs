@@ -24,11 +24,11 @@ public class MediumReclaimRegressionTests
   [Fact]
   public void Over_pressure_survives_a_node_remove_and_readd()
   {
-    // The cast (lpex) tier: LP steam sits at 3-5 atm, which is above the bolted tier's burst rating -
-    // carrying steam on bolted pipe is exactly what the tier ladder forbids.
+    // The cast (lpex) tier: LP steam sits at 3-5 atm, which is above the plated tier's burst rating -
+    // carrying steam on plated pipe is exactly what the tier ladder forbids.
     var (w, net) = PipeTestWorld.Run(5, "steel", capEnds: true);
     // Charge well above 1 atm (maxVolume = 5 * 30 = 150 L; ~3 atm).
-    net.TryProduceGas(450f, 150f, "Steam", w.Accessor, maxOutputPressure: 5f);
+    PipeTestWorld.Saturate(net, 150f, "Steam", w.Accessor, maxOutputPressure: 5f);
     Assert.True(net.State!.Pressure > 2.5f);
 
     // Re-walk the graph: remove a middle cell (splits) then re-add it (merges) with no tick in
@@ -46,8 +46,8 @@ public class MediumReclaimRegressionTests
 
   /// <summary>
   /// A run that has been fully drained but not yet cleared (the 3-second empty-clear delay keeps its
-  /// State alive so a busy push-and-drain line does not flicker) still carries its old medium LABEL.
-  /// The bug class (same shape as the cowper mix-latch): a producer of the OTHER medium read that
+  /// State alive so a busy push-and-drain line does not flicker) still carries its old medium label.
+  /// The bug class (same shape as the cowper mix-latch): a producer of the other medium read that
   /// stale label and was rejected, so repurposing empty pipes was blocked for up to 3 seconds. A
   /// physically empty run (Volume 0) must let a new medium re-claim it.
   /// </summary>
@@ -57,7 +57,7 @@ public class MediumReclaimRegressionTests
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3); // MaxVolume 90
 
-    // Fill with water, then drain it fully WITHOUT ticking past the clear delay: the run is
+    // Fill with water, then drain it fully without ticking past the clear delay: the run is
     // physically empty (Volume 0) but still labelled "Water".
     net.TryProduceLiquid(60f, 20f, 1f, w.Accessor);
     Assert.Equal(60f, net.TryConsumeLiquid(999f, w.Accessor), 3);
@@ -72,7 +72,7 @@ public class MediumReclaimRegressionTests
     Assert.Equal(45f, net.State.Volume, 3);
   }
 
-  /// <summary>The mirror of the above: a drained-but-labelled GAS run accepts water.</summary>
+  /// <summary>The mirror of the above: a drained-but-labelled gas run accepts water.</summary>
   [Fact]
   public void A_drained_gas_run_accepts_water_before_the_label_clears()
   {
@@ -91,7 +91,7 @@ public class MediumReclaimRegressionTests
     Assert.Equal(30f, net.State.Volume, 3);
   }
 
-  /// <summary>A run still physically carrying a medium must STILL reject the other one - the fix
+  /// <summary>A run still physically carrying a medium must still reject the other one - the fix
   /// only relaxes the guard for an empty run, not a full one (guards against over-fixing).</summary>
   [Fact]
   public void A_run_still_holding_a_medium_rejects_the_other()

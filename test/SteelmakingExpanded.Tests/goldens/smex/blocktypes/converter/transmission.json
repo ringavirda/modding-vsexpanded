@@ -17,37 +17,42 @@
   "maxstacksize": 1,
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "smex": [
-      "*-north"
+      "*-n"
     ]
   },
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shapebytype": {
-    "*-north": {
+    "*-n": {
       "base": "smex:converter/transmission",
       "rotateY": 180
     },
-    "*-east": {
+    "*-e": {
       "base": "smex:converter/transmission",
       "rotateY": 90
     },
-    "*-south": {
+    "*-s": {
       "base": "smex:converter/transmission",
       "rotateY": 0
     },
-    "*-west": {
+    "*-w": {
       "base": "smex:converter/transmission",
       "rotateY": 270
     }

@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Green Sand",
+    "ingredientPattern": "SSS,SCS,SSS",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "item",
+      "code": "iwex:greensand",
+      "quantity": 8
+    },
+    "ingredients": {
+      "S": {
+        "type": "block",
+        "code": "game:sand-*",
+        "quantity": 1
+      },
+      "C": {
+        "type": "item",
+        "code": "game:clay-blue",
+        "quantity": 1
+      }
+    }
+  }
+]

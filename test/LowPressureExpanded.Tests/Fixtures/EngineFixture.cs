@@ -31,7 +31,7 @@ internal sealed class EngineFixture
 
     Block = TestBlocks.Configure(
       new BlockEngineWatt(),
-      "lpex:enginewatt-north",
+      "lpex:enginewatt-n",
       20,
       ("side", "north")
     );
@@ -42,7 +42,7 @@ internal sealed class EngineFixture
     // Sealed single-cell steam inlet on the south face: north end abuts the engine's connector,
     // south end capped, so a produced charge holds its pressure instead of leaking.
     _inletPipe = pos.AddCopy(0, 0, 1);
-    // Cast (lpex) tier: the engine runs on 3-4 atm steam, over the bolted tier's burst rating.
+    // Cast (lpex) tier: the engine runs on 3-4 atm steam, over the plated tier's burst rating.
     var nsPipe = PipeTestWorld.MakePipe(
       material: "steel",
       orientation: "ns",
@@ -60,7 +60,7 @@ internal sealed class EngineFixture
     BlockPos subPos = Block.SubmachinePos(pos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
-      "lpex:enginefluidpump-east",
+      "lpex:enginefluidpump-e",
       22,
       ("side", "east")
     );
@@ -72,18 +72,30 @@ internal sealed class EngineFixture
     scene.Machine(subPos, pumpBlock, Pump);
   }
 
-  /// <summary>Charges the inlet steam network to <paramref name="atm"/> (a single 30 L pipe).</summary>
+  /// <summary>
+  /// Charges the inlet steam network to <paramref name="atm"/> (a single 30 L pipe).
+  /// Charges over several passes on purpose: since the 2026-08-05 throughput gate one
+  /// <c>TryProduceGas</c> moves at most the run's weakest segment's litres-per-second, so the old single
+  /// <c>atm * 30f</c> push silently stopped at the throughput and no over-pressure test could ever reach
+  /// its band.
+  /// </summary>
   public EngineFixture SetInletPressure(float atm)
   {
-    _scene
-      .NetworkAt<PipeNetwork>(_inletPipe)!
-      .TryProduceGas(
-        atm * 30f,
+    var net = _scene.NetworkAt<PipeNetwork>(_inletPipe)!;
+    float target = atm * 30f;
+    for (int i = 0; i < 512 && (net.State?.Volume ?? 0f) < target; i++)
+    {
+      float before = net.State?.Volume ?? 0f;
+      net.TryProduceGas(
+        target,
         150f,
         "Steam",
         _scene.World.Accessor,
         maxOutputPressure: atm
       );
+      if ((net.State?.Volume ?? 0f) - before <= 0.0001f)
+        break; // the run refuses more - its own ceiling, not the rate
+    }
     return this;
   }
 

@@ -24,7 +24,8 @@ nothing about ownership.
 The test-project reference chain deliberately mirrors the mod chain. Content-specific fixtures live
 with their content (`PipeTestWorld` in iwex because pipes are iwex; the boiler/engine plants in lpex);
 only **content-free** doubles may go in `ExpandedLib.Testing`, which ships as a standalone dev bundle
-and must stay mod-agnostic.
+and must stay mod-agnostic. `ReleasedCodes.cs` is the one sanctioned exception to "content-free doubles
+only": harness-owned release history - the shipped ppex/smex catalogues that migration coverage replays.
 
 `HighPressureExpanded.Tests` → `SteelmakingExpanded.Tests` is the one edge with no mod counterpart:
 the Cornish engine drives smex's air blower, so those scenarios need both assemblies, and hpex-on-top
@@ -38,7 +39,7 @@ Every project uses the same top-level buckets, omitting the ones it has no conte
 |---|---|
 | `Fixtures/` | support types with **no `[Fact]`** - see the suffix vocabulary below |
 | `Definitions/` | code-first `ExBlockDef`/`ExItemDef`/`ExRecipeDef` providers, golden tests, metal/catalogue registration, shipped-JSON guards |
-| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the `src/` area** it covers (`Blocks/Boiler/` ↔ `src/…/BlockStructures/Boiler/`) |
+| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the `src/` area** it covers (`Blocks/Boiler/` ↔ `src/…/BlockStructures/Boiler/`); network-block areas conventionally split finer than `src/` (lpex `Pipe/`, `Valves/`, `Condenser/`, `FluidIntake/` all cover `src` `BlockNetworkPipe`; iwex `Energy/` and `Molten/` cover `BlockNetworkEnergy`/`BlockNetworkMolten`; iwex `Blocks/Pipe/` covers the exlib pipe bases exercised at the iwex tier) |
 | `Networks/` | the network model itself - graph walks, pools, flow, connectors |
 | `Items/` | item behaviour |
 | `Materials/` | material roles, metal parity, burden/composition classifiers |
@@ -106,6 +107,15 @@ Two distinctions that decide most borderline cases:
 Root files: `ModuleInit.cs` (module initializer - assembly resolver + registry seeding) and
 `LegacyUsings.cs` where a project needs it.
 
+## Internal access
+
+Each mod grants `InternalsVisibleTo` to its own test project (`src/<Mod>/InternalsVisibleTo.cs`), so
+new tests should prefer internal accessors over string-keyed reflection - a rename breaks an accessor
+at compile time but breaks a reflection string only at run time. `ReflectionHelpers` remains for the
+existing tests. Derived state stays read-only either way: a property like the furnace's `State` is
+computed from the machine's inputs, and tests must set up those inputs, never get a setter added for
+their convenience.
+
 ## Running
 
 ```
@@ -121,7 +131,7 @@ Two traps worth knowing, both of which fail *quietly*:
   `<Private>true</Private>` on that project's `VintagestoryAPI` reference.
 - **Process-global statics race** across test classes, because xUnit parallelises them. Serialize
   every class touching one with a `[CollectionDefinition(…, DisableParallelization = true)]` - see
-  `SteelmakingExpanded.Tests/Blocks/Molds/MoldGatingCollection.cs` and
+  `ExpandedLib.Tests/Helpers/ExMeasureCollection.cs` and
   `IronworkingExpanded.Tests/Fixtures/FurnaceConfigCollection.cs`. **Joining is what serializes**: a
   collection only orders the classes that opt in, so the *readers* of a mutated static must join it too,
   not just the writer. A writer alone looks fine and races anyway.

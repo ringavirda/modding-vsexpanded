@@ -1,7 +1,6 @@
 using ExpandedLib.Testing;
 using LowPressureExpanded.BlockNetworkPipe;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockStructures.Boiler.BlockEntities;
 using LowPressureExpanded.BlockStructures.Boiler.Blocks;
@@ -72,7 +71,7 @@ internal sealed class BoilerFixture
     Block = TestBlocks.Configure(
       new BlockBoilerCornish(),
       // The layout's anchor cell wants "lpex:boilercornish*" - see BoilerRig for the same fix.
-      "lpex:boilercornish-north",
+      "lpex:boilercornish-n",
       blockId,
       ("side", "north")
     );

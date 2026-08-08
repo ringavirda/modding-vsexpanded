@@ -36,7 +36,7 @@ public class BessemerSteelMetalTests
     Assert.Equal("smex:ingot-bessemersteel", def.MoltenItem);
     Assert.True(def.IsAlloy);
     Assert.Equal("smex", def.CastDomain);
-    // Recovers as the SHARED vanilla steel scrap, not a per-metal metalbit-bessemersteel.
+    // Recovers as the shared vanilla steel scrap, not a per-metal metalbit-bessemersteel.
     Assert.Equal("game:metalbit-steel", def.SolidDrop);
   }
 

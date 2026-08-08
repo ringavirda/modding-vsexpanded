@@ -1,0 +1,27 @@
+{
+  "code": "stock-bloom",
+  "class": "iwex.ItemStockPiece",
+  "shape": {
+    "base": "iwex:forming/stock-bloom-30"
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 180,
+    "stockForm": "bloom"
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  }
+}

@@ -6,7 +6,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:convertercontrol-north"
+      "code": "smex:convertercontrol-n"
     },
     "ingredients": {
       "R": {
@@ -53,7 +53,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:convertertransmission-north"
+      "code": "smex:convertertransmission-n"
     },
     "ingredients": {
       "R": {
@@ -110,7 +110,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:converter-intake-north"
+      "code": "smex:converter-intake-n"
     },
     "ingredients": {
       "R": {
@@ -162,7 +162,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "smex:convertertransmission-north"
+      "code": "smex:convertertransmission-n"
     },
     "ingredients": {
       "R": {

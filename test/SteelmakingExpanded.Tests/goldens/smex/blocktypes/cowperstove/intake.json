@@ -23,11 +23,11 @@
     "multiblockStructure": {
       "blockNumbers": {
         "game:refractorybricks-good-tier*": 1,
-        "smex:cowperstove-intake*": 2,
+        "smex:cowperstove-intake-*-*": 2,
         "lpex:pipe-outlet*": 3,
         "lpex:pipe-passthrough-*": 4,
-        "smex:cowperstoveheatsink*": 5,
-        "game:cokeovendoor*": 6,
+        "smex:cowperstoveheatsink-*": 5,
+        "game:cokeovendoor-*-east": 6,
         "game:air": 7,
         "@(air|coalpile)": 8
       },
@@ -387,14 +387,19 @@
           "w": 1
         }
       ]
+    },
+    "multiblockFacings": {
+      "game:cokeovendoor-*-east": [
+        2
+      ]
     }
   },
   "creativeinventory": {
     "general": [
-      "*-intake-*-south"
+      "*-intake-*-s"
     ],
     "smex": [
-      "*-intake-*-south"
+      "*-intake-*-s"
     ]
   },
   "behaviors": [
@@ -405,7 +410,7 @@
       "name": "Lockable"
     },
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "variantgroups": [
@@ -425,23 +430,28 @@
     },
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shapebytype": {
-    "*-intake-*-north": {
+    "*-intake-*-n": {
       "base": "smex:cowperstove/intake",
       "rotateY": 0
     },
-    "*-intake-*-west": {
+    "*-intake-*-w": {
       "base": "smex:cowperstove/intake",
       "rotateY": 90
     },
-    "*-intake-*-south": {
+    "*-intake-*-s": {
       "base": "smex:cowperstove/intake",
       "rotateY": 180
     },
-    "*-intake-*-east": {
+    "*-intake-*-e": {
       "base": "smex:cowperstove/intake",
       "rotateY": 270
     }

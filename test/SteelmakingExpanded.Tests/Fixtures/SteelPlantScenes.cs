@@ -75,7 +75,7 @@ internal sealed class ConverterRig
       Pos = controlPos,
       Block = TestBlocks.Configure(
         new BlockConverterControl(),
-        "smex:convertercontrol-north",
+        "smex:convertercontrol-n",
         1,
         ("side", "north")
       ),
@@ -97,10 +97,10 @@ internal sealed class ConverterRig
     // `converterbessemertransmission` and two `smex:moltencanal-straight` cells standing in for a tap
     // and a canal start - and nothing could see it, because a rig that never builds the footprint
     // never checks a single code against it.
-    Input = PlaceCanal(InputTapLocal, "iwex:moltencanal-tap-s", "tap", "s", 9);
+    Input = PlaceCanal(InputTapLocal, "iwex:molten-canal-tap-s", "tap", "s", 9);
     Output = PlaceCanal(
       OutputStartLocal,
-      "iwex:moltencanal-start-s",
+      "iwex:molten-canal-start-fire-s",
       "start",
       "s",
       10
@@ -109,7 +109,7 @@ internal sealed class ConverterRig
     BlockPos intakePos = Structure.Cell(GasIntakeLocal.x, GasIntakeLocal.y, GasIntakeLocal.z);
     var intakeBlock = TestBlocks.Configure(
       new BlockConverterIntake(),
-      "smex:converter-intake-north",
+      "smex:converter-intake-n",
       11,
       ("side", "north")
     );
@@ -122,7 +122,7 @@ internal sealed class ConverterRig
     );
     var transBlock = TestBlocks.Configure(
       new BlockConverterTransmission(),
-      "smex:convertertransmission-north",
+      "smex:convertertransmission-n",
       13,
       ("side", "north")
     );
@@ -141,7 +141,7 @@ internal sealed class ConverterRig
       Pos = vesselPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:converterbessemer-north",
+        "smex:converterbessemer-n",
         14,
         ("side", "north")
       ),
@@ -155,7 +155,15 @@ internal sealed class ConverterRig
     // Blast supply: an Air pipe network docked against the intake's connector face.
     BlockFacing connFace = ((BlockConverterIntake)intakeBlock).ConnectorFace;
     BlockPos blastPos = intakePos.AddCopy(connFace);
-    var blastPipe = PipeTestWorld.MakePipe(orientation: "ns", id: 12);
+    // Cast (lpex), not plated (iwex) - a consequence of the throughput gate. The converter's
+    // blast is a steam-tier service and runs far past what the iron tier's pipe will pass, so a smex plant
+    // genuinely needs better plumbing than an iwex one. That is the tier gate doing its job, not a fixture
+    // detail: build this main in plated pipe and the blow starves.
+    var blastPipe = PipeTestWorld.MakePipe(
+      material: "steel",
+      orientation: "ns",
+      id: 12
+    );
     var blastBe = new BlockEntityPipe { Pos = blastPos.Copy(), Block = blastPipe };
     World.Place(blastPos, blastPipe, blastBe);
     World.Attach(blastBe);
@@ -415,10 +423,10 @@ internal sealed class CowperRig
     {
       Pos = pos,
       // The layout's origin cell wants "smex:cowperstove-intake*", so the anchor has to wear that
-      // code - the old "smex:cowperstove-north" would leave the stove one cell short of complete.
+      // code - the old "smex:cowperstove-n" would leave the stove one cell short of complete.
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:cowperstove-intake-tier3-north",
+        "smex:cowperstove-intake-tier3-n",
         1,
         ("side", "north")
       ),
@@ -426,7 +434,7 @@ internal sealed class CowperRig
     World.Place(pos, Stove.Block, Stove);
     World.Attach(Stove);
 
-    // The stove's structure faces OPPOSITE its side variant (the +180 convention it shares with the
+    // The stove's structure faces opposite its side variant (the +180 convention it shares with the
     // boiler body), so the shell stands on -Z while the exhaust intake face looks out along +Z.
     Structure = StructureRig.Around(
       World,
@@ -478,7 +486,13 @@ internal sealed class CowperRig
   /// <summary>A sealed 2-cell pipe run butted against <paramref name="face"/> of <paramref name="at"/>.</summary>
   private PipeNetwork SealedRunOn(BlockPos at, BlockFacing face, int firstId)
   {
-    var pipe = PipeTestWorld.MakePipe(orientation: "ns", id: firstId);
+    // Cast (lpex) for the same reason as the converter's blast main above - a cowper's hot-blast and
+    // exhaust runs are steam-tier services past the plated tier's throughput.
+    var pipe = PipeTestWorld.MakePipe(
+      material: "steel",
+      orientation: "ns",
+      id: firstId
+    );
     BlockPos p1 = at.AddCopy(face);
     BlockPos p2 = p1.AddCopy(face);
     World.Place(p1, pipe);
@@ -509,12 +523,19 @@ internal sealed class CowperRig
 
   /// <summary>
   /// Feeds cool blast air into the passthrough, then runs one production tick (discharge). The exhaust
-  /// line is valved off first (drained) - a stove only discharges while it is NOT taking exhaust, the
+  /// line is valved off first (drained) - a stove only discharges while it is not taking exhaust, the
   /// real two-stove charge/discharge swap.
   /// </summary>
   public CowperRig DischargeAir(float airTemp = 20f, float litres = 60f)
   {
-    _exhaust.TryConsumeGas(float.MaxValue, World.Accessor); // valve the exhaust off
+    // Valve the exhaust off. One `TryConsumeGas(float.MaxValue)` no longer empties a run: since the
+    // 2026-08-05 throughput gate a single call moves at most the weakest segment's litres-per-second, so
+    // draining is a loop. The old one-call idiom left the exhaust part-full and the stove never switched
+    // to discharge.
+    while (_exhaust.State is { Volume: > 0f })
+      if (_exhaust.TryConsumeGas(float.MaxValue, World.Accessor) <= 0f)
+        break; // nothing moving - stop rather than spin
+
     _airInNet.TryProduceGas(
       litres,
       airTemp,
@@ -530,7 +551,7 @@ internal sealed class CowperRig
   }
 
   /// <summary>
-  /// Both valves open: pumps fresh blast air into the passthrough AND hot exhaust into the intake on
+  /// Both valves open: pumps fresh blast air into the passthrough and hot exhaust into the intake on
   /// the same tick - the genuine "mixing" misconfiguration the stove must refuse to charge through.
   /// </summary>
   public CowperRig MixAirAndExhaust(

@@ -17,7 +17,7 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 public class FurnaceOrientationMatrixTests
 {
-  // NOTE: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
+  // Note: string-only theory data, deliberately - a [Theory] argument naming a game type is resolved by
   // xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
 
   [Theory]
@@ -28,12 +28,20 @@ public class FurnaceOrientationMatrixTests
   public void Hot_furnace_functional_cells_track_its_orientation(string side)
   {
     var be = new BlockEntityBlastFurnaceHot { Pos = new BlockPos(0, 16, 0) };
-    Orient(be, $"smex:blastfurnacecore-{side}", side);
+    OrientWithLayout(
+      be,
+      BlockBlastFurnaceCoreHot.Definitions("smex").Single(),
+      $"smex:blastfurnacecore-{side}",
+      side
+    );
     AssertFurnaceMatrix(
       be,
       BlockBlastFurnaceCoreHot.Definitions("smex").Single(),
       "smex:blastfurnacecore-*",
-      side
+      side,
+      TapGlyphs.ShaftFurnace,
+      NorthTuyereGlyph,
+      SouthTuyereGlyph
     );
   }
 }

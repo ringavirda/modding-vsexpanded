@@ -67,7 +67,7 @@ public class ConverterControlProcessTests
       Pos = new BlockPos(0, 8, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:converterbessemercontrol-north",
+        "smex:converterbessemercontrol-n",
         1,
         ("side", "north")
       ),

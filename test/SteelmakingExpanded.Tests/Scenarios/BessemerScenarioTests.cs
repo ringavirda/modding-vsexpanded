@@ -5,7 +5,7 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The capstone steelmaking scenario (handbook bessemer article): molten PIG iron from a canal is
+/// The capstone steelmaking scenario (handbook bessemer article): molten pig iron from a canal is
 /// charged into the Bessemer converter, blown with blast drawn off a live gas network to refine it -
 /// carbon falling as the blow proceeds - into Bessemer steel (or, blown on, over-blown to soft iron),
 /// and the steel + its floating slag byproduct poured back out through the shared output cell.
@@ -21,7 +21,7 @@ public class BessemerScenarioTests
   /// chemistry but says nothing about whether the thing can be commissioned at all: for as long as the
   /// rig never raised the footprint, five of its service blocks wore codes the layout does not accept
   /// (a <c>converterbessemercontrol</c> anchor, a <c>converterintake</c> port, a
-  /// <c>converterbessemertransmission</c>, and two <c>moltencanal-straight</c> cells standing in for a
+  /// <c>converterbessemertransmission</c>, and two <c>molten-canal-straight</c> cells standing in for a
   /// tap and a canal start) and nothing could tell.
   /// </summary>
   [Fact]
@@ -156,7 +156,7 @@ public class BessemerScenarioTests
     Assert.Contains("ingot-iron", rig.ContentCode);
   }
 
-  // Re-use regression: a converter is RE-USED for many heats. A finished, poured converter must accept
+  // Re-use regression: a converter is re-used for many heats. A finished, poured converter must accept
   // and refine a brand-new pig charge (no stale-steel type-mismatch latching the fill guard).
   [Fact]
   public void A_second_pig_heat_can_be_charged_and_refined_after_pouring_the_first()

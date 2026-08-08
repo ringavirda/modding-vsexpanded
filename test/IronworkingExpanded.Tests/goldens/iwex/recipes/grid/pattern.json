@@ -1,18 +1,18 @@
 [
   {
-    "name": "Pattern (heavyplate, from diagram)",
+    "name": "Pattern (castheavyplate, from diagram)",
     "ingredientPattern": "DKP",
     "width": 3,
     "height": 1,
     "output": {
       "type": "item",
-      "code": "iwex:pattern-heavyplate-{wood}",
+      "code": "iwex:pattern-castheavyplate-{wood}",
       "quantity": 1
     },
     "ingredients": {
       "D": {
         "type": "item",
-        "code": "iwex:diagram-item-heavyplate",
+        "code": "iwex:diagram-item-castheavyplate",
         "isTool": true
       },
       "K": {
@@ -43,62 +43,19 @@
     }
   },
   {
-    "name": "Pattern (moldplate, from diagram)",
+    "name": "Pattern (castingotmold, from diagram)",
     "ingredientPattern": "DKP",
     "width": 3,
     "height": 1,
     "output": {
       "type": "item",
-      "code": "iwex:pattern-moldplate-{wood}",
+      "code": "iwex:pattern-castingotmold-{wood}",
       "quantity": 1
     },
     "ingredients": {
       "D": {
         "type": "item",
-        "code": "iwex:diagram-item-moldplate",
-        "isTool": true
-      },
-      "K": {
-        "type": "item",
-        "code": "game:knife-*",
-        "isTool": true
-      },
-      "P": {
-        "type": "item",
-        "code": "game:plank-*",
-        "name": "wood",
-        "allowedVariants": [
-          "birch",
-          "oak",
-          "maple",
-          "pine",
-          "acacia",
-          "kapok",
-          "baldcypress",
-          "larch",
-          "redwood",
-          "ebony",
-          "walnut",
-          "purpleheart"
-        ],
-        "quantity": 2
-      }
-    }
-  },
-  {
-    "name": "Pattern (molddoubleingot, from diagram)",
-    "ingredientPattern": "DKP",
-    "width": 3,
-    "height": 1,
-    "output": {
-      "type": "item",
-      "code": "iwex:pattern-molddoubleingot-{wood}",
-      "quantity": 1
-    },
-    "ingredients": {
-      "D": {
-        "type": "item",
-        "code": "iwex:diagram-item-molddoubleingot",
+        "code": "iwex:diagram-item-castingotmold",
         "isTool": true
       },
       "K": {
@@ -142,6 +99,221 @@
       "D": {
         "type": "item",
         "code": "iwex:diagram-item-castbarrel",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castshell, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:pattern-castshell-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-item-castshell",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castwheelsection, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:pattern-castwheelsection-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-item-castwheelsection",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castbillets, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:pattern-castbillets-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-item-castbillets",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castblooms, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:pattern-castblooms-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-item-castblooms",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castslab, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iwex:pattern-castslab-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iwex:diagram-item-castslab",
         "isTool": true
       },
       "K": {

@@ -16,37 +16,42 @@
   "lightAbsorption": 99,
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "smex": [
-      "*-north"
+      "*-n"
     ]
   },
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     }
   ],
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shapebytype": {
-    "*-north": {
+    "*-n": {
       "base": "smex:cowperstove/heatsink",
       "rotateY": 0
     },
-    "*-east": {
+    "*-e": {
       "base": "smex:cowperstove/heatsink",
       "rotateY": 270
     },
-    "*-south": {
+    "*-s": {
       "base": "smex:cowperstove/heatsink",
       "rotateY": 180
     },
-    "*-west": {
+    "*-w": {
       "base": "smex:cowperstove/heatsink",
       "rotateY": 90
     }

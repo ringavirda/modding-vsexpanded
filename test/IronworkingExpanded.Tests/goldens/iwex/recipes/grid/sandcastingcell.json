@@ -6,7 +6,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:sandcastingcell-{brick}-north",
+      "code": "iwex:casting-sandcell-{brick}-n",
       "quantity": 1
     },
     "ingredients": {
@@ -49,7 +49,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:sandcastingcell-fire-north",
+      "code": "iwex:casting-sandcell-fire-n",
       "quantity": 1
     },
     "ingredients": {

@@ -100,7 +100,7 @@ public class EngineTickTests
   }
 
   // Re-use regression (the cowper lesson generalized): the burst path is reached through a sticky
-  // IsBroken latch plus an over-pressure accumulator, and Repair() must clear BOTH so the next
+  // IsBroken latch plus an over-pressure accumulator, and Repair() must clear both so the next
   // over-pressure episode starts clean. Without a reset, a repaired engine would re-break on the very
   // first over-pressure tick (or, if the latch leaked the other way, never break again). Every other
   // engine test either reflection-flips IsBroken or runs a single break - none crosses break→repair→
@@ -122,7 +122,7 @@ public class EngineTickTests
     scene.Step();
     Assert.True(eng.Engine.IsBroken, "precondition: sustained over-pressure broke it");
 
-    // Repair, then run ONE more over-pressure tick. If repair left the accumulator dirty this single
+    // Repair, then run one more over-pressure tick. If repair left the accumulator dirty this single
     // tick would re-break instantly; a clean reset means it must take the full grace again.
     eng.Engine.Repair();
     eng.SetInletPressure(4.5f);

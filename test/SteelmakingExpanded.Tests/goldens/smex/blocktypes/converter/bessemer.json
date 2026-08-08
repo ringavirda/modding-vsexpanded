@@ -149,7 +149,7 @@
   },
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     },
     {
       "name": "BlockEntityInteract"
@@ -335,16 +335,21 @@
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "shape": {
     "base": "smex:converter/bessemer",
     "rotateYByType": {
-      "*-north": 0,
-      "*-east": 270,
-      "*-south": 180,
-      "*-west": 90
+      "*-n": 0,
+      "*-e": 270,
+      "*-s": 180,
+      "*-w": 90
     },
     "selectiveElements": [
       "Root/GearShaft/*"

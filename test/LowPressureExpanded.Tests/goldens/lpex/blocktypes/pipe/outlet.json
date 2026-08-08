@@ -68,26 +68,26 @@
   ],
   "shapebytype": {
     "*-outlet-*-s": {
-      "base": "lpex:pipes/outlet"
+      "base": "lpex:pipe/outlet"
     },
     "*-outlet-*-n": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": 180
     },
     "*-outlet-*-e": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": 90
     },
     "*-outlet-*-w": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateY": -90
     },
     "*-outlet-*-u": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateX": -90
     },
     "*-outlet-*-d": {
-      "base": "lpex:pipes/outlet",
+      "base": "lpex:pipe/outlet",
       "rotateX": 90
     }
   },

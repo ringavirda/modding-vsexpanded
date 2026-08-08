@@ -1,7 +1,7 @@
 {
   "code": "pipe",
-  "class": "lpex.BlockPipePassthrough",
-  "entityClass": "lpex.BlockEntityPipePassthrough",
+  "class": "exlib.BlockPipePassthrough",
+  "entityClass": "exlib.BlockEntityPipePassthrough",
   "blockmaterial": "Ceramic",
   "sounds": {
     "walk": "game:walk/stone",
@@ -42,6 +42,11 @@
           "game:block/clay/brick/four/running/{brick}1"
         ]
       }
+    }
+  },
+  "textures": {
+    "normal4": {
+      "base": "iwex:block/metal/castiron"
     }
   },
   "renderpass": "OpaqueNoCull",
@@ -93,55 +98,55 @@
   ],
   "shapebytype": {
     "*-passthroughbend-*-nw": {
-      "base": "lpex:pipes/passthroughbend"
+      "base": "iwex:pipe/passthroughbend"
     },
     "*-passthroughbend-*-en": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 270
     },
     "*-passthroughbend-*-se": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 180
     },
     "*-passthroughbend-*-ws": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 90
     },
     "*-passthroughbend-*-dn": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateZ": 90
     },
     "*-passthroughbend-*-de": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 270,
       "rotateZ": 90
     },
     "*-passthroughbend-*-ds": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 180,
       "rotateZ": 90
     },
     "*-passthroughbend-*-dw": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 90,
       "rotateZ": 90
     },
     "*-passthroughbend-*-un": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateZ": 270
     },
     "*-passthroughbend-*-ue": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 270,
       "rotateZ": 270
     },
     "*-passthroughbend-*-us": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 180,
       "rotateZ": 270
     },
     "*-passthroughbend-*-uw": {
-      "base": "lpex:pipes/passthroughbend",
+      "base": "iwex:pipe/passthroughbend",
       "rotateY": 90,
       "rotateZ": 270
     }

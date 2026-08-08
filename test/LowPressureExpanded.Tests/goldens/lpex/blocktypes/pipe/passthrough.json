@@ -1,7 +1,7 @@
 {
   "code": "pipe",
-  "class": "lpex.BlockPipePassthrough",
-  "entityClass": "lpex.BlockEntityPipePassthrough",
+  "class": "exlib.BlockPipePassthrough",
+  "entityClass": "exlib.BlockEntityPipePassthrough",
   "blockmaterial": "Ceramic",
   "sounds": {
     "walk": "game:walk/stone",
@@ -44,6 +44,11 @@
       }
     }
   },
+  "textures": {
+    "normal4": {
+      "base": "iwex:block/metal/castiron"
+    }
+  },
   "renderpass": "OpaqueNoCull",
   "faceCullMode": "NeverCull",
   "lightAbsorption": 0,
@@ -84,15 +89,15 @@
   ],
   "shapebytype": {
     "*-passthrough-*-ns": {
-      "base": "lpex:pipes/passthrough",
+      "base": "iwex:pipe/passthrough",
       "rotateY": 0
     },
     "*-passthrough-*-we": {
-      "base": "lpex:pipes/passthrough",
+      "base": "iwex:pipe/passthrough",
       "rotateY": 90
     },
     "*-passthrough-*-ud": {
-      "base": "lpex:pipes/passthrough",
+      "base": "iwex:pipe/passthrough",
       "rotateX": 90
     }
   }

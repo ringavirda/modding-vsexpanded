@@ -113,7 +113,7 @@ public class BoilerTickTests
   }
 
   // Re-use regression (the cowper lesson generalized): a boiler is fired, shut down, and re-fired
-  // repeatedly. Shutdown deliberately LEAVES leftover steam in the vessel (it condenses back to water
+  // repeatedly. Shutdown deliberately leaves leftover steam in the vessel (it condenses back to water
   // in Idle), so a re-fire happens against a dirty, steam-laden vessel. That residual steam must not
   // latch the boiler out of operation - re-lighting with enough water must reach Heating again. Every
   // other boiler test runs a single forward leg from primed state; none re-fires after a shutdown.

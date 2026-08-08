@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ExpandedLib.Testing;
 using LowPressureExpanded.BlockStructures.Boiler.Blocks;
 using LowPressureExpanded.BlockStructures.Engine.Blocks;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
@@ -13,7 +13,7 @@ namespace SteelmakingExpanded.Tests;
 /// <summary>
 /// Regression guard for the RCC mega-block break/mining JSON, which the headless harness can't load
 /// (blocks are configured by hand, not from assets). Reads the shipped block JSON directly and pins:
-/// the Bessemer converter and the boiler must NOT drop themselves (control-spawned / built in place,
+/// the Bessemer converter and the boiler must not drop themselves (control-spawned / built in place,
 /// not a placeable frame) and must scatter 80% of their construction cost; the craftable engine keeps
 /// its frame-recovery self-drop; and the pickaxe tiers (converter = iron; Watt engine + Cornish
 /// boiler = bronze).
@@ -31,10 +31,6 @@ public class MegablockDropTierTests
     "src/LowPressureExpanded/assets/lpex/blocktypes/engine/watt.json";
   private const string BoilerCornish =
     "src/LowPressureExpanded/assets/lpex/blocktypes/boiler/cornish.json";
-
-  // Pickaxe tooltier in this game version: bronzes = 3, iron = 4, steel = 5.
-  private const int BronzeTier = 3;
-  private const int IronTier = 4;
 
   #region Converter (control-spawned: no self-drop)
 
@@ -60,7 +56,9 @@ public class MegablockDropTierTests
     // carries brokenDropsRatio and the default lives on the config.
     Assert.Equal(0.8f, new SmexConfig().RccBrokenDropsRatio, 3);
     Assert.False(
-      Constructable(Block(Bessemer)).TryGetProperty("brokenDropsRatio", out _),
+      DefinitionJson
+        .Constructable(Block(Bessemer))
+        .TryGetProperty("brokenDropsRatio", out _),
       "brokenDropsRatio must no longer live in the block JSON (moved to config)"
     );
   }
@@ -68,7 +66,10 @@ public class MegablockDropTierTests
   [Fact]
   public void Bessemer_converter_needs_an_iron_tier_pickaxe()
   {
-    Assert.Equal(IronTier, MiningTier(Block(Bessemer)));
+    Assert.Equal(
+      VanillaToolTiers.Iron,
+      DefinitionJson.MiningTier(Block(Bessemer))
+    );
   }
 
   #endregion
@@ -98,8 +99,8 @@ public class MegablockDropTierTests
   [InlineData(Watt)]
   public void Engines_still_drop_their_craftable_frame(string path)
   {
-    // Engines ARE placeable, craftable frames - breaking one should recover the frame block, so they
-    // must NOT carry the converter/boiler empty-drops override.
+    // Engines are placeable, craftable frames - breaking one should recover the frame block, so they
+    // must not carry the converter/boiler empty-drops override.
     JsonElement block = Block(path);
     bool suppressesSelfDrop =
       block.TryGetProperty("drops", out JsonElement drops)
@@ -124,7 +125,7 @@ public class MegablockDropTierTests
     string path
   )
   {
-    Assert.Equal(BronzeTier, MiningTier(Block(path)));
+    Assert.Equal(VanillaToolTiers.Bronze, DefinitionJson.MiningTier(Block(path)));
   }
 
   [Fact]
@@ -145,7 +146,9 @@ public class MegablockDropTierTests
   public void Engines_and_boilers_no_longer_carry_a_json_drop_ratio(string path)
   {
     Assert.False(
-      Constructable(Block(path)).TryGetProperty("brokenDropsRatio", out _),
+      DefinitionJson
+        .Constructable(Block(path))
+        .TryGetProperty("brokenDropsRatio", out _),
       $"{path} brokenDropsRatio must move to config (lpex RccBrokenDropsRatio)"
     );
   }
@@ -154,39 +157,10 @@ public class MegablockDropTierTests
 
   #region Asset loading
 
-  private static int MiningTier(JsonElement block) =>
-    block.GetProperty("requiredMiningTier").GetInt32();
-
-  // The ExRightClickConstructable entity behavior's properties node (holds brokenDropsRatio + stages).
-  private static JsonElement Constructable(JsonElement block)
-  {
-    foreach (
-      JsonElement b in block.GetProperty("entityBehaviors").EnumerateArray()
-    )
-    {
-      if (
-        b.TryGetProperty("name", out JsonElement name)
-        && name.GetString() == "ExRightClickConstructable"
-      )
-        return b.GetProperty("properties");
-    }
-    throw new Xunit.Sdk.XunitException(
-      "block has no ExRightClickConstructable behavior"
-    );
-  }
-
-  private static JsonElement Block(string repoRelativePath)
-  {
-    using var doc = JsonDocument.Parse(
-      BlockJson(repoRelativePath),
-      new JsonDocumentOptions
-      {
-        CommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
-      }
-    );
-    return doc.RootElement.Clone();
-  }
+  // MiningTier / Constructable / the lenient def parse live in ExpandedLib.Testing.DefinitionJson,
+  // shared with the hpex drop-tier suite.
+  private static JsonElement Block(string repoRelativePath) =>
+    DefinitionJson.Parse(BlockJson(repoRelativePath));
 
   // Every mega-block in this guard is now code-first (no shipped JSON), so read its authored def - the single
   // source of truth - instead of a file. Reading the def here keeps this guard honest through the migration: it

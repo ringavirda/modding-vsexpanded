@@ -1,7 +1,7 @@
 {
   "code": "pipe",
-  "class": "iwex.BlockPipe",
-  "entityClass": "iwex.BlockEntityPipe",
+  "class": "exlib.BlockPipe",
+  "entityClass": "exlib.BlockEntityPipe",
   "blockmaterial": "Metal",
   "sounds": {
     "place": "game:block/anvil",
@@ -69,54 +69,54 @@
   ],
   "shapebytype": {
     "*-tjunction-wne": {
-      "base": "lpex:pipes/tjunction"
+      "base": "lpex:pipe/tjunction"
     },
     "*-tjunction-nes": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 270
     },
     "*-tjunction-esw": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 180
     },
     "*-tjunction-swn": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 90
     },
     "*-tjunction-uwe": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateX": 90
     },
     "*-tjunction-uns": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateX": 90,
       "rotateZ": 90
     },
     "*-tjunction-dwe": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateX": 270
     },
     "*-tjunction-dns": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateX": 270,
       "rotateZ": 90
     },
     "*-tjunction-dnu": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateZ": 90
     },
     "*-tjunction-deu": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 270,
       "rotateZ": 90
     },
     "*-tjunction-dsu": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 180,
       "rotateZ": 90
     },
     "*-tjunction-dwu": {
-      "base": "lpex:pipes/tjunction",
+      "base": "lpex:pipe/tjunction",
       "rotateY": 90,
       "rotateZ": 90
     }

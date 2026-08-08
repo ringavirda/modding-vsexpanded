@@ -1,0 +1,695 @@
+{
+  "code": "furnace",
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "puddlingcore"
+      ]
+    },
+    {
+      "code": "tier",
+      "states": [
+        "tier1",
+        "tier2",
+        "tier3"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iwex": [
+      "*-n"
+    ]
+  },
+  "shape": {
+    "base": "game:block/basic/cube"
+  },
+  "blockmaterial": "Ceramic",
+  "maxstacksize": 4,
+  "replaceable": 700,
+  "resistance": 2.5,
+  "lightAbsorption": 99,
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "sounds": {
+    "walk": "game:walk/stone",
+    "place": "game:block/ceramicplace"
+  },
+  "materialDensity": 2000,
+  "class": "iwex.BlockPuddlingFurnaceCore",
+  "entityClass": "iwex.BlockEntityPuddlingFurnace",
+  "textures": {
+    "all": {
+      "base": "game:block/clay/refractory/{tier}/front1"
+    },
+    "north": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iwex:block/furnace/n"
+      ]
+    },
+    "south": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iwex:block/furnace/pf"
+      ]
+    }
+  },
+  "attributes": {
+    "multiblockStructure": {
+      "blockNumbers": {
+        "game:refractorybricks-good-tier*": 1,
+        "game:brickslabs-fire-up-free": 2,
+        "game:brickslabs-fire-south-free": 3,
+        "game:cokeovendoor-*-north": 4,
+        "iwex:furnace-puddlingcore-*-*": 5,
+        "iwex:furnace-puddlinghearth-n": 6,
+        "iwex:furnace-puddlingchargedoor-s": 7,
+        "iwex:furnace-puddlingchimneycap-n": 8,
+        "exlib:structurefiller": 9,
+        "iwex:furnace-firebox-*-*": 10,
+        "game:air": 11
+      },
+      "offsets": [
+        {
+          "x": -6,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 0,
+          "z": -1,
+          "w": 2
+        },
+        {
+          "x": -2,
+          "y": 0,
+          "z": -1,
+          "w": 2
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": -1,
+          "w": 2
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 0,
+          "z": 0,
+          "w": 2
+        },
+        {
+          "x": -5,
+          "y": 0,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": -4,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 0,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": -2,
+          "y": 0,
+          "z": 0,
+          "w": 6
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 5
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 0,
+          "z": 1,
+          "w": 2
+        },
+        {
+          "x": -2,
+          "y": 0,
+          "z": 1,
+          "w": 2
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 1,
+          "w": 2
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 1,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 1,
+          "z": 0,
+          "w": 10
+        },
+        {
+          "x": -4,
+          "y": 1,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 1,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 1,
+          "z": 1,
+          "w": 4
+        },
+        {
+          "x": -4,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 1,
+          "z": 1,
+          "w": 3
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 1,
+          "w": 7
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 1,
+          "w": 3
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 2,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": -4,
+          "y": 2,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": -3,
+          "y": 2,
+          "z": 0,
+          "w": 2
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -6,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 1,
+          "w": 9
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -5,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -4,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -3,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 6,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "w": 11
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 7,
+          "z": 0,
+          "w": 8
+        }
+      ]
+    },
+    "multiblockFacings": {
+      "game:brickslabs-fire-south-free": [
+        2
+      ],
+      "game:cokeovendoor-*-north": [
+        2
+      ],
+      "iwex:furnace-puddlinghearth-n": [
+        2
+      ],
+      "iwex:furnace-puddlingchargedoor-s": [
+        2
+      ],
+      "iwex:furnace-puddlingchimneycap-n": [
+        2
+      ]
+    },
+    "multiblockRoles": {
+      "Firebox": [
+        {
+          "x": -5,
+          "y": 1,
+          "z": 0
+        }
+      ],
+      "Flue": [
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": 0
+        }
+      ]
+    }
+  }
+}

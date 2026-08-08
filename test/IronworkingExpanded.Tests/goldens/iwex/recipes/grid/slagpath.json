@@ -6,7 +6,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:slagpath-free",
+      "code": "iwex:slag-path-free",
       "quantity": 2
     },
     "ingredients": {
@@ -28,7 +28,7 @@
     "height": 1,
     "output": {
       "type": "block",
-      "code": "iwex:slagpathslab-free",
+      "code": "iwex:slag-pathslab-free",
       "quantity": 1
     },
     "ingredients": {
@@ -50,7 +50,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:slagpathstairs-up-north-free",
+      "code": "iwex:slag-pathstairs-up-north-free",
       "quantity": 1
     },
     "ingredients": {

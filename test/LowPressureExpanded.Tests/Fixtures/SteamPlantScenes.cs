@@ -1,7 +1,6 @@
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using IronworkingExpanded.Tests;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
@@ -76,7 +75,7 @@ internal sealed class WaterPumpPlant
 
     var engineBlock = TestBlocks.Configure(
       new BlockEngineWatt(),
-      "lpex:enginewatt-north",
+      "lpex:enginewatt-n",
       30,
       ("side", "north")
     );
@@ -98,7 +97,7 @@ internal sealed class WaterPumpPlant
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
-      "lpex:enginefluidpump-east",
+      "lpex:enginefluidpump-e",
       33,
       ("side", "east")
     );
@@ -110,7 +109,7 @@ internal sealed class WaterPumpPlant
     scene.Machine(subPos, pumpBlock, Pump);
 
     // Source line: a fluid intake directly below the pump (oriented "u" so it presents a connector up
-    // into the pump's DOWN face). It is its own one-cell network - the pond the pump draws from.
+    // into the pump's down face). It is its own one-cell network - the pond the pump draws from.
     _pond = subPos.DownCopy();
     var intakeBlock = TestBlocks.Configure(
       new BlockFluidIntake(),

@@ -30,19 +30,19 @@
   },
   "shapebytype": {
     "*-n": {
-      "base": "lpex:pipes/fluidintake",
+      "base": "lpex:pipe/fluidintake",
       "rotateY": 180
     },
     "*-e": {
-      "base": "lpex:pipes/fluidintake",
+      "base": "lpex:pipe/fluidintake",
       "rotateY": 90
     },
     "*-s": {
-      "base": "lpex:pipes/fluidintake",
+      "base": "lpex:pipe/fluidintake",
       "rotateY": 0
     },
     "*-w": {
-      "base": "lpex:pipes/fluidintake",
+      "base": "lpex:pipe/fluidintake",
       "rotateY": 270
     }
   },

@@ -17,7 +17,7 @@
       "name": "MultiblockStructure"
     },
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     },
     {
       "name": "BlockEntityInteract"
@@ -162,24 +162,29 @@
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "lpex": [
-      "*-north"
+      "*-n"
     ]
   },
   "shape": {
     "base": "lpex:boiler/cornish",
     "rotateYByType": {
-      "*-north": 0,
-      "*-east": 270,
-      "*-south": 180,
-      "*-west": 90
+      "*-n": 0,
+      "*-e": 270,
+      "*-s": 180,
+      "*-w": 90
     },
     "selectiveElements": [
       "Root/Base/*"
@@ -366,13 +371,13 @@
     "multiblockStructure": {
       "blockNumbers": {
         "exlib:structurefiller": 1,
-        "lpex:boilercornish*": 2,
+        "lpex:boilercornish-*": 2,
         "lpex:pipe-passthrough-fire-*": 3,
         "lpex:pipe-passthroughbend-fire-u*": 4,
         "game:claybricks-good-fire": 5,
-        "game:air*": 6,
+        "game:air": 6,
         "@(air|coalpile)": 7,
-        "game:cokeovendoor*": 8,
+        "game:cokeovendoor-*-south": 8,
         "lpex:pipe-outlet-fire-u": 9
       },
       "offsets": [
@@ -760,6 +765,11 @@
           "z": 5,
           "w": 5
         }
+      ]
+    },
+    "multiblockFacings": {
+      "game:cokeovendoor-*-south": [
+        2
       ]
     }
   }

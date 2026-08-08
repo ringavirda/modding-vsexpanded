@@ -23,7 +23,7 @@ public class CowperStoveTests
       Pos = new BlockPos(0, 4, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:cowperstove-north",
+        "smex:cowperstove-n",
         85,
         ("side", "north")
       ),

@@ -6,7 +6,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-straight-{rock}-ns",
+      "code": "iwex:molten-canal-straight-{rock}-ns",
       "quantity": 1
     },
     "ingredients": {
@@ -51,7 +51,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "iwex:moltencanal-bend-{rock}-nw",
+      "code": "iwex:molten-canal-bend-{rock}-nw",
       "quantity": 1
     },
     "ingredients": {

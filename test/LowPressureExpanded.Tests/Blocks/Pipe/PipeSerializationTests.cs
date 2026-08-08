@@ -1,6 +1,5 @@
 using ExpandedLib.Networks;
 using LowPressureExpanded.BlockNetworkPipe;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Datastructures;
 using Xunit;

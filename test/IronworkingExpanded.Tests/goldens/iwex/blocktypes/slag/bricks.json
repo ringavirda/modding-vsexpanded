@@ -1,0 +1,60 @@
+{
+  "code": "slag-bricks",
+  "blockmaterial": "Stone",
+  "attributes": {
+    "canChisel": true,
+    "mapColorCode": "settlement"
+  },
+  "resistance": 4.0,
+  "mineTool": "pickaxe",
+  "sounds": {
+    "place": "game:block/stone",
+    "walk": "game:walk/stone",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "shape": {
+    "base": "game:block/basic/cube"
+  },
+  "textures": {
+    "all": {
+      "base": "iwex:block/slag/slag",
+      "overlays": [
+        "iwex:block/slag/slagbrick"
+      ]
+    }
+  },
+  "lightAbsorption": 99,
+  "replaceable": 200,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "construction": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.23,
+      "y": -0.91,
+      "z": -0.8
+    },
+    "rotation": {
+      "x": -2.0,
+      "y": 25.0,
+      "z": -78.0
+    },
+    "scale": 0.4
+  }
+}

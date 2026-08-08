@@ -1,7 +1,7 @@
 {
   "code": "pipe",
-  "class": "iwex.BlockPipe",
-  "entityClass": "iwex.BlockEntityPipe",
+  "class": "exlib.BlockPipe",
+  "entityClass": "exlib.BlockEntityPipe",
   "blockmaterial": "Metal",
   "sounds": {
     "place": "game:block/anvil",
@@ -69,55 +69,55 @@
   ],
   "shapebytype": {
     "*-bend-nw": {
-      "base": "lpex:pipes/bend"
+      "base": "lpex:pipe/bend"
     },
     "*-bend-en": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 270
     },
     "*-bend-se": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 180
     },
     "*-bend-ws": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 90
     },
     "*-bend-dn": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateZ": 90
     },
     "*-bend-de": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 270,
       "rotateZ": 90
     },
     "*-bend-ds": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 180,
       "rotateZ": 90
     },
     "*-bend-dw": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 90,
       "rotateZ": 90
     },
     "*-bend-un": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateZ": 270
     },
     "*-bend-ue": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 270,
       "rotateZ": 270
     },
     "*-bend-us": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 180,
       "rotateZ": 270
     },
     "*-bend-uw": {
-      "base": "lpex:pipes/bend",
+      "base": "lpex:pipe/bend",
       "rotateY": 90,
       "rotateZ": 270
     }

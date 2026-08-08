@@ -40,7 +40,7 @@ public class BlastFurnaceTests
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "smex:blastfurnacecore-north",
+        "smex:blastfurnacecore-n",
         1,
         ("side", "north")
       ),
@@ -59,29 +59,29 @@ public class BlastFurnaceTests
     Assert.Equal(FurnaceState.Idle, Furnace(NewWorld()).State);
   }
 
+  // `TransitionToMelting_moves_firing_into_melting` is deleted, not ported. The method it
+  // drove is the stored state machine's, and a shaft furnace no longer has one: `DerivesState` is true on
+  // this branch, so `TransitionToMelting` is unreachable from a blast furnace and the case was exercising
+  // the firebox's machinery through the wrong class. The transition it stood for is asserted where it can
+  // actually happen - `FireboxTickTests` for the branch that still owns a machine, and
+  // `BlastFurnaceScenarioTests.A_furnace_whose_flame_is_over_the_line_is_not_melting_until_its_CHARGE_is`
+  // for what replaces it here.
+
+  /// <summary>
+  /// <b>The split, stated as a unit.</b> <c>Extinguish()</c> was one method that did two things: decide
+  /// the furnace had gone out, and do everything going out entails. A derived branch cannot do the first -
+  /// its label is a read - so the second became <c>Shutdown()</c>, and this is what it owes: the reset to
+  /// ambient, the pools cleared, the residue laid down.
+  /// </summary>
   [Fact]
-  public void TransitionToMelting_moves_firing_into_melting()
+  public void Shutdown_resets_the_heat_and_the_pools_without_deciding_the_state()
   {
     var be = Furnace(NewWorld());
-    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Firing);
-
-    ReflectionHelpers.Invoke(be, "TransitionToMelting");
-
-    Assert.Equal(FurnaceState.Melting, be.State);
-    Assert.Equal(0f, (float)ReflectionHelpers.GetField(be, "_meltSeconds")!, 3);
-  }
-
-  [Fact]
-  public void Extinguish_returns_to_idle_and_resets_heat()
-  {
-    var be = Furnace(NewWorld());
-    ReflectionHelpers.SetProperty(be, nameof(be.State), FurnaceState.Melting);
     ReflectionHelpers.SetField(be, "_internalTemp", 1500f);
-    // No molten iron, so the solidified-iron drop branch is skipped.
+    ReflectionHelpers.SetField(be, "_moltenIron", 50f);
 
-    ReflectionHelpers.Invoke(be, "Extinguish");
+    ReflectionHelpers.Invoke(be, "Shutdown");
 
-    Assert.Equal(FurnaceState.Idle, be.State);
     Assert.Equal(
       20f,
       (float)ReflectionHelpers.GetField(be, "_internalTemp")!,
@@ -142,7 +142,15 @@ public class BlastFurnaceTests
   {
     var world = NewWorld();
     var src = Furnace(world);
-    ReflectionHelpers.SetProperty(src, nameof(src.State), FurnaceState.Melting);
+    // The state is put in through the reader, not through a setter - there is no setter, by design
+    // (FurnaceBranchGuards.NoFurnaceExposesASettableState). That is not a workaround: a save round trip is
+    // exactly "a furnace that loaded as Melting writes Melting", so loading it is the honest arrangement
+    // and it exercises one more link of the same chain than an assignment would have.
+    var seed = new TreeAttribute();
+    seed.SetInt("bfState", (int)FurnaceState.Melting);
+    src.FromTreeAttributes(seed, world.World);
+    Assert.Equal(FurnaceState.Melting, src.State);
+
     ReflectionHelpers.SetProperty(src, nameof(src.IsChoked), true);
     ReflectionHelpers.SetField(src, "_internalTemp", 1456f);
     ReflectionHelpers.SetField(src, "_moltenIron", 80f);
