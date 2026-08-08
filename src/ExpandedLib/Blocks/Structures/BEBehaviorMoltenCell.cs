@@ -9,42 +9,25 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
-/// A molten-metal <em>cell</em> as a composable block-entity behaviour: it holds one cell's worth of
-/// liquid (or, once latched, solidified) metal - amount, type, temperature - and exposes the per-cell
-/// operations the molten system drives (push / drain / soak / thermal update / solidify / recover).
-/// It lifts the <see cref="IMoltenCell"/> contract off <c>BlockEntityMoltenCanal</c> so that an
-/// invisible mega-block footprint cell (via <see cref="IFillerHostedBehavior"/>) - or any block entity
-/// - can <em>be</em> a molten cell by composition rather than by extending the canal block entity.
-/// <para>
-/// Unlike the canal, a hosted cell is not auto-registered in the shared molten network graph. The
-/// principal that hosts a fixed cluster of them (the sand casting bed; later the ladle / casting cell)
-/// drives flow across the cluster itself, keeping it an isolated internal network so the outside line
-/// can carry a different metal. Config - capacity, whether it seeds flow, whether it is a drain
-/// fitting, whether it clogs when cold, its cooldown rate - comes from the hosted-behaviour
-/// <c>properties</c> and is re-applied on load (the filler replays the saved spec through
-/// <see cref="ConfigureFromFiller"/>); only the mutable metal state is serialized here.
-/// </para>
+/// One molten-metal cell as a composable block-entity behaviour: holds a single cell's metal (amount,
+/// type, temperature) and the per-cell operations the molten system drives, so any block entity can be
+/// an <see cref="IMoltenCell"/> by composition, including a mega-block footprint cell hosted through
+/// <see cref="IFillerHostedBehavior"/>. A hosted cell is not registered in the shared molten network
+/// graph: its principal drives flow across the cluster, which may hold a different metal from the
+/// outside line. Hosted config is re-applied on load by <see cref="ConfigureFromFiller"/>; only mutable
+/// metal state is serialized here. See docs/design/mechanics/molten-network.md.
 /// </summary>
 [BlockEntityBehaviorRegister]
 public class BEBehaviorMoltenCell(BlockEntity blockentity)
   : BlockEntityBehavior(blockentity),
     IMoltenCell,
-    IFillerHostedBehavior
-{
+    IFillerHostedBehavior {
   /// <summary>Fallback capacity (units) when the declaration sets no <c>capacity</c>.</summary>
   public const int DefaultCapacity = 100;
 
   /// <summary>
-  /// The tree-key prefix a cell uses when it declares no <c>key</c>.
-  /// <para>
-  /// <b>This value is a save contract and must never change.</b> Every cell that shipped before the
-  /// prefix existed - the sand casting bed's runner, mold and basin cells, and the standalone casting
-  /// cell - declares no <c>key</c>, so their saved trees carry exactly these names. Changing the default
-  /// (to <c>""</c>, to the behaviour's name, to anything tidier) makes <see cref="FromTreeAttributes"/>
-  /// look for keys that are not in the tree and read zeros - every casting bed in every existing world
-  /// silently empties. <c>MoltenCellPairTests</c> spells the literal key set out rather than deriving it,
-  /// so this cannot drift.
-  /// </para>
+  /// The tree-key prefix a cell uses when it declares no <c>key</c>. Save contract: changing it makes
+  /// <see cref="FromTreeAttributes"/> read zeros over existing contents.
   /// </summary>
   public const string DefaultKeyPrefix = "mc_";
 
@@ -55,19 +38,13 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   private bool _solidifiesWhenCold = true;
   private float _cooldownSpeed = ExlibValues.MoltenCooldownDefault;
 
-  // Why a prefix exists at all: a block entity hands one tree to every behaviour it hosts, and a cell
-  // holds exactly one metal by design (PushMetalRaw refuses a second). So a layered vessel - the blast
-  // furnace's crucible, iron under slag - has to host two cells, and without distinct keys the second
-  // one's write lands on top of the first. Silently: nothing throws, the metal is simply gone on reload.
+  // One tree is shared by every behaviour a block entity hosts, and a cell holds exactly one metal
+  // (PushMetalRaw refuses a second), so a layered vessel such as a crucible holding iron under slag hosts
+  // two cells. Distinct prefixes keep the second cell's write from silently landing on the first.
   private string _keyPrefix = DefaultKeyPrefix;
 
-  // A runtime capacity override that wins over the declared/config one while set. Persisted so it
-  // survives a reload.
-  //
-  // Not only about patterns: a mold rammed into a casting cell is one caller, and the blast furnace's
-  // hearth - whose capacity is its band height times the footprint the player actually built - is
-  // another. The tree key stays `patcap` even though a hearth block has no pattern rammed into it,
-  // because the key is a save contract; the field name is not.
+  // Runtime capacity override that wins over the declared/config capacity while set; persisted so it
+  // survives a reload. The tree key stays `patcap` as a save contract.
   private int? _runtimeCapacity;
 
   /// <summary>The principal (controller) block this cell belongs to, or null when hosted standalone.</summary>
@@ -75,8 +52,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
 
   // Config keys read from the hosted-behaviour properties. flowSource seeds the principal's internal
   // flow, drainFitting takes the final sub-minimum dregs (a mold), solidifies clogs when cold.
-  private void ApplyConfig(JsonObject? props)
-  {
+  private void ApplyConfig(JsonObject? props) {
     if (props == null)
       return;
     _capacity = props["capacity"].AsInt(_capacity);
@@ -92,14 +68,12 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     BlockPos? principal,
     BlockFacing? connectorFace,
     JsonObject? properties
-  )
-  {
+  ) {
     Principal = principal;
     ApplyConfig(properties);
   }
 
-  public override void Initialize(ICoreAPI api, JsonObject properties)
-  {
+  public override void Initialize(ICoreAPI api, JsonObject properties) {
     base.Initialize(api, properties);
     // Hosted-on-filler cells were already configured via ConfigureFromFiller (which runs first); a cell
     // declared directly in a block's behaviours gets its config here instead. Same keys either way.
@@ -121,25 +95,16 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   public int MaxUnitCapacity => _runtimeCapacity ?? _capacity;
 
   /// <summary>
-  /// Overrides this cell's capacity at runtime. Wins over the declared and config capacity until
-  /// <see cref="ClearCapacity"/> is called. The caller guards against changing capacity while metal is
-  /// present.
-  /// <para>
-  /// Two callers, and they are not the same kind of thing: a mold rammed into a casting cell sets the
-  /// capacity from the pattern's spec (cleared on shake-out), and a furnace hearth sets it from its band
-  /// height times the footprint the player built. The override is deliberately generic - do not describe
-  /// it as "the pattern capacity" again.
-  /// </para>
+  /// Overrides this cell's capacity (units) until <see cref="ClearCapacity"/>; a non-positive value
+  /// clears the override. The caller guards against changing capacity while metal is present.
   /// </summary>
-  public void SetCapacity(int capacity)
-  {
+  public void SetCapacity(int capacity) {
     _runtimeCapacity = capacity > 0 ? capacity : null;
     Blockentity.MarkDirty();
   }
 
   /// <summary>Drops the runtime capacity override, reverting to the declared/config capacity.</summary>
-  public void ClearCapacity()
-  {
+  public void ClearCapacity() {
     if (_runtimeCapacity == null)
       return;
     _runtimeCapacity = null;
@@ -174,13 +139,11 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     CellAmount > 0 ? MoltenMetal.GlowLevel(_cellTemperature) : (byte)0;
 
   /// <summary>
-  /// Thermal state (liquid / cooling / hardened) classified against the metal's melting point,
-  /// honouring the metal's registered per-metal thresholds. Empty cells read liquid.
+  /// Thermal state (liquid / cooling / hardened) classified against the metal's melting point, honouring
+  /// its registered per-metal thresholds. Empty cells read liquid.
   /// </summary>
-  public MoltenState CellState
-  {
-    get
-    {
+  public MoltenState CellState {
+    get {
       IWorldAccessor? world = Blockentity.Api?.World;
       if (world == null || CellAmount <= 0 || CellMetalType.Length == 0)
         return MoltenState.Liquid;
@@ -215,8 +178,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     string metalType,
     float temperature,
     IWorldAccessor world
-  )
-  {
+  ) {
     if (Solidified || metalType.Length == 0)
       return 0;
     if (CellAmount > 0 && CellMetalType != metalType)
@@ -249,8 +211,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   }
 
   /// <inheritdoc/>
-  public int DrainMetal(int amount)
-  {
+  public int DrainMetal(int amount) {
     if (Solidified || CellAmount <= 0)
       return 0;
 
@@ -263,16 +224,14 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     return actual;
   }
 
-  private void EmptyCell()
-  {
+  private void EmptyCell() {
     CellAmount = 0;
     CellMetalType = "";
     _cellMetalStack = null;
     _cellTemperature = 0f;
   }
 
-  private void SetStackTemperature(IWorldAccessor world, float temp)
-  {
+  private void SetStackTemperature(IWorldAccessor world, float temp) {
     if (_cellMetalStack == null)
       return;
     MoltenMetal.SetTemperature(world, _cellMetalStack, temp);
@@ -280,12 +239,10 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   }
 
   /// <summary>
-  /// Raises this cell's temperature toward <paramref name="incomingTemp"/> without adding volume - hot
-  /// metal poured over an already-full cell, so a continuously-fed fitting stays molten instead of
-  /// plugging. Returns true if raised.
+  /// Raises this cell's temperature toward <paramref name="incomingTemp"/> without adding volume, so a
+  /// continuously-fed full fitting stays molten instead of plugging. Returns true if raised.
   /// </summary>
-  public bool SoakHeat(IWorldAccessor world, float incomingTemp)
-  {
+  public bool SoakHeat(IWorldAccessor world, float incomingTemp) {
     if (
       CellAmount <= 0
       || _cellMetalStack == null
@@ -300,8 +257,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   }
 
   /// <inheritdoc/>
-  public void EnsureMetalStack(IWorldAccessor world)
-  {
+  public void EnsureMetalStack(IWorldAccessor world) {
     if (_cellMetalStack != null || CellMetalType.Length == 0 || CellAmount <= 0)
       return;
 
@@ -313,8 +269,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   }
 
   /// <inheritdoc/>
-  public void UpdateThermal(IWorldAccessor world)
-  {
+  public void UpdateThermal(IWorldAccessor world) {
     if (CellAmount <= 0 || _cellMetalStack == null)
       return;
 
@@ -326,13 +281,11 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     float meltPoint = MoltenMetal.MeltingPointOf(world, _cellMetalStack);
 
     bool changed = false;
-    if (Math.Abs(_cellTemperature - temp) >= 1f)
-    {
+    if (Math.Abs(_cellTemperature - temp) >= 1f) {
       _cellTemperature = temp;
       changed = true;
     }
-    if (_solidifiesWhenCold && !Solidified && temp < meltPoint)
-    {
+    if (_solidifiesWhenCold && !Solidified && temp < meltPoint) {
       Solidified = true;
       changed = true;
     }
@@ -347,8 +300,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   public bool WouldSpillOnRemoval() => !Solidified && CellAmount > 0;
 
   /// <summary>Returns the solid metal-bit recovery for this cell's contents, or null when empty.</summary>
-  public ItemStack? GetRecoveryDrop(IWorldAccessor world)
-  {
+  public ItemStack? GetRecoveryDrop(IWorldAccessor world) {
     if (CellAmount <= 0 || CellMetalType.Length == 0)
       return null;
     return MoltenChisel.BuildRecovery(
@@ -360,11 +312,10 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   }
 
   /// <summary>
-  /// Empties this cell and clears its solidified latch (e.g. after the principal has collected the
-  /// hardened casting). No-op off-server.
+  /// Empties this cell and clears its solidified latch, e.g. once the principal has collected the
+  /// hardened casting. No-op off-server.
   /// </summary>
-  public void ClearContents()
-  {
+  public void ClearContents() {
     if (Blockentity.Api?.Side != EnumAppSide.Server)
       return;
     EmptyCell();
@@ -377,13 +328,11 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
 
   /// <summary>
   /// This cell's tree-key prefix - <see cref="DefaultKeyPrefix"/> unless the declaration sets
-  /// <c>key</c>. It is what lets two cells share one block entity's tree; see
-  /// <see cref="Blocks.Structures.MoltenCellHost.MoltenCell"/> for how a consumer addresses one.
+  /// <c>key</c>. Distinct prefixes are what let two cells share one block entity's tree.
   /// </summary>
   public string Key => _keyPrefix;
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetInt(_keyPrefix + "amount", CellAmount);
     tree.SetString(_keyPrefix + "type", CellMetalType);
@@ -398,8 +347,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     CellAmount = tree.GetInt(_keyPrefix + "amount");
     CellMetalType = tree.GetString(_keyPrefix + "type", "");
@@ -410,9 +358,8 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
       : null;
     // _cellMetalStack rebuilt lazily server-side in EnsureMetalStack.
 
-    // Invariant: an empty cell is never solidified (also scrubs phantom flags from old saves).
-    if (CellAmount <= 0)
-    {
+    // Invariant: an empty cell is never solidified; also scrubs stale flags from older saves.
+    if (CellAmount <= 0) {
       Solidified = false;
       CellMetalType = "";
     }

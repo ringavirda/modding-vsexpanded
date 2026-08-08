@@ -11,35 +11,32 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
-/// The twin-tub blower: the iron tier's air source, and the only one that needs no steam. It is
-/// <b>both</b> a gas-pipe node (it sits in the blast main and produces into it, hence the
-/// <see cref="BlockPipe"/> base) <b>and</b> a mega-block that reserves a 1x2x3 footprint of invisible
-/// fillers - the upper-rear cell of which hosts a mechanical-power port, so an axle on that face drives
-/// the bellows. See <see cref="BlockEntityTwinTubMPBlower"/> for the simulation.
+/// The twin-tub blower: the iron tier's air source, needing no steam. It is both a gas-pipe node (it
+/// sits in the blast main and produces into it, hence the <see cref="BlockPipe"/> base) and a mega-block
+/// reserving a 1x2x3 footprint of invisible fillers, whose upper-rear cell hosts a mechanical-power port
+/// so an axle on that face drives the bellows. <see cref="BlockEntityTwinTubMPBlower"/> holds the
+/// simulation.
 /// <para>
-/// It cannot derive <see cref="BlockFilledMegastructure"/> (that base is a plain <c>Block</c> and the
-/// blower must be a pipe), so it composes the same behaviour the way exlib's filler machinery is
-/// factored for exactly this case: implement <see cref="IFillerHost"/> and drive the
-/// <see cref="StructureFillers"/> statics from the placement triad below. Without that, the
-/// <c>fillerOffsets</c> footprint is inert JSON - no fillers spawn, and the MP port cell never exists.
+/// <see cref="BlockFilledMegastructure"/> is a plain <c>Block</c> and the blower must be a pipe, so this
+/// type implements <see cref="IFillerHost"/> and drives the <see cref="StructureFillers"/> statics from
+/// the placement triad below. Without those calls no fillers spawn and the MP port cell never exists.
 /// </para>
 /// </summary>
 [BlockRegister]
-public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFillerHost
-{
+public partial class BlockTwinTubMPBlower
+  : BlockPipe,
+    IExBlockDefProvider,
+    IFillerHost {
   #region Code-first definition
 
   /// <summary>
   /// The mechanical-power intake hosted by the footprint's upper-rear cell: an axle on the
-  /// (rotation-relative) west face drives the bellows. Same coupling the rolling mill uses.
-  /// <para>
-  /// This def is also what <c>Parity_catches_a_wrong_filler_port_face</c> reads: it is the harness's
-  /// sample of "a def with a per-cell behaviour". That test asserts the port exists before corrupting
-  /// it, so removing this spec fails loudly rather than leaving the parity oracle checking nothing.
-  /// </para>
+  /// (rotation-relative) west face drives the bellows. The same coupling the rolling mill uses.
   /// </summary>
-  private static readonly FillerBehaviorSpec MpPortWest =
-    new("exlib.BEBehaviorMPFillerPort", "west");
+  private static readonly FillerBehaviorSpec MpPortWest = new(
+    "exlib.BEBehaviorMPFillerPort",
+    "west"
+  );
 
   /// <summary>
   /// The twin-tub blower blocktype. Orientation follows the pipe-fitting convention (a <c>type</c> +
@@ -49,21 +46,25 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, BlockFurnaceCoreBase.FurnaceCode, "furnace/twintubblower")
+        .Create(
+          domain,
+          BlockFurnaceCoreBase.FurnaceCode,
+          "furnace/twintubblower"
+        )
         .Class<BlockTwinTubMPBlower>()
         .EntityClass<BlockEntityTwinTubMPBlower>()
-        // Carries the shared build-outline behaviour so the projection gesture is wired at every functional
-        // component uniformly. Unlike the tap/tuyere/hopper the blower is not a cell of the furnace layout -
-        // it is a pipe-network machine linked to a tuyere by the blast main at unbounded distance - so the
-        // layout-ownership resolver finds no owning anchor from it and the gesture does nothing (the "no
-        // resolvable anchor -> does nothing" contract). It keeps its own MP/pipe HUD.
+        // Carries the shared build-outline behaviour so the projection gesture is wired uniformly at
+        // every functional component. Unlike the tap, tuyere and hopper the blower is not a cell of the
+        // furnace layout (it is a pipe-network machine linked to a tuyere by the blast main at unbounded
+        // distance), so the layout-ownership resolver finds no owning anchor and the gesture does
+        // nothing. It keeps its own MP and pipe HUD.
         .Behavior("MultiblockStructure")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
         .VariantGroup("type", "twintubblower")
         .VariantGroup("orientation", "n", "e", "s", "w")
-        // The footprint is authored in the NORTH frame, so north is the unrotated shape - the offsets in
-        // FillerOffsets and StructureAngle below share that frame.
+        // The footprint is authored in the north frame, so north is the unrotated shape; FillerOffsets
+        // and StructureAngle below share that frame.
         .ShapeByType("*-n", "iwex:furnace/twintubmpblower", rotateY: 0)
         .ShapeByType("*-e", "iwex:furnace/twintubmpblower", rotateY: 90)
         .ShapeByType("*-s", "iwex:furnace/twintubmpblower", rotateY: 180)
@@ -102,8 +103,7 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
   /// angle, so the two can never disagree.
   /// </summary>
   public int StructureAngle =>
-    Variant?["orientation"] switch
-    {
+    Variant?["orientation"] switch {
       "e" => 90,
       "s" => 180,
       "w" => 270,
@@ -118,15 +118,13 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
     IPlayer byPlayer,
     BlockSelection blockSel,
     ref string failureCode
-  )
-  {
+  ) {
     if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
       return false;
 
     // Refuse placement unless the whole volume is clear, else the fillers fail to spawn and the blower
     // would stand with no MP port cell to be driven through.
-    if (!StructureFillers.CanPlace(world, FootprintCells(blockSel.Position)))
-    {
+    if (!StructureFillers.CanPlace(world, FootprintCells(blockSel.Position))) {
       failureCode = "notenoughspace";
       return false;
     }
@@ -137,8 +135,7 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
     IWorldAccessor world,
     BlockPos blockPos,
     ItemStack? byItemStack = null
-  )
-  {
+  ) {
     base.OnBlockPlaced(world, blockPos, byItemStack);
     StructureFillers.PlaceFillers(world, blockPos, FootprintCells(blockPos));
   }
@@ -148,8 +145,7 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     // Clear the reserved volume first so no invisible solid cells are left behind.
     StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
     base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);

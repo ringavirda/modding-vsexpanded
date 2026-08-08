@@ -725,8 +725,8 @@ and the filler reroute actually work. `run-tests.sh` green is necessary, not suf
 - [x] **Step 3: Update the docs**
 
 `docs/design/machines/long-cell.md` — `**Status**` from "art-only — the block does not exist" to `live`,
-and delete the "what would have to be built" list. `docs/design/iwex-bringup.md` — mark its Stage 2 done
-(that file still owns the art queue and the playtest gates). `docs/design/STATE.md` — the ladder diagram's
+and delete the "what would have to be built" list. `docs/plans/iwex-bringup.md` — mark its Stage 2 done
+(that file still owns the art queue and the playtest gates). `docs/plans/STATE.md` — the ladder diagram's
 long-cell row becomes live.
 
 - [x] **Step 4: Append the U1 WORKLOG entry**

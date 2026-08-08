@@ -1,15 +1,13 @@
 namespace IronworkingExpanded.BlockStructures.Casting;
 
 /// <summary>How much sand is rammed into a casting cell.</summary>
-public enum SandLevel
-{
+public enum SandLevel {
   /// <summary>The bare brick shell - no sand.</summary>
   Empty,
 
   /// <summary>
-  /// Half-rammed. <b>Legacy only</b> - shake-out used to leave a cell here and a second ram brought it back
-  /// to full. It now returns straight to <see cref="Full"/>, so nothing produces this any more; the state is
-  /// kept because saved cells still carry it, and one ram clears them.
+  /// Half-rammed. Nothing produces this state any more (shake-out returns straight to <see cref="Full"/>); it
+  /// is kept because saved cells still carry it, and one ram clears them.
   /// </summary>
   Half,
 
@@ -18,8 +16,7 @@ public enum SandLevel
 }
 
 /// <summary>What a right-click on a casting cell resolves to, given what the player holds and the cell's state.</summary>
-public enum CellAction
-{
+public enum CellAction {
   /// <summary>Nothing to do - fall through to the default block interaction.</summary>
   None,
 
@@ -37,17 +34,15 @@ public enum CellAction
 }
 
 /// <summary>
-/// The casting cell's interaction and cast-outcome rules, as pure functions so they can be pinned without
-/// a world (the block entity only orchestrates: it reads state, calls <see cref="Decide"/>, and applies
-/// the result). Mirrors the pig bed's split of testable arithmetic from in-game wiring.
+/// The casting cell's interaction and cast-outcome rules as pure functions, callable without a world. The
+/// block entity only orchestrates: it reads state, calls <see cref="Decide"/>, and applies the result.
+/// See docs/design/machines/casting-cell.md.
 /// </summary>
-public static class CastingCellLogic
-{
+public static class CastingCellLogic {
   /// <summary>
-  /// Resolves a right-click into the one action it should perform. Precedence matters: a hardened cast is
-  /// collected before anything else, a still-liquid cast blocks the empty-hand click with a "too hot"
-  /// refusal (never a fall-through), and ram/imprint only apply with the matching held item and an empty,
-  /// impression-free cell.
+  /// Resolves a right-click into the one action it performs. Precedence is fixed: a hardened cast is collected
+  /// first, a still-liquid cast answers an empty-hand click with <see cref="CellAction.TooHot"/> rather than
+  /// falling through, and ram/imprint apply only with the matching held item and an empty, impression-free cell.
   /// </summary>
   /// <param name="holdingSand">The player holds green sand (see <see cref="IsMoldingSand"/>).</param>
   /// <param name="holdingPattern">The player holds a mold pattern.</param>
@@ -64,12 +59,10 @@ public static class CastingCellLogic
     bool hasImpression,
     bool hasMetal,
     bool isHardened
-  )
-  {
-    // Metal present: an empty hand either shakes it out (hardened) or is refused (still hot). Nothing
-    // else may touch a cell with metal in it - no re-ramming, no re-patterning.
-    if (hasMetal)
-    {
+  ) {
+    // Metal present: an empty hand either shakes it out (hardened) or is refused (still hot). Nothing else
+    // may touch a cell holding metal - no re-ramming, no re-patterning.
+    if (hasMetal) {
       if (emptyHand)
         return isHardened ? CellAction.Harvest : CellAction.TooHot;
       return CellAction.None;
@@ -85,15 +78,8 @@ public static class CastingCellLogic
   }
 
   /// <summary>
-  /// The sand level a cell is at once its casting is shaken out: <b>full again</b>. Breaking the casting free
-  /// wrecks the impression, not the bed - the sand is raked back level and the cell is ready to take the next
-  /// pattern.
-  /// <para>
-  /// So sand is rammed <b>once</b> and the standing cost of a casting run is the ram-up of the pattern, not
-  /// the material. That is a deliberate simplification of a two-step reload (top up the sand, then re-impress)
-  /// whose first step was pure ceremony: the cell always accepted exactly one item, always needed exactly one
-  /// of it, and refusing to re-impress until it was done only ever read as the cell being broken.
-  /// </para>
+  /// The sand level a cell is at once its casting is shaken out: full again. Shake-out wrecks the impression,
+  /// not the bed, so sand is rammed once per cell and only the pattern is re-impressed per casting.
   /// </summary>
   public const SandLevel AfterShakeOut = SandLevel.Full;
 
@@ -101,50 +87,58 @@ public static class CastingCellLogic
   public const string GreenSandCode = "iwex:" + GreenSandItemDefinitions.Code;
 
   /// <summary>
-  /// Whether <paramref name="itemCode"/> is molding sand the cell will take. Exactly one item qualifies: raw
-  /// sand has no binder and holds no impression, so it is refused however much of it a player is carrying.
-  /// The check is on the <b>full code</b> rather than a path prefix, so another mod's <c>greensand</c> cannot
-  /// silently satisfy iwex's station.
+  /// Whether <paramref name="itemCode"/> is molding sand the cell will take. Only prepared green sand
+  /// qualifies; raw sand has no binder and holds no impression. Matches the full code rather than a path
+  /// prefix, so another domain's <c>greensand</c> does not satisfy the cell.
   /// </summary>
-  public static bool IsMoldingSand(string? itemCode) => itemCode == GreenSandCode;
+  public static bool IsMoldingSand(string? itemCode) =>
+    itemCode == GreenSandCode;
 
   /// <summary>
-  /// Whether a completed pour is a <b>misrun</b>: the cavity filled but the metal was below the pattern's
-  /// minimum pour temperature when it did, so it comes out as scrap rather than the part. A
-  /// <paramref name="minPourTemp"/> of 0 disables the check (always a good cast).
+  /// Whether a completed pour is a misrun: the cavity filled while the metal was below the pattern's minimum
+  /// pour temperature, so it yields scrap rather than the part. Temperatures in degrees Celsius; a
+  /// <paramref name="minPourTemp"/> of 0 disables the check.
   /// </summary>
-  public static bool IsMisrun(bool cavityFull, float metalTemp, float minPourTemp) =>
-    cavityFull && minPourTemp > 0f && metalTemp < minPourTemp;
+  public static bool IsMisrun(
+    bool cavityFull,
+    float metalTemp,
+    float minPourTemp
+  ) => cavityFull && minPourTemp > 0f && metalTemp < minPourTemp;
 
   /// <summary>
-  /// Whether the cell is currently able to draw metal from its feed: an impression is present and the
-  /// cavity is neither full nor already solidified. (The cell pulls only while there is somewhere for the
-  /// metal to go and it is still liquid enough to matter.)
+  /// Whether the cell can draw metal from its feed: an impression is present and the cavity is neither full
+  /// nor solidified.
   /// </summary>
-  public static bool CanIntake(bool hasImpression, bool cavityFull, bool solidified) =>
-    hasImpression && !cavityFull && !solidified;
+  public static bool CanIntake(
+    bool hasImpression,
+    bool cavityFull,
+    bool solidified
+  ) => hasImpression && !cavityFull && !solidified;
 
   /// <summary>The flat rammed-sand mesh, shown once the cell is fully rammed but not yet impressed.</summary>
   public const string BaseFillShape = "iwex:casting/cell-filling-base";
 
-  /// <summary>The half-height sand of a legacy <see cref="SandLevel.Half"/> cell. Nothing reaches this state
-  /// any more (see <see cref="AfterShakeOut"/>); it renders saved ones until they are next rammed.</summary>
+  /// <summary>The half-height sand of a <see cref="SandLevel.Half"/> cell. Nothing reaches that state any more
+  /// (see <see cref="AfterShakeOut"/>); this renders saved ones until they are next rammed.</summary>
   public const string HalfFillShape = "iwex:casting/cell-filling-half";
 
   /// <summary>
-  /// Which rammed-sand filling shape the cell should render for its current state, or <c>null</c> for the
-  /// bare brick shell (no sand). A bare cell shows nothing; a legacy half-rammed cell shows the flat half
-  /// sand; a fully-rammed cell shows the pattern's cavity (<paramref name="impressionShape"/>) once
-  /// impressed, else the flat full sand - falling back to the flat full sand if an impression is present but
-  /// its shape is unresolved. Pure so the state→shape mapping can be pinned without a world; the entity only
-  /// loads and tesselates whatever this returns.
+  /// The rammed-sand filling shape for the cell's current state, or <c>null</c> for the bare brick shell. A
+  /// fully-rammed cell shows the pattern's cavity (<paramref name="impressionShape"/>) once impressed, and
+  /// falls back to the flat full sand when an impression is present but its shape is unresolved. The entity
+  /// only loads and tesselates whatever this returns.
   /// </summary>
-  public static string? FillingShape(SandLevel sand, bool hasImpression, string? impressionShape) =>
-    sand switch
-    {
+  public static string? FillingShape(
+    SandLevel sand,
+    bool hasImpression,
+    string? impressionShape
+  ) =>
+    sand switch {
       SandLevel.Empty => null,
       SandLevel.Half => HalfFillShape,
-      SandLevel.Full => hasImpression ? impressionShape ?? BaseFillShape : BaseFillShape,
+      SandLevel.Full => hasImpression
+        ? impressionShape ?? BaseFillShape
+        : BaseFillShape,
       _ => null,
     };
 }

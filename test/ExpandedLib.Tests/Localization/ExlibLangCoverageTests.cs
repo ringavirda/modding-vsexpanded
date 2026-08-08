@@ -6,19 +6,21 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Every <c>exlib</c> block code must resolve to a name in every locale. An unresolved key is
-/// invisible until a player looks at the block, and then renders raw - nothing in the build, the
-/// goldens or the runtime says a word.
+/// Every <c>exlib</c> block code must resolve to a name in every locale. Neither the build nor the
+/// runtime reports an unresolved key; it renders raw in game.
 /// </summary>
-public class ExlibLangCoverageTests
-{
+public class ExlibLangCoverageTests {
   private const string Domain = "exlib";
-  private static readonly Assembly Mod = typeof(ExpandedLib.Blocks.Migrations.BlockMigrationModSystem).Assembly;
+  private static readonly Assembly Mod =
+    typeof(ExpandedLib.Blocks.Migrations.BlockMigrationModSystem).Assembly;
 
   [Fact]
-  public void Every_block_code_resolves_to_a_name_in_every_locale()
-  {
-    var missing = LangCoverage.MissingNames(Domain, Mod, $"assets/{Domain}/lang");
+  public void Every_block_code_resolves_to_a_name_in_every_locale() {
+    var missing = LangCoverage.MissingNames(
+      Domain,
+      Mod,
+      $"assets/{Domain}/lang"
+    );
 
     Assert.True(
       missing.Count == 0,

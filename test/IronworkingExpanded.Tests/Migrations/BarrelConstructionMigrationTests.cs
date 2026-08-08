@@ -13,16 +13,16 @@ namespace IronworkingExpanded.Tests;
 /// barrel). Covers both the current <c>iwex</c> code and the pre-split <c>smex</c> code, and that it
 /// no-ops when the new plated block is not registered.
 /// </summary>
-public class BarrelConstructionMigrationTests
-{
-  private static Dictionary<AssetLocation, AssetLocation> Remaps(TestWorld world) =>
+public class BarrelConstructionMigrationTests {
+  private static Dictionary<AssetLocation, AssetLocation> Remaps(
+    TestWorld world
+  ) =>
     new BarrelConstructionMigration()
       .GetRemaps(world.Api)
       .ToDictionary(r => r.oldCode, r => r.newCode);
 
   [Fact]
-  public void Both_old_barrel_codes_map_to_the_plated_variant()
-  {
+  public void Both_old_barrel_codes_map_to_the_plated_variant() {
     var world = new TestWorld();
     world.Register(
       TestBlocks.Configure(new Block(), "iwex:molten-barrel-plated", 100)
@@ -37,8 +37,7 @@ public class BarrelConstructionMigrationTests
   }
 
   [Fact]
-  public void Nothing_is_remapped_when_the_plated_block_is_absent()
-  {
+  public void Nothing_is_remapped_when_the_plated_block_is_absent() {
     // No molten-barrel-plated registered - the migration has nothing safe to remap to.
     Assert.Empty(Remaps(new TestWorld()));
   }

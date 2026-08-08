@@ -12,13 +12,12 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The sand casting bed's two mass-critical pieces, tested as pure logic (the mega-block wiring is left
-/// to in-game verification): the harvest denomination (hardened units -&gt; pigs/chunks/bits, never
-/// creating matter) and the internal flow edge (metal moves basin-outward, a mold hoards its charge,
-/// and unlike metals never mix). Iron melts at 1500 C.
+/// The sand casting bed's two mass-critical pieces as pure logic (the megablock wiring is verified
+/// in-game): harvest denomination, which splits hardened units into pigs/chunks/bits without creating
+/// matter, and the internal flow edge, where metal moves basin-outward, a mold keeps its charge, and
+/// unlike metals do not mix. Iron melts at 1500 C.
 /// </summary>
-public class SandCastingBedTests
-{
+public class SandCastingBedTests {
   private const string Iron = "game:ingot-iron";
   private const string Steel = "game:ingot-steel";
 
@@ -39,12 +38,14 @@ public class SandCastingBedTests
     int pigs,
     int chunks,
     int bits
-  )
-  {
-    Assert.Equal((pigs, chunks, bits), BlockEntitySandCastingBed.Denominate(units));
+  ) {
+    Assert.Equal(
+      (pigs, chunks, bits),
+      BlockEntitySandCastingBed.Denominate(units)
+    );
   }
 
-  // The awkward numbers, probed either side of a pig boundary so a re-mass cannot make them vacuous.
+  // Values either side of a pig boundary, so a change to the unit masses cannot make the cases vacuous.
   [Theory]
   [InlineData(0)]
   [InlineData(7)]
@@ -52,10 +53,14 @@ public class SandCastingBedTests
   [InlineData(376)] // one unit over
   [InlineData(749)] // one short of two
   [InlineData(452)]
-  public void Denominate_never_creates_matter(int units)
-  {
-    (int pigs, int chunks, int bits) = BlockEntitySandCastingBed.Denominate(units);
-    int recovered = pigs * ItemPig.PigUnits + chunks * ItemPig.ChunkUnits + bits * ItemPig.BitUnits;
+  public void Denominate_never_creates_matter(int units) {
+    (int pigs, int chunks, int bits) = BlockEntitySandCastingBed.Denominate(
+      units
+    );
+    int recovered =
+      pigs * ItemPig.PigUnits
+      + chunks * ItemPig.ChunkUnits
+      + bits * ItemPig.BitUnits;
     Assert.True(recovered <= units); // never more than was poured
     Assert.True(units - recovered < 5); // only a sub-bit crumb is ever lost
   }
@@ -65,26 +70,21 @@ public class SandCastingBedTests
   #region What a cell yields
 
   [Fact]
-  public void Only_a_carved_mold_yields_a_casting()
-  {
-    // One mold shape casts both products, so what a cell gives back no longer depends at all on which metal
-    // reached it - only on whether the player cut a cavity there.
+  public void Only_a_carved_mold_yields_a_casting() {
+    // One mold shape casts both products, so the yield depends only on whether a cavity was cut there,
+    // not on which metal reached the cell.
     Assert.True(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Mold));
   }
 
   [Fact]
-  public void A_runners_stranded_charge_is_scrap_however_good_the_metal_was()
-  {
-    // A runner is a conduit, not a cavity: nothing in it was ever going to be a casting, so it denominates
-    // as recovered bits. This is the one place the old metal-versus-mold rule still earns its keep.
+  public void A_runners_stranded_charge_is_scrap_however_good_the_metal_was() {
+    // A runner is a conduit, not a cavity, so its stranded charge denominates as recovered bits.
     Assert.False(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Runner));
   }
 
   [Fact]
-  public void Uncarved_sand_casts_nothing_whatever_is_in_it()
-  {
-    // A charge stranded in a slot that was never cut (or has been shaken out) has no cast to be, so it can
-    // only ever come back as bits.
+  public void Uncarved_sand_casts_nothing_whatever_is_in_it() {
+    // A charge in a slot that was never cut, or has been shaken out, comes back only as bits.
     Assert.False(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Sand));
   }
 
@@ -93,8 +93,7 @@ public class SandCastingBedTests
   #region Flow edge
 
   [Fact]
-  public void FlowEdge_moves_metal_from_the_fuller_cell_toward_the_emptier()
-  {
+  public void FlowEdge_moves_metal_from_the_fuller_cell_toward_the_emptier() {
     var w = NewWorld();
     var runner = Cell(w, "{ \"capacity\": 50 }", 50);
     var mold = Cell(w, "{ \"capacity\": 750, \"drainFitting\": true }", 0);
@@ -106,8 +105,7 @@ public class SandCastingBedTests
   }
 
   [Fact]
-  public void A_mold_hoards_its_charge_and_never_drains_back_out()
-  {
+  public void A_mold_hoards_its_charge_and_never_drains_back_out() {
     var w = NewWorld();
     var mold = Cell(w, "{ \"capacity\": 750, \"drainFitting\": true }", 100);
     var runner = Cell(w, "{ \"capacity\": 50 }", 0);
@@ -119,8 +117,7 @@ public class SandCastingBedTests
   }
 
   [Fact]
-  public void Unlike_metals_do_not_mix_across_the_edge()
-  {
+  public void Unlike_metals_do_not_mix_across_the_edge() {
     var w = NewWorld();
     var a = Cell(w, "{ \"capacity\": 100 }", 60, Iron);
     var b = Cell(w, "{ \"capacity\": 100, \"drainFitting\": true }", 20, Steel);
@@ -135,8 +132,7 @@ public class SandCastingBedTests
 
   #region Fixture
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var w = new TestWorld();
     w.RegisterItem(Iron, 1500f);
     w.RegisterItem(Steel, 1500f);
@@ -148,8 +144,7 @@ public class SandCastingBedTests
     string props,
     int amount,
     string metal = Iron
-  )
-  {
+  ) {
     var filler = TestBlocks.Configure(
       new BlockStructureFiller(),
       "exlib:structurefiller",

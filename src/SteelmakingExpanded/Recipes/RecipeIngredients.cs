@@ -8,20 +8,19 @@ namespace SteelmakingExpanded.Recipes;
 /// (plate/nails/rod/gear/hammer) come from <see cref="ExIngredients"/> via <c>using static</c>; anything
 /// used by a single provider stays private to that file.
 /// </summary>
-internal static class RecipeIngredients
-{
+internal static class RecipeIngredients {
   /// <summary>
-  /// A plain pipe segment, using the trailing-star wildcard (no dash) carried over from the source JSON.
-  /// Shared by the three blocks that are essentially a brick shell around a pipe - the cowper intake, the
-  /// smoke-stack intake and the converter's gas intake - so all three keep asking for the same thing.
+  /// A plain pipe segment of any variant, matched with a trailing star and no dash. Used by the
+  /// cowper, smoke-stack and converter gas intakes.
   /// </summary>
-  internal static Func<IngredientBuilder, IngredientBuilder> PipeStar(int qty) =>
-    i => i.Block("lpex:pipe-straight*").Quantity(qty);
+  internal static Func<IngredientBuilder, IngredientBuilder> PipeStar(
+    int qty
+  ) => i => i.Block("lpex:pipe-straight*").Quantity(qty);
 
   /// <summary>
-  /// Refractory brick of any tier, capturing the tier as <c>{tier}</c> so the crafted block resolves to the
-  /// matching variant. Used by the cowper and smoke-stack intakes; the hot blast furnace deliberately does
-  /// <b>not</b> use this - it is tier-3 only.
+  /// Refractory brick of any tier, capturing the tier as <c>{tier}</c> so the crafted block resolves
+  /// to the matching variant. Used by the cowper and smoke-stack intakes. The hot blast furnace does
+  /// not use this: it takes tier 3 only.
   /// </summary>
   internal static Func<IngredientBuilder, IngredientBuilder> RefractoryTier(
     int qty

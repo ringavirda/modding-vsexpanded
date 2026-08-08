@@ -1,6 +1,6 @@
 using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Testing;
 using ExpandedLib.Helpers;
+using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -9,8 +9,7 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>A production machine that opts into away-catch-up with a configurable step cap.</summary>
-internal sealed class CatchupMachine : BlockEntityProductionMachine
-{
+internal sealed class CatchupMachine : BlockEntityProductionMachine {
   public int ProductionTicks;
   public int Steps;
 
@@ -24,12 +23,11 @@ internal sealed class CatchupMachine : BlockEntityProductionMachine
 }
 
 /// <summary>
-/// Game-time away-catch-up: the calendar is the only clock that survives a chunk unload, so a machine
+/// Game-time away-catch-up. The calendar is the only clock that survives a chunk unload, so a machine
 /// that opts in (<c>MaxAwayCatchupSteps &gt; 0</c>) replays the game hours it spent unloaded as bounded
-/// sub-ticks on reload - proportional for a short absence, capped for a long one, and off by default.
+/// sub-ticks on reload: proportional for a short absence, capped for a long one. Off by default.
 /// </summary>
-public class GameTimeCatchupTests
-{
+public class GameTimeCatchupTests {
   #region GameTime helper
 
   [Theory]
@@ -40,22 +38,19 @@ public class GameTimeCatchupTests
     double from,
     double to,
     double expected
-  )
-  {
+  ) {
     Assert.Equal(expected, GameTime.SecondsBetween(from, to), 3);
   }
 
   [Fact]
-  public void CatchUp_replays_a_short_gap_in_full()
-  {
+  public void CatchUp_replays_a_short_gap_in_full() {
     int steps = 0;
     float total = 0f;
     int ran = GameTime.CatchUp(
       3.6,
       1f,
       100,
-      dt =>
-      {
+      dt => {
         steps++;
         total += dt;
       }
@@ -67,17 +62,15 @@ public class GameTimeCatchupTests
   }
 
   [Fact]
-  public void CatchUp_caps_a_long_gap_at_the_step_budget()
-  {
+  public void CatchUp_caps_a_long_gap_at_the_step_budget() {
     int ran = GameTime.CatchUp(3600.0, 1f, 10, _ => { });
     Assert.Equal(10, ran); // an hour would be 3600 steps; capped at 10
   }
 
   [Theory]
-  [InlineData(0)] // no steps budget
-  [InlineData(5)] // steps, but...
-  public void CatchUp_does_nothing_without_elapsed_time_or_budget(int maxSteps)
-  {
+  [InlineData(0)] // no step budget
+  [InlineData(5)] // a step budget, but no elapsed time
+  public void CatchUp_does_nothing_without_elapsed_time_or_budget(int maxSteps) {
     Assert.Equal(0, GameTime.CatchUp(0.0, 1f, maxSteps, _ => { }));
   }
 
@@ -89,12 +82,10 @@ public class GameTimeCatchupTests
     TestBlocks.Configure(new Block(), "test:catchupmachine", 99);
 
   // Ticks m1 once, unloads it, advances the calendar, and reloads a fresh machine from m1's save tree.
-  private static CatchupMachine Reload(int steps, double awayHours)
-  {
+  private static CatchupMachine Reload(int steps, double awayHours) {
     var world = new TestWorld();
     Block block = MachineBlock();
-    var m1 = new CatchupMachine
-    {
+    var m1 = new CatchupMachine {
       Pos = new BlockPos(0, 0, 0),
       Block = block,
       Steps = steps,
@@ -108,8 +99,7 @@ public class GameTimeCatchupTests
 
     world.AdvanceHours(awayHours);
 
-    var m2 = new CatchupMachine
-    {
+    var m2 = new CatchupMachine {
       Pos = new BlockPos(0, 0, 0),
       Block = block,
       Steps = steps,
@@ -122,32 +112,28 @@ public class GameTimeCatchupTests
   }
 
   [Fact]
-  public void A_short_absence_catches_up_proportionally()
-  {
+  public void A_short_absence_catches_up_proportionally() {
     // 3.6 game-seconds away -> 4 catch-up sub-ticks, then 1 normal tick.
     CatchupMachine m = Reload(steps: 100, awayHours: 0.001);
     Assert.Equal(5, m.ProductionTicks);
   }
 
   [Fact]
-  public void A_long_absence_is_capped_at_the_step_budget()
-  {
+  public void A_long_absence_is_capped_at_the_step_budget() {
     // An hour away would be 3600 sub-ticks; capped at 10, plus the 1 normal tick.
     CatchupMachine m = Reload(steps: 10, awayHours: 1.0);
     Assert.Equal(11, m.ProductionTicks);
   }
 
   [Fact]
-  public void Away_catchup_is_off_by_default()
-  {
+  public void Away_catchup_is_off_by_default() {
     // Steps = 0 (the base default): the machine just resumes, no replay.
     CatchupMachine m = Reload(steps: 0, awayHours: 1.0);
     Assert.Equal(1, m.ProductionTicks);
   }
 
   [Fact]
-  public void A_fresh_machine_never_catches_up()
-  {
+  public void A_fresh_machine_never_catches_up() {
     var world = new TestWorld();
     var m = new CatchupMachine { Pos = new BlockPos(0, 0, 0), Steps = 10 };
     world.Attach(m);

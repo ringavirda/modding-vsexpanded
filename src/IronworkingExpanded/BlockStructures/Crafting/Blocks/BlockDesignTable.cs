@@ -10,19 +10,13 @@ using Vintagestory.API.Util;
 namespace IronworkingExpanded.BlockStructures.Crafting.Blocks;
 
 /// <summary>
-/// The design table - the draughting station where diagrams are drawn and builds are planned (Phase 3 of
-/// the diagram-crafting system, see <c>docs/design/diagram-crafting.md</c>). A candle-lit, two-wide
-/// draughting desk (paper, charcoal, ruler, candles).
-/// <para>
-/// Right-click opens the drafting window (<see cref="BlockEntityDesignTable"/> / its dialog): pick a diagram
-/// and Draw it onto parchment. Still to come: the setup-guide viewer, candle particles, and the 2-wide
-/// megablock collision (a filler for the second cell); for now the block is a single cell whose model
-/// overhangs into the next.
-/// </para>
+/// The design table: a candle-lit, two-wide draughting desk where diagrams are drawn and builds are
+/// planned. Right-click opens the drafting dialog (<see cref="BlockEntityDesignTable"/>) to pick a
+/// diagram and draw it onto parchment. Currently a single cell whose model overhangs into the next;
+/// the second cell has no filler yet. See <c>docs/design/diagram-crafting.md</c>.
 /// </summary>
 [BlockRegister]
-public partial class BlockDesignTable : Block, IExBlockDefProvider
-{
+public partial class BlockDesignTable : Block, IExBlockDefProvider {
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -34,7 +28,7 @@ public partial class BlockDesignTable : Block, IExBlockDefProvider
         .CreativeCommon("*-n")
         .Shape("iwex:crafting/designtable")
         .Material(EnumBlockMaterial.Wood)
-        // Always-lit candles: a warm, dim glow (tune the value in-game).
+        // Always-lit candles: a warm, dim glow.
         .Raw("lightHsv", new[] { 5, 7, 12 })
         .MaxStackSize(1)
         .Resistance(2f)
@@ -47,13 +41,11 @@ public partial class BlockDesignTable : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is BlockEntityDesignTable be
-    )
-    {
+    ) {
       be.OnInteract(byPlayer);
       return true;
     }
@@ -65,15 +57,13 @@ public partial class BlockDesignTable : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
     return baseHelp
       .Append(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "iwex:blockhelp-designtable-open",
           MouseButton = EnumMouseButton.Right,
         }

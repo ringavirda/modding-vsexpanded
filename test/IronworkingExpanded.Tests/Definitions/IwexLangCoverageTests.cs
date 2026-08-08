@@ -6,23 +6,21 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Every <c>iwex</c> block code must resolve to a name in every locale.
-/// <para>
-/// This supersedes the narrower "no bare key on a variant-grouped block" check, which was scoped to
-/// the one defect that fix wave owned and explicitly could not assert full resolution because some
-/// blocks shipped no name key at all. An unresolved key is invisible until a player looks at the block
-/// and then renders raw.
-/// </para>
+/// Every <c>iwex</c> block code must resolve to a name in every locale. An unresolved key is invisible
+/// until a player looks at the block, which then renders the raw key.
 /// </summary>
-public class IwexLangCoverageTests
-{
+public class IwexLangCoverageTests {
   private const string Domain = "iwex";
-  private static readonly Assembly Mod = typeof(Recipes.Grid.FurnaceRecipeDefinitions).Assembly;
+  private static readonly Assembly Mod =
+    typeof(Recipes.Grid.FurnaceRecipeDefinitions).Assembly;
 
   [Fact]
-  public void Every_block_code_resolves_to_a_name_in_every_locale()
-  {
-    var missing = LangCoverage.MissingNames(Domain, Mod, $"assets/{Domain}/lang");
+  public void Every_block_code_resolves_to_a_name_in_every_locale() {
+    var missing = LangCoverage.MissingNames(
+      Domain,
+      Mod,
+      $"assets/{Domain}/lang"
+    );
 
     Assert.True(
       missing.Count == 0,
@@ -36,11 +34,14 @@ public class IwexLangCoverageTests
   }
 
   [Fact]
-  public void No_block_description_key_is_orphaned()
-  {
-    // A description is optional, so a missing one is not a defect - but a key that matches no live
-    // code is text that silently stopped appearing in game. Nothing else reads these keys.
-    var orphans = LangCoverage.OrphanedDescriptions(Domain, Mod, $"assets/{Domain}/lang");
+  public void No_block_description_key_is_orphaned() {
+    // A missing description is not a defect; a key matching no live code is text that no longer
+    // appears in game. Nothing else reads these keys.
+    var orphans = LangCoverage.OrphanedDescriptions(
+      Domain,
+      Mod,
+      $"assets/{Domain}/lang"
+    );
 
     Assert.True(
       orphans.Count == 0,

@@ -55,6 +55,4 @@
     <ProjectReference Include="..\..\src\IronworkingExpanded\IronworkingExpanded.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
   </ItemGroup>
-
-
 </Project>

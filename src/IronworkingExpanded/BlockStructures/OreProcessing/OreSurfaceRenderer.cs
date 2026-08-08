@@ -6,14 +6,13 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.OreProcessing;
 
 /// <summary>
-/// Draws the flat top surface of the granular charge (crushed ore / flux / coke / finished burden)
-/// heaped inside a burdenmaker's hoppers or basin. One opaque, ore-textured quad spans the vessel's interior
-/// footprint; its height rises with how full the vessel is, interpolating between an empty floor line
+/// Draws the flat top surface of the granular charge (crushed ore, flux, coke or finished burden) heaped
+/// inside a burdenmaker's hoppers or basin. One opaque, ore-textured quad spans the vessel's interior
+/// footprint; its height interpolates with <see cref="Fill"/> between an empty floor line
 /// (<see cref="_yMin"/>) and a brim-full line (<see cref="_yMax"/>). A <see cref="Fill"/> of zero hides
-/// the surface entirely, so an empty vessel shows nothing.
+/// the surface.
 /// </summary>
-public class OreSurfaceRenderer : SurfaceRenderer
-{
+public class OreSurfaceRenderer : SurfaceRenderer {
   private readonly int _textureId;
   private readonly float _yMin;
   private readonly float _yMax;
@@ -21,7 +20,7 @@ public class OreSurfaceRenderer : SurfaceRenderer
   /// <summary>Fill fraction 0..1 of the vessel; drives the surface height (0 hides it).</summary>
   public float Fill;
 
-  // Drawn in the opaque pass with the rest of the block; an ordinary depth-tested surface, no blend.
+  // Drawn in the opaque pass with the rest of the block: depth-tested, no blend.
   public override double RenderOrder => 0.5;
 
   /// <param name="footprintBoxes">Interior surface footprint in 0-16 pixel space (block-local).</param>
@@ -38,8 +37,7 @@ public class OreSurfaceRenderer : SurfaceRenderer
     float yMax,
     AssetLocation texture
   )
-    : base(pos, api, footprintBoxes, rotationY, combine: true)
-  {
+    : base(pos, api, footprintBoxes, rotationY, combine: true) {
     _yMin = yMin;
     _yMax = yMax;
     _textureId = api.Render.GetOrLoadTexture(texture);
@@ -53,17 +51,15 @@ public class OreSurfaceRenderer : SurfaceRenderer
   protected override void ConfigureShader(
     IStandardShaderProgram shader,
     IRenderAPI render
-  )
-  {
-    // Opaque, untinted granular surface lit by the block's own light - no glow, no blend.
+  ) {
+    // Opaque, untinted granular surface lit by the block's own light: no glow, no blend.
     shader.RgbaTint = new Vec4f(1f, 1f, 1f, 1f);
     shader.TempGlowMode = 0;
     shader.RgbaGlowIn = new Vec4f(0f, 0f, 0f, 0f);
     shader.ExtraGlow = 0;
   }
 
-  protected override bool BindSurfaceTexture(IRenderAPI render)
-  {
+  protected override bool BindSurfaceTexture(IRenderAPI render) {
     render.BindTexture2d(_textureId);
     return true;
   }

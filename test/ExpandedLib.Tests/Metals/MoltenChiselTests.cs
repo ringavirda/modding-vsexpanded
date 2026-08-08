@@ -1,21 +1,19 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The shared metal-bit recovery builder behind every chisel/break drop (canal cells, the molten
-/// barrel, the bessemer charge). Pins the unit-per-bit ratio, the temperature carry, and the slag
-/// fallback so the holders stay in lockstep through <see cref="MoltenChisel.BuildRecovery"/>.
+/// Covers <see cref="MoltenChisel.BuildRecovery"/>, the shared metal-bit recovery builder behind
+/// every chisel and break drop (canal cells, molten barrel, bessemer charge): the units-per-bit
+/// ratio, the temperature carry, and the slag fallback.
 /// </summary>
-public class MoltenChiselTests
-{
+public class MoltenChiselTests {
   private const string Iron = "game:ingot-iron";
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:metalbit-iron");
@@ -31,8 +29,7 @@ public class MoltenChiselTests
     int units,
     int unitsPerBit,
     int expectedBits
-  )
-  {
+  ) {
     var world = NewWorld();
 
     ItemStack? drop = MoltenChisel.BuildRecovery(
@@ -49,8 +46,7 @@ public class MoltenChiselTests
   }
 
   [Fact]
-  public void BuildRecovery_carries_the_metal_temperature()
-  {
+  public void BuildRecovery_carries_the_metal_temperature() {
     var world = NewWorld();
 
     ItemStack drop = MoltenChisel.BuildRecovery(
@@ -64,8 +60,7 @@ public class MoltenChiselTests
   }
 
   [Fact]
-  public void BuildRecovery_returns_null_when_the_solid_item_is_missing_and_no_slag_fallback()
-  {
+  public void BuildRecovery_returns_null_when_the_solid_item_is_missing_and_no_slag_fallback() {
     var world = NewWorld(); // no metalbit-gold registered
 
     Assert.Null(
@@ -79,8 +74,7 @@ public class MoltenChiselTests
   }
 
   [Fact]
-  public void BuildRecovery_falls_back_to_slag_when_requested()
-  {
+  public void BuildRecovery_falls_back_to_slag_when_requested() {
     var world = NewWorld();
 
     ItemStack? drop = MoltenChisel.BuildRecovery(

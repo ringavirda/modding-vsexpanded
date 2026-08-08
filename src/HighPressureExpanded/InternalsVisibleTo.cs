@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
 
-// The unit-test assembly may drive internal seams that must not be part of the mod's public API
-// surface. Prefer internal accessors over string-keyed reflection in new tests (see test/README.md).
+// Lets the unit-test assembly drive internal seams that are not part of the mod's public API
+// surface. Tests prefer internal accessors over string-keyed reflection (see test/README.md).
 [assembly: InternalsVisibleTo("HighPressureExpanded.Tests")]

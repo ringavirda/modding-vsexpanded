@@ -4,21 +4,20 @@ using Vintagestory.API.Common;
 namespace ExpandedLib.Registries.Recipes;
 
 /// <summary>
-/// The shared anchor point for mods that expose recipe-cost levels (<c>normal</c>/<c>cheap</c>/...): a
-/// process-wide registry of <see cref="RecipeProfile"/>s keyed by mod code. It owns the one apply
-/// pipeline every mod shares (repair → discover → fill levels → persist → apply), so a dependent mod
-/// only registers its catalogue and the generic <c>/exmod recipes &lt;code&gt; &lt;level&gt;</c> command
-/// (and exlib's load-time apply) drive it. Lives in exlib so any mod - not just lpex/smex - can plug in.
+/// Process-wide registry of <see cref="RecipeProfile"/>s keyed by mod code, for mods that expose
+/// recipe-cost levels (<c>normal</c>, <c>cheap</c>, ...). It owns the apply pipeline every mod shares
+/// (repair, discover, fill levels, persist, apply); a dependent mod registers its catalogue and the
+/// generic <c>/exmod recipes &lt;code&gt; &lt;level&gt;</c> command plus exlib's load-time apply drive it.
 /// </summary>
-public static class ExRecipeProfiles
-{
-  private static readonly ExKeyedRegistry<RecipeProfile> _profiles = new(
-    p => p.Code
+public static class ExRecipeProfiles {
+  private static readonly ExKeyedRegistry<RecipeProfile> _profiles = new(p =>
+    p.Code
   );
 
   /// <summary>Registers (or replaces) a mod's profile. Call once from the mod's <c>Start</c>, after its
   /// config/catalogue stores have loaded.</summary>
-  public static void Register(RecipeProfile profile) => _profiles.Register(profile);
+  public static void Register(RecipeProfile profile) =>
+    _profiles.Register(profile);
 
   /// <summary>Looks up a registered profile by mod code (case-insensitive).</summary>
   public static bool TryGet(string code, out RecipeProfile profile) =>
@@ -27,23 +26,20 @@ public static class ExRecipeProfiles
   /// <summary>The registered mod codes, for listing in the command.</summary>
   public static IReadOnlyCollection<string> Codes => _profiles.Codes;
 
-  /// <summary>Runs the apply pipeline for every registered profile. exlib calls this from its
-  /// <c>StartServerSide</c>/<c>StartClientSide</c> (after all mods registered in their <c>Start</c>),
-  /// so the active level is applied to the live recipes on each world load.</summary>
-  public static void ApplyAll(ICoreAPI api)
-  {
+  /// <summary>Runs the apply pipeline for every registered profile. Called from exlib's
+  /// <c>StartServerSide</c>/<c>StartClientSide</c>, after every mod has registered in its
+  /// <c>Start</c>, so the active level reaches the live recipes on each world load.</summary>
+  public static void ApplyAll(ICoreAPI api) {
     foreach (var profile in _profiles.Values)
       Apply(api, profile);
   }
 
   /// <summary>
-  /// The shared per-profile pipeline: repair the catalogue against the mod's curated defaults, fill the
+  /// Runs the pipeline for one profile: repair the catalogue against the mod's defaults, fill the
   /// <c>normal</c> baseline from the live recipes and the derived levels by scaling it, persist if
-  /// anything changed (server only - the file is host-authoritative), then apply the selected level to
-  /// the live grid/RCC recipes.
+  /// anything changed (server only), then apply the selected level to the live grid/RCC recipes.
   /// </summary>
-  public static void Apply(ICoreAPI api, RecipeProfile profile)
-  {
+  public static void Apply(ICoreAPI api, RecipeProfile profile) {
     var live = profile.Catalogue();
 
     bool changed = ExRecipeCosts.Reconcile(live, profile.Defaults());

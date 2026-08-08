@@ -6,16 +6,12 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace HighPressureExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the hpex machines: the Lancashire boiler and the Cornish engine
-/// (carved out of lpex's <c>MachineRecipeDefinitions</c> when the two HP leaves moved here). The
-/// Cornish engine, like every gear-driven machine in the family, crafts from vanilla rusty gears OR
-/// lpex's craftable gears - authored once and emitted for both gear codes in a loop, preserving the
-/// source order (rusty-gear recipe first, then the lpex-gear one).
+/// Code-first grid recipes for the hpex machines: the Lancashire boiler and the Cornish engine. Like
+/// every gear-driven machine in the family, the Cornish engine crafts from vanilla rusty gears or
+/// from lpex's craftable gears; it is authored once and emitted for both gear codes, rusty first.
 /// </summary>
-public class MachineRecipeDefinitions : IExRecipeDefProvider
-{
-  public static IEnumerable<ExRecipeDef> Definitions(string domain)
-  {
+public class MachineRecipeDefinitions : IExRecipeDefProvider {
+  public static IEnumerable<ExRecipeDef> Definitions(string domain) {
     ExRecipeDef def = ExRecipeDef
       .Create(domain, "grid", "machines")
       .Grid(LancashireBoiler);
@@ -49,17 +45,19 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("N", NailsSteel(4))
         .OutputBlock("hpex:enginecornish-n");
 
-  // hpex-specific ingredient factories (the shared vanilla ones - PlateSteel/NailsSteel/RodSteel/
-  // Gear/Hammer - come from ExIngredients via `using static`).
+  // hpex-specific ingredient factories; the shared vanilla ones (PlateSteel, NailsSteel, RodSteel,
+  // Gear, Hammer) come from ExIngredients through `using static`.
   //
-  // The pipe ingredient is the plain plated (iwex) segment, matching every other machine + fitting
-  // recipe in the family - the pipe tiers carry no iron/steel material axis, so a material-suffixed
-  // code (e.g. `...-steel`) resolves to no block.
-  // Tier-gating the HP builds to the cast (lpex) / rolled (hpex) segments waits on those segments
-  // getting craft recipes of their own, and on the hadfield material gate (see docs/design/hpex.md).
-  private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(int qty) =>
-    i => i.Block("iwex:pipe-straight-*").Quantity(qty);
+  // The pipe ingredient is the plain plated (iwex) segment, as in every other machine and fitting
+  // recipe in the family. The pipe tiers carry no iron/steel material axis, so a material-suffixed
+  // code such as `...-steel` resolves to no block. Tier-gating the HP builds to the cast (lpex) or
+  // rolled (hpex) segments waits on craft recipes for those segments and on the hadfield material
+  // gate; see docs/design/hpex.md.
+  private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
+    int qty
+  ) => i => i.Block("iwex:pipe-straight-*").Quantity(qty);
 
-  private static Func<IngredientBuilder, IngredientBuilder> BrickFire(int qty) =>
-    i => i.Item("game:burnedbrick-fire").Quantity(qty);
+  private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
+    int qty
+  ) => i => i.Item("game:burnedbrick-fire").Quantity(qty);
 }

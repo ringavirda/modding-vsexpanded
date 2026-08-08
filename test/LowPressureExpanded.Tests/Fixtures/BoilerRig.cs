@@ -13,43 +13,39 @@ using BoilerState = LowPressureExpanded.BlockStructures.Boiler.BlockEntityBoiler
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Assembles a fully-constructed, fired Cornish boiler that its production tick will actually run -
-/// the wiring the simpler unit tests skip. It stands up the three game-coupled dependencies the tick
-/// reads, using real types with their state forced through reflection:
+/// Assembles a fully-constructed, fired Cornish boiler whose production tick runs. It stands up the
+/// three game-coupled dependencies the tick reads, using real types with their state forced through
+/// reflection:
 /// <list type="bullet">
 /// <item>a real <see cref="BlockBoilerCornish"/> (its geometry offsets fall back to hardcoded cells
 /// when no JSON attributes are present, so no asset load is needed);</item>
-/// <item>a complete <see cref="ExRightClickConstructable"/> (a one-stage construction reads as
-/// finished), so <c>IsConstructed</c> is true;</item>
+/// <item>a complete <see cref="ExRightClickConstructable"/>, so <c>IsConstructed</c> is true;</item>
 /// <item>a burning <see cref="BlockEntityCoalPile"/> in the firebox cell, so the fire is lit.</item>
 /// </list>
 /// Drive it with <see cref="Tick"/> and prime operating state with the <c>Set*</c> helpers.
 /// </summary>
-internal sealed class BoilerRig
-{
+internal sealed class BoilerRig {
   public readonly TestWorld World;
   public readonly BlockEntityBoilerCornish Be;
   public readonly BlockBoilerCornish Block;
   public readonly BlockEntityCoalPile Pile;
 
-  /// <summary>The boiler's raised footprint - its cells address the shell and its fittings.</summary>
+  /// <summary>The boiler's raised footprint; its cells address the shell and its fittings.</summary>
   public readonly StructureRig Structure;
 
-  public BoilerRig()
-  {
+  public BoilerRig() {
     World = new TestWorld();
     World.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
-    // The layout's anchor cell wants "lpex:boilercornish*", so the block must wear that code - the
-    // old "lpex:boiler-cornish-n" is one hyphen away and satisfies nothing.
+    // The layout's anchor cell matches "lpex:boilercornish*", so the block must wear exactly that
+    // code; a stray hyphen in the base code satisfies nothing.
     Block = TestBlocks.Configure(
       new BlockBoilerCornish(),
       "lpex:boilercornish-n",
       1,
       ("side", "north")
     );
-    Be = new BlockEntityBoilerCornish
-    {
+    Be = new BlockEntityBoilerCornish {
       Pos = new BlockPos(0, 8, 0),
       Block = Block,
     };
@@ -62,7 +58,7 @@ internal sealed class BoilerRig
       Block.StructureAngle
     );
 
-    // A burning coal pile in the firebox cell (the geometry's fuel offset, rotated by the block angle).
+    // A burning coal pile in the firebox cell: the geometry's fuel offset, rotated by the block angle.
     var fuelPos = Block.FuelWorldPos(Be.Pos);
     Pile = BoilerFakes.BurningPile(fuelPos);
     World.Place(
@@ -72,9 +68,8 @@ internal sealed class BoilerRig
     );
   }
 
-  /// <summary>Runs the production tick directly (bypassing the tick-listener scheduling).</summary>
-  public void Tick(float dt = 1f, int times = 1)
-  {
+  /// <summary>Runs the production tick directly, bypassing the tick-listener scheduling.</summary>
+  public void Tick(float dt = 1f, int times = 1) {
     for (int i = 0; i < times; i++)
       ReflectionHelpers.Invoke(Be, "OnProductionTick", dt);
   }
@@ -88,46 +83,39 @@ internal sealed class BoilerRig
   public float SteamVolume =>
     (float)ReflectionHelpers.GetField(Be, "_steamVolume")!;
 
-  public BoilerRig SetState(BoilerState state)
-  {
+  public BoilerRig SetState(BoilerState state) {
     ReflectionHelpers.SetField(Be, "_state", state);
     return this;
   }
 
-  public BoilerRig SetWater(float litres)
-  {
+  public BoilerRig SetWater(float litres) {
     ReflectionHelpers.SetField(Be, "_waterVolume", litres);
     return this;
   }
 
-  public BoilerRig SetSteam(float litres)
-  {
+  public BoilerRig SetSteam(float litres) {
     ReflectionHelpers.SetField(Be, "_steamVolume", litres);
     return this;
   }
 
-  public BoilerRig SetHeatingSeconds(float seconds)
-  {
+  public BoilerRig SetHeatingSeconds(float seconds) {
     ReflectionHelpers.SetField(Be, "_heatingSeconds", seconds);
     return this;
   }
 
-  public BoilerRig SetShutdownSeconds(float seconds)
-  {
+  public BoilerRig SetShutdownSeconds(float seconds) {
     ReflectionHelpers.SetField(Be, "_shutdownSeconds", seconds);
     return this;
   }
 
   /// <summary>Snuffs the firebox so the next tick sees no fire.</summary>
-  public BoilerRig ExtinguishFire()
-  {
+  public BoilerRig ExtinguishFire() {
     ReflectionHelpers.SetField(Pile, "burning", false);
     return this;
   }
 
-  /// <summary>Re-lights the firebox (the inverse of <see cref="ExtinguishFire"/>) for a re-fire cycle.</summary>
-  public BoilerRig RelightFire()
-  {
+  /// <summary>Re-lights the firebox for a re-fire cycle.</summary>
+  public BoilerRig RelightFire() {
     ReflectionHelpers.SetField(Pile, "burning", true);
     return this;
   }

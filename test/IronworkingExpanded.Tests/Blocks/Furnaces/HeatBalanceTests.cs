@@ -12,35 +12,25 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The furnace's dynamic heat balance, evaluated directly. <c>T_process = T_in - T_loss</c> has no maximum
-/// temperature in it, so the only thing holding its numbers in place is this table - and the table is what
-/// the design docs' claims rest on: a cold blast furnace is one running a high-coke burden on unheated
-/// air, a hot blast furnace is the same machine with a cowper on the line.
-/// <para>
-/// It runs on the <b>cold</b> furnace's block entity because the model is iwex's -
-/// <c>BlockEntityFurnaceCore.ComputeHeatBalance</c> - and takes the blast temperature as an argument, so
-/// hot-blast rows need no hot furnace to evaluate. That the smex furnace agrees term for term is one
-/// separate parity fact, asserted from the smex suite where both types are in scope.
-/// </para>
+/// The furnace's dynamic heat balance, evaluated directly. <c>T_process = T_in - T_loss</c> carries no
+/// maximum temperature, so this table is what holds its numbers in place: a cold blast furnace is one
+/// running a high-coke burden on unheated air, a hot blast furnace the same machine with a cowper on the
+/// line. It runs on the cold furnace's block entity because the model is iwex's
+/// (<c>BlockEntityFurnaceCore.ComputeHeatBalance</c>) and takes the blast temperature as an argument, so
+/// hot-blast rows need no hot furnace. Parity with the smex furnace is asserted from the smex suite, where
+/// both types are in scope.
 /// </summary>
 [Collection(FurnaceConfigCollection.Name)]
-public class HeatBalanceTests
-{
+public class HeatBalanceTests {
   #region Harness
 
   /// <summary>
-  /// A cold blast furnace carrying its <b>real drawing</b>.
-  /// <para>
-  /// <b>It once stood on a bare <c>new Block()</c>, and that block has no layout at all</b> -
-  /// so the furnace owned no cells, and every geometry-derived answer came back <b>0</b>. It did not matter
-  /// while the heat balance divided by a config constant. It matters now that the denominator is the
-  /// furnace's own capacity: a 0 capacity is clamped up to 1 inside <c>ComputeHeatBalance</c>, so every
-  /// input saturates the clamp and the whole calibration table below would pass while measuring nothing.
-  /// The denominator cases assert the capacity is real for exactly that reason.
-  /// </para>
+  /// A cold blast furnace carrying its real drawing. The furnace has to own cells: the heat balance's
+  /// denominator is its own geometric capacity, and <c>ComputeHeatBalance</c> clamps a 0 capacity up to 1,
+  /// so a furnace stood on a layout-less block saturates the clamp on every input and the calibration
+  /// table below would pass while measuring nothing. The denominator cases assert the capacity is real.
   /// </summary>
-  private static BlockEntityBlastFurnaceCold Furnace()
-  {
+  private static BlockEntityBlastFurnaceCold Furnace() {
     var world = new TestWorld();
     var be = new BlockEntityBlastFurnaceCold { Pos = new BlockPos(0, 16, 0) };
     world.Attach(be);
@@ -76,34 +66,24 @@ public class HeatBalanceTests
       )!;
 
   /// <summary>
-  /// A cold blast furnace loaded to <b>capacity</b> - the calibration reference, and what every row below
-  /// means by "a full hearth". <b>39</b> chargeable cells × <b>32</b> units a block.
+  /// A cold blast furnace loaded to capacity - the calibration reference, and what every row below means
+  /// by "a full hearth". 39 chargeable cells × 32 units a block.
   /// <para>
-  /// <b>A literal, deliberately, and it must stay one.</b> It used to read
-  /// <c>IwexValues.BlastMixRequiredToFire</c>, which made the whole table a <b>tautology</b>: the heat
-  /// balance divides <c>mixCount / capacity</c>, so reading the reference off the same source moved the
-  /// numerator and the denominator together and the six expected temperatures survived any change to it.
-  /// Writing <c>Denominator(be)</c> here would re-create that exactly - which is why the tie below is an
-  /// <em>assertion</em> rather than an assignment.
-  /// </para>
-  /// <para>
-  /// <b>320 → 1 248, and the six temperatures did not move.</b> The old value was the fire
-  /// threshold, not a capacity, so "a full hearth" had been a shaft charged to a quarter of its own volume
-  /// paying the entire <c>BfChargeLossFull</c> penalty. Re-pointing the reference is what keeps these rows
-  /// describing the thing they are named for; had the literal stayed at 320 the four melting rows would
-  /// have moved by <b>+230 °C</b> and the design docs' published ceilings with them.
+  /// It must stay a literal. The heat balance divides <c>mixCount / capacity</c>, so reading the reference
+  /// off the same source as the denominator moves numerator and denominator together and the six expected
+  /// temperatures survive any change to it. The tie to the furnace's own capacity is asserted below rather
+  /// than assigned here.
   /// </para>
   /// </summary>
   private const int FullHearth = 1248;
 
   /// <summary>
-  /// The tie between the hand-written reference above and the furnace's own geometry, stated once so the
-  /// table cannot silently stop describing a full hearth. A layout change that adds or removes a chargeable
-  /// cell fails <b>here</b>, by name, instead of shifting six temperatures that still look plausible.
+  /// Ties the hand-written reference above to the furnace's own geometry, so the table cannot stop
+  /// describing a full hearth. A layout change that adds or removes a chargeable cell fails here, by name,
+  /// instead of shifting six temperatures that still look plausible.
   /// </summary>
   [Fact]
-  public void The_calibration_reference_really_is_the_furnaces_capacity()
-  {
+  public void The_calibration_reference_really_is_the_furnaces_capacity() {
     Assert.Equal(FullHearth, Denominator(Furnace()));
   }
 
@@ -115,34 +95,24 @@ public class HeatBalanceTests
 
   #region The cold-charge denominator
 
-  // Not one row of the calibration table below can see this number, and that is why this region
-  // exists. `chargeLoss = BfChargeLossFull * clamp(mixCount / requiredMix, 0, 1)`, and every row passes
-  // `FullHearth` as the mixCount - so the clamp saturates at 1 and the six temperatures are the
-  // full-charge case whatever the denominator happens to be. Halve it, double it, or reduce it to 1 and
-  // all six still pass.
-  //
-  // That matters because the denominator now rests on the shaft's geometric capacity rather than on
-  // `BlastMixRequiredToFire`. Without these two cases that change is invisible to every furnace's
-  // heat balance in the game, with a fully green suite.
+  // No row of the calibration table below can observe this number: `chargeLoss = BfChargeLossFull *
+  // clamp(mixCount / requiredMix, 0, 1)`, and every row passes `FullHearth` as the mixCount, so the clamp
+  // saturates at 1 and the six temperatures are the full-charge case whatever the denominator is. The
+  // denominator rests on the shaft's geometric capacity, and these two cases are the only ones that see it.
 
   /// <summary>
-  /// The denominator's whole observable effect, stated without needing to know <c>T_in</c>: a hearth at
-  /// <b>half</b> its denominator runs exactly <c>BfChargeLossFull / 2</c> hotter than one at full, because
-  /// half as much cold charge is there to soak the heat.
-  /// <para>
-  /// A difference rather than an absolute, so it pins the <em>rule</em> and survives any retune of the
-  /// combustion terms - which the six absolute rows below deliberately do not.
-  /// </para>
+  /// The denominator's whole observable effect, stated without needing <c>T_in</c>: a hearth at half its
+  /// denominator runs exactly <c>BfChargeLossFull / 2</c> hotter than one at full, because half as much
+  /// cold charge is there to soak the heat. A difference rather than an absolute, so it pins the rule and
+  /// survives a retune of the combustion terms, which the six absolute rows below do not.
   /// </summary>
   [Fact]
-  public void A_half_charged_hearth_pays_half_the_cold_charge_penalty()
-  {
+  public void A_half_charged_hearth_pays_half_the_cold_charge_penalty() {
     BlockEntityBlastFurnaceCold be = Furnace();
     int full = Denominator(be);
 
-    // The premise, and the reason this case cannot go quietly vacuous: `ComputeHeatBalance` clamps the
-    // denominator up to 1, so a furnace whose capacity read 0 would divide by 1, saturate on every input
-    // and pass both assertions below while measuring nothing at all.
+    // The premise: `ComputeHeatBalance` clamps the denominator up to 1, so a furnace whose capacity read
+    // 0 would saturate on every input and pass both assertions below while measuring nothing.
     Assert.True(
       full >= 2,
       $"the denominator must be a real capacity for this case to mean anything; it was {full}"
@@ -155,12 +125,11 @@ public class HeatBalanceTests
   }
 
   /// <summary>
-  /// And it <b>clamps</b> rather than running away: an over-charged hearth pays the full penalty and no
-  /// more. Without the clamp a shaft charged past its own capacity would go on getting colder for ever.
+  /// The charge loss clamps: an over-charged hearth pays the full penalty and no more. Without the clamp a
+  /// shaft charged past its own capacity would go on getting colder.
   /// </summary>
   [Fact]
-  public void An_over_charged_hearth_pays_the_full_penalty_and_no_more()
-  {
+  public void An_over_charged_hearth_pays_the_full_penalty_and_no_more() {
     BlockEntityBlastFurnaceCold be = Furnace();
     int full = Denominator(be);
 
@@ -170,7 +139,7 @@ public class HeatBalanceTests
       1
     );
 
-    // ...and an empty hearth pays none of it, which is the other end of the same clamp.
+    // An empty hearth pays none of it, the other end of the same clamp.
     Assert.Equal(
       IwexValues.BfChargeLossFull,
       Balance(be, 0.20f, 1f, 20f, 0).TProcess
@@ -183,9 +152,8 @@ public class HeatBalanceTests
 
   #region Calibration
 
-  // The anchor table. The first two rows reproduce the fixed ceilings the furnace used to carry as
-  // config constants (1420 C natural, 1740 C boosted), so this change is behaviour-preserving where
-  // it was already tuned; the rest are the cases those constants could not express at all.
+  // The anchor table. The first two rows are the fixed ceilings the furnace once carried as config
+  // constants (1420 C natural, 1740 C boosted); the rest are cases those constants could not express.
   [Theory]
   // fuelFrac, blastSupplyFrac, blastTemp, expected T_process
   [InlineData(0.20f, 1f, 20f, 1420f)] // standard burden, cold blast - the old natural ceiling
@@ -199,8 +167,7 @@ public class HeatBalanceTests
     float blastSupplyFrac,
     float blastTemp,
     float expected
-  )
-  {
+  ) {
     HeatBalance hb = Balance(
       Furnace(),
       fuelFrac,
@@ -220,8 +187,7 @@ public class HeatBalanceTests
     float fuelFrac,
     float blastTemp,
     bool shouldMelt
-  )
-  {
+  ) {
     HeatBalance hb = Balance(Furnace(), fuelFrac, 1f, blastTemp, FullHearth);
 
     Assert.Equal(shouldMelt, hb.TProcess > IwexValues.BfIronMeltingPoint);
@@ -232,8 +198,7 @@ public class HeatBalanceTests
   #region Contributors
 
   [Fact]
-  public void Preheat_is_the_only_thing_hot_blast_changes()
-  {
+  public void Preheat_is_the_only_thing_hot_blast_changes() {
     HeatBalance cold = Balance(Furnace(), 0.20f, 1f, 20f, FullHearth);
     HeatBalance hot = Balance(Furnace(), 0.20f, 1f, 950f, FullHearth);
 
@@ -248,8 +213,7 @@ public class HeatBalanceTests
   }
 
   [Fact]
-  public void Piling_in_coke_hits_the_ceiling_rather_than_running_away()
-  {
+  public void Piling_in_coke_hits_the_ceiling_rather_than_running_away() {
     Assert.Equal(
       IwexValues.BfMaxFuelFactor,
       Balance(Furnace(), 0.95f, 1f, 20f, FullHearth).FuelFactor,
@@ -258,31 +222,25 @@ public class HeatBalanceTests
   }
 
   [Fact]
-  public void The_coke_factor_floors_rather_than_going_negative()
-  {
-    // At the shipped sensitivity a coke-free burden only drops the factor to 0.65, so the floor is
-    // slack - it exists for retuning. Turn the sensitivity up far enough to drive the raw factor
-    // negative and the clamp has to catch it, or a badly tuned config could make a furnace produce
-    // cold.
+  public void The_coke_factor_floors_rather_than_going_negative() {
+    // At the shipped sensitivity a coke-free burden only drops the factor to 0.65, so the floor is slack
+    // and exists for retuning. The sensitivity is raised here to drive the raw factor negative, where a
+    // missing clamp would let a mistuned config make the furnace produce cold.
     float original = IwexValues.BfCokeSensitivity;
-    try
-    {
+    try {
       IwexValues.Edit(c => c.BfCokeSensitivity = 4f);
       Assert.Equal(
         IwexValues.BfMinFuelFactor,
         Balance(Furnace(), 0f, 1f, 20f, FullHearth).FuelFactor,
         3
       );
-    }
-    finally
-    {
+    } finally {
       IwexValues.Edit(c => c.BfCokeSensitivity = original);
     }
   }
 
   [Fact]
-  public void An_empty_hearth_carries_no_charge_loss()
-  {
+  public void An_empty_hearth_carries_no_charge_loss() {
     HeatBalance empty = Balance(Furnace(), 0.20f, 1f, 20f, 0);
     HeatBalance full = Balance(Furnace(), 0.20f, 1f, 20f, FullHearth);
 
@@ -292,8 +250,7 @@ public class HeatBalanceTests
   }
 
   [Fact]
-  public void Overfilling_the_hearth_does_not_keep_costing_heat()
-  {
+  public void Overfilling_the_hearth_does_not_keep_costing_heat() {
     HeatBalance full = Balance(Furnace(), 0.20f, 1f, 20f, FullHearth);
     HeatBalance overfull = Balance(Furnace(), 0.20f, 1f, 20f, FullHearth * 4);
 
@@ -301,8 +258,7 @@ public class HeatBalanceTests
   }
 
   [Fact]
-  public void Unstamped_charge_burns_at_the_reference_coke_ratio()
-  {
+  public void Unstamped_charge_burns_at_the_reference_coke_ratio() {
     // A charge with no composition (legacy blast mix) must read as the standard grade, or every
     // existing world's furnace would drop to the fuel-starved end of the balance on load.
     HeatBalance legacy = (HeatBalance)
@@ -320,8 +276,7 @@ public class HeatBalanceTests
   }
 
   [Fact]
-  public void A_cold_day_costs_heat_but_a_hot_one_is_not_a_gift()
-  {
+  public void A_cold_day_costs_heat_but_a_hot_one_is_not_a_gift() {
     var be = Furnace();
     HeatBalance mild = Balance(be, 0.20f, 1f, 20f, FullHearth);
 
@@ -337,23 +292,19 @@ public class HeatBalanceTests
       freezing.AmbientLoss,
       3
     );
-    Assert.Equal(0f, summer.AmbientLoss, 3); // no free heat for smelting in July
+    Assert.Equal(0f, summer.AmbientLoss, 3); // a warmer-than-reference day is not a gain
   }
 
   [Fact]
-  public void The_process_temperature_never_falls_below_ambient()
-  {
+  public void The_process_temperature_never_falls_below_ambient() {
     var be = Furnace();
     ReflectionHelpers.SetField(be, "_ambientTemp", 30f);
-    // Nothing burning worth the name, and a hearth packed with cold mass.
+    // No combustion, and a hearth packed with cold mass.
     IwexValues.Edit(c => c.BfCombustionBaseTemp = 0f);
-    try
-    {
+    try {
       HeatBalance hb = Balance(be, 0f, 0f, 30f, FullHearth);
       Assert.Equal(30f, hb.TProcess, 3);
-    }
-    finally
-    {
+    } finally {
       IwexValues.Edit(c => c.BfCombustionBaseTemp = 950f);
     }
   }

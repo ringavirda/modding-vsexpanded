@@ -9,16 +9,14 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The transmission couples two mpenergy runs across a gear <b>without merging them</b>: it is a machine (not a
-/// graph node), reading the south (input) and north (output) networks via <c>GetNetworkAt</c> on its port cells
-/// and projecting them onto the reduction constraint. These pin the wiring - the two sides stay separate, the
-/// port cells resolve, the north side is held at <c>ω_south / ratio</c>, and a disengaged clutch transfers
-/// nothing. The projection maths itself lives in <c>MpEnergyNetworkStateTests</c>.
+/// The transmission couples two mpenergy runs across a gear without merging them: it is a machine, not a
+/// graph node, reading the south (input) and north (output) networks via <c>GetNetworkAt</c> on its port
+/// cells and projecting them onto the reduction constraint. Covers the wiring: the two sides stay separate,
+/// the port cells resolve, the north side is held at <c>ω_south / ratio</c>, and a disengaged clutch
+/// transfers nothing. The projection maths is covered by <c>MpEnergyNetworkStateTests</c>.
 /// </summary>
-public class TransmissionTests
-{
-  private static BlockTransmission TxBlock(string type, string side)
-  {
+public class TransmissionTests {
+  private static BlockTransmission TxBlock(string type, string side) {
     var block = TestBlocks.Configure(
       new BlockTransmission(),
       $"iwex:mpenergy-transmission-{type}-{side}",
@@ -31,8 +29,7 @@ public class TransmissionTests
     return block;
   }
 
-  private static BlockCastIronShaft ShaftBlock(string orientation)
-  {
+  private static BlockCastIronShaft ShaftBlock(string orientation) {
     var block = TestBlocks.Configure(
       new BlockCastIronShaft(),
       $"iwex:mpenergy-shaft-{orientation}",
@@ -52,8 +49,7 @@ public class TransmissionTests
     BlockEntityTransmission be,
     MpEnergyNetwork south,
     MpEnergyNetwork north
-  ) Scene(string type)
-  {
+  ) Scene(string type) {
     var world = new TestWorld();
     world.RegisterNetwork("mpenergy", sys => new MpEnergyNetwork(sys));
 
@@ -82,16 +78,14 @@ public class TransmissionTests
   }
 
   [Fact]
-  public void The_two_sides_are_separate_networks()
-  {
+  public void The_two_sides_are_separate_networks() {
     var (_, _, south, north) = Scene("x2");
     // The transmission is not a graph node, so the shaft runs on either side never merge into one pool.
     Assert.NotSame(south, north);
   }
 
   [Fact]
-  public void Coupling_holds_the_north_side_at_the_reduced_speed()
-  {
+  public void Coupling_holds_the_north_side_at_the_reduced_speed() {
     var (_, be, south, north) = Scene("x2");
     south.State!.Speed = 2f;
     south.State.StoredEnergy = MpEnergyNetworkState.EnergyAtSpeed(
@@ -100,13 +94,15 @@ public class TransmissionTests
     );
 
     Assert.True(be.TryCouple(0f)); // lossless
-    Assert.True(north.State!.Speed > 0f, "the south run drives the north side up through the gear");
+    Assert.True(
+      north.State!.Speed > 0f,
+      "the south run drives the north side up through the gear"
+    );
     Assert.Equal(south.State.Speed / 2f, north.State.Speed, 3); // x2 reduction
   }
 
   [Fact]
-  public void A_disengaged_clutch_transfers_nothing()
-  {
+  public void A_disengaged_clutch_transfers_nothing() {
     var (_, be, south, north) = Scene("clutch"); // clutch defaults disengaged
     south.State!.Speed = 2f;
 
@@ -115,8 +111,7 @@ public class TransmissionTests
   }
 
   [Fact]
-  public void Throwing_the_lever_engages_and_re_engages_the_clutch()
-  {
+  public void Throwing_the_lever_engages_and_re_engages_the_clutch() {
     var (_, be, _, _) = Scene("clutch");
     Assert.False(be.IsEngaged);
 
@@ -128,8 +123,7 @@ public class TransmissionTests
   }
 
   [Fact]
-  public void Engaging_the_clutch_starts_the_transfer()
-  {
+  public void Engaging_the_clutch_starts_the_transfer() {
     var (_, be, south, north) = Scene("clutch");
     south.State!.Speed = 1f;
 
@@ -142,19 +136,23 @@ public class TransmissionTests
   }
 
   [Fact]
-  public void A_ratio_block_ignores_the_clutch_toggle()
-  {
+  public void A_ratio_block_ignores_the_clutch_toggle() {
     var (_, be, _, _) = Scene("x2"); // not a clutch
     Assert.False(be.ToggleEngaged());
     Assert.False(be.IsEngaged);
   }
 
   [Fact]
-  public void The_lever_cell_is_the_footprint_quarter_block()
-  {
+  public void The_lever_cell_is_the_footprint_quarter_block() {
     var (_, be, _, _) = Scene("clutch");
     int angle = ((BlockTransmission)be.Block).StructureAngle;
-    BlockPos lever = ExpandedLib.Helpers.ExOrientation.GlobalPos(be.Pos, 1, 1, 0, angle);
+    BlockPos lever = ExpandedLib.Helpers.ExOrientation.GlobalPos(
+      be.Pos,
+      1,
+      1,
+      0,
+      angle
+    );
 
     Assert.True(be.IsLeverCell(lever));
     Assert.False(be.IsLeverCell(be.Pos)); // the principal is not the lever
@@ -163,8 +161,7 @@ public class TransmissionTests
   #region Animation sync (the coupler has no network broadcast of its own)
 
   [Fact]
-  public void A_meaningful_speed_change_syncs_and_a_negligible_one_does_not()
-  {
+  public void A_meaningful_speed_change_syncs_and_a_negligible_one_does_not() {
     var (_, be, _, _) = Scene("x2");
     float step = 0.02f * ExpandedLib.ExlibValues.MpMaxSpeed;
 
@@ -174,8 +171,7 @@ public class TransmissionTests
   }
 
   [Fact]
-  public void Coming_to_a_stop_always_syncs_even_if_the_step_is_small()
-  {
+  public void Coming_to_a_stop_always_syncs_even_if_the_step_is_small() {
     var (_, be, _, _) = Scene("x2");
     float tiny = 0.02f * ExpandedLib.ExlibValues.MpMaxSpeed * 0.1f;
     be.SyncSideSpeeds(tiny, 0f);

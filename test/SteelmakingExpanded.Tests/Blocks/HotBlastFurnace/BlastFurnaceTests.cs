@@ -12,31 +12,28 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The blast furnace's firing/melting state machine is gated on a full multiblock with live tuyeres,
-/// gas outlets and hearth piles - too much to fake wholesale - but the state persistence, the molten
-/// stack construction, and the simple state transitions (transition to melting, extinguish-to-idle)
-/// stand on their own. Those are pinned here.
+/// The blast furnace's firing/melting behaviour is gated on a full multiblock with live tuyeres, gas
+/// outlets and hearth piles, which the headless harness does not raise. What stands on its own is
+/// pinned here: the idle default, the shutdown reset, molten stack construction, and the save round
+/// trip.
 /// </summary>
-public class BlastFurnaceTests
-{
-  private static TestWorld NewWorld()
-  {
+public class BlastFurnaceTests {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
     world.RegisterItem("iwex:slag");
     // The furnace resolves the "slag" short token through MetalRegistry, which the game populates from
-    // assets/iwex/config/metals/slag.json at AssetsFinalize. The headless harness runs no asset load,
-    // so register the same mapping here (iron/steel need none - they follow the game:ingot convention).
+    // assets/iwex/config/metals/slag.json at AssetsFinalize. The headless harness loads no assets, so
+    // the same mapping is registered here. Iron and steel need none: they follow the game:ingot
+    // convention.
     MetalRegistry.Register(
       new MetalDef { Code = "slag", MoltenItem = "iwex:slag" }
     );
     return world;
   }
 
-  private static BlockEntityBlastFurnaceHot Furnace(TestWorld world)
-  {
-    var be = new BlockEntityBlastFurnaceHot
-    {
+  private static BlockEntityBlastFurnaceHot Furnace(TestWorld world) {
+    var be = new BlockEntityBlastFurnaceHot {
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -54,28 +51,20 @@ public class BlastFurnaceTests
   #region State machine
 
   [Fact]
-  public void Defaults_to_idle()
-  {
+  public void Defaults_to_idle() {
     Assert.Equal(FurnaceState.Idle, Furnace(NewWorld()).State);
   }
 
-  // `TransitionToMelting_moves_firing_into_melting` is deleted, not ported. The method it
-  // drove is the stored state machine's, and a shaft furnace no longer has one: `DerivesState` is true on
-  // this branch, so `TransitionToMelting` is unreachable from a blast furnace and the case was exercising
-  // the firebox's machinery through the wrong class. The transition it stood for is asserted where it can
-  // actually happen - `FireboxTickTests` for the branch that still owns a machine, and
-  // `BlastFurnaceScenarioTests.A_furnace_whose_flame_is_over_the_line_is_not_melting_until_its_CHARGE_is`
-  // for what replaces it here.
+  // The shaft branch derives its state from the charge (`DerivesState`), so `TransitionToMelting` is
+  // unreachable from a blast furnace. `FireboxTickTests` covers the branch that owns a stored state
+  // machine, and `BlastFurnaceScenarioTests` the charge-driven melt.
 
   /// <summary>
-  /// <b>The split, stated as a unit.</b> <c>Extinguish()</c> was one method that did two things: decide
-  /// the furnace had gone out, and do everything going out entails. A derived branch cannot do the first -
-  /// its label is a read - so the second became <c>Shutdown()</c>, and this is what it owes: the reset to
-  /// ambient, the pools cleared, the residue laid down.
+  /// <c>Shutdown()</c> carries out what going out entails - reset to ambient, pools cleared, residue
+  /// laid down - without deciding the state, which the derived branch reads from the charge.
   /// </summary>
   [Fact]
-  public void Shutdown_resets_the_heat_and_the_pools_without_deciding_the_state()
-  {
+  public void Shutdown_resets_the_heat_and_the_pools_without_deciding_the_state() {
     var be = Furnace(NewWorld());
     ReflectionHelpers.SetField(be, "_internalTemp", 1500f);
     ReflectionHelpers.SetField(be, "_moltenIron", 50f);
@@ -95,8 +84,7 @@ public class BlastFurnaceTests
   #region Molten stack construction
 
   [Fact]
-  public void CreateMoltenStack_builds_iron_at_the_network_code()
-  {
+  public void CreateMoltenStack_builds_iron_at_the_network_code() {
     var world = NewWorld();
     var be = Furnace(world);
 
@@ -109,8 +97,7 @@ public class BlastFurnaceTests
   }
 
   [Fact]
-  public void CreateMoltenStack_maps_slag_to_its_own_domain()
-  {
+  public void CreateMoltenStack_maps_slag_to_its_own_domain() {
     var world = NewWorld();
     var be = Furnace(world);
 
@@ -122,8 +109,7 @@ public class BlastFurnaceTests
   }
 
   [Fact]
-  public void CreateMoltenStack_is_null_for_an_unresolved_metal()
-  {
+  public void CreateMoltenStack_is_null_for_an_unresolved_metal() {
     var world = NewWorld(); // gold not registered
     var be = Furnace(world);
 
@@ -138,14 +124,12 @@ public class BlastFurnaceTests
   #region Serialization
 
   [Fact]
-  public void Furnace_state_round_trips_through_the_tree()
-  {
+  public void Furnace_state_round_trips_through_the_tree() {
     var world = NewWorld();
     var src = Furnace(world);
-    // The state is put in through the reader, not through a setter - there is no setter, by design
-    // (FurnaceBranchGuards.NoFurnaceExposesASettableState). That is not a workaround: a save round trip is
-    // exactly "a furnace that loaded as Melting writes Melting", so loading it is the honest arrangement
-    // and it exercises one more link of the same chain than an assignment would have.
+    // State goes in through the reader: there is no setter
+    // (FurnaceBranchGuards.NoFurnaceExposesASettableState), and what this pins is that a furnace loaded
+    // as Melting writes Melting back out.
     var seed = new TreeAttribute();
     seed.SetInt("bfState", (int)FurnaceState.Melting);
     src.FromTreeAttributes(seed, world.World);
@@ -185,8 +169,7 @@ public class BlastFurnaceTests
   }
 
   [Fact]
-  public void The_air_starved_flag_round_trips_so_the_client_hud_can_read_it()
-  {
+  public void The_air_starved_flag_round_trips_so_the_client_hud_can_read_it() {
     // GetBlockInfo runs client-side and never reads the tuyere network, so the air-starved stall line
     // has to ride the save tree - the same reason the rejected-charge and mix-count state do.
     var world = NewWorld();
@@ -202,11 +185,9 @@ public class BlastFurnaceTests
   }
 
   [Fact]
-  public void The_heat_balance_round_trips_so_the_client_hud_can_read_it()
-  {
-    // GetBlockInfo runs client-side, and the client never walks the charge or reads the pipes. If
-    // the balance did not ride the tree the whole heat readout would print zeroes in game while
-    // every headless test still passed - so the round trip is pinned here.
+  public void The_heat_balance_round_trips_so_the_client_hud_can_read_it() {
+    // GetBlockInfo runs client-side and the client never walks the charge or reads the pipes, so the
+    // balance has to ride the save tree for the heat readout to show anything in game.
     var world = NewWorld();
     var src = Furnace(world);
     var balance = new HeatBalance(
@@ -223,11 +204,7 @@ public class BlastFurnaceTests
       AmbientLoss: 0f
     );
     ReflectionHelpers.SetField(src, "_lastHeatBalance", balance);
-    ReflectionHelpers.SetField(
-      src,
-      "_chargeMix",
-      new BurdenMix(75f, 5f, 20f)
-    );
+    ReflectionHelpers.SetField(src, "_chargeMix", new BurdenMix(75f, 5f, 20f));
 
     var tree = new TreeAttribute();
     src.ToTreeAttributes(tree);

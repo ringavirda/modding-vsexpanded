@@ -4,12 +4,11 @@ using ExpandedLib.Definitions;
 namespace IronworkingExpanded.Items;
 
 /// <summary>
-/// Code-first itemtype for the cast-iron bevel gear - the part a player adds to a cast-iron shaft to branch the
-/// mpenergy run around a corner. Consumed when added to a shaft/bevel; recovered when the bevel is broken.
+/// The cast-iron bevel gear: the part added to a cast-iron shaft to branch an mpenergy run around a
+/// corner. Consumed when added to a shaft or bevel, recovered when the bevel is broken.
 /// </summary>
-public class BevelGearItemDefinitions : IExItemDefProvider
-{
-  private const int GearUnits = 40; // cast iron a bevel gear is worth, for remelt/scrap
+public class BevelGearItemDefinitions : IExItemDefProvider {
+  private const int GearUnits = 40; // units of cast iron a bevel gear is worth, for remelt/scrap
 
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [

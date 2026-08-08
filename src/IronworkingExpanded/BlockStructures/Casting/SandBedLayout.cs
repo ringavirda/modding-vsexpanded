@@ -5,21 +5,17 @@ using System.Linq;
 namespace IronworkingExpanded.BlockStructures.Casting;
 
 /// <summary>Where a slot sits across the bed - the two mold flanks and the runner spine between them.</summary>
-public enum BedSlotSide
-{
+public enum BedSlotSide {
   West,
   Centre,
   East,
 }
 
 /// <summary>
-/// What a bed slot currently is. <see cref="Sand"/> covers <b>both</b> never-carved and shaken-out, because
-/// they are the same thing: an undisturbed bed of sand. That is not a shortcut - the art says so, with one
-/// <c>…Full</c> element per slot standing for both, so a shaken-out mold and a mold never cut leave the
-/// identical flat patch and the player re-carves either the same way.
+/// What a bed slot currently is. <see cref="Sand"/> covers both never-carved and shaken-out: the art draws
+/// one <c>Full</c> element per slot for both, and either is re-carved the same way.
 /// </summary>
-public enum BedSlotState
-{
+public enum BedSlotState {
   /// <summary>Full, flat sand - never carved, or carved and since shaken out.</summary>
   Sand,
 
@@ -27,25 +23,21 @@ public enum BedSlotState
   Runner,
 
   /// <summary>
-  /// A carved row of impressions. <b>One mold shape serves both castings</b>: iron poured into it hardens
-  /// into pigs, slag into slag bricks. They are the same furrow because they are the same act - a trough
-  /// raked into sand - and splitting them into two carve gestures only ever produced a bed cut for the
-  /// wrong thing.
+  /// A carved row of impressions. One shape serves both castings: iron hardens into pigs, slag into slag
+  /// bricks.
   /// </summary>
   Mold,
 }
 
 /// <summary>One carvable slot: which row it belongs to, and where across that row it sits.</summary>
 /// <param name="Row">1-4, front to back. Row 1 holds the pour basin at its centre.</param>
-public readonly record struct BedSlot(int Row, BedSlotSide Side)
-{
+public readonly record struct BedSlot(int Row, BedSlotSide Side) {
   /// <summary>A centre slot is runner spine; the flanks are molds.</summary>
   public bool IsMold => Side != BedSlotSide.Centre;
 
   /// <summary>Whether this slot can be carved into <paramref name="state"/> at all.</summary>
   public bool Accepts(BedSlotState state) =>
-    state switch
-    {
+    state switch {
       BedSlotState.Sand => true,
       BedSlotState.Runner => !IsMold,
       BedSlotState.Mold => IsMold,
@@ -54,30 +46,20 @@ public readonly record struct BedSlot(int Row, BedSlotSide Side)
 }
 
 /// <summary>
-/// The sand casting bed's carved surface, as the mapping from <b>slot state to shape elements</b>. Every one
-/// of the twelve slots always renders exactly one element, so the bed's whole appearance is a list of twelve
-/// choices - which is what lets the mesh be rebuilt from block-entity state rather than needing a block
-/// variant per combination (there are 2¹² of them).
+/// Maps the sand casting bed's slot states to shape elements. Every one of the twelve slots renders exactly
+/// one element, so the bed's whole appearance is twelve choices and the mesh can be rebuilt from
+/// block-entity state instead of needing a block variant per combination.
 /// <para>
-/// Pure, and separated from the block entity, because element names are <b>string literals against art</b>:
-/// a typo or a Blockbench re-export that re-rolls an auto-name produces a silently missing chunk of bed, not
-/// an exception. The tests assert every name this can emit exists in the shipped shape, so the art and the
-/// code cannot drift apart unnoticed.
-/// </para>
-/// <para>
-/// Paths follow VS's hierarchical <c>SelectiveElements</c> matcher: one <c>&lt;path&gt;/*</c> per element that
-/// should render, and <b>never</b> an ancestor on its own - ancestors render automatically as prefixes of the
-/// deeper entries, while naming one exactly would drop all of its children. That trap has bitten this repo
-/// before (see the engine's broken-mesh selection).
+/// Paths follow VS's hierarchical <c>SelectiveElements</c> matcher: one <c>&lt;path&gt;/*</c> per element
+/// that should render, and never an ancestor on its own - ancestors render as prefixes of the deeper
+/// entries, while naming one exactly drops all of its children.
 /// </para>
 /// </summary>
-public static class SandBedLayout
-{
+public static class SandBedLayout {
   /// <summary>
-  /// The group holding every carvable element - and the one the last construction stage adds, so a finished
-  /// bed is a bed full of sand with nothing cut into it yet. The construction behaviour can only name the
-  /// group as a whole (which would draw every slot's every state at once), so <see cref="Compose"/> replaces
-  /// it with one entry per slot.
+  /// The group holding every carvable element, added by the last construction stage. The construction
+  /// behaviour can only name the group whole, which would draw every state of every slot at once, so
+  /// <see cref="Compose"/> replaces it with one entry per slot.
   /// </summary>
   public const string RunnersGroup = "SandRunners";
 
@@ -109,13 +91,12 @@ public static class SandBedLayout
   public static int IndexOf(BedSlot slot) => Array.IndexOf(Slots, slot);
 
   /// <summary>
-  /// Where <paramref name="slot"/> sits in the bed's north-orientation footprint, relative to the principal.
-  /// The principal <b>is</b> row 1's runner (the pour basin), so it is the only slot at (0,0).
+  /// Where <paramref name="slot"/> sits in the bed's north-orientation footprint, relative to the
+  /// principal. The principal is row 1's runner (the pour basin), so it is the only slot at (0,0).
   /// </summary>
   public static (int Dx, int Dz) OffsetOf(BedSlot slot) =>
     (
-      slot.Side switch
-      {
+      slot.Side switch {
         BedSlotSide.West => -1,
         BedSlotSide.East => 1,
         _ => 0,
@@ -124,12 +105,10 @@ public static class SandBedLayout
     );
 
   /// <summary>The slot at a north-orientation footprint offset, or null if that is not a bed cell.</summary>
-  public static BedSlot? SlotAt(int dx, int dz)
-  {
+  public static BedSlot? SlotAt(int dx, int dz) {
     if (dz < 0 || dz >= Rows)
       return null;
-    BedSlotSide? side = dx switch
-    {
+    BedSlotSide? side = dx switch {
       -1 => BedSlotSide.West,
       0 => BedSlotSide.Centre,
       1 => BedSlotSide.East,
@@ -139,14 +118,14 @@ public static class SandBedLayout
   }
 
   /// <summary>
-  /// Impressions cut into one mold slot. The bed narrows at both ends - row 1 gives ground to the pour
-  /// basin's shoulders and row 4 to the back wall - so the two <b>end rows take two</b> apiece and the two
-  /// <b>middle rows three</b>. It is the art's own geometry, and the reason a full bed is twenty castings
-  /// rather than a round twenty-four.
+  /// Impressions cut into one mold slot. The bed narrows at both ends - row 1 to the pour basin's
+  /// shoulders, row 4 to the back wall - so the end rows take two apiece and the middle rows three, which
+  /// is why a full bed is 20 castings and not 24.
   /// </summary>
-  public static int ImpressionsPerMold(int row) => row == FirstRow || row == LastRow ? 2 : 3;
+  public static int ImpressionsPerMold(int row) =>
+    row == FirstRow || row == LastRow ? 2 : 3;
 
-  /// <summary>Castings a fully-carved, fully-poured bed yields - <b>20</b>.</summary>
+  /// <summary>Castings a fully-carved, fully-poured bed yields: 20.</summary>
   public static int BedCapacity =>
     Slots.Where(s => s.IsMold).Sum(s => ImpressionsPerMold(s.Row));
 
@@ -155,44 +134,38 @@ public static class SandBedLayout
 
   /// <summary>
   /// How much metal <paramref name="slot"/> holds once carved into <paramref name="state"/>, in units. A
-  /// mold's cavity is its row's impression count at one casting each; plain sand has no cavity at all.
-  /// <para>
-  /// It takes the <b>slot</b> and not just the state because the rows are not the same size - which is the
-  /// whole reason a middle row is worth more per pour than an end row.
-  /// </para>
+  /// mold's cavity is its row's impression count at one casting each; sand has no cavity. It takes the slot
+  /// rather than just the state because rows differ in impression count.
   /// </summary>
   public static int CapacityOf(BedSlot slot, BedSlotState state) =>
-    state switch
-    {
-      BedSlotState.Mold => ImpressionsPerMold(slot.Row) * Items.ItemPig.PigUnits,
+    state switch {
+      BedSlotState.Mold => ImpressionsPerMold(slot.Row)
+        * Items.ItemPig.PigUnits,
       BedSlotState.Runner => RunnerCapacity,
       _ => 0,
     };
 
   /// <summary>
-  /// Every slot that is <b>not</b> the principal's own cell, in footprint order. The block's
-  /// <c>fillerOffsets</c> is generated from this, so the footprint and the carved surface cannot disagree
-  /// about where a slot is - and so the order it emits is the order <c>SlotCells</c> zips against.
+  /// Every slot other than the principal's own cell, in footprint order. The block's <c>fillerOffsets</c>
+  /// is generated from this, so the footprint and the carved surface cannot disagree about where a slot is,
+  /// and the order emitted here is the order <c>SlotCells</c> zips against.
   /// </summary>
-  public static IEnumerable<BedSlot> FillerSlots => Slots.Where(s => OffsetOf(s) != (0, 0));
+  public static IEnumerable<BedSlot> FillerSlots =>
+    Slots.Where(s => OffsetOf(s) != (0, 0));
 
   /// <summary>The element group holding a row's slots.</summary>
   public static string RowGroup(int row) => $"RunnerRow{row}";
 
-  private static string SideSuffix(BedSlotSide side) => side == BedSlotSide.West ? "W" : "E";
+  private static string SideSuffix(BedSlotSide side) =>
+    side == BedSlotSide.West ? "W" : "E";
 
   /// <summary>
   /// The single element that draws <paramref name="slot"/> in <paramref name="state"/>. A state the slot
-  /// cannot hold falls back to plain sand rather than throwing - a bad persisted value should show an
-  /// uncarved slot, not crash a chunk render.
-  /// <para>
-  /// The <c>Full</c> suffix is the <b>uncarved</b> element, not the poured one: a shaken-out slot is flat
-  /// sand again, so "full" reads as "full of sand". Getting that backwards renders every finished bed as a
-  /// carved one and every carved one as flat, with nothing raised anywhere to say so.
-  /// </para>
+  /// cannot hold falls back to sand rather than throwing, so a bad persisted value shows an uncarved slot
+  /// instead of failing a chunk render. The <c>Full</c> suffix names the uncarved element - full of sand -
+  /// not a poured one.
   /// </summary>
-  public static string ElementFor(BedSlot slot, BedSlotState state)
-  {
+  public static string ElementFor(BedSlot slot, BedSlotState state) {
     if (!slot.Accepts(state))
       state = BedSlotState.Sand;
 
@@ -211,39 +184,32 @@ public static class SandBedLayout
   /// indexed as <see cref="Slots"/>; anything short or missing reads as plain sand, so a truncated save
   /// renders an uncarved bed instead of nothing.
   /// </summary>
-  public static string[] CarvedElements(IReadOnlyList<BedSlotState>? states)
-  {
+  public static string[] CarvedElements(IReadOnlyList<BedSlotState>? states) {
     var paths = new List<string>(Slots.Length);
-    for (int i = 0; i < Slots.Length; i++)
-    {
-      BedSlotState state = states != null && i < states.Count ? states[i] : BedSlotState.Sand;
+    for (int i = 0; i < Slots.Length; i++) {
+      BedSlotState state =
+        states != null && i < states.Count ? states[i] : BedSlotState.Sand;
       paths.Add(PathFor(Slots[i], state));
     }
     return [.. paths];
   }
 
   /// <summary>
-  /// Composes what the animator should draw, given what the construction behaviour has built
-  /// (<paramref name="built"/>) and the current slot states.
+  /// Composes what the animator should draw from what the construction behaviour has built
+  /// (<paramref name="built"/>) and the current slot states. It expands the construction's whole-group
+  /// <c>SandRunners</c> entry into one path per slot, since the group on its own would draw every state of
+  /// every slot in the same hole; a freshly built bed has every slot on <see cref="BedSlotState.Sand"/> and
+  /// so comes out flat.
   /// <para>
-  /// Two jobs. It <b>expands</b> the construction's whole-group <c>SandRunners</c> entry into one path per
-  /// slot - the group on its own would draw every state of every slot stacked in the same hole, so this is
-  /// what turns "the bed is full of sand" into "each slot shows what is cut into it". A freshly built bed
-  /// has every slot on <see cref="BedSlotState.Sand"/>, so it comes out flat and uncarved, exactly as the
-  /// last build stage leaves it.
-  /// </para>
-  /// <para>
-  /// And it <b>composes rather than overrides</b>: the construction behaviour rebuilds the mesh from its own
-  /// list on every stage, so a bed that simply pushed its own list would be clobbered by the next stage. Run
-  /// this over the construction's current list instead and the two cannot fight.
+  /// It composes over the construction's list rather than replacing it: that behaviour rebuilds the mesh
+  /// from its own list on every stage, so a pushed list would be clobbered by the next stage.
   /// </para>
   /// </summary>
   public static string[] Compose(
     IReadOnlyList<string>? built,
     IReadOnlyList<BedSlotState>? states,
     bool constructed
-  )
-  {
+  ) {
     IEnumerable<string> baseElements = built ?? [];
     if (!constructed)
       return [.. baseElements];
@@ -252,7 +218,8 @@ public static class SandBedLayout
     string[] kept =
     [
       .. baseElements.Where(e =>
-        e != RunnersGroup && !e.StartsWith(RunnersGroup + "/", StringComparison.Ordinal)
+        e != RunnersGroup
+        && !e.StartsWith(RunnersGroup + "/", StringComparison.Ordinal)
       ),
     ];
     return [.. kept, .. CarvedElements(states)];

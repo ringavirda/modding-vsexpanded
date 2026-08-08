@@ -1,7 +1,7 @@
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Testing;
-using NSubstitute;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -10,18 +10,16 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The per-cell partial-fill boxes that let a mega-block footprint cell be a slab or any other
-/// shape instead of a full cube: how <c>fillerOffsets</c> JSON parses into boxes, how they rotate
-/// into the placed orientation, how they survive the filler BE's save tree, and how the filler
-/// block hands them back for collision/selection (falling back to the full cube when a cell has none).
+/// Per-cell partial-fill boxes, which let a mega-block footprint cell be a slab or any other shape
+/// instead of a full cube: how <c>fillerOffsets</c> JSON parses into boxes, how they rotate into the
+/// placed orientation, how they survive the filler BE's save tree, and how the filler block hands them
+/// back for collision and selection, falling back to the full cube when a cell has none.
 /// </summary>
-public class StructureFillerBoxesTests
-{
+public class StructureFillerBoxesTests {
   #region Parsing
 
   [Fact]
-  public void Cell_without_boxes_parses_as_a_full_cube_null()
-  {
+  public void Cell_without_boxes_parses_as_a_full_cube_null() {
     var offsets = ReadOffsets(
       "[{ \"x\": 1, \"y\": 0, \"z\": 2, \"allowAttach\": true }]"
     );
@@ -33,8 +31,7 @@ public class StructureFillerBoxesTests
   }
 
   [Fact]
-  public void A_single_collisionBox_parses_to_one_box()
-  {
+  public void A_single_collisionBox_parses_to_one_box() {
     var offsets = ReadOffsets(
       "[{ \"x\": 0, \"y\": 1, \"z\": 0, \"collisionBox\": "
         + "{ \"x1\": 0, \"y1\": 0, \"z1\": 0, \"x2\": 1, \"y2\": 0.5, \"z2\": 1 } }]"
@@ -46,8 +43,7 @@ public class StructureFillerBoxesTests
   }
 
   [Fact]
-  public void A_collisionBoxes_array_parses_to_multiple_boxes()
-  {
+  public void A_collisionBoxes_array_parses_to_multiple_boxes() {
     var offsets = ReadOffsets(
       "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"collisionBoxes\": ["
         + "{ \"x1\": 0, \"y1\": 0, \"z1\": 0, \"x2\": 1, \"y2\": 0.5, \"z2\": 1 },"
@@ -63,8 +59,7 @@ public class StructureFillerBoxesTests
   }
 
   [Fact]
-  public void An_empty_collisionBoxes_array_falls_back_to_null()
-  {
+  public void An_empty_collisionBoxes_array_falls_back_to_null() {
     var offsets = ReadOffsets(
       "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"collisionBoxes\": [] }]"
     );
@@ -76,18 +71,22 @@ public class StructureFillerBoxesTests
   #region Rotation
 
   [Fact]
-  public void Boxes_are_unchanged_at_angle_0()
-  {
+  public void Boxes_are_unchanged_at_angle_0() {
     var cell = Assert.Single(FootprintAt(0));
-    AssertBox(new Cuboidf(0f, 0f, 0f, 0.5f, 1f, 1f), Assert.Single(cell.CollisionBoxes!));
+    AssertBox(
+      new Cuboidf(0f, 0f, 0f, 0.5f, 1f, 1f),
+      Assert.Single(cell.CollisionBoxes!)
+    );
   }
 
   [Fact]
-  public void Boxes_mirror_across_the_cell_centre_at_angle_180()
-  {
-    // A north box hugging the low-x half becomes the high-x half after a 180° turn; y is untouched.
+  public void Boxes_mirror_across_the_cell_centre_at_angle_180() {
+    // A north box on the low-x half becomes the high-x half after a 180° turn; y is untouched.
     var cell = Assert.Single(FootprintAt(180));
-    AssertBox(new Cuboidf(0.5f, 0f, 0f, 1f, 1f, 1f), Assert.Single(cell.CollisionBoxes!));
+    AssertBox(
+      new Cuboidf(0.5f, 0f, 0f, 1f, 1f, 1f),
+      Assert.Single(cell.CollisionBoxes!)
+    );
   }
 
   [Theory]
@@ -95,17 +94,15 @@ public class StructureFillerBoxesTests
   [InlineData(90)]
   [InlineData(180)]
   [InlineData(270)]
-  public void Rotation_preserves_box_count_and_vertical_extent(int angle)
-  {
-    // Whatever the horizontal turn, a slab stays a slab of the same height (y rotation is identity).
+  public void Rotation_preserves_box_count_and_vertical_extent(int angle) {
+    // Rotation is horizontal only, so a slab keeps its height at every angle.
     var box = Assert.Single(Assert.Single(FootprintAt(angle)).CollisionBoxes!);
     Assert.Equal(0f, box.Y1, 4);
     Assert.Equal(1f, box.Y2, 4);
   }
 
   [Fact]
-  public void A_cell_without_boxes_resolves_to_null_boxes()
-  {
+  public void A_cell_without_boxes_resolves_to_null_boxes() {
     var host = new Host(Offsets("[{ \"x\": 1, \"y\": 0, \"z\": 0 }]"));
     var cell = Assert.Single(
       StructureFillers.FootprintCells(host, new BlockPos(0, 0, 0), 90)
@@ -118,10 +115,8 @@ public class StructureFillerBoxesTests
   #region Serialization
 
   [Fact]
-  public void CollisionBoxes_round_trip_through_the_save_tree()
-  {
-    var be = new BlockEntityStructureFiller
-    {
+  public void CollisionBoxes_round_trip_through_the_save_tree() {
+    var be = new BlockEntityStructureFiller {
       Principal = new BlockPos(3, 4, 5),
       AllowAttach = true,
       CollisionBoxes =
@@ -135,14 +130,21 @@ public class StructureFillerBoxesTests
 
     Assert.NotNull(restored.CollisionBoxes);
     Assert.Equal(2, restored.CollisionBoxes.Length);
-    AssertBox(new Cuboidf(0f, 0f, 0f, 1f, 0.5f, 1f), restored.CollisionBoxes[0]);
-    AssertBox(new Cuboidf(0f, 0.5f, 0f, 0.5f, 1f, 1f), restored.CollisionBoxes[1]);
+    AssertBox(
+      new Cuboidf(0f, 0f, 0f, 1f, 0.5f, 1f),
+      restored.CollisionBoxes[0]
+    );
+    AssertBox(
+      new Cuboidf(0f, 0.5f, 0f, 0.5f, 1f, 1f),
+      restored.CollisionBoxes[1]
+    );
   }
 
   [Fact]
-  public void A_full_cube_cell_keeps_null_boxes_across_the_tree()
-  {
-    var be = new BlockEntityStructureFiller { Principal = new BlockPos(1, 2, 3) };
+  public void A_full_cube_cell_keeps_null_boxes_across_the_tree() {
+    var be = new BlockEntityStructureFiller {
+      Principal = new BlockPos(1, 2, 3),
+    };
     Assert.Null(RoundTrip(be).CollisionBoxes);
   }
 
@@ -151,22 +153,23 @@ public class StructureFillerBoxesTests
   #region Block boxes
 
   [Fact]
-  public void The_filler_block_returns_the_cells_partial_boxes()
-  {
+  public void The_filler_block_returns_the_cells_partial_boxes() {
     Cuboidf[] partial = [new Cuboidf(0f, 0f, 0f, 1f, 0.5f, 1f)];
     var block = new BlockStructureFiller();
     var pos = new BlockPos(0, 0, 0);
-    var ba = AccessorWith(pos, new BlockEntityStructureFiller { CollisionBoxes = partial });
+    var ba = AccessorWith(
+      pos,
+      new BlockEntityStructureFiller { CollisionBoxes = partial }
+    );
 
     Assert.Same(partial, block.GetCollisionBoxes(ba, pos));
     Assert.Same(partial, block.GetSelectionBoxes(ba, pos));
   }
 
   [Fact]
-  public void The_filler_block_falls_back_to_its_own_boxes_when_a_cell_has_no_boxes()
-  {
-    // A cell with an empty BE (no partial boxes) must resolve identically to a cell with no BE at
-    // all: both fall through to the block's own JSON-configured boxes, not the partial path.
+  public void The_filler_block_falls_back_to_its_own_boxes_when_a_cell_has_no_boxes() {
+    // A cell with an empty BE and a cell with no BE must resolve identically: both fall through to the
+    // block's own JSON-configured boxes rather than the partial path.
     var block = new BlockStructureFiller();
     var pos = new BlockPos(0, 0, 0);
     var emptyBe = AccessorWith(pos, new BlockEntityStructureFiller()); // null CollisionBoxes
@@ -188,15 +191,17 @@ public class StructureFillerBoxesTests
 
   private static JsonObject Offsets(string json) => new(JArray.Parse(json));
 
-  private static System.Collections.Generic.List<FillerOffset> ReadOffsets(string json) =>
-    StructureFillers.ReadOffsets(Offsets(json));
+  private static System.Collections.Generic.List<FillerOffset> ReadOffsets(
+    string json
+  ) => StructureFillers.ReadOffsets(Offsets(json));
 
   /// <summary>
   /// Resolves a single low-x-half slab cell at the given angle, so rotation can be asserted in
-  /// isolation: north box <c>(0,0,0 → 0.5,1,1)</c>.
+  /// isolation. The north box is <c>(0,0,0 - 0.5,1,1)</c>.
   /// </summary>
-  private static System.Collections.Generic.List<FillerCell> FootprintAt(int angle)
-  {
+  private static System.Collections.Generic.List<FillerCell> FootprintAt(
+    int angle
+  ) {
     var host = new Host(
       Offsets(
         "[{ \"x\": 1, \"y\": 0, \"z\": 0, \"collisionBox\": "
@@ -206,8 +211,9 @@ public class StructureFillerBoxesTests
     return StructureFillers.FootprintCells(host, new BlockPos(0, 0, 0), angle);
   }
 
-  private static BlockEntityStructureFiller RoundTrip(BlockEntityStructureFiller be)
-  {
+  private static BlockEntityStructureFiller RoundTrip(
+    BlockEntityStructureFiller be
+  ) {
     // base.ToTreeAttributes writes Pos/Block, so the BE has to be sited like a placed one.
     var world = new TestWorld();
     var block = TestBlocks.Configure(
@@ -227,15 +233,20 @@ public class StructureFillerBoxesTests
     return restored;
   }
 
-  private static IBlockAccessor AccessorWith(BlockPos pos, BlockEntityStructureFiller be)
-  {
+  private static IBlockAccessor AccessorWith(
+    BlockPos pos,
+    BlockEntityStructureFiller be
+  ) {
     var ba = Substitute.For<IBlockAccessor>();
     ba.GetBlockEntity(pos).Returns(be);
     return ba;
   }
 
-  private static void AssertBox(Cuboidf expected, Cuboidf actual, int precision = 4)
-  {
+  private static void AssertBox(
+    Cuboidf expected,
+    Cuboidf actual,
+    int precision = 4
+  ) {
     Assert.Equal(expected.X1, actual.X1, precision);
     Assert.Equal(expected.Y1, actual.Y1, precision);
     Assert.Equal(expected.Z1, actual.Z1, precision);
@@ -244,8 +255,7 @@ public class StructureFillerBoxesTests
     Assert.Equal(expected.Z2, actual.Z2, precision);
   }
 
-  private sealed class Host(JsonObject? offsets) : IFillerHost
-  {
+  private sealed class Host(JsonObject? offsets) : IFillerHost {
     public JsonObject? FillerOffsets { get; } = offsets;
   }
 

@@ -2,29 +2,27 @@ using System;
 using System.Text;
 using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
-using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using IronworkingExpanded.BlockNetworkMolten;
+using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 
 /// <summary>
-/// The big 3×3×3 converter shell. Construction is handled by the vanilla
-/// <c>RightClickConstructable</c> behavior (which suppresses the default mesh, so the vessel
-/// renders through the animator: a permanent <c>idle</c> animation re-tessellated to the built
-/// elements, with <c>filling</c>/<c>pouring</c> as held tilt poses). It mirrors the operational
-/// pose/charge from its <see cref="BlockEntityConverterControl"/> and hands solidified drops back
-/// on break.
+/// The 3×3×3 converter shell. Construction runs through the <c>RightClickConstructable</c>
+/// behavior, which suppresses the default mesh, so the vessel renders through the animator: a
+/// permanent <c>idle</c> animation re-tessellated to the built elements, with <c>filling</c> and
+/// <c>pouring</c> as held tilt poses. Operational pose and charge are mirrored from its
+/// <see cref="BlockEntityConverterControl"/>; solidified drops are handed back on break.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
-{
+public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten {
   private BlockPos? _controlPos;
   private ConverterOpState _opState = ConverterOpState.Normal;
   private bool _solidified;
@@ -41,8 +39,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
 
   #region Lifecycle
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     // The animator (and IsConstructed) is resolved on both sides; it only builds/poses on the client.
     _animator = new ConstructedAnimator(this, () => AnimCacheKey);
@@ -52,14 +49,12 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   private string AnimCacheKey =>
     BlockConverterBessemer.BaseCode + "-" + Block.Variant["side"];
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     _animator?.Dispose();
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     _animator?.Dispose();
     base.OnBlockUnloaded();
   }
@@ -69,8 +64,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   #region Control link
 
   /// <summary>Records the position of the control block that drives this vessel.</summary>
-  public void LinkControl(BlockPos controlPos)
-  {
+  public void LinkControl(BlockPos controlPos) {
     _controlPos = controlPos.Copy();
     MarkDirty(true);
   }
@@ -86,8 +80,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
     bool solidified,
     int chargeUnits,
     ConverterOpState state
-  )
-  {
+  ) {
     bool changed =
       _solidified != solidified
       || _chargeUnits != chargeUnits
@@ -113,8 +106,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
     LiningY2 = 2.0f;
 
   /// <summary>Emits rising smoke from the vessel mouth while refining; called from the control's tick.</summary>
-  public void SpawnSmokeParticles(float intensity = 1f)
-  {
+  public void SpawnSmokeParticles(float intensity = 1f) {
     // Called from the control's server tick; server-spawned particles replicate to clients, so
     // don't gate on the client API here.
     if (Api == null)
@@ -143,8 +135,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
       ExParticles.Smoke,
       minPos,
       maxPos,
-      // Lower upward velocity + shorter life ⇒ the plume only rises a short way
-      // out of the vessel mouth instead of shooting toward the ceiling.
+      // Low upward velocity and short life keep the plume close to the vessel mouth.
       new Vec3f(-0.15f, 0.5f, -0.15f),
       new Vec3f(0.15f, 1.1f, 0.15f),
       intensity * 6f,
@@ -167,18 +158,16 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
     );
 
   private void ApplyPose() =>
-    _animator?.Pose(util =>
-    {
+    _animator?.Pose(util => {
       util.StopAnimation("idle");
       util.StopAnimation("filling");
       util.StopAnimation("slagpouring");
       util.StopAnimation("pouring");
 
-      // Pose tilts only apply once the vessel is built; during construction it
-      // simply renders the partial mesh at rest via "idle". Slag pours off a SHALLOW tilt (it floats),
-      // the steel from the EXISTING deeper pour tilt beneath it.
-      string code = (IsConstructed ? _opState : ConverterOpState.Normal) switch
-      {
+      // Pose tilts apply only once the vessel is built; during construction it renders the partial
+      // mesh at rest through "idle". Slag pours off a shallow tilt, since it floats, and the steel
+      // off the deeper pour tilt beneath it.
+      string code = (IsConstructed ? _opState : ConverterOpState.Normal) switch {
         ConverterOpState.Filling => "filling",
         ConverterOpState.SlagPouring => "slagpouring",
         ConverterOpState.SteelPouring => "pouring",
@@ -186,11 +175,10 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
       };
 
       util.StartAnimation(
-        new AnimationMetaData
-        {
+        new AnimationMetaData {
           Animation = code,
           Code = code,
-          // The whole vessel tilts - slow and heavy. Idle just holds it visible.
+          // The whole vessel tilts, so the pose runs slow. Idle only holds it visible.
           AnimationSpeed = code == "idle" ? 1f : 0.3f,
           EaseInSpeed = 3f,
           EaseOutSpeed = 3f,
@@ -224,8 +212,8 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   /// <summary>Server-side: chips the hardened residue out via the control; null when not chiselable.</summary>
   public ItemStack? ChiselOutContent() => GetControl()?.ChiselOutContent();
 
-  // IChiselableMolten: a solidified charge is the chiselable target; unlike a canal it also caps by size,
-  // so the blocked feedback distinguishes "too full" (hardened but too big - break it) from "too hot".
+  // IChiselableMolten: the solidified charge is the chiselable target. Unlike a canal it also caps by
+  // size, so the blocked feedback separates "too full" (hardened but too big) from "too hot".
   bool IChiselableMolten.HasChiselableContent => HasSolidifiedCharge;
   bool IChiselableMolten.CanChiselOut => CanChiselOut();
   string? IChiselableMolten.ChiselBlockedError =>
@@ -238,11 +226,10 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   #region HUD
 
   /// <summary>
-  /// The vessel carries the live operational readout (charge, progress, power, status); the state
-  /// lives on the control brain, which builds the text.
+  /// The vessel carries the live operational readout (charge, progress, power, status). The state
+  /// lives on the control block, which builds the text.
   /// </summary>
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
 
     // During construction the RCC interaction help covers what's next - no operational state yet.
@@ -256,11 +243,9 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    if (_controlPos != null)
-    {
+    if (_controlPos != null) {
       tree.SetInt("ctrlX", _controlPos.X);
       tree.SetInt("ctrlY", _controlPos.Y);
       tree.SetInt("ctrlZ", _controlPos.Z);
@@ -273,8 +258,7 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     if (tree.HasAttribute("ctrlX"))
       _controlPos = new BlockPos(

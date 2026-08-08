@@ -9,23 +9,24 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Forming.Blocks;
 
 /// <summary>
-/// An invisible, solid axle cell of the rolling mill: a <b>pass-through <c>mpenergy</c> node</b> that carries
-/// the drive line across the mill's three-cell footprint, so the machine connects on both shaft ends (drivable
-/// from either side, and stands chain on one line). It is not craftable - the mill places and clears it and
-/// reroutes its break/drops/pick to the principal, exactly as <c>BlockStructureFiller</c> does for a plain
-/// filler, but unlike a filler it <b>is</b> a graph node (the network BFS only ever traverses
-/// <see cref="BlockNetworkNode"/> cells, so a filler could never bridge the axle).
+/// An invisible, solid axle cell of the rolling mill: a pass-through <c>mpenergy</c> node that carries the
+/// drive line across the mill's three-cell footprint, so the machine connects on both shaft ends and stands
+/// can be chained on one line. It is not craftable; the mill places and clears it, and its break, drops and
+/// pick are rerouted to the principal as <c>BlockStructureFiller</c> does for a plain filler. Unlike a
+/// filler it is a graph node: the network walk only traverses <see cref="BlockNetworkNode"/> cells, so a
+/// filler could not bridge the axle.
 /// </summary>
 [BlockRegister]
-public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvider
-{
+public partial class BlockRollingMillAxle
+  : BlockNetworkNode,
+    IExBlockDefProvider {
   public override string NetworkType => "mpenergy";
 
   #region Code-first definition
 
-  /// <summary>The axle-cell blocktype: invisible (empty shape), solid full-cube collision, no drops, hidden
-  /// from the handbook. Two orientations (<c>ns</c>/<c>we</c>) so the mill can lay its axle along either
-  /// horizontal axis; the connectors follow the orientation letters (<c>we</c> ⇒ east + west).</summary>
+  /// <summary>The axle-cell blocktype: empty shape, solid full-cube collision, no drops, hidden from the
+  /// handbook. Two orientations (<c>ns</c>/<c>we</c>) so the mill can lay its axle along either horizontal
+  /// axis; the connectors follow the orientation letters (<c>we</c> gives east and west).</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -54,8 +55,9 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
     BlockPos pos
   ) => world.BlockAccessor.GetBlockEntity(pos) as BlockEntityRollingMillAxle;
 
-  /// <summary>The mill owns this cell's orientation and lifecycle, so ignore neighbour changes: the base
-  /// behaviour would recompute the orientation or self-break the cell (it has no resting surface of its own).</summary>
+  /// <summary>Neighbour changes are ignored because the mill owns this cell's orientation and lifecycle:
+  /// the base behaviour would recompute the orientation or self-break the cell, which has no resting
+  /// surface of its own.</summary>
   public override void OnNeighbourBlockChange(
     IWorldAccessor world,
     BlockPos pos,
@@ -67,19 +69,17 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
-    // Breaking an axle cell breaks the whole mill: route to the principal, which clears every axle cell and
-    // filler (mirrors BlockStructureFiller.OnBlockBroken). base.OnBlockBroken here would only RemoveNode this
-    // one cell and leave the rest of the machine standing.
+  ) {
+    // Breaking an axle cell breaks the whole mill, so the break routes to the principal, which clears every
+    // axle cell and filler (mirrors BlockStructureFiller.OnBlockBroken). The base implementation would only
+    // RemoveNode this one cell and leave the rest of the machine standing.
     BlockPos? principal = Axle(world, pos)?.Principal;
     if (
       principal != null
       && world.BlockAccessor.GetBlock(principal) is BlockRollingMill mill
-    )
-    {
+    ) {
       mill.OnBlockBroken(world, principal, byPlayer, dropQuantityMultiplier);
-      // Safety net: if the principal's break didn't clear us, don't linger as an orphaned graph node.
+      // If the principal's break left this cell standing, remove it so it is not an orphaned graph node.
       if (world.BlockAccessor.GetBlock(pos).Id == BlockId)
         base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
       return;
@@ -95,12 +95,12 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
     float dropQuantityMultiplier = 1f
   ) => [];
 
-  /// <summary>Picking an axle cell yields the mill (via the principal), not this invisible internal block -
-  /// and never the base's <c>GetDrops()[0]</c>, which is now empty.</summary>
-  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
-  {
+  /// <summary>Picking an axle cell yields the mill via the principal, not this internal block. The base
+  /// implementation would index into <c>GetDrops()</c>, which is empty here.</summary>
+  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos) {
     BlockPos? principal = Axle(world, pos)?.Principal;
-    return principal != null
+    return
+      principal != null
       && world.BlockAccessor.GetBlock(principal) is BlockRollingMill mill
       ? mill.OnPickBlock(world, principal)
       : new ItemStack(this);
@@ -111,10 +111,10 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
     IWorldAccessor world,
     BlockPos pos,
     IPlayer forPlayer
-  )
-  {
+  ) {
     BlockPos? principal = Axle(world, pos)?.Principal;
-    return principal != null
+    return
+      principal != null
       && world.BlockAccessor.GetBlock(principal) is BlockRollingMill mill
       ? mill.GetPlacedBlockInfo(world, principal, forPlayer)
       : base.GetPlacedBlockInfo(world, pos, forPlayer);

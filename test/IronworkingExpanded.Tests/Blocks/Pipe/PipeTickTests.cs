@@ -1,18 +1,16 @@
-using ExpandedLib;
-using IronworkingExpanded;
 using System.Linq;
+using ExpandedLib;
 using ExpandedLib.Testing;
+using IronworkingExpanded;
 using Xunit;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>Time-driven behaviour: throughput/pressure refresh, idle clearing, evaporation,
 /// open-end leak loss, and over-pressure burst - all via <see cref="TestWorld.Tick"/>.</summary>
-public class PipeTickTests
-{
+public class PipeTickTests {
   [Fact]
-  public void Tick_refreshes_pressure_and_flow_rate()
-  {
+  public void Tick_refreshes_pressure_and_flow_rate() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
     net.TryProduceGas(45f, 120f, "Steam", w.Accessor);
 
@@ -27,17 +25,13 @@ public class PipeTickTests
 
   #region Passive cooling
 
-  // These exist because passive cooling shipped as dead code and nothing noticed. It was
-  // gated on `pass.Consumers == 0`, but Consumers counts one per pipe-node BE - i.e. once per segment -
-  // so the guard could never be true on a run made of pipes. A suite with no test for it passes
-  // identically whether the feature works or does not, which is exactly how it survived.
+  // Cooling is not gated on consumer count: Consumers counts one per pipe-node block entity, once per
+  // segment, so a run made of pipes never reports zero consumers.
 
   [Fact]
-  public void A_hot_gas_run_sheds_heat_toward_ambient()
-  {
-    // LiveRun, not Run: the bare fixture has no block entities, so the tick counts zero consumers
-    // and the very guard that made this dead code in game is satisfied in the test. This must stand up
-    // the same node classification the server sees or it proves nothing.
+  public void A_hot_gas_run_sheds_heat_toward_ambient() {
+    // LiveRun, not Run: the bare fixture has no block entities, so its tick counts zero consumers and
+    // does not stand up the node classification the server sees.
     var (w, net) = PipeTestWorld.LiveRun(3, "iron", capEnds: true);
     net.TryProduceGas(45f, 300f, "Steam", w.Accessor);
 
@@ -50,8 +44,7 @@ public class PipeTickTests
   }
 
   [Fact]
-  public void Cooling_stops_at_ambient_and_never_goes_below()
-  {
+  public void Cooling_stops_at_ambient_and_never_goes_below() {
     var (w, net) = PipeTestWorld.LiveRun(3, "iron", capEnds: true);
     net.TryProduceGas(45f, 30f, "Air", w.Accessor);
 
@@ -60,16 +53,13 @@ public class PipeTickTests
     Assert.Equal(ExlibValues.PipeAmbientTemperature, net.State!.Temperature, 3);
   }
 
-  // The "a flowing line stays hot" half is emergent, not a special case: cooling always applies, and
-  // the volume-weighted blend in TryProduceGas pulls the average back up each time hot gas arrives.
-  // That is why the fix removed the idle condition rather than refining it.
+  // A fed line staying hot is emergent, not a special case: cooling always applies, and the
+  // volume-weighted blend in TryProduceGas pulls the average back up each time hot gas arrives.
   [Fact]
-  public void A_run_kept_fed_with_hot_gas_stays_hot()
-  {
+  public void A_run_kept_fed_with_hot_gas_stays_hot() {
     var (w, net) = PipeTestWorld.LiveRun(3, "iron", capEnds: true);
 
-    for (int i = 0; i < 10; i++)
-    {
+    for (int i = 0; i < 10; i++) {
       net.TryProduceGas(45f, 300f, "Steam", w.Accessor);
       net.TryConsumeGas(45f, w.Accessor); // a consumer keeps drawing it through
       w.Tick();
@@ -84,8 +74,7 @@ public class PipeTickTests
   #endregion
 
   [Fact]
-  public void Drained_run_clears_only_after_idle_delay()
-  {
+  public void Drained_run_clears_only_after_idle_delay() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
     net.TryProduceGas(45f, 120f, "Air", w.Accessor);
     net.TryConsumeGas(45f, w.Accessor); // volume now 0, but just had flow
@@ -96,11 +85,10 @@ public class PipeTickTests
   }
 
   [Fact]
-  public void Water_run_evaporates_with_the_calendar()
-  {
+  public void Water_run_evaporates_with_the_calendar() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
-    // Fill over several passes: since the throughput gate one call moves at most the
-    // weakest segment's litres-per-second, so a single huge push no longer brims a run.
+    // Fill over several passes: the throughput gate moves at most the weakest segment's litres per
+    // second per call, so a single push cannot brim a run.
     for (int i = 0; i < 32 && (net.State?.Volume ?? 0f) < 90f; i++)
       net.TryProduceLiquid(float.MaxValue, 20f, 1f, w.Accessor); // full = 90 L
 
@@ -112,8 +100,7 @@ public class PipeTickTests
   }
 
   [Fact]
-  public void Open_ended_run_leaks_gas_each_tick()
-  {
+  public void Open_ended_run_leaks_gas_each_tick() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: false); // open air ends
     net.TryProduceGas(450f, 200f, "Steam", w.Accessor, maxOutputPressure: 10f);
 
@@ -127,10 +114,9 @@ public class PipeTickTests
   }
 
   [Fact]
-  public void Idle_sealed_gas_run_cools_two_degrees_per_tick()
-  {
-    // Passive cooling pass: a sealed hot gas run with no consumers drawing it sheds a fixed 2 C per
-    // tick. Pinned across two post-production ticks so it's independent of the exact production temp.
+  public void Idle_sealed_gas_run_cools_two_degrees_per_tick() {
+    // A sealed hot gas run with no consumers drawing it sheds a fixed 2 C per tick. Measured across two
+    // post-production ticks so it does not depend on the exact production temperature.
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
     net.TryProduceGas(45f, 120f, "Steam", w.Accessor);
 
@@ -144,11 +130,16 @@ public class PipeTickTests
   }
 
   [Fact]
-  public void Sealed_overpressured_run_bursts_after_the_grace_period()
-  {
+  public void Sealed_overpressured_run_bursts_after_the_grace_period() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
-    PipeTestWorld.Saturate(net, 200f, "Steam", w.Accessor, maxOutputPressure: 10f);
-    // Sitting exactly at the tier's burst pressure, derived from config rather than restated.
+    PipeTestWorld.Saturate(
+      net,
+      200f,
+      "Steam",
+      w.Accessor,
+      maxOutputPressure: 10f
+    );
+    // Sitting exactly at the tier's burst pressure, derived from config rather than restated here.
     Assert.Equal(
       3 * PipeTestWorld.LitresPerPipe * IwexValues.PlatedPipeBurstPressure,
       net.State!.Volume,

@@ -3,32 +3,28 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The 1×1 sand casting cell's interaction routing, and the pattern-size guard that makes
-/// <c>MoldSpec.Size</c> mean something.
+/// Interaction routing for the 1x1 sand casting cell, and the pattern-size guard that enforces
+/// <c>MoldSpec.Size</c>.
 /// </summary>
-public class CastingCellTests
-{
+public class CastingCellTests {
   #region Pattern size
 
   [Fact]
-  public void A_longcell_pattern_is_refused_by_the_one_by_one_cell()
-  {
-    // MoldSpec.Size was parsed, validated and round-tripped by two tests, and read by nothing in src/.
-    // Without this guard the cell accepts a pattern whose cavity is 24 voxels long, sets its capacity
+  public void A_longcell_pattern_is_refused_by_the_one_by_one_cell() {
+    // Without the guard the cell accepts a pattern whose cavity is 24 voxels long, takes its capacity
     // from it, and casts a slab out of a 1x1 block.
     var rig = CastingCellScenes.RammedFull();
 
     bool handled = rig.Interact(rig.PatternStack("castslab", size: "longcell"));
 
     Assert.True(handled); // the click is consumed, not passed through
-    Assert.False(rig.Cell.HasImpression); // ...but nothing was imprinted
+    Assert.False(rig.Cell.HasImpression); // but nothing is imprinted
     Assert.Equal("iwex-castingcell-wrongsize", rig.LastError);
   }
 
   [Fact]
-  public void A_cell_sized_pattern_is_still_imprinted()
-  {
-    // The other half of the guard. A size check that refuses everything would pass the test above.
+  public void A_cell_sized_pattern_is_still_imprinted() {
+    // Control for the refusal above: a size check that refused everything would also pass it.
     var rig = CastingCellScenes.RammedFull();
 
     bool handled = rig.Interact(rig.PatternStack("plate"));
@@ -39,30 +35,28 @@ public class CastingCellTests
   }
 
   [Fact]
-  public void The_refused_pattern_leaves_the_cavity_capacity_untouched()
-  {
-    // The failure this actually prevents. Imprint sets the molten cell's capacity from the spec, so a
-    // longcell pattern that slipped through would leave a 1x1 cell claiming a long cell's cavity - and
-    // the capacity outlives the refusal, because nothing else ever clears it.
+  public void The_refused_pattern_leaves_the_cavity_capacity_untouched() {
+    // Imprint sets the molten cell's capacity from the spec and nothing else clears it, so a longcell
+    // pattern that slipped through would leave a 1x1 cell holding a long cell's capacity.
     var rig = CastingCellScenes.RammedFull();
-    int before = rig.Cell.GetBehavior<
-      ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell
-    >()!.MaxUnitCapacity;
+    int before = rig
+      .Cell.GetBehavior<ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell>()!
+      .MaxUnitCapacity;
 
-    rig.Interact(rig.PatternStack("castslab", size: "longcell", capacity: 3000));
+    rig.Interact(
+      rig.PatternStack("castslab", size: "longcell", capacity: 3000)
+    );
 
     Assert.Equal(
       before,
-      rig.Cell.GetBehavior<ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell>()!
-        .MaxUnitCapacity
+      rig.Cell.GetBehavior<ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell>()!.MaxUnitCapacity
     );
   }
 
   [Fact]
-  public void A_pattern_carrying_no_mold_spec_is_refused_with_its_own_code()
-  {
-    // Distinct from the size refusal on purpose: "this pattern is broken" and "this pattern is for the
-    // other station" are different problems and the player can only act on one of them.
+  public void A_pattern_carrying_no_mold_spec_is_refused_with_its_own_code() {
+    // A separate error code from the size refusal: a broken pattern and a pattern meant for another
+    // station are different problems for the player.
     var rig = CastingCellScenes.RammedFull();
 
     rig.Interact(rig.SpeclessPatternStack());

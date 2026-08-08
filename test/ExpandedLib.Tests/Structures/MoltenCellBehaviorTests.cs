@@ -11,21 +11,19 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// The composable molten-cell behaviour (<see cref="BEBehaviorMoltenCell"/>): the per-cell metal state
-/// and operations lifted off <c>BlockEntityMoltenCanal</c> so a mega-block footprint cell (the sand
-/// casting bed's runners / molds) can BE a molten cell by composition. Covers config parsing, the
-/// push/drain/soak/thermal contract, melt-point classification, recovery, and the save round-trip.
-/// Iron melts at 1500 C -&gt; liquid above 0.8x = 1200, hardened below 0.3x = 450.
+/// and operations a mega-block footprint cell (the sand casting bed's runners and molds) carries by
+/// composition. Covers config parsing, the push/drain/soak/thermal contract, melt-point
+/// classification, recovery, and the save round-trip. The fixture melts iron at 1500 C, so liquid is
+/// above 0.8x = 1200 and hardened below 0.3x = 450.
 /// </summary>
-public class MoltenCellBehaviorTests
-{
+public class MoltenCellBehaviorTests {
   private const string Iron = "game:ingot-iron";
   private const string Steel = "game:ingot-steel";
   private const float IronMelt = 1500f;
 
   #region Fixture
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem(Steel, IronMelt);
@@ -34,8 +32,10 @@ public class MoltenCellBehaviorTests
   }
 
   // A cell behaviour attached to a placed, API-linked filler BE, configured from the given props.
-  private static BEBehaviorMoltenCell NewCell(TestWorld world, string props = "{}")
-  {
+  private static BEBehaviorMoltenCell NewCell(
+    TestWorld world,
+    string props = "{}"
+  ) {
     var filler = TestBlocks.Configure(
       new BlockStructureFiller(),
       "exlib:structurefiller",
@@ -55,8 +55,7 @@ public class MoltenCellBehaviorTests
   #region Config
 
   [Fact]
-  public void Config_reads_capacity_flow_source_and_drain_fitting()
-  {
+  public void Config_reads_capacity_flow_source_and_drain_fitting() {
     var cell = NewCell(
       NewWorld(),
       "{ \"capacity\": 300, \"flowSource\": true, \"drainFitting\": true }"
@@ -68,8 +67,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void SetCapacity_overrides_the_declared_capacity_and_clears_back_to_it()
-  {
+  public void SetCapacity_overrides_the_declared_capacity_and_clears_back_to_it() {
     var cell = NewCell(NewWorld(), "{ \"capacity\": 200 }");
     Assert.Equal(200, cell.MaxUnitCapacity);
 
@@ -83,16 +81,14 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void SetCapacity_of_zero_or_less_reverts_to_the_declared_capacity()
-  {
+  public void SetCapacity_of_zero_or_less_reverts_to_the_declared_capacity() {
     var cell = NewCell(NewWorld(), "{ \"capacity\": 200 }");
     cell.SetCapacity(0);
     Assert.Equal(200, cell.MaxUnitCapacity);
   }
 
   [Fact]
-  public void The_pattern_capacity_override_survives_a_save_round_trip()
-  {
+  public void The_pattern_capacity_override_survives_a_save_round_trip() {
     var world = NewWorld();
     var cell = NewCell(world, "{ \"capacity\": 200 }");
     cell.SetCapacity(297);
@@ -106,8 +102,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void Config_defaults_a_plain_cell()
-  {
+  public void Config_defaults_a_plain_cell() {
     var cell = NewCell(NewWorld());
 
     Assert.Equal(BEBehaviorMoltenCell.DefaultCapacity, cell.MaxUnitCapacity);
@@ -120,8 +115,7 @@ public class MoltenCellBehaviorTests
   #region Push / drain
 
   [Fact]
-  public void PushMetal_fills_up_to_capacity_and_reports_what_it_accepted()
-  {
+  public void PushMetal_fills_up_to_capacity_and_reports_what_it_accepted() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
 
@@ -133,8 +127,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void PushMetal_refuses_a_different_metal_while_occupied()
-  {
+  public void PushMetal_refuses_a_different_metal_while_occupied() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 1500f, w.World);
@@ -147,8 +140,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void PushMetal_temperature_averages_same_metal()
-  {
+  public void PushMetal_temperature_averages_same_metal() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 1600f, w.World);
@@ -160,8 +152,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void DrainMetal_removes_units_and_empties_at_zero()
-  {
+  public void DrainMetal_removes_units_and_empties_at_zero() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(100, Iron, 1500f, w.World);
@@ -176,8 +167,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void SoakHeat_raises_temperature_without_adding_volume()
-  {
+  public void SoakHeat_raises_temperature_without_adding_volume() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 1200f, w.World);
@@ -195,8 +185,7 @@ public class MoltenCellBehaviorTests
   #region Thermal + classification
 
   [Fact]
-  public void UpdateThermal_latches_solidified_below_the_melting_point()
-  {
+  public void UpdateThermal_latches_solidified_below_the_melting_point() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 800f, w.World); // already below the 1500 melt
@@ -207,8 +196,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void UpdateThermal_never_latches_when_the_cell_does_not_solidify()
-  {
+  public void UpdateThermal_never_latches_when_the_cell_does_not_solidify() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100, \"solidifies\": false }");
     cell.PushMetalRaw(40, Iron, 800f, w.World);
@@ -219,8 +207,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void A_hot_cell_stays_liquid_through_a_thermal_tick()
-  {
+  public void A_hot_cell_stays_liquid_through_a_thermal_tick() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 1600f, w.World);
@@ -238,8 +225,7 @@ public class MoltenCellBehaviorTests
   public void CellState_classifies_against_the_melting_point(
     float temp,
     MoltenState expected
-  )
-  {
+  ) {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, temp, w.World);
@@ -249,8 +235,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void GlowLightLevel_is_zero_when_empty_and_positive_when_hot()
-  {
+  public void GlowLightLevel_is_zero_when_empty_and_positive_when_hot() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     Assert.Equal(0, cell.GlowLightLevel);
@@ -264,8 +249,7 @@ public class MoltenCellBehaviorTests
   #region Recovery + clearing
 
   [Fact]
-  public void GetRecoveryDrop_yields_the_metal_bit()
-  {
+  public void GetRecoveryDrop_yields_the_metal_bit() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(50, Iron, 900f, w.World);
@@ -278,8 +262,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void ClearContents_empties_the_cell_and_lifts_the_latch()
-  {
+  public void ClearContents_empties_the_cell_and_lifts_the_latch() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(40, Iron, 800f, w.World);
@@ -298,8 +281,7 @@ public class MoltenCellBehaviorTests
   #region Serialization
 
   [Fact]
-  public void State_round_trips_through_the_save_tree()
-  {
+  public void State_round_trips_through_the_save_tree() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
     cell.PushMetalRaw(60, Iron, 1300f, w.World);
@@ -316,8 +298,7 @@ public class MoltenCellBehaviorTests
   }
 
   [Fact]
-  public void An_empty_cell_never_persists_as_solidified()
-  {
+  public void An_empty_cell_never_persists_as_solidified() {
     var w = NewWorld();
     var cell = NewCell(w, "{ \"capacity\": 100 }");
 

@@ -7,28 +7,18 @@ using Vintagestory.GameContent;
 namespace ExpandedLib.Blocks.Construction;
 
 /// <summary>
-/// Composable helper that owns the animator + <see cref="ExRightClickConstructable"/> lifecycle shared
-/// by every constructed, animator-rendered mega-block (boiler, engine, converter vessel, burdenmaker).
-/// The RCC behavior suppresses the block's default mesh, so these blocks are only visible through a
-/// permanent animation re-tessellated to the currently-built construction elements - a ~80-line triad
-/// that would otherwise be copy-pasted byte-for-byte across all of them.
-/// <para>
-/// It is a <b>helper</b>, not a base class, on purpose: the consumers sit on four different block-entity
-/// bases (plain <see cref="BlockEntity"/>, <c>BlockEntityProductionMachine</c>,
-/// <c>BlockEntityMultiblockStructure</c>, <c>BlockEntityContainer</c>), and C# single inheritance cannot
-/// give them one shared leaf base. Composing this helper instead lets each keep its own base while
-/// sharing the scaffold - and, crucially, the one place that owns the <c>_animatorReady</c> null-guard,
-/// so a machine can never drift into the null-animator <c>GetBlockInfo</c> NRE the way one hand-rolled
-/// copy did.
-/// </para>
+/// Owns the animator and <see cref="ExRightClickConstructable"/> lifecycle shared by constructed,
+/// animator-rendered mega-blocks (boiler, engine, converter vessel, burdenmaker). The construction
+/// behavior suppresses the block's default mesh, so such a block is visible only through a permanent
+/// animation re-tessellated to the currently-built construction elements. A helper rather than a base
+/// class because the consumers sit on four different block-entity bases.
 /// <para>
 /// Usage: hold one as a field, call <see cref="Initialize"/> from the block entity's <c>Initialize</c>
-/// (passing the machine's pose method), route the machine's pose method through <see cref="Pose"/>, and
-/// call <see cref="Dispose"/> from both <c>OnBlockRemoved</c> and <c>OnBlockUnloaded</c>.
+/// passing the machine's pose method, route that pose method through <see cref="Pose"/>, and call
+/// <see cref="Dispose"/> from both <c>OnBlockRemoved</c> and <c>OnBlockUnloaded</c>.
 /// </para>
 /// </summary>
-public sealed class ConstructedAnimator
-{
+public sealed class ConstructedAnimator {
   private readonly BlockEntity _be;
   private readonly Func<string> _cacheKey;
   private readonly Action<BlockEntityAnimationUtil, MeshData>? _onAnimatorBuilt;
@@ -39,25 +29,24 @@ public sealed class ConstructedAnimator
   private Action? _repose;
 
   /// <param name="be">The owning block entity.</param>
-  /// <param name="cacheKey">The per-block animator/shape cache key (e.g. <c>"burdenmaker-" + side</c>);
+  /// <param name="cacheKey">Per-block animator/shape cache key (e.g. <c>"burdenmaker-" + side</c>);
   /// evaluated lazily so a wrench-rotate that changes the variant is picked up.</param>
   /// <param name="onAnimatorBuilt">Optional hook run after each successful (re)build, receiving the anim
-  /// util and the freshly-built mesh - used to swap in a custom <see cref="AnimatableRenderer"/> (the
-  /// boiler relights its mesh from a body cell). Runs before the pose, so a renderer that seeds its
-  /// visibility from the active-animation set sees the same state the old inline swap did.</param>
+  /// util and the freshly-built mesh; used to swap in a custom <see cref="AnimatableRenderer"/>. Runs
+  /// before the pose, so a renderer seeding its visibility from the active-animation set sees the
+  /// pre-pose state.</param>
   public ConstructedAnimator(
     BlockEntity be,
     Func<string> cacheKey,
     Action<BlockEntityAnimationUtil, MeshData>? onAnimatorBuilt = null
-  )
-  {
+  ) {
     _be = be;
     _cacheKey = cacheKey;
     _onAnimatorBuilt = onAnimatorBuilt;
   }
 
-  /// <summary>True once the player has finished the construction stages. Valid on the server too (the
-  /// RCC behavior is resolved on both sides), so it can gate production.</summary>
+  /// <summary>True once the player has finished the construction stages. Valid on the server too, since
+  /// the construction behavior is resolved on both sides, so it can gate production.</summary>
   public bool IsConstructed => _rcc?.IsComplete ?? false;
 
   /// <summary>Whether a real animator currently exists (a client with a resolved shape). The single gate
@@ -71,13 +60,12 @@ public sealed class ConstructedAnimator
   public ExRightClickConstructable? Rcc => _rcc;
 
   /// <summary>
-  /// Resolves the animatable + construction behaviors, wires construction-stage re-tessellation, builds
-  /// the initial mesh and applies the first pose. Safe to call on any side - it only builds/poses on the
-  /// client. <paramref name="repose"/> is the machine's own pose selection; it is invoked here and after
-  /// every construction stage, and should itself route through <see cref="Pose"/>.
+  /// Resolves the animatable and construction behaviors, wires construction-stage re-tessellation,
+  /// builds the initial mesh and applies the first pose. Safe to call on any side; it only builds and
+  /// poses on the client. <paramref name="repose"/> is the machine's own pose selection, invoked here
+  /// and after every construction stage, and should itself route through <see cref="Pose"/>.
   /// </summary>
-  public void Initialize(Action repose)
-  {
+  public void Initialize(Action repose) {
     _repose = repose;
     _animatable = _be.GetBehavior<BEBehaviorAnimatable>();
     _rcc = _be.GetBehavior<ExRightClickConstructable>();
@@ -93,19 +81,17 @@ public sealed class ConstructedAnimator
     _repose?.Invoke();
   }
 
-  private void OnShapeChanged(CompositeShape cs)
-  {
+  private void OnShapeChanged(CompositeShape cs) {
     Rebuild(cs?.SelectiveElements);
     _repose?.Invoke();
   }
 
   /// <summary>
-  /// (Re)builds the animator to render exactly the currently-built elements (only the mesh is filtered
-  /// to <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape). Public so a
+  /// (Re)builds the animator to render exactly the currently-built elements. Only the mesh is filtered
+  /// to <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape. Public so a
   /// wrench-rotatable machine can rebuild in its new orientation from <c>OnExchanged</c>.
   /// </summary>
-  public void Rebuild(string[]? selectiveElements)
-  {
+  public void Rebuild(string[]? selectiveElements) {
     if (_be.Api is not ICoreClientAPI || _animatable == null)
       return;
 
@@ -128,20 +114,18 @@ public sealed class ConstructedAnimator
       new Vec3f(0, _be.Block.Shape.rotateY, 0)
     );
 
-    // A failed shape resolve leaves animUtil.animator null; only mark ready when it truly exists, so a
-    // pose is never queued against a null animator (vanilla GetBlockInfo would then NRE).
+    // A failed shape resolve leaves animUtil.animator null; only mark ready when it exists, so a pose
+    // is never queued against a null animator (vanilla GetBlockInfo would then NRE).
     _ready = util.animator != null;
     if (_ready)
       _onAnimatorBuilt?.Invoke(util, meshData);
   }
 
   /// <summary>
-  /// Runs <paramref name="pose"/> against the animation utility only on a client that has a live
-  /// animator - the one guard every constructed machine shares, so none can drift into the null-animator
-  /// <c>GetBlockInfo</c> NRE. A no-op otherwise.
+  /// Runs <paramref name="pose"/> against the animation utility only on a client with a live animator,
+  /// which keeps a pose off a null animator. A no-op otherwise.
   /// </summary>
-  public void Pose(Action<BlockEntityAnimationUtil> pose)
-  {
+  public void Pose(Action<BlockEntityAnimationUtil> pose) {
     if (_be.Api is not ICoreClientAPI || _animatable == null || !_ready)
       return;
     pose(_animatable.animUtil);
@@ -149,8 +133,7 @@ public sealed class ConstructedAnimator
 
   /// <summary>Unsubscribes from construction-stage events. Call from both <c>OnBlockRemoved</c> and
   /// <c>OnBlockUnloaded</c>.</summary>
-  public void Dispose()
-  {
+  public void Dispose() {
     if (_rcc != null)
       _rcc.OnShapeChanged -= OnShapeChanged;
   }

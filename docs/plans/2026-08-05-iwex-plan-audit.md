@@ -69,7 +69,7 @@ The rule applied: `docs/design/**` is authoritative for *decisions*; the plan is
 ### `MISSING_TASK` · fasteners · lpex's (and hpex's) boiler must require rivets with no nail path, while iwex machines accept either fastener.
 
 - **Task:** U8.7 Step 1 (and Produces)
-- **Doc:** [State.md](../design/STATE.md):634
+- **Doc:** [State.md](STATE.md):634
 - **Doc says:** So it stops being a tier gate: **iwex machines accept either, lpex's boiler requires rivets with no nail path.** Merely structural = substitutable; must-hold-pressure = not.
 - **Plan says:** U8.7 **Produces**: "every iwex bill retargeted onto it while lpex's boiler stages stay on the rivet-only helper" — but no task, and no file in U8.7's Modify list, touches BlockBoilerCornish.cs or BlockBoilerLancashire.cs. There is no rivet-only helper to "stay on".
 - **Why it matters:** Verified in src/: BlockBoilerCornish.cs:134,141,146 and BlockBoilerLancashire.cs:149,156,161 all call `.RequireMetalNails(domain, n)` today — exactly as docs/design/items/fasteners.md § Consumer census records (:159, :161). U8.7 Step 1 makes "no boiler stage accepts metalnailsandstrips under any wildcard" the first test and the anchor of the whole substitution rule; against unmodified boiler code it fails red on day one and nothing in the plan fixes it. Either the plan needs a RequireRivets helper plus a retarget of six boiler stages across two mods, or the settled half of the substitution rule (the half that gives rivets any meaning) never lands.
@@ -94,7 +94,7 @@ The rule applied: `docs/design/**` is authoritative for *decisions*; the plan is
 
 - **Task:** U8.11 Steps 1-2
 - **Doc:** [processes/stamping.md](../design/processes/stamping.md):202
-- **Doc says:** **The `ItemDie` spec does not exist either.** It is the [heading machine](../machines/heading-machine.md)'s to define, and this machine is its **second** consumer — so the hammer must not invent a parallel die format.
+- **Doc says:** **The `ItemDie` spec does not exist either.** It is the [heading machine](../design/machines/heading-machine.md)'s to define, and this machine is its **second** consumer — so the hammer must not invent a parallel die format.
 - **Plan says:** U8.11 Files: "docs/design/items/dies.md (strike the iwex/lpex/hpex die rows and the ItemDie contract)"; Step 2: "Strike every die row from dies.md and fasteners.md"; Step 1 deletes heading-machine.md, the contract's owner, replacing it with a rivet-machine.md that has "no die catalogue".
 - **Why it matters:** State.md's 2026-07-30 settlement removes only the fastener dies: ":642 No dies. Two machines with one job each need no swappable tooling, so the `ItemDie` family leaves iwex entirely" plus "the hpex ball die goes too". It does not touch state.md:603 ("steam hammer + stamping dies | lpex | shingled slab and blanking"), and dies.md:92 still carries the settled `lpex` stamping row (`boilerplate` 600 u → 3 × game:metalplate). "Strike every die row" plus deleting the only page that owns the contract erases lpex's tooling model as collateral damage and leaves stamping.md pointing at a deleted owner — the precise condition its own gotcha warns produces a parallel, incompatible die format later.
 
@@ -126,7 +126,7 @@ The rule applied: `docs/design/**` is authoritative for *decisions*; the plan is
 
 - **Task:** none (promised by U7 Shared-files and U6.11 Step 2; absent from U7.1-U7.10)
 - **Doc:** [machines/rolling-mill.md](../design/machines/rolling-mill.md):524
-- **Doc says:** | 6 | `StockForm`: `bloom` / `slab` → **`shingledbar` 3 × 3 × 18** and **`shingledslab` 8 × 3 × 20** | masses belong to [stock](../items/stock.md) |
+- **Doc says:** | 6 | `StockForm`: `bloom` / `slab` → **`shingledbar` 3 × 3 × 18** and **`shingledslab` 8 × 3 × 20** | masses belong to [stock](../design/items/stock.md) |
 - **Plan says:** The rename is deferred to U7 twice and then never performed. U6.11 Step 2: 'Do not rename StockForm.Bloom to Bar … that rename belongs to U7.3/U7.4'. U7's Shared-files note: 'U7.2/U7.3/U7.4 rewrite … the form table (including the bloom→bar rename U6 deliberately does not do)'. But U7.3 Step 4 changes only the dimensions, Step 5 keeps accepts ["bloom","rod"], and U7.6 Step 4 pins the strings billet/bloom/slab.
 - **Why it matters:** The rename is the direct cause of the caststock collision above: keeping the wrought form named 'bloom' is what makes caststock-bloom's stockForm ambiguous. It also leaves the lang rows wrong — stock.md:135 settles that item-stock-bloom 'Wrought Bloom' becomes 'Shingled Bar', and U7.3 Step 10 fixes only item-stock-slab's 'Cast Slab' string without renaming either item. Every downstream doc (stock.md, rolling.md:146-147, rolled-parts.md's crop table) names the forms shingledbar / shingledslab; after U7 the code would still say bloom / slab, so a reader diffing docs against code re-derives the same confusion this file exists to stop.
 
@@ -218,7 +218,7 @@ The rule applied: `docs/design/**` is authoritative for *decisions*; the plan is
 
 - **Task:** U9.8 Step 3
 - **Doc:** [items/alloys.md](../design/items/alloys.md):356
-- **Doc says:** Its **Unit economy** table is contradicted wholesale by the [density rule](../mechanics/density-rule.md), and its **Materials** / **Alloy compositions** tables are superseded by this page.
+- **Doc says:** Its **Unit economy** table is contradicted wholesale by the [density rule](../design/mechanics/density-rule.md), and its **Materials** / **Alloy compositions** tables are superseded by this page.
 - **Plan says:** U9.8 Step 3: 'Record in docs/design/materials.md that this raises vanilla's tool ceiling deliberately and that it gates nothing … That is the settled ruling and it needs a home outside the machine page.'
 - **Why it matters:** The plan sends the crucible-steel ladder ruling into the one table alloys.md declares superseded (and whose own header still falsely claims to be the single source of truth — the exact drift alloys.md Gotcha #8 exists to record). alloys.md:101 already carries the Crucible steel row with `Registry code: (none)` and `Status: designed`; no task in U9 updates it, so after U9.8 ships the canonical ladder still says the metal does not exist while a superseded table carries the ruling. The ruling's home is the alloys.md row.
 
@@ -250,14 +250,14 @@ The rule applied: `docs/design/**` is authoritative for *decisions*; the plan is
 
 - **Task:** U8.3 Step 1
 - **Doc:** [processes/fabrication.md](../design/processes/fabrication.md):178
-- **Doc says:** | **`beam`** | 4.5 × 2 × 9 | **200 u** | narrow `flat` 2.0, cropped in half ([rolling](rolling.md)) |
+- **Doc says:** | **`beam`** | 4.5 × 2 × 9 | **200 u** | narrow `flat` 2.0, cropped in half ([rolling](../design/processes/rolling.md)) |
 - **Plan says:** U8.3 Step 1: "item-rolled-beam.json `CutPlate1..2` are two 9x1x9 elements so a beam-stage piece crops to 2 plates".
 - **Why it matters:** A `game:metalplate` is 200 u (fabrication.md:179, stamping.md:114), so "a beam-stage piece → 2 plates" is 200 u in and 400 u out — a 2× mint, against the no-minting rule stamping.md:158 states as the ceiling every conversion inherits. The correct settled row is the one U7.5 Step 2 already writes: shingledbar at **flat 1.0** (400 u) → 2 × game:metalplate @200, with the beam being a separate 2.0-stage product (2 × beam @200). U8.3's wording either names the wrong input or the wrong stage; taken literally it breaks the mass ledger, and U8.3's own Step 2 conservation test would then be written around the wrong row.
 
 ### `MISSING_TASK` · fasteners · Every iwex machine bill accepts either fastener — the substitution rule is repo-wide for iwex, not a sample of bills.
 
 - **Task:** U8.7 Step 4
-- **Doc:** [State.md](../design/STATE.md):634
+- **Doc:** [State.md](STATE.md):634
 - **Doc says:** So it stops being a tier gate: **iwex machines accept either, lpex's boiler requires rivets with no nail path.** Merely structural = substitutable; must-hold-pressure = not.
 - **Plan says:** U8.7 Step 4 retargets exactly six sites: the four pipe segments, "the tall hopper (FurnaceRecipeDefinitions.cs:60)" and the plated molten barrel — while Produces claims "every iwex bill retargeted onto it".
 - **Why it matters:** Verified in src/: iwex has nine grid nail sites, not six — FurnaceRecipeDefinitions.cs:30 (blast furnace core, Nails(4)), :79 (tall hopper, Nails(1)), :100 (twin-tub blower, Nails(1)), MoltenRecipeDefinitions.cs:34, OreProcessingRecipeDefinitions.cs:36 (now removed) and the four pipe segments. The blast furnace core and the twin-tub blower are left nail-only. The plan's list was copied from fasteners.md § Consumer census, whose table is explicitly labelled "Representative and largest bills:" (fasteners.md:154) against a total of 21 grid sites (:150) — a representative sample read as an exhaustive one. The stale `FurnaceRecipeDefinitions.cs:60` line reference comes from the same doc table (fasteners.md:164) and points at nothing today.

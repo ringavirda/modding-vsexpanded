@@ -11,22 +11,17 @@ using BoilerState = LowPressureExpanded.BlockStructures.Boiler.BlockEntityBoiler
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Whole-process scenarios that combine structures and networks the way the in-game setup diagrams do
-/// (docs/setups): a steam engine turning a pump to produce water, and a real boiler driving an engine
-/// end to end. Each lays the machines + their pipe lines into one <see cref="Scene"/> and advances them
-/// together, asserting the emergent result rather than any single component.
-/// <para>
-/// The Cornish-engine halves of this file (MP generator, air blower) moved to the hpex suite with the
-/// engine itself - see <c>HighPressureExpanded.Tests.HpSteamPlantScenarioTests</c>.
-/// </para>
+/// Whole-process scenarios combining structures and networks the way the in-game setup diagrams do
+/// (docs/setups): a steam engine turning a pump to produce water, and a boiler driving an engine end to
+/// end. Each lays the machines and their pipe lines into one <see cref="Scene"/> and advances them
+/// together, asserting the emergent result rather than any single component. The Cornish-engine
+/// scenarios (MP generator, air blower) live in <c>HighPressureExpanded.Tests.HpSteamPlantScenarioTests</c>.
 /// </summary>
-public class SteamPlantScenarioTests
-{
+public class SteamPlantScenarioTests {
   #region Water production (boiler→engine→pump→water)
 
   [Fact]
-  public void Steam_drives_the_pump_to_lift_water_into_the_output_main()
-  {
+  public void Steam_drives_the_pump_to_lift_water_into_the_output_main() {
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var plant = new WaterPumpPlant(scene, new BlockPos(0, 8, 0));
     scene.Build();
@@ -45,8 +40,7 @@ public class SteamPlantScenarioTests
   }
 
   [Fact]
-  public void Without_steam_the_pump_stays_idle_and_no_water_moves()
-  {
+  public void Without_steam_the_pump_stays_idle_and_no_water_moves() {
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var plant = new WaterPumpPlant(scene, new BlockPos(0, 8, 0));
     scene.Build();
@@ -59,8 +53,7 @@ public class SteamPlantScenarioTests
   }
 
   [Fact]
-  public void Below_the_engage_pressure_the_engine_will_not_drive_the_pump()
-  {
+  public void Below_the_engage_pressure_the_engine_will_not_drive_the_pump() {
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var plant = new WaterPumpPlant(scene, new BlockPos(0, 8, 0));
     scene.Build();
@@ -77,10 +70,9 @@ public class SteamPlantScenarioTests
   #region Real boiler driving an engine over a shared steam main
 
   [Fact]
-  public void A_fired_boiler_charges_the_main_and_runs_an_attached_engine_pump()
-  {
-    // Boiler steam outlet and the engine's south inlet meet at one bend pipe (down→boiler,
-    // north→engine), so the boiler's own steam - not an injected charge - drives the whole chain.
+  public void A_fired_boiler_charges_the_main_and_runs_an_attached_engine_pump() {
+    // Boiler steam outlet and the engine's south inlet meet at one bend pipe (down to the boiler,
+    // north to the engine), so the boiler's own steam drives the chain rather than an injected charge.
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var boiler = new BoilerFixture(scene, new BlockPos(0, 8, 0));
     BlockPos attach = boiler.SteamPipeAttachPos;
@@ -88,16 +80,14 @@ public class SteamPlantScenarioTests
     // The shared steam main: a single junction pipe carrying a down connector (the boiler attaches
     // there) and a north connector (the engine reads across its inlet face).
     EnginePlant.Pipe(scene, attach, "dn", 50);
-    // ...and one more cell of main, so the engine house stands clear of the boiler. The down face is
-    // sealed by the boiler's own steam-port filler, which its raised shell now occupies for real -
-    // dropping a cap block there instead, as this scene used to, overwrites that layout cell and the
-    // next structure monitor tick finds the boiler broken.
+    // One more cell of main, so the engine house stands clear of the boiler. The down face is sealed by
+    // the boiler's own steam-port filler, which its raised shell occupies; a cap block there instead
+    // overwrites that layout cell and the next structure monitor tick finds the boiler broken.
     EnginePlant.Pipe(scene, attach.AddCopy(0, 0, -1), "ns", 51);
 
-    // Watt engine at the far end of that main, its south inlet face on the last pipe. It has to sit
-    // two cells out, not one: the pump's submachine is two further north again and its pond intake
-    // one below that, which at the old spacing landed *inside the boiler's brick shell* - a cell no
-    // player could build in. Nothing could see that while the shell was never raised.
+    // Watt engine at the far end of that main, its south inlet face on the last pipe. It sits two cells
+    // out rather than one: the pump's submachine is two further north again and its pond intake one
+    // below that, which at one cell of spacing lands inside the boiler's brick shell.
     var engine = BuildEnginePump(
       scene,
       attach.AddCopy(0, 0, -2),
@@ -135,16 +125,14 @@ public class SteamPlantScenarioTests
     BlockPos enginePos,
     out System.Func<float> output,
     out PondAccessor pond
-  )
-  {
+  ) {
     var engineBlock = TestBlocks.Configure(
       new BlockEngineWatt(),
       "lpex:enginewatt-n",
       60,
       ("side", "north")
     );
-    var engine = new BlockEntityEngineWatt
-    {
+    var engine = new BlockEntityEngineWatt {
       Pos = enginePos.Copy(),
       Block = engineBlock,
     };
@@ -158,8 +146,7 @@ public class SteamPlantScenarioTests
       61,
       ("side", "east")
     );
-    var pump = new BlockEntityEngineFluidPump
-    {
+    var pump = new BlockEntityEngineFluidPump {
       Pos = subPos.Copy(),
       Block = pumpBlock,
     };
@@ -174,8 +161,7 @@ public class SteamPlantScenarioTests
       ("orientation", "u")
     );
     ReflectionHelpers.SetProperty(intakeBlock, "Orientation", "u");
-    var intake = new BlockEntityFluidIntake
-    {
+    var intake = new BlockEntityFluidIntake {
       Pos = pondPos.Copy(),
       Block = intakeBlock,
     };
@@ -202,14 +188,12 @@ public class SteamPlantScenarioTests
     return engine;
   }
 
-  /// <summary>Lets the combined test stock the pond after Build (when its network exists).</summary>
-  internal sealed class PondAccessor
-  {
+  /// <summary>Stocks the pond after Build, once its network exists.</summary>
+  internal sealed class PondAccessor {
     private readonly Scene _scene;
     private readonly BlockPos _pos;
 
-    public PondAccessor(Scene scene, BlockPos pos)
-    {
+    public PondAccessor(Scene scene, BlockPos pos) {
       _scene = scene;
       _pos = pos;
     }
@@ -225,11 +209,10 @@ public class SteamPlantScenarioTests
   #region Multi-layer manifold (exercises SceneDiagram.Stack)
 
   [Fact]
-  public void A_three_layer_riser_with_a_top_arm_is_one_network()
-  {
-    // An L-shaped 3D run spanning all axes: a two-cell vertical riser (Y) whose top elbow turns east
-    // into a horizontal arm (X). Built bottom-to-top with SceneDiagram.Stack. 'I' is an up-down pipe,
-    // 'L' a down+east elbow, '=' a west-east pipe, '#' a cap.
+  public void A_three_layer_riser_with_a_top_arm_is_one_network() {
+    // An L-shaped run: a two-cell vertical riser (Y) whose top elbow turns east into a horizontal arm
+    // (X), built bottom-to-top with SceneDiagram.Stack. 'I' is an up-down pipe, 'L' a down+east elbow,
+    // '=' a west-east pipe, '#' a cap.
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var ud = PipeTestWorld.MakePipe(orientation: "ud", id: 70);
     var we = PipeTestWorld.MakePipe(orientation: "we", id: 71);

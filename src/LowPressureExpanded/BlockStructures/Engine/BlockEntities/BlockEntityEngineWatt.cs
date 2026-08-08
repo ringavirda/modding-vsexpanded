@@ -1,19 +1,17 @@
-using ExpandedLib.Registries.Entities;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
 namespace LowPressureExpanded.BlockStructures.Engine.BlockEntities;
 
 /// <summary>
-/// The Watt engine - the cheap, iron-buildable, low-pressure tier. Runs on the
-/// pressures a Cornish boiler supplies (2-4 atm band) but is thirsty: it draws a fixed
-/// 30 L/s of steam while running and has no control rods. All behavior lives in
-/// <see cref="BlockEntityEngine"/>.
+/// The Watt engine: the cheap, iron-buildable, low-pressure tier. Runs on the 2-4 atm
+/// band a Cornish boiler supplies, draws a fixed 30 L/s of steam while running, and has
+/// no control rods. Behavior lives in <see cref="BlockEntityEngine"/>.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityEngineWatt : BlockEntityEngine
-{
+public class BlockEntityEngineWatt : BlockEntityEngine {
   protected override float MaxPowerValue => LpexValues.WattEngineMaxPower;
   protected override float EngagePressure =>
     LpexValues.WattEngineEngagePressure;
@@ -25,14 +23,12 @@ public class BlockEntityEngineWatt : BlockEntityEngine
   public override void GetBlockInfo(
     IPlayer forPlayer,
     System.Text.StringBuilder dsc
-  )
-  {
+  ) {
     base.GetBlockInfo(forPlayer, dsc);
     if (!IsConstructed || IsBroken)
       return;
 
-    // Show the fixed operating band through ExMeasure (like the Cornish engine), so it converts
-    // with the player's measurement preference instead of reading a hardcoded "2-4 atm".
+    // ExMeasure renders the fixed operating band in the player's measurement preference.
     dsc.AppendLine(
       Lang.Get(
         "lpex:engine-info-band",

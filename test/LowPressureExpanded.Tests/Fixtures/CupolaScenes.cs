@@ -20,18 +20,13 @@ using Vintagestory.GameContent;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Drives the cupola furnace headlessly (docs/design/iwex.md, the scrap re-melter): a charged, lit,
-/// blast-fed shaft climbs past cast iron's melt line, enters the Melting phase, re-melts remelt burden
-/// into molten cast iron (and slag), taps cast iron out the lower tap into one canal and slag out the
-/// upper into another, and - when extinguished mid-heat - freezes its pool onto the hearth as solid cast
-/// iron while leaving the rest of the burden as salvageable spent charge (never slag). The cupola is the
-/// same machine as the blast furnace (<see cref="BlockEntityCupolaFurnace"/> derives
-/// <see cref="BlockEntityShaftFurnace"/>); this rig stands up its narrower peripherals - a single-column
-/// shaft, a single tuyere, and the two taps + canals - and pumps the gated <c>OnProductionTick</c>.
-/// Timers are fast-forwarded so the multi-minute melt is reachable in a test.
+/// Drives the cupola furnace headlessly (docs/design/iwex.md, the scrap re-melter). Stands up the cupola's
+/// peripherals - a single-column shaft, one tuyere, and the two taps with their canals - around a real
+/// <see cref="BlockEntityCupolaFurnace"/> (a <see cref="BlockEntityShaftFurnace"/>) and pumps the gated
+/// <c>OnProductionTick</c>, so a scene can charge, light and blow a furnace through ignition, melting,
+/// tapping and extinguish. Timers are fast-forwarded so the multi-minute melt is reachable in a test.
 /// </summary>
-internal sealed class CupolaRig
-{
+internal sealed class CupolaRig {
   public readonly TestWorld World;
   public readonly BlockEntityCupolaFurnace Furnace;
   public BlockEntityMoltenCanalStart? CastIronCanal { get; private set; }
@@ -45,26 +40,22 @@ internal sealed class CupolaRig
   private readonly BurdenMix? _burden;
   private readonly string _chargeCode;
 
-  /// <summary>Which fuel this scene lays its rounds with - see <see cref="WithFuel"/>.</summary>
+  /// <summary>The fuel this scene lays its rounds with. See <see cref="WithFuel"/>.</summary>
   private string _fuelCode = CokeCode;
   private float _blastTemp = -1f;
   private float _blastPressure = 5f;
 
-  /// <param name="charge">Scrap <b>metal units</b> laid into the shaft's single column. <b>0 fills it to
-  /// capacity.</b> The cupola counts its charge in metal units, not items - a 5 u bit, a 25 u chunk and a
-  /// 375 u pig all go into the same pile, which is how a cupola was charged in life - so one pile block
-  /// holds <c>CupolaChargeMetalUnitsPerBlock</c> (3 000), not 32.</param>
-  /// <param name="burden">Composition stamped on the charge (its coke fraction drives the heat balance).</param>
-  /// <param name="chargeCode">Item path (iwex domain) the shaft piles hold. Defaults to <c>pigchunk</c> -
-  /// it was <c>remeltburden</c> until the cupola started charging metal directly,
-  /// once the only machine that made remelt burden was removed. Pass <c>burden</c> to charge it with
-  /// something it will burn but never convert, and exercise the gate.</param>
+  /// <param name="charge">Scrap metal units laid into the shaft's single column. 0 fills it to capacity, a
+  /// negative value leaves it empty. Charge is counted in metal units, not items, so one pile block holds
+  /// <c>CupolaChargeMetalUnitsPerBlock</c> (3 000) rather than 32.</param>
+  /// <param name="burden">Composition stamped on the charge. Its coke fraction drives the heat balance.</param>
+  /// <param name="chargeCode">Item path in the iwex domain that the shaft piles hold. Pass <c>burden</c> to
+  /// charge material the cupola burns but never converts, which exercises the family gate.</param>
   public CupolaRig(
     int charge = 0,
     BurdenMix? burden = null,
     string chargeCode = "pigchunk"
-  )
-  {
+  ) {
     _burden = burden ?? new BurdenMix(60f, 5f, 35f);
     _chargeCode = chargeCode;
     World = new TestWorld();
@@ -91,8 +82,8 @@ internal sealed class CupolaRig
     World.Register(solid);
 
     // The charge pile and its entity class, so the cupola's own SyncChargeBlocks materialises real
-    // BlockEntityChargePile windows onto its column - see ColdBlastFurnaceScenes for why the factory and
-    // not just the block.
+    // BlockEntityChargePile windows onto its column. The factory is needed as well as the block - see
+    // ColdBlastFurnaceScenes.
     World.RegisterBlockEntityFactory(
       "iwex.BlockEntityChargePile",
       () => new BlockEntityChargePile()
@@ -109,8 +100,7 @@ internal sealed class CupolaRig
 
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
-    Furnace = new BlockEntityCupolaFurnace
-    {
+    Furnace = new BlockEntityCupolaFurnace {
       Pos = _pos,
       Block = TestBlocks.Configure(
         new Block(),
@@ -122,9 +112,9 @@ internal sealed class CupolaRig
     World.Place(_pos, Furnace.Block, Furnace);
     World.Attach(Furnace);
 
-    // The cupola's shipped layout, rotated to its facing (north -> 0). Peripherals go in first, then
-    // the rig fills the shell and the furnace completes itself - see StructureRig for why this is not
-    // a forced StructureComplete.
+    // The cupola's shipped layout, rotated to its facing (north -> 0). Peripherals go in first, then the
+    // rig fills the shell and the furnace completes itself rather than being forced complete - see
+    // StructureRig.
     Structure = StructureRig.Around(
       World,
       Furnace,
@@ -132,30 +122,24 @@ internal sealed class CupolaRig
       angle: 0
     );
 
-    // A single tuyere on the north face, its own blast network.
-    // (0,2,-1), not (0,1,-1): the 2026-08-03 redraw lifted the cupola's inlet a course, so it blows
-    // into the bottom of the shaft column rather than into the well - which is what puts the melt above
-    // the metal it collects. Layer 1's north row is solid brick now, so the old cell left the structure
-    // one short and every scenario in this file threw before it ran a single assertion.
+    // A single tuyere on the north face, on its own blast network. The inlet cell is (0,2,-1): a course
+    // above the well, so the blast enters the bottom of the shaft column and the melt sits above the metal
+    // it collects. Layer 1's north row is solid brick, so (0,1,-1) leaves the structure one cell short.
     _tuyeres = [Tuyere(Structure.Cell(0, 2, -1), 40, "n")];
 
     Structure.Complete();
 
-    // Charged after the structure stands: columns are the core's and it has none until its layout has
-    // arrived, so a push before completion lands nowhere - silently, because a furnace with no shaft box
-    // simply owns no columns.
-    // 0 means "fill the shaft"; a negative charge means "leave it empty", for the scenes that lay their
-    // own charge afterwards (see ChargeWithoutCoke).
+    // Charged after the structure stands: the core owns no columns until its layout has arrived, so a push
+    // before completion lands nowhere and does so silently. 0 fills the shaft; a negative charge leaves it
+    // empty for scenes that lay their own charge afterwards (see ChargeWithoutCoke).
     if (charge >= 0)
       Lay(charge > 0 ? charge : ShaftCapacityUnits);
   }
 
-  /// <summary>Everything the cupola's shaft can hold - its single column's cell count times the remelt
-  /// block quantum. What <c>charge: 0</c> means.</summary>
-  public int ShaftCapacityUnits
-  {
-    get
-    {
+  /// <summary>Total units the shaft can hold: each column's cell count times the charge block quantum.
+  /// What <c>charge: 0</c> lays.</summary>
+  public int ShaftCapacityUnits {
+    get {
       int total = 0;
       foreach (var (x, z) in Furnace.ShaftColumns.Keys)
         total += Furnace.ColumnCapacity(x, z);
@@ -165,23 +149,19 @@ internal sealed class CupolaRig
 
   /// <summary>
   /// Lays <paramref name="total"/> units of the scene's charge into the shaft, clamped to each column's
-  /// own capacity. The cupola's shaft is a single column, so there is nothing to spread - but the walk is
-  /// written over the column set rather than over a literal cell, because the cupola's whole point in this
-  /// suite is that it is the <b>same machine</b> as the blast furnace with a narrower drawing.
+  /// capacity. The walk is written over the column set rather than a literal cell so it matches the blast
+  /// furnace's.
   /// </summary>
-  /// <param name="rounds">Lay <b>real rounds</b> - a fuel course, then a metal course, in the scene's own
-  /// fuel (<see cref="WithFuel"/>). Only <see cref="ChargeWithoutCoke"/> passes false, and what it produces
-  /// is a shaft that cannot burn.</param>
-  private void Lay(int total, bool rounds = true)
-  {
+  /// <param name="rounds">True lays real rounds - a fuel course, then a metal course, in the scene's own
+  /// fuel (<see cref="WithFuel"/>). False lays charge alone, producing a shaft that cannot burn.</param>
+  private void Lay(int total, bool rounds = true) {
     if (total <= 0)
       return;
     int remaining = total;
     var keys = new List<(int X, int Z)>(Furnace.ShaftColumns.Keys);
     keys.Sort((a, b) => a.X != b.X ? a.X.CompareTo(b.X) : a.Z.CompareTo(b.Z));
 
-    foreach (var (x, z) in keys)
-    {
+    foreach (var (x, z) in keys) {
       if (remaining <= 0)
         break;
       ChargeColumn column = Furnace.ChargeColumnAt(x, z)!;
@@ -194,9 +174,14 @@ internal sealed class CupolaRig
       if (rounds)
         LayRounds(column, give);
       else
-        // A single fixed temperature, so a charge arrives as one band - see ColdBlastFurnaceScenes for
-        // why a drifting one shatters the column into slivers the salvage assertions cannot address.
-        column.Push($"iwex:{_chargeCode}", give, ChargeTemp, _burden ?? default);
+        // One fixed temperature, so the charge arrives as a single band rather than a run of slivers the
+        // salvage assertions cannot address.
+        column.Push(
+          $"iwex:{_chargeCode}",
+          give,
+          ChargeTemp,
+          _burden ?? default
+        );
       remaining -= give;
     }
 
@@ -204,33 +189,15 @@ internal sealed class CupolaRig
   }
 
   /// <summary>
-  /// Lays <paramref name="units"/> into one column as <b>real rounds</b> - a fuel course, then a metal
-  /// course - at the scene's own fuel fraction, in whichever fuel <see cref="WithFuel"/> armed.
-  /// <para>
-  /// <b>A cupola is a shaft furnace, so it burns coke at a raceway like any other</b>, and every scene
-  /// in this file once charged remelt burden alone. Carbon comes from fuel bands and nowhere
-  /// else, so the cupola simply never lit: all six lifecycle cases were arranging the state by assignment
-  /// and so could not see it.
-  /// </para>
-  /// <para>
-  /// <b>The band is a volume, not a carbon quantity.</b> A
-  /// charcoal round occupies the same <c>fuelPerRound</c> units of column as a coke round and carries
-  /// <em>half</em> the carbon - so a scene switched to charcoal must burn out in about half the time, and
-  /// <see cref="FuelBandUnits"/> and <see cref="CarbonUnits"/> stop being the same number. Scaling the band
-  /// up to compensate would hide precisely the effect the charcoal cases exist to measure.
-  /// </para>
-  /// <para>
-  /// <b>The fuel is measured in the cupola's own currency - metal units - and that is a simplification
-  /// the charging UI still owes.</b> <c>layered-charge.md</c> rules a cupola pile block as
-  /// <i>"3 000 u of metal <b>against</b> 8 bands of coke"</i>: the metal half is units and the coke half is
-  /// items, which one integer per segment cannot carry. The furnace model does not care - a column is
-  /// homogeneous in whatever unit that furnace counts, and <c>BlockEntityShaftFurnace.ChargeUnitScale</c> is
-  /// what lets the shared raceway constants work at either scale. What is unresolved is how a player
-  /// <em>loads</em> the two, and that belongs to the hopper, not here.
-  /// </para>
+  /// Lays <paramref name="units"/> into one column as real rounds - a fuel course, then a metal course - at
+  /// the scene's fuel fraction, in whichever fuel <see cref="WithFuel"/> armed. Carbon comes from fuel bands
+  /// and nowhere else, so a column laid without a fuel course cannot light. Fuel is counted in the cupola's
+  /// own metal units; <c>BlockEntityShaftFurnace.ChargeUnitScale</c> lets the shared raceway constants work
+  /// at either scale (docs/design/layered-charge.md). A round's fuel course is a fixed volume, not a fixed
+  /// carbon quantity, so a charcoal course fills the same <c>fuelPerRound</c> units as a coke one at half
+  /// the carbon and <see cref="FuelBandUnits"/> and <see cref="CarbonUnits"/> diverge.
   /// </summary>
-  private void LayRounds(ChargeColumn column, int units)
-  {
+  private void LayRounds(ChargeColumn column, int units) {
     int perRound = System.Math.Max(2, Furnace.ChargeUnitsPerBlock);
     float fuelFrac = (_burden ?? default).FuelFrac;
     int fuelPerRound = System.Math.Max(
@@ -239,8 +206,7 @@ internal sealed class CupolaRig
     );
 
     int left = units;
-    while (left > 0)
-    {
+    while (left > 0) {
       int fuel = System.Math.Min(fuelPerRound, left);
       column.Push(_fuelCode, fuel, ChargeTemp, default);
       left -= fuel;
@@ -253,9 +219,8 @@ internal sealed class CupolaRig
     }
   }
 
-  /// <summary>The fuel the scenes lay their rounds with by default. A scene may lay any fuel the registry
-  /// grants - see <see cref="ChargeWithFuel"/> - which is what lets the cupola gain a charcoal counterpart
-  /// for every case without a second rig.</summary>
+  /// <summary>The fuel the scenes lay their rounds with by default. A scene may lay any registered fuel -
+  /// see <see cref="ChargeWithFuel"/>.</summary>
   public const string CokeCode = "game:coke";
 
   /// <summary>Vanilla charcoal: the pre-coke reductant, worth half of coke per unit.</summary>
@@ -265,35 +230,22 @@ internal sealed class CupolaRig
   /// <see cref="ChargeColumn.Push"/> merges only within 1 °C.</summary>
   private const float ChargeTemp = 20f;
 
-  /// <summary>The mix the scene stamped on its charge - for the cases that must prove a furnace is reading
-  /// the fuel bands and not the stamp.</summary>
+  /// <summary>The mix the scene stamped on its charge, for cases that check the furnace reads the fuel
+  /// bands rather than the stamp.</summary>
   public BurdenMix ChargedMix => _burden ?? default;
 
-  /// <summary>Carbon still standing in the shaft - what a campaign is made of. The historical spelling of
-  /// <see cref="FuelBandUnits"/>, kept because the scenarios read it; on a coke-charged cupola the two
-  /// numbers and <see cref="CarbonUnits"/> all coincide, which is why the distinction stayed invisible.
-  /// </summary>
+  /// <summary>Alias for <see cref="FuelBandUnits"/>, kept because the scenarios read it. On a coke-charged
+  /// cupola it also equals <see cref="CarbonUnits"/>; on a charcoal-charged one it does not.</summary>
   public int CokeUnits => FuelBandUnits;
 
   /// <summary>
-  /// Charge units standing in <b>fuel bands</b> of any material - the column volume the fuel occupies.
-  /// <para>
-  /// Asked through the production predicate (<c>IsFuelCode</c>), never by comparing to a coke literal -
-  /// which is what this read once did. A string compare answers "not fuel" for charcoal, so a
-  /// charcoal-charged cupola read zero carbon: <c>A_full_shaft_with_no_coke_at_the_raceway_stays_cold</c>
-  /// would have passed on a shaft packed with perfectly good fuel, and <see cref="HeatSoak"/>'s failure
-  /// message would have reported an empty shaft on a furnace that was merely slow.
-  /// </para>
-  /// <para>
-  /// <b>Not the same number as <see cref="CarbonUnits"/> once a shaft can hold two fuels.</b> A charcoal
-  /// band occupies a band's worth of column and carries half a band's worth of carbon; conflating the two is
-  /// the double-count this model has already made once.
-  /// </para>
+  /// Charge units standing in fuel bands of any material - the column volume the fuel occupies. Asked
+  /// through the production predicate <c>IsFuelCode</c> rather than against a coke literal, which reads
+  /// zero on a charcoal-charged shaft. Not the same number as <see cref="CarbonUnits"/>: a charcoal band
+  /// occupies a band's worth of column and carries half a band's worth of carbon.
   /// </summary>
-  public int FuelBandUnits
-  {
-    get
-    {
+  public int FuelBandUnits {
+    get {
       int units = 0;
       foreach (ChargeColumn column in Furnace.ShaftColumns.Values)
         foreach (ChargeSegment segment in column.Segments)
@@ -304,65 +256,52 @@ internal sealed class CupolaRig
   }
 
   /// <summary>
-  /// Carbon standing in the shaft, in <b>coke units</b> - each fuel band's volume times its own
-  /// <c>CarbonPerUnit</c>. This is what the campaign length is actually made of: the raceway spends
-  /// carbon, never bands, so a charcoal cupola of the same volume goes out twice as soon.
+  /// Carbon standing in the shaft, in coke units - each fuel band's volume times its own
+  /// <c>CarbonPerUnit</c>. The raceway spends carbon rather than bands, so this is what sets campaign
+  /// length: a charcoal cupola of the same volume goes out twice as soon.
   /// </summary>
-  public float CarbonUnits
-  {
-    get
-    {
+  public float CarbonUnits {
+    get {
       float carbon = 0f;
       foreach (ChargeColumn column in Furnace.ShaftColumns.Values)
         foreach (ChargeSegment segment in column.Segments)
           carbon +=
-            segment.Units * BlockEntityFurnaceCore.CarbonPerUnit(segment.Material);
+            segment.Units
+            * BlockEntityFurnaceCore.CarbonPerUnit(segment.Material);
       return carbon;
     }
   }
 
   /// <summary>Fills the shaft with charge alone - no fuel bands: a full cupola that cannot burn.</summary>
-  public CupolaRig ChargeWithoutCoke(int units = 0)
-  {
+  public CupolaRig ChargeWithoutCoke(int units = 0) {
     Lay(units > 0 ? units : ShaftCapacityUnits, rounds: false);
     return this;
   }
 
   /// <summary>
-  /// Switches which fuel the scene's rounds are laid with - <see cref="CokeCode"/> by default,
-  /// <see cref="CharcoalCode"/> for the charcoal twin of any case.
-  /// <para>
-  /// Parameterising the fuel rather than adding a second rig is what makes every existing cupola
-  /// scenario gain a charcoal counterpart for free - and a counterpart is the only thing that can tell a
-  /// furnace that <em>prices</em> its fuel from one that merely accepts it. Call it before charging: the
-  /// rig lays its charge in the constructor, so a scene wanting charcoal passes <c>charge: -1</c> and
-  /// charges itself (or uses <see cref="ChargeWithFuel"/>).
-  /// </para>
+  /// Switches which fuel the scene's rounds are laid with - <see cref="CokeCode"/> by default. Must be
+  /// called before charging: the rig lays its charge in the constructor, so a scene wanting charcoal passes
+  /// <c>charge: -1</c> and charges itself, or uses <see cref="ChargeWithFuel"/>.
   /// </summary>
-  public CupolaRig WithFuel(string fuelCode)
-  {
+  public CupolaRig WithFuel(string fuelCode) {
     _fuelCode = fuelCode;
     return this;
   }
 
-  /// <summary>Lays a full shaft of rounds in <paramref name="fuelCode"/> - the charcoal twin of the
-  /// constructor's default charge.</summary>
-  public CupolaRig ChargeWithFuel(string fuelCode, int units = 0)
-  {
+  /// <summary>Lays a full shaft of rounds in <paramref name="fuelCode"/>.</summary>
+  public CupolaRig ChargeWithFuel(string fuelCode, int units = 0) {
     WithFuel(fuelCode);
     Lay(units > 0 ? units : ShaftCapacityUnits);
     return this;
   }
 
   /// <summary>
-  /// The blast-fed tuyere cell: the real <c>iwex:furnace-tuyere-*</c> block, not a generic pipe. Both behave
-  /// identically as network nodes, but only the tuyere satisfies the furnace layout.
+  /// The blast-fed tuyere cell: the real <c>iwex:furnace-tuyere-*</c> block rather than a generic pipe. Both
+  /// behave identically as network nodes, but only the tuyere satisfies the furnace layout.
   /// </summary>
-  /// <paramref name="orientation"/> is the connector face and the layout now pins it - `n` for the cell
-  /// in the north wall, `s` for the one in the south. Passing the same letter for both leaves the furnace
-  /// permanently incomplete, which is the point: a tuyere facing into the hearth used to complete it.
-  private PipeNetwork Tuyere(BlockPos pos, int id, string orientation)
-  {
+  /// <param name="orientation">Connector face, pinned by the layout: <c>n</c> for a cell in the north wall,
+  /// <c>s</c> for one in the south. A tuyere facing into the hearth leaves the structure incomplete.</param>
+  private PipeNetwork Tuyere(BlockPos pos, int id, string orientation) {
     var pipe = PipeTestWorld.MakeTuyere(id, orientation);
     var be = new BlockEntityTuyere { Pos = pos.Copy(), Block = pipe };
     World.Place(pos, pipe, be);
@@ -373,44 +312,29 @@ internal sealed class CupolaRig
   }
 
   /// <summary>Turns the blast on: air at <paramref name="temp"/> and <paramref name="pressure"/> at the tuyere.</summary>
-  public CupolaRig FeedBlast(float temp = 950f, float pressure = 5f)
-  {
+  public CupolaRig FeedBlast(float temp = 950f, float pressure = 5f) {
     _blastTemp = temp;
     _blastPressure = pressure;
     return this;
   }
 
   /// <summary>Cuts the blast off.</summary>
-  public CupolaRig CutBlast()
-  {
+  public CupolaRig CutBlast() {
     _blastTemp = -1f;
     return this;
   }
 
-  // Both taps go on literal structure-local cells, not on `Furnace.MetalTapPos`/`SlagTapPos`.
+  // Both taps stand on literal structure-local cells rather than on `Furnace.MetalTapPos`/`SlagTapPos`, so
+  // the scene states the drawing independently of the roles and a swapped `T`/`S` pair is caught by the
+  // metal-type assertions. The cells are the cupola's own `I` at (-1,1,0) and `S` at (1,1,0), named through
+  // the structure so they follow its rotation.
   //
-  // Reading the accessors looks tidier and made this rig worthless as an oracle: a scene that places its
-  // taps wherever the roles say cannot observe the roles being wrong. Swap the cupola drawing's `T` and
-  // `S` marks and a role-following rig swaps its own two canals to match, every assertion still holds, and
-  // `A_melting_cupola_taps_cast_iron_low_and_slag_high` - a test whose name is a claim about which tap is
-  // which - stays green. Literals make the scene an independent statement of the drawing, so the swap
-  // pours cast iron into the canal under the high tap and the metal-type assertions bite.
-  //
-  // The values are the cupola's own `I` at (-1,1,0) and `S` at (1,1,0). Named through the structure so
-  // they follow its rotation (this rig stands at north, so the two coincide) exactly as the tuyere cell
-  // above does.
-  //
-  // `S` was (1,2,0) - a course above the metal tap - until the 2026-08-03 redraw brought both notches
-  // down onto the hearth course, on opposite walls. The facing is now part of each cell's demand too,
-  // and it reads backwards: `TryPourMetal` spouts at `facing.Opposite`, so the west-wall iron notch is
-  // `-east` and the east-wall cinder notch is `-west`. A `-north` tap - which is what both of these were
-  // while the legend wildcarded the facing - now aims its spout at the cell south of it, inside the
-  // furnace's own shell.
+  // Tap facing is inverted: `TryPourMetal` spouts at `facing.Opposite`, so the west-wall iron notch is
+  // `-east` and the east-wall cinder notch is `-west`.
 
   /// <summary>Places the cast-iron tap on the drawing's own <c>I</c> cell - the west wall, so the block
   /// faces east - with a canal start under its spout, open.</summary>
-  public CupolaRig WithCastIronTapAndCanal()
-  {
+  public CupolaRig WithCastIronTapAndCanal() {
     CastIronCanal = TapAndCanal(
       Structure.Cell(-1, 1, 0),
       BlockFurnaceTap.IronType,
@@ -423,8 +347,7 @@ internal sealed class CupolaRig
 
   /// <summary>Places the slag tap on the drawing's own <c>S</c> cell - the east wall, so the block faces
   /// west - with a canal start under its spout, open. Level with the metal tap, not above it.</summary>
-  public CupolaRig WithSlagTapAndCanal()
-  {
+  public CupolaRig WithSlagTapAndCanal() {
     SlagCanal = TapAndCanal(
       Structure.Cell(1, 1, 0),
       BlockFurnaceTap.SlagType,
@@ -441,10 +364,8 @@ internal sealed class CupolaRig
     string side,
     int tapId,
     int canalId
-  )
-  {
-    var tap = new BlockEntityFurnaceTap
-    {
+  ) {
+    var tap = new BlockEntityFurnaceTap {
       Pos = tapPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -462,8 +383,7 @@ internal sealed class CupolaRig
     BlockPos canalPos = tapPos
       .AddCopy(BlockFacing.FromCode(side).Opposite)
       .DownCopy();
-    var canal = new BlockEntityMoltenCanalStart
-    {
+    var canal = new BlockEntityMoltenCanalStart {
       Pos = canalPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -482,13 +402,10 @@ internal sealed class CupolaRig
     (BlockPos)ReflectionHelpers.Invoke(Furnace, "GetGlobalPos", x, y, z)!;
 
   /// <summary>Advances the furnace tick <paramref name="ticks"/> times, re-feeding blast each tick.</summary>
-  public CupolaRig Tick(int ticks = 1)
-  {
-    for (int i = 0; i < ticks; i++)
-    {
+  public CupolaRig Tick(int ticks = 1) {
+    for (int i = 0; i < ticks; i++) {
       if (_blastTemp >= 0f)
-        foreach (var net in _tuyeres)
-        {
+        foreach (var net in _tuyeres) {
           net.TryProduceGas(
             150f,
             _blastTemp,
@@ -505,26 +422,20 @@ internal sealed class CupolaRig
 
   #region Fast-forward + accessors
 
-  // `SetState`, `SetSecondsAboveMelting`, `SetMeltSeconds` and `SetFuelBurnSeconds` are gone.
-  // A cupola is a shaft furnace, so it recomputes what it is doing from its charge every
-  // tick: a case that arranged one by writing `State = Melting` and a soak counter was stating a premise
-  // the next tick discarded, and every one of them was green while the machine underneath had never lit at
-  // all - the scenes charged no coke, so the real furnace could not have caught fire. `State` has no setter
-  // now (`FurnaceBranchGuards.NoFurnaceExposesASettableState`), so the same call throws.
+  // A cupola is a shaft furnace: it recomputes what it is doing from its charge every tick, and `State` has
+  // no setter (`FurnaceBranchGuards.NoFurnaceExposesASettableState`). A scene therefore arranges a melting
+  // cupola by charging, lighting and blowing it, through `RunUntil` and `HeatSoak` below.
 
   /// <summary>
   /// Runs the cupola until <paramref name="done"/> holds, up to <paramref name="maxSeconds"/>, returning the
-  /// seconds it took (or -1). The replacement for every <c>Set*</c> above: a melting cupola is one that
-  /// was built, charged and blown until it melted.
+  /// seconds it took or -1 if it never did.
   /// </summary>
   public int RunUntil(
     System.Func<CupolaRig, bool> done,
     int maxSeconds,
     System.Action<CupolaRig>? each = null
-  )
-  {
-    for (int i = 1; i <= maxSeconds; i++)
-    {
+  ) {
+    for (int i = 1; i <= maxSeconds; i++) {
       Tick(1);
       each?.Invoke(this);
       if (done(this))
@@ -533,36 +444,31 @@ internal sealed class CupolaRig
     return -1;
   }
 
-  /// <summary>Runs until the cupola is <see cref="FurnaceState.Melting"/>, failing legibly if it never
-  /// gets there - so a case about melting cannot silently become a case about idling.</summary>
-  public CupolaRig HeatSoak(int maxSeconds = 600)
-  {
+  /// <summary>Runs until the cupola reaches <see cref="FurnaceState.Melting"/>, asserting that it does, so
+  /// a case about melting cannot quietly become a case about idling.</summary>
+  public CupolaRig HeatSoak(int maxSeconds = 600) {
     int took = RunUntil(r => r.State == FurnaceState.Melting, maxSeconds);
     Xunit.Assert.True(
       took > 0,
-      // Reports the weighted carbon, not the band volume: on a charcoal scene the two differ by 2x, and
-      // the volume would make a half-fuelled shaft look fully stocked in the one message that has to
-      // explain why it never melted.
+      // Reports the weighted carbon rather than the band volume: the two differ by 2x on a charcoal scene,
+      // and the volume would make a half-fuelled shaft look fully stocked.
       $"the cupola should have reached Melting within {maxSeconds} s; it was {State} at "
         + $"{Temp:F0} C with {CarbonUnits:F0} u of carbon left ({FuelBandUnits} u of fuel bands)"
     );
     return this;
   }
 
-  public CupolaRig SetTemp(float t)
-  {
+  public CupolaRig SetTemp(float t) {
     ReflectionHelpers.SetField(Furnace, "_internalTemp", t);
     return this;
   }
 
-  public CupolaRig SetMoltenCastIron(float v)
-  {
+  public CupolaRig SetMoltenCastIron(float v) {
     ReflectionHelpers.SetField(Furnace, "_moltenIron", v);
     return this;
   }
 
-  public CupolaRig SetMoltenSlag(float v)
-  {
+  public CupolaRig SetMoltenSlag(float v) {
     ReflectionHelpers.SetField(Furnace, "_moltenSlag", v);
     return this;
   }
@@ -580,52 +486,40 @@ internal sealed class CupolaRig
   /// <summary>Full item code of the metal the lower tap poured (for the cast-iron assertion).</summary>
   public string? CastIronCanalMetalType => CastIronCanal?.CellMetalType;
 
-  /// <summary>Full item code of what the upper tap poured. The half that makes "slag high" a real
-  /// statement: a unit count alone stays positive when the two taps are swapped, because something still
-  /// pours. Only the material says which.</summary>
+  /// <summary>Full item code of what the upper tap poured. A unit count alone stays positive when the two
+  /// taps are swapped, because something still pours; only the material distinguishes them.</summary>
   public string? SlagCanalMetalType => SlagCanal?.CellMetalType;
 
   /// <summary>The block at a structure-local cell (for the extinguish-residue assertions).</summary>
-  public Block BlockAtLocal(int x, int y, int z) => World.GetBlock(Global(x, y, z));
+  public Block BlockAtLocal(int x, int y, int z) =>
+    World.GetBlock(Global(x, y, z));
 
   /// <summary>The charge pile at a structure-local shaft cell, or null (for the salvage assertions).</summary>
   public BlockEntityChargePile? PileAtLocal(int x, int y, int z) =>
     World.GetBlockEntity(Global(x, y, z)) as BlockEntityChargePile;
 
   /// <summary>
-  /// The burden mix standing in the charge block at a structure-local cell - <c>default</c> when the
-  /// column does not reach that cell, or when that block holds no burden at all. Reads the <b>column</b>:
-  /// a charge pile is a window onto it and holds no inventory of its own, which is what makes breaking one
-  /// safe.
-  /// <para>
-  /// <b>It skips fuel bands, and it has to</b> <i>(mirrored from
-  /// <c>ColdBlastFurnaceScenes.SalvageAtLocal</c>)</i>. Since the cupola charges real rounds, the band at
-  /// the <em>base</em> of a block is the round's fuel course - a segment carrying <c>default</c> mix,
-  /// because coke is carbon and nothing else - so the unfiltered walk returned an empty struct for a block
-  /// full of perfectly good salvage. It answered <c>default</c> for every rounds-charged cell, which is a
-  /// reading no assertion could distinguish from "the salvage was lost".
-  /// </para>
-  /// <para>
-  /// The span is bounded at <b>both</b> ends. Without the <c>high</c> clause the walk runs off the end of
-  /// this block's own slice and reports the burden of the block <em>above</em>, which is the granularity
-  /// burn-out decides at (<c>BlockEntityShaftFurnace.BurnOutCharge</c> is per block for exactly this
-  /// reason) - so a per-cell claim would silently become a claim about a different cell.
-  /// </para>
+  /// The burden mix standing in the charge block at a structure-local cell; <c>default</c> when the column
+  /// does not reach that cell or that block holds no burden. Reads the column rather than the block: a
+  /// charge pile is a window onto the column and holds no inventory of its own. The walk skips fuel bands
+  /// (a round's base band is its fuel course, carrying <c>default</c> mix) and is bounded at both ends -
+  /// without the <c>high</c> clause it runs off this block's slice and reports the block above, and
+  /// <c>BlockEntityShaftFurnace.BurnOutCharge</c> decides salvage per block.
   /// </summary>
-  public BurdenMix SalvageAtLocal(int x, int y, int z)
-  {
-    if (Furnace.ChargeColumnAt(Global(x, y, z), out int blockIndex) is not { } column)
+  public BurdenMix SalvageAtLocal(int x, int y, int z) {
+    if (
+      Furnace.ChargeColumnAt(Global(x, y, z), out int blockIndex)
+      is not { } column
+    )
       return default;
 
     int low = blockIndex * Furnace.ChargeUnitsPerBlock;
     int high = low + Furnace.ChargeUnitsPerBlock;
     int at = 0;
-    foreach (ChargeSegment segment in column.Segments)
-    {
+    foreach (ChargeSegment segment in column.Segments) {
       int end = at + segment.Units;
-      // `IsFuelCode`, never `!= CokeCode`. The literal answers "this is burden" for a charcoal band, so a
-      // charcoal cupola's salvage read would come back as `default` - silently, and in the direction that
-      // looks like lost salvage.
+      // `IsFuelCode` rather than `!= CokeCode`: the literal treats a charcoal band as burden, so a charcoal
+      // cupola's salvage read comes back as `default`.
       if (
         end > low
         && at < high
@@ -642,27 +536,22 @@ internal sealed class CupolaRig
     World.GetBlockEntity(Global(x, y, z));
 
   /// <summary>
-  /// Whether a <b>fuel</b> band stands in the block-sized slice of the column covering the structure-local
-  /// cell <c>(x, y, z)</c>.
-  /// <para>
-  /// It exists to let a case state the premise the extinguish residue turns on rather than assume it:
-  /// <c>BlockEntityFurnaceCore.PileHoldsRejectedCharge</c> walks exactly this slice to decide whether a
-  /// pool cell is free to freeze over, and a cupola that ran its carbon out has none left there - which is
-  /// why the ordinary burn-out case never saw the wrong-family misread of a coke band.
-  /// </para>
+  /// Whether a fuel band stands in the block-sized slice of the column covering the structure-local cell
+  /// <c>(x, y, z)</c>. <c>BlockEntityFurnaceCore.PileHoldsRejectedCharge</c> walks the same slice to decide
+  /// whether a pool cell is free to freeze over, so a case can state that premise rather than assume it. A
+  /// cupola that ran its carbon out holds no fuel there.
   /// </summary>
-  public bool HoldsFuelAtLocal(int x, int y, int z)
-  {
+  public bool HoldsFuelAtLocal(int x, int y, int z) {
     if (
-      Furnace.ChargeColumnAt(Global(x, y, z), out int blockIndex) is not { } column
+      Furnace.ChargeColumnAt(Global(x, y, z), out int blockIndex)
+      is not { } column
     )
       return false;
 
     int perBlock = System.Math.Max(1, Furnace.ChargeUnitsPerBlock);
     int low = blockIndex * perBlock;
     int at = 0;
-    foreach (ChargeSegment segment in column.Segments)
-    {
+    foreach (ChargeSegment segment in column.Segments) {
       int end = at + segment.Units;
       if (
         end > low

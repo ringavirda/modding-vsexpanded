@@ -12,36 +12,23 @@ using Vintagestory.API.Server;
 namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
-/// The <b>firebox</b>: a refractory rim with cast-iron firebars across it, holding a bed of fuel that a
-/// reverberatory furnace draws its flame off. The block that replaces free-placed <c>game:coalpile</c> in
-/// every fuel-bed machine in the suite - see <c>docs/design/machines/firebox.md</c>.
+/// The firebox: a refractory rim with cast-iron firebars across it, holding the bed of fuel a
+/// reverberatory furnace draws its flame off. Replaces free-placed <c>game:coalpile</c> in the suite's
+/// fuel-bed machines. The firebars are part of the block, so no separate grating cell sits under a
+/// firebox. See <c>docs/design/machines/firebox.md</c>.
 /// <para>
-/// <b>The firebars are part of the block</b>, which is why <c>game:refractorybrickgrating</c> left the
-/// puddling and reheat layouts: the grate stopped being a separate cell. It also makes the firebox a
-/// <b>tech-tree edge rather than a loop</b> - the bars are a sand-cast part, and the machines that have a
-/// firebox are not the machines that make cast iron, so the dependency runs one way (blast furnace or
-/// cupola → iron → rods → firebox → reverberatory furnaces). That is the historical order.
-/// </para>
-/// <para>
-/// <b>Its orientation is visual only.</b> The facing turns which way the bars run and nothing else - no
-/// layout may orientation-check a firebox cell, and no code may read a direction off it. Stated here
-/// because a block carrying a <c>side</c> group looks exactly like one whose facing is load-bearing, and
-/// the charge lid two files over <em>is</em> that.
+/// Its orientation is visual only: the facing turns which way the bars run and nothing else. No layout
+/// may orientation-check a firebox cell, and no code may read a direction off it.
 /// </para>
 /// </summary>
 [BlockRegister]
-public partial class BlockFirebox : Block, IExBlockDefProvider
-{
+public partial class BlockFirebox : Block, IExBlockDefProvider {
   #region Code-first definition
 
   /// <summary>
-  /// The firebox blocktype.
-  /// <para>
-  /// <b>Any refractory tier.</b> A firebox is a fuel bed, not a metallurgical shell, so there is no heat
-  /// argument for pinning tier 3 - and pinning it would put the block out of reach of exactly the
-  /// early-tier player who needs a puddling hearth first. It wears whichever tier it was built from, the
-  /// same <c>{tier}</c> the cores use.
-  /// </para>
+  /// The firebox blocktype. Available in every refractory tier, since a fuel bed carries no heat
+  /// requirement of its own, and it wears whichever tier it was built from, the same <c>{tier}</c> the
+  /// cores use.
   /// </summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
@@ -52,8 +39,8 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
         .EntityBehavior<BEBehaviorFirebox>()
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(4)
-        // The build outline: a firebox is a functional cell of a furnace layout, so a player standing at
-        // it can preview and complete an unfinished furnace - as at a door, a tap or a charge pile.
+        // Build outline: a firebox is a functional cell of a furnace layout, so a player standing at it
+        // can preview and complete an unfinished furnace, as at a door, a tap or a charge pile.
         .Behavior("MultiblockStructure")
         .Behavior("ExOrientable")
         // `type` names the family member; every furnace part shares the code `iwex:furnace`
@@ -66,9 +53,8 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
         .Texture("front1", "game:block/clay/refractory/{tier}/front1")
         .Texture("burned", "game:block/clay/vessel/sides/burned")
         .Texture("cast-iron1", "iwex:block/metal/castiron")
-        // All four fuels are declared, and the block entity repoints the bed's faces at whichever one
-        // was charged (ExShapeElements.Retextured). Vanilla already names every one of them, so a firebox
-        // of charcoal and a firebox of coke stop looking alike for the cost of three extra keys.
+        // All four fuels are declared; the block entity repoints the bed's faces at whichever one was
+        // charged (ExShapeElements.Retextured), so a bed of charcoal does not look like a bed of coke.
         .Texture(FuelTexture, "game:block/coal/coke")
         .Texture("bituminous", "game:block/coal/bituminous")
         .Texture("anthracite", "game:block/coal/anthracite")
@@ -104,13 +90,12 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
   public const string FuelTexture = "coke";
 
   /// <summary>
-  /// Which declared texture the bed wears for <paramref name="fuelCode"/>. Decided on the <b>code</b>
-  /// rather than a resolved collectible, for the reason <c>BlockChargePile.ElementOf</c> is: a bed stores
-  /// a code and has to keep drawing after the mod that owned one is removed, and it makes the function
-  /// total - no fuel can fail to draw.
+  /// Which declared texture the bed wears for <paramref name="fuelCode"/>. Matched on the code rather
+  /// than a resolved collectible, as <c>BlockChargePile.ElementOf</c> is: a bed stores a code and must
+  /// keep drawing after the mod that owned that fuel is removed. The function is total, so no fuel can
+  /// fail to draw.
   /// </summary>
-  public static string TextureKeyOf(string? fuelCode)
-  {
+  public static string TextureKeyOf(string? fuelCode) {
     if (string.IsNullOrEmpty(fuelCode))
       return FuelTexture;
     if (fuelCode.Contains("bituminous", StringComparison.Ordinal))
@@ -119,15 +104,14 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
       return "anthracite";
     if (fuelCode.Contains("charcoal", StringComparison.Ordinal))
       return "charcoal";
-    // Coke, and the honest fallback for anything a later mod adds: an unknown fuel draws as the
-    // metallurgical default rather than as the engine's missing-texture pink.
+    // Coke, and the fallback for any fuel a later mod adds: an unknown fuel draws as coke rather than
+    // as the engine's missing-texture placeholder.
     return FuelTexture;
   }
 
-  /// <summary>The element paths a bed of <paramref name="layers"/> courses draws - the base always, then
-  /// one <c>CokeL</c><i>n</i> per standing course.</summary>
-  public static List<string> ElementsFor(int layers)
-  {
+  /// <summary>The element paths a bed of <paramref name="layers"/> courses draws: the base always, then
+  /// one <c>CokeLn</c> per standing course.</summary>
+  public static List<string> ElementsFor(int layers) {
     var keep = new List<string> { BaseElement };
     for (int i = 1; i <= layers; i++)
       keep.Add(BedElement + "/CokeL" + i);
@@ -143,22 +127,20 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
   #region Break safety
 
   /// <summary>
-  /// Drops the block itself plus whatever fuel was still in the bed - a firebox is not a one-way sink, and
-  /// a bed holds one fuel, so this is a single extra stack rather than one per material.
+  /// Drops the block plus whatever fuel was still in the bed. A bed holds one fuel, so that is a single
+  /// extra stack rather than one per material.
   /// </summary>
   public override void OnBlockBroken(
     IWorldAccessor world,
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1
-  )
-  {
+  ) {
     if (
       world.Side == EnumAppSide.Server
       && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityFirebox be
       && be.Bed?.Contents() is { } fuel
-    )
-    {
+    ) {
       be.Bed.Clear();
       world.SpawnItemEntity(fuel, pos.ToVec3d().Add(0.5, 0.5, 0.5));
     }
@@ -170,42 +152,43 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
   #region Interaction
 
   /// <summary>
-  /// Charge with fuel in hand, take a course back out with an empty one.
-  /// <para>
-  /// <b>A deposit is spread across every firebox cell of the owning furnace</b>, which is what
-  /// <c>firebox.md</c> means by one pool: the player interacts once and fills the whole bed, but pays per
-  /// cell - so a two-cell reheat firebox costs twice a one-cell puddling firebox for the same visible
-  /// fill. A firebox with no furnace fills only itself, which is the honest answer for a bed standing in
-  /// a field.
-  /// </para>
+  /// Charges with fuel in hand, takes a course back out with an empty one. A deposit is spread across
+  /// every firebox cell of the owning furnace: one interaction fills the whole bed but costs per cell, so
+  /// a two-cell reheat firebox costs twice a one-cell puddling firebox for the same visible fill. A
+  /// firebox with no owning furnace fills only itself. See <c>docs/design/machines/firebox.md</c>.
   /// </summary>
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
-    if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is not BlockEntityFirebox be)
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(blockSel.Position)
+      is not BlockEntityFirebox be
+    )
       return false;
 
     // The build-outline gesture first, so ctrl+shift+right-click previews an unfinished furnace instead
-    // of shovelling coke into it.
-    if (BlockBehaviorMultiblockStructure.TryToggleProjection(world, byPlayer, blockSel.Position))
+    // of charging it.
+    if (
+      BlockBehaviorMultiblockStructure.TryToggleProjection(
+        world,
+        byPlayer,
+        blockSel.Position
+      )
+    )
       return true;
     if (world.Side != EnumAppSide.Server)
       return true;
 
     ItemSlot? active = byPlayer.InventoryManager?.ActiveHotbarSlot;
-    if (active is { Empty: false })
-    {
-      if (!BEBehaviorFirebox.IsFuel(active.Itemstack))
-      {
+    if (active is { Empty: false }) {
+      if (!BEBehaviorFirebox.IsFuel(active.Itemstack)) {
         (byPlayer as IServerPlayer)?.SendIngameError("iwex-firebox-notfuel");
         return true;
       }
       int taken = be.Charge(active.Itemstack);
-      if (taken == 0)
-      {
+      if (taken == 0) {
         (byPlayer as IServerPlayer)?.SendIngameError(
           be.Bed?.Accepts(active.Itemstack) == true
             ? "iwex-firebox-full"
@@ -221,7 +204,10 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
     if (be.Bed?.TryTakeLayer() is not { } course)
       return true;
     if (byPlayer.InventoryManager?.TryGiveItemstack(course) != true)
-      world.SpawnItemEntity(course, blockSel.Position.ToVec3d().Add(0.5, 1.0, 0.5));
+      world.SpawnItemEntity(
+        course,
+        blockSel.Position.ToVec3d().Add(0.5, 1.0, 0.5)
+      );
     return true;
   }
 
@@ -229,8 +215,7 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var help = new List<WorldInteraction>
     {
       new()
@@ -245,7 +230,8 @@ public partial class BlockFirebox : Block, IExBlockDefProvider
       },
     };
     if (
-      world.BlockAccessor.GetBlockEntity(selection.Position) is BlockEntityFirebox be
+      world.BlockAccessor.GetBlockEntity(selection.Position)
+        is BlockEntityFirebox be
       && be.ResolveOwningAnchor() is { StructureComplete: false }
     )
       help.AddRange(BlockBehaviorMultiblockStructure.ProjectionHelp(this));

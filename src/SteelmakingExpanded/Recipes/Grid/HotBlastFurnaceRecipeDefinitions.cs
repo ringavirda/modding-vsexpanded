@@ -6,13 +6,10 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the hot blast furnace and its charging gear (migrated from
-/// recipes/grid/hotblastfurnace.json). These moved here from iwex with the blocks themselves: the hot core
-/// (tier-3 refractory only - the hot blast is the one furnace that will not take a lower brick) and the two
-/// hoppers, whose blocks now live in the smex domain.
+/// Grid recipes for the hot blast furnace core and its charging gear, the reinforced hopper and the bell
+/// hopper. All three blocks live in the smex domain.
 /// </summary>
-public class HotBlastFurnaceRecipeDefinitions : IExRecipeDefProvider
-{
+public class HotBlastFurnaceRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

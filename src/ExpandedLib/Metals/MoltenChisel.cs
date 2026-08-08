@@ -8,13 +8,14 @@ using Vintagestory.API.Server;
 
 namespace ExpandedLib.Metals;
 
-/// <summary>What a chisel + hammer click resolved to on an <see cref="IChiselableMolten"/> holder.</summary>
-public enum ChiselOutcome
-{
-  /// <summary>Not a chisel-out here (no chisel + hammer, or nothing solidified) - let the click fall through.</summary>
+/// <summary>What a chisel and hammer click resolved to on an <see cref="IChiselableMolten"/> holder.</summary>
+public enum ChiselOutcome {
+  /// <summary>Not a chisel-out here: no chisel and hammer, or nothing solidified. The click falls
+  /// through.</summary>
   NotChiseling,
 
-  /// <summary>The player is chiselling solidified content that isn't ready yet (too hot / too full) - claimed, no recovery.</summary>
+  /// <summary>The solidified content is not ready (too hot or too full). The click is claimed, nothing
+  /// is recovered.</summary>
   Blocked,
 
   /// <summary>The hardened content was chipped out and recovered.</summary>
@@ -22,15 +23,13 @@ public enum ChiselOutcome
 }
 
 /// <summary>
-/// One implementation of the "chip solidified metal out with a chisel + hammer" interaction, shared by
-/// every <see cref="IChiselableMolten"/> holder (canal cells, the molten barrel, the bessemer vessel)
-/// so the tool gating, the not-ready feedback, the recovered drop, the tool wear and the sound aren't
-/// re-implemented per block. Holders keep only their content-specific state (the interface) and the
-/// clear-and-recover step (<see cref="IChiselableMolten.ChiselOut"/>); the drop itself is built with the
-/// shared <see cref="BuildRecovery"/>.
+/// The chip-solidified-metal-out interaction shared by every <see cref="IChiselableMolten"/> holder
+/// (canal cells, the molten barrel, the bessemer vessel): tool gating, not-ready feedback, the
+/// recovered drop, tool wear and sound. A holder supplies its content-specific state through the
+/// interface and the clear-and-recover step in <see cref="IChiselableMolten.ChiselOut"/>; the drop
+/// itself is built by <see cref="BuildRecovery"/>.
 /// </summary>
-public static class MoltenChisel
-{
+public static class MoltenChisel {
   /// <summary>True when <paramref name="stack"/> is a tool of kind <paramref name="tool"/>.</summary>
   public static bool IsTool(ItemStack? stack, EnumTool tool) =>
     stack?.Collectible?.Tool == tool;
@@ -43,12 +42,12 @@ public static class MoltenChisel
     ) && IsTool(byPlayer.Entity?.LeftHandItemSlot?.Itemstack, EnumTool.Hammer);
 
   /// <summary>
-  /// The metal-bit recovery stack for <paramref name="units"/> of the metal <paramref name="metalCode"/>
-  /// at <paramref name="temperature"/> °C - <paramref name="unitsPerBit"/> units per bit, mapped to the
-  /// solid drop code via <see cref="MetalRegistry.SolidDropOf"/>. When the solid item doesn't
-  /// resolve it falls back to the metal's recovery item (if <paramref name="slagFallback"/>, via
-  /// <see cref="MetalRegistry.FallbackOf"/>) or returns <c>null</c>. Shared by every chisel/break drop
-  /// path so the bit ratio and temperature handling live in one place.
+  /// The metal-bit recovery stack for <paramref name="units"/> of <paramref name="metalCode"/> at
+  /// <paramref name="temperature"/> °C, at <paramref name="unitsPerBit"/> units per bit and mapped to
+  /// the solid drop code by <see cref="MetalRegistry.SolidDropOf"/>. When the solid item does not
+  /// resolve, falls back to the metal's recovery item through
+  /// <see cref="MetalRegistry.FallbackOf"/> if <paramref name="slagFallback"/> is set, else returns
+  /// <c>null</c>. Used by every chisel and break drop path.
   /// </summary>
   public static ItemStack? BuildRecovery(
     IWorldAccessor world,
@@ -57,13 +56,11 @@ public static class MoltenChisel
     int units,
     int unitsPerBit = 5,
     bool slagFallback = false
-  )
-  {
+  ) {
     int count = Math.Max(1, units / unitsPerBit);
     AssetLocation loc = MetalRegistry.SolidDropOf(metalCode);
     Item? item = world.GetItem(loc);
-    if (item == null)
-    {
+    if (item == null) {
       if (!slagFallback)
         return null;
       Item? slag = world.GetItem(MetalRegistry.FallbackOf(metalCode));
@@ -75,14 +72,13 @@ public static class MoltenChisel
   }
 
   /// <summary>
-  /// Runs the full chisel-out interaction against <paramref name="target"/>. Returns
-  /// <see cref="ChiselOutcome.NotChiseling"/> when the click isn't a chisel-out here (so the caller falls
-  /// through to its other interactions), <see cref="ChiselOutcome.Blocked"/> when the player is chiselling
-  /// content that isn't ready (the block error, if any, is sent), and <see cref="ChiselOutcome.Chiseled"/>
-  /// once the hardened content has been chipped out, recovered into the player's inventory (or spawned at
-  /// <paramref name="yOffset"/>), the chisel damaged (<paramref name="damageChisel"/>) and
-  /// <paramref name="sound"/> played. All world mutation is server-side; the outcome is still returned on
-  /// the client so the caller can claim the click for prediction.
+  /// Runs the chisel-out interaction against <paramref name="target"/>. On
+  /// <see cref="ChiselOutcome.Chiseled"/> the hardened content has been chipped out and given to the
+  /// player, or spawned at <paramref name="yOffset"/> when the inventory is full, the chisel damaged
+  /// (unless <paramref name="damageChisel"/> is false or the player is in creative) and
+  /// <paramref name="sound"/> played. On <see cref="ChiselOutcome.Blocked"/> the block error, if any,
+  /// is sent. All world mutation is server-side; the outcome is still returned on the client so the
+  /// caller can claim the click for prediction.
   /// </summary>
   public static ChiselOutcome TryChisel(
     IWorldAccessor world,
@@ -92,20 +88,17 @@ public static class MoltenChisel
     AssetLocation sound,
     bool damageChisel = true,
     double yOffset = 0.6
-  )
-  {
+  ) {
     if (!HasChiselAndHammer(byPlayer) || !target.HasChiselableContent)
       return ChiselOutcome.NotChiseling;
 
-    if (!target.CanChiselOut)
-    {
+    if (!target.CanChiselOut) {
       if (world.Side == EnumAppSide.Server && target.ChiselBlockedError != null)
         (byPlayer as IServerPlayer)?.SendIngameError(target.ChiselBlockedError);
       return ChiselOutcome.Blocked;
     }
 
-    if (world.Side == EnumAppSide.Server)
-    {
+    if (world.Side == EnumAppSide.Server) {
       ItemStack? recovered = target.ChiselOut();
       if (
         recovered != null
@@ -130,16 +123,15 @@ public static class MoltenChisel
     return ChiselOutcome.Chiseled;
   }
 
-  // The chisel items advertised in the chisel-out interaction help, resolved once.
+  // The chisel items advertised in the interaction help, resolved once per process.
   private static ItemStack[]? _chiselStacks;
 
-  /// <summary>The "chip out the solidified metal" interaction hint, advertising every chisel item.</summary>
+  /// <summary>The chisel-out interaction hint, advertising every chisel item.</summary>
   public static WorldInteraction ChiselHelp(
     IWorldAccessor world,
     string langCode
   ) =>
-    new()
-    {
+    new() {
       ActionLangCode = langCode,
       MouseButton = EnumMouseButton.Right,
       Itemstacks = _chiselStacks ??=

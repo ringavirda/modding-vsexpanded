@@ -6,18 +6,16 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The builder surface a code-first <b>machine</b> needs beyond the flat block/pipe cases: a single shape
-/// spun per orientation, textured overlays, single collision/selection cuboids, a behavior carrying a
-/// properties blob, the typed construction-stage table, and the computed filler footprint. Each is pinned to
-/// the exact JSON token shape so the migrated def stays byte-identical to the hand-authored blocktype.
+/// The builder surface a code-first machine needs beyond the flat block and pipe cases: one shape spun
+/// per orientation, textured overlays, single collision and selection cuboids, a behavior carrying a
+/// properties blob, the typed construction-stage table, and the computed filler footprint. Each is
+/// pinned to the exact JSON token shape the hand-authored blocktype emitted.
 /// </summary>
-public class ExBlockDefMachineTests
-{
+public class ExBlockDefMachineTests {
   #region Shape (single, spun per orientation)
 
   [Fact]
-  public void ShapeRotateYByType_and_selective_elements_share_one_shape_node()
-  {
+  public void ShapeRotateYByType_and_selective_elements_share_one_shape_node() {
     JObject shape = (JObject)
       ExBlockDef
         .Create("d", "c")
@@ -37,8 +35,7 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void Shape_base_can_be_set_after_rotations_order_independently()
-  {
+  public void Shape_base_can_be_set_after_rotations_order_independently() {
     JObject shape = (JObject)
       ExBlockDef
         .Create("d", "c")
@@ -54,8 +51,7 @@ public class ExBlockDefMachineTests
   #region Textures with overlays
 
   [Fact]
-  public void Texture_emits_overlays_when_given()
-  {
+  public void Texture_emits_overlays_when_given() {
     JObject tex = (JObject)
       ExBlockDef
         .Create("d", "c")
@@ -70,8 +66,7 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void Texture_without_overlays_emits_no_overlays_key()
-  {
+  public void Texture_without_overlays_emits_no_overlays_key() {
     JObject tex = (JObject)
       ExBlockDef.Create("d", "c").Texture("all", "game:base").ToJson()[
         "textures"
@@ -84,8 +79,7 @@ public class ExBlockDefMachineTests
   #region Single boxes / drops
 
   [Fact]
-  public void SingleCollisionBox_sets_the_singular_object_not_the_array()
-  {
+  public void SingleCollisionBox_sets_the_singular_object_not_the_array() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
@@ -99,9 +93,9 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void NoDrops_emits_an_empty_drops_array()
-  {
-    JArray drops = (JArray)ExBlockDef.Create("d", "c").NoDrops().ToJson()["drops"]!;
+  public void NoDrops_emits_an_empty_drops_array() {
+    JArray drops = (JArray)
+      ExBlockDef.Create("d", "c").NoDrops().ToJson()["drops"]!;
     Assert.Empty(drops);
   }
 
@@ -110,8 +104,7 @@ public class ExBlockDefMachineTests
   #region Entity behavior with properties + construction stages
 
   [Fact]
-  public void EntityBehavior_with_properties_nests_the_blob()
-  {
+  public void EntityBehavior_with_properties_nests_the_blob() {
     JObject beh = (JObject)
       Assert.Single(
         (JArray)
@@ -126,8 +119,7 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void Construction_emits_the_exact_staged_material_table()
-  {
+  public void Construction_emits_the_exact_staged_material_table() {
     JArray behaviors = (JArray)
       ExBlockDef
         .Create("iwex", "bunker")
@@ -135,7 +127,11 @@ public class ExBlockDefMachineTests
         .Construction(c =>
           c.Stage(s => s.AddElements("Root/InputBase"))
             .Stage(s =>
-              s.Require("game:burnedbrick-{brick}", 8, "iwex:rcc-ingredient-brick")
+              s.Require(
+                  "game:burnedbrick-{brick}",
+                  8,
+                  "iwex:rcc-ingredient-brick"
+                )
                 .AddElements("Root/Base")
             )
         )
@@ -162,8 +158,7 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void Construction_can_set_a_broken_drops_ratio()
-  {
+  public void Construction_can_set_a_broken_drops_ratio() {
     JObject props = (JObject)
       Assert.Single(
         (JArray)
@@ -182,17 +177,14 @@ public class ExBlockDefMachineTests
   #region Filler footprint serialization
 
   [Fact]
-  public void FillerOffsets_serializes_cells_in_order_omitting_false_attach()
-  {
+  public void FillerOffsets_serializes_cells_in_order_omitting_false_attach() {
     JArray offsets = (JArray)
       ExBlockDef
         .Create("d", "c")
-        .FillerOffsets(
-          [
-            new FillerCellSpec(1, 0, 0, AllowAttach: true),
-            new FillerCellSpec(0, 0, 1),
-          ]
-        )
+        .FillerOffsets([
+          new FillerCellSpec(1, 0, 0, AllowAttach: true),
+          new FillerCellSpec(0, 0, 1),
+        ])
         .ToJson()["attributes"]!["fillerOffsets"]!;
 
     JArray expected = JArray.Parse(
@@ -210,22 +202,20 @@ public class ExBlockDefMachineTests
   }
 
   [Fact]
-  public void FillerOffsets_validates_the_footprint_at_build()
-  {
+  public void FillerOffsets_validates_the_footprint_at_build() {
     // A duplicate cell must fail the build (the footprint is validated on serialization).
-    Assert.Throws<System.ArgumentException>(
-      () =>
-        ExBlockDef
-          .Create("d", "c")
-          .FillerOffsets(
-            [new FillerCellSpec(1, 0, 0), new FillerCellSpec(1, 0, 0)]
-          )
+    Assert.Throws<System.ArgumentException>(() =>
+      ExBlockDef
+        .Create("d", "c")
+        .FillerOffsets([
+          new FillerCellSpec(1, 0, 0),
+          new FillerCellSpec(1, 0, 0),
+        ])
     );
   }
 
   [Fact]
-  public void FillerOffsets_from_a_computed_footprint_matches_the_bunker_count()
-  {
+  public void FillerOffsets_from_a_computed_footprint_matches_the_bunker_count() {
     JArray offsets = (JArray)
       ExBlockDef
         .Create("iwex", "bunker")

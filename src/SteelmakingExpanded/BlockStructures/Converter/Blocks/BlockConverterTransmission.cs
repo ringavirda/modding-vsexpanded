@@ -9,16 +9,15 @@ using Vintagestory.GameContent.Mechanics;
 namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 
 /// <summary>
-/// Mechanical-power intake for the converter. Couples an axle on the south face
-/// in its natural (north) orientation; the connector follows the "side" variant.
+/// Mechanical-power intake for the converter. Couples an axle on the south face in its natural (north)
+/// orientation; the connector follows the "side" variant.
 /// </summary>
 [BlockRegister]
 public partial class BlockConverterTransmission
   : Block,
     IMechanicalPowerBlock,
-    IExBlockDefProvider
-{
-  /// <summary>The converter MP-transmission blocktype, authored in C# (migrated from converter/transmission.json).</summary>
+    IExBlockDefProvider {
+  /// <summary>The converter MP-transmission blocktype, one per horizontal side.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -37,8 +36,7 @@ public partial class BlockConverterTransmission
     ];
 
   private BlockFacing ConnectorFace =>
-    Variant["side"] switch
-    {
+    Variant["side"] switch {
       "north" => BlockFacing.SOUTH,
       "east" => BlockFacing.WEST,
       "south" => BlockFacing.NORTH,
@@ -74,8 +72,7 @@ public partial class BlockConverterTransmission
     IWorldAccessor world,
     BlockPos pos,
     BlockPos neighbour
-  )
-  {
+  ) {
     base.OnNeighbourBlockChange(world, pos, neighbour);
   }
 }

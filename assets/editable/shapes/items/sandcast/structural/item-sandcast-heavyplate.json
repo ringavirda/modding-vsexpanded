@@ -1,0 +1,28 @@
+{
+	"editor": {
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+	},
+	"textures": {
+		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1"
+	},
+	"elements": [
+		{
+			"name": "Cube2",
+			"from": [ 3.0, 0.0, 3.0 ],
+			"to": [ 13.0, 2.0, 13.0 ],
+			"rotationOrigin": [ 3.0, 0.0, 3.0 ],
+			"faces": {
+				"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 2.0 ] },
+				"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 2.0 ] },
+				"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 2.0 ] },
+				"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 2.0 ] },
+				"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 10.0 ] },
+				"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 10.0, 10.0 ] }
+			}
+		}
+	]}

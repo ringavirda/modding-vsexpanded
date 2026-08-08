@@ -6,12 +6,10 @@ using static SteelmakingExpanded.Recipes.RecipeIngredients;
 namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipe for the smoke-stack intake (migrated from recipes/grid/smokestack.json) - the
-/// anchor the stack is built up from. A single recipe authored as a lone object, refractory brick around a
-/// pipe like the cowper's intake, but four bricks deep for the taller column.
+/// Grid recipe for the smoke-stack intake, the anchor the stack column is built up from. Authored as a
+/// lone recipe object: four refractory bricks around a pipe.
 /// </summary>
-public class SmokeStackRecipeDefinitions : IExRecipeDefProvider
-{
+public class SmokeStackRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

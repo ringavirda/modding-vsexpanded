@@ -5,13 +5,11 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Helpers;
 
 /// <summary>
-/// Shared catalogue of sound asset locations and small play helpers used across the mod
-/// family (lpex + smex). All sounds resolve from the vanilla "game" domain (which also
-/// covers the survival asset folder). Playing on the server replicates to nearby clients;
-/// the helpers do the side-checking where noted.
+/// Shared catalogue of sound asset locations and play helpers used across the mod family (lpex + smex).
+/// All sounds resolve from the vanilla "game" domain, which also covers the survival asset folder.
+/// Playing on the server replicates to nearby clients; each helper states whether it gates on side.
 /// </summary>
-public static class ExSounds
-{
+public static class ExSounds {
   // Molten / heat
   public static readonly AssetLocation Sizzle = new("game:sounds/sizzle");
   public static readonly AssetLocation MoltenMetal = new(
@@ -117,7 +115,7 @@ public static class ExSounds
     "game:sounds/effect/planetary_gears"
   );
 
-  /// <summary>Large explosion - boiler burst (CreateExplosion plays its own, this is a spare).</summary>
+  /// <summary>Large explosion - boiler burst. CreateExplosion plays its own; this is a spare.</summary>
   public static readonly AssetLocation LargeExplosion = new(
     "game:sounds/effect/largeexplosion"
   );
@@ -139,8 +137,7 @@ public static class ExSounds
     AssetLocation sound,
     float volume = 1f,
     float range = 24f
-  )
-  {
+  ) {
     if (api == null || api.Side != EnumAppSide.Server)
       return;
     api.World.PlaySoundAt(
@@ -156,8 +153,8 @@ public static class ExSounds
   }
 
   /// <summary>
-  /// Plays at most once per <paramref name="intervalMs"/>, updating <paramref name="lastMs"/> when
-  /// it fires. Use for looping ambience so per-second ticks don't spam audio. Server only.
+  /// Plays at most once per <paramref name="intervalMs"/>, updating <paramref name="lastMs"/> when it
+  /// fires. For looping ambience, so per-second ticks do not spam audio. Server only.
   /// </summary>
   public static void PlayThrottled(
     ICoreAPI? api,
@@ -167,8 +164,7 @@ public static class ExSounds
     long intervalMs,
     float volume = 1f,
     float range = 24f
-  )
-  {
+  ) {
     if (api == null || api.Side != EnumAppSide.Server)
       return;
     long now = api.World.ElapsedMilliseconds;
@@ -188,8 +184,8 @@ public static class ExSounds
   }
 
   /// <summary>
-  /// Plays a one-shot at <paramref name="pos"/> with NO side gate - for client-side, animation-
-  /// synced sounds that must play locally on each client (e.g. piston-stroke keyframe sounds).
+  /// Plays a one-shot at <paramref name="pos"/> with no side gate - for client-side, animation-synced
+  /// sounds that must play locally on each client (piston-stroke keyframe sounds).
   /// </summary>
   public static void PlayLocal(
     IWorldAccessor world,
@@ -211,8 +207,8 @@ public static class ExSounds
     );
 
   /// <summary>
-  /// Like <see cref="PlayThrottled"/> but with NO side gate - a client-safe throttled loop for
-  /// ongoing ambience (boiler hum, pipe bubbling/trickle).
+  /// Like <see cref="PlayThrottled"/> but with no side gate - a client-safe throttled loop for ongoing
+  /// ambience (boiler hum, pipe bubbling/trickle).
   /// </summary>
   public static void PlayLoop(
     IWorldAccessor world,
@@ -222,8 +218,7 @@ public static class ExSounds
     long intervalMs,
     float volume = 1f,
     float range = 16f
-  )
-  {
+  ) {
     long now = world.ElapsedMilliseconds;
     if (now - lastMs < intervalMs)
       return;
@@ -265,8 +260,8 @@ public static class ExSounds
     );
 
   /// <summary>
-  /// Plays a sound only <paramref name="chance"/> (0-1) of the time, so a recurring event
-  /// (a spill, a leak hiss) is audible without a constant roar.
+  /// Plays a sound only <paramref name="chance"/> (0-1) of the time, so a recurring event (a spill, a
+  /// leak hiss) is audible without a constant roar.
   /// </summary>
   public static void PlayChance(
     IWorldAccessor world,
@@ -276,8 +271,7 @@ public static class ExSounds
     bool randomizePitch = true,
     float range = 32f,
     float volume = 1f
-  )
-  {
+  ) {
     if (world.Rand.NextDouble() >= chance)
       return;
     world.PlaySoundAt(
@@ -293,9 +287,9 @@ public static class ExSounds
   }
 
   /// <summary>
-  /// Creates a gapless looping ambient sound (client only - null on server). The caller owns the
-  /// handle: <c>Start()</c>/<c>Stop()</c> on state changes, <c>Dispose()</c> on unload. Use for a
-  /// machine's constant hum, where re-fired one-shots would gap or stack.
+  /// Creates a gapless looping ambient sound. Returns null on the server. The caller owns the handle:
+  /// <c>Start()</c>/<c>Stop()</c> on state changes, <c>Dispose()</c> on unload. For a machine's constant
+  /// hum, where re-fired one-shots would gap or stack.
   /// </summary>
   public static ILoadedSound? CreateLoop(
     ICoreAPI? api,
@@ -304,13 +298,11 @@ public static class ExSounds
     float volume = 1f,
     float range = 16f,
     float pitch = 1f
-  )
-  {
+  ) {
     if (api is not ICoreClientAPI capi)
       return null;
     return capi.World.LoadSound(
-      new SoundParams
-      {
+      new SoundParams {
         Location = sound,
         ShouldLoop = true,
         Position = new Vec3f(pos.X + 0.5f, pos.Y + 0.5f, pos.Z + 0.5f),
@@ -327,7 +319,8 @@ public static class ExSounds
   public static void SplashSound(IWorldAccessor world, BlockPos pos) =>
     PlayChance(world, pos, SmallSplash, 0.3);
 
-  /// <summary>Plays a soft steam/gas hiss ~30% of the time, so venting gas is audible without a constant roar.</summary>
+  /// <summary>Plays a soft steam/gas hiss ~30% of the time, so venting gas is audible without a
+  /// constant roar.</summary>
   public static void HissSound(IWorldAccessor world, BlockPos pos) =>
     PlayChance(world, pos, ExtinguishHiss, 0.3, range: 24f, volume: 0.5f);
 }

@@ -55,7 +55,7 @@ jobs:
           key: vs-game-${{ matrix.game }}
 
       - name: Provision Vintage Story (server assemblies)
-        run: bash scripts/provision-game.sh -Version "${{ matrix.game }}" -Kind server
+        run: bash scripts/exmod.sh provision game -Version "${{ matrix.game }}" -Kind server
 
       - name: Test (legacy ${{ matrix.tfm }})
         env:

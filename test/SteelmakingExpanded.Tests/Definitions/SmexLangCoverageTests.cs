@@ -6,19 +6,21 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Every <c>smex</c> block code must resolve to a name in every locale. An unresolved key is
-/// invisible until a player looks at the block, and then renders raw - nothing in the build, the
-/// goldens or the runtime says a word.
+/// Every <c>smex</c> block code must resolve to a name in every locale. An unresolved key produces no
+/// build, golden or runtime error; it renders raw in game.
 /// </summary>
-public class SmexLangCoverageTests
-{
+public class SmexLangCoverageTests {
   private const string Domain = "smex";
-  private static readonly Assembly Mod = typeof(SteelmakingExpanded.BlockStructures.SmokeStack.Blocks.BlockSmokeStackIntake).Assembly;
+  private static readonly Assembly Mod =
+    typeof(SteelmakingExpanded.BlockStructures.SmokeStack.Blocks.BlockSmokeStackIntake).Assembly;
 
   [Fact]
-  public void Every_block_code_resolves_to_a_name_in_every_locale()
-  {
-    var missing = LangCoverage.MissingNames(Domain, Mod, $"assets/{Domain}/lang");
+  public void Every_block_code_resolves_to_a_name_in_every_locale() {
+    var missing = LangCoverage.MissingNames(
+      Domain,
+      Mod,
+      $"assets/{Domain}/lang"
+    );
 
     Assert.True(
       missing.Count == 0,
@@ -32,11 +34,14 @@ public class SmexLangCoverageTests
   }
 
   [Fact]
-  public void No_block_description_key_is_orphaned()
-  {
-    // A description is optional, so a missing one is not a defect - but a key that matches no live
-    // code is text that silently stopped appearing in game. Nothing else reads these keys.
-    var orphans = LangCoverage.OrphanedDescriptions(Domain, Mod, $"assets/{Domain}/lang");
+  public void No_block_description_key_is_orphaned() {
+    // A missing description is not a defect, but a key matching no live code is text that stopped
+    // appearing in game. Nothing else reads these keys.
+    var orphans = LangCoverage.OrphanedDescriptions(
+      Domain,
+      Mod,
+      $"assets/{Domain}/lang"
+    );
 
     Assert.True(
       orphans.Count == 0,

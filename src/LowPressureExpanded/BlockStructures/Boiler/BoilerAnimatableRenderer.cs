@@ -8,16 +8,15 @@ namespace LowPressureExpanded.BlockStructures.Boiler;
 
 /// <summary>
 /// Drop-in replacement for vanilla's <see cref="AnimatableRenderer"/> that samples block light at
-/// <see cref="LightPos"/> rather than at the render origin. Vanilla lights the boiler's whole
-/// footprint mesh from the block-entity cell (against the firebox), tinting the vessel red at
-/// night; pointing the sample at a body cell restores its natural colour. Re-declares
-/// <see cref="IRenderer"/> so the engine dispatches to this <see cref="OnRenderFrame"/> override,
-/// a faithful copy of the base differing only in the light-cell line.
-///
-/// 1.22 (net10) and the legacy game versions have meaningfully different
-/// <see cref="AnimatableRenderer"/> internals (1.22 splits opaque/transparent OIT mesh refs and
-/// takes a <see cref="MeshData"/> ctor argument; pre-1.22 has a single mesh ref, no OIT, and takes
-/// an uploaded <see cref="MultiTextureMeshRef"/>), so each targets its own copy of the render loop.
+/// <see cref="LightPos"/> rather than at the render origin, so the boiler's footprint mesh is lit
+/// from a vessel-body cell instead of the firebox-adjacent block-entity cell that tints it red at
+/// night. Re-declares <see cref="IRenderer"/> so the engine dispatches to this
+/// <see cref="OnRenderFrame"/> override, a copy of the base differing only in the light-cell line.
+/// <para>
+/// The render loop exists once per game version: 1.22 (net10) splits opaque and transparent OIT mesh
+/// refs and takes a <see cref="MeshData"/> constructor argument, while pre-1.22 has a single mesh
+/// ref, no OIT, and takes an uploaded <see cref="MultiTextureMeshRef"/>.
+/// </para>
 /// </summary>
 #if GAME_GE_1_22
 public class BoilerAnimatableRenderer(
@@ -105,8 +104,8 @@ public class BoilerAnimatableRenderer(
     );
     engineShader.Use();
 
-    // The only departure from vanilla: light the mesh from the vessel-body cell
-    // instead of the firebox-adjacent render-origin cell.
+    // The only departure from vanilla: light the mesh from the vessel-body cell rather than the
+    // firebox-adjacent render-origin cell.
     Vec4f light = LightAffected
       ? capi.World.BlockAccessor.GetLightRGBs(
         (int)LightPos.X,
@@ -201,13 +200,11 @@ public class BoilerAnimatableRenderer(
     capi.Render.UploadMultiTextureMesh(meshdata),
     renderStage
   ),
-    IRenderer
-{
+    IRenderer {
   /// <summary>World cell the mesh is lit from (defaults to the render origin).</summary>
   public Vec3d LightPos = pos;
 
-  public new void OnRenderFrame(float dt, EnumRenderStage stage)
-  {
+  public new void OnRenderFrame(float dt, EnumRenderStage stage) {
     if (
       !ShouldRender
       || (mtmeshref != null && (mtmeshref.Disposed || !mtmeshref.Initialized))
@@ -226,12 +223,9 @@ public class BoilerAnimatableRenderer(
       (float)(pos.Y - player.CameraPos.Y),
       (float)(pos.Z - player.CameraPos.Z)
     );
-    if (CustomTransform != null)
-    {
+    if (CustomTransform != null) {
       Mat4f.Multiply(ModelMat, ModelMat, CustomTransform);
-    }
-    else
-    {
+    } else {
       Mat4f.Translate(ModelMat, ModelMat, 0.5f, 0f, 0.5f);
       Mat4f.Scale(ModelMat, ModelMat, ScaleX, ScaleY, ScaleZ);
       Mat4f.RotateY(
@@ -254,8 +248,8 @@ public class BoilerAnimatableRenderer(
     );
     engineShader.Use();
 
-    // The only departure from vanilla: light the mesh from the vessel-body cell
-    // instead of the firebox-adjacent render-origin cell.
+    // The only departure from vanilla: light the mesh from the vessel-body cell rather than the
+    // firebox-adjacent render-origin cell.
     Vec4f light = LightAffected
       ? capi.World.BlockAccessor.GetLightRGBs(
         (int)LightPos.X,
@@ -266,8 +260,7 @@ public class BoilerAnimatableRenderer(
 
     render.GlToggleBlend(blend: true);
 
-    if (!shadow)
-    {
+    if (!shadow) {
       engineShader.Uniform("extraGlow", 0);
       engineShader.Uniform("rgbaAmbientIn", render.AmbientColor);
       engineShader.Uniform("rgbaFogIn", render.FogColor);
@@ -281,14 +274,11 @@ public class BoilerAnimatableRenderer(
       engineShader.Uniform("windWaveIntensity", 0f);
       engineShader.Uniform("glitchEffectStrength", 0f);
       engineShader.Uniform("frostAlpha", 0f);
-      if (!StabilityAffected)
-      {
+      if (!StabilityAffected) {
         engineShader.Uniform("globalWarpIntensity", 0f);
         engineShader.Uniform("glitchWaviness", 0f);
       }
-    }
-    else
-    {
+    } else {
       engineShader.UniformMatrix(
         "modelViewMatrix",
         Mat4f.Mul(new float[16], render.CurrentModelviewMatrix, ModelMat)

@@ -12,28 +12,23 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The behaviour-capable filler capability: a <c>fillerOffsets</c> cell can declare behaviours the
-/// invisible filler hosts on the principal's behalf (e.g. a mechanical-power intake at the cell where
-/// an axle physically couples, which the principal two cells away cannot accept itself). Covers
-/// parsing the declarations, rotating their connector faces into the placed orientation, surviving the
-/// save tree, the runtime hosting/instantiation path (a placed filler creates, configures and
-/// initialises its behaviours), the <see cref="IMechanicalPowerBlock"/> glue that turns a hosting cell
-/// into an MP connector, and the minimal <see cref="BEBehaviorMPFillerPort"/> itself.
+/// Behaviour-capable fillers: a <c>fillerOffsets</c> cell can declare behaviours the invisible filler
+/// hosts on the principal's behalf, such as a mechanical-power intake at the cell where an axle couples.
+/// Covers parsing the declarations, rotating their connector faces into the placed orientation, the save
+/// tree, the runtime hosting path, the <see cref="IMechanicalPowerBlock"/> glue that turns a hosting cell
+/// into an MP connector, and <see cref="BEBehaviorMPFillerPort"/> itself.
 /// </summary>
-public class StructureFillerBehaviorTests
-{
+public class StructureFillerBehaviorTests {
   #region Parsing
 
   [Fact]
-  public void A_cell_without_behaviors_parses_as_null()
-  {
+  public void A_cell_without_behaviors_parses_as_null() {
     var off = Assert.Single(ReadOffsets("[{ \"x\": 0, \"y\": 0, \"z\": 0 }]"));
     Assert.Null(off.Behaviors);
   }
 
   [Fact]
-  public void A_behavior_parses_its_code_and_face()
-  {
+  public void A_behavior_parses_its_code_and_face() {
     var off = Assert.Single(
       ReadOffsets(
         "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": ["
@@ -48,8 +43,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_behavior_without_a_face_has_a_null_connector()
-  {
+  public void A_behavior_without_a_face_has_a_null_connector() {
     var off = Assert.Single(
       ReadOffsets(
         "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": [ { \"code\": \"test.X\" } ] }]"
@@ -59,8 +53,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_behavior_keeps_its_declared_properties()
-  {
+  public void A_behavior_keeps_its_declared_properties() {
     var off = Assert.Single(
       ReadOffsets(
         "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": [ { \"code\": \"test.X\", "
@@ -72,8 +65,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void Multiple_behaviors_on_one_cell_all_parse()
-  {
+  public void Multiple_behaviors_on_one_cell_all_parse() {
     var off = Assert.Single(
       ReadOffsets(
         "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": ["
@@ -86,8 +78,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_behavior_missing_a_code_is_skipped()
-  {
+  public void A_behavior_missing_a_code_is_skipped() {
     var off = Assert.Single(
       ReadOffsets(
         "[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": [ { \"face\": \"west\" } ] }]"
@@ -97,8 +88,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void An_empty_behaviors_array_is_null()
-  {
+  public void An_empty_behaviors_array_is_null() {
     var off = Assert.Single(
       ReadOffsets("[{ \"x\": 0, \"y\": 0, \"z\": 0, \"behaviors\": [] }]")
     );
@@ -117,8 +107,7 @@ public class StructureFillerBehaviorTests
   public void The_connector_face_rotates_with_the_structure_angle(
     int angle,
     string expected
-  )
-  {
+  ) {
     var host = new Host(
       Offsets(
         "[{ \"x\": 1, \"y\": 0, \"z\": 0, \"behaviors\": ["
@@ -136,8 +125,7 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_faceless_behavior_passes_through_rotation_unchanged()
-  {
+  public void A_faceless_behavior_passes_through_rotation_unchanged() {
     var host = new Host(
       Offsets(
         "[{ \"x\": 1, \"y\": 0, \"z\": 0, \"behaviors\": [ { \"code\": \"test.X\" } ] }]"
@@ -156,10 +144,8 @@ public class StructureFillerBehaviorTests
   #region Serialization
 
   [Fact]
-  public void Hosted_behaviors_round_trip_through_the_save_tree()
-  {
-    var be = new BlockEntityStructureFiller
-    {
+  public void Hosted_behaviors_round_trip_through_the_save_tree() {
+    var be = new BlockEntityStructureFiller {
       Principal = new BlockPos(3, 4, 5),
       HostedBehaviors =
       [
@@ -180,10 +166,8 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_faceless_propertyless_behavior_round_trips_as_such()
-  {
-    var be = new BlockEntityStructureFiller
-    {
+  public void A_faceless_propertyless_behavior_round_trips_as_such() {
+    var be = new BlockEntityStructureFiller {
       Principal = new BlockPos(1, 1, 1),
       HostedBehaviors = [new FillerBehavior("test.X", null, null)],
     };
@@ -195,9 +179,10 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void A_filler_with_no_hosted_behaviors_stays_null_across_the_tree()
-  {
-    var be = new BlockEntityStructureFiller { Principal = new BlockPos(1, 2, 3) };
+  public void A_filler_with_no_hosted_behaviors_stays_null_across_the_tree() {
+    var be = new BlockEntityStructureFiller {
+      Principal = new BlockPos(1, 2, 3),
+    };
     Assert.Null(RoundTrip(be).HostedBehaviors);
   }
 
@@ -206,17 +191,19 @@ public class StructureFillerBehaviorTests
   #region Runtime hosting (scenario)
 
   [Fact]
-  public void A_placed_filler_creates_configures_and_initialises_its_behaviors()
-  {
+  public void A_placed_filler_creates_configures_and_initialises_its_behaviors() {
     var (world, filler) = NewWorld();
     var pos = new BlockPos(2, 3, 4);
     var principal = new BlockPos(2, 3, 1);
-    var be = new BlockEntityStructureFiller
-    {
+    var be = new BlockEntityStructureFiller {
       Principal = principal,
       HostedBehaviors =
       [
-        new FillerBehavior("test.Tracking", BlockFacing.EAST, Props("{ \"k\": 7 }")),
+        new FillerBehavior(
+          "test.Tracking",
+          BlockFacing.EAST,
+          Props("{ \"k\": 7 }")
+        ),
       ],
     };
     world.Place(pos, filler, be);
@@ -232,18 +219,16 @@ public class StructureFillerBehaviorTests
     var hosted = be.GetBehavior<TrackingHostedBehavior>();
     Assert.NotNull(hosted);
     Assert.True(hosted!.Initialized); // its own Initialize ran
-    Assert.Equal(principal, hosted.Principal); // configured with the principal link...
-    Assert.Equal(BlockFacing.EAST, hosted.Face); // ...and the rotated connector face...
-    Assert.Equal(7, hosted.Props!["k"].AsInt()); // ...and its declared properties
+    Assert.Equal(principal, hosted.Principal); // principal link
+    Assert.Equal(BlockFacing.EAST, hosted.Face); // rotated connector face
+    Assert.Equal(7, hosted.Props!["k"].AsInt()); // declared properties
   }
 
   [Fact]
-  public void An_unknown_behavior_class_is_skipped_without_throwing()
-  {
+  public void An_unknown_behavior_class_is_skipped_without_throwing() {
     var (world, filler) = NewWorld();
     var pos = new BlockPos(0, 0, 0);
-    var be = new BlockEntityStructureFiller
-    {
+    var be = new BlockEntityStructureFiller {
       Principal = new BlockPos(0, 0, -2),
       HostedBehaviors = [new FillerBehavior("test.DoesNotExist", null, null)],
     };
@@ -255,14 +240,15 @@ public class StructureFillerBehaviorTests
   }
 
   [Fact]
-  public void Hosted_behaviors_arriving_via_a_later_sync_update_are_created()
-  {
-    // Mirrors placing a mega-block while a client watches: the filler block is set (BE created and
-    // Initialized with no hosted behaviours), then the principal assigns them, arriving as a sync
-    // update. Initialize won't run again, so FromTreeAttributes must create them.
+  public void Hosted_behaviors_arriving_via_a_later_sync_update_are_created() {
+    // The filler BE is created and Initialized with no hosted behaviours, then the principal assigns
+    // them and they arrive as a sync update. Initialize does not run again, so FromTreeAttributes has
+    // to create them.
     var (world, filler) = NewWorld();
     var pos = new BlockPos(5, 6, 7);
-    var be = new BlockEntityStructureFiller { Principal = new BlockPos(5, 6, 4) };
+    var be = new BlockEntityStructureFiller {
+      Principal = new BlockPos(5, 6, 4),
+    };
     world.Place(pos, filler, be);
     world.Initialize(be);
     Assert.Null(be.GetBehavior<TrackingHostedBehavior>()); // none yet
@@ -276,12 +262,14 @@ public class StructureFillerBehaviorTests
 
     // Build the sync tree the principal's assignment would produce.
     var update = new TreeAttribute();
-    new BlockEntityStructureFiller
-    {
+    new BlockEntityStructureFiller {
       Pos = pos,
       Block = filler,
       Principal = new BlockPos(5, 6, 4),
-      HostedBehaviors = [new FillerBehavior("test.Tracking", BlockFacing.WEST, null)],
+      HostedBehaviors =
+      [
+        new FillerBehavior("test.Tracking", BlockFacing.WEST, null),
+      ],
     }.ToTreeAttributes(update);
 
     be.FromTreeAttributes(update, world.World);
@@ -297,40 +285,47 @@ public class StructureFillerBehaviorTests
   #region Mechanical-power connector glue
 
   [Fact]
-  public void A_hosting_cell_accepts_an_axle_on_either_end_of_its_port_axis()
-  {
+  public void A_hosting_cell_accepts_an_axle_on_either_end_of_its_port_axis() {
     var (world, filler) = NewWorld();
     var pos = new BlockPos(0, 0, 0);
-    var be = new BlockEntityStructureFiller { Principal = new BlockPos(0, 0, -2) };
+    var be = new BlockEntityStructureFiller {
+      Principal = new BlockPos(0, 0, -2),
+    };
     world.Place(pos, filler, be);
     world.Initialize(be);
-    // Stand in for the real hosted port: west-facing metadata + an MP behaviour present on the BE.
+    // Stands in for the real hosted port: west-facing metadata plus an MP behaviour on the BE.
     be.HostedBehaviors =
     [
-      new FillerBehavior("exlib.BEBehaviorMPFillerPort", BlockFacing.WEST, null),
+      new FillerBehavior(
+        "exlib.BEBehaviorMPFillerPort",
+        BlockFacing.WEST,
+        null
+      ),
     ];
     be.Behaviors.Add(new BEBehaviorMPFillerPort(be));
 
-    // An axle couples along the axis, so both ends of the declared face connect...
+    // An axle couples along the axis, so both ends of the declared face connect,
     Assert.True(HasMechConnector(filler, world, pos, BlockFacing.WEST));
     Assert.True(HasMechConnector(filler, world, pos, BlockFacing.EAST));
-    // ...but a perpendicular face does not.
+    // but a perpendicular face does not.
     Assert.False(HasMechConnector(filler, world, pos, BlockFacing.NORTH));
     Assert.False(HasMechConnector(filler, world, pos, BlockFacing.SOUTH));
   }
 
   [Fact]
-  public void A_cell_with_no_mp_behavior_is_not_a_connector()
-  {
+  public void A_cell_with_no_mp_behavior_is_not_a_connector() {
     var (world, filler) = NewWorld();
     var pos = new BlockPos(0, 0, 0);
-    var be = new BlockEntityStructureFiller
-    {
+    var be = new BlockEntityStructureFiller {
       Principal = new BlockPos(0, 0, -2),
-      // Face metadata present, but no MP behaviour hosted -> not an MP connector.
+      // Face metadata present, but no MP behaviour hosted, so not an MP connector.
       HostedBehaviors =
       [
-        new FillerBehavior("exlib.BEBehaviorMPFillerPort", BlockFacing.WEST, null),
+        new FillerBehavior(
+          "exlib.BEBehaviorMPFillerPort",
+          BlockFacing.WEST,
+          null
+        ),
       ],
     };
     world.Place(pos, filler, be);
@@ -345,22 +340,24 @@ public class StructureFillerBehaviorTests
   #region MP filler-port behaviour
 
   [Fact]
-  public void The_port_takes_its_face_and_resistance_from_configuration()
-  {
+  public void The_port_takes_its_face_and_resistance_from_configuration() {
     var (world, filler) = NewWorld();
     var be = new BlockEntityStructureFiller();
     world.Place(new BlockPos(0, 0, 0), filler, be);
 
     var port = new BEBehaviorMPFillerPort(be);
-    port.ConfigureFromFiller(null, BlockFacing.EAST, Props("{ \"resistance\": 0.9 }"));
+    port.ConfigureFromFiller(
+      null,
+      BlockFacing.EAST,
+      Props("{ \"resistance\": 0.9 }")
+    );
 
     Assert.Equal(BlockFacing.EAST, port.PortFacing);
     Assert.Equal(0.9f, port.GetResistance(), 3);
   }
 
   [Fact]
-  public void The_port_defaults_to_north_and_the_default_resistance()
-  {
+  public void The_port_defaults_to_north_and_the_default_resistance() {
     var (world, filler) = NewWorld();
     var be = new BlockEntityStructureFiller();
     world.Place(new BlockPos(0, 0, 0), filler, be);
@@ -368,15 +365,18 @@ public class StructureFillerBehaviorTests
     var port = new BEBehaviorMPFillerPort(be);
 
     Assert.Equal(BlockFacing.NORTH, port.PortFacing);
-    Assert.Equal(BEBehaviorMPFillerPort.DefaultResistance, port.GetResistance(), 3);
+    Assert.Equal(
+      BEBehaviorMPFillerPort.DefaultResistance,
+      port.GetResistance(),
+      3
+    );
   }
 
   #endregion
 
   #region Helpers
 
-  private static (TestWorld world, BlockStructureFiller filler) NewWorld()
-  {
+  private static (TestWorld world, BlockStructureFiller filler) NewWorld() {
     var world = new TestWorld();
     var filler = TestBlocks.Configure(
       new BlockStructureFiller(),
@@ -408,8 +408,7 @@ public class StructureFillerBehaviorTests
 
   private static BlockEntityStructureFiller RoundTrip(
     BlockEntityStructureFiller be
-  )
-  {
+  ) {
     var world = new TestWorld();
     var block = TestBlocks.Configure(
       new BlockStructureFiller(),
@@ -428,16 +427,14 @@ public class StructureFillerBehaviorTests
     return restored;
   }
 
-  private sealed class Host(JsonObject? offsets) : IFillerHost
-  {
+  private sealed class Host(JsonObject? offsets) : IFillerHost {
     public JsonObject? FillerOffsets { get; } = offsets;
   }
 
   /// <summary>A non-MP hosted behaviour that records how the filler configured and initialised it.</summary>
   private sealed class TrackingHostedBehavior(BlockEntity be)
     : BlockEntityBehavior(be),
-      IFillerHostedBehavior
-  {
+      IFillerHostedBehavior {
     public BlockPos? Principal;
     public BlockFacing? Face;
     public JsonObject? Props;
@@ -447,15 +444,13 @@ public class StructureFillerBehaviorTests
       BlockPos? principal,
       BlockFacing? connectorFace,
       JsonObject? properties
-    )
-    {
+    ) {
       Principal = principal;
       Face = connectorFace;
       Props = properties;
     }
 
-    public override void Initialize(ICoreAPI api, JsonObject properties)
-    {
+    public override void Initialize(ICoreAPI api, JsonObject properties) {
       base.Initialize(api, properties);
       Initialized = true;
     }

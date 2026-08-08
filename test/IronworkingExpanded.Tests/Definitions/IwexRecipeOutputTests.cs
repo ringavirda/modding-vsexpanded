@@ -7,23 +7,19 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Every <c>iwex</c> grid recipe's block output must name a block <c>iwex</c> registers.
-/// <para>
-/// <b>An output is the one code that cannot be a wildcard</b>, and until this test nothing checked
-/// it. A dead output does not throw - the recipe just never resolves - so the block silently becomes
-/// uncraftable while the suite stays green. See <see cref="RecipeCodes"/> for the two live defects that
-/// prompted it, one in each direction of the same rewrite.
-/// </para>
+/// Every <c>iwex</c> grid recipe's block output must name a block <c>iwex</c> registers. An output is
+/// the one code that cannot be a wildcard, and a dead one does not throw: the recipe simply never
+/// resolves and the block becomes uncraftable. See <see cref="RecipeCodes"/>.
 /// </summary>
-public class IwexRecipeOutputTests
-{
+public class IwexRecipeOutputTests {
   private const string Domain = "iwex";
-  private static readonly Assembly Mod = typeof(IronworkingExpanded.Recipes.Grid.FurnaceRecipeDefinitions).Assembly;
+  private static readonly Assembly Mod =
+    typeof(IronworkingExpanded.Recipes.Grid.FurnaceRecipeDefinitions).Assembly;
 
   [Fact]
-  public void Every_recipe_output_names_a_registered_block()
-  {
-    IReadOnlyList<RecipeCodes.Unresolvable> bad = RecipeCodes.UnresolvableOutputs(Domain, Mod);
+  public void Every_recipe_output_names_a_registered_block() {
+    IReadOnlyList<RecipeCodes.Unresolvable> bad =
+      RecipeCodes.UnresolvableOutputs(Domain, Mod);
 
     Assert.True(
       bad.Count == 0,

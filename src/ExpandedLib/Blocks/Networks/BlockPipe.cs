@@ -9,32 +9,26 @@ namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
 /// The base pipe block: a self-orienting node of the unified "pipe" network. Provides the
-/// orientation tables shared by every straight/bend/junction variant.
-/// <para>
-/// Lives in exlib with the network framework. Every tier reuses
-/// this exact class and its block entity by referencing the registered class keys <c>exlib.BlockPipe</c> /
-/// <c>exlib.BlockEntityPipe</c> and calling <see cref="Segments"/> from a thin per-mod
-/// <see cref="IExBlockDefProvider"/>: iwex supplies the plated tier, lpex the cast tier, hpex the
-/// rolled tier. There is one material per tier - the tier is the domain, and there is deliberately
-/// no <c>material</c> variant group.
-/// </para>
+/// orientation tables shared by every straight/bend/junction variant. Each tier reuses this class
+/// and its block entity through the registered class keys <c>exlib.BlockPipe</c> /
+/// <c>exlib.BlockEntityPipe</c>, calling <see cref="Segments"/> from a thin per-mod
+/// <see cref="IExBlockDefProvider"/>: iwex the plated tier, lpex the cast tier, hpex the rolled
+/// tier. One material per tier, so there is no <c>material</c> variant group.
 /// </summary>
 [BlockRegister]
 public partial class BlockPipe
   : BlockNetworkNode,
     IBurstablePipe,
     IThroughputLimitedPipe,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   public override string NetworkType => "pipe";
 
   #region Code-first definitions
 
-  /// <summary>The plain pipe segments for a tier <paramref name="domain"/>. Every tier registers them
-  /// through its own thin provider (iwex's <c>PlatedPipeDefinitions</c>, lpex's <c>CastPipeDefinitions</c>,
-  /// hpex's <c>RolledPipeDefinitions</c>); the framework's own scan gets nothing - exlib authors the
-  /// factories but ships no pipe content itself. The declared factory must still return the real segments
-  /// for tier domains: <see cref="BlockNetworkNode.AllowedOrientations"/> derives its map from it.</summary>
+  /// <summary>The plain pipe segments for a tier <paramref name="domain"/>, registered by each tier's
+  /// own provider. Yields nothing for exlib itself, which authors the factories but ships no pipe
+  /// content. Must still return the real segments for a tier domain:
+  /// <see cref="BlockNetworkNode.AllowedOrientations"/> derives its map from them.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     domain == "exlib" ? [] : Segments(domain);
 
@@ -42,14 +36,12 @@ public partial class BlockPipe
   /// The four plain pipe segments (straight / bend / T / X junction) for one tier
   /// <paramref name="domain"/>. All four share the <c>pipe</c> code at distinct asset paths and an
   /// identical common surface (<see cref="Common"/>); each adds only its variant list, shape rotations
-  /// and collision boxes. <b>Each tier ships its own shapes</b> at <c>{domain}:pipe/*</c> - plated
-  /// plate-and-rivet for iwex, cast for lpex, rolled for hpex - so a tier is a different model, not
-  /// just a different tint on one.
+  /// and collision boxes. Each tier ships its own shapes at <c>{domain}:pipe/*</c>.
   /// </summary>
   public static IEnumerable<ExBlockDef> Segments(string domain) =>
     [Straight(domain), Bend(domain), TJunction(domain), XJunction(domain)];
 
-  // The surface identical across every pipe blocktype; each type overlays its variants/shapes/boxes.
+  // The surface shared by every pipe blocktype; each type overlays its variants/shapes/boxes.
   private static ExBlockDef Common(
     string domain,
     string assetName,
@@ -73,19 +65,16 @@ public partial class BlockPipe
         "pipe-xjunction-*"
       )
       .Behavior("Lockable")
-      // No blanket texture override: each tier's shape declares its own texture map now. It also
-      // could not work if it tried - the shapes do not agree on key names (the plated bend calls its
-      // body sheet "iron42" where the straight calls it "iron4"), so overriding one key would repaint
-      // some segments and quietly miss others.
+      // No blanket texture override: each tier's shape declares its own texture map, and the shapes
+      // disagree on key names (the plated bend calls its body sheet "iron42" where the straight
+      // calls it "iron4"), so a single override would repaint some segments and miss others.
       .RenderPass("OpaqueNoCull")
       .FaceCullMode("NeverCull")
       .LightAbsorption(0)
       .SideSolid(false)
       .SideOpaque(false);
 
-  // Migrated from assets/lpex/blocktypes/pipe/straight.json; shapes shared in iwex.
-  private static ExBlockDef Straight(string domain)
-  {
+  private static ExBlockDef Straight(string domain) {
     string s = $"{domain}:pipe/straight";
     return Common(domain, "pipe/straight", 16, "*-straight-ns")
       .VariantGroup("type", "straight")
@@ -97,15 +86,24 @@ public partial class BlockPipe
       .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f);
   }
 
-  // Migrated from assets/lpex/blocktypes/pipe/bend.json.
-  private static ExBlockDef Bend(string domain)
-  {
+  private static ExBlockDef Bend(string domain) {
     string s = $"{domain}:pipe/bend";
     return Common(domain, "pipe/bend", 8, "*-bend-nw")
       .VariantGroup("type", "bend")
       .VariantGroup(
         "orientation",
-        "nw", "se", "en", "ws", "un", "us", "uw", "ue", "dn", "ds", "dw", "de"
+        "nw",
+        "se",
+        "en",
+        "ws",
+        "un",
+        "us",
+        "uw",
+        "ue",
+        "dn",
+        "ds",
+        "dw",
+        "de"
       )
       .ShapeByType("*-bend-nw", s)
       .ShapeByType("*-bend-en", s, rotateY: 270)
@@ -125,16 +123,24 @@ public partial class BlockPipe
       .SelectionBox(0f, 0.3125f, 0.3125f, 0.6875f, 0.6875f, 0.6875f);
   }
 
-  // Migrated from assets/lpex/blocktypes/pipe/tjunction.json.
-  private static ExBlockDef TJunction(string domain)
-  {
+  private static ExBlockDef TJunction(string domain) {
     string s = $"{domain}:pipe/tjunction";
     return Common(domain, "pipe/tjunction", 8, "*-tjunction-uns")
       .VariantGroup("type", "tjunction")
       .VariantGroup(
         "orientation",
-        "uns", "uwe", "dns", "dwe", "nes", "esw",
-        "swn", "wne", "dnu", "deu", "dsu", "dwu"
+        "uns",
+        "uwe",
+        "dns",
+        "dwe",
+        "nes",
+        "esw",
+        "swn",
+        "wne",
+        "dnu",
+        "deu",
+        "dsu",
+        "dwu"
       )
       .ShapeByType("*-tjunction-wne", s)
       .ShapeByType("*-tjunction-nes", s, rotateY: 270)
@@ -154,9 +160,7 @@ public partial class BlockPipe
       .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 0.3125f);
   }
 
-  // Migrated from assets/lpex/blocktypes/pipe/xjunction.json.
-  private static ExBlockDef XJunction(string domain)
-  {
+  private static ExBlockDef XJunction(string domain) {
     string s = $"{domain}:pipe/xjunction";
     return Common(domain, "pipe/xjunction", 8, "*-xjunction-nswe")
       .VariantGroup("type", "xjunction")
@@ -174,10 +178,10 @@ public partial class BlockPipe
 
   #region Burst rating (per-tier)
 
-  // Each pipe tier registers its plain-segment burst pressure from its own config in ModSystem.Start
-  // (iwex plated, lpex cast, ...). Resolved by the segment's own domain, so a run of mixed tiers is
-  // capped by whichever tier's segment is weakest - exactly as the old per-material rating worked.
-  private static readonly Dictionary<string, Func<float>> _burstByDomain = new();
+  // Each pipe tier registers its plain-segment burst pressure from its own config in ModSystem.Start.
+  // Resolved by the segment's own domain, so a run of mixed tiers is capped by its weakest segment.
+  private static readonly Dictionary<string, Func<float>> _burstByDomain =
+    new();
 
   private const float DefaultBurstPressure = 5f;
 
@@ -191,14 +195,15 @@ public partial class BlockPipe
   /// if the owning mod never registered one).
   /// </summary>
   public virtual float BurstPressure =>
-    _burstByDomain.TryGetValue(Code.Domain, out var f) ? f() : DefaultBurstPressure;
+    _burstByDomain.TryGetValue(Code.Domain, out var f)
+      ? f()
+      : DefaultBurstPressure;
 
   /// <summary>
-  /// Whether this pipe takes part in over-pressure failure. Only a plain pipe segment - the
-  /// structural variants of the base <see cref="BlockPipe"/> class (straight/bend/tjunction/
-  /// xjunction) - bursts and caps a run's pressure. Every specialised pipe (valve, outlet,
-  /// passthrough, tuyere, …) is a subclass and is exempt: it neither bursts nor limits the
-  /// pressure, so a new subclass is non-bursting by default unless it deliberately opts back in.
+  /// Whether this pipe takes part in over-pressure failure. Only the plain segments of the base
+  /// <see cref="BlockPipe"/> class (straight, bend, tjunction, xjunction) burst and cap a run's
+  /// pressure; every fitting (valve, outlet, passthrough, tuyere) is a subclass and exempt, so a new
+  /// subclass is non-bursting unless it overrides this.
   /// </summary>
   public virtual bool CanBurst => GetType() == typeof(BlockPipe);
 
@@ -206,34 +211,28 @@ public partial class BlockPipe
 
   #region Throughput (per-tier)
 
-  // How much a tier's pipe will pass per second, as opposed to how much a run holds (nodes x
+  // How much a tier's pipe passes per second, as distinct from how much a run holds (nodes x
   // LitresPerPipe) or how hard it can be pressurised (burst). Registered per domain from each mod's
-  // ModSystem, exactly like the burst rating and the joint family - a run is capped by its weakest
-  // segment.
-  private static readonly Dictionary<string, Func<float>> _throughputByDomain = new();
+  // ModSystem, like the burst rating and the joint family; a run is capped by its weakest segment.
+  private static readonly Dictionary<string, Func<float>> _throughputByDomain =
+    new();
 
   private const float DefaultThroughput = 120f;
 
   /// <summary>Registers the throughput (L/s) for a tier <paramref name="domain"/>.</summary>
-  public static void RegisterThroughput(string domain, Func<float> throughput) =>
-    _throughputByDomain[domain] = throughput;
+  public static void RegisterThroughput(
+    string domain,
+    Func<float> throughput
+  ) => _throughputByDomain[domain] = throughput;
 
   /// <summary>
   /// Litres per second this pipe will pass - the smallest across a run caps the whole run. Read from
   /// the per-tier registry keyed by this block's domain (falls back to
   /// <see cref="DefaultThroughput"/> if the owning mod never registered one).
   /// <para>
-  /// <b>Only a plain segment limits throughput - the same rule as <see cref="CanBurst"/>, and for a
-  /// sharper reason than symmetry.</b> An earlier draft limited on every subclass, arguing a valve is
-  /// still a length of the tier's pipe and does not widen the line. That is true of a valve and false of
-  /// the case that matters: the <b>tuyere</b> is an <c>iwex</c> block on its own single-node network,
-  /// because it is the furnace's own intake port rather than a length of main - so limiting on it would
-  /// cap <i>every</i> furnace in the suite at the iron tier's rate forever, including smex's hot blast
-  /// furnace. That is the exact opposite of what a pipe tier is for.
-  /// </para>
-  /// <para>
-  /// The "splice a valve to widen your line" worry the old rule guarded against is not reachable: the
-  /// plain segments a run is built from still limit it, and nobody builds a run entirely of fittings.
+  /// Only a plain segment limits throughput, the same rule as <see cref="CanBurst"/>. Fittings are
+  /// exempt because some are a machine's own port on a single-node network rather than a length of
+  /// main (the iwex tuyere), and limiting there would cap every furnace at that tier's rate.
   /// </para>
   /// </summary>
   public virtual float MaxThroughput =>
@@ -245,16 +244,16 @@ public partial class BlockPipe
 
   #region Joint family (which tiers physically couple)
 
-  // A pipe tier's joint, which is a different axis from its pressure rating. The plated (iwex) and
-  // cast (lpex) tiers are both square in section and bolted through flanges, so they mate; the rolled
+  // A pipe tier's joint, an axis independent of its pressure rating. The plated (iwex) and cast
+  // (lpex) tiers are both square in section and bolted through flanges, so they mate; the rolled
   // (hpex) tier is octagonal and welded, with no flange to bolt to, so it mates only with itself.
-  // Registered per domain from each mod's ModSystem, exactly like the burst rating.
+  // Registered per domain from each mod's ModSystem, like the burst rating.
   private static readonly Dictionary<string, string> _jointByDomain = new();
 
-  /// <summary>The joint every tier gets until its mod says otherwise - the bolted flange.</summary>
+  /// <summary>Default joint family: the bolted flange.</summary>
   public const string FlangedJoint = "flanged";
 
-  /// <summary>The welded joint of the rolled (HP) tier, which bolts to nothing.</summary>
+  /// <summary>Joint family of the rolled (HP) tier; it bolts to nothing.</summary>
   public const string WeldedJoint = "welded";
 
   /// <summary>Registers the joint family for a tier <paramref name="domain"/>.</summary>
@@ -271,22 +270,17 @@ public partial class BlockPipe
       : FlangedJoint;
 
   /// <summary>
-  /// A pipe couples to another pipe only when both present the same joint. Anything that is not a pipe
-  /// - a machine port, a condenser, a fluid intake - is unaffected: those are ports on a machine, not
-  /// a length of pipe, and a tier is not expected to bring its own boiler.
-  /// <para>
-  /// Because every fitting (valve, outlet, passthrough) is a <see cref="BlockPipe"/> subclass, this
-  /// also stops a rolled run from reaching the cast tier's fittings - which is correct and deliberate:
-  /// the HP tier needs its own fittings, and until it has them a rolled run is segments and machine
-  /// ports only.
-  /// </para>
+  /// A pipe couples to another pipe only when both present the same joint. Blocks that are not pipes
+  /// (machine ports, condensers, fluid intakes) are unaffected and join any tier. Every fitting
+  /// (valve, outlet, passthrough) is a <see cref="BlockPipe"/> subclass, so a run reaches only the
+  /// fittings of tiers sharing its joint family.
   /// </summary>
   public override bool AcceptsNeighbour(Block neighbour) =>
     neighbour is not BlockPipe other || other.JointFamily == JointFamily;
 
   #endregion
 
-  // AllowedOrientations + GetFallbackOrientation are inherited from BlockNetworkNode, which derives both from
-  // this block's own code-first defs (resolved by runtime type) - so every pipe subclass gets the right map
-  // with no duplicated list and no hand-kept fallback table.
+  // AllowedOrientations and GetFallbackOrientation are inherited from BlockNetworkNode, which derives
+  // both from this block's own code-first defs resolved by runtime type, so every pipe subclass gets
+  // its own map with no duplicated list and no hand-kept fallback table.
 }

@@ -4,39 +4,29 @@ using Vintagestory.API.Datastructures;
 namespace ExpandedLib.Helpers;
 
 /// <summary>
-/// A reusable "hold a condition for N seconds, then fire once" accumulator - the hysteresis idiom
-/// repeated across the mod's machines (boiler over-pressure / choke, engine over-pressure, pipe
-/// burst grace). Accumulates while the condition holds, resets the moment it lifts, and fires a
-/// single <c>true</c> when the threshold is crossed (then resets so it re-arms).
-///
-/// <code>
-/// if (_overPressure.Update(pressure > Limit, dt, GraceSeconds))
-///     Explode();
-/// </code>
+/// Accumulator for the "hold a condition for N seconds, then fire once" idiom used by boiler
+/// over-pressure and choke, engine over-pressure and pipe burst grace. Accrues seconds while the
+/// condition holds, resets the moment it lifts, and returns a single <c>true</c> when the threshold is
+/// crossed, then resets so it re-arms.
 /// </summary>
-public struct GraceTimer
-{
+public struct GraceTimer {
   /// <summary>Seconds the condition has held continuously (0 when not counting).</summary>
   public float Elapsed { get; private set; }
 
   /// <summary>
-  /// Advances the timer. While <paramref name="active"/> is <c>true</c> it accrues
-  /// <paramref name="dt"/>; once <see cref="Elapsed"/> reaches <paramref name="threshold"/> it
-  /// returns <c>true</c> once and resets. Any tick with <paramref name="active"/> <c>false</c>
-  /// resets it. <paramref name="threshold"/> is passed per-call so a config reload takes effect
-  /// without the timer caching a stale limit.
+  /// Advances the timer by <paramref name="dt"/> seconds while <paramref name="active"/> is
+  /// <c>true</c>, returning <c>true</c> once and resetting when <see cref="Elapsed"/> reaches
+  /// <paramref name="threshold"/>. A tick with <paramref name="active"/> <c>false</c> resets it. The
+  /// threshold is passed per call so a config reload takes effect without a stale cached limit.
   /// </summary>
-  public bool Update(bool active, float dt, float threshold)
-  {
-    if (!active)
-    {
+  public bool Update(bool active, float dt, float threshold) {
+    if (!active) {
       Elapsed = 0f;
       return false;
     }
 
     Elapsed += dt;
-    if (Elapsed >= threshold)
-    {
+    if (Elapsed >= threshold) {
       Elapsed = 0f;
       return true;
     }
@@ -46,10 +36,10 @@ public struct GraceTimer
   /// <summary>Clears the accumulator without firing.</summary>
   public void Reset() => Elapsed = 0f;
 
-  /// <summary>Whether the timer is part-way through counting (for HUD "warning" cues).</summary>
+  /// <summary>Whether the timer is part-way through counting, for HUD warning cues.</summary>
   public readonly bool IsCounting => Elapsed > 0f;
 
-  /// <summary>Seconds left before <paramref name="threshold"/> would fire (for HUD countdowns).</summary>
+  /// <summary>Seconds left before <paramref name="threshold"/> would fire, for HUD countdowns.</summary>
   public readonly float Remaining(float threshold) =>
     Math.Max(0f, threshold - Elapsed);
 

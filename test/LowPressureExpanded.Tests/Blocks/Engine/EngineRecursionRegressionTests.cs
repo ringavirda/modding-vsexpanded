@@ -7,20 +7,17 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// One fixed engine bug, kept as its own reproduction. It stands up a small world through
-/// <see cref="Scene"/>, but the subject is a single machine's own tick, so it is a block test.
+/// Regression cover for the engine's production tick. Stands up a small world through
+/// <see cref="Scene"/>, but the subject is a single machine's own tick, so it sits with the block tests.
 /// </summary>
-public class EngineRecursionRegressionTests
-{
+public class EngineRecursionRegressionTests {
   /// <summary>
-  /// A constructed machine's production tick must not stack-overflow. The bug:
-  /// <c>BlockEntityProductionMachine.NetworkAt</c>/<c>ConnectedNetwork</c> delegated with
-  /// <c>this.NetworkAt(...)</c>, which bound to the instance method itself (instance methods shadow
-  /// extensions) and recursed forever on every machine tick.
+  /// A constructed machine's production tick must not stack-overflow. Delegating the network lookup in
+  /// <c>BlockEntityProductionMachine.NetworkAt</c>/<c>ConnectedNetwork</c> as <c>this.NetworkAt(...)</c>
+  /// binds to the instance method rather than the extension, which recurses on every machine tick.
   /// </summary>
   [Fact]
-  public void Constructed_engine_tick_does_not_recurse()
-  {
+  public void Constructed_engine_tick_does_not_recurse() {
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var eng = new EngineFixture(scene, new BlockPos(0, 8, 0));
     scene.Build();

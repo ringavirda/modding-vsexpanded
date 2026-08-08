@@ -5,16 +5,13 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace LowPressureExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the lpex pipe fittings (valve, pressure valve, passthrough, outlet) -
-/// migrated from recipes/grid/pipes.json. The plain pipe segments themselves moved to iwex (the plated
-/// tier); a fitting is a plain plated pipe reworked, so each recipe takes an <c>iwex:pipe-straight-*</c>
-/// segment as its base. Recipes have no natural block/item class, so a stand-alone provider carries them
-/// (the pattern the tool-mold blocks and gear items use). The valve + pressure-valve recipes are authored
-/// twice (once for vanilla rusty gears, once for lpex's craftable gears) exactly as the source did, so
-/// either gear crafts them. There is no iron/steel material variant, so the outputs are single-variant.
+/// Grid recipes for the lpex pipe fittings (valve, pressure valve, passthrough, outlet), carried by a
+/// stand-alone provider because recipes have no natural block or item class. A fitting is a reworked
+/// plain plated pipe, so each recipe takes an <c>iwex:pipe-straight-*</c> segment as its base. The valve
+/// and pressure-valve recipes are authored twice, once for vanilla rusty gears and once for lpex's
+/// craftable gears, so either gear crafts them; the outputs have no metal variant.
 /// </summary>
-public class PipeRecipeDefinitions : IExRecipeDefProvider
-{
+public class PipeRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef
@@ -91,18 +88,34 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider
         ),
     ];
 
-  // lpex-specific ingredient factories (the shared vanilla ones - Plate/Nails/Hammer/Gear - come from
-  // ExIngredients via `using static`). These stay local: they encode block codes or a per-recipe wildcard.
-  private static System.Func<IngredientBuilder, IngredientBuilder> Brick(int qty) =>
+  // lpex-specific ingredient factories; they stay local because they encode block codes or a per-recipe
+  // wildcard. The shared vanilla ones (Plate/Nails/Hammer/Gear) come from ExIngredients via `using static`.
+  private static System.Func<IngredientBuilder, IngredientBuilder> Brick(
+    int qty
+  ) =>
     i =>
       i.Item("game:burnedbrick-*")
-        .Named("brick", "fire", "black", "brown", "cream", "gray", "orange", "red", "tan")
+        .Named(
+          "brick",
+          "fire",
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        )
         .Quantity(qty);
 
   // The fittings are worked from a plain plated (iwex) pipe segment.
-  private static System.Func<IngredientBuilder, IngredientBuilder> StraightBlock(int qty) =>
+  private static System.Func<
+    IngredientBuilder,
+    IngredientBuilder
+  > StraightBlock(int qty) =>
     i => i.Block("iwex:pipe-straight-*").Quantity(qty);
 
-  private static System.Func<IngredientBuilder, IngredientBuilder> ValvePipe(int qty) =>
-    i => i.Block("iwex:pipe-straight-ns").Quantity(qty);
+  private static System.Func<IngredientBuilder, IngredientBuilder> ValvePipe(
+    int qty
+  ) => i => i.Block("iwex:pipe-straight-ns").Quantity(qty);
 }

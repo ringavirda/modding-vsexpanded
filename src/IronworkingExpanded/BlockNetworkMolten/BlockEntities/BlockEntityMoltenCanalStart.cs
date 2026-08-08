@@ -18,13 +18,12 @@ namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityMoltenCanalStart
   : BlockEntityMoltenCanal,
-    ILiquidMetalSink
-{
-  /// <summary> Start block by itself has higher capacity. </summary>
+    ILiquidMetalSink {
+  /// <summary>Twice the capacity of a plain canal cell.</summary>
   public override int MaxUnitCapacity =>
     IwexValues.CanalDefaultUnitCapacity * 2;
 
-  /// <summary>The canal start seeds the flow: the distance-from-start BFS roots here.</summary>
+  /// <summary>The distance-from-start BFS roots at this cell.</summary>
   public override bool IsFlowSource => true;
 
   // Throttle for the molten-pour sound as metal enters here.
@@ -37,21 +36,18 @@ public class BlockEntityMoltenCanalStart
   private int _pourTally;
   private long _lastPourMs;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     // Server clears the pour tally once it goes idle; clients only render the synced count.
     if (api.Side == EnumAppSide.Server)
       RegisterGameTickListener(OnPourTallyTick, 1000);
   }
 
-  private void OnPourTallyTick(float dt)
-  {
+  private void OnPourTallyTick(float dt) {
     if (
       _pourTally > 0
       && Api.World.ElapsedMilliseconds - _lastPourMs > PourTallyTimeoutMs
-    )
-    {
+    ) {
       _pourTally = 0;
       MarkDirty();
     }
@@ -69,9 +65,9 @@ public class BlockEntityMoltenCanalStart
     && (CellAmount <= 0f || CellMetalType == metal.Collectible.Code.ToString());
 
   /// <summary>
-  /// Looser than <see cref="CanReceive"/>: also true when the cell is FULL of the same metal, so
-  /// the furnace tap keeps pouring (soaking heat via <see cref="ReceiveLiquidMetal"/>) instead of
-  /// letting a brim-full start cool to a plug.
+  /// Looser than <see cref="CanReceive"/>: also true when the cell is full of the same metal, so a
+  /// furnace tap keeps pouring and the cell soaks heat through <see cref="ReceiveLiquidMetal"/>
+  /// rather than cooling to a plug.
   /// </summary>
   public bool CanReceiveOrSoak(ItemStack metal) =>
     !Solidified
@@ -88,10 +84,8 @@ public class BlockEntityMoltenCanalStart
     ItemStack metal,
     ref int amount,
     float temperature
-  )
-  {
-    if (Api?.Side == EnumAppSide.Client)
-    {
+  ) {
+    if (Api?.Side == EnumAppSide.Client) {
       // Show the pour immediately; the server confirms the real fill on next sync.
       ShowPendingFill(amount);
       amount = 0;
@@ -99,8 +93,8 @@ public class BlockEntityMoltenCanalStart
     }
 
     string type = metal.Collectible.Code.ToString();
-    // Reject only on solidification or metal-type mismatch - a FULL cell still soaks heat below,
-    // so a start fed by the furnace stays molten even when it can't accept more volume.
+    // Reject only on solidification or metal-type mismatch: a full cell still soaks heat below, so a
+    // start fed by a tap stays molten when it cannot accept more volume.
     if (Solidified || (CellAmount > 0f && CellMetalType != type))
       return;
 
@@ -108,11 +102,10 @@ public class BlockEntityMoltenCanalStart
     int accepted = PushMetalRaw(amount, type, temperature, Api!.World);
     amount -= accepted;
 
-    // Unaccepted overflow still bathes the cell in hot metal - soak that heat so it never plugs.
+    // Unaccepted overflow still heats the cell; soak that heat so it does not plug.
     bool soaked = amount > 0 && SoakHeat(Api.World, temperature);
 
-    if (accepted > 0)
-    {
+    if (accepted > 0) {
       _pourTally += accepted;
       _lastPourMs = Api.World.ElapsedMilliseconds;
       MarkDirty();
@@ -131,8 +124,7 @@ public class BlockEntityMoltenCanalStart
 
   #endregion
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetInt("pourTally", _pourTally);
   }
@@ -140,14 +132,12 @@ public class BlockEntityMoltenCanalStart
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     _pourTally = tree.GetInt("pourTally");
   }
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
 
     // Live feedback while metal is flowing in; the tally self-clears after a few idle seconds.

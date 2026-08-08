@@ -9,21 +9,19 @@ using Vintagestory.API.Common;
 namespace SteelmakingExpanded.BlockStructures.SmokeStack.Blocks;
 
 /// <summary>
-/// Intake/anchor block of the smoke-stack multiblock. Vents surplus exhaust gas from
-/// the network to the sky. The build-outline projection (Ctrl + Shift + right-click) is
-/// provided by the shared <c>MultiblockStructure</c> block behavior declared in the
-/// block JSON.
+/// Intake and anchor block of the smoke-stack multiblock; vents surplus exhaust gas from the network to
+/// the sky. The build-outline projection (Ctrl + Shift + right-click) comes from the shared
+/// <c>MultiblockStructure</c> block behavior declared in the definition below.
 /// </summary>
 [BlockRegister]
-public partial class BlockSmokeStackIntake : BlockPipePassthrough, IExBlockDefProvider
-{
+public partial class BlockSmokeStackIntake
+  : BlockPipePassthrough,
+    IExBlockDefProvider {
   #region Code-first definition
 
-  /// <summary>The smoke-stack intake blocktype, authored in C# (migrated from smokestack/intake.json). The
-  /// anchor of the chimney multiblock: its 72-cell structure map is drawn as one top-down ASCII cross-section
-  /// per Y level (y=-1 the refractory base up to the tall y=10 flue), compared as an unordered cell set by
-  /// <see cref="DefinitionParity"/>. Its AllowedOrientations + fallback are derived from this def by the base
-  /// <see cref="BlockPipe"/> (orientation states [n,s,w,e], fallback "n"), so no hand-written tables.</summary>
+  /// <summary>The smoke-stack intake blocktype, anchor of the 72-cell chimney multiblock. The base
+  /// <see cref="BlockPipe"/> derives AllowedOrientations and the fallback from this definition
+  /// (orientation states n, s, w, e with fallback "n"), so neither is written out by hand.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef

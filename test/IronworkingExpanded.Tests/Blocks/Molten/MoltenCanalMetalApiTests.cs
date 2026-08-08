@@ -1,3 +1,4 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
@@ -5,23 +6,20 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// The per-cell metal API on <see cref="BlockEntityMoltenCanal"/>: pushing, draining, heat-soaking,
-/// the per-tick thermal update that latches a cell solid, and the solidified-drop recovery. These
-/// are the production paths the network drives every tick, so they are exercised against a world that
-/// resolves real temperature-tracked item stacks (iron melts at 1500 °C here).
+/// the per-tick thermal update that latches a cell solid, and the solidified-drop recovery. The network
+/// drives these every tick, so they run against a world that resolves temperature-tracked item stacks;
+/// iron melts at 1500 °C there.
 /// </summary>
-public class MoltenCanalMetalApiTests
-{
+public class MoltenCanalMetalApiTests {
   private const string Iron = "game:ingot-iron";
   private const float IronMelt = 1500f;
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem("game:metalbit-iron"); // solidified-drop target
@@ -29,10 +27,8 @@ public class MoltenCanalMetalApiTests
     return world;
   }
 
-  private static BlockEntityMoltenCanal Canal(TestWorld world)
-  {
-    var be = new BlockEntityMoltenCanal
-    {
+  private static BlockEntityMoltenCanal Canal(TestWorld world) {
+    var be = new BlockEntityMoltenCanal {
       Pos = new BlockPos(0, 0, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -47,16 +43,14 @@ public class MoltenCanalMetalApiTests
   }
 
   /// <summary>A temperature-tracked metal stack the way a pouring tap/crucible hands one over.</summary>
-  private static ItemStack Metal(TestWorld world, string code, float temp)
-  {
+  private static ItemStack Metal(TestWorld world, string code, float temp) {
     var stack = MoltenMetal.CreateStack(world.World, code, temp)!;
     Assert.NotNull(stack);
     return stack;
   }
 
-  // SoakHeat / UpdateThermal / EnsureMetalStack are internal (driven by MoltenNetwork.OnTick in
-  // production). Reach them through the harness's reflection shim - the repo convention rather than
-  // opening up internals on the shipped assembly.
+  // SoakHeat / UpdateThermal / EnsureMetalStack are internal and driven by MoltenNetwork.OnTick in
+  // production; the harness reaches them by reflection rather than widening their visibility.
   private static bool SoakHeat(
     BlockEntityMoltenCanal be,
     TestWorld world,
@@ -76,8 +70,7 @@ public class MoltenCanalMetalApiTests
   #region PushMetal
 
   [Fact]
-  public void PushMetal_fills_an_empty_cell_with_type_and_temperature()
-  {
+  public void PushMetal_fills_an_empty_cell_with_type_and_temperature() {
     var world = NewWorld();
     var be = Canal(world);
 
@@ -90,8 +83,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void PushMetal_clamps_to_capacity_and_reports_only_what_fit()
-  {
+  public void PushMetal_clamps_to_capacity_and_reports_only_what_fit() {
     var world = NewWorld();
     var be = Canal(world);
     int cap = be.MaxUnitCapacity;
@@ -107,8 +99,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void PushMetal_rejects_a_different_metal_type()
-  {
+  public void PushMetal_rejects_a_different_metal_type() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(10, Metal(world, Iron, 1400f), world.World);
@@ -125,8 +116,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void PushMetal_volume_weights_the_blended_temperature()
-  {
+  public void PushMetal_volume_weights_the_blended_temperature() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(10, Metal(world, Iron, 1000f), world.World);
@@ -142,8 +132,7 @@ public class MoltenCanalMetalApiTests
   #region DrainMetal
 
   [Fact]
-  public void DrainMetal_removes_a_partial_amount_and_keeps_the_metal()
-  {
+  public void DrainMetal_removes_a_partial_amount_and_keeps_the_metal() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(40, Metal(world, Iron, 1400f), world.World);
@@ -156,8 +145,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void DrainMetal_emptying_a_cell_clears_its_metal_type()
-  {
+  public void DrainMetal_emptying_a_cell_clears_its_metal_type() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -175,8 +163,7 @@ public class MoltenCanalMetalApiTests
   #region SoakHeat
 
   [Fact]
-  public void SoakHeat_raises_temperature_without_adding_volume()
-  {
+  public void SoakHeat_raises_temperature_without_adding_volume() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 1300f), world.World);
@@ -189,8 +176,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void SoakHeat_does_nothing_when_incoming_is_not_hotter()
-  {
+  public void SoakHeat_does_nothing_when_incoming_is_not_hotter() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -200,8 +186,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void SoakHeat_does_nothing_for_an_empty_cell()
-  {
+  public void SoakHeat_does_nothing_for_an_empty_cell() {
     var world = NewWorld();
     Assert.False(SoakHeat(Canal(world), world, 1500f));
   }
@@ -211,8 +196,7 @@ public class MoltenCanalMetalApiTests
   #region UpdateThermal
 
   [Fact]
-  public void UpdateThermal_latches_solidified_below_the_melting_point()
-  {
+  public void UpdateThermal_latches_solidified_below_the_melting_point() {
     var world = NewWorld();
     var be = Canal(world);
     // Poured in below iron's 1500 melt point -> next thermal tick should latch it solid.
@@ -226,8 +210,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void UpdateThermal_keeps_a_cell_above_the_melting_point_liquid()
-  {
+  public void UpdateThermal_keeps_a_cell_above_the_melting_point_liquid() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 1600f), world.World);
@@ -249,8 +232,7 @@ public class MoltenCanalMetalApiTests
   public void CellState_classifies_against_the_melting_point(
     float temp,
     MoltenState expected
-  )
-  {
+  ) {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, temp), world.World);
@@ -260,8 +242,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void CellState_reads_liquid_for_an_empty_cell()
-  {
+  public void CellState_reads_liquid_for_an_empty_cell() {
     var world = NewWorld();
     Assert.Equal(MoltenState.Liquid, Canal(world).CellState);
   }
@@ -271,8 +252,7 @@ public class MoltenCanalMetalApiTests
   #region Solidified drop
 
   [Fact]
-  public void GetSolidifiedDrop_yields_metalbits_scaled_by_amount()
-  {
+  public void GetSolidifiedDrop_yields_metalbits_scaled_by_amount() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 300f), world.World);
@@ -286,8 +266,7 @@ public class MoltenCanalMetalApiTests
   }
 
   [Fact]
-  public void GetSolidifiedDrop_is_null_while_still_liquid()
-  {
+  public void GetSolidifiedDrop_is_null_while_still_liquid() {
     var world = NewWorld();
     var be = Canal(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -299,16 +278,14 @@ public class MoltenCanalMetalApiTests
 
   #region Re-use: refill after chiselling out a plug
 
-  // The cowper lesson generalized to the canal: a cell's life cycle is pour → harden → chisel out →
-  // pour again. Every other test stops at one of those steps; none crosses chisel→refill, where a
-  // stale Solidified latch or leftover temperature from the first plug could poison the refill.
+  // The full cell life cycle: pour, harden, chisel out, pour again. Crossing chisel to refill is where
+  // a stale Solidified latch or leftover temperature from the first plug would show up.
   [Fact]
-  public void A_chiselled_out_cell_accepts_a_fresh_pour_and_rejoins_the_run()
-  {
+  public void A_chiselled_out_cell_accepts_a_fresh_pour_and_rejoins_the_run() {
     var world = NewWorld();
     var be = Canal(world);
 
-    // Pour iron in cold, let it harden, then chisel it out (the solidify→chisel half of the cycle).
+    // Pour iron in cold, let it harden, then chisel it out.
     be.PushMetal(20, Metal(world, Iron, 300f), world.World);
     UpdateThermal(be, world);
     Assert.True(be.Solidified);
@@ -318,8 +295,8 @@ public class MoltenCanalMetalApiTests
     Assert.False(be.Solidified);
     Assert.True(be.IsCellEmpty);
 
-    // Refill the chiselled cell: it must accept fresh molten metal at the new pour's temperature
-    // (no blend with the cleared plug's residue) and rejoin the network.
+    // The refill takes the new pour's temperature, with no blend against the cleared plug's residue,
+    // and rejoins the network.
     int accepted = be.PushMetal(20, Metal(world, Iron, 1450f), world.World);
 
     Assert.Equal(20, accepted);
@@ -328,11 +305,10 @@ public class MoltenCanalMetalApiTests
     Assert.True(be.HasMoltenMetal);
   }
 
-  // A chiselled cell may even be repurposed for a different metal - the type guard keys off the live
-  // cell content, which the chisel cleared, so the old type must not linger and reject the new pour.
+  // The type guard keys off live cell content, which the chisel cleared, so a chiselled cell can be
+  // repurposed for a different metal.
   [Fact]
-  public void A_chiselled_out_cell_accepts_a_different_metal()
-  {
+  public void A_chiselled_out_cell_accepts_a_different_metal() {
     var world = NewWorld();
     var be = Canal(world);
 
@@ -355,8 +331,7 @@ public class MoltenCanalMetalApiTests
   #region EnsureMetalStack (post-load rebuild)
 
   [Fact]
-  public void EnsureMetalStack_rebuilds_the_carrier_so_thermal_runs_after_load()
-  {
+  public void EnsureMetalStack_rebuilds_the_carrier_so_thermal_runs_after_load() {
     var world = NewWorld();
     var be = Canal(world);
 

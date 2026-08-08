@@ -7,19 +7,16 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The opt-in harness capabilities that let a test exercise engine behaviours the low-level helpers
-/// deliberately do not auto-fire: <see cref="TestWorld.NotifyNeighbours"/> (the engine's post-change
-/// neighbour notification, which drives self-break / reorientation / connector-update reactions) and
-/// <see cref="TestWorld.AdvanceBlockEntityTime"/> (interval-aware ticking, honouring the interval each
-/// block entity registered rather than firing everything uniformly).
+/// Harness capabilities the low-level helpers do not fire automatically:
+/// <see cref="TestWorld.NotifyNeighbours"/>, the engine's post-change neighbour notification that
+/// drives self-break, reorientation and connector-update reactions, and
+/// <see cref="TestWorld.AdvanceBlockEntityTime"/>, which ticks each block entity at its own interval.
 /// </summary>
-public class TestWorldNeighbourTickTests
-{
+public class TestWorldNeighbourTickTests {
   #region Neighbour propagation
 
   [Fact]
-  public void NotifyNeighbours_calls_each_of_the_six_neighbours_with_its_own_and_the_changed_position()
-  {
+  public void NotifyNeighbours_calls_each_of_the_six_neighbours_with_its_own_and_the_changed_position() {
     var world = new TestWorld();
     var center = new BlockPos(10, 10, 10);
     var eastPos = center.AddCopy(BlockFacing.EAST);
@@ -45,24 +42,26 @@ public class TestWorldNeighbourTickTests
   }
 
   [Fact]
-  public void NotifyNeighbours_treats_empty_neighbour_cells_as_a_no_op()
-  {
+  public void NotifyNeighbours_treats_empty_neighbour_cells_as_a_no_op() {
     var world = new TestWorld();
     // No blocks placed: every neighbour resolves to Air, whose base OnNeighbourBlockChange does nothing.
-    var ex = Record.Exception(() => world.NotifyNeighbours(new BlockPos(0, 0, 0)));
+    var ex = Record.Exception(() =>
+      world.NotifyNeighbours(new BlockPos(0, 0, 0))
+    );
     Assert.Null(ex);
   }
 
   [Fact]
-  public void NotifyNeighbours_lets_a_neighbour_reaction_mutate_the_world()
-  {
-    // Faithful to a real reaction: a block that finds itself unsupported when a neighbour changes and
-    // removes itself (as BlockNetworkNode self-breaks). The notification must be able to drive that.
+  public void NotifyNeighbours_lets_a_neighbour_reaction_mutate_the_world() {
+    // A neighbour reaction may remove its own block, as an unsupported BlockNetworkNode does.
     var world = new TestWorld();
     var center = new BlockPos(4, 4, 4);
     var reactingPos = center.AddCopy(BlockFacing.NORTH);
     var reacting = new SelfRemovingBlock();
-    world.Place(reactingPos, TestBlocks.Configure(reacting, "test:selfremove", 5));
+    world.Place(
+      reactingPos,
+      TestBlocks.Configure(reacting, "test:selfremove", 5)
+    );
 
     world.NotifyNeighbours(center);
 
@@ -74,8 +73,7 @@ public class TestWorldNeighbourTickTests
   #region Interval-aware ticking
 
   [Fact]
-  public void AdvanceBlockEntityTime_fires_a_listener_once_per_whole_interval_carrying_remainders()
-  {
+  public void AdvanceBlockEntityTime_fires_a_listener_once_per_whole_interval_carrying_remainders() {
     var world = new TestWorld();
     var be = Placed(world, new IntervalBe(1000), 6);
 
@@ -88,8 +86,7 @@ public class TestWorldNeighbourTickTests
   }
 
   [Fact]
-  public void AdvanceBlockEntityTime_honours_each_block_entitys_own_interval()
-  {
+  public void AdvanceBlockEntityTime_honours_each_block_entitys_own_interval() {
     var world = new TestWorld();
     var slow = Placed(world, new IntervalBe(1000), 7);
     var fast = Placed(world, new IntervalBe(250), 8);
@@ -102,8 +99,7 @@ public class TestWorldNeighbourTickTests
   }
 
   [Fact]
-  public void AdvanceBlockEntityTime_stops_firing_a_listener_that_unregisters_mid_advance()
-  {
+  public void AdvanceBlockEntityTime_stops_firing_a_listener_that_unregisters_mid_advance() {
     var world = new TestWorld();
     var be = new IntervalBe(1000) { UnregisterAfterFirst = true };
     Placed(world, be, 9);
@@ -117,24 +113,25 @@ public class TestWorldNeighbourTickTests
 
   #region Helpers
 
-  private static NeighbourProbeBlock Probe(string code, int id)
-  {
+  private static NeighbourProbeBlock Probe(string code, int id) {
     var block = new NeighbourProbeBlock();
     TestBlocks.Configure(block, code, id);
     return block;
   }
 
-  private static IntervalBe Placed(TestWorld world, IntervalBe be, int id)
-  {
+  private static IntervalBe Placed(TestWorld world, IntervalBe be, int id) {
     var pos = new BlockPos(id, 0, 0);
-    world.Place(pos, TestBlocks.Configure(new Block(), "test:interval-" + id, id), be);
+    world.Place(
+      pos,
+      TestBlocks.Configure(new Block(), "test:interval-" + id, id),
+      be
+    );
     world.Initialize(be);
     return be;
   }
 
   /// <summary>Records every neighbour-change notification it receives (its own pos, the changed pos).</summary>
-  private sealed class NeighbourProbeBlock : Block
-  {
+  private sealed class NeighbourProbeBlock : Block {
     public readonly List<(BlockPos own, BlockPos changed)> Calls = [];
 
     public override void OnNeighbourBlockChange(
@@ -145,8 +142,7 @@ public class TestWorldNeighbourTickTests
   }
 
   /// <summary>Reacts to any neighbour change by removing itself, like an unsupported block self-breaking.</summary>
-  private sealed class SelfRemovingBlock : Block
-  {
+  private sealed class SelfRemovingBlock : Block {
     public override void OnNeighbourBlockChange(
       IWorldAccessor world,
       BlockPos pos,
@@ -154,10 +150,9 @@ public class TestWorldNeighbourTickTests
     ) => world.BlockAccessor.SetBlock(0, pos);
   }
 
-  /// <summary>Registers a tick listener at a chosen interval and counts its fires; can tear its own
-  /// listener down after the first fire to model a self-unregistering block entity.</summary>
-  private sealed class IntervalBe : BlockEntity
-  {
+  /// <summary>Registers a tick listener at a chosen interval and counts its fires. With
+  /// <c>UnregisterAfterFirst</c> it tears the listener down after the first fire.</summary>
+  private sealed class IntervalBe : BlockEntity {
     private readonly int _interval;
     private long _id;
 
@@ -167,14 +162,12 @@ public class TestWorldNeighbourTickTests
 
     public IntervalBe(int interval) => _interval = interval;
 
-    public override void Initialize(ICoreAPI api)
-    {
+    public override void Initialize(ICoreAPI api) {
       base.Initialize(api);
       _id = RegisterGameTickListener(OnTick, _interval);
     }
 
-    private void OnTick(float dt)
-    {
+    private void OnTick(float dt) {
       Ticks++;
       LastDt = dt;
       if (UnregisterAfterFirst)

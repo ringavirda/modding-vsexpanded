@@ -8,18 +8,16 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The ASCII layer DSLs that let a multiblock structure / filler footprint be authored the way you'd draw it
-/// (a top-down grid per Y level) instead of a coordinate array. Pins the grid parse, that the multiblock and
-/// filler layouts generate the right cells, and - crucially - that the shared parity oracle treats a structure
-/// as an unordered set so a hand-written coordinate table and a DSL drawing of the same cells are equivalent.
+/// The ASCII layer DSLs that author a multiblock structure or filler footprint as a grid per Y level
+/// instead of a coordinate array. Covers the grid parse, the cells the multiblock and filler layouts
+/// generate, and the parity oracle's set semantics: a hand-written coordinate table and a DSL drawing of
+/// the same cells compare equal regardless of order or block numbering.
 /// </summary>
-public class StructureLayoutTests
-{
+public class StructureLayoutTests {
   #region Grid parsing
 
   [Fact]
-  public void Parse_maps_rows_to_z_and_columns_to_x_skipping_dots()
-  {
+  public void Parse_maps_rows_to_z_and_columns_to_x_skipping_dots() {
     var cells = StructureLayout.Parse(
       xLeft: -1,
       zTop: 0,
@@ -42,8 +40,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void Parse_trims_surrounding_blank_lines_so_z_starts_at_zTop()
-  {
+  public void Parse_trims_surrounding_blank_lines_so_z_starts_at_zTop() {
     var cells = StructureLayout.Parse(
       0,
       5,
@@ -54,8 +51,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void ParseVertical_maps_rows_down_in_y_and_columns_to_z()
-  {
+  public void ParseVertical_maps_rows_down_in_y_and_columns_to_z() {
     var cells = StructureLayout.ParseVertical(
       zLeft: 0,
       yTop: 2,
@@ -79,8 +75,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void ParseFrontal_maps_rows_down_in_y_and_columns_to_x()
-  {
+  public void ParseFrontal_maps_rows_down_in_y_and_columns_to_x() {
     var cells = StructureLayout.ParseFrontal(
       xLeft: -1,
       yTop: 2,
@@ -108,8 +103,7 @@ public class StructureLayoutTests
   #region Multiblock layout
 
   [Fact]
-  public void MultiblockLayout_generates_the_drawn_cells()
-  {
+  public void MultiblockLayout_generates_the_drawn_cells() {
     JObject structure = (JObject)
       ExBlockDef
         .Create("d", "c")
@@ -135,8 +129,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void MultiblockLayout_rejects_an_unlegended_symbol()
-  {
+  public void MultiblockLayout_rejects_an_unlegended_symbol() {
     Assert.Throws<System.InvalidOperationException>(() =>
       ExBlockDef
         .Create("d", "c")
@@ -149,8 +142,7 @@ public class StructureLayoutTests
   #region Filler layout
 
   [Fact]
-  public void FillerLayout_maps_glyphs_to_attach_and_skips_origin()
-  {
+  public void FillerLayout_maps_glyphs_to_attach_and_skips_origin() {
     var cells = StructureFootprint.Layout(f =>
       f.Origin(-1, 0)
         .Layer(
@@ -172,10 +164,9 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void FillerLayout_slice_reads_a_vertical_column_and_skips_origin()
-  {
+  public void FillerLayout_slice_reads_a_vertical_column_and_skips_origin() {
     // A front elevation of the x=0 plane: a full top row over a single lower cell, with the origin
-    // (0,0,0) marked 'O' at the lower-left - the engine beam-column shape in miniature.
+    // (0,0,0) marked 'O' at the lower left.
     var cells = StructureFootprint.Layout(f =>
       f.Origin(0, 1) // zLeft=0, yTop=1
         .Slice(
@@ -196,8 +187,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void FillerLayout_face_reads_a_thin_in_z_disc_in_the_xy_plane()
-  {
+  public void FillerLayout_face_reads_a_thin_in_z_disc_in_the_xy_plane() {
     // A north-facing wheel: the 3x3 disc lies in X-Y at z=0, origin at bottom-centre, hub one up.
     var cells = StructureFootprint.Layout(f =>
       f.Origin(-1, 2) // xLeft=-1, yTop=2
@@ -218,26 +208,23 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void FillerLayout_rejects_mixing_horizontal_layers_and_vertical_slices()
-  {
+  public void FillerLayout_rejects_mixing_horizontal_layers_and_vertical_slices() {
     Assert.Throws<System.InvalidOperationException>(() =>
       StructureFootprint.Layout(f => f.Layer(0, "#").Slice(0, "#"))
     );
   }
 
   [Fact]
-  public void FillerLayout_rejects_mixing_slices_and_faces()
-  {
+  public void FillerLayout_rejects_mixing_slices_and_faces() {
     Assert.Throws<System.InvalidOperationException>(() =>
       StructureFootprint.Layout(f => f.Slice(0, "#").Face(0, "#"))
     );
   }
 
   [Fact]
-  public void FillerLayout_rejects_the_principal_marker_off_the_origin()
-  {
-    // '#' at col0 is the origin (skipped); 'O' at col1 is (1,0,0) - a misplaced principal, so it errors
-    // rather than being silently dropped.
+  public void FillerLayout_rejects_the_principal_marker_off_the_origin() {
+    // '#' at col0 is the origin (skipped) and 'O' at col1 is (1,0,0), a misplaced principal marker.
+    // It throws rather than being dropped.
     Assert.Throws<System.InvalidOperationException>(() =>
       StructureFootprint.Layout(f => f.Layer(0, "# O"))
     );
@@ -248,8 +235,7 @@ public class StructureLayoutTests
   #region Parity oracle set-semantics
 
   [Fact]
-  public void DefinitionParity_treats_a_multiblock_as_an_unordered_renumberable_set()
-  {
+  public void DefinitionParity_treats_a_multiblock_as_an_unordered_renumberable_set() {
     // Same cells + codes, but different offset order and different w-numbering => still equal.
     JObject a = JObject.Parse(
       """
@@ -269,8 +255,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void DefinitionParity_catches_a_wrong_multiblock_cell()
-  {
+  public void DefinitionParity_catches_a_wrong_multiblock_cell() {
     JObject a = JObject.Parse(
       """{ "attributes": { "multiblockStructure": { "blockNumbers": { "mod:a": 1 }, "offsets": [ { "x": 0, "y": 0, "z": 0, "w": 1 } ] } } }"""
     );
@@ -281,8 +266,7 @@ public class StructureLayoutTests
   }
 
   [Fact]
-  public void DefinitionParity_treats_filler_offsets_as_a_set_with_explicit_attach()
-  {
+  public void DefinitionParity_treats_filler_offsets_as_a_set_with_explicit_attach() {
     // Reordered, and one form omits allowAttach:false while the other states it => equal.
     JObject a = JObject.Parse(
       """{ "attributes": { "fillerOffsets": [ { "x": 1, "y": 0, "z": 0, "allowAttach": true }, { "x": 0, "y": 0, "z": 1 } ] } }"""

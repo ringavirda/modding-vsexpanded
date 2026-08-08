@@ -6,31 +6,16 @@ using Vintagestory.API.Server;
 namespace SteelmakingExpanded.BlockMigrations;
 
 /// <summary>
-/// Migrates the smoke-stack intake, which gained a brick/refractory-tier variantgroup. It originally
-/// used a code without that group (e.g. <c>smex:smokestack-intake-s</c>); adding the group changed the
-/// code, so old placements load as missing-block placeholders. Each is rewritten to the tier3 variant
-/// of the same base and orientation.
-/// <para>
-/// ⓘ <b>The cowper-stove intake is deliberately not here, and its own migrator is gone.</b> It gained
-/// the same group, then took the side-word form (<c>-north</c>) when it stopped being a network node -
-/// so a <c>CowperStoveIntakeOrientationMigration</c> rewrote <c>-n</c> → <c>-north</c>. The 2026-08-04
-/// side respelling took the block back to <c>-n</c>, which made that migrator <b>circular</b>: it
-/// claimed a <b>live</b> code as its source and pointed at a target no block carries, i.e. it would
-/// have silently deleted every placed intake. Since the intake never shipped in any release
-/// (<c>ReleasedCodes.Smex</c> lists no <c>cowperstove-intake</c>), the word form only ever existed in
-/// dev worlds and is owed nothing. Deleted rather than inverted.
-/// </para>
-/// <para>
-/// The pipe passthrough/outlet that also gained the group have since moved to the lpex mod; their
-/// migration lives in <c>PipeMigration</c> there.
-/// </para>
+/// Migrates the smoke-stack intake, which gained a brick/refractory-tier variantgroup: placements of
+/// the pre-group code (<c>smex:smokestack-intake-s</c>) load as missing-block placeholders and are
+/// rewritten to the tier3 variant of the same base and orientation. The pipe passthrough and outlet
+/// that gained the same group migrate in lpex's <c>PipeMigration</c>. The cowper-stove intake has no
+/// migrator: it never shipped (<c>ReleasedCodes.Smex</c> lists no <c>cowperstove-intake</c>) and its
+/// pre-group code is live again, so a remap would claim a live code as its source.
 /// </summary>
-public class BrickVariantMigration : IBlockCodeMigration
-{
-  /// <summary>
-  /// One block that gained a variant: its code without the new group, the variant value
-  /// inserted before the orientation, and the orientations that existed beforehand.
-  /// </summary>
+public class BrickVariantMigration : IBlockCodeMigration {
+  /// <summary>One block that gained a variant: its pre-group code, the variant value inserted before
+  /// the orientation, and the orientations that existed beforehand.</summary>
   private readonly record struct Entry(
     string CodeBase,
     string InsertedVariant,
@@ -46,13 +31,12 @@ public class BrickVariantMigration : IBlockCodeMigration
 
   public IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(
     ICoreServerAPI api
-  )
-  {
+  ) {
     foreach (var (codeBase, inserted, orientations) in Entries)
-    foreach (string orient in orientations)
-      yield return (
-        new AssetLocation("smex", $"{codeBase}-{orient}"),
-        new AssetLocation("smex", $"{codeBase}-{inserted}-{orient}")
-      );
+      foreach (string orient in orientations)
+        yield return (
+          new AssetLocation("smex", $"{codeBase}-{orient}"),
+          new AssetLocation("smex", $"{codeBase}-{inserted}-{orient}")
+        );
   }
 }

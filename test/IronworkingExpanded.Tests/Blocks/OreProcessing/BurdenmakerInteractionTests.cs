@@ -5,7 +5,6 @@ using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.OreProcessing.BlockEntities;
 using IronworkingExpanded.BlockStructures.OreProcessing.Blocks;
-using static IronworkingExpanded.BlockStructures.OreProcessing.Blocks.BlockBurdenmaker;
 using NSubstitute;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -13,35 +12,21 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Xunit;
+using static IronworkingExpanded.BlockStructures.OreProcessing.Blocks.BlockBurdenmaker;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The burdenmaker's <b>routing</b>: a click on a real world cell reaching the right block-entity call.
+/// Interaction routing for the burdenmaker: a click on a world cell reaches the block-entity call that
+/// cell's class means. <see cref="BurdenmakerCellTests"/> covers the cell map itself.
 /// <para>
-/// <b>Why this exists alongside <see cref="BurdenmakerCellTests"/>.</b> That file proves the <em>map</em> -
-/// which offset is which class, at every facing. This one proves the <em>wiring</em>: that
-/// <c>HandleInteract</c>'s switch sends each class to the call that class means. They are genuinely separate
-/// claims, and only the first had evidence: <b>swapping the <c>OreHopper</c> and <c>FluxHopper</c> arms
-/// passed every test in the tree</b> until this file existed. A perfect classifier wired to the wrong verb
-/// is indistinguishable from a broken classifier, from the player's side of the screen.
-/// </para>
-/// <para>
-/// <b>Every click goes in through a real block.</b> Either the principal (<c>OnBlockInteractStart</c>) or
-/// a real <see cref="BlockStructureFiller"/> standing on a real footprint cell - never through
-/// <c>HandleInteract</c> directly, which is private for exactly this reason. That is what puts the
-/// <see cref="IFillerInteractionTarget"/> forwarding under test too: the ore bunker's forwarding block
-/// <em>throws the clicked cell away</em>, and a burdenmaker that copied it would answer every cell with one
-/// verb while every classifier test stayed green.
-/// </para>
-/// <para>
-/// The fillers are placed at <b>production's own footprint</b> (<see cref="StructureFillers.FootprintCells"/>
-/// read from the shipped def's <c>fillerOffsets</c>), not at coordinates typed into this file, so a footprint
-/// that moves takes this fixture with it instead of leaving it clicking air.
+/// Clicks go in through a real block - the principal or a <see cref="BlockStructureFiller"/> on a
+/// footprint cell - never through the private <c>HandleInteract</c>, so
+/// <see cref="IFillerInteractionTarget"/> forwarding is covered too. Filler positions come from
+/// <see cref="StructureFillers.FootprintCells"/> off the shipped def rather than hard-coded coordinates.
 /// </para>
 /// </summary>
-public class BurdenmakerInteractionTests
-{
+public class BurdenmakerInteractionTests {
   /// <summary>One deposit, small enough to fit one stack and every tank.</summary>
   private const int Load = 20;
 
@@ -49,9 +34,13 @@ public class BurdenmakerInteractionTests
 
   private static readonly string[] Sides = ["n", "e", "s", "w"];
 
-  // The authored (north-frame) cells and the class each one carries - the same drawing
-  // BurdenmakerCellTests reads, restated here because this file asserts what each class does.
-  private static readonly (int X, int Y, int Z, BurdenmakerCell Class)[] Authored =
+  // Authored cells in the north frame and the class each one carries.
+  private static readonly (
+    int X,
+    int Y,
+    int Z,
+    BurdenmakerCell Class
+  )[] Authored =
   [
     (-1, 1, -1, BurdenmakerCell.OreHopper),
     (0, 1, -1, BurdenmakerCell.OreHopper),
@@ -81,7 +70,7 @@ public class BurdenmakerInteractionTests
     Item Lime
   );
 
-  /// <summary>What a click found in the player's hand, and everything the machine gave back to them.</summary>
+  /// <summary>The player's held slot, plus everything the machine handed back during a click.</summary>
   private sealed record Hands(
     IServerPlayer Player,
     DummySlot Held,
@@ -89,8 +78,7 @@ public class BurdenmakerInteractionTests
     List<string> Errors
   );
 
-  private static Rig NewRig(string side = "n", bool constructed = true)
-  {
+  private static Rig NewRig(string side = "n", bool constructed = true) {
     var world = new TestWorld();
     world.World.Side.Returns(EnumAppSide.Server);
     world.RegisterItem("iwex:burden");
@@ -104,8 +92,7 @@ public class BurdenmakerInteractionTests
       ("brick", "red"),
       ("side", side)
     );
-    // The shipped footprint, off the def itself. A fixture that hand-typed the eight cells would keep
-    // passing after the drawing moved, clicking cells the real machine no longer reserves.
+    // Footprint read off the shipped def rather than hand-typed, so it follows the drawing.
     block.Attributes = new JsonObject(
       BlockBurdenmaker.Definitions("iwex").First().ToJson()["attributes"]!
     );
@@ -114,7 +101,7 @@ public class BurdenmakerInteractionTests
     var be = new BlockEntityBurdenmaker { Pos = At.Copy(), Block = block };
     world.Place(At, block, be);
     world.Initialize(be);
-    // The construction gate. Applied after Initialize, which re-reads _rcc from the (absent) behaviours.
+    // Construction gate. Applied after Initialize, which re-reads _rcc from the (absent) behaviours.
     if (constructed)
       RccFake.Complete(be);
 
@@ -130,10 +117,8 @@ public class BurdenmakerInteractionTests
         At,
         block.StructureAngle
       )
-    )
-    {
-      var fillerBe = new BlockEntityStructureFiller
-      {
+    ) {
+      var fillerBe = new BlockEntityStructureFiller {
         Pos = cell.Pos.Copy(),
         Principal = At.Copy(),
       };
@@ -154,8 +139,7 @@ public class BurdenmakerInteractionTests
     ItemStack? held,
     bool ctrl = false,
     bool inventoryFull = false
-  )
-  {
+  ) {
     DummySlot slot = held == null ? new DummySlot() : new DummySlot(held);
     var offered = new List<ItemStack>();
     var errors = new List<string>();
@@ -171,15 +155,13 @@ public class BurdenmakerInteractionTests
     inventory.ActiveHotbarSlot.Returns(slot);
     inventory
       .TryGiveItemstack(Arg.Any<ItemStack>())
-      .Returns(ci =>
-      {
+      .Returns(ci => {
         offered.Add(ci.Arg<ItemStack>());
         return !inventoryFull;
       });
     player.InventoryManager.Returns(inventory);
 
-    // Errors are captured as codes only - the standing convention is SendIngameError(code) with the
-    // text in lang, so asserting a message here would pin the wrong thing.
+    // Errors are captured as codes: the convention is SendIngameError(code) with the text in lang.
     player
       .When(p => p.SendIngameError(Arg.Any<string>(), Arg.Any<string>()))
       .Do(ci => errors.Add(ci.ArgAt<string>(0)));
@@ -192,12 +174,7 @@ public class BurdenmakerInteractionTests
   /// block stands there - the principal for the gate, a filler for everything else. Returns whether the
   /// click was consumed.
   /// </summary>
-  private static bool Click(
-    Rig rig,
-    (int X, int Y, int Z) cell,
-    Hands hands
-  )
-  {
+  private static bool Click(Rig rig, (int X, int Y, int Z) cell, Hands hands) {
     BlockPos pos = ExOrientation.GlobalPos(
       rig.Be.Pos,
       cell.X,
@@ -207,16 +184,18 @@ public class BurdenmakerInteractionTests
     );
     Block under = rig.World.GetBlock(pos);
 
-    // The premise, asserted rather than assumed: a real cell of this machine is under the cursor.
-    // Clicking air returns quietly and would make every "nothing moved" row below pass for the wrong
-    // reason - the exact way a fixture stops exercising the code it is named after.
+    // Premise: a real cell of this machine is under the cursor. Clicking air returns quietly, which
+    // would make every "nothing moved" assertion below pass for the wrong reason.
     Assert.True(
       ReferenceEquals(under, rig.Block) || under is BlockStructureFiller,
       $"no burdenmaker cell at local ({cell.X},{cell.Y},{cell.Z}) "
         + $"for side '{rig.Block.Variant["side"]}' - found '{under.Code}'"
     );
 
-    var selection = new BlockSelection { Position = pos, Face = BlockFacing.UP };
+    var selection = new BlockSelection {
+      Position = pos,
+      Face = BlockFacing.UP,
+    };
     return under.OnBlockInteractStart(rig.World.World, hands.Player, selection);
   }
 
@@ -226,8 +205,7 @@ public class BurdenmakerInteractionTests
     BurdenmakerCell cell,
     bool holdingOre
   ) =>
-    cell switch
-    {
+    cell switch {
       BurdenmakerCell.OreHopper when holdingOre => (Load, 0),
       BurdenmakerCell.FluxHopper when !holdingOre => (0, Load),
       _ => (0, 0),
@@ -237,8 +215,7 @@ public class BurdenmakerInteractionTests
   private static int Held(Hands hands) =>
     hands.Held.Empty ? 0 : hands.Held.StackSize;
 
-  private static void Fill(Rig rig, int ore, int flux)
-  {
+  private static void Fill(Rig rig, int ore, int flux) {
     if (ore > 0)
       Assert.True(
         rig.Be.TryLoadOre(new DummySlot(new ItemStack(rig.Ore, ore)), true)
@@ -260,8 +237,7 @@ public class BurdenmakerInteractionTests
     int,
     BurdenmakerCell,
     bool
-  > EveryCell()
-  {
+  > EveryCell() {
     var data = new TheoryData<string, int, int, int, BurdenmakerCell, bool>();
     foreach (string side in Sides)
       foreach (var (x, y, z, klass) in Authored)
@@ -279,14 +255,10 @@ public class BurdenmakerInteractionTests
     int localZ,
     BurdenmakerCell cell,
     bool holdingOre
-  )
-  {
-    // The mutation this kills: swap the OreHopper and FluxHopper arms of the switch. Both hoppers
-    // refuse the other's material, so a swapped arm does not put ore in the flux hopper - it puts it
-    // nowhere, and the machine looks broken to the player while every classifier test stays green.
-    //
-    // And a second one: hard-code the angle passed to Classify. At `side = n` StructureAngle is 0, so
-    // north alone cannot tell the two apart; running the whole table at all four facings can.
+  ) {
+    // Covers two mutations: swapping the OreHopper and FluxHopper arms of the switch (each hopper
+    // refuses the other's material, so a swapped arm moves nothing at all), and hard-coding the angle
+    // passed to Classify - StructureAngle is 0 at side "n", so all four facings are needed to see it.
     Rig rig = NewRig(side);
     Item held = holdingOre ? rig.Ore : rig.Lime;
     Hands hands = PlayerWith(new ItemStack(held, Load), ctrl: true);
@@ -310,11 +282,9 @@ public class BurdenmakerInteractionTests
   [InlineData("w")]
   public void An_empty_hand_takes_back_from_the_hopper_that_was_clicked(
     string side
-  )
-  {
-    // The take arms need their own case: the deposit table above cannot see them, and they are the
-    // other half of the same swap. The two loads differ in both material and size, so a swapped arm
-    // fails on either assertion alone.
+  ) {
+    // The take arms are unreachable from the deposit table above. The two loads differ in material and
+    // in size, so a swapped arm fails on either assertion alone.
     Rig rig = NewRig(side);
     Fill(rig, ore: 20, flux: 7);
 
@@ -332,10 +302,8 @@ public class BurdenmakerInteractionTests
   }
 
   [Fact]
-  public void Both_wide_cells_reach_the_same_hopper()
-  {
-    // The wide hopper spans two cells and they are one tank - a routing that mapped the second cell to
-    // its own storage would pass every single-cell case above.
+  public void Both_wide_cells_reach_the_same_hopper() {
+    // The wide hopper spans two cells backed by a single tank.
     Rig rig = NewRig();
     Hands first = PlayerWith(new ItemStack(rig.Ore, Load), ctrl: true);
     Hands second = PlayerWith(new ItemStack(rig.Ore, Load), ctrl: true);
@@ -351,11 +319,9 @@ public class BurdenmakerInteractionTests
   #region The gate, and what is not the gate
 
   [Fact]
-  public void Only_the_principal_pulls_the_gate()
-  {
-    // Gate and Bunker are the pair most likely to be confused: they share the y = 0 course, and the
-    // principal sits in the middle of the basin. A basin cell wired to ToggleGate would make the batch
-    // boundary unpredictable - the player would empty the hoppers by reaching in for the burden.
+  public void Only_the_principal_pulls_the_gate() {
+    // Gate and Bunker share the y = 0 course and the principal sits in the middle of the basin. A
+    // basin cell wired to ToggleGate would empty the hoppers when the player reaches for the burden.
     Rig rig = NewRig("e");
     Fill(rig, ore: 30, flux: 10);
 
@@ -380,8 +346,7 @@ public class BurdenmakerInteractionTests
   }
 
   [Fact]
-  public void A_gate_pulled_over_empty_hoppers_reports_the_refusal_by_code()
-  {
+  public void A_gate_pulled_over_empty_hoppers_reports_the_refusal_by_code() {
     Rig rig = NewRig();
     Hands hands = PlayerWith(null);
 
@@ -392,11 +357,9 @@ public class BurdenmakerInteractionTests
   }
 
   [Fact]
-  public void A_gate_pulled_over_a_full_basin_reports_the_other_refusal()
-  {
-    // Both refusals are routed by the same arm; only the second proves the code is carried through
-    // rather than a constant. Reported by code alone (SendIngameError(code)), so a missing lang row
-    // renders raw - which is what IwexLangCoverageTests guards.
+  public void A_gate_pulled_over_a_full_basin_reports_the_other_refusal() {
+    // Both refusals route through the same arm; the second shows the code is carried through rather
+    // than emitted as a constant.
     Rig rig = NewRig();
     Fill(rig, ore: 30, flux: 10);
     Assert.True(rig.Be.ToggleGate(out _)); // batch made
@@ -415,11 +378,9 @@ public class BurdenmakerInteractionTests
   #region The basin is take-only
 
   [Fact]
-  public void A_basin_cell_hands_the_burden_back_and_never_takes_a_deposit()
-  {
-    // Take-only whatever is held. A full hand must neither deposit into the basin (the gate is its
-    // only inlet) nor make the click do nothing - both would be silent, and both are plausible
-    // simplifications of this arm.
+  public void A_basin_cell_hands_the_burden_back_and_never_takes_a_deposit() {
+    // Take-only whatever is held: the gate is the basin's only inlet, and a full hand must still get
+    // the burden back rather than have the click do nothing.
     Rig rig = NewRig("s");
     Fill(rig, ore: 30, flux: 10);
     Assert.True(rig.Be.ToggleGate(out _));
@@ -436,8 +397,7 @@ public class BurdenmakerInteractionTests
   }
 
   [Fact]
-  public void A_full_inventory_drops_the_burden_rather_than_eating_it()
-  {
+  public void A_full_inventory_drops_the_burden_rather_than_eating_it() {
     Rig rig = NewRig();
     Fill(rig, ore: 30, flux: 10);
     Assert.True(rig.Be.ToggleGate(out _));
@@ -458,8 +418,7 @@ public class BurdenmakerInteractionTests
   private const string HelpPrefix = "iwex:burdenmaker-help-";
 
   /// <summary>The hint codes shown for a cell, through the same entry points the game uses.</summary>
-  private static string[] Help(Rig rig, (int X, int Y, int Z) cell)
-  {
+  private static string[] Help(Rig rig, (int X, int Y, int Z) cell) {
     BlockPos pos = ExOrientation.GlobalPos(
       rig.Be.Pos,
       cell.X,
@@ -467,8 +426,7 @@ public class BurdenmakerInteractionTests
       cell.Z,
       rig.Block.StructureAngle
     );
-    var principalSel = new BlockSelection
-    {
+    var principalSel = new BlockSelection {
       Position = rig.Be.Pos.Copy(),
       Face = BlockFacing.UP,
     };
@@ -491,8 +449,7 @@ public class BurdenmakerInteractionTests
   }
 
   private static string[] ExpectedHelp(BurdenmakerCell cell) =>
-    cell switch
-    {
+    cell switch {
       BurdenmakerCell.OreHopper =>
       [
         HelpPrefix + "addore",
@@ -509,8 +466,7 @@ public class BurdenmakerInteractionTests
       _ => [HelpPrefix + "take"],
     };
 
-  public static TheoryData<string, int, int, int, BurdenmakerCell> HelpCells()
-  {
+  public static TheoryData<string, int, int, int, BurdenmakerCell> HelpCells() {
     var data = new TheoryData<string, int, int, int, BurdenmakerCell>();
     foreach (string side in Sides)
       foreach (var (x, y, z, klass) in Authored)
@@ -526,22 +482,19 @@ public class BurdenmakerInteractionTests
     int localY,
     int localZ,
     BurdenmakerCell cell
-  )
-  {
-    // With no GUI, the help overlay is the only thing that tells the player the two hoppers differ -
-    // and the trial-and-error alternative is silent, because the wrong hopper simply refuses. So the
-    // help has to be classified per cell exactly as the click is; forwarding every filler cell to
-    // GetPlacedBlockInteractionHelp (which is what this did before) advertises the gate everywhere.
+  ) {
+    // There is no GUI, so the help overlay is the only thing distinguishing the two hoppers. Help is
+    // classified per cell exactly as the click is; forwarding every filler cell to
+    // GetPlacedBlockInteractionHelp would advertise the gate on every cell.
     Rig rig = NewRig(side);
 
     Assert.Equal(ExpectedHelp(cell), Help(rig, (localX, localY, localZ)));
   }
 
   [Fact]
-  public void Before_construction_the_help_belongs_to_the_builder()
-  {
-    // The RCC behaviour advertises the next stage's materials. A machine that showed "add ore" on a pile
-    // of bricks would be describing something the player cannot do yet.
+  public void Before_construction_the_help_belongs_to_the_builder() {
+    // Before construction the RCC behaviour advertises the next stage's materials, not the machine's
+    // own verbs.
     Rig rig = NewRig(constructed: false);
 
     Assert.DoesNotContain(
@@ -555,10 +508,9 @@ public class BurdenmakerInteractionTests
   #region Sides that must not act
 
   [Fact]
-  public void A_client_side_click_is_swallowed_but_changes_nothing()
-  {
-    // The server owns every mutation; the client still consumes the click so no block is placed against
-    // the machine's face. Dropping that guard would have both sides mutate and desync the inventory.
+  public void A_client_side_click_is_swallowed_but_changes_nothing() {
+    // The server owns every mutation; the client still consumes the click so no block is placed
+    // against the machine's face. Without the guard both sides mutate and the inventory desyncs.
     Rig rig = NewRig();
     rig.World.World.Side.Returns(EnumAppSide.Client);
     Hands hands = PlayerWith(new ItemStack(rig.Ore, Load), ctrl: true);
@@ -570,12 +522,9 @@ public class BurdenmakerInteractionTests
   }
 
   [Fact]
-  public void Before_construction_finishes_the_click_falls_through_to_the_builder()
-  {
-    // The machine is raised by right-clicking it through five construction stages. If HandleInteract
-    // consumed the click before then, the burdenmaker could never be built at all - so "returns null"
-    // is not an implementation detail, it is the only reason the block is reachable. Asserted as: the
-    // click is not consumed, and nothing moved.
+  public void Before_construction_finishes_the_click_falls_through_to_the_builder() {
+    // The machine is raised by right-clicking through five construction stages, so HandleInteract must
+    // leave the click unconsumed until construction finishes or the block can never be built.
     Rig rig = NewRig(constructed: false);
     Assert.False(rig.Be.IsConstructed); // the premise
 

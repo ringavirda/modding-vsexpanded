@@ -4,29 +4,28 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The mass-conservation arithmetic of breaking a pig on the anvil: a 375-unit pig fills 150 voxels
-/// (2.5 u each), and the units freed by the voxels a helve hit sheds are paid out as whole 25u chunks
-/// and 5u bits, carrying the sub-bit remainder to the next hit. The anvil wiring is verified in-game;
-/// this pins the maths.
+/// The mass arithmetic of breaking a pig on the anvil: a 375 u pig fills 150 voxels at 2.5 u each, and
+/// the units freed by the voxels a helve hit sheds are paid out as whole 25 u chunks and 5 u bits, with
+/// the sub-bit remainder carried to the next hit. Covers the arithmetic only, not the anvil wiring.
 /// </summary>
-public class PigBreakingTests
-{
+public class PigBreakingTests {
   #region The density rule
 
   [Fact]
-  public void A_pig_is_worth_exactly_two_and_a_half_units_per_voxel()
-  {
+  public void A_pig_is_worth_exactly_two_and_a_half_units_per_voxel() {
     Assert.Equal(2.5f, PigBreaking.UnitsPerVoxel, 4);
   }
 
-  // The invariant behind the number above, stated so a future re-mass cannot quietly break it: the voxel
-  // count and the unit mass must move together, because 2.5 u/vx³ is the mod's one density rule and this
-  // derived constant is the only place the codebase expresses it. Asserting the ratio alone would still
-  // pass if both constants drifted; asserting the product is what ties them to each other.
+  // 2.5 u/vx³ is the mod's one density rule and this derived constant is where the codebase expresses
+  // it. Asserting the product ties the voxel count to the unit mass; a ratio alone would still pass if
+  // both constants drifted.
   [Fact]
-  public void The_voxel_count_and_the_mass_move_together()
-  {
-    Assert.Equal(ItemPig.PigUnits, PigBreaking.PigVoxels * PigBreaking.UnitsPerVoxel, 4);
+  public void The_voxel_count_and_the_mass_move_together() {
+    Assert.Equal(
+      ItemPig.PigUnits,
+      PigBreaking.PigVoxels * PigBreaking.UnitsPerVoxel,
+      4
+    );
   }
 
   #endregion
@@ -43,15 +42,16 @@ public class PigBreakingTests
     int voxelsRemoved,
     int chunks,
     int bits
-  )
-  {
+  ) {
     float remainder = 0f;
-    Assert.Equal((chunks, bits), PigBreaking.Emit(voxelsRemoved, ref remainder));
+    Assert.Equal(
+      (chunks, bits),
+      PigBreaking.Emit(voxelsRemoved, ref remainder)
+    );
   }
 
   [Fact]
-  public void The_sub_bit_remainder_carries_between_hits()
-  {
+  public void The_sub_bit_remainder_carries_between_hits() {
     float remainder = 0f;
 
     // Two single-voxel hits: 2.5u then 5.0u -> the second crosses a bit.
@@ -60,12 +60,10 @@ public class PigBreakingTests
   }
 
   [Fact]
-  public void Breaking_a_whole_pig_one_voxel_at_a_time_conserves_the_mass()
-  {
+  public void Breaking_a_whole_pig_one_voxel_at_a_time_conserves_the_mass() {
     float remainder = 0f;
     int units = 0;
-    for (int i = 0; i < PigBreaking.PigVoxels; i++)
-    {
+    for (int i = 0; i < PigBreaking.PigVoxels; i++) {
       (int chunks, int bits) = PigBreaking.Emit(1, ref remainder);
       units += chunks * ItemPig.ChunkUnits + bits * ItemPig.BitUnits;
     }

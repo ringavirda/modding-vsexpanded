@@ -6,13 +6,12 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Testing.Doubles;
 
 /// <summary>
-/// A block entity that records the network broadcasts and open-connector notifications it
-/// receives, so a test can assert that a producer/consumer change reached the nodes. Implements
-/// <see cref="INetworkNode"/> directly (not via <c>BlockEntityNetworkNode</c>) to avoid the
+/// Block entity that records the network broadcasts and open-connector notifications it receives, so
+/// a test can assert that a producer/consumer change reached the nodes. Implements
+/// <see cref="INetworkNode"/> directly rather than via <c>BlockEntityNetworkNode</c> to avoid the
 /// engine-bound <c>Initialize</c> path.
 /// </summary>
-public sealed class CapturingNode : BlockEntity, INetworkNode
-{
+public sealed class CapturingNode : BlockEntity, INetworkNode {
   /// <summary>The most recent state payload delivered by <see cref="OnNetworkUpdate"/>.</summary>
   public object? LastState { get; private set; }
 
@@ -35,11 +34,13 @@ public sealed class CapturingNode : BlockEntity, INetworkNode
   public void OnOpenConnectorsChanged(BlockFacing[] openFaces) =>
     LastOpenFaces = openFaces;
 
-  public void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity) =>
-    LastLeakFaces = leakingFaces;
+  public void OnLeak(
+    BlockFacing[] leakingFaces,
+    bool isLiquid,
+    float intensity
+  ) => LastLeakFaces = leakingFaces;
 
-  public void OnNetworkUpdate(object? state)
-  {
+  public void OnNetworkUpdate(object? state) {
     LastState = state;
     UpdateCount++;
   }

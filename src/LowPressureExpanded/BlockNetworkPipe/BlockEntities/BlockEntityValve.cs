@@ -1,8 +1,8 @@
 using System;
 using System.Text;
 using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Renderers;
 using ExpandedLib.Registries.Entities;
+using ExpandedLib.Renderers;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -13,14 +13,13 @@ using Vintagestory.GameContent;
 namespace LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 
 /// <summary>
-/// A manually-toggled in-line valve. Open, it is a normal pipe node and the run flows straight
-/// through it as one network; closed, it severs the run at its own cell
-/// (<see cref="IsConnectionBroken"/>), splitting it in two. Toggling re-walks the graph. The
-/// state is shown by holding the shape's <c>open</c> animation pose.
+/// A manually-toggled in-line valve. Open, it is a normal pipe node and the run flows through it as
+/// one network; closed, it severs the run at its own cell (<see cref="IsConnectionBroken"/>),
+/// splitting it in two. Toggling re-walks the graph. The state is shown by holding the shape's
+/// <c>open</c> animation pose.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityValve : BlockEntityPipe
-{
+public class BlockEntityValve : BlockEntityPipe {
   private bool _open;
 
   private ToggleAnimator? _toggle;
@@ -34,8 +33,7 @@ public class BlockEntityValve : BlockEntityPipe
 
   #region Lifecycle
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     _toggle = new ToggleAnimator(this, BuildAnimator);
     _toggle.Initialize(ApplyValvePose);
@@ -43,10 +41,9 @@ public class BlockEntityValve : BlockEntityPipe
       Pressure = 0f;
   }
 
-  // Non-RCC animated block: load the shape + drive the full X/Y/Z rotation, through the shared toggle
-  // helper (which owns the null-animator ready-guard). A failed shape resolve degrades to "not ready".
-  private void BuildAnimator(BEBehaviorAnimatable animatable)
-  {
+  // Non-RCC animated block: loads the shape and drives the full X/Y/Z rotation through the shared
+  // toggle helper, which owns the null-animator ready guard. A failed shape resolve leaves it not ready.
+  private void BuildAnimator(BEBehaviorAnimatable animatable) {
     var capi = (ICoreClientAPI)Api;
     Shape? shape = capi
       .Assets.TryGet(
@@ -67,9 +64,9 @@ public class BlockEntityValve : BlockEntityPipe
       new Vec3f(Block.Shape.rotateX, Block.Shape.rotateY, Block.Shape.rotateZ)
     );
 
-    // AnimatableRenderer only honours the Y rotation; rotateX/Z are dropped, so the vertical
-    // valve variants (ud/du, pipe along rotateX=90) rendered the "open" pose flat while the
-    // static mesh stayed vertical. Drive the full rotation through CustomTransform instead.
+    // AnimatableRenderer honours only the Y rotation and drops rotateX/Z, which the vertical valve
+    // variants (ud/du, pipe along rotateX=90) need. Drive the full rotation through CustomTransform,
+    // so the animated pose matches the static mesh in every orientation.
     if (animatable.animUtil.renderer is { } renderer)
       renderer.CustomTransform = BuildShapeRotationTransform(
         Block.Shape.rotateX,
@@ -82,15 +79,14 @@ public class BlockEntityValve : BlockEntityPipe
 
   /// <summary>
   /// Builds the model→world matrix matching how the chunk tesselator rotates a CompositeShape:
-  /// <c>T(centre) · RotateXYZ · T(-centre)</c> about (0.5, 0.5, 0.5), X→Y→Z order. Assigned to
-  /// the renderer's <c>CustomTransform</c> so the animated pose lines up in every orientation.
+  /// <c>T(centre) · RotateXYZ · T(-centre)</c> about (0.5, 0.5, 0.5), in X→Y→Z order. Assigned to
+  /// the renderer's <c>CustomTransform</c>.
   /// </summary>
   private static float[] BuildShapeRotationTransform(
     float rotXDeg,
     float rotYDeg,
     float rotZDeg
-  )
-  {
+  ) {
     float[] rotation = Mat4f.Create();
     Mat4f.RotateXYZ(
       rotation,
@@ -108,18 +104,16 @@ public class BlockEntityValve : BlockEntityPipe
   }
 
   /// <summary>
-  /// A wrench rotates the valve via <c>ExchangeBlock</c>, which keeps this BE alive so
-  /// <see cref="Initialize"/> never re-runs and the animator stays bound to the original
-  /// orientation. Re-bind the animator to the new block's rotation and restore the pose.
+  /// A wrench rotates the valve via <c>ExchangeBlock</c>, which keeps this BE alive, so
+  /// <see cref="Initialize"/> never re-runs and the animator would stay bound to the original
+  /// orientation. Re-binds the animator to the new block's rotation and restores the pose.
   /// </summary>
-  public override void OnExchanged(Block block)
-  {
+  public override void OnExchanged(Block block) {
     base.OnExchanged(block);
 
-    if (Api is ICoreClientAPI && _toggle != null)
-    {
+    if (Api is ICoreClientAPI && _toggle != null) {
       // Only re-init on a real orientation change. A network re-walk can re-exchange to an
-      // equivalent variant (ns<->sn); re-initing each time would reset the "open" pose.
+      // equivalent variant (ns to sn), and re-initing each time would reset the "open" pose.
       if (_toggle.Ready && _animatorOrientation == block.Variant["orientation"])
         return;
 
@@ -128,11 +122,9 @@ public class BlockEntityValve : BlockEntityPipe
     }
   }
 
-  /// <summary>Server-side toggle of the valve's open state. Re-walks the network so the
-  /// change in connectivity (open rejoins the two sides, closed severs them) takes effect
-  /// immediately.</summary>
-  public void ToggleOpen()
-  {
+  /// <summary>Server-side toggle of the valve's open state. Re-walks the network so the change in
+  /// connectivity - open rejoins the two sides, closed severs them - takes effect immediately.</summary>
+  public void ToggleOpen() {
     _open = !_open;
     MarkDirty(true);
 
@@ -142,37 +134,31 @@ public class BlockEntityValve : BlockEntityPipe
       Api?.Side == EnumAppSide.Server
       && NetworkSystem != null
       && Api.World?.BlockAccessor is { } ba
-    )
-    {
+    ) {
       NetworkSystem.RemoveNode(ba, Pos);
       NetworkSystem.AddNode(ba, Pos, NetworkType);
     }
-    if (!_open)
-    {
+    if (!_open) {
       Pressure = 0f;
       DiscardNetworkPool();
     }
   }
 
   /// <summary>
-  /// Drops any cached/persisted network pool. Closing severs the cell without a broadcast, so the
-  /// pressurised state it cached while open would otherwise serialise and be restored into the
-  /// isolated cell on reload, bursting it. Clearing keeps closed-valve saves empty.
+  /// Drops any cached or persisted network pool. Closing severs the cell without a broadcast, so the
+  /// pressurised state cached while open would otherwise serialise and be restored into the isolated
+  /// cell on reload, bursting it.
   /// </summary>
-  private void DiscardNetworkPool()
-  {
+  private void DiscardNetworkPool() {
     _savedNetworkState = null;
     _networkState = null;
   }
 
-  private void ApplyValvePose()
-  {
-    _toggle?.Pose(util =>
-    {
+  private void ApplyValvePose() {
+    _toggle?.Pose(util => {
       if (_open)
         util.StartAnimation(
-          new AnimationMetaData
-          {
+          new AnimationMetaData {
             Animation = "open",
             Code = "open",
             AnimationSpeed = 2.5f,
@@ -189,8 +175,7 @@ public class BlockEntityValve : BlockEntityPipe
 
   #region HUD
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     dsc.AppendLine(
       Lang.Get(
         "lpex:valve-state",
@@ -205,8 +190,7 @@ public class BlockEntityValve : BlockEntityPipe
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("valveOpen", _open);
   }
@@ -214,13 +198,12 @@ public class BlockEntityValve : BlockEntityPipe
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     bool prev = _open;
     _open = tree.GetBool("valveOpen");
-    // Closed at save time → isolated cell holds nothing. Drop any persisted pool before
-    // Initialize captures it for restore, so a stale pressurised state can't burst it on load.
+    // Closed at save time means the isolated cell holds nothing. Drop any persisted pool before
+    // Initialize captures it for restore, so a stale pressurised state cannot burst it on load.
     if (!_open)
       DiscardNetworkPool();
     if (Api?.Side == EnumAppSide.Client && prev != _open)

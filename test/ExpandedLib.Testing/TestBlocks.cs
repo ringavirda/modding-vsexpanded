@@ -4,18 +4,17 @@ using Vintagestory.API.Util;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// Helpers for turning a bare <see cref="Block"/>/<see cref="BlockEntity"/> instance into one
-/// the simulation can read, without the engine's asset-load pipeline. A freshly constructed
+/// Helpers for turning a bare <see cref="Block"/> or <see cref="BlockEntity"/> instance into one the
+/// simulation can read, without the engine's asset-load pipeline. A freshly constructed
 /// <see cref="Block"/> has a <c>null</c> <see cref="RegistryObject.Variant"/>, so any code path
-/// touching <c>Variant["..."]</c> would throw - <see cref="Configure"/> primes it.
+/// touching <c>Variant["..."]</c> would throw; <see cref="Configure"/> primes it.
 /// </summary>
-public static class TestBlocks
-{
+public static class TestBlocks {
   /// <summary>
-  /// Assigns <paramref name="code"/>/<paramref name="id"/> and builds the relaxed variant map
-  /// from <paramref name="variants"/>. The relaxed map returns <c>null</c> (not a throw) for
-  /// absent keys, matching how the real registry builds it - so e.g. <c>BlockPipe.Material</c>
-  /// falls back to iron when no material variant is supplied.
+  /// Assigns <paramref name="code"/> and <paramref name="id"/> and builds the relaxed variant map
+  /// from <paramref name="variants"/>. As in the real registry, the map returns <c>null</c> for
+  /// absent keys rather than throwing, so e.g. <c>BlockPipe.Material</c> falls back to iron when no
+  /// material variant is supplied.
   /// </summary>
   public static T Configure<T>(
     T block,
@@ -23,8 +22,7 @@ public static class TestBlocks
     int id,
     params (string key, string value)[] variants
   )
-    where T : Block
-  {
+    where T : Block {
     block.Code = new AssetLocation(code);
     block.BlockId = id;
     foreach (var (key, value) in variants)

@@ -8,19 +8,13 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The staged stock shapes are <b>generated</b> from the two authored bases (shingled bloom and slab) by
-/// <c>scripts/generate-rolled-stock.py</c>, one per gap in the roll schedule. Because they are derived, they
-/// can silently drift from the schedule they illustrate - a gap with no shape, or a shape whose width no
-/// longer matches what the simulation thinks the piece spread to. These pin the two together.
-/// <para>
-/// All three dimensions are checked. Thickness and width are the two the mechanics read; length is derived
-/// from volume conservation off the <em>actual</em> (possibly capped) width, so it is checked too - a piece
-/// that has stopped widening has to put every further reduction into length, and that jump is exactly the
-/// sort of thing a regenerated shape could silently lose.
-/// </para>
+/// The staged stock shapes are generated from the two authored bases (shingled bloom and slab) by
+/// <c>scripts/generate-rolled-stock.py</c>, one per gap in the roll schedule. Being derived, they can drift
+/// from the schedule they illustrate, so all three dimensions are checked against it: thickness and width are
+/// what the mechanics read, and length follows from volume conservation off the actual (possibly capped)
+/// width. See docs/design/items/stock.md.
 /// </summary>
-public class RolledStockStagesTests
-{
+public class RolledStockStagesTests {
   private const string ShapeDir = "../../../../../assets/iwex/shapes/forming";
 
   private static readonly float[] Gaps = [3f, 2f, 1.5f, 1f, 0.5f];
@@ -28,15 +22,15 @@ public class RolledStockStagesTests
   private static string StagePath(string form, float thickness) =>
     Path.Combine(ShapeDir, $"stock-{form}-{(int)(thickness * 10)}.json");
 
-  private static (float Width, float Thickness, float Length) Measure(string path)
-  {
+  private static (float Width, float Thickness, float Length) Measure(
+    string path
+  ) {
     JObject shape = JObject.Parse(File.ReadAllText(path));
     var xs = new List<float>();
     var ys = new List<float>();
     var zs = new List<float>();
     foreach (JToken el in shape["elements"]!)
-      foreach (string key in new[] { "from", "to" })
-      {
+      foreach (string key in new[] { "from", "to" }) {
         xs.Add((float)el[key]![0]!);
         ys.Add((float)el[key]![1]!);
         zs.Add((float)el[key]![2]!);
@@ -44,8 +38,7 @@ public class RolledStockStagesTests
     return (xs.Max() - xs.Min(), ys.Max() - ys.Min(), zs.Max() - zs.Min());
   }
 
-  public static TheoryData<string, float> Stages()
-  {
+  public static TheoryData<string, float> Stages() {
     var data = new TheoryData<string, float>();
     foreach (string form in StockForm.All.Keys)
       foreach (float thickness in Gaps)
@@ -55,31 +48,39 @@ public class RolledStockStagesTests
 
   [Theory]
   [MemberData(nameof(Stages))]
-  public void Every_stage_shape_exists(string form, float thickness)
-  {
-    Assert.True(File.Exists(StagePath(form, thickness)), $"missing stage shape for {form} at t={thickness}");
+  public void Every_stage_shape_exists(string form, float thickness) {
+    Assert.True(
+      File.Exists(StagePath(form, thickness)),
+      $"missing stage shape for {form} at t={thickness}"
+    );
   }
 
   [Theory]
   [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_thick_as_its_gap(string form, float thickness)
-  {
+  public void A_stage_shape_is_as_thick_as_its_gap(string form, float thickness) {
     Assert.Equal(thickness, Measure(StagePath(form, thickness)).Thickness, 2);
   }
 
   [Theory]
   [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_wide_as_the_spread_model_says(string form, float thickness)
-  {
-    // The art and the simulation have to agree here, because width is what decides whether the piece
-    // overhangs the barrel and so how many passes the gap costs.
-    Assert.Equal(StockForm.All[form].WidthAt(thickness), Measure(StagePath(form, thickness)).Width, 2);
+  public void A_stage_shape_is_as_wide_as_the_spread_model_says(
+    string form,
+    float thickness
+  ) {
+    // Width decides whether the piece overhangs the barrel, and so how many passes the gap costs.
+    Assert.Equal(
+      StockForm.All[form].WidthAt(thickness),
+      Measure(StagePath(form, thickness)).Width,
+      2
+    );
   }
 
   [Theory]
   [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_long_as_conserving_its_volume_demands(string form, float thickness)
-  {
+  public void A_stage_shape_is_as_long_as_conserving_its_volume_demands(
+    string form,
+    float thickness
+  ) {
     StockForm stock = StockForm.All[form];
     float baseLength = Measure(StagePath(form, stock.BaseThickness)).Length;
     float expected =
@@ -97,24 +98,26 @@ public class RolledStockStagesTests
   [Theory]
   [InlineData("bloom")]
   [InlineData("slab")]
-  public void A_piece_that_has_stopped_widening_runs_out_lengthways_instead(string form)
-  {
-    // Volume has to go somewhere. Once the width ceiling is reached the last gap cannot spread, so it
-    // elongates sharply - which is why length is deliberately left uncapped in the art.
+  public void A_piece_that_has_stopped_widening_runs_out_lengthways_instead(
+    string form
+  ) {
+    // Once the width ceiling is reached the last gap cannot spread, so the piece elongates sharply. Length
+    // is left uncapped in the art for that reason.
     StockForm stock = StockForm.All[form];
     Assert.Equal(stock.MaxWidth, stock.WidthAt(0.5f), 2); // capped by the last gap
 
     float atOne = Measure(StagePath(form, 1f)).Length;
     float atHalf = Measure(StagePath(form, 0.5f)).Length;
-    Assert.True(atHalf > atOne * 1.5f, $"expected a sharp elongation, got {atOne} -> {atHalf}");
+    Assert.True(
+      atHalf > atOne * 1.5f,
+      $"expected a sharp elongation, got {atOne} -> {atHalf}"
+    );
   }
 
   [Fact]
-  public void A_bloom_lands_on_plate_geometry_at_the_one_voxel_gap()
-  {
-    // The schedule is tuned so the bloom arrives at nearly its full width exactly where it becomes one voxel
-    // thick - one voxel thick and about eight wide being the proportion of a vanilla metal plate, which is
-    // what the piece gets cut into. Landing on that geometry rather than near it is the point.
+  public void A_bloom_lands_on_plate_geometry_at_the_one_voxel_gap() {
+    // The schedule is tuned so the bloom reaches nearly its full width where it becomes one voxel thick.
+    // One voxel by about eight is the proportion of the vanilla metal plate the piece is cut into.
     StockForm bloom = StockForm.Bloom;
     float atPlateGap = bloom.WidthAt(1f);
 
@@ -127,29 +130,34 @@ public class RolledStockStagesTests
   }
 
   [Fact]
-  public void A_bloom_outgrows_the_narrow_barrel_partway_down_the_schedule()
-  {
-    // The lesson the flat set is meant to teach: it starts fitting and stops fitting, so the early gaps are
-    // cheap and the late ones are not. If this ever became "fits throughout" or "never fits", the narrow set
-    // would have no story.
+  public void A_bloom_outgrows_the_narrow_barrel_partway_down_the_schedule() {
+    // The bloom starts inside the narrow barrel and outgrows it partway down, so its early gaps cost two
+    // passes and its late ones cost four.
     const float barrel = 6f; // RollSetItemDefinitions: the flat set's barrel
-    Assert.True(StockForm.Bloom.WidthAt(3f) <= barrel, "a fresh bloom should fit the narrow barrel");
-    Assert.True(StockForm.Bloom.WidthAt(0.5f) > barrel, "a rolled-out bloom should overhang it");
+    Assert.True(
+      StockForm.Bloom.WidthAt(3f) <= barrel,
+      "a fresh bloom should fit the narrow barrel"
+    );
+    Assert.True(
+      StockForm.Bloom.WidthAt(0.5f) > barrel,
+      "a rolled-out bloom should overhang it"
+    );
   }
 
   [Fact]
-  public void A_slab_never_fits_a_narrow_barrel_which_is_why_it_needs_wide_rolls()
-  {
+  public void A_slab_never_fits_a_narrow_barrel_which_is_why_it_needs_wide_rolls() {
     Assert.True(StockForm.Slab.WidthAt(3f) > 6f);
   }
 
   [Fact]
-  public void No_form_is_ever_wider_than_the_wide_barrel_can_swallow()
-  {
-    // The wide set's whole promise is that it never needs side-by-side strips, which only holds if its barrel
-    // clears every form's ceiling.
+  public void No_form_is_ever_wider_than_the_wide_barrel_can_swallow() {
+    // The wide set never needs side-by-side strips, which holds only if its barrel clears every form's
+    // width ceiling.
     const float wideBarrel = 16f; // RollSetItemDefinitions: the flat-wide set's barrel
     foreach (StockForm stock in StockForm.All.Values)
-      Assert.True(stock.MaxWidth <= wideBarrel, $"{stock.Name} can outgrow the wide barrel");
+      Assert.True(
+        stock.MaxWidth <= wideBarrel,
+        $"{stock.Name} can outgrow the wide barrel"
+      );
   }
 }

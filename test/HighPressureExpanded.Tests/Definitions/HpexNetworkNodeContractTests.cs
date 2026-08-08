@@ -5,24 +5,18 @@ using Xunit;
 namespace HighPressureExpanded.Tests;
 
 /// <summary>
-/// Every <c>hpex</c> network node must declare at least one <c>type</c> variant state.
-/// <para>
-/// A node that loses its <c>type</c> group does not fail loudly - it gets an <b>empty</b>
-/// <c>AllowedOrientations</c> (<c>ExDefinitions.OrientationMap</c> has nothing to contribute when
-/// there are no type states) and simply becomes impossible to place. No exception, no log line, no failing
-/// assertion. See <see cref="NetworkNodeContract"/> for why this is the trap the code-naming rename
-/// walks straight into: the redundant-looking single-state <c>type</c> on a stuttering code
-/// (once <c>tuyere-tuyere-*</c>, now <c>furnace-tuyere-*</c>) is load-bearing, and it is the
-/// <i>code</i> that moved, not the group.
-/// </para>
+/// Every <c>hpex</c> network node must declare at least one <c>type</c> variant state. A node that
+/// loses its <c>type</c> group gets an empty <c>AllowedOrientations</c>
+/// (<c>ExDefinitions.OrientationMap</c> has nothing to map without type states) and becomes impossible
+/// to place, with no exception and no log line. A single-state <c>type</c> group looks redundant but
+/// is load-bearing. See <see cref="NetworkNodeContract"/>.
 /// </summary>
-public class HpexNetworkNodeContractTests
-{
-  private static readonly Assembly Mod = typeof(HighPressureExpanded.BlockStructures.Boiler.Blocks.BlockBoilerLancashire).Assembly;
+public class HpexNetworkNodeContractTests {
+  private static readonly Assembly Mod =
+    typeof(HighPressureExpanded.BlockStructures.Boiler.Blocks.BlockBoilerLancashire).Assembly;
 
   [Fact]
-  public void Every_network_node_declares_at_least_one_type_state()
-  {
+  public void Every_network_node_declares_at_least_one_type_state() {
     var violations = NetworkNodeContract.Violations("hpex", Mod);
 
     Assert.True(

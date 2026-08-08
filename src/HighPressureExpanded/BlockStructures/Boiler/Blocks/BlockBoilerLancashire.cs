@@ -5,7 +5,6 @@ using ExpandedLib.Registries.Entities;
 using HighPressureExpanded.BlockStructures.Boiler.BlockEntities;
 using LowPressureExpanded;
 using LowPressureExpanded.BlockStructures.Boiler;
-
 using Vintagestory.API.MathTools;
 
 namespace HighPressureExpanded.BlockStructures.Boiler.Blocks;
@@ -19,11 +18,9 @@ public partial class BlockBoilerLancashire
   : BlockBoiler,
     IFillerHost,
     IBoilerGeometry,
-    IExBlockDefProvider
-{
-  /// <summary>The Lancashire boiler blocktype, authored in C# (migrated from boiler/lancashire.json). Its
-  /// filler footprint and structure map are drawn as ASCII layer diagrams; the geometry offsets are plain
-  /// attributes; the build sequence is a typed stage table.</summary>
+    IExBlockDefProvider {
+  /// <summary>The Lancashire boiler blocktype: geometry offsets as attributes, filler footprint and
+  /// structure map as ASCII layer diagrams, and the build sequence as a typed stage table.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Lancashire(domain)];
 
@@ -37,16 +34,38 @@ public partial class BlockBoilerLancashire
       )
       .MiningTier(4)
       .Attributes(
-        new
-        {
-          steamConnectorOffset = new { x = 0, y = 1, z = 4 },
-          lidOffset = new { x = 0, y = 1, z = 1 },
-          fuelOffset = new { x = 0, y = 0, z = -1 },
-          explosionCenterOffset = new { x = 0, y = 1, z = 3 },
-          lightSampleOffset = new { x = 0, y = 1, z = 3 },
-          exhaustOutletOffset = new { x = 0, y = 1, z = 6 },
-          waterRendererBox = new
-          {
+        new {
+          steamConnectorOffset = new {
+            x = 0,
+            y = 1,
+            z = 4,
+          },
+          lidOffset = new {
+            x = 0,
+            y = 1,
+            z = 1,
+          },
+          fuelOffset = new {
+            x = 0,
+            y = 0,
+            z = -1,
+          },
+          explosionCenterOffset = new {
+            x = 0,
+            y = 1,
+            z = 3,
+          },
+          lightSampleOffset = new {
+            x = 0,
+            y = 1,
+            z = 3,
+          },
+          exhaustOutletOffset = new {
+            x = 0,
+            y = 1,
+            z = 6,
+          },
+          waterRendererBox = new {
             x1 = -14,
             y1 = 2,
             z1 = 2,
@@ -84,7 +103,7 @@ public partial class BlockBoilerLancashire
         )
       )
       // The firebox/flue masonry the boiler is walled into. The pipe fittings it seats on are lpex's
-      // cast tier (hpex depends on lpex), so those legends keep the lpex domain.
+      // cast tier, so those legends keep the lpex domain.
       .MultiblockLayout(s =>
         s.Origin(-1, -2)
           .Legend('#', ExCodes.Filler)

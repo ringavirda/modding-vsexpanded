@@ -5,22 +5,16 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Laying out the sides of a part-rolled piece for rendering. The mesh is composed from the form's one base
-/// shape rather than authored per state, and the placement is driven by the <b>same numbers the simulation
-/// uses</b> - so what the player sees in their hand cannot drift from how the piece actually behaves.
-/// <para>
-/// Pinned because this is arithmetic that fails quietly: a side placed slightly out reads as a modelling slip,
-/// not a bug, and nobody would think to check it. The final look still wants an in-game eye.
-/// </para>
+/// Side placement for rendering a part-rolled piece. The mesh is composed from the form's single base shape
+/// rather than authored per state, and each side is positioned from the same numbers the simulation uses, so
+/// the rendered piece matches its simulated dimensions. The final appearance is verified in-game.
 /// </summary>
-public class StockMeshTests
-{
+public class StockMeshTests {
   private static WorkPiece Even(StockForm form, float thickness, int sides) =>
     new(form, [.. Enumerable.Repeat(thickness, sides)], new bool[sides]);
 
   [Fact]
-  public void A_fresh_piece_is_its_base_shape_untouched()
-  {
+  public void A_fresh_piece_is_its_base_shape_untouched() {
     SidePlacement p = StockMesh.SideOf(WorkPiece.Fresh(StockForm.Bloom), 0);
 
     Assert.Equal(1f, p.Scale.X, 3);
@@ -30,9 +24,8 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void A_rolled_side_is_thinner_wider_and_longer()
-  {
-    // Every axis moves, and each one comes from the model rather than a fudge factor.
+  public void A_rolled_side_is_thinner_wider_and_longer() {
+    // Every axis moves, each taken from the piece's own dimensions.
     var piece = Even(StockForm.Bloom, 1f, sides: 1);
     SidePlacement p = StockMesh.SideOf(piece, 0);
 
@@ -42,9 +35,8 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void Sides_abut_rather_than_overlapping_or_leaving_a_gap()
-  {
-    // The seam is what sells a half-rolled piece as one object; a gap or an overlap reads as broken art.
+  public void Sides_abut_rather_than_overlapping_or_leaving_a_gap() {
+    // Adjacent sides share an edge: a gap or an overlap shows as a seam in the piece.
     var half = new WorkPiece(StockForm.Bloom, [3f, 1f], new bool[2]);
 
     SidePlacement left = StockMesh.SideOf(half, 0);
@@ -58,8 +50,7 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void The_whole_piece_stays_centred_however_lopsided_it_is()
-  {
+  public void The_whole_piece_stays_centred_however_lopsided_it_is() {
     var half = new WorkPiece(StockForm.Bloom, [3f, 0.5f], new bool[2]);
 
     float outerLeft =
@@ -76,10 +67,8 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void An_unevenly_rolled_piece_is_visibly_lopsided()
-  {
-    // The rolled side has spread, so it takes up more of the width than the untouched one. That asymmetry is
-    // the whole point of composing the mesh at all.
+  public void An_unevenly_rolled_piece_is_visibly_lopsided() {
+    // The rolled side has spread, so it takes up more of the width than the untouched one.
     var half = new WorkPiece(StockForm.Bloom, [3f, 1f], new bool[2]);
 
     Assert.True(
@@ -89,8 +78,7 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void An_out_of_range_side_falls_back_to_the_base_shape()
-  {
+  public void An_out_of_range_side_falls_back_to_the_base_shape() {
     SidePlacement p = StockMesh.SideOf(WorkPiece.Fresh(StockForm.Bloom), 5);
     Assert.Equal(1f, p.Scale.X, 3);
     Assert.Equal(0f, p.OffsetX, 3);
@@ -99,8 +87,7 @@ public class StockMeshTests
   #region Cache key
 
   [Fact]
-  public void Pieces_that_look_the_same_share_a_cached_mesh()
-  {
+  public void Pieces_that_look_the_same_share_a_cached_mesh() {
     // Only geometry may affect the key, or the cache grows one entry per stack instead of per appearance.
     var a = new WorkPiece(StockForm.Bloom, [2f, 1f], [false, false]);
     var b = new WorkPiece(StockForm.Bloom, [2f, 1f], [true, true]); // mid turn-over, identical shape
@@ -109,8 +96,7 @@ public class StockMeshTests
   }
 
   [Fact]
-  public void Pieces_that_look_different_do_not()
-  {
+  public void Pieces_that_look_different_do_not() {
     var bloom = new WorkPiece(StockForm.Bloom, [2f, 1f], new bool[2]);
     Assert.NotEqual(
       StockMesh.CacheKey(bloom),

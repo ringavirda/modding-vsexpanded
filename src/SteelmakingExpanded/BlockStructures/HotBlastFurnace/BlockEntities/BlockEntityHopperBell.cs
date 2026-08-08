@@ -11,26 +11,20 @@ using Vintagestory.API.Datastructures;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
 /// <summary>
-/// Block entity for the bell hopper beneath the reinforced hopper. It no longer mixes anything: it pulls
-/// the ready-made burden from the reinforced tank above into an internal magazine, then drips that burden
-/// down into the furnace shaft while dropping is enabled. The burden's grade (its blast-mix proportions)
-/// rides along, so the furnace core reads the same charge the burdenmaker stamped.
+/// Bell hopper, sitting beneath the reinforced hopper. Pulls ready-made burden from the tank above into
+/// an internal magazine and drips it into the furnace shaft while dropping is enabled. The burden's grade
+/// (its blast-mix proportions) rides along, so the furnace core reads the charge the burdenmaker stamped.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperBell : BlockEntity
-{
+public class BlockEntityHopperBell : BlockEntity {
   private long _tickId;
 
-  // The magazine is one burden stack (grade = its attributes), pulled from the tank above and dripped
-  // below. Null when empty.
+  // The magazine is one burden stack (grade carried in its attributes), pulled from the tank above and
+  // dripped below. Null when empty.
   private ItemStack? _magazine;
 
-  // The furnace this bell charges, resolved by the same bounded multiblock scan every furnace part uses.
-  //
-  // The shaft geometry is the furnace core's: the core answers with its own columns, keyed
-  // structure-local. The bell must not derive a plane scan of its own - that would be a second copy of
-  // geometry the core already owns, right for exactly one layout at exactly one facing, and it would get
-  // out of step with a redrawn shaft.
+  // The furnace this bell charges, resolved by the bounded multiblock scan every furnace part uses. The
+  // core owns the shaft geometry and answers with its own structure-local columns.
   private MultiblockAnchorLink<BlockEntityFurnaceCore>? _anchor;
 
   private MultiblockAnchorLink<BlockEntityFurnaceCore> Anchor =>
@@ -41,12 +35,12 @@ public class BlockEntityHopperBell : BlockEntity
       BlockEntityFurnaceCore.ComponentScanAbove
     );
 
-  /// <summary>The burden stack buffered in the magazine (or null when empty), for the block's break
+  /// <summary>The burden stack buffered in the magazine, or null when empty, for the block's break
   /// drops. The caller must not mutate it - clone first.</summary>
   public ItemStack? MagazineContents => _magazine;
 
-  // Dropping is on by default so a freshly built furnace feeds itself without the player having to
-  // discover the Ctrl + right-click toggle first.
+  // Defaults to on, so a freshly built furnace feeds itself before the player finds the
+  // Ctrl + right-click toggle.
   private bool _isDropping = true;
 
   /// <summary>Burden units currently buffered in the magazine.</summary>
@@ -56,16 +50,13 @@ public class BlockEntityHopperBell : BlockEntity
   public int MaxMagazineCapacity => SmexValues.HopperMaxMagazineCapacity;
 
   /// <summary>Whether the hopper is dripping burden into the furnace.</summary>
-  public bool IsDropping
-  {
+  public bool IsDropping {
     get => _isDropping;
-    set
-    {
+    set {
       if (_isDropping == value)
         return;
       _isDropping = value;
-      if (Api?.Side == EnumAppSide.Server)
-      {
+      if (Api?.Side == EnumAppSide.Server) {
         if (_isDropping)
           StartTicking();
         else
@@ -74,24 +65,20 @@ public class BlockEntityHopperBell : BlockEntity
     }
   }
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
 
     if (api.Side == EnumAppSide.Server && _isDropping)
       StartTicking();
   }
 
-  private void StartTicking()
-  {
+  private void StartTicking() {
     if (_tickId == 0 && Api != null)
       _tickId = RegisterGameTickListener(OnServerTick, 1000);
   }
 
-  private void StopTicking()
-  {
-    if (_tickId != 0 && Api != null)
-    {
+  private void StopTicking() {
+    if (_tickId != 0 && Api != null) {
       UnregisterGameTickListener(_tickId);
       _tickId = 0;
     }
@@ -100,8 +87,7 @@ public class BlockEntityHopperBell : BlockEntity
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     _magazine = tree.GetItemstack("magazine");
     _magazine?.ResolveBlockOrItem(worldForResolving);
@@ -110,24 +96,21 @@ public class BlockEntityHopperBell : BlockEntity
     IsDropping = tree.GetBool("isDropping", true);
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     if (_magazine != null)
       tree.SetItemstack("magazine", _magazine);
     tree.SetBool("isDropping", IsDropping);
   }
 
-  private void OnServerTick(float dt)
-  {
+  private void OnServerTick(float dt) {
     PullFromTankAbove();
     DripIntoShaft();
   }
 
-  // Draw ready-made burden from the reinforced tank above into the magazine, respecting the single-grade
-  // rule (a different grade waits until the magazine drains).
-  private void PullFromTankAbove()
-  {
+  // Draws ready-made burden from the reinforced tank above into the magazine. One grade at a time: a
+  // different grade waits until the magazine drains.
+  private void PullFromTankAbove() {
     if (
       Api.World.BlockAccessor.GetBlockEntity(Pos.UpCopy())
       is not BlockEntityHopperReinforced top
@@ -154,40 +137,24 @@ public class BlockEntityHopperBell : BlockEntity
   }
 
   /// <summary>
-  /// One drop: lays <c>HopperDropAmount</c> of the magazine onto the column the furnace nominates.
+  /// One drop: lays <c>HopperDropAmount</c> of the magazine onto the column the furnace nominates
+  /// (<see cref="BlockEntityFurnaceCore.NextChargeColumn"/>: lowest column first, fuel only onto burden).
   /// <para>
-  /// The selection rule is the furnace's, not this block's
-  /// (<see cref="BlockEntityFurnaceCore.NextChargeColumn"/> - lowest column first, fuel only onto burden).
-  /// The bell keeps only what is genuinely its own: the magazine, the pull from the tank above, and the
-  /// drop cadence with its stop toggle. Duplicating the rule here is how the two hoppers would come to
-  /// charge the same shaft differently.
-  /// </para>
-  /// <para>
-  /// The item/unit comparisons below stay honest with fuel coming through here too. <c>BlastMixMagazine</c>
-  /// is a stack size and <c>room</c> is column units, and on this furnace the two are the same currency by
-  /// construction: an ore-scale charge is counted in items
-  /// (<c>ChargeUnitsPerBlock = ChargeItemsPerBand × BandsPerBlock</c>), so one item of coke is one unit of
-  /// coke exactly as one item of burden is one unit of burden. A fuel's carbon <em>weight</em>
-  /// (<c>CarbonPerUnit</c>: 1.0 coke, 0.5 charcoal) is applied where the raceway reads the band, never
-  /// where it is laid - so charging is volumetric and identical for both fuels, which is what makes a
-  /// charcoal campaign the same number of loads for less iron rather than fewer loads.
-  /// <para>
-  /// The one furnace where item ≠ unit is the cupola (3 000 metal units a block), and a bell can
-  /// never charge one: the anchor link demands <c>OwnsCell</c>, and no cupola drawing carries a bell cell.
-  /// If that ever changes, this arithmetic is the first thing that breaks.
-  /// </para>
+  /// <c>BlastMixMagazine</c> is a stack size and <c>room</c> is column units; on this furnace they are the
+  /// same currency (<c>ChargeUnitsPerBlock = ChargeItemsPerBand × BandsPerBlock</c>). A fuel's carbon
+  /// weight (<c>CarbonPerUnit</c>: 1.0 coke, 0.5 charcoal) is applied where the raceway reads the band,
+  /// not where it is laid, so charging is volumetric and identical for both fuels.
   /// </para>
   /// </summary>
-  private void DripIntoShaft()
-  {
+  private void DripIntoShaft() {
     int dropAmount = SmexValues.HopperDropAmount;
     if (_magazine == null || BlastMixMagazine < dropAmount)
       return;
     if (Anchor.Resolve() is not { } core)
       return;
 
-    // A stack whose item no longer resolves reads null here - a live world state on a tick path, so it
-    // holds rather than throws.
+    // A stack whose item no longer resolves reads null here. Reachable on a live tick path, so it holds
+    // rather than throws.
     string? material = _magazine.Collectible?.Code?.ToShortString();
     if (string.IsNullOrEmpty(material) || !core.IsChargeCode(material))
       return;
@@ -196,11 +163,16 @@ public class BlockEntityHopperBell : BlockEntity
     if (column == null || room < dropAmount)
       return; // shaft full, or the band order refuses this material anywhere - hold the magazine
 
-    // The grade rides along, read off the magazine: burden's one surviving quality is its flux ratio
-    // and it has to reach the raceway intact.
-    column.Push(material, dropAmount, core.ChargeTemperature, Burden.Read(_magazine));
+    // The grade (the burden's flux ratio) is read off the magazine and pushed with the charge, so it
+    // reaches the raceway intact.
+    column.Push(
+      material,
+      dropAmount,
+      core.ChargeTemperature,
+      Burden.Read(_magazine)
+    );
     core.SyncChargeBlocks();
-    core.MarkDirty(true); // the shaft total is the core's, and the hoppers' readouts read it
+    core.MarkDirty(true); // the hoppers' readouts read the core's shaft total
 
     _magazine.StackSize -= dropAmount;
     if (_magazine.StackSize <= 0)
@@ -212,24 +184,16 @@ public class BlockEntityHopperBell : BlockEntity
   }
 
   /// <summary>
-  /// Whether the furnace below has no room left - <b>every</b> column at its own capacity.
-  /// <para>
-  /// Per column, not one figure for the furnace: a hearth with a well in it gives some columns a cell
-  /// more than the rest, so "the shaft holds N" would read full while three columns still had room.
-  /// </para>
-  /// <para>
-  /// A bell over no furnace answers <b>false</b>, which is the honest reading of "is the shaft full" -
-  /// there is no shaft. The drip refuses separately, on the same missing anchor.
-  /// </para>
+  /// Whether every column of the furnace below is at its own capacity. Tested per column rather than
+  /// against one shaft total, because a hearth well gives some columns a cell more than the rest.
+  /// False when there is no furnace under the bell.
   /// </summary>
-  public bool IsFurnaceFull()
-  {
+  public bool IsFurnaceFull() {
     if (Api == null || Anchor.Resolve() is not { } core)
       return false;
 
     bool any = false;
-    foreach (var ((x, z), column) in core.ShaftColumns)
-    {
+    foreach (var ((x, z), column) in core.ShaftColumns) {
       any = true;
       if (column.TotalUnits < core.ColumnCapacity(x, z))
         return false;
@@ -237,20 +201,18 @@ public class BlockEntityHopperBell : BlockEntity
     return any;
   }
 
-  // Same item and same stamped grade - the magazine holds one grade at a time, mirroring the tank above.
+  // Same item and same stamped grade: the magazine holds one grade at a time, as the tank above does.
   private bool IsMergeable(ItemStack stack) =>
     _magazine != null
     && stack.Collectible == _magazine.Collectible
     && Burden.Read(stack).Equals(Burden.Read(_magazine));
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     base.OnBlockRemoved();
     StopTicking();
   }
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(
       Lang.Get(

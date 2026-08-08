@@ -8,16 +8,13 @@ namespace LowPressureExpanded.Tests;
 
 /// <summary>
 /// A boiler is built in place (RightClickConstructable), not placed from a frame item, so breaking it
-/// must return only its construction materials - never the boiler block itself. The JSON "drops": []
-/// isn't reliably honoured for a variant block, so the block overrides GetDrops to guarantee an empty
-/// list; this pins that the override strips even a registry-populated self-drop. (Engines keep their
-/// craftable-frame self-drop and don't derive from BlockBoiler.)
+/// returns only its construction materials and never the boiler block itself. A JSON <c>"drops": []</c>
+/// is not reliably honoured for a variant block, so the block overrides <c>GetDrops</c> to return an
+/// empty list even when the registry populates a self-drop.
 /// </summary>
-public class BoilerDropTests
-{
+public class BoilerDropTests {
   [Fact]
-  public void A_boiler_never_drops_itself_even_if_registered_with_a_self_drop()
-  {
+  public void A_boiler_never_drops_itself_even_if_registered_with_a_self_drop() {
     var block = TestBlocks.Configure(
       new BlockBoilerCornish(),
       "lpex:boilercornish-n",

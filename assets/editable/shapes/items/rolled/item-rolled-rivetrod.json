@@ -1,0 +1,73 @@
+{
+	"editor": {
+		"collapsedPaths": "Root/ShingledBloom1,Root/RolledGrooved3,Root/Bar1,Root/RolledRod1,Root/RolledGrooved2.5,Root/RolledGrooved1.25-1,Root/Rod1,Root/ShingledBloomRolled2.75,Root/RolledGrooved2.75,Root/Grooved150,Root/RolledGrooved1.5,Root/RolledGrooved1.75,Root/RolledGrooved1.26,Root/RolledGrooved2.26,Root/RolledGrooved2.25,Root/Grooved125-1,Root/RolledRod200,Root/Grooved175",
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+	},
+	"textures": {
+		"iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
+	},
+	"elements": [
+		{
+			"name": "RivetRod1",
+			"from": [ 7.5, 0.0, 6.0 ],
+			"to": [ 8.5, 1.0, 16.0 ],
+			"rotationOrigin": [ 7.0, 0.0, 6.0 ],
+			"faces": {
+				"north": { "texture": "#iron5", "uv": [ 11.5, 4.0, 12.5, 5.0 ] },
+				"east": { "texture": "#iron5", "uv": [ 0.0, 1.0, 10.0, 2.0 ] },
+				"south": { "texture": "#iron5", "uv": [ 13.0, 12.0, 14.0, 13.0 ] },
+				"west": { "texture": "#iron5", "uv": [ 0.0, 8.5, 10.0, 9.5 ] },
+				"up": { "texture": "#iron5", "uv": [ 11.5, 0.0, 12.5, 10.0 ] },
+				"down": { "texture": "#iron5", "uv": [ 8.0, 0.0, 9.0, 10.0 ] }
+			},
+			"children": [
+				{
+					"name": "RivetRod2",
+					"from": [ 0.0, 0.0, -10.0 ],
+					"to": [ 1.0, 1.0, 0.0 ],
+					"rotationOrigin": [ -0.5, 0.0, -10.0 ],
+					"faces": {
+						"north": { "texture": "#iron5", "uv": [ 11.5, 4.0, 12.5, 5.0 ] },
+						"east": { "texture": "#iron5", "uv": [ 0.0, 1.0, 10.0, 2.0 ] },
+						"south": { "texture": "#iron5", "uv": [ 13.0, 12.0, 14.0, 13.0 ] },
+						"west": { "texture": "#iron5", "uv": [ 0.0, 8.5, 10.0, 9.5 ] },
+						"up": { "texture": "#iron5", "uv": [ 11.5, 0.0, 12.5, 10.0 ] },
+						"down": { "texture": "#iron5", "uv": [ 8.0, 0.0, 9.0, 10.0 ] }
+					}
+				},
+				{
+					"name": "RivetRod3",
+					"from": [ 0.0, 0.0, -20.0 ],
+					"to": [ 1.0, 1.0, -10.0 ],
+					"rotationOrigin": [ -0.5, 0.0, -20.0 ],
+					"faces": {
+						"north": { "texture": "#iron5", "uv": [ 11.5, 4.0, 12.5, 5.0 ] },
+						"east": { "texture": "#iron5", "uv": [ 0.0, 1.0, 10.0, 2.0 ] },
+						"south": { "texture": "#iron5", "uv": [ 13.0, 12.0, 14.0, 13.0 ] },
+						"west": { "texture": "#iron5", "uv": [ 0.0, 8.5, 10.0, 9.5 ] },
+						"up": { "texture": "#iron5", "uv": [ 11.5, 0.0, 12.5, 10.0 ] },
+						"down": { "texture": "#iron5", "uv": [ 8.0, 0.0, 9.0, 10.0 ] }
+					}
+				},
+				{
+					"name": "RivetRod4",
+					"from": [ 0.0, 0.0, -30.0 ],
+					"to": [ 1.0, 1.0, -20.0 ],
+					"rotationOrigin": [ -0.5, 0.0, -30.0 ],
+					"faces": {
+						"north": { "texture": "#iron5", "uv": [ 11.5, 4.0, 12.5, 5.0 ] },
+						"east": { "texture": "#iron5", "uv": [ 0.0, 1.0, 10.0, 2.0 ] },
+						"south": { "texture": "#iron5", "uv": [ 13.0, 12.0, 14.0, 13.0 ] },
+						"west": { "texture": "#iron5", "uv": [ 0.0, 8.5, 10.0, 9.5 ] },
+						"up": { "texture": "#iron5", "uv": [ 11.5, 0.0, 12.5, 10.0 ] },
+						"down": { "texture": "#iron5", "uv": [ 8.0, 0.0, 9.0, 10.0 ] }
+					}
+				}
+			]
+		}
+	]}

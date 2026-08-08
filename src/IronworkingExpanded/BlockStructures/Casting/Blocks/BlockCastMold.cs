@@ -8,24 +8,14 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 /// <summary>
-/// The cast-iron casting mold block - the iron-tier replacement for the ceramic tool molds. A flat mold
-/// placed on a surface and filled by a pour (crucible / ladle / mold pedestal, recognised through
+/// The cast-iron casting mold block, the iron-tier counterpart to the ceramic tool molds. A flat mold
+/// placed on a surface and filled by a pour (crucible, ladle or mold pedestal, which reach it through
 /// <see cref="ILiquidMetalSink"/> on its entity); right-click with an empty hand takes the hardened cast
-/// out and the mold stays (reusable). Cast in the sand cell from the matching pattern.
-/// <para>
-/// <b>One tool type: <c>ingot</c>, a single-ingot tray.</b> Anything the mill already makes has no mold
-/// here: plates and rods are rolled products, so casting them in a tray would be a second route to the
-/// mill's own output. The ingot mold survives because crucible steel has to be poured into something - a
-/// tapped heat needs a vessel that is not a canal.
-/// </para>
-/// <para>
-/// The drawn tray (<c>item-sandcast-ingotmold.json</c>) has one bay, so the block follows the art:
-/// 100 units, one ingot.
-/// </para>
+/// out and leaves the mold, which is reusable. The mold itself is cast in the sand cell from the matching
+/// pattern. One tool type, <c>ingot</c>: a single-bay tray of 100 units yielding one ingot.
 /// </summary>
 [BlockRegister]
-public partial class BlockCastMold : Block, IExBlockDefProvider
-{
+public partial class BlockCastMold : Block, IExBlockDefProvider {
   #region Code-first definition
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
@@ -40,11 +30,11 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
       .Resistance(3.5f)
       .MaxStackSize(16)
       .LightAbsorption(0)
-      // A one-state variant group on purpose: it keeps the `-ingot` suffix in the code, so adding a second
-      // mold later is a new state rather than a code shape change every world has to migrate through.
+      // A one-state variant group keeps the `-ingot` suffix in the block code, so a second mold type is a
+      // new state rather than a code shape change worlds have to migrate through.
       .VariantGroup("tooltype", "ingot")
-      // The tray is the drawn `item-sandcast-ingotmold` art - one bay, and it carries its own cast-iron
-      // texture, so no `#other` ceramic key needs binding.
+      // The tray uses the `item-sandcast-ingotmold` art, which carries its own cast-iron texture, so no
+      // `#other` ceramic key is bound.
       .ShapeByType("*-ingot", "iwex:molten/molds/ingot", rotateY: 90)
       .SingleCollisionBox(0.0625f, 0f, 0.0625f, 0.9375f, 0.125f, 0.9375f)
       .SingleSelectionBox(0.0625f, 0f, 0.0625f, 0.9375f, 0.125f, 0.9375f)
@@ -56,9 +46,25 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
       .Sound("break", "game:block/anvil")
       .Sound("hit", "game:block/anvil")
       .Sound("walk", "game:walk/stone")
-      // The cast a full, hardened mold yields, resolved in the metal's cast domain by the entity.
-      // 100 units, one ingot - vanilla's own ingot arithmetic, and what the single-bay tray draws.
-      .RawByType("attributesByType", "casting-mold-ingot", new { requiredUnits = 100, fillHeight = 1, drops = new[] { new { type = "item", code = "game:ingot-{metal}", quantity = 1 } } });
+      // The cast a full, hardened mold yields; the entity resolves it in the metal's cast domain.
+      // 100 units per ingot, matching vanilla's ingot arithmetic.
+      .RawByType(
+        "attributesByType",
+        "casting-mold-ingot",
+        new {
+          requiredUnits = 100,
+          fillHeight = 1,
+          drops = new[]
+          {
+            new
+            {
+              type = "item",
+              code = "game:ingot-{metal}",
+              quantity = 1,
+            },
+          },
+        }
+      );
 
   #endregion
 
@@ -68,10 +74,10 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
-      world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityCastMold mold
+      world.BlockAccessor.GetBlockEntity(blockSel.Position)
+        is BlockEntityCastMold mold
       && mold.TryTakeOut(byPlayer)
     )
       return true;
@@ -87,10 +93,9 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
-    // The mold is reusable, so it drops itself - carrying its cast in the stack (so a filled mold can be
-    // picked up and, if still liquid, spills when it leaves the hand). A hardened cast rides along.
+  ) {
+    // The mold is reusable, so it drops itself and carries its cast in the stack: a filled mold can be
+    // picked up, and while the metal is still liquid it spills once it leaves the hand.
     var moldStack = new ItemStack(this);
     if (
       world.BlockAccessor.GetBlockEntity(pos) is BlockEntityCastMold mold
@@ -110,19 +115,19 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
   #region Heat-sink glow
 
   /// <summary>
-  /// Emits incandescent block light off the hotter of the cast and the mold body, so a freshly-poured iron
-  /// mold glows and lights its surroundings even as the casting inside sets - the same
-  /// <c>GetLightHsv</c> + <c>MarkBlockDirty</c>-on-change idiom as the molten barrel and the canals. The
-  /// entity owns the level (<see cref="BlockEntityCastMold.GlowLightLevel"/>) and re-lights on change.
+  /// Emits incandescent block light off the hotter of the cast and the mold body, so a freshly poured mold
+  /// keeps lighting its surroundings while the casting sets. The entity owns the level
+  /// (<see cref="BlockEntityCastMold.GlowLightLevel"/>) and re-lights the block when it changes.
   /// </summary>
   public override byte[] GetLightHsv(
     IBlockAccessor blockAccessor,
     BlockPos pos,
     ItemStack? stack = null
-  )
-  {
-    if (pos != null && blockAccessor.GetBlockEntity(pos) is BlockEntityCastMold mold)
-    {
+  ) {
+    if (
+      pos != null
+      && blockAccessor.GetBlockEntity(pos) is BlockEntityCastMold mold
+    ) {
       byte val = mold.GlowLightLevel;
       if (val > 0)
         return [8, 7, val];

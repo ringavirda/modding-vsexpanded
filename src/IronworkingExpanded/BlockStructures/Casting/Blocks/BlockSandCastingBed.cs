@@ -13,38 +13,41 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 /// <summary>
-/// The sand casting bed mega-block: a 3×1×4 footprint (built through right-click construction - two
-/// brick courses, a sand fill, then the player forms the runners) that casts poured molten pig iron
-/// into solid pigs. Its footprint filler cells each host a <see cref="BEBehaviorMoltenCell"/> - the
-/// central column the runners, the two side columns the double-molds - and the principal hosts the
-/// pour basin. <see cref="BlockEntitySandCastingBed"/> drives the isolated internal flow and the
-/// harvest; this block wires the footprint, the construction, and routes a click on a hardened mold
-/// through to the harvest (falling through to construction otherwise).
+/// The sand casting bed mega-block: a 3x1x4 footprint, built through right-click construction (two brick
+/// courses then a sand fill, with the runners carved by the player), that casts poured molten pig iron
+/// into solid pigs. Each footprint filler cell hosts a <see cref="BEBehaviorMoltenCell"/> - the central
+/// column the runners, the two side columns the double-molds - and the principal hosts the pour basin.
+/// <see cref="BlockEntitySandCastingBed"/> drives the isolated internal flow and the harvest; this block
+/// wires the footprint, the construction, and the click that reaches the harvest.
+/// See docs/design/machines/casting-bed.md.
 /// </summary>
 [BlockRegister]
 public partial class BlockSandCastingBed
   : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
   // Per-cell molten-cell configs hosted on the footprint fillers: a thin pass-through runner and a mold
   // that hoards its charge (drainFitting) until it hardens into pigs.
-  private static readonly FillerBehaviorSpec RunnerCell =
-    new("exlib.BEBehaviorMoltenCell", null, new { capacity = 50 });
+  private static readonly FillerBehaviorSpec RunnerCell = new(
+    "exlib.BEBehaviorMoltenCell",
+    null,
+    new { capacity = 50 }
+  );
 
-  // A mold's capacity is its ROW's impression count at one pig each - never a literal. The rows are not the
-  // same size (the two end rows carry 2 impressions, the middle rows 3), which is the whole reason a middle
-  // row is worth more per pour; a single shared number was short for every middle row and silently tracked
-  // the pig's mass. SandBedLayout.CapacityOf is the same expression the harvest reads, so the cavity the
-  // bed pours into and the cavity it hands back cannot drift apart.
+  // A mold's capacity is its row's impression count at one pig each: the two end rows carry 2 impressions,
+  // the middle rows 3. SandBedLayout.CapacityOf is the same expression the harvest reads, so the cavity
+  // the bed pours into and the cavity it hands back cannot drift apart.
   private static FillerBehaviorSpec MoldCell(BedSlot slot) =>
     new(
       "exlib.BEBehaviorMoltenCell",
       null,
-      new { capacity = SandBedLayout.CapacityOf(slot, BedSlotState.Mold), drainFitting = true }
+      new {
+        capacity = SandBedLayout.CapacityOf(slot, BedSlotState.Mold),
+        drainFitting = true,
+      }
     );
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
@@ -62,14 +65,14 @@ public partial class BlockSandCastingBed
       .NoDrops()
       .Behavior("ExOrientable")
       .FillerOffsets(Footprint())
-      // The pour basin lives on the principal itself - the internal flow's source.
+      // The pour basin lives on the principal itself and is the internal flow's source.
       .EntityBehavior(
         "exlib.BEBehaviorMoltenCell",
         new JObject { ["capacity"] = 200, ["flowSource"] = true }
       )
-      // The RCC behaviour suppresses the default block mesh, so the built brick+sand stages only render
-      // through a ConstructedAnimator (the ore-bunker/engine idiom). Without Animatable the bed draws
-      // nothing but its molten surfaces. The bed is static, so the animator only tesselates - no anims.
+      // The RCC behaviour suppresses the default block mesh, so the built stages render only through a
+      // ConstructedAnimator; without Animatable the bed draws nothing but its molten surfaces. The bed is
+      // static, so the animator only tesselates and runs no animations.
       .EntityBehavior("Animatable")
       .Construction(c =>
         c.Stage(s =>
@@ -84,15 +87,16 @@ public partial class BlockSandCastingBed
               .AddElements("Base")
           )
           .Stage(s =>
-            s.Require("game:burnedbrick-{brick}", 16, "iwex:rcc-ingredient-brick")
+            s.Require(
+                "game:burnedbrick-{brick}",
+                16,
+                "iwex:rcc-ingredient-brick"
+              )
               .AddElements("BaseExtension")
           )
-          // Filling the bed with green sand is the last build step, and it finishes UNCARVED: every slot
-          // starts broken (plain sand), so the runners and molds are the player's own work afterwards
-          // rather than something construction hands them.
-          // Prepared green sand, not raw `game:sand-*`. Green sand (sand + blue clay) is what holds an
-          // impression at all, so the bed takes the same prepared item the 1×1 cell is rammed with - one
-          // moulding material across the whole casting suite.
+          // The sand fill is the last build step and finishes uncarved: every slot starts as plain sand,
+          // and the player carves the runners and molds afterwards. Takes prepared green sand (sand plus
+          // blue clay), the same item the 1x1 cell is rammed with, since only that holds an impression.
           .Stage(s =>
             s.Require(
                 $"{domain}:{GreenSandItemDefinitions.Code}",
@@ -102,30 +106,33 @@ public partial class BlockSandCastingBed
               .AddElements(SandBedLayout.RunnersGroup)
           )
       )
-      // No `sand` variant group. Carrying the rock type of whatever sand filled the bed (over vanilla's
-      // 20-state `block/rock` property) would multiply the bed's codes twentyfold to record a purely
-      // cosmetic fact. With one prepared moulding material there is nothing to record: every bed is
-      // rammed with the same green sand, so the block is `casting-sandbed-{brick}-{side}` and the sand
-      // texture is a constant. iwex has never shipped, so no migration is owed for the dropped group.
-      .VariantGroup("brick", "black", "brown", "cream", "gray", "orange", "red", "tan")
+      // No `sand` variant group: every bed is filled with the same green sand, so the code is
+      // `casting-sandbed-{brick}-{side}` and the sand texture is a constant.
+      .VariantGroup(
+        "brick",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      )
       .SideVariant()
       .CreativeTab("general", "*-n")
       .CreativeTab("iwex", "*-n")
-      // Caution: `iwex:sandcasting-bed` is the pre-rework shape and must not come back. It still carries
-      // `SandFull` and has none of the ten per-slot elements SandBedLayout emits, so the bed rendered
-      // through it shows nothing at all for a carved runner or mold - selective-element matching drops
-      // an unknown name silently, so the failure is an invisible hole rather than an exception.
-      // SandBedLayoutTests walks THIS shape; the two must stay the same file.
+      // Must stay `iwex:casting/sandcastingbed`: it is the shape carrying the per-slot elements
+      // SandBedLayout emits, and selective-element matching drops an unknown element name silently, so a
+      // shape without them renders a carved runner or mold as nothing at all. SandBedLayoutTests walks
+      // this same shape file.
       .Shape("iwex:casting/sandcastingbed")
       .ShapeRotateYByType("*-n", 180)
       .ShapeRotateYByType("*-e", 90)
       .ShapeRotateYByType("*-s", 0)
       .ShapeRotateYByType("*-w", 270)
-      // Brick colour is a tint overlay over the running-bond base (the ore-bunker pattern); the burned-clay
-      // mold cavities stay fixed. The `andesite` key is the rammed-sand key the shapes are drawn against
-      // - named for the rock the bed once defaulted to, back when it took any sand and keyed this per
-      // variant. With one prepared moulding sand it simply is the green-sand texture, exactly as on the
-      // 1×1 cell, and the shapes (which still declare the historical key) resolve straight through.
+      // Brick colour is a tint overlay over the running-bond base; the burned-clay mold cavities stay
+      // fixed. The shapes draw their rammed sand against the `andesite` key, bound here to the green-sand
+      // texture, as on the 1x1 cell.
       .Texture(
         "fire1",
         "game:block/clay/brick/four/running/cream1",
@@ -142,31 +149,32 @@ public partial class BlockSandCastingBed
       .Sound("hit", "game:block/ceramic")
       .Sound("walk", "game:walk/stone");
 
-  // The north-orientation footprint: every carvable slot that is not the principal's own cell. Every cell of
-  // the bed is now a slot - the basin's old brick shoulders became row 1's molds when the bed grew to four
-  // rows - so this is generated FROM the layout rather than restated here, and the order it emits is the
-  // order SlotCells zips against.
-  private static IReadOnlyList<FillerCellSpec> Footprint()
-  {
+  // The north-orientation footprint: every carvable slot that is not the principal's own cell. Generated
+  // from SandBedLayout, and the order it emits is the order SlotCells zips against.
+  private static IReadOnlyList<FillerCellSpec> Footprint() {
     var cells = new List<FillerCellSpec>();
-    foreach (BedSlot slot in SandBedLayout.FillerSlots)
-    {
+    foreach (BedSlot slot in SandBedLayout.FillerSlots) {
       (int dx, int dz) = SandBedLayout.OffsetOf(slot);
-      cells.Add(new FillerCellSpec(dx, 0, dz, Behaviors: [slot.IsMold ? MoldCell(slot) : RunnerCell]));
+      cells.Add(
+        new FillerCellSpec(
+          dx,
+          0,
+          dz,
+          Behaviors: [slot.IsMold ? MoldCell(slot) : RunnerCell]
+        )
+      );
     }
     return cells;
   }
 
   /// <summary>
   /// The world position of every carvable slot for a bed at <paramref name="pos"/>. Built by zipping the
-  /// resolved footprint against the specs it was generated from - <see cref="Footprint"/> and
-  /// <c>FootprintCells</c> preserve order, and both come from <see cref="SandBedLayout"/>, so there is no
-  /// separate inverse rotation to get wrong. The principal's own cell carries row 1's runner (the basin).
+  /// resolved footprint against the specs it was generated from: <see cref="Footprint"/> and
+  /// <c>FootprintCells</c> preserve order, so no separate inverse rotation is needed. The principal's own
+  /// cell carries row 1's runner, the basin.
   /// </summary>
-  public IReadOnlyDictionary<BlockPos, BedSlot> SlotCells(BlockPos pos)
-  {
-    var map = new Dictionary<BlockPos, BedSlot>
-    {
+  public IReadOnlyDictionary<BlockPos, BedSlot> SlotCells(BlockPos pos) {
+    var map = new Dictionary<BlockPos, BedSlot> {
       [pos] = new BedSlot(SandBedLayout.FirstRow, BedSlotSide.Centre),
     };
 
@@ -182,9 +190,9 @@ public partial class BlockSandCastingBed
   #endregion
 
   /// <summary>
-  /// Structure/filler rotation, paired with the shape <c>rotateYByType</c>: the +180 keeps the footprint
-  /// flush with the model, whose body is authored extending the opposite way from the orientation
-  /// convention (so a placed bed runs away from the player). Also rotates the BE's molten surfaces.
+  /// Structure and filler rotation, paired with the shape <c>rotateYByType</c>. The +180 keeps the
+  /// footprint flush with the model, whose body is authored extending the opposite way from the
+  /// orientation convention. Also rotates the block entity's molten surfaces.
   /// </summary>
   public override int StructureAngle =>
     ExOrientation.AngleFromSide(Variant["side"]) + 180;
@@ -195,8 +203,8 @@ public partial class BlockSandCastingBed
 
   #region Drops
 
-  // Raised through construction; a broken bed scatters only its construction materials (the RCC
-  // behaviour), never the bed block itself.
+  // The bed is raised through construction, so a broken bed scatters only the construction materials the
+  // RCC behaviour returns, never the bed block itself.
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,
@@ -208,22 +216,24 @@ public partial class BlockSandCastingBed
 
   #region Interaction (harvest a hardened mold, else fall through to construction)
 
-  private static BlockEntitySandCastingBed? Bed(IWorldAccessor world, BlockPos pos) =>
-    world.BlockAccessor.GetBlockEntity(pos) as BlockEntitySandCastingBed;
+  private static BlockEntitySandCastingBed? Bed(
+    IWorldAccessor world,
+    BlockPos pos
+  ) => world.BlockAccessor.GetBlockEntity(pos) as BlockEntitySandCastingBed;
 
   /// <summary>
-  /// A click on the bed's <b>principal</b> cell. Without this the principal's own slot is unreachable:
-  /// <see cref="BlockEntitySandCastingBed.OnCellInteract"/> is otherwise only wired through the filler path, and
-  /// <c>SandBedLayout.FillerSlots</c> deliberately excludes offset (0,0) - which is exactly where row 1's
-  /// centre slot sits. So one slot of the bed could never be carved or harvested however the player clicked.
-  /// Routes identically to the filler path, falling through to construction when the cell has nothing to do.
+  /// A click on the bed's principal cell. <c>SandBedLayout.FillerSlots</c> excludes offset (0,0), where
+  /// row 1's centre slot sits, so that slot has no filler and is reachable only here. Routes to
+  /// <see cref="BlockEntitySandCastingBed.OnCellInteract"/> exactly as the filler path does, falling
+  /// through to construction when the cell has nothing to do.
   /// </summary>
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
   ) =>
-    Bed(world, blockSel.Position)?.OnCellInteract(blockSel.Position, byPlayer) == true
+    Bed(world, blockSel.Position)?.OnCellInteract(blockSel.Position, byPlayer)
+      == true
     || base.OnBlockInteractStart(world, byPlayer, blockSel);
 
   bool IFillerInteractionTarget.OnFillerInteractStart(
@@ -232,7 +242,8 @@ public partial class BlockSandCastingBed
     BlockSelection principalSel,
     BlockPos clickedCell
   ) =>
-    Bed(world, principalSel.Position)?.OnCellInteract(clickedCell, byPlayer) == true
+    Bed(world, principalSel.Position)?.OnCellInteract(clickedCell, byPlayer)
+      == true
     || base.OnBlockInteractStart(world, byPlayer, principalSel);
 
   bool IFillerInteractionTarget.OnFillerInteractStep(

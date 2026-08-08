@@ -8,33 +8,26 @@ namespace IronworkingExpanded.BlockStructures.Forming;
 public readonly record struct SidePlacement(Vec3f Scale, float OffsetX);
 
 /// <summary>
-/// Placing the sides of a part-rolled piece, so a half-worked bloom <em>looks</em> half-worked: thin and wide
-/// down the side that has been through the rolls, still thick and narrow down the side that has not.
-/// <para>
-/// The mesh is composed rather than authored. Every state is the form's one base shape scaled per side, so the
-/// 5 thicknesses × 2 sides a schedule can reach cost no art at all - and, more usefully, the picture is derived
-/// from the <b>same numbers the simulation uses</b> (<see cref="WorkPiece.StripWidth"/> /
-/// <see cref="WorkPiece.StripLength"/>), so what the player sees cannot drift from how the piece behaves.
-/// </para>
-/// <para>
-/// Pure, because the arithmetic is the part that can be wrong in a way nobody would notice: a side placed a
-/// fraction out reads as a modelling slip rather than a bug. The final look still wants an in-game eye, as
-/// every held transform in this codebase does.
-/// </para>
+/// Places the sides of a part-rolled piece so a half-worked bloom looks half-worked: thin and wide down the
+/// side that has been through the rolls, still thick and narrow down the side that has not. The mesh is
+/// composed rather than authored - every state is the form's one base shape scaled per side - and the scale
+/// comes from the same values the simulation uses (<see cref="WorkPiece.StripWidth"/> /
+/// <see cref="WorkPiece.StripLength"/>), so the picture cannot drift from the piece's behaviour.
 /// </summary>
-public static class StockMesh
-{
+public static class StockMesh {
   /// <summary>The base shapes are authored centred on x = 8 in the usual 16-unit block space.</summary>
   public const float CentreX = 8f;
 
   /// <summary>
-  /// Where side <paramref name="index"/> of <paramref name="piece"/> sits, as a scale and shift of the form's
-  /// base shape. Sides <b>abut</b> across the piece and the whole thing stays centred, so an unevenly rolled
-  /// piece is visibly lopsided - the wider, thinner side taking up more of the width - rather than two halves
-  /// floating apart.
+  /// Where side <paramref name="index"/> of <paramref name="piece"/> sits, as a scale and shift of the
+  /// form's base shape. Sides abut across the piece and the whole stays centred, so an unevenly rolled
+  /// piece is lopsided, the wider and thinner side taking up more of the width.
   /// </summary>
-  public static SidePlacement SideOf(WorkPiece piece, int index, float centreX = CentreX)
-  {
+  public static SidePlacement SideOf(
+    WorkPiece piece,
+    int index,
+    float centreX = CentreX
+  ) {
     StockForm form = piece.Form;
     if (index < 0 || index >= piece.Strips.Length || form.BaseWidth <= 0f)
       return new SidePlacement(new Vec3f(1f, 1f, 1f), 0f);
@@ -59,16 +52,17 @@ public static class StockMesh
   }
 
   /// <summary>
-  /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. Only the strip
-  /// thicknesses matter - two pieces at the same thicknesses look identical however they got there, so the
-  /// turn-over state and the heat are deliberately excluded and the cache stays small (a handful of states per
-  /// form rather than one per stack).
+  /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. Only the form
+  /// and the strip thicknesses take part: two pieces at the same thicknesses look identical, so turn-over
+  /// state and heat are excluded and the cache holds a handful of states per form rather than one per stack.
   /// </summary>
-  public static string CacheKey(WorkPiece piece)
-  {
+  public static string CacheKey(WorkPiece piece) {
     var sb = new System.Text.StringBuilder(piece.Form.Name);
     foreach (float t in piece.Strips)
-      sb.Append('|').Append(t.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));
+      sb.Append('|')
+        .Append(
+          t.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+        );
     return sb.ToString();
   }
 }

@@ -1,18 +1,17 @@
-using Xunit;
 using ExpandedLib.Metals;
+using Xunit;
 
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The shared molten-metal value helper: the incandescent glow scale and the metal-name formatting
-/// that every canal cell, tap, pedestal and barrel reads. Temperature/melt-point classification needs
-/// a resolved collectible, so only the world-free arithmetic is pinned here.
+/// The shared molten-metal value helper: the glow scale and metal-name formatting read by canal
+/// cells, taps, pedestals and barrels. Melt-point classification needs a resolved collectible, so
+/// only the world-free arithmetic is covered here.
 /// </summary>
 // Reads the global ExMeasure.System through MoltenMetal's temperature formatter, so it must not run
 // beside a class that flips it - see ExMeasureCollection.
 [Collection(ExMeasureCollection.Name)]
-public class MoltenMetalTests
-{
+public class MoltenMetalTests {
   [Theory]
   [InlineData(20f, 0)] // cold
   [InlineData(499f, 0)] // just below the glow floor
@@ -23,8 +22,7 @@ public class MoltenMetalTests
   public void GlowLevel_scales_from_the_glow_floor_and_clamps(
     float temp,
     int expected
-  )
-  {
+  ) {
     Assert.Equal((byte)expected, MoltenMetal.GlowLevel(temp));
   }
 
@@ -36,29 +34,25 @@ public class MoltenMetalTests
   public void DisplayName_strips_ingot_prefix_and_capitalises(
     string code,
     string expected
-  )
-  {
+  ) {
     Assert.Equal(expected, MoltenMetal.DisplayName(code));
   }
 
   [Fact]
-  public void Thresholds_are_ordered_hardened_below_liquid()
-  {
+  public void Thresholds_are_ordered_hardened_below_liquid() {
     Assert.True(MoltenMetal.HardenedThreshold < MoltenMetal.LiquidThreshold);
   }
 
   [Fact]
-  public void FormatTemperature_reads_cold_below_room_temperature()
-  {
+  public void FormatTemperature_reads_cold_below_room_temperature() {
     // Below 21 C it prints the "cold" label (here the echoed lang key), not a number.
     Assert.Equal("exlib:metalstate-cold", MoltenMetal.FormatTemperature(15f));
   }
 
   [Fact]
-  public void FormatTemperature_prints_the_rounded_value_when_warm()
-  {
-    // With no formatter injected (lpex wires its metric/imperial ExMeasure in-game), the exlib
-    // default prints the metric "650 °C" form.
+  public void FormatTemperature_prints_the_rounded_value_when_warm() {
+    // With no formatter injected (lpex wires its own ExMeasure in-game), the exlib default prints
+    // the metric "650 °C" form.
     Assert.StartsWith("650 ", MoltenMetal.FormatTemperature(650f));
   }
 }

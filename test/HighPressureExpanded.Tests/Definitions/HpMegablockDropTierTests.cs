@@ -9,20 +9,13 @@ using Xunit;
 namespace HighPressureExpanded.Tests;
 
 /// <summary>
-/// Regression guard for the two HP mega-blocks' break/mining/construction JSON, which the headless
-/// harness can't load (blocks are configured by hand, not from assets). Reads each block's authored
-/// code-first def - the single source of truth - and pins: the Lancashire boiler must not drop itself
-/// (built in place, not a placeable frame); the Cornish engine keeps its craftable-frame self-drop;
-/// the pickaxe tiers (steel Lancashire = iron, engine = bronze); and the Lancashire's full construction
-/// cost, which the 80% salvage is taken from.
-/// <para>
-/// Split out of <c>SteelmakingExpanded.Tests.MegablockDropTierTests</c> when the two HP machines were
-/// extracted into hpex - smex must not gain an hpex reference (there is no smex → hpex edge). The LP
-/// and Bessemer cases stay in that file.
-/// </para>
+/// Break, mining and construction JSON for the two HP mega-blocks, read from each block's authored
+/// code-first def because the headless harness configures blocks by hand rather than from assets. Pins
+/// that the Lancashire boiler suppresses its self-drop (it is built in place, not placed from a frame),
+/// that the Cornish engine keeps its craftable-frame self-drop, the pickaxe tiers, and the Lancashire's
+/// full construction cost that the salvage fraction is taken from.
 /// </summary>
-public class HpMegablockDropTierTests
-{
+public class HpMegablockDropTierTests {
   private static JsonElement Lancashire() =>
     DefinitionJson.Parse(
       BlockBoilerLancashire.Definitions("hpex").Single().ToJson().ToString()
@@ -36,8 +29,7 @@ public class HpMegablockDropTierTests
   #region Lancashire boiler (built in place: no self-drop)
 
   [Fact]
-  public void Lancashire_boiler_does_not_drop_itself_as_a_block()
-  {
+  public void Lancashire_boiler_does_not_drop_itself_as_a_block() {
     // A boiler is built in place (RightClickConstructable), not placed from a frame item, so it must
     // declare "drops": [] to suppress the auto-populated self-drop.
     JsonElement block = Lancashire();
@@ -50,10 +42,12 @@ public class HpMegablockDropTierTests
   }
 
   [Fact]
-  public void Lancashire_boiler_needs_an_iron_tier_pickaxe()
-  {
-    // Welded steel like the Bessemer converter, unlike the bronze-tier iron machines.
-    Assert.Equal(VanillaToolTiers.Iron, DefinitionJson.MiningTier(Lancashire()));
+  public void Lancashire_boiler_needs_an_iron_tier_pickaxe() {
+    // Welded steel, like the Bessemer converter.
+    Assert.Equal(
+      VanillaToolTiers.Iron,
+      DefinitionJson.MiningTier(Lancashire())
+    );
   }
 
   #endregion
@@ -61,10 +55,9 @@ public class HpMegablockDropTierTests
   #region Cornish engine (craftable frame: self-drop is correct)
 
   [Fact]
-  public void Cornish_engine_still_drops_its_craftable_frame()
-  {
-    // Engines are placeable, craftable frames - breaking one should recover the frame block, so they
-    // must not carry the boiler's empty-drops override.
+  public void Cornish_engine_still_drops_its_craftable_frame() {
+    // Engines are placeable craftable frames, so breaking one recovers the frame block and they must
+    // not carry the boiler's empty-drops override.
     JsonElement block = CornishEngine();
     bool suppressesSelfDrop =
       block.TryGetProperty("drops", out JsonElement drops)
@@ -77,8 +70,7 @@ public class HpMegablockDropTierTests
   }
 
   [Fact]
-  public void Cornish_engine_needs_a_bronze_tier_pickaxe()
-  {
+  public void Cornish_engine_needs_a_bronze_tier_pickaxe() {
     Assert.Equal(
       VanillaToolTiers.Bronze,
       DefinitionJson.MiningTier(CornishEngine())
@@ -89,15 +81,11 @@ public class HpMegablockDropTierTests
 
   #region Construction cost + salvage
 
-  // The break salvage scatters brokenDropsRatio (80%) of the consumed stacks across every completed
-  // stage. Vanilla rcc.GetDrops omits the last stage (a `i < CurrentCompletedStage` off-by-one), which
-  // robbed the salvage of the most expensive stage - the Lancashire casing - so a fully built boiler
-  // refunded ~40% instead of 80%. ExRightClickConstructable now includes the final stage. This pins
-  // the full per-material construction cost the 80% is taken from, so a stage edit can't silently
-  // shift it again.
+  // Break salvage scatters brokenDropsRatio (80%) of the stacks consumed by every completed stage,
+  // the final one included. This pins the full per-material construction cost that fraction is taken
+  // from, so a stage edit cannot shift it unnoticed.
   [Fact]
-  public void Lancashire_boiler_full_construction_cost_is_pinned()
-  {
+  public void Lancashire_boiler_full_construction_cost_is_pinned() {
     Dictionary<string, int> cost = ConstructionCost(Lancashire());
 
     Assert.Equal(34, cost["metalplate-steel"]); // 10 + 8 + 16
@@ -107,16 +95,14 @@ public class HpMegablockDropTierTests
   }
 
   [Fact]
-  public void Hp_machine_salvage_ratio_defaults_to_80_percent()
-  {
-    // The salvage fraction lives on the player-tunable config, read live via ExRccSettings keyed by
-    // the broken block's Code.Domain - so hpex carries its own copy rather than inheriting lpex's.
+  public void Hp_machine_salvage_ratio_defaults_to_80_percent() {
+    // The salvage fraction lives on the player-tunable config, read via ExRccSettings keyed by the
+    // broken block's Code.Domain, so hpex carries its own copy rather than inheriting lpex's.
     Assert.Equal(0.8f, new HpexConfig().RccBrokenDropsRatio, 3);
   }
 
   [Fact]
-  public void Hp_machines_no_longer_carry_a_json_drop_ratio()
-  {
+  public void Hp_machines_no_longer_carry_a_json_drop_ratio() {
     foreach (JsonElement block in new[] { Lancashire(), CornishEngine() })
       Assert.False(
         DefinitionJson
@@ -134,19 +120,17 @@ public class HpMegablockDropTierTests
   // shared with the smex drop-tier suite.
 
   // Sums every stage's requireStacks quantity by ingredient code (the full build cost).
-  private static Dictionary<string, int> ConstructionCost(JsonElement block)
-  {
+  private static Dictionary<string, int> ConstructionCost(JsonElement block) {
     var totals = new Dictionary<string, int>();
     foreach (
-      JsonElement stage in DefinitionJson.Constructable(block)
+      JsonElement stage in DefinitionJson
+        .Constructable(block)
         .GetProperty("stages")
         .EnumerateArray()
-    )
-    {
+    ) {
       if (!stage.TryGetProperty("requireStacks", out JsonElement stacks))
         continue;
-      foreach (JsonElement ing in stacks.EnumerateArray())
-      {
+      foreach (JsonElement ing in stacks.EnumerateArray()) {
         string code = ing.GetProperty("code").GetString()!;
         totals[code] =
           totals.GetValueOrDefault(code)

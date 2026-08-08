@@ -8,34 +8,20 @@ using Vintagestory.GameContent;
 namespace IronworkingExpanded.Items;
 
 /// <summary>
-/// The pig-iron family and the pig's helve-breaking behaviour. A cast <c>iwex:pig</c> (150 units) is
-/// deliberately not smithable into tools, but - being brittle - it CAN be shattered under a helve hammer:
-/// implementing <see cref="IAnvilWorkable"/> lets the player set a pig on an anvil, where it becomes a work
-/// item of <see cref="PigBreaking.PigVoxels"/> voxels tagged with <see cref="PigBreaking.MarkerKey"/>. The
-/// helve then hammers it down to the tiny <c>smithing/pig</c> recipe shape (one leftover pigchunk), and
-/// <see cref="IronworkingExpanded.Patches.AnvilPigBreakingPatches"/> pays the shed voxels out as chunks and
-/// bits - conserving the mass. The work item reuses the vanilla iron one so it renders without any custom
-/// registration; the marker keeps the patch off ordinary iron smithing.
-/// <para>
-/// The pig's broken products live here too - <c>iwex:pigchunk</c> (25 u) and <c>iwex:pigbit</c> (5 u) - as
-/// they are nothing but smaller denominations of a pig, so the whole family and its unit hierarchy sit in
-/// one file. Only the pig needs a custom class; the chunk and bit are plain <see cref="Item"/>s. All three
-/// are non-forgeable brittle scrap that feeds the cupola, never the smithy; the mass-conserving arithmetic
-/// of breaking one down is in <see cref="PigBreaking"/>.
-/// </para>
+/// The pig-iron family. A cast <c>iwex:pig</c> is brittle scrap: not smithable into tools, but
+/// shatterable under a helve hammer. <see cref="IAnvilWorkable"/> lets it be set on an anvil as a work
+/// item of <see cref="PigBreaking.PigVoxels"/> voxels tagged with <see cref="PigBreaking.MarkerKey"/>,
+/// which keeps <see cref="IronworkingExpanded.Patches.AnvilPigBreakingPatches"/> off ordinary iron
+/// smithing; the helve sheds voxels down to the <c>smithing/pig</c> shape and the patch pays them out as
+/// chunks and bits. The plain <see cref="Item"/>s <c>iwex:pigchunk</c> (25 u) and <c>iwex:pigbit</c>
+/// (5 u) are defined here too; break arithmetic is in <see cref="PigBreaking"/>.
 /// </summary>
 [ItemRegister]
-public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
-{
-  /// <summary>Units a full pig, a chunk, and a bit each represent - the mass the bed's casting and the
-  /// helve-breaking both conserve (5 u bit -&gt; 25 u chunk -&gt; 375 u pig), recorded on each item as
-  /// <c>materialUnits</c> and read as constants by the machines and the breaking maths.
-  /// <para>
-  /// 375 u is <b>5 x 3 x 10 = 150 vx³</b> at the mod's one density rule (1 vx³ = 2.5 u). It is not a free
-  /// number: the cupola's charge band is derived from it, and one pig per band is the only count a block of
-  /// loose iron can physically hold - 375 u/band fills a block to 58.6 %, which is where loose irregular
-  /// solids actually pack, while two pigs would be 117 %, denser than solid iron.
-  /// </para></summary>
+public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider {
+  /// <summary>Material units a bit, a chunk and a full pig each represent (5 u, 25 u, 375 u). Casting in
+  /// the bed and helve-breaking both conserve them, and each item records its value as
+  /// <c>materialUnits</c>. 375 u is 5 x 3 x 10 = 150 vx³ at the mod's density rule of 2.5 u per vx³, and
+  /// the cupola's charge band derives from it. See docs/design/items/pig.md.</summary>
   public const int PigUnits = 375;
   public const int ChunkUnits = 25;
   public const int BitUnits = 5;
@@ -44,8 +30,8 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 
   #region Definitions
 
-  // The pig carries the helve-breaking (IAnvilWorkable) class; its chunk and bit are plain items, nothing
-  // but smaller denominations of the same tarnished iron. One provider for the whole family.
+  // One provider for the family: the pig carries the IAnvilWorkable class, the chunk and bit are plain
+  // items of the same tarnished iron.
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [Pig(domain), PigChunk(domain), PigBit(domain)];
 
@@ -60,7 +46,7 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
       .MaterialDensity(7200)
       .CombustibleProps(new { meltingPoint = 1150 })
       .Attribute("materialUnits", PigUnits)
-      // Brittle scrap: workable (shatterable) at any temperature, never anvil-formed into tools.
+      // Brittle scrap: shatterable at any temperature, never anvil-formed into tools.
       .Attribute("workableTemperature", 0)
       .CreativeCommon("*");
 
@@ -96,18 +82,20 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
   public List<SmithingRecipe> GetMatchingRecipes(ItemStack stack) =>
     api.GetSmithingRecipes()
       ?.Where(r => r.Ingredient?.SatisfiesAsIngredient(stack, true) == true)
-      .ToList() ?? [];
+      .ToList()
+    ?? [];
 
-  // Pig iron is brittle - it shatters cold, so it is workable regardless of temperature.
+  // Pig iron shatters cold, so it is workable regardless of temperature.
   public bool CanWork(ItemStack stack) => true;
 
-  public ItemStack? TryPlaceOn(ItemStack stack, BlockEntityAnvil beAnvil)
-  {
+  public ItemStack? TryPlaceOn(ItemStack stack, BlockEntityAnvil beAnvil) {
     // One pig at a time: never merge into or top up another work item.
     if (beAnvil.WorkItemStack != null)
       return null;
 
-    Item? workItem = api.World.GetItem(new AssetLocation(PigBreaking.WorkItemCode));
+    Item? workItem = api.World.GetItem(
+      new AssetLocation(PigBreaking.WorkItemCode)
+    );
     if (workItem == null)
       return null;
 
@@ -117,7 +105,7 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
       stackToPlace,
       stack.Collectible.GetTemperature(api.World, stack)
     );
-    // Tag it so the helve patch shatters THIS work item (and only it) into chunks/bits.
+    // Tagged so the helve patch shatters this work item, and only it, into chunks and bits.
     stackToPlace.Attributes.SetBool(PigBreaking.MarkerKey, value: true);
 
     CreatePigVoxels(ref beAnvil.Voxels);
@@ -126,7 +114,7 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 
   public ItemStack GetBaseMaterial(ItemStack stack) => stack;
 
-  // FullyWorkable: the helve hammers away every metal voxel not in the recipe shape - i.e. it crumbles.
+  // FullyWorkable makes the helve hammer away every metal voxel outside the recipe shape.
   public EnumHelveWorkableMode GetHelveWorkableMode(
     ItemStack stack,
     BlockEntityAnvil beAnvil
@@ -134,12 +122,10 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 
   public int VoxelCountForHandbook(ItemStack stack) => PigBreaking.PigVoxels;
 
-  // A solid 5x3x10 = 150-voxel block - the pig's own 375 u solid at 2.5 u/vx³, not a stand-in - positioned
-  // so it fully covers the small smithing/pig recipe shape (x 4..8, y 0, z 6..7); the helve sheds the other
-  // 140 voxels, which the patch turns into chunks/bits. The anvil grid is [16, 6, 16], so a 3-tall fill
-  // clears its 6 and z 6..15 stays in bounds.
-  private static void CreatePigVoxels(ref byte[,,] voxels)
-  {
+  // A solid 5x3x10 = 150-voxel block, the pig's 375 u at 2.5 u/vx³, positioned so it fully covers the
+  // smithing/pig recipe shape (x 4..8, y 0, z 6..7). The helve sheds the other 140 voxels, which the patch
+  // turns into chunks and bits. The anvil grid is [16, 6, 16], so a 3-tall fill and z 6..15 stay in bounds.
+  private static void CreatePigVoxels(ref byte[,,] voxels) {
     voxels = new byte[16, 6, 16];
     for (int x = 0; x < 5; x++)
       for (int y = 0; y < 3; y++)

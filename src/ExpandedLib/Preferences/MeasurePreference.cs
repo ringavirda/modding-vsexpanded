@@ -1,15 +1,14 @@
 using System.Collections.Generic;
-using ExpandedLib.Registries.Preferences;
 using ExpandedLib.Helpers;
+using ExpandedLib.Registries.Preferences;
 
 namespace ExpandedLib.Preferences;
 
 /// <summary>
-/// The metric/imperial display-unit preference. Adapts the <see cref="ExMeasure"/> formatter to the
-/// library's generic <see cref="IExPreference"/> contract: <see cref="Apply"/> sets the active
-/// <see cref="ExMeasure.System"/> that every block-info / handbook formatter reads. The simulation
-/// always runs in metric; this only changes how values are displayed. Registered (and persisted)
-/// through the library's preferences store; its <c>.exmod measure</c> sub-command is built by
+/// Metric/imperial display-unit preference. <see cref="Apply"/> sets the active
+/// <see cref="ExMeasure.System"/> that every block-info and handbook formatter reads; the simulation
+/// always runs in metric, so this changes display only. Registered and persisted through the
+/// library's preferences store; the <c>.exmod measure</c> sub-command is built by
 /// <see cref="ExpandedLib.Commands.MeasureSubCommand"/>.
 /// <para>
 /// Lang keys (exlib domain): <c>command-measure-desc</c>, <c>pref-measure-label</c>,
@@ -17,8 +16,7 @@ namespace ExpandedLib.Preferences;
 /// </para>
 /// </summary>
 [PreferenceRegister]
-public sealed class MeasurePreference : IExPreference
-{
+public sealed class MeasurePreference : IExPreference {
   public string Key => "measure";
 
   public IReadOnlyList<string> Options { get; } = ["metric", "imperial"];

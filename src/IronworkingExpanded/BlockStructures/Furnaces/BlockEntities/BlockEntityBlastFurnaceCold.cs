@@ -3,15 +3,14 @@ using ExpandedLib.Registries.Entities;
 namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 
 /// <summary>
-/// The cold blast furnace. Everything it does lives in <see cref="BlockEntityShaftFurnace"/>; what
-/// makes it the cold one is that its blast arrives at ambient off a mechanical blower, so the heat
-/// balance gives it no preheat and its burden has to carry the coke instead.
+/// The cold blast furnace. Its behaviour lives in <see cref="BlockEntityShaftFurnace"/>; the blast
+/// arrives at ambient off a mechanical blower, so the heat balance grants no preheat and the burden
+/// carries the coke instead. See docs/design/machines/blast-furnace-cold.md.
 /// <para>
-/// The empty body is deliberate: the cold furnace's open top is its chimney (docs/design/iwex.md) and
-/// its layout puts plain refractory brick where the hot furnace carries its pipe outlets, so the
-/// drawing carries no outlet glyph and the furnace derives no gas outlets from it. Overriding
-/// <c>GasOutletCells</c> here would make every lit tick re-run the outlet scan against brick and leave
-/// <see cref="BlockEntityFurnaceCore.IsChoked"/> permanently unreachable.
+/// The body is empty on purpose: the open top is the chimney and the layout places plain refractory
+/// brick where the hot furnace carries its pipe outlets, so no gas outlets are derived. Overriding
+/// <c>GasOutletCells</c> here would re-run the outlet scan against brick every lit tick and leave
+/// <see cref="BlockEntityFurnaceCore.IsChoked"/> unreachable.
 /// </para>
 /// </summary>
 [BlockEntityRegister]

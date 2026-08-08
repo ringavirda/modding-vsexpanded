@@ -15,34 +15,21 @@ namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// The twin-tub blower: the iron tier's only air source, a mechanically driven bellows that produces
-/// into the blast main it stands in.
-/// <para>
-/// The tests that matter here are the <b>ordering</b> ones. The iron tier's progression gate is not a
-/// rule anywhere in the code - it is the relationship between four numbers: what a coke-rich burden
-/// demands, what a lean one demands, what bellows can raise, and what plated pipe can hold. Order them
-/// wrong and either the iron tier cannot blow its own furnace, or a cheap mechanical blower runs the
-/// fuel-efficient burden the steam tier is supposed to be for. The rest pins the speed response, the
-/// production path and the footprint that hosts the axle.
-/// </para>
+/// into the blast main it stands in. The tier-balance cases pin the ordering of four numbers - the blast
+/// demand of a coke-rich burden, that of a lean one, the bellows pressure ceiling and plated pipe's
+/// burst pressure - which is what makes bellows able to blow a rich burden and unable to blow a lean
+/// one. The rest covers the speed response, the production path and the footprint hosting the axle.
 /// </summary>
-public class TwinTubBlowerTests
-{
+public class TwinTubBlowerTests {
   #region Tier balance
-
-  // The iron tier's whole gate lives in four numbers: what a rich burden demands, what a lean one
-  // demands, what the bellows can raise, and what plated pipe can hold. Get their orDER wrong and
-  // either the iron tier cannot be blown at all, or a mechanical blower runs the fuel-efficient
-  // burden that is supposed to require steam.
 
   private static readonly BurdenMix RichBurden = new(65f, 5f, 30f);
   private static readonly BurdenMix LeanBurden = new(85f, 5f, 10f);
 
   /// <summary>A cold blast furnace, purely to evaluate its burden-derived blast demand.</summary>
-  private static BlockEntityBlastFurnaceCold Furnace()
-  {
+  private static BlockEntityBlastFurnaceCold Furnace() {
     var world = new TestWorld();
-    var be = new BlockEntityBlastFurnaceCold
-    {
+    var be = new BlockEntityBlastFurnaceCold {
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -52,26 +39,25 @@ public class TwinTubBlowerTests
       ),
     };
     world.Attach(be);
-    // The live draw scales the cached reference rate, which Initialize would prime; cache it directly
-    // rather than standing up the whole furnace just to read one number.
+    // The live draw scales the cached reference rate that Initialize primes; cache it directly rather
+    // than standing up the whole furnace to read one number.
     ReflectionHelpers.Invoke(be, "CacheAttributes");
     return be;
   }
 
   [Fact]
-  public void The_bellows_can_blow_a_coke_rich_burden_but_not_a_lean_one()
-  {
+  public void The_bellows_can_blow_a_coke_rich_burden_but_not_a_lean_one() {
     var furnace = Furnace();
     float rich = furnace.RequiredBlastPressureFor(RichBurden);
     float lean = furnace.RequiredBlastPressureFor(LeanBurden);
     float ceiling = IwexValues.TwinTubBlowerMaxPressure;
 
-    // Brute force is allowed: a coke-hungry charge is permeable and blows on bellows.
+    // A coke-rich charge is permeable, so bellows pressure is enough to blow it.
     Assert.True(
       ceiling >= rich,
       $"the iron tier cannot blow its own furnace: bellows reach {ceiling} atm, a rich burden needs {rich}"
     );
-    // Fuel efficiency is not: the lean charge is what the steam tier is for.
+    // A lean charge packs denser and belongs to the steam tier.
     Assert.True(
       ceiling < lean,
       $"bellows at {ceiling} atm run a lean burden needing {lean} atm - the steam gate is open"
@@ -79,8 +65,7 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void The_bellows_never_burst_their_own_tier_of_pipe()
-  {
+  public void The_bellows_never_burst_their_own_tier_of_pipe() {
     Assert.True(
       IwexValues.TwinTubBlowerMaxPressure < IwexValues.PlatedPipeBurstPressure,
       $"a blower at {IwexValues.TwinTubBlowerMaxPressure} atm bursts plated pipe "
@@ -89,10 +74,9 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void A_lean_burden_needs_more_pressure_than_plated_pipe_can_hold()
-  {
-    // The second half of the gate, and the one that makes it visible in world: even if a player found
-    // a stronger iron-tier blower, the plated main itself would burst before the lean burden lit.
+  public void A_lean_burden_needs_more_pressure_than_plated_pipe_can_hold() {
+    // The second half of the gate: even with a stronger iron-tier blower, the plated main bursts before
+    // a lean burden could be blown.
     Assert.True(
       Furnace().RequiredBlastPressureFor(LeanBurden)
         > IwexValues.PlatedPipeBurstPressure,
@@ -101,10 +85,9 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void Full_output_covers_a_two_tuyere_furnace_on_its_thirstiest_burden()
-  {
-    // A rich burden burns the most coke and so draws the most air - the highest demand the iron tier
-    // ever has to meet. One blower must run one furnace, or the tier needs stacked blowers to work.
+  public void Full_output_covers_a_two_tuyere_furnace_on_its_thirstiest_burden() {
+    // A rich burden burns the most coke and so draws the most air: the highest demand of the iron tier.
+    // One blower covers one two-tuyere furnace.
     float demand = 2 * Furnace().TuyereDrawFor(RichBurden);
     Assert.True(
       IwexValues.TwinTubBlowerOutputPerSecond >= demand,
@@ -118,12 +101,11 @@ public class TwinTubBlowerTests
   #region Burden-derived demand
 
   [Fact]
-  public void A_leaner_burden_demands_more_pressure_and_less_air()
-  {
+  public void A_leaner_burden_demands_more_pressure_and_less_air() {
     var furnace = Furnace();
 
     // Coke is the permeable skeleton of the charge: less of it packs denser and resists the blast more,
-    // while burning less fuel needs less oxygen. Both directions come from the one number.
+    // while burning less fuel needs less oxygen. Both directions derive from the fuel fraction.
     Assert.True(
       furnace.RequiredBlastPressureFor(LeanBurden)
         > furnace.RequiredBlastPressureFor(RichBurden),
@@ -136,8 +118,7 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void An_unstamped_charge_is_treated_as_the_default_grade()
-  {
+  public void An_unstamped_charge_is_treated_as_the_default_grade() {
     var furnace = Furnace();
     var standard = new BurdenMix(
       100f - 100f * IwexValues.BfDefaultFuelFrac - 5f,
@@ -145,8 +126,8 @@ public class TwinTubBlowerTests
       100f * IwexValues.BfDefaultFuelFrac
     );
 
-    // Legacy count-only blast mix carries no composition; the heat balance reads it as standard grade
-    // and the blast demand must agree, or old charges would silently become unblowable.
+    // A count-only blast mix carries no composition; the heat balance reads it as the default grade, so
+    // the blast demand has to agree or such a charge becomes unblowable.
     Assert.Equal(
       furnace.RequiredBlastPressureFor(standard),
       furnace.RequiredBlastPressureFor(default),
@@ -159,7 +140,7 @@ public class TwinTubBlowerTests
     );
   }
 
-  // (The ascending pipe-tier ordering is asserted in the lpex suite - iwex cannot see lpex's config.)
+  // The ascending pipe-tier ordering is asserted in the lpex suite: iwex cannot see lpex's config.
 
   #endregion
 
@@ -174,27 +155,18 @@ public class TwinTubBlowerTests
   public void Output_scales_linearly_between_the_min_and_max_axle_speed(
     float speed,
     float expected
-  )
-  {
-    Assert.Equal(
-      expected,
-      BlockEntityTwinTubMPBlower.SpeedFraction(speed),
-      3
-    );
+  ) {
+    Assert.Equal(expected, BlockEntityTwinTubMPBlower.SpeedFraction(speed), 3);
   }
 
   [Fact]
-  public void A_retuned_speed_band_moves_the_response_with_it()
-  {
+  public void A_retuned_speed_band_moves_the_response_with_it() {
     float minOriginal = IwexValues.TwinTubBlowerMinSpeed;
-    try
-    {
+    try {
       IwexValues.Edit(c => c.TwinTubBlowerMinSpeed = 1.0f);
-      // What used to be half output is now nothing: the band starts where the config says it does.
+      // 1.0 is half output under the default band and zero once the minimum is raised to 1.0.
       Assert.Equal(0f, BlockEntityTwinTubMPBlower.SpeedFraction(1.0f), 3);
-    }
-    finally
-    {
+    } finally {
       IwexValues.Edit(c => c.TwinTubBlowerMinSpeed = minOriginal);
     }
   }
@@ -204,12 +176,15 @@ public class TwinTubBlowerTests
   #region Production
 
   /// <summary>
-  /// A blower standing as a node in its own (single-cell) blast main. <c>ProduceAir</c> is driven
-  /// directly with an axle speed: the live tick reads its speed from a hosted MP filler port, which
-  /// needs a real filler block entity the headless world does not build.
+  /// A blower standing as a node in its own single-cell blast main. <c>ProduceAir</c> is driven with an
+  /// axle speed directly: the live tick reads speed from a hosted MP filler port, which needs a filler
+  /// block entity the headless world does not build.
   /// </summary>
-  private static (TestWorld world, PipeNetwork net, BlockEntityTwinTubMPBlower blower) Rig()
-  {
+  private static (
+    TestWorld world,
+    PipeNetwork net,
+    BlockEntityTwinTubMPBlower blower
+  ) Rig() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
@@ -238,8 +213,7 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void A_driven_blower_puts_air_into_its_own_network()
-  {
+  public void A_driven_blower_puts_air_into_its_own_network() {
     var (_, net, blower) = Rig();
     Assert.Equal(0f, net.State?.Volume ?? 0f);
 
@@ -251,8 +225,7 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void An_undriven_blower_leaves_the_main_alone()
-  {
+  public void An_undriven_blower_leaves_the_main_alone() {
     var (world, net, blower) = Rig();
     net.TryProduceGas(20f, 20f, "Air", world.Accessor, maxOutputPressure: 2f);
     float before = net.State!.Volume;
@@ -263,12 +236,12 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void A_half_speed_axle_delivers_half_the_air_of_a_rated_one()
-  {
+  public void A_half_speed_axle_delivers_half_the_air_of_a_rated_one() {
     var (_, fastNet, fast) = Rig();
     var (_, slowNet, slow) = Rig();
     float mid =
-      (IwexValues.TwinTubBlowerMinSpeed + IwexValues.TwinTubBlowerMaxSpeed) / 2f;
+      (IwexValues.TwinTubBlowerMinSpeed + IwexValues.TwinTubBlowerMaxSpeed)
+      / 2f;
 
     float fullOutput = fast.ProduceAir(IwexValues.TwinTubBlowerMaxSpeed, 1f);
     float halfOutput = slow.ProduceAir(mid, 1f);
@@ -278,8 +251,7 @@ public class TwinTubBlowerTests
   }
 
   [Fact]
-  public void The_blower_never_pushes_its_line_past_the_pressure_ceiling()
-  {
+  public void The_blower_never_pushes_its_line_past_the_pressure_ceiling() {
     var (_, net, blower) = Rig();
 
     // Blow far longer than the single cell can hold, so the ceiling - not the volume - is what stops it.
@@ -297,8 +269,7 @@ public class TwinTubBlowerTests
   #region Footprint
 
   [Fact]
-  public void The_footprint_hosts_a_mechanical_port_on_its_upper_rear_cell()
-  {
+  public void The_footprint_hosts_a_mechanical_port_on_its_upper_rear_cell() {
     ExBlockDef def = BlockTwinTubMPBlower.Definitions("iwex").Single();
     var offsets = (JArray)def.ToJson()["attributes"]!["fillerOffsets"]!;
 
@@ -309,7 +280,10 @@ public class TwinTubBlowerTests
       (int)o["y"]! == 1 && (int)o["z"]! == 0 && (int)o["x"]! == 0
     );
     var behaviors = (JArray)port["behaviors"]!;
-    Assert.Equal("exlib.BEBehaviorMPFillerPort", (string)behaviors[0]!["code"]!);
+    Assert.Equal(
+      "exlib.BEBehaviorMPFillerPort",
+      (string)behaviors[0]!["code"]!
+    );
     Assert.Equal("west", (string)behaviors[0]!["face"]!);
     Assert.True((bool)port["allowAttach"]!);
   }
@@ -322,8 +296,7 @@ public class TwinTubBlowerTests
   public void The_structure_angle_follows_the_orientation_variant(
     string orientation,
     int expected
-  )
-  {
+  ) {
     var block = TestBlocks.Configure(
       new BlockTwinTubMPBlower(),
       $"iwex:furnace-twintubblower-{orientation}",

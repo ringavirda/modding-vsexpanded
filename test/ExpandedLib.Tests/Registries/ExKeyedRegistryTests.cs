@@ -5,13 +5,11 @@ namespace ExpandedLib.Tests;
 
 /// <summary>The shared case-insensitive keyed store backing the config/recipe/(metal/liquid)
 /// registries.</summary>
-public class ExKeyedRegistryTests
-{
+public class ExKeyedRegistryTests {
   private sealed record Item(string Code, int Value);
 
   [Fact]
-  public void Registers_and_looks_up_by_derived_code()
-  {
+  public void Registers_and_looks_up_by_derived_code() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
     reg.Register(new Item("lpex", 1));
 
@@ -20,8 +18,7 @@ public class ExKeyedRegistryTests
   }
 
   [Fact]
-  public void Lookup_is_case_insensitive()
-  {
+  public void Lookup_is_case_insensitive() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
     reg.Register(new Item("Smex", 7));
 
@@ -30,8 +27,7 @@ public class ExKeyedRegistryTests
   }
 
   [Fact]
-  public void Re_registering_a_code_replaces_the_item()
-  {
+  public void Re_registering_a_code_replaces_the_item() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
     reg.Register(new Item("iwex", 1));
     reg.Register(new Item("iwex", 2));
@@ -42,15 +38,13 @@ public class ExKeyedRegistryTests
   }
 
   [Fact]
-  public void Missing_code_returns_false()
-  {
+  public void Missing_code_returns_false() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
     Assert.False(reg.TryGet("nope", out _));
   }
 
   [Fact]
-  public void Codes_and_values_enumerate_the_registered_set()
-  {
+  public void Codes_and_values_enumerate_the_registered_set() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
     reg.Register(new Item("a", 1));
     reg.Register(new Item("b", 2));

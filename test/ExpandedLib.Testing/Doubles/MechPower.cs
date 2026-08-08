@@ -5,15 +5,13 @@ using Vintagestory.GameContent.Mechanics;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// Helpers for headless mechanical-power (MP) tests. The vanilla <see cref="MechanicalNetwork"/> has a
-/// public parameterless ctor with settable <c>Speed</c>/<c>NetworkResistance</c>, so a turning (or
-/// stalled, or overloaded) network can be faked directly, then bound onto a real
-/// <see cref="BEBehaviorMPBase"/> behavior (its <c>network</c> field) and that behavior attached to a
-/// block entity's behavior list so <c>GetBehavior&lt;BEBehaviorMPBase&gt;()</c> finds it - the wiring
-/// the game does at chunk load but the headless harness skips.
+/// Helpers for headless mechanical-power tests. <see cref="MechanicalNetwork"/> has a public
+/// parameterless constructor with settable <c>Speed</c>/<c>NetworkResistance</c>, so a turning, stalled
+/// or overloaded network can be built directly, bound onto a real <see cref="BEBehaviorMPBase"/> and
+/// that behavior added to a block entity's behavior list so <c>GetBehavior&lt;BEBehaviorMPBase&gt;()</c>
+/// resolves it. That wiring is done by the game at chunk load and skipped by the headless harness.
 /// </summary>
-public static class MechPower
-{
+public static class MechPower {
   /// <summary>A fake mechanical network turning at <paramref name="speed"/> with the given load.</summary>
   public static MechanicalNetwork Network(float speed, float resistance = 0f) =>
     new() { Speed = speed, NetworkResistance = resistance };
@@ -27,8 +25,7 @@ public static class MechPower
     T behavior,
     MechanicalNetwork? network
   )
-    where T : BEBehaviorMPBase
-  {
+    where T : BEBehaviorMPBase {
     if (network != null)
       ReflectionHelpers.SetField(behavior, "network", network);
     var list = (IList)ReflectionHelpers.GetField(be, "Behaviors")!;

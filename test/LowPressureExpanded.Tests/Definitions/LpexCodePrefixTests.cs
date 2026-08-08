@@ -6,30 +6,24 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// No <c>lpex</c> block's base code may be a proper prefix of another's at a <c>-</c> boundary.
-/// <para>
-/// The idiom this protects is <c>SomeFamily.Code + "*"</c>, which several
-/// <c>LpexCodes</c> selectors use to name "any member of this family" - including ones fed straight into
-/// multiblock <c>Legend</c>s. A prefix collision silently widens such a wildcard to cover a
-/// <b>different block</b>, and a layout would then accept the wrong part in a cell with every code
-/// resolving and no test failing. See <see cref="CodePrefixCollision"/>.
-/// </para>
-/// <para>
-/// Found live: the 2026-08-03 naming wave briefly gave <c>iwex:mpenergy</c> (shaft + bevel) a code
-/// that prefixed <c>iwex:mpenergy-flywheel</c>. The fix was to put every member of the family in its
-/// <c>type</c> variant under one shared code - which is the rule this test enforces in general:
-/// <b>either all of a family's members live in <c>type</c>, or none do.</b>
-/// </para>
+/// No <c>lpex</c> block's base code may be a proper prefix of another's at a <c>-</c> boundary. The
+/// idiom this protects is <c>SomeFamily.Code + "*"</c>, used by <c>LpexCodes</c> selectors to name any
+/// member of a family and fed straight into multiblock <c>Legend</c>s: a prefix collision widens such
+/// a wildcard to cover a different block, so a layout accepts the wrong part in a cell with every code
+/// still resolving. The rule that satisfies it is that either all of a family's members live in the
+/// <c>type</c> variant or none do. See <see cref="CodePrefixCollision"/>.
 /// </summary>
-public class LpexCodePrefixTests
-{
+public class LpexCodePrefixTests {
   private const string Domain = "lpex";
-  private static readonly Assembly Mod = typeof(LowPressureExpanded.LpexConfig).Assembly;
+  private static readonly Assembly Mod =
+    typeof(LowPressureExpanded.LpexConfig).Assembly;
 
   [Fact]
-  public void No_base_code_is_a_prefix_of_another()
-  {
-    IReadOnlyList<string> collisions = CodePrefixCollision.Collisions(Domain, Mod);
+  public void No_base_code_is_a_prefix_of_another() {
+    IReadOnlyList<string> collisions = CodePrefixCollision.Collisions(
+      Domain,
+      Mod
+    );
 
     Assert.True(
       collisions.Count == 0,

@@ -1,24 +1,18 @@
 namespace ExpandedLib.Registries.Config;
 
 /// <summary>
-/// Declares that upgrading a mod into (or past) <see cref="ToVersion"/> resets the named config
-/// properties back to their coded defaults, discarding the player's saved tuning for just those
-/// keys. Every value not listed is preserved across the upgrade.
+/// Declares that upgrading a mod into or past <see cref="ToVersion"/> resets the named config
+/// properties to their coded defaults, discarding the player's saved tuning for those keys only.
+/// Every value not listed is preserved across the upgrade.
 /// <para>
-/// Migrations are handed to the mod's <see cref="ExConfigRegister{TConfig}"/> at construction. On load
-/// the store compares the version stamped in the config file (the "from" version) to the running mod
-/// version and applies every migration whose <see cref="ToVersion"/> falls in that gap, oldest
-/// first. A migration fires <em>once</em> - the first time a build at or past its
-/// <see cref="ToVersion"/> loads a file last saved below it.
-/// </para>
-/// <para>
-/// To target a single transition (e.g. "0.9.1 =&gt; 0.9.2"), set <see cref="FromVersion"/> to the
-/// lower bound: the reset then only fires for files saved at or above it. Leave it null to reset on
-/// any upgrade that crosses <see cref="ToVersion"/>, regardless of how old the file is.
+/// Migrations are handed to the mod's <see cref="ExConfigRegister{TConfig}"/> at construction. On
+/// load the store compares the version stamped in the config file to the running mod version and
+/// applies every migration whose <see cref="ToVersion"/> falls in that gap, oldest first, so each
+/// fires once: the first time a build at or past its <see cref="ToVersion"/> loads a file last saved
+/// below it. <see cref="FromVersion"/> narrows a migration to a single transition.
 /// </para>
 /// </summary>
-public sealed class ExConfigMigration
-{
+public sealed class ExConfigMigration {
   /// <summary>The mod version this reset is tied to (e.g. <c>"0.9.2"</c>). The reset fires when the
   /// player first runs a build at or past this version having last saved below it.</summary>
   public required string ToVersion { get; init; }

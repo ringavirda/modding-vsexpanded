@@ -9,21 +9,19 @@ using Vintagestory.API.Util;
 namespace IronworkingExpanded.BlockStructures.Crafting.Gui;
 
 /// <summary>
-/// The design table's drafting window - the one window iwex owns (a sanctioned exception to R7, see
-/// <c>docs/design/diagram-crafting.md</c>). Read-mostly: the medium/parchment input slots and the drafted
-/// output, a picker over every loaded diagram, an info panel describing the selected plan, and a Draw
-/// button that asks the block entity to draft it.
+/// The design table's drafting window: the medium/parchment input slots and the drafted output, a picker
+/// over every loaded diagram, an info panel describing the selected plan, and a Draw button that asks the
+/// block entity to draft it. See <c>docs/design/diagram-crafting.md</c>.
 /// <para>
-/// The window lives entirely on the client; the block entity applies slot moves and the draft through the
-/// open/close/draft packet handshake (see <see cref="BlockEntities.BlockEntityDesignTable"/>). The diagram
-/// picker enumerates the loaded <c>diagram-*</c> items directly, so plans contributed by other mods (lpex,
-/// smex) appear here for free. The setup-guide viewer is a later increment.
+/// Client-side only; the block entity applies slot moves and the draft through the open/close/draft packet
+/// handshake (see <see cref="BlockEntities.BlockEntityDesignTable"/>). The picker enumerates the loaded
+/// <c>diagram-*</c> items directly, so plans contributed by other mods appear in it.
 /// </para>
 /// </summary>
-public class GuiDialogDesignTable : GuiDialogBlockEntity
-{
-  /// <summary>Block-entity packet the Draw button sends: the chosen diagram's code. The block entity drafts
-  /// it server-side (see <see cref="BlockEntities.BlockEntityDesignTable.PacketIdDraft"/>).</summary>
+public class GuiDialogDesignTable : GuiDialogBlockEntity {
+  /// <summary>Block-entity packet the Draw button sends, carrying the chosen diagram's code. The block
+  /// entity drafts it server-side (see
+  /// <see cref="BlockEntities.BlockEntityDesignTable.PacketIdDraft"/>).</summary>
   public const int PacketIdDraft = 1002;
 
   private readonly ICoreClientAPI _capi;
@@ -41,8 +39,7 @@ public class GuiDialogDesignTable : GuiDialogBlockEntity
     ICoreClientAPI capi,
     string? preselected
   )
-    : base(title, inventory, pos, capi)
-  {
+    : base(title, inventory, pos, capi) {
     _capi = capi;
     _pos = pos;
     _title = title;
@@ -64,18 +61,18 @@ public class GuiDialogDesignTable : GuiDialogBlockEntity
     Compose();
   }
 
-  /// <summary>A drafted-plan item: first code part <c>diagram</c> with a <c>type</c> variant. Matches iwex's
-  /// and any other mod's diagrams alike, so the picker is the whole catalogue.</summary>
+  /// <summary>A drafted-plan item: first code part <c>diagram</c> with a <c>type</c> variant. Domain is
+  /// not matched, so other mods' diagrams qualify too.</summary>
   private static bool IsDiagram(Item item) =>
     item?.Code != null
     && item.Code.FirstCodePart() == "diagram"
     && item.Variant != null
     && item.Variant.ContainsKey("type");
 
-  private static string DisplayName(Item diagram) => new ItemStack(diagram).GetName();
+  private static string DisplayName(Item diagram) =>
+    new ItemStack(diagram).GetName();
 
-  private void Compose()
-  {
+  private void Compose() {
     double slot =
       GuiElementPassiveItemSlot.unscaledSlotSize
       + GuiElementItemSlotGridBase.unscaledSlotPadding;
@@ -132,7 +129,11 @@ public class GuiDialogDesignTable : GuiDialogBlockEntity
       .AddDialogTitleBar(_title, CloseIconPressed)
       .BeginChildElements(bg)
       .AddStaticText(Lang.Get("iwex:designtable-inputs"), labelFont, inputLabel)
-      .AddStaticText(Lang.Get("iwex:designtable-result"), labelFont, outputLabel)
+      .AddStaticText(
+        Lang.Get("iwex:designtable-result"),
+        labelFont,
+        outputLabel
+      )
       .AddItemSlotGrid(Inventory, DoSendPacket, 2, [0, 1], inputGrid)
       .AddItemSlotGrid(Inventory, DoSendPacket, 1, [2], outputGrid)
       .AddDropDown(codes, names, sel, OnDiagramSelected, ddBounds, "diagramdd")
@@ -145,16 +146,14 @@ public class GuiDialogDesignTable : GuiDialogBlockEntity
     UpdateInfo();
   }
 
-  private void OnDiagramSelected(string code, bool selected)
-  {
+  private void OnDiagramSelected(string code, bool selected) {
     if (!selected)
       return;
     _selectedCode = code;
     UpdateInfo();
   }
 
-  private void UpdateInfo()
-  {
+  private void UpdateInfo() {
     Item? diagram = _diagrams.FirstOrDefault(i =>
       i.Code.ToShortString() == _selectedCode
     );
@@ -167,11 +166,12 @@ public class GuiDialogDesignTable : GuiDialogBlockEntity
         : "";
 
     SingleComposer.GetDynamicText("diagname").SetNewText(name);
-    SingleComposer.GetDynamicText("diagdesc").SetNewText(desc, autoHeight: true);
+    SingleComposer
+      .GetDynamicText("diagdesc")
+      .SetNewText(desc, autoHeight: true);
   }
 
-  private bool OnDrawClicked()
-  {
+  private bool OnDrawClicked() {
     if (_selectedCode != null)
       _capi.Network.SendBlockEntityPacket(
         _pos,

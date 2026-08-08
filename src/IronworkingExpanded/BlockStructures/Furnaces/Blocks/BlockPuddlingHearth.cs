@@ -13,27 +13,25 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
 /// The puddling furnace's hearth - a cast-iron bottom plate three cells wide, fettled with iron oxide and
-/// charged with pig through the door.
-/// <para>
-/// It is a mega-block whose two flanking cells are fillers, and <b>the fillers are the interface</b>: which
-/// cell you click picks which row you are working, so a player reaches into the hearth exactly where they
-/// mean to. That is only possible because the layout's slab shoulders open the doorway wide enough to
-/// reach all three; before that the hearth would have needed a split mesh and a guessing game.
-/// </para>
+/// charged with pig through the door. A mega-block whose two flanking cells are fillers; the clicked cell
+/// selects the row being worked, which is what the layout's slab shoulders make reachable for all three.
 /// </summary>
 [BlockRegister]
 public partial class BlockPuddlingHearth
   : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, BlockFurnaceCoreBase.FurnaceCode, "furnace/puddlinghearth")
+        .Create(
+          domain,
+          BlockFurnaceCoreBase.FurnaceCode,
+          "furnace/puddlinghearth"
+        )
         .Class<BlockPuddlingHearth>()
         .EntityClass<BlockEntityPuddlingHearth>()
         .Material(EnumBlockMaterial.Metal)
@@ -41,41 +39,46 @@ public partial class BlockPuddlingHearth
         .Behavior("MultiblockStructure")
         .Behavior("ExOrientable")
         // `type` names the family member; every furnace part shares the code `iwex:furnace`
-        // (see BlockFurnaceCoreBase.FurnaceCode and N7).
+        // (see BlockFurnaceCoreBase.FurnaceCode).
         .VariantGroup("type", "puddlinghearth")
         .SideVariant()
         .ShapeByTypePerOrientation("iwex:furnace/puddlinghearth", 0)
         .CreativeCommon("*-n")
         // One filler each side: the bed is 3 cells across, one row per cell.
         .FillerOffsets(
-          StructureFootprint.Layout(f =>
-            f.Origin(-1, 0)
-              .Layer(0, "#0#")
-          )
+          StructureFootprint.Layout(f => f.Origin(-1, 0).Layer(0, "#0#"))
         )
         .Replaceable(400)
         .Resistance(6f)
         .LightAbsorption(0)
         .Sound("walk", "walk/metal")
         .Sound("place", "block/anvil")
-        .SoundByTool(EnumTool.Pickaxe, "block/rock-hit-pickaxe", "block/rock-break-pickaxe")
+        .SoundByTool(
+          EnumTool.Pickaxe,
+          "block/rock-hit-pickaxe",
+          "block/rock-break-pickaxe"
+        )
         .SolidNonOpaque(),
     ];
 
   #endregion
 
-  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);
+  public override int StructureAngle =>
+    ExOrientation.AngleFromSide(Variant["side"]);
 
   #region Interaction
 
   /// <summary>
-  /// The row a clicked cell is. The footprint turns with the block, so the world offset is rotated back
-  /// into the hearth's own frame before it is read as a row - otherwise a hearth facing west has its left
-  /// and right swapped.
+  /// The row a clicked cell belongs to. The footprint turns with the block, so the world offset is rotated
+  /// back into the hearth's own frame before it is read as a row; otherwise a hearth facing west has its
+  /// left and right swapped.
   /// </summary>
-  private HearthRows.Row? RowAt(BlockPos principal, BlockPos clicked)
-  {
-    Vec3i world = new(clicked.X - principal.X, clicked.Y - principal.Y, clicked.Z - principal.Z);
+  private HearthRows.Row? RowAt(BlockPos principal, BlockPos clicked) {
+    Vec3i world = new(
+      clicked.X - principal.X,
+      clicked.Y - principal.Y,
+      clicked.Z - principal.Z
+    );
     Vec3i local = ExOrientation.RotateOffset(world, -StructureAngle);
     return HearthRows.FromLocalOffset(local);
   }
@@ -85,11 +88,19 @@ public partial class BlockPuddlingHearth
     IPlayer byPlayer,
     BlockPos principal,
     BlockPos clicked
-  )
-  {
-    if (world.BlockAccessor.GetBlockEntity(principal) is not BlockEntityPuddlingHearth be)
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(principal)
+      is not BlockEntityPuddlingHearth be
+    )
       return false;
-    if (BlockBehaviorMultiblockStructure.TryToggleProjection(world, byPlayer, principal))
+    if (
+      BlockBehaviorMultiblockStructure.TryToggleProjection(
+        world,
+        byPlayer,
+        principal
+      )
+    )
       return true;
     if (world.Side != EnumAppSide.Server)
       return true;
@@ -101,10 +112,9 @@ public partial class BlockPuddlingHearth
     string? held = active?.Itemstack?.Collectible?.Code?.Path;
     var player = byPlayer as IServerPlayer;
 
-    // Fettle before pig, always. A row charged onto a bare plate would weld to it, which is exactly why
-    // fettling was a per-heat cost rather than part of the build.
-    if (held == "puddlingfettle")
-    {
+    // Fettle before pig: a row charged onto a bare plate would weld to it, so fettling is a per-heat cost
+    // rather than part of the build.
+    if (held == "puddlingfettle") {
       if (be.TryFettle(row))
         active!.TakeOut(1);
       else
@@ -112,13 +122,14 @@ public partial class BlockPuddlingHearth
       return true;
     }
 
-    if (held == "pig")
-    {
+    if (held == "pig") {
       if (be.TryChargePig(row))
         active!.TakeOut(1);
       else
         player?.SendIngameError(
-          be.NeedsFettle(row) ? "iwex-hearth-needsfettle" : "iwex-hearth-cannotcharge"
+          be.NeedsFettle(row)
+            ? "iwex-hearth-needsfettle"
+            : "iwex-hearth-cannotcharge"
         );
       return true;
     }
@@ -184,8 +195,7 @@ public partial class BlockPuddlingHearth
       },
     ];
 
-  private ItemStack[] StackOf(string path)
-  {
+  private ItemStack[] StackOf(string path) {
     Item? item = api.World.GetItem(new AssetLocation("iwex", path));
     return item == null ? [] : [new ItemStack(item)];
   }

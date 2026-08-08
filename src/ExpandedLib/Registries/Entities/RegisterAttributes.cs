@@ -3,20 +3,13 @@ using System;
 namespace ExpandedLib.Registries.Entities;
 
 /// <summary>
-/// Base for the kind-specific registration attributes (<see cref="BlockRegisterAttribute"/>,
-/// <see cref="ItemRegisterAttribute"/>, <see cref="BlockEntityRegisterAttribute"/>,
-/// <see cref="BlockBehaviorRegisterAttribute"/>, <see cref="BlockEntityBehaviorRegisterAttribute"/>,
-/// <see cref="CollectibleBehaviorRegisterAttribute"/>). A class carries exactly one;
-/// <see cref="EntityRegistry.RegisterAll"/> scans for these and registers each under the matching
-/// game registry, validating that the class's base type matches the attribute's kind.
-/// <para>
-/// By default the registry key is <c>{modid}.{ClassName}</c>. Set <see cref="Code"/> and
-/// <see cref="PrefixModId"/> to register under an explicit / bare key (e.g. when replacing a vanilla
-/// class: <c>[BlockBehaviorRegister("MultiblockStructure", PrefixModId = false)]</c>).
-/// </para>
+/// Base for the kind-specific registration attributes. A class carries exactly one;
+/// <see cref="EntityRegistry.RegisterAll"/> scans for these, registers each under the matching game
+/// registry and validates the class's base type against the attribute's kind. The key defaults to
+/// <c>{modid}.{ClassName}</c>; <see cref="Code"/> and <see cref="PrefixModId"/> override it, as in
+/// <c>[BlockBehaviorRegister("MultiblockStructure", PrefixModId = false)]</c> for a vanilla replacement.
 /// </summary>
-public abstract class RegisterAttribute(string? code = null) : Attribute
-{
+public abstract class RegisterAttribute(string? code = null) : Attribute {
   /// <summary>Explicit registry key. When null, the class name is used.</summary>
   public string? Code { get; } = code;
 
@@ -25,8 +18,8 @@ public abstract class RegisterAttribute(string? code = null) : Attribute
   public bool PrefixModId { get; init; } = true;
 }
 
-/// <summary>Registers a <see cref="Vintagestory.API.Common.Block"/> class. Blocks are singletons
-/// (one instance per variant), so their JSON attributes can be surfaced as generated members.</summary>
+/// <summary>Registers a <see cref="Vintagestory.API.Common.Block"/> class. A block is a singleton,
+/// one instance per variant, so its JSON attributes can be surfaced as generated members.</summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class BlockRegisterAttribute(string? code = null)
   : RegisterAttribute(code);

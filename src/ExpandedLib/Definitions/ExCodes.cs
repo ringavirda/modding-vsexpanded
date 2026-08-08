@@ -1,27 +1,15 @@
 namespace ExpandedLib.Definitions;
 
 /// <summary>
-/// The catalogue of <b>exlib's own</b> block codes that multiblock layouts are drawn from. Small by
-/// design: exlib owns almost no blocks, because it is the framework the mods are built on rather than
-/// a content mod.
-/// <para>
-/// <b>Where the others live.</b> <see cref="VanillaCodes"/> holds the game's own codes - the ones that
-/// can never be generated, and where the historical typo was. <c>IwexCodes</c> / <c>LpexCodes</c> hold
-/// each mod's, so the dependency runs down the chain exlib ← iwex ← lpex ← smex/hpex and never back up.
-/// </para>
-/// <para>
-/// <b>Nothing here holds a literal any more.</b> Every member forwards to <c>ExlibBlocks</c>, which is
-/// emitted from the definitions themselves - so this file is a set of readable <em>names</em> for codes
-/// the definitions state exactly, and cannot drift from them. What remains hand-written is only the
-/// choice of which codes deserve a short name and what to call them.
-/// </para>
-/// <para>
-/// Contrast <see cref="VanillaCodes"/>, which cannot work this way: the game declares those blocks, so
-/// there is no definition to emit from and every string there is genuinely hand-kept.
-/// </para>
+/// Catalogue of exlib's own block codes that multiblock layouts are drawn from. Small, since exlib is
+/// the framework the mods are built on rather than a content mod. <see cref="VanillaCodes"/> holds the
+/// game's own codes, <c>IwexCodes</c> and <c>LpexCodes</c> each mod's, so the dependency runs exlib to
+/// iwex to lpex to smex/hpex and never back up. Every member here forwards to <c>ExlibBlocks</c>, which
+/// is emitted from the block definitions, so a name cannot drift from the code it stands for; only the
+/// choice of which codes get a short name is hand-written. <see cref="VanillaCodes"/> cannot work that
+/// way - the game declares those blocks, so every string there is hand-kept.
 /// </summary>
-public static class ExCodes
-{
+public static class ExCodes {
   /// <summary>The invisible per-cell filler a mega-block places over its own footprint:
   /// <c>exlib:structurefiller</c>. Declared by <c>StructureFillers</c>.</summary>
   public const string Filler = ExlibBlocks.Structurefiller.Code;

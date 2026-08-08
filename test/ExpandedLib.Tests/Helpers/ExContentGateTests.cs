@@ -11,18 +11,15 @@ namespace ExpandedLib.Tests;
 /// The generic content-gate mechanism a mod uses to disable registered content: hiding matching
 /// blocks/items from the creative inventory and handbook.
 /// </summary>
-public class ExContentGateTests
-{
+public class ExContentGateTests {
   private static Block Tabbed(string code) =>
-    new()
-    {
+    new() {
       Code = new AssetLocation(code),
       CreativeInventoryTabs = ["general"],
     };
 
   [Fact]
-  public void Hiding_clears_creative_tabs_and_stacks_for_matches_only()
-  {
+  public void Hiding_clears_creative_tabs_and_stacks_for_matches_only() {
     var world = new TestWorld();
     var target = Tabbed("smex:toolmold-blue-fired-plate");
     var other = Tabbed("smex:testblock-tabbed");
@@ -41,8 +38,7 @@ public class ExContentGateTests
   }
 
   [Fact]
-  public void Hiding_returns_zero_when_nothing_matches()
-  {
+  public void Hiding_returns_zero_when_nothing_matches() {
     var world = new TestWorld();
     var block = Tabbed("smex:testblock-tabbed");
     world.World.Blocks.Returns(new List<Block> { block });

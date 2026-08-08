@@ -16,33 +16,29 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 
 /// <summary>
-/// Block entity for the smoke-stack multiblock. Registers as a gas-network node and acts as a
-/// sink: each tick it consumes exhaust from the connected network and vents it as smoke, keeping
-/// the network from choking the blast furnace.
+/// Block entity for the smoke-stack multiblock. Registers as a gas-network node and acts as a sink:
+/// each production tick it consumes gas from the connected network and vents it as smoke.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntitySmokeStack
   : BlockEntityMultiblockStructure,
     INetworkNode,
-    IPipeNode
-{
+    IPipeNode {
   private float _lastConsumedAmount;
   private BlockNetworkModSystem? _system;
   private long _lastVentSoundMs;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     _system = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
 
-    // Register this position in the gas graph. BlockEntityNetworkNode would do this automatically,
-    // but this class inherits from BlockEntityMultiblockStructure, so do it explicitly.
+    // Register this position in the gas graph. BlockEntityNetworkNode does this automatically, but
+    // this class derives from BlockEntityMultiblockStructure, so it must register itself.
     if (api.Side == EnumAppSide.Server && _system.GetNetworkAt(Pos) == null)
       _system.AddNode(api.World.BlockAccessor, Pos, "pipe");
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     // Safety fallback for chunk-unload edge cases (break-time RemoveNode is handled elsewhere).
     if (Api?.Side == EnumAppSide.Server)
       _system?.RemoveNode(Api.World.BlockAccessor, Pos);
@@ -67,25 +63,29 @@ public class BlockEntitySmokeStack
   /// <inheritdoc/>
   public void OnOpenConnectorsChanged(BlockFacing[] openFaces) { }
 
-  /// <summary>No-op: the smoke stack draws gas through <see cref="TryConsume"/>, it doesn't leak.</summary>
-  public void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity) { }
+  /// <summary>No-op: the stack draws gas through <see cref="TryConsume"/> and does not leak.</summary>
+  public void OnLeak(
+    BlockFacing[] leakingFaces,
+    bool isLiquid,
+    float intensity
+  ) { }
 
-  /// <summary>No-op: the stack reads the network API directly and caches no local state.</summary>
+  /// <summary>No-op: the stack reads the network directly and caches no local state.</summary>
   public void OnNetworkUpdate(object? state) { }
 
   #endregion
 
   #region IPipeNode
 
-  /// <summary>Delegates to the network for completeness; unused, since the stack only vents.</summary>
+  /// <summary>Delegates to the network to complete <see cref="IPipeNode"/>; unused, the stack only
+  /// vents.</summary>
   public bool TryProduce(
     float volume,
     float temperature,
     string gasType = "Air",
     float maxOutputPressure = 1.0f,
     bool bypassLeakCap = false
-  )
-  {
+  ) {
     if (_system?.GetNetworkAt(Pos) is not PipeNetwork gasNet)
       return false;
     return gasNet.TryProduceGas(
@@ -99,8 +99,7 @@ public class BlockEntitySmokeStack
   }
 
   /// <summary>Consumes up to <paramref name="requestedVolume"/> L from the gas network; returns the amount consumed.</summary>
-  public float TryConsume(float requestedVolume)
-  {
+  public float TryConsume(float requestedVolume) {
     if (_system?.GetNetworkAt(Pos) is not PipeNetwork gasNet)
       return 0f;
     return gasNet.TryConsumeGas(requestedVolume, Api.World.BlockAccessor);
@@ -143,8 +142,7 @@ public class BlockEntitySmokeStack
 
   #region Structure orientation
 
-  protected override void UpdateStructureRotation()
-  {
+  protected override void UpdateStructureRotation() {
     if (Block == null)
       return;
 
@@ -164,25 +162,21 @@ public class BlockEntitySmokeStack
 
   #region Production tick
 
-  protected override void OnProductionTick(float dt)
-  {
+  protected override void OnProductionTick(float dt) {
     if (!StructureComplete)
       return;
 
     var gasIntakeVolume = SmexValues.SmokestackGasIntakeVolume;
 
-    // Read the medium before drawing - TryConsume can empty the pool and clear its label. It
-    // refuses a liquid run, so this only ever vents exhaust, steam or air.
+    // Read the medium before drawing: TryConsume can empty the pool and clear its label. It refuses
+    // a liquid run, so the medium here is always exhaust, steam or air.
     string medium = Medium;
     float consumed = TryConsume(gasIntakeVolume);
 
-    if (System.Math.Abs(_lastConsumedAmount - consumed) > 0.001f)
-    {
+    if (System.Math.Abs(_lastConsumedAmount - consumed) > 0.001f) {
       _lastConsumedAmount = consumed;
       MarkDirty(true);
-    }
-    else
-    {
+    } else {
       _lastConsumedAmount = consumed;
     }
 
@@ -202,8 +196,7 @@ public class BlockEntitySmokeStack
     );
   }
 
-  private void SpawnSmokeParticles(string medium)
-  {
+  private void SpawnSmokeParticles(string medium) {
     // Colour by what's venting: soot for exhaust, vapour for steam, nothing for air.
     if (ExParticles.GasColor(medium, ventAir: false) is not int color)
       return;
@@ -238,10 +231,8 @@ public class BlockEntitySmokeStack
 
   #region HUD
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
-    if (!StructureComplete)
-    {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
+    if (!StructureComplete) {
       dsc.AppendLine(Lang.Get(SmexLang.StructureIncomplete));
       return;
     }
@@ -257,8 +248,7 @@ public class BlockEntitySmokeStack
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetFloat("lastConsumedAmount", _lastConsumedAmount);
     tree.SetString("orientation", Orientation);
@@ -271,8 +261,7 @@ public class BlockEntitySmokeStack
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     _lastConsumedAmount = tree.GetFloat("lastConsumedAmount");
     Orientation = tree.GetString("orientation");

@@ -11,17 +11,15 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The generic recipe-cost adjuster: a catalogue entry carries a self-contained
-/// <see cref="RecipeProfileCost"/> per profile. Tests cover extracting "normal" from a live recipe,
-/// scale-filling an alternate profile, applying a profile to grid recipes (ingredients + pinned output)
-/// and to RCC blocks (per-stage), and reconciling a hand-edited file.
+/// The recipe-cost adjuster: a catalogue entry carries a self-contained <see cref="RecipeProfileCost"/>
+/// per profile. Covers extracting "normal" from a live recipe, scale-filling an alternate profile,
+/// applying a profile to grid recipes (ingredients + pinned output) and to RCC blocks (per-stage), and
+/// reconciling a hand-edited file.
 /// </summary>
-public class ExRecipeCostsTests
-{
+public class ExRecipeCostsTests {
   // 1.22 resolves grid ingredients into a CraftingRecipeIngredient[] property; 1.20/1.21 use a
-  // GridRecipeIngredient[] field (a CraftingRecipeIngredient subclass). The tests mutate the same
-  // ingredient instance they pass in and assert on it afterwards, so on legacy the instances
-  // themselves must be GridRecipeIngredients to live in that field - hence the per-version Ing.
+  // GridRecipeIngredient[] field of the subclass GridRecipeIngredient. The tests assert on the same
+  // instances they pass in, so on legacy those instances must be GridRecipeIngredients to fit the field.
 #if GAME_GE_1_22
   private static CraftingRecipeIngredient Ing(string code, int qty) =>
     new() { Code = new AssetLocation(code), Quantity = qty };
@@ -33,12 +31,9 @@ public class ExRecipeCostsTests
   private static GridRecipe GridRecipe(
     string output,
     params CraftingRecipeIngredient[] ings
-  )
-  {
-    var recipe = new GridRecipe
-    {
-      Output = new CraftingRecipeIngredient
-      {
+  ) {
+    var recipe = new GridRecipe {
+      Output = new CraftingRecipeIngredient {
         Code = new AssetLocation(output),
       },
     };
@@ -58,8 +53,7 @@ public class ExRecipeCostsTests
     recipe.resolvedIngredients = ings.Cast<GridRecipeIngredient>().ToArray();
 #endif
 
-  private static Block RccBlock(string code, JObject props)
-  {
+  private static Block RccBlock(string code, JObject props) {
     var block = TestBlocks.Configure(new Block(), code, 70);
     block.BlockEntityBehaviors =
     [
@@ -73,8 +67,7 @@ public class ExRecipeCostsTests
   }
 
   private static JObject Stage(string ingName, int qty) =>
-    new()
-    {
+    new() {
       ["requireStacks"] = new JArray
       {
         new JObject { ["name"] = ingName, ["quantity"] = qty },
@@ -91,12 +84,9 @@ public class ExRecipeCostsTests
   #region Scale + extract
 
   [Fact]
-  public void A_scaled_profile_reduces_normal_and_floors_each_at_one()
-  {
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["x"] = new()
-      {
+  public void A_scaled_profile_reduces_normal_and_floors_each_at_one() {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["x"] = new() {
         Type = "grid",
         Match = "m:x",
         Profiles = new() { ["normal"] = Grid(("a", 10), ("b", 1)) },
@@ -110,16 +100,12 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void A_scaled_profile_never_overwrites_filled_costs()
-  {
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["x"] = new()
-      {
+  public void A_scaled_profile_never_overwrites_filled_costs() {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["x"] = new() {
         Type = "grid",
         Match = "m:x",
-        Profiles = new()
-        {
+        Profiles = new() {
           ["normal"] = Grid(("a", 10)),
           ["cheap"] = Grid(("a", 2)), // intentional edit
         },
@@ -132,16 +118,12 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void A_scaled_profile_fills_ingredients_but_keeps_a_pinned_quantity()
-  {
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["pipe"] = new()
-      {
+  public void A_scaled_profile_fills_ingredients_but_keeps_a_pinned_quantity() {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["pipe"] = new() {
         Type = "grid",
         Match = "m:pipe",
-        Profiles = new()
-        {
+        Profiles = new() {
           ["normal"] = Grid(("a", 4)),
           ["cheap"] = new() { Quantity = 4 }, // only a pinned output, no ingredients yet
         },
@@ -155,8 +137,7 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Normal_is_extracted_from_the_live_grid_recipe()
-  {
+  public void Normal_is_extracted_from_the_live_grid_recipe() {
     var world = new TestWorld();
     world.World.GridRecipes.Returns(
       new List<GridRecipe>
@@ -165,8 +146,7 @@ public class ExRecipeCostsTests
       }
     );
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
+    var cat = new Dictionary<string, RecipeCostEntry> {
       ["watt-grid"] = new() { Type = "grid", Match = "lpex:enginewatt-*" },
     };
 
@@ -178,20 +158,17 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Normal_is_extracted_per_stage_from_an_rcc_block()
-  {
+  public void Normal_is_extracted_per_stage_from_an_rcc_block() {
     var world = new TestWorld();
     // The same ingredient in two stages stays two separate, per-stage entries.
-    var props = new JObject
-    {
+    var props = new JObject {
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
     world.World.Blocks.Returns(
       new List<Block> { RccBlock("lpex:enginewatt-n", props) }
     );
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
+    var cat = new Dictionary<string, RecipeCostEntry> {
       ["watt-rcc"] = new() { Type = "rcc", Match = "lpex:enginewatt-*" },
     };
 
@@ -206,23 +183,18 @@ public class ExRecipeCostsTests
   #region Reconcile (robustness against bad edits)
 
   private static Dictionary<string, RecipeCostEntry> DefaultCat() =>
-    new()
-    {
-      ["watt-rcc"] = new()
-      {
+    new() {
+      ["watt-rcc"] = new() {
         Type = "rcc",
         Match = "lpex:enginewatt-*",
-        Profiles = new()
-        {
-          ["cheap"] = new()
-          {
+        Profiles = new() {
+          ["cheap"] = new() {
             Stages = new() { ["1"] = new() { ["plate"] = 2 } },
           },
         },
       },
       ["watt-grid"] = new() { Type = "grid", Match = "lpex:enginewatt-*" },
-      ["pipe-grid"] = new()
-      {
+      ["pipe-grid"] = new() {
         Type = "grid",
         Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = new() { Quantity = 4 } },
@@ -230,8 +202,7 @@ public class ExRecipeCostsTests
     };
 
   [Fact]
-  public void Reconcile_restores_a_deleted_entry()
-  {
+  public void Reconcile_restores_a_deleted_entry() {
     var live = new Dictionary<string, RecipeCostEntry>(); // player wiped everything
 
     Assert.True(ExRecipeCosts.Reconcile(live, DefaultCat()));
@@ -242,13 +213,10 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Reconcile_repairs_structural_fields_and_restores_a_deleted_pinned_profile()
-  {
-    var live = new Dictionary<string, RecipeCostEntry>
-    {
+  public void Reconcile_repairs_structural_fields_and_restores_a_deleted_pinned_profile() {
+    var live = new Dictionary<string, RecipeCostEntry> {
       // Player blanked the match/type and deleted the pinned cheap profile.
-      ["watt-rcc"] = new()
-      {
+      ["watt-rcc"] = new() {
         Type = "grid",
         Match = "",
         Profiles = new(),
@@ -263,13 +231,10 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Reconcile_restores_a_deleted_pinned_output_quantity()
-  {
-    var live = new Dictionary<string, RecipeCostEntry>
-    {
+  public void Reconcile_restores_a_deleted_pinned_output_quantity() {
+    var live = new Dictionary<string, RecipeCostEntry> {
       // Player kept the entry but dropped the pinned doubled output.
-      ["pipe-grid"] = new()
-      {
+      ["pipe-grid"] = new() {
         Type = "grid",
         Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = Grid(("a", 1)) },
@@ -283,18 +248,13 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Reconcile_clamps_nonsense_quantities_to_at_least_one()
-  {
-    var live = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-grid"] = new()
-      {
+  public void Reconcile_clamps_nonsense_quantities_to_at_least_one() {
+    var live = new Dictionary<string, RecipeCostEntry> {
+      ["watt-grid"] = new() {
         Type = "grid",
         Match = "lpex:enginewatt-*",
-        Profiles = new()
-        {
-          ["cheap"] = new()
-          {
+        Profiles = new() {
+          ["cheap"] = new() {
             Ingredients = new() { ["a"] = 0, ["b"] = -5 },
             Quantity = -2,
           },
@@ -310,18 +270,14 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Reconcile_keeps_valid_player_numbers_and_extra_entries()
-  {
-    var live = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-grid"] = new()
-      {
+  public void Reconcile_keeps_valid_player_numbers_and_extra_entries() {
+    var live = new Dictionary<string, RecipeCostEntry> {
+      ["watt-grid"] = new() {
         Type = "grid",
         Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("a", 3)) }, // intentional edit
       },
-      ["my-custom"] = new()
-      {
+      ["my-custom"] = new() {
         Type = "grid",
         Match = "mod:thing",
         Profiles = new() { ["cheap"] = Grid(("x", 7)) },
@@ -340,8 +296,7 @@ public class ExRecipeCostsTests
   #region Apply
 
   [Fact]
-  public void Applying_a_grid_profile_sets_the_ingredient_quantities()
-  {
+  public void Applying_a_grid_profile_sets_the_ingredient_quantities() {
     var world = new TestWorld();
     var plate = Ing("game:metalplate-iron", 4);
     var rod = Ing("game:rod-iron", 8);
@@ -349,14 +304,11 @@ public class ExRecipeCostsTests
       new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", plate, rod) }
     );
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-grid"] = new()
-      {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["watt-grid"] = new() {
         Type = "grid",
         Match = "lpex:enginewatt-*",
-        Profiles = new()
-        {
+        Profiles = new() {
           ["cheap"] = Grid(("game:metalplate-iron", 2), ("game:rod-iron", 4)),
         },
       },
@@ -369,18 +321,15 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Applying_a_grid_profile_can_pin_a_doubled_output()
-  {
+  public void Applying_a_grid_profile_can_pin_a_doubled_output() {
     var world = new TestWorld();
     var recipe = GridRecipe("lpex:pipe-straight-ns-iron");
     recipe.Output!.Quantity = 2; // authored output
     recipe.Output.ResolvedItemStack = new ItemStack { StackSize = 2 };
     world.World.GridRecipes.Returns(new List<GridRecipe> { recipe });
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["pipe-straight-grid"] = new()
-      {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["pipe-straight-grid"] = new() {
         Type = "grid",
         Match = "lpex:pipe-straight-*",
         Profiles = new() { ["cheap"] = new() { Quantity = 4 } }, // doubled
@@ -398,10 +347,9 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Applying_a_grid_profile_also_resizes_the_resolved_stack()
-  {
-    // Crafting consumes ResolvedItemStack.StackSize, not Quantity - both must be updated or the
-    // recipe keeps charging its original amount (the bug behind grid costs "not changing").
+  public void Applying_a_grid_profile_also_resizes_the_resolved_stack() {
+    // Crafting consumes ResolvedItemStack.StackSize, not Quantity, so both must be updated or the
+    // recipe keeps charging its authored amount.
     var world = new TestWorld();
     var rod = Ing("game:rod-iron", 8);
     rod.ResolvedItemStack = new ItemStack { StackSize = 8 };
@@ -409,10 +357,8 @@ public class ExRecipeCostsTests
       new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", rod) }
     );
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-grid"] = new()
-      {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["watt-grid"] = new() {
         Type = "grid",
         Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("game:rod-iron", 4)) },
@@ -426,29 +372,22 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Applying_an_rcc_profile_sets_each_stage_independently()
-  {
+  public void Applying_an_rcc_profile_sets_each_stage_independently() {
     var world = new TestWorld();
     // The same ingredient in two stages (4 and 2) is set per stage, not redistributed.
-    var props = new JObject
-    {
+    var props = new JObject {
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
     var block = RccBlock("lpex:enginewatt-n", props);
     world.World.Blocks.Returns(new List<Block> { block });
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-rcc"] = new()
-      {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["watt-rcc"] = new() {
         Type = "rcc",
         Match = "lpex:enginewatt-*",
-        Profiles = new()
-        {
-          ["cheap"] = new()
-          {
-            Stages = new()
-            {
+        Profiles = new() {
+          ["cheap"] = new() {
+            Stages = new() {
               ["0"] = new() { ["plate"] = 3 },
               ["1"] = new() { ["plate"] = 1 },
             },
@@ -467,18 +406,15 @@ public class ExRecipeCostsTests
   }
 
   [Fact]
-  public void Applying_an_unknown_profile_leaves_recipes_untouched()
-  {
+  public void Applying_an_unknown_profile_leaves_recipes_untouched() {
     var world = new TestWorld();
     var rod = Ing("game:rod-iron", 8);
     world.World.GridRecipes.Returns(
       new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", rod) }
     );
 
-    var cat = new Dictionary<string, RecipeCostEntry>
-    {
-      ["watt-grid"] = new()
-      {
+    var cat = new Dictionary<string, RecipeCostEntry> {
+      ["watt-grid"] = new() {
         Type = "grid",
         Match = "lpex:enginewatt-*",
         Profiles = new() { ["cheap"] = Grid(("game:rod-iron", 4)) },

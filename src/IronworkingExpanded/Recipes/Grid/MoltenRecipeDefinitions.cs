@@ -6,18 +6,14 @@ using static IronworkingExpanded.Recipes.RecipeIngredients;
 namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for iwex's molten-metal handling (migrated from
-/// recipes/grid/{molten-barrel,molten-canal}.json): the molten barrel, and the canal network's six shapes in
-/// each of their three materials plus the tap.
-/// <para>
-/// Every canal shape is craftable from cobblestone (a 20-rock capture) OR a coloured running-brick (a
-/// 7-brick capture) OR fire brick; all are hammered + chiselled over fire clay, so that F/H/K trio is folded
-/// into one helper. The diagram-crafted equivalents live in <see cref="DiagramRecipeDefinitions"/> and share
-/// this file's cobblestone capture through <see cref="RecipeIngredients"/>.
-/// </para>
+/// Code-first grid recipes for iwex's molten-metal handling: the molten barrel, and the canal network's
+/// six shapes in each of their three materials plus the tap. Every canal shape is craftable from
+/// cobblestone (20-rock capture), a coloured running-brick (7-brick capture) or fire brick; all are
+/// hammered and chiselled over fire clay, folded into the shared F/H/K helper. The diagram-crafted
+/// equivalents live in <see cref="DiagramRecipeDefinitions"/> and share this file's captures through
+/// <see cref="RecipeIngredients"/>.
 /// </summary>
-public class MoltenRecipeDefinitions : IExRecipeDefProvider
-{
+public class MoltenRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [MoltenBarrel(domain), MoltenCanal(domain)];
 
@@ -35,8 +31,8 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("H", Hammer)
           .OutputBlock("iwex:molten-barrel-plated")
       )
-      // Cast route: line a sand-cast cast-barrel blank with fire clay (the vessel's "finish the casting").
-      // Cheaper in bulk than the plated craft - one blank replaces the six plates and the nails.
+      // Cast route: a sand-cast cast-barrel blank lined with fire clay. One blank replaces the six
+      // plates and the nails, so it is cheaper in bulk than the plated craft.
       .Grid(r =>
         r.Name("Molten Barrel (Cast, lined)")
           .Pattern("BC")
@@ -236,7 +232,6 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
           .OutputBlock("iwex:molten-canal-moldpedestal-fire-s", 1)
       );
 
-  // The Fhk (fire-clay + hammer + chisel) trio, the coloured RunningBrick / FireBrick captures, and the
-  // Bricks palette are shared with the casting-cell craft, so they live in RecipeIngredients (reached via
-  // the file's `using static`).
+  // Fhk (fire clay + hammer + chisel), the RunningBrick / FireBrick captures and the Bricks palette are
+  // shared with the casting-cell craft, so they live in RecipeIngredients, reached via `using static`.
 }

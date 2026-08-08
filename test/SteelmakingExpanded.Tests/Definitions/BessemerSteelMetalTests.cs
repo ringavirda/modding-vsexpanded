@@ -8,14 +8,12 @@ namespace SteelmakingExpanded.Tests;
 
 /// <summary>
 /// Pins the shipped Bessemer-steel metal descriptor (<c>assets/smex/config/metals/bessemersteel.json</c>).
-/// smex owns this material - materials.md keeps Bessemer steel distinct from vanilla <c>game:steel</c> - so
-/// the converter's output identity and the family emitter both key off exactly these fields. A typo in the
-/// shipped JSON binds silently to null and would surface only in-game; this catches it headless.
+/// smex owns this material, kept distinct from vanilla <c>game:steel</c>, and both the converter's output
+/// identity and the item-family emitter key off these fields. A typo in the shipped JSON binds to null
+/// without error and would otherwise surface only in game. See docs/design/materials.md.
 /// </summary>
-public class BessemerSteelMetalTests
-{
-  private static MetalDef ShippedDef()
-  {
+public class BessemerSteelMetalTests {
+  private static MetalDef ShippedDef() {
     MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
         DefinitionGoldens.SolutionRelative(
@@ -28,8 +26,7 @@ public class BessemerSteelMetalTests
   }
 
   [Fact]
-  public void Bessemer_steel_is_its_own_smex_owned_alloy()
-  {
+  public void Bessemer_steel_is_its_own_smex_owned_alloy() {
     MetalDef def = ShippedDef();
 
     Assert.Equal("bessemersteel", def.Code);
@@ -41,8 +38,7 @@ public class BessemerSteelMetalTests
   }
 
   [Fact]
-  public void Bessemer_steel_generates_a_full_good_tooled_family()
-  {
+  public void Bessemer_steel_generates_a_full_good_tooled_family() {
     MetalDef def = ShippedDef();
 
     Assert.True(def.GenerateItemFamily);

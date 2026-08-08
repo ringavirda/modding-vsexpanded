@@ -6,21 +6,15 @@ namespace ExpandedLib.Testing;
 /// <summary>
 /// Stands up a minimal headless <see cref="Lang"/> so production code that formats player-facing
 /// strings (block info, HUD, measurement units) can call <see cref="Lang.Get"/> without the game's
-/// asset pipeline. Without this, <c>Lang.Get</c> throws because <c>CurrentLocale</c> is null and the
-/// language dictionary is empty.
-/// <para>
-/// The registered translation service simply echoes the key back (the same graceful fallback the
-/// real service uses for an untranslated key), which is all tests need: assertions check the numeric
-/// payload of a formatted string, not the localized unit label.
-/// </para>
+/// asset pipeline; otherwise <c>Lang.Get</c> throws, because <c>CurrentLocale</c> is null and the
+/// language dictionary is empty. The registered service echoes the key back, the same fallback the
+/// real service uses for an untranslated key.
 /// </summary>
-public static class TestLang
-{
+public static class TestLang {
   private static bool _ready;
 
   /// <summary>Idempotently registers an echo-the-key translation service for the "en" locale.</summary>
-  public static void Init()
-  {
+  public static void Init() {
     if (_ready)
       return;
     _ready = true;
@@ -41,8 +35,8 @@ public static class TestLang
       .Returns(true);
 
     Lang.DefaultLocale = "en";
-    // AvailableLanguages is a read-only auto-property over a dictionary the engine mutates in
-    // place (Load adds to it); add our locale the same way rather than replacing the field.
+    // AvailableLanguages is a read-only auto-property over a dictionary the engine mutates in place,
+    // so the locale is added to it rather than the field replaced.
     Lang.AvailableLanguages["en"] = svc;
     // ChangeLanguage is the engine's path to set the otherwise-getter-only CurrentLocale.
     Lang.ChangeLanguage("en");

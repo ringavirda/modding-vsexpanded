@@ -94,7 +94,7 @@
   <!-- $(GamePath) = the install for THIS TFM. Priority:
          1. An explicit env-var override (its name is in $(GameInstallEnv)) - used by CI and by anyone
             pointing the build at an external install.
-         2. Otherwise the in-repo install provisioned into .game/<slug> by scripts/provision-game.*
+         2. Otherwise the in-repo install provisioned into .game/<slug> by scripts/exmod.*
        Both the env-var name and the slug come from the manifest above, so there are no per-version
        branches and no machine-specific .env file to maintain. -->
   <PropertyGroup Condition="'$(GameInstallEnv)' != ''">
@@ -143,13 +143,15 @@
       Importance="high"
       Text="Vintage Story $(_ProvisionVersion) not found - provisioning server binaries into .game\$(GameSlug) ..."
     />
+    <!-- One implementation (exmod.ps1); exmod.sh is the POSIX launcher, which also bootstraps pwsh
+         when the machine has none. -->
     <Exec
       Condition="$([MSBuild]::IsOSPlatform('Windows'))"
-      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\provision-game.ps1&quot; -Version $(_ProvisionVersion) -Kind server"
+      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)../scripts/exmod.ps1&quot; provision game -Version $(_ProvisionVersion) -Kind server"
     />
     <Exec
       Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
-      Command="bash &quot;$(MSBuildThisFileDirectory)../scripts/provision-game.sh&quot; -Version $(_ProvisionVersion) -Kind server"
+      Command="bash &quot;$(MSBuildThisFileDirectory)../scripts/exmod.sh&quot; provision game -Version $(_ProvisionVersion) -Kind server"
     />
   </Target>
 
@@ -163,7 +165,7 @@
   >
     <Error
       Condition="!Exists('$(GamePath)\VintagestoryAPI.dll')"
-      Text="Can't find the Vintage Story $(GameVer) install (GamePath='$(GamePath)'). Provision it with 'pwsh scripts/provision-game.ps1 -Version $(_ProvisionVersion) -Kind server' (Windows) or 'scripts/provision-game.sh -Version $(_ProvisionVersion) -Kind server' (Linux/macOS), or set the $(GameInstallEnv) environment variable to an existing install."
+      Text="Can't find the Vintage Story $(GameVer) install (GamePath='$(GamePath)'). Provision it with 'scripts/exmod.sh provision game -Version $(_ProvisionVersion) -Kind server', or set the $(GameInstallEnv) environment variable to an existing install."
     />
   </Target>
 

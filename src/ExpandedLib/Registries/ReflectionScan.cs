@@ -10,23 +10,18 @@ namespace ExpandedLib.Registries;
 /// (<see cref="Entities.EntityRegistry"/>, <see cref="Commands.CommandRegistry"/>,
 /// <see cref="Preferences.PreferenceRegistry"/>).
 /// </summary>
-public static class ReflectionScan
-{
+public static class ReflectionScan {
   /// <summary>
   /// Returns every concrete (non-abstract) class in <paramref name="asm"/>, tolerating a
   /// partial load (<see cref="ReflectionTypeLoadException"/>) so one unloadable type can't
   /// break registration of the rest.
   /// </summary>
-  public static Type[] GetCandidateTypes(Assembly asm)
-  {
-    try
-    {
+  public static Type[] GetCandidateTypes(Assembly asm) {
+    try {
       return asm.GetTypes()
         .Where(t => t is { IsClass: true, IsAbstract: false })
         .ToArray();
-    }
-    catch (ReflectionTypeLoadException ex)
-    {
+    } catch (ReflectionTypeLoadException ex) {
       return ex
         .Types.Where(t => t is { IsClass: true, IsAbstract: false })
         .ToArray()!;
@@ -35,10 +30,9 @@ public static class ReflectionScan
 
   /// <summary>
   /// Validates that <paramref name="type"/> is assignable to <typeparamref name="T"/> and, if so,
-  /// activates it via its parameterless constructor. On a mismatch (a mis-applied register attribute)
-  /// logs one consistent warning and returns <c>false</c> so the caller skips it rather than throwing -
-  /// the single primitive the activating registries (commands, sub-commands, preferences) previously
-  /// hand-rolled with drifting warning text.
+  /// activates it through its parameterless constructor. A mismatch (a mis-applied register
+  /// attribute) logs a warning and returns <c>false</c> so the caller skips the type rather than
+  /// throwing. Shared by the activating registries: commands, sub-commands and preferences.
   /// </summary>
   public static bool TryActivate<T>(
     ICoreAPI api,
@@ -46,10 +40,8 @@ public static class ReflectionScan
     Type type,
     out T instance
   )
-    where T : class
-  {
-    if (!typeof(T).IsAssignableFrom(type))
-    {
+    where T : class {
+    if (!typeof(T).IsAssignableFrom(type)) {
       api.Logger.Warning(
         "[{0}] {1} is marked for registration but does not implement {2}; skipped.",
         modId,

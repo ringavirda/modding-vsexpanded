@@ -5,16 +5,13 @@ namespace ExpandedLib.Registries;
 
 /// <summary>
 /// A process-wide, case-insensitive registry of items keyed by a string code derived from each item.
-/// Backs the mod-keyed catalogues that previously each hand-rolled the same
-/// <see cref="StringComparer.OrdinalIgnoreCase"/> dictionary
-/// (<see cref="Config.ExConfigProfiles"/>, <see cref="Recipes.ExRecipeProfiles"/>, and - as they land -
-/// the metal/liquid registries). Register (or replace) by derived code, look up by code, and enumerate
-/// the registered codes and values. Domain-specific behaviour (e.g. the recipe apply pipeline) stays on
-/// the owning class; this only owns the keyed storage.
+/// Register or replace by derived code, look up by code, and enumerate the registered codes and
+/// values. Backs the mod-keyed catalogues (<see cref="Config.ExConfigProfiles"/>,
+/// <see cref="Recipes.ExRecipeProfiles"/>). Domain behaviour such as the recipe apply pipeline stays
+/// on the owning class; this holds the keyed storage only.
 /// </summary>
 /// <typeparam name="T">The registered item type.</typeparam>
-public sealed class ExKeyedRegistry<T>
-{
+public sealed class ExKeyedRegistry<T> {
   private readonly Dictionary<string, T> _items = new(
     StringComparer.OrdinalIgnoreCase
   );
@@ -26,9 +23,9 @@ public sealed class ExKeyedRegistry<T>
   /// <summary>Registers (or replaces) an item under its derived code.</summary>
   public void Register(T item) => _items[_key(item)] = item;
 
-  /// <summary>Drops every registered item. Asset-backed catalogues (metals/liquids) repopulate on each
-  /// <c>AssetsFinalize</c>, so they clear first to avoid accumulating stale entries across world reloads
-  /// in one process; also gives unit tests a clean slate on a process-wide store.</summary>
+  /// <summary>Drops every registered item. Asset-backed catalogues repopulate on each
+  /// <c>AssetsFinalize</c> and clear first, so entries do not accumulate across world reloads within
+  /// one process.</summary>
   public void Clear() => _items.Clear();
 
   /// <summary>Looks up an item by code (case-insensitive); <c>false</c> when none is registered.</summary>

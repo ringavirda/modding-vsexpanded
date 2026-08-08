@@ -11,15 +11,13 @@ using Vintagestory.API.MathTools;
 namespace LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 
 /// <summary>
-/// A pipe node that draws water from the world. Once a second it scans the cube directly below;
-/// it feeds the network (<see cref="CanIntake"/>) only when that whole cube is water (a frozen
-/// top-edge skin is tolerated, but not directly below) AND no other intake is within the exclusion
-/// range (which stops players packing intakes onto one pond). Re-checked on a timer and surfaced
-/// in the HUD.
+/// A pipe node that draws water from the world. Once a second it scans the cube directly below and
+/// feeds the network (<see cref="CanIntake"/>) only when that whole cube is water - a frozen top-edge
+/// skin is tolerated, the cell directly below is not - and no other intake sits within the exclusion
+/// range, which limits how many intakes one pond can carry. The result syncs to the client for the HUD.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityFluidIntake : BlockEntityNetworkNode
-{
+public class BlockEntityFluidIntake : BlockEntityNetworkNode {
   public override string NetworkType { get; set; } = "pipe";
 
   private long _scanId;
@@ -34,12 +32,11 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
   public bool CanIntake => HasWater && !Crowded;
 
   /// <summary>
-  /// Draws up to <paramref name="amount"/> litres from the pond below into this intake's own
-  /// network - the intake, not the pump, is the generator. Called by a powered fluid pump; returns
-  /// the litres produced (0 when it can't draw, see <see cref="CanIntake"/>, or the network is full).
+  /// Draws up to <paramref name="amount"/> litres from the pond below into this intake's own network;
+  /// the intake is the generator, not the pump. Called by a powered fluid pump. Returns the litres
+  /// produced, 0 when <see cref="CanIntake"/> is false or the network is full.
   /// </summary>
-  public float ProduceWater(float amount, float temperature, IBlockAccessor ba)
-  {
+  public float ProduceWater(float amount, float temperature, IBlockAccessor ba) {
     if (!CanIntake || amount <= 0f)
       return 0f;
     if (NetworkSystem?.GetNetworkAt(Pos) is not PipeNetwork net)
@@ -49,23 +46,19 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
     return net.ProduceLiquidMeasured(amount, temperature, 1f, ba);
   }
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
-    if (api.Side == EnumAppSide.Server)
-    {
+    if (api.Side == EnumAppSide.Server) {
       Rescan(0);
       _scanId = RegisterGameTickListener(Rescan, 1000);
     }
   }
 
   /// <summary>Server-side periodic validity check; syncs to clients only on change.</summary>
-  private void Rescan(float dt)
-  {
+  private void Rescan(float dt) {
     bool water = ScanWaterBelow();
     bool crowded = HasNearbyIntake();
-    if (water != HasWater || crowded != Crowded)
-    {
+    if (water != HasWater || crowded != Crowded) {
       HasWater = water;
       Crowded = crowded;
       MarkDirty();
@@ -73,35 +66,31 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
   }
 
   /// <summary>
-  /// True when every cell of the <c>depth³</c> cube below is water, except the top-layer outer
-  /// cells may be frozen (a lake-ice skin doesn't stop the intake). The cell directly below must
-  /// stay liquid, so once it freezes the intake stops.
+  /// True when every cell of the <c>depth³</c> cube below is water. Top-layer outer cells may be
+  /// ice, so a lake-ice skin does not stop the intake; the cell directly below must stay liquid.
   /// </summary>
-  private bool ScanWaterBelow()
-  {
+  private bool ScanWaterBelow() {
     var ba = Api.World.BlockAccessor;
     int depth = LpexValues.FluidIntakeWaterDepth;
     int half = depth / 2;
     var p = new BlockPos(Pos.X, Pos.Y, Pos.Z, Pos.dimension);
     for (int dx = -half; dx <= half; dx++)
-    for (int dy = -1; dy >= -depth; dy--)
-    for (int dz = -half; dz <= half; dz++)
-    {
-      p.Set(Pos.X + dx, Pos.Y + dy, Pos.Z + dz);
-      if (ba.GetBlock(p, BlockLayersAccess.Fluid).LiquidCode == "water")
-        continue;
-      // Top-layer outer cells may be frozen; everything else must be liquid water.
-      bool topOuter = dy == -1 && (dx != 0 || dz != 0);
-      if (topOuter && ba.GetBlock(p).BlockMaterial == EnumBlockMaterial.Ice)
-        continue;
-      return false;
-    }
+      for (int dy = -1; dy >= -depth; dy--)
+        for (int dz = -half; dz <= half; dz++) {
+          p.Set(Pos.X + dx, Pos.Y + dy, Pos.Z + dz);
+          if (ba.GetBlock(p, BlockLayersAccess.Fluid).LiquidCode == "water")
+            continue;
+          // Top-layer outer cells may be frozen; everything else must be liquid water.
+          bool topOuter = dy == -1 && (dx != 0 || dz != 0);
+          if (topOuter && ba.GetBlock(p).BlockMaterial == EnumBlockMaterial.Ice)
+            continue;
+          return false;
+        }
     return true;
   }
 
   /// <summary>True when another fluid intake sits within the exclusion range (excludes self).</summary>
-  private bool HasNearbyIntake()
-  {
+  private bool HasNearbyIntake() {
     var ba = Api.World.BlockAccessor;
     int r = (int)System.Math.Ceiling(LpexValues.FluidIntakeExclusionRange);
     float rSq =
@@ -109,22 +98,20 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
       * LpexValues.FluidIntakeExclusionRange;
     var p = new BlockPos(Pos.X, Pos.Y, Pos.Z, Pos.dimension);
     for (int dx = -r; dx <= r; dx++)
-    for (int dy = -r; dy <= r; dy++)
-    for (int dz = -r; dz <= r; dz++)
-    {
-      if (dx == 0 && dy == 0 && dz == 0)
-        continue;
-      if (dx * dx + dy * dy + dz * dz > rSq)
-        continue;
-      p.Set(Pos.X + dx, Pos.Y + dy, Pos.Z + dz);
-      if (ba.GetBlock(p) is BlockFluidIntake)
-        return true;
-    }
+      for (int dy = -r; dy <= r; dy++)
+        for (int dz = -r; dz <= r; dz++) {
+          if (dx == 0 && dy == 0 && dz == 0)
+            continue;
+          if (dx * dx + dy * dy + dz * dz > rSq)
+            continue;
+          p.Set(Pos.X + dx, Pos.Y + dy, Pos.Z + dz);
+          if (ba.GetBlock(p) is BlockFluidIntake)
+            return true;
+        }
     return false;
   }
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
 
     if (Crowded)
@@ -135,8 +122,7 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
       dsc.AppendLine(Lang.Get("lpex:fluidintake-info-active"));
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("intakeHasWater", HasWater);
     tree.SetBool("intakeCrowded", Crowded);
@@ -145,15 +131,13 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     HasWater = tree.GetBool("intakeHasWater");
     Crowded = tree.GetBool("intakeCrowded");
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     if (_scanId != 0)
       UnregisterGameTickListener(_scanId);
     base.OnBlockRemoved();

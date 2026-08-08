@@ -11,33 +11,21 @@ using Vintagestory.API.Common;
 namespace ExpandedLib.Definitions;
 
 /// <summary>
-/// A code-first block definition: a fluent builder that produces the exact <see cref="JObject"/> the
-/// vanilla object loader (<c>ModRegistryObjectTypeLoader</c>) consumes for a <c>blocktypes/</c> asset.
-/// The <see cref="ExDefinitionModSystem"/> injects each built def as a synthetic in-memory asset on the
-/// server, so the whole vanilla pipeline (variant expansion, <c>*ByType</c> selection, atlas, block-ID
-/// assignment, client sync) runs unchanged - we never construct a <see cref="Block"/> instance
-/// ourselves (that would reimplement all of that and break on every schema change).
-/// <para>
-/// Art stays in files: <see cref="Shape"/>/<see cref="Texture"/> take asset-file references, never
-/// inline geometry. The <see cref="Class{T}"/>/<see cref="EntityClass{T}"/> overloads resolve the
-/// registered <c>{modid}.{ClassName}</c> key from the type via <see cref="EntityRegistry.KeyFor"/> -
-/// the same source the registry uses - so a class rename can't silently desync the definition.
-/// </para>
-/// <para>
-/// Only the subset of the blocktype schema the migrated blocks need is surfaced as typed methods;
-/// anything else is reachable through <see cref="Attribute"/> (a nested POCO/token) or
-/// <see cref="Raw"/> (an arbitrary token), so nothing the JSON can express is unrepresentable.
-/// </para>
+/// A code-first block definition: a fluent builder producing the <see cref="JObject"/> the vanilla
+/// object loader (<c>ModRegistryObjectTypeLoader</c>) consumes for a <c>blocktypes/</c> asset.
+/// <see cref="ExDefinitionModSystem"/> injects each built def as a synthetic in-memory asset on the
+/// server, so variant expansion, <c>*ByType</c> selection, atlas, block-ID assignment and client sync
+/// run unchanged and no <see cref="Block"/> is constructed directly. Shapes and textures take
+/// asset-file references, never inline geometry; schema the typed methods do not cover is reachable
+/// through <see cref="Attribute"/> and <see cref="Raw"/>.
 /// </summary>
-public sealed class ExBlockDef : IExDef
-{
+public sealed class ExBlockDef : IExDef {
   private readonly string _domain;
   private readonly string _code;
   private readonly string _assetName;
   private readonly JObject _root = new();
 
-  private ExBlockDef(string domain, string code, string assetName)
-  {
+  private ExBlockDef(string domain, string code, string assetName) {
     _domain = domain;
     _code = code;
     _assetName = assetName;
@@ -50,8 +38,8 @@ public sealed class ExBlockDef : IExDef
   public static ExBlockDef Create(string domain, string code) =>
     new(domain, code, code);
 
-  /// <summary>Starts a block definition whose asset <b>path</b> differs from its <paramref name="code"/>
-  /// - needed when several blocktype files share one code (e.g. the pipe class:
+  /// <summary>Starts a block definition whose asset path differs from its <paramref name="code"/>,
+  /// for when several blocktype files share one code (e.g.
   /// <c>Create("lpex", "pipe", "pipe/straight")</c> -&gt; code <c>pipe</c> at
   /// <c>blocktypes/pipe/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
   public static ExBlockDef Create(
@@ -67,43 +55,35 @@ public sealed class ExBlockDef : IExDef
   public string Code => _code;
 
   /// <summary>The synthetic asset location the loader keys on:
-  /// <c>{domain}:blocktypes/{assetName}.json</c> - unique per def (path begins <c>blocktypes/</c> and
-  /// ends <c>.json</c>, exactly as the loader filters).</summary>
+  /// <c>{domain}:blocktypes/{assetName}.json</c>, unique per def. The path must begin
+  /// <c>blocktypes/</c> and end <c>.json</c> for the loader's filter to pick it up.</summary>
   public AssetLocation Location =>
     new(_domain, "blocktypes/" + _assetName + ".json");
 
   #region Rendered codes
 
-  // The def is the handle. Everything below derives a usable code from the def's own variant grammar,
-  // so a layout legend, a recipe output and the generated {Mod}Blocks table are three callers of one
-  // implementation rather than three spellings that have to be kept in step. `BlockCodeEmitter` emits its
-  // accessors by calling these - which is what makes the generated table incapable of disagreeing with the
-  // definitions it is generated from.
+  // Everything below derives a usable code from the def's own variant grammar, so layout legends,
+  // recipe outputs and the generated {Mod}Blocks table share one implementation. `BlockCodeEmitter`
+  // emits its accessors by calling these.
 
   /// <summary>The domain-qualified bare code, no variants: <c>iwex:furnace</c>.</summary>
   public string QualifiedCode => _domain + ":" + _code;
 
   /// <summary>
-  /// This def's variant groups, <b>in declaration order</b> - which is the order their states appear in the
-  /// rendered code.
-  /// <para>
-  /// <see cref="ExVariantGroup.States"/> is empty for a worldproperty-sourced group: those states live in
-  /// the game's own assets, not in our definition, so nothing here can enumerate them.
-  /// </para>
+  /// This def's variant groups in declaration order, which is the order their states appear in the
+  /// rendered code. <see cref="ExVariantGroup.States"/> is empty for a worldproperty-sourced group:
+  /// those states live in the game's assets, not in the definition.
   /// </summary>
-  public IReadOnlyList<ExVariantGroup> VariantGroups
-  {
-    get
-    {
+  public IReadOnlyList<ExVariantGroup> VariantGroups {
+    get {
       if (_root["variantgroups"] is not JArray groups)
         return [];
 
       var result = new List<ExVariantGroup>();
-      foreach (JToken g in groups)
-      {
+      foreach (JToken g in groups) {
         string? props = (string?)g["loadFromProperties"];
-        // A codeless worldproperty group takes its name from the property itself (vanilla's form for
-        // horizontal orientation). Named for the property's last segment so an accessor still reads.
+        // A codeless worldproperty group (vanilla's form for horizontal orientation) is named after
+        // the property path's last segment.
         string? name = (string?)g["code"] ?? props?.Split('/').Last();
         if (name == null)
           continue;
@@ -118,12 +98,9 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>
-  /// The wildcard that matches <b>every</b> variant of this def: <c>iwex:furnace-irontap-*</c>.
-  /// <para>
-  /// A single-state group is baked in rather than wildcarded. It is fixed - there is only one value it
-  /// could ever take - so a <c>*</c> there would only lose precision, and losing precision on the segment
-  /// that names the family member is exactly how a wildcard escapes its family (N7).
-  /// </para>
+  /// The wildcard matching every variant of this def: <c>iwex:furnace-irontap-*</c>. A single-state
+  /// group is baked in rather than wildcarded, since a <c>*</c> on a segment with one possible value
+  /// only loses precision and lets the wildcard escape its family.
   /// </summary>
   public string Any =>
     QualifiedCode
@@ -134,24 +111,23 @@ public sealed class ExBlockDef : IExDef
   /// <summary>
   /// The code with <paramref name="group"/> pinned to <paramref name="state"/> and every other varying
   /// group wildcarded: <c>WithVariant("side", "north")</c> on the tall hopper gives
-  /// <c>iwex:hopper-tall-north</c>.
-  /// <para>
-  /// <b>Pinning is what makes a layout cell orientation-checked</b> rather than merely occupied. A
-  /// legend built from <see cref="Any"/> accepts a part fitted the wrong way round; one built from this
-  /// does not, and <c>MultiblockFacings</c> rotates the pinned segment with the structure.
-  /// </para>
+  /// <c>iwex:hopper-tall-north</c>. Pinning makes a layout cell orientation-checked rather than merely
+  /// occupied - a legend built from <see cref="Any"/> accepts a part fitted the wrong way round - and
+  /// <c>MultiblockFacings</c> rotates the pinned segment with the structure.
   /// </summary>
-  /// <exception cref="ArgumentException">No group of that name - which is a typo, not a runtime
-  /// condition, so it fails loudly at definition time rather than yielding a code matching nothing.</exception>
-  public string WithVariant(string group, string state)
-  {
+  /// <exception cref="ArgumentException">The def declares no variant group named
+  /// <paramref name="group"/>; thrown at definition time rather than yielding a code matching
+  /// nothing.</exception>
+  public string WithVariant(string group, string state) {
     var groups = VariantGroups;
     if (!groups.Any(g => g.Name == group))
       throw new ArgumentException(
         $"'{QualifiedCode}' has no variant group '{group}' - it declares "
-          + (groups.Count == 0
-            ? "none at all"
-            : string.Join(", ", groups.Select(g => g.Name))),
+          + (
+            groups.Count == 0
+              ? "none at all"
+              : string.Join(", ", groups.Select(g => g.Name))
+          ),
         nameof(group)
       );
 
@@ -225,9 +201,9 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef HeldTpUseAnimation(string animation) =>
     Set("heldTpUseAnimation", animation);
 
-  /// <summary>Sets <c>walkspeedmultiplier</c> - the movement-speed factor while standing on the block (e.g.
-  /// a smooth path &gt; 1). Takes a <see cref="double"/> so the emitted number matches the JSON-parsed value
-  /// exactly (a <see cref="float"/> like <c>1.3f</c> widens to a different double and would break parity).</summary>
+  /// <summary>Sets <c>walkspeedmultiplier</c> - the movement-speed factor while standing on the block (a
+  /// smooth path is &gt; 1). Takes a <see cref="double"/> so the emitted number matches the JSON-parsed
+  /// value exactly; a <see cref="float"/> such as <c>1.3f</c> widens to a different double.</summary>
   public ExBlockDef WalkSpeedMultiplier(double multiplier) =>
     Set("walkspeedmultiplier", multiplier);
 
@@ -238,15 +214,14 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef MineTool(EnumTool tool) =>
     Set("mineTool", tool.ToString().ToLowerInvariant());
 
-  /// <summary>Sets <c>drops</c> to an empty array - the block never drops itself (mega-blocks that are
-  /// raised through construction and hand back only their materials/contents).</summary>
+  /// <summary>Sets <c>drops</c> to an empty array - the block never drops itself (mega-blocks hand back
+  /// only their materials and contents).</summary>
   public ExBlockDef NoDrops() => Set("drops", new JArray());
 
   /// <summary>Appends one <c>drops</c> entry (<c>{ type, code[, quantity] }</c>) - for a block that hands back a
   /// specific stack rather than itself (e.g. a stairs/slab variant that always drops its base "-free" form).
   /// Accumulates across calls.</summary>
-  public ExBlockDef Drop(string type, string code, int? quantity = null)
-  {
+  public ExBlockDef Drop(string type, string code, int? quantity = null) {
     var entry = new JObject { ["type"] = type, ["code"] = code };
     if (quantity.HasValue)
       entry["quantity"] = quantity.Value;
@@ -260,19 +235,16 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Sets the <c>shape</c> base reference (<c>{ "base": "domain:path" }</c>). Order-independent
   /// with <see cref="ShapeRotateYByType"/>/<see cref="ShapeSelectiveElements"/> - all mutate one node.</summary>
-  public ExBlockDef Shape(string baseShape)
-  {
+  public ExBlockDef Shape(string baseShape) {
     NestedShape()["base"] = baseShape;
     return this;
   }
 
   /// <summary>Maps a variant wildcard to a Y rotation under the single shape's <c>rotateYByType</c> (for a
   /// block that keeps one base shape and only spins it per orientation, e.g. a mega-block footprint).</summary>
-  public ExBlockDef ShapeRotateYByType(string wildcard, int degrees)
-  {
+  public ExBlockDef ShapeRotateYByType(string wildcard, int degrees) {
     JObject shape = NestedShape();
-    if (shape["rotateYByType"] is not JObject map)
-    {
+    if (shape["rotateYByType"] is not JObject map) {
       map = new JObject();
       shape["rotateYByType"] = map;
     }
@@ -282,18 +254,16 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Sets the shape's <c>selectiveElements</c> (the sub-elements the block renders, e.g. a
   /// mega-block's construction-stage roots).</summary>
-  public ExBlockDef ShapeSelectiveElements(params string[] elements)
-  {
+  public ExBlockDef ShapeSelectiveElements(params string[] elements) {
     NestedShape()["selectiveElements"] = new JArray(elements);
     return this;
   }
 
   /// <summary>Sets one base shape and spins it for the four horizontal orientations via <c>rotateYByType</c>,
-  /// with the per-side angles derived from <see cref="ExOrientation.AngleFromSide"/> (the same convention the
-  /// runtime uses for structure/box rotation) instead of a hand-typed 0/270/180/90 table. <paramref name="offset"/>
-  /// is added to every angle (a block whose model faces away, like the mega-blocks that pass 180).</summary>
-  public ExBlockDef ShapeSpunPerOrientation(string baseShape, int offset = 0)
-  {
+  /// with per-side angles from <see cref="ExOrientation.AngleFromSide"/> - the convention the runtime uses
+  /// for structure and box rotation. <paramref name="offset"/> is added to every angle, for a block whose
+  /// model faces away from its variant side (the mega-blocks pass 180).</summary>
+  public ExBlockDef ShapeSpunPerOrientation(string baseShape, int offset = 0) {
     Shape(baseShape);
     foreach (string side in HorizontalSides)
       ShapeRotateYByType(
@@ -305,8 +275,7 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>The <c>shapebytype</c> form of <see cref="ShapeSpunPerOrientation"/> (one base shape, four
   /// per-orientation rotations) - for a block that keys its shape by the full variant wildcard.</summary>
-  public ExBlockDef ShapeByTypePerOrientation(string baseShape, int offset = 0)
-  {
+  public ExBlockDef ShapeByTypePerOrientation(string baseShape, int offset = 0) {
     foreach (string side in HorizontalSides)
       ShapeByType(
         $"*-{side}",
@@ -317,17 +286,10 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>
-  /// The four horizontal facings as this family spells them - <b>single letters</b>, matching the
-  /// tokens network <c>orientation</c> groups have always used and the vocabulary
-  /// <c>ExOrientations.Face</c> declares.
-  /// <para>
-  /// Letters rather than the full words of vanilla's <c>abstract/horizontalorientation</c>
-  /// worldproperty, because only letters compose - a bend is <c>nw</c>, a tee <c>uns</c>, a cross
-  /// <c>nswe</c>, and there is no word form of any of those. Two spellings for one concept would
-  /// force <c>ExOrientation</c> to carry an <c>asLetter</c> flag through every call and infer it from
-  /// <c>side.Length == 1</c>, and let a rig hold <c>furnace-tuyere-n</c> and
-  /// <c>furnace-irontap-west</c> in adjacent constants.
-  /// </para>
+  /// The four horizontal facings as single letters, matching the tokens network <c>orientation</c>
+  /// groups use and the vocabulary <c>ExOrientations.Face</c> declares. Letters rather than the full
+  /// words of vanilla's <c>abstract/horizontalorientation</c> worldproperty because only letters
+  /// compose: a bend is <c>nw</c>, a tee <c>uns</c>, a cross <c>nswe</c>.
   /// </summary>
   private static readonly string[] HorizontalSides = ["n", "e", "s", "w"];
 
@@ -338,8 +300,7 @@ public sealed class ExBlockDef : IExDef
     string key,
     string baseTexture,
     params string[] overlays
-  )
-  {
+  ) {
     var texture = new JObject { ["base"] = baseTexture };
     if (overlays.Length > 0)
       texture["overlays"] = new JArray(overlays);
@@ -351,12 +312,11 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef TextureAll(string baseTexture) =>
     Texture("all", baseTexture);
 
-  /// <summary>Sets a texture mapping <paramref name="key"/> from a fully-formed POCO/anonymous object/token - the
-  /// escape hatch for texture shapes the <see cref="Texture(string, string, string[])"/> helper can't express,
-  /// notably <c>alternates</c> (a list of alternative <c>{ base, overlays }</c> the atlas picks between per block,
-  /// e.g. the pebble-scatter road textures). Overwrites any existing entry for the key.</summary>
-  public ExBlockDef Texture(string key, object texture)
-  {
+  /// <summary>Sets a texture mapping <paramref name="key"/> from a fully-formed POCO/anonymous object/token,
+  /// for texture shapes <see cref="Texture(string, string, string[])"/> cannot express - notably
+  /// <c>alternates</c>, a list of alternative <c>{ base, overlays }</c> the atlas picks between per block.
+  /// Overwrites any existing entry for the key.</summary>
+  public ExBlockDef Texture(string key, object texture) {
     Nested("textures")[key] = texture as JToken ?? JToken.FromObject(texture);
     return this;
   }
@@ -366,8 +326,8 @@ public sealed class ExBlockDef : IExDef
   #region Model transforms
 
   /// <summary>Sets the <c>tpHandTransform</c> (the model transform applied when the block is held in third
-  /// person): translation, XYZ rotation (degrees) and uniform scale. The generic route for any of the
-  /// held/ground/gui transforms is the same <c>{ translation, rotation, scale }</c> object shape.</summary>
+  /// person): translation, XYZ rotation in degrees, and uniform scale. The held, ground and gui transforms
+  /// all share this <c>{ translation, rotation, scale }</c> object shape.</summary>
   public ExBlockDef TpHandTransform(
     double tx,
     double ty,
@@ -387,16 +347,13 @@ public sealed class ExBlockDef : IExDef
     double rz,
     double scale
   ) =>
-    new()
-    {
-      ["translation"] = new JObject
-      {
+    new() {
+      ["translation"] = new JObject {
         ["x"] = tx,
         ["y"] = ty,
         ["z"] = tz,
       },
-      ["rotation"] = new JObject
-      {
+      ["rotation"] = new JObject {
         ["x"] = rx,
         ["y"] = ry,
         ["z"] = rz,
@@ -409,14 +366,13 @@ public sealed class ExBlockDef : IExDef
   #region Sounds / creative tabs
 
   /// <summary>Adds one <c>sounds.{type}</c> entry (e.g. <c>Sound("place", "game:block/anvil")</c>).</summary>
-  public ExBlockDef Sound(string type, string assetPath)
-  {
+  public ExBlockDef Sound(string type, string assetPath) {
     Nested("sounds")[type] = assetPath;
     return this;
   }
 
-  /// <summary>Sets the four common <c>sounds</c> entries at once - the place/break/hit/walk block almost every
-  /// block repeats. Equivalent to four <see cref="Sound"/> calls.</summary>
+  /// <summary>Sets the place/break/hit/walk <c>sounds</c> entries at once. Equivalent to four
+  /// <see cref="Sound"/> calls.</summary>
   public ExBlockDef Sounds(
     string place,
     string breakSound,
@@ -429,7 +385,7 @@ public sealed class ExBlockDef : IExDef
       .Sound("walk", walk);
 
   /// <summary>The metal machine sound set (anvil place/break/hit, stone walk) shared by the pipes, boilers,
-  /// engines and converters - authored once instead of copied into every def.</summary>
+  /// engines and converters.</summary>
   public ExBlockDef MetalSounds() =>
     Sounds(
       "game:block/anvil",
@@ -440,16 +396,13 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Adds a per-tool hit/break sound override under
   /// <c>sounds.byTool.{tool}</c> (e.g. a ceramic pipe that breaks like rock under a pickaxe).</summary>
-  public ExBlockDef SoundByTool(EnumTool tool, string hit, string breakSound)
-  {
+  public ExBlockDef SoundByTool(EnumTool tool, string hit, string breakSound) {
     var byTool = Nested("sounds");
-    if (byTool["byTool"] is not JObject tools)
-    {
+    if (byTool["byTool"] is not JObject tools) {
       tools = new JObject();
       byTool["byTool"] = tools;
     }
-    tools[tool.ToString()] = new JObject
-    {
+    tools[tool.ToString()] = new JObject {
       ["hit"] = hit,
       ["break"] = breakSound,
     };
@@ -460,12 +413,10 @@ public sealed class ExBlockDef : IExDef
   /// <c>SoundByType("break", "*-snow", "game:block/snow")</c> so a snow-covered variant breaks with a snow
   /// sound. <paramref name="type"/> is the base sound key (<c>break</c>/<c>hit</c>/…); the map key emitted is
   /// <c>{type}ByType</c>.</summary>
-  public ExBlockDef SoundByType(string type, string wildcard, string assetPath)
-  {
+  public ExBlockDef SoundByType(string type, string wildcard, string assetPath) {
     JObject sounds = Nested("sounds");
     string key = type + "ByType";
-    if (sounds[key] is not JObject map)
-    {
+    if (sounds[key] is not JObject map) {
       map = new JObject();
       sounds[key] = map;
     }
@@ -474,15 +425,13 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>Adds a <c>creativeinventory.{tab}</c> selector list (accumulates across calls).</summary>
-  public ExBlockDef CreativeTab(string tab, params string[] selectors)
-  {
+  public ExBlockDef CreativeTab(string tab, params string[] selectors) {
     Nested("creativeinventory")[tab] = new JArray(selectors);
     return this;
   }
 
-  /// <summary>Adds the block to both the <c>general</c> tab and this def's own mod tab with the same
-  /// <paramref name="selectors"/> - the pair every migrated block repeats, with the second tab name derived
-  /// from the def's domain instead of hand-copied.</summary>
+  /// <summary>Adds the block to both the <c>general</c> tab and this def's own mod tab (named for the
+  /// domain) with the same <paramref name="selectors"/>.</summary>
   public ExBlockDef CreativeCommon(params string[] selectors) =>
     CreativeTab("general", selectors).CreativeTab(_domain, selectors);
 
@@ -492,8 +441,7 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Appends a <c>variantgroups</c> entry with explicit <paramref name="states"/> (order is
   /// preserved - variant expansion is left to the vanilla loader).</summary>
-  public ExBlockDef VariantGroup(string code, params string[] states)
-  {
+  public ExBlockDef VariantGroup(string code, params string[] states) {
     NestedArray("variantgroups")
       .Add(new JObject { ["code"] = code, ["states"] = new JArray(states) });
     return this;
@@ -504,8 +452,7 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef VariantGroupFromProperties(
     string code,
     string propertiesPath
-  )
-  {
+  ) {
     NestedArray("variantgroups")
       .Add(
         new JObject { ["code"] = code, ["loadFromProperties"] = propertiesPath }
@@ -516,32 +463,24 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Appends a codeless <c>variantgroups</c> entry sourced from a worldproperty (<c>{ loadFromProperties }</c>
   /// with no <c>code</c>) - the vanilla form for the horizontal-orientation property, whose group code is implied
   /// by the property itself (e.g. stairs' <c>game:abstract/horizontalorientation</c>).</summary>
-  public ExBlockDef VariantGroupFromProperties(string propertiesPath)
-  {
+  public ExBlockDef VariantGroupFromProperties(string propertiesPath) {
     NestedArray("variantgroups")
       .Add(new JObject { ["loadFromProperties"] = propertiesPath });
     return this;
   }
 
   /// <summary>
-  /// Declares the <c>side</c> variant group as an <b>explicit</b> four-state letter list.
+  /// Declares the <c>side</c> variant group as an explicit four-state letter list. The states must be
+  /// explicit: a <c>loadFromProperties</c> group reports none of its own, which makes
+  /// <c>UsesLetters</c> false and drops the <c>WithSide(BlockFacing)</c> overload the furnace layouts
+  /// are written against from the generated block-code table.
   /// <para>
-  /// <b>Explicit states, never a worldproperty - and that is load-bearing.</b> A group sourced from
-  /// <c>loadFromProperties</c> lists no states of its own, so <c>ExVariantGroup.States.Count</c> is 0.
-  /// That makes <c>UsesLetters</c> false and <c>IsHorizontalFacing</c> depend on a hard-coded property
-  /// name - and the block-code emitter then stops offering the <c>WithSide(BlockFacing)</c> overload
-  /// that every furnace layout is written against. Declaring a custom worldproperty instead of a state
-  /// list would compile and silently delete that whole API.
-  /// </para>
-  /// <para>
-  /// Pair it with <c>Behavior("ExOrientable")</c>. Vanilla's <c>HorizontalOrientable</c> builds the
-  /// placed code with <c>CodeWithParts</c>, which keeps only the first dash-segment - so it cannot
-  /// place any block whose code has a type or tier group, and it crashed the client outright on the
-  /// ones that do.
+  /// Pair with <c>Behavior("ExOrientable")</c>: vanilla's <c>HorizontalOrientable</c> builds the placed
+  /// code with <c>CodeWithParts</c>, which keeps only the first dash-segment and so cannot place a
+  /// block whose code also carries a type or tier group.
   /// </para>
   /// </summary>
-  public ExBlockDef SideVariant() =>
-    VariantGroup("side", HorizontalSides);
+  public ExBlockDef SideVariant() => VariantGroup("side", HorizontalSides);
 
   /// <summary>Sets <c>skipVariants</c> - variant-code wildcards the loader must not expand (e.g. rock types a
   /// block doesn't ship a texture for).</summary>
@@ -556,8 +495,7 @@ public sealed class ExBlockDef : IExDef
     int? rotateX = null,
     int? rotateY = null,
     int? rotateZ = null
-  )
-  {
+  ) {
     var shape = new JObject { ["base"] = baseShape };
     if (rotateX.HasValue)
       shape["rotateX"] = rotateX.Value;
@@ -577,11 +515,9 @@ public sealed class ExBlockDef : IExDef
     string textureKey,
     string baseTexture,
     params string[] overlays
-  )
-  {
+  ) {
     var byType = Nested("texturesByType");
-    if (byType[wildcard] is not JObject entry)
-    {
+    if (byType[wildcard] is not JObject entry) {
       entry = new JObject();
       byType[wildcard] = entry;
     }
@@ -598,20 +534,17 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Appends a block behavior by its registered name (a vanilla behavior, e.g.
   /// <c>"Lockable"</c>).</summary>
-  public ExBlockDef Behavior(string name)
-  {
+  public ExBlockDef Behavior(string name) {
     NestedArray("behaviors").Add(new JObject { ["name"] = name });
     return this;
   }
 
   /// <summary>Appends a block behavior carrying a <c>properties</c> blob (a POCO/anonymous object/token) - e.g.
   /// <c>Behavior("GroundStorable", new { layout = "SingleCenter" })</c>.</summary>
-  public ExBlockDef Behavior(string name, object properties)
-  {
+  public ExBlockDef Behavior(string name, object properties) {
     NestedArray("behaviors")
       .Add(
-        new JObject
-        {
+        new JObject {
           ["name"] = name,
           ["properties"] =
             properties as JToken ?? JToken.FromObject(properties),
@@ -626,18 +559,16 @@ public sealed class ExBlockDef : IExDef
     where T : BlockBehavior =>
     Behavior(EntityRegistry.KeyFor(_domain, typeof(T)));
 
-  /// <summary>Appends a block-<b>entity</b> behavior by its registered name (a vanilla behavior, e.g.
+  /// <summary>Appends a block-entity behavior by its registered name (a vanilla behavior, e.g.
   /// <c>"Animatable"</c>).</summary>
-  public ExBlockDef EntityBehavior(string name)
-  {
+  public ExBlockDef EntityBehavior(string name) {
     NestedArray("entityBehaviors").Add(new JObject { ["name"] = name });
     return this;
   }
 
   /// <summary>Appends a block-entity behavior carrying a <c>properties</c> blob (e.g. the construction
   /// behavior's <c>stages</c>). Prefer <see cref="Construction"/> for the RCC behavior.</summary>
-  public ExBlockDef EntityBehavior(string name, JObject properties)
-  {
+  public ExBlockDef EntityBehavior(string name, JObject properties) {
     NestedArray("entityBehaviors")
       .Add(new JObject { ["name"] = name, ["properties"] = properties });
     return this;
@@ -661,8 +592,7 @@ public sealed class ExBlockDef : IExDef
     float x2,
     float y2,
     float z2
-  )
-  {
+  ) {
     NestedArray("collisionboxes").Add(Box(x1, y1, z1, x2, y2, z2));
     return this;
   }
@@ -675,8 +605,7 @@ public sealed class ExBlockDef : IExDef
     float x2,
     float y2,
     float z2
-  )
-  {
+  ) {
     NestedArray("selectionboxes").Add(Box(x1, y1, z1, x2, y2, z2));
     return this;
   }
@@ -760,8 +689,7 @@ public sealed class ExBlockDef : IExDef
     float y2,
     float z2
   ) =>
-    new()
-    {
+    new() {
       ["x1"] = x1,
       ["y1"] = y1,
       ["z1"] = z1,
@@ -779,8 +707,7 @@ public sealed class ExBlockDef : IExDef
   /// through the game's JSON conventions, e.g.
   /// <c>Attribute("steamConnectorOffset", new { x = 0, y = 1, z = 4 })</c> or
   /// <c>Attribute("tiers", new[] { 1, 2, 3 })</c>.</summary>
-  public ExBlockDef Attribute(string key, object value)
-  {
+  public ExBlockDef Attribute(string key, object value) {
     Nested("attributes")[key] = value as JToken ?? JToken.FromObject(value);
     return this;
   }
@@ -789,8 +716,7 @@ public sealed class ExBlockDef : IExDef
   /// a block that carries several custom scalars/objects, e.g.
   /// <c>Attributes(new { steamConnectorOffset = new { x = 0, y = 1, z = 4 }, fillHeight = 0.5f })</c>. Each
   /// property becomes one <c>attributes.{name}</c> entry (later calls overwrite by key).</summary>
-  public ExBlockDef Attributes(object poco)
-  {
+  public ExBlockDef Attributes(object poco) {
     JObject source =
       poco as JObject
       ?? JToken.FromObject(poco) as JObject
@@ -806,10 +732,8 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Sets <c>attributes.handbook.groupBy</c> - the handbook variant grouping (so a family of
   /// variants shows as one collapsed handbook entry).</summary>
-  public ExBlockDef Handbook(params string[] groupBy)
-  {
-    Nested("attributes")["handbook"] = new JObject
-    {
+  public ExBlockDef Handbook(params string[] groupBy) {
+    Nested("attributes")["handbook"] = new JObject {
       ["groupBy"] = new JArray(groupBy),
     };
     return this;
@@ -821,13 +745,11 @@ public sealed class ExBlockDef : IExDef
   public ExBlockDef HandbookExclude() =>
     Set("handbook", new JObject { ["exclude"] = true });
 
-  /// <summary>Sets <c>attributes.fillerOffsets</c> from a computed/validated footprint - the mega-block's
-  /// invisible per-cell collision reservation (see <see cref="StructureFootprint"/>). Each cell emits
-  /// <c>{ x, y, z }</c> plus <c>allowAttach: true</c> only when set (matching the hand-written form).
-  /// The footprint is validated (no duplicate cell, none at the principal origin) so a bad table fails at
-  /// load instead of silently clobbering a filler - retiring the block-number class of bugs in C#.</summary>
-  public ExBlockDef FillerOffsets(IEnumerable<FillerCellSpec> cells)
-  {
+  /// <summary>Sets <c>attributes.fillerOffsets</c> - the mega-block's invisible per-cell collision
+  /// reservation (see <see cref="StructureFootprint"/>). Each cell emits <c>{ x, y, z }</c>, plus
+  /// <c>allowAttach: true</c> only when set. The footprint is validated (no duplicate cell, none at the
+  /// principal origin), so a bad table fails at load rather than clobbering a filler.</summary>
+  public ExBlockDef FillerOffsets(IEnumerable<FillerCellSpec> cells) {
     Nested("attributes")["fillerOffsets"] = SerializeFillerCells(cells);
     return this;
   }
@@ -835,15 +757,15 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Per-type footprint: sets <c>attributesByType.{typeWildcard}.fillerOffsets</c>, for a mega-block
   /// whose reserved volume varies by variant (a flywheel's normal 3×3×1 vs large 5×5×2 disc). Accumulates, so
   /// call once per type wildcard. Same validation/serialization as <see cref="FillerOffsets"/>.</summary>
-  public ExBlockDef FillerOffsetsByType(string typeWildcard, IEnumerable<FillerCellSpec> cells)
-  {
-    if (_root["attributesByType"] is not JObject byType)
-    {
+  public ExBlockDef FillerOffsetsByType(
+    string typeWildcard,
+    IEnumerable<FillerCellSpec> cells
+  ) {
+    if (_root["attributesByType"] is not JObject byType) {
       byType = new JObject();
       _root["attributesByType"] = byType;
     }
-    if (byType[typeWildcard] is not JObject attrs)
-    {
+    if (byType[typeWildcard] is not JObject attrs) {
       attrs = new JObject();
       byType[typeWildcard] = attrs;
     }
@@ -851,25 +773,20 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  private static JArray SerializeFillerCells(IEnumerable<FillerCellSpec> cells)
-  {
+  private static JArray SerializeFillerCells(IEnumerable<FillerCellSpec> cells) {
     var list = cells as IReadOnlyList<FillerCellSpec> ?? cells.ToArray();
     StructureFootprint.Validate(list);
 
     var array = new JArray();
-    foreach (FillerCellSpec cell in list)
-    {
-      var entry = new JObject
-      {
+    foreach (FillerCellSpec cell in list) {
+      var entry = new JObject {
         ["x"] = cell.X,
         ["y"] = cell.Y,
         ["z"] = cell.Z,
       };
-      if (cell.Behaviors is { Count: > 0 })
-      {
+      if (cell.Behaviors is { Count: > 0 }) {
         var behaviors = new JArray();
-        foreach (FillerBehaviorSpec b in cell.Behaviors)
-        {
+        foreach (FillerBehaviorSpec b in cell.Behaviors) {
           var behavior = new JObject { ["code"] = b.Code };
           if (b.Face != null)
             behavior["face"] = b.Face;
@@ -886,10 +803,9 @@ public sealed class ExBlockDef : IExDef
     return array;
   }
 
-  /// <summary>Appends the exlib right-click construction behavior (<c>ExRightClickConstructable</c>) with
-  /// its staged material/shape table authored via a typed builder rather than a hand-nested JSON blob.</summary>
-  public ExBlockDef Construction(Action<ConstructionStages> configure)
-  {
+  /// <summary>Appends the exlib right-click construction behavior (<c>ExRightClickConstructable</c>), with
+  /// its staged material/shape table authored through a typed builder.</summary>
+  public ExBlockDef Construction(Action<ConstructionStages> configure) {
     var stages = new ConstructionStages();
     configure(stages);
     return EntityBehavior(nameof(ExRightClickConstructable), stages.Build());
@@ -898,8 +814,7 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Sets <c>attributes.multiblockStructure</c> (the <c>blockNumbers</c> map + <c>offsets</c> table)
   /// from a typed builder that names the block numbers, fills regular sub-volumes, and validates that every
   /// offset resolves to a declared number with no duplicate cell - see <see cref="MultiblockBuilder"/>.</summary>
-  public ExBlockDef Multiblock(Action<MultiblockBuilder> configure)
-  {
+  public ExBlockDef Multiblock(Action<MultiblockBuilder> configure) {
     var structure = new MultiblockBuilder();
     configure(structure);
     Nested("attributes")["multiblockStructure"] = structure.Build();
@@ -907,11 +822,9 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>Sets <c>attributes.multiblockStructure</c> from an ASCII layer diagram - a <c>Legend</c> plus one
-  /// <c>Layer</c> per Y level drawn as a top-down grid (see <see cref="MultiblockLayoutBuilder"/>). The visual
-  /// layout replaces the coordinate array; the generated table is behaviour-identical to any hand ordering of
-  /// the same cells (the game treats the offsets as a set).</summary>
-  public ExBlockDef MultiblockLayout(Action<MultiblockLayoutBuilder> configure)
-  {
+  /// <c>Layer</c> per Y level drawn as a top-down grid (see <see cref="MultiblockLayoutBuilder"/>). The game
+  /// treats the offsets as an unordered set, so the generated cell order carries no meaning.</summary>
+  public ExBlockDef MultiblockLayout(Action<MultiblockLayoutBuilder> configure) {
     var layout = new MultiblockLayoutBuilder();
     configure(layout);
     Nested("attributes")["multiblockStructure"] = layout.Build();
@@ -919,8 +832,7 @@ public sealed class ExBlockDef : IExDef
     // object is deserialised by vanilla's own MultiblockStructure and must stay exactly its schema.
     if (layout.BuildFacings() is JObject facings)
       Nested("attributes")["multiblockFacings"] = facings;
-    // Cell roles ride in a sibling for the same reason. Both are omitted entirely when the layout declares
-    // none, so a layout that uses neither emits byte-identical JSON to before either existed.
+    // Cell roles ride in a sibling for the same reason. Both are omitted when the layout declares none.
     if (layout.BuildRoles() is JObject roles)
       Nested("attributes")["multiblockRoles"] = roles;
     return this;
@@ -935,11 +847,9 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Adds a <c>{wildcard: value}</c> entry to a <c>{key}ByType</c> map under <c>attributes</c>
   /// (accumulates across calls) - e.g. <c>AttributeByType("widthByType", "*", 1)</c> for a door's
   /// per-type width. <paramref name="value"/> may be a scalar, POCO or token.</summary>
-  public ExBlockDef AttributeByType(string key, string wildcard, object value)
-  {
+  public ExBlockDef AttributeByType(string key, string wildcard, object value) {
     JObject attrs = Nested("attributes");
-    if (attrs[key] is not JObject map)
-    {
+    if (attrs[key] is not JObject map) {
       map = new JObject();
       attrs[key] = map;
     }
@@ -950,10 +860,8 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Adds a <c>{wildcard: value}</c> entry to a top-level <c>{key}ByType</c> map (accumulates) - for
   /// the per-type transform maps (<c>guiTransformByType</c>/<c>tpHandTransformByType</c>/<c>groundTransformByType</c>),
   /// whose values are transform objects with <c>{ translation, rotation, origin, scale }</c>.</summary>
-  public ExBlockDef RawByType(string key, string wildcard, object value)
-  {
-    if (_root[key] is not JObject map)
-    {
+  public ExBlockDef RawByType(string key, string wildcard, object value) {
+    if (_root[key] is not JObject map) {
       map = new JObject();
       _root[key] = map;
     }
@@ -961,8 +869,8 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  /// <summary>Sets an arbitrary top-level key to an arbitrary token - the parity escape hatch so
-  /// nothing the JSON can express is unrepresentable.</summary>
+  /// <summary>Sets an arbitrary top-level key to an arbitrary token - the escape hatch for blocktype
+  /// schema with no dedicated method.</summary>
   public ExBlockDef Raw(string key, JToken token) => Set(key, token);
 
   /// <summary>Sets an arbitrary top-level key from a POCO/anonymous object - the object-valued companion to
@@ -974,13 +882,11 @@ public sealed class ExBlockDef : IExDef
   #endregion
 
   /// <summary>
-  /// The explicit states of a variant group by its code (empty when the group is absent or sourced
-  /// from a worldproperty via <see cref="VariantGroupFromProperties"/>). Lets a block derive its
-  /// runtime tables - e.g. <c>AllowedOrientations</c> - straight from the def instead of hand-keeping a
-  /// duplicate list that drifts out of sync.
+  /// The explicit states of a variant group by its code; empty when the group is absent or sourced from
+  /// a worldproperty via <see cref="VariantGroupFromProperties"/>. Lets a block derive runtime tables
+  /// such as <c>AllowedOrientations</c> from the def rather than a duplicate list.
   /// </summary>
-  public string[] VariantStates(string groupCode)
-  {
+  public string[] VariantStates(string groupCode) {
     if (_root["variantgroups"] is not JArray groups)
       return [];
     foreach (JToken g in groups)
@@ -992,22 +898,19 @@ public sealed class ExBlockDef : IExDef
   /// <summary>The built blocktype JSON (a defensive clone, safe to mutate/serialize).</summary>
   public JObject ToJson() => (JObject)_root.DeepClone();
 
-  // Explicit IExDef surface: the interface returns the base JToken; the public ToJson keeps the more precise
-  // JObject its callers rely on (implicit interface implementation can't covary the return type).
+  // Explicit implementation: the interface returns JToken, while the public ToJson keeps the more precise
+  // JObject its callers rely on. An implicit implementation cannot covary the return type.
   JToken IExDef.ToJson() => ToJson();
 
-  private ExBlockDef Set(string key, JToken value)
-  {
+  private ExBlockDef Set(string key, JToken value) {
     _root[key] = value;
     return this;
   }
 
   // Returns the JObject at `key`, creating it if absent - for the accumulating sub-objects
   // (textures / sounds / creativeinventory / attributes / *ByType maps).
-  private JObject Nested(string key)
-  {
-    if (_root[key] is not JObject obj)
-    {
+  private JObject Nested(string key) {
+    if (_root[key] is not JObject obj) {
       obj = new JObject();
       _root[key] = obj;
     }
@@ -1020,10 +923,8 @@ public sealed class ExBlockDef : IExDef
 
   // Returns the JArray at `key`, creating it if absent - for the accumulating, order-preserving lists
   // (variantgroups / behaviors / collisionboxes / selectionboxes).
-  private JArray NestedArray(string key)
-  {
-    if (_root[key] is not JArray arr)
-    {
+  private JArray NestedArray(string key) {
+    if (_root[key] is not JArray arr) {
       arr = new JArray();
       _root[key] = arr;
     }

@@ -3,15 +3,13 @@ using System.Collections.Generic;
 namespace ExpandedLib.Registries.Config;
 
 /// <summary>
-/// Non-generic view over a config store (<see cref="ExConfigRegister{TConfig}"/>) that the generic
-/// <c>/exmod config</c> command uses to list, read and set a mod's gameplay tunables by name without
-/// knowing the concrete config type. A mod opts a config in by marking it
-/// <c>[ExConfigRegister(..., Manageable = true)]</c>; the generated accessor then registers its store
-/// with <see cref="ExConfigProfiles"/> at load.
+/// Non-generic view over a config store (<see cref="ExConfigRegister{TConfig}"/>) that the
+/// <c>/exmod config</c> command uses to list, read and set a mod's tunables by name without knowing
+/// the concrete config type. A config opts in with <c>[ExConfigRegister(..., Manageable = true)]</c>;
+/// the generated accessor then registers its store with <see cref="ExConfigProfiles"/> at load.
 /// </summary>
-public interface IExConfigAccess
-{
-  /// <summary>The owning mod id, e.g. <c>"smex"</c> - the code typed in <c>/exmod config smex ...</c>.</summary>
+public interface IExConfigAccess {
+  /// <summary>The owning mod id, e.g. <c>"smex"</c>, as typed in <c>/exmod config smex ...</c>.</summary>
   string ModId { get; }
 
   /// <summary>The config file this store reads/writes, for display.</summary>
@@ -26,14 +24,13 @@ public interface IExConfigAccess
   bool TryGet(string name, out string canonicalName, out string value);
 
   /// <summary>Parses <paramref name="raw"/> into the named value's type, validates it, sets it on the
-  /// live config and persists the file - so the change applies immediately to everything reading the
-  /// value through the accessor's getters. Returns the outcome (incl. canonical name and old/new value).</summary>
+  /// live config and persists the file, so the change takes effect immediately for every reader going
+  /// through the accessor's getters. Returns the outcome, with canonical name and old/new value.</summary>
   ExConfigEditResult Set(string name, string raw);
 }
 
 /// <summary>Outcome category of an <see cref="IExConfigAccess.Set"/> attempt.</summary>
-public enum ExConfigEditStatus
-{
+public enum ExConfigEditStatus {
   /// <summary>The value was parsed, validated, set and persisted.</summary>
   Ok,
 
@@ -48,8 +45,7 @@ public enum ExConfigEditStatus
 }
 
 /// <summary>The result of an attempted config edit, with enough detail for the command to report it.</summary>
-public sealed class ExConfigEditResult
-{
+public sealed class ExConfigEditResult {
   /// <summary>What happened.</summary>
   public required ExConfigEditStatus Status { get; init; }
 

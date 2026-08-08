@@ -10,40 +10,24 @@ using Newtonsoft.Json.Linq;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// Emits a mod's <c>{Mod}Blocks</c> table from its <b>code-first definitions</b>, so a layout author can
-/// name a block code - with a chosen variant - without hand-writing the string.
-/// <para>
-/// <b>It runs the definitions rather than parsing them.</b> A Roslyn source generator would have to read
-/// the fluent chains syntactically, and it would be wrong: codes reach <c>ExBlockDef.Create</c> through
-/// helpers (<c>Core(domain, "puddlingfurnacecore", …)</c>, <c>Common(domain, "pipes/straight", …)</c>) and
-/// <b>the helper adds variant groups the call site never shows</b>. Executing <c>Definitions(domain)</c>
-/// yields the finished def, variant order and arity included, so what is emitted is what actually ships.
-/// This is the goldens' own trick, and it is exact rather than approximate.
-/// </para>
-/// <para>
-/// <b>This cannot cover vanilla codes.</b> The game declares those, so <c>VanillaCodes</c> stays
-/// hand-authored - which is exactly why the historical <c>refractorygrating</c> typo was there and not in a
-/// mod's own codes. Its foolproofing is a different tool.
-/// </para>
+/// Emits a mod's <c>{Mod}Blocks</c> table from its code-first definitions, so a layout author can name a
+/// block code, with a chosen variant, instead of hand-writing the string. It executes
+/// <c>Definitions(domain)</c> rather than parsing the fluent chains: codes reach <c>ExBlockDef.Create</c>
+/// through helpers that add variant groups the call site never shows, so only the finished def carries the
+/// variant order and arity that ship. Vanilla codes are out of reach here - the game declares those, and
+/// <c>VanillaCodes</c> stays hand-authored.
 /// </summary>
-public static class BlockCodeEmitter
-{
-  /// <summary>True when <c>EXLIB_WRITE_BLOCKCODES=1</c>.
-  /// <para>
-  /// Deliberately <b>not</b> <c>EXLIB_WRITE_GOLDENS</c>. That flag rewrites an entire domain's goldens,
-  /// which has destroyed hand-blessed work before; regenerating a code table is a different, far smaller
-  /// action and must not be reachable by the same switch.
-  /// </para></summary>
+public static class BlockCodeEmitter {
+  /// <summary>True when <c>EXLIB_WRITE_BLOCKCODES=1</c>. Separate from <c>EXLIB_WRITE_GOLDENS</c>, which
+  /// rewrites an entire domain's goldens: regenerating a code table must not be reachable by that
+  /// switch.</summary>
   public static bool WriteRequested =>
     Environment.GetEnvironmentVariable("EXLIB_WRITE_BLOCKCODES") == "1";
 
   /// <summary>
   /// Emits <paramref name="domain"/>'s table and compares it to the file at
-  /// <paramref name="repoRelativePath"/>. Writes it instead when <see cref="WriteRequested"/>.
-  /// <para>
-  /// The failure message has to say how to fix it. A drift test that only reports "these differ" costs
-  /// the reader a hunt for the regeneration switch every single time.
-  /// </para>
+  /// <paramref name="repoRelativePath"/>. Writes it instead when <see cref="WriteRequested"/>. The
+  /// failure message names the regeneration switch.
   /// </summary>
   public static (bool ok, string message) CheckOrWrite(
     string domain,
@@ -51,36 +35,38 @@ public static class BlockCodeEmitter
     string className,
     string namespaceName,
     string repoRelativePath
-  )
-  {
+  ) {
     string expected = Emit(domain, asm, className, namespaceName);
     string path = DefinitionGoldens.SolutionRelative(repoRelativePath);
 
-    if (WriteRequested)
-    {
+    if (WriteRequested) {
       System.IO.File.WriteAllText(path, expected);
       return (true, "written");
     }
 
     if (!System.IO.File.Exists(path))
-      return (false, $"{repoRelativePath} does not exist. Regenerate with "
-        + "EXLIB_WRITE_BLOCKCODES=1 dotnet test <this project>");
+      return (
+        false,
+        $"{repoRelativePath} does not exist. Regenerate with "
+          + "EXLIB_WRITE_BLOCKCODES=1 dotnet test <this project>"
+      );
 
     string actual = System.IO.File.ReadAllText(path).Replace("\r\n", "\n");
     if (actual == expected.Replace("\r\n", "\n"))
       return (true, "up to date");
 
-    return (false,
+    return (
+      false,
       $"{repoRelativePath} is stale - the block definitions and this generated table disagree.\n"
-      + "Regenerate with: EXLIB_WRITE_BLOCKCODES=1 dotnet test <this project>\n"
-      + FirstDifference(actual, expected.Replace("\r\n", "\n")));
+        + "Regenerate with: EXLIB_WRITE_BLOCKCODES=1 dotnet test <this project>\n"
+        + FirstDifference(actual, expected.Replace("\r\n", "\n"))
+    );
   }
 
-  private static string FirstDifference(string actual, string expected)
-  {
-    string[] a = actual.Split('\n'), e = expected.Split('\n');
-    for (int i = 0; i < Math.Max(a.Length, e.Length); i++)
-    {
+  private static string FirstDifference(string actual, string expected) {
+    string[] a = actual.Split('\n'),
+      e = expected.Split('\n');
+    for (int i = 0; i < Math.Max(a.Length, e.Length); i++) {
       string av = i < a.Length ? a[i] : "<end of file>";
       string ev = i < e.Length ? e[i] : "<end of file>";
       if (av != ev)
@@ -90,14 +76,11 @@ public static class BlockCodeEmitter
   }
 
   /// <summary>
-  /// One emitted accessor. It carries the <b>def itself</b>, not a copy of its grammar: every code this
-  /// file writes out comes from <see cref="ExBlockDef.Any"/> / <see cref="ExBlockDef.WithVariant"/>, so the
-  /// generated table and the definitions cannot drift into disagreement - there is one implementation, and
-  /// the emitter is merely a caller of it. This file used to recompute the wildcard rule itself, which is
-  /// two copies of a decision (single-state groups are baked in, the rest wildcarded) that nothing checked.
+  /// One emitted accessor. It carries the def itself rather than a copy of its grammar: every code this
+  /// file writes out comes from <see cref="ExBlockDef.Any"/> or <see cref="ExBlockDef.WithVariant"/>, so
+  /// the emitter is a caller of the wildcard rule rather than a second implementation of it.
   /// </summary>
-  private sealed record Entry(string Member, string AssetPath, ExBlockDef Def)
-  {
+  private sealed record Entry(string Member, string AssetPath, ExBlockDef Def) {
     public string Code => Def.QualifiedCode;
 
     public IReadOnlyList<ExVariantGroup> Groups => Def.VariantGroups;
@@ -107,30 +90,45 @@ public static class BlockCodeEmitter
   /// The full <c>{Mod}Blocks</c> source for <paramref name="domain"/>, ready to compare against the
   /// checked-in file or write over it.
   /// </summary>
-  public static string Emit(string domain, Assembly asm, string className, string namespaceName)
-  {
+  public static string Emit(
+    string domain,
+    Assembly asm,
+    string className,
+    string namespaceName
+  ) {
     List<Entry> entries = Collect(domain, asm);
     var sb = new StringBuilder();
 
     sb.Append("// <auto-generated>\n");
-    sb.Append("//   Emitted from this mod's code-first block definitions by BlockCodeEmitter.\n");
-    sb.Append("//   DO NOT EDIT BY HAND - a drift test fails when this file and the definitions disagree.\n");
-    sb.Append("//   To regenerate: EXLIB_WRITE_BLOCKCODES=1 dotnet test <this mod's test project>\n");
+    sb.Append(
+      "//   Emitted from this mod's code-first block definitions by BlockCodeEmitter.\n"
+    );
+    sb.Append(
+      "//   DO NOT EDIT BY HAND - a drift test fails when this file and the definitions disagree.\n"
+    );
+    sb.Append(
+      "//   To regenerate: EXLIB_WRITE_BLOCKCODES=1 dotnet test <this mod's test project>\n"
+    );
     sb.Append("// </auto-generated>\n\n");
     sb.Append($"namespace {namespaceName};\n\n");
     sb.Append("/// <summary>\n");
-    sb.Append($"/// Every block <c>{domain}</c> declares, as a code you can name instead of type. Generated from\n");
-    sb.Append("/// the definitions themselves, so the variant grammar here is the one that actually ships.\n");
+    sb.Append(
+      $"/// Every block <c>{domain}</c> declares, as a code you can name instead of type. Generated from\n"
+    );
+    sb.Append(
+      "/// the definitions themselves, so the variant grammar here is the one that actually ships.\n"
+    );
     sb.Append("/// <para>\n");
-    sb.Append("/// Vanilla codes are NOT here - the game declares those, and they stay hand-authored in\n");
+    sb.Append(
+      "/// Vanilla codes are NOT here - the game declares those, and they stay hand-authored in\n"
+    );
     sb.Append("/// <c>VanillaCodes</c>.\n");
     sb.Append("/// </para>\n");
     sb.Append("/// </summary>\n");
     sb.Append($"public static class {className}\n{{\n");
 
     bool first = true;
-    foreach (Entry e in entries)
-    {
+    foreach (Entry e in entries) {
       if (!first)
         sb.Append('\n');
       first = false;
@@ -141,64 +139,72 @@ public static class BlockCodeEmitter
     return sb.ToString();
   }
 
-  private static void AppendEntry(StringBuilder sb, Entry e)
-  {
-    string groups = e.Groups.Count == 0
-      ? "no variants"
-      : string.Join(
-        ", ",
-        e.Groups.Select(g =>
-          g.States.Count > 0
-            ? $"{g.Name}({string.Join('|', g.States)})"
-            : $"{g.Name}(from {g.FromProperties})"
-        )
-      );
+  private static void AppendEntry(StringBuilder sb, Entry e) {
+    string groups =
+      e.Groups.Count == 0
+        ? "no variants"
+        : string.Join(
+          ", ",
+          e.Groups.Select(g =>
+            g.States.Count > 0
+              ? $"{g.Name}({string.Join('|', g.States)})"
+              : $"{g.Name}(from {g.FromProperties})"
+          )
+        );
 
-    sb.Append($"  /// <summary><c>{e.Code}</c> - {e.AssetPath}. Variant groups: {groups}.</summary>\n");
+    sb.Append(
+      $"  /// <summary><c>{e.Code}</c> - {e.AssetPath}. Variant groups: {groups}.</summary>\n"
+    );
     sb.Append($"  public static class {e.Member}\n  {{\n");
-    sb.Append($"    /// <summary>The bare code, no variants: <c>{e.Code}</c>.</summary>\n");
+    sb.Append(
+      $"    /// <summary>The bare code, no variants: <c>{e.Code}</c>.</summary>\n"
+    );
     sb.Append($"    public const string Code = \"{e.Code}\";\n");
 
-    // Straight off the def - the wildcard rule (single-state groups baked in, the rest wildcarded) lives
-    // in ExBlockDef.Any and is not restated here.
+    // Taken straight off the def: the wildcard rule (single-state groups baked in, the rest wildcarded)
+    // lives in ExBlockDef.Any and is not restated here.
     string any = e.Def.Any;
-    if (e.Groups.Count > 0)
-    {
+    if (e.Groups.Count > 0) {
       sb.Append($"\n    /// <summary>Any variant: <c>{any}</c>.</summary>\n");
       sb.Append($"    public const string Any = \"{any}\";\n");
     }
 
-    foreach (ExVariantGroup g in e.Groups.Where(g => g.States.Count > 1))
-    {
-      sb.Append($"\n    /// <summary>The <c>{g.Name}</c> variant group.</summary>\n");
+    foreach (ExVariantGroup g in e.Groups.Where(g => g.States.Count > 1)) {
+      sb.Append(
+        $"\n    /// <summary>The <c>{g.Name}</c> variant group.</summary>\n"
+      );
       sb.Append($"    public static class {Pascal(g.Name)}\n    {{\n");
       foreach (string state in g.States)
-        sb.Append($"      public const string {Pascal(state)} = \"{state}\";\n");
+        sb.Append(
+          $"      public const string {Pascal(state)} = \"{state}\";\n"
+        );
       sb.Append("    }\n");
     }
 
-    // One accessor per varying group: pin that group, wildcard the others. This is what a layout wants -
-    // "a tall hopper facing north", "a straight pipe on the NS axis" - far more often than a fully
-    // resolved code.
-    foreach (ExVariantGroup g in e.Groups.Where(g => g.States.Count != 1))
-    {
-      // The interpolation hole is produced by WithVariant itself, so where the pinned segment lands is the
-      // def's rule rather than a second copy of it here.
+    // One accessor per varying group: pin that group, wildcard the others. A layout usually wants that
+    // ("a tall hopper facing north", "a straight pipe on the NS axis") rather than a fully resolved code.
+    foreach (ExVariantGroup g in e.Groups.Where(g => g.States.Count != 1)) {
+      // WithVariant produces the interpolation hole, so where the pinned segment lands stays the def's
+      // rule rather than a second copy of it here.
       string pattern = e.Def.WithVariant(g.Name, "{" + Ident(g.Name) + "}");
-      sb.Append($"\n    /// <summary>Pin only <c>{g.Name}</c>: <c>{pattern}</c>.</summary>\n");
-      sb.Append($"    public static string With{Pascal(g.Name)}(string {Ident(g.Name)}) =>\n");
+      sb.Append(
+        $"\n    /// <summary>Pin only <c>{g.Name}</c>: <c>{pattern}</c>.</summary>\n"
+      );
+      sb.Append(
+        $"    public static string With{Pascal(g.Name)}(string {Ident(g.Name)}) =>\n"
+      );
       sb.Append($"      $\"{pattern}\";\n");
 
-      // The BlockFacing overload - what a layout author actually reaches for. A legend wants "the
-      // hopper on the charging face", and spelling that as a string means knowing whether this part writes
-      // its facing as a word (`side`) or a letter (`orientation`) - the N4 split, which is a fact about the
-      // block, not about the cell. The overload converts, so the caller states only the direction.
-      // Emitted only where the states really are facings: an axis group (ns|we, nw|ne|se|sw) has no
-      // BlockFacing naming one of its states, and an overload there would invite a code matching nothing.
+      // The BlockFacing overload converts a direction into whichever token this block writes - a word
+      // (`side`) or a letter (`orientation`) - so the caller states only the direction. Emitted only
+      // where the states really are facings: an axis group (ns|we, nw|ne|se|sw) has no BlockFacing
+      // naming one of its states, and an overload there would produce a code matching nothing.
       if (!g.IsHorizontalFacing)
         continue;
 
-      sb.Append($"\n    /// <summary>Pin only <c>{g.Name}</c>, from a facing rather than a token: ");
+      sb.Append(
+        $"\n    /// <summary>Pin only <c>{g.Name}</c>, from a facing rather than a token: "
+      );
       sb.Append($"<c>{pattern}</c>.</summary>\n");
       sb.Append(
         $"    public static string With{Pascal(g.Name)}(Vintagestory.API.MathTools.BlockFacing {Ident(g.Name)}) =>\n"
@@ -210,31 +216,42 @@ public static class BlockCodeEmitter
 
     // The fully-resolved accessor, when there is more than one thing to resolve.
     var varying = e.Groups.Where(g => g.States.Count != 1).ToList();
-    if (varying.Count > 1)
-    {
-      string full = e.Code
+    if (varying.Count > 1) {
+      string full =
+        e.Code
         + string.Concat(
-          e.Groups.Select(x => x.States.Count == 1 ? "-" + x.States[0] : "-{" + Ident(x.Name) + "}")
+          e.Groups.Select(x =>
+            x.States.Count == 1 ? "-" + x.States[0] : "-{" + Ident(x.Name) + "}"
+          )
         );
-      string args = string.Join(", ", varying.Select(g => "string " + Ident(g.Name)));
-      sb.Append($"\n    /// <summary>Every group resolved: <c>{full}</c>.</summary>\n");
-      sb.Append($"    public static string Of({args}) =>\n      $\"{full}\";\n");
+      string args = string.Join(
+        ", ",
+        varying.Select(g => "string " + Ident(g.Name))
+      );
+      sb.Append(
+        $"\n    /// <summary>Every group resolved: <c>{full}</c>.</summary>\n"
+      );
+      sb.Append(
+        $"    public static string Of({args}) =>\n      $\"{full}\";\n"
+      );
     }
 
     sb.Append("  }\n");
   }
 
-  private static List<Entry> Collect(string domain, Assembly asm)
-  {
+  private static List<Entry> Collect(string domain, Assembly asm) {
     var entries = new List<Entry>();
     var used = new HashSet<string>(StringComparer.Ordinal);
 
-    foreach (ExBlockDef def in DefinitionGoldens.Collect(domain, asm).OfType<ExBlockDef>())
-    {
+    foreach (
+      ExBlockDef def in DefinitionGoldens
+        .Collect(domain, asm)
+        .OfType<ExBlockDef>()
+    ) {
       // The asset path is the unique key, not the code: several defs legitimately share one code and
       // differ by a `type` variant (`pipe` is straight, bend, tjunction, xjunction and outlet).
-      string assetPath = def.Location.Path
-        .Replace("blocktypes/", "")
+      string assetPath = def
+        .Location.Path.Replace("blocktypes/", "")
         .Replace(".json", "");
 
       string member = Pascal(assetPath.Replace('/', '-'));
@@ -252,22 +269,18 @@ public static class BlockCodeEmitter
   }
 
   /// <summary>A C# identifier from a variant-group name (<c>orientation</c> → <c>orientation</c>).</summary>
-  private static string Ident(string raw)
-  {
+  private static string Ident(string raw) {
     string s = Pascal(raw);
     return char.ToLowerInvariant(s[0]) + s[1..];
   }
 
   /// <summary>PascalCase from a code segment: <c>pipes-straight</c> → <c>PipesStraight</c>,
   /// <c>tier1</c> → <c>Tier1</c>, <c>n</c> → <c>N</c>.</summary>
-  private static string Pascal(string raw)
-  {
+  private static string Pascal(string raw) {
     var sb = new StringBuilder(raw.Length);
     bool upper = true;
-    foreach (char c in raw)
-    {
-      if (!char.IsLetterOrDigit(c))
-      {
+    foreach (char c in raw) {
+      if (!char.IsLetterOrDigit(c)) {
         upper = true;
         continue;
       }

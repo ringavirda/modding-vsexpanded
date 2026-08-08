@@ -1,6 +1,6 @@
-using IronworkingExpanded.Tests;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
+using IronworkingExpanded.Tests;
 using LowPressureExpanded.BlockNetworkPipe;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
@@ -12,15 +12,13 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// The pressure-relief valve's player-set gate: stepping it up/down is clamped to
+/// The pressure-relief valve's player-set gate: stepping it up or down is clamped to
 /// [<see cref="BlockEntityPressureValve.MinGatePressure"/>, the valve's burst rating], reports
-/// whether it actually moved, and the setting persists across a save/reload (defaulting to 1 atm for
-/// valves saved before the gate was configurable).
+/// whether it actually moved, and persists across a save/reload, defaulting to 1 atm when the saved
+/// tree carries no gate value.
 /// </summary>
-public class PressureValveBeTests
-{
-  private static BlockPressureValve ValveBlock(string material = "iron")
-  {
+public class PressureValveBeTests {
+  private static BlockPressureValve ValveBlock(string material = "iron") {
     var block = TestBlocks.Configure(
       new BlockPressureValve(),
       $"lpex:pressurevalve-{material}-ns",
@@ -34,11 +32,9 @@ public class PressureValveBeTests
     return block;
   }
 
-  private static BlockEntityPressureValve Valve(string material = "iron")
-  {
+  private static BlockEntityPressureValve Valve(string material = "iron") {
     var world = new TestWorld();
-    var be = new BlockEntityPressureValve
-    {
+    var be = new BlockEntityPressureValve {
       Pos = new BlockPos(0, 0, 0),
       Block = ValveBlock(material),
     };
@@ -49,8 +45,7 @@ public class PressureValveBeTests
   #region Rating
 
   [Fact]
-  public void MaxGatePressure_is_the_blocks_burst_rating()
-  {
+  public void MaxGatePressure_is_the_blocks_burst_rating() {
     var be = Valve();
     Assert.Equal(
       ((BlockPressureValve)be.Block).BurstPressure,
@@ -63,8 +58,7 @@ public class PressureValveBeTests
   #region Adjusting the gate
 
   [Fact]
-  public void Increase_raises_the_gate_by_one_step()
-  {
+  public void Increase_raises_the_gate_by_one_step() {
     var be = Valve();
     float before = be.GatePressure;
 
@@ -77,8 +71,7 @@ public class PressureValveBeTests
   }
 
   [Fact]
-  public void Decrease_lowers_the_gate_by_one_step()
-  {
+  public void Decrease_lowers_the_gate_by_one_step() {
     var be = Valve();
     float before = be.GatePressure;
 
@@ -91,8 +84,7 @@ public class PressureValveBeTests
   }
 
   [Fact]
-  public void Raising_clamps_at_the_material_ceiling_and_then_reports_no_change()
-  {
+  public void Raising_clamps_at_the_material_ceiling_and_then_reports_no_change() {
     var be = Valve("iron");
 
     // Step up until it pins at the ceiling.
@@ -103,8 +95,7 @@ public class PressureValveBeTests
   }
 
   [Fact]
-  public void Lowering_clamps_at_the_floor_and_then_reports_no_change()
-  {
+  public void Lowering_clamps_at_the_floor_and_then_reports_no_change() {
     var be = Valve();
 
     for (int i = 0; i < 100 && be.AdjustGatePressure(false); i++) { }
@@ -118,8 +109,7 @@ public class PressureValveBeTests
   #region Persistence
 
   [Fact]
-  public void Gate_pressure_round_trips_through_the_tree()
-  {
+  public void Gate_pressure_round_trips_through_the_tree() {
     var src = Valve();
     src.AdjustGatePressure(true);
     src.AdjustGatePressure(true); // 1 -> 1.5
@@ -129,8 +119,7 @@ public class PressureValveBeTests
     src.ToTreeAttributes(tree);
 
     var world = new TestWorld();
-    var restored = new BlockEntityPressureValve
-    {
+    var restored = new BlockEntityPressureValve {
       Pos = new BlockPos(0, 0, 0),
       Block = ValveBlock(),
     };
@@ -141,17 +130,15 @@ public class PressureValveBeTests
   }
 
   [Fact]
-  public void A_save_without_a_gate_value_defaults_to_one_atm()
-  {
+  public void A_save_without_a_gate_value_defaults_to_one_atm() {
     var world = new TestWorld();
-    var be = new BlockEntityPressureValve
-    {
+    var be = new BlockEntityPressureValve {
       Pos = new BlockPos(0, 0, 0),
       Block = ValveBlock(),
     };
     world.Attach(be);
 
-    // A tree with the base pipe keys but no "gatePressure" (a pre-feature save).
+    // A tree with the base pipe keys but no "gatePressure".
     var tree = new TreeAttribute();
     tree.SetString("networkType", "pipe");
     tree.SetString("orientation", "ns");
@@ -166,17 +153,16 @@ public class PressureValveBeTests
   #region Overflow venting (network-backed)
 
   /// <summary>
-  /// A valve at (0,0,1) facing "ns": its input face (north) butts against a sealed 2-cell pipe run
-  /// at (0,0,0)/(0,0,-1) (capped by rock to the north and by the valve block to the south), and its
-  /// output face (south) is open air - so any overflow vents to atmosphere. Returns the live input
-  /// network so the test can pressurise it.
+  /// A valve at (0,0,1) facing "ns": its input face (north) butts against a sealed 2-cell pipe run at
+  /// (0,0,0)/(0,0,-1), capped by rock to the north and by the valve block to the south, and its output
+  /// face (south) is open air, so overflow vents to atmosphere. Returns the live input network so the
+  /// test can pressurise it.
   /// </summary>
   private static (
     TestWorld world,
     BlockEntityPressureValve valve,
     PipeNetwork inNet
-  ) VentRig()
-  {
+  ) VentRig() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
@@ -185,8 +171,7 @@ public class PressureValveBeTests
     world.Place(new BlockPos(0, 0, 0), pipe);
 
     var valveBlock = ValveBlock();
-    var valve = new BlockEntityPressureValve
-    {
+    var valve = new BlockEntityPressureValve {
       Pos = new BlockPos(0, 0, 1),
       Block = valveBlock,
     };
@@ -215,8 +200,7 @@ public class PressureValveBeTests
     ReflectionHelpers.Invoke(valve, "OnTick", 1f);
 
   [Fact]
-  public void Above_the_gate_an_open_face_vents_gas_to_atmosphere()
-  {
+  public void Above_the_gate_an_open_face_vents_gas_to_atmosphere() {
     var (world, valve, inNet) = VentRig();
 
     // MaxVolume = 2 pipes * 30 L = 60; gate is 1 atm, so >60 L is overflow.
@@ -236,8 +220,7 @@ public class PressureValveBeTests
   }
 
   [Fact]
-  public void At_or_below_the_gate_nothing_vents()
-  {
+  public void At_or_below_the_gate_nothing_vents() {
     var (world, valve, inNet) = VentRig();
 
     // 30 L is below the 60 L gate allowance, so the valve stays shut.

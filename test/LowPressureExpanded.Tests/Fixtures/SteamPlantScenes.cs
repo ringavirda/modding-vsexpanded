@@ -13,25 +13,19 @@ namespace LowPressureExpanded.Tests;
 
 /// <summary>
 /// Whole-plant fixtures that stand a steam engine up with its real peripherals in a shared
-/// <see cref="Scene"/>, so scenario tests can model the in-game setups end to end (steam in → power →
-/// work out). Shared helper to wire the engine + its sealed steam inlet; subclasses add the
-/// sub-machine and its lines.
-/// <para>
-/// Public because the high-pressure plants (hpex) build on the same helper - the sub-machine wiring
-/// is identical whichever engine drives it.
-/// </para>
+/// <see cref="Scene"/>, so scenario tests can model the in-game setups end to end: steam in, power,
+/// work out. Shared helpers for the engine and its sealed steam inlet; the plants below add the
+/// sub-machine and its lines. Public because the hpex plants build on the same helpers.
 /// </summary>
-public static class EnginePlant
-{
-  /// <summary>One oriented, network-joined pipe cell in the scene (steel holds the high-pressure lines).</summary>
+public static class EnginePlant {
+  /// <summary>One oriented, network-joined pipe cell in the scene; steel carries high-pressure lines.</summary>
   public static void Pipe(
     Scene scene,
     BlockPos pos,
     string orientation,
     int id,
     string material = "iron"
-  )
-  {
+  ) {
     var block = PipeTestWorld.MakePipe(
       material: material,
       orientation: orientation,
@@ -53,13 +47,12 @@ public static class EnginePlant
 }
 
 /// <summary>
-/// Models the starter steam-power setup's water half: a constructed Watt engine driving a fluid-pump
-/// sub-machine. The pump's source line (below) holds a fluid intake over a pond; its output line
-/// (left) is a sealed water main. With steam at the engine's inlet the engine engages, the pump draws
-/// from the pond and lifts water into the main - the boiler→engine→pump→water chain.
+/// The starter steam-power setup's water half: a constructed Watt engine driving a fluid-pump
+/// sub-machine. The pump's source line, below, holds a fluid intake over a pond; its output line, to
+/// the left, is a sealed water main. With steam at the engine's inlet the engine engages, the pump
+/// draws from the pond and lifts water into the main.
 /// </summary>
-internal sealed class WaterPumpPlant
-{
+internal sealed class WaterPumpPlant {
   public readonly BlockEntityEngineWatt Engine;
   public readonly BlockEntityEngineFluidPump Pump;
   public readonly BlockEntityFluidIntake Intake;
@@ -69,8 +62,7 @@ internal sealed class WaterPumpPlant
   private readonly BlockPos _pond;
   private readonly BlockPos _output;
 
-  public WaterPumpPlant(Scene scene, BlockPos pos)
-  {
+  public WaterPumpPlant(Scene scene, BlockPos pos) {
     _scene = scene;
 
     var engineBlock = TestBlocks.Configure(
@@ -79,13 +71,12 @@ internal sealed class WaterPumpPlant
       30,
       ("side", "north")
     );
-    Engine = new BlockEntityEngineWatt
-    {
+    Engine = new BlockEntityEngineWatt {
       Pos = pos.Copy(),
       Block = engineBlock,
     };
     scene.Machine(pos, engineBlock, Engine);
-    RccFake.Complete(Engine); // Initialize cleared _rcc from the absent behavior
+    RccFake.Complete(Engine); // re-apply: Initialize clears _rcc from the absent behavior
 
     // Sealed steam inlet on the engine's south face.
     BlockFacing inletFace = engineBlock.SteamInletFace;
@@ -93,7 +84,7 @@ internal sealed class WaterPumpPlant
     EnginePlant.Pipe(scene, _inlet, EnginePlant.Axis(inletFace), 31);
     scene.Block(_inlet.AddCopy(inletFace), LpexScenes.Cap(32));
 
-    // Fluid pump at the engine's sub-machine cell (side rotates north→east).
+    // Fluid pump at the engine's sub-machine cell; the side rotates from north to east.
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
@@ -101,15 +92,14 @@ internal sealed class WaterPumpPlant
       33,
       ("side", "east")
     );
-    Pump = new BlockEntityEngineFluidPump
-    {
+    Pump = new BlockEntityEngineFluidPump {
       Pos = subPos.Copy(),
       Block = pumpBlock,
     };
     scene.Machine(subPos, pumpBlock, Pump);
 
-    // Source line: a fluid intake directly below the pump (oriented "u" so it presents a connector up
-    // into the pump's down face). It is its own one-cell network - the pond the pump draws from.
+    // Source line: a fluid intake directly below the pump, oriented "u" so it presents a connector up
+    // into the pump's down face. It is its own one-cell network, the pond the pump draws from.
     _pond = subPos.DownCopy();
     var intakeBlock = TestBlocks.Configure(
       new BlockFluidIntake(),
@@ -118,8 +108,7 @@ internal sealed class WaterPumpPlant
       ("orientation", "u")
     );
     ReflectionHelpers.SetProperty(intakeBlock, "Orientation", "u");
-    Intake = new BlockEntityFluidIntake
-    {
+    Intake = new BlockEntityFluidIntake {
       Pos = _pond.Copy(),
       Block = intakeBlock,
     };
@@ -142,9 +131,8 @@ internal sealed class WaterPumpPlant
     scene.Block(_output.AddCopy(leftFace), LpexScenes.Cap(36));
   }
 
-  /// <summary>Tops the engine's steam inlet back up to <paramref name="atm"/> (single 30 L pipe).</summary>
-  public WaterPumpPlant Steam(float atm)
-  {
+  /// <summary>Tops the engine's steam inlet back up to <paramref name="atm"/>; a single 30 L pipe.</summary>
+  public WaterPumpPlant Steam(float atm) {
     _scene
       .NetworkAt<PipeNetwork>(_inlet)!
       .TryProduceGas(
@@ -158,23 +146,20 @@ internal sealed class WaterPumpPlant
   }
 
   /// <summary>
-  /// Holds the inlet at <paramref name="atm"/> for <paramref name="seconds"/> ticks - a stand-in for
-  /// a boiler continuously feeding the line - re-charging before each tick so the running engine has
-  /// steam to draw (a sealed pipe's charge would otherwise deplete as the engine consumes it).
+  /// Holds the inlet at <paramref name="atm"/> for <paramref name="seconds"/> one-second ticks, a
+  /// stand-in for a boiler continuously feeding the line. It re-charges before each tick because a
+  /// sealed pipe's charge would otherwise deplete as the running engine consumes it.
   /// </summary>
-  public WaterPumpPlant RunWithSteam(float atm, int seconds)
-  {
-    for (int i = 0; i < seconds; i++)
-    {
+  public WaterPumpPlant RunWithSteam(float atm, int seconds) {
+    for (int i = 0; i < seconds; i++) {
       Steam(atm);
       _scene.Step(1);
     }
     return this;
   }
 
-  /// <summary>Pre-fills the pond (source line) with standing water for the pump to lift.</summary>
-  public WaterPumpPlant FillPond(float litres)
-  {
+  /// <summary>Pre-fills the pond, the source line, with standing water for the pump to lift.</summary>
+  public WaterPumpPlant FillPond(float litres) {
     _scene
       .NetworkAt<PipeNetwork>(_pond)!
       .TryProduceLiquid(litres, 12f, 1f, _scene.World.Accessor);

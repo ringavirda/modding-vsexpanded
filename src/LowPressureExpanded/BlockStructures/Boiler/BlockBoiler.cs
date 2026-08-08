@@ -20,22 +20,22 @@ public abstract class BlockBoiler
   : BlockFilledMegastructure,
     INetworkConnector,
     IFillerInteractionTarget,
-    IBoilerGeometry
-{
-  // The boiler geometry offsets, read at runtime from the block's own attributes (populated from the JSON
-  // file or the injected code-first def alike). Implemented here so the concrete Lancashire/Cornish leaves
-  // inherit one copy instead of each carrying a generated one - and so a leaf can drop its blocktype JSON
-  // without losing these accessors (the "runtime reads the same record" side of the code-first inversion).
+    IBoilerGeometry {
+  // Boiler geometry offsets, read at runtime from the block's own attributes, populated from the JSON file
+  // or the injected code-first def alike. Implemented here so the Lancashire and Cornish leaves share one
+  // copy and a leaf can drop its blocktype JSON without losing these accessors.
   public JsonObject? FuelOffset => Attributes?["fuelOffset"];
   public JsonObject? ExhaustOutletOffset => Attributes?["exhaustOutletOffset"];
   public JsonObject? LidOffset => Attributes?["lidOffset"];
-  public JsonObject? SteamConnectorOffset => Attributes?["steamConnectorOffset"];
+  public JsonObject? SteamConnectorOffset =>
+    Attributes?["steamConnectorOffset"];
   public JsonObject? LightSampleOffset => Attributes?["lightSampleOffset"];
-  public JsonObject? ExplosionCenterOffset => Attributes?["explosionCenterOffset"];
+  public JsonObject? ExplosionCenterOffset =>
+    Attributes?["explosionCenterOffset"];
   public JsonObject? WaterRendererBox => Attributes?["waterRendererBox"];
 
-  // The body extends along local +z; offset the angle 180° so HorizontalOrientable raises it
-  // AWAY from the player. rotateYByType is offset to match, keeping visual/fillers/connectors aligned.
+  // The body extends along local +z, so the angle is offset 180° for HorizontalOrientable to raise it
+  // away from the player. rotateYByType is offset to match, keeping visual, fillers and connectors aligned.
   private int Angle =>
     (ExOrientation.AngleFromSide(Variant["side"]) + 180) % 360;
 
@@ -51,11 +51,11 @@ public abstract class BlockBoiler
   private IBoilerGeometry Geo => this;
 
   /// <summary>
-  /// The shared code-first surface both boiler variants carry (material, sounds, break resistance, the
-  /// multiblock/orientable/interact behaviors, the Animatable entity behavior, the side variant group, the
-  /// one base shape spun per orientation, and the non-solid flags). Each leaf's <c>Definitions</c> starts
-  /// here and overlays only what differs: mining tier, geometry offsets, filler footprint, structure map and
-  /// construction stages. Authored once instead of copied into both boiler defs.
+  /// The code-first surface both boiler variants share: material, sounds, break resistance, the multiblock,
+  /// orientable and interact behaviors, the Animatable entity behavior, the side variant group, one base
+  /// shape spun per orientation, and the non-solid flags. Each leaf's <c>Definitions</c> starts here and
+  /// overlays only what differs - mining tier, geometry offsets, filler footprint, structure map and
+  /// construction stages.
   /// </summary>
   protected static ExBlockDef BoilerShell(ExBlockDef def, string shapeBase) =>
     def.Material(EnumBlockMaterial.Metal)
@@ -73,9 +73,8 @@ public abstract class BlockBoiler
       .ShapeSelectiveElements("Root/Base/*")
       .NonSolid();
 
-  // Each offset value lives solely in the def attribute (both boiler variants author all of them, pinned by
-  // the parity tests), so there is no hand-kept fallback to drift from it - a missing attribute resolves to
-  // the origin rather than a stale guess.
+  // Each offset lives solely in the def attribute - both boiler variants author all of them - so there is
+  // no hand-kept fallback to drift from it: a missing attribute resolves to the origin.
   private BlockPos OffsetWorldPos(BlockPos boilerPos, JsonObject? offsetNode) =>
     ExOrientation.WorldPosFromAttr(boilerPos, offsetNode, Vec3i.Zero, Angle);
 
@@ -99,9 +98,9 @@ public abstract class BlockBoiler
     OffsetWorldPos(boilerPos, Geo.SteamConnectorOffset);
 
   /// <summary>
-  /// World cell the animated vessel mesh is lit from. Vanilla lights the whole footprint from
-  /// the block's firebox-adjacent cell, tinting the vessel red at night; this points the light
-  /// sample at a body cell instead. Read from <c>lightSampleOffset</c>, rotated by angle.
+  /// World cell the animated vessel mesh is lit from, read from <c>lightSampleOffset</c> and rotated by
+  /// angle. It points at a body cell instead of the firebox-adjacent cell vanilla would light the whole
+  /// footprint from, which tints the vessel red at night.
   /// </summary>
   public BlockPos LightSampleWorldPos(BlockPos boilerPos) =>
     OffsetWorldPos(boilerPos, Geo.LightSampleOffset);
@@ -128,28 +127,24 @@ public abstract class BlockBoiler
   /// Turns the steam-connector filler cell (<see cref="SteamPipeWorldPos"/>) into an upward "pipe"
   /// port, so a steam pipe placed above it connects straight into the boiler.
   /// </summary>
-  private void MarkSteamPort(IWorldAccessor world, BlockPos boilerPos)
-  {
+  private void MarkSteamPort(IWorldAccessor world, BlockPos boilerPos) {
     if (world.Side != EnumAppSide.Server)
       return;
     BlockPos portCell = SteamPipeWorldPos(boilerPos);
     if (
       world.BlockAccessor.GetBlockEntity(portCell)
       is BlockEntityStructureFiller be
-    )
-    {
+    ) {
       be.PortFace = "u";
       be.PortNetworkType = NetworkType; // "pipe"
       be.MarkDirty(true);
     }
   }
 
-  // A broken boiler returns only its construction materials (scattered by the RightClickConstructable
-  // behaviour at brokenDropsRatio), never the boiler block itself - mirrors the bessemer converter. The
-  // JSON "drops": [] declares this, but it isn't reliably honoured for a variant block (the per-pressure
-  // variant can still be handed its own code as a fallback drop at registration), so enforce the empty
-  // drop list here. (The engines deliberately keep their craftable-frame self-drop and are unaffected -
-  // they don't derive from BlockBoiler.)
+  // A broken boiler returns only its construction materials, scattered by the RightClickConstructable
+  // behaviour at brokenDropsRatio, never the boiler block itself. The JSON "drops": [] declares this but is
+  // not reliably honoured for a variant block - the per-pressure variant can still be handed its own code
+  // as a fallback drop at registration - so the empty drop list is enforced here.
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,
@@ -193,8 +188,7 @@ public abstract class BlockBoiler
     IPlayer byPlayer,
     BlockSelection sel,
     BlockPos clickedCell
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(sel.Position)
       is not BlockEntityBoiler be
@@ -214,24 +208,21 @@ public abstract class BlockBoiler
     ItemSlot? slot = byPlayer.InventoryManager?.ActiveHotbarSlot;
 
     // A water container while the lid is open → pour its entire contents in.
-    if (be.LidOpen && IsWaterContainer(slot?.Itemstack))
-    {
+    if (be.LidOpen && IsWaterContainer(slot?.Itemstack)) {
       if (world.Side == EnumAppSide.Server && slot != null)
         be.TryManualFill(byPlayer, slot);
       return true;
     }
 
     // An empty liquid container while the lid is open → bail water out into it.
-    if (be.LidOpen && IsEmptyLiquidContainer(slot?.Itemstack))
-    {
+    if (be.LidOpen && IsEmptyLiquidContainer(slot?.Itemstack)) {
       if (world.Side == EnumAppSide.Server && slot != null)
         be.TryManualDrain(byPlayer, slot);
       return true;
     }
 
     // Empty hands → begin the lid hold; the toggle happens in the step loop past the threshold.
-    if (slot?.Empty != false)
-    {
+    if (slot?.Empty != false) {
       be.LidToggled = false;
       return true;
     }
@@ -269,8 +260,7 @@ public abstract class BlockBoiler
     IPlayer byPlayer,
     BlockSelection sel,
     BlockPos clickedCell
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(sel.Position)
         is not BlockEntityBoiler be
@@ -285,8 +275,7 @@ public abstract class BlockBoiler
 
     // Toggle once past the threshold, then keep returning true until release so the engine
     // doesn't restart the interaction (which would toggle the lid repeatedly).
-    if (secondsUsed >= LidHoldSeconds && !be.LidToggled)
-    {
+    if (secondsUsed >= LidHoldSeconds && !be.LidToggled) {
       be.LidToggled = true;
       if (world.Side == EnumAppSide.Server)
         be.ToggleLid();
@@ -300,8 +289,7 @@ public abstract class BlockBoiler
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (!HandleInteractStop(world, byPlayer, blockSel))
       base.OnBlockInteractStop(secondsUsed, world, byPlayer, blockSel);
   }
@@ -312,8 +300,7 @@ public abstract class BlockBoiler
     IPlayer byPlayer,
     BlockSelection principalSel,
     BlockPos clickedCell
-  )
-  {
+  ) {
     if (!HandleInteractStop(world, byPlayer, principalSel))
       base.OnBlockInteractStop(secondsUsed, world, byPlayer, principalSel);
   }
@@ -322,8 +309,7 @@ public abstract class BlockBoiler
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection sel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(sel.Position)
         is not BlockEntityBoiler be
@@ -335,8 +321,7 @@ public abstract class BlockBoiler
     return true;
   }
 
-  private static bool IsWaterContainer(ItemStack? stack)
-  {
+  private static bool IsWaterContainer(ItemStack? stack) {
     if (stack?.Collectible is not BlockLiquidContainerBase cont)
       return false;
     ItemStack? content = cont.GetContent(stack);
@@ -344,8 +329,7 @@ public abstract class BlockBoiler
   }
 
   /// <summary>An empty liquid container (e.g. an empty bucket) - the tool used to bail water out.</summary>
-  private static bool IsEmptyLiquidContainer(ItemStack? stack)
-  {
+  private static bool IsEmptyLiquidContainer(ItemStack? stack) {
     if (stack?.Collectible is not BlockLiquidContainerBase cont)
       return false;
     return cont.GetContent(stack) == null;
@@ -355,8 +339,7 @@ public abstract class BlockBoiler
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var help = HandleInteractionHelp(
       world,
       selection,
@@ -387,8 +370,7 @@ public abstract class BlockBoiler
     BlockSelection selection,
     IPlayer forPlayer,
     BlockPos clickedCell
-  )
-  {
+  ) {
     var help = new List<WorldInteraction>(
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? []
     );
@@ -405,8 +387,7 @@ public abstract class BlockBoiler
 
     // Empty-handed right click toggles the lid.
     help.Add(
-      new WorldInteraction
-      {
+      new WorldInteraction {
         ActionLangCode = "lpex:blockhelp-boiler-lid",
         MouseButton = EnumMouseButton.Right,
         RequireFreeHand = true,
@@ -414,19 +395,16 @@ public abstract class BlockBoiler
     );
 
     // The manual water fill/drain only work while the lid is open, so only advertise them then.
-    if (be.LidOpen)
-    {
+    if (be.LidOpen) {
       help.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "lpex:blockhelp-boiler-fill",
           MouseButton = EnumMouseButton.Right,
           Itemstacks = WaterContainerStacks(world),
         }
       );
       help.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "lpex:blockhelp-boiler-drain",
           MouseButton = EnumMouseButton.Right,
           Itemstacks = EmptyContainerStacks(world),
@@ -437,17 +415,16 @@ public abstract class BlockBoiler
     return help.ToArray();
   }
 
-  // True for the vanilla wood-bucket family, matched by code path: vanilla blocks carry no
-  // attribute we could key on without a JSON patch, and the substring keeps every bucket
-  // variant in the fill/drain interaction hints.
+  // True for the vanilla wood-bucket family, matched on the code path because those blocks carry no
+  // attribute to key on without a JSON patch. The substring keeps every bucket variant in the
+  // fill/drain interaction hints.
   private static bool IsWoodBucket(Block? block) =>
     block?.Code != null && block.Code.Path.Contains("woodbucket");
 
   /// <summary>Water-filled liquid containers shown on the manual-fill interaction hint, resolved once.</summary>
   private static ItemStack[]? _waterContainerStacks;
 
-  private static ItemStack[] WaterContainerStacks(IWorldAccessor world)
-  {
+  private static ItemStack[] WaterContainerStacks(IWorldAccessor world) {
     if (_waterContainerStacks != null)
       return _waterContainerStacks;
 
@@ -455,8 +432,7 @@ public abstract class BlockBoiler
       world.GetItem(new AssetLocation("game:waterportion"))
     );
     var list = new List<ItemStack>();
-    foreach (var block in world.Blocks)
-    {
+    foreach (var block in world.Blocks) {
       if (block is not BlockLiquidContainerBase cont || !IsWoodBucket(block))
         continue;
       var bucket = new ItemStack(block);
@@ -473,14 +449,12 @@ public abstract class BlockBoiler
   /// <summary>Empty liquid containers shown on the manual-drain interaction hint, resolved once.</summary>
   private static ItemStack[]? _emptyContainerStacks;
 
-  private static ItemStack[] EmptyContainerStacks(IWorldAccessor world)
-  {
+  private static ItemStack[] EmptyContainerStacks(IWorldAccessor world) {
     if (_emptyContainerStacks != null)
       return _emptyContainerStacks;
 
     var list = new List<ItemStack>();
-    foreach (var block in world.Blocks)
-    {
+    foreach (var block in world.Blocks) {
       if (block is not BlockLiquidContainerBase || !IsWoodBucket(block))
         continue;
       list.Add(new ItemStack(block));

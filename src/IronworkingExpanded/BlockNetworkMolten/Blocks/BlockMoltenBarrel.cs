@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -11,7 +12,6 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
@@ -21,29 +21,28 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 /// be chiselled out. Sneak + right-click picks the barrel up with its contents.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
-{
+public partial class BlockMoltenBarrel : Block, IExBlockDefProvider {
   private MeshData? _barrelBaseMesh;
 
-  // Cached item list for the pour interaction help, populated on load. (The chisel list is shared
-  // through MoltenChisel.ChiselHelp.)
+  // Item list for the pour interaction help, cached on load. The chisel list comes from
+  // MoltenChisel.ChiselHelp.
   private ItemStack[] _smeltedCrucibles = [];
 
   #region Code-first definition
 
-  // Fill geometry + capacity read at runtime from the block's own attributes (file or injected def
-  // alike), replacing the JSON-scanned generated members - so the values live once, in the def.
+  // Fill geometry and capacity, read at runtime from the block's own attributes (authored file or
+  // injected def alike) so the values live once, in the def.
   public int MaxUnits => Attributes?["maxUnits"].AsInt(800) ?? 800;
   public int FillStart => Attributes?["fillStart"].AsInt(2) ?? 2;
   public int FillHeight => Attributes?["fillHeight"].AsInt(8) ?? 8;
   public JsonObject? FillQuadsByLevel => Attributes?["fillQuadsByLevel"];
 
-  /// <summary>The molten barrel blocktype, authored in C# (migrated from molten/barrel.json). A portable
-  /// metal vessel that stores liquid metal and can be carried in a backpack. Two <c>construction</c>
-  /// variants that behave identically - only their shape and craft differ: <c>plated</c> is fabricated from
-  /// plates, fire clay and nails; <c>cast</c> is a sand-cast <c>cast-barrel</c> blank lined with fire clay
-  /// (see the sand-casting design doc). Old single-code <c>molten-barrel</c> worlds are remapped to
-  /// <c>-plated</c> by <see cref="BlockMigrations.BarrelConstructionMigration"/>.</summary>
+  /// <summary>The molten barrel blocktype: a portable metal vessel that stores liquid metal and can be
+  /// carried in a backpack. The two <c>construction</c> variants behave identically and differ only in
+  /// shape and craft - <c>plated</c> is fabricated from plates, fire clay and nails, <c>cast</c> is a
+  /// sand-cast <c>cast-barrel</c> blank lined with fire clay (see docs/design/processes/casting.md).
+  /// Single-code <c>molten-barrel</c> worlds are remapped to <c>-plated</c> by
+  /// <see cref="BlockMigrations.BarrelConstructionMigration"/>.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -60,7 +59,19 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
         .Attribute("maxUnits", 800)
         .Attribute("fillHeight", 8)
         .Attribute("fillStart", 2)
-        .Attribute("fillQuadsByLevel", new[] { new { x1 = 4, z1 = 4, x2 = 12, z2 = 12 } })
+        .Attribute(
+          "fillQuadsByLevel",
+          new[]
+          {
+            new
+            {
+              x1 = 4,
+              z1 = 4,
+              x2 = 12,
+              z2 = 12,
+            },
+          }
+        )
         .Behavior("Lockable")
         .Behavior("UnstableFalling")
         .ShapeByType("*-plated", "iwex:molten/barrel-plated")
@@ -71,8 +82,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 
   #endregion
 
-  public override void OnLoaded(ICoreAPI api)
-  {
+  public override void OnLoaded(ICoreAPI api) {
     base.OnLoaded(api);
 
     // Cache all smelted crucibles for the pour interaction help.
@@ -80,24 +90,20 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
   }
 
   /// <summary>
-  /// Emits incandescent block light scaled to the stored metal's temperature, so a
-  /// hot barrel lights its surroundings (same scheme as the canals and the cowper
-  /// heat sink). The block entity owns the threshold/scaling via
-  /// <see cref="BlockEntityMoltenBarrel.GlowLightLevel"/> and re-lights the block as
-  /// that level shifts. Held/inventory barrels (null pos) fall back to base and glow
-  /// via <see cref="OnBeforeRender"/> instead.
+  /// Emits incandescent block light scaled to the stored metal's temperature. The block entity owns the
+  /// threshold and scaling (<see cref="BlockEntityMoltenBarrel.GlowLightLevel"/>) and re-lights the block
+  /// when that level changes. Held and inventory barrels have no position, fall back to base and glow
+  /// through <see cref="OnBeforeRender"/> instead.
   /// </summary>
   public override byte[] GetLightHsv(
     IBlockAccessor blockAccessor,
     BlockPos pos,
     ItemStack? stack = null
-  )
-  {
+  ) {
     if (
       pos != null
       && blockAccessor.GetBlockEntity(pos) is BlockEntityMoltenBarrel be
-    )
-    {
+    ) {
       byte val = be.GlowLightLevel;
       if (val > 0)
         return [8, 7, val];
@@ -111,8 +117,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     ItemStack itemstack,
     EnumItemRenderTarget target,
     ref ItemRenderInfo renderinfo
-  )
-  {
+  ) {
     base.OnBeforeRender(capi, itemstack, target, ref renderinfo);
 
     var (metal, units) = MoltenContents.Read(
@@ -123,7 +128,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     if (units <= 0 || metal?.Collectible == null)
       return;
 
-    int maxUnits = MaxUnits; // generated const, baked from the block JSON's "maxUnits" attribute.
+    int maxUnits = MaxUnits;
     float fillRatio =
       maxUnits > 0 ? GameMath.Clamp((float)units / maxUnits, 0f, 1f) : 0f;
     float temp = metal.Collectible.GetTemperature(capi.World, metal);
@@ -132,8 +137,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     var cache = GetMeshRefCache(capi);
     int fillStep = (int)GameMath.Clamp(fillRatio * 16f, 0f, 16f);
     string key = $"{metal.Collectible.Code}|{fillStep}|{glow / 16}";
-    if (!cache.TryGetValue(key, out var meshRef))
-    {
+    if (!cache.TryGetValue(key, out var meshRef)) {
       MeshData mesh = GenMeshWithContent(capi, metal, fillRatio, glow);
       meshRef = cache[key] = capi.Render.UploadMultiTextureMesh(mesh);
     }
@@ -142,8 +146,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 
   private Dictionary<string, MultiTextureMeshRef> GetMeshRefCache(
     ICoreClientAPI capi
-  )
-  {
+  ) {
     string cacheKey = "moltenBarrelMeshRefs:" + Code;
     if (
       capi.ObjectCache.TryGetValue(cacheKey, out var existing)
@@ -160,12 +163,10 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     ItemStack metal,
     float fillRatio,
     int glow
-  )
-  {
+  ) {
     _barrelBaseMesh ??= TesselateBaseMesh(capi);
     MeshData combined = _barrelBaseMesh.Clone();
 
-    // FillQuadsByLevel / FillStart / FillHeight are the generated attribute members (no string reads).
     Cuboidf[] boxes = FillQuads.BoxesFrom(
       FillQuadsByLevel,
       new Cuboidf(4f, 0f, 4f, 12f, 16f, 12f)
@@ -184,8 +185,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     if (texPos == null)
       return combined;
 
-    foreach (Cuboidf box in boxes)
-    {
+    foreach (Cuboidf box in boxes) {
       MeshData quad = QuadMeshUtil.GetQuad();
       quad.Rgba = new byte[16];
       quad.Rgba.Fill(byte.MaxValue);
@@ -220,22 +220,18 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     return combined;
   }
 
-  private MeshData TesselateBaseMesh(ICoreClientAPI capi)
-  {
+  private MeshData TesselateBaseMesh(ICoreClientAPI capi) {
     capi.Tesselator.TesselateBlock(this, out MeshData mesh);
     return mesh;
   }
 
-  public override void OnUnloaded(ICoreAPI api)
-  {
-    if (api is ICoreClientAPI capi)
-    {
+  public override void OnUnloaded(ICoreAPI api) {
+    if (api is ICoreClientAPI capi) {
       string cacheKey = "moltenBarrelMeshRefs:" + Code;
       if (
         capi.ObjectCache.TryGetValue(cacheKey, out var existing)
         && existing is Dictionary<string, MultiTextureMeshRef> dict
-      )
-      {
+      ) {
         foreach (var meshRef in dict.Values)
           meshRef.Dispose();
         capi.ObjectCache.Remove(cacheKey);
@@ -249,8 +245,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is not BlockEntityMoltenBarrel be
@@ -262,10 +257,9 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
       .ActiveHotbarSlot
       ?.Itemstack
       ?.Collectible;
-    if (heldItem?.Tool == EnumTool.Chisel)
-    {
-      // A chisel in hand resolves here either way: chip the hardened metal out (shared ritual; the
-      // barrel takes no tool wear and chips at 10 units/bit), or do nothing when it isn't hardened yet.
+    if (heldItem?.Tool == EnumTool.Chisel) {
+      // A chisel in hand resolves here either way: chip the hardened metal out (no tool wear, 10 units
+      // per bit), or do nothing while the metal is not hardened.
       var outcome = MoltenChisel.TryChisel(
         world,
         byPlayer,
@@ -278,8 +272,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
       return outcome != ChiselOutcome.NotChiseling;
     }
 
-    if (byPlayer.Entity.Controls.ShiftKey)
-    {
+    if (byPlayer.Entity.Controls.ShiftKey) {
       if (world.Side == EnumAppSide.Client)
         return true;
 
@@ -306,8 +299,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockPos blockPos,
     ItemStack byItemStack
-  )
-  {
+  ) {
     base.OnBlockPlaced(world, blockPos, byItemStack);
 
     if (byItemStack == null)
@@ -315,8 +307,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 
     if (
       world.BlockAccessor.GetBlockEntity(blockPos) is BlockEntityMoltenBarrel be
-    )
-    {
+    ) {
       // Assign fields directly instead of FromTreeAttributes: the base
       // deserializer rebuilds Pos from posx/posy/posz, which this partial tree
       // lacks, corrupting the block entity position to (0,0,0) on reload.
@@ -334,8 +325,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     StringBuilder dsc,
     IWorldAccessor world,
     bool withDebugInfo
-  )
-  {
+  ) {
     base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
 
     if (inSlot.Itemstack?.Attributes?["blockEntityAttributes"] == null)
@@ -346,16 +336,14 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
       MoltenContents.BarrelUnitsKey,
       world
     );
-    int maxUnits = MaxUnits; // generated const, baked from the block JSON's "maxUnits" attribute.
+    int maxUnits = MaxUnits;
 
-    if (currentUnits <= 0)
-    {
+    if (currentUnits <= 0) {
       dsc.AppendLine(Lang.Get(IwexLang.MoltenbarrelInfoEmpty, maxUnits));
       return;
     }
 
-    if (metalContent == null)
-    {
+    if (metalContent == null) {
       dsc.AppendLine(
         Lang.Get(IwexLang.MoltenbarrelInfoUnits, currentUnits, maxUnits)
       );
@@ -363,8 +351,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     }
 
     string state = Lang.Get(
-      MoltenMetal.StateOf(world, metalContent) switch
-      {
+      MoltenMetal.StateOf(world, metalContent) switch {
         MoltenState.Liquid => "iwex:metalstate-liquid",
         MoltenState.Hardened => "iwex:metalstate-hardened",
         _ => "iwex:metalstate-soft",
@@ -389,8 +376,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var interactions =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
@@ -410,11 +396,9 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
       },
     };
 
-    if (!isHardened && !isFull)
-    {
+    if (!isHardened && !isFull) {
       result.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "iwex:blockhelp-barrel-pour",
           MouseButton = EnumMouseButton.Right,
           Itemstacks = _smeltedCrucibles,
@@ -430,8 +414,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     return result.ToArray();
   }
 
-  public override bool CanBePlacedInto(ItemStack stack, ItemSlot slot)
-  {
+  public override bool CanBePlacedInto(ItemStack stack, ItemSlot slot) {
     return slot.Inventory?.ClassName == "backpack";
   }
 
@@ -440,8 +423,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1
-  )
-  {
+  ) {
     // Molten metal hits the ground and sizzles when a still-liquid barrel breaks.
     if (
       world.Side == EnumAppSide.Server
@@ -468,8 +450,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     var drops = new List<ItemStack> { new ItemStack(this) };
 
     if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenBarrel be)

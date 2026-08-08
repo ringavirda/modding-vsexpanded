@@ -4,13 +4,11 @@ using ExpandedLib.Definitions;
 namespace LowPressureExpanded.Items;
 
 /// <summary>
-/// Code-first itemtype definitions for lpex's craftable gears (migrated from itemtypes/gear.json and
-/// itemtypes/largegear.json). Both use the vanilla <c>Item</c> class - there is no mod class to hang the
-/// definition on - so a dedicated stand-alone provider carries them (the same pattern as the tool molds and
-/// slag-path blocks). See <see cref="IExItemDefProvider"/> for why a never-instantiated provider class works.
+/// Itemtype definitions for lpex's craftable gears. Both use the vanilla <c>Item</c> class, so there is no
+/// mod class to hang the definitions on and a stand-alone provider carries them instead. See
+/// <see cref="IExItemDefProvider"/> for how a never-instantiated provider class is discovered.
 /// </summary>
-public class GearDefinitions : IExItemDefProvider
-{
+public class GearDefinitions : IExItemDefProvider {
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [Gear(domain), LargeGear(domain)];
 
@@ -29,29 +27,62 @@ public class GearDefinitions : IExItemDefProvider
       .Shape("game:item/gear-rusty")
       .MaxStackSize(64)
       .GuiTransform(
-        new
-        {
-          translation = new { x = 0, y = 0, z = 0 },
-          rotation = new { x = 145, y = -12, z = 0 },
-          origin = new { x = 0.32, y = 0.0625, z = 0.5 },
+        new {
+          translation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          rotation = new {
+            x = 145,
+            y = -12,
+            z = 0,
+          },
+          origin = new {
+            x = 0.32,
+            y = 0.0625,
+            z = 0.5,
+          },
           scale = 2.5,
         }
       )
       .TpHandTransform(
-        new
-        {
-          translation = new { x = -0.45, y = -0.35, z = -0.55 },
-          rotation = new { x = 0, y = -89, z = -83 },
-          origin = new { x = 0.5, y = 0.0625, z = 0.5 },
+        new {
+          translation = new {
+            x = -0.45,
+            y = -0.35,
+            z = -0.55,
+          },
+          rotation = new {
+            x = 0,
+            y = -89,
+            z = -83,
+          },
+          origin = new {
+            x = 0.5,
+            y = 0.0625,
+            z = 0.5,
+          },
           scale = 0.97,
         }
       )
       .GroundTransform(
-        new
-        {
-          translation = new { x = 0, y = 0, z = 0 },
-          rotation = new { x = 0, y = 0, z = 0 },
-          origin = new { x = 0.39, y = 0, z = 0.47 },
+        new {
+          translation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          rotation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          origin = new {
+            x = 0.39,
+            y = 0,
+            z = 0.47,
+          },
           scale = 3.76,
         }
       );
@@ -62,29 +93,62 @@ public class GearDefinitions : IExItemDefProvider
       .Texture("gold", "game:block/metal/ingot/{metal}")
       .MaxStackSize(16)
       .GuiTransform(
-        new
-        {
-          translation = new { x = 0, y = 0, z = 0 },
-          rotation = new { x = 145, y = 13, z = 0 },
-          origin = new { x = 0.47, y = 0.2, z = 0.5 },
+        new {
+          translation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          rotation = new {
+            x = 145,
+            y = 13,
+            z = 0,
+          },
+          origin = new {
+            x = 0.47,
+            y = 0.2,
+            z = 0.5,
+          },
           scale = 2.5,
         }
       )
       .TpHandTransform(
-        new
-        {
-          translation = new { x = -0.4, y = 0.2, z = -0.39 },
-          rotation = new { x = 4, y = 103, z = 73 },
-          origin = new { x = 0.5, y = 0.0625, z = 0.5 },
+        new {
+          translation = new {
+            x = -0.4,
+            y = 0.2,
+            z = -0.39,
+          },
+          rotation = new {
+            x = 4,
+            y = 103,
+            z = 73,
+          },
+          origin = new {
+            x = 0.5,
+            y = 0.0625,
+            z = 0.5,
+          },
           scale = 1,
         }
       )
       .GroundTransform(
-        new
-        {
-          translation = new { x = 0, y = 0, z = 0 },
-          rotation = new { x = 0, y = 0, z = 0 },
-          origin = new { x = 0.39, y = 0, z = 0.47 },
+        new {
+          translation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          rotation = new {
+            x = 0,
+            y = 0,
+            z = 0,
+          },
+          origin = new {
+            x = 0.39,
+            y = 0,
+            z = 0.47,
+          },
           scale = 5,
         }
       );

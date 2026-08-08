@@ -8,82 +8,70 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Builders shared by the pipe suite: real <see cref="BlockPipe"/> instances (the burst path
-/// requires the exact type), pipe runs registered with the graph, and loose <see cref="PipeNetwork"/>
-/// instances for pool/merge math that does not depend on a burst ceiling.
-/// <para>
-/// Lives in the iwex test project because iwex owns the pipe base block; the lpex, smex and hpex
-/// suites reach it through the test-project reference chain that mirrors the mod chain.
-/// </para>
+/// Builders shared by the pipe suite: real <see cref="BlockPipe"/> instances (the burst path requires
+/// the exact type), pipe runs registered with the graph, and loose <see cref="PipeNetwork"/> instances
+/// for pool and merge math that does not depend on a burst ceiling. Lives in the iwex test project
+/// because iwex owns the pipe base block; the lpex, smex and hpex suites reach it through the
+/// test-project reference chain that mirrors the mod chain.
 /// </summary>
-public static class PipeTestWorld
-{
-  /// <summary>Litres a single pipe holds at 1 atm - the value the production code reads from config.</summary>
+public static class PipeTestWorld {
+  /// <summary>Litres a single pipe holds at 1 atm, matching the value production reads from config.</summary>
   public const float LitresPerPipe = 30f;
 
   /// <summary>
-  /// Cast (lpex) tier burst pressure, restated here because iwex cannot reference lpex. It must equal
-  /// <c>LpexValues.CastPipeBurstPressure</c>; <c>LowPressureExpanded.Tests.PipeBurstParityTests</c>
-  /// pins that, because a stale copy here silently retunes every burst test in three suites - which is
-  /// exactly what happened when the tiers were rebalanced and this file kept the old 5/8 pair.
+  /// Cast (lpex) tier burst pressure (atm), restated here because iwex cannot reference lpex. Must
+  /// equal <c>LpexValues.CastPipeBurstPressure</c>, which
+  /// <c>LowPressureExpanded.Tests.PipeBurstParityTests</c> pins: a stale copy here retunes every burst
+  /// test in three suites.
   /// </summary>
   public const float CastTierBurst = 5f;
 
   /// <summary>
-  /// Rolled (hpex) tier burst pressure - same restatement, same reason. Guarded by
+  /// Rolled (hpex) tier burst pressure (atm), restated for the same reason and guarded by
   /// <c>HighPressureExpanded.Tests.PipeBurstParityTests</c>.
   /// </summary>
   public const float RolledTierBurst = 12f;
 
   /// <summary>
   /// Cast (lpex) tier throughput (L/s), restated for the same reason as <see cref="CastTierBurst"/> and
-  /// guarded by the same parity test. It must equal <c>LpexValues.CastPipeThroughput</c>.
+  /// guarded by the same parity test. Must equal <c>LpexValues.CastPipeThroughput</c>.
   /// </summary>
   public const float CastTierThroughput = 120f;
 
   /// <summary>
-  /// Rolled (hpex) tier throughput (L/s) - same restatement, same guard. Must equal
+  /// Rolled (hpex) tier throughput (L/s), same restatement and guard. Must equal
   /// <c>HpexValues.RolledPipeThroughput</c>.
   /// </summary>
   public const float RolledTierThroughput = 250f;
 
-  // The burst rating is per-tier now (registered per domain by each mod's ModSystem, which the headless
-  // tests don't run). Seed all three shipped tiers so a pipe's BurstPressure resolves the same way it
-  // does in-game. The iwex value is read straight off the live config so it cannot drift; the two above
-  // iwex are the guarded constants above.
-  static PipeTestWorld()
-  {
+  // Burst ratings are per-domain, registered by each mod's ModSystem, which the headless tests do not
+  // run. All three shipped tiers are seeded here so a pipe's BurstPressure resolves as it does in game.
+  // The iwex value is read off the live config; the other two are the guarded constants above.
+  static PipeTestWorld() {
     BlockPipe.RegisterBurst("iwex", () => IwexValues.PlatedPipeBurstPressure);
     BlockPipe.RegisterBurst("lpex", () => CastTierBurst);
     BlockPipe.RegisterBurst("hpex", () => RolledTierBurst);
 
-    // The throughput registry, seeded for the same reason and on the same weakest-link rule. A third
-    // axis, independent of both: burst is how hard a run can be pressurised, LitresPerPipe is how much
-    // it holds, and this is how much it passes per second. Unregistered, every tier falls back to one
-    // default and a headless test could never see a tier refuse a line it should.
+    // Throughput is a third axis, independent of the other two: burst is how hard a run can be
+    // pressurised, LitresPerPipe is how much it holds, this is how much it passes per second.
+    // Unregistered, every tier falls back to one default and no tier can refuse a line.
     BlockPipe.RegisterThroughput("iwex", () => IwexValues.PlatedPipeThroughput);
     BlockPipe.RegisterThroughput("lpex", () => CastTierThroughput);
     BlockPipe.RegisterThroughput("hpex", () => RolledTierThroughput);
 
-    // The joint registry, seeded the same way and for the same reason. This is a separate axis from
-    // pressure: plated and cast are square and flanged so they mate with each other, rolled is
-    // octagonal and welded so it mates only with itself. Unregistered, every tier falls back to
-    // "flanged" and a headless test would happily couple an HP main to a plated one - which is exactly
-    // the thing the rule exists to prevent, so it has to be seeded here or the rule is untested.
+    // Joints are a further axis, separate from pressure: plated and cast are square and flanged so
+    // they mate with each other, rolled is octagonal and welded so it mates only with itself.
+    // Unregistered, every tier falls back to "flanged" and an HP main couples to a plated one.
     BlockPipe.RegisterJoint("iwex", BlockPipe.FlangedJoint);
     BlockPipe.RegisterJoint("lpex", BlockPipe.FlangedJoint);
     BlockPipe.RegisterJoint("hpex", BlockPipe.WeldedJoint);
   }
 
   /// <summary>
-  /// Fills <paramref name="net"/> with gas until it stops accepting - the blowers running until the line
-  /// is full, which is what actually happens in game over a few seconds.
-  /// <para>
-  /// <b>Use this instead of one huge <c>TryProduceGas(1000f, …)</c>.</b> Under the
-  /// throughput gate a single call moves at most the run's weakest segment's litres-per-second, so the
-  /// old "push a thousand litres and let the ceiling clamp it" idiom silently fills a run to the
-  /// <i>throughput</i> rather than to the pressure ceiling the test is actually about.
-  /// </para>
+  /// Fills <paramref name="net"/> with gas until it stops accepting, as blowers do over a few seconds
+  /// in game. Use this rather than a single large <c>TryProduceGas</c> call: under the throughput gate
+  /// one call moves at most the weakest segment's litres per second, so a single call fills the run to
+  /// its throughput rather than to its pressure ceiling.
   /// </summary>
   public static void Saturate(
     PipeNetwork net,
@@ -92,13 +80,10 @@ public static class PipeTestWorld
     IBlockAccessor accessor,
     float maxOutputPressure = 1f,
     bool bypassLeakCap = false
-  )
-  {
-    // Bounded: a run that refuses everything must not spin, and one that accepts a trickle for ever
-    // (a leaking run being topped up) has to stop somewhere. 512 passes is far more than any shipped
-    // run needs to reach its ceiling.
-    for (int i = 0; i < 512; i++)
-    {
+  ) {
+    // Bounded so a run that refuses everything, or one that accepts a trickle for ever while leaking,
+    // still terminates. 512 passes is more than any shipped run needs to reach its ceiling.
+    for (int i = 0; i < 512; i++) {
       float before = net.State?.Volume ?? 0f;
       net.TryProduceGas(
         float.MaxValue,
@@ -114,32 +99,28 @@ public static class PipeTestWorld
   }
 
   /// <summary>
-  /// The mod domain that owns a pipe tier. The old iron/steel <em>material</em> axis is gone - one
-  /// material per mod - so these names now select a tier: <c>"iron"</c> plated (iwex), <c>"steel"</c>
-  /// cast (lpex), <c>"hadfield"</c> rolled (hpex). Which tier a fixture picks is a real choice, not
-  /// decoration: it sets the burst ceiling, and a line charged past it bursts.
+  /// The mod domain that owns a pipe tier. There is one material per mod, so the name selects a tier:
+  /// <c>"iron"</c> plated (iwex), <c>"steel"</c> cast (lpex), <c>"hadfield"</c> rolled (hpex). The tier
+  /// sets the burst ceiling, so a line charged past it bursts.
   /// </summary>
   public static string DomainOf(string material) =>
-    material switch
-    {
+    material switch {
       "steel" => "lpex",
       "hadfield" or "rolled" => "hpex",
       _ => "iwex",
     };
 
   /// <summary>
-  /// A real <see cref="BlockPipe"/> primed with tier/orientation. The <paramref name="material"/> names
-  /// a tier (see <see cref="DomainOf"/>) since the per-material variant was dropped in favour of one
-  /// material per mod. <c>OnLoaded</c>
-  /// (which would parse these from variants) is skipped, so the protected <c>Type</c>/<c>Orientation</c>
-  /// are set by reflection. One instance is shared across every cell of a straight run, as the engine does.
+  /// A real <see cref="BlockPipe"/> primed with tier and orientation; <paramref name="material"/> names
+  /// a tier (see <see cref="DomainOf"/>). <c>OnLoaded</c>, which would parse these from the variants, is
+  /// skipped, so the protected <c>Type</c> and <c>Orientation</c> are set by reflection. One instance is
+  /// shared across every cell of a straight run, as the engine does.
   /// </summary>
   public static BlockPipe MakePipe(
     string material = "iron",
     int id = 1,
     string orientation = "ns"
-  )
-  {
+  ) {
     string domain = DomainOf(material);
     var pipe = TestBlocks.Configure(
       new BlockPipe(),
@@ -154,13 +135,12 @@ public static class PipeTestWorld
   }
 
   /// <summary>
-  /// A real <see cref="BlockTuyere"/> - the furnace's blast intake, which is a pipe node wearing the
-  /// <c>iwex:furnace-tuyere-*</c> code its furnace layout asks for at that cell. A generic
-  /// <see cref="MakePipe"/> behaves identically as a network node but does <b>not</b> satisfy the
-  /// layout, so a furnace rig standing up its real structure needs this one.
+  /// A real <see cref="BlockTuyere"/>, the furnace's blast intake: a pipe node carrying the
+  /// <c>iwex:furnace-tuyere-*</c> code the furnace layout asks for at that cell. <see cref="MakePipe"/>
+  /// behaves identically as a network node but does not satisfy the layout, so a furnace rig standing
+  /// up its real structure needs this one.
   /// </summary>
-  public static BlockTuyere MakeTuyere(int id, string orientation = "n")
-  {
+  public static BlockTuyere MakeTuyere(int id, string orientation = "n") {
     var tuyere = TestBlocks.Configure(
       new BlockTuyere(),
       $"iwex:furnace-tuyere-{orientation}",
@@ -182,8 +162,7 @@ public static class PipeTestWorld
     int length,
     string material = "iron",
     bool capEnds = false
-  )
-  {
+  ) {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
@@ -191,8 +170,7 @@ public static class PipeTestWorld
     for (int z = 0; z < length; z++)
       world.Place(new BlockPos(0, 0, z), pipe);
 
-    if (capEnds)
-    {
+    if (capEnds) {
       var rock = TestBlocks.Configure(new Block(), "game:rock", 99);
       world.Place(new BlockPos(0, 0, -1), rock);
       world.Place(new BlockPos(0, 0, length), rock);
@@ -206,37 +184,29 @@ public static class PipeTestWorld
   }
 
   /// <summary>
-  /// Like <see cref="Run"/>, but every cell also carries a real <see cref="BlockEntityPipe"/>.
-  /// <para>
-  /// <b>Use this for anything that depends on the tick's node classification.</b> Plain
-  /// <see cref="Run"/> places blocks with <b>no block entities</b>, and
-  /// <c>PipeNetwork.ClassifyOpenings</c> counts a "consumer" per node whose BE is an
-  /// <c>IPipeNode</c> - so on a bare run that count is <b>0</b> where in game it equals the segment
-  /// count. Anything guarded on it therefore behaves the opposite way in a headless test from how it
-  /// behaves in play, and a test written against the bare fixture passes whether the feature works or
-  /// not. That is exactly how passive cooling shipped as dead code and stayed unnoticed.
-  /// </para>
+  /// Like <see cref="Run"/>, but every cell also carries a real <see cref="BlockEntityPipe"/>. Required
+  /// for anything that depends on the tick's node classification: <see cref="Run"/> places blocks with
+  /// no block entities, and <c>PipeNetwork.ClassifyOpenings</c> counts a consumer per node whose block
+  /// entity is an <c>IPipeNode</c>, so on a bare run that count is 0 where in game it equals the
+  /// segment count.
   /// </summary>
   public static (TestWorld world, PipeNetwork net) LiveRun(
     int length,
     string material = "iron",
     bool capEnds = false
-  )
-  {
+  ) {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
     var pipe = MakePipe(material);
-    for (int z = 0; z < length; z++)
-    {
+    for (int z = 0; z < length; z++) {
       var pos = new BlockPos(0, 0, z);
       var be = new BlockEntityPipe { Pos = pos.Copy(), Block = pipe };
       world.Place(pos, pipe, be);
       world.Attach(be);
     }
 
-    if (capEnds)
-    {
+    if (capEnds) {
       var rock = TestBlocks.Configure(new Block(), "game:rock", 99);
       world.Place(new BlockPos(0, 0, -1), rock);
       world.Place(new BlockPos(0, 0, length), rock);
@@ -258,8 +228,7 @@ public static class PipeTestWorld
     BlockNetworkModSystem system,
     int nodeCount,
     int baseZ = 0
-  )
-  {
+  ) {
     var net = new PipeNetwork(system);
     for (int i = 0; i < nodeCount; i++)
       net.Nodes.Add(new BlockPos(0, 0, baseZ + i));

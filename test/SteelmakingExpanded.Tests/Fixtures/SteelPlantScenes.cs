@@ -20,18 +20,16 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Models the Bessemer steelmaking line (handbook bessemer article) end to end: a converter control
-/// fed molten iron from an input canal cell, blown with real <strong>blast</strong> drawn off a live
-/// gas network through its intake port, refining the charge to steel and pouring it into an output
-/// canal cell. It stands up the three services the converter actually reads each tick - the input
-/// cell, the output cell, and an Air≥blast-threshold pipe network across the intake - so the refining
-/// process runs against a real blast supply (the per-state steps are driven directly, as the gated
-/// <c>OnProductionTick</c> also requires an aligned transmission + constructed vessel).
+/// Models the Bessemer steelmaking line (handbook bessemer article) end to end: a converter control fed
+/// molten iron from an input canal cell, blown with blast drawn off a live gas network through its intake
+/// port, refining the charge to steel and pouring it into an output canal cell. Stands up the three
+/// services the converter reads each tick - the input cell, the output cell, and an Air network at or
+/// above the blast threshold across the intake. The per-state steps are driven directly, since the gated
+/// <c>OnProductionTick</c> also requires an aligned transmission and a constructed vessel.
 /// </summary>
-internal sealed class ConverterRig
-{
-  // Resolved the way the control resolves them so what we push matches what it reads, headless registry
-  // (game: convention) or populated (iwex:/smex:) alike.
+internal sealed class ConverterRig {
+  // Resolved the way the control resolves them, so a pushed code matches what it reads under a headless
+  // registry (game: convention) or a populated one (iwex:/smex:) alike.
   private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string Steel =>
     MetalRegistry.MoltenItemOf("bessemersteel").ToString();
@@ -49,13 +47,12 @@ internal sealed class ConverterRig
   public readonly BlockEntityConverterTransmission Transmission;
   public readonly BlockEntityConverterBessemer Vessel;
 
-  /// <summary>The control's raised footprint - its cells address the service ports.</summary>
+  /// <summary>The control's raised footprint; its cells address the service ports.</summary>
   public readonly StructureRig Structure;
 
   private readonly PipeNetwork _blast;
 
-  public ConverterRig()
-  {
+  public ConverterRig() {
     World = new TestWorld();
     // Both convention and shipped codes, so the resolved token always finds a real item.
     World.RegisterItem("game:ingot-pigiron", 1150f);
@@ -70,8 +67,7 @@ internal sealed class ConverterRig
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
     var controlPos = new BlockPos(0, 8, 0);
-    Control = new BlockEntityConverterControl
-    {
+    Control = new BlockEntityConverterControl {
       Pos = controlPos,
       Block = TestBlocks.Configure(
         new BlockConverterControl(),
@@ -92,11 +88,8 @@ internal sealed class ConverterRig
       angle: (ExOrientation.AngleFromSide("north") + 180) % 360
     );
 
-    // Every service port, wearing the code its own layout cell names. All five of these were wrong
-    // before the structure was ever raised - `converterbessemercontrol`, `converterintake`,
-    // `converterbessemertransmission` and two `smex:moltencanal-straight` cells standing in for a tap
-    // and a canal start - and nothing could see it, because a rig that never builds the footprint
-    // never checks a single code against it.
+    // Every service port, wearing the code its own layout cell names. A wrong code here is only visible
+    // because the rig raises the real footprint and the completion check matches each cell against it.
     Input = PlaceCanal(InputTapLocal, "iwex:molten-canal-tap-s", "tap", "s", 9);
     Output = PlaceCanal(
       OutputStartLocal,
@@ -106,7 +99,11 @@ internal sealed class ConverterRig
       10
     );
 
-    BlockPos intakePos = Structure.Cell(GasIntakeLocal.x, GasIntakeLocal.y, GasIntakeLocal.z);
+    BlockPos intakePos = Structure.Cell(
+      GasIntakeLocal.x,
+      GasIntakeLocal.y,
+      GasIntakeLocal.z
+    );
     var intakeBlock = TestBlocks.Configure(
       new BlockConverterIntake(),
       "smex:converter-intake-n",
@@ -126,18 +123,16 @@ internal sealed class ConverterRig
       13,
       ("side", "north")
     );
-    Transmission = new BlockEntityConverterTransmission
-    {
+    Transmission = new BlockEntityConverterTransmission {
       Pos = transPos.Copy(),
       Block = transBlock,
     };
     Structure.Occupy(transPos, transBlock, Transmission);
 
-    // The vessel itself - a right-click construction, so being present is not the same as being
-    // finished. The control gates on both: StructureComplete for the shell, IsConstructed for this.
+    // The vessel is a right-click construction, so being present is not the same as being finished. The
+    // control gates on both: StructureComplete for the shell, IsConstructed for this.
     BlockPos vesselPos = Structure.Cell(0, 0, 2);
-    Vessel = new BlockEntityConverterBessemer
-    {
+    Vessel = new BlockEntityConverterBessemer {
       Pos = vesselPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -155,16 +150,17 @@ internal sealed class ConverterRig
     // Blast supply: an Air pipe network docked against the intake's connector face.
     BlockFacing connFace = ((BlockConverterIntake)intakeBlock).ConnectorFace;
     BlockPos blastPos = intakePos.AddCopy(connFace);
-    // Cast (lpex), not plated (iwex) - a consequence of the throughput gate. The converter's
-    // blast is a steam-tier service and runs far past what the iron tier's pipe will pass, so a smex plant
-    // genuinely needs better plumbing than an iwex one. That is the tier gate doing its job, not a fixture
-    // detail: build this main in plated pipe and the blow starves.
+    // Cast (lpex), not plated (iwex): the converter's blast is a steam-tier service and runs past what
+    // the iron tier's pipe will pass, so a plated main here starves the blow.
     var blastPipe = PipeTestWorld.MakePipe(
       material: "steel",
       orientation: "ns",
       id: 12
     );
-    var blastBe = new BlockEntityPipe { Pos = blastPos.Copy(), Block = blastPipe };
+    var blastBe = new BlockEntityPipe {
+      Pos = blastPos.Copy(),
+      Block = blastPipe,
+    };
     World.Place(blastPos, blastPipe, blastBe);
     World.Attach(blastBe);
     World.AddNode(blastPos, "pipe");
@@ -172,8 +168,8 @@ internal sealed class ConverterRig
   }
 
   /// <summary>
-  /// A molten-canal cell at a structure-local offset, coded as the layout wants it there. The canal BE
-  /// is the generic one - what the layout checks, and what used to be wrong, is the block code.
+  /// A molten-canal cell at a structure-local offset, coded as the layout wants it there. The block entity
+  /// is the generic canal one; the layout checks the block code.
   /// </summary>
   private BlockEntityMoltenCanal PlaceCanal(
     (int x, int y, int z) local,
@@ -181,11 +177,9 @@ internal sealed class ConverterRig
     string type,
     string orientation,
     int id
-  )
-  {
+  ) {
     BlockPos pos = Structure.Cell(local.x, local.y, local.z);
-    var cell = new BlockEntityMoltenCanal
-    {
+    var cell = new BlockEntityMoltenCanal {
       Pos = pos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -200,12 +194,11 @@ internal sealed class ConverterRig
   }
 
   /// <summary>
-  /// Drives the transmission's mechanical network at <paramref name="speed"/> (the engine→generator→
-  /// axle chain spinning it). Attaches the real MP behavior + a faked turning network so the control's
-  /// <see cref="BlockEntityConverterControl.HasPower"/> reads it.
+  /// Drives the transmission's mechanical network at <paramref name="speed"/>, standing in for the
+  /// engine-generator-axle chain. Attaches the real MP behavior and a faked turning network so the
+  /// control's <see cref="BlockEntityConverterControl.HasPower"/> reads it.
   /// </summary>
-  public ConverterRig SetMechPower(float speed)
-  {
+  public ConverterRig SetMechPower(float speed) {
     var mp = new BEBehaviorMPConverterTransmission(Transmission);
     MechPower.Attach(Transmission, mp, MechPower.Network(speed));
     return this;
@@ -215,31 +208,27 @@ internal sealed class ConverterRig
   public bool HasPower => Control.HasPower();
 
   /// <summary>
-  /// The <b>public</b> production tick - the one the game calls, which runs only when all four gates
-  /// are open: the shell complete, the vessel constructed, and both the gas intake and the transmission
-  /// facing the same way as the control. The per-state <see cref="Refine"/>/<see cref="Fill"/> steps
-  /// below reach past it deliberately (they exercise one state in isolation); this is the emergent
-  /// path, and it can only be driven now that the rig raises the real structure.
+  /// The public production tick the game calls. It runs only with all four gates open: the shell complete,
+  /// the vessel constructed, and both the gas intake and the transmission facing the same way as the
+  /// control. The per-state <see cref="Refine"/> and <see cref="Fill"/> steps below reach past it to
+  /// exercise one state in isolation.
   /// </summary>
-  public ConverterRig ProductionTick(int times = 1)
-  {
+  public ConverterRig ProductionTick(int times = 1) {
     for (int i = 0; i < times; i++)
       ReflectionHelpers.Invoke(Control, "OnProductionTick", 1f);
     return this;
   }
 
-  /// <summary>The last status line the control set - what a player reads off the block.</summary>
+  /// <summary>The last status line the control set, as shown on the block.</summary>
   public string Status =>
     (string?)ReflectionHelpers.GetField(Control, "_status") ?? "";
 
   /// <summary>
-  /// Throws the vessel lever, through the same <see cref="BlockEntityConverterControl.TrySetState"/>
-  /// the block calls on a right-click - which refuses unless the shell is complete, the vessel is
-  /// constructed and the transmission is turning. Setting the state is itself a gated operation, so
-  /// this only works on a machine that is genuinely built and powered.
+  /// Throws the vessel lever through the same <see cref="BlockEntityConverterControl.TrySetState"/> the
+  /// block calls on a right-click, which refuses unless the shell is complete, the vessel is constructed
+  /// and the transmission is turning. Throws if the machine refuses.
   /// </summary>
-  public ConverterRig SetState(ConverterOpState state)
-  {
+  public ConverterRig SetState(ConverterOpState state) {
     Assert(
       Control.TrySetState(null!, state, out string error),
       $"the converter refused to switch to {state}: {error}"
@@ -247,13 +236,12 @@ internal sealed class ConverterRig
     return this;
   }
 
-  private static void Assert(bool condition, string message)
-  {
+  private static void Assert(bool condition, string message) {
     if (!condition)
       throw new InvalidOperationException(message);
   }
 
-  /// <summary>Whether the control considers itself buildable-and-built: shell + vessel + both ports.</summary>
+  /// <summary>Whether the control considers itself built: shell, vessel and both ports.</summary>
   public bool IsCommissioned =>
     Control.StructureComplete
     && Control.IsConverterConstructed()
@@ -266,23 +254,20 @@ internal sealed class ConverterRig
     float temp
   ) => MoltenMetal.CreateStack(world.World, code, temp)!;
 
-  /// <summary>Pours molten pig iron into the input canal cell (the blast-furnace tap feeding the converter).</summary>
-  public ConverterRig PourPigToInput(int units, float temp = 1700f)
-  {
+  /// <summary>Pours molten pig iron into the input canal cell, as the blast-furnace tap would.</summary>
+  public ConverterRig PourPigToInput(int units, float temp = 1700f) {
     Input.PushMetal(units, MetalStack(World, Pig, temp), World.World);
     return this;
   }
 
   /// <summary>
-  /// Charges <paramref name="units"/> of pig into the vessel, refilling the 50 u input canal cell as many
-  /// times as it takes (one cell only holds a cell's worth), so a heat larger than one canal cell can be
-  /// assembled the way a furnace tap dripping over time would.
+  /// Charges <paramref name="units"/> of pig into the vessel, refilling the input canal cell as many times
+  /// as its capacity requires, so a heat larger than one cell can be assembled the way a furnace tap
+  /// dripping over time would.
   /// </summary>
-  public ConverterRig ChargePig(int units, float temp = 1700f)
-  {
+  public ConverterRig ChargePig(int units, float temp = 1700f) {
     int remaining = units;
-    while (remaining > 0)
-    {
+    while (remaining > 0) {
       int chunk = System.Math.Min(remaining, Input.MaxUnitCapacity);
       PourPigToInput(chunk, temp);
       Fill();
@@ -291,17 +276,16 @@ internal sealed class ConverterRig
     return this;
   }
 
-  /// <summary>Charges cold steel scrap into the vessel (the temperature gate), bypassing the hand interaction.</summary>
-  public ConverterRig ChargeScrap(int units)
-  {
+  /// <summary>Charges cold steel scrap into the vessel, bypassing the hand interaction.</summary>
+  public ConverterRig ChargeScrap(int units) {
     int have = (int)ReflectionHelpers.GetField(Control, "_scrapUnits")!;
     ReflectionHelpers.SetField(Control, "_scrapUnits", have + units);
     return this;
   }
 
-  /// <summary>Charges the intake's gas network with blast (Air at <paramref name="atm"/> ≥ 2.5 atm).</summary>
-  public ConverterRig ChargeBlast(float atm = 3f)
-  {
+  /// <summary>Charges the intake's gas network with Air at <paramref name="atm"/>; the converter's blast
+  /// threshold is 2.5 atm.</summary>
+  public ConverterRig ChargeBlast(float atm = 3f) {
     _blast.TryProduceGas(
       atm * 30f,
       20f,
@@ -322,10 +306,8 @@ internal sealed class ConverterRig
   public ConverterRig Pour() => Invoke("TickSteelPouring");
 
   /// <summary>Pours steel until the charge empties or the output cell stops accepting (bounded).</summary>
-  public ConverterRig DrainSteel(int maxTicks = 20)
-  {
-    for (int i = 0; i < maxTicks && ContentUnits > 0; i++)
-    {
+  public ConverterRig DrainSteel(int maxTicks = 20) {
+    for (int i = 0; i < maxTicks && ContentUnits > 0; i++) {
       int before = ContentUnits;
       Pour();
       if (ContentUnits == before)
@@ -335,10 +317,8 @@ internal sealed class ConverterRig
   }
 
   /// <summary>Pours slag until the slag pool empties or the output cell stops accepting (bounded).</summary>
-  public ConverterRig DrainSlag(int maxTicks = 20)
-  {
-    for (int i = 0; i < maxTicks && SlagUnits > 0f; i++)
-    {
+  public ConverterRig DrainSlag(int maxTicks = 20) {
+    for (int i = 0; i < maxTicks && SlagUnits > 0f; i++) {
       float before = SlagUnits;
       PourSlag();
       if (SlagUnits == before)
@@ -348,9 +328,8 @@ internal sealed class ConverterRig
   }
 
   // Blows exactly the blast that takes the bath's carbon down to `to`, so a scenario reaches a chosen
-  // phase (steel / over-blown iron) without simulating the whole multi-minute blow tick by tick.
-  private void BlowToCarbon(float to)
-  {
+  // phase without simulating the whole multi-minute blow tick by tick.
+  private void BlowToCarbon(float to) {
     float carbon = Carbon;
     float blast = System.Math.Max(
       0f,
@@ -360,21 +339,18 @@ internal sealed class ConverterRig
   }
 
   /// <summary>Fully blows the pig charge down into the steel window (mass sheds into slag as it goes).</summary>
-  public ConverterRig BlowToSteel()
-  {
+  public ConverterRig BlowToSteel() {
     BlowToCarbon(SmexValues.BessemerSteelCarbonTarget / 2f);
     return this;
   }
 
   /// <summary>Keeps blowing past the over-blow floor, retyping the steel to soft ingot iron.</summary>
-  public ConverterRig OverBlowToIron()
-  {
+  public ConverterRig OverBlowToIron() {
     BlowToCarbon(SmexValues.BessemerOverblowCarbon / 2f);
     return this;
   }
 
-  private ConverterRig Invoke(string method)
-  {
+  private ConverterRig Invoke(string method) {
     ReflectionHelpers.Invoke(Control, method, 1f);
     return this;
   }
@@ -394,18 +370,16 @@ internal sealed class ConverterRig
 }
 
 /// <summary>
-/// Models the cowper stove's regenerator cycle (handbook hot-blast article): a single stove
-/// <strong>charges</strong> its brick core from hot furnace exhaust piped to its intake, then
-/// <strong>discharges</strong> by passing cool blast air through it - the air leaves scorching hot
-/// (hot blast for the furnace tuyeres) and the core gives its heat up. Wires the stove's exhaust
-/// intake (charge), and the air passthrough + hot-air outlet it reads on discharge.
+/// Models the cowper stove's regenerator cycle (handbook hot-blast article): a single stove charges its
+/// brick core from hot furnace exhaust piped to its intake, then discharges by passing cool blast air
+/// through it, so the air leaves hot for the furnace tuyeres and the core gives up its heat. Wires the
+/// exhaust intake used on charge, and the air passthrough and hot-air outlet read on discharge.
 /// </summary>
-internal sealed class CowperRig
-{
+internal sealed class CowperRig {
   public readonly TestWorld World;
   public readonly BlockEntityCowperStove Stove;
 
-  /// <summary>The stove's raised footprint - its cells address the fittings it reads.</summary>
+  /// <summary>The stove's raised footprint; its cells address the fittings it reads.</summary>
   public readonly StructureRig Structure;
 
   private readonly PipeNetwork _exhaust;
@@ -413,17 +387,15 @@ internal sealed class CowperRig
   private readonly PipeNetwork _airInNet;
   private readonly PipeNetwork _hotOut;
 
-  public CowperRig()
-  {
+  public CowperRig() {
     World = new TestWorld();
     World.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
     var pos = new BlockPos(0, 8, 0);
-    Stove = new BlockEntityCowperStove
-    {
+    Stove = new BlockEntityCowperStove {
       Pos = pos,
-      // The layout's origin cell wants "smex:cowperstove-intake*", so the anchor has to wear that
-      // code - the old "smex:cowperstove-n" would leave the stove one cell short of complete.
+      // The layout's origin cell wants "smex:cowperstove-intake*", so the anchor must wear that code or
+      // the stove stays one cell short of complete.
       Block = TestBlocks.Configure(
         new Block(),
         "smex:cowperstove-intake-tier3-n",
@@ -443,38 +415,49 @@ internal sealed class CowperRig
       angle: (ExOrientation.AngleFromSide("north") + 180) % 360
     );
 
-    // The two fitting cells the stove actually reads on discharge, placed before the fill with the
-    // real lpex fittings their layout cells name. A generic pipe here is a network node all the same,
-    // which is exactly why it used to pass: it carried air but never satisfied the footprint.
+    // The two fitting cells the stove reads on discharge, placed before the fill with the real lpex
+    // fittings their layout cells name. A generic pipe would carry air as a network node but would not
+    // satisfy the footprint.
     BlockPos airInPos = Structure.Cell(0, 1, 2);
     var ptBlock = PipeFittings.Passthrough(id: 20);
-    _airIn = new BlockEntityPipePassthrough { Pos = airInPos.Copy(), Block = ptBlock };
+    _airIn = new BlockEntityPipePassthrough {
+      Pos = airInPos.Copy(),
+      Block = ptBlock,
+    };
     Structure.Occupy(airInPos, ptBlock, _airIn);
 
     BlockPos hotOutPos = Structure.Cell(0, 1, 0);
     var outBlock = PipeFittings.Outlet(id: 21);
-    var outBe = new BlockEntityPipeOutlet { Pos = hotOutPos.Copy(), Block = outBlock };
+    var outBe = new BlockEntityPipeOutlet {
+      Pos = hotOutPos.Copy(),
+      Block = outBlock,
+    };
     Structure.Occupy(hotOutPos, outBlock, outBe);
 
-    // Raise the rest of the shell, run the real Initialize - which is what caches the tunables and
-    // derives _connectorFace, both of which used to be hand-poked - and let the stove's own monitor
-    // tick find its finished structure.
+    // Raise the rest of the shell, run the real Initialize - which caches the tunables and derives
+    // _connectorFace - and let the stove's own monitor tick find its finished structure.
     Structure.Complete();
 
     World.AddNode(airInPos, "pipe");
-    ReflectionHelpers.SetProperty(_airIn, nameof(_airIn.NetworkSystem), World.Networks);
+    ReflectionHelpers.SetProperty(
+      _airIn,
+      nameof(_airIn.NetworkSystem),
+      World.Networks
+    );
     _airInNet = (PipeNetwork)World.NetworkAt(airInPos)!;
 
     World.AddNode(hotOutPos, "pipe");
     // Attach (not Initialize) leaves NetworkSystem unset; the outlet needs it to produce into its net.
-    ReflectionHelpers.SetProperty(outBe, nameof(outBe.NetworkSystem), World.Networks);
+    ReflectionHelpers.SetProperty(
+      outBe,
+      nameof(outBe.NetworkSystem),
+      World.Networks
+    );
     _hotOut = (PipeNetwork)World.NetworkAt(hotOutPos)!;
 
-    // Charge side: a sealed exhaust run butted against the stove's exhaust intake face. The stove's
-    // own block caps the near end - the old rig dropped a rock on that cell, which now would be
-    // dropping a rock on the stove.
-    // Read the face the stove itself derived at Initialize rather than restating it, so a change to
-    // the +180 convention moves the exhaust run with it instead of silently unplumbing the rig.
+    // Charge side: a sealed exhaust run butted against the stove's exhaust intake face; the stove's own
+    // block caps the near end. The face is read back from what the stove derived at Initialize rather than
+    // restated, so a change to the +180 convention moves the exhaust run with it.
     var connector = (BlockFacing)
       ReflectionHelpers.GetField(Stove, "_connectorFace")!;
     _exhaust = SealedRunOn(pos, connector, 2);
@@ -484,10 +467,9 @@ internal sealed class CowperRig
     (BlockPos)ReflectionHelpers.Invoke(Stove, "GetGlobalPos", x, y, z)!;
 
   /// <summary>A sealed 2-cell pipe run butted against <paramref name="face"/> of <paramref name="at"/>.</summary>
-  private PipeNetwork SealedRunOn(BlockPos at, BlockFacing face, int firstId)
-  {
-    // Cast (lpex) for the same reason as the converter's blast main above - a cowper's hot-blast and
-    // exhaust runs are steam-tier services past the plated tier's throughput.
+  private PipeNetwork SealedRunOn(BlockPos at, BlockFacing face, int firstId) {
+    // Cast (lpex) for the same reason as the converter's blast main: a cowper's hot-blast and exhaust
+    // runs are steam-tier services past the plated tier's throughput.
     var pipe = PipeTestWorld.MakePipe(
       material: "steel",
       orientation: "ns",
@@ -501,15 +483,14 @@ internal sealed class CowperRig
       p2.AddCopy(face),
       TestBlocks.Configure(new Block(), "game:rock", 98)
     ); // far cap
-    // No near cap: `at` is the machine itself, which seals that end on its own.
+    // No near cap: `at` is the machine itself, which seals that end.
     World.AddNode(p1, "pipe");
     World.AddNode(p2, "pipe");
     return (PipeNetwork)World.NetworkAt(p1)!;
   }
 
   /// <summary>Charges the exhaust intake with hot furnace exhaust, then runs one production tick.</summary>
-  public CowperRig ChargeFromExhaust(float exhaustTemp, float litres = 60f)
-  {
+  public CowperRig ChargeFromExhaust(float exhaustTemp, float litres = 60f) {
     _exhaust.TryProduceGas(
       litres,
       exhaustTemp,
@@ -522,16 +503,14 @@ internal sealed class CowperRig
   }
 
   /// <summary>
-  /// Feeds cool blast air into the passthrough, then runs one production tick (discharge). The exhaust
-  /// line is valved off first (drained) - a stove only discharges while it is not taking exhaust, the
-  /// real two-stove charge/discharge swap.
+  /// Feeds cool blast air into the passthrough, then runs one production tick to discharge. The exhaust
+  /// line is drained first: a stove only discharges while it is not taking exhaust, which is the two-stove
+  /// charge/discharge swap.
   /// </summary>
-  public CowperRig DischargeAir(float airTemp = 20f, float litres = 60f)
-  {
-    // Valve the exhaust off. One `TryConsumeGas(float.MaxValue)` no longer empties a run: since the
-    // 2026-08-05 throughput gate a single call moves at most the weakest segment's litres-per-second, so
-    // draining is a loop. The old one-call idiom left the exhaust part-full and the stove never switched
-    // to discharge.
+  public CowperRig DischargeAir(float airTemp = 20f, float litres = 60f) {
+    // Valve the exhaust off. One `TryConsumeGas(float.MaxValue)` does not empty a run: the throughput gate
+    // moves at most the weakest segment's litres per second per call, so draining takes a loop. A part-full
+    // exhaust leaves the stove on charge and it never switches to discharge.
     while (_exhaust.State is { Volume: > 0f })
       if (_exhaust.TryConsumeGas(float.MaxValue, World.Accessor) <= 0f)
         break; // nothing moving - stop rather than spin
@@ -543,23 +522,22 @@ internal sealed class CowperRig
       World.Accessor,
       maxOutputPressure: 3f
     );
-    // The stove reads the passthrough's client-synced Volume/Medium/Temperature, so push the network
-    // state into those display fields (a broadcast) before the tick.
+    // The stove reads the passthrough's client-synced Volume/Medium/Temperature, so the network state has
+    // to be broadcast into those display fields before the tick.
     _airInNet.BroadcastUpdate(World.Accessor);
     Tick();
     return this;
   }
 
   /// <summary>
-  /// Both valves open: pumps fresh blast air into the passthrough and hot exhaust into the intake on
-  /// the same tick - the genuine "mixing" misconfiguration the stove must refuse to charge through.
+  /// Both valves open: pumps fresh blast air into the passthrough and hot exhaust into the intake on the
+  /// same tick - the mixing misconfiguration the stove must refuse to charge through.
   /// </summary>
   public CowperRig MixAirAndExhaust(
     float exhaustTemp = 1200f,
     float airLitres = 60f,
     float exhaustLitres = 60f
-  )
-  {
+  ) {
     _airInNet.TryProduceGas(
       airLitres,
       20f,
@@ -579,9 +557,8 @@ internal sealed class CowperRig
     return this;
   }
 
-  /// <summary>One production tick of the stove, with nothing fed in - the idle case.</summary>
-  public CowperRig Tick()
-  {
+  /// <summary>One production tick of the stove with nothing fed in: the idle case.</summary>
+  public CowperRig Tick() {
     ReflectionHelpers.Invoke(Stove, "OnProductionTick", 1f);
     return this;
   }

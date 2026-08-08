@@ -1,12 +1,10 @@
-// exlib-owned right-click construction behavior, referenced by the mega-blocks (engines,
-// boilers, bessemer converter) under the JSON behavior name "ExRightClickConstructable".
+// exlib-owned right-click construction behavior, referenced by the mega-blocks (engines, boilers,
+// bessemer converter) under the JSON behavior name "ExRightClickConstructable".
 //
-// On 1.22 it is a thin subclass of the vanilla BEBehaviorRightClickConstructable, so the
-// primary build reuses vanilla's well-tested logic unchanged and only adds a clean drops
-// accessor (replacing the old reflection into the protected rcc field). On 1.20/1.21, where
-// the vanilla behavior does not exist, it is a full reimplementation backed by
-// ExRightClickConstruction. Owning the JSON name on all versions lets the mod C# reference a
-// single type and keeps vanilla blocks (e.g. the waterwheel) on vanilla's own behavior.
+// On 1.22 it subclasses the vanilla BEBehaviorRightClickConstructable and adds a drops accessor. On
+// 1.20/1.21, where the vanilla behavior does not exist, it is a full reimplementation backed by
+// ExRightClickConstruction. Owning the JSON name on every version gives the mod C# a single type to
+// reference and leaves vanilla blocks (e.g. the waterwheel) on vanilla's own behavior.
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Common;
 
@@ -22,11 +20,9 @@ public class ExRightClickConstructable(BlockEntity blockentity)
 {
   /// <summary>
   /// The materials this block would scatter at <paramref name="ratio"/> (0..1) of the consumed stacks,
-  /// across every completed stage. Vanilla <c>rcc.GetDrops</c> loops <c>i &lt; CurrentCompletedStage</c>,
-  /// which silently omits the last built stage's materials - for the mega-blocks that's the most
-  /// expensive stage (e.g. the Lancashire casing: 16 plate / 8 nails / 6 rod / 48 brick), so a fully
-  /// built structure refunded far less than its <c>brokenDropsRatio</c>. Advancing the counter by one
-  /// across the call (it's a public field) makes the loop reach the final stage, then we restore it.
+  /// across every completed stage. Vanilla <c>rcc.GetDrops</c> loops <c>i &lt; CurrentCompletedStage</c>
+  /// and so omits the last built stage; the counter (a public field) is advanced by one across the call
+  /// and restored afterwards so the loop reaches it.
   /// </summary>
   public ItemStack[] GetConstructionDrops(float ratio, Random rand)
   {
@@ -48,9 +44,9 @@ public class ExRightClickConstructable(BlockEntity blockentity)
     ExRccSettings.BrokenDropsRatio(Block.Code.Domain) ?? brokenDropsRatio;
 
   /// <summary>
-  /// Replaces vanilla's break handler (which scatters the off-by-one <c>rcc.GetDrops</c>) so a broken
-  /// structure refunds all completed stages at the configured salvage fraction. Null-safe on the breaker
-  /// (an explosion-broken structure still drops its salvage), unlike the vanilla override.
+  /// Replaces vanilla's break handler so a broken structure refunds all completed stages at the
+  /// configured salvage fraction. Null-safe on the breaker, so an explosion-broken structure still
+  /// drops its salvage.
   /// </summary>
   public override void OnBlockBroken(IPlayer? byPlayer = null)
   {
@@ -73,8 +69,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 [BlockEntityBehaviorRegister("ExRightClickConstructable", PrefixModId = false)]
-public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
-{
+public class ExRightClickConstructable : BlockEntityBehavior, IInteractable {
   private readonly ExRightClickConstruction rcc = new();
   private float brokenDropsRatio = 1f;
 
@@ -83,13 +78,11 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
   public event Action<CompositeShape>? OnShapeChanged;
 
   public ExRightClickConstructable(BlockEntity blockentity)
-    : base(blockentity)
-  {
+    : base(blockentity) {
     shape = blockentity.Block.Shape;
   }
 
-  public override void Initialize(ICoreAPI api, JsonObject properties)
-  {
+  public override void Initialize(ICoreAPI api, JsonObject properties) {
     base.Initialize(api, properties);
     brokenDropsRatio = properties["brokenDropsRatio"].AsFloat(1f);
     var stages = properties["stages"].AsObject<ExConstructionStage[]>(null);
@@ -102,11 +95,9 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
     IPlayer byPlayer,
     BlockSelection blockSel,
     ref EnumHandling handling
-  )
-  {
+  ) {
     handling = EnumHandling.PreventDefault;
-    if (rcc.OnInteract(byPlayer.Entity, byPlayer.Entity.RightHandItemSlot))
-    {
+    if (rcc.OnInteract(byPlayer.Entity, byPlayer.Entity.RightHandItemSlot)) {
       UpdateShape();
       Blockentity.MarkDirty(true);
     }
@@ -116,14 +107,12 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor world
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, world);
     rcc.FromTreeAttributes(tree);
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     rcc.ToTreeAttributes(tree);
     base.ToTreeAttributes(tree);
     UpdateShape();
@@ -137,8 +126,7 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
   public override void GetBlockInfo(
     IPlayer forPlayer,
     System.Text.StringBuilder dsc
-  )
-  {
+  ) {
     base.GetBlockInfo(forPlayer, dsc);
     if (Api.World.EntityDebugMode)
       dsc.AppendLine(
@@ -151,8 +139,7 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
   private float EffectiveBrokenDropsRatio =>
     ExRccSettings.BrokenDropsRatio(Block.Code.Domain) ?? brokenDropsRatio;
 
-  public override void OnBlockBroken(IPlayer? byPlayer = null)
-  {
+  public override void OnBlockBroken(IPlayer? byPlayer = null) {
     if (byPlayer?.WorldData.CurrentGameMode != EnumGameMode.Creative)
       foreach (
         var drop in rcc.GetDrops(EffectiveBrokenDropsRatio, Api.World.Rand)
@@ -177,8 +164,7 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
     IWorldAccessor world,
     BlockSelection selection,
     WorldInteraction[] baseHelp
-  )
-  {
+  ) {
     var help = world
       .BlockAccessor.GetBlockEntity(selection.Position)
       ?.GetBehavior<ExRightClickConstructable>()
@@ -193,10 +179,8 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable
     return combined;
   }
 
-  private void UpdateShape()
-  {
-    shape = new CompositeShape
-    {
+  private void UpdateShape() {
+    shape = new CompositeShape {
       Base = Block.Shape.Base,
       rotateY = Block.Shape.rotateY,
       SelectiveElements = rcc.getShapeElements(),

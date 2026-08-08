@@ -12,16 +12,15 @@ namespace LowPressureExpanded.Tests;
 
 /// <summary>
 /// lpex-specific building blocks for <see cref="Scene"/> integration tests: a pipe-diagram legend and
-/// a boiler fixture. These hold the mod knowledge (which glyph is which oriented pipe, how a boiler is
-/// stood up) so the scenario tests read as layouts + assertions.
+/// a boiler fixture. They hold the mod knowledge - which glyph is which oriented pipe, how a boiler is
+/// stood up - so scenario tests read as layouts plus assertions.
 /// </summary>
-public static class LpexScenes
-{
+public static class LpexScenes {
   /// <summary>A cap block that seals a pipe end so a run can pressurise instead of leaking.</summary>
   public static Block Cap(int id = 99) =>
     TestBlocks.Configure(new Block(), "game:rock", id);
 
-  /// <summary>One shared oriented pipe block (the engine reuses a single instance across a run).</summary>
+  /// <summary>One shared oriented pipe block; the game reuses a single instance across a run.</summary>
   public static BlockPipe Pipe(string orientation, int id) =>
     PipeTestWorld.MakePipe(orientation: orientation, id: id);
 
@@ -30,8 +29,7 @@ public static class LpexScenes
   /// <c>=</c> west-east pipe, <c>|</c> north-south pipe, <c>I</c> vertical (up-down) pipe,
   /// <c>#</c> a sealing cap. Each glyph shares one oriented block instance, as the game does.
   /// </summary>
-  public static SceneDiagram PipeLegend(Scene scene)
-  {
+  public static SceneDiagram PipeLegend(Scene scene) {
     var we = Pipe("we", 1);
     var ns = Pipe("ns", 2);
     var ud = Pipe("ud", 3);
@@ -49,12 +47,11 @@ public static class LpexScenes
 }
 
 /// <summary>
-/// A constructed, fired Cornish boiler placed into a shared <see cref="Scene"/> - the integration-test
-/// counterpart of <see cref="BoilerRig"/> (which owns its own world). It registers the real production
-/// tick (so <see cref="Scene.Step"/> drives it) and exposes the operating state for setup/assertions.
+/// A constructed, fired Cornish boiler placed into a shared <see cref="Scene"/>: the integration-test
+/// counterpart of <see cref="BoilerRig"/>, which owns its own world. It registers the real production
+/// tick, so <see cref="Scene.Step"/> drives it, and exposes operating state for setup and assertions.
 /// </summary>
-internal sealed class BoilerFixture
-{
+internal sealed class BoilerFixture {
   public readonly BlockEntityBoilerCornish Be;
   public readonly BlockBoilerCornish Block;
 
@@ -66,11 +63,10 @@ internal sealed class BoilerFixture
     BlockPos pos,
     int blockId = 10,
     int coalId = 11
-  )
-  {
+  ) {
     Block = TestBlocks.Configure(
       new BlockBoilerCornish(),
-      // The layout's anchor cell wants "lpex:boilercornish*" - see BoilerRig for the same fix.
+      // The layout's anchor cell matches "lpex:boilercornish*".
       "lpex:boilercornish-n",
       blockId,
       ("side", "north")
@@ -79,8 +75,8 @@ internal sealed class BoilerFixture
 
     scene.World.Place(pos, Block, Be);
     scene.World.Attach(Be);
-    // Raises the real shell, Initializes, and completes the right-click construction afterwards
-    // (Initialize clears _rcc off the absent behaviors, so the fake has to follow it).
+    // Raises the real shell, Initializes, then completes the right-click construction: Initialize
+    // clears _rcc off the absent behaviors, so the fake has to follow it.
     Structure = BoilerFakes.Commission(
       scene.World,
       Be,
@@ -96,8 +92,7 @@ internal sealed class BoilerFixture
     );
   }
 
-  public BoilerFixture Prime(BoilerState state, float water, float steam)
-  {
+  public BoilerFixture Prime(BoilerState state, float water, float steam) {
     ReflectionHelpers.SetField(Be, "_state", state);
     ReflectionHelpers.SetField(Be, "_waterVolume", water);
     ReflectionHelpers.SetField(Be, "_steamVolume", steam);

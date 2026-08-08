@@ -9,8 +9,7 @@ namespace ExpandedLib.Tests;
 /// the class registration (<c>RegisterAll</c>) and the code-first builder's type-safe <c>Class&lt;T&gt;()</c>.
 /// These pin the exact key it produces for each attribute shape so the two consumers can never desync.
 /// </summary>
-public class RegistrationKeyTests
-{
+public class RegistrationKeyTests {
   [BlockRegister]
   private sealed class ConventionBlock : Block { }
 
@@ -23,8 +22,7 @@ public class RegistrationKeyTests
   private sealed class NoAttributeBlock : Block { }
 
   [Fact]
-  public void Default_convention_is_modid_dot_classname()
-  {
+  public void Default_convention_is_modid_dot_classname() {
     Assert.Equal(
       "iwex.ConventionBlock",
       EntityRegistry.KeyFor("iwex", typeof(ConventionBlock))
@@ -32,8 +30,7 @@ public class RegistrationKeyTests
   }
 
   [Fact]
-  public void Explicit_code_replaces_the_class_name_but_keeps_the_prefix()
-  {
+  public void Explicit_code_replaces_the_class_name_but_keeps_the_prefix() {
     Assert.Equal(
       "iwex.customcode",
       EntityRegistry.KeyFor("iwex", typeof(CodedBlock))
@@ -41,15 +38,13 @@ public class RegistrationKeyTests
   }
 
   [Fact]
-  public void PrefixModId_false_registers_under_a_bare_key()
-  {
+  public void PrefixModId_false_registers_under_a_bare_key() {
     // As used when replacing a vanilla class - no {modid}. prefix.
     Assert.Equal("Vanilla", EntityRegistry.KeyFor("iwex", typeof(BareBlock)));
   }
 
   [Fact]
-  public void A_type_without_a_register_attribute_falls_back_to_the_convention()
-  {
+  public void A_type_without_a_register_attribute_falls_back_to_the_convention() {
     Assert.Equal(
       "iwex.NoAttributeBlock",
       EntityRegistry.KeyFor("iwex", typeof(NoAttributeBlock))

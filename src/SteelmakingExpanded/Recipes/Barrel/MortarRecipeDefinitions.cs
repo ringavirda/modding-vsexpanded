@@ -4,12 +4,11 @@ using ExpandedLib.Definitions;
 namespace SteelmakingExpanded.Recipes.Barrel;
 
 /// <summary>
-/// Code-first barrel (sealed-mixing) recipe (migrated from recipes/barrel/mortar.json): slaked lime + powdered
-/// slag make mortar. A single recipe object authored via the <see cref="ExRecipeDef.Body"/> escape hatch;
-/// barrel ingredients are measured in litres (the lime) or by stack quantity (the slag).
+/// Barrel (sealed-mixing) recipe: slaked lime plus powdered slag makes mortar. Authored as a single
+/// recipe object through the <see cref="ExRecipeDef.Body"/> escape hatch; barrel ingredients are
+/// measured in litres (the lime) or by stack quantity (the slag).
 /// </summary>
-public class MortarRecipeDefinitions : IExRecipeDefProvider
-{
+public class MortarRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

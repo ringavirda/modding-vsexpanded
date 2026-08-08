@@ -1,5 +1,6 @@
-using IronworkingExpanded;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
+using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
@@ -8,18 +9,15 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The player-relief mechanics added after the first Bessemer playtest: the charge cools slower
-/// inside the vessel (a configurable coefficient on the molten cooldown speed, so a finished heat
-/// gives more time to pour), and a small fully-hardened residue that solidified mid-pour can be
-/// chiselled out instead of breaking the whole - expensive - converter.
+/// The Bessemer converter's relief mechanics: the charge cools slower inside the vessel (a configurable
+/// coefficient on the molten cooldown speed, giving more time to pour a finished heat), and a small
+/// fully-hardened residue can be chiselled out instead of breaking the converter.
 /// </summary>
-public class ConverterChiselTests
-{
+public class ConverterChiselTests {
   private const string Iron = "game:ingot-iron";
   private const string Steel = "game:ingot-steel";
 
@@ -27,13 +25,12 @@ public class ConverterChiselTests
   // 20% chisel ceiling is 960 units.
   private const float IronMelt = 1500f;
 
-  // Resolved like the control resolves them, for the pig → Bessemer-steel retype test.
+  // Resolved the way the control resolves it, for the pig to Bessemer-steel retype test.
   private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
 
   private static readonly (int x, int y, int z) InputTapLocal = (1, 1, 2);
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem(Steel, IronMelt);
@@ -46,10 +43,8 @@ public class ConverterChiselTests
     return world;
   }
 
-  private static BlockEntityConverterControl Control(TestWorld world)
-  {
-    var be = new BlockEntityConverterControl
-    {
+  private static BlockEntityConverterControl Control(TestWorld world) {
+    var be = new BlockEntityConverterControl {
       Pos = new BlockPos(0, 8, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -79,8 +74,7 @@ public class ConverterChiselTests
     float temp,
     int units,
     bool solidified
-  )
-  {
+  ) {
     ReflectionHelpers.SetField(
       be,
       "_charge",
@@ -101,8 +95,7 @@ public class ConverterChiselTests
   #region Cooldown coefficient
 
   [Fact]
-  public void Filling_creates_the_charge_with_the_slowed_converter_cooldown()
-  {
+  public void Filling_creates_the_charge_with_the_slowed_converter_cooldown() {
     var world = NewWorld();
     var be = Control(world);
     var input = PlaceInputCell(world, be);
@@ -115,8 +108,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void Refined_steel_carries_the_slowed_converter_cooldown()
-  {
+  public void Refined_steel_carries_the_slowed_converter_cooldown() {
     var world = NewWorld();
     var be = Control(world);
     // A pig charge at the carbon target, retyped to Bessemer steel the way the blow does.
@@ -135,9 +127,8 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void The_default_coefficient_halves_the_molten_cooldown_speed()
-  {
-    // 0.5 x the molten-system rate, the spec'd default (cools twice as slowly inside the vessel).
+  public void The_default_coefficient_halves_the_molten_cooldown_speed() {
+    // Default is 0.5 x the molten-system rate: the charge cools twice as slowly inside the vessel.
     Assert.Equal(0.5f, SmexValues.BessemerCooldownCoefficient, 3);
     Assert.Equal(
       IwexValues.MoltenCooldownSpeed * 0.5f,
@@ -146,21 +137,18 @@ public class ConverterChiselTests
     );
   }
 
-  // Regression (player-reported): /exmod config smex bessemercooldowncoefficient 10 did nothing,
-  // because the rate was baked into the charge only when it was first poured. The tick now re-stamps
-  // the live rate, so a coefficient change reaches the metal already in the vessel.
+  // The tick re-stamps the live rate onto the charge rather than baking it in at pour time, so a
+  // coefficient change reaches metal already in the vessel.
   [Fact]
-  public void Changing_the_cooldown_coefficient_reaches_the_charge_already_in_the_vessel()
-  {
+  public void Changing_the_cooldown_coefficient_reaches_the_charge_already_in_the_vessel() {
     var world = NewWorld();
     var be = Control(world);
     var content = Metal(world, Iron, 1400f);
     ReflectionHelpers.SetField(be, "_charge", MoltenCharge.Of(content, 50));
 
     float original = SmexValues.BessemerCooldownCoefficient;
-    try
-    {
-      // Admin speeds the cooling way up mid-session.
+    try {
+      // Cooling sped up mid-session.
       SmexValues.Edit(c => c.BessemerCooldownCoefficient = 10f);
       ReflectionHelpers.Invoke(be, "SyncContentCooldown");
 
@@ -169,9 +157,7 @@ public class ConverterChiselTests
         CooldownSpeedOf(content),
         3
       );
-    }
-    finally
-    {
+    } finally {
       SmexValues.Edit(c => c.BessemerCooldownCoefficient = original);
     }
   }
@@ -181,8 +167,7 @@ public class ConverterChiselTests
   #region Chisel-out gating
 
   [Fact]
-  public void A_small_hardened_residue_can_be_chiselled_out()
-  {
+  public void A_small_hardened_residue_can_be_chiselled_out() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 100, solidified: true); // hardened (300<450), 100 < 960
@@ -191,8 +176,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void A_solidified_but_still_hot_residue_cannot_be_chiselled()
-  {
+  public void A_solidified_but_still_hot_residue_cannot_be_chiselled() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 800f, 100, solidified: true); // 450 < 800 < 1500 -> cooling, not hardened
@@ -202,8 +186,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void A_large_hardened_charge_cannot_be_chiselled_only_broken()
-  {
+  public void A_large_hardened_charge_cannot_be_chiselled_only_broken() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 1000, solidified: true); // hardened but 1000 >= 960 (20% of 4800)
@@ -213,8 +196,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void A_still_liquid_charge_cannot_be_chiselled()
-  {
+  public void A_still_liquid_charge_cannot_be_chiselled() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 100, solidified: false);
@@ -227,13 +209,11 @@ public class ConverterChiselTests
 
   #region Self-drop suppression
 
-  // Regression (player-reported): the control-spawned vessel still dropped itself as a block on break,
-  // alongside its construction materials. "drops": [] in the JSON isn't always honoured for a variant
-  // block, so the block overrides GetDrops to guarantee an empty list. Simulate the registry handing
-  // the block its own code as a fallback drop and confirm the override strips it.
+  // The control spawns the vessel, so breaking it must yield only construction materials. "drops": []
+  // in the JSON is not always honoured for a variant block, so the block overrides GetDrops to return
+  // an empty list. Here the registry is simulated handing the block its own code as a fallback drop.
   [Fact]
-  public void Bessemer_vessel_never_drops_itself_even_if_registered_with_a_self_drop()
-  {
+  public void Bessemer_vessel_never_drops_itself_even_if_registered_with_a_self_drop() {
     var block = TestBlocks.Configure(
       new BlockConverterBessemer(),
       "smex:converterbessemer-n",
@@ -251,14 +231,13 @@ public class ConverterChiselTests
 
   #region Solidified status feedback
 
-  // The block-info status walks the player through clearing a frozen charge, the way a clogged canal
-  // does: break a large residue, wait for a small-but-hot one to harden, chisel a small hardened one.
+  // The block-info status names the step for clearing a frozen charge: break a large residue, wait for
+  // a small but still hot one to harden, chisel a small hardened one.
   private static string SolidifiedStatus(BlockEntityConverterControl be) =>
     (string)ReflectionHelpers.Invoke(be, "SolidifiedStatus")!;
 
   [Fact]
-  public void Status_tells_the_player_to_break_a_large_solidified_charge()
-  {
+  public void Status_tells_the_player_to_break_a_large_solidified_charge() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 1000, solidified: true); // hardened but 1000 >= 960
@@ -267,8 +246,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void Status_tells_the_player_to_wait_for_a_small_hot_residue_to_harden()
-  {
+  public void Status_tells_the_player_to_wait_for_a_small_hot_residue_to_harden() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 800f, 100, solidified: true); // small (100 < 240) but not yet hardened
@@ -277,8 +255,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void Status_tells_the_player_to_chisel_a_small_hardened_residue()
-  {
+  public void Status_tells_the_player_to_chisel_a_small_hardened_residue() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 100, solidified: true); // small and hardened
@@ -291,8 +268,7 @@ public class ConverterChiselTests
   #region Chisel-out recovery
 
   [Fact]
-  public void Chiselling_recovers_the_metal_and_clears_the_charge()
-  {
+  public void Chiselling_recovers_the_metal_and_clears_the_charge() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 300f, 100, solidified: true);
@@ -307,8 +283,7 @@ public class ConverterChiselTests
   }
 
   [Fact]
-  public void Chiselling_a_non_chiselable_charge_returns_nothing_and_keeps_it()
-  {
+  public void Chiselling_a_non_chiselable_charge_returns_nothing_and_keeps_it() {
     var world = NewWorld();
     var be = Control(world);
     PrimeCharge(be, world, 800f, 100, solidified: true); // too hot to chisel
@@ -323,8 +298,7 @@ public class ConverterChiselTests
   private static BlockEntityMoltenCanal PlaceInputCell(
     TestWorld world,
     BlockEntityConverterControl control
-  )
-  {
+  ) {
     var pos = (BlockPos)
       ReflectionHelpers.Invoke(
         control,
@@ -333,8 +307,7 @@ public class ConverterChiselTests
         InputTapLocal.y,
         InputTapLocal.z
       )!;
-    var cell = new BlockEntityMoltenCanal
-    {
+    var cell = new BlockEntityMoltenCanal {
       Block = TestBlocks.Configure(
         new Block(),
         "smex:moltencanal-straight-ns",

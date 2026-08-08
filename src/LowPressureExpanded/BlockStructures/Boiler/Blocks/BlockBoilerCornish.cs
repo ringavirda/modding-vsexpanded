@@ -3,24 +3,21 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using LowPressureExpanded.BlockStructures.Boiler.BlockEntities;
-
 using Vintagestory.API.MathTools;
 
 namespace LowPressureExpanded.BlockStructures.Boiler.Blocks;
 
 /// <summary>
-/// The Cornish boiler mega-block (iron, low-pressure entry tier). All behavior lives
-/// in <see cref="BlockBoiler"/>.
+/// The Cornish boiler mega-block (iron, low-pressure entry tier). Behavior lives in
+/// <see cref="BlockBoiler"/>.
 /// </summary>
 [BlockRegister]
 public partial class BlockBoilerCornish
   : BlockBoiler,
     IFillerHost,
     IBoilerGeometry,
-    IExBlockDefProvider
-{
-  /// <summary>The Cornish boiler blocktype, authored in C# (migrated from boiler/cornish.json). Shorter body
-  /// than the Lancashire; its filler footprint and structure map are drawn as ASCII layer diagrams.</summary>
+    IExBlockDefProvider {
+  /// <summary>The Cornish boiler blocktype. Shorter body than the Lancashire.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Cornish(domain)];
 
@@ -34,16 +31,38 @@ public partial class BlockBoilerCornish
       )
       .MiningTier(3)
       .Attributes(
-        new
-        {
-          steamConnectorOffset = new { x = 0, y = 1, z = 2 },
-          lidOffset = new { x = 0, y = 1, z = 1 },
-          fuelOffset = new { x = 0, y = 0, z = -1 },
-          explosionCenterOffset = new { x = 0, y = 1, z = 2 },
-          lightSampleOffset = new { x = 0, y = 1, z = 2 },
-          exhaustOutletOffset = new { x = 0, y = 1, z = 4 },
-          waterRendererBox = new
-          {
+        new {
+          steamConnectorOffset = new {
+            x = 0,
+            y = 1,
+            z = 2,
+          },
+          lidOffset = new {
+            x = 0,
+            y = 1,
+            z = 1,
+          },
+          fuelOffset = new {
+            x = 0,
+            y = 0,
+            z = -1,
+          },
+          explosionCenterOffset = new {
+            x = 0,
+            y = 1,
+            z = 2,
+          },
+          lightSampleOffset = new {
+            x = 0,
+            y = 1,
+            z = 2,
+          },
+          exhaustOutletOffset = new {
+            x = 0,
+            y = 1,
+            z = 4,
+          },
+          waterRendererBox = new {
             x1 = -14,
             y1 = 2,
             z1 = 2,

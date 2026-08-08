@@ -8,19 +8,16 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// <see cref="ExBlockDef"/> builds the exact blocktype <see cref="JObject"/> the vanilla object loader
-/// consumes. The load-bearing guarantee is parity: the emitted JSON must match a hand-authored
-/// blocktype byte-for-byte (semantically), so an injected code-first block is indistinguishable from
-/// the file it replaces. Each field's token shape is pinned, plus a full-block parity oracle against a
-/// verbatim copy of a real shipped blocktype (iwex's <c>solidifiediron</c>).
+/// <see cref="ExBlockDef"/> builds the blocktype <see cref="JObject"/> the vanilla object loader
+/// consumes. Pins the token shape of each field plus a whole-block parity check against a verbatim copy
+/// of a shipped blocktype (iwex's <c>solidifiediron</c>): the emitted JSON must be semantically equal to
+/// the hand-authored file it replaces.
 /// </summary>
-public class ExBlockDefTests
-{
-  // A verbatim copy of iwex/blocktypes/blastfurnace/solidifiediron.json - the golden the builder must
-  // reproduce. Kept inline (not read from the iwex asset) so it survives that file's later deletion
-  // when the block migrates to code-first.
-  private const string SolidifiedIronJson =
-    """
+public class ExBlockDefTests {
+  // Verbatim copy of iwex/blocktypes/blastfurnace/solidifiediron.json, the golden the builder must
+  // reproduce. Inline rather than read from the iwex asset so it survives that file's deletion when
+  // the block moves to code-first.
+  private const string SolidifiedIronJson = """
     {
       "code": "solidifiediron",
       "class": "iwex.BlockSolidifiedIron",
@@ -50,8 +47,7 @@ public class ExBlockDefTests
 
   #region Full-block parity oracle
   [Fact]
-  public void Builder_reproduces_a_real_shipped_blocktype_exactly()
-  {
+  public void Builder_reproduces_a_real_shipped_blocktype_exactly() {
     ExBlockDef def = ExBlockDef
       .Create("iwex", "solidifiediron")
       .Class("iwex.BlockSolidifiedIron")
@@ -80,8 +76,7 @@ public class ExBlockDefTests
 
   #region Type-safe class binding
   [Fact]
-  public void Class_of_T_resolves_the_registered_modid_dot_classname_key()
-  {
+  public void Class_of_T_resolves_the_registered_modid_dot_classname_key() {
     JObject json = ExBlockDef
       .Create("test", "x")
       .Class<CodeFirstBlock>()
@@ -93,10 +88,12 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Class_of_T_matches_KeyFor_so_a_rename_cannot_desync()
-  {
-    // The whole point of the typed overload: it produces the same string the class registry uses.
-    JObject json = ExBlockDef.Create("iwex", "x").Class<CodeFirstBlock>().ToJson();
+  public void Class_of_T_matches_KeyFor_so_a_rename_cannot_desync() {
+    // The typed overload emits the same string the class registry keys on.
+    JObject json = ExBlockDef
+      .Create("iwex", "x")
+      .Class<CodeFirstBlock>()
+      .ToJson();
     Assert.Equal(
       EntityRegistry.KeyFor("iwex", typeof(CodeFirstBlock)),
       (string?)json["class"]
@@ -106,8 +103,7 @@ public class ExBlockDefTests
 
   #region Per-field token shapes
   [Fact]
-  public void Code_is_set_from_Create()
-  {
+  public void Code_is_set_from_Create() {
     Assert.Equal(
       "solidifiediron",
       (string?)ExBlockDef.Create("iwex", "solidifiediron").ToJson()["code"]
@@ -115,38 +111,38 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Material_emits_the_enum_name()
-  {
+  public void Material_emits_the_enum_name() {
     Assert.Equal(
       "Metal",
       (string?)
-        ExBlockDef
-          .Create("d", "c")
-          .Material(EnumBlockMaterial.Metal)
-          .ToJson()["blockmaterial"]
+        ExBlockDef.Create("d", "c").Material(EnumBlockMaterial.Metal).ToJson()[
+          "blockmaterial"
+        ]
     );
   }
 
   [Fact]
-  public void MineTool_is_lower_cased_to_match_the_vanilla_convention()
-  {
+  public void MineTool_is_lower_cased_to_match_the_vanilla_convention() {
     Assert.Equal(
       "pickaxe",
       (string?)
-        ExBlockDef.Create("d", "c").MineTool(EnumTool.Pickaxe).ToJson()["mineTool"]
+        ExBlockDef.Create("d", "c").MineTool(EnumTool.Pickaxe).ToJson()[
+          "mineTool"
+        ]
     );
   }
 
   [Fact]
-  public void Shape_emits_a_base_reference_object()
-  {
-    JObject json = ExBlockDef.Create("d", "c").Shape("game:block/basic/cube").ToJson();
+  public void Shape_emits_a_base_reference_object() {
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .Shape("game:block/basic/cube")
+      .ToJson();
     Assert.Equal("game:block/basic/cube", (string?)json["shape"]!["base"]);
   }
 
   [Fact]
-  public void Textures_accumulate_across_calls()
-  {
+  public void Textures_accumulate_across_calls() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Texture("side", "game:a")
@@ -157,8 +153,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void CreativeTab_emits_a_selector_array_per_tab()
-  {
+  public void CreativeTab_emits_a_selector_array_per_tab() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .CreativeTab("general", "*-a-*", "*-b-*")
@@ -168,8 +163,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Attribute_nests_a_poco_under_attributes()
-  {
+  public void Attribute_nests_a_poco_under_attributes() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Attribute("fillHeight", 0.5f)
@@ -180,8 +174,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Raw_sets_an_arbitrary_top_level_token_as_the_escape_hatch()
-  {
+  public void Raw_sets_an_arbitrary_top_level_token_as_the_escape_hatch() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Raw("someFutureField", new JValue(42))
@@ -190,16 +183,18 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Raw_from_a_poco_sets_a_top_level_object_for_root_transforms()
-  {
-    // The object overload - for the block-root transforms whose shape varies per block (here: no rotation).
+  public void Raw_from_a_poco_sets_a_top_level_object_for_root_transforms() {
+    // The object overload, for block-root transforms whose shape varies per block (here: no rotation).
     JObject json = ExBlockDef
       .Create("d", "c")
       .Raw(
         "guiTransform",
-        new
-        {
-          translation = new { x = 0, y = 3, z = 0 },
+        new {
+          translation = new {
+            x = 0,
+            y = 3,
+            z = 0,
+          },
           scale = 1.33,
         }
       )
@@ -212,16 +207,14 @@ public class ExBlockDefTests
 
   #region Location
   [Fact]
-  public void Location_targets_the_blocktypes_json_the_loader_filters_on()
-  {
+  public void Location_targets_the_blocktypes_json_the_loader_filters_on() {
     AssetLocation loc = ExBlockDef.Create("iwex", "solidifiediron").Location;
     Assert.Equal("iwex", loc.Domain);
     Assert.Equal("blocktypes/solidifiediron.json", loc.Path);
   }
 
   [Fact]
-  public void A_distinct_asset_name_separates_the_path_from_the_shared_code()
-  {
+  public void A_distinct_asset_name_separates_the_path_from_the_shared_code() {
     // Several pipe defs share code "pipe" but need unique asset paths.
     ExBlockDef def = ExBlockDef.Create("lpex", "pipe", "pipes/straight");
     Assert.Equal("pipe", (string?)def.ToJson()["code"]);
@@ -240,8 +233,7 @@ public class ExBlockDefTests
     : BlockEntityBehavior(be);
 
   [Fact]
-  public void VariantGroup_appends_ordered_code_and_states_entries()
-  {
+  public void VariantGroup_appends_ordered_code_and_states_entries() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .VariantGroup("type", "straight")
@@ -253,12 +245,14 @@ public class ExBlockDefTests
     Assert.Equal("type", (string?)groups[0]!["code"]); // order preserved
     Assert.Equal(["straight"], groups[0]!["states"]!.ToObject<string[]>()!);
     Assert.Equal("material", (string?)groups[1]!["code"]);
-    Assert.Equal(["iron", "steel"], groups[1]!["states"]!.ToObject<string[]>()!);
+    Assert.Equal(
+      ["iron", "steel"],
+      groups[1]!["states"]!.ToObject<string[]>()!
+    );
   }
 
   [Fact]
-  public void VariantGroupFromProperties_emits_a_loadFromProperties_entry()
-  {
+  public void VariantGroupFromProperties_emits_a_loadFromProperties_entry() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .VariantGroupFromProperties("side", "abstract/horizontalorientation")
@@ -272,8 +266,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void ShapeByType_emits_base_plus_only_the_set_rotations()
-  {
+  public void ShapeByType_emits_base_plus_only_the_set_rotations() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .ShapeByType("*-ns-*", "lpex:pipes/straight")
@@ -290,8 +283,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void TextureByType_maps_a_wildcard_to_a_texture_key_base()
-  {
+  public void TextureByType_maps_a_wildcard_to_a_texture_key_base() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .TextureByType("*-iron", "iron4", "game:block/metal/sheet-plain/iron4")
@@ -309,8 +301,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Behavior_by_name_and_by_type_append_name_entries()
-  {
+  public void Behavior_by_name_and_by_type_append_name_entries() {
     JObject json = ExBlockDef
       .Create("lpex", "c")
       .Behavior("Lockable")
@@ -324,8 +315,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Behavior_with_properties_appends_a_name_and_properties_entry()
-  {
+  public void Behavior_with_properties_appends_a_name_and_properties_entry() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Behavior("GroundStorable", new { layout = "SingleCenter" })
@@ -337,8 +327,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void VariantGroupFromProperties_codeless_omits_the_code_key()
-  {
+  public void VariantGroupFromProperties_codeless_omits_the_code_key() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .VariantGroupFromProperties("game:abstract/horizontalorientation")
@@ -346,12 +335,14 @@ public class ExBlockDefTests
 
     var group = (JObject)((JArray)json["variantgroups"]!)[0]!;
     Assert.Null(group["code"]);
-    Assert.Equal("game:abstract/horizontalorientation", (string?)group["loadFromProperties"]);
+    Assert.Equal(
+      "game:abstract/horizontalorientation",
+      (string?)group["loadFromProperties"]
+    );
   }
 
   [Fact]
-  public void SoundByType_accumulates_a_typed_byType_map_under_sounds()
-  {
+  public void SoundByType_accumulates_a_typed_byType_map_under_sounds() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .SoundByType("break", "*-snow", "game:block/snow")
@@ -364,8 +355,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Drop_appends_entries_with_an_optional_quantity()
-  {
+  public void Drop_appends_entries_with_an_optional_quantity() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Drop("block", "slagpath-free")
@@ -379,8 +369,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void SideSolid_from_a_poco_sets_per_face_flags()
-  {
+  public void SideSolid_from_a_poco_sets_per_face_flags() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .SideSolid(new { all = true, up = false })
@@ -391,45 +380,45 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void WalkSpeedMultiplier_emits_a_double_matching_the_parsed_json_value()
-  {
+  public void WalkSpeedMultiplier_emits_a_double_matching_the_parsed_json_value() {
     // 1.3 has no exact float representation; the double path must equal JSON-parsed 1.3 (a float would not).
-    JObject json = ExBlockDef.Create("d", "c").WalkSpeedMultiplier(1.3).ToJson();
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .WalkSpeedMultiplier(1.3)
+      .ToJson();
     Assert.Equal(JToken.Parse("1.3"), json["walkspeedmultiplier"]);
   }
 
   [Fact]
-  public void HandbookExclude_sets_the_top_level_handbook_exclude_flag()
-  {
+  public void HandbookExclude_sets_the_top_level_handbook_exclude_flag() {
     JObject json = ExBlockDef.Create("d", "c").HandbookExclude().ToJson();
     Assert.True((bool)json["handbook"]!["exclude"]!);
     Assert.Null(json["attributes"]); // top-level handbook, not attributes.handbook
   }
 
   [Fact]
-  public void DrawType_sets_the_drawtype_key()
-  {
+  public void DrawType_sets_the_drawtype_key() {
     JObject json = ExBlockDef.Create("d", "c").DrawType("json").ToJson();
     Assert.Equal("json", (string?)json["drawtype"]);
   }
 
   [Fact]
-  public void FillerOffsets_emits_per_cell_hosted_behaviors()
-  {
+  public void FillerOffsets_emits_per_cell_hosted_behaviors() {
     JObject json = ExBlockDef
       .Create("d", "c")
-      .FillerOffsets(
-        [
-          new FillerCellSpec(-1, 0, 0),
-          new FillerCellSpec(
-            0,
-            1,
-            0,
-            AllowAttach: true,
-            Behaviors: [new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west")]
-          ),
-        ]
-      )
+      .FillerOffsets([
+        new FillerCellSpec(-1, 0, 0),
+        new FillerCellSpec(
+          0,
+          1,
+          0,
+          AllowAttach: true,
+          Behaviors:
+          [
+            new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west"),
+          ]
+        ),
+      ])
       .ToJson();
 
     var cells = (JArray)json["attributes"]!["fillerOffsets"]!;
@@ -441,8 +430,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void EntityBehavior_by_name_and_by_type_append_entityBehaviors_entries()
-  {
+  public void EntityBehavior_by_name_and_by_type_append_entityBehaviors_entries() {
     JObject json = ExBlockDef
       .Create("lpex", "c")
       .EntityBehavior("Animatable")
@@ -455,8 +443,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void SoundByTool_nests_a_per_tool_hit_and_break_override()
-  {
+  public void SoundByTool_nests_a_per_tool_hit_and_break_override() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Sound("place", "game:block/ceramicplace")
@@ -474,8 +461,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void TextureByType_emits_overlays_when_supplied()
-  {
+  public void TextureByType_emits_overlays_when_supplied() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .TextureByType(
@@ -498,8 +484,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Collision_and_selection_boxes_emit_cuboid_arrays()
-  {
+  public void Collision_and_selection_boxes_emit_cuboid_arrays() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
@@ -514,8 +499,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Handbook_sets_the_attributes_handbook_groupBy()
-  {
+  public void Handbook_sets_the_attributes_handbook_groupBy() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .Handbook("pipe-straight-*", "pipe-bend-*")
@@ -527,8 +511,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void VariantStates_reads_a_groups_explicit_states_back()
-  {
+  public void VariantStates_reads_a_groups_explicit_states_back() {
     ExBlockDef def = ExBlockDef
       .Create("d", "c")
       .VariantGroup("type", "straight")
@@ -540,8 +523,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void VariantStates_is_empty_for_a_worldproperty_sourced_group()
-  {
+  public void VariantStates_is_empty_for_a_worldproperty_sourced_group() {
     ExBlockDef def = ExBlockDef
       .Create("d", "c")
       .VariantGroupFromProperties("side", "abstract/horizontalorientation");
@@ -549,8 +531,7 @@ public class ExBlockDefTests
   }
 
   [Fact]
-  public void Render_and_side_flags_emit_the_expected_keys()
-  {
+  public void Render_and_side_flags_emit_the_expected_keys() {
     JObject json = ExBlockDef
       .Create("d", "c")
       .RenderPass("OpaqueNoCull")

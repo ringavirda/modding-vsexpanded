@@ -1,8 +1,8 @@
 using System.Linq;
-using ExpandedLib.Registries.Commands;
-using ExpandedLib.Registries.Preferences;
 using ExpandedLib.Patches;
 using ExpandedLib.Preferences;
+using ExpandedLib.Registries.Commands;
+using ExpandedLib.Registries.Preferences;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -10,24 +10,20 @@ using Vintagestory.API.Config;
 namespace ExpandedLib.Commands;
 
 /// <summary>
-/// Attaches <c>.exmod measure [metric|imperial]</c> to the library's shared <c>.exmod</c> root:
-/// shows or (with an argument) sets the per-player display unit system, validating against the
-/// preference's options and persisting through <see cref="ExPreferences"/>. The preference itself and
-/// its effect on the active display unit system live in <see cref="MeasurePreference"/>. Client-only,
-/// since the unit system is a client-side display setting.
-/// <para>
-/// Per-preference display strings (<c>command-measure-desc</c>, <c>pref-measure-label</c>,
-/// <c>pref-measure-{value}</c>) and the generic result strings
-/// (<c>command-pref-current</c>/<c>-set</c>/<c>-invalid</c>) all live in the <c>exlib</c> domain.
-/// </para>
+/// Attaches <c>.exmod measure [metric|imperial]</c> to the library's shared <c>.exmod</c> root: shows
+/// or, with an argument, sets the per-player display unit system, validated against the preference's
+/// options and persisted through <see cref="ExPreferences"/>. The preference itself and its effect on
+/// the active display unit system live in <see cref="MeasurePreference"/>. Client-only, since the unit
+/// system is a client-side display setting. The per-preference display strings
+/// (<c>command-measure-desc</c>, <c>pref-measure-label</c>, <c>pref-measure-{value}</c>) and the
+/// generic result strings (<c>command-pref-current</c>/<c>-set</c>/<c>-invalid</c>) live in the
+/// <c>exlib</c> domain.
 /// </summary>
 [SubCommandRegister(Side = EnumAppSide.Client)]
-public sealed class MeasureSubCommand : IExSubCommand
-{
+public sealed class MeasureSubCommand : IExSubCommand {
   public string ParentName => "exmod";
 
-  public void Register(ICoreAPI api, Mod mod, IChatCommand parent)
-  {
+  public void Register(ICoreAPI api, Mod mod, IChatCommand parent) {
     var capi = (ICoreClientAPI)api;
     var pref = ExPreferences.Find("measure") ?? new MeasurePreference();
     string domain = mod.Info.ModID;
@@ -45,8 +41,7 @@ public sealed class MeasureSubCommand : IExSubCommand
     string domain,
     IExPreference pref,
     TextCommandCallingArgs args
-  )
-  {
+  ) {
     string uid = api.World.Player.PlayerUID;
     string? word = (args[0] as string)?.ToLowerInvariant();
     string label = Lang.Get(domain + ":pref-" + pref.Key + "-label");

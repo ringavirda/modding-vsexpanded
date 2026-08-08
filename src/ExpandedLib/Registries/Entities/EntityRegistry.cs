@@ -7,27 +7,22 @@ using Vintagestory.API.Common;
 namespace ExpandedLib.Registries.Entities;
 
 /// <summary>
-/// Generic, reflection-driven registration for mods built on ExpandedLib. Scans an assembly for
-/// types carrying a <see cref="RegisterAttribute"/> (one of the kind-specific
-/// <c>[BlockRegister]</c>, <c>[ItemRegister]</c>, <c>[BlockEntityRegister]</c>,
-/// <c>[BlockBehaviorRegister]</c>, <c>[BlockEntityBehaviorRegister]</c>,
-/// <c>[CollectibleBehaviorRegister]</c> attributes) and registers each with the game under the
-/// matching registry, using the <c>{modid}.{ClassName}</c> naming convention. Replaces the long
-/// hand-written list of <c>api.Register*Class</c> calls a mod system would otherwise carry.
+/// Reflection-driven class registration for mods built on ExpandedLib. Scans an assembly for types
+/// carrying a <see cref="RegisterAttribute"/> (the kind-specific <c>[BlockRegister]</c>,
+/// <c>[ItemRegister]</c>, <c>[BlockEntityRegister]</c>, <c>[BlockBehaviorRegister]</c>,
+/// <c>[BlockEntityBehaviorRegister]</c>, <c>[CollectibleBehaviorRegister]</c>) and registers each
+/// with the game under the matching registry, keyed <c>{modid}.{ClassName}</c> by convention.
 /// </summary>
-public static class EntityRegistry
-{
+public static class EntityRegistry {
   /// <summary>
   /// Registers every <see cref="RegisterAttribute"/>-decorated class in <paramref name="asm"/>
   /// (default: the calling mod's own assembly). Call once from <c>ModSystem.Start</c>.
   /// </summary>
-  public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null)
-  {
+  public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null) {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
 
-    foreach (Type type in ReflectionScan.GetCandidateTypes(asm))
-    {
+    foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
       var attr = type.GetCustomAttributes()
         .OfType<RegisterAttribute>()
         .FirstOrDefault();
@@ -36,8 +31,7 @@ public static class EntityRegistry
 
       string key = KeyFor(modId, type, attr);
 
-      switch (attr)
-      {
+      switch (attr) {
         case BlockRegisterAttribute
           when Validate<Block>(api, modId, type, "block"):
           api.RegisterBlockClass(key, type);
@@ -75,10 +69,9 @@ public static class EntityRegistry
       }
     }
 
-    // Discover and register any co-located code-first block/item/recipe definitions in this assembly, so a
-    // block, item or recipe authoring its own def (IExBlockDefProvider / IExItemDefProvider /
-    // IExRecipeDefProvider) has it registered next to the class registration - no separate central list or
-    // explicit registration call.
+    // Code-first definitions live next to the classes they describe: a type implementing
+    // IExBlockDefProvider / IExItemDefProvider / IExRecipeDefProvider is picked up from the same
+    // assembly scan, so no central list registers them.
     ExDefinitions.DiscoverAndRegister(modId, asm);
     ExDefinitions.DiscoverAndRegisterItems(modId, asm);
     ExDefinitions.DiscoverAndRegisterRecipes(modId, asm);
@@ -86,12 +79,11 @@ public static class EntityRegistry
 
   /// <summary>
   /// The registry key a <see cref="RegisterAttribute"/>-decorated <paramref name="type"/> is
-  /// registered under - <c>{modId}.{Code ?? ClassName}</c>, or the bare key when
-  /// <see cref="RegisterAttribute.PrefixModId"/> is false. This is the single source for the
-  /// class-string↔type binding, shared with the code-first definition builder (<c>ExBlockDef</c>'s
-  /// type-safe <c>Class&lt;T&gt;()</c>) so a class rename can never desync the two. Returns
-  /// <c>{modId}.{ClassName}</c> as the convention default when <paramref name="type"/> carries no
-  /// register attribute.
+  /// registered under: <c>{modId}.{Code ?? ClassName}</c>, or the bare key when
+  /// <see cref="RegisterAttribute.PrefixModId"/> is false. Falls back to the convention default
+  /// <c>{modId}.{ClassName}</c> when <paramref name="type"/> carries no register attribute. The
+  /// code-first definition builder (<c>ExBlockDef</c>'s type-safe <c>Class&lt;T&gt;()</c>) resolves
+  /// class strings through here as well, so the two cannot disagree after a rename.
   /// </summary>
   public static string KeyFor(string modId, Type type) =>
     KeyFor(
@@ -100,8 +92,7 @@ public static class EntityRegistry
       type.GetCustomAttributes().OfType<RegisterAttribute>().FirstOrDefault()
     );
 
-  private static string KeyFor(string modId, Type type, RegisterAttribute? attr)
-  {
+  private static string KeyFor(string modId, Type type, RegisterAttribute? attr) {
     string baseKey = attr?.Code ?? type.Name;
     return (attr?.PrefixModId ?? true) ? $"{modId}.{baseKey}" : baseKey;
   }
@@ -114,8 +105,7 @@ public static class EntityRegistry
     string modId,
     Type type,
     string kind
-  )
-  {
+  ) {
     if (typeof(TBase).IsAssignableFrom(type))
       return true;
 
@@ -141,8 +131,7 @@ public static class EntityRegistry
     string key,
     RegisterAttribute attr,
     Type type
-  )
-  {
+  ) {
     api.RegisterBlockEntityClass(key, type);
 
     const string prefix = "BlockEntity";

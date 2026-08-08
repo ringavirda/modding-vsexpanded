@@ -3,20 +3,16 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Networks;
 
 /// <summary>
-/// Base interface for all block entities that participate in a block network
-/// (gas pipes, molten canals, …).
+/// Base interface for block entities that participate in a block network (gas pipes, molten canals).
 /// </summary>
-public interface INetworkNode
-{
+public interface INetworkNode {
   /// <summary>
-  /// The first letter of each direction that has a network connector at this block
-  /// (e.g. "ns" for north + south).  May be <c>null</c> while the block is loading.
+  /// The first letter of each direction that has a network connector at this block, e.g. "ns" for
+  /// north plus south. May be <c>null</c> while the block is loading.
   /// </summary>
   string? Orientation { get; }
 
-  /// <summary>
-  /// All orientation strings valid at this position (used for wrench cycling).
-  /// </summary>
+  /// <summary>All orientation strings valid at this position, used for wrench cycling.</summary>
   string[] PossibleOrientations { get; }
 
   /// <summary>Network type identifier, e.g. "gas" or "molten".</summary>
@@ -26,21 +22,18 @@ public interface INetworkNode
   bool HasConnectorAt(BlockFacing face);
 
   /// <summary>
-  /// Called by the network tick with the set of connector faces that have no
-  /// valid neighbour (open ends / leaks).  Default: no-op.
+  /// Called by the network tick with the connector faces that have no valid neighbour (open ends).
+  /// Implementations may no-op.
   /// </summary>
   void OnOpenConnectorsChanged(BlockFacing[] openFaces);
 
   /// <summary>
-  /// Called by the pipe network tick for a node sitting on the leaking (open-ended) boundary of a
-  /// pressurised/flooded run, so it can emit its own leak feedback (particles / sound).
-  /// <paramref name="isLiquid"/> tells water from gas; <paramref name="intensity"/> is a 0-based
-  /// density scale. Default implementations no-op; a pipe overrides it to spray leak particles.
+  /// Called by the pipe network tick for a node on the open-ended boundary of a pressurised or
+  /// flooded run, so it can emit leak feedback. <paramref name="isLiquid"/> distinguishes water from
+  /// gas; <paramref name="intensity"/> is a density scale from 0 upwards. Implementations may no-op.
   /// </summary>
   void OnLeak(BlockFacing[] leakingFaces, bool isLiquid, float intensity);
 
-  /// <summary>
-  /// Receives the latest network state so clients can update their display.
-  /// </summary>
+  /// <summary>Receives the latest network state so clients can update their display.</summary>
   void OnNetworkUpdate(object? state);
 }

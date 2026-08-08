@@ -10,32 +10,25 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The burdenmaker's two hoppers, its shared basin and the one gate between them.
-/// <para>
-/// <b>Crate semantics</b>: materials go in and come out freely, with no batch state to get stuck in. The
-/// ore mixer's <c>drainfirst</c> / <c>nothingmixed</c> / <c>wrongfamily</c> refusals are all gone; what is
-/// left to assert is that each hopper takes only its own material, that the gate makes one honest batch, and
-/// that <b>everything comes back on break</b>.
-/// </para>
+/// The burdenmaker's two hoppers, its shared basin and the one gate between them. Crate semantics:
+/// materials go in and come out freely, with no batch state to get stuck in. Each hopper takes only its
+/// own material, the gate makes one stamped batch, and everything loaded comes back on break.
 /// </summary>
-public class BurdenmakerTests
-{
+public class BurdenmakerTests {
   private static (
     TestWorld world,
     BlockEntityBurdenmaker be,
     Item ore,
     Item lime
-  ) NewMachine()
-  {
+  ) NewMachine() {
     var world = new TestWorld();
     world.RegisterItem("iwex:burden");
     world.RegisterItem("game:crushed-iron");
     world.RegisterItem("game:lime");
     world.RegisterItem("game:clay-fire"); // an unrelated item, for the refusal cases
 
-    // The real block type, not `new Block()`. A stub carries no variants, so `Variant["side"]` is null
-    // and the animator's cache key throws - and more importantly a stub block is how a fixture silently
-    // stops exercising production code (see the charge-pile and heat-balance scars).
+    // The real block type, not `new Block()`: a stub carries no variants, so `Variant["side"]` is null
+    // and the animator's cache key throws.
     var block = TestBlocks.Configure(
       new BlockBurdenmaker(),
       "iwex:burdenmaker-red-n",
@@ -62,8 +55,7 @@ public class BurdenmakerTests
   #region Each hopper takes only its own material
 
   [Fact]
-  public void The_wide_hopper_takes_ore_and_refuses_flux()
-  {
+  public void The_wide_hopper_takes_ore_and_refuses_flux() {
     var (_, be, ore, lime) = NewMachine();
 
     Assert.True(be.TryLoadOre(Slot(ore, 64), wholeStack: true));
@@ -75,8 +67,7 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void The_narrow_hopper_takes_flux_and_refuses_ore()
-  {
+  public void The_narrow_hopper_takes_flux_and_refuses_ore() {
     var (_, be, ore, lime) = NewMachine();
 
     Assert.True(be.TryLoadFlux(Slot(lime, 32), wholeStack: true));
@@ -88,8 +79,7 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void An_unrelated_item_goes_in_neither_hopper()
-  {
+  public void An_unrelated_item_goes_in_neither_hopper() {
     var (world, be, _, _) = NewMachine();
     Item clay = world.World.GetItem(new AssetLocation("game:clay-fire"))!;
 
@@ -100,8 +90,7 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void A_plain_deposit_takes_one_unit_and_ctrl_takes_the_stack()
-  {
+  public void A_plain_deposit_takes_one_unit_and_ctrl_takes_the_stack() {
     var (_, be, ore, _) = NewMachine();
 
     DummySlot held = Slot(ore, 40);
@@ -115,8 +104,7 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void Taking_from_a_hopper_returns_the_material_not_burden()
-  {
+  public void Taking_from_a_hopper_returns_the_material_not_burden() {
     var (_, be, ore, lime) = NewMachine();
     be.TryLoadOre(Slot(ore, 20), wholeStack: true);
     be.TryLoadFlux(Slot(lime, 10), wholeStack: true);
@@ -131,13 +119,10 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void A_full_hopper_takes_no_more()
-  {
-    // This case earns its keep by having already failed: with the slot ranges first written as 4/2/9,
-    // a 64-stack ore filled the wide hopper at **256** units against a configured capacity of **512**, so
-    // the config key promised twice what the machine could hold. The slot count must always leave the
-    // unit cap binding first - see the constants on the block entity. If this goes red after a capacity
-    // change, the slot ranges are what to move, not this number.
+  public void A_full_hopper_takes_no_more() {
+    // The slot ranges must leave the unit cap binding first, or the hopper fills short of its configured
+    // capacity. If this goes red after a capacity change, the slot ranges on the block entity are what
+    // to move, not this number.
     var (_, be, ore, _) = NewMachine();
     int cap = IwexValues.BurdenmakerOreCapacity;
 
@@ -150,18 +135,31 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void Every_tank_can_actually_reach_its_configured_capacity()
-  {
-    // The general form of the case above, for the other two tanks - the flux hopper and the basin have the
-    // same failure mode and no scenario would otherwise fill them to the brim.
+  public void Every_tank_can_actually_reach_its_configured_capacity() {
+    // The same check for the other two tanks: the flux hopper and the basin have the same failure mode
+    // and no other case fills them to the brim.
     var (_, be, ore, lime) = NewMachine();
 
-    for (int i = 0; i < 64 && be.FluxUnits < IwexValues.BurdenmakerFluxCapacity; i++)
-      be.TryLoadFlux(Slot(lime, IwexValues.BurdenmakerFluxCapacity), wholeStack: true);
+    for (
+      int i = 0;
+      i < 64 && be.FluxUnits < IwexValues.BurdenmakerFluxCapacity;
+      i++
+    )
+      be.TryLoadFlux(
+        Slot(lime, IwexValues.BurdenmakerFluxCapacity),
+        wholeStack: true
+      );
     Assert.Equal(IwexValues.BurdenmakerFluxCapacity, be.FluxUnits);
 
-    for (int i = 0; i < 64 && be.OreUnits < IwexValues.BurdenmakerOreCapacity; i++)
-      be.TryLoadOre(Slot(ore, IwexValues.BurdenmakerOreCapacity), wholeStack: true);
+    for (
+      int i = 0;
+      i < 64 && be.OreUnits < IwexValues.BurdenmakerOreCapacity;
+      i++
+    )
+      be.TryLoadOre(
+        Slot(ore, IwexValues.BurdenmakerOreCapacity),
+        wholeStack: true
+      );
 
     // Gate the lot through: ore + flux must fit the basin, or a legal full load would be destroyed.
     Assert.True(be.ToggleGate(out _));
@@ -177,8 +175,7 @@ public class BurdenmakerTests
   #region The gate
 
   [Fact]
-  public void Opening_the_gate_empties_both_hoppers_into_one_stamped_batch()
-  {
+  public void Opening_the_gate_empties_both_hoppers_into_one_stamped_batch() {
     var (_, be, ore, lime) = NewMachine();
     be.TryLoadOre(Slot(ore, 90), wholeStack: true);
     be.TryLoadFlux(Slot(lime, 10), wholeStack: true);
@@ -194,14 +191,12 @@ public class BurdenmakerTests
     BurdenMix mix = Burden.Read(be.TryWithdrawBurden());
     Assert.Equal(0.90f, mix.Iron, 3);
     Assert.Equal(0.10f, mix.Flux, 3);
-    // Coke left the burden when charging became layered. A burden carrying a fuel fraction would be a
-    // second, disagreeing answer to "how much carbon is at the raceway".
+    // Burden carries no fuel fraction: the carbon at the raceway comes from the layered charge alone.
     Assert.Equal(0f, mix.Fuel, 5);
   }
 
   [Fact]
-  public void The_gate_refuses_when_nothing_is_loaded()
-  {
+  public void The_gate_refuses_when_nothing_is_loaded() {
     var (_, be, _, _) = NewMachine();
 
     Assert.False(be.ToggleGate(out string? error));
@@ -210,8 +205,7 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void The_gate_refuses_while_the_basin_still_holds_a_batch()
-  {
+  public void The_gate_refuses_while_the_basin_still_holds_a_batch() {
     var (_, be, ore, lime) = NewMachine();
     be.TryLoadOre(Slot(ore, 50), wholeStack: true);
     be.TryLoadFlux(Slot(lime, 50), wholeStack: true);
@@ -227,11 +221,9 @@ public class BurdenmakerTests
   }
 
   [Fact]
-  public void A_second_batch_carries_only_its_own_stamp()
-  {
-    // The dirty-precondition rule. The first batch is 50:50; the second is 90:10. If the basin were
-    // allowed to pool, the second read would come back as an average of the two and the player would be
-    // charging a grade they never made.
+  public void A_second_batch_carries_only_its_own_stamp() {
+    // First batch 50:50, second 90:10. A basin that pooled the two would return their average on the
+    // second read.
     var (_, be, ore, lime) = NewMachine();
 
     be.TryLoadOre(Slot(ore, 50), wholeStack: true);
@@ -257,12 +249,9 @@ public class BurdenmakerTests
   #region Drops — the whole point of the block
 
   [Fact]
-  public void Breaking_it_returns_the_ore_the_flux_AND_the_burden()
-  {
-    // The ore mixer returned nothing and could silently destroy up to 512 units of raw charge. Under R2
-    // that was always wrong, and with no batch state there is not even an excuse for it. Asserted, not
-    // assumed - and asserted through the inventory the container base spills, so it cannot pass by virtue
-    // of a custom GetDrops that a later edit removes.
+  public void Breaking_it_returns_the_ore_the_flux_AND_the_burden() {
+    // Asserted through the inventory the container base spills, so it cannot pass by virtue of a custom
+    // GetDrops that a later edit removes.
     var (_, be, ore, lime) = NewMachine();
 
     be.TryLoadOre(Slot(ore, 60), wholeStack: true);
@@ -279,8 +268,7 @@ public class BurdenmakerTests
 
     var found = new Dictionary<string, int>();
     foreach (ItemSlot slot in be.Inventory)
-      if (!slot.Empty)
-      {
+      if (!slot.Empty) {
         string path = slot.Itemstack.Collectible.Code.Path;
         found[path] = found.GetValueOrDefault(path) + slot.Itemstack.StackSize;
       }

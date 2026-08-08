@@ -8,31 +8,34 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The medium taxonomy that replaced the hardcoded <c>PipeNetworkState</c> string helpers. The
-/// load-bearing guarantee is <b>parity</b>: for the four built-in media, <see cref="IMediumTaxonomy"/>
-/// must reproduce the old <c>MediaCompatible</c> / <c>GetHigherPriorityGas</c> / <c>== "Water"</c>
-/// truth tables exactly, so no pipe run behaves differently. The one intended divergence - two
-/// different liquids no longer silently blending - is pinned separately. <see cref="ExLiquids"/> is a
-/// process-wide static, so the class is serialized and reset to the built-in seed before each test.
+/// The medium taxonomy backing pipe-network compatibility, gas priority and phase change. For the four
+/// built-in media <see cref="IMediumTaxonomy"/> reproduces the <c>PipeNetworkState</c> string-helper
+/// truth tables exactly; the single divergence, two different liquids not blending, is pinned
+/// separately. <see cref="ExLiquids"/> is a process-wide static, so the class is serialized and reset
+/// to the built-in seed before each test.
 /// </summary>
 [Collection("ExLiquids")]
-public class MediumTaxonomyTests
-{
-  private static readonly string[] AllMedia = ["", "Air", "Steam", "Exhaust", "Water"];
+public class MediumTaxonomyTests {
+  private static readonly string[] AllMedia =
+  [
+    "",
+    "Air",
+    "Steam",
+    "Exhaust",
+    "Water",
+  ];
   private static readonly string[] Gases = ["Air", "Steam", "Exhaust"];
 
-  public MediumTaxonomyTests()
-  {
+  public MediumTaxonomyTests() {
     ExLiquids.Clear();
     ExLiquids.SeedDefaults();
   }
 
-  // The exact pre-registry formulas, as the parity oracle.
+  // The pre-registry formulas, used as the parity oracle.
   private static bool OldCompatible(string current, string medium) =>
     current.Length == 0 || (current == "Water") == (medium == "Water");
 
-  private static string OldHigherPriority(string a, string b)
-  {
+  private static string OldHigherPriority(string a, string b) {
     if (a == "Exhaust" || b == "Exhaust")
       return "Exhaust";
     if (a == "Steam" || b == "Steam")
@@ -42,8 +45,7 @@ public class MediumTaxonomyTests
 
   #region Parity with the old string helpers
   [Fact]
-  public void Compatible_matches_the_old_truth_table_for_every_builtin_pair()
-  {
+  public void Compatible_matches_the_old_truth_table_for_every_builtin_pair() {
     foreach (string current in AllMedia)
       foreach (string medium in AllMedia)
         Assert.Equal(
@@ -53,8 +55,7 @@ public class MediumTaxonomyTests
   }
 
   [Fact]
-  public void HigherPriority_matches_the_old_gas_ranking_both_orders()
-  {
+  public void HigherPriority_matches_the_old_gas_ranking_both_orders() {
     foreach (string a in Gases)
       foreach (string b in Gases)
         Assert.Equal(
@@ -68,21 +69,23 @@ public class MediumTaxonomyTests
   [InlineData("Air", false)]
   [InlineData("Steam", false)]
   [InlineData("Exhaust", false)]
-  [InlineData("", false)] // unclaimed run reads as not-liquid (old == "Water")
-  [InlineData("Nonsense", false)] // unknown code degrades to gas, never throws
-  public void IsLiquid_matches_the_old_water_only_rule(string code, bool expected)
-  {
+  [InlineData("", false)] // an unclaimed run reads as not-liquid
+  [InlineData("Nonsense", false)] // an unknown code degrades to gas, never throws
+  public void IsLiquid_matches_the_old_water_only_rule(
+    string code,
+    bool expected
+  ) {
     Assert.Equal(expected, ExLiquids.Taxonomy.IsLiquid(code));
   }
   #endregion
 
   #region The intended divergence + condensation
   [Fact]
-  public void Two_different_liquids_do_not_blend()
-  {
-    // The old MediaCompatible treated all non-water as one family, so a second liquid would silently
-    // blend with water. The registry fixes that: a liquid mixes only with the same liquid code.
-    ExLiquids.Register(new LiquidDef { Code = "Oil", Phase = LiquidPhase.Liquid });
+  public void Two_different_liquids_do_not_blend() {
+    // A liquid mixes only with the same liquid code, never with another liquid or with a gas.
+    ExLiquids.Register(
+      new LiquidDef { Code = "Oil", Phase = LiquidPhase.Liquid }
+    );
 
     Assert.True(ExLiquids.Taxonomy.IsLiquid("Oil"));
     Assert.False(ExLiquids.Taxonomy.Compatible("Water", "Oil"));
@@ -92,15 +95,18 @@ public class MediumTaxonomyTests
   }
 
   [Fact]
-  public void Steam_condenses_to_water_only_below_its_boil_point()
-  {
+  public void Steam_condenses_to_water_only_below_its_boil_point() {
     Assert.True(
       ExLiquids.Taxonomy.TryCondensation("Steam", 90f, out string target, out _)
     );
     Assert.Equal("Water", target);
 
-    Assert.False(ExLiquids.Taxonomy.TryCondensation("Steam", 100f, out _, out _)); // at boil, not below
-    Assert.False(ExLiquids.Taxonomy.TryCondensation("Steam", 130f, out _, out _));
+    Assert.False(
+      ExLiquids.Taxonomy.TryCondensation("Steam", 100f, out _, out _)
+    ); // at boil, not below
+    Assert.False(
+      ExLiquids.Taxonomy.TryCondensation("Steam", 130f, out _, out _)
+    );
     Assert.False(ExLiquids.Taxonomy.TryCondensation("Air", 20f, out _, out _)); // no condensation
     Assert.False(ExLiquids.Taxonomy.TryCondensation("Water", 5f, out _, out _)); // no target
   }
@@ -108,25 +114,34 @@ public class MediumTaxonomyTests
 
   #region Vaporisation + the temp-independent phase-change pair (the general-still substrate)
   [Fact]
-  public void Water_vaporises_to_steam_only_at_or_above_its_boil_point()
-  {
-    // The mirror of condensation: gates at/above the boil point (condensation gates below the dew point).
+  public void Water_vaporises_to_steam_only_at_or_above_its_boil_point() {
+    // Vaporisation gates at or above the boil point; condensation gates strictly below the dew point.
     Assert.True(
-      ExLiquids.Taxonomy.TryVaporisation("Water", 100f, out string target, out _)
+      ExLiquids.Taxonomy.TryVaporisation(
+        "Water",
+        100f,
+        out string target,
+        out _
+      )
     );
     Assert.Equal("Steam", target);
 
-    Assert.True(ExLiquids.Taxonomy.TryVaporisation("Water", 130f, out _, out _)); // above boil
-    Assert.False(ExLiquids.Taxonomy.TryVaporisation("Water", 99f, out _, out _)); // below boil
-    Assert.False(ExLiquids.Taxonomy.TryVaporisation("Steam", 200f, out _, out _)); // a gas has no boil pair
+    Assert.True(
+      ExLiquids.Taxonomy.TryVaporisation("Water", 130f, out _, out _)
+    ); // above boil
+    Assert.False(
+      ExLiquids.Taxonomy.TryVaporisation("Water", 99f, out _, out _)
+    ); // below boil
+    Assert.False(
+      ExLiquids.Taxonomy.TryVaporisation("Steam", 200f, out _, out _)
+    ); // a gas has no boil pair
     Assert.False(ExLiquids.Taxonomy.TryVaporisation("Air", 500f, out _, out _)); // no vaporisesTo
   }
 
   [Fact]
-  public void Water_and_steam_are_reciprocal_phase_change_partners()
-  {
-    // The seeded pair: Water boils to Steam, Steam condenses to Water. The general still reads exactly
-    // this data per fraction; the boiler is its degenerate single-fraction case.
+  public void Water_and_steam_are_reciprocal_phase_change_partners() {
+    // The seeded pair: Water boils to Steam, Steam condenses to Water. A still reads this data per
+    // fraction; the boiler is the single-fraction case.
     Assert.True(
       ExLiquids.Taxonomy.VaporisationTarget("Water", out string gas, out _)
     );
@@ -138,23 +153,23 @@ public class MediumTaxonomyTests
   }
 
   [Fact]
-  public void CondensationTarget_is_temperature_independent()
-  {
-    // An active condenser supplies its own cooling, so the pair lookup must not gate on the gas's
-    // current temperature - a 150C steam line still condenses (exactly what the condenser BE relies on,
-    // and what a temp-gated lookup would wrongly refuse).
+  public void CondensationTarget_is_temperature_independent() {
+    // An active condenser supplies its own cooling, so the pair lookup does not gate on the gas's
+    // current temperature: a 150 C steam line still has Water as its condensation target.
     Assert.True(
       ExLiquids.Taxonomy.CondensationTarget("Steam", out string target, out _)
     );
     Assert.Equal("Water", target);
-    Assert.False(ExLiquids.Taxonomy.TryCondensation("Steam", 150f, out _, out _));
+    Assert.False(
+      ExLiquids.Taxonomy.TryCondensation("Steam", 150f, out _, out _)
+    );
   }
 
   [Fact]
-  public void Builtin_phase_change_leaves_the_volume_factor_to_the_caller()
-  {
-    // The built-ins leave the factor 0 (null in the def) so exlib carries no lpex expansion constant;
-    // consumers fall back to their own default (the condenser to LpexValues.SteamExpansionFactor).
+  public void Builtin_phase_change_leaves_the_volume_factor_to_the_caller() {
+    // The built-ins leave the factor at 0 (null in the def) so exlib carries no lpex expansion
+    // constant; consumers fall back to their own default, the condenser to
+    // LpexValues.SteamExpansionFactor.
     ExLiquids.Taxonomy.CondensationTarget("Steam", out _, out float condFactor);
     ExLiquids.Taxonomy.VaporisationTarget("Water", out _, out float vapFactor);
     Assert.Equal(0f, condFactor);
@@ -162,13 +177,11 @@ public class MediumTaxonomyTests
   }
 
   [Fact]
-  public void A_fraction_can_ship_its_own_phase_change_pair_and_factor()
-  {
-    // A distillation add-on registers a fraction with an explicit boil/condense pair + factor; a still
-    // reads them straight from the taxonomy, no code change - the substrate the staged plan builds on.
+  public void A_fraction_can_ship_its_own_phase_change_pair_and_factor() {
+    // A fraction registered with an explicit boil/condense pair and factor is readable straight from
+    // the taxonomy, with no code change on the consumer side.
     ExLiquids.Register(
-      new LiquidDef
-      {
+      new LiquidDef {
         Code = "Benzene",
         Phase = LiquidPhase.Liquid,
         VaporisesTo = "BenzeneVapour",
@@ -177,8 +190,7 @@ public class MediumTaxonomyTests
       }
     );
     ExLiquids.Register(
-      new LiquidDef
-      {
+      new LiquidDef {
         Code = "BenzeneVapour",
         Phase = LiquidPhase.Gas,
         CondensesTo = "Benzene",
@@ -212,23 +224,20 @@ public class MediumTaxonomyTests
 
   #region Registry mechanics + JSON binding
   [Fact]
-  public void SeedDefaults_registers_the_four_builtins()
-  {
+  public void SeedDefaults_registers_the_four_builtins() {
     Assert.Equal(4, ExLiquids.All.Count);
     Assert.True(ExLiquids.TryGet("Steam", out var steam));
     Assert.Equal(LiquidPhase.Gas, steam.Phase);
   }
 
   [Fact]
-  public void Clear_empties_the_registry()
-  {
+  public void Clear_empties_the_registry() {
     ExLiquids.Clear();
     Assert.Empty(ExLiquids.All);
   }
 
   [Fact]
-  public void LiquidCatalogue_binds_camelCase_json_and_the_phase_enum()
-  {
+  public void LiquidCatalogue_binds_camelCase_json_and_the_phase_enum() {
     const string json =
       @"{ ""code"": ""liquid"", ""liquids"": [
           { ""code"": ""Oil"", ""phase"": ""liquid"", ""priority"": 0,
@@ -241,7 +250,7 @@ public class MediumTaxonomyTests
     Assert.NotNull(cat.Liquids);
     Assert.Equal(2, cat.Liquids!.Count);
     Assert.Equal("Oil", cat.Liquids[0].Code);
-    Assert.Equal(LiquidPhase.Liquid, cat.Liquids[0].Phase); // "liquid" → Liquid (case-insensitive)
+    Assert.Equal(LiquidPhase.Liquid, cat.Liquids[0].Phase); // phase binds case-insensitively
     Assert.Equal("OilVapour", cat.Liquids[0].VaporisesTo);
     Assert.Equal(300f, cat.Liquids[0].BoilPointC);
     Assert.Equal(8f, cat.Liquids[0].VaporiseVolumeFactor);
@@ -251,12 +260,9 @@ public class MediumTaxonomyTests
   }
 
   [Fact]
-  public void The_shipped_liquids_json_reproduces_the_builtin_seed()
-  {
-    // exlib ships assets/exlib/config/liquids.json as the data-authored baseline (the "author a medium
-    // as data" deliverable + a modder template). It re-declares the four built-ins, which SeedDefaults
-    // also seeds in code - so the load-bearing guarantee is that the two never drift: the file must bind
-    // to exactly the seeded set, field-for-field, or a fresh install stops being byte-identical.
+  public void The_shipped_liquids_json_reproduces_the_builtin_seed() {
+    // assets/exlib/config/liquids.json re-declares the four built-ins that SeedDefaults also seeds in
+    // code. The two must not drift: the file has to bind to exactly the seeded set, field for field.
     var seeded = ExLiquids.All.ToDictionary(
       d => d.Code,
       StringComparer.OrdinalIgnoreCase
@@ -281,8 +287,7 @@ public class MediumTaxonomyTests
       cat.Liquids!.Select(d => d.Code).OrderBy(k => k, StringComparer.Ordinal)
     );
 
-    foreach (LiquidDef fileDef in cat.Liquids!)
-    {
+    foreach (LiquidDef fileDef in cat.Liquids!) {
       Assert.True(
         seeded.TryGetValue(fileDef.Code, out LiquidDef seed),
         $"shipped liquid '{fileDef.Code}' is not one of the seeded built-ins"
@@ -299,8 +304,7 @@ public class MediumTaxonomyTests
   }
   #endregion
 
-  private static string RepoRoot()
-  {
+  private static string RepoRoot() {
     var dir = new DirectoryInfo(AppContext.BaseDirectory);
     while (
       dir != null

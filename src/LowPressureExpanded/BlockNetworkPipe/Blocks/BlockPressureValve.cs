@@ -17,10 +17,9 @@ namespace LowPressureExpanded.BlockNetworkPipe.Blocks;
 /// <see cref="BlockEntityPressureValve.GatePressureStep"/>), bounded by the valve's material rating.
 /// </summary>
 [BlockRegister]
-public partial class BlockPressureValve : BlockValve
-{
-  /// <summary>The pressure-valve blocktype, authored in C# (migrated from pipes/pressurevalve.json).
-  /// AllowedOrientations/fallback are derived from it by the base <see cref="BlockPipe"/>.</summary>
+public partial class BlockPressureValve : BlockValve {
+  /// <summary>The pressure-valve blocktype. AllowedOrientations and the fallback are derived from it
+  /// by the base <see cref="BlockPipe"/>.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [PressureValve(domain)];
 
@@ -40,9 +39,21 @@ public partial class BlockPressureValve : BlockValve
       .ShapeByType("*-pressurevalve-ns", "lpex:pipe/pressurevalve")
       .ShapeByType("*-pressurevalve-we", "lpex:pipe/pressurevalve", rotateY: 90)
       .ShapeByType("*-pressurevalve-ud", "lpex:pipe/pressurevalve", rotateX: 90)
-      .ShapeByType("*-pressurevalve-sn", "lpex:pipe/pressurevalve", rotateY: 180)
-      .ShapeByType("*-pressurevalve-ew", "lpex:pipe/pressurevalve", rotateY: -90)
-      .ShapeByType("*-pressurevalve-du", "lpex:pipe/pressurevalve", rotateX: -90)
+      .ShapeByType(
+        "*-pressurevalve-sn",
+        "lpex:pipe/pressurevalve",
+        rotateY: 180
+      )
+      .ShapeByType(
+        "*-pressurevalve-ew",
+        "lpex:pipe/pressurevalve",
+        rotateY: -90
+      )
+      .ShapeByType(
+        "*-pressurevalve-du",
+        "lpex:pipe/pressurevalve",
+        rotateX: -90
+      )
       .Texture("iron4", "game:block/metal/sheet-plain/iron4")
       .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
       .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
@@ -54,21 +65,19 @@ public partial class BlockPressureValve : BlockValve
 
   public override bool IsNetworkEndPoint => true;
 
-  // Right-click adjusts the gate pressure instead of the inherited open/close toggle:
-  // plain RMB raises it, sneak + RMB lowers it.
+  // Adjusts the gate pressure instead of the inherited open/close toggle.
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is not BlockEntityPressureValve be
     )
       return false;
 
-    // Don't hijack the right-click while the player is placing/using a held item.
+    // The right-click stays with the held item while the player has one.
     if (!byPlayer.Entity.RightHandItemSlot.Empty)
       return false;
 
@@ -95,15 +104,13 @@ public partial class BlockPressureValve : BlockValve
     base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
       .Where(x => x.ActionLangCode != "lpex:blockhelp-valve-toggle")
       .Append(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "lpex:blockhelp-pressurevalve-increase",
           MouseButton = EnumMouseButton.Right,
         }
       )
       .Append(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "lpex:blockhelp-pressurevalve-decrease",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",

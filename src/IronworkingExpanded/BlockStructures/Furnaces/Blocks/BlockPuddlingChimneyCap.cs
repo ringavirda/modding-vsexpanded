@@ -12,25 +12,25 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
 /// The puddling furnace's chimney cap - the damper that regulates its natural draught, on a control rod
-/// running down the stack.
-/// <para>
-/// It is <b>two cells deep</b>: the cap body sits over the flue with its housing behind, which is why the
-/// footprint runs along the structure's local +Z rather than sideways.
-/// </para>
+/// running down the stack. Two cells deep: the cap body sits over the flue with its housing behind, so
+/// the footprint runs along the structure's local +Z rather than sideways.
 /// </summary>
 [BlockRegister]
 public partial class BlockPuddlingChimneyCap
   : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, BlockFurnaceCoreBase.FurnaceCode, "furnace/puddlingchimneycap")
+        .Create(
+          domain,
+          BlockFurnaceCoreBase.FurnaceCode,
+          "furnace/puddlingchimneycap"
+        )
         .Class<BlockPuddlingChimneyCap>()
         .EntityClass<BlockEntityPuddlingChimneyCap>()
         .EntityBehavior("Animatable")
@@ -39,13 +39,13 @@ public partial class BlockPuddlingChimneyCap
         .Behavior("MultiblockStructure")
         .Behavior("ExOrientable")
         // `type` names the family member; every furnace part shares the code `iwex:furnace`
-        // (see BlockFurnaceCoreBase.FurnaceCode and N7).
+        // (see BlockFurnaceCoreBase.FurnaceCode).
         .VariantGroup("type", "puddlingchimneycap")
         .SideVariant()
         .ShapeByTypePerOrientation("iwex:furnace/puddlingchimneycap", 0)
         .CreativeCommon("*-n")
-        // One filler at local +Z: the cap's housing. Derived from the shipped shape's own extent
-        // (x -2..16 = one cell wide, z -5..32 = two deep), not guessed.
+        // One filler at local +Z: the cap's housing. Matches the shape's extent
+        // (x -2..16 = one cell wide, z -5..32 = two deep).
         .FillerOffsets(
           StructureFootprint.Layout(f =>
             f.Origin(0, 0)
@@ -63,21 +63,38 @@ public partial class BlockPuddlingChimneyCap
         .LightAbsorption(0)
         .Sound("walk", "walk/metal")
         .Sound("place", "block/anvil")
-        .SoundByTool(EnumTool.Pickaxe, "block/rock-hit-pickaxe", "block/rock-break-pickaxe")
+        .SoundByTool(
+          EnumTool.Pickaxe,
+          "block/rock-hit-pickaxe",
+          "block/rock-break-pickaxe"
+        )
         .SolidNonOpaque(),
     ];
 
   #endregion
 
-  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);
+  public override int StructureAngle =>
+    ExOrientation.AngleFromSide(Variant["side"]);
 
   #region Interaction
 
-  private bool HandleInteract(IWorldAccessor world, IPlayer byPlayer, BlockPos principal)
-  {
-    if (world.BlockAccessor.GetBlockEntity(principal) is not BlockEntityPuddlingChimneyCap be)
+  private bool HandleInteract(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockPos principal
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(principal)
+      is not BlockEntityPuddlingChimneyCap be
+    )
       return false;
-    if (BlockBehaviorMultiblockStructure.TryToggleProjection(world, byPlayer, principal))
+    if (
+      BlockBehaviorMultiblockStructure.TryToggleProjection(
+        world,
+        byPlayer,
+        principal
+      )
+    )
       return true;
     if (world.Side == EnumAppSide.Server)
       be.Toggle();

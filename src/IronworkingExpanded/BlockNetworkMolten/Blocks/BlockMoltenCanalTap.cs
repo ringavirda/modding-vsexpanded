@@ -18,16 +18,15 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 /// barrel/mold; Ctrl + right-click toggles pouring on and off.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenCanalTap : BlockMoltenCanal
-{
+public partial class BlockMoltenCanalTap : BlockMoltenCanal {
   // Barrel + large molds (anvil, helve hammer) that can be cast in the tap.
   private ItemStack[]? _acceptedContents;
 
   #region Code-first definition
 
-  /// <summary>The canal tap blocktype, authored in C# (migrated from molten/tap.json). A single-skin
-  /// endpoint (its own burned-clay + metal-sheet textures, not the brick/cobble skins), so it is authored
-  /// directly rather than through the shared canal-family surface.</summary>
+  /// <summary>The canal tap blocktype. A single-skin endpoint with its own burned-clay and metal-sheet
+  /// textures rather than the brick and cobble skins, so it is declared directly instead of through the
+  /// shared canal-family surface.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -45,7 +44,19 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
         .CreativeCommon("*-tap-s")
         .Attribute("fillHeight", 1)
         .Attribute("fillStart", 14)
-        .Attribute("fillQuadsByLevel", new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 5 } })
+        .Attribute(
+          "fillQuadsByLevel",
+          new[]
+          {
+            new
+            {
+              x1 = 7,
+              z1 = 0,
+              x2 = 9,
+              z2 = 5,
+            },
+          }
+        )
         .Handbook("molten-canal-tap-*")
         .Texture("burned", "game:block/clay/vessel/sides/burned")
         .Texture("steel3", "game:block/metal/riveted/steel3")
@@ -65,14 +76,13 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
 
   #endregion
 
-  public override void OnLoaded(ICoreAPI api)
-  {
+  public override void OnLoaded(ICoreAPI api) {
     base.OnLoaded(api);
 
     var list = new List<ItemStack>();
-    // Every construction variant, not the bare code. `iwex:molten-barrel` does not resolve since the
-    // barrel gained construction(plated|cast), and the null guard below would make the barrel silently
-    // drop out of the accepted-contents list rather than fail anywhere visible.
+    // Collect every construction variant by class: the bare code `iwex:molten-barrel` does not resolve
+    // now that the barrel carries construction(plated|cast), and a lookup by code would drop the barrel
+    // from the accepted-contents list without any visible failure.
     foreach (var block in api.World.Blocks)
       if (block is BlockMoltenBarrel)
         list.Add(new ItemStack(block));
@@ -86,17 +96,15 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is not BlockEntityMoltenCanalTap be
     )
       return false;
 
-    // Sneak (ShiftKey) + RMB places/removes the barrel; the opposite modifier
-    // (CtrlKey) + RMB toggles pouring. Plain RMB chips out a clogged (solidified)
-    // cell with a chisel + hammer, exactly like a canal or the start block.
+    // Sneak (ShiftKey) + RMB places or removes the barrel; CtrlKey + RMB toggles pouring. Plain RMB chips
+    // out a clogged (solidified) cell with a chisel and hammer, like a canal or the start block.
     bool sneak = byPlayer.Entity.Controls.ShiftKey;
     bool opposite = byPlayer.Entity.Controls.CtrlKey;
     if (!sneak && !opposite)
@@ -107,13 +115,11 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     if (world.Side == EnumAppSide.Client)
       return true;
 
-    if (sneak)
-    {
+    if (sneak) {
       if (!HasSolidSupportBelow(world, blockSel.Position))
         return false;
 
-      if (be.HasContent)
-      {
+      if (be.HasContent) {
         // A mold full of still-liquid metal may only be taken into an empty
         // hand - anywhere else in the inventory it instantly spills.
         bool liquidMold =
@@ -142,28 +148,19 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
           liquidMold,
           blockSel.Position.ToVec3d().Add(0.5, 1.0, 0.5)
         );
-      }
-      else
-      {
+      } else {
         var heldSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
         if (heldSlot?.Itemstack is not { } heldStack)
           return false;
 
-        if (heldStack.Block is BlockMoltenBarrel)
-        {
+        if (heldStack.Block is BlockMoltenBarrel) {
           be.AddBarrel(heldStack);
-        }
-        else if (MoldKinds.IsLarge(heldStack.Block))
-        {
+        } else if (MoldKinds.IsLarge(heldStack.Block)) {
           be.AddMold(heldStack);
-        }
-        else if (heldStack.Block is BlockToolMold)
-        {
+        } else if (heldStack.Block is BlockToolMold) {
           (byPlayer as IServerPlayer)?.SendIngameError("iwex-moldtoosmall");
           return false;
-        }
-        else
-        {
+        } else {
           return false;
         }
 
@@ -172,9 +169,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
       }
       ExSounds.Play(world.Api, blockSel.Position, ExSounds.Ingot, 0.7f);
       be.MarkDirty(true);
-    }
-    else
-    {
+    } else {
       be.TryTogglePouring();
     }
 
@@ -182,15 +177,14 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
   }
 
   /// <summary>
-  /// A barrel or mold can only be parked under the tap when the cell directly below is a real solid
-  /// surface to rest on. Invisible mega-block fillers are deliberately excluded: they are solid for
-  /// collision but are an internal part of another structure, not a stand you can set a vessel on.
+  /// True when the cell directly below the tap is a solid surface a barrel or mold can rest on. Invisible
+  /// megablock fillers are excluded: they are solid for collision but are internal parts of another
+  /// structure.
   /// </summary>
   private static bool HasSolidSupportBelow(
     IWorldAccessor world,
     BlockPos tapPos
-  )
-  {
+  ) {
     Block below = world.BlockAccessor.GetBlock(tapPos.DownCopy());
     return below.SideSolid[BlockFacing.UP.Index]
       && below is not BlockStructureFiller;
@@ -200,8 +194,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var interactions =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
@@ -223,23 +216,18 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     if (!HasSolidSupportBelow(world, selection.Position))
       return result.ToArray();
 
-    if (!hasContent)
-    {
+    if (!hasContent) {
       result.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "iwex:blockhelp-tap-placecontent",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
           Itemstacks = _acceptedContents,
         }
       );
-    }
-    else
-    {
+    } else {
       result.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "iwex:blockhelp-tap-removecontent",
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "sneak",
@@ -255,18 +243,15 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
-    // A parked barrel/mold is stored on the BE (the player's item was consumed on
-    // placement), not as a separate block, so drop it - with its contents - before
-    // the tap is removed, otherwise it is silently lost.
+  ) {
+    // A parked barrel or mold is stored on the block entity, not as a separate block, and the player's
+    // item was consumed on placement, so drop it with its contents before the tap is removed.
     if (
       world.Side == EnumAppSide.Server
       && byPlayer is not { WorldData.CurrentGameMode: EnumGameMode.Creative }
       && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanalTap be
       && be.HasContent
-    )
-    {
+    ) {
       ItemStack? parked = be.IsBarrel
         ? be.RemoveBarrel()
         : (be.MoldStack != null ? be.RemoveMold() : null);
@@ -277,22 +262,21 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
   }
 
-  // AllowedOrientations + GetFallbackOrientation are derived from the def's variant group (base
-  // BlockMoltenCanal); the tap's first-listed orientation "n" is also its fallback, so neither is overridden.
+  // AllowedOrientations and GetFallbackOrientation come from the def's variant group (base
+  // BlockMoltenCanal); the tap's first-listed orientation "n" is also its fallback, so neither is
+  // overridden here.
 
   protected override void GetRotations(
     string orientation,
     out float rotX,
     out float rotY,
     out float rotZ
-  )
-  {
+  ) {
     rotX = 0;
     rotY = 0;
     rotZ = 0;
 
-    switch (orientation)
-    {
+    switch (orientation) {
       case "n":
         rotY = 0;
         break;

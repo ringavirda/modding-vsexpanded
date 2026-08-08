@@ -1,28 +1,26 @@
+using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
+using IronworkingExpanded.BlockStructures.Casting.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
-using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
-/// Shared rule: a tool mold holding still-molten (liquid) metal may only be
-/// safely carried in the active hand. Anywhere else - another hotbar slot, a
-/// backpack, a chest, a mold rack - the liquid metal spills out, emptying the
-/// mold. Hardened/cooling castings are unaffected.
+/// A tool mold holding liquid metal may only be carried in the active hand. Anywhere else - another
+/// hotbar slot, a backpack, a chest, a mold rack - the metal spills out and empties the mold. Hardened
+/// and cooling castings are unaffected.
 /// </summary>
-public static class MoltenMoldSpill
-{
+public static class MoltenMoldSpill {
   /// <summary>Spill notification code, resolved client-side from "game:ingameerror-{code}".</summary>
   public const string ErrorCode = "iwex-moltenspill";
 
   /// <summary>
-  /// Whether a block gets the enhanced mold handling (spill / burn / carry). Our own
-  /// <see cref="BlockCastMold"/> always does; vanilla clay <c>BlockToolMold</c> only when the server has
-  /// opted in via <c>EnhanceVanillaMolds</c> (<c>/exmod molds vanilla on</c>).
+  /// Whether a block gets the enhanced mold handling (spill, burn, carry). <see cref="BlockCastMold"/>
+  /// always does; vanilla clay <c>BlockToolMold</c> only when the server has opted in via
+  /// <c>EnhanceVanillaMolds</c> (<c>/exmod molds vanilla on</c>).
   /// </summary>
   public static bool IsHandledMold(Block? block) =>
     block is BlockCastMold
@@ -36,8 +34,7 @@ public static class MoltenMoldSpill
     ItemSlot? slot,
     IWorldAccessor world,
     IServerPlayer? notify
-  )
-  {
+  ) {
     if (slot?.Itemstack is not { } stack || !IsHandledMold(stack.Block))
       return false;
 
@@ -84,8 +81,7 @@ public static class MoltenMoldSpill
     IPlayer byPlayer,
     ItemStack? contents,
     int units
-  )
-  {
+  ) {
     if (!IsLiquidContent(world, contents, units))
       return false;
     if (byPlayer.InventoryManager?.ActiveHotbarSlot?.Empty == true)
@@ -96,8 +92,9 @@ public static class MoltenMoldSpill
   }
 
   /// <summary>
-  /// Hands <paramref name="stack"/> to the player. A liquid mold goes straight into the (verified
-  /// empty) active hand so it can't be parked in a backpack where it would spill; else give-or-drop.
+  /// Hands <paramref name="stack"/> to the player. A liquid mold goes into the active hand, which the
+  /// caller has verified empty, so it cannot land in a backpack and spill; anything else is given to the
+  /// inventory or dropped at <paramref name="dropPos"/>.
   /// </summary>
   public static void GiveMoldStack(
     IWorldAccessor world,
@@ -105,11 +102,9 @@ public static class MoltenMoldSpill
     ItemStack stack,
     bool liquid,
     Vec3d dropPos
-  )
-  {
+  ) {
     var active = byPlayer.InventoryManager?.ActiveHotbarSlot;
-    if (liquid && active?.Empty == true)
-    {
+    if (liquid && active?.Empty == true) {
       active.Itemstack = stack;
       active.MarkDirty();
       return;

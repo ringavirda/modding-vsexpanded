@@ -15,32 +15,18 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
 /// A tap-hole in the hearth wall of a shaft furnace. Right-clicking with an empty hand toggles pouring;
-/// what comes out runs into the canal start beneath the spout.
+/// what comes out runs into the canal start beneath the spout. Two blocktypes: the iron notch at the
+/// crucible floor and the cinder notch higher in the same wall, below the tuyeres. Each carries its own
+/// code, so a layout glyph names the tap it means and the wrong one built in a tap cell does not
+/// complete the structure; <see cref="CellRole.MetalTap"/> and <see cref="CellRole.SlagTap"/> serve only
+/// the lookup (<c>MetalTapPos</c> / <c>SlagTapPos</c>).
 /// <para>
-/// <b>Two blocktypes come off this one class, because a furnace has two tap-holes and they are not
-/// interchangeable.</b> Real hearth anatomy puts the <b>iron notch</b> at the crucible floor and the
-/// <b>cinder notch</b> higher in the same wall, below the tuyeres - so which hole a player builds is a
-/// decision the drawing should be able to state.
-/// </para>
-/// <para>
-/// <b>It could not state it before this split.</b> Both taps were one blocktype, so the three shaft
-/// layouts drew <c>T</c> and <c>S</c> pointing at the <em>same</em> code and told them apart only by
-/// <see cref="CellRole.MetalTap"/> / <see cref="CellRole.SlagTap"/> - a workaround for there being one
-/// block, not a design. A player could build the iron tap in the slag cell and the structure completed
-/// anyway. With two types each glyph carries its own code, and the roles go back to being what they are
-/// for: the <em>lookup</em> (<c>MetalTapPos</c> / <c>SlagTapPos</c> ask the drawing where they are).
-/// </para>
-/// <para>
-/// The two share one shape for now. The drawn art
-/// (<c>assets/editable/shapes/furnace-block-{iron,slag}tap.json</c>) puts the height difference in the
-/// <b>geometry</b> - iron spouts from 2/16, slag from 10/16 - which only reads correctly once both taps
-/// sit at y=1, and today's layouts still stack them a course apart. Adopting the shapes is part of that
-/// layout move, not of this split; see <c>docs/design/layered-charge.md</c> § Typed taps.
+/// Both types share one shape until the drawn art is adopted, which needs both taps at y=1 rather than a
+/// course apart as the layouts have them. See <c>docs/design/layered-charge.md</c> § Typed taps.
 /// </para>
 /// </summary>
 [BlockRegister]
-public partial class BlockFurnaceTap : Block, IExBlockDefProvider
-{
+public partial class BlockFurnaceTap : Block, IExBlockDefProvider {
   /// <summary>The lower tap-hole, at the crucible floor: drains the metal pool.</summary>
   public const string IronType = "irontap";
 
@@ -49,8 +35,8 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
 
   #region Code-first definition
 
-  /// <summary>The two shaft-furnace tap-holes, authored in C# (migrated from blastfurnace/tap.json).
-  /// Animatable, horizontally orientable ceramic spouts.</summary>
+  /// <summary>The two shaft-furnace tap-holes: animatable, horizontally orientable ceramic
+  /// spouts.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Tap(domain, IronType), Tap(domain, SlagType)];
 
@@ -62,8 +48,8 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
       .EntityBehavior("Animatable")
       .Material(EnumBlockMaterial.Ceramic)
       .MaxStackSize(1)
-      // The build-outline projection: a tap is a functional cell of the furnace layout, so a player at the
-      // tap can preview + complete an incomplete furnace. This carries the help line; the interaction is
+      // Build outline: a tap is a functional cell of the furnace layout, so a player at the tap can
+      // preview and complete an incomplete furnace. This carries the help line; the interaction is
       // forwarded explicitly in OnBlockInteractStart below, which overrides without calling base.
       .Behavior("MultiblockStructure")
       .Behavior("ExOrientable")
@@ -71,8 +57,8 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
       // (see BlockFurnaceCoreBase.FurnaceCode and N7).
       .VariantGroup("type", type)
       .SideVariant()
-      // ⏳ One shape for both types until the drawn art lands with the y=1 layout move - see the class
-      // remarks. The path is `furnace/tap` rather than either type's, so it is obvious it is shared.
+      // One shape for both types until the drawn art is adopted; see the class remarks. The path is
+      // `furnace/tap` rather than either type's, to mark it as shared.
       .ShapeByTypePerOrientation("iwex:furnace/tap", 0)
       .CreativeCommon("*-s")
       .Replaceable(400)
@@ -98,11 +84,10 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     // This override handles interaction without calling base, so the MultiblockStructure behaviour's own
-    // click never runs; forward the build-outline gesture to the shared entry point first, so Ctrl+Shift+
-    // right-click previews an incomplete furnace instead of toggling the pour.
+    // click never runs. The build-outline gesture is forwarded to the shared entry point first, so
+    // Ctrl+Shift+right-click previews an incomplete furnace instead of toggling the pour.
     if (
       BlockBehaviorMultiblockStructure.TryToggleProjection(
         world,
@@ -115,28 +100,24 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is BlockEntityFurnaceTap tap
-    )
-    {
+    ) {
       // Prevent toggling if the player is holding an item/block
       if (!byPlayer.Entity.RightHandItemSlot.Empty)
         return false;
 
       // Opening requires a canal start directly below the tap's spout.
       bool isOpening = !tap.IsPouring;
-      if (isOpening)
-      {
+      if (isOpening) {
         // ExOrientation.FacingFromSide, not BlockFacing.FromCode: the latter returns null for a
-        // single-letter token and this dereferences it immediately, so a letter-spelled side would
-        // crash the interact rather than misbehave. Nullable-checked besides, because a tap whose
-        // variant names no facing at all should refuse, not throw.
+        // single-letter side token. Null-checked besides, so a tap whose variant names no facing
+        // refuses instead of throwing.
         BlockFacing? facing = ExOrientation.FacingFromSide(Variant["side"]);
         if (facing == null)
           return false;
         BlockPos startPos = blockSel
           .Position.AddCopy(facing.Opposite)
           .DownCopy();
-        if (world.BlockAccessor.GetBlock(startPos) is not BlockMoltenCanalStart)
-        {
+        if (world.BlockAccessor.GetBlock(startPos) is not BlockMoltenCanalStart) {
           (world.Api as ICoreClientAPI)?.TriggerIngameError(
             this,
             "nocanal",
@@ -146,9 +127,9 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
         }
       }
 
-      // The tap no longer swaps to a separate opened/closed block - its pouring
-      // state lives on the block entity and is shown by holding the "open"
-      // animation pose (see BlockEntityFurnaceTap.ApplyPourPose).
+      // There is no separate opened/closed block: pouring state lives on the
+      // block entity and is shown by holding the "open" animation pose (see
+      // BlockEntityFurnaceTap.ApplyPourPose).
       if (world.Side == EnumAppSide.Server)
         tap.TogglePouring();
 
@@ -169,13 +150,11 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
-    var toggleHelp = new WorldInteraction
-    {
+    var toggleHelp = new WorldInteraction {
       ActionLangCode = "iwex:blockhelp-tap-toggle",
       MouseButton = EnumMouseButton.Right,
       // Toggling needs an empty hand (a held item is placed instead). Gate the
@@ -191,31 +170,13 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider
   #region Drops
 
   /// <summary>
-  /// The stack a picked or mined tap becomes: this tap's own type, normalised to the <c>s</c> facing -
-  /// the one the creative entry and both grid recipes produce - so a mined tap stacks with a crafted one
-  /// instead of splitting the inventory four ways. The <b>type</b> is carried through: an iron tap must
-  /// never come back as a slag tap.
-  /// <para>
-  /// <b>The <c>?? this</c> fallback silently eats a dead code.</b> A wrong token here - a stale block
-  /// name, or a variant value spelled in the wrong vocabulary (the <c>side</c> group renders single
-  /// <b>letters</b>, not words) - makes <c>GetBlock</c> answer null; the fallback then hands back the
-  /// block's own facing and the tap merely stops normalising, with nothing failing. Deriving the code
-  /// is not the fix; the fix is that <see cref="BlastFurnaceTapTests"/> asserts the resulting code, so
-  /// a wrong token fails instead of degrading.
-  /// </para>
-  /// <para>
-  /// The token comes from <see cref="ExOrientation.TokenOf"/> rather than a literal, so it follows the
-  /// side vocabulary if that ever respells again.
-  /// </para>
-  /// <para>
-  /// <b><c>s</c> deliberately disagrees with <see cref="BlockBehaviorExOrientable"/>'s canonical,
-  /// which is the scheme's first token (<c>n</c>).</b> These overrides do not call base, so the
-  /// behaviour's version never runs on this block. The tap is the outlier on purpose - its creative entry
-  /// (<c>*-s</c>) and both grid recipes already produce <c>s</c> - and
-  /// <c>The_creative_entry_the_grid_recipe_and_the_drop_all_name_the_south_facing</c> pins the three
-  /// together so they cannot drift apart silently: the cost if they do is that a crafted tap and a mined
-  /// one stop stacking.
-  /// </para>
+  /// The stack a picked or mined tap becomes: this tap's own type, normalised to the <c>s</c> facing so a
+  /// mined tap stacks with a crafted one instead of splitting the inventory four ways. The type is
+  /// carried through, so an iron tap never comes back as a slag tap. <c>s</c> rather than
+  /// <see cref="BlockBehaviorExOrientable"/>'s canonical <c>n</c>, to match the creative entry
+  /// (<c>*-s</c>) and both grid recipes; these overrides do not call base, so the behaviour's own
+  /// normalisation never runs here. A code that resolves to no block falls back to <c>this</c>, so a
+  /// wrong token stops normalisation silently rather than failing.
   /// </summary>
   private ItemStack NormalisedStack(IWorldAccessor world) =>
     new(

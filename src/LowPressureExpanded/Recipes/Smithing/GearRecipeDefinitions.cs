@@ -5,18 +5,15 @@ using ExpandedLib.Definitions;
 namespace LowPressureExpanded.Recipes.Smithing;
 
 /// <summary>
-/// Code-first smithing (anvil) recipes for lpex's gears (migrated from recipes/smithing/gear.json and
-/// largegear.json). Smithing recipes are declarative voxel patterns, so they are authored via the
-/// <see cref="ExRecipeDef.Add"/> / <see cref="ExRecipeDef.Body"/> escape hatch (an anonymous object per
-/// recipe) rather than a dedicated builder. gear.json is an array of two recipes (2-gear and 4-gear plans);
-/// largegear.json is a single recipe object.
+/// Smithing (anvil) recipes for lpex's gears. Smithing recipes are declarative voxel patterns, so they are
+/// authored through the <see cref="ExRecipeDef.Add"/> / <see cref="ExRecipeDef.Body"/> escape hatch with an
+/// anonymous object per recipe rather than a dedicated builder. The gear def carries two recipes (the
+/// 2-gear and 4-gear plans); the large gear is a single recipe body.
 /// </summary>
-public class GearRecipeDefinitions : IExRecipeDefProvider
-{
+public class GearRecipeDefinitions : IExRecipeDefProvider {
   // The iron/steel ingot the gears are smithed from (shared by all three recipes).
   private static object IngotMetal =>
-    new
-    {
+    new {
       type = "item",
       code = "game:ingot-*",
       name = "metal",
@@ -44,7 +41,12 @@ public class GearRecipeDefinitions : IExRecipeDefProvider
             name = "2 gears",
             pattern = new[] { TwoGearRows },
             code = "2gears-{metal}",
-            output = new { type = "item", code = "lpex:gear-{metal}", stacksize = 2 },
+            output = new
+            {
+              type = "item",
+              code = "lpex:gear-{metal}",
+              stacksize = 2,
+            },
           }
         )
         .Add(
@@ -54,7 +56,12 @@ public class GearRecipeDefinitions : IExRecipeDefProvider
             name = "4 gears",
             pattern = new[] { TwoGearRows.Concat(TwoGearRows).ToArray() },
             code = "4gears-{metal}",
-            output = new { type = "item", code = "lpex:gear-{metal}", stacksize = 4 },
+            output = new
+            {
+              type = "item",
+              code = "lpex:gear-{metal}",
+              stacksize = 4,
+            },
           }
         ),
       ExRecipeDef
@@ -81,7 +88,12 @@ public class GearRecipeDefinitions : IExRecipeDefProvider
               },
             },
             code = "largegear-{metal}",
-            output = new { type = "item", code = "lpex:largegear-{metal}", stacksize = 1 },
+            output = new
+            {
+              type = "item",
+              code = "lpex:largegear-{metal}",
+              stacksize = 1,
+            },
           }
         ),
     ];

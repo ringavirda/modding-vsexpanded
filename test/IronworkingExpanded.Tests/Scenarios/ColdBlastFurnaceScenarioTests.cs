@@ -9,65 +9,37 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The <b>cold</b> blast furnace driven end to end (docs/design/iwex.md): a charged, lit, mechanically
-/// blown shaft climbs past iron's melt line on the coke in its own burden, enters Melting, renders ore
-/// burden into molten pig iron and slag, taps them into canals - and, when it goes out, freezes its pool
-/// onto the hearth and hands the rest of the column back as salvage.
-/// <para>
-/// This is the machine the whole iron economy starts at, and until now it had only geometry, parts, tap
-/// and HUD tests: nothing charged it, lit it, melted, tapped or extinguished it. The suite is meant to be
-/// the safety net a later rework of the charge model, the heat model and the crucible is judged against,
-/// so each case pins an <em>observable behaviour</em> and most carry their own control - the counterpart
-/// scene that must come out differently - so a test cannot pass for a reason other than the one it names.
-/// </para>
-/// <para>
-/// Everything runs on the clock through <see cref="ColdBlastFurnaceScenes"/>: the real 160-cell footprint
-/// stands, the furnace completes itself, and its own registered production tick does the work. No state is
-/// fast-forwarded by reflection.
-/// </para>
+/// The cold blast furnace driven end to end: a charged, lit, mechanically blown shaft climbs past iron's
+/// melt line on the coke in its own burden, melts ore burden into pig iron and slag, taps both into canals
+/// and, when it goes out, freezes its pool onto the hearth and hands the column back as salvage
+/// (<c>docs/design/layered-charge.md</c>). Everything runs on the clock through
+/// <see cref="ColdBlastFurnaceScenes"/>: the real 160-cell footprint stands, the furnace completes itself
+/// and its own production tick does the work, with no state fast-forwarded by reflection.
 /// </summary>
-// Joins the furnace-config collection as a *reader*: these scenes drive real furnaces and read computed
-// heat balances, so they must not run while HeatBalanceTests has BfCombustionBaseTemp or BfCokeSensitivity
-// off their shipped values.
+// Joins the furnace-config collection as a reader: these scenes read computed heat balances, so they must
+// not run while HeatBalanceTests has BfCombustionBaseTemp or BfCokeSensitivity off their shipped values.
 [Collection(FurnaceConfigCollection.Name)]
-public class ColdBlastFurnaceScenarioTests
-{
+public class ColdBlastFurnaceScenarioTests {
   /// <summary>
-  /// Long enough for a cold furnace to blow in and reach the melt line, with slack.
-  /// <para>
-  /// <b>Not derivable from the config; that is the counter-current model.</b> The shaft branch has no
-  /// chase and no soak: the flame follows the raceway within a tick and what takes time is the <b>charge warming
-  /// through</b>, which depends on how much coke is at the raceway, how tall the column is and how much
-  /// gas each band strips on the way past. There is no closed form for that, so this is a ceiling with
-  /// room in it rather than a computed earliest.
-  /// </para>
-  /// <para>
-  /// Caution: never wait a <em>fixed</em> duration here - it is wrong in both directions: the furnace
-  /// can reach Melting well before it, and - because a campaign ends when the coke does rather than
-  /// when a timer does - it can also have finished the whole shaft by then. Use
+  /// Ceiling in seconds for a cold furnace to blow in and reach the melt line, with slack. Not derivable
+  /// from the config: what takes time is the charge warming through. Never wait this out as a fixed
+  /// duration - a campaign ends when the coke does, not when a timer does. Use
   /// <see cref="ColdBlastFurnaceRig.RunUntil"/> and assert on the state it was waited for.
-  /// </para>
   /// </summary>
   private const int CampaignSeconds = 900;
 
   /// <summary>
-  /// A ceiling for "run it until the fire dies", with room in it.
-  /// <para>
-  /// <b>A shaft furnace has no extinguish timer to wait out</b> - only the firebox branch owns a
-  /// countdown. What ends a campaign is running out of carbon, so what is being waited for is
-  /// <c>coke ÷ (BfRacewayCarbonPerSecond × AirFactor)</c> - a full cold shaft at 30 % coke is ~370 u of
-  /// carbon against 0.35 u/s, so ~1 060 s blown and twice that on natural draught. Waited for with
-  /// <see cref="ColdBlastFurnaceRig.RunUntil"/> and asserted on the state it was waited for, never sampled at
-  /// a fixed offset.
-  /// </para>
+  /// Ceiling in seconds for "run it until the fire dies", with slack. A shaft furnace has no extinguish
+  /// timer, so what is waited for is <c>coke ÷ (BfRacewayCarbonPerSecond × AirFactor)</c>: a full cold
+  /// shaft at 30 % coke is ~370 u of carbon against 0.35 u/s, so ~1 060 s blown and twice that on natural
+  /// draught. Waited for with <see cref="ColdBlastFurnaceRig.RunUntil"/>, never sampled at a fixed offset.
   /// </summary>
   private const int BurnoutSeconds = 2400;
 
   #region The whole process, emergent
 
   [Fact]
-  public void Charge_light_melt_tap_yields_pig_and_slag_into_their_canals()
-  {
+  public void Charge_light_melt_tap_yields_pig_and_slag_into_their_canals() {
     // A coke-rich burden is what makes a cold furnace work: with no cowper on the line every degree
     // above iron's melt line has to come out of the charge. 30 % coke clears the ~23.9 % break-even.
     var scene = ColdBlastFurnaceScenes.Complete();
@@ -79,9 +51,8 @@ public class ColdBlastFurnaceScenarioTests
     );
     Assert.Equal(FurnaceState.Idle, scene.State);
 
-    // Charged, blown, and run until it has actually rendered metal rather than for a fixed stretch - see
-    // CampaignSeconds. Waited on the product, not on the state: entering Melting and having melted
-    // something are now different moments, because the burden still has to arrive at the raceway hot.
+    // Waited on the product, not on the state: entering Melting and having melted something are different
+    // moments, because the burden still has to arrive at the raceway hot.
     Assert.True(
       scene.RunUntil(s => s.MoltenIron > 0f, CampaignSeconds) > 0,
       "a coke-rich cold furnace should render pig within a campaign"
@@ -103,8 +74,14 @@ public class ColdBlastFurnaceScenarioTests
 
     scene.RunLive(30);
 
-    Assert.True(scene.IronCanalUnits > 0, "pig should have reached the canal start");
-    Assert.True(scene.SlagCanalUnits > 0, "slag should have reached its own canal start");
+    Assert.True(
+      scene.IronCanalUnits > 0,
+      "pig should have reached the canal start"
+    );
+    Assert.True(
+      scene.SlagCanalUnits > 0,
+      "slag should have reached its own canal start"
+    );
     // The blast furnace makes pig iron, not plain iron - plain iron is a Bessemer over-blow product.
     Assert.Contains("pigiron", scene.IronCanalMetal);
     Assert.DoesNotContain("ingot-iron", scene.IronCanalMetal);
@@ -116,22 +93,13 @@ public class ColdBlastFurnaceScenarioTests
   #region Firing
 
   /// <summary>
-  /// <b>There is no quantity threshold on ignition.</b>
-  /// <para>
-  /// A shaft derives its state from what is in front of its tuyeres - a complete raceway course, and
-  /// <b>carbon</b> in it - so 319 units of perfectly good burden-and-coke laid across every column
-  /// lights exactly as 320 does, and it should. A quantity gate would pin a tunable, not a behaviour.
-  /// </para>
-  /// <para>
-  /// What genuinely keeps a full shaft dark is having <b>nothing that can burn</b> at the raceway. That
-  /// is the honest half, it needs no number, and it is the half a stamped-coke reading would get wrong: this
-  /// scene's burden carries a 30 % coke <em>stamp</em>, so a furnace that took its carbon from the stamp
-  /// rather than from the bands would light here.
-  /// </para>
+  /// Ignition has no quantity threshold: a shaft derives its state from what is in front of its tuyeres - a
+  /// complete raceway course with carbon in it. What keeps a full shaft dark is having nothing that can
+  /// burn there. The scene's burden still carries a 30 % coke stamp, so a furnace reading its carbon off
+  /// the stamp rather than off the bands would light here.
   /// </summary>
   [Fact]
-  public void A_full_shaft_with_no_coke_at_its_raceway_never_lights()
-  {
+  public void A_full_shaft_with_no_coke_at_its_raceway_never_lights() {
     var noFuel = ColdBlastFurnaceScenes.NoCokeAtTheRaceway();
     Assert.True(noFuel.Core.StructureComplete);
 
@@ -148,12 +116,14 @@ public class ColdBlastFurnaceScenarioTests
     bool everLit = false;
     noFuel.RunLive(120, s => everLit |= s.State != FurnaceState.Idle);
 
-    Assert.False(everLit, "a shaft with no carbon in it should never catch at all");
+    Assert.False(
+      everLit,
+      "a shaft with no carbon in it should never catch at all"
+    );
     Assert.Equal(FurnaceState.Idle, noFuel.State);
 
-    // The control, and it is the whole case: the same furnace charged with the same burden at the same
-    // grade - but laid as real rounds, so the coke is its own bands - catches on its first tick. Without
-    // it this passes just as well on a furnace that could never light at all.
+    // The control: the same burden at the same grade, laid as real rounds so the coke is its own bands,
+    // catches on its first tick. Without it this passes on a furnace that could never light at all.
     var lit = ColdBlastFurnaceScenes.Complete();
     Assert.True(lit.CokeUnits > 0);
     lit.RunLive(2);
@@ -161,31 +131,18 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   /// <summary>
-  /// <b>The ignition gate is positional, not a quantity</b> (<c>docs/design/layered-charge.md</c> § <i>The ignition
-  /// sequence, fully specified</i>): the raceway course must be complete - a charge pile standing on
-  /// <b>every</b> column - or a tuyere has nothing to blow into.
-  /// <para>
-  /// It is a fraction of capacity numerically and must never be <em>expressed</em> as one. "Charge ≥ N
-  /// units" and "every column has charge at the raceway" agree on a full course and disagree everywhere
-  /// else, and this scene is the everywhere-else: three times the fire threshold, piled into one column,
-  /// with eight of the nine tuyeres facing empty air.
-  /// </para>
-  /// <para>
-  /// The requirement is the furnace's own column count - nine here, one on the cupola - so a redrawn
-  /// layout updates it for free and there is no constant to tune or to drift.
-  /// </para>
+  /// The ignition gate is positional, not a quantity (<c>docs/design/layered-charge.md</c>, section "The
+  /// ignition sequence, fully specified"): a charge pile must stand on every column. This scene piles three
+  /// times the fire threshold into one, leaving eight of the nine tuyeres facing empty air. The requirement
+  /// is the furnace's own column count, so a redrawn layout updates it and there is no constant to tune.
   /// </summary>
   [Fact]
-  public void A_shaft_piled_into_ONE_column_never_lights_however_much_is_in_it()
-  {
+  public void A_shaft_piled_into_ONE_column_never_lights_however_much_is_in_it() {
     var tower = ColdBlastFurnaceScenes.OneTallColumn();
 
     Assert.True(tower.Core.StructureComplete);
-    // This compared against `BlastMixRequiredToFire` (320) until that key was deleted - "the scene must
-    // clear the threshold, or it would be testing the quantity gate". There is no quantity gate left to
-    // clear; ignition is positional and pneumatic. The premise the case still needs is that the shaft is
-    // genuinely well charged, so a failure to light cannot be read as an empty furnace - stated against the shaft's
-    // own capacity, which is the only "how much" number left.
+    // The premise: the shaft is genuinely well charged, so failing to light cannot be read as an empty
+    // furnace. Stated against the shaft's own capacity.
     Assert.True(
       tower.ColumnUnits > tower.ShaftCapacityUnits / 4,
       $"the scene must stand a substantial charge, or it proves nothing; "
@@ -196,43 +153,33 @@ public class ColdBlastFurnaceScenarioTests
     bool everLit = false;
     tower.RunLive(120, s => everLit |= s.State != FurnaceState.Idle);
 
-    Assert.False(everLit, "a shaft with eight empty columns should never catch");
+    Assert.False(
+      everLit,
+      "a shaft with eight empty columns should never catch"
+    );
 
-    // The control, and it is the whole case: the same total, spread into a complete course, lights at
-    // once. Without it this passes just as well on a furnace that can never light at all.
+    // The control: the same total, spread into a complete course, lights at once.
     var course = ColdBlastFurnaceScenes.Complete(charge: tower.ColumnUnits);
     course.RunLive(2);
     Assert.Equal(FurnaceState.Firing, course.State);
   }
 
   /// <summary>
-  /// <b>A stopped blower does not snuff the fire - it throttles it.</b> This case once asserted the
-  /// opposite ("an unblown furnace should be snuffed by the starvation disruption"), and the
-  /// inversion is the point.
-  /// <para>
-  /// Air is the reagent, so what the blast decides is the <b>rate</b>: cut it and the furnace falls back to
-  /// natural draught, which burns its carbon at <c>BfNaturalDraughtFactor</c> of the blown rate and settles
-  /// well below iron's melt line. It leaves Melting, it renders nothing, and it goes on quietly eating its
-  /// own campaign - which is a far worse outcome for the player than going out, and the correct one.
-  /// <c>docs/design/layered-charge.md</c> § <i>What sets the rate: the blast</i>.
-  /// </para>
-  /// <para>
-  /// The two failure modes it must not be confused with are elsewhere: a <b>choke</b> (exhaust sealed) is
-  /// instant death, and a <b>breach</b> is this same natural-draught burn with the walls gone. A stopped
-  /// blower is neither - the shaft is intact and the fire has all the fuel it started with.
-  /// </para>
+  /// A stopped blower throttles the fire rather than snuffing it. Air is the reagent, so the blast sets the
+  /// rate: cut it and the furnace falls back to natural draught at <c>BfNaturalDraughtFactor</c> of the
+  /// blown rate, settles below iron's melt line, renders nothing and goes on eating its campaign. See
+  /// <c>docs/design/layered-charge.md</c>, section "What sets the rate: the blast".
   /// </summary>
   [Fact]
-  public void Cutting_the_blast_takes_a_melting_furnace_back_out_of_melting()
-  {
+  public void Cutting_the_blast_takes_a_melting_furnace_back_out_of_melting() {
     var scene = ColdBlastFurnaceScenes.Complete();
     Assert.True(
       scene.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds) > 0,
       "the furnace should have reached Melting on blast"
     );
 
-    // The control comes first, on the same furnace: with the blowers still on it sails through a long
-    // window without ever leaving Melting.
+    // The control comes first, on the same furnace: with the blowers still on it holds a long window
+    // without ever leaving Melting.
     const int window = 120;
     scene.RunLive(window);
     Assert.Equal(FurnaceState.Melting, scene.State);
@@ -243,28 +190,22 @@ public class ColdBlastFurnaceScenarioTests
     int coke = scene.CokeUnits;
     scene.CutBlast();
 
-    // Watched second by second rather than read at the end: "not Melting at the end" would be satisfied by
-    // a furnace that dipped out and melted again, which is the thing being denied.
-    // The watch is armed only once it has actually left Melting, and the pool is banked at that same
-    // instant. The tuyere mains still hold the last second of blast when the blowers stop, so the first
-    // tick or two after the cut legitimately still melt - a furnace does not lose its air the instant a
-    // crank stops turning, and pinning the pool from before the cut would be asserting that it does.
+    // Watched second by second: "not Melting at the end" would also hold for a furnace that dipped out and
+    // melted again. The watch arms once it has left Melting and banks the pool at that instant - the tuyere
+    // mains still hold the last second of blast, so the first tick or two after the cut legitimately melt.
     bool left = false;
     bool meltedAgain = false;
     float bankedAtCutoff = 0f;
     float grewAfter = 0f;
     scene.RunLive(
       window,
-      s =>
-      {
-        if (s.State != FurnaceState.Melting)
-        {
+      s => {
+        if (s.State != FurnaceState.Melting) {
           if (!left)
             bankedAtCutoff = s.MoltenIron;
           left = true;
           grewAfter = Math.Max(grewAfter, s.MoltenIron - bankedAtCutoff);
-        }
-        else if (left)
+        } else if (left)
           meltedAgain = true;
       }
     );
@@ -276,12 +217,14 @@ public class ColdBlastFurnaceScenarioTests
       scene.Temp < IwexValues.BfIronMeltingPoint,
       $"natural draught should sit below the melt line; was {scene.Temp} C"
     );
-    Assert.True(bankedAtCutoff > 0f, "it should have banked real pig before the blast went");
+    Assert.True(
+      bankedAtCutoff > 0f,
+      "it should have banked real pig before the blast went"
+    );
     Assert.Equal(0f, grewAfter, 3); // and rendered nothing at all once it had fallen out
 
     // Still alight, and still spending. A frozen furnace and an extinguished one look identical from
-    // outside, so consumption is the only observable that separates "throttled" from "out" - the same
-    // assertion the breach case turns, for the same reason.
+    // outside, so consumption is the only observable that separates "throttled" from "out".
     Assert.NotEqual(FurnaceState.Idle, scene.State);
     Assert.True(
       scene.CokeUnits < coke,
@@ -294,27 +237,13 @@ public class ColdBlastFurnaceScenarioTests
   #region Melting
 
   /// <summary>
-  /// The taught cold/hot trade, not a bug. The <c>standard</c> grade (20 % coke) is the reference the whole
-  /// heat balance is calibrated at; on cold blast it settles at ~1420 C against a 1482 C melt line and never
-  /// crosses it. The furnace announces exactly that through <c>bf-info-heatstall</c> ("Needs {0} - add coke
-  /// or hot blast") and shows T_process against the melt line every tick.
-  /// <para>
-  /// <b>And now it ends, which the flat model could not express.</b> A furnace whose burden never melts
-  /// never makes room for the column to descend, so the fire eats the carbon it can <em>reach</em> and then
-  /// finds burden where the next coke course should be. That is the <b>chill</b> - hanging, the most famous
-  /// way a real blast furnace goes wrong - and it arrives here as an outcome rather than as a rule: nothing
-  /// in the code names it, it is what "descent is a consequence, never a rate" produces.
-  /// <c>docs/design/layered-charge.md</c> § <i>The chill</i>.
-  /// </para>
-  /// <para>
-  /// The window is therefore <b>waited for</b>, never fixed. This case used to run a flat 600 s and assert
-  /// <c>Firing</c> at the end, which is a claim about a duration - and the duration moved the moment
-  /// campaign length became "how much carbon is charged" instead of a timer.
-  /// </para>
+  /// The cold/hot trade: the <c>standard</c> grade (20 % coke) is the heat balance's calibration point and
+  /// on cold blast settles at ~1420 C against a 1482 C melt line, reporting <c>bf-info-heatstall</c>. A
+  /// burden that never melts makes no room for the column to descend, so the fire eats what carbon it can
+  /// reach and chills. See <c>docs/design/layered-charge.md</c>, section "The chill".
   /// </summary>
   [Fact]
-  public void A_standard_burden_lights_holds_and_never_melts()
-  {
+  public void A_standard_burden_lights_holds_and_never_melts() {
     var stalled = ColdBlastFurnaceScenes.StandardBurden();
 
     Assert.True(
@@ -329,14 +258,16 @@ public class ColdBlastFurnaceScenarioTests
     int lived = stalled.RunUntil(
       s => s.State == FurnaceState.Idle,
       BurnoutSeconds,
-      s =>
-      {
+      s => {
         hottest = Math.Max(hottest, s.Temp);
         everMelted |= s.State == FurnaceState.Melting;
       }
     );
 
-    Assert.False(everMelted, "a standard burden must never reach Melting on cold blast");
+    Assert.False(
+      everMelted,
+      "a standard burden must never reach Melting on cold blast"
+    );
     Assert.True(
       hottest < IwexValues.BfIronMeltingPoint,
       $"a standard burden should hold below the melt line, peaked at {hottest} C"
@@ -344,83 +275,81 @@ public class ColdBlastFurnaceScenarioTests
     Assert.Equal(0f, stalled.MoltenIron, 3);
     Assert.Equal(0f, stalled.MoltenSlag, 3);
 
-    // ...and it is a chill, not a spent campaign: the fire stopped with burden still standing in the shaft
-    // and coke it could no longer reach. A furnace that had simply burnt its charge would end empty.
+    // ...and it is a chill, not a spent campaign: the fire stopped with burden still standing in the shaft.
+    // A furnace that had simply burnt its charge would end empty.
     Assert.True(lived > 0, "a chilled furnace should eventually go out");
     Assert.True(
       stalled.ColumnUnits > 0,
       "the chilled column should still be standing there, which is what makes it salvageable"
     );
 
-    // The player is told why, rather than being left with a furnace that silently does nothing. Read on a
-    // fresh scene still in the stall, because the one above has gone out.
+    // The player is told why. Read on a fresh scene still in the stall, because the one above has gone out.
     var naming = ColdBlastFurnaceScenes.StandardBurden();
     Assert.True(naming.RunUntil(s => s.State == FurnaceState.Firing, 30) > 0);
     naming.RunLive(30);
     Assert.Equal(naming.Heat.TProcess, naming.Temp, 1); // arrived at the balance, not still climbing
     Assert.Contains(IwexLang.BfInfoHeatstall, naming.CoreInfo());
 
-    // The control: nothing about the scene stops a furnace melting - only the burden does. The same
-    // rig charged with coke-rich burden crosses into Melting inside the same window.
+    // The control: the same rig charged with coke-rich burden crosses into Melting inside the same window,
+    // so what holds the stalled furnace below the line is the burden and nothing about the scene.
     var melting = ColdBlastFurnaceScenes.Complete();
     Assert.True(
-      melting.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds) > 0
+      melting.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds)
+        > 0
     );
     Assert.Equal(FurnaceState.Melting, melting.State);
   }
 
   /// <summary>
-  /// Campaign length is <b>not</b> bounded by one shaft-full: a furnace is charged continuously while it
-  /// runs. Two identical furnaces, blown the same way; one is recharged when its carbon is about half gone,
-  /// the other is not. Nothing else differs, so the divergence at the end is the recharge and only the
-  /// recharge.
-  /// <para>
-  /// <b>What "the campaign" is measured in changed, and this case is where it shows.</b> It used to be
-  /// burden units against <c>DisruptionMixFloor</c> and windows counted in <c>ExtinguishThresholdDefault</c>
-  /// - a shaft that ran thin tripped a disruption and a countdown put it out. There is no countdown and no
-  /// floor on this branch: a lit shaft runs until its <b>carbon</b> is gone, so that is what the scene
-  /// halves, what the recharge has to restore, and what the control dies of.
-  /// </para>
+  /// Campaign length is not bounded by one shaft-full: a furnace is charged continuously while it runs.
+  /// Two identical furnaces, blown the same way; one is recharged when its carbon is about half gone, so
+  /// the divergence at the end is the recharge and nothing else. A lit shaft runs until its carbon is gone,
+  /// so carbon is what the scene halves, what the recharge restores and what the control dies of.
   /// </summary>
   [Fact]
-  public void Refilling_a_firing_furnace_extends_the_campaign()
-  {
+  public void Refilling_a_firing_furnace_extends_the_campaign() {
     var refilled = ColdBlastFurnaceScenes.Complete();
     var control = ColdBlastFurnaceScenes.Complete();
 
     Assert.True(
-      refilled.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds) > 0
+      refilled.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds)
+        > 0
     );
     Assert.True(
-      control.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds) > 0
+      control.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds)
+        > 0
     );
 
     int charged = refilled.CokeUnits;
     int half = charged / 2;
-    Assert.True(half > 0, "the scene must carry real carbon, or there is nothing to halve");
+    Assert.True(
+      half > 0,
+      "the scene must carry real carbon, or there is nothing to halve"
+    );
 
     // Burn until roughly half the carbon is gone.
-    Assert.True(refilled.RunUntil(s => s.CokeUnits <= half, CampaignSeconds) > 0);
-    Assert.True(control.RunUntil(s => s.CokeUnits <= half, CampaignSeconds) > 0);
+    Assert.True(
+      refilled.RunUntil(s => s.CokeUnits <= half, CampaignSeconds) > 0
+    );
+    Assert.True(
+      control.RunUntil(s => s.CokeUnits <= half, CampaignSeconds) > 0
+    );
     Assert.Equal(FurnaceState.Melting, refilled.State);
     Assert.Equal(FurnaceState.Melting, control.State);
 
     // The one difference: the player charges again.
     refilled.Recharge(refilled.ShaftCapacityUnits);
 
-    // The recharge has to be visible to the furnace, not merely present in the world. A machine that
-    // latched its charge at ignition - or that only ever let it fall - would coast through the window
-    // below on a stale number and pass everything after this line without ever crediting the new burden.
-    // One tick, one assertion, and that hole is shut.
+    // The recharge has to be visible to the furnace, not merely present in the world: a machine that
+    // latched its charge at ignition would coast through the window below on a stale number.
     refilled.RunLive(1);
     Assert.True(
       refilled.CokeUnits > half,
       $"the recharge should show up in the carbon the furnace can reach; still {refilled.CokeUnits}"
     );
 
-    // The window is the control's own life, not a constant: run the un-refilled furnace until it dies,
-    // then hold the refilled one for exactly that long. That makes "still melting" a claim measured against
-    // the very thing it is being compared with, and it cannot go stale when a rate is retuned.
+    // The window is the control's own life, not a constant, so "still melting" is measured against the
+    // thing it is compared with and cannot go stale when a rate is retuned.
     int controlLived = control.RunUntil(
       s => s.State == FurnaceState.Idle,
       BurnoutSeconds
@@ -443,7 +372,10 @@ public class ColdBlastFurnaceScenarioTests
     );
     Assert.Equal(FurnaceState.Melting, refilled.State);
     Assert.True(refilled.CokeUnits > 0, "and it still has carbon left to burn");
-    Assert.True(refilled.MoltenIron > 0f, "and it kept making pig the whole way");
+    Assert.True(
+      refilled.MoltenIron > 0f,
+      "and it kept making pig the whole way"
+    );
   }
 
   #endregion
@@ -451,38 +383,25 @@ public class ColdBlastFurnaceScenarioTests
   #region Tapping
 
   [Fact]
-  public void A_tap_installed_backwards_no_longer_completes_the_structure()
-  {
-    // This test once asserted the opposite, and the inversion is the point.
-    //
-    // The legend used to be the wildcard `iwex:furnace-tap-*`, so a tap fitted the wrong way round
-    // satisfied its cell and the furnace completed - the mistake was invisible at build time and only
-    // showed up at the tap, where the spout of an east-facing tap in the east wall aims one cell into
-    // the furnace's own base and the block refuses to open over nothing. A player got a furnace that
-    // built, lit, melted, and then silently would not drain.
-    //
-    // The redraw pinned the facing (`iwex:furnace-irontap-west`), so the wrong tap no longer satisfies
-    // the cell at all: the structure stays incomplete and the build outline keeps pointing at the one
-    // cell that is wrong. Failing loudly at build time is strictly better than failing quietly at the
-    // first tap, so the scene now proves the refusal rather than the workaround.
-    //
-    // The runtime half did not go uncovered - it moved down to where it belongs and is stated on the
-    // block itself, off any structure: BlastFurnaceTapTests.An_open_tap_over_nothing_pours_nothing and
-    // .An_open_tap_pours_into_the_cell_its_side_faces_away_from.
+  public void A_tap_installed_backwards_no_longer_completes_the_structure() {
+    // The tap cell's legend pins the facing (`iwex:furnace-irontap-west`), so a backwards tap does not
+    // satisfy the cell and the structure stays incomplete. A wildcarded facing would defer the failure to
+    // the first tap, where an east-facing tap in the east wall aims its spout into the furnace's own base.
     var wrong = ColdBlastFurnaceScenes.BackwardsIronTap();
     Assert.False(
       wrong.Core.StructureComplete,
       "a backwards tap must no longer satisfy the facing-pinned tap cell"
     );
 
-    // ...and it is the tap that is unsatisfied, not some unrelated cell the scene got wrong. Exactly
-    // one cell short, and the breakdown names the iron notch's own position - without this the test
-    // would pass just as well on a scene that had gone wrong somewhere else entirely.
+    // ...and it is the tap that is unsatisfied, not some unrelated cell: exactly one cell short, and the
+    // breakdown names the iron notch's own position.
     Assert.Equal(1, wrong.Structure.Missing);
-    Assert.Contains(wrong.IronTap.Pos.ToString(), wrong.Structure.MissingReport);
+    Assert.Contains(
+      wrong.IronTap.Pos.ToString(),
+      wrong.Structure.MissingReport
+    );
 
-    // The control: the identical scene with the tap the right way round completes and opens on the
-    // gesture the backwards one is never offered, so the difference is the facing and nothing else.
+    // The control: the identical scene with the tap the right way round completes and opens.
     var right = ColdBlastFurnaceScenes.Complete();
     Assert.True(right.Core.StructureComplete);
     Assert.True(right.OpenIronTap());
@@ -490,8 +409,7 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   [Fact]
-  public void A_full_canal_backs_the_pour_up_and_the_pool_stops_draining()
-  {
+  public void A_full_canal_backs_the_pour_up_and_the_pool_stops_draining() {
     var scene = ColdBlastFurnaceScenes.Complete();
     Assert.True(
       scene.RunUntil(s => s.State == FurnaceState.Melting, CampaignSeconds) > 0
@@ -505,8 +423,8 @@ public class ColdBlastFurnaceScenarioTests
     );
     Assert.Equal(scene.IronCanalCapacity, scene.IronCanalUnits);
 
-    // With the runout brim-full the pour is refused. The pool must be *held*, not silently swallowed:
-    // the furnace only gives up metal the canal actually accepted.
+    // With the runout brim-full the pour is refused. The pool must be held, not silently swallowed: the
+    // furnace only gives up metal the canal actually accepted.
     float pooled = scene.MoltenIron;
     scene.RunLive(20);
 
@@ -516,8 +434,7 @@ public class ColdBlastFurnaceScenarioTests
       $"a backed-up tap must not eat the pool; {scene.MoltenIron} vs {pooled}"
     );
 
-    // The control: clear the runout and the very next tick pours again, so the stall really was the
-    // full canal and not a tap that had quietly stopped working.
+    // The control: clear the runout and the very next tick pours again, so the stall was the full canal.
     scene.IronCanal.DrainMetal(scene.IronCanalCapacity);
     Assert.Equal(0, scene.IronCanalUnits);
     scene.RunLive(1);
@@ -528,25 +445,12 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   /// <summary>
-  /// F5: every other tap assertion in this suite is direction-only (<c>IronCanalUnits &gt; 0</c>,
-  /// <c>== 0</c>, <c>&gt;= IronCanalCapacity</c>) against a 50-unit canal that a multi-second run always
-  /// saturates regardless of the tap's actual per-tick rate - reachable in 5 ticks even at the pre-fix
-  /// hard-coded ceiling (<c>Ceiling(20 * TapIronStackFactor) = 12</c>/tick). Proven empirically:
-  /// setting <c>TapDrainPerTick</c> back to 20 left all nine existing cases in this
-  /// suite green.
-  /// <para>
-  /// This pins the rate itself, not just its direction: bank the pool well past a single tick's cap,
-  /// open the tap fresh (so the canal starts at exactly 0), then run <b>exactly one</b> production tick.
-  /// The canal must then read exactly <c>Ceiling(min(TapDrainPerTick, MoltenIron) * TapIronStackFactor)</c>
-  /// - at the shipped defaults (50, 0.6f) that is <b>31</b>, not the mathematically-clean 30 (see
-  /// <c>BlastFurnaceTapTests.Retuning_the_tap_rate_moves_the_drain_with_it</c> for why 0.6f rounds up
-  /// through <c>Math.Ceiling</c>) and nowhere near the pre-fix ceiling's 12. A future rework that
-  /// silently reintroduces a hard 20-unit cap fails this at 12, not 31.
-  /// </para>
+  /// Pins the tap's per-tick rate rather than its direction. One tick on a freshly opened tap over an empty
+  /// canal must drain <c>Ceiling(min(TapDrainPerTick, MoltenIron) * TapIronStackFactor)</c> - 31 at the
+  /// shipped 50 and 0.6f, not 30, since <c>Math.Ceiling</c> rounds up.
   /// </summary>
   [Fact]
-  public void A_freshly_opened_tap_drains_exactly_one_ticks_worth_not_a_hidden_ceiling()
-  {
+  public void A_freshly_opened_tap_drains_exactly_one_ticks_worth_not_a_hidden_ceiling() {
     var scene = ColdBlastFurnaceScenes.Complete();
     Assert.True(
       scene.RunUntil(s => s.MoltenIron > 200f, CampaignSeconds) > 0,
@@ -566,26 +470,13 @@ public class ColdBlastFurnaceScenarioTests
   #region What the blast meters
 
   /// <summary>
-  /// <b>Campaign length is arithmetic, and this is the case that pins the arithmetic.</b> A lit shaft
-  /// burns <c>BfRacewayCarbonPerTuyerePerSecond x tuyeres</c> of carbon a second at full blast, and it runs
-  /// until that carbon is gone - so how long a furnace lasts is what the player charged divided by how hard
-  /// it is being blown, with no timer in it anywhere.
-  /// <para>
-  /// <b>The tuyere count is the half nothing else covers</b>, and it was proved missing rather than
-  /// assumed: with the rate keyed per furnace instead of per tuyere, all five suites stayed green. A bigger
-  /// furnace being a <em>faster</em> furnace is the whole reason to build one, and it is exactly the kind of
-  /// claim that quietly stops being true - so it is asserted against the furnace's own scanned tuyere list
-  /// rather than against a literal, and a machine that stopped multiplying by it halves this number.
-  /// </para>
-  /// <para>
-  /// Measured over a window rather than a tick: coke is items, so a fuel band burns in whole units and a
-  /// single second usually spends none. <c>ColdBlastFurnaceRig</c> lays real rounds, so what is being
-  /// measured is a real charge burning down.
-  /// </para>
+  /// A lit shaft burns <c>BfRacewayCarbonPerTuyerePerSecond x tuyeres</c> of carbon a second at full blast
+  /// and runs until that carbon is gone, so campaign length is charge over blast with no timer in it. The
+  /// tuyere count comes from the furnace's own scanned list, not a literal. Measured over a window rather
+  /// than a tick, since a fuel band burns in whole units and a single second usually spends none.
   /// </summary>
   [Fact]
-  public void The_blast_meters_the_carbon_at_the_rate_per_tuyere_it_advertises()
-  {
+  public void The_blast_meters_the_carbon_at_the_rate_per_tuyere_it_advertises() {
     var scene = ColdBlastFurnaceScenes.Complete(charge: 0);
     Assert.Equal(2, scene.TuyereCount); // the cold furnace's drawing, so the expectation below is real
 
@@ -613,19 +504,13 @@ public class ColdBlastFurnaceScenarioTests
   #region Breach
 
   /// <summary>
-  /// <b>A furnace that loses its walls keeps burning.</b> <c>OnStructureLost</c> once called
-  /// <c>Extinguish()</c> - applying the <b>choke</b> behaviour (sealed and
-  /// starved, so it goes out) to its exact physical opposite. A furnace that loses its stack becomes a
-  /// bonfire in a brick ruin: opened to the air it draws harder and burns its coke off at open-air
-  /// temperature. A furnace whose <em>blast</em> fails is the one that dies, because a packed shaft has
-  /// almost no natural draught of its own. Two failure modes, and they are opposites.
-  /// <para>
-  /// <b>Nothing in any of the five suites asserted what a breached lit furnace does</b> before this.
-  /// </para>
+  /// A furnace that loses its walls keeps burning: opened to the air it draws harder and burns its coke off
+  /// at open-air temperature. A furnace whose blast fails is the one that dies, because a packed shaft has
+  /// almost no natural draught of its own. Breach and choke are opposite failure modes, so
+  /// <c>OnStructureLost</c> must not take the choke path through <c>Extinguish()</c>.
   /// </summary>
   [Fact]
-  public void A_breached_lit_furnace_keeps_burning_its_coke_and_makes_nothing()
-  {
+  public void A_breached_lit_furnace_keeps_burning_its_coke_and_makes_nothing() {
     var scene = ColdBlastFurnaceScenes.Complete();
     Assert.True(
       scene.RunUntil(s => s.MoltenIron > 0f, CampaignSeconds) > 0,
@@ -634,14 +519,17 @@ public class ColdBlastFurnaceScenarioTests
 
     scene.Breach();
     scene.RunLive(5);
-    Assert.False(scene.Core.StructureComplete, "the breach should be visible to the furnace");
+    Assert.False(
+      scene.Core.StructureComplete,
+      "the breach should be visible to the furnace"
+    );
 
     int coke = scene.ColumnUnits;
     float made = scene.MoltenIron;
     scene.RunLive(180);
 
-    // Still alight. A frozen furnace and an extinguished one look identical from the outside, so the
-    // assertion is that it is still consuming - that is the only observable that tells burning from both.
+    // Still alight. A frozen furnace and an extinguished one look identical from the outside, so
+    // consumption is the only observable that tells burning from both.
     Assert.NotEqual(FurnaceState.Idle, scene.State);
     Assert.True(
       scene.ColumnUnits < coke,
@@ -657,14 +545,10 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   [Fact]
-  public void A_breached_IDLE_furnace_stays_idle_and_cannot_be_lit_through_the_hole()
-  {
-    // The clause that keeps breach and choke distinguishable. Without it a player could knock a wall
-    // out of a cold furnace and light it through the gap, making "opened to the air" a strictly better
-    // way to run one.
-    // Staged on the permanently-incomplete scene rather than by breaching a complete one: the structure
-    // monitor only re-runs every few seconds, so a complete furnace lights on its first tick and is
-    // already burning by the time a breach could be noticed - which is correct, and untestable that way.
+  public void A_breached_IDLE_furnace_stays_idle_and_cannot_be_lit_through_the_hole() {
+    // The clause that keeps breach and choke distinguishable: without it a wall could be knocked out of a
+    // cold furnace and the furnace lit through the gap. Staged on the permanently-incomplete scene rather
+    // than by breaching a complete one, because the structure monitor only re-runs every few seconds.
     var scene = ColdBlastFurnaceScenes.BackwardsIronTap();
     Assert.False(scene.Core.StructureComplete);
     Assert.Equal(FurnaceState.Idle, scene.State);
@@ -680,8 +564,7 @@ public class ColdBlastFurnaceScenarioTests
   #region Extinguish
 
   [Fact]
-  public void The_pool_freezes_onto_the_hearth_rather_than_vanishing()
-  {
+  public void The_pool_freezes_onto_the_hearth_rather_than_vanishing() {
     var scene = ColdBlastFurnaceScenes.Complete();
     Assert.True(
       scene.RunUntil(s => s.MoltenIron > 0f, CampaignSeconds) > 0,
@@ -689,20 +572,14 @@ public class ColdBlastFurnaceScenarioTests
     );
 
     // Let the campaign run itself out, remembering the pool as of the last tick it was still lit - that is
-    // the metal the freeze has to account for.
-    //
-    // It used to be put out by cutting the blast, and that no longer works: a stopped blower throttles the
-    // fire to natural draught rather than snuffing it (see
-    // Cutting_the_blast_takes_a_melting_furnace_back_out_of_melting). What ends a campaign is the carbon
-    // running out, so the scene simply waits for it - with the taps shut, so the pool it made is still
-    // standing in the hearth when the fire dies, which is the situation the freeze exists for.
+    // the metal the freeze has to account for. A campaign ends when the carbon runs out, so the scene waits
+    // for it with the taps shut and the pool still standing in the hearth when the fire dies.
     float pooled = 0f;
     Assert.True(
       scene.RunUntil(
         s => s.State == FurnaceState.Idle,
         BurnoutSeconds,
-        s =>
-        {
+        s => {
           if (s.State != FurnaceState.Idle)
             pooled = s.MoltenIron;
         }
@@ -711,10 +588,8 @@ public class ColdBlastFurnaceScenarioTests
     );
     Assert.True(pooled > 0f);
 
-    // The pool froze across the bottom layer of the shaft as solid iron - not slag, not nothing.
-    // Three cells since the furnace redraw, not two: the crucible runs the full width of the
-    // hearth course now. Counting only the old pair left a third of the metal unaccounted for and the
-    // nugget total short - a wrong expectation that read exactly like a leaking freeze.
+    // The pool froze across the bottom layer of the shaft as solid iron - not slag, not nothing. Three
+    // cells, because the crucible runs the full width of the hearth course.
     var crucible = new[] { (-1, 1, 0), (0, 1, 0), (1, 1, 0) };
     foreach (var (x, y, z) in crucible)
       Assert.Equal(
@@ -722,8 +597,8 @@ public class ColdBlastFurnaceScenarioTests
         scene.BlockAtLocal(x, y, z).Code?.ToString()
       );
 
-    // ...and it carries the metal, rather than being a decorative block over a deleted pool. The
-    // cells together hold the whole pool at the configured units-per-nugget.
+    // ...and it carries the metal rather than being a decorative block over a deleted pool: the cells
+    // together hold the whole pool at the configured units-per-nugget.
     int nuggets = 0;
     foreach (var (x, y, z) in crucible)
       nuggets += Count(scene.BlockEntityAtLocal(x, y, z));
@@ -741,35 +616,26 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   [Fact]
-  public void Burnt_out_charge_comes_back_as_salvage_richer_in_coke_at_the_top()
-  {
-    // A furnace that goes out is a setback, not a total loss. The column is rewritten in place as
-    // spent charge: the ore and flux survive verbatim, and only the coke is burned out - by height,
-    // because the blast burned hardest at the tuyeres and never reached the top of the stack. The
-    // player digs the column out, adds fresh coke bands and charges it again.
-    //
-    // Run on the standard burden precisely because it never melts: with no pool there is no freeze,
-    // so both piles - including the one on the hearth floor - survive to be read.
+  public void Burnt_out_charge_comes_back_as_salvage_richer_in_coke_at_the_top() {
+    // The column is rewritten in place as spent charge: ore and flux survive verbatim and only the coke is
+    // burned out, by height, because the blast burned hardest at the tuyeres. Run on the standard burden
+    // because it never melts: with no pool there is no freeze, so both piles survive to be read.
     var scene = ColdBlastFurnaceScenes.StandardBurden();
     Assert.True(
       scene.RunUntil(s => s.State == FurnaceState.Firing, 30) > 0,
       "the furnace should have lit"
     );
 
-    // It is put out by the chill, with the blowers left running. A standard burden never melts, so its
-    // column never makes room to descend, so the fire eats the carbon it can reach and then finds burden
-    // where the next coke course should be - which leaves the whole shaft standing there to be salvaged,
-    // and is exactly the situation burn-out exists for. (Cutting the blast would only throttle it.)
+    // Put out by the chill, with the blowers left running: that leaves the whole shaft standing to be
+    // salvaged, which is the situation burn-out exists for. Cutting the blast would only throttle it.
     Assert.True(
       scene.RunUntil(s => s.State == FurnaceState.Idle, BurnoutSeconds) > 0,
       "a chilled furnace should go out"
     );
 
-    // Both piles are still there as charge piles - burned out, not destroyed and not slagged. (Stated
-    // as "is still a charge pile" rather than "is not slag": the latter is satisfied by an empty cell,
-    // so it would hold even if the whole column had been deleted.)
-    // `iwex:furnace-chargepile`, not `game:coalpile`, since the column cutover: the shaft's charge is
-    // the furnace's own and the block over it is a window onto it rather than a vanilla container.
+    // Both piles are still charge piles - burned out, not destroyed and not slagged. Stated as "is still a
+    // charge pile" rather than "is not slag", which an empty cell would also satisfy. The block is
+    // `iwex:furnace-chargepile`: the shaft's charge is the furnace's own, not a vanilla container.
     Assert.Equal(
       "iwex:furnace-chargepile",
       scene.BlockAtLocal(0, 1, 0).Code?.ToString()
@@ -791,14 +657,17 @@ public class ColdBlastFurnaceScenarioTests
     Assert.Equal(charged.Flux, bottom.Flux, 3);
     Assert.Equal(charged.Flux, top.Flux, 3);
 
-    // The gradient - the point of the case. Asserted as a relationship, plus a tie to the config keys
-    // themselves rather than to today's numbers, so retuning the retention pair moves the test with it.
+    // The gradient. Asserted as a relationship plus a tie to the config keys rather than to today's
+    // numbers, so retuning the retention pair moves the test with it.
     Assert.True(
       top.Fuel > bottom.Fuel,
       $"the top of the shaft should keep more coke than the bottom; "
         + $"top {top.Fuel} vs bottom {bottom.Fuel}"
     );
-    Assert.True(top.Fuel < charged.Fuel, "even the top of the column loses coke");
+    Assert.True(
+      top.Fuel < charged.Fuel,
+      "even the top of the column loses coke"
+    );
     Assert.Equal(
       charged.Fuel * IwexValues.BfBurnoutFuelRetainedTop,
       top.Fuel,
@@ -812,37 +681,17 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   /// <summary>
-  /// Fixed production defect (Phase 1 fix wave, F2) - the salvage a dead furnace owes the player used to
-  /// be destroyed geometrically if nobody came back for it immediately.
-  /// <para>
-  /// <c>Extinguish</c> leaves the shaft exactly as it was: full, and (before the fix) with every pile
-  /// still alight. <c>BlastmixPiles.ReleaseFromFurnace</c> (<c>CoalPileBlastmixPatches.cs</c>) reset the
-  /// pile's burn timer but never cleared <c>burning</c>, and the ignition gate in
-  /// <c>BlockEntityFurnaceCore.OnProductionTick</c> asks only for
-  /// <c>Idle &amp;&amp; StructureComplete &amp;&amp; _cachedIsFull &amp;&amp; !IsChoked</c> plus an
-  /// all-lit shaft - so the furnace re-ignited on the <b>very next tick</b>. With no blast it starved
-  /// out again one extinguish grace later, and <c>Extinguish → ExtinguishResidue → BurnOutCharge</c>
-  /// multiplied the remaining coke by <c>retained</c> a second time. And a third.
-  /// </para>
-  /// <para>
-  /// The burden used to decay as <c>fuel × retained^n</c>, one power per relight cycle: a stalled standard
-  /// burden left for five minutes returned essentially no coke at all - while <c>bf-info-burnedout</c>
-  /// was still telling the player to dig the column out and re-coke it. The loop was normally invisible
-  /// because a furnace that had a molten pool freezes it onto the hearth, which breaks the structure
-  /// and stops the production tick; a furnace that never melted (this one) had nothing to freeze and
-  /// oscillated indefinitely.
-  /// </para>
-  /// <para>
-  /// Fix: <c>ReleaseFromFurnace</c> now also calls <c>pile.Extinguish()</c> when the pile is still
-  /// burning, so a released pile's own fire goes out with the furnace and the ignition gate cannot
-  /// find an already-lit shaft on the next tick. The invariant asserted here is the honest one -
-  /// <b>burn-out is applied once</b>, so the salvage a player finds does not depend on how fast they ran
-  /// back to the furnace.
-  /// </para>
+  /// Burn-out is applied once, so the salvage does not depend on how fast the player came back for it.
+  /// <c>Extinguish</c> leaves the shaft full, so <c>BlastmixPiles.ReleaseFromFurnace</c>
+  /// (<c>CoalPileBlastmixPatches.cs</c>) has to call <c>pile.Extinguish()</c> on a released pile that is
+  /// still burning: otherwise an already-lit shaft re-ignites on the next tick and each
+  /// <c>Extinguish → ExtinguishResidue → BurnOutCharge</c> cycle multiplies the remaining coke by
+  /// <c>retained</c> again, decaying the burden as <c>fuel × retained^n</c>. Runs on the standard burden: a
+  /// furnace that made a pool freezes it, which breaks the structure and stops the tick, while one that
+  /// never melted can oscillate indefinitely.
   /// </summary>
   [Fact]
-  public void A_furnace_left_alone_after_it_goes_out_keeps_burning_its_own_salvage()
-  {
+  public void A_furnace_left_alone_after_it_goes_out_keeps_burning_its_own_salvage() {
     var scene = ColdBlastFurnaceScenes.StandardBurden();
     Assert.True(scene.RunUntil(s => s.State == FurnaceState.Firing, 30) > 0);
     Assert.True(
@@ -859,10 +708,9 @@ public class ColdBlastFurnaceScenarioTests
 
     Assert.Equal(FurnaceState.Idle, scene.State);
     Assert.Equal(owed.Fuel, scene.SalvageAtLocal(0, 5, 0).Fuel, 5);
-    // And the coke bands are untouched too, which the stamp alone cannot say. Burn-out zeroes the carbon
-    // at the raceway (BfBurnoutFuelRetainedBottom is 0) precisely so a dead furnace cannot re-derive itself
-    // alight off its own salvage - and this is the assertion that the gate holds for the whole idle stretch
-    // rather than only on the tick it was applied.
+    // And the coke bands are untouched too, which the stamp alone cannot say. Burn-out zeroes the carbon at
+    // the raceway (BfBurnoutFuelRetainedBottom is 0) so a dead furnace cannot re-derive itself alight; this
+    // asserts the gate holds for the whole idle stretch, not only on the tick it was applied.
     Assert.Equal(cokeLeft, scene.CokeUnits);
   }
 
@@ -870,31 +718,15 @@ public class ColdBlastFurnaceScenarioTests
 
   #region Charcoal salvage
 
-  // Everything above this line lays coke. Charcoal has been accepted by the shaft all along - it lit,
-  // burned, made gas, descended, yielded iron at coke's exact rate and rendered pixel-for-pixel the same -
-  // so every one of those cases passes identically against a furnace whose fuel test is the literal
-  // `game:coke`. Now charcoal is priced (half the carbon a unit, `CarbonPerUnit`), and the
-  // cases here are the ones that cannot pass on a coke-only machine.
-  //
-  // The rig charges rounds in whatever fuel it is given (`ChargeWithFuel`), so a charcoal counterpart of
-  // any scene costs one call and no second fixture. `charge: -1` means "stand the furnace up but lay
-  // nothing" - the constructor charges in coke otherwise, and a shaft holding both would prove neither.
+  // Everything above this line lays coke, and every case above passes identically against a furnace whose
+  // fuel test is the literal `game:coke`. Charcoal is priced at half the carbon a unit (`CarbonPerUnit`),
+  // and the cases here are the ones that cannot pass on a coke-only machine.
 
   /// <summary>
-  /// The <b>exact geometric twin</b> of <see cref="ColdBlastFurnaceScenes.StandardBurden"/>: a full shaft of
-  /// rounds at <c>BfReferenceFuelFrac</c> by volume, laid in charcoal instead of coke. Same courses, same
-  /// band sizes, same column heights - the only difference in the whole scene is which item the fuel course
-  /// is made of, which is what lets the two be compared band for band.
-  /// <para>
-  /// 20 % by volume is <b>10 % by carbon</b> here, half of what the same rounds in coke are worth, so it
-  /// lights, holds well under the ~23.9 % cold break-even and chills. That is the honest charcoal campaign,
-  /// and it is what makes these cases readable: a furnace that never melts freezes no pool, so the whole
-  /// column is still standing to be dug out when the fire dies.
-  /// </para>
-  /// <para>
-  /// <c>charge: -1</c> means "stand the furnace up but lay nothing" - the constructor charges in coke
-  /// otherwise, and a shaft holding both fuels would prove neither.
-  /// </para>
+  /// The geometric twin of <see cref="ColdBlastFurnaceScenes.StandardBurden"/>: a full shaft of rounds at
+  /// <c>BfReferenceFuelFrac</c> by volume laid in charcoal, so the two compare band for band. 20 % by
+  /// volume is 10 % by carbon, under the ~23.9 % cold break-even, so the shaft lights and chills with its
+  /// column left standing. <c>charge: -1</c> lays nothing; the constructor would otherwise charge coke.
   /// </summary>
   private static ColdBlastFurnaceRig CharcoalShaft() =>
     ColdBlastFurnaceScenes
@@ -902,33 +734,25 @@ public class ColdBlastFurnaceScenarioTests
       .ChargeWithFuel(ColdBlastFurnaceRig.CharcoalCode);
 
   /// <summary>
-  /// <b>The no-was-lit-bit invariant, proven through the second fuel.</b> A shaft has no state machine:
-  /// what stops a dead furnace re-deriving itself alight on the very next tick is that burn-out leaves no
-  /// carbon at its own raceway (<c>BfBurnoutFuelRetainedBottom</c> is <b>0</b>) - not a flag, not a timer.
-  /// <c>A_furnace_left_alone_after_it_goes_out_keeps_burning_its_own_salvage</c> pins that, and pins it for
-  /// coke alone.
+  /// A dead furnace cannot re-derive itself alight, stated through the second fuel. A shaft has no state
+  /// machine: what stops the relight is that burn-out leaves no carbon at its own raceway
+  /// (<c>BfBurnoutFuelRetainedBottom</c> is 0). <c>BurnOutCharge</c> recognises a fuel band through
+  /// <c>IsFuelCode</c>; a coke literal would send a charcoal band down the legacy-burden branch, which
+  /// keeps every unit and leaves the raceway readable as carbon-bearing.
   /// <para>
-  /// <b>What that leaves open.</b> <c>BurnOutCharge</c> recognises a fuel band through
-  /// <c>IsFuelCode</c>; make that a coke literal and a charcoal band takes the <em>legacy burden</em> branch
-  /// instead - it carries <c>default</c> mix, so it is stamped with the standard-grade shares and keeps
-  /// <b>every unit</b>. The raceway still reads carbon-bearing, the furnace re-ignites on the next tick,
-  /// starves one grace later, and burn-out multiplies the retention again. And again. The relight
-  /// oscillation the fuel-pricing work closed, returning intact through the fuel nothing tested.
-  /// </para>
-  /// <para>
-  /// Watched second by second over the idle stretch rather than sampled at the end: an oscillating
-  /// furnace spends most of its time <c>Idle</c>, so "Idle twenty minutes later" is exactly what it looks
-  /// like. What separates the two is that nothing was <b>consumed</b> - the same observable the breach and
-  /// cut-blast cases turn, for the same reason.
+  /// Watched second by second rather than sampled at the end: an oscillating furnace spends most of its
+  /// time <c>Idle</c>, so what separates the two is that nothing was consumed.
   /// </para>
   /// </summary>
   [Fact]
-  public void A_charcoal_furnace_that_went_out_cannot_relight_off_its_own_salvage()
-  {
+  public void A_charcoal_furnace_that_went_out_cannot_relight_off_its_own_salvage() {
     var scene = CharcoalShaft();
 
     // The scene's own premises, so it cannot pass by holding no fuel or by holding coke after all.
-    Assert.True(scene.FuelBandUnits > 0, "the shaft must actually hold fuel bands");
+    Assert.True(
+      scene.FuelBandUnits > 0,
+      "the shaft must actually hold fuel bands"
+    );
     Assert.Equal(scene.FuelBandUnits * 0.5f, scene.CarbonUnits, 3); // priced at half of coke, per unit
 
     Assert.True(
@@ -945,7 +769,7 @@ public class ColdBlastFurnaceScenarioTests
       scene.FuelBandUnits > 0,
       "the top of the column should keep some charcoal, or there is no salvage to speak of"
     );
-    // ...and none of it is left in front of a tuyere, on any column - which is the whole gate.
+    // ...and none of it is left in front of a tuyere, on any column - which is the gate.
     foreach (ChargeColumn column in scene.Core.ShaftColumns.Values)
       Assert.False(
         column.Segments.Count > 0
@@ -960,27 +784,23 @@ public class ColdBlastFurnaceScenarioTests
     bool everLit = false;
     scene.RunLive(1200, s => everLit |= s.State != FurnaceState.Idle);
 
-    Assert.False(everLit, "a dead charcoal furnace must never re-derive itself alight");
+    Assert.False(
+      everLit,
+      "a dead charcoal furnace must never re-derive itself alight"
+    );
     Assert.Equal(FurnaceState.Idle, scene.State);
     Assert.Equal(fuel, scene.FuelBandUnits); // the bands are untouched, which the stamp alone cannot say
     Assert.Equal(carbon, scene.CarbonUnits, 3);
   }
 
   /// <summary>
-  /// The charcoal twin of <c>Burnt_out_charge_comes_back_as_salvage_richer_in_coke_at_the_top</c>: what a
-  /// dead furnace owes the player is the <b>burden's</b> ore and flux, verbatim, on the same height
-  /// gradient - and that promise is about the shaft, not about what was burned in it.
-  /// <para>
-  /// It is the <em>identical</em> gradient, asserted against the same two config keys rather than
-  /// against numbers, so a retention that ever grew a per-fuel branch fails here. <c>SalvageAtLocal</c>
-  /// steps over fuel bands through the production predicate, which is the reason this reads burden at all
-  /// on a charcoal furnace - a code literal there would answer <c>default</c> and every line below would be
-  /// comparing an empty struct against a burden, silently and in the direction that looks like lost salvage.
-  /// </para>
+  /// The charcoal twin of <c>Burnt_out_charge_comes_back_as_salvage_richer_in_coke_at_the_top</c>: a dead
+  /// furnace owes the player its ore and flux verbatim on the same height gradient, whatever was burned in
+  /// it. Asserted against the two config keys rather than numbers. <c>SalvageAtLocal</c> steps over fuel
+  /// bands through the production predicate, which is why this reads burden at all on charcoal.
   /// </summary>
   [Fact]
-  public void Charcoal_salvage_keeps_its_ore_and_flux_on_the_same_gradient_as_cokes()
-  {
+  public void Charcoal_salvage_keeps_its_ore_and_flux_on_the_same_gradient_as_cokes() {
     var scene = CharcoalShaft();
     Assert.True(
       scene.RunUntil(s => s.State == FurnaceState.Firing, 30) > 0,
@@ -1004,7 +824,11 @@ public class ColdBlastFurnaceScenarioTests
     Assert.Equal(charged.Flux, bottom.Flux, 3);
     Assert.Equal(charged.Flux, top.Flux, 3);
 
-    Assert.Equal(charged.Fuel * IwexValues.BfBurnoutFuelRetainedTop, top.Fuel, 4);
+    Assert.Equal(
+      charged.Fuel * IwexValues.BfBurnoutFuelRetainedTop,
+      top.Fuel,
+      4
+    );
     Assert.Equal(
       charged.Fuel * IwexValues.BfBurnoutFuelRetainedBottom,
       bottom.Fuel,
@@ -1016,20 +840,14 @@ public class ColdBlastFurnaceScenarioTests
 
   #region Charcoal is a trade, not an alias
 
-  // The cases above prove charcoal survives the shaft's machinery. These prove it is priced there.
-  // Every one of them is built to go red on two mutations and to say which: aliasing charcoal to coke
-  // (`CarbonPerUnit` returning a flat 1.0, or `Accumulate` counting bands), and ignoring it (the fuel
-  // predicate falling back to a `game:coke` literal). A case that survives both is testing the fixture.
-  //
-  // The ratio is read off the registry, never off `CarbonPerUnit` and never as a literal - see
-  // `CarbonOf`. `CarbonPerUnit` is the thing under test; an expectation that called it would move with the
-  // defect and the whole region would stay green on a furnace that had stopped telling the two apart.
+  // The cases above prove charcoal survives the shaft's machinery; these prove it is priced there. Each
+  // goes red on aliasing charcoal to coke and on ignoring it. The ratio is read off the registry, never
+  // off `CarbonPerUnit` - see `CarbonOf` - since `CarbonPerUnit` is the thing under test.
 
   /// <summary>
-  /// The carbon one charge unit of <paramref name="code"/> carries, in coke units - production's own
-  /// formula (the <c>fuel</c>-role value over <see cref="IwexValues.BfFuelCarbonReference"/>) recomputed
-  /// here from the registry, so a retune of either moves the expectation and a defect in
-  /// <c>CarbonPerUnit</c> does not.
+  /// The carbon one charge unit of <paramref name="code"/> carries, in coke units: the <c>fuel</c>-role
+  /// value over <see cref="IwexValues.BfFuelCarbonReference"/>, recomputed from the registry so a defect in
+  /// <c>CarbonPerUnit</c> does not move the expectation.
   /// </summary>
   private static float CarbonOf(string code) =>
     MaterialRoleRegistry.ValueOf(Roles.Fuel, new AssetLocation(code))
@@ -1037,46 +855,42 @@ public class ColdBlastFurnaceScenarioTests
 
   /// <summary>
   /// A complete, blown cold furnace charged to the brim with real rounds laid in <paramref name="fuel"/> at
-  /// <paramref name="fuelFrac"/> <b>by volume</b>. <c>charge: -1</c> stands the furnace up and lays
-  /// nothing; the constructor would otherwise charge it in coke, and a shaft holding both fuels would prove
-  /// neither.
+  /// <paramref name="fuelFrac"/> by volume. <c>charge: -1</c> lays nothing: the constructor would otherwise
+  /// charge coke, and a shaft holding both fuels would prove neither.
   /// </summary>
-  private static ColdBlastFurnaceRig Rounds(string fuel, float fuelFrac = 0.30f) =>
+  private static ColdBlastFurnaceRig Rounds(
+    string fuel,
+    float fuelFrac = 0.30f
+  ) =>
     ColdBlastFurnaceScenes
       .Complete(charge: -1, fuelFrac: fuelFrac)
       .ChargeWithFuel(fuel);
 
   /// <summary>
-  /// <b>The blast meters carbon, so two fuels of different worth burn away at different volumes.</b> Two
-  /// furnaces identical to the cell - same layout, same blast, same burden stamp, same fuel-band volume
-  /// charged - differing only in which fuel the rounds are laid with. Over the same window they spend the
-  /// same carbon, and the charcoal one loses fuel-band volume in exactly the ratio the registry declares.
+  /// The blast meters carbon, so two fuels of different worth burn away at different volumes. Two furnaces
+  /// identical to the cell, differing only in which fuel the rounds are laid with: over the same window
+  /// they spend the same carbon, and the charcoal one loses fuel-band volume in the registry's ratio. Equal
+  /// carbon says the blast is still the only throttle; the volume ratio says charcoal is priced at all.
   /// <para>
-  /// Both halves are needed and neither alone is enough. The equal <b>carbon</b> is what says the blast is
-  /// still the only throttle - a furnace that burned charcoal "faster" to compensate would have quietly
-  /// grown a second one. The volume <b>ratio</b> is what says charcoal is priced at all: alias it to coke and
-  /// the two shafts empty at the same rate, which is the old unpriced model exactly.
-  /// </para>
-  /// <para>
-  /// Measured over a window rather than a tick, and with both furnaces asserted still alight at the end of
-  /// it. A fuel band burns in whole units - a single second usually spends none - and a charcoal shaft at
-  /// this fraction chills a few minutes in, so a window that outran it would be comparing a burning furnace
-  /// against a dead one.
+  /// Measured over a window rather than a tick, with both furnaces asserted still alight at the end: a fuel
+  /// band burns in whole units, and a charcoal shaft at this fraction chills a few minutes in.
   /// </para>
   /// </summary>
   [Fact]
-  public void Charcoal_burns_at_its_own_carbon_value_not_cokes()
-  {
+  public void Charcoal_burns_at_its_own_carbon_value_not_cokes() {
     var coke = Rounds(ColdBlastFurnaceRig.CokeCode);
     var charcoal = Rounds(ColdBlastFurnaceRig.CharcoalCode);
 
     float ratio =
       CarbonOf(ColdBlastFurnaceRig.CokeCode)
       / CarbonOf(ColdBlastFurnaceRig.CharcoalCode);
-    Assert.True(ratio > 1f, "the registry must price coke above charcoal, or this claims nothing");
+    Assert.True(
+      ratio > 1f,
+      "the registry must price coke above charcoal, or this claims nothing"
+    );
 
-    // The premise the whole comparison rests on: the same volume of fuel stands in both shafts, carrying
-    // different carbon. Without this the case could pass on two furnaces charged differently.
+    // The premise: the same volume of fuel stands in both shafts, carrying different carbon. Without it the
+    // case could pass on two furnaces charged differently.
     Assert.True(coke.FuelBandUnits > 0, "the coke shaft must hold fuel bands");
     Assert.Equal(coke.FuelBandUnits, charcoal.FuelBandUnits);
     Assert.Equal(coke.CarbonUnits / ratio, charcoal.CarbonUnits, 2);
@@ -1103,7 +917,10 @@ public class ColdBlastFurnaceScenarioTests
     int charcoalBands = charcoalBandsBefore - charcoal.FuelBandUnits;
     float cokeCarbon = cokeCarbonBefore - coke.CarbonUnits;
     float charcoalCarbon = charcoalCarbonBefore - charcoal.CarbonUnits;
-    Assert.True(cokeBands > 0, "the coke furnace should have burned something in the window");
+    Assert.True(
+      cokeBands > 0,
+      "the coke furnace should have burned something in the window"
+    );
 
     // Same carbon: the blast is the throttle and it does not know which fuel it is burning.
     Assert.True(
@@ -1111,7 +928,7 @@ public class ColdBlastFurnaceScenarioTests
       $"the blast meters carbon, so both should spend the same; coke {cokeCarbon} vs charcoal {charcoalCarbon}"
     );
 
-    // Different volume, in the registry's own ratio. This is the assertion aliasing fails.
+    // Different volume, in the registry's own ratio - the assertion aliasing fails.
     float expectedBands = cokeBands * ratio;
     Assert.True(
       Math.Abs(charcoalBands - expectedBands) <= expectedBands * 0.05f,
@@ -1121,25 +938,13 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   /// <summary>
-  /// <b>The case that proves the feature.</b> These two furnaces' temperatures were once
-  /// <b>bit-identical</b>: charcoal was accepted, burned, made gas and yielded iron at coke's exact rate, so
-  /// a charge laid in it was a pure speed buff - identical flame, identical iron, half the campaign.
-  /// <para>
-  /// Same geometry, same 30 % fuel course by volume, same cold blast. The raceway reads 30 % of a coke round
-  /// as ~0.36 coke fraction and 30 % of a charcoal one as ~0.22, so the coke twin clears iron's melt line
-  /// and the charcoal twin settles roughly 200 °C under it. That is the trade, and it is a wall only at this
-  /// fraction - see <see cref="Charcoal_still_makes_a_viable_campaign_on_a_richer_course"/>.
-  /// </para>
-  /// <para>
-  /// Asserted on each furnace's <b>peak</b> over its run rather than on an end-of-window sample. The
-  /// raceway composition moves as courses arrive and a chilled furnace stops recomputing its balance
-  /// entirely, so a single sample would be reading whichever moment the window happened to end on - and
-  /// "never crossed the melt line" is a claim about the whole run, not about one second of it.
-  /// </para>
+  /// Same geometry, same 30 % fuel course by volume, same cold blast, differing only in the fuel: the
+  /// raceway reads ~0.36 coke fraction on a coke round and ~0.22 on a charcoal one, so the coke twin clears
+  /// iron's melt line and the charcoal twin settles roughly 200 °C under it. Asserted on each furnace's
+  /// peak over its run, since a chilled furnace stops recomputing its balance.
   /// </summary>
   [Fact]
-  public void A_charcoal_charge_at_the_same_band_fraction_runs_COOLER_than_a_coke_one()
-  {
+  public void A_charcoal_charge_at_the_same_band_fraction_runs_COOLER_than_a_coke_one() {
     var coke = Rounds(ColdBlastFurnaceRig.CokeCode);
     var charcoal = Rounds(ColdBlastFurnaceRig.CharcoalCode);
 
@@ -1149,14 +954,16 @@ public class ColdBlastFurnaceScenarioTests
     int lit = coke.RunUntil(
       s => s.State == FurnaceState.Melting,
       CampaignSeconds,
-      s =>
-      {
+      s => {
         cokeFactor = Math.Max(cokeFactor, s.Heat.FuelFactor);
         cokeTemp = Math.Max(cokeTemp, s.Temp);
         cokeMelted |= s.State == FurnaceState.Melting;
       }
     );
-    Assert.True(lit > 0, "the coke twin must reach Melting, or there is nothing to be cooler than");
+    Assert.True(
+      lit > 0,
+      "the coke twin must reach Melting, or there is nothing to be cooler than"
+    );
 
     // The charcoal twin gets the whole campaign window - strictly more time than the coke one needed - so
     // "it never got there" cannot be an artefact of a shorter run.
@@ -1165,8 +972,7 @@ public class ColdBlastFurnaceScenarioTests
     bool charcoalMelted = false;
     charcoal.RunLive(
       CampaignSeconds,
-      s =>
-      {
+      s => {
         charcoalFactor = Math.Max(charcoalFactor, s.Heat.FuelFactor);
         charcoalTemp = Math.Max(charcoalTemp, s.Temp);
         charcoalMelted |= s.State == FurnaceState.Melting;
@@ -1193,32 +999,28 @@ public class ColdBlastFurnaceScenarioTests
       $"the charcoal twin should never reach it; peaked at {charcoalTemp} C"
     );
     Assert.True(cokeMelted);
-    Assert.False(charcoalMelted, "a 30 % charcoal course must not melt on cold blast");
+    Assert.False(
+      charcoalMelted,
+      "a 30 % charcoal course must not melt on cold blast"
+    );
     Assert.Equal(0f, charcoal.MoltenIron, 3);
   }
 
   /// <summary>
-  /// The mirror of <c>A_full_shaft_with_no_coke_at_its_raceway_never_lights</c>: what a shaft needs in front
-  /// of its tuyeres is <b>carbon</b>, not coke, so a course laid entirely in charcoal catches on its first
-  /// tick with not a lump of coke anywhere in the furnace.
-  /// <para>
-  /// It carries its own arithmetic premise - the shaft's carbon is its fuel volume times <em>charcoal's</em>
-  /// weight, read off the registry - so it cannot pass on a machine that lit because it thought the bands
-  /// were coke. Lighting alone is the half that survives aliasing; the carbon is the half that does not.
-  /// </para>
-  /// <para>
-  /// Its control is <see cref="A_raceway_of_a_non_fuel_that_is_not_burden_never_lights"/>, built the same
-  /// way out of a material that carries no fuel role: the pair is what separates "the shaft reads the role"
-  /// from "the shaft lights on anything that is not burden".
-  /// </para>
+  /// The mirror of <c>A_full_shaft_with_no_coke_at_its_raceway_never_lights</c>: a shaft needs carbon in
+  /// front of its tuyeres, not coke, so a course laid entirely in charcoal catches on its first tick. It
+  /// carries its own arithmetic premise - fuel volume times charcoal's registry weight - so it cannot pass
+  /// on a machine that lit thinking the bands were coke.
   /// </summary>
   [Fact]
-  public void A_shaft_whose_only_raceway_fuel_is_CHARCOAL_still_lights()
-  {
+  public void A_shaft_whose_only_raceway_fuel_is_CHARCOAL_still_lights() {
     var scene = Rounds(ColdBlastFurnaceRig.CharcoalCode);
     Assert.True(scene.Core.StructureComplete);
 
-    Assert.True(scene.FuelBandUnits > 0, "the shaft must actually hold fuel bands");
+    Assert.True(
+      scene.FuelBandUnits > 0,
+      "the shaft must actually hold fuel bands"
+    );
     Assert.Equal(
       scene.FuelBandUnits * CarbonOf(ColdBlastFurnaceRig.CharcoalCode),
       scene.CarbonUnits,
@@ -1239,24 +1041,13 @@ public class ColdBlastFurnaceScenarioTests
   }
 
   /// <summary>
-  /// <b><c>RacewayIsLightable</c> was once literally "anything that is not burden"</b>, and
-  /// this is the case that keeps it from drifting back. A shaft charged in rounds of <b>raw anthracite</b> -
-  /// a real vanilla item, not burden, and deliberately <em>not</em> granted <c>Roles.Fuel</c> because raw
-  /// coal crushes to dust under a burden column (<c>docs/design/processes/coking.md</c>) - never catches.
-  /// <para>
-  /// It is the discriminator the no-coke scene cannot be. That one charges <b>burden</b>, so a furnace
-  /// whose fuel test had degraded to <c>!IsBurden</c> would still refuse it and still look correct. This one
-  /// is the everywhere-else: a full shaft, a complete raceway course, and something in front of every tuyere
-  /// that is neither burden nor fuel.
-  /// </para>
-  /// <para>
-  /// The control is the <b>charcoal</b> shaft rather than the coke one, deliberately: both are "not coke",
-  /// so the pair asks about the role and nothing else.
-  /// </para>
+  /// A shaft charged in rounds of raw anthracite - a vanilla item that is neither burden nor fuel, since
+  /// raw coal crushes to dust under a burden column (<c>docs/design/processes/coking.md</c>) - never
+  /// catches, so <c>RacewayIsLightable</c> cannot degrade to "anything that is not burden". Its control is
+  /// the charcoal shaft, not the coke one, so the pair asks about the role alone.
   /// </summary>
   [Fact]
-  public void A_raceway_of_a_non_fuel_that_is_not_burden_never_lights()
-  {
+  public void A_raceway_of_a_non_fuel_that_is_not_burden_never_lights() {
     const string anthracite = "game:ore-anthracite";
     Assert.False(
       BlockEntityFurnaceCore.IsFuelCode(anthracite),
@@ -1264,7 +1055,9 @@ public class ColdBlastFurnaceScenarioTests
     );
     Assert.False(Burden.IsCode(anthracite), "...and it is not burden either");
 
-    var scene = ColdBlastFurnaceScenes.Complete(charge: -1).ChargeWithFuel(anthracite);
+    var scene = ColdBlastFurnaceScenes
+      .Complete(charge: -1)
+      .ChargeWithFuel(anthracite);
     Assert.True(scene.Core.StructureComplete);
     Assert.True(scene.ColumnUnits > 0, "the shaft must actually be charged");
     Assert.Equal(0, scene.FuelBandUnits); // nothing in it is fuel, on the production predicate
@@ -1274,39 +1067,30 @@ public class ColdBlastFurnaceScenarioTests
     bool everLit = false;
     scene.RunLive(120, s => everLit |= s.State != FurnaceState.Idle);
 
-    Assert.False(everLit, "a raceway of a role-less material should never catch");
+    Assert.False(
+      everLit,
+      "a raceway of a role-less material should never catch"
+    );
     Assert.Equal(FurnaceState.Idle, scene.State);
 
-    // The control, and it is the whole case: the identical scene laid with charcoal - also not coke -
-    // catches on its first tick, so what the shaft is reading is the role and not a literal.
+    // The control: the identical scene laid with charcoal - also not coke - catches on its first tick, so
+    // what the shaft reads is the role and not a literal.
     var lit = Rounds(ColdBlastFurnaceRig.CharcoalCode);
     lit.RunLive(2);
     Assert.Equal(FurnaceState.Firing, lit.State);
   }
 
   /// <summary>
-  /// The positive half, so the trade is a <b>trade</b> and not a wall: charcoal buys a working campaign at a
-  /// richer course.
-  /// <para>
-  /// <b>The fraction is arithmetic, not a guess.</b> Cold, full and blown, the balance is
-  /// <c>T = BfCombustionBaseTemp + BfCombustionCokeGain·f - (BfRadiationLossBase + BfChargeLossFull)</c> =
-  /// <c>520 + 900·f</c>, so crossing the 1482 °C melt line needs <c>f ≥ 1.069</c>, i.e. a raceway coke
-  /// fraction of <b>0.239</b> (<c>f = 1 + 0.35·(F-0.2)/0.2</c>). A round of 32 units laid at volume fraction
-  /// φ is <c>u = ⌊32φ⌋</c> of fuel over <c>32-u</c> of burden, and the burden contributes only its ore and
-  /// flux, so the raceway reads <c>F = 0.5u / (0.5u + (1-φ)(32-u))</c> on charcoal. At φ = 0.30 that is
-  /// <b>0.218</b> - short, which is the cooler case above. Break-even lands near φ = 0.32; at
-  /// <b>φ = 0.40</b> (u = 12) it is <c>6/18 = 0.333</c>, giving <c>f = 1.233</c> and ~1630 °C, comfortably
-  /// clear. So charcoal costs about ten points of course richness, not the melt.
-  /// </para>
-  /// <para>
-  /// The arithmetic is then <b>checked live</b> rather than only stated: the furnace's own
-  /// <c>Heat.TProcess</c> has to clear the melt line, so a retune that moved any of those five keys fails
-  /// here with the reason visible instead of somewhere downstream.
-  /// </para>
+  /// The positive half: charcoal buys a working campaign at a richer course. Cold, full and blown the
+  /// balance is <c>T = 520 + 900·f</c>, so the 1482 °C melt line needs <c>f ≥ 1.069</c> - a raceway coke
+  /// fraction of 0.239, where <c>f = 1 + 0.35·(F-0.2)/0.2</c>. A round of 32 units at volume fraction φ is
+  /// <c>u = ⌊32φ⌋</c> of fuel over <c>32-u</c> of burden, so charcoal reads
+  /// <c>F = 0.5u / (0.5u + (1-φ)(32-u))</c>: 0.218 at φ = 0.30, break-even near 0.32, and 0.333 at
+  /// φ = 0.40 for <c>f = 1.233</c> and ~1630 °C. The furnace's own <c>Heat.TProcess</c> is asserted too, so
+  /// retuning any of those five keys fails here rather than downstream.
   /// </summary>
   [Fact]
-  public void Charcoal_still_makes_a_viable_campaign_on_a_richer_course()
-  {
+  public void Charcoal_still_makes_a_viable_campaign_on_a_richer_course() {
     // 0.40 by volume - worked out above, and roughly eight points over the charcoal break-even.
     var scene = Rounds(ColdBlastFurnaceRig.CharcoalCode, fuelFrac: 0.40f);
 
@@ -1324,8 +1108,8 @@ public class ColdBlastFurnaceScenarioTests
     Assert.True(scene.MoltenSlag > 0f, "and slag alongside it");
     Assert.Equal(0f, scene.Heat.PreheatGain, 1); // still cold blast - the charge did all of it
 
-    // And it melted on charcoal, priced as charcoal. Without this the case passes just as well on a
-    // furnace that had aliased the fuel to coke - which is precisely the machine that made 30 % melt too.
+    // And it melted on charcoal, priced as charcoal: without this the case passes on a furnace that had
+    // aliased the fuel to coke.
     Assert.True(
       scene.CarbonUnits < scene.FuelBandUnits,
       $"the fuel standing in this shaft must be worth less than coke per unit; "
@@ -1335,10 +1119,12 @@ public class ColdBlastFurnaceScenarioTests
     // It really does drain, so "viable" means a campaign and not a puddle.
     Assert.True(scene.OpenIronTap(), "the iron tap should open over its canal");
     scene.RunLive(30);
-    Assert.True(scene.IronCanalUnits > 0, "pig should have reached the canal start");
+    Assert.True(
+      scene.IronCanalUnits > 0,
+      "pig should have reached the canal start"
+    );
     Assert.Contains("pigiron", scene.IronCanalMetal);
   }
 
   #endregion
-
 }

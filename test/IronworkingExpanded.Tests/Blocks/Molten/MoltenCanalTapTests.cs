@@ -1,15 +1,15 @@
-using IronworkingExpanded;
 using System;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using Newtonsoft.Json.Linq;
+using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.Tests;
 
@@ -18,12 +18,10 @@ namespace IronworkingExpanded.Tests;
 /// and severs the run when closed. This covers the capacity, the open/closed connectivity gate,
 /// the barrel attach/detach content round trip, and the per-tick drain (capacity- and type-gated).
 /// </summary>
-public class MoltenCanalTapTests
-{
+public class MoltenCanalTapTests {
   private const string Iron = "game:ingot-iron";
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:ingot-copper", 1084f);
@@ -32,10 +30,8 @@ public class MoltenCanalTapTests
     return world;
   }
 
-  private static BlockEntityMoltenCanalTap Tap(TestWorld world)
-  {
-    var be = new BlockEntityMoltenCanalTap
-    {
+  private static BlockEntityMoltenCanalTap Tap(TestWorld world) {
+    var be = new BlockEntityMoltenCanalTap {
       Pos = new BlockPos(0, 0, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -61,8 +57,7 @@ public class MoltenCanalTapTests
   #region Capacity / connectivity
 
   [Fact]
-  public void Tap_capacity_is_half_the_default_rounded_up()
-  {
+  public void Tap_capacity_is_half_the_default_rounded_up() {
     var world = NewWorld();
     Assert.Equal(
       (int)Math.Ceiling(IwexValues.CanalDefaultUnitCapacity / 2.0),
@@ -71,8 +66,7 @@ public class MoltenCanalTapTests
   }
 
   [Fact]
-  public void A_closed_tap_severs_the_run_an_open_one_does_not()
-  {
+  public void A_closed_tap_severs_the_run_an_open_one_does_not() {
     var world = NewWorld();
     var be = Tap(world);
 
@@ -85,8 +79,7 @@ public class MoltenCanalTapTests
   }
 
   [Fact]
-  public void TryTogglePouring_flips_the_pour_state()
-  {
+  public void TryTogglePouring_flips_the_pour_state() {
     var world = NewWorld();
     var be = Tap(world);
 
@@ -101,8 +94,7 @@ public class MoltenCanalTapTests
   #region Barrel attach / detach
 
   [Fact]
-  public void AddBarrel_adopts_the_stacks_metal_and_capacity()
-  {
+  public void AddBarrel_adopts_the_stacks_metal_and_capacity() {
     var world = NewWorld();
     var be = Tap(world);
 
@@ -123,15 +115,14 @@ public class MoltenCanalTapTests
     Assert.False(be.IsMold);
     Assert.True(be.HasContent);
     Assert.Equal(20, be.BarrelCurrentUnits);
-    // The test barrel is a plain Block double (no injected maxUnits attribute), so the tap reads the
-    // config-default capacity - the same 800 the block's MaxUnits accessor would return in-game.
+    // The test barrel is a plain Block double with no maxUnits attribute, so the tap falls back to the
+    // config-default capacity.
     Assert.Equal(IwexValues.BarrelDefaultMaxUnits, be.BarrelMaxUnits);
     Assert.NotNull(be.BarrelMetalContent);
   }
 
   [Fact]
-  public void RemoveBarrel_returns_a_stack_carrying_the_preserved_contents()
-  {
+  public void RemoveBarrel_returns_a_stack_carrying_the_preserved_contents() {
     var world = NewWorld();
     var be = Tap(world);
     var barrelStack = new ItemStack(
@@ -173,8 +164,7 @@ public class MoltenCanalTapTests
     );
 
   [Fact]
-  public void OnServerTick_drains_cell_metal_into_a_parked_barrel()
-  {
+  public void OnServerTick_drains_cell_metal_into_a_parked_barrel() {
     var world = NewWorld();
     var be = Tap(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -190,8 +180,7 @@ public class MoltenCanalTapTests
   }
 
   [Fact]
-  public void OnServerTick_does_nothing_while_the_tap_is_closed()
-  {
+  public void OnServerTick_does_nothing_while_the_tap_is_closed() {
     var world = NewWorld();
     var be = Tap(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -206,8 +195,7 @@ public class MoltenCanalTapTests
   }
 
   [Fact]
-  public void OnServerTick_will_not_mix_a_different_metal_into_the_barrel()
-  {
+  public void OnServerTick_will_not_mix_a_different_metal_into_the_barrel() {
     var world = NewWorld();
     var be = Tap(world);
     be.PushMetal(20, Metal(world, Iron, 1400f), world.World);
@@ -232,11 +220,10 @@ public class MoltenCanalTapTests
 
   #region Cell solidify + chisel-clear
 
-  // The tap's own cell now clogs and is chiselled clear like a canal or the start block, instead of
-  // staying permanently liquid - so a run that goes cold with metal left in the tap can be recovered.
+  // The tap's own cell clogs and is chiselled clear like a canal cell, so a run that goes cold with
+  // metal left in the tap is recoverable.
   [Fact]
-  public void A_cold_tap_cell_solidifies_severs_and_can_be_cleared()
-  {
+  public void A_cold_tap_cell_solidifies_severs_and_can_be_cleared() {
     var world = NewWorld();
     world.RegisterItem("game:metalbit-iron"); // the chiselled-out solid drop
     var be = Tap(world);
@@ -256,8 +243,7 @@ public class MoltenCanalTapTests
   #region Serialization
 
   [Fact]
-  public void Tap_pour_and_content_flags_round_trip_through_the_tree()
-  {
+  public void Tap_pour_and_content_flags_round_trip_through_the_tree() {
     var world = NewWorld();
     var src = Tap(world);
     OpenTap(src);

@@ -5,41 +5,33 @@ using Vintagestory.API.Common;
 namespace ExpandedLib.Materials;
 
 /// <summary>
-/// Process-wide catalogue of material-role assignments (<see cref="MaterialRoleDef"/>) - the single
-/// surface the mixer, both hopper families and the furnace core consult instead of hardcoding
-/// <c>Collectible.Code.Path</c> equality to tell flux / fuel / ore / scrap / charge apart. Mirrors
-/// <see cref="Metals.MetalRegistry"/>: populated at <c>AssetsFinalize</c> by
-/// <see cref="MaterialRoleLoader"/> from every domain's <c>config/materialroles.json</c>, plus any
-/// registered code contributor (for the mod-gating JSON cannot express - see
-/// <see cref="RegisterContributor"/>). Kept world-free so it is unit-testable headless.
-/// <para>
-/// Matching mirrors <see cref="MaterialRoleDef"/>: an item has a role if any def under that role matches
-/// it by exact domain-normalised <see cref="MaterialRoleDef.Code"/> or by domain-blind
-/// <see cref="MaterialRoleDef.PathPrefix"/>. Empty registry ⇒ nothing has a role, so a machine that
-/// reads the registry before it loads (or a mis-ordered load) simply classifies nothing rather than
-/// throwing.
-/// </para>
+/// Process-wide catalogue of material-role assignments (<see cref="MaterialRoleDef"/>), consulted to
+/// tell flux, fuel, ore, scrap and charge apart. Populated at <c>AssetsFinalize</c> by
+/// <see cref="MaterialRoleLoader"/> from every domain's <c>config/materialroles.json</c> plus any
+/// contributor from <see cref="RegisterContributor"/>. An item has a role when a def under that role
+/// matches by exact domain-normalised <see cref="MaterialRoleDef.Code"/> or by domain-blind
+/// <see cref="MaterialRoleDef.PathPrefix"/>; a read before the load returns false rather than throwing.
 /// </summary>
-public static class MaterialRoleRegistry
-{
-  // role token (case-insensitive) -> the defs granting it. A role can be granted by several defs
-  // (e.g. fuel = coke + charcoal; ironore = the crushed-iron prefix + per-mod ore codes).
+public static class MaterialRoleRegistry {
+  // Role token (case-insensitive) -> the defs granting it. Several defs can grant one role: fuel is
+  // coke plus charcoal, ironore is the crushed-iron prefix plus per-mod ore codes.
   private static readonly Dictionary<string, List<MaterialRoleDef>> _byRole =
     new(StringComparer.OrdinalIgnoreCase);
 
-  // Code contributors run after the JSON overlay on every load, so a mod-gated registration
-  // (IronOreCompat's IsModEnabled branches) survives the loader's Clear and re-applies each world load.
+  // Code contributors run after the JSON overlay on every load, so a mod-gated registration survives
+  // the loader's Clear and re-applies on each world load.
   private static readonly List<Action<ICoreAPI>> _contributors = new();
 
   #region Registration
   /// <summary>Registers a role assignment. A def with no role, or with neither code nor path prefix,
   /// is ignored (it could never match).</summary>
-  public static void Register(MaterialRoleDef def)
-  {
+  public static void Register(MaterialRoleDef def) {
     if (
       def == null
       || string.IsNullOrEmpty(def.Role)
-      || (string.IsNullOrEmpty(def.Code) && string.IsNullOrEmpty(def.PathPrefix))
+      || (
+        string.IsNullOrEmpty(def.Code) && string.IsNullOrEmpty(def.PathPrefix)
+      )
     )
       return;
     if (!_byRole.TryGetValue(def.Role, out List<MaterialRoleDef>? list))
@@ -48,35 +40,37 @@ public static class MaterialRoleRegistry
   }
 
   /// <summary>Drops every registered role assignment. The loader clears before repopulating on each
-  /// world load (contributors are kept - they are re-invoked after the clear).</summary>
+  /// world load; contributors are kept and re-invoked after the clear.</summary>
   public static void Clear() => _byRole.Clear();
 
-  /// <summary>Registers a code contributor invoked (with the api) after the JSON overlay on every
-  /// <see cref="MaterialRoleLoader.Load"/> - the seam a mod uses for role registrations JSON cannot
-  /// express, e.g. gating on <c>ModLoader.IsModEnabled</c>. Call once from the mod's <c>Start</c>.</summary>
-  public static void RegisterContributor(Action<ICoreAPI> contributor)
-  {
+  /// <summary>Registers a code contributor invoked with the api after the JSON overlay on every
+  /// <see cref="MaterialRoleLoader.Load"/>, for role registrations JSON cannot express such as gating
+  /// on <c>ModLoader.IsModEnabled</c>. Call once from the mod's <c>Start</c>.</summary>
+  public static void RegisterContributor(Action<ICoreAPI> contributor) {
     if (contributor != null)
       _contributors.Add(contributor);
   }
 
-  /// <summary>Drops every registered contributor (test isolation only - the game registers once per process).</summary>
+  /// <summary>Drops every registered contributor. For test isolation only; the game registers once per
+  /// process.</summary>
   public static void ClearContributors() => _contributors.Clear();
 
-  /// <summary>Runs every registered contributor against <paramref name="api"/> (called by the loader
-  /// after clearing + overlaying JSON).</summary>
-  internal static void InvokeContributors(ICoreAPI api)
-  {
+  /// <summary>Runs every registered contributor against <paramref name="api"/>. Called by the loader
+  /// after clearing and overlaying the JSON.</summary>
+  internal static void InvokeContributors(ICoreAPI api) {
     foreach (Action<ICoreAPI> contributor in _contributors)
       contributor(api);
   }
   #endregion
 
   #region Lookup
-  /// <summary>True when <paramref name="loc"/> has role <paramref name="role"/> (by exact code or path prefix).</summary>
-  public static bool IsRole(string role, AssetLocation loc)
-  {
-    if (loc == null || !_byRole.TryGetValue(role, out List<MaterialRoleDef>? list))
+  /// <summary>True when <paramref name="loc"/> has role <paramref name="role"/>, by exact code or path
+  /// prefix.</summary>
+  public static bool IsRole(string role, AssetLocation loc) {
+    if (
+      loc == null
+      || !_byRole.TryGetValue(role, out List<MaterialRoleDef>? list)
+    )
       return false;
     string norm = Normalize(loc);
     foreach (MaterialRoleDef def in list)
@@ -90,11 +84,16 @@ public static class MaterialRoleRegistry
     stack?.Collectible?.Code != null && IsRole(role, stack.Collectible.Code);
 
   /// <summary>The <see cref="MaterialRoleDef.Value"/> of the first def of <paramref name="role"/> that
-  /// matches <paramref name="loc"/> and carries a value; <paramref name="fallback"/> when none does.</summary>
-  public static float ValueOf(string role, AssetLocation loc, float fallback = 1f)
-  {
-    if (loc != null && _byRole.TryGetValue(role, out List<MaterialRoleDef>? list))
-    {
+  /// matches <paramref name="loc"/> and carries a value, else <paramref name="fallback"/>.</summary>
+  public static float ValueOf(
+    string role,
+    AssetLocation loc,
+    float fallback = 1f
+  ) {
+    if (
+      loc != null
+      && _byRole.TryGetValue(role, out List<MaterialRoleDef>? list)
+    ) {
       string norm = Normalize(loc);
       foreach (MaterialRoleDef def in list)
         if (Matches(def, norm, loc.Path) && def.Value.HasValue)
@@ -104,7 +103,11 @@ public static class MaterialRoleRegistry
   }
 
   /// <summary>The value of the role a stack's collectible carries. Null-safe.</summary>
-  public static float ValueOf(string role, ItemStack? stack, float fallback = 1f) =>
+  public static float ValueOf(
+    string role,
+    ItemStack? stack,
+    float fallback = 1f
+  ) =>
     stack?.Collectible?.Code != null
       ? ValueOf(role, stack.Collectible.Code, fallback)
       : fallback;
@@ -117,8 +120,12 @@ public static class MaterialRoleRegistry
   #endregion
 
   #region Matching + normalisation (mirrors MetalRegistry)
-  // Code is exact + domain-normalised; PathPrefix is a domain-blind StartsWith on the path segment.
-  private static bool Matches(MaterialRoleDef def, string normLoc, string path) =>
+  // Code is exact and domain-normalised; PathPrefix is a domain-blind StartsWith on the path segment.
+  private static bool Matches(
+    MaterialRoleDef def,
+    string normLoc,
+    string path
+  ) =>
     (def.Code != null && Normalize(def.Code) == normLoc)
     || (
       def.PathPrefix != null
@@ -126,7 +133,8 @@ public static class MaterialRoleRegistry
     );
 
   // Domain-normalise so "lime" (defaulting to game) and "game:lime" key alike.
-  private static string Normalize(string code) => new AssetLocation(code).ToString();
+  private static string Normalize(string code) =>
+    new AssetLocation(code).ToString();
 
   private static string Normalize(AssetLocation loc) => loc.ToString();
   #endregion

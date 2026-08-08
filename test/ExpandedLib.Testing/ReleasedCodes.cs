@@ -8,31 +8,22 @@ using System.Collections.Generic;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// Every block code that has ever <b>shipped</b>, taken from the release artifacts in
-/// <c>dist/Releases/</c> rather than from memory or from the live registry.
+/// Every block code that has ever shipped, read from the release artifacts in <c>dist/Releases/</c>
+/// rather than from the live registry. This is the migration contract: a code in this list must
+/// still reach a live block after migration; a code absent from it never shipped and needs no
+/// migrator.
 /// <para>
-/// <b>This is the migration contract.</b> A code in this list must still reach a live block
-/// after migration, forever; a code that is not in it never shipped and needs no migrator at all.
-/// That second half is the useful one - it is what bounds a rename wave to the ~45 paths that
-/// actually escaped, instead of every block in the suite.
-/// </para>
-/// <para>
-/// <b>Only three mods have ever shipped</b> - <c>exlib</c>, <c>ppex</c> (which became lpex, with
-/// its HP half extracted to hpex and its pipe base to iwex) and <c>smex</c> (whose ironmaking half
-/// became iwex). There has never been a released <c>iwex</c>, <c>lpex</c> or <c>hpex</c> build, so
-/// every block added after those splits is unreleased and carries no migration debt.
-/// </para>
-/// <para>
-/// <c>exlib</c> 0.7.0 ships no blocktype JSON of its own - its structure filler is injected
-/// code-first - but the filler <b>is</b> present in released worlds, because the shipped ppex and
-/// smex multiblock layouts name it in their <c>blockNumbers</c>. It is listed here for that reason.
+/// Three mods have shipped: <c>exlib</c>, <c>ppex</c> (later lpex, with its HP half in hpex and its
+/// pipe base in iwex) and <c>smex</c> (whose ironmaking half became iwex); no iwex, lpex or hpex
+/// build has been released. <c>exlib</c> 0.7.0 ships no blocktype JSON, but its structure filler is
+/// in released worlds because the shipped ppex and smex layouts name it in <c>blockNumbers</c>.
 /// </para>
 /// </summary>
 public static class ReleasedCodes
 {
   /// <summary>One shipped blocktype: where it lived, its base code, and every concrete code it
-  /// expanded to. Property-sourced variant groups are sampled rather than enumerated (the game
-  /// holds their states), so <see cref="Codes"/> is representative for those, exact otherwise.</summary>
+  /// expanded to. Property-sourced variant groups are sampled rather than enumerated (the game holds
+  /// their states), so <see cref="Codes"/> is representative for those and exact otherwise.</summary>
   public sealed record Shipped(string Domain, string AssetPath, string BaseCode, string[] Codes);
 
   /// <summary>ppex 0.6.4 - 18 blocktypes, 288 concrete codes.</summary>

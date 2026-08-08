@@ -3,6 +3,7 @@ using System.Linq;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -10,45 +11,40 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
-/// The base molten-canal block: a self-orienting node of the "molten" network that
-/// carries liquid metal. Provides the orientation tables shared by every
-/// straight/bend/junction canal variant and handles open-end connector updates,
-/// solidified-metal drops, and spill sounds on break.
+/// The base molten-canal block: a self-orienting node of the "molten" network that carries liquid
+/// metal. Provides the orientation tables shared by every straight/bend/junction canal variant and
+/// handles open-end connector updates, solidified-metal drops, and spill sounds on break.
+/// See docs/design/machines/molten-canal.md.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
-{
+public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider {
   public override string NetworkType => "molten";
 
-  // AllowedOrientations is inherited from BlockNetworkNode, which derives it from this block's own code-first
-  // defs (resolved by runtime type) - so every canal endpoint subclass (start/tap/moldpedestal) gets the right
-  // map with no duplicated list.
+  // AllowedOrientations is inherited from BlockNetworkNode, which derives it from this block's own
+  // code-first defs resolved by runtime type, so every endpoint subclass gets its own map.
 
   #region Code-first definition
 
-  // The fill-geometry attributes read at runtime from the block's own attributes (file or injected def
-  // alike), replacing the JSON-scanned generated members - so the values live once, in the def.
+  // Fill geometry read at runtime from the block's own attributes, file-authored or injected alike, so
+  // the values live once in the def.
   public JsonObject? FillQuadsByLevel => Attributes?["fillQuadsByLevel"];
   public int FillStart => Attributes?["fillStart"].AsInt(14) ?? 14;
   public int FillHeight => Attributes?["fillHeight"].AsInt(1) ?? 1;
 
-  /// <summary>The molten-canal blocktypes, authored in C# (migrated from molten/canalbrick/* and
-  /// molten/canalcobblestone/*). One class backs 8 files: the 4 canal shapes (straight/bend/tjunction/
-  /// xjunction) each in a fire-brick and a cobblestone skin.</summary>
-  public static IEnumerable<ExBlockDef> Definitions(string domain)
-  {
+  /// <summary>The molten-canal blocktypes: the four canal shapes (straight, bend, tjunction, xjunction),
+  /// each in a fire-brick and a cobblestone skin.</summary>
+  public static IEnumerable<ExBlockDef> Definitions(string domain) {
     foreach (CanalSkin skin in CanalSkins)
       foreach (CanalTypeSpec type in CanalTypes)
         yield return CanalDef(domain, skin, type);
   }
 
-  // Protected so the endpoint subclasses (start/moldpedestal), which share the fire-brick + cobblestone
-  // skins, reuse the exact same material/sounds/texture/variant surface instead of re-declaring it.
+  // Protected so the endpoint subclasses (start, moldpedestal) reuse the same material, sounds, texture
+  // and variant surface.
   protected sealed record CanalSkin(
     string Folder,
     EnumBlockMaterial Material,
@@ -97,7 +93,12 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       HasPlaceSound: false,
       Variants: d =>
         d.VariantGroupFromProperties("rock", "block/rockwithdeposit")
-          .SkipVariants("*-halite-*", "*-scoria-*", "*-tuff-*", "*-travertine-*"),
+          .SkipVariants(
+            "*-halite-*",
+            "*-scoria-*",
+            "*-tuff-*",
+            "*-travertine-*"
+          ),
       Texture: d =>
         d.Texture("granite1", "game:block/stone/cobblestone/{rock}1")
     ),
@@ -110,7 +111,16 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       8,
       ["ns", "we"],
       "*-straight-*-ns",
-      new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 16 } },
+      new[]
+      {
+        new
+        {
+          x1 = 7,
+          z1 = 0,
+          x2 = 9,
+          z2 = 16,
+        },
+      },
       [("*-straight-*-ns", null), ("*-straight-*-we", 90)]
     ),
     new(
@@ -120,8 +130,20 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       "*-bend-*-nw",
       new[]
       {
-        new { x1 = 7, z1 = 0, x2 = 9, z2 = 9 },
-        new { x1 = 0, z1 = 7, x2 = 7, z2 = 9 },
+        new
+        {
+          x1 = 7,
+          z1 = 0,
+          x2 = 9,
+          z2 = 9,
+        },
+        new
+        {
+          x1 = 0,
+          z1 = 7,
+          x2 = 7,
+          z2 = 9,
+        },
       },
       [
         ("*-bend-*-nw", null),
@@ -137,8 +159,20 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       "*-tjunction-*-esw",
       new[]
       {
-        new { x1 = 0, z1 = 7, x2 = 16, z2 = 9 },
-        new { x1 = 7, z1 = 0, x2 = 9, z2 = 7 },
+        new
+        {
+          x1 = 0,
+          z1 = 7,
+          x2 = 16,
+          z2 = 9,
+        },
+        new
+        {
+          x1 = 7,
+          z1 = 0,
+          x2 = 9,
+          z2 = 7,
+        },
       },
       [
         ("*-tjunction-*-wne", null),
@@ -154,9 +188,27 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       "*-xjunction-*-nswe",
       new[]
       {
-        new { x1 = 0, z1 = 7, x2 = 16, z2 = 9 },
-        new { x1 = 7, z1 = 0, x2 = 9, z2 = 7 },
-        new { x1 = 7, z1 = 9, x2 = 9, z2 = 16 },
+        new
+        {
+          x1 = 0,
+          z1 = 7,
+          x2 = 16,
+          z2 = 9,
+        },
+        new
+        {
+          x1 = 7,
+          z1 = 0,
+          x2 = 9,
+          z2 = 7,
+        },
+        new
+        {
+          x1 = 7,
+          z1 = 9,
+          x2 = 9,
+          z2 = 16,
+        },
       },
       [("*-xjunction-*-nswe", null)]
     ),
@@ -183,11 +235,10 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       .EntityClass("iwex.BlockEntityMoltenCanal");
 
   /// <summary>
-  /// Builds the surface shared by every canal-family blocktype - a canal shape OR a start/moldpedestal
-  /// endpoint: the skin's material/sounds/texture/variant plus the common fill geometry, handbook grouping,
-  /// Lockable behavior, orientation group, per-orientation shapes and non-solid flags. The caller binds its
-  /// own <c>class</c>/<c>entityClass</c> (they differ per endpoint) and adds any extra attributes (the mold
-  /// pedestal's separate mold fill). Authored once instead of copied across the start/moldpedestal defs.
+  /// Builds the def surface shared by every canal-family blocktype, canal shape or endpoint alike: the
+  /// skin's material, sounds, texture and variants plus the common fill geometry, handbook grouping,
+  /// Lockable behavior, orientation group, per-orientation shapes and non-solid flags. The caller binds
+  /// its own class and entityClass and adds any extra attributes.
   /// </summary>
   protected static ExBlockDef CanalFamilyDef(
     string domain,
@@ -200,8 +251,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     object fillQuads,
     string shapeBase,
     (string Wildcard, int? RotateY)[] shapes
-  )
-  {
+  ) {
     var def = ExBlockDef
       .Create(domain, "molten-canal", assetName)
       .Material(skin.Material)
@@ -231,15 +281,14 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
 
   #endregion
 
-  // GetFallbackOrientation (first-listed state, else "ns") is inherited from BlockNetworkNode; only the start
-  // block overrides it (it defaults south, not to its first-listed north).
+  // GetFallbackOrientation (first-listed state, else "ns") is inherited from BlockNetworkNode. Only the
+  // start block overrides it: it defaults south rather than to its first-listed north.
 
   /// <summary>
   /// Disables wrench rotation (and the hint) while the cell holds liquid metal or has solidified -
   /// drain or chip it clear first.
   /// </summary>
-  protected override bool CanWrenchRotate(IWorldAccessor world, BlockPos pos)
-  {
+  protected override bool CanWrenchRotate(IWorldAccessor world, BlockPos pos) {
     if (
       world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal be
       && (be.HasMoltenMetal || be.Solidified)
@@ -250,20 +299,18 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
   }
 
   /// <summary>
-  /// Emits incandescent block light scaled to the metal's temperature (via
-  /// <see cref="BlockEntityMoltenCanal.GlowLightLevel"/>), like the cowper heat sink.
+  /// Emits incandescent block light scaled to the metal's temperature, via
+  /// <see cref="BlockEntityMoltenCanal.GlowLightLevel"/>.
   /// </summary>
   public override byte[] GetLightHsv(
     IBlockAccessor blockAccessor,
     BlockPos pos,
     ItemStack? stack = null
-  )
-  {
+  ) {
     if (
       pos != null
       && blockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal be
-    )
-    {
+    ) {
       byte val = be.GlowLightLevel;
       if (val > 0)
         return [8, 7, val];
@@ -275,8 +322,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IWorldAccessor world,
     BlockPos pos,
     ItemStack? byItemStack
-  )
-  {
+  ) {
     base.OnBlockPlaced(world, pos, byItemStack);
     UpdateEndConnectors(world, pos);
   }
@@ -285,14 +331,12 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IWorldAccessor world,
     BlockPos pos,
     BlockPos neibpos
-  )
-  {
+  ) {
     base.OnNeighbourBlockChange(world, pos, neibpos);
     UpdateEndConnectors(world, pos);
   }
 
-  protected void UpdateEndConnectors(IWorldAccessor world, BlockPos pos)
-  {
+  protected void UpdateEndConnectors(IWorldAccessor world, BlockPos pos) {
     if (Orientation == null)
       return;
 
@@ -315,9 +359,8 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1
-  )
-  {
-    // Read BE state before base.OnBlockBroken → RemoveNode tears the network down.
+  ) {
+    // Read BE state before base.OnBlockBroken calls RemoveNode and tears the network down.
     if (
       world.Side == EnumAppSide.Server
       && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal be
@@ -333,14 +376,12 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     var drops = base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
 
-    // The network is already torn down here, so read the cached state from the BE (still alive,
-    // holding the last broadcast values).
-    if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal be)
-    {
+    // The network is already torn down here, so read the cached state from the BE, which is still
+    // alive and holds the last broadcast values.
+    if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal be) {
       var solidifiedDrop = be.GetSolidifiedDrop(world);
       if (solidifiedDrop != null)
         drops = [.. drops, solidifiedDrop];
@@ -357,15 +398,12 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     return drops;
   }
 
-  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
-  {
+  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos) {
     if (
-      world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal
-      {
+      world.BlockAccessor.GetBlockEntity(pos) is BlockEntityMoltenCanal {
         Solidified: true
       }
-    )
-    {
+    ) {
       AssetLocation loc = CodeWithVariants(
         ["variant", "state", "orientation"],
         ["pass", "normal", "ns"]
@@ -396,8 +434,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is not BlockEntityMoltenCanal be
@@ -407,10 +444,9 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     ItemSlot? activeSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
     ItemStack? held = activeSlot?.Itemstack;
 
-    // A solidified canal is chipped clear with a chisel in hand + hammer in the off-hand (shared
-    // chisel-out ritual). A plain click on a still-clogged cell falls through to base.
-    if (be.Solidified)
-    {
+    // A solidified canal is chipped clear with a chisel in hand and a hammer in the off-hand. A plain
+    // click on a still-clogged cell falls through to base.
+    if (be.Solidified) {
       var outcome = MoltenChisel.TryChisel(
         world,
         byPlayer,
@@ -426,25 +462,21 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     if (Type != "straight")
       return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
-    if (!be.Sealed)
-    {
+    if (!be.Sealed) {
       if (!IsFireClay(held) || held!.StackSize < IwexValues.CanalSealClayCost)
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
       // Only seal a fully drained section: this cell and its connector-face neighbours must be
       // empty, so a seal never traps metal against itself.
-      if (!CanSeal(world, blockSel.Position, be))
-      {
+      if (!CanSeal(world, blockSel.Position, be)) {
         if (world.Side == EnumAppSide.Server)
           (byPlayer as IServerPlayer)?.SendIngameError("iwex-canalnotempty");
         return false;
       }
 
-      if (world.Side == EnumAppSide.Server)
-      {
+      if (world.Side == EnumAppSide.Server) {
         be.SetSealed(true);
-        if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
-        {
+        if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative) {
           activeSlot!.TakeOut(IwexValues.CanalSealClayCost);
           activeSlot.MarkDirty();
         }
@@ -457,14 +489,11 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     if (!MoltenChisel.IsTool(held, EnumTool.Chisel))
       return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
-    if (world.Side == EnumAppSide.Server)
-    {
+    if (world.Side == EnumAppSide.Server) {
       be.SetSealed(false);
-      if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative)
-      {
+      if (byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative) {
         Item? clay = world.GetItem(FireClayCode);
-        if (clay != null)
-        {
+        if (clay != null) {
           var refund = new ItemStack(clay, IwexValues.CanalUnsealClayRefund);
           if (!byPlayer.InventoryManager.TryGiveItemstack(refund))
             world.SpawnItemEntity(
@@ -487,15 +516,13 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IWorldAccessor world,
     BlockPos pos,
     BlockEntityMoltenCanal be
-  )
-  {
+  ) {
     if (!be.IsCellEmpty)
       return false;
     if (Orientation == null)
       return true;
 
-    foreach (char c in Orientation)
-    {
+    foreach (char c in Orientation) {
       BlockPos nPos = pos.AddCopy(BlockFacing.FromFirstLetter(c));
       if (
         world.BlockAccessor.GetBlockEntity(nPos) is BlockEntityMoltenCanal nbe
@@ -515,9 +542,8 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
 
   /// <summary>
   /// The "chip out the solidified cell" interaction hint, or <c>null</c> when the cell at
-  /// <paramref name="pos"/> can't be chiselled yet (not solidified, or not fully hardened). Exposed so
-  /// endpoint subclasses that build their own interaction help (the mold pedestal) can still advertise
-  /// clearing a clogged cell - the tap inherits the base help directly.
+  /// <paramref name="pos"/> cannot be chiselled yet (not solidified, or not fully hardened). Protected so
+  /// endpoint subclasses that build their own interaction help can still advertise clearing a clogged cell.
   /// </summary>
   protected WorldInteraction? ChiselClearInteraction(
     IWorldAccessor world,
@@ -532,8 +558,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     WorldInteraction[] baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
@@ -541,8 +566,8 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       world.BlockAccessor.GetBlockEntity(selection.Position)
       as BlockEntityMoltenCanal;
 
-    // The chip-clear hint only shows on a clogged (solidified) cell once it has fully hardened -
-    // not on fittings that never latch Solidified, which can't be chiselled.
+    // The chip-clear hint only shows on a solidified cell once it has fully hardened, never on
+    // fittings that do not latch Solidified and so cannot be chiselled.
     if (be is { Solidified: true, IsHardened: true })
       return
       [
@@ -561,8 +586,8 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
         MoltenChisel.ChiselHelp(world, "iwex:blockhelp-canal-unseal"),
       ];
 
-    // The seal hint only shows when sealing is actually possible: this cell and its neighbours
-    // are empty. A cell holding (or sitting next to) metal - liquid or solidified - won't advertise it.
+    // The seal hint only shows when sealing is possible: this cell and its connector-face neighbours
+    // hold no metal, liquid or solidified.
     if (be != null && CanSeal(world, selection.Position, be))
       return
       [
@@ -581,8 +606,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     return baseHelp;
   }
 
-  private static ItemStack[] ResolveFireClayStacks(IWorldAccessor world)
-  {
+  private static ItemStack[] ResolveFireClayStacks(IWorldAccessor world) {
     Item? clay = world.GetItem(FireClayCode);
     return clay != null
       ? [new ItemStack(clay, IwexValues.CanalSealClayCost)]
@@ -597,11 +621,9 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
   public int CountConnectedNeighborFaces(
     IBlockAccessor blockAccessor,
     BlockPos pos
-  )
-  {
+  ) {
     int count = 0;
-    foreach (var face in BlockFacing.HORIZONTALS)
-    {
+    foreach (var face in BlockFacing.HORIZONTALS) {
       BlockPos nPos = pos.AddCopy(face);
       if (
         blockAccessor.GetBlock(nPos) is BlockMoltenCanal nCanal
@@ -620,11 +642,9 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
     IBlockAccessor blockAccessor,
     BlockPos pos,
     string[] orientations
-  )
-  {
+  ) {
     var requiredFaces = BlockFacing
-      .HORIZONTALS.Where(face =>
-      {
+      .HORIZONTALS.Where(face => {
         BlockPos nPos = pos.AddCopy(face);
         return blockAccessor.GetBlock(nPos) is BlockMoltenCanal nCanal
           && nCanal.HasConnectorAt(face.Opposite);
@@ -632,8 +652,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       .Select(f => f.Code[0])
       .ToList();
 
-    foreach (string orient in orientations)
-    {
+    foreach (string orient in orientations) {
       if (requiredFaces.Count == 1 && orient.StartsWith(requiredFaces[0]))
         return orient;
       else if (

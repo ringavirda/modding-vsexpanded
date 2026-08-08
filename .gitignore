@@ -1,69 +1,50 @@
-# Ignore rules for this repo. Generic .NET/IDE rules first, repo-specific rules (with rationale)
-# below.
+# Ignore rules for this repo. 
+# Generic .NET/IDE rules first, repo-specific rules second.
 
-# --- .NET / IDE ------------------------------------------------------------
+#
+# .NET/IDE
+#
 
-# User-specific IDE state
+# User-specific IDE state.
 *.rsuser
 *.suo
 *.user
 *.sln.docstates
 *.DotSettings.user
 
-# Build results
+# Build results.
 [Dd]ebug/
 [Rr]elease/
 [Rr]eleases/
 [Bb]in/
 [Oo]bj/
 
-# Logs and temporaries (also covers a stray /launch.log from the vsdbg --tracelog launch config)
+# Logs and temporaries.
 *.log
 *.tlog
 *.tmp
 
-# Visual Studio / Rider caches
+# Visual Studio / Rider caches.
 .vs/
 .idea/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 
-# Visual Studio cache files
-# files ending in .cache can be ignored
+# Visual Studio cache files.
+# files ending in .cache can be ignored.
 *.[Cc]ache
-# but keep track of directories ending in .cache
+# but keep track of directories ending in .cache.
 !?*.[Cc]ache/
-# ...and .lscache, which the pattern above does NOT match (the dot must precede "cache", and here it
-# precedes "lscache"). These are LanguageService per-project caches; two were tracked for months.
+# ...and .lscache, which the pattern above does NOT match. 
 *.lscache
 
-# Test + coverage output
+# Test and coverage output.
 [Tt]est[Rr]esult*/
 coverage*.json
 coverage*.xml
 coverage*.info
 *.coverage
 *.coveragexml
-
-# --- Repo-specific ---------------------------------------------------------
-
-# Downloaded Vintage Story installs (per version) + cached archives, provisioned by
-# scripts/provision-game.* - never committed.
-/.game/
-
-# Vintage Story data dir (saves, configs, logs) the game generates under the repo via --dataPath.
-/.gamedata/
-
-# Self-contained .NET (SDK + runtimes) provisioned by scripts/provision-dotnet.* for clones that
-# don't have the required .NET 7/8/10 installed system-wide.
-/.dotnet/
-
-# Local sources of third-party mods we maintain compatibility with (reference only, not ours).
-/.compat/
-
-# Release zips built by dist/CakeBuild. scripts/gen-released-codes.py reads these - they are
-# machine-local and not reproducible from a clone.
-/dist/Releases/
 
 # VS Code: ignore everything except the shared workspace files.
 .vscode/*
@@ -73,3 +54,32 @@ coverage*.info
 !.vscode/extensions.json
 *.code-workspace
 .history/
+
+#
+# Repo-specific
+#
+
+# Downloaded Vintage Story installs + cached archives.
+/.game/
+
+# Vintage Story data dir the game generates under the repo via --dataPath.
+/.gamedata/
+
+# Self-contained .NET (SDK + runtimes).
+/.dotnet/
+
+# Local sources of other mods to maintain compatibility with (reference only).
+/.compat/
+
+# Release zips built by dist/CakeBuild.
+/dist/Releases/
+
+# Local planning and temporary state files.
+/docs/plans/
+
+# Local specific scripts.
+/scripts/tools/
+
+# Reference images and broken shapes.
+/assets/editable/refs/
+/assets/editable/remake/

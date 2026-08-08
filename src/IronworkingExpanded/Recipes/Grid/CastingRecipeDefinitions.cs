@@ -7,21 +7,16 @@ using static IronworkingExpanded.Recipes.RecipeIngredients;
 namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for iwex's sand-casting <b>stations</b> (as opposed to the parts they cast, whose
-/// recipes live with the patterns). The 1×1 casting cell is a fired-brick shell hammered and chiselled over
-/// fire clay - the same brick-tinted idiom as the molten canal, so it shares the canal's
-/// <see cref="RecipeIngredients.Fhk"/> / <see cref="RecipeIngredients.RunningBrick"/> /
-/// <see cref="RecipeIngredients.FireBrick"/> captures.
-/// <para>
-/// The cell carries an 8-state <c>brick</c> variant (fire + seven colours), so it takes two recipes sharing
-/// one pattern: a coloured route that captures the running-brick colour into <c>{brick}</c>, and a fire-brick
-/// route that outputs the <c>fire</c> default. The two never conflict - the coloured brick course
-/// (<c>brickcourse-four-running-*</c>) and the fire bricks (<c>claybricks-good-fire</c>) do not overlap -
-/// exactly as the canal's coloured/fire pairs.
-/// </para>
+/// Code-first grid recipes for iwex's sand-casting stations; the parts they cast are authored with their
+/// patterns. The cells are fired-brick shells hammered and chiselled over fire clay, the same brick-tinted
+/// idiom as the molten canal, so they share the canal's <see cref="RecipeIngredients.Fhk"/> /
+/// <see cref="RecipeIngredients.RunningBrick"/> / <see cref="RecipeIngredients.FireBrick"/> captures.
+/// A cell's 8-state <c>brick</c> variant (fire plus seven colours) needs two recipes on one pattern: a
+/// coloured route capturing the running-brick colour into <c>{brick}</c>, and a fire-brick route outputting
+/// the <c>fire</c> default. The two cannot conflict - <c>brickcourse-four-running-*</c> and
+/// <c>claybricks-good-fire</c> do not overlap.
 /// </summary>
-public class CastingRecipeDefinitions : IExRecipeDefProvider
-{
+public class CastingRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       SandCastingCell(domain),
@@ -31,18 +26,11 @@ public class CastingRecipeDefinitions : IExRecipeDefProvider
     ];
 
   /// <summary>
-  /// The 3×1×4 pig-bed's base course. The recipe is essential: the bed is what turns molten pig iron
-  /// into pigs, so without it the blast furnace has nowhere to pour in survival.
-  /// <para>
-  /// Right-click constructed, so this is only the first brick course you place. The two remaining courses
-  /// (16 bricks each) and the sand fill are charged by its stages, which is where the bulk of the cost lives.
-  /// </para>
-  /// <para>
-  /// <b>There is no <c>sand</c> variant group.</b> Recording the rock type of whatever
-  /// sand filled the bed, over vanilla's 20-state <c>block/rock</c> property, would be twenty times the
-  /// block codes for a purely cosmetic fact. Green sand is the one moulding material, so there is
-  /// nothing to record and the output is <c>casting-sandbed-{brick}-n</c>.
-  /// </para>
+  /// The 3×1×4 pig bed's base course, which turns molten pig iron into pigs. Right-click constructed, so
+  /// this recipe covers only the first brick course; the two remaining courses (16 bricks each) and the
+  /// sand fill are charged by the construction stages and carry the bulk of the cost. The output is
+  /// <c>casting-sandbed-{brick}-n</c> with no <c>sand</c> variant group: green sand is the one moulding
+  /// material, so the rock type that filled the bed is cosmetic and is not recorded.
   /// </summary>
   private static ExRecipeDef SandCastingBed(string domain) =>
     ExRecipeDef
@@ -63,15 +51,10 @@ public class CastingRecipeDefinitions : IExRecipeDefProvider
       );
 
   /// <summary>
-  /// Mixing <b>green sand</b>: eight sand around one blue clay. The clay is the binder that makes the mix
-  /// hold an impression at all (~11 % here, which is about the real proportion), and it is the only reason
-  /// this is a recipe rather than the cell simply taking raw sand.
-  /// <para>
-  /// The sand ingredient is a deliberate <c>game:sand-*</c> wildcard with <b>no capture</b>: every rock type
-  /// mixes, and none of them survives into the output. That is the whole point - the rock type of sand is
-  /// cosmetic in vanilla, so gating on it would be a rule a player could only look up. One prepared item
-  /// comes out regardless of what went in.
-  /// </para>
+  /// Mixing green sand: eight sand around one blue clay. The clay is the binder that lets the mix hold an
+  /// impression, at about 11 %, close to the real proportion. The sand ingredient is a <c>game:sand-*</c>
+  /// wildcard with no capture: sand's rock type is cosmetic in vanilla, so every type mixes and the same
+  /// prepared item comes out whatever went in.
   /// </summary>
   private static ExRecipeDef GreenSand(string domain) =>
     ExRecipeDef
@@ -111,21 +94,12 @@ public class CastingRecipeDefinitions : IExRecipeDefProvider
       );
 
   /// <summary>
-  /// The 1×2 long cell: the 1×1 cell's shell at double the length, so double the brick and double the core.
-  /// It ships with its recipe rather than after it - a station with no recipe is not a partial
-  /// feature, it is an absent one.
-  /// <para>
-  /// <b>The cost is doubled through quantity, not through a taller pattern.</b> The vanilla crafting
-  /// grid is 3×3, so the 3×4 grid this obviously wants cannot be crafted at all - it would have passed
-  /// every test in the suite and been uncraftable in the world. Same shape as the 1×1 cell, twice the
-  /// brick per slot and twice the clay: 12 bricks and 4 fire clay against the cell's 6 and 2.
-  /// </para>
-  /// <para>
-  /// Same two-route split as the 1×1 cell for the same reason: an 8-state <c>brick</c> variant needs a
-  /// coloured route that captures <c>{brick}</c> and a fire-brick route that outputs the <c>fire</c>
-  /// default. The two cannot conflict - <c>brickcourse-four-running-*</c> and <c>claybricks-good-fire</c>
-  /// do not overlap.
-  /// </para>
+  /// The 1×2 long cell: the 1×1 cell's shell at double the length, so double the brick and double the
+  /// core. The cost is doubled through quantity rather than a taller pattern because the vanilla crafting
+  /// grid is 3×3 and a 3×4 pattern cannot be crafted at all - same shape as the 1×1 cell, 12 bricks and
+  /// 4 fire clay against its 6 and 2. Two routes for the same reason as the 1×1 cell: the 8-state
+  /// <c>brick</c> variant needs a coloured route capturing <c>{brick}</c> and a fire-brick route
+  /// outputting the <c>fire</c> default.
   /// </summary>
   private static ExRecipeDef SandCastingLongCell(string domain) =>
     ExRecipeDef

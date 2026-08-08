@@ -8,31 +8,31 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Named reproductions of fixed bugs in the network pool itself, so they can never silently return.
-/// These are <b>network-math</b> tests, not scenarios: there is no spatial world and nothing emerges
-/// from adjacency - they drive <see cref="PipeNetwork"/> directly. They used to sit under
-/// <c>Scenarios/</c>, which made that folder read as "wherever a regression happened to land" rather
-/// than "several blocks in a world, behaving".
+/// Regressions for the network pool itself. These are network-math tests, not scenarios: there is no
+/// spatial world and nothing emerges from adjacency, they drive <see cref="PipeNetwork"/> directly.
 /// </summary>
-public class MediumReclaimRegressionTests
-{
+public class MediumReclaimRegressionTests {
   /// <summary>
   /// Over-pressure (volume above the 1-atm capacity, up to the burst ceiling) must survive a graph
-  /// re-walk. The bug: OnMerge/OnSplitFragment clamped gas at MaxVolume, so every split/merge (e.g. a
-  /// valve toggle) dumped a pressurised run back to 1 atm.
+  /// re-walk. Clamping gas at MaxVolume in OnMerge/OnSplitFragment dumps a pressurised run back to
+  /// 1 atm on every split or merge, such as a valve toggle.
   /// </summary>
   [Fact]
-  public void Over_pressure_survives_a_node_remove_and_readd()
-  {
-    // The cast (lpex) tier: LP steam sits at 3-5 atm, which is above the plated tier's burst rating -
-    // carrying steam on plated pipe is exactly what the tier ladder forbids.
+  public void Over_pressure_survives_a_node_remove_and_readd() {
+    // The cast (lpex) tier: LP steam sits at 3-5 atm, above the plated tier's burst rating.
     var (w, net) = PipeTestWorld.Run(5, "steel", capEnds: true);
     // Charge well above 1 atm (maxVolume = 5 * 30 = 150 L; ~3 atm).
-    PipeTestWorld.Saturate(net, 150f, "Steam", w.Accessor, maxOutputPressure: 5f);
+    PipeTestWorld.Saturate(
+      net,
+      150f,
+      "Steam",
+      w.Accessor,
+      maxOutputPressure: 5f
+    );
     Assert.True(net.State!.Pressure > 2.5f);
 
     // Re-walk the graph: remove a middle cell (splits) then re-add it (merges) with no tick in
-    // between, so nothing leaks - isolating the merge/split clamp.
+    // between, so nothing leaks and only the merge/split clamp is in play.
     var mid = new BlockPos(0, 0, 2);
     w.RemoveNode(mid);
     w.AddNode(mid, "pipe");
@@ -45,15 +45,13 @@ public class MediumReclaimRegressionTests
   }
 
   /// <summary>
-  /// A run that has been fully drained but not yet cleared (the 3-second empty-clear delay keeps its
-  /// State alive so a busy push-and-drain line does not flicker) still carries its old medium label.
-  /// The bug class (same shape as the cowper mix-latch): a producer of the other medium read that
-  /// stale label and was rejected, so repurposing empty pipes was blocked for up to 3 seconds. A
-  /// physically empty run (Volume 0) must let a new medium re-claim it.
+  /// A run fully drained but not yet cleared still carries its old medium label: the 3-second
+  /// empty-clear delay keeps its State alive so a busy push-and-drain line does not flicker. A
+  /// physically empty run (Volume 0) must let a new medium re-claim it rather than latching the stale
+  /// label for those 3 seconds.
   /// </summary>
   [Fact]
-  public void A_drained_run_accepts_the_other_medium_before_the_label_clears()
-  {
+  public void A_drained_run_accepts_the_other_medium_before_the_label_clears() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3); // MaxVolume 90
 
@@ -72,10 +70,9 @@ public class MediumReclaimRegressionTests
     Assert.Equal(45f, net.State.Volume, 3);
   }
 
-  /// <summary>The mirror of the above: a drained-but-labelled gas run accepts water.</summary>
+  /// <summary>The mirror case: a drained but still-labelled gas run accepts water.</summary>
   [Fact]
-  public void A_drained_gas_run_accepts_water_before_the_label_clears()
-  {
+  public void A_drained_gas_run_accepts_water_before_the_label_clears() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3);
 
@@ -91,11 +88,10 @@ public class MediumReclaimRegressionTests
     Assert.Equal(30f, net.State.Volume, 3);
   }
 
-  /// <summary>A run still physically carrying a medium must still reject the other one - the fix
-  /// only relaxes the guard for an empty run, not a full one (guards against over-fixing).</summary>
+  /// <summary>A run still physically carrying a medium rejects the other one: the guard is relaxed
+  /// only at Volume 0.</summary>
   [Fact]
-  public void A_run_still_holding_a_medium_rejects_the_other()
-  {
+  public void A_run_still_holding_a_medium_rejects_the_other() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3);
     net.TryProduceLiquid(30f, 20f, 1f, w.Accessor); // Volume 30, "Water"

@@ -14,14 +14,12 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The flywheel: the signature storage node of the mechanical-energy network. These tests pin the two
-/// things this increment wires - the per-size inertia read from config, and the node coming alive as an
-/// <c>"mpenergy"</c> run whose reservoir takes its inertia. The energy-balance math itself
-/// (supply → store → draw, capacity, over-speed) is unit-tested in exlib's
-/// <c>MpEnergyNetworkStateTests</c>; here we prove the block is discovered and feeds the network.
+/// The flywheel: the storage node of the mechanical-energy network. Covers the per-size inertia read from
+/// config, the node forming an <c>"mpenergy"</c> run whose reservoir takes that inertia, the per-size
+/// footprint, and the vanilla-MP bridge. The energy balance itself (supply, store, draw, capacity,
+/// over-speed) is covered by exlib's <c>MpEnergyNetworkStateTests</c>.
 /// </summary>
-public class FlywheelTests
-{
+public class FlywheelTests {
   private static BlockFlywheel FlywheelBlock(string size, string orientation) =>
     TestBlocks.Configure(
       new BlockFlywheel(),
@@ -38,8 +36,7 @@ public class FlywheelTests
   [Theory]
   [InlineData("normal")]
   [InlineData("large")]
-  public void Inertia_is_read_from_config_by_size(string size)
-  {
+  public void Inertia_is_read_from_config_by_size(string size) {
     float expected =
       size == "large"
         ? IwexValues.FlywheelInertiaLarge
@@ -51,10 +48,9 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void The_large_wheel_stores_far_more_than_the_normal_one()
-  {
-    // A disc's inertia scales with R^4 * t, so the large wheel is the heavy-industry buffer: it must be
-    // a large multiple of the normal one, not a token bump (the design targets ~15x).
+  public void The_large_wheel_stores_far_more_than_the_normal_one() {
+    // A disc's inertia scales with R^4 * t, so the large wheel must be a large multiple of the normal one.
+    // The design targets about 15x.
     Assert.True(
       IwexValues.FlywheelInertiaLarge > IwexValues.FlywheelInertiaNormal * 5f,
       $"large inertia {IwexValues.FlywheelInertiaLarge} is not meaningfully bigger than "
@@ -66,8 +62,7 @@ public class FlywheelTests
 
   #region Network node
 
-  private static (TestWorld world, BlockPos pos) PlacedFlywheel(string size)
-  {
+  private static (TestWorld world, BlockPos pos) PlacedFlywheel(string size) {
     var world = new TestWorld();
     world.RegisterNetwork("mpenergy", sys => new MpEnergyNetwork(sys));
 
@@ -82,25 +77,23 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void A_placed_flywheel_forms_an_mpenergy_network()
-  {
+  public void A_placed_flywheel_forms_an_mpenergy_network() {
     var (world, pos) = PlacedFlywheel("normal");
     Assert.IsType<MpEnergyNetwork>(world.NetworkAt(pos));
   }
 
   [Fact]
-  public void The_reservoir_takes_its_inertia_from_the_flywheel()
-  {
+  public void The_reservoir_takes_its_inertia_from_the_flywheel() {
     var (world, pos) = PlacedFlywheel("large");
 
     // Before the first tick the run has no reservoir state; the tick walks the nodes, sums the storage
-    // inertia and stands one up.
+    // inertia and creates one.
     world.Tick();
 
     var state = ((MpEnergyNetwork)world.NetworkAt(pos)!).State;
     Assert.NotNull(state);
     Assert.Equal(IwexValues.FlywheelInertiaLarge, state!.Inertia, 3);
-    // No producer yet, so the wheel is inert mass: it holds no energy and does not spin.
+    // No producer on the run, so the wheel holds no energy and does not spin.
     Assert.Equal(0f, state.StoredEnergy);
     Assert.Equal(0f, state.Speed);
   }
@@ -109,22 +102,23 @@ public class FlywheelTests
 
   #region Footprint
 
-  /// <summary>The per-size <c>fillerOffsets</c> table straight from the code-first def (north frame, before
-  /// placement rotation) - the flywheel authors its footprint under <c>attributesByType</c> because it
-  /// varies by size, so it is read from there rather than the plain <c>attributes</c> node.</summary>
-  private static JArray FillerOffsetsJson(string size)
-  {
+  /// <summary>The per-size <c>fillerOffsets</c> table from the code-first def, in the north frame before
+  /// placement rotation. The footprint varies by size, so it is authored under <c>attributesByType</c>
+  /// rather than the plain <c>attributes</c> node.</summary>
+  private static JArray FillerOffsetsJson(string size) {
     ExBlockDef def = BlockFlywheel.Definitions("iwex").Single();
-    return (JArray)def.ToJson()["attributesByType"]![$"*-{size}-*"]!["fillerOffsets"]!;
+    return (JArray)
+      def.ToJson()["attributesByType"]![$"*-{size}-*"]!["fillerOffsets"]!;
   }
 
-  /// <summary>A flywheel block with its per-size footprint loaded into <c>Attributes</c>, so the placement
-  /// helpers resolve it (the headless test does not populate <c>Attributes</c> from the def).</summary>
-  private static BlockFlywheel PlacedBlock(string size, string orientation)
-  {
+  /// <summary>A flywheel block with its per-size footprint loaded into <c>Attributes</c> so the placement
+  /// helpers resolve it. The headless harness does not populate <c>Attributes</c> from the def.</summary>
+  private static BlockFlywheel PlacedBlock(string size, string orientation) {
     BlockFlywheel block = FlywheelBlock(size, orientation);
     block.Attributes = new JsonObject(
-      new JObject { ["fillerOffsets"] = (JArray)FillerOffsetsJson(size).DeepClone() }
+      new JObject {
+        ["fillerOffsets"] = (JArray)FillerOffsetsJson(size).DeepClone(),
+      }
     );
     return block;
   }
@@ -135,14 +129,12 @@ public class FlywheelTests
   public void The_footprint_reserves_the_disc_volume_minus_the_principal(
     string size,
     int expected
-  )
-  {
+  ) {
     Assert.Equal(expected, FillerOffsetsJson(size).Count);
   }
 
   [Fact]
-  public void The_normal_north_frame_footprint_is_a_thin_in_z_disc_centred_on_the_principal()
-  {
+  public void The_normal_north_frame_footprint_is_a_thin_in_z_disc_centred_on_the_principal() {
     var cells = FillerOffsetsJson("normal")
       .Select(o => ((int)o["x"]!, (int)o["y"]!, (int)o["z"]!))
       .ToHashSet();
@@ -159,8 +151,7 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void The_large_footprint_is_two_thin_in_z_faces()
-  {
+  public void The_large_footprint_is_two_thin_in_z_faces() {
     var zs = FillerOffsetsJson("large").Select(o => (int)o["z"]!).ToHashSet();
     Assert.Equal(new HashSet<int> { 0, 1 }, zs);
   }
@@ -171,8 +162,7 @@ public class FlywheelTests
   public void The_structure_angle_follows_the_orientation_variant(
     string orientation,
     int expected
-  )
-  {
+  ) {
     Assert.Equal(expected, FlywheelBlock("normal", orientation).StructureAngle);
   }
 
@@ -188,8 +178,7 @@ public class FlywheelTests
   public void Bridge_drive_torque_scales_with_axle_speed_up_to_rated(
     float axleSpeed,
     float expected
-  )
-  {
+  ) {
     Assert.Equal(
       expected,
       BlockEntityFlywheel.BridgeDriveTorque(
@@ -202,16 +191,15 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void A_zero_rated_speed_drives_nothing()
-  {
+  public void A_zero_rated_speed_drives_nothing() {
     // Guard against divide-by-zero if the rated hub speed is misconfigured to 0.
     Assert.Equal(0f, BlockEntityFlywheel.BridgeDriveTorque(5f, 2f, 0f));
   }
 
   [Fact]
-  public void The_normal_hub_hosts_north_and_south_mp_intakes_one_cell_above_the_principal()
-  {
-    JToken hub = FillerOffsetsJson("normal").Single(o => o["behaviors"] is JArray);
+  public void The_normal_hub_hosts_north_and_south_mp_intakes_one_cell_above_the_principal() {
+    JToken hub = FillerOffsetsJson("normal")
+      .Single(o => o["behaviors"] is JArray);
     Assert.Equal((0, 1, 0), ((int)hub["x"]!, (int)hub["y"]!, (int)hub["z"]!)); // disc centre
 
     var behaviors = (JArray)hub["behaviors"]!;
@@ -226,8 +214,7 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void Both_large_hubs_sit_on_the_shaft_axis_one_per_face_depth()
-  {
+  public void Both_large_hubs_sit_on_the_shaft_axis_one_per_face_depth() {
     var hubs = FillerOffsetsJson("large")
       .Where(o => o["behaviors"] is JArray)
       .Select(o => ((int)o["x"]!, (int)o["y"]!, (int)o["z"]!))
@@ -238,8 +225,7 @@ public class FlywheelTests
   }
 
   [Fact]
-  public void Rotating_to_we_turns_the_disc_plane_and_ports_onto_the_x_axis()
-  {
+  public void Rotating_to_we_turns_the_disc_plane_and_ports_onto_the_x_axis() {
     var cells = StructureFillers.FootprintCells(
       PlacedBlock("normal", "we"),
       new BlockPos(0, 0, 0),

@@ -9,11 +9,10 @@ namespace ExpandedLib.Networks;
 /// <summary>
 /// Abstract base for all live block-network instances. Each concrete subclass (e.g.
 /// <c>PipeNetwork</c>, <c>MoltenNetwork</c>) owns its typed state and implements the type-specific
-/// operations (producers, consumers, merge/split/tick). The <see cref="BlockNetworkModSystem"/>
-/// only does graph-level work (BFS add/remove/rebuild); everything else lives here.
+/// operations (producers, consumers, merge/split/tick). <see cref="BlockNetworkModSystem"/> does only
+/// graph-level work (BFS add/remove/rebuild); everything else lives here.
 /// </summary>
-public abstract class BlockNetwork(BlockNetworkModSystem system)
-{
+public abstract class BlockNetwork(BlockNetworkModSystem system) {
   /// <summary>Stable identity for this network instance.</summary>
   public Guid Id { get; } = Guid.NewGuid();
 
@@ -39,8 +38,7 @@ public abstract class BlockNetwork(BlockNetworkModSystem system)
   /// <see cref="BlockEntityNetworkNode"/> during world load to restore persisted state before the
   /// first tick. Override to cast to the concrete state type.
   /// </summary>
-  public virtual void RestoreState(object? state)
-  {
+  public virtual void RestoreState(object? state) {
     State = state;
   }
 
@@ -49,21 +47,20 @@ public abstract class BlockNetwork(BlockNetworkModSystem system)
   #region Broadcasting
 
   /// <summary>
-  /// Sends the current typed state to every <see cref="INetworkNode"/> block
-  /// entity in this network so clients can update their display.
+  /// Sends the current typed state to every <see cref="INetworkNode"/> block entity in this network so
+  /// clients can update their display.
   /// </summary>
-  public void BroadcastUpdate(IBlockAccessor blockAccessor)
-  {
+  public void BroadcastUpdate(IBlockAccessor blockAccessor) {
     OnBeforeBroadcast(blockAccessor);
     object? payload = GetStatePayload();
-    foreach (var pos in Nodes)
-    {
+    foreach (var pos in Nodes) {
       if (blockAccessor.GetBlockEntity(pos) is INetworkNode receiver)
         receiver.OnNetworkUpdate(payload);
     }
   }
 
-  /// <summary>Called by <see cref="BroadcastUpdate"/> before payload is collected and dispatched. Override to update derived state (e.g. recalculate capacity).</summary>
+  /// <summary>Called by <see cref="BroadcastUpdate"/> before the payload is collected and dispatched.
+  /// Override to update derived state (e.g. recalculate capacity).</summary>
   protected virtual void OnBeforeBroadcast(IBlockAccessor blockAccessor) { }
 
   /// <summary>Returns the typed state object sent to nodes during a broadcast.</summary>
@@ -74,21 +71,21 @@ public abstract class BlockNetwork(BlockNetworkModSystem system)
   #region Lifecycle callbacks
 
   /// <summary>
-  /// Returns <c>false</c> to veto a graph-level merge of two adjacent networks
-  /// of the same type.  Default: always allow.
+  /// Returns <c>false</c> to veto a graph-level merge of two adjacent networks of the same type.
+  /// Always allows by default.
   /// </summary>
   public virtual bool CanMerge(BlockNetwork other, IBlockAccessor world) =>
     true;
 
   /// <summary>
-  /// Called when <paramref name="other"/> merges into <c>this</c> network.
-  /// Implementations combine state (e.g. weighted-average temperature, total volume).
+  /// Called when <paramref name="other"/> merges into this network. Implementations combine state
+  /// (e.g. weighted-average temperature, total volume).
   /// </summary>
   public abstract void OnMerge(BlockNetwork other, IBlockAccessor world);
 
   /// <summary>
-  /// Called on a fresh fragment after fracture (<c>this</c> = new fragment,
-  /// <paramref name="original"/> = the fractured network). Distributes a proportional share of state.
+  /// Called on a fresh fragment after fracture, where this instance is the new fragment and
+  /// <paramref name="original"/> the fractured network. Distributes a proportional share of state.
   /// </summary>
   public abstract void OnSplitFragment(
     BlockNetwork original,

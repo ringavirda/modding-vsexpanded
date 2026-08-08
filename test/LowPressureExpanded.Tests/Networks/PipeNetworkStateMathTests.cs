@@ -6,8 +6,7 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>Pure pressure/medium math on <see cref="PipeNetworkState"/> - no world needed.</summary>
-public class PipeNetworkStateMathTests
-{
+public class PipeNetworkStateMathTests {
   [Theory]
   [InlineData(0f, 90f, 0f)]
   [InlineData(45f, 90f, 0.5f)]
@@ -38,8 +37,8 @@ public class PipeNetworkStateMathTests
       3
     );
 
-  // The medium compatibility / priority helpers moved off PipeNetworkState into the injected
-  // ExLiquids taxonomy (always seeded with the four built-ins); the behaviour is unchanged.
+  // Medium compatibility and priority live in the injected ExLiquids taxonomy, which is always
+  // seeded with the four built-in media.
   [Theory]
   [InlineData("", "Air", true)] // empty run accepts anything
   [InlineData("", "Water", true)]

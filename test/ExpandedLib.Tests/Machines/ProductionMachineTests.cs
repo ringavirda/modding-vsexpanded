@@ -7,8 +7,7 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>A concrete production machine for driving the base tick lifecycle in tests.</summary>
-internal sealed class TestProductionMachine : BlockEntityProductionMachine
-{
+internal sealed class TestProductionMachine : BlockEntityProductionMachine {
   public bool Operational = true;
   public int ProductionTicks;
   public int IdleTicks;
@@ -17,14 +16,12 @@ internal sealed class TestProductionMachine : BlockEntityProductionMachine
 
   protected override bool CanRunProduction => Operational;
 
-  protected override void OnProductionTick(float dt)
-  {
+  protected override void OnProductionTick(float dt) {
     ProductionTicks++;
     LastProductionDt = dt;
   }
 
-  protected override void OnIdleProductionTick(float dt)
-  {
+  protected override void OnIdleProductionTick(float dt) {
     IdleTicks++;
     LastIdleDt = dt;
   }
@@ -34,10 +31,8 @@ internal sealed class TestProductionMachine : BlockEntityProductionMachine
 }
 
 /// <summary>The shared production-tick template: it gates each tick on <c>CanRunProduction</c>.</summary>
-public class ProductionMachineTests
-{
-  private static (TestWorld world, TestProductionMachine machine) NewMachine()
-  {
+public class ProductionMachineTests {
+  private static (TestWorld world, TestProductionMachine machine) NewMachine() {
     var world = new TestWorld();
     var machine = new TestProductionMachine { Pos = new BlockPos(0, 0, 0) };
     world.Attach(machine);
@@ -46,8 +41,7 @@ public class ProductionMachineTests
   }
 
   [Fact]
-  public void Runs_production_each_tick_while_operational()
-  {
+  public void Runs_production_each_tick_while_operational() {
     var (world, machine) = NewMachine();
 
     world.FireBlockEntityTicks(times: 3);
@@ -57,8 +51,7 @@ public class ProductionMachineTests
   }
 
   [Fact]
-  public void Routes_to_idle_while_not_operational()
-  {
+  public void Routes_to_idle_while_not_operational() {
     var (world, machine) = NewMachine();
     machine.Operational = false;
 
@@ -69,8 +62,7 @@ public class ProductionMachineTests
   }
 
   [Fact]
-  public void Resumes_production_when_it_becomes_operational_again()
-  {
+  public void Resumes_production_when_it_becomes_operational_again() {
     var (world, machine) = NewMachine();
 
     machine.Operational = false;
@@ -84,12 +76,11 @@ public class ProductionMachineTests
 
   #region Catch-up dt clamp (rejoin/hitch guard)
 
-  // A chunk reload or server hitch can hand the machine one oversized catch-up dt; the base clamps it
-  // to 2x the tick interval (default 1000ms -> 2s) so a grace timer can't leap its whole window in one
-  // step - the boiler "detonates right after rejoining" class of bug.
+  // A chunk reload or server hitch can hand the machine one oversized catch-up dt; the base clamps
+  // it to 2x the tick interval (default 1000 ms -> 2 s) so a grace timer cannot cross its whole
+  // window in one step.
   [Fact]
-  public void Clamps_an_oversized_catchup_dt_to_2x_the_interval()
-  {
+  public void Clamps_an_oversized_catchup_dt_to_2x_the_interval() {
     var (world, machine) = NewMachine();
 
     world.FireBlockEntityTicks(dt: 3600f); // one hour of catch-up in a single tick
@@ -99,8 +90,7 @@ public class ProductionMachineTests
   }
 
   [Fact]
-  public void Passes_a_normal_dt_through_unclamped()
-  {
+  public void Passes_a_normal_dt_through_unclamped() {
     var (world, machine) = NewMachine();
 
     world.FireBlockEntityTicks(dt: 1f);
@@ -109,8 +99,7 @@ public class ProductionMachineTests
   }
 
   [Fact]
-  public void Clamps_the_idle_tick_dt_too()
-  {
+  public void Clamps_the_idle_tick_dt_too() {
     var (world, machine) = NewMachine();
     machine.Operational = false;
 

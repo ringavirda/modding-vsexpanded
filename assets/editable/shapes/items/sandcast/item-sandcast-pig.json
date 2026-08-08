@@ -1,0 +1,28 @@
+{
+  "editor": {
+    "allAngles": false,
+    "entityTextureMode": false
+  },
+  "textureWidth": 16,
+  "textureHeight": 16,
+  "textureSizes": {},
+  "textures": {
+    "iron": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/tarnished/iron"
+  },
+  "elements": [
+    {
+      "name": "Pig1",
+      "from": [5.5, 0.0, 2.0],
+      "to": [10.5, 3.0, 14.0],
+      "rotationOrigin": [5.0, 0.0, 2.0],
+      "faces": {
+        "north": { "texture": "#iron", "uv": [0.0, 0.0, 5.0, 3.0] },
+        "east": { "texture": "#iron", "uv": [0.0, 0.0, 12.0, 3.0] },
+        "south": { "texture": "#iron", "uv": [0.0, 0.0, 5.0, 3.0] },
+        "west": { "texture": "#iron", "uv": [0.0, 0.0, 12.0, 3.0] },
+        "up": { "texture": "#iron", "uv": [0.0, 0.0, 5.0, 12.0] },
+        "down": { "texture": "#iron", "uv": [0.0, 0.0, 5.0, 12.0] }
+      }
+    }
+  ]
+}

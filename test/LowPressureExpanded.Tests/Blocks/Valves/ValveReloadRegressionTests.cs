@@ -10,18 +10,16 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// One fixed valve bug, kept as its own reproduction. A block test, not a scenario: a single valve is
-/// driven directly and nothing emerges from adjacency.
+/// Reload reproduction for the in-line valve. A block-level test: one valve is driven directly and
+/// no behaviour comes from adjacency.
 /// </summary>
-public class ValveReloadRegressionTests
-{
+public class ValveReloadRegressionTests {
   /// <summary>
-  /// A closed valve must not restore a pressurised pool on reload. The bug: a valve cached its pool
-  /// while open, then persisted+restored it into the now-isolated cell, bursting it.
+  /// Closing a valve drops the pool it cached while open. A persisted pool would be restored into
+  /// the now-isolated cell and burst it.
   /// </summary>
   [Fact]
-  public void Closed_valve_does_not_reload_a_pressurised_pool()
-  {
+  public void Closed_valve_does_not_reload_a_pressurised_pool() {
     var (world, valve) = ValveRun();
     valve.ToggleOpen(); // open
 
@@ -41,13 +39,11 @@ public class ValveReloadRegressionTests
     Assert.Equal(0f, valve.Pressure, 3);
   }
 
-  private static (TestWorld world, BlockEntityValve valve) ValveRun()
-  {
+  private static (TestWorld world, BlockEntityValve valve) ValveRun() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", s => new PipeNetwork(s));
     var pipe = PipeTestWorld.MakePipe();
-    var valve = new BlockEntityValve
-    {
+    var valve = new BlockEntityValve {
       Pos = new BlockPos(0, 0, 1),
       Block = pipe,
     };

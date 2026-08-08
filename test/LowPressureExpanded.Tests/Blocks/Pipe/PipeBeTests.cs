@@ -9,16 +9,14 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// The pipe block entity: how a network broadcast lands in its cached display fields, how those
-/// fields and the restore-on-load network state round-trip through the save tree, and the live
-/// path where a real <see cref="PipeNetwork"/> pushes state into placed pipe entities.
+/// The pipe block entity: a network broadcast landing in its cached display fields, those fields and
+/// the restore-on-load network state round-tripping through the save tree, and a live
+/// <see cref="PipeNetwork"/> pushing state into placed pipe entities.
 /// </summary>
-public class PipeBeTests
-{
+public class PipeBeTests {
   private static (TestWorld world, BlockEntityPipe be) NewPipe(
     BlockPos? at = null
-  )
-  {
+  ) {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
     var pos = at ?? new BlockPos(0, 0, 0);
@@ -38,8 +36,7 @@ public class PipeBeTests
     float pressure = 2f,
     int openings = 0
   ) =>
-    new()
-    {
+    new() {
       Volume = vol,
       MaxVolume = max,
       Temperature = temp,
@@ -50,8 +47,7 @@ public class PipeBeTests
     };
 
   [Fact]
-  public void OnNetworkUpdate_caches_the_broadcast_state()
-  {
+  public void OnNetworkUpdate_caches_the_broadcast_state() {
     var (_, be) = NewPipe();
 
     be.OnNetworkUpdate(State());
@@ -65,16 +61,14 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void OnNetworkUpdate_with_water_medium_reads_as_liquid()
-  {
+  public void OnNetworkUpdate_with_water_medium_reads_as_liquid() {
     var (_, be) = NewPipe();
     be.OnNetworkUpdate(State(medium: "Water"));
     Assert.True(be.IsLiquid);
   }
 
   [Fact]
-  public void OnNetworkUpdate_null_clears_to_neutral_display()
-  {
+  public void OnNetworkUpdate_null_clears_to_neutral_display() {
     var (_, be) = NewPipe();
     be.OnNetworkUpdate(State());
 
@@ -86,8 +80,7 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void Meaningful_state_is_cached_for_restore_empty_state_is_not()
-  {
+  public void Meaningful_state_is_cached_for_restore_empty_state_is_not() {
     var (_, be) = NewPipe();
 
     be.OnNetworkUpdate(State(vol: 300f, flow: 0f));
@@ -98,8 +91,7 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void Display_fields_and_network_state_round_trip_through_the_tree()
-  {
+  public void Display_fields_and_network_state_round_trip_through_the_tree() {
     var (_, be) = NewPipe();
     be.OnNetworkUpdate(
       State(vol: 450f, temp: 160f, medium: "Steam", pressure: 3f)
@@ -119,8 +111,7 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void Orientation_metadata_round_trips()
-  {
+  public void Orientation_metadata_round_trips() {
     var (_, be) = NewPipe();
     be.Orientation = "we";
     be.PossibleOrientations = ["ns", "we"];
@@ -136,8 +127,7 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void Empty_network_state_does_not_deserialize_a_pool()
-  {
+  public void Empty_network_state_does_not_deserialize_a_pool() {
     // A pipe saved with a zero-volume pool must restore with no cached state, so it does not
     // re-inject a phantom pool on load.
     var (_, be) = NewPipe();
@@ -153,15 +143,13 @@ public class PipeBeTests
   }
 
   [Fact]
-  public void A_live_network_broadcasts_pressure_into_placed_pipe_entities()
-  {
+  public void A_live_network_broadcasts_pressure_into_placed_pipe_entities() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
 
     var pipe = PipeTestWorld.MakePipe();
     var bes = new BlockEntityPipe[3];
-    for (int z = 0; z < 3; z++)
-    {
+    for (int z = 0; z < 3; z++) {
       var pos = new BlockPos(0, 0, z);
       bes[z] = new BlockEntityPipe { Pos = pos, Block = pipe };
       world.Place(pos, pipe, bes[z]);
@@ -189,8 +177,7 @@ public class PipeBeTests
     );
     net.BroadcastUpdate(world.Accessor);
 
-    foreach (var be in bes)
-    {
+    foreach (var be in bes) {
       Assert.Equal("Steam", be.Medium);
       Assert.True(
         be.Pressure > 0f,

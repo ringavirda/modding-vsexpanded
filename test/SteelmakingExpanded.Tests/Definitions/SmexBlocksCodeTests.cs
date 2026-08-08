@@ -5,17 +5,15 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The generated <c>SmexBlocks</c> table must stay in step with the definitions it was emitted from.
-/// A generated file with no drift test is worse than no generated file: it looks authoritative and is
-/// silently wrong the first time a variant group changes.
+/// The generated <c>SmexBlocks</c> table must stay in step with the definitions it was emitted from: a
+/// variant-group change that is not regenerated leaves the table wrong with no other signal.
 /// </summary>
-public class SmexBlocksCodeTests
-{
-  private static readonly Assembly Mod = typeof(SteelmakingExpanded.BlockStructures.SmokeStack.Blocks.BlockSmokeStackIntake).Assembly;
+public class SmexBlocksCodeTests {
+  private static readonly Assembly Mod =
+    typeof(SteelmakingExpanded.BlockStructures.SmokeStack.Blocks.BlockSmokeStackIntake).Assembly;
 
   [Fact]
-  public void Generated_block_codes_match_the_definitions()
-  {
+  public void Generated_block_codes_match_the_definitions() {
     var (ok, message) = BlockCodeEmitter.CheckOrWrite(
       "smex",
       Mod,

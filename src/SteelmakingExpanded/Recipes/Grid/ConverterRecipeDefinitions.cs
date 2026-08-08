@@ -7,13 +7,12 @@ using static SteelmakingExpanded.Recipes.RecipeIngredients;
 namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the Bessemer converter's three parts - the control, the transmission and the
-/// gas intake (migrated from recipes/grid/bessemerconverter.json). The two transmission variants (vanilla
-/// rusty gear / lpex's craftable gear) are interleaved with the non-gear control + gas intake, so this file
-/// is authored in explicit source order rather than a gear loop.
+/// Grid recipes for the Bessemer converter's three parts: the control, the transmission and the gas
+/// intake. The two transmission variants (vanilla rusty gear, lpex craftable gear) are interleaved with
+/// the control and gas intake, so the recipes are listed in explicit source order rather than emitted
+/// from a gear loop.
 /// </summary>
-public class ConverterRecipeDefinitions : IExRecipeDefProvider
-{
+public class ConverterRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

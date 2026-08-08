@@ -8,18 +8,16 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
-/// Base block entity for any block that is a node in a <see cref="BlockNetwork"/>
-/// (gas pipes, molten canals, …). Handles registering/unregistering the node with
-/// the <see cref="BlockNetworkModSystem"/>, persisting orientation and network
-/// state, and forwarding network updates to the concrete block entity.
+/// Base block entity for any block that is a node in a <see cref="BlockNetwork"/> (gas pipes, molten
+/// canals). Registers and unregisters the node with the <see cref="BlockNetworkModSystem"/>, persists
+/// orientation and network state, and forwards network updates to the concrete block entity.
+/// Registration and removal are server-side only.
 /// </summary>
-public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
-{
+public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
   /// <summary>The network manager this node is registered with, resolved on <see cref="Initialize"/>.</summary>
   public BlockNetworkModSystem? NetworkSystem { get; protected set; }
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     // Capture persisted state before base.Initialize() triggers AddNode, which may broadcast
     // null state and clear _savedNetworkState via OnNetworkUpdate.
     object? pendingRestore = _savedNetworkState;
@@ -27,31 +25,27 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
     base.Initialize(api);
     NetworkSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
 
-    if (api.Side == EnumAppSide.Server)
-    {
+    if (api.Side == EnumAppSide.Server) {
       if (NetworkSystem.GetNetworkAt(Pos) == null)
         NetworkSystem.AddNode(api.World.BlockAccessor, Pos, NetworkType);
 
       if (
         pendingRestore != null
         && NetworkSystem.GetNetworkAt(Pos) is BlockNetwork network
-      )
-      {
+      ) {
         network.RestoreState(pendingRestore);
         network.BroadcastUpdate(api.World.BlockAccessor);
       }
     }
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     base.OnBlockRemoved();
     if (Api?.Side == EnumAppSide.Server)
       NetworkSystem?.RemoveNode(Api.World.BlockAccessor, Pos);
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetString("networkType", NetworkType);
     tree.SetString("orientation", Orientation);
@@ -65,8 +59,7 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     NetworkType = tree.GetString("networkType", null);
     Orientation = tree.GetString("orientation");
@@ -114,8 +107,7 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode
     (Block as BlockNetworkNode)?.HasConnectorAt(face) ?? false;
 
   /// <inheritdoc/>
-  public virtual void OnNetworkUpdate(object? state)
-  {
+  public virtual void OnNetworkUpdate(object? state) {
     _networkState = state;
     if (IsNetworkStateMeaningful(state))
       _savedNetworkState = state;

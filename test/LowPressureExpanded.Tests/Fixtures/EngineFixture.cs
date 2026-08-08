@@ -11,13 +11,12 @@ namespace LowPressureExpanded.Tests;
 
 /// <summary>
 /// A constructed Watt engine in a shared <see cref="Scene"/>, wired with a sealed steam inlet pipe and
-/// a fluid-pump sub-machine at its sub-machine cell - the minimum to drive the engine's power tick
-/// (it engages only when a sub-machine demands power). Geometry comes from the real
-/// <see cref="BlockEngineWatt"/> (offsets fall back to coded defaults with no JSON): north-facing, so
-/// the steam inlet is south and the sub-machine sits two cells north.
+/// a fluid-pump sub-machine at its sub-machine cell, which is the minimum to drive the power tick: the
+/// engine engages only when a sub-machine demands power. Geometry comes from the real
+/// <see cref="BlockEngineWatt"/>, whose offsets fall back to coded defaults with no JSON. North-facing,
+/// so the steam inlet is south and the sub-machine sits two cells north.
 /// </summary>
-internal sealed class EngineFixture
-{
+internal sealed class EngineFixture {
   public readonly BlockEntityEngineWatt Engine;
   public readonly BlockEngineWatt Block;
   public readonly BlockEntityEngineFluidPump Pump;
@@ -25,8 +24,7 @@ internal sealed class EngineFixture
   private readonly Scene _scene;
   private readonly BlockPos _inletPipe;
 
-  public EngineFixture(Scene scene, BlockPos pos)
-  {
+  public EngineFixture(Scene scene, BlockPos pos) {
     _scene = scene;
 
     Block = TestBlocks.Configure(
@@ -37,7 +35,7 @@ internal sealed class EngineFixture
     );
     Engine = new BlockEntityEngineWatt { Pos = pos.Copy(), Block = Block };
     scene.Machine(pos, Block, Engine); // Initialize registers the production tick
-    RccFake.Complete(Engine); // re-apply: Initialize cleared _rcc from absent behaviors
+    RccFake.Complete(Engine); // re-apply: Initialize clears _rcc from the absent behaviors
 
     // Sealed single-cell steam inlet on the south face: north end abuts the engine's connector,
     // south end capped, so a produced charge holds its pressure instead of leaking.
@@ -56,7 +54,7 @@ internal sealed class EngineFixture
     );
     scene.Block(pos.AddCopy(0, 0, 2), LpexScenes.Cap(98));
 
-    // Fluid-pump sub-machine at the engine's sub-machine cell (provides the power demand).
+    // Fluid-pump sub-machine at the engine's sub-machine cell: the source of the power demand.
     BlockPos subPos = Block.SubmachinePos(pos);
     var pumpBlock = TestBlocks.Configure(
       new BlockEngineFluidPump(),
@@ -64,8 +62,7 @@ internal sealed class EngineFixture
       22,
       ("side", "east")
     );
-    Pump = new BlockEntityEngineFluidPump
-    {
+    Pump = new BlockEntityEngineFluidPump {
       Pos = subPos.Copy(),
       Block = pumpBlock,
     };
@@ -73,18 +70,14 @@ internal sealed class EngineFixture
   }
 
   /// <summary>
-  /// Charges the inlet steam network to <paramref name="atm"/> (a single 30 L pipe).
-  /// Charges over several passes on purpose: since the 2026-08-05 throughput gate one
-  /// <c>TryProduceGas</c> moves at most the run's weakest segment's litres-per-second, so the old single
-  /// <c>atm * 30f</c> push silently stopped at the throughput and no over-pressure test could ever reach
-  /// its band.
+  /// Charges the inlet steam network to <paramref name="atm"/> (a single 30 L pipe). Runs several
+  /// passes because one <c>TryProduceGas</c> moves at most the run's weakest segment's
+  /// litres-per-second, so a single push stops at the throughput limit short of the target.
   /// </summary>
-  public EngineFixture SetInletPressure(float atm)
-  {
+  public EngineFixture SetInletPressure(float atm) {
     var net = _scene.NetworkAt<PipeNetwork>(_inletPipe)!;
     float target = atm * 30f;
-    for (int i = 0; i < 512 && (net.State?.Volume ?? 0f) < target; i++)
-    {
+    for (int i = 0; i < 512 && (net.State?.Volume ?? 0f) < target; i++) {
       float before = net.State?.Volume ?? 0f;
       net.TryProduceGas(
         target,

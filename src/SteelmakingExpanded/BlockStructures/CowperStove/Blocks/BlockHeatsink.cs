@@ -10,13 +10,12 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.CowperStove.Blocks;
 
 /// <summary>
-/// Heat sink block on the cowper stove: glows with the stored regenerator heat.
-/// Always drops/picks as the canonical north variant.
+/// Heat sink block on the cowper stove; glows with the stored regenerator heat. Drops and picks as the
+/// canonical north variant whatever side it was placed on.
 /// </summary>
 [BlockRegister]
-public partial class BlockHeatSink : Block, IExBlockDefProvider
-{
-  /// <summary>The cowper-stove heat-sink blocktype, authored in C# (migrated from cowperstove/heatsink.json).</summary>
+public partial class BlockHeatSink : Block, IExBlockDefProvider {
+  /// <summary>The cowper-stove heat-sink blocktype, one per horizontal side.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -39,13 +38,11 @@ public partial class BlockHeatSink : Block, IExBlockDefProvider
     IBlockAccessor blockAccessor,
     BlockPos pos,
     ItemStack? stack = null
-  )
-  {
+  ) {
     if (
       pos != null
       && blockAccessor.GetBlockEntity(pos) is BlockEntityHeatSink hs
-    )
-    {
+    ) {
       byte val = MoltenMetal.GlowLevel(hs.Temperature);
       if (val > 0)
         return [8, 7, val];
@@ -53,8 +50,7 @@ public partial class BlockHeatSink : Block, IExBlockDefProvider
     return base.GetLightHsv(blockAccessor, pos, stack);
   }
 
-  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos)
-  {
+  public override ItemStack OnPickBlock(IWorldAccessor world, BlockPos pos) {
     return new ItemStack(
       world.GetBlock(CodeWithVariant("side", "north")) ?? this
     );
@@ -65,8 +61,7 @@ public partial class BlockHeatSink : Block, IExBlockDefProvider
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     return
     [
       new ItemStack(

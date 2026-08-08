@@ -10,19 +10,17 @@ namespace ExpandedLib.Tests;
 /// <summary>
 /// The overlay that fills <see cref="MaterialRoleRegistry"/> at <c>AssetsFinalize</c>, and the
 /// <see cref="MaterialRoleDef"/> / <see cref="MaterialRoleCatalogue"/> JSON binding a content mod ships.
-/// The asset read itself needs a running game (verified in-game); the load-bearing logic - valid-def
-/// registration, malformed-def skipping, and the camelCase→POCO mapping - is pinned here against the
-/// asset-free <see cref="MaterialRoleLoader.Overlay"/>.
+/// The asset read itself needs a running game; valid-def registration, malformed-def skipping and the
+/// camelCase to POCO mapping are covered against the asset-free
+/// <see cref="MaterialRoleLoader.Overlay"/>.
 /// </summary>
 [Collection("MaterialRoles")] // shares the process-wide registry with MaterialRoleRegistryTests
-public class MaterialRoleLoaderTests
-{
+public class MaterialRoleLoaderTests {
   public MaterialRoleLoaderTests() => MaterialRoleRegistry.Clear();
 
   #region Overlay
   [Fact]
-  public void Overlay_registers_every_valid_def()
-  {
+  public void Overlay_registers_every_valid_def() {
     MaterialRoleLoader.Overlay(
       new[]
       {
@@ -31,21 +29,29 @@ public class MaterialRoleLoaderTests
           Materials = new()
           {
             new MaterialRoleDef { Role = Roles.Flux, Code = "game:lime" },
-            new MaterialRoleDef { Role = Roles.IronOre, PathPrefix = "crushed-iron" },
+            new MaterialRoleDef
+            {
+              Role = Roles.IronOre,
+              PathPrefix = "crushed-iron",
+            },
           },
         },
       }
     );
 
-    Assert.True(MaterialRoleRegistry.IsRole(Roles.Flux, new AssetLocation("game:lime")));
     Assert.True(
-      MaterialRoleRegistry.IsRole(Roles.IronOre, new AssetLocation("game:crushed-iron-x"))
+      MaterialRoleRegistry.IsRole(Roles.Flux, new AssetLocation("game:lime"))
+    );
+    Assert.True(
+      MaterialRoleRegistry.IsRole(
+        Roles.IronOre,
+        new AssetLocation("game:crushed-iron-x")
+      )
     );
   }
 
   [Fact]
-  public void Overlay_skips_and_warns_on_a_def_missing_role_or_matcher()
-  {
+  public void Overlay_skips_and_warns_on_a_def_missing_role_or_matcher() {
     var warnings = new List<string>();
     MaterialRoleLoader.Overlay(
       new[]
@@ -68,8 +74,7 @@ public class MaterialRoleLoaderTests
   }
 
   [Fact]
-  public void Overlay_ignores_a_catalogue_with_no_materials()
-  {
+  public void Overlay_ignores_a_catalogue_with_no_materials() {
     MaterialRoleLoader.Overlay(new[] { new MaterialRoleCatalogue() });
     Assert.Empty(MaterialRoleRegistry.OfRole(Roles.Flux));
   }
@@ -77,8 +82,7 @@ public class MaterialRoleLoaderTests
 
   #region JSON binding
   [Fact]
-  public void MaterialRoleDef_binds_camelCase_json()
-  {
+  public void MaterialRoleDef_binds_camelCase_json() {
     var def = JsonConvert.DeserializeObject<MaterialRoleDef>(
       @"{ ""role"": ""fuel"", ""code"": ""game:coke"", ""pathPrefix"": ""crushed-iron"", ""value"": 2 }"
     )!;
@@ -90,8 +94,7 @@ public class MaterialRoleLoaderTests
   }
 
   [Fact]
-  public void MaterialRoleDef_minimal_json_leaves_the_optionals_null()
-  {
+  public void MaterialRoleDef_minimal_json_leaves_the_optionals_null() {
     var def = JsonConvert.DeserializeObject<MaterialRoleDef>(
       @"{ ""role"": ""flux"", ""code"": ""game:lime"" }"
     )!;
@@ -103,8 +106,7 @@ public class MaterialRoleLoaderTests
   }
 
   [Fact]
-  public void MaterialRoleCatalogue_binds_the_materials_array()
-  {
+  public void MaterialRoleCatalogue_binds_the_materials_array() {
     var cat = JsonConvert.DeserializeObject<MaterialRoleCatalogue>(
       @"{ ""materials"": [
           { ""role"": ""flux"", ""code"": ""game:lime"" },

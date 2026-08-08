@@ -15,13 +15,12 @@ using SmexAirBlowerBlock = SteelmakingExpanded.BlockStructures.Engine.Blocks.Blo
 namespace HighPressureExpanded.Tests;
 
 /// <summary>
-/// Whole-plant fixtures for the high-pressure Cornish engine driving each of its sub-machines. They
-/// reuse lpex's <see cref="EnginePlant"/> pipe/axis helper and <see cref="LpexScenes.Cap"/> - the
-/// sub-machine wiring is identical whichever engine drives it; only the engine and its pressure band
-/// differ.
+/// Whole-plant fixtures for the high-pressure Cornish engine driving each of its sub-machines.
+/// Sub-machine wiring is identical whichever engine drives it, so these reuse lpex's
+/// <see cref="EnginePlant"/> pipe/axis helper and <see cref="LpexScenes.Cap"/>; only the engine and its
+/// pressure band differ.
 /// </summary>
-internal sealed class MPGeneratorPlant
-{
+internal sealed class MPGeneratorPlant {
   public readonly BlockEntityEngineCornish Engine;
   public readonly BlockEntityEngineMPGenerator Generator;
 
@@ -29,13 +28,12 @@ internal sealed class MPGeneratorPlant
   private readonly BlockPos _inlet;
 
   /// <summary>
-  /// Models the improved steel setup's MP half: a constructed Cornish engine driving an MP-generator
-  /// sub-machine. With steam in its band the engine engages and delivers a mechanical-power budget
-  /// (<see cref="BlockEntityEngine.MpPowerBudget"/>) - the boiler→engine→MP-generator chain that powers
-  /// the converter / helve hammers.
+  /// Builds a constructed Cornish engine driving an MP-generator sub-machine. With steam in the
+  /// engine's band it engages and delivers a mechanical-power budget
+  /// (<see cref="BlockEntityEngine.MpPowerBudget"/>), the boiler to engine to MP-generator chain that
+  /// powers the converter and helve hammers.
   /// </summary>
-  public MPGeneratorPlant(Scene scene, BlockPos pos)
-  {
+  public MPGeneratorPlant(Scene scene, BlockPos pos) {
     _scene = scene;
 
     var engineBlock = TestBlocks.Configure(
@@ -44,8 +42,7 @@ internal sealed class MPGeneratorPlant
       40,
       ("side", "north")
     );
-    Engine = new BlockEntityEngineCornish
-    {
+    Engine = new BlockEntityEngineCornish {
       Pos = pos.Copy(),
       Block = engineBlock,
     };
@@ -54,7 +51,7 @@ internal sealed class MPGeneratorPlant
 
     BlockFacing inletFace = engineBlock.SteamInletFace;
     _inlet = pos.AddCopy(inletFace);
-    // The Cornish engine's band is high (≥6 atm) - a plated pipe bursts at 5, so feed it through cast.
+    // The Cornish band starts at 6 atm and a plated pipe bursts at 5, so the inlet runs in cast.
     EnginePlant.Pipe(
       scene,
       _inlet,
@@ -71,16 +68,14 @@ internal sealed class MPGeneratorPlant
       43,
       ("side", "east")
     );
-    Generator = new BlockEntityEngineMPGenerator
-    {
+    Generator = new BlockEntityEngineMPGenerator {
       Pos = subPos.Copy(),
       Block = genBlock,
     };
     scene.Machine(subPos, genBlock, Generator);
   }
 
-  public MPGeneratorPlant Steam(float atm)
-  {
+  public MPGeneratorPlant Steam(float atm) {
     _scene
       .NetworkAt<PipeNetwork>(_inlet)!
       .TryProduceGas(
@@ -94,10 +89,8 @@ internal sealed class MPGeneratorPlant
   }
 
   /// <summary>Holds the inlet at <paramref name="atm"/> for <paramref name="seconds"/> ticks (boiler stand-in).</summary>
-  public MPGeneratorPlant RunWithSteam(float atm, int seconds)
-  {
-    for (int i = 0; i < seconds; i++)
-    {
+  public MPGeneratorPlant RunWithSteam(float atm, int seconds) {
+    for (int i = 0; i < seconds; i++) {
       Steam(atm);
       _scene.Step(1);
     }
@@ -110,20 +103,16 @@ internal sealed class MPGeneratorPlant
 }
 
 /// <summary>
-/// Models the hot-blast supply's air half: a Cornish engine driving the smex air-blower sub-machine.
-/// With steam in the engine's band the blower pressurises Air on its left network; once that air
-/// crosses the blast threshold (<c>SmexValues.BlastPressureThreshold</c>) it counts as Blast - the
-/// boiler→engine→blower→blast chain that feeds the cowper stoves, blast-furnace tuyeres and the
-/// Bessemer converter.
+/// A Cornish engine driving the smex air-blower sub-machine. With steam in the engine's band the blower
+/// pressurises Air on its left network; above <c>SmexValues.BlastPressureThreshold</c> that air counts
+/// as Blast, the chain that feeds the cowper stoves, blast-furnace tuyeres and Bessemer converter.
 /// <para>
-/// This is the one fixture that needs hpex and smex in the same assembly. It lives here rather than in
-/// the smex suite because the reference can only run this way: smex must never see hpex, while hpex
-/// already depends on smex in the shipped chain. The blower itself bolts onto the engine purely
-/// through lpex's <see cref="BlockEntityEngine"/> base contract - there is no hpex↔smex code edge.
+/// Lives in the hpex suite because it is the only fixture needing hpex and smex in one assembly and the
+/// reference can only run this way: smex must not see hpex. The blower couples to the engine through
+/// lpex's <see cref="BlockEntityEngine"/> contract alone, so there is no hpex-to-smex code edge.
 /// </para>
 /// </summary>
-internal sealed class AirBlowerPlant
-{
+internal sealed class AirBlowerPlant {
   public readonly BlockEntityEngineCornish Engine;
   public readonly SmexAirBlowerBe Blower;
 
@@ -131,8 +120,7 @@ internal sealed class AirBlowerPlant
   private readonly BlockPos _inlet;
   private readonly BlockPos _blast;
 
-  public AirBlowerPlant(Scene scene, BlockPos pos)
-  {
+  public AirBlowerPlant(Scene scene, BlockPos pos) {
     _scene = scene;
 
     var engineBlock = TestBlocks.Configure(
@@ -141,15 +129,14 @@ internal sealed class AirBlowerPlant
       45,
       ("side", "north")
     );
-    Engine = new BlockEntityEngineCornish
-    {
+    Engine = new BlockEntityEngineCornish {
       Pos = pos.Copy(),
       Block = engineBlock,
     };
     scene.Machine(pos, engineBlock, Engine);
     RccFake.Complete(Engine);
 
-    // The Cornish band is high (≥6 atm) - feed the inlet through cast (plated bursts at 5).
+    // The Cornish band starts at 6 atm and a plated pipe bursts at 5, so the inlet runs in cast.
     BlockFacing inletFace = engineBlock.SteamInletFace;
     _inlet = pos.AddCopy(inletFace);
     EnginePlant.Pipe(
@@ -171,8 +158,8 @@ internal sealed class AirBlowerPlant
     Blower = new SmexAirBlowerBe { Pos = subPos.Copy(), Block = blowerBlock };
     scene.Machine(subPos, blowerBlock, Blower);
 
-    // Blast line: a sealed cast pipe on the blower's left face, oriented along that axis, so the
-    // pressurised air it pushes is held instead of leaking.
+    // Blast line: a sealed cast pipe on the blower's left face, along that axis, so the pressurised
+    // air it pushes is held instead of leaking.
     BlockFacing leftFace = ExOrientation.RotateFacing(
       BlockFacing.WEST,
       ExOrientation.AngleFromSide("east")
@@ -188,8 +175,7 @@ internal sealed class AirBlowerPlant
     scene.Block(_blast.AddCopy(leftFace), LpexScenes.Cap(50));
   }
 
-  public AirBlowerPlant Steam(float atm)
-  {
+  public AirBlowerPlant Steam(float atm) {
     _scene
       .NetworkAt<PipeNetwork>(_inlet)!
       .TryProduceGas(
@@ -203,10 +189,8 @@ internal sealed class AirBlowerPlant
   }
 
   /// <summary>Holds the inlet at <paramref name="atm"/> for <paramref name="seconds"/> ticks (boiler stand-in).</summary>
-  public AirBlowerPlant RunWithSteam(float atm, int seconds)
-  {
-    for (int i = 0; i < seconds; i++)
-    {
+  public AirBlowerPlant RunWithSteam(float atm, int seconds) {
+    for (int i = 0; i < seconds; i++) {
       Steam(atm);
       _scene.Step(1);
     }

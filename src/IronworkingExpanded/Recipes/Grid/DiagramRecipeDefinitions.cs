@@ -5,16 +5,14 @@ using static IronworkingExpanded.Recipes.RecipeIngredients;
 namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Phase-2 proof of the diagram-crafting system (docs/design/diagram-crafting.md): the SAME material
-/// pattern (a reusable diagram + cobblestone), the diagram picking the canal shape - what the seven
-/// hand-authored canal patterns in <see cref="MoltenRecipeDefinitions"/> collapse into. The diagram is
-/// <c>.Tool()</c> (isTool), so it is not consumed: draw it once, reuse it. Creative-only until the design
-/// table can draft diagrams, and it coexists with the legacy canal recipes for now (Phase 6 migrates them
-/// wholesale). The cobblestone capture is shared with those legacy recipes so both paths yield the same
-/// <c>{rock}</c> variants.
+/// Diagram-driven grid recipes for molten canals: one material pattern (a reusable diagram plus
+/// cobblestone) with the diagram picking the canal shape, in place of the seven hand-authored canal
+/// patterns in <see cref="MoltenRecipeDefinitions"/>. The diagram is <c>.Tool()</c> (isTool), so it is
+/// not consumed. Creative-only until the design table can draft diagrams, and it coexists with the
+/// legacy canal recipes, sharing their cobblestone capture so both paths yield the same <c>{rock}</c>
+/// variants. See docs/design/diagram-crafting.md.
 /// </summary>
-public class DiagramRecipeDefinitions : IExRecipeDefProvider
-{
+public class DiagramRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

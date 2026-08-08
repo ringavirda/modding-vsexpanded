@@ -2,19 +2,14 @@ namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
 /// A functional component of a multiblock machine (a molten tap, a charging hopper, a tuyere) whose own
-/// block entity is <b>not</b> the anchor, but which belongs to one. It resolves the anchor whose layout
-/// owns its cell - the reverse lookup the anchor never stores, because the anchor pushes to its components
-/// by structure-local offset and nothing points back, so the component scans up to find it (typically via a
-/// <see cref="MultiblockAnchorLink{T}"/> over <see cref="BlockEntityMultiblockStructure.FindAnchorOwning{T}"/>).
-/// <para>
-/// The shared <see cref="BlockBehaviorMultiblockStructure"/> build-outline projection asks this so the
-/// "show missing blocks" gesture is reachable from any real component, not only the core. A component with
-/// no owning anchor in range (placed before its anchor, or a broken structure) returns null, and the
-/// projection then does nothing - the one contract every functional component shares.
-/// </para>
+/// block entity is not the anchor but belongs to one. The anchor pushes to its components by
+/// structure-local offset and stores no reverse link, so the component scans up to find the anchor whose
+/// layout owns its cell, typically via a <see cref="MultiblockAnchorLink{T}"/> over
+/// <see cref="BlockEntityMultiblockStructure.FindAnchorOwning{T}"/>. The shared
+/// <see cref="BlockBehaviorMultiblockStructure"/> build-outline projection uses this so the missing-block
+/// outline is reachable from any component, not only the core.
 /// </summary>
-public interface IMultiblockComponent
-{
+public interface IMultiblockComponent {
   /// <summary>The multiblock anchor whose layout owns this component's cell, or null when none is in range.</summary>
   BlockEntityMultiblockStructure? ResolveOwningAnchor();
 }

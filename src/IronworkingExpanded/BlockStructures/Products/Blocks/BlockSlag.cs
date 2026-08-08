@@ -9,10 +9,9 @@ namespace IronworkingExpanded.BlockStructures.Products.Blocks;
 
 /// <summary>Solidified slag block left when blast mix finishes burning; drops slag items scaled to its stored count.</summary>
 [BlockRegister]
-public partial class BlockSlag : Block, IExBlockDefProvider
-{
-  /// <summary>The solidified-slag blocktype, authored in C# (migrated from blastfurnace/slag.json). Smeltable
-  /// back into slag items via its combustibleProps.</summary>
+public partial class BlockSlag : Block, IExBlockDefProvider {
+  /// <summary>The solidified-slag blocktype. Smeltable back into slag items via its
+  /// combustibleProps.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -49,14 +48,11 @@ public partial class BlockSlag : Block, IExBlockDefProvider
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
-    if (worldMap.BlockAccessor.GetBlockEntity(pos) is BlockEntitySlag be)
-    {
+  ) {
+    if (worldMap.BlockAccessor.GetBlockEntity(pos) is BlockEntitySlag be) {
       Item? slagItem = worldMap.GetItem(new AssetLocation("iwex", "slag"));
-      if (slagItem != null && be.SlagCount > 0)
-      {
-        // Randomize the drop slightly (e.g. 80-100% of the original mix)
+      if (slagItem != null && be.SlagCount > 0) {
+        // Drops 80-100% of the stored count, minimum 1.
         int dropCount = (int)(
           be.SlagCount * (0.8f + (worldMap.Rand.NextDouble() * 0.2f))
         );

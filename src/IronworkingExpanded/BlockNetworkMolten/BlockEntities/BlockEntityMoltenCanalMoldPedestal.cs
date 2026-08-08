@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
@@ -10,28 +11,25 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 
 /// <summary>
 /// Block entity for the mold pedestal: a canal node that holds one small tool mold
 /// and drains the network's liquid metal into it each tick until full or hardened.
+/// See docs/design/machines/molten-canal.md.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
-{
+public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
   /// <summary>Whether a mold is currently placed on the pedestal.</summary>
   public bool IsMold { get; set; } = false;
 
   private bool _isPouring = true;
 
   /// <summary>Whether the pedestal is actively filling the mold from the network.</summary>
-  public bool IsPouring
-  {
+  public bool IsPouring {
     get => _isPouring;
-    private set
-    {
+    private set {
       if (_isPouring == value)
         return;
       _isPouring = value;
@@ -41,14 +39,11 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     }
   }
 
-  // The pedestal's own cell clogs and is chiselled clear like any canal or the start block: it
-  // inherits the default SolidifiesWhenCold (true). Metal being actively delivered stays hot, so it
-  // only freezes once the run goes cold with metal left standing in the cell - then HasMoltenMetal/
-  // IsConnectionBroken stop the fill and sever it until the player chips it out.
+  // The pedestal's own cell clogs and is chiselled clear like any canal: it inherits the default
+  // SolidifiesWhenCold (true), so it freezes once the run goes cold with metal left standing in it.
 
-  // A closed pedestal severs itself from the run (single-connector leaf) so no metal flows into
-  // its cell - otherwise IsPouring only gates draining into the mold, leaving the cell to fill.
-  // Solidified (base) severs it too, so a frozen cell drops off the run until cleared.
+  // A closed pedestal severs itself from the run (single-connector leaf) so no metal flows into its
+  // cell; IsPouring alone would only gate draining into the mold. Solidified severs it too, via base.
   public override bool IsConnectionBroken() =>
     base.IsConnectionBroken() || !IsPouring;
 
@@ -72,13 +67,12 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   public override bool AcceptsSubMinimumFlow => true;
 
   // Cooldown rate for metal cast in the mold: the molten-system base scaled by the pedestal's mold
-  // coefficient (mirrors the converter's charge cooldown). Read live so a config change applies now.
+  // coefficient. Read live so a config change applies immediately.
   private static float MoldCooldownSpeed =>
     IwexValues.MoltenCooldownSpeed * IwexValues.MoldPedestalCooldownCoefficient;
 
   /// <summary>Toggles whether the pedestal fills its mold from the network.</summary>
-  public void TryTogglePouring()
-  {
+  public void TryTogglePouring() {
     IsPouring = !IsPouring;
     ExSounds.Play(Api, Pos, ExSounds.Latch, 0.7f);
     MarkDirty(true);
@@ -92,26 +86,23 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   // Throttle for the looping molten-pour hiss while draining into the mold.
   private long _lastDrainSoundMs;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     if (api.Side == EnumAppSide.Server)
       RegisterGameTickListener(OnServerTick, 1000);
     else
-      // Mold metal keeps cooling after the pour stops broadcasting, so refresh the surface glow
-      // from the stack's live temperature, or it freezes hot and snaps cold on interaction.
+      // Mold metal keeps cooling after the pour stops broadcasting, so refresh the surface glow from
+      // the stack's live temperature.
       RegisterGameTickListener(_ => UpdateRenderer(), 1000);
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     _moldRenderer?.Dispose();
     _moldRenderer = null;
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     _moldRenderer?.Dispose();
     _moldRenderer = null;
     base.OnBlockUnloaded();
@@ -120,8 +111,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   #region Mold attach / detach
 
   /// <summary>Places <paramref name="itemStack"/> as the pedestal's mold, adopting any metal it already holds.</summary>
-  public void AddMold(ItemStack itemStack)
-  {
+  public void AddMold(ItemStack itemStack) {
     MoldStack = itemStack.Clone();
     MoldStack.StackSize = 1;
 
@@ -139,8 +129,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   }
 
   /// <summary>Removes the mold and returns it, preserving any cast metal in its <c>blockEntityAttributes</c>.</summary>
-  public ItemStack RemoveMold()
-  {
+  public ItemStack RemoveMold() {
     IsMold = false;
     var stack = MoldStack!.Clone();
 
@@ -162,20 +151,17 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
   #region Server tick: drain network into mold
 
-  private void OnServerTick(float dt)
-  {
-    // A mold whose type a server admin disabled (/exmod molds ... off) is purged from the pedestal
-    // on load - the world-block/inventory copies are removed by the shared migration sweep, but a
-    // pedestal's mold is stored outside any inventory, so clear it here.
-    if (IsMold && ExMoldGate.IsToolMoldDisabled(MoldStack?.Collectible?.Code))
-    {
+  private void OnServerTick(float dt) {
+    // A mold type disabled through /exmod molds is purged here: the shared migration sweep only
+    // reaches world-block and inventory copies, and a pedestal's mold is stored outside any inventory.
+    if (IsMold && ExMoldGate.IsToolMoldDisabled(MoldStack?.Collectible?.Code)) {
       RemoveMold();
       MarkDirty(true);
       return;
     }
 
-    // Keep the cast mold's cooldown rate in step with the live config (before the pour gate) so a
-    // `/exmod config iwex MoltenCooldownSpeed ...` change affects metal already cast in the mold.
+    // Runs before the pour gate so a live MoltenCooldownSpeed config change also reaches metal that
+    // is already cast in the mold.
     if (IsMold && MoldMetalContent != null && MoldCurrentUnits > 0)
       MoltenMetal.SyncCooldownSpeed(
         Api.World,
@@ -183,17 +169,14 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
         MoldCooldownSpeed
       );
 
-    // The ceramic tier's ceiling: a fired-clay tool mold cannot hold iron-family metal. The instant the
-    // run delivers metal hotter than the clay ceiling, the mold cracks apart. This closes the pedestal
-    // loophole - draining fills the mold directly, bypassing the vanilla CanReceive gate, so without it a
-    // clay mold on an iron run would silently trap the cast (game:metalplate-castiron has no product).
-    // Our own cast-iron molds are a different block class and never satisfy the predicate.
+    // A fired-clay tool mold cannot hold iron-family metal: anything above the clay ceiling shatters it.
+    // Draining fills the mold directly and bypasses the vanilla CanReceive gate, so the ceiling has to be
+    // checked here. Cast-iron molds are a different block class and never match the predicate.
     if (
       IsMold
       && HasMoltenMetal
       && ClayHeatGate.WouldShatter(MoldStack?.Block, CellTemperature)
-    )
-    {
+    ) {
       ShatterMold();
       return;
     }
@@ -228,8 +211,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     if (drained <= 0f)
       return;
 
-    if (MoldMetalContent == null)
-    {
+    if (MoldMetalContent == null) {
       MoldMetalContent = MoltenMetal.CreateStack(
         Api.World,
         type,
@@ -238,9 +220,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
       );
       if (MoldMetalContent == null)
         return;
-    }
-    else
-    {
+    } else {
       MoltenMetal.SetTemperature(Api.World, MoldMetalContent, temp);
     }
     MoldCurrentUnits += (int)drained;
@@ -261,13 +241,10 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     && MoltenMetal.IsHardened(Api.World, MoldMetalContent);
 
   /// <summary>
-  /// Destroys the clay mold that just took an over-ceiling pour: the fired clay cracks apart, so the mold
-  /// is gone (no drop) and the metal that would have poured is lost - the run keeps the rest of its metal,
-  /// which now has nowhere to go until an iron mold is placed. A crack of sound and an ingame error to
-  /// nearby players make the failure legible rather than a silent void.
+  /// Destroys a clay mold that took an over-ceiling pour: the mold is removed with no drop and whatever it
+  /// held is lost. Plays a break sound and sends an ingame error to players within 8 blocks.
   /// </summary>
-  private void ShatterMold()
-  {
+  private void ShatterMold() {
     IsMold = false;
     MoldStack = null;
     MoldMetalContent = null;
@@ -292,8 +269,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
   #region Renderer
 
-  protected override void InitRenderer(ICoreClientAPI capi)
-  {
+  protected override void InitRenderer(ICoreClientAPI capi) {
     base.InitRenderer(capi);
 
     if (Block is not BlockMoltenCanalMoldPedestal pedestal)
@@ -318,15 +294,13 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     capi.Event.RegisterRenderer(_moldRenderer, EnumRenderStage.Opaque);
   }
 
-  protected override void UpdateRenderer()
-  {
+  protected override void UpdateRenderer() {
     base.UpdateRenderer();
 
     if (_moldRenderer == null)
       return;
 
-    if (!IsMold || MoldMetalContent == null || MoldCurrentUnits <= 0)
-    {
+    if (!IsMold || MoldMetalContent == null || MoldCurrentUnits <= 0) {
       _moldRenderer.FillRatio = 0f;
       _moldRenderer.MetalStack = null;
       return;
@@ -347,13 +321,11 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   public override bool OnTesselation(
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
-  )
-  {
+  ) {
     base.OnTesselation(mesher, tesselator);
 
-    // Pouring disabled: cap the inlet with the canal end piece so it reads as closed (like the tap).
-    if (!IsPouring)
-    {
+    // Pouring disabled: cap the inlet with the canal end piece so it reads as closed.
+    if (!IsPouring) {
       if (_endMesh == null && Orientation != null)
         _endMesh = MoltenMeshes.TesselateEndCap(
           Api,
@@ -363,9 +335,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
         );
       if (_endMesh != null)
         mesher.AddMeshData(_endMesh);
-    }
-    else
-    {
+    } else {
       _endMesh = null;
     }
 
@@ -375,8 +345,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
     if (
       _moldMesh == null
       || !Equals(_tessellatedMoldCode, MoldStack.Block.Code)
-    )
-    {
+    ) {
       tesselator.TesselateBlock(MoldStack.Block, out _moldMesh);
       _tessellatedMoldCode = MoldStack.Block.Code;
 
@@ -395,8 +364,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("isMold", IsMold);
     tree.SetBool("isPouring", IsPouring);
@@ -409,8 +377,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
 
     IsMold = tree.GetBool("isMold");
@@ -428,8 +395,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
 
   #region Block info
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
 
     dsc.AppendLine(
@@ -439,21 +405,18 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal
       )
     );
 
-    if (!IsMold)
-    {
+    if (!IsMold) {
       dsc.AppendLine(Lang.Get("iwex:moldpedestal-nomold"));
       return;
     }
 
-    if (MoldMetalContent == null || MoldCurrentUnits <= 0)
-    {
+    if (MoldMetalContent == null || MoldCurrentUnits <= 0) {
       dsc.AppendLine(Lang.Get("iwex:mold-empty"));
       return;
     }
 
     string state = Lang.Get(
-      MoltenMetal.StateOf(Api.World, MoldMetalContent) switch
-      {
+      MoltenMetal.StateOf(Api.World, MoldMetalContent) switch {
         MoltenState.Liquid => "iwex:metalstate-liquid",
         MoltenState.Hardened => "iwex:metalstate-hardened",
         _ => "iwex:metalstate-cooling",

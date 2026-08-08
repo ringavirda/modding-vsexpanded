@@ -16,10 +16,9 @@ namespace LowPressureExpanded.BlockNetworkPipe.Blocks;
 /// <see cref="BlockEntityValve.IsConnectionBroken"/>). Empty-hand right-click toggles it.
 /// </summary>
 [BlockRegister]
-public partial class BlockValve : BlockPipe
-{
-  /// <summary>The in-line valve blocktype, authored in C# (migrated from pipes/valve.json).
-  /// AllowedOrientations/fallback are derived from it by the base <see cref="BlockPipe"/>.</summary>
+public partial class BlockValve : BlockPipe {
+  /// <summary>The in-line valve blocktype. AllowedOrientations and the fallback are derived from it
+  /// by the base <see cref="BlockPipe"/>.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Valve(domain)];
 
@@ -56,14 +55,12 @@ public partial class BlockValve : BlockPipe
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is BlockEntityValve be
-    )
-    {
-      // Don't toggle while holding an item/block.
+    ) {
+      // The right-click stays with the held item while the player has one.
       if (!byPlayer.Entity.RightHandItemSlot.Empty)
         return false;
 
@@ -87,13 +84,11 @@ public partial class BlockValve : BlockPipe
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
-    var toggleHelp = new WorldInteraction
-    {
+    var toggleHelp = new WorldInteraction {
       ActionLangCode = "lpex:blockhelp-valve-toggle",
       MouseButton = EnumMouseButton.Right,
     };

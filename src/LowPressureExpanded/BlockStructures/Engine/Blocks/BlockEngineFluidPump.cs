@@ -16,9 +16,8 @@ namespace LowPressureExpanded.BlockStructures.Engine.Blocks;
 public partial class BlockEngineFluidPump
   : BlockEngineSubmachine,
     INetworkConnector,
-    IExBlockDefProvider
-{
-  /// <summary>The fluid-pump sub-machine blocktype, authored in C# (migrated from engine/fluidpump.json).</summary>
+    IExBlockDefProvider {
+  /// <summary>The fluid-pump sub-machine blocktype.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef

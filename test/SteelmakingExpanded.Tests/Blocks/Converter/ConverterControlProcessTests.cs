@@ -14,17 +14,16 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The Bessemer converter's dynamic charge process, exercised directly (the full
-/// <c>OnProductionTick</c> is gated on four aligned peripherals + a constructed vessel, but the per-
-/// state steps and the carbon model are reachable on their own): filling molten pig and seeding its
-/// carbon, blowing carbon down to retype pig → Bessemer steel (and past it, over-blow → soft iron),
-/// the mass-conserving slag/steel split, the cold-scrap temperature gate + its emergent freeze cap,
-/// and the split slag/steel pour out the shared output cell.
+/// The Bessemer converter's charge process, exercised step by step: <c>OnProductionTick</c> is gated on
+/// four aligned peripherals and a constructed vessel, but the per-state steps and the carbon model are
+/// reachable on their own. Covers filling molten pig and seeding its carbon, blowing carbon down to
+/// retype pig to Bessemer steel (and past it, over-blow to soft iron), the mass-conserving slag/steel
+/// split, the cold-scrap temperature gate and its freeze cap, and the split slag/steel pour out the
+/// shared output cell.
 /// </summary>
-public class ConverterControlProcessTests
-{
+public class ConverterControlProcessTests {
   // Resolved the same way the control resolves them, so a headless registry (game: convention) and a
-  // populated one (iwex:/smex:) both line up between what we push and what the control reads.
+  // populated one (iwex:/smex:) line up between what the test pushes and what the control reads.
   private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string Steel =>
     MetalRegistry.MoltenItemOf("bessemersteel").ToString();
@@ -37,8 +36,7 @@ public class ConverterControlProcessTests
   private static readonly (int x, int y, int z) InputTapLocal = (1, 1, 2);
   private static readonly (int x, int y, int z) OutputStartLocal = (1, -2, 2);
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     // Register both the convention (game:) and the shipped (iwex:/smex:) codes so the resolved token
     // resolves to a real item whatever the static MetalRegistry state is under the test runner.
@@ -60,10 +58,8 @@ public class ConverterControlProcessTests
     return world;
   }
 
-  private static BlockEntityConverterControl Control(TestWorld world)
-  {
-    var be = new BlockEntityConverterControl
-    {
+  private static BlockEntityConverterControl Control(TestWorld world) {
+    var be = new BlockEntityConverterControl {
       Pos = new BlockPos(0, 8, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -84,8 +80,7 @@ public class ConverterControlProcessTests
     TestWorld world,
     BlockEntityConverterControl control,
     (int x, int y, int z) local
-  )
-  {
+  ) {
     var pos = (BlockPos)
       ReflectionHelpers.Invoke(
         control,
@@ -94,8 +89,7 @@ public class ConverterControlProcessTests
         local.y,
         local.z
       )!;
-    var cell = new BlockEntityMoltenCanal
-    {
+    var cell = new BlockEntityMoltenCanal {
       Block = TestBlocks.Configure(
         new Block(),
         "smex:moltencanal-straight-ns",
@@ -130,21 +124,23 @@ public class ConverterControlProcessTests
     BlockEntityConverterControl be,
     int units,
     float temp = 1600f
-  )
-  {
+  ) {
     ReflectionHelpers.SetField(
       be,
       "_charge",
       MoltenCharge.Of(Metal(world, Pig, temp), units)
     );
-    ReflectionHelpers.SetField(be, "_carbon", SmexValues.BessemerPigCarbonStart);
+    ReflectionHelpers.SetField(
+      be,
+      "_carbon",
+      SmexValues.BessemerPigCarbonStart
+    );
     ReflectionHelpers.SetField(be, "_pigCharged", units);
   }
 
-  // Blows exactly the blast that takes the bath's carbon down to `to`, so a test picks the phase
-  // (still pig / at steel / over-blown) precisely rather than juggling litres.
-  private static void BlowToCarbon(BlockEntityConverterControl be, float to)
-  {
+  // Blows exactly the blast that takes the bath's carbon down to `to`, so a test names the phase
+  // (still pig, at steel, over-blown) directly rather than in litres.
+  private static void BlowToCarbon(BlockEntityConverterControl be, float to) {
     float carbon = CarbonOf(be);
     float blast = Math.Max(
       0f,
@@ -157,14 +153,12 @@ public class ConverterControlProcessTests
     BlockEntityConverterControl be,
     float airFactor
   ) =>
-    (HeatBalance)
-      ReflectionHelpers.Invoke(be, "ComputeHeatBalance", airFactor)!;
+    (HeatBalance)ReflectionHelpers.Invoke(be, "ComputeHeatBalance", airFactor)!;
 
   #region Filling
 
   [Fact]
-  public void TickFilling_draws_molten_pig_and_seeds_the_carbon()
-  {
+  public void TickFilling_draws_molten_pig_and_seeds_the_carbon() {
     var world = NewWorld();
     var be = Control(world);
     var input = PlaceCell(world, be, InputTapLocal);
@@ -184,8 +178,7 @@ public class ConverterControlProcessTests
   #region The dynamic carbon model
 
   [Fact]
-  public void Blowing_to_the_carbon_target_retypes_pig_to_bessemer_steel()
-  {
+  public void Blowing_to_the_carbon_target_retypes_pig_to_bessemer_steel() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000);
@@ -201,8 +194,7 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void Stopping_the_blow_above_the_target_leaves_it_as_pig()
-  {
+  public void Stopping_the_blow_above_the_target_leaves_it_as_pig() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000);
@@ -214,8 +206,7 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void Blowing_past_the_target_over_blows_the_steel_to_ingot_iron()
-  {
+  public void Blowing_past_the_target_over_blows_the_steel_to_ingot_iron() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000);
@@ -230,12 +221,11 @@ public class ConverterControlProcessTests
 
     BlowToCarbon(be, SmexValues.BessemerOverblowCarbon / 2f);
 
-    Assert.Equal(Iron, ChargeCode(be)); // soft ingot iron, the deliberate plain-iron path
+    Assert.Equal(Iron, ChargeCode(be)); // soft ingot iron, the plain-iron path
   }
 
   [Fact]
-  public void A_full_blow_conserves_mass_steel_plus_slag_never_exceeding_the_pig()
-  {
+  public void A_full_blow_conserves_mass_steel_plus_slag_never_exceeding_the_pig() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000);
@@ -246,7 +236,7 @@ public class ConverterControlProcessTests
     int steel = ChargeUnits(be);
     float slag = SlagOf(be);
     Assert.Contains("bessemersteel", ChargeCode(be));
-    // R2: never create matter - the gas share is the only thing that left.
+    // R2 (declared recovery): the gas share is the only mass that left.
     Assert.True(steel + slag <= 1000, $"steel {steel} + slag {slag} > 1000");
     // ~90u steel + ~6u slag per 100u pig (the shipped yields), leaving the ~4u gas.
     Assert.Equal(1000 * SmexValues.BessemerSteelYield, steel, 0f);
@@ -258,8 +248,7 @@ public class ConverterControlProcessTests
   #region Cold steel scrap - the temperature gate
 
   [Fact]
-  public void Cold_scrap_lowers_the_process_temperature()
-  {
+  public void Cold_scrap_lowers_the_process_temperature() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 2000);
@@ -276,15 +265,16 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void A_modest_scrap_charge_still_refines_and_yields_extra_steel()
-  {
+  public void A_modest_scrap_charge_still_refines_and_yields_extra_steel() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000);
     ReflectionHelpers.SetField(be, "_scrapUnits", 200);
 
     // Modest scrap keeps the bath above the refine floor, so the blow completes.
-    Assert.True(HeatBalance(be, 1f).TProcess >= SmexValues.BessemerRefineTemperature);
+    Assert.True(
+      HeatBalance(be, 1f).TProcess >= SmexValues.BessemerRefineTemperature
+    );
 
     BlowToCarbon(be, SmexValues.BessemerSteelCarbonTarget / 2f);
 
@@ -301,8 +291,7 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void An_excessive_scrap_charge_freezes_the_bath_before_it_refines()
-  {
+  public void An_excessive_scrap_charge_freezes_the_bath_before_it_refines() {
     var world = NewWorld();
     var be = Control(world);
     GivePig(world, be, 1000, temp: 1600f);
@@ -315,8 +304,8 @@ public class ConverterControlProcessTests
       $"an excessive scrap charge should drag T_process ({hb.TProcess}) below the melt point"
     );
 
-    // The blow drives the bath to that frozen equilibrium; the solidify latch then catches it - the
-    // emergent scrap cap reusing the existing solidified/chisel path, no hardcoded limit.
+    // The blow drives the bath to that frozen equilibrium and the solidify latch catches it. The scrap
+    // cap is emergent: it reuses the solidified/chisel path rather than a hardcoded limit.
     ReflectionHelpers.Invoke(be, "HoldBathTemperature", hb.TProcess);
     ReflectionHelpers.Invoke(be, "UpdateSolidified");
     Assert.True((bool)ReflectionHelpers.GetField(be, "_solidified")!);
@@ -327,8 +316,7 @@ public class ConverterControlProcessTests
   #region Split-pour out the shared output cell
 
   [Fact]
-  public void TickSteelPouring_pushes_the_steel_into_the_output_cell()
-  {
+  public void TickSteelPouring_pushes_the_steel_into_the_output_cell() {
     var world = NewWorld();
     var be = Control(world);
     var output = PlaceCell(world, be, OutputStartLocal);
@@ -346,8 +334,7 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void TickSlagPouring_pushes_slag_out_of_the_same_output_cell()
-  {
+  public void TickSlagPouring_pushes_slag_out_of_the_same_output_cell() {
     var world = NewWorld();
     var be = Control(world);
     var output = PlaceCell(world, be, OutputStartLocal);
@@ -377,8 +364,7 @@ public class ConverterControlProcessTests
   public void UpdateSolidified_latches_against_the_melting_point(
     float temp,
     bool expected
-  )
-  {
+  ) {
     var world = NewWorld();
     var be = Control(world);
     ReflectionHelpers.SetField(
@@ -400,8 +386,7 @@ public class ConverterControlProcessTests
   #region Operability gate
 
   [Fact]
-  public void CanOperate_refuses_an_incomplete_structure_with_a_reason()
-  {
+  public void CanOperate_refuses_an_incomplete_structure_with_a_reason() {
     var world = NewWorld();
     var be = Control(world);
 
@@ -412,8 +397,7 @@ public class ConverterControlProcessTests
   }
 
   [Fact]
-  public void IsConverterPresent_is_false_with_no_vessel_placed()
-  {
+  public void IsConverterPresent_is_false_with_no_vessel_placed() {
     var world = NewWorld();
     Assert.False(Control(world).IsConverterPresent());
   }

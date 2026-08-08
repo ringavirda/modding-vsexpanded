@@ -8,29 +8,33 @@ namespace ExpandedLib.Registries.Preferences;
 /// Reflection-driven preference registration for mods built on ExpandedLib, the preference-side
 /// counterpart to <see cref="Commands.CommandRegistry"/>. Scans an assembly for
 /// <see cref="IExPreference"/> classes carrying <see cref="PreferenceRegisterAttribute"/> and adds
-/// each one to <see cref="ExPreferences"/>, so a mod system never hand-wires preferences.
+/// each one to <see cref="ExPreferences"/>.
 /// </summary>
-public static class PreferenceRegistry
-{
+public static class PreferenceRegistry {
   /// <summary>
   /// Registers every <see cref="PreferenceRegisterAttribute"/>-decorated
-  /// <see cref="IExPreference"/> in <paramref name="asm"/> (default: the calling mod's own
-  /// assembly) with <see cref="ExPreferences"/>. Call from <c>ModSystem.StartClientSide</c>
-  /// after <see cref="ExPreferences.LoadConfig"/> and before the <c>.exmod</c> command registers,
-  /// since the command builds a sub-command per registered preference.
+  /// <see cref="IExPreference"/> in <paramref name="asm"/> (default: the calling assembly) with
+  /// <see cref="ExPreferences"/>. Call from <c>ModSystem.StartClientSide</c> after
+  /// <see cref="ExPreferences.LoadConfig"/> and before the <c>.exmod</c> command registers, since
+  /// that command builds a sub-command per registered preference.
   /// </summary>
-  public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null)
-  {
+  public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null) {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
 
-    foreach (Type type in ReflectionScan.GetCandidateTypes(asm))
-    {
+    foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
       var attr = type.GetCustomAttribute<PreferenceRegisterAttribute>();
       if (attr == null)
         continue;
 
-      if (!ReflectionScan.TryActivate<IExPreference>(api, modId, type, out var pref))
+      if (
+        !ReflectionScan.TryActivate<IExPreference>(
+          api,
+          modId,
+          type,
+          out var pref
+        )
+      )
         continue;
 
       ExPreferences.Register(pref);

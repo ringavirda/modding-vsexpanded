@@ -38,7 +38,8 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/stage-mods.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
@@ -47,19 +48,6 @@
         "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/stage-mods.sh",
-          "-Dest",
-          "${workspaceFolder}/bin/Mods",
-          "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
-          "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/Mods/mod",
-          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod",
-          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
-        ]
-      },
       "problemMatcher": []
     },
     {
@@ -87,14 +75,10 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/run-tests.ps1",
-        "-Version",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "test",
         "latest"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/run-tests.sh", "latest"]
-      },
       "group": "test",
       "problemMatcher": []
     },
@@ -105,14 +89,10 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/run-tests.ps1",
-        "-Version",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "test",
         "1.21"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.21"]
-      },
       "group": "test",
       "problemMatcher": []
     },
@@ -123,14 +103,10 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/run-tests.ps1",
-        "-Version",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "test",
         "1.20"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/run-tests.sh", "1.20"]
-      },
       "group": "test",
       "problemMatcher": []
     },
@@ -141,14 +117,10 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/run-tests.ps1",
-        "-Version",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "test",
         "all"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/run-tests.sh", "all"]
-      },
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": []
     },
@@ -159,7 +131,8 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/run-tests.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "test",
         "-Coverage"
       ],
       "group": "test",
@@ -172,14 +145,12 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "dotnet",
         "-Version",
         "latest"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "latest"]
-      },
       "problemMatcher": []
     },
     {
@@ -189,14 +160,12 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "dotnet",
         "-Version",
         "1.21"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.21"]
-      },
       "problemMatcher": []
     },
     {
@@ -206,14 +175,12 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-dotnet.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "dotnet",
         "-Version",
         "1.20"
       ],
-      "linux": {
-        "command": "bash",
-        "args": ["${workspaceFolder}/scripts/provision-dotnet.sh", "1.20"]
-      },
       "problemMatcher": []
     },
     {
@@ -223,22 +190,14 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-game.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "game",
         "-Version",
         "1.22",
         "-Kind",
         "client"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/provision-game.sh",
-          "-Version",
-          "1.22.0",
-          "-Kind",
-          "client"
-        ]
-      },
       "problemMatcher": []
     },
     {
@@ -256,7 +215,7 @@
 
     // ----------------------------------------------------------------------------------------
     // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
-    // Each version is provisioned into .game/<slug> by scripts/provision-game.* (no machine-wide
+    // Each version is provisioned into .game/<slug> by scripts/exmod.ps1 (no machine-wide
     // install needed); the build and launch read it from there. build-smex pulls exlib + lpex via
     // project references, so a single build covers the chain.
     // ----------------------------------------------------------------------------------------
@@ -339,7 +298,8 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/stage-mods.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.21",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
@@ -348,19 +308,6 @@
         "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/stage-mods.sh",
-          "-Dest",
-          "${workspaceFolder}/bin/Mods-1.21",
-          "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
-          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net8.0/Mods/mod",
-          "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net8.0/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod",
-          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
-        ]
-      },
       "problemMatcher": []
     },
     {
@@ -370,7 +317,8 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/stage-mods.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.20",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
@@ -379,19 +327,6 @@
         "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/stage-mods.sh",
-          "-Dest",
-          "${workspaceFolder}/bin/Mods-1.20",
-          "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
-          "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net7.0/Mods/mod",
-          "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net7.0/Mods/mod",
-          "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod",
-          "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
-        ]
-      },
       "problemMatcher": []
     },
     {
@@ -401,22 +336,14 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-game.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "game",
         "-Version",
         "1.21.0",
         "-Kind",
         "client"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/provision-game.sh",
-          "-Version",
-          "1.21.0",
-          "-Kind",
-          "client"
-        ]
-      },
       "problemMatcher": []
     },
     {
@@ -426,22 +353,14 @@
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/scripts/provision-game.ps1",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "provision",
+        "game",
         "-Version",
         "1.20.0",
         "-Kind",
         "client"
       ],
-      "linux": {
-        "command": "bash",
-        "args": [
-          "${workspaceFolder}/scripts/provision-game.sh",
-          "-Version",
-          "1.20.0",
-          "-Kind",
-          "client"
-        ]
-      },
       "problemMatcher": []
     },
     {

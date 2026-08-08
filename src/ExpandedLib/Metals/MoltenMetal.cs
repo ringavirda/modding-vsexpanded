@@ -10,15 +10,14 @@ namespace ExpandedLib.Metals;
 /// <summary>
 /// Coarse thermal state of a metal stack relative to its melting point.
 /// </summary>
-public enum MoltenState
-{
-  /// <summary>Above 80% of the melting point - flows freely.</summary>
+public enum MoltenState {
+  /// <summary>Above the liquid threshold (default 80% of the melting point): flows freely.</summary>
   Liquid,
 
-  /// <summary>Between the hardened and liquid thresholds - no longer flows, still hot.</summary>
+  /// <summary>Between the hardened and liquid thresholds: no longer flows, still hot.</summary>
   Cooling,
 
-  /// <summary>Below 30% of the melting point - fully hardened (chisellable).</summary>
+  /// <summary>Below the hardened threshold (default 30% of the melting point): chisellable.</summary>
   Hardened,
 }
 
@@ -28,8 +27,7 @@ public enum MoltenState
 /// the incandescent block-light scale, and player-facing metal/state formatting. Shared by every
 /// canal cell, tap, pedestal, barrel and the bessemer charge.
 /// </summary>
-public static class MoltenMetal
-{
+public static class MoltenMetal {
   /// <summary>Fraction of the melting point above which metal counts as liquid.</summary>
   public static float LiquidThreshold => ExlibValues.MetalLiquidThreshold;
 
@@ -50,16 +48,14 @@ public static class MoltenMetal
     string itemCode,
     float temperature,
     float? cooldownSpeed = null
-  )
-  {
+  ) {
     Item? item =
       itemCode.Length > 0 ? world.GetItem(new AssetLocation(itemCode)) : null;
     if (item == null)
       return null;
     var stack = new ItemStack(item, 1);
-    // SetTemperature first: it creates the "temperature" tree that SetCooldownSpeed writes into. On
-    // a fresh stack that tree doesn't exist yet, so setting the cooldown before it silently no-ops -
-    // which left the cooldownSpeed argument dead for every caller until this ordering fix.
+    // SetTemperature first: it creates the "temperature" tree SetCooldownSpeed writes into. On a fresh
+    // stack that tree does not exist yet, so setting the cooldown before it silently no-ops.
     SetTemperature(world, stack, temperature);
     SetCooldownSpeed(stack, cooldownSpeed ?? ExlibValues.MoltenCooldownDefault);
     return stack;
@@ -73,22 +69,19 @@ public static class MoltenMetal
     );
 
   /// <summary>
-  /// Re-applies the (live) cooldown rate to an already-stamped stack, rebasing the cooldown baseline
-  /// to the stack's current temperature so a changed <c>cooldownSpeed</c> takes effect from this
-  /// moment forward. Call once per tick on standing/parked molten content (canal cells, parked molds,
-  /// barrels, the bessemer charge) to keep a live <c>/exmod config</c> change to the molten cooldown
-  /// applying to metal already in the world - not just to metal added afterward. The rebase matters:
-  /// vanilla scales the elapsed cooling by <c>cooldownSpeed</c>, so rewriting the rate alone would
-  /// retro-apply the new rate across the whole span since the stack was last stamped (a temperature
-  /// jump). Re-stamping the current temperature first resets that span to zero. With an unchanged
-  /// rate the rebase is exact (linear decay), so this is a no-op for the common case.
+  /// Re-applies the cooldown rate to an already-stamped stack, rebasing the baseline to the stack's
+  /// current temperature so a changed <c>cooldownSpeed</c> takes effect from this moment forward.
+  /// Vanilla scales elapsed cooling by <c>cooldownSpeed</c>, so rewriting the rate without the rebase
+  /// would retro-apply it across the whole span since the last stamp. Call once per tick on standing
+  /// molten content (canal cells, parked molds, barrels, the bessemer charge) so a live
+  /// <c>/exmod config</c> change reaches metal already in the world. With an unchanged rate the rebase
+  /// is exact, so the common case is a no-op.
   /// </summary>
   public static void SyncCooldownSpeed(
     IWorldAccessor world,
     ItemStack stack,
     float? cooldownSpeed = null
-  )
-  {
+  ) {
     SetTemperature(world, stack, GetTemperature(world, stack));
     SetCooldownSpeed(stack, cooldownSpeed ?? ExlibValues.MoltenCooldownDefault);
   }
@@ -124,23 +117,26 @@ public static class MoltenMetal
 
   /// <summary>
   /// Classifies a metal at <paramref name="temperature"/> (°C) against its
-  /// <paramref name="meltingPoint"/> using the thresholds registered for
-  /// <paramref name="moltenItem"/> - a <see cref="MetalDef"/>'s per-metal
-  /// <c>liquidThreshold</c>/<c>hardenedThreshold</c> when it ships them, otherwise the global
-  /// <see cref="ExlibValues"/> defaults (so an unregistered metal classifies exactly as before this
-  /// per-metal wiring). Pure and world-free: the stack-based <see cref="StateOf"/> and the canal
-  /// cell (which tracks its own temperature, not a live stack) share this single primitive, so a
-  /// registered metal's thresholds apply at every classification site.
+  /// <paramref name="meltingPoint"/> using the thresholds registered for <paramref name="moltenItem"/>:
+  /// a <see cref="MetalDef"/>'s <c>liquidThreshold</c>/<c>hardenedThreshold</c> when it ships them,
+  /// otherwise the global <see cref="ExlibValues"/> defaults. Pure and world-free, so the stack-based
+  /// <see cref="StateOf"/> and the canal cell (which tracks its own temperature rather than a live
+  /// stack) share one primitive and a registered metal's thresholds apply at every classification site.
   /// </summary>
   public static MoltenState Classify(
     float temperature,
     float meltingPoint,
     AssetLocation moltenItem
-  )
-  {
-    if (temperature > MetalRegistry.LiquidThresholdOf(moltenItem) * meltingPoint)
+  ) {
+    if (
+      temperature
+      > MetalRegistry.LiquidThresholdOf(moltenItem) * meltingPoint
+    )
       return MoltenState.Liquid;
-    if (temperature < MetalRegistry.HardenedThresholdOf(moltenItem) * meltingPoint)
+    if (
+      temperature
+      < MetalRegistry.HardenedThresholdOf(moltenItem) * meltingPoint
+    )
       return MoltenState.Hardened;
     return MoltenState.Cooling;
   }
@@ -154,8 +150,8 @@ public static class MoltenMetal
     StateOf(world, stack) == MoltenState.Liquid;
 
   /// <summary>
-  /// Incandescent block-light level (0-24) for metal at <paramref name="temperature"/> -
-  /// the shared scale used by canals, barrels and the cowper heat sink.
+  /// Incandescent block-light level (0-24) for metal at <paramref name="temperature"/>. The shared
+  /// scale used by canals, barrels and the cowper heat sink.
   /// </summary>
   public static byte GlowLevel(float temperature) =>
     temperature > GlowMinTemp
@@ -164,16 +160,16 @@ public static class MoltenMetal
 
   /// <summary>
   /// Human-readable metal name from an item code ("game:ingot-iron" → "Iron", "iwex:slag" → "Slag").
-  /// Delegates to <see cref="MetalRegistry.DisplayName"/>, the single source of truth: it honours a
-  /// registered metal's localization key and otherwise applies this strip-and-capitalise convention.
+  /// Delegates to <see cref="MetalRegistry.DisplayName"/>, which honours a registered metal's
+  /// localization key and otherwise applies the strip-and-capitalise convention.
   /// </summary>
   public static string DisplayName(string metalItemCode) =>
     MetalRegistry.DisplayName(metalItemCode);
 
   /// <summary>
-  /// Formats a molten temperature for display, routed through <see cref="ExMeasure.Temperature"/> so it
-  /// honours the player's metric/imperial preference. Kept as an injectable delegate (tests and any
-  /// future consumer can override it); the simulation itself always stays metric.
+  /// Formats a molten temperature for display through <see cref="ExMeasure.Temperature"/>, honouring the
+  /// player's metric/imperial preference. Injectable so a consumer can override it; the simulation
+  /// itself always stays metric.
   /// </summary>
   public static System.Func<float, string> TemperatureFormatter { get; set; } =
     t => ExMeasure.Temperature(t);
@@ -185,16 +181,14 @@ public static class MoltenMetal
       : TemperatureFormatter(temperature);
 
   /// <summary>
-  /// Every smelted-crucible block as an <see cref="ItemStack"/> - the "pour from" list a molten
-  /// sink advertises in its interaction help (canal start, barrel). Matched by code path
-  /// (<c>crucible-*-smelted</c>), domain-blind, so vanilla and modded crucibles qualify alike.
-  /// Scan once on block load and cache the result.
+  /// Every smelted-crucible block as an <see cref="ItemStack"/>: the "pour from" list a molten sink
+  /// advertises in its interaction help (canal start, barrel). Matched by code path
+  /// (<c>crucible-*-smelted</c>), domain-blind, so vanilla and modded crucibles qualify alike. Scans
+  /// every loaded block; call once on block load and cache the result.
   /// </summary>
-  public static ItemStack[] SmeltedCrucibleStacks(IWorldAccessor world)
-  {
+  public static ItemStack[] SmeltedCrucibleStacks(IWorldAccessor world) {
     var stacks = new List<ItemStack>();
-    foreach (Block block in world.Blocks)
-    {
+    foreach (Block block in world.Blocks) {
       if (
         block.Code != null
         && block.Code.Path.StartsWith("crucible-")

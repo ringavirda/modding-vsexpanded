@@ -15,10 +15,9 @@ public partial class BlockEngineWatt
   : BlockEngine,
     IFillerHost,
     IEngineGeometry,
-    IExBlockDefProvider
-{
-  /// <summary>The Watt engine blocktype, authored in C# (migrated from engine/watt.json) off the shared
-  /// <see cref="BlockEngine.EngineShell"/>, adding only its six-stage construction table.</summary>
+    IExBlockDefProvider {
+  /// <summary>The Watt engine blocktype, built on the shared <see cref="BlockEngine.EngineShell"/> and
+  /// adding its six-stage construction table.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Watt(domain)];
 
@@ -31,8 +30,8 @@ public partial class BlockEngineWatt
         "lpex:engine/watt"
       )
       // The beam column reserved beside the engine, drawn as a front elevation of the x=0 plane (rows are
-      // Y from 3 down to 0, columns are Z 0..2). The bottom row's gaps are the engine cell itself (z=0) and
-      // the sub-machine cell (z=2). Authored per-engine because each engine's column differs.
+      // Y from 3 down to 0, columns are Z 0..2). The bottom row's gaps are the engine cell (z=0) and the
+      // sub-machine cell (z=2). Authored per engine because each engine's column differs.
       .FillerOffsets(
         StructureFootprint.Layout(f =>
           f.Origin(0, 3)
@@ -72,10 +71,7 @@ public partial class BlockEngineWatt
               .RequireMetalNails(domain, 2)
               .AddElements("Root/ControlPiston")
           )
-          .Stage(s =>
-            s.RequireMetalRod(domain, 4)
-              .AddElements("Root/Rod")
-          )
+          .Stage(s => s.RequireMetalRod(domain, 4).AddElements("Root/Rod"))
       );
 
   protected override RepairItem[] RepairItems =>

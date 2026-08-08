@@ -4,8 +4,8 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Networks;
-using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -15,8 +15,7 @@ namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 
 // Peripheral side of the control: resolving the structure-local offsets to world cells,
 // drawing blast/power through them, spawning the vessel, and the vessel-break handoff.
-public partial class BlockEntityConverterControl
-{
+public partial class BlockEntityConverterControl {
   #region Peripheral access
   // The converter's local frame faces opposite the structure angle, so peripherals map at
   // _currentAngle + 180 (see the +180 convention).
@@ -40,8 +39,7 @@ public partial class BlockEntityConverterControl
     Api.World.BlockAccessor.GetBlockEntity(PeripheralPos(local))
     as BlockEntityMoltenCanal;
 
-  private float TryConsumeBlast(float amount)
-  {
+  private float TryConsumeBlast(float amount) {
     // The intake is a fixed connector, not a node - the blast network lives in the cell across
     // its connector face, not in the intake cell.
     BlockPos intakePos = PeripheralPos(GasIntakeLocal);
@@ -61,7 +59,7 @@ public partial class BlockEntityConverterControl
       is not PipeNetwork pipeNet
     )
       return 0f;
-    // "Blast" is now air at or above the blast threshold pressure (≥ 3 atm).
+    // Blast is air at or above the blast threshold pressure (3 atm).
     if (
       pipeNet.State?.MediumType != "Air"
       || pipeNet.State.Pressure < SmexValues.BlastPressureThreshold
@@ -71,8 +69,7 @@ public partial class BlockEntityConverterControl
   }
 
   /// <summary>True if the transmission's mechanical network is turning.</summary>
-  public bool HasPower()
-  {
+  public bool HasPower() {
     var be = Api.World.BlockAccessor.GetBlockEntity(
       PeripheralPos(TransmissionLocal)
     );
@@ -101,8 +98,7 @@ public partial class BlockEntityConverterControl
   /// The gas intake must face the same way as the control (matching <c>side</c> variant) or its
   /// blast connector won't line up. The multiblock check accepts any orientation, so validate here.
   /// </summary>
-  public bool IsGasIntakeAligned()
-  {
+  public bool IsGasIntakeAligned() {
     Block intake = Api.World.BlockAccessor.GetBlock(
       PeripheralPos(GasIntakeLocal)
     );
@@ -113,11 +109,10 @@ public partial class BlockEntityConverterControl
   }
 
   /// <summary>
-  /// The transmission must face the same way as the control (matching "side" variant) or its axle
-  /// connector won't line up. Validated here like the gas intake.
+  /// The transmission must face the same way as the control (matching <c>side</c> variant) or its
+  /// axle connector will not line up. The multiblock check accepts any orientation.
   /// </summary>
-  public bool IsTransmissionAligned()
-  {
+  public bool IsTransmissionAligned() {
     Block trans = Api.World.BlockAccessor.GetBlock(
       PeripheralPos(TransmissionLocal)
     );
@@ -136,11 +131,9 @@ public partial class BlockEntityConverterControl
   /// gears and rods from the player's hotbar. Returns false (with reason) if the
   /// converter already exists, the cell is blocked, or materials are missing.
   /// </summary>
-  public bool TrySpawnConverter(IPlayer byPlayer, out string error)
-  {
+  public bool TrySpawnConverter(IPlayer byPlayer, out string error) {
     error = "";
-    if (IsConverterPresent())
-    {
+    if (IsConverterPresent()) {
       error = Lang.Get("smex:bessemer-err-converter-present");
       return false;
     }
@@ -150,8 +143,7 @@ public partial class BlockEntityConverterControl
 
     BlockPos pos = PeripheralPos(ConverterLocal);
     Block existing = Api.World.BlockAccessor.GetBlock(pos);
-    if (existing.Id != 0 && !existing.IsReplacableBy(converter))
-    {
+    if (existing.Id != 0 && !existing.IsReplacableBy(converter)) {
       error = Lang.Get("smex:bessemer-err-converter-blocked");
       return false;
     }
@@ -164,18 +156,16 @@ public partial class BlockEntityConverterControl
       pos,
       fillerAngle
     );
-    if (!StructureFillers.CanPlace(Api.World, fillerCells))
-    {
+    if (!StructureFillers.CanPlace(Api.World, fillerCells)) {
       error = Lang.Get("smex:bessemer-err-converter-blocked");
       return false;
     }
 
-    // Creative builders get the vessel for free - no gears/rods needed.
+    // Creative builders get the vessel for free, with no gears or rods consumed.
     bool isCreative =
       byPlayer.WorldData?.CurrentGameMode == EnumGameMode.Creative;
 
-    if (!isCreative && !HasSpawnMaterials(byPlayer))
-    {
+    if (!isCreative && !HasSpawnMaterials(byPlayer)) {
       error = Lang.Get(
         "smex:bessemer-err-materials",
         SmexValues.BessemerRequiredGears,
@@ -202,17 +192,16 @@ public partial class BlockEntityConverterControl
     return true;
   }
 
-  private Block? GetConverterBlock()
-  {
+  private Block? GetConverterBlock() {
     string side = Block.Variant["side"];
     return Api.World.GetBlock(
       new AssetLocation("smex:" + BlockConverterBessemer.BaseCode + "-" + side)
     );
   }
 
-  // Spawn materials are drawn from the hotbar only (the player presents them), unlike engine repairs.
-  // The converter vessel is gated on a smithable iron/steel large gear so it stays
-  // buildable in worlds where looted rusty gears can't be obtained.
+  // Spawn materials are taken from the hotbar only, unlike engine repairs. The gear must be a
+  // smithable iron or steel large gear, so the vessel stays buildable in worlds where looted rusty
+  // gears cannot be obtained.
   private static bool IsSpawnGear(ItemStack stack) =>
     stack.Collectible?.Code?.ToString()
       is "lpex:largegear-iron"
@@ -227,8 +216,7 @@ public partial class BlockEntityConverterControl
     && ExInventory.CountHotbar(byPlayer, IsSpawnRod)
       >= SmexValues.BessemerRequiredRods;
 
-  private void ConsumeSpawnMaterials(IPlayer byPlayer)
-  {
+  private void ConsumeSpawnMaterials(IPlayer byPlayer) {
     ExInventory.TakeHotbar(
       byPlayer,
       IsSpawnGear,
@@ -249,8 +237,7 @@ public partial class BlockEntityConverterControl
   /// Called by the converter block when it is broken. Returns the solidified
   /// drops (bits/slag) to scatter, and clears the charge regardless.
   /// </summary>
-  public ItemStack? OnConverterBroken()
-  {
+  public ItemStack? OnConverterBroken() {
     ItemStack? drops = null;
     if (_solidified && _charge != null && _charge.Units > 0)
       drops = BuildSolidifiedDrops();
@@ -263,10 +250,9 @@ public partial class BlockEntityConverterControl
     return drops;
   }
 
-  private ItemStack? BuildSolidifiedDrops()
-  {
-    // Breaking the vessel mangles part of the charge: drop a random few units less than chiselling
-    // would recover.
+  private ItemStack? BuildSolidifiedDrops() {
+    // Breaking the vessel mangles part of the charge: 0, 5 or 10 units less than chiselling would
+    // recover.
     int units = _charge?.Units ?? 0;
     int randLoss = Random.Shared.Next(3) * 5;
     int remaining = units - randLoss;
@@ -285,8 +271,7 @@ public partial class BlockEntityConverterControl
 
   // Clears the whole heat's bookkeeping (carbon, pig basis, cold scrap, slag) - used when the vessel is
   // emptied by breaking or chiselling.
-  private void ResetHeat()
-  {
+  private void ResetHeat() {
     _carbon = 0f;
     _pigCharged = 0;
     _scrapUnits = 0;

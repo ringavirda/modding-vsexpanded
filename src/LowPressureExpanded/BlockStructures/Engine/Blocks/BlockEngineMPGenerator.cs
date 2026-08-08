@@ -17,18 +17,16 @@ namespace LowPressureExpanded.BlockStructures.Engine.Blocks;
 public partial class BlockEngineMPGenerator
   : BlockEngineSubmachine,
     IMechanicalPowerBlock,
-    IExBlockDefProvider
-{
-  /// <summary>The MP-generator sub-machine blocktype, authored in C# (migrated from engine/mpgenerator.json).</summary>
+    IExBlockDefProvider {
+  /// <summary>The MP-generator sub-machine blocktype.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
         .Create(domain, "enginempgenerator", "engine/mpgenerator")
         .Class<BlockEngineMPGenerator>()
-        // Type-safe rather than a raw class-name string: both sides
-        // resolve through EntityRegistry.KeyFor, so renaming the block entity can never leave this
-        // registration pointing at a class that no longer exists (a load-time failure with no compile
-        // error - see the twin-tub blower for what that looks like).
+        // Typed rather than a raw class-name string: both sides resolve through
+        // EntityRegistry.KeyFor, so a rename of the block entity cannot leave this registration
+        // pointing at a missing class, which would fail at load time with no compile error.
         .EntityClass<BlockEntityEngineMPGenerator>()
         .Behavior("ExOrientable")
         .EntityBehavior("lpex.BEBehaviorEngineMPGenerator")

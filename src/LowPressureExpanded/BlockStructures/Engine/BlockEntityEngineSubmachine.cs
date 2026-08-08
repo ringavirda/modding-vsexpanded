@@ -1,8 +1,8 @@
 using System;
-using ExpandedLib.Renderers;
 using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
+using ExpandedLib.Renderers;
 using LowPressureExpanded.BlockNetworkPipe;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -12,16 +12,13 @@ using Vintagestory.GameContent;
 namespace LowPressureExpanded.BlockStructures.Engine;
 
 /// <summary>
-/// Base class for the engine sub-machines - fluid pump, air blower, MP generator. Each is placed
-/// at the engine's sub-machine cell and reads the master engine's
-/// <see cref="BlockEntityEngine.AvailablePower"/> to scale its output; the engine is the source
-/// of truth for the cycle tempo. This base owns the generic behavior (engine discovery, per-second
-/// <see cref="DoWork"/>, and the <c>idle</c>/<c>cycle</c> animator), so a new sub-machine only
-/// needs an <c>Animatable</c> behavior with <c>idle</c>/<c>cycle</c> animations plus a
-/// <see cref="DoWork"/> implementation.
+/// Base class for the engine sub-machines - fluid pump, air blower, MP generator. Each sits at the
+/// engine's sub-machine cell and scales its output by the master engine's
+/// <see cref="BlockEntityEngine.AvailablePower"/>. This base owns engine discovery, the per-second
+/// <see cref="DoWork"/> call and the <c>idle</c>/<c>cycle</c> animator, so a sub-machine needs only
+/// an <c>Animatable</c> behavior with those two animations plus a <see cref="DoWork"/> override.
 /// </summary>
-public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
-{
+public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine {
   private ToggleAnimator? _toggle;
   private long _tickId;
   private bool _animRunning;
@@ -35,13 +32,10 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   protected BlockPos? EnginePos;
 
   /// <summary>The master engine block entity, or <c>null</c> if not found. Re-resolves
-  /// <see cref="EnginePos"/> on demand: the BEs initialize in arbitrary chunk-load order, so a
-  /// one-shot lookup at Initialize can miss the engine (especially client-side). Lazily retrying
-  /// while unresolved fixes that.</summary>
-  public BlockEntityEngine? Engine
-  {
-    get
-    {
+  /// <see cref="EnginePos"/> on demand because block entities initialize in arbitrary chunk-load
+  /// order, so a one-shot lookup at Initialize can miss the engine.</summary>
+  public BlockEntityEngine? Engine {
+    get {
       EnginePos ??= FindEngine();
       return
         EnginePos != null
@@ -53,20 +47,18 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   }
 
   /// <summary>
-  /// Fraction of engine power (0..1) this sub-machine can actually use this tick.
-  /// The engine reads it to consume only as much steam as is demanded (no waste).
+  /// Fraction of engine power (0..1) this sub-machine can use this tick. The engine reads it and
+  /// consumes only as much steam as is demanded.
   /// </summary>
   public virtual float PowerDemand => Engine != null ? 1f : 0f;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     // The base registers the server production tick; this sub-machine adds the client visuals.
     base.Initialize(api);
     EnginePos = FindEngine();
     _toggle = new ToggleAnimator(this, BuildAnimator);
 
-    if (api.Side == EnumAppSide.Client)
-    {
+    if (api.Side == EnumAppSide.Client) {
       // Hold the rest pose immediately; the poll switches to cycle if the engine already runs.
       var engine = Engine;
       _animRunning = engine?.IsRunning ?? false;
@@ -82,10 +74,8 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   /// Fires per-stroke piston sounds as the <c>cycle</c> animation crosses its up/down keyframes.
   /// Phase-locked to the engine, so the two stroke in step.
   /// </summary>
-  private void OnKeyframeTick(float dt)
-  {
-    if (!_animRunning || _toggle?.AnimUtil?.animator is not { } animator)
-    {
+  private void OnKeyframeTick(float dt) {
+    if (!_animRunning || _toggle?.AnimUtil?.animator is not { } animator) {
       _lastCycleFrame = -1f;
       return;
     }
@@ -95,8 +85,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
       return;
     float frame = st.CurrentFrame;
     int total = st.Animation.QuantityFrames;
-    if (total > 1)
-    {
+    if (total > 1) {
       if (_lastCycleFrame >= 0f)
         OnCycleStroke(_lastCycleFrame, frame, total);
       _lastCycleFrame = frame;
@@ -128,15 +117,12 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
     this.ConnectedNetwork<PipeNetwork>(connectorFace);
 
   /// <summary>Locates the engine that owns this sub-machine cell (assumes aligned orientation).</summary>
-  private BlockPos? FindEngine()
-  {
+  private BlockPos? FindEngine() {
     // Invert BlockEngine.SubmachinePos (engine + rotate(submachineOffset, bodyAngle)) to get the
-    // engine cell. BodyAngle = AngleFromSide + 180 (the body frame), matched here; the offset is
-    // read from this block's own JSON so it stays in step with the engine's.
+    // engine cell. BodyAngle is AngleFromSide + 180.
     int angle =
       (ExOrientation.AngleFromSide(Block.Variant["side"]) + 180) % 360;
-    // The sub-machine's own JSON declares no submachineOffset (no generated member); it mirrors the
-    // engine's default cell so this inversion lines back up with the engine.
+    // The sub-machine declares no submachineOffset, so mirror the engine's default cell.
     Vec3i off = new(0, 0, 2);
     Vec3i r = ExOrientation.RotateOffset(off, angle);
     BlockPos cand = Pos.AddCopy(-r.X, -r.Y, -r.Z);
@@ -144,8 +130,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
       return cand;
 
     // Fallback: the engine sits two cells away along a horizontal axis.
-    foreach (var f in BlockFacing.HORIZONTALS)
-    {
+    foreach (var f in BlockFacing.HORIZONTALS) {
       BlockPos p = Pos.AddCopy(f.Normali.X * 2, 0, f.Normali.Z * 2);
       if (Api.World.BlockAccessor.GetBlockEntity(p) is BlockEntityEngine)
         return p;
@@ -163,13 +148,11 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
     DoWork(Engine!.AvailablePower, dt);
 
   // Mirror the engine's cycle animation; re-apply on a run-state flip or meaningful speed change.
-  private void OnClientAnimTick(float dt)
-  {
+  private void OnClientAnimTick(float dt) {
     var engine = Engine;
     bool run = engine?.IsRunning ?? false;
     float speed = engine?.AnimationSpeed ?? 1f;
-    if (run != _animRunning || (run && Math.Abs(speed - _animSpeed) > 0.05f))
-    {
+    if (run != _animRunning || (run && Math.Abs(speed - _animSpeed) > 0.05f)) {
       _animRunning = run;
       _animSpeed = speed;
       ApplyAnim(run, speed);
@@ -185,12 +168,11 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   protected virtual void OnClientStateTick(float dt) { }
 
   /// <summary>
-  /// Builds the animator from the block's shape, through the shared toggle helper (which owns the
-  /// null-animator ready-guard - a shape that fails to resolve leaves it not-ready, so we never pose
-  /// a null animator and vanilla GetBlockInfo can't NRE).
+  /// Builds the animator from the block's shape through the shared toggle helper, which owns the
+  /// null-animator ready guard: a shape that fails to resolve leaves it not ready, so no pose is
+  /// applied to a null animator and vanilla GetBlockInfo cannot NRE.
   /// </summary>
-  private void BuildAnimator(BEBehaviorAnimatable animatable)
-  {
+  private void BuildAnimator(BEBehaviorAnimatable animatable) {
     MeshData meshData = animatable.animUtil.CreateMesh(
       Block.Code.Path,
       null,
@@ -207,19 +189,15 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   }
 
   /// <summary>
-  /// Holds one animation at a time: <c>cycle</c> (at the engine's speed) while driven, <c>idle</c>
-  /// otherwise. Keeping one active stops the animator mesh vanishing (and the GetBlockInfo NRE).
+  /// Holds one animation at a time: <c>cycle</c> at the engine's speed while driven, <c>idle</c>
+  /// otherwise. Keeping one active stops the animator mesh from vanishing.
   /// </summary>
-  protected virtual void ApplyAnim(bool running, float speed)
-  {
-    _toggle?.Pose(util =>
-    {
-      if (running)
-      {
+  protected virtual void ApplyAnim(bool running, float speed) {
+    _toggle?.Pose(util => {
+      if (running) {
         util.StopAnimation("idle");
         util.StartAnimation(
-          new AnimationMetaData
-          {
+          new AnimationMetaData {
             Animation = "cycle",
             Code = "cycle",
             AnimationSpeed = speed,
@@ -228,13 +206,10 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
           }.Init()
         );
         PhaseLockToEngine();
-      }
-      else
-      {
+      } else {
         util.StopAnimation("cycle");
         util.StartAnimation(
-          new AnimationMetaData
-          {
+          new AnimationMetaData {
             Animation = "idle",
             Code = "idle",
             AnimationSpeed = 1f,
@@ -250,8 +225,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   /// Called by the master engine (from its own pose change) to start/stop this sub-machine's
   /// cycle in the same client frame as the engine's, so the two never start out of phase.
   /// </summary>
-  public void SyncAnimation(bool running, float speed)
-  {
+  public void SyncAnimation(bool running, float speed) {
     if (Api is not ICoreClientAPI)
       return;
     _animRunning = running;
@@ -260,11 +234,10 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
   }
 
   /// <summary>
-  /// Snaps our just-started <c>cycle</c> to the engine's current progress so the pistons stroke
-  /// in lockstep regardless of when each animation began.
+  /// Snaps a just-started <c>cycle</c> to the engine's current progress so the pistons stroke in
+  /// lockstep regardless of when each animation began.
   /// </summary>
-  private void PhaseLockToEngine()
-  {
+  private void PhaseLockToEngine() {
     if (
       _toggle?.AnimUtil?.animator is not { } animator
       || Engine is not { } engine
@@ -279,15 +252,13 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
 
   /// <summary>
   /// Fired when the engine snaps this sub-machine to its matching orientation via
-  /// <c>ExchangeBlock</c> (engine placed onto an existing sub-machine), keeping this BE alive.
-  /// Re-resolve the engine and rebind the animator to the new orientation, then restore the pose.
+  /// <c>ExchangeBlock</c>, which keeps this block entity alive. Re-resolves the engine, rebinds the
+  /// animator to the new orientation and restores the pose.
   /// </summary>
-  public override void OnExchanged(Block block)
-  {
+  public override void OnExchanged(Block block) {
     base.OnExchanged(block);
     EnginePos = null;
-    if (Api is ICoreClientAPI)
-    {
+    if (Api is ICoreClientAPI) {
       _toggle?.Rebuild();
       ApplyAnim(_animRunning, _animSpeed);
     }
@@ -300,8 +271,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
       ExOrientation.AngleFromSide(Block.Variant["side"])
     );
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     if (_tickId != 0)
       UnregisterGameTickListener(_tickId);
     if (_keyframeTickId != 0)
@@ -309,8 +279,7 @@ public abstract class BlockEntityEngineSubmachine : BlockEntityProductionMachine
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     if (_tickId != 0)
       UnregisterGameTickListener(_tickId);
     if (_keyframeTickId != 0)

@@ -9,16 +9,16 @@ namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// The load-time pattern sweep: at asset finalize every collectible carrying a <c>mold</c> attribute must
-/// parse into a valid <see cref="MoldSpec"/>, so a malformed pattern is surfaced as a load error instead of
-/// a silent no-op when a player rams it into a cell. Pure over a collectible list.
+/// parse into a valid <see cref="MoldSpec"/>, so a malformed pattern surfaces as a load error rather than
+/// a silent no-op when it is rammed into a cell. Operates on a plain collectible list.
 /// </summary>
-public class PatternValidationTests
-{
+public class PatternValidationTests {
   private static Item Pattern(string code, string moldJson) =>
-    new()
-    {
+    new() {
       Code = new AssetLocation("iwex", code),
-      Attributes = new JsonObject(JToken.Parse("{ \"mold\": " + moldJson + " }")),
+      Attributes = new JsonObject(
+        JToken.Parse("{ \"mold\": " + moldJson + " }")
+      ),
     };
 
   private const string ValidMold = """
@@ -32,17 +32,19 @@ public class PatternValidationTests
     """;
 
   [Fact]
-  public void All_valid_patterns_produce_no_errors()
-  {
-    var errors = PatternValidation.Validate([Pattern("pattern-plate-oak", ValidMold)]);
+  public void All_valid_patterns_produce_no_errors() {
+    var errors = PatternValidation.Validate([
+      Pattern("pattern-plate-oak", ValidMold),
+    ]);
     Assert.Empty(errors);
   }
 
   [Fact]
-  public void A_malformed_pattern_is_reported_with_its_code_and_reason()
-  {
+  public void A_malformed_pattern_is_reported_with_its_code_and_reason() {
     var bad = ValidMold.Replace("\"capacity\": 136", "\"capacity\": 0");
-    var errors = PatternValidation.Validate([Pattern("pattern-plate-oak", bad)]);
+    var errors = PatternValidation.Validate([
+      Pattern("pattern-plate-oak", bad),
+    ]);
 
     Assert.Single(errors);
     Assert.Contains("iwex:pattern-plate-oak", errors[0]); // names the offending pattern
@@ -50,23 +52,25 @@ public class PatternValidationTests
   }
 
   [Fact]
-  public void Non_pattern_collectibles_are_skipped()
-  {
+  public void Non_pattern_collectibles_are_skipped() {
     // An item with no `mold` attribute is not a pattern and must not be flagged.
     var plain = new Item { Code = new AssetLocation("game", "stick") };
     Assert.Empty(PatternValidation.Validate([plain]));
   }
 
   [Fact]
-  public void A_bad_pattern_among_good_ones_is_the_only_one_reported()
-  {
-    var errors = PatternValidation.Validate(
-      [
-        Pattern("pattern-plate-oak", ValidMold),
-        Pattern("pattern-broken-oak", ValidMold.Replace("\"shape\": \"iwex:casting/cell-filling-plate\"", "\"shape\": \"\"")),
-        new Item { Code = new AssetLocation("game", "plank-oak") },
-      ]
-    );
+  public void A_bad_pattern_among_good_ones_is_the_only_one_reported() {
+    var errors = PatternValidation.Validate([
+      Pattern("pattern-plate-oak", ValidMold),
+      Pattern(
+        "pattern-broken-oak",
+        ValidMold.Replace(
+          "\"shape\": \"iwex:casting/cell-filling-plate\"",
+          "\"shape\": \"\""
+        )
+      ),
+      new Item { Code = new AssetLocation("game", "plank-oak") },
+    ]);
 
     Assert.Single(errors);
     Assert.Contains("pattern-broken-oak", errors.Single());

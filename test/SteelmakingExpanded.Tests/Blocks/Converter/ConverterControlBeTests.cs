@@ -11,30 +11,26 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The Bessemer converter control's persisted state machine and its break handoff. The full
-/// production tick is gated on a constructed vessel plus four aligned peripherals (transmission MP
-/// network, gas blast, molten in/out cells), which is out of scope to fully fake; this pins the
-/// operational state that survives a reload and the charge-clearing on break.
+/// The Bessemer converter control's persisted state machine and its break handoff. The production
+/// tick is gated on a constructed vessel plus four aligned peripherals (transmission MP network, gas
+/// blast, molten in and out cells) and is not faked here; these cover the operational state that
+/// survives a reload and the charge clearing on break.
 /// </summary>
-public class ConverterControlBeTests
-{
+public class ConverterControlBeTests {
   private static readonly TestWorld ResolveWorld = NewResolveWorld();
 
-  private static TestWorld NewResolveWorld()
-  {
+  private static TestWorld NewResolveWorld() {
     var w = new TestWorld();
     w.RegisterItem("game:ingot-iron"); // so a saved charge stack resolves on reload
     return w;
   }
 
-  // The charge's units through the reflected MoltenCharge, or 0 when there is no charge.
+  // Units on the reflected MoltenCharge, or 0 when there is no charge.
   private static int ChargeUnits(BlockEntityConverterControl be) =>
     (ReflectionHelpers.GetField(be, "_charge") as MoltenCharge)?.Units ?? 0;
 
-  private static BlockEntityConverterControl Control(TestWorld? world = null)
-  {
-    var be = new BlockEntityConverterControl
-    {
+  private static BlockEntityConverterControl Control(TestWorld? world = null) {
+    var be = new BlockEntityConverterControl {
       Pos = new BlockPos(0, 8, 0),
       Block = TestBlocks.Configure(
         new Block(),
@@ -47,23 +43,24 @@ public class ConverterControlBeTests
     return be;
   }
 
-  private static ItemStack IronCharge(TestWorld world)
-  {
+  private static ItemStack IronCharge(TestWorld world) {
     var item = new Item { Code = new AssetLocation("game:ingot-iron") };
     return new ItemStack(item, 1);
   }
 
   [Fact]
-  public void OpState_defaults_to_normal()
-  {
+  public void OpState_defaults_to_normal() {
     Assert.Equal(ConverterOpState.Normal, Control().OpState);
   }
 
   [Fact]
-  public void Operational_state_round_trips_through_the_tree()
-  {
+  public void Operational_state_round_trips_through_the_tree() {
     var src = Control();
-    ReflectionHelpers.SetProperty(src, "OpState", ConverterOpState.SteelPouring);
+    ReflectionHelpers.SetProperty(
+      src,
+      "OpState",
+      ConverterOpState.SteelPouring
+    );
     ReflectionHelpers.SetField(
       src,
       "_charge",
@@ -81,17 +78,20 @@ public class ConverterControlBeTests
     dst.FromTreeAttributes(tree, ResolveWorld.World);
 
     Assert.Equal(ConverterOpState.SteelPouring, dst.OpState);
-    Assert.Equal(30, ChargeUnits(dst)); // charge (stack + units) round-trips through the tree
-    // The dynamic-model bookkeeping (carbon, cold scrap, slag pool) rides the tree too.
+    Assert.Equal(30, ChargeUnits(dst)); // stack and units both round-trip
+    // Carbon fraction, cold scrap and slag pool ride the tree as well.
     Assert.Equal(0.031f, (float)ReflectionHelpers.GetField(dst, "_carbon")!, 4);
     Assert.Equal(45, (int)ReflectionHelpers.GetField(dst, "_scrapUnits")!);
-    Assert.Equal(12f, (float)ReflectionHelpers.GetField(dst, "_moltenSlag")!, 2);
+    Assert.Equal(
+      12f,
+      (float)ReflectionHelpers.GetField(dst, "_moltenSlag")!,
+      2
+    );
     Assert.True((bool)ReflectionHelpers.GetField(dst, "_solidified")!);
   }
 
   [Fact]
-  public void Breaking_a_solidified_converter_returns_drops_and_clears_the_charge()
-  {
+  public void Breaking_a_solidified_converter_returns_drops_and_clears_the_charge() {
     var world = new TestWorld();
     // The solidified-bits drop resolves the bit item; any non-null item yields a stack.
     world
@@ -114,8 +114,7 @@ public class ConverterControlBeTests
   }
 
   [Fact]
-  public void Breaking_a_liquid_converter_clears_the_charge_without_drops()
-  {
+  public void Breaking_a_liquid_converter_clears_the_charge_without_drops() {
     var world = new TestWorld();
     var be = Control(world);
     ReflectionHelpers.SetField(

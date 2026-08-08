@@ -11,27 +11,25 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The one heat-balance fact that needs both furnaces in scope. The model itself - the calibration table,
-/// the contributors, the clamps - is iwex's and is asserted there against the cold furnace's block entity;
-/// what cannot be checked from that suite is that smex's furnace agrees, because iwex cannot see the hot
-/// type. That parity is the whole point of the merge, so it is pinned here.
+/// Heat-balance parity between the cold and hot blast furnaces, the one fact that needs both types in
+/// scope. The model itself - calibration table, contributors, clamps - is iwex's and is asserted there
+/// against the cold furnace's block entity; iwex cannot see the hot type, so their agreement is pinned
+/// here.
 /// </summary>
-public class HeatBalanceTests
-{
+public class HeatBalanceTests {
   private static BlockEntityBlastFurnaceHot HotFurnace() =>
     Stand(new BlockEntityBlastFurnaceHot(), "smex:blastfurnacecore-n");
 
   private static BlockEntityBlastFurnaceCold ColdFurnace() =>
     Stand(new BlockEntityBlastFurnaceCold(), "iwex:furnace-blastcore-tier1-n");
 
-  // Note: two concrete overloads rather than one generic - a `where T : BlockEntity` constraint is
-  // resolved by xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
+  // Two concrete overloads rather than one generic: a `where T : BlockEntity` constraint is resolved by
+  // xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.
 
   private static BlockEntityBlastFurnaceHot Stand(
     BlockEntityBlastFurnaceHot be,
     string code
-  )
-  {
+  ) {
     StandUp(be, code);
     return be;
   }
@@ -39,14 +37,12 @@ public class HeatBalanceTests
   private static BlockEntityBlastFurnaceCold Stand(
     BlockEntityBlastFurnaceCold be,
     string code
-  )
-  {
+  ) {
     StandUp(be, code);
     return be;
   }
 
-  private static void StandUp(BlockEntity be, string code)
-  {
+  private static void StandUp(BlockEntity be, string code) {
     var world = new TestWorld();
     be.Pos = new BlockPos(0, 16, 0);
     be.Block = TestBlocks.Configure(new Block(), code, 1, ("side", "north"));
@@ -55,7 +51,11 @@ public class HeatBalanceTests
     ReflectionHelpers.Invoke(be, "CacheAttributes");
   }
 
-  private static HeatBalance Balance(object be, float fuelFrac, float blastTemp) =>
+  private static HeatBalance Balance(
+    object be,
+    float fuelFrac,
+    float blastTemp
+  ) =>
     (HeatBalance)
       ReflectionHelpers.Invoke(
         be,
@@ -63,10 +63,8 @@ public class HeatBalanceTests
         new BurdenMix(1f - 0.05f - fuelFrac, 0.05f, fuelFrac),
         1f,
         blastTemp,
-        // The furnace's own capacity, so every row below is the full-charge case - which is what the
-        // parity claim against iwex needs. It passed `IwexValues.BlastMixRequiredToFire` (320) until that
-        // key was deleted; 320 was a fire threshold, not a capacity, and a hot blast furnace holds far
-        // more, so these rows were quietly the "loaded to a quarter" case on both sides of the parity.
+        // The furnace's own capacity, so every row below is the full-charge case, which is what the
+        // parity claim needs.
         (int)ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!
       )!;
 
@@ -78,12 +76,9 @@ public class HeatBalanceTests
   public void Both_furnaces_compute_the_same_balance_from_the_same_conditions(
     float fuelFrac,
     float blastTemp
-  )
-  {
-    // The whole point of the merge: there is one blast furnace. Feed the cold anchor's block entity and
-    // the hot anchor's the same charge and the same blast and they must agree to the degree - what
-    // differs in game is the layout they sit in and whether a cowper is on the line, never the model.
-    // Two independent copies of these formulas is what this replaces.
+  ) {
+    // Same charge and same blast into both block entities: they must agree to the degree. What differs
+    // in game is the layout they sit in and whether a cowper is on the line, never the model.
     HeatBalance cold = Balance(ColdFurnace(), fuelFrac, blastTemp);
     HeatBalance hot = Balance(HotFurnace(), fuelFrac, blastTemp);
 

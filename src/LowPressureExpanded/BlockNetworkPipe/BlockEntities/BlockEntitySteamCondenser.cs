@@ -1,5 +1,5 @@
-using ExpandedLib;
 using System;
+using ExpandedLib;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
@@ -14,14 +14,13 @@ using Vintagestory.API.MathTools;
 namespace LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 
 /// <summary>
-/// The steam condenser's logic. Each tick it passes water through its W/E faces - the fuller side
-/// is the inlet, the other the outlet (inlet pressure preserved downstream) - and condenses steam
-/// drawn from the north line into that through-flow. An unplumbed face leaks: no outlet sprays the
-/// backed-up water (plus condensate) out, no water line at all vents drawn steam as gas.
+/// The steam condenser's logic. Each tick it passes water through its W/E faces - the fuller side is
+/// the inlet, the other the outlet, and the inlet pressure is preserved downstream - and condenses
+/// steam drawn from the north line into that through-flow. With no outlet piped, the backed-up water
+/// and condensate spray out of the open face; with no water line at all, drawn steam vents as gas.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntitySteamCondenser : BlockEntity
-{
+public class BlockEntitySteamCondenser : BlockEntity {
   private long _tickId;
 
   // Client-display mirror, synced via the tree.
@@ -34,17 +33,14 @@ public class BlockEntitySteamCondenser : BlockEntity
   private PipeNetwork? ConnectedNetwork(BlockFacing connectorFace) =>
     this.ConnectedNetwork<PipeNetwork>(connectorFace);
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
-    if (api.Side == EnumAppSide.Server)
-    {
+    if (api.Side == EnumAppSide.Server) {
       _tickId = RegisterGameTickListener(OnTick, 1000);
     }
   }
 
-  private void OnTick(float dt)
-  {
+  private void OnTick(float dt) {
     if (CondenserBlock == null)
       return;
 
@@ -58,17 +54,16 @@ public class BlockEntitySteamCondenser : BlockEntity
 
     bool condensing = Process(steamNet, netA, faceA, netB, faceB, dt, ba);
 
-    if (condensing != _condensing)
-    {
+    if (condensing != _condensing) {
       _condensing = condensing;
       MarkDirty(true);
     }
   }
 
   /// <summary>
-  /// Runs the water line through the W↔E faces (fuller side = inlet) and condenses steam from the
-  /// north line into that through-flow, preserving the inlet's pressure downstream. Returns
-  /// <c>true</c> if any steam was condensed this tick (for the HUD).
+  /// Runs the water line through the W↔E faces (fuller side is the inlet) and condenses steam from
+  /// the north line into that through-flow, preserving the inlet's pressure downstream. Returns
+  /// <c>true</c> if any steam was condensed this tick, which drives the HUD state.
   /// </summary>
   private bool Process(
     PipeNetwork? steamNet,
@@ -78,15 +73,14 @@ public class BlockEntitySteamCondenser : BlockEntity
     BlockFacing faceB,
     float dt,
     IBlockAccessor ba
-  )
-  {
+  ) {
     // Only water-capable sides count for the water line; a gas run is unplumbed for water.
     PipeNetwork? wa = CanTakeWater(netA) ? netA : null;
     PipeNetwork? wb = CanTakeWater(netB) ? netB : null;
 
     bool steam = HasCondensableGas(steamNet, out float rawFactor);
-    // Litres of condensate = gas drawn / expansion factor; the medium def may override the factor,
-    // else fall back to lpex's own steam-expansion default (exlib carries no lpex constant).
+    // Litres of condensate = gas drawn / expansion factor. The medium def may override the factor;
+    // otherwise the lpex steam-expansion default applies, since exlib carries no lpex constant.
     float condenseFactor =
       rawFactor > 0f ? rawFactor : LpexValues.SteamExpansionFactor;
     float steamTemp = steam
@@ -94,8 +88,7 @@ public class BlockEntitySteamCondenser : BlockEntity
       : LpexValues.BoilingPoint;
 
     // Both water faces on the same run (a loop): nothing to pass, just drop in condensate.
-    if (wa != null && ReferenceEquals(wa, wb))
-    {
+    if (wa != null && ReferenceEquals(wa, wb)) {
       if (!steam)
         return false;
       float looped =
@@ -116,10 +109,9 @@ public class BlockEntitySteamCondenser : BlockEntity
     else
       (inNet, outNet, outFace) = (wb, wa, faceA);
 
-    // No water line plumbed on either side - there is nowhere to condense steam into, so any
-    // steam drawn just vents out of the condenser as gas (capped at the pipe-leak rate).
-    if (inNet == null && outNet == null)
-    {
+    // No water line on either side: there is nowhere to condense into, so drawn steam vents out of
+    // the condenser as gas, capped at the pipe gas-leak rate.
+    if (inNet == null && outNet == null) {
       if (!steam)
         return false;
       float ventGas = steamNet!.TryConsumeGas(
@@ -129,8 +121,7 @@ public class BlockEntitySteamCondenser : BlockEntity
         ),
         ba
       );
-      if (ventGas > 0f)
-      {
+      if (ventGas > 0f) {
         ExParticles.GasVent(
           Api.World,
           Pos,
@@ -150,8 +141,7 @@ public class BlockEntitySteamCondenser : BlockEntity
 
     // Steam condenses into its (much smaller) hot-water volume, merged into the line below.
     float condensed = 0f;
-    if (steam)
-    {
+    if (steam) {
       float used = steamNet!.TryConsumeGas(
         LpexValues.CondenserSteamPerSecond * dt,
         ba
@@ -159,11 +149,10 @@ public class BlockEntitySteamCondenser : BlockEntity
       condensed = used / condenseFactor;
     }
 
-    // No outlet piped: the water line backs up and leaks out the open outlet face. Drain
-    // what the open end can shed from the inlet, add the condensate, and spray it all out
-    // (the water is lost). Capped at the pipe water-leak rate like any open-ended run.
-    if (outNet == null)
-    {
+    // No outlet piped: the water line backs up and leaks out of the open outlet face. Drain what the
+    // open end can shed from the inlet, add the condensate and spray it out; that water is lost.
+    // Capped at the pipe water-leak rate, like any open-ended run.
+    if (outNet == null) {
       float drained =
         inNet != null
           ? inNet.TryConsumeLiquid(ExlibValues.LiquidLeakRate * dt, ba)
@@ -183,8 +172,7 @@ public class BlockEntitySteamCondenser : BlockEntity
     float condIn = Math.Min(condensed, outFree);
     float passSpace = outFree - condIn;
 
-    float inTemp =
-      inNet?.State?.Temperature ?? ExlibValues.AmbientTemperature;
+    float inTemp = inNet?.State?.Temperature ?? ExlibValues.AmbientTemperature;
     float inPress = inNet?.State?.Pressure ?? 0f;
     float move =
       inNet != null && passSpace > 0f
@@ -215,8 +203,7 @@ public class BlockEntitySteamCondenser : BlockEntity
     float temp,
     float pressure,
     IBlockAccessor ba
-  )
-  {
+  ) {
     net.TryProduceLiquid(
       amount,
       Math.Clamp(
@@ -233,8 +220,8 @@ public class BlockEntitySteamCondenser : BlockEntity
   private static float LiquidVolumeOf(PipeNetwork? net) =>
     net?.State is { IsLiquid: true } s ? s.Volume : 0f;
 
-  /// <summary>Whether <paramref name="net"/> can receive water - a water run or one that
-  /// hasn't claimed a medium yet (a gas run would reject it).</summary>
+  /// <summary>Whether <paramref name="net"/> can receive water: a water run, or one that has not
+  /// claimed a medium yet. A gas run would reject it.</summary>
   private static bool CanTakeWater(PipeNetwork? net) =>
     net != null
     && (
@@ -243,16 +230,13 @@ public class BlockEntitySteamCondenser : BlockEntity
       || net.State.MediumType.Length == 0
     );
 
-  /// <summary>Whether <paramref name="net"/> carries a gas that condenses into a liquid (steam today;
-  /// any future condensable vapour a still routes through a condenser). The medium's condensation
-  /// volume factor is returned in <paramref name="volumeFactor"/> (0 = use the caller's own default).
-  /// Reading the phase change from the taxonomy keeps the condenser medium-agnostic - it no longer
-  /// hardcodes "Steam" / the steam-expansion factor.</summary>
+  /// <summary>Whether <paramref name="net"/> carries a gas that the liquid taxonomy declares
+  /// condensable, which keeps the condenser medium-agnostic. The medium's condensation volume factor
+  /// is returned in <paramref name="volumeFactor"/>; 0 means the caller's own default applies.</summary>
   private static bool HasCondensableGas(
     PipeNetwork? net,
     out float volumeFactor
-  )
-  {
+  ) {
     volumeFactor = 0f;
     if (net?.State is not { Volume: > 0f } s || s.IsLiquid)
       return false;
@@ -263,22 +247,19 @@ public class BlockEntitySteamCondenser : BlockEntity
     );
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     if (_tickId != 0)
       UnregisterGameTickListener(_tickId);
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     if (_tickId != 0)
       UnregisterGameTickListener(_tickId);
     base.OnBlockUnloaded();
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("condensing", _condensing);
   }
@@ -286,8 +267,7 @@ public class BlockEntitySteamCondenser : BlockEntity
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     _condensing = tree.GetBool("condensing");
   }
@@ -295,8 +275,7 @@ public class BlockEntitySteamCondenser : BlockEntity
   public override void GetBlockInfo(
     IPlayer forPlayer,
     System.Text.StringBuilder dsc
-  )
-  {
+  ) {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(
       Lang.Get(

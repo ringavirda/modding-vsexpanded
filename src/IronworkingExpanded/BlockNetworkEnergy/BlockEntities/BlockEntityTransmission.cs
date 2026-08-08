@@ -16,26 +16,21 @@ using Vintagestory.GameContent;
 namespace IronworkingExpanded.BlockNetworkEnergy.BlockEntities;
 
 /// <summary>
-/// Block entity for a <see cref="Blocks.BlockTransmission"/>: it drives the RightClickConstructable build, keeps
-/// the finished machine visible via its pose, runs the two-port ratio coupling each tick (reading the south +
-/// north mpenergy networks via <c>GetNetworkAt</c> and imposing <c>ω_north = ω_south / r</c> without merging
-/// them - see <see cref="TryCouple"/>), and - for the clutch variant - throws the coupling on/off from its lever
-/// cell (<see cref="ToggleEngaged"/>), holding the matching <c>connected</c>/<c>disconnected</c> pose.
+/// Block entity for a <see cref="Blocks.BlockTransmission"/>: drives the RightClickConstructable build, holds
+/// the finished machine's pose, and each tick reads the south and north mpenergy networks through
+/// <c>GetNetworkAt</c> to impose <c>ω_north = ω_south / r</c> without merging them (<see cref="TryCouple"/>).
+/// The clutch variant engages and disengages that coupling from its lever cell (<see cref="ToggleEngaged"/>).
 /// <para>
-/// <b>The gear train animates off the runs it couples.</b> The coupler is not a graph node, so no network
-/// broadcast reaches it - instead the server records the two side speeds it just read and pushes them to clients
-/// on a throttled <c>MarkDirty</c>, and the client plays the shape's clips at that speed
-/// (<see cref="EnergyAnim.SpinSpeed"/>). The ratio blocks author <b>one north revolution per clip</b> with the
-/// south gear geared up inside the clip itself, so a single <c>cycle</c> at ω_north shows the whole train
-/// correctly; the clutch instead drives each shaft from <b>its own</b> side, which is what lets a disengaged
-/// clutch show one shaft spinning while the other stands still.
+/// The coupler is not a graph node and receives no network broadcast: the server records the two side speeds
+/// it read and pushes them to clients on a throttled <c>MarkDirty</c>, and the client animates from those.
+/// Ratio blocks author one north revolution per clip with the south gear geared up inside it; the clutch
+/// drives each shaft from its own side, so a disengaged clutch shows one shaft turning and the other still.
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityTransmission : BlockEntityProductionMachine
-{
-  // Owns the RCC-suppressed-mesh animator triad shared by every constructed mega-block (holds the null-guard
-  // so a pose can never NRE before the animator is built).
+public class BlockEntityTransmission : BlockEntityProductionMachine {
+  // RCC-suppressed-mesh animator shared by every constructed mega-block; it null-guards poses issued
+  // before the animator is built.
   private ConstructedAnimator? _animator;
 
   // Resolved once: the graph manager the coupler reads the south/north networks from.
@@ -44,8 +39,8 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   // Clutch coupling state (persisted). x2/x4 are always coupled; the clutch only transfers while engaged.
   private bool _engaged;
 
-  // The two side speeds (rad/s) the coupler last saw, synced to clients so the gear train can animate. The
-  // transmission is not a graph node, so it gets no network broadcast of its own - see SyncSideSpeeds.
+  // The two side speeds (rad/s) the coupler last saw, synced to clients so the gear train can animate; the
+  // transmission is not a graph node and gets no network broadcast of its own (see SyncSideSpeeds).
   private float _southSpeed;
   private float _northSpeed;
 
@@ -54,14 +49,14 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
 
   private string Type => Block?.Variant["kind"] ?? "x2";
 
-  /// <summary>The gear reduction S→N: the north (output) run turns at <c>ω_south / Ratio</c>. The clutch is a
-  /// straight 1:1 coupling.</summary>
-  private float Ratio => Type switch
-  {
-    "x2" => 2f,
-    "x4" => 4f,
-    _ => 1f,
-  };
+  /// <summary>Gear reduction south to north: the north (output) run turns at <c>ω_south / Ratio</c>. The
+  /// clutch is a straight 1:1 coupling.</summary>
+  private float Ratio =>
+    Type switch {
+      "x2" => 2f,
+      "x4" => 4f,
+      _ => 1f,
+    };
 
   /// <summary>Whether the two sides are coupled right now: always for the ratio blocks; only when engaged for the
   /// clutch (a disengaged clutch leaves the two runs fully independent).</summary>
@@ -70,34 +65,34 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   /// <summary>True for the clutch variant (the only one the engage/disengage interaction applies to).</summary>
   public bool IsClutch => Type == "clutch";
 
-  /// <summary>Whether the clutch coupling is currently engaged (meaningless, but harmless, for the ratio blocks).</summary>
+  /// <summary>Whether the clutch coupling is engaged; unused by the ratio blocks.</summary>
   public bool IsEngaged => _engaged;
 
   protected override int ProductionTickMs => 250;
   protected override bool CanRunProduction => IsConstructed;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     _networks = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-    _animator = new ConstructedAnimator(this, () => $"transmission-{Type}-{Block?.Variant["side"]}");
+    _animator = new ConstructedAnimator(
+      this,
+      () => $"transmission-{Type}-{Block?.Variant["side"]}"
+    );
     _animator.Initialize(ApplyPose);
   }
 
   #region Clutch engage / disengage
 
-  /// <summary>Whether <paramref name="clicked"/> is the clutch's lever cell - the quarter-block filler at the
+  /// <summary>Whether <paramref name="clicked"/> is the clutch's lever cell: the quarter-block filler at the
   /// footprint's <c>(1,1,0)</c>, rotated to this orientation. The interaction is localised there.</summary>
-  public bool IsLeverCell(BlockPos clicked)
-  {
+  public bool IsLeverCell(BlockPos clicked) {
     int angle = (Block as BlockTransmission)?.StructureAngle ?? 0;
     return clicked.Equals(ExOrientation.GlobalPos(Pos, 1, 1, 0, angle));
   }
 
-  /// <summary>Throws the clutch lever: toggles the coupling on/off (so <see cref="ShouldCouple"/> follows) and
-  /// re-poses the lever. Server-authoritative and clutch-only; the pose syncs to clients through the save tree.</summary>
-  public bool ToggleEngaged()
-  {
+  /// <summary>Throws the clutch lever: toggles the coupling so <see cref="ShouldCouple"/> follows, and re-poses
+  /// the lever. Server-side and clutch-only; the pose reaches clients through the save tree.</summary>
+  public bool ToggleEngaged() {
     if (Api?.Side != EnumAppSide.Server || !IsClutch)
       return false;
     _engaged = !_engaged;
@@ -109,11 +104,10 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
 
   #region Animation (the gear train turns at the speed of the runs it couples)
 
-  /// <summary>Re-applies every clip this machine should be holding: the clutch's lever pose, and the spin clips at
-  /// the current side speeds. The single entry point - construction stages, a lever throw and a speed change all
-  /// route through here, so no caller has to know which clips a variant has.</summary>
-  private void ApplyPose()
-  {
+  /// <summary>Re-applies every clip this machine should be holding: the clutch's lever pose and the spin clips at
+  /// the current side speeds. Construction stages, lever throws and speed changes all route through here, so no
+  /// caller has to know which clips a variant has.</summary>
+  private void ApplyPose() {
     if (IsClutch)
       UpdateClutchPose();
     UpdateSpin();
@@ -123,36 +117,26 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   /// poses, stopping the other so they never overlap. The disengaged pose also slides the side shaft out of mesh,
   /// which is why <c>sideshaftcycle</c> must not run alongside it (see <see cref="UpdateSpin"/>).</summary>
   private void UpdateClutchPose() =>
-    _animator?.Pose(util =>
-    {
+    _animator?.Pose(util => {
       util.StopAnimation(_engaged ? "disconnected" : "connected");
       util.StartAnimation(PoseMeta(_engaged ? "connected" : "disconnected"));
     });
 
   /// <summary>
-  /// Drives the spin clips off the two side speeds.
-  /// <para>
-  /// The <b>ratio blocks</b> author one <em>north</em> revolution per <c>cycle</c>, with the south shaft geared up
-  /// (and counter-rotating) inside the clip, so the whole rigid train is one clip played at ω_north; below the
-  /// turning threshold it rests on <c>idle</c> instead, which is what keeps the RCC-suppressed mesh visible.
-  /// </para>
-  /// <para>
-  /// The <b>clutch</b> has no rigid train, so each shaft runs from its own side - <c>mainshaft1cycle</c> at
-  /// ω_north, <c>mainshaft2cycle</c> at ω_south - and a disengaged clutch legitimately shows one turning while the
-  /// other stands still. The <c>sideshaftcycle</c> coupling shaft runs only while engaged (disengaged, the lever
-  /// pose has moved it out of mesh). It needs no rest pose: the lever pose is always active.
-  /// </para>
+  /// Drives the spin clips off the two side speeds. Ratio blocks author one north revolution per <c>cycle</c>
+  /// with the south shaft geared up and counter-rotating inside the clip, so the rigid train is one clip played
+  /// at ω_north; below the turning threshold they rest on <c>idle</c>, which keeps the RCC-suppressed mesh
+  /// visible. The clutch has no rigid train, so <c>mainshaft1cycle</c> runs at ω_north and
+  /// <c>mainshaft2cycle</c> at ω_south, and <c>sideshaftcycle</c> only while engaged (disengaged, the lever pose
+  /// has moved it out of mesh); it needs no rest pose because the lever pose is always active.
   /// </summary>
-  private void UpdateSpin()
-  {
+  private void UpdateSpin() {
     float max = ExlibValues.MpMaxSpeed;
     bool northTurning = EnergyAnim.IsTurning(_northSpeed, max);
     bool southTurning = EnergyAnim.IsTurning(_southSpeed, max);
 
-    _animator?.Pose(util =>
-    {
-      if (!IsClutch)
-      {
+    _animator?.Pose(util => {
+      if (!IsClutch) {
         Drive(util, "cycle", northTurning, _northSpeed);
         // One of the two must always run, or the suppressed mesh has nothing to render.
         if (northTurning)
@@ -174,24 +158,20 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
     });
   }
 
-  // Runs one spin clip at the playback rate for `omega`, or stops it. Re-starting an already-running clip with a
-  // new speed is how the engine sub-machines retune theirs, so the throttle in SyncSideSpeeds is what keeps this
-  // from restarting the clip every tick.
+  // Runs one spin clip at the playback rate for `omega`, or stops it. A new speed takes effect by restarting an
+  // already-running clip, so the throttle in SyncSideSpeeds is what keeps this off every tick.
   private static void Drive(
     BlockEntityAnimationUtil util,
     string clip,
     bool turning,
     float omega
-  )
-  {
-    if (!turning)
-    {
+  ) {
+    if (!turning) {
       util.StopAnimation(clip);
       return;
     }
     util.StartAnimation(
-      new AnimationMetaData
-      {
+      new AnimationMetaData {
         Animation = clip,
         Code = clip,
         AnimationSpeed = EnergyAnim.SpinSpeed(omega),
@@ -202,8 +182,7 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   }
 
   private static AnimationMetaData PoseMeta(string clip) =>
-    new AnimationMetaData
-    {
+    new AnimationMetaData {
       Animation = clip,
       Code = clip,
       AnimationSpeed = 1f,
@@ -212,13 +191,12 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
     }.Init();
 
   /// <summary>
-  /// Records the side speeds the coupler just read and pushes them to clients when either has moved by ≥2% of full
-  /// scale, or has stopped. The transmission is not a graph node, so it never receives the network's own broadcast
-  /// - this is its equivalent, and the throttle is what stops a per-tick <c>MarkDirty</c> (and a per-tick clip
-  /// restart on the client). Returns whether a sync was pushed. Public so the throttle is testable.
+  /// Records the side speeds the coupler just read and pushes them to clients when either has moved by at least
+  /// 2% of full scale or has stopped. The transmission is not a graph node and never receives the network's own
+  /// broadcast, so this stands in for it; the threshold is what stops a per-tick <c>MarkDirty</c> and a per-tick
+  /// clip restart on the client. Returns whether a sync was pushed.
   /// </summary>
-  public bool SyncSideSpeeds(float southSpeed, float northSpeed)
-  {
+  public bool SyncSideSpeeds(float southSpeed, float northSpeed) {
     float step = 0.02f * ExlibValues.MpMaxSpeed;
     bool changed =
       MathF.Abs(southSpeed - _southSpeed) >= step
@@ -236,13 +214,11 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   #endregion
 
   /// <summary>
-  /// Couples the two mpenergy runs across the gear each tick, then publishes the resulting side speeds so the
-  /// gear train animates. The speeds are published <b>whether or not</b> a coupling happened - a disengaged
-  /// clutch still shows each shaft turning at its own side's speed, which is exactly how a player reads that the
-  /// lever is open.
+  /// Couples the two mpenergy runs across the gear, then publishes the resulting side speeds so the gear train
+  /// animates. The speeds are published whether or not a coupling happened, so a disengaged clutch still shows
+  /// each shaft turning at its own side's speed.
   /// </summary>
-  protected override void OnProductionTick(float dt)
-  {
+  protected override void OnProductionTick(float dt) {
     TryCouple(dt);
     var (south, north) = ReadSides();
     SyncSideSpeeds(south?.Speed ?? 0f, north?.Speed ?? 0f);
@@ -250,11 +226,10 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
 
   /// <summary>
   /// Resolves the south (input, +Z) and north (output, −Z) port cells for this orientation and reads the mpenergy
-  /// state on each. The two stay SEPARATE - the transmission is not a graph node - so this is a read of two
-  /// independent runs, either of which may be absent. Server-only (the graph lives there).
+  /// state on each. The transmission is not a graph node, so the two stay separate: this reads two independent
+  /// runs, either of which may be absent. Server-only, since the graph lives there.
   /// </summary>
-  private (MpEnergyNetworkState? South, MpEnergyNetworkState? North) ReadSides()
-  {
+  private (MpEnergyNetworkState? South, MpEnergyNetworkState? North) ReadSides() {
     if (Api?.Side != EnumAppSide.Server || _networks == null)
       return (null, null);
 
@@ -271,12 +246,10 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
 
   /// <summary>
   /// Projects the two runs onto the gear constraint <c>ω_north = ω_south / Ratio</c> less the mesh loss over
-  /// <paramref name="dt"/>. Returns whether a coupling happened (false when disengaged, a side has no shaft, or
-  /// both ports resolve to the same run - a loop, with nothing to couple). Public so the wiring is testable
-  /// end-to-end without the construction gate.
+  /// <paramref name="dt"/> seconds. Returns whether a coupling happened: false when disengaged, when a side has
+  /// no shaft, or when both ports resolve to the same run (a loop, with nothing to couple).
   /// </summary>
-  public bool TryCouple(float dt)
-  {
+  public bool TryCouple(float dt) {
     if (Api?.Side != EnumAppSide.Server || !ShouldCouple || _networks == null)
       return false;
 
@@ -304,8 +277,7 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
     return true;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("engaged", _engaged);
     tree.SetFloat("southSpeed", _southSpeed);
@@ -315,8 +287,7 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     bool wasEngaged = _engaged;
     float wasSouth = _southSpeed;
@@ -326,24 +297,26 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
     _southSpeed = tree.GetFloat("southSpeed");
     _northSpeed = tree.GetFloat("northSpeed");
 
-    // A client receiving a lever throw or a speed sync re-poses (the animator may not exist yet on first load;
-    // Initialize applies the initial pose, so only react to an actual change here).
+    // A client receiving a lever throw or a speed sync re-poses. The animator may not exist yet on first load
+    // and Initialize applies the initial pose, so only an actual change is acted on here.
     if (Api?.Side != EnumAppSide.Client)
       return;
     if (_engaged != wasEngaged)
       UpdateClutchPose();
-    if (_engaged != wasEngaged || _southSpeed != wasSouth || _northSpeed != wasNorth)
+    if (
+      _engaged != wasEngaged
+      || _southSpeed != wasSouth
+      || _northSpeed != wasNorth
+    )
       UpdateSpin();
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     _animator?.Dispose();
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     _animator?.Dispose();
     base.OnBlockUnloaded();
   }

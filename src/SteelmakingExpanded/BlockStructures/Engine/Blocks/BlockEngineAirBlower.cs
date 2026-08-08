@@ -11,16 +11,15 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.Engine.Blocks;
 
 /// <summary>
-/// The air-blower sub-machine. Exposes a single pipe connector on its left face
-/// (rotated to the placed orientation) through which it pushes pressurised air.
+/// The air-blower sub-machine. Exposes a single pipe connector on its left face, rotated to the placed
+/// orientation, through which it pushes pressurised air.
 /// </summary>
 [BlockRegister]
 public partial class BlockEngineAirBlower
   : BlockEngineSubmachine,
     INetworkConnector,
-    IExBlockDefProvider
-{
-  /// <summary>The air-blower sub-machine blocktype, authored in C# (migrated from engine/airblower.json).</summary>
+    IExBlockDefProvider {
+  /// <summary>The air-blower sub-machine blocktype, one per horizontal side.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef

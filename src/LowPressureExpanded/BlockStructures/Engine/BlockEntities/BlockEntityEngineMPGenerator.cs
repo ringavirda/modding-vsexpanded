@@ -7,36 +7,32 @@ using Vintagestory.API.Common;
 namespace LowPressureExpanded.BlockStructures.Engine.BlockEntities;
 
 /// <summary>
-/// Engine sub-machine: a mechanical-power generator. Torque is injected into the vanilla MP
-/// network by the <see cref="BEBehaviorEngineMPGenerator"/> behavior (which reads this BE's
-/// <see cref="BlockEntityEngineSubmachine.Engine"/> power); the visible motion is its spinning
-/// axle. The generator owns no animation of its own, so it <b>drives the engine's</b>
-/// <c>cyclemp</c> animation instead: every render frame it pushes its axle angle to the engine
-/// (one revolution = one cycle), keeping the two locked at any speed and cycling while the
-/// flywheel coasts after the steam is cut.
+/// Engine sub-machine that generates mechanical power. Torque is injected into the vanilla MP
+/// network by the <see cref="BEBehaviorEngineMPGenerator"/> behavior, which reads this BE's
+/// <see cref="BlockEntityEngineSubmachine.Engine"/> power. The generator has no animation of its
+/// own and instead drives the engine's <c>cyclemp</c> animation: every render frame it pushes its
+/// axle angle to the engine (one revolution per cycle), keeping the two in step at any speed and
+/// while the flywheel coasts.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityEngineMPGenerator
   : BlockEntityEngineSubmachine,
-    IRenderer
-{
+    IRenderer {
   private BEBehaviorEngineMPGenerator? _mp;
   private ICoreClientAPI? _capi;
 
-  // Low metal-on-metal grind from the spinning gear train while the axle turns (client only).
+  // Looping metal grind from the gear train while the axle turns. Client only.
   private ILoadedSound? _grindSound;
 
   // Update the engine's frame before the opaque pass so it renders in step with the axle.
   public double RenderOrder => 0.0;
   public int RenderRange => 64;
 
-  // Full power while an engine is attached and the MP load is within what it can drive; once the
-  // load overstresses the engine it cuts out (demand 0) until machines are removed. Judged by the
-  // network's resistance, not live speed, so a stalled engine recovers when load is shed.
-  public override float PowerDemand
-  {
-    get
-    {
+  // Full power while an engine is attached and the MP load is within what it can drive; drops to 0
+  // once the load overstresses the engine. Judged by network resistance rather than live speed, so
+  // a stalled engine recovers when load is shed.
+  public override float PowerDemand {
+    get {
       if (Engine is not { } engine)
         return 0f;
       float load = _mp?.Network?.NetworkResistance ?? 0f;
@@ -47,12 +43,10 @@ public class BlockEntityEngineMPGenerator
   // No pipe work - power leaves as MP torque via the behavior.
   protected override void DoWork(float power, float dt) { }
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     _mp = GetBehavior<BEBehaviorEngineMPGenerator>();
-    if (api is ICoreClientAPI capi)
-    {
+    if (api is ICoreClientAPI capi) {
       _capi = capi;
       capi.Event.RegisterRenderer(
         this,
@@ -63,29 +57,25 @@ public class BlockEntityEngineMPGenerator
   }
 
   /// <summary>
-  /// Per render frame: pushes the axle's current render angle to the master engine so it can
-  /// lock its cycle animation to the visible axle (see <see cref="BlockEntityEngine.DriveMpCycleFrame"/>).
+  /// Pushes the axle's current render angle to the master engine each frame so it can lock its cycle
+  /// animation to the visible axle (see <see cref="BlockEntityEngine.DriveMpCycleFrame"/>).
   /// </summary>
-  public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
-  {
+  public void OnRenderFrame(float deltaTime, EnumRenderStage stage) {
     if (_mp == null)
       return;
     bool turning = _mp.Network != null && Math.Abs(_mp.Network.Speed) > 0.001f;
     UpdateGrindSound(turning);
     if (Engine is { } engine)
-      // Drive the engine cycle off the axle's signed render angle so its rod tracks the axle's
-      // visible spin direction (folding in AxisSign tracked the opposite way - the rendered axle
-      // already turns with AngleRad here).
+      // The engine cycle runs off the axle's signed render angle so its rod tracks the axle's
+      // visible spin direction; AngleRad already carries that direction.
       engine.DriveMpCycleFrame(turning, _mp.AngleRad);
   }
 
-  /// <summary>Runs a quiet looping metal-grind while the axle is turning; stops it when it stalls.</summary>
-  private void UpdateGrindSound(bool turning)
-  {
+  /// <summary>Runs a quiet looping metal grind while the axle turns; stops it when the axle stalls.</summary>
+  private void UpdateGrindSound(bool turning) {
     if (_capi == null)
       return;
-    if (turning)
-    {
+    if (turning) {
       _grindSound ??= ExSounds.CreateLoop(
         _capi,
         Pos,
@@ -96,37 +86,32 @@ public class BlockEntityEngineMPGenerator
       );
       if (_grindSound is { IsPlaying: false })
         _grindSound.Start();
-    }
-    else if (_grindSound is { IsPlaying: true })
+    } else if (_grindSound is { IsPlaying: true })
       _grindSound.Stop();
   }
 
   /// <summary>
-  /// Re-applies the axle orientation when the engine snapped this generator to its matching facing;
-  /// the base re-resolves the engine while this re-seeds the mechanical axis.
+  /// Re-applies the axle orientation after the engine snapped this generator to its matching facing.
+  /// The base re-resolves the engine; this re-seeds the mechanical axis.
   /// </summary>
-  public override void OnExchanged(Block block)
-  {
+  public override void OnExchanged(Block block) {
     base.OnExchanged(block);
     _mp?.OnOrientationChanged();
   }
 
-  public void Dispose()
-  {
+  public void Dispose() {
     _grindSound?.Stop();
     _grindSound?.Dispose();
     _grindSound = null;
     _capi?.Event.UnregisterRenderer(this, EnumRenderStage.Before);
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     Dispose();
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     Dispose();
     base.OnBlockUnloaded();
   }

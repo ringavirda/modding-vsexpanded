@@ -12,17 +12,13 @@ using Vintagestory.API.Server;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// A headless, in-process stand-in for a Vintage Story server world, just large enough to drive
-/// the block-network simulation in tests. It owns an in-memory block/block-entity store, a live
-/// <see cref="BlockNetworkModSystem"/>, and an <see cref="IServerWorldAccessor"/> wired to the
-/// store (via NSubstitute - the real interfaces carry ~80 members each, almost none of which the
-/// simulation touches).
-///
-/// Typical use: <see cref="Place"/> blocks, <see cref="AddNode"/> them to a network, then
-/// <see cref="Tick"/> to advance one server second at a time and assert on <see cref="NetworkAt"/>.
+/// A headless, in-process stand-in for a Vintage Story server world, large enough to drive the
+/// block-network simulation in tests. It owns an in-memory block/block-entity store, a live
+/// <see cref="BlockNetworkModSystem"/>, and NSubstitute fakes for the accessor, world and server API
+/// wired to that store. Typical use: <see cref="Place"/> blocks, <see cref="AddNode"/> them to a
+/// network, then <see cref="Tick"/> one server second at a time and assert on <see cref="NetworkAt"/>.
 /// </summary>
-public sealed class TestWorld
-{
+public sealed class TestWorld {
   private readonly Dictionary<BlockPos, Block> _blocks = new();
   private readonly Dictionary<BlockPos, BlockEntity> _blockEntities = new();
   private readonly Dictionary<int, Block> _blocksById = new();
@@ -50,9 +46,9 @@ public sealed class TestWorld
   public IGameCalendar Calendar { get; }
 
   /// <summary>
-  /// A server-side core API wired to this world (mod loader resolves <see cref="Networks"/>, event
-  /// API captures block-entity tick listeners). Assign it to a block entity's <c>Api</c> (or via
-  /// <see cref="Attach"/>) so it can resolve networks and register production ticks headlessly.
+  /// A server-side core API wired to this world (mod loader resolves <see cref="Networks"/>, event API
+  /// captures block-entity tick listeners). Assign it to a block entity's <c>Api</c>, or use
+  /// <see cref="Attach"/>, so it can resolve networks and register production ticks headlessly.
   /// </summary>
   public ICoreServerAPI Api { get; }
 
@@ -65,9 +61,8 @@ public sealed class TestWorld
   private long _nextListenerId;
 
   /// <summary>A captured block-entity tick listener: its callback and the interval (ms) it asked for.
-  /// The interval feeds interval-aware ticking (<see cref="AdvanceBlockEntityTime"/>);
-  /// <see cref="FireBlockEntityTicks"/> fires every live listener regardless. Keyed by a real unique id
-  /// so <c>UnregisterGameTickListener</c> can drop a torn-down block entity's listener.</summary>
+  /// Keyed by a unique id so <c>UnregisterGameTickListener</c> can drop a torn-down block entity's
+  /// listener.</summary>
   private readonly record struct TickListener(
     System.Action<float> Callback,
     int IntervalMs
@@ -76,8 +71,7 @@ public sealed class TestWorld
   /// <summary>Item stacks spawned by the simulation (e.g. a bursting pipe dropping its materials).</summary>
   public List<ItemStack> Drops { get; } = new();
 
-  public TestWorld()
-  {
+  public TestWorld() {
     Air = TestBlocks.Configure(new Block(), "game:air", 0);
     _blocksById[0] = Air;
 
@@ -89,8 +83,8 @@ public sealed class TestWorld
     Api = BuildApi();
     World.Api.Returns(Api);
 
-    // The manager normally captures the server world in StartServerSide, which we deliberately
-    // do not call (it would also register a real tick listener). Prime it directly.
+    // StartServerSide is not called (it would register a real tick listener), so the server world it
+    // normally captures is primed directly.
     ReflectionHelpers.SetProperty(
       Networks,
       nameof(Networks.ServerWorld),
@@ -99,19 +93,17 @@ public sealed class TestWorld
   }
 
   /// <summary>Links <paramref name="be"/> to this world's API so it can resolve networks and ticks.</summary>
-  public TestWorld Attach(BlockEntity be)
-  {
+  public TestWorld Attach(BlockEntity be) {
     be.Api = Api;
     return this;
   }
 
   /// <summary>
   /// Runs <paramref name="be"/> through its real <see cref="BlockEntity.Initialize"/> against this
-  /// world's API (so a network node registers itself, captures the manager and schedules its ticks),
-  /// exactly as the placement pipeline would. The block entity must already be <see cref="Place"/>d.
+  /// world's API, so a network node registers itself and schedules its ticks exactly as the placement
+  /// pipeline would. The block entity must already be <see cref="Place"/>d.
   /// </summary>
-  public TestWorld Initialize(BlockEntity be)
-  {
+  public TestWorld Initialize(BlockEntity be) {
     be.Api = Api;
     be.Initialize(Api);
     return this;
@@ -123,8 +115,7 @@ public sealed class TestWorld
   public TestWorld RegisterNetwork(
     string networkType,
     System.Func<BlockNetworkModSystem, BlockNetwork> factory
-  )
-  {
+  ) {
     Networks.RegisterNetworkType(networkType, () => factory(Networks));
     return this;
   }
@@ -132,15 +123,13 @@ public sealed class TestWorld
   /// <summary>
   /// Places <paramref name="block"/> (and optional <paramref name="be"/>) at <paramref name="pos"/>,
   /// registering the block in the id/code lookup so <c>ExchangeBlock</c>/<c>GetBlock</c> resolve it.
-  /// The block entity is positioned and linked but not <c>Initialize</c>d - the network suite drives
-  /// the graph directly rather than through the placement pipeline.
+  /// The block entity is positioned and linked but not <c>Initialize</c>d; see
+  /// <see cref="Initialize"/> for the placement-pipeline path.
   /// </summary>
-  public TestWorld Place(BlockPos pos, Block block, BlockEntity? be = null)
-  {
+  public TestWorld Place(BlockPos pos, Block block, BlockEntity? be = null) {
     Register(block);
     _blocks[pos] = block;
-    if (be != null)
-    {
+    if (be != null) {
       be.Pos = pos.Copy();
       be.Block = block;
       _blockEntities[pos] = be;
@@ -149,24 +138,21 @@ public sealed class TestWorld
   }
 
   /// <summary>
-  /// Registers a factory that <c>BlockAccessor.SpawnBlockEntity(classname, pos)</c> uses to create a
-  /// block entity for <paramref name="classname"/> - the headless stand-in for the engine's class
-  /// registry. The spawned entity is positioned, linked to the block at that cell, stored, and
-  /// <c>Initialize</c>d against this world's API, mirroring the real spawn path closely enough to test
-  /// block-entity recreation (e.g. the orphaned-BE healer).
+  /// Registers a factory that <c>BlockAccessor.SpawnBlockEntity(classname, pos)</c> uses for
+  /// <paramref name="classname"/> - the headless stand-in for the engine's class registry. The spawned
+  /// entity is positioned, linked to the block at that cell, stored and <c>Initialize</c>d against this
+  /// world's API.
   /// </summary>
   public TestWorld RegisterBlockEntityFactory(
     string classname,
     Func<BlockEntity> factory
-  )
-  {
+  ) {
     _beFactories[classname] = factory;
     return this;
   }
 
   /// <summary>Registers a block in the id/code lookup without placing it (for orientation-variant swaps).</summary>
-  public TestWorld Register(Block block)
-  {
+  public TestWorld Register(Block block) {
     _blocksById[block.BlockId] = block;
     if (block.Code != null)
       _blocksByCode[block.Code.ToString()] = block;
@@ -175,23 +161,19 @@ public sealed class TestWorld
 
   /// <summary>
   /// Registers a resolvable <see cref="Item"/> under <paramref name="code"/> so
-  /// <c>World.GetItem(code)</c> returns it - the molten-metal API resolves its temperature carrier
-  /// this way. <paramref name="meltingPoint"/> (°C, 0 = none) is exposed through the item's
-  /// <see cref="CombustibleProperties"/> so that melt-point classification (liquid/cooling/hardened)
-  /// works headlessly. Returns the created item.
+  /// <c>World.GetItem(code)</c> returns it. <paramref name="meltingPoint"/> (°C, 0 = none) is exposed
+  /// through the item's <see cref="CombustibleProperties"/> so melt-point classification
+  /// (liquid/cooling/hardened) works headlessly. Returns the created item.
   /// </summary>
-  public Item RegisterItem(string code, float meltingPoint = 0f)
-  {
+  public Item RegisterItem(string code, float meltingPoint = 0f) {
     // A unique non-zero id so ItemStack.ResolveBlockOrItem (which re-resolves a cloned/loaded stack
     // by id) finds the item instead of nulling out its Collectible.
-    var item = new Item
-    {
+    var item = new Item {
       Code = new AssetLocation(code),
       ItemId = _nextItemId++,
     };
     if (meltingPoint > 0f)
-      item.CombustibleProps = new CombustibleProperties
-      {
+      item.CombustibleProps = new CombustibleProperties {
         MeltingPoint = (int)meltingPoint,
       };
     _itemsByCode[code] = item;
@@ -233,20 +215,13 @@ public sealed class TestWorld
   #region Neighbours
 
   /// <summary>
-  /// Fires <see cref="Block.OnNeighbourBlockChange"/> on each of the six blocks adjacent to
-  /// <paramref name="changedPos"/>, exactly as the engine does right after a block is placed, broken or
-  /// exchanged at that cell (each neighbour is told its own position and the position that changed).
-  /// Empty cells resolve to <see cref="Air"/>, whose base implementation is a no-op, so only real
-  /// neighbours react. This is <b>opt-in</b>: the low-level <see cref="Place"/>/<c>SetBlock</c>/
-  /// <c>ExchangeBlock</c>/<c>BreakBlock</c> helpers deliberately do not auto-fire it, because doing so
-  /// would make an isolated network node self-break and reorientations recurse across the graph suite.
-  /// Call it when a test needs to exercise neighbour-driven reactions - a network node re-checking its
-  /// support and self-breaking, a canal updating its end connectors, an intake re-syncing orientation.
+  /// Fires <see cref="Block.OnNeighbourBlockChange"/> on the six blocks adjacent to
+  /// <paramref name="changedPos"/>, as the engine does after a place, break or exchange there; empty
+  /// cells resolve to <see cref="Air"/> and no-op. Opt-in, because auto-firing from <see cref="Place"/>
+  /// and the accessor makes an isolated network node self-break and reorientations recurse.
   /// </summary>
-  public TestWorld NotifyNeighbours(BlockPos changedPos)
-  {
-    foreach (BlockFacing face in BlockFacing.ALLFACES)
-    {
+  public TestWorld NotifyNeighbours(BlockPos changedPos) {
+    foreach (BlockFacing face in BlockFacing.ALLFACES) {
       BlockPos nPos = changedPos.AddCopy(face);
       GetBlock(nPos).OnNeighbourBlockChange(World, nPos, changedPos);
     }
@@ -258,12 +233,11 @@ public sealed class TestWorld
   #region Time
 
   /// <summary>
-  /// Advances the simulation by <paramref name="seconds"/> server ticks (the network manager runs
-  /// one tick per second). Mirrors <c>BlockNetworkModSystem.OnServerTick</c> by dispatching
-  /// <see cref="BlockNetwork.OnTick"/> for every live network, with <c>dt = 1</c>.
+  /// Advances the simulation by <paramref name="seconds"/> server ticks (the network manager runs one
+  /// tick per second), dispatching <see cref="BlockNetwork.OnTick"/> for every live network with
+  /// <c>dt = 1</c>.
   /// </summary>
-  public void Tick(int seconds = 1)
-  {
+  public void Tick(int seconds = 1) {
     for (int i = 0; i < seconds; i++)
       foreach (var net in Networks.AllNetworks.ToList())
         net.OnTick(Accessor, 1f, Networks);
@@ -271,37 +245,28 @@ public sealed class TestWorld
 
   /// <summary>Fires every block-entity server tick listener registered through <see cref="Api"/>
   /// (i.e. via <c>BlockEntity.RegisterGameTickListener</c>), <paramref name="times"/> times.</summary>
-  public void FireBlockEntityTicks(float dt = 1f, int times = 1)
-  {
+  public void FireBlockEntityTicks(float dt = 1f, int times = 1) {
     for (int i = 0; i < times; i++)
       foreach (var listener in _tickListeners.Values.ToList())
         listener.Callback(dt);
   }
 
   /// <summary>
-  /// Advances block-entity sim time by <paramref name="totalMs"/> ms, firing each registered listener
-  /// once per whole interval that elapses - honouring the interval each block entity asked for at
-  /// <c>RegisterGameTickListener</c>. A 1000 ms listener fires twice over 2500 ms; a 250 ms listener
-  /// fires ten times; each callback receives <c>dt = interval / 1000</c> s. Remainders carry across
-  /// calls, so two 600 ms advances still cross a 1000 ms boundary once. Unlike
-  /// <see cref="FireBlockEntityTicks"/> (which fires every listener a fixed number of times regardless
-  /// of interval), this lets a scene with block entities on different intervals be advanced faithfully,
-  /// and interval-gated behaviour be asserted. A listener that unregisters itself mid-advance stops
-  /// receiving further fires this call.
+  /// Advances block-entity sim time by <paramref name="totalMs"/> ms, firing each listener once per
+  /// whole interval that elapses at the interval it registered, with <c>dt = interval / 1000</c> s.
+  /// Remainders carry across calls, so two 600 ms advances cross a 1000 ms boundary once. A listener
+  /// that unregisters itself mid-advance receives no further fires this call.
   /// </summary>
-  public void AdvanceBlockEntityTime(int totalMs)
-  {
+  public void AdvanceBlockEntityTime(int totalMs) {
     // Snapshot: a listener may unregister (or a block entity may register a new one) while firing.
-    foreach (long id in _tickListeners.Keys.ToList())
-    {
+    foreach (long id in _tickListeners.Keys.ToList()) {
       if (!_tickListeners.TryGetValue(id, out TickListener listener))
         continue; // already removed by an earlier callback this pass
       int interval = System.Math.Max(1, listener.IntervalMs);
       int accum = _tickAccumMs.TryGetValue(id, out int a) ? a : 0;
       accum += totalMs;
       float dt = interval / 1000f;
-      while (accum >= interval && _tickListeners.ContainsKey(id))
-      {
+      while (accum >= interval && _tickListeners.ContainsKey(id)) {
         accum -= interval;
         listener.Callback(dt);
       }
@@ -312,8 +277,7 @@ public sealed class TestWorld
   }
 
   /// <summary>Moves the calendar forward without ticking, for calendar-driven effects (evaporation).</summary>
-  public void AdvanceDays(double days)
-  {
+  public void AdvanceDays(double days) {
     _totalDays += days;
     PushCalendar();
   }
@@ -321,8 +285,7 @@ public sealed class TestWorld
   /// <summary>Moves the calendar forward by game hours without ticking (for away-catch-up tests).</summary>
   public void AdvanceHours(double hours) => AdvanceDays(hours / 24.0);
 
-  private void PushCalendar()
-  {
+  private void PushCalendar() {
     Calendar.TotalDays.Returns(_totalDays);
     Calendar.TotalHours.Returns(_totalDays * 24.0);
   }
@@ -332,16 +295,12 @@ public sealed class TestWorld
   #region Lifecycle
 
   /// <summary>
-  /// Models a save → chunk-unload → reload of the block entity at <paramref name="pos"/>: serialises its
-  /// real <c>ToTreeAttributes</c> bytes, tears the live instance down (unregistering its tick listeners,
-  /// exactly as the engine does on unload) while leaving the block placed, then rebuilds a <b>fresh</b>
-  /// instance of the same class and drives <c>FromTreeAttributes</c> → <c>Initialize</c> - the sequence a
-  /// loaded-from-disk block entity actually goes through, and where reload bugs (stale-pool bursts,
-  /// dropped mid-cycle state, phantom graph nodes) surface. Returns the new instance; the old one is
-  /// discarded. Tick after this to exercise the first post-reload tick.
+  /// Models a save, chunk unload and reload of the block entity at <paramref name="pos"/>: serialises
+  /// its real <c>ToTreeAttributes</c> bytes, tears the live instance down (unregistering its tick
+  /// listeners) while leaving the block placed, then builds a fresh instance of the same class and
+  /// drives <c>FromTreeAttributes</c> then <c>Initialize</c>. Returns the new instance.
   /// </summary>
-  public BlockEntity? Reload(BlockPos pos)
-  {
+  public BlockEntity? Reload(BlockPos pos) {
     BlockEntity? old = GetBlockEntity(pos);
     if (old == null)
       return null;
@@ -368,12 +327,10 @@ public sealed class TestWorld
 
   /// <summary>
   /// Models a chunk unload of the block entity at <paramref name="pos"/>: runs its real
-  /// <c>OnBlockUnloaded</c> (which unregisters its tick listeners - now honoured by the fake event API,
-  /// so it truly stops ticking) and drops the instance while leaving the block placed. Use to assert a
-  /// machine's teardown, or that a "stopped" listener no longer fires.
+  /// <c>OnBlockUnloaded</c> (the fake event API honours the tick-listener unregister, so it stops
+  /// ticking) and drops the instance while leaving the block placed.
   /// </summary>
-  public void Unload(BlockPos pos)
-  {
+  public void Unload(BlockPos pos) {
     GetBlockEntity(pos)?.OnBlockUnloaded();
     _blockEntities.Remove(pos);
   }
@@ -381,10 +338,12 @@ public sealed class TestWorld
   /// <summary>Creates a fresh block entity of the same class the engine would instantiate on load:
   /// a registered factory for the block's entity class if one exists (see
   /// <see cref="RegisterBlockEntityFactory"/>), otherwise the type's parameterless constructor.</summary>
-  private BlockEntity NewBlockEntityLike(BlockEntity old, Block block)
-  {
+  private BlockEntity NewBlockEntityLike(BlockEntity old, Block block) {
     string? classname = block?.EntityClass ?? old.Block?.EntityClass;
-    if (classname != null && _beFactories.TryGetValue(classname, out var factory))
+    if (
+      classname != null
+      && _beFactories.TryGetValue(classname, out var factory)
+    )
       return factory();
     return (BlockEntity)Activator.CreateInstance(old.GetType())!;
   }
@@ -393,8 +352,7 @@ public sealed class TestWorld
 
   #region Fake wiring
 
-  private IBlockAccessor BuildAccessor()
-  {
+  private IBlockAccessor BuildAccessor() {
     var a = Substitute.For<IBlockAccessor>();
 
     a.GetBlock(Arg.Any<BlockPos>()).Returns(ci => GetBlock(ci.Arg<BlockPos>()));
@@ -402,36 +360,40 @@ public sealed class TestWorld
     // distinct fluid layer place a block whose LiquidCode is set.
     a.GetBlock(Arg.Any<BlockPos>(), Arg.Any<int>())
       .Returns(ci => GetBlock(ci.Arg<BlockPos>()));
-    // Coordinate overloads, including the unchecked GetBlockRaw that vanilla's multiblock code reads
-    // through (MultiblockStructure completeness, the build-outline highlight). Left unwired these
-    // return null and NRE inside engine code, which reads as "the structure never completes".
-    // Obsolete in favour of the BlockPos overload, but engine code still calls it, so the fake must
-    // answer it - the deprecation is the engine's problem, not ours.
+    // Coordinate overloads, including the unchecked GetBlockRaw vanilla's multiblock code reads
+    // through. Left unwired these return null and NRE inside engine code. The int overload is obsolete
+    // in favour of the BlockPos one but engine code still calls it, hence the suppression.
 #pragma warning disable CS0618
     a.GetBlock(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>())
-      .Returns(ci => GetBlock(
-        new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
-      ));
+      .Returns(ci =>
+        GetBlock(
+          new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
+        )
+      );
 #pragma warning restore CS0618
-    a.GetBlockRaw(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>())
-      .Returns(ci => GetBlock(
-        new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
-      ));
+    a.GetBlockRaw(
+        Arg.Any<int>(),
+        Arg.Any<int>(),
+        Arg.Any<int>(),
+        Arg.Any<int>()
+      )
+      .Returns(ci =>
+        GetBlock(
+          new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
+        )
+      );
     a.GetBlockEntity(Arg.Any<BlockPos>())
       .Returns(ci => GetBlockEntity(ci.Arg<BlockPos>()));
     // Resolve-by-code, the same store IServerWorldAccessor.GetBlock(AssetLocation) reads. Orientation
-    // behaviours reach for the accessor rather than the world when swapping a block to its facing
-    // variant (CodeWithVariant -> GetBlock -> ExchangeBlock), and unwired this returns null, which
-    // those paths correctly read as "that variant was never declared" - so a working block looks like
-    // an authoring mistake.
+    // behaviours swap a block to its facing variant through the accessor rather than the world
+    // (CodeWithVariant -> GetBlock -> ExchangeBlock), and read a null here as an undeclared variant.
     a.GetBlock(Arg.Any<AssetLocation>())
       .Returns(ci => GetByCode(ci.Arg<AssetLocation>()));
 
     a.When(x => x.SetBlock(Arg.Any<int>(), Arg.Any<BlockPos>()))
       .Do(ci => DoSetBlock(ci.ArgAt<int>(0), ci.ArgAt<BlockPos>(1)));
-    // The placement overload. The stack it carries is what the engine uses to seed block-entity
-    // attributes; the store has no use for it, but leaving the overload unwired makes a real
-    // TryPlaceBlock silently place nothing.
+    // The placement overload. The stack it carries seeds block-entity attributes in the engine and the
+    // store has no use for it, but unwired this overload makes a real TryPlaceBlock place nothing.
     a.When(x =>
         x.SetBlock(Arg.Any<int>(), Arg.Any<BlockPos>(), Arg.Any<ItemStack>())
       )
@@ -446,9 +408,7 @@ public sealed class TestWorld
           Arg.Any<ItemStack>()
         )
       )
-      .Do(ci =>
-        DoSpawnBlockEntity(ci.ArgAt<string>(0), ci.ArgAt<BlockPos>(1))
-      );
+      .Do(ci => DoSpawnBlockEntity(ci.ArgAt<string>(0), ci.ArgAt<BlockPos>(1)));
     a.When(x =>
         x.BreakBlock(Arg.Any<BlockPos>(), Arg.Any<IPlayer>(), Arg.Any<float>())
       )
@@ -479,8 +439,7 @@ public sealed class TestWorld
     BlockPos min,
     BlockPos max,
     System.Action<Block, int, int, int> onBlock
-  )
-  {
+  ) {
     int x0 = System.Math.Min(min.X, max.X),
       x1 = System.Math.Max(min.X, max.X);
     int y0 = System.Math.Min(min.Y, max.Y),
@@ -488,13 +447,12 @@ public sealed class TestWorld
     int z0 = System.Math.Min(min.Z, max.Z),
       z1 = System.Math.Max(min.Z, max.Z);
     for (int x = x0; x <= x1; x++)
-    for (int y = y0; y <= y1; y++)
-    for (int z = z0; z <= z1; z++)
-      onBlock(GetBlock(new BlockPos(x, y, z, min.dimension)), x, y, z);
+      for (int y = y0; y <= y1; y++)
+        for (int z = z0; z <= z1; z++)
+          onBlock(GetBlock(new BlockPos(x, y, z, min.dimension)), x, y, z);
   }
 
-  private IServerWorldAccessor BuildWorld()
-  {
+  private IServerWorldAccessor BuildWorld() {
     var w = Substitute.For<IServerWorldAccessor>();
     w.BlockAccessor.Returns(Accessor);
     w.Calendar.Returns(Calendar);
@@ -520,8 +478,7 @@ public sealed class TestWorld
     return w;
   }
 
-  private ICoreServerAPI BuildApi()
-  {
+  private ICoreServerAPI BuildApi() {
     var api = Substitute.For<ICoreServerAPI>();
     // A block entity's Api field is typed ICoreAPI, so it reads the base-interface World/Event/
     // ModLoader members - which ICoreServerAPI re-declares with `new`. Configure both views.
@@ -540,11 +497,9 @@ public sealed class TestWorld
     api.Event.Returns(events);
     coreApi.Event.Returns(events);
 
-    // Capture the server tick listeners block entities register, so the test can pump them via
-    // FireBlockEntityTicks. BlockEntity.RegisterGameTickListener forwards to a position-scoped
-    // event-API overload that gained a BlockPos parameter in 1.22: 1.22 calls
-    // (onGameTick, Pos, errorHandler, interval, delay); 1.20/1.21 call (onGameTick, errorHandler,
-    // interval, delay) with no position. Mock whichever overload this game version forwards to.
+    // Capture the server tick listeners block entities register, so a test can pump them via
+    // FireBlockEntityTicks. The event-API overload BlockEntity.RegisterGameTickListener forwards to
+    // gained a BlockPos parameter in 1.22, so only the one this game version calls is mocked.
 #if GAME_GE_1_22
     events
       .RegisterGameTickListener(
@@ -554,7 +509,9 @@ public sealed class TestWorld
         Arg.Any<int>(),
         Arg.Any<int>()
       )
-      .Returns(ci => AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(3)));
+      .Returns(ci =>
+        AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(3))
+      );
 #else
     events
       .RegisterGameTickListener(
@@ -563,16 +520,16 @@ public sealed class TestWorld
         Arg.Any<int>(),
         Arg.Any<int>()
       )
-      .Returns(ci => AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(2)));
+      .Returns(ci =>
+        AddTickListener(ci.Arg<System.Action<float>>(), ci.ArgAt<int>(2))
+      );
 #endif
 
     // Honour UnregisterGameTickListener so a torn-down block entity (Reload/Unload/OnBlockRemoved)
-    // actually stops ticking. The real event API removes it; leaving this a no-op would let a
-    // discarded block entity keep ticking and mask double-tick bugs after a reload.
+    // stops ticking; left a no-op, a discarded block entity would go on ticking.
     events
       .When(x => x.UnregisterGameTickListener(Arg.Any<long>()))
-      .Do(ci =>
-      {
+      .Do(ci => {
         long id = ci.Arg<long>();
         _tickListeners.Remove(id);
         _tickAccumMs.Remove(id);
@@ -586,18 +543,15 @@ public sealed class TestWorld
       ? b
       : null;
 
-  private long AddTickListener(System.Action<float> callback, int intervalMs)
-  {
+  private long AddTickListener(System.Action<float> callback, int intervalMs) {
     long id = ++_nextListenerId;
     _tickListeners[id] = new TickListener(callback, intervalMs);
     _tickAccumMs[id] = 0;
     return id;
   }
 
-  private void DoSetBlock(int id, BlockPos pos)
-  {
-    if (id == 0)
-    {
+  private void DoSetBlock(int id, BlockPos pos) {
+    if (id == 0) {
       _blocks.Remove(pos);
       _blockEntities.Remove(pos);
       return;
@@ -607,29 +561,24 @@ public sealed class TestWorld
     _blocks[pos] = b;
 
     // Engine parity: placing a block that declares an entity class (re)creates its block entity, so a
-    // caller that swaps a block and then reads its block entity - as the migrator's ReplaceBlock does
-    // to hand over the old entity's saved tree - finds the new block's BE right after the swap. Only
-    // acts when a factory is registered for the class (opt-in via RegisterBlockEntityFactory), so the
-    // graph-only network tests that never register one are unaffected. A BE already matching the new
-    // block is kept; a stale one (different block) is replaced.
+    // caller that swaps a block and then reads its block entity finds the new block's one. Acts only
+    // when a factory is registered for the class, so graph-only tests are unaffected. A block entity
+    // already matching the new block is kept; a stale one is replaced.
     if (
       b.EntityClass is { } entityClass
       && (
         !_blockEntities.TryGetValue(pos, out var existing)
         || existing.Block != b
       )
-    )
-    {
+    ) {
       // A block-changing SetBlock replaces the old block entity; tear the stale one down first (as
-      // the engine's chunk unload does - unregistering its tick listeners) so it cannot linger as a
-      // zombie that keeps ticking, mirroring the faithful DoBreak teardown.
+      // the engine's chunk unload does, unregistering its tick listeners) so it cannot keep ticking.
       existing?.OnBlockUnloaded();
       DoSpawnBlockEntity(entityClass, pos);
     }
   }
 
-  private void DoSpawnBlockEntity(string classname, BlockPos pos)
-  {
+  private void DoSpawnBlockEntity(string classname, BlockPos pos) {
     if (!_beFactories.TryGetValue(classname, out var factory))
       return;
     var be = factory();
@@ -639,8 +588,7 @@ public sealed class TestWorld
     be.Initialize(Api);
   }
 
-  private void DoExchangeBlock(int id, BlockPos pos)
-  {
+  private void DoExchangeBlock(int id, BlockPos pos) {
     if (!_blocksById.TryGetValue(id, out var b))
       return;
     _blocks[pos] = b;
@@ -648,14 +596,10 @@ public sealed class TestWorld
       be.Block = b;
   }
 
-  private void DoBreak(BlockPos pos)
-  {
-    // Route through the real break lifecycle so a block entity drops its contents and, crucially,
-    // runs OnBlockRemoved - which unregisters its tick listeners and (for a network node) calls
-    // RemoveNode. The old stub skipped this, so a "forgot to RemoveNode" regression left a phantom
-    // graph node that no test could see.
-    if (_blockEntities.TryGetValue(pos, out var be))
-    {
+  private void DoBreak(BlockPos pos) {
+    // Route through the real break lifecycle so a block entity drops its contents and runs
+    // OnBlockRemoved, which unregisters its tick listeners and, for a network node, calls RemoveNode.
+    if (_blockEntities.TryGetValue(pos, out var be)) {
       be.OnBlockBroken();
       be.OnBlockRemoved();
     }

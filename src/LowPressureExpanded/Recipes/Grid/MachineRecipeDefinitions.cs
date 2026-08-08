@@ -6,20 +6,14 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace LowPressureExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the lpex machines (migrated from recipes/grid/machines.json): the fluid intake,
-/// steam condenser, the Cornish boiler, the Watt engine, both pumps and the MP generator. The four gear-driven
-/// machines each craft from vanilla rusty gears OR lpex's craftable gears - the source listed both, so here each
-/// recipe is authored once and emitted for both gear codes in a loop (the DRY win; byte-identical output, and
-/// the loop preserves the source order: all rusty-gear recipes, then all lpex-gear recipes).
-/// <para>
-/// The two high-pressure machines (Lancashire boiler, Cornish engine) moved to hpex and take their grid
-/// recipes with them - see <c>HighPressureExpanded.Recipes.Grid.MachineRecipeDefinitions</c>.
-/// </para>
+/// Code-first grid recipes for the lpex machines: the fluid intake, steam condenser, Cornish boiler,
+/// Watt engine, both pumps and the MP generator. Each of the four gear-driven machines crafts from
+/// vanilla rusty gears or from lpex's craftable gears, so it is authored once and emitted for both
+/// gear codes in a loop. The high-pressure machines (Lancashire boiler, Cornish engine) live in
+/// <c>HighPressureExpanded.Recipes.Grid.MachineRecipeDefinitions</c>.
 /// </summary>
-public class MachineRecipeDefinitions : IExRecipeDefProvider
-{
-  public static IEnumerable<ExRecipeDef> Definitions(string domain)
-  {
+public class MachineRecipeDefinitions : IExRecipeDefProvider {
+  public static IEnumerable<ExRecipeDef> Definitions(string domain) {
     ExRecipeDef def = ExRecipeDef
       .Create(domain, "grid", "machines")
       .Grid(FluidIntake)
@@ -117,16 +111,15 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("H", Hammer)
         .OutputBlock("lpex:enginempgenerator-n");
 
-  // lpex-specific ingredient factories (the shared vanilla ones - Plate/PlateSteel/Nails/NailsSteel/Rod/
-  // RodSteel/Gear/Hammer - come from ExIngredients via `using static`). These stay local: the pipe base
-  // block + a vanilla fire brick used only here.
-  //
-  // The pipe ingredient is the plain plated (iwex) segment - the base tier that actually has a craft
-  // recipe - matching the fitting recipes in PipeRecipeDefinitions. lpex's own cast segments are a
-  // higher tier with no recipe of their own yet.
-  private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(int qty) =>
-    i => i.Block("iwex:pipe-straight-*").Quantity(qty);
+  // lpex-specific ingredient factories; the shared vanilla ones (Plate/PlateSteel/Nails/NailsSteel/
+  // Rod/RodSteel/Gear/Hammer) come from ExIngredients via `using static`. The pipe ingredient is the
+  // plain plated (iwex) segment, the base tier that has a craft recipe, matching the fitting recipes
+  // in PipeRecipeDefinitions; lpex's own cast segments are a higher tier with no recipe of their own.
+  private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
+    int qty
+  ) => i => i.Block("iwex:pipe-straight-*").Quantity(qty);
 
-  private static Func<IngredientBuilder, IngredientBuilder> BrickFire(int qty) =>
-    i => i.Item("game:burnedbrick-fire").Quantity(qty);
+  private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
+    int qty
+  ) => i => i.Item("game:burnedbrick-fire").Quantity(qty);
 }

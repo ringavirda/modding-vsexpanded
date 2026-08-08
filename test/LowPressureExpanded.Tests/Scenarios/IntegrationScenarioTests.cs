@@ -10,15 +10,12 @@ namespace LowPressureExpanded.Tests;
 
 /// <summary>
 /// Whole-setup integration scenarios built from <see cref="Scene"/> + <see cref="SceneDiagram"/>: lay
-/// out a network (or a machine feeding one), advance the simulation with a single step, and assert on
-/// the emergent cross-cell / cross-machine state. These exercise the wiring between components, not a
-/// single unit in isolation.
+/// out a network (or a machine feeding one), advance the simulation, and assert on the emergent
+/// cross-cell and cross-machine state.
 /// </summary>
-public class IntegrationScenarioTests
-{
+public class IntegrationScenarioTests {
   [Fact]
-  public void Sealed_run_pressurises_and_broadcasts_to_every_pipe()
-  {
+  public void Sealed_run_pressurises_and_broadcasts_to_every_pipe() {
     // A five-cell west-east steam main, capped at both ends.
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     LpexScenes.PipeLegend(scene).Layer("#=====#");
@@ -49,8 +46,7 @@ public class IntegrationScenarioTests
   }
 
   [Fact]
-  public void Two_separate_runs_stay_isolated()
-  {
+  public void Two_separate_runs_stay_isolated() {
     // Two capped mains with a gap between them - two independent networks.
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     LpexScenes.PipeLegend(scene).Layer("#==#   #==#");
@@ -80,26 +76,25 @@ public class IntegrationScenarioTests
   }
 
   [Fact]
-  public void A_boiling_boiler_charges_an_attached_steam_main()
-  {
-    // Boiler + a sealed two-cell vertical steam riser on its outlet: the boiler should bleed steam
-    // into the pipe network until their pressures equalise (the connected-vessel PushSteam path).
+  public void A_boiling_boiler_charges_an_attached_steam_main() {
+    // Boiler + a sealed two-cell vertical steam riser on its outlet: the boiler bleeds steam into the
+    // pipe network until their pressures equalise (the connected-vessel PushSteam path).
     var scene = new Scene().Network("pipe", s => new PipeNetwork(s));
     var boiler = new BoilerFixture(scene, new BlockPos(0, 8, 0));
 
     BlockPos attach = boiler.SteamPipeAttachPos; // pipe cell directly above the outlet connector
     var riser = LpexScenes.PipeLegend(scene);
-    // Only the top needs sealing: the riser's bottom sits on the boiler's own steam-outlet cell,
-    // which its raised shell occupies. Capping it here would overwrite that layout cell and break
-    // the structure on the next monitor tick.
+    // Only the top needs sealing: the riser's bottom sits on the boiler's own steam-outlet cell, which
+    // its raised shell occupies. A cap there overwrites that layout cell and breaks the structure on
+    // the next monitor tick.
     riser
       .Layer("I", y: attach.Y, originX: attach.X, originZ: attach.Z) // riser cell 1
       .Layer("I", y: attach.Y + 1, originX: attach.X, originZ: attach.Z) // riser cell 2
       .Layer("#", y: attach.Y + 2, originX: attach.X, originZ: attach.Z); // top cap
     scene.Build();
 
-    // Heating (not Boiling) still pushes steam out the outlet but doesn't generate more, so the
-    // boiler's steam strictly drops as it charges the main - isolating the PushSteam transfer.
+    // Heating (not Boiling) pushes steam out the outlet without generating more, so the boiler's steam
+    // strictly drops as it charges the main, isolating the PushSteam transfer.
     boiler.Prime(BoilerState.Heating, water: 200f, steam: 400f);
     scene.Step(3);
 

@@ -1,29 +1,27 @@
+using ExpandedLib.Metals;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using NSubstitute;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Drives the molten network end to end: real canal cells own their metal, the network's per-tick
-/// pass flows it across connectors and conserves the total. A fake "ingot" item stands in for the
+/// Drives the molten network end to end: real canal cells own their metal, and the network's per-tick
+/// pass flows it across connectors while conserving the total. A fake ingot item stands in for the
 /// resolved game collectible so the temperature carrier works headlessly.
 /// </summary>
-public class MoltenFlowTests
-{
+public class MoltenFlowTests {
   private const string Metal = "game:ingot-iron";
 
-  /// <summary>A configured ns molten-canal block: connectors come straight off the orientation
-  /// string, so reflection-setting Type/Orientation (OnLoaded is skipped) is enough.</summary>
-  private static BlockMoltenCanal Canal()
-  {
+  /// <summary>A configured ns molten-canal block. Connectors derive from the orientation string, so
+  /// reflection-setting Type/Orientation is enough with OnLoaded skipped.</summary>
+  private static BlockMoltenCanal Canal() {
     var block = TestBlocks.Configure(
       new BlockMoltenCanal(),
       "smex:moltencanal-straight-ns",
@@ -42,8 +40,7 @@ public class MoltenFlowTests
     TestWorld world,
     BlockEntityMoltenCanal a,
     BlockEntityMoltenCanal b
-  ) Run()
-  {
+  ) Run() {
     var world = new TestWorld();
     world.RegisterNetwork("molten", sys => new MoltenNetwork(sys));
 
@@ -51,13 +48,11 @@ public class MoltenFlowTests
     world.World.GetItem(Arg.Any<AssetLocation>()).Returns(item);
 
     var block = Canal();
-    var a = new BlockEntityMoltenCanal
-    {
+    var a = new BlockEntityMoltenCanal {
       Pos = new BlockPos(0, 0, 0),
       Block = block,
     };
-    var b = new BlockEntityMoltenCanal
-    {
+    var b = new BlockEntityMoltenCanal {
       Pos = new BlockPos(0, 0, 1),
       Block = block,
     };
@@ -75,15 +70,13 @@ public class MoltenFlowTests
     new(world.World.GetItem(new AssetLocation(Metal)), 1);
 
   [Fact]
-  public void Both_cells_join_one_network()
-  {
+  public void Both_cells_join_one_network() {
     var (world, a, b) = Run();
     Assert.Same(world.NetworkAt(a.Pos), world.NetworkAt(b.Pos));
   }
 
   [Fact]
-  public void PushMetal_fills_a_cell_up_to_its_capacity()
-  {
+  public void PushMetal_fills_a_cell_up_to_its_capacity() {
     var (world, a, _) = Run();
 
     int accepted = a.PushMetal(40, MetalStack(world), world.World);
@@ -95,8 +88,7 @@ public class MoltenFlowTests
   }
 
   [Fact]
-  public void PushMetal_clamps_to_the_cell_capacity()
-  {
+  public void PushMetal_clamps_to_the_cell_capacity() {
     var (world, a, _) = Run();
     // Capacity defaults to 50 units; a 200-unit push tops out there.
     int accepted = a.PushMetal(200, MetalStack(world), world.World);
@@ -105,8 +97,7 @@ public class MoltenFlowTests
   }
 
   [Fact]
-  public void DrainMetal_removes_and_empties_the_cell()
-  {
+  public void DrainMetal_removes_and_empties_the_cell() {
     var (world, a, _) = Run();
     a.PushMetal(30, MetalStack(world), world.World);
 
@@ -119,8 +110,7 @@ public class MoltenFlowTests
   }
 
   [Fact]
-  public void A_tick_flows_metal_across_the_connector_and_conserves_the_total()
-  {
+  public void A_tick_flows_metal_across_the_connector_and_conserves_the_total() {
     var (world, a, b) = Run();
     a.PushMetal(40, MetalStack(world), world.World);
     Assert.Equal(0, b.CellAmount);
@@ -134,20 +124,19 @@ public class MoltenFlowTests
 
   #region Levelling converges (it used to oscillate)
 
-  // A levelling edge moves half the difference. Moving all of it overshoots the midpoint and swaps the two
-  // cells outright, so the pair flip-flopped forever instead of settling - these pin the convergence.
+  // A levelling edge moves half the difference. Moving all of it overshoots the midpoint and swaps the
+  // two cells outright, so the pair oscillates instead of settling.
 
   [Fact]
-  public void A_levelling_tick_never_overshoots_the_midpoint()
-  {
+  public void A_levelling_tick_never_overshoots_the_midpoint() {
     var (world, a, b) = Run();
     a.PushMetal(40, MetalStack(world), world.World);
     b.PushMetal(20, MetalStack(world), world.World);
 
     world.Tick();
 
-    // The giver must still be the fuller cell. If a tick can invert the pair, it will invert it back next
-    // tick and the run never comes to rest.
+    // The giver must still be the fuller cell. A tick that inverts the pair inverts it back the next
+    // tick, and the run never comes to rest.
     Assert.True(
       a.CellAmount >= b.CellAmount,
       $"the fuller cell became the emptier one ({a.CellAmount} vs {b.CellAmount}) - this is the oscillation"
@@ -156,8 +145,7 @@ public class MoltenFlowTests
   }
 
   [Fact]
-  public void A_pair_settles_level_and_stays_there()
-  {
+  public void A_pair_settles_level_and_stays_there() {
     var (world, a, b) = Run();
     a.PushMetal(40, MetalStack(world), world.World);
     b.PushMetal(20, MetalStack(world), world.World);
@@ -165,7 +153,7 @@ public class MoltenFlowTests
     for (int i = 0; i < 20; i++)
       world.Tick();
 
-    // Within a unit of level, and conserved. Integer halving terminates at a 1-unit difference, which is the
+    // Within a unit of level, and conserved. Integer halving terminates at a 1-unit difference, the
     // closest whole-unit split of an odd total.
     Assert.True(
       System.Math.Abs(a.CellAmount - b.CellAmount) <= 1,
@@ -173,18 +161,17 @@ public class MoltenFlowTests
     );
     Assert.Equal(60, a.CellAmount + b.CellAmount);
 
-    // And it is genuinely at rest: another tick moves nothing.
+    // At rest: another tick moves nothing.
     int before = a.CellAmount;
     world.Tick();
     Assert.Equal(before, a.CellAmount);
   }
 
   [Fact]
-  public void A_near_level_pair_still_closes_the_gap()
-  {
-    // The regression guard for the fix's own failure mode. Halving used to be floored by
-    // MoltenMinFlowAmount (10), which turned into a 2x deadband: a pair 19 units apart moved nothing, so a
-    // canal quietly stopped delivering partway along.
+  public void A_near_level_pair_still_closes_the_gap() {
+    // A difference below MoltenMinFlowAmount (10) must still flow. Flooring the halved amount at that
+    // minimum makes a 2x deadband in which a pair 19 units apart moves nothing and the canal stops
+    // delivering partway along.
     var (world, a, b) = Run();
     a.PushMetal(19, MetalStack(world), world.World);
 
@@ -199,8 +186,7 @@ public class MoltenFlowTests
   #endregion
 
   [Fact]
-  public void Different_metals_do_not_mix_across_a_connector()
-  {
+  public void Different_metals_do_not_mix_across_a_connector() {
     var (world, a, b) = Run();
     a.PushMetal(40, MetalStack(world), world.World);
 

@@ -7,17 +7,14 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The Bessemer transmission's mechanical-power behavior (was 0% covered): a fixed network endpoint
-/// that carries the axle into the converter control. Covers its constant resistance and the
-/// orientation seeding (discovery face opposite the placed side, one axle sign per axis so opposite
-/// facings on a shaft don't counter-rotate).
+/// The Bessemer transmission's mechanical-power behavior: a fixed network endpoint that carries the
+/// axle into the converter control. Covers its constant resistance and the orientation seeding -
+/// discovery face opposite the placed side, one axle sign per axis so that opposite facings on a
+/// shaft do not counter-rotate.
 /// </summary>
-public class ConverterTransmissionTests
-{
-  private static BEBehaviorMPConverterTransmission Behavior(string side)
-  {
-    var be = new BlockEntityConverterTransmission
-    {
+public class ConverterTransmissionTests {
+  private static BEBehaviorMPConverterTransmission Behavior(string side) {
+    var be = new BlockEntityConverterTransmission {
       Block = TestBlocks.Configure(
         new Block(),
         $"smex:converterbessemertransmission-{side}",
@@ -29,8 +26,7 @@ public class ConverterTransmissionTests
   }
 
   [Fact]
-  public void Resistance_is_the_constant_transmission_drag()
-  {
+  public void Resistance_is_the_constant_transmission_drag() {
     Assert.Equal(0.25f, Behavior("north").GetResistance(), 5);
   }
 
@@ -42,8 +38,7 @@ public class ConverterTransmissionTests
   public void Discovery_face_is_opposite_the_placed_side(
     string side,
     string expectedFace
-  )
-  {
+  ) {
     var mp = Behavior(side);
     mp.SetOrientations();
     Assert.Equal(
@@ -55,8 +50,7 @@ public class ConverterTransmissionTests
   [Theory]
   [InlineData("north")] // Z axis
   [InlineData("east")] // X axis
-  public void Axle_uses_a_single_sign_per_axis(string side)
-  {
+  public void Axle_uses_a_single_sign_per_axis(string side) {
     var mp = Behavior(side);
     mp.SetOrientations();
     int[] expected =

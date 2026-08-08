@@ -9,11 +9,10 @@ using Vintagestory.API.MathTools;
 namespace LowPressureExpanded.BlockNetworkPipe.Blocks;
 
 [BlockRegister]
-public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
-{
+public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider {
   public override string NetworkType => "pipe";
 
-  /// <summary>The fluid-intake blocktype, authored in C# (migrated from pipes/fluidintake.json).</summary>
+  /// <summary>The fluid-intake blocktype, authored in C#.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [FluidIntake(domain)];
 
@@ -34,14 +33,14 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
       .SideSolid(false)
       .SideOpaque(false);
 
-  // AllowedOrientations is inherited from BlockNetworkNode (derived from this block's own def's variant groups).
-  // Intentionally "s" - the intake defaults to facing south, not the first-listed orientation.
+  // AllowedOrientations comes from BlockNetworkNode, derived from this block's own def's variant
+  // groups. The fallback is "s": the intake faces south by default, not the first-listed orientation.
   protected override string GetFallbackOrientation(string? type) => "s";
 
   /// <summary>
-  /// The intake rests on water in any horizontal facing, so the wrench must cycle all four
-  /// facings rather than the one it snapped to. Opting in makes <c>GetWrenchOrientations</c>
-  /// recompute the cycle on the fly.
+  /// The intake rests on water in any horizontal facing, so the wrench must cycle all four facings
+  /// rather than the one it snapped to. Opting in makes <c>GetWrenchOrientations</c> recompute the
+  /// cycle on the fly.
   /// </summary>
   protected override bool IsFullCube => true;
 
@@ -55,16 +54,14 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
     ItemStack itemstack,
     BlockSelection blockSel,
     ref string failureCode
-  )
-  {
+  ) {
     Block below = world.BlockAccessor.GetBlock(
       blockSel.Position.DownCopy(),
       BlockLayersAccess.Fluid
     );
-    if (below.LiquidCode != "water")
-    {
-      // Shown as Lang.Get("placefailure-" + code), so this must be a plain code with a
-      // matching "game:placefailure-…" lang entry, not text.
+    if (below.LiquidCode != "water") {
+      // Shown as Lang.Get("placefailure-" + code), so this must be a plain code with a matching
+      // "game:placefailure-…" lang entry, not literal text.
       failureCode = "lpex-fluidintake-nowater";
       return false;
     }
@@ -80,15 +77,14 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
 
   /// <summary>
   /// The intake is a standalone source block resting on the water it pumps. Water is not an
-  /// attachable surface, so the base self-break would wrongly destroy a freshly placed intake.
-  /// Keep its orientation in sync but never self-break; losing the water just disables it.
+  /// attachable surface, so the base self-break would destroy a freshly placed intake. Keeps the
+  /// orientation in sync and never self-breaks; losing the water only disables it.
   /// </summary>
   public override void OnNeighbourBlockChange(
     IWorldAccessor world,
     BlockPos pos,
     BlockPos neighbour
-  )
-  {
+  ) {
     if (Orientation == null)
       return;
 

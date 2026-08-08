@@ -1,11 +1,12 @@
 using System;
 using ExpandedLib;
-using ExpandedLib.Renderers;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Materials;
+using ExpandedLib.Metals;
 using ExpandedLib.Process;
 using ExpandedLib.Registries.Entities;
+using ExpandedLib.Renderers;
 using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -14,29 +15,21 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 
 /// <summary>
-/// The "brain" of the Bessemer converter multiblock. Owns the operational state
-/// machine, the molten charge, and the dynamic pig-iron → steel refining process. The
-/// converter block is a thin visual/break shell driven from here; the control
-/// reads its peripherals (input tap, gas intake, output start, transmission) by
-/// resolving their structure-local offsets through <see cref="GetGlobalPos"/>.
-/// <para>
-/// The blow is an <b>acid</b> Bessemer (materials.md high-N mild steel): air blown through molten pig,
-/// no flux, a self-forming siliceous slag - historically correct, not a simplification (flux belongs to
-/// the basic/Thomas process only). It is <b>autothermal</b>: the pig's own oxidisable content, burned by
-/// the blast, is the only heat source, fed into the shared exlib heat balance. Carbon falls monotonically
-/// as you blow, so the player picks the product by <em>when</em> they stop - pig (too short) → Bessemer
-/// steel (at target) → soft ingot iron (over-blow). Carbon standing in for total oxidisable content is an
-/// ABSTRACTION (real Bessemer heat is silicon-dominated) that self-terminates like the real flame drop.
-/// </para>
+/// Control block entity of the Bessemer converter multiblock: owns the operational state machine,
+/// the molten charge and the pig-iron to steel refining process. The converter block is a visual and
+/// break shell driven from here; peripherals (input tap, gas intake, output start, transmission)
+/// resolve from their structure-local offsets through <see cref="GetGlobalPos"/>. The blow is an
+/// autothermal acid Bessemer: the pig's own oxidisable content, burned by the blast, is the only heat
+/// source, and carbon falls monotonically, so the stop point selects the product - pig, Bessemer
+/// steel at target, or soft ingot iron on over-blow. See docs/design/materials.md.
 /// </summary>
 [BlockEntityRegister]
-public partial class BlockEntityConverterControl : BlockEntityMultiblockStructure
-{
+public partial class BlockEntityConverterControl
+  : BlockEntityMultiblockStructure {
   #region Structure-local peripheral offsets
   private static readonly (int x, int y, int z) TransmissionLocal = (0, -1, 0);
   private static readonly (int x, int y, int z) ConverterLocal = (0, 0, 2);
@@ -52,18 +45,21 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     SmexValues.BessemerPowerSpeedThreshold;
   private static float PourRate => SmexValues.BessemerPourRate;
 
-  // The dynamic carbon model + autothermal heat balance (all live config, re-read each read).
+  // Carbon model + autothermal heat balance. All live config, re-read on every access.
   private static float PigCarbonStart => SmexValues.BessemerPigCarbonStart;
-  private static float SteelCarbonTarget => SmexValues.BessemerSteelCarbonTarget;
+  private static float SteelCarbonTarget =>
+    SmexValues.BessemerSteelCarbonTarget;
   private static float OverblowCarbon => SmexValues.BessemerOverblowCarbon;
   private static float CarbonPerBlastLitre =>
     SmexValues.BessemerCarbonPerBlastLitre;
   private static float AutothermalBase => SmexValues.BessemerAutothermalBase;
-  private static float HeatPerCarbonUnit => SmexValues.BessemerHeatPerCarbonUnit;
+  private static float HeatPerCarbonUnit =>
+    SmexValues.BessemerHeatPerCarbonUnit;
   private static float AutothermalCeiling =>
     SmexValues.BessemerAutothermalCeiling;
   private static float RadiationLoss => SmexValues.BessemerRadiationLoss;
-  private static float RefineTemperature => SmexValues.BessemerRefineTemperature;
+  private static float RefineTemperature =>
+    SmexValues.BessemerRefineTemperature;
   private static float ColdScrapLossCoefficient =>
     SmexValues.BessemerColdScrapLossCoefficient;
   private static int ScrapUnitValue => SmexValues.BessemerScrapUnitValue;
@@ -71,26 +67,27 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   private static float SteelYield => SmexValues.BessemerSteelYield;
   private static float SlagYield => SmexValues.BessemerSlagYield;
 
-  // The charge cools slower inside the insulated vessel than loose molten metal does: scale the
-  // molten-system cooldown speed by the configurable coefficient (0.5 ⇒ cools twice as slowly), so
-  // a finished heat gives the player time to pour before it solidifies.
+  // Molten-system cooldown speed scaled by the configured coefficient (0.5 cools twice as slowly),
+  // so the insulated vessel holds a finished heat long enough to pour it.
   private static float ContentCooldownSpeed =>
     IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
 
-  // Below this fraction of capacity a hardened residue is small enough to chisel out (rather than
-  // breaking the whole converter to salvage it).
+  // Below this fraction of capacity a hardened residue can be chiselled out instead of breaking the
+  // whole converter to salvage it.
   private static float ChiselMaxFraction =>
     SmexValues.BessemerChiselMaxFraction;
 
-  // The molten item codes for the bessemer's input/product metals, resolved through the shared registry
-  // (a mod could redirect any token). Input is molten PIG iron off the blast furnace; the target product
-  // is smex Bessemer steel; over-blowing past the target yields soft vanilla ingot iron; the slag
-  // byproduct is the same iwex:slag the furnaces make.
-  private static string PigCode => MetalRegistry.MoltenItemOf("pigiron").ToString();
+  // Molten item codes for the converter's metals, resolved through the shared registry so another mod
+  // can redirect a token: molten pig in, Bessemer steel at the target, soft ingot iron on over-blow,
+  // and the same iwex:slag the furnaces make.
+  private static string PigCode =>
+    MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string SteelCode =>
     MetalRegistry.MoltenItemOf("bessemersteel").ToString();
-  private static string IronCode => MetalRegistry.MoltenItemOf("iron").ToString();
-  private static string SlagCode => MetalRegistry.MoltenItemOf("slag").ToString();
+  private static string IronCode =>
+    MetalRegistry.MoltenItemOf("iron").ToString();
+  private static string SlagCode =>
+    MetalRegistry.MoltenItemOf("slag").ToString();
   #endregion
 
   #region Operational + charge state
@@ -98,31 +95,31 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   public ConverterOpState OpState { get; private set; } =
     ConverterOpState.Normal;
 
-  // The metal pool: molten pig on the way in, retyped in place to Bessemer steel at the carbon target
-  // (or to soft ingot iron on over-blow). Its Units are the steel/iron units.
+  // The metal pool: molten pig on the way in, retyped in place to Bessemer steel at the carbon
+  // target, or to soft ingot iron on over-blow. Units are metal units.
   private MoltenCharge? _charge;
 
-  // Carbon fraction of the bath (pig ~0.04). Falls as the blow oxidises it; drives the retype and the
-  // HUD carbon %.
+  // Carbon fraction of the bath (pig starts near 0.04). Falls as the blow oxidises it; drives the
+  // retype and the HUD carbon percentage.
   private float _carbon;
 
-  // Pig mass basis for the mass-balance yields (total pig charged this heat), and the sub-unit carry so
-  // the per-tick integer shed off the charge does not lose fractional mass.
+  // Pig mass basis for the mass-balance yields (total pig charged this heat), and the sub-unit carry
+  // that keeps the per-tick integer shed from losing fractional mass.
   private int _pigCharged;
   private float _shedCarry;
 
-  // Cold steel scrap charged alongside the pig (in molten units): pure heat-sink mass that raises T_loss
-  // (the emergent scrap cap) until it melts into the steel at the target. Never a hardcoded limit.
+  // Cold steel scrap charged alongside the pig, in molten units. Pure heat-sink mass that raises
+  // T_loss until it melts into the steel at the carbon target; there is no fixed scrap ceiling.
   private int _scrapUnits;
 
-  // The floating slag pool (units), the same iwex:slag the furnaces make. Accumulates DURING the blow as
-  // impurities oxidise; a shallow tilt spills it off the top before the steel beneath.
+  // The floating slag pool in units, the same iwex:slag the furnaces make. Accumulates during the
+  // blow as impurities oxidise; a shallow tilt spills it off the top before the steel beneath.
   private float _moltenSlag;
 
   private bool _solidified;
 
-  // The last heat balance the tick computed, serialized so the client HUD (which never blows) can print
-  // the contributors - the same push-based readout the furnace core uses.
+  // Heat balance from the last tick, serialized so the client HUD can print the contributors:
+  // GetBlockInfo runs client-side and the client never blows the bath.
   private HeatBalance _lastHeatBalance;
 
   private string _status = Lang.Get("smex:bessemer-status-idle");
@@ -138,8 +135,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Lifecycle
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
 
     // Establish the structure angle up front so GetGlobalPos resolves peripherals on the first
@@ -150,10 +146,9 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     _toggle.Initialize(ApplyControlPose);
   }
 
-  // Non-RCC animated block: load the shape and initialise the animator through the shared toggle helper,
-  // which owns the null-animator ready-guard (a failed shape resolve degrades to "not ready", no pose).
-  private void BuildAnimator(BEBehaviorAnimatable animatable)
-  {
+  // Non-RCC animated block: loads the shape and initialises the animator through the shared toggle
+  // helper, which owns the null-animator ready-guard. A failed shape resolve leaves it not ready.
+  private void BuildAnimator(BEBehaviorAnimatable animatable) {
     var capi = (ICoreClientAPI)Api;
     Shape? shape = capi
       .Assets.TryGet(
@@ -166,8 +161,8 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     if (shape == null)
       return;
 
-    // Rotation is applied only by the renderer, not baked into the mesh (InitializeShapeAnd-
-    // Animator does both and would rotate the control 180° off).
+    // Rotation is applied only by the renderer, not baked into the mesh: InitializeShapeAnd-
+    // Animator does both and would rotate the control 180° off.
     animatable.animUtil.InitializeAnimator(
       "bessemercontrol-" + Block.Variant["side"],
       shape,
@@ -180,22 +175,18 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Production tick (server only, started by base when StructureComplete)
 
-  protected override void OnProductionTick(float dt)
-  {
-    if (!StructureComplete || !IsConverterConstructed())
-    {
+  protected override void OnProductionTick(float dt) {
+    if (!StructureComplete || !IsConverterConstructed()) {
       SetStatus(Lang.Get("smex:bessemer-status-notbuilt"));
       return;
     }
 
-    if (!IsGasIntakeAligned())
-    {
+    if (!IsGasIntakeAligned()) {
       SetStatus(Lang.Get("smex:bessemer-status-misaligned"));
       return;
     }
 
-    if (!IsTransmissionAligned())
-    {
+    if (!IsTransmissionAligned()) {
       SetStatus(Lang.Get("smex:bessemer-status-transmission-misaligned"));
       return;
     }
@@ -203,8 +194,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     UpdateSolidified();
     SyncContentCooldown();
 
-    switch (OpState)
-    {
+    switch (OpState) {
       case ConverterOpState.Filling:
         TickFilling(dt);
         break;
@@ -220,25 +210,21 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     }
   }
 
-  private void TickNormal(float dt)
-  {
-    // Idle while holding the charge; run the autothermal blow when the charge is still blowable.
-    if (_charge == null || _charge.Units <= 0)
-    {
+  private void TickNormal(float dt) {
+    // Idles while holding the charge; runs the autothermal blow while the charge is blowable.
+    if (_charge == null || _charge.Units <= 0) {
       SetStatus(Lang.Get("smex:bessemer-status-empty"));
       return;
     }
 
-    if (_solidified)
-    {
+    if (_solidified) {
       SetStatus(SolidifiedStatus());
       return;
     }
 
-    // Only pig (blowing to steel) and Bessemer steel (which can be over-blown further) take the blow.
-    // A finished over-blown iron heat, or any foreign metal, just waits to be poured.
-    if (!IsBlowable())
-    {
+    // Only pig and Bessemer steel take the blow. An over-blown iron heat, or any foreign metal,
+    // waits to be poured.
+    if (!IsBlowable()) {
       SetStatus(
         Lang.Get(
           IsOverblownIron()
@@ -253,16 +239,16 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     // balance (autothermal T_in scales with it) and the decarburisation this tick.
     float demand = BlastPerSecond * dt;
     float blastConsumed = TryConsumeBlast(demand);
-    float airFactor = demand > 0f ? GameMath.Clamp(blastConsumed / demand, 0f, 1f) : 0f;
+    float airFactor =
+      demand > 0f ? GameMath.Clamp(blastConsumed / demand, 0f, 1f) : 0f;
 
-    // Compute + stash the heat balance every tick (even paused), so the HUD always explains the state.
+    // Recomputed and stashed every tick, including a paused one, so the HUD always explains the state.
     _lastHeatBalance = ComputeHeatBalance(airFactor);
     MarkDirty();
 
-    if (blastConsumed <= 0f)
-    {
-      // With the blast cut, pig still wants air to finish; a bath already at the steel target is simply
-      // ready - the player has succeeded and can pour, or resume the blast to over-blow it to iron.
+    if (blastConsumed <= 0f) {
+      // With the blast cut, a bath at the steel target is ready to pour or to over-blow once the
+      // blast resumes; pig still needs air to finish.
       SetStatus(
         Lang.Get(
           IsBessemerSteel()
@@ -274,22 +260,20 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       return;
     }
 
-    // The blow drives the bath toward its autothermal equilibrium (T_in − T_loss). Cold scrap pulls that
-    // equilibrium down; enough of it drops the bath below its melting point and the next UpdateSolidified
-    // freezes it - the emergent scrap cap, no hardcoded limit.
+    // The blow drives the bath toward its autothermal equilibrium (T_in - T_loss). Cold scrap pulls
+    // that equilibrium down; enough of it drops the bath below its melting point and freezes it.
     HoldBathTemperature(_lastHeatBalance.TProcess);
 
-    // Refine only while the bath clears the refine floor (the steel liquidus); a bath dragged under it by
-    // a heavy cold-scrap charge stalls here and cools toward the freeze.
-    if (_lastHeatBalance.TProcess < RefineTemperature)
-    {
+    // Refining requires the bath to clear the refine floor (the steel liquidus); a bath dragged
+    // under it by a heavy cold-scrap charge stalls here and cools toward the freeze.
+    if (_lastHeatBalance.TProcess < RefineTemperature) {
       SetStatus(
         Lang.Get("smex:bessemer-status-blow-stalled", CarbonPercentText())
       );
       return;
     }
 
-    // Emit process smoke + the roaring/crackling blast only while actively refining.
+    // Process smoke and blast sound play only while actively refining.
     GetConverter()?.SpawnSmokeParticles();
     ExSounds.PlayThrottled(
       Api,
@@ -315,36 +299,31 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   }
 
   /// <summary>
-  /// One blow step: oxidises carbon (∝ blast that reached the bath), sheds the oxidised mass off the
-  /// charge into slag + gas as it goes (mass-conserving, R2), and retypes the charge as carbon crosses
-  /// the thresholds - pig → Bessemer steel at the target, Bessemer steel → soft ingot iron on over-blow.
+  /// One blow step: oxidises carbon in proportion to the blast that reached the bath, sheds the
+  /// oxidised mass into slag and gas as it goes (mass-conserving), and retypes the charge as carbon
+  /// crosses the thresholds - pig to Bessemer steel at target, steel to soft ingot iron on over-blow.
   /// </summary>
-  private void BlowStep(float blastConsumed)
-  {
+  private void BlowStep(float blastConsumed) {
     if (_charge == null)
       return;
 
     float prevCarbon = _carbon;
     _carbon = Math.Max(0f, _carbon - CarbonPerBlastLitre * blastConsumed);
 
-    if (IsPig())
-    {
-      // The pig → steel band [target, start] is where impurities burn off and slag forms. Only the part
-      // of this tick's carbon drop that lies in that band sheds mass, so a final over-shoot into the
-      // steel band never over-sheds.
+    if (IsPig()) {
+      // Impurities burn off and slag forms across the [target, start] carbon band. Only the part of
+      // this tick's carbon drop inside that band sheds mass, so an overshoot never over-sheds.
       float range = Math.Max(1e-6f, PigCarbonStart - SteelCarbonTarget);
       float bandBurned =
         GameMath.Clamp(prevCarbon, SteelCarbonTarget, PigCarbonStart)
         - GameMath.Clamp(_carbon, SteelCarbonTarget, PigCarbonStart);
-      if (bandBurned > 0f)
-      {
-        // Total mass shed across the whole blow is pigCharged × (1 − steelYield); split into slag and
-        // gas by their yields. The integer carry keeps sub-unit sheds from being rounded away.
+      if (bandBurned > 0f) {
+        // Total mass shed across the whole blow is pigCharged × (1 − steelYield), split into slag
+        // and gas by their yields. The carry keeps sub-unit sheds from being rounded away.
         float lossFrac = Math.Max(1e-6f, 1f - SteelYield);
         _shedCarry += _pigCharged * lossFrac * (bandBurned / range);
         int shed = Math.Min((int)_shedCarry, _charge.Units);
-        if (shed > 0)
-        {
+        if (shed > 0) {
           _charge.Units -= shed;
           _shedCarry -= shed;
           _moltenSlag += shed * (SlagYield / lossFrac); // the rest of the shed is gas (gone)
@@ -353,21 +332,20 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
       if (_carbon <= SteelCarbonTarget)
         RetypeToSteel();
-    }
-    else if (IsBessemerSteel() && _carbon <= OverblowCarbon)
-    {
-      // Over-blow: carbon driven to ~0 leaves soft, slag-free ingot iron (the deliberate plain-iron path
-      // now the blast furnace makes pig). Mass unchanged - the carbon that left is already in the gas.
+    } else if (IsBessemerSteel() && _carbon <= OverblowCarbon) {
+      // Over-blow: carbon driven to near zero leaves soft, slag-free ingot iron. Mass is unchanged;
+      // the carbon that left is already accounted for in the gas.
       _charge.RetypeTo(Api.World, IronCode, ContentCooldownSpeed);
     }
   }
 
-  // Retypes the pig charge to Bessemer steel at the carbon target and melts any cold scrap into it (scrap
-  // yields ScrapSteelYield to steel, the rest lost as gas). The pig-derived steel is what is left of the
-  // charge after the blow's shedding; adding the scrap steel is why a scrap charge yields MORE steel.
-  private void RetypeToSteel()
-  {
-    if (_charge == null || !_charge.RetypeTo(Api.World, SteelCode, ContentCooldownSpeed))
+  // Retypes the pig charge to Bessemer steel at the carbon target and melts any cold scrap into it;
+  // scrap yields ScrapSteelYield to steel and the rest is lost as gas.
+  private void RetypeToSteel() {
+    if (
+      _charge == null
+      || !_charge.RetypeTo(Api.World, SteelCode, ContentCooldownSpeed)
+    )
       return;
     int scrapSteel = (int)Math.Round(_scrapUnits * ScrapSteelYield);
     if (scrapSteel > 0)
@@ -376,10 +354,8 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     _shedCarry = 0f;
   }
 
-  private void TickFilling(float dt)
-  {
-    if (_solidified)
-    {
+  private void TickFilling(float dt) {
+    if (_solidified) {
       SetStatus(SolidifiedStatus());
       return;
     }
@@ -388,22 +364,19 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
     // Respect the tap's open/closed state: a closed tap's cell still receives metal from the
     // network, so check it here or the vessel would fill through a shut tap.
-    if (inputCell is BlockEntityMoltenCanalTap { IsPouring: false })
-    {
+    if (inputCell is BlockEntityMoltenCanalTap { IsPouring: false }) {
       SetStatus(Lang.Get("smex:bessemer-status-filling-tapclosed"));
       return;
     }
 
-    if (inputCell == null || !inputCell.HasMoltenMetal)
-    {
+    if (inputCell == null || !inputCell.HasMoltenMetal) {
       SetStatus(Lang.Get("smex:bessemer-status-filling-nometal"));
       return;
     }
 
-    // Cold scrap counts against the vessel capacity too (it is real mass sitting in the bath).
+    // Cold scrap counts against the vessel capacity; it is mass sitting in the bath.
     int held = (_charge?.Units ?? 0) + _scrapUnits;
-    if (held >= CapacityUnits)
-    {
+    if (held >= CapacityUnits) {
       SetStatus(Lang.Get("smex:bessemer-status-filling-full"));
       return;
     }
@@ -412,8 +385,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     if (
       _charge != null
       && _charge.MetalCode.ToString() != inputCell.CellMetalType
-    )
-    {
+    ) {
       SetStatus(Lang.Get("smex:bessemer-status-filling-mismatch"));
       return;
     }
@@ -444,20 +416,19 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     _charge.SetTemperature(Api.World, temp);
     _charge.Units += (int)drained;
 
-    // A pig fill (re)seeds the carbon for the blow: fresh pig is ~PigCarbonStart, so a top-up onto a
-    // partly-blown bath raises the average by mass, and the pig-mass basis for the yields grows with it.
-    if (_charge.MetalCode.ToString() == PigCode)
-    {
+    // A pig fill reseeds the carbon for the blow: fresh pig arrives at PigCarbonStart, so a top-up
+    // onto a partly-blown bath raises the mass-weighted average and grows the pig-mass yield basis.
+    if (_charge.MetalCode.ToString() == PigCode) {
       int pigUnits = _charge.Units;
       _carbon =
         pigUnits > 0
-          ? (_carbon * (pigUnits - (int)drained) + PigCarbonStart * (int)drained)
-            / pigUnits
+          ? (
+            _carbon * (pigUnits - (int)drained) + PigCarbonStart * (int)drained
+          ) / pigUnits
           : PigCarbonStart;
       _pigCharged += (int)drained;
     }
 
-    // Molten metal hissing into the vessel.
     ExSounds.PlayThrottled(
       Api,
       Pos,
@@ -467,37 +438,36 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       0.6f
     );
     SetStatus(
-      Lang.Get("smex:bessemer-status-filling", held + (int)drained, CapacityUnits)
+      Lang.Get(
+        "smex:bessemer-status-filling",
+        held + (int)drained,
+        CapacityUnits
+      )
     );
     MarkDirty();
   }
 
-  // Shallow tilt: skims the floating slag off the top through the shared output cell. Slag is far less
-  // than the steel, so it drains in seconds - the window to then tilt on to the steel pour.
-  private void TickSlagPouring(float dt)
-  {
-    if (_solidified)
-    {
+  // Shallow tilt: skims the floating slag off the top through the shared output cell. Slag is a
+  // small fraction of the steel, so it drains in seconds before the tilt moves on to the steel pour.
+  private void TickSlagPouring(float dt) {
+    if (_solidified) {
       SetStatus(SolidifiedStatus());
       return;
     }
 
-    if (_moltenSlag <= 0f)
-    {
+    if (_moltenSlag <= 0f) {
       SetStatus(Lang.Get("smex:bessemer-status-slag-empty"));
       return;
     }
 
     var outputCell = GetMoltenCell(OutputStartLocal);
-    if (outputCell == null)
-    {
+    if (outputCell == null) {
       SetStatus(Lang.Get("smex:bessemer-status-pouring-nocanal"));
       return;
     }
 
     int amount = Math.Min((int)Math.Ceiling(_moltenSlag), PourPerTick(dt));
-    float bathTemp =
-      _charge?.Temperature(Api.World) ?? RefineTemperature;
+    float bathTemp = _charge?.Temperature(Api.World) ?? RefineTemperature;
     ItemStack? slagStack = MoltenMetal.CreateStack(
       Api.World,
       SlagCode,
@@ -508,10 +478,9 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       return;
 
     float accepted = outputCell.PushMetal(amount, slagStack, Api.World);
-    if (accepted <= 0f)
-    {
-      // Output cell full or carrying the other medium (steel): keep it hot so it stays molten, and tell
-      // the player to clear/valve it. The single-medium canal guard is what keeps slag and steel apart.
+    if (accepted <= 0f) {
+      // Output cell full or carrying steel: keep it hot so it stays molten and report the block.
+      // The single-medium canal guard is what keeps slag and steel apart.
       outputCell.SoakHeat(Api.World, bathTemp);
       SetStatus(Lang.Get("smex:bessemer-status-slag-blocked"));
       return;
@@ -531,32 +500,27 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   }
 
   // Deep tilt: pours the steel beneath the slag out through the same output cell.
-  private void TickSteelPouring(float dt)
-  {
-    if (_charge == null || _charge.Units <= 0)
-    {
+  private void TickSteelPouring(float dt) {
+    if (_charge == null || _charge.Units <= 0) {
       SetStatus(Lang.Get("smex:bessemer-status-pouring-empty"));
       return;
     }
 
-    if (_solidified)
-    {
+    if (_solidified) {
       SetStatus(SolidifiedStatus());
       return;
     }
 
     var outputCell = GetMoltenCell(OutputStartLocal);
-    if (outputCell == null)
-    {
+    if (outputCell == null) {
       SetStatus(Lang.Get("smex:bessemer-status-pouring-nocanal"));
       return;
     }
 
     int amount = Math.Min(_charge.Units, PourPerTick(dt));
     float accepted = outputCell.PushMetal(amount, _charge.Stack, Api.World);
-    if (accepted <= 0f)
-    {
-      // Output canal full: keep bathing it in our hot content so it stays molten and keeps
+    if (accepted <= 0f) {
+      // Output canal full: keep soaking it with the bath's heat so it stays molten and keeps
       // feeding downstream instead of cooling to a plug. Mirrors the furnace tap's heat soak.
       outputCell.SoakHeat(Api.World, _charge.Temperature(Api.World));
       SetStatus(Lang.Get("smex:bessemer-status-pouring-full"));
@@ -572,19 +536,16 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       1500,
       0.6f
     );
-    if (_charge.Units <= 0)
-    {
+    if (_charge.Units <= 0) {
       _charge = null;
-      // The steel is out; clear the heat's carbon/pig/scrap bookkeeping. Any un-poured slag stays until
-      // it too is drained (a fully emptied vessel clears it in the next slag-pour tick).
+      // The steel is out; clear the heat's carbon, pig and scrap bookkeeping. Un-poured slag stays
+      // until it too is drained by a slag-pour tick.
       _carbon = 0f;
       _pigCharged = 0;
       _scrapUnits = 0;
       _shedCarry = 0f;
       SetStatus(Lang.Get("smex:bessemer-status-emptied"));
-    }
-    else
-    {
+    } else {
       SetStatus(
         Lang.Get("smex:bessemer-status-pouring", _charge.Units, CapacityUnits)
       );
@@ -599,39 +560,34 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   #region Cold scrap charge (the temperature gate)
 
   /// <summary>
-  /// Charges cold steel scrap (any item with the exlib <see cref="Roles.Scrap"/> role - vanilla
-  /// <c>game:metalbit-steel</c> and the like) from the player's hotbar into the vessel, historically
-  /// charged before the pig. It is pure cold mass that raises the bath's heat loss until it melts into
-  /// the steel at the carbon target, so more scrap → a cooler, slower blow and, past the emergent
-  /// ceiling, a frozen bath. Returns <c>false</c> (leaving the click to fall through to state selection)
-  /// when the held item is not scrap; returns <c>true</c> with a reason it could not be charged otherwise.
+  /// Charges cold steel scrap from the player's hotbar into the vessel - any item carrying the exlib
+  /// <see cref="Roles.Scrap"/> role, such as <c>game:metalbit-steel</c>. Scrap is cold mass that
+  /// raises the bath's heat loss until it melts into the steel at the carbon target.
   /// </summary>
-  public bool TryChargeScrap(IPlayer byPlayer, out string error)
-  {
+  /// <returns><c>false</c> when the held item is not scrap, leaving the click to fall through to
+  /// state selection; <c>true</c> otherwise, with <paramref name="error"/> set when refused.</returns>
+  public bool TryChargeScrap(IPlayer byPlayer, out string error) {
     error = "";
     ItemStack? held = byPlayer.InventoryManager?.ActiveHotbarSlot?.Itemstack;
     if (held == null || !MaterialRoleRegistry.IsRole(Roles.Scrap, held))
-      return false; // not scrap - not our click
+      return false; // not scrap - the click falls through
 
     if (!CanOperate(out error))
       return true;
-    if (_solidified)
-    {
+    if (_solidified) {
       error = Lang.Get("smex:bessemer-err-scrap-solidified");
       return true;
     }
-    // Scrap is charged onto an empty vessel or a raw pig charge, before the blow makes steel - not into a
-    // finished heat (where it would just be unrefined cold lumps in the steel).
-    if (_charge != null && _charge.MetalCode.ToString() != PigCode)
-    {
+    // Scrap goes into an empty vessel or a raw pig charge, before the blow makes steel; adding it to
+    // a finished heat would leave unrefined cold lumps in the steel.
+    if (_charge != null && _charge.MetalCode.ToString() != PigCode) {
       error = Lang.Get("smex:bessemer-err-scrap-notpig");
       return true;
     }
 
     int held0 = (_charge?.Units ?? 0) + _scrapUnits;
     int roomBits = (CapacityUnits - held0) / Math.Max(1, ScrapUnitValue);
-    if (roomBits <= 0)
-    {
+    if (roomBits <= 0) {
       error = Lang.Get("smex:bessemer-status-filling-full");
       return true;
     }
@@ -658,21 +614,17 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Temperature handling
 
-  // Re-stamps the live charge's cooldown rate from the (live) config every tick, so an admin changing
-  // BessemerCooldownCoefficient (or the base MoltenCooldownSpeed) via /exmod config speeds up or slows
-  // down the metal already in the vessel - not just metal added on a later fill. Rebases the cooldown
-  // baseline to the current temperature (see MoltenMetal.SyncCooldownSpeed) so the new rate applies from
-  // this tick forward even when the charge has been sitting idle.
-  private void SyncContentCooldown()
-  {
+  // Re-stamps the live charge's cooldown rate from config every tick, so a config change reaches
+  // metal already in the vessel, not only metal added on a later fill. The cooldown baseline is
+  // rebased to the current temperature (see MoltenMetal.SyncCooldownSpeed) so the new rate applies
+  // from this tick forward even for an idle charge.
+  private void SyncContentCooldown() {
     _charge?.SyncCooldown(Api.World, ContentCooldownSpeed);
   }
 
-  // Drives the bath to its autothermal equilibrium while blowing (both up - the blow heats it - and down,
-  // when a cold-scrap charge makes T_loss exceed T_in). This replaces the old fixed 1800 °C hold: the
-  // hold temperature is now whatever the heat balance settles at, so scrap visibly lowers the peak.
-  private void HoldBathTemperature(float tProcess)
-  {
+  // Drives the bath to the autothermal equilibrium while blowing, in both directions: up as the blow
+  // heats it, down when a cold-scrap charge makes T_loss exceed T_in. Never a fixed value.
+  private void HoldBathTemperature(float tProcess) {
     if (_charge == null)
       return;
     _charge.SetTemperature(
@@ -682,14 +634,12 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   }
 
   /// <summary>
-  /// The converter's autothermal heat balance - <c>T_process = T_in − T_loss</c> via the shared exlib
-  /// helper (the same law the shaft furnace runs, no maximum temperature). <c>T_in</c> is the pig's own
-  /// oxidation heat, scaled by how much blast actually reached the bath (no external fuel); <c>T_loss</c>
-  /// is radiation plus the cold mass of any steel scrap. The scrap term is the whole scrap cap: enough of
-  /// it drags T_process under the refine floor (a stall) and then under the melting point (a freeze).
+  /// The converter's autothermal heat balance, <c>T_process = T_in - T_loss</c>, through the shared
+  /// exlib helper and with no maximum temperature. <c>T_in</c> is the pig's own oxidation heat scaled
+  /// by how much blast reached the bath; <c>T_loss</c> is radiation plus the cold mass of any scrap.
+  /// Enough scrap drags T_process under the refine floor (a stall), then under the melting point.
   /// </summary>
-  private HeatBalance ComputeHeatBalance(float airFactor)
-  {
+  private HeatBalance ComputeHeatBalance(float airFactor) {
     float tIn = Math.Min(
       AutothermalCeiling,
       AutothermalBase + HeatPerCarbonUnit * airFactor
@@ -697,8 +647,8 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     float chargeLoss = ColdScrapLossCoefficient * _scrapUnits;
     float tLoss = RadiationLoss + chargeLoss;
 
-    // fuelFrac/fuelFactor/preheat are the furnace's coke contributors; the converter has none, so they
-    // are zero/one and its HUD lang keys simply do not print them. ambient = reference ⇒ no ambient loss.
+    // fuelFrac, fuelFactor and preheat are the furnace's coke contributors; the converter has none,
+    // so they stay at zero/one. Ambient as the reference temperature gives no ambient loss.
     return HeatBalance.Compute(
       tIn,
       tLoss,
@@ -714,12 +664,9 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     );
   }
 
-  private void UpdateSolidified()
-  {
-    if (_charge == null || _charge.Units <= 0)
-    {
-      if (_solidified)
-      {
+  private void UpdateSolidified() {
+    if (_charge == null || _charge.Units <= 0) {
+      if (_solidified) {
         _solidified = false;
         SyncConverter();
       }
@@ -727,8 +674,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     }
 
     bool nowSolid = _charge.IsBelowMeltingPoint(Api.World);
-    if (nowSolid != _solidified)
-    {
+    if (nowSolid != _solidified) {
       _solidified = nowSolid;
       if (nowSolid)
         ExSounds.Play(Api, Pos, ExSounds.Extinguish, 0.7f);
@@ -741,19 +687,19 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Content queries
 
-  // The bath is molten pig (still blowing to steel).
+  // The bath is molten pig, still blowing toward steel.
   private bool IsPig() =>
     _charge != null
     && _charge.Units > 0
     && _charge.MetalCode.ToString() == PigCode;
 
-  // The bath is Bessemer steel (at the carbon target; can be over-blown further to iron).
+  // The bath is Bessemer steel, at the carbon target and still over-blowable to iron.
   private bool IsBessemerSteel() =>
     _charge != null
     && _charge.Units > 0
     && _charge.MetalCode.ToString() == SteelCode;
 
-  // The bath is over-blown soft ingot iron (the blow's terminal, ~0 carbon, product).
+  // The bath is over-blown soft ingot iron, the terminal near-zero-carbon product of the blow.
   private bool IsOverblownIron() =>
     _charge != null
     && _charge.Units > 0
@@ -767,7 +713,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   private string CarbonPercentText() => $"{CarbonPercent():0.00}%";
 
-  // The blow status names the phase the carbon has reached, so the player can time the stop.
+  // Names the phase the carbon has reached, so the stop can be timed against it.
   private string BlowingStatus() =>
     Lang.Get(
       IsBessemerSteel()
@@ -781,35 +727,29 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   #region Player-driven state transitions
 
   /// <summary>
-  /// Validates that the converter is in a state where the player can change its
-  /// operating mode: structure complete, vessel constructed, peripherals aligned,
-  /// and mechanical power present. Returns false with a player-facing reason.
+  /// True when the operating mode can be changed: structure complete, vessel constructed,
+  /// peripherals aligned and mechanical power present. Otherwise false, with
+  /// <paramref name="error"/> set to a player-facing reason.
   /// </summary>
-  public bool CanOperate(out string error)
-  {
+  public bool CanOperate(out string error) {
     error = "";
-    if (!StructureComplete)
-    {
+    if (!StructureComplete) {
       error = Lang.Get("smex:bessemer-err-incomplete");
       return false;
     }
-    if (!IsConverterConstructed())
-    {
+    if (!IsConverterConstructed()) {
       error = Lang.Get("smex:bessemer-err-notbuilt");
       return false;
     }
-    if (!IsGasIntakeAligned())
-    {
+    if (!IsGasIntakeAligned()) {
       error = Lang.Get("smex:bessemer-err-intake-misaligned");
       return false;
     }
-    if (!IsTransmissionAligned())
-    {
+    if (!IsTransmissionAligned()) {
       error = Lang.Get("smex:bessemer-err-transmission-misaligned");
       return false;
     }
-    if (!HasPower())
-    {
+    if (!HasPower()) {
       error = Lang.Get("smex:bessemer-err-nopower");
       return false;
     }
@@ -817,16 +757,14 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   }
 
   /// <summary>
-  /// Attempts to switch operational state. Requires the structure complete, the
-  /// converter constructed, and mechanical power to rotate. Returns a result the
-  /// block can surface to the player.
+  /// Switches operational state, subject to <see cref="CanOperate"/>. Returns false with
+  /// <paramref name="error"/> set to a reason the block can surface to the player.
   /// </summary>
   public bool TrySetState(
     IPlayer byPlayer,
     ConverterOpState newState,
     out string error
-  )
-  {
+  ) {
     if (!CanOperate(out error))
       return false;
 
@@ -834,17 +772,13 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       return true;
 
     OpState = newState;
-    if (Api.Side == EnumAppSide.Server)
-    {
-      // Heavy door-style clunk as the vessel lever is set to fill / pour / hold,
-      // layered over the grind of the heavy vessel rotating on its trunnions.
+    if (Api.Side == EnumAppSide.Server) {
+      // Lever clunk at the control, layered over the vessel grinding round on its trunnions.
       ExSounds.Play(Api, Pos, ExSounds.CokeOvenDoorOpen, 0.9f);
       ExSounds.Play(Api, Pos.AddCopy(0, 0, 2), ExSounds.MetalGrinding, 0.7f);
       SyncConverter();
       MarkDirty(true);
-    }
-    else
-    {
+    } else {
       ApplyControlPose();
     }
     return true;
@@ -863,9 +797,8 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     _charge != null && _charge.Units > 0 && _charge.IsHardened(Api.World);
 
   /// <summary>
-  /// True when a small, fully-hardened residue can be chiselled out of the vessel - rather than
-  /// having to break the whole converter to recover a charge that solidified mid-pour. Requires the
-  /// charge solidified, cooled to hardened, and below <see cref="ChiselMaxFraction"/> of capacity.
+  /// True when a residue can be chiselled out instead of breaking the converter: the charge must be
+  /// solidified, cooled to hardened, and below <see cref="ChiselMaxFraction"/> of capacity.
   /// </summary>
   public bool CanChiselOut() =>
     HasSolidifiedCharge
@@ -873,12 +806,11 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     && (_charge?.Units ?? 0) < ChiselMaxFraction * CapacityUnits;
 
   /// <summary>
-  /// Server-side: chips the hardened residue out of the vessel, returns the recovered metal-bit drop
-  /// (full amount, no break loss), and clears the charge. Returns <c>null</c> off-server or when the
-  /// charge is not chiselable.
+  /// Chips the hardened residue out of the vessel, clears the charge and returns the recovered
+  /// metal-bit drop at full amount, with none of the break loss. Server-side; returns <c>null</c>
+  /// on the client or when the charge is not chiselable.
   /// </summary>
-  public ItemStack? ChiselOutContent()
-  {
+  public ItemStack? ChiselOutContent() {
     if (Api?.Side != EnumAppSide.Server || !CanChiselOut())
       return null;
 
@@ -891,12 +823,9 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     return recovered;
   }
 
-  // Guides the player through clearing a frozen charge, the same way a clogged canal cell does:
-  //  - too large a residue to chisel  -> break the vessel to salvage it;
-  //  - small, but still too hot        -> wait for it to harden, then chisel (it can't be chipped yet);
-  //  - small and fully hardened        -> chisel it out from the upper hatch.
-  private string SolidifiedStatus()
-  {
+  // Status text for a frozen charge: residue too large to chisel -> break the vessel to salvage it;
+  // small but still too hot -> wait for it to harden; small and fully hardened -> chisel it out.
+  private string SolidifiedStatus() {
     if ((_charge?.Units ?? 0) >= ChiselMaxFraction * CapacityUnits)
       return Lang.Get("smex:bessemer-status-solidified");
 
@@ -911,17 +840,14 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Animation
 
-  private void ApplyControlPose()
-  {
-    _toggle?.Pose(util =>
-    {
+  private void ApplyControlPose() {
+    _toggle?.Pose(util => {
       util.StopAnimation("filling");
       util.StopAnimation("pouring");
 
-      // The control lever holds one of two positions: a fill throw, or a pour throw shared by both the
-      // slag and the steel tilt (the depth distinction is on the vessel, not the lever).
-      string? code = OpState switch
-      {
+      // The lever holds one of two positions: a fill throw, or a pour throw shared by the slag and
+      // steel tilts - the depth distinction is on the vessel, not the lever.
+      string? code = OpState switch {
         ConverterOpState.Filling => "filling",
         ConverterOpState.SlagPouring or ConverterOpState.SteelPouring =>
           "pouring",
@@ -929,11 +855,10 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       };
       if (code != null)
         util.StartAnimation(
-          new AnimationMetaData
-          {
+          new AnimationMetaData {
             Animation = code,
             Code = code,
-            AnimationSpeed = 3.0f, // lever pull - quick
+            AnimationSpeed = 3.0f, // a lever pull is quick
             EaseInSpeed = 8f,
             EaseOutSpeed = 8f,
           }.Init()
@@ -941,17 +866,14 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     });
   }
 
-  private void SyncConverter()
-  {
+  private void SyncConverter() {
     GetConverter()?.UpdateMirror(_solidified, _charge?.Units ?? 0, OpState);
   }
 
   protected override void OnStructureCompleted() => SyncConverter();
 
-  protected override void OnStructureLost()
-  {
-    if (OpState != ConverterOpState.Normal)
-    {
+  protected override void OnStructureLost() {
+    if (OpState != ConverterOpState.Normal) {
       OpState = ConverterOpState.Normal;
       ApplyControlPose();
     }
@@ -961,8 +883,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Abstract impls
 
-  protected override void UpdateStructureRotation()
-  {
+  protected override void UpdateStructureRotation() {
     if (Block == null)
       return;
 
@@ -984,8 +905,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetInt("opState", (int)OpState);
     tree.SetItemstack("content", _charge?.Stack);
@@ -1003,8 +923,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     var prevState = OpState;
     OpState = (ConverterOpState)tree.GetInt("opState");
@@ -1027,11 +946,9 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
       ApplyControlPose();
   }
 
-  // The whole balance rides the tree, not just its result: GetBlockInfo runs client-side and the client
-  // never blows the bath or reads the pipes, so anything the HUD prints has to arrive here (the same
-  // reason the furnace core serializes its balance).
-  private void WriteHeatBalance(ITreeAttribute tree)
-  {
+  // The whole balance rides the tree, not just its result: GetBlockInfo runs client-side, where the
+  // bath is never blown and the pipes are never read, so anything the HUD prints must arrive here.
+  private void WriteHeatBalance(ITreeAttribute tree) {
     HeatBalance hb = _lastHeatBalance;
     tree.SetFloat("hbIn", hb.TIn);
     tree.SetFloat("hbLoss", hb.TLoss);
@@ -1041,8 +958,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockStructur
     tree.SetFloat("hbChargeLoss", hb.ChargeLoss);
   }
 
-  private void ReadHeatBalance(ITreeAttribute tree)
-  {
+  private void ReadHeatBalance(ITreeAttribute tree) {
     _lastHeatBalance = new HeatBalance(
       tree.GetFloat("hbIn"),
       tree.GetFloat("hbLoss"),

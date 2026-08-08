@@ -1,0 +1,102 @@
+{
+	"editor": {
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+	},
+	"textures": {
+		"basalt": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/stone/sand/basalt"
+	},
+	"elements": [
+		{
+			"name": "Cube2",
+			"from": [ 2.0, 2.0, 2.0 ],
+			"to": [ 14.0, 10.0, 14.0 ],
+			"rotationOrigin": [ 2.0, 2.0, 2.0 ],
+			"faces": {
+				"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 8.0 ] },
+				"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 8.0 ] },
+				"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 8.0 ] },
+				"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 8.0 ] },
+				"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 12.0 ] },
+				"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 12.0 ] }
+			},
+			"children": [
+				{
+					"name": "Cube3",
+					"from": [ 0.0, 8.0, 0.0 ],
+					"to": [ 1.0, 12.0, 12.0 ],
+					"rotationOrigin": [ 0.0, 8.0, 0.0 ],
+					"faces": {
+						"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+						"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+						"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 12.0 ] },
+						"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 12.0 ] }
+					},
+					"children": [
+						{
+							"name": "Cube4",
+							"from": [ 11.0, 0.0, 0.0 ],
+							"to": [ 12.0, 4.0, 12.0 ],
+							"rotationOrigin": [ 11.0, 0.0, 0.0 ],
+							"faces": {
+								"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+								"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+								"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+								"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+								"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 12.0 ] },
+								"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 1.0, 12.0 ] }
+							}
+						},
+						{
+							"name": "Cube5",
+							"from": [ 1.0, 0.0, 0.0 ],
+							"to": [ 11.0, 4.0, 3.0 ],
+							"rotationOrigin": [ 1.0, 0.0, 0.0 ],
+							"faces": {
+								"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+								"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+								"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+								"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+								"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 3.0 ] },
+								"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 3.0 ] }
+							}
+						},
+						{
+							"name": "Cube6",
+							"from": [ 1.0, 0.0, 9.0 ],
+							"to": [ 11.0, 4.0, 12.0 ],
+							"rotationOrigin": [ 1.0, 0.0, 9.0 ],
+							"faces": {
+								"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+								"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+								"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+								"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+								"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 3.0 ] },
+								"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 10.0, 3.0 ] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Cube7",
+					"from": [ 2.5, 8.0, 4.5 ],
+					"to": [ 9.5, 10.0, 7.5 ],
+					"rotationOrigin": [ 2.0, 8.0, 4.0 ],
+					"faces": {
+						"north": { "texture": "#basalt", "uv": [ 0.0, 0.0, 7.0, 2.0 ] },
+						"east": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 2.0 ] },
+						"south": { "texture": "#basalt", "uv": [ 0.0, 0.0, 7.0, 2.0 ] },
+						"west": { "texture": "#basalt", "uv": [ 0.0, 0.0, 3.0, 2.0 ] },
+						"up": { "texture": "#basalt", "uv": [ 0.0, 0.0, 7.0, 3.0 ] },
+						"down": { "texture": "#basalt", "uv": [ 0.0, 0.0, 7.0, 3.0 ] }
+					}
+				}
+			]
+		}
+	]}

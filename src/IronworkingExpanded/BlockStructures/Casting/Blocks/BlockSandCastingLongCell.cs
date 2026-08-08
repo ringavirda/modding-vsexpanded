@@ -12,18 +12,12 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 /// <summary>
-/// The 1×2 sand casting <b>long cell</b> - the cast-stock station, and the only block in the suite that can
-/// pour a piece longer than twelve voxels.
+/// The 1×2 sand casting long cell: the cast-stock station, and the only block in the suite that can pour a
+/// piece longer than twelve voxels. The product follows the impressed pattern - three narrow lanes give
+/// billets, two give blooms, one gives a slab.
 /// <para>
-/// Its quieter job is the <b>lane ladder</b>: one cell, three fillings, three products. Three narrow
-/// lanes give billets, two give blooms, one gives a slab - the whole cast-stock ladder off one block with
-/// nothing but a pattern swap, which is the trick the 1×1
-/// <see cref="BlockSandCastingCell"/> plays for capital goods.
-/// </para>
-/// <para>
-/// The second cell is a filler for collision and interaction only, so every click on it is rerouted to
-/// the principal through <see cref="IFillerInteractionTarget"/>. Without that reroute, half the station is
-/// dead to the player - the failure the casting bed shipped with (B-bed-2).
+/// The second cell is a filler for collision and interaction only, so clicks on it are rerouted to the
+/// principal through <see cref="IFillerInteractionTarget"/>.
 /// </para>
 /// </summary>
 [BlockRegister]
@@ -31,18 +25,17 @@ public partial class BlockSandCastingLongCell
   : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
   /// <summary>
-  /// Pre-impression ceiling for the single pooled impression. Sized above the largest shipped long-cell
-  /// capacity (the slab's 3000 u) with headroom, because an impressed pattern overrides it anyway - this
-  /// only bounds a cell that has been rammed but not yet impressed.
+  /// Capacity in units of a cell that has been rammed but not yet impressed. Sized above the largest
+  /// long-cell capacity (the slab's 3000 u); an impressed pattern overrides it.
   /// </summary>
   private const int UnimpressedCapacity = 3400;
 
-  public static IEnumerable<ExBlockDef> Definitions(string domain) => [LongCell(domain)];
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [LongCell(domain)];
 
   private static ExBlockDef LongCell(string domain) =>
     ExBlockDef
@@ -55,15 +48,27 @@ public partial class BlockSandCastingLongCell
       .MaxStackSize(8)
       .Behavior("ExOrientable")
       .FillerOffsets(LongCellLayout.Footprint())
-      // One pooled impression on the principal; the filler hosts nothing. drainFitting: the station is fed
-      // by a canal, it does not join the molten graph.
+      // One pooled impression on the principal; the filler hosts nothing. drainFitting keeps the station
+      // off the molten graph - it is fed by a canal.
       .EntityBehavior(
         "exlib.BEBehaviorMoltenCell",
-        new JObject { ["capacity"] = UnimpressedCapacity, ["drainFitting"] = true }
+        new JObject {
+          ["capacity"] = UnimpressedCapacity,
+          ["drainFitting"] = true,
+        }
       )
-      // Same brick group and declaration order as the 1×1 cell, so the two read as one family and the
-      // code lands as casting-sandlongcell-{brick}-{side}.
-      .VariantGroup("brick", "fire", "black", "brown", "cream", "gray", "orange", "red", "tan")
+      // Same brick group and declaration order as the 1×1 cell, so the two share a variant layout.
+      .VariantGroup(
+        "brick",
+        "fire",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      )
       .SideVariant()
       .ShapeSpunPerOrientation("iwex:casting/sandcastinglongcell", offset: 180)
       .Texture(
@@ -72,8 +77,8 @@ public partial class BlockSandCastingLongCell
         "game:block/clay/brick/four/running/{brick}1"
       )
       .Texture("burned", "game:block/clay/vessel/sides/burned")
-      // The filling shapes are drawn against the historical `andesite` key (the name the cell defaulted
-      // to when it took any sand). Omit this and the rammed sand renders untextured.
+      // The filling shapes draw the rammed sand against the `andesite` key. Omit this and the sand
+      // renders untextured.
       .Texture("andesite", GreenSandItemDefinitions.Texture)
       .CreativeTab("general", "*-n")
       .CreativeTab("iwex", "*-n")
@@ -89,12 +94,13 @@ public partial class BlockSandCastingLongCell
   #region Structure
 
   /// <summary>
-  /// Structure/filler rotation, paired with the shape's <c>rotateYByType</c> offset: the +180 keeps the
-  /// footprint flush with the model, whose body is authored extending the opposite way from the
-  /// orientation convention. It must equal the angle passed to the shape, or the filler lands on the
-  /// wrong side of the principal and the structure can never complete.
+  /// Structure/filler rotation. The +180 pairs with the shape's <c>rotateYByType</c> offset, since the
+  /// model's body is authored extending opposite to the orientation convention. It must equal the angle
+  /// passed to the shape, or the filler lands on the wrong side of the principal and the structure can
+  /// never complete.
   /// </summary>
-  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]) + 180;
+  public override int StructureAngle =>
+    ExOrientation.AngleFromSide(Variant["side"]) + 180;
 
   #endregion
 
@@ -103,7 +109,8 @@ public partial class BlockSandCastingLongCell
   private static BlockEntitySandCastingLongCell? Cell(
     IWorldAccessor world,
     BlockPos pos
-  ) => world.BlockAccessor.GetBlockEntity(pos) as BlockEntitySandCastingLongCell;
+  ) =>
+    world.BlockAccessor.GetBlockEntity(pos) as BlockEntitySandCastingLongCell;
 
   /// <inheritdoc/>
   public override bool OnBlockInteractStart(
@@ -114,10 +121,8 @@ public partial class BlockSandCastingLongCell
     Cell(world, blockSel.Position)?.OnInteract(byPlayer) == true
     || base.OnBlockInteractStart(world, byPlayer, blockSel);
 
-  // The reroute that keeps the far half alive. A click on the filler carries the filler's position, so
-  // without this the station only responds on the cell the player happened to place - and the impression
-  // spans both. The clicked cell is deliberately ignored: the whole station is one casting, so both cells
-  // do the same thing.
+  // A click on the filler carries the filler's position, so it is rerouted to the principal, which owns
+  // the single impression spanning both cells. The clicked cell is ignored: both cells do the same thing.
   bool IFillerInteractionTarget.OnFillerInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,

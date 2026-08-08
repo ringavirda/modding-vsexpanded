@@ -9,22 +9,19 @@ using Vintagestory.API.Common;
 namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 
 /// <summary>
-/// The canal network's anchor block. Acts as an <see cref="BlockEntityMoltenCanalStart"/>
-/// sink that liquid metal is poured into - from a furnace/converter tap above, or
-/// directly from a smelted crucible held by the player.
+/// The canal network's anchor block. Its entity (<see cref="BlockEntityMoltenCanalStart"/>) is the sink
+/// liquid metal is poured into, either from a furnace or converter tap above or from a smelted crucible
+/// held by the player.
 /// </summary>
 [BlockRegister]
-public partial class BlockMoltenCanalStart : BlockMoltenCanal
-{
+public partial class BlockMoltenCanalStart : BlockMoltenCanal {
   // Smelted crucibles cached once on load, used only for the pour interaction help.
   private ItemStack[] _smeltedCrucibles = [];
 
-  /// <summary>The two start blocktypes (fire-brick + cobblestone skin), authored in C# (migrated from
-  /// molten/canalbrick/start.json + molten/canalcobblestone/start.json) off the shared canal-family
-  /// surface. <c>new</c> hides the base's canal-shape defs so discovery + the derived AllowedOrientations
-  /// see only the start block's own defs.</summary>
-  public static new IEnumerable<ExBlockDef> Definitions(string domain)
-  {
+  /// <summary>The two start blocktypes (fire-brick and cobblestone skins), built off the shared
+  /// canal-family surface. <c>new</c> hides the base's canal-shape defs so discovery and the derived
+  /// AllowedOrientations see only the start block's own defs.</summary>
+  public static new IEnumerable<ExBlockDef> Definitions(string domain) {
     foreach (CanalSkin skin in CanalSkins)
       yield return CanalFamilyDef(
           domain,
@@ -36,8 +33,20 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
           ["n", "w", "s", "e"],
           new[]
           {
-            new { x1 = 5, z1 = 5, x2 = 11, z2 = 11 },
-            new { x1 = 7, z1 = 11, x2 = 9, z2 = 16 },
+            new
+            {
+              x1 = 5,
+              z1 = 5,
+              x2 = 11,
+              z2 = 11,
+            },
+            new
+            {
+              x1 = 7,
+              z1 = 11,
+              x2 = 9,
+              z2 = 16,
+            },
           },
           "iwex:molten/canal/start",
           [
@@ -55,23 +64,20 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
   // is overridden: the start defaults to facing south (toward the pour), not to its first-listed north.
   protected override string GetFallbackOrientation(string? type) => "s";
 
-  public override void OnLoaded(ICoreAPI api)
-  {
+  public override void OnLoaded(ICoreAPI api) {
     base.OnLoaded(api);
 
     _smeltedCrucibles = MoltenMetal.SmeltedCrucibleStacks(api.World);
   }
 
-  // A solidified start clogs like any canal - hand it to the base chisel-clear interaction so the
-  // player can chip it out for the next pour. Otherwise return false so the held item's interaction
-  // runs instead of being swallowed: the block entity implements ILiquidMetalSink, so vanilla
-  // BlockSmeltedContainer (a smelted crucible) pours its molten metal into the canal network here.
+  // A solidified start clogs like any canal, so it goes to the base chisel-clear interaction. Otherwise
+  // return false so the held item's own interaction runs: the block entity implements ILiquidMetalSink,
+  // and vanilla BlockSmeltedContainer pours a smelted crucible into the canal network here.
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is BlockEntityMoltenCanal { Solidified: true }
@@ -86,14 +92,12 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
     out float rotX,
     out float rotY,
     out float rotZ
-  )
-  {
+  ) {
     rotX = 0;
     rotY = 0;
     rotZ = 0;
 
-    switch (orientation)
-    {
+    switch (orientation) {
       case "n":
         rotY = 180;
         break;
@@ -116,8 +120,7 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 

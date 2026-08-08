@@ -6,19 +6,18 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Networks;
 
 /// <summary>
-/// Optional per-network strategy for gas <em>vents</em> - open connectors that draw gas away as a
-/// sink rather than leaking it (e.g. a chimney capping a vertical pipe). The content mod supplies an
-/// instance at <c>RegisterNetworkType</c> (via the network factory); a network with no strategy
-/// treats every open end as a leak. The strategy owns whatever per-network bookkeeping the venting
-/// needs (sound throttling, etc.), so a fresh instance is created per network by the factory.
+/// Optional per-network strategy for gas vents: open connectors that draw gas away as a sink rather
+/// than leaking it, such as a chimney capping a vertical pipe. The content mod supplies an instance
+/// through the network factory at <c>RegisterNetworkType</c>; a network without one treats every open
+/// end as a leak. The strategy holds per-network bookkeeping such as sound throttling, so the factory
+/// creates a fresh instance per network.
 /// </summary>
-public interface IPipeVentStrategy
-{
+public interface IPipeVentStrategy {
   /// <summary>
   /// Returns <c>true</c> when the open <paramref name="face"/> of <paramref name="node"/> at
-  /// <paramref name="pos"/> is a vent (given its <paramref name="neighbour"/>), so the network counts
-  /// it as a draw sink rather than a leak. On <c>true</c>, <paramref name="ventPos"/> is where venting
-  /// effects should play (typically the neighbour cell).
+  /// <paramref name="pos"/> is a vent given its <paramref name="neighbour"/>, so the network counts it
+  /// as a draw sink rather than a leak. On <c>true</c>, <paramref name="ventPos"/> is where venting
+  /// effects play, typically the neighbour cell.
   /// </summary>
   bool TryClassifyVent(
     IBlockAccessor blockAccessor,
@@ -30,10 +29,10 @@ public interface IPipeVentStrategy
   );
 
   /// <summary>
-  /// Draws gas out through the collected <paramref name="vents"/> (gas runs only - <paramref name="liquid"/>
-  /// runs vent nothing), mutating <paramref name="state"/>'s volume, and plays per-vent feedback. Also
-  /// drops any per-vent bookkeeping for vents no longer active this tick. Returns the litres vented,
-  /// for the network's throughput accounting.
+  /// Draws gas out through the collected <paramref name="vents"/>, mutating <paramref name="state"/>'s
+  /// volume and playing per-vent feedback, and drops bookkeeping for vents no longer active this tick.
+  /// A <paramref name="liquid"/> run vents nothing. Returns the litres vented, for the network's
+  /// throughput accounting.
   /// </summary>
   float Vent(
     IReadOnlyList<BlockPos> vents,

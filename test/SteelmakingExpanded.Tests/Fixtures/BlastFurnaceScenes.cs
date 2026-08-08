@@ -23,22 +23,18 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Drives the blast furnace's primary process headlessly (handbook blast-furnace + hot-blast
-/// articles): a charged, lit hearth fed hot blast through its tuyeres climbs past iron's melting
-/// point, enters the Melting phase, turns blast mix into molten pig iron, and taps it into a canal -
-/// the steelmaking line's first stage. Stands up the peripherals the gated <c>OnProductionTick</c>
-/// reads (hearth blast-mix piles, blast-fed tuyeres) and the metal tap + canal, then drives the tick.
-/// Timers are fast-forwarded so the multi-minute melt is reachable in a test.
+/// Drives the blast furnace headlessly (handbook blast-furnace + hot-blast articles): a charged, lit
+/// hearth fed hot blast through its tuyeres climbs past iron's melting point, melts, and taps molten pig
+/// iron into a canal. Stands up what the gated <c>OnProductionTick</c> reads - shaft charge, blast-fed
+/// tuyeres, metal tap and canal - then drives the tick, with timers fast-forwarded so the multi-minute
+/// melt is reachable.
 /// <para>
-/// The furnace's <b>real structure is built</b> through <see cref="StructureRig"/>: every cell of the
-/// shipped layout is occupied, and the furnace's own monitor tick then observes it and completes
-/// itself, which is what runs <c>CacheAttributes</c> and <c>ScanForOutlets</c>. The rig used to force
-/// <c>StructureComplete</c> and invoke those two by reflection, which meant a broken layout, a wrong
-/// rotation or a tuyere placed one cell out could not fail here - see <see cref="Tuyeres"/>.
+/// The structure is built through <see cref="StructureRig"/> and completed by the furnace's own monitor
+/// tick, which is what runs <c>CacheAttributes</c> and <c>ScanForOutlets</c>. A broken layout, a wrong
+/// rotation or a tuyere one cell out therefore fails here.
 /// </para>
 /// </summary>
-internal sealed class BlastFurnaceRig
-{
+internal sealed class BlastFurnaceRig {
   public readonly TestWorld World;
   public readonly BlockEntityBlastFurnaceHot Furnace;
   public BlockEntityMoltenCanalStart? Canal { get; private set; }
@@ -57,10 +53,9 @@ internal sealed class BlastFurnaceRig
   private float _blastPressure = 5f;
 
   /// <summary>
-  /// Where a standard-grade burden settles on cold blast with a full hearth: the furnace's old
-  /// "natural max temp" constant, now a consequence of the heat balance rather than a config key.
-  /// Derived from the live tunables (coke factor 1 at the reference grade, air factor 1 at full
-  /// blast supply, no preheat), so retuning the balance moves the tests with it.
+  /// Temperature (C) a standard-grade burden settles at on cold blast with a full hearth. Derived from
+  /// the live tunables - coke factor 1 at the reference grade, air factor 1 at full blast supply, no
+  /// preheat - so retuning the heat balance moves the tests with it.
   /// </summary>
   public static float ColdBlastCeiling =>
     IwexValues.BfCombustionBaseTemp
@@ -68,45 +63,34 @@ internal sealed class BlastFurnaceRig
     - IwexValues.BfRadiationLossBase
     - IwexValues.BfChargeLossFull;
 
-  /// <param name="blastMix">Charge items laid into the shaft, spread across <b>every</b> column in
-  /// proportion to how many cells each has. Every column, not two cells: the raceway course has to be
-  /// complete before a shaft furnace will light, so a scene that piled its whole charge into one column
-  /// would leave the other tuyeres blowing into empty air.</param>
-  /// <param name="burden">
-  /// Composition to stamp on the charge. Null charges <b>unstamped</b> <c>iwex:burden</c>, which the
-  /// furnace reads as a standard grade - that is what keeps the calibration anchors here equal to the
-  /// furnace's old fixed ceilings.
-  /// It used to be the attribute-less <c>iwex:blastmix</c> item; that item is gone and
-  /// unstamped burden inherited its meaning exactly - charge that carries no composition burns as the
-  /// reference grade, which is the branch `ReadChargeMix` has always had for it.
-  /// </param>
-  /// <param name="chargeCode">
-  /// Item path the charge is laid as (in the iwex domain). Null follows the default, <c>burden</c> -
-  /// stamped when a mix is given, unstamped when it is not. Pass <c>remeltburden</c> to charge the blast
-  /// furnace with the wrong family and exercise the conversion gate.
-  /// </param>
+  /// <param name="blastMix">Charge items laid into the shaft, spread across every column in proportion to
+  /// its cell count, because the raceway course must be complete before a shaft furnace will light. 0 fills
+  /// the shaft; negative leaves it empty for scenes that lay their own charge.</param>
+  /// <param name="burden">Composition to stamp on the charge. Null charges unstamped <c>iwex:burden</c>,
+  /// which <c>ReadChargeMix</c> reads as the reference grade - what keeps the calibration anchors here
+  /// equal to the furnace's fixed ceilings.</param>
+  /// <param name="chargeCode">Item path the charge is laid as, in the iwex domain. Null follows the
+  /// default, <c>burden</c>. Pass <c>remeltburden</c> to charge the wrong family and exercise the
+  /// conversion gate.</param>
   public BlastFurnaceRig(
     int blastMix = 400,
     BurdenMix? burden = null,
     string? chargeCode = null
-  )
-  {
+  ) {
     _burden = burden;
     _chargeCode = chargeCode;
     World = new TestWorld();
-    // The metal tap resolves its molten carrier through MetalRegistry: pig iron -> iwex:ingot-pigiron
-    // when the metal is registered, else the game:ingot-pigiron convention. Register both codes so
-    // GetItem resolves whatever the tick asks for, independent of process-wide registry state.
+    // The metal tap resolves its molten carrier through MetalRegistry: iwex:ingot-pigiron when the metal
+    // is registered, else the game:ingot-pigiron convention. Both codes are registered so GetItem resolves
+    // whatever the tick asks for, independent of process-wide registry state.
     World.RegisterItem("iwex:ingot-pigiron", 1500f);
     World.RegisterItem("game:ingot-pigiron", 1500f);
     World.RegisterItem("iwex:slag");
-    World.RegisterItem(
-      "iwex:" + (chargeCode ?? "burden")
-    );
+    World.RegisterItem("iwex:" + (chargeCode ?? "burden"));
 
     // The charge pile and its entity class, so the furnace's own SyncChargeBlocks materialises real
-    // BlockEntityChargePile windows onto its columns - see ColdBlastFurnaceScenes for why the factory
-    // matters as much as the block.
+    // BlockEntityChargePile windows onto its columns. The factory registration matters as much as the
+    // block: without it the piles are placed but carry no entity.
     World.RegisterBlockEntityFactory(
       "iwex.BlockEntityChargePile",
       () => new BlockEntityChargePile()
@@ -122,8 +106,7 @@ internal sealed class BlastFurnaceRig
 
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
 
-    Furnace = new BlockEntityBlastFurnaceHot
-    {
+    Furnace = new BlockEntityBlastFurnaceHot {
       Pos = _pos,
       Block = TestBlocks.Configure(
         new Block(),
@@ -135,8 +118,8 @@ internal sealed class BlastFurnaceRig
     World.Place(_pos, Furnace.Block, Furnace);
     World.Attach(Furnace);
 
-    // The shipped layout, rotated to the furnace's own facing (north -> 0). Everything the furnace
-    // must actually *see* goes in before the fill; the rig then stands up the rest of the shell.
+    // The shipped layout, rotated to the furnace's own facing (north -> 0). Everything the furnace has to
+    // see goes in before the fill; the rig then stands up the rest of the shell.
     Structure = StructureRig.Around(
       World,
       Furnace,
@@ -144,9 +127,9 @@ internal sealed class BlastFurnaceRig
       angle: 0
     );
 
-    // Tuyeres: a real tuyere block at each tuyere cell, each its own blast network. Addressed through
-    // the structure's own rotation rather than by hand-offsetting, so the cells the furnace reads and
-    // the cells the layout wants cannot drift apart.
+    // A real tuyere block at each tuyere cell, each on its own blast network. Addressed through the
+    // structure's own rotation rather than by hand-offsetting, so the cells the furnace reads and the
+    // cells the layout wants cannot drift apart.
     _tuyeres =
     [
       Tuyere(Structure.Cell(0, 1, -1), 20, "n"),
@@ -157,20 +140,16 @@ internal sealed class BlastFurnaceRig
     // own completed structure. Throws with a per-cell breakdown if it cannot.
     Structure.Complete();
 
-    // Charged after the structure stands: columns are the core's and it has none until its layout has
-    // arrived, so a push before completion lands nowhere - silently.
-    // 0 means "fill the shaft"; a negative charge means "leave it empty", for the scenes that lay their
-    // own charge afterwards (see ChargeWithoutCoke).
+    // Charged after the structure stands: the columns belong to the core and it has none until its layout
+    // has arrived, so a push before completion lands nowhere and does so silently.
     if (blastMix >= 0)
       Lay(blastMix > 0 ? blastMix : ShaftCapacityUnits);
   }
 
-  /// <summary>Everything the shaft can hold - every column's own cell count times the furnace's block
-  /// quantum. What <c>blastMix: 0</c> means.</summary>
-  public int ShaftCapacityUnits
-  {
-    get
-    {
+  /// <summary>Charge units the shaft can hold: every column's cell count times the furnace's block
+  /// quantum. What <c>blastMix: 0</c> lays.</summary>
+  public int ShaftCapacityUnits {
+    get {
       int total = 0;
       foreach (var (x, z) in Furnace.ShaftColumns.Keys)
         total += Furnace.ColumnCapacity(x, z);
@@ -180,14 +159,12 @@ internal sealed class BlastFurnaceRig
 
   /// <summary>
   /// Lays <paramref name="total"/> items of the scene's charge across every column, weighted by each
-  /// column's own cell count and clamped to it - the same rule
-  /// <c>ColdBlastFurnaceScenes.Lay</c> follows, and for the same reasons (a complete raceway course, and
-  /// no charge pushed above a column's roof where no block can draw it).
+  /// column's cell count and clamped to it - the same rule <c>ColdBlastFurnaceScenes.Lay</c> follows, for
+  /// a complete raceway course and no charge above a column's roof where no block can draw it.
   /// </summary>
-  /// <param name="rounds">Lay <b>real rounds</b> - a coke course, then a burden course. Only
-  /// <see cref="ChargeWithoutCoke"/> passes false, and what it produces is a shaft that cannot burn.</param>
-  private void Lay(int total, bool rounds = true)
-  {
+  /// <param name="rounds">Lay real rounds - a fuel course, then a burden course. Only
+  /// <see cref="ChargeWithoutCoke"/> passes false, which produces a shaft that cannot burn.</param>
+  private void Lay(int total, bool rounds = true) {
     if (total <= 0)
       return;
 
@@ -200,28 +177,25 @@ internal sealed class BlastFurnaceRig
     foreach (var (x, z) in keys)
       capacity += Furnace.ColumnCapacity(x, z);
 
-    string material =
-      "iwex:" + (_chargeCode ?? "burden");
+    string material = "iwex:" + (_chargeCode ?? "burden");
 
     var want = new int[keys.Count];
     int assigned = 0;
-    for (int i = 0; i < keys.Count; i++)
-    {
+    for (int i = 0; i < keys.Count; i++) {
       want[i] = (int)(
-        (long)total * Furnace.ColumnCapacity(keys[i].X, keys[i].Z)
+        (long)total
+        * Furnace.ColumnCapacity(keys[i].X, keys[i].Z)
         / System.Math.Max(1, capacity)
       );
       assigned += want[i];
     }
-    for (int i = 0; assigned < total && i < keys.Count; i++)
-    {
+    for (int i = 0; assigned < total && i < keys.Count; i++) {
       want[i]++;
       assigned++;
     }
 
     int carry = 0;
-    for (int i = 0; i < keys.Count; i++)
-    {
+    for (int i = 0; i < keys.Count; i++) {
       var (x, z) = keys[i];
       ChargeColumn column = Furnace.ChargeColumnAt(x, z)!;
       int room = Furnace.ColumnCapacity(x, z) - column.TotalUnits;
@@ -239,29 +213,19 @@ internal sealed class BlastFurnaceRig
   }
 
   /// <summary>
-  /// Lays <paramref name="units"/> into one column as <b>real rounds</b> - a coke course, then a burden
-  /// course, repeating - at the scene's own coke fraction.
-  /// <para>
-  /// <b>Charging burden-only is a fiction from the mixed-pile model and it deadlocks the counter-current
-  /// furnace.</b> Coke stamped into a burden band cannot burn away, so it makes no void, so nothing
-  /// descends - and with the raceway reading carbon off the <em>bands</em> rather than off the stamp, a
-  /// burden-only shaft simply never lights at all. Traced in the cold suite; every scene here was charging
-  /// the same fiction. The hopper has laid coke as its own bands for a long while; only the fixtures lagged.
-  /// </para>
-  /// <para>
-  /// The burden still carries its stamped fuel fraction: that is what the grade readout and the legacy
-  /// path read. It is a <em>grade</em> signal here, not the fuel supply.
-  /// </para>
+  /// Lays <paramref name="units"/> into one column as alternating fuel and burden courses, at the scene's
+  /// own fuel fraction. Fuel must be its own bands: the raceway reads carbon off the bands rather than off
+  /// a burden stamp, and only a fuel band burning away makes the void the counter-current shaft descends
+  /// into, so a burden-only column never lights. The stamped fuel fraction on the burden remains a grade
+  /// signal for the readout, not the fuel supply.
   /// </summary>
-  private void LayRounds(ChargeColumn column, string material, int units)
-  {
+  private void LayRounds(ChargeColumn column, string material, int units) {
     int perRound = System.Math.Max(2, Furnace.ChargeUnitsPerBlock);
     float fuelFrac = _burden?.FuelFrac ?? IwexValues.BfDefaultFuelFrac;
     int fuelPerRound = System.Math.Max(1, (int)(perRound * fuelFrac));
 
     int left = units;
-    while (left > 0)
-    {
+    while (left > 0) {
       int fuel = System.Math.Min(fuelPerRound, left);
       column.Push(_fuelCode, fuel, 20f, default);
       left -= fuel;
@@ -276,61 +240,42 @@ internal sealed class BlastFurnaceRig
 
   /// <summary>
   /// Switches which fuel the scene's rounds are laid with - <see cref="CokeCode"/> by default,
-  /// <see cref="CharcoalCode"/> for the charcoal twin of any case.
-  /// <para>
-  /// Parameterising the fuel rather than adding a second rig is what makes every existing scenario gain
-  /// a charcoal counterpart for free - and a counterpart is the only thing that can tell a furnace that
-  /// <em>prices</em> its fuel from one that merely accepts it. Call it before charging: the rig lays its
-  /// charge in the constructor, so a scene wanting charcoal passes <c>blastMix: -1</c> and charges itself.
-  /// </para>
+  /// <see cref="CharcoalCode"/> for the charcoal twin of a case. Must be called before charging: the rig
+  /// lays its charge in the constructor, so a charcoal scene passes <c>blastMix: -1</c> and charges itself.
   /// </summary>
-  public BlastFurnaceRig WithFuel(string fuelCode)
-  {
+  public BlastFurnaceRig WithFuel(string fuelCode) {
     _fuelCode = fuelCode;
     return this;
   }
 
-  /// <summary>Lays a full shaft of rounds in <paramref name="fuelCode"/> - the charcoal twin of the
-  /// constructor's default charge.</summary>
-  public BlastFurnaceRig ChargeWithFuel(string fuelCode, int units = 0)
-  {
+  /// <summary>Lays a full shaft of rounds in <paramref name="fuelCode"/>. <paramref name="units"/> of 0
+  /// fills the shaft.</summary>
+  public BlastFurnaceRig ChargeWithFuel(string fuelCode, int units = 0) {
     WithFuel(fuelCode);
     Lay(units > 0 ? units : ShaftCapacityUnits);
     return this;
   }
 
-  /// <summary>The fuel the scenes lay their rounds with by default. A scene may lay any fuel the
-  /// registry grants - see <see cref="ChargeWithFuel"/> - which is what makes the charcoal cases possible
-  /// without a second rig.</summary>
+  /// <summary>The fuel the scenes lay their rounds with by default. A scene may lay any fuel the registry
+  /// grants - see <see cref="ChargeWithFuel"/>.</summary>
   public const string CokeCode = "game:coke";
 
   /// <summary>Vanilla charcoal: the pre-coke reductant, worth half of coke per unit.</summary>
   public const string CharcoalCode = "game:charcoal";
 
-  /// <summary>Alias for <see cref="FuelBandUnits"/>, kept because the scenario cases read it by this
-  /// name. One reader behind two names, never two readers - the whole reason the string compare below
-  /// it survived as long as it did was that nothing else counted bands to disagree with.</summary>
+  /// <summary>Alias for <see cref="FuelBandUnits"/>, which the scenario cases read by this name. It
+  /// delegates rather than counting again, so there is one reader behind both names.</summary>
   public int CokeUnits => FuelBandUnits;
 
   /// <summary>
-  /// Charge units standing in <b>fuel bands</b> of any material - the column volume the fuel occupies.
-  /// <para>
-  /// <b>Not the same number as <see cref="CarbonUnits"/> once a shaft can hold two fuels</b>, and
-  /// conflating them is the double-count this model has already made once. A charcoal band occupies a
-  /// band's worth of column and carries <em>half</em> a band's worth of carbon.
-  /// </para>
-  /// <para>
-  /// Asked through the production predicate (<c>IsFuelCode</c>), never by comparing to a coke literal -
-  /// which is what this read used to do while its own comment claimed it matched production. Production
-  /// asks the material-role registry; a string compare answers "no" for charcoal, so every campaign-length
-  /// assertion in the suite would have read zero carbon on a charcoal furnace and passed for the wrong
-  /// reason.
-  /// </para>
+  /// Charge units standing in fuel bands of any material: the column volume the fuel occupies. Not the
+  /// same number as <see cref="CarbonUnits"/> once a shaft holds two fuels - a charcoal band occupies a
+  /// full band of column and carries half a band's worth of carbon. Membership is asked through the
+  /// production predicate <c>IsFuelCode</c>, which consults the material-role registry; a compare against
+  /// a coke literal answers no for charcoal and would report zero on a charcoal furnace.
   /// </summary>
-  public int FuelBandUnits
-  {
-    get
-    {
+  public int FuelBandUnits {
+    get {
       int units = 0;
       foreach (ChargeColumn column in Furnace.ShaftColumns.Values)
         foreach (ChargeSegment segment in column.Segments)
@@ -341,44 +286,39 @@ internal sealed class BlastFurnaceRig
   }
 
   /// <summary>
-  /// Carbon standing in the shaft, in <b>coke units</b> - each fuel band's volume times its own
-  /// <c>CarbonPerUnit</c>. This is what a campaign is made of: a lit shaft runs until it reaches zero,
-  /// at <c>BfRacewayCarbonPerTuyerePerSecond x tuyeres</c> a second.
+  /// Carbon standing in the shaft, in coke units: each fuel band's volume times its own
+  /// <c>CarbonPerUnit</c>. A lit shaft runs until this reaches zero, burning
+  /// <c>BfRacewayCarbonPerTuyerePerSecond x tuyeres</c> per second.
   /// </summary>
-  public float CarbonUnits
-  {
-    get
-    {
+  public float CarbonUnits {
+    get {
       float carbon = 0f;
       foreach (ChargeColumn column in Furnace.ShaftColumns.Values)
         foreach (ChargeSegment segment in column.Segments)
           carbon +=
-            segment.Units * BlockEntityFurnaceCore.CarbonPerUnit(segment.Material);
+            segment.Units
+            * BlockEntityFurnaceCore.CarbonPerUnit(segment.Material);
       return carbon;
     }
   }
 
   /// <summary>
-  /// Fills every column to the brim with <b>burden alone</b> - no coke bands anywhere: a full shaft that
-  /// cannot burn, which is what keeps a furnace dark now that the quantity threshold no longer does.
+  /// Fills every column to the brim with burden alone, no fuel bands anywhere: a full shaft that cannot
+  /// burn. The way to keep a furnace dark, since quantity alone no longer gates ignition.
   /// </summary>
-  public BlastFurnaceRig ChargeWithoutCoke(int units = 0)
-  {
+  public BlastFurnaceRig ChargeWithoutCoke(int units = 0) {
     Lay(units > 0 ? units : ShaftCapacityUnits, rounds: false);
     return this;
   }
 
   /// <summary>
-  /// A blast-fed tuyere cell: the real <c>iwex:furnace-tuyere-*</c> block (a pipe node the furnace draws
-  /// through) on its own single-node network. It must be the tuyere block, not a generic pipe - the
-  /// two behave identically as network nodes, but only the tuyere satisfies the furnace layout, so a
-  /// generic pipe here leaves the structure incomplete and the furnace inert.
+  /// A blast-fed tuyere cell: the real <c>iwex:furnace-tuyere-*</c> block on its own single-node network.
+  /// It must be the tuyere block and not a generic pipe - the two are identical as network nodes, but only
+  /// the tuyere satisfies the layout, so a generic pipe leaves the furnace incomplete and inert.
   /// </summary>
-  /// <paramref name="orientation"/> is the connector face and the layout now pins it - `n` for the cell
-  /// in the north wall, `s` for the one in the south. Passing the same letter for both leaves the furnace
-  /// permanently incomplete, which is the point: a tuyere facing into the hearth used to complete it.
-  private PipeNetwork Tuyere(BlockPos pos, int id, string orientation)
-  {
+  /// <param name="orientation">Connector face, pinned by the layout: `n` for the cell in the north wall,
+  /// `s` for the one in the south. The same letter for both never completes.</param>
+  private PipeNetwork Tuyere(BlockPos pos, int id, string orientation) {
     var pipe = PipeTestWorld.MakeTuyere(id, orientation);
     var be = new BlockEntityTuyere { Pos = pos.Copy(), Block = pipe };
     World.Place(pos, pipe, be);
@@ -389,47 +329,35 @@ internal sealed class BlastFurnaceRig
   }
 
   /// <summary>
-  /// Turns the air blowers on: air at <paramref name="temp"/> at the tuyeres each tick.
-  /// <paramref name="pressure"/> below <c>BlastPressureThreshold</c> models a line the blowers cannot
-  /// keep up with - the furnace stops counting it as blast at all.
+  /// Arms the blowers: air at <paramref name="temp"/> (C) delivered at the tuyeres each tick.
+  /// <paramref name="pressure"/> (atm) below <c>BlastPressureThreshold</c> models a line the blowers
+  /// cannot keep up with, which the furnace stops counting as blast at all.
   /// </summary>
-  public BlastFurnaceRig FeedBlast(float temp = 950f, float pressure = 5f)
-  {
+  public BlastFurnaceRig FeedBlast(float temp = 950f, float pressure = 5f) {
     _blastTemp = temp;
     _blastPressure = pressure;
     return this;
   }
 
-  /// <summary>Cuts the blast off (the air blowers stopped / the cowpers ran cold).</summary>
-  public BlastFurnaceRig CutBlast()
-  {
+  /// <summary>Cuts the blast off: the blowers stop and the tuyeres are no longer re-fed.</summary>
+  public BlastFurnaceRig CutBlast() {
     _blastTemp = -1f;
     return this;
   }
 
   /// <summary>
-  /// Places an open iron tap in the furnace's tap cell with a canal start under it - the runout the
-  /// molten pig iron is poured into.
-  /// <para>
-  /// Two details here used to be wrong and could not fail while the rig forced <c>StructureComplete</c>.
-  /// The tap was coded <c>iwex:blastfurnacetap-*</c>, a code no block has carried since the tap was
-  /// generalized, so it did not satisfy the layout's tap cell. And it faced
-  /// north, which made <c>TryPourMetal</c> aim its runout at the cell south-and-down of the tap -
-  /// <b>inside the furnace's own east wall</b>. The tap sits in that wall, so it must face <em>into</em>
-  /// the furnace (west) and pour outward, which is also the only orientation whose canal cell is not
-  /// part of the footprint. Both now show up as a furnace that will not complete.
-  /// </para>
+  /// Places an open iron tap in the furnace's tap cell with a canal start under it - the runout the molten
+  /// pig iron is poured into. The tap sits in the east wall and must face into the furnace (west) so that
+  /// <c>TryPourMetal</c> aims its runout outward; that is also the only orientation whose canal cell falls
+  /// outside the footprint. A wrong code or facing shows up as a furnace that will not complete.
   /// </summary>
-  public BlastFurnaceRig WithIronTapAndCanal()
-  {
-    // The tap sits in the east wall facing in, so its runout lands one cell further east - clear of
-    // the structure. Production derives the pour cell from this same variant, so the two cannot drift.
-    // `w`, not `west`: a `side` variant renders a single letter since the 2026-08-04 respelling, and
-    // this constant is pasted straight into the code the layout's tap cell has to match.
+  public BlastFurnaceRig WithIronTapAndCanal() {
+    // The tap faces in, so its runout lands one cell further east, clear of the structure. Production
+    // derives the pour cell from this same variant, so the two cannot drift. `w`, not `west`: a side
+    // variant renders a single letter, and this constant is pasted into the code the tap cell must match.
     const string tapSide = "w";
     BlockPos tapPos = Global(2, 1, 0);
-    var tap = new BlockEntityFurnaceTap
-    {
+    var tap = new BlockEntityFurnaceTap {
       Pos = tapPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -447,8 +375,7 @@ internal sealed class BlastFurnaceRig
     BlockPos canalPos = tapPos
       .AddCopy(ExOrientation.FacingFromSide(tapSide)!.Opposite)
       .DownCopy();
-    Canal = new BlockEntityMoltenCanalStart
-    {
+    Canal = new BlockEntityMoltenCanalStart {
       Pos = canalPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
@@ -467,14 +394,12 @@ internal sealed class BlastFurnaceRig
     (BlockPos)ReflectionHelpers.Invoke(Furnace, "GetGlobalPos", x, y, z)!;
 
   /// <summary>
-  /// Charges the tuyere networks with blast once, without ticking the furnace - so a test can set a
-  /// known amount of air in the main and then watch the furnace draw it down (or leave it be while
-  /// idle). Unlike <see cref="FeedBlast"/> this does not arm the per-tick re-feed.
+  /// Charges the tuyere networks with blast once, without ticking the furnace, so a test can set a known
+  /// amount of air in the main and then watch the furnace draw it down. Unlike <see cref="FeedBlast"/>
+  /// this does not arm the per-tick re-feed.
   /// </summary>
-  public BlastFurnaceRig PrimeBlast(float temp = 950f, float pressure = 5f)
-  {
-    foreach (var net in _tuyeres)
-    {
+  public BlastFurnaceRig PrimeBlast(float temp = 950f, float pressure = 5f) {
+    foreach (var net in _tuyeres) {
       net.TryProduceGas(
         150f,
         temp,
@@ -488,12 +413,10 @@ internal sealed class BlastFurnaceRig
   }
 
   /// <summary>One tick of the blowers: tops the tuyere mains back up to the armed blast.</summary>
-  private void FeedTuyeres()
-  {
+  private void FeedTuyeres() {
     if (_blastTemp < 0f)
       return;
-    foreach (var net in _tuyeres)
-    {
+    foreach (var net in _tuyeres) {
       net.TryProduceGas(
         150f,
         _blastTemp,
@@ -501,20 +424,18 @@ internal sealed class BlastFurnaceRig
         World.Accessor,
         maxOutputPressure: _blastPressure
       );
-      net.BroadcastUpdate(World.Accessor); // push Medium/Pressure/Temperature to the tuyere pipes
+      net.BroadcastUpdate(World.Accessor); // pushes Medium/Pressure/Temperature to the tuyere pipes
     }
   }
 
   /// <summary>
   /// Advances the furnace tick <paramref name="ticks"/> times, re-feeding blast each tick. Invokes the
-  /// production tick directly, which is what lets a test jump the multi-minute heat-up with the
-  /// <c>Set*</c> fast-forwards and assert one transition in isolation. For the emergent run - no
-  /// fast-forward, no reflection - use <see cref="RunLive"/>.
+  /// production tick directly, which lets a test jump the multi-minute heat-up with the <c>Set*</c>
+  /// fast-forwards and assert one transition in isolation. Use <see cref="RunLive"/> for a run with no
+  /// fast-forward and no reflection.
   /// </summary>
-  public BlastFurnaceRig Tick(int ticks = 1)
-  {
-    for (int i = 0; i < ticks; i++)
-    {
+  public BlastFurnaceRig Tick(int ticks = 1) {
+    for (int i = 0; i < ticks; i++) {
       FeedTuyeres();
       ReflectionHelpers.Invoke(Furnace, "OnProductionTick", 1f);
     }
@@ -522,16 +443,13 @@ internal sealed class BlastFurnaceRig
   }
 
   /// <summary>
-  /// Runs <paramref name="seconds"/> of simulated time through the furnace's <b>own</b> registered
-  /// production tick - the listener its <c>Initialize</c> put on the clock, fired at the interval it
-  /// asked for - with the blowers topping the mains up each second. Nothing is invoked by reflection
-  /// and no state is fast-forwarded, so what comes out is what the machine actually does when it is
-  /// built, charged and blown: the headline process is an outcome rather than a sequence of assignments.
+  /// Runs <paramref name="seconds"/> of simulated time through the furnace's own registered production
+  /// tick - the listener its <c>Initialize</c> put on the clock, at the interval it asked for - with the
+  /// blowers topping the mains up each second. Nothing is invoked by reflection and no state is
+  /// fast-forwarded, so the outcome is what a built, charged and blown furnace does.
   /// </summary>
-  public BlastFurnaceRig RunLive(int seconds)
-  {
-    for (int i = 0; i < seconds; i++)
-    {
+  public BlastFurnaceRig RunLive(int seconds) {
+    for (int i = 0; i < seconds; i++) {
       FeedTuyeres();
       World.AdvanceBlockEntityTime(1000);
     }
@@ -540,33 +458,23 @@ internal sealed class BlastFurnaceRig
 
   #region Fast-forward + accessors
 
-  // `SetState`, `SetSecondsAboveMelting` and `SetMeltSeconds` are gone, and they must not
-  // come back. A shaft furnace recomputes what it is doing from its charge every tick, so a case that
-  // arranged one by assigning `State = Melting` and a soak counter was stating a premise the very next tick
-  // threw away - green, and testing nothing. `State` has no setter at all now, so the same call throws
-  // rather than quietly succeeding (`FurnaceBranchGuards.NoFurnaceExposesASettableState`).
-  //
-  // What replaces them is arrangement by charging and blowing: `HeatSoak` below runs the real machine
-  // until it reaches the state the case is about, and fails loudly if it never does. That costs a few
-  // hundred simulated seconds per case and buys a suite whose premises are real.
+  // There is no `SetState`, `SetSecondsAboveMelting` or `SetMeltSeconds`, and none may be added. A shaft
+  // furnace recomputes its state from the charge every tick, so an assigned premise is discarded on the
+  // next tick; `State` has no setter, which `FurnaceBranchGuards.NoFurnaceExposesASettableState` enforces.
+  // Arrange instead by charging and blowing: `HeatSoak` runs the real machine until it reaches the wanted
+  // state and fails if it never does, at a cost of a few hundred simulated seconds per case.
 
   /// <summary>
-  /// Runs the furnace until it reaches <paramref name="wanted"/>, up to <paramref name="maxSeconds"/>, and
-  /// returns the seconds it took (or -1 if it never got there).
-  /// <para>
-  /// <b>The replacement for every <c>SetState</c> in this suite.</b> A case that wants a melting furnace
-  /// gets one by building, charging and blowing a real one - which is the only arrangement a derived state
-  /// can have.
-  /// </para>
+  /// Runs the furnace a second at a time until <paramref name="done"/> holds, up to
+  /// <paramref name="maxSeconds"/>. Returns the seconds it took, or -1 if it never got there.
+  /// <paramref name="each"/> runs after every simulated second.
   /// </summary>
   public int RunUntil(
     System.Func<BlastFurnaceRig, bool> done,
     int maxSeconds,
     System.Action<BlastFurnaceRig>? each = null
-  )
-  {
-    for (int i = 1; i <= maxSeconds; i++)
-    {
+  ) {
+    for (int i = 1; i <= maxSeconds; i++) {
       FeedTuyeres();
       World.AdvanceBlockEntityTime(1000);
       each?.Invoke(this);
@@ -576,29 +484,26 @@ internal sealed class BlastFurnaceRig
     return -1;
   }
 
-  /// <summary>Runs until the furnace is <see cref="FurnaceState.Melting"/>, throwing a legible failure if
-  /// it never gets there - so a case about melting cannot silently become a case about idling.</summary>
-  public BlastFurnaceRig HeatSoak(int maxSeconds = 900)
-  {
+  /// <summary>Runs until the furnace is <see cref="FurnaceState.Melting"/>, failing with a diagnostic if
+  /// it never gets there, so a case about melting cannot silently become a case about idling.</summary>
+  public BlastFurnaceRig HeatSoak(int maxSeconds = 900) {
     int took = RunUntil(r => r.State == FurnaceState.Melting, maxSeconds);
     Assert.True(
       took > 0,
-      // CarbonUnits, not the band count: on a charcoal scene the two differ by 2x, and a diagnostic
-      // that reported band volume while calling it carbon would send the reader after the wrong tunable.
+      // Both figures: on a charcoal scene carbon and band volume differ by 2x, so reporting one alone
+      // points at the wrong tunable.
       $"the scene should have reached Melting within {maxSeconds} s; it was {State} at "
         + $"{Temp:F0} C with {CarbonUnits:F0} u of carbon left ({FuelBandUnits} u of fuel bands)"
     );
     return this;
   }
 
-  public BlastFurnaceRig SetTemp(float t)
-  {
+  public BlastFurnaceRig SetTemp(float t) {
     ReflectionHelpers.SetField(Furnace, "_internalTemp", t);
     return this;
   }
 
-  public BlastFurnaceRig SetMoltenIron(float v)
-  {
+  public BlastFurnaceRig SetMoltenIron(float v) {
     ReflectionHelpers.SetField(Furnace, "_moltenIron", v);
     return this;
   }
@@ -608,10 +513,8 @@ internal sealed class BlastFurnaceRig
     (float)ReflectionHelpers.GetField(Furnace, "_internalTemp")!;
 
   /// <summary>Total air (L) sitting in the tuyere networks - what the furnace draws its blast from.</summary>
-  public float TuyereVolume
-  {
-    get
-    {
+  public float TuyereVolume {
+    get {
       float total = 0f;
       foreach (var net in _tuyeres)
         total += net.State?.Volume ?? 0f;
@@ -619,11 +522,11 @@ internal sealed class BlastFurnaceRig
     }
   }
 
-  /// <summary>Whether the furnace read as air-starved on the last tick (blast under the floor).</summary>
+  /// <summary>Whether the furnace read as air-starved on the last tick: blast under the floor.</summary>
   public bool AirStarved =>
     (bool)ReflectionHelpers.GetField(Furnace, "_airStarved")!;
 
-  /// <summary>The heat balance the last tick computed - what the furnace is chasing, and why.</summary>
+  /// <summary>The heat balance the last tick computed: gains, losses and the target temperature.</summary>
   public HeatBalance Heat =>
     (HeatBalance)ReflectionHelpers.GetField(Furnace, "_lastHeatBalance")!;
 
@@ -635,7 +538,7 @@ internal sealed class BlastFurnaceRig
     (float)ReflectionHelpers.GetField(Furnace, "_moltenIron")!;
   public int CanalIron => Canal?.CellAmount ?? 0;
 
-  /// <summary>Full item code of the metal the tap poured into the canal (for the pig-iron assertion).</summary>
+  /// <summary>Full item code of the metal the tap poured into the canal.</summary>
   public string? CanalMetalType => Canal?.CellMetalType;
 
   #endregion

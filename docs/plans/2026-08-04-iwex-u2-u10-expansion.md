@@ -128,7 +128,7 @@ its charge keeps burning at natural-draught temperature — `blastSupplyFrac = 0
 balance already settles at **~970 °C**, below iron's 1500 — until the coke runs out. Breaking the piles
 returns **burden and remaining coke**. A furnace that loses air through the **tuyeres** does the opposite:
 sealed and starved, it chokes and extinguishes quickly. See
-[`layered-charge.md` § *Two failure modes, and they are opposites*](../../design/layered-charge.md).
+[`layered-charge.md` § *Two failure modes, and they are opposites*](../design/layered-charge.md).
 
 **The correction.** "Lit is stored nowhere" was too strong.
 `layered-charge.md` has always said **lit is furnace-level**. What dissolves is the *timer-driven FSM* —
@@ -163,7 +163,7 @@ already exists.
     cast item's `materialUnits` (`CastMassParityTests`). Nothing connected those two numbers before, and
     drift mints or eats metal with no error, no log and no visibly wrong cast. It holds for all seven
     item-output patterns today.
-  - **Both flywheel grids are diagram-led and flat.** Per `docs/design/diagram-crafting.md` a
+  - **Both flywheel grids are diagram-led and flat.** Per `docs/design/mechanics/diagram-crafting.md` a
     diagram-crafted recipe is **the plan plus a flat bill of materials** — one cell per distinct ingredient
     carrying its quantity — and explicitly *not* a picture of the product drawn in the grid. An earlier
     version spread the four rim sections across the corners of a 3×3 to look like a wheel; it reads nicely
@@ -1183,7 +1183,7 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Entry condition.** U7 must be complete and is not today — verified against src/. Hard prerequisites U8 cannot be started without: (1) U7.2 — `WorkPiece` (src/IronworkingExpanded/BlockStructures/Forming/WorkPiece.cs:34) is still the per-strip `Strips[]`/`Turned[]` record with no `Thickness`, no `Mass` and no `Length`, so a crop cannot be expressed at all; (2) U7.4 — no rolled product item exists (src/IronworkingExpanded/Items/ has no rolledrod/nailplate/beam; the codes live only as string literals at RollSetItemDefinitions.cs:66,77,90,100, four of five naming items that do not resolve); (3) U7.5 — `RollSetSpec.OutputAt` (RollSetSpec.cs:95) still has zero callers in src/, so rolling produces no product to crop; (4) ruling 4 — `StockItemDefinitions.cs:44` still emits the tenths shape key `(int)(form.BaseThickness*10)` and `scripts/generate-rolled-stock.py` still writes `stock-bloom-30`; the hundredths key must land in U7 before U8.3 writes a stage-keyed crop table against it. Soft prerequisite: `RollSetItemDefinitions.Sets["grooved"]` opens at a 1.0 gap against 3.0 stock (RollSetItemDefinitions.cs:89), blocker B4, so the 25 u rod the rivet machine eats has no legal entry until U7.3 rewrites it to 1.5 → 1.0.
 
-**Shared files** (collision risk): `src/IronworkingExpanded/IwexConfig.cs — U2, U3 and U7 all add config regions; U8 adds a Forming benches region after the Rolling mill region at :576-633`, `src/IronworkingExpanded/IwexRecipeConfig.cs:45-78 — every unit shipping a craftable block adds catalogue rows to the same dictionary`, `src/IronworkingExpanded/Generated/IwexBlocks.g.cs — regenerated wholesale by EXLIB_WRITE_BLOCKCODES=1; two units adding blocks in parallel will both rewrite this file`, `test/IronworkingExpanded.Tests/goldens/iwex/** — one file per def; the completeness test (Goldens_exactly_cover_the_defs) fails if any unit adds a def without its golden`, `assets/iwex/lang/en.json, ru.json, uk.json — every unit adding a block or an error code appends here; IwexLangCoverageTests fails on any missing locale`, `src/IronworkingExpanded/BlockStructures/Forming/RollSetSpec.cs — U7.3 rewrites the gap tables while U8.3 deletes Outputs/OutputAt and its parse branch at :159-176`, `src/IronworkingExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs — U7.3 redesigns the sets; U8.3 strips every `outputs` array and the Out() helper at :46`, `src/IronworkingExpanded/BlockStructures/Forming/WorkPiece.cs — U7.2 rewrites it to the two-round model; U8.3 and U8.4 read Thickness/Mass/Length off the result`, `src/IronworkingExpanded/BlockStructures/Forming/StockItemDefinitions.cs:44 — U7.4 changes the shape key from tenths to hundredths; U8.3's crop table keys on the same integer`, `src/IronworkingExpanded/BlockStructures/Forming/Blocks/BlockRollingMillAxle.cs:75-121 — U8.4 generalises its three BlockRollingMill casts so the bus serves four machines; anything else touching the mill's placement touches these lines`, `src/ExpandedLib/Definitions/ExIngredients.cs and ConstructionStages.cs — cross-mod files; U8.7's Fastener/RequireFastener helpers change how 36 nail sites and 27 rod sites across all four mods resolve`, `src/IronworkingExpanded/Recipes/Grid/FormingRecipeDefinitions.cs — U8.8 extends it to four recipes and U8.10 adds a fifth`, `src/IronworkingExpanded/Recipes/Grid/PipeRecipeDefinitions.cs:25,34,43,52 — U8.7 retargets all four pipe segments off Nails(1)`, `docs/design/STATE.md — U8.11 fixes the placement table at :596-599; other units edit the same file's decision log`, `docs/iwex/handbook/*.html plus the NN- prefixed keys in assets/iwex/lang/en.json — the sync pipeline joins them and drift fails a test, so any unit adding a handbook page collides here`
+**Shared files** (collision risk): `src/IronworkingExpanded/IwexConfig.cs — U2, U3 and U7 all add config regions; U8 adds a Forming benches region after the Rolling mill region at :576-633`, `src/IronworkingExpanded/IwexRecipeConfig.cs:45-78 — every unit shipping a craftable block adds catalogue rows to the same dictionary`, `src/IronworkingExpanded/Generated/IwexBlocks.g.cs — regenerated wholesale by EXLIB_WRITE_BLOCKCODES=1; two units adding blocks in parallel will both rewrite this file`, `test/IronworkingExpanded.Tests/goldens/iwex/** — one file per def; the completeness test (Goldens_exactly_cover_the_defs) fails if any unit adds a def without its golden`, `assets/iwex/lang/en.json, ru.json, uk.json — every unit adding a block or an error code appends here; IwexLangCoverageTests fails on any missing locale`, `src/IronworkingExpanded/BlockStructures/Forming/RollSetSpec.cs — U7.3 rewrites the gap tables while U8.3 deletes Outputs/OutputAt and its parse branch at :159-176`, `src/IronworkingExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs — U7.3 redesigns the sets; U8.3 strips every `outputs` array and the Out() helper at :46`, `src/IronworkingExpanded/BlockStructures/Forming/WorkPiece.cs — U7.2 rewrites it to the two-round model; U8.3 and U8.4 read Thickness/Mass/Length off the result`, `src/IronworkingExpanded/BlockStructures/Forming/StockItemDefinitions.cs:44 — U7.4 changes the shape key from tenths to hundredths; U8.3's crop table keys on the same integer`, `src/IronworkingExpanded/BlockStructures/Forming/Blocks/BlockRollingMillAxle.cs:75-121 — U8.4 generalises its three BlockRollingMill casts so the bus serves four machines; anything else touching the mill's placement touches these lines`, `src/ExpandedLib/Definitions/ExIngredients.cs and ConstructionStages.cs — cross-mod files; U8.7's Fastener/RequireFastener helpers change how 36 nail sites and 27 rod sites across all four mods resolve`, `src/IronworkingExpanded/Recipes/Grid/FormingRecipeDefinitions.cs — U8.8 extends it to four recipes and U8.10 adds a fifth`, `src/IronworkingExpanded/Recipes/Grid/PipeRecipeDefinitions.cs:25,34,43,52 — U8.7 retargets all four pipe segments off Nails(1)`, `docs/plans/STATE.md — U8.11 fixes the placement table at :596-599; other units edit the same file's decision log`, `docs/iwex/handbook/*.html plus the NN- prefixed keys in assets/iwex/lang/en.json — the sync pipeline joins them and drift fails a test, so any unit adding a handbook page collides here`
 
 ### Tasks
 
@@ -1422,10 +1422,10 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Files**
 - Create: `docs/design/machines/rivet-machine.md`
-- Modify: `docs/design/machines/heading-machine.md (delete — content superseded and renamed)`, `docs/design/items/dies.md (strike the iwex/lpex/hpex die rows and the ItemDie contract)`, `docs/design/items/fasteners.md (strike the bolt, the die column, and the stale asset table naming item-rod-rolled.json / item-rod-nail.json)`, `docs/design/machines/shear.md § Assets and § Structure`, `docs/design/machines/nail-machine.md § Assets and § Structure`, `docs/design/STATE.md:596-599 (the placement table still lists 'heading machine (bolts) | iwex' and 'rivet die | lpex', contradicting :627 in the same file)`
+- Modify: `docs/design/machines/heading-machine.md (delete — content superseded and renamed)`, `docs/design/items/dies.md (strike the iwex/lpex/hpex die rows and the ItemDie contract)`, `docs/design/items/fasteners.md (strike the bolt, the die column, and the stale asset table naming item-rod-rolled.json / item-rod-nail.json)`, `docs/design/machines/shear.md § Assets and § Structure`, `docs/design/machines/nail-machine.md § Assets and § Structure`, `docs/plans/STATE.md:596-599 (the placement table still lists 'heading machine (bolts) | iwex' and 'rivet die | lpex', contradicting :627 in the same file)`
 - Test: `test/ExpandedLib.Tests/Localization/HandbookParityTests.cs`
 
-**Consumes:** docs/design/STATE.md:620-649 § 'Fasteners — settled 2026-07-30: two machines, two routes, no dies' as the authoritative text; the handbook sync pipeline joining docs/<mod>/handbook/*.html to lang/en.json on the NN- prefix (test/ExpandedLib.Testing/HandbookSync.cs)
+**Consumes:** docs/plans/STATE.md:620-649 § 'Fasteners — settled 2026-07-30: two machines, two routes, no dies' as the authoritative text; the handbook sync pipeline joining docs/<mod>/handbook/*.html to lang/en.json on the NN- prefix (test/ExpandedLib.Testing/HandbookSync.cs)
 
 **Produces:** A machines/rivet-machine.md that owns the rivet bench with no die catalogue; dies.md and fasteners.md with the die family and the bolt struck; shear.md and nail-machine.md whose Assets and Structure sections match the drawn art
 
@@ -1901,11 +1901,11 @@ verbatim below — this section is the only copy of it, so do not paraphrase the
 U11 builds the ladle as a **structure**, not as a process: the two blocks, their two layouts, the shape export, the
 RCC construction, placement/breaking, and the tests. **The metallurgy is explicitly not in this unit** — no
 alloy windows, no ferroalloy metal defs, no powdered coke, no `blowniron`, no composition resolver. Those are
-smex-tier and are gated on decisions [ladle.md](../../design/machines/ladle.md) § *Open* still lists as open (#3
+smex-tier and are gated on decisions [ladle.md](../design/machines/ladle.md) § *Open* still lists as open (#3
 capacity, #4 where the windows live). This unit ends with a ladle that stands up in the world, holds a bath, pulls
 from its canals and pours; what it pours is one metal, and the merge arrives with the alloy catalogue.
 
-**Home: iwex.** Ruled 2026-08-05 ([ladle.md](../../design/machines/ladle.md):16-20) — *"`iwex`, not smex. Its
+**Home: iwex.** Ruled 2026-08-05 ([ladle.md](../design/machines/ladle.md):16-20) — *"`iwex`, not smex. Its
 alloying role is smex-tier, but its pouring role gates iwex casting, and the block is the same object in both
 eras."* The page's own front-matter still says **Mod smex** and § *Code* still points at
 `src/SteelmakingExpanded/BlockStructures/Ladle/`; both are stale against the ruling five lines below them, and
@@ -2205,7 +2205,7 @@ anyway so the decision stays reversible, and its rails are the only thing given 
 
 **Lifecycle — precedent, not invention.** Grid-craft the ladle → place it → RCC **shell** then **lining**. That
 is what `lpex:boilercornish-n` and `lpex:enginewatt-n` do (both grid-crafted *and* `.Construction(...)`), and it
-matches [ladle.md](../../design/machines/ladle.md)'s own two-stage table and its `ladle-grid` cost key. The
+matches [ladle.md](../design/machines/ladle.md)'s own two-stage table and its `ladle-grid` cost key. The
 Bessemer is the *other* pattern — control-spawned — and it is the wrong one here: there is no control block in
 the layout, and the vessel is the thing the player places.
 

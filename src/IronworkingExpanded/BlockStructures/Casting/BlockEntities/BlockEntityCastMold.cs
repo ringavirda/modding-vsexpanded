@@ -16,24 +16,14 @@ using Vintagestory.GameContent;
 namespace IronworkingExpanded.BlockStructures.Casting.BlockEntities;
 
 /// <summary>
-/// The cast-iron casting mold - the iron-tier replacement for the ceramic tool molds, cast in the sand
-/// cell. Its own class rather than a <c>BlockToolMold</c> subclass: metal-pouring is recognised by the
-/// <see cref="ILiquidMetalSink"/> interface (the molten barrel proves it), so owning the class keeps full
-/// pour interop while shedding vanilla's clay baggage - and it lets the mold behave the way an iron mold
-/// actually does:
-/// <list type="bullet">
-/// <item>it <b>never shatters</b> and is reusable;</item>
-/// <item>it is a <b>heat sink that glows</b> - a pour raises the mold body's own temperature, off which it
-/// emits block light, then fades as it cools;</item>
-/// <item>it <b>outputs the cast directly</b> in the metal's cast domain
-/// (<see cref="MetalRegistry.CastProductOf"/>), so no domain-rehoming patch is needed.</item>
-/// </list>
-/// A sibling of <see cref="Blocks.BlockMoltenBarrel"/>; the shared receive/glow/harden/extract base is
-/// worth lifting later.
+/// The cast-iron casting mold: the iron-tier tool mold, itself cast in the sand cell. Pouring is
+/// recognised through <see cref="ILiquidMetalSink"/> rather than by deriving from vanilla's tool-mold
+/// class, so the mold never shatters and stays reusable, acts as a heat sink whose body temperature
+/// drives its block light, and yields its cast in the metal's own cast domain
+/// (<see cref="MetalRegistry.CastProductOf"/>). See docs/design/processes/casting.md.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
-{
+public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
   /// <summary>The metal cast in the mold, or null when empty.</summary>
   public ItemStack? MetalContent;
 
@@ -43,7 +33,8 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   /// <summary>Units this mold takes for a full cast (the <c>requiredUnits</c> block attribute).</summary>
   public int MaxUnitAmount = 200;
 
-  // The mold body's own temperature (°C) - the heat-sink glow. Raised by a pour, decayed each tick.
+  // The mold body's own temperature (°C), the source of the heat-sink glow. Raised by a pour, decayed
+  // each tick.
   private float _moldTemperature;
 
   private byte _lastGlow;
@@ -69,8 +60,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   public bool CanReceiveAny => !IsFull;
 
   /// <inheritdoc/>
-  public bool CanReceive(ItemStack metal)
-  {
+  public bool CanReceive(ItemStack metal) {
     if (IsFull)
       return false;
     if (
@@ -89,8 +79,11 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   public void BeginFill(Vec3d hitPosition) { }
 
   /// <inheritdoc/>
-  public void ReceiveLiquidMetal(ItemStack metal, ref int amount, float temperature)
-  {
+  public void ReceiveLiquidMetal(
+    ItemStack metal,
+    ref int amount,
+    float temperature
+  ) {
     if (IsFull)
       return;
     if (
@@ -103,8 +96,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
     )
       return;
 
-    if (MetalContent == null)
-    {
+    if (MetalContent == null) {
       MetalContent = metal.Clone();
       MetalContent.ResolveBlockOrItem(Api.World);
       MetalContent.StackSize = 1;
@@ -116,8 +108,8 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
     CurrentUnitAmount += accepted;
     amount -= accepted;
 
-    // Heat sink: the iron body soaks up the poured heat and glows. It reaches a fraction of the metal's
-    // temperature, weighted so a bigger pour heats it more.
+    // Heat sink: the body reaches a fraction of the poured metal's temperature, keeping whichever of
+    // the two is hotter.
     float reached = temperature * IwexValues.CastMoldHeatSinkFraction;
     if (reached > _moldTemperature)
       _moldTemperature = reached;
@@ -135,10 +127,8 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   #region Heat-sink glow
 
   /// <summary>Block-light value (0-24) from the hotter of the cast metal and the glowing mold body.</summary>
-  public byte GlowLightLevel
-  {
-    get
-    {
+  public byte GlowLightLevel {
+    get {
       if (Api?.World == null)
         return 0;
       float hot = Math.Max(_moldTemperature, MetalTemperature);
@@ -146,11 +136,9 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
     }
   }
 
-  private void UpdateGlow()
-  {
+  private void UpdateGlow() {
     byte g = GlowLightLevel;
-    if (g != _lastGlow)
-    {
+    if (g != _lastGlow) {
       _lastGlow = g;
       Api?.World.BlockAccessor.MarkBlockDirty(Pos);
     }
@@ -160,30 +148,29 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
 
   #region Lifecycle + tick
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     MaxUnitAmount = Block.Attributes?["requiredUnits"].AsInt(200) ?? 200;
 
-    if (api.Side == EnumAppSide.Client)
-    {
+    if (api.Side == EnumAppSide.Client) {
       InitRenderer((ICoreClientAPI)api);
       UpdateRenderer();
       RegisterGameTickListener(_ => UpdateRenderer(), 1000);
-    }
-    else
-    {
+    } else {
       RegisterGameTickListener(_ => OnServerTick(), 1000);
     }
   }
 
   /// <summary>Restores a cast carried in on the placing stack (a filled mold set back down).</summary>
-  public override void OnBlockPlaced(ItemStack? byItemStack = null)
-  {
+  public override void OnBlockPlaced(ItemStack? byItemStack = null) {
     base.OnBlockPlaced(byItemStack);
     if (byItemStack == null)
       return;
-    var (contents, units) = MoltenContents.Read(byItemStack, MoltenContents.MoldUnitsKey, Api.World);
+    var (contents, units) = MoltenContents.Read(
+      byItemStack,
+      MoltenContents.MoldUnitsKey,
+      Api.World
+    );
     if (contents?.Collectible == null || units <= 0)
       return;
     MetalContent = contents;
@@ -195,14 +182,16 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
     MarkDirty(true);
   }
 
-  private void OnServerTick()
-  {
+  private void OnServerTick() {
     if (MetalContent != null && CurrentUnitAmount > 0)
-      MoltenMetal.SyncCooldownSpeed(Api.World, MetalContent, ContentCooldownSpeed);
+      MoltenMetal.SyncCooldownSpeed(
+        Api.World,
+        MetalContent,
+        ContentCooldownSpeed
+      );
 
-    // The mold body sheds its heat toward ambient a little each second.
-    if (_moldTemperature > IwexValues.MoltenAmbientTemperature)
-    {
+    // The mold body decays toward ambient each second.
+    if (_moldTemperature > IwexValues.MoltenAmbientTemperature) {
       _moldTemperature = Math.Max(
         IwexValues.MoltenAmbientTemperature,
         _moldTemperature - IwexValues.CastMoldBodyCooldownPerSecond
@@ -220,15 +209,13 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   /// Takes the hardened casting out (the mold is reusable, so it stays). Returns true if the click was
   /// consumed. A still-liquid cast refuses with a "too hot" message rather than falling through.
   /// </summary>
-  public bool TryTakeOut(IPlayer byPlayer)
-  {
+  public bool TryTakeOut(IPlayer byPlayer) {
     if (MetalContent == null || CurrentUnitAmount <= 0)
       return false;
     if (Api.Side == EnumAppSide.Client)
       return true;
 
-    if (!IsHardened)
-    {
+    if (!IsHardened) {
       (byPlayer as IServerPlayer)?.SendIngameError("iwex-castmold-toohot");
       return true;
     }
@@ -247,23 +234,27 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   }
 
   /// <summary>
-  /// Resolves the cast(s) this mold yields for <paramref name="fromMetal"/>, in the metal's cast domain -
-  /// so cast iron comes out as <c>iwex:metalplate-castiron</c> and vanilla metals keep their own domain,
-  /// with no domain-rehoming patch. Empty when the metal has no product for this mold's template.
+  /// Resolves the cast(s) this mold yields for <paramref name="fromMetal"/> in the metal's own cast
+  /// domain, so cast iron comes out as <c>iwex:metalplate-castiron</c> while vanilla metals keep theirs.
+  /// Empty when the metal has no product for this mold's template.
   /// </summary>
-  public ItemStack[] GetMoldedStacks(ItemStack fromMetal)
-  {
+  public ItemStack[] GetMoldedStacks(ItemStack fromMetal) {
     AssetLocation? metal = fromMetal?.Collectible?.Code;
     if (metal == null)
       return [];
 
     var molded = new List<ItemStack>();
-    foreach (JsonItemStack template in ExMoldDrops.Templates(Block))
-    {
+    foreach (JsonItemStack template in ExMoldDrops.Templates(Block)) {
       if (template.Code == null)
         continue;
       template.Code = MetalRegistry.CastProductOf(template.Code, metal);
-      if (!template.Resolve(Api.World, "cast mold drop", printWarningOnError: false))
+      if (
+        !template.Resolve(
+          Api.World,
+          "cast mold drop",
+          printWarningOnError: false
+        )
+      )
         continue;
       if (template.ResolvedItemstack is not { } stack)
         continue;
@@ -275,8 +266,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   }
 
   /// <summary>Drops for a broken mold: a full hardened cast yields the part, otherwise recovered bits.</summary>
-  public ItemStack[] GetMetalDrops()
-  {
+  public ItemStack[] GetMetalDrops() {
     if (MetalContent == null || CurrentUnitAmount <= 0)
       return [];
     if (IsFull && IsHardened)
@@ -294,39 +284,34 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
 
   #region Rendering
 
-  private void InitRenderer(ICoreClientAPI capi)
-  {
-    // A shallow pool over the mold's cavity; the fill geometry follows the block's fillQuads, defaulting
-    // to the tray footprint.
+  private void InitRenderer(ICoreClientAPI capi) {
+    // A shallow pool over the mold cavity: the tray footprint, one level deep starting at y = 1/16.
     var boxes = new[] { new Cuboidf(2f, 1f, 2f, 14f, 2f, 14f) };
     _renderer = new MoltenRenderer(Pos, capi, boxes, 0f, 1f / 16f, 1f);
     capi.Event.RegisterRenderer(_renderer, EnumRenderStage.Opaque);
   }
 
-  private void UpdateRenderer()
-  {
+  private void UpdateRenderer() {
     if (_renderer == null)
       return;
-    if (MetalContent == null || CurrentUnitAmount <= 0)
-    {
+    if (MetalContent == null || CurrentUnitAmount <= 0) {
       _renderer.FillRatio = 0f;
       _renderer.MetalStack = null;
       return;
     }
-    _renderer.FillRatio = MaxUnitAmount > 0 ? (float)CurrentUnitAmount / MaxUnitAmount : 0f;
+    _renderer.FillRatio =
+      MaxUnitAmount > 0 ? (float)CurrentUnitAmount / MaxUnitAmount : 0f;
     _renderer.Temperature = MetalTemperature;
     _renderer.MetalStack = MetalContent;
   }
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     _renderer?.Dispose();
     _renderer = null;
     base.OnBlockRemoved();
   }
 
-  public override void OnBlockUnloaded()
-  {
+  public override void OnBlockUnloaded() {
     _renderer?.Dispose();
     _renderer = null;
     base.OnBlockUnloaded();
@@ -336,17 +321,14 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
 
   #region HUD + serialization
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
-    if (MetalContent == null || CurrentUnitAmount <= 0)
-    {
+    if (MetalContent == null || CurrentUnitAmount <= 0) {
       dsc.AppendLine(Lang.Get("iwex:castmold-empty", MaxUnitAmount));
       return;
     }
     string state = Lang.Get(
-      MoltenMetal.StateOf(Api.World, MetalContent) switch
-      {
+      MoltenMetal.StateOf(Api.World, MetalContent) switch {
         MoltenState.Liquid => "iwex:metalstate-liquid",
         MoltenState.Hardened => "iwex:metalstate-hardened",
         _ => "iwex:metalstate-soft",
@@ -365,23 +347,23 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
 
   // Persist under the vanilla mold key ("fillLevel") so a carried, filled mold round-trips through
   // MoltenContents and the shared spill/burn/carry handling recognises it.
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetItemstack("contents", MetalContent);
     tree.SetInt(MoltenContents.MoldUnitsKey, CurrentUnitAmount);
     tree.SetFloat("moldTemp", _moldTemperature);
   }
 
-  public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor world)
-  {
+  public override void FromTreeAttributes(
+    ITreeAttribute tree,
+    IWorldAccessor world
+  ) {
     base.FromTreeAttributes(tree, world);
     MetalContent = tree.GetItemstack("contents");
     CurrentUnitAmount = tree.GetInt(MoltenContents.MoldUnitsKey);
     _moldTemperature = tree.GetFloat("moldTemp");
     MetalContent?.ResolveBlockOrItem(world);
-    if (Api?.Side == EnumAppSide.Client)
-    {
+    if (Api?.Side == EnumAppSide.Client) {
       UpdateRenderer();
       UpdateGlow();
     }
@@ -390,8 +372,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
   public override void OnStoreCollectibleMappings(
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
-  )
-  {
+  ) {
     MetalContent?.Collectible.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(MetalContent),
@@ -406,7 +387,12 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink
     Dictionary<int, AssetLocation> oldItemIdMapping,
     int schematicSeed,
     bool resolveImports
-  ) => MetalContent?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve);
+  ) =>
+    MetalContent?.FixMapping(
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      worldForResolve
+    );
 
   #endregion
 }

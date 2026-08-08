@@ -7,8 +7,7 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>A throwaway versioned config POCO; property initialisers define the coded defaults.</summary>
-internal sealed class FakeConfig : IExVersionedConfig
-{
+internal sealed class FakeConfig : IExVersionedConfig {
   public string? ConfigVersion { get; set; }
   public int ValueA { get; set; } = 100;
   public int ValueB { get; set; } = 200;
@@ -21,15 +20,13 @@ internal sealed class FakeConfig : IExVersionedConfig
 /// upgrade crosses its <c>ToVersion</c>, scoped optionally by <c>FromVersion</c>, and only the named
 /// fields are reset while everything else (and the version stamp) round-trips.
 /// </summary>
-public class ConfigMigrationTests
-{
+public class ConfigMigrationTests {
   private const string ModId = "fakemod";
   private const string FileName = "fake.json";
 
   /// <summary>A fake mod stamped with <paramref name="version"/>. <c>Mod.Info</c> has a non-public
   /// setter, so it is assigned through reflection.</summary>
-  private static Mod FakeMod(string version)
-  {
+  private static Mod FakeMod(string version) {
     var mod = Substitute.For<Mod>();
     typeof(Mod)
       .GetProperty("Info")!
@@ -42,12 +39,11 @@ public class ConfigMigrationTests
   private static (ICoreAPI api, System.Func<FakeConfig?> saved) FakeApi(
     FakeConfig? stored,
     string runningVersion
-  )
-  {
+  ) {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
 
-    // The store now reads/writes its "fakemod" section of a shared mod-sectioned document.
+    // The store reads and writes its "fakemod" section of a shared mod-sectioned document.
     JObject? doc =
       stored == null
         ? null
@@ -70,11 +66,9 @@ public class ConfigMigrationTests
   ) => new(FileName, ModId, m);
 
   [Fact]
-  public void Load_resets_invalid_values_to_defaults_but_keeps_valid_ones()
-  {
+  public void Load_resets_invalid_values_to_defaults_but_keeps_valid_ones() {
     // A player has hand-edited the file into gameplay-breaking values.
-    var stored = new FakeConfig
-    {
+    var stored = new FakeConfig {
       ConfigVersion = "1.0.0",
       ValueA = -3, // negative int
       ValueB = 7, // valid - keep
@@ -94,8 +88,7 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Missing_file_loads_coded_defaults_and_stamps_version()
-  {
+  public void Missing_file_loads_coded_defaults_and_stamps_version() {
     var (api, saved) = FakeApi(stored: null, runningVersion: "1.0.0");
     var store = Store();
 
@@ -108,10 +101,8 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Same_version_preserves_all_player_tuning()
-  {
-    var stored = new FakeConfig
-    {
+  public void Same_version_preserves_all_player_tuning() {
+    var stored = new FakeConfig {
       ConfigVersion = "1.0.0",
       ValueA = 5,
       ValueB = 7,
@@ -129,10 +120,8 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Crossing_migration_resets_only_the_named_field()
-  {
-    var stored = new FakeConfig
-    {
+  public void Crossing_migration_resets_only_the_named_field() {
+    var stored = new FakeConfig {
       ConfigVersion = "0.9.0",
       ValueA = 5,
       ValueB = 7,
@@ -150,10 +139,8 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Empty_reset_fields_resets_the_whole_config()
-  {
-    var stored = new FakeConfig
-    {
+  public void Empty_reset_fields_resets_the_whole_config() {
+    var stored = new FakeConfig {
       ConfigVersion = "0.9.0",
       ValueA = 5,
       ValueB = 7,
@@ -168,12 +155,11 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Migration_above_the_running_build_does_not_fire()
-  {
+  public void Migration_above_the_running_build_does_not_fire() {
     var stored = new FakeConfig { ConfigVersion = "0.9.0", ValueA = 5 };
     var (api, _) = FakeApi(stored, runningVersion: "0.9.1");
     var store = Store(
-      // resets only for builds at/above 0.9.5 - we are still on 0.9.1.
+      // Resets only for builds at or above 0.9.5; the running build is 0.9.1.
       new ExConfigMigration { ToVersion = "0.9.5", ResetFields = ["ValueA"] }
     );
 
@@ -183,15 +169,13 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void FromVersion_lower_bound_scopes_the_reset()
-  {
-    // File saved at 0.9.0, below the migration's FromVersion of 0.9.1, so the
-    // tightly-scoped "0.9.1 => 0.9.2" reset must not touch it.
+  public void FromVersion_lower_bound_scopes_the_reset() {
+    // The file was saved at 0.9.0, below the migration's FromVersion of 0.9.1, so the scoped
+    // "0.9.1 => 0.9.2" reset must not touch it.
     var stored = new FakeConfig { ConfigVersion = "0.9.0", ValueA = 5 };
     var (api, _) = FakeApi(stored, runningVersion: "0.9.2");
     var store = Store(
-      new ExConfigMigration
-      {
+      new ExConfigMigration {
         ToVersion = "0.9.2",
         FromVersion = "0.9.1",
         ResetFields = ["ValueA"],
@@ -204,8 +188,7 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Unparseable_stored_version_is_treated_as_oldest_and_migrates()
-  {
+  public void Unparseable_stored_version_is_treated_as_oldest_and_migrates() {
     // Pre-versioning file (null stamp) sorts lowest, so an unscoped migration fires.
     var stored = new FakeConfig { ConfigVersion = null, ValueA = 5 };
     var (api, _) = FakeApi(stored, runningVersion: "0.9.2");
@@ -219,8 +202,7 @@ public class ConfigMigrationTests
   }
 
   [Fact]
-  public void Load_failure_falls_back_to_defaults_without_throwing()
-  {
+  public void Load_failure_falls_back_to_defaults_without_throwing() {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
     api.LoadModConfig<JObject>(FileName)

@@ -5,59 +5,55 @@ using ExpandedLib.Definitions;
 namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
-/// Authors a mega-block <c>fillerOffsets</c> footprint from ASCII diagrams (see
-/// <see cref="StructureFootprint.Layout"/> and <see cref="StructureLayout"/> for the grid rules). Draw it either
-/// way: one <see cref="Layer"/> per Y level (a floor plan, rows +Z / cols +X) for a footprint that spreads across
-/// the ground, or one <see cref="Slice"/> per X level (a front elevation, rows -Y down / cols +Z) for one that
-/// stacks up in Y. A cell's character says whether it is a plain filler or one other blocks may attach to: by
-/// default <c>'#'</c> is plain and <c>'+'</c> attach-allowing; <c>'.'</c> is empty. The principal
-/// <c>(0,0,0)</c> is marked <c>'O'</c> (or <c>'0'</c>) for readability - it is skipped, so it never becomes
-/// a filler; drawing the principal glyph anywhere but the origin is a load-time error (a misplaced grid).
+/// Authors a mega-block <c>fillerOffsets</c> footprint from ASCII diagrams (grid rules in
+/// <see cref="StructureFootprint.Layout"/> and <see cref="StructureLayout"/>). Draw it as one
+/// <see cref="Layer"/> per Y level (floor plan, rows +Z / cols +X), one <see cref="Slice"/> per X level
+/// (rows -Y down / cols +Z), or one <see cref="Face"/> per Z level (rows -Y down / cols +X); a builder
+/// uses one kind only. By default <c>'#'</c> is a plain filler, <c>'+'</c> one other blocks may attach
+/// to, <c>'.'</c> empty. The principal <c>(0,0,0)</c> may be marked <c>'O'</c> or <c>'0'</c>; it never
+/// becomes a filler, and that glyph anywhere but the origin is a load-time error.
 /// </summary>
-public sealed class FillerLayoutBuilder
-{
+public sealed class FillerLayoutBuilder {
   private int _originA;
   private int _originB;
-  private readonly Dictionary<char, bool> _symbols = new() { ['#'] = false, ['+'] = true };
-  private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted = new();
+  private readonly Dictionary<char, bool> _symbols = new() {
+    ['#'] = false,
+    ['+'] = true,
+  };
+  private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted =
+    new();
   private readonly List<(int Y, string Grid)> _layers = new();
   private readonly List<(int X, string Grid)> _slices = new();
   private readonly List<(int Z, string Grid)> _faces = new();
 
-  /// <summary>Sets the top-left cell of every grid. For horizontal <see cref="Layer"/>s the pair is
-  /// <c>(xLeft, zTop)</c> - the X of the first column and the Z of the first row. For fixed-X vertical
-  /// <see cref="Slice"/>s it is <c>(zLeft, yTop)</c>; for fixed-Z <see cref="Face"/> elevations it is
-  /// <c>(xLeft, yTop)</c> - the X of the first column and the Y of the top row. Defaults to <c>(0, 0)</c>.
-  /// A builder uses layers, slices, OR faces - one kind, since their Origin axes differ.</summary>
-  public FillerLayoutBuilder Origin(int a, int b)
-  {
+  /// <summary>Sets the top-left cell of every grid: <c>(xLeft, zTop)</c> for horizontal
+  /// <see cref="Layer"/>s, <c>(zLeft, yTop)</c> for fixed-X <see cref="Slice"/>s, <c>(xLeft, yTop)</c>
+  /// for fixed-Z <see cref="Face"/> elevations. Defaults to <c>(0, 0)</c>. A builder uses one kind of
+  /// grid, since their Origin axes differ.</summary>
+  public FillerLayoutBuilder Origin(int a, int b) {
     _originA = a;
     _originB = b;
     return this;
   }
 
-  /// <summary>Registers a character as a plain filler cell (other blocks may not attach). Overrides the
-  /// default <c>'#'</c> mapping when a different glyph reads better.</summary>
-  public FillerLayoutBuilder Solid(char symbol)
-  {
+  /// <summary>Registers a character as a plain filler cell (other blocks may not attach), overriding the
+  /// default <c>'#'</c> mapping.</summary>
+  public FillerLayoutBuilder Solid(char symbol) {
     _symbols[symbol] = false;
     return this;
   }
 
-  /// <summary>Registers a character as a filler other blocks may attach to (the JSON <c>allowAttach: true</c>).
-  /// Overrides the default <c>'+'</c> mapping.</summary>
-  public FillerLayoutBuilder Attach(char symbol)
-  {
+  /// <summary>Registers a character as a filler other blocks may attach to (the JSON <c>allowAttach: true</c>),
+  /// overriding the default <c>'+'</c> mapping.</summary>
+  public FillerLayoutBuilder Attach(char symbol) {
     _symbols[symbol] = true;
     return this;
   }
 
   /// <summary>
-  /// Registers a character as an attach-allowing filler cell that <b>hosts</b> <paramref name="behaviors"/>
-  /// on the principal's behalf - the ports a mega-block exposes on a footprint cell (an
-  /// <c>exlib.BEBehaviorMPFillerPort</c> so an axle on that face drives it, a stateful
-  /// <c>exlib.BEBehaviorMoltenCell</c>, …). Without this a footprint that needs one port has to be
-  /// hand-listed cell by cell purely to attach it, which loses the diagram the layout exists to give.
+  /// Registers a character as an attach-allowing filler cell hosting <paramref name="behaviors"/> on the
+  /// principal's behalf - the ports a mega-block exposes on a footprint cell, such as an MP filler port
+  /// driven by an axle on that face, or a stateful molten cell.
   /// <code>
   ///   f.Host('M', new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west"))
   ///    .Slice(0, """
@@ -69,44 +65,41 @@ public sealed class FillerLayoutBuilder
   public FillerLayoutBuilder Host(
     char symbol,
     params FillerBehaviorSpec[] behaviors
-  )
-  {
+  ) {
     _symbols[symbol] = true;
     _hosted[symbol] = behaviors;
     return this;
   }
 
-  /// <summary>Adds one horizontal Y-level grid (a floor plan; rows run +Z, columns +X). Layers may be
-  /// declared in any Y order.</summary>
-  public FillerLayoutBuilder Layer(int y, string grid)
-  {
+  /// <summary>Adds one horizontal Y-level grid (a floor plan; rows run +Z, columns +X). Layers may be declared
+  /// in any Y order.</summary>
+  public FillerLayoutBuilder Layer(int y, string grid) {
     _layers.Add((y, grid));
     return this;
   }
 
   /// <summary>Adds one vertical X-level grid (a front elevation; rows run down in -Y from the top, columns
-  /// run +Z). For a footprint that stacks in Y - an engine's beam column, a piston tower - this reads far more
-  /// naturally than a stack of one-row horizontal layers. Slices may be declared in any X order.</summary>
-  public FillerLayoutBuilder Slice(int x, string grid)
-  {
+  /// run +Z). Suits a footprint that stacks in Y, such as an engine's beam column. Slices may be declared
+  /// in any X order.</summary>
+  public FillerLayoutBuilder Slice(int x, string grid) {
     _slices.Add((x, grid));
     return this;
   }
 
-  /// <summary>Adds one vertical Z-level grid (a front elevation looking along -Z; rows run down in -Y from the
-  /// top, columns run +X). This is the natural view for a thin-in-Z, north-facing structure - a flywheel disc,
-  /// a hammer's A-frame - whose face lies in the X-Y plane, which neither the horizontal <see cref="Layer"/>
-  /// nor the fixed-X <see cref="Slice"/> can draw in-plane. Faces may be declared in any Z order.</summary>
-  public FillerLayoutBuilder Face(int z, string grid)
-  {
+  /// <summary>Adds one vertical Z-level grid (a front elevation looking along -Z; rows run down in -Y
+  /// from the top, columns run +X). Suits a thin-in-Z, north-facing structure such as a flywheel disc,
+  /// whose face lies in the X-Y plane that neither <see cref="Layer"/> nor <see cref="Slice"/> draws
+  /// in-plane. Faces may be declared in any Z order.</summary>
+  public FillerLayoutBuilder Face(int z, string grid) {
     _faces.Add((z, grid));
     return this;
   }
 
-  internal IReadOnlyList<FillerCellSpec> Build()
-  {
+  internal IReadOnlyList<FillerCellSpec> Build() {
     int kinds =
-      (_layers.Count > 0 ? 1 : 0) + (_slices.Count > 0 ? 1 : 0) + (_faces.Count > 0 ? 1 : 0);
+      (_layers.Count > 0 ? 1 : 0)
+      + (_slices.Count > 0 ? 1 : 0)
+      + (_faces.Count > 0 ? 1 : 0);
     if (kinds > 1)
       throw new InvalidOperationException(
         "Filler layout mixes Layer / Slice / Face grids; each uses a different Origin axis pair, so use one "
@@ -116,15 +109,14 @@ public sealed class FillerLayoutBuilder
     var parsed =
       _faces.Count > 0
         ? StructureLayout.ParseFrontal(_originA, _originB, _faces)
-        : _slices.Count > 0
-          ? StructureLayout.ParseVertical(_originA, _originB, _slices)
-          : StructureLayout.Parse(_originA, _originB, _layers);
+      : _slices.Count > 0
+        ? StructureLayout.ParseVertical(_originA, _originB, _slices)
+      : StructureLayout.Parse(_originA, _originB, _layers);
 
     var cells = new List<FillerCellSpec>();
-    foreach (LayoutCell cell in parsed)
-    {
+    foreach (LayoutCell cell in parsed) {
       if (cell.X == 0 && cell.Y == 0 && cell.Z == 0)
-        continue; // the principal occupies the origin - never a filler (whatever glyph marks it)
+        continue; // the principal occupies the origin - never a filler, whatever glyph marks it
       if (cell.Symbol is 'O' or '0')
         throw new InvalidOperationException(
           $"Filler layout marks the principal ('{cell.Symbol}') at ({cell.X},{cell.Y},{cell.Z}), which is not "

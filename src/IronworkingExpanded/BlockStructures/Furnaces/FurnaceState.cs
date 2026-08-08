@@ -1,8 +1,7 @@
 namespace IronworkingExpanded.BlockStructures.Furnaces;
 
-/// <summary>Operating state of a furnace core (blast furnace and future variants).</summary>
-public enum FurnaceState
-{
+/// <summary>Operating state of a furnace core.</summary>
+public enum FurnaceState {
   /// <summary>Not lit.</summary>
   Idle,
 

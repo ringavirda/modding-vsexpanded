@@ -1,11 +1,11 @@
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using NSubstitute;
 using LowPressureExpanded.BlockNetworkPipe;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockStructures.ManualPump.BlockEntities;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -14,23 +14,19 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// The hand-cranked fluid pump: a no-power way to start a water loop. Right-click-hold drives the
-/// crank state (with a watchdog that stops it if the release event is missed), and while cranked it
-/// moves standing input water to the output line - the fluid intake on the input network is the real
-/// generator. Covers the crank state machine, the watchdog, the water transfer, and persistence.
+/// The hand-cranked fluid pump. Right-click-hold drives the crank state, with a watchdog that stops
+/// it if the release event is missed; while cranked it moves standing input water to the output
+/// line. Covers the crank state machine, the watchdog, the water transfer, and persistence.
 /// </summary>
-public class ManualPumpBeTests
-{
+public class ManualPumpBeTests {
   private static bool Pumping(BlockEntityManualFluidPump be) =>
     (bool)ReflectionHelpers.GetField(be, "_pumping")!;
 
   private static bool Drawing(BlockEntityManualFluidPump be) =>
     (bool)ReflectionHelpers.GetField(be, "_drawingWater")!;
 
-  private static BlockEntityManualFluidPump Pump(TestWorld world, BlockPos pos)
-  {
-    var be = new BlockEntityManualFluidPump
-    {
+  private static BlockEntityManualFluidPump Pump(TestWorld world, BlockPos pos) {
+    var be = new BlockEntityManualFluidPump {
       Pos = pos,
       Block = TestBlocks.Configure(
         new Block(),
@@ -47,8 +43,7 @@ public class ManualPumpBeTests
   #region Crank state machine
 
   [Fact]
-  public void OnPumpStart_then_stop_toggles_the_crank()
-  {
+  public void OnPumpStart_then_stop_toggles_the_crank() {
     var world = new TestWorld();
     var be = Pump(world, new BlockPos(0, 8, 0));
 
@@ -60,8 +55,7 @@ public class ManualPumpBeTests
   }
 
   [Fact]
-  public void The_watchdog_stops_a_crank_whose_release_event_was_missed()
-  {
+  public void The_watchdog_stops_a_crank_whose_release_event_was_missed() {
     var world = new TestWorld();
     world.World.ElapsedMilliseconds.Returns(5000L);
     var be = Pump(world, new BlockPos(0, 8, 0));
@@ -69,7 +63,7 @@ public class ManualPumpBeTests
     be.OnPumpStart(); // records _lastStepMs = 5000
     Assert.True(Pumping(be));
 
-    // Time jumps well past the 1200 ms watchdog window with no OnPumpStep refresh.
+    // Time jumps past the 1200 ms watchdog window with no OnPumpStep refresh.
     world.World.ElapsedMilliseconds.Returns(7000L);
     ReflectionHelpers.Invoke(be, "OnServerTick", 1f);
 
@@ -81,14 +75,14 @@ public class ManualPumpBeTests
   #region Water transfer
 
   /// <summary>
-  /// Builds input + output pipe lines on the pump's two connector faces. The input line's single node
-  /// is the fluid intake (the generator), primed with water; the output line is an empty pipe run.
+  /// Builds input and output pipe lines on the pump's two connector faces. The input line's single
+  /// node is the fluid intake, which is the generator, primed with water; the output line is an
+  /// empty pipe run.
   /// </summary>
   private static (PipeNetwork inNet, PipeNetwork outNet) Plumb(
     TestWorld world,
     BlockEntityManualFluidPump pump
-  )
-  {
+  ) {
     int angle = ExOrientation.AngleFromSide("north");
     BlockFacing inFace = ExOrientation.RotateFacing(BlockFacing.SOUTH, angle);
     BlockFacing outFace = ExOrientation.RotateFacing(BlockFacing.NORTH, angle);
@@ -108,8 +102,7 @@ public class ManualPumpBeTests
       "Orientation",
       inFace.Opposite.Code[..1]
     );
-    var intake = new BlockEntityFluidIntake
-    {
+    var intake = new BlockEntityFluidIntake {
       Pos = intakePos,
       Block = intakeBlock,
     };
@@ -131,8 +124,7 @@ public class ManualPumpBeTests
   }
 
   [Fact]
-  public void DoWork_moves_standing_input_water_to_the_output_line()
-  {
+  public void DoWork_moves_standing_input_water_to_the_output_line() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
     var pump = Pump(world, new BlockPos(0, 8, 0));
@@ -147,8 +139,7 @@ public class ManualPumpBeTests
   }
 
   [Fact]
-  public void DoWork_with_no_lines_moves_nothing()
-  {
+  public void DoWork_with_no_lines_moves_nothing() {
     var world = new TestWorld();
     world.RegisterNetwork("pipe", sys => new PipeNetwork(sys));
     var pump = Pump(world, new BlockPos(0, 8, 0));
@@ -163,8 +154,7 @@ public class ManualPumpBeTests
   #region Persistence
 
   [Fact]
-  public void Run_state_round_trips_through_the_tree()
-  {
+  public void Run_state_round_trips_through_the_tree() {
     var world = new TestWorld();
     var src = Pump(world, new BlockPos(0, 8, 0));
     ReflectionHelpers.SetField(src, "_pumping", true);

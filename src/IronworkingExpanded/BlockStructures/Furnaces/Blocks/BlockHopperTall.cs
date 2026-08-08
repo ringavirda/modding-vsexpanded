@@ -14,19 +14,17 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 
 /// <summary>
 /// The tall hopper: a two-cell-high burden tank that drips its contents into the furnace shaft below it
-/// (<see cref="BlockEntityHopperTall"/>). It occupies one grid cell - the base - and renders a
-/// two-block-high model up through its <b>top filler cell</b>, which is where every player interaction
-/// lands: the filler reroutes right-clicks to the base's block entity through
-/// <see cref="IFillerInteractionTarget"/>, so burden is poured into (and drawn out of) the top of the
-/// hopper rather than its base. Fills either burden family; the furnace it feeds gates acceptance.
+/// (<see cref="BlockEntityHopperTall"/>). It occupies one grid cell, the base, and renders a two-block-high
+/// model up through its top filler cell. Every player interaction lands on that filler cell, which reroutes
+/// right-clicks to the base's block entity through <see cref="IFillerInteractionTarget"/>, so burden is
+/// poured in and drawn out at the top. Holds either burden family; the furnace it feeds gates acceptance.
 /// </summary>
 [BlockRegister]
 public partial class BlockHopperTall
   : BlockFilledMegastructure,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
@@ -35,19 +33,19 @@ public partial class BlockHopperTall
         .Create(domain, "hopper-tall", "hopper/tall")
         .Class<BlockHopperTall>()
         .EntityClass<BlockEntityHopperTall>()
-        // The build-outline projection: the hopper is a functional cell of the furnace layout, so a player
-        // at the hopper can preview + complete an incomplete furnace (the top filler cell routes the gesture
-        // through HandleInteract; the base cell fires this behaviour). Before other rmb consumers.
+        // Build-outline projection: the hopper is a functional cell of the furnace layout, so a player at
+        // the hopper can preview and complete an incomplete furnace. The base cell fires this behaviour;
+        // the top filler cell routes the gesture through HandleInteract. Must precede other rmb consumers.
         .Behavior("MultiblockStructure")
-        // The vanilla behaviour stamps the side variant at placement, same as every furnace core.
+        // Stamps the side variant at placement, as on every furnace core.
         .Behavior("ExOrientable")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
         .Shape("iwex:hopper-tall")
         .CreativeCommon("*")
         // The footprint is a single filler one cell up (the hopper is 2 tall over its base): '#' over the
-        // '0' principal with Origin(0, 1) resolves to the cell at (0, +1, 0) - the top the model fills and
-        // every interaction routes through.
+        // '0' principal with Origin(0, 1) resolves to the cell at (0, +1, 0), the top cell the model fills
+        // and every interaction routes through.
         .FillerOffsets(
           StructureFootprint.Layout(f =>
             f.Origin(0, 1)
@@ -61,32 +59,31 @@ public partial class BlockHopperTall
           )
         )
         .SolidNonOpaque()
-        // Declared last so the code reads hopper-tall-{side}. A side variant is what lets the multiblock
-        // layout demand a correctly-facing hopper: the oriented-parts rule rotates the required facing with
-        // the structure, which is what stops a rotated cupola charging outside itself. The drip reads this
-        // variant directly - no anchor lookup.
-        // N4: inherit vanilla's own four states rather than re-typing them - a hand list can
-        // drift from the property it is copying and says nothing about where the words came from.
+        // Declared last so the code reads hopper-tall-{side}. The side variant lets a multiblock layout
+        // demand a correctly-facing hopper: the oriented-parts rule rotates the required facing with the
+        // structure, so a rotated cupola does not charge outside itself. The drip reads this variant
+        // directly, without an anchor lookup. The four states are inherited from vanilla's property rather
+        // than re-typed.
         .SideVariant(),
     ];
 
   #endregion
 
-  /// <summary>The hopper's own placement angle. The filler sits directly above the base so the footprint is
-  /// rotation-invariant, but the drip is not - it searches neighbours, and those must rotate.</summary>
-  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);
+  /// <summary>The hopper's own placement angle. The footprint is rotation-invariant because the filler sits
+  /// directly above the base, but the drip is not: it searches neighbours, which must rotate.</summary>
+  public override int StructureAngle =>
+    ExOrientation.AngleFromSide(Variant["side"]);
 
   #region Drops
 
   // Placement, the top filler cell and its removal on break are handled by BlockFilledMegastructure. A
-  // broken hopper returns itself plus whatever burden the tank still held, so the charge is never lost.
+  // broken hopper drops itself plus whatever burden the tank still held.
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     var drops = new List<ItemStack>(
       base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier)
     );
@@ -102,25 +99,23 @@ public partial class BlockHopperTall
 
   #region Interaction (routed from the top filler cell)
 
-  // Deposit/withdraw is deliberately reachable only through the top filler cell, not the base block: the
-  // hopper is charged at its mouth (the top), and the filler reroutes those clicks here. A right-click
-  // with burden fills the tank (ctrl = the whole held stack), an empty-handed right-click empties it.
+  // Deposit and withdraw are reachable only through the top filler cell, which reroutes those clicks here.
+  // A right-click with burden fills the tank (ctrl transfers the whole held stack); an empty-handed
+  // right-click empties it.
   private bool HandleInteract(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection principalSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(principalSel.Position)
       is not BlockEntityHopperTall be
     )
       return false;
 
-    // The hopper's own cells route here (deposits/withdraws land on the top filler cell). Consume the
-    // build-outline gesture before the deposit/withdraw path so Ctrl+Shift+right-click previews the
-    // incomplete furnace instead of emptying the tank. The hopper's base cell gets this from the shared
-    // MultiblockStructure behaviour directly; this covers the filler-routed clicks the behaviour never sees.
+    // Consume the build-outline gesture before the deposit/withdraw path so Ctrl+Shift+right-click
+    // previews the incomplete furnace instead of emptying the tank. The base cell gets this from the
+    // shared MultiblockStructure behaviour; this covers the filler-routed clicks the behaviour never sees.
     if (
       BlockBehaviorMultiblockStructure.TryToggleProjection(
         world,
@@ -130,22 +125,18 @@ public partial class BlockHopperTall
     )
       return true;
 
-    if (world.Side == EnumAppSide.Server)
-    {
+    if (world.Side == EnumAppSide.Server) {
       ItemSlot? active = byPlayer.InventoryManager?.ActiveHotbarSlot;
-      if (active?.Empty == false)
-      {
-        // A mismatched grade/family is a real mistake (one stack can't hold two), so it is named; a full
-        // tank is a state the block info already shows, not an error, so it is swallowed silently.
+      if (active?.Empty == false) {
+        // A mismatched grade or family is reported, since one stack cannot hold two. A full tank is
+        // already shown by the block info, so it passes silently.
         if (
           !be.TryDeposit(active, byPlayer.Entity.Controls.CtrlKey) && !be.IsFull
         )
           (byPlayer as IServerPlayer)?.SendIngameError(
             "iwex-hoppertall-wronggrade"
           );
-      }
-      else
-      {
+      } else {
         ItemStack? taken = be.TryWithdraw();
         if (
           taken != null
@@ -201,8 +192,7 @@ public partial class BlockHopperTall
   private WorldInteraction[] HopperInteractionHelp(
     IWorldAccessor world,
     BlockSelection principalSel
-  )
-  {
+  ) {
     ItemStack[] burden = _burdenStack ??= ResolveBurdenStack();
     var help = new List<WorldInteraction>
     {
@@ -226,15 +216,14 @@ public partial class BlockHopperTall
       && be.TankCount > 0
     )
       help.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "iwex:hoppertall-help-take",
           MouseButton = EnumMouseButton.Right,
         }
       );
 
-    // While the furnace this hopper charges is still incomplete, offer the build-outline gesture here too
-    // (the base cell shows it via the shared behaviour; the top filler cell routes its help through this).
+    // While the furnace this hopper charges is incomplete, offer the build-outline gesture here as well.
+    // The base cell shows it via the shared behaviour; the top filler cell routes its help through this.
     if (
       world.BlockAccessor.GetBlockEntity(principalSel.Position)
         is BlockEntityHopperTall hopper
@@ -245,8 +234,7 @@ public partial class BlockHopperTall
     return [.. help];
   }
 
-  private ItemStack[] ResolveBurdenStack()
-  {
+  private ItemStack[] ResolveBurdenStack() {
     Item? burden = api.World.GetItem(new AssetLocation("iwex", "burden"));
     return burden == null ? [] : [new ItemStack(burden)];
   }

@@ -12,16 +12,14 @@ using Vintagestory.API.Util;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 
 /// <summary>
-/// The reinforced hopper that feeds the blast furnace. It is a plain charge tank now (iwex's burdenmaker
-/// makes the burden; this no longer mixes): a right-click with charge fills it, an empty-handed right-click
-/// empties it, and Ctrl + empty-handed right-click toggles the bell hopper's dropping below.
+/// The reinforced hopper that feeds the blast furnace. A plain charge tank: right-click with charge
+/// fills it, empty-handed right-click empties it, and Ctrl plus empty-handed right-click toggles the
+/// dropping of the bell hopper below. The burden itself is made by iwex's burdenmaker.
 /// </summary>
 [BlockRegister]
-public partial class BlockHopperReinforced : Block, IExBlockDefProvider
-{
-  /// <summary>The reinforced hopper blocktype, authored in C#. No longer a container (the window and the
-  /// iron/coke/flux mixing slots are gone) - it is a single burden tank the player, or later the skip
-  /// hoist, tops up.</summary>
+public partial class BlockHopperReinforced : Block, IExBlockDefProvider {
+  /// <summary>The reinforced hopper blocktype. Not a container: it holds a single burden tank, so it
+  /// carries no inventory slots and no dialog.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -42,8 +40,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
       is not BlockEntityHopperReinforced be
@@ -52,36 +49,29 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
 
     // All mutation is server-authoritative; the click is swallowed on both sides so nothing is placed
     // against the hopper face.
-    if (world.Side == EnumAppSide.Server)
-    {
+    if (world.Side == EnumAppSide.Server) {
       ItemSlot? active = byPlayer.InventoryManager?.ActiveHotbarSlot;
       bool ctrl = byPlayer.Entity.Controls.CtrlKey;
 
-      if (active?.Empty != false)
-      {
+      if (active?.Empty != false) {
         // Empty-handed: Ctrl toggles the bell's dropping, a plain click draws the tank out.
         if (ctrl)
           be.ToggleBellDropping();
         else
           Withdraw(world, byPlayer, be, blockSel.Position);
-      }
-      else if (be.IsChargeItem(active.Itemstack))
-      {
-        // Charge in hand: fill the tank (Ctrl deposits the whole held stack). A mismatched grade is a
-        // real mistake (one tank can't hold two), so it is named; a full tank is a state the block info
-        // already shows, so it is swallowed silently.
+      } else if (be.IsChargeItem(active.Itemstack)) {
+        // Charge in hand: fill the tank (Ctrl deposits the whole held stack). A mismatched grade is
+        // reported; a full tank is silent, since the block info already shows it.
         //
-        // `be.IsChargeItem`, not `Burden.IsAny` (see BlockEntityHopperReinforced.Accepts): a
-        // burden-only gate leaves coke in hand falling through to the Ctrl branch below, where a plain
-        // click does nothing at all and a Ctrl click toggles the bell instead of loading fuel. The
-        // identity question is asked here and the grade question is left to TryDeposit, which is what
-        // keeps the wronggrade error reachable - a gate spelled `be.Accepts` would send a mismatched
-        // grade to the bell toggle instead.
+        // The gate must stay `be.IsChargeItem` - an identity test over everything the furnace
+        // charges. A burden-only or grade-aware gate (Burden.IsAny, be.Accepts) drops coke and
+        // mismatched grades into the Ctrl branch below, where they toggle the bell instead of
+        // loading, and makes the wronggrade error unreachable. Grade is TryDeposit's question.
         if (!be.TryDeposit(active, ctrl) && !be.IsFull)
-          (byPlayer as IServerPlayer)?.SendIngameError("smex-hopper-wronggrade");
-      }
-      else if (ctrl)
-      {
+          (byPlayer as IServerPlayer)?.SendIngameError(
+            "smex-hopper-wronggrade"
+          );
+      } else if (ctrl) {
         // Holding something the furnace does not charge: Ctrl still toggles the bell.
         be.ToggleBellDropping();
       }
@@ -95,22 +85,22 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
     IPlayer byPlayer,
     BlockEntityHopperReinforced be,
     BlockPos pos
-  )
-  {
+  ) {
     ItemStack? taken = be.TryWithdraw();
-    if (taken != null && byPlayer.InventoryManager?.TryGiveItemstack(taken) != true)
+    if (
+      taken != null
+      && byPlayer.InventoryManager?.TryGiveItemstack(taken) != true
+    )
       world.SpawnItemEntity(taken, pos.ToVec3d().Add(0.5, 0.5, 0.5));
   }
 
-  // A broken hopper returns itself plus whatever burden the tank still held, so the charge is never lost
-  // (the old Container behaviour scattered its inventory; the tank does the same here).
+  // A broken hopper drops itself plus whatever the tank still held, so the charge is never lost.
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     var drops = new List<ItemStack>(
       base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier)
     );
@@ -131,8 +121,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var baseHelp =
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? [];
 
@@ -160,8 +149,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
       && be.TankCount > 0
     )
       help.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "smex:blockhelp-hopper-take",
           MouseButton = EnumMouseButton.Right,
         }
@@ -172,8 +160,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
       is BlockEntityHopperBell
     )
       help.Add(
-        new WorldInteraction
-        {
+        new WorldInteraction {
           ActionLangCode = "smex:blockhelp-hopper-toggle",
           HotKeyCodes = ["ctrl"],
           MouseButton = EnumMouseButton.Right,
@@ -183,8 +170,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
     return baseHelp.Concat(help).ToArray();
   }
 
-  private static ItemStack[] ResolveBurdenStack(IWorldAccessor world)
-  {
+  private static ItemStack[] ResolveBurdenStack(IWorldAccessor world) {
     Item? burden = world.GetItem(new AssetLocation("iwex", "burden"));
     return burden == null ? [] : [new ItemStack(burden)];
   }

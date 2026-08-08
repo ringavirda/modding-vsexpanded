@@ -1,10 +1,10 @@
-using ExpandedLib.Networks;
 using System;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using NSubstitute;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
@@ -12,18 +12,15 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Property/invariant tests for the molten network: over many randomized fills and many flow ticks,
-/// metal is neither created nor destroyed, no cell ever holds negative or over-capacity metal, and
-/// the run trends toward levelling out. Conservation is the law most likely to be silently broken by
-/// a flow-math change, so it is asserted over random topologies rather than one fixed case.
+/// Invariant tests for the molten network: over randomized fills and flow ticks, metal is neither
+/// created nor destroyed and no cell holds a negative or over-capacity amount. Asserted over random
+/// topologies rather than one fixed case, since a flow-math change breaks conservation silently.
 /// </summary>
-public class MoltenInvariantTests
-{
+public class MoltenInvariantTests {
   private const string Metal = "game:ingot-iron";
   private const int Capacity = 50; // CanalDefaultUnitCapacity
 
-  private static BlockMoltenCanal Canal()
-  {
+  private static BlockMoltenCanal Canal() {
     var block = TestBlocks.Configure(
       new BlockMoltenCanal(),
       "smex:moltencanal-straight-ns",
@@ -41,8 +38,7 @@ public class MoltenInvariantTests
   [InlineData(11)]
   [InlineData(29)]
   [InlineData(101)]
-  public void Flow_conserves_total_metal_and_respects_cell_bounds(int seed)
-  {
+  public void Flow_conserves_total_metal_and_respects_cell_bounds(int seed) {
     var rng = new Random(seed);
     int n = rng.Next(2, 6);
 
@@ -53,8 +49,7 @@ public class MoltenInvariantTests
 
     var block = Canal();
     var cells = new BlockEntityMoltenCanal[n];
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       var pos = new BlockPos(0, 0, i);
       cells[i] = new BlockEntityMoltenCanal { Pos = pos, Block = block };
       world.Place(pos, block, cells[i]);
@@ -65,8 +60,7 @@ public class MoltenInvariantTests
 
     // Seed random amounts (a single shared metal so the no-mix rule never blocks flow).
     int expectedTotal = 0;
-    foreach (var c in cells)
-    {
+    foreach (var c in cells) {
       int amt = rng.Next(0, Capacity + 1);
       int accepted = c.PushMetal(amt, new ItemStack(item, 1), world.World);
       expectedTotal += accepted;
@@ -75,12 +69,10 @@ public class MoltenInvariantTests
     int Total() => cells.Sum(c => c.CellAmount);
     Assert.Equal(expectedTotal, Total());
 
-    for (int tick = 0; tick < 30; tick++)
-    {
+    for (int tick = 0; tick < 30; tick++) {
       world.Tick();
       Assert.Equal(expectedTotal, Total()); // conservation: nothing created or destroyed
-      foreach (var c in cells)
-      {
+      foreach (var c in cells) {
         Assert.True(c.CellAmount >= 0, $"negative cell amount (seed {seed})");
         Assert.True(
           c.CellAmount <= Capacity,
@@ -91,13 +83,11 @@ public class MoltenInvariantTests
   }
 }
 
-internal static class MoltenInvariantExtensions
-{
+internal static class MoltenInvariantExtensions {
   public static int Sum(
     this BlockEntityMoltenCanal[] cells,
     System.Func<BlockEntityMoltenCanal, int> sel
-  )
-  {
+  ) {
     int t = 0;
     foreach (var c in cells)
       t += sel(c);

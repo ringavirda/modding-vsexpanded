@@ -12,16 +12,14 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// The metal-family emitter turns an opted-in <see cref="MetalDef"/> into its resource item family
-/// (ingot / plate / bits / rod / nails). These pin the mechanism: which codes come out per metal, that an
-/// un-opted-in metal is untouched, and that the generated items are homed + wired correctly (owning
-/// domain, shared-scrap shatter, own-ingot smelt-back, tools deferred). Byte-level parity of the
-/// generated cast-iron family against the hand-authored defs it replaced is the golden harness's job
-/// (<see cref="DefinitionGoldens"/>); this is the behavioural contract around it.
+/// (ingot / plate / bits / rod / nails) and, where the metal declares one, its tool family. Covers which
+/// codes come out per metal, that an un-opted-in metal is untouched, and that generated items are homed
+/// and wired correctly: owning domain, shared-scrap shatter, own-ingot smelt-back. Byte-level parity of
+/// the generated defs is the golden harness's job (<see cref="DefinitionGoldens"/>).
 /// </summary>
-public class MetalFamilyEmitterTests
-{
+public class MetalFamilyEmitterTests {
   // The shipped metal descriptor, read from the same JSON the runtime and the golden harness feed the
-  // emitter - so "the shipped castiron/pigiron/bessemersteel emit correctly" is tested end to end.
+  // emitter.
   private static MetalDef Shipped(string mod, string metal) =>
     JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
@@ -37,12 +35,12 @@ public class MetalFamilyEmitterTests
   private static string[] Codes(IEnumerable<ExItemDef> defs) =>
     defs.Select(d => d.Code).OrderBy(c => c).ToArray();
 
-  // A generated def is a tool iff it carries the top-level "tool" key (resource forms never do); lets the
-  // resource-form assertions stay exact now that Emit also yields the tool family.
+  // A generated def is a tool iff it carries the top-level "tool" key; resource forms never do.
   private static bool IsTool(ExItemDef d) => d.ToJson()["tool"] != null;
 
-  private static IEnumerable<ExItemDef> Resources(IEnumerable<ExItemDef> defs) =>
-    defs.Where(d => !IsTool(d));
+  private static IEnumerable<ExItemDef> Resources(
+    IEnumerable<ExItemDef> defs
+  ) => defs.Where(d => !IsTool(d));
 
   private static JObject ToolJson(IEnumerable<ExItemDef> defs, string code) =>
     defs.Single(d => d.Code == code).ToJson();
@@ -50,13 +48,12 @@ public class MetalFamilyEmitterTests
   #region Which codes per shipped metal
 
   [Fact]
-  public void Cast_iron_emits_its_five_shipped_forms_in_iwex()
-  {
+  public void Cast_iron_emits_its_five_shipped_forms_in_iwex() {
     List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
 
-    // The three legacy codes the cupola + solidified block reference, plus the two build stocks the
-    // iron-substitution recipes need. All in iwex, the domain its molten item names. (The tool family is
-    // also emitted now - asserted separately; here we pin just the resource forms.)
+    // The three codes the cupola and solidified block reference, plus the two build stocks the
+    // iron-substitution recipes need, all in iwex - the domain its molten item names. The tool family
+    // is emitted too and asserted separately.
     Assert.Equal(
       new[]
       {
@@ -72,8 +69,7 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Pig_iron_emits_only_the_ingot_feedstock()
-  {
+  public void Pig_iron_emits_only_the_ingot_feedstock() {
     List<ExItemDef> defs = Emit(Shipped("iwex", "pigiron"));
 
     // A feedstock: the blast furnace's cast target and nothing else (no plate/rod/nails, no tools).
@@ -83,8 +79,7 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Bessemer_steel_emits_its_four_forms_in_smex()
-  {
+  public void Bessemer_steel_emits_its_four_forms_in_smex() {
     List<ExItemDef> defs = Emit(Shipped("smex", "bessemersteel"));
 
     Assert.Equal(
@@ -106,16 +101,14 @@ public class MetalFamilyEmitterTests
   #region Opt-in gate
 
   [Fact]
-  public void A_metal_that_has_not_opted_in_emits_nothing()
-  {
+  public void A_metal_that_has_not_opted_in_emits_nothing() {
     // Every vanilla / EM metal: it already owns game:ingot-iron, so the emitter must never touch it.
     MetalDef vanilla = new() { Code = "iron", MoltenItem = "game:ingot-iron" };
     Assert.Empty(Emit(vanilla));
   }
 
   [Fact]
-  public void An_opted_in_metal_missing_its_molten_item_emits_nothing()
-  {
+  public void An_opted_in_metal_missing_its_molten_item_emits_nothing() {
     // Without a molten item there is no owning domain to home the family - skip rather than guess.
     MetalDef broken = new() { Code = "mystery", GenerateItemFamily = true };
     Assert.Empty(Emit(broken));
@@ -126,10 +119,8 @@ public class MetalFamilyEmitterTests
   #region Forms selection
 
   [Fact]
-  public void A_null_item_forms_list_emits_the_default_build_set()
-  {
-    MetalDef m = new()
-    {
+  public void A_null_item_forms_list_emits_the_default_build_set() {
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
@@ -149,10 +140,8 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void An_unknown_form_token_is_skipped()
-  {
-    MetalDef m = new()
-    {
+  public void An_unknown_form_token_is_skipped() {
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
@@ -164,8 +153,7 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Known_forms_are_the_five_resource_tokens()
-  {
+  public void Known_forms_are_the_five_resource_tokens() {
     Assert.Equal(
       new[] { "bits", "ingot", "nails", "plate", "rod" },
       MetalFamilyEmitter.KnownForms.OrderBy(f => f).ToArray()
@@ -173,8 +161,7 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Known_tools_are_the_eight_tool_tokens()
-  {
+  public void Known_tools_are_the_eight_tool_tokens() {
     Assert.Equal(
       new[]
       {
@@ -213,24 +200,18 @@ public class MetalFamilyEmitterTests
       .ToArray();
 
   [Fact]
-  public void Cast_iron_emits_the_full_brittle_tool_set()
-  {
-    // Stage 3 flips the stage-2 boundary: the Tools { preset: brittle } spec now yields the eight tool
-    // items (the survey's default set), each in iwex beside the resource forms.
+  public void Cast_iron_emits_the_full_brittle_tool_set() {
+    // A Tools { preset: brittle } spec yields the eight default tool items, each in iwex beside the
+    // resource forms.
     List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
 
-    Assert.Equal(
-      ToolCodes("castiron"),
-      Codes(defs.Where(IsTool))
-    );
+    Assert.Equal(ToolCodes("castiron"), Codes(defs.Where(IsTool)));
     Assert.All(defs.Where(IsTool), d => Assert.Equal("iwex", d.Domain));
   }
 
   [Fact]
-  public void Cast_iron_tools_are_brittle_gold_tier_durability()
-  {
-    // The user's chosen balance: cast iron makes tools, but they shatter (gold-tier ~150 durability, far
-    // below an iron pick's 1000) - emergent brittleness rather than a hard mold gate.
+  public void Cast_iron_tools_are_brittle_gold_tier_durability() {
+    // Cast iron makes tools, but brittle ones: gold-tier durability of 150 against an iron pick's 1000.
     List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
 
     foreach (string code in ToolCodes("castiron"))
@@ -238,28 +219,27 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Cast_iron_tools_still_mine_at_a_decent_hard_rate()
-  {
-    // "Hard, just shatters": a brittle preset keeps a usable mining tier + speed - the pick is iron-tier
-    // (4) and mines stone/ore/metal at a decent 6.0, it just does not last.
-    JObject pick = ToolJson(Emit(Shipped("iwex", "castiron")), "pickaxe-castiron");
+  public void Cast_iron_tools_still_mine_at_a_decent_hard_rate() {
+    // The brittle preset keeps a usable mining tier and speed: iron tier (4), 6.0 on stone/ore/metal.
+    JObject pick = ToolJson(
+      Emit(Shipped("iwex", "castiron")),
+      "pickaxe-castiron"
+    );
 
     Assert.Equal(4, (int)pick["tooltier"]!);
     Assert.Equal(6.0, (double)pick["miningspeed"]!["metal"]!);
   }
 
   [Fact]
-  public void Pig_iron_makes_no_tools()
-  {
-    // A feedstock (Tools null): the blast furnace's cast target only - never a tool, per materials.md.
+  public void Pig_iron_makes_no_tools() {
+    // A feedstock (Tools null): the blast furnace's cast target only, never a tool.
+    // See docs/design/materials.md.
     Assert.DoesNotContain(Emit(Shipped("iwex", "pigiron")), IsTool);
   }
 
   [Fact]
-  public void Bessemer_steel_tools_carry_good_steel_tier_stats()
-  {
-    // The "good" preset: steel-grade durability / attack / tier, so the steel line's tools are the payoff
-    // for building the converter.
+  public void Bessemer_steel_tools_carry_good_steel_tier_stats() {
+    // The "good" preset: steel-grade durability, attack power and tool tier.
     JObject pick = ToolJson(
       Emit(Shipped("smex", "bessemersteel")),
       "pickaxe-bessemersteel"
@@ -271,25 +251,28 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Cast_iron_tools_bind_the_vanilla_tool_classes()
-  {
-    // Binding the real vanilla class is what makes the generated item behave as its tool (axe felling,
-    // scythe harvest, chisel microblocks); a class typo would surface only at world load.
+  public void Cast_iron_tools_bind_the_vanilla_tool_classes() {
+    // The vanilla class is what makes a generated item behave as its tool (axe felling, scythe
+    // harvest, chisel microblocks); a class typo would surface only at world load.
     List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
 
     Assert.Equal("ItemAxe", (string?)ToolJson(defs, "axe-castiron")["class"]);
-    Assert.Equal("ItemScythe", (string?)ToolJson(defs, "scythe-castiron")["class"]);
+    Assert.Equal(
+      "ItemScythe",
+      (string?)ToolJson(defs, "scythe-castiron")["class"]
+    );
     // A pickaxe binds no bespoke class in vanilla - the base Item drives it via the tool + stat fields.
     Assert.Null(ToolJson(defs, "pickaxe-castiron")["class"]);
-    Assert.Equal("pickaxe", (string?)ToolJson(defs, "pickaxe-castiron")["tool"]);
+    Assert.Equal(
+      "pickaxe",
+      (string?)ToolJson(defs, "pickaxe-castiron")["tool"]
+    );
   }
 
   [Fact]
-  public void A_none_preset_makes_the_resource_forms_but_no_tools()
-  {
+  public void A_none_preset_makes_the_resource_forms_but_no_tools() {
     // "none" is the explicit way to say "buildable metal, but not tool-grade" - distinct from a null spec.
-    MetalDef m = new()
-    {
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
@@ -303,11 +286,9 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Explicit_tool_types_limit_the_generated_set()
-  {
-    // A metal can opt into just the tools that make sense for it; unlisted types are simply not emitted.
-    MetalDef m = new()
-    {
+  public void Explicit_tool_types_limit_the_generated_set() {
+    // A metal can opt into a subset of tool types; unlisted types are not emitted.
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
@@ -320,16 +301,17 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void An_unknown_tool_type_is_skipped()
-  {
+  public void An_unknown_tool_type_is_skipped() {
     // Symmetry with resource forms: a type the emitter has no template for is dropped, not crashed on.
-    MetalDef m = new()
-    {
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
       ItemForms = [],
-      Tools = new MetalToolSpec { Preset = "good", ToolTypes = ["pickaxe", "laser"] },
+      Tools = new MetalToolSpec {
+        Preset = "good",
+        ToolTypes = ["pickaxe", "laser"],
+      },
     };
 
     ExItemDef only = Assert.Single(Emit(m).Where(IsTool));
@@ -337,17 +319,14 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void A_stat_override_beats_the_preset()
-  {
-    // Presets keep the JSON terse; an explicit number overrides just the stat it names (survey D4).
-    MetalDef m = new()
-    {
+  public void A_stat_override_beats_the_preset() {
+    // Presets keep the JSON terse; an explicit number overrides only the stat it names.
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
       ItemForms = [],
-      Tools = new MetalToolSpec
-      {
+      Tools = new MetalToolSpec {
         Preset = "brittle",
         Durability = 42,
         ToolTypes = ["pickaxe"],
@@ -356,7 +335,7 @@ public class MetalFamilyEmitterTests
 
     JObject pick = ToolJson(Emit(m), "pickaxe-foo");
     Assert.Equal(42, (int)pick["durability"]!);
-    // Untouched stats still ride the brittle preset (tier 4), proving the override is per-stat.
+    // Untouched stats still come from the brittle preset (tier 4), so the override is per-stat.
     Assert.Equal(4, (int)pick["tooltier"]!);
   }
 
@@ -365,10 +344,9 @@ public class MetalFamilyEmitterTests
   #region Wiring: scrap, smelt-back, domain
 
   [Fact]
-  public void The_ingot_sheds_the_metals_shared_scrap_on_shatter()
-  {
-    // Cast iron's SolidDrop is the shared vanilla bit, so a shattered mold yields the same thing
-    // MoltenChisel recovers - shatter and chisel agree rather than diverging.
+  public void The_ingot_sheds_the_metals_shared_scrap_on_shatter() {
+    // Cast iron's SolidDrop is the shared vanilla bit, so a shattered mold yields what MoltenChisel
+    // recovers.
     ExItemDef ingot = Emit(Shipped("iwex", "castiron"))
       .Single(d => d.Code == "ingot-castiron");
 
@@ -379,11 +357,9 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void The_ingot_shatter_falls_back_to_the_metals_own_bit_when_no_scrap_is_set()
-  {
+  public void The_ingot_shatter_falls_back_to_the_metals_own_bit_when_no_scrap_is_set() {
     // No SolidDrop -> the convention bit in the owning domain (a metal that ships its own scrap).
-    MetalDef m = new()
-    {
+    MetalDef m = new() {
       Code = "foo",
       MoltenItem = "mymod:ingot-foo",
       GenerateItemFamily = true,
@@ -398,10 +374,9 @@ public class MetalFamilyEmitterTests
   }
 
   [Fact]
-  public void Every_non_ingot_form_smelts_back_to_the_metals_own_ingot()
-  {
-    // Plates/rods/nails/bits recover the alloy, not vanilla iron - the melt loop stays in-metal. Tools
-    // carry no combustibleProps, so scope this to the non-ingot resource forms.
+  public void Every_non_ingot_form_smelts_back_to_the_metals_own_ingot() {
+    // Plates, rods, nails and bits recover the alloy rather than vanilla iron. Tools carry no
+    // combustibleProps, so this is scoped to the non-ingot resource forms.
     foreach (
       ExItemDef def in Resources(Emit(Shipped("iwex", "castiron")))
         .Where(d => d.Code != "ingot-castiron")

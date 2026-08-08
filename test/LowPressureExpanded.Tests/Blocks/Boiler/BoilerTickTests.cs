@@ -5,23 +5,20 @@ using BoilerState = LowPressureExpanded.BlockStructures.Boiler.BlockEntityBoiler
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// The boiler's full production tick - the construction/structure-gated state machine that the
-/// math/serialization tests could not reach. Driven through <see cref="BoilerRig"/>, which fakes the
-/// finished construction, the structure, and a burning firebox.
+/// The boiler's full production tick: the construction- and structure-gated state machine, driven
+/// through <see cref="BoilerRig"/>, which fakes the finished construction, the structure, and a burning
+/// firebox.
 /// </summary>
-public class BoilerTickTests
-{
+public class BoilerTickTests {
   [Fact]
-  public void Rig_reports_a_constructed_operational_boiler()
-  {
+  public void Rig_reports_a_constructed_operational_boiler() {
     var rig = new BoilerRig();
     Assert.True(rig.Be.IsConstructed);
     Assert.True(rig.Be.IsOperational);
   }
 
   [Fact]
-  public void Idle_starts_heating_when_fired_with_enough_water()
-  {
+  public void Idle_starts_heating_when_fired_with_enough_water() {
     var rig = new BoilerRig().SetState(BoilerState.Idle).SetWater(200f);
 
     rig.Tick();
@@ -30,8 +27,7 @@ public class BoilerTickTests
   }
 
   [Fact]
-  public void Idle_stays_idle_without_enough_water()
-  {
+  public void Idle_stays_idle_without_enough_water() {
     // The Cornish boiler needs 150 L; 100 L is below the floor.
     var rig = new BoilerRig().SetState(BoilerState.Idle).SetWater(100f);
 
@@ -41,8 +37,7 @@ public class BoilerTickTests
   }
 
   [Fact]
-  public void Idle_stays_idle_when_the_fire_is_out()
-  {
+  public void Idle_stays_idle_when_the_fire_is_out() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Idle)
       .SetWater(200f)
@@ -54,8 +49,7 @@ public class BoilerTickTests
   }
 
   [Fact]
-  public void Heating_reaches_boiling_once_the_heat_up_time_elapses()
-  {
+  public void Heating_reaches_boiling_once_the_heat_up_time_elapses() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Heating)
       .SetWater(200f)
@@ -67,8 +61,7 @@ public class BoilerTickTests
   }
 
   [Fact]
-  public void Boiling_converts_water_into_steam()
-  {
+  public void Boiling_converts_water_into_steam() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Boiling)
       .SetWater(200f)
@@ -78,16 +71,15 @@ public class BoilerTickTests
 
     Assert.True(rig.SteamVolume > 0f, "boiling should generate steam");
     // BoilStep consumes SteamPerSecond/expansion litres of water per second (32/16 = 2 L for the
-    // Cornish). The steam pool itself isn't asserted exactly here: with no pipe on the outlet the
-    // open neck leaks some of it back out the same tick (covered by the leak path elsewhere).
+    // Cornish). The steam pool is not asserted exactly: with no pipe on the outlet, the open neck
+    // leaks some of it back out the same tick.
     float expectedWaterUse =
       LpexValues.CornishBoilerSteamPerSecond / LpexValues.SteamExpansionFactor;
     Assert.Equal(200f - expectedWaterUse, rig.WaterVolume, 2);
   }
 
   [Fact]
-  public void A_running_boiler_shuts_down_after_the_grace_period_when_the_fire_dies()
-  {
+  public void A_running_boiler_shuts_down_after_the_grace_period_when_the_fire_dies() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Boiling)
       .SetWater(200f)
@@ -100,8 +92,7 @@ public class BoilerTickTests
   }
 
   [Fact]
-  public void Heating_aborts_back_to_idle_after_grace_when_water_runs_out()
-  {
+  public void Heating_aborts_back_to_idle_after_grace_when_water_runs_out() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Heating)
       .SetWater(0f) // below the boil floor
@@ -112,14 +103,11 @@ public class BoilerTickTests
     Assert.Equal(BoilerState.Idle, rig.State);
   }
 
-  // Re-use regression (the cowper lesson generalized): a boiler is fired, shut down, and re-fired
-  // repeatedly. Shutdown deliberately leaves leftover steam in the vessel (it condenses back to water
-  // in Idle), so a re-fire happens against a dirty, steam-laden vessel. That residual steam must not
-  // latch the boiler out of operation - re-lighting with enough water must reach Heating again. Every
-  // other boiler test runs a single forward leg from primed state; none re-fires after a shutdown.
+  // Shutdown leaves steam in the vessel (it condenses back to water in Idle), so a re-fire runs against
+  // a steam-laden vessel. That residual steam must not latch the boiler out of operation: re-lighting
+  // with enough water must reach Heating again.
   [Fact]
-  public void A_boiler_re_fires_after_a_shutdown_despite_leftover_steam()
-  {
+  public void A_boiler_re_fires_after_a_shutdown_despite_leftover_steam() {
     // Run to Boiling, snuff the fire, and tick past the grace so it shuts down to Idle - with steam
     // still in the vessel.
     var rig = new BoilerRig()

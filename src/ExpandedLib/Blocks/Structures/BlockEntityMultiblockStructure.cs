@@ -21,16 +21,15 @@ namespace ExpandedLib.Blocks.Structures;
 /// Subclasses supply the orientation logic, production behavior, and status messages.
 /// </summary>
 public abstract class BlockEntityMultiblockStructure
-  : BlockEntityProductionMachine
-{
+  : BlockEntityProductionMachine {
   protected MultiblockStructure? _structure;
   protected MultiblockStructure? _highlightedStructure;
   protected int _currentAngle = -1;
 
   /// <summary>
-  /// The angle actually handed to <c>InitForUse</c> - <c>_currentAngle + initAngleOffset</c>. The offsets
-  /// are rotated by this, so the oriented-part check must be too; the bessemer control's <c>+180</c> frame
-  /// is exactly the case where using <see cref="_currentAngle"/> would face every part backwards.
+  /// The angle handed to <c>InitForUse</c> (<c>_currentAngle + initAngleOffset</c>). Layout offsets are
+  /// rotated by it, so oriented-part checks use this rather than <see cref="_currentAngle"/>, which
+  /// differs for a machine with a frame offset such as the bessemer control's <c>+180</c>.
   /// </summary>
   private int _structureInitAngle;
   private MultiblockFacings _facings = MultiblockFacings.None;
@@ -46,12 +45,11 @@ public abstract class BlockEntityMultiblockStructure
   /// <summary>The production tick runs only while the structure is complete.</summary>
   protected override bool CanRunProduction => StructureComplete;
 
-  /// <summary>Register the production tick on load only if the structure is already complete;
-  /// the monitor tick starts/stops it across completion transitions.</summary>
+  /// <summary>The production tick is registered on load only if the structure is already complete;
+  /// the monitor tick starts and stops it across completion transitions.</summary>
   protected override bool AutoStartProduction => StructureComplete;
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     // Base registers the production tick (only when already complete, via AutoStartProduction).
     base.Initialize(api);
     // The monitor tick runs unconditionally to detect both completion and breakage.
@@ -60,14 +58,12 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>Starts both the completion monitor and the production tick.</summary>
-  protected void StartStructureTick()
-  {
+  protected void StartStructureTick() {
     StartMonitorTick();
     StartProductionTick();
   }
 
-  protected void StartMonitorTick()
-  {
+  protected void StartMonitorTick() {
     if (_completionTickId == 0 && Api.Side == EnumAppSide.Server)
       _completionTickId = RegisterGameTickListener(
         OnMonitorStructureTick,
@@ -76,18 +72,15 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>Stops both ticks (used on block removal).</summary>
-  protected void StopStructureTick()
-  {
+  protected void StopStructureTick() {
     StopProductionTick();
-    if (_completionTickId != 0)
-    {
+    if (_completionTickId != 0) {
       UnregisterGameTickListener(_completionTickId);
       _completionTickId = 0;
     }
   }
 
-  private void OnMonitorStructureTick(float dt)
-  {
+  private void OnMonitorStructureTick(float dt) {
     UpdateStructureRotation();
     if (_structure == null)
       return;
@@ -97,13 +90,10 @@ public abstract class BlockEntityMultiblockStructure
       return;
 
     StructureComplete = nowComplete;
-    if (nowComplete)
-    {
+    if (nowComplete) {
       OnStructureCompleted();
       StartProductionTick();
-    }
-    else
-    {
+    } else {
       OnStructureLost();
       if (StopsProductionOnStructureLost)
         StopProductionTick();
@@ -115,18 +105,10 @@ public abstract class BlockEntityMultiblockStructure
   protected virtual void OnStructureLost() { }
 
   /// <summary>
-  /// Whether losing the structure also <b>unregisters</b> the production tick. True by default, which is
-  /// right for almost everything: a machine missing a part should stop, and dropping the listener is
-  /// cheaper than gating a body that can never do anything.
-  /// <para>
-  /// <b>A machine that must keep running while broken has to opt out here, not in
-  /// <see cref="CanRunProduction"/>.</b> The gate is only consulted by a listener that still exists, so a
-  /// machine overriding only the gate goes quiet with no error and no test failure - it simply freezes,
-  /// holding its state for ever, which is indistinguishable from stopping deliberately. The case that
-  /// surfaced this is the breached blast furnace: iwex's shaft furnace keeps burning when its walls come out (a breach is
-  /// the opposite of a choke - opened to the air, it draws harder), and neither deleting its extinguish
-  /// call nor relaxing its own tick guard had any effect while the listener was gone.
-  /// </para>
+  /// Whether losing the structure also unregisters the production tick. True by default. A machine that
+  /// must keep running while broken overrides this, not <see cref="CanRunProduction"/>: that gate is only
+  /// consulted by a listener that still exists, so overriding it alone leaves the machine frozen with its
+  /// state held rather than stopped. A breached shaft furnace keeps burning by opting out here.
   /// </summary>
   protected virtual bool StopsProductionOnStructureLost => true;
 
@@ -134,14 +116,12 @@ public abstract class BlockEntityMultiblockStructure
   protected abstract void UpdateStructureRotation();
 
   /// <summary>
-  /// Canonical body for <see cref="UpdateStructureRotation"/>: (re)loads the
-  /// <c>multiblockStructure</c> JSON when missing or <paramref name="angle"/> changed, calls
-  /// <c>InitForUse(angle + initAngleOffset)</c>, caches the angle, and clears any stale build
-  /// projection. <paramref name="initAngleOffset"/> covers machines whose local frame faces
-  /// opposite the stored angle (e.g. the bessemer control at <c>angle + 180</c>).
+  /// Canonical body for <see cref="UpdateStructureRotation"/>: reloads the <c>multiblockStructure</c>
+  /// JSON when missing or <paramref name="angle"/> changed, calls <c>InitForUse</c> with
+  /// <c>angle + initAngleOffset</c>, caches the angle and clears any stale build projection. The offset
+  /// covers a machine whose local frame faces opposite the stored angle (bessemer control: <c>+180</c>).
   /// </summary>
-  protected void SetStructureAngle(int angle, int initAngleOffset = 0)
-  {
+  protected void SetStructureAngle(int angle, int initAngleOffset = 0) {
     if (_structure != null && _currentAngle == angle)
       return;
 
@@ -149,10 +129,9 @@ public abstract class BlockEntityMultiblockStructure
       "multiblockStructure"
     ]?.AsObject<MultiblockStructure>();
     _structure?.InitForUse(angle + initAngleOffset);
-    // All three caches below are reads OF the structure that was just replaced: the number->code map comes
-    // out of its BlockNumbers, and the accepting-cell and role-cell lists are world positions computed at
-    // the old angle. Dropping them here is what stops a wrench turn (or a block exchange) answering out of
-    // the previous facing - and keeps them from ever disagreeing about which layout they describe.
+    // These caches derive from the structure just replaced: the number->code map, and the accepting-cell
+    // and role-cell lists as world positions at the old angle. Dropping them keeps a wrench turn or a
+    // block exchange from answering out of the previous facing.
     _codeByNumber = null;
     _cellsAccepting = null;
     _cellsWithRole = null;
@@ -161,8 +140,7 @@ public abstract class BlockEntityMultiblockStructure
     _facings = MultiblockFacings.FromAttributes(Block.Attributes);
     _roles = MultiblockCellRoles.FromAttributes(Block.Attributes);
 
-    if (Api is ICoreClientAPI capi && _highlightedStructure != null)
-    {
+    if (Api is ICoreClientAPI capi && _highlightedStructure != null) {
       _highlightedStructure.ClearHighlights(Api.World, capi.World.Player);
       _highlightedStructure = null;
     }
@@ -174,26 +152,22 @@ public abstract class BlockEntityMultiblockStructure
 
   /// <summary>
   /// Ensures <see cref="_structure"/> and <see cref="_currentAngle"/> are populated. The monitor tick
-  /// primes them server-side; a client-side read that needs the layout - a functional component
-  /// resolving the anchor it belongs to during <c>GetBlockInfo</c> - primes them lazily here, because
+  /// primes them server-side; a client-side read that needs the layout primes them lazily here, since
   /// the monitor tick never runs on the client. Idempotent: <see cref="SetStructureAngle"/> is guarded.
   /// </summary>
-  protected void EnsureStructureLoaded()
-  {
+  protected void EnsureStructureLoaded() {
     if (_structure == null)
       UpdateStructureRotation();
   }
 
   /// <summary>
-  /// Whether <paramref name="worldCell"/> is one of the cells this structure occupies for its placed
-  /// rotation - the target lands on one of the anchor's transformed layout offsets. A functional
-  /// component (tap, hopper, tuyere) uses this to confirm the anchor it scanned up actually owns it,
-  /// which is what disambiguates two adjacent structures whose scan boxes overlap. Reads the same
-  /// <see cref="MultiblockStructure.TransformedOffsets"/> the build-outline highlight walks, and loads
-  /// the layout lazily so it answers on the client too.
+  /// Whether <paramref name="worldCell"/> is one of the cells this structure occupies at its placed
+  /// rotation. A functional component (tap, hopper, tuyere) uses this to confirm the anchor it scanned up
+  /// actually owns it, which disambiguates two adjacent structures whose scan boxes overlap. Reads the
+  /// same <see cref="MultiblockStructure.TransformedOffsets"/> the build outline walks, and loads the
+  /// layout lazily so it answers on the client too.
   /// </summary>
-  public bool OwnsCell(BlockPos worldCell)
-  {
+  public bool OwnsCell(BlockPos worldCell) {
     EnsureStructureLoaded();
     var offsets = _structure?.TransformedOffsets;
     if (offsets == null)
@@ -213,41 +187,16 @@ public abstract class BlockEntityMultiblockStructure
   private Dictionary<AssetLocation, BlockPos[]>? _cellsAccepting;
 
   /// <summary>
-  /// The world cells of this structure's footprint whose layout slot would <b>accept</b>
-  /// <paramref name="blockCode"/> - every cell that block may stand in without the completion check ever
-  /// counting it missing. Rotation-correct for the placed facing, and cached.
-  /// <para>
-  /// The layout is asked about itself, which is the whole point: no legend string is restated here and no
-  /// machine keeps a second, hand-written list of "the cells that are X" beside the drawing it was copied
-  /// from. The test is the same <see cref="WildcardUtil.Match"/> against the same rotation-resolved wanted
-  /// code <see cref="IncompleteBlockCount"/> uses, so "this cell accepts that block" and "placing that
-  /// block here leaves the structure complete" are one statement rather than two that can drift apart.
-  /// Cells whose legend carries a facing are resolved through <see cref="MultiblockFacings"/> first, so an
-  /// oriented slot admits the variant the placed structure actually wants.
-  /// </para>
-  /// <para>
-  /// <paramref name="blockCode"/> is the <b>concrete</b> code of the block that would be placed
-  /// (<c>iwex:furnace-chargepile</c>), never a wildcard - vanilla's matcher takes the wildcard on the left, and
-  /// this argument is on the right. A code no cell admits answers empty, and that is a real answer rather
-  /// than a failure: a layout whose fuel legend is <c>game:@(air|coalpile)</c> genuinely has nowhere to
-  /// put an <c>iwex:furnace-chargepile</c>.
-  /// </para>
-  /// <para>
-  /// Cached per code, and dropped in <see cref="SetStructureAngle"/> because these are <b>world</b>
-  /// cells: a wrench turn moves every one of them. That drop is the load-bearing half.
-  /// </para>
-  /// <para>
-  /// The empty answer of a structure whose layout has not arrived yet is additionally never written to the
-  /// cache, and that half is <b>knowingly belt-and-braces</b>: <see cref="EnsureStructureLoaded"/> re-enters
-  /// the reload path on every call while the layout is missing, and that path drops the cache, so today
-  /// nothing can memoise "nothing" even without this line (verified by mutation - removing it fails no
-  /// test). It stays because the failure it guards against is silent and permanent - a client-side block
-  /// entity answering "no cells" for the rest of its life - and it only stops being free if someone moves
-  /// the invalidation.
-  /// </para>
+  /// The world cells of this footprint whose layout slot would accept <paramref name="blockCode"/> at the
+  /// placed facing, resolving a legend's facing through <see cref="MultiblockFacings"/> first. Matches by
+  /// the same <see cref="WildcardUtil.Match"/> against the same wanted code as
+  /// <see cref="IncompleteBlockCount"/>, so acceptance and completion cannot drift apart. Cached per code
+  /// and dropped in <see cref="SetStructureAngle"/>, since a wrench turn moves these cells; the empty
+  /// answer of a layout that has not loaded is never cached.
   /// </summary>
-  public IReadOnlyList<BlockPos> CellsAccepting(AssetLocation blockCode)
-  {
+  /// <param name="blockCode">Concrete code of the block that would be placed, never a wildcard: vanilla's
+  /// matcher takes the wildcard on the left. A code no cell admits answers empty.</param>
+  public IReadOnlyList<BlockPos> CellsAccepting(AssetLocation blockCode) {
     EnsureStructureLoaded();
     if (_structure?.TransformedOffsets is not { } offsets)
       return _noCells;
@@ -272,33 +221,17 @@ public abstract class BlockEntityMultiblockStructure
   private Dictionary<CellRole, BlockPos[]>? _cellsWithRole;
 
   /// <summary>
-  /// The world cells this structure's layout marks with <paramref name="role"/> - "where are my tuyeres?"
-  /// asked of the drawing itself. Rotation-correct for the placed facing, and cached. Empty for a layout that
-  /// declares no roles, which is every layout authored before roles existed.
+  /// The world cells this structure's layout marks with <paramref name="role"/>, rotation-correct for the
+  /// placed facing; empty when the layout declares no roles. A role states what a cell is for rather than
+  /// what may fill it. Cached per role and dropped in <see cref="SetStructureAngle"/>, since a wrench turn
+  /// moves these cells.
   /// <para>
-  /// A role says what a cell is <b>for</b>, independent of what fills it, and that is the difference from
-  /// <see cref="CellsAccepting"/>: that one answers "which cells would take this block", which is genuinely
-  /// the right question when the caller has a block in hand, but it couples the caller to a block code that
-  /// a retype can move out from under it. Both read the same footprint; neither restates a legend.
-  /// </para>
-  /// <para>
-  /// <b>How rotation is inherited rather than reimplemented.</b> The role table stores the offsets the
-  /// author drew, in the north-default frame. Vanilla's <c>InitForUse</c> builds
-  /// <see cref="MultiblockStructure.TransformedOffsets"/> by walking <see cref="MultiblockStructure.Offsets"/>
-  /// in order and rotating each one, leaving the two lists index-aligned and <c>Offsets</c> itself untouched
-  /// (verified against the decompiled API). So the authored offset is looked up in <c>Offsets</c> and the
-  /// <b>same index</b> is read out of <c>TransformedOffsets</c>. There is no second copy of the rotation
-  /// maths here to disagree with the completion walk - not even a choice between <c>_currentAngle</c> and
-  /// <see cref="_structureInitAngle"/>, which is exactly the distinction the bessemer control's <c>+180</c>
-  /// frame turns on.
-  /// </para>
-  /// <para>
-  /// Cached per role and dropped in <see cref="SetStructureAngle"/>, because these are <b>world</b> cells:
-  /// a wrench turn moves every one of them. That drop is the load-bearing half.
+  /// Rotation is inherited, not recomputed: <c>InitForUse</c> rotates
+  /// <see cref="MultiblockStructure.Offsets"/> into <see cref="MultiblockStructure.TransformedOffsets"/>
+  /// in order, so an authored north-frame role offset is read back at the same index.
   /// </para>
   /// </summary>
-  public IReadOnlyList<BlockPos> CellsWithRole(CellRole role)
-  {
+  public IReadOnlyList<BlockPos> CellsWithRole(CellRole role) {
     EnsureStructureLoaded();
     if (_structure?.TransformedOffsets is not { } transformed)
       return _noCells;
@@ -324,47 +257,31 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
-  /// The <b>authored</b> (north-frame) offsets this structure's layout marks with
-  /// <paramref name="role"/> - the same cells <see cref="CellsWithRole"/> answers, before any rotation and
-  /// before the anchor's position is added. Empty for a layout that marks none.
+  /// The authored (north-frame) offsets this layout marks with <paramref name="role"/> - what
+  /// <see cref="CellsWithRole"/> answers before rotation and before the anchor position is added; empty
+  /// when the layout marks none. Suits a structure-local fact such as shaft height, which no facing moves.
   /// <para>
-  /// <b>Why a second accessor rather than un-rotating the first.</b> A caller that wants a
-  /// <em>structure-local</em> fact - "how tall is the shaft", "which local <c>(x, z)</c> columns are there" -
-  /// wants an answer no facing can move, and the authored offsets are already in that frame. Going through
-  /// <see cref="CellsWithRole"/> and back would rotate each cell forward and then inverse-rotate it, which
-  /// is a no-op that costs a round trip and, worse, reads as though rotation mattered here. It does not: a
-  /// local box is a compile-time fact of the block type, which is exactly what lets a consumer cache it.
-  /// </para>
-  /// <para>
-  /// <b>Not cached and not defensively copied</b>, both deliberately: this is a dictionary lookup into the
-  /// table <see cref="MultiblockCellRoles"/> already holds, and the set it returns is that table's own -
-  /// read-only by its interface, replaced wholesale (never mutated) when the layout reloads. A caller
-  /// wanting it per tick should cache the <em>derived</em> fact, not this.
-  /// </para>
-  /// <para>
-  /// Loads the layout lazily exactly as <see cref="CellsWithRole"/> does, so it answers on the client and -
-  /// unlike anything needing <c>Api</c> - before <c>Initialize</c>, which is when a block entity restoring
-  /// a save first needs its own geometry. <c>Block</c> is assigned by vanilla's <c>CreateBehaviors</c>
-  /// immediately before <c>FromTreeAttributes</c> on every load path, so the layout is readable there.
+  /// Neither cached nor copied: the returned set is the <see cref="MultiblockCellRoles"/> table's own,
+  /// read-only by its interface and replaced wholesale when the layout reloads, so a per-tick caller
+  /// should cache the derived fact. Loads the layout lazily, so it answers on the client and from
+  /// <c>FromTreeAttributes</c> - vanilla assigns <c>Block</c> before it on every load path.
   /// </para>
   /// </summary>
-  public IReadOnlySet<(int X, int Y, int Z)> LocalCellsWithRole(CellRole role)
-  {
+  public IReadOnlySet<(int X, int Y, int Z)> LocalCellsWithRole(CellRole role) {
     EnsureStructureLoaded();
     return _roles.CellsOf(role);
   }
 
   /// <summary>
-  /// Scans a bounded box around <paramref name="componentPos"/> for a <typeparamref name="T"/> anchor
-  /// whose structure <see cref="OwnsCell">owns</see> that cell, and returns it - the reverse lookup a
-  /// functional component uses to find the multiblock it is part of. The anchor pushes to its
-  /// components by offset and nothing points back, so the component scans. The box reaches
-  /// <paramref name="below"/> cells down / <paramref name="above"/> up and <paramref name="horizontal"/>
-  /// out on each horizontal axis, sized by the caller to cover its tallest component. Returns null when
-  /// no owning anchor is in range (a component placed before its anchor, or a broken structure) - the
-  /// caller then shows only its own readout. The ownership gate makes the box slack harmless: a wider
-  /// box only turns up more candidates to reject, never a wrong owner.
+  /// Scans a box around <paramref name="componentPos"/> for a <typeparamref name="T"/> anchor whose
+  /// structure <see cref="OwnsCell">owns</see> that cell - the reverse lookup a functional component uses
+  /// to find its multiblock, since the anchor pushes to its components by offset and nothing points back.
+  /// The caller sizes the box to cover its tallest component; a slack box is harmless, as the ownership
+  /// gate only turns up more candidates to reject. Returns null when no owning anchor is in range.
   /// </summary>
+  /// <param name="horizontal">Box reach out from the component on each horizontal axis, in cells.</param>
+  /// <param name="below">Box reach below the component, in cells.</param>
+  /// <param name="above">Box reach above the component, in cells.</param>
   public static T? FindAnchorOwning<T>(
     IWorldAccessor world,
     BlockPos componentPos,
@@ -372,45 +289,40 @@ public abstract class BlockEntityMultiblockStructure
     int below,
     int above
   )
-    where T : BlockEntityMultiblockStructure
-  {
+    where T : BlockEntityMultiblockStructure {
     for (int dy = -below; dy <= above; dy++)
-    for (int dx = -horizontal; dx <= horizontal; dx++)
-    for (int dz = -horizontal; dz <= horizontal; dz++)
-    {
-      BlockPos at = new(
-        componentPos.X + dx,
-        componentPos.Y + dy,
-        componentPos.Z + dz,
-        componentPos.dimension
-      );
-      if (
-        world.BlockAccessor.GetBlockEntity(at) is T anchor
-        && anchor.OwnsCell(componentPos)
-      )
-        return anchor;
-    }
+      for (int dx = -horizontal; dx <= horizontal; dx++)
+        for (int dz = -horizontal; dz <= horizontal; dz++) {
+          BlockPos at = new(
+            componentPos.X + dx,
+            componentPos.Y + dy,
+            componentPos.Z + dz,
+            componentPos.dimension
+          );
+          if (
+            world.BlockAccessor.GetBlockEntity(at) is T anchor
+            && anchor.OwnsCell(componentPos)
+          )
+            return anchor;
+        }
     return null;
   }
 
   /// <summary>
-  /// Player interaction entry point (the structure-projection toggle): re-checks completeness,
-  /// fires the completed/lost callbacks, and client-side shows the build outline + missing count
-  /// or clears it once complete. <see cref="FromTreeAttributes"/> also auto-clears the projection
-  /// the moment the structure completes.
+  /// Player interaction entry point (the projection toggle): re-checks completeness, fires the
+  /// completed/lost callbacks, and client-side shows the build outline and missing count or clears it
+  /// once complete. <see cref="FromTreeAttributes"/> also auto-clears the projection on completion.
   /// </summary>
-  public virtual void Interact(IPlayer byPlayer)
-  {
+  public virtual void Interact(IPlayer byPlayer) {
     UpdateStructureRotation();
     if (_structure == null)
       return;
 
-    // Tally missing blocks by wanted code while counting, to both draw the projection and
-    // print an exact shopping list.
+    // Tally missing blocks by wanted code while counting, so one walk feeds both the projection and the
+    // missing-materials report.
     var missingByCode = new Dictionary<AssetLocation, int>();
     int missingCount = IncompleteBlockCount(
-      (haveBlock, wantBlockCode) =>
-      {
+      (haveBlock, wantBlockCode) => {
         // Air-satisfied or auto-filled slots aren't player-gathered, so leave them out.
         if (IsAutoFilled(wantBlockCode))
           return;
@@ -421,16 +333,12 @@ public abstract class BlockEntityMultiblockStructure
     bool wasComplete = StructureComplete;
     StructureComplete = missingCount == 0;
 
-    if (Api.Side == EnumAppSide.Server)
-    {
-      if (StructureComplete && !wasComplete)
-      {
+    if (Api.Side == EnumAppSide.Server) {
+      if (StructureComplete && !wasComplete) {
         OnStructureCompleted();
         StartStructureTick();
         MarkDirty(true);
-      }
-      else if (!StructureComplete && wasComplete)
-      {
+      } else if (!StructureComplete && wasComplete) {
         OnStructureLost();
         StopProductionTick();
         MarkDirty(true);
@@ -440,10 +348,8 @@ public abstract class BlockEntityMultiblockStructure
         SendMissingBlocksReport(serverPlayer, missingByCode);
     }
 
-    if (Api is ICoreClientAPI clientApi)
-    {
-      if (missingCount > 0)
-      {
+    if (Api is ICoreClientAPI clientApi) {
+      if (missingCount > 0) {
         _highlightedStructure = _structure;
         clientApi.TriggerIngameError(
           this,
@@ -451,9 +357,7 @@ public abstract class BlockEntityMultiblockStructure
           GetIncompleteMessage(missingCount)
         );
         HighlightIncompleteSafe(_highlightedStructure, byPlayer);
-      }
-      else
-      {
+      } else {
         clientApi.TriggerIngameError(this, "complete", GetCompleteMessage());
         _highlightedStructure?.ClearHighlights(Api.World, byPlayer);
         _highlightedStructure = null;
@@ -462,25 +366,23 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
-  /// Number of structure cells not yet satisfied, and the replacement for vanilla
-  /// <see cref="MultiblockStructure.InCompleteBlockCount"/>. It walks the same
-  /// <c>TransformedOffsets</c> vanilla does and matches the same way, with one addition: a cell whose
-  /// legend carries a facing has that facing <b>rotated with the structure</b> first
-  /// (<see cref="MultiblockFacings"/>), so a layout can demand a correctly-oriented slab or door.
-  /// <para>
-  /// <paramref name="onMissing"/> receives <c>(blockThere, wantedCode)</c> per unsatisfied cell - the
-  /// wanted code already rotated, so a missing-blocks report names the variant the player must actually
-  /// place. Returns 0 when the structure is not loaded, matching the old <c>?? 0</c> call sites.
-  /// </para>
+  /// Number of structure cells not yet satisfied, replacing vanilla
+  /// <see cref="MultiblockStructure.InCompleteBlockCount"/>. Walks the same <c>TransformedOffsets</c> and
+  /// matches the same way, with one addition: a cell whose legend carries a facing has that facing
+  /// rotated with the structure first (<see cref="MultiblockFacings"/>), so a layout can demand a
+  /// correctly-oriented slab or door.
   /// </summary>
-  protected int IncompleteBlockCount(Action<Block, AssetLocation>? onMissing = null)
-  {
+  /// <param name="onMissing">Called per unsatisfied cell with <c>(blockThere, wantedCode)</c>, the wanted
+  /// code already rotated, so a report names the variant the player must place.</param>
+  /// <returns>The count of unsatisfied cells, or 0 when the structure is not loaded.</returns>
+  protected int IncompleteBlockCount(
+    Action<Block, AssetLocation>? onMissing = null
+  ) {
     if (_structure?.TransformedOffsets == null)
       return 0;
 
     int missing = 0;
-    foreach (BlockOffsetAndNumber offset in _structure.TransformedOffsets)
-    {
+    foreach (BlockOffsetAndNumber offset in _structure.TransformedOffsets) {
       if (WantedCodeAt(offset) is not AssetLocation wanted)
         continue;
 
@@ -499,12 +401,11 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
-  /// The (rotation-resolved) code a transformed offset requires, or null when its block number has no
-  /// <c>blockNumbers</c> entry. Vanilla keeps the number→code map private, so it is rebuilt from the
-  /// public <c>BlockNumbers</c> - cached, because both the completion walk and the highlight need it.
+  /// The rotation-resolved code a transformed offset requires, or null when its block number has no
+  /// <c>blockNumbers</c> entry. Vanilla keeps the number-to-code map private, so it is rebuilt from the
+  /// public <c>BlockNumbers</c> and cached: both the completion walk and the highlight need it.
   /// </summary>
-  private AssetLocation? WantedCodeAt(BlockOffsetAndNumber offset)
-  {
+  private AssetLocation? WantedCodeAt(BlockOffsetAndNumber offset) {
     if (_structure == null)
       return null;
 
@@ -518,8 +419,7 @@ public abstract class BlockEntityMultiblockStructure
 
   private static Dictionary<int, AssetLocation> BuildCodeByNumber(
     MultiblockStructure structure
-  )
-  {
+  ) {
     var map = new Dictionary<int, AssetLocation>();
     foreach (var kv in structure.BlockNumbers)
       map[kv.Value] = kv.Key;
@@ -527,16 +427,15 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
-  /// Crash-safe replacement for vanilla <see cref="MultiblockStructure.HighlightIncompleteParts"/>,
-  /// which tints each empty slot with <c>SearchBlocks(wantedCode)[0]</c> and throws
-  /// <see cref="System.IndexOutOfRangeException"/> when a (wildcard) code resolves to no block.
-  /// This mirrors the vanilla logic but falls back to a neutral tint for unresolvable slots.
+  /// Crash-safe replacement for vanilla <see cref="MultiblockStructure.HighlightIncompleteParts"/>, which
+  /// tints each empty slot with <c>SearchBlocks(wantedCode)[0]</c> and throws
+  /// <see cref="System.IndexOutOfRangeException"/> when a wildcard code resolves to no block. Mirrors the
+  /// vanilla logic but falls back to a neutral tint for unresolvable slots.
   /// </summary>
   private void HighlightIncompleteSafe(
     MultiblockStructure structure,
     IPlayer player
-  )
-  {
+  ) {
     var offsets = structure.TransformedOffsets;
     if (offsets == null)
       return;
@@ -544,11 +443,10 @@ public abstract class BlockEntityMultiblockStructure
     var positions = new List<BlockPos>();
     var colors = new List<int>();
 
-    foreach (var offset in offsets)
-    {
-      // Same rotation-resolved code the completion walk uses, so the tint and the count can never
-      // disagree about which cells are wrong - and an oriented slot resolves to the exact variant,
-      // which is what makes SearchBlocks below pick the right-facing block to colour from.
+    foreach (var offset in offsets) {
+      // Same rotation-resolved code the completion walk uses, so the tint and the count cannot disagree
+      // about which cells are wrong. An oriented slot resolves to the exact variant, so SearchBlocks
+      // below colours from the right-facing block.
       if (WantedCodeAt(offset) is not AssetLocation wanted)
         continue;
 
@@ -562,8 +460,7 @@ public abstract class BlockEntityMultiblockStructure
 
       positions.Add(new BlockPos(offset.X, offset.Y, offset.Z).Add(Pos));
 
-      if (actual.Id != 0)
-      {
+      if (actual.Id != 0) {
         // A wrong solid block occupies the slot - vanilla tints these red.
         colors.Add(ColorUtil.ColorFromRgba(215, 94, 94, 0x60));
         continue;
@@ -572,8 +469,7 @@ public abstract class BlockEntityMultiblockStructure
       // Empty slot: tint with the wanted block's color when it resolves, otherwise
       // fall back to a neutral blue instead of crashing on an empty SearchBlocks.
       Block[] matches = Api.World.SearchBlocks(wanted);
-      if (matches.Length == 0)
-      {
+      if (matches.Length == 0) {
         colors.Add(ColorUtil.ColorFromRgba(94, 94, 215, 0x60));
         continue;
       }
@@ -602,21 +498,18 @@ public abstract class BlockEntityMultiblockStructure
     || WildcardUtil.Match(wantBlockCode, StructureFillers.FillerCode);
 
   /// <summary>
-  /// Sends the player a chat breakdown of every block still missing from the
-  /// structure and how many of each, resolving (possibly wildcard) codes to
-  /// readable block names.
+  /// Sends the player a chat breakdown of every block still missing and how many of each, resolving
+  /// (possibly wildcard) codes to readable block names.
   /// </summary>
   private void SendMissingBlocksReport(
     IServerPlayer player,
     Dictionary<AssetLocation, int> missingByCode
-  )
-  {
+  ) {
     if (missingByCode.Count == 0)
       return;
 
-    // exlib owns these strings: it is its own mod with its own asset domain, so the shared report does
-    // not borrow a consumer's lang file. Going through the generated ExlibLang accessors means a
-    // renamed or deleted key is a compile error rather than a key echoed at the player at runtime.
+    // The strings come from exlib's own asset domain, so the shared report does not borrow a consumer
+    // mod's lang file. The generated ExlibLang accessors make a renamed or deleted key a compile error.
     var sb = new StringBuilder();
     sb.Append(Lang.Get(ExlibLang.StructureMissingHeader));
 
@@ -624,8 +517,7 @@ public abstract class BlockEntityMultiblockStructure
       var entry in missingByCode
         .OrderByDescending(e => e.Value)
         .ThenBy(e => ResolveBlockName(e.Key))
-    )
-    {
+    ) {
       sb.Append('\n');
       sb.Append(
         Lang.Get(
@@ -644,14 +536,12 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
-  /// Resolves a structure block code - which may be a wildcard such as
-  /// "iwex:furnace-blastcore-*" - to a human-readable display name.
+  /// Resolves a structure block code, which may be a wildcard such as "iwex:furnace-blastcore-*", to a
+  /// human-readable display name.
   /// </summary>
-  private string ResolveBlockName(AssetLocation wantBlockCode)
-  {
+  private string ResolveBlockName(AssetLocation wantBlockCode) {
     Block? block = Api.World.GetBlock(wantBlockCode);
-    if (block == null)
-    {
+    if (block == null) {
       Block[] matches = Api.World.SearchBlocks(wantBlockCode);
       if (matches.Length > 0)
         block = matches[0];
@@ -671,16 +561,14 @@ public abstract class BlockEntityMultiblockStructure
   /// <summary>Returns the ingame-error message shown when the structure is complete.</summary>
   protected abstract string GetCompleteMessage();
 
-  public override void OnBlockRemoved()
-  {
+  public override void OnBlockRemoved() {
     base.OnBlockRemoved();
     StopStructureTick();
     if (Api is ICoreClientAPI capi)
       _highlightedStructure?.ClearHighlights(Api.World, capi.World.Player);
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("structureComplete", StructureComplete);
   }
@@ -688,8 +576,7 @@ public abstract class BlockEntityMultiblockStructure
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     bool wasComplete = StructureComplete;
     StructureComplete = tree.GetBool("structureComplete");
@@ -700,8 +587,7 @@ public abstract class BlockEntityMultiblockStructure
       && StructureComplete
       && Api is ICoreClientAPI capi
       && _highlightedStructure != null
-    )
-    {
+    ) {
       _highlightedStructure.ClearHighlights(Api.World, capi.World.Player);
       _highlightedStructure = null;
     }

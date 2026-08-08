@@ -6,13 +6,10 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipe for smex's engine sub-machine, the air blower (migrated from
-/// recipes/grid/airblower.json) - the steam tier's answer to iwex's twin-tub bellows. Like every
-/// gear-driven machine in the family it crafts from vanilla rusty gears OR lpex's craftable gears, so the
-/// recipe is authored once and emitted for both codes in the source's order.
+/// Grid recipe for smex's engine sub-machine, the air blower. It crafts from either vanilla rusty gears
+/// or lpex craftable gears, so the recipe is authored once and emitted once per gear code.
 /// </summary>
-public class EngineRecipeDefinitions : IExRecipeDefProvider
-{
+public class EngineRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

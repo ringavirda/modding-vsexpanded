@@ -1,5 +1,5 @@
-using ExpandedLib.Networks;
 using ExpandedLib;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronworkingExpanded.Tests;
 using LowPressureExpanded;
@@ -9,18 +9,12 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Whole-process hot-blast scenarios (handbook hot-blast article): the smoke stack as the furnace's
-/// safety valve - it vents the surplus exhaust the cowper stoves can't swallow, and a backed-up
-/// exhaust line chokes the furnace. Models a furnace continuously spilling exhaust into a gas main and
-/// asserts the stack keeps the line from running away, where without it the main backs up.
-/// <para>
-/// The stack is a fully built <see cref="SmokeStackRig"/> - the 72-cell chimney raised from its shipped
-/// layout and completed by its own monitor tick - so "the stack vents" is a property of a machine that
-/// stands, not of a flag.
-/// </para>
+/// Whole-process hot-blast scenarios (handbook hot-blast article): a furnace spills exhaust into a gas
+/// main every tick and the smoke stack vents the surplus the cowper stoves cannot swallow, keeping the
+/// main from backing up and choking the furnace. The stack is a built <see cref="SmokeStackRig"/>, the
+/// 72-cell chimney raised from its shipped layout and completed by its own monitor tick.
 /// </summary>
-public class HotBlastScenarioTests
-{
+public class HotBlastScenarioTests {
   /// <summary>One tick of the furnace spilling <paramref name="exhaust"/> litres into the main.</summary>
   private static void Furnace(
     TestWorld world,
@@ -42,8 +36,7 @@ public class HotBlastScenarioTests
   private const float FurnacePerTick = 38f;
 
   [Fact]
-  public void The_smoke_stack_vents_furnace_exhaust_so_the_main_does_not_choke()
-  {
+  public void The_smoke_stack_vents_furnace_exhaust_so_the_main_does_not_choke() {
     // A long sealed exhaust main fed by a furnace each tick, with a built stack venting it.
     var rig = new SmokeStackRig(mainLength: 6);
 
@@ -60,8 +53,7 @@ public class HotBlastScenarioTests
   }
 
   [Fact]
-  public void Without_a_stack_the_exhaust_main_backs_up_and_chokes()
-  {
+  public void Without_a_stack_the_exhaust_main_backs_up_and_chokes() {
     // The same main and the same furnace, but the stack never ticks - nothing draws the exhaust off.
     var rig = new SmokeStackRig(mainLength: 6);
     PipeNetwork net = rig.Main;
@@ -69,8 +61,8 @@ public class HotBlastScenarioTests
     for (int i = 0; i < 12; i++)
       Furnace(rig.World, net, FurnacePerTick); // furnace spills, but nothing vents
 
-    // No sink: the exhaust accumulates well past the main's 1-atm capacity (the backed-up,
-    // furnace-choking condition the stack exists to prevent).
+    // With no sink the exhaust accumulates well past the main's 1 atm capacity, the backed-up
+    // condition that chokes the furnace.
     float maxVolume = net.Nodes.Count * ExlibValues.LitresPerPipe;
     Assert.True(
       net.State!.Volume > maxVolume,
@@ -83,12 +75,11 @@ public class HotBlastScenarioTests
   #region Cowper stove regenerator cycle
 
   [Fact]
-  public void A_charged_cowper_stove_blows_cool_air_back_out_as_hot_blast()
-  {
+  public void A_charged_cowper_stove_blows_cool_air_back_out_as_hot_blast() {
     var rig = new CowperRig();
 
-    // Charge: hot (1200 C) furnace exhaust soaks heat into the brick core. The transfer is gradual,
-    // so run a long charging session - the regenerator builds heat over time.
+    // Charge: 1200 C furnace exhaust soaks heat into the brick core. Transfer is gradual, so the
+    // charging session has to run long.
     for (int i = 0; i < 200; i++)
       rig.ChargeFromExhaust(exhaustTemp: 1200f);
     float charged = rig.CoreTemperature;
@@ -97,8 +88,7 @@ public class HotBlastScenarioTests
       $"the core should charge from exhaust, was {charged} C"
     );
 
-    // Discharge: route cool (20 C) air through the charged stove - it leaves scorching hot, and the
-    // core gives up its heat.
+    // Discharge: cool 20 C air routed through the charged stove leaves hot, and the core gives up heat.
     rig.DischargeAir(airTemp: 20f);
 
     Assert.Equal("Air", rig.HotBlastMedium);
@@ -117,8 +107,7 @@ public class HotBlastScenarioTests
   }
 
   [Fact]
-  public void A_cold_cowper_stove_cannot_make_hot_blast()
-  {
+  public void A_cold_cowper_stove_cannot_make_hot_blast() {
     var rig = new CowperRig();
 
     // Never charged: discharging cool air through a cold core warms nothing.
@@ -130,17 +119,14 @@ public class HotBlastScenarioTests
     );
   }
 
-  // Regression (player-reported): the real two-phase cycle is discharge → close the air valve →
-  // recharge from exhaust. Discharging leaves blast air sitting in the passthrough, and closing the
-  // valve strands it there (a pressurised run holds well over a pipe's worth). The stove used to read
-  // that stranded air as "mixing" and latch shut, refusing to ever recharge. Every other cowper test
-  // charges from a pristine, empty passthrough, so none of them crossed this discharge→recharge path.
+  // The two-phase cycle is discharge, close the air valve, recharge from exhaust. Discharging leaves
+  // blast air stranded in the passthrough (a pressurised run holds well over a pipe's worth), and the
+  // mix guard must not read that stranded air as air actively flowing.
   [Fact]
-  public void Recharging_after_a_discharge_is_not_blocked_by_air_left_in_the_passthrough()
-  {
+  public void Recharging_after_a_discharge_is_not_blocked_by_air_left_in_the_passthrough() {
     var rig = new CowperRig();
 
-    // Push blast air through once - this leaves leftover air stranded in the passthrough.
+    // One discharge leaves air stranded in the passthrough.
     rig.DischargeAir(airTemp: 20f, litres: 90f);
     Assert.True(
       rig.CoreTemperature <= 25f,
@@ -157,11 +143,10 @@ public class HotBlastScenarioTests
     );
   }
 
-  // The mix guard must still fire while air is genuinely flowing (both valves open): the stove can't
-  // soak exhaust into the core while air streams through the passthrough, so it must not charge.
+  // With both valves open the mix guard must still fire: the stove cannot soak exhaust into the core
+  // while air streams through the passthrough, so it must not charge.
   [Fact]
-  public void Exhaust_with_air_actively_flowing_is_still_treated_as_mixing()
-  {
+  public void Exhaust_with_air_actively_flowing_is_still_treated_as_mixing() {
     var rig = new CowperRig();
     float before = rig.CoreTemperature;
 

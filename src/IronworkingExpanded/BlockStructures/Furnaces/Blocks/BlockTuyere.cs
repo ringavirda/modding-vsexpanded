@@ -11,11 +11,10 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 /// air or hot blast is drawn into the hearth.
 /// </summary>
 [BlockRegister]
-public partial class BlockTuyere : BlockPipe, IExBlockDefProvider
-{
-  /// <summary>The tuyere blocktype, authored in C# (migrated from blastfurnace/tuyere.json). Its
-  /// AllowedOrientations + GetFallbackOrientation are derived from this def by the <see cref="BlockPipe"/>
-  /// base (variant order [s,n,w,e], fallback "s" = its first-listed state), so no hand-written tables.</summary>
+public partial class BlockTuyere : BlockPipe, IExBlockDefProvider {
+  /// <summary>The tuyere blocktype. AllowedOrientations and GetFallbackOrientation are derived from this
+  /// def by the <see cref="BlockPipe"/> base: variant order [s,n,w,e], fallback "s" as the first-listed
+  /// state.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -24,8 +23,8 @@ public partial class BlockTuyere : BlockPipe, IExBlockDefProvider
         .EntityClass("iwex.BlockEntityTuyere")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
-        // The build-outline projection: the tuyere is a functional cell of the furnace layout, so a player
-        // at the tuyere can preview + complete an incomplete furnace. Before other rmb consumers (Lockable).
+        // Build-outline projection: the tuyere is a functional cell of the furnace layout, so a player at
+        // it can preview and complete an incomplete furnace. Must precede other rmb consumers (Lockable).
         .Behavior("MultiblockStructure")
         .Behavior("Lockable")
         .VariantGroup("type", "tuyere")

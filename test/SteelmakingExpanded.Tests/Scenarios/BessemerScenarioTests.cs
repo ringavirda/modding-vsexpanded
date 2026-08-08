@@ -5,31 +5,24 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// The capstone steelmaking scenario (handbook bessemer article): molten pig iron from a canal is
-/// charged into the Bessemer converter, blown with blast drawn off a live gas network to refine it -
-/// carbon falling as the blow proceeds - into Bessemer steel (or, blown on, over-blown to soft iron),
-/// and the steel + its floating slag byproduct poured back out through the shared output cell.
-/// Exercises the molten input/output cells, the blast gas network and the dynamic carbon model together.
+/// End-to-end steelmaking scenarios (handbook bessemer article): molten pig iron is charged from a
+/// canal into the Bessemer converter, blown with blast drawn off a live gas network until carbon falls
+/// to the steel target (or past it, to soft iron), then poured out with its slag byproduct through the
+/// shared output cell. Covers the molten input/output cells, the blast gas network and the carbon model.
 /// </summary>
-public class BessemerScenarioTests
-{
+public class BessemerScenarioTests {
   #region The machine stands (emergent)
 
   /// <summary>
-  /// The converter as a <em>built machine</em>, driven through the same public tick the game calls.
-  /// Every other scenario here reaches past that tick into one state at a time, which is fine for the
-  /// chemistry but says nothing about whether the thing can be commissioned at all: for as long as the
-  /// rig never raised the footprint, five of its service blocks wore codes the layout does not accept
-  /// (a <c>converterbessemercontrol</c> anchor, a <c>converterintake</c> port, a
-  /// <c>converterbessemertransmission</c>, and two <c>molten-canal-straight</c> cells standing in for a
-  /// tap and a canal start) and nothing could tell.
+  /// Drives a converter raised from its layout through the same public production tick the game calls,
+  /// so commissioning and the block codes of its service blocks are covered. The other scenarios here
+  /// set one state at a time and bypass that tick.
   /// </summary>
   [Fact]
-  public void A_built_converter_commissions_and_refines_through_its_own_production_tick()
-  {
+  public void A_built_converter_commissions_and_refines_through_its_own_production_tick() {
     var rig = new ConverterRig();
 
-    // All four gates, open because the machine was built - not because a flag was set.
+    // All four commissioning gates come from the built structure, not from a set flag.
     Assert.True(
       rig.IsCommissioned,
       "shell, vessel and both service ports should all check out"
@@ -37,8 +30,8 @@ public class BessemerScenarioTests
 
     rig.PourPigToInput(50).SetMechPower(1f).ChargeBlast(5f);
 
-    // Throw the lever to Filling - itself a gated operation, refused on an unbuilt or unpowered
-    // machine - then let the public tick draw the charge in and start the blow.
+    // Switching to Filling is gated: it is refused on an unbuilt or unpowered machine. The public
+    // tick then draws the charge in and starts the blow.
     rig.SetState(ConverterOpState.Filling);
     rig.ProductionTick();
     rig.SetState(ConverterOpState.Normal);
@@ -53,10 +46,8 @@ public class BessemerScenarioTests
   }
 
   [Fact]
-  public void A_converter_whose_shell_is_breached_stops_at_the_first_gate()
-  {
-    // The negative half, which only means something once the positive half is real: pull one filler
-    // out of the body and the control refuses on its own next tick.
+  public void A_converter_whose_shell_is_breached_stops_at_the_first_gate() {
+    // Removing one filler from the body makes the control refuse on its own next tick.
     var rig = new ConverterRig();
     rig.PourPigToInput(50).SetMechPower(1f).ChargeBlast(5f);
 
@@ -81,8 +72,7 @@ public class BessemerScenarioTests
   #region Full charge → blow → pour cycle
 
   [Fact]
-  public void Molten_pig_is_charged_blown_into_steel_and_poured_to_the_output_canal()
-  {
+  public void Molten_pig_is_charged_blown_into_steel_and_poured_to_the_output_canal() {
     var rig = new ConverterRig();
 
     // 1. Fill: the furnace tap pours molten pig iron into the input canal, the converter draws it in.
@@ -95,8 +85,7 @@ public class BessemerScenarioTests
     );
     Assert.Contains("pigiron", rig.ContentCode);
 
-    // 2. Blow: with blast flowing the converter oxidises the carbon out, so carbon falls and it draws
-    //    real blast off the gas network.
+    // 2. Blow: with blast flowing the converter oxidises carbon out, drawing blast off the gas network.
     rig.ChargeBlast(3f);
     float carbonBefore = rig.Carbon;
     float blastBefore = rig.BlastVolume;
@@ -107,7 +96,7 @@ public class BessemerScenarioTests
       "the blow should consume blast from the network"
     );
 
-    // 3. Finish the blow (fast-forwarded through the carbon math) - the charge becomes Bessemer steel.
+    // 3. Finish the blow (fast-forwarded through the carbon math): the charge becomes Bessemer steel.
     rig.BlowToSteel();
     Assert.Contains("bessemersteel", rig.ContentCode);
 
@@ -121,8 +110,7 @@ public class BessemerScenarioTests
   }
 
   [Fact]
-  public void The_blow_makes_slag_that_pours_off_the_shallow_tilt_out_the_shared_cell()
-  {
+  public void The_blow_makes_slag_that_pours_off_the_shallow_tilt_out_the_shared_cell() {
     var rig = new ConverterRig();
     rig.ChargePig(100);
     rig.BlowToSteel();
@@ -143,24 +131,22 @@ public class BessemerScenarioTests
   }
 
   [Fact]
-  public void Over_blowing_past_the_steel_target_yields_soft_ingot_iron()
-  {
+  public void Over_blowing_past_the_steel_target_yields_soft_ingot_iron() {
     var rig = new ConverterRig();
     rig.PourPigToInput(50);
     rig.Fill();
     rig.BlowToSteel();
     Assert.Contains("bessemersteel", rig.ContentCode);
 
-    // Keep blowing past the over-blow floor - the deliberate route to plain iron now the BF makes pig.
+    // Blowing on past the over-blow floor is the route to plain iron.
     rig.OverBlowToIron();
     Assert.Contains("ingot-iron", rig.ContentCode);
   }
 
-  // Re-use regression: a converter is re-used for many heats. A finished, poured converter must accept
-  // and refine a brand-new pig charge (no stale-steel type-mismatch latching the fill guard).
+  // A converter serves many heats: once poured out it must accept and refine a fresh pig charge, with
+  // no leftover steel latching the fill guard on a type mismatch.
   [Fact]
-  public void A_second_pig_heat_can_be_charged_and_refined_after_pouring_the_first()
-  {
+  public void A_second_pig_heat_can_be_charged_and_refined_after_pouring_the_first() {
     var rig = new ConverterRig();
 
     // First heat: pig → steel → poured out, emptying the vessel.
@@ -186,8 +172,7 @@ public class BessemerScenarioTests
   #region Cold-scrap temperature gate
 
   [Fact]
-  public void A_modest_scrap_charge_refines_and_yields_more_steel_than_pig_alone()
-  {
+  public void A_modest_scrap_charge_refines_and_yields_more_steel_than_pig_alone() {
     var rig = new ConverterRig();
     rig.ChargePig(100);
     rig.ChargeScrap(40); // cold steel bits, melted in at the target
@@ -207,8 +192,7 @@ public class BessemerScenarioTests
   #region Blast dependency
 
   [Fact]
-  public void Without_blast_the_charge_does_not_refine()
-  {
+  public void Without_blast_the_charge_does_not_refine() {
     var rig = new ConverterRig();
     rig.PourPigToInput(50);
     rig.Fill();
@@ -225,8 +209,7 @@ public class BessemerScenarioTests
   #region Mechanical-power gate (engine→generator→transmission→converter)
 
   [Fact]
-  public void A_turning_transmission_gives_the_converter_power()
-  {
+  public void A_turning_transmission_gives_the_converter_power() {
     var rig = new ConverterRig();
     rig.SetMechPower(speed: 1f); // the engine's MP generator spins the transmission axle
 
@@ -237,8 +220,7 @@ public class BessemerScenarioTests
   }
 
   [Fact]
-  public void A_stalled_transmission_leaves_the_converter_unpowered()
-  {
+  public void A_stalled_transmission_leaves_the_converter_unpowered() {
     var rig = new ConverterRig();
     rig.SetMechPower(speed: 0f); // axle present but not turning (engine off / overstressed)
 
@@ -246,8 +228,7 @@ public class BessemerScenarioTests
   }
 
   [Fact]
-  public void With_no_mechanical_network_the_converter_has_no_power()
-  {
+  public void With_no_mechanical_network_the_converter_has_no_power() {
     var rig = new ConverterRig();
     // The transmission block is placed but was never spun up (no MP network behind it).
     Assert.False(rig.HasPower);

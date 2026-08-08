@@ -9,22 +9,22 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockNetworkEnergy.Blocks;
 
 /// <summary>
-/// A straight cast-iron shaft: the mechanical-energy network's transmission run - the heavy-duty parallel to a
-/// vanilla wooden axle. It carries the drive along a line and contributes a little rotational inertia
-/// (<see cref="BlockEntityCastIronShaft"/>), so a shaft line itself buffers a touch. Bends and parallel splits
-/// are the bevel/spur gears; this is the straight segment only, self-orienting on its axis (<c>ns</c>/<c>we</c>)
-/// the way a straight pipe does - so an octagonal shaft laid in a line joins end to end.
+/// A straight cast-iron shaft: the mpenergy network's transmission run, the heavy-duty parallel to a vanilla
+/// wooden axle. It carries the drive along a line and contributes a little rotational inertia
+/// (<see cref="BlockEntityCastIronShaft"/>), so a shaft line buffers slightly. This is the straight segment
+/// only - bends and parallel splits are the bevel and spur gears - and it self-orients on its axis the way a
+/// straight pipe does, joining end to end.
 /// </summary>
 [BlockRegister]
-public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider
-{
+public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider {
   public override string NetworkType => "mpenergy";
 
   #region Code-first definition
 
-  /// <summary>The cast-iron shaft blocktype: a thin octagonal bar on the run's axis, three orientations - two
-  /// horizontal (<c>ns</c>/<c>we</c>) plus vertical (<c>ud</c>), so a run can climb. Authored along Z (<c>ns</c>),
-  /// with <c>we</c> the 90° Y rotation and <c>ud</c> the 90° X rotation (matching the base box rotation).</summary>
+  /// <summary>The cast-iron shaft blocktype: a thin octagonal bar on the run's axis in three orientations, two
+  /// horizontal (<c>ns</c>/<c>we</c>) and one vertical (<c>ud</c>) so a run can climb. The shape is authored
+  /// along Z (<c>ns</c>); <c>we</c> is the 90° Y rotation and <c>ud</c> the 90° X rotation, matching the base
+  /// box rotation.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -54,17 +54,16 @@ public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider
   #region Turn a shaft into a bevel junction
 
   /// <summary>
-  /// Using a bevel-gear item on a shaft turns it into a <see cref="BlockCastIronBevel"/> of the same axis - a
-  /// branch-capable junction. No face or support to pick: the branches follow whatever perpendicular shafts the
-  /// player then places against it. <c>SetBlock</c> swaps the BE class (shaft RemoveNode → bevel AddNode), and
-  /// the bevel presents connectors on every face, so an already-adjacent perpendicular neighbour connects at once.
+  /// Using a bevel-gear item on a shaft turns it into a <see cref="BlockCastIronBevel"/> of the same axis. No
+  /// face is picked: the branches follow whatever perpendicular shafts are placed against it. <c>SetBlock</c>
+  /// swaps the BE class (shaft RemoveNode, then bevel AddNode), and since the bevel presents connectors on every
+  /// face an already-adjacent perpendicular neighbour connects at once. Server side only.
   /// </summary>
   public override bool OnBlockInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     ItemSlot? slot = byPlayer.InventoryManager?.ActiveHotbarSlot;
     if (!BlockCastIronBevel.IsBevelGearItem(slot?.Itemstack))
       return base.OnBlockInteractStart(world, byPlayer, blockSel);

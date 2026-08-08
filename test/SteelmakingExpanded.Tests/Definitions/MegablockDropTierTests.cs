@@ -11,20 +11,15 @@ using Xunit;
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Regression guard for the RCC mega-block break/mining JSON, which the headless harness can't load
-/// (blocks are configured by hand, not from assets). Reads the shipped block JSON directly and pins:
-/// the Bessemer converter and the boiler must not drop themselves (control-spawned / built in place,
-/// not a placeable frame) and must scatter 80% of their construction cost; the craftable engine keeps
-/// its frame-recovery self-drop; and the pickaxe tiers (converter = iron; Watt engine + Cornish
-/// boiler = bronze).
-/// <para>
-/// The two high-pressure machines this guard used to cover (Lancashire boiler, Cornish engine) moved
-/// to hpex; smex must not reference hpex, so their cases live in
-/// <c>HighPressureExpanded.Tests.HpMegablockDropTierTests</c>.
-/// </para>
+/// Pins the RCC mega-block break/mining definitions, which the headless harness does not load (blocks
+/// are configured by hand, not from assets). The Bessemer converter and the boiler must not drop
+/// themselves (control-spawned or built in place, not a placeable frame) and must scatter 80% of their
+/// construction cost; the craftable engine keeps its frame-recovery self-drop; mining tiers are iron for
+/// the converter and bronze for the Watt engine and Cornish boiler. The high-pressure machines
+/// (Lancashire boiler, Cornish engine) are covered by
+/// <c>HighPressureExpanded.Tests.HpMegablockDropTierTests</c>, since smex must not reference hpex.
 /// </summary>
-public class MegablockDropTierTests
-{
+public class MegablockDropTierTests {
   private const string Bessemer =
     "src/SteelmakingExpanded/assets/smex/blocktypes/converter/bessemer.json";
   private const string Watt =
@@ -35,10 +30,9 @@ public class MegablockDropTierTests
   #region Converter (control-spawned: no self-drop)
 
   [Fact]
-  public void Bessemer_converter_does_not_drop_itself_as_a_block()
-  {
-    // An explicit empty "drops" array suppresses the auto-populated self-drop. Without it the
-    // registry hands the block its own code as a drop - the reported bug.
+  public void Bessemer_converter_does_not_drop_itself_as_a_block() {
+    // An explicit empty "drops" array suppresses the auto-populated self-drop; without it the registry
+    // hands the block its own code as a drop.
     JsonElement block = Block(Bessemer);
     Assert.True(
       block.TryGetProperty("drops", out JsonElement drops),
@@ -49,11 +43,9 @@ public class MegablockDropTierTests
   }
 
   [Fact]
-  public void Bessemer_converter_salvage_ratio_defaults_to_80_percent()
-  {
-    // The salvage fraction moved off the block JSON to the player-tunable config (smex
-    // RccBrokenDropsRatio); the behaviour reads it live via ExRccSettings, so the JSON no longer
-    // carries brokenDropsRatio and the default lives on the config.
+  public void Bessemer_converter_salvage_ratio_defaults_to_80_percent() {
+    // The salvage fraction lives on the player-tunable config (smex RccBrokenDropsRatio) and the
+    // behaviour reads it live via ExRccSettings, so the block JSON carries no brokenDropsRatio.
     Assert.Equal(0.8f, new SmexConfig().RccBrokenDropsRatio, 3);
     Assert.False(
       DefinitionJson
@@ -64,8 +56,7 @@ public class MegablockDropTierTests
   }
 
   [Fact]
-  public void Bessemer_converter_needs_an_iron_tier_pickaxe()
-  {
+  public void Bessemer_converter_needs_an_iron_tier_pickaxe() {
     Assert.Equal(
       VanillaToolTiers.Iron,
       DefinitionJson.MiningTier(Block(Bessemer))
@@ -78,10 +69,9 @@ public class MegablockDropTierTests
 
   [Theory]
   [InlineData(BoilerCornish)]
-  public void Boilers_do_not_drop_themselves_as_a_block(string path)
-  {
-    // Like the converter, a boiler is built in place (RightClickConstructable), not placed from a
-    // frame item, so it must declare "drops": [] to suppress the auto-populated self-drop.
+  public void Boilers_do_not_drop_themselves_as_a_block(string path) {
+    // A boiler is built in place (RightClickConstructable), not placed from a frame item, so like the
+    // converter it must declare "drops": [] to suppress the auto-populated self-drop.
     JsonElement block = Block(path);
     Assert.True(
       block.TryGetProperty("drops", out JsonElement drops),
@@ -97,10 +87,9 @@ public class MegablockDropTierTests
 
   [Theory]
   [InlineData(Watt)]
-  public void Engines_still_drop_their_craftable_frame(string path)
-  {
-    // Engines are placeable, craftable frames - breaking one should recover the frame block, so they
-    // must not carry the converter/boiler empty-drops override.
+  public void Engines_still_drop_their_craftable_frame(string path) {
+    // Engines are placeable, craftable frames: breaking one recovers the frame block, so they must not
+    // carry the converter/boiler empty-drops override.
     JsonElement block = Block(path);
     bool suppressesSelfDrop =
       block.TryGetProperty("drops", out JsonElement drops)
@@ -116,23 +105,24 @@ public class MegablockDropTierTests
 
   #region Engines + boilers (shared: mining tier, 80% salvage)
 
-  // Bronze tier: the Watt engine and the iron Cornish boiler. (The steel Lancashire boiler is welded
-  // steel like the converter and takes an iron pickaxe - pinned in the hpex suite.)
+  // Bronze tier: the Watt engine and the iron Cornish boiler. The welded-steel Lancashire boiler takes
+  // an iron pickaxe like the converter and is pinned in the hpex suite.
   [Theory]
   [InlineData(Watt)]
   [InlineData(BoilerCornish)]
   public void Engines_and_the_cornish_boiler_need_a_bronze_tier_pickaxe(
     string path
-  )
-  {
-    Assert.Equal(VanillaToolTiers.Bronze, DefinitionJson.MiningTier(Block(path)));
+  ) {
+    Assert.Equal(
+      VanillaToolTiers.Bronze,
+      DefinitionJson.MiningTier(Block(path))
+    );
   }
 
   [Fact]
-  public void Engine_and_boiler_salvage_ratio_defaults_to_80_percent()
-  {
-    // The salvage fraction moved off the block JSON to the player-tunable config (lpex
-    // RccBrokenDropsRatio), shared by every lpex engine/boiler and read live via ExRccSettings.
+  public void Engine_and_boiler_salvage_ratio_defaults_to_80_percent() {
+    // The salvage fraction lives on the player-tunable config (lpex RccBrokenDropsRatio), shared by
+    // every lpex engine and boiler and read live via ExRccSettings.
     Assert.Equal(
       0.8f,
       new LowPressureExpanded.LpexConfig().RccBrokenDropsRatio,
@@ -143,8 +133,7 @@ public class MegablockDropTierTests
   [Theory]
   [InlineData(Watt)]
   [InlineData(BoilerCornish)]
-  public void Engines_and_boilers_no_longer_carry_a_json_drop_ratio(string path)
-  {
+  public void Engines_and_boilers_no_longer_carry_a_json_drop_ratio(string path) {
     Assert.False(
       DefinitionJson
         .Constructable(Block(path))
@@ -162,22 +151,25 @@ public class MegablockDropTierTests
   private static JsonElement Block(string repoRelativePath) =>
     DefinitionJson.Parse(BlockJson(repoRelativePath));
 
-  // Every mega-block in this guard is now code-first (no shipped JSON), so read its authored def - the single
-  // source of truth - instead of a file. Reading the def here keeps this guard honest through the migration: it
-  // pins the same drop/tier/cost the game will load.
+  // Every mega-block in this guard is code-first (no shipped JSON), so its authored def is read instead
+  // of a file: that def is the same drop/tier/cost the game loads.
   private static string BlockJson(string repoRelativePath) =>
-    repoRelativePath switch
-    {
-      BoilerCornish =>
-        BlockBoilerCornish.Definitions("lpex").Single().ToJson().ToString(),
+    repoRelativePath switch {
+      BoilerCornish => BlockBoilerCornish
+        .Definitions("lpex")
+        .Single()
+        .ToJson()
+        .ToString(),
       Watt => BlockEngineWatt.Definitions("lpex").Single().ToJson().ToString(),
-      Bessemer =>
-        BlockConverterBessemer.Definitions("smex").Single().ToJson().ToString(),
+      Bessemer => BlockConverterBessemer
+        .Definitions("smex")
+        .Single()
+        .ToJson()
+        .ToString(),
       _ => ReadAssetFile(repoRelativePath),
     };
 
-  private static string ReadAssetFile(string repoRelativePath)
-  {
+  private static string ReadAssetFile(string repoRelativePath) {
     string full = Path.Combine(
       RepoRoot(),
       repoRelativePath.Replace('/', Path.DirectorySeparatorChar)
@@ -186,8 +178,7 @@ public class MegablockDropTierTests
     return File.ReadAllText(full);
   }
 
-  private static string RepoRoot()
-  {
+  private static string RepoRoot() {
     DirectoryInfo? dir = new(AppContext.BaseDirectory);
     while (
       dir != null

@@ -10,21 +10,17 @@ namespace ExpandedLib.Registries.Config;
 
 /// <summary>
 /// A shared, mod-sectioned config file under <c>ModConfig</c> (e.g. <c>ex_values.json</c> /
-/// <c>ex_recipes.json</c>): one physical file whose top-level keys are mod ids, each holding that mod's
-/// config object. It replaces the per-mod files (<c>lpex_values.json</c>, <c>smex_values.json</c>, …)
-/// so the folder does not gain a file per mod. Each <see cref="ExConfigRegister{TConfig}"/> reads and
-/// writes only its own section; a mod's own nested <c>ConfigVersion</c> and migrations are unchanged by
-/// the sharing.
+/// <c>ex_recipes.json</c>): one file whose top-level keys are mod ids, each holding that mod's config
+/// object. Each <see cref="ExConfigRegister{TConfig}"/> reads and writes only its own section, and a
+/// mod's nested <c>ConfigVersion</c> and migrations are unaffected by the sharing.
 /// <para>
-/// The in-memory document is cached <b>per <see cref="ICoreAPI"/> instance</b>: in the game all mods
-/// share one API, so they share (and coordinate on) one document loaded once; each headless test uses a
-/// distinct fake API, so the cache is naturally isolated between tests with no global reset. Mod load
-/// is single-threaded, so sections bind sequentially against the one in-memory document - the document,
-/// not the disk, is the source of truth between a load and its write-back.
+/// The document is cached per <see cref="ICoreAPI"/> instance: all mods in a running game share one
+/// API and therefore one document loaded once, while each headless test has its own API and so its
+/// own cache. Mod load is single-threaded and sections bind sequentially, so between a load and its
+/// <see cref="Flush"/> the in-memory document, not the file, holds the current state.
 /// </para>
 /// </summary>
-public sealed class ExConfigDocument
-{
+public sealed class ExConfigDocument {
   private static readonly ConditionalWeakTable<
     ICoreAPI,
     Dictionary<string, ExConfigDocument>
@@ -34,22 +30,21 @@ public sealed class ExConfigDocument
   private readonly string _fileName;
   private readonly JObject _doc;
 
-  private ExConfigDocument(ICoreAPI api, string fileName)
-  {
+  private ExConfigDocument(ICoreAPI api, string fileName) {
     _api = api;
     _fileName = fileName;
     _doc = LoadOrEmpty();
   }
 
   /// <summary>Returns the shared document for <paramref name="fileName"/>, loading it once per API.</summary>
-  public static ExConfigDocument ForFile(ICoreAPI api, string fileName)
-  {
+  public static ExConfigDocument ForFile(ICoreAPI api, string fileName) {
     var perApi = _byApi.GetValue(
       api,
-      _ => new Dictionary<string, ExConfigDocument>(StringComparer.OrdinalIgnoreCase)
+      _ => new Dictionary<string, ExConfigDocument>(
+        StringComparer.OrdinalIgnoreCase
+      )
     );
-    if (!perApi.TryGetValue(fileName, out var doc))
-    {
+    if (!perApi.TryGetValue(fileName, out var doc)) {
       doc = new ExConfigDocument(api, fileName);
       perApi[fileName] = doc;
     }
@@ -62,16 +57,12 @@ public sealed class ExConfigDocument
   /// <summary>Deserializes <paramref name="modId"/>'s section to <typeparamref name="TConfig"/>, or
   /// <c>null</c> if the section is absent or unreadable (the caller then uses coded defaults).</summary>
   public TConfig? GetSection<TConfig>(string modId)
-    where TConfig : class
-  {
+    where TConfig : class {
     if (_doc[modId] is not JObject section)
       return null;
-    try
-    {
+    try {
       return section.ToObject<TConfig>();
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       _api.Logger.Warning(
         "[{0}] Config '{1}' section could not be read; using defaults. {2}",
         modId,
@@ -90,14 +81,13 @@ public sealed class ExConfigDocument
   public void Flush() => _api.StoreModConfig(_doc, _fileName);
 
   /// <summary>
-  /// One-time migration of a legacy per-mod file into this document's <paramref name="modId"/> section:
-  /// if the section is absent and a legacy file (e.g. <c>lpex_values.json</c>) exists under
-  /// <c>ModConfig</c>, its contents become the section and the old file is renamed to
-  /// <c>&lt;name&gt;.migrated</c> (kept, not deleted, so the carry-over is reversible). No-op once the
+  /// One-time migration of a legacy per-mod file into this document's <paramref name="modId"/>
+  /// section: when the section is absent and a legacy file exists under <c>ModConfig</c>, its
+  /// contents become the section and the old file is renamed to <c>&lt;name&gt;.migrated</c> rather
+  /// than deleted, keeping the carry-over reversible. First existing name wins. No-op once the
   /// section exists, so it never re-runs.
   /// </summary>
-  public void FoldLegacy(string modId, IReadOnlyList<string> legacyFileNames)
-  {
+  public void FoldLegacy(string modId, IReadOnlyList<string> legacyFileNames) {
     if (
       legacyFileNames == null
       || legacyFileNames.Count == 0
@@ -105,16 +95,14 @@ public sealed class ExConfigDocument
     )
       return;
 
-    foreach (var legacy in legacyFileNames)
-    {
+    foreach (var legacy in legacyFileNames) {
       if (string.IsNullOrWhiteSpace(legacy))
         continue;
       string path = Path.Combine(GamePaths.ModConfig, legacy);
       if (!File.Exists(path))
         continue;
 
-      try
-      {
+      try {
         _doc[modId] = JObject.Parse(File.ReadAllText(path));
         File.Move(path, path + ".migrated");
         _api.Logger.Notification(
@@ -123,9 +111,7 @@ public sealed class ExConfigDocument
           legacy,
           _fileName
         );
-      }
-      catch (Exception e)
-      {
+      } catch (Exception e) {
         _api.Logger.Warning(
           "[{0}] Could not fold legacy config '{1}' into '{2}': {3}",
           modId,
@@ -138,17 +124,12 @@ public sealed class ExConfigDocument
     }
   }
 
-  private JObject LoadOrEmpty()
-  {
-    try
-    {
+  private JObject LoadOrEmpty() {
+    try {
       return _api.LoadModConfig<JObject>(_fileName) ?? new JObject();
-    }
-    catch (Exception e)
-    {
-      // A whole-file parse failure would otherwise take out every mod's section at once. Back the
-      // bad file up and start from an empty document, so each section falls back to its coded
-      // defaults - exactly as a missing per-mod file did before the fold.
+    } catch (Exception e) {
+      // A parse failure would otherwise take out every mod's section at once. Back the bad file up
+      // and start from an empty document, leaving each section on its coded defaults.
       _api.Logger.Warning(
         "[exlib] Config file '{0}' could not be parsed; backing it up to '{0}.corrupt' and starting fresh. {1}",
         _fileName,
@@ -159,16 +140,12 @@ public sealed class ExConfigDocument
     }
   }
 
-  private void TryBackupCorrupt()
-  {
-    try
-    {
+  private void TryBackupCorrupt() {
+    try {
       string path = Path.Combine(GamePaths.ModConfig, _fileName);
       if (File.Exists(path))
         File.Copy(path, path + ".corrupt", overwrite: true);
-    }
-    catch
-    {
+    } catch {
       // Best effort - a failed backup must not stop the game from starting on defaults.
     }
   }

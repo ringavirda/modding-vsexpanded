@@ -6,12 +6,10 @@ using static SteelmakingExpanded.Recipes.RecipeIngredients;
 namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the cowper stove (migrated from recipes/grid/cowperstove.json): the intake
-/// that anchors the structure, and the heat sink its regenerator column is stacked from. Both are pipe
-/// wrapped in refractory brick, which is exactly what a regenerative stove is.
+/// Grid recipes for the cowper stove: the intake that anchors the structure, and the heat sink its
+/// regenerator column is stacked from. Both are pipe wrapped in refractory brick.
 /// </summary>
-public class CowperStoveRecipeDefinitions : IExRecipeDefProvider
-{
+public class CowperStoveRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

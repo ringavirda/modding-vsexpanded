@@ -11,41 +11,37 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockNetworkEnergy.Blocks;
 
 /// <summary>
-/// The flywheel: the signature block of the mechanical-<b>energy</b> network
-/// (<c>docs/design/mp-energy-network.md</c>). It is a self-orienting node of the <c>"mpenergy"</c> run
-/// that stores energy as spin (<c>E = ½Iω²</c>); its rotational inertia sets the run's reservoir
-/// capacity and spin-up time. A vertical disc on a horizontal shaft, so its connectors sit on the two
-/// shaft-axis faces - the same linear <c>ns</c>/<c>we</c> orientation model a straight canal or pipe uses.
-/// <para>
-/// Two sizes share this class: <c>normal</c> (a 3×3×1 disc) and <c>large</c> (5×5×2). A disc's inertia
-/// scales with <c>R⁴·t</c>, so the large wheel holds ~15× the energy and takes ~15× as long to charge -
-/// the heavy-industry buffer. The per-size inertia is content (<see cref="IwexValues"/>); the simulation
-/// lives in <see cref="BlockEntityFlywheel"/> and <c>ExpandedLib.Networks.MpEnergyNetwork</c>.
-/// </para>
-/// <para>
-/// The wheel is a placeable, network-registered storage node: it reserves its disc volume with invisible
-/// fillers (below), the hub cell(s) of which host mechanical-power ports so a coupled axle charges the
-/// reservoir - the vanilla-MP bridge, driven by <see cref="BlockEntityFlywheel"/>. The spin animation and
-/// any producers that spend the stored energy are follow-ups; until one lands the run simply sits idle.
-/// </para>
+/// Self-orienting storage node of the <c>"mpenergy"</c> run: a vertical disc on a horizontal shaft holding
+/// energy as spin (<c>E = ½Iω²</c>), its rotational inertia setting the run's reservoir capacity and
+/// spin-up time. Connectors sit on the two shaft-axis faces, using the linear <c>ns</c>/<c>we</c>
+/// orientation model. Two sizes share this class: <c>normal</c> (3×3×1) and <c>large</c> (5×5×2), disc
+/// inertia scaling with <c>R⁴·t</c> so the large wheel holds about 15× the energy. Per-size values are
+/// content (<see cref="IwexValues"/>); the simulation lives in <see cref="BlockEntityFlywheel"/> and
+/// <c>ExpandedLib.Networks.MpEnergyNetwork</c>. See docs/design/mechanics/mp-energy.md.
 /// </summary>
 [BlockRegister]
-public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFillerHost
-{
+public partial class BlockFlywheel
+  : BlockNetworkNode,
+    IExBlockDefProvider,
+    IFillerHost {
   public override string NetworkType => "mpenergy";
 
   // AllowedOrientations is inherited from BlockNetworkNode, which derives it from this block's own
-  // code-first defs (type → {ns, we}) - no hand-kept table.
+  // code-first defs (type → {ns, we}).
 
   #region Code-first definition
 
-  // The disc is thin in Z (its face lies in the X-Y plane, its axle runs along Z), so a coupled axle
-  // meets it on the north or south shaft face; the hub cell hosts a port for each side. Rotated into the
-  // placed orientation by StructureFillers.FootprintCells, so the we variant's ports become east/west.
-  private static readonly FillerBehaviorSpec MpNorth =
-    new("exlib.BEBehaviorMPFillerPort", "north");
-  private static readonly FillerBehaviorSpec MpSouth =
-    new("exlib.BEBehaviorMPFillerPort", "south");
+  // The disc is thin in Z (face in the X-Y plane, axle along Z), so a coupled axle meets it on the north
+  // or south shaft face and the hub cell hosts a port for each side. StructureFillers.FootprintCells
+  // rotates these into the placed orientation, so the we variant's ports become east/west.
+  private static readonly FillerBehaviorSpec MpNorth = new(
+    "exlib.BEBehaviorMPFillerPort",
+    "north"
+  );
+  private static readonly FillerBehaviorSpec MpSouth = new(
+    "exlib.BEBehaviorMPFillerPort",
+    "south"
+  );
 
   /// <summary>Normal wheel footprint: a thin-in-Z 3×3 disc in the X-Y plane, principal at bottom-centre,
   /// its hub one cell up at <c>(0,1,0)</c> hosting the two shaft ports.</summary>
@@ -91,9 +87,9 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
         )
     );
 
-  /// <summary>The two flywheel blocktypes (normal / large), each a vertical disc that connects on its
-  /// shaft-axis faces (ns / we). Authored in the north (shaft-along-Z) frame; the <c>we</c> variant is the
-  /// same shape rotated 90°.</summary>
+  /// <summary>The two flywheel blocktypes (normal / large), each a vertical disc connecting on its
+  /// shaft-axis faces (ns / we). Authored in the north (shaft-along-Z) frame; <c>we</c> is the same shape
+  /// rotated 90°.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -105,15 +101,13 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
         .Sound("place", "game:block/anvil")
         .MaxStackSize(1)
         .Handbook("mpenergy-flywheel-*")
-        // The disc spins at the run's speed, so the spin itself is the charge gauge, readable in-world
-        // (docs/design/conventions.md R7: nothing is hidden). The animator renders
-        // the wheel whenever a clip is active, so the block entity always holds one (idle at rest, cycle
-        // while turning) or the mesh would fall back to the static shape mid-frame.
+        // The disc spins at the run's speed, so the spin is the charge gauge (docs/design/conventions.md
+        // R7). The animator renders the wheel only while a clip is active, so the block entity must always
+        // hold one (idle at rest, cycle while turning) or the mesh falls back to the static shape.
         .EntityBehavior("Animatable")
-        // Note: `type` names the family member, not the size - every mpenergy block shares the code
-        // `iwex:mpenergy`, so no block's code can be a prefix of another's and a wildcard built from
-        // Code cannot stray outside its member (see CodePrefixCollision). The size is its own group;
-        // the rendered code is unchanged either way.
+        // `type` names the family member, not the size: every mpenergy block shares the code
+        // `iwex:mpenergy`, so no block's code is a prefix of another's and a wildcard built from Code
+        // cannot stray outside its member (see CodePrefixCollision). The size is its own group.
         .VariantGroup("type", "flywheel")
         .VariantGroup("size", "normal", "large")
         .VariantGroup("orientation", "ns", "we")
@@ -123,8 +117,7 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
         .ShapeByType("*-large-ns", "iwex:mpenergy/flywheel-large", rotateY: 0)
         .ShapeByType("*-large-we", "iwex:mpenergy/flywheel-large", rotateY: 90)
         .CreativeCommon("*-normal-ns", "*-large-ns")
-        // The reserved volume differs by SIZE, so each size declares its own footprint (attributesByType);
-        // the placement triad drives the shared StructureFillers statics, exactly like the twin-tub blower.
+        // The reserved volume differs by size, so each size declares its own footprint (attributesByType).
         .FillerOffsetsByType("*-normal-*", NormalFootprint)
         .FillerOffsetsByType("*-large-*", LargeFootprint)
         // The disc overhangs its cell (the shape is authored larger than 16px); the placed cell is solid
@@ -136,17 +129,16 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
 
   #region Footprint (invisible fillers reserve the disc's volume)
 
-  // The wheel renders across a whole slab but occupies one grid cell, so - like the twin-tub blower and
-  // ore bunker - the rest of the volume is reserved with invisible solid fillers that reroute interaction
-  // and break to this principal. Each size's footprint is declared per-type in the def above and rotated
-  // into the placed orientation by the shared helper; the hub cell(s) carry the MP ports the bridge reads.
+  // The wheel renders across a whole slab but occupies one grid cell, so the rest of the volume is
+  // reserved with invisible solid fillers that reroute interaction and break to this principal. The hub
+  // cells carry the MP ports the bridge reads.
 
   /// <summary>The <c>fillerOffsets</c> attribute for the placed size variant (from the code-first def).</summary>
   public JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
 
-  /// <summary>Rotation applied to the north-frame (ns, shaft-along-Z) footprint to reach the placed
-  /// orientation: <c>ns</c> 0, <c>we</c> 90 - the same angles the per-orientation shapes rotate by, so
-  /// footprint and mesh never disagree. The block entity rotates its hub-port lookup by the same angle.</summary>
+  /// <summary>Degrees applied to the north-frame (ns, shaft-along-Z) footprint to reach the placed
+  /// orientation: <c>ns</c> 0, <c>we</c> 90. Matches the per-orientation shape rotation, and the block
+  /// entity rotates its hub-port lookup by the same angle.</summary>
   public int StructureAngle => Variant?["orientation"] == "we" ? 90 : 0;
 
   private List<FillerCell> FootprintCells(BlockPos pos) =>
@@ -157,15 +149,13 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
     IPlayer byPlayer,
     BlockSelection blockSel,
     ref string failureCode
-  )
-  {
+  ) {
     if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
       return false;
 
-    // Refuse unless the whole disc volume is clear, so the fillers always spawn (a wheel standing with an
-    // unfilled cell would let blocks be placed inside it and leave a gap in its collision).
-    if (!StructureFillers.CanPlace(world, FootprintCells(blockSel.Position)))
-    {
+    // Refuse unless the whole disc volume is clear, so the fillers always spawn: an unfilled cell would
+    // let blocks be placed inside the wheel and leave a gap in its collision.
+    if (!StructureFillers.CanPlace(world, FootprintCells(blockSel.Position))) {
       failureCode = "notenoughspace";
       return false;
     }
@@ -176,8 +166,7 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
     IWorldAccessor world,
     BlockPos blockPos,
     ItemStack? byItemStack = null
-  )
-  {
+  ) {
     base.OnBlockPlaced(world, blockPos, byItemStack);
     StructureFillers.PlaceFillers(world, blockPos, FootprintCells(blockPos));
   }
@@ -187,8 +176,7 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
     BlockPos pos,
     IPlayer byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     // Clear the reserved volume first so no invisible solid cells are orphaned, then let the base run
     // (which removes this node from the mpenergy graph and drops the wheel).
     StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));

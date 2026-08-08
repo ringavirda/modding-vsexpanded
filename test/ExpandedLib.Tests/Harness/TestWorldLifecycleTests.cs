@@ -7,16 +7,13 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The harness lifecycle helpers: <see cref="TestWorld.Reload"/> drives the real
-/// save → discard → fresh-instance → FromTree → Initialize sequence, and (with the now-honoured
-/// <c>UnregisterGameTickListener</c>) a discarded block entity truly stops ticking - closing the
-/// "sim passed, game broke on reload" gap.
+/// The harness lifecycle helpers. <see cref="TestWorld.Reload"/> runs the real save, discard,
+/// fresh-instance, FromTree, Initialize sequence, and a discarded block entity stops ticking because
+/// the harness honours <c>UnregisterGameTickListener</c>.
 /// </summary>
-public class TestWorldLifecycleTests
-{
+public class TestWorldLifecycleTests {
   [Fact]
-  public void Reload_round_trips_state_and_the_old_instance_stops_ticking()
-  {
+  public void Reload_round_trips_state_and_the_old_instance_stops_ticking() {
     var world = new TestWorld();
     var pos = new BlockPos(0, 0, 0);
     var block = TestBlocks.Configure(new Block(), "test:stateful", 1);
@@ -30,7 +27,7 @@ public class TestWorldLifecycleTests
     original.Saved = 42; // state that must survive the reload
     var reloaded = Assert.IsType<StatefulBe>(world.Reload(pos));
 
-    Assert.NotSame(original, reloaded); // a genuinely fresh instance, as on disk load
+    Assert.NotSame(original, reloaded); // a fresh instance, as on disk load
     Assert.Equal(42, reloaded.Saved); // restored via ToTree/FromTree
     Assert.Same(reloaded, world.GetBlockEntity(pos));
 
@@ -40,8 +37,7 @@ public class TestWorldLifecycleTests
   }
 
   [Fact]
-  public void Unload_drops_the_entity_and_stops_its_listener_but_keeps_the_block()
-  {
+  public void Unload_drops_the_entity_and_stops_its_listener_but_keeps_the_block() {
     var world = new TestWorld();
     var pos = new BlockPos(1, 0, 0);
     var block = TestBlocks.Configure(new Block(), "test:stateful", 2);
@@ -61,18 +57,15 @@ public class TestWorldLifecycleTests
   }
 
   [Fact]
-  public void Reload_of_an_empty_cell_is_a_no_op()
-  {
+  public void Reload_of_an_empty_cell_is_a_no_op() {
     var world = new TestWorld();
     Assert.Null(world.Reload(new BlockPos(5, 5, 5)));
   }
 
   [Fact]
-  public void Break_runs_the_real_block_broken_and_removed_lifecycle()
-  {
-    // Production code breaks blocks via the accessor (a network node self-breaking when unsupported,
-    // a boiler shattering its shell). The break must run OnBlockRemoved - which for a network node
-    // calls RemoveNode - not just wipe the store, or a "forgot to RemoveNode" bug is invisible here.
+  public void Break_runs_the_real_block_broken_and_removed_lifecycle() {
+    // Production code breaks blocks through the accessor, so the break must run OnBlockBroken and
+    // OnBlockRemoved rather than only wiping the store: a network node calls RemoveNode there.
     var world = new TestWorld();
     var pos = new BlockPos(2, 0, 0);
     var block = TestBlocks.Configure(new Block(), "test:lifecycle", 3);
@@ -89,38 +82,32 @@ public class TestWorldLifecycleTests
   }
 
   /// <summary>Records that its break/removed lifecycle hooks ran.</summary>
-  private sealed class LifecycleBe : BlockEntity
-  {
+  private sealed class LifecycleBe : BlockEntity {
     public bool BrokenCalled;
     public bool RemovedCalled;
 
-    public override void OnBlockBroken(IPlayer? byPlayer = null)
-    {
+    public override void OnBlockBroken(IPlayer? byPlayer = null) {
       BrokenCalled = true;
       base.OnBlockBroken(byPlayer);
     }
 
-    public override void OnBlockRemoved()
-    {
+    public override void OnBlockRemoved() {
       RemovedCalled = true;
       base.OnBlockRemoved();
     }
   }
 
   /// <summary>A minimal block entity that persists one value and counts its own tick.</summary>
-  private sealed class StatefulBe : BlockEntity
-  {
+  private sealed class StatefulBe : BlockEntity {
     public int Saved;
     public int Ticks;
 
-    public override void Initialize(ICoreAPI api)
-    {
+    public override void Initialize(ICoreAPI api) {
       base.Initialize(api);
       RegisterGameTickListener(_ => Ticks++, 1000);
     }
 
-    public override void ToTreeAttributes(ITreeAttribute tree)
-    {
+    public override void ToTreeAttributes(ITreeAttribute tree) {
       base.ToTreeAttributes(tree);
       tree.SetInt("saved", Saved);
     }
@@ -128,8 +115,7 @@ public class TestWorldLifecycleTests
     public override void FromTreeAttributes(
       ITreeAttribute tree,
       IWorldAccessor world
-    )
-    {
+    ) {
       base.FromTreeAttributes(tree, world);
       Saved = tree.GetInt("saved");
     }

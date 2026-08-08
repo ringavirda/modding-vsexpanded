@@ -4,16 +4,13 @@ using Xunit;
 namespace HighPressureExpanded.Tests;
 
 /// <summary>
-/// Pins the rolled-tier burst rating the shared <c>PipeTestWorld</c> fixture has to restate, for the
-/// same reason its lpex sibling does: the fixture lives in the iwex suite and cannot reference hpex, so
-/// a retune of <c>HpexValues.RolledPipeBurstPressure</c> would otherwise leave every HP-tier test
-/// running against a stale ceiling and still passing.
+/// The shared <c>PipeTestWorld</c> fixture lives in the iwex suite and cannot reference hpex, so it
+/// restates the rolled-tier pipe constants. These assertions catch a retune of the <c>HpexValues</c>
+/// originals that would otherwise leave every HP-tier test running against stale numbers and passing.
 /// </summary>
-public class PipeBurstParityTests
-{
+public class PipeBurstParityTests {
   [Fact]
-  public void The_shared_fixture_seeds_the_shipped_rolled_tier_burst_rating()
-  {
+  public void The_shared_fixture_seeds_the_shipped_rolled_tier_burst_rating() {
     Assert.Equal(
       PipeTestWorld.RolledTierBurst,
       HpexValues.RolledPipeBurstPressure,
@@ -21,10 +18,9 @@ public class PipeBurstParityTests
     );
   }
 
-  // Second restated number, same silent-drift failure - see the lpex sibling.
+  // Second restated constant, same drift check.
   [Fact]
-  public void The_shared_fixture_seeds_the_shipped_rolled_tier_throughput()
-  {
+  public void The_shared_fixture_seeds_the_shipped_rolled_tier_throughput() {
     Assert.Equal(
       PipeTestWorld.RolledTierThroughput,
       HpexValues.RolledPipeThroughput,

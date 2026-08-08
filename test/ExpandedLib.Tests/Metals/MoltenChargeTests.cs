@@ -7,19 +7,17 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The shared molten-charge domain type: a temperature-tracked stack + unit count with the
-/// temperature / state-classification / retype / recovery / tree round-trip the converter, barrel,
-/// tap and pedestal used to hand-roll. Iron melts at 1500 C, so it's liquid above 0.8x = 1200,
-/// hardened below 0.3x = 450, and solidified below 1500.
+/// The shared molten-charge domain type used by the converter, barrel, tap and pedestal: a
+/// temperature-tracked stack plus a unit count, with temperature, state classification, retype,
+/// recovery and tree round-trip. Iron melts at 1500 C, so it is liquid above 0.8x = 1200, hardened
+/// below 0.3x = 450, and below its melting point under 1500.
 /// </summary>
-public class MoltenChargeTests
-{
+public class MoltenChargeTests {
   private const string Iron = "game:ingot-iron";
   private const string Steel = "game:ingot-steel";
   private const float IronMelt = 1500f;
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem(Steel, IronMelt);
@@ -29,14 +27,14 @@ public class MoltenChargeTests
   }
 
   private static float CooldownSpeedOf(ItemStack stack) =>
-    (stack.Attributes["temperature"] as ITreeAttribute)?.GetFloat("cooldownSpeed")
-    ?? 0f;
+    (stack.Attributes["temperature"] as ITreeAttribute)?.GetFloat(
+      "cooldownSpeed"
+    ) ?? 0f;
 
   #region Create / identity
 
   [Fact]
-  public void Create_builds_a_charge_with_the_metal_code_units_and_temperature()
-  {
+  public void Create_builds_a_charge_with_the_metal_code_units_and_temperature() {
     var w = NewWorld();
     MoltenCharge? charge = MoltenCharge.Create(w.World, Iron, 1400f, 40);
 
@@ -47,8 +45,7 @@ public class MoltenChargeTests
   }
 
   [Fact]
-  public void Create_returns_null_when_the_item_does_not_resolve()
-  {
+  public void Create_returns_null_when_the_item_does_not_resolve() {
     var w = NewWorld();
     Assert.Null(MoltenCharge.Create(w.World, "game:doesnotexist", 1400f, 10));
   }
@@ -58,8 +55,7 @@ public class MoltenChargeTests
   #region Temperature + state classification
 
   [Fact]
-  public void SetTemperature_round_trips()
-  {
+  public void SetTemperature_round_trips() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 1400f, 40)!;
 
@@ -68,8 +64,8 @@ public class MoltenChargeTests
     Assert.Equal(800f, charge.Temperature(w.World), 1);
   }
 
-  // Iron: liquid above 0.8x1500 = 1200, hardened below 0.3x1500 = 450, below melt below 1500. Note
-  // the 1200-1500 band flows (IsLiquid) yet is already below the melting point (IsBelowMeltingPoint).
+  // Iron: liquid above 0.8x1500 = 1200, hardened below 0.3x1500 = 450, below melt under 1500. The
+  // 1200-1500 band still flows (IsLiquid) while already below the melting point (IsBelowMeltingPoint).
   [Theory]
   [InlineData(1600f, true, false, false)] // above melt: liquid, not hardened, not below melt
   [InlineData(1300f, true, false, true)] // flowing but below the melting point
@@ -80,8 +76,7 @@ public class MoltenChargeTests
     bool liquid,
     bool hardened,
     bool belowMelt
-  )
-  {
+  ) {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, temp, 40)!;
 
@@ -91,8 +86,7 @@ public class MoltenChargeTests
   }
 
   [Fact]
-  public void SyncCooldown_writes_the_rate_onto_the_stack()
-  {
+  public void SyncCooldown_writes_the_rate_onto_the_stack() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 1400f, 40)!;
 
@@ -106,8 +100,7 @@ public class MoltenChargeTests
   #region Retype (refine) + recovery
 
   [Fact]
-  public void RetypeTo_swaps_the_metal_keeping_units_and_temperature()
-  {
+  public void RetypeTo_swaps_the_metal_keeping_units_and_temperature() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 1600f, 40)!;
 
@@ -120,8 +113,7 @@ public class MoltenChargeTests
   }
 
   [Fact]
-  public void RetypeTo_leaves_the_charge_unchanged_when_the_target_does_not_resolve()
-  {
+  public void RetypeTo_leaves_the_charge_unchanged_when_the_target_does_not_resolve() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 1600f, 40)!;
 
@@ -132,8 +124,7 @@ public class MoltenChargeTests
   }
 
   [Fact]
-  public void BuildRecovery_yields_metal_bits_at_five_units_each()
-  {
+  public void BuildRecovery_yields_metal_bits_at_five_units_each() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 900f, 50)!;
 
@@ -149,8 +140,7 @@ public class MoltenChargeTests
   #region Serialization
 
   [Fact]
-  public void ToTree_then_FromTree_round_trips_the_stack_and_units()
-  {
+  public void ToTree_then_FromTree_round_trips_the_stack_and_units() {
     var w = NewWorld();
     var charge = MoltenCharge.Create(w.World, Iron, 1400f, 35)!;
 
@@ -169,11 +159,15 @@ public class MoltenChargeTests
   }
 
   [Fact]
-  public void FromTree_of_an_empty_tree_is_null()
-  {
+  public void FromTree_of_an_empty_tree_is_null() {
     var w = NewWorld();
     Assert.Null(
-      MoltenCharge.FromTree(new TreeAttribute(), "content", "contentUnits", w.World)
+      MoltenCharge.FromTree(
+        new TreeAttribute(),
+        "content",
+        "contentUnits",
+        w.World
+      )
     );
   }
 

@@ -42,6 +42,4 @@
     <ProjectReference Include="..\..\src\ExpandedLib\ExpandedLib.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
   </ItemGroup>
-
-
 </Project>

@@ -5,20 +5,15 @@ using IronworkingExpanded.BlockStructures.Casting;
 namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Carves the sand-casting <b>patterns</b> from their diagrams: a reusable pattern diagram (<c>isTool</c>)
-/// plus a knife (<c>isTool</c>) shape a wooden positive out of plank stock. One recipe per pattern, derived
-/// from <see cref="PatternItemDefinitions.PatternTypes"/> - the same single source the pattern variants and
-/// their diagram variants come from - so adding a castable part carries its craft automatically.
-/// <para>
-/// The diagram itself is creative-only until the design table can draft it (exactly like the canal diagrams
-/// in <see cref="DiagramRecipeDefinitions"/>); this is the diagram→pattern leg of that phase. The diagram
-/// is a tool (draw once, reuse); the knife is a tool; the planks are consumed.
-/// </para>
+/// Grid recipes carving the sand-casting patterns from their diagrams: a pattern diagram and a knife,
+/// both tools, shape a wooden positive out of plank stock. One recipe per entry in
+/// <see cref="PatternItemDefinitions.PatternTypes"/>, the same source the pattern and diagram variants
+/// are generated from, so a new castable part carries its craft with it. The diagram is creative-only
+/// until the design table can draft it, as with the canal diagrams in
+/// <see cref="DiagramRecipeDefinitions"/>.
 /// </summary>
-public class PatternRecipeDefinitions : IExRecipeDefProvider
-{
-  public static IEnumerable<ExRecipeDef> Definitions(string domain)
-  {
+public class PatternRecipeDefinitions : IExRecipeDefProvider {
+  public static IEnumerable<ExRecipeDef> Definitions(string domain) {
     var def = ExRecipeDef.Create(domain, "grid", "pattern");
     foreach (string type in PatternItemDefinitions.PatternTypes)
       def = def.Grid(r =>

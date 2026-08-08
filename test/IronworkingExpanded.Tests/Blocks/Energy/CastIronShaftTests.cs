@@ -8,14 +8,12 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The cast-iron shaft: the mp-energy transmission run (the design's "Buffer" node). These pin that it
-/// connects along its own axis - so a line of shafts joins end to end and a bend needs a bevel gear, not a
-/// bent shaft - that it is a small inertia buffer, and that a placed shaft stands up an <c>mpenergy</c> run.
+/// The cast-iron shaft, the buffer node of an mp-energy transmission run. It connects along its own axis
+/// only, so a line of shafts joins end to end and a bend needs a bevel gear; it carries a small inertia;
+/// and placing one forms an <c>mpenergy</c> network.
 /// </summary>
-public class CastIronShaftTests
-{
-  private static BlockCastIronShaft ShaftBlock(string orientation)
-  {
+public class CastIronShaftTests {
+  private static BlockCastIronShaft ShaftBlock(string orientation) {
     var block = TestBlocks.Configure(
       new BlockCastIronShaft(),
       $"iwex:mpenergy-shaft-{orientation}",
@@ -29,8 +27,7 @@ public class CastIronShaftTests
   }
 
   [Fact]
-  public void An_ns_shaft_connects_north_and_south_only()
-  {
+  public void An_ns_shaft_connects_north_and_south_only() {
     var shaft = ShaftBlock("ns");
     Assert.True(shaft.HasConnectorAt(BlockFacing.NORTH));
     Assert.True(shaft.HasConnectorAt(BlockFacing.SOUTH));
@@ -39,8 +36,7 @@ public class CastIronShaftTests
   }
 
   [Fact]
-  public void A_we_shaft_connects_east_and_west_only()
-  {
+  public void A_we_shaft_connects_east_and_west_only() {
     var shaft = ShaftBlock("we");
     Assert.True(shaft.HasConnectorAt(BlockFacing.EAST));
     Assert.True(shaft.HasConnectorAt(BlockFacing.WEST));
@@ -49,8 +45,7 @@ public class CastIronShaftTests
   }
 
   [Fact]
-  public void The_shaft_is_a_small_buffer_node()
-  {
+  public void The_shaft_is_a_small_buffer_node() {
     var be = new BlockEntityCastIronShaft();
 
     Assert.IsAssignableFrom<IMpEnergyStorage>(be);
@@ -62,8 +57,7 @@ public class CastIronShaftTests
   }
 
   [Fact]
-  public void A_placed_shaft_forms_an_mpenergy_network()
-  {
+  public void A_placed_shaft_forms_an_mpenergy_network() {
     var world = new TestWorld();
     world.RegisterNetwork("mpenergy", sys => new MpEnergyNetwork(sys));
 

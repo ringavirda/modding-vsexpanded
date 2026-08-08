@@ -5,30 +5,22 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The shaft furnace's interior cell codes. These live in <c>IwexCodes</c> rather than exlib's
-/// catalogue because what they describe is a <b>shaft furnace's</b> interior: the alternations are
-/// mostly vanilla paths, but the blocks that make them correct - the charge pile, the frozen pool -
-/// are iwex's own. smex's hot furnace draws them too, which is fine: smex is downstream.
-/// <para>
-/// This test moving here from the exlib suite is the layering working: the codes went to iwex, and
-/// exlib's tests cannot reference iwex, so the test had to follow.
-/// </para>
+/// The shaft furnace's interior cell codes. They live in <c>IwexCodes</c> rather than exlib's
+/// catalogue because the blocks that make the alternations correct - the charge pile, the frozen pool -
+/// are iwex's own, and this test lives here because exlib's tests cannot reference iwex. smex's hot
+/// furnace draws the same codes from downstream.
 /// </summary>
-public class IwexCodesHearthCellTests
-{
+public class IwexCodesHearthCellTests {
   [Theory]
-  // Everything ChargeShaft admits, the hearth cell admits too - it is a superset, not a variant.
+  // The hearth cell is a superset of ChargeShaft: everything ChargeShaft admits, it admits too.
   [InlineData("air")]
   [InlineData("coalpile")]
   [InlineData("furnace-chargepile")]
-  // …plus the block the furnace stands its own metal in. A cell whose legend does not admit a block
-  // the machine itself places there reads incomplete on the next monitor tick, and for a shaft furnace
-  // incomplete means extinguish. This is the same shape of defect that made ChargeShaft need the charge
-  // pile, one cell lower.
+  // ...plus the block the furnace stands its own metal in. A legend that refuses a block the machine
+  // places there reads incomplete on the next monitor tick, and an incomplete shaft furnace extinguishes.
   [InlineData("hearthmetal-pigiron")]
   [InlineData("hearthmetal-castiron")]
-  public void The_hearth_cell_admits_the_pool(string path)
-  {
+  public void The_hearth_cell_admits_the_pool(string path) {
     Assert.True(
       WildcardUtil.Match(
         new Vintagestory.API.Common.AssetLocation(IwexCodes.HearthCell),
@@ -38,18 +30,14 @@ public class IwexCodesHearthCellTests
   }
 
   /// <summary>
-  /// <b>The pool member is a prefix pattern, and it is written <c>hearthmetal-.*</c> because inside an
-  /// alternation the body is a regex.</b> A later metal needs no edit here; a lookalike that merely starts
-  /// with the word must still be refused.
-  /// <para>
-  /// Written as a Theory over <see cref="WildcardUtil.Match"/> rather than as a claim about the string,
-  /// because what matters is what the matcher does with it, not how it reads.
-  /// </para>
+  /// The pool member is written <c>hearthmetal-.*</c> because inside an alternation the body is a
+  /// regex. A later metal needs no edit here, and a lookalike that only starts with the word is
+  /// refused. Asserted through <see cref="WildcardUtil.Match"/> rather than against the string itself.
   /// </summary>
   [Theory]
   [InlineData("hearthmetal-pigiron", true)]
   [InlineData("hearthmetal-castiron", true)]
-  // A metal that does not exist yet still matches - that is the point of the pattern.
+  // A metal that does not exist yet still matches.
   [InlineData("hearthmetal-somefuturealloy", true)]
   // ...but a bare-prefix lookalike must not.
   [InlineData("hearthmetalother", false)]
@@ -69,21 +57,15 @@ public class IwexCodesHearthCellTests
     );
 
   /// <summary>
-  /// <b>The two syntaxes in one string, pinned - because the obvious spelling is silently inverted.</b>
-  /// Inside <c>@(…)</c> the body is a regular expression, so <c>hearthmetal-*</c> reads as "hearthmetal
-  /// followed by zero or more dashes": it admits the bare word (a code no definition produces) and refuses
-  /// <b>both</b> metals that do exist. Outside an alternation the same <c>*</c> is an ordinary glob and
-  /// behaves as expected.
-  /// <para>
-  /// Nothing about the string's appearance says which world it is in, and the failure is not a crash:
-  /// a hearth legend that refuses the block the furnace itself places there reads <em>incomplete</em> on
-  /// the next monitor tick, and for a shaft furnace incomplete means <b>extinguish</b>. So the wrong
-  /// spelling is asserted here explicitly, rather than only the right one - a test that pinned the shipped
-  /// constant alone would pass just as happily after someone "simplified" the <c>.</c> away.
-  /// </para>
+  /// Both spellings pinned in one table. Inside <c>@(…)</c> the body is a regular expression, so
+  /// <c>hearthmetal-*</c> means "hearthmetal followed by zero or more dashes": it admits the bare word,
+  /// which no definition produces, and refuses both metals that do exist. Outside an alternation the
+  /// same <c>*</c> is an ordinary glob. The wrong spelling is asserted alongside the right one because
+  /// it does not crash - a hearth legend refusing the block the furnace places reads incomplete on the
+  /// next monitor tick, which extinguishes the furnace.
   /// </summary>
   [Theory]
-  // The naive glob spelling, inside an alternation: exactly backwards.
+  // The glob spelling, inside an alternation: inverted.
   [InlineData("*:@(air|hearthmetal-*)", "hearthmetal-pigiron", false)]
   [InlineData("*:@(air|hearthmetal-*)", "hearthmetal-castiron", false)]
   [InlineData("*:@(air|hearthmetal-*)", "hearthmetal", true)]
@@ -92,7 +74,7 @@ public class IwexCodesHearthCellTests
   [InlineData("*:@(air|hearthmetal-.*)", "hearthmetal-castiron", true)]
   [InlineData("*:@(air|hearthmetal-.*)", "hearthmetal", false)]
   [InlineData("*:@(air|hearthmetal-.*)", "hearthmetalother", false)]
-  // The same glob outside an alternation, which is where `*` means what it looks like.
+  // The same glob outside an alternation, where `*` is an ordinary glob.
   [InlineData("*:hearthmetal-*", "hearthmetal-pigiron", true)]
   [InlineData("*:hearthmetal-*", "hearthmetal", false)]
   public void A_star_inside_an_alternation_is_a_regex_and_a_star_outside_one_is_a_glob(
@@ -109,11 +91,9 @@ public class IwexCodesHearthCellTests
     );
 
   [Fact]
-  public void The_hearth_cell_keeps_the_domain_wildcard_that_makes_it_work()
-  {
-    // Load-bearing, exactly as on ChargeShaft: `@(…)` is a regex over the path only, so without the
-    // leading `*:` the alternation is implicitly `game:` and could admit none of iwex's own blocks -
-    // not the charge pile, and not the frozen pool either.
+  public void The_hearth_cell_keeps_the_domain_wildcard_that_makes_it_work() {
+    // `@(…)` is a regex over the path only, so without the leading `*:` the alternation is implicitly
+    // `game:` and admits none of iwex's own blocks - neither the charge pile nor the frozen pool.
     Assert.StartsWith("*:", IwexCodes.HearthCell);
     Assert.StartsWith("*:", IwexCodes.ChargeShaft);
   }
@@ -121,28 +101,15 @@ public class IwexCodesHearthCellTests
   #region The rig's copies of these strings
 
   /// <summary>
-  /// <b>The test rig hand-copies both alternations, and nothing made the copies follow the originals.</b>
-  /// <see cref="FurnaceLayoutRig.ShaftGlyph"/> and <see cref="FurnaceLayoutRig.HearthGlyph"/> are string
-  /// literals identical to <see cref="IwexCodes.ChargeShaft"/> and <see cref="IwexCodes.HearthCell"/> - and
-  /// because they are literals rather than references, changing a constant here <b>compiles cleanly</b> and
-  /// leaves the rig asserting against the old spelling.
-  /// <para>
-  /// It came due when <c>solidifiediron</c> / <c>solidifiedcastiron</c> were renamed to
-  /// <c>hearthmetal-{metal}</c>: the rig's literal compiles cleanly against the new constant. Without
-  /// this equality assertion every furnace layout test would keep passing against blocks that no longer
-  /// exist - a green suite asserting nothing about the shipped legend, which is the exact failure mode
-  /// such renames keep producing. Both spellings were changed in the same edit, so this pin
-  /// was never observed red; what it protects is the *next* change, when only one side moves.
-  /// </para>
-  /// <para>
-  /// The duplication itself is deliberate: a rig that derived its glyphs from the production constants
-  /// could not catch a wrong constant, because both sides would move together. Two independent spellings
-  /// plus one equality assertion is the shape that catches it - so keep the literals and keep this test.
-  /// </para>
+  /// <see cref="FurnaceLayoutRig.ShaftGlyph"/> and <see cref="FurnaceLayoutRig.HearthGlyph"/> are
+  /// string literals equal to <see cref="IwexCodes.ChargeShaft"/> and
+  /// <see cref="IwexCodes.HearthCell"/>. Being literals rather than references, a change to either
+  /// constant compiles cleanly and leaves the rig asserting the old spelling, so the equality is pinned
+  /// here. The duplication is intentional: glyphs derived from the constants would move with them and
+  /// could not catch a wrong constant.
   /// </summary>
   [Fact]
-  public void The_layout_rigs_glyphs_still_match_the_shipped_constants()
-  {
+  public void The_layout_rigs_glyphs_still_match_the_shipped_constants() {
     Assert.Equal(IwexCodes.ChargeShaft, FurnaceLayoutRig.ShaftGlyph);
     Assert.Equal(IwexCodes.HearthCell, FurnaceLayoutRig.HearthGlyph);
   }
@@ -152,30 +119,30 @@ public class IwexCodesHearthCellTests
   #region The domain half of an alternation
 
   /// <summary>
-  /// <b>The behaviour both constants are built on, pinned against the real
-  /// <see cref="WildcardUtil.Match"/> rather than described in a comment.</b>
-  /// <para>
-  /// The rule is that <c>Match</c> compares <b>domain and path separately</b>. An <c>@(…)</c> alternation
-  /// is a regex over the <em>path</em> and says nothing about the domain, so the domain half is whatever
-  /// the <see cref="Vintagestory.API.Common.AssetLocation"/> constructor put there - and with no <c>:</c>
-  /// in the string that default is <c>game</c>. A bare alternation is therefore silently
-  /// <c>game:@(…)</c> and <b>cannot match a modded block however well its path fits</b>.
-  /// </para>
-  /// <para>
-  /// This is the trap, and it is quiet: the alternation still <em>looks</em> right, still matches every
-  /// vanilla block in it, and only fails on the one member that is ours. In a multiblock legend that reads
-  /// as a structure which will not complete once the player charges it.
-  /// </para>
+  /// The behaviour both constants are built on. <see cref="WildcardUtil.Match"/> compares domain and
+  /// path separately: an <c>@(…)</c> alternation is a regex over the path and says nothing about the
+  /// domain, so the domain is whatever the <see cref="Vintagestory.API.Common.AssetLocation"/>
+  /// constructor supplied, which is <c>game</c> when the string carries no <c>:</c>. A bare alternation
+  /// is therefore <c>game:@(…)</c>, matches every vanilla member and no modded one, and in a multiblock
+  /// legend reads as a structure that never completes.
   /// </summary>
   [Theory]
-  // A domain-wildcarded alternation matches the same path in any domain - which is the point.
-  [InlineData("*:@(air|coalpile|furnace-chargepile)", "iwex:furnace-chargepile", true)]
+  // A domain-wildcarded alternation matches the same path in any domain.
+  [InlineData(
+    "*:@(air|coalpile|furnace-chargepile)",
+    "iwex:furnace-chargepile",
+    true
+  )]
   [InlineData("*:@(air|coalpile|furnace-chargepile)", "game:air", true)]
   [InlineData("*:@(air|coalpile|furnace-chargepile)", "game:coalpile", true)]
   // ...and a domainless one is `game:`, so the modded member of its own alternation never matches.
-  [InlineData("@(air|coalpile|furnace-chargepile)", "iwex:furnace-chargepile", false)]
+  [InlineData(
+    "@(air|coalpile|furnace-chargepile)",
+    "iwex:furnace-chargepile",
+    false
+  )]
   [InlineData("@(air|coalpile|furnace-chargepile)", "game:air", true)]
-  // The same statement without an alternation in the way: it is the domain that decides, not the syntax.
+  // The same statement without an alternation: the domain decides, not the syntax.
   [InlineData("game:coalpile", "iwex:coalpile", false)]
   [InlineData("*:coalpile", "iwex:coalpile", true)]
   public void A_bare_alternation_is_game_domained_and_cannot_admit_a_modded_block(
@@ -192,15 +159,12 @@ public class IwexCodesHearthCellTests
     );
 
   /// <summary>
-  /// The cost of the domain wildcard, stated so it is a choice rather than an oversight: <c>*:</c> admits
-  /// the path from <b>any</b> mod, not only ours. That is accepted here - a third mod registering a block
-  /// called <c>coalpile</c> or <c>furnace-chargepile</c> would be claiming to be one - but it is the reason
-  /// <c>VanillaCodes</c>' masonry ladder stays domainless: those alternations name vanilla's own bricks and
-  /// should <em>not</em> silently take a modded lookalike.
+  /// <c>*:</c> admits the path from any mod, which is accepted for these cells. <c>VanillaCodes</c>'
+  /// masonry ladder stays domainless for the opposite reason: those alternations name vanilla's own
+  /// bricks and must not take a modded lookalike.
   /// </summary>
   [Fact]
-  public void The_domain_wildcard_admits_any_mods_matching_path_and_that_is_the_trade()
-  {
+  public void The_domain_wildcard_admits_any_mods_matching_path_and_that_is_the_trade() {
     Assert.True(
       WildcardUtil.Match(
         new Vintagestory.API.Common.AssetLocation(IwexCodes.ChargeShaft),

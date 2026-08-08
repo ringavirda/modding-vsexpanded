@@ -10,19 +10,21 @@ using Vintagestory.API.MathTools;
 namespace LowPressureExpanded.BlockNetworkPipe.Blocks;
 
 /// <summary>
-/// The steam condenser: a tjunction-shaped fixed port (not a network node) that recycles leftover
-/// steam back into the water line. In north orientation west/east are the water line and north is
-/// the steam line; steam drawn from the north condenses into the water passing W↔E. The three
-/// adjacent runs stay separate networks (it's a connector, not a node); the BE bridges the two
-/// water sides itself.
+/// Steam condenser: a tjunction-shaped fixed port that recycles leftover steam back into the water
+/// line. In north orientation west and east are the water line and north is the steam line; steam
+/// drawn from the north condenses into the water passing west to east. Being a connector rather than
+/// a network node, it leaves the three adjacent runs as separate networks, and the block entity
+/// bridges the two water sides itself.
 /// </summary>
 [BlockRegister]
-public partial class BlockSteamCondenser : Block, INetworkConnector, IExBlockDefProvider
-{
+public partial class BlockSteamCondenser
+  : Block,
+    INetworkConnector,
+    IExBlockDefProvider {
   public string NetworkType => "pipe";
 
-  /// <summary>The steam-condenser blocktype, authored in C# (migrated from pipes/steamcondenser.json).
-  /// It orients via the vanilla <c>HorizontalOrientable</c> behavior, not the pipe orientation table.</summary>
+  /// <summary>The steam-condenser blocktype. It orients through the vanilla
+  /// <c>HorizontalOrientable</c> behavior, not the pipe orientation table.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [SteamCondenser(domain)];
 
@@ -54,8 +56,8 @@ public partial class BlockSteamCondenser : Block, INetworkConnector, IExBlockDef
 
   private int Angle => ExOrientation.AngleFromSide(Variant["side"]);
 
-  // JSON collision/selection boxes are authored in the north orientation and do not
-  // auto-rotate with the placed variant, so rotate them to match the shape's rotateY.
+  // Collision and selection boxes are authored in the north orientation and do not auto-rotate with
+  // the placed variant, so they are rotated here to match the shape's rotateY.
   private Cuboidf[]? _rotatedCollisionBoxes;
   private Cuboidf[]? _rotatedSelectionBoxes;
 
@@ -83,8 +85,7 @@ public partial class BlockSteamCondenser : Block, INetworkConnector, IExBlockDef
   public BlockFacing SteamInletFace =>
     ExOrientation.RotateFacing(BlockFacing.NORTH, Angle);
 
-  public bool HasConnectorAt(BlockFacing face)
-  {
+  public bool HasConnectorAt(BlockFacing face) {
     int angle = Angle;
     return face == ExOrientation.RotateFacing(BlockFacing.WEST, angle)
       || face == ExOrientation.RotateFacing(BlockFacing.EAST, angle)

@@ -9,25 +9,22 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Localization guard over every mod's shipped lang files. English is the source of truth; each
-/// translated locale must carry <b>exactly</b> the same keys (a missing key renders as its raw code
-/// in-game - as iwex's ru/uk did for the whole bunker/mixer/burden family before they were filled -
-/// and a stray extra key is dead weight or a typo), and every shared value must reference the same set
-/// of <c>{0}</c>/<c>{1:F0}</c> argument placeholders (a translation that introduces an index the format
-/// call has no argument for throws a real <see cref="FormatException"/> at runtime; one that drops an
-/// index silently loses information). Discovers the lang directories from the source tree, so a new mod
-/// or a new locale is covered automatically.
+/// Localization guard over every mod's shipped lang files. English is the source of truth: each
+/// translated locale must carry the same key set (a missing key renders as its raw code in game, an
+/// extra one is dead weight), and every shared value must reference the same set of <c>{0}</c> /
+/// <c>{1:F0}</c> argument placeholders (an index the format call has no argument for throws
+/// <see cref="FormatException"/> at runtime, a dropped index loses information). Lang directories are
+/// discovered from the source tree, so a new mod or locale is covered automatically.
 /// </summary>
-public class LangParityTests
-{
-  private static readonly Regex Placeholder =
-    new(@"\{(\d+)(?::[^}]*)?\}", RegexOptions.Compiled);
+public class LangParityTests {
+  private static readonly Regex Placeholder = new(
+    @"\{(\d+)(?::[^}]*)?\}",
+    RegexOptions.Compiled
+  );
 
   /// <summary>One case per non-English locale file: (label, englishPath, localePath).</summary>
-  public static IEnumerable<object[]> LocaleFiles()
-  {
-    // Assets were hoisted out of src/<Mod>/ to a single repo-root assets/ tree; the lang dirs are
-    // now assets/<domain>/lang/. (The /bin/ + /assets/ + /lang/ filters below still hold.)
+  public static IEnumerable<object[]> LocaleFiles() {
+    // Lang files live at assets/<domain>/lang/ under the repo-root assets tree.
     string assets = Path.Combine(RepoRoot(), "assets");
     foreach (
       string enPath in Directory.EnumerateFiles(
@@ -35,10 +32,9 @@ public class LangParityTests
         "en.json",
         SearchOption.AllDirectories
       )
-    )
-    {
+    ) {
       string norm = enPath.Replace('\\', '/');
-      // Only source lang assets - never build output, never an unrelated en.json.
+      // Source lang assets only: no build output, no unrelated en.json.
       if (
         norm.Contains("/bin/")
         || !norm.Contains("/assets/")
@@ -48,8 +44,7 @@ public class LangParityTests
 
       string dir = Path.GetDirectoryName(enPath)!;
       string domain = new DirectoryInfo(dir).Parent!.Name; // assets/<domain>/lang
-      foreach (string locPath in Directory.EnumerateFiles(dir, "*.json"))
-      {
+      foreach (string locPath in Directory.EnumerateFiles(dir, "*.json")) {
         if (
           Path.GetFileName(locPath)
             .Equals("en.json", StringComparison.OrdinalIgnoreCase)
@@ -66,8 +61,7 @@ public class LangParityTests
     string label,
     string enPath,
     string locPath
-  )
-  {
+  ) {
     HashSet<string> en = [.. Load(enPath).Keys];
     HashSet<string> loc = [.. Load(locPath).Keys];
 
@@ -77,10 +71,14 @@ public class LangParityTests
     Assert.True(
       missing.Count == 0 && extra.Count == 0,
       $"{label}: {missing.Count} missing, {extra.Count} extra vs en.\n"
-        + (missing.Count > 0
-          ? "  missing: " + string.Join(", ", missing.Take(20)) + "\n"
-          : "")
-        + (extra.Count > 0 ? "  extra: " + string.Join(", ", extra.Take(20)) : "")
+        + (
+          missing.Count > 0
+            ? "  missing: " + string.Join(", ", missing.Take(20)) + "\n"
+            : ""
+        )
+        + (
+          extra.Count > 0 ? "  extra: " + string.Join(", ", extra.Take(20)) : ""
+        )
     );
   }
 
@@ -90,23 +88,19 @@ public class LangParityTests
     string label,
     string enPath,
     string locPath
-  )
-  {
+  ) {
     Dictionary<string, string> en = Load(enPath);
     Dictionary<string, string> loc = Load(locPath);
 
     List<string> drift = [];
-    foreach ((string key, string enVal) in en)
-    {
+    foreach ((string key, string enVal) in en) {
       // Missing keys are the other test's job; only compare values present in both.
       if (!loc.TryGetValue(key, out string? locVal))
         continue;
       HashSet<int> enIx = Indices(enVal);
       HashSet<int> locIx = Indices(locVal);
       if (!enIx.SetEquals(locIx))
-        drift.Add(
-          $"{key} (en:[{Join(enIx)}] loc:[{Join(locIx)}])"
-        );
+        drift.Add($"{key} (en:[{Join(enIx)}] loc:[{Join(locIx)}])");
     }
 
     Assert.True(
@@ -116,19 +110,16 @@ public class LangParityTests
     );
   }
 
-  private static string Join(HashSet<int> ix) =>
-    string.Join(",", ix.Order());
+  private static string Join(HashSet<int> ix) => string.Join(",", ix.Order());
 
-  private static HashSet<int> Indices(string value)
-  {
+  private static HashSet<int> Indices(string value) {
     HashSet<int> set = [];
     foreach (Match m in Placeholder.Matches(value))
       set.Add(int.Parse(m.Groups[1].Value));
     return set;
   }
 
-  private static Dictionary<string, string> Load(string path)
-  {
+  private static Dictionary<string, string> Load(string path) {
     var obj = JObject.Parse(File.ReadAllText(path));
     Dictionary<string, string> map = [];
     foreach (JProperty p in obj.Properties())
@@ -139,8 +130,7 @@ public class LangParityTests
     return map;
   }
 
-  private static string RepoRoot()
-  {
+  private static string RepoRoot() {
     var dir = new DirectoryInfo(AppContext.BaseDirectory);
     while (
       dir != null

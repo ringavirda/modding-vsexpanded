@@ -3,19 +3,17 @@ using System.Collections.Generic;
 namespace ExpandedLib.Registries.Preferences;
 
 /// <summary>
-/// A single per-player, client-side display preference (e.g. the metric/imperial unit system).
-/// Each preference lives in its own class, carries a <see cref="PreferenceRegisterAttribute"/> and
-/// is discovered by <see cref="PreferenceRegistry.RegisterAll"/>, so adding a new toggle is just a
-/// matter of dropping in a class - <see cref="ExPreferences"/> handles persistence and the
-/// <c>.exmod</c> command exposes it automatically.
+/// A single per-player, client-side display preference (e.g. the metric/imperial unit system). Each
+/// preference is a class carrying a <see cref="PreferenceRegisterAttribute"/>, discovered by
+/// <see cref="PreferenceRegistry.RegisterAll"/>; <see cref="ExPreferences"/> persists it and the
+/// <c>.exmod</c> command exposes it. The value is stored as a plain string, one of
+/// <see cref="Options"/>.
 /// <para>
-/// The value is stored as a plain string (one of <see cref="Options"/>); <see cref="Apply"/> turns
-/// that string into whatever live client state the preference drives. The registry instantiates the
-/// class with its parameterless constructor, so a preference should hold no constructor state.
+/// The registry instantiates implementations through their parameterless constructor, so a
+/// preference must hold no constructor state.
 /// </para>
 /// </summary>
-public interface IExPreference
-{
+public interface IExPreference {
   /// <summary>Stable key for this preference, used as the config key, the <c>.exmod</c>
   /// sub-command name and the lang-key stem (<c>command-{Key}-desc</c>,
   /// <c>pref-{Key}-label</c>, <c>pref-{Key}-{value}</c>). Lower-case, no spaces.</summary>

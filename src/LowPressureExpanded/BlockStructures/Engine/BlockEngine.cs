@@ -25,8 +25,7 @@ namespace LowPressureExpanded.BlockStructures.Engine;
 public abstract class BlockEngine
   : BlockFilledMegastructure,
     INetworkConnector,
-    IFillerInteractionTarget
-{
+    IFillerInteractionTarget {
   // Pipe ports in north orientation, rotated to the placed orientation at runtime.
   private static readonly BlockFacing[] BaseConnectorFaces =
   [
@@ -37,9 +36,9 @@ public abstract class BlockEngine
   // Raw side angle (north 0, west 90, south 180, east 270).
   protected int Angle => ExOrientation.AngleFromSide(Variant["side"]) % 360;
 
-  // The body extends along local +z, but rotateYByType raises the mesh 180° from that so the
-  // body points AWAY from the player. Everything lining up with the visible body (fillers,
-  // connectors, sub-machine, gear housing) lives in this +180 "body" frame.
+  // The body extends along local +z, but rotateYByType turns the mesh 180° from that, so the body
+  // points away from the player. Everything aligned with the visible body (fillers, connectors,
+  // sub-machine, gear housing) lives in this +180 body frame.
   protected int BodyAngle => (Angle + 180) % 360;
 
   /// <summary>The structure/filler rotation angle - the engine's footprint lives in the body frame.</summary>
@@ -47,10 +46,8 @@ public abstract class BlockEngine
 
   public string NetworkType => "pipe";
 
-  public bool HasConnectorAt(BlockFacing face)
-  {
-    foreach (var baseFace in BaseConnectorFaces)
-    {
+  public bool HasConnectorAt(BlockFacing face) {
+    foreach (var baseFace in BaseConnectorFaces) {
       if (ExOrientation.RotateFacing(baseFace, Angle) == face)
         return true;
     }
@@ -65,10 +62,9 @@ public abstract class BlockEngine
   public BlockFacing WaterOutletFace =>
     ExOrientation.RotateFacing(BlockFacing.EAST, Angle);
 
-  // The engine placement geometry (IEngineGeometry), read at runtime from the block's own attributes
-  // (file or injected def alike). These replace the per-leaf generated members so the values live once,
-  // in the def; the concrete Watt/Cornish satisfy IEngineGeometry via these inherited accessors. Left
-  // nullable so the coded Default*Offset below still applies when the block carries no attributes (tests).
+  // Engine placement geometry (IEngineGeometry), read at runtime from the block's own attributes;
+  // Watt and Cornish satisfy IEngineGeometry through these inherited accessors. Nullable, so the
+  // Default*Offset values below apply when the block carries no attributes.
   public JsonObject? SubmachineOffset => Attributes?["submachineOffset"];
   public JsonObject? GearHousingOffset => Attributes?["gearHousingOffset"];
 
@@ -92,11 +88,10 @@ public abstract class BlockEngine
 
   /// <summary>
   /// Compass-clockwise mapping from an engine's facing to its sub-machine's facing: north→east,
-  /// east→south, south→west, west→north. The single rule both placement directions use.
+  /// east→south, south→west, west→north. Used by both placement directions.
   /// </summary>
   public static string SubmachineSide(string engineSide) =>
-    engineSide switch
-    {
+    engineSide switch {
       "north" => "east",
       "east" => "south",
       "south" => "west",
@@ -106,18 +101,16 @@ public abstract class BlockEngine
 
   /// <summary>
   /// Locates the engine owning the sub-machine cell at <paramref name="submachinePos"/>. The engine
-  /// sits two cells away horizontally, so test the four candidates and confirm each engine's
-  /// <see cref="SubmachinePos"/> points back here - works for any orientation and offset.
+  /// sits two cells away horizontally, so the four candidates are tested and each engine's
+  /// <see cref="SubmachinePos"/> must point back here. Holds for any orientation and offset.
   /// </summary>
   public static bool TryFindEngineFor(
     IBlockAccessor blockAccessor,
     BlockPos submachinePos,
     out BlockPos enginePos,
     out BlockEngine engineBlock
-  )
-  {
-    foreach (var f in BlockFacing.HORIZONTALS)
-    {
+  ) {
+    foreach (var f in BlockFacing.HORIZONTALS) {
       BlockPos cand = submachinePos.AddCopy(
         f.Normali.X * 2,
         0,
@@ -126,8 +119,7 @@ public abstract class BlockEngine
       if (
         blockAccessor.GetBlock(cand) is BlockEngine eng
         && eng.SubmachinePos(cand).Equals(submachinePos)
-      )
-      {
+      ) {
         enginePos = cand;
         engineBlock = eng;
         return true;
@@ -155,12 +147,11 @@ public abstract class BlockEngine
   private static readonly Vec3d DefaultCylinderVent = new(0.5, 1.5, 0.5);
 
   /// <summary>
-  /// World point at the top of the piston cylinder, where it puffs spent steam while running (and
-  /// hard while over-pressure). Read from the optional <c>cylinderVentOffset</c> JSON attribute
-  /// (master-cell frame); the horizontal part rotates by the body angle to track the cylinder.
+  /// World point at the top of the piston cylinder, where spent steam puffs while running and
+  /// harder while over-pressure. No engine declares <c>cylinderVentOffset</c>, so the coded default
+  /// applies; its horizontal part rotates by the body angle to track the cylinder.
   /// </summary>
-  public Vec3d CylinderVentPos(BlockPos enginePos)
-  {
+  public Vec3d CylinderVentPos(BlockPos enginePos) {
     Vec3d off = ReadVentOffset();
     float x = (float)off.X;
     float z = (float)off.Z;
@@ -168,8 +159,6 @@ public abstract class BlockEngine
     return new Vec3d(enginePos.X + x, enginePos.Y + off.Y, enginePos.Z + z);
   }
 
-  // No engine JSON declares cylinderVentOffset (so there's no generated member); it's the coded
-  // default. CylinderVentPos still rotates the horizontal part by the body angle.
   private Vec3d ReadVentOffset() => DefaultCylinderVent;
 
   // Placement, the filler footprint and break-time filler removal are handled by
@@ -178,8 +167,7 @@ public abstract class BlockEngine
   protected override void OnFootprintPlaced(
     IWorldAccessor world,
     BlockPos blockPos
-  )
-  {
+  ) {
     if (world.Side == EnumAppSide.Server)
       ReorientSubmachine(world, blockPos);
   }
@@ -189,8 +177,7 @@ public abstract class BlockEngine
   /// <see cref="SubmachineSide"/>). <c>ExchangeBlock</c> keeps the block entity alive, re-binding
   /// its animator and engine back-reference via <c>OnExchanged</c>.
   /// </summary>
-  private void ReorientSubmachine(IWorldAccessor world, BlockPos enginePos)
-  {
+  private void ReorientSubmachine(IWorldAccessor world, BlockPos enginePos) {
     var ba = world.BlockAccessor;
     BlockPos subPos = SubmachinePos(enginePos);
     if (ba.GetBlock(subPos) is not BlockEngineSubmachine sub)
@@ -208,12 +195,11 @@ public abstract class BlockEngine
   #region Code-first definition
 
   /// <summary>
-  /// The surface shared by both steam-engine mega-blocks (Watt/Cornish): metal material + sounds, mining
-  /// tier/resistance, the HorizontalOrientable + BlockEntityInteract behaviors, the Animatable entity
-  /// behavior, the sub-machine/gear-housing offsets, the side variant group, the body-frame shape spin
-  /// (+180) with the cylinder selective elements, and the full cube collision. The caller binds its own
-  /// <c>class</c>/<c>entityClass</c>, its own filler footprint (each engine's beam column differs), and its
-  /// staged construction table.
+  /// Block-definition surface shared by both steam-engine mega-blocks (Watt/Cornish): material and
+  /// sounds, mining tier and resistance, the orientable and interact behaviors, the sub-machine and
+  /// gear-housing offsets, the side variant group, the +180 body-frame shape spin with the cylinder
+  /// selective elements, and the full-cube collision. The caller adds its own
+  /// <c>class</c>/<c>entityClass</c>, filler footprint and staged construction table.
   /// </summary>
   protected static ExBlockDef EngineShell(ExBlockDef def, string shapeBase) =>
     def.Material(EnumBlockMaterial.Metal)
@@ -224,8 +210,22 @@ public abstract class BlockEngine
       .Behavior("ExOrientable")
       .Behavior("BlockEntityInteract")
       .EntityBehavior("Animatable")
-      .Attribute("submachineOffset", new { x = 0, y = 0, z = 2 })
-      .Attribute("gearHousingOffset", new { x = 0, y = 3, z = 1 })
+      .Attribute(
+        "submachineOffset",
+        new {
+          x = 0,
+          y = 0,
+          z = 2,
+        }
+      )
+      .Attribute(
+        "gearHousingOffset",
+        new {
+          x = 0,
+          y = 3,
+          z = 1,
+        }
+      )
       .SideVariant()
       .CreativeCommon("*-n")
       .ShapeSpunPerOrientation(shapeBase, 180)
@@ -257,8 +257,7 @@ public abstract class BlockEngine
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var help = RepairInteractionHelp(
       world,
       selection.Position,
@@ -284,19 +283,17 @@ public abstract class BlockEngine
     IWorldAccessor world,
     BlockPos enginePos,
     WorldInteraction[]? baseHelp
-  )
-  {
+  ) {
     baseHelp ??= [];
 
-    // Only a broken engine is repairable - show the wrench action then.
+    // Only a broken engine is repairable.
     if (
       world.BlockAccessor.GetBlockEntity(enginePos) is not BlockEntityEngine be
       || !be.IsBroken
     )
       return baseHelp;
 
-    var repairHelp = new WorldInteraction
-    {
+    var repairHelp = new WorldInteraction {
       ActionLangCode = "lpex:blockhelp-engine-repair",
       MouseButton = EnumMouseButton.Right,
       Itemstacks = ExItems.WrenchStacks(world),
@@ -306,10 +303,10 @@ public abstract class BlockEngine
 
   #region IFillerInteractionTarget
 
-  // Footprint fillers forward player interaction here; by default a filler cell behaves like
-  // clicking the engine itself. Cornish overrides these for its per-cell control rods.
-  // Forwarding uses the vanilla base help (not the virtual GetPlacedBlockInteractionHelp) so a
-  // subclass's per-cell extras aren't shown on every footprint cell.
+  // Footprint fillers forward player interaction here; a filler cell behaves like clicking the
+  // engine itself. Cornish overrides these for its per-cell control rods. Forwarding uses the
+  // vanilla base help, not the virtual GetPlacedBlockInteractionHelp, so a subclass's per-cell
+  // extras are not shown on every footprint cell.
 
   public virtual bool OnFillerInteractStart(
     IWorldAccessor world,
@@ -352,10 +349,9 @@ public abstract class BlockEngine
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
-    // A held placeable block (not a liquid container) = the player is building against the
-    // engine (e.g. a pipe on the steam inlet/water outlet); let vanilla place it on the clicked
+  ) {
+    // A held placeable block that is not a liquid container means the player is building against
+    // the engine (a pipe on the steam inlet or water outlet), so vanilla places it on the clicked
     // face. Construction materials and the wrench are items, so they fall through below.
     ItemStack? held = byPlayer.InventoryManager?.ActiveHotbarSlot?.Itemstack;
     if (held?.Block != null && held.Collectible is not BlockLiquidContainerBase)
@@ -366,8 +362,7 @@ public abstract class BlockEngine
       world.BlockAccessor.GetBlockEntity(blockSel.Position)
         is BlockEntityEngine be
       && be.IsBroken
-    )
-    {
+    ) {
       if (world.Side == EnumAppSide.Server)
         TryRepair(world, byPlayer, be);
       return true;
@@ -381,13 +376,11 @@ public abstract class BlockEngine
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockEntityEngine be
-  )
-  {
+  ) {
     var player = byPlayer as IServerPlayer;
     ItemSlot? slot = byPlayer.InventoryManager?.ActiveHotbarSlot;
 
-    if (slot?.Itemstack?.Collectible?.Code?.Path?.Contains("wrench") != true)
-    {
+    if (slot?.Itemstack?.Collectible?.Code?.Path?.Contains("wrench") != true) {
       player?.SendIngameError(
         "lpex-engine",
         Lang.Get("lpex:engine-repair-wrench")
@@ -399,15 +392,13 @@ public abstract class BlockEngine
     // Creative players repair instantly with the wrench - no materials needed or consumed.
     bool creative =
       byPlayer.WorldData?.CurrentGameMode == EnumGameMode.Creative;
-    if (!creative)
-    {
+    if (!creative) {
       bool hasAll = RepairItems.All(r =>
         ExInventory.Count(byPlayer, stack => Matches(stack, r.Codes))
         >= r.Quantity
       );
-      if (!hasAll)
-      {
-        // Print exactly what the repair needs to the chat instead of cluttering the help.
+      if (!hasAll) {
+        // The requirements go to the chat rather than the interaction help.
         PrintRepairMaterials(player);
         return;
       }

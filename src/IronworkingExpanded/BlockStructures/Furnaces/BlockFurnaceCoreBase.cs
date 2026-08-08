@@ -4,93 +4,65 @@ using Vintagestory.API.Common;
 namespace IronworkingExpanded.BlockStructures.Furnaces;
 
 /// <summary>
-/// Shared plumbing for every furnace anchor - the refractory core that sits at the centre of the
-/// furnace's lowest layer and carries the whole multiblock. Replaces the old furnace door: the door
-/// anchored the structure part-way up the shaft, so a build started in mid-air and a dead furnace
-/// could be cleared by swinging one hinge. The core anchors on the bottom layer instead, so a build
-/// starts on the ground and clearing a dead furnace means breaking its walls.
-/// <para>
-/// Orientation is a plain <c>side</c> variant driven by the vanilla <c>HorizontalOrientable</c>
-/// behaviour, which is why none of the cores need the door's hand-rolled <c>TryPlaceBlock</c>: there
-/// is no <c>BEBehaviorDoor.RotateYRad</c> to seed and no open/closed state to feed the furnace FSM.
-/// </para>
-/// <para>
-/// Only the code, brick tier, block entity and multiblock layout differ between the cold blast
-/// furnace, the hot blast furnace and the cupola - everything else is this one fragment, because
-/// duplicating the anchor three ways is what broke the furnaces the last time round.
-/// </para>
+/// Shared plumbing for every furnace anchor: the refractory core at the centre of the furnace's lowest
+/// layer, which carries the whole multiblock. Anchoring on the bottom layer means a build starts on the
+/// ground and a dead furnace is cleared by breaking its walls. Orientation is a plain <c>side</c> variant
+/// driven by the vanilla <c>HorizontalOrientable</c> behaviour, so no core needs its own
+/// <c>TryPlaceBlock</c>. The cold blast furnace, hot blast furnace and cupola differ only in code, brick
+/// tier, block entity and multiblock layout.
 /// </summary>
-public abstract class BlockFurnaceCoreBase : Block
-{
+public abstract class BlockFurnaceCoreBase : Block {
   /// <summary>
-  /// The single <c>code</c> every furnace part is registered under - cores, doors, hearths, the
-  /// chimney cap, the charge pile, the tap, the tuyere and the blower alike. Each is told apart by its
-  /// <c>type</c> variant, exactly as the pipe family is.
-  /// <para>
-  /// <b>This is not a style choice.</b> Several <c>IwexCodes</c> selectors mean "any member of this
-  /// family" and are built as <c>Code + "*"</c>, and some of those are fed straight into multiblock
-  /// <c>Legend</c>s. If one part kept its own <c>furnace-X</c> code, this code would be a proper prefix
-  /// of it and such a wildcard would match the <b>wrong part</b> - a layout would accept a charge door in
-  /// a tuyere cell, with every code resolving and no test failing. Guarded by
-  /// <c>CodePrefixCollision</c>; the rule is N7 in <c>docs/design/mechanics/naming.md</c>.
-  /// </para>
-  /// <para>
-  /// The consequence for callers: a family wildcard must be the generated <c>.Any</c>
-  /// (<c>iwex:furnace-tuyere-*</c>), never <c>Code + "*"</c>. That misuse is the one thing the guard
-  /// cannot see, because it checks code against code.
-  /// </para>
+  /// The single <c>code</c> every furnace part is registered under - cores, doors, hearths, chimney cap,
+  /// charge pile, tap, tuyere and blower - each told apart by its <c>type</c> variant. A part with its own
+  /// <c>furnace-X</c> code would have this code as a proper prefix, so a <c>Code + "*"</c> selector fed
+  /// into a multiblock <c>Legend</c> would match the wrong part while every code still resolved. Guarded
+  /// by <c>CodePrefixCollision</c>; rule N7 in docs/design/mechanics/naming.md.
   /// </summary>
+  /// <remarks>A family wildcard must be the generated <c>.Any</c> (<c>iwex:furnace-tuyere-*</c>), never
+  /// <c>Code + "*"</c>. The guard compares code against code and cannot see that misuse.</remarks>
   public const string FurnaceCode = "furnace";
 
   /// <summary>
-  /// The def fragment every furnace core shares: a refractory-brick cube oriented by a <c>side</c>
-  /// variant and carrying the build-outline projection. The caller adds its own
-  /// <c>.Class</c>/<c>.EntityClass</c>, brick-tier faces and <c>.MultiblockLayout</c>. The cube's
-  /// north face carries an orientation marker and its south face the furnace-type label (both applied
-  /// by the caller), so the anchor reads apart from the surrounding wall bricks - and tells the builder
-  /// which way it faces - at a glance. The labelled faces do the job a visually-distinct core shape
-  /// would, and better, since they also name the furnace.
+  /// The def fragment every furnace core shares: a refractory-brick cube oriented by a <c>side</c> variant
+  /// and carrying the build-outline projection. The caller adds its own <c>.Class</c>/<c>.EntityClass</c>,
+  /// brick-tier face textures and <c>.MultiblockLayout</c>, and stamps an orientation marker on the north
+  /// face and the furnace-type label on the south so the anchor reads apart from the surrounding wall
+  /// bricks.
   /// </summary>
-  /// <param name="code">The blocktype <c>code</c>. iwex's cores all pass <see cref="FurnaceCode"/>;
-  /// smex passes its own, because a shared helper must never rename another mod's block.</param>
+  /// <param name="code">The blocktype <c>code</c>. iwex's cores pass <see cref="FurnaceCode"/>; smex
+  /// passes its own, since a shared helper must not rename another mod's block.</param>
   /// <param name="type">The <c>type</c> state naming the family member, or <c>null</c> for a core that
-  /// carries no <c>type</c> group at all (smex's, until its own naming pass).</param>
+  /// carries no <c>type</c> group at all.</param>
   protected static ExBlockDef Core(
     string domain,
     string code,
     string? type,
     string path,
     params string[] brickTiers
-  )
-  {
+  ) {
     var def = ExBlockDef
       .Create(domain, code, path)
       // Must precede any other right-click consumer so its PreventSubsequent wins.
       .Behavior("MultiblockStructure")
       .Behavior("ExOrientable");
 
-    // Declared first so the code reads furnace-{type}-{tier}-{side}. Every iwex furnace part
-    // shares the one code `iwex:furnace` and is told apart by `type`; a part with its own `furnace-X`
-    // code would be prefixed by this one, and a wildcard built from it (IwexCodes) would then match the
-    // wrong part in a layout legend. See N7 in docs/design/mechanics/naming.md.
-    //
-    // smex passes null: it keeps its own code and gains no group. When this parameter was not here,
-    // the helper silently renamed `smex:blastfurnacecore` to `smex:furnace` - a cross-mod rename nobody
-    // asked for, caught only because smex's generated code table drifted.
+    // Declared first so the code reads furnace-{type}-{tier}-{side}. See N7 in
+    // docs/design/mechanics/naming.md. A null type leaves the block without a type group, which is what
+    // smex passes to keep its own code unchanged.
     if (type != null)
       def = def.VariantGroup("type", type);
 
-    // Refractory-tier variant, declared before the side group so the code reads {code}-{tier}-{side}
-    // (and the "*-n" creative/recipe selectors still match). Cores that take any refractory brick
-    // pass all three tiers; the tier3-only hot core passes none and stays a single, tier-less block.
+    // Refractory-tier variant, declared before the side group so the code reads {code}-{tier}-{side} and
+    // the "*-n" creative and recipe selectors still match. Cores that accept any refractory brick pass all
+    // three tiers; a core fixed to one tier passes none and stays a single, tier-less block.
     if (brickTiers.Length > 0)
       def = def.VariantGroup("tier", brickTiers);
 
-    return def
-      .SideVariant()
+    return def.SideVariant()
       .CreativeCommon("*-n")
-      // A plain cube: its per-face texture codes (north/south/east/west/up/down) are what let the
-      // caller stamp the orientation marker and type label onto just the two faces that carry them.
+      // A plain cube. Its per-face texture codes (north/south/east/west/up/down) let the caller stamp the
+      // orientation marker and type label onto single faces.
       .Shape("game:block/basic/cube")
       .Material(EnumBlockMaterial.Ceramic)
       .MaxStackSize(4)

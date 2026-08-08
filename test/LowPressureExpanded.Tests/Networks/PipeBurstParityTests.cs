@@ -4,23 +4,16 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Pins the one pipe-tier number the shared test fixture has to restate. <c>PipeTestWorld</c> seeds the
-/// per-domain burst ratings that the mods' ModSystems register in game, and it lives in the iwex suite -
-/// which cannot reference lpex, so the cast-tier rating is a constant there rather than a config read.
-/// <para>
-/// A stale copy is not a loud failure: every burst, over-pressure and capacity test in three suites
-/// quietly runs against the wrong ceiling and still passes. That is what happened when the tiers were
-/// rebalanced (plated 5 → 2.5, cast 8 → 5) and the fixture kept the old pair, so this guard exists to
-/// make the next retune fail here instead of nowhere.
-/// </para>
+/// Pins the pipe-tier numbers the shared fixture restates. <c>PipeTestWorld</c> seeds the per-domain
+/// burst and throughput ratings the mods' ModSystems register in game, and it lives in the iwex suite,
+/// which cannot reference lpex - so the cast-tier figures are constants there rather than config reads.
+/// A retune that leaves them stale fails here instead of quietly gating every burst, over-pressure,
+/// capacity and throughput test in three suites on the old ceiling.
 /// </summary>
-public class PipeBurstParityTests
-{
+public class PipeBurstParityTests {
   [Fact]
-  public void The_shared_fixture_seeds_the_shipped_cast_tier_burst_rating()
-  {
-    // The fixture constant is the 'expected' side: it is the copy that has to track the config, and
-    // xUnit's analyzer wants the constant there anyway.
+  public void The_shared_fixture_seeds_the_shipped_cast_tier_burst_rating() {
+    // The fixture constant is the expected side: it is the copy that has to track the config.
     Assert.Equal(
       PipeTestWorld.CastTierBurst,
       LpexValues.CastPipeBurstPressure,
@@ -28,12 +21,8 @@ public class PipeBurstParityTests
     );
   }
 
-  // Throughput is a second restated number with exactly the same failure mode: the fixture
-  // cannot read LpexValues, so a retune of the cast tier's rate would silently leave every throughput
-  // test in three suites gated on the old figure - and pass.
   [Fact]
-  public void The_shared_fixture_seeds_the_shipped_cast_tier_throughput()
-  {
+  public void The_shared_fixture_seeds_the_shipped_cast_tier_throughput() {
     Assert.Equal(
       PipeTestWorld.CastTierThroughput,
       LpexValues.CastPipeThroughput,

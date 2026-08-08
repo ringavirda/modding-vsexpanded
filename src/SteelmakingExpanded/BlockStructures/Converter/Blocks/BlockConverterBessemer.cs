@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
@@ -10,44 +11,36 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using ExpandedLib.Metals;
 
 namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 
 /// <summary>
-/// The 3×3×3 converter vessel block. Construction is driven by the
-/// RightClickConstructable block-entity behavior; this block scatters any
-/// solidified charge when broken with an iron-tier pickaxe.
-/// <para>
-/// Implements <see cref="IFillerInteractionTarget"/> so a small hardened residue (one that
-/// solidified mid-pour) can be chiselled out of the upper-rear <c>(0,1,1)</c> footprint cell with a
-/// chisel + hammer, rather than forcing the player to break the whole vessel.
-/// </para>
+/// The 3×3×3 converter vessel block. Construction is driven by the RightClickConstructable
+/// block-entity behavior; this block scatters any solidified charge when broken with an iron-tier
+/// pickaxe. As an <see cref="IFillerInteractionTarget"/> it also lets a small hardened residue be
+/// chiselled out of the hatch footprint cell (<c>chiselOffset</c>) with a chisel and hammer instead
+/// of breaking the whole vessel.
 /// </summary>
 [BlockRegister]
 public partial class BlockConverterBessemer
   : Block,
     IFillerHost,
     IFillerInteractionTarget,
-    IExBlockDefProvider
-{
-  /// <summary>The blocktype base code ("converterbessemer") - the single source of truth the vessel is
-  /// defined under (<see cref="Definitions"/>) and later resolved/animated by, so the control block that
-  /// spawns it (<c>GetConverterBlock</c>) and the animator cache key can't silently drift from the code
-  /// the block registers under. The multiblock/recipe/migration tables keep it literal by design (they
-  /// are hand-curated match catalogues, and typing one code among their siblings would only skew them).</summary>
+    IExBlockDefProvider {
+  /// <summary>The blocktype base code the vessel registers under. Shared by <see cref="Definitions"/>,
+  /// the control block's converter lookup and the animator cache key, so the three cannot drift apart.
+  /// The multiblock, recipe and migration tables spell the code literally.</summary>
   public const string BaseCode = "converterbessemer";
 
   #region Code-first definition
 
-  // The 3x3x3 footprint and the chisel-hatch offset, read at runtime from the block's own attributes
-  // (file or injected def alike) - replacing the generated members so the values live once, in the def.
+  // The 3x3x3 footprint and the chisel-hatch offset, read at runtime from the block's own attributes.
   public JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
   public JsonObject? ChiselOffset => Attributes?["chiselOffset"];
 
-  /// <summary>The Bessemer converter vessel blocktype, authored in C# (migrated from converter/bessemer.json).
-  /// A control-spawned 3x3x3 mega-block: raised through a 7-stage right-click construction, it never drops
-  /// itself and reserves its whole cube with invisible fillers. Not in creative (the control block spawns it).</summary>
+  /// <summary>The Bessemer converter vessel blocktype. A control-spawned 3x3x3 mega-block: raised
+  /// through a 7-stage right-click construction, it never drops itself and reserves its whole cube with
+  /// invisible fillers. Absent from creative, since the control block spawns it.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -60,7 +53,15 @@ public partial class BlockConverterBessemer
         .Resistance(45.0f)
         .MaxStackSize(1)
         .NoDrops()
-        .Attribute("chiselOffset", new { x = 0, y = 1, z = 0 })
+        .Attribute(
+          "chiselOffset",
+          new
+          {
+            x = 0,
+            y = 1,
+            z = 0,
+          }
+        )
         // The full 3x3x3 cube (x/y/z in -1..1) around the principal, minus the origin (the vessel cell) and
         // the upper-rear-left (-1,1,0) gap. Drawn as three floor plans (rows +Z, cols +X, top-left = (-1,-1)).
         .FillerOffsets(
@@ -139,48 +140,37 @@ public partial class BlockConverterBessemer
 
   #endregion
 
-  // RMB construction and its build prompts are routed to the
-  // RightClickConstructable block-entity behaviour by the "BlockEntityInteract"
-  // block behaviour declared in the block JSON.
+  // Right-click construction and its build prompts are routed to the RightClickConstructable
+  // block-entity behaviour by the "BlockEntityInteract" block behaviour declared above.
 
-  // The converter is welded plate over a refractory lining - breaking it needs an iron-tier pickaxe.
-  // The actual mining requirement is enforced via "requiredMiningTier" in the
-  // block JSON; here we just scatter whatever solidified charge it held.
+  // The mining tier that breaking the vessel requires is enforced by the block definition; this
+  // override only scatters whatever solidified charge it held.
   public override void OnBlockBroken(
     IWorldAccessor world,
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     ItemStack? solidifiedDrops = null;
     if (
       world.BlockAccessor.GetBlockEntity(pos) is BlockEntityConverterBessemer be
     )
       solidifiedDrops = be.CollectBreakDrops();
 
-    // Clear the reserved 3x3x3 filler volume. Done before base.OnBlockBroken so
-    // that even if the construction-drop path below throws, the fillers are gone
-    // and we don't leave invisible solid cells behind.
+    // Clear the reserved 3x3x3 filler volume before base.OnBlockBroken, so a throw in the
+    // construction-drop path below cannot leave invisible solid cells behind.
     int fillerAngle = ExOrientation.AngleFromSide(Variant["side"]);
     var fillerCells = StructureFillers.FootprintCells(this, pos, fillerAngle);
     StructureFillers.RemoveFillers(world, pos, fillerCells);
 
-    // base.OnBlockBroken drives the RightClickConstructable behaviour, which
-    // resolves each completed stage's ingredients back into drops. That path
-    // expands wildcard codes (e.g. metalplate-*) using the wildcard values
-    // captured at build time; a converter raised before "storeWildCard" was
-    // added to the recipe has none stored, so vanilla GetDrops throws while
-    // expanding the "*" - and because it runs before the block is cleared, the
-    // exception escapes to the client and crashes the game. Guard it so a
-    // legacy/corrupt construction state degrades to "no construction drops"
-    // and the block is still removed.
-    try
-    {
+    // base.OnBlockBroken drives the RightClickConstructable behaviour, which resolves each completed
+    // stage's ingredients back into drops by expanding wildcard codes (metalplate-*) against the
+    // values captured at build time. A vessel saved without those values makes vanilla GetDrops
+    // throw, and the exception would otherwise escape to the client. The guard degrades that state
+    // to no construction drops and still removes the block.
+    try {
       base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       world.Logger.Warning(
         "[smex] Bessemer converter at {0} could not drop its construction "
           + "materials (likely built before the recipe fix); removing it "
@@ -196,13 +186,12 @@ public partial class BlockConverterBessemer
       world.SpawnItemEntity(solidifiedDrops, pos.ToVec3d().Add(0.5, 0.5, 0.5));
   }
 
-  // The vessel is control-spawned, never placed from an item, so it must NOT drop itself when broken:
-  // the construction materials come from the RightClickConstructable behaviour and the solidified
-  // charge is spawned by OnBlockBroken above. The JSON "drops": [] declares this, but it is not always
-  // honoured for a variant block (the per-side variant can still be handed its own code as a fallback
-  // drop at registration), which leaves the vessel dropping itself alongside the materials. Enforce the
-  // empty drop list here so the suppression can't be bypassed. (Block behaviours can still contribute
-  // their own drops via base.GetDrops; the converter has none, so an empty list is correct.)
+  // The vessel is control-spawned and never placed from an item, so it must not drop itself: the
+  // construction materials come from the RightClickConstructable behaviour and the solidified charge
+  // is spawned by OnBlockBroken above. The declared empty drop list is not always honoured for a
+  // variant block, which can be handed its own code as a fallback drop at registration, so the empty
+  // list is enforced here. Block behaviours could contribute drops through base.GetDrops; the
+  // converter has none.
   public override ItemStack[] GetDrops(
     IWorldAccessor world,
     BlockPos pos,
@@ -212,15 +201,14 @@ public partial class BlockConverterBessemer
 
   #region Chisel-out interaction (IFillerInteractionTarget)
 
-  // Every footprint cell forwards interaction to this principal block. We single out the (0,1,1)
-  // hatch cell for the chisel-out and forward everything else to the normal construction handling.
+  // Every footprint cell forwards interaction to this principal block. Only the hatch cell at
+  // chiselOffset takes the chisel-out; every other cell falls through to construction handling.
   public bool OnFillerInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection principalSel,
     BlockPos clickedCell
-  )
-  {
+  ) {
     if (
       IsChiselCell(principalSel.Position, clickedCell)
       && TryChiselOut(world, byPlayer, principalSel.Position)
@@ -250,8 +238,7 @@ public partial class BlockConverterBessemer
     BlockSelection principalSel,
     IPlayer forPlayer,
     BlockPos clickedCell
-  )
-  {
+  ) {
     WorldInteraction[] baseHelp =
       GetPlacedBlockInteractionHelp(world, principalSel, forPlayer) ?? [];
 
@@ -271,8 +258,7 @@ public partial class BlockConverterBessemer
     return baseHelp;
   }
 
-  private bool IsChiselCell(BlockPos principalPos, BlockPos clickedCell)
-  {
+  private bool IsChiselCell(BlockPos principalPos, BlockPos clickedCell) {
     BlockPos chiselCell = ExOrientation.WorldPosFromAttr(
       principalPos,
       ChiselOffset,
@@ -282,15 +268,14 @@ public partial class BlockConverterBessemer
     return clickedCell.Equals(chiselCell);
   }
 
-  // Chisel in hand + hammer in the off-hand chips a hardened residue out of the vessel via the shared
-  // MoltenChisel ritual. Returns true when this owns the click (chiselled, or claimed-but-not-ready with
-  // a "too hot"/"too full" message), so it isn't forwarded to construction handling.
+  // A chisel in hand and a hammer in the off-hand chip a hardened residue out of the vessel through
+  // the shared MoltenChisel sequence. Returns true when the click is owned here (chiselled, or
+  // claimed but not ready with a "too hot"/"too full" message) so it is not forwarded to construction.
   private bool TryChiselOut(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockPos principalPos
-  )
-  {
+  ) {
     if (
       world.BlockAccessor.GetBlockEntity(principalPos)
       is not BlockEntityConverterBessemer be

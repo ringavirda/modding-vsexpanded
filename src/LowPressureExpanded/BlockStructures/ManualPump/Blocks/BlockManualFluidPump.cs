@@ -13,12 +13,12 @@ using Vintagestory.API.MathTools;
 namespace LowPressureExpanded.BlockStructures.ManualPump.Blocks;
 
 /// <summary>
-/// The manual (hand-cranked) fluid pump. A two-cell-tall, horizontally orientable pipe connector
-/// (NOT a network node): in north orientation it draws from the south face and delivers out the
-/// north face. Look-aware on placement but deliberately NOT wrench-orientable. The cell above is
-/// reserved with an invisible filler (real collision + the crank target). All work lives in
-/// <see cref="BlockEntityManualFluidPump"/>; this block only exposes the connectors, manages the
-/// filler footprint, and forwards the crank interaction.
+/// The hand-cranked fluid pump: a two-cell-tall, horizontally orientable pipe connector, not a
+/// network node. In north orientation it draws from the south face and delivers out the north face;
+/// placement is look-aware but the block is not wrench-orientable. The cell above is reserved by an
+/// invisible filler carrying the collision box and the crank target. All work lives in
+/// <see cref="BlockEntityManualFluidPump"/>; this block exposes the connectors, manages the filler
+/// footprint and forwards the crank interaction.
 /// </summary>
 [BlockRegister]
 public partial class BlockManualFluidPump
@@ -26,20 +26,18 @@ public partial class BlockManualFluidPump
     INetworkConnector,
     IFillerInteractionTarget,
     IFillerHost,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   public string NetworkType => "pipe";
 
   #region Code-first definition
 
   // The single-cell filler footprint (the crank cell above), read at runtime from the block's own
-  // attributes (file or injected def alike) - replacing the generated member so the value lives once,
-  // in the def. Satisfies IFillerHost, which StructureFillers.FootprintCells reads.
+  // attributes so the value lives only in the def. Satisfies IFillerHost, which
+  // StructureFillers.FootprintCells reads.
   public JsonObject? FillerOffsets => Attributes?["fillerOffsets"];
 
-  /// <summary>The manual (hand-cranked) fluid pump blocktype, authored in C# (migrated from
-  /// manualfluidpump.json). A two-cell-tall horizontally orientable pipe connector with an invisible
-  /// filler reserving the crank cell above.</summary>
+  /// <summary>The hand-cranked fluid pump blocktype: a two-cell-tall horizontally orientable pipe
+  /// connector with an invisible filler reserving the crank cell above.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -79,14 +77,12 @@ public partial class BlockManualFluidPump
     IPlayer byPlayer,
     BlockSelection blockSel,
     ref string failureCode
-  )
-  {
+  ) {
     if (!base.CanPlaceBlock(world, byPlayer, blockSel, ref failureCode))
       return false;
 
     var cells = StructureFillers.FootprintCells(this, blockSel.Position, Angle);
-    if (!StructureFillers.CanPlace(world, cells))
-    {
+    if (!StructureFillers.CanPlace(world, cells)) {
       failureCode = "notenoughspace";
       return false;
     }
@@ -97,8 +93,7 @@ public partial class BlockManualFluidPump
     IWorldAccessor world,
     BlockPos blockPos,
     ItemStack? byItemStack = null
-  )
-  {
+  ) {
     base.OnBlockPlaced(world, blockPos, byItemStack);
     StructureFillers.PlaceFillers(
       world,
@@ -112,8 +107,7 @@ public partial class BlockManualFluidPump
     BlockPos pos,
     IPlayer? byPlayer,
     float dropQuantityMultiplier = 1f
-  )
-  {
+  ) {
     StructureFillers.RemoveFillers(
       world,
       pos,
@@ -144,15 +138,14 @@ public partial class BlockManualFluidPump
     ?? base.OnBlockInteractStart(world, byPlayer, principalSel);
 
   /// <summary>
-  /// Begins a crank on an empty-handed right-click. Returns <c>null</c> to defer (held items,
-  /// e.g. a wrench, fall through to the default behavior).
+  /// Begins a crank on an empty-handed right-click. Returns <c>null</c> to defer, so a held item
+  /// such as a wrench falls through to the default behavior.
   /// </summary>
   private bool? HandleStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockPos pumpPos
-  )
-  {
+  ) {
     if (byPlayer.InventoryManager?.ActiveHotbarSlot?.Empty != true)
       return null;
     if (
@@ -184,8 +177,7 @@ public partial class BlockManualFluidPump
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockPos pumpPos
-  )
-  {
+  ) {
     // Keep cranking only while the hand stays empty; a held item ends the hold.
     if (byPlayer.InventoryManager?.ActiveHotbarSlot?.Empty != true)
       return false;
@@ -214,8 +206,7 @@ public partial class BlockManualFluidPump
     BlockPos clickedCell
   ) => HandleStop(world, principalSel.Position);
 
-  private static void HandleStop(IWorldAccessor world, BlockPos pumpPos)
-  {
+  private static void HandleStop(IWorldAccessor world, BlockPos pumpPos) {
     if (
       world.BlockAccessor.GetBlockEntity(pumpPos)
       is BlockEntityManualFluidPump be
@@ -240,14 +231,12 @@ public partial class BlockManualFluidPump
     IWorldAccessor world,
     BlockSelection selection,
     IPlayer forPlayer
-  )
-  {
+  ) {
     var help = new List<WorldInteraction>(
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? []
     );
     help.Add(
-      new WorldInteraction
-      {
+      new WorldInteraction {
         ActionLangCode = "lpex:blockhelp-manualfluidpump-crank",
         MouseButton = EnumMouseButton.Right,
         RequireFreeHand = true,

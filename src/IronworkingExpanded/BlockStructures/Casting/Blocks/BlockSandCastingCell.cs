@@ -9,14 +9,13 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 
 /// <summary>
-/// The 1×1 sand casting cell block: a hollow brick shell placed empty, then rammed with sand and impressed
-/// with a wooden pattern to cast a part from molten metal drawn off a canal on its launder face. The block
-/// wires the code-first definition, the hosted <see cref="BEBehaviorMoltenCell"/>, and routes every
-/// right-click through to <see cref="BlockEntitySandCastingCell.OnInteract"/>.
+/// The 1×1 sand casting cell: a hollow brick shell placed empty, rammed with sand and impressed with a
+/// wooden pattern, then filled from a canal on its launder face. Wires the code-first definition and the
+/// hosted <see cref="BEBehaviorMoltenCell"/>, and routes right-clicks to
+/// <see cref="BlockEntitySandCastingCell.OnInteract"/>.
 /// </summary>
 [BlockRegister]
-public partial class BlockSandCastingCell : Block, IExBlockDefProvider
-{
+public partial class BlockSandCastingCell : Block, IExBlockDefProvider {
   #region Code-first definition
 
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
@@ -32,23 +31,31 @@ public partial class BlockSandCastingCell : Block, IExBlockDefProvider
       .Resistance(3.5f)
       .MaxStackSize(16)
       .Behavior("ExOrientable")
-      // The cell holds its cast on a drain-fitting molten cell (not network-registered); the entity pulls
-      // into it from the launder face and overrides its capacity from the impressed pattern.
+      // The cast is held on a drain-fitting molten cell, which is not registered on the molten network.
+      // The entity pulls into it from the launder face and overrides its capacity from the impressed
+      // pattern.
       .EntityBehavior(
         "exlib.BEBehaviorMoltenCell",
         new JObject { ["capacity"] = 200, ["drainFitting"] = true }
       )
-      // The fired-brick colour (the canal's 8-state group, fire first = default so the original
-      // fire-brick look survives the migration and the fire-brick recipe has a target) plus the
-      // horizontal facing. Declaration order brick-then-side => code sandcastingcell-{brick}-{side}.
-      .VariantGroup("brick", "fire", "black", "brown", "cream", "gray", "orange", "red", "tan")
+      // The canal's 8-colour brick group, fire first so it is the default variant, plus the horizontal
+      // facing. Declaration order brick-then-side puts the variants in that order in the block code.
+      .VariantGroup(
+        "brick",
+        "fire",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
+      )
       .SideVariant()
       .ShapeSpunPerOrientation("iwex:casting/sandcastingcell")
-      // Brick colour is a tint overlay over the running-bond base (the canal/bed pattern). The `andesite`
-      // key is the rammed sand the filling shapes are drawn with - named for the rock type the cell once
-      // defaulted to, back when it took any sand and remapped this key per-BE. With one prepared molding
-      // sand there is nothing to remap, so it simply is the green-sand texture and the shapes (which still
-      // declare the historical key) resolve straight through.
+      // Brick colour is a tint overlay over the running-bond base (the canal/bed pattern). The filling
+      // shapes draw the rammed sand against the `andesite` key, so that key maps to the green-sand
+      // texture.
       .Texture(
         "fire1",
         "game:block/clay/brick/four/running/cream1",
@@ -75,10 +82,10 @@ public partial class BlockSandCastingCell : Block, IExBlockDefProvider
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection blockSel
-  )
-  {
+  ) {
     if (
-      world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntitySandCastingCell cell
+      world.BlockAccessor.GetBlockEntity(blockSel.Position)
+        is BlockEntitySandCastingCell cell
       && cell.OnInteract(byPlayer)
     )
       return true;

@@ -15,13 +15,12 @@ namespace LowPressureExpanded.BlockNetworkPipe.Blocks;
 /// A chimney capping its open top face draws gas out of the run (<see cref="IChimneyVentable"/>).
 /// </summary>
 [BlockRegister]
-public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable
-{
-  /// <summary>Outlets never burst - a machine-port connector is a fixed fitting, not a length
-  /// of run that should fail under pressure, so it's exempt from over-pressure failure.</summary>
+public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable {
+  /// <summary>Outlets never burst: a machine-port connector is a fixed fitting rather than a length
+  /// of run, so it is exempt from over-pressure failure.</summary>
   public override float BurstPressure => float.MaxValue;
 
-  /// <summary>The gas-outlet blocktype, authored in C# (migrated from pipes/outlet.json).</summary>
+  /// <summary>The gas-outlet blocktype.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Outlet(domain)];
 
@@ -46,7 +45,14 @@ public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable
       .VariantGroup("type", "outlet")
       .VariantGroup(
         "brick",
-        "fire", "black", "brown", "cream", "gray", "orange", "red", "tan"
+        "fire",
+        "black",
+        "brown",
+        "cream",
+        "gray",
+        "orange",
+        "red",
+        "tan"
       )
       .VariantGroup("orientation", "s", "n", "w", "e", "u", "d")
       .ShapeByType("*-outlet-*-s", "lpex:pipe/outlet")

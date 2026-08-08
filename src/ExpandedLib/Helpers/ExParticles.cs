@@ -4,14 +4,12 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Helpers;
 
 /// <summary>
-/// Shared catalogue of particle effects for the mod family (lpex + smex), so the look and tuning
-/// live in one place instead of inline <see cref="SimpleParticleProperties"/>. The named presets
-/// are thin wrappers over the configurable <see cref="Spawn"/> primitive (reuse it or
-/// <see cref="RisingPlume"/> for new effects). Methods do no side-checking: spawn on the server to
-/// broadcast to nearby clients, or on the client to show locally.
+/// Shared catalogue of particle effects for the mod family (lpex + smex). The named presets are thin
+/// wrappers over the configurable <see cref="Spawn"/> primitive; new effects reuse it or
+/// <see cref="RisingPlume"/>. No method does side-checking: spawn on the server to broadcast to nearby
+/// clients, or on the client to show locally.
 /// </summary>
-public static class ExParticles
-{
+public static class ExParticles {
   /// <summary>White vapour (steam / pressurised air venting).</summary>
   public static readonly int Vapor = ColorUtil.ToRgba(130, 235, 235, 240);
 
@@ -37,8 +35,8 @@ public static class ExParticles
   public static readonly int AirTint = ColorUtil.ToRgba(70, 225, 225, 230);
 
   /// <summary>
-  /// Configurable core: builds a <see cref="SimpleParticleProperties"/> from the given
-  /// bounds/velocity/timing and spawns it. Every preset below funnels through here.
+  /// Builds a <see cref="SimpleParticleProperties"/> from the given bounds, velocity and timing and
+  /// spawns it. Every preset below funnels through here.
   /// </summary>
   public static void Spawn(
     IWorldAccessor world,
@@ -57,8 +55,7 @@ public static class ExParticles
     EvolvingNatFloat? opacityEvolve = null,
     EvolvingNatFloat? sizeEvolve = null,
     bool shouldDieInLiquid = false
-  )
-  {
+  ) {
     var particles = new SimpleParticleProperties(
       minQuantity,
       maxQuantity,
@@ -72,12 +69,11 @@ public static class ExParticles
       minSize,
       maxSize,
       model
-    )
-    {
+    ) {
       ShouldDieInLiquid = shouldDieInLiquid,
     };
-    // Evolve properties are non-nullable; only set them when supplied so presets without
-    // evolves keep the engine default.
+    // Evolve properties are non-nullable, so they are only set when supplied; presets without an
+    // evolve keep the engine default.
     if (opacityEvolve.HasValue)
       particles.OpacityEvolve = opacityEvolve.Value;
     if (sizeEvolve.HasValue)
@@ -112,8 +108,8 @@ public static class ExParticles
     : Vapor;
 
   /// <summary>
-  /// Generic box-bounded rising plume (furnace/refining smoke and glow) - a readable alias over
-  /// <see cref="Spawn"/> with the model fixed to Quad.
+  /// Box-bounded rising plume (furnace/refining smoke and glow) - an alias over <see cref="Spawn"/>
+  /// with the model fixed to Quad.
   /// </summary>
   public static void RisingPlume(
     IWorldAccessor world,
@@ -180,11 +176,9 @@ public static class ExParticles
   /// Short-lived white steam plume rising out of the top of <paramref name="cell"/>
   /// (an open boiler lid or steam-outlet neck). <paramref name="count"/> sets the density.
   /// </summary>
-  public static void SteamPlume(IWorldAccessor world, BlockPos cell, int count)
-  {
+  public static void SteamPlume(IWorldAccessor world, BlockPos cell, int count) {
     var rnd = world.Rand;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
       Vec3d p = new(
         cell.X + 0.5 + (rnd.NextDouble() - 0.5) * 0.5,
         cell.Y + 0.9 + rnd.NextDouble() * 0.25,
@@ -236,9 +230,9 @@ public static class ExParticles
     );
 
   /// <summary>
-  /// A short downdraft of faint air wisps sucked into the air blower's cylinder on the intake
-  /// stroke - the visible "inhale". Spawns just above <paramref name="mouth"/> and pulls the wisps
-  /// down, shrinking into the bore. <paramref name="count"/> sets the density.
+  /// A short downdraft of faint air wisps drawn into the air blower's cylinder on the intake stroke.
+  /// Spawns just above <paramref name="mouth"/> and pulls the wisps down, shrinking into the bore.
+  /// <paramref name="count"/> sets the density.
   /// </summary>
   public static void AirInhale(IWorldAccessor world, Vec3d mouth, int count) =>
     Spawn(
@@ -260,7 +254,7 @@ public static class ExParticles
     );
 
   /// <summary>
-  /// A dense fading cloud of dark smoke from a world point - the sooty blast of a machine burst.
+  /// A dense fading cloud of dark smoke from a world point - a machine bursting.
   /// <paramref name="count"/> sets the density.
   /// </summary>
   public static void SmokeCloud(IWorldAccessor world, Vec3d pos, int count) =>
@@ -291,8 +285,7 @@ public static class ExParticles
     BlockPos pos,
     BlockFacing face,
     float intensity = 1f
-  )
-  {
+  ) {
     float t = GameMath.Clamp(intensity, 0f, 1f);
     Vec3d center = FaceCenter(pos, face);
     Spawn(
@@ -322,8 +315,7 @@ public static class ExParticles
     BlockPos pos,
     BlockFacing face,
     string gasType
-  )
-  {
+  ) {
     if (GasColor(gasType, ventAir: false) is not int color)
       return;
 
@@ -356,8 +348,7 @@ public static class ExParticles
     BlockPos pos,
     BlockFacing face,
     float intensity = 1f
-  )
-  {
+  ) {
     float t = GameMath.Clamp(intensity, 0f, 1f);
     Vec3d center = FaceCenter(pos, face);
     Spawn(
@@ -382,8 +373,7 @@ public static class ExParticles
   /// Blue water splash pooling out of the top of <paramref name="cell"/> - condensate
   /// (engine outlet) with nowhere to drain.
   /// </summary>
-  public static void WaterSpill(IWorldAccessor world, BlockPos cell)
-  {
+  public static void WaterSpill(IWorldAccessor world, BlockPos cell) {
     var pos = new Vec3d(cell.X + 0.5, cell.Y + 0.1, cell.Z + 0.5);
     Spawn(
       world,
@@ -407,8 +397,7 @@ public static class ExParticles
   /// Dark dust raining out of the bottom of <paramref name="pos"/> - the hopper bell dropping its
   /// charge into the furnace shaft.
   /// </summary>
-  // Mirrors the original call: maxSize 0 (it passed (float)EnumParticleModel.Cube == 0), so the
-  // model stays the Quad default.
+  // maxSize is 0, below minSize, and the model stays the Quad default.
   public static void FallingDust(IWorldAccessor world, BlockPos pos) =>
     Spawn(
       world,

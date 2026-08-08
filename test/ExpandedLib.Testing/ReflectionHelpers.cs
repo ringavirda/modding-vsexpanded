@@ -4,19 +4,17 @@ using System.Reflection;
 namespace ExpandedLib.Testing;
 
 /// <summary>
-/// Small reflection shims for poking at production members that are not publicly settable but
-/// must be primed for a headless test (e.g. the network manager's server-world back-reference,
-/// normally assigned only inside <c>StartServerSide</c>).
+/// Reflection shims for reading and priming production members that are not publicly accessible but
+/// must be set for a headless test (e.g. the network manager's server-world back-reference, normally
+/// assigned only inside <c>StartServerSide</c>).
 /// </summary>
-public static class ReflectionHelpers
-{
+public static class ReflectionHelpers {
   /// <summary>Sets a property's value through its (possibly non-public) setter.</summary>
   public static void SetProperty(
     object target,
     string propertyName,
     object? value
-  )
-  {
+  ) {
     PropertyInfo prop =
       target
         .GetType()
@@ -38,10 +36,9 @@ public static class ReflectionHelpers
   }
 
   /// <summary>Reads a (possibly non-public) instance property - the getter counterpart of
-  /// <see cref="SetProperty"/>, for asserting on a <c>protected virtual</c> the production code
-  /// exposes as its single source of truth (e.g. a machine's structure-local cell offsets).</summary>
-  public static object? GetProperty(object target, string propertyName)
-  {
+  /// <see cref="SetProperty"/>, for asserting on a <c>protected virtual</c> such as a machine's
+  /// structure-local cell offsets.</summary>
+  public static object? GetProperty(object target, string propertyName) {
     PropertyInfo prop =
       target
         .GetType()
@@ -77,16 +74,13 @@ public static class ReflectionHelpers
     object target,
     string fieldName,
     out object? value
-  )
-  {
-    for (Type? t = target.GetType(); t != null; t = t.BaseType)
-    {
+  ) {
+    for (Type? t = target.GetType(); t != null; t = t.BaseType) {
       FieldInfo? f = t.GetField(
         fieldName,
         BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
       );
-      if (f != null)
-      {
+      if (f != null) {
         value = f.GetValue(target);
         return true;
       }
@@ -100,10 +94,8 @@ public static class ReflectionHelpers
     object target,
     string methodName,
     params object?[] args
-  )
-  {
-    for (Type? t = target.GetType(); t != null; t = t.BaseType)
-    {
+  ) {
+    for (Type? t = target.GetType(); t != null; t = t.BaseType) {
       MethodInfo? m = t.GetMethod(
         methodName,
         BindingFlags.Public
@@ -119,10 +111,8 @@ public static class ReflectionHelpers
     );
   }
 
-  private static FieldInfo FindField(Type type, string fieldName)
-  {
-    for (Type? t = type; t != null; t = t.BaseType)
-    {
+  private static FieldInfo FindField(Type type, string fieldName) {
+    for (Type? t = type; t != null; t = t.BaseType) {
       FieldInfo? f = t.GetField(
         fieldName,
         BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance

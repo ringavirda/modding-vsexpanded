@@ -4,12 +4,11 @@ namespace ExpandedLib.Registries.Recipes;
 
 /// <summary>
 /// A mod's registration with the shared recipe-cost framework: everything <see cref="ExRecipeProfiles"/>
-/// needs to read, fill, persist and apply that mod's cost catalogue, plus get/set the active level the
-/// <c>/exmod recipes &lt;code&gt; &lt;level&gt;</c> command flips. A mod registers one of these in its
-/// <c>Start</c> so the command and the library's apply pass can find it by <see cref="Code"/>.
+/// needs to read, fill, persist and apply that mod's cost catalogue, plus get and set the active level
+/// the <c>/exmod recipes &lt;code&gt; &lt;level&gt;</c> command flips. Register one from the mod's
+/// <c>Start</c>; the command and the library's apply pass find it by <see cref="Code"/>.
 /// </summary>
-public sealed class RecipeProfile
-{
+public sealed class RecipeProfile {
   /// <summary>The mod's short code used on the command line, e.g. <c>"smex"</c> in
   /// <c>/exmod recipes smex cheap</c>.</summary>
   public required string Code { get; init; }
@@ -36,8 +35,8 @@ public sealed class RecipeProfile
   /// <summary>The selectable level names, in display order. The first is the authored baseline.</summary>
   public IReadOnlyList<string> Levels { get; init; } = ["normal", "cheap"];
 
-  /// <summary>Levels filled by scaling <c>normal</c>: level name → factor (e.g. <c>cheap = 0.5</c> =
-  /// half cost). Any level a recipe pins explicitly is left alone.</summary>
+  /// <summary>Levels filled by scaling <c>normal</c>: level name to factor (<c>cheap = 0.5</c> is
+  /// half cost). A level a recipe pins explicitly is left alone.</summary>
   public IReadOnlyDictionary<string, double> DerivedLevels { get; init; } =
     new Dictionary<string, double> { ["cheap"] = 0.5 };
 }

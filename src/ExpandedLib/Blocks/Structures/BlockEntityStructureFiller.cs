@@ -15,8 +15,7 @@ namespace ExpandedLib.Blocks.Structures;
 /// link and HUD passthrough.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityStructureFiller : BlockEntity
-{
+public class BlockEntityStructureFiller : BlockEntity {
   /// <summary>The controller block this filler cell belongs to, or null if orphaned.</summary>
   public BlockPos? Principal { get; set; }
 
@@ -55,31 +54,27 @@ public class BlockEntityStructureFiller : BlockEntity
   /// detach the previous set before recreating it.</summary>
   private readonly List<BlockEntityBehavior> _hosted = [];
 
-  // The most recent save/sync tree, kept so a hosted behaviour created after FromTreeAttributes (the
-  // normal order: FromTree restores HostedBehaviors, then Initialize instantiates them) can still be
-  // handed that tree. This matters for mechanical-power ports: on the client the MP network is joined
-  // purely from the synced NetworkId in the tree (the server discovers it), and BlockEntity.FromTree
-  // can only route the tree to behaviours that already exist - which the runtime-hosted port doesn't
-  // yet, on the first load. Without this the client port never joins, so the driven part never turns.
+  // The most recent save/sync tree, kept so a hosted behaviour can still be handed it. FromTree
+  // restores HostedBehaviors and Initialize instantiates them afterwards, so
+  // BlockEntity.FromTreeAttributes has no behaviour to route the tree to on first load. A client-side
+  // mechanical-power port joins its network purely from the synced NetworkId in that tree.
   private ITreeAttribute? _savedTree;
 
   private static JsonObject EmptyProps => new(new JObject());
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
-    // On load, HostedBehaviors was restored by FromTreeAttributes (which runs before Initialize);
-    // recreate the behaviour instances now that the class registry and Api are available.
+    // FromTreeAttributes runs before Initialize and restores HostedBehaviors; the instances are
+    // recreated here, once the class registry and Api are available.
     ApplyHostedBehaviors();
   }
 
   /// <summary>
-  /// Stores the cell's hosted-behaviour declarations and (re)creates them. Called by
+  /// Stores the cell's hosted-behaviour declarations and recreates them. Called by
   /// <see cref="StructureFillers.PlaceFillers"/> right after the principal link is set, so an MP port
-  /// joins the network at placement; a no-op set of null clears any existing hosted behaviours.
+  /// joins the network at placement. Passing null clears any existing hosted behaviours.
   /// </summary>
-  public void SetHostedBehaviors(FillerBehavior[]? behaviors)
-  {
+  public void SetHostedBehaviors(FillerBehavior[]? behaviors) {
     HostedBehaviors = behaviors is { Length: > 0 } ? behaviors : null;
     ApplyHostedBehaviors();
     MarkDirty(true);
@@ -91,8 +86,7 @@ public class BlockEntityStructureFiller : BlockEntity
   /// initialises it. Detaches any previously created set first so it is safe to call more than once.
   /// Does nothing until <see cref="BlockEntity.Api"/> is set (the load path runs it from Initialize).
   /// </summary>
-  private void ApplyHostedBehaviors()
-  {
+  private void ApplyHostedBehaviors() {
     if (Api == null)
       return;
 
@@ -103,14 +97,12 @@ public class BlockEntityStructureFiller : BlockEntity
     if (HostedBehaviors == null)
       return;
 
-    foreach (FillerBehavior spec in HostedBehaviors)
-    {
+    foreach (FillerBehavior spec in HostedBehaviors) {
       BlockEntityBehavior? beh = Api.ClassRegistry.CreateBlockEntityBehavior(
         this,
         spec.Code
       );
-      if (beh == null)
-      {
+      if (beh == null) {
         Api.Logger.Warning(
           "[exlib] StructureFiller at {0}: unknown hosted behaviour class '{1}'.",
           Pos,
@@ -127,28 +119,25 @@ public class BlockEntityStructureFiller : BlockEntity
       Behaviors.Add(beh);
       _hosted.Add(beh);
       beh.Initialize(Api, spec.Properties ?? EmptyProps);
-      // Replay the loaded tree so the behaviour restores any state it would normally read in
-      // FromTreeAttributes (it was created too late to be in BlockEntity.FromTreeAttributes' loop).
-      // Client only: on the server the behaviour establishes its own state in Initialize (e.g. an MP
-      // port discovers its network), and replaying a stale saved NetworkId would fight that.
+      // Replays the loaded tree so the behaviour restores the state it would normally read in
+      // FromTreeAttributes, having been created too late for that loop. Client only: on the server
+      // the behaviour establishes its own state in Initialize (an MP port discovers its network),
+      // which a stale saved NetworkId would override.
       if (Api.Side == EnumAppSide.Client && _savedTree != null)
         beh.FromTreeAttributes(_savedTree, Api.World);
     }
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     // -1,-1,-1 is the "no principal" sentinel.
     tree.SetInt("cx", Principal?.X ?? -1);
     tree.SetInt("cy", Principal?.Y ?? -1);
     tree.SetInt("cz", Principal?.Z ?? -1);
     tree.SetBool("allowAttach", AllowAttach);
-    if (CollisionBoxes is { Length: > 0 })
-    {
+    if (CollisionBoxes is { Length: > 0 }) {
       var flat = new float[CollisionBoxes.Length * 6];
-      for (int i = 0; i < CollisionBoxes.Length; i++)
-      {
+      for (int i = 0; i < CollisionBoxes.Length; i++) {
         Cuboidf b = CollisionBoxes[i];
         flat[i * 6 + 0] = b.X1;
         flat[i * 6 + 1] = b.Y1;
@@ -159,17 +148,14 @@ public class BlockEntityStructureFiller : BlockEntity
       }
       tree["cboxes"] = new FloatArrayAttribute(flat);
     }
-    if (PortFace != null && PortNetworkType != null)
-    {
+    if (PortFace != null && PortNetworkType != null) {
       tree.SetString("portFace", PortFace);
       tree.SetString("portNet", PortNetworkType);
     }
-    if (HostedBehaviors is { Length: > 0 } hosted)
-    {
+    if (HostedBehaviors is { Length: > 0 } hosted) {
       var bt = new TreeAttribute();
       bt.SetInt("n", hosted.Length);
-      for (int i = 0; i < hosted.Length; i++)
-      {
+      for (int i = 0; i < hosted.Length; i++) {
         bt.SetString($"c{i}", hosted[i].Code);
         bt.SetString($"f{i}", hosted[i].ConnectorFace?.Code ?? "");
         bt.SetString($"p{i}", hosted[i].Properties?.ToString() ?? "");
@@ -181,8 +167,7 @@ public class BlockEntityStructureFiller : BlockEntity
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
     int cx = tree.GetInt("cx", -1);
     int cy = tree.GetInt("cy", -1);
@@ -190,34 +175,33 @@ public class BlockEntityStructureFiller : BlockEntity
     Principal =
       cx == -1 && cy == -1 && cz == -1 ? null : new BlockPos(cx, cy, cz);
     AllowAttach = tree.GetBool("allowAttach", false);
-    CollisionBoxes =
-      tree["cboxes"] is FloatArrayAttribute { value.Length: >= 6 } fa
-        ? ReadFlatBoxes(fa.value)
-        : null;
+    CollisionBoxes = tree["cboxes"]
+      is FloatArrayAttribute { value.Length: >= 6 } fa
+      ? ReadFlatBoxes(fa.value)
+      : null;
     PortFace = tree.GetString("portFace", null);
     PortNetworkType = tree.GetString("portNet", null);
-    HostedBehaviors =
-      tree["hostedBehaviors"] is ITreeAttribute bt ? ReadHostedBehaviors(bt) : null;
-    // Keep the tree so behaviours created below (or in Initialize) can still read their state from it
-    // (the base loop above already fed any behaviours that existed at this point).
+    HostedBehaviors = tree["hostedBehaviors"] is ITreeAttribute bt
+      ? ReadHostedBehaviors(bt)
+      : null;
+    // Kept so behaviours created below, or in Initialize, can still read their state from it; the
+    // base loop above already fed any behaviour that existed at this point.
     _savedTree = tree;
-    // When a mega-block is placed while a client is watching, the filler block is set first (the client
-    // creates + Initializes this BE with no hosted behaviours yet) and the principal only assigns
-    // HostedBehaviors a moment later, arriving here as a sync update. Initialize won't run again, so
-    // create the behaviours now - otherwise an MP port (and the part it drives) never appears client-side.
+    // When a mega-block is placed while a client is watching, the filler block is set first (the
+    // client creates and initialises this BE with no hosted behaviours) and the principal assigns
+    // HostedBehaviors a moment later, arriving here as a sync update. Initialize does not run again,
+    // so the behaviours are created here instead.
     if (Api != null && _hosted.Count == 0 && HostedBehaviors is { Length: > 0 })
       ApplyHostedBehaviors();
   }
 
   /// <summary>Rebuilds the hosted-behaviour specs from the save tree (faces stay rotated as stored).</summary>
-  private static FillerBehavior[]? ReadHostedBehaviors(ITreeAttribute bt)
-  {
+  private static FillerBehavior[]? ReadHostedBehaviors(ITreeAttribute bt) {
     int n = bt.GetInt("n", 0);
     if (n <= 0)
       return null;
     var list = new List<FillerBehavior>(n);
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
       string code = bt.GetString($"c{i}", "");
       if (string.IsNullOrEmpty(code))
         continue;
@@ -226,7 +210,9 @@ public class BlockEntityStructureFiller : BlockEntity
       list.Add(
         new FillerBehavior(
           code,
-          string.IsNullOrEmpty(faceCode) ? null : BlockFacing.FromCode(faceCode),
+          string.IsNullOrEmpty(faceCode)
+            ? null
+            : BlockFacing.FromCode(faceCode),
           string.IsNullOrEmpty(propsJson)
             ? null
             : new JsonObject(JToken.Parse(propsJson))
@@ -237,8 +223,7 @@ public class BlockEntityStructureFiller : BlockEntity
   }
 
   /// <summary>Rebuilds the cuboid array from the flattened 6-floats-per-box save form.</summary>
-  private static Cuboidf[] ReadFlatBoxes(float[] flat)
-  {
+  private static Cuboidf[] ReadFlatBoxes(float[] flat) {
     int n = flat.Length / 6;
     var boxes = new Cuboidf[n];
     for (int i = 0; i < n; i++)
@@ -254,8 +239,7 @@ public class BlockEntityStructureFiller : BlockEntity
   }
 
   /// <summary>Reroutes the HUD readout to the principal block entity.</summary>
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder sb)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder sb) {
     if (Principal == null)
       return;
     Api.World.BlockAccessor.GetBlockEntity(Principal)

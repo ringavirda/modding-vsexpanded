@@ -1,16 +1,14 @@
-using IronworkingExpanded;
 using ExpandedLib.Testing;
+using IronworkingExpanded;
 using LowPressureExpanded.BlockNetworkPipe;
 using Xunit;
 
 namespace LowPressureExpanded.Tests;
 
 /// <summary>Gas production/consumption, overflow ceilings, and the leak clamp.</summary>
-public class GasPoolTests
-{
+public class GasPoolTests {
   [Fact]
-  public void Produce_sets_volume_pressure_and_medium()
-  {
+  public void Produce_sets_volume_pressure_and_medium() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3); // MaxVolume 90
 
@@ -24,8 +22,7 @@ public class GasPoolTests
   }
 
   [Fact]
-  public void Produce_overflows_up_to_max_output_pressure()
-  {
+  public void Produce_overflows_up_to_max_output_pressure() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3); // MaxVolume 90, no burst ceiling
 
@@ -36,27 +33,37 @@ public class GasPoolTests
   }
 
   [Fact]
-  public void Produce_is_capped_by_weakest_pipe_burst_pressure()
-  {
+  public void Produce_is_capped_by_weakest_pipe_burst_pressure() {
     // Real plated pipes cap the run below the producer's 10-atm choke. The ceiling is read from
-    // config, not restated - a literal here is what let the pipe-tier rebalance slip past.
+    // config rather than restated as a literal.
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true); // MaxVolume 90
     float burst = IwexValues.PlatedPipeBurstPressure;
 
-    PipeTestWorld.Saturate(net, 200f, "Steam", w.Accessor, maxOutputPressure: 10f);
+    PipeTestWorld.Saturate(
+      net,
+      200f,
+      "Steam",
+      w.Accessor,
+      maxOutputPressure: 10f
+    );
 
     Assert.Equal(3 * PipeTestWorld.LitresPerPipe * burst, net.State!.Volume, 3);
     Assert.Equal(burst, net.State.Pressure, 3);
   }
 
   [Fact]
-  public void Leaking_run_clamps_to_one_atm_unless_bypassed()
-  {
+  public void Leaking_run_clamps_to_one_atm_unless_bypassed() {
     var (w, net) = PipeTestWorld.Run(3, "iron", capEnds: true);
     net.TryProduceGas(10f, 120f, "Air", w.Accessor); // create the pool
     net.State!.OpeningsCount = 1; // mark as leaking
 
-    PipeTestWorld.Saturate(net, 120f, "Air", w.Accessor, maxOutputPressure: 10f);
+    PipeTestWorld.Saturate(
+      net,
+      120f,
+      "Air",
+      w.Accessor,
+      maxOutputPressure: 10f
+    );
     Assert.Equal(90f, net.State.Volume, 3); // clamped to 1 atm
 
     PipeTestWorld.Saturate(
@@ -67,9 +74,7 @@ public class GasPoolTests
       maxOutputPressure: 10f,
       bypassLeakCap: true
     );
-    // Bypass lifts the clamp to the tier's burst ceiling. Derived, not restated: this used to read a
-    // literal 450 L (3 pipes x 30 L x the old 5 atm), so the pipe-tier rebalance silently halved the
-    // real ceiling while the fixture kept feeding the test the stale one.
+    // Bypass lifts the clamp to the tier's burst ceiling, derived from config rather than restated.
     Assert.Equal(
       3 * PipeTestWorld.LitresPerPipe * IwexValues.PlatedPipeBurstPressure,
       net.State.Volume,
@@ -78,8 +83,7 @@ public class GasPoolTests
   }
 
   [Fact]
-  public void Consume_returns_min_of_request_and_available()
-  {
+  public void Consume_returns_min_of_request_and_available() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3);
     net.TryProduceGas(45f, 120f, "Air", w.Accessor);
@@ -90,8 +94,7 @@ public class GasPoolTests
   }
 
   [Fact]
-  public void Water_run_rejects_gas_production()
-  {
+  public void Water_run_rejects_gas_production() {
     var w = new TestWorld();
     var net = PipeTestWorld.LooseNet(w.Networks, 3);
     net.TryProduceLiquid(30f, 20f, 1f, w.Accessor);

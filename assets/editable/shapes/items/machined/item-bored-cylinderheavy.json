@@ -1,0 +1,139 @@
+{
+	"editor": {
+		"collapsedPaths": "Root/ShaftGroup/Shaft4,Root/ShaftGroup/Shaft2,Root/ShaftGroup,Root/SlidingBed/Cube61/Cube77,Root/SlidingBed/Cube61/Cube76,Root/SlidingBed/Cube61/Cube82,Root/Shaft2/HubSpur3,Root/Shaft2/HubSpur2,Root/ControlGroup/Shaft4/HubSpur4/Rim32,Root/Base,Root/ControlGroup/Shaft4/HubSpur4/Rim33,Root/Shaft2,Root/Shaft3,Root/HubSpur2,Root/ShaftGroup/Shaft3/HubSpur3,Root/Base/Cube3/Cube22,Root/Hub1,Root/ControlGroup/Shaft4/HubSpur4/Rim30,Root/ShaftGroup/Cube6,Root/HubPinion2,Root/ControlGroup/Shaft4/HubSpur4/Rim31,Root/ControlGroup/Shaft4/HubSpur4/Rim27,Root/ControlGroup/Shaft4/HubSpur4/Rim28,Root/ShaftGroup/Cube6/Cube7,Root/ControlGroup/Shaft4/HubSpur4/Rim26,Root/ShaftGroup/Shaft3/Cube61/Cube73,Root/ControlGroup/Shaft4/HubSpur4/Rim29,Root/Base/Cube3",
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+	},
+	"textures": {
+		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1"
+	},
+	"elements": [
+		{
+			"name": "Cylinder",
+			"from": [ 14.0, 0.0, 5.0 ],
+			"to": [ 26.0, 2.0, 11.0 ],
+			"rotationOrigin": [ 14.0, 0.0, 5.0 ],
+			"rotationZ": 90.0,
+			"faces": {
+				"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+				"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+				"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+				"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+				"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+				"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] }
+			},
+			"children": [
+				{
+					"name": "Cube94",
+					"from": [ 0.0, 10.0, 0.0 ],
+					"to": [ 12.0, 12.0, 6.0 ],
+					"rotationOrigin": [ 0.0, 10.0, 0.0 ],
+					"faces": {
+						"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+						"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+						"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+						"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] }
+					},
+					"children": [
+						{
+							"name": "Cube107",
+							"from": [ 0.01, 2.0, 0.0 ],
+							"to": [ 12.01, 4.0, 4.2 ],
+							"rotationOrigin": [ 0.0, 2.0, 0.0 ],
+							"rotationX": 135.0,
+							"faces": {
+								"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+								"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+								"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+								"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+								"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+								"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] }
+							}
+						},
+						{
+							"name": "Cube108",
+							"from": [ 0.01, 0.0, 6.0 ],
+							"to": [ 12.01, 2.0, 10.2 ],
+							"rotationOrigin": [ 0.0, 2.0, 6.0 ],
+							"rotationX": 45.0,
+							"faces": {
+								"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+								"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+								"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+								"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+								"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+								"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] }
+							}
+						}
+					]
+				},
+				{
+					"name": "Cube95",
+					"from": [ 0.01, 0.0, 0.0 ],
+					"to": [ 12.01, 4.2, 2.0 ],
+					"rotationOrigin": [ 0.0, 0.0, 0.0 ],
+					"rotationX": -45.0,
+					"faces": {
+						"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+						"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 4.0 ] },
+						"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+						"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 4.0 ] },
+						"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] }
+					}
+				},
+				{
+					"name": "Cube106",
+					"from": [ 0.01, 0.0, 6.0 ],
+					"to": [ 12.01, 2.0, 10.2 ],
+					"rotationOrigin": [ 0.0, 0.0, 6.0 ],
+					"rotationX": -45.0,
+					"faces": {
+						"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+						"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 4.0, 2.0 ] },
+						"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] },
+						"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 4.0 ] }
+					}
+				},
+				{
+					"name": "Cube109",
+					"from": [ 0.0, 3.0, -3.0 ],
+					"to": [ 12.0, 9.0, -1.0 ],
+					"rotationOrigin": [ 0.0, 3.0, -3.0 ],
+					"faces": {
+						"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+						"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 6.0 ] },
+						"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+						"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 6.0 ] },
+						"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] }
+					}
+				},
+				{
+					"name": "Cube110",
+					"from": [ 0.0, 3.0, 7.0 ],
+					"to": [ 12.0, 9.0, 9.0 ],
+					"rotationOrigin": [ 0.0, 3.0, 7.0 ],
+					"faces": {
+						"north": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+						"east": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 6.0 ] },
+						"south": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 6.0 ] },
+						"west": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 2.0, 6.0 ] },
+						"up": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] },
+						"down": { "texture": "#cast-iron1", "uv": [ 0.0, 0.0, 12.0, 2.0 ] }
+					}
+				}
+			]
+		}
+	],
+	"animations": [
+	]
+}

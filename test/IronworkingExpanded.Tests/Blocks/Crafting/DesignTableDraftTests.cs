@@ -5,12 +5,11 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The design table's draft-input predicates: what counts as a drawing medium (charcoal or black coal) and
-/// as parchment (vanilla's <c>paper</c>). The inventory-mutating <c>TryDraft</c> needs a live world and is
-/// verified in-game; these pin the material identity.
+/// The design table's draft-input predicates: what counts as a drawing medium (charcoal or any coal) and
+/// as parchment (vanilla's <c>paper</c>). The inventory-mutating <c>TryDraft</c> is covered by
+/// <see cref="DesignTableBeTests"/>.
 /// </summary>
-public class DesignTableDraftTests
-{
+public class DesignTableDraftTests {
   private static ItemStack Stack(string domain, string path) =>
     new(new Item { Code = new AssetLocation(domain, path) });
 
@@ -26,7 +25,11 @@ public class DesignTableDraftTests
     string domain,
     string path,
     bool expected
-  ) => Assert.Equal(expected, BlockEntityDesignTable.IsDrawingMedium(Stack(domain, path)));
+  ) =>
+    Assert.Equal(
+      expected,
+      BlockEntityDesignTable.IsDrawingMedium(Stack(domain, path))
+    );
 
   #endregion
 
@@ -40,13 +43,16 @@ public class DesignTableDraftTests
     string domain,
     string path,
     bool expected
-  ) => Assert.Equal(expected, BlockEntityDesignTable.IsParchment(Stack(domain, path)));
+  ) =>
+    Assert.Equal(
+      expected,
+      BlockEntityDesignTable.IsParchment(Stack(domain, path))
+    );
 
   #endregion
 
   [Fact]
-  public void A_missing_stack_is_neither_medium_nor_parchment()
-  {
+  public void A_missing_stack_is_neither_medium_nor_parchment() {
     Assert.False(BlockEntityDesignTable.IsDrawingMedium(null));
     Assert.False(BlockEntityDesignTable.IsParchment(null));
   }

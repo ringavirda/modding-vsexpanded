@@ -5,14 +5,12 @@ using static ExpandedLib.Definitions.ExIngredients;
 namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
-/// Code-first grid recipes for the iwex (plated) pipe tier: the four plain straight/bend/T/X segments,
-/// hammered together from a metal plate and nails. iwex owns the base pipe block, so its plated
-/// segments are craftable on their own; the cast (lpex) and rolled (hpex) tiers author their own
-/// segment recipes (casting / rolling) and the fittings live in lpex. Migrated from the old
-/// <c>lpex</c> pipe recipes, retargeted to <c>iwex:pipe-*</c> with the dropped iron/steel variant.
+/// Grid recipes for the iwex (plated) pipe tier: the four plain straight/bend/T/X segments, hammered
+/// together from a metal plate and nails. iwex owns the base pipe block, so its plated segments are
+/// craftable on their own; the cast (lpex) and rolled (hpex) tiers author their own segment recipes
+/// for casting and rolling, and the fittings live in lpex.
 /// </summary>
-public class PipeRecipeDefinitions : IExRecipeDefProvider
-{
+public class PipeRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef

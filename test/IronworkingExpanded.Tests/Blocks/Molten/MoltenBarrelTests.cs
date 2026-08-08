@@ -1,27 +1,25 @@
-using IronworkingExpanded;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
+using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
-using ExpandedLib.Metals;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// The molten barrel stores a single liquid metal as an <see cref="ILiquidMetalSink"/>: it accepts
-/// matching metal up to capacity, rejects a foreign metal, tracks temperature/hardening for its glow
-/// and drops, and round-trips its contents. (The molded full-and-hardened drop path and the
-/// player-coupled chisel-out are exercised by the casting scenarios in <c>Scenarios/</c>.)
+/// matching metal up to capacity, rejects a foreign metal, tracks temperature and hardening for its
+/// glow and drops, and round-trips its contents. The full-and-hardened drop path and the chisel-out
+/// are covered by the casting scenarios in <c>Scenarios/</c>.
 /// </summary>
-public class MoltenBarrelTests
-{
+public class MoltenBarrelTests {
   private const string Iron = "game:ingot-iron";
 
-  private static TestWorld NewWorld()
-  {
+  private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:ingot-copper", 1084f);
@@ -29,10 +27,8 @@ public class MoltenBarrelTests
     return world;
   }
 
-  private static BlockEntityMoltenBarrel Barrel(TestWorld world)
-  {
-    var be = new BlockEntityMoltenBarrel
-    {
+  private static BlockEntityMoltenBarrel Barrel(TestWorld world) {
+    var be = new BlockEntityMoltenBarrel {
       Pos = new BlockPos(0, 0, 0),
       Block = TestBlocks.Configure(new Block(), "smex:moltenbarrel", 50),
     };
@@ -46,8 +42,7 @@ public class MoltenBarrelTests
   #region Receiving metal
 
   [Fact]
-  public void An_empty_barrel_can_receive_and_is_not_full()
-  {
+  public void An_empty_barrel_can_receive_and_is_not_full() {
     var world = NewWorld();
     var be = Barrel(world);
     Assert.True(be.CanReceiveAny);
@@ -55,8 +50,7 @@ public class MoltenBarrelTests
   }
 
   [Fact]
-  public void ReceiveLiquidMetal_stores_metal_and_consumes_the_amount()
-  {
+  public void ReceiveLiquidMetal_stores_metal_and_consumes_the_amount() {
     var world = NewWorld();
     var be = Barrel(world);
 
@@ -70,8 +64,7 @@ public class MoltenBarrelTests
   }
 
   [Fact]
-  public void ReceiveLiquidMetal_clamps_to_capacity_and_returns_overflow()
-  {
+  public void ReceiveLiquidMetal_clamps_to_capacity_and_returns_overflow() {
     var world = NewWorld();
     var be = Barrel(world);
 
@@ -85,8 +78,7 @@ public class MoltenBarrelTests
   }
 
   [Fact]
-  public void ReceiveLiquidMetal_rejects_a_foreign_metal()
-  {
+  public void ReceiveLiquidMetal_rejects_a_foreign_metal() {
     var world = NewWorld();
     var be = Barrel(world);
     int first = 20;
@@ -113,8 +105,7 @@ public class MoltenBarrelTests
   public void IsHardened_tracks_the_stored_temperature(
     float temp,
     bool hardened
-  )
-  {
+  ) {
     var world = NewWorld();
     var be = Barrel(world);
     int amount = 20;
@@ -126,8 +117,7 @@ public class MoltenBarrelTests
   [Theory]
   [InlineData(400f, 0)] // below glow floor
   [InlineData(800f, 10)] // (800-500)/30
-  public void GlowLightLevel_follows_the_metal_temperature(float temp, int glow)
-  {
+  public void GlowLightLevel_follows_the_metal_temperature(float temp, int glow) {
     var world = NewWorld();
     var be = Barrel(world);
     int amount = 20;
@@ -137,8 +127,7 @@ public class MoltenBarrelTests
   }
 
   [Fact]
-  public void An_empty_barrel_has_no_glow_and_zero_temperature()
-  {
+  public void An_empty_barrel_has_no_glow_and_zero_temperature() {
     var world = NewWorld();
     var be = Barrel(world);
     Assert.Equal(0, be.GlowLightLevel);
@@ -156,15 +145,13 @@ public class MoltenBarrelTests
     ) ?? 0f;
 
   [Fact]
-  public void The_barrel_cooldown_coefficient_defaults_to_one()
-  {
-    // Ships as a no-op multiplier (1x the molten-system rate); admins can slow the barrel down.
+  public void The_barrel_cooldown_coefficient_defaults_to_one() {
+    // A no-op multiplier by default (1x the molten-system rate); configurable to slow the barrel down.
     Assert.Equal(1f, IwexValues.BarrelCooldownCoefficient, 3);
   }
 
   [Fact]
-  public void Stored_metal_carries_the_barrel_cooldown_coefficient()
-  {
+  public void Stored_metal_carries_the_barrel_cooldown_coefficient() {
     var world = NewWorld();
     var be = Barrel(world);
     int amount = 20;
@@ -177,19 +164,17 @@ public class MoltenBarrelTests
     );
   }
 
-  // Regression: a live `/exmod config smex barrelcooldowncoefficient ...` change must reach metal
-  // already standing in the barrel, not just the next pour - the server tick re-stamps the live rate.
+  // A live `/exmod config smex barrelcooldowncoefficient ...` change must reach metal already in the
+  // barrel, not just the next pour: the server tick re-stamps the current rate.
   [Fact]
-  public void Changing_the_barrel_coefficient_reaches_metal_already_in_the_barrel()
-  {
+  public void Changing_the_barrel_coefficient_reaches_metal_already_in_the_barrel() {
     var world = NewWorld();
     var be = Barrel(world);
     int amount = 20;
     be.ReceiveLiquidMetal(Metal(world, Iron, 1300f), ref amount, 1300f);
 
     float original = IwexValues.BarrelCooldownCoefficient;
-    try
-    {
+    try {
       IwexValues.Edit(c => c.BarrelCooldownCoefficient = 5f);
       ReflectionHelpers.Invoke(be, "OnServerTick");
 
@@ -198,9 +183,7 @@ public class MoltenBarrelTests
         CooldownSpeedOf(be.MetalContent!),
         3
       );
-    }
-    finally
-    {
+    } finally {
       IwexValues.Edit(c => c.BarrelCooldownCoefficient = original);
     }
   }
@@ -210,8 +193,7 @@ public class MoltenBarrelTests
   #region Drops
 
   [Fact]
-  public void GetMetalDrops_yields_metalbits_for_a_partly_filled_barrel()
-  {
+  public void GetMetalDrops_yields_metalbits_for_a_partly_filled_barrel() {
     var world = NewWorld();
     var be = Barrel(world);
     int amount = 20;
@@ -225,8 +207,7 @@ public class MoltenBarrelTests
   }
 
   [Fact]
-  public void GetMetalDrops_is_empty_for_an_empty_barrel()
-  {
+  public void GetMetalDrops_is_empty_for_an_empty_barrel() {
     var world = NewWorld();
     Assert.Empty(Barrel(world).GetMetalDrops());
   }
@@ -236,8 +217,7 @@ public class MoltenBarrelTests
   #region Serialization
 
   [Fact]
-  public void Contents_round_trip_through_the_tree()
-  {
+  public void Contents_round_trip_through_the_tree() {
     var world = NewWorld();
     var src = Barrel(world);
     int amount = 35;

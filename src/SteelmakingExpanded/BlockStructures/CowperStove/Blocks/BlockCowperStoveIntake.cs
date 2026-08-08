@@ -11,21 +11,20 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.CowperStove.Blocks;
 
 /// <summary>
-/// Intake/anchor block of the cowper-stove multiblock. Routes exhaust gas into the
-/// stove. The build-outline projection (Ctrl + Shift + right-click) is provided by the
-/// shared <c>MultiblockStructure</c> block behavior declared in the block JSON.
+/// Intake and anchor block of the cowper-stove multiblock. Routes exhaust gas into the stove. The
+/// build-outline projection (Ctrl + Shift + right-click) comes from the shared
+/// <c>MultiblockStructure</c> block behavior declared in the definition below.
 /// </summary>
 [BlockRegister]
 public partial class BlockCowperStoveIntake
   : Block,
     INetworkConnector,
-    IExBlockDefProvider
-{
+    IExBlockDefProvider {
   #region Code-first definition
 
-  /// <summary>The cowper-stove intake blocktype, authored in C# (migrated from cowperstove/intake.json). The
-  /// anchor of the cowper multiblock: its 59-cell structure map is drawn as one top-down ASCII cross-section
-  /// per Y level (y=-1 the brick foundation up to y=5 the domed cap), compared as an unordered cell set by
+  /// <summary>The cowper-stove intake blocktype: the anchor of the cowper multiblock. Its 59-cell
+  /// structure map is drawn as one top-down ASCII cross-section per Y level (y=-1 the brick
+  /// foundation up to y=5 the domed cap), compared as an unordered cell set by
   /// <see cref="DefinitionParity"/>.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
@@ -43,10 +42,10 @@ public partial class BlockCowperStoveIntake
         )
         .MaxStackSize(1)
         .Handbook("cowperstove-intake-*")
-        // The stove footprint, drawn as one top-down cross-section per Y level (rows +Z, cols +X, origin
-        // x=-1/z=0). y=-1 brick foundation .. y=5 the domed cap. Legend: # refractory brick, I the intake
-        // (origin), P pipe outlet, X pipe passthrough, H heat sink, D coke-oven door, a air, c coal/air.
-        // Compared as an unordered cell set by DefinitionParity, so the w-numbering is free.
+        // The stove footprint, one top-down cross-section per Y level (rows +Z, cols +X, origin
+        // x=-1/z=0), from y=-1 the brick foundation to y=5 the domed cap. Legend: # refractory
+        // brick, I the intake (origin), P pipe outlet, X pipe passthrough, H heat sink, D coke-oven
+        // door, a air, c coal/air. Compared as an unordered cell set, so the w-numbering is free.
         .MultiblockLayout(s =>
           s.Origin(-1, 0)
             .Legend('#', VanillaCodes.Refractory)

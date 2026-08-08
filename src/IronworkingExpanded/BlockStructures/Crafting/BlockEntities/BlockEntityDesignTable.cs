@@ -10,22 +10,17 @@ using Vintagestory.GameContent;
 namespace IronworkingExpanded.BlockStructures.Crafting.BlockEntities;
 
 /// <summary>
-/// The design table's block entity - Phase 3 of the diagram-crafting system (see
-/// <c>docs/design/diagram-crafting.md</c>). Holds the drafting inventory (a drawing medium + parchment +
-/// an output slot) and the draft logic: draw a chosen diagram onto parchment, consuming one medium and one
-/// parchment. Right-click opens the drafting window (<see cref="GuiDialogDesignTable"/>); the player picks a
-/// diagram there and presses Draw, which sends the draft packet handled here.
+/// The design table's block entity. Holds the drafting inventory (drawing medium, parchment, output) and the
+/// draft logic: draw a chosen diagram onto parchment, consuming one medium and one parchment. Right-click
+/// opens <see cref="GuiDialogDesignTable"/>, where the player picks a diagram and presses Draw, which sends
+/// the draft packet handled here. See <c>docs/design/diagram-crafting.md</c>.
 /// <para>
-/// The window lives on the client, so - as with any custom-GUI container over a plain
-/// <see cref="BlockEntityContainer"/> - the slot moves and the draft only reach the server through the
-/// open/close/draft packet handshake in <see cref="OnReceivedClientPacket"/>. Without it the two
-/// inventories silently diverge. The 2-cell megablock collision and candle particles land in following
-/// increments.
+/// The window is client-side, so slot moves and drafts reach the server only through the open/close/draft
+/// handshake in <see cref="OnReceivedClientPacket"/>; without it the two inventories diverge.
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityDesignTable : BlockEntityContainer
-{
+public class BlockEntityDesignTable : BlockEntityContainer {
   /// <summary>Inventory slots: the drawing medium (charcoal/coal), the parchment, and the drafted output.</summary>
   public const int MediumSlot = 0;
   public const int ParchmentSlot = 1;
@@ -35,8 +30,8 @@ public class BlockEntityDesignTable : BlockEntityContainer
   public const int MediumCost = 1;
   public const int ParchmentCost = 1;
 
-  // Block-entity packet ids: 1000/1001 are the vanilla openable-container open/close literals; 1002 is our
-  // Draw request (the selected diagram's code).
+  // Packet ids: 1000/1001 are the vanilla openable-container open/close literals; 1002 is the Draw request
+  // carrying the selected diagram's code.
   private const int PacketIdOpen = 1000;
   private const int PacketIdClose = 1001;
 
@@ -47,32 +42,28 @@ public class BlockEntityDesignTable : BlockEntityContainer
   public override InventoryBase Inventory => _inventory;
   public override string InventoryClassName => "designtable";
 
-  // The open drafting window (client-side only; null when closed).
+  // The open drafting window. Client-side only; null when closed.
   private GuiDialogDesignTable? _dialog;
 
-  /// <summary>The diagram the player last drafted (its code), persisted so the window re-opens on it. Null
-  /// when nothing has been drafted yet.</summary>
+  /// <summary>Code of the diagram last drafted, persisted so the window re-opens on it. Null until the first
+  /// draft.</summary>
   public string? SelectedType { get; set; }
 
-  public override void Initialize(ICoreAPI api)
-  {
+  public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     _inventory.LateInitialize("designtable-" + Pos, api);
   }
 
   #region Interaction + packet handshake
 
-  /// <summary>Right-click: opens (or re-closes) the drafting window on the client.</summary>
-  public void OnInteract(IPlayer byPlayer)
-  {
+  /// <summary>Right-click: toggles the drafting window. Client-side only.</summary>
+  public void OnInteract(IPlayer byPlayer) {
     if (Api.Side == EnumAppSide.Client)
       ToggleDialog((ICoreClientAPI)Api, byPlayer);
   }
 
-  private void ToggleDialog(ICoreClientAPI capi, IPlayer byPlayer)
-  {
-    if (_dialog != null)
-    {
+  private void ToggleDialog(ICoreClientAPI capi, IPlayer byPlayer) {
+    if (_dialog != null) {
       _dialog.TryClose();
       return;
     }
@@ -84,8 +75,7 @@ public class BlockEntityDesignTable : BlockEntityContainer
       capi,
       SelectedType
     );
-    _dialog.OnClosed += () =>
-    {
+    _dialog.OnClosed += () => {
       _dialog = null;
       capi.Network.SendBlockEntityPacket(Pos, PacketIdClose);
     };
@@ -96,24 +86,21 @@ public class BlockEntityDesignTable : BlockEntityContainer
   }
 
   /// <summary>
-  /// Server-side handling of the window packets. The base <see cref="BlockEntityContainer"/> does not route
-  /// these, so the slot moves and the draft would otherwise be dropped, leaving the server inventory out of
-  /// sync with what the player sees. Mirrors the vanilla openable-container protocol, plus our draft packet.
+  /// Server-side handling of the window packets: the vanilla openable-container protocol plus the draft
+  /// packet. <see cref="BlockEntityContainer"/> does not route these, so without it slot moves and drafts are
+  /// dropped and the server inventory drifts from what the player sees.
   /// </summary>
   public override void OnReceivedClientPacket(
     IPlayer player,
     int packetid,
     byte[] data
-  )
-  {
-    if (packetid == PacketIdClose)
-    {
+  ) {
+    if (packetid == PacketIdClose) {
       player.InventoryManager?.CloseInventory(Inventory);
       return;
     }
 
-    if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use))
-    {
+    if (!Api.World.Claims.TryAccess(player, Pos, EnumBlockAccessFlags.Use)) {
       Api.World.Logger.Audit(
         "Player {0} sent a design-table packet to {1} without claim access. Rejected.",
         player.PlayerName,
@@ -122,20 +109,17 @@ public class BlockEntityDesignTable : BlockEntityContainer
       return;
     }
 
-    if (packetid < 1000)
-    {
+    if (packetid < 1000) {
       Inventory.InvNetworkUtil.HandleClientPacket(player, packetid, data);
       return;
     }
 
-    if (packetid == PacketIdOpen)
-    {
+    if (packetid == PacketIdOpen) {
       player.InventoryManager?.OpenInventory(Inventory);
       return;
     }
 
-    if (packetid == PacketIdDraft)
-    {
+    if (packetid == PacketIdDraft) {
       OnDraftRequested(SerializerUtil.Deserialize<string>(data));
       return;
     }
@@ -143,8 +127,7 @@ public class BlockEntityDesignTable : BlockEntityContainer
     base.OnReceivedClientPacket(player, packetid, data);
   }
 
-  private void OnDraftRequested(string diagramCode)
-  {
+  private void OnDraftRequested(string diagramCode) {
     SelectedType = diagramCode;
     TryDraft(diagramCode);
   }
@@ -153,7 +136,7 @@ public class BlockEntityDesignTable : BlockEntityContainer
 
   #region Draft logic (pure where it can be; unit-tested)
 
-  /// <summary>Charcoal or black coal - either draws a diagram (both work in vanilla).</summary>
+  /// <summary>Whether the stack is a drawing medium: charcoal or coal.</summary>
   public static bool IsDrawingMedium(ItemStack? stack) =>
     stack?.Collectible?.Code is { } code
     && (code.Path == "charcoal" || code.FirstCodePart() == "coal");
@@ -169,11 +152,11 @@ public class BlockEntityDesignTable : BlockEntityContainer
     && IsParchment(_inventory[ParchmentSlot].Itemstack)
     && _inventory[ParchmentSlot].StackSize >= ParchmentCost;
 
-  /// <summary>Draws <paramref name="diagramCode"/> onto parchment: consumes one medium + one parchment and
-  /// puts the diagram in the output slot. Returns false if the inputs are missing, the code is unknown, or
-  /// the output slot can't take another. Server-side (mutates the inventory).</summary>
-  public bool TryDraft(string diagramCode)
-  {
+  /// <summary>Draws <paramref name="diagramCode"/> onto parchment: consumes one medium and one parchment and
+  /// puts the diagram in the output slot. Server-side; mutates the inventory.</summary>
+  /// <returns>False when the inputs are missing, the code resolves to no item, or the output slot cannot take
+  /// another.</returns>
+  public bool TryDraft(string diagramCode) {
     if (!HasInputs)
       return false;
 
@@ -207,16 +190,17 @@ public class BlockEntityDesignTable : BlockEntityContainer
 
   #endregion
 
-  // The container base persists the inventory; only the selected-diagram state is ours to carry.
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  // The container base persists the inventory; only the selected diagram is carried here.
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     if (SelectedType != null)
       tree.SetString("dt_selected", SelectedType);
   }
 
-  public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor world)
-  {
+  public override void FromTreeAttributes(
+    ITreeAttribute tree,
+    IWorldAccessor world
+  ) {
     base.FromTreeAttributes(tree, world);
     SelectedType = tree.GetString("dt_selected", null);
   }
@@ -224,15 +208,12 @@ public class BlockEntityDesignTable : BlockEntityContainer
 
 /// <summary>
 /// The design table's 3-slot inventory: a drawing-medium input, a parchment input, and a take-only output.
-/// The typed input slots make the window self-explanatory (only the right material fits) and pin the accept
-/// rules headlessly.
+/// The typed input slots carry the accept rules, so only the matching material fits.
 /// </summary>
 public class InventoryDesignTable(string? invId, ICoreAPI? api)
-  : InventoryGeneric(3, invId, api)
-{
+  : InventoryGeneric(3, invId, api) {
   protected override ItemSlot NewSlot(int i) =>
-    i switch
-    {
+    i switch {
       BlockEntityDesignTable.MediumSlot => new ItemSlotDesignInput(
         this,
         BlockEntityDesignTable.IsDrawingMedium,
@@ -247,9 +228,8 @@ public class InventoryDesignTable(string? invId, ICoreAPI? api)
     };
 }
 
-/// <summary>An input slot that only accepts stacks matching a predicate (a drawing medium, or parchment).</summary>
-public class ItemSlotDesignInput : ItemSlotSurvival
-{
+/// <summary>An input slot that accepts only stacks matching a predicate.</summary>
+public class ItemSlotDesignInput : ItemSlotSurvival {
   private readonly System.Func<ItemStack?, bool> _accepts;
 
   public ItemSlotDesignInput(
@@ -257,8 +237,7 @@ public class ItemSlotDesignInput : ItemSlotSurvival
     System.Func<ItemStack?, bool> accepts,
     string hexColor
   )
-    : base(inventory)
-  {
+    : base(inventory) {
     _accepts = accepts;
     HexBackgroundColor = hexColor;
   }
@@ -272,10 +251,9 @@ public class ItemSlotDesignInput : ItemSlotSurvival
     _accepts(sourceSlot.Itemstack) && base.CanHold(sourceSlot);
 }
 
-/// <summary>The drafted-output slot: take-only, so a draft's result cannot be overwritten by hand.</summary>
+/// <summary>The drafted-output slot: take-only, so its contents cannot be overwritten by hand.</summary>
 public class ItemSlotDesignOutput(InventoryBase inventory)
-  : ItemSlotSurvival(inventory)
-{
+  : ItemSlotSurvival(inventory) {
   public override bool CanTakeFrom(
     ItemSlot sourceSlot,
     EnumMergePriority priority = EnumMergePriority.AutoMerge

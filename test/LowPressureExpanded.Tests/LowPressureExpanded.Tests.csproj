@@ -55,5 +55,4 @@
     <Using Include="ExpandedLib.Blocks.Networks" />
     <Using Include="IronworkingExpanded.Tests" />
   </ItemGroup>
-
 </Project>

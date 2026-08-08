@@ -7,23 +7,19 @@ using Xunit;
 namespace LowPressureExpanded.Tests;
 
 /// <summary>
-/// Every <c>lpex</c> grid recipe's block output must name a block <c>lpex</c> registers.
-/// <para>
-/// <b>An output is the one code that cannot be a wildcard</b>, and until this test nothing checked
-/// it. A dead output does not throw - the recipe just never resolves - so the block silently becomes
-/// uncraftable while the suite stays green. See <see cref="RecipeCodes"/> for the two live defects that
-/// prompted it, one in each direction of the same rewrite.
-/// </para>
+/// Every <c>lpex</c> grid recipe's block output must name a block <c>lpex</c> registers. An output
+/// cannot be a wildcard, and a dead one does not throw: the recipe never resolves and the block
+/// becomes uncraftable with no error reported. See <see cref="RecipeCodes"/>.
 /// </summary>
-public class LpexRecipeOutputTests
-{
+public class LpexRecipeOutputTests {
   private const string Domain = "lpex";
-  private static readonly Assembly Mod = typeof(LowPressureExpanded.LpexConfig).Assembly;
+  private static readonly Assembly Mod =
+    typeof(LowPressureExpanded.LpexConfig).Assembly;
 
   [Fact]
-  public void Every_recipe_output_names_a_registered_block()
-  {
-    IReadOnlyList<RecipeCodes.Unresolvable> bad = RecipeCodes.UnresolvableOutputs(Domain, Mod);
+  public void Every_recipe_output_names_a_registered_block() {
+    IReadOnlyList<RecipeCodes.Unresolvable> bad =
+      RecipeCodes.UnresolvableOutputs(Domain, Mod);
 
     Assert.True(
       bad.Count == 0,

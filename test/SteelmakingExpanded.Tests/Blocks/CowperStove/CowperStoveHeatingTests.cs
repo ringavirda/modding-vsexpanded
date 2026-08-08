@@ -7,21 +7,14 @@ namespace SteelmakingExpanded.Tests;
 
 /// <summary>
 /// The cowper stove charges its brick core from hot furnace exhaust drawn off the gas network across
-/// its connector face. This spans smex (the regenerator) and lpex (the <see cref="PipeNetwork"/>),
-/// which is why it lives in the smex suite - the top mod of the two: a sealed exhaust run on the
-/// stove's intake face heats the core and is drained; an unfed stove sits cold.
-/// <para>
-/// Both run on a built <see cref="CowperRig"/>. That matters more here than it looks: the stove used to
-/// be stood up with a forced <c>StructureComplete</c>, a hand-poked <c>_connectorFace</c> and six
-/// hand-poked tunables, none of which the machine had to agree with. Now the real <c>Initialize</c>
-/// derives the face and caches the tunables, and the shell has to stand.
-/// </para>
+/// its connector face. Spanning smex (the regenerator) and lpex (the <see cref="PipeNetwork"/>), it
+/// lives in the smex suite as the top mod of the two. Every case runs on a built
+/// <see cref="CowperRig"/>, so the stove's own <c>Initialize</c> derives the connector face and caches
+/// the tunables, and the shell has to stand for the stove to commission.
 /// </summary>
-public class CowperStoveHeatingTests
-{
+public class CowperStoveHeatingTests {
   [Fact]
-  public void Hot_exhaust_charges_the_core_and_is_drawn_off()
-  {
+  public void Hot_exhaust_charges_the_core_and_is_drawn_off() {
     var rig = new CowperRig();
     float before = rig.ExhaustVolume;
 
@@ -38,8 +31,7 @@ public class CowperStoveHeatingTests
   }
 
   [Fact]
-  public void An_unfed_stove_stays_cold()
-  {
+  public void An_unfed_stove_stays_cold() {
     // Built, plumbed, and ticking - with nothing in the exhaust main to draw.
     var rig = new CowperRig();
 
@@ -49,10 +41,9 @@ public class CowperStoveHeatingTests
   }
 
   [Fact]
-  public void A_stove_whose_shell_is_breached_never_commissions()
-  {
-    // The counterpart the forced flag could never express: pull one brick out of a raised shell and
-    // the stove drops back to incomplete on its own next monitor tick, so it stops regenerating.
+  public void A_stove_whose_shell_is_breached_never_commissions() {
+    // One brick out of a raised shell and the stove drops back to incomplete on its next monitor tick,
+    // so it stops regenerating.
     var rig = new CowperRig();
     Assert.True(rig.Stove.StructureComplete);
 

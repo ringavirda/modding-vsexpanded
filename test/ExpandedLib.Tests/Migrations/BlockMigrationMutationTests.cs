@@ -11,24 +11,20 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// The block migrator's <em>mutation</em> path - the part that actually rewrites save data, as opposed
-/// to the per-mod <c>GetRemaps</c> definitions covered elsewhere. Exercises the two primitives the
-/// chunk sweep drives: <see cref="BlockMigrationModSystem.ReplaceBlock"/> (a placed block swapped in
-/// the world, with and without block-entity state) and
-/// <see cref="BlockMigrationModSystem.RemapInventory"/> (migrated content held as item stacks in
-/// containers/inventories). This is the highest save-data blast radius in the mod family and was
-/// previously driven by nothing.
+/// The block migrator's mutation path, which rewrites save data; the per-mod <c>GetRemaps</c>
+/// definitions are covered elsewhere. Exercises the two primitives the chunk sweep drives:
+/// <see cref="BlockMigrationModSystem.ReplaceBlock"/> (a placed block swapped in the world, with and
+/// without block-entity state) and <see cref="BlockMigrationModSystem.RemapInventory"/> (migrated
+/// content held as item stacks in containers and inventories).
 /// </summary>
-public class BlockMigrationMutationTests
-{
+public class BlockMigrationMutationTests {
   private static Block Block(string code, int id) =>
     TestBlocks.Configure(new Block(), code, id);
 
-  private static BlockMigrationModSystem System(TestWorld world)
-  {
+  private static BlockMigrationModSystem System(TestWorld world) {
     var sys = new BlockMigrationModSystem();
     // ReplaceBlock's block-entity branch reaches through _sapi.World when handing the old tree to a
-    // migration; the headless harness never runs StartServerSide that would set it.
+    // migration. The headless harness never runs StartServerSide, which is what would set it.
     ReflectionHelpers.SetField(sys, "_sapi", world.Api);
     return sys;
   }
@@ -36,8 +32,7 @@ public class BlockMigrationMutationTests
   #region ReplaceBlock - in-world swaps
 
   [Fact]
-  public void ReplaceBlock_swaps_a_plain_block_in_place()
-  {
+  public void ReplaceBlock_swaps_a_plain_block_in_place() {
     var world = new TestWorld();
     var pos = new BlockPos(3, 4, 5, 0);
     var oldBlock = Block("smex:pipe-old", 20);
@@ -58,8 +53,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void ReplaceBlock_deletes_the_block_and_its_entity_for_a_removal()
-  {
+  public void ReplaceBlock_deletes_the_block_and_its_entity_for_a_removal() {
     var world = new TestWorld();
     var pos = new BlockPos(6, 7, 8, 0);
     var oldBlock = Block("smex:gone", 22);
@@ -80,8 +74,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void ReplaceBlock_copies_block_entity_state_onto_a_fresh_entity()
-  {
+  public void ReplaceBlock_copies_block_entity_state_onto_a_fresh_entity() {
     var world = new TestWorld();
     var pos = new BlockPos(1, 2, 3, 0);
     const string newClass = "migratetest";
@@ -91,8 +84,8 @@ public class BlockMigrationMutationTests
     newBlock.EntityClass = newClass;
     world.Register(oldBlock);
     world.Register(newBlock);
-    // The engine (re)creates the new block's BE when the block is placed; the harness mirrors that
-    // for a registered class, which is exactly what ReplaceBlock relies on to hand over the old tree.
+    // The engine creates the new block's BE when the block is placed, and the harness mirrors that for
+    // a registered class. ReplaceBlock relies on it to hand the old tree over.
     world.RegisterBlockEntityFactory(newClass, () => new StatefulBe());
 
     var oldBe = new StatefulBe { Value = 99 };
@@ -119,8 +112,7 @@ public class BlockMigrationMutationTests
   #region RemapInventory - held item stacks
 
   [Fact]
-  public void RemapInventory_swaps_a_block_stack_preserving_size_and_attributes()
-  {
+  public void RemapInventory_swaps_a_block_stack_preserving_size_and_attributes() {
     var world = new TestWorld();
     var oldBlock = Block("smex:slag", 40);
     var newBlock = Block("iwex:slag", 41);
@@ -148,8 +140,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void RemapInventory_drops_a_block_stack_that_maps_to_a_removal()
-  {
+  public void RemapInventory_drops_a_block_stack_that_maps_to_a_removal() {
     var world = new TestWorld();
     var oldBlock = Block("smex:purged", 42);
 
@@ -170,8 +161,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void RemapInventory_swaps_an_item_stack_preserving_size()
-  {
+  public void RemapInventory_swaps_an_item_stack_preserving_size() {
     var world = new TestWorld();
     Item oldItem = world.RegisterItem("smex:olditem");
     Item newItem = world.RegisterItem("iwex:newitem");
@@ -196,8 +186,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void RemapInventory_picks_the_table_by_the_stacks_class_for_a_dual_code()
-  {
+  public void RemapInventory_picks_the_table_by_the_stacks_class_for_a_dual_code() {
     // "slag" exists as both a block and an item; the block table and item table map it to different
     // replacements, and RemapInventory must resolve each stack by its own class.
     var world = new TestWorld();
@@ -213,11 +202,12 @@ public class BlockMigrationMutationTests
       newSlagBlock.Code,
       null
     );
-    sys._itemRemap[oldSlagItem.Code] = new BlockMigrationModSystem.ItemRemapEntry(
-      newSlagItem,
-      oldSlagItem.Code,
-      newSlagItem.Code
-    );
+    sys._itemRemap[oldSlagItem.Code] =
+      new BlockMigrationModSystem.ItemRemapEntry(
+        newSlagItem,
+        oldSlagItem.Code,
+        newSlagItem.Code
+      );
 
     var blockSlot = new DummySlot(new ItemStack(oldSlagBlock, 1));
     var itemSlot = new DummySlot(new ItemStack(oldSlagItem, 1));
@@ -232,8 +222,7 @@ public class BlockMigrationMutationTests
   }
 
   [Fact]
-  public void RemapInventory_leaves_unmapped_and_empty_slots_untouched()
-  {
+  public void RemapInventory_leaves_unmapped_and_empty_slots_untouched() {
     var world = new TestWorld();
     var mapped = Block("smex:old", 60);
     var newBlock = Block("iwex:new", 61);
@@ -262,42 +251,37 @@ public class BlockMigrationMutationTests
 
   #region Helpers
 
-  /// <summary>A fake inventory that simply enumerates the given slots - all
+  /// <summary>An inventory that enumerates the given slots, which is all
   /// <see cref="BlockMigrationModSystem.RemapInventory"/> asks of an <see cref="IInventory"/>.</summary>
-  private static IInventory Inventory(params ItemSlot[] slots)
-  {
+  private static IInventory Inventory(params ItemSlot[] slots) {
     var list = slots.ToList();
     var inv = Substitute.For<IInventory>();
     inv.GetEnumerator().Returns(_ => list.GetEnumerator());
     return inv;
   }
 
-  /// <summary>A copy-verbatim block-entity migration (same class either side of the swap), like the
-  /// real relocated furnace/canal entities use.</summary>
-  private sealed class CopyTreeMigration : IBlockEntityMigration
-  {
+  /// <summary>A copy-verbatim block-entity migration, the same class either side of the swap, as the
+  /// relocated furnace and canal entities use.</summary>
+  private sealed class CopyTreeMigration : IBlockEntityMigration {
     public void MigrateBlockEntity(
       AssetLocation oldCode,
       AssetLocation newCode,
       ITreeAttribute? oldState,
       BlockEntity newBlockEntity,
       IWorldAccessor world
-    )
-    {
+    ) {
       if (oldState != null)
         newBlockEntity.FromTreeAttributes(oldState, world);
     }
   }
 
-  /// <summary>A block entity carrying one saved value, so a state hand-off can be observed, plus a
-  /// flag recording that it was marked dirty.</summary>
-  private sealed class StatefulBe : BlockEntity
-  {
+  /// <summary>A block entity carrying one saved value, so a state hand-off can be observed, plus a flag
+  /// recording that it was marked dirty.</summary>
+  private sealed class StatefulBe : BlockEntity {
     public int Value { get; set; }
     public bool Dirtied { get; private set; }
 
-    public override void ToTreeAttributes(ITreeAttribute tree)
-    {
+    public override void ToTreeAttributes(ITreeAttribute tree) {
       base.ToTreeAttributes(tree);
       tree.SetInt("value", Value);
     }
@@ -305,8 +289,7 @@ public class BlockMigrationMutationTests
     public override void FromTreeAttributes(
       ITreeAttribute tree,
       IWorldAccessor worldAccessForResolve
-    )
-    {
+    ) {
       base.FromTreeAttributes(tree, worldAccessForResolve);
       Value = tree.GetInt("value");
     }

@@ -4,11 +4,11 @@ using Vintagestory.API.Common;
 namespace SteelmakingExpanded;
 
 /// <summary>
-/// JSON-serializable gameplay tunables for Steelmaking Expanded - the "magic
-/// numbers" that balance the machines and the molten/gas systems. Loaded from
-/// (and written to) <c>ModConfig/smex_values.json</c>; the property defaults below
-/// are used when the file is missing or a key is absent (and any NaN/infinite/negative
-/// value is reset to its default on load). Accessed through <see cref="SmexValues"/>, not directly.
+/// JSON-serializable gameplay tunables for Steelmaking Expanded: the balance numbers for its
+/// machines and the molten/gas systems. Held in the <c>smex</c> section of
+/// <c>ModConfig/ex_values.json</c>. The property defaults apply when the file or a key is missing,
+/// and NaN, infinite or negative values are reset to their defaults on load. Accessed through
+/// <see cref="SmexValues"/>, not directly.
 /// </summary>
 [ExConfigRegister(
   "ex_values.json",
@@ -16,25 +16,21 @@ namespace SteelmakingExpanded;
   LegacyFileNames = new string[] { "smex_values.json", "smex.json" },
   Manageable = true
 )]
-public class SmexConfig : IExVersionedConfig
-{
+public class SmexConfig : IExVersionedConfig {
   /// <summary>Mod version that last wrote this file; drives the <see cref="Migrations"/> resets.
   /// Managed by <see cref="ExConfigRegister{TConfig}"/> - do not set by hand.</summary>
   public string? ConfigVersion { get; set; }
 
   /// <summary>
-  /// Version-driven default resets. When a player upgrades across one of these versions the listed
-  /// values are forced back to the defaults above, discarding their saved tuning for just those keys
-  /// (everything else is preserved). Add an entry per release that rebalances values you want pushed
-  /// out to existing configs; use <c>nameof</c> for the field names. An entry with no
-  /// <c>ResetFields</c> resets the whole config.
+  /// Version-driven default resets. Upgrading across one of these versions forces the listed fields
+  /// back to their defaults, discarding saved tuning for those keys only. Add an entry per release
+  /// whose rebalanced defaults must reach existing configs; use <c>nameof</c> for the field names.
+  /// An entry with no <c>ResetFields</c> resets the whole config.
   /// </summary>
   public static readonly ExConfigMigration[] Migrations =
   [
-    // 0.9.0: the bessemer blast draw (1 -> 8 L/s) and smoke-stack vent rate (4 -> 48 L/s)
-    // were retuned during the gas-volume rebalance - push the new defaults to pre-0.9.0
-    // configs (e.g. players coming from 0.8.6). FromVersion null so even unversioned
-    // files are caught; 0.9.0+ already carry these values.
+    // 0.9.0: the gas-volume rebalance retuned the bessemer blast draw (1 -> 8 L/s) and the
+    // smoke-stack vent rate (4 -> 48 L/s). No FromVersion, so unversioned files are caught too.
     new()
     {
       ToVersion = "0.9.0",
@@ -44,10 +40,9 @@ public class SmexConfig : IExVersionedConfig
         nameof(SmokestackGasIntakeVolume),
       ],
     },
-    // 0.9.2: the converter vessel now costs a single smithable large gear (8 rods)
-    // instead of 4 rusty gears (12 rods), and the air blower now scales off absolute
-    // engine power so its base output was retuned (16 -> 48 L/s) - push the rebalanced
-    // defaults to existing configs.
+    // 0.9.2: the converter vessel costs one smithable large gear (8 rods) instead of 4 rusty gears
+    // (12 rods), and the air blower scales off absolute engine power, retuning its base output
+    // (16 -> 48 L/s).
     new()
     {
       ToVersion = "0.9.2",
@@ -59,30 +54,24 @@ public class SmexConfig : IExVersionedConfig
       ],
     },
     // 0.9.5: the Bessemer converter's fixed blow-time/hold-temperature refine was replaced with the
-    // dynamic carbon model (autothermal heat balance + over-blow + cold-scrap temp gate + slag +
-    // split-pour), and the vessel was enlarged to ≥2 large billets. The retired
-    // BessemerProcessDuration/BessemerProcessTemperature keys drop out of the POCO; force the capacity
-    // and the new model tunables to their defaults so existing configs run the reworked machine.
+    // dynamic carbon model (autothermal heat balance, over-blow, cold-scrap temp gate, slag,
+    // split-pour), and the vessel was enlarged to at least 2 large billets. The retired
+    // BessemerProcessDuration/BessemerProcessTemperature keys drop out of the POCO; the capacity is
+    // reset so existing configs run the reworked machine.
     new()
     {
       ToVersion = "0.9.5",
-      ResetFields =
-      [
-        nameof(BessemerConverterCapacity),
-      ],
+      ResetFields = [nameof(BessemerConverterCapacity)],
     },
   ];
 
-  // The molten-metal system tunables (cooldown rates, canal flow, default capacities, canal-seal
-  // clay costs) moved to the foundational iwex mod along with the molten subsystem itself - see
-  // IronworkingExpanded.IwexConfig / IwexValues. The bessemer charge cooldown still reads the base
-  // IwexValues.MoltenCooldownSpeed and scales it by BessemerCooldownCoefficient below.
+  // The molten-metal system tunables (cooldown rates, canal flow, default capacities, canal-seal clay
+  // costs) live in IronworkingExpanded.IwexConfig / IwexValues alongside the molten subsystem itself.
 
   #region Hopper feed (reinforced tank + bell drip)
-  // The reinforced hopper is now a plain charge tank (iwex's burdenmaker makes the burden; the hopper no
-  // longer mixes). It is deliberately a SMALL buffer versus the tall hopper's 128 - it is meant to be
-  // fed by the skip-hoist system later, not hand-loaded to the brim.
-  /// <summary>Burden units the reinforced hopper tank holds. Small by design (skip-hoist fed).</summary>
+  // The reinforced hopper is a plain charge tank; iwex's burdenmaker makes the burden. Its buffer is
+  // small next to the tall hopper's 128 because it is meant to be fed by the skip hoist.
+  /// <summary>Burden units the reinforced hopper tank holds.</summary>
   public int HopperReinforcedCapacity { get; set; } = 48;
 
   /// <summary>Burden the bell hopper's magazine can buffer below the reinforced tank.</summary>
@@ -113,9 +102,6 @@ public class SmexConfig : IExVersionedConfig
   public float AirBlowerOutputPerSecond { get; set; } = 48f;
   #endregion
 
-  // Mold-carry player safety (the burn temperature) moved to iwex (IwexValues.MoldBurnMinTemperature)
-  // with the mold spill/burn tick, so the cast-iron molds iwex owns are safe to carry without smex.
-
   #region Cowper stove
   /// <summary>Cap (°C) on the cowper stove's internal regenerator temperature.</summary>
   public float CowperMaxTemperature { get; set; } = 1240f;
@@ -139,25 +125,25 @@ public class SmexConfig : IExVersionedConfig
   /// regenerator has soaked up its heat (the rest went into the brick core).</summary>
   public float CowperExhaustAttenuation { get; set; } = 0.4f;
 
-  /// <summary>Gas (L/s) the cowper stove draws each tick from each of its intakes - the furnace exhaust it soaks heat from, and the air it reheats into hot blast.</summary>
+  /// <summary>Gas (L/s) drawn each tick from each intake: the furnace exhaust the stove soaks heat
+  /// from, and the air it reheats into hot blast.</summary>
   public float CowperIntakeVolume { get; set; } = 24f;
   #endregion
 
   #region Bessemer converter
-  /// <summary>Molten-metal capacity (units) of the converter vessel. Sized to hold ≥2 large billets
-  /// (2×2400 u) so a full pig charge blows to two billets of steel and the line never stalls.</summary>
+  /// <summary>Molten-metal capacity (units) of the converter vessel. Sized for at least two large
+  /// billets (2×2400 u), so a full pig charge blows to two billets of steel.</summary>
   public int BessemerConverterCapacity { get; set; } = 4800;
 
   /// <summary>Blast (L/s) the converter draws from its gas intake while blowing.</summary>
   public float BessemerBlastPerSecond { get; set; } = 8.0f;
 
   // --- Dynamic carbon model (the autothermal blow) -------------------------------------------------
-  // The charge carries a per-unit carbon fraction; the air blow oxidises it, so carbon MONOTONICALLY
-  // falls the longer you blow. The player picks the product by WHEN they stop: high carbon = still pig,
-  // at the target = Bessemer steel, past it (over-blow) = soft ingot iron. Carbon is an ABSTRACTION for
-  // total oxidisable content (real Bessemer heat is silicon-dominated); modelling it as "carbon burns →
-  // heat, and reaching the target IS the steel" self-terminates the way the real flame drops at blow's
-  // end. Acid process: no flux, self-forming siliceous slag (historically correct, not a shortcut).
+  // The charge carries a per-unit carbon fraction and the blow oxidises it, so carbon falls
+  // monotonically while blowing and the product depends on when the blow stops: high carbon is still
+  // pig, the target is Bessemer steel, past it (over-blow) is soft ingot iron. Carbon stands in for
+  // total oxidisable content, since real Bessemer heat is silicon-dominated. Acid process: no flux,
+  // self-forming siliceous slag. See docs/design/machines/bessemer.md.
 
   /// <summary>Carbon fraction of a fresh molten-pig charge (materials.md: pig ~4.0 % C).</summary>
   public float BessemerPigCarbonStart { get; set; } = 0.04f;
@@ -166,8 +152,7 @@ public class SmexConfig : IExVersionedConfig
   public float BessemerSteelCarbonTarget { get; set; } = 0.002f;
 
   /// <summary>Carbon fraction below which the blow has over-blown the heat to soft iron (~0 % C):
-  /// the charge retypes to <c>game:ingot-iron</c> (ingot iron, the deliberate plain-iron route now that
-  /// the blast furnace makes pig).</summary>
+  /// the charge retypes to <c>game:ingot-iron</c>, the plain-iron route.</summary>
   public float BessemerOverblowCarbon { get; set; } = 0.0005f;
 
   /// <summary>Carbon fraction burned out per litre of blast that reaches the bath - the decarburisation
@@ -181,9 +166,9 @@ public class SmexConfig : IExVersionedConfig
   public float BessemerAutothermalBase { get; set; } = 1250f;
 
   /// <summary>Autothermal heat (°C) the oxidising charge contributes to T_in at full blast - the
-  /// carbon/silicon burn that makes the process need no external fuel. Scaled by how much blast actually
-  /// reaches the bath. The post-blow peak is (base + this − radiation) ≈ 1800 °C at the shipped values;
-  /// raise it for a hotter, longer liquid window.</summary>
+  /// carbon/silicon burn that makes the process need no external fuel. Scaled by how much blast
+  /// actually reaches the bath. The post-blow peak is (base + this − radiation), about 1800 °C at the
+  /// shipped values.</summary>
   public float BessemerHeatPerCarbonUnit { get; set; } = 600f;
 
   /// <summary>Ceiling (°C) on autothermal T_in, so a retuned heat term can't run the bath arbitrarily hot.</summary>
@@ -192,17 +177,17 @@ public class SmexConfig : IExVersionedConfig
   /// <summary>Radiation/ambient heat loss (°C) off the open vessel mouth - the always-on term of T_loss.</summary>
   public float BessemerRadiationLoss { get; set; } = 50f;
 
-  /// <summary>Process floor (°C): the blow only refines while T_process is at or above this (the steel
-  /// liquidus - below it the bath would skull). Cold scrap that pushes T_process under this stalls the
-  /// blow; heavier still and the bath freezes solid (the emergent scrap cap).</summary>
+  /// <summary>Process floor (°C), the steel liquidus: the blow refines only while T_process is at or
+  /// above this. Cold scrap that pushes T_process below it stalls the blow; more scrap still freezes
+  /// the bath.</summary>
   public float BessemerRefineTemperature { get; set; } = 1500f;
 
   // --- Cold steel-scrap charge (the temperature gate) ----------------------------------------------
   // Optional cold steel bits (game:metalbit-steel, classified via the exlib Scrap role) are charged
-  // alongside the pig; they add cold mass to T_loss, so MORE scrap ⇒ LOWER T_process. There is no
-  // hardcoded scrap cap - past the ceiling the bath can't stay above the refine floor and the heat
-  // stalls or freezes (conventions.md). The coefficient is tuned so ~15-20 % cold scrap on a full charge
-  // is the practical ceiling (the real acid-Bessemer figure; ~30 % is too generous).
+  // alongside the pig and add cold mass to T_loss, so more scrap means a lower T_process. There is no
+  // hardcoded scrap cap: past the ceiling the bath cannot hold the refine floor and the heat stalls or
+  // freezes (conventions.md). The coefficient is tuned so 15-20 % cold scrap on a full charge is the
+  // practical ceiling, the acid-Bessemer figure.
 
   /// <summary>Heat loss (°C) added to T_loss per unit of cold scrap in the vessel. At the shipped value a
   /// full 4800 u charge stalls the blow around ~850 u scrap (~15-18 %).</summary>
@@ -216,9 +201,9 @@ public class SmexConfig : IExVersionedConfig
   [ExConfigRange(0, 1)]
   public float BessemerScrapSteelYield { get; set; } = 0.97f;
 
-  // --- Mass balance (R2: steel + slag ≤ input, never create matter) --------------------------------
-  // Per 100 u pig → 90 u molten steel + 6 u molten slag (the same iwex:slag the furnaces make) + 4 u gas
-  // (carbon burned off, gone - not a material). Slag accumulates into its own pool during the blow.
+  // --- Mass balance (R2: steel + slag ≤ input) -----------------------------------------------------
+  // Per 100 u pig → 90 u molten steel + 6 u molten slag (the same iwex:slag the furnaces make) + 4 u
+  // gas from the burned-off carbon. Slag accumulates into its own pool during the blow.
 
   /// <summary>Fraction of pig mass that becomes steel across the blow (materials.md).</summary>
   [ExConfigRange(0, 1)]
@@ -229,18 +214,17 @@ public class SmexConfig : IExVersionedConfig
   [ExConfigRange(0, 1)]
   public float BessemerSlagYield { get; set; } = 0.06f;
 
-  /// <summary>Pour rate (units/second) draining the vessel through the output cell - tuned so a full
-  /// 4800 u steel charge drains in ~110 s (slag, being far less, drains in seconds), leaving margin
-  /// inside the ~3-4 min liquid window to tilt slag→steel and work the canal valves.</summary>
+  /// <summary>Pour rate (units/second) draining the vessel through the output cell. A full 4800 u
+  /// steel charge drains in ~110 s, leaving margin inside the ~3-4 min liquid window to tilt
+  /// slag→steel and work the canal valves.</summary>
   public float BessemerPourRate { get; set; } = 44f;
 
   /// <summary>Minimum geared mechanical speed for the converter to count as powered.</summary>
   public float BessemerPowerSpeedThreshold { get; set; } = 0.1f;
 
-  /// <summary>Multiplier on the converter charge's cooldown speed (vs the base molten-system rate,
-  /// <c>IwexValues.MoltenCooldownSpeed</c>).
-  /// Below 1 the bath holds its heat longer, giving the player more time to pour before it solidifies
-  /// (0.5 ⇒ half the molten-system rate, i.e. cools twice as slowly).</summary>
+  /// <summary>Multiplier on the converter charge's cooldown speed, against the base molten-system rate
+  /// <c>IwexValues.MoltenCooldownSpeed</c>. Below 1 the bath holds its heat longer (0.5 is half the
+  /// molten-system rate, so it cools twice as slowly).</summary>
   public float BessemerCooldownCoefficient { get; set; } = 0.5f;
 
   /// <summary>Fraction of the converter capacity below which a hardened (cooled) charge can be chiselled
@@ -250,7 +234,7 @@ public class SmexConfig : IExVersionedConfig
   public float BessemerChiselMaxFraction { get; set; } = 0.2f;
 
   /// <summary>Fraction (0..1) of the converter's construction materials recovered when its vessel is
-  /// broken - the right-click-construction salvage ratio. Player-tunable; applied live on the next break.</summary>
+  /// broken - the right-click-construction salvage ratio. Applied live on the next break.</summary>
   public float RccBrokenDropsRatio { get; set; } = 0.8f;
   #endregion
 
@@ -258,9 +242,6 @@ public class SmexConfig : IExVersionedConfig
   /// <summary>Exhaust gas (L/s) the smoke stack vents from the network.</summary>
   public float SmokestackGasIntakeVolume { get; set; } = 48.0f;
   #endregion
-
-  // The ceramic tool molds (and their /exmod molds enable/disable flags) were removed in favour of the
-  // cast-iron molds cast in the sand cell (iwex); see docs/design/sand-casting.md.
 
   #region Recipe balance
   /// <summary>Active steelmaking recipe cost level - <c>"normal"</c> or <c>"cheap"</c>. Toggled

@@ -9,18 +9,16 @@ namespace ExpandedLib.Tests;
 /// <summary>
 /// The two-pass populate that fills <see cref="MetalRegistry"/> at <c>AssetsFinalize</c>, and the
 /// <see cref="MetalDef"/> JSON binding a content mod ships. The asset reads themselves need a running
-/// game (verified in-game); the load-bearing logic - baseline derivation, overlay precedence, and the
-/// camelCase→POCO mapping - is pinned here against the asset-free <see cref="MetalCatalogueLoader.Populate"/>.
+/// game; baseline derivation, overlay precedence and the camelCase to POCO mapping are covered against
+/// the asset-free <see cref="MetalCatalogueLoader.Populate"/>.
 /// </summary>
 [Collection("MetalRegistry")] // shares the process-wide MetalRegistry with MetalRegistryTests
-public class MetalCatalogueLoaderTests
-{
+public class MetalCatalogueLoaderTests {
   public MetalCatalogueLoaderTests() => MetalRegistry.Clear();
 
   #region Pass 1 - baseline derivation
   [Fact]
-  public void Baseline_registers_a_game_ingot_entry_per_metal_code()
-  {
+  public void Baseline_registers_a_game_ingot_entry_per_metal_code() {
     MetalCatalogueLoader.Populate(new[] { "iron", "copper" }, NoOverlays);
 
     Assert.True(MetalRegistry.TryGet("game:ingot-iron", out var iron));
@@ -30,15 +28,13 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void Baseline_derives_a_metal_listed_twice_only_once()
-  {
+  public void Baseline_derives_a_metal_listed_twice_only_once() {
     MetalCatalogueLoader.Populate(new[] { "iron", "iron" }, NoOverlays);
     Assert.Single(MetalRegistry.All);
   }
 
   [Fact]
-  public void Baseline_strips_a_domain_qualified_worldproperty_code()
-  {
+  public void Baseline_strips_a_domain_qualified_worldproperty_code() {
     MetalCatalogueLoader.Populate(new[] { "game:copper" }, NoOverlays);
 
     // "game:copper" → short code "copper" → molten item game:ingot-copper.
@@ -49,12 +45,14 @@ public class MetalCatalogueLoaderTests
 
   #region Pass 2 - overlay precedence
   [Fact]
-  public void Overlay_enriches_the_baseline_entry_for_the_same_metal()
-  {
+  public void Overlay_enriches_the_baseline_entry_for_the_same_metal() {
     var iron = new AssetLocation("game:ingot-iron");
     // Convention glow floor before the overlay...
     MetalCatalogueLoader.Populate(new[] { "iron" }, NoOverlays);
-    Assert.Equal(ExpandedLib.ExlibValues.MetalGlowMinTemp, MetalRegistry.GlowMinTempOf(iron));
+    Assert.Equal(
+      ExpandedLib.ExlibValues.MetalGlowMinTemp,
+      MetalRegistry.GlowMinTempOf(iron)
+    );
 
     MetalRegistry.Clear();
     MetalCatalogueLoader.Populate(
@@ -74,11 +72,13 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void Overlay_adds_a_metal_absent_from_the_baseline()
-  {
+  public void Overlay_adds_a_metal_absent_from_the_baseline() {
     MetalCatalogueLoader.Populate(
       NoCodes,
-      new[] { new MetalDef { Code = "slag", MoltenItem = "iwex:slag" } }
+      new[]
+      {
+        new MetalDef { Code = "slag", MoltenItem = "iwex:slag" },
+      }
     );
 
     Assert.True(MetalRegistry.TryGet("iwex:slag", out _));
@@ -86,8 +86,7 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void Overlay_missing_a_required_field_is_skipped_and_warned()
-  {
+  public void Overlay_missing_a_required_field_is_skipped_and_warned() {
     var warnings = new List<string>();
     MetalCatalogueLoader.Populate(
       NoCodes,
@@ -108,8 +107,7 @@ public class MetalCatalogueLoaderTests
 
   #region MetalDef JSON binding
   [Fact]
-  public void MetalDef_binds_camelCase_json_including_nested_alloy()
-  {
+  public void MetalDef_binds_camelCase_json_including_nested_alloy() {
     const string json =
       @"{
         ""code"": ""hadfield"",
@@ -137,8 +135,7 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void MetalDef_minimal_json_leaves_every_optional_null()
-  {
+  public void MetalDef_minimal_json_leaves_every_optional_null() {
     var def = JsonConvert.DeserializeObject<MetalDef>(
       @"{ ""code"": ""pigiron"", ""moltenItem"": ""iwex:ingot-pigiron"" }"
     )!;
@@ -151,8 +148,8 @@ public class MetalCatalogueLoaderTests
     Assert.Null(def.Alloy);
     Assert.False(def.IsAlloy);
 
-    // The item-family generation fields default to "generate nothing" so a metal that ships no such
-    // data (every metal but the opted-in alloys) is untouched by the emitter.
+    // The item-family generation fields default to "generate nothing", so a metal that ships no such
+    // data is untouched by the emitter.
     Assert.False(def.GenerateItemFamily);
     Assert.Null(def.ItemForms);
     Assert.Null(def.TexturePath);
@@ -162,8 +159,7 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void MetalDef_binds_the_item_family_generation_fields()
-  {
+  public void MetalDef_binds_the_item_family_generation_fields() {
     const string json =
       @"{
         ""code"": ""castiron"",
@@ -198,10 +194,8 @@ public class MetalCatalogueLoaderTests
   }
 
   [Fact]
-  public void MetalToolSpec_with_only_a_preset_leaves_the_overrides_null()
-  {
-    // The terse path a "good"/"brittle" metal actually ships: the preset names the stat baseline and
-    // every override stays null for the emitter to fill in - the whole point of having presets.
+  public void MetalToolSpec_with_only_a_preset_leaves_the_overrides_null() {
+    // A preset names the stat baseline; every override stays null for the emitter to fill in.
     var def = JsonConvert.DeserializeObject<MetalDef>(
       @"{ ""code"": ""bessemersteel"", ""moltenItem"": ""smex:ingot-bessemersteel"",
           ""tools"": { ""preset"": ""good"" } }"
@@ -217,5 +211,6 @@ public class MetalCatalogueLoaderTests
   #endregion
 
   private static readonly string[] NoCodes = System.Array.Empty<string>();
-  private static readonly MetalDef[] NoOverlays = System.Array.Empty<MetalDef>();
+  private static readonly MetalDef[] NoOverlays =
+    System.Array.Empty<MetalDef>();
 }

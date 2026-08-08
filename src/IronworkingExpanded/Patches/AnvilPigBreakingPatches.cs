@@ -7,24 +7,21 @@ using Vintagestory.GameContent;
 namespace IronworkingExpanded.Patches;
 
 /// <summary>
-/// Turns the helve hammer into a pig-breaker. A pig placed on the anvil becomes a marked work item (see
-/// <see cref="ItemPig"/>); the vanilla <see cref="BlockEntityAnvil.OnHelveHammerHit"/> hammers its metal
-/// voxels away toward the tiny <c>smithing/pig</c> recipe, and this patch pays out the voxels shed each
-/// hit as pig chunks and bits - the mass conserved by <see cref="PigBreaking"/>. It fires ONLY on the
-/// marked pig work item, so ordinary iron smithing is untouched, and it needs no dependency: the marker
-/// and the recipe are ours. The work item is our own cold-workable <see cref="ItemPigWorkItem"/> (not the
-/// reused <c>game:workitem-iron</c>), so other mods' iron-work-item patches (e.g. SmithingPlus's bit
-/// recovery) never touch the pig.
+/// Turns the helve hammer into a pig-breaker. A pig placed on the anvil becomes a marked work item
+/// (<see cref="ItemPig"/>); vanilla <see cref="BlockEntityAnvil.OnHelveHammerHit"/> hammers its metal
+/// voxels away toward the small <c>smithing/pig</c> recipe, and this patch pays the voxels shed each hit
+/// out as pig chunks and bits, with mass conserved by <see cref="PigBreaking"/>. It fires only on the
+/// marked work item, which is the cold-workable <see cref="ItemPigWorkItem"/> rather than a reused
+/// <c>game:workitem-iron</c>, so ordinary iron smithing and other mods' iron-work-item patches are
+/// unaffected.
 /// </summary>
 [HarmonyPatch(typeof(BlockEntityAnvil))]
-public static class AnvilPigBreakingPatches
-{
+public static class AnvilPigBreakingPatches {
   private static string RemainderKey => PigBreaking.MarkerKey + "rem";
 
   [HarmonyPrefix]
   [HarmonyPatch("OnHelveHammerHit")]
-  public static void Prefix(BlockEntityAnvil __instance, ref int __state)
-  {
+  public static void Prefix(BlockEntityAnvil __instance, ref int __state) {
     __state = -1; // sentinel: not a pig / client / nothing to do
     if (__instance.Api.Side != EnumAppSide.Server)
       return;
@@ -35,8 +32,7 @@ public static class AnvilPigBreakingPatches
 
   [HarmonyPostfix]
   [HarmonyPatch("OnHelveHammerHit")]
-  public static void Postfix(BlockEntityAnvil __instance, int __state)
-  {
+  public static void Postfix(BlockEntityAnvil __instance, int __state) {
     if (__state < 0)
       return;
     ItemStack? workItem = __instance.WorkItemStack;
@@ -59,8 +55,7 @@ public static class AnvilPigBreakingPatches
     workItem != null && workItem.Attributes.GetBool(PigBreaking.MarkerKey);
 
   // Count filled metal voxels (EnumVoxelMaterial.Metal == 1); slag (2) and empty (0) don't count.
-  private static int MetalVoxelCount(byte[,,] voxels)
-  {
+  private static int MetalVoxelCount(byte[,,] voxels) {
     int count = 0;
     for (int x = 0; x < 16; x++)
       for (int y = 0; y < 6; y++)
@@ -75,8 +70,7 @@ public static class AnvilPigBreakingPatches
     ItemStack workItem,
     string code,
     int count
-  )
-  {
+  ) {
     if (count <= 0)
       return;
     Item? item = anvil.Api.World.GetItem(new AssetLocation(code));
@@ -84,7 +78,7 @@ public static class AnvilPigBreakingPatches
       return;
 
     var stack = new ItemStack(item, count);
-    // Fresh chunks carry the pig's heat, so they glow and cool like the metal they broke off.
+    // Fresh chunks inherit the pig's temperature, so they glow and cool like the metal they came off.
     item.SetTemperature(
       anvil.Api.World,
       stack,

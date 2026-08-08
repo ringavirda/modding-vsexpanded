@@ -9,19 +9,17 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.Converter.Blocks;
 
 /// <summary>
-/// The converter's blast intake: a fixed structure port (not a network node) that
-/// exposes a single pipe connector on the face it is turned to face. A pipe run
-/// docks against that connector and the <see cref="BlockEntities.BlockEntityConverterControl"/>
-/// reads/consumes blast from the network on the other side of it. Horizontally
-/// orientable so it can be aligned with the control block.
+/// The converter's blast intake: a fixed structure port, not a network node, exposing a single pipe
+/// connector on the face it is turned to. A pipe run docks against that connector and
+/// <see cref="BlockEntities.BlockEntityConverterControl"/> consumes blast from the network behind it.
+/// Horizontally orientable so it can be aligned with the control block.
 /// </summary>
 [BlockRegister]
 public partial class BlockConverterIntake
   : Block,
     INetworkConnector,
-    IExBlockDefProvider
-{
-  /// <summary>The converter blast-intake blocktype, authored in C# (migrated from converter/intake.json).</summary>
+    IExBlockDefProvider {
+  /// <summary>The converter blast-intake blocktype: one <c>type</c> variant, one per horizontal side.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
@@ -41,8 +39,8 @@ public partial class BlockConverterIntake
   public string NetworkType => "pipe";
 
   /// <summary>
-  /// The single horizontal face that carries the pipe connector, derived from the
-  /// block's <c>side</c> variant (north → north, rotated for the other sides).
+  /// The single horizontal face carrying the pipe connector, derived from the block's <c>side</c>
+  /// variant (north for the north side, rotated for the others).
   /// </summary>
   public BlockFacing ConnectorFace =>
     ExOrientation.RotateFacing(
