@@ -35,7 +35,7 @@ public partial class BlockCastIronBevel : BlockNetworkNode, IExBlockDefProvider
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "castironbevel", "mpenergy/castironbevel")
+        .Create(domain, "mpenergy", "mpenergy/bevel")
         .Class<BlockCastIronBevel>()
         .EntityClass<BlockEntityCastIronBevel>()
         .Material(EnumBlockMaterial.Metal)
@@ -124,7 +124,7 @@ public partial class BlockCastIronBevel : BlockNetworkNode, IExBlockDefProvider
   {
     var drops = new List<ItemStack>();
     if (
-      world.GetBlock(CodeWithPath("castironshaft-shaft-" + (Orientation ?? "ns")))
+      world.GetBlock(CodeWithPath("mpenergy-shaft-" + (Orientation ?? "ns")))
       is { } shaft
     )
       drops.Add(new ItemStack(shaft));

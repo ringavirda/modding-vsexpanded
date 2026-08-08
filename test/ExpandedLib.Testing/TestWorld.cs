@@ -238,7 +238,7 @@ public sealed class TestWorld
   /// exchanged at that cell (each neighbour is told its own position and the position that changed).
   /// Empty cells resolve to <see cref="Air"/>, whose base implementation is a no-op, so only real
   /// neighbours react. This is <b>opt-in</b>: the low-level <see cref="Place"/>/<c>SetBlock</c>/
-  /// <c>ExchangeBlock</c>/<c>BreakBlock</c> helpers deliberately do NOT auto-fire it, because doing so
+  /// <c>ExchangeBlock</c>/<c>BreakBlock</c> helpers deliberately do not auto-fire it, because doing so
   /// would make an isolated network node self-break and reorientations recurse across the graph suite.
   /// Call it when a test needs to exercise neighbour-driven reactions - a network node re-checking its
   /// support and self-breaking, a canal updating its end connectors, an intake re-syncing orientation.
@@ -419,8 +419,22 @@ public sealed class TestWorld
       ));
     a.GetBlockEntity(Arg.Any<BlockPos>())
       .Returns(ci => GetBlockEntity(ci.Arg<BlockPos>()));
+    // Resolve-by-code, the same store IServerWorldAccessor.GetBlock(AssetLocation) reads. Orientation
+    // behaviours reach for the accessor rather than the world when swapping a block to its facing
+    // variant (CodeWithVariant -> GetBlock -> ExchangeBlock), and unwired this returns null, which
+    // those paths correctly read as "that variant was never declared" - so a working block looks like
+    // an authoring mistake.
+    a.GetBlock(Arg.Any<AssetLocation>())
+      .Returns(ci => GetByCode(ci.Arg<AssetLocation>()));
 
     a.When(x => x.SetBlock(Arg.Any<int>(), Arg.Any<BlockPos>()))
+      .Do(ci => DoSetBlock(ci.ArgAt<int>(0), ci.ArgAt<BlockPos>(1)));
+    // The placement overload. The stack it carries is what the engine uses to seed block-entity
+    // attributes; the store has no use for it, but leaving the overload unwired makes a real
+    // TryPlaceBlock silently place nothing.
+    a.When(x =>
+        x.SetBlock(Arg.Any<int>(), Arg.Any<BlockPos>(), Arg.Any<ItemStack>())
+      )
       .Do(ci => DoSetBlock(ci.ArgAt<int>(0), ci.ArgAt<BlockPos>(1)));
     a.When(x => x.ExchangeBlock(Arg.Any<int>(), Arg.Any<BlockPos>()))
       .Do(ci => DoExchangeBlock(ci.ArgAt<int>(0), ci.ArgAt<BlockPos>(1)));

@@ -224,6 +224,9 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
   // directly (the game assemblies and NSubstitute the consumer supplies - see the wiki
   // "Consuming outside this repo").
   //
+  // Not part of the Default chain - built on demand with `dotnet run -- --target=PackageTesting`
+  // when a release actually attaches the dev bundle.
+  //
   // Built for the CURRENT game version only (net10.0 / 1.22); on 1.20/1.21 reference it from source.
   const string BundleReadme =
     "ExpandedLib.Testing - headless Vintage Story test harness (dev library)\n"
@@ -275,5 +278,5 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
 }
 
 [TaskName("Default")]
-[IsDependentOn(typeof(PackageTestingTask))]
+[IsDependentOn(typeof(PackageTask))]
 public class DefaultTask : FrostingTask { }

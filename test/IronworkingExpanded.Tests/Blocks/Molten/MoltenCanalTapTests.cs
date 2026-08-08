@@ -28,7 +28,7 @@ public class MoltenCanalTapTests
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:ingot-copper", 1084f);
     // The barrel block the tap resolves when detaching a parked barrel.
-    world.Register(TestBlocks.Configure(new Block(), "iwex:moltenbarrel", 50));
+    world.Register(TestBlocks.Configure(new Block(), "iwex:molten-barrel", 50));
     return world;
   }
 
@@ -108,7 +108,7 @@ public class MoltenCanalTapTests
 
     // A barrel item carrying 20 units of iron in its block-entity attributes.
     var barrelStack = new ItemStack(
-      world.World.GetBlock(new AssetLocation("iwex:moltenbarrel"))
+      world.World.GetBlock(new AssetLocation("iwex:molten-barrel"))
     );
     MoltenContents.Write(
       barrelStack,
@@ -135,7 +135,7 @@ public class MoltenCanalTapTests
     var world = NewWorld();
     var be = Tap(world);
     var barrelStack = new ItemStack(
-      world.World.GetBlock(new AssetLocation("iwex:moltenbarrel"))
+      world.World.GetBlock(new AssetLocation("iwex:molten-barrel"))
     );
     MoltenContents.Write(
       barrelStack,

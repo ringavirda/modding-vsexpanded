@@ -183,7 +183,8 @@ public class BlockEntitySteamCondenser : BlockEntity
     float condIn = Math.Min(condensed, outFree);
     float passSpace = outFree - condIn;
 
-    float inTemp = inNet?.State?.Temperature ?? 20f;
+    float inTemp =
+      inNet?.State?.Temperature ?? ExlibValues.AmbientTemperature;
     float inPress = inNet?.State?.Pressure ?? 0f;
     float move =
       inNet != null && passSpace > 0f
@@ -198,7 +199,11 @@ public class BlockEntitySteamCondenser : BlockEntity
       return false;
 
     float mixedTemp = (move * inTemp + condIn * steamTemp) / total;
-    mixedTemp = Math.Clamp(mixedTemp, 20f, LpexValues.BoilingPoint - 1f);
+    mixedTemp = Math.Clamp(
+      mixedTemp,
+      ExlibValues.AmbientTemperature,
+      LpexValues.BoilingPoint - 1f
+    );
     outNet.TryProduceLiquid(total, mixedTemp, inPress, ba);
     return condIn > 0f;
   }
@@ -214,7 +219,11 @@ public class BlockEntitySteamCondenser : BlockEntity
   {
     net.TryProduceLiquid(
       amount,
-      Math.Clamp(temp, 20f, LpexValues.BoilingPoint - 1f),
+      Math.Clamp(
+        temp,
+        ExlibValues.AmbientTemperature,
+        LpexValues.BoilingPoint - 1f
+      ),
       pressure,
       ba
     );

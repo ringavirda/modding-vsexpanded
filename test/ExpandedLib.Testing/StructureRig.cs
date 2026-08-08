@@ -58,8 +58,26 @@ public sealed class StructureRig
   public int Angle { get; }
 
   /// <summary>
+  /// The world the structure stands in. Exposed because <c>FurnaceLayoutRig.Stand</c> builds the world
+  /// itself, so a caller that needs to register a block type, a block-entity factory or advance the clock
+  /// has no other handle on it - and reflecting into the private field for that is the kind of thing a test
+  /// harness should not make its callers do.
+  /// </summary>
+  public TestWorld World => _world;
+
+  /// <summary>
   /// Every cell of the rotated layout: its world position and the (possibly wildcard) block code that
   /// cell wants. This is vanilla's own rotated offset table, so it is the same set the machine checks.
+  /// <para>
+  /// <b>The code is the rotated demand, not the authored glyph.</b> A layout may mark a part oriented
+  /// (<see cref="MultiblockFacings"/>), in which case the production completion check turns that part's
+  /// facing with the structure - a cell authored <c>iwex:hopper-tall-north</c> wants a <c>-west</c> hopper
+  /// on a structure at 90 deg. A rig that filled and counted by the authored code instead would place a
+  /// north one, satisfy its own check, and report <c>0 of 157 cells unsatisfied</c> on a machine that never
+  /// completes - which is exactly the wall the first rotated furnace scenario hit. Codes the layout did not
+  /// mark oriented are carried through in their <b>authored</b> form, so a domainless or wildcard glyph
+  /// keeps it rather than being re-domained by an <see cref="AssetLocation"/> round trip.
+  /// </para>
   /// </summary>
   public IReadOnlyList<(BlockPos Pos, string Wanted)> Cells { get; }
 
@@ -115,8 +133,8 @@ public sealed class StructureRig
     anchor.Block.Attributes = new JsonObject(attributes);
 
     // Authored glyph per block number, read straight off the JSON so a domainless or wildcard code -
-    // notably a shaft's "@(air|coalpile)" - keeps its authored form instead of being re-domained by an
-    // AssetLocation round trip.
+    // notably a shaft's "*:@(air|coalpile|furnace-chargepile)" - keeps its authored form instead of being
+    // re-domained by an AssetLocation round trip. Demand() then applies the one rewrite that is real.
     var codeByNumber = ((JObject)layout["blockNumbers"]!)
       .Properties()
       .ToDictionary(p => (int)p.Value!, p => p.Name);
@@ -127,16 +145,47 @@ public sealed class StructureRig
       .AsObject<MultiblockStructure>()!;
     structure.InitForUse(angle);
 
+    // The oriented-part table the layout ships, read the same way the production block entity reads it.
+    // Without this the rig fills and counts by the authored code while the machine checks the rotated one.
+    MultiblockFacings facings = MultiblockFacings.FromAttributes(
+      new JsonObject(attributes)
+    );
+
     var cells = new List<(BlockPos, string)>();
     foreach (BlockOffsetAndNumber offset in structure.TransformedOffsets!)
       cells.Add(
         (
           anchor.Pos.AddCopy(offset.X, offset.Y, offset.Z),
-          codeByNumber[offset.W]
+          Demand(facings, codeByNumber[offset.W], angle)
         )
       );
 
     return new StructureRig(world, anchor, angle, cells);
+  }
+
+  /// <summary>
+  /// What a cell authored as <paramref name="authored"/> actually requires once the structure is turned to
+  /// <paramref name="angle"/> - the rig's half of <c>BlockEntityMultiblockStructure.WantedCodeAt</c>, which
+  /// is where the production check applies the same rotation.
+  /// <para>
+  /// The authored string is handed straight back whenever the rotation is the identity (no oriented parts,
+  /// or a code this layout did not mark), rather than the round-tripped one: an
+  /// <see cref="AssetLocation"/> round trip re-domains a domainless glyph - notably a shaft's
+  /// <c>@(air|coalpile|furnace-chargepile)</c> - and the authored form is what the rest of the rig reads.
+  /// </para>
+  /// </summary>
+  private static string Demand(
+    MultiblockFacings facings,
+    string authored,
+    int angle
+  )
+  {
+    if (facings.IsEmpty)
+      return authored;
+
+    var code = new AssetLocation(authored);
+    AssetLocation rotated = facings.Rotate(code, angle);
+    return rotated.Equals(code) ? authored : rotated.ToString();
   }
 
   /// <summary>
@@ -182,7 +231,11 @@ public sealed class StructureRig
         continue; // occupied - the anchor itself, or a block the test placed deliberately
 
       AssetLocation concrete = Concretize(new AssetLocation(wanted));
-      if (concrete.Equals(AirCode))
+      // Compared on path alone. A shaft legend is domain-wildcarded (`*:@(air|coalpile|furnace-chargepile)`,
+      // because vanilla's matcher cannot cross domains inside an alternation), so its first branch
+      // concretises to `*:air`, which is not equal to `game:air` - and a rig that compared the whole code
+      // would plug every shaft cell with a stand-in while still reporting the structure satisfied.
+      if (concrete.Path == AirCode.Path)
         continue; // an air-satisfied slot: leaving the cell empty *is* the fill
 
       _world.Place(pos, StandIn(concrete));
@@ -191,9 +244,9 @@ public sealed class StructureRig
   }
 
   /// <summary>
-  /// How many cells of the footprint are still unsatisfied, asked through vanilla's own
-  /// <see cref="MultiblockStructure.InCompleteBlockCount"/> by way of the machine - the exact number
-  /// its monitor tick compares against zero. Non-zero after <see cref="Raise"/> means the layout and
+  /// How many cells of the footprint are still unsatisfied, counted against the same rotated demand the
+  /// machine's own completion check uses (see <see cref="Cells"/>) - so this number and
+  /// <c>StructureComplete</c> cannot disagree. Non-zero after <see cref="Raise"/> means the layout and
   /// the world genuinely disagree.
   /// </summary>
   public int Missing

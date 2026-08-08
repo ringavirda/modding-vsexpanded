@@ -30,5 +30,5 @@ public class EngineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("R", Rod(2))
         .Ingredient("G", Gear(gear, 2))
         .Ingredient("H", Hammer)
-        .OutputBlock("smex:engineairblower-north");
+        .OutputBlock("smex:engineairblower-n");
 }

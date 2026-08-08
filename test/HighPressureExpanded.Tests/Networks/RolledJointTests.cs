@@ -1,6 +1,5 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using IronworkingExpanded.Tests;
 using LowPressureExpanded.BlockNetworkPipe;
 using LowPressureExpanded.Tests;
@@ -12,9 +11,9 @@ namespace HighPressureExpanded.Tests;
 
 /// <summary>
 /// The rolled (HP) pipe tier does not couple to the tiers below it. That is a <b>shape</b> rule, not a
-/// pressure one: bolted and cast pipe are square in section and bolted through flanges, so they mate
+/// pressure one: plated and cast pipe are square in section and bolted through flanges, so they mate
 /// with each other; rolled pipe is octagonal and welded, with no flange to bolt anything to. A player
-/// must not be able to run a cheap bolted line into an HP main.
+/// must not be able to run a cheap plated line into an HP main.
 /// <para>
 /// This lives in the hpex suite because it is the only one that can see all three tiers. It pins the
 /// rule from both directions, because a one-sided joint check is the failure mode that would actually
@@ -59,7 +58,7 @@ public class RolledJointTests
   [Theory]
   [InlineData("iwex", "iwex")]
   [InlineData("lpex", "lpex")]
-  [InlineData("iwex", "lpex")] // bolted -> cast: both square and flanged
+  [InlineData("iwex", "lpex")] // plated -> cast: both square and flanged
   [InlineData("lpex", "iwex")]
   [InlineData("hpex", "hpex")]
   public void Pipes_sharing_a_joint_form_one_network(string a, string b)
@@ -85,7 +84,7 @@ public class RolledJointTests
     // AcceptsNeighbour implementation, and the one a naive "am I the special one" check would break.
     Assert.False(
       OneNetwork(Butted(a, b)),
-      $"{a} and {b} pipe must not couple - welded octagonal against bolted square"
+      $"{a} and {b} pipe must not couple - welded octagonal against plated square"
     );
   }
 
@@ -125,7 +124,7 @@ public class RolledJointTests
     // The rule is about pipe-to-pipe couplings. An HP run must still reach machine ports, or the tier
     // would have nothing to connect to at all until it grows its own fittings.
     BlockPipe rolled = Pipe("hpex", 1);
-    var port = TestBlocks.Configure(new Block(), "smex:converter-intake-north", 2);
+    var port = TestBlocks.Configure(new Block(), "smex:converter-intake-n", 2);
 
     Assert.True(rolled.AcceptsNeighbour(port));
   }

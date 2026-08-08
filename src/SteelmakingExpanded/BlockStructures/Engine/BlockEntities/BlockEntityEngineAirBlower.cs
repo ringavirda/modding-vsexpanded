@@ -1,3 +1,4 @@
+using ExpandedLib;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
@@ -57,7 +58,7 @@ public class BlockEntityEngineAirBlower : BlockEntityEngineSubmachine
 
     leftNet.TryProduceGas(
       amount,
-      20f,
+      ExlibValues.AmbientTemperature,
       "Air",
       Api.World.BlockAccessor,
       maxOutputPressure: maxPressure

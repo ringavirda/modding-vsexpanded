@@ -1,6 +1,8 @@
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Testing;
+using IronworkingExpanded.BlockStructures.Casting;
 using IronworkingExpanded.BlockStructures.Casting.BlockEntities;
+using IronworkingExpanded.Items;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -23,14 +25,15 @@ public class SandCastingBedTests
   #region Denomination (mass conservation)
 
   [Theory]
-  [InlineData(300, 2, 0, 0)] // a full double-mold: two pigs
-  [InlineData(150, 1, 0, 0)] // one pig
-  [InlineData(175, 1, 1, 0)] // pig + chunk
-  [InlineData(155, 1, 0, 1)] // pig + bit
+  [InlineData(750, 2, 0, 0)] // a full end-row mold: two pigs
+  [InlineData(1125, 3, 0, 0)] // a full middle-row mold: three pigs - the rows are not the same size
+  [InlineData(375, 1, 0, 0)] // one pig
+  [InlineData(400, 1, 1, 0)] // pig + chunk
+  [InlineData(380, 1, 0, 1)] // pig + bit
   [InlineData(50, 0, 2, 0)] // partial: two chunks
   [InlineData(20, 0, 0, 4)] // runner residue: four bits
   [InlineData(3, 0, 0, 0)] // sub-bit crumb: nothing collectable
-  [InlineData(1800, 12, 0, 0)] // a whole bed's worth
+  [InlineData(4500, 12, 0, 0)] // a whole bed's worth
   public void Denominate_splits_units_into_pigs_chunks_bits(
     int units,
     int pigs,
@@ -41,19 +44,48 @@ public class SandCastingBedTests
     Assert.Equal((pigs, chunks, bits), BlockEntitySandCastingBed.Denominate(units));
   }
 
+  // The awkward numbers, probed either side of a pig boundary so a re-mass cannot make them vacuous.
   [Theory]
   [InlineData(0)]
   [InlineData(7)]
-  [InlineData(149)]
-  [InlineData(151)]
-  [InlineData(299)]
+  [InlineData(374)] // one unit short of a pig
+  [InlineData(376)] // one unit over
+  [InlineData(749)] // one short of two
   [InlineData(452)]
   public void Denominate_never_creates_matter(int units)
   {
     (int pigs, int chunks, int bits) = BlockEntitySandCastingBed.Denominate(units);
-    int recovered = pigs * 150 + chunks * 25 + bits * 5;
+    int recovered = pigs * ItemPig.PigUnits + chunks * ItemPig.ChunkUnits + bits * ItemPig.BitUnits;
     Assert.True(recovered <= units); // never more than was poured
     Assert.True(units - recovered < 5); // only a sub-bit crumb is ever lost
+  }
+
+  #endregion
+
+  #region What a cell yields
+
+  [Fact]
+  public void Only_a_carved_mold_yields_a_casting()
+  {
+    // One mold shape casts both products, so what a cell gives back no longer depends at all on which metal
+    // reached it - only on whether the player cut a cavity there.
+    Assert.True(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Mold));
+  }
+
+  [Fact]
+  public void A_runners_stranded_charge_is_scrap_however_good_the_metal_was()
+  {
+    // A runner is a conduit, not a cavity: nothing in it was ever going to be a casting, so it denominates
+    // as recovered bits. This is the one place the old metal-versus-mold rule still earns its keep.
+    Assert.False(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Runner));
+  }
+
+  [Fact]
+  public void Uncarved_sand_casts_nothing_whatever_is_in_it()
+  {
+    // A charge stranded in a slot that was never cut (or has been shaken out) has no cast to be, so it can
+    // only ever come back as bits.
+    Assert.False(BlockEntitySandCastingBed.YieldsCasting(BedSlotState.Sand));
   }
 
   #endregion
@@ -65,7 +97,7 @@ public class SandCastingBedTests
   {
     var w = NewWorld();
     var runner = Cell(w, "{ \"capacity\": 50 }", 50);
-    var mold = Cell(w, "{ \"capacity\": 300, \"drainFitting\": true }", 0);
+    var mold = Cell(w, "{ \"capacity\": 750, \"drainFitting\": true }", 0);
 
     BlockEntitySandCastingBed.FlowEdge(runner, mold, w.World);
 
@@ -77,7 +109,7 @@ public class SandCastingBedTests
   public void A_mold_hoards_its_charge_and_never_drains_back_out()
   {
     var w = NewWorld();
-    var mold = Cell(w, "{ \"capacity\": 300, \"drainFitting\": true }", 100);
+    var mold = Cell(w, "{ \"capacity\": 750, \"drainFitting\": true }", 100);
     var runner = Cell(w, "{ \"capacity\": 50 }", 0);
 
     BlockEntitySandCastingBed.FlowEdge(mold, runner, w.World);

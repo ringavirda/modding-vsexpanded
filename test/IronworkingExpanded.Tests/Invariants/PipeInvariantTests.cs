@@ -7,14 +7,14 @@ namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// Property/invariant tests: instead of one hand-picked scenario, hammer the pipe simulation with
-/// many randomized sequences of produce/consume/tick and assert the laws that must hold for ALL of
+/// many randomized sequences of produce/consume/tick and assert the laws that must hold for all of
 /// them - finite, non-negative state; pressure never past the burst ceiling without bursting; no
 /// gas created from nothing. These catch whole classes of bugs (NaNs, runaway pressure, sign slips)
 /// that example tests miss.
 /// </summary>
 public class PipeInvariantTests
 {
-  // The weakest (iron) pipe bursts at 5 atm; over-pressure may sit AT the ceiling but never above.
+  // The weakest (iron) pipe bursts at 5 atm; over-pressure may sit at the ceiling but never above.
   private const float IronBurst = 5.0f;
 
   private static bool Finite(float f) =>
@@ -76,8 +76,8 @@ public class PipeInvariantTests
   }
 
   // Order-randomizing invariant (the cowper lesson generalized to a property): randomly interleave
-  // gas/water production, consumption, and ticks - including MEDIUM SWITCHES on a drained run - and
-  // assert the law that example tests kept missing: an EMPTY run (State null, or Volume ~0) must
+  // gas/water production, consumption, and ticks - including medium switches on a drained run - and
+  // assert the law that example tests kept missing: an empty run (State null, or Volume ~0) must
   // never permanently reject a fresh medium. A latched stale-label guard would eventually wedge a
   // physically empty run so neither medium could ever re-claim it.
   [Theory]
@@ -127,7 +127,7 @@ public class PipeInvariantTests
         $"state went bad (seed {seed}, op {op})"
       );
 
-      // The invariant: drain the run completely, and BOTH mediums must be accepted into it (one of
+      // The invariant: drain the run completely, and both mediums must be accepted into it (one of
       // them re-claims the empty pipes). A stale-label latch would fail this.
       net.TryConsumeGas(float.MaxValue, w.Accessor);
       net.TryConsumeLiquid(float.MaxValue, w.Accessor);

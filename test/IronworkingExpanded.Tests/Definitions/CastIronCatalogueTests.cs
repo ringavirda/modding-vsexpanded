@@ -12,8 +12,8 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Cross-checks the cast-iron METAL descriptor (a JSON asset, loaded at AssetsFinalize) against the
-/// cast-iron ITEM defs (C#, injected as synthetic assets). Nothing else compares the two: the goldens pin
+/// Cross-checks the cast-iron metal descriptor (a JSON asset, loaded at AssetsFinalize) against the
+/// cast-iron item defs (C#, injected as synthetic assets). Nothing else compares the two: the goldens pin
 /// each side's shape in isolation, so a typo in one code would leave both green while every
 /// <c>world.GetItem(MetalRegistry.MoltenItemOf("castiron"))</c> silently returned null at runtime - the
 /// failure mode the cupola and the molten canals both sit downstream of.
@@ -40,6 +40,32 @@ public class CastIronCatalogueTests
   }
 
   private static void RegisterShipped() => MetalRegistry.Register(ShippedDef());
+
+  /// <summary>
+  /// Registers <b>every</b> metal the hearth block can be made of, not only cast iron.
+  /// <para>
+  /// The class fixture deliberately loads <c>castiron.json</c> alone, which is right for the rest of
+  /// this file and wrong for a block whose variants span two metals: with pig iron unregistered,
+  /// <c>SolidDropOf</c> falls through to the <c>ingot-X → metalbit-X</c> convention and answers
+  /// <c>game:metalbit-pigiron</c> - an item that does not exist. That reads as a failing assertion about
+  /// the metal registry when it is really a gap in the fixture, so the two are kept apart.
+  /// </para>
+  /// </summary>
+  private static void RegisterHearthMetals()
+  {
+    foreach (string metal in new[] { "castiron", "pigiron" })
+    {
+      MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
+        File.ReadAllText(
+          DefinitionGoldens.SolutionRelative(
+            $"assets/iwex/config/metals/{metal}.json"
+          )
+        )
+      );
+      Assert.NotNull(def);
+      MetalRegistry.Register(def!);
+    }
+  }
 
   // The cast-iron item family the emitter generates from the shipped metal descriptor - the same set the
   // runtime injects, built off the same JSON. This is what replaced the hand-authored item defs.
@@ -71,7 +97,7 @@ public class CastIronCatalogueTests
     Assert.Equal(0.75f, def.LiquidThreshold);
 
     // HardenedThreshold is deliberately left null (-> the global 0.3). Vanilla's
-    // BlockEntityToolMold.IsHardened HARDCODES 0.3 and is what gates collecting a casting, while the
+    // BlockEntityToolMold.IsHardened hardcodes 0.3 and is what gates collecting a casting, while the
     // pedestal's pour gate uses this registry value. Overriding it here would open a band where the
     // player can neither top the mold up nor take the plate out. Do not "tune" this without changing
     // the retrieval gate too.
@@ -107,9 +133,9 @@ public class CastIronCatalogueTests
   {
     RegisterShipped();
 
-    // Per the metals rule, a mod alloy does NOT ship its own scrap bit: breaking or chiselling cast
+    // Per the metals rule, a mod alloy does not ship its own scrap bit: breaking or chiselling cast
     // iron drops vanilla game:metalbit-iron, a drop shared across the iron alloys rather than a
-    // per-metal metalbit-castiron copy. (The metalbit-castiron RESOURCE item still exists - it is just
+    // per-metal metalbit-castiron copy. (The metalbit-castiron resource item still exists - it is just
     // no longer what a broken casting sheds.)
     AssetLocation bit = MetalRegistry.SolidDropOf(
       MetalRegistry.MoltenItemOf("castiron")
@@ -117,25 +143,59 @@ public class CastIronCatalogueTests
     Assert.Equal("game:metalbit-iron", bit.ToString());
   }
 
+  /// <summary>
+  /// <b>The metal moved from an attribute into the code</b>, so this asserts the variant
+  /// states rather than <c>attributes.metal</c>. <c>BlockHearthMetal.GetDrops</c> feeds
+  /// <c>Variant["metal"]</c> straight into <c>MoltenItemOf</c>, and a token the registry does not know
+  /// falls back to a nonexistent <c>game:ingot-&lt;token&gt;</c> - silently, because a null item just
+  /// means "drop nothing".
+  /// <para>
+  /// Every state is checked, not only cast iron. The block it replaced could fall back to a
+  /// <c>DefaultMetal</c> when its attribute was absent; with the metal in the code there is no
+  /// attribute-less case, so what has to hold is that <b>each</b> variant names a metal the registry
+  /// knows - which is the assertion that will fail the day a third metal is added without a def.
+  /// </para>
+  /// </summary>
   [Fact]
-  public void The_solidified_cast_iron_block_names_the_registered_metal()
+  public void Every_hearth_metal_variant_names_a_registered_metal()
   {
-    RegisterShipped();
+    RegisterHearthMetals();
 
-    // BlockSolidifiedIron.GetDrops feeds this attribute straight into MoltenItemOf; a token the
-    // registry does not know would silently fall back to a nonexistent game:ingot-<token>.
     JObject block = BlockStructures
-      .Products.Blocks.BlockSolidifiedIron.Definitions(Domain)
-      .Single(d => d.Code == "solidifiedcastiron")
+      .Products.Blocks.BlockHearthMetal.Definitions(Domain)
+      .Single()
       .ToJson();
-    string metal = (string)block["attributes"]!["metal"]!;
+    string[] metals =
+    [
+      .. block["variantgroups"]!
+        .Single(g => (string)g["code"]! == "metal")["states"]!
+        .Select(s => (string)s!),
+    ];
 
-    Assert.Equal("castiron", metal);
-    // A dead cupola's residue breaks into the shared vanilla scrap, not a cast-iron-specific bit.
-    Assert.Equal(
-      "game:metalbit-iron",
-      MetalRegistry.SolidDropOf(MetalRegistry.MoltenItemOf(metal)).ToString()
-    );
+    Assert.Equal(["pigiron", "castiron"], metals);
+    foreach (string metal in metals)
+      // A dead furnace's metal breaks into the shared vanilla scrap, not a per-metal bit.
+      Assert.Equal(
+        "game:metalbit-iron",
+        MetalRegistry.SolidDropOf(MetalRegistry.MoltenItemOf(metal)).ToString()
+      );
+  }
+
+  /// <summary>
+  /// The negative half, and the reason the constant was deleted rather than kept: there must be no
+  /// <c>metal</c> attribute left to read. A block that carries both the variant and a stale attribute
+  /// has two answers to "which metal is this", and the drop path would keep using whichever it was
+  /// written against - which is how a cupola's residue could shed the blast furnace's metal.
+  /// </summary>
+  [Fact]
+  public void The_hearth_metal_block_carries_no_metal_attribute()
+  {
+    JObject block = BlockStructures
+      .Products.Blocks.BlockHearthMetal.Definitions(Domain)
+      .Single()
+      .ToJson();
+
+    Assert.Null(block["attributes"]?["metal"]);
   }
 
   [Fact]
@@ -204,7 +264,7 @@ public class CastIronCatalogueTests
   [Fact]
   public void Cast_iron_is_not_forgeable()
   {
-    // materials.md: castable and brittle, never beaten. What enforces it is the ABSENCE of these
+    // materials.md: castable and brittle, never beaten. What enforces it is the absence of these
     // attributes - if a future edit copies more of vanilla's ingot surface in, it silently becomes
     // anvil-workable.
     JObject attributes = (JObject)(
@@ -249,7 +309,7 @@ public class CastIronCatalogueTests
     string expected
   )
   {
-    // These are vanilla class keys bound by STRING (no rename safety), so a typo would surface only at
+    // These are vanilla class keys bound by string (no rename safety), so a typo would surface only at
     // world load. Pin them.
     Assert.Equal(expected, (string?)ItemJson(code)["class"]);
   }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -182,4 +183,25 @@ public static class MoltenMetal
     temperature < 21f
       ? Lang.Get("exlib:metalstate-cold")
       : TemperatureFormatter(temperature);
+
+  /// <summary>
+  /// Every smelted-crucible block as an <see cref="ItemStack"/> - the "pour from" list a molten
+  /// sink advertises in its interaction help (canal start, barrel). Matched by code path
+  /// (<c>crucible-*-smelted</c>), domain-blind, so vanilla and modded crucibles qualify alike.
+  /// Scan once on block load and cache the result.
+  /// </summary>
+  public static ItemStack[] SmeltedCrucibleStacks(IWorldAccessor world)
+  {
+    var stacks = new List<ItemStack>();
+    foreach (Block block in world.Blocks)
+    {
+      if (
+        block.Code != null
+        && block.Code.Path.StartsWith("crucible-")
+        && block.Code.Path.EndsWith("-smelted")
+      )
+        stacks.Add(new ItemStack(block));
+    }
+    return stacks.ToArray();
+  }
 }

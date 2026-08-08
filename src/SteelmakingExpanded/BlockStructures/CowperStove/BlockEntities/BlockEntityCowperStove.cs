@@ -1,5 +1,6 @@
 using ExpandedLib;
 using System.Text;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
@@ -25,7 +26,7 @@ namespace SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 public class BlockEntityCowperStove : BlockEntityMultiblockStructure
 {
   private BlockFacing _connectorFace = BlockFacing.SOUTH;
-  private float _internalTemperature = 20f;
+  private float _internalTemperature = ExlibValues.AmbientTemperature;
   private string _lastStatus = Lang.Get("smex:cowperstove-status-idle");
   private long _lastHeatSoundMs;
 
@@ -36,6 +37,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
   private float _factorDefault;
   private float _coolingSpeedExhaust;
   private float _coolingSpeedAir;
+  private float _exhaustAttenuation;
   private float _maxTemperature;
   private float _intakeVolume;
 
@@ -61,6 +63,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     _factorDefault = SmexValues.CowperHeatingSpeedDefault;
     _coolingSpeedExhaust = SmexValues.CowperCoolingSpeedExhaust;
     _coolingSpeedAir = SmexValues.CowperCoolingSpeedAir;
+    _exhaustAttenuation = SmexValues.CowperExhaustAttenuation;
     _maxTemperature = SmexValues.CowperMaxTemperature;
     _intakeVolume = SmexValues.CowperIntakeVolume;
   }
@@ -89,6 +92,12 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
 
   #region Production tick
 
+  // True for the vanilla coal-pile block family, matched by code path: vanilla blocks carry no
+  // attribute we could key on without a JSON patch, and the prefix covers every pile variant
+  // (the stove then inspects the pile inventory to tell anthracite from other coal).
+  private static bool IsCoalPile(Block? block) =>
+    block?.Code?.Path.StartsWith("coalpile") == true;
+
   protected override void OnProductionTick(float dt)
   {
     if (!StructureComplete)
@@ -102,11 +111,12 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     // through the adjacent cell with its connectors pointing elsewhere is not
     // plumbed in (same reciprocity rule as the converter intake and the engines).
     var consumedExhaustVol = 0f;
-    float inputExhaustTemp = 20f;
+    float inputExhaustTemp = ExlibValues.AmbientTemperature;
     bool isReceivingExhaust = false;
     if (ConnectedNetwork<PipeNetwork>(_connectorFace) is { } exhaustNet)
     {
-      inputExhaustTemp = exhaustNet.State?.Temperature ?? 20f;
+      inputExhaustTemp =
+        exhaustNet.State?.Temperature ?? ExlibValues.AmbientTemperature;
       consumedExhaustVol = exhaustNet.TryConsumeGas(
         _intakeVolume,
         Api.World.BlockAccessor
@@ -118,7 +128,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     bool hasOtherCoal = false;
 
     Block blockBelow = Api.World.BlockAccessor.GetBlock(Pos.DownCopy());
-    if (blockBelow.Code?.Path.StartsWith("coalpile") == true)
+    if (IsCoalPile(blockBelow))
     {
       if (
         Api.World.BlockAccessor.GetBlockEntity(Pos.DownCopy())
@@ -139,7 +149,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     }
 
     float airVol = 0f;
-    float airTemp = 20f;
+    float airTemp = ExlibValues.AmbientTemperature;
     string inGasType = "Air";
 
     BlockPos passthroughPos = GetGlobalPos(0, 1, 2);
@@ -163,7 +173,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
     {
       // Air and exhaust both present. Closing the air valve cuts its supply but leaves the gas
       // already in the passthrough stranded there - and a pressurised run holds well over one pipe's
-      // worth - which used to latch the stove in "mixing" forever and refuse to charge. Vent that
+      // worth - which would otherwise latch the stove in "mixing" forever and refuse to charge. Vent that
       // stranded gas: with the valve shut nothing refills it, so it clears within a tick and the
       // stove charges next tick; only a still-open valve keeps refilling it and stays flagged.
       newStatus = Lang.Get("smex:cowperstove-status-exhaustmix");
@@ -205,7 +215,10 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure
       )
         outlet2.TryProduce(
           consumedExhaustVol,
-          System.Math.Max(20f, inputExhaustTemp * 0.4f),
+          System.Math.Max(
+            ExlibValues.AmbientTemperature,
+            inputExhaustTemp * _exhaustAttenuation
+          ),
           "Exhaust"
         );
     }

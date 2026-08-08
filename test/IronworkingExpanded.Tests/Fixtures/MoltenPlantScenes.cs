@@ -268,7 +268,7 @@ internal sealed class CastingYard
 
     var block = TestBlocks.Configure(
       new BlockMoltenCanal(),
-      $"iwex:moltencanal-straight-{orientation}",
+      $"iwex:molten-canal-straight-{orientation}",
       id,
       ("type", "straight"),
       ("orientation", orientation)

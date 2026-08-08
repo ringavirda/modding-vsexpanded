@@ -25,16 +25,22 @@ namespace IronworkingExpanded.BlockStructures.Casting.BlockEntities;
 /// The sand casting bed principal: a 3×1×4 mega-block that receives molten pig iron poured into the
 /// molten canal network and casts it into solid pigs. It hosts its own pour-basin
 /// <see cref="BEBehaviorMoltenCell"/> and drives an ISOLATED internal flow across the footprint's
-/// filler-hosted cells (basin → central runners → the six side double-molds) itself, so the outside
+/// filler-hosted cells (basin → the four central runners → the eight side molds) itself, so the outside
 /// canal line can carry a different metal. Metal enters through a pull-port that drains the adjacent
 /// external molten cell each tick; it propagates by level-equalisation, cools where no fresh metal
-/// arrives, and - once a mold hardens - the player right-clicks it to collect up to two 150-unit pigs
-/// (partial fills and runner residue come out as chunks/bits, conserving the mass).
+/// arrives, and - once a mold hardens - the player right-clicks it to collect its castings (partial fills
+/// and runner residue come out as chunks/bits, conserving the mass).
+/// <para>
+/// A fully carved bed holds <b>20</b> impressions: the two end rows take two a side, the two middle rows
+/// three. One mold shape casts both products - iron makes pigs, slag makes bricks - so nothing about the
+/// carve has to anticipate what will eventually be poured into it.
+/// </para>
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntitySandCastingBed : BlockEntity
 {
-  // A mold cell casts two 150u pigs (300u); a runner is a thin pass-through whose residue is bits.
+  // A mold cell casts its row's impressions at 150u each; a runner is a thin pass-through whose residue
+  // is bits.
   private const int PullRatePerTick = 25;
 
   private long _serverTick;
@@ -43,6 +49,10 @@ public class BlockEntitySandCastingBed : BlockEntity
   // Renders the built brick+sand construction elements (the RCC behaviour suppresses the default mesh).
   private ConstructedAnimator? _animator;
 
+  // What the player has carved into each of the twelve slots, indexed as SandBedLayout.Slots. All sand until
+  // the bed is built and carved, which is also exactly how a shaken-out slot reads.
+  private readonly BedSlotState[] _slots = new BedSlotState[SandBedLayout.Slots.Length];
+
   private BEBehaviorMoltenCell? Basin => GetBehavior<BEBehaviorMoltenCell>();
 
   #region Lifecycle
@@ -50,16 +60,31 @@ public class BlockEntitySandCastingBed : BlockEntity
   public override void Initialize(ICoreAPI api)
   {
     base.Initialize(api);
+    // Re-size each carved cavity from the persisted slot states, so a reloaded bed keeps the mold the player
+    // actually cut rather than reverting to the declared capacity mid-cast.
+    foreach (BedSlot slot in SandBedLayout.Slots)
+      if (StateOf(slot) != BedSlotState.Sand)
+        ApplyCapacity(slot);
+
+    // The animator (and IsConstructed) is resolved on BOTH sides; it only builds/poses on the client - the
+    // same arrangement every other constructed machine in the suite uses.
+    //
+    // Caution: do not move this into the client-only `else` below. With `_animator` null on the server,
+    // `TryCarveAt`'s `_animator?.IsConstructed != true` guard always fails there, the bed can never be
+    // carved, the blast furnace has nowhere to pour, and the iron tier has no product at all. The bed is
+    // static (no pose), so the animator only re-tesselates the built elements.
+    _animator = new ConstructedAnimator(
+      this,
+      () => "sandcastingbed-" + (Block.Variant["side"] ?? "north")
+    );
+    // The repose hook runs after every rebuild, construction stages included - which is the only place
+    // the carved surface can be re-applied without the next stage clobbering it (see RebuildSurface).
+    _animator.Initialize(RebuildSurface);
+
     if (api.Side == EnumAppSide.Server)
       _serverTick = RegisterGameTickListener(OnServerTick, 1000);
     else
     {
-      // The bed is static: no pose to apply, so the animator only re-tesselates the built elements.
-      _animator = new ConstructedAnimator(
-        this,
-        () => "sandcastingbed-" + (Block.Variant["side"] ?? "north")
-      );
-      _animator.Initialize(() => { });
       BuildSurfaces((ICoreClientAPI)api);
       _clientTick = RegisterGameTickListener(_ => UpdateSurfaces(), 1000);
     }
@@ -77,6 +102,101 @@ public class BlockEntitySandCastingBed : BlockEntity
     _animator?.Dispose();
     DisposeSurfaces();
     base.OnBlockUnloaded();
+  }
+
+  #endregion
+
+  #region Carved surface (which shape elements each slot draws)
+
+  /// <summary>What is carved into <paramref name="slot"/> right now; plain sand for an unknown slot.</summary>
+  public BedSlotState StateOf(BedSlot slot)
+  {
+    int i = SandBedLayout.IndexOf(slot);
+    return i < 0 ? BedSlotState.Sand : _slots[i];
+  }
+
+  /// <summary>Which slot a world cell of this bed is, or null when it is not a carvable cell.</summary>
+  public BedSlot? SlotAt(BlockPos cellPos) =>
+    Block is BlockSandCastingBed bed
+    && bed.SlotCells(Pos).TryGetValue(cellPos, out BedSlot slot)
+      ? slot
+      : null;
+
+  /// <summary>
+  /// Whether metal may pass through the cell at <paramref name="cellPos"/>. Uncarved and broken-out sand is
+  /// not a channel: this is what makes carving the actual gameplay, since the player decides where the heat
+  /// can run by where they cut. A cell that is not a slot at all (the brick shoulders) never carries metal.
+  /// </summary>
+  public bool IsCarved(BlockPos cellPos) =>
+    SlotAt(cellPos) is { } slot && StateOf(slot) != BedSlotState.Sand;
+
+  /// <summary>
+  /// Carves <paramref name="slot"/> to <paramref name="state"/>, re-rendering if it actually changed.
+  /// Refuses a state the slot cannot hold (a runner in a mold flank), and returns whether anything moved -
+  /// so a caller can tell "already like that" from "not allowed" by asking <see cref="BedSlot.Accepts"/>.
+  /// </summary>
+  public bool Carve(BedSlot slot, BedSlotState state)
+  {
+    int i = SandBedLayout.IndexOf(slot);
+    if (i < 0 || !slot.Accepts(state) || _slots[i] == state)
+      return false;
+
+    _slots[i] = state;
+    ApplyCapacity(slot);
+    MarkDirty(true);
+    if (Api?.Side == EnumAppSide.Client)
+      RebuildSurface();
+    return true;
+  }
+
+  /// <summary>
+  /// Sizes a slot's molten cell to the cavity that is now cut into it - a middle row takes three impressions
+  /// where an end row takes two, so where the player carved decides how much a pour sinks. Re-applied on load
+  /// as well as on carve, or a reloaded bed would fall back to the declared capacity and quietly re-size a
+  /// mid-cast mold.
+  /// </summary>
+  private void ApplyCapacity(BedSlot slot)
+  {
+    if (Api == null || Block is not BlockSandCastingBed bed)
+      return;
+
+    foreach ((BlockPos cellPos, BedSlot at) in bed.SlotCells(Pos))
+    {
+      if (!at.Equals(slot))
+        continue;
+
+      BEBehaviorMoltenCell? cell = Api
+        .World.BlockAccessor.GetBlockEntity(cellPos)
+        ?.GetBehavior<BEBehaviorMoltenCell>();
+      if (cell == null)
+        return;
+
+      int capacity = SandBedLayout.CapacityOf(slot, StateOf(slot));
+      if (capacity > 0)
+        cell.SetCapacity(capacity);
+      else
+        cell.ClearCapacity();
+      return;
+    }
+  }
+
+  /// <summary>
+  /// Re-renders the bed for the current slot states. Composed over the construction behaviour's own element
+  /// list rather than replacing it: that behaviour rebuilds the mesh from its list on every stage, so a bed
+  /// that pushed its own list would be undone by the next one. Running through the repose hook - which the
+  /// animator invokes after every rebuild, its own included - is what makes the carving survive.
+  /// </summary>
+  private void RebuildSurface()
+  {
+    if (_animator is not { } animator || Api?.Side != EnumAppSide.Client)
+      return;
+    animator.Rebuild(
+      SandBedLayout.Compose(
+        animator.Rcc?.shape?.SelectiveElements,
+        _slots,
+        animator.IsConstructed
+      )
+    );
   }
 
   #endregion
@@ -123,14 +243,23 @@ public class BlockEntitySandCastingBed : BlockEntity
       c.EnsureMetalStack(world);
 
     // Drive each internal edge once, from the cell nearer the basin to the farther one, so a freshly
-    // pulled charge propagates outward toward the molds a wavefront at a time.
+    // pulled charge propagates outward toward the molds a wavefront at a time. An edge only exists where
+    // BOTH ends are carved: uncarved and broken-out sand is not a channel, so the heat runs exactly where
+    // the player cut it and stops at a mold they broke open. (Cells still tick thermally either way, which
+    // is why this gates the edges rather than the cell list - a stranded charge must still cool.)
     foreach (BlockPos p in cells.Keys.OrderBy(DistFromBasin).ToList())
     {
+      if (!IsCarved(p))
+        continue;
       IMoltenCell a = cells[p];
       foreach (BlockFacing face in BlockFacing.HORIZONTALS)
       {
         BlockPos np = p.AddCopy(face);
-        if (cells.TryGetValue(np, out IMoltenCell? b) && DistFromBasin(np) > DistFromBasin(p))
+        if (
+          cells.TryGetValue(np, out IMoltenCell? b)
+          && DistFromBasin(np) > DistFromBasin(p)
+          && IsCarved(np)
+        )
           FlowEdge(a, b, world);
       }
     }
@@ -201,6 +330,46 @@ public class BlockEntitySandCastingBed : BlockEntity
   #region Harvest (right-click a hardened mold/runner)
 
   /// <summary>
+  /// Routes a right-click on one of the bed's cells. A cell holding metal is a harvest; an empty one is a
+  /// carve. Returns true when the click was consumed, false to fall through to construction (which is what
+  /// an unbuilt bed wants).
+  /// </summary>
+  public bool OnCellInteract(BlockPos cellPos, IPlayer byPlayer) =>
+    TryHarvest(cellPos, byPlayer) || TryCarveAt(cellPos, byPlayer);
+
+  /// <summary>
+  /// Cuts the shape the cell can hold into it: a runner channel down the spine, a row of impressions in the
+  /// flanks. Only on a finished bed, and only into plain sand.
+  /// <para>
+  /// <b>There is nothing to choose.</b> One mold serves both castings - iron makes pigs in it, slag makes
+  /// bricks - so the carve is decided entirely by which cell was clicked. That is the whole reason the two
+  /// mold types were merged: the old sneak-modified carve let a mis-held key cut a whole row for the wrong
+  /// metal, and the player found out four rows later at the pour.
+  /// </para>
+  /// </summary>
+  public bool TryCarveAt(BlockPos cellPos, IPlayer byPlayer)
+  {
+    if (_animator?.IsConstructed != true || SlotAt(cellPos) is not { } slot)
+      return false;
+
+    BedSlotState wanted = slot.IsMold ? BedSlotState.Mold : BedSlotState.Runner;
+
+    if (Api.Side == EnumAppSide.Client)
+      return StateOf(slot) == BedSlotState.Sand;
+
+    if (StateOf(slot) != BedSlotState.Sand)
+    {
+      (byPlayer as IServerPlayer)?.SendIngameError("iwex-castingbed-alreadycarved");
+      return true;
+    }
+
+    if (!Carve(slot, wanted))
+      return false;
+    ExSounds.Play(Api, cellPos, ExSounds.StoneCrush, 0.5f);
+    return true;
+  }
+
+  /// <summary>
   /// Collects the hardened casting from the cell at <paramref name="cellPos"/>: full 150-unit pigs
   /// first, then chunks and bits from the remainder, conserving the mass. Returns true if the click was
   /// consumed (a cell with metal), false to fall through to construction. Server hands the items over;
@@ -224,11 +393,24 @@ public class BlockEntitySandCastingBed : BlockEntity
       return true;
     }
 
-    foreach (ItemStack stack in BuildHarvest(cell.CellAmount))
+    BedSlotState mold = SlotAt(cellPos) is { } s ? StateOf(s) : BedSlotState.Sand;
+    foreach (
+      ItemStack stack in BuildHarvest(
+        cell.CellAmount,
+        mold,
+        cell.CellMetalType,
+        cell.CellTemperature
+      )
+    )
       if (byPlayer.InventoryManager?.TryGiveItemstack(stack) != true)
         Api.World.SpawnItemEntity(stack, cellPos.ToVec3d().Add(0.5, 0.6, 0.5));
 
     cell.ClearContents();
+    // Shaking the casting out destroys the impression - the mold is broken open to free it, which is the
+    // defining property of sand casting rather than a detail. The slot drops to plain sand and stops being
+    // a channel until it is carved again.
+    if (SlotAt(cellPos) is { } slot)
+      Carve(slot, BedSlotState.Sand);
     ExSounds.Play(Api, cellPos, ExSounds.StoneCrush, 0.6f);
     return true;
   }
@@ -248,7 +430,28 @@ public class BlockEntitySandCastingBed : BlockEntity
     return (pigs, chunks, bits);
   }
 
-  private List<ItemStack> BuildHarvest(int units)
+  /// <summary>
+  /// Whether a cell in <paramref name="state"/> yields a <b>casting</b> rather than recovered scrap. Only a
+  /// carved mold does: a runner is a conduit, not a cavity, so whatever cooled in it is a stranded charge and
+  /// comes back as bits however good the metal was.
+  /// <para>
+  /// There is deliberately no metal-versus-mold pairing left. One mold casts pigs from iron and bricks from
+  /// slag, so the only way to get scrap out of a mold is to pour something that is neither - which the
+  /// recovery path already handles without a rule.
+  /// </para>
+  /// </summary>
+  public static bool YieldsCasting(BedSlotState state) => state == BedSlotState.Mold;
+
+  // What a cell yields on shake-out. A mold gives the casting its metal makes - pigs from iron, bricks from
+  // slag; a runner's stranded charge comes back as recovered bits of whatever it actually was. Nothing is
+  // ever destroyed, so a misrouted pour costs a remelt rather than the metal, and no refusal or error message
+  // is needed to protect the player from it.
+  private List<ItemStack> BuildHarvest(
+    int units,
+    BedSlotState mold,
+    string metalCode,
+    float temperature
+  )
   {
     var stacks = new List<ItemStack>();
     void Add(string code, int count)
@@ -258,6 +461,30 @@ public class BlockEntitySandCastingBed : BlockEntity
       Item? item = Api.World.GetItem(new AssetLocation(code));
       if (item != null)
         stacks.Add(new ItemStack(item, count));
+    }
+
+    if (!YieldsCasting(mold))
+    {
+      if (
+        MoltenChisel.BuildRecovery(
+          Api.World,
+          new AssetLocation(metalCode),
+          temperature,
+          units,
+          slagFallback: true
+        )
+        is { } recovered
+      )
+        stacks.Add(recovered);
+      return stacks;
+    }
+
+    if (metalCode == SlagItemDefinitions.MoltenCode)
+    {
+      // A brick occupies exactly one pig's impression, so the same cavity denominates either way and no
+      // remainder is stranded by pouring the "wrong" one.
+      Add("iwex:slagbrick", units / SlagItemDefinitions.SlagBrickUnits);
+      return stacks;
     }
 
     (int pigs, int chunks, int bits) = Denominate(units);
@@ -405,6 +632,42 @@ public class BlockEntitySandCastingBed : BlockEntity
       dsc.AppendLine(Lang.Get("iwex:castingbed-pigs-ready", ready));
     if (cooling > 0)
       dsc.AppendLine(Lang.Get("iwex:castingbed-cooling", cooling));
+  }
+
+  #endregion
+
+  #region Serialization
+
+  // The carved surface, one byte per slot, positional against SandBedLayout.Slots - which is why that order
+  // is part of the save format and pinned by a test. Written as one array rather than ten keys so a layout
+  // change is a single, visible break rather than ten silent ones.
+  private const string SlotsKey = "bed_slots";
+
+  public override void ToTreeAttributes(ITreeAttribute tree)
+  {
+    base.ToTreeAttributes(tree);
+    var packed = new byte[_slots.Length];
+    for (int i = 0; i < _slots.Length; i++)
+      packed[i] = (byte)_slots[i];
+    tree.SetBytes(SlotsKey, packed);
+  }
+
+  public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor world)
+  {
+    base.FromTreeAttributes(tree, world);
+
+    byte[]? packed = tree.GetBytes(SlotsKey);
+    for (int i = 0; i < _slots.Length; i++)
+    {
+      // A bed saved before carving existed (or a truncated array) reads as uncarved sand, and a value from
+      // a future layout falls back the same way rather than rendering nothing.
+      BedSlotState state =
+        packed != null && i < packed.Length ? (BedSlotState)packed[i] : BedSlotState.Sand;
+      _slots[i] = SandBedLayout.Slots[i].Accepts(state) ? state : BedSlotState.Sand;
+    }
+
+    if (Api?.Side == EnumAppSide.Client)
+      RebuildSurface();
   }
 
   #endregion

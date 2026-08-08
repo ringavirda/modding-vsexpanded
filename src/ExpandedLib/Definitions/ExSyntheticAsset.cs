@@ -8,7 +8,7 @@ namespace ExpandedLib.Definitions;
 /// Builds the in-memory asset a code-first definition is injected as. The engine's object loader
 /// (<c>ModRegistryObjectTypeLoader</c>) reads blocktypes via <c>GetMany&lt;JObject&gt;</c>, whose loop
 /// variable is the <b>concrete</b> <see cref="Asset"/> (<c>foreach (Asset item in …)</c>) - so an
-/// injected asset MUST be a real <see cref="Asset"/>; a custom <see cref="IAsset"/> throws
+/// injected asset must be a real <see cref="Asset"/>; a custom <see cref="IAsset"/> throws
 /// <see cref="System.InvalidCastException"/> and aborts the whole <c>AssetsLoaded</c> phase. That is
 /// why exlib references <c>VintagestoryLib</c> here (the API alone can't express the loader's contract).
 /// The asset is built already-loaded (its <c>Data</c> is set), so its origin is never asked to load it.

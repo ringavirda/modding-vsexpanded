@@ -27,12 +27,21 @@
         "molten-tap",
         "molten-furnacetap",
         "molten-moldpedestal",
-        "molten-barrel",
         "molten-sandbed",
         "molten-sandcell",
         "tuyere",
-        "bfc",
-        "cf"
+        "furnace-coldblast",
+        "furnace-cupola",
+        "mpenergy-flywheel",
+        "mpenergy-flywheellarge",
+        "item-castheavyplate",
+        "item-castingotmold",
+        "item-castbarrel",
+        "item-castshell",
+        "item-castwheelsection",
+        "item-castbillets",
+        "item-castblooms",
+        "item-castslab"
       ]
     }
   ],

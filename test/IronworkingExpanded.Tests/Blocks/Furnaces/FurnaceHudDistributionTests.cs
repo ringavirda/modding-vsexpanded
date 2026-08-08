@@ -33,7 +33,11 @@ public class FurnaceHudDistributionTests
   private const string MetalKey = "iwex:bf-info-molteniron";
   private const string SlagKey = "iwex:bf-info-moltenslag";
   private const string CastIronKey = "iwex:cupola-info-moltencastiron";
-  private const string MixKey = "iwex:bf-info-mixloaded";
+  // `bf-info-mixloaded` ("Blast Mix loaded: {0} / {1}") is deleted. It divided the
+  // loaded count by the old fire threshold; once that became the furnace's capacity it printed the same
+  // pair of numbers as `bf-info-shaftfull`, twice in one tooltip. The shaft-charge line this file is
+  // really about is the surviving one.
+  private const string MixKey = "iwex:bf-info-shaftfull";
   private const string WrongBurdenKey = "iwex:bf-info-wrongburden";
   private const string TapStateKey = "iwex:tap-state";
   private const string NeedsMixKey = "iwex:bf-info-needsmix";
@@ -78,7 +82,7 @@ public class FurnaceHudDistributionTests
     Furnace<BlockEntityBlastFurnaceCold>(
       world,
       new BlockPos(0, 16, 0),
-      "iwex:blastfurnacecore-north",
+      "iwex:furnace-blastcore-tier1-n",
       (JObject)
         BlockBlastFurnaceCoreCold.Definitions("iwex").Single().ToJson()[
           "attributes"
@@ -89,22 +93,30 @@ public class FurnaceHudDistributionTests
     Furnace<BlockEntityCupolaFurnace>(
       world,
       new BlockPos(0, 16, 0),
-      "iwex:cupolafurnacecore-north",
+      "iwex:furnace-cupolacore-tier1-n",
       (JObject)
         BlockCupolaFurnaceCore.Definitions("iwex").Single().ToJson()[
           "attributes"
         ]!
     );
 
-  private static BlockEntityMoltenMetalTap Tap(TestWorld world, BlockPos pos)
+  // `type` is the tap's family member - irontap or slagtap. It plays no part in these assertions (the HUD
+  // and the projection both key off the tap's position), but a stand-in coded as the wrong notch reads as
+  // though it did, so the call sites say which one they are standing up.
+  private static BlockEntityFurnaceTap Tap(
+    TestWorld world,
+    BlockPos pos,
+    string type = BlockFurnaceTap.IronType
+  )
   {
-    var be = new BlockEntityMoltenMetalTap();
+    var be = new BlockEntityFurnaceTap();
     world.Place(
       pos,
       TestBlocks.Configure(
         new Block(),
-        "iwex:moltenmetaltap-north",
+        $"iwex:furnace-{type}-n",
         2,
+        ("type", type),
         ("side", "north")
       ),
       be
@@ -148,7 +160,7 @@ public class FurnaceHudDistributionTests
     ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
     ReflectionHelpers.SetField(furnace, "_moltenSlag", 40f);
 
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
     string info = Info(tap);
 
     Assert.Contains(MetalKey, info);
@@ -162,7 +174,7 @@ public class FurnaceHudDistributionTests
     var world = NewWorld();
     var furnace = ColdFurnace(world);
     // Idle furnace, empty pool: the gauge stays quiet - the readout appears only when there is metal.
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
     string info = Info(tap);
 
     Assert.DoesNotContain(MetalKey, info);
@@ -181,7 +193,7 @@ public class FurnaceHudDistributionTests
     ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
     ReflectionHelpers.SetField(furnace, "_moltenSlag", 40f);
 
-    var tap = Tap(world, furnace.SlagTapPos);
+    var tap = Tap(world, furnace.SlagTapPos!, BlockFurnaceTap.SlagType);
     string info = Info(tap);
 
     Assert.Contains(SlagKey, info);
@@ -199,7 +211,6 @@ public class FurnaceHudDistributionTests
     var furnace = ColdFurnace(world);
     ReflectionHelpers.SetField(furnace, "_cachedMixCount", 220);
     ReflectionHelpers.SetField(furnace, "_cachedRejectedCount", 50);
-    ReflectionHelpers.SetField(furnace, "_cachedRejectedFamily", "remelt");
 
     // The cold furnace's tall hopper sits at structure-local (-2, 6, 0) - six cells above the hearth.
     var hopper = Hopper(world, Global(furnace, -2, 6, 0));
@@ -221,14 +232,14 @@ public class FurnaceHudDistributionTests
     world.World.ElapsedMilliseconds.Returns(10000L);
     var furnace = ColdFurnace(world);
     // Load the pools and shaft so, had the lines stayed, they would print - proving their absence is the
-    // split, not an empty furnace. Idle so the (unchanged) lit heat ledger is not exercised here.
+    // split, not an empty furnace.
     ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
     ReflectionHelpers.SetField(furnace, "_cachedMixCount", 100);
-    ReflectionHelpers.SetProperty(
-      furnace,
-      nameof(furnace.State),
-      FurnaceState.Idle
-    );
+    // It is Idle because a furnace that has never ticked is idle - which is what the deleted
+    // `SetProperty(furnace, "State", Idle)` here was restating. `State` has no setter at all now
+    // (FurnaceBranchGuards.NoFurnaceExposesASettableState), and this call was the harmless end of the
+    // pattern that made the harmful ones invisible: arranging a machine by assigning a label it derives.
+    Assert.Equal(FurnaceState.Idle, furnace.State);
 
     string info = Info(furnace);
 
@@ -262,7 +273,7 @@ public class FurnaceHudDistributionTests
     var furnace = CupolaFurnace(world);
     ReflectionHelpers.SetField(furnace, "_moltenIron", 60f);
 
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
     string info = Info(tap);
 
     Assert.Contains(CastIronKey, info); // the cupola relabels its molten product

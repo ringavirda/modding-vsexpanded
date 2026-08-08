@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
+using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -58,17 +59,7 @@ public partial class BlockMoltenCanalStart : BlockMoltenCanal
   {
     base.OnLoaded(api);
 
-    var crucibles = new List<ItemStack>();
-    foreach (var block in api.World.Blocks)
-    {
-      if (
-        block.Code != null
-        && block.Code.Path.StartsWith("crucible-")
-        && block.Code.Path.EndsWith("-smelted")
-      )
-        crucibles.Add(new ItemStack(block));
-    }
-    _smeltedCrucibles = crucibles.ToArray();
+    _smeltedCrucibles = MoltenMetal.SmeltedCrucibleStacks(api.World);
   }
 
   // A solidified start clogs like any canal - hand it to the base chisel-clear interaction so the

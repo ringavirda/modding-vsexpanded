@@ -129,6 +129,19 @@ public sealed class IngredientBuilder
     return this;
   }
 
+  /// <summary>
+  /// Matches by item <b>tag</b> instead of by code - the one way a single slot can accept several unrelated
+  /// item codes (vanilla's own <c>tool-chisel</c> / <c>flux</c> ingredients work this way). Sets
+  /// <c>type</c> and <c>tags</c> and deliberately leaves <c>code</c> unset, since a tag ingredient matches
+  /// on the tag alone.
+  /// </summary>
+  public IngredientBuilder Tagged(string type, params string[] tags)
+  {
+    _root["type"] = type;
+    _root["tags"] = new JArray(tags);
+    return this;
+  }
+
   /// <summary>Marks the ingredient a tool (<c>isTool = true</c>) - consumed by durability, not by stack.</summary>
   public IngredientBuilder Tool()
   {

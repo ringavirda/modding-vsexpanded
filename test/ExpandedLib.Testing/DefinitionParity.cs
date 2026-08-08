@@ -10,15 +10,15 @@ namespace ExpandedLib.Testing;
 /// distinguishes, so a migration is judged equivalent iff the game would load an identical block:
 /// <list type="bullet">
 /// <item>numbers are type-agnostic (a JSON <c>0</c> equals the builder's <c>0.0</c>);</item>
-/// <item><c>attributes.multiblockStructure</c> is compared as the SET of <c>(x,y,z,block-code)</c> cells it
+/// <item><c>attributes.multiblockStructure</c> is compared as the set of <c>(x,y,z,block-code)</c> cells it
 /// resolves to - the offset order and the private <c>w</c> block-number values carry no meaning to the engine,
 /// so a layer-DSL that renumbers/reorders the same cells is equivalent;</item>
-/// <item><c>attributes.fillerOffsets</c> is compared as the SET of <c>(x,y,z,allowAttach,behaviors)</c> cells
+/// <item><c>attributes.fillerOffsets</c> is compared as the set of <c>(x,y,z,allowAttach,behaviors)</c> cells
 /// (order is irrelevant - each filler is placed independently - but a cell's hosted <c>behaviors</c>, e.g. an
-/// MP power port, ARE part of its identity and must match).</item>
+/// MP power port, are part of its identity and must match).</item>
 /// </list>
 /// Everything else (variantgroups, behaviors, construction stages, …) stays order-sensitive, because those
-/// arrays ARE ordered in the schema. Replaces the per-mod copies of this normalizer.
+/// arrays are ordered in the schema. Replaces the per-mod copies of this normalizer.
 /// </summary>
 public static class DefinitionParity
 {
@@ -60,7 +60,7 @@ public static class DefinitionParity
     }
   }
 
-  // A multiblockStructure reduces to the SET of resolved cells plus the SET of referenced block codes; the
+  // A multiblockStructure reduces to the set of resolved cells plus the set of referenced block codes; the
   // w-numbering and offset order are engine-internal and carry no meaning.
   private static JToken CanonicalMultiblock(JObject structure)
   {

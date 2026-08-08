@@ -60,7 +60,7 @@ public class StructureRigTests
     var machine = new TestMegablock { Angle = 0 };
     world.Place(
       new BlockPos(0, 10, 0),
-      TestBlocks.Configure(new Block(), "exlib:testmega-north", 1),
+      TestBlocks.Configure(new Block(), "exlib:testmega-n", 1),
       machine
     );
     world.Attach(machine);
@@ -102,13 +102,34 @@ public class StructureRigTests
           .At(0, 1, 0, 3)
       );
 
+  /// <summary>
+  /// A footprint with one <b>oriented</b> part in it - the door is authored facing north, and
+  /// <see cref="MultiblockLayoutBuilder.Legend"/> marks any code carrying a whole side segment oriented,
+  /// so the completion check rotates that facing with the structure. Authored through the layout builder
+  /// rather than <c>Multiblock</c> because only the builder emits the <c>multiblockFacings</c> table.
+  /// </summary>
+  private static ExBlockDef OrientedDef() =>
+    ExBlockDef
+      .Create("exlib", "testmega")
+      .MultiblockLayout(s =>
+        s.Origin(0, 0)
+          .Legend('C', "exlib:testmega*")
+          .Legend('D', "exlib:testdoor-n")
+          .Layer(
+            0,
+            """
+            C D
+            """
+          )
+      );
+
   private static (TestWorld world, TestMegablock machine) Stand(int angle = 0)
   {
     var world = new TestWorld();
     var machine = new TestMegablock { Angle = angle };
     world.Place(
       new BlockPos(0, 10, 0),
-      TestBlocks.Configure(new Block(), "exlib:testmega-north", 1),
+      TestBlocks.Configure(new Block(), "exlib:testmega-n", 1),
       machine
     );
     world.Attach(machine);
@@ -268,6 +289,71 @@ public class StructureRigTests
     Assert.NotEqual(new BlockPos(1, 10, 0), mapped); // it genuinely moved
   }
 
+  #endregion
+
+  #region Oriented parts
+
+  // These are the rig's half of MultiblockFacings. The production check turns an oriented part's facing
+  // with the structure, so a rig that fills and counts by the authored code disagrees with the machine at
+  // every non-north angle: it places a north-facing part, reports "0 of N cells unsatisfied", and the
+  // machine never completes. The first rotated furnace scenario in the tree hit exactly that wall.
+
+  [Theory]
+  [InlineData(0)]
+  [InlineData(90)]
+  [InlineData(180)]
+  [InlineData(270)]
+  public void A_structure_with_an_oriented_part_completes_at_any_angle(int angle)
+  {
+    var (world, machine) = Stand(angle);
+
+    // Throws with a per-cell breakdown if the rig satisfied its own idea of the cell but not the machine's.
+    StructureRig.Around(world, machine, OrientedDef(), angle).Complete();
+
+    Assert.True(machine.StructureComplete);
+  }
+
+  [Fact]
+  public void A_rotated_oriented_cell_wants_the_rotated_facing_not_the_authored_one()
+  {
+    var (world, machine) = Stand(90);
+    var rig = StructureRig.Around(world, machine, OrientedDef(), 90);
+
+    // The layout authors a north-facing door; a structure turned to 90 deg wants a west-facing one. Placing
+    // the authored variant is the mistake the old rig made on the player's behalf and then hid.
+    rig.Occupy(
+      rig.Cell(1, 0, 0),
+      TestBlocks.Configure(new Block(), "exlib:testdoor-n", 91)
+    );
+    rig.Raise();
+
+    // Both halves. Counting alone is not enough: with Missing left reading the authored code this was 0,
+    // and Complete() then threw the actively misleading "0 of 2 cells unsatisfied".
+    Assert.Equal(1, rig.Missing);
+    // Letters: the legend authors `exlib:testdoor-n` and MultiblockFacings rotates the token in the
+    // spelling it was given, so a quarter turn asks for `-w`. Spelling either side out produced a
+    // substring that is simply never in the report, i.e. a red test rather than a wrong one.
+    Assert.Contains("wants 'exlib:testdoor-w'", rig.MissingReport);
+    Assert.Contains("has 'exlib:testdoor-n'", rig.MissingReport);
+  }
+
+  [Fact]
+  public void A_layout_with_no_oriented_part_keeps_its_authored_glyphs()
+  {
+    var (world, machine) = Stand(90);
+    var rig = StructureRig.Around(world, machine, Def(), 90);
+
+    // The other direction, so the rotation above is not simply "rewrite every code". A shaft glyph is
+    // domainless on purpose; an AssetLocation round trip would re-domain it to "game:@(air|coalpile)" and
+    // the authored form is what the rig's own filler and report read.
+    Assert.Contains(rig.Cells, c => c.Wanted == "@(air|coalpile)");
+    Assert.Contains(rig.Cells, c => c.Wanted == "exlib:testbrick*");
+  }
+
+  #endregion
+
+  #region Rotation, continued
+
   [Fact]
   public void A_structure_raised_at_the_wrong_angle_does_not_complete()
   {
@@ -277,7 +363,7 @@ public class StructureRigTests
     var machine = new TestMegablock { Angle = 0 };
     world.Place(
       new BlockPos(0, 10, 0),
-      TestBlocks.Configure(new Block(), "exlib:testmega-north", 1),
+      TestBlocks.Configure(new Block(), "exlib:testmega-n", 1),
       machine
     );
     world.Attach(machine);

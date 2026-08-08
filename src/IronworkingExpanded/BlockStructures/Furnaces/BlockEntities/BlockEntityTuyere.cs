@@ -1,6 +1,6 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 
 namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 

@@ -25,7 +25,7 @@ public class BoilerWaterRenderer : SurfaceRenderer
   /// <summary>Water temperature (°C); drives the faint hot-water glow.</summary>
   public float Temperature;
 
-  // Must render AFTER the animated geometry (RenderOrder 1.0): drawing the translucent surface
+  // Must render after the animated geometry (RenderOrder 1.0): drawing the translucent surface
   // first would write depth and cull the interior below the water line. Drawing last blends over it.
   public override double RenderOrder => 1.5;
 

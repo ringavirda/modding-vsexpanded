@@ -48,6 +48,14 @@ public class BEBehaviorMPFillerPort(BlockEntity blockentity)
   /// scale work it does - e.g. mixing - by how fast the axle turns.</summary>
   public float Speed => Network != null ? System.Math.Abs(Network.Speed) : 0f;
 
+  /// <summary>
+  /// Which way the axle turns: true when the vanilla network runs negative. <see cref="Speed"/> is deliberately
+  /// absolute because almost every consumer only cares how fast it spins - but a machine whose <em>geometry</em>
+  /// depends on rotation needs the sign too. The rolling mill is the case in point: its feed side follows the
+  /// rolls, so reversing the drive swaps which deck you feed and which one the piece comes out on.
+  /// </summary>
+  public bool IsReversed => Network is { Speed: < -0.001f };
+
   public void ConfigureFromFiller(
     BlockPos? principal,
     BlockFacing? connectorFace,
@@ -64,7 +72,7 @@ public class BEBehaviorMPFillerPort(BlockEntity blockentity)
   {
     base.Initialize(api, properties);
 
-    // The base only seeds the single OutFacingForNetworkDiscovery face. Couple the OPPOSITE end of the
+    // The base only seeds the single OutFacingForNetworkDiscovery face. Couple the opposite end of the
     // axis too (like vanilla's angled gears and the engine MP generator) so a row of ports merges into
     // one network and power passes straight through - an axle on either side drives the same line, and
     // a port placed beside an already-built one links to it instead of forming a separate network.

@@ -23,7 +23,7 @@ public class RollingMillTests
   private static BlockRollingMill MillBlock(string orientation) =>
     TestBlocks.Configure(
       new BlockRollingMill(),
-      $"iwex:rollingmill-rollingmill-{orientation}",
+      $"iwex:forming-rollingmill-{orientation}",
       1,
       ("type", "rollingmill"),
       ("orientation", orientation)
@@ -129,14 +129,14 @@ public class RollingMillTests
   {
     var axle = TestBlocks.Configure(
       new BlockRollingMillAxle(),
-      "iwex:rollingmillaxle-shaft-we",
+      "iwex:forming-millaxle-we",
       2,
       ("type", "shaft"),
       ("orientation", "we")
     );
     ReflectionHelpers.SetProperty(axle, "Orientation", "we");
 
-    // we axle = a two-ended bus: connectors east AND west, none north/south.
+    // we axle = a two-ended bus: connectors east and west, none north/south.
     Assert.True(axle.HasConnectorAt(BlockFacing.EAST));
     Assert.True(axle.HasConnectorAt(BlockFacing.WEST));
     Assert.False(axle.HasConnectorAt(BlockFacing.NORTH));
@@ -173,13 +173,119 @@ public class RollingMillTests
   }
 
   [Fact]
-  public void The_mill_is_an_idle_mpenergy_consumer()
+  public void An_idle_mill_is_a_consumer_that_loads_nothing()
   {
     var be = new BlockEntityRollingMill();
 
-    // It is a consumer (it can load the run), but Phase A imposes no torque until a pass is worked.
+    // It is a consumer (it can load the run), but imposes no torque with nothing under the rolls.
     Assert.IsAssignableFrom<IMpEnergyConsumer>(be);
     Assert.Equal(0f, be.LoadTorque(0f));
+  }
+
+  #endregion
+
+  #region The pass - the network's first real demand
+
+  // A mill with stock under the rolls. Hot and shallow enough to bite; `length` is how far it must travel.
+  private static BlockEntityRollingMill Rolling(
+    float tempC = 1100f,
+    float draft = 0.5f,
+    float length = 4f
+  )
+  {
+    var be = new BlockEntityRollingMill();
+    Assert.True(be.BeginPass(draft, width: 4f, length: length, tempC: tempC));
+    return be;
+  }
+
+  [Fact]
+  public void A_pass_under_the_rolls_actually_loads_the_run()
+  {
+    // The whole point of this increment: before it, nothing in the mod drew a single N.m from an mpenergy
+    // run. An idle mill still draws nothing, so the load is the pass, not the machine.
+    var be = Rolling();
+    Assert.True(be.IsRolling);
+    Assert.True(be.LoadTorque(1f) > 0f);
+
+    be.CancelPass();
+    Assert.Equal(0f, be.LoadTorque(1f));
+  }
+
+  [Fact]
+  public void Cold_stock_is_refused_rather_than_allowed_to_jam_the_run()
+  {
+    // Below rolling heat the friction collapses, so the rolls cannot pull the piece in at all. Refusing up
+    // front is kinder than accepting a pass that would stall the whole line.
+    var be = new BlockEntityRollingMill();
+    Assert.False(be.BeginPass(draft: 0.5f, width: 4f, length: 4f, tempC: 400f));
+    Assert.False(be.IsRolling);
+  }
+
+  [Fact]
+  public void An_over_deep_gap_is_refused_even_when_the_stock_is_hot()
+  {
+    var be = new BlockEntityRollingMill();
+    Assert.False(be.BeginPass(draft: 99f, width: 4f, length: 4f, tempC: 1200f));
+  }
+
+  [Fact]
+  public void Only_one_piece_can_be_under_the_rolls_at_a_time()
+  {
+    var be = Rolling();
+    Assert.False(be.BeginPass(draft: 0.5f, width: 4f, length: 4f, tempC: 1100f));
+  }
+
+  [Fact]
+  public void The_stock_is_drawn_through_at_the_roll_surface_speed()
+  {
+    var be = Rolling(length: 4f);
+    float before = be.Remaining;
+
+    Assert.False(be.AdvancePass(dt: 0.1f, speed: 1f)); // not finished yet
+    Assert.True(be.Remaining < before, "the bite should have advanced");
+
+    // A faster run draws the same stock through in fewer ticks.
+    var slow = Rolling(length: 4f);
+    var fast = Rolling(length: 4f);
+    slow.AdvancePass(0.1f, speed: 0.5f);
+    fast.AdvancePass(0.1f, speed: 2f);
+    Assert.True(fast.Remaining < slow.Remaining);
+  }
+
+  [Fact]
+  public void A_stalled_run_makes_no_progress_but_does_not_lose_the_pass()
+  {
+    var be = Rolling(length: 4f);
+    float before = be.Remaining;
+
+    Assert.False(be.AdvancePass(dt: 1f, speed: 0f));
+    Assert.True(be.IsStalled);
+    Assert.Equal(before, be.Remaining, 4); // the piece is still there, mid-bite
+
+    // Spin the run back up and it resumes from where it jammed.
+    be.AdvancePass(dt: 1f, speed: 1f);
+    Assert.False(be.IsStalled);
+    Assert.True(be.Remaining < before);
+  }
+
+  [Fact]
+  public void The_pass_completes_once_the_stock_has_cleared_the_rolls()
+  {
+    var be = Rolling(length: 1f);
+
+    Assert.True(be.AdvancePass(dt: 10f, speed: 1f)); // plenty of travel: it clears
+    Assert.False(be.IsRolling);
+    Assert.Equal(0f, be.LoadTorque(1f)); // and stops loading the run
+  }
+
+  [Fact]
+  public void Cooler_stock_loads_the_run_harder_than_hotter_stock()
+  {
+    // Both bite (both are above rolling heat), but the cooler piece resists more - the gradient that makes
+    // a player care about the reheat furnace rather than just clearing a hard threshold.
+    var hot = Rolling(tempC: 1200f);
+    var barely = Rolling(tempC: 900f);
+    Assert.True(hot.LoadTorque(1f) <= barely.LoadTorque(1f));
   }
 
   #endregion

@@ -32,7 +32,7 @@ public abstract class SurfaceRenderer : IRenderer
   public abstract double RenderOrder { get; }
   public virtual int RenderRange => 24;
 
-  /// <param name="footprintBoxes">Surface footprint boxes in 0-16 pixel space (NOT 0-1).</param>
+  /// <param name="footprintBoxes">Surface footprint boxes in 0-16 pixel space (not 0-1).</param>
   /// <param name="rotationY">Y rotation (radians) matching the block's visual shape.</param>
   /// <param name="combine">
   /// Merge all boxes into one always-drawn mesh (<c>true</c>) or keep one mesh per box and draw the

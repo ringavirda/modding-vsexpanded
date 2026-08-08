@@ -54,7 +54,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
       .Ingredient("P", Plate(1))
       .Ingredient("H", Hammer)
       .Ingredient("N", Nails(2))
-      .OutputBlock("lpex:steamcondenser-north");
+      .OutputBlock("lpex:steamcondenser-n");
 
   private static void CornishBoiler(GridRecipeBuilder r) =>
     r.Name("Cornish Boiler")
@@ -65,7 +65,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
       .Ingredient("I", StraightPipe(1))
       .Ingredient("N", Nails(2))
       .Ingredient("H", Hammer)
-      .OutputBlock("lpex:boilercornish-north");
+      .OutputBlock("lpex:boilercornish-n");
 
   // --- gear-driven machines: authored once, emitted for both gear codes ---
   private static Action<GridRecipeBuilder> WattEngine(string gear) =>
@@ -78,7 +78,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("G", Gear(gear, 2))
         .Ingredient("I", StraightPipe(1))
         .Ingredient("H", Hammer)
-        .OutputBlock("lpex:enginewatt-north");
+        .OutputBlock("lpex:enginewatt-n");
 
   private static Action<GridRecipeBuilder> FluidPump(string gear) =>
     r =>
@@ -90,7 +90,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("I", StraightPipe(1))
         .Ingredient("H", Hammer)
         .Ingredient("R", Rod(2))
-        .OutputBlock("lpex:enginefluidpump-north");
+        .OutputBlock("lpex:enginefluidpump-n");
 
   private static Action<GridRecipeBuilder> ManualPump(string gear) =>
     r =>
@@ -103,7 +103,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("R", Rod(2))
         .Ingredient("B", i => i.Block("game:supportbeam-*").Quantity(4))
         .Ingredient("H", Hammer)
-        .OutputBlock("lpex:manualfluidpump-north");
+        .OutputBlock("lpex:manualfluidpump-n");
 
   private static Action<GridRecipeBuilder> MpGenerator(string gear) =>
     r =>
@@ -115,13 +115,13 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("G", Gear(gear, 2))
         .Ingredient("A", i => i.Block("game:woodenaxle-ud").Quantity(1))
         .Ingredient("H", Hammer)
-        .OutputBlock("lpex:enginempgenerator-north");
+        .OutputBlock("lpex:enginempgenerator-n");
 
   // lpex-specific ingredient factories (the shared vanilla ones - Plate/PlateSteel/Nails/NailsSteel/Rod/
   // RodSteel/Gear/Hammer - come from ExIngredients via `using static`). These stay local: the pipe base
   // block + a vanilla fire brick used only here.
   //
-  // The pipe ingredient is the plain bolted (iwex) segment - the base tier that actually has a craft
+  // The pipe ingredient is the plain plated (iwex) segment - the base tier that actually has a craft
   // recipe - matching the fitting recipes in PipeRecipeDefinitions. lpex's own cast segments are a
   // higher tier with no recipe of their own yet.
   private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(int qty) =>

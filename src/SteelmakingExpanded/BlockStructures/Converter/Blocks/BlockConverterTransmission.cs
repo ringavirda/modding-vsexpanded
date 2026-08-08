@@ -29,9 +29,9 @@ public partial class BlockConverterTransmission
         .Material(EnumBlockMaterial.Metal)
         .MetalSounds()
         .MaxStackSize(1)
-        .CreativeCommon("*-north")
-        .Behavior("HorizontalOrientable")
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .CreativeCommon("*-n")
+        .Behavior("ExOrientable")
+        .SideVariant()
         .ShapeByTypePerOrientation("smex:converter/transmission", offset: 180)
         .NonSolid(),
     ];

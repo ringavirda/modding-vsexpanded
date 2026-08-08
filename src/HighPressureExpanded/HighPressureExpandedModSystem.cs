@@ -1,9 +1,9 @@
 using ExpandedLib.Blocks.Construction;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Commands;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Recipes;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -38,10 +38,11 @@ public class HighPressureExpandedModSystem : ModSystem
     );
 
     // The rolled (Hadfield steel) pipe tier's burst rating, read live from this mod's config. Keyed by
-    // domain in BlockPipe, exactly as iwex registers bolted and lpex registers cast.
+    // domain in BlockPipe, exactly as iwex registers plated and lpex registers cast.
     BlockPipe.RegisterBurst(Mod.Info.ModID, () => HpexValues.RolledPipeBurstPressure);
+    BlockPipe.RegisterThroughput(Mod.Info.ModID, () => HpexValues.RolledPipeThroughput);
     // Rolled pipe is octagonal and welded - no flange to bolt a lower tier onto, so an HP run
-    // will not join a bolted or cast one at all.
+    // will not join a plated or cast one at all.
     BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.WeldedJoint);
 
     // The HP-machine recipe cost catalogue.

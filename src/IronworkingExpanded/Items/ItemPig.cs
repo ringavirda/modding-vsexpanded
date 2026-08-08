@@ -28,9 +28,15 @@ namespace IronworkingExpanded.Items;
 public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 {
   /// <summary>Units a full pig, a chunk, and a bit each represent - the mass the bed's casting and the
-  /// helve-breaking both conserve (5 u bit -&gt; 25 u chunk -&gt; 150 u pig), recorded on each item as
-  /// <c>materialUnits</c> and read as constants by the machines and the breaking maths.</summary>
-  public const int PigUnits = 150;
+  /// helve-breaking both conserve (5 u bit -&gt; 25 u chunk -&gt; 375 u pig), recorded on each item as
+  /// <c>materialUnits</c> and read as constants by the machines and the breaking maths.
+  /// <para>
+  /// 375 u is <b>5 x 3 x 10 = 150 vx³</b> at the mod's one density rule (1 vx³ = 2.5 u). It is not a free
+  /// number: the cupola's charge band is derived from it, and one pig per band is the only count a block of
+  /// loose iron can physically hold - 375 u/band fills a block to 58.6 %, which is where loose irregular
+  /// solids actually pack, while two pigs would be 117 %, denser than solid iron.
+  /// </para></summary>
+  public const int PigUnits = 375;
   public const int ChunkUnits = 25;
   public const int BitUnits = 5;
 
@@ -128,14 +134,16 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider
 
   public int VoxelCountForHandbook(ItemStack stack) => PigBreaking.PigVoxels;
 
-  // A solid 6x2x5 = 60-voxel block, positioned so it fully covers the small smithing/pig recipe shape
-  // (x 4..8, y 0, z 6..7); the helve sheds the other 50 voxels, which the patch turns into chunks/bits.
+  // A solid 5x3x10 = 150-voxel block - the pig's own 375 u solid at 2.5 u/vx³, not a stand-in - positioned
+  // so it fully covers the small smithing/pig recipe shape (x 4..8, y 0, z 6..7); the helve sheds the other
+  // 140 voxels, which the patch turns into chunks/bits. The anvil grid is [16, 6, 16], so a 3-tall fill
+  // clears its 6 and z 6..15 stays in bounds.
   private static void CreatePigVoxels(ref byte[,,] voxels)
   {
     voxels = new byte[16, 6, 16];
-    for (int x = 0; x < 6; x++)
-      for (int y = 0; y < 2; y++)
-        for (int z = 0; z < 5; z++)
+    for (int x = 0; x < 5; x++)
+      for (int y = 0; y < 3; y++)
+        for (int z = 0; z < 10; z++)
           voxels[4 + x, y, 6 + z] = 1; // EnumVoxelMaterial.Metal
   }
 

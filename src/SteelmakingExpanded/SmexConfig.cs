@@ -79,7 +79,7 @@ public class SmexConfig : IExVersionedConfig
   // IwexValues.MoltenCooldownSpeed and scales it by BessemerCooldownCoefficient below.
 
   #region Hopper feed (reinforced tank + bell drip)
-  // The reinforced hopper is now a plain burden tank (the ore mixer makes the burden; the hopper no
+  // The reinforced hopper is now a plain charge tank (iwex's burdenmaker makes the burden; the hopper no
   // longer mixes). It is deliberately a SMALL buffer versus the tall hopper's 128 - it is meant to be
   // fed by the skip-hoist system later, not hand-loaded to the brim.
   /// <summary>Burden units the reinforced hopper tank holds. Small by design (skip-hoist fed).</summary>
@@ -134,6 +134,10 @@ public class SmexConfig : IExVersionedConfig
 
   /// <summary>Per-second rate the regenerator loses heat into the air it reheats into hot blast.</summary>
   public float CowperCoolingSpeedAir { get; set; } = 0.0012f;
+
+  /// <summary>Fraction of the incoming exhaust temperature the stove's outlet exhaust keeps after the
+  /// regenerator has soaked up its heat (the rest went into the brick core).</summary>
+  public float CowperExhaustAttenuation { get; set; } = 0.4f;
 
   /// <summary>Gas (L/s) the cowper stove draws each tick from each of its intakes - the furnace exhaust it soaks heat from, and the air it reheats into hot blast.</summary>
   public float CowperIntakeVolume { get; set; } = 24f;
@@ -214,7 +218,7 @@ public class SmexConfig : IExVersionedConfig
 
   // --- Mass balance (R2: steel + slag ≤ input, never create matter) --------------------------------
   // Per 100 u pig → 90 u molten steel + 6 u molten slag (the same iwex:slag the furnaces make) + 4 u gas
-  // (carbon burned off, gone - not a material). Slag accumulates into its own pool DURING the blow.
+  // (carbon burned off, gone - not a material). Slag accumulates into its own pool during the blow.
 
   /// <summary>Fraction of pig mass that becomes steel across the blow (materials.md).</summary>
   [ExConfigRange(0, 1)]

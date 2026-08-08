@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -26,7 +26,7 @@ public partial class BlockPressureValve : BlockValve
 
   private static ExBlockDef PressureValve(string domain) =>
     ExBlockDef
-      .Create(domain, "pipe", "pipes/pressurevalve")
+      .Create(domain, "pipe", "pipe/pressurevalve")
       .Class<BlockPressureValve>()
       .EntityClass<BlockEntityPressureValve>()
       .Material(EnumBlockMaterial.Metal)
@@ -37,12 +37,12 @@ public partial class BlockPressureValve : BlockValve
       .Behavior("Lockable")
       .VariantGroup("type", "pressurevalve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
-      .ShapeByType("*-pressurevalve-ns", "lpex:pipes/pressurevalve")
-      .ShapeByType("*-pressurevalve-we", "lpex:pipes/pressurevalve", rotateY: 90)
-      .ShapeByType("*-pressurevalve-ud", "lpex:pipes/pressurevalve", rotateX: 90)
-      .ShapeByType("*-pressurevalve-sn", "lpex:pipes/pressurevalve", rotateY: 180)
-      .ShapeByType("*-pressurevalve-ew", "lpex:pipes/pressurevalve", rotateY: -90)
-      .ShapeByType("*-pressurevalve-du", "lpex:pipes/pressurevalve", rotateX: -90)
+      .ShapeByType("*-pressurevalve-ns", "lpex:pipe/pressurevalve")
+      .ShapeByType("*-pressurevalve-we", "lpex:pipe/pressurevalve", rotateY: 90)
+      .ShapeByType("*-pressurevalve-ud", "lpex:pipe/pressurevalve", rotateX: 90)
+      .ShapeByType("*-pressurevalve-sn", "lpex:pipe/pressurevalve", rotateY: 180)
+      .ShapeByType("*-pressurevalve-ew", "lpex:pipe/pressurevalve", rotateY: -90)
+      .ShapeByType("*-pressurevalve-du", "lpex:pipe/pressurevalve", rotateX: -90)
       .Texture("iron4", "game:block/metal/sheet-plain/iron4")
       .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
       .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)

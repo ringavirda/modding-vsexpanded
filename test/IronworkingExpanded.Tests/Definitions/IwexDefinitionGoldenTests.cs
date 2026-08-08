@@ -1,7 +1,10 @@
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace IronworkingExpanded.Tests;
@@ -56,6 +59,53 @@ public class IwexDefinitionGoldenTests
       missing.Count == 0,
       "definitions naming shapes that do not exist: " + string.Join("; ", missing)
     );
+  }
+
+  /// <summary>
+  /// Every locale under <c>assets/iwex/lang/</c> must carry either no name key for a variant-grouped block,
+  /// or a wildcarded one (<c>block-{code}*</c> / <c>block-{code}-{state}*</c>, etc). A bare <c>block-{code}</c>
+  /// key is a defect the moment the block has any variant group: the block's own <c>code</c> is never itself a
+  /// placeable block - every real instance carries at least one variant suffix on top of it - so VS's
+  /// <c>Lang.GetMatching("{domain}:block-" + Code.Path)</c> (no dash-stripping fallback) can never hit that
+  /// bare key, and the raw key renders in-game instead of a name.
+  /// <para>
+  /// This is exactly the F1 defect (the tall hopper gained a <c>side</c> variant group and orphaned its bare
+  /// lang key) plus its three pre-existing siblings (blastfurnacecore/cupolafurnacecore/twintubmpblower) - all
+  /// four had this literal shape: a variant-grouped block whose only lang entry was the un-suffixed code.
+  /// </para>
+  /// <para>
+  /// Deliberately narrower than "every blocktype has a resolving name key" - some iwex blocks (e.g. the
+  /// heating/puddling furnace cores) currently ship no name key at all, which is a different, pre-existing gap
+  /// this fix wave was not scoped to touch. Asserting full resolution here would fail on those too.
+  /// </para>
+  /// </summary>
+  [Fact]
+  public void Variant_grouped_blocks_never_carry_a_bare_name_key()
+  {
+    string langDir = DefinitionGoldens.SolutionRelative("assets/iwex/lang");
+    var variantBlockCodes = DefinitionGoldens
+      .Collect(Domain, Mod)
+      .OfType<ExBlockDef>()
+      .Where(d => d.ToJson()["variantgroups"] is JArray groups && groups.Count > 0)
+      .Select(d => d.Code)
+      .Distinct()
+      .OrderBy(c => c)
+      .ToList();
+
+    var failures = new List<string>();
+    foreach (string langFile in Directory.EnumerateFiles(langDir, "*.json"))
+    {
+      var lang = JObject.Parse(File.ReadAllText(langFile));
+      string locale = Path.GetFileName(langFile);
+      foreach (string code in variantBlockCodes)
+      {
+        string bareKey = "block-" + code;
+        if (lang.ContainsKey(bareKey))
+          failures.Add($"{locale}: '{bareKey}' is bare but '{code}' has variant groups - use '{bareKey}*'");
+      }
+    }
+
+    Assert.True(failures.Count == 0, string.Join("\n", failures));
   }
 
   [Fact]

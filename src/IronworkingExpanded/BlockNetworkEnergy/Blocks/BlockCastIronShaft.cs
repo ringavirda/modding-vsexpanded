@@ -28,14 +28,14 @@ public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "castironshaft", "mpenergy/castironshaft")
+        .Create(domain, "mpenergy", "mpenergy/shaft")
         .Class<BlockCastIronShaft>()
         .EntityClass<BlockEntityCastIronShaft>()
         .Material(EnumBlockMaterial.Metal)
         .Sound("walk", "game:walk/metal")
         .Sound("place", "game:block/anvil")
         .MaxStackSize(64)
-        .Handbook("castironshaft-*")
+        .Handbook("mpenergy-shaft-*")
         .VariantGroup("type", "shaft")
         .VariantGroup("orientation", "ns", "we", "ud")
         .ShapeByType("*-ns", "iwex:mpenergy/shaft", rotateY: 0)
@@ -72,7 +72,7 @@ public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider
       return true;
 
     if (
-      world.GetBlock(CodeWithPath("castironbevel-bevel-" + (Orientation ?? "ns")))
+      world.GetBlock(CodeWithPath("mpenergy-bevel-" + (Orientation ?? "ns")))
       is not { } bevel
     )
       return true;

@@ -39,20 +39,31 @@ public partial class BlockHopperBell : Block, IExBlockDefProvider
     float dropQuantityMultiplier = 1f
   )
   {
-    var drops = new List<ItemStack>(
-      base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier)
+    // Null-guarded: vanilla's Block.GetDrops returns null when the block declares no drops, and wrapping
+    // that in a List<> ctor throws ArgumentNullException on null. A shipped block always has its
+    // self-drop, so the case never fires in play - but a definition change that dropped the entry would
+    // turn "break this block" into a crash rather than into a block that drops nothing.
+    ItemStack[]? inherited = base.GetDrops(
+      world,
+      pos,
+      byPlayer,
+      dropQuantityMultiplier
     );
+    var drops = new List<ItemStack>(inherited ?? []);
 
-    // Return the blast mix buffered in the internal magazine so it isn't lost.
+    // Return whatever the magazine is actually holding, so a broken bell does not eat its own load.
+    //
+    // The magazine's own stack is the honest answer and needs no lookup at all: it is already a
+    // resolved stack of exactly what is in there, grade and all. Do not swap this for an item minted
+    // through a null-guarded `world.GetItem(...)`: that hands back a different item from the burden the
+    // bell buffers (losing the grade the ore mixer stamped), and the null guard fails soft - deleting
+    // the looked-up item would make a break silently return nothing, with the build still succeeding
+    // and no test going red.
     if (
       world.BlockAccessor.GetBlockEntity(pos) is BlockEntityHopperBell be
-      && be.BlastMixMagazine > 0
+      && be.MagazineContents is { StackSize: > 0 } magazine
     )
-    {
-      Item? blastmix = world.GetItem(new AssetLocation("iwex", "blastmix"));
-      if (blastmix != null)
-        drops.Add(new ItemStack(blastmix, be.BlastMixMagazine));
-    }
+      drops.Add(magazine.Clone());
 
     return drops.ToArray();
   }

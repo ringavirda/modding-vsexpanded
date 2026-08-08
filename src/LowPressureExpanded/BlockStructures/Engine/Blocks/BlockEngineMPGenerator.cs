@@ -25,16 +25,16 @@ public partial class BlockEngineMPGenerator
       ExBlockDef
         .Create(domain, "enginempgenerator", "engine/mpgenerator")
         .Class<BlockEngineMPGenerator>()
-        // Type-safe, not the raw "lpex.BlockEntityEngineMPGenerator" string it used to be: both sides
-        // now resolve through EntityRegistry.KeyFor, so renaming the block entity can never leave this
+        // Type-safe rather than a raw class-name string: both sides
+        // resolve through EntityRegistry.KeyFor, so renaming the block entity can never leave this
         // registration pointing at a class that no longer exists (a load-time failure with no compile
         // error - see the twin-tub blower for what that looks like).
         .EntityClass<BlockEntityEngineMPGenerator>()
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .EntityBehavior("lpex.BEBehaviorEngineMPGenerator")
         .Material(EnumBlockMaterial.Metal)
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .CreativeCommon("*-north")
+        .SideVariant()
+        .CreativeCommon("*-n")
         .ShapeByTypePerOrientation("lpex:engine/mpgenerator")
         .NonSolid(),
     ];

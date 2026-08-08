@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -31,7 +31,12 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
 
   /// <summary>
   /// The mechanical-power intake hosted by the footprint's upper-rear cell: an axle on the
-  /// (rotation-relative) west face drives the bellows. Same coupling the ore mixer uses.
+  /// (rotation-relative) west face drives the bellows. Same coupling the rolling mill uses.
+  /// <para>
+  /// This def is also what <c>Parity_catches_a_wrong_filler_port_face</c> reads: it is the harness's
+  /// sample of "a def with a per-cell behaviour". That test asserts the port exists before corrupting
+  /// it, so removing this spec fails loudly rather than leaving the parity oracle checking nothing.
+  /// </para>
   /// </summary>
   private static readonly FillerBehaviorSpec MpPortWest =
     new("exlib.BEBehaviorMPFillerPort", "west");
@@ -44,25 +49,25 @@ public partial class BlockTwinTubMPBlower : BlockPipe, IExBlockDefProvider, IFil
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "twintubmpblower", "furnaces/twintubmpblower")
+        .Create(domain, BlockFurnaceCoreBase.FurnaceCode, "furnace/twintubblower")
         .Class<BlockTwinTubMPBlower>()
         .EntityClass<BlockEntityTwinTubMPBlower>()
         // Carries the shared build-outline behaviour so the projection gesture is wired at every functional
-        // component uniformly. Unlike the tap/tuyere/hopper the blower is NOT a cell of the furnace layout -
+        // component uniformly. Unlike the tap/tuyere/hopper the blower is not a cell of the furnace layout -
         // it is a pipe-network machine linked to a tuyere by the blast main at unbounded distance - so the
         // layout-ownership resolver finds no owning anchor from it and the gesture does nothing (the "no
         // resolvable anchor -> does nothing" contract). It keeps its own MP/pipe HUD.
         .Behavior("MultiblockStructure")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
-        .VariantGroup("type", "twintubmpblower")
+        .VariantGroup("type", "twintubblower")
         .VariantGroup("orientation", "n", "e", "s", "w")
         // The footprint is authored in the NORTH frame, so north is the unrotated shape - the offsets in
         // FillerOffsets and StructureAngle below share that frame.
-        .ShapeByType("*-n", "iwex:furnaces/twintubmpblower", rotateY: 0)
-        .ShapeByType("*-e", "iwex:furnaces/twintubmpblower", rotateY: 90)
-        .ShapeByType("*-s", "iwex:furnaces/twintubmpblower", rotateY: 180)
-        .ShapeByType("*-w", "iwex:furnaces/twintubmpblower", rotateY: 270)
+        .ShapeByType("*-n", "iwex:furnace/twintubmpblower", rotateY: 0)
+        .ShapeByType("*-e", "iwex:furnace/twintubmpblower", rotateY: 90)
+        .ShapeByType("*-s", "iwex:furnace/twintubmpblower", rotateY: 180)
+        .ShapeByType("*-w", "iwex:furnace/twintubmpblower", rotateY: 270)
         .CreativeCommon("*-n")
         .FillerOffsets(
           StructureFootprint.Layout(f =>

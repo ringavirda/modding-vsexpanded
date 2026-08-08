@@ -80,7 +80,7 @@ public class MediumTaxonomyTests
   [Fact]
   public void Two_different_liquids_do_not_blend()
   {
-    // The old MediaCompatible treated ALL non-water as one family, so a second liquid would silently
+    // The old MediaCompatible treated all non-water as one family, so a second liquid would silently
     // blend with water. The registry fixes that: a liquid mixes only with the same liquid code.
     ExLiquids.Register(new LiquidDef { Code = "Oil", Phase = LiquidPhase.Liquid });
 
@@ -140,7 +140,7 @@ public class MediumTaxonomyTests
   [Fact]
   public void CondensationTarget_is_temperature_independent()
   {
-    // An active condenser supplies its own cooling, so the pair lookup must NOT gate on the gas's
+    // An active condenser supplies its own cooling, so the pair lookup must not gate on the gas's
     // current temperature - a 150C steam line still condenses (exactly what the condenser BE relies on,
     // and what a temp-gated lookup would wrongly refuse).
     Assert.True(

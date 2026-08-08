@@ -26,7 +26,7 @@ public class ConverterRecipeDefinitions : IExRecipeDefProvider
             .Ingredient("P", Plate(4))
             .Ingredient("H", Hammer)
             .Ingredient("N", Nails(8))
-            .OutputBlock("smex:convertercontrol-north")
+            .OutputBlock("smex:convertercontrol-n")
         )
         .Grid(Transmission("game:gear-rusty"))
         .Grid(r =>
@@ -38,7 +38,7 @@ public class ConverterRecipeDefinitions : IExRecipeDefProvider
             .Ingredient("H", Hammer)
             .Ingredient("N", Nails(8))
             .Ingredient("L", PipeStar(1))
-            .OutputBlock("smex:converter-intake-north")
+            .OutputBlock("smex:converter-intake-n")
         )
         .Grid(Transmission("lpex:gear-*")),
     ];
@@ -54,5 +54,5 @@ public class ConverterRecipeDefinitions : IExRecipeDefProvider
         .Ingredient("N", Nails(8))
         .Ingredient("G", Gear(gear, 16))
         .Ingredient("A", i => i.Block("game:woodenaxle-ud").Quantity(1))
-        .OutputBlock("smex:convertertransmission-north");
+        .OutputBlock("smex:convertertransmission-n");
 }

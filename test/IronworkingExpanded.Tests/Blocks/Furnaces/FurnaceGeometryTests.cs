@@ -1,4 +1,5 @@
 using System.Linq;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
@@ -25,7 +26,7 @@ public class FurnaceGeometryTests
 {
   #region Furnace standup
 
-  // NOTE: plain concrete helpers, no generic with a `where T : BlockEntity` constraint - see the caveat
+  // Note: plain concrete helpers, no generic with a `where T : BlockEntity` constraint - see the caveat
   // on FurnaceLayoutRig.
 
   /// <summary>
@@ -35,7 +36,7 @@ public class FurnaceGeometryTests
   private static BlockEntityBlastFurnaceCold ColdFurnace()
   {
     var be = new BlockEntityBlastFurnaceCold { Pos = new BlockPos(0, 16, 0) };
-    Orient(be, "iwex:blastfurnacecore-north", "north");
+    OrientWithLayout(be, ColdDef(), "iwex:furnace-blastcore-tier1-n", "north");
     return be;
   }
 
@@ -43,7 +44,7 @@ public class FurnaceGeometryTests
   private static BlockEntityCupolaFurnace CupolaFurnace()
   {
     var be = new BlockEntityCupolaFurnace { Pos = new BlockPos(0, 16, 0) };
-    Orient(be, "iwex:cupolafurnacecore-north", "north");
+    OrientWithLayout(be, CupolaDef(), "iwex:furnace-cupolacore-tier1-n", "north");
     return be;
   }
 
@@ -59,17 +60,24 @@ public class FurnaceGeometryTests
 
   [Fact]
   public void Cold_furnace_offsets_line_up_with_its_layout() =>
+    // The anchor glyph is facing-pinned, not `.Any`. The furnace redraw made the core's own cell
+    // demand a correctly-facing core, so a furnace built with the anchor turned the wrong way no
+    // longer completes -- `MultiblockFacings` rotates the letter with the structure, so this reads
+    // `-north` in the drawing and `-east` in a furnace built facing east.
     AssertFurnaceGeometry(
       ColdFurnace(),
       ColdDef(),
-      "iwex:blastfurnacecore-*",
-      "cold furnace"
+      IwexBlocks.FurnaceBlastcore.WithSide(BlockFacing.NORTH),
+      "cold furnace",
+      TapGlyphs.ShaftFurnace,
+      NorthTuyereGlyph,
+      SouthTuyereGlyph
     );
 
   [Fact]
   public void Cold_furnace_declares_no_exhaust_outlets() =>
-    // The cold furnace's open top IS its chimney, so its layout ships no pipe outlet to point at.
-    AssertNoExhaustOutlets(ColdFurnace(), ColdDef());
+    // The cold furnace's open top is its chimney, so its layout ships no pipe outlet to point at.
+    AssertNoExhaustOutlets(ColdDef());
 
   #endregion
 
@@ -87,18 +95,25 @@ public class FurnaceGeometryTests
     AssertFurnaceGeometry(
       CupolaFurnace(),
       CupolaDef(),
-      "iwex:cupolafurnacecore-*",
-      "cupola"
+      // Facing-pinned, as the cold furnace's is - see the note there.
+      IwexBlocks.FurnaceCupolacore.WithSide(BlockFacing.NORTH),
+      "cupola",
+      // The mirrored pair, not the blast furnaces'. The cupola drains cast iron out its west wall and
+      // skims cinder off its east, so both glyphs are the opposite facing. See TapGlyphs.
+      TapGlyphs.Cupola,
+      // One inlet, in the north wall - the cupola is blown from one side only.
+      NorthTuyereGlyph
     );
 
   [Fact]
   public void Cupola_declares_one_tuyere_and_no_exhaust_outlets()
   {
     // The cupola is the narrow furnace: a single tuyere, and (like the cold blast furnace) an open top
-    // that is its own stack, so it ships no pipe outlet to point at.
-    var be = CupolaFurnace();
-    Assert.Single(Cells(be, "TuyereCells"));
-    AssertNoExhaustOutlets(be, CupolaDef());
+    // that is its own stack, so it ships no pipe outlet to point at. The count is worth stating on its own
+    // - both blast furnaces mark two, so a role copied from either of them onto this drawing would be
+    // caught here rather than read as a plausible cupola.
+    Assert.Single(RoleCellsOf(CupolaDef(), CellRole.Tuyere));
+    AssertNoExhaustOutlets(CupolaDef());
   }
 
   #endregion

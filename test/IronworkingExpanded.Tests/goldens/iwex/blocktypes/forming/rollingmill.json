@@ -1,5 +1,5 @@
 {
-  "code": "rollingmill",
+  "code": "forming",
   "class": "iwex.BlockRollingMill",
   "entityClass": "iwex.BlockEntityRollingMill",
   "blockmaterial": "Metal",
@@ -11,7 +11,7 @@
   "attributes": {
     "handbook": {
       "groupBy": [
-        "rollingmill-*"
+        "forming-rollingmill-*"
       ]
     },
     "fillerOffsets": [

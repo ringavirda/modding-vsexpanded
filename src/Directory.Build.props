@@ -182,6 +182,15 @@
     assets/<domain>/… layout INSIDE the packaged mod.
     ============================================================================================
   -->
+  <!-- One shared legacy-usings shim for every mod project (all of which set $(AssetDomain)): on the
+       legacy TFMs it pulls exlib's Legacy namespace into scope assembly-wide, and it compiles away on
+       the current TFM. Linked here so the five projects share one file instead of per-project copies. -->
+  <ItemGroup Condition="'$(AssetDomain)' != ''">
+    <Compile Include="$(MSBuildThisFileDirectory)LegacyUsings.cs">
+      <Link>LegacyUsings.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(AssetDomain)' != ''">
     <Content Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\**\*">
       <Link>assets\$(AssetDomain)\%(RecursiveDir)%(Filename)%(Extension)</Link>

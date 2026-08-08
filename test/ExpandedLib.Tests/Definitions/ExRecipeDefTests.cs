@@ -102,10 +102,10 @@ public class ExRecipeDefTests
   public void GridObject_emits_a_single_recipe_object_not_an_array()
   {
     // A one-recipe file the source authored as a lone object (bunker/molten-barrel) - the token must be an
-    // OBJECT, not a one-element array, so it is byte-faithful to the source.
+    // object, not a one-element array, so it is byte-faithful to the source.
     ExRecipeDef def = ExRecipeDef
       .Create("iwex", "grid", "bunker")
-      .GridObject(r => r.Pattern("B").Size(1, 1).OutputBlock("iwex:bunker-{brick}-north", 1));
+      .GridObject(r => r.Pattern("B").Size(1, 1).OutputBlock("iwex:bunker-{brick}-n", 1));
 
     JToken json = def.ToJson();
     Assert.Equal(JTokenType.Object, json.Type);

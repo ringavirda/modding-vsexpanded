@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
 using SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 using Vintagestory.API.Common;
@@ -45,13 +45,10 @@ public partial class BlockSmokeStackIntake : BlockPipePassthrough, IExBlockDefPr
         // (origin), a air, B chimney brick-course. Compared as an unordered cell set by DefinitionParity.
         .MultiblockLayout(s =>
           s.Origin(-1, 0)
-            .Legend('#', "game:refractorybricks-good-tier*")
-            .Legend('I', "smex:smokestack-intake*")
-            .Legend('a', "game:air")
-            .Legend(
-              'B',
-              "@(claybricks-good-fire|refractorybricks-good-.*|brickcourse-.*-(black|brown|cream|gray|orange|red|tan))"
-            )
+            .Legend('#', VanillaCodes.Refractory)
+            .Legend('I', SmexBlocks.SmokestackIntake.Any)
+            .Legend('a', VanillaCodes.Air)
+            .Legend('B', VanillaCodes.AnyBricks)
             .Layer(
               -1,
               """
@@ -155,10 +152,10 @@ public partial class BlockSmokeStackIntake : BlockPipePassthrough, IExBlockDefPr
         .VariantGroup("type", "intake")
         .VariantGroup("refractory", "tier1", "tier2", "tier3")
         .VariantGroup("orientation", "n", "s", "w", "e")
-        .ShapeByType("*-intake-*-s", "lpex:pipes/outlet")
-        .ShapeByType("*-intake-*-e", "lpex:pipes/outlet", rotateY: 90)
-        .ShapeByType("*-intake-*-n", "lpex:pipes/outlet", rotateY: 180)
-        .ShapeByType("*-intake-*-w", "lpex:pipes/outlet", rotateY: 270)
+        .ShapeByType("*-intake-*-s", "lpex:pipe/outlet")
+        .ShapeByType("*-intake-*-e", "lpex:pipe/outlet", rotateY: 90)
+        .ShapeByType("*-intake-*-n", "lpex:pipe/outlet", rotateY: 180)
+        .ShapeByType("*-intake-*-w", "lpex:pipe/outlet", rotateY: 270)
         .Texture("front1", "game:block/clay/refractory/{refractory}/front1")
         .SideSolid(false)
         .SideOpaque(false),

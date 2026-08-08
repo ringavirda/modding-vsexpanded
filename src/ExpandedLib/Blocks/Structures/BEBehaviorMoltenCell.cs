@@ -16,7 +16,7 @@ namespace ExpandedLib.Blocks.Structures;
 /// invisible mega-block footprint cell (via <see cref="IFillerHostedBehavior"/>) - or any block entity
 /// - can <em>be</em> a molten cell by composition rather than by extending the canal block entity.
 /// <para>
-/// Unlike the canal, a hosted cell is NOT auto-registered in the shared molten network graph. The
+/// Unlike the canal, a hosted cell is not auto-registered in the shared molten network graph. The
 /// principal that hosts a fixed cluster of them (the sand casting bed; later the ladle / casting cell)
 /// drives flow across the cluster itself, keeping it an isolated internal network so the outside line
 /// can carry a different metal. Config - capacity, whether it seeds flow, whether it is a drain
@@ -34,6 +34,20 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   /// <summary>Fallback capacity (units) when the declaration sets no <c>capacity</c>.</summary>
   public const int DefaultCapacity = 100;
 
+  /// <summary>
+  /// The tree-key prefix a cell uses when it declares no <c>key</c>.
+  /// <para>
+  /// <b>This value is a save contract and must never change.</b> Every cell that shipped before the
+  /// prefix existed - the sand casting bed's runner, mold and basin cells, and the standalone casting
+  /// cell - declares no <c>key</c>, so their saved trees carry exactly these names. Changing the default
+  /// (to <c>""</c>, to the behaviour's name, to anything tidier) makes <see cref="FromTreeAttributes"/>
+  /// look for keys that are not in the tree and read zeros - every casting bed in every existing world
+  /// silently empties. <c>MoltenCellPairTests</c> spells the literal key set out rather than deriving it,
+  /// so this cannot drift.
+  /// </para>
+  /// </summary>
+  public const string DefaultKeyPrefix = "mc_";
+
   #region Config
   private int _capacity = DefaultCapacity;
   private bool _isFlowSource;
@@ -41,9 +55,20 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   private bool _solidifiesWhenCold = true;
   private float _cooldownSpeed = ExlibValues.MoltenCooldownDefault;
 
-  // A mold rammed into a casting cell sets the cell's capacity from the pattern's spec at runtime; while
-  // set it wins over the declared/config capacity. Persisted so a half-cast cell survives a reload.
-  private int? _patternCapacity;
+  // Why a prefix exists at all: a block entity hands one tree to every behaviour it hosts, and a cell
+  // holds exactly one metal by design (PushMetalRaw refuses a second). So a layered vessel - the blast
+  // furnace's crucible, iron under slag - has to host two cells, and without distinct keys the second
+  // one's write lands on top of the first. Silently: nothing throws, the metal is simply gone on reload.
+  private string _keyPrefix = DefaultKeyPrefix;
+
+  // A runtime capacity override that wins over the declared/config one while set. Persisted so it
+  // survives a reload.
+  //
+  // Not only about patterns: a mold rammed into a casting cell is one caller, and the blast furnace's
+  // hearth - whose capacity is its band height times the footprint the player actually built - is
+  // another. The tree key stays `patcap` even though a hearth block has no pattern rammed into it,
+  // because the key is a save contract; the field name is not.
+  private int? _runtimeCapacity;
 
   /// <summary>The principal (controller) block this cell belongs to, or null when hosted standalone.</summary>
   public BlockPos? Principal { get; private set; }
@@ -59,6 +84,7 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
     _drainFitting = props["drainFitting"].AsBool(_drainFitting);
     _solidifiesWhenCold = props["solidifies"].AsBool(_solidifiesWhenCold);
     _cooldownSpeed = props["cooldownSpeed"].AsFloat(_cooldownSpeed);
+    _keyPrefix = props["key"].AsString(_keyPrefix);
   }
 
   /// <inheritdoc/>
@@ -92,25 +118,31 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   public float CellTemperature => _cellTemperature;
 
   /// <inheritdoc/>
-  public int MaxUnitCapacity => _patternCapacity ?? _capacity;
+  public int MaxUnitCapacity => _runtimeCapacity ?? _capacity;
 
   /// <summary>
-  /// Overrides this cell's capacity at runtime from a rammed mold pattern's spec. Wins over the declared
-  /// and config capacity until <see cref="ClearCapacity"/> is called (on shake-out). The caller guards
-  /// against changing capacity while metal is present.
+  /// Overrides this cell's capacity at runtime. Wins over the declared and config capacity until
+  /// <see cref="ClearCapacity"/> is called. The caller guards against changing capacity while metal is
+  /// present.
+  /// <para>
+  /// Two callers, and they are not the same kind of thing: a mold rammed into a casting cell sets the
+  /// capacity from the pattern's spec (cleared on shake-out), and a furnace hearth sets it from its band
+  /// height times the footprint the player built. The override is deliberately generic - do not describe
+  /// it as "the pattern capacity" again.
+  /// </para>
   /// </summary>
   public void SetCapacity(int capacity)
   {
-    _patternCapacity = capacity > 0 ? capacity : null;
+    _runtimeCapacity = capacity > 0 ? capacity : null;
     Blockentity.MarkDirty();
   }
 
-  /// <summary>Drops the pattern capacity override, reverting to the declared/config capacity.</summary>
+  /// <summary>Drops the runtime capacity override, reverting to the declared/config capacity.</summary>
   public void ClearCapacity()
   {
-    if (_patternCapacity == null)
+    if (_runtimeCapacity == null)
       return;
-    _patternCapacity = null;
+    _runtimeCapacity = null;
     Blockentity.MarkDirty();
   }
 
@@ -342,17 +374,25 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   #endregion
 
   #region Serialization (behaviour keys are prefixed to share the BE tree)
+
+  /// <summary>
+  /// This cell's tree-key prefix - <see cref="DefaultKeyPrefix"/> unless the declaration sets
+  /// <c>key</c>. It is what lets two cells share one block entity's tree; see
+  /// <see cref="Blocks.Structures.MoltenCellHost.MoltenCell"/> for how a consumer addresses one.
+  /// </summary>
+  public string Key => _keyPrefix;
+
   public override void ToTreeAttributes(ITreeAttribute tree)
   {
     base.ToTreeAttributes(tree);
-    tree.SetInt("mc_amount", CellAmount);
-    tree.SetString("mc_type", CellMetalType);
-    tree.SetFloat("mc_temp", _cellTemperature);
-    tree.SetBool("mc_solid", Solidified);
-    if (_patternCapacity is { } cap)
-      tree.SetInt("mc_patcap", cap);
+    tree.SetInt(_keyPrefix + "amount", CellAmount);
+    tree.SetString(_keyPrefix + "type", CellMetalType);
+    tree.SetFloat(_keyPrefix + "temp", _cellTemperature);
+    tree.SetBool(_keyPrefix + "solid", Solidified);
+    if (_runtimeCapacity is { } cap)
+      tree.SetInt(_keyPrefix + "patcap", cap);
     else
-      tree.RemoveAttribute("mc_patcap");
+      tree.RemoveAttribute(_keyPrefix + "patcap");
   }
 
   public override void FromTreeAttributes(
@@ -361,11 +401,13 @@ public class BEBehaviorMoltenCell(BlockEntity blockentity)
   )
   {
     base.FromTreeAttributes(tree, worldForResolving);
-    CellAmount = tree.GetInt("mc_amount");
-    CellMetalType = tree.GetString("mc_type", "");
-    _cellTemperature = tree.GetFloat("mc_temp");
-    Solidified = tree.GetBool("mc_solid");
-    _patternCapacity = tree.HasAttribute("mc_patcap") ? tree.GetInt("mc_patcap") : null;
+    CellAmount = tree.GetInt(_keyPrefix + "amount");
+    CellMetalType = tree.GetString(_keyPrefix + "type", "");
+    _cellTemperature = tree.GetFloat(_keyPrefix + "temp");
+    Solidified = tree.GetBool(_keyPrefix + "solid");
+    _runtimeCapacity = tree.HasAttribute(_keyPrefix + "patcap")
+      ? tree.GetInt(_keyPrefix + "patcap")
+      : null;
     // _cellMetalStack rebuilt lazily server-side in EnsureMetalStack.
 
     // Invariant: an empty cell is never solidified (also scrubs phantom flags from old saves).

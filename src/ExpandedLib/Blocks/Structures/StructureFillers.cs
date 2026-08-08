@@ -46,9 +46,15 @@ public static class StructureFillers
   /// <summary>
   /// Asset code of the invisible filler block. <c>exlib</c> ships the one shared
   /// <c>structurefiller</c> block and points this at it; every dependent mod reuses it.
+  /// <para>
+  /// Taken from the generated table rather than spelled out. This code is written into the world for
+  /// <b>every footprint cell of every mega-block in all five mods</b>, so a literal here that drifts
+  /// from the definition would orphan every multiblock in every save - and a bare string is invisible
+  /// to the codegen drift test, which is the one thing that would otherwise catch it.
+  /// </para>
   /// </summary>
   public static AssetLocation FillerCode { get; set; } =
-    new("exlib:structurefiller");
+    new(ExlibBlocks.Structurefiller.Code);
 
   /// <summary>
   /// Parses an already-resolved <c>fillerOffsets</c> node (the principal's generated

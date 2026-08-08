@@ -25,7 +25,7 @@ public class DiagramRecipeDefinitions : IExRecipeDefProvider
             .Size(1, 2)
             .Ingredient("D", i => i.Item("iwex:diagram-molten-straight").Tool())
             .Ingredient("C", Cobble)
-            .OutputBlock("iwex:moltencanal-straight-{rock}-ns", 1)
+            .OutputBlock("iwex:molten-canal-straight-{rock}-ns", 1)
         )
         .Grid(r =>
           r.Name("Molten Canal (Bend, from diagram)")
@@ -33,7 +33,7 @@ public class DiagramRecipeDefinitions : IExRecipeDefProvider
             .Size(1, 2)
             .Ingredient("D", i => i.Item("iwex:diagram-molten-bend").Tool())
             .Ingredient("C", Cobble)
-            .OutputBlock("iwex:moltencanal-bend-{rock}-nw", 1)
+            .OutputBlock("iwex:molten-canal-bend-{rock}-nw", 1)
         ),
     ];
 }

@@ -161,7 +161,7 @@ public class ExRecipeCostsTests
     world.World.GridRecipes.Returns(
       new List<GridRecipe>
       {
-        GridRecipe("lpex:enginewatt-north", Ing("game:rod-iron", 8)),
+        GridRecipe("lpex:enginewatt-n", Ing("game:rod-iron", 8)),
       }
     );
 
@@ -187,7 +187,7 @@ public class ExRecipeCostsTests
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
     world.World.Blocks.Returns(
-      new List<Block> { RccBlock("lpex:enginewatt-north", props) }
+      new List<Block> { RccBlock("lpex:enginewatt-n", props) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -346,7 +346,7 @@ public class ExRecipeCostsTests
     var plate = Ing("game:metalplate-iron", 4);
     var rod = Ing("game:rod-iron", 8);
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", plate, rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", plate, rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -406,7 +406,7 @@ public class ExRecipeCostsTests
     var rod = Ing("game:rod-iron", 8);
     rod.ResolvedItemStack = new ItemStack { StackSize = 8 };
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -434,7 +434,7 @@ public class ExRecipeCostsTests
     {
       ["stages"] = new JArray { Stage("plate", 4), Stage("plate", 2) },
     };
-    var block = RccBlock("lpex:enginewatt-north", props);
+    var block = RccBlock("lpex:enginewatt-n", props);
     world.World.Blocks.Returns(new List<Block> { block });
 
     var cat = new Dictionary<string, RecipeCostEntry>
@@ -472,7 +472,7 @@ public class ExRecipeCostsTests
     var world = new TestWorld();
     var rod = Ing("game:rod-iron", 8);
     world.World.GridRecipes.Returns(
-      new List<GridRecipe> { GridRecipe("lpex:enginewatt-north", rod) }
+      new List<GridRecipe> { GridRecipe("lpex:enginewatt-n", rod) }
     );
 
     var cat = new Dictionary<string, RecipeCostEntry>

@@ -1,7 +1,16 @@
 {
-  "code": "moltenbarrel",
+  "code": "molten-barrel",
   "class": "iwex.BlockMoltenBarrel",
   "entityClass": "iwex.BlockEntityMoltenBarrel",
+  "variantgroups": [
+    {
+      "code": "construction",
+      "states": [
+        "plated",
+        "cast"
+      ]
+    }
+  ],
   "maxstacksize": 1,
   "storageFlags": 2,
   "blockmaterial": "Metal",
@@ -41,8 +50,13 @@
       "name": "UnstableFalling"
     }
   ],
-  "shape": {
-    "base": "iwex:molten/barrel"
+  "shapebytype": {
+    "*-plated": {
+      "base": "iwex:molten/barrel-plated"
+    },
+    "*-cast": {
+      "base": "iwex:molten/barrel-cast"
+    }
   },
   "sidesolid": {
     "all": false

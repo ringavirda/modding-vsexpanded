@@ -1,5 +1,5 @@
 {
-  "code": "flywheel",
+  "code": "mpenergy",
   "class": "iwex.BlockFlywheel",
   "entityClass": "iwex.BlockEntityFlywheel",
   "blockmaterial": "Metal",
@@ -11,13 +11,24 @@
   "attributes": {
     "handbook": {
       "groupBy": [
-        "flywheel-*"
+        "mpenergy-flywheel-*"
       ]
     }
   },
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
   "variantgroups": [
     {
       "code": "type",
+      "states": [
+        "flywheel"
+      ]
+    },
+    {
+      "code": "size",
       "states": [
         "normal",
         "large"

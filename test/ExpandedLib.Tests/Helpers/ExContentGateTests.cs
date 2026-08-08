@@ -9,8 +9,7 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// The generic content-gate mechanism a mod uses to disable registered content: hiding matching
-/// blocks/items from the creative inventory and handbook. (The recipe-removal helpers are thin
-/// RemoveAll wrappers over the game's recipe registries, which the headless harness can't stand up.)
+/// blocks/items from the creative inventory and handbook.
 /// </summary>
 public class ExContentGateTests
 {
@@ -26,7 +25,7 @@ public class ExContentGateTests
   {
     var world = new TestWorld();
     var target = Tabbed("smex:toolmold-blue-fired-plate");
-    var other = Tabbed("smex:toolmold-blue-fired-quadrod");
+    var other = Tabbed("smex:testblock-tabbed");
     world.World.Blocks.Returns(new List<Block> { target, other });
     world.World.Items.Returns(new List<Item>());
 
@@ -45,7 +44,7 @@ public class ExContentGateTests
   public void Hiding_returns_zero_when_nothing_matches()
   {
     var world = new TestWorld();
-    var block = Tabbed("smex:toolmold-blue-fired-quadrod");
+    var block = Tabbed("smex:testblock-tabbed");
     world.World.Blocks.Returns(new List<Block> { block });
     world.World.Items.Returns(new List<Item>());
 

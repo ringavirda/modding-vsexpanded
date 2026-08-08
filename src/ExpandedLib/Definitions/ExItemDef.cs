@@ -18,7 +18,7 @@ namespace ExpandedLib.Definitions;
 /// simpler schema than blocks (no collision/render/multiblock surface), so this is a lean sibling rather than
 /// a shared base - anything else is reachable through <see cref="Attribute"/> (a nested POCO/token) or
 /// <see cref="Raw"/> (an arbitrary token). Art stays in files: <see cref="Shape"/>/<see cref="Texture"/> take
-/// asset-file REFERENCES, never inline geometry.
+/// asset-file references, never inline geometry.
 /// </para>
 /// <para>
 /// <b>Numeric authoring note:</b> author model-transform decimals as <c>double</c> literals (the C# default
@@ -168,7 +168,7 @@ public sealed class ExItemDef : IExDef
   }
 
   /// <summary>Adds the item to both the <c>general</c> tab and this def's own mod tab with the same
-  /// <paramref name="selectors"/>, the second tab name DERIVED from the def's domain.</summary>
+  /// <paramref name="selectors"/>, the second tab name derived from the def's domain.</summary>
   public ExItemDef CreativeCommon(params string[] selectors) =>
     CreativeTab("general", selectors).CreativeTab(_domain, selectors);
 

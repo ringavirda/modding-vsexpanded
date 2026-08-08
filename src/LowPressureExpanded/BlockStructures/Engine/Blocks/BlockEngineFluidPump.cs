@@ -25,11 +25,11 @@ public partial class BlockEngineFluidPump
         .Create(domain, "enginefluidpump", "engine/fluidpump")
         .Class<BlockEngineFluidPump>()
         .EntityClass("lpex.BlockEntityEngineFluidPump")
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .EntityBehavior("Animatable")
         .Material(EnumBlockMaterial.Metal)
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .CreativeCommon("*-north")
+        .SideVariant()
+        .CreativeCommon("*-n")
         .ShapeByTypePerOrientation("lpex:engine/fluidpump")
         .NonSolid(),
     ];

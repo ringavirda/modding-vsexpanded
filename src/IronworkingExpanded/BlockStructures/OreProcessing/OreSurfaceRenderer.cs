@@ -7,7 +7,7 @@ namespace IronworkingExpanded.BlockStructures.OreProcessing;
 
 /// <summary>
 /// Draws the flat top surface of the granular charge (crushed ore / flux / coke / finished burden)
-/// heaped inside an ore bunker or mixer. One opaque, ore-textured quad spans the vessel's interior
+/// heaped inside a burdenmaker's hoppers or basin. One opaque, ore-textured quad spans the vessel's interior
 /// footprint; its height rises with how full the vessel is, interpolating between an empty floor line
 /// (<see cref="_yMin"/>) and a brim-full line (<see cref="_yMax"/>). A <see cref="Fill"/> of zero hides
 /// the surface entirely, so an empty vessel shows nothing.

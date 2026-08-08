@@ -229,7 +229,7 @@ public class MetalFamilyEmitterTests
   [Fact]
   public void Cast_iron_tools_are_brittle_gold_tier_durability()
   {
-    // The user's chosen balance: cast iron makes tools, but they SHATTER (gold-tier ~150 durability, far
+    // The user's chosen balance: cast iron makes tools, but they shatter (gold-tier ~150 durability, far
     // below an iron pick's 1000) - emergent brittleness rather than a hard mold gate.
     List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
 
@@ -400,8 +400,8 @@ public class MetalFamilyEmitterTests
   [Fact]
   public void Every_non_ingot_form_smelts_back_to_the_metals_own_ingot()
   {
-    // Plates/rods/nails/bits recover the ALLOY, not vanilla iron - the melt loop stays in-metal. Tools
-    // carry no combustibleProps, so scope this to the non-ingot RESOURCE forms.
+    // Plates/rods/nails/bits recover the alloy, not vanilla iron - the melt loop stays in-metal. Tools
+    // carry no combustibleProps, so scope this to the non-ingot resource forms.
     foreach (
       ExItemDef def in Resources(Emit(Shipped("iwex", "castiron")))
         .Where(d => d.Code != "ingot-castiron")

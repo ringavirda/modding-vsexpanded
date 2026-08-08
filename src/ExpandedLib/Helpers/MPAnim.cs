@@ -39,7 +39,7 @@ public static class MPAnim
 
   /// <summary>
   /// Maps a network rotation angle <em>directly</em> to a cyclic animation frame, so a driven part
-  /// stays phase-locked to the axle's ABSOLUTE angle (it lines up with the axle, not merely spins at
+  /// stays phase-locked to the axle's absolute angle (it lines up with the axle, not merely spins at
   /// the same rate) and loops seamlessly. Angle <c>0..2π</c> maps onto frame <c>0..(totalFrames-1)</c>
   /// and wraps at <c>2π</c>; because a full-turn animation's first and last keyframes are the same
   /// orientation, the wrap is invisible. Use this for a part that should align with the axle (e.g. a

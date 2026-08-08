@@ -1,4 +1,5 @@
 using System.Text;
+using ExpandedLib;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Client;
@@ -17,7 +18,7 @@ namespace SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityHeatSink : BlockEntity
 {
-  private float _temperature = 20f;
+  private float _temperature = ExlibValues.AmbientTemperature;
 
   /// <summary>Current heat-sink temperature (°C); changing it re-lights the block when the glow level shifts.</summary>
   public float Temperature

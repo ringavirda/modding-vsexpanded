@@ -1,0 +1,78 @@
+{
+  "code": "mpenergy",
+  "class": "iwex.BlockCastIronShaft",
+  "entityClass": "iwex.BlockEntityCastIronShaft",
+  "blockmaterial": "Metal",
+  "sounds": {
+    "walk": "game:walk/metal",
+    "place": "game:block/anvil"
+  },
+  "maxstacksize": 64,
+  "attributes": {
+    "handbook": {
+      "groupBy": [
+        "mpenergy-shaft-*"
+      ]
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "shaft"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we",
+        "ud"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-ns": {
+      "base": "iwex:mpenergy/shaft",
+      "rotateY": 0
+    },
+    "*-we": {
+      "base": "iwex:mpenergy/shaft",
+      "rotateY": 90
+    },
+    "*-ud": {
+      "base": "iwex:mpenergy/shaft",
+      "rotateX": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-ns"
+    ],
+    "iwex": [
+      "*-ns"
+    ]
+  },
+  "collisionbox": {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.0,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 1.0
+  },
+  "selectionbox": {
+    "x1": 0.3125,
+    "y1": 0.3125,
+    "z1": 0.0,
+    "x2": 0.6875,
+    "y2": 0.6875,
+    "z2": 1.0
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

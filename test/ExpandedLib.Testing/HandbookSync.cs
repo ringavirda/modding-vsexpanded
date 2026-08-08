@@ -212,8 +212,8 @@ public static class HandbookSync
     return changed;
   }
 
-  // The converter array is passed EXPLICITLY, and that is the whole point of this helper. The suite
-  // compiles against one Newtonsoft and loads the GAME's at runtime; where the two disagree, the
+  // The converter array is passed explicitly, and that is the whole point of this helper. The suite
+  // compiles against one Newtonsoft and loads the game's at runtime; where the two disagree, the
   // compiler binds the convenience overload (`ToString(Formatting)`, `WriteTo(JsonWriter)`) and the
   // runtime has only the `params JsonConverter[]` form, so the call throws MissingMethodException.
   // Nothing catches that until the write path actually runs - which, for a one-shot re-bless switch,

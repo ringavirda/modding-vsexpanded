@@ -37,6 +37,11 @@ public class MpEnergyNetworkState
   /// <summary>Power drawn from the run this tick, <c>P = τ_load·ω</c> in <b>watts</b> — for display.</summary>
   public float DemandPower { get; set; }
 
+  /// <summary>Which way the run turns. <see cref="Speed"/> stays unsigned because the torque balance is all
+  /// magnitudes; direction rides alongside for the machines whose geometry depends on it (see
+  /// <see cref="IMpEnergyDirection"/>).</summary>
+  public bool Reversed { get; set; }
+
   /// <summary>Reservoir capacity <c>E_cap = ½·I·ω_max²</c> in joules for the given inertia and burst speed.
   /// Storage contributes <em>inertia</em>; capacity is derived, so a full reservoir is exactly a flywheel
   /// spinning at <c>maxSpeed</c> (the large wheel's larger <c>I</c> is why it stores ~15× the normal one).</summary>
@@ -123,10 +128,4 @@ public class MpEnergyNetworkState
     south.StoredEnergy = EnergyAtSpeed(south.Inertia, omegaSouth);
     north.StoredEnergy = EnergyAtSpeed(north.Inertia, omegaNorth);
   }
-
-  /// <summary>Whether the reservoir is at (or past) its burst speed — a full reservoir the governor is failing
-  /// to hold back. With the <see cref="Step"/> clamp ω ≤ maxSpeed this is just "spun up to the ceiling"; a
-  /// destructive burst only returns with an explicit governor-failure mechanic (not modelled).</summary>
-  public static bool IsOverSpeed(MpEnergyNetworkState s, float maxSpeed) =>
-    s.Inertia > 0f && s.Speed >= maxSpeed - 1e-4f;
 }

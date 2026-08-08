@@ -7,7 +7,7 @@ namespace IronworkingExpanded.Recipes.Grid;
 
 /// <summary>
 /// Code-first grid recipes for iwex's molten-metal handling (migrated from
-/// recipes/grid/{moltenbarrel,moltencanal}.json): the molten barrel, and the canal network's six shapes in
+/// recipes/grid/{molten-barrel,molten-canal}.json): the molten barrel, and the canal network's six shapes in
 /// each of their three materials plus the tap.
 /// <para>
 /// Every canal shape is craftable from cobblestone (a 20-rock capture) OR a coloured running-brick (a
@@ -26,24 +26,24 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
       .Create(domain, "grid", "moltenbarrel")
       // Fabricated route: plates hammered over a fire-clay lining, nailed shut.
       .Grid(r =>
-        r.Name("Molten Barrel (Bolted)")
+        r.Name("Molten Barrel (Plated)")
           .Pattern("PHP,PCP,PNP")
           .Size(3, 3)
           .Ingredient("P", Plate(1))
           .Ingredient("C", FireClay(4))
           .Ingredient("N", Nails(4))
           .Ingredient("H", Hammer)
-          .OutputBlock("iwex:moltenbarrel-bolted")
+          .OutputBlock("iwex:molten-barrel-plated")
       )
       // Cast route: line a sand-cast cast-barrel blank with fire clay (the vessel's "finish the casting").
-      // Cheaper in bulk than the bolted craft - one blank replaces the six plates and the nails.
+      // Cheaper in bulk than the plated craft - one blank replaces the six plates and the nails.
       .Grid(r =>
         r.Name("Molten Barrel (Cast, lined)")
           .Pattern("BC")
           .Size(2, 1)
           .Ingredient("B", i => i.Item("iwex:cast-barrel").Quantity(1))
           .Ingredient("C", FireClay(4))
-          .OutputBlock("iwex:moltenbarrel-cast")
+          .OutputBlock("iwex:molten-barrel-cast")
       );
 
   private static ExRecipeDef MoltenCanal(string domain) =>
@@ -58,7 +58,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-straight-{rock}-ns", 1)
+          .OutputBlock("iwex:molten-canal-straight-{rock}-ns", 1)
       )
       .Grid(r =>
         Fhk(
@@ -68,7 +68,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-bend-{rock}-nw", 1)
+          .OutputBlock("iwex:molten-canal-bend-{rock}-nw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -78,7 +78,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-tjunction-{rock}-esw", 1)
+          .OutputBlock("iwex:molten-canal-tjunction-{rock}-esw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -88,7 +88,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-xjunction-{rock}-nswe", 1)
+          .OutputBlock("iwex:molten-canal-xjunction-{rock}-nswe", 1)
       )
       .Grid(r =>
         Fhk(
@@ -98,7 +98,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-start-{rock}-s", 1)
+          .OutputBlock("iwex:molten-canal-start-{rock}-s", 1)
       )
       .Grid(r =>
         Fhk(
@@ -108,11 +108,11 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("C", Cobble),
             2
           )
-          .OutputBlock("iwex:moltencanal-moldpedestal-{rock}-s", 1)
+          .OutputBlock("iwex:molten-canal-moldpedestal-{rock}-s", 1)
       )
       .Grid(r =>
         Fhk(r.Name("Molten Canal (Tap)").Pattern("HFK").Size(3, 1), 4)
-          .OutputBlock("iwex:moltencanal-tap-s", 1)
+          .OutputBlock("iwex:molten-canal-tap-s", 1)
       )
       // coloured running-brick + fire-brick pairs
       .Grid(r =>
@@ -123,7 +123,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-straight-{brick}-ns", 1)
+          .OutputBlock("iwex:molten-canal-straight-{brick}-ns", 1)
       )
       .Grid(r =>
         Fhk(
@@ -133,7 +133,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-straight-fire-ns", 1)
+          .OutputBlock("iwex:molten-canal-straight-fire-ns", 1)
       )
       .Grid(r =>
         Fhk(
@@ -143,7 +143,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-bend-{brick}-nw", 1)
+          .OutputBlock("iwex:molten-canal-bend-{brick}-nw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -153,7 +153,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-bend-fire-nw", 1)
+          .OutputBlock("iwex:molten-canal-bend-fire-nw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -163,7 +163,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-tjunction-{brick}-esw", 1)
+          .OutputBlock("iwex:molten-canal-tjunction-{brick}-esw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -173,7 +173,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-tjunction-fire-esw", 1)
+          .OutputBlock("iwex:molten-canal-tjunction-fire-esw", 1)
       )
       .Grid(r =>
         Fhk(
@@ -183,7 +183,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-xjunction-{brick}-nswe", 1)
+          .OutputBlock("iwex:molten-canal-xjunction-{brick}-nswe", 1)
       )
       .Grid(r =>
         Fhk(
@@ -193,7 +193,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-xjunction-fire-nswe", 1)
+          .OutputBlock("iwex:molten-canal-xjunction-fire-nswe", 1)
       )
       .Grid(r =>
         Fhk(
@@ -203,7 +203,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-start-{brick}-s", 1)
+          .OutputBlock("iwex:molten-canal-start-{brick}-s", 1)
       )
       .Grid(r =>
         Fhk(
@@ -213,7 +213,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-start-fire-s", 1)
+          .OutputBlock("iwex:molten-canal-start-fire-s", 1)
       )
       .Grid(r =>
         Fhk(
@@ -223,7 +223,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", RunningBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-moldpedestal-{brick}-s", 1)
+          .OutputBlock("iwex:molten-canal-moldpedestal-{brick}-s", 1)
       )
       .Grid(r =>
         Fhk(
@@ -233,7 +233,7 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider
               .Ingredient("B", FireBrick),
             2
           )
-          .OutputBlock("iwex:moltencanal-moldpedestal-fire-s", 1)
+          .OutputBlock("iwex:molten-canal-moldpedestal-fire-s", 1)
       );
 
   // The Fhk (fire-clay + hammer + chisel) trio, the coloured RunningBrick / FireBrick captures, and the

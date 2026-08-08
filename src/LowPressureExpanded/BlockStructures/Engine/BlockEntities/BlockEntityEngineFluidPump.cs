@@ -1,3 +1,4 @@
+using ExpandedLib;
 using ExpandedLib.Networks;
 using System;
 using ExpandedLib.Helpers;
@@ -50,9 +51,14 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine
     float move = Math.Min(amount, FluidPumpCore.OutputFreeCapacity(leftNet));
     float drawn = bottomNet?.TryConsumeLiquid(move, ba) ?? 0f;
     if (drawn > 0f)
-      leftNet?.TryProduceLiquid(drawn, 20f, pressure, ba);
+      leftNet?.TryProduceLiquid(
+        drawn,
+        ExlibValues.AmbientTemperature,
+        pressure,
+        ba
+      );
 
-    intake.ProduceWater(amount, 20f, ba);
+    intake.ProduceWater(amount, ExlibValues.AmbientTemperature, ba);
   }
 
   /// <summary>Updates the synced water-drawing flag, syncing to clients only on change.</summary>

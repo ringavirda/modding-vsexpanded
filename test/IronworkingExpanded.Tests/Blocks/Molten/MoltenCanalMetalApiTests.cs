@@ -318,7 +318,7 @@ public class MoltenCanalMetalApiTests
     Assert.False(be.Solidified);
     Assert.True(be.IsCellEmpty);
 
-    // Refill the chiselled cell: it must accept fresh molten metal at the NEW pour's temperature
+    // Refill the chiselled cell: it must accept fresh molten metal at the new pour's temperature
     // (no blend with the cleared plug's residue) and rejoin the network.
     int accepted = be.PushMetal(20, Metal(world, Iron, 1450f), world.World);
 
@@ -328,7 +328,7 @@ public class MoltenCanalMetalApiTests
     Assert.True(be.HasMoltenMetal);
   }
 
-  // A chiselled cell may even be repurposed for a DIFFERENT metal - the type guard keys off the live
+  // A chiselled cell may even be repurposed for a different metal - the type guard keys off the live
   // cell content, which the chisel cleared, so the old type must not linger and reject the new pour.
   [Fact]
   public void A_chiselled_out_cell_accepts_a_different_metal()

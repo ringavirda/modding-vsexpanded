@@ -8,7 +8,7 @@ namespace IronworkingExpanded.Tests;
 
 /// <summary>
 /// Pins the shipped pig-iron metal descriptor (<c>assets/iwex/config/metals/pigiron.json</c>): the blast
-/// furnace's cast target and the converter's feedstock. Pig iron is a FEEDSTOCK - solid ingot form only,
+/// furnace's cast target and the converter's feedstock. Pig iron is a feedstock - solid ingot form only,
 /// no tools - and recovers as the shared vanilla iron scrap rather than a per-metal bit. A typo in the
 /// shipped JSON binds silently to null and would surface only in-game; this catches it headless.
 /// </summary>

@@ -3,7 +3,7 @@
   "maxstacksize": 64,
   "textures": {
     "all": {
-      "base": "game:block/stone/gravel/phyllite"
+      "base": "iwex:block/slag/slag"
     }
   },
   "creativeinventory": {

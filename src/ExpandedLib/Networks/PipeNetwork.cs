@@ -123,7 +123,14 @@ public class PipeNetwork : BlockNetwork
       ceilingPressure = Math.Min(ceilingPressure, 1f);
 
     float ceiling = ceilingPressure * State.MaxVolume;
-    float actualVolume = Math.Min(volume, ceiling - State.Volume);
+    // Two independent bounds: headroom (how much the run can hold at this pressure) and throughput
+    // (how much the weakest segment will pass this second). With the first alone, a single pipe
+    // would implicitly pass burst x LitresPerPipe - ~75 L/s on the plated tier, above every line in
+    // the mod - and the pipe would be a pool with no rate meaning at all.
+    float actualVolume = Math.Min(
+      Math.Min(volume, ceiling - State.Volume),
+      PerCallLimit(blockAccessor)
+    );
 
     if (actualVolume > 0 || State.Volume <= 0)
     {
@@ -205,7 +212,12 @@ public class PipeNetwork : BlockNetwork
     if (State == null || State.IsLiquid)
       return 0f;
 
-    float available = Math.Min(requestedVolume, State.Volume);
+    // Two bounds again: what the pool holds and what the weakest segment will pass this second.
+    // Without the second, a consumer asking for a million litres drained the whole run in one call.
+    float available = Math.Min(
+      Math.Min(requestedVolume, State.Volume),
+      PerCallLimit(blockAccessor)
+    );
     if (available > 0)
     {
       State.Volume -= available;
@@ -247,7 +259,11 @@ public class PipeNetwork : BlockNetwork
     // line is brim-full (below that the pressure tracks the fill ratio).
     State.FeedPressure = setPressure;
 
-    float actual = Math.Min(volume, State.MaxVolume - State.Volume);
+    // Headroom and throughput, the same pair the gas side takes.
+    float actual = Math.Min(
+      Math.Min(volume, State.MaxVolume - State.Volume),
+      PerCallLimit(blockAccessor)
+    );
     if (actual <= 0f)
     {
       // Already brim-full - no more water fits, but keep the pressure in step with the
@@ -305,7 +321,10 @@ public class PipeNetwork : BlockNetwork
     if (State == null || !State.IsLiquid)
       return 0f;
 
-    float available = Math.Min(requestedVolume, State.Volume);
+    float available = Math.Min(
+      Math.Min(requestedVolume, State.Volume),
+      PerCallLimit(blockAccessor)
+    );
     if (available > 0)
     {
       State.Volume -= available;
@@ -495,6 +514,7 @@ public class PipeNetwork : BlockNetwork
     _producedAccum = 0f;
     _consumedAccum = 0f;
     _minBurstCache = null;
+    _minThroughputCache = null;
 
     if (State == null)
       return;
@@ -514,7 +534,7 @@ public class PipeNetwork : BlockNetwork
     ApplyLeakLoss(dt, state, pass);
     ApplyEvaporation(manager, state, pass);
     RepressureAfterVentLeak(state, pass);
-    ApplyPassiveCooling(state, pass);
+    ApplyPassiveCooling(state, pass, dt);
     ClearIfEmptyAndIdle(state, pass);
 
     if (pass.Changed)
@@ -562,7 +582,7 @@ public class PipeNetwork : BlockNetwork
   }
 
   /// <summary>Particle density for any open-end leaks this tick, scaled by the network-total leak
-  /// rate (NOT the opening count): gas wisps ramp over 1→8 L/s, water spray over 1→5 L/s.</summary>
+  /// rate (not the opening count): gas wisps ramp over 1→8 L/s, water spray over 1→5 L/s.</summary>
   private void ComputeLeakFractions(PipeNetworkState state, TickPass pass)
   {
     float gasLeakRate = Math.Min(
@@ -578,7 +598,7 @@ public class PipeNetwork : BlockNetwork
   }
 
   /// <summary>
-  /// Single pass over the nodes: detect and classify open connectors - a chimney on the TOP connector
+  /// Single pass over the nodes: detect and classify open connectors - a chimney on the top connector
   /// of a passthrough/outlet is a gas vent (not a leak), an air-exposed end is a leak - counting the
   /// consumers, firing each leaking node's spray/open-connector hooks, and refreshing the openings count.
   /// </summary>
@@ -612,7 +632,7 @@ public class PipeNetwork : BlockNetwork
         BlockFacing face = openFaces[i];
         BlockPos nPos = pos.AddCopy(face);
         Block neighbour = blockAccessor.GetBlock(nPos);
-        // A vent (e.g. a chimney on the open TOP connector) draws gas away rather than leaking it -
+        // A vent (e.g. a chimney on the open top connector) draws gas away rather than leaking it -
         // the content mod's strategy decides. A vent face is not counted as a leak.
         if (
           _vent != null
@@ -676,7 +696,7 @@ public class PipeNetwork : BlockNetwork
     }
   }
 
-  /// <summary>Leak loss: a gas leak is pressure relief (a small FIXED rate regardless of open-end
+  /// <summary>Leak loss: a gas leak is pressure relief (a small fixed rate regardless of open-end
   /// count, so bulk venting needs a chimney/stack); a water leak drains at a fixed rate.</summary>
   private void ApplyLeakLoss(float dt, PipeNetworkState state, TickPass pass)
   {
@@ -693,8 +713,9 @@ public class PipeNetwork : BlockNetwork
       {
         float lost = Math.Min(state.Volume, ExlibValues.GasLeakRate);
         state.Volume -= lost;
-        if (state.Temperature > 20f)
-          state.Temperature = Math.Max(20f, state.Temperature - 5.0f);
+        float ambient = ExlibValues.PipeAmbientTemperature;
+        if (state.Temperature > ambient)
+          state.Temperature = Math.Max(ambient, state.Temperature - 5.0f);
       }
       pass.Changed = true;
     }
@@ -738,22 +759,46 @@ public class PipeNetwork : BlockNetwork
       );
   }
 
-  /// <summary>Passive cooling of an idle gas run (no consumers drawing it).</summary>
-  private void ApplyPassiveCooling(PipeNetworkState state, TickPass pass)
+  /// <summary>
+  /// Passive cooling: a gas run sheds heat toward ambient, always.
+  /// <para>
+  /// Caution: do not gate this on <c>pass.Consumers == 0</c> ("only an idle run cools").
+  /// <c>Consumers</c> is incremented once per node whose BE is an <see cref="IPipeNode"/>
+  /// (<see cref="ClassifyOpenings"/>), i.e. once per <b>pipe segment</b>, so that guard is
+  /// unsatisfiable on any run that contains a pipe, and a hot main would hold its temperature for
+  /// ever.
+  /// </para>
+  /// <para>
+  /// That would not be a cosmetic bug: <c>gas-system.md</c> prices buffering in heat - <i>"stored gas
+  /// comes out cold; smoothness or temperature, never both"</i> - and a run that never cools is a
+  /// gasholder that dodges the price, making the holder block strictly worse than ordinary pipe at
+  /// its own job.
+  /// </para>
+  /// <para>
+  /// There is deliberately <b>no idle condition</b>. A live line is fed hot gas every second and the
+  /// volume-weighted blend in <see cref="TryProduceGas"/> pulls its average straight back up, so "flowing
+  /// stays hot" is emergent rather than special-cased - and a longer main is harder to keep hot, because
+  /// the injected litres are a smaller fraction of a bigger pool.
+  /// </para>
+  /// </summary>
+  private void ApplyPassiveCooling(
+    PipeNetworkState state,
+    TickPass pass,
+    float dt
+  )
   {
-    if (
-      !pass.Liquid
-      && state.Volume > 0
-      && state.Temperature > 20f
-      && pass.Consumers == 0
-    )
-    {
-      state.Temperature = Math.Max(20f, state.Temperature - 2.0f);
-      pass.Changed = true;
-    }
+    float ambient = ExlibValues.PipeAmbientTemperature;
+    if (pass.Liquid || state.Volume <= 0 || state.Temperature <= ambient)
+      return;
+
+    state.Temperature = Math.Max(
+      ambient,
+      state.Temperature - ExlibValues.PipeGasCoolPerSecond * dt
+    );
+    pass.Changed = true;
   }
 
-  /// <summary>Clears empty state only once drained AND idle for a few seconds, so a push-and-drain
+  /// <summary>Clears empty state only once drained and idle for a few seconds, so a push-and-drain
   /// water line (near 0 L while busy) keeps its "Water" label instead of flickering.</summary>
   private void ClearIfEmptyAndIdle(PipeNetworkState state, TickPass pass)
   {
@@ -826,11 +871,51 @@ public class PipeNetwork : BlockNetwork
   // (invalidated via OnTopologyChanged) plus a once-per-tick refresh in OnTick.
   private float? _minBurstCache;
 
+  // Same shape, same lifetime, same invalidation as the burst cache above.
+  private float? _minThroughputCache;
+
   /// <summary>Drops topology-derived caches when the manager changes the node set.</summary>
   public override void OnTopologyChanged()
   {
     _minBurstCache = null;
+    _minThroughputCache = null;
   }
+
+  /// <summary>The smallest throughput (L/s) across the run - the weakest-link rule, exactly as
+  /// <see cref="MinBurstPressure"/> works. <see cref="float.MaxValue"/> when the run holds no
+  /// throughput-limited blocks (e.g. only machine ports), which leaves it uncapped.</summary>
+  private float MinThroughput(IBlockAccessor world) =>
+    _minThroughputCache ??= ComputeMinThroughput(world);
+
+  private float ComputeMinThroughput(IBlockAccessor world)
+  {
+    float min = float.MaxValue;
+    foreach (var pos in Nodes)
+      if (world.GetBlock(pos) is IThroughputLimitedPipe p)
+        min = Math.Min(min, p.MaxThroughput);
+    return min;
+  }
+
+  /// <summary>
+  /// The most one call may move, given the run's weakest segment. Callers push/draw once per their own
+  /// tick with <c>rate * dt</c>, and the manager ticks at a fixed 1000 ms, so a per-call litre clamp is a
+  /// litres-per-second rate without threading <c>dt</c> through the six pool entry points.
+  /// <para>
+  /// <b>Deliberately stateless - it does not accumulate across callers within a tick.</b> The first
+  /// implementation kept a per-tick budget refilled in <see cref="OnTick"/>, which was more accurate when
+  /// it worked and silently wrong when it did not: any caller driving a machine's own tick <i>without</i>
+  /// pumping the network tick - which every furnace scenario fixture does - never refilled the budget, so
+  /// a per-second rate quietly became a one-shot allowance for the whole run and twelve scenarios failed
+  /// for a reason that looked like calibration. A rate that is only correct when something else remembers
+  /// to tick is the silent-failure shape this codebase keeps paying for.
+  /// </para>
+  /// <para>
+  /// <b>What this therefore does not model:</b> two producers on one run can each move a full segment's
+  /// worth in the same second. With one producer and one consumer per run - every shipped layout - it is
+  /// exact. Revisit only alongside a clock the pool owns, never by re-coupling to an external tick.
+  /// </para>
+  /// </summary>
+  private float PerCallLimit(IBlockAccessor world) => MinThroughput(world);
 
   /// <summary>The weakest pipe's burst pressure (atm) across the whole run - the rating
   /// that caps how far the gas pool can be pressurised. <see cref="float.MaxValue"/> when

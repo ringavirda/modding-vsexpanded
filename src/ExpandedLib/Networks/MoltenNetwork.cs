@@ -190,7 +190,10 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
       )
         continue;
 
-      foreach (var face in BlockFacing.HORIZONTALS)
+      // ALLFACES, not HORIZONTALS: the graph joins vertical neighbours, so a run that steps down a level was
+      // in one network yet never exchanged any metal - the two halves just sat there. HasConnectorAt still
+      // gates every face, so this only enables flow where a connector actually exists.
+      foreach (var face in BlockFacing.ALLFACES)
       {
         if (!aNode.HasConnectorAt(face))
           continue;
@@ -202,6 +205,20 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
         var b = (Pos: npos, Cell: bCell);
         if (b.Cell.Sealed || b.Cell.Solidified)
           continue;
+
+        // A vertical edge is downhill only - molten metal runs down a launder, it never climbs. So it is
+        // driven from the upper cell (face DOWN) and the reverse face is skipped outright, rather than going
+        // through the distance ordering that decides horizontal edges: a level-seeking vertical edge would
+        // pump metal uphill. A full lower cell simply backs the upper one up, which is exactly the
+        // back-pressure the rest of the canal model already relies on.
+        if (face.Axis == EnumAxis.Y)
+        {
+          if (face != BlockFacing.DOWN)
+            continue;
+          FlowEdge(a.Cell, b.Cell, maxFlow, world, downhillOnly: true);
+          continue;
+        }
+
         // Drive each undirected edge exactly once, from the cell farther from
         // the source (ties broken by position).
         if (CompareFlowOrder(a, b, distFromStart) >= 0)
@@ -216,12 +233,21 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
       c.Cell.UpdateThermal(world);
   }
 
-  /// <summary>Moves metal across one connection toward equal fill ratio, capped at <paramref name="maxFlow"/> units.</summary>
+  /// <summary>
+  /// Moves metal across one connection toward an equal <b>amount</b>, capped at <paramref name="maxFlow"/>
+  /// units. Deliberately amount, not fill <em>ratio</em>. Whether differently-sized cells (canal vs
+  /// bed vs long cell) should level by ratio instead is a live tuning question, not a bug.
+  /// <para>
+  /// <paramref name="downhillOnly"/> makes the edge one-way from <paramref name="aNode"/>: used for vertical
+  /// edges, where levelling in both directions would pump metal uphill.
+  /// </para>
+  /// </summary>
   private static void FlowEdge(
     IMoltenCell aNode,
     IMoltenCell bNode,
     int maxFlow,
-    IWorldAccessor world
+    IWorldAccessor world,
+    bool downhillOnly = false
   )
   {
     var aCap = aNode.MaxUnitCapacity;
@@ -234,6 +260,10 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
       return;
 
     bool aIsGiver = aNode.CellAmount > bNode.CellAmount;
+    // A downhill edge only ever runs one way. If the lower cell is the fuller one there is nothing to do -
+    // metal does not climb back up the launder.
+    if (downhillOnly && !aIsGiver)
+      return;
     IMoltenCell giver = aIsGiver ? aNode : bNode;
     IMoltenCell receiver = aIsGiver ? bNode : aNode;
     if (giver.CellAmount <= 0f)
@@ -246,13 +276,29 @@ public class MoltenNetwork(BlockNetworkModSystem system) : BlockNetwork(system)
     )
       return;
 
-    // Whole units only, never less than the minimum per tick - except into a drain fitting
-    // (pedestal/tap), which takes the final sub-minimum dregs so a run can empty completely.
-    var transfer = diff > maxFlow ? maxFlow : diff;
-    if (
-      transfer < ExlibValues.MoltenMinFlowAmount
-      && !receiver.AcceptsSubMinimumFlow
-    )
+    // Move half the difference, not all of it. Moving the whole difference overshoots the midpoint and
+    // swaps the two cells' levels outright - 100/80 becomes 80/100 - so a pair never settles and instead
+    // oscillates for as long as the run is alive. Half converges monotonically, which is what "flows toward
+    // level" is supposed to mean.
+    //
+    // Two exemptions keep their whole-difference behaviour, and both are one-way sinks rather than pairs
+    // levelling with each other: a drain fitting (pedestal/tap) is consuming the metal, and a downhill edge
+    // is pouring into the cell below. Halving those would strand dregs that have nowhere else to go.
+    //
+    // Whole units only, never less than the minimum per tick - except into a drain fitting, which takes the
+    // final sub-minimum dregs so a run can empty completely.
+    // Integer division floors, which is what keeps this to whole units and makes it terminate: the step
+    // decays 20 -> 10 -> 5 -> 2 -> 1 -> 0 and the edge goes quiet on its own once the pair is level.
+    var step = receiver.AcceptsSubMinimumFlow || downhillOnly ? diff : diff / 2;
+    var transfer = step > maxFlow ? maxFlow : step;
+
+    // No MoltenMinFlowAmount floor on a levelling edge, and that is deliberate. The floor exists to "stop
+    // sub-unit dribbles", but combined with halving it becomes a deadband of twice its own size: at a floor of
+    // 10 a pair 19 units apart would move nothing at all, forever, and a canal would quietly stop delivering
+    // partway along. Halving is the better dribble control because it is proportional - it decays to nothing
+    // by itself - so the floor has no work left to do here. It still applies to nothing else: the only other
+    // callers are one-way sinks, which were already exempt from it.
+    if (transfer <= 0)
       return;
 
     var accepted = receiver.PushMetalRaw(

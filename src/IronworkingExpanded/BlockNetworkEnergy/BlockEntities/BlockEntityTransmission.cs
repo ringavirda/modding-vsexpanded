@@ -52,7 +52,7 @@ public class BlockEntityTransmission : BlockEntityProductionMachine
   /// <summary>True once the player has finished the three construction stages.</summary>
   public bool IsConstructed => _animator?.IsConstructed ?? false;
 
-  private string Type => Block?.Variant["type"] ?? "x2";
+  private string Type => Block?.Variant["kind"] ?? "x2";
 
   /// <summary>The gear reduction S→N: the north (output) run turns at <c>ω_south / Ratio</c>. The clutch is a
   /// straight 1:1 coupling.</summary>

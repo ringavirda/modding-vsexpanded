@@ -6,7 +6,7 @@ namespace IronworkingExpanded.BlockStructures.Products;
 
 /// <summary>
 /// Code-first definitions for the slag-path decorative family (migrated from blocktypes/slagpath{,slab,stairs}.json).
-/// All three use VANILLA classes (path + slab = plain <c>Block</c>; stairs = <c>BlockStairs</c>), so there is no mod
+/// All three use vanilla classes (path + slab = plain <c>Block</c>; stairs = <c>BlockStairs</c>), so there is no mod
 /// block class to host <see cref="IExBlockDefProvider"/> — this dedicated provider carries them, discovered and
 /// registered under the iwex domain like any provider. They share a gravel-path surface (the 11-pebble scatter
 /// texture, the snow/free resistance + sound splits, the held-block animations, the road map colour) authored once
@@ -18,9 +18,10 @@ public class SlagPathDefinitions : IExBlockDefProvider
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Path(domain), Slab(domain), Stairs(domain)];
 
-  // The phyllite-gravel road texture: a base pebble1 overlay plus pebble2..11 as atlas alternates (the scatter
-  // that makes a laid path look non-repeating). Identical value in all three files (only the texture KEY differs:
-  // "all" for the full cube, "normal1" for the slab/stairs shapes).
+  // The slag-gravel road texture: a base pebble1 overlay plus pebble2..11 as atlas alternates (the scatter
+  // that makes a laid path look non-repeating). Identical value in all three files (only the texture key differs:
+  // "all" for the full cube, "normal1" for the slab/stairs shapes). The pebble overlays are vanilla's and stay
+  // - they are the scatter, not the material; only the base moved off phyllite onto slag's own texture.
   private static object RoadTexture()
   {
     var alternates = new List<object>();
@@ -28,13 +29,13 @@ public class SlagPathDefinitions : IExBlockDefProvider
       alternates.Add(
         new
         {
-          @base = "game:block/stone/gravel/phyllite",
+          @base = Items.SlagItemDefinitions.Texture,
           overlays = new[] { $"game:block/overlay/pebble{i}" },
         }
       );
     return new
     {
-      @base = "game:block/stone/gravel/phyllite",
+      @base = Items.SlagItemDefinitions.Texture,
       overlays = new[] { "game:block/overlay/pebble1" },
       alternates = alternates.ToArray(),
     };
@@ -46,7 +47,7 @@ public class SlagPathDefinitions : IExBlockDefProvider
       .Attribute("mapColorCode", "road")
       .Attribute(
         "inContainerTexture",
-        new { @base = "game:block/stone/gravel/phyllite" }
+        new { @base = Items.SlagItemDefinitions.Texture }
       )
       .RawByType("resistanceByType", "*-snow", 0.2)
       .RawByType("resistanceByType", "*-free", 2.4)
@@ -76,7 +77,7 @@ public class SlagPathDefinitions : IExBlockDefProvider
       .CreativeTab("iwex", selector);
 
   private static ExBlockDef Path(string domain) =>
-    PathTabs(Common(ExBlockDef.Create(domain, "slagpath")), "*-free")
+    PathTabs(Common(ExBlockDef.Create(domain, "slag-path", "slag/path")), "*-free")
       .Behavior("Lockable")
       .VariantGroup("cover", "free", "snow")
       .Attribute("liquidBarrierOnSides", new[] { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 })
@@ -88,10 +89,10 @@ public class SlagPathDefinitions : IExBlockDefProvider
       .SingleSelectionBox(0f, 0f, 0f, 1f, 0.9375f, 1f)
       .SingleCollisionBox(0f, 0f, 0f, 1f, 0.9375f, 1f)
       .TpHandTransform(-1.23, -0.91, -0.8, -2, 25, -78, 0.4)
-      .Drop("block", "slagpath-free");
+      .Drop("block", "slag-path-free");
 
   private static ExBlockDef Slab(string domain) =>
-    PathTabs(Common(ExBlockDef.Create(domain, "slagpathslab")), "*-free")
+    PathTabs(Common(ExBlockDef.Create(domain, "slag-pathslab", "slag/pathslab")), "*-free")
       .Behavior("Lockable")
       .VariantGroup("cover", "free", "snow")
       .Attribute("liquidBarrierOnSides", new[] { 0.5, 0.5, 0.5, 0.5 })
@@ -122,20 +123,20 @@ public class SlagPathDefinitions : IExBlockDefProvider
           scale = 0.4,
         }
       )
-      .Drop("block", "slagpathslab-free");
+      .Drop("block", "slag-pathslab-free");
 
   private static ExBlockDef Stairs(string domain)
   {
     const string free = "iwex:legacy/basic/stairs/stonepath-stairs-free";
     const string snow = "iwex:legacy/basic/stairs/stonepath-stairs-snow";
     return PathTabs(
-        Common(ExBlockDef.Create(domain, "slagpathstairs")),
+        Common(ExBlockDef.Create(domain, "slag-pathstairs", "slag/pathstairs")),
         "*-up-north-free"
       )
       .Class("BlockStairs")
       .Behavior(
         "WrenchOrientable",
-        new { baseCode = "slagpathstairs-up-*-{cover}" }
+        new { baseCode = "slag-pathstairs-up-*-{cover}" }
       )
       .VariantGroup("updown", "up")
       .VariantGroupFromProperties("game:abstract/horizontalorientation")
@@ -194,6 +195,6 @@ public class SlagPathDefinitions : IExBlockDefProvider
         }
       )
       .TpHandTransform(-1.23, -0.91, -0.8, -2, 25, -78, 0.4)
-      .Drop("block", "slagpathstairs-up-north-free");
+      .Drop("block", "slag-pathstairs-up-north-free");
   }
 }

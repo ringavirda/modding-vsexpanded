@@ -1,0 +1,72 @@
+{
+  "code": "casting-mold",
+  "class": "iwex.BlockCastMold",
+  "entityClass": "iwex.BlockEntityCastMold",
+  "blockmaterial": "Metal",
+  "resistance": 3.5,
+  "maxstacksize": 16,
+  "lightAbsorption": 0,
+  "variantgroups": [
+    {
+      "code": "tooltype",
+      "states": [
+        "ingot"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-ingot": {
+      "base": "iwex:molten/molds/ingot",
+      "rotateY": 90
+    }
+  },
+  "collisionbox": {
+    "x1": 0.0625,
+    "y1": 0.0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.125,
+    "z2": 0.9375
+  },
+  "selectionbox": {
+    "x1": 0.0625,
+    "y1": 0.0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.125,
+    "z2": 0.9375
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iwex": [
+      "*"
+    ]
+  },
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "attributesByType": {
+    "casting-mold-ingot": {
+      "requiredUnits": 100,
+      "fillHeight": 1,
+      "drops": [
+        {
+          "type": "item",
+          "code": "game:ingot-{metal}",
+          "quantity": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,8 +1,8 @@
 using System;
 using System.Text;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Renderers;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;

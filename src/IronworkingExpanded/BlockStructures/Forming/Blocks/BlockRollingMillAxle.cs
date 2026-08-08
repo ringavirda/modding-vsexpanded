@@ -13,7 +13,7 @@ namespace IronworkingExpanded.BlockStructures.Forming.Blocks;
 /// the drive line across the mill's three-cell footprint, so the machine connects on both shaft ends (drivable
 /// from either side, and stands chain on one line). It is not craftable - the mill places and clears it and
 /// reroutes its break/drops/pick to the principal, exactly as <c>BlockStructureFiller</c> does for a plain
-/// filler, but unlike a filler it IS a graph node (the network BFS only ever traverses
+/// filler, but unlike a filler it <b>is</b> a graph node (the network BFS only ever traverses
 /// <see cref="BlockNetworkNode"/> cells, so a filler could never bridge the axle).
 /// </summary>
 [BlockRegister]
@@ -29,7 +29,7 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "rollingmillaxle")
+        .Create(domain, "forming", "forming/millaxle")
         .Class<BlockRollingMillAxle>()
         .EntityClass<BlockEntityRollingMillAxle>()
         .HandbookExclude()
@@ -43,7 +43,7 @@ public partial class BlockRollingMillAxle : BlockNetworkNode, IExBlockDefProvide
         .NoDrops()
         .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
         .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f)
-        .VariantGroup("type", "shaft")
+        .VariantGroup("type", "millaxle")
         .VariantGroup("orientation", "ns", "we"),
     ];
 

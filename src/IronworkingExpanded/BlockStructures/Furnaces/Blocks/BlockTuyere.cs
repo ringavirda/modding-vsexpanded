@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
 
 namespace IronworkingExpanded.BlockStructures.Furnaces.Blocks;
@@ -19,7 +19,7 @@ public partial class BlockTuyere : BlockPipe, IExBlockDefProvider
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "tuyere", "furnaces/tuyere")
+        .Create(domain, BlockFurnaceCoreBase.FurnaceCode, "furnace/tuyere")
         .Class<BlockTuyere>()
         .EntityClass("iwex.BlockEntityTuyere")
         .Material(EnumBlockMaterial.Ceramic)
@@ -30,10 +30,10 @@ public partial class BlockTuyere : BlockPipe, IExBlockDefProvider
         .Behavior("Lockable")
         .VariantGroup("type", "tuyere")
         .VariantGroup("orientation", "s", "n", "w", "e")
-        .ShapeByType("*-s", "iwex:furnaces/tuyere", rotateY: 0)
-        .ShapeByType("*-e", "iwex:furnaces/tuyere", rotateY: 90)
-        .ShapeByType("*-n", "iwex:furnaces/tuyere", rotateY: 180)
-        .ShapeByType("*-w", "iwex:furnaces/tuyere", rotateY: -90)
+        .ShapeByType("*-s", "iwex:furnace/tuyere", rotateY: 0)
+        .ShapeByType("*-e", "iwex:furnace/tuyere", rotateY: 90)
+        .ShapeByType("*-n", "iwex:furnace/tuyere", rotateY: 180)
+        .ShapeByType("*-w", "iwex:furnace/tuyere", rotateY: -90)
         .CreativeCommon("*-s")
         .Replaceable(400)
         .Resistance(3.5f)

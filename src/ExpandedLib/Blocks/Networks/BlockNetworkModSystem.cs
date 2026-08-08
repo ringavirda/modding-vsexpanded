@@ -335,7 +335,7 @@ public class BlockNetworkModSystem : ModSystem
   private void OnServerTick(IBlockAccessor blockAccessor, float dt)
   {
     // Same catch-up clamp as the machine tick (BlockEntityProductionMachine): the network tick is a
-    // server-global listener that SURVIVES chunk unload, so a rejoin can deliver one huge dt that a
+    // server-global listener that survives chunk unload, so a rejoin can deliver one huge dt that a
     // network over-pressure grace timer (pipe burst) would leap in a single step. Cap at 2x the 1000ms
     // interval.
     dt = GameMath.Min(dt, 2f);

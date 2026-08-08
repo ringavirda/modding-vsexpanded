@@ -60,6 +60,9 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   /// <summary>Whether a barrel is parked under the tap.</summary>
   public bool IsBarrel { get; set; } = false;
 
+  /// <summary>The code of the parked barrel, so its construction variant survives park → detach.</summary>
+  public AssetLocation? BarrelCode { get; private set; }
+
   /// <summary>Metal stored in the parked barrel, or <c>null</c>.</summary>
   public ItemStack? BarrelMetalContent { get; private set; }
 
@@ -168,9 +171,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
 
     if (IsBarrel)
     {
-      contentBlock = capi.World.GetBlock(
-        new AssetLocation("iwex:moltenbarrel")
-      );
+      contentBlock = capi.World.GetBlock(ParkedBarrelCode);
       key = "barrel";
       content = BarrelMetalContent;
       currentUnits = BarrelCurrentUnits;
@@ -291,6 +292,12 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     BarrelMaxUnits =
       (barrelStack.Block as BlockMoltenBarrel)?.MaxUnits
       ?? IwexValues.BarrelDefaultMaxUnits;
+    // Remember which barrel, not just that one is parked. Rebuilding the block from the bare code
+    // `iwex:molten-barrel` fails: that code does not resolve now that the barrel carries a
+    // construction(plated|cast) group, so RemoveBarrel would hand back a null block and the render path
+    // would silently draw nothing. Even with a resolvable default, detaching would quietly turn a cast
+    // barrel into a plated one.
+    BarrelCode = barrelStack.Block?.Code?.Clone();
     IsBarrel = true;
     IsMold = false;
   }
@@ -299,9 +306,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
   public ItemStack RemoveBarrel()
   {
     IsBarrel = false;
-    var barrelBlock = Api.World.GetBlock(
-      new AssetLocation("iwex:moltenbarrel")
-    );
+    var barrelBlock = Api.World.GetBlock(ParkedBarrelCode);
     var stack = new ItemStack(barrelBlock);
     MoltenContents.Write(
       stack,
@@ -312,8 +317,18 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     BarrelMetalContent = null;
     BarrelCurrentUnits = 0;
     BarrelMaxUnits = IwexValues.BarrelDefaultMaxUnits;
+    BarrelCode = null;
     return stack;
   }
+
+  /// <summary>The code of the barrel actually parked here.
+  /// <para>
+  /// Falls back to the <b>plated</b> variant for a save written before the code was stored - plated
+  /// being the original fabricated barrel, matching the choice <c>BarrelConstructionMigration</c>
+  /// already makes for a variant-less legacy barrel.
+  /// </para></summary>
+  private AssetLocation ParkedBarrelCode =>
+    BarrelCode ?? new AssetLocation(IwexBlocks.MoltenBarrel.WithConstruction("plated"));
 
   #endregion
 
@@ -496,6 +511,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     tree.SetBool("isPouring", IsPouring);
 
     tree.SetBool("isBarrel", IsBarrel);
+    tree.SetString("barrelCode", BarrelCode?.ToString() ?? "");
     tree.SetItemstack("barrelContents", BarrelMetalContent);
     tree.SetInt("barrelCurrentUnits", BarrelCurrentUnits);
     tree.SetInt("barrelMaxUnits", BarrelMaxUnits);
@@ -518,6 +534,9 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal
     IsPouring = tree.GetBool("isPouring", true);
 
     IsBarrel = tree.GetBool("isBarrel");
+    // Empty for a save written before the code was stored; ParkedBarrelCode falls back to plated.
+    string savedBarrel = tree.GetString("barrelCode", "");
+    BarrelCode = savedBarrel.Length > 0 ? new AssetLocation(savedBarrel) : null;
     BarrelMetalContent = tree.GetItemstack("barrelContents");
     BarrelMetalContent?.ResolveBlockOrItem(worldForResolving);
     BarrelCurrentUnits = tree.GetInt("barrelCurrentUnits");

@@ -1,5 +1,5 @@
 {
-  "code": "transmission",
+  "code": "mpenergy",
   "class": "iwex.BlockTransmission",
   "entityClass": "iwex.BlockEntityTransmission",
   "blockmaterial": "Metal",
@@ -28,7 +28,7 @@
   },
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     },
     {
       "name": "BlockEntityInteract"
@@ -51,7 +51,7 @@
             "requireStacks": [
               {
                 "type": "item",
-                "code": "lpex:gear-iron",
+                "code": "iwex:spurgear",
                 "quantity": 2,
                 "name": "iwex:rcc-ingredient-transmissiongears"
               },
@@ -87,6 +87,12 @@
     {
       "code": "type",
       "states": [
+        "transmission"
+      ]
+    },
+    {
+      "code": "kind",
+      "states": [
         "x2",
         "x4",
         "clutch"
@@ -94,19 +100,24 @@
     },
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "creativeinventory": {
     "general": [
-      "*-x2-north",
-      "*-x4-north",
-      "*-clutch-north"
+      "*-x2-n",
+      "*-x4-n",
+      "*-clutch-n"
     ],
     "iwex": [
-      "*-x2-north",
-      "*-x4-north",
-      "*-clutch-north"
+      "*-x2-n",
+      "*-x4-n",
+      "*-clutch-n"
     ]
   },
   "shape": {

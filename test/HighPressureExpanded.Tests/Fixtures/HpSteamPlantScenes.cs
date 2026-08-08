@@ -40,7 +40,7 @@ internal sealed class MPGeneratorPlant
 
     var engineBlock = TestBlocks.Configure(
       new BlockEngineCornish(),
-      "hpex:enginecornish-north",
+      "hpex:enginecornish-n",
       40,
       ("side", "north")
     );
@@ -54,7 +54,7 @@ internal sealed class MPGeneratorPlant
 
     BlockFacing inletFace = engineBlock.SteamInletFace;
     _inlet = pos.AddCopy(inletFace);
-    // The Cornish engine's band is high (≥6 atm) - a bolted pipe bursts at 5, so feed it through cast.
+    // The Cornish engine's band is high (≥6 atm) - a plated pipe bursts at 5, so feed it through cast.
     EnginePlant.Pipe(
       scene,
       _inlet,
@@ -67,7 +67,7 @@ internal sealed class MPGeneratorPlant
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var genBlock = TestBlocks.Configure(
       new BlockEngineMPGenerator(),
-      "lpex:enginempgenerator-east",
+      "lpex:enginempgenerator-e",
       43,
       ("side", "east")
     );
@@ -137,7 +137,7 @@ internal sealed class AirBlowerPlant
 
     var engineBlock = TestBlocks.Configure(
       new BlockEngineCornish(),
-      "hpex:enginecornish-north",
+      "hpex:enginecornish-n",
       45,
       ("side", "north")
     );
@@ -149,7 +149,7 @@ internal sealed class AirBlowerPlant
     scene.Machine(pos, engineBlock, Engine);
     RccFake.Complete(Engine);
 
-    // The Cornish band is high (≥6 atm) - feed the inlet through cast (bolted bursts at 5).
+    // The Cornish band is high (≥6 atm) - feed the inlet through cast (plated bursts at 5).
     BlockFacing inletFace = engineBlock.SteamInletFace;
     _inlet = pos.AddCopy(inletFace);
     EnginePlant.Pipe(
@@ -164,7 +164,7 @@ internal sealed class AirBlowerPlant
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var blowerBlock = TestBlocks.Configure(
       new SmexAirBlowerBlock(),
-      "smex:engineairblower-east",
+      "smex:engineairblower-e",
       48,
       ("side", "east")
     );

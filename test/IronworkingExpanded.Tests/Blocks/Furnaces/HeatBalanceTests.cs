@@ -1,7 +1,9 @@
+using System.Linq;
 using ExpandedLib.Process;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Furnaces;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
 using IronworkingExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -26,21 +28,28 @@ public class HeatBalanceTests
 {
   #region Harness
 
+  /// <summary>
+  /// A cold blast furnace carrying its <b>real drawing</b>.
+  /// <para>
+  /// <b>It once stood on a bare <c>new Block()</c>, and that block has no layout at all</b> -
+  /// so the furnace owned no cells, and every geometry-derived answer came back <b>0</b>. It did not matter
+  /// while the heat balance divided by a config constant. It matters now that the denominator is the
+  /// furnace's own capacity: a 0 capacity is clamped up to 1 inside <c>ComputeHeatBalance</c>, so every
+  /// input saturates the clamp and the whole calibration table below would pass while measuring nothing.
+  /// The denominator cases assert the capacity is real for exactly that reason.
+  /// </para>
+  /// </summary>
   private static BlockEntityBlastFurnaceCold Furnace()
   {
     var world = new TestWorld();
-    var be = new BlockEntityBlastFurnaceCold
-    {
-      Pos = new BlockPos(0, 16, 0),
-      Block = TestBlocks.Configure(
-        new Block(),
-        "iwex:blastfurnacecore-north",
-        1,
-        ("side", "north")
-      ),
-    };
+    var be = new BlockEntityBlastFurnaceCold { Pos = new BlockPos(0, 16, 0) };
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    FurnaceLayoutRig.OrientWithLayout(
+      be,
+      BlockBlastFurnaceCoreCold.Definitions("iwex").First(),
+      "iwex:furnace-blastcore-tier1-n",
+      "north"
+    );
     ReflectionHelpers.Invoke(be, "CacheAttributes");
     return be;
   }
@@ -66,8 +75,109 @@ public class HeatBalanceTests
         mixCount
       )!;
 
-  /// <summary>A hearth loaded exactly to the fire threshold - the calibration reference.</summary>
-  private static int FullHearth => IwexValues.BlastMixRequiredToFire;
+  /// <summary>
+  /// A cold blast furnace loaded to <b>capacity</b> - the calibration reference, and what every row below
+  /// means by "a full hearth". <b>39</b> chargeable cells × <b>32</b> units a block.
+  /// <para>
+  /// <b>A literal, deliberately, and it must stay one.</b> It used to read
+  /// <c>IwexValues.BlastMixRequiredToFire</c>, which made the whole table a <b>tautology</b>: the heat
+  /// balance divides <c>mixCount / capacity</c>, so reading the reference off the same source moved the
+  /// numerator and the denominator together and the six expected temperatures survived any change to it.
+  /// Writing <c>Denominator(be)</c> here would re-create that exactly - which is why the tie below is an
+  /// <em>assertion</em> rather than an assignment.
+  /// </para>
+  /// <para>
+  /// <b>320 → 1 248, and the six temperatures did not move.</b> The old value was the fire
+  /// threshold, not a capacity, so "a full hearth" had been a shaft charged to a quarter of its own volume
+  /// paying the entire <c>BfChargeLossFull</c> penalty. Re-pointing the reference is what keeps these rows
+  /// describing the thing they are named for; had the literal stayed at 320 the four melting rows would
+  /// have moved by <b>+230 °C</b> and the design docs' published ceilings with them.
+  /// </para>
+  /// </summary>
+  private const int FullHearth = 1248;
+
+  /// <summary>
+  /// The tie between the hand-written reference above and the furnace's own geometry, stated once so the
+  /// table cannot silently stop describing a full hearth. A layout change that adds or removes a chargeable
+  /// cell fails <b>here</b>, by name, instead of shifting six temperatures that still look plausible.
+  /// </summary>
+  [Fact]
+  public void The_calibration_reference_really_is_the_furnaces_capacity()
+  {
+    Assert.Equal(FullHearth, Denominator(Furnace()));
+  }
+
+  /// <summary>The furnace's own cold-charge denominator - what it counts as "full".</summary>
+  private static int Denominator(BlockEntityBlastFurnaceCold be) =>
+    (int)ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!;
+
+  #endregion
+
+  #region The cold-charge denominator
+
+  // Not one row of the calibration table below can see this number, and that is why this region
+  // exists. `chargeLoss = BfChargeLossFull * clamp(mixCount / requiredMix, 0, 1)`, and every row passes
+  // `FullHearth` as the mixCount - so the clamp saturates at 1 and the six temperatures are the
+  // full-charge case whatever the denominator happens to be. Halve it, double it, or reduce it to 1 and
+  // all six still pass.
+  //
+  // That matters because the denominator now rests on the shaft's geometric capacity rather than on
+  // `BlastMixRequiredToFire`. Without these two cases that change is invisible to every furnace's
+  // heat balance in the game, with a fully green suite.
+
+  /// <summary>
+  /// The denominator's whole observable effect, stated without needing to know <c>T_in</c>: a hearth at
+  /// <b>half</b> its denominator runs exactly <c>BfChargeLossFull / 2</c> hotter than one at full, because
+  /// half as much cold charge is there to soak the heat.
+  /// <para>
+  /// A difference rather than an absolute, so it pins the <em>rule</em> and survives any retune of the
+  /// combustion terms - which the six absolute rows below deliberately do not.
+  /// </para>
+  /// </summary>
+  [Fact]
+  public void A_half_charged_hearth_pays_half_the_cold_charge_penalty()
+  {
+    BlockEntityBlastFurnaceCold be = Furnace();
+    int full = Denominator(be);
+
+    // The premise, and the reason this case cannot go quietly vacuous: `ComputeHeatBalance` clamps the
+    // denominator up to 1, so a furnace whose capacity read 0 would divide by 1, saturate on every input
+    // and pass both assertions below while measuring nothing at all.
+    Assert.True(
+      full >= 2,
+      $"the denominator must be a real capacity for this case to mean anything; it was {full}"
+    );
+
+    float atFull = Balance(be, 0.20f, 1f, 20f, full).TProcess;
+    float atHalf = Balance(be, 0.20f, 1f, 20f, full / 2).TProcess;
+
+    Assert.Equal(IwexValues.BfChargeLossFull / 2f, atHalf - atFull, 1);
+  }
+
+  /// <summary>
+  /// And it <b>clamps</b> rather than running away: an over-charged hearth pays the full penalty and no
+  /// more. Without the clamp a shaft charged past its own capacity would go on getting colder for ever.
+  /// </summary>
+  [Fact]
+  public void An_over_charged_hearth_pays_the_full_penalty_and_no_more()
+  {
+    BlockEntityBlastFurnaceCold be = Furnace();
+    int full = Denominator(be);
+
+    Assert.Equal(
+      Balance(be, 0.20f, 1f, 20f, full).TProcess,
+      Balance(be, 0.20f, 1f, 20f, full * 4).TProcess,
+      1
+    );
+
+    // ...and an empty hearth pays none of it, which is the other end of the same clamp.
+    Assert.Equal(
+      IwexValues.BfChargeLossFull,
+      Balance(be, 0.20f, 1f, 20f, 0).TProcess
+        - Balance(be, 0.20f, 1f, 20f, full).TProcess,
+      1
+    );
+  }
 
   #endregion
 

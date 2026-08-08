@@ -11,12 +11,18 @@ namespace SteelmakingExpanded.BlockMigrations;
 /// code, so old placements load as missing-block placeholders. Each is rewritten to the tier3 variant
 /// of the same base and orientation.
 /// <para>
-/// The cowper-stove intake also gained the group, but its orientation was later switched to the
-/// side-word form (<c>-north</c>/<c>-south</c>/…) by <see cref="CowperStoveIntakeOrientationMigration"/>, so a tier3-<em>letter</em>
-/// target here no longer resolves - that remap was dead (skipped every startup) and has been removed.
-/// If a pre-tier <c>cowperstove-intake-&lt;letter&gt;</c> placement is ever found in an old world, the fix
-/// is a direct letter→side-word remap, not this dead intermediate. The pipe passthrough/outlet that also
-/// gained the group have since moved to the lpex mod; their migration lives in <c>PipeMigration</c> there.
+/// ⓘ <b>The cowper-stove intake is deliberately not here, and its own migrator is gone.</b> It gained
+/// the same group, then took the side-word form (<c>-north</c>) when it stopped being a network node -
+/// so a <c>CowperStoveIntakeOrientationMigration</c> rewrote <c>-n</c> → <c>-north</c>. The 2026-08-04
+/// side respelling took the block back to <c>-n</c>, which made that migrator <b>circular</b>: it
+/// claimed a <b>live</b> code as its source and pointed at a target no block carries, i.e. it would
+/// have silently deleted every placed intake. Since the intake never shipped in any release
+/// (<c>ReleasedCodes.Smex</c> lists no <c>cowperstove-intake</c>), the word form only ever existed in
+/// dev worlds and is owed nothing. Deleted rather than inverted.
+/// </para>
+/// <para>
+/// The pipe passthrough/outlet that also gained the group have since moved to the lpex mod; their
+/// migration lives in <c>PipeMigration</c> there.
 /// </para>
 /// </summary>
 public class BrickVariantMigration : IBlockCodeMigration

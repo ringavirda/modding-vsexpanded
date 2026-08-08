@@ -25,9 +25,11 @@ public class FlywheelTests
   private static BlockFlywheel FlywheelBlock(string size, string orientation) =>
     TestBlocks.Configure(
       new BlockFlywheel(),
-      $"iwex:flywheel-{size}-{orientation}",
+      $"iwex:mpenergy-flywheel-{size}-{orientation}",
       1,
-      ("type", size),
+      // `type` names the family member; the size lives in its own group (CodePrefixCollision).
+      ("type", "flywheel"),
+      ("size", size),
       ("orientation", orientation)
     );
 

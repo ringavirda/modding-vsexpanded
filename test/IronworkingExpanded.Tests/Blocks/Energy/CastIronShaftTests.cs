@@ -18,7 +18,7 @@ public class CastIronShaftTests
   {
     var block = TestBlocks.Configure(
       new BlockCastIronShaft(),
-      $"iwex:castironshaft-shaft-{orientation}",
+      $"iwex:mpenergy-shaft-{orientation}",
       200,
       ("type", "shaft"),
       ("orientation", orientation)

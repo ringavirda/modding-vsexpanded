@@ -9,7 +9,7 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// <see cref="ExBlockDef"/> builds the exact blocktype <see cref="JObject"/> the vanilla object loader
-/// consumes. The load-bearing guarantee is PARITY: the emitted JSON must match a hand-authored
+/// consumes. The load-bearing guarantee is parity: the emitted JSON must match a hand-authored
 /// blocktype byte-for-byte (semantically), so an injected code-first block is indistinguishable from
 /// the file it replaces. Each field's token shape is pinned, plus a full-block parity oracle against a
 /// verbatim copy of a real shipped blocktype (iwex's <c>solidifiediron</c>).
@@ -95,7 +95,7 @@ public class ExBlockDefTests
   [Fact]
   public void Class_of_T_matches_KeyFor_so_a_rename_cannot_desync()
   {
-    // The whole point of the typed overload: it produces the SAME string the class registry uses.
+    // The whole point of the typed overload: it produces the same string the class registry uses.
     JObject json = ExBlockDef.Create("iwex", "x").Class<CodeFirstBlock>().ToJson();
     Assert.Equal(
       EntityRegistry.KeyFor("iwex", typeof(CodeFirstBlock)),
@@ -403,7 +403,7 @@ public class ExBlockDefTests
   {
     JObject json = ExBlockDef.Create("d", "c").HandbookExclude().ToJson();
     Assert.True((bool)json["handbook"]!["exclude"]!);
-    Assert.Null(json["attributes"]); // top-level handbook, NOT attributes.handbook
+    Assert.Null(json["attributes"]); // top-level handbook, not attributes.handbook
   }
 
   [Fact]

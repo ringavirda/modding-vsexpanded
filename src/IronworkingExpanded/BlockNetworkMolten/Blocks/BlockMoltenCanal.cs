@@ -69,7 +69,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
   protected static readonly CanalSkin[] CanalSkins =
   [
     new(
-      "canalbrick",
+      "canal/brick",
       EnumBlockMaterial.Ceramic,
       HasPlaceSound: true,
       Variants: d =>
@@ -92,7 +92,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
         )
     ),
     new(
-      "canalcobblestone",
+      "canal/cobblestone",
       EnumBlockMaterial.Stone,
       HasPlaceSound: false,
       Variants: d =>
@@ -203,7 +203,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
   )
   {
     var def = ExBlockDef
-      .Create(domain, "moltencanal", assetName)
+      .Create(domain, "molten-canal", assetName)
       .Material(skin.Material)
       .Sound("walk", "game:walk/stone");
     if (skin.HasPlaceSound)
@@ -218,7 +218,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       .Attribute("fillHeight", 1)
       .Attribute("fillStart", 14)
       .Attribute("fillQuadsByLevel", fillQuads)
-      .Handbook($"moltencanal-{type}-*")
+      .Handbook($"molten-canal-{type}-*")
       .Behavior("Lockable")
       .VariantGroup("type", type);
     skin.Variants(def);
@@ -431,7 +431,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider
       if (!IsFireClay(held) || held!.StackSize < IwexValues.CanalSealClayCost)
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
-      // Only seal a fully drained section: this cell AND its connector-face neighbours must be
+      // Only seal a fully drained section: this cell and its connector-face neighbours must be
       // empty, so a seal never traps metal against itself.
       if (!CanSeal(world, blockSel.Position, be))
       {

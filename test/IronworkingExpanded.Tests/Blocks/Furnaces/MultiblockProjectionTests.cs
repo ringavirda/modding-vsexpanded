@@ -17,8 +17,8 @@ namespace IronworkingExpanded.Tests;
 /// functional component of the furnace multiblock, not only the core: the tap, the tuyere and the tall
 /// hopper each scan up to the anchor whose layout owns their cell and forward to the core's outline through
 /// one shared seam - <see cref="BlockBehaviorMultiblockStructure.ResolveIncompleteAnchor"/> over
-/// <see cref="IMultiblockComponent"/>. This pins that: an INCOMPLETE furnace projects from any of the three
-/// (and the projection they resolve is the very same core the gesture on the core resolves), a COMPLETE one
+/// <see cref="IMultiblockComponent"/>. This pins that: an incomplete furnace projects from any of the three
+/// (and the projection they resolve is the very same core the gesture on the core resolves), a complete one
 /// projects from none of them, and a lone component with no furnace resolves nothing. A refractory brick /
 /// filler is not a component (no BE role), so it is silent by construction and not exercised here.
 /// </summary>
@@ -30,7 +30,7 @@ public class MultiblockProjectionTests
   {
     var block = TestBlocks.Configure(
       new Block(),
-      "iwex:blastfurnacecore-north",
+      "iwex:furnace-blastcore-tier1-n",
       1,
       ("side", "north")
     );
@@ -52,15 +52,23 @@ public class MultiblockProjectionTests
     return be;
   }
 
-  private static BlockEntityMoltenMetalTap Tap(TestWorld world, BlockPos pos)
+  // `type` is the tap's family member - irontap or slagtap. It plays no part in these assertions (the HUD
+  // and the projection both key off the tap's position), but a stand-in coded as the wrong notch reads as
+  // though it did, so the call sites say which one they are standing up.
+  private static BlockEntityFurnaceTap Tap(
+    TestWorld world,
+    BlockPos pos,
+    string type = BlockFurnaceTap.IronType
+  )
   {
-    var be = new BlockEntityMoltenMetalTap();
+    var be = new BlockEntityFurnaceTap();
     world.Place(
       pos,
       TestBlocks.Configure(
         new Block(),
-        "iwex:moltenmetaltap-north",
+        $"iwex:furnace-{type}-n",
         2,
+        ("type", type),
         ("side", "north")
       ),
       be
@@ -72,7 +80,7 @@ public class MultiblockProjectionTests
   private static BlockEntityTuyere Tuyere(TestWorld world, BlockPos pos)
   {
     var be = new BlockEntityTuyere();
-    world.Place(pos, TestBlocks.Configure(new Block(), "iwex:tuyere-n", 4), be);
+    world.Place(pos, TestBlocks.Configure(new Block(), "iwex:furnace-tuyere-n", 4), be);
     world.Attach(be);
     return be;
   }
@@ -107,7 +115,7 @@ public class MultiblockProjectionTests
   {
     var world = new TestWorld();
     var furnace = Furnace(world, complete: false);
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
 
     Assert.Same(furnace, Resolve(world, tap.Pos));
   }
@@ -117,7 +125,7 @@ public class MultiblockProjectionTests
   {
     var world = new TestWorld();
     var furnace = Furnace(world, complete: false);
-    var tap = Tap(world, furnace.SlagTapPos);
+    var tap = Tap(world, furnace.SlagTapPos!, BlockFurnaceTap.SlagType);
 
     Assert.Same(furnace, Resolve(world, tap.Pos));
   }
@@ -153,7 +161,7 @@ public class MultiblockProjectionTests
   {
     var world = new TestWorld();
     var furnace = Furnace(world, complete: false);
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
 
     // The gesture on the core resolves the core itself; the gesture on the tap resolves the same instance,
     // so both toggle the one outline - "the projection matches the core's".
@@ -170,7 +178,7 @@ public class MultiblockProjectionTests
   {
     var world = new TestWorld();
     var furnace = Furnace(world, complete: true);
-    var tap = Tap(world, furnace.MetalTapPos);
+    var tap = Tap(world, furnace.MetalTapPos!);
     var tuyere = Tuyere(world, Global(furnace, 0, 1, -1));
     var hopper = Hopper(world, Global(furnace, -2, 6, 0));
 

@@ -163,7 +163,7 @@ public class MetalRegistryTests
   public void Classify_of_an_unregistered_metal_uses_the_global_thresholds()
   {
     // Belt-and-braces on the fallback: with nothing registered, the strict-liquid boundary matches
-    // the historical StateOf semantics (temp == threshold×meltPoint is NOT liquid).
+    // the historical StateOf semantics (temp == threshold×meltPoint is not liquid).
     var iron = new AssetLocation("game:ingot-iron");
     float liquid = ExlibValues.MetalLiquidThreshold;
     float hardened = ExlibValues.MetalHardenedThreshold;

@@ -25,7 +25,7 @@ public class HotBlastFurnaceRecipeDefinitions : IExRecipeDefProvider
             .Ingredient("R", Rod(2))
             .Ingredient("N", Nails(4))
             .Ingredient("P", Plate(2))
-            .OutputBlock("smex:blastfurnacecore-north")
+            .OutputBlock("smex:blastfurnacecore-n")
         )
         .Grid(r =>
           r.Name("Reinforced Hopper")

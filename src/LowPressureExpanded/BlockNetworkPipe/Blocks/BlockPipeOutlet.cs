@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -27,7 +27,7 @@ public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable
 
   private static ExBlockDef Outlet(string domain) =>
     ExBlockDef
-      .Create(domain, "pipe", "pipes/outlet")
+      .Create(domain, "pipe", "pipe/outlet")
       .Class<BlockPipeOutlet>()
       .EntityClass<BlockEntityPipeOutlet>()
       .Material(EnumBlockMaterial.Ceramic)
@@ -49,12 +49,12 @@ public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable
         "fire", "black", "brown", "cream", "gray", "orange", "red", "tan"
       )
       .VariantGroup("orientation", "s", "n", "w", "e", "u", "d")
-      .ShapeByType("*-outlet-*-s", "lpex:pipes/outlet")
-      .ShapeByType("*-outlet-*-n", "lpex:pipes/outlet", rotateY: 180)
-      .ShapeByType("*-outlet-*-e", "lpex:pipes/outlet", rotateY: 90)
-      .ShapeByType("*-outlet-*-w", "lpex:pipes/outlet", rotateY: -90)
-      .ShapeByType("*-outlet-*-u", "lpex:pipes/outlet", rotateX: -90)
-      .ShapeByType("*-outlet-*-d", "lpex:pipes/outlet", rotateX: 90)
+      .ShapeByType("*-outlet-*-s", "lpex:pipe/outlet")
+      .ShapeByType("*-outlet-*-n", "lpex:pipe/outlet", rotateY: 180)
+      .ShapeByType("*-outlet-*-e", "lpex:pipe/outlet", rotateY: 90)
+      .ShapeByType("*-outlet-*-w", "lpex:pipe/outlet", rotateY: -90)
+      .ShapeByType("*-outlet-*-u", "lpex:pipe/outlet", rotateX: -90)
+      .ShapeByType("*-outlet-*-d", "lpex:pipe/outlet", rotateX: 90)
       .TextureByType(
         "*",
         "front1",

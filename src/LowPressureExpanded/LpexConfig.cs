@@ -46,8 +46,15 @@ public class LpexConfig : IExVersionedConfig
   // stays here is lpex-content-specific: the cast pipe tier's strength and the water/steam phase point.
 
   /// <summary>Burst pressure (atm) of a plain cast (lpex) pipe segment - the weakest pipe limits a run.
-  /// The bolted (iwex) and rolled (hpex) tiers register their own ratings.</summary>
+  /// The plated (iwex) and rolled (hpex) tiers register their own ratings.</summary>
   public float CastPipeBurstPressure { get; set; } = 5.0f;
+
+  /// <summary>Throughput (L/s) of a plain cast (lpex) pipe segment - the weakest segment caps a run.
+  /// First-pass calibration - see <c>IwexValues.PlatedPipeThroughput</c> for the full
+  /// note. 120 clears smex's engine blower at ~144 L/s while the plated tier's 50 refuses it, which is
+  /// exactly what makes a converter's blast main and a cowper's hot-blast run a reason to buy cast pipe.
+  /// Throughput, not bore.</summary>
+  public float CastPipeThroughput { get; set; } = 120f;
 
   /// <summary>Temperature (°C) at which water boils into steam / steam condenses into water.</summary>
   public float BoilingPoint { get; set; } = 100f;

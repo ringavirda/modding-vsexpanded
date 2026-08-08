@@ -186,7 +186,7 @@ public class ConfigMigrationTests
   public void FromVersion_lower_bound_scopes_the_reset()
   {
     // File saved at 0.9.0, below the migration's FromVersion of 0.9.1, so the
-    // tightly-scoped "0.9.1 => 0.9.2" reset must NOT touch it.
+    // tightly-scoped "0.9.1 => 0.9.2" reset must not touch it.
     var stored = new FakeConfig { ConfigVersion = "0.9.0", ValueA = 5 };
     var (api, _) = FakeApi(stored, runningVersion: "0.9.2");
     var store = Store(

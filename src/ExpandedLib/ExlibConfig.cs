@@ -25,6 +25,13 @@ public class ExlibConfig : IExVersionedConfig
   /// <summary>Mod version that last wrote this file. Managed by the config store - do not set by hand.</summary>
   public string? ConfigVersion { get; set; }
 
+  #region World
+  /// <summary>World ambient reference temperature (°C) used by machine heat models - the value cold
+  /// feeds enter at and the floor idle machines cool toward. Pipe runs cool toward their own
+  /// <see cref="PipeAmbientTemperature"/>.</summary>
+  public float AmbientTemperature { get; set; } = 20f;
+  #endregion
+
   #region Pipe network
   /// <summary>Litres a single pipe holds at 1 atm (both the gas and water pools). A run's capacity is
   /// this times its node count.</summary>
@@ -45,6 +52,27 @@ public class ExlibConfig : IExVersionedConfig
   /// <summary>Seconds a pipe run may sit at its weakest pipe's burst pressure (nowhere to vent)
   /// before a pipe lets go - mirrors the boiler over-pressure grace.</summary>
   public float PipeOverpressureSeconds { get; set; } = 30f;
+
+  /// <summary>
+  /// Degrees C per second a pipe run's gas sheds toward <see cref="PipeAmbientTemperature"/>. Applies
+  /// whenever the run holds gas above ambient - it is not conditional on the line being idle.
+  /// <para>
+  /// This is what stops a long main being a <b>gasholder that stores gas hot</b>, which
+  /// <c>docs/design/mechanics/gas-system.md</c> forbids: buffering is priced in heat ("smoothness or
+  /// temperature, never both").
+  /// </para>
+  /// <para>
+  /// Run length matters through the volume-weighted blend rather than through this rate: a longer main
+  /// holds more gas, so the hot gas a producer injects each second is a smaller fraction of the total and
+  /// pulls the average back up less. A long main is harder to keep hot, which is the first real cost
+  /// length has ever carried.
+  /// </para>
+  /// </summary>
+  public float PipeGasCoolPerSecond { get; set; } = 2.0f;
+
+  /// <summary>Temperature (C) a pipe run's gas cools toward - the world's ambient. Cooling never takes a
+  /// run below it.</summary>
+  public float PipeAmbientTemperature { get; set; } = 20f;
   #endregion
 
   #region Molten network

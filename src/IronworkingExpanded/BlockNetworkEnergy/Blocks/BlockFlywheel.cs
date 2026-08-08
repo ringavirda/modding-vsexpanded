@@ -97,15 +97,25 @@ public partial class BlockFlywheel : BlockNetworkNode, IExBlockDefProvider, IFil
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "flywheel", "mpenergy/flywheel")
+        .Create(domain, "mpenergy", "mpenergy/flywheel")
         .Class<BlockFlywheel>()
         .EntityClass<BlockEntityFlywheel>()
         .Material(EnumBlockMaterial.Metal)
         .Sound("walk", "game:walk/metal")
         .Sound("place", "game:block/anvil")
         .MaxStackSize(1)
-        .Handbook("flywheel-*")
-        .VariantGroup("type", "normal", "large")
+        .Handbook("mpenergy-flywheel-*")
+        // The disc spins at the run's speed, so the spin itself is the charge gauge, readable in-world
+        // (docs/design/conventions.md R7: nothing is hidden). The animator renders
+        // the wheel whenever a clip is active, so the block entity always holds one (idle at rest, cycle
+        // while turning) or the mesh would fall back to the static shape mid-frame.
+        .EntityBehavior("Animatable")
+        // Note: `type` names the family member, not the size - every mpenergy block shares the code
+        // `iwex:mpenergy`, so no block's code can be a prefix of another's and a wildcard built from
+        // Code cannot stray outside its member (see CodePrefixCollision). The size is its own group;
+        // the rendered code is unchanged either way.
+        .VariantGroup("type", "flywheel")
+        .VariantGroup("size", "normal", "large")
         .VariantGroup("orientation", "ns", "we")
         // North frame = shaft along Z (ns); we is the 90° rotation. Each size has its own disc shape.
         .ShapeByType("*-normal-ns", "iwex:mpenergy/flywheel", rotateY: 0)

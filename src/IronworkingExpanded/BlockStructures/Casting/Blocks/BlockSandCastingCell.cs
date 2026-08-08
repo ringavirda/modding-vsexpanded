@@ -24,14 +24,14 @@ public partial class BlockSandCastingCell : Block, IExBlockDefProvider
 
   private static ExBlockDef Cell(string domain) =>
     ExBlockDef
-      .Create(domain, "sandcastingcell", "casting/sandcastingcell")
+      .Create(domain, "casting-sandcell", "casting/sandcell")
       .Class<BlockSandCastingCell>()
       .EntityClass<BlockEntitySandCastingCell>()
       .Material(EnumBlockMaterial.Ceramic)
       .MiningTier(0)
       .Resistance(3.5f)
       .MaxStackSize(16)
-      .Behavior("HorizontalOrientable")
+      .Behavior("ExOrientable")
       // The cell holds its cast on a drain-fitting molten cell (not network-registered); the entity pulls
       // into it from the launder face and overrides its capacity from the impressed pattern.
       .EntityBehavior(
@@ -42,20 +42,22 @@ public partial class BlockSandCastingCell : Block, IExBlockDefProvider
       // fire-brick look survives the migration and the fire-brick recipe has a target) plus the
       // horizontal facing. Declaration order brick-then-side => code sandcastingcell-{brick}-{side}.
       .VariantGroup("brick", "fire", "black", "brown", "cream", "gray", "orange", "red", "tan")
-      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+      .SideVariant()
       .ShapeSpunPerOrientation("iwex:casting/sandcastingcell")
-      // Brick colour is a tint overlay over the running-bond base (the canal/bed pattern). The sand
-      // texture key stays the fixed andesite default: the rammed sand is drawn dynamically per-BE in
-      // BlockEntitySandCastingCell.OnTesselation, which remaps this key to the rammed sand's texture.
+      // Brick colour is a tint overlay over the running-bond base (the canal/bed pattern). The `andesite`
+      // key is the rammed sand the filling shapes are drawn with - named for the rock type the cell once
+      // defaulted to, back when it took any sand and remapped this key per-BE. With one prepared molding
+      // sand there is nothing to remap, so it simply is the green-sand texture and the shapes (which still
+      // declare the historical key) resolve straight through.
       .Texture(
         "fire1",
         "game:block/clay/brick/four/running/cream1",
         "game:block/clay/brick/four/running/{brick}1"
       )
       .Texture("burned", "game:block/clay/vessel/sides/burned")
-      .Texture("andesite", "game:block/stone/sand/andesite")
-      .CreativeTab("general", "*-north")
-      .CreativeTab("iwex", "*-north")
+      .Texture("andesite", GreenSandItemDefinitions.Texture)
+      .CreativeTab("general", "*-n")
+      .CreativeTab("iwex", "*-n")
       .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f)
       .SingleCollisionBox(0f, 0f, 0f, 1f, 0.875f, 1f)
       .SideSolid(false)

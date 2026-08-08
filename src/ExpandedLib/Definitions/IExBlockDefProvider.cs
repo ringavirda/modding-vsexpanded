@@ -11,7 +11,7 @@ namespace ExpandedLib.Definitions;
 /// single, local act on the block class.
 /// <para>
 /// A class returns <b>one or more</b> defs because one C# class often backs several blocktype assets
-/// (e.g. the pipe class backs <c>pipes/straight</c>, <c>pipes/bend</c>, … - same <c>code</c>, distinct
+/// (e.g. the pipe class backs <c>pipe/straight</c>, <c>pipe/bend</c>, … - same <c>code</c>, distinct
 /// asset paths). The def(s) are built by a <b>static</b> factory (they exist before any block instance;
 /// the instances are created from them). The <paramref name="domain"/> passed in is the mod id, so
 /// <see cref="ExBlockDef.Create"/> and the type-safe <c>Class&lt;T&gt;()</c> bind to the right asset

@@ -39,3 +39,19 @@ public interface IMpEnergyConsumer
   /// flow stress → more torque → it drags the shaft down and stalls the mill — the "keep it hot" coupling).</summary>
   float LoadTorque(float speed);
 }
+
+/// <summary>
+/// A node that knows which <b>way</b> the run turns. Speed itself is deliberately unsigned - the whole torque
+/// balance is magnitudes, and making omega signed would complicate every relation for the sake of one machine -
+/// so direction rides alongside it as a flag, set by whatever drives the run.
+/// <para>
+/// It exists for machines whose <em>geometry</em> depends on rotation rather than just its rate. The rolling
+/// mill is the case in point: its feed side follows the rolls, so reversing the drive swaps which deck you feed
+/// and which one the piece lands on - which is exactly why a reversing mill was worth building historically.
+/// </para>
+/// </summary>
+public interface IMpEnergyDirection
+{
+  /// <summary>True when the run turns in reverse.</summary>
+  bool IsReversed { get; }
+}

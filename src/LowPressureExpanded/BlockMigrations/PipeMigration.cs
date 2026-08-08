@@ -12,14 +12,14 @@ namespace LowPressureExpanded.BlockMigrations;
 /// <list type="bullet">
 /// <item><description>The pipe base block moved down to iwex and lost its iron/steel <c>material</c>
 /// axis (tier = mod now). Old <c>ppex:pipe-{straight,bend,tjunction,xjunction}-{orient}-{iron|steel}</c>
-/// segments become the plain bolted <c>iwex:pipe-{type}-{orient}</c>; old
+/// segments become the plain plated <c>iwex:pipe-{type}-{orient}</c>; old
 /// <c>ppex:pipe-{valve,pressurevalve}-{orient}-{iron|steel}</c> fittings become the material-less
 /// <c>lpex:pipe-{type}-{orient}</c>. (The <c>ppex → lpex</c> mod rename itself - and the brick
 /// passthroughs/outlets/fluid-intakes that only need that flat rename - is handled by
 /// <see cref="LpexRenameMigration"/>.)</description></item>
 /// <item><description>The far older smex→ppex move (<c>gaspipe-* → pipe-*</c>): its segments/valves are
 /// retargeted onto the same current tier blocks, its brick shapes onto the lpex fittings (dropped
-/// refractory tiers fall back to fire brick), and its removed inline machines onto a plain bolted
+/// refractory tiers fall back to fire brick), and its removed inline machines onto a plain plated
 /// straight pipe.</description></item>
 /// </list>
 ///
@@ -65,7 +65,7 @@ public class PipeMigration : IBlockCodeMigration
       if (type == null || !path.StartsWith("pipe-"))
         continue;
 
-      // Current bolted segments (iwex): old material-suffixed ppex codes and the older smex gaspipe.
+      // Current plated segments (iwex): old material-suffixed ppex codes and the older smex gaspipe.
       if (dom == "iwex" && SegmentTypes.Contains(type))
       {
         string orient = block.Variant["orientation"];
@@ -117,7 +117,7 @@ public class PipeMigration : IBlockCodeMigration
         new AssetLocation("lpex", $"pipe-outlet-fire-{o}")
       );
 
-    // Removed inline gas machines → a plain bolted (iwex) straight pipe of the matching axis.
+    // Removed inline gas machines → a plain plated (iwex) straight pipe of the matching axis.
     foreach (string o in new[] { "ns", "we" })
       yield return (
         new AssetLocation("smex", $"gaspipe-blower-{o}"),

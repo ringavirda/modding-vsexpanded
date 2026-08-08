@@ -19,7 +19,7 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
 
   private static ExBlockDef FluidIntake(string domain) =>
     ExBlockDef
-      .Create(domain, "pipe", "pipes/fluidintake")
+      .Create(domain, "pipe", "pipe/fluidintake")
       .Class<BlockFluidIntake>()
       .EntityClass<BlockEntityFluidIntake>()
       .Material(EnumBlockMaterial.Metal)
@@ -27,10 +27,10 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider
       .VariantGroup("orientation", "n", "s", "w", "e")
       .CreativeTab("general", "*-fluidintake-s")
       .CreativeTab("lpex", "*-fluidintake-s")
-      .ShapeByType("*-n", "lpex:pipes/fluidintake", rotateY: 180)
-      .ShapeByType("*-e", "lpex:pipes/fluidintake", rotateY: 90)
-      .ShapeByType("*-s", "lpex:pipes/fluidintake", rotateY: 0)
-      .ShapeByType("*-w", "lpex:pipes/fluidintake", rotateY: 270)
+      .ShapeByType("*-n", "lpex:pipe/fluidintake", rotateY: 180)
+      .ShapeByType("*-e", "lpex:pipe/fluidintake", rotateY: 90)
+      .ShapeByType("*-s", "lpex:pipe/fluidintake", rotateY: 0)
+      .ShapeByType("*-w", "lpex:pipe/fluidintake", rotateY: 270)
       .SideSolid(false)
       .SideOpaque(false);
 

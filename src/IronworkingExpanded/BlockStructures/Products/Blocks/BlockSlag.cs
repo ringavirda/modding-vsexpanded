@@ -16,13 +16,13 @@ public partial class BlockSlag : Block, IExBlockDefProvider
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "slag", "blastfurnace/slag")
+        .Create(domain, "slag-block", "slag/block")
         .Class<BlockSlag>()
         .EntityClass("iwex.BlockEntitySlag")
         .Material(EnumBlockMaterial.Stone)
         .CreativeCommon("*")
         .Shape("game:block/basic/cube")
-        .TextureAll("game:block/stone/gravel/phyllite")
+        .TextureAll(Items.SlagItemDefinitions.Texture)
         .Resistance(3.0f)
         .MaxStackSize(64)
         .MiningTier(2)

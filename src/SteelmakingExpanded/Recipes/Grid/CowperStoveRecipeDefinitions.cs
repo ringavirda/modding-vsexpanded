@@ -24,7 +24,7 @@ public class CowperStoveRecipeDefinitions : IExRecipeDefProvider
             .Ingredient("N", Nails(2))
             .Ingredient("P", PipeStar(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("smex:cowperstove-intake-{tier}-south")
+            .OutputBlock("smex:cowperstove-intake-{tier}-s")
         )
         .Grid(r =>
           r.Name("Heat Sink")
@@ -33,7 +33,7 @@ public class CowperStoveRecipeDefinitions : IExRecipeDefProvider
             .Ingredient("N", Nails(2))
             .Ingredient("H", Hammer)
             .Ingredient("P", PipeStar(1))
-            .OutputBlock("smex:cowperstoveheatsink-north")
+            .OutputBlock("smex:cowperstoveheatsink-n")
         ),
     ];
 }

@@ -22,8 +22,8 @@ public class ExRightClickConstructable(BlockEntity blockentity)
 {
   /// <summary>
   /// The materials this block would scatter at <paramref name="ratio"/> (0..1) of the consumed stacks,
-  /// across EVERY completed stage. Vanilla <c>rcc.GetDrops</c> loops <c>i &lt; CurrentCompletedStage</c>,
-  /// which silently omits the LAST built stage's materials - for the mega-blocks that's the most
+  /// across every completed stage. Vanilla <c>rcc.GetDrops</c> loops <c>i &lt; CurrentCompletedStage</c>,
+  /// which silently omits the last built stage's materials - for the mega-blocks that's the most
   /// expensive stage (e.g. the Lancashire casing: 16 plate / 8 nails / 6 rod / 48 brick), so a fully
   /// built structure refunded far less than its <c>brokenDropsRatio</c>. Advancing the counter by one
   /// across the call (it's a public field) makes the loop reach the final stage, then we restore it.

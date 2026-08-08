@@ -169,8 +169,8 @@ public abstract class BlockEntityProductionMachine : BlockEntity
 
   #region Network ports
 
-  // NOTE: these forward to the MachinePorts extension methods by their fully-qualified static form.
-  // Writing `this.ConnectedNetwork(...)` would bind to THIS instance method (instance methods shadow
+  // Note: these forward to the MachinePorts extension methods by their fully-qualified static form.
+  // Writing `this.ConnectedNetwork(...)` would bind to this instance method (instance methods shadow
   // extension methods), recursing forever - so the static call is required, not stylistic.
 
   /// <summary>The <typeparamref name="TNet"/> across <paramref name="face"/>, or <c>null</c> if not plumbed in.</summary>

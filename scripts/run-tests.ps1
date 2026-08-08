@@ -36,6 +36,22 @@ $wanted = switch ($Version) {
     default { @($Version) }
 }
 
+# Minimum tests each suite must DISCOVER, from the one file both runners read. A suite that loses
+# its assembly reports no failure at all - see the file's header for the mechanism - so the exit
+# code alone cannot be trusted to mean "the tests ran". Parsed here so a malformed row fails fast,
+# before anything is built.
+$floorsFile = Join-Path $PSScriptRoot 'test-floors.txt'
+if (-not (Test-Path $floorsFile)) { throw "Missing $floorsFile - the per-suite test-count floors." }
+$floors = @{}
+foreach ($line in Get-Content $floorsFile) {
+    if ($line -match '^\s*(#|$)') { continue }
+    if ($line -notmatch '^\s*([\w.]+)\s*=\s*(\d+)\s*$') { throw "Bad row in test-floors.txt: '$line'" }
+    $floors[$Matches[1]] = [int]$Matches[2]
+}
+# A project with no floor would be silently ungated, which is the exact hole this guard closes.
+$ungated = @($projects | Where-Object { -not $floors.ContainsKey($_) })
+if ($ungated) { throw "No test-count floor for: $($ungated -join ', ') - add a row to scripts/test-floors.txt." }
+
 # Pick the dotnet host. Use the system one if it already has every runtime major we need; otherwise
 # provision a self-contained .dotnet and use ITS muxer - the global muxer ignores DOTNET_ROOT, so a
 # local muxer is the only reliable way to run on locally-installed runtimes (verified). This is what
@@ -82,6 +98,7 @@ $work = foreach ($v in $wanted) {
             Project = $p
             Proj    = (Join-Path $repoRoot "test/$p/$p.csproj")
             Legacy  = $legacy
+            Floor   = $floors[$p]
         }
     }
 }
@@ -108,10 +125,33 @@ $results = $built | ForEach-Object -ThrottleLimit $Throttle -Parallel {
     $args = @('test', $item.Proj, '-f', $item.Tfm, '--no-build', '--nologo')
     if ($item.Legacy) { $args += '-p:Legacy=true' }
     $out = & $dotnet @args 2>&1
+    $ok = ($LASTEXITCODE -eq 0)
+    $line = ($out | Select-String -Pattern 'Passed!|Failed!|error' | Select-Object -Last 1)
+
+    # ⚠ The exit code is NOT enough. An assembly that fails to load during discovery prints
+    # "No test is available in ..." and exits 0, with no summary line to grep - so the run reads as a
+    # blank PASS while every test in the suite has silently vanished. Trust the count the summary
+    # carries, and treat its ABSENCE as the failure it is.
+    $total = ($out | Select-String -Pattern 'Total:\s*(\d+)' -AllMatches |
+        ForEach-Object { $_.Matches } | Select-Object -Last 1)
+    if (-not $total) {
+        $ok = $false
+        $line = 'NO TEST SUMMARY - the assembly discovered no tests (a type-load failure during ' +
+        'discovery does this and still exits 0). See scripts/test-floors.txt.'
+    }
+    else {
+        $count = [int]$total.Groups[1].Value
+        if ($count -lt $item.Floor) {
+            $ok = $false
+            $line = "ONLY $count TEST(S), FLOOR IS $($item.Floor) - tests vanished rather than failed. " +
+            'If the deletion was deliberate, lower the floor in scripts/test-floors.txt.'
+        }
+    }
+
     [pscustomobject]@{
         Name = "$($item.Version)/$($item.Project)"
-        Ok   = ($LASTEXITCODE -eq 0)
-        Line = ($out | Select-String -Pattern 'Passed!|Failed!|error' | Select-Object -Last 1)
+        Ok   = $ok
+        Line = $line
     }
 }
 

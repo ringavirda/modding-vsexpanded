@@ -132,6 +132,72 @@ public class MoltenFlowTests
     Assert.Equal(40, a.CellAmount + b.CellAmount); // nothing created or destroyed
   }
 
+  #region Levelling converges (it used to oscillate)
+
+  // A levelling edge moves half the difference. Moving all of it overshoots the midpoint and swaps the two
+  // cells outright, so the pair flip-flopped forever instead of settling - these pin the convergence.
+
+  [Fact]
+  public void A_levelling_tick_never_overshoots_the_midpoint()
+  {
+    var (world, a, b) = Run();
+    a.PushMetal(40, MetalStack(world), world.World);
+    b.PushMetal(20, MetalStack(world), world.World);
+
+    world.Tick();
+
+    // The giver must still be the fuller cell. If a tick can invert the pair, it will invert it back next
+    // tick and the run never comes to rest.
+    Assert.True(
+      a.CellAmount >= b.CellAmount,
+      $"the fuller cell became the emptier one ({a.CellAmount} vs {b.CellAmount}) - this is the oscillation"
+    );
+    Assert.Equal(60, a.CellAmount + b.CellAmount);
+  }
+
+  [Fact]
+  public void A_pair_settles_level_and_stays_there()
+  {
+    var (world, a, b) = Run();
+    a.PushMetal(40, MetalStack(world), world.World);
+    b.PushMetal(20, MetalStack(world), world.World);
+
+    for (int i = 0; i < 20; i++)
+      world.Tick();
+
+    // Within a unit of level, and conserved. Integer halving terminates at a 1-unit difference, which is the
+    // closest whole-unit split of an odd total.
+    Assert.True(
+      System.Math.Abs(a.CellAmount - b.CellAmount) <= 1,
+      $"the pair never settled: {a.CellAmount} vs {b.CellAmount}"
+    );
+    Assert.Equal(60, a.CellAmount + b.CellAmount);
+
+    // And it is genuinely at rest: another tick moves nothing.
+    int before = a.CellAmount;
+    world.Tick();
+    Assert.Equal(before, a.CellAmount);
+  }
+
+  [Fact]
+  public void A_near_level_pair_still_closes_the_gap()
+  {
+    // The regression guard for the fix's own failure mode. Halving used to be floored by
+    // MoltenMinFlowAmount (10), which turned into a 2x deadband: a pair 19 units apart moved nothing, so a
+    // canal quietly stopped delivering partway along.
+    var (world, a, b) = Run();
+    a.PushMetal(19, MetalStack(world), world.World);
+
+    world.Tick();
+
+    Assert.True(
+      b.CellAmount > 0,
+      "a sub-deadband difference must still flow, or a canal stalls short of its destination"
+    );
+  }
+
+  #endregion
+
   [Fact]
   public void Different_metals_do_not_mix_across_a_connector()
   {

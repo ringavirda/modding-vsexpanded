@@ -21,7 +21,7 @@ public class CastIronBevelTests
   {
     var block = TestBlocks.Configure(
       new BlockCastIronBevel(),
-      $"iwex:castironbevel-bevel-{orientation}",
+      $"iwex:mpenergy-bevel-{orientation}",
       210,
       ("type", "bevel"),
       ("orientation", orientation)
@@ -35,7 +35,7 @@ public class CastIronBevelTests
   {
     var block = TestBlocks.Configure(
       new BlockCastIronShaft(),
-      $"iwex:castironshaft-shaft-{orientation}",
+      $"iwex:mpenergy-shaft-{orientation}",
       id,
       ("type", "shaft"),
       ("orientation", orientation)
@@ -107,7 +107,7 @@ public class CastIronBevelTests
   [Fact]
   public void Every_shaft_orientation_can_become_a_bevel()
   {
-    // A bevel is grown from a shaft of the SAME axis by code (`castironbevel-bevel-{orientation}`), so a shaft
+    // A bevel is grown from a shaft of the same axis by code (`mpenergy-bevel-{orientation}`), so a shaft
     // orientation with no matching bevel variant silently does nothing when a gear is used on it - that axis
     // could climb but never branch. These two sets must not drift apart.
     Assert.Equal(
@@ -121,7 +121,7 @@ public class CastIronBevelTests
   {
     var gear = new ItemStack(TestBlocks.Configure(new Block(), "iwex:bevelgear", 211));
     var other = new ItemStack(
-      TestBlocks.Configure(new Block(), "iwex:castironshaft-shaft-ns", 212)
+      TestBlocks.Configure(new Block(), "iwex:mpenergy-shaft-ns", 212)
     );
 
     Assert.True(BlockCastIronBevel.IsBevelGearItem(gear));
@@ -137,7 +137,7 @@ public class CastIronBevelTests
   public void A_perpendicular_shaft_grows_a_gear_on_that_face()
   {
     var (world, pos, be) = Scene("ns");
-    // A we-shaft to the east faces back (presents its west connector), so a gear grows on EAST.
+    // A we-shaft to the east faces back (presents its west connector), so a gear grows on east.
     world.Place(pos.AddCopy(BlockFacing.EAST), ShaftBlock("we", 260), new BlockEntityCastIronShaft());
 
     Assert.Contains(BlockFacing.EAST, be.GearedFaces());
@@ -202,7 +202,7 @@ public class CastIronBevelTests
     var drops = bevel.GetDrops(world.World, pos, null);
 
     Assert.Equal(2, drops.Length);
-    Assert.Contains(drops, d => d.Collectible?.Code?.ToString() == "iwex:castironshaft-shaft-ns");
+    Assert.Contains(drops, d => d.Collectible?.Code?.ToString() == "iwex:mpenergy-shaft-ns");
     Assert.Contains(drops, d => d.Collectible?.Code?.ToString() == "iwex:bevelgear");
   }
 

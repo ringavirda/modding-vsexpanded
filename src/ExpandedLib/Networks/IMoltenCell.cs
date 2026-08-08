@@ -5,7 +5,7 @@ namespace ExpandedLib.Networks;
 /// <summary>
 /// The per-cell contract the <see cref="MoltenNetwork"/> flow driver needs from each molten-canal
 /// block entity: its stored metal (amount / type / temperature), capacity, the two flow-blocking
-/// latches, and the two capability flags that used to be concrete block-entity type checks - a flow
+/// latches, and two capability flags in place of concrete block-entity type checks - a flow
 /// source (the canal start, where the distance-from-start BFS roots) and a drain fitting (tap / mold
 /// pedestal) that accepts even the final sub-minimum dregs so a run can empty completely.
 /// <para>

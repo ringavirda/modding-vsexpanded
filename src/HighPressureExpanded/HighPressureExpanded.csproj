@@ -90,6 +90,25 @@
     <ProjectReference Include="..\LowPressureExpanded\LowPressureExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <!--
+      iwex arrives transitively through lpex, and declaring it explicitly here is the only thing
+      that lets Private=false apply to it. `<Private>false</Private>` suppresses copy-local for the
+      one item it sits on; it does not propagate to a project's transitive closure. Without the
+      explicit item the SDK synthesises a transitive ProjectReference for iwex with the default
+      Private=true and copies IronworkingExpanded.dll into hpex's output - a second assembly carrying
+      a ModSystem, which makes Vintage Story refuse to load the mod at all ("Found multiple .dll
+      files with ModSystems and/or ModInfo attributes"), leaving hpex silently absent from the
+      loaded-mod list. The control that proves it: exlib is transitive through lpex too, yet
+      exlib.dll is not in the output - because it is declared directly above, and the explicit item's
+      metadata beats the synthesised one. smex lists all three explicitly for the same reason.
+      This affects the release zip as well as local staging: dist/CakeBuild stages `publish/*`, and
+      publish copies runtime deps the same way.
+      DisableTransitiveProjectReferences is not the fix - it strips the compile reference too, and
+      hpex uses iwex types directly (BlockNetworkPipe.Blocks). modinfo.json already declares iwex.
+    -->
+    <ProjectReference Include="..\IronworkingExpanded\IronworkingExpanded.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <!-- Source generator that emits the HpexValues accessor from the [ExConfig] HpexConfig POCO.
          OutputItemType=Analyzer + ReferenceOutputAssembly=false: compile-time only, ships nothing. -->
     <ProjectReference

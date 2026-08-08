@@ -8,7 +8,7 @@ using Vintagestory.GameContent.Mechanics;
 namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
-/// Shared base for a mechanical-power node whose block renders a STATIC body plus a vanilla-spun axle -
+/// Shared base for a mechanical-power node whose block renders a static body plus a vanilla-spun axle -
 /// the Bessemer transmission and the engine MP generator. Vanilla's MP renderer draws only the rotating
 /// <c>Axle*</c> elements (selected by <see cref="GetShape"/>), so the static remainder of the shape has to
 /// be tesselated and added separately; both consumers hand-rolled a byte-identical
@@ -67,7 +67,7 @@ public abstract class BEBehaviorMPSubmachineBase(BlockEntity blockentity)
       Shape? shape = Api.Assets.TryGet(shapeLoc)?.ToObject<Shape>();
       if (shape != null)
       {
-        // Render the whole body EXCEPT the Axle* elements; vanilla's MP renderer spins those.
+        // Render the whole body except the Axle* elements; vanilla's MP renderer spins those.
         Shape baseShape = shape.Clone();
         baseShape.Elements = baseShape
           .Elements.Where(e => !e.Name?.StartsWith("Axle") ?? true)

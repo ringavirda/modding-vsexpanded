@@ -5,11 +5,15 @@ using Vintagestory.API.Common;
 namespace IronworkingExpanded.Items;
 
 /// <summary>
-/// The composition of a <see cref="ItemBurden"/> stack: the relative parts of iron ore, flux
-/// (crushed limestone) and fuel (the carbon reductant - coke, or charcoal at a worse carbon density)
-/// it was mixed from. Stored as raw parts on the stack and read back as fractions, so splitting/merging
-/// a stack preserves the per-unit proportions. The blast furnace reads these to scale heat /
-/// iron-per-tick / slag; the mixer writes them from its inputs.
+/// The composition of a <see cref="ItemBurden"/> stack, and of one <c>ChargeSegment</c>: the relative parts
+/// of iron ore, flux (lime) and fuel (carbon). Stored as raw parts and read back as fractions, so
+/// splitting or merging a stack preserves the per-unit proportions.
+/// <para>
+/// <b><see cref="Fuel"/> is always 0 on burden the burdenmaker made</b> - burden is ore and flux. The
+/// field stays because the same struct describes a <em>column's</em> composition, where fuel bands and
+/// legacy unstamped charge both contribute carbon, and because burn-out scales a legacy stamp's carbon
+/// through it.
+/// </para>
 /// </summary>
 public readonly record struct BurdenMix(float Iron, float Flux, float Fuel)
 {
@@ -22,48 +26,48 @@ public readonly record struct BurdenMix(float Iron, float Flux, float Fuel)
 }
 
 /// <summary>
-/// Read/write helpers and the (config-tunable) grade classifier for blast burden. Shared by the
-/// burden item's tooltip, the mixer (writes the mix + names the target grade) and, later, the
-/// blast furnace (reads the mix to drive smelting).
+/// Read/write helpers and the (config-tunable) grade classifier for burden. Shared by the burden item's
+/// tooltip, the <c>BlockEntityBurdenmaker</c> (the only writer - it stamps the mix and previews the grade
+/// before the gate opens) and the shaft furnaces (they read the mix to drive the heat balance).
 /// </summary>
 public static class Burden
 {
   private const string IronKey = "iron";
   private const string FluxKey = "flux";
   private const string FuelKey = "fuel";
-  private const string LegacyFuelKey = "coke"; // pre-rename stacks stored the fuel part as "coke"
 
-  /// <summary>Burden family for the blast furnace (ore + flux + coke). The default family, so every
-  /// existing burden stack and every legacy blast mix keeps working with no migration.</summary>
-  public const string FamilyOre = "ore";
+  private const string OreCode = "iwex:burden";
 
-  /// <summary>Burden family for the cupola (scrap metal + flux + coke, remelted to cast iron).</summary>
-  public const string FamilyRemelt = "remelt";
+  // There is one burden item and deliberately no family model: "which family" would have exactly one
+  // answer, and a gate with one answer is not a gate - it is a thing that can only ever be wrong. The
+  // cupola charges metal directly, so no second burden family has a consumer.
+  //
+  // In place of a family gate, the shaft counts anything it does not recognise as charge as *rejected*,
+  // which blocks the conversion and keeps the HUD honest. That covers what a family check would cover
+  // and also the cases it never could (fuel-free rubbish, a foreign mod's item).
+  //
+  // There is likewise no legacy `coke` attribute fallback: a second stamping convention is what
+  // `docs/design/items/burden.md` Gotcha 2 warns against, and the burdenmaker is the only writer in
+  // existence, so nothing can be stamped any other way.
+  // `Two_batches_at_the_same_ratio_read_the_same_grade_and_merge` pins that closed.
 
-  /// <summary>True when <paramref name="stack"/> is the ore burden item (<c>iwex:burden</c>) - the
-  /// blast-furnace charge the ore bunker and the blast furnace gate on. Deliberately narrow: the ore
-  /// bunker stores only this family, so broadening it would pool remelt burden into an ore bunker.</summary>
+  /// <summary>True when <paramref name="stack"/> is the burden item (<c>iwex:burden</c>) - the prepared
+  /// blast-furnace charge the burdenmaker's basin and the blast furnace both gate on.</summary>
   public static bool Is([NotNullWhen(true)] ItemStack? stack) =>
     stack?.Collectible?.Code is { Domain: "iwex", Path: "burden" };
 
-  /// <summary>True when <paramref name="stack"/> is the remelt burden item (<c>iwex:remeltburden</c>) -
-  /// the cupola charge.</summary>
-  public static bool IsRemelt([NotNullWhen(true)] ItemStack? stack) =>
-    stack?.Collectible?.Code is { Domain: "iwex", Path: "remeltburden" };
-
-  /// <summary>True for any prepared burden, either family. The furnace core / mixer recognise charge
-  /// through this; the per-furnace family gate then decides which family a given furnace will convert.</summary>
-  public static bool IsAny([NotNullWhen(true)] ItemStack? stack) =>
-    Is(stack) || IsRemelt(stack);
-
   /// <summary>
-  /// The burden family of a stack, derived from its <b>item identity</b> (which collectible) rather than
-  /// a stamped attribute - so distinct items stay legible and can never accidentally merge piles. Remelt
-  /// burden reads as <see cref="FamilyRemelt"/>; every other charge (ore burden, legacy blast mix) reads
-  /// as <see cref="FamilyOre"/>, which is why an unstamped legacy world keeps loading as ore burden.
+  /// The code-string form of <see cref="Is"/>. A charge column stores its material as an
+  /// asset-location <b>string</b> (<c>ChargeSegment.Material</c>), never as an <c>ItemStack</c> - it holds
+  /// units of a substance, which is the whole reason the layered model can split a band without splitting
+  /// a stack. So every gate the shaft applies to charge needs a form that takes the code, and the pair
+  /// lives here rather than apart so they cannot drift into disagreeing about what a burden is.
+  /// <para>
+  /// Its negation is how the shaft recognises <b>fuel</b>: a segment that is not burden is coke (or
+  /// charcoal), which is what the raceway needs under the burden for the column to light at all.
+  /// </para>
   /// </summary>
-  public static string FamilyOf(ItemStack? stack) =>
-    IsRemelt(stack) ? FamilyRemelt : FamilyOre;
+  public static bool IsCode(string? material) => material == OreCode;
 
   /// <summary>Stamps the mix parts onto a burden stack (any non-negative parts; read back as fractions).</summary>
   public static void Write(ItemStack stack, BurdenMix mix)
@@ -74,50 +78,41 @@ public static class Burden
     a.SetFloat(FuelKey, Math.Max(0f, mix.Fuel));
   }
 
-  /// <summary>Reads the mix parts off a burden stack; an unstamped stack reads as empty. Falls back to
-  /// the legacy <c>coke</c> attribute so burden stamped before the fuel rename still reads its carbon.</summary>
+  /// <summary>Reads the mix parts off a burden stack; an unstamped stack reads as empty.</summary>
   public static BurdenMix Read(ItemStack? stack)
   {
     var a = stack?.Attributes;
     if (a == null)
       return default;
-    return new BurdenMix(
-      a.GetFloat(IronKey),
-      a.GetFloat(FluxKey),
-      a.HasAttribute(FuelKey) ? a.GetFloat(FuelKey) : a.GetFloat(LegacyFuelKey)
-    );
+    return new BurdenMix(a.GetFloat(IronKey), a.GetFloat(FluxKey), a.GetFloat(FuelKey));
   }
 
   /// <summary>
-  /// Lang key of the named grade for a mix (used in the burden tooltip and the mixer block info).
-  /// Returns the first <see cref="IwexConfig.BurdenProfiles"/> entry whose iron/flux/coke bands all
-  /// contain the mix. A mix outside every band is <c>off-spec</c>; the common, fixable case - too
-  /// little flux to slag, below every grade's flux floor - gets its own <c>lowflux</c> status so the
-  /// player knows to add limestone rather than discard the batch. Both are reloadable into an empty mixer.
+  /// Lang key of the named grade for a mix - the burden tooltip and the burdenmaker's readout both print
+  /// it, so <em>"right"</em> at the machine and <em>"right"</em> at the furnace are one answer.
+  /// <para>
+  /// <b>Graded on flux alone.</b>
+  /// Burden is ore and flux; coke is charged as its own bands at the furnace
+  /// (<c>docs/design/layered-charge.md</c>), so a coke band on the burden would be a second, disagreeing
+  /// answer to "how much carbon is at the raceway". With fuel not on the item, iron is just
+  /// <c>1 − flux</c> - so an iron band would be a second knob for one quantity, and the bands are
+  /// flux-only.
+  /// </para>
+  /// <para>
+  /// There is no derived low-flux floor either: <c>underfluxed</c> is an explicit band, and an
+  /// inference would only ever shadow it.
+  /// </para>
   /// </summary>
   public static string ProfileLangKey(BurdenMix mix)
   {
     if (!mix.HasContent)
       return "iwex:burden-profile-empty";
 
-    // Track the lowest flux floor any grade demands while scanning for a match.
-    float fluxFloor = float.MaxValue;
     foreach (BurdenProfile p in IwexValues.BurdenProfiles)
-    {
-      if (p.MinFlux < fluxFloor)
-        fluxFloor = p.MinFlux;
-      if (
-        InBand(mix.IronFrac, p.MinIron, p.MaxIron)
-        && InBand(mix.FluxFrac, p.MinFlux, p.MaxFlux)
-        && InBand(mix.FuelFrac, p.MinFuel, p.MaxFuel)
-      )
+      if (InBand(mix.FluxFrac, p.MinFlux, p.MaxFlux))
         return "iwex:burden-profile-" + p.Key;
-    }
 
-    // Off-spec. Single out a flux shortfall when every grade needs some flux and this mix is under it.
-    if (fluxFloor > 0f && fluxFloor < float.MaxValue && mix.FluxFrac < fluxFloor)
-      return "iwex:burden-profile-lowflux";
-
+    // Unreachable with the shipped bands (they tile 0..1), but a player's edited config can leave a gap.
     return "iwex:burden-profile-offspec";
   }
 

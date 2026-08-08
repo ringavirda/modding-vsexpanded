@@ -228,92 +228,212 @@ public class BlockMigrationModSystem : ChunkColumnSweeperModSystem
       );
   }
 
+  /// <summary>One declared block remap, before any resolution against the world.</summary>
+  public readonly record struct DeclaredRemap(
+    string Migration,
+    AssetLocation OldCode,
+    AssetLocation NewCode
+  );
+
+  /// <summary>
+  /// Every <c>(oldCode, newCode)</c> pair declared by any discovered <see cref="IBlockCodeMigration"/>,
+  /// <b>before</b> resolution against the world.
+  /// <para>
+  /// Exposed because the migration contract is only testable as a whole: one mod's migrator is
+  /// routinely the sole path by which a code from <i>another</i> mod's released build reaches a live
+  /// block, so asserting per-migration is exactly the shape that lets a released code fall through the
+  /// gap between two of them.
+  /// </para>
+  /// </summary>
+  public static IEnumerable<DeclaredRemap> DeclaredBlockRemaps(ICoreServerAPI api)
+  {
+    foreach (IBlockCodeMigration migration in Discover<IBlockCodeMigration>())
+      foreach (var (oldCode, newCode) in migration.GetRemaps(api))
+        yield return new DeclaredRemap(migration.Name, oldCode, newCode);
+  }
+
+  /// <summary>Every block code any discovered <see cref="IBlockRemoval"/> declares for purging. A
+  /// released code landing here is <i>covered</i> - deliberately deleted is not orphaned.</summary>
+  public static IEnumerable<(string Removal, AssetLocation Code)> DeclaredRemovals(
+    ICoreServerAPI api
+  )
+  {
+    foreach (IBlockRemoval removal in Discover<IBlockRemoval>())
+      foreach (AssetLocation code in removal.GetRemovals(api))
+        if (code != null)
+          yield return (removal.Name, code);
+  }
+
+  /// <summary>Guards a pathological declaration (A→B→A) from spinning the chain walk.</summary>
+  internal const int MaxChainHops = 16;
+
+  /// <summary>
+  /// Follows the declared remap graph from <paramref name="from"/> to the code it finally lands on.
+  /// <para>
+  /// Pure on purpose - no world, no registry, no discovery - because this is the part that decides
+  /// whether a save from three renames ago survives, and it must be provable without standing up five
+  /// mods. A chain's intermediate codes are dead by construction (that is what a rename <i>is</i>), so
+  /// resolution can only happen at the terminal.
+  /// </para>
+  /// </summary>
+  /// <param name="next">The next hop for a code, or null when it is terminal.</param>
+  /// <param name="isPurged">Whether a code is declared for removal; a purge terminates the chain.</param>
+  /// <param name="purged">Set when the walk ended on a declared removal.</param>
+  /// <param name="overflowed">Set when <see cref="MaxChainHops"/> was hit - a cycle, or a chain far
+  /// longer than any real rename history.</param>
+  // System.Func, spelled out: Vintagestory.API.Common declares its own Func<,> and the two are
+  // ambiguous in this file.
+  internal static AssetLocation FollowChain(
+    AssetLocation from,
+    System.Func<AssetLocation, AssetLocation?> next,
+    System.Func<AssetLocation, bool> isPurged,
+    out bool purged,
+    out bool overflowed
+  )
+  {
+    AssetLocation cursor = from;
+    purged = false;
+    overflowed = false;
+
+    for (int hops = 0; ; hops++)
+    {
+      // Ask for the next hop before testing the limit. Testing first makes a chain of exactly
+      // MaxChainHops report an overflow even though it terminates cleanly - the guard is for a cycle,
+      // not for a long-but-finite rename history.
+      AssetLocation? hop = next(cursor);
+      if (hop == null)
+        return cursor;
+
+      if (hops >= MaxChainHops)
+      {
+        overflowed = true;
+        return cursor;
+      }
+
+      cursor = hop;
+      if (isPurged(cursor))
+      {
+        purged = true;
+        return cursor;
+      }
+    }
+  }
+
   private void BuildRemapTable()
   {
+    // ── Pass 1: collect every declared pair without resolving it against the world. ──────────────
+    // Resolution has to wait, because a chain's intermediate codes are dead by construction: if
+    // ppex:x → lpex:x → hpex:x, then lpex:x is precisely the code that no longer registers. The old
+    // one-pass version resolved as it collected, so it could only ever honour a single hop, and every
+    // multi-hop history (ppex → lpex → hpex, smex → iwex → renamed) silently lost its oldest worlds.
+    var declared =
+      new Dictionary<AssetLocation, (AssetLocation New, IBlockEntityMigration? Be, string Name)>();
+
     foreach (IBlockCodeMigration migration in Discover<IBlockCodeMigration>())
     {
       var beMigration = migration as IBlockEntityMigration;
-      int count = 0;
       foreach (var (oldCode, newCode) in migration.GetRemaps(_sapi))
       {
-        // GetBlock resolves missing-block placeholders too, so a null means this world has no
-        // such legacy block - skip it.
-        if (_sapi.World.GetBlock(oldCode) == null)
+        if (oldCode == null || newCode == null || oldCode.Equals(newCode))
           continue;
 
-        Block? newBlock = _sapi.World.GetBlock(newCode);
-        if (newBlock == null || newBlock.BlockId == 0)
+        if (declared.TryGetValue(oldCode, out var existing))
         {
-          _sapi.Logger.Warning(
-            Tag
-              + " Migration '{0}': replacement block '{1}' is not registered; skipping.",
-            migration.Name,
-            newCode
-          );
+          if (!existing.New.Equals(newCode))
+            _sapi.Logger.Warning(
+              Tag
+                + " Migration '{0}' remaps {1} but it is already mapped elsewhere; keeping the first mapping.",
+              migration.Name,
+              oldCode
+            );
           continue;
         }
 
-        if (
-          _remap.TryGetValue(oldCode, out RemapEntry existing)
-          && existing.NewBlock?.Code.Equals(newCode) != true
-        )
-        {
-          _sapi.Logger.Warning(
-            Tag
-              + " Migration '{0}' remaps {1} but it is already mapped elsewhere; keeping the first mapping.",
-            migration.Name,
-            oldCode
-          );
-          continue;
-        }
-
-        _remap[oldCode] = new RemapEntry(
-          newBlock,
-          oldCode,
-          newCode,
-          beMigration
-        );
-        count++;
+        declared[oldCode] = (newCode, beMigration, migration.Name);
       }
-
-      if (count > 0)
-        _sapi.Logger.Notification(
-          Tag + " Migration '{0}': {1} legacy block code(s) found to update.",
-          migration.Name,
-          count
-        );
     }
 
-    // Purges (IBlockRemoval): same matching, but the action is "delete" (null replacement).
+    // ── Pass 2: declared purges. A removal terminates a chain just as a live block does. ─────────
+    var removals = new Dictionary<AssetLocation, string>();
     foreach (IBlockRemoval removal in Discover<IBlockRemoval>())
-    {
-      int count = 0;
       foreach (AssetLocation code in removal.GetRemovals(_sapi))
+        if (code != null && !declared.ContainsKey(code))
+          removals.TryAdd(code, removal.Name);
+
+    // ── Pass 3: follow each declared source to its terminal, then resolve that once. ─────────────
+    var perMigration = new Dictionary<string, int>();
+    foreach (AssetLocation oldCode in declared.Keys)
+    {
+      // GetBlock resolves missing-block placeholders too, so a null means this world has no such
+      // legacy block - nothing to migrate.
+      if (_sapi.World.GetBlock(oldCode) == null)
+        continue;
+
+      // The block-entity migration is the first hop's: it is the one that has actually seen this old
+      // code. Every hop in the suite copies the tree verbatim, so a longer chain does not change the
+      // outcome - but if a hop ever needs to reshape state, that hop must be collapsed into a direct
+      // pair rather than relied on mid-chain.
+      var (_, beMigration, sourceName) = declared[oldCode];
+
+      AssetLocation cursor = FollowChain(
+        oldCode,
+        c => declared.TryGetValue(c, out var hop) ? hop.New : null,
+        removals.ContainsKey,
+        out bool purged,
+        out bool overflowed
+      );
+
+      if (overflowed)
+        _sapi.Logger.Warning(
+          Tag + " Migration chain from '{0}' exceeded {1} hops; stopping at '{2}'.",
+          oldCode,
+          MaxChainHops,
+          cursor
+        );
+
+      if (purged)
       {
-        if (code == null || _sapi.World.GetBlock(code) == null)
-          continue;
-
-        if (_remap.ContainsKey(code))
-        {
-          _sapi.Logger.Warning(
-            Tag
-              + " Removal '{0}' targets {1} but it is already mapped elsewhere; keeping the existing mapping.",
-            removal.Name,
-            code
-          );
-          continue;
-        }
-
-        _remap[code] = new RemapEntry(null, code, null, null);
-        count++;
+        _remap[oldCode] = new RemapEntry(null, oldCode, null, null);
+        perMigration[sourceName] = perMigration.GetValueOrDefault(sourceName) + 1;
+        continue;
       }
 
-      if (count > 0)
-        _sapi.Logger.Notification(
-          Tag + " Removal '{0}': {1} block code(s) marked for purge.",
-          removal.Name,
-          count
+      Block? newBlock = _sapi.World.GetBlock(cursor);
+      if (newBlock == null || newBlock.BlockId == 0)
+      {
+        _sapi.Logger.Warning(
+          Tag
+            + " Migration '{0}': {1} resolves to '{2}', which is not registered; skipping.",
+          sourceName,
+          oldCode,
+          cursor
         );
+        continue;
+      }
+
+      _remap[oldCode] = new RemapEntry(newBlock, oldCode, cursor, beMigration);
+      perMigration[sourceName] = perMigration.GetValueOrDefault(sourceName) + 1;
+    }
+
+    foreach (var (name, count) in perMigration)
+      _sapi.Logger.Notification(
+        Tag + " Migration '{0}': {1} legacy block code(s) found to update.",
+        name,
+        count
+      );
+
+    // Purges declared directly on a live code (not reached through a chain).
+    foreach (var (code, removalName) in removals)
+    {
+      if (_sapi.World.GetBlock(code) == null || _remap.ContainsKey(code))
+        continue;
+
+      _remap[code] = new RemapEntry(null, code, null, null);
+      _sapi.Logger.Notification(
+        Tag + " Removal '{0}': block code {1} marked for purge.",
+        removalName,
+        code
+      );
     }
 
     // Item migrations: rewrites for held stacks only (items are never in the world voxel grid).

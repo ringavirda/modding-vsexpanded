@@ -1,12 +1,7 @@
 {
   "code": "castplate-heavy",
   "shape": {
-    "base": "game:item/plate"
-  },
-  "textures": {
-    "all": {
-      "base": "iwex:block/metal/castiron"
-    }
+    "base": "iwex:item/heavyplate"
   },
   "maxstacksize": 16,
   "materialDensity": 7200,

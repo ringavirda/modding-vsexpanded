@@ -23,17 +23,42 @@ namespace IronworkingExpanded.BlockStructures.Furnaces;
 public abstract class BlockFurnaceCoreBase : Block
 {
   /// <summary>
+  /// The single <c>code</c> every furnace part is registered under - cores, doors, hearths, the
+  /// chimney cap, the charge pile, the tap, the tuyere and the blower alike. Each is told apart by its
+  /// <c>type</c> variant, exactly as the pipe family is.
+  /// <para>
+  /// <b>This is not a style choice.</b> Several <c>IwexCodes</c> selectors mean "any member of this
+  /// family" and are built as <c>Code + "*"</c>, and some of those are fed straight into multiblock
+  /// <c>Legend</c>s. If one part kept its own <c>furnace-X</c> code, this code would be a proper prefix
+  /// of it and such a wildcard would match the <b>wrong part</b> - a layout would accept a charge door in
+  /// a tuyere cell, with every code resolving and no test failing. Guarded by
+  /// <c>CodePrefixCollision</c>; the rule is N7 in <c>docs/design/mechanics/naming.md</c>.
+  /// </para>
+  /// <para>
+  /// The consequence for callers: a family wildcard must be the generated <c>.Any</c>
+  /// (<c>iwex:furnace-tuyere-*</c>), never <c>Code + "*"</c>. That misuse is the one thing the guard
+  /// cannot see, because it checks code against code.
+  /// </para>
+  /// </summary>
+  public const string FurnaceCode = "furnace";
+
+  /// <summary>
   /// The def fragment every furnace core shares: a refractory-brick cube oriented by a <c>side</c>
   /// variant and carrying the build-outline projection. The caller adds its own
   /// <c>.Class</c>/<c>.EntityClass</c>, brick-tier faces and <c>.MultiblockLayout</c>. The cube's
   /// north face carries an orientation marker and its south face the furnace-type label (both applied
   /// by the caller), so the anchor reads apart from the surrounding wall bricks - and tells the builder
-  /// which way it faces - at a glance. That is the job the old visually-distinct grating shape used to
-  /// do; the labelled faces do it better, since they also name the furnace.
+  /// which way it faces - at a glance. The labelled faces do the job a visually-distinct core shape
+  /// would, and better, since they also name the furnace.
   /// </summary>
+  /// <param name="code">The blocktype <c>code</c>. iwex's cores all pass <see cref="FurnaceCode"/>;
+  /// smex passes its own, because a shared helper must never rename another mod's block.</param>
+  /// <param name="type">The <c>type</c> state naming the family member, or <c>null</c> for a core that
+  /// carries no <c>type</c> group at all (smex's, until its own naming pass).</param>
   protected static ExBlockDef Core(
     string domain,
     string code,
+    string? type,
     string path,
     params string[] brickTiers
   )
@@ -42,17 +67,28 @@ public abstract class BlockFurnaceCoreBase : Block
       .Create(domain, code, path)
       // Must precede any other right-click consumer so its PreventSubsequent wins.
       .Behavior("MultiblockStructure")
-      .Behavior("HorizontalOrientable");
+      .Behavior("ExOrientable");
 
-    // Refractory-tier variant, declared BEFORE the side group so the code reads {code}-{tier}-{side}
-    // (and the "*-north" creative/recipe selectors still match). Cores that take any refractory brick
+    // Declared first so the code reads furnace-{type}-{tier}-{side}. Every iwex furnace part
+    // shares the one code `iwex:furnace` and is told apart by `type`; a part with its own `furnace-X`
+    // code would be prefixed by this one, and a wildcard built from it (IwexCodes) would then match the
+    // wrong part in a layout legend. See N7 in docs/design/mechanics/naming.md.
+    //
+    // smex passes null: it keeps its own code and gains no group. When this parameter was not here,
+    // the helper silently renamed `smex:blastfurnacecore` to `smex:furnace` - a cross-mod rename nobody
+    // asked for, caught only because smex's generated code table drifted.
+    if (type != null)
+      def = def.VariantGroup("type", type);
+
+    // Refractory-tier variant, declared before the side group so the code reads {code}-{tier}-{side}
+    // (and the "*-n" creative/recipe selectors still match). Cores that take any refractory brick
     // pass all three tiers; the tier3-only hot core passes none and stays a single, tier-less block.
     if (brickTiers.Length > 0)
       def = def.VariantGroup("tier", brickTiers);
 
     return def
-      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-      .CreativeCommon("*-north")
+      .SideVariant()
+      .CreativeCommon("*-n")
       // A plain cube: its per-face texture codes (north/south/east/west/up/down) are what let the
       // caller stamp the orientation marker and type label onto just the two faces that carry them.
       .Shape("game:block/basic/cube")

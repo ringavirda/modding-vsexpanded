@@ -1,4 +1,5 @@
 using System;
+using ExpandedLib;
 using ExpandedLib.Renderers;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Networks;
@@ -144,8 +145,13 @@ public class BlockEntityManualFluidPump : BlockEntity
       float drawn = inputNet?.TryConsumeLiquid(move, ba) ?? 0f;
       if (drawn > 0f)
         // Hand-cranked head: a fixed 1 atm - enough to lift water into a boiler.
-        outputNet?.TryProduceLiquid(drawn, 20f, 1f, ba);
-      intake!.ProduceWater(amount, 20f, ba);
+        outputNet?.TryProduceLiquid(
+          drawn,
+          ExlibValues.AmbientTemperature,
+          1f,
+          ba
+        );
+      intake!.ProduceWater(amount, ExlibValues.AmbientTemperature, ba);
     }
 
     if (drawing != _drawingWater)

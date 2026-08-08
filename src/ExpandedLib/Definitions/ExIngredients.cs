@@ -4,7 +4,7 @@ namespace ExpandedLib.Definitions;
 
 /// <summary>
 /// The catalogue of vanilla crafting ingredients that recur across every mod's code-first recipe files -
-/// authored ONCE here instead of re-declared as a private factory in each provider (the <c>Hammer</c>/
+/// authored once here instead of re-declared as a private factory in each provider (the <c>Hammer</c>/
 /// <c>Plate</c>/<c>Nails</c>/<c>Rod</c>/<c>Gear</c> trio was copy-pasted across the lpex/iwex/smex recipe
 /// files). Each entry is an <see cref="IngredientBuilder"/> factory in the exact shape
 /// <see cref="GridRecipeBuilder.Ingredient"/> accepts, so a provider references it by name after a

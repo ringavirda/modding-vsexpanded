@@ -25,11 +25,13 @@ public class SandCastingCellBrickMigrationTests
   {
     var world = new TestWorld();
     world.Register(
-      TestBlocks.Configure(new Block(), "iwex:sandcastingcell-fire-north", 100)
+      TestBlocks.Configure(new Block(), "iwex:casting-sandcell-fire-n", 100)
     );
 
     var remaps = Remaps(world);
-    var fireNorth = new AssetLocation("iwex", "sandcastingcell-fire-north");
+    // `-n`, not `-north`: the target is a live code and sides were respelled on 2026-08-04. The
+    // source string is the historical one and does not move with it.
+    var fireNorth = new AssetLocation("iwex", "casting-sandcell-fire-n");
 
     Assert.Single(remaps);
     Assert.Equal(fireNorth, remaps[new AssetLocation("iwex", "sandcastingcell")]);
@@ -38,7 +40,7 @@ public class SandCastingCellBrickMigrationTests
   [Fact]
   public void Nothing_is_remapped_when_the_new_block_is_absent()
   {
-    // No sandcastingcell-fire-north registered - the migration has nothing safe to remap to.
+    // No casting-sandcell-fire-n registered - the migration has nothing safe to remap to.
     Assert.Empty(Remaps(new TestWorld()));
   }
 }

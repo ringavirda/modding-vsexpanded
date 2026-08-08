@@ -8,14 +8,14 @@ namespace ExpandedLib.Blocks.Structures;
 /// <summary>
 /// Shared base for a mega-block that occupies one grid cell but renders across a multi-cell footprint
 /// reserved with invisible <see cref="BlockStructureFiller"/> cells (real per-cell collision, with
-/// interaction/break/info rerouted to the principal). It folds the filler triad that was copy-pasted
-/// byte-for-byte across every such block (audit Theme A, block side): refuse placement unless the whole
+/// interaction/break/info rerouted to the principal). It folds the filler triad that would otherwise be
+/// copy-pasted byte-for-byte across every such block: refuse placement unless the whole
 /// footprint is clear, spawn the fillers on placement, and clear them again on break.
 /// <para>
 /// Concrete blocks supply the footprint rotation through <see cref="StructureAngle"/> and, when they need
 /// to touch a filler cell right after placement, override <see cref="OnFootprintPlaced"/> (the boiler turns
 /// its steam-connector cell into a port; the engine snaps an already-present sub-machine to match). Drops
-/// are deliberately NOT handled here: most of these blocks are raised through construction and must never
+/// are deliberately not handled here: most of these blocks are raised through construction and must never
 /// drop themselves (so they override <c>GetDrops</c> to <c>[]</c>), but the engines keep a craftable-frame
 /// self-drop - leaving that choice to each block.
 /// </para>

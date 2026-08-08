@@ -1,6 +1,6 @@
 # Notes for translators
 
-Thank you for translating **Pipes & Power Expanded** / **Steelmaking Expanded** / **ExpandedLib**!
+Thank you for translating **Low Pressure Expanded** / **Steelmaking Expanded** / **ExpandedLib**!
 Please read this before editing the lang files - these mods do a few non-obvious things at runtime.
 
 ## The basics

@@ -4,8 +4,8 @@ using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
 /// <summary>
-/// The hot blast furnace. Deliberately empty: it is the same machine as the cold furnace, and every
-/// heat tunable it used to restate was an identical copy of iwex's. What makes it the hot one is its
+/// The hot blast furnace. Deliberately empty: it is the same machine as the cold furnace, and any
+/// heat tunable restated here would be an identical copy of iwex's. What makes it the hot one is its
 /// layout - a shaft that carries exhaust outlets and a sealed bell top - and the cowper on its blast
 /// line, which arrives preheated at the tuyeres. The heat balance in
 /// <see cref="IronworkingExpanded.BlockStructures.Furnaces.BlockEntityFurnaceCore.ComputeHeatBalance"/>
@@ -18,4 +18,4 @@ namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityBlastFurnaceHot : BlockEntityBlastFurnace { }
+public class BlockEntityBlastFurnaceHot : BlockEntityShaftFurnace { }

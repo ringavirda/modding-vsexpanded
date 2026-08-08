@@ -4,6 +4,8 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using LowPressureExpanded.BlockStructures.Boiler.BlockEntities;
 
+using Vintagestory.API.MathTools;
+
 namespace LowPressureExpanded.BlockStructures.Boiler.Blocks;
 
 /// <summary>
@@ -76,15 +78,15 @@ public partial class BlockBoilerCornish
       )
       .MultiblockLayout(s =>
         s.Origin(-1, -2)
-          .Legend('#', "exlib:structurefiller")
-          .Legend('L', "lpex:boilercornish*")
-          .Legend('p', "lpex:pipe-passthrough-fire-*")
-          .Legend('B', "lpex:pipe-passthroughbend-fire-u*")
-          .Legend('b', "game:claybricks-good-fire")
-          .Legend('a', "game:air*")
-          .Legend('c', "@(air|coalpile)")
-          .Legend('d', "game:cokeovendoor*")
-          .Legend('o', "lpex:pipe-outlet-fire-u")
+          .Legend('#', ExCodes.Filler)
+          .Legend('L', LpexBlocks.BoilerCornish.Any)
+          .Legend('p', LpexCodes.PipePassthroughFire)
+          .Legend('B', LpexCodes.PipePassthroughBendFireUp)
+          .Legend('b', VanillaCodes.FireBricks)
+          .Legend('a', VanillaCodes.Air)
+          .Legend('c', VanillaCodes.CoalBed)
+          .Legend('d', VanillaCodes.Sealing(BlockFacing.NORTH))
+          .Legend('o', LpexCodes.PipeOutletFireUp)
           .Layer(
             1,
             """

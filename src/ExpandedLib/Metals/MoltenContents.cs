@@ -8,7 +8,7 @@ namespace ExpandedLib.Metals;
 /// through the stack's <c>blockEntityAttributes</c> tree - the same trees the vanilla
 /// tool mold and this mod's barrel block entity persist, so a parked item placed back
 /// into the world restores seamlessly. The tap, the mold pedestal, the barrel block and
-/// the held-item info all used to hand-roll these reads/writes.
+/// the held-item info all share these reads/writes.
 /// </summary>
 public static class MoltenContents
 {

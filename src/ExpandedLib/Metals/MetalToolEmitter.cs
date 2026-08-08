@@ -6,19 +6,19 @@ using Newtonsoft.Json.Linq;
 namespace ExpandedLib.Metals;
 
 /// <summary>
-/// The TOOL half of the generated metal item family: named stat presets, one template per tool type, and
+/// The tool half of the generated metal item family: named stat presets, one template per tool type, and
 /// the single builder that turns (metal x template x stats) into an <see cref="ExItemDef"/>. Split out of
 /// <see cref="MetalFamilyEmitter"/>, which keeps the resource forms (ingot / plate / bits / rod / nails);
 /// the two are emitted together so one pass over the metal catalogue yields a metal's whole family.
 /// <para>
-/// A metal opts in through <see cref="MetalDef.Tools"/>. The model is deliberately FLAT: every generated
-/// tool of a metal shares ONE durability / attack power / mining tier, and each tool paints its single
+/// A metal opts in through <see cref="MetalDef.Tools"/>. The model is deliberately flat: every generated
+/// tool of a metal shares one durability / attack power / mining tier, and each tool paints its single
 /// mining speed across the categories it works - never a <c>*byType</c> table. Cast iron's low durability
 /// is that knob doing its job: a cast-iron pick mines iron-tier blocks but shatters fast, which is the
 /// brittleness gate the design chose over refusing to let it be cast at all.
 /// </para>
 /// <para>
-/// Generated tools stay OFF the vanilla <c>block/metal</c> worldproperty for the same reason the resource
+/// Generated tools stay off the vanilla <c>block/metal</c> worldproperty for the same reason the resource
 /// forms do (see <see cref="MetalFamilyEmitter"/>): a standalone item never leaks an anvil-forgeable
 /// <c>workitem-&lt;metal&gt;</c>, which would contradict a castable-but-brittle metal.
 /// </para>
@@ -50,9 +50,9 @@ internal static class MetalToolEmitter
   }
 
   // ---- Tool stats: named presets -> one flat stat block, applied uniformly across the tool set ----
-  // The "flat, non-byType" model (survey Area 3): every generated tool of a metal shares ONE durability /
+  // The "flat, non-byType" model (survey Area 3): every generated tool of a metal shares one durability /
   // attack / mining tier, and each tool paints that one mining speed across the material categories it
-  // works. Cast iron's LOW durability - not a per-tool table - is the deliberate brittleness knob the user
+  // works. Cast iron's low durability - not a per-tool table - is the deliberate brittleness knob the user
   // chose over a hard mold gate: a cast-iron pick mines iron-tier blocks but shatters fast.
   private sealed record ToolStats(
     int Durability,
@@ -62,7 +62,7 @@ internal static class MetalToolEmitter
   );
 
   // Presets (survey D4). brittle ~ gold-tier durability, iron-tier hardness (cast iron); good ~ steel-tier
-  // (Bessemer steel); standard ~ iron-tier for any future opt-in that names no preset. "none" is NOT here -
+  // (Bessemer steel); standard ~ iron-tier for any future opt-in that names no preset. "none" is not here -
   // it is resolved to "emit no tools" before a stat block is looked up.
   private static readonly IReadOnlyDictionary<string, ToolStats> Presets =
     new Dictionary<string, ToolStats>(StringComparer.OrdinalIgnoreCase)
@@ -98,11 +98,11 @@ internal static class MetalToolEmitter
     };
   }
 
-  // ---- Tool templates: everything about a tool type that does NOT vary with the metal ----
+  // ---- Tool templates: everything about a tool type that does not vary with the metal ----
   // Which vanilla class + ToolType to bind, the iron-equivalent shape + which texture slot the metal paints,
   // the material categories the tool mines, and the held-animation / behaviour / transform surface lifted
   // from the vanilla itemtype. The metal supplies only its texture + the flat stat block; these supply the
-  // rest. Kept OFF the vanilla worldproperty on purpose (see the type remarks): a generated standalone item
+  // rest. Kept off the vanilla worldproperty on purpose (see the type remarks): a generated standalone item
   // never leaks an anvil-forgeable workitem the way a worldproperty variant would.
   private sealed record ToolTemplate(
     string ToolType,
@@ -500,7 +500,7 @@ internal static class MetalToolEmitter
   // One tool item: {toolToken}-{metalcode} in the metal's owning domain, binding the vanilla tool class so
   // the whole tool pipeline (mining, durability, tool modes, held animations) runs unchanged. Everything
   // type-specific comes from the template; only the texture + the flat stats come from the metal. Stats are
-  // written FLAT (a single durability / attackpower / tooltier, one miningspeed per category) - never a
+  // written flat (a single durability / attackpower / tooltier, one miningspeed per category) - never a
   // *byType* table - exactly as the survey specified.
   private static ExItemDef ToolItem(
     MetalDef m,
@@ -599,7 +599,7 @@ internal static class MetalToolEmitter
       }
     );
 
-  // Merge a POCO's properties as TOP-LEVEL itemtype keys (held*Animation, attackRange, …). The sibling of
+  // Merge a POCO's properties as top-level itemtype keys (held*Animation, attackRange, …). The sibling of
   // ExItemDef.Attributes, which merges into attributes; there is no top-level-merge on the builder, so this
   // spreads the template's TopLevel blob one key at a time.
   private static void MergeTop(ExItemDef def, object? topLevel)

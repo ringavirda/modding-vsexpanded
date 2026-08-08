@@ -24,10 +24,10 @@ public class ExDefinitionInjectionTests
   [Fact]
   public void Synthetic_asset_is_a_real_engine_Asset_the_loader_can_cast()
   {
-    // REGRESSION GUARD: the object loader iterates blocktypes as the CONCRETE
+    // Regression guard: the object loader iterates blocktypes as the concrete
     // Vintagestory.Common.Asset (foreach (Asset item in ...)); a custom IAsset throws
     // InvalidCastException and aborts the whole AssetsLoaded phase (server won't start). The injected
-    // asset MUST be the real engine type.
+    // asset must be the real engine type.
     var location = new AssetLocation("iwex", "blocktypes/solidifiediron.json");
     var payload = new JObject { ["code"] = "solidifiediron", ["n"] = 7 };
     IAsset asset = ExSyntheticAsset.Create(
@@ -205,7 +205,7 @@ public class ExDefinitionInjectionTests
     Assert.Equal("lpex", location.Domain);
     Assert.Equal("recipes/grid/pipes.json", location.Path);
     Assert.Equal("Vintagestory.Common.Asset", asset.GetType().FullName);
-    // A recipe file is a JSON ARRAY; the loader reads it via ToObject<JArray>. It must round-trip exactly.
+    // A recipe file is a JSON array; the loader reads it via ToObject<JArray>. It must round-trip exactly.
     Assert.True(JToken.DeepEquals(def.ToJson(), asset.ToObject<JArray>()));
   }
 

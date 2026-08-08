@@ -8,8 +8,6 @@ using ExpandedLib.Registries.Recipes;
 using HarmonyLib;
 using IronworkingExpanded.BlockNetworkMolten;
 using IronworkingExpanded.BlockNetworkMolten.Blocks;
-using IronworkingExpanded.BlockNetworkPipe;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using IronworkingExpanded.Compat;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -45,8 +43,7 @@ public class IronworkingExpandedModSystem : ModSystem
     IwexValues.Load(api);
 
     // Load this mod's recipe-cost catalogue and register its profile, so exlib's shared apply pass
-    // and the generic /exmod recipes iwex <level> command can drive it (see ExRecipeProfiles). The
-    // iron tier used to have no switch of its own - its costs rode under /exmod recipes smex.
+    // and the generic /exmod recipes iwex <level> command can drive it (see ExRecipeProfiles).
     IwexRecipeValues.Load(api);
     ExRecipeProfiles.Register(
       new RecipeProfile
@@ -71,14 +68,23 @@ public class IronworkingExpandedModSystem : ModSystem
       _harmony.PatchAll(GetType().Assembly);
     }
 
-    // The plain (bolted) pipe segment's burst rating, read live from this mod's config. Higher pipe
+    // The plain (plated) pipe segment's burst rating, read live from this mod's config. Higher pipe
     // tiers register their own (lpex cast, hpex rolled), keyed by domain in BlockPipe.
-    BlockPipe.RegisterBurst(Mod.Info.ModID, () => IwexValues.BoltedPipeBurstPressure);
+    BlockPipe.RegisterBurst(Mod.Info.ModID, () => IwexValues.PlatedPipeBurstPressure);
+    BlockPipe.RegisterThroughput(Mod.Info.ModID, () => IwexValues.PlatedPipeThroughput);
     BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);
 
     // Auto-register every [BlockRegister]/[ItemRegister]/[BlockEntityRegister]/etc. declared here,
     // and discover any co-located code-first block definitions (IExBlockDefProvider) for injection.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
+
+    // save-compat: pipes placed before the 0.x pipe-base move to exlib. Those worlds carry the old
+    // iwex.* class strings; the scan above cannot re-claim these keys (the classes live in exlib now).
+    api.RegisterBlockEntityClass("iwex.BlockEntityPipe", typeof(BlockEntityPipe));
+    api.RegisterBlockEntityClass(
+      "iwex.BlockEntityPipePassthrough",
+      typeof(BlockEntityPipePassthrough)
+    );
 
     // iwex owns the two networks its pipes/canals ride and registers them before any dependent mod
     // (lpex, smex) needs them. The unified "pipe" network (gas + liquid pools) carries a chimney-vent
@@ -108,11 +114,20 @@ public class IronworkingExpandedModSystem : ModSystem
     base.AssetsFinalize(api);
     // Surface any malformed mold pattern at load (a bad `mold` block), rather than as a silent no-op when
     // a player rams it into a casting cell. Server-side only - the same defs load on the client.
-    if (api.Side == EnumAppSide.Server)
-      foreach (
-        string error in BlockStructures.Casting.PatternValidation.Validate(api.World.Collectibles)
-      )
-        api.Logger.Error("[iwex] invalid mold pattern - " + error);
+    if (api.Side != EnumAppSide.Server)
+      return;
+
+    foreach (
+      string error in BlockStructures.Casting.PatternValidation.Validate(api.World.Collectibles)
+    )
+      api.Logger.Error("[iwex] invalid mold pattern - " + error);
+
+    // Same guarantee for the mill's tooling: a bad gap sequence fails by doing *nothing* when stock is fed
+    // in, so it has to be caught at load rather than at the rolls.
+    foreach (
+      string error in BlockStructures.Forming.RollSetValidation.Validate(api.World.Collectibles)
+    )
+      api.Logger.Error("[iwex] invalid roll set - " + error);
   }
 
   public override void StartClientSide(ICoreClientAPI api)

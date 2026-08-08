@@ -182,6 +182,51 @@ resolves to no block, so the base falls back to a neutral tint instead of crashi
 > `blockNumbers` entry that resolves to at least one real block, or the build outline (and vanilla
 > highlighting) misbehaves.
 
+## Orientation-checked parts
+
+Vanilla rotates a structure's **offsets** through `InitForUse(angle)` but never its **codes**. So a
+layout that asked for `brickslabs-fire-south-free` would demand a *south*-facing slab at every structure
+angle - wrong three times out of four. The only workable answer used to be `-*`, "any rotation", which is
+how a structure could report itself complete while its walls still had visible gaps in them.
+
+A legend code containing a whole horizontal side segment (`north`/`south`/`east`/`west`, or the letters
+`n`/`s`/`e`/`w`) is now **orientation-checked**: the required facing rotates with the structure. Layouts
+stay authored in the north-default frame, like everything else.
+
+```csharp
+.Legend('i', "game:brickslabs-fire-south-free")  // south at angle 0, east at 90, ...
+.Legend('-', "game:brickslabs-fire-up-free")     // vertical - a Y rotation cannot move it
+.Legend('#', "game:claybricks-good-fire")        // no facing - untouched
+.LegendAnyFacing('x', "mod:thing-north")         // opt out: accept the literal code at any angle
+```
+
+How it works, and why it costs almost nothing:
+
+- `MultiblockLayoutBuilder` records **which dash-segment** of each oriented code is the facing word, into
+  a sibling attribute `attributes.multiblockFacings`. It is a *sibling* rather than a member of
+  `multiblockStructure`, because that object is deserialised by vanilla's own `MultiblockStructure` and
+  must stay exactly its schema.
+- `MultiblockFacings.Rotate` swaps that segment for the structure-rotated one
+  (`ExOrientation.RotateSideWord`, the string counterpart of `RotateFacing` and sharing its convention:
+  a part authored `north` reads as the side whose `AngleFromSide` equals the structure's angle).
+- `BlockEntityMultiblockStructure.IncompleteBlockCount` replaces vanilla's `InCompleteBlockCount` and
+  routes every wanted code through that rotation. The build outline shares the same resolver, so the
+  tint and the count can never disagree - and an oriented slot now resolves to a **real, correctly-facing
+  block**, so the outline colours from the right variant and the missing-blocks report names it.
+
+Three things to know:
+
+- **Only whole segments count.** `westward` or a `-we-` axis token is not mistaken for a facing, and the
+  *last* matching segment wins, because block codes put the orientation at the end.
+- **Codes are keyed in full domained form.** `AssetLocation.ToShortString()` elides `game:`, so a table
+  keyed the way an author typed it would never match a vanilla block at runtime.
+- **Trapdoors cannot be checked this way.** `game:trapdoor` keeps its facing and open/closed state in its
+  *block entity*, not its code, so no code match can see it. Slabs, stairs, doors and `cokeovendoor` all
+  carry theirs in the code and work fine.
+
+A layout that declares no oriented part emits no attribute at all and behaves exactly as before - which
+is why this needed no migration and changed no shipped structure's goldens.
+
 ## Related pages
 
 - [Production Machines](Production-Machines) - the tick lifecycle this builds on.

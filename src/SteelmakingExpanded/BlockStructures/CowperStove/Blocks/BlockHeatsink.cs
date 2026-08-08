@@ -28,9 +28,9 @@ public partial class BlockHeatSink : Block, IExBlockDefProvider
         .MetalSounds()
         .MaxStackSize(4)
         .LightAbsorption(99)
-        .CreativeCommon("*-north")
-        .Behavior("HorizontalOrientable")
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .CreativeCommon("*-n")
+        .Behavior("ExOrientable")
+        .SideVariant()
         .ShapeByTypePerOrientation("smex:cowperstove/heatsink")
         .NonSolid(),
     ];

@@ -34,10 +34,6 @@ public class MetalDef
   /// convention (the historical <see cref="MoltenMetal.DisplayName"/> behaviour).</summary>
   public string? DisplayLangKey { get; set; }
 
-  /// <summary>Optional melting-point override (°C). Null → defer to the item's vanilla
-  /// <c>GetMeltingPoint</c>; kept as an escape hatch, not a duplication of vanilla data.</summary>
-  public float? MeltingPointOverride { get; set; }
-
   /// <summary>Fraction of the melting point above which this metal flows. Null → the global
   /// <see cref="ExlibValues.MetalLiquidThreshold"/>.</summary>
   public float? LiquidThreshold { get; set; }
@@ -96,11 +92,10 @@ public class MetalDef
   public int? Density { get; set; }
 
   /// <summary>Melting point (°C) written into the generated family's <c>combustibleProps</c> - the value
-  /// vanilla's <c>GetMeltingPoint</c> then reports, so it is the SEED that makes
-  /// <see cref="MoltenMetal.MeltingPointOf"/> return the right point with no
-  /// <see cref="MeltingPointOverride"/> needed. Distinct from that override: this authors an item that
-  /// does not exist yet, the override escape-hatches the read of a metal whose item already exists; the
-  /// two never both apply. Null → the emitter's default.</summary>
+  /// vanilla's <c>GetMeltingPoint</c> then reports, so it is the seed that makes
+  /// <see cref="MoltenMetal.MeltingPointOf"/> return the right point. This authors an item that does
+  /// not exist yet; reads of an existing metal always resolve through the item's own
+  /// <c>combustibleProps</c>. Null → the emitter's default.</summary>
   public int? MeltingPoint { get; set; }
 
   /// <summary>Tool family to generate for this metal, or null for a feedstock that makes no tools (pig

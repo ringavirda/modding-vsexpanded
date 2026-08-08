@@ -1,0 +1,53 @@
+{
+  "code": "forming",
+  "class": "iwex.BlockRollingMillAxle",
+  "entityClass": "iwex.BlockEntityRollingMillAxle",
+  "handbook": {
+    "exclude": true
+  },
+  "blockmaterial": "Metal",
+  "shape": {
+    "base": "exlib:block/empty"
+  },
+  "drawtype": "json",
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "lightAbsorption": 0,
+  "resistance": 45.0,
+  "drops": [],
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "millaxle"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we"
+      ]
+    }
+  ]
+}

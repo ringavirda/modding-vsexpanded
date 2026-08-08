@@ -3,7 +3,10 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using HighPressureExpanded.BlockStructures.Boiler.BlockEntities;
+using LowPressureExpanded;
 using LowPressureExpanded.BlockStructures.Boiler;
+
+using Vintagestory.API.MathTools;
 
 namespace HighPressureExpanded.BlockStructures.Boiler.Blocks;
 
@@ -84,15 +87,15 @@ public partial class BlockBoilerLancashire
       // cast tier (hpex depends on lpex), so those legends keep the lpex domain.
       .MultiblockLayout(s =>
         s.Origin(-1, -2)
-          .Legend('#', "exlib:structurefiller")
-          .Legend('L', "hpex:boilerlancashire*")
-          .Legend('p', "lpex:pipe-passthrough-fire-*")
-          .Legend('B', "lpex:pipe-passthroughbend-fire-u*")
-          .Legend('b', "game:claybricks-good-fire")
-          .Legend('a', "game:air*")
-          .Legend('c', "@(air|coalpile)")
-          .Legend('d', "game:cokeovendoor*")
-          .Legend('o', "lpex:pipe-outlet-fire-u")
+          .Legend('#', ExCodes.Filler)
+          .Legend('L', HpexBlocks.BoilerLancashire.Any)
+          .Legend('p', LpexCodes.PipePassthroughFire)
+          .Legend('B', LpexCodes.PipePassthroughBendFireUp)
+          .Legend('b', VanillaCodes.FireBricks)
+          .Legend('a', VanillaCodes.Air)
+          .Legend('c', VanillaCodes.CoalBed)
+          .Legend('d', VanillaCodes.Sealing(BlockFacing.NORTH))
+          .Legend('o', LpexCodes.PipeOutletFireUp)
           .Layer(
             1,
             """

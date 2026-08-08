@@ -4,22 +4,38 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The mass-conservation arithmetic of breaking a pig on the anvil: a 150-unit pig fills 60 voxels
+/// The mass-conservation arithmetic of breaking a pig on the anvil: a 375-unit pig fills 150 voxels
 /// (2.5 u each), and the units freed by the voxels a helve hit sheds are paid out as whole 25u chunks
 /// and 5u bits, carrying the sub-bit remainder to the next hit. The anvil wiring is verified in-game;
 /// this pins the maths.
 /// </summary>
 public class PigBreakingTests
 {
+  #region The density rule
+
   [Fact]
   public void A_pig_is_worth_exactly_two_and_a_half_units_per_voxel()
   {
     Assert.Equal(2.5f, PigBreaking.UnitsPerVoxel, 4);
   }
 
+  // The invariant behind the number above, stated so a future re-mass cannot quietly break it: the voxel
+  // count and the unit mass must move together, because 2.5 u/vx³ is the mod's one density rule and this
+  // derived constant is the only place the codebase expresses it. Asserting the ratio alone would still
+  // pass if both constants drifted; asserting the product is what ties them to each other.
+  [Fact]
+  public void The_voxel_count_and_the_mass_move_together()
+  {
+    Assert.Equal(ItemPig.PigUnits, PigBreaking.PigVoxels * PigBreaking.UnitsPerVoxel, 4);
+  }
+
+  #endregion
+
+  #region Denomination
+
   [Theory]
-  [InlineData(60, 6, 0)] // the whole pig at once -> six chunks (150u)
-  [InlineData(50, 5, 0)] // the 50 shed voxels -> five chunks (125u)
+  [InlineData(150, 15, 0)] // the whole pig at once -> fifteen chunks (375u)
+  [InlineData(140, 14, 0)] // the shed voxels -> fourteen chunks (350u)
   [InlineData(10, 1, 0)] // the recipe leftover's worth -> one chunk (25u)
   [InlineData(2, 0, 1)] // 5u -> one bit
   [InlineData(1, 0, 0)] // 2.5u -> nothing yet (carried)
@@ -54,8 +70,10 @@ public class PigBreakingTests
       units += chunks * ItemPig.ChunkUnits + bits * ItemPig.BitUnits;
     }
 
-    // Every unit of the 150u pig comes out (60 voxels x 2.5 = 150, an exact multiple of the 5u bit).
+    // Every unit of the 375u pig comes out (150 voxels x 2.5 = 375, an exact multiple of the 5u bit).
     Assert.Equal(ItemPig.PigUnits, units);
     Assert.Equal(0f, remainder, 4);
   }
+
+  #endregion
 }

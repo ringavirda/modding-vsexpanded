@@ -4,7 +4,7 @@ namespace ExpandedLib.Fluids;
 
 /// <summary>
 /// One pipe/canal medium descriptor - the data the network's compatibility / priority / condensation
-/// logic reads instead of the hardcoded medium strings that used to live in <c>PipeNetworkState</c>.
+/// logic reads in place of hardcoded medium strings in <c>PipeNetworkState</c>.
 /// Deserialized from <c>assets/&lt;domain&gt;/config/liquids.json</c> and registered into
 /// <see cref="ExLiquids"/>; a mod adds a medium by shipping/patching one JSON entry.
 /// <para>

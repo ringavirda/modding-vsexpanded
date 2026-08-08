@@ -27,11 +27,11 @@ public partial class BlockEngineAirBlower
         .Create(domain, "engineairblower", "engine/airblower")
         .Class<BlockEngineAirBlower>()
         .EntityClass("smex.BlockEntityEngineAirBlower")
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .EntityBehavior("Animatable")
         .Material(EnumBlockMaterial.Metal)
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .CreativeCommon("*-north")
+        .SideVariant()
+        .CreativeCommon("*-n")
         .ShapeByTypePerOrientation("smex:engine/airblower")
         .NonSolid(),
     ];

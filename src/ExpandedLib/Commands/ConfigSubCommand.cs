@@ -80,7 +80,7 @@ public sealed class ConfigSubCommand : IExSubCommand
     };
   }
 
-  // Hand the framework the lang KEY + args (StatusMessage = key, MessageParams = arguments) so the
+  // Hand the framework the lang key + args (StatusMessage = key, MessageParams = arguments) so the
   // server resolves it once, in the caller's language (VintagestoryLib dispatch: Lang.GetL(langCode,
   // StatusMessage, MessageParams)). Two display traps to keep in mind, both in the lang strings, not
   // here: (1) a single-line result we pre-formatted gets re-run through Lang.Get, so a literal ':' is

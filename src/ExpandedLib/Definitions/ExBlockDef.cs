@@ -18,7 +18,7 @@ namespace ExpandedLib.Definitions;
 /// assignment, client sync) runs unchanged - we never construct a <see cref="Block"/> instance
 /// ourselves (that would reimplement all of that and break on every schema change).
 /// <para>
-/// Art stays in files: <see cref="Shape"/>/<see cref="Texture"/> take asset-file REFERENCES, never
+/// Art stays in files: <see cref="Shape"/>/<see cref="Texture"/> take asset-file references, never
 /// inline geometry. The <see cref="Class{T}"/>/<see cref="EntityClass{T}"/> overloads resolve the
 /// registered <c>{modid}.{ClassName}</c> key from the type via <see cref="EntityRegistry.KeyFor"/> -
 /// the same source the registry uses - so a class rename can't silently desync the definition.
@@ -52,8 +52,8 @@ public sealed class ExBlockDef : IExDef
 
   /// <summary>Starts a block definition whose asset <b>path</b> differs from its <paramref name="code"/>
   /// - needed when several blocktype files share one code (e.g. the pipe class:
-  /// <c>Create("lpex", "pipe", "pipes/straight")</c> -&gt; code <c>pipe</c> at
-  /// <c>blocktypes/pipes/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
+  /// <c>Create("lpex", "pipe", "pipe/straight")</c> -&gt; code <c>pipe</c> at
+  /// <c>blocktypes/pipe/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
   public static ExBlockDef Create(
     string domain,
     string code,
@@ -71,6 +71,101 @@ public sealed class ExBlockDef : IExDef
   /// ends <c>.json</c>, exactly as the loader filters).</summary>
   public AssetLocation Location =>
     new(_domain, "blocktypes/" + _assetName + ".json");
+
+  #region Rendered codes
+
+  // The def is the handle. Everything below derives a usable code from the def's own variant grammar,
+  // so a layout legend, a recipe output and the generated {Mod}Blocks table are three callers of one
+  // implementation rather than three spellings that have to be kept in step. `BlockCodeEmitter` emits its
+  // accessors by calling these - which is what makes the generated table incapable of disagreeing with the
+  // definitions it is generated from.
+
+  /// <summary>The domain-qualified bare code, no variants: <c>iwex:furnace</c>.</summary>
+  public string QualifiedCode => _domain + ":" + _code;
+
+  /// <summary>
+  /// This def's variant groups, <b>in declaration order</b> - which is the order their states appear in the
+  /// rendered code.
+  /// <para>
+  /// <see cref="ExVariantGroup.States"/> is empty for a worldproperty-sourced group: those states live in
+  /// the game's own assets, not in our definition, so nothing here can enumerate them.
+  /// </para>
+  /// </summary>
+  public IReadOnlyList<ExVariantGroup> VariantGroups
+  {
+    get
+    {
+      if (_root["variantgroups"] is not JArray groups)
+        return [];
+
+      var result = new List<ExVariantGroup>();
+      foreach (JToken g in groups)
+      {
+        string? props = (string?)g["loadFromProperties"];
+        // A codeless worldproperty group takes its name from the property itself (vanilla's form for
+        // horizontal orientation). Named for the property's last segment so an accessor still reads.
+        string? name = (string?)g["code"] ?? props?.Split('/').Last();
+        if (name == null)
+          continue;
+
+        string[] states = g["states"] is JArray arr
+          ? [.. arr.Select(s => (string)s!)]
+          : [];
+        result.Add(new ExVariantGroup(name, states, props));
+      }
+      return result;
+    }
+  }
+
+  /// <summary>
+  /// The wildcard that matches <b>every</b> variant of this def: <c>iwex:furnace-irontap-*</c>.
+  /// <para>
+  /// A single-state group is baked in rather than wildcarded. It is fixed - there is only one value it
+  /// could ever take - so a <c>*</c> there would only lose precision, and losing precision on the segment
+  /// that names the family member is exactly how a wildcard escapes its family (N7).
+  /// </para>
+  /// </summary>
+  public string Any =>
+    QualifiedCode
+    + string.Concat(
+      VariantGroups.Select(g => g.States.Count == 1 ? "-" + g.States[0] : "-*")
+    );
+
+  /// <summary>
+  /// The code with <paramref name="group"/> pinned to <paramref name="state"/> and every other varying
+  /// group wildcarded: <c>WithVariant("side", "north")</c> on the tall hopper gives
+  /// <c>iwex:hopper-tall-north</c>.
+  /// <para>
+  /// <b>Pinning is what makes a layout cell orientation-checked</b> rather than merely occupied. A
+  /// legend built from <see cref="Any"/> accepts a part fitted the wrong way round; one built from this
+  /// does not, and <c>MultiblockFacings</c> rotates the pinned segment with the structure.
+  /// </para>
+  /// </summary>
+  /// <exception cref="ArgumentException">No group of that name - which is a typo, not a runtime
+  /// condition, so it fails loudly at definition time rather than yielding a code matching nothing.</exception>
+  public string WithVariant(string group, string state)
+  {
+    var groups = VariantGroups;
+    if (!groups.Any(g => g.Name == group))
+      throw new ArgumentException(
+        $"'{QualifiedCode}' has no variant group '{group}' - it declares "
+          + (groups.Count == 0
+            ? "none at all"
+            : string.Join(", ", groups.Select(g => g.Name))),
+        nameof(group)
+      );
+
+    return QualifiedCode
+      + string.Concat(
+        groups.Select(g =>
+          g.Name == group ? "-" + state
+          : g.States.Count == 1 ? "-" + g.States[0]
+          : "-*"
+        )
+      );
+  }
+
+  #endregion
 
   #region Class binding (type-safe)
 
@@ -194,7 +289,7 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>Sets one base shape and spins it for the four horizontal orientations via <c>rotateYByType</c>,
-  /// with the per-side angles DERIVED from <see cref="ExOrientation.AngleFromSide"/> (the same convention the
+  /// with the per-side angles derived from <see cref="ExOrientation.AngleFromSide"/> (the same convention the
   /// runtime uses for structure/box rotation) instead of a hand-typed 0/270/180/90 table. <paramref name="offset"/>
   /// is added to every angle (a block whose model faces away, like the mega-blocks that pass 180).</summary>
   public ExBlockDef ShapeSpunPerOrientation(string baseShape, int offset = 0)
@@ -221,13 +316,20 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  private static readonly string[] HorizontalSides =
-  [
-    "north",
-    "east",
-    "south",
-    "west",
-  ];
+  /// <summary>
+  /// The four horizontal facings as this family spells them - <b>single letters</b>, matching the
+  /// tokens network <c>orientation</c> groups have always used and the vocabulary
+  /// <c>ExOrientations.Face</c> declares.
+  /// <para>
+  /// Letters rather than the full words of vanilla's <c>abstract/horizontalorientation</c>
+  /// worldproperty, because only letters compose - a bend is <c>nw</c>, a tee <c>uns</c>, a cross
+  /// <c>nswe</c>, and there is no word form of any of those. Two spellings for one concept would
+  /// force <c>ExOrientation</c> to carry an <c>asLetter</c> flag through every call and infer it from
+  /// <c>side.Length == 1</c>, and let a rig hold <c>furnace-tuyere-n</c> and
+  /// <c>furnace-irontap-west</c> in adjacent constants.
+  /// </para>
+  /// </summary>
+  private static readonly string[] HorizontalSides = ["n", "e", "s", "w"];
 
   /// <summary>Adds a texture mapping <paramref name="key"/> -&gt; <c>{ "base": "domain:path" }</c> under
   /// <c>textures</c> (accumulates across calls). Any <paramref name="overlays"/> are emitted as an
@@ -379,7 +481,7 @@ public sealed class ExBlockDef : IExDef
   }
 
   /// <summary>Adds the block to both the <c>general</c> tab and this def's own mod tab with the same
-  /// <paramref name="selectors"/> - the pair every migrated block repeats, with the second tab name DERIVED
+  /// <paramref name="selectors"/> - the pair every migrated block repeats, with the second tab name derived
   /// from the def's domain instead of hand-copied.</summary>
   public ExBlockDef CreativeCommon(params string[] selectors) =>
     CreativeTab("general", selectors).CreativeTab(_domain, selectors);
@@ -411,7 +513,7 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  /// <summary>Appends a CODELESS <c>variantgroups</c> entry sourced from a worldproperty (<c>{ loadFromProperties }</c>
+  /// <summary>Appends a codeless <c>variantgroups</c> entry sourced from a worldproperty (<c>{ loadFromProperties }</c>
   /// with no <c>code</c>) - the vanilla form for the horizontal-orientation property, whose group code is implied
   /// by the property itself (e.g. stairs' <c>game:abstract/horizontalorientation</c>).</summary>
   public ExBlockDef VariantGroupFromProperties(string propertiesPath)
@@ -421,7 +523,27 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  /// <summary>Sets <c>skipVariants</c> - variant-code wildcards the loader must NOT expand (e.g. rock types a
+  /// <summary>
+  /// Declares the <c>side</c> variant group as an <b>explicit</b> four-state letter list.
+  /// <para>
+  /// <b>Explicit states, never a worldproperty - and that is load-bearing.</b> A group sourced from
+  /// <c>loadFromProperties</c> lists no states of its own, so <c>ExVariantGroup.States.Count</c> is 0.
+  /// That makes <c>UsesLetters</c> false and <c>IsHorizontalFacing</c> depend on a hard-coded property
+  /// name - and the block-code emitter then stops offering the <c>WithSide(BlockFacing)</c> overload
+  /// that every furnace layout is written against. Declaring a custom worldproperty instead of a state
+  /// list would compile and silently delete that whole API.
+  /// </para>
+  /// <para>
+  /// Pair it with <c>Behavior("ExOrientable")</c>. Vanilla's <c>HorizontalOrientable</c> builds the
+  /// placed code with <c>CodeWithParts</c>, which keeps only the first dash-segment - so it cannot
+  /// place any block whose code has a type or tier group, and it crashed the client outright on the
+  /// ones that do.
+  /// </para>
+  /// </summary>
+  public ExBlockDef SideVariant() =>
+    VariantGroup("side", HorizontalSides);
+
+  /// <summary>Sets <c>skipVariants</c> - variant-code wildcards the loader must not expand (e.g. rock types a
   /// block doesn't ship a texture for).</summary>
   public ExBlockDef SkipVariants(params string[] wildcards) =>
     Set("skipVariants", new JArray(wildcards));
@@ -605,7 +727,7 @@ public sealed class ExBlockDef : IExDef
     Set("sideAo", new JObject { ["all"] = all });
 
   /// <summary>Sets <c>emitSideAo</c> (whether the block casts ambient occlusion onto neighbours) for all faces at
-  /// once (<c>{ "all": value }</c>). Distinct from <see cref="SideAo"/> (which controls AO the block RECEIVES).</summary>
+  /// once (<c>{ "all": value }</c>). Distinct from <see cref="SideAo"/> (which controls AO the block receives).</summary>
   public ExBlockDef EmitSideAo(bool all) =>
     Set("emitSideAo", new JObject { ["all"] = all });
 
@@ -629,11 +751,6 @@ public sealed class ExBlockDef : IExDef
   /// <summary>Solid but non-opaque on all faces (the brick pipe variant: <c>sidesolid true</c>,
   /// <c>sideopaque false</c>).</summary>
   public ExBlockDef SolidNonOpaque() => SideSolid(true).SideOpaque(false);
-
-  /// <summary>The transparent-render preset the metal pipes/valves share:
-  /// <c>renderpass OpaqueNoCull</c>, <c>faceCullMode NeverCull</c>, <c>lightAbsorption 0</c>.</summary>
-  public ExBlockDef NoCullRender() =>
-    RenderPass("OpaqueNoCull").FaceCullMode("NeverCull").LightAbsorption(0);
 
   private static JObject Box(
     float x1,
@@ -698,7 +815,7 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  /// <summary>Sets the TOP-LEVEL <c>handbook.exclude</c> flag - hides the block from the survival handbook (for
+  /// <summary>Sets the top-level <c>handbook.exclude</c> flag - hides the block from the survival handbook (for
   /// an internal block a player never crafts, e.g. the invisible structure filler). Distinct from
   /// <see cref="Handbook"/>, which sets the grouping under <c>attributes</c>.</summary>
   public ExBlockDef HandbookExclude() =>
@@ -798,6 +915,14 @@ public sealed class ExBlockDef : IExDef
     var layout = new MultiblockLayoutBuilder();
     configure(layout);
     Nested("attributes")["multiblockStructure"] = layout.Build();
+    // Oriented legends ride in a sibling attribute rather than inside multiblockStructure, because that
+    // object is deserialised by vanilla's own MultiblockStructure and must stay exactly its schema.
+    if (layout.BuildFacings() is JObject facings)
+      Nested("attributes")["multiblockFacings"] = facings;
+    // Cell roles ride in a sibling for the same reason. Both are omitted entirely when the layout declares
+    // none, so a layout that uses neither emits byte-identical JSON to before either existed.
+    if (layout.BuildRoles() is JObject roles)
+      Nested("attributes")["multiblockRoles"] = roles;
     return this;
   }
 
@@ -822,7 +947,7 @@ public sealed class ExBlockDef : IExDef
     return this;
   }
 
-  /// <summary>Adds a <c>{wildcard: value}</c> entry to a TOP-LEVEL <c>{key}ByType</c> map (accumulates) - for
+  /// <summary>Adds a <c>{wildcard: value}</c> entry to a top-level <c>{key}ByType</c> map (accumulates) - for
   /// the per-type transform maps (<c>guiTransformByType</c>/<c>tpHandTransformByType</c>/<c>groundTransformByType</c>),
   /// whose values are transform objects with <c>{ translation, rotation, origin, scale }</c>.</summary>
   public ExBlockDef RawByType(string key, string wildcard, object value)

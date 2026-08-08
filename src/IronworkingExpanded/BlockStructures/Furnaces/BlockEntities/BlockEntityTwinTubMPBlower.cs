@@ -1,9 +1,10 @@
 using System.Text;
+using ExpandedLib;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -21,15 +22,15 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 /// network: the principal sits in the blast main itself (the block is a <see cref="BlockNetworkPipe.Blocks.BlockPipe"/>),
 /// so it produces into its own network the same way the fluid intake does for water. The mechanical
 /// power comes from a <see cref="BEBehaviorMPFillerPort"/> hosted on the footprint's upper-rear cell,
-/// so an axle on that face drives it - the same coupling the ore mixer uses.
+/// so an axle on that face drives it - the same coupling the rolling mill uses.
 /// </para>
 /// <para>
 /// Output is deliberately modest, and it is what draws the line between the iron and steam tiers. A
 /// furnace's blast demand is not a constant - it comes from the burden's coke fraction (see
 /// <c>BlockEntityFurnaceCore.RequiredBlastPressureFor</c>): coke is the permeable skeleton of the charge
-/// column, so a coke-RICH burden blows easily but eats fuel and drinks air, while a coke-LEAN one packs
+/// column, so a coke-rich burden blows easily but eats fuel and drinks air, while a coke-lean one packs
 /// dense and needs far more pressure. <see cref="IwexValues.TwinTubBlowerMaxPressure"/> sits above what
-/// a rich burden asks and <b>below what a lean one does</b>, and under the bolted pipe's burst rating.
+/// a rich burden asks and <b>below what a lean one does</b>, and under the plated pipe's burst rating.
 /// </para>
 /// <para>
 /// So the tier gate is a consequence, not a rule: bellows will run an iron furnace all day on a
@@ -131,9 +132,11 @@ public class BlockEntityTwinTubMPBlower : BlockEntityPipe
     return GameMath.Max(0f, (net.State?.Volume ?? 0f) - before);
   }
 
-  /// <summary>Ambient air temperature at the bellows; falls back to 20 °C where no climate is available.</summary>
+  /// <summary>Ambient air temperature at the bellows; falls back to the configured world ambient
+  /// (<see cref="ExlibConfig.AmbientTemperature"/>) where no climate is available.</summary>
   private float AmbientTemperature =>
-    Api?.World?.BlockAccessor?.GetClimateAt(Pos)?.Temperature ?? 20f;
+    Api?.World?.BlockAccessor?.GetClimateAt(Pos)?.Temperature
+    ?? ExlibValues.AmbientTemperature;
 
   /// <summary>
   /// How much of the rated output the bellows deliver at <paramref name="speed"/>: 0 at or below the

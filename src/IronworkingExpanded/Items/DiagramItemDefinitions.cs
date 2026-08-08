@@ -43,12 +43,27 @@ public class DiagramItemDefinitions : IExItemDefProvider
     "molten-tap",
     "molten-furnacetap",
     "molten-moldpedestal",
-    "molten-barrel",
+    // No `molten-barrel` entry: the barrel's cast route is planned by the pattern diagram
+    // `item-castbarrel`, which makes the blank the `molten-barrel-cast` variant is lined
+    // from - a second structure diagram for the finished vessel would plan the same thing twice.
     "molten-sandbed",
     "molten-sandcell",
     "tuyere",
-    "bfc",
-    "cf",
+    // `furnace-coldblast` / `furnace-cupola`, not initialisms. The type name is the
+    // texture name, and the drawn set spells them out.
+    "furnace-coldblast",
+    "furnace-cupola",
+    // The two flywheel plans. Each grid consumes its own (reusable, `isTool`), which is what makes them
+    // read as diagram-crafting rather than as a picture of a wheel drawn in the grid: per
+    // docs/design/diagram-crafting.md a diagram-led recipe is diagram + material list, with quantities on
+    // one cell each, never the same ingredient scattered across cells to suggest a shape.
+    //
+    // Two diagrams, not one shared. A 5×5×2 wheel is a different drawing from a 3×3×1 one even though the
+    // build is an upgrade of it, and the art says so: `diag-mpenergy-flywheel` and
+    // `diag-mpenergy-flywheellarge` are both drawn. The type names follow the art, which follows the block
+    // codes (`mpenergy-flywheel-normal` / `-large`).
+    "mpenergy-flywheel",
+    "mpenergy-flywheellarge",
   ];
 
   // PATTERN/ITEM diagrams - one per sand-casting pattern, drawn as diag-item-{pattern}. Derived from the
@@ -60,7 +75,19 @@ public class DiagramItemDefinitions : IExItemDefProvider
   private static readonly string[] Types = [.. StructureTypes, .. PatternDiagramTypes];
 
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
-    [
+    [Itemtype(domain, Types)];
+
+  /// <summary>
+  /// Builds a mod's whole <c>diagram</c> itemtype over <paramref name="types"/>. Shared for the same
+  /// reason <see cref="BlockStructures.Casting.PatternItemDefinitions.Itemtype"/> is: a mod that owns a cast
+  /// part owns the diagram that plans it, and duplicating sixty lines of seed transforms per mod is how the
+  /// four sheets come to sit at four different angles in the hand.
+  /// <para>
+  /// Each type needs a <c>{domain}:item/diagram/diag-{type}</c> texture. A missing one is not an error -
+  /// the sheet just renders untextured - so the texture set has no guard but the eye.
+  /// </para>
+  /// </summary>
+  public static ExItemDef Itemtype(string domain, IEnumerable<string> types) =>
       ExItemDef
         .Create(domain, "diagram")
         // The folded-sheet shape (shared, in exlib): parchment base + the per-type drawing overlaid on the
@@ -69,9 +96,9 @@ public class DiagramItemDefinitions : IExItemDefProvider
         .Texture(
           "paper",
           "exlib:item/diagram/paper",
-          "iwex:item/diagram/diag-{type}"
+          $"{domain}:item/diagram/diag-{{type}}"
         )
-        .VariantGroup("type", Types)
+        .VariantGroup("type", [.. types])
         .MaxStackSize(64)
         .MaterialDensity(100)
         // Held two-handed and inclined so the drawing on the top face angles toward the camera. SEED
@@ -103,6 +130,5 @@ public class DiagramItemDefinitions : IExItemDefProvider
             scale = 2.5,
           }
         )
-        .CreativeCommon("*"),
-    ];
+        .CreativeCommon("*");
 }

@@ -98,7 +98,7 @@ public class ExRightClickConstruction
     if (CurrentCompletedStage < 1)
       return Array.Empty<ItemStack>();
 
-    // Refund EVERY completed stage, 0..CurrentCompletedStage inclusive - the loop is `<=`, not `<`, so
+    // Refund every completed stage, 0..CurrentCompletedStage inclusive - the loop is `<=`, not `<`, so
     // the last (and usually most expensive) built stage's materials are recovered too, matching the
     // 1.22 path. A `<` bound silently drops the final stage's cost from the salvage.
     var list = new List<ItemStack>();

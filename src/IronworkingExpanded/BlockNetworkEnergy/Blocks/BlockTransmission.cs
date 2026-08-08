@@ -18,7 +18,7 @@ namespace IronworkingExpanded.BlockNetworkEnergy.Blocks;
 /// build</em> - <c>x2</c> (belt drive), <c>x4</c> (compound gear train), and <c>clutch</c> (ratio 1, a
 /// coupling the player engages/disengages).
 /// <para>
-/// Unlike the shaft/bevel it is <b>not</b> a graph node: it is a machine (like the ore mixer) whose principal
+/// Unlike the shaft/bevel it is <b>not</b> a graph node: it is a machine (like the rolling mill) whose principal
 /// couples the two <em>separate</em> mpenergy networks on its south and north faces (read via
 /// <c>GetNetworkAt</c>) so the two sides never merge - that coupling, and the clutch, live in
 /// <see cref="BlockEntityTransmission"/>. Here is the block: the 2×2 footprint, the three type × four
@@ -42,7 +42,7 @@ public partial class BlockTransmission
   public static IEnumerable<ExBlockDef> Definitions(string domain)
   {
     ExBlockDef def = ExBlockDef
-      .Create(domain, "transmission", "mpenergy/transmission")
+      .Create(domain, "mpenergy", "mpenergy/transmission")
       .Class<BlockTransmission>()
       .EntityClass<BlockEntityTransmission>()
       .Material(EnumBlockMaterial.Metal)
@@ -61,13 +61,15 @@ public partial class BlockTransmission
           new FillerCellSpec(1, 1, 0), // quarter-block: the clutch interaction cell
         ]
       )
-      .Behavior("HorizontalOrientable")
+      .Behavior("ExOrientable")
       .Behavior("BlockEntityInteract")
       .EntityBehavior("Animatable")
       .Construction(c =>
         c.Stage(s => s.AddElements("Base"))
           .Stage(s =>
-            s.Require("lpex:gear-iron", 2, "iwex:rcc-ingredient-transmissiongears")
+            // iwex's own cast gear, not lpex's. Reaching upward for `lpex:gear-iron` made this
+            // unbuildable for an iwex-only player (the placement rule forbids it either way).
+            s.Require("iwex:" + Items.SpurGearItemDefinitions.Code, 2, "iwex:rcc-ingredient-transmissiongears")
               .Require("game:ingot-iron", 4, "iwex:rcc-ingredient-transmissionshafts")
               .AddElements("MainShafts")
           )
@@ -76,9 +78,12 @@ public partial class BlockTransmission
               .AddElements("SupportShaft")
           )
       )
-      .VariantGroup("type", Types)
-      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-      .CreativeCommon("*-x2-north", "*-x4-north", "*-clutch-north")
+      // See BlockFlywheel: `type` names the member so the family shares one code. The gearing is
+      // `kind`; the rendered code (mpenergy-transmission-x2-north) is unchanged.
+      .VariantGroup("type", "transmission")
+      .VariantGroup("kind", Types)
+      .SideVariant()
+      .CreativeCommon("*-x2-n", "*-x4-n", "*-clutch-n")
       .ShapeSelectiveElements("Base/*")
       .Sounds(
         "game:block/anvil",

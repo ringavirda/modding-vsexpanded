@@ -14,7 +14,7 @@
   "maxstacksize": 1,
   "behaviors": [
     {
-      "name": "HorizontalOrientable"
+      "name": "ExOrientable"
     },
     {
       "name": "BlockEntityInteract"
@@ -283,24 +283,29 @@
   "variantgroups": [
     {
       "code": "side",
-      "loadFromProperties": "abstract/horizontalorientation"
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
     }
   ],
   "creativeinventory": {
     "general": [
-      "*-north"
+      "*-n"
     ],
     "hpex": [
-      "*-north"
+      "*-n"
     ]
   },
   "shape": {
     "base": "hpex:engine/cornish",
     "rotateYByType": {
-      "*-north": 180,
-      "*-east": 90,
-      "*-south": 0,
-      "*-west": 270
+      "*-n": 180,
+      "*-e": 90,
+      "*-s": 0,
+      "*-w": 270
     },
     "selectiveElements": [
       "Root/Cylinder/*"

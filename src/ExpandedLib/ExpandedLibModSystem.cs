@@ -51,9 +51,12 @@ public class ExpandedLibModSystem : ModSystem
 
     // The shared filler block this lib ships; dependent mods' mega-blocks reserve their
     // footprint cells with it (see StructureFillers).
+    // This is the assignment that wins at runtime, so it is the literal that mattered - and it was
+    // invisible to the codegen drift test, being a hand-typed path rather than a def reference. Sourced
+    // from the generated table now: the domain segment is the mod id by construction, since the
+    // definition is created with it.
     StructureFillers.FillerCode = new AssetLocation(
-      Mod.Info.ModID,
-      "structurefiller"
+      ExlibBlocks.Structurefiller.Code
     );
   }
 

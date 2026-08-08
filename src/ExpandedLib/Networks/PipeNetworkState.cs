@@ -3,7 +3,7 @@ using ExpandedLib.Fluids;
 namespace ExpandedLib.Networks;
 
 /// <summary>
-/// Live state of a pipe run. A network carries exactly ONE medium - a gas (Air/Steam/Exhaust)
+/// Live state of a pipe run. A network carries exactly one medium - a gas (Air/Steam/Exhaust)
 /// or a liquid (Water), never both - claimed by the first producer and held until empty. A
 /// gas's <see cref="Pressure"/> is the volume ratio <c>Volume / MaxVolume</c> (uncapped -
 /// producers overflow up to their own choke); a liquid's is set by the pump. Temperature is a

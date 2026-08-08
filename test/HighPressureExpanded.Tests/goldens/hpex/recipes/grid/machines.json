@@ -6,7 +6,7 @@
     "height": 2,
     "output": {
       "type": "block",
-      "code": "hpex:boilerlancashire-north"
+      "code": "hpex:boilerlancashire-n"
     },
     "ingredients": {
       "P": {
@@ -38,7 +38,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "hpex:enginecornish-north"
+      "code": "hpex:enginecornish-n"
     },
     "ingredients": {
       "P": {
@@ -80,7 +80,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "hpex:enginecornish-north"
+      "code": "hpex:enginecornish-n"
     },
     "ingredients": {
       "P": {

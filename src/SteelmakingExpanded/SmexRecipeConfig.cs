@@ -52,9 +52,9 @@ public class SmexRecipeConfig : IExVersionedConfig
         Match = "smex:converterbessemer-*",
       },
 
-      // Converter + hot-blast machine grid recipes. The iron-tier content this catalogue used to also
-      // cover (blast-furnace components, molten transport, slag paths - all iwex: outputs) moved to
-      // IwexRecipeConfig, so /exmod recipes smex now discounts steelmaking and nothing else.
+      // Converter + hot-blast machine grid recipes. The iron-tier content (blast-furnace components,
+      // molten transport, slag paths - all iwex: outputs) lives in IwexRecipeConfig, so
+      // /exmod recipes smex discounts steelmaking and nothing else.
       ["converter-intake-grid"] = Grid("smex:converter-intake-*"),
       ["convertercontrol-grid"] = Grid("smex:convertercontrol-*"),
       ["convertertransmission-grid"] = Grid("smex:convertertransmission-*"),

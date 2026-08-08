@@ -64,11 +64,11 @@ public abstract class BlockBoiler
       .MaxStackSize(1)
       .NoDrops()
       .Behavior("MultiblockStructure")
-      .Behavior("HorizontalOrientable")
+      .Behavior("ExOrientable")
       .Behavior("BlockEntityInteract")
       .EntityBehavior("Animatable")
-      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-      .CreativeCommon("*-north")
+      .SideVariant()
+      .CreativeCommon("*-n")
       .ShapeSpunPerOrientation(shapeBase)
       .ShapeSelectiveElements("Root/Base/*")
       .NonSolid();
@@ -437,6 +437,12 @@ public abstract class BlockBoiler
     return help.ToArray();
   }
 
+  // True for the vanilla wood-bucket family, matched by code path: vanilla blocks carry no
+  // attribute we could key on without a JSON patch, and the substring keeps every bucket
+  // variant in the fill/drain interaction hints.
+  private static bool IsWoodBucket(Block? block) =>
+    block?.Code != null && block.Code.Path.Contains("woodbucket");
+
   /// <summary>Water-filled liquid containers shown on the manual-fill interaction hint, resolved once.</summary>
   private static ItemStack[]? _waterContainerStacks;
 
@@ -451,11 +457,7 @@ public abstract class BlockBoiler
     var list = new List<ItemStack>();
     foreach (var block in world.Blocks)
     {
-      if (
-        block?.Code == null
-        || block is not BlockLiquidContainerBase cont
-        || !block.Code.Path.Contains("woodbucket")
-      )
+      if (block is not BlockLiquidContainerBase cont || !IsWoodBucket(block))
         continue;
       var bucket = new ItemStack(block);
       cont.SetContent(bucket, waterStack);
@@ -479,11 +481,7 @@ public abstract class BlockBoiler
     var list = new List<ItemStack>();
     foreach (var block in world.Blocks)
     {
-      if (
-        block?.Code == null
-        || block is not BlockLiquidContainerBase
-        || !block.Code.Path.Contains("woodbucket")
-      )
+      if (block is not BlockLiquidContainerBase || !IsWoodBucket(block))
         continue;
       list.Add(new ItemStack(block));
     }

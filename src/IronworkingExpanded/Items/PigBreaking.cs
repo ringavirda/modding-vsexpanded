@@ -10,10 +10,16 @@ namespace IronworkingExpanded.Items;
 /// </summary>
 public static class PigBreaking
 {
-  /// <summary>Metal voxels a fresh pig fills on the anvil - chosen so units-per-voxel is exact: a 150u pig
-  /// over 60 voxels is 2.5 u/voxel, so a 10-voxel recipe leftover is one 25u pigchunk and the 50 shed
-  /// voxels are five more, six chunks = 150u.</summary>
-  public const int PigVoxels = 60;
+  /// <summary>Metal voxels a fresh pig fills on the anvil - chosen so units-per-voxel is exact: a 375u pig
+  /// over 150 voxels is 2.5 u/voxel, so a 10-voxel recipe leftover is one 25u pigchunk and the 140 shed
+  /// voxels are fourteen more, fifteen chunks = 375u.
+  /// <para>
+  /// It moves with <see cref="ItemPig.PigUnits"/> and always must: 2.5 u/vx³ is the mod's <b>one</b> density
+  /// rule, and <see cref="UnitsPerVoxel"/> is the only place in the codebase that expresses it. Pinning the
+  /// voxel count while the mass moves would make an anvil voxel of pig iron denser than a pig-iron voxel
+  /// anywhere else - and would quietly hand the player a cheaper break per unit of iron.
+  /// </para></summary>
+  public const int PigVoxels = 150;
 
   /// <summary>The dedicated cold-workable pig work item a placed pig becomes (see
   /// <see cref="ItemPigWorkItem"/>) - still tagged with <see cref="MarkerKey"/> so the helve patch acts only
@@ -25,7 +31,8 @@ public static class PigBreaking
   /// on it, never on ordinary iron smithing). Also carries the sub-bit unit remainder between hits.</summary>
   public const string MarkerKey = "iwexpigbreak";
 
-  /// <summary>Units each removed voxel frees (<c>150 / 60 = 2.5</c>).</summary>
+  /// <summary>Units each removed voxel frees (<c>375 / 150 = 2.5</c>) - the mod's density rule, and the only
+  /// place the codebase states it.</summary>
   public static float UnitsPerVoxel =>
     ItemPig.PigUnits / (float)PigVoxels;
 

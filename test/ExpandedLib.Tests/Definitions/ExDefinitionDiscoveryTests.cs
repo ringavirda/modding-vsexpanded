@@ -179,9 +179,10 @@ public class ExDefinitionDiscoveryTests
   }
 
   [Fact]
-  public void OrientationMap_skips_defs_without_a_single_type_state()
+  public void OrientationMap_skips_a_def_with_no_type_states_at_all()
   {
-    // A worldproperty-oriented block (no explicit type states) contributes nothing.
+    // A worldproperty-oriented block (no explicit type states) contributes nothing - it has no
+    // type→orientation pair to contribute.
     var defs = new[]
     {
       ExBlockDef
@@ -189,5 +190,28 @@ public class ExDefinitionDiscoveryTests
         .VariantGroupFromProperties("side", "abstract/horizontalorientation"),
     };
     Assert.Empty(ExDefinitions.OrientationMap(defs));
+  }
+
+  [Fact]
+  public void OrientationMap_maps_every_type_state_a_def_declares()
+  {
+    // A def may declare several type states in one group, and every one of them shares that def's
+    // orientation group. Keeping only single-state defs silently dropped the whole def instead:
+    // iwex:flywheel declares type(normal|large) + orientation(ns|we) in one def, so its
+    // AllowedOrientations came back empty, ComputeValidOrientations returned [] for either size, and
+    // TryPlaceBlock refused the block outright. The flywheel could not be placed at all, while its own
+    // source comment claimed the derivation gave it "type → {ns, we}".
+    var defs = new[]
+    {
+      ExBlockDef
+        .Create("d", "flywheel")
+        .VariantGroup("type", "normal", "large")
+        .VariantGroup("orientation", "ns", "we"),
+    };
+
+    var map = ExDefinitions.OrientationMap(defs);
+
+    Assert.Equal(["ns", "we"], map["normal"]);
+    Assert.Equal(["ns", "we"], map["large"]);
   }
 }

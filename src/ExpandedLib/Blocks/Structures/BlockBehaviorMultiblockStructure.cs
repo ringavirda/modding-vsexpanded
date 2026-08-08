@@ -38,7 +38,7 @@ public class BlockBehaviorMultiblockStructure : BlockBehavior
   }
 
   /// <summary>
-  /// Resolves the INCOMPLETE multiblock anchor the block at <paramref name="pos"/> should project, or null.
+  /// Resolves the incomplete multiblock anchor the block at <paramref name="pos"/> should project, or null.
   /// The block is either the anchor itself (its BE is a <see cref="BlockEntityMultiblockStructure"/> - the
   /// core) or a functional component (its BE is an <see cref="IMultiblockComponent"/> - a tap, hopper, tuyere -
   /// that scans up to the anchor whose layout owns its cell). Either way the anchor is returned only while its

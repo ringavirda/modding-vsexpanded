@@ -52,7 +52,7 @@ public static class StructureLayout
   }
 
   /// <summary>
-  /// Parses VERTICAL slices - one 2D grid per X level drawn as a front elevation, for a structure whose cells
+  /// Parses vertical slices - one 2D grid per X level drawn as a front elevation, for a structure whose cells
   /// stack in Y (a piston tower, an engine's beam column) rather than spreading across a floor. Within each grid
   /// the top row is the highest Y (<paramref name="yTop"/>, decreasing down the rows) and each column runs along
   /// +Z from <paramref name="zLeft"/>; the slice's X is fixed. Same character rules as <see cref="Parse"/>
@@ -89,7 +89,7 @@ public static class StructureLayout
   }
 
   /// <summary>
-  /// Parses FRONTAL slices - one 2D grid per Z level drawn as a front elevation (looking along -Z), for a
+  /// Parses frontal slices - one 2D grid per Z level drawn as a front elevation (looking along -Z), for a
   /// structure whose face lies in the X-Y plane and is thin in Z: a north-facing flywheel disc, a hammer's
   /// A-frame. Within each grid the top row is the highest Y (<paramref name="yTop"/>, decreasing down the
   /// rows) and each column runs along +X from <paramref name="xLeft"/>; the slice's Z is fixed. Same character

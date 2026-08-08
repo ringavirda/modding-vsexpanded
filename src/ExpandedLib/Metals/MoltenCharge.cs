@@ -8,10 +8,10 @@ namespace ExpandedLib.Metals;
 /// <see cref="ItemStack"/> carrier that identifies the metal and its heat, plus a unit count. Wraps
 /// the reads/writes - temperature, live cooldown, state classification, chisel recovery, tree
 /// round-trip - that the bessemer converter, the molten barrel, the canal tap and the mold pedestal
-/// each used to hand-roll around a bare <c>ItemStack _content</c> + <c>int _units</c> pair
-/// (audit Theme D). One domain type they all compose.
+/// all need, so none of them keeps its own bare <c>ItemStack _content</c> + <c>int _units</c> pair.
+/// One domain type they all compose.
 /// <para>
-/// A <c>MoltenCharge</c> instance is a PRESENT charge (its <see cref="Stack"/> is never null); an
+/// A <c>MoltenCharge</c> instance is a <em>present</em> charge (its <see cref="Stack"/> is never null); an
 /// absent charge is a null reference. World-coupled reads (temperature, melting point) take the
 /// <see cref="IWorldAccessor"/> the same way <see cref="MoltenMetal"/> does - the heat lives on the
 /// stack's vanilla temperature tree, so it keeps decaying on its own between reads.
@@ -93,7 +93,7 @@ public sealed class MoltenCharge
 
   #region Transform + recovery
   /// <summary>
-  /// Replaces the carrier with <paramref name="newItemCode"/> at the charge's CURRENT temperature,
+  /// Replaces the carrier with <paramref name="newItemCode"/> at the charge's current temperature,
   /// keeping the unit count (the iron→steel refine step). Returns <c>false</c> - leaving the charge
   /// unchanged - when the new item code does not resolve.
   /// </summary>

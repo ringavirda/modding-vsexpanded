@@ -26,13 +26,13 @@ public partial class BlockDesignTable : Block, IExBlockDefProvider
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "designtable", "design-table")
+        .Create(domain, "crafting-designtable", "crafting/designtable")
         .Class<BlockDesignTable>()
         .EntityClass<BlockEntityDesignTable>()
-        .Behavior("HorizontalOrientable")
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .CreativeCommon("*-north")
-        .Shape("iwex:design-table")
+        .Behavior("ExOrientable")
+        .SideVariant()
+        .CreativeCommon("*-n")
+        .Shape("iwex:crafting/designtable")
         .Material(EnumBlockMaterial.Wood)
         // Always-lit candles: a warm, dim glow (tune the value in-game).
         .Raw("lightHsv", new[] { 5, 7, 12 })

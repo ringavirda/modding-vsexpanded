@@ -63,7 +63,7 @@ public class MoltenContentsTests
     Assert.False(moldTree.GetBool("shattered"));
     Assert.Equal(0f, moldTree.GetFloat("meshAngle"));
 
-    // The barrel key must NOT inject the mold-only keys.
+    // The barrel key must not inject the mold-only keys.
     var barrel = new ItemStack();
     MoltenContents.Write(
       barrel,

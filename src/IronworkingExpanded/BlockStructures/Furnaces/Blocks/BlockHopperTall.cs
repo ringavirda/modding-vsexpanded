@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronworkingExpanded.Items;
@@ -31,16 +32,18 @@ public partial class BlockHopperTall
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "hopper-tall", "furnaces/hopper-tall")
+        .Create(domain, "hopper-tall", "hopper/tall")
         .Class<BlockHopperTall>()
         .EntityClass<BlockEntityHopperTall>()
         // The build-outline projection: the hopper is a functional cell of the furnace layout, so a player
         // at the hopper can preview + complete an incomplete furnace (the top filler cell routes the gesture
         // through HandleInteract; the base cell fires this behaviour). Before other rmb consumers.
         .Behavior("MultiblockStructure")
+        // The vanilla behaviour stamps the side variant at placement, same as every furnace core.
+        .Behavior("ExOrientable")
         .Material(EnumBlockMaterial.Ceramic)
         .MaxStackSize(1)
-        .Shape("iwex:furnaces/hopper-tall")
+        .Shape("iwex:hopper-tall")
         .CreativeCommon("*")
         // The footprint is a single filler one cell up (the hopper is 2 tall over its base): '#' over the
         // '0' principal with Origin(0, 1) resolves to the cell at (0, +1, 0) - the top the model fills and
@@ -57,15 +60,21 @@ public partial class BlockHopperTall
               )
           )
         )
-        .SolidNonOpaque(),
+        .SolidNonOpaque()
+        // Declared last so the code reads hopper-tall-{side}. A side variant is what lets the multiblock
+        // layout demand a correctly-facing hopper: the oriented-parts rule rotates the required facing with
+        // the structure, which is what stops a rotated cupola charging outside itself. The drip reads this
+        // variant directly - no anchor lookup.
+        // N4: inherit vanilla's own four states rather than re-typing them - a hand list can
+        // drift from the property it is copying and says nothing about where the words came from.
+        .SideVariant(),
     ];
 
   #endregion
 
-  // A single, non-oriented tank: the drip and the filler are rotation-invariant (the filler sits
-  // directly above the base, the drip searches its own column and the four neighbours), so the footprint
-  // needs no rotation.
-  public override int StructureAngle => 0;
+  /// <summary>The hopper's own placement angle. The filler sits directly above the base so the footprint is
+  /// rotation-invariant, but the drip is not - it searches neighbours, and those must rotate.</summary>
+  public override int StructureAngle => ExOrientation.AngleFromSide(Variant["side"]);
 
   #region Drops
 
@@ -93,7 +102,7 @@ public partial class BlockHopperTall
 
   #region Interaction (routed from the top filler cell)
 
-  // Deposit/withdraw is deliberately reachable ONLY through the top filler cell, not the base block: the
+  // Deposit/withdraw is deliberately reachable only through the top filler cell, not the base block: the
   // hopper is charged at its mouth (the top), and the filler reroutes those clicks here. A right-click
   // with burden fills the tank (ctrl = the whole held stack), an empty-handed right-click empties it.
   private bool HandleInteract(
@@ -109,7 +118,7 @@ public partial class BlockHopperTall
       return false;
 
     // The hopper's own cells route here (deposits/withdraws land on the top filler cell). Consume the
-    // build-outline gesture BEFORE the deposit/withdraw path so Ctrl+Shift+right-click previews the
+    // build-outline gesture before the deposit/withdraw path so Ctrl+Shift+right-click previews the
     // incomplete furnace instead of emptying the tank. The hopper's base cell gets this from the shared
     // MultiblockStructure behaviour directly; this covers the filler-routed clicks the behaviour never sees.
     if (

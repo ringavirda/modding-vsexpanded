@@ -19,7 +19,7 @@ namespace ExpandedLib.Testing;
 /// (<see cref="CheckCompleteness"/>). This replaces the per-family test classes that each carried a large inline
 /// golden string plus a copy of the same gather/lookup/assert scaffold.
 /// <para>
-/// Defs are collected straight off a mod assembly (<see cref="Collect"/>) WITHOUT touching the process-wide
+/// Defs are collected straight off a mod assembly (<see cref="Collect"/>) without touching the process-wide
 /// <see cref="ExDefinitions"/> registry, so parity tests stay isolated and parallel. Goldens are read from the
 /// source tree (like the lang-parity guard reads shipped assets), so no build-output copy step is needed;
 /// <see cref="WriteAll"/> re-blesses them from the current def output after an intended change. Comparison is
@@ -143,22 +143,68 @@ public static class DefinitionGoldens
     return (missing, orphans);
   }
 
-  /// <summary>Re-blesses every golden under <paramref name="goldenRoot"/> from the current def output - run
-  /// once to create the tree, or after an intended def change to accept the new JSON. Opt-in (call only when
-  /// <see cref="WriteRequested"/>), never part of a normal test run.</summary>
+  /// <summary>
+  /// Re-blesses the goldens under <paramref name="goldenRoot"/> from the current def output - run once to
+  /// create the tree, or after an intended def change to accept the new JSON. Opt-in (call only when
+  /// <see cref="WriteRequested"/>), never part of a normal test run.
+  ///
+  /// <para>
+  /// <b><c>EXLIB_WRITE_GOLDENS=1</c> re-blesses the whole domain, and that is a blunt instrument.</b> A
+  /// golden's only job is to be a hand-checked record of what the defs produce; re-blessing a hundred of
+  /// them to accept a change in two means the other ninety-eight are accepted <em>unread</em>. If any of
+  /// them had drifted for a reason nobody noticed, the drift is now the record.
+  /// </para>
+  ///
+  /// <para>
+  /// So the variable also takes a <b>comma-separated list of paths</b> instead of <c>1</c>, and then only
+  /// the goldens whose <c>domain/path</c> contains one of them are rewritten - everything else is left
+  /// exactly as it was. <c>EXLIB_WRITE_GOLDENS=iwex/blocktypes/furnace/blastcore</c> blesses one file. Reach
+  /// for the list first; <c>1</c> is for creating the tree from nothing.
+  /// </para>
+  /// </summary>
   public static void WriteAll(string domain, Assembly asm, string goldenRoot)
   {
+    IReadOnlyList<string> only = WriteFilter;
+
     foreach (IExDef def in Collect(domain, asm))
     {
+      // Matched on the same domain-qualified relative path the parity test reports, so a failure message
+      // can be pasted straight into the variable.
+      string relative = def.Location.Domain + "/" + def.Location.Path;
+      if (only.Count > 0 && !only.Any(f => relative.Contains(f, StringComparison.Ordinal)))
+        continue;
+
       string file = FullPath(goldenRoot, def);
       Directory.CreateDirectory(Path.GetDirectoryName(file)!);
       File.WriteAllText(file, def.ToJson().ToString());
     }
   }
 
-  /// <summary>True when <c>EXLIB_WRITE_GOLDENS=1</c> - the opt-in switch a regeneration test guards on.</summary>
+  /// <summary>True when <c>EXLIB_WRITE_GOLDENS</c> is set to anything non-empty - the opt-in switch a
+  /// regeneration test guards on. <c>1</c> means every golden; anything else is a path filter, see
+  /// <see cref="WriteAll"/>.</summary>
   public static bool WriteRequested =>
-    Environment.GetEnvironmentVariable("EXLIB_WRITE_GOLDENS") == "1";
+    !string.IsNullOrWhiteSpace(
+      Environment.GetEnvironmentVariable("EXLIB_WRITE_GOLDENS")
+    );
+
+  /// <summary>The path fragments <c>EXLIB_WRITE_GOLDENS</c> names, or empty for "every golden" (<c>1</c>).</summary>
+  private static IReadOnlyList<string> WriteFilter
+  {
+    get
+    {
+      string value =
+        Environment.GetEnvironmentVariable("EXLIB_WRITE_GOLDENS") ?? "";
+      if (value.Trim() is "" or "1")
+        return [];
+      return
+      [
+        .. value
+          .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+          .Select(p => p.Replace('\\', '/').Replace(".json", "")),
+      ];
+    }
+  }
 
   /// <summary>Resolves a repo-root-relative path (e.g. <c>test/LowPressureExpanded.Tests/goldens</c>) to an
   /// absolute path by walking up from the test binary to the solution root - the same source-tree anchor the

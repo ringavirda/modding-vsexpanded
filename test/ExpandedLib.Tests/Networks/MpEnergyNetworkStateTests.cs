@@ -132,20 +132,6 @@ public class MpEnergyNetworkStateTests
 
   #endregion
 
-  #region Over-speed
-
-  [Fact]
-  public void Over_speed_is_at_the_ceiling()
-  {
-    var s = new MpEnergyNetworkState { Inertia = 10f, Speed = MaxSpeed };
-    Assert.True(MpEnergyNetworkState.IsOverSpeed(s, MaxSpeed));
-
-    s.Speed = MaxSpeed * 0.9f;
-    Assert.False(MpEnergyNetworkState.IsOverSpeed(s, MaxSpeed));
-  }
-
-  #endregion
-
   #region Gear coupling (the transmission)
 
   private static float TotalKE(MpEnergyNetworkState a, MpEnergyNetworkState b) =>

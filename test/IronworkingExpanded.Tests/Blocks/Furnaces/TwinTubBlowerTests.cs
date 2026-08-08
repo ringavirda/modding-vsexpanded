@@ -19,7 +19,7 @@ namespace IronworkingExpanded.Tests;
 /// <para>
 /// The tests that matter here are the <b>ordering</b> ones. The iron tier's progression gate is not a
 /// rule anywhere in the code - it is the relationship between four numbers: what a coke-rich burden
-/// demands, what a lean one demands, what bellows can raise, and what bolted pipe can hold. Order them
+/// demands, what a lean one demands, what bellows can raise, and what plated pipe can hold. Order them
 /// wrong and either the iron tier cannot blow its own furnace, or a cheap mechanical blower runs the
 /// fuel-efficient burden the steam tier is supposed to be for. The rest pins the speed response, the
 /// production path and the footprint that hosts the axle.
@@ -30,7 +30,7 @@ public class TwinTubBlowerTests
   #region Tier balance
 
   // The iron tier's whole gate lives in four numbers: what a rich burden demands, what a lean one
-  // demands, what the bellows can raise, and what bolted pipe can hold. Get their ORDER wrong and
+  // demands, what the bellows can raise, and what plated pipe can hold. Get their orDER wrong and
   // either the iron tier cannot be blown at all, or a mechanical blower runs the fuel-efficient
   // burden that is supposed to require steam.
 
@@ -46,7 +46,7 @@ public class TwinTubBlowerTests
       Pos = new BlockPos(0, 16, 0),
       Block = TestBlocks.Configure(
         new Block(),
-        "iwex:blastfurnacecore-north",
+        "iwex:furnace-blastcore-tier1-n",
         1,
         ("side", "north")
       ),
@@ -82,21 +82,21 @@ public class TwinTubBlowerTests
   public void The_bellows_never_burst_their_own_tier_of_pipe()
   {
     Assert.True(
-      IwexValues.TwinTubBlowerMaxPressure < IwexValues.BoltedPipeBurstPressure,
-      $"a blower at {IwexValues.TwinTubBlowerMaxPressure} atm bursts bolted pipe "
-        + $"(burst {IwexValues.BoltedPipeBurstPressure} atm)"
+      IwexValues.TwinTubBlowerMaxPressure < IwexValues.PlatedPipeBurstPressure,
+      $"a blower at {IwexValues.TwinTubBlowerMaxPressure} atm bursts plated pipe "
+        + $"(burst {IwexValues.PlatedPipeBurstPressure} atm)"
     );
   }
 
   [Fact]
-  public void A_lean_burden_needs_more_pressure_than_bolted_pipe_can_hold()
+  public void A_lean_burden_needs_more_pressure_than_plated_pipe_can_hold()
   {
     // The second half of the gate, and the one that makes it visible in world: even if a player found
-    // a stronger iron-tier blower, the bolted main itself would burst before the lean burden lit.
+    // a stronger iron-tier blower, the plated main itself would burst before the lean burden lit.
     Assert.True(
       Furnace().RequiredBlastPressureFor(LeanBurden)
-        > IwexValues.BoltedPipeBurstPressure,
-      "bolted pipe can hold a lean burden's blast, so the pipe tier is not a gate"
+        > IwexValues.PlatedPipeBurstPressure,
+      "plated pipe can hold a lean burden's blast, so the pipe tier is not a gate"
     );
   }
 
@@ -215,12 +215,12 @@ public class TwinTubBlowerTests
 
     var blowerBlock = TestBlocks.Configure(
       new BlockTwinTubMPBlower(),
-      "iwex:twintubmpblower-twintubmpblower-n",
+      "iwex:furnace-twintubblower-n",
       120,
-      ("type", "twintubmpblower"),
+      ("type", "twintubblower"),
       ("orientation", "n")
     );
-    ReflectionHelpers.SetProperty(blowerBlock, "Type", "twintubmpblower");
+    ReflectionHelpers.SetProperty(blowerBlock, "Type", "twintubblower");
     ReflectionHelpers.SetProperty(blowerBlock, "Orientation", "n");
 
     var blower = new BlockEntityTwinTubMPBlower();
@@ -326,9 +326,9 @@ public class TwinTubBlowerTests
   {
     var block = TestBlocks.Configure(
       new BlockTwinTubMPBlower(),
-      $"iwex:twintubmpblower-twintubmpblower-{orientation}",
+      $"iwex:furnace-twintubblower-{orientation}",
       121,
-      ("type", "twintubmpblower"),
+      ("type", "twintubblower"),
       ("orientation", orientation)
     );
     Assert.Equal(expected, block.StructureAngle);

@@ -12,7 +12,7 @@
 <ul>
   <li><strong>Game version:</strong> built for Vintage Story 1.22. Legacy 1.20 and 1.21 builds are on the GitHub releases page.</li>
   <li><strong>Multiplayer:</strong> works in singleplayer and on dedicated servers.</li>
-  <li><strong>Requires:</strong> <a href="https://mods.vintagestory.at/exlib">Expanded Library</a> (exlib) and <a href="https://mods.vintagestory.at/lpex">Low Pressure Expanded</a> (lpex). Install both before updating.</li>
+  <li><strong>Requires:</strong> <a href="https://mods.vintagestory.at/exlib">Expanded Library</a> (exlib), <a href="https://mods.vintagestory.at/iwex">Ironworking Expanded</a> (iwex) and <a href="https://mods.vintagestory.at/lpex">Low Pressure Expanded</a> (lpex). Install all three before updating.</li>
   <li><strong>Languages:</strong> English, Russian, Ukrainian.</li>
   <li><strong>Save safety:</strong> safe to add to an existing world. Removing it leaves the placed machine blocks behind, so break them first if you uninstall. Updating from before 0.9.0 runs block migrations automatically; replace any leftover unknown blocks in creative.</li>
 </ul>
@@ -20,10 +20,10 @@
 <h2>Quick start</h2>
 <p>The iron line, in order. Each step has a full handbook article ("Steelmaking:") in game.</p>
 <ol>
-  <li>Build the blast furnace: place the door block, hold Ctrl + right-click for the build outline, and fill in every highlighted block until it reports complete.</li>
+  <li>Build the blast furnace: place the Blast Furnace Core block (the anchor at the bottom centre of the hearth), hold Ctrl + Shift + right-click on it for the build outline, and fill in every highlighted block until it reports complete.</li>
   <li>Set up steam power (see Low Pressure Expanded), then an Air Blower sub-machine, a pair of Cowper Stoves and a Smoke Stack. Pipe air through the blower and a cowper into the tuyeres, and pipe furnace exhaust through the cowpers out to the smoke stack.</li>
-  <li>Load the Reinforced Hopper with crushed iron ore, crushed coke and lime. The Bell Hopper below fills the shaft on its own (dropping is on by default).</li>
-  <li>Ignite the blast mix with a torch and close the door.</li>
+  <li>Prepare burden at an Ironworking Expanded burdenmaker (crushed iron ore fluxed with lime). Load the Reinforced Hopper with coke and burden in alternating rounds - it holds one material at a time - and the Bell Hopper below lays them down the shaft on its own (dropping is on by default).</li>
+  <li>Lay coke first: the furnace lights itself once a complete course of fuel covers the bottom of the shaft. There is no door and no torch.</li>
   <li>Charge one cowper stove on exhaust while the other blows hot blast in, swapping them with valves as they cool. Hold the furnace above about 1482 degrees Celsius and it begins to melt iron.</li>
   <li>Open the Molten Metal Taps to drain iron and slag down canals into molds or barrels.</li>
   <li>For steel, pour molten iron into a Bessemer converter and refine it - that is Stage II.</li>
@@ -33,7 +33,6 @@
 <ul>
   <li><code>.exmod network hi</code> / <code>unhi</code> - highlights every networked block, a separate colour per network, so you can see where a run is continuous and where it is broken.</li>
   <li><code>.exmod measure metric</code> / <code>imperial</code> - switches display units on machines and network blocks. Display only; the simulation is unchanged.</li>
-  <li><code>/exmod molds &lt;plate|ingot|rod|all&gt; &lt;on|off&gt;</code> - enables or disables this mod's tool molds (admin).</li>
   <li><code>/exmod config smex</code> - view or change any gameplay value live, applied immediately with no world reload (admin).</li>
   <li><code>/exmod recipes smex &lt;normal|cheap&gt;</code> - switch the crafting and construction cost level; applies on the next world reload (admin).</li>
 </ul>
@@ -42,8 +41,8 @@
   first run:
 </p>
 <ul>
-  <li><code>smex_values.json</code> - the gameplay tunables (melt temperatures and timings, how much blast mix a charge needs, canal and barrel cooldown rates, salvage drop ratios). Editable live with <code>/exmod config smex</code>.</li>
-  <li><code>smex_recipes.json</code> - the per-recipe and per-construction cost numbers for each level (normal and cheap). Pick the active level with <code>/exmod recipes smex</code> and fine-tune the numbers in this file; changes apply on the next world reload.</li>
+  <li><code>ex_values.json</code> (its <code>smex</code> section) - the gameplay tunables (hopper capacities, cowper stove heating rates, converter refining behaviour, salvage drop ratios). Editable live with <code>/exmod config smex</code>.</li>
+  <li><code>ex_recipes.json</code> (its <code>smex</code> section) - the per-recipe and per-construction cost numbers for each level (normal and cheap). Pick the active level with <code>/exmod recipes smex</code> and fine-tune the numbers in this file; changes apply on the next world reload.</li>
 </ul>
 
 <h2>How it works</h2>
@@ -53,15 +52,15 @@
     <p>
       <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/smex/screenshots/blast_furnace.png?raw=true" alt="" width="840" height="472" />
     </p>
-    <p>The blast furnace is a tall multiblock built mostly from refractory bricks, with its own door, two tuyeres (hot-blast intakes) low on the shaft, two gas outlets (exhaust) high up, two hoppers on top, and two molten metal taps (the upper pours slag, the lower pours iron). Place the door first - it is the control block - then Ctrl + right-click for the build outline and fill it in.</p>
-    <p>The furnace does not consume ore directly; it burns blast mix (ore, fuel and flux). Load the ingredients into the reinforced hopper and the bell hopper drips blast mix down the shaft. Ignite it with a torch and close the door. While firing the temperature climbs to about 1400 degrees Celsius on its own - not enough to smelt iron - so you feed it hot blast through the tuyeres to push past iron's melting point (about 1482 degrees Celsius) and into the melting phase, where it turns the blast mix into a reservoir of molten iron and slag.</p>
-    <p>The furnace is temperamental: opening the door, running out of blast mix, a choked exhaust, or an overflowing reservoir all put the fire out and solidify everything inside into blocks you must clear before firing again. You cannot open the door while it fires, so keep it fed through the hoppers for continuous melting.</p>
+    <p>The blast furnace is a tall multiblock built mostly from refractory bricks, with two tuyeres (hot-blast intakes) low on the shaft, two gas outlets (exhaust) high up, two hoppers on top, and two molten metal taps (the upper pours slag, the lower pours iron). Place the Blast Furnace Core first - it is the control block, at the bottom centre of the hearth - then Ctrl + Shift + right-click it for the build outline and fill it in.</p>
+    <p>The furnace does not consume ore directly; it eats burden (crushed ore fluxed with lime, stamped at an Ironworking Expanded burdenmaker) and coke, charged as alternating layers - nothing is premixed. Load them into the reinforced hopper in turns and the bell hopper drips them down the shaft. Lay coke first and the furnace lights itself once a complete course of fuel covers the bottom of the shaft - there is no door and no torch. While firing the temperature climbs to about 1400 degrees Celsius on its own - not enough to smelt iron - so you feed it hot blast through the tuyeres to push past iron's melting point (about 1482 degrees Celsius) and into the melting phase, where it renders the charge into a reservoir of molten iron and slag.</p>
+    <p>The furnace is temperamental: running out of fuel at the tuyeres or a choked exhaust puts the fire out and solidifies everything inside into blocks you must clear before firing again, and an overflowing reservoir silently wastes whatever melts over the top. Keep it fed through the hoppers, and keep the taps open, for continuous melting.</p>
     <p>The hoppers:</p>
     <ul>
-      <li><strong>Reinforced hopper</strong> - holds crushed iron ore, crushed coke and lime, and combines 12 crushed iron, 3 crushed coke and 1 lime into 16 blast mix at a time, stockpiling it internally. It also accepts reclaimed blast mix.</li>
-      <li><strong>Bell hopper</strong> - sits below and deploys blast mix into the shaft, stopping on its own when the furnace is full. Dropping is on by default; toggle it with Ctrl + right-click.</li>
+      <li><strong>Reinforced hopper</strong> - the loading bunker. It holds one material at a time - burden or fuel - so you charge in rounds: fill it with coke, let it drain, then fill it with burden.</li>
+      <li><strong>Bell hopper</strong> - sits below and deploys the charge into the shaft, stopping on its own when the furnace is full. Dropping is on by default; toggle it with Ctrl + right-click.</li>
     </ul>
-    <p>Coke is baked from coal in a vanilla coke oven, and ore and coke are crushed in a vanilla pulverizer. The furnace needs a lot of both, so prepare ahead.</p>
+    <p>Coke is baked from coal in a vanilla coke oven, and ore is crushed in a vanilla pulverizer. The furnace needs a lot of both, so prepare ahead.</p>
     <p>
       <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/smex/screenshots/cowpers_frombehind.png?raw=true" alt="" width="841" height="473" />
     </p>
@@ -88,11 +87,11 @@
     <p>
       <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/smex/screenshots/slag_tap.png?raw=true" alt="" width="839" height="472" />
     </p>
-    <p>Liquid metal is poured through canals, not carried by pipes. Lay a Molten Canal (Start) as the anchor of a network, then run straights, bends and junctions out from it.</p>
+    <p>Liquid metal is poured through canals, not carried by pipes. The canal network ships with Ironworking Expanded (required); lay a Molten Canal (Start) as the anchor of a network, then run straights, bends and junctions out from it.</p>
     <ul>
       <li><strong>Molten Metal Taps</strong> - drain the furnace (the lower pours iron, the upper pours slag), each into the start of a canal below.</li>
       <li><strong>Canal Tap</strong> - pours metal out of the network into a barrel, a large mold, or the converter.</li>
-      <li><strong>Mold Pedestal</strong> - holds a fired mold and fills it from the network. The mod also adds larger plate, quad rod and double ingot molds, clay-formed and fired like any tool mold.</li>
+      <li><strong>Mold Pedestal</strong> - holds a fired tool mold and fills it from the network; the big anvil and helve-hammer molds are cast under the Canal Tap instead.</li>
       <li><strong>Molten Barrel</strong> - bulk storage for molten metal; buffer excess iron or hold slag from the upper tap.</li>
     </ul>
     <p>Mind the temperature: metal in the canals cools, and if it drops too far it solidifies in place. A hardened canal stops flowing - once it has cooled enough, chisel it out with a chisel and hammer to recover most of the metal as bits, which crush back into crushed iron. Keep runs short, keep them fed, and empty them before they go cold.</p>
@@ -105,10 +104,9 @@
     <p>Smelting leaves byproducts, none of them wasted:</p>
     <ul>
       <li><strong>Slag</strong> - grinds into powdered slag, which makes mortar when mixed with slaked lime in a barrel, or acts as a phosphate fertilizer on farmland.</li>
-      <li><strong>Loose blast mix</strong> - behaves like a coal pile, so you can lay it back down, stack it, feed it through the hoppers, or burn it as ordinary fuel in a pinch.</li>
       <li><strong>Solidified metal</strong> - chisels out of canals and barrels as bits. Per vanilla, recovering hardened metal from a ceramic mold shatters the mold.</li>
     </ul>
-    <p>The mod also swaps a few vanilla classes for drop-in replacements (Harmony patches) so the molten line works. None of this changes vanilla recipes or balance - it only adds the plumbing the new machines need: filled tool molds can be carried and racked while still holding metal (a molten one spills if racked before it sets), the mold rack enforces that, coal piles gain blast-mix burn-to-slag behaviour, and the larger plate, double-ingot and quad-rod mold variants are added.</p>
+    <p>The vanilla-facing plumbing the molten line needs ships with the required Ironworking Expanded mod rather than here: filled tool molds can be carried and racked while still holding metal (a molten one spills if racked before it sets), and the mold rack enforces that. Steelmaking Expanded itself changes no vanilla recipes or balance.</p>
   </div>
 </div>
 
@@ -129,7 +127,7 @@
 <h2>FAQ</h2>
 <ul>
   <li><strong>My furnace is stuck around 1400 degrees Celsius.</strong> It needs hot blast. Charge a cowper stove on exhaust, then route pressurised air through it into the tuyeres.</li>
-  <li><strong>My furnace keeps going out.</strong> Do not open the door while it fires. Keep blast mix fed, keep the exhaust flowing through the smoke stack, and do not let the molten reservoir overflow.</li>
+  <li><strong>My furnace keeps going out.</strong> It lives on the fuel at the tuyeres, so keep the coke rounds coming, and keep the exhaust flowing through the smoke stack - a backed-up exhaust smothers it. An overflowing reservoir does not put the fire out, but it silently wastes metal, so keep the taps open too.</li>
   <li><strong>My cowper stove will not heat, or exhaust comes out the air line.</strong> Exhaust and blast mixed inside the stove - keep them on separate paths. Burning anything but anthracite also emits some exhaust.</li>
   <li><strong>My metal solidified in a canal, mold or converter.</strong> It cooled. Chisel canals, barrels and converter residue out, or break the converter with a steel pickaxe to recover. Keep runs short and fed - sleeping cools everything, it does not fast-forward the process.</li>
   <li><strong>A machine became an inert block I cannot interact with or break.</strong> Its block entity was lost (a load error or desync). It is recreated on reload, or an admin can run <code>/exmod heal</code>.</li>

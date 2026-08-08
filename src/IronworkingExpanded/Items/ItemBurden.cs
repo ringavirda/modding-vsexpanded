@@ -9,28 +9,33 @@ using Vintagestory.API.Config;
 namespace IronworkingExpanded.Items;
 
 /// <summary>
-/// Prepared furnace charge (the historical "burden"). Two distinct items share this class, one per
-/// furnace family so they read differently in the world and can never merge into one pile:
-/// <c>iwex:burden</c> is the blast-furnace ORE burden (iron ore + flux + coke) and
-/// <c>iwex:remeltburden</c> is the cupola REMELT burden (scrap metal + flux + coke). Each stack carries
-/// its <see cref="BurdenMix"/> as attributes; the furnace core reads the same mix (its coke fraction) to
-/// drive the shared heat balance, so it never needs to know which family it is burning - only whether it
-/// accepts that family. Replaces smex's count-only <c>blastmix</c>.
+/// Prepared furnace charge (the historical "burden"): <b>crushed iron ore blended with lime flux, and
+/// nothing else</b>. One item, made only by the burdenmaker, carrying its <see cref="BurdenMix"/> as stack
+/// attributes so the ratio is decided once and travels with the stack through splitting, a hopper tank, a
+/// charge column and a burn-out.
+/// <para>
+/// <b>Coke is not in it.</b> Fuel is charged as its own bands at the furnace
+/// (<c>docs/design/layered-charge.md</c>), which is why the only quality this item carries is its flux
+/// fraction.
+/// </para>
 /// </summary>
 [ItemRegister]
 public partial class ItemBurden : Item, IExItemDefProvider
 {
-  /// <summary>The code-first itemtype definitions: the ore burden and the remelt burden, one item class
-  /// for both (family is by identity, <see cref="Burden.FamilyOf"/>). Migrated from itemtypes/burden.json.</summary>
+  /// <summary>
+  /// The code-first itemtype definition. Migrated from itemtypes/burden.json.
+  /// <para>
+  /// <b><c>iwex:remeltburden</c> is retired, not renamed - there is deliberately no migration for
+  /// it.</b> Its producer (the ore mixer) and its consumer (the cupola, which charges metal directly)
+  /// are both gone, so there is nothing to remap it to. A world that somehow held one loses it; no iwex
+  /// build has ever shipped, so no world does.
+  /// </para>
+  /// </summary>
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
-    [
-      Def(domain, "burden", "game:block/coal/orecoalmix"),
-      // The remelt burden looks metallic (scrap-based), not coaly, so the two piles read apart at a glance.
-      Def(domain, "remeltburden", "game:block/metal/tarnished/iron"),
-    ];
+    [Def(domain, "burden", "game:block/coal/orecoalmix")];
 
-  // The surface both burdens share; only the code and the texture differ. Kept as one factory so a
-  // future field (a new transform, a behaviour) can never drift between the two families.
+  // Kept as a factory even with one caller: it is the shape of the item, and inlining it would make the
+  // next burden-like item a copy-paste instead of a second call.
   private static ExItemDef Def(string domain, string code, string texture) =>
     ExItemDef
       .Create(domain, code)
@@ -80,25 +85,20 @@ public partial class ItemBurden : Item, IExItemDefProvider
   {
     base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
 
-    // Which furnace this charge is for, read the moment the stack is in hand - so the player learns
-    // the burden is cupola-only (or blast-furnace-only) before walking to the wrong furnace with it.
-    string family = Burden.FamilyOf(inSlot.Itemstack);
-    dsc.AppendLine(Lang.Get("iwex:burden-for-" + family));
-
+    // No "which furnace is this for" line: there is one burden and one furnace that eats it, so the
+    // line could only ever say the same thing.
     BurdenMix mix = Burden.Read(inSlot.Itemstack);
     if (!mix.HasContent)
       return;
 
-    // The primary channel is iron ore for ore burden but scrap metal for remelt burden; label it per
-    // family so the composition line does not call scrap "iron ore".
+    // Two numbers, not three. Carbon is charged as its own fuel bands at the furnace, so printing a
+    // fuel percentage here would be a second, disagreeing answer to "how much carbon is at the
+    // raceway".
     dsc.AppendLine(
       Lang.Get(
-        family == Burden.FamilyRemelt
-          ? "iwex:remelt-composition"
-          : "iwex:burden-composition",
+        "iwex:burden-composition",
         (int)Math.Round(mix.IronFrac * 100),
-        (int)Math.Round(mix.FluxFrac * 100),
-        (int)Math.Round(mix.FuelFrac * 100)
+        (int)Math.Round(mix.FluxFrac * 100)
       )
     );
     dsc.AppendLine(Lang.Get(Burden.ProfileLangKey(mix)));

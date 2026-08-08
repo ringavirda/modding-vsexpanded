@@ -1,7 +1,9 @@
 using System;
 using System.Text;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
+using IronworkingExpanded.BlockStructures.Furnaces;
 using IronworkingExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -12,12 +14,12 @@ using Vintagestory.API.MathTools;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 
 /// <summary>
-/// The reinforced hopper: a small burden tank that sits above the bell hopper and feeds it. It no longer
-/// mixes anything - the ore mixer now stamps the blast-furnace burden, and this is just the loading bunker
-/// the player (or, later, the skip hoist) tops up. A right-click with burden fills the tank, an empty-handed
+/// The reinforced hopper: a small charge tank that sits above the bell hopper and feeds it. It no longer
+/// mixes anything - iwex's burdenmaker stamps the burden, and this is just the loading bunker
+/// the player (or, later, the skip hoist) tops up. A right-click with charge fills the tank, an empty-handed
 /// right-click empties it, and Ctrl + right-click toggles the bell hopper's dropping below.
 /// <para>
-/// A single burden <see cref="ItemStack"/>, so it holds one grade at a time (a mismatched deposit is
+/// A single <see cref="ItemStack"/>, so it holds one grade at a time (a mismatched deposit is
 /// refused). Deliberately a much smaller buffer than the tall hopper's tank: it is meant to be skip-hoist
 /// fed rather than hand-loaded to the brim. The bell hopper below pulls from it (<see cref="DrawBurden"/>)
 /// into its own magazine and drips that down the shaft.
@@ -26,8 +28,24 @@ namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityHopperReinforced : BlockEntity
 {
-  // The whole tank is one burden stack (item identity = family, attributes = grade). Null when empty.
+  // The whole tank is one charge stack (item identity = family/fuel, attributes = grade). Null when empty.
   private ItemStack? _tank;
+
+  // The furnace this hopper ultimately charges, resolved by the same bounded multiblock scan every furnace
+  // part uses (the bell below keeps an identical link). The reinforced hopper stands eight cells above the
+  // core on the shipped drawing, which is exactly ComponentScanBelow - see BlockEntityFurnaceCore.
+  //
+  // It exists for one reason: the tank must not carry an opinion of its own about what is chargeable.
+  // See the remark on Accepts.
+  private MultiblockAnchorLink<BlockEntityFurnaceCore>? _anchor;
+
+  private MultiblockAnchorLink<BlockEntityFurnaceCore> Anchor =>
+    _anchor ??= new MultiblockAnchorLink<BlockEntityFurnaceCore>(
+      this,
+      BlockEntityFurnaceCore.ComponentScanHorizontal,
+      BlockEntityFurnaceCore.ComponentScanBelow,
+      BlockEntityFurnaceCore.ComponentScanAbove
+    );
 
   // Cached, untranslated mesh of the burden contents pile (built lazily client-side).
   private MeshData? _contentsBaseMesh;
@@ -53,12 +71,42 @@ public class BlockEntityHopperReinforced : BlockEntity
   #region Deposit / withdraw (driven from the block)
 
   /// <summary>
-  /// Whether <paramref name="stack"/> can enter the tank right now: it must be prepared burden of either
-  /// family, and - once the tank holds something - must match what is already in it (same item and grade),
-  /// because one stack cannot carry two grades. An empty tank accepts any single burden.
+  /// Whether <paramref name="stack"/> is something the furnace under this hopper actually charges - asked of
+  /// the anchored core, never answered here.
+  /// <para>
+  /// Caution: do not replace this with <c>Burden.IsAny</c>. That predicate is true for prepared burden and
+  /// nothing else, so the only route the shipped world has for laying a fuel band into this shaft - the
+  /// reinforced hopper, which is the only charging cell the hot furnace's drawing carries - would refuse
+  /// coke and charcoal outright. A shaft with no fuel at its raceway can never satisfy
+  /// <c>RacewayIsLightable</c>, so the machine would build, complete, take its blast and be impossible to
+  /// light. Tests that push charge straight into the columns drive past this gate, so nothing fails visibly.
+  /// </para>
+  /// <para>
+  /// The tall hopper delegates the same way (<c>BlockEntityHopperTall.Accepts</c>) for the same reason: one
+  /// tank block serves four machines that each declare a different charge and burn their own fuel, so
+  /// the machine is the only thing that can answer.
+  /// </para>
+  /// <para>
+  /// A hopper standing over nothing charges nothing. That is the honest answer - there is no machine to
+  /// declare a charge - and it is also what stops a hopper being filled and then walled into a furnace that
+  /// refuses what is already in it.
+  /// </para>
+  /// </summary>
+  public bool IsChargeItem(ItemStack? stack) =>
+    Anchor.Resolve() is { } core && core.IsChargeItem(stack);
+
+  /// <summary>
+  /// Whether <paramref name="stack"/> can enter the tank right now: it must be charge this furnace takes
+  /// (<see cref="IsChargeItem"/>), and - once the tank holds something - must match what is already in it
+  /// (same item and grade), because one stack cannot carry two grades. An empty tank accepts any single charge.
+  /// <para>
+  /// With fuel able to enter here, the single-stack rule is what guarantees
+  /// <b>one load lays one band type</b>, which is the whole of band-order charging. A tank that could hold
+  /// coke and burden at once would drip them interleaved and no round could ever be laid.
+  /// </para>
   /// </summary>
   public bool Accepts(ItemStack? stack) =>
-    Burden.IsAny(stack) && (_tank == null || IsMergeable(stack));
+    IsChargeItem(stack) && (_tank == null || IsMergeable(stack));
 
   /// <summary>
   /// Moves burden from <paramref name="fromSlot"/> into the tank. With <paramref name="wholeStack"/> it
@@ -144,6 +192,12 @@ public class BlockEntityHopperReinforced : BlockEntity
 
   // Same item and same stamped grade - one stack cannot hold two grades, so a different mix (or the other
   // family) is refused rather than silently pooling into one stack.
+  //
+  // This is already right for fuel, and by its first clause rather than its second. Coke and charcoal are
+  // distinct collectibles, so a tank holding one refuses the other; the grade half is simply a no-op for
+  // them, because Burden.Read of an unstamped fuel stack is `default` on both sides. That matters more than
+  // it looks: two fuels are not the same carbon (CarbonPerUnit is 1.0 against 0.5), and a band is stored as
+  // one material code, so a tank that pooled them would have to pick one code for a load that was neither.
   private bool IsMergeable(ItemStack? stack) =>
     _tank != null
     && stack?.Collectible == _tank.Collectible

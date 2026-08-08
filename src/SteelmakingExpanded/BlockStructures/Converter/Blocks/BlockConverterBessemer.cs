@@ -92,7 +92,7 @@ public partial class BlockConverterBessemer
               )
           )
         )
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .Behavior("BlockEntityInteract")
         .EntityBehavior("Animatable")
         .Construction(c =>
@@ -129,7 +129,7 @@ public partial class BlockConverterBessemer
               s.Require("game:clay-fire", 12).AddElements("Root/InputLining")
             )
         )
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .SideVariant()
         .ShapeSpunPerOrientation("smex:converter/bessemer", 0)
         .ShapeSelectiveElements("Root/GearShaft/*")
         .SingleSelectionBox(-0.5f, -0.5f, -0.5f, 1.5f, 2f, 1.5f)

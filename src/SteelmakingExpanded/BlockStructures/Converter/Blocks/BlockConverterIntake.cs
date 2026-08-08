@@ -27,13 +27,13 @@ public partial class BlockConverterIntake
       ExBlockDef
         .Create(domain, "converter", "converter/intake")
         .Class<BlockConverterIntake>()
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .Material(EnumBlockMaterial.Metal)
         .MetalSounds()
         .MaxStackSize(1)
-        .CreativeCommon("*-north")
+        .CreativeCommon("*-n")
         .VariantGroup("type", "intake")
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
+        .SideVariant()
         .ShapeByTypePerOrientation("smex:converter/intake")
         .NonSolid(),
     ];

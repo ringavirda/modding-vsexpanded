@@ -42,7 +42,7 @@ public static class RccFake
     ReflectionHelpers.SetField(rcc, "rcc", construction);
 
     // A machine that composes the ConstructedAnimator helper keeps _rcc on that helper; a not-yet-
-    // migrated one (the engine) holds it directly. The rigs fake state WITHOUT running Initialize, so
+    // migrated one (the engine) holds it directly. The rigs fake state without running Initialize, so
     // the helper may be absent - create a bare one (its cache key is never used off the render path)
     // and plant the completed rcc into it.
     if (ReflectionHelpers.TryGetField(be, "_animator", out object? existing))

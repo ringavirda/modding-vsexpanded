@@ -23,7 +23,7 @@ public class BEBehaviorEngineMPGenerator(BlockEntity blockentity)
   {
     base.Initialize(api, properties);
 
-    // The generator couples on BOTH ends of its axis, but the base only seeds the single
+    // The generator couples on both ends of its axis, but the base only seeds the single
     // OutFacingForNetworkDiscovery face. Wire the opposite connector too (like vanilla's angled gears).
     if (api.Side == EnumAppSide.Server && OutFacingForNetworkDiscovery != null)
       tryConnect(OutFacingForNetworkDiscovery.Opposite);

@@ -105,14 +105,20 @@ public class HpexConfig : IExVersionedConfig
   #region Pipes
   /// <summary>
   /// Burst pressure (atm) of a rolled (hpex) Hadfield-steel pipe segment - the top pipe tier, and the
-  /// only one that can carry the Cornish engine's output. The weakest pipe limits a run, so one bolted
+  /// only one that can carry the Cornish engine's output. The weakest pipe limits a run, so one plated
   /// or cast segment spliced into an HP main drags the whole run down to its rating.
   /// <para>
-  /// hpex previously registered <b>no</b> rating at all, which left the rolled tier with no strength
-  /// advantage over cast at all - the HP pipe was cosmetic.
+  /// The rating must be registered: without one the rolled tier has no strength advantage over cast
+  /// and the HP pipe is cosmetic.
   /// </para>
   /// </summary>
   public float RolledPipeBurstPressure { get; set; } = 12f;
+
+  /// <summary>Throughput (L/s) of a plain rolled (hpex) pipe segment - the weakest segment caps a run.
+  /// First-pass calibration: 250 clears hpex's own planned heavy blast (~160 L/s),
+  /// which neither plated (50) nor cast (120) will pass - so the top tier has a service only it can
+  /// carry. Throughput, not bore.</summary>
+  public float RolledPipeThroughput { get; set; } = 250f;
   #endregion
 
   #region Construction

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using ExpandedLib;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Fluids;
@@ -108,8 +109,8 @@ public class BlockEntitySmokeStack
   /// <inheritdoc/>
   public float Temperature =>
     _system?.GetNetworkAt(Pos) is PipeNetwork gasNet
-      ? gasNet.State?.Temperature ?? 20f
-      : 20f;
+      ? gasNet.State?.Temperature ?? ExlibValues.AmbientTemperature
+      : ExlibValues.AmbientTemperature;
 
   /// <inheritdoc/>
   public string Medium =>

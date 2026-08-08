@@ -54,17 +54,12 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent
   /// <inheritdoc/>
   public BlockEntityMultiblockStructure? ResolveOwningAnchor() => Anchor.Resolve();
 
-  /// <summary>Structure-local candidate columns the drip searches, own column first, then the four
-  /// horizontal neighbours - so a hopper sitting directly over the shaft AND one sitting beside-and-above
-  /// it (the cupola's side-charging layout) both find the shaft to feed, orientation-blind.</summary>
-  private static readonly (int dx, int dz)[] Columns =
-  [
-    (0, 0),
-    (0, -1),
-    (0, 1),
-    (-1, 0),
-    (1, 0),
-  ];
+  // The hopper carries no offset table and no drip rotation of its own: columns are keyed
+  // structure-local on the core, so there is nothing to rotate - a second, rotated copy of geometry the
+  // furnace already owns is how a south- or west-facing cupola comes to charge outside itself. The
+  // hopper asks the furnace which column to lay on, at any facing, and the anchor link (below) resolves
+  // the core by the multiblock scan every furnace part uses, so "how many cells down to look" is not
+  // this block's question either.
 
   /// <summary>Units currently held in the tank (0 when empty). Serialized, so the client HUD reads it.</summary>
   public int TankCount => _tank?.StackSize ?? 0;
@@ -102,12 +97,31 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent
   #region Deposit / withdraw (driven from the filler)
 
   /// <summary>
-  /// Whether <paramref name="stack"/> can enter the tank right now: it must be prepared burden of either
-  /// family, and - once the tank holds something - must match what is already in it (same item and grade),
-  /// because one stack cannot carry two grades. An empty tank accepts any single burden.
+  /// Whether <paramref name="stack"/> can enter the tank right now: it must be something the furnace below
+  /// actually charges, and - once the tank holds something - must match what is already in it (same item
+  /// and grade), because one stack cannot carry two grades. An empty tank accepts any single charge.
+  /// <para>
+  /// <b>The hopper has no opinion of its own about what is chargeable.</b> Answering
+  /// <c>Burden.IsAny</c> itself would be a fourth copy of a predicate that already exists on the cores,
+  /// and one hopper block cannot serve four machines that way: the blast furnace, the cupola, the heating
+  /// furnace and the beehive coke oven all take a different charge, and each of them burns its own fuel as
+  /// well. Asking the anchored core makes the tank machine-agnostic and the machine the only authority.
+  /// </para>
+  /// <para>
+  /// A hopper standing over nothing accepts nothing. That is the honest answer - there is no machine to
+  /// declare a charge - and it is also what stops a hopper being filled and then walled into a furnace that
+  /// refuses what is already in it.
+  /// </para>
+  /// <para>
+  /// The single-stack tank rule below carries weight it did not before: it is what guarantees <b>one load
+  /// lays one band type</b>, which is the whole of band-order charging. A tank that could hold coke and
+  /// burden at once would drip them interleaved and no round could ever be laid.
+  /// </para>
   /// </summary>
   public bool Accepts(ItemStack? stack) =>
-    Burden.IsAny(stack) && (_tank == null || IsMergeable(stack));
+    Anchor.Resolve() is { } core
+    && core.IsChargeItem(stack)
+    && (_tank == null || IsMergeable(stack));
 
   /// <summary>
   /// Moves burden from <paramref name="fromSlot"/> into the tank. With <paramref name="wholeStack"/> it
@@ -164,149 +178,64 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent
 
   #region Continuous drip
 
+  /// <summary>
+  /// One drip: lay up to <c>HopperTallDropPerSecond</c> of the tank onto the shaft column the furnace
+  /// nominates, and reconcile the blocks so the new material becomes something the player can see.
+  /// <para>
+  /// <b>No world scan, no <c>game:coalpile</c>, no per-cell cap.</b> The whole of "which cell does this
+  /// land in" is <see cref="BlockEntityFurnaceCore.NextChargeColumn"/> - lowest column first, fuel only
+  /// onto burden - so the hopper contributes the tank, the cadence and nothing else. The cap the old path
+  /// clamped against was vanilla's pile mesh (a hard 16 layers); a column's ceiling is its own cell count
+  /// times the furnace's block quantum, which is a number this mod chose.
+  /// </para>
+  /// <para>
+  /// A full shaft, or a column set that will not take what is in the tank, simply holds the load - the
+  /// hopper is a tank with a valve, not a machine that can fail.
+  /// </para>
+  /// </summary>
   private void OnServerTick(float dt)
   {
     if (_tank == null || _tank.StackSize <= 0)
       return;
+    if (Anchor.Resolve() is not { } core)
+      return;
 
-    (BlockPos pos, bool seed)? target = FindDropTarget();
-    if (target == null)
-      return; // shaft full / none below: hold the burden until there is room
+    // The column stores a code string, not a stack: it holds units of a substance. A stack whose item no
+    // longer resolves reads null here, which is a live world state on a tick path, so it holds rather
+    // than throws - the same reason ChargeColumn.Push refuses an empty material instead of throwing.
+    string? material = _tank.Collectible?.Code?.ToShortString();
+    if (string.IsNullOrEmpty(material) || !core.IsChargeCode(material))
+      return;
 
-    int perTick = Math.Max(1, IwexValues.HopperTallDropPerSecond);
-    int room = target.Value.seed
-      ? IwexValues.HopperTallPileCap
-      : IwexValues.HopperTallPileCap - PileStackSize(target.Value.pos);
-    int amount = Math.Min(Math.Min(perTick, _tank.StackSize), room);
+    ChargeColumn? column = core.NextChargeColumn(material, out int room);
+    if (column == null || room <= 0)
+      return; // shaft full, or the band order refuses this material anywhere
+
+    int amount = Math.Min(
+      Math.Min(Math.Max(1, IwexValues.HopperTallDropPerSecond), _tank.StackSize),
+      room
+    );
     if (amount <= 0)
       return;
 
-    if (target.Value.seed)
-      SeedPile(target.Value.pos, amount);
-    else
-      TopUpPile(target.Value.pos, amount);
+    // The mix rides along, and it is read off the tank rather than recomputed: burden's one surviving
+    // quality is its flux ratio, and it has to reach the raceway intact. Fuel carries `default`, which is
+    // exactly what Burden.Read answers for a stack with no stamp.
+    column.Push(material, amount, core.ChargeTemperature, Burden.Read(_tank));
 
     _tank.StackSize -= amount;
     if (_tank.StackSize <= 0)
       _tank = null;
 
-    ExParticles.FallingDust(Api.World, target.Value.pos);
+    // The columns moved, so the world has to catch up - blocks appear as a column crosses a boundary, and
+    // every surviving pile in it republishes the snapshot its mesh reads.
+    core.SyncChargeBlocks();
+    core.MarkDirty(true); // the shaft total is the core's, and this hopper's HUD reads it
+
+    ExParticles.FallingDust(Api.World, Pos.DownCopy());
     ExSounds.Play(Api, Pos, ExSounds.StoneCrush, 0.4f, 16f);
     MarkDirty(true);
   }
-
-  /// <summary>
-  /// Finds the cell to drip into: walking each candidate column downward, top up the first burden pile
-  /// that has room, else seed a new pile in the gap just above the first full pile or the first solid
-  /// floor - so a column fills from the bottom up and never higher than the hopper's own level. Returns
-  /// the cell and whether it must be seeded (a fresh coal pile) versus topped up (an existing one).
-  /// </summary>
-  private (BlockPos pos, bool seed)? FindDropTarget()
-  {
-    int depth = Math.Max(1, IwexValues.HopperTallDropDepth);
-    foreach (var (dx, dz) in Columns)
-    {
-      for (int d = 1; d <= depth; d++)
-      {
-        var pos = new BlockPos(
-          Pos.X + dx,
-          Pos.Y - d,
-          Pos.Z + dz,
-          Pos.dimension
-        );
-        Block block = Api.World.BlockAccessor.GetBlock(pos);
-
-        if (IsCoalPile(block))
-        {
-          if (PileHasRoom(pos))
-            return (pos, false);
-          // A full pile: the next unit lands in the empty cell just on top of it (bottom-up growth).
-          if (CanSeedAt(pos.UpCopy()))
-            return (pos.UpCopy(), true);
-          break; // column blocked here
-        }
-
-        if (!IsReplaceable(block))
-        {
-          // A solid floor: seed a pile in the empty cell resting on it.
-          if (CanSeedAt(pos.UpCopy()))
-            return (pos.UpCopy(), true);
-          break;
-        }
-        // Otherwise air/replaceable: keep falling toward the floor or the top of a pile.
-      }
-    }
-    return null;
-  }
-
-  // A cell can be seeded when it is empty (replaceable), at or below the hopper's own level (burden does
-  // not pile up past where it is charged), and is not the hopper's own base cell.
-  private bool CanSeedAt(BlockPos pos) =>
-    pos.Y <= Pos.Y
-    && !pos.Equals(Pos)
-    && IsReplaceable(Api.World.BlockAccessor.GetBlock(pos));
-
-  private bool PileHasRoom(BlockPos pos)
-  {
-    if (Pile(pos) is not { inventory: { Count: > 0 } } pile)
-      return false;
-    ItemSlot slot = pile.inventory[0];
-    if (slot.Empty)
-      return true;
-    return IsMergeable(slot.Itemstack)
-      && slot.StackSize < IwexValues.HopperTallPileCap;
-  }
-
-  private int PileStackSize(BlockPos pos) =>
-    Pile(pos)?.inventory is { Count: > 0 } inv && !inv[0].Empty
-      ? inv[0].StackSize
-      : 0;
-
-  private void TopUpPile(BlockPos pos, int amount)
-  {
-    if (Pile(pos) is not { inventory: { Count: > 0 } } pile)
-      return;
-    ItemSlot slot = pile.inventory[0];
-    if (slot.Empty)
-      slot.Itemstack = BurdenStack(amount);
-    else
-      slot.Itemstack.StackSize += amount;
-    slot.MarkDirty();
-    pile.MarkDirty(true);
-    Api.World.BlockAccessor.MarkBlockDirty(pos);
-  }
-
-  private void SeedPile(BlockPos pos, int amount)
-  {
-    Block? coalpile = Api.World.GetBlock(new AssetLocation("game", "coalpile"));
-    if (coalpile == null)
-      return;
-    Api.World.BlockAccessor.SetBlock(coalpile.BlockId, pos);
-    if (Pile(pos) is { inventory: { Count: > 0 } } pile)
-    {
-      pile.inventory[0].Itemstack = BurdenStack(amount);
-      pile.inventory[0].MarkDirty();
-      pile.MarkDirty(true);
-    }
-  }
-
-  // A stack of the tank's exact burden (item + grade), sized for this drop - so the pile below carries
-  // the same family and mix the furnace reads.
-  private ItemStack BurdenStack(int amount)
-  {
-    ItemStack stack = _tank!.Clone();
-    stack.StackSize = amount;
-    return stack;
-  }
-
-  private BlockEntityCoalPile? Pile(BlockPos pos) =>
-    Api.World.BlockAccessor.GetBlockEntity(pos) as BlockEntityCoalPile;
-
-  private static bool IsCoalPile(Block block) =>
-    block.Code?.Path.StartsWith("coalpile") == true;
-
-  // Air/water/other replaceable cells read >= 6000; a solid block or a coal pile reads below it.
-  private static bool IsReplaceable(Block block) => block.Replaceable >= 6000;
 
   #endregion
 
@@ -353,8 +282,8 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent
           _tank.GetName()
         )
       );
-      // Which furnace this burden is for, so a mis-loaded hopper reads its mistake before the furnace stalls.
-      dsc.AppendLine(Lang.Get("iwex:burden-for-" + Burden.FamilyOf(_tank)));
+      // No "which furnace this burden is for" line: a hopper cannot be mis-loaded with the wrong
+      // burden, because there is only one burden item.
     }
 
     // The shaft may hold burden even with the tank empty (the hopper dripped it all down), so this runs

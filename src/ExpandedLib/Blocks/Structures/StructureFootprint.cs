@@ -46,7 +46,7 @@ public static class StructureFootprint
   /// A rectangular floor footprint: <paramref name="depth"/> rows along +Z (<c>z = 0 .. depth-1</c>) and
   /// <c>2*halfWidth + 1</c> columns along X, emitted centre-out per row (<c>0, +1, -1, +2, -2, …</c>). The
   /// principal cell (the origin <c>0,0,0</c>) is skipped, and every flanking column (<c>x != 0</c>) opts
-  /// into attachment. This reproduces the ore-bunker/ore-mixer style linear footprint.
+  /// into attachment. This reproduces the linear footprint style of iwex's brick machines.
   /// </summary>
   public static IReadOnlyList<FillerCellSpec> Rectangle(int halfWidth, int depth)
   {

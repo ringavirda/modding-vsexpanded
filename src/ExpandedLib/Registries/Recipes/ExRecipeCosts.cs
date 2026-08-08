@@ -31,7 +31,7 @@ public static class ExRecipeCosts
   /// <summary>
   /// Fills the <see cref="ProfileNormal"/> profile of every catalogue entry that lacks it by reading
   /// the live recipe's current quantities. Returns <c>true</c> if anything was added, so the caller can
-  /// persist the catalogue. Run this BEFORE <see cref="Apply"/> (which mutates the live recipes).
+  /// persist the catalogue. Run this before <see cref="Apply"/> (which mutates the live recipes).
   /// </summary>
   public static bool EnsureNormalExtracted(
     ICoreAPI api,

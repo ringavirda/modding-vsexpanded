@@ -5,11 +5,14 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
+using ExpandedLib.Renderers;
 using IronworkingExpanded.BlockNetworkEnergy.Blocks;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace IronworkingExpanded.BlockNetworkEnergy.BlockEntities;
 
@@ -24,14 +27,15 @@ namespace IronworkingExpanded.BlockNetworkEnergy.BlockEntities;
 /// <see cref="BEBehaviorMPFillerPort"/> (declared by <see cref="BlockFlywheel"/>'s per-size footprint), which
 /// is what actually joins the vanilla MP network and presents a load. This block entity reads back the port
 /// axle speed each tick and converts it to a drive torque - the same "read the port speed" pattern the
-/// twin-tub blower and ore mixer use. In-game tuning sets the bridge torque and rated axle speed.
+/// twin-tub blower and the rolling mill use. In-game tuning sets the bridge torque and rated axle speed.
 /// </para>
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityFlywheel
   : BlockEntityNetworkNode,
     IMpEnergyStorage,
-    IMpEnergyProducer
+    IMpEnergyProducer,
+    IMpEnergyDirection
 {
   public override string NetworkType
   {
@@ -39,7 +43,7 @@ public class BlockEntityFlywheel
     set { }
   }
 
-  private bool IsLarge => Block?.Variant["type"] == "large";
+  private bool IsLarge => Block?.Variant["size"] == "large";
 
   /// <summary>Rotational inertia this wheel adds to its run, by size (large ≈ 15× normal). Read live from
   /// iwex config so it can be retuned without a rebuild.</summary>
@@ -72,6 +76,26 @@ public class BlockEntityFlywheel
       ? 0f
       : maxTorque * GameMath.Clamp(hubSpeed / ratedHubSpeed, 0f, 1f);
 
+  /// <summary>Which way the coupled vanilla axle turns, handed on to the run. The bridge is where direction
+  /// enters the mpenergy network at all, since our own speed is unsigned.</summary>
+  public bool IsReversed
+  {
+    get
+    {
+      if (Api?.World == null)
+        return false;
+      foreach ((int hx, int hy, int hz) in HubCells)
+      {
+        BlockPos cell = ExOrientation.GlobalPos(Pos, hx, hy, hz, Angle);
+        var port = Api.World.BlockAccessor.GetBlockEntity(cell)
+          ?.GetBehavior<BEBehaviorMPFillerPort>();
+        if (port is { IsTurning: true })
+          return port.IsReversed;
+      }
+      return false;
+    }
+  }
+
   /// <summary>The placed rotation, read from the block so the hub lookup and the footprint agree.</summary>
   private int Angle => (Block as BlockFlywheel)?.StructureAngle ?? 0;
 
@@ -82,6 +106,99 @@ public class BlockEntityFlywheel
   private static readonly (int X, int Y, int Z)[] LargeHubs = [(0, 2, 0), (0, 2, 1)];
 
   private (int X, int Y, int Z)[] HubCells => IsLarge ? LargeHubs : NormalHubs;
+
+  #region Spin animation (the disc speed IS the charge gauge)
+
+  private ToggleAnimator? _spin;
+  private float _posedSpeed = -1f;
+
+  public override void Initialize(ICoreAPI api)
+  {
+    base.Initialize(api);
+    if (api.Side != EnumAppSide.Client)
+      return;
+    _spin = new ToggleAnimator(this, BuildAnimator);
+    _spin.Initialize(ApplySpin);
+  }
+
+  private void BuildAnimator(BEBehaviorAnimatable animatable)
+  {
+    MeshData mesh = animatable.animUtil.CreateMesh(
+      Block.Code.Path,
+      null,
+      out Shape resolvedShape,
+      null,
+      new TesselationMetaData()
+    );
+    animatable.animUtil.InitializeAnimator(
+      Block.Code.Path,
+      mesh,
+      resolvedShape,
+      new Vec3f(0, Block.Shape.rotateY, 0)
+    );
+  }
+
+  /// <summary>
+  /// Holds exactly one clip: <c>cycle</c> at the run's speed while the wheel turns, <c>idle</c> at rest.
+  /// Keeping one always active is what renders the wheel at all - the animator only suppresses the static
+  /// mesh while a clip is running, so dropping both would make the disc flicker back to its unposed shape.
+  /// <para>
+  /// The clip is authored as one revolution, so its playback rate is the wheel's revolutions per second
+  /// (<see cref="EnergyAnim.SpinSpeed"/>) - the disc is then a direct readout of the reservoir's charge,
+  /// visible in-world at a glance (docs/design/conventions.md R7: nothing is hidden).
+  /// </para>
+  /// </summary>
+  private void ApplySpin()
+  {
+    float speed = (_savedNetworkState as MpEnergyNetworkState)?.Speed ?? 0f;
+    bool turning = EnergyAnim.IsTurning(speed, ExpandedLib.ExlibValues.MpMaxSpeed);
+
+    _spin?.Pose(util =>
+    {
+      if (turning)
+      {
+        util.StopAnimation("idle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "cycle",
+            Code = "cycle",
+            AnimationSpeed = EnergyAnim.SpinSpeed(speed),
+            EaseInSpeed = 3f,
+            EaseOutSpeed = 3f,
+          }.Init()
+        );
+      }
+      else
+      {
+        util.StopAnimation("cycle");
+        util.StartAnimation(
+          new AnimationMetaData
+          {
+            Animation = "idle",
+            Code = "idle",
+            AnimationSpeed = 1f,
+            EaseInSpeed = 3f,
+            EaseOutSpeed = 3f,
+          }.Init()
+        );
+      }
+    });
+    _posedSpeed = speed;
+  }
+
+  /// <summary>A wrench rotation exchanges the block but keeps this entity, so the animator would keep posing
+  /// the pre-rotation shape. Rebuild it, then restore the spin.</summary>
+  public override void OnExchanged(Block block)
+  {
+    base.OnExchanged(block);
+    if (Api is not ICoreClientAPI)
+      return;
+    _spin?.Rebuild();
+    ApplySpin();
+  }
+
+  #endregion
 
   /// <summary>Fastest axle speed among the hub ports, or 0 when none is turning (the two large-wheel hubs
   /// are the same shaft line, so an axle drives whichever side it is coupled to).</summary>
@@ -129,6 +246,22 @@ public class BlockEntityFlywheel
         DemandPower = tree.GetFloat("mpDemand"),
       }
       : null;
+
+  public override void FromTreeAttributes(
+    ITreeAttribute tree,
+    IWorldAccessor worldForResolving
+  )
+  {
+    base.FromTreeAttributes(tree, worldForResolving); // refreshes _savedNetworkState
+    // The throttled sync below is what reaches clients; re-pose off it rather than adding a second channel,
+    // so the disc's speed and the block-info readout can never disagree.
+    if (
+      Api?.Side == EnumAppSide.Client
+      && (_savedNetworkState as MpEnergyNetworkState)?.Speed is { } speed
+      && speed != _posedSpeed
+    )
+      ApplySpin();
+  }
 
   public override void OnNetworkUpdate(object? state)
   {

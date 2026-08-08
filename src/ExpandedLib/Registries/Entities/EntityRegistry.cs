@@ -87,7 +87,7 @@ public static class EntityRegistry
   /// <summary>
   /// The registry key a <see cref="RegisterAttribute"/>-decorated <paramref name="type"/> is
   /// registered under - <c>{modId}.{Code ?? ClassName}</c>, or the bare key when
-  /// <see cref="RegisterAttribute.PrefixModId"/> is false. This is the SINGLE source for the
+  /// <see cref="RegisterAttribute.PrefixModId"/> is false. This is the single source for the
   /// class-string↔type binding, shared with the code-first definition builder (<c>ExBlockDef</c>'s
   /// type-safe <c>Class&lt;T&gt;()</c>) so a class rename can never desync the two. Returns
   /// <c>{modId}.{ClassName}</c> as the convention default when <paramref name="type"/> carries no

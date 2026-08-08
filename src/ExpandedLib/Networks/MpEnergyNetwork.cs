@@ -58,6 +58,7 @@ public class MpEnergyNetwork : BlockNetwork
     float inertia = 0f;
     float driveTorque = 0f;
     float loadTorque = 0f;
+    bool reversed = false;
 
     foreach (var pos in Nodes)
     {
@@ -70,6 +71,10 @@ public class MpEnergyNetwork : BlockNetwork
         driveTorque += Math.Max(0f, producer.DriveTorque(speed));
       if (be is IMpEnergyConsumer consumer)
         loadTorque += Math.Max(0f, consumer.LoadTorque(speed));
+      // Any driver that knows its rotation sets the run's direction; the last one wins, which is fine because
+      // two drives fighting each other is already a build error rather than a state to model.
+      if (be is IMpEnergyDirection { IsReversed: true })
+        reversed = true;
     }
 
     // A run with no inertia has nothing to spin - drop the reservoir (nothing to simulate).
@@ -85,6 +90,7 @@ public class MpEnergyNetwork : BlockNetwork
 
     State ??= new MpEnergyNetworkState();
     State.Inertia = inertia;
+    State.Reversed = reversed;
 
     // Integrate the shaft: ω += (τ_drive − τ_load − τ_fric)/I · dt, clamped to [0, ω_max]. Torque governs -
     // an under-torqued run decelerates to a stall rather than buffering its way to a pulse.

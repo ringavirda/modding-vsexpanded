@@ -9,6 +9,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace IronworkingExpanded.BlockStructures.Forming.Blocks;
 
@@ -43,14 +44,14 @@ public partial class BlockRollingMill
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "rollingmill", "forming/rollingmill")
+        .Create(domain, "forming", "forming/rollingmill")
         .Class<BlockRollingMill>()
         .EntityClass<BlockEntityRollingMill>()
         .Material(EnumBlockMaterial.Metal)
         .Sound("walk", "game:walk/metal")
         .Sound("place", "game:block/anvil")
         .MaxStackSize(1)
-        .Handbook("rollingmill-*")
+        .Handbook("forming-rollingmill-*")
         .VariantGroup("type", "rollingmill")
         .VariantGroup("orientation", "ns", "we")
         // we = axle along X (authored, rotateY 0); ns = the 90° rotation (axle along Z).
@@ -171,7 +172,7 @@ public partial class BlockRollingMill
       return;
     // The axle runs along the mill's orientation axis, so the axle cells share the mill's orientation.
     Block? axle = world.GetBlock(
-      CodeWithPath("rollingmillaxle-shaft-" + Orientation)
+      CodeWithPath("forming-millaxle-" + Orientation)
     );
     if (axle == null)
       return;
@@ -215,18 +216,165 @@ public partial class BlockRollingMill
 
   #endregion
 
-  #region Deck interaction (Phase A stub)
+  #region Deck interaction
 
-  // The two feed-deck middle cells route the player's "work the stock" click here. Phase A proves the wiring
-  // and does nothing; Phase C picks the live input deck from the drive-rotation direction and runs a pass.
-  bool IFillerInteractionTarget.OnFillerInteractStart(
+  /// <summary>
+  /// Routes a click on the footprint. Two things can happen at a rolling mill:
+  /// <list type="bullet">
+  ///   <item>holding a <b>roll set</b> - fit it to the stand (or swap the one already there), anywhere on the
+  ///   machine, because the tooling is the mill's one real configuration;</item>
+  ///   <item>holding <b>stock</b> on the <b>input deck</b> - feed it. Where along the deck you click picks the
+  ///   gap, and sneaking picks which strip goes through. The piece rides out onto the far deck.</item>
+  /// </list>
+  /// Clicking the output deck does nothing: a two-high stand cannot be fed backwards, which is the whole
+  /// reason the piece has to be carried back around.
+  /// </summary>
+  public bool OnFillerInteractStart(
     IWorldAccessor world,
     IPlayer byPlayer,
     BlockSelection principalSel,
     BlockPos clickedCell
-  ) => false;
+  ) => HandleInteract(world, byPlayer, principalSel, clickedCell);
 
-  bool IFillerInteractionTarget.OnFillerInteractStep(
+  public override bool OnBlockInteractStart(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection blockSel
+  ) =>
+    HandleInteract(world, byPlayer, blockSel, blockSel.Position)
+    || base.OnBlockInteractStart(world, byPlayer, blockSel);
+
+  private bool HandleInteract(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection sel,
+    BlockPos clickedCell
+  )
+  {
+    if (
+      world.BlockAccessor.GetBlockEntity(sel.Position)
+      is not BlockEntities.BlockEntityRollingMill mill
+    )
+      return false;
+
+    ItemSlot? slot = byPlayer.InventoryManager?.ActiveHotbarSlot;
+    ItemStack? held = slot?.Itemstack;
+
+    // A wrench frees a piece stuck in the rolls - the one recovery the machine needs. Whatever stopped the
+    // pass (the drive died, the stock went cold), the answer is the same and the piece comes back untouched.
+    if (IsWrench(held) && mill.IsRolling)
+      return FreeStuckPiece(world, byPlayer, mill);
+    if (IsRollSet(held))
+      return FitRollSet(world, byPlayer, mill, slot!);
+    if (held == null || !mill.IsInputDeck(clickedCell))
+      return false;
+
+    return Feed(world, byPlayer, mill, sel, clickedCell, held);
+  }
+
+  private static bool IsWrench(ItemStack? stack) =>
+    stack?.Collectible?.Code?.FirstCodePart() == "wrench";
+
+  private static bool FreeStuckPiece(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntities.BlockEntityRollingMill mill
+  )
+  {
+    if (world.Side != EnumAppSide.Server)
+      return true;
+
+    ItemStack? freed = mill.ReleaseStuckPiece();
+    if (freed != null && !byPlayer.InventoryManager.TryGiveItemstack(freed))
+      world.SpawnItemEntity(freed, byPlayer.Entity.Pos.XYZ);
+    return true;
+  }
+
+  private static bool IsRollSet(ItemStack? stack) =>
+    stack?.Collectible?.Attributes?[RollSetSpec.AttributeKey] is { Exists: true };
+
+  private static bool FitRollSet(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntities.BlockEntityRollingMill mill,
+    ItemSlot slot
+  )
+  {
+    if (world.Side != EnumAppSide.Server)
+      return true;
+
+    ItemStack fitting = slot.TakeOut(1);
+    if (!mill.TryFitRollSet(fitting, out ItemStack? previous))
+    {
+      // Refused (a pass is running) - give the set straight back rather than eating it.
+      slot.Itemstack = fitting;
+      slot.MarkDirty();
+      (byPlayer as IServerPlayer)?.SendIngameError("iwex-rollingmill-busy");
+      return true;
+    }
+
+    if (previous != null && !byPlayer.InventoryManager.TryGiveItemstack(previous))
+      world.SpawnItemEntity(previous, byPlayer.Entity.Pos.XYZ);
+    slot.MarkDirty();
+    return true;
+  }
+
+  private bool Feed(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntities.BlockEntityRollingMill mill,
+    BlockSelection sel,
+    BlockPos clickedCell,
+    ItemStack held
+  )
+  {
+    if (world.Side != EnumAppSide.Server)
+      return true;
+
+    int gapCount = mill.RollSet?.Gaps.Length ?? 1;
+    int gap = MillFeed.GapZone(AlongBarrel(mill.Pos, clickedCell, sel), gapCount);
+    int sides = WorkPiece.FromStack(held) is { } wp && mill.RollSet != null
+      ? WorkPiece.SidesFor(wp.Width, mill.RollSet.BarrelWidth)
+      : 1;
+    int strip = MillFeed.StripIndex(byPlayer.Entity.Controls.Sneak, sides);
+
+    FeedDecision decision = mill.TryFeed(held, gap, strip);
+    if (decision.Accepted)
+    {
+      // The piece is in the rolls now and will be spat out on the far deck - it leaves the player's hand.
+      byPlayer.InventoryManager.ActiveHotbarSlot.TakeOut(1);
+      byPlayer.InventoryManager.ActiveHotbarSlot.MarkDirty();
+      return true;
+    }
+
+    (byPlayer as IServerPlayer)?.SendIngameError(
+      decision.Verdict switch
+      {
+        FeedVerdict.NoRollSet => "iwex-rollingmill-norollset",
+        FeedVerdict.WrongForm => "iwex-rollingmill-wrongform",
+        FeedVerdict.NoReduction => "iwex-rollingmill-noreduction",
+        FeedVerdict.TooCold => "iwex-rollingmill-toocold",
+        _ => "iwex-rollingmill-wontbite",
+      }
+    );
+    return true;
+  }
+
+  /// <summary>
+  /// Where along the barrel a click landed, 0..1. The hit point is taken into the mill's own frame first (the
+  /// footprint is authored <c>we</c> and rotated on placement), so the band arithmetic itself never has to know
+  /// the orientation.
+  /// </summary>
+  private float AlongBarrel(BlockPos principal, BlockPos clickedCell, BlockSelection sel)
+  {
+    // World-space hit point relative to the principal, then rotated back into the authored frame.
+    double dx = clickedCell.X - principal.X + (sel.HitPosition?.X ?? 0.5);
+    double dz = clickedCell.Z - principal.Z + (sel.HitPosition?.Z ?? 0.5);
+    double localX = StructureAngle == 90 ? dz : dx;
+    return MillFeed.AlongBarrel(localX);
+  }
+
+  public bool OnFillerInteractStep(
     float secondsUsed,
     IWorldAccessor world,
     IPlayer byPlayer,
@@ -234,7 +382,7 @@ public partial class BlockRollingMill
     BlockPos clickedCell
   ) => false;
 
-  void IFillerInteractionTarget.OnFillerInteractStop(
+  public void OnFillerInteractStop(
     float secondsUsed,
     IWorldAccessor world,
     IPlayer byPlayer,
@@ -242,12 +390,42 @@ public partial class BlockRollingMill
     BlockPos clickedCell
   ) { }
 
-  WorldInteraction[] IFillerInteractionTarget.GetFillerInteractionHelp(
+  public WorldInteraction[] GetFillerInteractionHelp(
     IWorldAccessor world,
     BlockSelection principalSel,
     IPlayer forPlayer,
     BlockPos clickedCell
-  ) => [];
+  )
+  {
+    if (
+      world.BlockAccessor.GetBlockEntity(principalSel.Position)
+        is not BlockEntities.BlockEntityRollingMill mill
+      || !mill.IsInputDeck(clickedCell)
+    )
+      return [];
+
+    return
+    [
+      new WorldInteraction
+      {
+        ActionLangCode = "iwex:rollingmill-help-feed",
+        MouseButton = EnumMouseButton.Right,
+      },
+      new WorldInteraction
+      {
+        ActionLangCode = "iwex:rollingmill-help-feed-far",
+        MouseButton = EnumMouseButton.Right,
+        HotKeyCode = "sneak",
+      },
+      new WorldInteraction
+      {
+        ActionLangCode = "iwex:rollingmill-help-free",
+        MouseButton = EnumMouseButton.Right,
+        Itemstacks = [],
+      },
+    ];
+  }
 
   #endregion
+
 }

@@ -35,8 +35,8 @@ public class ExDefinitionModSystem : ModSystem
     var origin = new ExDefinitionOrigin();
 
     // Register the generated metal-family resource items (ingot/plate/rod/nails/bits per opted-in metal)
-    // so they inject through the same item path below. The catalogue is read DIRECTLY here, not off
-    // MetalRegistry: the registry is populated at AssetsFinalize, AFTER this phase, so at injection time
+    // so they inject through the same item path below. The catalogue is read directly here, not off
+    // MetalRegistry: the registry is populated at AssetsFinalize, after this phase, so at injection time
     // it is still empty - the emitter must read config/metals itself.
     foreach (
       ExItemDef def in MetalFamilyEmitter.Emit(
@@ -61,7 +61,7 @@ public class ExDefinitionModSystem : ModSystem
       items++;
     }
 
-    // recipes/{category}/ are server-side categories read by the survival recipe loaders, which run AFTER the
+    // recipes/{category}/ are server-side categories read by the survival recipe loaders, which run after the
     // object loader (they resolve block/item codes the object loader has just built) - so injecting here at
     // 0.04 places the recipe files in the index well before any recipe loader consumes them.
     int recipes = 0;

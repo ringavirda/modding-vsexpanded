@@ -2,45 +2,41 @@
 
 A [Vintage Story](https://www.vintagestory.at/) mod adding an industrial-era iron and
 steel production chain on top of vanilla metalworking. Requires
-[Expanded Library](../ExpandedLib/README.md) (`exlib`) and
+[Expanded Library](../ExpandedLib/README.md) (`exlib`),
+[Ironworking Expanded](../IronworkingExpanded/README.md) (`iwex`) and
 [Low Pressure Expanded](../LowPressureExpanded/README.md) (`lpex`).
 
 ## What it adds
 
-- **Blast furnace** - a tall refractory multiblock fed by a hopper pair that combines
-  crushed iron ore, crushed coke and lime into blast mix. Fired and held above iron's
-  melting point, it pools molten iron and slag.
+- **Blast furnace** - a tall refractory multiblock charged through a hopper pair with
+  alternating bands of burden (crushed ore fluxed with lime in the `iwex` burdenmaker)
+  and coke. Fired and held above iron's melting point, it pools molten iron and slag.
 - **Hot blast machinery** - cowper stoves that recycle furnace exhaust into scorching
   blast air, a smoke stack that vents the surplus, and a steam-driven air blower
   (a `lpex` engine sub-machine) that pressurises the line.
-- **Molten canal network** - liquid metal is plumbed, not carried: rock-built canals,
-  furnace taps, a pouring canal tap, mold pedestals, and molten barrels for bulk
-  storage. Metal cools in the canals and solidifies if neglected.
-- **Casting** - new plate / quad rod / double ingot ceramic molds, plus casting of
-  large molds (anvil, helve hammer) directly under a canal tap. Still-liquid molds can
-  only be carried in an empty hand and burn unprotected skin.
 - **Bessemer converter** - stage II: a 3×3×3 vessel that takes mechanical power and a
   Blast line and blows molten iron into steel, poured back out through the same canals.
 - **Slag chain** - solidified slag grinds into powdered slag, usable as mortar
   ingredient or phosphate fertilizer; scrap iron bits crush back into crushed iron.
 
+Liquid metal is plumbed, not carried: it drains through taps into the molten canal
+network. That network (canals, taps, mold pedestals, molten barrels) and the casting
+chain (sand casting, iron molds) belong to `iwex` - smex consumes them, it does not
+own them.
+
 The in-game **handbook** ships five articles (overview, blast furnace, hot blast,
 casting, Bessemer) with full build costs and operating procedures. Gameplay tunables
-live in `ModConfig/smex.json` (see `SmexValues.cs`).
+live in the `smex` section of `ModConfig/ex_values.json` (see `SmexConfig.cs`).
 
 ## Code layout
 
-- `BlockNetworkMolten/` - the molten-metal network, canal/tap/pedestal/barrel blocks,
-  and the shared molten-chiselling behaviour.
-- `BlockStructures/` - blast furnace, cowper stove, smoke stack, Bessemer converter
-  and the air-blower engine sub-machine.
-- `Molds/` - the tool-mold blocks and their config-gated enable/disable.
-- `Commands/` - server `/exmod` sub-commands (the `molds` toggle).
-- `Patches/` - Harmony patches into vanilla (tool mold filled-mold flow + held
-  rendering, mold rack spill rule, coal pile blast-mix burn-to-slag).
-- `Compat/` - other-mod compatibility (extra crushed-iron-ore item codes).
-- `BlockMigrations/` - save migrations for renamed block codes.
-- `assets/smex/` - blocktypes, shapes, recipes, patches, lang, handbook pages.
+- `BlockStructures/` - the mega-block machines: blast furnace (with its hopper pair),
+  cowper stove, smoke stack, Bessemer converter and the air-blower engine sub-machine.
+- `Recipes/` - code-first grid and barrel recipes.
+- `Generated/` - the emitted `SmexBlocks` block-code constants (drift-tested).
+- `BlockMigrations/` - save migrations for renamed block codes and the removed
+  ceramic molds.
+- `../../assets/smex/` - shapes, textures, patches, lang, config.
 
 ## Building
 

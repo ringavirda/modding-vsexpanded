@@ -1,0 +1,120 @@
+{
+  "code": "molten-canal",
+  "class": "iwex.BlockMoltenCanalTap",
+  "entityClass": "iwex.BlockEntityMoltenCanalTap",
+  "blockmaterial": "Stone",
+  "sounds": {
+    "walk": "game:walk/stone",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-tap-s"
+    ],
+    "iwex": [
+      "*-tap-s"
+    ]
+  },
+  "attributes": {
+    "fillHeight": 1,
+    "fillStart": 14,
+    "fillQuadsByLevel": [
+      {
+        "x1": 7,
+        "z1": 0,
+        "x2": 9,
+        "z2": 5
+      }
+    ],
+    "handbook": {
+      "groupBy": [
+        "molten-canal-tap-*"
+      ]
+    }
+  },
+  "textures": {
+    "burned": {
+      "base": "game:block/clay/vessel/sides/burned"
+    },
+    "steel3": {
+      "base": "game:block/metal/riveted/steel3"
+    },
+    "iron3": {
+      "base": "game:block/metal/sheet-plain/iron3"
+    },
+    "steel32": {
+      "base": "game:block/metal/sheet-plain/steel3"
+    }
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "tap"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "n",
+        "w",
+        "s",
+        "e"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-tap-n": {
+      "base": "iwex:molten/canal/tap"
+    },
+    "*-tap-w": {
+      "base": "iwex:molten/canal/tap",
+      "rotateY": 90
+    },
+    "*-tap-s": {
+      "base": "iwex:molten/canal/tap",
+      "rotateY": 180
+    },
+    "*-tap-e": {
+      "base": "iwex:molten/canal/tap",
+      "rotateY": 270
+    }
+  },
+  "collisionboxes": [
+    {
+      "x1": 0.0625,
+      "y1": 0.0625,
+      "z1": 0.0,
+      "x2": 0.9375,
+      "y2": 0.9375,
+      "z2": 0.9375
+    }
+  ],
+  "selectionboxes": [
+    {
+      "x1": 0.0625,
+      "y1": 0.0625,
+      "z1": 0.0,
+      "x2": 0.9375,
+      "y2": 0.9375,
+      "z2": 0.9375
+    }
+  ],
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

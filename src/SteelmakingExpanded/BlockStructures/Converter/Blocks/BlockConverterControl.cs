@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
+using IronworkingExpanded;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -35,17 +36,22 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
       .Material(EnumBlockMaterial.Metal)
       .MetalSounds()
       .MaxStackSize(1)
-      .CreativeTab("general", "*-north")
-      .CreativeTab("smex", "*-north")
+      .CreativeTab("general", "*-n")
+      .CreativeTab("smex", "*-n")
       .Multiblock(m =>
         m.Number("smex:convertercontrol*", 1)
           .Number("smex:convertertransmission*", 2)
           .Number("smex:converterbessemer*", 3)
           .Number("smex:converter-intake*", 4)
-          .Number("iwex:moltencanal-tap*", 5)
-          .Number("iwex:moltencanal-start*", 6)
-          .Number("iwex:moltencanal-straight*", 7)
-          .Number("exlib:structurefiller", 8)
+          // Straight off iwex's generated table. `Any` wildcards the skin group whichever def it comes
+          // from - the canal ships one def per rock skin, but the brick entry's `Any` and the
+          // cobblestone entry's are the same string and either spans both.
+          // `MoltenCanalSkinsAgreeTests` pins that, because the day the two skins stop rendering the
+          // same number of segments this silently narrows to one of them.
+          .Number(IwexBlocks.MoltenCanalTap.Any, 5)
+          .Number(IwexBlocks.MoltenCanalBrickStart.Any, 6)
+          .Number(IwexBlocks.MoltenCanalBrickStraight.Any, 7)
+          .Number(ExCodes.Filler, 8)
           // control + transmission below it
           .At(0, 0, 0, 1)
           .At(0, -1, 0, 2)
@@ -70,12 +76,12 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider
           .At(2, -2, 2, 7)
       )
       .Behavior("MultiblockStructure")
-      .Behavior("HorizontalOrientable")
-      .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-      .ShapeByType("*-north", "smex:converter/control", rotateY: 0)
-      .ShapeByType("*-east", "smex:converter/control", rotateY: 270)
-      .ShapeByType("*-south", "smex:converter/control", rotateY: 180)
-      .ShapeByType("*-west", "smex:converter/control", rotateY: 90)
+      .Behavior("ExOrientable")
+      .SideVariant()
+      .ShapeByType("*-n", "smex:converter/control", rotateY: 0)
+      .ShapeByType("*-e", "smex:converter/control", rotateY: 270)
+      .ShapeByType("*-s", "smex:converter/control", rotateY: 180)
+      .ShapeByType("*-w", "smex:converter/control", rotateY: 90)
       .SideSolid(false)
       .SideOpaque(false);
 

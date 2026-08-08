@@ -29,10 +29,15 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("R", Rod(2))
           .Ingredient("N", Nails(4))
           .Ingredient("P", Plate(2))
-          .OutputBlock("iwex:blastfurnacecore-{tier}-north")
+          .OutputBlock("iwex:furnace-blastcore-{tier}-n")
       )
+      // The two tap-holes are two blocks and so two recipes. The iron notch is the deeper, harder one -
+      // it runs a full canal and takes an iron plate to line the channel; the cinder notch is a shallow
+      // slot with a spout and needs none. The patterns must differ (here in the plate's cell, `P` vs
+      // `_`): two grid recipes sharing a pattern and overlapping ingredients collide, and the loser
+      // silently never resolves.
       .Grid(r =>
-        r.Name("Molten Metal Tap")
+        r.Name("Iron Tap")
           .Pattern("BPH,BFC,BBB")
           .Size(3, 3)
           .Ingredient("B", Refractory(2))
@@ -40,17 +45,31 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("P", Plate(1))
           .Ingredient("H", Hammer)
           .Ingredient("C", Chisel)
-          .OutputBlock("iwex:moltenmetaltap-south")
+          .OutputBlock("iwex:furnace-irontap-s")
+      )
+      .Grid(r =>
+        r.Name("Slag Tap")
+          .Pattern("B_H,BFC,BBB")
+          .Size(3, 3)
+          .Ingredient("B", Refractory(2))
+          .Ingredient("F", FireClay(12))
+          .Ingredient("H", Hammer)
+          .Ingredient("C", Chisel)
+          .OutputBlock("iwex:furnace-slagtap-s")
       )
       .Grid(r =>
         r.Name("Tuyere")
           .Pattern("BHB,BCB,BPB")
           .Size(3, 3)
           .Ingredient("B", Refractory(2))
-          .Ingredient("P", i => i.Block("lpex:pipe-straight*"))
+          // iwex's own plated pipe segment, not lpex's cast one. `lpex:pipe-straight*` would match
+          // nothing in any mod - lpex registers no straight pipe at all (PipeMigration remaps those
+          // codes *to* iwex) - which would leave the blast furnace, and therefore the whole iron tier,
+          // uncraftable. iwex owns the base pipe block and its recipe.
+          .Ingredient("P", i => i.Block("iwex:pipe-straight*"))
           .Ingredient("H", Hammer)
           .Ingredient("C", Chisel)
-          .OutputBlock("iwex:tuyere-tuyere-s")
+          .OutputBlock("iwex:furnace-tuyere-s")
       )
       .Grid(r =>
         r.Name("Tall Hopper")
@@ -59,7 +78,28 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("P", Plate(1))
           .Ingredient("S", Nails(1))
           .Ingredient("H", Hammer)
-          .OutputBlock("iwex:hopper-tall")
+          .OutputBlock("iwex:hopper-tall-n")
+      )
+      // The twin-tub blower - the iron tier's only air source, so without this recipe the blast main
+      // cannot be completed at all. Two leather-topped wooden tubs on a nailed frame, driven by a plain
+      // vanilla wood axle (BEBehaviorMPFillerPort) - so it needs
+      // nothing from iwex itself, which is what keeps the tier startable.
+      .Grid(r =>
+        r.Name("Twin Tub Blower")
+          .Pattern("LPL,PNP,_H_")
+          .Size(3, 3)
+          // `game:leather-normal-plain`, not `game:leather`. Vanilla's leather is fully
+          // variant-grouped (type × colour) with `allowedVariants: ["leather-normal-*",
+          // "leather-sturdy-plain"]`, so a bare `leather` is never registered as a concrete item - in
+          // 1.20, 1.21 and 1.22 alike. Because the code carries no `*`, resolution is a hard
+          // `GetItem` lookup rather than a wildcard match, so a bare `leather` fails outright and the
+          // blower loses its recipe. This is the
+          // spelling vanilla's own armour and jerkin recipes use.
+          .Ingredient("L", i => i.Item("game:leather-normal-plain").Quantity(2))
+          .Ingredient("P", i => i.Item("game:plank-*").Quantity(1))
+          .Ingredient("N", Nails(1))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iwex:furnace-twintubblower-n")
       );
 
   // The cupola core: refractory brick bound with iron rods over a fire-clay core. A distinct pattern
@@ -76,7 +116,7 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider
           .Ingredient("R", Rod(2))
           .Ingredient("P", Plate(1))
           .Ingredient("C", FireClay(8))
-          .OutputBlock("iwex:cupolafurnacecore-{tier}-north")
+          .OutputBlock("iwex:furnace-cupolacore-{tier}-n")
       );
 
   // iwex's tier-3 refractory brick, used by the fittings that will not take a lower grade.

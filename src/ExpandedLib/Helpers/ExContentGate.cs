@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
-using Vintagestory.GameContent;
 
 namespace ExpandedLib.Helpers;
 
 /// <summary>
 /// Generic mechanism for a config-gated "disable this content" toggle: hide registered blocks/items
-/// from the creative inventory and handbook, and strip the recipes that produce them. The caller
-/// (a mod deciding a feature is off) supplies the predicate that selects what to gate; this owns the
-/// how. Call after recipes have resolved - i.e. from a mod system's
-/// <c>StartServerSide</c>/<c>StartClientSide</c>, not <c>Start</c>.
+/// from the creative inventory and handbook. The caller (a mod deciding a feature is off) supplies
+/// the predicate that selects what to gate; this owns the how. Call after content has resolved -
+/// i.e. from a mod system's <c>StartServerSide</c>/<c>StartClientSide</c>, not <c>Start</c>.
 /// </summary>
 public static class ExContentGate
 {
@@ -37,25 +35,6 @@ public static class ExContentGate
     }
     return hidden;
   }
-
-  /// <summary>Removes every clay-forming recipe whose output code matches <paramref name="outputMatch"/>.
-  /// Returns the count removed.</summary>
-  public static int RemoveClayformingRecipes(
-    ICoreAPI api,
-    System.Func<AssetLocation, bool> outputMatch
-  ) =>
-    api.GetClayformingRecipes()
-      .RemoveAll(r => r.Output?.Code is { } c && outputMatch(c));
-
-  /// <summary>Removes every grid (crafting) recipe whose output code matches <paramref name="outputMatch"/>.
-  /// Returns the count removed.</summary>
-  public static int RemoveGridRecipes(
-    ICoreAPI api,
-    System.Func<AssetLocation, bool> outputMatch
-  ) =>
-    api.World.GridRecipes.RemoveAll(r =>
-      r.Output?.Code is { } c && outputMatch(c)
-    );
 
   private static IEnumerable<CollectibleObject> AllCollectibles(ICoreAPI api) =>
     api

@@ -17,8 +17,8 @@ foundational tier of the *Expanded* mod family. It sits directly on
   mechanical (waterwheel-driven) twin-tub blower, and molten pig tapped into canals.
 - **Molten-metal canals, taps, barrels and pedestals** - the per-cell molten flow system,
   plus sand casting.
-- **Ore processing** - the ore bunker and ore mixer that prepare the graded burden the
-  furnaces are charged with.
+- **Ore processing** - the burdenmaker, which blends crushed iron ore with lime flux into the
+  graded burden the furnaces are charged with. Fuel is charged separately, as its own bands.
 - **Design table** - the diagram-crafting station.
 
 Gameplay numbers live in the `iwex` section of `ModConfig/ex_values.json` (see
@@ -33,7 +33,8 @@ Gameplay numbers live in the `iwex` section of `ModConfig/ex_values.json` (see
   (multiblock structure + right-click construction + animation).
 - `Recipes/` - code-first grid and smithing recipes.
 - `Items/` - the mod's items.
-- `Patches/` - Harmony patches into vanilla (coal-pile blast mix, anvil work).
+- `Patches/` - Harmony patches into vanilla (anvil pig breaking, filled-mold rack
+  spill, tool-mold heat gate).
 - `BlockMigrations/` - save migrations for renamed block codes.
 - `Compat/` - other mods' iron-ore registrations for the furnace hoppers.
 - `../../assets/iwex/` - shapes, textures, lang, handbook pages. This mod is also the one

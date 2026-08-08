@@ -1,7 +1,7 @@
 # Notes for translators
 
-Thank you for translating **ExpandedLib** (the shared library for Pipes & Power Expanded and
-Steelmaking Expanded)!
+Thank you for translating **ExpandedLib** (the shared library for the Expanded mod family -
+Ironworking Expanded, Low Pressure Expanded, High Pressure Expanded and Steelmaking Expanded)!
 
 ## The basics
 
@@ -17,7 +17,7 @@ Steelmaking Expanded)!
 
 ## Measurements / handbook (lpex & smex)
 
-ExpandedLib itself has no units or handbook articles. The companion mods **Pipes & Power Expanded**
+ExpandedLib itself has no units or handbook articles. The companion mods **Low Pressure Expanded**
 and **Steelmaking Expanded** do, and they convert measurements and rewrite handbook text at runtime.
 If you translate those mods, read the `TRANSLATORS.md` shipped in their `lang/` folders first - it
 explains the `unit-*` keys, the metric=>imperial auto-conversion, and the `<hk>` hotkey tag.

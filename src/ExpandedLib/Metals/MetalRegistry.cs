@@ -157,7 +157,7 @@ public static class MetalRegistry
 
   #region Conventions (the exact pre-registry behaviour)
   // The token a tool mold substitutes into {metal}. Deliberately mirrors vanilla's own substitution
-  // source - BlockEntityToolMold.stackFromCode uses Collectible.LastCodePart(), NOT MetalDef.Code - so a
+  // source - BlockEntityToolMold.stackFromCode uses Collectible.LastCodePart(), not MetalDef.Code - so a
   // metal whose registry code differs from its item suffix still resolves the way the mold does.
   private static string ShortMetalOf(AssetLocation moltenItem)
   {

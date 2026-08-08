@@ -5,14 +5,14 @@ using Vintagestory.API.Common;
 namespace ExpandedLib.Definitions;
 
 /// <summary>
-/// A code-first recipe FILE: the recipe-side sibling of <see cref="ExBlockDef"/> / <see cref="ExItemDef"/>.
+/// A code-first recipe file: the recipe-side sibling of <see cref="ExBlockDef"/> / <see cref="ExItemDef"/>.
 /// One def maps to one <c>recipes/{category}/{assetName}.json</c> synthetic asset the survival recipe loaders
 /// consume. A recipe file is EITHER a JSON array of recipes (most grid/smithing files) OR a single recipe
 /// object (a one-recipe grid file, or a clayforming/barrel file) - the survival loaders accept both, and this
 /// def mirrors whichever the source used so the injected JSON is byte-faithful:
 /// <list type="bullet">
-/// <item>ARRAY mode - call <see cref="Grid"/> / <see cref="Add"/> one or more times (accumulates);</item>
-/// <item>SINGLE-OBJECT mode - call <see cref="GridObject"/> (a lone grid recipe) or <see cref="Body"/> (an
+/// <item>Array mode - call <see cref="Grid"/> / <see cref="Add"/> one or more times (accumulates);</item>
+/// <item>Single-object mode - call <see cref="GridObject"/> (a lone grid recipe) or <see cref="Body"/> (an
 /// arbitrary single-object recipe, e.g. clayforming/barrel) exactly once.</item>
 /// </list>
 /// The two modes are mutually exclusive (mixing them throws).
@@ -62,7 +62,7 @@ public sealed class ExRecipeDef : IExDef
   public AssetLocation Location =>
     new(_domain, "recipes/" + _category + "/" + _assetName + ".json");
 
-  /// <summary>Appends one grid recipe (ARRAY mode) authored via <see cref="GridRecipeBuilder"/>. Order is
+  /// <summary>Appends one grid recipe (array mode) authored via <see cref="GridRecipeBuilder"/>. Order is
   /// preserved (recipe files are ordered arrays), so author in the source file's order for byte-for-byte
   /// parity.</summary>
   public ExRecipeDef Grid(Action<GridRecipeBuilder> configure)
@@ -73,7 +73,7 @@ public sealed class ExRecipeDef : IExDef
     return this;
   }
 
-  /// <summary>Appends an arbitrary recipe object (ARRAY mode) - the escape hatch for a recipe type without a
+  /// <summary>Appends an arbitrary recipe object (array mode) - the escape hatch for a recipe type without a
   /// dedicated builder yet, or an entry the grid builder can't express.</summary>
   public ExRecipeDef Add(object recipe)
   {
@@ -81,9 +81,9 @@ public sealed class ExRecipeDef : IExDef
     return this;
   }
 
-  /// <summary>Sets the file to a SINGLE grid recipe object (not wrapped in an array) authored via
+  /// <summary>Sets the file to a single grid recipe object (not wrapped in an array) authored via
   /// <see cref="GridRecipeBuilder"/> - for a one-recipe grid file the source authored as a lone object
-  /// (e.g. the ore-bunker or molten-barrel recipe).</summary>
+  /// (e.g. the burdenmaker or molten-barrel recipe).</summary>
   public ExRecipeDef GridObject(Action<GridRecipeBuilder> configure)
   {
     var builder = new GridRecipeBuilder();
@@ -91,7 +91,7 @@ public sealed class ExRecipeDef : IExDef
     return Body(builder.Build());
   }
 
-  /// <summary>Sets the file to a SINGLE recipe object from a POCO/anonymous object/token - for a recipe type
+  /// <summary>Sets the file to a single recipe object from a POCO/anonymous object/token - for a recipe type
   /// authored as a lone object (clayforming/barrel), or the escape hatch for one.</summary>
   public ExRecipeDef Body(object recipe)
   {

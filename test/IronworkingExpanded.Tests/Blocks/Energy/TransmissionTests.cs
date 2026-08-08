@@ -21,9 +21,11 @@ public class TransmissionTests
   {
     var block = TestBlocks.Configure(
       new BlockTransmission(),
-      $"iwex:transmission-{type}-{side}",
+      $"iwex:mpenergy-transmission-{type}-{side}",
       700,
-      ("type", type),
+      // `type` names the family member; the gearing lives in `kind` (CodePrefixCollision).
+      ("type", "transmission"),
+      ("kind", type),
       ("side", side)
     );
     return block;
@@ -33,7 +35,7 @@ public class TransmissionTests
   {
     var block = TestBlocks.Configure(
       new BlockCastIronShaft(),
-      $"iwex:castironshaft-shaft-{orientation}",
+      $"iwex:mpenergy-shaft-{orientation}",
       701,
       ("type", "shaft"),
       ("orientation", orientation)

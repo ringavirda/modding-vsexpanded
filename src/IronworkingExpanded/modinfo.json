@@ -7,7 +7,7 @@
   "description": "Cold-blast ironmaking: mechanical (waterwheel) blowers, ore mixing and blast-furnace charge preparation.",
   "version": "0.1.0",
   "dependencies": {
-    "game": "1.22.0",
+    "game": "1.21",
     "exlib": "0.1.0"
   }
 }

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.Items;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -13,8 +12,8 @@ using Vintagestory.API.Util;
 namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 
 /// <summary>
-/// The reinforced hopper that feeds the blast furnace. It is a plain burden tank now (the ore mixer makes
-/// the burden; this no longer mixes): a right-click with burden fills it, an empty-handed right-click
+/// The reinforced hopper that feeds the blast furnace. It is a plain charge tank now (iwex's burdenmaker
+/// makes the burden; this no longer mixes): a right-click with charge fills it, an empty-handed right-click
 /// empties it, and Ctrl + empty-handed right-click toggles the bell hopper's dropping below.
 /// </summary>
 [BlockRegister]
@@ -66,17 +65,24 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider
         else
           Withdraw(world, byPlayer, be, blockSel.Position);
       }
-      else if (Burden.IsAny(active.Itemstack))
+      else if (be.IsChargeItem(active.Itemstack))
       {
-        // Burden in hand: fill the tank (Ctrl deposits the whole held stack). A mismatched grade is a
+        // Charge in hand: fill the tank (Ctrl deposits the whole held stack). A mismatched grade is a
         // real mistake (one tank can't hold two), so it is named; a full tank is a state the block info
         // already shows, so it is swallowed silently.
+        //
+        // `be.IsChargeItem`, not `Burden.IsAny` (see BlockEntityHopperReinforced.Accepts): a
+        // burden-only gate leaves coke in hand falling through to the Ctrl branch below, where a plain
+        // click does nothing at all and a Ctrl click toggles the bell instead of loading fuel. The
+        // identity question is asked here and the grade question is left to TryDeposit, which is what
+        // keeps the wronggrade error reachable - a gate spelled `be.Accepts` would send a mismatched
+        // grade to the bell toggle instead.
         if (!be.TryDeposit(active, ctrl) && !be.IsFull)
           (byPlayer as IServerPlayer)?.SendIngameError("smex-hopper-wronggrade");
       }
       else if (ctrl)
       {
-        // Holding something that is not burden: Ctrl still toggles the bell.
+        // Holding something the furnace does not charge: Ctrl still toggles the bell.
         be.ToggleBellDropping();
       }
     }

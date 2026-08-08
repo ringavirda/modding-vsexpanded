@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Commands;
@@ -5,7 +6,6 @@ using ExpandedLib.Registries.Entities;
 using ExpandedLib.Registries.Preferences;
 using ExpandedLib.Registries.Recipes;
 using HarmonyLib;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -58,7 +58,8 @@ public class LowPressureExpandedModSystem : ModSystem
     // pipe block + the "pipe" network itself are registered by iwex; lpex just contributes its tier's
     // strength and the cast segments/fittings via its code-first definitions.
     BlockPipe.RegisterBurst(Mod.Info.ModID, () => LpexValues.CastPipeBurstPressure);
-    // Cast pipe is square and bolted like the bolted tier, so the two runs interconnect.
+    BlockPipe.RegisterThroughput(Mod.Info.ModID, () => LpexValues.CastPipeThroughput);
+    // Cast pipe is square and plated like the plated tier, so the two runs interconnect.
     BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);
 
     // The shared structure-filler block and network/structure framework live in the exlib

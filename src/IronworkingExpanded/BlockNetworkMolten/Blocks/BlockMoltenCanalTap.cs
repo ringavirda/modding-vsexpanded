@@ -31,7 +31,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "moltencanal", "molten/tap")
+        .Create(domain, "molten-canal", "molten/canal/tap")
         .Class<BlockMoltenCanalTap>()
         .EntityClass("iwex.BlockEntityMoltenCanalTap")
         .Material(EnumBlockMaterial.Stone)
@@ -46,7 +46,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
         .Attribute("fillHeight", 1)
         .Attribute("fillStart", 14)
         .Attribute("fillQuadsByLevel", new[] { new { x1 = 7, z1 = 0, x2 = 9, z2 = 5 } })
-        .Handbook("moltencanal-tap-*")
+        .Handbook("molten-canal-tap-*")
         .Texture("burned", "game:block/clay/vessel/sides/burned")
         .Texture("steel3", "game:block/metal/riveted/steel3")
         .Texture("iron3", "game:block/metal/sheet-plain/iron3")
@@ -70,9 +70,12 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal
     base.OnLoaded(api);
 
     var list = new List<ItemStack>();
-    var barrel = api.World.GetBlock(new AssetLocation("iwex:moltenbarrel"));
-    if (barrel != null)
-      list.Add(new ItemStack(barrel));
+    // Every construction variant, not the bare code. `iwex:molten-barrel` does not resolve since the
+    // barrel gained construction(plated|cast), and the null guard below would make the barrel silently
+    // drop out of the accepted-contents list rather than fail anywhere visible.
+    foreach (var block in api.World.Blocks)
+      if (block is BlockMoltenBarrel)
+        list.Add(new ItemStack(block));
     foreach (var block in api.World.Blocks)
       if (MoldKinds.IsLarge(block))
         list.Add(new ItemStack(block));

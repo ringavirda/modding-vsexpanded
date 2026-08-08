@@ -57,8 +57,17 @@ public static class ExDefinitions
   /// <summary>
   /// Builds a <c>type -&gt; orientation states</c> map from a class's code-first defs - the single
   /// source a block derives its runtime <c>AllowedOrientations</c> from, so the orientation list lives
-  /// only in the variant groups (never a hand-kept duplicate that drifts). Defs without a single
-  /// <c>type</c> state (e.g. a worldproperty-oriented block) are skipped.
+  /// only in the variant groups (never a hand-kept duplicate that drifts). A def with no <c>type</c>
+  /// states (e.g. a worldproperty-oriented block) has no pair to contribute and is skipped.
+  /// <para>
+  /// <b>Every</b> type state a def declares is mapped, not just a lone one. A def may legitimately
+  /// carry several - they share that def's single orientation group by construction - and requiring
+  /// exactly one silently dropped the whole def instead. <c>iwex:flywheel</c> declares
+  /// <c>type(normal|large)</c> with <c>orientation(ns|we)</c> in one def, so it came back with an
+  /// <b>empty</b> map: <c>ComputeValidOrientations</c> returned <c>[]</c> for either size and
+  /// <c>TryPlaceBlock</c> refused the block outright. The flywheel could not be placed at all, and
+  /// nothing said so - there is no exception on this path, only an empty list.
+  /// </para>
   /// </summary>
   public static Dictionary<string, string[]> OrientationMap(
     IEnumerable<ExBlockDef> defs
@@ -67,9 +76,9 @@ public static class ExDefinitions
     var map = new Dictionary<string, string[]>();
     foreach (ExBlockDef d in defs)
     {
-      string[] types = d.VariantStates("type");
-      if (types.Length == 1)
-        map[types[0]] = d.VariantStates("orientation");
+      string[] orientations = d.VariantStates("orientation");
+      foreach (string type in d.VariantStates("type"))
+        map[type] = orientations;
     }
     return map;
   }
@@ -138,7 +147,7 @@ public static class ExDefinitions
   public static IEnumerable<ExRecipeDef> RecipeDefinitionsOf(Type type, string domain) =>
     DefinitionsOf<ExRecipeDef>(type, domain, typeof(IExRecipeDefProvider));
 
-  // The defs a type DECLARES itself via its provider interface's static `Definitions(string)` factory, or
+  // The defs a type declares itself via its provider interface's static `Definitions(string)` factory, or
   // empty when it declares none. DeclaredOnly matters: several blocks subclass a def-providing base (the
   // special pipes extend BlockPipe), and without it a derived class would return the base's inherited defs -
   // a class contributes only the defs it declares itself. All three provider interfaces name the factory

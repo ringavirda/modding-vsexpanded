@@ -5,7 +5,7 @@ namespace ExpandedLib.Helpers;
 
 /// <summary>
 /// Reads a tool mold's cast-product templates off its block attributes: the vanilla <c>drop</c> (single)
-/// / <c>drops</c> (array) schema, resolved with the mold's OWN domain as the default for unqualified
+/// / <c>drops</c> (array) schema, resolved with the mold's own domain as the default for unqualified
 /// codes - byte-for-byte what <c>BlockEntityToolMold.GetMoldedStacks</c> does.
 /// <para>
 /// Shared rather than copied because two mods read the same attributes for two different questions: smex

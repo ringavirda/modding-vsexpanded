@@ -40,17 +40,17 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
 
   /// <summary>The molten barrel blocktype, authored in C# (migrated from molten/barrel.json). A portable
   /// metal vessel that stores liquid metal and can be carried in a backpack. Two <c>construction</c>
-  /// variants that behave identically - only their shape and craft differ: <c>bolted</c> is fabricated from
+  /// variants that behave identically - only their shape and craft differ: <c>plated</c> is fabricated from
   /// plates, fire clay and nails; <c>cast</c> is a sand-cast <c>cast-barrel</c> blank lined with fire clay
-  /// (see the sand-casting design doc). Old single-code <c>moltenbarrel</c> worlds are remapped to
-  /// <c>-bolted</c> by <see cref="BlockMigrations.BarrelConstructionMigration"/>.</summary>
+  /// (see the sand-casting design doc). Old single-code <c>molten-barrel</c> worlds are remapped to
+  /// <c>-plated</c> by <see cref="BlockMigrations.BarrelConstructionMigration"/>.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef
-        .Create(domain, "moltenbarrel", "molten/barrel")
+        .Create(domain, "molten-barrel", "molten/barrel")
         .Class<BlockMoltenBarrel>()
         .EntityClass("iwex.BlockEntityMoltenBarrel")
-        .VariantGroup("construction", "bolted", "cast")
+        .VariantGroup("construction", "plated", "cast")
         .MaxStackSize(1)
         .StorageFlags(2)
         .Material(EnumBlockMaterial.Metal)
@@ -63,7 +63,7 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
         .Attribute("fillQuadsByLevel", new[] { new { x1 = 4, z1 = 4, x2 = 12, z2 = 12 } })
         .Behavior("Lockable")
         .Behavior("UnstableFalling")
-        .ShapeByType("*-bolted", "iwex:molten/barrel-bolted")
+        .ShapeByType("*-plated", "iwex:molten/barrel-plated")
         .ShapeByType("*-cast", "iwex:molten/barrel-cast")
         .NonSolid()
         .TpHandTransform(-0.8, -1, -0.55, 20, 14, -90, 0.75),
@@ -75,20 +75,8 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider
   {
     base.OnLoaded(api);
 
-    // Cache all smelted crucibles
-    var crucibleList = new List<ItemStack>();
-    foreach (var block in api.World.Blocks)
-    {
-      if (
-        block.Code != null
-        && block.Code.Path.StartsWith("crucible-")
-        && block.Code.Path.EndsWith("-smelted")
-      )
-      {
-        crucibleList.Add(new ItemStack(block));
-      }
-    }
-    _smeltedCrucibles = crucibleList.ToArray();
+    // Cache all smelted crucibles for the pour interaction help.
+    _smeltedCrucibles = MoltenMetal.SmeltedCrucibleStacks(api.World);
   }
 
   /// <summary>

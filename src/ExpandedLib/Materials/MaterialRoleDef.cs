@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace ExpandedLib.Materials;
 
 /// <summary>
-/// One material-role assignment - the data a machine reads instead of the hardcoded
-/// <c>Collectible.Code.Path</c> string equality that used to classify a flux / fuel / ore / scrap /
-/// charge item inline in the mixer, hoppers and furnace core. Deserialized from every domain's
+/// One material-role assignment - the data a machine reads to classify a flux / fuel / ore / scrap /
+/// charge item, in place of hardcoded <c>Collectible.Code.Path</c> string equality inline in the
+/// mixer, hoppers and furnace core. Deserialized from every domain's
 /// <c>config/materialroles.json</c> and registered into <see cref="MaterialRoleRegistry"/>, so a
 /// content mod (or EM) gives an item a role by shipping/patching one JSON entry - no recompile.
 /// <para>

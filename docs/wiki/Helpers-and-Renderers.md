@@ -129,21 +129,20 @@ public static class ExBlockNames
 
 ## `ExContentGate` - disabling content
 
-Config-gated "turn this content off": hide collectibles from creative + handbook and strip their
-recipes. Each method returns how many it affected.
+Config-gated "turn this content off": hide collectibles from the creative inventory and handbook.
+Returns how many it affected.
 
 ```csharp
 public static class ExContentGate
 {
     public static int HideFromCreativeAndHandbook(ICoreAPI api, Func<CollectibleObject, bool> match);
-    public static int RemoveClayformingRecipes(ICoreAPI api, Func<AssetLocation, bool> outputMatch);
-    public static int RemoveGridRecipes(ICoreAPI api, Func<AssetLocation, bool> outputMatch);
 }
 ```
 
 Clearing a block's creative tabs and stacks also removes it from the handbook, so
-`HideFromCreativeAndHandbook` does both. Pair it with a config toggle for "disable X" features
-(e.g. `smex` tool-mold gating behind `/exmod molds`).
+`HideFromCreativeAndHandbook` does both. Call it after content has resolved (from
+`StartServerSide`/`StartClientSide`, not `Start`), and pair it with a config toggle for
+"disable X" features (e.g. `smex` tool-mold gating behind `/exmod molds`).
 
 ## `SurfaceRenderer` - flat fluid surfaces
 

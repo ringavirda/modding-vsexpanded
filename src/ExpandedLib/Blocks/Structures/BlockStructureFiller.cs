@@ -76,7 +76,7 @@ public partial class BlockStructureFiller
   // IMechanicalPowerBlock: a footprint cell becomes a mechanical-power intake when its
   // fillerOffsets entry hosts an MP behaviour (e.g. exlib.BEBehaviorMPFillerPort) with a connector
   // face - the parallel of the pipe-port support above, but for the vanilla MP network, which
-  // discovers power by asking the BLOCK at each cell whether it accepts an axle on a given face.
+  // discovers power by asking the block at each cell whether it accepts an axle on a given face.
   private static BEBehaviorMPBase? MpBehaviorAt(IBlockAccessor world, BlockPos pos) =>
     world.GetBlockEntity(pos)?.GetBehavior<BEBehaviorMPBase>();
 

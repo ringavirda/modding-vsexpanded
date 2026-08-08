@@ -11,8 +11,17 @@ namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 /// The cast-iron casting mold block - the iron-tier replacement for the ceramic tool molds. A flat mold
 /// placed on a surface and filled by a pour (crucible / ladle / mold pedestal, recognised through
 /// <see cref="ILiquidMetalSink"/> on its entity); right-click with an empty hand takes the hardened cast
-/// out and the mold stays (reusable). Cast in the sand cell from the matching pattern. Two tool types for
-/// now: <c>plate</c> and <c>doubleingot</c> (no <c>quadrod</c> - rod is a rolled product).
+/// out and the mold stays (reusable). Cast in the sand cell from the matching pattern.
+/// <para>
+/// <b>One tool type: <c>ingot</c>, a single-ingot tray.</b> Anything the mill already makes has no mold
+/// here: plates and rods are rolled products, so casting them in a tray would be a second route to the
+/// mill's own output. The ingot mold survives because crucible steel has to be poured into something - a
+/// tapped heat needs a vessel that is not a canal.
+/// </para>
+/// <para>
+/// The drawn tray (<c>item-sandcast-ingotmold.json</c>) has one bay, so the block follows the art:
+/// 100 units, one ingot.
+/// </para>
 /// </summary>
 [BlockRegister]
 public partial class BlockCastMold : Block, IExBlockDefProvider
@@ -24,18 +33,19 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
 
   private static ExBlockDef Mold(string domain) =>
     ExBlockDef
-      .Create(domain, "castmold")
+      .Create(domain, "casting-mold", "casting/mold")
       .Class<BlockCastMold>()
       .EntityClass<BlockEntityCastMold>()
       .Material(EnumBlockMaterial.Metal)
       .Resistance(3.5f)
       .MaxStackSize(16)
       .LightAbsorption(0)
-      .VariantGroup("tooltype", "plate", "doubleingot")
-      .ShapeByType("*-plate", "iwex:molten/molds/plate", rotateY: 90)
-      .ShapeByType("*-doubleingot", "iwex:molten/molds/doubleingot", rotateY: 90)
-      // The tray shapes bind their surface to "#other"; repaint it cast iron.
-      .Texture("other", "iwex:block/metal/castiron")
+      // A one-state variant group on purpose: it keeps the `-ingot` suffix in the code, so adding a second
+      // mold later is a new state rather than a code shape change every world has to migrate through.
+      .VariantGroup("tooltype", "ingot")
+      // The tray is the drawn `item-sandcast-ingotmold` art - one bay, and it carries its own cast-iron
+      // texture, so no `#other` ceramic key needs binding.
+      .ShapeByType("*-ingot", "iwex:molten/molds/ingot", rotateY: 90)
       .SingleCollisionBox(0.0625f, 0f, 0.0625f, 0.9375f, 0.125f, 0.9375f)
       .SingleSelectionBox(0.0625f, 0f, 0.0625f, 0.9375f, 0.125f, 0.9375f)
       .SideSolid(false)
@@ -47,8 +57,8 @@ public partial class BlockCastMold : Block, IExBlockDefProvider
       .Sound("hit", "game:block/anvil")
       .Sound("walk", "game:walk/stone")
       // The cast a full, hardened mold yields, resolved in the metal's cast domain by the entity.
-      .RawByType("attributesByType", "castmold-plate", new { requiredUnits = 200, fillHeight = 1, drops = new[] { new { type = "item", code = "game:metalplate-{metal}" } } })
-      .RawByType("attributesByType", "castmold-doubleingot", new { requiredUnits = 200, fillHeight = 1, drops = new[] { new { type = "item", code = "game:ingot-{metal}", quantity = 2 } } });
+      // 100 units, one ingot - vanilla's own ingot arithmetic, and what the single-bay tray draws.
+      .RawByType("attributesByType", "casting-mold-ingot", new { requiredUnits = 100, fillHeight = 1, drops = new[] { new { type = "item", code = "game:ingot-{metal}", quantity = 1 } } });
 
   #endregion
 

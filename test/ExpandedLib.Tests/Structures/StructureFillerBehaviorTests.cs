@@ -304,7 +304,7 @@ public class StructureFillerBehaviorTests
     var be = new BlockEntityStructureFiller { Principal = new BlockPos(0, 0, -2) };
     world.Place(pos, filler, be);
     world.Initialize(be);
-    // Stand in for the real hosted port: WEST-facing metadata + an MP behaviour present on the BE.
+    // Stand in for the real hosted port: west-facing metadata + an MP behaviour present on the BE.
     be.HostedBehaviors =
     [
       new FillerBehavior("exlib.BEBehaviorMPFillerPort", BlockFacing.WEST, null),

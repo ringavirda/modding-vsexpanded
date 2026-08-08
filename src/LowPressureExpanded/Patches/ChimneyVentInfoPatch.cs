@@ -2,7 +2,6 @@ using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
 using HarmonyLib;
 using IronworkingExpanded;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 using LowPressureExpanded.BlockNetworkPipe.Blocks;
 using ExpandedLib.Helpers;
 using Vintagestory.API.Common;
@@ -26,8 +25,9 @@ public static class ChimneyVentInfoPatch
     ref string __result
   )
   {
-    // Only vanilla (or any) chimney blocks; everything else passes through untouched.
-    if (__instance.Code?.Path?.Contains("chimney") != true)
+    // Only chimney blocks (shared predicate with the vent classification); everything else
+    // passes through untouched.
+    if (!ChimneyVent.IsChimney(__instance))
       return;
 
     // The chimney only draws when sitting directly on a passthrough / passthrough-bend /

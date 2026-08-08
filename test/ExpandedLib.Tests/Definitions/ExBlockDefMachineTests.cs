@@ -22,14 +22,14 @@ public class ExBlockDefMachineTests
       ExBlockDef
         .Create("d", "c")
         .Shape("iwex:ore/bunker")
-        .ShapeRotateYByType("*-north", 180)
-        .ShapeRotateYByType("*-east", 90)
+        .ShapeRotateYByType("*-n", 180)
+        .ShapeRotateYByType("*-e", 90)
         .ShapeSelectiveElements("Root/InputBase/*")
         .ToJson()["shape"]!;
 
     Assert.Equal("iwex:ore/bunker", (string?)shape["base"]);
-    Assert.Equal(180, (int)shape["rotateYByType"]!["*-north"]!);
-    Assert.Equal(90, (int)shape["rotateYByType"]!["*-east"]!);
+    Assert.Equal(180, (int)shape["rotateYByType"]!["*-n"]!);
+    Assert.Equal(90, (int)shape["rotateYByType"]!["*-e"]!);
     Assert.Equal(
       ["Root/InputBase/*"],
       shape["selectiveElements"]!.ToObject<string[]>()!
@@ -42,11 +42,11 @@ public class ExBlockDefMachineTests
     JObject shape = (JObject)
       ExBlockDef
         .Create("d", "c")
-        .ShapeRotateYByType("*-south", 0)
+        .ShapeRotateYByType("*-s", 0)
         .Shape("iwex:ore/bunker")
         .ToJson()["shape"]!;
     Assert.Equal("iwex:ore/bunker", (string?)shape["base"]);
-    Assert.Equal(0, (int)shape["rotateYByType"]!["*-south"]!);
+    Assert.Equal(0, (int)shape["rotateYByType"]!["*-s"]!);
   }
 
   #endregion

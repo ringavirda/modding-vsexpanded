@@ -8,10 +8,10 @@ namespace ExpandedLib.Blocks.Construction;
 
 /// <summary>
 /// Composable helper that owns the animator + <see cref="ExRightClickConstructable"/> lifecycle shared
-/// by every constructed, animator-rendered mega-block (boiler, engine, converter vessel, ore mixer/bunker).
+/// by every constructed, animator-rendered mega-block (boiler, engine, converter vessel, burdenmaker).
 /// The RCC behavior suppresses the block's default mesh, so these blocks are only visible through a
 /// permanent animation re-tessellated to the currently-built construction elements - a ~80-line triad
-/// that was copy-pasted byte-for-byte across all of them (audit Theme A).
+/// that would otherwise be copy-pasted byte-for-byte across all of them.
 /// <para>
 /// It is a <b>helper</b>, not a base class, on purpose: the consumers sit on four different block-entity
 /// bases (plain <see cref="BlockEntity"/>, <c>BlockEntityProductionMachine</c>,
@@ -39,7 +39,7 @@ public sealed class ConstructedAnimator
   private Action? _repose;
 
   /// <param name="be">The owning block entity.</param>
-  /// <param name="cacheKey">The per-block animator/shape cache key (e.g. <c>"orebunker-" + side</c>);
+  /// <param name="cacheKey">The per-block animator/shape cache key (e.g. <c>"burdenmaker-" + side</c>);
   /// evaluated lazily so a wrench-rotate that changes the variant is picked up.</param>
   /// <param name="onAnimatorBuilt">Optional hook run after each successful (re)build, receiving the anim
   /// util and the freshly-built mesh - used to swap in a custom <see cref="AnimatableRenderer"/> (the
@@ -111,7 +111,7 @@ public sealed class ConstructedAnimator
 
     BlockEntityAnimationUtil util = _animatable.animUtil;
 
-    // CreateMesh resolves a FRESH shape each call; reusing one re-maps UVs into atlas space and
+    // CreateMesh resolves a fresh shape each call; reusing one re-maps UVs into atlas space and
     // stretches textures. Rotation is applied by the renderer, not baked into the mesh.
     MeshData meshData = util.CreateMesh(
       _cacheKey(),

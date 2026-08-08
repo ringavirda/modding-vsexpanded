@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.Blocks;
 using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -25,7 +25,7 @@ public partial class BlockValve : BlockPipe
 
   private static ExBlockDef Valve(string domain) =>
     ExBlockDef
-      .Create(domain, "pipe", "pipes/valve")
+      .Create(domain, "pipe", "pipe/valve")
       .Class<BlockValve>()
       .EntityClass<BlockEntityValve>()
       .EntityBehavior("Animatable")
@@ -37,12 +37,12 @@ public partial class BlockValve : BlockPipe
       .Behavior("Lockable")
       .VariantGroup("type", "valve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
-      .ShapeByType("*-valve-ns", "lpex:pipes/valve")
-      .ShapeByType("*-valve-we", "lpex:pipes/valve", rotateY: 90)
-      .ShapeByType("*-valve-ud", "lpex:pipes/valve", rotateX: 90)
-      .ShapeByType("*-valve-sn", "lpex:pipes/valve", rotateY: 180)
-      .ShapeByType("*-valve-ew", "lpex:pipes/valve", rotateY: -90)
-      .ShapeByType("*-valve-du", "lpex:pipes/valve", rotateX: 90, rotateY: 180)
+      .ShapeByType("*-valve-ns", "lpex:pipe/valve")
+      .ShapeByType("*-valve-we", "lpex:pipe/valve", rotateY: 90)
+      .ShapeByType("*-valve-ud", "lpex:pipe/valve", rotateX: 90)
+      .ShapeByType("*-valve-sn", "lpex:pipe/valve", rotateY: 180)
+      .ShapeByType("*-valve-ew", "lpex:pipe/valve", rotateY: -90)
+      .ShapeByType("*-valve-du", "lpex:pipe/valve", rotateX: 90, rotateY: 180)
       .Texture("iron4", "game:block/metal/sheet-plain/iron4")
       .CollisionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)
       .SelectionBox(0.3125f, 0.3125f, 0f, 0.6875f, 0.6875f, 1f)

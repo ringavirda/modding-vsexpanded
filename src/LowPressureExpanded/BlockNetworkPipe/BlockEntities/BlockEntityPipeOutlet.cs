@@ -1,5 +1,5 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkPipe.BlockEntities;
 
 namespace LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 

@@ -20,7 +20,7 @@ public static class GameTime
   /// <summary>
   /// Replays <paramref name="elapsedSeconds"/> of catch-up as sub-steps of at most
   /// <paramref name="stepSeconds"/>, invoking <paramref name="step"/> once per sub-step. Bounded on
-  /// BOTH ends: never more than <paramref name="maxSteps"/> sub-steps run (so a long absence is capped,
+  /// both ends: never more than <paramref name="maxSteps"/> sub-steps run (so a long absence is capped,
   /// not replayed in full), and the last step carries only the leftover. Returns the number of
   /// sub-steps actually run. A machine gets the same per-tick <c>dt</c> it sees while loaded, so its
   /// existing rate math and safety clamps apply unchanged.

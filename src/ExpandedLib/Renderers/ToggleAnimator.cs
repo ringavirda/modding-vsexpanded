@@ -6,16 +6,16 @@ using Vintagestory.GameContent;
 namespace ExpandedLib.Renderers;
 
 /// <summary>
-/// Composable helper for a NON-constructed animated block entity - one that renders through a permanent
+/// Composable helper for a non-constructed animated block entity - one that renders through a permanent
 /// or toggled animation (<see cref="BEBehaviorAnimatable"/> + <see cref="BlockEntityAnimationUtil"/>) but
-/// is NOT raised via RightClickConstructable. Its constructed sibling is
+/// is not raised via RightClickConstructable. Its constructed sibling is
 /// <c>ExpandedLib.Blocks.Construction.ConstructedAnimator</c>; this is the lighter variant for the pour
 /// taps, gas/pressure valves, converter control, engine sub-machines and the manual pump.
 /// <para>
 /// It owns exactly the scaffold those five hand-rolled identically: resolving the animatable behavior,
-/// the ONE null-animator ready-guard (so no consumer can drift into the null-animator <c>GetBlockInfo</c>
+/// the one null-animator ready-guard (so no consumer can drift into the null-animator <c>GetBlockInfo</c>
 /// NRE - two copies set the flag <c>true</c> unconditionally and were exposed to it), and the pose gate.
-/// The animator BUILD itself varies too much to own - two <c>InitializeAnimator</c> overloads (mesh-based
+/// The animator build itself varies too much to own - two <c>InitializeAnimator</c> overloads (mesh-based
 /// vs shape+texsource), per-block cache keys, Y-only vs full X/Y/Z rotation, an optional renderer
 /// <c>CustomTransform</c> - so the consumer supplies it as the <paramref name="build"/> delegate.
 /// </para>

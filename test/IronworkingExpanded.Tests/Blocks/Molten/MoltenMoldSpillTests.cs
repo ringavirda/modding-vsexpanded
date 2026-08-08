@@ -31,7 +31,7 @@ public class MoltenMoldSpillTests
   {
     var block = TestBlocks.Configure(
       new BlockCastMold(),
-      "iwex:castmold-plate",
+      "iwex:casting-mold-ingot",
       id,
       ("tooltype", "plate")
     );
@@ -54,7 +54,7 @@ public class MoltenMoldSpillTests
   {
     var mold = TestBlocks.Configure(
       new BlockCastMold(),
-      "iwex:castmold-plate",
+      "iwex:casting-mold-ingot",
       3110,
       ("tooltype", "plate")
     );

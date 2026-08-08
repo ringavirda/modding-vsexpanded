@@ -704,7 +704,7 @@ public abstract class BlockNetworkNode
 
   /// <summary>
   /// Maps shape-type strings (e.g. "straight", "bend") to their valid orientation strings - used for
-  /// placement, wrench rotation, and collision-box pre-computation. Derived by default from THIS block's own
+  /// placement, wrench rotation, and collision-box pre-computation. Derived by default from this block's own
   /// code-first defs (resolved by runtime type, so every network-node subclass gets the right map from its own
   /// variant groups), cached on first read - the orientation states live once, in the def, with no hand-kept
   /// duplicate table that drifts. A block whose orientation isn't a type→orientation variant pair can override.
@@ -748,7 +748,7 @@ public abstract class BlockNetworkNode
   /// <para>
   /// This is where an <em>incompatible joint</em> belongs: two runs can meet face to face, agree on
   /// network type, and still not be connectable because the physical coupling does not exist (the
-  /// welded octagonal HP pipe against a bolted square one). Refusing here is stronger than hiding the
+  /// welded octagonal HP pipe against a plated square one). Refusing here is stronger than hiding the
   /// connector - the far side reads as an <b>open end</b>, so the run leaks rather than silently
   /// merging, which is the honest in-world outcome.
   /// </para>

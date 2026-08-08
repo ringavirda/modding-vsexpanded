@@ -10,7 +10,7 @@ namespace ExpandedLib.Metals;
 /// Generates the derived resource item family (ingot / plate / bits / rod / nails) for every
 /// <see cref="MetalDef"/> that opts in via <see cref="MetalDef.GenerateItemFamily"/>, so a mod-added
 /// alloy gets its build-recipe forms without hand-authoring one itemtype per form. Each item is an
-/// <see cref="ExItemDef"/> in the metal's OWNING domain (the <see cref="MetalDef.MoltenItem"/> domain)
+/// <see cref="ExItemDef"/> in the metal's owning domain (the <see cref="MetalDef.MoltenItem"/> domain)
 /// under the code convention <c>{form}-{metalcode}</c> - e.g. cast iron yields
 /// <c>iwex:ingot-castiron</c> / <c>metalplate-castiron</c> / … exactly the codes the cupola and the
 /// solidified-cast-iron block already resolve.
@@ -22,13 +22,13 @@ namespace ExpandedLib.Metals;
 /// the live <c>config/metals</c> catalogue, the golden harness feeds it the same JSON from the source tree.
 /// </para>
 /// <para>
-/// <see cref="Emit"/> also yields a metal's TOOLS, which come from the companion
+/// <see cref="Emit"/> also yields a metal's tools, which come from the companion
 /// <see cref="MetalToolEmitter"/> - the presets, per-type templates and tool builder live there so this
 /// file stays the resource half. Tools are opt-in per metal via <see cref="MetalDef.Tools"/>; a metal
 /// that declares none (a feedstock like pig iron) contributes resource forms only.
 /// </para>
 /// <para>
-/// A generated metal is deliberately kept OFF the vanilla <c>block/metal</c> worldproperty: registering
+/// A generated metal is deliberately kept off the vanilla <c>block/metal</c> worldproperty: registering
 /// it there would auto-create an anvil-forgeable <c>workitem-&lt;metal&gt;</c> off the seven itemtypes
 /// that load from it, contradicting materials.md's "castable, brittle" cast iron. Authoring the family
 /// here keeps full control and never leaks a forge path.

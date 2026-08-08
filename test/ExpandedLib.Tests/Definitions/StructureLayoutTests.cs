@@ -250,7 +250,7 @@ public class StructureLayoutTests
   [Fact]
   public void DefinitionParity_treats_a_multiblock_as_an_unordered_renumberable_set()
   {
-    // Same cells + codes, but different offset order AND different w-numbering => still equal.
+    // Same cells + codes, but different offset order and different w-numbering => still equal.
     JObject a = JObject.Parse(
       """
       { "attributes": { "multiblockStructure": {

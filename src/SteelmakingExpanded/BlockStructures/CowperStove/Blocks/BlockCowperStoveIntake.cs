@@ -3,6 +3,7 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
+using LowPressureExpanded;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -48,14 +49,14 @@ public partial class BlockCowperStoveIntake
         // Compared as an unordered cell set by DefinitionParity, so the w-numbering is free.
         .MultiblockLayout(s =>
           s.Origin(-1, 0)
-            .Legend('#', "game:refractorybricks-good-tier*")
-            .Legend('I', "smex:cowperstove-intake*")
-            .Legend('P', "lpex:pipe-outlet*")
-            .Legend('X', "lpex:pipe-passthrough-*")
-            .Legend('H', "smex:cowperstoveheatsink*")
-            .Legend('D', "game:cokeovendoor*")
-            .Legend('a', "game:air")
-            .Legend('c', "@(air|coalpile)")
+            .Legend('#', VanillaCodes.Refractory)
+            .Legend('I', SmexBlocks.CowperstoveIntake.Any)
+            .Legend('P', LpexCodes.PipeOutlet)
+            .Legend('X', LpexCodes.PipePassthroughAny)
+            .Legend('H', SmexBlocks.CowperstoveHeatsink.Any)
+            .Legend('D', VanillaCodes.Sealing(BlockFacing.WEST))
+            .Legend('a', VanillaCodes.Air)
+            .Legend('c', VanillaCodes.CoalBed)
             .Layer(
               -1,
               """
@@ -113,17 +114,17 @@ public partial class BlockCowperStoveIntake
               """
             )
         )
-        .CreativeCommon("*-intake-*-south")
+        .CreativeCommon("*-intake-*-s")
         .Behavior("MultiblockStructure")
         .Behavior("Lockable")
-        .Behavior("HorizontalOrientable")
+        .Behavior("ExOrientable")
         .VariantGroup("type", "intake")
         .VariantGroup("refractory", "tier1", "tier2", "tier3")
-        .VariantGroupFromProperties("side", "abstract/horizontalorientation")
-        .ShapeByType("*-intake-*-north", "smex:cowperstove/intake", rotateY: 0)
-        .ShapeByType("*-intake-*-west", "smex:cowperstove/intake", rotateY: 90)
-        .ShapeByType("*-intake-*-south", "smex:cowperstove/intake", rotateY: 180)
-        .ShapeByType("*-intake-*-east", "smex:cowperstove/intake", rotateY: 270)
+        .SideVariant()
+        .ShapeByType("*-intake-*-n", "smex:cowperstove/intake", rotateY: 0)
+        .ShapeByType("*-intake-*-w", "smex:cowperstove/intake", rotateY: 90)
+        .ShapeByType("*-intake-*-s", "smex:cowperstove/intake", rotateY: 180)
+        .ShapeByType("*-intake-*-e", "smex:cowperstove/intake", rotateY: 270)
         .Texture("front1", "game:block/clay/refractory/{refractory}/front1")
         .SideSolid(true)
         .SideOpaque(false),
