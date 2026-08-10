@@ -85,6 +85,27 @@ public class BlockEntityDesignTable : BlockEntityContainer {
     capi.Network.SendBlockEntityPacket(Pos, PacketIdOpen);
   }
 
+  /// <summary>Closes the drafting window if open and drops the reference, so a broken or unloaded table
+  /// cannot leave its GUI bound to a dead block entity (see <see cref="OnBlockRemoved"/> and
+  /// <see cref="OnBlockUnloaded"/>). Mirrors vanilla's <c>BEOpenableContainer.Dispose</c>
+  /// (<c>BEOpenableContainer.cs:264-269</c>).</summary>
+  internal virtual void CloseDialog() {
+    if (_dialog?.IsOpened() == true)
+      _dialog?.TryClose();
+    _dialog?.Dispose();
+    _dialog = null;
+  }
+
+  public override void OnBlockRemoved() {
+    base.OnBlockRemoved();
+    CloseDialog();
+  }
+
+  public override void OnBlockUnloaded() {
+    base.OnBlockUnloaded();
+    CloseDialog();
+  }
+
   /// <summary>
   /// Server-side handling of the window packets: the vanilla openable-container protocol plus the draft
   /// packet. <see cref="BlockEntityContainer"/> does not route these, so without it slot moves and drafts are

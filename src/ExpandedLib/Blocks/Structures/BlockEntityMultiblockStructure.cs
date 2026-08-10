@@ -574,6 +574,19 @@ public abstract class BlockEntityMultiblockStructure
       _highlightedStructure?.ClearHighlights(Api.World, capi.World.Player);
   }
 
+  /// <summary>
+  /// Chunk unload. The structure stays placed, so only this instance's listeners and its client-side
+  /// build outline go: the outline lives in a per-player highlight slot owned by the world, not by this
+  /// block entity, so an unload that skips it paints a projection over ground that no longer resolves.
+  /// Vanilla's <c>BEBeeHiveKiln</c> clears its highlight on both paths for the same reason.
+  /// </summary>
+  public override void OnBlockUnloaded() {
+    base.OnBlockUnloaded();
+    StopStructureTick();
+    if (Api is ICoreClientAPI capi)
+      _highlightedStructure?.ClearHighlights(Api.World, capi.World.Player);
+  }
+
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetBool("structureComplete", StructureComplete);

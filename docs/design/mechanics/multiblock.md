@@ -460,6 +460,11 @@ sand casting bed's per-cell `exlib.BEBehaviorMoltenCell` with different `{capaci
 
 ### A filler can NEVER be a graph node
 
+> Retired by decision, not yet by code. [framework-composition](framework-composition.md) settles
+> that the graph walk resolves a node by behaviour rather than by block type, which removes this
+> limitation and the `BlockRollingMillAxle` workaround below. Everything here is true of the code as
+> it stands.
+
 The block-network BFS starts with:
 
 ```csharp

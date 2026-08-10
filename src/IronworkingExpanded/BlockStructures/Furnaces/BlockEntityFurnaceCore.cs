@@ -1647,6 +1647,13 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure {
 
   #region Block lifecycle
 
+  /// <summary>
+  /// Puts a running furnace out before the block goes, so the pool freezes and the charge burns out to
+  /// residue rather than vanishing with the block entity.
+  /// removal-only teardown: a chunk unload leaves the furnace placed and still lit, and the away-catch-up
+  /// in <see cref="ExpandedLib.Blocks.Machines.BlockEntityProductionMachine"/> replays the time it spent
+  /// unloaded. Extinguishing here would put out every furnace whose player walked away.
+  /// </summary>
   public override void OnBlockRemoved() {
     if (Api?.Side == EnumAppSide.Server && State != FurnaceState.Idle)
       Extinguish();

@@ -38,8 +38,14 @@ public class BlockEntitySmokeStack
       _system.AddNode(api.World.BlockAccessor, Pos, "pipe");
   }
 
+  /// <summary>
+  /// Drops the stack out of the gas graph, mirroring the <see cref="Initialize"/> registration this class
+  /// has to do by hand.
+  /// removal-only teardown: a chunk unload leaves the stack plumbed in, so deregistering there would cut
+  /// the exhaust run every time a player walked away. The base clears the listeners and the build outline
+  /// on unload, which is the whole of what an unload owes.
+  /// </summary>
   public override void OnBlockRemoved() {
-    // Safety fallback for chunk-unload edge cases (break-time RemoveNode is handled elsewhere).
     if (Api?.Side == EnumAppSide.Server)
       _system?.RemoveNode(Api.World.BlockAccessor, Pos);
     base.OnBlockRemoved();

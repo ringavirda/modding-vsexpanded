@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
@@ -148,6 +149,41 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     }
     if (Api?.Side == EnumAppSide.Client)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);
+  }
+
+  /// <summary>Maps every row's piece, so a hearth mid-reheat pasted into another world still resolves
+  /// each stock item against that world's ids rather than this one's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) {
+    foreach (ItemStack? stack in _rows)
+      stack?.Collectible?.OnStoreCollectibleMappings(
+        Api.World,
+        new DummySlot(stack),
+        blockIdMapping,
+        itemIdMapping
+      );
+  }
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809. An index loop, not a
+    // foreach, since the null-out has to land back in the array.
+    for (int i = 0; i < _rows.Length; i++)
+      if (
+        _rows[i]
+          ?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
+        == false
+      )
+        _rows[i] = null;
   }
 
   #endregion

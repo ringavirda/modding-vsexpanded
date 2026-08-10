@@ -9,7 +9,7 @@ namespace ExpandedLib.Blocks.Structures;
 /// Shared base for a mega-block that occupies one grid cell but renders across a multi-cell footprint
 /// reserved with invisible <see cref="BlockStructureFiller"/> cells (real per-cell collision, with
 /// interaction/break/info rerouted to the principal). It refuses placement unless the whole footprint is
-/// clear, spawns the fillers on placement and clears them again on break. Concrete blocks supply the
+/// clear, spawns the fillers on placement and clears them again on removal. Concrete blocks supply the
 /// footprint rotation through <see cref="StructureAngle"/> and override
 /// <see cref="OnFootprintPlaced"/> when they need to touch a filler cell right after placement. Drops
 /// are left to the derived block: construction-raised ones override <c>GetDrops</c> to <c>[]</c>, the
@@ -67,15 +67,13 @@ public abstract class BlockFilledMegastructure : Block, IFillerHost {
     BlockPos blockPos
   ) { }
 
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  ) {
-    // Clear the reserved volume first so no invisible solid cells are left behind; the base call then
-    // spills container contents / scatters construction materials as applicable.
+  public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
+    // The engine calls this on every removal path - a player break, an explosion
+    // (Block.OnBlockExploded goes straight to a bulk SetBlock, never OnBlockBroken), a worldedit
+    // delete - unlike OnBlockBroken, which only a player break triggers. Clearing the footprint
+    // here, rather than there, keeps every path from leaving invisible solid orphan cells behind.
+    // Mirrors vanilla's BlockLargeGear3m.OnBlockRemoved.
     StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+    base.OnBlockRemoved(world, pos);
   }
 }

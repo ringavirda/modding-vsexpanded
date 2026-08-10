@@ -374,6 +374,31 @@ public class StructureFillerBehaviorTests {
 
   #endregion
 
+  #region Removal (Block.OnBlockRemoved clears the footprint)
+
+  [Fact]
+  public void Replacing_the_principal_without_breaking_it_still_clears_the_footprint() {
+    // An explosion sets the block to air through the bulk accessor and never calls OnBlockBroken,
+    // so cleanup hung off OnBlockBroken leaves solid invisible cells behind. TestWorld's fake
+    // accessor does not route SetBlock through Block.OnBlockRemoved (see TestWorld.DoSetBlock), so
+    // this drives the Block-level hook directly instead of asserting on a dispatch path the
+    // harness cannot model.
+    var w = NewWorldWithMegastructure(
+      out BlockPos principal,
+      out BlockPos[] footprint
+    );
+    var principalBlock = (BlockFilledMegastructure)w.GetBlock(principal);
+
+    principalBlock.OnBlockRemoved(w.World, principal);
+
+    // GetBlockId is unstubbed on TestWorld's fake accessor (always returns 0), so the check reads
+    // the store through the stubbed GetBlock instead.
+    foreach (var cell in footprint)
+      Assert.Equal(0, w.Accessor.GetBlock(cell).BlockId);
+  }
+
+  #endregion
+
   #region Helpers
 
   private static (TestWorld world, BlockStructureFiller filler) NewWorld() {
@@ -385,6 +410,61 @@ public class StructureFillerBehaviorTests {
     );
     world.Register(filler);
     return (world, filler);
+  }
+
+  /// <summary>
+  /// A principal placed with a two-cell footprint (east and west of it), each cell a filler BE
+  /// already linked to the principal - the state <see cref="StructureFillers.PlaceFillers"/> would
+  /// leave behind, built directly so the removal tests do not depend on the placement path.
+  /// </summary>
+  private static TestWorld NewWorldWithMegastructure(
+    out BlockPos principal,
+    out BlockPos[] footprint
+  ) {
+    var world = new TestWorld();
+    // RemoveFillers (and PlaceFillers) are server-only; the fake world otherwise leaves Side
+    // unstubbed, which does not equal EnumAppSide.Server.
+    world.World.Side.Returns(EnumAppSide.Server);
+    var filler = TestBlocks.Configure(
+      new BlockStructureFiller(),
+      "exlib:structurefiller",
+      70
+    );
+    world.Register(filler);
+
+    var mega = TestBlocks.Configure(
+      new FakeMega {
+        Attributes = new JsonObject(
+          JToken.Parse(
+            "{ \"fillerOffsets\": ["
+              + "{ \"x\": 1, \"y\": 0, \"z\": 0 }, { \"x\": -1, \"y\": 0, \"z\": 0 } ] }"
+          )
+        ),
+      },
+      "test:mega",
+      71
+    );
+    world.Register(mega);
+
+    principal = new BlockPos(4, 4, 4);
+    world.Place(principal, mega);
+
+    var cells = StructureFillers.FootprintCells(
+      mega,
+      principal,
+      mega.StructureAngle
+    );
+    var positions = new List<BlockPos>();
+    foreach (var cell in cells) {
+      world.Place(
+        cell.Pos,
+        filler,
+        new BlockEntityStructureFiller { Principal = principal.Copy() }
+      );
+      positions.Add(cell.Pos);
+    }
+    footprint = [.. positions];
+    return world;
   }
 
   private static bool HasMechConnector(
@@ -429,6 +509,12 @@ public class StructureFillerBehaviorTests {
 
   private sealed class Host(JsonObject? offsets) : IFillerHost {
     public JsonObject? FillerOffsets { get; } = offsets;
+  }
+
+  /// <summary>A minimal concrete <see cref="BlockFilledMegastructure"/> for exercising its placement
+  /// and removal lifecycle without any of the game-content leaves' extra behaviour.</summary>
+  private sealed class FakeMega : BlockFilledMegastructure {
+    public override int StructureAngle => 0;
   }
 
   /// <summary>A non-MP hosted behaviour that records how the filler configured and initialised it.</summary>

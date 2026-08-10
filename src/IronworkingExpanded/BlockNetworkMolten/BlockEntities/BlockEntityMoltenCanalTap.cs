@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
@@ -517,6 +518,68 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
     }
     if (Api?.Side == EnumAppSide.Client)
       UpdateRenderer();
+  }
+
+  /// <summary>Maps the tap's parked content - a barrel and a mold are mutually exclusive, but both
+  /// carry cast metal, so all three possible stacks are offered up for the destination world's ids.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) {
+    BarrelMetalContent?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(BarrelMetalContent),
+      blockIdMapping,
+      itemIdMapping
+    );
+    MoldStack?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(MoldStack),
+      blockIdMapping,
+      itemIdMapping
+    );
+    MoldMetalContent?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(MoldMetalContent),
+      blockIdMapping,
+      itemIdMapping
+    );
+  }
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      BarrelMetalContent?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      BarrelMetalContent = null;
+    if (
+      MoldStack?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      MoldStack = null;
+    if (
+      MoldMetalContent?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      MoldMetalContent = null;
   }
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {

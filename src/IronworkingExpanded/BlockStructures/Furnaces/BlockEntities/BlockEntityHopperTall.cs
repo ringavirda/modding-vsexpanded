@@ -28,8 +28,6 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent {
   // The whole tank is one burden stack (item identity = family, attributes = grade). Null when empty.
   private ItemStack? _tank;
 
-  private long _tickId;
-
   // The hopper feeds the shaft below, so it also surfaces the furnace's burden slice: how much charge is
   // loaded, and any wrong-family warning. Scans down for the core it drips into (six cells below in the cold
   // furnace, four in the cupola); silent when the hopper is not over a furnace. The same link answers the
@@ -71,14 +69,10 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent {
   public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
     // The drip is autonomous and always on. Server side only - the client never moves burden.
+    // The handle is not kept: the base drops every listener on both removal and chunk unload, and
+    // nothing else here starts or stops the drip.
     if (api.Side == EnumAppSide.Server)
-      _tickId = RegisterGameTickListener(OnServerTick, 1000);
-  }
-
-  public override void OnBlockRemoved() {
-    if (_tickId != 0)
-      UnregisterGameTickListener(_tickId);
-    base.OnBlockRemoved();
+      RegisterGameTickListener(OnServerTick, 1000);
   }
 
   #endregion
@@ -220,6 +214,36 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent {
     base.ToTreeAttributes(tree);
     if (_tank != null)
       tree.SetItemstack("tank", _tank);
+  }
+
+  /// <summary>Maps the tank's burden stack, so a hopper pasted into another world resolves its
+  /// contents against that world's item ids rather than this one's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) =>
+    _tank?.Collectible.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_tank),
+      blockIdMapping,
+      itemIdMapping
+    );
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      _tank?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
+      == false
+    )
+      _tank = null;
   }
 
   #endregion

@@ -102,18 +102,15 @@ public partial class BlockManualFluidPump
     );
   }
 
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer? byPlayer,
-    float dropQuantityMultiplier = 1f
-  ) {
+  public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
+    // Runs on every removal path (a player break, an explosion, a worldedit delete), unlike
+    // OnBlockBroken, so the crank cell above is never left behind as an orphan solid cell.
     StructureFillers.RemoveFillers(
       world,
       pos,
       StructureFillers.FootprintCells(this, pos, Angle)
     );
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+    base.OnBlockRemoved(world, pos);
   }
 
   #endregion

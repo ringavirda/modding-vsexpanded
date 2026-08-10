@@ -15,18 +15,21 @@
   <ItemGroup>
     <!-- Private=true (unlike the other test projects, which leave it false). The vstest discoverer
          probes a test assembly's direct references on disk BEFORE the harness's assembly resolver can
-         run; when VintagestoryAPI is not in the output folder it can silently SKIP the whole assembly
-         ("could not find dependent assembly 'VintagestoryAPI, Version=…'") and report zero tests
-         rather than failing - which is how this project quietly contributed nothing on the legacy
-         lane. Copying the dll in is dev-only output (never shipped) and makes discovery deterministic.
-         TODO: the same fragility likely affects the other suites; roll this out once understood. -->
+         run; when a reference is not in the output folder it can silently SKIP the whole assembly
+         ("could not find dependent assembly '<name>, Version=…'") and report zero tests rather than
+         failing - which is how this project quietly contributed nothing on the legacy lane. Confirmed
+         for VSSurvivalMod too (`diag.host.*.log`): testhost's own AssemblyResolver fails its first,
+         path-only probe and throws ReflectionTypeLoadException during discovery's type scan, before
+         VsAssemblyResolver gets a chance to answer the same request from the .game install (later
+         requests then resolve "from cache" - too late, discovery already gave up on the assembly).
+         Copying the dll in is dev-only output (never shipped) and makes discovery deterministic. -->
     <Reference Include="VintagestoryAPI">
       <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <Reference Include="VSSurvivalMod">
       <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
     </Reference>
     <Reference Include="VSEssentials">
       <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>

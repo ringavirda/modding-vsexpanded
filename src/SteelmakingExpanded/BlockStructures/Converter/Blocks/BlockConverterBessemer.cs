@@ -157,12 +157,6 @@ public partial class BlockConverterBessemer
     )
       solidifiedDrops = be.CollectBreakDrops();
 
-    // Clear the reserved 3x3x3 filler volume before base.OnBlockBroken, so a throw in the
-    // construction-drop path below cannot leave invisible solid cells behind.
-    int fillerAngle = ExOrientation.AngleFromSide(Variant["side"]);
-    var fillerCells = StructureFillers.FootprintCells(this, pos, fillerAngle);
-    StructureFillers.RemoveFillers(world, pos, fillerCells);
-
     // base.OnBlockBroken drives the RightClickConstructable behaviour, which resolves each completed
     // stage's ingredients back into drops by expanding wildcard codes (metalplate-*) against the
     // values captured at build time. A vessel saved without those values makes vanilla GetDrops
@@ -184,6 +178,18 @@ public partial class BlockConverterBessemer
 
     if (solidifiedDrops != null && world.Side == EnumAppSide.Server)
       world.SpawnItemEntity(solidifiedDrops, pos.ToVec3d().Add(0.5, 0.5, 0.5));
+  }
+
+  public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
+    // Runs on every removal path (a player break, an explosion, a worldedit delete), unlike
+    // OnBlockBroken, so the reserved 3x3x3 filler volume is never left behind.
+    int fillerAngle = ExOrientation.AngleFromSide(Variant["side"]);
+    StructureFillers.RemoveFillers(
+      world,
+      pos,
+      StructureFillers.FootprintCells(this, pos, fillerAngle)
+    );
+    base.OnBlockRemoved(world, pos);
   }
 
   // The vessel is control-spawned and never placed from an item, so it must not drop itself: the

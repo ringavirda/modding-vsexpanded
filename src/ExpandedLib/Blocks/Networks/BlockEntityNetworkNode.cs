@@ -39,6 +39,13 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
     }
   }
 
+  /// <summary>
+  /// Drops this position out of the graph, which splits or shrinks the network it belonged to.
+  /// removal-only teardown: a chunk unload leaves the block placed, so deregistering there would
+  /// fracture a live network every time a player walked away from it. The vanilla unload path already
+  /// drops this instance's tick listeners, and <see cref="Initialize"/> re-adopts the position when the
+  /// chunk comes back.
+  /// </summary>
   public override void OnBlockRemoved() {
     base.OnBlockRemoved();
     if (Api?.Side == EnumAppSide.Server)

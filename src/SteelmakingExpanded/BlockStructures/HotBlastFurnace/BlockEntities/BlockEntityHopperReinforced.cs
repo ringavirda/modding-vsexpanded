@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
@@ -226,6 +227,36 @@ public class BlockEntityHopperReinforced : BlockEntity {
     base.ToTreeAttributes(tree);
     if (_tank != null)
       tree.SetItemstack("tank", _tank);
+  }
+
+  /// <summary>Maps the tank's charge stack, so a reinforced hopper pasted into another world resolves
+  /// its contents against that world's item ids rather than this one's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) =>
+    _tank?.Collectible.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_tank),
+      blockIdMapping,
+      itemIdMapping
+    );
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      _tank?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
+      == false
+    )
+      _tank = null;
   }
 
   #endregion

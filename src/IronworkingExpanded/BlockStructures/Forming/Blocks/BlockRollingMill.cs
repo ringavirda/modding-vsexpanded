@@ -178,18 +178,16 @@ public partial class BlockRollingMill
     }
   }
 
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer byPlayer,
-    float dropQuantityMultiplier = 1f
-  ) {
+  public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
+    // Runs on every removal path (a player break, an explosion, a worldedit delete), unlike
+    // OnBlockBroken, so the reserved volume and the axle bus are never left behind as orphan solid
+    // cells. The axle cells are also live mpenergy graph nodes, so a break-only path would leave two
+    // unbreakable cells stranded inside the network.
     if (world.Side == EnumAppSide.Server) {
       RemoveAxleNodes(world, pos);
       StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
     }
-    // The base call removes the principal from the mpenergy graph and drops the mill.
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+    base.OnBlockRemoved(world, pos);
   }
 
   private void RemoveAxleNodes(IWorldAccessor world, BlockPos pos) {

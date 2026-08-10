@@ -29,7 +29,6 @@ public class BlockEntityPressureValve : BlockEntityPipe {
   /// <summary>Amount each interaction raises or lowers the gate pressure (atm).</summary>
   public const float GatePressureStep = 0.25f;
 
-  private long _tickId;
   private float _lastVentVolume;
   private float _gatePressure = 1f;
 
@@ -48,8 +47,10 @@ public class BlockEntityPressureValve : BlockEntityPipe {
       MinGatePressure,
       MaxGatePressure
     );
+    // The handle is not kept: the base drops every listener on both removal and chunk unload, and
+    // nothing else here stops the vent tick.
     if (api.Side == EnumAppSide.Server)
-      _tickId = RegisterGameTickListener(OnTick, 1000);
+      RegisterGameTickListener(OnTick, 1000);
   }
 
   /// <summary>
@@ -97,7 +98,7 @@ public class BlockEntityPressureValve : BlockEntityPipe {
       + OverflowLiquid(inNet, outNet, outFace);
 
     if (Math.Abs(_lastVentVolume - moved) > 0.01f)
-      MarkDirty(true);
+      MarkDirty();
     _lastVentVolume = moved;
   }
 
@@ -255,14 +256,6 @@ public class BlockEntityPressureValve : BlockEntityPipe {
     return spilled;
   }
 
-  public override void OnBlockRemoved() {
-    base.OnBlockRemoved();
-    if (_tickId != 0) {
-      UnregisterGameTickListener(_tickId);
-      _tickId = 0;
-    }
-  }
-
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     dsc.AppendLine(
       Lang.Get(
@@ -282,6 +275,7 @@ public class BlockEntityPressureValve : BlockEntityPipe {
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
     tree.SetFloat("gatePressure", _gatePressure);
+    tree.SetFloat("lastVentVolume", _lastVentVolume);
   }
 
   public override void FromTreeAttributes(
@@ -291,5 +285,6 @@ public class BlockEntityPressureValve : BlockEntityPipe {
     base.FromTreeAttributes(tree, worldForResolving);
     // A save with no stored gate reads back as the 1 atm default.
     _gatePressure = tree.GetFloat("gatePressure", 1f);
+    _lastVentVolume = tree.GetFloat("lastVentVolume", 0f);
   }
 }

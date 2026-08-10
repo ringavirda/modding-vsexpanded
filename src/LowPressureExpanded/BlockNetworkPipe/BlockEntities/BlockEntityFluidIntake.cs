@@ -20,8 +20,6 @@ namespace LowPressureExpanded.BlockNetworkPipe.BlockEntities;
 public class BlockEntityFluidIntake : BlockEntityNetworkNode {
   public override string NetworkType { get; set; } = "pipe";
 
-  private long _scanId;
-
   /// <summary>True when the cube directly below the intake is fully water.</summary>
   public bool HasWater { get; private set; }
 
@@ -48,9 +46,11 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode {
 
   public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
+    // The scan handle is not kept: the base drops every listener on both removal and chunk unload,
+    // and nothing else here stops the scan.
     if (api.Side == EnumAppSide.Server) {
       Rescan(0);
-      _scanId = RegisterGameTickListener(Rescan, 1000);
+      RegisterGameTickListener(Rescan, 1000);
     }
   }
 
@@ -135,11 +135,5 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode {
     base.FromTreeAttributes(tree, worldForResolving);
     HasWater = tree.GetBool("intakeHasWater");
     Crowded = tree.GetBool("intakeCrowded");
-  }
-
-  public override void OnBlockRemoved() {
-    if (_scanId != 0)
-      UnregisterGameTickListener(_scanId);
-    base.OnBlockRemoved();
   }
 }

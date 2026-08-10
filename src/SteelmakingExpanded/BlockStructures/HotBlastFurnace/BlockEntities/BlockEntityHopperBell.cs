@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
@@ -103,6 +104,39 @@ public class BlockEntityHopperBell : BlockEntity {
     tree.SetBool("isDropping", IsDropping);
   }
 
+  /// <summary>Maps the magazine's burden stack, so a bell hopper pasted into another world resolves
+  /// its buffered charge against that world's item ids rather than this one's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) =>
+    _magazine?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_magazine),
+      blockIdMapping,
+      itemIdMapping
+    );
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      _magazine?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      _magazine = null;
+  }
+
   private void OnServerTick(float dt) {
     PullFromTankAbove();
     DripIntoShaft();
@@ -206,11 +240,6 @@ public class BlockEntityHopperBell : BlockEntity {
     _magazine != null
     && stack.Collectible == _magazine.Collectible
     && Burden.Read(stack).Equals(Burden.Read(_magazine));
-
-  public override void OnBlockRemoved() {
-    base.OnBlockRemoved();
-    StopTicking();
-  }
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);

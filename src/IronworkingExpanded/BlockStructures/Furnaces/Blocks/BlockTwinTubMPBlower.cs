@@ -140,15 +140,11 @@ public partial class BlockTwinTubMPBlower
     StructureFillers.PlaceFillers(world, blockPos, FootprintCells(blockPos));
   }
 
-  public override void OnBlockBroken(
-    IWorldAccessor world,
-    BlockPos pos,
-    IPlayer byPlayer,
-    float dropQuantityMultiplier = 1f
-  ) {
-    // Clear the reserved volume first so no invisible solid cells are left behind.
+  public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
+    // Runs on every removal path (a player break, an explosion, a worldedit delete), unlike
+    // OnBlockBroken, so the reserved volume is never left behind.
     StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
-    base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+    base.OnBlockRemoved(world, pos);
   }
 
   #endregion

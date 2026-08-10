@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib.Helpers;
@@ -389,6 +390,54 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
     MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
     MoldMaxUnits = tree.GetInt("moldMaxUnits", IwexValues.MoldDefaultUnits);
     UpdateRenderer();
+  }
+
+  /// <summary>Maps the pedestal's own mold and its cast metal - the two stacks a schematic paste must
+  /// resolve against the destination world's item ids, not this world's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) {
+    MoldStack?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(MoldStack),
+      blockIdMapping,
+      itemIdMapping
+    );
+    MoldMetalContent?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(MoldMetalContent),
+      blockIdMapping,
+      itemIdMapping
+    );
+  }
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      MoldStack?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      MoldStack = null;
+    if (
+      MoldMetalContent?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      MoldMetalContent = null;
   }
 
   #endregion

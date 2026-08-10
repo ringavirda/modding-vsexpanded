@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
@@ -428,6 +429,48 @@ public class BlockEntityRollingMill : BlockEntityNetworkNode, IMpEnergyConsumer 
     // A stack read from a tree has no resolved Collectible until it is resolved against the world.
     _piece?.ResolveBlockOrItem(worldForResolving);
     _rollSet?.ResolveBlockOrItem(worldForResolving);
+  }
+
+  /// <summary>Maps the piece under the rolls and the fitted roll set, so a mid-pass mill pasted into
+  /// another world still resolves both stacks against that world's item ids.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) {
+    _piece?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_piece),
+      blockIdMapping,
+      itemIdMapping
+    );
+    _rollSet?.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_rollSet),
+      blockIdMapping,
+      itemIdMapping
+    );
+  }
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      _piece?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
+      == false
+    )
+      _piece = null;
+    if (
+      _rollSet?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
+      == false
+    )
+      _rollSet = null;
   }
 
   #endregion

@@ -373,7 +373,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
-    MetalContent?.Collectible.OnStoreCollectibleMappings(
+    MetalContent?.Collectible?.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(MetalContent),
       blockIdMapping,
@@ -387,12 +387,19 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
     Dictionary<int, AssetLocation> oldItemIdMapping,
     int schematicSeed,
     bool resolveImports
-  ) =>
-    MetalContent?.FixMapping(
-      oldBlockIdMapping,
-      oldItemIdMapping,
-      worldForResolve
-    );
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
+    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      MetalContent?.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      MetalContent = null;
+  }
 
   #endregion
 }

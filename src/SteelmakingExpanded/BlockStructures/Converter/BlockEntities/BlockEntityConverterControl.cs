@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ExpandedLib;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
@@ -972,6 +973,40 @@ public partial class BlockEntityConverterControl
       tree.GetFloat("hbChargeLoss"),
       AmbientLoss: 0f
     );
+  }
+
+  /// <summary>Maps the bath's carrier stack, so a converter mid-heat pasted into another world still
+  /// resolves the molten metal against that world's item ids rather than this one's.</summary>
+  public override void OnStoreCollectibleMappings(
+    Dictionary<int, AssetLocation> blockIdMapping,
+    Dictionary<int, AssetLocation> itemIdMapping
+  ) =>
+    _charge?.Stack.Collectible?.OnStoreCollectibleMappings(
+      Api.World,
+      new DummySlot(_charge.Stack),
+      blockIdMapping,
+      itemIdMapping
+    );
+
+  public override void OnLoadCollectibleMappings(
+    IWorldAccessor worldForResolve,
+    Dictionary<int, AssetLocation> oldBlockIdMapping,
+    Dictionary<int, AssetLocation> oldItemIdMapping,
+    int schematicSeed,
+    bool resolveImports
+  ) {
+    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
+    // source world's value, which would resolve to whatever owns that id there. Null the whole charge
+    // instead of keeping a mis-resolved one - MoltenCharge.Stack is never null while a charge exists,
+    // matching vanilla's BEIngotMold.cs:806-809.
+    if (
+      _charge?.Stack.FixMapping(
+        oldBlockIdMapping,
+        oldItemIdMapping,
+        worldForResolve
+      ) == false
+    )
+      _charge = null;
   }
 
   #endregion
