@@ -17,6 +17,7 @@
   "pipe-medium-air": "Air",
   "pipe-medium-steam": "Steam",
   "pipe-medium-exhaust": "Exhaust",
+  "pipe-medium-unknown": "Gas",
   "metal-castiron": "Cast Iron",
   "metal-pigiron": "Pig Iron",
   "item-ingot-castiron": "Cast Iron Ingot",

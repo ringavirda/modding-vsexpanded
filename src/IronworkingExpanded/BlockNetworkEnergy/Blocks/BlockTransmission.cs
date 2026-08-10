@@ -25,7 +25,6 @@ public partial class BlockTransmission
     IExBlockDefProvider,
     IFillerInteractionTarget {
   private static readonly string[] Types = ["x2", "x4", "clutch"];
-  private static readonly string[] Sides = ["north", "east", "south", "west"];
 
   #region Code-first definition
 
@@ -80,7 +79,7 @@ public partial class BlockTransmission
           )
       )
       // `type` names the family member so the whole mpenergy family shares one code (see BlockFlywheel);
-      // the gearing is `kind`. Rendered code: mpenergy-transmission-x2-north.
+      // the gearing is `kind`. Rendered code: mpenergy-transmission-x2-n.
       .VariantGroup("type", "transmission")
       .VariantGroup("kind", Types)
       .SideVariant()
@@ -97,9 +96,10 @@ public partial class BlockTransmission
       .SideSolid(false)
       .SideOpaque(false);
 
-    // Per kind × side: the kind picks the shape, the side spins it by the derived angle.
+    // Per kind × side: the kind picks the shape, the side spins it by the derived angle. The sides come
+    // from the scheme SideVariant expands, so a wildcard cannot drift out from under the codes it selects.
     foreach (string type in Types)
-      foreach (string side in Sides)
+      foreach (string side in ExOrientations.Face.Tokens)
         def.ShapeByType(
           $"*-{type}-{side}",
           $"iwex:mpenergy/transmission-{type}",

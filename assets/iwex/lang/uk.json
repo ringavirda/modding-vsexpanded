@@ -17,6 +17,7 @@
   "pipe-medium-air": "Повітря",
   "pipe-medium-steam": "Пара",
   "pipe-medium-exhaust": "Вихлоп",
+  "pipe-medium-unknown": "Газ",
   "item-tapcinder": "Пудлінговий шлак",
   "itemdesc-tapcinder": "Багатий на залізо шлак, який вигрібають з пудлінгової печі. Випалений і мелений, він іде на футерівку наступної плавки.",
   "item-millscale": "Окалина",

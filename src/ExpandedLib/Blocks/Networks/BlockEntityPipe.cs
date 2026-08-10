@@ -327,12 +327,20 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode {
       dsc.AppendLine(
         Lang.Get("iwex:pipe-info-pressure", ExMeasure.Pressure(Pressure))
       );
-    } else if (_clientMaxVolume > 0 && Medium.Length > 0) {
+    } else if (_clientMaxVolume > 0 && (Medium.Length > 0 || _clientFlowRate > 0)) {
+      // A run drained as fast as it is fed holds nothing, and its medium label clears with the last
+      // litre - so gating this line on the label alone hides the throughput of exactly the pipes
+      // working hardest. A furnace tuyere in balance with its blower reads empty while carrying its
+      // whole blast. Name the gas while the run still knows it, and say gas when it does not.
       dsc.AppendLine(
         Lang.Get(
           "iwex:pipe-info-flow",
           ExMeasure.FlowRate(_clientFlowRate),
-          Lang.Get("iwex:pipe-medium-" + Medium.ToLowerInvariant()),
+          Lang.Get(
+            Medium.Length > 0
+              ? "iwex:pipe-medium-" + Medium.ToLowerInvariant()
+              : "iwex:pipe-medium-unknown"
+          ),
           ExMeasure.Temperature(Temperature, "F1")
         )
       );

@@ -606,10 +606,14 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   /// Progress (0..1) through the engine's currently-running cycle animation, read by the
   /// attached sub-machine to phase-lock its own cycle. 0 when not animating client-side.
   /// </summary>
+  /// <remarks>
+  /// Divides by the whole frame count, not the last keyframe's number: the animator's live frame space
+  /// is <c>[0, QuantityFrames)</c>, so a frame past the last keyframe would otherwise read above 1.
+  /// </remarks>
   public float CycleAnimProgress {
     get {
       var (frame, total) = ReadCycleFrame();
-      return total > 1 ? frame / (total - 1) : 0f;
+      return total > 1 ? frame / total : 0f;
     }
   }
 

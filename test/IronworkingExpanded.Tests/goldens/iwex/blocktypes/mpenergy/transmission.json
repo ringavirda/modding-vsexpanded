@@ -154,51 +154,51 @@
     "all": false
   },
   "shapebytype": {
-    "*-x2-north": {
+    "*-x2-n": {
       "base": "iwex:mpenergy/transmission-x2",
       "rotateY": 0
     },
-    "*-x2-east": {
+    "*-x2-e": {
       "base": "iwex:mpenergy/transmission-x2",
       "rotateY": 270
     },
-    "*-x2-south": {
+    "*-x2-s": {
       "base": "iwex:mpenergy/transmission-x2",
       "rotateY": 180
     },
-    "*-x2-west": {
+    "*-x2-w": {
       "base": "iwex:mpenergy/transmission-x2",
       "rotateY": 90
     },
-    "*-x4-north": {
+    "*-x4-n": {
       "base": "iwex:mpenergy/transmission-x4",
       "rotateY": 0
     },
-    "*-x4-east": {
+    "*-x4-e": {
       "base": "iwex:mpenergy/transmission-x4",
       "rotateY": 270
     },
-    "*-x4-south": {
+    "*-x4-s": {
       "base": "iwex:mpenergy/transmission-x4",
       "rotateY": 180
     },
-    "*-x4-west": {
+    "*-x4-w": {
       "base": "iwex:mpenergy/transmission-x4",
       "rotateY": 90
     },
-    "*-clutch-north": {
+    "*-clutch-n": {
       "base": "iwex:mpenergy/transmission-clutch",
       "rotateY": 0
     },
-    "*-clutch-east": {
+    "*-clutch-e": {
       "base": "iwex:mpenergy/transmission-clutch",
       "rotateY": 270
     },
-    "*-clutch-south": {
+    "*-clutch-s": {
       "base": "iwex:mpenergy/transmission-clutch",
       "rotateY": 180
     },
-    "*-clutch-west": {
+    "*-clutch-w": {
       "base": "iwex:mpenergy/transmission-clutch",
       "rotateY": 90
     }

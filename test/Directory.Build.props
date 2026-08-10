@@ -10,9 +10,16 @@
   <Import Project="$(MSBuildThisFileDirectory)..\src\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Run the test assemblies in parallel across all cores (xunit.runner.json adds within-assembly
-         collection parallelism). Applied automatically by `dotnet test` / the IDE runner. The
-         scripts/run-tests.* helper runs the per-version suites concurrently on top of this. -->
+    <!-- Run the test assemblies in parallel across all cores. Applied automatically by
+         `dotnet test` / the IDE runner. The scripts/exmod helper runs the per-version suites
+         concurrently on top of this.
+
+         Within an assembly, xunit.runner.json turns collection parallelism OFF. Each mod reads its
+         config live from a process-global register (IwexValues, SmexValues, LpexValues), and around
+         twenty tests retune one mid-run through `Values.Edit`, so a class exercising production code
+         can observe another class's temporary values. Such a failure appears only under parallel
+         load and passes on every standalone re-run. Assembly-level parallelism is where the
+         wall-clock comes from anyway: a whole suite is a few hundred milliseconds. -->
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)parallel.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 

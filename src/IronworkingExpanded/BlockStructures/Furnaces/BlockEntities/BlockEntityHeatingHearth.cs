@@ -162,7 +162,7 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     }
     dsc.AppendLine(
       Lang.Get(
-        "iwex:furnace-heatinghearth-loaded",
+        "iwex:heatinghearth-loaded",
         LoadedRows,
         HeatingHearthLayout.Rows
       )

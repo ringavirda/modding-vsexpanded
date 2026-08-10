@@ -13,6 +13,7 @@ conventions live outside it: a page here is never also a task tracker.
 | [plans/NEXT.md](../plans/NEXT.md) | what is being built right now and what comes next |
 | [plans/iwex-bringup.md](../plans/iwex-bringup.md) | the art queue and the playtest gates for bringing iwex online |
 | [workbench/layouts.md](../workbench/layouts.md) | multiblock layout scratchpad. Not a source of truth - the goldens are |
+| [vanilla/](../vanilla/README.md) | the vendored Vintage Story source: where its types live, the practices it follows, the traps it hides. What the game does, cited to a line |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | code style, comment conventions, formatting |
 
 ## Read first

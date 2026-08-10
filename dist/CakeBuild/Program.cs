@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using Cake.Common;
 using Cake.Common.IO;
 using Cake.Common.Tools.DotNet;
@@ -193,14 +194,24 @@ public sealed class PackageTask : FrostingTask<BuildContext>
           );
 
         // Authoritative modinfo: the source declares the current game version, so point the game
-        // dependency at this target's version (no-op for the current one).
-        string modinfo = File.ReadAllText(
-            $"../../src/{project.Folder}/modinfo.json"
-          )
-          .Replace(
-            $"\"game\": \"{BuildContext.SourceGameVersion}\"",
-            $"\"game\": \"{target.GameVersion}\""
+        // dependency at this target's version (no-op for the current one). A source that declares any
+        // other version leaves every legacy zip claiming the wrong floor, and a string replace that
+        // matches nothing reports success - so the declaration is checked rather than assumed.
+        string source = File.ReadAllText(
+          $"../../src/{project.Folder}/modinfo.json"
+        );
+        string declared = $"\"game\": \"{BuildContext.SourceGameVersion}\"";
+        if (!source.Contains(declared))
+          throw new InvalidOperationException(
+            $"src/{project.Folder}/modinfo.json must declare {declared} - the packaged game "
+              + $"dependency is rewritten from it per target. Found: "
+              + $"{GameDependencyOf(source)}."
           );
+
+        string modinfo = source.Replace(
+          declared,
+          $"\"game\": \"{target.GameVersion}\""
+        );
         File.WriteAllText($"{stageDir}/modinfo.json", modinfo);
 
         string versionSuffix = target.IsCurrent ? "" : $"_{target.GameVersion}";
@@ -210,6 +221,12 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         );
       }
     }
+  }
+
+  /// <summary>The <c>game</c> dependency a modinfo declares, for the mismatch message.</summary>
+  private static string GameDependencyOf(string modinfo) {
+    Match m = Regex.Match(modinfo, "\"game\"\\s*:\\s*\"([^\"]*)\"");
+    return m.Success ? m.Groups[1].Value : "(none)";
   }
 }
 

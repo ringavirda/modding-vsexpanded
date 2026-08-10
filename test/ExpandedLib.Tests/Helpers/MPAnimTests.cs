@@ -96,13 +96,49 @@ public class MPAnimTests {
 
   #region Absolute angle mapping
 
+  private const int Frames = 60;
+
   [Fact]
-  public void FrameFromAngle_maps_the_axle_angle_onto_the_keyframe_span() {
-    // 60 frames -> span 59 (keyframes 0..59); angle 0 and a full turn both land on frame 0.
-    Assert.Equal(0f, MPAnim.FrameFromAngle(0f, 60), 3);
-    Assert.Equal(0f, MPAnim.FrameFromAngle(TwoPi, 60), 3); // wraps seamlessly
-    Assert.Equal(29.5f, MPAnim.FrameFromAngle(GameMath.PI, 60), 3); // half turn = half the span
-    Assert.Equal(59f / 4f, MPAnim.FrameFromAngle(HalfPi, 60), 3); // quarter turn
+  public void A_full_turn_maps_onto_the_whole_frame_space() {
+    // The span is the full frame count, not the last keyframe's number: the animator's live frame
+    // space is [0, QuantityFrames), and the stretch from the last keyframe back to the first is an
+    // ordinary interpolation segment it renders like any other. Spanning total-1 maps a revolution
+    // onto everything BUT that segment, leaving it reachable only by the clip's own advance.
+    Assert.Equal(0f, MPAnim.FrameFromAngle(0f, Frames), 4);
+    Assert.Equal(Frames / 4f, MPAnim.FrameFromAngle(HalfPi, Frames), 4);
+    Assert.Equal(Frames / 2f, MPAnim.FrameFromAngle(GameMath.PI, Frames), 4);
+  }
+
+  [Fact]
+  public void The_last_frame_is_reachable_so_the_wrap_segment_is_never_skipped() {
+    float justShy = MPAnim.FrameFromAngle(TwoPi - 0.001f, Frames);
+
+    Assert.InRange(justShy, Frames - 1f, Frames);
+  }
+
+  [Fact]
+  public void A_whole_revolution_returns_to_the_first_frame() {
+    Assert.Equal(
+      MPAnim.FrameFromAngle(0f, Frames),
+      MPAnim.FrameFromAngle(TwoPi, Frames),
+      4
+    );
+    Assert.Equal(
+      MPAnim.FrameFromAngle(0.4f, Frames),
+      MPAnim.FrameFromAngle(0.4f + TwoPi, Frames),
+      4
+    );
+  }
+
+  [Fact]
+  public void A_reversed_axle_runs_the_cycle_backwards() {
+    // Direction comes from the angle itself - the caller passes the axle's render angle, which
+    // decreases when the shaft turns the other way, so there is no baseline to reset and no drift.
+    foreach (float angle in new[] { 0.3f, 1.7f, 3.9f, 5.5f }) {
+      float forward = MPAnim.FrameFromAngle(angle, Frames);
+      float reversed = MPAnim.FrameFromAngle(-angle, Frames);
+      Assert.Equal(Frames - forward, reversed, 3);
+    }
   }
 
   [Fact]
@@ -112,10 +148,10 @@ public class MPAnimTests {
   }
 
   [Fact]
-  public void FrameFromAngle_stays_within_the_span_for_any_angle() {
-    for (int i = 0; i < 200; i++) {
-      float angle = i * 0.123f;
-      Assert.InRange(MPAnim.FrameFromAngle(angle, 60), 0f, 59f);
+  public void FrameFromAngle_stays_within_the_frame_space_for_any_angle() {
+    for (int i = -720; i <= 720; i += 7) {
+      float frame = MPAnim.FrameFromAngle(i * GameMath.DEG2RAD, Frames);
+      Assert.InRange(frame, 0f, Frames);
     }
   }
 

@@ -12377,17 +12377,20 @@
       "ShaftCenter1": {
        "rotationX": 0.0,
        "rotationY": 0.0,
-       "rotationZ": 360.0
+       "rotationZ": 348.0,
+       "rotShortestDistanceZ": true
       },
       "ShaftSide": {
        "rotationX": 0.0,
        "rotationY": 0.0,
-       "rotationZ": -720.0
+       "rotationZ": -696.0,
+       "rotShortestDistanceZ": true
       },
       "ShaftCenter2": {
        "rotationX": 0.0,
        "rotationY": 0.0,
-       "rotationZ": 1440.0
+       "rotationZ": 1392.0,
+       "rotShortestDistanceZ": true
       }
      }
     }

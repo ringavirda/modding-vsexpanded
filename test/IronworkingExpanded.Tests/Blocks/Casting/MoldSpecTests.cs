@@ -98,9 +98,12 @@ public class MoldSpecTests {
   [Fact]
   public void A_missing_output_is_rejected() {
     string noOut = Valid.Replace(
-      "\"output\": { \"type\": \"block\", \"code\": \"iwex:casting-mold-ingot\" },\n",
+      "\"output\": { \"type\": \"block\", \"code\": \"iwex:casting-mold-ingot\" },",
       ""
     );
+    // The cut has to land, or the spec stays valid and the rejection below passes for the wrong
+    // reason. Matching the line terminator too would tie the cut to the checkout's line endings.
+    Assert.NotEqual(Valid, noOut);
     Assert.False(MoldSpec.TryParse(Obj(noOut), out _, out string? error));
     Assert.Contains("output", error);
   }

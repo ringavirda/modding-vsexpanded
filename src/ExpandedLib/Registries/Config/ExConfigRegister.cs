@@ -72,7 +72,10 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
     config.ConfigVersion = current;
 
     Config = config;
-    Save();
+    // Server only: in singleplayer both sides load this register in the same process against the
+    // same file, and two writers race over it. The server's copy is the authority anyway.
+    if (api.Side == EnumAppSide.Server)
+      Save();
   }
 
   /// <summary>

@@ -38,10 +38,14 @@ public class ConfigMigrationTests {
   /// and whose mod version is <paramref name="runningVersion"/>. Captures whatever is saved back.</summary>
   private static (ICoreAPI api, System.Func<FakeConfig?> saved) FakeApi(
     FakeConfig? stored,
-    string runningVersion
+    string runningVersion,
+    EnumAppSide side = EnumAppSide.Server
   ) {
     var api = Substitute.For<ICoreAPI>();
     api.Logger.Returns(Substitute.For<ILogger>());
+    // Only the server writes the file back, so an unstubbed Side (default 0, neither side) would
+    // silently turn every write-back assertion below into a check on a no-op.
+    api.Side.Returns(side);
 
     // The store reads and writes its "fakemod" section of a shared mod-sectioned document.
     JObject? doc =
@@ -216,5 +220,23 @@ public class ConfigMigrationTests {
 
     Assert.Equal(100, store.Config.ValueA);
     Assert.Equal("1.0.0", store.Config.ConfigVersion);
+  }
+
+  [Fact]
+  public void A_client_side_load_reads_the_config_but_never_writes_it() {
+    // In singleplayer both sides load this register in the same process against the same file. Two
+    // writers race over it, so only the server writes.
+    var stored = new FakeConfig { ConfigVersion = "1.0.0", ValueA = 42 };
+    var (api, saved) = FakeApi(
+      stored,
+      runningVersion: "1.0.0",
+      side: EnumAppSide.Client
+    );
+    var store = Store();
+
+    store.Load(api);
+
+    Assert.Equal(42, store.Config.ValueA);
+    Assert.Null(saved());
   }
 }

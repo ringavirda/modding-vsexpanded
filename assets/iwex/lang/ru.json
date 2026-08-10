@@ -17,6 +17,7 @@
   "pipe-medium-air": "воздуха",
   "pipe-medium-steam": "пара",
   "pipe-medium-exhaust": "выхлопа",
+  "pipe-medium-unknown": "газа",
   "item-tapcinder": "Пудлинговый шлак",
   "itemdesc-tapcinder": "Богатый железом шлак, выгребаемый из пудлинговой печи. Обожжённый и молотый, он идёт на футеровку следующей плавки.",
   "item-millscale": "Окалина",

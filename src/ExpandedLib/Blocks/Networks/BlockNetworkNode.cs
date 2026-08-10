@@ -242,7 +242,9 @@ public abstract class BlockNetworkNode
       && currentOrientation != null
     ) {
       requiredChars.RemoveAll(c => {
-        BlockFacing? facing = BlockFacing.FromCode(c.ToString());
+        // Orientation tokens are single letters; BlockFacing.FromCode only knows the full words and
+        // returns null for every one of them, which would make this whole relaxation a no-op.
+        BlockFacing? facing = BlockNetworkModSystem.SideToFace(c.ToString());
         if (facing == null)
           return false;
         BlockPos nPos = pos.AddCopy(facing);

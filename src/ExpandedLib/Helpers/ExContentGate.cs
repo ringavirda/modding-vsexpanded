@@ -24,7 +24,10 @@ public static class ExContentGate {
     foreach (var obj in AllCollectibles(api)) {
       if (obj?.Code == null || !match(obj))
         continue;
-      obj.CreativeInventoryTabs = null;
+      // Empty, not null: vanilla reads the tab list without a null guard in places
+      // (BehaviorAttachable.cs:646 does `CreativeInventoryTabs.Length == 0`), so nulling it throws
+      // on anything that enumerates collectibles. Length 0 hides the item just as well.
+      obj.CreativeInventoryTabs = [];
       obj.CreativeInventoryStacks = null;
       hidden++;
     }

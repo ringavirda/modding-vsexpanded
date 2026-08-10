@@ -349,9 +349,18 @@ a one-off typo.
 Engine → sub-machine (pump, blower). `ApplyPose` starts the engine's clip and, from the same call,
 `SubmachineBE?.SyncAnimation(run, speed)` (`BlockEntityEngine.cs:638`) so the two begin in the same client
 frame. The sub-machine's `ApplyAnim` then calls `PhaseLockToEngine`, which snaps
-`cycle.CurrentFrame = engine.CycleAnimProgress × (frames − 1)`
+`cycle.CurrentFrame = engine.CycleAnimProgress × frames`
 (`BlockEntityEngineSubmachine.cs:266-278`, `BlockEntityEngine.cs:646-653`). A 500 ms client poll
 (`:166-179`) is the backstop for a sub-machine that initialised after the engine.
+
+Both sides of that product span the **whole** frame count, never the last keyframe's number. The
+animator's live frame space is `[0, QuantityFrames)`, so the stretch from the last keyframe back to
+the first is an ordinary interpolation segment it renders like any other — one frame wide, carrying
+the last `360/QuantityFrames` degrees. Spanning `frames − 1` maps a revolution onto everything but
+that segment, which the clip's own advance then walks into out of step with the axle. The clips
+driven this way are therefore authored as vanilla authors them (`gencore.json`, `genmixer.json`):
+last keyframe at `360 × (frames − 1) / frames` with `rotShortestDistance` set, never a duplicate of
+frame 0. `LoopingAnimationTests` enforces that on every shipped shape.
 
 Sub-machine → engine (MP generator only). Inverted, because the generator's motion is the vanilla
 axle. Every render frame it pushes the axle's absolute angle:

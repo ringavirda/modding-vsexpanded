@@ -22393,12 +22393,14 @@
       "AxleShaft": {
        "rotationX": 0.0,
        "rotationY": 0.0,
-       "rotationZ": 360.0
+       "rotationZ": 348.0,
+       "rotShortestDistanceZ": true
       },
       "Mass": {
        "rotationX": 0.0,
        "rotationY": 0.0,
-       "rotationZ": 360.0
+       "rotationZ": 348.0,
+       "rotShortestDistanceZ": true
       }
      }
     }

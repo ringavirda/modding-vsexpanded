@@ -170,7 +170,7 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
     }
     dsc.AppendLine(
       Lang.Get(
-        "iwex:furnace-puddlinghearth-charge",
+        "iwex:puddlinghearth-charge",
         PigCount,
         PuddlingHearthLayout.PigCapacity
       )
@@ -180,9 +180,7 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       if (!_fettled[(int)row])
         unfettled++;
     if (unfettled > 0)
-      dsc.AppendLine(
-        Lang.Get("iwex:furnace-puddlinghearth-needsfettle", unfettled)
-      );
+      dsc.AppendLine(Lang.Get("iwex:puddlinghearth-needsfettle", unfettled));
     if (CentreLoaded && !IsFullyCharged)
       dsc.AppendLine(Lang.Get("iwex:hearth-centreblocks"));
   }

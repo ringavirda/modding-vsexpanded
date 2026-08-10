@@ -1,4 +1,4 @@
-ExpandedLib.Tests = 827
+ExpandedLib.Tests = 1450
 IronworkingExpanded.Tests = 1550
 LowPressureExpanded.Tests = 176
 HighPressureExpanded.Tests = 50

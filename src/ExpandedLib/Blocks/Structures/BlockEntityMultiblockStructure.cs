@@ -52,9 +52,15 @@ public abstract class BlockEntityMultiblockStructure
   public override void Initialize(ICoreAPI api) {
     // Base registers the production tick (only when already complete, via AutoStartProduction).
     base.Initialize(api);
-    // The monitor tick runs unconditionally to detect both completion and breakage.
-    if (api.Side == EnumAppSide.Server)
+    if (api.Side == EnumAppSide.Server) {
+      // Prime the angle before anything ticks. _currentAngle starts at -1, which ExOrientation
+      // normalises to 359 and then resolves through the unrotated default - so a structure that
+      // loads already complete would run its first production ticks reading every structure-local
+      // offset in the block's north frame, finding its peripherals at mirrored positions.
+      UpdateStructureRotation();
+      // The monitor tick runs unconditionally to detect both completion and breakage.
       StartMonitorTick();
+    }
   }
 
   /// <summary>Starts both the completion monitor and the production tick.</summary>
