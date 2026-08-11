@@ -35,8 +35,8 @@ public abstract class BlockNetwork(BlockNetworkModSystem system) {
 
   /// <summary>
   /// Injects <paramref name="state"/> into this network. Called by
-  /// <see cref="BlockEntityNetworkNode"/> during world load to restore persisted state before the
-  /// first tick. Override to cast to the concrete state type.
+  /// <see cref="BEBehaviorNetworkMember"/> during world load to restore the state its block entity
+  /// persisted, before the first tick. Override to cast to the concrete state type.
   /// </summary>
   public virtual void RestoreState(object? state) {
     State = state;

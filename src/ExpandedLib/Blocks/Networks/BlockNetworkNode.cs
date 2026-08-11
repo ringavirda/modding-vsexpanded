@@ -164,9 +164,9 @@ public abstract class BlockNetworkNode
     }
 
     // Neighbour orientation updates run via OnNeighbourBlockChange (the engine calls it on
-    // adjacent blocks after this returns). Node registration runs in
-    // BlockEntityNetworkNode.Initialize (inside DoPlaceBlock); calling AddNode here too would
-    // trigger a redundant O(N) BroadcastUpdate, freezing the server for large networks.
+    // adjacent blocks after this returns). Node registration runs when the block entity's network
+    // membership initialises (inside DoPlaceBlock); calling AddNode here too would trigger a
+    // redundant O(N) BroadcastUpdate, freezing the server for large networks.
   }
 
   /// <summary>
@@ -725,10 +725,12 @@ public abstract class BlockNetworkNode
     Orientation != null && Orientation.Contains(face.Code[0]);
 
   /// <summary>
-  /// Position-aware connector test, implementing the <see cref="INetworkConnector"/> default interface
-  /// method. Defaults to the position-less answer; a node whose connectors depend on runtime
-  /// block-entity state, such as the bevel gear's per-face gears, overrides it to read the cell.
-  /// <c>BlockNetworkModSystem.GetConnectedNeighbors</c> calls this, so an override branches the run.
+  /// Position-aware connector test, answering <see cref="INetworkMember.HasConnectorAt"/> ahead of
+  /// that interface's own default. Defaults to the position-less answer; a node whose connectors
+  /// depend on runtime block-entity state, such as the bevel gear's per-face gears, overrides it to
+  /// read the cell. <c>BlockNetworkModSystem.GetConnectedNeighbors</c> calls this, so an override
+  /// branches the run. Declaring it here as a class virtual is what makes those overrides reachable
+  /// through the interface; see <see cref="INetworkMember.HasConnectorAt"/>.
   /// </summary>
   public virtual bool HasConnectorAt(
     IBlockAccessor world,

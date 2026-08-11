@@ -22,6 +22,12 @@ public interface INetworkNode {
   bool HasConnectorAt(BlockFacing face);
 
   /// <summary>
+  /// Whether this node currently severs the network at its position (e.g. a closed valve).
+  /// Default <c>false</c>; override to break connectivity dynamically.
+  /// </summary>
+  bool IsConnectionBroken() => false;
+
+  /// <summary>
   /// Called by the network tick with the connector faces that have no valid neighbour (open ends).
   /// Implementations may no-op.
   /// </summary>

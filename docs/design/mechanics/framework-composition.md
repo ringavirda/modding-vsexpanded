@@ -117,6 +117,74 @@ accessor keyed on network type and face rather than reuse vanilla's.
 This is the one place the framework deliberately goes past vanilla, which never needed it: a vanilla
 block entity carries at most one `BEBehaviorMPBase`.
 
+### A per-cell answer must be a plain public class member
+
+`INetworkMember` is answered by two very different kinds of implementor, so two separate C# dispatch
+rules decide whether an override is reached at all. Both fail the same way: the wrong shape compiles,
+and the interface's default answers instead of the code that was written.
+
+**A block declares the per-cell pair as ordinary public members.** `INetworkConnector` supplies
+`INetworkMember.HasConnectorAt` and `INetworkMember.IsConnectionBroken` as *explicit* default
+implementations, which is the only shape that compiles: redeclaring them non-explicitly hides the
+base member rather than implementing it (`CS0108`, then `CS0535` on the eight implementors that
+answer only `HasConnectorAt(face)`). Interface mapping searches the class hierarchy before falling
+through to a default, so `BlockStructureFiller`'s plain public `NetworkTypeAt`/`HasConnectorAt` and
+`BlockCastIronBevel`'s `override` of `BlockNetworkNode`'s virtual both outrank it. An *explicit*
+`bool INetworkMember.HasConnectorAt(...)` on one of those classes would not, because nothing can
+override an explicit implementation, and the per-cell answer would become unreachable.
+
+**A behaviour subclass must override a base virtual.** Interface mapping is fixed at the class that
+lists the interface. `BEBehaviorNetworkMember` lists `INetworkMember`, so a subclass declaring a
+matching public member without re-listing the interface never enters the map, and the base's answer
+keeps winning. That is why `BEBehaviorNetworkMember` declares every member a subclass may answer
+differently — `NetworkTypeAt`, `HasConnectorAt`, `IsConnectionBroken`, `IsNetworkEndPoint`,
+`AcceptsNeighbour` — as a `public virtual`, instead of inheriting any of them as a default.
+`NetworkType` is not among them: it is set once per instance rather than overridden.
+
+`NetworkMembershipTests` guards both shapes against the real production classes.
+
+### Both arms of the resolver ask the same question
+
+`NetworkMembership.Resolve` finds a membership behaviour first and the block second, and both arms
+compare `NetworkTypeAt(world, pos)`, never the declared `NetworkType`. Keying the two on different
+properties would make a membership whose type varies by cell, which is exactly what a filler cell is,
+unfindable at a position where the equivalent block is found. `MemberOf(be, networkType)` remains the
+position-less accessor for callers holding only a block entity, and matches the declared type.
+
+### A hosted membership registers, and the engine fixes when
+
+`BlockEntityNetworkNode` keeps its whole surface and hosts a private nested `BEBehaviorNetworkMember`
+that forwards to it; only graph registration moved. A nested type reaches its enclosing type's private
+and protected members, so no member changed visibility and no concrete block entity was touched.
+
+Persistence deliberately did **not** move. Vanilla fans behaviour persistence out over the block
+entity's **own flat tree**, with no subtree (`vsapi/Common/Collectible/Block/BlockEntity.cs:320-323`,
+`:339-342`), so if a block entity and its behaviour both wrote network state they would write the same
+keys and the second writer would win. Exactly one thing may write them, and it stays the block entity —
+which is also what keeps `BlockEntityPipe`'s conditional keys, and its rewrite of `temp`/`medium`/
+`pressure` *after* `base.ToTreeAttributes`, working unchanged. Nothing on disk changes.
+
+Three orderings the engine dictates, each of which silently produces a wrong answer if ignored:
+
+- **The membership is added in the constructor.** `BlockEntity.FromTreeAttributes` and `.Initialize`
+  both fan out over `Behaviors`; a membership added any later misses whichever has already run.
+- **It reads its network type at registration, never earlier.** `FromTreeAttributes` reaches the
+  behaviours *before* it assigns the block entity's own `NetworkType`, and a derived field initializer
+  runs before the base constructor body — so both the constructor and the tree fan-out are too early.
+  `BlockEntityFluidIntake` is the case that proves it: its `NetworkType` is a plain auto-property the
+  save tree fills in.
+- **It reads the state to restore before `AddNode`, not after.** `AddNode` broadcasts, the broadcast
+  reaches `OnNetworkUpdate`, and that clears the saved state it is about to restore.
+
+`properties` is null on the programmatic path — `BlockEntityBehavior.Initialize` sets only `Api`, and
+only `CreateBehaviors` assigns `properties` (`BlockEntity.cs:117`) — so a membership added in code must
+guard every read of it, while a JSON declaration still names its network type through `networkType`.
+
+The removal-only teardown opt-out moved with the code that owns it. Deregistering on chunk unload
+would fracture a live run every time a player walked away, and the guard in `TeardownSymmetryTests`
+reads a file carrying the marker as exempt — so a marker left behind on a class that no longer tears
+anything down would quietly exempt whatever lands in that file next.
+
 ### What stays a base class
 
 Little. Once membership, process and structure-completion are behaviours, a shared block-entity root

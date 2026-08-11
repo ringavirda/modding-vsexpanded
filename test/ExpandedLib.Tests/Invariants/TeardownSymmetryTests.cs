@@ -7,11 +7,14 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Repo-wide block entity teardown rule: a block entity that cleans up in <c>OnBlockRemoved</c> must
-/// also clean up in <c>OnBlockUnloaded</c>, or state in the file why it does not. Removal means the
-/// block is gone for good; unload means the chunk left memory while the block stays placed, so the two
-/// paths share the client-side releases (listeners, renderers, dialogs, highlights) but not the
-/// permanent ones (dropping contents, deregistering a network node, putting a fire out).
+/// Repo-wide block entity teardown rule: whatever cleans up in <c>OnBlockRemoved</c> must also clean
+/// up in <c>OnBlockUnloaded</c>, or state in the file why it does not. Removal means the block is gone
+/// for good; unload means the chunk left memory while the block stays placed, so the two paths share
+/// the client-side releases (listeners, renderers, dialogs, highlights) but not the permanent ones
+/// (dropping contents, deregistering a network node, putting a fire out).
+/// <para>
+/// Behaviours are covered by the same signatures, because a block entity fans both calls out to them.
+/// </para>
 /// <para>
 /// Checked per file rather than per class tree: a subclass's own teardown is its own, and a corrected
 /// base class does not run it. A file whose asymmetry is deliberate opts out with <c>removal-only
@@ -103,6 +106,36 @@ public class TeardownSymmetryTests {
         + "client-side share of the teardown, or mark the file with \""
         + OptOut
         + " <reason>\":\n    "
+        + string.Join("\n    ", offenders)
+    );
+  }
+
+  [Fact]
+  public void A_removal_only_opt_out_sits_where_the_removal_teardown_does() {
+    // A marker outlives the method it explains when the teardown moves to a behaviour or a subclass,
+    // and the rule above reads any file carrying one as exempt - so a stale marker quietly exempts
+    // whatever offender lands in that file next.
+    var offenders = new List<string>();
+    int marked = 0;
+    foreach (string f in SourceFiles("src")) {
+      string text = File.ReadAllText(f);
+      if (!text.Contains(OptOut, StringComparison.Ordinal))
+        continue;
+      marked++;
+      if (!RemovedOverride.IsMatch(text))
+        offenders.Add(Rel(f));
+    }
+
+    Assert.True(
+      marked > 0,
+      "Found no opt-out markers at all - the source walk is wrong."
+    );
+    Assert.True(
+      offenders.Count == 0,
+      "These carry the \""
+        + OptOut
+        + "\" marker but override no OnBlockRemoved(), so it explains nothing and exempts the "
+        + "file from the rule above. Move it to whatever does the removal-only teardown now:\n    "
         + string.Join("\n    ", offenders)
     );
   }

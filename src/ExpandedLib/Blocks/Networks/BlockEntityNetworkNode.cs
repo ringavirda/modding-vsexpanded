@@ -9,47 +9,38 @@ namespace ExpandedLib.Blocks.Networks;
 
 /// <summary>
 /// Base block entity for any block that is a node in a <see cref="BlockNetwork"/> (gas pipes, molten
-/// canals). Registers and unregisters the node with the <see cref="BlockNetworkModSystem"/>, persists
-/// orientation and network state, and forwards network updates to the concrete block entity.
-/// Registration and removal are server-side only.
+/// canals). Graph membership is held by a <see cref="BEBehaviorNetworkMember"/> this class hosts, which
+/// registers and unregisters the node server-side; the block entity itself persists orientation and
+/// network state and forwards network updates to the concrete block entity.
 /// </summary>
 public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
-  /// <summary>The network manager this node is registered with, resolved on <see cref="Initialize"/>.</summary>
-  public BlockNetworkModSystem? NetworkSystem { get; protected set; }
+  private readonly HostMembership _membership;
 
-  public override void Initialize(ICoreAPI api) {
-    // Capture persisted state before base.Initialize() triggers AddNode, which may broadcast
-    // null state and clear _savedNetworkState via OnNetworkUpdate.
-    object? pendingRestore = _savedNetworkState;
+  protected BlockEntityNetworkNode() {
+    // Added here because BlockEntity fans both FromTreeAttributes and Initialize out over Behaviors,
+    // and a membership added any later misses whichever of the two has already run.
+    _membership = new HostMembership(this);
+    Behaviors.Add(_membership);
+  }
 
-    base.Initialize(api);
-    NetworkSystem = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-
-    if (api.Side == EnumAppSide.Server) {
-      if (NetworkSystem.GetNetworkAt(Pos) == null)
-        NetworkSystem.AddNode(api.World.BlockAccessor, Pos, NetworkType);
-
-      if (
-        pendingRestore != null
-        && NetworkSystem.GetNetworkAt(Pos) is BlockNetwork network
-      ) {
-        network.RestoreState(pendingRestore);
-        network.BroadcastUpdate(api.World.BlockAccessor);
-      }
-    }
+  /// <summary>The network manager this node is registered with, resolved when the block entity
+  /// initialises. Held by the membership, which is what registers with it.</summary>
+  public BlockNetworkModSystem? NetworkSystem {
+    get => _membership.NetworkSystem;
+    protected set => _membership.NetworkSystem = value;
   }
 
   /// <summary>
-  /// Drops this position out of the graph, which splits or shrinks the network it belonged to.
-  /// removal-only teardown: a chunk unload leaves the block placed, so deregistering there would
-  /// fracture a live network every time a player walked away from it. The vanilla unload path already
-  /// drops this instance's tick listeners, and <see cref="Initialize"/> re-adopts the position when the
-  /// chunk comes back.
+  /// This node's graph membership. It reads the network type and the saved state off the block entity
+  /// at registration time rather than copying either up front, because <see cref="FromTreeAttributes"/>
+  /// reaches the behaviours before it assigns them.
   /// </summary>
-  public override void OnBlockRemoved() {
-    base.OnBlockRemoved();
-    if (Api?.Side == EnumAppSide.Server)
-      NetworkSystem?.RemoveNode(Api.World.BlockAccessor, Pos);
+  private sealed class HostMembership(BlockEntityNetworkNode owner)
+    : BEBehaviorNetworkMember(owner) {
+    protected override object? SavedNetworkState => owner._savedNetworkState;
+
+    protected override void OnBeforeRegister() =>
+      NetworkType = owner.NetworkType;
   }
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
