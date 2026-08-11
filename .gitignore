@@ -73,16 +73,3 @@ coverage*.info
 
 # Release zips built by dist/CakeBuild.
 /dist/Releases/
-
-# Local planning and temporary state files.
-/docs/plans/
-
-# Scratch state for subagent-driven execution: ledgers, task briefs, review packages.
-/.superpowers/
-
-# Local specific scripts.
-/scripts/tools/
-
-# Reference images and broken shapes.
-/assets/editable/refs/
-/assets/editable/remake/
