@@ -36,8 +36,11 @@ public static class NetworkMembership {
   /// <summary>
   /// How the cell at <paramref name="pos"/> participates in <paramref name="networkType"/>, or
   /// <c>null</c> when it does not. A membership behaviour answers first; otherwise the block does,
-  /// which is what keeps a node in the graph while its chunk is unloaded and its block entity gone.
+  /// which keeps a cell walkable whenever its block entity is absent but the cell itself readable.
   /// </summary>
+  /// <remarks>An unloaded chunk is not that case: it takes the block away too, so both arms answer
+  /// nothing and the cell reads as empty space. That gap is closed at the graph level instead - see
+  /// <see cref="BlockNetworkModSystem"/>'s connectivity review.</remarks>
   public static INetworkMember? Resolve(
     IBlockAccessor world,
     BlockPos pos,
@@ -55,6 +58,24 @@ public static class NetworkMembership {
       ? connector
       : null;
   }
+
+  /// <summary>
+  /// Whether the cell at <paramref name="pos"/> exposes a network connector on
+  /// <paramref name="face"/>, from whichever side answers for it - any membership on its block entity,
+  /// or the block. Network-type agnostic, for a caller after the network across a face rather than one
+  /// network in particular; <see cref="Resolve"/> is the form the graph walk asks.
+  /// </summary>
+  public static bool CouplesAt(
+    IBlockAccessor world,
+    BlockPos pos,
+    BlockFacing face
+  ) =>
+    MembersOf(world.GetBlockEntity(pos))
+      .Any(m => m.HasConnectorAt(world, pos, face))
+    || (
+      world.GetBlock(pos) is INetworkConnector connector
+      && connector.HasConnectorAt(world, pos, face)
+    );
 
   /// <summary>
   /// Whether <paramref name="member"/> reports <paramref name="networkType"/> at

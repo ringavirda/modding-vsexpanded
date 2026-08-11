@@ -1,6 +1,6 @@
 # Multiblock & Filler Structures
 **Status** live   **Mod** exlib (the whole system; every mod authors layouts against it)
-**Owns** the ASCII layout DSL (`Origin` / `Legend` / `Layer` / `Slice` / `Face`, the `'.'`/`' '`/`'O'` glyph rules, `@(a|b)` alternation), the origin-is-the-negation-of-the-core rule, oriented-part rotation and the trapdoor caveat, cell roles (what a cell is for, attached to glyphs), the invisible-filler footprint system (per-cell collision, interaction/break/info rerouting, `allowAttach`, partial collision boxes), behaviour-capable filler cells, the completion/projection machinery, and the invariant that a filler can never be a graph node.
+**Owns** the ASCII layout DSL (`Origin` / `Legend` / `Layer` / `Slice` / `Face`, the `'.'`/`' '`/`'O'` glyph rules, `@(a|b)` alternation), the origin-is-the-negation-of-the-core rule, oriented-part rotation and the trapdoor caveat, cell roles (what a cell is for, attached to glyphs), the invisible-filler footprint system (per-cell collision, interaction/break/info rerouting, `allowAttach`, partial collision boxes), behaviour-capable filler cells, the completion/projection machinery, and the rule that a filler cell is a graph node exactly when it declares a membership.
 **Depends on** [mp-energy](mp-energy.md) (the `BEBehaviorMPFillerPort` a hosted cell carries, and the rolling mill's axle cells - the canonical case of the graph-node rule) · [conventions](../conventions.md) (block / megablock / multiblock vocabulary) · [layouts-workbench.md](../../workbench/layouts.md) (the layout scratchpad)
 
 ---
@@ -80,7 +80,7 @@ A-frame), which neither of the other two can draw in-plane (`:93-98`).
 - **`Layer(y, grid)`** - one Y level; layers may be declared in any Y order.
 - **`@(a|b)` alternation** - not an exlib feature. It is vanilla `WildcardUtil` regex-alternation syntax
   passed through untouched; matching happens in `WildcardUtil.Match`
-  (`Blocks/Structures/BlockEntityMultiblockStructure.cs:444`). Used for `@(air|coalpile)` fuel cells
+  (`Blocks/Structures/BlockEntityMultiblockStructure.cs:419`). Used for `@(air|coalpile)` fuel cells
   everywhere, and for the smokestack's brick-family alternation
   (`BlockSmokeStackIntake.cs:53`).
 
@@ -150,7 +150,7 @@ furnace still have visible gaps in its walls (`Blocks/Structures/MultiblockFacin
    (`ExOrientation.cs:162-164`, `IsHorizontalSideWord` at `:182-183`).
 
 The angle used is `_structureInitAngle` = `_currentAngle + initAngleOffset`, i.e. the angle actually handed
-to `InitForUse` - not `_currentAngle` (`BlockEntityMultiblockStructure.cs:30-35`, `:134`, `:143`, `:465`). The
+to `InitForUse` - not `_currentAngle` (`BlockEntityMultiblockStructure.cs:36-40`, `:146`, `:161`, `:439`). The
 bessemer control's `+180` frame is the case where using `_currentAngle` would face every part backwards.
 
 A layout that declares nothing oriented emits no attribute and gets `MultiblockFacings.None` (`:29-30`);
@@ -207,7 +207,7 @@ says what the layout knows the cell is for, independent of what fills it. Both s
 | **Arity** | `[SingleCell]` on the enum member (`CellRole.cs:113`), read through `CellRoles.IsSingleCell` (`:135`) |
 | **Emission** | sibling attribute `attributes.multiblockRoles` (`ExBlockDef.cs:806-808`), role name → authored offsets |
 | **Reading** | `MultiblockCellRoles.FromAttributes` (`MultiblockCellRoles.cs:71`), `CellsOf(role)` (`:51`) |
-| **Runtime** | `BlockEntityMultiblockStructure.CellsWithRole(role)` (`BlockEntityMultiblockStructure.cs:283`) → world `BlockPos`, cached |
+| **Runtime** | `BlockEntityMultiblockStructure.CellsWithRole(role)` (`BlockEntityMultiblockStructure.cs:256`) → world `BlockPos`, cached |
 
 The rule for what earns a role: a role exists only where code asks the layout "where are my X cells?".
 A block that finds its own core - a charge door, a hopper, a hearth, a filler, the core itself - needs none,
@@ -318,17 +318,19 @@ matches nothing because vanilla's variant order is `{state}-{type}`, i.e. `clayb
 
 ### Completion, projection and the missing-blocks report
 
-`BlockEntityMultiblockStructure` (`Blocks/Structures/BlockEntityMultiblockStructure.cs:23`) is the base for
+`BlockEntityMultiblockStructure` (`Blocks/Structures/BlockEntityMultiblockStructure.cs:28`) is the base for
 every multiblock anchor:
 
-- A monitor tick every `CompletionTickMs` (default 3000 ms, `:44`) recomputes the rotation and
-  flips `StructureComplete`, starting/stopping the production tick across the transition (`:89-111`).
-- `IncompleteBlockCount` (`:428-451`) walks the same `TransformedOffsets` vanilla does and matches with the
+- A monitor tick every `CompletionTickMs` (default 3000 ms, `:49`) recomputes the rotation and
+  flips `StructureComplete`, starting and stopping whatever process the machine carries across the
+  transition, through `ProductionProcess` (`:99-120`) - a form-only multiblock has none and the two
+  calls are no-ops.
+- `IncompleteBlockCount` (`:403-426`) walks the same `TransformedOffsets` vanilla does and matches with the
   same `WildcardUtil.Match`, with one addition: the wanted code is run through `MultiblockFacings.Rotate`
-  first (`WantedCodeAt`, `:458-467`). The number → code map is rebuilt from the public `BlockNumbers`
-  because vanilla keeps its own private, and cached (`:469-479`).
+  first (`WantedCodeAt`, `:433-441`). The number → code map is rebuilt from the public `BlockNumbers`
+  because vanilla keeps its own private, and cached (`:443-452`).
 - Projection is Ctrl+Shift+right-click (`BlockBehaviorMultiblockStructure.cs:34-38`), routed to
-  `Interact` (`BlockEntityMultiblockStructure.cs:354-414`), which both draws the hologram and chats an exact
+  `Interact` (`BlockEntityMultiblockStructure.cs:338-401`), which both draws the hologram and chats an exact
   shopping list. The behaviour is carried by the anchor and by every functional component of the same
   structure (a tap, hopper, tuyere), each of which scans up to its owning anchor
   (`BlockBehaviorMultiblockStructure.cs:13-19`, `IMultiblockComponent`). Add it before any other
@@ -426,67 +428,90 @@ Declared as `FillerBehaviorSpec(Code, Face?, Properties?)` (`StructureFootprint.
 `{ code[, face][, properties] }` in the cell's `behaviors` array (`ExBlockDef.cs:737-770`), read back by
 `StructureFillers.ReadBehaviors` (`:88-111`).
 
-Instantiation lives in `BlockEntityStructureFiller.ApplyHostedBehaviors` (`:94-137`): resolve the class code
+Instantiation lives in `BlockEntityStructureFiller.ApplyHostedBehaviors` (`:96-142`): resolve the class code
 through `Api.ClassRegistry`, call `IFillerHostedBehavior.ConfigureFromFiller(principal, rotatedFace,
 properties)` before `Initialize` so the behaviour's `SetOrientations` sees the right face, then attach
-and initialise. A previously created set is detached first, so it is safe to call twice. Unknown class codes
-log a warning and are skipped (`:113-120`).
+and initialise. Unknown class codes log a warning and are skipped (`:118-125`).
+
+Re-applying is safe: being handed the declaration set already applied returns without touching the live
+behaviours (`:97-99`), and a genuine change detaches the previous set with `OnBlockRemoved` first, so a
+detached behaviour deregisters whatever it registered rather than leaving it behind (`:101-107`).
 
 Three sync traps are handled explicitly, all documented in-source:
 
 - `SetHostedBehaviors` is called by `PlaceFillers` right after the principal link is set, so an MP port
-  joins the network at placement rather than at the next reload (`StructureFillers.cs:239-241`).
+  joins the network at placement rather than at the next reload (`StructureFillers.cs:227-229`).
 - The load order is `FromTreeAttributes` → `Initialize`, so a behaviour created in `Initialize` missed the
   base class's tree-routing loop. The tree is kept in `_savedTree` and replayed to each behaviour -
   client only, because on the server the behaviour establishes its own state and a stale saved
-  `NetworkId` would fight it (`BlockEntityStructureFiller.cs:58-64`, `:130-136`).
+  `NetworkId` would fight it (`BlockEntityStructureFiller.cs:63-67`, `:135-140`). ⛔ The consequence is
+  that a hosted behaviour's *saved* state is never read back on the server; a membership is unaffected
+  because it persists nothing and re-registers from its declaration.
 - When a megablock is placed while a client is watching, the filler block is set first (client creates the
   BE with no behaviours) and `HostedBehaviors` arrives a moment later as a sync update, after `Initialize`
   has already run. `FromTreeAttributes` re-runs `ApplyHostedBehaviors` in that case
-  (`BlockEntityStructureFiller.cs:204-209`).
+  (`BlockEntityStructureFiller.cs:203-208`).
 
 `BlockStructureFiller` then advertises the hosted behaviour to the two foreign networks:
 
 - exlib pipe/molten via `INetworkConnector.NetworkTypeAt` / `HasConnectorAt(world, pos, face)`, reading
-  `PortNetworkType` / `PortFace` off the BE (`BlockStructureFiller.cs:59-74`);
+  `PortNetworkType` / `PortFace` off the BE (`BlockStructureFiller.cs:62-73`);
 - vanilla MP via `IMechanicalPowerBlock.HasMechPowerConnectorAt`, which accepts the declared face or
   its opposite - an axle couples along an axis, so a player can run it straight through the cell and
-  attach from either side (`:83-110`).
+  attach from either side (`:84-110`). ⛔ It reads every hosted declaration's face, not just an MP one's,
+  so a cell hosting a network membership *and* an MP port would offer an axle the membership's face too.
 
 Live users: the flywheel's hub cells hosting `exlib.BEBehaviorMPFillerPort` north and south
 (`BlockFlywheel.cs:45-48, 55, 71`), the twin-tub blower's west port (`BlockTwinTubMPBlower.cs:69`), and the
 sand casting bed's per-cell `exlib.BEBehaviorMoltenCell` with different `{capacity, drainFitting}` per slot
 (`BlockSandCastingBed.cs:36-38, 140`).
 
-### A filler can NEVER be a graph node
+### A filler cell is a graph node when it declares one
 
-> Retired by decision, not yet by code. [framework-composition](framework-composition.md) settles
-> that the graph walk resolves a node by behaviour rather than by block type, which removes this
-> limitation and the `BlockRollingMillAxle` workaround below. Everything here is true of the code as
-> it stands.
+A footprint cell joins an exlib `BlockNetwork` the way any other cell does: by carrying a
+`BEBehaviorNetworkMember` for that network. The graph resolves a cell's participation through
+`NetworkMembership.Resolve` - the memberships on its block entity first, the block second
+(`NetworkMembership.cs:44-60`) - so a filler being a plain `Block` no longer keeps it out, and one can
+bridge two nodes on opposite sides of itself. A cell that declares no membership is still not a node:
+the footprint stays empty space to the graph unless a cell says otherwise.
 
-The block-network BFS starts with:
+The declaration is an ordinary hosted behaviour, so nothing new carries it:
 
 ```csharp
-if (world.GetBlock(pos) is not BlockNetworkNode node)
-  yield break;                       // BlockNetworkModSystem.cs:386-387
+f.Host('P', new FillerBehaviorSpec(
+  "exlib.BEBehaviorNetworkMember", "north",
+  new { networkType = "pipe", passThrough = true }));
 ```
 
-`BlockStructureFiller` is a plain `Block` (`BlockStructureFiller.cs:22-26`), so a filler is invisible to
-graph traversal and can never bridge two node cells, however many ports it hosts.
+- `networkType` names the graph the cell joins. Without it the cell logs an error and joins nothing,
+  because registering a blank type throws inside a chunk load (`BEBehaviorNetworkMember.cs:205-216`).
+- the cell's `face`, rotated into the placed orientation by `FootprintCells`, is the face it couples
+  on; `passThrough` adds the opposite face too, so a run passes straight through the cell - the same
+  axis rule an axle follows (`BEBehaviorNetworkMember.cs:107-119`).
+- a `connectors` string in the properties is written in the *unrotated* frame and does not turn with
+  the structure, so a footprint that rotates states its `face` instead.
 
-| A filler **can** | A filler **cannot** |
-|---|---|
-| host a `BEBehaviorMPFillerPort` and join the vanilla MP network | be a member of an exlib `BlockNetwork` |
-| expose a fixed pipe/molten connector the network reads across (`NetworkTypeAt` / `HasConnectorAt`) | be walked through by `GetConnectedNeighbors` |
-| carry a stateful `BEBehaviorMoltenCell` the principal drives internally | connect two graph nodes on opposite sides of itself |
+**A membership and a port on one cell.** `PortFace`/`PortNetworkType` still mean what they always
+meant: a face another network couples *to* on a cell that is not itself a node, as the lancashire
+boiler's water intake is. The two arms compose per network type - a membership answers for the network
+it names, the port for any other - and where both name the same one **the membership wins**: it is the
+cell's own participation and the thing that registered the node, so a port cannot move a node's faces.
+A membership that states no face of its own falls through to the port's, which turns an existing port
+cell into a node without restating where it couples.
 
-The canonical case: the rolling mill needs a three-cell drive line so it can be driven from
-either shaft end and chained with other stands. It therefore leaves those two cells out of its filler
-footprint (the `.` cells at `BlockRollingMill.cs:78-85`) and places dedicated `BlockRollingMillAxle` blocks
-there instead (`:169-192`), which are `BlockNetworkNode`s with `NetworkType => "mpenergy"`
-(`BlockRollingMillAxle.cs:20-22`). They are otherwise filler-shaped - invisible, solid, no drops, break and
-info rerouted to the principal - but they are nodes (`BlockRollingMillAxle.cs:16-17`). See
+⛔ A footprint cell answers *only* through its block entity, where an ordinary node block has the block
+arm to fall back on as well. That difference is narrower than it looks: an unload takes the block too,
+so both kinds of cell are equally invisible while their chunk is away. The graph answers that for both
+by suspending its fracture check rather than acting on it, so a run bridged through a footprint cell is
+left whole until the chunk returns - see [pipe network](pipe-network.md) § 1.
+
+`BlockRollingMillAxle` is the workaround this retires. The mill needs a three-cell drive line so it can
+be driven from either shaft end and chained with other stands, so it leaves those two cells out of its
+filler footprint (the `.` cells at `BlockRollingMill.cs:78-85`) and places dedicated
+`BlockRollingMillAxle` blocks there instead (`:169-192`) - `BlockNetworkNode`s with
+`NetworkType => "mpenergy"` (`BlockRollingMillAxle.cs:23-26`), otherwise filler-shaped. A `passThrough`
+membership on those footprint cells does the same job now, and the block is redundant. It stays: it is
+placed in existing worlds, and removing a placed block needs a migration. See
 [mp-energy](mp-energy.md).
 
 ### `layouts-workbench.md` — the scratchpad
@@ -517,7 +542,7 @@ multiblocks or fillers. A layout is content, authored in C# and pinned by a gold
 | filler drawtype / shape | `json` / `exlib:block/empty` | `:41-42` | renders nothing |
 | default `allowAttach` | `false` | `StructureFillers.cs:72`, `BlockEntityStructureFiller.cs:28` | opt-in per cell |
 | default partial boxes | `null` (full cube) | `StructureFillers.cs:123-141` | `collisionBoxes` wins over `collisionBox` |
-| `CompletionTickMs` | `3000` | `BlockEntityMultiblockStructure.cs:44` | `protected virtual`, overridable per machine |
+| `CompletionTickMs` | `3000` | `BlockEntityMultiblockStructure.cs:49` | `protected virtual`, overridable per machine |
 | first block number `w` | `1`, incrementing per distinct code in legend-declaration order | `MultiblockLayoutBuilder.cs:170-181` | private index; the game only cares that it resolves |
 | reserved legend symbols | `'.'`, `' '` | `MultiblockLayoutBuilder.cs:91-94` | throw if used as a legend symbol |
 | cell roles defined | 9 | `Blocks/Structures/CellRole.cs:42` | emitted only when a layout marks something; 5 layouts do (the furnace cores), using 5 of the nine - `Chargeable`, `Firebox`, `Tuyere`, `GasOutlet`, `Pool`. `MetalTap`/`SlagTap` are next; `Flue`/`Damper` have no consumer |
@@ -526,10 +551,10 @@ multiblocks or fillers. A layout is content, authored in C# and pinned by a gold
 | default filler glyphs | `'#'` plain, `'+'` attach | `FillerLayoutBuilder.cs:21` | overridable via `Solid`/`Attach` |
 | "no principal" sentinel | `(-1,-1,-1)` | `BlockEntityStructureFiller.cs:142-145` | in the save tree |
 | projection gesture | Ctrl + Shift + RMB | `BlockBehaviorMultiblockStructure.cs:34-38` | |
-| wrong-block highlight | RGBA `215,94,94,0x60` | `BlockEntityMultiblockStructure.cs:520` | red |
-| unresolvable-slot highlight | RGBA `94,94,215,0x60` | `:529` | neutral blue fallback |
+| wrong-block highlight | RGBA `215,94,94,0x60` | `BlockEntityMultiblockStructure.cs:490` | red |
+| unresolvable-slot highlight | RGBA `94,94,215,0x60` | `:498` | neutral blue fallback |
 | projection help key | `<domain>:blockhelp-mulblock-struc-show` | `BlockBehaviorMultiblockStructure.cs:102` | resolved against the block's own domain |
-| missing-report lang keys | `ExlibLang.StructureMissingHeader` / `…Line` | `BlockEntityMultiblockStructure.cs:573`, `:584` | exlib owns them; generated accessors, so a rename is a compile error |
+| missing-report lang keys | `ExlibLang.StructureMissingHeader` / `…Line` | `BlockEntityMultiblockStructure.cs:539`, `:549` | exlib owns them; generated accessors, so a rename is a compile error |
 
 Shipped drawn layouts: 9 (`../layouts-workbench.md` lists them per mod), plus the bessemer converter
 still in coordinate form.
@@ -559,11 +584,13 @@ still in coordinate form.
 
 | Type / member | file:line | Role |
 |---|---|---|
-| `BlockEntityMultiblockStructure` | `Blocks/Structures/BlockEntityMultiblockStructure.cs:23` | monitor tick, completion, projection, missing report |
-| `.UpdateStructureRotation` | `:117` | abstract - every anchor implements it, normally by calling `SetStructureAngle` |
-| `.SetStructureAngle(angle, offset)` | `:126-152` | the canonical body: reload the JSON, `InitForUse(angle+offset)`, cache, drop stale projection |
-| `.OnStructureCompleted` / `.OnStructureLost` | `:618`, `:114` | the two hooks a machine overrides |
-| `.OwnsCell` / `.FindAnchorOwning<T>` | `:178`, `:320` | component → anchor reverse lookup |
+| `BlockEntityMultiblockStructure` | `Blocks/Structures/BlockEntityMultiblockStructure.cs:28` | the form alone: monitor tick, completion, projection, missing report, and the readiness it publishes |
+| `.UpdateStructureRotation` | `:138` | abstract - every anchor implements it, normally by calling `SetStructureAngle` |
+| `.SetStructureAngle(angle, offset)` | `:146-169` | the canonical body: reload the JSON, `InitForUse(angle+offset)`, cache, drop stale projection |
+| `.OnStructureCompleted` / `.OnStructureLost` | `:581`, `:123` | the two hooks a machine overrides |
+| `.IsReadyToProduce` / `.StopsProductionWhenNotReady` | `:59`, `:135` | the readiness a process reads; see [framework composition](framework-composition.md) |
+| `.OwnsCell` / `.FindAnchorOwning<T>` | `:192`, `:307` | component → anchor reverse lookup |
+| `BlockEntityMultiblockMachine` | `Blocks/Structures/BlockEntityMultiblockMachine.cs:20` | the form plus a hosted production process; what a multiblock that also runs derives from |
 | `BlockBehaviorMultiblockStructure` | `Blocks/Structures/BlockBehaviorMultiblockStructure.cs:28` | registered as `"MultiblockStructure"`; `TryToggleProjection` (`:73`) is the one shared entry point |
 | `.CellsAccepting(code)` / `.CellsWithRole(role)` | `:232`, `:283` | the two layout-derived cell queries; both cached, both dropped in `SetStructureAngle` |
 | `MultiblockFacings` | `Blocks/Structures/MultiblockFacings.cs:27` | `FromAttributes` (`:44`), `Rotate` (`:66`), `RotateSegment` (`:86`) |
@@ -616,7 +643,7 @@ cell (`ExOrientation.GlobalPos(Pos, hx, hy, hz, angle)`) - `BlockEntityFlywheel.
   no-op with no error (`MultiblockLayoutBuilder.cs:104-106`, `MultiblockFacings.cs:71-74`).
 - Use `_structureInitAngle`, never `_currentAngle`, for facing rotation. They differ whenever a machine
   passes an `initAngleOffset` - the bessemer control's `+180`
-  (`BlockEntityMultiblockStructure.cs:30-35`, `:465`).
+  (`BlockEntityMultiblockStructure.cs:36-40`, `:439`).
 - A wildcard code with `*` cannot be orientation-checked usefully - `-*` matches every rotation by
   construction. Oriented legends must name a concrete facing.
 - A megablock must refuse placement when its volume is not clear, or the fillers silently fail to spawn
@@ -632,7 +659,7 @@ cell (`ExOrientation.GlobalPos(Pos, hx, hy, hz, angle)`) - `BlockEntityFlywheel.
 - `ConfigureFromFiller` must run before `Initialize` or the behaviour's `SetOrientations` sees the
   unrotated default face (`BlockEntityStructureFiller.cs:121-129`).
 - Vanilla's `HighlightIncompleteParts` crashes on a wildcard that resolves to nothing. Always use the
-  safe reimplementation (`BlockEntityMultiblockStructure.cs:481-486`).
+  safe reimplementation (`BlockEntityMultiblockStructure.cs:460-513`).
 - `MultiblockLayoutBuilder`'s doc says nothing about the origin rule (`:11-19`), the most error-prone
   thing about the DSL. The rule lives only in `layouts-workbench.md`.
 - `BlockNetworkNode.cs:18` claims the network base is "currently used for gas pipes and molten canals".

@@ -204,7 +204,7 @@ pump's business, never the intake's (`:48`).
 ### Engine fluid pump — `DoWork`, `BlockEntityEngineFluidPump.cs:29-56`
 
 Runs on the shared production tick: server-side, 1000 ms, `dt` clamped to 2 s
-(`BlockEntityProductionMachine.cs:26`, `:75`, `:126`), gated on `Engine != null`
+(`BlockEntityProductionMachine.cs:56`; the clamp at `BEBehaviorProductionMachine.cs:77`, `:146`), gated on `Engine != null`
 (`BlockEntityEngineSubmachine.cs:160`).
 
 ```csharp
@@ -304,7 +304,7 @@ Every downstream statement of the number is therefore wrong by 3×:
 | manual delivery `1f` atm | `BlockEntityManualFluidPump.cs:147` | the hand-cranked head |
 | delivered water temperature `20f` °C | `BlockEntityEngineFluidPump.cs:53`, `:55`; `BlockEntityManualFluidPump.cs:147`, `:148` | four literals; the pump never carries the pond's temperature |
 | intake rescan `1000 ms` | `BlockEntityFluidIntake.cs:58` | validity poll |
-| production tick `1000 ms`, `dt` clamp `2 s` | `BlockEntityProductionMachine.cs:26`, `:75`, `:126` | the engine pump's beat |
+| production tick `1000 ms`, `dt` clamp `2 s` | `BlockEntityProductionMachine.cs:56`, `BEBehaviorProductionMachine.cs:77`, `:146` | the engine pump's beat |
 | manual server tick `1000 ms` | `BlockEntityManualFluidPump.cs:67` | |
 | manual client tick `250 ms` | `BlockEntityManualFluidPump.cs:74` | animation + sound mirror |
 | crank watchdog `1200 ms` | `BlockEntityManualFluidPump.cs:117` | stale-hold cutoff |

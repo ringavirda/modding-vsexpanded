@@ -342,7 +342,7 @@ and a ceiling here silently capped the advertised hot-blast temperature.
 
 `MaxAwayCatchupSteps` = 600 (`:48`) with a 1 s sub-tick, so a furnace replays up to 10 minutes of the game
 time it spent unloaded; each replayed `dt` still passes the 2× clamp
-(`ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:75`, `:126`). `CacheAttributes()` runs at the
+(`ExpandedLib/Blocks/Machines/BEBehaviorProductionMachine.cs:77`, `:146`). `CacheAttributes()` runs at the
 top of every tick (`:430-433`), so `/exmod config iwex <key> <value>` takes effect on the next second - no
 reload.
 
@@ -456,8 +456,8 @@ these is a `virtual` member, so a subclass can override it - but no `/exmod conf
 | `_ambientTemp` initial | `20f` | :140 | Literal, overwritten on the first `CacheAttributes` |
 | melt-speed absolute floor | `0.01f` | :1932 | Guards a retuned `BfMeltSpeedMin` of 0 from dividing by zero |
 | `HeatBalance.IsHotBlast` epsilon | `0.5f` | `ExpandedLib/Process/HeatBalance.cs:46` | Preheat gain above which the HUD says "hot blast" |
-| `ProductionTickMs` | 1000 | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:26` | Furnaces use the default; they do not override it |
-| `MaxCatchupTickMultiple` | 2 | `…/BlockEntityProductionMachine.cs:75` | Upper bound on a single `dt` |
+| `ProductionTickMs` | 1000 | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:56` | Furnaces use the default; they do not override it |
+| `MaxCatchupTickMultiple` | 2 | `…/BEBehaviorProductionMachine.cs:77` | Upper bound on a single `dt` |
 
 ### Cited, owned elsewhere
 

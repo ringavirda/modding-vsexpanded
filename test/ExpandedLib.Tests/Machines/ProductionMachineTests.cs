@@ -9,12 +9,15 @@ namespace ExpandedLib.Tests;
 /// <summary>A concrete production machine for driving the base tick lifecycle in tests.</summary>
 internal sealed class TestProductionMachine : BlockEntityProductionMachine {
   public bool Operational = true;
+  public bool AutoStart = true;
   public int ProductionTicks;
   public int IdleTicks;
   public float LastProductionDt;
   public float LastIdleDt;
 
   protected override bool CanRunProduction => Operational;
+
+  protected override bool AutoStartProduction => AutoStart;
 
   protected override void OnProductionTick(float dt) {
     ProductionTicks++;

@@ -211,9 +211,10 @@ public sealed class StructureRig {
 
   /// <summary>
   /// Runs the machine's own completion monitor until it observes the finished footprint, and returns
-  /// whether it did: the tick is the production one, so false means the machine cannot see the structure
-  /// the rig built. The block entity must already be <see cref="TestWorld.Initialize">initialized</see>;
-  /// the monitor runs on a 3 s interval, so one interval is advanced per attempt.
+  /// whether it did, so false means the machine cannot see the structure the rig built. The tick driven
+  /// here is the monitor, never the production one; the block entity must already be
+  /// <see cref="TestWorld.Initialize">initialized</see>, and the monitor runs on a 3 s interval, so one
+  /// interval is advanced per attempt.
   /// </summary>
   public bool AwaitCompletion(int maxMonitorTicks = 2) {
     for (int i = 0; i < maxMonitorTicks && !_anchor.StructureComplete; i++)

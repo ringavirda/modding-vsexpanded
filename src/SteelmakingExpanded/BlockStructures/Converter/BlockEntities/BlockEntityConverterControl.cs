@@ -29,8 +29,7 @@ namespace SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 /// steel at target, or soft ingot iron on over-blow. See docs/design/materials.md.
 /// </summary>
 [BlockEntityRegister]
-public partial class BlockEntityConverterControl
-  : BlockEntityMultiblockStructure {
+public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine {
   #region Structure-local peripheral offsets
   private static readonly (int x, int y, int z) TransmissionLocal = (0, -1, 0);
   private static readonly (int x, int y, int z) ConverterLocal = (0, 0, 2);

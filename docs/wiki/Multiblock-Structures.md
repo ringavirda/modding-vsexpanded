@@ -105,16 +105,16 @@ stores the `Principal` position link plus optional network-port config (`PortFac
 ## Completion monitoring: `BlockEntityMultiblockStructure`
 
 For designed multiblock machines (blast furnace, cowper stove, bessemer control) subclass
-`BlockEntityMultiblockStructure`. It extends [`BlockEntityProductionMachine`](Production-Machines),
-adding a monitor tick that detects completion/breakage and gates production on it.
+`BlockEntityMultiblockStructure`. It is the **form** alone: a monitor tick that detects
+completion/breakage, and the completed pattern published as readiness through `IProductionReadiness`.
 
 ```csharp
-public abstract class BlockEntityMultiblockStructure : BlockEntityProductionMachine
+public abstract class BlockEntityMultiblockStructure : BlockEntity, IProductionReadiness
 {
     public bool StructureComplete { get; protected set; }
     protected virtual int CompletionTickMs { get; }          // monitor interval, default 3000ms
-    protected override bool CanRunProduction { get; }        // production runs only while complete
-    protected virtual bool AutoStartProduction { get; }      // register production tick on load if already complete
+    protected virtual bool CanRunProduction { get; }         // production runs only while complete
+    protected virtual bool StopsProductionOnStructureLost { get; }  // false keeps a breached machine ticking
 
     public virtual void Interact(IPlayer byPlayer);          // toggle the build-outline projection
 
@@ -132,11 +132,32 @@ public abstract class BlockEntityMultiblockStructure : BlockEntityProductionMach
 }
 ```
 
+## Multiblocks that also produce: `BlockEntityMultiblockMachine`
+
+Running a production tick is a separate choice from being a multiblock. Subclass
+`BlockEntityMultiblockMachine` to take it on: it hosts the same
+[`BEBehaviorProductionMachine`](Production-Machines) every other machine runs, registers the tick on
+load only when the structure is already complete, and lets the monitor tick start and stop it across
+completion transitions. A structure that only has to be built subclasses the form above and carries
+no tick at all.
+
+```csharp
+public abstract class BlockEntityMultiblockMachine : BlockEntityMultiblockStructure
+{
+    protected virtual int ProductionTickMs { get; }          // tick interval, default 1000ms
+    protected virtual bool AutoStartProduction { get; }      // register on load if already complete
+    protected virtual int MaxAwayCatchupSteps { get; }       // 0 disables the unloaded-time replay
+
+    protected abstract void OnProductionTick(float dt);
+    protected virtual void OnIdleProductionTick(float dt);
+}
+```
+
 A minimal subclass:
 
 ```csharp
 [BlockEntityRegister]
-public class BlockEntityBlastFurnace : BlockEntityMultiblockStructure
+public class BlockEntityBlastFurnace : BlockEntityMultiblockMachine
 {
     protected override void UpdateStructureRotation()
         => SetStructureAngle(ExOrientation.AngleFromSide(Block.Variant["side"]));

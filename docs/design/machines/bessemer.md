@@ -282,7 +282,7 @@ held item falls through to state selection.
 ### The tick
 
 One `OnProductionTick` per second, server-side, inherited unmodified from `BlockEntityProductionMachine`
-(`ProductionTickMs` = 1000, `BlockEntityProductionMachine.cs:26`; the converter does not override it). It
+(`ProductionTickMs` = 1000, `BlockEntityProductionMachine.cs:56`; the converter does not override it). It
 gates in order (`BlockEntityConverterControl.cs:189-227`):
 
 1. `StructureComplete` ∧ vessel `IsConstructed` - else "not built";
@@ -421,8 +421,8 @@ rods, `:51-60`); `0.9.5` resets `BessemerConverterCapacity` and retires `Besseme
 | transmission MP resistance | `0.25f` | `BEBehaviorMPConverterTransmission.cs:20` |
 | RCC stage costs | 13 integer literals | `BlockConverterBessemer.cs:98-131` |
 | vessel mining tier / resistance | 4 (= iron pickaxe in this game version) / 45.0 | `:57-58`, pinned by `MegablockDropTierTests.cs:69` |
-| production tick | 1000 ms, inherited | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:26` |
-| away catch-up | `MaxAwayCatchupSteps` not overridden ⇒ 0 - the converter does not replay unloaded time | `…/BlockEntityProductionMachine.cs:89` |
+| production tick | 1000 ms, inherited | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:56` |
+| away catch-up | `MaxAwayCatchupSteps` not overridden ⇒ 0 - the converter does not replay unloaded time | `…/BlockEntityProductionMachine.cs:105` |
 
 ### Derived — the numbers that matter in play
 

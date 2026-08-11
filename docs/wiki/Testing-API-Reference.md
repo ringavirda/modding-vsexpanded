@@ -28,15 +28,25 @@ public sealed class TestWorld
     public TestWorld Initialize(BlockEntity be);
     public TestWorld RegisterNetwork(string networkType, Func<BlockNetworkModSystem, BlockNetwork> factory);
     public TestWorld Place(BlockPos pos, Block block, BlockEntity? be = null);
+    public TestWorld PlaceNode(BlockPos pos, string networkType, string orientation, int id = 1);
+    public TestWorld PlaceMemberBlock(BlockPos pos, string networkType, string connectors, int id = 899);
+    public TestWorld PlaceFiller(BlockPos pos, FillerBehavior[]? hosted = null, BlockPos? principal = null);
+    public TestWorld PlaceFillerNode(BlockPos pos, string networkType, string orientation, BlockPos? principal = null);
     public TestWorld RegisterBlockEntityFactory(string classname, Func<BlockEntity> factory);
+    public TestWorld RegisterBlockEntityBehaviorFactory(string classname, Func<BlockEntity, BlockEntityBehavior> factory);
     public TestWorld Register(Block block);
     public Item RegisterItem(string code, float meltingPoint = 0f);
     public Item? GetItem(AssetLocation? code);
     public Item? GetItem(int id);
 
-    // Store access:
+    // Store access (what was placed, loaded or not; the accessor reads through the chunk gate):
     public Block GetBlock(BlockPos pos);
     public BlockEntity? GetBlockEntity(BlockPos pos);
+
+    // Chunk loading:
+    public TestWorld UnloadChunkAt(BlockPos pos);            // hide that chunk from Accessor; store untouched
+    public TestWorld LoadChunkAt(BlockPos pos);              // bring it back; loading a loaded chunk is a no-op
+    public bool IsChunkLoaded(BlockPos pos);
 
     // Graph:
     public void AddNode(BlockPos pos, string networkType);
@@ -44,16 +54,36 @@ public sealed class TestWorld
     public BlockNetwork? NetworkAt(BlockPos pos);
 
     // Time:
-    public void Tick(int seconds = 1);                       // mirrors BlockNetworkModSystem.OnServerTick: OnTick(1f) per network
+    public void Tick(int seconds = 1);                       // drives BlockNetworkModSystem.ServerTick with dt = 1
     public void FireBlockEntityTicks(float dt = 1f, int times = 1);   // fire RegisterGameTickListener callbacks
     public void AdvanceDays(double days);
 }
 ```
 
-`Tick` advances the network simulation; `FireBlockEntityTicks` fires the listeners block entities
-registered via `RegisterGameTickListener` (captured from the fake event API). It supports both the
-1.22 `RegisterGameTickListener` overload (with `BlockPos`) and the legacy 1.20/1.21 one via
-`#if GAME_GE_1_22`.
+`PlaceNode` and `PlaceMemberBlock` place a cell *and* register it, by running the real
+`BlockEntity.Initialize` whose membership behaviour registers itself — so neither needs, or tolerates,
+a following `AddNode`. Both require a prior `RegisterNetwork` for the type. `PlaceNode` places a
+`TestNetworkBlock`; `PlaceMemberBlock` places a plain `Block` whose membership states its own
+connector faces, for the cell that is a node only because it carries one.
+
+`PlaceFiller` places a mega-block footprint cell - the shared `BlockStructureFiller` over a
+`BlockEntityStructureFiller` - hosting whatever behaviours it is given, built through the fake class
+registry (`RegisterBlockEntityBehaviorFactory`) exactly as the game builds them from
+`[BlockEntityBehaviorRegister]`. `PlaceFillerNode` is that cell declaring one network membership:
+`orientation` is one side letter, or two naming an opposite pair for a cell a run passes through.
+
+`UnloadChunkAt` models a chunk unload as the walk sees one: every cell in the chunk holding that
+position reads back as air, its block entities as `null` and `GetChunkAtBlockPos` as `null`, while the
+store keeps everything so `LoadChunkAt` restores the chunk exactly. Chunks are real
+`GlobalConstants.ChunkSize` (32) cubes, so a fixture that wants a boundary between two adjacent cells
+must straddle one. ⛔ Not to be confused with `Unload(pos)`, which is the *other* half - one block
+entity running its own `OnBlockUnloaded` and being dropped, with the cell left readable.
+
+`Tick` advances the network simulation through the manager's real `ServerTick`, so it resumes any
+connectivity review an unloaded chunk suspended before dispatching `OnTick`; `FireBlockEntityTicks`
+fires the listeners block entities registered via `RegisterGameTickListener` (captured from the fake
+event API). It supports both the 1.22 `RegisterGameTickListener` overload (with `BlockPos`) and the
+legacy 1.20/1.21 one via `#if GAME_GE_1_22`.
 
 ## `Scene`
 

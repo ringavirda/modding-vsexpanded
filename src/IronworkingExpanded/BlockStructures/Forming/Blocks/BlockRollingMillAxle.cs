@@ -12,9 +12,12 @@ namespace IronworkingExpanded.BlockStructures.Forming.Blocks;
 /// An invisible, solid axle cell of the rolling mill: a pass-through <c>mpenergy</c> node that carries the
 /// drive line across the mill's three-cell footprint, so the machine connects on both shaft ends and stands
 /// can be chained on one line. It is not craftable; the mill places and clears it, and its break, drops and
-/// pick are rerouted to the principal as <c>BlockStructureFiller</c> does for a plain filler. Unlike a
-/// filler it is a graph node: the network walk only traverses <see cref="BlockNetworkNode"/> cells, so a
-/// filler could not bridge the axle.
+/// pick are rerouted to the principal as <c>BlockStructureFiller</c> does for a plain filler.
+/// <para>
+/// A footprint cell carrying a pass-through <c>BEBehaviorNetworkMember</c> now does the same job, so this
+/// block is redundant. It stays because it is placed in existing worlds and retiring a placed block needs
+/// a migration. See docs/design/mechanics/multiblock.md.
+/// </para>
 /// </summary>
 [BlockRegister]
 public partial class BlockRollingMillAxle

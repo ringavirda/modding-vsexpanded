@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using LowPressureExpanded.BlockNetworkPipe;
@@ -147,6 +148,25 @@ public class FluidIntakeBeTests {
     restored.FromTreeAttributes(tree, world.World);
 
     Assert.True(restored.HasWater);
+  }
+
+  [Fact]
+  public void The_membership_follows_a_network_type_the_tree_reassigns() {
+    // The intake is the one node whose NetworkType is a real setter, and every MarkDirty resyncs the
+    // whole attribute tree - redrawOnClient only adds the mesh redraw on top - so FromTreeAttributes
+    // runs again long after Initialize. A membership holding a copy taken then would strand the cell
+    // on its old network, and the graph walk asks the membership.
+    var (world, intake, _) = Rig();
+    INetworkMember member = Assert.Single(NetworkMembership.MembersOf(intake));
+    Assert.Equal("pipe", member.NetworkType);
+
+    var tree = new TreeAttribute();
+    intake.ToTreeAttributes(tree);
+    tree.SetString("networkType", "molten");
+    intake.FromTreeAttributes(tree, world.World);
+
+    Assert.Equal("molten", member.NetworkType);
+    Assert.Equal("molten", member.NetworkTypeAt(world.Accessor, intake.Pos));
   }
 
   #endregion

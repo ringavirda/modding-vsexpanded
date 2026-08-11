@@ -16,12 +16,18 @@ namespace ExpandedLib.Blocks.Structures;
 
 /// <summary>
 /// Base block entity for the mod's multiblock machines (blast furnace, cowper stove,
-/// bessemer control). Runs a slow monitor tick that detects when the structure is
-/// completed or broken, and a production tick that fires only while complete.
-/// Subclasses supply the orientation logic, production behavior, and status messages.
+/// bessemer control). Runs a slow monitor tick that detects when the structure is completed or broken,
+/// publishes the completed pattern as readiness, and starts and stops whatever production process the
+/// machine carries across those transitions. Subclasses supply the orientation logic and the status
+/// messages.
+/// <para>
+/// This is form alone: a multiblock that also produces derives from
+/// <see cref="BlockEntityMultiblockMachine"/>, which is the only place the process is taken on.
+/// </para>
 /// </summary>
 public abstract class BlockEntityMultiblockStructure
-  : BlockEntityProductionMachine {
+  : BlockEntity,
+    IProductionReadiness {
   protected MultiblockStructure? _structure;
   protected MultiblockStructure? _highlightedStructure;
   protected int _currentAngle = -1;
@@ -42,15 +48,19 @@ public abstract class BlockEntityMultiblockStructure
   /// <summary>Interval (ms) of the structure-completion monitor tick.</summary>
   protected virtual int CompletionTickMs => 3000;
 
-  /// <summary>The production tick runs only while the structure is complete.</summary>
-  protected override bool CanRunProduction => StructureComplete;
+  /// <summary>Whether the machine may run production this tick: a multiblock is ready once its pattern
+  /// is whole. A machine that must also run while broken widens this and opts out of
+  /// <see cref="StopsProductionOnStructureLost"/>.</summary>
+  protected virtual bool CanRunProduction => StructureComplete;
 
-  /// <summary>The production tick is registered on load only if the structure is already complete;
-  /// the monitor tick starts and stops it across completion transitions.</summary>
-  protected override bool AutoStartProduction => StructureComplete;
+  /// <summary>This form's readiness answer, for a hosted process and anything else that asks. Not
+  /// overridable: a subclass states its gate in <see cref="CanRunProduction"/>, so the two cannot drift
+  /// apart.</summary>
+  public bool IsReadyToProduce => CanRunProduction;
 
   public override void Initialize(ICoreAPI api) {
-    // Base registers the production tick (only when already complete, via AutoStartProduction).
+    // A process the machine carries registers its own tick from inside base.Initialize, which fans out
+    // over the behaviours, and only when the structure is already complete.
     base.Initialize(api);
     if (api.Side == EnumAppSide.Server) {
       // Prime the angle before anything ticks. _currentAngle starts at -1, which ExOrientation
@@ -66,7 +76,7 @@ public abstract class BlockEntityMultiblockStructure
   /// <summary>Starts both the completion monitor and the production tick.</summary>
   protected void StartStructureTick() {
     StartMonitorTick();
-    StartProductionTick();
+    ProductionProcess.Start(this);
   }
 
   protected void StartMonitorTick() {
@@ -79,7 +89,7 @@ public abstract class BlockEntityMultiblockStructure
 
   /// <summary>Stops both ticks (used on block removal).</summary>
   protected void StopStructureTick() {
-    StopProductionTick();
+    ProductionProcess.Stop(this);
     if (_completionTickId != 0) {
       UnregisterGameTickListener(_completionTickId);
       _completionTickId = 0;
@@ -98,11 +108,13 @@ public abstract class BlockEntityMultiblockStructure
     StructureComplete = nowComplete;
     if (nowComplete) {
       OnStructureCompleted();
-      StartProductionTick();
+      ProductionProcess.Start(this);
     } else {
       OnStructureLost();
-      if (StopsProductionOnStructureLost)
-        StopProductionTick();
+      // Asked of every publisher on the machine, not of this class alone: a behaviour that must keep
+      // its process ticking through the breach answers for the machine too.
+      if (ProductionReadiness.StopsProductionWhenNotReady(this))
+        ProductionProcess.Stop(this);
     }
     MarkDirty(true);
   }
@@ -117,6 +129,10 @@ public abstract class BlockEntityMultiblockStructure
   /// state held rather than stopped. A breached shaft furnace keeps burning by opting out here.
   /// </summary>
   protected virtual bool StopsProductionOnStructureLost => true;
+
+  /// <summary>Losing the pattern is this form's way of losing readiness, so the published answer is the
+  /// one above. Not overridable, so a subclass has a single place to state the rule.</summary>
+  public bool StopsProductionWhenNotReady => StopsProductionOnStructureLost;
 
   /// <summary>Recomputes the structure's rotation/angle from the block orientation.</summary>
   protected abstract void UpdateStructureRotation();
@@ -346,7 +362,10 @@ public abstract class BlockEntityMultiblockStructure
         MarkDirty(true);
       } else if (!StructureComplete && wasComplete) {
         OnStructureLost();
-        StopProductionTick();
+        // The same readiness question the monitor tick asks on this transition. A machine that keeps
+        // running while broken must not be stopped by whichever of the two noticed first.
+        if (ProductionReadiness.StopsProductionWhenNotReady(this))
+          ProductionProcess.Stop(this);
         MarkDirty(true);
       }
 

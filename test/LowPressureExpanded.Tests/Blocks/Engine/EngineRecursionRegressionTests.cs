@@ -12,9 +12,10 @@ namespace LowPressureExpanded.Tests;
 /// </summary>
 public class EngineRecursionRegressionTests {
   /// <summary>
-  /// A constructed machine's production tick must not stack-overflow. Delegating the network lookup in
-  /// <c>BlockEntityProductionMachine.NetworkAt</c>/<c>ConnectedNetwork</c> as <c>this.NetworkAt(...)</c>
-  /// binds to the instance method rather than the extension, which recurses on every machine tick.
+  /// A constructed machine's production tick must not stack-overflow. Machines reach a network port
+  /// through the <c>MachinePorts</c> extensions, and several wrap one in a same-named instance helper;
+  /// instance methods shadow extensions, so a wrapper written without its type argument binds back to
+  /// itself and recurses on every tick.
   /// </summary>
   [Fact]
   public void Constructed_engine_tick_does_not_recurse() {

@@ -26,7 +26,7 @@ namespace LowPressureExpanded.BlockStructures.Boiler;
 /// verification, completeness, projection and tick scheduling live in the multiblock base. Per-variant
 /// stats come from the virtual hooks below.
 /// </summary>
-public abstract partial class BlockEntityBoiler : BlockEntityMultiblockStructure {
+public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
   // Owns the RCC-suppressed-mesh animator triad shared by every constructed mega-block; the boiler
   // additionally swaps in its own renderer via the onAnimatorBuilt hook (see SwapBoilerRenderer).
   private ConstructedAnimator? _animator;
@@ -291,7 +291,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockStructure
 
     PipeNetwork? exhaustNet =
       BoilerBlock != null
-        ? NetworkAt<PipeNetwork>(BoilerBlock.ExhaustOutletWorldPos(Pos))
+        ? this.NetworkAt<PipeNetwork>(BoilerBlock.ExhaustOutletWorldPos(Pos))
         : null;
     bool draughtBlocked =
       (exhaustNet?.State?.Pressure ?? 0f)
@@ -309,7 +309,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockStructure
       _choked = false;
     }
 
-    PipeNetwork? waterNet = ConnectedNetwork<PipeNetwork>(BlockFacing.DOWN);
+    PipeNetwork? waterNet = this.ConnectedNetwork<PipeNetwork>(
+      BlockFacing.DOWN
+    );
     if (waterNet != null && _waterVolume < MaxWaterIntakeFill) {
       float feedPressure = waterNet.State?.Pressure ?? 0f;
       // Cap the draw at the intake rate so a piped supply trickles in instead of taking the whole
@@ -497,7 +499,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockStructure
       return leaked > 0f;
     }
 
-    PipeNetwork? steamNet = NetworkAt<PipeNetwork>(pipePos);
+    PipeNetwork? steamNet = this.NetworkAt<PipeNetwork>(pipePos);
     if (steamNet == null)
       return false;
 

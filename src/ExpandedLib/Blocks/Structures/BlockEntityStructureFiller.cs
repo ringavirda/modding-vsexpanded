@@ -54,6 +54,12 @@ public class BlockEntityStructureFiller : BlockEntity {
   /// detach the previous set before recreating it.</summary>
   private readonly List<BlockEntityBehavior> _hosted = [];
 
+  // The declaration set _hosted was built from, so being handed the same one again leaves the live
+  // behaviours alone. Rebuilding is a removal followed by a fresh registration - for a network
+  // membership, dropping the cell's graph node and adding it back, which fractures and re-merges the
+  // run around it - and an unchanged declaration should not cost that.
+  private FillerBehavior[]? _appliedSpecs;
+
   // The most recent save/sync tree, kept so a hosted behaviour can still be handed it. FromTree
   // restores HostedBehaviors and Initialize instantiates them afterwards, so
   // BlockEntity.FromTreeAttributes has no behaviour to route the tree to on first load. A client-side
@@ -83,15 +89,22 @@ public class BlockEntityStructureFiller : BlockEntity {
   /// <summary>
   /// Instantiates each declared behaviour by its registered class code, hands it the principal link
   /// and rotated connector face (<see cref="IFillerHostedBehavior"/>), adds it to this BE and
-  /// initialises it. Detaches any previously created set first so it is safe to call more than once.
-  /// Does nothing until <see cref="BlockEntity.Api"/> is set (the load path runs it from Initialize).
+  /// initialises it. Detaches any previously created set first, so it is safe to call more than once,
+  /// and returns without touching a live set when handed the declarations it already applied. Does
+  /// nothing until <see cref="BlockEntity.Api"/> is set (the load path runs it from Initialize).
   /// </summary>
   private void ApplyHostedBehaviors() {
-    if (Api == null)
+    if (Api == null || ReferenceEquals(HostedBehaviors, _appliedSpecs))
       return;
+    _appliedSpecs = HostedBehaviors;
 
-    foreach (BlockEntityBehavior previous in _hosted)
+    foreach (BlockEntityBehavior previous in _hosted) {
+      // Detaching is a removal as far as the behaviour is concerned, and it is told so: a network
+      // membership deregisters its graph node here, and one merely dropped from the list would strand
+      // a node at a position nothing owns afterwards.
+      previous.OnBlockRemoved();
       Behaviors.Remove(previous);
+    }
     _hosted.Clear();
 
     if (HostedBehaviors == null)

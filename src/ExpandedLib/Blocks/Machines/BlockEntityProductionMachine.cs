@@ -1,25 +1,57 @@
-using ExpandedLib.Helpers;
-using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
-/// Base for any block entity that does periodic server-side production work, multiblock or not
-/// (<see cref="ExpandedLib.Blocks.Structures.BlockEntityMultiblockStructure"/> derives from this, as
-/// do the standalone steam engines and their sub-machines). It owns the production tick lifecycle -
-/// registration, the operational gate, and teardown - so a concrete machine writes only its per-tick
-/// logic in <see cref="OnProductionTick"/> plus the gate in <see cref="CanRunProduction"/>, and reads
-/// networks through the inherited port helpers.
-///
-/// The tick runs every <see cref="ProductionTickMs"/> ms on the server. Each tick is gated by
-/// <see cref="CanRunProduction"/>: when it returns <c>false</c> the machine is idle and
-/// <see cref="OnIdleProductionTick"/> runs instead (default no-op).
+/// Base for a block entity whose whole reason to exist is periodic server-side production work - the
+/// standalone steam engines and their sub-machines. A machine that is also something else hosts a
+/// <see cref="BEBehaviorProductionMachine"/> of its own instead, and a multiblock does it through
+/// <see cref="ExpandedLib.Blocks.Structures.BlockEntityMultiblockMachine"/>.
+/// <para>
+/// The tick lifecycle - registration, the gate, teardown and away-catch-up - is run by the process
+/// this class hosts, so a concrete machine writes only its per-tick logic in
+/// <see cref="OnProductionTick"/> plus the gate in <see cref="CanRunProduction"/>: the tick runs
+/// every <see cref="ProductionTickMs"/> ms, and a <c>false</c> gate routes it to
+/// <see cref="OnIdleProductionTick"/> instead. Network access is not part of being a machine - a
+/// machine that reads a port calls the <see cref="MachinePorts"/> extensions on itself, exactly as a
+/// plain block entity does.
+/// </para>
 /// </summary>
-public abstract class BlockEntityProductionMachine : BlockEntity {
-  private long _productionTickId;
+public abstract class BlockEntityProductionMachine
+  : BlockEntity,
+    IProductionReadiness {
+  private readonly HostProcess _process;
+
+  protected BlockEntityProductionMachine() {
+    // Added here because BlockEntity fans both FromTreeAttributes and Initialize out over Behaviors,
+    // and a process added any later misses whichever of the two has already run.
+    _process = new HostProcess(this);
+    Behaviors.Add(_process);
+  }
+
+  /// <summary>
+  /// This machine's production process. It holds no copy of the machine's answers and reads each one
+  /// off the block entity as the tick needs it, so a subclass override and a state change mid-tick are
+  /// both seen at once.
+  /// </summary>
+  private sealed class HostProcess(BlockEntityProductionMachine owner)
+    : BEBehaviorProductionMachine(owner) {
+    protected override int ProductionTickMs => owner.ProductionTickMs;
+
+    protected override bool AutoStartProduction => owner.AutoStartProduction;
+
+    protected override int MaxAwayCatchupSteps => owner.MaxAwayCatchupSteps;
+
+    protected override float AwayCatchupStepSeconds =>
+      owner.AwayCatchupStepSeconds;
+
+    protected override void OnProductionTick(float dt) =>
+      owner.OnProductionTick(dt);
+
+    protected override void OnIdleProductionTick(float dt) =>
+      owner.OnIdleProductionTick(dt);
+  }
 
   /// <summary>Interval (ms) of the production tick.</summary>
   protected virtual int ProductionTickMs => 1000;
@@ -27,54 +59,42 @@ public abstract class BlockEntityProductionMachine : BlockEntity {
   /// <summary>
   /// Whether the machine is in an operational state this tick (e.g. structure complete, finished
   /// construction). Returning <c>false</c> routes the tick to <see cref="OnIdleProductionTick"/>.
+  /// This is the machine's own readiness answer; the process reads it as one publisher among any
+  /// carried by behaviours (<see cref="ProductionReadiness"/>), and every one of them must agree.
   /// </summary>
   protected abstract bool CanRunProduction { get; }
 
+  /// <summary>This machine's own readiness answer, for the process and anything else that asks. Not
+  /// overridable: a subclass states its gate in <see cref="CanRunProduction"/>, so the two cannot
+  /// drift apart.</summary>
+  public bool IsReadyToProduce => CanRunProduction;
+
   /// <summary>
-  /// Whether <see cref="Initialize"/> should register the production tick immediately. Default
+  /// Whether losing readiness also unregisters the production tick. A machine that must keep running
+  /// while un-ready overrides this, not <see cref="CanRunProduction"/>: that gate is only consulted by
+  /// a listener that still exists, so widening it alone leaves the machine frozen with its state held
+  /// rather than stopped.
+  /// </summary>
+  public virtual bool StopsProductionWhenNotReady => true;
+
+  /// <summary>
+  /// Whether the process registers the production tick as soon as the machine loads. Default
   /// <c>true</c> (the machine self-gates each tick). A machine that registers/unregisters the tick
   /// on a state change (e.g. a multiblock that only ticks while complete) overrides this and drives
   /// <see cref="StartProductionTick"/>/<see cref="StopProductionTick"/> itself.
+  /// Separate from readiness on purpose: a self-gating machine registers its tick while un-ready and
+  /// idles until it is, and taking the answer from readiness would leave it with no listener to notice
+  /// the change.
   /// </summary>
   protected virtual bool AutoStartProduction => true;
 
-  public override void Initialize(ICoreAPI api) {
-    base.Initialize(api);
-    if (api.Side == EnumAppSide.Server && AutoStartProduction)
-      StartProductionTick();
-  }
-
   /// <summary>Registers the production tick (idempotent, server-side only).</summary>
-  protected void StartProductionTick() {
-    if (_productionTickId == 0 && Api?.Side == EnumAppSide.Server)
-      _productionTickId = RegisterGameTickListener(
-        RunProductionTick,
-        ProductionTickMs
-      );
-  }
+  protected void StartProductionTick() => _process.StartProductionTick();
 
   /// <summary>Unregisters the production tick.</summary>
-  protected void StopProductionTick() {
-    if (_productionTickId != 0) {
-      UnregisterGameTickListener(_productionTickId);
-      _productionTickId = 0;
-    }
-  }
-
-  /// <summary>Upper bound on a single production <c>dt</c>, as a multiple of the tick interval. After a
-  /// chunk reload or a server hitch the engine can deliver one oversized catch-up <c>dt</c>, which an
-  /// unclamped grace timer (such as the boiler over-pressure burst) would cross in that single step.
-  /// Capping at 2x the interval loses at most about one tick of simulation on a genuine hitch.
-  /// Away-catch-up below replays the unloaded interval as many bounded sub-ticks, each still passing
-  /// through this clamp.</summary>
-  private const float MaxCatchupTickMultiple = 2f;
+  protected void StopProductionTick() => _process.StopProductionTick();
 
   #region Away catch-up (game time)
-
-  // Calendar time (game hours) of the last simulated tick; -1 on a fresh machine, until its first
-  // tick. Persisted, so on reload the gap to now is the game time the machine spent unloaded.
-  private double _lastTickHours = -1;
-  private bool _pendingCatchup;
 
   /// <summary>
   /// How many bounded sub-ticks a machine replays to catch up the game time it spent unloaded. Default
@@ -89,45 +109,11 @@ public abstract class BlockEntityProductionMachine : BlockEntity {
   /// caught-up step is just another ordinary tick and needs no extra <c>dt</c> robustness.</summary>
   protected virtual float AwayCatchupStepSeconds => ProductionTickMs / 1000f;
 
-  private void RunProductionTick(float dt) {
-    // First tick after a reload: replay the unloaded game-time gap before this real tick.
-    if (_pendingCatchup) {
-      _pendingCatchup = false;
-      RunAwayCatchup();
-    }
-
-    RunOneTick(dt);
-    if (Api?.World != null)
-      _lastTickHours = Api.World.Calendar.TotalHours;
-  }
-
-  private void RunAwayCatchup() {
-    if (MaxAwayCatchupSteps <= 0 || _lastTickHours < 0 || Api?.World == null)
-      return;
-
-    double away = GameTime.SecondsBetween(
-      _lastTickHours,
-      Api.World.Calendar.TotalHours
-    );
-    GameTime.CatchUp(
-      away,
-      AwayCatchupStepSeconds,
-      MaxAwayCatchupSteps,
-      RunOneTick
-    );
-  }
-
-  private void RunOneTick(float dt) {
-    dt = GameMath.Min(dt, ProductionTickMs / 1000f * MaxCatchupTickMultiple);
-    if (CanRunProduction)
-      OnProductionTick(dt);
-    else
-      OnIdleProductionTick(dt);
-  }
-
+  // The process holds the last-tick stamp and this class persists it: vanilla fans a behaviour's tree
+  // into the block entity's own flat tree, so a key written on both sides has one silent winner.
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    tree.SetDouble("pm_lastHours", _lastTickHours);
+    tree.SetDouble("pm_lastHours", _process.LastTickHours);
   }
 
   public override void FromTreeAttributes(
@@ -135,9 +121,7 @@ public abstract class BlockEntityProductionMachine : BlockEntity {
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _lastTickHours = tree.GetDouble("pm_lastHours", -1);
-    // A saved timestamp means this machine was previously simulated, so the gap to now is unloaded time.
-    _pendingCatchup = _lastTickHours >= 0;
+    _process.RestoreLastTickHours(tree.GetDouble("pm_lastHours", -1));
   }
 
   #endregion
@@ -147,31 +131,4 @@ public abstract class BlockEntityProductionMachine : BlockEntity {
 
   /// <summary>Runs in place of <see cref="OnProductionTick"/> while the machine is not operational. Default: no-op.</summary>
   protected virtual void OnIdleProductionTick(float dt) { }
-
-  public override void OnBlockRemoved() {
-    base.OnBlockRemoved();
-    StopProductionTick();
-  }
-
-  public override void OnBlockUnloaded() {
-    base.OnBlockUnloaded();
-    StopProductionTick();
-  }
-
-  #region Network ports
-
-  // These forward to the MachinePorts extension methods in fully-qualified static form. Writing
-  // `this.ConnectedNetwork(...)` would bind to the instance method below, since instance methods
-  // shadow extension methods, and recurse forever.
-
-  /// <summary>The <typeparamref name="TNet"/> across <paramref name="face"/>, or <c>null</c> if not plumbed in.</summary>
-  protected TNet? ConnectedNetwork<TNet>(BlockFacing face)
-    where TNet : BlockNetwork =>
-    MachinePorts.ConnectedNetwork<TNet>(this, face);
-
-  /// <summary>The <typeparamref name="TNet"/> owning <paramref name="pos"/>, or <c>null</c>.</summary>
-  protected TNet? NetworkAt<TNet>(BlockPos pos)
-    where TNet : BlockNetwork => MachinePorts.NetworkAt<TNet>(this, pos);
-
-  #endregion
 }

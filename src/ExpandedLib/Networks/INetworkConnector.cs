@@ -5,11 +5,15 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Networks;
 
 /// <summary>
-/// The block-side answer to <see cref="INetworkMember"/>: anything a network pipe can connect to,
-/// asked of the block rather than of a block entity. Implemented by <see cref="BlockNetworkNode"/>
-/// (the pipes and canals themselves) and by structure blocks that expose a fixed port on certain
-/// faces without being a full network node, such as the lancashire boiler's water intake. Ports are
-/// valid connection targets but are not added to the network graph.
+/// A port: a face another network may couple to, on a block that is not itself a graph member - the
+/// lancashire boiler's water intake is one. A port is a valid connection target and is never added to
+/// the graph. Membership is a different thing and belongs to <c>BEBehaviorNetworkMember</c>: a pipe is
+/// a member, and a block that is on a network carries one of those rather than a port.
+/// <para>
+/// This is also how a block answers <see cref="INetworkMember"/>, which is what lets a cell stay
+/// resolvable when it has no block entity - the second arm of <c>NetworkMembership.Resolve</c>. That is
+/// why <see cref="BlockNetworkNode"/> implements it: its own cells answer the walk from the block.
+/// </para>
 /// </summary>
 public interface INetworkConnector : INetworkMember {
   /// <summary>True when this block exposes a network connector on <paramref name="face"/>.</summary>

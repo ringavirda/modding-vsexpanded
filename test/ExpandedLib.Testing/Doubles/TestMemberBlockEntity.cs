@@ -16,10 +16,28 @@ public sealed class TestMemberBlockEntity : BlockEntity {
     BlockPos pos,
     params string[] networkTypes
   ) {
+    TestMemberBlockEntity be = Carrying(networkTypes);
+    world.Place(pos, TestBlocks.Configure(new Block(), "test:member", 899), be);
+    return be;
+  }
+
+  /// <summary>Builds a block entity carrying one membership per network type, unplaced, for a caller
+  /// that chooses the block itself. Each membership takes its connectors from that block.</summary>
+  public static TestMemberBlockEntity Carrying(params string[] networkTypes) {
     var be = new TestMemberBlockEntity();
     foreach (string type in networkTypes)
       be.Behaviors.Add(new TestNetworkMember(be, type));
-    world.Place(pos, TestBlocks.Configure(new Block(), "test:member", 899), be);
+    return be;
+  }
+
+  /// <summary>Builds a block entity carrying one membership that states its own
+  /// <paramref name="connectors"/> - an orientation string - rather than reading them off its block.</summary>
+  public static TestMemberBlockEntity Declaring(
+    string networkType,
+    string connectors
+  ) {
+    TestMemberBlockEntity be = Carrying(networkType);
+    ((TestNetworkMember)be.Behaviors[0]).DeclareConnectors(connectors);
     return be;
   }
 

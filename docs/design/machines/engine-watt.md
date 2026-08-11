@@ -461,8 +461,8 @@ power each). Nothing in the code says this; it is the ratio of two config values
 
 | value | file:line | what it does |
 |---|---|---|
-| production tick `1000 ms` | `BlockEntityProductionMachine.cs:26` | engine and sub-machine beat |
-| `dt` clamp `2 ×` tick | `BlockEntityProductionMachine.cs:75`, `:126` | |
+| production tick `1000 ms` | `BlockEntityProductionMachine.cs:56` | engine and sub-machine beat |
+| `dt` clamp `2 ×` tick | `BEBehaviorProductionMachine.cs:77`, `:146` | |
 | sub-machine type poll `500 ms` | `BlockEntityEngine.cs:225` | mp ⇄ pump pose switch |
 | engine client tick `50 ms` | `BlockEntityEngine.cs:228` | stroke sounds + over-pressure plume |
 | sub-machine anim mirror `500 ms` / keyframe watch `50 ms` | `BlockEntityEngineSubmachine.cs:76-77` | |

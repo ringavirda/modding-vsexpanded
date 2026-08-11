@@ -242,7 +242,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
       return;
     }
 
-    var inlet = ConnectedNetwork<PipeNetwork>(EngineBlock.SteamInletFace);
+    var inlet = this.ConnectedNetwork<PipeNetwork>(EngineBlock.SteamInletFace);
     float pressure =
       inlet?.State?.MediumType == "Steam" ? inlet.State.Pressure : 0f;
     InletPressure = pressure;
@@ -298,7 +298,9 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   /// pressure (only the pump pressurises water); otherwise it spills with a splash particle.
   /// </summary>
   private void OutputCondensate(float amount, IBlockAccessor ba) {
-    var outNet = ConnectedNetwork<PipeNetwork>(EngineBlock!.WaterOutletFace);
+    var outNet = this.ConnectedNetwork<PipeNetwork>(
+      EngineBlock!.WaterOutletFace
+    );
     bool piped = outNet?.TryProduceLiquid(amount, 90f, 0f, ba) == true;
     if (!piped)
       SpawnWaterSpill();

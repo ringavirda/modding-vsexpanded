@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Networks;
+using ExpandedLib.Testing.Doubles;
+using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -138,6 +142,152 @@ public sealed class TestWorld {
   }
 
   /// <summary>
+  /// Places a network node at <paramref name="pos"/>: a <see cref="TestNetworkBlock"/> of
+  /// <paramref name="networkType"/> whose connectors are <paramref name="orientation"/>, a block
+  /// entity carrying one membership for that network, and the real <see cref="Initialize"/> the
+  /// placement pipeline runs - which is what registers the cell. <see cref="RegisterNetwork"/> must
+  /// have run for <paramref name="networkType"/> first, or the factory lookup throws.
+  /// </summary>
+  public TestWorld PlaceNode(
+    BlockPos pos,
+    string networkType,
+    string orientation,
+    int id = 1
+  ) {
+    TestMemberBlockEntity be = TestMemberBlockEntity.Carrying(networkType);
+    Place(pos, TestNetworkBlock.Create(networkType, orientation, id), be);
+    return Initialize(be);
+  }
+
+  /// <summary>
+  /// Places a cell whose membership is all that puts it on the graph: a plain <see cref="Block"/> -
+  /// deliberately neither a node block nor an <see cref="INetworkConnector"/> - under a block entity
+  /// carrying one membership that states its own <paramref name="connectors"/>. Registered the same
+  /// way <see cref="PlaceNode"/> is.
+  /// </summary>
+  public TestWorld PlaceMemberBlock(
+    BlockPos pos,
+    string networkType,
+    string connectors,
+    int id = 899
+  ) {
+    TestMemberBlockEntity be = TestMemberBlockEntity.Declaring(
+      networkType,
+      connectors
+    );
+    Place(pos, TestBlocks.Configure(new Block(), $"test:member-{id}", id), be);
+    return Initialize(be);
+  }
+
+  /// <summary>
+  /// The one shared <see cref="BlockStructureFiller"/> this world places footprint cells from, created
+  /// on first use. Production has exactly one instance - always north, no variants - standing in every
+  /// cell of every mega-block, so a cell's own answers have to come from its block entity rather than
+  /// from its block; the fixtures share one instance for the same reason.
+  /// </summary>
+  public BlockStructureFiller Filler =>
+    _filler ??= TestBlocks.Configure(
+      new BlockStructureFiller(),
+      "exlib:structurefiller",
+      897
+    );
+
+  private BlockStructureFiller? _filler;
+
+  /// <summary>
+  /// The registered class code of the network-membership behaviour, as a <c>fillerOffsets</c> cell
+  /// names it. Written out rather than derived, because it is the string content authors write;
+  /// <c>EntityRegistry.KeyFor</c> is asserted against it so the two cannot drift.
+  /// </summary>
+  public const string NetworkMemberClass = "exlib.BEBehaviorNetworkMember";
+
+  /// <summary>
+  /// Places a mega-block footprint cell at <paramref name="pos"/>: the shared <see cref="Filler"/>
+  /// block over a filler block entity linked to <paramref name="principal"/> (the cell below by
+  /// default) and hosting <paramref name="hosted"/>, then runs the real <see cref="Initialize"/> the
+  /// placement and load paths both go through, which is what creates the hosted behaviours.
+  /// </summary>
+  public TestWorld PlaceFiller(
+    BlockPos pos,
+    FillerBehavior[]? hosted = null,
+    BlockPos? principal = null
+  ) {
+    var be = new BlockEntityStructureFiller {
+      Principal = (principal ?? pos.AddCopy(0, -1, 0)).Copy(),
+      HostedBehaviors = hosted,
+    };
+    Place(pos, Filler, be);
+    return Initialize(be);
+  }
+
+  /// <summary>
+  /// Places a footprint cell that is a graph node in its own right: a <see cref="PlaceFiller"/> cell
+  /// hosting one network membership on <paramref name="networkType"/>, declared exactly as a
+  /// <c>fillerOffsets</c> cell declares it - a class code, a connector face already rotated into the
+  /// placed orientation, and a properties blob. <paramref name="orientation"/> is one side letter, or
+  /// two naming an opposite pair for a cell a run passes straight through.
+  /// </summary>
+  public TestWorld PlaceFillerNode(
+    BlockPos pos,
+    string networkType,
+    string orientation,
+    BlockPos? principal = null
+  ) {
+    RegisterBlockEntityBehaviorFactory(
+      NetworkMemberClass,
+      be => new BEBehaviorNetworkMember(be)
+    );
+    (BlockFacing face, bool passThrough) = ReadOrientation(orientation);
+    var props = new JObject { ["networkType"] = networkType };
+    if (passThrough)
+      props["passThrough"] = true;
+    return PlaceFiller(
+      pos,
+      [new FillerBehavior(NetworkMemberClass, face, new JsonObject(props))],
+      principal
+    );
+  }
+
+  /// <summary>Reads a one- or two-letter orientation as the face a filler cell couples on plus whether
+  /// the run passes through to its opposite; anything else is an authoring mistake in the fixture.</summary>
+  private static (BlockFacing Face, bool PassThrough) ReadOrientation(
+    string orientation
+  ) {
+    BlockFacing[] faces =
+    [
+      .. orientation
+        .Select(c => BlockNetworkModSystem.SideToFace(c.ToString()))
+        .OfType<BlockFacing>()
+        .Distinct(),
+    ];
+    return faces switch {
+      [BlockFacing one] => (one, false),
+      [BlockFacing a, BlockFacing b] when a.Opposite == b => (a, true),
+      _ => throw new ArgumentException(
+        $"A filler cell couples on one face, or on two opposite ones; '{orientation}' names neither.",
+        nameof(orientation)
+      ),
+    };
+  }
+
+  /// <summary>
+  /// Registers a factory the fake class registry builds <paramref name="classname"/> from - the
+  /// headless stand-in for the behaviour registry a structure filler creates its hosted behaviours
+  /// through. Production fills that registry from <c>[BlockEntityBehaviorRegister]</c>.
+  /// </summary>
+  public TestWorld RegisterBlockEntityBehaviorFactory(
+    string classname,
+    System.Func<BlockEntity, BlockEntityBehavior> factory
+  ) {
+    Api.ClassRegistry.CreateBlockEntityBehavior(
+        Arg.Any<BlockEntity>(),
+        classname
+      )
+      .Returns(ci => factory(ci.Arg<BlockEntity>()));
+    return this;
+  }
+
+  /// <summary>
   /// Registers a factory that <c>BlockAccessor.SpawnBlockEntity(classname, pos)</c> uses for
   /// <paramref name="classname"/> - the headless stand-in for the engine's class registry. The spawned
   /// entity is positioned, linked to the block at that cell, stored and <c>Initialize</c>d against this
@@ -193,11 +343,69 @@ public sealed class TestWorld {
 
   #region Store access
 
+  /// <summary>What the store holds at <paramref name="pos"/>, whether or not its chunk is loaded.
+  /// <see cref="Accessor"/> reads through <see cref="ReadBlock"/> instead, which answers
+  /// <see cref="Air"/> for an unloaded chunk exactly as the engine does.</summary>
   public Block GetBlock(BlockPos pos) =>
     _blocks.TryGetValue(pos, out var b) ? b : Air;
 
+  /// <summary>What the store holds at <paramref name="pos"/>, whether or not its chunk is loaded;
+  /// the accessor reads through <see cref="ReadBlockEntity"/>.</summary>
   public BlockEntity? GetBlockEntity(BlockPos pos) =>
     _blockEntities.TryGetValue(pos, out var be) ? be : null;
+
+  #endregion
+
+  #region Chunk loading
+
+  private readonly HashSet<Vec3i> _unloadedChunks = new();
+  private readonly IWorldChunk _loadedChunk = Substitute.For<IWorldChunk>();
+
+  /// <summary>The chunk coordinate <paramref name="pos"/> falls in, dimension-aware through
+  /// <c>InternalY</c> - a mini-dimension sits above the world in internal Y, so a chunk column there
+  /// must not share a key with the one below it.</summary>
+  private static Vec3i ChunkOf(BlockPos pos) =>
+    new(
+      pos.X / GlobalConstants.ChunkSize,
+      pos.InternalY / GlobalConstants.ChunkSize,
+      pos.Z / GlobalConstants.ChunkSize
+    );
+
+  /// <summary>Whether the chunk holding <paramref name="pos"/> is loaded. Every cell starts loaded;
+  /// <see cref="UnloadChunkAt"/> takes one chunk away.</summary>
+  public bool IsChunkLoaded(BlockPos pos) =>
+    !_unloadedChunks.Contains(ChunkOf(pos));
+
+  /// <summary>
+  /// Hides every cell in the chunk holding <paramref name="pos"/> from <see cref="Accessor"/>: its
+  /// blocks read as <see cref="Air"/>, its block entities as <c>null</c> and
+  /// <c>GetChunkAtBlockPos</c> as <c>null</c>, which is what a real unload looks like to a walk. The
+  /// store is untouched, so <see cref="LoadChunkAt"/> brings the chunk back exactly as it was.
+  /// </summary>
+  /// <remarks>Distinct from <see cref="Unload"/>, which models the other half - one block entity
+  /// running its own <c>OnBlockUnloaded</c> and being dropped - and leaves the cell readable.</remarks>
+  public TestWorld UnloadChunkAt(BlockPos pos) {
+    _unloadedChunks.Add(ChunkOf(pos));
+    return this;
+  }
+
+  /// <summary>Brings back the chunk holding <paramref name="pos"/>. Loading a chunk that was never
+  /// unloaded does nothing, so a test can call it twice.</summary>
+  public TestWorld LoadChunkAt(BlockPos pos) {
+    _unloadedChunks.Remove(ChunkOf(pos));
+    return this;
+  }
+
+  /// <summary>What <see cref="Accessor"/> sees at <paramref name="pos"/>: the placed block, or
+  /// <see cref="Air"/> when its chunk is away. The engine never returns null for an unloaded cell,
+  /// which is exactly why an absent cell and an unreadable one need telling apart.</summary>
+  private Block ReadBlock(BlockPos pos) =>
+    IsChunkLoaded(pos) ? GetBlock(pos) : Air;
+
+  /// <summary>What <see cref="Accessor"/> sees at <paramref name="pos"/>: the live block entity, or
+  /// <c>null</c> when its chunk is away.</summary>
+  private BlockEntity? ReadBlockEntity(BlockPos pos) =>
+    IsChunkLoaded(pos) ? GetBlockEntity(pos) : null;
 
   #endregion
 
@@ -234,13 +442,13 @@ public sealed class TestWorld {
 
   /// <summary>
   /// Advances the simulation by <paramref name="seconds"/> server ticks (the network manager runs one
-  /// tick per second), dispatching <see cref="BlockNetwork.OnTick"/> for every live network with
-  /// <c>dt = 1</c>.
+  /// tick per second) through <see cref="BlockNetworkModSystem.ServerTick"/>, so a test drives the
+  /// same per-tick graph work the server does - resuming discovery a chunk suspended, then
+  /// <see cref="BlockNetwork.OnTick"/> for every live network with <c>dt = 1</c>.
   /// </summary>
   public void Tick(int seconds = 1) {
     for (int i = 0; i < seconds; i++)
-      foreach (var net in Networks.AllNetworks.ToList())
-        net.OnTick(Accessor, 1f, Networks);
+      Networks.ServerTick(Accessor, 1f);
   }
 
   /// <summary>Fires every block-entity server tick listener registered through <see cref="Api"/>
@@ -326,9 +534,10 @@ public sealed class TestWorld {
   }
 
   /// <summary>
-  /// Models a chunk unload of the block entity at <paramref name="pos"/>: runs its real
+  /// Models the block-entity half of a chunk unload at <paramref name="pos"/>: runs its real
   /// <c>OnBlockUnloaded</c> (the fake event API honours the tick-listener unregister, so it stops
-  /// ticking) and drops the instance while leaving the block placed.
+  /// ticking) and drops the instance while leaving the block placed and readable. The cell itself
+  /// stays visible to the accessor; <see cref="UnloadChunkAt"/> is the half that takes it away.
   /// </summary>
   public void Unload(BlockPos pos) {
     GetBlockEntity(pos)?.OnBlockUnloaded();
@@ -355,18 +564,23 @@ public sealed class TestWorld {
   private IBlockAccessor BuildAccessor() {
     var a = Substitute.For<IBlockAccessor>();
 
-    a.GetBlock(Arg.Any<BlockPos>()).Returns(ci => GetBlock(ci.Arg<BlockPos>()));
+    a.GetBlock(Arg.Any<BlockPos>())
+      .Returns(ci => ReadBlock(ci.Arg<BlockPos>()));
     // The fluid/solid-layer overload (BlockLayersAccess) reads the same store - tests that need a
     // distinct fluid layer place a block whose LiquidCode is set.
     a.GetBlock(Arg.Any<BlockPos>(), Arg.Any<int>())
-      .Returns(ci => GetBlock(ci.Arg<BlockPos>()));
+      .Returns(ci => ReadBlock(ci.Arg<BlockPos>()));
+    // Null for a chunk this world has taken away, a live chunk otherwise. The one call that can tell
+    // an absent cell from an unreadable one, since every block read answers air for both.
+    a.GetChunkAtBlockPos(Arg.Any<BlockPos>())
+      .Returns(ci => IsChunkLoaded(ci.Arg<BlockPos>()) ? _loadedChunk : null);
     // Coordinate overloads, including the unchecked GetBlockRaw vanilla's multiblock code reads
     // through. Left unwired these return null and NRE inside engine code. The int overload is obsolete
     // in favour of the BlockPos one but engine code still calls it, hence the suppression.
 #pragma warning disable CS0618
     a.GetBlock(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<int>())
       .Returns(ci =>
-        GetBlock(
+        ReadBlock(
           new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
         )
       );
@@ -378,12 +592,12 @@ public sealed class TestWorld {
         Arg.Any<int>()
       )
       .Returns(ci =>
-        GetBlock(
+        ReadBlock(
           new BlockPos(ci.ArgAt<int>(0), ci.ArgAt<int>(1), ci.ArgAt<int>(2))
         )
       );
     a.GetBlockEntity(Arg.Any<BlockPos>())
-      .Returns(ci => GetBlockEntity(ci.Arg<BlockPos>()));
+      .Returns(ci => ReadBlockEntity(ci.Arg<BlockPos>()));
     // Resolve-by-code, the same store IServerWorldAccessor.GetBlock(AssetLocation) reads. Orientation
     // behaviours swap a block to its facing variant through the accessor rather than the world
     // (CodeWithVariant -> GetBlock -> ExchangeBlock), and read a null here as an undeclared variant.

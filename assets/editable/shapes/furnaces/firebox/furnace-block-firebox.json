@@ -1,6 +1,6 @@
 {
 	"editor": {
-		"collapsedPaths": "Root/Base/ClayStand4,Root/Base/Masonry,Root/Chunk1,Root/FillingBlisterSteel,Root/Ingot,Root/Base/Firebars,Root/FillingSlag,Root/Covers,Root/Filling/Chunk2,Root/Filling/Chunk1,Root/Base,Root/Coke,Root/Crucible,Root/Crucibles,Root/Base/Cube5,Root/Base/ClayStand1,Root/Base/ClayStand2,Root/Base/ClayStand3",
+		"collapsedPaths": "Root/Crucibles,Root/Ingot,Root/Base/Firebars,Root/Crucible,Root/Base/ClayStand4,Root/Chunk1,Root/FillingBlisterSteel,Root/Base/ClayStand1,Root/Base/ClayStand2,Root/Base/ClayStand3,Root/Base/Masonry,Root/Filling/Chunk2,Root/Filling/Chunk1,Root/Base/Cube5,Root/FillingSlag,Root/Covers,Root/Base,Root/Coke",
 		"allAngles": false,
 		"entityTextureMode": false
 	},
@@ -9,10 +9,10 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"front1": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/refractory/tier3/front1",
-		"burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned",
-		"coke": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/coal/coke",
-		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1"
+		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1",
+		"front1": "block/clay/refractory/tier3/front1",
+		"burned": "block/clay/vessel/sides/burned",
+		"coke": "block/coal/coke"
 	},
 	"elements": [
 		{
@@ -133,6 +133,7 @@
 			"name": "Coke",
 			"from": [ 0.0, 0.0, 0.0 ],
 			"to": [ 0.0, 0.0, 0.0 ],
+			"renderInEditor": false,
 			"faces": {
 				"north": { "texture": "#coke", "uv": [ 10.5, 7.0, 11.0, 7.5 ] },
 				"east": { "texture": "#coke", "uv": [ 15.0, 5.5, 15.5, 6.0 ] },

@@ -1,12 +1,15 @@
 # Framework Composition — form, process, membership
-**Status** settled 2026-08-10. This is a decision record: nothing here is built. The current code is
-described only where it shows why the target differs.
+**Status** settled 2026-08-10. Both seams are built. Seam 2 is live in the code it describes; Seam 1
+is live for every host — the process is a behaviour, readiness is a published contract, form no
+longer inherits process, and a block entity whose base slot is already spent carries the process
+anyway (`BlockEntityRollingMill`). The megablock footprint-intactness arm and the station-window
+consumers are still a decision record.
 **Mod** exlib (every seam) · every mod (every consumer)
 **Owns** the three axes a machine is composed from, the two seams between them, and the rule that
 decides whether a capability is a base class or a behaviour. Supersedes the implicit hierarchy in
-which `BlockEntityMultiblockStructure` extends `BlockEntityProductionMachine`.
+which `BlockEntityMultiblockStructure` extended `BlockEntityProductionMachine`.
 **Depends on** [multiblock](multiblock.md) (the form vocabulary and the filler mechanism, whose
-"a filler can NEVER be a graph node" section this page retires) · [pipe-network](pipe-network.md) ·
+"a filler can never be a graph node" limitation this page retired) · [pipe-network](pipe-network.md) ·
 [mp-energy](mp-energy.md) · [conventions](../conventions.md) (the block-size vocabulary, the network
 families) · [the vanilla source map](../../vanilla/README.md)
 
@@ -15,9 +18,9 @@ families) · [the vanilla source map](../../vanilla/README.md)
 ## Role
 
 A machine in these mods is three independent things at once: a **shape in the world**, a **process
-that runs over time**, and a **member of one or more networks**. The framework currently expresses
-two of those three as inheritance, and C# gives a class one base. Everything awkward in the block
-layer follows from that single fact.
+that runs over time**, and a **member of one or more networks**. C# gives a class one base, so at most
+one of the three can be inheritance: process and membership are behaviours a block entity carries,
+and form keeps the slot.
 
 This page fixes the axes and the seams between them so that a capability is added by composition,
 and states the rule for when something is a base class at all.
@@ -62,50 +65,98 @@ only three questions through `IMechanicalPowerBlock` — `GetNetwork`, `HasMechP
 
 ### Seam 1 — form publishes readiness, process consumes it
 
-A multiblock knows whether its pattern is complete. A process needs a gate. Today that is an
-inheritance edge: `BlockEntityMultiblockStructure` extends `BlockEntityProductionMachine` purely so
-it can write `CanRunProduction => StructureComplete`
-(`ExpandedLib/Blocks/Structures/BlockEntityMultiblockStructure.cs:46`, `:50`) and start and stop the
-tick across completion transitions (`:69`, `:82`, `:101`, `:349`).
+A multiblock knows whether its pattern is complete. A process needs a gate. That was an inheritance
+edge — `BlockEntityMultiblockStructure` extended `BlockEntityProductionMachine` — and it is now a
+published contract. The form implements `IProductionReadiness`, answering `IsReadyToProduce` from its
+own `CanRunProduction` and `StopsProductionWhenNotReady` from `StopsProductionOnStructureLost`; the
+process reads every publisher on the machine through `ProductionReadiness` and names none of them. The
+monitor tick drives the transitions through `ProductionProcess.Start`/`.Stop`, which reach whatever
+process the machine carries and do nothing when it carries none.
 
-The coupling is real and must survive; only its expression changes. Form publishes a readiness
-signal, process reads it. A plain block publishes "always ready"; a megablock publishes whether its
-footprint is intact; a multiblock publishes pattern completion. No process needs to know which kind
-of form answered.
+The coupling is real and survives; only its expression changed. Form publishes a readiness signal,
+process reads it. No process needs to know which kind of form answered.
 
-Every concrete multiblock in the tree today does run a process, so the edge is currently harmless in
-behaviour. It is not harmless in structure: it spends the single block-entity base slot for
-everything beneath it, and it loses invariants across the levels — `BlockEntityMultiblockStructure`
-overrides `OnBlockRemoved` without `OnBlockUnloaded`, although the parent it inherits from overrides
-both (`BlockEntityProductionMachine.cs:151`, `:156`).
+**Taking the process on is a separate choice from being a multiblock.** The tick lives in
+`BEBehaviorProductionMachine`, and a multiblock that also produces derives from
+`BlockEntityMultiblockMachine`, which hosts one. A multiblock that only has to be built derives from
+the form alone and carries no tick, which the type system made impossible before: the abstract
+`OnProductionTick` reached every multiblock through the spent base slot.
+
+**Teardown ordering is the host's choice, and a hosted capability may not assume one.** A block
+entity drops every listener it holds *before* either teardown call fans out to its behaviours, so a
+host that calls `base` first does the rest of its own teardown with no listeners left, and one that
+calls `base` last still has them. Both orderings ship: the multiblock form tears down after `base`,
+the furnace core before it, because its fire must be out while the tick still exists. A behaviour
+therefore does only order-independent work on those paths — the process forgets its tick handle,
+which is idempotent and has no side effect — and a machine with work to finish first does it before
+calling `base`.
+
+**A host does not have to be a machine base class.** Anything deriving from `BlockEntity` can add a
+`BEBehaviorProductionMachine` in its constructor and publish `IProductionReadiness` from whatever it
+already knows, which is what frees the base slot for the axis that needs it.
+`BlockEntityRollingMill` is the shipped case: it spends its base on being a graph node, states its
+pass interval and its gate on a nested process, and gets the bounded `dt` it previously did without.
+It is the shape the four machine tools need, each of which wants a timed job *and* a window
+inventory ([machining line](machining-line.md)) — `BlockEntityContainer` takes the base, the process
+is a behaviour. One workaround from the old edge is still in the tree: `BlockEntitySmokeStack`
+hand-registers its own graph node because its base went to the multiblock.
+
+Readiness is not one signal, and this is what the seam must actually carry:
+
+| Kind | Answered by | Classes |
+|---|---|---|
+| pattern completion | `StructureComplete` | 10 |
+| construction completion | `IsConstructed`, off the RCC stage count | transmission, engine |
+| peer presence | `Engine != null` | engine sub-machine |
+| work in hand | `IsRolling` | rolling mill |
+
+Only the first is form. Peer presence is topology and work in hand is the machine's own state, so a
+form-only provider retires neither. Readiness also has two
+**levels**, not one: `CanRunProduction` asks *may I run this tick*, while
+`StopsProductionOnStructureLost` (`:131`) asks *should I still be ticking at all*. A machine that
+answers only the first is frozen with its state held rather than stopped, which is exactly what the
+breached furnace relies on (`BlockEntityFurnaceCore.cs:1043`).
+
+⛔ Two arms of the target have no implementation to move. Nothing anywhere computes whether a
+megablock's footprint is intact, and no shipped machine answers "always ready" — `CanRunProduction`
+is abstract and all five overrides gate on something. Those arms are new code, not a refactor.
 
 ### Seam 2 — a cell carries membership, not a block class
 
-The block-network walk resolves a node by block type:
+Membership belongs to the **cell**, not to a kind of block. The walk asks a resolver what participates
+at a position and never names a block class:
 
 ```csharp
-if (world.GetBlock(pos) is not BlockNetworkNode node)
-  yield break;                       // BlockNetworkModSystem.cs:351, in GetConnectedNeighbors
+INetworkMember? source = NetworkMembership.Resolve(world, pos, networkType);
+if (source == null || !CouplesFrom(world, pos, source))
+  yield break;                       // BlockNetworkModSystem.cs:482, in GetConnectedNeighbors
 ```
 
-The fracture walk tests the same way at `:242`, so both the discovery and the split path resolve a
-node by block type. ([multiblock](multiblock.md) cites `:386-387` for this; the file has drifted
-since.)
+`GetConnectedNeighbors` is the only walk there is. `RemoveNode`'s fracture BFS
+(`BlockNetworkModSystem.cs:239`) and `RebuildFromRoot` (`:330`) both step through it rather than testing anything themselves, so there is a
+single place a node is resolved and it names no class.
 
-Three consequences, all currently documented as if they were rules of the domain:
+`Resolve` answers in two arms: a `BEBehaviorNetworkMember` on the cell's block entity whose network
+type matches, else the block itself through `INetworkConnector` (`NetworkMembership.cs:44`). Both
+produce the same `INetworkMember`, and the neighbour side resolves through exactly the same call
+(`BlockNetworkModSystem.cs:543`), so a block carrying a membership is walked **to** as well as **from**. Resolving only the
+block on the far side would leave the graph one-directional.
 
-- A filler is a plain `Block`, so it can never be a graph node, however many ports it hosts
-  ([multiblock](multiblock.md) § A filler can NEVER be a graph node).
-- A block that spent its base on something else reaches a network through `INetworkConnector`
-  instead — ten implementors, nine of which are not network nodes at all and read the far-side cell.
-- No megastructure is a network node, because none can extend two bases.
+The block arm is there because a block **with no block entity in a loaded chunk** is a real state:
+`BlockConverterIntake` is an `INetworkConnector` that is deliberately not a node and has no block
+entity, and a node whose block entity was torn down while its chunk stayed resident goes on answering.
+⛔ A chunk unload is not that case — it takes the block too, and the graph handles it separately (see
+below).
 
-The same filler cell can already join the **vanilla** mechanical network, because vanilla resolves
-its nodes by behaviour. One cell, two networks, one of which is reachable and one of which is not,
-and the only difference is how the walk finds a node.
-
-The target: the walk resolves a node by behaviour, and the block answers only a small interface.
-A cell — principal or filler — carries one membership behaviour per network it joins.
+Why the resolver rather than a base class. C# gives a class one base, so as long as a node *was* a
+`BlockNetworkNode`, a block that spent its base elsewhere could only reach a network through
+`INetworkConnector` — a connection target, never a member — and no megastructure could be a node at
+all. A filler cell felt the same rule from the other side: it is a plain `Block`, yet it could already
+join the **vanilla** mechanical network, because vanilla resolves its nodes by behaviour. One cell, two
+networks, one reachable and one not, and the only difference was how the walk found a node. A cell —
+principal or filler — now carries one membership behaviour per network it joins, and
+[multiblock](multiblock.md) § "A filler cell is a graph node when it declares one" is where a footprint
+cell declares its.
 
 ### Membership is addressed by network type, never by CLR type
 
@@ -137,11 +188,15 @@ override an explicit implementation, and the per-cell answer would become unreac
 lists the interface. `BEBehaviorNetworkMember` lists `INetworkMember`, so a subclass declaring a
 matching public member without re-listing the interface never enters the map, and the base's answer
 keeps winning. That is why `BEBehaviorNetworkMember` declares every member a subclass may answer
-differently — `NetworkTypeAt`, `HasConnectorAt`, `IsConnectionBroken`, `IsNetworkEndPoint`,
-`AcceptsNeighbour` — as a `public virtual`, instead of inheriting any of them as a default.
-`NetworkType` is not among them: it is set once per instance rather than overridden.
+differently — `NetworkType`, `NetworkTypeAt`, `HasConnectorAt`, `IsConnectionBroken`,
+`IsNetworkEndPoint`, `AcceptsNeighbour` — as a `public virtual`, instead of inheriting any of them as
+a default. `NetworkType` included: a hosted membership does not own its answer, and a copy of it
+drifts (see below).
 
-`NetworkMembershipTests` guards both shapes against the real production classes.
+`NetworkMembershipTests` guards both shapes against production classes, and asks each through an
+`INetworkMember`-typed reference — the only way to exercise the map rather than the class member:
+the block side against `BlockStructureFiller` and a `BlockNetworkNode` subclass, the behaviour side
+against the membership `BlockEntityPipe` hosts.
 
 ### Both arms of the resolver ask the same question
 
@@ -150,6 +205,26 @@ compare `NetworkTypeAt(world, pos)`, never the declared `NetworkType`. Keying th
 properties would make a membership whose type varies by cell, which is exactly what a filler cell is,
 unfindable at a position where the equivalent block is found. `MemberOf(be, networkType)` remains the
 position-less accessor for callers holding only a block entity, and matches the declared type.
+
+### A membership may state its own connector faces
+
+`BEBehaviorNetworkMember.Connectors` holds the faces the membership couples on. Empty — the default —
+means the block answers, which is what every shipped network node relies on: a membership added to a
+node block inherits its orientation without restating it. A non-empty set outranks the block, because
+the two cases that need one have a block that cannot answer for the cell at all. A plain `Block` is no
+`INetworkConnector`, so a membership on one would report no connector on any face and bridge nothing.
+A filler cell's block is the single shared `exlib:structurefiller` singleton — always north, no
+variants — so its port face comes from the footprint declaration instead.
+
+Faces are stated either as an orientation string of single-letter side codes (`"ns"`, `"we"`,
+`"nsewud"`, mapped through `BlockNetworkModSystem.SideToFace`) or as `BlockFacing`s directly, which is
+what a filler hands over: its declared face arrives already rotated into the placed orientation. A
+JSON `connectors` key reaches the same property through `Initialize`.
+
+A set already configured in code therefore wins over a JSON declaration, and the disagreement is
+logged — the same precedence and the same noise as a losing `networkType` declaration. The reason is
+the rotation: a configured face names a face the cell actually exposes, while a declaration is written
+in the unrotated frame, so a declaration that won would move the port.
 
 ### A hosted membership registers, and the engine fixes when
 
@@ -168,22 +243,51 @@ Three orderings the engine dictates, each of which silently produces a wrong ans
 
 - **The membership is added in the constructor.** `BlockEntity.FromTreeAttributes` and `.Initialize`
   both fan out over `Behaviors`; a membership added any later misses whichever has already run.
-- **It reads its network type at registration, never earlier.** `FromTreeAttributes` reaches the
-  behaviours *before* it assigns the block entity's own `NetworkType`, and a derived field initializer
-  runs before the base constructor body — so both the constructor and the tree fan-out are too early.
-  `BlockEntityFluidIntake` is the case that proves it: its `NetworkType` is a plain auto-property the
-  save tree fills in.
+- **It never holds a copy of its network type.** Every point at which one could be taken is wrong.
+  A derived field initializer runs before the base constructor body, so the constructor sees the
+  declared default rather than the loaded value; `FromTreeAttributes` reaches the behaviours *before*
+  it assigns the block entity's own `NetworkType`, so the tree fan-out is too early; and
+  `FromTreeAttributes` runs again on **every** `MarkDirty(…)`, so even a value taken at `Initialize`
+  drifts afterwards. ⛔ `redrawOnClient` does not gate that: `BlockEntity.MarkDirty` calls
+  `MarkBlockEntityDirty` unconditionally and only then, `if (redrawOnClient)`, adds the mesh redraw
+  (`BlockEntity.cs:451-459`) — so the bare no-argument call resyncs the tree just the same. The
+  hosted membership therefore *overrides* `NetworkType` and reads its owner's live.
+  `BlockEntityFluidIntake` is the case that proves all three: its `NetworkType` is a plain
+  auto-property the save tree fills in, and it calls bare `MarkDirty()` once a second.
 - **It reads the state to restore before `AddNode`, not after.** `AddNode` broadcasts, the broadcast
   reaches `OnNetworkUpdate`, and that clears the saved state it is about to restore.
 
-`properties` is null on the programmatic path — `BlockEntityBehavior.Initialize` sets only `Api`, and
-only `CreateBehaviors` assigns `properties` (`BlockEntity.cs:117`) — so a membership added in code must
-guard every read of it, while a JSON declaration still names its network type through `networkType`.
+Two more traps around the same method. `properties` is null on the programmatic path —
+`BlockEntityBehavior.Initialize` sets only `Api`, and only `CreateBehaviors` assigns `properties`
+(`BlockEntity.cs:117`) — so a membership added in code must guard every read of it. And
+`BlockEntityBehavior.Api` is assigned *only* by that same `Initialize`, while a block entity can be
+handed an api without being initialised, so anything gated on the behaviour's own `Api` silently
+never runs on that path; teardown reads `Blockentity.Api`, which is assigned before the behaviour
+fan-out and is therefore set whenever the behaviour's is.
+
+**A declared `networkType` loses to a block entity that already names one, and the disagreement is an
+error.** The JSON key is for a membership with no other source — a plain block's, or a filler cell's.
+A block entity's own answer is a compiled contract, and every node family but `BlockEntityFluidIntake`
+implements the setter as a no-op, so a declaration that "won" would vanish on the way through and the
+cell would register under the constant regardless; on the intake, which has a real setter, it would
+win *and* be persisted by `ToTreeAttributes`. Both silent outcomes read to whoever wrote the JSON as
+if it had taken effect, and they disagree with each other, so neither may be silent.
+
+A membership that ends up naming no network at all is logged as an **error** and joins nothing.
+Registering a blank type throws out of the network factory lookup, and this runs inside a chunk load,
+so one bad declaration would take a world down; but a cell silently outside its run reads to a player
+as a network that stopped working, which is not a warning.
 
 The removal-only teardown opt-out moved with the code that owns it. Deregistering on chunk unload
 would fracture a live run every time a player walked away, and the guard in `TeardownSymmetryTests`
 reads a file carrying the marker as exempt — so a marker left behind on a class that no longer tears
 anything down would quietly exempt whatever lands in that file next.
+
+Keeping the node is only half of it. ⛔ An unloaded chunk hides the **block** as well as the block
+entity, so neither arm of the resolver answers there and the cell reads to the walk as empty space —
+the block arm keeps a cell walkable across an absent block entity, not across an absent chunk. The
+graph therefore suspends its fracture check rather than answering it whenever part of a network is
+unreadable; see [pipe network](pipe-network.md) § 1, "An unloaded chunk suspends the fracture check".
 
 ### What stays a base class
 
@@ -203,15 +307,16 @@ changes, paying for a chunk re-tesselation to synchronise a value it never sends
 
 Retired by this design:
 
-- [multiblock](multiblock.md) § "A filler can NEVER be a graph node", and with it the rolling mill's
-  dedicated `BlockRollingMillAxle` cells, which exist only because the two drive cells could not be
-  fillers and nodes at once.
+- [multiblock](multiblock.md)'s "a filler can never be a graph node" rule, now § "A filler cell is a
+  graph node when it declares one", and with it the rolling mill's dedicated `BlockRollingMillAxle`
+  cells, which exist only because the two drive cells could not be fillers and nodes at once. The
+  block itself stays until a migration can retire it: it is placed in existing worlds.
 - `INetworkConnector` as a parallel mechanism **for membership**. A block that is *on* a network has
   a membership behaviour, and there is no second way. The interface itself survives, narrowed to
   what it was named for: a **port** — a face another network may couple to, on a block that is not
   itself a graph member. The lancashire boiler's water intake stays a port; it is a connection
-  target, not a node. The walk already resolves the neighbour side this way; A1 makes the source
-  side match.
+  target, not a node. It is also how a *block* answers `INetworkMember`, which is what keeps a cell
+  resolvable when it has no block entity.
 - The peripheral-block pattern as a *requirement*. Splitting a machine's connections across cells
   stays available because it is often the right shape physically — an intake belongs where the pipe
   arrives — but it is no longer the only way to be on more than one network.
@@ -223,20 +328,39 @@ recorded and how the graph is walked. It does not touch what flows.
 
 ## Code
 
-Current shape, for reference while the target is built.
+Membership — the built axis.
 
-| Type / member | file:line | Role today |
+| Type / member | file:line | Role |
 |---|---|---|
-| `BlockNetworkNode` | `ExpandedLib/Blocks/Networks/BlockNetworkNode.cs` | abstract `Block`; 8 subclasses; the thing the walk tests for |
-| `BlockNetworkModSystem.GetConnectedNeighbors` | `ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs:351` | resolves a node by block type — Seam 2's problem in one line |
-| `BlockNetworkModSystem` fracture walk | `:242` | the same test on the split path |
-| `INetworkConnector` | `ExpandedLib/Blocks/Networks/INetworkConnector.cs` | the escape hatch, 9 implementors |
-| `BlockEntityProductionMachine` | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:21` | the process, as a base class |
-| `.CanRunProduction` / `.AutoStartProduction` | `:31`, `:39` | the gate the form overrides |
-| `.ConnectedNetwork<TNet>` / `.NetworkAt<TNet>` | `:168`, `:173` | network access bolted to the process base |
-| `BlockEntityMultiblockStructure` | `ExpandedLib/Blocks/Structures/BlockEntityMultiblockStructure.cs:23` | the form, extending the process |
-| `BlockStructureFiller` | `ExpandedLib/Blocks/Structures/BlockStructureFiller.cs` | a plain `Block`; hosts behaviours but is not a node |
-| `BEBehaviorMPFillerPort` | `ExpandedLib/Blocks/Structures/BEBehaviorMPFillerPort.cs` | membership done right already, for vanilla MP only |
+| `INetworkMember` | `ExpandedLib/Networks/INetworkMember.cs:21` | the whole source-side contract, five members; what the walk holds |
+| `INetworkConnector` | `ExpandedLib/Networks/INetworkConnector.cs:18` | a port, and the block-side answer to `INetworkMember`; 10 implementors, 9 of them not nodes |
+| `NetworkMembership.Resolve` | `ExpandedLib/Blocks/Networks/NetworkMembership.cs:44` | membership behaviour first, block second; the only place a node is resolved |
+| `.MembersOf` / `.MemberOf` | `:17`, `:27` | every membership on a block entity, and the one declaring a network type |
+| `.CouplesAt` | `:68` | network-agnostic: does this cell expose a connector on this face, from whichever side answers |
+| `BEBehaviorNetworkMember` | `ExpandedLib/Blocks/Networks/BEBehaviorNetworkMember.cs:22` | one membership; registers its cell and drops it on removal |
+| `.Connectors` / `.DeclareConnectors` | `:53`, `:60` | the faces it couples on, empty to leave the answer to the block |
+| `.ConfigureFromFiller` | `:107` | takes a footprint cell's face, already rotated into the placed orientation |
+| `.Initialize` / `.OnBlockRemoved` | `:191`, `:246` | the graph join, and the removal-only teardown |
+| `BlockEntityNetworkNode.HostMembership` | `ExpandedLib/Blocks/Networks/BlockEntityNetworkNode.cs:38` | private nested membership forwarding to its owner; no persistence moved |
+| `BlockNetworkModSystem.GetConnectedNeighbors` | `ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs:477` | the one walk; every other traversal steps through it |
+| `.IsValidNetworkNeighbour` | `:535` | the far side, resolved by the same call as the near side |
+| `.GetOpenConnectorFaces` | `:449` | open ends; deliberately does not gate its source (see [pipe network](pipe-network.md) § 1) |
+| `.ReviewConnectivity` | `:206` | fracture, settle, or suspend when part of the run is unreadable |
+| `BlockNetworkNode` | `ExpandedLib/Blocks/Networks/BlockNetworkNode.cs:19` | abstract `Block`; 17 subclasses; a convenience now, not the contract |
+| `BEBehaviorMPFillerPort` | `ExpandedLib/Blocks/Structures/BEBehaviorMPFillerPort.cs` | the same shape for vanilla MP, and the precedent this followed |
+
+Form and process.
+
+| Type / member | file:line | Role |
+|---|---|---|
+| `BEBehaviorProductionMachine` | `ExpandedLib/Blocks/Machines/BEBehaviorProductionMachine.cs:15` | the process: the tick, its gate, teardown and away-catch-up |
+| `IProductionReadiness` / `ProductionReadiness` | `ExpandedLib/Blocks/Machines/IProductionReadiness.cs:17`, `ProductionReadiness.cs:14` | one publisher's answer, and the two aggregates over every publisher on a machine |
+| `ProductionProcess` | `ExpandedLib/Blocks/Machines/ProductionProcess.cs:14` | starts and stops a machine's process without naming the class that carries it |
+| `BlockEntityProductionMachine` | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:20` | hosts a process for a machine that is not a multiblock |
+| `MachinePorts` | `ExpandedLib/Blocks/Machines/MachinePorts.cs:14` | network access as extensions on any `BlockEntity`, so it is not a machine's to inherit |
+| `BlockEntityMultiblockStructure` | `ExpandedLib/Blocks/Structures/BlockEntityMultiblockStructure.cs:28` | the form: the pattern, its monitor tick, and the readiness it publishes |
+| `BlockEntityMultiblockMachine` | `ExpandedLib/Blocks/Structures/BlockEntityMultiblockMachine.cs:20` | the form plus a hosted process; what the five concrete multiblocks derive from |
+| `BlockStructureFiller` | `ExpandedLib/Blocks/Structures/BlockStructureFiller.cs:22` | a plain `Block`; hosts behaviours, and a cell of it is a node when it declares one |
 
 Vanilla, as the worked example.
 

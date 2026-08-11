@@ -111,7 +111,7 @@ All proposed - no config section, no keys, no code.
 
 | Key | Proposed | file:line | What it does |
 |---|---|---|---|
-| `HeadingStrokeMs` | 250 ms | — (cf. hard-coded `PassTickMs`, `BlockEntityRollingMill.cs:41`) | stroke tick |
+| `HeadingStrokeMs` | 250 ms | — (cf. hard-coded `PassTickMs`, `BlockEntityRollingMill.cs:42`) | stroke tick |
 | `HeadingMinTorque` | 0.3 | — | matches the `grooved` set's shipped `minTorque` (`RollSetItemDefinitions.cs:92`), i.e. the bench costs about what rolling its own input costs - and sits above the nail bench, which is the geared/ungeared distinction expressed as force |
 | `HeadingStrokesPerPiece` | 1 | — | one blow, one head |
 | die `count` | 1 per 25 u rod | — | mass-neutral: a bolt is the rod plus a head, nothing is added or lost |
@@ -153,11 +153,11 @@ Nothing exists. `grep -i "heading\|rivetmachine" src/` finds nothing relevant.
 |---|---|---|
 | `ItemDie` (record + `TryParse`) | `src/IronworkingExpanded/BlockStructures/Forming/ItemDie.cs` | `RollSetSpec.cs:31-201` end to end - including the JSON shape decision: outputs as an array of objects, never a float-keyed object (`RollSetSpec.cs:159-161` explains why: `0.5` vs `"0.50"` never compare equal) |
 | `DieItemDefinitions` | `.../Forming/DieItemDefinitions.cs` | `RollSetItemDefinitions.cs:17-128` - one item, a `type` variant group, per-variant specs via `.Raw("attributesByType", byType)` (`:126`) |
-| `BlockEntityDieBench` (shared base) | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:33` - `BlockEntityNetworkNode` + `IMpEnergyConsumer`; `NetworkType => "mpenergy"` (`:35-39`); `LoadTorque` 0 while idle (`:314-326`); tooling slot + `TryFit…` (`:127-155`); persistence via `SetItemstack` / `ResolveBlockOrItem` (`:409-443` - the resolve call is required or the loaded stack has no `Collectible`) |
+| `BlockEntityDieBench` (shared base) | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:24` - `BlockEntityNetworkNode` + `IMpEnergyConsumer` + `IProductionReadiness`; `NetworkType => "mpenergy"` (`:35-38`); `LoadTorque` 0 while idle (`:336-350`); tooling slot + `TryFit…` (`:147-182`); persistence via `SetItemstack` / `ResolveBlockOrItem` (`:428-460` - the resolve call is required or the loaded stack has no `Collectible`) |
 | `BlockHeadingMachine` | `.../Forming/Blocks/` | `BlockRollingMill.cs:31`, minus `IFillerHost` / `IFillerInteractionTarget` |
 | the decision | `.../Forming/DieFeed.cs`, pure | `MillFeed.Decide` (`MillFeed.cs:95-128`) - pure, so the whole rule set is pinned headless |
 | the torque gate | inside that decision | `RollingPass.CanCarry` (`RollingPass.cs:126-127`) - no caller in `src/` today |
-| stroke tick | `RegisterGameTickListener`, server only | `BlockEntityRollingMill.cs:64-71`, or `BlockEntityProductionMachine` (`:21`, tick gate `:32`, away-catch-up `:92`) |
+| stroke tick | a hosted `BEBehaviorProductionMachine`, server only | `BlockEntityRollingMill.cs:28`, `:48-53` - the process is added in the constructor and states its interval; the bench publishes its gate as `IProductionReadiness` (`:59`, `:63`) and writes the stroke in `OnProductionTick`. That buys the bounded `dt` and the away-catch-up for nothing (`BEBehaviorProductionMachine.cs:77`, `:113`) |
 | def + recipe | `IExBlockDefProvider.Definitions(domain)` + `ExRecipeDef` | `BlockRollingMill.cs:44-64`, `CraftingStationRecipeDefinitions.cs:23-36` |
 
 Where a caller hooks in. To add a fastener: ship one die item whose `die` attribute names `Bench`, `Accepts`, `Output` and `Count`. No block change, no dependency on iwex beyond the attribute shape - the same contract `MoldSpec` gives casting patterns (`MoldSpec.cs:18-25`). To add a bench: derive from the shared BE base and give it a different `Bench` string.
@@ -172,7 +172,7 @@ Where a caller hooks in. To add a fastener: ship one die item whose `die` attrib
 - **The spur gear must not become a ratio.** See Structure. Two ratio systems on one network is how the transmission's `TryCouple` guard (`BlockEntityTransmission.cs:290`) stops meaning anything.
 - **Float keys in JSON.** If the die ever keys anything on a thickness or a gap, read `RollSetSpec.cs:159-161` first - and note the double-vs-float authoring note at `RollSetItemDefinitions.cs:22-24`, which exists because a widened float destabilises the emitted def against its golden.
 - **Fitting must hand the tooling back on refusal.** `FitRollSet` takes the item out of the slot before asking, and puts it back if the machine says no (`BlockRollingMill.cs:306-314`). Getting that order wrong eats the player's die.
-- **`ResolveBlockOrItem` after `GetItemstack`.** A stack read off a tree carries no resolved collectible; both the mill (`BlockEntityRollingMill.cs:440-442`) and the hearth (`BlockEntityHeatingHearth.cs:148-150`) document the trap in-source, and in the hearth's case the symptom is a piece that silently fails to draw.
+- **`ResolveBlockOrItem` after `GetItemstack`.** A stack read off a tree carries no resolved collectible; both the mill (`BlockEntityRollingMill.cs:457-459`) and the hearth (`BlockEntityHeatingHearth.cs:148-150`) document the trap in-source, and in the hearth's case the symptom is a piece that silently fails to draw.
 - **A run with no storage node has no state** (`MpEnergyNetwork.cs:81-89`).
 - **Heading is not stamping and not shearing.** The [shear](shear.md) cuts across; a die on the [steam hammer](steam-hammer.md) cuts out; this bench upsets - it adds no geometry to a strip and removes nothing, which is why it is mass-neutral and neither of the other two is.
 

@@ -116,7 +116,7 @@ All proposed; the bench has no config section and no keys. Values that exist tod
 | Key | Proposed | file:line | What it does |
 |---|---|---|---|
 | `NailsPerPlate` | 4 | — | the conversion. Fixed by the mass ledger, not chosen: 4 × 25 = 100 u |
-| `NailStrokeMs` | 250 ms | — (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:41`) | stroke tick |
+| `NailStrokeMs` | 250 ms | — (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:42`) | stroke tick |
 | `NailStrokesPerPlate` | 4 | — | one stroke per nail, so a plate visibly takes four |
 | `NailMinTorque` | 0.15 | — | below the `flat` roll set's 0.2 (`RollSetItemDefinitions.cs:68`) - a nail bench must be the easiest load on the run |
 | `NailStrokeEnergy` | ≪ one mill pass | — | sized against `RollingTorqueScale = 0.02` (`IwexConfig.cs:520`) and the headroom note at `IwexConfig.cs:508-520` |
@@ -139,8 +139,8 @@ Hard-coded elsewhere, and relevant:
 | Broken | Returns |
 |---|---|
 | the bench | itself, one item |
-| a plate on the table | handed back uncut - no partial credit, the same rule the mill applies to an interrupted pass (`BlockEntityRollingMill.cs:280-288`) |
-| nails in the tray | all of them - spawn the contents before `base.OnBlockBroken`, as `BlockEntityRollingMill.cs:374-383` does for its piece and roll set |
+| a plate on the table | handed back uncut - no partial credit, the same rule the mill applies to an interrupted pass (`BlockEntityRollingMill.cs:302-311`) |
+| nails in the tray | all of them - spawn the contents before `base.OnBlockBroken`, as `BlockEntityRollingMill.cs:395-404` does for its piece and roll set |
 | the fitted die | spawned, not destroyed |
 
 No fillers, so nothing routes through [multiblock](../mechanics/multiblock.md)'s drop rerouting.
@@ -154,9 +154,9 @@ Nothing exists. `grep -i "nailcutter\|nailmachine" src/` returns nothing.
 | Piece | Where | Model it on |
 |---|---|---|
 | `BlockNailMachine` | `src/IronworkingExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` (`BlockNetworkNode` + `IExBlockDefProvider`), minus the filler interfaces |
-| `BlockEntityNailMachine` | `.../Forming/BlockEntities/` | shares a base with the [heading machine](heading-machine.md): `BlockEntityNetworkNode` + `IMpEnergyConsumer`, `LoadTorque` at idle = 0 (`BlockEntityRollingMill.cs:314-326`) |
-| stroke tick | `RegisterGameTickListener` in `Initialize`, server-side only | `BlockEntityRollingMill.cs:64-71`. Alternatively `BlockEntityProductionMachine` (`BlockEntityProductionMachine.cs:21`) for the free away-catch-up (`:92`) and the `CanRunProduction` gate (`:32`) |
-| speed read | per stroke | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:79-81` |
+| `BlockEntityNailMachine` | `.../Forming/BlockEntities/` | shares a base with the [heading machine](heading-machine.md): `BlockEntityNetworkNode` + `IMpEnergyConsumer`, `LoadTorque` at idle = 0 (`BlockEntityRollingMill.cs:336-350`) |
+| stroke tick | a hosted `BEBehaviorProductionMachine`, server-side only | `BlockEntityRollingMill.cs:28`, `:48-53`; the gate is published as `IProductionReadiness` (`:59`, `:63`) rather than tested at the top of the stroke. The bounded `dt` (`BEBehaviorProductionMachine.cs:77`, `:146`) and the away-catch-up (`:107`, `:113`) come with it |
+| speed read | per stroke | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:89-93` |
 | the die spec | `ItemDie`, owned by [heading machine](heading-machine.md) | `RollSetSpec.cs:31` / `MoldSpec.cs:32` - `TryParse` returning a human-readable error (`RollSetSpec.cs:108`, `MoldSpec.cs:49`) |
 | animation | `EnergyAnim.SpinSpeed` for the wheel | `EnergyAnim.cs:10-24`; clips authored as one revolution |
 | def + recipe | a `IExBlockDefProvider` static `Definitions(domain)` and an `ExRecipeDef` grid | `BlockRollingMill.cs:44-64`, `CraftingStationRecipeDefinitions.cs:23-36` |

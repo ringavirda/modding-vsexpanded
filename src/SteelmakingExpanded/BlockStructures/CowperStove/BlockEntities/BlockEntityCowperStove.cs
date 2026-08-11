@@ -1,5 +1,6 @@
 using System.Text;
 using ExpandedLib;
+using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
@@ -22,7 +23,7 @@ namespace SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 /// passing through into the hot blast that boosts the blast furnace.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityCowperStove : BlockEntityMultiblockStructure {
+public class BlockEntityCowperStove : BlockEntityMultiblockMachine {
   private BlockFacing _connectorFace = BlockFacing.SOUTH;
   private float _internalTemperature = ExlibValues.AmbientTemperature;
   private string _lastStatus = Lang.Get("smex:cowperstove-status-idle");
@@ -107,7 +108,7 @@ public class BlockEntityCowperStove : BlockEntityMultiblockStructure {
     var consumedExhaustVol = 0f;
     float inputExhaustTemp = ExlibValues.AmbientTemperature;
     bool isReceivingExhaust = false;
-    if (ConnectedNetwork<PipeNetwork>(_connectorFace) is { } exhaustNet) {
+    if (this.ConnectedNetwork<PipeNetwork>(_connectorFace) is { } exhaustNet) {
       inputExhaustTemp =
         exhaustNet.State?.Temperature ?? ExlibValues.AmbientTemperature;
       consumedExhaustVol = exhaustNet.TryConsumeGas(

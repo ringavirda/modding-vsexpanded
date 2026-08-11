@@ -6,8 +6,9 @@ namespace ExpandedLib.Networks;
 /// <summary>
 /// One cell's participation in a block network, as the graph walk sees it. Answered either by a
 /// <c>BEBehaviorNetworkMember</c> on the block entity or by the block itself through
-/// <see cref="INetworkConnector"/>, so a cell stays a node while its chunk is unloaded and its block
-/// entity is gone. See docs/design/mechanics/framework-composition.md.
+/// <see cref="INetworkConnector"/>, so a cell stays walkable while its block entity is absent. An
+/// unloaded chunk takes the block too and neither arm answers; the graph handles that separately.
+/// See docs/design/mechanics/framework-composition.md.
 /// </summary>
 /// <remarks>
 /// Most members below carry a default, and a default is silently reached when an implementor

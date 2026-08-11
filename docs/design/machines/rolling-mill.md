@@ -1,7 +1,7 @@
 # Rolling mill
 
-**Status** blocked - the block, the pass simulation and the save/load are live and pinned by 123 test
-methods across nine files; nothing in survival can craft it, and nothing in survival can feed it
+**Status** blocked - the block, the pass simulation, the pass clock and the save/load are live and
+pinned by 129 test methods across ten files; nothing in survival can craft it, and nothing in survival can feed it
 (B3 / B4, plus the deck-reachability blocker B17 - see [Blockers](#blockers)).
 **Mod** iwex (`IronworkingExpanded`)
 
@@ -72,11 +72,13 @@ Nine fillers, two axle nodes, one principal - twelve cells (`BlockRollingMill.cs
 footprint is authored with the ASCII layout DSL and rotated on placement; see
 [multiblock](../mechanics/multiblock.md).
 
-The axle cells are not fillers. The network BFS only traverses `BlockNetworkNode` cells, so a filler could
-never bridge the drive line and the mill would connect on one shaft end only. Two dedicated invisible node
-blocks make the three-cell line one connected bus, drivable from either end and chainable into a train of
-stands on a shared shaft (`BlockRollingMillAxle.cs:11-18`). This is the canonical case of the
-no-filler-graph-node rule ([multiblock](../mechanics/multiblock.md)).
+The axle cells are not fillers. The network BFS used to traverse `BlockNetworkNode` cells only, so a filler
+could never bridge the drive line and the mill would connect on one shaft end only. Two dedicated invisible
+node blocks make the three-cell line one connected bus, drivable from either end and chainable into a train
+of stands on a shared shaft (`BlockRollingMillAxle.cs:11-18`). That constraint is retired - a footprint cell
+declaring a `passThrough` membership does the same job ([multiblock](../mechanics/multiblock.md) § A filler
+cell is a graph node when it declares one) - but the block stays, because removing a placed block needs a
+migration.
 
 Placement refuses unless the whole volume is clear - both the filler cells and the axle cells
 (`BlockRollingMill.cs:122-153`). Breaking any axle cell routes to the principal and takes the whole machine
@@ -85,7 +87,7 @@ Placement refuses unless the whole volume is clear - both the filler cells and t
 ### Which deck is which
 
 The stand only turns one way, so a two-high mill can only be fed from one side. Which side follows the drive:
-`InputDeck` = `Deck(DriveReversed)`, `OutputDeck` always the opposite (`BlockEntityRollingMill.cs:236-260`).
+`InputDeck` = `Deck(DriveReversed)`, `OutputDeck` always the opposite (`BlockEntityRollingMill.cs:264-281`).
 Reversing the run reverses the feed side. Direction enters the network only at the bridge; see
 [mp-energy](../mechanics/mp-energy.md).
 
@@ -181,7 +183,7 @@ to `0..1` along the barrel, and split into `gapCount` equal bands (`BlockRolling
 ### The pass
 
 1. `TryFeed` re-splits the piece for this barrel (`ceil(width / barrelWidth)` sides), then asks
-   `MillFeed.Decide` (`BlockEntityRollingMill.cs:167-211`).
+   `MillFeed.Decide` (`BlockEntityRollingMill.cs:193-237`).
 2. On `Ok` the gap and strip are held as pending and `BeginPass` puts the piece under the rolls with the
    post-reduction width and length. The player's stack is taken (`BlockRollingMill.cs:344-347`).
 3. Every 250 ms the mill advances the bite by `v = ωR · dt`, reading the live network speed so progress
@@ -203,7 +205,7 @@ the piece out all leave the reduction unapplied and the gap simply redone. That 
 
 A stall is not a lost pass: it resumes where it stopped once the run spins back up or the stock is re-heated.
 Since a stalled piece keeps cooling, past the bite threshold the only answer is the reheat furnace
-(`BlockEntityRollingMill.cs:350-360`).
+(`BlockEntityRollingMill.cs:359-380`).
 
 ### Refusal messages
 
@@ -227,7 +229,7 @@ furnace, not a wider gap.
 | Spread | `w = w₀·(t₀/t)^e`, capped at `maxWidth` | `:146-160` |
 | Length | `L = L₀ · (t₀/t) / (w/w₀)` - from the actual, possibly capped, width | `:168-176` |
 | Cooling | `T ← ambient + (T−ambient)·e^(−rate·dt)` | `:190-196` |
-| Travel | `Δs = ω · R · dt`, zero below rolling heat | `BlockEntityRollingMill.cs:350-351` |
+| Travel | `Δs = ω · R · dt`, zero below rolling heat | `BlockEntityRollingMill.cs:370-373` |
 
 ### Config — iwex, `ex_values.json` (domain `iwex`)
 
@@ -261,7 +263,7 @@ Changing one changes the other silently.
 | `MillFeed.DeckOriginOffset` | `2` | `MillFeed.cs:81` | deck offsets run `−2 … 0` in the mill frame |
 | `StockMesh.CentreX` | `8` | `StockMesh.cs:27` | base shapes are authored centred on x = 8 |
 | Axle offsets | `(−1,0,0)`, `(−2,0,0)` | `BlockRollingMill.cs:99` | `static readonly Vec3i[]` |
-| Deck offsets | `z = ±1`, `x = 0` | `BlockEntityRollingMill.cs:250-257` | one cell per deck - see [Blockers](#blockers) |
+| Deck offsets | `z = ±1`, `x = 0` | `BlockEntityRollingMill.cs:274-281` | one cell per deck - see [Blockers](#blockers) |
 | `stackSize` | `1` | `BlockRollingMill.cs:53`, `StockItemDefinitions.cs:42`, `RollSetItemDefinitions.cs:125` | every stock piece carries its own state, so they can never merge |
 
 ### Shipped roll-set catalogue — `RollSetItemDefinitions.cs:56-104`
@@ -310,8 +312,9 @@ the hot pass runs with about 15 % to spare and the cold one stalls by a factor o
 
 ### Cited — owned elsewhere
 
-The mill's pass tick (`BlockEntityRollingMill.cs:41`) and the network tick it samples belong to
-[mp-energy](../mechanics/mp-energy.md). The stock items' `materialUnits`, `MaterialDensity`,
+The mill's pass-tick interval (`BlockEntityRollingMill.cs:42`) and the network tick it samples belong
+to [mp-energy](../mechanics/mp-energy.md); the clock that carries it belongs to
+[framework composition](../mechanics/framework-composition.md). The stock items' `materialUnits`, `MaterialDensity`,
 `combustibleProps.meltingPoint` and `temperatureDamage` (`StockItemDefinitions.cs:23-27`, `:43`, `:48-56`)
 belong to [stock](../items/stock.md); the shipped `bloom` / `slab` unit figures predate the settled
 `shingledbar` / `shingledslab` masses. The bevel-gear item and every `Mp*` / `Flywheel*` / `ShaftInertia`
@@ -345,13 +348,16 @@ Nothing is lost on break. The one path that does destroy a piece is `CancelPass`
 | `.Feed` | `:322-361` | gap zone + strip from the click, then `TryFeed`; consumes the held stack on `Ok` |
 | `.AlongBarrel` | `:368-375` | world hit point → mill frame → `0..1` |
 | `BlockRollingMillAxle` | `Forming/Blocks/BlockRollingMillAxle.cs:20` | invisible graph node, not a filler; `OnNeighbourBlockChange` empty by design (`:59-63`) |
-| `BlockEntityRollingMill` | `Forming/BlockEntities/BlockEntityRollingMill.cs:33` | `BlockEntityNetworkNode` + `IMpEnergyConsumer` |
-| `.LoadTorque(speed)` | `:314-326` | the consumer contract; speed-independent by design |
-| `.AdvancePass(dt, speed)` | `:333-371` | cool → travel → stall-or-progress → `CompletePass` |
-| `.TryFeed` | `:167-211` | re-split, `Decide`, arm the pending reduction, `BeginPass` |
-| `.CompletePass` | `:282-288` | the only place the stock changes |
-| `.ReleaseStuckPiece` | `:218-229` | the wrench recovery |
-| `.ToTree` / `.FromTree` | `:409-443` | draft, width, temp, remaining, stalled, pending gap+strip, piece, roll set; both stacks re-resolved |
+| `BlockEntityRollingMill` | `Forming/BlockEntities/BlockEntityRollingMill.cs:24` | `BlockEntityNetworkNode` + `IMpEnergyConsumer` + `IProductionReadiness` |
+| `.HostProcess` | `:48-53` | the 250 ms pass clock, a hosted `BEBehaviorProductionMachine`; added in the constructor (`:28`) |
+| `.IsReadyToProduce` / `.StopsProductionWhenNotReady` | `:59`, `:63` | a pass is the gate; an empty stand keeps its clock |
+| `.OnPassTick` | `:89-93` | reads the live run's ω and advances the bite by a bounded `dt` |
+| `.LoadTorque(speed)` | `:336-350` | the consumer contract; speed-independent by design |
+| `.AdvancePass(dt, speed)` | `:355-393` | cool → travel → stall-or-progress → `CompletePass` |
+| `.TryFeed` | `:193-237` | re-split, `Decide`, arm the pending reduction, `BeginPass` |
+| `.CompletePass` | `:302-311` | the only place the stock changes |
+| `.ReleaseStuckPiece` | `:243-256` | the wrench recovery |
+| `.ToTree` / `.FromTree` | `:428-460` | draft, width, temp, remaining, stalled, pending gap+strip, piece, roll set; both stacks re-resolved |
 | `RollingPass` | `Forming/RollingPass.cs:30` | pure physics; the entire model, pinned headless |
 | `MillFeed.Decide` | `Forming/MillFeed.cs:95-128` | pure feed verdict |
 | `RollSetSpec` | `Forming/RollSetSpec.cs:31` | the tooling record; `TryParse` at `:108-201` |
@@ -377,13 +383,16 @@ To drive the mill, connect an `mpenergy` run to either shaft end. See
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Forming/` - nine files, 123 `[Fact]`/`[Theory]` methods:
+`test/IronworkingExpanded.Tests/Blocks/Forming/` - ten files, 129 `[Fact]`/`[Theory]` methods:
 `RollingPassTests` (21), `RollingMillFeedTests` (19), `RollingMillTests` (17), `MillFeedTests` (15),
 `RollSetSpecTests` (15), `RollingMillLoadTests` (10), `WorkPieceTests` (9), `RolledStockStagesTests` (9),
-`StockMeshTests` (8).
+`StockMeshTests` (8), `RollingMillClockTests` (6).
+
+`RollingMillClockTests` is the only one that drives the mill's real listener; every other file calls
+`AdvancePass` directly with a `dt` of its own, so the clock and the physics are pinned separately.
 
 Caution: the suite's blind spot is the bootstrap. Every mill test builds its work piece with
-`WorkPiece.Fresh(...).ToStack(stack)` by hand (`RollingMillFeedTests.cs:63-67`). No production code path
+`WorkPiece.Fresh(...).ToStack(stack)` by hand (`RollingMillFeedTests.cs:62-66`). No production code path
 does that, which is why B3 is invisible to the tests.
 
 ---
@@ -414,7 +423,7 @@ the draft is 2.0 against `δ_max = 0.5² · 4 = 1.0` → `WontBite`, always. The
 
 ### B17 — only the middle deck cell is an input, so most gaps are unreachable
 
-`Deck()` returns the single cell at offset `(0, 0, ±1)` (`BlockEntityRollingMill.cs:250-257`) and
+`Deck()` returns the single cell at offset `(0, 0, ±1)` (`BlockEntityRollingMill.cs:274-281`) and
 `IsInputDeck` compares against exactly that (`:260`). The deck is three cells wide, and
 `MillFeed.AlongBarrel` maps the mill-frame `x` over the range `−2 … 0` (`MillFeed.cs:78-89`).
 
@@ -443,24 +452,24 @@ Four of five output codes do not exist, and `OutputAt` has no production caller 
 
 ## Gotchas
 
-- `TryFeed` ignores `BeginPass`'s return value (`BlockEntityRollingMill.cs:203-210`). It arms
+- `TryFeed` ignores `BeginPass`'s return value (`BlockEntityRollingMill.cs:225-236`). It arms
   `_pendingGap` / `_pendingStrip`, calls `BeginPass(...)` discarding the `bool`, and returns the accepted
   decision regardless. `BlockRollingMill.Feed` then takes the stack out of the player's hand
   (`:344-347`). If `BeginPass` ever refuses - it re-checks `CanBite`, and rejects `length ≤ 0` or
-  `width ≤ 0` (`:109-112`) - the item is destroyed silently. Today the two checks happen to agree; the
+  `width ≤ 0` (`:122-132`) - the item is destroyed silently. Today the two checks happen to agree; the
   contract is unguarded.
 - A refused offer still mutates the held stack. `TryFeed` re-splits the piece and writes it back with
-  `piece.ToStack(stack!)` before `MillFeed.Decide` runs (`:178-183`). `Resplit` allocates a fresh
+  `piece.ToStack(stack!)` before `MillFeed.Decide` runs (`:203-209`). `Resplit` allocates a fresh
   `Turned` array (`WorkPiece.cs:73-76`), so a rejected feed against a differently-sized barrel silently
   clears the "first pass done" flags. Move the write-back inside the accepted branch.
-- `CancelPass` destroys the piece. It nulls `_piece` without ejecting (`:265-273`), unlike
+- `CancelPass` destroys the piece. It nulls `_piece` without ejecting (`:289-296`), unlike
   `ReleaseStuckPiece` and `OnBlockBroken`, which both return it. No production caller today (tests only), so
   it is latent, but it is one call site away from an item-loss bug.
 - `CancelPass` does not clear `_pendingGap`/`_pendingStrip`; `ReleaseStuckPiece` clears only
-  `_pendingGap`. `_pendingStrip` is never reset anywhere (`:226`, `:265-273`). Harmless only because
+  `_pendingGap`. `_pendingStrip` is never reset anywhere (`:226`, `:289-296`). Harmless only because
   `TryFeed` overwrites both before every pass.
 - A malformed roll set reports "busy". `TryFitRollSet` returns `false` both when a pass is running and
-  when `TryParse` fails (`:144-154`), and `FitRollSet` maps every `false` to
+  when `TryParse` fails (`:163-182`), and `FitRollSet` maps every `false` to
   `iwex-rollingmill-busy` (`BlockRollingMill.cs:312`). The gate that got you there only checked that the
   `rollset` attribute exists (`:293-294`).
 - `RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==` (`RollSetSpec.cs:96-101`).
@@ -483,10 +492,6 @@ Four of five output codes do not exist, and `OutputAt` has no production caller 
 - `WorkPiece.Resplit` silently no-ops on an uneven piece (`WorkPiece.cs:69-70`). By design - an uneven
   piece is meant to fail to bite until its sides are levelled - but it means a piece carried between mills
   with different barrels can enter a state where neither barrel will take it.
-- Stale class doc: `BlockEntityRollingMill.cs:26-30` says "The roll-set tooling item, work-item
-  form/thickness tracking and the staged render are the next increment; until they land a pass is begun
-  through `BeginPass`". All three landed - the roll set is fitted through `TryFitRollSet`, `WorkPiece`
-  tracks form and thickness, and `ItemStockPiece` composes the render.
 - Stale doc: `RollSetSpec.cs:22-23` says "a flat set running 2.0 → 1.5 → 1.0 → 0.5 yields plate at 1.0
   and sheet at 0.5" - both output codes are unresolvable, and 0.5 is dropped by the settled schedule.
 - Stale doc: `RollSetItemDefinitions.cs:58-61` explains the flat set's "2, 2, 4, 4" schedule cost off

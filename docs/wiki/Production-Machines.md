@@ -21,12 +21,37 @@ public abstract class BlockEntityProductionMachine : BlockEntity
 
     protected void StartProductionTick();                    // idempotent, server-side
     protected void StopProductionTick();
-
-    // Network port access (typed):
-    protected TNet? ConnectedNetwork<TNet>(BlockFacing face) where TNet : BlockNetwork;
-    protected TNet? NetworkAt<TNet>(BlockPos pos) where TNet : BlockNetwork;
 }
 ```
+
+The tick itself lives in `BEBehaviorProductionMachine`, which this class hosts; a block entity whose
+one base slot is already spent hosts the same behaviour instead of deriving from here:
+
+```csharp
+public class BlockEntityRollingMill : BlockEntityNetworkNode, IProductionReadiness
+{
+    // In the constructor, not Initialize: BlockEntity fans both FromTreeAttributes and Initialize
+    // out over Behaviors, and a process added later misses whichever has already run.
+    public BlockEntityRollingMill() => Behaviors.Add(new HostProcess(this));
+
+    private sealed class HostProcess(BlockEntityRollingMill owner)
+        : BEBehaviorProductionMachine(owner)
+    {
+        protected override int ProductionTickMs => 250;
+        protected override void OnProductionTick(float dt) => owner.OnPassTick(dt);
+    }
+
+    public bool IsReadyToProduce => IsRolling;          // the gate, published not overridden
+    public bool StopsProductionWhenNotReady => false;   // an idle mill keeps its clock
+}
+```
+
+The gate goes through `IProductionReadiness` rather than an override, because a machine may publish
+more than one answer and the process reads every publisher on the block entity (see
+[Multiblock Structures](Multiblock-Structures)). A host that enables away-catch-up must also save the
+process's `LastTickHours` in its own `ToTreeAttributes` and hand it back through
+`RestoreLastTickHours` - a behaviour's tree lands in the block entity's flat tree, so exactly one of
+the two may write that key.
 
 Minimal machine:
 
@@ -75,8 +100,9 @@ protected override void OnProductionTick(float dt)
 ```
 
 `ConnectedNetwork` performs the reciprocal-connector test: it returns the network only if the
-neighbour across `connectorFace` actually exposes a matching connector back. The same two helpers
-are exposed as `protected` methods directly on `BlockEntityProductionMachine` for convenience.
+neighbour across `connectorFace` actually exposes a matching connector back. These are extensions on
+any `BlockEntity`, so reading a port is not something a machine inherits: a plain block entity calls
+them exactly as a production machine does.
 
 > Air blower, engine, boiler outlet and converter intake are all `INetworkConnector` ports, not
 > nodes - they read/write the network in the adjacent cell rather than being part of the graph.
@@ -116,4 +142,5 @@ Persist it with `ToTree`/`FromTree` so a near-burst boiler doesn't reset its gra
 ## Related pages
 
 - [Block Networks](Block-Networks) - what `ConnectedNetwork<TNet>` returns.
-- [Multiblock Structures](Multiblock-Structures) - `BlockEntityMultiblockStructure` extends this base.
+- [Multiblock Structures](Multiblock-Structures) - `BlockEntityMultiblockMachine` is the multiblock
+  that hosts the same process.

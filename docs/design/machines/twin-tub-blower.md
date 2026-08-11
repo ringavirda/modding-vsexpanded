@@ -65,8 +65,9 @@ can never disagree.
 
 ### The network connector
 
-The principal is the only graph node. Fillers can never be graph nodes
-([multiblock](../mechanics/multiblock.md), § A filler can NEVER be a graph node), so the blast main must butt
+The principal is the only graph node: the blower's footprint cells declare no membership, and a cell that
+declares none is not a node ([multiblock](../mechanics/multiblock.md), § A filler cell is a graph node when
+it declares one). So the blast main must butt
 against the principal cell, on the single face named by the `orientation` variant: `GetConnectorFaces` maps
 each character of `Orientation` through `SideToFace` (`BlockNetworkNode.cs:784-793`,
 `BlockNetworkModSystem.cs:458-468`), and the blower's orientation string is one character. A `-n` blower
@@ -330,9 +331,10 @@ cell.
    `Animatable`, no animator). A running blower is visually indistinguishable from an idle one.
 
 2. Stale comment about where the main connects. `BlockTwinTubMPBlower.cs:78-79` says the housing's far end at
-   `(y=0, z=2)` "is what the blast main butts against". It is a filler, fillers can never be graph nodes, and
-   the actual connector is the principal's single orientation-named face - which for `-n` points the opposite
-   way from the housing. Anyone plumbing from that comment will build a main that never joins.
+   `(y=0, z=2)` "is what the blast main butts against". It is a filler cell that declares no membership, so it
+   is no node, and the actual connector is the principal's single orientation-named face - which for `-n`
+   points the opposite way from the housing. Anyone plumbing from that comment will build a main that never
+   joins.
 
 3. `ProduceAir` re-implements `ProduceGasMeasured`. The before/after volume diff at
    `BlockEntityTwinTubMPBlower.cs:124-131` is exactly what `PipeNetwork.ProduceGasMeasured`

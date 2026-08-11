@@ -33,7 +33,7 @@ namespace IronworkingExpanded.BlockStructures.Furnaces;
 /// and blast stay parameters: a furnace with no pool overrides no molten member, and one with no tuyeres
 /// sets <see cref="RequiresBlast"/> false. See <c>docs/design/conventions.md</c>.
 /// </remarks>
-public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure {
+public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   // The furnace runs on game time: on reload it replays the game-time it spent unloaded as 1-second
   // sub-ticks (the timers all accumulate dt, so a replayed tick is an ordinary one), capped so a long
   // absence neither stalls the server nor leaps a timer. Up to ~10 minutes of smelting.
@@ -1651,7 +1651,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockStructure {
   /// Puts a running furnace out before the block goes, so the pool freezes and the charge burns out to
   /// residue rather than vanishing with the block entity.
   /// removal-only teardown: a chunk unload leaves the furnace placed and still lit, and the away-catch-up
-  /// in <see cref="ExpandedLib.Blocks.Machines.BlockEntityProductionMachine"/> replays the time it spent
+  /// in <see cref="ExpandedLib.Blocks.Machines.BEBehaviorProductionMachine"/> replays the time it spent
   /// unloaded. Extinguishing here would put out every furnace whose player walked away.
   /// </summary>
   public override void OnBlockRemoved() {

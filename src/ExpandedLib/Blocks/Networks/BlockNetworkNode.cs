@@ -696,8 +696,16 @@ public abstract class BlockNetworkNode
 
   /// <summary>
   /// Returns <c>true</c> when a connection to <paramref name="neighborBlock"/> on
-  /// <paramref name="face"/> is valid even though the neighbour is not a network block
-  /// (used to suppress false leak detection, e.g. a machine housing that seals the pipe).
+  /// <paramref name="face"/> is valid even though the neighbour is not a network block, so
+  /// <c>BlockNetworkModSystem.GetOpenConnectorFaces</c> counts that face as sealed rather than open -
+  /// a machine housing a pipe runs into, say.
+  /// <para>
+  /// Nothing in the repo overrides it, so the hook is inert as shipped and every face against a
+  /// non-network block reads as open. That is harmless because the leak classifier only turns an open
+  /// face into a leak when the neighbour is air, which is what actually delivers the passthrough's
+  /// "seals against a wall". An override here changes which faces are open for every consumer of that
+  /// set, not just the leak count, so it is a wider change than it looks.
+  /// </para>
   /// </summary>
   public virtual bool IsValidNonNetworkConnection(
     Block neighborBlock,
@@ -738,16 +746,13 @@ public abstract class BlockNetworkNode
     BlockFacing face
   ) => HasConnectorAt(face);
 
-  /// <summary>Returns all block faces that have a network connector, or <c>null</c> if unorientated.</summary>
-  public virtual BlockFacing[]? GetConnectorFaces() {
-    if (Orientation == null)
-      return null;
-
-    return Orientation
-      .Select(c => BlockNetworkModSystem.SideToFace(c.ToString())!)
-      .Where(f => f != null)
-      .ToArray();
-  }
+  /// <summary>Returns all block faces that have a network connector, or <c>null</c> if unorientated.
+  /// <c>null</c> and an empty array mean different things to a caller: no orientation variant at all
+  /// versus one naming no side.</summary>
+  public virtual BlockFacing[]? GetConnectorFaces() =>
+    Orientation == null
+      ? null
+      : BlockNetworkModSystem.SidesToFaces(Orientation);
 
   public override bool CanAttachBlockAt(
     IBlockAccessor world,

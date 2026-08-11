@@ -31,16 +31,18 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
   }
 
   /// <summary>
-  /// This node's graph membership. It reads the network type and the saved state off the block entity
-  /// at registration time rather than copying either up front, because <see cref="FromTreeAttributes"/>
-  /// reaches the behaviours before it assigns them.
+  /// This node's graph membership. It holds no copy of the network type or the saved state and reads
+  /// both off the block entity as it needs them: <see cref="FromTreeAttributes"/> reaches the
+  /// behaviours before it assigns either, and runs again on every client sync.
   /// </summary>
   private sealed class HostMembership(BlockEntityNetworkNode owner)
     : BEBehaviorNetworkMember(owner) {
-    protected override object? SavedNetworkState => owner._savedNetworkState;
+    public override string NetworkType {
+      get => owner.NetworkType;
+      protected set => owner.NetworkType = value;
+    }
 
-    protected override void OnBeforeRegister() =>
-      NetworkType = owner.NetworkType;
+    protected override object? SavedNetworkState => owner._savedNetworkState;
   }
 
   public override void ToTreeAttributes(ITreeAttribute tree) {

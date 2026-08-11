@@ -13,7 +13,7 @@
 **Depends on** - cited, never restated here:
 [diagram crafting](../mechanics/diagram-crafting.md) owns the station idiom, Model A, the `diagram-{type}` item, the schematic-is-reusable rule and the exlib station-window plan ·
 [mp-energy](../mechanics/mp-energy.md) owns the `"mpenergy"` run and the four node contracts ·
-[multiblock & fillers](../mechanics/multiblock.md) owns the filler footprint system, behaviour-capable filler cells and the "a filler can never be a graph node" invariant ·
+[multiblock & fillers](../mechanics/multiblock.md) owns the filler footprint system, behaviour-capable filler cells and the rule for when a filler cell is a graph node ·
 [recipes & config](../mechanics/recipes-config.md) owns `ExBlockDef` / `ExRecipeDef`, the RCC stage builder, the cost catalogue and the golden harness ·
 [density rule](../mechanics/density-rule.md) owns every mass, including `blank` @ 200 u ·
 [casting cell](casting-cell.md) owns the pattern → cavity → cast-part chain that feeds this machine ·
@@ -76,7 +76,7 @@ Measured bounding boxes from `assets/editable/shapes/machine-mp-megablock-boring
 Consequences the builder must honour:
 
 - The model overhangs its own cell (−3 on X and Z, −2 on Y). That is legal - copy `SolidNonOpaque` from the mill (`BlockRollingMill.cs:62-63`) - but the overhang is downward and sideways, so the placement rule and collision boxes need care.
-- A filler can never be a graph node ([multiblock](../mechanics/multiblock.md)). If the machine joins the `"mpenergy"` run, the principal must be the `BlockNetworkNode` and the top cell can only be a behaviour host. If it takes vanilla MP instead, the filler can carry the port directly, as the twin-tub blower and the flywheel do with `exlib.BEBehaviorMPFillerPort`. Which of the two is undecided - see Open.
+- A filler cell can be a graph node when it declares a `BEBehaviorNetworkMember` ([multiblock](../mechanics/multiblock.md)), so the top cell may join the `"mpenergy"` run directly and the principal no longer has to be the `BlockNetworkNode`. If the machine takes vanilla MP instead, the filler carries the port directly, as the twin-tub blower and the flywheel do with `exlib.BEBehaviorMPFillerPort`. Which of the two is undecided - see Open.
 - The head-swap gesture lives on the top cell, so the filler must be interaction-routing (`AllowAttach` / behaviour-capable, [multiblock](../mechanics/multiblock.md)), not a plain collision filler.
 
 ---
@@ -188,7 +188,7 @@ Everything in this section is proposed. The machine has no config section and no
 
 | Key | Proposed | file:line | What it does |
 |---|---|---|---|
-| `BoringTickMs` | 1000 ms | inherit `ProductionTickMs` - `BlockEntityProductionMachine.cs:26` (`protected virtual`, default 1000) | job tick |
+| `BoringTickMs` | 1000 ms | state `ProductionTickMs` on the hosted process - `BEBehaviorProductionMachine.cs:25` (`protected virtual`, default 1000) | job tick |
 | `BoringSecondsPerItem` | ≈ 2 s | - | "a craft takes a couple of seconds" ([diagram crafting](../mechanics/diagram-crafting.md)); a stack multiplies it |
 | `BoringPortResistance` | 0.5 | `BEBehaviorMPFillerPort.DefaultResistance = 0.5f` - `BEBehaviorMPFillerPort.cs:30` | vanilla-MP load, if the vanilla route is chosen |
 | bit tier ladder | cast iron → quench-hardened steel → HSS | [STATE.md § D9](../../plans/STATE.md) (crucible steel's consumers include "boring-machine bits") | bit material gates the hardest metal the machine will cut |
@@ -199,8 +199,8 @@ Hard-coded values that will bite:
 
 | Constant | Value | file:line | Note |
 |---|---|---|---|
-| `ProductionTickMs` | 1000 ms | `BlockEntityProductionMachine.cs:26` | hard-coded virtual default, not config |
-| `MaxCatchupTickMultiple` | 2f | `BlockEntityProductionMachine.cs:75` | hard-coded `private const`; clamps one catch-up `dt` (`:126`) |
+| `ProductionTickMs` | 1000 ms | `BEBehaviorProductionMachine.cs:25` | hard-coded virtual default, not config |
+| `MaxCatchupTickMultiple` | 2f | `BEBehaviorProductionMachine.cs:77` | hard-coded `private const`; clamps one catch-up `dt` (`:146`), so the bound is twice **this machine's** interval |
 | `DefaultResistance` | 0.5f | `BEBehaviorMPFillerPort.cs:30` | hard-coded; overridable per-declaration via a `resistance` property (`:68`) |
 | `MpMaxSpeed` | 2f | `ExlibConfig.cs:98` | owned by [mp-energy](../mechanics/mp-energy.md) |
 | window packet ids | 1000 / 1001 / 1002 | `BlockEntityDesignTable.cs:40`, `:41`, `:44`; `GuiDialogDesignTable.cs:27` | hard-coded literals; 1000/1001 are the vanilla container open/close protocol - a second station must use the same two and pick its own ≥ 1002 |
@@ -232,12 +232,12 @@ Nothing exists. A repo-wide `grep -rni boring src/` returns one hit and it is a 
 | Piece | Where it goes | Model it on |
 |---|---|---|
 | `BlockBoringMachine` | `src/LowPressureExpanded/BlockStructures/Machining/Blocks/` | `BlockDesignTable.cs:24` (`Block` + `IExBlockDefProvider` + `OnBlockInteractStart` → BE) plus `BlockTwinTubMPBlower` / `BlockFlywheel` for the filler footprint |
-| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityProductionMachine` (`src/ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:22`) for the timed job + away-catch-up, plus `BlockEntityContainer` for the window inventory - these are two different bases; see Gotchas |
+| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityContainer` for the window inventory, hosting a `BEBehaviorProductionMachine` (`src/ExpandedLib/Blocks/Machines/BEBehaviorProductionMachine.cs:15`) for the timed job + away-catch-up. `BlockEntityRollingMill.cs:28`, `:48` is the worked example of the host pattern |
 | the window | `.../Machining/Gui/GuiDialogBoringMachine.cs` | `GuiDialogDesignTable.cs:23` - `GuiDialogBlockEntity`, `IsDuplicate` guard (`:50`), `Compose()` (`:77`), a dropdown + `AddDynamicText` info panel (`:138-140`), a button that sends one packet (`:173-182`) |
 | packet handshake | on the BE | `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) - the open/close/action protocol, the `Claims.TryAccess` audit (`:115-122`) and the `packetid < 1000 → InvNetworkUtil` route (`:125-129`) |
 | typed slots | inventory class | `InventoryDesignTable` (`:230-247`) + `ItemSlotDesignInput` (`:251`) / `ItemSlotDesignOutput` (`:276`) |
 | the job itself (pure) | `.../Machining/BoringJob.cs` | `BlockEntityDesignTable.TryDraft` (`:175-206`) is the shape: validate inputs, resolve the output, guard the output slot, mutate, `MarkDirty()` - headless-testable |
-| power read | inside the tick | vanilla route: `BEBehaviorMPFillerPort.IsTurning` / `.Speed` (`:45`, `:49`). `mpenergy` route: `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:79-81` |
+| power read | inside the tick | vanilla route: `BEBehaviorMPFillerPort.IsTurning` / `.Speed` (`:45`, `:49`). `mpenergy` route: `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:89-93` |
 | animation drive | on job state | `MPAnim.AdvanceFrame` via the port's `CurrentAngleRad` (`BEBehaviorMPFillerPort.cs:42`); clips are authored as one revolution so playback is `ω / 2π` (`EnergyAnim.cs:23-24`) |
 | def + recipe | `Machining/BoringMachineDefinitions.cs` + an `ExRecipeDef` grid | `BlockDesignTable.Definitions` (`:26-44`), `CraftingStationRecipeDefinitions.cs:24-37` |
 
@@ -251,11 +251,11 @@ Caller-side contract for anyone adding a job: declare it on the schematic item, 
 
 - `overview.md:70` lists the boring machine as shipped lpex content. It is not built - [diagram crafting](../mechanics/diagram-crafting.md) records that correctly. The other two overview mentions (`:127` "in scope and simply not built yet", `:160` build order) are consistent with planned and need no change; line 70 does.
 - `overview.md:70` also still calls lpex "Pipes & Power Expanded". The mod's display name is Low Pressure Expanded (`src/LowPressureExpanded/modinfo.json`).
-- `BlockEntityProductionMachine` is not a container and not a network node. It derives from `BlockEntity` (`:22`), so the window inventory and the network membership are both additional work. `BlockEntityDesignTable` gets its inventory by deriving from `BlockEntityContainer` (`:27`); a class cannot have both bases. Either compose (production tick as a behaviour) or re-implement the tick on the container.
+- ~~The timed job and the window inventory are two bases.~~ Retired: the production tick is a behaviour (`BEBehaviorProductionMachine`), so the base slot goes to `BlockEntityContainer` for the inventory - the shape `BlockEntityDesignTable` already has (`:27`) - and the machine adds the process in its constructor and publishes its gate through `IProductionReadiness`. [framework composition](../mechanics/framework-composition.md) owns the rule; `BlockEntityRollingMill` is the shipped host.
 - A custom GUI over a container desyncs without packet routing. `BlockEntityContainer` does not route the window's packets; the recorded scar is the hopper. `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) is the reference implementation, including the claim-access audit.
 - The drill clip does not repeat. All four clips are `onAnimationEnd: EaseOut`. Re-author `drill` and `base-move` to `Repeat` or the mesh blinks back to static.
 - The shape's textures are not shippable. One absolute Windows path and four undomained `block/…` paths - see Assets.
-- A filler cannot be a graph node. If the machine joins `"mpenergy"`, the port cannot live on the top cell as a node; it can only be a behaviour host. [multiblock](../mechanics/multiblock.md) owns this invariant and it is the biggest structural constraint on the design as drawn.
+- ~~A filler cannot be a graph node.~~ Retired: a footprint cell that declares a `BEBehaviorNetworkMember` is a node, so the `"mpenergy"` port may live on the top cell after all. [multiblock](../mechanics/multiblock.md) owns the rule. What was the design's biggest structural constraint is no longer one.
 - The schematic is never consumed; the diagram sometimes is. The boring machine's schematics are reusable tooling ([diagram crafting](../mechanics/diagram-crafting.md)), while a structure-core diagram is a consumed grid ingredient. Both are decided by the `.Tool()` flag, not by machine code.
 - The machine's whole input chain is unbuilt. `blank`, `castframe`, the cylinder blank, the gear blanks and the cutting schematics do not exist as items; only `castplate-heavy` and `cast-barrel` do (`CastPartItemDefinitions.cs:28-29`).
 - This machine gates the cast pipe tier. Until it exists, `lpex:pipe-*` has no cast-pipe-part route and the tier is reachable only through the recipes that currently accept the plain plated iwex segment (`MachineRecipeDefinitions.cs`'s `StraightPipe`, which is deliberately `iwex:pipe-straight-*`). The dead cost key `pipe-straight-grid` (`LpexRecipeConfig.cs:76`) costs a grid recipe that does not exist ([STATE.md](../../plans/STATE.md)).

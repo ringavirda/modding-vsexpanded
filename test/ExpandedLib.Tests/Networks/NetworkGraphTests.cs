@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using ExpandedLib.Testing.Doubles;
 using Vintagestory.API.MathTools;
@@ -18,18 +19,15 @@ public class NetworkGraphTests {
     return w;
   }
 
-  /// <summary>Places a straight "ns" run along +Z at z=0..count-1 (one shared block instance,
-  /// many cells - as the engine does) and registers every cell as a node.</summary>
+  /// <summary>Places a straight "ns" run along +Z at z=0..count-1, each cell a block entity carrying
+  /// a membership that registers the cell as it is placed - so the first is isolated and every later
+  /// one merges into the run, which is the order the engine places in.</summary>
   private static BlockPos[] BuildLine(TestWorld w, int count) {
-    var block = TestNetworkBlock.Create("test", "ns", id: 1);
     var positions = new BlockPos[count];
     for (int z = 0; z < count; z++) {
-      var pos = new BlockPos(0, 0, z);
-      positions[z] = pos;
-      w.Place(pos, block);
+      positions[z] = new BlockPos(0, 0, z);
+      w.PlaceNode(positions[z], "test", "ns");
     }
-    foreach (var pos in positions)
-      w.AddNode(pos, "test");
     return positions;
   }
 
@@ -87,6 +85,47 @@ public class NetworkGraphTests {
     Assert.NotNull(net);
     Assert.Equal(2, net!.Nodes.Count);
     Assert.Same(net, w.NetworkAt(positions[1]));
+  }
+
+  [Fact]
+  public void A_plain_block_carrying_a_membership_bridges_two_nodes() {
+    // Membership is a property of the cell, not a kind of block. Bridging is the only assertion that
+    // can fail: an isolated AddNode always creates a standalone network, so a lone member-bearing
+    // cell reads as "on a network" whether or not the walk can see it.
+    var w = NewWorld();
+    w.PlaceNode(new BlockPos(0, 0, 0), "test", "ns");
+    w.PlaceMemberBlock(new BlockPos(0, 0, 1), "test", "ns");
+    w.PlaceNode(new BlockPos(0, 0, 2), "test", "ns");
+
+    var net = w.NetworkAt(new BlockPos(0, 0, 0));
+
+    Assert.NotNull(net);
+    Assert.Equal(3, net!.Nodes.Count);
+    Assert.Same(net, w.NetworkAt(new BlockPos(0, 0, 2)));
+  }
+
+  [Fact]
+  public void The_walk_reaches_a_plain_member_from_both_directions() {
+    // The source and the neighbour sides resolve a cell separately, so flipping one alone leaves a
+    // member-bearing block walkable from but never to - a network that exists in one direction only.
+    var w = NewWorld();
+    var node = new BlockPos(0, 0, 0);
+    var member = new BlockPos(0, 0, 1);
+    w.PlaceNode(node, "test", "ns");
+    w.PlaceMemberBlock(member, "test", "ns");
+    // The premise: nothing about the placed block puts it on a network, so only its membership can.
+    Assert.IsNotAssignableFrom<INetworkConnector>(w.GetBlock(member));
+
+    Assert.Equal(
+      member,
+      Assert.Single(w.Networks.GetConnectedNeighbors(w.Accessor, node, "test"))
+    );
+    Assert.Equal(
+      node,
+      Assert.Single(
+        w.Networks.GetConnectedNeighbors(w.Accessor, member, "test")
+      )
+    );
   }
 
   [Fact]

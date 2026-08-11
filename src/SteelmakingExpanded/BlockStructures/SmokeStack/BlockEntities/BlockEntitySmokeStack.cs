@@ -21,7 +21,7 @@ namespace SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntitySmokeStack
-  : BlockEntityMultiblockStructure,
+  : BlockEntityMultiblockMachine,
     INetworkNode,
     IPipeNode {
   private float _lastConsumedAmount;

@@ -64,6 +64,45 @@ public class ConnectorTests {
   }
 
   [Fact]
+  public void GetOpenConnectorFaces_ignores_the_sources_own_severing() {
+    // The traversal and the open-end scan share the neighbour-side gates but not the source's. A
+    // severed cell contributes no graph edge, yet its faces are still physically joined: a closed
+    // valve does not leak and a solidified canal does not grow an end cap where it meets its run.
+    var w = NewWorld();
+    var a = new BlockPos(0, 0, 0);
+    var b = new BlockPos(0, 0, 1);
+    var block = TestNetworkBlock.Create("test", "ns", 1);
+    w.Place(a, block, new SeverableNode { Broken = true });
+    w.Place(b, block);
+    // The premise, asserted rather than assumed: severing has taken this cell off the graph, so a
+    // guard that stopped severing it would read as green while proving nothing.
+    Assert.Empty(w.Networks.GetConnectedNeighbors(w.Accessor, a, "test"));
+
+    var open = w.Networks.GetOpenConnectorFaces(w.Accessor, a, block);
+
+    // North meets air; south meets the neighbour it is coupled to.
+    Assert.Equal(BlockFacing.NORTH, Assert.Single(open));
+  }
+
+  [Fact]
+  public void GetOpenConnectorFaces_ignores_the_source_being_an_endpoint() {
+    // Same rule for the other source gate: an endpoint terminates the run rather than passing it on,
+    // but the pipe it terminates against is still coupled to it and is no leak.
+    var w = NewWorld();
+    var a = new BlockPos(0, 0, 0);
+    var b = new BlockPos(0, 0, 1);
+    var endpoint = TestBlocks.Configure(new EndPointNode(), "test:endpoint", 3);
+    w.Place(a, endpoint);
+    w.Place(b, TestNetworkBlock.Create("test", "ns", 1));
+    // The premise: being an endpoint has taken this cell off the graph.
+    Assert.Empty(w.Networks.GetConnectedNeighbors(w.Accessor, a, "test"));
+
+    var open = w.Networks.GetOpenConnectorFaces(w.Accessor, a, endpoint);
+
+    Assert.Equal(BlockFacing.NORTH, Assert.Single(open));
+  }
+
+  [Fact]
   public void IsConnectionBroken_severs_then_restores_traversal() {
     var w = NewWorld();
     var a = new BlockPos(0, 0, 0);
@@ -105,5 +144,16 @@ public class ConnectorTests {
     Assert.False(
       BlockNetworkModSystem.IsCompatibleNetworkBlock(block, "molten")
     );
+  }
+
+  /// <summary>A node that terminates a run at its own cell, as the pressure valve does, with a
+  /// connector on each end of the north-south axis.</summary>
+  private sealed class EndPointNode : BlockNetworkNode {
+    public override string NetworkType => "test";
+
+    public override bool IsNetworkEndPoint => true;
+
+    public override bool HasConnectorAt(BlockFacing face) =>
+      face == BlockFacing.NORTH || face == BlockFacing.SOUTH;
   }
 }

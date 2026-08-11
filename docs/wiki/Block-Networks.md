@@ -113,8 +113,11 @@ public virtual void RecalculateAndSyncOrientations(IWorldAccessor world, BlockPo
 ```
 
 Override `GetRotations` only for custom orientation alphabets; override
-`IsValidNonNetworkConnection` to tell the leak detector that an adjacent non-network block (a
-machine port, say) is a legitimate connection rather than an open face.
+`IsValidNonNetworkConnection` to tell `GetOpenConnectorFaces` that an adjacent non-network block (a
+machine housing, say) seals the face rather than leaving it open. Note that nothing in the suite
+overrides it: an open face only becomes a leak when the neighbour is air, so a face against a solid
+block is already quiet. Overriding it changes which faces are open for every consumer of that set,
+not just the leak count.
 
 ## Defining the node block entity
 
@@ -195,7 +198,7 @@ public virtual void AddNode(IBlockAccessor world, BlockPos pos, string networkTy
 public virtual void RemoveNode(IBlockAccessor world, BlockPos pos, bool broadcast = true);
 public BlockNetwork? RebuildFromRoot(IBlockAccessor world, BlockPos rootPos, string networkType, bool broadcast = true);
 
-public BlockFacing[] GetOpenConnectorFaces(IBlockAccessor world, BlockPos pos, BlockNetworkNode node);
+public BlockFacing[] GetOpenConnectorFaces(IBlockAccessor world, BlockPos pos, INetworkMember member);
 public IEnumerable<BlockPos> GetConnectedNeighbors(IBlockAccessor world, BlockPos pos, string networkType);
 
 public static BlockFacing? SideToFace(string? side);

@@ -9,7 +9,7 @@ using Xunit;
 namespace ExpandedLib.Tests;
 
 /// <summary>A concrete mega-block for driving the multiblock lifecycle headlessly.</summary>
-internal sealed class TestMegablock : BlockEntityMultiblockStructure {
+internal sealed class TestMegablock : BlockEntityMultiblockMachine {
   /// <summary>The rotation the machine reports, standing in for reading a <c>side</c> variant.</summary>
   public int Angle;
   public int ProductionTicks;

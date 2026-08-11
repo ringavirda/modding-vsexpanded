@@ -286,11 +286,12 @@ mill's calibration moves with them.
   (`MpEnergyNetwork.cs:81-89`). A mill wired to a bare bridge with no flywheel and no shaft segment sees
   `Speed == 0` and can never roll. Every practical run needs at least one shaft segment
   (`ShaftInertia = 0.5`) or a wheel.
-- A filler can never be a graph node. The BFS bails at
-  `if (world.GetBlock(pos) is not BlockNetworkNode node)` (`BlockNetworkModSystem.cs:386`), and
-  `BlockStructureFiller` is a plain `Block`. That is why the rolling mill's drive line uses dedicated
-  `BlockRollingMillAxle` cells instead of fillers (`BlockRollingMill.cs:72-73`,
-  `BlockRollingMillAxle.cs:16-17`). See [multiblock](multiblock.md).
+- A filler cell is a graph node exactly when it declares one. The walk resolves a cell through
+  `NetworkMembership.Resolve` (`BlockNetworkModSystem.cs:482`), which reads the memberships on its block
+  entity before the block, so a footprint cell hosting a `BEBehaviorNetworkMember` bridges a run the
+  same way a node block does. The rolling mill's drive line still uses dedicated `BlockRollingMillAxle`
+  cells (`BlockRollingMill.cs:78-85`), which predate the rule and stay only because removing a placed
+  block needs a migration. See [multiblock](multiblock.md).
 - The transmission must not become a node. If it did, its two sides would merge into a single run and the
   ratio would be meaningless. `ReferenceEquals(south, north)` guards the degenerate loop-back case
   (`BlockEntityTransmission.cs:290`).

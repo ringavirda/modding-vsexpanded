@@ -71,7 +71,7 @@ verifies a player-built firebox around itself before it will run
 | `StructureAngle` | `AngleFromSide(side) + 180` (`BlockBoiler.cs:39-43`) - the body frame; the vessel extends along local `+z` |
 | Shape spin | `rotateYByType` = `AngleFromSide(side)`, no `+180` offset (`BlockBoiler.cs:73` → `ExBlockDef.cs:200-208`; golden `goldens/lpex/blocktypes/boiler/cornish.json`) - see [Gotchas](#gotchas) |
 | Verified layout | `Origin(-1, -2)`, three layers (`BlockBoilerCornish.cs:77-127`); rendered in [layouts.md](../../workbench/layouts.md) § Section 2 |
-| Completion monitor | every 3000 ms (`BlockEntityMultiblockStructure.cs:43`) |
+| Completion monitor | every 3000 ms (`BlockEntityMultiblockStructure.cs:49`) |
 
 ### Geometry offsets — `BlockBoilerCornish.cs:35-52`, resolved through `BlockBoiler.cs:79-114`
 
@@ -95,8 +95,10 @@ principal (`BlockBoiler.cs:76-78`).
 | Steam out | `(0,2,2)`, above the port filler | boiler → pipe | `MarkSteamPort` sets the filler's `PortFace = "u"`, `PortNetworkType = "pipe"` right after placement (`BlockBoiler.cs:122-145`); `PushSteam` verifies a `BlockNetworkNode` with a DOWN connector then reads `NetworkAt<PipeNetwork>` on the pipe cell (`BlockEntityBoiler.cs:515-535`) |
 | Exhaust out | `(0,1,4)` | boiler → pipe | `NetworkAt<PipeNetwork>(ExhaustOutletWorldPos)` - the outlet block is the node (`BlockEntityBoiler.cs:305-308`) |
 
-The port filler is a connector, never a graph node - the standard rule, owned by
-[multiblock](../mechanics/multiblock.md) and [pipe network](../mechanics/pipe-network.md) § connectors.
+The port filler is a connector rather than a graph node: the cell carries a port, not a membership. A
+footprint cell that declares one *is* a node now ([multiblock](../mechanics/multiblock.md) § A filler
+cell is a graph node when it declares one); the boiler's does not, and the port arm still answers for it.
+See also [pipe network](../mechanics/pipe-network.md) § connectors.
 
 ### The player-built firebox — `BlockBoilerCornish.cs:77-127`
 
@@ -196,7 +198,7 @@ Catalogued twice for the cost system: `boilercornish-grid` and `boilercornish-rc
 ### The tick — `OnProductionTick`, `BlockEntityBoiler.cs:289-450`
 
 Runs every 1000 ms server-side, gated on `StructureComplete` (base) and `IsConstructed` (`:290-291`).
-`dt` is clamped to 2× the tick (`BlockEntityProductionMachine.cs:75`, `:126`). The boiler does not opt into
+`dt` is clamped to 2× the tick (`BEBehaviorProductionMachine.cs:77`, `:146`). The boiler does not opt into
 away-catch-up (`MaxAwayCatchupSteps` stays 0); only the furnace core does.
 
 | # | Step | Line |
@@ -414,9 +416,9 @@ anywhere in the steam run silently halves the usable ceiling.
 
 | value | file:line | what it does |
 |---|---|---|
-| production tick `1000 ms` | `BlockEntityProductionMachine.cs:26` | one boiler beat per second |
-| `dt` clamp `2 ×` tick | `BlockEntityProductionMachine.cs:75`, `:126` | catch-up bound |
-| completion monitor `3000 ms` | `BlockEntityMultiblockStructure.cs:43` | structure re-verification |
+| production tick `1000 ms` | `BlockEntityProductionMachine.cs:56` | one boiler beat per second |
+| `dt` clamp `2 ×` tick | `BEBehaviorProductionMachine.cs:77`, `:146` | catch-up bound |
+| completion monitor `3000 ms` | `BlockEntityMultiblockStructure.cs:49` | structure re-verification |
 | client tick `250 ms` | `BlockEntityBoiler.cs:157` | water surface, glow, particles, hum |
 | danger zone `0.9 × MaxOutputPressure` | `:127` | the warning-plume threshold |
 | exhaust temperature `0.6 × SteamTemperature()` | `:444` | flue-gas temperature |
