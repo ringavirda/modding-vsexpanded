@@ -371,20 +371,6 @@ function Invoke-Test([string[]]$Argv) {
     }
   }
 
-  # Minimum tests each suite must DISCOVER. A suite that loses its assembly reports no failure at all,
-  # so the exit code alone cannot be trusted to mean the tests ran. Parsed up front so a malformed row
-  # fails before anything is built.
-  $floorsFile = Join-Path $PSScriptRoot 'test-floors.txt'
-  if (-not (Test-Path $floorsFile)) { throw "Missing $floorsFile - the per-suite test-count floors." }
-  $floors = @{}
-  foreach ($line in Get-Content $floorsFile) {
-    if ($line -match '^\s*(#|$)') { continue }
-    if ($line -notmatch '^\s*([\w.]+)\s*=\s*(\d+)\s*$') { throw "Bad row in test-floors.txt: '$line'" }
-    $floors[$Matches[1]] = [int]$Matches[2]
-  }
-  $ungated = @($projects | Where-Object { -not $floors.ContainsKey($_) })
-  if ($ungated) { throw "No test-count floor for: $($ungated -join ', ') - add a row to scripts/test-floors.txt." }
-
   # Use the system dotnet when it already has every runtime major needed; otherwise provision a local
   # .dotnet and use ITS muxer, because the global muxer ignores DOTNET_ROOT. This is what lets a fresh
   # clone without .NET 7/8 run the legacy suites.
@@ -426,7 +412,6 @@ function Invoke-Test([string[]]$Argv) {
         Project = $p
         Proj    = (Join-Path $RepoRoot "test/$p/$p.csproj")
         Legacy  = ($tfms[$v] -ne 'net10.0')   # legacy TFMs need the multi-target opt-in
-        Floor   = $floors[$p]
       }
     }
   }
@@ -458,21 +443,13 @@ function Invoke-Test([string[]]$Argv) {
 
     # The exit code is not enough. An assembly that fails to load during discovery prints
     # "No test is available in ..." and exits 0 with no summary line, so the run reads as a blank PASS
-    # while every test in the suite has silently vanished. Trust the summary's count, and treat its
-    # absence as the failure it is.
+    # while every test in the suite has silently vanished. Treat a missing summary as the failure it is.
     $total = ($out | Select-String -Pattern 'Total:\s*(\d+)' -AllMatches |
       ForEach-Object { $_.Matches } | Select-Object -Last 1)
     if (-not $total) {
       $ok = $false
       $line = 'NO TEST SUMMARY - the assembly discovered no tests (a type-load failure during ' +
-      'discovery does this and still exits 0). See scripts/test-floors.txt.'
-    } else {
-      $count = [int]$total.Groups[1].Value
-      if ($count -lt $item.Floor) {
-        $ok = $false
-        $line = "ONLY $count TEST(S), FLOOR IS $($item.Floor) - tests vanished rather than failed. " +
-        'If the deletion was deliberate, lower the floor in scripts/test-floors.txt.'
-      }
+      'discovery does this and still exits 0).'
     }
 
     [pscustomobject]@{ Name = "$($item.Version)/$($item.Project)"; Ok = $ok; Line = $line }

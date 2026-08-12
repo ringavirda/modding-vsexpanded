@@ -4,7 +4,7 @@
 no test.
 **Would live in** the **Copper add-on**, parent `smex` ([overview.md](../../overview.md); the design comes
 from the archived smex spec, under a header that already marked itself unscheduled).
-**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../plans/STATE.md)); the cut is owned by
+**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../internal/plans/STATE.md)); the cut is owned by
 [scope.md](../../scope.md) § Non-ferrous.
 
 **Owns** - the facts this page is canonical for:

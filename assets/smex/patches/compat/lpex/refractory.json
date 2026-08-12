@@ -4,6 +4,7 @@
     "file": "lpex:blocktypes/pipes/passthrough.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier1",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -11,6 +12,7 @@
     "file": "lpex:blocktypes/pipes/passthrough.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier2",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -18,12 +20,14 @@
     "file": "lpex:blocktypes/pipes/passthrough.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier3",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
     "op": "remove",
     "file": "lpex:blocktypes/pipes/passthrough.json",
     "path": "/texturesByType/*",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -33,6 +37,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -42,6 +47,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -51,6 +57,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -63,6 +70,7 @@
         "overlays": ["game:block/clay/brick/four/running/{brick}1"]
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
 
@@ -71,6 +79,7 @@
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier1",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -78,6 +87,7 @@
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier2",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -85,12 +95,14 @@
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier3",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
     "op": "remove",
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
     "path": "/texturesByType/*",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -100,6 +112,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -109,6 +122,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -118,6 +132,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -130,6 +145,7 @@
         "overlays": ["game:block/clay/brick/four/running/{brick}1"]
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
 
@@ -138,6 +154,7 @@
     "file": "lpex:blocktypes/pipes/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier1",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -145,6 +162,7 @@
     "file": "lpex:blocktypes/pipes/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier2",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -152,12 +170,14 @@
     "file": "lpex:blocktypes/pipes/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier3",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
     "op": "remove",
     "file": "lpex:blocktypes/pipes/outlet.json",
     "path": "/texturesByType/*",
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -167,6 +187,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -176,6 +197,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -185,6 +207,7 @@
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -197,6 +220,7 @@
         "overlays": ["game:block/clay/brick/four/running/{brick}1"]
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
 
@@ -228,6 +252,7 @@
         "code": "lpex:pipe-passthrough-refractory{tier}-ns"
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -258,6 +283,7 @@
         "code": "lpex:pipe-passthroughbend-refractory{tier}-nw"
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   },
   {
@@ -300,6 +326,7 @@
         "code": "lpex:pipe-outlet-refractory{tier}-n"
       }
     },
+    "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
   }
 ]

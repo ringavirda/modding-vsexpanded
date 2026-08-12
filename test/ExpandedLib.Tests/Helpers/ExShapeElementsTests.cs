@@ -1,4 +1,5 @@
 using ExpandedLib.Helpers;
+using Vintagestory.API.Common;
 using Xunit;
 
 namespace ExpandedLib.Tests;
@@ -81,6 +82,81 @@ public class ExShapeElementsTests {
     // "Base" and "Base/*" mean the same thing, so both spellings render a group's children.
     Assert.True(ExShapeElements.Matches("Base/Cube2", ["Base"]));
     Assert.True(ExShapeElements.Matches("Base/Cube2", ["Base/*"]));
+  }
+
+  #endregion
+
+  #region Copy semantics
+
+  // A bed wearing a fuel texture, with a child that wears it too, beside a group neither pattern keeps.
+  private static Shape Fixture() =>
+    new() {
+      Elements =
+      [
+        new ShapeElement
+        {
+          Name = "Bed",
+          FacesResolved =
+          [
+            new ShapeElementFace { Texture = "#coke" },
+            new ShapeElementFace { Texture = "#brick" },
+          ],
+          Children =
+          [
+            new ShapeElement
+            {
+              Name = "Cube1",
+              FacesResolved = [new ShapeElementFace { Texture = "#coke" }],
+            },
+            new ShapeElement { Name = "Cube2", FacesResolved = [] },
+          ],
+        },
+        new ShapeElement { Name = "Pigs", FacesResolved = [] },
+      ],
+    };
+
+  [Fact]
+  public void Retexturing_repoints_every_matching_face_at_every_depth() {
+    Shape copy = ExShapeElements.Retextured(Fixture(), "coke", "charcoal");
+
+    Assert.Equal("#charcoal", copy.Elements[0].FacesResolved![0].Texture);
+    Assert.Equal("#brick", copy.Elements[0].FacesResolved![1].Texture);
+    Assert.Equal(
+      "#charcoal",
+      copy.Elements[0].Children![0].FacesResolved![0].Texture
+    );
+  }
+
+  [Fact]
+  public void Retexturing_does_not_write_through_to_the_shape_it_copied() {
+    // ShapeElement.Clone copies FacesResolved with a plain array clone, so a cloned element's faces are
+    // the *same objects* as the source's. Repointing one in place therefore rewrites the asset every
+    // other block draws from - a firebox charged with charcoal would retexture the bed of every firebox
+    // in the world. Load-bearing now that shapes are loaded once and cached rather than per tesselation.
+    Shape source = Fixture();
+    Shape copy = ExShapeElements.Retextured(source, "coke", "charcoal");
+
+    Assert.Equal("#coke", source.Elements[0].FacesResolved![0].Texture);
+    Assert.Equal(
+      "#coke",
+      source.Elements[0].Children![0].FacesResolved![0].Texture
+    );
+    Assert.NotSame(
+      source.Elements[0].FacesResolved![0],
+      copy.Elements[0].FacesResolved![0]
+    );
+  }
+
+  [Fact]
+  public void Pruning_does_not_write_through_to_the_shape_it_copied() {
+    Shape source = Fixture();
+    Shape copy = ExShapeElements.Pruned(source, ["Bed/Cube1"]);
+
+    Assert.Single(copy.Elements); // Pigs dropped
+    Assert.Single(copy.Elements[0].Children!); // Cube2 dropped
+
+    Assert.Equal(2, source.Elements.Length);
+    Assert.Equal(2, source.Elements[0].Children!.Length);
   }
 
   #endregion

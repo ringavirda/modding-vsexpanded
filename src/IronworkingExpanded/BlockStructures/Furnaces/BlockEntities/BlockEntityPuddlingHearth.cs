@@ -96,22 +96,35 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
   ) {
-    if (Api is not ICoreClientAPI)
+    if (Api is not ICoreClientAPI capi)
       return base.OnTesselation(mesher, tesselator);
+
+    // Keyed on the charge, the way vanilla's firepit keys on burn and content state: the pigs per row and
+    // whether that row is fettled are the only two things the drawn element set reads.
+    if (
+      ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        string.Join(',', _pigs) + "|" + string.Join(',', _fettled),
+        () => BuildBedMesh(tesselator)
+      ) is { } mesh
+    )
+      mesher.AddMeshData(mesh);
+
+    // True suppresses the default block mesh, which would draw every pig and both fettle beds regardless
+    // of what is charged.
+    return true;
+  }
+
+  private MeshData? BuildBedMesh(ITesselatorAPI tesselator) {
+    if (
+      ExMeshCache.LoadShape(Api, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
+      return null;
 
     // Prune the element tree directly rather than through the engine's selectiveElements matching, whose
     // per-segment prefix rule can keep or drop the wrong subtree without reporting it.
-    Shape? shape = Api
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
-      return base.OnTesselation(mesher, tesselator);
-
     tesselator.TesselateShape(
       Block,
       ExShapeElements.Pruned(
@@ -121,10 +134,7 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       out MeshData mesh
     );
     ExMesh.RotateByShape(mesh, Block);
-    mesher.AddMeshData(mesh);
-    // True suppresses the default block mesh, which would draw every pig and both fettle beds regardless
-    // of what is charged.
-    return true;
+    return mesh;
   }
 
   #endregion

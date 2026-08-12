@@ -24,7 +24,7 @@ the shared firebox branch's charge model ([heat balance](../mechanics/heat-balan
 [density rule](../mechanics/density-rule.md) · [rolling mill](rolling-mill.md) ·
 [puddling furnace](puddling-furnace.md) (the same chassis, one row shallower) · [firebox](firebox.md) ·
 [stock rack](stock-rack.md) (shares the planned `StockPile.Place`) ·
-[rolling](../processes/rolling.md) · [layouts-workbench.md](../../workbench/layouts.md) § 1
+[rolling](../processes/rolling.md) · [layouts-workbench.md](../../internal/workbench/layouts.md) § 1
 
 ---
 

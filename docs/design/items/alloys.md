@@ -21,7 +21,7 @@
 * the generated item family - which resource forms and tools a metal opts into, the three stat presets and
   their numbers, and the smelt-back ratios;
 * the audit of the four shipped metal defs against the ladder - including that `bessemersteel.json` ships
-  `tools: {preset:"good"}` against [N1](../../plans/STATE.md);
+  `tools: {preset:"good"}` against [N1](../../internal/plans/STATE.md);
 * every material identity, composition and ratio on the ferrous ladder -
   [materials.md](../materials.md) is a pointer page and this page is the home.
 
@@ -45,14 +45,14 @@
 | `IMoltenCell`, `FlowEdge`, the metal-type refusal, the no-op merge | [molten network](../mechanics/molten-network.md) |
 | code-first `ExItemDef`, goldens, `ExRecipeCosts`, `/exmod` | [recipes & config](../mechanics/recipes-config.md) |
 | melt-back recovery granularity and the ≤32 / ≤48 invariant | [recoverability](../mechanics/recoverability.md) |
-| status of everything, D1–D9, N1–N3, the blocker list | [STATE.md](../../plans/STATE.md) |
+| status of everything, D1–D9, N1–N3, the blocker list | [STATE.md](../../internal/plans/STATE.md) |
 
 **Depends on** [density rule](../mechanics/density-rule.md) · [molten network](../mechanics/molten-network.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [ladle](../machines/ladle.md) ·
 [Bessemer](../machines/bessemer.md) · [blown iron](blown-iron.md) ·
 [open hearth](../machines/open-hearth.md) · [crucible furnace](../machines/crucible-furnace.md) ·
 [cupola](../machines/cupola.md) · [cold blast furnace](../machines/blast-furnace-cold.md) ·
-[bearings](../machines/bearings.md) · [STATE.md](../../plans/STATE.md)
+[bearings](../machines/bearings.md) · [STATE.md](../../internal/plans/STATE.md)
 
 ---
 
@@ -88,7 +88,7 @@ The one geometry-adjacent number a metal owns is its density in kg/m³: vanilla 
 ## The catalogue
 
 The ferrous ladder. "shipped" marks a metal whose `MetalDef` ships today. Scope is ferrous only
-([D8](../../plans/STATE.md)); non-ferrous (copper, the bronzes, pure copper) is deferred and has no row here.
+([D8](../../internal/plans/STATE.md)); non-ferrous (copper, the bronzes, pure copper) is deferred and has no row here.
 
 | Metal | Registry code | What it guarantees | Made by | Consumed by | Mod | Status |
 |---|---|---|---|---|---|---|
@@ -114,7 +114,7 @@ The ferrous ladder. "shipped" marks a metal whose `MetalDef` ships today. Scope 
 
 ### D3 — an alloy inherits its base's grade, as a continuous penalty
 
-Settled ([STATE.md § D3](../../plans/STATE.md)):
+Settled ([STATE.md § D3](../../internal/plans/STATE.md)):
 
 > **Alloys inherit their base's properties.** Critical machinery built from a lesser base gets a **lower max
 > pressure** — not a refusal.
@@ -350,7 +350,7 @@ off-ratio mix to the nearest alloy - the exact behaviour the [ladle](../machines
 1. **`bessemersteel.json` ships a full tool family, against N1.** `generateItemFamily: true`,
    `itemForms: [ingot, plate, rod, nails]` and `tools: {preset: "good"}` (`bessemersteel.json:8-15`) yield 12
    items including a tier-5, 2600-durability pickaxe - better than any vanilla steel tool the player can
-   forge. [N1](../../plans/STATE.md) (the blow yields blown iron, not steel) and the ladder's own rule (tools
+   forge. [N1](../../internal/plans/STATE.md) (the blow yields blown iron, not steel) and the ladder's own rule (tools
    come from shear / crucible / HSS steel) both say this must not exist. The fix is one preset token, but it
    must not land before the [ladle](../machines/ladle.md) does - see [blown iron](blown-iron.md).
 

@@ -110,7 +110,7 @@ temperature and throw away its calorific value. See [Open](#open).
 
 ## Structure *(proposed — nothing is authored)*
 
-No layout exists. `docs/workbench/layouts.md` has no producer entry, and no `MultiblockLayout` in `src/`
+No layout exists. `docs/internal/workbench/layouts.md` has no producer entry, and no `MultiblockLayout` in `src/`
 mentions one. The cells below become hard-coded structure-local offsets the moment the block entity is
 written.
 

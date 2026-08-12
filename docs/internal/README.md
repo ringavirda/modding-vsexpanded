@@ -1,0 +1,77 @@
+# docs/internal — planning, records and reference
+
+Everything here is for whoever is building the mods. None of it ships: the packager takes `assets/`
+and the built dlls, never `docs/`.
+
+**Start at [plans/NEXT.md](plans/NEXT.md).** It is the single "what now" entry point.
+
+## Why this directory exists
+
+These four trees used to sit directly under `docs/` and were excluded from git in
+`.git/info/exclude`. That cost us a plan: `docs/design/master-plan.md` was written 2026-07-13,
+deleted at some point, and has **no recoverable history** because it was never committed. Its only
+surviving trace is a note in an assistant memory file.
+
+It also cost us duplicated work. A1's task list included migrating `PossibleOrientations` off
+`System.Text.Json`; nothing recorded that the task was outstanding, so it was rediscovered two days
+later through a separate audit and investigated from scratch.
+
+So: one root, tracked, not disposable. Staging it is the repo owner's call - nothing here does that.
+
+## Who owns what
+
+The split is fixed and worth restating every time it is tempting to blur it.
+
+| Tree | Owns | Does not own |
+|---|---|---|
+| `docs/design/**` (tracked, outside this dir) | **decisions** - numbers, rules, mechanisms | sequencing, status |
+| `internal/plans/` | **sequencing** - what order settled decisions get built in | decisions |
+| `internal/worklog/` | **what actually landed**, newest first, monthly | intent |
+| `internal/vanilla/` | a map of the vendored engine source at `.compat/vintagestory/` | our own code |
+| `internal/workbench/` | working scratch - measurements, layouts | anything settled |
+
+If a number, a rule or a mechanism is settled, it is settled on a **design page** - never in a plan,
+never in a code comment alone.
+
+## Rules that came out of losing a plan
+
+1. **A plan file states its own status.** Put it in the header, and update it when a stage lands.
+   Reconstructing completion from worklog prose is how a finished stage reads as unstarted.
+2. **A completed plan is marked done, not deleted.** It carries the reasoning behind what shipped,
+   and that reasoning is the expensive part.
+3. **A superseded plan says what superseded it**, in its header, before anything else.
+4. **Cite by symbol, not by line.** Line numbers here were right on the day they were written.
+   13.6% of the repo's doc citations already point past end-of-file.
+
+## Index
+
+### plans/
+
+| File | What | Status |
+|---|---|---|
+| [NEXT.md](plans/NEXT.md) | the entry point - what is next, right now | live |
+| [STATE.md](plans/STATE.md) | status and open decisions; the blocker table | live |
+| [2026-08-12-extensibility.md](plans/2026-08-12-extensibility.md) | third-party extension of our processes | **live, next** |
+| [2026-08-10-backport-and-vanilla-backlog.md](plans/2026-08-10-backport-and-vanilla-backlog.md) | § A backport (58 open) · § B vanilla practice (12 open) | live |
+| [2026-08-04-iwex-u2-u10-expansion.md](plans/2026-08-04-iwex-u2-u10-expansion.md) | U2–U11, 87 tasks / 707 steps | live, paused |
+| [2026-08-04-iwex-completion.md](plans/2026-08-04-iwex-completion.md) | U1 remainder, Global Constraints, Commands | live |
+| [iwex-bringup.md](plans/iwex-bringup.md) | the art queue and the playtest gates | live |
+| [2026-08-05-iwex-plan-audit.md](plans/2026-08-05-iwex-plan-audit.md) | design-vs-plan findings, unstarted units | open findings |
+| [2026-08-05-iwex-plan-coherence.md](plans/2026-08-05-iwex-plan-coherence.md) | plan-internal coherence findings | open findings |
+| [2026-08-10-framework-composition-staging.md](plans/2026-08-10-framework-composition-staging.md) | A0–A4 sequencing | **done 2026-08-12** |
+| [2026-08-10-a0-lifecycle-fixes.md](plans/2026-08-10-a0-lifecycle-fixes.md) | A0 task detail | done |
+| [2026-08-10-a1-network-membership-behaviour.md](plans/2026-08-10-a1-network-membership-behaviour.md) | A1 task detail | done |
+| [2026-08-11-a3-form-consolidation.md](plans/2026-08-11-a3-form-consolidation.md) | A3 task detail | done |
+| [furnace-and-machine-rebalance.md](plans/furnace-and-machine-rebalance.md) | the 0.9 rebalance plan of record | executed 0.9.7 |
+
+A2 and A4 have no plan document. They were executed directly, which is why the paper trail thins
+out after A1 and why the arc reads as unfinished from the outside.
+
+### The other trees
+
+- [worklog/](worklog/) - `2026-07.md`, `2026-08.md`. Newest first; each entry is roughly what a
+  commit message would have said.
+- [vanilla/](vanilla/) - where every engine type lives, the practices vanilla follows, the traps its
+  source hides. Two things inside `vsapi` that nothing else documents: `docs/api/` is the full
+  generated API reference and `docs/json-docs/` is the **JSON asset schema**.
+- [workbench/](workbench/) - `layouts.md`, the multiblock layout measurements.

@@ -1,7 +1,7 @@
 [
   {
     "file": "game:itemtypes/resource/metalbit.json",
-    "op": "add",
+    "op": "addmerge",
     "path": "/crushingPropsByType",
     "value": {
       "*-iron": {

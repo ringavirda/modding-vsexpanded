@@ -85,7 +85,7 @@ round early, and it is owned [there](../mechanics/recoverability.md).
 The wrought ball is an input with no item. 9 pigs = 3375 u puddle into 16 balls (3200 u) + 175 u of tap
 cinder ([puddling](../processes/puddling.md)); 2 balls make a bar, 6 make a slab
 ([shingling](../processes/shingling.md)). No `ball` item exists in `src/`, and the puddling furnace cannot
-light ([STATE.md § B8](../../plans/STATE.md)).
+light ([STATE.md § B8](../../internal/plans/STATE.md)).
 
 ---
 
@@ -264,7 +264,7 @@ added after.
 ## Open
 
 - Nothing produces any stock. Puddling → helve shingling is the settled route for the wrought pair and
-  neither is built (puddling additionally cannot light, [STATE.md § B8](../../plans/STATE.md)); the long cell
+  neither is built (puddling additionally cannot light, [STATE.md § B8](../../internal/plans/STATE.md)); the long cell
   that would pour the cast three does not exist. Every piece of stock in the game today comes from creative.
 - This page's construction list: replace the two forms, delete the generator and its ten outputs, wire the
   authored art, redraw the three cast shapes to 27 / 25 / 25 and move them to the smex domain, then add the

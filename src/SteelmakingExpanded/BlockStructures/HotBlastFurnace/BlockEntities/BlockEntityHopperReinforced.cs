@@ -42,7 +42,6 @@ public class BlockEntityHopperReinforced : BlockEntity {
     );
 
   // Cached, untranslated mesh of the burden contents pile (built lazily client-side).
-  private MeshData? _contentsBaseMesh;
 
   // The contents pile is drawn between these heights (in 1/16 block units) inside the hopper, scaling
   // with how full the tank is.
@@ -179,17 +178,26 @@ public class BlockEntityHopperReinforced : BlockEntity {
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
   ) {
-    if (TankCount > 0) {
-      _contentsBaseMesh ??= BuildContentsMesh(tesselator);
-      if (_contentsBaseMesh != null) {
-        float fill = GameMath.Clamp((float)TankCount / Capacity, 0f, 1f);
-        float yOffset =
-          (ContentsMinY + fill * (ContentsMaxY - ContentsMinY)) / 16f;
+    if (
+      TankCount > 0
+      && Api is ICoreClientAPI capi
+      && ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        "contents",
+        () => BuildContentsMesh(tesselator)
+      )
+        is { } contents
+    ) {
+      float fill = GameMath.Clamp((float)TankCount / Capacity, 0f, 1f);
+      float yOffset =
+        (ContentsMinY + fill * (ContentsMaxY - ContentsMinY)) / 16f;
 
-        MeshData mesh = _contentsBaseMesh.Clone();
-        mesh.Translate(0f, yOffset, 0f);
-        mesher.AddMeshData(mesh);
-      }
+      // Clone first: the cached mesh is shared by every hopper of this blocktype and Translate moves it
+      // in place, so lifting the cached one would raise the pile in every other hopper too, cumulatively.
+      MeshData mesh = contents.Clone();
+      mesh.Translate(0f, yOffset, 0f);
+      mesher.AddMeshData(mesh);
     }
 
     // Keep the default hopper block mesh as well.
@@ -197,10 +205,13 @@ public class BlockEntityHopperReinforced : BlockEntity {
   }
 
   private MeshData? BuildContentsMesh(ITesselatorAPI tesselator) {
-    Shape? shape = Api
-      .Assets.TryGet(new AssetLocation("iwex:shapes/ore/burden.json"))
-      ?.ToObject<Shape>();
-    if (shape == null)
+    if (
+      ExMeshCache.LoadShape(
+        Api,
+        new AssetLocation("iwex:shapes/ore/burden.json")
+      )
+      is not { } shape
+    )
       return null;
 
     tesselator.TesselateShape(Block, shape, out MeshData mesh);

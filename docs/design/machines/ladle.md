@@ -125,7 +125,7 @@ right machine for that ·
 [long cell](long-cell.md) · [casting cell](casting-cell.md) · [casting bed](casting-bed.md) - where the mixed
 metal goes · [heat balance](../mechanics/heat-balance.md) - the furnace `T_process` law the ladle does not
 use (it has no fire) · [recipes & config](../mechanics/recipes-config.md) ·
-[STATE.md](../../plans/STATE.md) - D3, D6, N1, and the ferroalloy rulings
+[STATE.md](../../internal/plans/STATE.md) - D3, D6, N1, and the ferroalloy rulings
 
 **Depends on** [molten network](../mechanics/molten-network.md) · [molten canal](molten-canal.md) ·
 [materials.md](../materials.md) · [Bessemer](bessemer.md) · [open hearth](open-hearth.md) ·
@@ -151,7 +151,7 @@ Three jobs, in the order the player meets them:
 
 ### The Bessemer route does not work without it
 
-[STATE.md](../../plans/STATE.md) N1, settled 2026-07-29: the blow burns out all the carbon and the manganese,
+[STATE.md](../../internal/plans/STATE.md) N1, settled 2026-07-29: the blow burns out all the carbon and the manganese,
 leaving iron that is oxygen-saturated. Its name is blown iron and it is not a material to build with.
 Mushet's 1856 spiegeleisen addition was not a refinement: without it the Bessemer process did not work at all.
 
@@ -321,7 +321,7 @@ Waste alloy is recoverable - in the [cupola](cupola.md) as cast iron, as capped 
 
 ### The chill model — the mechanic is temperature, and it gates nothing
 
-Settled 2026-07-29 ([STATE.md](../../plans/STATE.md) § "How ferroalloys are added"): both routes are real, and the
+Settled 2026-07-29 ([STATE.md](../../internal/plans/STATE.md) § "How ferroalloys are added"): both routes are real, and the
 quantity decides which one is usable.
 
 | Addition | Route | Why |
@@ -375,7 +375,7 @@ value is how long the player has to work.
 Brass boils its zinc off unless the bath is covered with coke ([materials.md](../materials.md)). That is a
 second use for the same hand-drop port and a second reason the ladle needs a bath state, not just a tally,
 but it is non-ferrous and therefore deferred with everything non-ferrous
-([STATE.md](../../plans/STATE.md) D8).
+([STATE.md](../../internal/plans/STATE.md) D8).
 
 ---
 
@@ -385,7 +385,7 @@ All proposed. No config section, no keys, no code. The right-hand column is what
 
 | Key | Proposed | Measured against (file:line) | What it does |
 |---|---|---|---|
-| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IwexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
+| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../internal/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IwexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
 | `LadlePullRate` | 25 u/tick | the casting bed's and cell's hard-coded `PullRatePerTick = 25` (`BlockEntitySandCastingBed.cs:44`, `BlockEntitySandCastingCell.cs:33`) | ship it as config, not a fourth hard-coded copy (D5b) |
 | `LadlePourRate` | 44 u/s | `BessemerPourRate` 44 (`SmexConfig.cs:231`) | match the converter so a ladle never becomes the bottleneck |
 | `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SmexConfig.cs:240`), on `IwexValues.MoltenCooldownSpeed` 24 (`IwexConfig.cs:31`) | how long the player has to work a mix |
@@ -489,7 +489,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
    12.5 % Mn while silently missing its ~1.2 % C target ([materials.md](../materials.md)).
 
 7. **The pour destination decides the product, and there are three of them** - canal start, mold pedestal,
-   long cell - each with a different capacity and a different rate. [STATE.md](../../plans/STATE.md) D5b wants one
+   long cell - each with a different capacity and a different rate. [STATE.md](../../internal/plans/STATE.md) D5b wants one
    number (50 u/s) for the whole molten network; two of the four current rates are hard-coded.
 
 8. **Zinc's coke cover is non-ferrous and deferred**, but it is the one addition whose absence destroys
@@ -524,7 +524,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 4. **Where do the alloy windows live?** A JSON catalogue beside `config/metals/` is the obvious answer and
    matches how metals already load - but the targets currently live in `materials.md`, which
-   [STATE.md](../../plans/STATE.md) says should become generated. The two must not both be canonical.
+   [STATE.md](../../internal/plans/STATE.md) says should become generated. The two must not both be canonical.
 
 5. **Is the static ladle enough?** Historically a ladle is carried by crane from converter to casting
    floor; the settled static block means the canal has to reach every casting station, and the

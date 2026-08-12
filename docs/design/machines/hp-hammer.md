@@ -37,13 +37,13 @@ belongs to [steam hammer](steam-hammer.md) and is linked, never restated.
 | `1 vx³ = 2.5 u` and every mass in the stock ladder | [density rule](../mechanics/density-rule.md) |
 | the ≤ 32 / ≤ 48 handling limits | [recoverability](../mechanics/recoverability.md) |
 | what hadfield, crucible steel and HSS are | [materials.md](../materials.md) |
-| the placement rule that assigns machines to mods | [STATE.md § placement rule](../../plans/STATE.md) |
+| the placement rule that assigns machines to mods | [STATE.md § placement rule](../../internal/plans/STATE.md) |
 
 **Depends on** [steam hammer](steam-hammer.md) · [pipe network](../mechanics/pipe-network.md) ·
 [heading machine](heading-machine.md) · [shear](shear.md) ·
 [multiblock & fillers](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [density rule](../mechanics/density-rule.md) · [boiler-cornish](boiler-cornish.md) (the FSM the Lancashire
-inherits) · [materials.md](../materials.md) · [STATE.md](../../plans/STATE.md)
+inherits) · [materials.md](../materials.md) · [STATE.md](../../internal/plans/STATE.md)
 
 ---
 
@@ -65,7 +65,7 @@ displaced. Adding `p·A` to the falling weight is the historical fix (Nasmyth 18
 double-acting version followed for heavy closed-die forging).
 
 It is hpex because of what it feeds. Under the placement rule
-([STATE.md § placement rule](../../plans/STATE.md)) a machine lives with the content it makes possible, and
+([STATE.md § placement rule](../../internal/plans/STATE.md)) a machine lives with the content it makes possible, and
 the ≥ 2-voxel forgings this machine is for are the heavy rotating parts of the HP engines - a Corliss crank,
 a connecting rod, a piston rod, the [bearings](bearings.md) housings - plus its own hardened die sets. None
 of those exist as items; see [Open](#open).
@@ -99,7 +99,7 @@ material in the suite explicitly wrong for reversal ([steam hammer](steam-hammer
 rod snaps on the first stroke"*).
 
 So the HP hammer is the first machine whose frame must be fabricated, and the first place where N3, the
-cast-iron ↔ fabricated-steel substitution ([STATE.md § N3](../../plans/STATE.md)), is mandatory rather than
+cast-iron ↔ fabricated-steel substitution ([STATE.md § N3](../../internal/plans/STATE.md)), is mandatory rather than
 optional: `castframe` → beam × N + plate + rivets, assembled by a recipe, with rivets as an ingredient so no
 riveting machine is required.
 
@@ -148,7 +148,7 @@ problems, all live:
 |---|---|
 | Hadfield does not exist in code. Three source mentions, all comments; no metal descriptor, no item, no alloy recipe | `HpexConfig.cs:107`, `HighPressureExpandedModSystem.cs:40`, `MachineRecipeDefinitions.cs:59` - the last one says the gate is still waiting on hadfield |
 | The two live hpex machines do not honour it. The HP builds take the plain plated iwex segment, not a hadfield one, and the source comment says tier-gating "waits on … the hadfield material gate" | `MachineRecipeDefinitions.cs:59-61` |
-| A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../plans/STATE.md) |
+| A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../internal/plans/STATE.md) |
 
 The grade penalty has an obvious axis on a hammer: blow energy is a function of admitted pressure, and a
 weaker frame has a lower admissible pressure. Built from Bessemer structural steel it works but cannot be
@@ -346,7 +346,7 @@ ingredient codes, which is why the hadfield gate is still a comment.
   drawing hard can only lower line pressure, so it does not worsen this, but any headroom argument that
   assumes a margin is wrong.
 * The rolled pipe tier is uncraftable (B5) - four live blocktypes, four shapes, zero recipes
-  ([STATE.md:52](../../plans/STATE.md); `src/HighPressureExpanded/Recipes/` contains exactly one file). So an
+  ([STATE.md:52](../../internal/plans/STATE.md); `src/HighPressureExpanded/Recipes/` contains exactly one file). So an
   HP hammer plumbed in "HP pipe" would be plumbed in a tier the player cannot build.
 * hadfield is a comment, not a material - see [Construction](#construction).
 * The LP hammer's drawn mesh already overhangs its declared footprint (57 voxels tall against 48 for

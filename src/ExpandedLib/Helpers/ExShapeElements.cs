@@ -99,12 +99,29 @@ public static class ExShapeElements {
     string to
   ) {
     foreach (ShapeElement el in elements ?? []) {
-      foreach (ShapeElementFace face in (el.FacesResolved ?? []))
-        if (face?.Texture == from)
-          face.Texture = to;
+      ShapeElementFace[] faces = el.FacesResolved ?? [];
+      for (int i = 0; i < faces.Length; i++)
+        if (faces[i]?.Texture == from)
+          faces[i] = Repointed(faces[i], to);
       RetextureLevel(el.Children, from, to);
     }
   }
+
+  // Shape.Clone deep-copies the element tree, but ShapeElement.Clone copies FacesResolved with a plain
+  // array clone, so the copy's faces are the same objects as the source's. Writing face.Texture there
+  // repoints the asset itself for every other block using it. The array slot is ours to overwrite; the
+  // face behind it is not, so a repointed face is a new one.
+  private static ShapeElementFace Repointed(ShapeElementFace face, string to) =>
+    new() {
+      Texture = to,
+      Uv = (float[]?)face.Uv?.Clone(),
+      Rotation = face.Rotation,
+      Glow = face.Glow,
+      Enabled = face.Enabled,
+      ReflectiveMode = face.ReflectiveMode,
+      WindMode = (sbyte[]?)face.WindMode?.Clone(),
+      WindData = (sbyte[]?)face.WindData?.Clone(),
+    };
 
   /// <summary>Every element path in <paramref name="shape"/>, parent-first - the set pattern literals
   /// can be checked against after a re-export renames a group.</summary>

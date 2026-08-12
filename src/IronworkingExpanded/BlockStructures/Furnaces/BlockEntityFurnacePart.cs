@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Helpers;
 using ExpandedLib.Renderers;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Client;
@@ -58,15 +59,12 @@ public abstract class BlockEntityFurnacePart : BlockEntity, IMultiblockComponent
   /// </summary>
   private void BuildAnimator(BEBehaviorAnimatable animatable) {
     var capi = (ICoreClientAPI)Api;
-    Shape? shape = capi
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
+    // Not cached: InitializeAnimator resolves joints into the shape it is handed, so each animator needs
+    // its own instance. Shape.TryGet parses afresh per call.
+    if (
+      ExMeshCache.LoadShape(capi, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
       return;
 
     animatable.animUtil.InitializeAnimator(

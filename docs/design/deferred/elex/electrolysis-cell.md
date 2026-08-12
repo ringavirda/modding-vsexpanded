@@ -1,5 +1,5 @@
 # Electrolysis cell
-**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D8** ([STATE.md](../../../plans/STATE.md), release target = the ferrous line) **and again by D8's non-ferrous half** ([scope](../../scope.md) § Non-ferrous) — this is a *copper* machine
+**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D8** ([STATE.md](../../../internal/plans/STATE.md), release target = the ferrous line) **and again by D8's non-ferrous half** ([scope](../../scope.md) § Non-ferrous) — this is a *copper* machine
 
 **Owns**
 * the electrolyte-not-reagent rule in mechanical terms — why a bath that recirculates is a one-time charge and never a supply chain;
@@ -37,7 +37,7 @@ Two independent deferrals land on it:
 
 | Deferral | Ruling | Effect on this cell |
 |---|---|---|
-| elex is off the release path | D8 ([STATE.md](../../../plans/STATE.md)) - release target is the ferrous line | defers the whole mod, this block included |
+| elex is off the release path | D8 ([STATE.md](../../../internal/plans/STATE.md)) - release target is the ferrous line | defers the whole mod, this block included |
 | non-ferrous is deferred later | D8's second half, [scope](../../scope.md) § Non-ferrous | defers its input and its output independently of elex |
 
 Both belong to [scope](../../scope.md). The consequence that is this page's: bringing elex forward would not bring this block forward, because its anode is converter copper and its two upstream machines are on the non-ferrous list. It is the one elex block that needs a different deferral reversed.

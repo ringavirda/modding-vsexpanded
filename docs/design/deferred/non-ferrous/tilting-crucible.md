@@ -5,7 +5,7 @@ config key, no test.
 **Would live in** unassigned. Its consumers are the copper add-on (parent `smex`,
 [overview.md](../../overview.md):80); its interface is the iwex-owned molten canal, and no doc places it in
 a mod. See § Open.
-**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../plans/STATE.md)); the cut and its reasoning
+**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../internal/plans/STATE.md)); the cut and its reasoning
 are owned by [scope.md](../../scope.md) § Non-ferrous.
 
 **Owns** - the facts this page is canonical for:
@@ -226,4 +226,4 @@ Nothing in the release target waits on this machine.
    for a run.
 7. Throughput and capacity. No number is proposed anywhere. The canal start holds 100 u
    (`BlockEntityMoltenCanalStart.cs:24-25`) and the network moves 50 u/s end to end (D5b,
-   [STATE.md](../../../plans/STATE.md)); nothing says what one tilt is worth.
+   [STATE.md](../../../internal/plans/STATE.md)); nothing says what one tilt is worth.

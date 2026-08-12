@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Renderers;
 using Vintagestory.API.Client;
@@ -45,15 +46,12 @@ public class BlockEntityValve : BlockEntityPipe {
   // toggle helper, which owns the null-animator ready guard. A failed shape resolve leaves it not ready.
   private void BuildAnimator(BEBehaviorAnimatable animatable) {
     var capi = (ICoreClientAPI)Api;
-    Shape? shape = capi
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
+    // Not mesh-cached: InitializeAnimator resolves joints into the shape it is handed, so each animator
+    // needs its own instance. Shape.TryGet parses afresh per call.
+    if (
+      ExMeshCache.LoadShape(capi, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
       return;
 
     // Rotation is applied by the renderer (per-orientation), not baked into the mesh.

@@ -327,6 +327,6 @@ instance of the pattern.
 3. **The cupola's scenario suite lives in the wrong project.** `CupolaScenarioTests` and `CupolaScenes` are
    in `test/LowPressureExpanded.Tests/`, testing an iwex machine - against the per-mod test-homing rule.
 
-4. **The [layouts.md](../../workbench/layouts.md) workbench copy has drifted**: its cupola section still
+4. **The [layouts.md](../../internal/workbench/layouts.md) workbench copy has drifted**: its cupola section still
    spells the retired `iwex:cupolafurnacecore` anchor code and a `Y` tuyere glyph where the shipped drawing
    uses `T`. Regenerate it from the golden.

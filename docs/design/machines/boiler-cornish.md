@@ -70,7 +70,7 @@ verifies a player-built firebox around itself before it will run
 | Orientation | `side` variant from `abstract/horizontalorientation` (`BlockBoiler.cs:70`) |
 | `StructureAngle` | `AngleFromSide(side) + 180` (`BlockBoiler.cs:39-43`) - the body frame; the vessel extends along local `+z` |
 | Shape spin | `rotateYByType` = `AngleFromSide(side)`, no `+180` offset (`BlockBoiler.cs:73` → `ExBlockDef.cs:200-208`; golden `goldens/lpex/blocktypes/boiler/cornish.json`) - see [Gotchas](#gotchas) |
-| Verified layout | `Origin(-1, -2)`, three layers (`BlockBoilerCornish.cs:77-127`); rendered in [layouts.md](../../workbench/layouts.md) § Section 2 |
+| Verified layout | `Origin(-1, -2)`, three layers (`BlockBoilerCornish.cs:77-127`); rendered in [layouts.md](../../internal/workbench/layouts.md) § Section 2 |
 | Completion monitor | every 3000 ms (`BlockEntityMultiblockStructure.cs:49`) |
 
 ### Geometry offsets — `BlockBoilerCornish.cs:35-52`, resolved through `BlockBoiler.cs:79-114`

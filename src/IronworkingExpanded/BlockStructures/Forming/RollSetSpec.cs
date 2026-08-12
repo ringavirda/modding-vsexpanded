@@ -128,13 +128,11 @@ public sealed record RollSetSpec(
 
     // Outputs are an array of {gap, code} rather than a gap-keyed object: a float is a poor JSON key
     // (0.5 and "0.50" never compare equal), and the array keeps the stopping points in barrel order.
+    // Optional. A set naming no stopping point is not broken: the mill ejects the piece it drew through,
+    // and every stage whose product needs a shear cut leaves as stock to be cropped elsewhere. Only a
+    // whole-piece conversion is claimed at the mill, and today no shipped stage is one.
     var outputs = new Dictionary<float, string>();
-    JsonObject[]? outputNodes = node["outputs"].AsArray();
-    if (outputNodes is not { Length: > 0 }) {
-      error =
-        "missing 'outputs' (a set with no named stopping point makes nothing)";
-      return false;
-    }
+    JsonObject[] outputNodes = node["outputs"].AsArray() ?? [];
     foreach (JsonObject outputNode in outputNodes) {
       float gap = outputNode["gap"].AsFloat(-1f);
       string code = outputNode["code"].AsString("");

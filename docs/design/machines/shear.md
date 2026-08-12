@@ -24,7 +24,7 @@ and why cold shear is not a third escape) ·
 [recipes & config](../mechanics/recipes-config.md) (the code-first def, the cost catalogue, goldens) ·
 [rolling mill](rolling-mill.md) (the stock it crops and the stage it arrives at) ·
 [reheat furnace](reheat-furnace.md) (the alternative to a cold cut) ·
-[rolling](../processes/rolling.md) · [STATE.md § placement rule](../../plans/STATE.md)
+[rolling](../processes/rolling.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
 
 ---
 

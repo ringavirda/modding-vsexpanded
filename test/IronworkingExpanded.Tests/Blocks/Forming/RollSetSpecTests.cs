@@ -75,15 +75,29 @@ public class RollSetSpecTests {
   }
 
   [Fact]
-  public void A_set_that_bites_nothing_or_makes_nothing_is_rejected() {
+  public void A_set_that_bites_nothing_is_rejected() {
     Assert.Contains(
       "accepts",
       Rejects(FlatSet.Replace("[ \"bloom\", \"billet\" ]", "[ ]"))
     );
-    Assert.Contains(
-      "outputs",
-      Rejects(FlatSet.Replace("\"outputs\"", "\"unused\""))
+  }
+
+  [Fact]
+  public void A_set_naming_no_stopping_point_is_accepted_and_makes_stock() {
+    // Not a broken set. The mill ejects the piece it drew through, and every stage whose product needs a
+    // shear cut leaves as stock to be cropped elsewhere - which is every shipped stage today. Only a
+    // whole-piece conversion is claimed at the mill.
+    Assert.True(
+      RollSetSpec.TryParse(
+        Json(FlatSet.Replace("\"outputs\"", "\"unused\"")),
+        out RollSetSpec? spec,
+        out string? error
+      ),
+      error
     );
+
+    Assert.Empty(spec!.Outputs);
+    Assert.Null(spec.OutputAt(1.0f));
   }
 
   [Fact]

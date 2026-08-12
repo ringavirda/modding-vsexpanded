@@ -1,3 +1,4 @@
+using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Crafting.BlockEntities;
 using NSubstitute;
@@ -19,8 +20,19 @@ public class DesignTableBeTests {
   private const string Paper = "game:paper";
   private const string Tuyere = "iwex:diagram-tuyere";
 
+  /// <summary>
+  /// The real design table with the engine's interaction-range test switched off. On 1.22 the station's
+  /// access check runs <c>CachedAccessPerms</c>, which asks the engine whether the player is in range of
+  /// the block - and a substitute <see cref="IPlayer"/> is never in range of anything, so every packet
+  /// route would be rejected before it was reached. Nothing else about the access check is changed: the
+  /// claim check below still decides, which is what the rejection tests turn on.
+  /// </summary>
+  private sealed class ReachableDesignTable : BlockEntityDesignTable {
+    internal override bool ValidatePickRange => false;
+  }
+
   private static BlockEntityDesignTable Table(TestWorld world, BlockPos pos) {
-    var be = new BlockEntityDesignTable {
+    var be = new ReachableDesignTable {
       Pos = pos,
       Block = TestBlocks.Configure(new Block(), "iwex:designtable", 100),
     };
@@ -51,13 +63,13 @@ public class DesignTableBeTests {
     var table = Table(new TestWorld(), new BlockPos(0, 1, 0));
 
     Assert.Equal(3, table.Inventory.Count);
-    Assert.IsType<ItemSlotDesignInput>(
+    Assert.IsType<ItemSlotMachineInput>(
       table.Inventory[BlockEntityDesignTable.MediumSlot]
     );
-    Assert.IsType<ItemSlotDesignInput>(
+    Assert.IsType<ItemSlotMachineInput>(
       table.Inventory[BlockEntityDesignTable.ParchmentSlot]
     );
-    Assert.IsType<ItemSlotDesignOutput>(
+    Assert.IsType<ItemSlotMachineOutput>(
       table.Inventory[BlockEntityDesignTable.OutputSlot]
     );
   }
@@ -253,6 +265,33 @@ public class DesignTableBeTests {
 
     Assert.Null(table.SelectedType);
     Assert.True(table.Inventory[BlockEntityDesignTable.OutputSlot].Empty);
+  }
+
+  [Fact]
+  public void A_slot_move_marks_the_chunk_for_saving() {
+    // Vanilla's containers do this on every handled slot packet, with the comment "Tell server to save
+    // this chunk to disk again". Without it a slot move that is not followed by some other write is
+    // lost on the next server restart - the player's items are simply back where they were.
+    var world = new TestWorld();
+    var table = Table(world, new BlockPos(0, 1, 0));
+    var player = AccessPlayer(world, granted: true);
+
+    table.OnReceivedClientPacket(player, 5, null!);
+
+    world.LoadedChunk.Received().MarkModified();
+  }
+
+  [Fact]
+  public void A_refused_slot_move_does_not_mark_the_chunk() {
+    // The rejection path returns before the handler, so nothing was written and there is nothing to
+    // save. Pins that the MarkModified above sits after the access check rather than before it.
+    var world = new TestWorld();
+    var table = Table(world, new BlockPos(0, 1, 0));
+    var player = AccessPlayer(world, granted: false);
+
+    table.OnReceivedClientPacket(player, 5, null!);
+
+    world.LoadedChunk.DidNotReceive().MarkModified();
   }
 
   #endregion

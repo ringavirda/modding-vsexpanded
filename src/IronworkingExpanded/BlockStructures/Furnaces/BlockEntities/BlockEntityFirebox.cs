@@ -92,35 +92,44 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
     int layers = _renderLayers;
     string texture = _renderTexture;
 
-    Shape? shape = capi
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
+    // Layer count and fuel texture are the only things that change the mesh, so they are the whole key.
+    // Cached across every firebox in the world: without it this re-read the shape JSON, deep-cloned it and
+    // re-tesselated on every chunk re-tesselation, on the tesselation thread.
+    MeshData? mesh = ExMeshCache.GetOrCreate(
+      capi,
+      Block,
+      $"{layers}|{texture}",
+      () => {
+        Shape? shape = ExMeshCache.LoadShape(
+          capi,
+          ExMeshCache.ShapePathOf(Block)
+        );
+        if (shape == null)
+          return null;
+
+        Shape drawn = ExShapeElements.Pruned(
+          shape,
+          BlockFirebox.ElementsFor(layers)
+        );
+        if (texture != BlockFirebox.FuelTexture)
+          drawn = ExShapeElements.Retextured(
+            drawn,
+            BlockFirebox.FuelTexture,
+            texture
+          );
+
+        tesselator.TesselateShape(
+          "firebox",
+          drawn,
+          out MeshData built,
+          capi.Tesselator.GetTextureSource(Block),
+          new Vec3f(0, Block.Shape.rotateY, 0)
+        );
+        return built;
+      }
+    );
+    if (mesh == null)
       return true;
-
-    Shape drawn = ExShapeElements.Pruned(
-      shape,
-      BlockFirebox.ElementsFor(layers)
-    );
-    if (texture != BlockFirebox.FuelTexture)
-      drawn = ExShapeElements.Retextured(
-        drawn,
-        BlockFirebox.FuelTexture,
-        texture
-      );
-
-    tesselator.TesselateShape(
-      "firebox-" + layers + "-" + texture,
-      drawn,
-      out MeshData mesh,
-      capi.Tesselator.GetTextureSource(Block),
-      new Vec3f(0, Block.Shape.rotateY, 0)
-    );
     mesher.AddMeshData(mesh);
     return true;
   }

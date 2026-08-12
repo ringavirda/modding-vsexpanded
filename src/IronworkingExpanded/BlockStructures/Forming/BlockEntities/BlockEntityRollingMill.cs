@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
@@ -22,23 +23,75 @@ namespace IronworkingExpanded.BlockStructures.Forming.BlockEntities;
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityRollingMill
-  : BlockEntityNetworkNode,
+  : BlockEntityMachineStation,
     IMpEnergyConsumer,
-    IProductionReadiness
-{
-  public BlockEntityRollingMill()
-  {
-    // Added here because BlockEntity fans both FromTreeAttributes and Initialize out over Behaviors,
-    // and a process added any later misses whichever of the two has already run. The mill's own base
-    // class is spent on being a graph node, so the pass clock is a behaviour rather than a base.
+    IProductionReadiness {
+  private readonly HostMembership _membership;
+
+  public BlockEntityRollingMill() {
+    // Both are added here because BlockEntity fans FromTreeAttributes and Initialize out over
+    // Behaviors, and either added later misses whichever of the two has already run. The mill's base
+    // slot goes to what it is - a container the player fits tooling into - while the two things it
+    // has, a graph membership and a pass clock, are behaviours.
+    _membership = new HostMembership(this);
+    Behaviors.Add(_membership);
     Behaviors.Add(new HostProcess(this));
   }
 
-  public override string NetworkType
-  {
-    get => "mpenergy";
-    set { }
+  /// <summary>The network manager the mill is registered with. Held by the membership, which is what
+  /// registers with it; the setter writes through so the fixtures can inject a test graph.</summary>
+  public BlockNetworkModSystem? NetworkSystem {
+    get => _membership.NetworkSystem;
+    protected set => _membership.NetworkSystem = value;
   }
+
+  /// <summary>The mill's place on the mechanical-energy graph. It carries no state of its own: the
+  /// mill reads the live network each pass tick rather than caching a broadcast.</summary>
+  private sealed class HostMembership(BlockEntityRollingMill owner)
+    : BEBehaviorNetworkMember(owner) {
+    public override string NetworkType {
+      get => "mpenergy";
+      protected set { }
+    }
+  }
+
+  #region Inventory
+
+  /// <summary>The fitted roll set - the tooling that decides what this mill makes.</summary>
+  public const int RollSetSlot = 0;
+
+  /// <summary>The piece under the rolls, held only for the duration of a pass.</summary>
+  public const int PieceSlot = 1;
+
+  public override string InventoryClassName => "rollingmill";
+
+  protected override MachineSlotSpec[] SlotSpecs =>
+    [MachineSlotSpec.Input(IsRollSet, "#6A5A3A"), MachineSlotSpec.AnyInput()];
+
+  /// <summary>Whether the stack is a roll set, i.e. carries a parseable set spec.</summary>
+  public static bool IsRollSet(ItemStack? stack) =>
+    RollSetSpec.TryParse(
+      stack?.Collectible?.Attributes?[RollSetSpec.AttributeKey],
+      out _,
+      out _
+    );
+
+  // The two stacks the mill holds. Slot-backed so the container base carries their persistence and
+  // their collectible id mappings; before A3 both were bare fields with all of that hand-rolled.
+  // Neither setter marks its slot dirty: every caller already dirties the whole block entity, whose
+  // tree carries the inventory subtree, and a slot-level MarkDirty needs an inventory that has been
+  // through LateInitialize - which a mill placed but never initialised has not.
+  private ItemStack? _piece {
+    get => Inventory[PieceSlot].Itemstack;
+    set => Inventory[PieceSlot].Itemstack = value;
+  }
+
+  private ItemStack? _rollSet {
+    get => Inventory[RollSetSlot].Itemstack;
+    set => Inventory[RollSetSlot].Itemstack = value;
+  }
+
+  #endregion
 
   // The pass advances on its own 250 ms clock rather than the network's 1 s tick, so motion reads as
   // continuous; the speed it samples is whatever the run settled at on the last network tick.
@@ -52,8 +105,7 @@ public class BlockEntityRollingMill
   // nothing to replay and there is no last-tick stamp worth persisting. A piece left in the rolls is
   // found exactly as it was left, which is what the wrench recovery already assumes.
   private sealed class HostProcess(BlockEntityRollingMill owner)
-    : BEBehaviorProductionMachine(owner)
-  {
+    : BEBehaviorProductionMachine(owner) {
     protected override int ProductionTickMs => PassTickMs;
 
     protected override void OnProductionTick(float dt) => owner.OnPassTick(dt);
@@ -78,12 +130,6 @@ public class BlockEntityRollingMill
   private float _remaining; // stock still to draw through, in block-space units
   private bool _stalled;
 
-  // The piece in transit between the two decks, held only for the duration of a pass.
-  private ItemStack? _piece;
-
-  // The fitted roll set. Decides what the mill makes; without one the stand cannot roll.
-  private ItemStack? _rollSet;
-
   // The reduction this pass will make, held until the piece clears the rolls. Nothing is committed mid-pass,
   // so an interruption cannot leave a piece half-rolled.
   private float _pendingGap;
@@ -93,8 +139,7 @@ public class BlockEntityRollingMill
   // broadcast, so progress stays in step with the torque balance this mill is loading. The dt is the
   // process's, so it is bounded at twice the pass interval: an unbounded one would draw a whole piece
   // through in a single step after a hitch, and cool it by the same leap.
-  private void OnPassTick(float dt)
-  {
+  private void OnPassTick(float dt) {
     float speed =
       (NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed ?? 0f;
     AdvancePass(dt, speed);
@@ -126,8 +171,7 @@ public class BlockEntityRollingMill
     float length,
     float tempC,
     ItemStack? piece = null
-  )
-  {
+  ) {
     if (IsRolling || length <= 0f || width <= 0f)
       return false;
     if (
@@ -169,8 +213,7 @@ public class BlockEntityRollingMill
   /// Fits <paramref name="set"/> to the stand and hands back through <paramref name="previous"/> whatever was
   /// there. Refused while stock is under the rolls; the tooling cannot change mid-pass.
   /// </summary>
-  public bool TryFitRollSet(ItemStack? set, out ItemStack? previous)
-  {
+  public bool TryFitRollSet(ItemStack? set, out ItemStack? previous) {
     previous = null;
     if (IsRolling)
       return false;
@@ -200,8 +243,7 @@ public class BlockEntityRollingMill
   /// <paramref name="strip"/>. On acceptance the piece goes under the rolls and lands on the output deck when
   /// it clears. The verdict is returned on refusal too, so the caller can report which mistake was made.
   /// </summary>
-  public FeedDecision TryFeed(ItemStack? stack, int gapIndex, int strip)
-  {
+  public FeedDecision TryFeed(ItemStack? stack, int gapIndex, int strip) {
     if (IsRolling)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
 
@@ -212,8 +254,7 @@ public class BlockEntityRollingMill
 
     // Re-divide the piece for this barrel first: a wide set takes it whole, a narrow one a side at a time.
     WorkPiece? piece = WorkPiece.FromStack(stack);
-    if (piece != null && RollSet != null)
-    {
+    if (piece != null && RollSet != null) {
       piece = piece.Resplit(
         WorkPiece.SidesFor(piece.Width, RollSet.BarrelWidth)
       );
@@ -252,8 +293,7 @@ public class BlockEntityRollingMill
   /// Takes a stuck piece back out of the rolls, backing the wrench interaction. The stack is returned
   /// unchanged, since the interrupted reduction was never committed. Returns null when nothing is stuck.
   /// </summary>
-  public ItemStack? ReleaseStuckPiece()
-  {
+  public ItemStack? ReleaseStuckPiece() {
     if (!IsRolling)
       return null;
     ItemStack? piece = _piece;
@@ -283,7 +323,8 @@ public class BlockEntityRollingMill
   /// <summary>The deck the piece lands on, always the opposite one.</summary>
   public BlockPos OutputDeck => Deck(!DriveReversed);
 
-  // The two decks sit either side of the roll stand, at z = +/-1 in the mill's own frame.
+  // The two decks sit either side of the roll stand, at z = +/-1 in the mill's own frame. This is the
+  // cell a finished piece lands on; the deck the player feeds from is the whole row - see DeckRow.
   private BlockPos Deck(bool far) =>
     ExOrientation.GlobalPos(
       Pos,
@@ -293,14 +334,37 @@ public class BlockEntityRollingMill
       (Block as BlockRollingMill)?.StructureAngle ?? 0
     );
 
-  /// <summary>Whether <paramref name="cell"/> is the deck the mill can currently be fed from.</summary>
-  public bool IsInputDeck(BlockPos cell) => cell.Equals(InputDeck);
+  /// <summary>
+  /// Every cell of one deck row: local x from 0 back to <c>-(MillFeed.DeckCells - 1)</c>, rotated into the
+  /// placed orientation. The row is how far along the barrel the player can reach, and which gap a click
+  /// selects is read from where along it the click landed.
+  /// </summary>
+  private IEnumerable<BlockPos> DeckRow(bool far) {
+    int angle = (Block as BlockRollingMill)?.StructureAngle ?? 0;
+    for (int x = 0; x > -MillFeed.DeckCells; x--)
+      yield return ExOrientation.GlobalPos(Pos, x, 0, far ? 1 : -1, angle);
+  }
+
+  /// <summary>
+  /// Whether <paramref name="cell"/> is one of the cells the mill can currently be fed from.
+  /// <para>
+  /// The whole row, not just the cell beside the stand. <see cref="MillFeed.AlongBarrel"/> maps a click
+  /// across all <see cref="MillFeed.DeckCells"/> of it, so accepting only one cell confined every click
+  /// to the last third of the barrel - and the widest gap, the only one fresh stock can enter at, sits
+  /// in the first third. No click could reach it at any gap count above one.
+  /// </para>
+  /// </summary>
+  public bool IsInputDeck(BlockPos cell) {
+    foreach (BlockPos c in DeckRow(DriveReversed))
+      if (c.Equals(cell))
+        return true;
+    return false;
+  }
 
   #endregion
 
   /// <summary>Pulls the stock back out, abandoning the pass.</summary>
-  public void CancelPass()
-  {
+  public void CancelPass() {
     if (!IsRolling)
       return;
     _remaining = 0f;
@@ -313,20 +377,67 @@ public class BlockEntityRollingMill
   /// Applies the reduction the pass just completed and drops the piece onto the output deck. The only place
   /// the stock changes, which is what makes an interrupted pass safe.
   /// </summary>
-  private void CompletePass()
-  {
+  private void CompletePass() {
     if (
       _piece != null
       && _pendingGap > 0f
       && WorkPiece.FromStack(_piece) is { } piece
-    )
-      piece.Fed(_pendingStrip, _pendingGap).ToStack(_piece);
+    ) {
+      WorkPiece rolled = piece.Fed(_pendingStrip, _pendingGap);
+      rolled.ToStack(_piece);
+      ClaimFinishedPiece(rolled);
+    }
     _pendingGap = 0f;
     EjectPiece();
   }
 
-  private void EjectPiece()
-  {
+  /// <summary>
+  /// Swaps the piece for the finished item its stage names, when that stage needs no shear cut. A stage the
+  /// set names no output for stays stock and leaves the mill to be cropped elsewhere, which is every stage
+  /// that yields more than one item off a piece.
+  /// <para>
+  /// One piece in, one piece out either way: a conversion changes what the piece is, never how many there
+  /// are. Only a piece rolled even across its whole width is finished - one still thicker on a side has more
+  /// passes to take, and claiming it there would let a player stop half way and keep the full item.
+  /// </para>
+  /// </summary>
+  private void ClaimFinishedPiece(WorkPiece rolled) {
+    if (
+      _piece == null
+      || Api == null
+      || !rolled.IsEven
+      || RollSet?.OutputAt(rolled.Thickest) is not { } code
+    )
+      return;
+
+    // A product may be an item or a block, and the set names only its code, so both are tried.
+    var loc = new AssetLocation(code);
+    ItemStack? finished =
+      Api.World.GetItem(loc) is { } item ? new ItemStack(item, _piece.StackSize)
+      : Api.World.GetBlock(loc) is { } block
+        ? new ItemStack(block, _piece.StackSize)
+      : null;
+    if (finished == null) {
+      Api.Logger.Warning(
+        "[iwex] Rolling mill: roll set names output \"{0}\" at gap {1}, which resolves to no item. The "
+          + "piece stays stock.",
+        code,
+        rolled.Thickest
+      );
+      return;
+    }
+
+    // Heat carries across: the piece came off the rolls hot and the item it became is the same metal at the
+    // same moment. Without this a finished piece reads as cold and cannot be worked on.
+    finished.Collectible.SetTemperature(
+      Api.World,
+      finished,
+      _piece.Collectible.GetTemperature(Api.World, _piece)
+    );
+    _piece = finished;
+  }
+
+  private void EjectPiece() {
     ItemStack? piece = _piece;
     _piece = null;
     if (piece == null || Api?.Side != EnumAppSide.Server)
@@ -368,8 +479,7 @@ public class BlockEntityRollingMill
   /// stopped run makes no progress and flags the pass <see cref="IsStalled"/> rather than losing it.
   /// </summary>
   /// <returns>True when the pass completed on this advance.</returns>
-  public bool AdvancePass(float dt, float speed)
-  {
+  public bool AdvancePass(float dt, float speed) {
     if (!IsRolling)
       return false;
 
@@ -388,10 +498,8 @@ public class BlockEntityRollingMill
       _tempC >= IwexValues.RollingTempC
         ? speed * IwexValues.RollingRollRadius * dt
         : 0f;
-    if (travelled <= 0f)
-    {
-      if (!_stalled)
-      {
+    if (travelled <= 0f) {
+      if (!_stalled) {
         _stalled = true;
         MarkDirty(true);
       }
@@ -411,11 +519,9 @@ public class BlockEntityRollingMill
 
   /// <summary>Drops any piece stuck in the rolls and the fitted roll set, so neither is lost with the
   /// mill.</summary>
-  public override void OnBlockBroken(IPlayer? byPlayer = null)
-  {
+  public override void OnBlockBroken(IPlayer? byPlayer = null) {
     EjectPiece();
-    if (_rollSet != null && Api?.Side == EnumAppSide.Server)
-    {
+    if (_rollSet != null && Api?.Side == EnumAppSide.Server) {
       Api.World.SpawnItemEntity(_rollSet, Pos.ToVec3d().Add(0.5, 0.6, 0.5));
       _rollSet = null;
     }
@@ -424,12 +530,10 @@ public class BlockEntityRollingMill
 
   #region Block info
 
-  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-  {
+  public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
 
-    if (!IsRolling)
-    {
+    if (!IsRolling) {
       dsc.AppendLine(Lang.Get("iwex:rollingmill-info-idle"));
       return;
     }
@@ -448,84 +552,66 @@ public class BlockEntityRollingMill
 
   #region Persistence
 
-  public override void ToTreeAttributes(ITreeAttribute tree)
-  {
+  // The pass, declared once and read and written from that one declaration. The mill's base slot is
+  // spent on being a station, so it owns an ExBlockState rather than deriving from ExBlockEntity - the
+  // composable half of the same mechanism. The two stacks are absent here on purpose: they are the
+  // container's now, written into its "inventory" subtree with their id mappings.
+  private ExBlockState? _state;
+
+  private ExBlockState State =>
+    _state ??= new ExBlockState()
+      .Float("rmDraft", () => _draft, v => _draft = v)
+      .Float("rmWidth", () => _width, v => _width = v)
+      .Float("rmTemp", () => _tempC, v => _tempC = v)
+      .Float("rmRemaining", () => _remaining, v => _remaining = v)
+      .Bool("rmStalled", () => _stalled, v => _stalled = v)
+      .Float("rmPendingGap", () => _pendingGap, v => _pendingGap = v)
+      .Int("rmPendingStrip", () => _pendingStrip, v => _pendingStrip = v);
+
+  public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    tree.SetFloat("rmDraft", _draft);
-    tree.SetFloat("rmWidth", _width);
-    tree.SetFloat("rmTemp", _tempC);
-    tree.SetFloat("rmRemaining", _remaining);
-    tree.SetBool("rmStalled", _stalled);
-    tree.SetFloat("rmPendingGap", _pendingGap);
-    tree.SetInt("rmPendingStrip", _pendingStrip);
-    if (_piece != null)
-      tree.SetItemstack("rmPiece", _piece);
-    if (_rollSet != null)
-      tree.SetItemstack("rmRollSet", _rollSet);
+    State.ToTree(tree);
   }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
-  )
-  {
+  ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _draft = tree.GetFloat("rmDraft");
-    _width = tree.GetFloat("rmWidth");
-    _tempC = tree.GetFloat("rmTemp");
-    _remaining = tree.GetFloat("rmRemaining");
-    _stalled = tree.GetBool("rmStalled");
-    _pendingGap = tree.GetFloat("rmPendingGap");
-    _pendingStrip = tree.GetInt("rmPendingStrip");
-    _piece = tree.GetItemstack("rmPiece");
-    _rollSet = tree.GetItemstack("rmRollSet");
-    // A stack read from a tree has no resolved Collectible until it is resolved against the world.
-    _piece?.ResolveBlockOrItem(worldForResolving);
-    _rollSet?.ResolveBlockOrItem(worldForResolving);
+    State.FromTree(tree, worldForResolving);
+    MigrateLooseStacks(tree, worldForResolving);
   }
 
-  /// <summary>Maps the piece under the rolls and the fitted roll set, so a mid-pass mill pasted into
-  /// another world still resolves both stacks against that world's item ids.</summary>
-  public override void OnStoreCollectibleMappings(
-    Dictionary<int, AssetLocation> blockIdMapping,
-    Dictionary<int, AssetLocation> itemIdMapping
-  )
-  {
-    _piece?.Collectible?.OnStoreCollectibleMappings(
-      Api.World,
-      new DummySlot(_piece),
-      blockIdMapping,
-      itemIdMapping
-    );
-    _rollSet?.Collectible?.OnStoreCollectibleMappings(
-      Api.World,
-      new DummySlot(_rollSet),
-      blockIdMapping,
-      itemIdMapping
-    );
-  }
+  /// <summary>
+  /// Moves a pre-A3 mill's two loose stacks into the inventory. Both were written at the tree root as
+  /// <c>rmPiece</c>/<c>rmRollSet</c>; the container writes them under <c>inventory</c> instead, so a
+  /// saved mill would otherwise come back with its roll set gone and a piece dropped mid-pass.
+  /// <para>
+  /// One-way and self-healing: the keys are never written again, so the next save carries only the
+  /// container's form and this does nothing thereafter. It runs on the client too, which is harmless -
+  /// a synced tree has no such keys.
+  /// </para>
+  /// </summary>
+  private void MigrateLooseStacks(
+    ITreeAttribute tree,
+    IWorldAccessor worldForResolving
+  ) {
+    Adopt("rmRollSet", RollSetSlot);
+    Adopt("rmPiece", PieceSlot);
 
-  public override void OnLoadCollectibleMappings(
-    IWorldAccessor worldForResolve,
-    Dictionary<int, AssetLocation> oldBlockIdMapping,
-    Dictionary<int, AssetLocation> oldItemIdMapping,
-    int schematicSeed,
-    bool resolveImports
-  )
-  {
-    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
-    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
-    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
-    if (
-      _piece?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
-      == false
-    )
-      _piece = null;
-    if (
-      _rollSet?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
-      == false
-    )
-      _rollSet = null;
+    void Adopt(string key, int slot) {
+      if (tree[key] == null)
+        return;
+      ItemStack? stack = tree.GetItemstack(key);
+      if (stack == null)
+        return;
+      // A stack read from a tree has no resolved Collectible until it is resolved against the world.
+      stack.ResolveBlockOrItem(worldForResolving);
+      // Only into an empty slot: a tree carrying both forms means the inventory is already the
+      // authority, and overwriting it would restore a stale copy over the live one.
+      if (Inventory[slot].Empty)
+        Inventory[slot].Itemstack = stack;
+    }
   }
 
   #endregion

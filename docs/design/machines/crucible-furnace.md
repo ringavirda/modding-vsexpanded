@@ -9,13 +9,13 @@
 * why it is iwex and not smex, and why it is built in banks;
 * the requirement that the natural-draught factor become a function of stack height, and the arithmetic behind it.
 
-**Does not own** - cited only: the `T_process = T_in − T_loss` law, the melt-speed factor, the Idle/Firing/Melting FSM and every `Bf*` / `Cupola*` key ([heat balance](../mechanics/heat-balance.md)) · what blister / shear / crucible steel are ([materials.md](../materials.md)) · the canal a pot pours into ([molten network](../mechanics/molten-network.md)) · the layout DSL ([multiblock](../mechanics/multiblock.md)) · the cupola's own numbers ([cupola](cupola.md)) · the tilting non-ferrous crucible, a different and deferred machine ([STATE.md](../../plans/STATE.md)).
+**Does not own** - cited only: the `T_process = T_in − T_loss` law, the melt-speed factor, the Idle/Firing/Melting FSM and every `Bf*` / `Cupola*` key ([heat balance](../mechanics/heat-balance.md)) · what blister / shear / crucible steel are ([materials.md](../materials.md)) · the canal a pot pours into ([molten network](../mechanics/molten-network.md)) · the layout DSL ([multiblock](../mechanics/multiblock.md)) · the cupola's own numbers ([cupola](cupola.md)) · the tilting non-ferrous crucible, a different and deferred machine ([STATE.md](../../internal/plans/STATE.md)).
 
 **Depends on**
 [heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
 [molten network](../mechanics/molten-network.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [materials.md](../materials.md) · [cupola](cupola.md) (the machine it is deliberately not) ·
-[shear](shear.md) (blade sets are one of its consumers) · [STATE.md § D9](../../plans/STATE.md)
+[shear](shear.md) (blade sets are one of its consumers) · [STATE.md § D9](../../internal/plans/STATE.md)
 
 ---
 
@@ -164,7 +164,7 @@ function.
 | hearth interior (base, 4 pots, blister/slag fills, covers) | `assets/editable/shapes/furnace-draftcruciblehearth.json` |
 | the pot as an item | `assets/editable/shapes/item-steelcrucible.json` |
 | crushed blister-steel chunk | `assets/editable/shapes/item-shingled-metalchunk.json` |
-| layout draft | [layouts.md](../../workbench/layouts.md) § 1 |
+| layout draft | [layouts.md](../../internal/workbench/layouts.md) § 1 |
 
 No coke element in the hearth shape, though `#coke` is declared: the coke around the pots is the charge-pile
 problem the charge column already solves. `ChargeColumn` + `BandsAt` give layered coke that burns down and is
@@ -293,7 +293,7 @@ So: clayformed from `clay-fire`, exactly as vanilla's own crucible is, as a dist
 
 This removes the need for a refractory clay item entirely: vanilla clayforming accepts only `clay-*` in `["blue","fire","red"]`, and refractory brick is a grid recipe (`clay-fire` + crushed quartz/bauxite/olivine/ilmenite), so there is no clayformable refractory to pick a tier of.
 
-The tilting non-ferrous crucible keeps its own argument unchanged: a cast-iron vessel cannot hold molten steel, so that machine stays incapable by construction rather than by rule ([STATE.md](../../plans/STATE.md)).
+The tilting non-ferrous crucible keeps its own argument unchanged: a cast-iron vessel cannot hold molten steel, so that machine stays incapable by construction rather than by rule ([STATE.md](../../internal/plans/STATE.md)).
 
 ---
 
@@ -345,7 +345,7 @@ Against [heat balance](../mechanics/heat-balance.md)'s own terms (the firebox br
 
 To land 1600 °C with a full firebox the natural factor must rise to `(1600 + 430 − 950) / 1125 ≈ 0.96`, natural draught nearly as effective as full blast. With an empty-hearth loss it is ≈ 0.68. Either way the shipped 0.5 cannot do it, so "chimney height sets temperature" is the only term available and the furnace does not work without it.
 
-This is the same ceiling as blocker B8 (the puddling furnace: natural draught caps `T_in` at 1512.5 against an inherited 1482 melt point - [STATE.md](../../plans/STATE.md)). One fix serves both, plus the coke oven: make the natural-draught factor a function of stack height, which retro-fits every natural-draught furnace at once. Draught rises with stack height and with the temperature difference.
+This is the same ceiling as blocker B8 (the puddling furnace: natural draught caps `T_in` at 1512.5 against an inherited 1482 melt point - [STATE.md](../../internal/plans/STATE.md)). One fix serves both, plus the coke oven: make the natural-draught factor a function of stack height, which retro-fits every natural-draught furnace at once. Draught rises with stack height and with the temperature difference.
 
 ---
 

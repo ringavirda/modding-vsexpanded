@@ -30,13 +30,13 @@ iwex (nail, heading) · lpex (rivet die) · hpex (ball die)
 | the pass model, `δ_max = μ²R`, the two-round rule, gaps and barrel widths | [rolling mill](../machines/rolling-mill.md) · [steel roll sets](../machines/steel-roll-sets.md) · [roll sets](roll-sets.md) |
 | `rolledrod`, `nailplate`, `beam`, `boilerplate` as rolled products | [rolled parts](rolled-parts.md) |
 | where rivets are spent - riveted shells, barrels, rims, girders | [bending roller](../machines/bending-roller.md) · [cast parts](cast-parts.md) |
-| the placement rule and the D2/N3 decisions | [STATE.md](../../plans/STATE.md) |
+| the placement rule and the D2/N3 decisions | [STATE.md](../../internal/plans/STATE.md) |
 | code-first defs, ingredient helpers as a system, the cost catalogue | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [density rule](../mechanics/density-rule.md) · [nail machine](../machines/nail-machine.md) ·
 [heading machine](../machines/heading-machine.md) · [shear](../machines/shear.md) ·
 [rolling mill](../machines/rolling-mill.md) · [rolled parts](rolled-parts.md) ·
-[cast parts](cast-parts.md) · [bearings](../machines/bearings.md) · [STATE.md](../../plans/STATE.md)
+[cast parts](cast-parts.md) · [bearings](../machines/bearings.md) · [STATE.md](../../internal/plans/STATE.md)
 
 ---
 
@@ -56,7 +56,7 @@ makes a joint that is strong **and tight**; nails and bolts are strong but not t
 because it must hold steam; a flywheel is bolted because it merely must not fall apart. So the rivet
 arrives with the first thing that holds pressure - lpex's boiler - and not one step earlier. iwex machines
 that might want one use nails or bolts and accept rivets later through the standard RCC dual path
-([STATE.md § Fasteners](../../plans/STATE.md)).
+([STATE.md § Fasteners](../../internal/plans/STATE.md)).
 
 That rule places the dies, not the bench: a machine in lpex would strand iwex's own rod, so there is one
 bench and the die is the difference - see [heading machine](../machines/heading-machine.md), which owns the
@@ -194,7 +194,7 @@ repo that is:
 
 The element names are stale. `CutNailRod1…4` and the filename `item-rod-nail.json` both say nail, but under
 the settled rule the 25 u rod goes to the heading bench and nails come from plate
-([STATE.md § Fasteners](../../plans/STATE.md)) - the right rename target is a plain rod name, not `rivetrod`.
+([STATE.md § Fasteners](../../internal/plans/STATE.md)) - the right rename target is a plain rod name, not `rivetrod`.
 
 **Lang / handbook**: no key and no page for any fastener in any mod; nails and rod inherit vanilla's.
 

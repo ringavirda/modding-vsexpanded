@@ -72,7 +72,7 @@ with `Origin(-1, 0)` - the negation of the `I` glyph's (col, row), per
 |---|---|
 | Definition (twelve cross-sections, y = −1 → y = 10) | `BlockSmokeStackIntake.cs:46-151` |
 | Golden (the arbiter) | `test/SteelmakingExpanded.Tests/goldens/smex/blocktypes/smokestack/intake.json` |
-| Round-tripped copy for editing | [layouts.md](../../workbench/layouts.md) § Section 2 |
+| Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2 |
 
 ### Cell census — 72 offsets
 

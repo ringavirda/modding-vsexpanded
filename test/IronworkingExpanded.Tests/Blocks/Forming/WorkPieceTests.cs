@@ -137,4 +137,60 @@ public class WorkPieceTests {
   }
 
   #endregion
+
+  #region Fresh stock off the crafting grid
+
+  /// <summary>
+  /// A stock item exactly as the game hands it over: the form is declared on the **item type** by
+  /// <c>StockItemDefinitions</c> (<c>.Attribute("stockForm", …)</c>) and the stack itself carries
+  /// nothing, because nothing has rolled it yet.
+  /// </summary>
+  private static ItemStack FreshStock(TestWorld world, StockForm form) {
+    Item item = world.RegisterItem($"iwex:stock-{form.Name}");
+    item.Attributes = new Vintagestory.API.Datastructures.JsonObject(
+      Newtonsoft.Json.Linq.JToken.Parse(
+        $$"""{ "stockForm": "{{form.Name}}" }"""
+      )
+    );
+    return new ItemStack(item);
+  }
+
+  [Fact]
+  public void Stock_straight_off_the_grid_is_already_a_work_piece() {
+    // Every other test here writes the form into the stack tree by hand, which nothing in the game
+    // does before the first pass. Read only from the stack tree, a freshly crafted bloom is not a
+    // work piece at all - and the mill refuses it as WrongForm, so nothing can be rolled, ever.
+    ItemStack stack = FreshStock(new TestWorld(), StockForm.Bloom);
+
+    WorkPiece? piece = WorkPiece.FromStack(stack);
+
+    Assert.NotNull(piece);
+    Assert.Equal(StockForm.Bloom, piece!.Form);
+    // Fresh: one full-thickness strip, nothing rolled off it yet.
+    Assert.Equal([StockForm.Bloom.BaseThickness], piece.Strips);
+  }
+
+  [Fact]
+  public void The_stack_state_wins_over_the_item_types_declaration() {
+    // Once rolled, the piece's own state is the authority - the item type only says what it started
+    // as, and a part-rolled piece must not be read back as fresh.
+    var world = new TestWorld();
+    ItemStack stack = FreshStock(world, StockForm.Bloom);
+    new WorkPiece(StockForm.Bloom, [0.5f, 0.5f], new bool[2]).ToStack(stack);
+
+    Assert.Equal([0.5f, 0.5f], WorkPiece.FromStack(stack)!.Strips);
+  }
+
+  [Fact]
+  public void An_item_type_naming_an_unknown_form_is_still_refused() {
+    var world = new TestWorld();
+    Item item = world.RegisterItem("iwex:stock-phantom");
+    item.Attributes = new Vintagestory.API.Datastructures.JsonObject(
+      Newtonsoft.Json.Linq.JToken.Parse("""{ "stockForm": "nosuchform" }""")
+    );
+
+    Assert.Null(WorkPiece.FromStack(new ItemStack(item)));
+  }
+
+  #endregion
 }

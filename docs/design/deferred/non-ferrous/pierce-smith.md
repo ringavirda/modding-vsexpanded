@@ -4,7 +4,7 @@
 no test. The vessel it is specified to reuse is fully live.
 **Would live in** the Copper add-on, parent `smex` ([overview.md](../../overview.md)); specified in the
 archived smex spec under a header that marked itself unscheduled.
-**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../plans/STATE.md)); the cut is owned by
+**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../internal/plans/STATE.md)); the cut is owned by
 [scope.md](../../scope.md) § Non-ferrous.
 
 **Owns** - the facts this page is canonical for:
@@ -186,7 +186,7 @@ the suite, including elex's whole AC half, passes through it.
    [materials.md](../../materials.md)'s waste-alloy machinery instead of a new punishment.
 4. Whether the copper mode is a variant block, a burden-family switch, or a lining item. The mode has to be
    selectable in-world and legible under R7 ([conventions.md](../../conventions.md)); nothing says how.
-5. Capacity and rate. D4 settled the ferrous converter at 6000 u ([STATE.md](../../../plans/STATE.md)); no
+5. Capacity and rate. D4 settled the ferrous converter at 6000 u ([STATE.md](../../../internal/plans/STATE.md)); no
    copper number is proposed, and a copper heat has no natural "2 slab pours / 3 bloom pours" anchor to size
    against.
 6. Blister copper as a material. [materials.md](../../materials.md) names converter copper at ~98 % Cu but no

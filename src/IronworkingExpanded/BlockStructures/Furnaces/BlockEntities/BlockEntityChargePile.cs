@@ -333,33 +333,42 @@ public class BlockEntityChargePile : BlockEntityFurnacePart {
     if (slabs.Length == 0)
       return true;
 
-    Shape? shape = capi
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
-      return true;
-
     foreach (BlockChargePile.ChargeBandSlab slab in slabs) {
       float height = slab.ToY - slab.FromY;
       if (height <= 0f)
         continue;
 
-      // The cache key must name every input to the mesh; here the element name is the only one, the pruned
-      // shape being a function of it alone and height applied by Scale below, after tesselation. That holds
-      // only because each material is its own shape element. The same local feeds both the key and the
-      // prune, so they cannot drift.
+      // The element name is the whole key: the pruned shape is a function of it alone, and height is
+      // applied by Scale below, after tesselation. That holds only because each material is its own
+      // shape element. The same local feeds both the key and the prune, so they cannot drift.
       string element = BlockChargePile.ElementOf(slab.Material);
-      tesselator.TesselateShape(
-        "chargepile-" + element,
-        ExShapeElements.Pruned(shape, [element]),
-        out MeshData mesh,
-        capi.Tesselator.GetTextureSource(Block)
+      MeshData? unscaled = ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        element,
+        () => {
+          Shape? shape = ExMeshCache.LoadShape(
+            capi,
+            ExMeshCache.ShapePathOf(Block)
+          );
+          if (shape == null)
+            return null;
+          tesselator.TesselateShape(
+            "chargepile",
+            ExShapeElements.Pruned(shape, [element]),
+            out MeshData built,
+            capi.Tesselator.GetTextureSource(Block)
+          );
+          return built;
+        }
       );
+      if (unscaled == null)
+        continue;
+
+      // Clone before shaping it. Scale and Translate mutate in place, and the cached mesh is shared by
+      // every pile in the world - scaling it directly would compound on every draw and drag every other
+      // pile's bands with it.
+      MeshData mesh = unscaled.Clone();
       // Scaled about the block floor (y = 0), not its centre: band positions are measured from the floor
       // up, and scaling about the centre would leave every partial slab floating.
       mesh.Scale(new Vec3f(0.5f, 0f, 0.5f), 1f, height, 1f);

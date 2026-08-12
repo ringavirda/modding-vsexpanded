@@ -2,7 +2,7 @@
 
 **Status** designed — the oven itself is not built. There is no core, no block entity, no oven recipe and
 no golden for the structure; what exists is the settled design, a draft layout in
-[layouts.md](../../workbench/layouts.md) § 1, and the crown lid, which is built
+[layouts.md](../../internal/workbench/layouts.md) § 1, and the crown lid, which is built
 (`iwex:furnace-chargelid-{side}`, 2026-08-03).
 **Mod** iwex (`IronworkingExpanded`)
 
@@ -18,7 +18,7 @@ oriented parts and the trapdoor caveat, and the invisible-filler footprint syste
 [definitions, recipes & config](../mechanics/recipes-config.md) — owns code-first defs, goldens, RCC stages ·
 [heat balance](../mechanics/heat-balance.md) — owns the furnace core the oven rides ·
 [blast furnace](blast-furnace-cold.md), [cupola](cupola.md), [puddling furnace](puddling-furnace.md) — the
-consumers of what it makes · [layouts.md](../../workbench/layouts.md) § 1
+consumers of what it makes · [layouts.md](../../internal/workbench/layouts.md) § 1
 
 ---
 
@@ -58,7 +58,7 @@ the cycle gates on sealed + timer, never on temperature.
 
 ## Structure
 
-Draft only - [layouts.md](../../workbench/layouts.md) § 1, "Beehive coke oven". Nothing below has been
+Draft only - [layouts.md](../../internal/workbench/layouts.md) § 1, "Beehive coke oven". Nothing below has been
 parsed by `StructureLayout` or pinned by a golden, unlike the shipped structures.
 
 Settled 2026-08-03 - vanilla coal piles are the charge, and the oven is all firebrick:
@@ -78,7 +78,7 @@ Settled 2026-08-03 - vanilla coal piles are the charge, and the oven is all fire
   the [cowper](cowper.md) loses its pile in a remake. The oven's piles are plain coal.
 * The oven fits no `CellRole`. Its `c` cells are neither `Firebox` (fuel heating something else) nor
   `Chargeable` (a burden column) - the coal is the workpiece. Either the oven needs no role and walks its
-  own chamber box, or the enum gains a `Retort`. Undecided; see [layouts.md](../../workbench/layouts.md).
+  own chamber box, or the enum gains a `Retort`. Undecided; see [layouts.md](../../internal/workbench/layouts.md).
 
 A bank of two chambers sharing a wall. Each chamber is charged from above through the crown and drawn
 from the side through a door - the historically correct pair of openings, and mechanically the reason the
@@ -232,7 +232,7 @@ are to the draft and to the vanilla assets it reuses.
 
 | Key | Proposed value | Source | What it does |
 |---|---|---|---|
-| chambers | 2 | [layouts.md](../../workbench/layouts.md) § 1 | a bank sharing one wall |
+| chambers | 2 | [layouts.md](../../internal/workbench/layouts.md) § 1 | a bank sharing one wall |
 | cells per chamber | 6 (3 wide × 2 deep × 1 tall) | draft layer 1, `c` glyph | vs vanilla's 3 × 3 × 3 single chamber |
 | footprint | 9 × 4 × 4, 128 declared cells | draft | 89 brick, 12 fuel, 12 slab, 4 filler, 4 air, 2 hopper, 2 lid, 2 door, 1 core |
 | origin | `(-4, -2)` | draft | negation of `C`'s `(col 4, row 2)` |

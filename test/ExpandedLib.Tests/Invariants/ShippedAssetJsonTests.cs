@@ -74,6 +74,75 @@ public class ShippedAssetJsonTests {
     Assert.Equal(ShippedDomains().OrderBy(d => d), covered.OrderBy(d => d));
   }
 
+  #region Patch declarations
+
+  [Fact]
+  public void Every_patch_entry_declares_the_side_it_runs_on() {
+    // JsonPatch.Side defaults to Universal, not to the target file's category, so an entry with no
+    // "side" is evaluated on the client too - where blocktypes, itemtypes and recipes do not exist.
+    // The patch is then counted as not-found and logs a miss per entry on every client start. The
+    // engine's own loader comments on exactly this case as the reason it does not warn about it.
+    // Never write "side": null either: that takes the branch which skips the patch on BOTH sides,
+    // silently and with no log line at all.
+    var offenders = new List<string>();
+
+    foreach (string path in PatchFiles()) {
+      using JsonDocument doc = Parse(path);
+      int index = 0;
+      foreach (JsonElement entry in doc.RootElement.EnumerateArray()) {
+        if (
+          !entry.TryGetProperty("side", out JsonElement side)
+          || side.ValueKind != JsonValueKind.String
+        )
+          offenders.Add($"{path} [{index}] declares no side");
+        else if (ServerOnlyCategory(entry) && side.GetString() != "Server")
+          offenders.Add(
+            $"{path} [{index}] targets a server-only category but declares "
+              + $"\"{side.GetString()}\""
+          );
+        index++;
+      }
+    }
+
+    Assert.True(
+      offenders.Count == 0,
+      "Patch entries must declare their side:\n  "
+        + string.Join("\n  ", offenders)
+    );
+  }
+
+  [Fact]
+  public void The_patch_corpus_is_not_empty() {
+    // The rule above passes trivially if the path filter stops matching - a patches folder renamed or
+    // moved would read as "every entry is correct".
+    Assert.NotEmpty(PatchFiles());
+  }
+
+  // blocktypes, itemtypes and recipes are all EnumAppSide.Server asset categories. Anything else
+  // (shapes, textures, lang) is legitimately client-side or universal, so only the side's presence is
+  // required there.
+  private static readonly string[] ServerOnlyCategories =
+  [
+    "blocktypes",
+    "itemtypes",
+    "recipes",
+  ];
+
+  private static bool ServerOnlyCategory(JsonElement entry) =>
+    entry.TryGetProperty("file", out JsonElement file)
+    && file.GetString() is { } target
+    && ServerOnlyCategories.Contains(
+      target.Split(':').Last().Split('/').First()
+    );
+
+  private static IReadOnlyList<string> PatchFiles() =>
+    [
+      .. AssetFiles()
+        .Where(p => p.Contains("/patches/", StringComparison.Ordinal)),
+    ];
+
+  #endregion
+
   #region Corpus
 
   /// <summary>

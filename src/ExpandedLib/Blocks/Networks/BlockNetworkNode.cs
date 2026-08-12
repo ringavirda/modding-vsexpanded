@@ -794,7 +794,11 @@ public abstract class BlockNetworkNode
       return;
     }
 
-    beNet.Orientation = Orientation;
+    // netBlock.Orientation, not this.Orientation. The six calls from Rotate run this against each
+    // neighbour of the block being wrenched, so the initiator's orientation is not the one that belongs
+    // in a neighbour's tree - it would be persisted and synced to every client watching. Every other
+    // read in this method already goes through netBlock.
+    beNet.Orientation = netBlock.Orientation;
     beNet.PossibleOrientations = finalChoices;
     beNet.MarkDirty(true);
 

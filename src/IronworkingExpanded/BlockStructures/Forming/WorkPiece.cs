@@ -129,14 +129,22 @@ public sealed record WorkPiece(StockForm Form, float[] Strips, bool[] Turned) {
 
   #region Stack round-trip
 
-  /// <summary>Reads the piece off a stack, or null when the stack carries no work-piece state (an item that
-  /// has never been rolled, or something else entirely).</summary>
+  /// <summary>Reads the piece off a stack, or null when the stack is not stock at all.</summary>
+  /// <remarks>
+  /// Two sources, stack first. A piece that has been rolled carries its own form and strips in the
+  /// stack tree. One that has not carries nothing there - the form is on the **item type**, where
+  /// <c>StockItemDefinitions</c> declared it - so the fallback is what makes fresh stock off the
+  /// crafting grid a work piece at all. Without it every unrolled piece reads as "not stock", the mill
+  /// refuses it as <c>WrongForm</c>, and nothing can ever take its first pass.
+  /// </remarks>
   public static WorkPiece? FromStack(ItemStack? stack) {
     ITreeAttribute? tree = stack?.Attributes;
     if (tree == null)
       return null;
 
-    string? formName = tree.GetString(FormKey);
+    string? formName =
+      tree.GetString(FormKey)
+      ?? stack!.Collectible?.Attributes?[FormKey]?.AsString();
     if (
       formName == null
       || !StockForm.All.TryGetValue(formName, out StockForm? form)

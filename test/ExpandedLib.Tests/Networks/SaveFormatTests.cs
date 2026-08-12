@@ -143,10 +143,10 @@ public class SaveFormatTests {
   }
 
   [Fact]
-  public void The_wrench_rotation_choices_come_back_as_the_json_string_they_were_saved_as() {
-    // possibleOrientations is one string holding serialised JSON, not a string-array attribute.
-    // Reading it with the array accessor answers empty for every world already on disk, which loses
-    // the player's rotation choices with nothing to show for it.
+  public void The_wrench_rotation_choices_come_back_from_the_json_string_they_were_saved_as() {
+    // Worlds saved before the string-array cutover hold possibleOrientations as one string of
+    // serialised JSON. Reading that with the array accessor alone answers empty for every world
+    // already on disk, losing the player's rotation choices with nothing to show for it.
     var w = NewPipeWorld();
     var pos = new BlockPos(0, 0, 0);
     var be = new BlockEntityPipe();
@@ -156,6 +156,49 @@ public class SaveFormatTests {
 
     Assert.Equal(new[] { "ns", "we" }, be.PossibleOrientations);
     Assert.Equal("ns", be.Orientation);
+  }
+
+  [Fact]
+  public void A_node_loaded_from_the_old_string_is_written_back_as_a_string_array() {
+    // The migration is one-way and silent: nothing rewrites a world wholesale, so a pipe converts on
+    // its own next save. If it wrote the string back the tree would never leave the old shape and the
+    // fallback above would be load-bearing forever.
+    var w = NewPipeWorld();
+    var pos = new BlockPos(0, 0, 0);
+    var be = new BlockEntityPipe();
+    w.Place(pos, TestNetworkBlock.Create("pipe", "ns", id: 955), be);
+    be.FromTreeAttributes(OldFormatTree(pos), w.World);
+
+    var written = new TreeAttribute();
+    be.ToTreeAttributes(written);
+
+    Assert.IsType<StringArrayAttribute>(written["possibleOrientations"]);
+    Assert.Equal(
+      new[] { "ns", "we" },
+      ((StringArrayAttribute)written["possibleOrientations"]).value
+    );
+  }
+
+  [Fact]
+  public void The_rotation_choices_round_trip_through_the_new_shape() {
+    var w = NewPipeWorld();
+    var pos = new BlockPos(0, 0, 0);
+    var be = new BlockEntityPipe();
+    w.Place(pos, TestNetworkBlock.Create("pipe", "ns", id: 956), be);
+    be.PossibleOrientations = ["ns", "we", "ud"];
+
+    var written = new TreeAttribute();
+    be.ToTreeAttributes(written);
+
+    var reloaded = new BlockEntityPipe();
+    w.Place(
+      new BlockPos(1, 0, 0),
+      TestNetworkBlock.Create("pipe", "ns", id: 957),
+      reloaded
+    );
+    reloaded.FromTreeAttributes(written, w.World);
+
+    Assert.Equal(new[] { "ns", "we", "ud" }, reloaded.PossibleOrientations);
   }
 
   #endregion

@@ -378,7 +378,7 @@ overflow once the steel tier is built rather than being replaced.
    `WithSide(WEST)`, slag `WithSide(EAST)`, tuyeres likewise (`BlockBlastFurnaceCoreCold.cs:66`, `:80`,
    `:94-95`) - so a wrong-facing or wrong-type part reads as a build-outline mismatch rather than a silent
    dead tap. The invariant, pinned by `BlastFurnaceTapTests`: the `side` variant faces into the furnace, and
-   the tap pours to `side.Opposite`, one down. Caution: [layouts-workbench](../../workbench/layouts.md)'s
+   the tap pours to `side.Opposite`, one down. Caution: [layouts-workbench](../../internal/workbench/layouts.md)'s
    cold draft, marked stale on that page, still carries bare tap legends (the hot draft's facings are
    correct); the source and the golden are the arbiters, not the workbench drafts.
 

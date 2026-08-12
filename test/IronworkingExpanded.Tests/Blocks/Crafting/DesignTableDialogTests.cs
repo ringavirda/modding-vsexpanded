@@ -19,11 +19,11 @@ public class DesignTableDialogTests {
   private sealed class SpyDesignTable : BlockEntityDesignTable {
     public int CloseDialogCalls { get; private set; }
 
-    // internal (not private) so this override can be seen and hit here - the assembly sees internals
-    // per src/IronworkingExpanded/InternalsVisibleTo.cs.
-    internal override void CloseDialog() {
+    // The window teardown now lives on exlib's BlockEntityMachineStation, so this guards every
+    // machine station, not only the design table.
+    protected override void CloseWindow() {
       CloseDialogCalls++;
-      base.CloseDialog();
+      base.CloseWindow();
     }
   }
 

@@ -1,9 +1,10 @@
 # Framework Composition — form, process, membership
-**Status** settled 2026-08-10. Both seams are built. Seam 2 is live in the code it describes; Seam 1
-is live for every host — the process is a behaviour, readiness is a published contract, form no
-longer inherits process, and a block entity whose base slot is already spent carries the process
-anyway (`BlockEntityRollingMill`). The megablock footprint-intactness arm and the station-window
-consumers are still a decision record.
+**Status** settled 2026-08-10. All three seams are built. Seam 2 is live in the code it describes;
+Seam 1 is live for every host — the process is a behaviour, readiness is a published contract, and
+form no longer inherits process. Seam 3 freed the block-entity base slot: membership no longer squats
+in it, `BlockEntityMachineStation` carries the container and window plumbing in exlib, and the rolling
+mill is its proof (2026-08-11). The megablock footprint-intactness arm remains a decision record, and
+the mill is a station with no window yet.
 **Mod** exlib (every seam) · every mod (every consumer)
 **Owns** the three axes a machine is composed from, the two seams between them, and the rule that
 decides whether a capability is a base class or a behaviour. Supersedes the implicit hierarchy in
@@ -11,7 +12,7 @@ which `BlockEntityMultiblockStructure` extended `BlockEntityProductionMachine`.
 **Depends on** [multiblock](multiblock.md) (the form vocabulary and the filler mechanism, whose
 "a filler can never be a graph node" limitation this page retired) · [pipe-network](pipe-network.md) ·
 [mp-energy](mp-energy.md) · [conventions](../conventions.md) (the block-size vocabulary, the network
-families) · [the vanilla source map](../../vanilla/README.md)
+families) · [the vanilla source map](../../internal/vanilla/README.md)
 
 ---
 
@@ -289,6 +290,36 @@ the block arm keeps a cell walkable across an absent block entity, not across an
 graph therefore suspends its fracture check rather than answering it whenever part of a network is
 unreadable; see [pipe network](pipe-network.md) § 1, "An unloaded chunk suspends the fracture check".
 
+### Seam 3 — the block-entity base slot belongs to form, and nothing else may squat in it
+
+Membership became a behaviour in Seam 2, but `BlockEntityNetworkNode` still held the base slot of every
+machine that happened to be on a network. That is not form: a rolling mill is not *a kind of network
+node*, it is a machine that belongs to one. While the slot was spent that way, no such machine could be
+a **container**, and a container is what a machine with a window is.
+
+So a machine now takes the base its form actually calls for and hosts the rest. The mill derives from
+`BlockEntityMachineStation` — exlib's container-with-a-window-and-a-handshake — and carries its
+membership and its pass clock as behaviours. `BlockEntityNetworkNode` survives for the seventeen blocks
+that genuinely are only nodes; it is a convenience for them, never a requirement.
+
+**The slot pays for itself twice.** The mill's two `ItemStack` fields became inventory slots, which
+retired both its hand-written stack persistence and its ~40 lines of collectible id mapping — the
+container base carries both, and that mapping is the one whose absence corrupts a schematic paste.
+
+⛔ **A shipped machine's loose stacks need a load-time migration, not a clean break.** The mill's keys
+`rmPiece`/`rmRollSet` sat at the tree root; a container writes under `inventory` instead. Without the
+one-way adopt in `FromTreeAttributes`, every saved mill comes back with its roll set gone and any piece
+mid-pass destroyed — and the world looks fine, because nothing errors.
+
+**Against vanilla's model, deliberately: ours stays.** `vsessentialsmod/Block/BlockMultiblock.cs`
+offers three levels of multiblock modularity and an `IMultiBlock*` interface family whose every hook
+carries a `Vec3i offset`. It needs **a blocktype per offset** (`multiblock-monolithic-{dx}-{dy}-{dz}`,
+generated over a range) and puts **no block entity on a filler cell at all**. Ours puts the offset in
+the filler's block entity — which is the only reason Seam 2 could host a graph node there, and the only
+reason a footprint cell can carry a behaviour on its principal's behalf. Adopting their vocabulary
+would retract that. Worth borrowing, and not yet borrowed: their `is BlockMultiblock` recursion guards,
+which we have already paid for once in a port-forwarder stack overflow.
+
 ### What stays a base class
 
 Little. Once membership, process and structure-completion are behaviours, a shared block-entity root
@@ -297,9 +328,10 @@ runs identically whether the block was removed or its chunk unloaded, disposal o
 and looping sounds, and declared fields that round-trip through the attribute tree.
 
 That last one is a class of bug, not an inconvenience. A field written only by a server tick, read
-in `GetBlockInfo`, and absent from `ToTreeAttributes` reads zero on the client for ever;
-`BlockEntityPressureValve._lastVentVolume` does exactly this, and calls `MarkDirty(true)` when it
-changes, paying for a chunk re-tesselation to synchronise a value it never sends.
+in `GetBlockInfo`, and absent from `ToTreeAttributes` reads zero on the client for ever — and pays for
+a chunk re-tesselation to synchronise a value it never sends if it also calls `MarkDirty(true)`.
+`BlockEntityPressureValve._lastVentVolume` was the worked example of both halves; it has since been
+fixed, which is why the declared-state base (`ExBlockState`) exists rather than the discipline.
 
 ---
 
@@ -348,6 +380,19 @@ Membership — the built axis.
 | `.ReviewConnectivity` | `:206` | fracture, settle, or suspend when part of the run is unreadable |
 | `BlockNetworkNode` | `ExpandedLib/Blocks/Networks/BlockNetworkNode.cs:19` | abstract `Block`; 17 subclasses; a convenience now, not the contract |
 | `BEBehaviorMPFillerPort` | `ExpandedLib/Blocks/Structures/BEBehaviorMPFillerPort.cs` | the same shape for vanilla MP, and the precedent this followed |
+
+Form — the freed base slot.
+
+| Type / member | file | Role |
+|---|---|---|
+| `BlockEntityMachineStation` | `ExpandedLib/Blocks/Machines/BlockEntityMachineStation.cs` | container + window + packet handshake; the base a machine with slots takes |
+| `.OnReceivedClientPacket` | same | **sealed**, so no override can drop the claim check by forgetting `base` |
+| `.OnStationPacket` | same | where a machine adds its own actions, from `FirstMachinePacketId` |
+| `.CreateDialog` | same | null leaves the machine windowless, which the mill is today |
+| `MachineSlotSpec` / `MachineStationInventory` | `ExpandedLib/Blocks/Machines/MachineStationSlots.cs` | slots as data; built through `InventoryGeneric`'s own slot-factory delegate |
+| `BlockEntityRollingMill` | `IronworkingExpanded/.../BlockEntityRollingMill.cs` | the proof: container base, membership + process as behaviours |
+| `.MigrateLooseStacks` | same | the one-way adopt of a pre-A3 save's two root-level stacks |
+| `BlockEntityDesignTable` | `IronworkingExpanded/.../BlockEntityDesignTable.cs` | the promotion's first consumer; keeps only its slot rules and its draft |
 
 Form and process.
 

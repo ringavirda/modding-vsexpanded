@@ -75,7 +75,7 @@ systems; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
 | Shape spin | `rotateYByType` `*-north: 0` - no `+180`, so it differs from `StructureAngle` by 180° on purpose ([Cornish boiler](boiler-cornish.md) Gotcha 2) |
 | Resistance / stack | 45 / 1, from `BoilerShell` (`BlockBoiler.cs:63-64`) |
 | Mining tier | 4 (`BlockBoilerLancashire.cs:35`) - pinned by `HpMegablockDropTierTests.Lancashire_boiler_needs_an_iron_tier_pickaxe` |
-| Rendered layout | [layouts.md](../../workbench/layouts.md) § Section 2, "Lancashire boiler (hpex)" - round-tripped from the golden |
+| Rendered layout | [layouts.md](../../internal/workbench/layouts.md) § Section 2, "Lancashire boiler (hpex)" - round-tripped from the golden |
 
 ### Geometry offsets — `BlockBoilerLancashire.cs:36-55`, resolved through `BlockBoiler.cs:79-114`
 

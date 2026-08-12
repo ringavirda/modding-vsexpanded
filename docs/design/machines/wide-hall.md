@@ -39,7 +39,7 @@ whatever the shared-shaft drive needs; three of the six roll shapes are already 
 [flywheel & shafting](flywheel-and-shafting.md) · [reheat furnace](reheat-furnace.md) · [shear](shear.md) ·
 [steam hammer](steam-hammer.md) · [recoverability](../mechanics/recoverability.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [rolling](../processes/rolling.md) ·
-[STATE.md § placement rule](../../plans/STATE.md)
+[STATE.md § placement rule](../../internal/plans/STATE.md)
 
 ---
 
@@ -82,7 +82,7 @@ There is no hall block, no hall footprint and no hall block entity. A hall is a 
 | each stand | one `BlockRollingMill` - 3 × 3 × 2, principal + two axle-bus nodes + nine fillers | [rolling mill](rolling-mill.md) |
 | the drive line | the mills' own axle cells, butted end to end, optionally extended by `BlockCastIronShaft` / `BlockCastIronBevel` | [flywheel & shafting](flywheel-and-shafting.md) |
 | the reservoir | one flywheel on the run | [mp-energy](../mechanics/mp-energy.md) |
-| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in lpex | [STATE.md](../../plans/STATE.md) |
+| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in lpex | [STATE.md](../../internal/plans/STATE.md) |
 
 ### The stands chain on their own axle bus
 
@@ -179,7 +179,7 @@ has exactly one gap, so the click position along the deck carries no information
 
 The mill's live reachability blocker - B17, only the middle deck cell is an input, so a click can only ever
 land in the last third of the barrel and two of four gap bands are unreachable
-(`BlockEntityRollingMill.cs:250-260` vs `MillFeed.cs:78-89`; [STATE.md](../../plans/STATE.md)) - therefore
+(`BlockEntityRollingMill.cs:250-260` vs `MillFeed.cs:78-89`; [STATE.md](../../internal/plans/STATE.md)) - therefore
 cannot bite a hall stand. The wide route is the only route that is not blocked by it.
 
 B17 still blocks the narrow `flat` set and must still be fixed

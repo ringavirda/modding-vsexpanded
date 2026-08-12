@@ -12,7 +12,7 @@
 
 **Does not own** - cited only: the oriented-parts feature and `multiblockFacings`
 ([multiblock](multiblock.md)) · the rotation convention itself, north 0° / west 90° (`ExOrientation`) ·
-the layout scratchpad ([layouts-workbench.md](../../workbench/layouts.md)).
+the layout scratchpad ([layouts-workbench.md](../../internal/workbench/layouts.md)).
 
 ---
 
@@ -184,7 +184,7 @@ That buys three things at once:
    exactly the case that cannot be resolved from the string, and a registry can fail the build when a layout
    pins such a token without saying which scheme it means.
 
-This is the same move [`ExCodes`](../../workbench/layouts.md) made for block codes, applied to variant states.
+This is the same move [`ExCodes`](../../internal/workbench/layouts.md) made for block codes, applied to variant states.
 
 ---
 

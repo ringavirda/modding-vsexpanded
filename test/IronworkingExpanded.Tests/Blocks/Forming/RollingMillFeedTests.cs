@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
@@ -116,6 +118,58 @@ public class RollingMillFeedTests {
     Assert.False(mill.IsInputDeck(mill.OutputDeck));
   }
 
+  [Fact]
+  public void The_whole_input_row_is_feedable_along_the_barrel() {
+    // Which gap a click selects is read from how far along the barrel it landed, and MillFeed maps that
+    // across all DeckCells of the row. Accepting only the cell beside the stand confined every click to
+    // the last third - so the widest gap, the only one fresh stock can enter at, was unreachable.
+    var (_, mill, pos) = Mill();
+    int angle = ((BlockRollingMill)mill.Block).StructureAngle;
+    int inZ = mill.InputDeck.Equals(
+      ExOrientation.GlobalPos(pos, 0, 0, 1, angle)
+    )
+      ? 1
+      : -1;
+
+    for (int x = 0; x > -MillFeed.DeckCells; x--)
+      Assert.True(
+        mill.IsInputDeck(ExOrientation.GlobalPos(pos, x, 0, inZ, angle)),
+        $"deck cell at local x={x} must be feedable"
+      );
+
+    // The row does not bleed past the footprint, and the far row is still refused.
+    Assert.False(
+      mill.IsInputDeck(
+        ExOrientation.GlobalPos(pos, -MillFeed.DeckCells, 0, inZ, angle)
+      )
+    );
+    Assert.False(
+      mill.IsInputDeck(ExOrientation.GlobalPos(pos, -1, 0, -inZ, angle))
+    );
+  }
+
+  [Fact]
+  public void Every_gap_zone_is_reachable_from_some_cell_of_the_input_row() {
+    // The end-to-end statement of B17: walking the row must select every gap, widest to narrowest. With a
+    // single feedable cell this yielded only zones 2 and 3 of 4.
+    var (_, mill, pos) = Mill();
+    int angle = ((BlockRollingMill)mill.Block).StructureAngle;
+    const int gapCount = 4;
+
+    var zones = new HashSet<int>();
+    for (int x = 0; x > -MillFeed.DeckCells; x--) {
+      Assert.True(
+        mill.IsInputDeck(ExOrientation.GlobalPos(pos, x, 0, 1, angle))
+          || mill.IsInputDeck(ExOrientation.GlobalPos(pos, x, 0, -1, angle))
+      );
+      // Both ends of the cell, since a click lands anywhere across it.
+      foreach (double frac in new[] { 0.0, 0.999 })
+        zones.Add(MillFeed.GapZone(MillFeed.AlongBarrel(x + frac), gapCount));
+    }
+
+    Assert.Equal([0, 1, 2, 3], [.. zones.OrderBy(z => z)]);
+  }
+
   #endregion
 
   #region Feeding and ejecting
@@ -219,6 +273,122 @@ public class RollingMillFeedTests {
     stock.Collectible.SetTemperature(world.World, stock, 1100f);
     return (world, mill, stock);
   }
+
+  [Fact]
+  public void A_bloom_straight_off_the_grid_takes_its_first_pass() {
+    // Every other test here feeds a stack whose work state was written by hand, which nothing does
+    // before the first pass. A real crafted bloom carries its form on the ITEM TYPE and nothing on
+    // the stack, and the mill used to read only the stack - so it refused the piece as WrongForm and
+    // no player could roll anything at all. The whole machine hangs off this one read.
+    var (world, mill, _) = Fitted();
+
+    Item bloom = world.RegisterItem("iwex:stock-bloom-fresh");
+    bloom.Attributes = new Vintagestory.API.Datastructures.JsonObject(
+      Newtonsoft.Json.Linq.JToken.Parse("""{ "stockForm": "bloom" }""")
+    );
+    var stack = new ItemStack(bloom);
+    stack.Collectible.SetTemperature(world.World, stack, 1100f);
+
+    FeedDecision decision = mill.TryFeed(stack, 0, 0);
+
+    Assert.True(decision.Accepted, $"refused as {decision.Verdict}");
+    Assert.True(mill.IsRolling);
+  }
+
+  #region Claiming a finished item
+
+  // A mill fitted with a set that names a finished item at its last gap. The shipped sets name none today
+  // (every stage is a shear crop), so the mechanism is driven through a set authored here.
+  private static (
+    TestWorld World,
+    BlockEntityRollingMill Mill,
+    ItemStack Stock
+  ) FittedWithOutput(string outputCode) {
+    var (world, mill, _) = Mill();
+
+    var setItem = world.RegisterItem("iwex:rollset-claiming");
+    setItem.Attributes = new Vintagestory.API.Datastructures.JsonObject(
+      Newtonsoft.Json.Linq.JToken.Parse(
+        $$"""
+        { "rollset": {
+            "family": "flat",
+            "accepts": [ "bloom" ],
+            "gaps": [ 2.0 ],
+            "outputs": [ { "gap": 2.0, "code": "{{outputCode}}" } ],
+            "barrelWidth": 16.0 } }
+        """
+      )
+    );
+    Assert.True(mill.TryFitRollSet(new ItemStack(setItem), out _));
+
+    ItemStack stock = Piece(world);
+    stock.Collectible.SetTemperature(world.World, stock, 1100f);
+    return (world, mill, stock);
+  }
+
+  [Fact]
+  public void A_stage_that_names_a_finished_item_ejects_that_item_not_stock() {
+    var (world, mill, stock) = FittedWithOutput("iwex:nailplate");
+    world.RegisterItem("iwex:nailplate");
+
+    // Two feeds: the first turns the piece, the second commits the reduction to the gap.
+    for (int i = 0; i < WorkPiece.FeedsPerSide; i++) {
+      Assert.True(mill.TryFeed(stock, 0, 0).Accepted, $"feed {i} refused");
+      Assert.True(RunPass(mill), $"pass {i} did not finish");
+    }
+
+    ItemStack ejected = world.Drops[^1];
+    Assert.Equal("iwex:nailplate", ejected.Collectible.Code.ToString());
+    Assert.Equal(1, ejected.StackSize); // one piece in, one piece out
+  }
+
+  [Fact]
+  public void A_claimed_item_keeps_the_heat_the_piece_came_off_the_rolls_with() {
+    var (world, mill, stock) = FittedWithOutput("iwex:nailplate");
+    Item plate = world.RegisterItem("iwex:nailplate");
+
+    for (int i = 0; i < WorkPiece.FeedsPerSide; i++) {
+      mill.TryFeed(stock, 0, 0);
+      RunPass(mill);
+    }
+
+    ItemStack ejected = world.Drops[^1];
+    Assert.Equal(plate.Code, ejected.Collectible.Code);
+    // Cold would mean the player cannot work the thing they just rolled.
+    Assert.True(
+      ejected.Collectible.GetTemperature(world.World, ejected) > 500f,
+      "a piece claimed straight off the rolls must still be hot"
+    );
+  }
+
+  [Fact]
+  public void A_stage_naming_no_output_ejects_the_stock_it_rolled() {
+    // Every shipped stage is like this: the piece leaves as stock, to be cropped at the shear.
+    var (world, mill, _) = Fitted();
+    ItemStack stock = Piece(world);
+    stock.Collectible.SetTemperature(world.World, stock, 1100f);
+
+    Assert.True(mill.TryFeed(stock, 0, 0).Accepted);
+    Assert.True(RunPass(mill));
+
+    Assert.Same(stock, world.Drops[^1]);
+  }
+
+  [Fact]
+  public void An_output_code_naming_no_item_leaves_the_piece_as_stock() {
+    // The four codes that used to ship named no item that existed. A dangling code must not destroy the
+    // player's piece.
+    var (world, mill, stock) = FittedWithOutput("iwex:nosuchproduct");
+
+    for (int i = 0; i < WorkPiece.FeedsPerSide; i++) {
+      mill.TryFeed(stock, 0, 0);
+      RunPass(mill);
+    }
+
+    Assert.Same(stock, world.Drops[^1]);
+  }
+
+  #endregion
 
   [Fact]
   public void A_bare_stand_cannot_roll_anything() {

@@ -1,5 +1,0 @@
-ExpandedLib.Tests = 1637
-IronworkingExpanded.Tests = 1577
-LowPressureExpanded.Tests = 182
-HighPressureExpanded.Tests = 54
-SteelmakingExpanded.Tests = 243

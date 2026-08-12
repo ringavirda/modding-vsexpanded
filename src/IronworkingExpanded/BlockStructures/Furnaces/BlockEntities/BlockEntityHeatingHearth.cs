@@ -91,36 +91,49 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
   ) {
-    if (Api is not ICoreClientAPI)
+    if (Api is not ICoreClientAPI capi)
       return base.OnTesselation(mesher, tesselator);
 
     var forms = new HeatingHearthLayout.Stock?[HeatingHearthLayout.Rows];
     for (int i = 0; i < forms.Length; i++)
       forms[i] = HeatingHearthLayout.StockOf(_rows[i]?.Collectible?.Code?.Path);
 
+    // Keyed on what is lying on the bed, the way vanilla's firepit keys on burn and content state. The
+    // key space is bounded by 6^3 per orientation and fills only with states actually built.
+    if (
+      ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        string.Join('|', forms),
+        () => BuildBedMesh(tesselator, forms)
+      ) is { } mesh
+    )
+      mesher.AddMeshData(mesh);
+
+    // True: this block entity draws its whole mesh, so the default block mesh must not also be drawn. It
+    // would show every stock form in every row at once.
+    return true;
+  }
+
+  private MeshData? BuildBedMesh(
+    ITesselatorAPI tesselator,
+    HeatingHearthLayout.Stock?[] forms
+  ) {
+    if (
+      ExMeshCache.LoadShape(Api, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
+      return null;
+
     // Prune the element tree directly: the engine's selectiveElements matching is per-segment prefix
     // based and keeps or drops the wrong subtree for these element names.
-    Shape? shape = Api
-      .Assets.TryGet(
-        Block
-          .Shape.Base.Clone()
-          .WithPathPrefixOnce("shapes/")
-          .WithPathAppendixOnce(".json")
-      )
-      ?.ToObject<Shape>();
-    if (shape == null)
-      return base.OnTesselation(mesher, tesselator);
-
     tesselator.TesselateShape(
       Block,
       ExShapeElements.Pruned(shape, HeatingHearthLayout.ElementsFor(forms)),
       out MeshData mesh
     );
     ExMesh.RotateByShape(mesh, Block);
-    mesher.AddMeshData(mesh);
-    // True: this block entity draws its whole mesh, so the default block mesh must not also be drawn. It
-    // would show every stock form in every row at once.
-    return true;
+    return mesh;
   }
 
   #endregion

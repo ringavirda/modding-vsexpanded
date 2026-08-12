@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using ExpandedLib;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Blocks.Structures;
@@ -258,10 +257,7 @@ public class BlockEntitySmokeStack
     base.ToTreeAttributes(tree);
     tree.SetFloat("lastConsumedAmount", _lastConsumedAmount);
     tree.SetString("orientation", Orientation);
-    tree.SetString(
-      "possibleOrientations",
-      JsonSerializer.Serialize(PossibleOrientations)
-    );
+    tree.SetStrings("possibleOrientations", PossibleOrientations);
   }
 
   public override void FromTreeAttributes(
@@ -271,10 +267,14 @@ public class BlockEntitySmokeStack
     base.FromTreeAttributes(tree, worldForResolving);
     _lastConsumedAmount = tree.GetFloat("lastConsumedAmount");
     Orientation = tree.GetString("orientation");
-    PossibleOrientations = ExTree.SafeDeserialize(
-      tree.GetString("possibleOrientations"),
-      PossibleOrientations
-    );
+    // The old encoding of this key was a JSON string; it is read second so worlds saved before the
+    // cutover keep their rotation choices, and converts on the stack's next save.
+    PossibleOrientations =
+      tree.GetStrings("possibleOrientations")
+      ?? ExTree.SafeDeserialize(
+        tree.GetString("possibleOrientations"),
+        PossibleOrientations
+      );
   }
 
   #endregion

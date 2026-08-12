@@ -450,11 +450,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
     if (Api is not ICoreClientAPI capi || Block.Shape?.Base == null)
       return null;
 
-    AssetLocation loc = Block
-      .Shape.Base.Clone()
-      .WithPathPrefixOnce("shapes/")
-      .WithPathAppendixOnce(".json");
-    Shape? shape = capi.Assets.TryGet(loc)?.ToObject<Shape>();
+    Shape? shape = ExMeshCache.LoadShape(capi, ExMeshCache.ShapePathOf(Block));
     if (shape?.Elements == null)
       return null;
 

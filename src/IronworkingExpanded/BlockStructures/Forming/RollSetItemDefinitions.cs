@@ -39,8 +39,19 @@ public class RollSetItemDefinitions : IExItemDefProvider {
   private static object Out(double gap, string code) => new { gap, code };
 
   /// <summary>
-  /// Each entry maps a set's <c>type</c> variant to its spec. A multi-gap set carries a sequence cut along one
-  /// barrel, so a piece is walked down it and pulled out at the wanted thickness (plate 1.0, sheet 0.5).
+  /// Each entry maps a set's <c>type</c> variant to its spec: a sequence of gaps cut along one barrel, walked
+  /// widest-first.
+  /// <para>
+  /// Every set declares <c>outputs: []</c>. Per the crop table in <c>docs/design/items/rolled-parts.md</c>
+  /// every shipped stage is a shear crop, so the mill ejects the piece it drew through and the shear claims
+  /// the items. The four codes that used to sit here named no item that existed and contradicted two settled
+  /// rulings, so they are gone rather than re-pointed.
+  /// </para>
+  /// <para>
+  /// The one whole-piece conversion - a <c>rolledrod</c> taken flat to 1.0 into a <c>nailplate</c> - cannot be
+  /// written yet: <see cref="RollSetSpec.Outputs"/> is keyed on gap alone, and flat 1.0 also yields plate from
+  /// a bloom. Same gap, different product, decided by the form that entered; the key must become (form, gap).
+  /// </para>
   /// </summary>
   private static readonly Dictionary<string, object> Sets = new() {
     // Flat: a shingled bloom enters 3 thick and 3 wide, so the early gaps fit inside the 6-wide barrel at two
@@ -51,7 +62,7 @@ public class RollSetItemDefinitions : IExItemDefProvider {
       "flat",
       ["bloom", "billet"],
       [2.0, 1.5, 1.0, 0.5],
-      [Out(1.0, "iwex:rolledplate-iron"), Out(0.5, "iwex:rolledsheet-iron")],
+      [],
       barrelWidth: 6.0,
       minTorque: 0.2
     ),
@@ -61,18 +72,22 @@ public class RollSetItemDefinitions : IExItemDefProvider {
       "flat",
       ["slab", "bloom"],
       [2.0, 1.5, 1.0, 0.5],
-      [Out(1.0, "iwex:rolledplate-iron"), Out(0.5, "iwex:rolledsheet-iron")],
+      [],
       // Wider than any form's MaxWidth (slab caps at 14), so the work never overhangs however far it spreads.
       barrelWidth: 16.0,
       minTorque: 0.5
     ),
     // Grooved: the rod route. A real groove constrains the spread rather than letting it run sideways, which
-    // is modelled here as a barrel the work never outgrows.
+    // is modelled here as a barrel the work never outgrows. The groove bottoms out at 1.0 - it cannot close
+    // further - and the ladder walks down in 0.5 steps from an entry the fresh 3.0 bloom can bite: the old
+    // first gap of 1.0 was a 2.0 draft against delta_max 1.0, so the rod route had no legal entry at all.
     ["grooved"] = Set(
       "grooved",
       ["bloom", "billet"],
-      [1.0, 0.5],
-      [Out(1.0, "game:rod-iron"), Out(0.5, "iwex:wirerod-iron")],
+      [2.5, 2.0, 1.5, 1.0],
+      // No outputs: both grooved stages are shear crops (2.0 -> 4x rolledrod, 1.0 -> 4x rod), and the mill
+      // ejects the one piece it drew through. See the note on Outputs below.
+      [],
       barrelWidth: 16.0,
       minTorque: 0.3
     ),
@@ -81,7 +96,7 @@ public class RollSetItemDefinitions : IExItemDefProvider {
       "slitting",
       ["plate"],
       [0.5],
-      [Out(0.5, "iwex:nailrod-iron")],
+      [],
       barrelWidth: 16.0,
       minTorque: 0.4
     ),

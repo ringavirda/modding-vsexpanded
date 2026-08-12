@@ -361,6 +361,11 @@ public sealed class TestWorld {
   private readonly HashSet<Vec3i> _unloadedChunks = new();
   private readonly IWorldChunk _loadedChunk = Substitute.For<IWorldChunk>();
 
+  /// <summary>The chunk every loaded position resolves to. One instance for the whole world, so it
+  /// answers "did anything ask a chunk to be saved again" rather than "which chunk" - enough for a
+  /// <c>MarkModified</c> assertion, not enough to tell two chunks apart.</summary>
+  public IWorldChunk LoadedChunk => _loadedChunk;
+
   /// <summary>The chunk coordinate <paramref name="pos"/> falls in, dimension-aware through
   /// <c>InternalY</c> - a mini-dimension sits above the world in internal Y, so a chunk column there
   /// must not share a key with the one below it.</summary>

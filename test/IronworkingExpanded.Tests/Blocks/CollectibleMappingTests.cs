@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Forming.BlockEntities;
 using IronworkingExpanded.BlockStructures.Forming.Blocks;
@@ -31,7 +32,12 @@ public class CollectibleMappingTests {
     var pos = new BlockPos(0, 0, 0);
     var mill = new BlockEntityRollingMill();
     world.Place(pos, block, mill);
-    world.Attach(mill);
+    // Initialize, not Attach: the mapping now runs through the container base, whose in-world
+    // container resolves the world off the API its own Initialize hands it. Attach sets the block
+    // entity's Api but never runs Initialize, so the container would still be unwired - and
+    // initialising the mill also joins its membership to the graph, which needs the factory.
+    world.RegisterNetwork("mpenergy", n => new MpEnergyNetwork(n));
+    world.Initialize(mill);
 
     Item bloom = world.RegisterItem("iwex:stock-bloom");
     var piece = new ItemStack(bloom);

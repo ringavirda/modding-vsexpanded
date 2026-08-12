@@ -3,7 +3,7 @@
 **Status** designed - nothing built, and nothing drawn. No block, no block entity, no tooling item, no
 recipe, no shape, no lang key. A repo-wide grep of `src/` for `bend`, `roller` or `conical` returns only pipe
 bend segments. Generalised from the design's "conical pipe roller"
-([STATE.md:429-434](../../plans/STATE.md)).
+([STATE.md:429-434](../../internal/plans/STATE.md)).
 **Mod** lpex (`LowPressureExpanded`)
 
 ## Owns
@@ -29,14 +29,14 @@ bend segments. Generalised from the design's "conical pipe roller"
 | every product mass and `1 vx³ = 2.5 u` | [density rule](../mechanics/density-rule.md), [rolled-parts](../items/rolled-parts.md) |
 | pipe tiers, burst pressures, the flanged/welded joint-family rule | [pipe network](../mechanics/pipe-network.md) |
 | the cast-vs-forged rule and the cast part catalogue this machine substitutes for | [cast-parts](../items/cast-parts.md) |
-| the fabricated-substitute decision (D2 / N3) and the placement rule | [STATE.md](../../plans/STATE.md) |
+| the fabricated-substitute decision (D2 / N3) and the placement rule | [STATE.md](../../internal/plans/STATE.md) |
 | the ≤ 32 / ≤ 48 handling invariant | [recoverability](../mechanics/recoverability.md) |
 | code-first defs, RCC stages, cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [mp-energy](../mechanics/mp-energy.md) · [rolling mill](rolling-mill.md) ·
 [wide hall](wide-hall.md) · [shear](shear.md) · [heading machine](heading-machine.md) ·
 [flywheel & shafting](flywheel-and-shafting.md) · [pipe network](../mechanics/pipe-network.md) ·
-[recipes & config](../mechanics/recipes-config.md) · [STATE.md § N3](../../plans/STATE.md) ·
+[recipes & config](../mechanics/recipes-config.md) · [STATE.md § N3](../../internal/plans/STATE.md) ·
 [cast-parts](../items/cast-parts.md)
 
 ---
@@ -47,7 +47,7 @@ bend segments. Generalised from the design's "conical pipe roller"
 
 A rolling mill is a two-high stand: the piece passes through one gap and comes out thinner. Plate bending
 rolls are three rolls in a triangle: the piece comes out curved and the same thickness. A different
-operation, not a variant of the same one ([STATE.md:446-448](../../plans/STATE.md)).
+operation, not a variant of the same one ([STATE.md:446-448](../../internal/plans/STATE.md)).
 
 Everything in `RollingPass` describes reducing thickness:
 
@@ -61,12 +61,12 @@ Everything in `RollingPass` describes reducing thickness:
 Every one is a function of thickness change. Bending changes none of them; it produces curvature, which
 `WorkPiece` has no axis for (`WorkPiece.cs:35` - the record carries form, strips, turned-flags and nothing
 else). Expressing bending as a `RollSetSpec` would mean a `gaps` array that silently means something else,
-the overload the roll-set idiom exists to avoid ([STATE.md:450-453](../../plans/STATE.md)).
+the overload the roll-set idiom exists to avoid ([STATE.md:450-453](../../internal/plans/STATE.md)).
 
 It shares the code - `mpenergy` consumer, tooling item, block-entity base - without sharing the block, the
 same relationship the [shear](shear.md), [nail machine](nail-machine.md) and
 [heading machine](heading-machine.md) already have with each other
-([STATE.md:455-456](../../plans/STATE.md)).
+([STATE.md:455-456](../../internal/plans/STATE.md)).
 
 ### It closes the last open consumer question
 
@@ -75,12 +75,12 @@ same relationship the [shear](shear.md), [nail machine](nail-machine.md) and
 
 > A rolled shell is what a boiler barrel is. The same plate bends into machine shells, barrels, pipe and
 > wheel rims. Boilerplate → bending roller → the shell of everything
-> ([STATE.md:440-442](../../plans/STATE.md)).
+> ([STATE.md:440-442](../../internal/plans/STATE.md)).
 
 ### It is what makes the fabricated substitutes buildable
 
 Every cast-iron structural part gets a rolled/fabricated steel equivalent (D2/N3). All of them reduce to two
-operations, and only bending needs a machine ([STATE.md:417-427](../../plans/STATE.md)):
+operations, and only bending needs a machine ([STATE.md:417-427](../../internal/plans/STATE.md)):
 
 | Cast part | Fabricated from | Operation | Made on |
 |---|---|---|---|
@@ -92,13 +92,13 @@ operations, and only bending needs a machine ([STATE.md:417-427](../../plans/STA
 
 Rivets are the ingredient, so the joining is abstracted into the recipe and no riveting machine is required.
 A powered riveter stays available later as a pure throughput upgrade, but nothing is blocked without one
-([STATE.md:436-438](../../plans/STATE.md)). The rivet itself comes off the
+([STATE.md:436-438](../../internal/plans/STATE.md)). The rivet itself comes off the
 [heading machine](heading-machine.md) wearing lpex's rivet die.
 
 ### Why lpex
 
 The placement rule sends a machine to the mod that consumes its output, not the one whose materials it is
-made of ([STATE.md:458-476](../../plans/STATE.md), row *bending roller → lpex*):
+made of ([STATE.md:458-476](../../internal/plans/STATE.md), row *bending roller → lpex*):
 
 > Nothing at iron tier bends. iwex's pipes are plated from flat plates - which is what the `plated` tier's
 > name records - and its cast parts are cast, not fabricated. The first thing in the suite that needs a
@@ -106,7 +106,7 @@ made of ([STATE.md:458-476](../../plans/STATE.md), row *bending roller → lpex*
 
 Historically plate bending rolls sat next to the shear and the punch in the boiler shop, which is what the
 1867 machine-tool plate at `assets/editable/refs/rivetsnails/` is a page of
-([STATE.md:433-434](../../plans/STATE.md)).
+([STATE.md:433-434](../../internal/plans/STATE.md)).
 
 ---
 
@@ -116,16 +116,16 @@ Nothing is decided beyond "not the mill". What the design fixes, and what it lea
 
 | Aspect | Proposal | Source |
 |---|---|---|
-| Network | `"mpenergy"`, an `IMpEnergyConsumer` | [STATE.md:455](../../plans/STATE.md) |
+| Network | `"mpenergy"`, an `IMpEnergyConsumer` | [STATE.md:455](../../internal/plans/STATE.md) |
 | Shafting | cast-iron shaft / bevel, not vanilla MP and not wooden axles - cast iron is the shared prerequisite for both the frame and the shafting, so there is no second tier to gate | [flywheel & shafting](flywheel-and-shafting.md) |
 | Frame | cast-iron: `castframe` standards on a plate bed, the boiler-shop C-frame silhouette | [cast-parts](../items/cast-parts.md) |
 | Footprint | unchosen. The three 1 × 1 benches (shear, nail, heading) are small so a player builds several; a plate roll is a wide machine and the pieces it eats are 15 voxels across, so 1 × 1 is probably wrong | — |
-| Tooling | one roll-set-shaped item selecting the roll geometry, in the established `rollset` / `pattern` / `ItemDie` idiom | [STATE.md:430-432](../../plans/STATE.md) |
+| Tooling | one roll-set-shaped item selecting the roll geometry, in the established `rollset` / `pattern` / `ItemDie` idiom | [STATE.md:430-432](../../internal/plans/STATE.md) |
 | Drive | the load is a steady draw, not a pulse - unlike the shear, nail and heading benches, which are pulsed and each carry their own flywheel | derived here; see [Open](#open) |
 
 The one structural thing that is settled is that this is a separate block, sharing a base class with the
 die-fed benches and not sharing a frame with them - "three shapes, three blocks"
-([STATE.md:455-456](../../plans/STATE.md)).
+([STATE.md:455-456](../../internal/plans/STATE.md)).
 
 ---
 
@@ -186,10 +186,10 @@ two machines, or it is a machine's signature" ([cast-parts](../items/cast-parts.
 | cylindrical rolls | plate | `cast-barrel` substitute | the molten barrel, the fluid tank |
 | large radius | bar / plate | bent rim → `castwheelsection` substitute | flywheels, wheels |
 
-([STATE.md:425-432](../../plans/STATE.md); `skelp`'s geometry and mass at [rolled-parts](../items/rolled-parts.md).)
+([STATE.md:425-432](../../internal/plans/STATE.md); `skelp`'s geometry and mass at [rolled-parts](../items/rolled-parts.md).)
 
 Four jobs instead of one is what justifies building it - pipe alone never did
-([STATE.md:432-433](../../plans/STATE.md)).
+([STATE.md:432-433](../../internal/plans/STATE.md)).
 
 ### The verbs — proposed, none built
 
@@ -248,7 +248,7 @@ below is either a constraint it must satisfy or a number owned elsewhere that it
 | rivet count per fabricated part | ditto |
 
 The last two are the balance question that matters, and nothing anywhere has answered it: "cast when you have
-a cupola, fabricate when you have a mill" ([STATE.md:234-236](../../plans/STATE.md)) only works if the two
+a cupola, fabricate when you have a mill" ([STATE.md:234-236](../../internal/plans/STATE.md)) only works if the two
 routes cost comparably.
 
 ---
@@ -279,7 +279,7 @@ Do not copy `RollingPass`. None of it applies - see [Role](#role).
 
 ## Gotchas
 
-* The settled placement is lpex ([STATE.md:476](../../plans/STATE.md)), and the machine is the general
+* The settled placement is lpex ([STATE.md:476](../../internal/plans/STATE.md)), and the machine is the general
   bender, not a pipe-only one.
 * It is not an upgrade to the mill and must never be modelled as a roll set. The `gaps` array would have to
   mean radius; `RollSetSpec.IsWide` (`RollSetSpec.cs:70`) already means "one gap = one stand in a train",
@@ -293,7 +293,7 @@ Do not copy `RollingPass`. None of it applies - see [Role](#role).
   fabricated route can be a second recipe producing the same item rather than a new one
   ([cast parts](../items/cast-parts.md)).
 * hpex's rolled pipe tier is uncraftable - B5: four live blocktypes, four shapes, zero recipes
-  ([STATE.md:52](../../plans/STATE.md)). The skelp → segment → bell-weld → rolled pipe chain through this
+  ([STATE.md:52](../../internal/plans/STATE.md)). The skelp → segment → bell-weld → rolled pipe chain through this
   machine is the intended fix, so B5 and this page are the same work item.
 * A rolled run cannot use lpex's fittings. The welded joint family means rolled (hpex) pipe joins only
   rolled pipe; there is no valve, outlet or passthrough for it until hpex ships its own
@@ -318,4 +318,4 @@ Do not copy `RollingPass`. None of it applies - see [Role](#role).
 | 5 | Does it need its own flywheel? The three die benches are pulsed loads and each carries one ([heading machine](heading-machine.md)); a bending roll is a steady draw, so it may be the first `mpenergy` consumer that is not pulsed | |
 | 6 | The bell-weld step. `skelp` → pipe segment implies a weld, and welding is not a verb the suite has. Is it a stage on this machine, a grid recipe, or does the roller simply output the segment? | |
 | 7 | Nothing to draw from. No shape reference has been chosen and no art exists | |
-| 8 | A powered riveter as a later throughput upgrade is explicitly allowed but undesigned ([STATE.md:437-438](../../plans/STATE.md)) | — |
+| 8 | A powered riveter as a later throughput upgrade is explicitly allowed but undesigned ([STATE.md:437-438](../../internal/plans/STATE.md)) | — |

@@ -1,7 +1,7 @@
 # Electrical grid (AC + DC)
 
 **Status** deferred   **Would live in** elex (Electrical Expanded) - a mod with no project, no asset
-domain and no code   **Deferred by** D8 ([STATE.md](../../../plans/STATE.md)) - the release target is the
+domain and no code   **Deferred by** D8 ([STATE.md](../../../internal/plans/STATE.md)) - the release target is the
 complete ferrous line, so elex is out of it; the decision and its reasoning are recorded in
 [scope.md](../../scope.md) § The release target and § elex
 
@@ -149,7 +149,7 @@ electrical version of the pipe's burst - the consequence of ignoring a readable 
 | Wire extruder | megablock | MP-driven, not electric (needs lpex MP): copper rod/plate → wire, impure or pure |
 
 The wire extruder is the one block on this list that needs no grid to work - it is an MP machine. Under D7
-([STATE.md](../../../plans/STATE.md)) wire lives in elex, which is what puts it on this table at all.
+([STATE.md](../../../internal/plans/STATE.md)) wire lives in elex, which is what puts it on this table at all.
 
 ### The numbers, and they are self-consistent
 

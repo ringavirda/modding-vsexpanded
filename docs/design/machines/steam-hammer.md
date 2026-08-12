@@ -33,13 +33,13 @@ runtime shape. A repo-wide grep for `hammer` in `src/` returns only vanilla tool
 | the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](../mechanics/multiblock.md) |
 | code-first defs, RCC construction stages, the recipe-cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 | the ≤ 32 / ≤ 48 handling limits and the soft-lock definition | [recoverability](../mechanics/recoverability.md) |
-| the placement rule and the fastener split that put this machine in lpex | [STATE.md](../../plans/STATE.md) |
+| the placement rule and the fastener split that put this machine in lpex | [STATE.md](../../internal/plans/STATE.md) |
 | the cast-vs-forged rule that makes dies forged and the frame cast | [casting](../processes/casting.md) |
 
 **Depends on** [pipe network](../mechanics/pipe-network.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [density rule](../mechanics/density-rule.md) ·
 [shear](shear.md) · [wide hall](wide-hall.md) · [rolling mill](rolling-mill.md) ·
-[reheat furnace](reheat-furnace.md) · [STATE.md § placement rule](../../plans/STATE.md)
+[reheat furnace](reheat-furnace.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
 
 ---
 
@@ -57,7 +57,7 @@ Nasmyth built the hammer in 1839 to forge a paddle shaft, so shingling is its pe
 It is lpex because of what it feeds, not what it is made of: its frame is cast iron and its dies are
 wrought/steel, both iwex materials, but its products are the shingled slab and the stamped plate, the wide
 route's inputs and outputs. The placement rule sends a machine to the mod that consumes it
-([STATE.md](../../plans/STATE.md), row *steam hammer + stamping dies → lpex*).
+([STATE.md](../../internal/plans/STATE.md), row *steam hammer + stamping dies → lpex*).
 
 ### The hammer never shears
 
@@ -326,7 +326,7 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 4. pile-reads-form shingling (≥ 6 balls → slab);
 5. the stamping die (`boilerplate` → 3 × `game:metalplate`), in the `rollset` / `pattern` tooling idiom;
 6. the rivet die - lpex's one entry in the [heading machine](heading-machine.md)'s die catalogue. The
-   rivet die goes on the heading machine, not on this one ([STATE.md](../../plans/STATE.md)).
+   rivet die goes on the heading machine, not on this one ([STATE.md](../../internal/plans/STATE.md)).
 
 ---
 

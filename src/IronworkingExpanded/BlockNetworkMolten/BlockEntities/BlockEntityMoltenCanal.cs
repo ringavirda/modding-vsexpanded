@@ -395,23 +395,38 @@ public class BlockEntityMoltenCanal
     // self-corrects without a network broadcast.
     RefreshOpenConnectorFaces();
 
-    var baseShapeLoc = new AssetLocation(
-      $"iwex:shapes/molten/canal/{Block?.Variant["type"]}.json"
-    );
-    Shape baseShape = Api.Assets.Get<Shape>(baseShapeLoc);
-    if (baseShape != null) {
-      tesselator.TesselateShape(Block, baseShape, out _baseMesh);
-      if (Block?.Shape != null) {
-        float rotX = Block.Shape.rotateX * GameMath.DEG2RAD;
-        float rotY = Block.Shape.rotateY * GameMath.DEG2RAD;
-        float rotZ = Block.Shape.rotateZ * GameMath.DEG2RAD;
+    // Shape and rotation both come from the blocktype, so one cached mesh serves every canal piece of
+    // that type. The _baseMesh field below it looked cached and never was - it was assigned on every
+    // call, so each re-tesselation re-read the JSON and re-tesselated. The rotation must happen inside
+    // the factory: Rotate mutates the mesh in place, so rotating a shared one per call would compound.
+    _baseMesh = Api is not ICoreClientAPI capi
+      ? null
+      : ExMeshCache.GetOrCreate(
+        capi,
+        Block!,
+        "canalbase",
+        () => {
+          Shape? baseShape = ExMeshCache.LoadShape(
+            Api,
+            new AssetLocation(
+              $"iwex:shapes/molten/canal/{Block?.Variant["type"]}.json"
+            )
+          );
+          if (baseShape == null)
+            return null;
 
-        if (rotX != 0 || rotY != 0 || rotZ != 0) {
-          Vec3f center = new(0.5f, 0.5f, 0.5f);
-          _baseMesh.Rotate(center, rotX, rotY, rotZ);
+          tesselator.TesselateShape(Block, baseShape, out MeshData built);
+          if (Block?.Shape != null) {
+            float rotX = Block.Shape.rotateX * GameMath.DEG2RAD;
+            float rotY = Block.Shape.rotateY * GameMath.DEG2RAD;
+            float rotZ = Block.Shape.rotateZ * GameMath.DEG2RAD;
+
+            if (rotX != 0 || rotY != 0 || rotZ != 0)
+              built.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), rotX, rotY, rotZ);
+          }
+          return built;
         }
-      }
-    }
+      );
     if (_baseMesh != null)
       mesher.AddMeshData(_baseMesh);
 

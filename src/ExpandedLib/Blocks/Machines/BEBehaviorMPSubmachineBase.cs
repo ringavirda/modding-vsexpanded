@@ -16,8 +16,6 @@ namespace ExpandedLib.Blocks.Machines;
 /// </summary>
 public abstract class BEBehaviorMPSubmachineBase(BlockEntity blockentity)
   : BEBehaviorMPBase(blockentity) {
-  private MeshData? _baseMesh;
-
   /// <summary>
   /// The network-discovery face in the placed orientation. The base seeds
   /// <see cref="BEBehaviorMPBase.OutFacingForNetworkDiscovery"/> from it and derives the axle's rotation
@@ -36,10 +34,6 @@ public abstract class BEBehaviorMPSubmachineBase(BlockEntity blockentity)
       OutFacingForNetworkDiscovery.Axis == EnumAxis.X ? [-1, 0, 0] : [0, 0, -1];
   }
 
-  /// <summary>Drops the cached static body mesh so the next tesselation rebuilds it. Call after an
-  /// in-place orientation change, as the generator does when the engine snaps it.</summary>
-  protected void ResetBaseMesh() => _baseMesh = null;
-
   protected override CompositeShape GetShape() =>
     new() {
       Base = Block.Shape.Base.Clone(),
@@ -52,26 +46,42 @@ public abstract class BEBehaviorMPSubmachineBase(BlockEntity blockentity)
     ITerrainMeshPool mesher,
     ITesselatorAPI tesselator
   ) {
-    if (_baseMesh == null) {
-      AssetLocation shapeLoc = Block
-        .Shape.Base.WithPathPrefixOnce("shapes/")
-        .WithPathAppendixOnce(".json");
-      Shape? shape = Api.Assets.TryGet(shapeLoc)?.ToObject<Shape>();
-      if (shape != null) {
-        // Render the whole body except the Axle* elements; vanilla's MP renderer spins those.
-        Shape baseShape = shape.Clone();
-        baseShape.Elements = baseShape
-          .Elements.Where(e => !e.Name?.StartsWith("Axle") ?? true)
-          .ToArray();
-        tesselator.TesselateShape(Block, baseShape, out _baseMesh);
-        ExMesh.RotateByShape(_baseMesh, Block);
-      }
-    }
-
-    if (_baseMesh != null)
-      mesher.AddMeshData(_baseMesh);
+    // Keyed on the block code alone: the body mesh is a pure function of the blocktype's shape and its
+    // rotateY, and the engine snapping a generator onto another axis does it with ExchangeBlock, so the
+    // new orientation arrives as a different code and misses this entry rather than reusing it.
+    if (
+      Api is ICoreClientAPI capi
+      && ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        "body",
+        () => BuildBody(tesselator)
+      )
+        is { } body
+    )
+      mesher.AddMeshData(body);
 
     base.OnTesselation(mesher, tesselator);
     return true;
+  }
+
+  private MeshData? BuildBody(ITesselatorAPI tesselator) {
+    if (
+      ExMeshCache.LoadShape(Api, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
+      return null;
+
+    // Render the whole body except the Axle* elements; vanilla's MP renderer spins those.
+    Shape body = shape.Clone();
+    body.Elements = body
+      .Elements.Where(e => !e.Name?.StartsWith("Axle") ?? true)
+      .ToArray();
+    tesselator.TesselateShape(Block, body, out MeshData mesh);
+    // Inside the factory, not on the way out: the cached mesh is shared by every instance of this
+    // blocktype and Rotate mutates in place, so rotating a returned one turns the body a further
+    // rotateY on every tesselation.
+    ExMesh.RotateByShape(mesh, Block);
+    return mesh;
   }
 }

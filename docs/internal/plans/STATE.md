@@ -1,0 +1,252 @@
+# STATE — status and open decisions
+
+Last updated 2026-08-12. **This file owns two things and nothing else: *status* and *open decisions*.**
+It is the answer to "what is actually true right now". It does not own numbers, mechanics or lore — those
+live on the entity pages — and it does not own sequencing, which lives in `docs/internal/plans/` with
+[NEXT.md](NEXT.md) as the entry point.
+
+---
+
+## Blockers — the game does not work without these
+
+The list keeps its original B-numbers because other pages cite them. Numbers absent from the table are
+fixed and no longer carried; line citations are kept only where re-verified — where the source has moved,
+the class name is the anchor.
+
+| # | Blocker | Evidence |
+|---|---|---|
+| ~~B3a~~ | ~~**The mill's feed path rejects fresh stock.**~~ **Fixed 2026-08-11.** `WorkPiece.FromStack` now falls back to `stack.Collectible.Attributes` when the stack tree carries no `stockForm`, so fresh stock off the grid is a work piece. Stack state still wins once a piece has been rolled | `WorkPiece.FromStack` |
+| ~~B3b~~ | ~~**The mill never produces its product.**~~ **Mechanism built 2026-08-12.** `ClaimFinishedPiece` calls `OutputAt` from `CompletePass`: an even piece whose stage names an output is swapped for that item, heat carried across; otherwise it ejects stock for the shear. All four stale codes deleted (two contradicted settled rulings). ⛔ **The remaining gap is the key, not the wiring**: `Outputs` is keyed on gap alone, and flat 1.0 yields `nailplate` from a `rolledrod` but plate from a bloom — the key must become **(form, gap)** before the catalogue can be written | `BlockEntityRollingMill.ClaimFinishedPiece`, `RollSetSpec.Outputs` |
+| **B3c** | **No rolled product item exists.** The catalogue (`rolledrod`, `rod`, `nailplate`, `beam`, `blank`, `skelp`, `heavyplate`, `boilerplate`) has no `ExItemDef` anywhere. Art is drawn for four of them in `assets/editable/shapes/items/rolled/` (`beam`, `nailplate`, `rivetrod`, `rod`) and **none is exported** to `assets/iwex/shapes/`. The shear station that claims most of them is also unbuilt | `docs/design/items/rolled-parts.md`, `docs/design/machines/shear.md` |
+| ~~B4~~ | ~~**`grooved` cannot bite fresh stock.**~~ **Fixed 2026-08-12.** Gaps are `[2.5, 2.0, 1.5, 1.0]` (owner's numbers; the groove bottoms at 1.0), every step a 0.5 draft inside δ_max 1.0. Outputs are now `[]` — both stages are shear crops. Guarded behaviourally by `ShippedRollSetTests` — every shipped ladder must be walkable from its accepted form's fresh thickness, which a golden alone never checked | `RollSetItemDefinitions` |
+| **B5** | **hpex's rolled-pipe tier is uncraftable.** Four live blocktypes, four shapes, zero recipes | `hpex/Recipes/` carries machine recipes only |
+| **B6** | **The "mandatory" pressure valve cannot be installed on an HP line.** It is lpex-domain (flanged), so welded hpex pipe refuses to couple it; and its gate clamps below the Cornish engine's engage pressures | `BlockEntityPressureValve`, `HpexConfig` |
+| **B15** | **The crucible furnace (designed) cannot reach crucible-steel heat** on the flat natural-draught factor — it settles ~1082 °C against the ~1600 the process needs. The stage-height draught model is the planned fix | `BlockEntityFurnaceCore` draught model |
+| ~~B17~~ | ~~**The mill's deck can only reach 2 of 4 gap zones.**~~ **Fixed 2026-08-12.** `IsInputDeck` now accepts the whole `MillFeed.DeckCells` row rather than the single cell beside the stand, so a click reaches the full barrel. It was worse than recorded: for **any** gap count above one the widest gap — the only one fresh stock can enter at — was unreachable, since the reachable span was the last third | `BlockEntityRollingMill.IsInputDeck`/`DeckRow` |
+| **B18** | **A refused pipe joint does not leak.** `ClassifyOpenings` counts an open face as a leak only when the neighbour block is air, so a welded segment butted against a cast one produces no leak, no warning and no signal — B6 is silent in play | `PipeNetwork.ClassifyOpenings` (exlib) *(re-verified 2026-08-07)* |
+| **B19** | **The cast pipe segments have no recipe at all** — the cast tier is creative-only, and the source comment admits it | `lpex MachineRecipeDefinitions` |
+| **B20** | **The Watt engine costs no gear.** Its pattern `_H_,PRP,PIP` has no `G` cell while the def declares a gear ingredient, so the gear is free | `lpex MachineRecipeDefinitions.WattEngine` *(re-verified 2026-08-07)* |
+| **B21** | **Sub-machine → engine lookup is off by 90° in every orientation**, so every sub-machine binds through a fallback loop that never verifies the engine points back — two engines two cells apart can cross-bind | `BlockEntityEngineSubmachine` |
+| **B23** | **The Bessemer vessel cannot be built at all — in survival or creative.** RCC stage 3 requires `lpex:pipe-straight-ns-{metal}`, but the pipe blocktype declares no `{metal}` group, and `ExConstruction` resolves ingredients before the creative shortcut and hard-fails a non-wildcard miss. The one-token fix lands on `lpex:pipe-straight-ns`, which has no recipe (B19). Two independent walls | `BlockConverterBessemer.cs:108` *(re-verified 2026-08-07)*, `ExConstruction` |
+| **B24** | **The rolled-joint test is a tautology.** It asserts `OpeningsCount > 0`, which comes from the rig's unsealed free end, not from the refused joint — so it passes identically whether the joint couples or not. B18 is exactly the bug it was written to catch | `RolledJointTests` |
+
+Fixed and dropped from the table: B1/B7 (iwex recipes reaching into lpex — iwex ships its own pipe and
+gear), B2 (withdrawn — the 1420 °C stall is the taught coke trade, named by the furnace every tick; the
+residual is band tuning), B8's ignition half (the firebox threshold is derived from the firebox's own cell
+count; the puddling *process* is still unwritten, which is shell status, not a blocker), B9–B11 (molten
+flow and blast-draw order), B13 (the hearth parts ship their own filler footprints), B14 (the casting bed
+carves on the server), B16 (hopper columns rotate with the structure), B22 (the hpex migration names its
+two extracted paths literally, with a coverage guard test).
+
+Unverified, carried as a question rather than a claim: **B12** — a castbloom stage-length soft-lock
+recorded against the retired forming spec. The forming line has since been resettled
+([forming stock](../../design/items/stock.md)); re-check when cast stock lands.
+
+### Other known defects
+
+* **The ×3 literal is in both sub-machines**: it makes the fluid pump **15 L/s** (documented 5) and smex's
+  blower **43.2 L/s** (documented 14.4). It survived because no test asserts any pump's rate as a number —
+  they all check only "water moved / did not move".
+* **The steam hammer's drawn mesh does not fit its declared footprint**: 57 voxels tall against 48 for
+  three cells, and the `HandLeaver` reaches into the west neighbour. All four clips are authored `EaseOut`
+  where `hammerhit` must `Repeat`.
+* **The density rule is not yet applied to casting.** The shipped mold cavities use inconsistent implicit
+  densities, and the `materialUnits` JSON attribute is written on every item and never read by any mod
+  code — machines read the C# constants. The settled masses land as one batch
+  ([economy-landing](../../design/items/economy-landing.md)).
+* **Molten throughput is still not one number.** The taps read `TapDrainPerTick = 50` and the canal edge
+  is 50, but the bed/cell pull is a hard-coded 25 and the furnace hand-down a hard-coded `min(20, pool)`,
+  and the mold pedestal has no rate cap at all. D5b wants 50 u/s everywhere, from config.
+* **N1 is contradicted by shipped data.** `bessemersteel.json` ships `generateItemFamily: true` **and**
+  `tools: {preset: "good"}` *(re-verified 2026-08-07)* — so Bessemer steel currently makes pickaxes and
+  knives, against the blown-iron ruling.
+
+---
+
+## The ladder — what a player actually does
+
+**live** = works in game · **shell** = block stands, logic missing · **designed** = spec only ·
+**art** = drawn, not wired.
+
+### Tier 1 — iwex (iron, water + cast iron)
+
+```
+coal ──▶ beehive coke oven [designed] ──▶ coke
+ore ──▶ crusher ──▶ burdenmaker [live] ──▶ burden ───┐
+                    (lime in, no power)              ├──▶ tall hopper [live]
+coke ────────────────────────────────────────────────┘   (one material per load)
+                                                                            │
+   twin-tub MP blower [live] ──blast──▶ COLD BLAST FURNACE [live] ◀─────────┘
+                                            │ molten canal [live]
+              ┌─────────────────────────────┼──────────────────────────────┐
+              ▼                             ▼                              ▼
+      pig beds [live]              cupola [live]                   (later: converter)
+      pigs 375u                    remelt ──▶ cast iron
+              │                             │
+              │                    sand cells [live] / long cell [ART ONLY]
+              │                             ▼
+              │                    CAST PARTS — castplate-heavy [live], castframe/
+              │                    cylinder/gearblank/axle/flywheelpart [ART ONLY]
+              ▼
+      puddling furnace [shell] ──▶ wrought balls ──▶ helve [vanilla] ──▶ shingledbar
+                                                                            │
+      reheat furnace [shell*] ──reheat──▶ ROLLING MILL [live but B3] ◀──────┘
+                                            │
+              ┌──────────────┬──────────────┼───────────────┐
+              ▼              ▼              ▼               ▼
+          rolledrod        beam       game:metalplate    (wide: needs lpex)
+              │
+        ┌─────┴─────┐          ← the fork: same 4 feeds, same 100 u, either way
+        ▼           ▼
+   grooved 1.0   flat 1.0
+   rivetrod      nailplate
+        │           │
+   rivet machine  nail machine   [both designed] ──▶ rivets · nails-and-strips
+                                  shear [designed] — owns every crop
+```
+
+\* The reheat furnace is further along than its own doc says: the hearth rows and all five part blocks
+**are** built (`BlockEntityHeatingHearth`). Only the heat-into-stock is missing.
+
+**Side choices at this tier:** cast parts vs wrought parts · rivets vs nails per rod · which burden grade.
+
+### Tier 2 — lpex (steam)
+
+```
+Cornish boiler [live] ──▶ Watt engine [live] ──▶ MP + cast pipes [live]
+                                    │
+              ┌─────────────────────┼──────────────────┐
+              ▼                     ▼                  ▼
+      STEAM HAMMER [designed]   WIDE HALL          boring machine
+      6 balls → shingledslab    4 mills 2.5→1.0    [designed]
+      + STAMPING                [designed]
+              │                     │
+              ▼                     ▼
+      boilerplate ──stamp──▶ 3 × metalplate    heavyplate
+```
+
+### Tier 3 — smex (steel)
+
+```
+hot blast furnace [live] + cowpers [live] ──▶ molten pig
+                                   │
+                    ┌──────────────┴──────────────┐
+                    ▼                             ▼
+          BESSEMER [live]                OPEN HEARTH [designed]
+          volume · structural            slow · quality · alloys · bulk scrap
+                    └──────────────┬──────────────┘
+                                   ▼
+                            ladle [designed]
+                                   ▼
+                        long cell ──▶ castbillet · castbloom · castslab
+                                   ▼
+                        +2 mills (3.5/3.0) ──▶ the wide hall extended
+                                   ▼
+                        bending roller (conical rolls) ──▶ skelp ──▶ rolled pipe
+```
+
+**Side choices:** Bessemer vs open hearth (by what the product must guarantee) · direct-charge vs pig beds.
+
+### Tier 4 — hpex · Tier 5 — elex
+
+hpex ships two live machines and four live pipe blocktypes but is **blocked by B5 and B6**, and its
+material gate (hadfield) **does not exist in code**. elex is **deferred**; [scope.md](../../design/scope.md) owns the
+deferral ruling and its carve-outs — this file keeps only the status word.
+
+---
+
+## Settled decisions
+
+Short dated statements; the reasoning lives on the owner pages.
+
+| # | Settled | Ruling |
+|---|---|---|
+| **D1** | 2026-07-29 | Pig mass **375 u** (5 × 3 × 10 vx³ under R9). Full bed **7500 u**; puddling charge = 9 pigs = **3375 u**. Shipped (`ItemPig.PigUnits`) — [pig](../../design/items/pig.md) |
+| **D2** | 2026-07-29 | Cast plate **`castplate` 10 × 2 × 10 = 500 u**, density-consistent. The **rolled** plate is a *separate item* — rolled steel, not cast iron. Every cast structural part gets a fabricated-steel substitute (see N3) — [cast-parts](../../design/items/cast-parts.md) |
+| **D3** | 2026-07-29 | **Alloys inherit their base's properties** as a *continuous penalty*, never a lockout: critical machinery built from lesser steel gets a lower max pressure — [alloys](../../design/items/alloys.md) |
+| **D4** | 2026-07-29 | Converter capacity **6000 u** — see Open for the pig-vs-steel accounting |
+| **D5b** | 2026-07-29 | **One number for the whole molten network: 50 u/s** — tap, bed pull and canal, because it is the same canal. Two sites are still hard-coded (see defects) |
+| **D6** | 2026-07-29 | Alloying happens **in the open-hearth bath, primarily**; the ladle can do it too — a second option, not a replacement |
+| **D7** | 2026-07-29 | **Wire exists, in elex.** The iron-tier rejection stands |
+| **D8** | 2026-07-29 | **Non-ferrous later.** The release target is the complete ferrous line — owned by [scope.md](../../design/scope.md) |
+| **D9** | 2026-07-29 | **Crucible steel is the tool/weapon reward** — Huntsman 1740, iwex, one pot at a time, built in banks. Vanilla `game:steel` (shear steel) becomes crucible feedstock — [crucible-furnace](../../design/machines/crucible-furnace.md) |
+| **N1** | 2026-07-29 | **Blown iron**: Bessemer steel is structural, never tool-grade — [blown-iron](../../design/items/blown-iron.md) |
+| **N2** | 2026-07-29 | **Bearings are in**, hpex tier only, required by HP machines: chrome-steel balls + a rolled ring race. Earlier machinery abstracts journal bearings into build cost — [bearings](../../design/machines/bearings.md) |
+| **N3** | 2026-07-29 | **All cast parts get fabricated substitutes** — beam + plate + rivets for frames, bent shells on the bending roller for shells/barrels/rims. The HP hammer's frame is in tension and is the first that **must** be fabricated — [fabrication](../../design/processes/fabrication.md) |
+| **E1–E4** | 2026-08-12 | **Extensibility is a product target.** Other mods must be able to add tooling to diagram crafting, sand casting, rolling, the steam hammer and the machining line. Both routes (JSON attributes primary, public C# registration API alongside); the die carries its job spec; **every spec attribute is versioned**; and this layer lands **before** the tier spine — the schemas are a public contract, so breaking changes go first. Plan: [extensibility](2026-08-12-extensibility.md) |
+| **F1** | 2026-08-12 | **Framework composition A0–A4 complete.** Form / process / membership are three independent axes; the block-entity base slot belongs to form. [staging](2026-08-10-framework-composition-staging.md) · [design](../../design/mechanics/framework-composition.md) |
+
+D5a is retired: the pile-cap question dissolved when charge capacity became furnace geometry
+(`ChargeCapacityUnits`, 2026-08-06) and the fire-threshold constants were deleted with it.
+
+Later rulings, one line each:
+
+* **Ferroalloys (2026-07-29)** — the cold blast furnace's permanent job: FeMn, FeCr and later FeSi as
+  burden-family campaigns on the existing block. Run it cold and pay in coke, or hot and pay in
+  throughput. Large additions (spiegel, hadfield-scale Mn) are melted in the **cupola** and poured — a
+  cold charge that size freezes the heat; small ones are thrown in solid. Chill is the mechanic, no gate.
+  Powdered coke is not a substitute: carbon alone cannot deoxidise burnt Bessemer metal — the manganese
+  does, which is why FeMn is mandatory after a blow — [recarburising](../../design/processes/recarburising.md),
+  [alloying](../../design/processes/alloying.md).
+* **Cupola vs crucible (2026-07-29)** — fuel contact decides: the cupola carburises (right for cast iron
+  and ferroalloys), the crucible's sealed pot stays clean (right for tool steel, later non-ferrous).
+  Two crucible machines: the ferrous **draft furnace** (natural draught, tall stack, ~1600 °C, tongs) and
+  the deferred non-ferrous **tilting crucible**. Hole count sets throughput; chimney height sets
+  temperature — [crucible-furnace](../../design/machines/crucible-furnace.md),
+  [tilting-crucible](../../design/deferred/non-ferrous/tilting-crucible.md).
+* **Bending (2026-07-29)** — cold and multi-pass: the mill walks thickness *down* in gaps, the bender
+  walks curvature *up* in passes, so `WorkPiece` gains a curvature axis. A separate block, because three
+  rolls bend and two reduce. Welding is implied by placement, not a verb —
+  [bending-roller](../../design/machines/bending-roller.md), [bending](../../design/processes/bending.md).
+* **Fasteners (2026-07-30)** — two machines, two routes, **no dies, no bolts**: the nail machine shears
+  and heads nailplate in one pass; the rivet machine cuts and upsets rod @ 25 u; both **iwex**. iwex
+  machines accept nails or rivets (merely structural = substitutable); lpex's boiler requires rivets
+  (must-hold-pressure = not) — [fasteners](../../design/items/fasteners.md).
+* **Placement (2026-07-29)** — a machine lives with the content it **feeds**, not what it is made of. The
+  test: an iwex-only player gets a complete early-19th-century loop — cast, puddle, roll, fasten — with no
+  dangling ends pointing at steam, and iwex recipes never reach into lpex.
+* **Power progression (2026-07-29)** — the producer changes, the network does not: lpex swaps the
+  waterwheel for a steam engine at the flywheel's hub and everything downstream is untouched. Steam's
+  advantage is siting and reliability, not raw power, and the flywheel is never obsoleted —
+  [mp-energy](../../design/mechanics/mp-energy.md).
+* **The open hearth is a blown furnace (2026-07-29)** — natural draught settles ~1082 °C; blown it reaches
+  the bath's working range, with the regenerator feeding the intake and buying speed, not possibility
+  (R5) — [open-hearth](../../design/machines/open-hearth.md).
+* **The ladle pulls by code (2026-07-29)** — it never joins the molten graph, so R3's merge mechanic needs
+  no exlib change — [ladle](../../design/machines/ladle.md).
+
+---
+
+## Open
+
+* **The cycle rate** stays deliberately loose for play-testing.
+* **D4's accounting.** `CapacityUnits` gates the **pig** charge and the blow sheds 10 %, so 6000 u of pig
+  yields 5400 u of steel = 1.8 slab pours, not 2. Either the capacity becomes 6667 u of pig, or D4 is
+  restated as a *steel* capacity and the fill gate changes with it.
+* **Ladle sizing.** 5400 u of steel + 12.5 % Mn = 6171 u, over a 6000 u ladle. And ferroalloy additions
+  move manganese and carbon **together** (FeMn is high-carbon by definition), so a single-element model
+  silently misses hadfield's ~1.2 % C target.
+* **Producer gas has no path through any existing system** — four independent gaps the open hearth depends
+  on: the cowper soaks *sensible* heat only and cannot burn a fuel gas; `Medium == "Air"` is tested
+  literally, so a fourth gas is silently inert at every furnace (violating R7); two gases always mix; and
+  the heat balance has no gas-fuel term. Also "producer gas is never stored" must be a **rate rule at the
+  machines** — a pipe run *is* storage. Owned by [gas-system](../../design/mechanics/gas-system.md) and
+  [gas-producer](../../design/machines/gas-producer.md); recorded here as status.
+* **`BridgeDriveTorque` tuning** — how much a single vanilla waterwheel actually buys decides whether the
+  iron tier feels powered or starved, and nothing on paper fixes it.
+* **hpex's material gate (hadfield) does not exist in code.**
+* **The full-shaft anchor** (a full shaft ≈ one casting bed) has not been re-checked against the
+  geometry-derived capacity — see [burden](../../design/items/burden.md) § Open.
+
+---
+
+## What "complete" looks like
+
+The release target — a player walks `exlib → iwex → lpex → smex → hpex` without leaving the spine — is
+owned by [scope.md](../../design/scope.md). Today the walk breaks in three places: the mill's forming path
+(B3b, B4, B17 — B3a's feed half was fixed 2026-08-11), the missing long cell (the cast-stock route),
+and hpex (B5, B6, B23).
+
+Everything else is polish. The frameworks are mature, the networks work, the heat balance is calibrated,
+and the test harness is real. **The gap is not capability — it is that the last mile of each tier was
+never wired to the next.**

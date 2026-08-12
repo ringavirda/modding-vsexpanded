@@ -1,9 +1,11 @@
 [
   {
+    "comment": "Disables EM's hammer recipe that crushes 1 game:coke into 4 em:crushed-ore-coal. Coke is a carbon reagent here, not a bulk fuel, so a 1-to-4 hand multiplier undercuts the whole coke oven. The VS patch system has no key-based array addressing, so the recipe can only be named by its index: /2 is the THIRD entry of em:recipes/grid/crushing.json, verified against EM 3.7.0, where the entries are (0) charcoal, (1) bituminouscoal+anthracite ore, (2) coke. Re-verify this index on every EM bump - if EM inserts or reorders a recipe this silently disables a different one, with no error.",
     "file": "em:recipes/grid/crushing.json",
     "op": "add",
     "path": "/2/enabled",
     "value": false,
+    "side": "Server",
     "dependsOn": [{ "modid": "em" }]
   }
 ]

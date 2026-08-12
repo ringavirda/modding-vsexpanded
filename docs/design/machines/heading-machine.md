@@ -13,7 +13,7 @@
 [rolling mill](rolling-mill.md) (the `grooved` schedule that makes rod) ·
 [nail machine](nail-machine.md) (shares this page's `ItemDie` contract and the BE base - not the shape) ·
 [multiblock & fillers](../mechanics/multiblock.md) · [density rule](../mechanics/density-rule.md) ·
-[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../plans/STATE.md)
+[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../internal/plans/STATE.md)
 
 ---
 
@@ -21,7 +21,7 @@
 
 A bolt-and-rivet header: a short length of rod is gripped, and a die upsets a head onto the end of it. Fig 1 of the 1867 machine-tool plate is captioned "rivet making machine" and the same machine made bolts - the die was the whole difference, which is why this is one block with a tooling slot and not two blocks.
 
-It is not a "rivet machine", and the distinction is a placement rule. Rivets belong to lpex: a rivet makes a joint that is strong and tight, so it arrives with the first thing that holds pressure - the boiler. Nails and bolts are strong but not tight, and they are the iron tier's fasteners. Putting the machine in lpex would strand the `grooved` 1.0 gap, whose product is the 25 u rod: an iwex mill making something only lpex can use is the dangling end the placement rule exists to prevent. Resolution: same rod, same bench, different die ([STATE.md § Fasteners](../../plans/STATE.md)).
+It is not a "rivet machine", and the distinction is a placement rule. Rivets belong to lpex: a rivet makes a joint that is strong and tight, so it arrives with the first thing that holds pressure - the boiler. Nails and bolts are strong but not tight, and they are the iron tier's fasteners. Putting the machine in lpex would strand the `grooved` 1.0 gap, whose product is the 25 u rod: an iwex mill making something only lpex can use is the dangling end the placement rule exists to prevent. Resolution: same rod, same bench, different die ([STATE.md § Fasteners](../../internal/plans/STATE.md)).
 
 | Die | Input | Output | Ships with |
 |---|---|---|---|

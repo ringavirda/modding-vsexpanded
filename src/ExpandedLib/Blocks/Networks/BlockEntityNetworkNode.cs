@@ -1,4 +1,3 @@
-using System.Text.Json;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using Vintagestory.API.Common;
@@ -49,10 +48,7 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
     base.ToTreeAttributes(tree);
     tree.SetString("networkType", NetworkType);
     tree.SetString("orientation", Orientation);
-    tree.SetString(
-      "possibleOrientations",
-      JsonSerializer.Serialize(PossibleOrientations)
-    );
+    tree.SetStrings("possibleOrientations", PossibleOrientations);
     SerializeNetworkState(tree, _savedNetworkState);
   }
 
@@ -63,10 +59,15 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
     base.FromTreeAttributes(tree, worldForResolving);
     NetworkType = tree.GetString("networkType", null);
     Orientation = tree.GetString("orientation");
-    PossibleOrientations = ExTree.SafeDeserialize<string[]>(
-      tree.GetString("possibleOrientations"),
-      []
-    );
+    // Saves written before the string-array cutover hold this key as JSON text under the same name. The
+    // array read returns null on one of those rather than throwing, so the old encoding is simply the
+    // second thing tried; a node loaded that way is rewritten in the new shape on its next save.
+    PossibleOrientations =
+      tree.GetStrings("possibleOrientations")
+      ?? ExTree.SafeDeserialize<string[]>(
+        tree.GetString("possibleOrientations"),
+        []
+      );
     _savedNetworkState = DeserializeNetworkState(tree);
   }
 

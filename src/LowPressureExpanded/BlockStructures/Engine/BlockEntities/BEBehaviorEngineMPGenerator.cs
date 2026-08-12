@@ -29,10 +29,10 @@ public class BEBehaviorEngineMPGenerator(BlockEntity blockentity)
   /// <summary>
   /// Re-applies the axle orientation after a side-variant change. The engine snaps the generator with
   /// <c>ExchangeBlock</c>, which keeps this behavior alive so <see cref="Initialize"/> never re-runs;
-  /// this rebuilds the rotated base mesh and re-seeds the connectors onto the new axis.
+  /// this re-seeds the connectors onto the new axis. The body mesh needs no hand-off: it is cached
+  /// against the block code, and the exchange has already given this behavior a different one.
   /// </summary>
   public void OnOrientationChanged() {
-    ResetBaseMesh();
     SetOrientations();
     if (Api.Side == EnumAppSide.Server && OutFacingForNetworkDiscovery != null) {
       tryConnect(OutFacingForNetworkDiscovery);

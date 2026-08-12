@@ -227,6 +227,11 @@ gesture instead, because a roll set is a profile rather than a consumable.
 
 ## The job convention
 
+**`MachineJob` lives in exlib** (settled 2026-08-11), alongside `ItemDie`. Both are mechanics rather
+than content: a mod adding rails to our mill should depend on the framework, not on a mod full of
+furnaces. It hangs off `BlockEntityMachineStation`, exlib's container-plus-window base, which the
+rolling mill already derives from.
+
 `MoldSpec` and `RollSetSpec` differ on one axis — **terminal versus sequence**. The four machine tools
 are terminal; the mill and the bender are sequences. One schema covers both when the sequence is
 optional.
@@ -267,6 +272,12 @@ mirrored by `DiagramItemDefinitions.Itemtype`. That is the proven pattern and th
 follows it.
 
 ### Two pre-existing blockers this convention inherits
+
+✅ **One of the two is fixed (2026-08-11).** "Nothing can be rolled at all today" was exactly right:
+`WorkPiece.FromStack` read `stockForm` from the **stack tree** while `StockItemDefinitions` declares it
+on the **item type**, so every unrolled piece was refused as `WrongForm`. `FromStack` now falls back to
+the item type, stack state still winning once a piece has been rolled. `StockForm.All` being a closed
+static dict with no registration hook is untouched and still blocks a third-party stock form.
 
 ⛔ **`StockForm.All` is a closed static dictionary with no registration hook**
 (`StockForm.cs:53-57`). A third party's `accepts` value dead-ends at `WrongForm`. This is the literal
@@ -319,7 +330,7 @@ plays, and all four roll families render at once. The render layer is greenfield
 | 3 | The scale/swarf item and its remelt sink, without which the planer's slab route mints nothing | high |
 | 4 | Masses for every machined part and blank. [density rule](density-rule.md) has no settled figure for hollow or toothed geometry, which is what all of these are | high |
 | 5 | The hand gear's exact bill and durability cost, against the shaper route, so the ladder is a real choice | medium |
-| 6 | Whether `MachineJob` lives in exlib or iwex. It is the same cross-mod question `ItemDie` has | medium |
+| ~~6~~ | ~~Whether `MachineJob` lives in exlib or iwex~~ — **settled 2026-08-11: exlib**, and `ItemDie` with it. Both are mechanics other mods consume, which is the whole point of the string-keyed `Machine` field; a contract living in iwex would force a dependency on a *content* mod to use it. The station they hang off is already there — `BlockEntityMachineStation` | closed |
 | 7 | Seconds and `MinTorque` per job — none proposed anywhere | medium |
 | 8 | Footprints. The planer is 73 × 64 × 46 voxels and the bender 74 × 58 × 41; both overhang their cell heavily on negative axes | medium |
 | 9 | The drill press has one consumer (the gear web) and no shape yet. It needs a second job before it is more than a step in one chain — the test every other machine here had to pass | medium |

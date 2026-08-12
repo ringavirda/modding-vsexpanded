@@ -2,7 +2,7 @@
   {
     "comment": "Tag vanilla's crushed iron ore as fettle stock, so one recipe slot can take it interchangeably with iwex's recovered oxides (tap cinder, mill scale). Uses tagsByType rather than a top-level tags array because crushed.json is one itemtype covering every ore - crushed galena and cassiterite are not iron oxides and must not fettle. The '*': [] catch-all mirrors vanilla's own powder.json, which tags only '*-borax' as flux the same way; without it the untagged variants have no entry to resolve.",
     "file": "game:itemtypes/resource/crushed/crushed.json",
-    "op": "add",
+    "op": "addmerge",
     "path": "/tagsByType",
     "value": {
       "*-iron": ["fettlestock"],

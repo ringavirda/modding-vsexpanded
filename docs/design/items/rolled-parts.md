@@ -56,7 +56,7 @@ The mill only ever makes stock; the shear turns a stage into a product; this pag
   ([rolling mill](../machines/rolling-mill.md)), so the reduction simulator terminates in nothing.
 - Every cast-iron structural part gets a rolled/fabricated equivalent built from beam + plate + rivets
   through the RCC dual path, which is what gives `beam` and the wide plates a consumer list
-  ([STATE.md § D2](../../plans/STATE.md)).
+  ([STATE.md § D2](../../internal/plans/STATE.md)).
 
 No route mints a unit against the hand route. The chain is conserved end to end: one 400 u bar is 2 plates or
 4 rods or 16 nails, and 4 nails per 100 u is vanilla's own anvil rate
@@ -153,7 +153,7 @@ rivets are an ingredient.
 
 ## `heavyplate` is not `castplate`
 
-Two items ([STATE.md § D2](../../plans/STATE.md)):
+Two items ([STATE.md § D2](../../internal/plans/STATE.md)):
 
 | | `castplate` | `heavyplate` |
 |---|---|---|

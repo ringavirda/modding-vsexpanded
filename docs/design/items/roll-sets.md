@@ -39,7 +39,7 @@ see [The cross-mod emit question](#the-cross-mod-emit-question).
 **Depends on** [rolling mill](../machines/rolling-mill.md) · [wide hall](../machines/wide-hall.md) ·
 [steel roll sets](../machines/steel-roll-sets.md) · [shear](../machines/shear.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [density rule](../mechanics/density-rule.md) ·
-[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../plans/STATE.md)
+[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
 
 ---
 
@@ -122,7 +122,7 @@ a 4-wide barrel, and `flatwide` splits from one four-gap item into six one-gap i
 Bending is not a roll-set job. The [bending roller](../machines/bending-roller.md) walks curvature up in
 passes while the mill walks thickness down in gaps; `WorkPiece` has no curvature axis, so expressing a bend as
 a `gaps` array would mean an array that silently means something else
-([STATE.md § Bending is a separate machine](../../plans/STATE.md)). Blade sets for the
+([STATE.md § Bending is a separate machine](../../internal/plans/STATE.md)). Blade sets for the
 [shear](../machines/shear.md) and die sets for the [steam hammer](../machines/steam-hammer.md) are separate
 tooling families with their own attribute keys, not roll-set variants - see [dies](dies.md).
 
@@ -356,4 +356,4 @@ What it costs, and nobody has written it down:
 | 5 | **A recipe - any recipe - for any set** | the cast-blank route is implied by `item-rollers-castblank.json` and needs a [pattern](patterns.md) entry first |
 | 6 | **Does `RollSetSpec` move to exlib?** | Three mods will ship sets, and the identical question is open for `ItemDie` ([heading machine § Open](../machines/heading-machine.md)). `MoldSpec` set the precedent by staying in iwex (`MoldSpec.cs:6`); nobody has re-examined it since the family grew to three |
 | 7 | **Should the idiom carry `MaxWidth`?** | [wide hall](../machines/wide-hall.md) settles that `MaxWidth` moves off `StockForm` onto the roll set. That is a sixth field on the record and a golden change for every shipped set |
-| 8 | **Delete `slitting`** | translated into three languages, accepts a non-form, and is deleted by the settled design ([STATE.md § Remove](../../plans/STATE.md)) |
+| 8 | **Delete `slitting`** | translated into three languages, accepts a non-form, and is deleted by the settled design ([STATE.md § Remove](../../internal/plans/STATE.md)) |

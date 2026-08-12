@@ -10,7 +10,7 @@ namespace IronworkingExpanded.Recipes.Grid;
 /// they are cast rather than fabricated, so their recipes belong with the casting patterns.
 /// <para>
 /// The mill is buildable before it is useful - no stock item resolves a work piece and no product comes off
-/// the rolls yet. See docs/plans/iwex-bringup.md, Stage 4.
+/// the rolls yet. See docs/internal/plans/iwex-bringup.md, Stage 4.
 /// </para>
 /// </summary>
 public class FormingRecipeDefinitions : IExRecipeDefProvider {

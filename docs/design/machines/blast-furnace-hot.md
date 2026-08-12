@@ -14,7 +14,7 @@
   `smex:hopperbell` (magazine + drip), including their capacities and how the drip reaches the shaft;
 * the construction of all three smex blocks, and the fact that the core is absent from the recipe-cost
   catalogue;
-* the enlarged draft layout in [layouts.md](../../workbench/layouts.md) § 1 - recorded as deferred.
+* the enlarged draft layout in [layouts.md](../../internal/workbench/layouts.md) § 1 - recorded as deferred.
 
 **Does not own** - cited only, never restated:
 [heat balance](../mechanics/heat-balance.md) (the `T_process` law, the preheat term, the raceway rate model,
@@ -73,7 +73,7 @@ Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the nega
 |---|---|
 | Definition (nine ASCII cross-sections, y = 0 → y = 8) | `BlockBlastFurnaceCoreHot.cs` |
 | Golden (the arbiter) | `test/SteelmakingExpanded.Tests/goldens/smex/blocktypes/blastfurnace/core.json` |
-| Round-tripped copy for editing | [layouts.md](../../workbench/layouts.md) § Section 2, "Hot blast furnace" |
+| Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2, "Hot blast furnace" |
 
 ### Cell census — 147 offsets
 
@@ -380,7 +380,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
 
 ## Open
 
-1. Deferred - the enlarged draft. [layouts.md](../../workbench/layouts.md) § 1 carries a 4 × 4-shaft
+1. Deferred - the enlarged draft. [layouts.md](../../internal/workbench/layouts.md) § 1 carries a 4 × 4-shaft
    redesign (four tuyeres, four exhaust outlets, four bell cells, no reinforced hopper). It is recorded,
    not scheduled. It predates the charge-column cutover and the typed-tap rename, so its legends are known
    to be stale (block codes that no longer exist, a slag-tap legend that duplicates the metal tap's) and it

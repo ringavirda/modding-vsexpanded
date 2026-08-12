@@ -23,7 +23,7 @@ config file layout · [density rule](../mechanics/density-rule.md) - owns `1 vx�
 derived from it, including the pig · [blast furnace](blast-furnace-cold.md) - the pig source ·
 [cupola](cupola.md) - the other pig consumer · [rolling mill](rolling-mill.md) and
 [reheat furnace](reheat-furnace.md) - where the wrought product goes next ·
-[ironmaking](../processes/ironmaking.md) · [layouts-workbench](../../workbench/layouts.md) § 1
+[ironmaking](../processes/ironmaking.md) · [layouts-workbench](../../internal/workbench/layouts.md) § 1
 
 ---
 

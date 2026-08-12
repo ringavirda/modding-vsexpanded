@@ -401,30 +401,46 @@ public class BlockEntitySandCastingCell : BlockEntity {
       Api is ICoreClientAPI capi
       && CastingCellLogic.FillingShape(_sand, HasImpression, Spec?.Shape)
         is { } shapeRef
-      && LoadShape(shapeRef) is { } shape
-    ) {
-      tesselator.TesselateShape(
-        "sandcastingcell-filling",
-        shape,
-        out MeshData mesh,
-        capi.Tesselator.GetTextureSource(Block)
-      );
-      // The filling shape is authored in the north frame like the shell, so it needs the same rotation
-      // the tesselator bakes into the shell mesh.
-      ExMesh.RotateByShape(mesh, Block);
+      // The state already reduces to a shape reference, so that reference is the key. The block code goes
+      // in with it because the texture source below is the block's.
+      && ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        shapeRef,
+        () => BuildFillingMesh(capi, tesselator, shapeRef)
+      )
+        is { } mesh
+    )
       mesher.AddMeshData(mesh);
-    }
+
     return base.OnTesselation(mesher, tesselator);
   }
 
-  // Resolve a shape reference (e.g. "iwex:casting/cell-filling-base") to its loaded shape asset.
-  private Shape? LoadShape(string shapeRef) {
+  private MeshData? BuildFillingMesh(
+    ICoreClientAPI capi,
+    ITesselatorAPI tesselator,
+    string shapeRef
+  ) {
     var loc = new AssetLocation(shapeRef);
-    return Api
-      .Assets.TryGet(
+    if (
+      ExMeshCache.LoadShape(
+        Api,
         new AssetLocation(loc.Domain, "shapes/" + loc.Path + ".json")
       )
-      ?.ToObject<Shape>();
+      is not { } shape
+    )
+      return null;
+
+    tesselator.TesselateShape(
+      "sandcastingcell-filling",
+      shape,
+      out MeshData mesh,
+      capi.Tesselator.GetTextureSource(Block)
+    );
+    // The filling shape is authored in the north frame like the shell, so it needs the same rotation the
+    // tesselator bakes into the shell mesh.
+    ExMesh.RotateByShape(mesh, Block);
+    return mesh;
   }
 
   #endregion

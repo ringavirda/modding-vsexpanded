@@ -22,7 +22,7 @@ charge column, which is the shaft equivalent and deliberately a different model
 
 **Depends on** [puddling-furnace](puddling-furnace.md) · [reheat-furnace](reheat-furnace.md) ·
 [crucible-furnace](crucible-furnace.md) · [boiler-cornish](boiler-cornish.md) ·
-[boiler-lancashire](boiler-lancashire.md) · [cowper](cowper.md) · [layouts.md](../../workbench/layouts.md) § 1
+[boiler-lancashire](boiler-lancashire.md) · [cowper](cowper.md) · [layouts.md](../../internal/workbench/layouts.md) § 1
 
 ---
 
