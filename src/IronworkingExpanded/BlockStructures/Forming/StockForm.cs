@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace IronworkingExpanded.BlockStructures.Forming;
@@ -49,10 +50,34 @@ public sealed record StockForm(
   /// wide for a narrow barrel from the start, so it runs only on wide rolls.</summary>
   public static readonly StockForm Slab = new("slab", 8f, 3f, 14f, 20f, 0.463f);
 
-  /// <summary>Every form with authored base art, by name.</summary>
-  public static readonly IReadOnlyDictionary<string, StockForm> All =
-    new Dictionary<string, StockForm> {
-      [Bloom.Name] = Bloom,
-      [Slab.Name] = Slab,
-    };
+  // A registry rather than a closed table. A third party's roll set can declare it accepts their own
+  // stock, and without this the piece dead-ends at WrongForm because nothing can add the form itself -
+  // named in machining-line.md as the literal wall on mill extensibility.
+  private static readonly Dictionary<string, StockForm> _all = new(
+    StringComparer.OrdinalIgnoreCase
+  );
+
+  static StockForm() => SeedDefaults();
+
+  /// <summary>Every registered form, by name.</summary>
+  public static IReadOnlyDictionary<string, StockForm> All => _all;
+
+  /// <summary>Registers (or replaces) a form under its own name.</summary>
+  public static void Register(StockForm form) => _all[form.Name] = form;
+
+  /// <summary>Drops a form. There is deliberately no clear: a mod emptying the table would take our stock
+  /// with it, and every shipped roll set with it.</summary>
+  public static void Unregister(string name) => _all.Remove(name);
+
+  /// <summary>Looks up a form by name; <c>false</c> when none is registered.</summary>
+  public static bool TryGet(string? name, out StockForm? form) {
+    form = null;
+    return name != null && _all.TryGetValue(name, out form);
+  }
+
+  /// <summary>Puts the shipped forms back, replacing any override of them.</summary>
+  public static void SeedDefaults() {
+    Register(Bloom);
+    Register(Slab);
+  }
 }

@@ -720,7 +720,7 @@ U6 turns the puddling furnace from a shell that cannot complete, cannot light an
 - Modify: `src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs:1211-1270`, `src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs:193-243`, `src/IronworkingExpanded/IwexConfig.cs:220-230`
 - Test: `test/IronworkingExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs`
 
-**Consumes:** BlockEntityFurnaceCore.ComputeHeatBalance(BurdenMix charge, float blastSupplyFrac, float blastTemp, int mixCount) (:1211); IwexValues.BfChargeLossFull = 310 (IwexConfig.cs:225); IwexValues.BfRadiationLossBase = 120 (:221); HeatBalance.Compute(...) in src/ExpandedLib/Process/HeatBalance.cs
+**Consumes:** BlockEntityFurnaceCore.ComputeHeatBalance(BurdenMix charge, float blastSupplyFrac, float blastTemp, int mixCount) (:1211); IwexValues.BfChargeLossFull = 310 (IwexConfig.cs:225); IwexValues.BfRadiationLossBase = 120 (:221); HeatBalance.Compute(...) in src/ExpandedLib/Heat/HeatBalance.cs
 
 **Produces:** `protected virtual float ChargeLossFull => IwexValues.BfChargeLossFull;` and `protected virtual float TransferLoss => 0f;` on BlockEntityFurnaceCore; firebox-branch overrides (reverberatory transfer loss ≈250, firebox charge loss ≈100)
 

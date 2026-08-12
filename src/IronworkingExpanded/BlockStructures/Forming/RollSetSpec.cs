@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Vintagestory.API.Common;
+using ExpandedLib.Processes;
 using Vintagestory.API.Datastructures;
 
 namespace IronworkingExpanded.BlockStructures.Forming;
@@ -9,23 +8,33 @@ namespace IronworkingExpanded.BlockStructures.Forming;
 /// <summary>
 /// The spec a roll set carries, parsed from the roll-set item's <c>rollset</c> attribute; the tooling owns
 /// the data and the machine only reads it, as the casting patterns do (<see cref="Casting.MoldSpec"/>).
-/// <see cref="Gaps"/> is the sequence cut along the barrel, walked widest first one segment at a time and
-/// never re-gapped, so the spacing enforces <c>δ_max = μ²R</c>. See docs/design/machines/rolling-mill.md.
+/// <para>
+/// It declares what the tooling itself decides - which roller family it is, which stock it will bite, how
+/// wide its barrel is and what torque it needs to turn - and nothing about what the metal becomes. The
+/// states the metal passes through are the stock family's stage ladder, and the pair of them is a
+/// <see cref="MillSchedule"/>, so a set names no product and a new product needs no set edited. See
+/// docs/design/machines/rolling-mill.md and docs/design/mechanics/process-extension.md.
+/// </para>
 /// </summary>
-/// <param name="Family">The roll family: <c>flat</c>, <c>grooved</c>, <c>slitting</c>. Flavour and handbook grouping.</param>
+/// <param name="Schema">Schema version of the declaration, so a parser can read every shipped form.</param>
+/// <param name="Family">The roller family: <c>flat</c>, <c>grooved</c>, <c>slitting</c>. Selects this set's branch of a stage ladder.</param>
 /// <param name="Accepts">Stock forms this set will bite (e.g. <c>bloom</c>, <c>billet</c>, <c>slab</c>). Empty accepts nothing.</param>
-/// <param name="Gaps">The gap sequence cut along the barrel, in the order the stock walks them. Strictly descending.</param>
-/// <param name="Outputs">Gap thickness to what the stock reads as when pulled at that gap.</param>
 /// <param name="BarrelWidth">Usable width of the roll barrel. Stock wider than this cannot be taken in one bite and needs side-by-side passes.</param>
 /// <param name="MinTorque">Drive torque the stand needs before this set will turn at all. Tiers gate on torque, not roll material.</param>
 public sealed record RollSetSpec(
+  int Schema,
   string Family,
   string[] Accepts,
-  float[] Gaps,
-  IReadOnlyDictionary<float, string> Outputs,
   float BarrelWidth,
   float MinTorque
 ) {
+  /// <summary>The attribute key a roll set carries its spec under.</summary>
+  public const string AttributeKey = "rollset";
+
+  /// <summary>The schema this parser writes and reads up to. Raise it only alongside the fallback that
+  /// reads the form it replaces (<see cref="SpecSchema"/>).</summary>
+  public const int CurrentSchema = SpecSchema.First;
+
   /// <summary>Working passes a single gap costs for stock of <paramref name="width"/>: a floor of two (a
   /// pass, then the piece turned over and passed again), multiplied by the strip count when the stock
   /// overhangs the barrel and has to be rolled side by side.</summary>
@@ -40,39 +49,11 @@ public sealed record RollSetSpec(
   public bool OverhangsBarrel(float width) =>
     BarrelWidth > 0f && width > BarrelWidth;
 
-  /// <summary>The attribute key a roll set carries its spec under.</summary>
-  public const string AttributeKey = "rollset";
-
-  /// <summary>A single-gap set: one wide groove filling the barrel (slab and bloom work), so reducing that
-  /// stock takes a train of stands rather than a walk along one barrel.</summary>
-  public bool IsWide => Gaps.Length == 1;
-
-  /// <summary>Whether this set will bite <paramref name="form"/> at all.</summary>
+  /// <summary>Whether this set will bite <paramref name="form"/> at all. Independent of the stage ladder:
+  /// the ladder says which states the metal has, this says whether the tooling can take that stock at
+  /// all - a narrow barrel refuses a slab whatever states the slab has.</summary>
   public bool AcceptsForm(string? form) =>
     form != null && Accepts.Contains(form);
-
-  /// <summary>The next gap for stock at <paramref name="thickness"/>: the first gap strictly thinner than
-  /// it, or null once the stock has passed the last gap or is thinner than the whole schedule. Walking the
-  /// barrel in order is what prevents a segment being skipped.</summary>
-  public float? NextGap(float thickness) {
-    foreach (float gap in Gaps)
-      if (gap < thickness)
-        return gap;
-    return null;
-  }
-
-  /// <summary>The draft (reduction) the next pass takes, or 0 when the stock is finished.</summary>
-  public float NextDraft(float thickness) =>
-    NextGap(thickness) is { } gap ? thickness - gap : 0f;
-
-  /// <summary>What stock pulled at <paramref name="thickness"/> reads as, or null when that is not a named
-  /// stopping point (mid-schedule stock stays stock).</summary>
-  public string? OutputAt(float thickness) {
-    foreach ((float gap, string code) in Outputs)
-      if (gap == thickness)
-        return code;
-    return null;
-  }
 
   /// <summary>Parses and validates a roll set's <c>rollset</c> attribute. Returns false with a
   /// human-readable <paramref name="error"/> on any malformed field, so a bad set fails at load rather than
@@ -90,9 +71,13 @@ public sealed record RollSetSpec(
       return false;
     }
 
+    if (!SpecSchema.TryRead(node, CurrentSchema, out int schema, out error))
+      return false;
+
     string family = node["family"].AsString("");
     if (string.IsNullOrWhiteSpace(family)) {
-      error = "missing 'family'";
+      error =
+        "missing 'family' (nothing selects the set's branch of a stage ladder without it)";
       return false;
     }
 
@@ -107,46 +92,6 @@ public sealed record RollSetSpec(
       return false;
     }
 
-    float[] gaps = node["gaps"].AsArray<float>([]) ?? [];
-    if (gaps.Length == 0) {
-      error = "missing 'gaps' sequence";
-      return false;
-    }
-    // Strictly descending: the barrel is walked widest-first, so an out-of-order gap would let the stock
-    // skip a reduction or take a negative one.
-    for (int i = 0; i < gaps.Length; i++) {
-      if (gaps[i] <= 0f) {
-        error = $"gap {i} must be > 0 (was {gaps[i]})";
-        return false;
-      }
-      if (i > 0 && gaps[i] >= gaps[i - 1]) {
-        error =
-          $"gaps must strictly descend along the barrel (gap {i} = {gaps[i]} is not below {gaps[i - 1]})";
-        return false;
-      }
-    }
-
-    // Outputs are an array of {gap, code} rather than a gap-keyed object: a float is a poor JSON key
-    // (0.5 and "0.50" never compare equal), and the array keeps the stopping points in barrel order.
-    // Optional. A set naming no stopping point is not broken: the mill ejects the piece it drew through,
-    // and every stage whose product needs a shear cut leaves as stock to be cropped elsewhere. Only a
-    // whole-piece conversion is claimed at the mill, and today no shipped stage is one.
-    var outputs = new Dictionary<float, string>();
-    JsonObject[] outputNodes = node["outputs"].AsArray() ?? [];
-    foreach (JsonObject outputNode in outputNodes) {
-      float gap = outputNode["gap"].AsFloat(-1f);
-      string code = outputNode["code"].AsString("");
-      if (!gaps.Contains(gap)) {
-        error = $"output gap {gap} is not one of the barrel's gaps";
-        return false;
-      }
-      if (string.IsNullOrWhiteSpace(code)) {
-        error = $"output at gap {gap} has no 'code'";
-        return false;
-      }
-      outputs[gap] = code;
-    }
-
     float barrelWidth = node["barrelWidth"].AsFloat(0f);
     if (barrelWidth <= 0f) {
       error =
@@ -155,10 +100,9 @@ public sealed record RollSetSpec(
     }
 
     spec = new RollSetSpec(
+      schema,
       family,
       accepts,
-      gaps,
-      outputs,
       barrelWidth,
       node["minTorque"].AsFloat(0f)
     );

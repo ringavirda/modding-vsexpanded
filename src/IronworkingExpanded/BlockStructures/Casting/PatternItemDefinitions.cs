@@ -32,6 +32,7 @@ public class PatternItemDefinitions : IExItemDefProvider {
   ) =>
     new {
       mold = new {
+        schema = MoldSpec.CurrentSchema,
         size,
         shape,
         capacity,

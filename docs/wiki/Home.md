@@ -38,6 +38,8 @@ This wiki documents both libraries the family publishes for reuse:
 - Building plumbing/wiring of any kind? **[Block Networks](Block-Networks)**.
 - Building a furnace, boiler or other big machine? **[Multiblock Structures](Multiblock-Structures)**
   and **[Production Machines](Production-Machines)**.
+- Adding to a process our mods already ship - a roll set, a mold, a crop, a die? **[Extending
+  Processes](Extending-Processes)**. Our machines name no product; you declare one.
 - Want config, commands or recipe tuning? **[Registries](Registries)**,
   **[Config System](Config-System)**, **[Commands](Commands)**, **[Recipe Costs](Recipe-Costs)**.
 - Writing tests? **[Testing Harness](Testing-Harness)** and **[Testing API Reference](Testing-API-Reference)**.

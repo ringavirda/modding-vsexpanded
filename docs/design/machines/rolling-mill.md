@@ -266,22 +266,39 @@ Changing one changes the other silently.
 | Deck offsets | `z = ±1`, `x = 0` | `BlockEntityRollingMill.cs:274-281` | one cell per deck - see [Blockers](#blockers) |
 | `stackSize` | `1` | `BlockRollingMill.cs:53`, `StockItemDefinitions.cs:42`, `RollSetItemDefinitions.cs:125` | every stock piece carries its own state, so they can never merge |
 
-### Shipped roll-set catalogue — `RollSetItemDefinitions.cs:56-104`
+### Shipped roll-set catalogue — `RollSetItemDefinitions.cs`
 
-| Variant | Family | Accepts | Gaps | Barrel | `minTorque` | Outputs | file:line |
-|---|---|---|---|---|---|---|---|
-| `rollset-flat` | flat | `bloom`, `billet` | 2.0 / 1.5 / 1.0 / 0.5 | 6.0 | 0.2 | 1.0 → `iwex:rolledplate-iron`; 0.5 → `iwex:rolledsheet-iron` | `:62-69` |
-| `rollset-flatwide` | flat | `slab`, `bloom` | 2.0 / 1.5 / 1.0 / 0.5 | 16.0 | 0.5 | same two | `:73-81` |
-| `rollset-grooved` | grooved | `bloom`, `billet` | 1.0 / 0.5 | 16.0 | 0.3 | 1.0 → `game:rod-iron`; 0.5 → `iwex:wirerod-iron` | `:86-93` |
-| `rollset-slitting` | slitting | `plate` | 0.5 | 16.0 | 0.4 | 0.5 → `iwex:nailrod-iron` | `:96-103` |
+*Re-cut 2026-08-12: a set no longer carries gaps or outputs. It declares only what the tooling knows, and
+the gauges come from the stock's ladder below.*
 
-Caution: four of the five output codes do not exist anywhere in `src/` - `iwex:rolledplate-iron`,
-`iwex:rolledsheet-iron`, `iwex:wirerod-iron`, `iwex:nailrod-iron`. `TryParse` only checks that an output's
-gap is one of the barrel's gaps (`RollSetSpec.cs:172-175`); it never resolves the code, so
-`RollSetValidation` passes them.
-`slitting` accepts `"plate"`, which is not a `StockForm` - `StockForm.All` holds only `bloom` and
-`slab` (`StockForm.cs:57-64`). No piece can ever satisfy it.
-`billet` is likewise accepted by two sets and is not a `StockForm` either.
+| Variant | Family | Accepts | Barrel | `minTorque` |
+|---|---|---|---|---|
+| `rollset-flat` | flat | `bloom`, `billet` | 6.0 | 0.2 |
+| `rollset-flatwide` | flat | `slab`, `bloom` | 16.0 | 0.5 |
+| `rollset-grooved` | grooved | `bloom`, `billet` | 16.0 | 0.3 |
+| `rollset-slitting` | slitting | `plate` | 16.0 | 0.4 |
+
+### Shipped stage ladders — `StockItemDefinitions.cs`
+
+Declared on the stock items under `attributes.stageladder`, merged into `StageLadderRegistry` at
+`AssetsFinalize` ([process-extension](../mechanics/process-extension.md)). No rung names a `code` yet:
+every shipped stage is a shear crop, so the mill ejects the piece it drew through.
+
+| Family | Rung | Accepted by |
+|---|---|---|
+| `bloom` | 2.5 | grooved |
+| `bloom` | 2.0 / 1.5 / 1.0 | flat, grooved |
+| `bloom` | 0.5 | flat |
+| `slab` | 2.0 / 1.5 / 1.0 / 0.5 | flat |
+
+The routes a set actually has are the two crossed: `flat` and `flatwide` walk 2.0 / 1.5 / 1.0 / 0.5,
+`grooved` walks 2.5 / 2.0 / 1.5 / 1.0, and `flat` is kept off the slab by its `accepts` rather than by the
+ladder - the narrow barrel is the reason, and no ladder can carry that.
+
+Caution: `slitting` accepts `"plate"`, which is not a `StockForm` - `StockForm.All` holds only `bloom` and
+`slab` - and no ladder declares a slitting rung either. No piece can ever satisfy it, and
+`ShippedRollSetTests` pins it as the one known dead set. `billet` is likewise accepted by two sets and is
+not a `StockForm`.
 
 ### `StockForm` — `StockForm.cs:48`, `:54`
 
@@ -472,17 +489,18 @@ Four of five output codes do not exist, and `OutputAt` has no production caller 
   when `TryParse` fails (`:163-182`), and `FitRollSet` maps every `false` to
   `iwex-rollingmill-busy` (`BlockRollingMill.cs:312`). The gate that got you there only checked that the
   `rollset` attribute exists (`:293-294`).
-- `RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==` (`RollSetSpec.cs:96-101`).
-  It works only because the same literals flow through the same `float` conversion; any derived thickness
-  (a half-step, for instance) will miss. This is one of the reasons `Outputs` must move to the shear and key
-  on stage, not gap.
+- ~~`RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==`.~~ **Fixed 2026-08-12.**
+  `Outputs` and `Gaps` are gone; the states are the stock's stage ladder
+  ([process-extension](../mechanics/process-extension.md)) and `MillSchedule.OutputAt` matches on the
+  ladder's own tolerance. The set no longer names a product at all.
 - `RollSetSpec.MinTorque` is parsed, stored, validated and never read. No production call site; the
   only reference is `RollSetItemDefinitions.cs:13`'s prose. The settled design makes it the
   [shear](shear.md)'s cold-cut gate, which would be its first real use.
-- So is most of `RollSetSpec` and half of `WorkPiece`. `PassesAt`, `PassesForGap`, `NextGap`,
-  `NextDraft`, `OutputAt`, `Outputs`, `IsWide`, `OverhangsBarrel`, `Thickest`, `Thinnest`, `WidthAt` and
-  `RollingPass.CanCarry` have no callers in `src/`, only tests. The "product / stopping point" half of
-  the design is written but not wired.
+- Half of `WorkPiece` still is. `PassesAt`, `PassesForGap`, `NextGap`, `NextDraft`, `IsWide`,
+  `OverhangsBarrel`, `Thinnest`, `WidthAt` and `RollingPass.CanCarry` have no callers in `src/`, only
+  tests. `OutputAt` gained its first production caller on 2026-08-12 (`ClaimFinishedPiece`), so the
+  stopping-point half is now wired end to end - but no shipped ladder names a `code`, so nothing is
+  claimed at the mill yet.
 - `ColdShearMaxThickness` does not exist in `src/` at all. Any design text that names it is describing a
   constant that was never written; the settled design deletes the concept ([shear](shear.md)).
 - The composed work-piece mesh is only used for uneven pieces. `ItemStockPiece.OnBeforeRender` returns

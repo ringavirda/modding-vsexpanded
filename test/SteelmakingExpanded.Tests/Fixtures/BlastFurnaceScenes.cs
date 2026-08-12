@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Heat;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
-using ExpandedLib.Process;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
 using IronworkingExpanded.BlockNetworkMolten.BlockEntities;

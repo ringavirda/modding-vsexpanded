@@ -10,6 +10,9 @@
 - [Construction (RCC)](Construction)
 - [Migrations & Healing](Migrations-and-Healing)
 
+**exlib - Extending our mods**
+- [Extending Processes](Extending-Processes)
+
 **exlib - Registration**
 - [Registries](Registries)
 - [Config System](Config-System)

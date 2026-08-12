@@ -52,10 +52,47 @@ public static class StockMesh {
   }
 
   /// <summary>
-  /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. Only the form
-  /// and the strip thicknesses take part: two pieces at the same thicknesses look identical, so turn-over
-  /// state and heat are excluded and the cache holds a handful of states per form rather than one per stack.
+  /// Whether <paramref name="piece"/> is exactly the shape its form was authored at - one undivided side,
+  /// still at the base gauge - so the default item mesh already draws it and nothing has to be composed.
   /// </summary>
+  /// <remarks>
+  /// Evenness is not the question. Every single-sided piece is even, so testing that alone made a bloom
+  /// taken from 3.0 down to 2.0 read as unworked and render as if it had never been rolled.
+  /// </remarks>
+  public static bool IsBaseState(WorkPiece piece) =>
+    piece.Sides <= 1
+    && ExpandedLib.Processes.StageLadder.SameThickness(
+      piece.Thickest,
+      piece.Form.BaseThickness
+    );
+
+  /// <summary>
+  /// The shape element <paramref name="ladder"/> draws <paramref name="piece"/> at, or null when there is
+  /// none and the composed mesh is the answer: no ladder, no shape file to hold the elements, a gauge the
+  /// ladder does not draw, or a piece that does not know which branch worked it.
+  /// </summary>
+  /// <remarks>
+  /// A piece with no family is never guessed at. At a fork two families draw one gauge differently, so a
+  /// guess is visibly wrong half the time.
+  /// </remarks>
+  public static string? ElementFor(
+    ExpandedLib.Processes.StageLadder? ladder,
+    WorkPiece piece
+  ) =>
+    ladder?.Shape == null || piece.Family == null
+      ? null
+      : ladder.StageAt(piece.Thickest, piece.Family)?.Element;
+
+  /// <summary>
+  /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. The form, the
+  /// strip thicknesses and the branch take part; turn-over state and heat do not, since two pieces at the
+  /// same gauge on the same branch look identical whatever they went through to get there.
+  /// </summary>
+  /// <remarks>
+  /// Nothing per-stack may enter this key. The handbook clones the stack every frame, so a key carrying a
+  /// stack's own identity would upload a fresh mesh per frame and leak every one of them - the trap vanilla
+  /// documents in place on <c>ItemWorkItem</c>.
+  /// </remarks>
   public static string CacheKey(WorkPiece piece) {
     var sb = new System.Text.StringBuilder(piece.Form.Name);
     foreach (float t in piece.Strips)
@@ -63,6 +100,6 @@ public static class StockMesh {
         .Append(
           t.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
         );
-    return sb.ToString();
+    return sb.Append('|').Append(piece.Family ?? "-").ToString();
   }
 }

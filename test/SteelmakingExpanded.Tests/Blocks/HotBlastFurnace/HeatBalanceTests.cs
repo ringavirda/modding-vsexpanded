@@ -1,4 +1,4 @@
-using ExpandedLib.Process;
+using ExpandedLib.Heat;
 using ExpandedLib.Testing;
 using IronworkingExpanded;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;

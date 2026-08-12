@@ -1,6 +1,7 @@
 # Extensibility — third-party mods extend our processes
 
-**Status** live, next. Written 2026-08-12 after extensibility became a stated product target.
+**Status** **complete** 2026-08-12. Every task landed; all 15 test targets pass across 1.20/1.21/1.22.
+What remains is content rather than contract — see *What is still open* at the bottom.
 
 **Goal:** a modder can add tooling to diagram crafting, sand casting, rolling, the steam hammer and
 the machining line from their own mod, without our source and without a fork.
@@ -65,75 +66,189 @@ the people who asked for this, because it makes their content break on our sched
 
 ## Tasks
 
-### Task 1 — Name the rule
+### Task 1 — Name the rule ✅ DONE 2026-08-12
 
-**Files:** create `docs/design/mechanics/process-extension.md`; link it from
+`docs/design/mechanics/process-extension.md` written and linked from
 [framework-composition](../../design/mechanics/framework-composition.md) and
-[machining-line](../../design/mechanics/machining-line.md).
+[machining-line](../../design/mechanics/machining-line.md). It owns the rule, the two registry shapes,
+the stage schema, item generation, declared renames and the versioning contract.
 
-The design page states the rule, the terminal-vs-sequence axis, the versioning contract (E3), and
-both routes (E1). It is a **decisions** page, so it owns the schema shape; this plan owns only the
-order things get built in.
+Everything below is now implementation of that page.
 
-Until this exists the rule is three instances and a habit.
+### Task 2 — The stage schema and `RollSetSpec` ✅ DONE 2026-08-12
 
-### Task 2 — `RollSetSpec.Outputs` becomes `(form, gap)`
+`stages[]` replaced the `gaps` + `outputs` pair. Each stage carries `thickness`, `element`,
+`acceptedBy` and an optional `code`; **`code` present is the stopping point**, which retired
+the `(form, gap)` key problem entirely rather than solving it — the stage *is* the (form, gap) pair.
 
-**Files:** `RollSetSpec.cs`, `RollSetItemDefinitions.cs`, `BlockEntityRollingMill.ClaimFinishedPiece`,
-the shipped golden, `RollSetSpecTests`, `ShippedRollSetTests`.
+**Owner ruling that shaped it:** a registry is a **merged catalogue any collectible contributes to**, not
+a field on the tooling item. Hang the ladder on the roll set and adding a stock family means patching every
+set; hang it on the stock and adding a roller family means patching every stock item. Merging removes the
+choice, and it is why `acceptedBy` is per stage rather than per declaration.
 
-The one genuine whole-piece conversion in the design is unwritable on the current key: flat 1.0
-yields `nailplate` from a `rolledrod` but plate from a bloom - same gap, different product, decided by
-the form that entered. `ClaimFinishedPiece` is built, tested and waiting on this.
+**Built:**
 
-Breaking, and deliberately first: nobody depends on it yet.
+| Where | What |
+|---|---|
+| `src/ExpandedLib/Processes/` | `ProcessStage`, `StageLadder` (the `stageladder` attribute + parser), `StageLadderRegistry` (merge on `(thickness, family)`, first declaration wins, conflicts reported), `StageLadderLoader` (scans collectibles at `AssetsFinalize`, wired into `ExpandedLibModSystem`) |
+| `src/IronworkingExpanded/…/Forming/` | `MillSchedule` — the fitted set's branch of one family's ladder; `RollSetSpec` slimmed to `schema`/`family`/`accepts`/`barrelWidth`/`minTorque`; the shipped bloom and slab ladders on `StockItemDefinitions`; `MillFeed`, `BlockEntityRollingMill` and `BlockRollingMill` read a schedule |
+| tests | `StageLadderTests`, `StageLadderRegistryTests`, `MillScheduleTests`, `StageLadderSeeds`; `RollSetSpecTests` and `ShippedRollSetTests` re-cut; three goldens regenerated |
 
-### Task 3 — Schema versioning across the three shipped specs
+⛔ **`accepts` stayed on the roll set and is not derived from the ladder.** They are independent facts: the
+ladder says which states the metal has, `accepts` says whether the tooling can take that stock at all. Derived,
+the narrow `flat` set (barrel 6) would have started biting slabs, which only `flatwide` should.
 
-**Files:** `RollSetSpec`, `MoldSpec`, and the diagram scan; `ExTree`-style read-both helpers.
+⛔ **A ladder must be an `attributes` entry, not a top-level itemtype key.** `ExItemDef.Raw` writes the
+root and `CollectibleObject.Attributes` never sees it, so the first cut shipped a ladder the loader could
+not find and every feed refused as `WrongForm`. Caught by the fixtures, not by a golden — the golden was
+happy either way.
 
-Each spec attribute gains `schema`. Each parser reads the current form, falls back to the previous,
-and the item rewrites on next save. Model it on the `possibleOrientations` migration, whose lesson is
-recorded: **the absent/null distinction is the migration** - a reader that cannot tell "never written"
-from "written empty" cannot fall back.
+⛔ **`BlockEntityRollingMill.Ladders` is settable** for the same reason `NetworkSystem` is: a machine that
+reads only a process-wide static cannot have a route stood up for it in a fixture without writing to the
+catalogue every other test shares.
 
-Pin each with a test that loads an old-form spec and asserts it still parses.
+### Task 3 — Schema versioning across the shipped specs ✅ DONE 2026-08-12
 
-### Task 4 — The public C# registration API (E1)
+`SpecSchema` (exlib `Processes/`) holds the contract: absent reads as **schema 1**; an older form is
+read as declared and is the caller's to fall back on; ⛔ a **newer** one is **refused** with an error
+naming both numbers, since reading it as the form we do know would mis-parse someone's content
+silently. `StageLadder`, `RollSetSpec` and `MoldSpec` all route through it; `MoldSpec` gained the field
+and `PatternItemDefinitions` now emits it (pattern golden regenerated).
 
-**Files:** new `src/ExpandedLib/Processes/` - the registry and its per-process entry points.
+⛔ **A spec attribute is not save data**, which is the finding that resized this task. It sits on the
+itemtype and is re-read from the declaration every load, so *our own* emitters never need a fallback —
+regenerating the def replaces the old form outright. The burden exists only for declarations we do not
+own, so it starts at the first schema a third party could have written against. That is why Task 2 could
+drop `gaps`/`outputs` outright at schema 1 and still satisfy E3, and why no legacy-`gaps` reader was
+built: it would have been dead code with a maintenance cost from the day it was written.
 
-A mod calls exlib to register a roll set, a mold, a diagram or a machine job programmatically. Shape
-it on the existing `ExKeyedRegistry<T>` rather than a fourth hand-rolled keyed dictionary.
+⛔ **The diagram scan is out of scope, and not by omission.** A `diagram-*` item is identified by code
+shape alone and holds no spec for a parser to version. Recorded on the design page; if diagrams ever gain
+data, that is when they gain a number.
 
-⛔ This is the surface we owe stability on. Keep it as small as the JSON route and no smaller: anything
-expressible only in C# is a gap in the JSON schema, and the schema should grow instead.
+`ShippedSpecSchemaGuards` (iwex) pins that every spec we emit declares `schema` explicitly even though
+absent would parse — our JSON is the template a third party copies, and one that omits the field teaches
+them to omit it. Mutation-checked.
 
-### Task 5 — The guard
+### Task 3b — The item emitter ✅ DONE 2026-08-12
 
-**Files:** `test/ExpandedLib.Tests/Invariants/ProcessExtensionGuards.cs`.
+`ProcessItemEmitter` builds an `ExItemDef` per stopping point, wired into
+`ExDefinitionModSystem.AssetsLoaded` at 0.04. All five `MetalFamilyEmitter` properties carried across, plus
+one the metals did not need: **the `game:` domain is never generated into**, since injecting an itemtype
+there would replace a base-game item. `ProcessItemRenames` turns declared `formerCodes` into item remaps
+through `BlockMigrationModSystem`, discovered like any other migration.
 
-A source scan in the shape of `ShapeLoadingGuards`: no machine block entity names a product code in
-code. Whole-file matching, and assert the corpus is non-empty - a guard that scans nothing passes.
+⛔⛔ **The ladders moved from an item attribute to `config/stageladders/*.json`, and the load order forced
+it.** Generation must run at 0.04 — before the patch loader (0.05) and the object loader (0.2, verified in
+`vsessentialsmod/Loading/`) — so a ladder carried on an itemtype could not be read in time: **you cannot
+build an itemtype from data that lives on an itemtype.** Keeping the attribute would have meant two parses
+of one contract (raw pre-patch JSON for the emitter, resolved collectibles for the registry), which is the
+same shape as the `.Raw`/`.Attribute` bug from Task 2. Owner ruling; the merged-registry ruling is
+untouched, only the file's home changed.
 
-Mutation-check it red before trusting it.
+The catalogue is now read twice by **one** parser: at 0.04 for generation and at `AssetsFinalize` for the
+registry the machines consult. ⛔ Consequence: **patching our catalogue adds a route but no item**, because
+the patch lands after generation. Ship your own file instead — the merge puts it in the same family.
 
-### Task 6 — Document it where a modder will look
+**B3c is dissolved in mechanism**: the rolled catalogue can now fall out of the declaration. It is not yet
+dissolved in content — no shipped rung names a `code`, because every shipped stage is a shear crop and the
+shear does not exist. The first real product arrives with Task 3d.
 
-**Files:** `docs/wiki/Extending-Processes.md`, plus `_Sidebar.md` and `Home.md`.
+### Task 3c — Mid-pass rendering ✅ DONE 2026-08-12
 
-The wiki has 17 pages on our **frameworks** and not one on any process extension point. A capability
-nobody can find is, for the people who asked for this, the same as one that does not exist.
+`ItemStockPiece.OnBeforeRender` now has two routes: the **drawn** stage, tesselated from the family shape
+file at the stage's element, when the ladder names both; and the **composed** mesh otherwise, which is what
+already shipped. `StockMesh.IsBaseState` and `.ElementFor` hold the decision, so it is testable without a
+client — the upload itself is not reachable headlessly.
 
-One worked example per process, each a complete copy-pasteable item def.
+⛔ **The bug this found: every single-sided piece rendered as unworked.** The early return was
+`piece.Sides <= 1 && piece.IsEven`, and a one-sided piece is *always* even — so a bloom taken from 3.0 down
+to 2.0 looked exactly like one straight off the helve. The settled two-round model makes uneven pieces
+impossible, which would have made the whole composition path dead code. Now the test is "one side, still at
+the base gauge". Mutation-checked against the old expression.
 
-### Task 7 — `MachineJob` and `ItemDie` (E2)
+⛔⛔ **Thickness alone cannot address a stage, so the piece had to gain its branch.** A fork draws one gauge
+two ways (`Grooved200` / `Flattened200` at 2.0), so a renderer keyed on thickness is wrong half the time.
+`WorkPiece` gained `Family`, written with the reduction in `CompletePass` and carried on the stack under
+`rollerFamily`; the mesh cache key includes it. Absent on an old stack, which reads as "no branch known" and
+falls back to the composed mesh rather than guessing.
 
-**Files:** `src/ExpandedLib/Processes/MachineJob.cs`, `ItemDie.cs`; the four machine tools.
+The handbook trap was already avoided — the cache was keyed on geometry, never on a per-stack id — and is
+now pinned by a test rather than left to the comment.
 
-Build them on the contract Tasks 1–4 settle, not before. This is the largest surface and the only one
-that is still greenfield - designed extensible from the start it costs nothing, retrofitted it costs a
-rewrite.
+### Task 3d — The shear registry ✅ DONE 2026-08-12
+
+`ProcessJob` / `ProcessJobSet` / `ProcessJobRegistry` / `ProcessJobLoader` — the terminal shape, declared at
+`config/processjobs/*.json` and merged exactly as a ladder is. **Count** is the field that makes it a shape
+of its own; `stage` + `family` are optional and let a job take a piece part way down a ladder, which is what
+the crop table needs and what a gap-keyed table could never express.
+
+⛔ **The crop table itself is not shipped, deliberately.** Seven of its nine products are items that do not
+exist, and shipping codes that resolve to nothing is precisely the mistake the four dangling roll-set
+outputs already made once. Recorded in [shear.md](../../design/machines/shear.md) § Open; it waits on the
+rolled catalogue, and on the split-versus-remainder interaction that page still lists as undecided.
+
+**The sweep landed** and the convention holds everywhere. `item-shingled-bar.json` → `CutRod1..4` + `Beam`;
+`item-rolled-rod.json` → `CutRivetRod1..4`; `item-rolled-beam.json` → `CutPlate1..2`. All are the shear's,
+tabulated on its page. ⛔ `NailPlate` inside `item-rolled-rod.json` is **not** — it is the one whole-piece
+conversion, so it is a ladder stopping point, not a crop.
+
+### Task 4 — The public C# registration API (E1) ✅ DONE 2026-08-12
+
+`ProcessExtensions` — `AddStages` and `AddJobs` over both registries, with `Shared` pointing at the same
+instances the loaders fill.
+
+★★ **The code route re-states none of the rules.** It builds the declaration a file would have held and runs
+it through the same `TryParse`, throwing on anything the JSON route would have refused. That is what keeps
+one set of rules rather than two, and it is why the surface cannot drift wider than the schema.
+
+### Task 5 — The guard ✅ DONE 2026-08-12
+
+`ProcessExtensionGuards` — a source scan in `ShapeLoadingGuards`' shape. Mutation-checked red by pointing
+`ClaimFinishedPiece` at a literal `iwex:nailplate`.
+
+★★ **The corpus derives itself**: a file is a process machine because it *reads a process registry*. A hand
+list would have to be remembered; this way a machine joins the guard by adopting a registry, and cannot be
+added outside its reach. Art paths are exempt — a machine's own appearance is not a product.
+
+### Task 6 — Document it where a modder will look ✅ DONE 2026-08-12
+
+`docs/wiki/Extending-Processes.md`, linked from `_Sidebar.md` and `Home.md`. Both registry shapes with
+copy-pasteable JSON, the generation rules, the C# route, the schema promise, and a symptom table for when
+nothing appears.
+
+### Task 7 — `MachineJob` and `ItemDie` (E2) ✅ DONE 2026-08-12
+
+⛔ **`MachineJob` is not a new type — it is `ProcessJob`.** The machining line's sketch and the terminal
+registry are the same shape; a second near-identical record would have been two schemas for one idea. The
+job gained `minTier` and `seconds`, which are what a machine tool's work costs beyond a crop's.
+
+`ItemDie` carries a job set in a `machinejob` attribute, is recognised by *parsing* rather than by its code
+— so a third party's die needs no naming blessing — and ships `ItemDie.Itemtype(domain, jobs)`, the public
+factory seam `PatternItemDefinitions` proved and the roll sets still lack.
+
+⛔ **`RenderSpec` is deliberately not built.** No machine renders a job yet, so every field would have been
+unverifiable design with no consumer — the same call as the legacy-`gaps` reader in Task 3.
+
+★★ **`StockForm` is now a registry**, which the machining line named as *the literal wall on mill
+extensibility*: a third party's roll set could declare it accepts their stock and the piece still dead-ended
+at `WrongForm`, because nothing could add the form. `Register` / `Unregister` / `TryGet` / `SeedDefaults`,
+and deliberately **no `Clear`** — a mod emptying the table would take our stock and every shipped roll set
+with it.
+
+---
+
+## What is still open
+
+Contract complete; the rest is content.
+
+| Open | Why it is not here |
+|---|---|
+| the shear's crop table | seven of nine products do not exist — see Task 3d |
+| the rolled catalogue (B3c) | dissolved in **mechanism**: a stage naming a `code` builds its item. No shipped rung names one, because every shipped stage is a shear crop and the shear is not built |
+| the four machine tools, the shear block | machines, not contract. They now have a registry to be built against |
+| `RenderSpec` | no machine renders a job yet |
+| stage art wiring | the shipped ladders declare no `shape`/`element`, so every piece takes the composed-mesh route. The drawn route is built and waits on the export |
 
 ---
 

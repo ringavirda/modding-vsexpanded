@@ -1,3 +1,4 @@
+using ExpandedLib.Processes;
 using IronworkingExpanded.BlockStructures.Forming;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Datastructures;
@@ -24,8 +25,6 @@ public class MillFeedTests {
           {
             "family": "flat",
             "accepts": [ "bloom" ],
-            "gaps": [ 2.0, 1.5, 1.0, 0.5 ],
-            "outputs": [ { "gap": 1.0, "code": "iwex:rolledplate-iron" } ],
             "barrelWidth": 6.0
           }
           """
@@ -37,6 +36,42 @@ public class MillFeedTests {
       ? spec!
       : throw new System.InvalidOperationException("fixture failed to parse");
 
+  // The bloom's flat branch, the four gaps this set walks. Declared here rather than taken from the shipped
+  // ladder so the arithmetic below stays readable against the numbers it asserts.
+  private static StageLadderRegistry BloomLadder() {
+    var registry = new StageLadderRegistry();
+    if (
+      !StageLadder.TryParse(
+        new JsonObject(
+          JToken.Parse(
+            """
+            {
+              "family": "bloom",
+              "stages": [
+                { "thickness": 2.0, "acceptedBy": [ "flat" ] },
+                { "thickness": 1.5, "acceptedBy": [ "flat" ] },
+                { "thickness": 1.0, "acceptedBy": [ "flat" ], "code": "iwex:rolledplate-iron" },
+                { "thickness": 0.5, "acceptedBy": [ "flat" ] }
+              ]
+            }
+            """
+          )
+        ),
+        out StageLadder? ladder,
+        out string? error
+      )
+    )
+      throw new System.InvalidOperationException(
+        "fixture ladder failed to parse: " + error
+      );
+    registry.Contribute(ladder!);
+    return registry;
+  }
+
+  private static MillSchedule FlatSchedule =>
+    MillSchedule.For(FlatSet, "bloom", BloomLadder())
+    ?? throw new System.InvalidOperationException("fixture has no schedule");
+
   private static FeedDecision Feed(
     WorkPiece piece,
     int gapIndex,
@@ -46,6 +81,7 @@ public class MillFeedTests {
   ) =>
     MillFeed.Decide(
       set ?? FlatSet,
+      MillSchedule.For(set ?? FlatSet, piece.Form.Name, BloomLadder()),
       piece,
       gapIndex,
       strip,
@@ -192,6 +228,7 @@ public class MillFeedTests {
       MillFeed
         .Decide(
           null,
+          null,
           WorkPiece.Fresh(StockForm.Bloom),
           0,
           0,
@@ -212,7 +249,30 @@ public class MillFeedTests {
     );
     Assert.Equal(
       FeedVerdict.WrongForm,
-      MillFeed.Decide(FlatSet, null, 0, 0, Hot, Radius, RollingTemp).Verdict
+      MillFeed
+        .Decide(FlatSet, FlatSchedule, null, 0, 0, Hot, Radius, RollingTemp)
+        .Verdict
+    );
+  }
+
+  [Fact]
+  public void A_fitted_set_with_no_route_for_this_stock_refuses_it() {
+    // The tooling is there and it accepts the form, but nothing has declared a stage its family works. A
+    // set that cannot reach the metal is the same refusal as one that will not bite it.
+    Assert.Equal(
+      FeedVerdict.WrongForm,
+      MillFeed
+        .Decide(
+          FlatSet,
+          null,
+          WorkPiece.Fresh(StockForm.Bloom),
+          0,
+          0,
+          Hot,
+          Radius,
+          RollingTemp
+        )
+        .Verdict
     );
   }
 

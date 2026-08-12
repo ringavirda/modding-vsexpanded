@@ -23,68 +23,47 @@
   "attributesByType": {
     "*-flat": {
       "rollset": {
+        "schema": 1,
         "family": "flat",
         "accepts": [
           "bloom",
           "billet"
         ],
-        "gaps": [
-          2.0,
-          1.5,
-          1.0,
-          0.5
-        ],
-        "outputs": [],
         "barrelWidth": 6.0,
         "minTorque": 0.2
       }
     },
     "*-flatwide": {
       "rollset": {
+        "schema": 1,
         "family": "flat",
         "accepts": [
           "slab",
           "bloom"
         ],
-        "gaps": [
-          2.0,
-          1.5,
-          1.0,
-          0.5
-        ],
-        "outputs": [],
         "barrelWidth": 16.0,
         "minTorque": 0.5
       }
     },
     "*-grooved": {
       "rollset": {
+        "schema": 1,
         "family": "grooved",
         "accepts": [
           "bloom",
           "billet"
         ],
-        "gaps": [
-          2.5,
-          2.0,
-          1.5,
-          1.0
-        ],
-        "outputs": [],
         "barrelWidth": 16.0,
         "minTorque": 0.3
       }
     },
     "*-slitting": {
       "rollset": {
+        "schema": 1,
         "family": "slitting",
         "accepts": [
           "plate"
         ],
-        "gaps": [
-          0.5
-        ],
-        "outputs": [],
         "barrelWidth": 16.0,
         "minTorque": 0.4
       }

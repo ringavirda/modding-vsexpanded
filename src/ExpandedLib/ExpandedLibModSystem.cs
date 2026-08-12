@@ -57,6 +57,15 @@ public class ExpandedLibModSystem : ModSystem {
     // The material-role catalogue (flux/fuel/ore/scrap/charge classification) and its mod-gated code
     // contributors. Must load after the metal and liquid registries; exlib ships no role content itself.
     MaterialRoleLoader.Load(api);
+
+    // The merged process-stage catalogue. Read again here rather than only at inject time so the
+    // registry the machines consult is the post-patch one; the emitter's earlier read cannot be.
+    foreach (string error in Processes.StageLadderLoader.Load(api))
+      api.Logger.Error("[exlib] invalid stage ladder - " + error);
+
+    // The terminal half of the same contract: every machine's job table.
+    foreach (string error in Processes.ProcessJobLoader.Load(api))
+      api.Logger.Error("[exlib] invalid process job - " + error);
   }
 
   public override void StartClientSide(ICoreClientAPI api) {

@@ -11,7 +11,14 @@ sequencing, `../worklog/` owns what landed.
 
 ## What is next, right now
 
-**The extensibility layer** — [2026-08-12-extensibility.md](2026-08-12-extensibility.md).
+The extensibility layer is **complete** ([2026-08-12-extensibility.md](2026-08-12-extensibility.md), all
+seven tasks). The contract a third party writes against now exists and is guarded; what is left of it is
+content, listed in that plan's *What is still open*.
+
+**Next: the tier spine.** **B3c** is dissolved in mechanism — a stage naming a `code` builds its item — but
+no shipped rung names one yet, because every shipped stage is a shear crop and the shear is not built. So
+the order is now: the **shear block** (which unblocks the crop table and the rolled catalogue together),
+then hpex's **B5/B6**.
 
 Extensibility became a stated product target on 2026-08-12: other modders must be able to add to
 diagram crafting, sand casting, rolling, the steam hammer and the machining line, and people have

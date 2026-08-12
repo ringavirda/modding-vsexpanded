@@ -1,5 +1,8 @@
 # Shear
-**Status** designed - nothing built (no block, no BE, no recipe, no shape)   **Mod** iwex (`IronworkingExpanded`)
+**Status** designed; the **registry is built** (2026-08-12) and the machine is not - no block, no BE, no
+recipe, no shape. `ProcessJob` / `ProcessJobRegistry` / `ProcessJobLoader` in exlib are the terminal shape
+this page's crop table will be declared in, at `assets/<domain>/config/processjobs/*.json`. No entry ships
+yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
 
 **Owns**
 * the crop station: the rule that every crop in the forming ladder passes through this one block, and that the
@@ -84,6 +87,27 @@ page.
 | reference art | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
 | lang | `assets/iwex/lang/en.json` carries no `shear-*` key |
 | handbook | `docs/iwex/handbook/` has no page; the sync pipeline joins on the `NN-` prefix and drift fails a test |
+
+### The shear's products are already drawn — inside the mill's shape files
+
+*Swept 2026-08-12, across `assets/editable/shapes/items/`.* The convention holds everywhere: an element drawn
+off the shared origin is **not a stage**, it is another machine's output, and it belongs in that machine's
+registry ([process-extension](../mechanics/process-extension.md)).
+
+| Shape file | Stage elements (the mill's ladder) | Off-origin — **this** registry's |
+|---|---|---|
+| `smithed/item-shingled-bar.json` | `ShingledBar1`, `Grooved275/250/225`, `Flattened275/250/225` | `CutRod1..4`, `Beam` |
+| `rolled/item-rolled-rod.json` | `RolledRod200`, `Grooved175/150/125`, `Flattened175/150/125` | `CutRivetRod1..4` |
+| `rolled/item-rolled-beam.json` | `Beam`, `Flattened175/150/125` | `CutPlate1..2` |
+| `smithed/item-shingled-slab.json` | `ShingledSlab1`, `ShingledSlab11` | — |
+
+Two products have a file of their own rather than an in-situ cut: `rolled/item-rolled-rivetrod.json`
+(`RivetRod1..4`) and `rolled/item-rolled-nailplate.json` (`NailPlate1`). Both conventions are supported — an
+element of a family file, or a whole file as the stage.
+
+`NailPlate` inside `item-rolled-rod.json` is **not** this page's. It is the one whole-piece conversion in the
+design (a rod taken flat, no crop), so it is a stopping point on the mill's ladder — a stage with a `code` —
+and not a job here. The `Cube2..11` elements in three of the files are modelling leftovers with no meaning.
 
 Draw Fig 5, the double shearing machine: the heaviest and most legible of the three, and its giant flywheel is
 the right visual promise for a machine that takes one enormous bite and then nothing. Elements the design asks
@@ -262,8 +286,14 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
 
 ## Open
 
-- Nothing is built. Block, BE, def, recipe, shape, lang, handbook and tests are all absent. The forming build
-  list says build the shear first of the three benches, because the `Outputs` move depends on it.
+- **The crop table is not shipped, deliberately.** The registry exists and the table is settled
+  ([rolled parts](../items/rolled-parts.md)), but seven of its nine products are items that do not exist, and
+  shipping a table of codes that resolve to nothing is exactly the mistake the four dangling roll-set outputs
+  already made once. It waits on the rolled catalogue. The two entries that would resolve today
+  (`game:metalplate`, `game:rod-iron`) are not worth shipping alone, because the interaction they would drive
+  is the one still undecided below.
+- Block, BE, def, recipe, shape, lang, handbook and tests are all absent. The forming build list says build
+  the shear first of the three benches, because the `Outputs` move depends on it.
 - How the torque gate reads drive torque - see Gotchas. Options: add `DriveTorque` to `MpEnergyNetworkState`;
   gate on `StoredEnergy ≥ k` instead; or have the shear attempt the stroke and let a stall be the answer
   (cheapest, and consistent with the mill's "a pass that overdraws simply freezes").

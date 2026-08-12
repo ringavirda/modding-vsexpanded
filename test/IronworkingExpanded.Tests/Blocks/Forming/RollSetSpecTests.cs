@@ -6,23 +6,20 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The roll-set tooling contract. A set carries its own schedule in its item attributes, so adding a rolled
-/// product is an item def and nothing else. The gap sequence is cut into the barrel widest first and must
-/// strictly descend; it is walked one segment at a time; and each gap is a stopping point, so the product is
-/// the thickness the stock stops at. See docs/design/items/roll-sets.md.
+/// The roll-set tooling contract. A set carries what the tooling itself decides - which roller family it
+/// is, which stock it will bite, how wide its barrel is and what torque it needs to turn - and nothing
+/// about what the metal becomes. The states are the stock family's stage ladder
+/// (<see cref="MillScheduleTests"/>), so a set names no product and a product needs no set edited.
+/// See docs/design/items/roll-sets.md.
 /// </summary>
 public class RollSetSpecTests {
   private static JsonObject Json(string json) => new(JToken.Parse(json));
 
   private const string FlatSet = """
     {
+      "schema": 1,
       "family": "flat",
       "accepts": [ "bloom", "billet" ],
-      "gaps": [ 1.5, 1.0, 0.5 ],
-      "outputs": [
-        { "gap": 1.0, "code": "iwex:plate-iron" },
-        { "gap": 0.5, "code": "iwex:sheet-iron" }
-      ],
       "barrelWidth": 4.0,
       "minTorque": 2.0
     }
@@ -52,25 +49,32 @@ public class RollSetSpecTests {
   public void A_well_formed_set_parses_every_field() {
     RollSetSpec spec = Parse(FlatSet);
 
+    Assert.Equal(1, spec.Schema);
     Assert.Equal("flat", spec.Family);
     Assert.Equal(["bloom", "billet"], spec.Accepts);
-    Assert.Equal([1.5f, 1.0f, 0.5f], spec.Gaps);
     Assert.Equal(4.0f, spec.BarrelWidth);
     Assert.Equal(2.0f, spec.MinTorque);
-    Assert.Equal("iwex:plate-iron", spec.Outputs[1.0f]);
   }
 
   [Fact]
-  public void Gaps_must_strictly_descend_along_the_barrel() {
-    // An out-of-order gap would let the stock skip a reduction or take a negative one, so it is rejected at
-    // load time rather than at the mill.
+  public void An_undeclared_schema_reads_as_the_first_one() {
+    Assert.Equal(1, Parse(FlatSet.Replace("\"schema\": 1,", "")).Schema);
+  }
+
+  [Fact]
+  public void A_set_from_a_newer_build_is_refused_rather_than_mis_read() {
     Assert.Contains(
-      "descend",
-      Rejects(FlatSet.Replace("[ 1.5, 1.0, 0.5 ]", "[ 1.0, 1.5, 0.5 ]"))
+      "99",
+      Rejects(FlatSet.Replace("\"schema\": 1,", "\"schema\": 99,"))
     );
+  }
+
+  [Fact]
+  public void A_set_belonging_to_no_roller_family_is_rejected() {
+    // The family is what selects the set's branch of a stage ladder, so a set without one can roll nothing.
     Assert.Contains(
-      "descend",
-      Rejects(FlatSet.Replace("[ 1.5, 1.0, 0.5 ]", "[ 1.0, 1.0 ]"))
+      "family",
+      Rejects(FlatSet.Replace("\"family\"", "\"unused\""))
     );
   }
 
@@ -83,75 +87,17 @@ public class RollSetSpecTests {
   }
 
   [Fact]
-  public void A_set_naming_no_stopping_point_is_accepted_and_makes_stock() {
-    // Not a broken set. The mill ejects the piece it drew through, and every stage whose product needs a
-    // shear cut leaves as stock to be cropped elsewhere - which is every shipped stage today. Only a
-    // whole-piece conversion is claimed at the mill.
-    Assert.True(
-      RollSetSpec.TryParse(
-        Json(FlatSet.Replace("\"outputs\"", "\"unused\"")),
-        out RollSetSpec? spec,
-        out string? error
-      ),
-      error
-    );
-
-    Assert.Empty(spec!.Outputs);
-    Assert.Null(spec.OutputAt(1.0f));
-  }
-
-  [Fact]
-  public void An_output_must_sit_on_a_real_gap() {
-    // An output on no gap is a product the stock can never stop at.
+  public void A_barrel_width_is_required_because_the_mill_cannot_guess_it() {
     Assert.Contains(
-      "not one of",
-      Rejects(FlatSet.Replace("\"gap\": 1.0", "\"gap\": 1.25"))
+      "barrelWidth",
+      Rejects(FlatSet.Replace("\"barrelWidth\"", "\"unused\""))
     );
   }
 
   [Fact]
   public void A_missing_attribute_is_reported_rather_than_throwing() {
     Assert.False(RollSetSpec.TryParse(null, out _, out string? error));
-    Assert.Contains("rollset", error!);
-  }
-
-  #endregion
-
-  #region Walking the barrel
-
-  [Fact]
-  public void The_next_gap_is_the_first_one_thinner_than_the_stock() {
-    RollSetSpec spec = Parse(FlatSet);
-
-    Assert.Equal(1.5f, spec.NextGap(2.0f)); // fresh stock takes the widest gap first
-    Assert.Equal(1.0f, spec.NextGap(1.5f)); // then the next one along
-    Assert.Equal(0.5f, spec.NextGap(1.0f));
-  }
-
-  [Fact]
-  public void Stock_that_has_walked_the_whole_barrel_has_no_next_pass() {
-    RollSetSpec spec = Parse(FlatSet);
-    Assert.Null(spec.NextGap(0.5f));
-    Assert.Null(spec.NextGap(0.25f));
-  }
-
-  [Fact]
-  public void You_cannot_skip_a_segment_to_get_a_deeper_bite() {
-    // From 1.5 the only next step is 1.0, never straight to 0.5. The segment spacing is what keeps every
-    // pass inside delta_max without the mill checking it.
-    RollSetSpec spec = Parse(FlatSet);
-    Assert.Equal(0.5f, spec.NextDraft(1.5f), 4); // 1.5 -> 1.0, not 1.5 -> 0.5
-    Assert.Equal(0f, spec.NextDraft(0.5f), 4); // finished
-  }
-
-  [Fact]
-  public void The_product_is_the_thickness_you_stop_at() {
-    RollSetSpec spec = Parse(FlatSet);
-
-    Assert.Equal("iwex:plate-iron", spec.OutputAt(1.0f));
-    Assert.Equal("iwex:sheet-iron", spec.OutputAt(0.5f));
-    Assert.Null(spec.OutputAt(1.5f)); // a real gap, but not a named stopping point - still just stock
-    Assert.Null(spec.OutputAt(0.75f)); // not a gap at all
+    Assert.Contains(RollSetSpec.AttributeKey, error!);
   }
 
   [Fact]
@@ -161,26 +107,6 @@ public class RollSetSpecTests {
     Assert.True(spec.AcceptsForm("bloom"));
     Assert.False(spec.AcceptsForm("slab"));
     Assert.False(spec.AcceptsForm(null));
-  }
-
-  [Fact]
-  public void A_single_gap_set_is_a_wide_one_that_needs_a_train() {
-    // A single-gap set fills the whole barrel, so it has no segment sequence to walk and is reduced by a
-    // train of stands instead. `IsWide` is what tells the mill and the handbook which kind of set it is.
-    RollSetSpec wide = Parse(
-      """
-      {
-        "family": "flat",
-        "accepts": [ "slab" ],
-        "gaps": [ 1.0 ],
-        "outputs": [ { "gap": 1.0, "code": "iwex:plate-iron" } ],
-        "barrelWidth": 20.0
-      }
-      """
-    );
-
-    Assert.True(wide.IsWide);
-    Assert.False(Parse(FlatSet).IsWide);
   }
 
   #endregion
@@ -220,27 +146,20 @@ public class RollSetSpecTests {
 
     const float startWidth = 3f;
     const float startThickness = 3f;
+    float[] gaps = [1.5f, 1.0f, 0.5f];
 
     int narrowTotal = 0;
     int wideTotal = 0;
-    foreach (float gap in narrow.Gaps) {
+    foreach (float gap in gaps) {
       float width = RollingPass.SpreadWidth(startWidth, startThickness, gap);
       narrowTotal += narrow.PassesAt(width);
       wideTotal += wide.PassesAt(width);
     }
 
-    Assert.Equal(2 * narrow.Gaps.Length, wideTotal); // wide: the two-pass floor at every gap
+    Assert.Equal(2 * gaps.Length, wideTotal); // wide: the two-pass floor at every gap
     Assert.True(
       narrowTotal > wideTotal,
       $"the narrow set should cost more overall ({narrowTotal} vs {wideTotal})"
-    );
-  }
-
-  [Fact]
-  public void A_barrel_width_is_required_because_the_mill_cannot_guess_it() {
-    Assert.Contains(
-      "barrelWidth",
-      Rejects(FlatSet.Replace("\"barrelWidth\"", "\"unused\""))
     );
   }
 

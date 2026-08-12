@@ -16,13 +16,22 @@ namespace IronworkingExpanded.BlockStructures.Forming;
 /// <param name="Strips">Thickness of each side of the piece.</param>
 /// <param name="Turned">Per side, whether its first pass at the current gap is done, so the next feed is the
 /// turn-over that completes the reduction.</param>
-public sealed record WorkPiece(StockForm Form, float[] Strips, bool[] Turned) {
+/// <param name="Family">The roller family that last worked this piece, or null for one never rolled. A
+/// stage is addressed by (thickness, family), so at a fork - where two families draw the same gauge
+/// differently - the gauge alone cannot say which of them the piece looks like.</param>
+public sealed record WorkPiece(
+  StockForm Form,
+  float[] Strips,
+  bool[] Turned,
+  string? Family = null
+) {
   /// <summary>Feeds each side needs to reach a gap: a pass, then the same pass with the piece turned over.</summary>
   public const int FeedsPerSide = 2;
 
   private const string FormKey = "stockForm";
   private const string StripsKey = "stripThickness";
   private const string TurnedKey = "stripTurned";
+  private const string FamilyKey = "rollerFamily";
 
   /// <summary>How many sides a piece of <paramref name="width"/> must be rolled in on a barrel of
   /// <paramref name="barrelWidth"/>: one when it fits, more when it overhangs and has to be taken in
@@ -145,10 +154,7 @@ public sealed record WorkPiece(StockForm Form, float[] Strips, bool[] Turned) {
     string? formName =
       tree.GetString(FormKey)
       ?? stack!.Collectible?.Attributes?[FormKey]?.AsString();
-    if (
-      formName == null
-      || !StockForm.All.TryGetValue(formName, out StockForm? form)
-    )
+    if (formName == null || !StockForm.TryGet(formName, out StockForm? form))
       return null;
 
     float[]? strips = (tree[StripsKey] as FloatArrayAttribute)?.value;
@@ -158,7 +164,9 @@ public sealed record WorkPiece(StockForm Form, float[] Strips, bool[] Turned) {
     bool[]? turned = (tree[TurnedKey] as BoolArrayAttribute)?.value;
     if (turned == null || turned.Length != strips.Length)
       turned = new bool[strips.Length];
-    return new WorkPiece(form, strips, turned);
+    // Absent on a piece rolled before the family was recorded, which reads as "no branch known" and falls
+    // back to the composed mesh rather than guessing one.
+    return new WorkPiece(form, strips, turned, tree.GetString(FamilyKey));
   }
 
   /// <summary>Writes this piece onto a stack, replacing any state already there.</summary>
@@ -166,6 +174,10 @@ public sealed record WorkPiece(StockForm Form, float[] Strips, bool[] Turned) {
     stack.Attributes.SetString(FormKey, Form.Name);
     stack.Attributes[StripsKey] = new FloatArrayAttribute(Strips);
     stack.Attributes[TurnedKey] = new BoolArrayAttribute(Turned);
+    if (Family != null)
+      stack.Attributes.SetString(FamilyKey, Family);
+    else
+      stack.Attributes.RemoveAttribute(FamilyKey);
   }
 
   #endregion

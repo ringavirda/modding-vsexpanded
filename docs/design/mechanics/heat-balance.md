@@ -48,7 +48,7 @@ rule anyone wrote.
 
 ### The law
 
-`ExpandedLib/Process/HeatBalance.cs:55-80`:
+`ExpandedLib/Heat/HeatBalance.cs:55-80`:
 
 ```
 T_process = max(ambient, T_in − T_loss)
@@ -455,7 +455,7 @@ these is a `virtual` member, so a subclass can override it - but no `/exmod conf
 | `_internalTemp` initial | `20f` | :109 | Literal |
 | `_ambientTemp` initial | `20f` | :140 | Literal, overwritten on the first `CacheAttributes` |
 | melt-speed absolute floor | `0.01f` | :1932 | Guards a retuned `BfMeltSpeedMin` of 0 from dividing by zero |
-| `HeatBalance.IsHotBlast` epsilon | `0.5f` | `ExpandedLib/Process/HeatBalance.cs:46` | Preheat gain above which the HUD says "hot blast" |
+| `HeatBalance.IsHotBlast` epsilon | `0.5f` | `ExpandedLib/Heat/HeatBalance.cs:46` | Preheat gain above which the HUD says "hot blast" |
 | `ProductionTickMs` | 1000 | `ExpandedLib/Blocks/Machines/BlockEntityProductionMachine.cs:56` | Furnaces use the default; they do not override it |
 | `MaxCatchupTickMultiple` | 2 | `…/BEBehaviorProductionMachine.cs:77` | Upper bound on a single `dt` |
 
@@ -489,8 +489,8 @@ furnace](../machines/blast-furnace-cold.md)'s.
 | `AppendHeatBalanceInfo` | :2741 | Ledger + burden grade + melt-rate line |
 | `BlockEntityShaftFurnace` (abstract) | `…/BlockEntities/BlockEntityShaftFurnace.cs:38` | The derived branch: raceway combustion, `DeriveState` :1031, `RacewayHoldsCarbon` :1062, the chill (`IsHung` / `HungColumnCount`) |
 | `BlockEntityFireboxFurnace` (abstract) | `…/BlockEntityFireboxFurnace.cs:33` | The stored branch: the `Firebox*` cadence and a `sealed` capacity of `FireboxCellCount × FireboxMixPerCell` |
-| `HeatBalance` record / `.Compute` | `ExpandedLib/Process/HeatBalance.cs:30` / `:55` | The shared `T_process` law |
-| `HeatBalanceHud.AppendLedger` | `ExpandedLib/Process/HeatBalanceHud.cs:48` | Five shared lines; lang keys passed in so exlib stays content-free |
+| `HeatBalance` record / `.Compute` | `ExpandedLib/Heat/HeatBalance.cs:30` / `:55` | The shared `T_process` law |
+| `HeatBalanceHud.AppendLedger` | `ExpandedLib/Heat/HeatBalanceHud.cs:48` | Five shared lines; lang keys passed in so exlib stays content-free |
 | `HeatBalanceLedgerKeys` | `…/HeatBalanceHud.cs:21` | The furnace's set is at `BlockEntityFurnaceCore.cs:2772` |
 
 ### Where a caller hooks in

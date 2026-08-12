@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
+using ExpandedLib.Processes;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Forming;
 using IronworkingExpanded.BlockStructures.Forming.BlockEntities;
@@ -261,8 +262,6 @@ public class RollingMillFeedTests {
         { "rollset": {
             "family": "flat",
             "accepts": [ "bloom" ],
-            "gaps": [ 2.0, 1.5, 1.0, 0.5 ],
-            "outputs": [ { "gap": 1.0, "code": "iwex:rolledplate-iron" } ],
             "barrelWidth": 6.0 } }
         """
       )
@@ -297,8 +296,9 @@ public class RollingMillFeedTests {
 
   #region Claiming a finished item
 
-  // A mill fitted with a set that names a finished item at its last gap. The shipped sets name none today
-  // (every stage is a shear crop), so the mechanism is driven through a set authored here.
+  // A mill fitted with a set whose one rung names a finished item. The shipped ladders name no code today
+  // (every stage is a shear crop), so the claim is driven through a ladder authored here and handed to
+  // this mill alone rather than written into the shared catalogue.
   private static (
     TestWorld World,
     BlockEntityRollingMill Mill,
@@ -309,21 +309,46 @@ public class RollingMillFeedTests {
     var setItem = world.RegisterItem("iwex:rollset-claiming");
     setItem.Attributes = new Vintagestory.API.Datastructures.JsonObject(
       Newtonsoft.Json.Linq.JToken.Parse(
-        $$"""
+        """
         { "rollset": {
-            "family": "flat",
+            "family": "claiming",
             "accepts": [ "bloom" ],
-            "gaps": [ 2.0 ],
-            "outputs": [ { "gap": 2.0, "code": "{{outputCode}}" } ],
             "barrelWidth": 16.0 } }
         """
       )
     );
     Assert.True(mill.TryFitRollSet(new ItemStack(setItem), out _));
+    ReflectionHelpers.SetProperty(mill, "Ladders", ClaimingLadder(outputCode));
 
     ItemStack stock = Piece(world);
     stock.Collectible.SetTemperature(world.World, stock, 1100f);
     return (world, mill, stock);
+  }
+
+  // A one-rung bloom ladder whose single stage is a stopping point.
+  private static StageLadderRegistry ClaimingLadder(string outputCode) {
+    var registry = new StageLadderRegistry();
+    Assert.True(
+      StageLadder.TryParse(
+        new Vintagestory.API.Datastructures.JsonObject(
+          Newtonsoft.Json.Linq.JToken.Parse(
+            $$"""
+            {
+              "family": "bloom",
+              "stages": [
+                { "thickness": 2.0, "acceptedBy": [ "claiming" ], "code": "{{outputCode}}" }
+              ]
+            }
+            """
+          )
+        ),
+        out StageLadder? ladder,
+        out string? error
+      ),
+      error
+    );
+    Assert.Empty(registry.Contribute(ladder!));
+    return registry;
   }
 
   [Fact]

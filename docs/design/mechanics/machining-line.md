@@ -227,6 +227,10 @@ gesture instead, because a roll set is a profile rather than a consumable.
 
 ## The job convention
 
+The terminal-versus-sequence axis below is now general: every machine has a registry in one of those
+two shapes, and [process-extension](process-extension.md) owns the contract. `MachineJob` is the
+terminal shape for the four machine tools.
+
 **`MachineJob` lives in exlib** (settled 2026-08-11), alongside `ItemDie`. Both are mechanics rather
 than content: a mod adding rails to our mill should depend on the framework, not on a mod full of
 furnaces. It hangs off `BlockEntityMachineStation`, exlib's container-plus-window base, which the

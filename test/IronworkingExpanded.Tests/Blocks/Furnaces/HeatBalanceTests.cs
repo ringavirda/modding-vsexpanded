@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Process;
+using ExpandedLib.Heat;
 using ExpandedLib.Testing;
 using IronworkingExpanded.BlockStructures.Furnaces;
 using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;

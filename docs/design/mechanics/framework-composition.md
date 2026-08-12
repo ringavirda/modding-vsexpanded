@@ -13,6 +13,8 @@ which `BlockEntityMultiblockStructure` extended `BlockEntityProductionMachine`.
 "a filler can never be a graph node" limitation this page retired) · [pipe-network](pipe-network.md) ·
 [mp-energy](mp-energy.md) · [conventions](../conventions.md) (the block-size vocabulary, the network
 families) · [the vanilla source map](../../internal/vanilla/README.md)
+**Extended by** [process-extension](process-extension.md) — this page composes a machine from three
+axes; that one settles how a machine learns what it can *make*, and why it may never name a product.
 
 ---
 

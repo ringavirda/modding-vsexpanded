@@ -328,7 +328,7 @@ the player's hand.
 ### The heat balance the converter supplies
 
 `ComputeHeatBalance` (`:694-718`) calls the shared `HeatBalance.Compute` ([heat
-balance](../mechanics/heat-balance.md), `ExpandedLib/Process/HeatBalance.cs:55`) with:
+balance](../mechanics/heat-balance.md), `ExpandedLib/Heat/HeatBalance.cs:55`) with:
 
 ```
 T_in   = min(BessemerAutothermalCeiling, BessemerAutothermalBase + BessemerHeatPerCarbonUnit · airFactor)

@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "family": "bloom",
+  "stages": [
+    { "thickness": 2.5, "acceptedBy": [ "grooved" ] },
+    { "thickness": 2.0, "acceptedBy": [ "flat", "grooved" ] },
+    { "thickness": 1.5, "acceptedBy": [ "flat", "grooved" ] },
+    { "thickness": 1.0, "acceptedBy": [ "flat", "grooved" ] },
+    { "thickness": 0.5, "acceptedBy": [ "flat" ] }
+  ]
+}

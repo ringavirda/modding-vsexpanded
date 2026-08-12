@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpandedLib.Process;
+namespace ExpandedLib.Heat;
 
 /// <summary>One evaluation of a process heat balance, captured as the tick computed it so block info
 /// reads the contributors without recomputing. Shared by the shaft furnace (coke combustion) and the

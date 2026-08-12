@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Processes;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -20,6 +21,7 @@ public enum MoldSize {
 /// shake-out yields, and the minimum pour temperature. The pattern owns this data and the casting cell
 /// only reads it, so a mod adds a castable part with a pattern definition alone.
 /// </summary>
+/// <param name="Schema">Schema version of the declaration, so a parser can read every shipped form.</param>
 /// <param name="Size">Which station this pattern is for.</param>
 /// <param name="Shape">The filling-shape asset shown while the impression is present (e.g. <c>iwex:casting/cell-filling-plate</c>).</param>
 /// <param name="Capacity">Units of metal the impression holds (= the cavity volume).</param>
@@ -27,6 +29,7 @@ public enum MoldSize {
 /// <param name="Output">What a full, hardened cast yields on shake-out (resolved against the world at use time).</param>
 /// <param name="MinPourTemp">Pour temperature (°C) below which a completed fill is a misrun (scrap, not the part). 0 disables the check.</param>
 public sealed record MoldSpec(
+  int Schema,
   MoldSize Size,
   string Shape,
   int Capacity,
@@ -36,6 +39,10 @@ public sealed record MoldSpec(
 ) {
   /// <summary>The attribute key a pattern carries its spec under.</summary>
   public const string AttributeKey = "mold";
+
+  /// <summary>The schema this parser writes and reads up to. Raise it only alongside the fallback that
+  /// reads the form it replaces (<see cref="SpecSchema"/>).</summary>
+  public const int CurrentSchema = SpecSchema.First;
 
   /// <summary>
   /// Parses and validates a pattern's <c>mold</c> attribute. Returns false with a human-readable
@@ -53,6 +60,9 @@ public sealed record MoldSpec(
       error = $"missing '{AttributeKey}' attribute";
       return false;
     }
+
+    if (!SpecSchema.TryRead(mold, CurrentSchema, out int schema, out error))
+      return false;
 
     string sizeStr = mold["size"].AsString("cell");
     MoldSize? size = sizeStr switch {
@@ -106,6 +116,7 @@ public sealed record MoldSpec(
     float minPourTemp = mold["minPourTemp"].AsFloat(0f);
 
     spec = new MoldSpec(
+      schema,
       size.Value,
       shape,
       capacity,

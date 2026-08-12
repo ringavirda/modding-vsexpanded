@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Vintagestory.API.Config;
 
-namespace ExpandedLib.Process;
+namespace ExpandedLib.Heat;
 
 /// <summary>
 /// The lang keys a <see cref="HeatBalance"/> ledger reads, supplied by the machine because exlib

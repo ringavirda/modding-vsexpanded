@@ -55,7 +55,7 @@ Nothing. Not a block, not an item, not a lang key, not a shape, not a metal regi
 | its product | `grep -rniE "electrolys\|hss\|highspeedsteel" src/ assets/` | 2 hits, both binary substring noise in art files (`assets/editable/refs/rolling/rolling-mill-for-puddling-ledebur-W31WYE.jpg`, `assets/editable/textures/vs_textures.psd`) - 0 in code |
 | the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit - a doc comment at `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58` |
 
-The frameworks it would sit on are live and shipped: the heat-balance law (`ExpandedLib/Process/HeatBalance.cs:30`, `:55`), the molten network, the multiblock layout DSL, and the metal registry (`ExpandedLib/Metals/MetalCatalogueLoader.cs:58`).
+The frameworks it would sit on are live and shipped: the heat-balance law (`ExpandedLib/Heat/HeatBalance.cs:30`, `:55`), the molten network, the multiblock layout DSL, and the metal registry (`ExpandedLib/Metals/MetalCatalogueLoader.cs:58`).
 
 ---
 

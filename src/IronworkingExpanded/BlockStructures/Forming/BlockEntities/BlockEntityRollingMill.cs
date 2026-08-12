@@ -5,6 +5,7 @@ using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
+using ExpandedLib.Processes;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.Forming.Blocks;
 using Vintagestory.API.Common;
@@ -209,6 +210,20 @@ public class BlockEntityRollingMill
   /// <summary>Whether a set is fitted.</summary>
   public bool HasRollSet => RollSet != null;
 
+  /// <summary>The stage catalogue this mill reads its routes from - the process-wide one, which every mod's
+  /// ladders load into. Settable so a fixture can stand a route up without writing to the shared
+  /// catalogue.</summary>
+  public StageLadderRegistry Ladders { get; protected set; } =
+    StageLadderRegistry.Shared;
+
+  /// <summary>
+  /// What the fitted set can do to <paramref name="piece"/>: its branch of that stock family's stage
+  /// ladder. Null when the stand is bare, when the tooling will not bite this stock, or when nothing has
+  /// declared a stage this set's family accepts.
+  /// </summary>
+  public MillSchedule? ScheduleFor(WorkPiece? piece) =>
+    piece == null ? null : MillSchedule.For(RollSet, piece.Form.Name, Ladders);
+
   /// <summary>
   /// Fits <paramref name="set"/> to the stand and hands back through <paramref name="previous"/> whatever was
   /// there. Refused while stock is under the rolls; the tooling cannot change mid-pass.
@@ -261,8 +276,10 @@ public class BlockEntityRollingMill
       piece.ToStack(stack!);
     }
 
+    MillSchedule? schedule = ScheduleFor(piece);
     FeedDecision decision = MillFeed.Decide(
       RollSet,
+      schedule,
       piece,
       gapIndex,
       strip,
@@ -275,7 +292,7 @@ public class BlockEntityRollingMill
 
     // The reduction is not applied yet: it is committed in CompletePass. An interrupted pass therefore leaves
     // the stock exactly as it went in.
-    _pendingGap = RollSet!.Gaps[gapIndex];
+    _pendingGap = schedule!.Gaps[gapIndex];
     _pendingStrip = strip;
 
     float gap = _pendingGap;
@@ -383,7 +400,11 @@ public class BlockEntityRollingMill
       && _pendingGap > 0f
       && WorkPiece.FromStack(_piece) is { } piece
     ) {
-      WorkPiece rolled = piece.Fed(_pendingStrip, _pendingGap);
+      // The branch is recorded with the reduction: a stage is addressed by (thickness, family), so a
+      // piece that did not carry the family it was worked on could not be drawn at a fork.
+      WorkPiece rolled = piece.Fed(_pendingStrip, _pendingGap) with {
+        Family = RollSet?.Family ?? piece.Family,
+      };
       rolled.ToStack(_piece);
       ClaimFinishedPiece(rolled);
     }
@@ -393,7 +414,7 @@ public class BlockEntityRollingMill
 
   /// <summary>
   /// Swaps the piece for the finished item its stage names, when that stage needs no shear cut. A stage the
-  /// set names no output for stays stock and leaves the mill to be cropped elsewhere, which is every stage
+  /// ladder names no code for stays stock and leaves the mill to be cropped elsewhere, which is every stage
   /// that yields more than one item off a piece.
   /// <para>
   /// One piece in, one piece out either way: a conversion changes what the piece is, never how many there
@@ -406,7 +427,7 @@ public class BlockEntityRollingMill
       _piece == null
       || Api == null
       || !rolled.IsEven
-      || RollSet?.OutputAt(rolled.Thickest) is not { } code
+      || ScheduleFor(rolled)?.OutputAt(rolled.Thickest) is not { } code
     )
       return;
 
@@ -419,8 +440,8 @@ public class BlockEntityRollingMill
       : null;
     if (finished == null) {
       Api.Logger.Warning(
-        "[iwex] Rolling mill: roll set names output \"{0}\" at gap {1}, which resolves to no item. The "
-          + "piece stays stock.",
+        "[iwex] Rolling mill: the stage ladder names output \"{0}\" at gap {1}, which resolves to no item. "
+          + "The piece stays stock.",
         code,
         rolled.Thickest
       );

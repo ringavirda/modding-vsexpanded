@@ -100,6 +100,15 @@ public sealed class ExItemDef : IExDef {
     return this;
   }
 
+  /// <summary>Sets the shape's <c>selectiveElements</c> - the sub-elements the item renders, for a shape
+  /// file holding a family of them. Mutates the same <c>shape</c> node as <see cref="Shape"/>.</summary>
+  /// <remarks>Matching is the engine's per-segment prefix rule, so naming an ancestor keeps more than
+  /// intended and naming an element exactly drops its children.</remarks>
+  public ExItemDef ShapeSelectiveElements(params string[] elements) {
+    Nested("shape")["selectiveElements"] = new JArray(elements);
+    return this;
+  }
+
   /// <summary>Adds a texture mapping <paramref name="key"/> -&gt; <c>{ "base": "domain:path" }</c> under
   /// <c>textures</c> (accumulates across calls). Any <paramref name="overlays"/> are emitted as an
   /// <c>overlays</c> array composited over the base.</summary>

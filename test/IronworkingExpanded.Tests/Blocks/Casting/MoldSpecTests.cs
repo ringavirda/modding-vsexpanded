@@ -39,6 +39,34 @@ public class MoldSpecTests {
   }
 
   [Fact]
+  public void A_pattern_written_before_the_field_existed_reads_as_the_first_schema() {
+    // Every shipped pattern is this form. Refusing it, or reading it as anything but schema 1, would
+    // break the whole casting catalogue the day the field was added.
+    Assert.True(
+      MoldSpec.TryParse(Obj(Valid), out MoldSpec? spec, out string? error),
+      error
+    );
+    Assert.Equal(1, spec!.Schema);
+  }
+
+  [Fact]
+  public void A_pattern_from_a_newer_build_is_refused_rather_than_mis_read() {
+    Assert.False(
+      MoldSpec.TryParse(
+        Obj(
+          Valid.Replace(
+            "\"size\": \"cell\"",
+            "\"schema\": 99, \"size\": \"cell\""
+          )
+        ),
+        out _,
+        out string? error
+      )
+    );
+    Assert.Contains("99", error!);
+  }
+
+  [Fact]
   public void Longcell_size_parses() {
     Assert.True(
       MoldSpec.TryParse(

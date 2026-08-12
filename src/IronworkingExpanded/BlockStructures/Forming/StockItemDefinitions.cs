@@ -22,6 +22,11 @@ public class StockItemDefinitions : IExItemDefProvider {
     ["slab"] = 400,
   };
 
+  // The states each form can be worked into are not declared here. They are the stage catalogue, in
+  // assets/iwex/config/stageladders/, because items are generated from it and that has to happen before
+  // the object loader builds items - a ladder carried on this itemtype could not be read in time.
+  // See docs/design/mechanics/process-extension.md.
+
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     StockForm.All.Values.Select(form => Stock(domain, form));
 

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using ExpandedLib.Helpers;
+using ExpandedLib.Processes;
 using ExpandedLib.Registries.Entities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -28,18 +30,66 @@ public class ItemStockPiece : Item {
     // An unworked piece is exactly its base shape, so leave the default mesh alone.
     if (
       WorkPiece.FromStack(itemstack) is not { } piece
-      || piece.Sides <= 1 && piece.IsEven
+      || StockMesh.IsBaseState(piece)
     )
       return;
 
+    // Cached on geometry alone - never on anything belonging to the stack. The handbook clones the stack
+    // every frame, so a per-stack key would upload a mesh per frame and leak every one.
     string key = StockMesh.CacheKey(piece);
     if (!_meshes.TryGetValue(key, out MultiTextureMeshRef? mesh)) {
-      mesh = Compose(capi, piece);
+      mesh = Build(capi, piece);
       if (mesh == null)
         return;
       _meshes[key] = mesh;
     }
     renderinfo.ModelRef = mesh;
+  }
+
+  /// <summary>
+  /// The mesh for a worked piece: the stage the family's shape file draws it at when the ladder has one,
+  /// and the composed mesh otherwise. Drawn art wins because it carries detail the scale cannot - a groove
+  /// is not a thinner rectangle - while the composition covers every gauge nobody has drawn.
+  /// </summary>
+  private MultiTextureMeshRef? Build(ICoreClientAPI capi, WorkPiece piece) {
+    StageLadder? ladder = StageLadderRegistry.Shared.Ladder(piece.Form.Name);
+    return StockMesh.ElementFor(ladder, piece) is { } element
+      ? Drawn(capi, ladder!.Shape!, element)
+      : Compose(capi, piece);
+  }
+
+  /// <summary>Tesselates one element of the family's shape file - the stage as it was drawn.</summary>
+  // The texture source is the item's own rather than the shape file's: `ShapeTextureSource` does not
+  // exist on 1.20, and this is the route every other tesselation site here already takes.
+  private MultiTextureMeshRef? Drawn(
+    ICoreClientAPI capi,
+    string shape,
+    string element
+  ) {
+    Shape? loaded = ExMeshCache.LoadShape(
+      capi,
+      new AssetLocation(shape)
+        .WithPathPrefixOnce("shapes/")
+        .WithPathAppendixOnce(".json")
+    );
+    if (loaded == null)
+      return null;
+
+    // The shape holds the whole family, so only this stage's element is kept. Prefix matching is the
+    // engine's own rule here, which is why the stages are authored as flat, distinctly-named elements.
+    capi.Tesselator.TesselateShape(
+      "stock stage " + element,
+      loaded,
+      out MeshData? mesh,
+      capi.Tesselator.GetTextureSource(this),
+      null,
+      0,
+      0,
+      0,
+      null,
+      [element]
+    );
+    return mesh == null ? null : capi.Render.UploadMultiTextureMesh(mesh);
   }
 
   /// <summary>Tesselates the base shape once and lays a scaled copy down for each side of the piece.</summary>

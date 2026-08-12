@@ -71,6 +71,7 @@
   "attributesByType": {
     "*-castheavyplate-*": {
       "mold": {
+        "schema": 1,
         "size": "cell",
         "shape": "iwex:casting/cell-filling-heavyplate",
         "capacity": 160,
@@ -93,6 +94,7 @@
     },
     "*-castingotmold-*": {
       "mold": {
+        "schema": 1,
         "size": "cell",
         "shape": "iwex:casting/cell-filling-ingotmold",
         "capacity": 152,
@@ -115,6 +117,7 @@
     },
     "*-castbarrel-*": {
       "mold": {
+        "schema": 1,
         "size": "cell",
         "shape": "iwex:casting/cell-filling-moltenbarrel",
         "capacity": 200,
@@ -137,6 +140,7 @@
     },
     "*-castshell-*": {
       "mold": {
+        "schema": 1,
         "size": "cell",
         "shape": "iwex:casting/cell-filling-castshell",
         "capacity": 600,
@@ -159,6 +163,7 @@
     },
     "*-castwheelsection-*": {
       "mold": {
+        "schema": 1,
         "size": "cell",
         "shape": "iwex:casting/cell-filling-flywheelpart",
         "capacity": 600,
@@ -181,6 +186,7 @@
     },
     "*-castbillets-*": {
       "mold": {
+        "schema": 1,
         "size": "longcell",
         "shape": "iwex:casting/longcell-filling-billets",
         "capacity": 1800,
@@ -219,6 +225,7 @@
     },
     "*-castblooms-*": {
       "mold": {
+        "schema": 1,
         "size": "longcell",
         "shape": "iwex:casting/longcell-filling-blooms",
         "capacity": 2000,
@@ -249,6 +256,7 @@
     },
     "*-castslab-*": {
       "mold": {
+        "schema": 1,
         "size": "longcell",
         "shape": "iwex:casting/longcell-filling-castslab",
         "capacity": 3000,

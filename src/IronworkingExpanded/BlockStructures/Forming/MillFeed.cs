@@ -79,12 +79,18 @@ public static class MillFeed {
 
   /// <summary>
   /// Whether the rolls take <paramref name="piece"/> on strip <paramref name="strip"/> at gap
-  /// <paramref name="gapIndex"/> of <paramref name="set"/>, and the draft it takes if they do. Temperatures in
-  /// degrees Celsius; <paramref name="rollRadius"/> in block-space units. An out-of-range gap or strip reads as
-  /// <see cref="FeedVerdict.NoReduction"/>.
+  /// <paramref name="gapIndex"/> of <paramref name="schedule"/>, and the draft it takes if they do.
+  /// Temperatures in degrees Celsius; <paramref name="rollRadius"/> in block-space units. An out-of-range
+  /// gap or strip reads as <see cref="FeedVerdict.NoReduction"/>.
+  /// <para>
+  /// <paramref name="set"/> is taken alongside the schedule only to tell a bare stand from a fitted one
+  /// that cannot work this stock: a schedule is absent in both cases and the two mistakes have different
+  /// fixes.
+  /// </para>
   /// </summary>
   public static FeedDecision Decide(
     RollSetSpec? set,
+    MillSchedule? schedule,
     WorkPiece? piece,
     int gapIndex,
     int strip,
@@ -94,14 +100,14 @@ public static class MillFeed {
   ) {
     if (set == null)
       return new FeedDecision(FeedVerdict.NoRollSet, 0f);
-    if (piece == null || !set.AcceptsForm(piece.Form.Name))
+    if (piece == null || schedule == null)
       return new FeedDecision(FeedVerdict.WrongForm, 0f);
-    if (gapIndex < 0 || gapIndex >= set.Gaps.Length)
+    if (gapIndex < 0 || gapIndex >= schedule.Gaps.Length)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
     if (strip < 0 || strip >= piece.Sides)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
 
-    float gap = set.Gaps[gapIndex];
+    float gap = schedule.Gaps[gapIndex];
     float thickness = piece.Strips[strip];
     if (gap >= thickness)
       return new FeedDecision(FeedVerdict.NoReduction, 0f); // passes straight through

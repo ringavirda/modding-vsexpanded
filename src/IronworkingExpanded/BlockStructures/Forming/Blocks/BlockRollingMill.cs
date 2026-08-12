@@ -310,14 +310,18 @@ public partial class BlockRollingMill
     if (world.Side != EnumAppSide.Server)
       return true;
 
-    int gapCount = mill.RollSet?.Gaps.Length ?? 1;
+    // The deck's zones span the gaps this set has for this stock, so the click maps onto the branch the
+    // player is actually working rather than onto the ladder as a whole.
+    WorkPiece? offered = WorkPiece.FromStack(held);
+    MillSchedule? schedule = mill.ScheduleFor(offered);
+    int gapCount = schedule?.Gaps.Length ?? 1;
     int gap = MillFeed.GapZone(
       AlongBarrel(mill.Pos, clickedCell, sel),
       gapCount
     );
     int sides =
-      WorkPiece.FromStack(held) is { } wp && mill.RollSet != null
-        ? WorkPiece.SidesFor(wp.Width, mill.RollSet.BarrelWidth)
+      offered != null && mill.RollSet != null
+        ? WorkPiece.SidesFor(offered.Width, mill.RollSet.BarrelWidth)
         : 1;
     int strip = MillFeed.StripIndex(byPlayer.Entity.Controls.Sneak, sides);
 
