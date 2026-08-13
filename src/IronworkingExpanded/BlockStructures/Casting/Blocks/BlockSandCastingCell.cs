@@ -11,7 +11,7 @@ namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 /// <summary>
 /// The 1×1 sand casting cell: a hollow brick shell placed empty, rammed with sand and impressed with a
 /// wooden pattern, then filled from a canal on its launder face. Wires the code-first definition and the
-/// hosted <see cref="BEBehaviorMoltenCell"/>, and routes right-clicks to
+/// hosted <see cref="ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell"/>, and routes right-clicks to
 /// <see cref="BlockEntitySandCastingCell.OnInteract"/>.
 /// </summary>
 [BlockRegister]

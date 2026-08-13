@@ -173,7 +173,7 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider {
   /// The stack a picked or mined tap becomes: this tap's own type, normalised to the <c>s</c> facing so a
   /// mined tap stacks with a crafted one instead of splitting the inventory four ways. The type is
   /// carried through, so an iron tap never comes back as a slag tap. <c>s</c> rather than
-  /// <see cref="BlockBehaviorExOrientable"/>'s canonical <c>n</c>, to match the creative entry
+  /// <see cref="ExpandedLib.Blocks.Behaviors.BlockBehaviorExOrientable"/>'s canonical <c>n</c>, to match the creative entry
   /// (<c>*-s</c>) and both grid recipes; these overrides do not call base, so the behaviour's own
   /// normalisation never runs here. A code that resolves to no block falls back to <c>this</c>, so a
   /// wrong token stops normalisation silently rather than failing.

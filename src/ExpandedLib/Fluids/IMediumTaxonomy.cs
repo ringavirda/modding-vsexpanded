@@ -2,8 +2,8 @@ namespace ExpandedLib.Fluids;
 
 /// <summary>
 /// Medium policy the pipe network consults instead of hardcoded medium strings, injected like
-/// <see cref="Blocks.Networks.IPipeVentStrategy"/>. Supplied to
-/// <see cref="Blocks.Networks.PipeNetwork"/> at <c>RegisterNetworkType</c>; a network constructed
+/// <see cref="Networks.IPipeVentStrategy"/>. Supplied to
+/// <see cref="Networks.PipeNetwork"/> at <c>RegisterNetworkType</c>; a network constructed
 /// without one falls back to <see cref="ExLiquids.Taxonomy"/>, which always knows the four built-ins.
 /// </summary>
 public interface IMediumTaxonomy {

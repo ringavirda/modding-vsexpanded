@@ -6,8 +6,8 @@ namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Reads a JSON catalogue out of every domain's assets, backing the metal and liquid registries.
-/// Pulls every <c>assets/&lt;domain&gt;/&lt;pathBegins&gt;*.json</c>, deserializes each to
-/// <typeparamref name="T"/>, and returns them for a registry to key. Must run at
+/// Pulls every <c>assets/&lt;domain&gt;/&lt;pathBegins&gt;*.json</c>, deserializes each to the
+/// caller's catalogue type, and returns them for a registry to key. Must run at
 /// <c>AssetsFinalize</c>, after the VS patch pipeline has merged the raw JSON. The <c>config</c>
 /// category it reads is Universal, so it populates identically on client and server. A malformed
 /// asset is logged and skipped so one bad file does not fail the whole load.

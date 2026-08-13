@@ -9,6 +9,7 @@ using Cake.Common.Tools.DotNet.Build;
 using Cake.Common.Tools.DotNet.MSBuild;
 using Cake.Common.Tools.DotNet.Publish;
 using Cake.Core;
+using Cake.Core.Diagnostics;
 using Cake.Frosting;
 using Cake.Json;
 using Newtonsoft.Json;
@@ -285,12 +286,41 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
       $"{context.PublishDir(exlib, current)}/exlib.dll",
       $"{stageDir}/exlib.dll"
     );
+    // The XML docs beside each dll are what give a consumer IntelliSense over the public surface;
+    // without them a referenced assembly shows bare signatures. The mod zips get theirs for free
+    // (they copy the whole publish directory), but this bundle names its files, so they are named
+    // here too. Copied best-effort: an older build tree may predate GenerateDocumentationFile.
+    CopyDocsIfPresent(
+      context,
+      $"../../test/ExpandedLib.Testing/bin/{context.BuildConfiguration}/ExpandedLib.Testing.xml",
+      $"{stageDir}/ExpandedLib.Testing.xml"
+    );
+    CopyDocsIfPresent(
+      context,
+      $"{context.PublishDir(exlib, current)}/exlib.xml",
+      $"{stageDir}/exlib.xml"
+    );
     File.WriteAllText($"{stageDir}/README.txt", BundleReadme);
 
     context.Zip(
       stageDir,
       $"../Releases/{current.GameVersion}/exlib-testing_{exlib.Version}.zip"
     );
+  }
+
+  /// <summary>Copies an XML documentation file when the build produced one, warning rather than
+  /// failing when it did not - the bundle is still usable without docs, just poorer.</summary>
+  private static void CopyDocsIfPresent(
+    BuildContext context,
+    string from,
+    string to
+  ) {
+    if (File.Exists(from))
+      context.CopyFile(from, to);
+    else
+      context.Log.Warning(
+        $"No XML documentation at {from}; bundling without it."
+      );
   }
 }
 

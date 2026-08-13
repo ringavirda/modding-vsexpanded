@@ -12,7 +12,7 @@ namespace IronworkingExpanded.BlockMigrations;
 /// <c>requiredUnits 100</c> / one ingot where the old block held <c>200</c> / two.
 /// <para>
 /// A mold poured past the new capacity keeps its contents: the state copies verbatim because
-/// <see cref="BlockEntities.BlockEntityCastMold"/> reads <c>requiredUnits</c> off the block rather than the
+/// <see cref="BlockStructures.Casting.BlockEntities.BlockEntityCastMold"/> reads <c>requiredUnits</c> off the block rather than the
 /// tree and treats at-or-past capacity as full. <c>casting-mold-plate</c> was retired rather than renamed,
 /// so it is intentionally absent from the table.
 /// </para>

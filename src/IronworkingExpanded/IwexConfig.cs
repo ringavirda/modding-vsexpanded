@@ -295,7 +295,7 @@ public class IwexConfig : IExVersionedConfig {
   /// over this reference, so <c>game:coke</c> (value 2) is 1.0 and <c>game:charcoal</c> (value 1) is 0.5;
   /// a fuel granted the role with no value takes the registry fallback of 1.0, half of coke. The per-fuel
   /// values live in <c>assets/iwex/config/materialroles.json</c>, read through
-  /// <see cref="MaterialRoleRegistry"/>. Moving this key changes the meaning of every coke figure here.
+  /// <see cref="ExpandedLib.Materials.MaterialRoleRegistry"/>. Moving this key changes the meaning of every coke figure here.
   /// </summary>
   public float BfFuelCarbonReference { get; set; } = 2f;
 

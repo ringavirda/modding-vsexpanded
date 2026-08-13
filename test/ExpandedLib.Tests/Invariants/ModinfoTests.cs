@@ -70,7 +70,80 @@ public class ModinfoTests {
     Assert.True(stale.Count == 0, string.Join("; ", stale));
   }
 
+  [Fact]
+  public void No_mod_s_source_version_is_at_or_below_a_version_it_has_already_released() {
+    // The game compares by modid, and a config file carries the version that wrote it. Cutting a
+    // release from a tree stamped at or below what is already published means the player's installed
+    // build is newer than the update: the update never supersedes it, and every ExConfigMigration
+    // whose ToVersion falls in the gap has already been passed, so it can never fire again. That
+    // combination has shipped from this repo once.
+    var released = ReleasedVersions();
+    var behind = new List<string>();
+
+    foreach (Mod m in Mods()) {
+      if (!released.TryGetValue(m.ModId, out string? shipped))
+        continue; // never published under this id; nothing to regress against
+      if (Compare(m.Version, shipped) <= 0)
+        behind.Add(
+          $"{m.Folder} is {m.Version} but {m.ModId} {shipped} is already in dist/Releases"
+        );
+    }
+
+    Assert.True(
+      behind.Count == 0,
+      "a source version must be strictly above every version already published under the same "
+        + $"modid: {string.Join("; ", behind)}"
+    );
+  }
+
   #region Corpus
+
+  /// <summary>
+  /// The highest version published per modid, read from the zip names under <c>dist/Releases/</c>
+  /// rather than restated here, so recording a release needs no edit to this file. Keyed by the modid
+  /// the artifact becomes today: <c>ppex</c> was renamed to <c>lpex</c>, and a rename does not reset
+  /// the version line, because a pre-rename config file is folded into the renamed mod's section and
+  /// still carries the version that wrote it.
+  /// </summary>
+  private static Dictionary<string, string> ReleasedVersions() {
+    string root = Path.Combine(RepoRoot(), "dist", "Releases");
+    var highest = new Dictionary<string, string>(StringComparer.Ordinal);
+    if (!Directory.Exists(root))
+      return highest;
+
+    // {modid}_{version}.zip, optionally with the legacy game version appended: exlib_0.7.2_1.21.0.zip
+    var name = new Regex(
+      @"^(?<id>[a-z][a-z-]*)_(?<ver>\d+(?:\.\d+)*)(?:_\d+(?:\.\d+)*)?\.zip$"
+    );
+
+    foreach (
+      string zip in Directory.EnumerateFiles(
+        root,
+        "*.zip",
+        SearchOption.AllDirectories
+      )
+    ) {
+      Match m = name.Match(Path.GetFileName(zip));
+      if (!m.Success)
+        continue;
+
+      string id = m.Groups["id"].Value;
+      id = id switch
+      {
+        "ppex" => "lpex", // renamed 2026-07; LpexRenameMigration carries the codes across
+        _ => id,
+      };
+
+      string ver = m.Groups["ver"].Value;
+      if (!highest.TryGetValue(id, out string? seen) || Compare(ver, seen) > 0)
+        highest[id] = ver;
+    }
+
+    // Three mods have shipped. An empty map would make the assertion above vacuous, which is the one
+    // way this guard could pass while the regression it exists for is live.
+    Assert.NotEmpty(highest);
+    return highest;
+  }
 
   private static string? Dependency(Mod mod, string name) =>
     mod.Dependencies.TryGetProperty(name, out JsonElement v)

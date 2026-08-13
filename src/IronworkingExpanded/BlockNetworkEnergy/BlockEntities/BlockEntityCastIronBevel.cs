@@ -10,7 +10,7 @@ namespace IronworkingExpanded.BlockNetworkEnergy.BlockEntities;
 
 /// <summary>
 /// Block entity for a <see cref="BlockCastIronBevel"/>: a shaft junction that branches the mpenergy run onto any
-/// perpendicular face. It inherits the shaft's <see cref="IMpEnergyStorage"/> buffer and adds the render, one
+/// perpendicular face. It inherits the shaft's <see cref="ExpandedLib.Networks.IMpEnergyStorage"/> buffer and adds the render, one
 /// bevel gear per perpendicular face with a connected neighbour. Those faces are derived from the world on each
 /// call (<see cref="GearedFaces"/>) rather than stored, so placing or breaking a perpendicular shaft grows or
 /// removes a gear on the next re-tesselation.

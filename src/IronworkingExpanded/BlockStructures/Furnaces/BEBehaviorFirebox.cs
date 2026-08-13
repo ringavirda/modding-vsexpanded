@@ -96,7 +96,7 @@ public class BEBehaviorFirebox(BlockEntity blockentity)
 
   /// <summary>
   /// Syncs and redraws, or does nothing before <c>Initialize</c> has run. A bed is legitimately filled while
-  /// <see cref="Api"/> is still null - the engine deserialises before it initialises, and a boiler may fill
+  /// <c>Api</c> is still null - the engine deserialises before it initialises, and a boiler may fill
   /// its firebox while standing itself up - and <c>BlockEntity.MarkDirty</c> dereferences <c>Api.World</c>.
   /// </summary>
   private void Dirty() {

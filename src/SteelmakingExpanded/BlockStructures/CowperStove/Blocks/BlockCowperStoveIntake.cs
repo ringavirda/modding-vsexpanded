@@ -25,7 +25,7 @@ public partial class BlockCowperStoveIntake
   /// <summary>The cowper-stove intake blocktype: the anchor of the cowper multiblock. Its 59-cell
   /// structure map is drawn as one top-down ASCII cross-section per Y level (y=-1 the brick
   /// foundation up to y=5 the domed cap), compared as an unordered cell set by
-  /// <see cref="DefinitionParity"/>.</summary>
+  /// <c>DefinitionParity</c>.</summary>
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
       ExBlockDef

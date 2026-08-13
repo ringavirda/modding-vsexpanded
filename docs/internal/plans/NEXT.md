@@ -9,6 +9,24 @@ sequencing, `../worklog/` owns what landed.
 
 ---
 
+## ⛔ Read first — the tree was not building, and the release identity was wrong
+
+Both fixed 2026-08-13, but they say something about the working rhythm. `src/SteelmakingExpanded/
+SteelmakingExpanded.csproj` and its test csproj had been reverted to a pre-split revision in the working
+tree: 36 CS0246s, and — worse — no `<AssetDomain>`, so a release cut from that tree would have shipped
+smex with **zero assets** while silently dropping out of the shipped-asset guard. Separately, all three
+published mods were stamped **below** what `dist/Releases/` already holds (exlib 0.7.0 < 0.7.2, lpex
+0.6.4 < ppex 0.6.8, smex 0.9.5 < 0.9.8) — the release-below-migrations failure, recurring. Both now have
+guards: `ModinfoTests` asserts source > released, mutation-checked.
+
+**A framework-hardening plan is now live:**
+[2026-08-13-framework-hardening.md](2026-08-13-framework-hardening.md) — F0–F2 done, F3–F8 open. It is
+packaging, diagnostics and documentation for exlib as a *published library*; it does not touch content,
+and it does not compete with the forming line below. The mod-merge question it raises is **blocked on an
+owner ruling**, stated in that plan.
+
+---
+
 ## What is next, right now
 
 The extensibility layer is **complete** ([2026-08-12-extensibility.md](2026-08-12-extensibility.md), all

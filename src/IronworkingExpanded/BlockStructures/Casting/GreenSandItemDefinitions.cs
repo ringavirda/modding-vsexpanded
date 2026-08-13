@@ -7,8 +7,8 @@ namespace IronworkingExpanded.BlockStructures.Casting;
 /// Green sand: the molding sand a casting cell is rammed with. Silica sand blended with a clay binder and
 /// damped; "green" means moist and uncured, not the colour. It is a single prepared item with no variants,
 /// so the cell does not have to remember which sand was rammed into it, and any vanilla <c>sand-{rock}</c>
-/// is a valid input to the mix. Shake-out returns it rather than consuming it (see
-/// <see cref="CastingCellLogic.SandIsReturned"/>).
+/// is a valid input to the mix. Shake-out returns it rather than consuming it - the cell comes back to
+/// <see cref="BlockStructures.Casting.CastingCellLogic.AfterShakeOut"/> rammed, not empty.
 /// </summary>
 public class GreenSandItemDefinitions : IExItemDefProvider {
   /// <summary>The item code; the cell's ram check and the shake-out return both use it.</summary>

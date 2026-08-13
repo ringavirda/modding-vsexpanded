@@ -5,11 +5,11 @@
   "name": "Steelmaking Expanded",
   "authors": ["fallenstar"],
   "description": "Industrial iron and steel production using blast furnace and Bessemer process!",
-  "version": "0.9.5",
+  "version": "0.9.9",
   "dependencies": {
     "game": "1.22.0",
-    "exlib": "0.7.0",
-    "lpex": "0.6.4",
+    "exlib": "0.7.3",
+    "lpex": "0.6.9",
     "iwex": "0.1.0"
   }
 }

@@ -10,7 +10,7 @@ namespace IronworkingExpanded.BlockStructures.Casting.Blocks;
 /// <summary>
 /// The cast-iron casting mold block, the iron-tier counterpart to the ceramic tool molds. A flat mold
 /// placed on a surface and filled by a pour (crucible, ladle or mold pedestal, which reach it through
-/// <see cref="ILiquidMetalSink"/> on its entity); right-click with an empty hand takes the hardened cast
+/// <see cref="Vintagestory.GameContent.ILiquidMetalSink"/> on its entity); right-click with an empty hand takes the hardened cast
 /// out and leaves the mold, which is reusable. The mold itself is cast in the sand cell from the matching
 /// pattern. One tool type, <c>ingot</c>: a single-bay tray of 100 units yielding one ingot.
 /// </summary>

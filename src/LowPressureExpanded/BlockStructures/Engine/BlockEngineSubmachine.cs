@@ -7,7 +7,7 @@ namespace LowPressureExpanded.BlockStructures.Engine;
 /// placement orientation: at an existing engine's sub-machine cell it snaps to the matching facing
 /// (<see cref="BlockEngine.SubmachineSide"/>) instead of the player's look; with no engine nearby
 /// it places normally. The reverse (engine onto an existing sub-machine) is handled in
-/// <see cref="BlockEngine.OnBlockPlaced"/>.
+/// <c>BlockEngine.OnBlockPlaced</c>.
 /// </summary>
 public abstract class BlockEngineSubmachine : Block {
   public override bool TryPlaceBlock(

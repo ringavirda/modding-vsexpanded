@@ -7,7 +7,7 @@ namespace IronworkingExpanded.BlockNetworkMolten.Blocks;
 /// <see cref="IwexValues.ClayMoldHeatCeiling"/> is poured into it. Only the small molds that fit the mold
 /// pedestal are gated (<see cref="MoldKinds.FitsPedestal"/>); the large anvil and helve-hammer molds, cast
 /// at iron temperatures in the canal tap, are exempt, and cast-iron molds
-/// (<see cref="Casting.Blocks.BlockCastMold"/>) are a separate block class the predicate never matches.
+/// (<see cref="BlockStructures.Casting.Blocks.BlockCastMold"/>) are a separate block class the predicate never matches.
 /// Both pour paths call it: the pedestal's automated drain, which bypasses <c>CanReceive</c>, and the
 /// crucible-pour gate <see cref="Patches.ToolMoldHeatGatePatch"/>.
 /// </summary>

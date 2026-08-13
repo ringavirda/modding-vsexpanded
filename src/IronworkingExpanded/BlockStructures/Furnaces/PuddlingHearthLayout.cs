@@ -44,7 +44,7 @@ public static class PuddlingHearthLayout {
   }
 
   /// <summary>
-  /// Every element that should be drawn for the given contents, as <see cref="Vintagestory.API.Common.Shape.SelectiveElements"/>
+  /// Every element that should be drawn for the given contents, as the tesselator's <c>selectiveElements</c>
   /// paths. The structural groups are always present; only the charge varies.
   /// </summary>
   public static string[] ElementsFor(

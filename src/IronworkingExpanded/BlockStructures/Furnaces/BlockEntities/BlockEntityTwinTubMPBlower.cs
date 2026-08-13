@@ -15,7 +15,7 @@ namespace IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
 /// <summary>
 /// Mechanically driven pair of bellows that pushes cold ambient air into the blast main, the iron tier's
 /// only air source. It is a pipe node that generates rather than a machine feeding a neighbouring network:
-/// the block is a <see cref="BlockNetworkPipe.Blocks.BlockPipe"/> and produces into its own network, the
+/// the block is a <see cref="ExpandedLib.Blocks.Networks.BlockPipe"/> and produces into its own network, the
 /// way the fluid intake does for water. Drive comes from a <see cref="BEBehaviorMPFillerPort"/> on the
 /// footprint's upper-rear cell.
 /// <para>

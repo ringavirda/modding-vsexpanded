@@ -15,7 +15,7 @@ namespace ExpandedLib.Blocks.Migrations;
 /// mod drops. Collects every <see cref="IBlockCodeMigration"/>, <see cref="IItemCodeMigration"/> and
 /// <see cref="IBlockRemoval"/> in all loaded assemblies into legacy-code → action tables, then applies
 /// them as chunk columns load (the walk lives in <see cref="ChunkColumnSweeperModSystem"/>). Matching
-/// is on <see cref="Block.Code"/>, not a precomputed id, because the engine renumbers ids on load; that
+/// is on <see cref="RegistryObject.Code"/>, not a precomputed id, because the engine renumbers ids on load; that
 /// also catches the missing-block placeholders kept for removed codes. A plain migration is a bare
 /// block-id swap, one implementing <see cref="IBlockEntityMigration"/> also gets the old BE's tree, a
 /// removal deletes in place; matching stacks in container BEs and inventories are rewritten either way.
