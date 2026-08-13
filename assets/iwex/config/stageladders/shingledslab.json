@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "family": "slab",
+  "family": "shingledslab",
   "stages": [
+    { "thickness": 2.5, "acceptedBy": [ "flat" ] },
     { "thickness": 2.0, "acceptedBy": [ "flat" ] },
     { "thickness": 1.5, "acceptedBy": [ "flat" ] },
-    { "thickness": 1.0, "acceptedBy": [ "flat" ] },
-    { "thickness": 0.5, "acceptedBy": [ "flat" ] }
+    { "thickness": 1.0, "acceptedBy": [ "flat" ] }
   ]
 }

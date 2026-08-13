@@ -222,7 +222,7 @@ Nothing exists. Where it hooks in:
 
 Where a caller hooks in: nothing needs to know about the rack. It accepts any item whose shape can be pruned
 to a stage element and whose textures resolve. The one contract is the recognition predicate - today the
-hearth uses a code-prefix match (`HeatingHearthLayout.StockOf`, `:64-79`, matching `stock-bloom`, `stock-slab`,
+hearth uses a code-prefix match (`HeatingHearthLayout.StockOf`, `:64-79`, matching `stock-shingledbar`, `stock-shingledslab`,
 `castbillet`, `castbloom`, `castslab`), which is the part that should become an attribute test so another
 mod's stock qualifies without an iwex edit.
 

@@ -40,8 +40,8 @@ not at all (ruled 2026-08-07).
 |---|---|---|---|---|
 | **pig** | 375 u (`ItemPig.cs:39`) | 375 u | 5 × 3 × 10 = 150 vx³ × 2.5 ([pig](pig.md)) | shipped 2026-08-05 |
 | **wrought ball** | no item exists | 200 u | 16 balls per 9-pig heat: 3375 → 3200 + 175 ([puddling](../processes/puddling.md)) | pending |
-| **stock bloom** (`stock-bloom`) | 180 u (`StockItemDefinitions.cs:25`) | 400 u | = `shingledbar` at 3 × 3 × 18, 2 balls ([stock](stock.md)) | pending |
-| **stock slab** (`stock-slab`) | 400 u (`StockItemDefinitions.cs:26`) | 1200 u | = `shingledslab` at 8 × 3 × 20 = 480 vx³, 6 balls ([stock](stock.md)) | pending |
+| **shingled bar** (`stock-shingledbar`) | 400 u (`StockItemDefinitions.cs:24`) | 400 u | 3 × 3 × 18 = 162 vx³, 2 balls ([stock](stock.md)) | shipped 2026-08-12 |
+| **shingled slab** (`stock-shingledslab`) | 1200 u (`StockItemDefinitions.cs:25`) | 1200 u | 8 × 3 × 20 = 480 vx³, 6 balls ([stock](stock.md)) | shipped 2026-08-12 |
 | **cast plate** (`castplate-heavy`) | 160 u (`CastPartItemDefinitions.cs:37`) | 500 u - D2 re-affirmed 2026-08-07 | 10 × 2 × 10 = 200 vx³ × 2.5 = 500 | pending - and the art follows, see below |
 | **tap cinder** | count undecided (`FettleItemDefinitions.cs:77-78`) | 3 per heat | the 175 u remainder as exactly the count that closes the fettle loop: 3 cinder → 3 fettle → the next heat ([puddling](../processes/puddling.md)) | pending |
 

@@ -223,11 +223,16 @@ Read live each tick through `ExlibValues` (`MpEnergyNetwork.cs:28-30`), so retun
 | Block-info power gate | `> 1 W` | `BlockEntityFlywheel.cs:302` | supply/demand line is suppressed below this |
 | Bevel gear item | `"iwex:bevelgear"` | `BlockCastIronBevel.cs:26` | `const string GearItemCode` |
 
-The mill's own balance levers (`RollingTorqueScale`, `RollingTempC`, `RollingRollRadius`, …) are documented
-on its page, but the calibration comment at `IwexConfig.cs:865` derives `RollingTorqueScale` from this
-page's numbers: one bridge drive (1 N·m) less friction at ω_max (`0.05·2 + 0.5 = 0.6`) leaves 0.4 N·m of
-headroom. Change `MpFrictionCoeff`, `MpIdleTorque`, `MpMaxSpeed` or `FlywheelBridgeChargePower` and the
+The mill's own balance levers (`RollingLoadTorque`, `RollingTempC`, `RollingRollRadius`, …) are documented
+on its page, but `RollingLoadTorque` is derived from this page's numbers: one bridge drive (1 N·m) less
+friction at ω_max (`0.05·2 + 0.5 = 0.6`) leaves 0.4 N·m of headroom, and the mill's declared demand takes
+85 % of it. Change `MpFrictionCoeff`, `MpIdleTorque`, `MpMaxSpeed` or `FlywheelBridgeChargePower` and the
 mill's calibration moves with them.
+
+★ Since 2026-08-13 that is the **only** thing that moves it. The mill's load used to be computed from the
+bite (`T = Y·w·R·δ·k`), so re-cutting its schedule moved its demand on this network without anyone
+choosing to - which is exactly what happened, and cost the mill 5× its intended draw. A consumer that
+declares what it takes is the shape to copy for the next one.
 
 ---
 

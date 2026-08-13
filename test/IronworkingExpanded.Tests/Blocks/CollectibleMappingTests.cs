@@ -39,17 +39,11 @@ public class CollectibleMappingTests {
     world.RegisterNetwork("mpenergy", n => new MpEnergyNetwork(n));
     world.Initialize(mill);
 
-    Item bloom = world.RegisterItem("iwex:stock-bloom");
+    Item bloom = world.RegisterItem("iwex:stock-shingledbar");
     var piece = new ItemStack(bloom);
 
     Assert.True(
-      mill.BeginPass(
-        draft: 0.5f,
-        width: 4f,
-        length: 40f,
-        tempC: 1100f,
-        piece: piece
-      )
+      mill.BeginPass(draft: 0.25f, length: 40f, tempC: 1100f, piece: piece)
     );
 
     var blockIdMapping = new Dictionary<int, AssetLocation>();

@@ -1,14 +1,14 @@
 {
-  "code": "stock-bloom",
+  "code": "stock-shingledbar",
   "class": "iwex.ItemStockPiece",
   "shape": {
-    "base": "iwex:forming/stock-bloom-30"
+    "base": "iwex:forming/stock-shingledbar-30"
   },
   "maxstacksize": 1,
   "materialDensity": 7800,
   "attributes": {
-    "materialUnits": 180,
-    "stockForm": "bloom"
+    "materialUnits": 400,
+    "stockForm": "shingledbar"
   },
   "combustibleProps": {
     "meltingPoint": 1500,

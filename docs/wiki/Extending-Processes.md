@@ -47,12 +47,30 @@ convention; nothing enforces it.
 |---|---|
 | `machine` | which machine these jobs belong to. Required |
 | `input` / `output` | item codes. Required |
-| `count` | how many outputs one job yields. Defaults to 1; must be at least 1 |
+| `count` | how many outputs one job yields. Defaults to 1; must be at least 1. On a **staged** job this is the whole piece's yield and one leaves per stroke; on a whole-item job they all leave at once |
 | `stage` / `family` | optional, and go together: take a piece part way down a ladder, at that gauge on that branch. Omit both to take the whole item |
 | `minTorque` | drive torque the machine needs for this job. 0 when it is not gated |
 
 A second job on one input is **reported in the log and ignored** — the first declaration stands. Taking
 the last writer would make the outcome depend on mod load order, which nobody can reproduce.
+
+### A staged job crops; a whole-item job converts
+
+Whether you gave the job a `stage` decides what happens to the input, and it is the only thing that does:
+
+| Job | The input | `count` reads as |
+|---|---|---|
+| **staged** (`stage` present) | **survives**, still stock at the same gauge, with one more crop tallied against it | the whole piece's yield |
+| **whole-item** (no `stage`) | **consumed** | what one conversion produces |
+
+Your `count` is your number and nothing checks it against geometry — what a piece divides into is a design
+choice, not something we can calculate for you. Two things follow that are worth knowing before you pick it:
+
+- **The count stays live.** The piece tallies crops *taken*, so raising a `count` from 4 to 6 gives every
+  piece already in a player's world the two extra crops rather than stranding it on the old number.
+- **A part-worked piece cannot re-enter a sequence.** Crop a bar twice and the rolling mill will refuse it
+  until it is cut out. The tally is against *that stage's* count, so a part piece carried to the next stage
+  would be worth the next stage's whole count again. Finish the cut, then roll the pieces on.
 
 ---
 
@@ -67,9 +85,8 @@ works it. Drop a file at `assets/<yourdomain>/config/stageladders/<anything>.jso
   "family": "bronzebar",
   "shape": "yourmod:item/bronze-bar",
   "stages": [
-    { "thickness": 3.00, "element": "BronzeBar1", "acceptedBy": ["grooved", "flat"] },
-    { "thickness": 2.75, "element": "Grooved275",  "acceptedBy": ["grooved"] },
-    { "thickness": 2.50, "element": "Grooved250",  "acceptedBy": ["grooved"], "code": "yourmod:bronzerod" }
+    { "thickness": 2.50, "element": "Grooved250",  "acceptedBy": ["grooved", "flat"] },
+    { "thickness": 2.00, "element": "Grooved200",  "acceptedBy": ["grooved"], "code": "yourmod:bronzerod" }
   ]
 }
 ```
@@ -82,8 +99,13 @@ field drives the item catalogue, the machine's stopping points and the held-item
 piece at the same gauge continues one way on grooved rolls and another on flat ones. That is the mill's
 whole point, and a line could not express it.
 
-**A gap costs two passes** — in, turned, and back — so the ladder is drawn per *pass*. `3.00 → 2.75 → 2.50`
-is one gap taken in two bites, and the half-steps are exactly the stages that carry no `code`.
+**One rung per gap, not per pass.** A gap does cost two trips — in, turned, and back — but the mill lands
+the half-step between them by arithmetic, and you do not declare it. `3.00 → 2.75 → 2.50` is the *walk*;
+`2.50` is the *rung*. Declare the half-steps and the mill will offer them as gaps of their own, which is a
+barrel with twice the grooves you meant.
+
+A gauge no rung names is drawn by scaling the family's base shape, so an undeclared half-step still looks
+part-worked in the hand.
 
 ### Why `config/` and not an item attribute
 

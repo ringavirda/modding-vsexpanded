@@ -1,87 +1,74 @@
-using System.Linq;
 using IronworkingExpanded.BlockStructures.Forming;
+using Vintagestory.API.MathTools;
 using Xunit;
 
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Side placement for rendering a part-rolled piece. The mesh is composed from the form's single base shape
-/// rather than authored per state, and each side is positioned from the same numbers the simulation uses, so
+/// Scaling for the composed mesh - the route that draws the half-step, the state between two declared rungs
+/// that no ladder names and no art draws. The scale is taken from the same numbers the simulation uses, so
 /// the rendered piece matches its simulated dimensions. The final appearance is verified in-game.
 /// </summary>
 public class StockMeshTests {
-  private static WorkPiece Even(StockForm form, float thickness, int sides) =>
-    new(form, [.. Enumerable.Repeat(thickness, sides)], new bool[sides]);
-
   [Fact]
   public void A_fresh_piece_is_its_base_shape_untouched() {
-    SidePlacement p = StockMesh.SideOf(WorkPiece.Fresh(StockForm.Bloom), 0);
+    Vec3f scale = StockMesh.ScaleOf(WorkPiece.Fresh(StockForm.ShingledBar));
 
-    Assert.Equal(1f, p.Scale.X, 3);
-    Assert.Equal(1f, p.Scale.Y, 3);
-    Assert.Equal(1f, p.Scale.Z, 3);
-    Assert.Equal(0f, p.OffsetX, 3);
+    Assert.Equal(1f, scale.X, 3);
+    Assert.Equal(1f, scale.Y, 3);
+    Assert.Equal(1f, scale.Z, 3);
   }
 
   [Fact]
-  public void A_rolled_side_is_thinner_wider_and_longer() {
+  public void A_rolled_piece_is_thinner_wider_and_longer() {
     // Every axis moves, each taken from the piece's own dimensions.
-    var piece = Even(StockForm.Bloom, 1f, sides: 1);
-    SidePlacement p = StockMesh.SideOf(piece, 0);
+    Vec3f scale = StockMesh.ScaleOf(
+      new WorkPiece(StockForm.ShingledBar, 1f, 0f, [false])
+    );
 
-    Assert.True(p.Scale.Y < 1f, "it should be thinner");
-    Assert.True(p.Scale.X > 1f, "and wider");
-    Assert.True(p.Scale.Z > 1f, "and longer");
+    Assert.True(scale.Y < 1f, "it should be thinner");
+    Assert.True(scale.X > 1f, "and wider");
+    Assert.True(scale.Z > 1f, "and longer");
   }
 
   [Fact]
-  public void Sides_abut_rather_than_overlapping_or_leaving_a_gap() {
-    // Adjacent sides share an edge: a gap or an overlap shows as a seam in the piece.
-    var half = new WorkPiece(StockForm.Bloom, [3f, 1f], new bool[2]);
+  public void A_half_step_sits_between_the_two_rungs_it_lies_between() {
+    // The half-step is the whole reason this route exists: 2.75 is drawn nowhere, so it is composed, and it
+    // has to read as further along than 3.0 and less far than 2.5.
+    float atBase = StockMesh.ScaleOf(WorkPiece.Fresh(StockForm.ShingledBar)).X;
+    float atHalfStep = StockMesh
+      .ScaleOf(new WorkPiece(StockForm.ShingledBar, 2.75f, 2.5f, [false]))
+      .X;
+    float atGap = StockMesh
+      .ScaleOf(new WorkPiece(StockForm.ShingledBar, 2.5f, 0f, [false]))
+      .X;
 
-    SidePlacement left = StockMesh.SideOf(half, 0);
-    SidePlacement right = StockMesh.SideOf(half, 1);
-    float leftWidth = half.StripWidth(half.Strips[0]);
-    float rightWidth = half.StripWidth(half.Strips[1]);
-
-    float leftEdgeRight = StockMesh.CentreX + left.OffsetX + leftWidth / 2f;
-    float rightEdgeLeft = StockMesh.CentreX + right.OffsetX - rightWidth / 2f;
-    Assert.Equal(leftEdgeRight, rightEdgeLeft, 3);
+    Assert.True(atBase < atHalfStep && atHalfStep < atGap);
   }
 
   [Fact]
-  public void The_whole_piece_stays_centred_however_lopsided_it_is() {
-    var half = new WorkPiece(StockForm.Bloom, [3f, 0.5f], new bool[2]);
-
-    float outerLeft =
-      StockMesh.CentreX
-      + StockMesh.SideOf(half, 0).OffsetX
-      - half.StripWidth(half.Strips[0]) / 2f;
-    float outerRight =
-      StockMesh.CentreX
-      + StockMesh.SideOf(half, 1).OffsetX
-      + half.StripWidth(half.Strips[1]) / 2f;
-
-    Assert.Equal(half.Width, outerRight - outerLeft, 3); // spans exactly the piece's width
-    Assert.Equal(StockMesh.CentreX, (outerLeft + outerRight) / 2f, 3); // and stays centred
-  }
-
-  [Fact]
-  public void An_unevenly_rolled_piece_is_visibly_lopsided() {
-    // The rolled side has spread, so it takes up more of the width than the untouched one.
-    var half = new WorkPiece(StockForm.Bloom, [3f, 1f], new bool[2]);
-
-    Assert.True(
-      StockMesh.SideOf(half, 1).Scale.X > StockMesh.SideOf(half, 0).Scale.X,
-      "the worked side should be the wider one"
+  public void How_a_piece_is_divided_does_not_change_how_it_looks() {
+    // A piece is one gauge across its whole width; the side count is how it is fed, not what it is.
+    Assert.Equal(
+      StockMesh
+        .ScaleOf(new WorkPiece(StockForm.ShingledBar, 1f, 0f, [false]))
+        .X,
+      StockMesh
+        .ScaleOf(new WorkPiece(StockForm.ShingledBar, 1f, 0f, new bool[3]))
+        .X,
+      3
     );
   }
 
   [Fact]
-  public void An_out_of_range_side_falls_back_to_the_base_shape() {
-    SidePlacement p = StockMesh.SideOf(WorkPiece.Fresh(StockForm.Bloom), 5);
-    Assert.Equal(1f, p.Scale.X, 3);
-    Assert.Equal(0f, p.OffsetX, 3);
+  public void A_form_with_no_authored_size_falls_back_to_the_base_shape() {
+    var degenerate = new StockForm("degenerate", 0f, 3f, 8f, 16f, 0.5f);
+
+    Vec3f scale = StockMesh.ScaleOf(new WorkPiece(degenerate, 1f, 0f, [false]));
+
+    Assert.Equal(1f, scale.X, 3);
+    Assert.Equal(1f, scale.Y, 3);
+    Assert.Equal(1f, scale.Z, 3);
   }
 
   #region Cache key
@@ -89,26 +76,33 @@ public class StockMeshTests {
   [Fact]
   public void Pieces_that_look_the_same_share_a_cached_mesh() {
     // Only geometry may affect the key, or the cache grows one entry per stack instead of per appearance.
-    var a = new WorkPiece(StockForm.Bloom, [2f, 1f], [false, false]);
-    var b = new WorkPiece(StockForm.Bloom, [2f, 1f], [true, true]); // mid turn-over, identical shape
+    var a = new WorkPiece(StockForm.ShingledBar, 2f, 0f, [false, false]);
+    var b = new WorkPiece(StockForm.ShingledBar, 2f, 1.5f, [true, true]); // mid round, identical shape
 
     Assert.Equal(StockMesh.CacheKey(a), StockMesh.CacheKey(b));
+    // And the division does not either, since it never showed.
+    Assert.Equal(
+      StockMesh.CacheKey(a),
+      StockMesh.CacheKey(new WorkPiece(StockForm.ShingledBar, 2f, 0f, [false]))
+    );
   }
 
   [Fact]
   public void Pieces_that_look_different_do_not() {
-    var bloom = new WorkPiece(StockForm.Bloom, [2f, 1f], new bool[2]);
+    var bloom = new WorkPiece(StockForm.ShingledBar, 2f, 0f, [false]);
+
     Assert.NotEqual(
       StockMesh.CacheKey(bloom),
-      StockMesh.CacheKey(new WorkPiece(StockForm.Bloom, [1f, 1f], new bool[2]))
+      StockMesh.CacheKey(new WorkPiece(StockForm.ShingledBar, 1f, 0f, [false]))
     );
     Assert.NotEqual(
       StockMesh.CacheKey(bloom),
-      StockMesh.CacheKey(new WorkPiece(StockForm.Slab, [2f, 1f], new bool[2]))
+      StockMesh.CacheKey(new WorkPiece(StockForm.ShingledSlab, 2f, 0f, [false]))
     );
+    // A fork draws one gauge two ways, so the branch is part of the appearance.
     Assert.NotEqual(
       StockMesh.CacheKey(bloom),
-      StockMesh.CacheKey(Even(StockForm.Bloom, 2f, sides: 1))
+      StockMesh.CacheKey(bloom with { Family = "grooved" })
     );
   }
 

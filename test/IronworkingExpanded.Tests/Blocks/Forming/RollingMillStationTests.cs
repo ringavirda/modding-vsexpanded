@@ -92,7 +92,7 @@ public class RollingMillStationTests {
   [Fact]
   public void The_roll_set_slot_refuses_a_stack_that_is_not_a_roll_set() {
     (TestWorld world, BlockEntityRollingMill mill, _) = Mill();
-    Item bloom = world.RegisterItem("iwex:stock-bloom");
+    Item bloom = world.RegisterItem("iwex:stock-shingledbar");
 
     ItemSlot source = new DummySlot(new ItemStack(bloom));
 
@@ -105,18 +105,12 @@ public class RollingMillStationTests {
   public void A_fitted_set_and_a_piece_under_the_rolls_land_in_their_slots() {
     (TestWorld world, BlockEntityRollingMill mill, _) = Mill();
     ItemStack set = RollSetStack(world);
-    Item bloom = world.RegisterItem("iwex:stock-bloom");
+    Item bloom = world.RegisterItem("iwex:stock-shingledbar");
     var piece = new ItemStack(bloom);
 
     Assert.True(mill.TryFitRollSet(set, out _));
     Assert.True(
-      mill.BeginPass(
-        draft: 0.5f,
-        width: 4f,
-        length: 40f,
-        tempC: 1100f,
-        piece: piece
-      )
+      mill.BeginPass(draft: 0.25f, length: 40f, tempC: 1100f, piece: piece)
     );
 
     Assert.Same(
@@ -148,7 +142,7 @@ public class RollingMillStationTests {
   public void A_mill_saved_before_A3_finds_both_of_its_loose_stacks() {
     (TestWorld world, BlockEntityRollingMill mill, _) = Mill(initialize: false);
     ItemStack set = RollSetStack(world);
-    Item bloom = world.RegisterItem("iwex:stock-bloom");
+    Item bloom = world.RegisterItem("iwex:stock-shingledbar");
     var piece = new ItemStack(bloom);
 
     mill.FromTreeAttributes(LegacyTree(set, piece), world.World);
@@ -216,7 +210,7 @@ public class RollingMillStationTests {
         """
         { "rollset": {
             "family": "flat",
-            "accepts": [ "bloom" ],
+            "accepts": [ "shingledbar" ],
             "gaps": [ 2.0, 1.0 ],
             "outputs": [ { "gap": 1.0, "code": "iwex:rolledplate-iron" } ],
             "barrelWidth": 6.0 } }

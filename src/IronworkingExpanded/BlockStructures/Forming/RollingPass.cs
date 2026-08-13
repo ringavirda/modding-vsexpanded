@@ -4,19 +4,25 @@ namespace IronworkingExpanded.BlockStructures.Forming;
 
 /// <summary>
 /// Physics of one pass through a two-high rolling stand. Pure static math with no world state, so the model
-/// runs headless and the mill block is only a readout of it. Three relations carry it: the bite limit
-/// <c>δ_max = μ²R</c>, roll force <c>F = Y·w·L_c</c> over the arc of contact <c>L_c = √(R·δ)</c>, and load
-/// torque <c>T = 2·F·a</c> with lever arm <c>a ≈ L_c/2</c> over two rolls. Flow stress rises as the stock
-/// cools, so temperature drives both whether a pass bites and whether the run can carry it.
+/// runs headless and the mill block is only a readout of it. Geometry decides what the rolls will take -
+/// the bite limit <c>δ_max = μ²R</c>, then spread and elongation - while the load the stand puts on its run
+/// is a declared demand rather than a product of that geometry. Flow stress rises as the stock cools, so
+/// temperature drives both whether a pass bites and whether the run can carry it.
 /// See docs/design/machines/rolling-mill.md and docs/design/mechanics/mp-energy.md.
 /// </summary>
 public static class RollingPass {
-  /// <summary>Friction coefficient of hot iron against a cast roll.</summary>
-  public const float HotFriction = 0.5f;
+  /// <summary>
+  /// Friction coefficient of hot iron against a cast roll. Chosen so <c>δ_max = μ²R</c> lands between one
+  /// round's draft and one gap's: at <c>R = 4</c> it gives 0.36, which takes the 0.25 bite a round asks and
+  /// skids on the 0.5 a skipped gap would. That is what makes the walk down the barrel the schedule rather
+  /// than a suggestion, without the mill needing an ordering rule of its own.
+  /// See docs/design/machines/rolling-mill.md § Open.
+  /// </summary>
+  public const float HotFriction = 0.3f;
 
   /// <summary>Friction coefficient of cold iron. Draft scales with μ², so a cold stand takes roughly a
   /// thirtieth of the draft a hot one does.</summary>
-  public const float ColdFriction = 0.09f;
+  public const float ColdFriction = 0.055f;
 
   /// <summary>
   /// Largest draft (thickness reduction) a stand of roll radius <paramref name="rollRadius"/> can pull in by
@@ -63,42 +69,28 @@ public static class RollingPass {
     return 1f + (MathF.Max(1f, coldMultiplier) - 1f) * coldness;
   }
 
-  /// <summary>Arc of contact <c>L_c = √(R·δ)</c>: how much of the roll presses on the stock. Both the roll
-  /// force and the lever arm derive from it.</summary>
-  public static float ContactLength(float rollRadius, float draft) =>
-    rollRadius <= 0f || draft <= 0f ? 0f : MathF.Sqrt(rollRadius * draft);
-
   /// <summary>
-  /// Resisting torque (N·m) a pass imposes on the run: <c>T = 2·F·a</c> with <c>F = Y·w·L_c</c> and lever arm
-  /// <c>a = L_c/2</c>, reducing to <c>T = Y·w·R·δ·k</c>. <paramref name="torqueScale"/> balances the mill
-  /// against the flywheel from config without touching the physics.
+  /// Resisting torque (N·m) a pass imposes on the run: the stand's declared
+  /// <paramref name="runningTorque"/> while stock is under the rolls, stiffened by the flow stress of a
+  /// piece that has fallen below rolling heat. A stand is working or it is not, so the demand is declared
+  /// rather than read off the bite - a derived load follows every change to the schedule's geometry, which
+  /// is how this mill came adrift from its own calibration once.
   /// <para>
   /// Independent of shaft speed: a plastic-deformation load resists the same however fast the rolls turn, so
   /// it does not ease off as ω falls and can hold a run stalled.
   /// </para>
   /// </summary>
   public static float LoadTorque(
-    float draft,
-    float width,
-    float rollRadius,
+    float runningTorque,
     float tempC,
     float rollingTempC,
     float coldMultiplier,
-    float coldSpanC,
-    float torqueScale
-  ) {
-    float contact = ContactLength(rollRadius, draft);
-    if (contact <= 0f || width <= 0f)
-      return 0f;
-    float flowStress = FlowStress(
-      tempC,
-      rollingTempC,
-      coldMultiplier,
-      coldSpanC
-    );
-    // F = Y * w * L_c, and T = 2 * F * (L_c / 2) = F * L_c -> Y * w * L_c^2 = Y * w * R * delta.
-    return flowStress * width * contact * contact * torqueScale;
-  }
+    float coldSpanC
+  ) =>
+    runningTorque <= 0f
+      ? 0f
+      : runningTorque
+        * FlowStress(tempC, rollingTempC, coldMultiplier, coldSpanC);
 
   /// <summary>
   /// Whether a run turning at <paramref name="speed"/> with <paramref name="availableTorque"/> on tap can carry

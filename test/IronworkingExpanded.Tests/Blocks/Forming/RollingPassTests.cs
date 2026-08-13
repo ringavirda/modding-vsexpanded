@@ -4,10 +4,10 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// The rolling-pass physics the mill's load model is built on: bite <c>δ_max = μ²R</c>, contact arc
-/// <c>√(Rδ)</c>, torque <c>Y·w·R·δ</c>, spread and cooling. Also covers the rules that follow from them -
-/// hot stock bites about 30 times deeper than cold, a cooling piece both refuses to bite and loads harder,
-/// and a stopped shaft cannot start a pass. See docs/design/processes/rolling.md.
+/// The rolling-pass physics the mill is built on: bite <c>δ_max = μ²R</c>, spread, elongation, cooling, and
+/// the load a working stand puts on its run. Also covers the rules that follow from them - hot stock bites
+/// about 30 times deeper than cold, a cooling piece both refuses to bite and loads harder, and a stopped
+/// shaft cannot start a pass. See docs/design/processes/rolling.md.
 /// </summary>
 public class RollingPassTests {
   private const float RollingTemp = 900f;
@@ -15,20 +15,38 @@ public class RollingPassTests {
   private const float ColdMultiplier = 10f;
   private const float ColdSpan = 400f;
 
+  // A stand's working demand. The shipped number is IwexValues.RollingLoadTorque; this only has to be a
+  // value the relations here are exercised against.
+  private const float Demand = 0.34f;
+
   #region Bite (δ_max = μ²R)
 
   [Fact]
   public void Hot_stock_bites_about_thirty_times_deeper_than_cold() {
-    // Draft scales with mu squared, so friction 0.5 against 0.09 is a ratio of about 31.
+    // Draft scales with mu squared, so friction 0.3 against 0.055 is a ratio of about 30.
     float hot = RollingPass.MaxDraft(Radius, RollingPass.HotFriction);
     float cold = RollingPass.MaxDraft(Radius, RollingPass.ColdFriction);
 
-    Assert.Equal(1f, hot, 4); // 0.5^2 * 4
+    Assert.Equal(0.36f, hot, 4); // 0.3^2 * 4
     Assert.True(
       hot / cold > 25f,
-      $"hot/cold draft ratio was {hot / cold:F1}, expected ~31"
+      $"hot/cold draft ratio was {hot / cold:F1}, expected ~30"
     );
     Assert.True(hot / cold < 35f);
+  }
+
+  [Fact]
+  public void Delta_max_sits_between_one_round_and_one_gap() {
+    // The calibration the whole schedule rests on. Every shipped gap is a 0.5 step taken in two rounds, so
+    // a round asks 0.25 and a skipped gap asks 0.5: the first must bite and the second must skid, or the
+    // barrel stops being a sequence the player has to walk.
+    float hot = RollingPass.MaxDraft(Radius, RollingPass.HotFriction);
+
+    Assert.True(
+      hot >= 0.25f,
+      $"an ordinary round must bite, delta_max was {hot}"
+    );
+    Assert.True(hot < 0.5f, $"a skipped gap must skid, delta_max was {hot}");
   }
 
   [Fact]
@@ -41,8 +59,8 @@ public class RollingPassTests {
 
   [Fact]
   public void A_draft_a_hot_piece_takes_is_refused_once_it_cools() {
-    // The same gap segment: accepted at rolling heat, refused once the piece drops below it.
-    const float draft = 0.5f;
+    // The same round: accepted at rolling heat, refused once the piece drops below it.
+    const float draft = 0.25f;
     Assert.True(RollingPass.CanBite(draft, Radius, tempC: 1000f, RollingTemp));
     Assert.False(RollingPass.CanBite(draft, Radius, tempC: 600f, RollingTemp));
   }
@@ -50,9 +68,9 @@ public class RollingPassTests {
   [Fact]
   public void An_over_deep_pass_will_not_enter_even_when_hot() {
     // Above mu^2 R the rolls skid however hot the stock is, which is what forces the gap sequence - each
-    // barrel segment is one legal step - instead of a single deep reduction.
-    Assert.False(RollingPass.CanBite(1.5f, Radius, tempC: 1200f, RollingTemp));
-    Assert.True(RollingPass.CanBite(0.9f, Radius, tempC: 1200f, RollingTemp));
+    // barrel segment is two legal rounds - instead of a single deep reduction.
+    Assert.False(RollingPass.CanBite(0.5f, Radius, tempC: 1200f, RollingTemp));
+    Assert.True(RollingPass.CanBite(0.35f, Radius, tempC: 1200f, RollingTemp));
   }
 
   [Fact]
@@ -114,47 +132,34 @@ public class RollingPassTests {
 
   [Fact]
   public void A_cold_pass_loads_the_run_far_harder_than_a_hot_one() {
-    // Identical geometry; only the temperature differs.
-    float hot = Torque(draft: 0.5f, tempC: 1000f);
-    float cold = Torque(draft: 0.5f, tempC: 500f);
+    // Same stand, same declared demand; only the temperature differs.
+    float hot = Torque(tempC: 1000f);
+    float cold = Torque(tempC: 500f);
 
     Assert.Equal(ColdMultiplier, cold / hot, 2);
   }
 
   [Fact]
-  public void Torque_grows_with_draft_and_width() {
-    Assert.True(
-      Torque(draft: 0.8f, tempC: 1000f) > Torque(draft: 0.2f, tempC: 1000f)
-    );
-    Assert.True(
-      Torque(draft: 0.5f, tempC: 1000f, width: 8f)
-        > Torque(draft: 0.5f, tempC: 1000f, width: 2f)
-    );
+  public void Every_hot_pass_asks_the_same_of_the_run() {
+    // The load is what the stand draws while it is working, not what the bite happens to be. Nothing about
+    // the piece under the rolls moves it, which is what keeps the mill's balance from drifting when the
+    // schedule is re-cut.
+    Assert.Equal(Demand, Torque(tempC: 1000f), 6);
+    Assert.Equal(Torque(tempC: 1000f), Torque(tempC: 1400f), 6);
   }
 
   [Fact]
-  public void Torque_is_linear_in_draft_because_the_contact_arc_is_squared() {
-    // T = Y*w*L_c^2 with L_c = sqrt(R*delta), so force and lever arm each go as sqrt(delta) and the torque
-    // is exactly linear in delta.
-    Assert.Equal(
-      2f * Torque(draft: 0.25f, tempC: 1000f),
-      Torque(draft: 0.5f, tempC: 1000f),
-      4
-    );
-  }
-
-  [Fact]
-  public void An_idle_mill_loads_nothing() {
-    Assert.Equal(0f, Torque(draft: 0f, tempC: 1000f));
-    Assert.Equal(0f, Torque(draft: 0.5f, tempC: 1000f, width: 0f));
+  public void A_stand_that_draws_nothing_loads_nothing() {
+    Assert.Equal(0f, Torque(tempC: 1000f, runningTorque: 0f));
+    Assert.Equal(0f, Torque(tempC: 500f, runningTorque: -1f));
   }
 
   [Fact]
   public void The_pass_load_does_not_ease_off_as_the_shaft_slows() {
     // Plastic deformation resists the same at any speed, unlike friction, which falls with omega. A pass
     // can therefore drag a run down to a stall.
-    float slow = Torque(draft: 0.5f, tempC: 1000f);
-    float fast = Torque(draft: 0.5f, tempC: 1000f);
+    float slow = Torque(tempC: 1000f);
+    float fast = Torque(tempC: 1000f);
     Assert.Equal(slow, fast, 6); // the signature carries no speed term
   }
 
@@ -252,15 +257,13 @@ public class RollingPassTests {
 
   [Fact]
   public void A_cooling_piece_loads_the_line_harder_as_the_pass_goes_on() {
-    // The same geometry costs more torque later in the pass, so a schedule the run carried at the first gap
+    // The same stand costs more torque later in the pass, so a schedule the run carried at the first gap
     // can stall it by the last.
     float entered = 1000f;
     float later = RollingPass.Cool(entered, 20f, 0.02f, dt: 60f);
 
     Assert.True(later < entered);
-    Assert.True(
-      Torque(draft: 0.5f, tempC: later) > Torque(draft: 0.5f, tempC: entered)
-    );
+    Assert.True(Torque(tempC: later) > Torque(tempC: entered));
   }
 
   [Fact]
@@ -275,15 +278,12 @@ public class RollingPassTests {
 
   #endregion
 
-  private static float Torque(float draft, float tempC, float width = 4f) =>
+  private static float Torque(float tempC, float runningTorque = Demand) =>
     RollingPass.LoadTorque(
-      draft,
-      width,
-      Radius,
+      runningTorque,
       tempC,
       RollingTemp,
       ColdMultiplier,
-      ColdSpan,
-      torqueScale: 1f
+      ColdSpan
     );
 }

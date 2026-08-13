@@ -93,14 +93,20 @@ light ([STATE.md § B8](../../internal/plans/STATE.md)).
 
 ### What the code ships
 
-Only `stock-bloom` and `stock-slab` exist. They are emitted one per `StockForm` (`StockItemDefinitions.cs:30`),
-so the item list and `StockForm.All` cannot diverge - but both the names and both the masses predate the
-settled ladder.
+Only `stock-shingledbar` and `stock-shingledslab` exist. They are emitted one per `StockForm`
+(`StockItemDefinitions.cs:30`), so the item list and `StockForm.All` cannot diverge. Both were renamed onto
+the settled ladder and re-massed on 2026-08-12; `bloom` and `slab` survive only as `FormerNames`, which is
+what carries a piece already in a world across the rename.
 
-| Shipped item | `materialUnits` | file:line | Drawn vx³ | Rule says | Settled item it becomes | Verdict |
-|---|---|---|---|---|---|---|
-| `stock-bloom` | 180 | `StockItemDefinitions.cs:25` | 144 (3 × 3 × 16) | 360 | `shingledbar` 400 at 3 × 3 × 18 | stale, and 2 voxels short |
-| `stock-slab` | 400 | `StockItemDefinitions.cs:26` | 480 (8 × 3 × 20) | 1200 | `shingledslab` 1200 | stale, 3× low; section is already right |
+| Shipped item | `materialUnits` | file:line | Section × length | Rule says | Verdict |
+|---|---|---|---|---|---|
+| `stock-shingledbar` | 400 | `StockItemDefinitions.cs:24` | 3 × 3 × 18 = 162 vx³ | 405, rounded to 400 so it divides by four | settled |
+| `stock-shingledslab` | 1200 | `StockItemDefinitions.cs:25` | 8 × 3 × 20 = 480 vx³ | 1200 | settled, exactly |
+
+⛔ The **art** did not move with the form. The bar's ten generated stage shapes are still drawn off a
+16-long base while the form is 18, so the held item is 2 voxels short of its own mass. Nothing reads a
+shape's length - the item's mass, width and length all come from `StockForm` - so this is proportions
+only, and wiring the authored art (drawn at 18, as two 9-long halves) closes it.
 
 The full cross-item audit - including the four shipped mold cavities and their four different implicit
 densities - is [density rule](../mechanics/density-rule.md)'s and is not repeated here.
@@ -115,10 +121,10 @@ the reheat hearth can recognise can never be held.
 |---|---|---|---|
 | item class | `ItemStockPiece` | `:40` | composes its own mesh per state; see [rolling mill](../machines/rolling-mill.md) |
 | shape | `iwex:forming/stock-{form}-{(int)(t × 10)}` | `:41` | the form's as-shingled stage; a part-rolled piece overrides per stack |
-| `MaxStackSize` | 1 | `:42` | each piece carries its own strip state, so two can never merge |
+| `MaxStackSize` | 1 | `:42` | each piece carries its own gauge and heat, so two can never merge |
 | `MaterialDensity` | 7800 | `:43` | real kg/m³ for wrought, for engine weight - not the unit rule ([density rule](../mechanics/density-rule.md) Gotcha 1) |
-| `materialUnits` | 180 / 400 | `:44` | written on the item and never read by any mod code |
-| `stockForm` | the form name | `:45` | lands in the *itemtype* attributes, not the stack tree - this is B3 |
+| `materialUnits` | 400 / 1200 | `:44` | written on the item and never read by any mod code |
+| `stockForm` | the form name | `:45` | lands in the *itemtype* attributes, not the stack tree; `WorkPiece.FromStack` falls back to it, which is what closed B3 |
 | `combustibleProps.meltingPoint` | 1500 | `:52` | |
 | `combustibleProps.meltingDuration` | 30 | `:53` | |
 | `combustibleProps.smeltedRatio` | 1 | `:54` | one piece melts back to one unit of its metal |
@@ -132,8 +138,8 @@ Heat itself is vanilla's `temperature` stack attribute, so the cooling during th
 
 | Key | Ships | file:line | Verdict |
 |---|---|---|---|
-| `item-stock-bloom` | "Wrought Bloom" | `assets/iwex/lang/en.json:104` | becomes "Shingled Bar" |
-| `item-stock-slab` | "Cast Slab" | `assets/iwex/lang/en.json:105` | wrong today - `stock-slab` is the shingled (wrought) slab; the name belongs to a cast form that does not exist |
+| `item-stock-shingledbar` | "Shingled Bar" | `assets/iwex/lang/en.json:91` | settled; ru «Кричный брусок», uk «Кричний брусок» - both drafts, pending the author's review |
+| `item-stock-shingledslab` | "Shingled Slab" | `assets/iwex/lang/en.json:92` | settled - it used to read "Cast Slab", which is a form that does not exist. ru/uk «Кричный сляб» / «Кричний сляб», drafts |
 
 ---
 
@@ -220,7 +226,7 @@ the voxel.
 | Member | file:line | Role |
 |---|---|---|
 | `StockItemDefinitions` | `src/IronworkingExpanded/BlockStructures/Forming/StockItemDefinitions.cs:19` | `IExItemDefProvider`; one item per `StockForm` |
-| `.Units` | `:23-27` | the two masses - `bloom` 180 (`:25`), `slab` 400 (`:26`) |
+| `.Units` | `:23-26` | the two masses - `shingledbar` 400, `shingledslab` 1200, both from geometry at 1 vx³ = 2.5 u |
 | `.Definitions` | `:29-30` | `StockForm.All.Values.Select(Stock)` - the item list cannot diverge from the form list |
 | `.Stock` | `:32-59` | the def itself; every property above |
 | `ItemStockPiece` | `.../Forming/Items/ItemStockPiece.cs:22` | the item class; mesh composition is [rolling mill](../machines/rolling-mill.md)'s |
@@ -230,21 +236,20 @@ the voxel.
 | `scripts/generate-rolled-stock.py` | `:44-48`, `:87-120` | the dead generator |
 
 To add a stock form: add a `StockForm` and the item is emitted automatically (`:30`) - but its stage art must
-also be supplied or `RolledStockStagesTests` fails. Under the settled design the whole form list is replaced:
-`bloom`/`slab` become `shingledbar` 3 × 3 × 18 and `shingledslab` 8 × 3 × 20, and the three cast forms are
-added after.
+also be supplied or `RolledStockStagesTests` fails. To **rename** one, declare the old name in
+`FormerNames`: the registry resolves a piece already in a world by it, and `StockFormRenameMigration` emits
+the item-code remap off the same field. The wrought pair is done; the three cast forms are still to add.
 
 ---
 
 ## Gotchas
 
-- A stock item has no mass, length or form the game can read. `materialUnits` is written and never read by
-  any mod code; `stockForm` is written to the *itemtype* attributes while `WorkPiece.FromStack` reads the
-  *stack* tree (B3, owned by [rolling mill](../machines/rolling-mill.md)); and `WorkPiece` carries neither
-  `Mass` nor `Length` at all. The three properties that define a piece of stock are all absent from the
-  object.
-- `stock-slab` is called "Cast Slab" in lang and is the wrought one. Renaming the items will move both keys;
-  the handbook-sync pipeline joins on the `NN-` prefix and drift fails a test.
+- A stock item still has no **mass** the game can read. `materialUnits` is written and read by no mod code.
+  The other two are answered now: `stockForm` resolves through `FromStack`'s itemtype fallback (B3 closed),
+  and `WorkPiece` gained `Length`/`LengthAt` with the two-round model. `Mass` is the one left, and it is
+  what the 48-voxel refusal needs.
+- ~~`stock-slab` is called "Cast Slab" in lang and is the wrought one.~~ Fixed with the rename; both keys
+  moved, and no handbook page names either item, so the `NN-` join was not involved.
 - The two shipped forms are 2 voxels short and 2.7× light respectively, so any recipe or machine bill written
   against them today will need re-costing when the ladder lands.
 - `MaxStackSize(1)` is load-bearing. Two pieces at different stages must never merge, and the heat is

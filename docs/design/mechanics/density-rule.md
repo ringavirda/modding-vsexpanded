@@ -131,8 +131,8 @@ authoritative on its own; the table records where they disagree.
 | `castplate-heavy` | `Items/CastPartItemDefinitions.cs:35` | 160 | `assets/iwex/shapes/item/heavyplate.json` (12×2×12) | 288 | 720 as drawn; settled 500 | stale, and the art must be redrawn |
 | `cast-barrel` | `Items/CastPartItemDefinitions.cs` | 200 | `…/item/cast-barrel.json` (hollow) | 603 (meaningless) | not naively derivable | needs a solid-volume measure |
 | `bevelgear` | `Items/BevelGearItemDefinitions.cs:12` | 40 | `…/item/gearbevel.json` (toothed) | 488 (meaningless) | not naively derivable | needs a solid-volume measure |
-| `stock-bloom` | `BlockStructures/Forming/StockItemDefinitions.cs:25` | 180 | `…/forming/stock-bloom-*.json` | 144 | 360 | stale, 2× low |
-| `stock-slab` | `…/StockItemDefinitions.cs:26` | 400 | `…/forming/stock-slab-*.json` | 480 | 1200 | stale, 3× low |
+| `stock-shingledbar` | `BlockStructures/Forming/StockItemDefinitions.cs:24` | 400 | `…/forming/stock-shingledbar-*.json` | 144 as drawn | 405 for the settled 3 × 3 × 18 | mass settled 2026-08-12; the **art** is still the 16-long one |
+| `stock-shingledslab` | `…/StockItemDefinitions.cs:25` | 1200 | `…/forming/stock-shingledslab-*.json` | 480 | 1200 | correct, art included |
 | `castmold-plate` cavity | `BlockStructures/Casting/PatternItemDefinitions.cs:83` | 136 | `…/item/moldplate.json` | 292 | 730 | stale |
 | `castmold-doubleingot` cavity | `…/PatternItemDefinitions.cs:91` | 152 | `…/item/molddoubleingot.json` | 328 | 820 | stale |
 

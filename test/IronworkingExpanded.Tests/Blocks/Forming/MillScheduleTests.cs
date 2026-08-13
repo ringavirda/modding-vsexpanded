@@ -21,7 +21,7 @@ public class MillScheduleTests {
   // half way through one.
   private const string BarLadder = """
     {
-      "family": "bloom",
+      "family": "shingledbar",
       "shape": "iwex:item/smithed/shingled-bar",
       "stages": [
         { "thickness": 3.0, "element": "ShingledBar1", "acceptedBy": [ "grooved", "flat" ] },
@@ -36,7 +36,7 @@ public class MillScheduleTests {
   private const string GroovedSet = """
     {
       "family": "grooved",
-      "accepts": [ "bloom" ],
+      "accepts": [ "shingledbar" ],
       "barrelWidth": 16.0,
       "minTorque": 0.3
     }
@@ -72,7 +72,7 @@ public class MillScheduleTests {
 
   private static MillSchedule Schedule(
     string set = GroovedSet,
-    string form = "bloom"
+    string form = "shingledbar"
   ) {
     MillSchedule? schedule = MillSchedule.For(
       Set(set),
@@ -98,7 +98,7 @@ public class MillScheduleTests {
   public void The_two_families_share_an_entry_and_part_after_it() {
     MillSchedule flat = Schedule(
       GroovedSet.Replace("\"grooved\"", "\"flat\""),
-      "bloom"
+      "shingledbar"
     );
 
     Assert.Equal(
@@ -118,7 +118,7 @@ public class MillScheduleTests {
             "\"family\": \"slitting\""
           )
         ),
-        "bloom",
+        "shingledbar",
         Registry(BarLadder)
       )
     );
@@ -128,7 +128,9 @@ public class MillScheduleTests {
   public void A_form_the_set_refuses_has_no_schedule() {
     // The ladder is the states the metal can take; `accepts` is the tooling's own geometry. A narrow
     // barrel refuses a slab whatever states the slab has.
-    Assert.Null(MillSchedule.For(Set(GroovedSet), "slab", Registry(BarLadder)));
+    Assert.Null(
+      MillSchedule.For(Set(GroovedSet), "shingledslab", Registry(BarLadder))
+    );
   }
 
   [Fact]
@@ -144,7 +146,7 @@ public class MillScheduleTests {
 
   [Fact]
   public void A_bare_stand_has_no_schedule() {
-    Assert.Null(MillSchedule.For(null, "bloom", Registry(BarLadder)));
+    Assert.Null(MillSchedule.For(null, "shingledbar", Registry(BarLadder)));
   }
 
   #endregion
@@ -180,11 +182,11 @@ public class MillScheduleTests {
     // train of stands instead.
     MillSchedule wide = MillSchedule.For(
       Set(GroovedSet.Replace("\"grooved\"", "\"wide\"")),
-      "bloom",
+      "shingledbar",
       Registry(
         """
         {
-          "family": "bloom",
+          "family": "shingledbar",
           "stages": [ { "thickness": 2.0, "acceptedBy": [ "wide" ], "code": "lpex:heavyplate" } ]
         }
         """

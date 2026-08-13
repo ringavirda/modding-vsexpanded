@@ -365,7 +365,7 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 | 2 | No recipe / RCC of any kind | yes |
 | 3 | Every steam number is unchosen: draw, minimum pressure, blow interval, vent rate | yes |
 | 4 | The die spec does not exist. It should be the [heading machine](heading-machine.md)'s `ItemDie`, and that page owns the contract - this machine is its second consumer | yes |
-| 5 | `shingledslab` does not exist as a `StockForm`. `StockForm.All` holds `bloom` and `slab` only (`StockForm.cs:57-64`); the rename is on the forming build list | yes - nothing to shingle into |
+| ~~5~~ | ~~`shingledslab` does not exist as a `StockForm`~~ | **closed 2026-08-12** - the form is `shingledslab`, 8 × 3 × 20 at 1200 u. What the hammer shingles into now exists; the hammer does not |
 | 6 | The wrought ball does not exist either | yes - nothing to shingle from |
 | 7 | `boilerplate` does not exist | yes - nothing to stamp |
 | 8 | Art: three shapes to wire, re-texture with domain-relative paths, and fit to whatever footprint is chosen | |

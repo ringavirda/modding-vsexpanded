@@ -46,8 +46,8 @@ STAGES = [3.0, 2.0, 1.5, 1.0, 0.5]
 # measures the emitted shapes against the simulation's own model.
 FORMS = {
     #          base shape              t0   w0   maxWidth  spreadExponent
-    "bloom": ("item-shingledbloom", 3.0, 3.0, 8.0, 0.846),
-    "slab": ("item-shingledslab", 3.0, 8.0, 14.0, 0.463),
+    "shingledbar": ("item-shingledbloom", 3.0, 3.0, 8.0, 0.846),
+    "shingledslab": ("item-shingledslab", 3.0, 8.0, 14.0, 0.463),
 }
 
 

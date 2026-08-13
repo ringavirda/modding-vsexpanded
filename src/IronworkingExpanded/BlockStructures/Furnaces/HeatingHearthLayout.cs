@@ -51,9 +51,9 @@ public static class HeatingHearthLayout {
   public static Stock? StockOf(string? itemPath) {
     if (string.IsNullOrEmpty(itemPath))
       return null;
-    if (itemPath.StartsWith("stock-bloom"))
+    if (itemPath.StartsWith("stock-shingledbar"))
       return Stock.ShingledBloom;
-    if (itemPath.StartsWith("stock-slab"))
+    if (itemPath.StartsWith("stock-shingledslab"))
       return Stock.ShingledSlab;
     if (itemPath.StartsWith("castbillet"))
       return Stock.CastBillet;

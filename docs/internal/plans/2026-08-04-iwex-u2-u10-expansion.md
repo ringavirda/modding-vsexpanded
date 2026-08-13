@@ -899,6 +899,21 @@ U6 turns the puddling furnace from a shell that cannot complete, cannot light an
 
 # U7 — Reheat and rolling: heat-into-stock, the two-round WorkPiece rewrite, roll sets, rolled products
 
+⛔ **Five of these tasks were done outside this plan, under the forming-line ruling of 2026-08-12** (see
+[NEXT.md](NEXT.md) and the worklog). Read this before picking any U7 task up:
+
+| Task | State |
+|---|---|
+| **U7.6** (B3 - the fallback line) | **done** - `WorkPiece.FromStack` reads the itemtype attribute when the stack carries nothing |
+| **U7.7** (B17 - the whole deck row) | **done** - `IsInputDeck` walks `DeckRow`. ⛔ the `ns` gap-band sign inversion it names is **not** verified fixed; check `AlongBarrel` before assuming |
+| **U7.2** (the two-round `WorkPiece`) | **done 2026-08-12** - one `Thickness`, the `Gap` it is half way through, a flag per side; `Length`/`LengthAt` landed with it. **`Mass` did not** |
+| **U7.5** (`Outputs`/`OutputAt` off `RollSetSpec`) | **done** - the states are the stock's stage ladder and the set names no product; the *shear's* half of it is still unbuilt |
+| the `bloom` → `bar` rename this unit defers to U7.3/U7.4 | **done 2026-08-12** - `shingledbar` / `shingledslab`, with the masses, `FormerNames` and an item-code migration |
+
+What is genuinely left in U7: **U7.1** (the reheat cycle - `SmeltCycle` is still an empty body), the
+**section law** (U7.3's real content), the **roll-set schedule** re-cut, **U7.4**'s product items, **U7.9**'s
+48-voxel refusal (a declared stage property since the 2026-08-13 ruling, not `WorkPiece.Mass`), and U7.10.
+
 U7 turns a reduction simulator that nothing can enter and nothing can leave into a working forming line. Four things are genuinely missing and one is genuinely wrong: the reheat furnace puts no heat into stock (`SmeltCycle` is an empty body at `BlockEntityHeatingFurnace.cs:54`); `WorkPiece` still carries the retired per-strip `Strips[]`/`Turned[]` model instead of one `Thickness` + a per-side fed-this-round flag; the four shipped roll sets encode a schedule the 2026-07-29 decision replaced (and one of them, `slitting`, accepts a form that does not exist); and no rolled product item exists at all. The wrong thing is the spread model: `RollingPass.SpreadWidth`'s per-form exponent cannot reproduce the drawn stage art, which encodes the **section law** (flat holds length and puts everything into width; square keeps w=t and puts everything into length) — I verified that law reproduces every drawn stage element to within the drawing's own rounding, and the shipped exponent model does not. Two tiny unblockers (B3's one-line attribute fallback, B17's deck row) come first because nothing downstream is reachable without them, and B17's neighbourhood hides a second, untested bug: `BlockRollingMill.AlongBarrel` uses `localX = dz` for the `ns` orientation where `RotateOffset(…, 90)` demands `-dz`, so on a north-south mill the gap bands run backwards along the barrel.
 
 **Entry condition.** U6 complete: the puddling furnace + helve produce the wrought feed the mill eats, and that feed is an item whose code `HeatingHearthLayout.StockOf` (`HeatingHearthLayout.cs:64-79`) recognises — today that whitelist is the literal prefixes `stock-bloom`, `stock-slab`, `castbillet`, `castbloom`, `castslab`. U1 complete (done: `CastStockItemDefinitions` ships `caststock-{billet,bloom,slab}` at 600/1000/3000 u; `PatternItemDefinitions.Molds` carries the three `longcell` patterns). U7 must not run concurrently with U2/U3/U6: U7.1 edits `BlockEntityHeatingFurnace` and reads `BlockEntityFurnaceCore`'s melt cadence, and all three of those units rewrite that cadence (ruling 2 makes `BfMeltIntervalSec` / `BfMeltStartDelay` / `BfMaxFuelBurnTime` emergent — the same three keys `BlockEntityFireboxFurnace.cs:197-199` binds the reheat furnace to).

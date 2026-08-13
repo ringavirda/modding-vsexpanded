@@ -323,9 +323,9 @@ public partial class BlockRollingMill
       offered != null && mill.RollSet != null
         ? WorkPiece.SidesFor(offered.Width, mill.RollSet.BarrelWidth)
         : 1;
-    int strip = MillFeed.StripIndex(byPlayer.Entity.Controls.Sneak, sides);
+    int side = MillFeed.SideIndex(byPlayer.Entity.Controls.Sneak, sides);
 
-    FeedDecision decision = mill.TryFeed(held, gap, strip);
+    FeedDecision decision = mill.TryFeed(held, gap, side);
     if (decision.Accepted) {
       // The mill holds the piece until it drops on the far deck, so it leaves the player's hand here.
       byPlayer.InventoryManager.ActiveHotbarSlot.TakeOut(1);
@@ -339,6 +339,7 @@ public partial class BlockRollingMill
         FeedVerdict.WrongForm => "iwex-rollingmill-wrongform",
         FeedVerdict.NoReduction => "iwex-rollingmill-noreduction",
         FeedVerdict.TooCold => "iwex-rollingmill-toocold",
+        FeedVerdict.PartCropped => "iwex-rollingmill-partcropped",
         _ => "iwex-rollingmill-wontbite",
       }
     );

@@ -7,10 +7,14 @@ using Xunit;
 namespace IronworkingExpanded.Tests;
 
 /// <summary>
-/// Offering stock to the rolls. The player picks where along the barrel to feed (the gap) and which strip of
+/// Offering stock to the rolls. The player picks where along the barrel to feed (the gap) and which side of
 /// the piece to put through; the rest follows from geometry. There is no explicit next-gap-only check: the
 /// bite limit <c>δ_max = μ²R</c> makes a gap far narrower than the stock skid, and a deeper bite inside that
-/// limit is legal. See docs/design/processes/rolling.md.
+/// limit is legal.
+/// <para>
+/// What the rolls are asked to bite is one round's draft, not the gap's: a gap is taken in two rounds, so
+/// the first lands half way and the second the rest. See docs/design/processes/rolling.md.
+/// </para>
 /// </summary>
 public class MillFeedTests {
   private const float Radius = 4f; // IwexValues.RollingRollRadius
@@ -24,8 +28,8 @@ public class MillFeedTests {
           """
           {
             "family": "flat",
-            "accepts": [ "bloom" ],
-            "barrelWidth": 6.0
+            "accepts": [ "shingledbar" ],
+            "barrelWidth": 4.0
           }
           """
         )
@@ -46,12 +50,12 @@ public class MillFeedTests {
           JToken.Parse(
             """
             {
-              "family": "bloom",
+              "family": "shingledbar",
               "stages": [
+                { "thickness": 2.5, "acceptedBy": [ "flat" ] },
                 { "thickness": 2.0, "acceptedBy": [ "flat" ] },
                 { "thickness": 1.5, "acceptedBy": [ "flat" ] },
-                { "thickness": 1.0, "acceptedBy": [ "flat" ], "code": "iwex:rolledplate-iron" },
-                { "thickness": 0.5, "acceptedBy": [ "flat" ] }
+                { "thickness": 1.0, "acceptedBy": [ "flat" ], "code": "iwex:rolledplate-iron" }
               ]
             }
             """
@@ -69,13 +73,13 @@ public class MillFeedTests {
   }
 
   private static MillSchedule FlatSchedule =>
-    MillSchedule.For(FlatSet, "bloom", BloomLadder())
+    MillSchedule.For(FlatSet, "shingledbar", BloomLadder())
     ?? throw new System.InvalidOperationException("fixture has no schedule");
 
   private static FeedDecision Feed(
     WorkPiece piece,
     int gapIndex,
-    int strip = 0,
+    int side = 0,
     float tempC = Hot,
     RollSetSpec? set = null
   ) =>
@@ -84,7 +88,7 @@ public class MillFeedTests {
       MillSchedule.For(set ?? FlatSet, piece.Form.Name, BloomLadder()),
       piece,
       gapIndex,
-      strip,
+      side,
       tempC,
       Radius,
       RollingTemp
@@ -145,17 +149,14 @@ public class MillFeedTests {
 
   #endregion
 
-  #region Which strip
+  #region Which side
 
   [Fact]
-  public void Sneak_takes_the_far_strip_and_a_plain_click_the_near_one() {
-    // With two strips the choice matters; with one there is only the whole piece to feed.
-    Assert.NotEqual(
-      MillFeed.StripIndex(true, 2),
-      MillFeed.StripIndex(false, 2)
-    );
-    Assert.Equal(0, MillFeed.StripIndex(true, 1));
-    Assert.Equal(0, MillFeed.StripIndex(false, 1));
+  public void Sneak_takes_the_far_side_and_a_plain_click_the_near_one() {
+    // With two sides the choice matters; with one there is only the whole piece to feed.
+    Assert.NotEqual(MillFeed.SideIndex(true, 2), MillFeed.SideIndex(false, 2));
+    Assert.Equal(0, MillFeed.SideIndex(true, 1));
+    Assert.Equal(0, MillFeed.SideIndex(false, 1));
   }
 
   #endregion
@@ -163,35 +164,85 @@ public class MillFeedTests {
   #region The decision
 
   [Fact]
-  public void A_fresh_bloom_is_taken_at_the_widest_gap() {
-    FeedDecision d = Feed(WorkPiece.Fresh(StockForm.Bloom), gapIndex: 0);
+  public void A_fresh_bar_is_taken_at_the_widest_gap_half_way() {
+    FeedDecision d = Feed(WorkPiece.Fresh(StockForm.ShingledBar), gapIndex: 0);
 
     Assert.True(d.Accepted);
-    Assert.Equal(1f, d.Draft, 3); // 3.0 -> 2.0
+    Assert.Equal(0.25f, d.Draft, 3); // 3.0 -> 2.75, the half-step of the 2.5 gap
+  }
+
+  [Fact]
+  public void The_second_round_takes_the_rest_of_the_gap() {
+    // Same gap, same click; the piece knows it is half way through and the rolls take what is left.
+    var half = new WorkPiece(StockForm.ShingledBar, 2.75f, 2.5f, [false]);
+
+    FeedDecision d = Feed(half, gapIndex: 0);
+
+    Assert.True(d.Accepted);
+    Assert.Equal(0.25f, d.Draft, 3); // 2.75 -> 2.5
   }
 
   [Fact]
   public void Skipping_far_down_the_barrel_skids_instead_of_being_forbidden() {
-    // 3.0 straight to 0.5 is a 2.5 draft against delta_max of 1.0, so the rolls cannot pull it in. No
-    // wrong-gap rule is involved; the friction limit refuses it.
-    FeedDecision d = Feed(WorkPiece.Fresh(StockForm.Bloom), gapIndex: 3);
+    // 3.0 offered the narrowest gap is a 1.0 draft even taken half way, against delta_max of 0.36, so the
+    // rolls cannot pull it in. No wrong-gap rule is involved; the friction limit refuses it.
+    FeedDecision d = Feed(WorkPiece.Fresh(StockForm.ShingledBar), gapIndex: 3);
 
     Assert.Equal(FeedVerdict.WontBite, d.Verdict);
   }
 
   [Fact]
-  public void A_legal_deeper_bite_is_allowed_if_the_geometry_permits_it() {
-    // From 2.0 the 1.0 gap is a 1.0 draft, exactly delta_max, so it is legal even though it skips 1.5.
-    var piece = WorkPiece.Fresh(StockForm.Bloom).WithStrip(0, 2f);
+  public void Even_a_single_skipped_gap_skids() {
+    // delta_max is calibrated between one round's draft and one gap's, so the next rung is the only rung
+    // that bites and the barrel has to be walked. This is the whole of the ordering rule the mill does not
+    // otherwise have (settled 2026-08-12).
+    var piece = new WorkPiece(StockForm.ShingledBar, 2.5f, 0f, [false]);
 
-    Assert.True(Feed(piece, gapIndex: 2).Accepted);
+    Assert.True(Feed(piece, gapIndex: 1).Accepted); // 2.5 -> 2.25, the next rung's half-step
+    Assert.Equal(FeedVerdict.WontBite, Feed(piece, gapIndex: 2).Verdict); // straight at 1.5: 0.5 deep
+  }
+
+  [Fact]
+  public void A_part_cropped_piece_is_refused_at_every_gap() {
+    // What a stage yields is declared per stage, so a part piece carried to the next one would be worth that
+    // stage's whole count again however much of it had already gone. The stand refuses it instead.
+    var piece = WorkPiece.Fresh(StockForm.ShingledBar).Crop(4);
+
+    for (int gap = 0; gap < 4; gap++)
+      Assert.Equal(FeedVerdict.PartCropped, Feed(piece, gap).Verdict);
+  }
+
+  [Fact]
+  public void A_worked_out_piece_is_refused_for_the_same_reason() {
+    // Nothing distinguishes it at the stand: any piece with metal already taken out of it is a part piece.
+    WorkPiece piece = WorkPiece.Fresh(StockForm.ShingledBar);
+    for (int i = 0; i < 4; i++)
+      piece = piece.Crop(4);
+
+    Assert.Equal(FeedVerdict.PartCropped, Feed(piece, gapIndex: 0).Verdict);
+  }
+
+  [Fact]
+  public void The_piece_being_a_part_piece_is_reported_before_the_gap_is_judged() {
+    // A part piece offered a gap that would also have been wrong must still say so: sending the player along
+    // the barrel to look for a gap that does not exist is the wrong fix.
+    var piece = new WorkPiece(
+      StockForm.ShingledBar,
+      3f,
+      0f,
+      [false],
+      null,
+      Cropped: 1
+    );
+
+    Assert.Equal(FeedVerdict.PartCropped, Feed(piece, gapIndex: 3).Verdict);
   }
 
   [Fact]
   public void A_gap_wider_than_the_stock_wastes_the_trip_rather_than_erroring() {
     // The piece passes through untouched.
-    var piece = WorkPiece.Fresh(StockForm.Bloom).WithStrip(0, 1f);
-    FeedDecision d = Feed(piece, gapIndex: 0); // 2.0 gap on 1.0 stock
+    var piece = new WorkPiece(StockForm.ShingledBar, 1f, 0f, [false]);
+    FeedDecision d = Feed(piece, gapIndex: 0); // 2.5 gap on 1.0 stock
 
     Assert.Equal(FeedVerdict.NoReduction, d.Verdict);
     Assert.Equal(0f, d.Draft);
@@ -201,7 +252,7 @@ public class MillFeedTests {
   public void Cold_stock_is_refused_at_the_bite() {
     // Reported as cold rather than as a bad gap.
     FeedDecision d = Feed(
-      WorkPiece.Fresh(StockForm.Bloom),
+      WorkPiece.Fresh(StockForm.ShingledBar),
       gapIndex: 0,
       tempC: 500f
     );
@@ -209,16 +260,13 @@ public class MillFeedTests {
   }
 
   [Fact]
-  public void Each_strip_is_judged_on_its_own_thickness() {
-    // Half-rolled: strip 0 down to 2.0, strip 1 untouched at 3.0. The same gap is a reduction for one and a
-    // skid for the other, so each strip is judged on its own.
-    var half = new WorkPiece(StockForm.Bloom, [2f, 3f], new bool[2]);
+  public void A_side_already_through_this_round_would_pass_untouched() {
+    // It is already at this round's gauge and the rest of the piece has yet to catch up with it, so the
+    // refusal is the same one a too-wide gap gets.
+    var midRound = new WorkPiece(StockForm.ShingledBar, 3f, 0f, [true, false]);
 
-    Assert.True(Feed(half, gapIndex: 1, strip: 0).Accepted); // 2.0 -> 1.5
-    Assert.Equal(
-      FeedVerdict.WontBite,
-      Feed(half, gapIndex: 1, strip: 1).Verdict
-    ); // 3.0 -> 1.5 is too deep
+    Assert.Equal(FeedVerdict.NoReduction, Feed(midRound, 0, side: 0).Verdict);
+    Assert.True(Feed(midRound, 0, side: 1).Accepted); // the side still owed is taken
   }
 
   [Fact]
@@ -229,7 +277,7 @@ public class MillFeedTests {
         .Decide(
           null,
           null,
-          WorkPiece.Fresh(StockForm.Bloom),
+          WorkPiece.Fresh(StockForm.ShingledBar),
           0,
           0,
           Hot,
@@ -245,7 +293,7 @@ public class MillFeedTests {
     // The flat set here takes bloom only; a slab needs wide rolls.
     Assert.Equal(
       FeedVerdict.WrongForm,
-      Feed(WorkPiece.Fresh(StockForm.Slab), 0).Verdict
+      Feed(WorkPiece.Fresh(StockForm.ShingledSlab), 0).Verdict
     );
     Assert.Equal(
       FeedVerdict.WrongForm,
@@ -265,7 +313,7 @@ public class MillFeedTests {
         .Decide(
           FlatSet,
           null,
-          WorkPiece.Fresh(StockForm.Bloom),
+          WorkPiece.Fresh(StockForm.ShingledBar),
           0,
           0,
           Hot,
@@ -277,12 +325,12 @@ public class MillFeedTests {
   }
 
   [Fact]
-  public void An_out_of_range_gap_or_strip_is_a_no_op_not_a_crash() {
-    var piece = WorkPiece.Fresh(StockForm.Bloom);
+  public void An_out_of_range_gap_or_side_is_a_no_op_not_a_crash() {
+    var piece = WorkPiece.Fresh(StockForm.ShingledBar);
     Assert.Equal(FeedVerdict.NoReduction, Feed(piece, gapIndex: 99).Verdict);
     Assert.Equal(
       FeedVerdict.NoReduction,
-      Feed(piece, gapIndex: 0, strip: 99).Verdict
+      Feed(piece, gapIndex: 0, side: 99).Verdict
     );
   }
 

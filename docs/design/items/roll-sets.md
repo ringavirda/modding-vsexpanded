@@ -93,10 +93,9 @@ stock a set bites and where it sits.
 
 | Item | Family | Bites | Gaps | Barrel | Fitted to | Makes | file:line |
 |---|---|---|---|---|---|---|---|
-| `iwex:rollset-flat` | flat | `bloom`, `billet` | 2.0 / 1.5 / 1.0 / 0.5 | 6.0 | [rolling mill](../machines/rolling-mill.md) | two codes that do not exist | `RollSetItemDefinitions.cs:62-69` |
-| `iwex:rollset-flatwide` | flat | `slab`, `bloom` | 2.0 / 1.5 / 1.0 / 0.5 | 16.0 | " | the same two | `:73-81` |
-| `iwex:rollset-grooved` | grooved | `bloom`, `billet` | 1.0 / 0.5 | 16.0 | " | `game:rod-iron` (real) + one that does not exist | `:86-93` |
-| `iwex:rollset-slitting` | slitting | `plate` - not a `StockForm` | 0.5 | 16.0 | " | one code that does not exist | `:96-103` |
+| `iwex:rollset-flat` | flat | `shingledbar`, `billet` | the stock's ladder: 2.5 / 2.0 / 1.5 / 1.0 | 4.0 | [rolling mill](../machines/rolling-mill.md) | none - a set names no product | `RollSetItemDefinitions.cs:50-57` |
+| `iwex:rollset-flatwide` | flat | `shingledslab`, `shingledbar` | the stock's ladder | 16.0 | " | none | `:59-66` |
+| `iwex:rollset-grooved` | grooved | `shingledbar`, `billet` | the bar's grooved branch: 2.5 / 2.0 / 1.5 / 1.0 | 16.0 | " | none | `:70-76` |
 
 The gap, barrel, `minTorque` and output values are [rolling mill](../machines/rolling-mill.md)'s to own; they
 are reproduced here only as the census key, and the delta against the settled schedules is that page's table.
@@ -111,9 +110,10 @@ are reproduced here only as the census key, and the delta against the settled sc
 | steel `grooved` | smex | 2.5 / 2.0 / 1.5 / 1.0 | `castbillet` on the iwex mill's own barrel | " |
 | steel `flat` | smex | 2.5 / 2.0 / 1.5 / 1.0 | " | " |
 
-So the settled family is twelve sets across three mods against four shipped in one, and the four shipped ones
-are not a subset: `slitting` is deleted outright, the iwex `flat` schedule shifts to 2.5 / 2.0 / 1.5 / 1.0 on
-a 4-wide barrel, and `flatwide` splits from one four-gap item into six one-gap items
+So the settled family is twelve sets across three mods against **three** shipped in one. Two of the three
+deltas closed on 2026-08-12: `slitting` is deleted and the iwex `flat` schedule is 2.5 / 2.0 / 1.5 / 1.0 on
+a 4-wide barrel. What is left is that `flatwide` is still one item where the settled train is six one-gap
+items
 ([rolling mill](../machines/rolling-mill.md) § the authored roll art;
 [wide hall](../machines/wide-hall.md) § The six wide roll sets).
 
@@ -137,7 +137,7 @@ tooling families with their own attribute keys, not roll-set variants - see [die
 | itemtype code | `rollset` (asset `{domain}:itemtypes/rollset.json`) | `RollSetItemDefinitions.cs:119` |
 | item shape | `game:item/ingot` - placeholder | `:122` |
 | texture (`all`) | `iwex:block/metal/castiron` | `:123` |
-| variant group | `type` over `SetTypes` = `flat`, `flatwide`, `grooved`, `slitting` | `:124`, `:108` |
+| variant group | `type` over `SetTypes` = `flat`, `flatwide`, `grooved` | `:88`, `:103` |
 | max stack size | 1 | `:125` |
 | per-variant specs | `attributesByType["*-{type}"]` | `:126`, built at `:114-116` |
 | creative inventory | `*` in `general` + `iwex` | `:127` |
@@ -157,18 +157,20 @@ The meaning and the validation rule of every field belong to
 [rolling mill](../machines/rolling-mill.md) § the roll-set spec format. This table exists so an item author
 knows what an entry must contain and where to read the rule.
 
-| JSON key | C# member | Required? | Rule lives at |
-|---|---|---|---|
-| `family` | `Family` | yes, non-blank | `RollSetSpec.cs:32`, `:119-125` |
-| `accepts` | `Accepts` | yes, ≥ 1 entry | `:33`, `:126-134` |
-| `gaps` | `Gaps` | yes, ≥ 1, all > 0, strictly descending | `:34`, `:136-157` |
-| `outputs` | `Outputs` | yes, ≥ 1; an array of `{gap, code}`, never a float-keyed object | `:35`, `:159-183` |
-| `barrelWidth` | `BarrelWidth` | yes, > 0 | `:36`, `:185-190` |
-| `minTorque` | `MinTorque` | no - defaults to `0f` | `:37`, `:198` |
+*Re-cut 2026-08-12. `gaps` and `outputs` are gone: a set declares only what the tooling itself knows, and
+the states the metal passes through are the stock's stage ladder
+([process-extension](../mechanics/process-extension.md)).*
 
-The array-not-object decision for `outputs` is documented in-source at `RollSetSpec.cs:159-161`: *a float is
-a poor JSON key (`0.5` vs `"0.50"` never compare equal)*. It is the one schema decision every later tooling
-family is told to copy ([heading machine](../machines/heading-machine.md) § Code).
+| JSON key | C# member | Required? |
+|---|---|---|
+| `schema` | `Schema` | no - absent reads as 1 |
+| `family` | `Family` | yes, non-blank. The roller family, which selects this set's branch of a ladder |
+| `accepts` | `Accepts` | yes, ≥ 1 entry. The tooling's own geometry, and **not** derived from the ladder - a narrow barrel refuses a slab whatever states the slab has |
+| `barrelWidth` | `BarrelWidth` | yes, > 0 |
+| `minTorque` | `MinTorque` | no - defaults to `0f` |
+
+⛔ ~~The array-not-object decision for `outputs`.~~ Retired with `outputs` itself. The lesson it carried -
+a float is a poor JSON key - survives as the tolerance every gauge comparison now uses.
 
 ### The dead API — what a roll set carries that nothing consumes
 
@@ -262,10 +264,9 @@ says so in the schema.
 | `item-rollset-flat` | "Flat Roll Set" - `:113` | `ru.json:130` | `uk.json:130` |
 | `item-rollset-flatwide` | "Wide Flat Roll Set" - `:114` | `:131` | `:131` |
 | `item-rollset-grooved` | "Grooved Roll Set" - `:115` | `:132` | `:132` |
-| `item-rollset-slitting` | "Slitting Roll Set" - `:116` | `:133` | `:133` |
 
-All four rows in all three languages are for sets the settled design either rewrites or deletes. `slitting`
-in particular is translated into Russian and Ukrainian and can never accept anything.
+The three surviving rows are correct for what ships. `slitting`'s row was translated into Russian and
+Ukrainian for a set that could never accept anything; it went with the set on 2026-08-12.
 
 ---
 
@@ -327,7 +328,7 @@ What it costs, and nobody has written it down:
 * `minTorque` is optional and defaults to `0` (`RollSetSpec.cs:198`). A set authored without it is valid
   and, if the gate is ever wired, will turn on any drive at all. There is no validation requiring it, and the
   shipped four all set it - which hides the default.
-* `accepts` is matched against `StockForm` names, and `StockForm.All` holds only `bloom` and `slab`
+* `accepts` is matched against `StockForm` names, and `StockForm.All` holds only `shingledbar` and `shingledslab`
   (`StockForm.cs:57-64`). Two shipped sets accept `billet` and one accepts `plate`; none of the three is a
   form, so those entries are unreachable strings that `TryParse` happily accepts (`RollSetSpec.cs:126-134`
   checks only that the array is non-empty and its entries non-blank).
@@ -356,4 +357,4 @@ What it costs, and nobody has written it down:
 | 5 | **A recipe - any recipe - for any set** | the cast-blank route is implied by `item-rollers-castblank.json` and needs a [pattern](patterns.md) entry first |
 | 6 | **Does `RollSetSpec` move to exlib?** | Three mods will ship sets, and the identical question is open for `ItemDie` ([heading machine § Open](../machines/heading-machine.md)). `MoldSpec` set the precedent by staying in iwex (`MoldSpec.cs:6`); nobody has re-examined it since the family grew to three |
 | 7 | **Should the idiom carry `MaxWidth`?** | [wide hall](../machines/wide-hall.md) settles that `MaxWidth` moves off `StockForm` onto the roll set. That is a sixth field on the record and a golden change for every shipped set |
-| 8 | **Delete `slitting`** | translated into three languages, accepts a non-form, and is deleted by the settled design ([STATE.md § Remove](../../internal/plans/STATE.md)) |
+| ~~8~~ | ~~**Delete `slitting`**~~ | **done 2026-08-12**, with its three lang rows. Retired rather than renamed, so no migration - remapping a retired code onto a surviving one hands the player an item they never had |

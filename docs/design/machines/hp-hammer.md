@@ -208,7 +208,7 @@ expresses the tier gate and D3's continuous grade penalty. The `ItemDie` contrac
 
 Two families are named for this machine and neither has an item behind it:
 *billet → forged heavy components (open die)*, and *tools, complex/thick forgings*. Neither names a stock
-form, an output code or a mass, and `StockForm.All` holds `bloom` and `slab` only (`StockForm.cs:57-64`).
+form, an output code or a mass, and `StockForm.All` holds `shingledbar` and `shingledslab` only (`StockForm.cs:80`).
 
 Every die named anywhere in the design with an actual product, and its output thickness:
 

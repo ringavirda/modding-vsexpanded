@@ -194,7 +194,7 @@ the steel tier changes.
 | `flat` | 0.2 | `RollSetItemDefinitions.cs:68` |
 | `flatwide` | 0.5 | `:80` |
 | `grooved` | 0.3 | `:92` |
-| `slitting` | 0.4 | `:102` - the set itself is deleted by the settled design |
+| ~~`slitting`~~ | ~~0.4~~ | the set was retired on 2026-08-12 |
 
 ### Hard-coded / structural constraints on any new set
 
@@ -205,7 +205,7 @@ the steel tier changes.
 | every output gap must be one of `gaps` | `:172-175` | blocks `castbillet`'s crop at the 2.25 half-step. `Outputs` must move to the [shear](shear.md) and key on stage before steel sets are authored |
 | `barrelWidth` required > 0 | `:185-190` | a wide set that omits it fails validation at `AssetsFinalize` (`RollSetValidation.cs:20-32`) |
 | a malformed set reports "busy" | `BlockRollingMill.cs:312` | an author error in a steel set is indistinguishable from a running pass ([rolling mill](rolling-mill.md) § Gotchas) |
-| `Accepts` is matched against `StockForm` names | `RollSetSpec.cs:73-74`; `StockForm.All` = `bloom`, `slab` only (`StockForm.cs:57-64`) | the three cast forms do not exist. `castbillet` / `castbloom` / `castslab` must be added as `StockForm`s first |
+| `Accepts` is matched against `StockForm` names | `RollSetSpec.cs:73-74`; `StockForm.All` = `shingledbar`, `shingledslab` only (`StockForm.cs:80`) | the three cast forms do not exist. `castbillet` / `castbloom` / `castslab` must be added as `StockForm`s first - `StockForm.Register` is public, so that is a declaration rather than a fork |
 | `stackSize` 1 | `RollSetItemDefinitions.cs:125` | one set per stack, as every stateful item |
 
 ---
@@ -268,10 +268,11 @@ any tier: that a set below `MinTorque` is refused.
   changes curvature, which `WorkPiece` has no axis for - a different operation
   ([bending roller](bending-roller.md)).
 * The roll-set item is live; the steel family is not. And no roll set of any tier has a recipe.
-* `slitting` must not be copied forward. It accepts form `"plate"`, which is not a `StockForm`, so it
-  can never bite anything, and the settled design deletes it ([rolling mill](rolling-mill.md) § Blockers).
-* Four of the five shipped output codes name items that do not exist, and `TryParse` never resolves a
-  code - it only checks the gap (`RollSetSpec.cs:172-175`). Authoring a steel family the same way would ship
+* ~~`slitting` must not be copied forward.~~ It cannot be: the set was retired on 2026-08-12, having
+  accepted a form that is not a `StockForm` and so never biting anything.
+* ~~Four of the five shipped output codes name items that do not exist~~ - a set no longer names a product
+  at all, so there is nothing here to copy wrongly. What survives as advice: `TryParse` still resolves no
+  code, because the codes are the ladder's. Authoring a steel family the same way would ship
   four more dangling codes; `Outputs` is leaving for the [shear](shear.md) precisely to stop that.
 * `Outputs` is a `Dictionary<float, string>` compared with `==` (`RollSetSpec.cs:96-101`). Single-gap
   wide sets shrink the hazard to one entry each; the narrow steel sets do not.

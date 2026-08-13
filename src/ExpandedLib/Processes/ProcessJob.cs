@@ -6,14 +6,14 @@ using Vintagestory.API.Datastructures;
 namespace ExpandedLib.Processes;
 
 /// <summary>
-/// One terminal job: a piece goes in, one kind of thing comes out, and <see cref="Count"/> of them do. The
-/// count is what makes terminal a shape of its own rather than a one-rung ladder - the shear crops a rod
-/// into four rods, so a job that could name only one output could not express the crop table.
-/// See docs/design/mechanics/process-extension.md.
+/// One terminal job: a piece goes in, one kind of thing comes out, and <see cref="Count"/> of them do. A
+/// staged job crops and the input survives; a whole-item job converts and it does not.
+/// See docs/design/mechanics/process-extension.md § What a count means.
 /// </summary>
 /// <param name="Input">Item code the machine takes.</param>
 /// <param name="Output">Item code it yields.</param>
-/// <param name="Count">How many of the output one job yields. At least one.</param>
+/// <param name="Count">How many of the output the input is worth. On a staged job that is the whole
+/// piece's yield and one leaves per stroke; on a whole-item job they all leave at once. At least one.</param>
 /// <param name="Stage">Gauge the input must be at, or null when the whole item is the input.</param>
 /// <param name="Family">Branch the input must be on, for a staged job at a fork.</param>
 /// <param name="MinTorque">Drive torque the machine needs for this job. 0 when it is not gated.</param>

@@ -2,7 +2,7 @@
 
 **Status** settled 2026-08-12; the sequence half is **built** — `StageLadder`, `StageLadderRegistry`,
 `StageLadderLoader`, `SpecSchema`, `ProcessItemEmitter` and `ProcessItemRenames` in exlib, `MillSchedule`
-and the shipped bloom/slab catalogues in iwex. The rule and the two registry shapes are fixed; the schemas
+and the shipped shingledbar/shingledslab catalogues in iwex. The rule and the two registry shapes are fixed; the schemas
 below are the contract a third-party mod writes against.
 **Mod** exlib (the contract and the emitter) · every mod (every registry)
 **Owns** the rule that a machine names no product, the two shapes a process registry takes, how a
@@ -61,7 +61,7 @@ exactly as a ladder is — a second job on one input is reported and the first s
   "schema": 1,
   "machine": "shear",
   "jobs": [
-    { "input": "iwex:stock-bloom", "stage": 2.0, "family": "grooved",
+    { "input": "iwex:stock-shingledbar", "stage": 2.0, "family": "grooved",
       "output": "game:rod-iron", "count": 4, "minTorque": 0.3 },
     { "input": "iwex:nailplate", "output": "game:metalnailsandstrips", "count": 4 }
   ]
@@ -71,6 +71,43 @@ exactly as a ladder is — a second job on one input is reported and the first s
 `stage` and `family` are optional and belong together: a job naming them takes a piece part way down a
 ladder, at that gauge on that branch; one omitting them takes the whole item. A staged job wins over a
 whole-item one for the same input, so a stock family can carry both.
+
+### What a count means *(settled 2026-08-12)*
+
+> **A staged job crops. A whole-item job converts.** The distinction decides whether the input survives,
+> and `count` reads differently on each.
+
+| Job | `count` is | The input |
+|---|---|---|
+| **staged** (`stage` present) | the whole piece's yield - a bar at the rod gauge is **4** | **survives**, with one fewer crop left in it, still stock at the same stage |
+| **whole-item** (no `stage`) | what one conversion produces | **consumed** |
+
+The names are the rule: a crop takes a product's worth off and leaves the remainder on the deck, and a
+conversion turns the thing into another thing. Both were already in the design - crop-not-convert is
+[shear](../machines/shear.md)'s, and `nailplate → 4 × nails-and-strips` is the one whole-piece conversion
+in the forming ladder.
+
+`count` is the modder's own number and nothing checks it against geometry. That the shipped rows happen to
+divide their input's mass exactly - 400 / 4, 600 / 6, 3000 / 5 - is the [density rule](density-rule.md)
+being applied by whoever authored them, not a constraint the loader enforces. It could not be: length and
+mass are art, and a cut point is a design choice.
+
+★★ **A staged crop needs one integer on the stack, and nothing else** *(ruled and built 2026-08-13)*. The
+piece carries **crops taken**, and `count - taken` is what is left; at zero left it is spent. It needs no
+mass and no length, because **length is not defined programmatically - it comes from the art** - and a cut
+point is declared rather than derived. `count` being the modder's own number is the whole point: what a
+piece divides into is a design choice, not arithmetic we can do for them.
+
+★★ **Taken, not remaining**, so that zero means *untouched*: a piece that has never met the machine and one
+worked out to nothing must not read alike, no piece already in a world needs migrating, and the declared
+`count` stays the authority - retuning a row from 4 to 6 gives every existing piece the two extra crops
+rather than stranding it on the number it was cut against.
+
+⛔⛔ **A part-worked piece cannot re-enter a sequence.** The tally is against *this* stage's count, so a
+piece carried to the next stage would be worth that stage's whole count again however much of it had gone -
+metal from nothing. The mill refuses one outright (`FeedVerdict.PartCropped`). That refusal is what lets the
+tally stay a single `int` instead of a proportion carried between stages, and any other sequence machine
+declaring staged jobs owes the same refusal.
 
 **Sequence** — a ladder the work walks, one step at a time, carrying state between steps. Only the
 rolling mill and the bending roller are sequences today: the mill walks thickness *down* in gaps, the
@@ -130,10 +167,8 @@ may both contribute to one family.
   "family": "shingledbar",
   "shape": "iwex:item/smithed/shingled-bar",
   "stages": [
-    { "thickness": 3.00, "element": "ShingledBar1", "acceptedBy": ["grooved", "flat"] },
-    { "thickness": 2.75, "element": "Grooved275",   "acceptedBy": ["grooved"] },
-    { "thickness": 2.50, "element": "Grooved250",   "acceptedBy": ["grooved"], "code": "rolledrod" },
-    { "thickness": 2.25, "element": "Grooved225",   "acceptedBy": ["grooved"] }
+    { "thickness": 2.50, "element": "Grooved250",   "acceptedBy": ["grooved"] },
+    { "thickness": 2.00, "element": "Grooved200",   "acceptedBy": ["grooved"], "code": "rolledrod" }
   ]
 }
 ```
@@ -158,8 +193,15 @@ same piece at the same thickness continues on grooved toward a rivet rod or swit
 nail plate — same feed, same mass, two routes. A line could not express that, and the fork is the
 mill's whole point.
 
-**A gap costs two passes**, in and turned back, so the ladder is drawn per *pass*: 3.00 → 2.75 → 2.50
-is gap 2.5 taken in two bites. The half-steps are exactly the states that carry no `code`.
+⛔ **A rung is a gap, not a round** *(corrected 2026-08-12, when the two-round model was built)*. A gap
+costs two rounds - 3.00 → 2.75 → 2.50 is gap 2.5 taken in two bites - but only **2.50 is a rung**. The
+half-step between them is arithmetic (`(thickness + gap) / 2`), it is never declared, and it is drawn by
+the composed mesh rather than by an element.
+
+This page previously said the ladder is drawn per *pass*, with the half-steps as the rungs carrying no
+`code`. That reading puts twice as many gap bands on the mill's deck as the barrel has grooves, because
+`MillSchedule` builds the deck's bands straight from the rungs a family accepts. A third-party ladder
+should therefore declare **one rung per gap**, and get its half-steps for free.
 
 ### Mid-pass states are a per-stack mesh, not an item
 

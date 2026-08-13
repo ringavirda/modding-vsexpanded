@@ -249,9 +249,11 @@ model's and are [rolling mill](../machines/rolling-mill.md)'s; the throughput co
 - `castbloom`'s `skelp` stage is 50 long. Five 8 × 1 × 10 skelps come out of it exactly, but the uncropped
   stage is past the 48-voxel limit - the hole in the invariant that
   [recoverability](../mechanics/recoverability.md) flags as its highest-value open item.
-- A product cannot be declared at a half-step today. `RollSetSpec.TryParse` rejects any output whose gap is
-  not one of the barrel's gaps, and `OutputAt` compares floats with `==`. Both are why `Outputs` moves to the
-  shear and keys on stage ([shear](../machines/shear.md)).
+- ~~A product cannot be declared at a half-step today.~~ **Fixed 2026-08-12.** `RollSetSpec` no longer holds
+  `gaps` or `outputs` at all: the states are the stock's stage ladder, a half-step is an ordinary rung, and
+  a stopping point is a stage carrying a `code`
+  ([process-extension](../mechanics/process-extension.md)). Gauges match on a tolerance, not `==`. The
+  shear's own crop table is a terminal registry and is still unshipped - see [shear](../machines/shear.md).
 - The four grooved half-steps have art and the four flat ones do not, so the fork currently looks like two
   branches of unequal maturity when it is meant to be symmetric.
 

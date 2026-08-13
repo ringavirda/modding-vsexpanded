@@ -166,14 +166,15 @@ public class RollingMillTests {
 
   #region The pass - the network's first real demand
 
-  // A mill with stock under the rolls. Hot and shallow enough to bite; `length` is how far it must travel.
+  // A mill with stock under the rolls. Hot, and one round's draft so it bites; `length` is how far it must
+  // travel.
   private static BlockEntityRollingMill Rolling(
     float tempC = 1100f,
-    float draft = 0.5f,
+    float draft = 0.25f,
     float length = 4f
   ) {
     var be = new BlockEntityRollingMill();
-    Assert.True(be.BeginPass(draft, width: 4f, length: length, tempC: tempC));
+    Assert.True(be.BeginPass(draft, length: length, tempC: tempC));
     return be;
   }
 
@@ -193,22 +194,20 @@ public class RollingMillTests {
     // Below rolling heat the friction collapses and the rolls cannot pull the piece in, so the pass is
     // refused at the start rather than accepted and left to stall the run.
     var be = new BlockEntityRollingMill();
-    Assert.False(be.BeginPass(draft: 0.5f, width: 4f, length: 4f, tempC: 400f));
+    Assert.False(be.BeginPass(draft: 0.25f, length: 4f, tempC: 400f));
     Assert.False(be.IsRolling);
   }
 
   [Fact]
   public void An_over_deep_gap_is_refused_even_when_the_stock_is_hot() {
     var be = new BlockEntityRollingMill();
-    Assert.False(be.BeginPass(draft: 99f, width: 4f, length: 4f, tempC: 1200f));
+    Assert.False(be.BeginPass(draft: 99f, length: 4f, tempC: 1200f));
   }
 
   [Fact]
   public void Only_one_piece_can_be_under_the_rolls_at_a_time() {
     var be = Rolling();
-    Assert.False(
-      be.BeginPass(draft: 0.5f, width: 4f, length: 4f, tempC: 1100f)
-    );
+    Assert.False(be.BeginPass(draft: 0.25f, length: 4f, tempC: 1100f));
   }
 
   [Fact]

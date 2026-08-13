@@ -43,42 +43,35 @@ public class RollSetItemDefinitions : IExItemDefProvider {
   /// a slab whatever states the slab has, which is the one fact the ladder cannot carry.
   /// </summary>
   private static readonly Dictionary<string, object> Sets = new() {
-    // Flat: a shingled bloom enters 3 thick and 3 wide, so the early gaps fit inside the 6-wide barrel at two
-    // passes each. The piece spreads as it flattens (StockForm.Bloom) and overhangs the barrel by the 1.0 gap,
-    // after which every gap costs four passes because it must be taken in side-by-side strips. Schedule cost
-    // runs 2, 2, 4, 4.
+    // Flat: a shingled bar enters 3 thick and 3 wide, so the first two gaps fit inside the 4-wide barrel at
+    // two feeds each. The piece spreads as it flattens (StockForm.ShingledBar) and outgrows the barrel by
+    // the 1.5 gap, after which every gap costs four feeds because it must be taken a side at a time.
+    // Schedule cost runs 2, 2, 4, 4 - twelve feeds for two plates, which is the number the wide hall is
+    // measured against.
     ["flat"] = Set(
       "flat",
-      ["bloom", "billet"],
-      barrelWidth: 6.0,
+      ["shingledbar", "billet"],
+      barrelWidth: 4.0,
       minTorque: 0.2
     ),
     // Flat-wide: the same branch on a barrel wide enough that the work never overhangs, so every gap stays
     // at two passes however far the piece spreads. Slab starts wider than a narrow barrel and runs only here.
     ["flatwide"] = Set(
       "flat",
-      ["slab", "bloom"],
-      // Wider than any form's MaxWidth (slab caps at 14), so the work never overhangs however far it spreads.
+      ["shingledslab", "shingledbar"],
+      // Wider than any form's MaxWidth (the slab caps at 14), so the work never overhangs however far it
+      // spreads.
       barrelWidth: 16.0,
       minTorque: 0.5
     ),
     // Grooved: the rod route. A real groove constrains the spread rather than letting it run sideways, which
-    // is modelled here as a barrel the work never outgrows. The bloom's grooved branch enters at 2.5, which
-    // a fresh 3.0 piece can bite: an entry rung of 1.0 was a 2.0 draft against delta_max 1.0, so the rod
-    // route had no legal entry at all.
+    // is modelled here as a barrel the work never outgrows. It walks the same four rungs as flat, so every
+    // draft in the game is uniform and a gap costs the same two rounds whichever family takes it.
     ["grooved"] = Set(
       "grooved",
-      ["bloom", "billet"],
+      ["shingledbar", "billet"],
       barrelWidth: 16.0,
       minTorque: 0.3
-    ),
-    // Slitting: plate slit into nail rod. No stock family declares a slitting rung yet, so the set is
-    // tooling with no route - pinned as the one known dead set by ShippedRollSetTests.
-    ["slitting"] = Set(
-      "slitting",
-      ["plate"],
-      barrelWidth: 16.0,
-      minTorque: 0.4
     ),
   };
 

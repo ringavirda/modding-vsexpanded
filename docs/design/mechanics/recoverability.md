@@ -152,7 +152,7 @@ Only the lengthwise half exists today, and it does not measure anything.
 
 What actually gates loading today: `TryLoad` refuses on three conditions only - the row is unreachable
 past a loaded centre, the row is occupied, or the item's code path is not recognised stock
-(`BlockEntityHeatingHearth.cs:57-69`). Recognition is a code-prefix match - `stock-bloom`, `stock-slab`,
+(`BlockEntityHeatingHearth.cs:57-69`). Recognition is a code-prefix match - `stock-shingledbar`, `stock-shingledslab`,
 `castbillet`, `castbloom`, `castslab` (`HeatingHearthLayout.cs:64-79`). No length is read, because no
 stock item carries one.
 

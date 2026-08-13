@@ -119,7 +119,7 @@ All proposed; the bench has no config section and no keys. Values that exist tod
 | `NailStrokeMs` | 250 ms | — (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:42`) | stroke tick |
 | `NailStrokesPerPlate` | 4 | — | one stroke per nail, so a plate visibly takes four |
 | `NailMinTorque` | 0.15 | — | below the `flat` roll set's 0.2 (`RollSetItemDefinitions.cs:68`) - a nail bench must be the easiest load on the run |
-| `NailStrokeEnergy` | ≪ one mill pass | — | sized against `RollingTorqueScale = 0.02` (`IwexConfig.cs:520`) and the headroom note at `IwexConfig.cs:508-520` |
+| `NailStrokeEnergy` | ≪ one mill pass | — | sized against `RollingLoadTorque = 0.34` — the mill's declared working demand, 85 % of one bridged wheel's headroom (`IwexConfig.cs`) |
 
 Masses are not owned here - `nailplate` 4 × 1 × 10 = 40 vx³ = 100 u and `game:metalnailsandstrips` at 25 u both come from the [density rule](../mechanics/density-rule.md) and the [fasteners](../items/fasteners.md) page; the ladder that produces them is the forming line's ([stock](../items/stock.md), [rolling](../processes/rolling.md)).
 

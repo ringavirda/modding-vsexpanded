@@ -96,8 +96,8 @@ public class RolledStockStagesTests {
   }
 
   [Theory]
-  [InlineData("bloom")]
-  [InlineData("slab")]
+  [InlineData("shingledbar")]
+  [InlineData("shingledslab")]
   public void A_piece_that_has_stopped_widening_runs_out_lengthways_instead(
     string form
   ) {
@@ -118,7 +118,7 @@ public class RolledStockStagesTests {
   public void A_bloom_lands_on_plate_geometry_at_the_one_voxel_gap() {
     // The schedule is tuned so the bloom reaches nearly its full width where it becomes one voxel thick.
     // One voxel by about eight is the proportion of the vanilla metal plate the piece is cut into.
-    StockForm bloom = StockForm.Bloom;
+    StockForm bloom = StockForm.ShingledBar;
     float atPlateGap = bloom.WidthAt(1f);
 
     Assert.True(
@@ -126,7 +126,7 @@ public class RolledStockStagesTests {
       $"should be nearly {bloom.MaxWidth} wide, was {atPlateGap}"
     );
     Assert.True(atPlateGap <= bloom.MaxWidth);
-    Assert.Equal(1f, Measure(StagePath("bloom", 1f)).Thickness, 2);
+    Assert.Equal(1f, Measure(StagePath("shingledbar", 1f)).Thickness, 2);
   }
 
   [Fact]
@@ -135,18 +135,18 @@ public class RolledStockStagesTests {
     // passes and its late ones cost four.
     const float barrel = 6f; // RollSetItemDefinitions: the flat set's barrel
     Assert.True(
-      StockForm.Bloom.WidthAt(3f) <= barrel,
+      StockForm.ShingledBar.WidthAt(3f) <= barrel,
       "a fresh bloom should fit the narrow barrel"
     );
     Assert.True(
-      StockForm.Bloom.WidthAt(0.5f) > barrel,
+      StockForm.ShingledBar.WidthAt(0.5f) > barrel,
       "a rolled-out bloom should overhang it"
     );
   }
 
   [Fact]
   public void A_slab_never_fits_a_narrow_barrel_which_is_why_it_needs_wide_rolls() {
-    Assert.True(StockForm.Slab.WidthAt(3f) > 6f);
+    Assert.True(StockForm.ShingledSlab.WidthAt(3f) > 6f);
   }
 
   [Fact]

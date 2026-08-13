@@ -145,13 +145,13 @@ Measured off the files, children counted as additional solid per
 
 | Live thing | Value | file:line | Against |
 |---|---|---|---|
-| `StockForm.Bloom` | `("bloom", w 3, t 3, maxW 8, len 16, e 0.846)` | `StockForm.cs:48` | the shingled bar is 18 long, and the form is still called `bloom` |
-| `StockForm.Slab` | `("slab", w 8, t 3, maxW 14, len 20, e 0.463)` | `StockForm.cs:54` | length and section already match `shingledslab` |
-| `StockForm.All` | bloom, slab - two entries | `StockForm.cs:57-64` | there is no `bar` form |
-| `stock-bloom` mass | 180 u | `StockItemDefinitions.cs:25` | a 2-ball bar is 400 u - 2.2× low |
-| `stock-slab` mass | 400 u | `StockItemDefinitions.cs:26` | a 6-ball slab is 1200 u - 3× low |
-| `stock-bloom-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `assets/iwex/shapes/forming/` | the drawn shingled bar is 162 vx³ |
-| `stock-slab-30.json` | two 8 × 3 × 10 cubes = 8 × 3 × 20 = 480 vx³ | " | same geometry as the drawn slab |
+| `StockForm.ShingledBar` | `("shingledbar", w 3, t 3, maxW 8, len 18, e 0.846)` | `StockForm.cs:48` | matches the settled bar |
+| `StockForm.ShingledSlab` | `("shingledslab", w 8, t 3, maxW 14, len 20, e 0.463)` | `StockForm.cs:60` | matches the settled slab |
+| `StockForm.All` | shingledbar, shingledslab - two entries | `StockForm.cs:80` | `bloom`/`slab` survive only as `FormerNames` |
+| `stock-shingledbar` mass | 400 u | `StockItemDefinitions.cs:24` | a 2-ball bar - correct |
+| `stock-shingledslab` mass | 1200 u | `StockItemDefinitions.cs:25` | a 6-ball slab - correct |
+| `stock-shingledbar-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `assets/iwex/shapes/forming/` | ⛔ the drawn shingled bar is 162 vx³ - the art still lags the form by 2 voxels of length |
+| `stock-shingledslab-30.json` | two 8 × 3 × 10 cubes = 8 × 3 × 20 = 480 vx³ | " | same geometry as the drawn slab |
 | iwex smithing recipes | exactly one, and it is pig-breaking | `test/IronworkingExpanded.Tests/goldens/iwex/recipes/smithing/pig.json` | the helve's "one recipe" is not the shingling one |
 
 ---
@@ -208,21 +208,22 @@ of the line entirely. Keeping the hammer to consolidation is what makes the form
 
 ## Gotchas
 
-* Nothing on this page is built. There is no ball item, no shingling smithing recipe, no `bar` stock
-  form, and no steam-hammer block. The mill is live and nothing feeds it in survival - this process is
-  the missing link.
-* The stock item's own doc-comment states the contradiction. `StockItemDefinitions.cs:21-22` says
-  *"A bloom is the helve's output from two puddle balls"* and the very next line sets that item to 180 u
-  (`:25`) against 2 × 200 = 400. The comment records the settled design; the constant does not.
-* The form is still named `bloom`, not `bar`. `StockForm.All` holds `bloom` and `slab`
-  (`StockForm.cs:57-64`) and every shipped stock shape, roll-set `accepts` list and golden is keyed on those
-  names. The rename is not cosmetic - it renames ten `assets/iwex/shapes/forming/stock-bloom-*.json` files
-  and every reference to them.
-* Two different bars are drawn. The live `stock-bloom-*` art is 3 × 3 × 16 (`StockForm.cs:48`,
-  `stock-bloom-30.json`); the new `item-shingled-bar.json` is 3 × 3 × 18 - and the
-  [reheat furnace](../machines/reheat-furnace.md)'s beds were authored for a 16-long piece. Both lengths are
+* The *process* on this page is still not built: no ball item, no shingling smithing recipe, no
+  steam-hammer block. What it produces now exists - `shingledbar` at 400 u and `shingledslab` at 1200 u,
+  renamed and re-massed 2026-08-12 - so the missing link is the recipe, not the target.
+* ~~The stock item's own doc-comment states the contradiction.~~ Closed: the comment said *"a bloom is the
+  helve's output from two puddle balls"* while the constant read 180 against 2 × 200. It reads 400 now, and
+  the comment derives both masses from geometry.
+* ~~The form is still named `bloom`, not `bar`.~~ Renamed 2026-08-12 to `shingledbar` / `shingledslab`,
+  across the ten stage shapes, both ladder files, the roll sets' `accepts`, three lang files and two
+  goldens. `bloom` and `slab` survive as `StockForm.FormerNames`, which is what carries a piece already in
+  a world; the item codes are carried by `StockFormRenameMigration`.
+* ⛔ Two different bars are still drawn. `ShingledBar.BaseLength` is 18 and the live `stock-shingledbar-*`
+  art is 3 × 3 × 16 - the rename moved the files, not their geometry. The
+  [reheat furnace](../machines/reheat-furnace.md)'s beds were authored for a 16-long piece. Both lengths sit
   inside the ≤ 32 lengthwise escape, so this is a fit problem, not a soft-lock
-  ([recoverability](../mechanics/recoverability.md)).
+  ([recoverability](../mechanics/recoverability.md)), and wiring the authored art closes it
+  ([rolling mill § Open](../machines/rolling-mill.md#open) item 7).
 * `item-shingled-bar.json` is not only the shingled stage. It carries the whole narrow ladder as
   sibling top-level elements - `ShingledBar1`, `Grooved275` / `Grooved250` / `Grooved225`,
   `Flattened275` / `Flattened250` / `Flattened225`, `CutRod1..4` and `Beam` - each drawn at very nearly the
@@ -252,7 +253,7 @@ of the line entirely. Keeping the hammer to consolidation is what makes the form
 | # | Question | Blocking? |
 |---|---|---|
 | 1 | The wrought ball item. Code, mass, shape, heat, stack size. Everything here starts with it | yes |
-| 2 | `bloom` → `bar` rename, plus a `bar` `StockForm` at the drawn 3 × 3 × 18, plus re-massing `stock-bloom` 180 → 400 and `stock-slab` 400 → 1200 | yes |
+| ~~2~~ | ~~`bloom` → `bar` rename, the form at 3 × 3 × 18, and the re-massing~~ | **done 2026-08-12** - the form is `shingledbar`, 18 long, 400 u; the slab `shingledslab`, 1200 u. Only the *art* still lags, at 16 long |
 | 3 | The helve's shingling recipe - a second smithing recipe, and the guarantee that it stays the only one | yes |
 | 4 | The pile as anvil state. Vanilla's anvil holds one work item; "pile 6 balls" needs either a voxel-accumulation path (the vanilla plate idiom, which the design cites) or a counted stack on the machine. The pig-breaking patch is the closest precedent and it accumulates nothing | yes |
 | 5 | Blows per form. Unchosen on both machines; the reference behaviour is a vanilla smithing recipe | |

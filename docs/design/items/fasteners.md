@@ -210,7 +210,7 @@ There is no fastener code. What exists is the demand side.
 | `ConstructionStages.RequireMetalNails` / `RequireMetalRod` | `src/ExpandedLib/Definitions/ConstructionStages.cs:107-115`, shared body `:120-132` | live - the shared RCC helpers |
 | `MetalFamilyEmitter.Nails` / `.Rod` | `src/ExpandedLib/Metals/MetalFamilyEmitter.cs:458` / `:384` | live - generates the two unusable variants |
 | `RollSetItemDefinitions.Sets["grooved"]` | `src/IronworkingExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:86-93` | live def, unreachable - see Gotcha 7 |
-| `RollSetItemDefinitions.Sets["slitting"]` | `:96-103` | live def, dead - see Gotcha 8 |
+| ~~`RollSetItemDefinitions.Sets["slitting"]`~~ | — | **retired 2026-08-12**, with its three lang rows - see Gotcha 8 |
 | `ItemDie` (the spec), `DieItemDefinitions`, `BlockEntityDieBench` | *(proposed)* `…/BlockStructures/Forming/` | nothing - [heading machine § Code](../machines/heading-machine.md) owns the plan |
 | bolt / rivet / ball items | - | nothing |
 | `nailplate` item | - | nothing |
@@ -259,14 +259,14 @@ There is no fastener code. What exists is the demand side.
    directly upstream of every headed fastener. The settled schedule is 1.5 → 1.0, which the shipped def
    does not have.
 
-8. **The `slitting` set is dead twice over**: it accepts `"plate"` (`RollSetItemDefinitions.cs:98`), which
-   is not a `StockForm` - the only two are `bloom` and `slab` (`StockForm.cs:48`, `:54`, `:57`) - and its
-   output `iwex:nailrod-iron` (`:100`) does not exist. The slitting mill is also the wrong route under the
-   settled design, which sends nails through plate on the `flat` set.
+8. ~~**The `slitting` set is dead twice over.**~~ **Retired 2026-08-12.** It accepted `"plate"`, which is
+   not a `StockForm`, and named an output that did not exist. The slitting mill was also the wrong route
+   under the settled design, which sends nails through plate on the `flat` set - so it was deleted rather
+   than fixed, and no migration was written: a retired code must not be remapped onto a surviving one.
 
-9. **Four of the five roll-set output codes do not exist.** Only `game:rod-iron` (`:90`) resolves;
-   `iwex:rolledplate-iron`, `iwex:rolledsheet-iron`, `iwex:wirerod-iron` and `iwex:nailrod-iron` do not.
-   The rod route is the one branch of the fork whose product code is real.
+9. ~~**Four of the five roll-set output codes do not exist.**~~ Gone with `Outputs` on 2026-08-12: a roll
+   set no longer names a product at all. What a stage becomes is the stock's own ladder, and no shipped
+   rung names a `code` yet, because every shipped stopping point is a shear crop.
 
 10. **No stock item carries a `stockForm` on its stack**, so nothing can be fed to the mill at all
     (blocker B3, [nail machine § Gotchas](../machines/nail-machine.md)). Both fork branches are behind it.

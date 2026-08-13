@@ -13,8 +13,9 @@ public enum FeedVerdict {
   /// <summary>The fitted set does not accept this form of stock.</summary>
   WrongForm,
 
-  /// <summary>The chosen gap is no narrower than the strip already is, so the piece would pass straight
-  /// through untouched.</summary>
+  /// <summary>Nothing to take off this side: the chosen gap is no narrower than the piece already is, or the
+  /// side has already been through the rolls this round. Either way it would pass straight through
+  /// untouched.</summary>
   NoReduction,
 
   /// <summary>The reduction is deeper than friction can drag in (<c>δ_max = μ²R</c>), so the rolls skid. The
@@ -24,11 +25,17 @@ public enum FeedVerdict {
   /// <summary>The stock has dropped below rolling heat, so friction has collapsed and nothing will bite. Kept
   /// separate from <see cref="WontBite"/> because the fix is a reheat rather than a wider gap.</summary>
   TooCold,
+
+  /// <summary>Part of the piece has already been cut off it. A stand cannot take a part piece: what a stage
+  /// yields is declared per stage, so a piece carried to the next one would be worth that stage's whole count
+  /// again however much of it had gone. The fix is to finish the cut.</summary>
+  PartCropped,
 }
 
 /// <summary>The outcome of offering a piece to the rolls, and the draft it will take if accepted.</summary>
 /// <param name="Verdict">Whether the rolls take it, and why not if they do not.</param>
-/// <param name="Draft">Thickness the chosen strip loses. Zero unless <see cref="FeedVerdict.Ok"/>.</param>
+/// <param name="Draft">Thickness this round takes off - half the way to the gap, then the rest. Zero unless
+/// <see cref="FeedVerdict.Ok"/>.</param>
 public readonly record struct FeedDecision(FeedVerdict Verdict, float Draft) {
   public bool Accepted => Verdict == FeedVerdict.Ok;
 }
@@ -57,10 +64,10 @@ public static class MillFeed {
   }
 
   /// <summary>
-  /// Which strip a click takes: plain right-click works the near (right) side, sneak the far (left) one, so
+  /// Which side a click takes: plain right-click works the near (right) side, sneak the far (left) one, so
   /// both halves of a piece too wide for the barrel are reachable without a second control.
   /// </summary>
-  public static int StripIndex(bool sneaking, int sides) =>
+  public static int SideIndex(bool sneaking, int sides) =>
     sneaking ? 0 : Math.Max(0, sides - 1);
 
   /// <summary>Cells the feed deck spans along the barrel (the mill's footprint is three wide).</summary>
@@ -78,10 +85,15 @@ public static class MillFeed {
     (float)Math.Clamp((localX + DeckOriginOffset) / DeckCells, 0d, 1d);
 
   /// <summary>
-  /// Whether the rolls take <paramref name="piece"/> on strip <paramref name="strip"/> at gap
+  /// Whether the rolls take <paramref name="piece"/> on side <paramref name="side"/> at gap
   /// <paramref name="gapIndex"/> of <paramref name="schedule"/>, and the draft it takes if they do.
   /// Temperatures in degrees Celsius; <paramref name="rollRadius"/> in block-space units. An out-of-range
-  /// gap or strip reads as <see cref="FeedVerdict.NoReduction"/>.
+  /// gap or side reads as <see cref="FeedVerdict.NoReduction"/>.
+  /// <para>
+  /// The draft is this round's, not the gap's: a gap is taken in two rounds, so what the rolls have to bite
+  /// is half the reduction at a time. That is what makes a schedule walkable at all - the whole reduction
+  /// would be past <c>δ_max</c> at every gap the settled ladder declares.
+  /// </para>
   /// <para>
   /// <paramref name="set"/> is taken alongside the schedule only to tell a bare stand from a fitted one
   /// that cannot work this stock: a schedule is absent in both cases and the two mistakes have different
@@ -93,7 +105,7 @@ public static class MillFeed {
     MillSchedule? schedule,
     WorkPiece? piece,
     int gapIndex,
-    int strip,
+    int side,
     float tempC,
     float rollRadius,
     float rollingTempC
@@ -104,20 +116,27 @@ public static class MillFeed {
       return new FeedDecision(FeedVerdict.WrongForm, 0f);
     if (gapIndex < 0 || gapIndex >= schedule.Gaps.Length)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
-    if (strip < 0 || strip >= piece.Sides)
+    if (side < 0 || side >= piece.Sides)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
+    // Before anything about the gap: the objection is to the piece itself, and reporting a bad gap for a part
+    // piece would send the player along the barrel looking for a gap that does not exist.
+    if (piece.IsPartCropped)
+      return new FeedDecision(FeedVerdict.PartCropped, 0f);
 
     float gap = schedule.Gaps[gapIndex];
-    float thickness = piece.Strips[strip];
-    if (gap >= thickness)
+    if (gap >= piece.Thickness)
       return new FeedDecision(FeedVerdict.NoReduction, 0f); // passes straight through
+    // A side that has already been through this round really would: it is at this round's gauge and the
+    // rest of the piece has yet to catch up with it.
+    if (piece.IsFed(side))
+      return new FeedDecision(FeedVerdict.NoReduction, 0f);
 
     // Checked before CanBite so cold stock reports as cold rather than as a bad gap: both fail the same bite
     // check, but one is fixed at the furnace and the other at the barrel.
     if (tempC < rollingTempC)
       return new FeedDecision(FeedVerdict.TooCold, 0f);
 
-    float draft = thickness - gap;
+    float draft = piece.Thickness - piece.RoundTarget(gap);
     return RollingPass.CanBite(draft, rollRadius, tempC, rollingTempC)
       ? new FeedDecision(FeedVerdict.Ok, draft)
       : new FeedDecision(FeedVerdict.WontBite, draft);

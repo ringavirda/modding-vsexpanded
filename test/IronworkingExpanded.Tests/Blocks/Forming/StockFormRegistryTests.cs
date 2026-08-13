@@ -17,8 +17,8 @@ public class StockFormRegistryTests {
 
   [Fact]
   public void The_forms_we_ship_are_registered_rather_than_hard_coded() {
-    Assert.Contains("bloom", StockForm.All.Keys);
-    Assert.Contains("slab", StockForm.All.Keys);
+    Assert.Contains("shingledbar", StockForm.All.Keys);
+    Assert.Contains("shingledslab", StockForm.All.Keys);
   }
 
   [Fact]
@@ -54,12 +54,38 @@ public class StockFormRegistryTests {
   }
 
   [Fact]
+  public void A_form_that_was_renamed_still_answers_to_the_name_it_had() {
+    // A piece already in a world carries its form name on its own stack. Without this the mill reads a form
+    // nobody registered and refuses the piece as WrongForm - the rename would eat the player's stock.
+    Assert.True(StockForm.TryGet("bloom", out StockForm? bar));
+    Assert.Equal("shingledbar", bar!.Name);
+    Assert.True(StockForm.TryGet("slab", out StockForm? slab));
+    Assert.Equal("shingledslab", slab!.Name);
+  }
+
+  [Fact]
+  public void A_former_name_is_not_a_form_of_its_own() {
+    // It resolves a piece and nothing more: listed as a form it would double the shipped corpus every guard
+    // counts, and a roll set could declare it accepts a name that no longer exists.
+    Assert.DoesNotContain("bloom", StockForm.All.Keys);
+    Assert.DoesNotContain("slab", StockForm.All.Keys);
+  }
+
+  [Fact]
+  public void Unregistering_a_form_takes_its_former_names_with_it() {
+    StockForm.Register(Foreign() with { FormerNames = ["bronzeblank"] });
+    StockForm.Unregister("bronzebar");
+
+    Assert.False(StockForm.TryGet("bronzeblank", out _));
+  }
+
+  [Fact]
   public void The_forms_we_ship_cannot_be_dropped_by_a_reset() {
     // A mod clearing the table would take our stock with it, so there is no clear - only a targeted
     // removal, and re-seeding restores the shipped set.
     StockForm.SeedDefaults();
 
-    Assert.Contains("bloom", StockForm.All.Keys);
+    Assert.Contains("shingledbar", StockForm.All.Keys);
     Assert.Equal(2, StockForm.All.Count);
   }
 }

@@ -17,7 +17,7 @@ namespace IronworkingExpanded.BlockStructures.Forming;
 /// </para>
 /// </summary>
 /// <param name="Schema">Schema version of the declaration, so a parser can read every shipped form.</param>
-/// <param name="Family">The roller family: <c>flat</c>, <c>grooved</c>, <c>slitting</c>. Selects this set's branch of a stage ladder.</param>
+/// <param name="Family">The roller family - <c>flat</c> or <c>grooved</c> in what we ship, and whatever a mod names in what it ships. Selects this set's branch of a stage ladder.</param>
 /// <param name="Accepts">Stock forms this set will bite (e.g. <c>bloom</c>, <c>billet</c>, <c>slab</c>). Empty accepts nothing.</param>
 /// <param name="BarrelWidth">Usable width of the roll barrel. Stock wider than this cannot be taken in one bite and needs side-by-side passes.</param>
 /// <param name="MinTorque">Drive torque the stand needs before this set will turn at all. Tiers gate on torque, not roll material.</param>

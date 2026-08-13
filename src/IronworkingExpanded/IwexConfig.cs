@@ -616,14 +616,14 @@ public class IwexConfig : IExVersionedConfig {
   public float RollingRollRadius { get; set; } = 4f;
 
   /// <summary>
-  /// Scales raw pass torque into the network's torque units, so the mill is balanced against the drive and
-  /// the flywheel without touching the physics in <c>RollingPass</c>. Raise it to make the mill hungrier.
-  /// Calibrated against one bridge drive (<see cref="FlywheelBridgeChargePower"/> = 1 N.m) less friction
-  /// at omega_max (0.6), leaving 0.4 N.m of headroom: at 0.02 a typical hot pass (0.16) runs on a single
-  /// water wheel, the same pass cold (1.6) stalls, and a wide deep hot pass (0.58) sags the line.
+  /// Torque (N.m) the stand draws off its run while stock is between the rolls, before the cold multiplier.
+  /// The mill has two states and this is the working one; an empty stand draws nothing. Calibrated against
+  /// one bridge drive (<see cref="FlywheelBridgeChargePower"/> = 1 N.m) less friction at omega_max (0.6),
+  /// leaving 0.4 N.m of headroom: at 0.34 a hot pass runs on a single water wheel with about 15 % to spare
+  /// and a piece that drops below rolling heat overdraws it. Raise it to make the mill hungrier.
   /// </summary>
   [ExConfigRange(0, 10_000)]
-  public float RollingTorqueScale { get; set; } = 0.02f;
+  public float RollingLoadTorque { get; set; } = 0.34f;
 
   /// <summary>Fraction of its excess heat the stock sheds per second, during the carry-back as well as
   /// under the rolls. Tuned so a single pass finishes comfortably (still well above rolling heat after

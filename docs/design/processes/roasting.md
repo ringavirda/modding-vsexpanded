@@ -229,7 +229,7 @@ the roasted rung is one key beside it ([metal recovery](../mechanics/metal-recov
    fixed.
 
 3. The hearth recognises stock, not ore. `HeatingHearthLayout.StockOf` matches a fixed set of code prefixes -
-   `stock-bloom`, `stock-slab`, `castbillet`, `castbloom`, `castslab` (`HeatingHearthLayout.cs:64-79`) - and
+   `stock-shingledbar`, `stock-shingledslab`, `castbillet`, `castbloom`, `castslab` (`HeatingHearthLayout.cs:64-79`) - and
    `TryLoad` refuses anything else (`BlockEntityHeatingHearth.cs:57-69`). Roasting needs a second contents
    model on the same hearth, or a different volume entirely. The hearth's 3 × 2 footprint is also where the
    ≤ 32 / ≤ 48 handling limits come from ([recoverability](../mechanics/recoverability.md)), so it is not a

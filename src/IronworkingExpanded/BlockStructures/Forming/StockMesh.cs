@@ -2,67 +2,55 @@ using Vintagestory.API.MathTools;
 
 namespace IronworkingExpanded.BlockStructures.Forming;
 
-/// <summary>How one side of a work piece is placed relative to the form's authored base shape.</summary>
-/// <param name="Scale">Per-axis scale of the base mesh: width, thickness, length.</param>
-/// <param name="OffsetX">Shift along the barrel axis that puts this side in its place across the piece.</param>
-public readonly record struct SidePlacement(Vec3f Scale, float OffsetX);
-
 /// <summary>
-/// Places the sides of a part-rolled piece so a half-worked bloom looks half-worked: thin and wide down the
-/// side that has been through the rolls, still thick and narrow down the side that has not. The mesh is
-/// composed rather than authored - every state is the form's one base shape scaled per side - and the scale
-/// comes from the same values the simulation uses (<see cref="WorkPiece.StripWidth"/> /
-/// <see cref="WorkPiece.StripLength"/>), so the picture cannot drift from the piece's behaviour.
+/// Draws a work piece at whatever gauge it is standing on. The mesh is composed rather than authored - every
+/// state is the form's one base shape scaled - and the scale comes from the same values the simulation uses
+/// (<see cref="WorkPiece.WidthAt"/> / <see cref="WorkPiece.LengthAt"/>), so the picture cannot drift from the
+/// piece's behaviour.
+/// <para>
+/// What it covers is the half-step. A piece is one gauge across its whole width, and the gauges a ladder
+/// declares are drawn art; the state between two of them is the half-step a round lands, and nothing draws
+/// that. Under the per-side model this composed the lopsided piece that model allowed; a lopsided piece is
+/// no longer reachable.
+/// </para>
 /// </summary>
 public static class StockMesh {
   /// <summary>The base shapes are authored centred on x = 8 in the usual 16-unit block space.</summary>
   public const float CentreX = 8f;
 
   /// <summary>
-  /// Where side <paramref name="index"/> of <paramref name="piece"/> sits, as a scale and shift of the
-  /// form's base shape. Sides abut across the piece and the whole stays centred, so an unevenly rolled
-  /// piece is lopsided, the wider and thinner side taking up more of the width.
+  /// Per-axis scale of the form's base shape that draws <paramref name="piece"/> at its current gauge:
+  /// width, thickness, length. The base is authored centred, so a scale about the centre is the whole
+  /// placement.
   /// </summary>
-  public static SidePlacement SideOf(
-    WorkPiece piece,
-    int index,
-    float centreX = CentreX
-  ) {
+  public static Vec3f ScaleOf(WorkPiece piece) {
     StockForm form = piece.Form;
-    if (index < 0 || index >= piece.Strips.Length || form.BaseWidth <= 0f)
-      return new SidePlacement(new Vec3f(1f, 1f, 1f), 0f);
+    if (
+      form.BaseWidth <= 0f
+      || form.BaseThickness <= 0f
+      || form.BaseLength <= 0f
+    )
+      return new Vec3f(1f, 1f, 1f);
 
-    float thickness = piece.Strips[index];
-    float width = piece.StripWidth(thickness);
-
-    // Left edge of the whole piece, then walk across the sides before this one.
-    float left = centreX - piece.Width / 2f;
-    for (int i = 0; i < index; i++)
-      left += piece.StripWidth(piece.Strips[i]);
-
-    return new SidePlacement(
-      new Vec3f(
-        width / form.BaseWidth,
-        thickness / form.BaseThickness,
-        piece.StripLength(thickness) / form.BaseLength
-      ),
-      // The base scales about the centre, so shift from there to where this side actually belongs.
-      left + width / 2f - centreX
+    return new Vec3f(
+      piece.Width / form.BaseWidth,
+      piece.Thickness / form.BaseThickness,
+      piece.Length / form.BaseLength
     );
   }
 
   /// <summary>
-  /// Whether <paramref name="piece"/> is exactly the shape its form was authored at - one undivided side,
-  /// still at the base gauge - so the default item mesh already draws it and nothing has to be composed.
+  /// Whether <paramref name="piece"/> is exactly the shape its form was authored at - still at the base
+  /// gauge - so the default item mesh already draws it and nothing has to be composed.
   /// </summary>
   /// <remarks>
-  /// Evenness is not the question. Every single-sided piece is even, so testing that alone made a bloom
-  /// taken from 3.0 down to 2.0 read as unworked and render as if it had never been rolled.
+  /// The side count is not the question, and neither was evenness before it. A piece divided for a narrow
+  /// barrel is still one gauge, and testing the division made a piece read as worked for having met a
+  /// barrel it was never fed to.
   /// </remarks>
   public static bool IsBaseState(WorkPiece piece) =>
-    piece.Sides <= 1
-    && ExpandedLib.Processes.StageLadder.SameThickness(
-      piece.Thickest,
+    ExpandedLib.Processes.StageLadder.SameThickness(
+      piece.Thickness,
       piece.Form.BaseThickness
     );
 
@@ -81,25 +69,27 @@ public static class StockMesh {
   ) =>
     ladder?.Shape == null || piece.Family == null
       ? null
-      : ladder.StageAt(piece.Thickest, piece.Family)?.Element;
+      : ladder.StageAt(piece.Thickness, piece.Family)?.Element;
 
   /// <summary>
   /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. The form, the
-  /// strip thicknesses and the branch take part; turn-over state and heat do not, since two pieces at the
-  /// same gauge on the same branch look identical whatever they went through to get there.
+  /// gauge and the branch take part; the round in progress, the side count and the heat do not, since two
+  /// pieces at the same gauge on the same branch look identical whatever they went through to get there.
   /// </summary>
   /// <remarks>
   /// Nothing per-stack may enter this key. The handbook clones the stack every frame, so a key carrying a
   /// stack's own identity would upload a fresh mesh per frame and leak every one of them - the trap vanilla
   /// documents in place on <c>ItemWorkItem</c>.
   /// </remarks>
-  public static string CacheKey(WorkPiece piece) {
-    var sb = new System.Text.StringBuilder(piece.Form.Name);
-    foreach (float t in piece.Strips)
-      sb.Append('|')
-        .Append(
-          t.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
-        );
-    return sb.Append('|').Append(piece.Family ?? "-").ToString();
-  }
+  public static string CacheKey(WorkPiece piece) =>
+    string.Concat(
+      piece.Form.Name,
+      "|",
+      piece.Thickness.ToString(
+        "0.###",
+        System.Globalization.CultureInfo.InvariantCulture
+      ),
+      "|",
+      piece.Family ?? "-"
+    );
 }

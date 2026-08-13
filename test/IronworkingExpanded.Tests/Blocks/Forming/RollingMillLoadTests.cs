@@ -1,5 +1,6 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
+using IronworkingExpanded.BlockStructures.Forming;
 using IronworkingExpanded.BlockStructures.Forming.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -11,7 +12,12 @@ namespace IronworkingExpanded.Tests;
 /// The mechanical-energy network end to end, with the real mill block entity on a real network. The
 /// couplings covered here fall out of the torque balance rather than being special-cased: a run either
 /// carries a pass or is wound to a hard stall, cold stock is refused before it can load the line, and a
-/// heavy pass that stalls a small flywheel is carried through by a large one.
+/// pass a weak drive cannot hold is carried through by a large enough flywheel.
+/// <para>
+/// A working stand draws a declared demand, so what makes a pass heavy here is the run - how much drive it
+/// has and how much it stored - and never the piece. The one thing about the stock that still moves the
+/// load is its heat, which is the mill's own thesis.
+/// </para>
 /// See docs/design/mechanics/mp-energy.md.
 /// </summary>
 public class RollingMillLoadTests {
@@ -92,17 +98,16 @@ public class RollingMillLoadTests {
     return false;
   }
 
-  // A pass one water wheel carries: narrow, shallow, at rolling heat.
-  private static bool LightHotPass(
+  // A drive that cannot hold a working stand: 0.7 N.m against 0.34 of declared load and the network's 0.5
+  // standing floor. There is no equilibrium below it, so the shaft winds all the way down.
+  private const float WeakDrive = 0.7f;
+
+  // The pass, one bar's ordinary round at rolling heat. Its draft and length no longer reach the load -
+  // the stand's demand is declared - so the same call stands in for every pass these tests run.
+  private static bool HotPass(
     BlockEntityRollingMill mill,
     float length = 40f
-  ) => mill.BeginPass(draft: 0.5f, width: 4f, length: length, tempC: 1100f);
-
-  // Wide stock at the deepest draft the rolls can bite: a plate-mill pass, past what one wheel holds.
-  private static bool HeavyHotPass(
-    BlockEntityRollingMill mill,
-    float length = 200f
-  ) => mill.BeginPass(draft: 1f, width: 16f, length: length, tempC: 1100f);
+  ) => mill.BeginPass(draft: 0.25f, length: length, tempC: 1100f);
 
   [Fact]
   public void A_pass_is_demand_the_network_can_actually_see() {
@@ -111,7 +116,7 @@ public class RollingMillLoadTests {
     Charge(net, world);
     Assert.Equal(0f, net.State!.DemandPower, 4);
 
-    Assert.True(LightHotPass(mill));
+    Assert.True(HotPass(mill));
     Spin(net, world, 1);
     Assert.True(
       net.State!.DemandPower > 0f,
@@ -124,27 +129,28 @@ public class RollingMillLoadTests {
   }
 
   [Fact]
-  public void One_water_wheel_carries_a_light_hot_pass_indefinitely() {
+  public void One_water_wheel_carries_a_hot_pass_indefinitely() {
     var (world, net, mill, _) = Run();
     float free = Charge(net, world);
     Assert.True(free > 0f);
 
-    Assert.True(LightHotPass(mill));
+    Assert.True(HotPass(mill));
     Spin(net, world, 100);
 
-    // The load fits inside the drive's headroom, so the line holds its speed and the pass runs on.
+    // The demand is calibrated to sit inside one bridged wheel's headroom, so the line holds its speed and
+    // the pass runs on. That margin is what RollingLoadTorque is chosen against.
     Assert.Equal(free, net.State!.Speed, 3);
   }
 
   [Fact]
   public void A_run_either_carries_the_pass_or_is_wound_to_a_hard_stall() {
     // There is no intermediate equilibrium: standing resistance means a drive that cannot beat load plus
-    // friction has its shaft wound all the way down. Speed cannot be accumulated through an over-heavy
-    // pass.
-    var (world, net, mill, _) = Run();
+    // friction has its shaft wound all the way down. Speed cannot be accumulated through a pass the drive
+    // cannot hold.
+    var (world, net, mill, _) = Run(driveTorque: WeakDrive);
     Charge(net, world);
 
-    Assert.True(HeavyHotPass(mill));
+    Assert.True(HotPass(mill, length: 400f));
     Spin(net, world, 400);
 
     Assert.Equal(0f, net.State!.Speed, 3);
@@ -152,15 +158,22 @@ public class RollingMillLoadTests {
 
   [Fact]
   public void A_big_flywheel_carries_a_pass_that_stalls_a_small_one() {
-    // The drive alone cannot hold this pass at either inertia. Stored inertia is spent into the bite, so a
-    // large wheel gets the piece out before the line winds down.
-    var (smallWorld, smallNet, smallMill, _) = Run(inertia: NormalWheel);
-    var (largeWorld, largeNet, largeMill, _) = Run(inertia: LargeWheel);
+    // Both lines are charged and then lose their drive outright, which is the case the flywheel exists for.
+    // What is left is stored inertia spent into the bite, so a large wheel gets the piece out where a small
+    // one winds down under it.
+    var (smallWorld, smallNet, smallMill, smallDrive) = Run(
+      inertia: NormalWheel
+    );
+    var (largeWorld, largeNet, largeMill, largeDrive) = Run(
+      inertia: LargeWheel
+    );
     Charge(smallNet, smallWorld);
     Charge(largeNet, largeWorld);
+    smallDrive.Torque = 0f;
+    largeDrive.Torque = 0f;
 
-    Assert.True(HeavyHotPass(smallMill));
-    Assert.True(HeavyHotPass(largeMill));
+    Assert.True(HotPass(smallMill, length: 200f));
+    Assert.True(HotPass(largeMill, length: 200f));
 
     Assert.False(
       Work(smallNet, smallWorld, smallMill, 200),
@@ -179,9 +192,7 @@ public class RollingMillLoadTests {
     var (world, net, mill, _) = Run();
     Charge(net, world);
 
-    Assert.False(
-      mill.BeginPass(draft: 0.5f, width: 4f, length: 40f, tempC: 899f)
-    );
+    Assert.False(mill.BeginPass(draft: 0.25f, length: 40f, tempC: 899f));
     Assert.False(mill.IsRolling);
     Spin(net, world, 1);
     Assert.Equal(0f, net.State!.DemandPower, 4); // no demand ever reached the line
@@ -191,7 +202,8 @@ public class RollingMillLoadTests {
   public void A_stalled_line_leaves_the_piece_stuck_mid_bite_and_resumes_on_more_power() {
     var (world, net, mill, drive) = Run(inertia: NormalWheel);
     Charge(net, world);
-    Assert.True(HeavyHotPass(mill));
+    drive.Torque = 0f; // the drive drops out with a charged wheel and a piece to draw
+    Assert.True(HotPass(mill, length: 200f));
     Work(net, world, mill, 30); // stalls on torque well inside the heat window
 
     float stuckAt = mill.Remaining;
@@ -210,10 +222,10 @@ public class RollingMillLoadTests {
 
   [Fact]
   public void The_line_recovers_its_speed_once_the_stock_clears_the_rolls() {
-    var (world, net, mill, _) = Run();
+    var (world, net, mill, _) = Run(driveTorque: WeakDrive);
     float free = Charge(net, world);
 
-    Assert.True(HeavyHotPass(mill));
+    Assert.True(HotPass(mill, length: 400f));
     Spin(net, world, 100);
     Assert.True(net.State!.Speed < free);
 
@@ -229,7 +241,7 @@ public class RollingMillLoadTests {
     Spin(net, world, 20);
     Assert.Equal(0f, net.State!.Speed, 4);
 
-    Assert.True(LightHotPass(mill, length: 4f));
+    Assert.True(HotPass(mill, length: 4f));
     float before = mill.Remaining;
     Assert.False(Work(net, world, mill, 20));
 
@@ -242,7 +254,7 @@ public class RollingMillLoadTests {
     // The piece cools whether or not it is moving, so a stall compounds: a pass one wheel could carry
     // becomes one it cannot, and past the bite threshold no amount of torque recovers it.
     var (world, net, mill, _) = Run(driveTorque: 0f);
-    Assert.True(LightHotPass(mill, length: 4f));
+    Assert.True(HotPass(mill, length: 4f));
     float atEntry = mill.LoadTorque(1f);
 
     Work(net, world, mill, 60); // jammed in a dead mill for a minute
@@ -259,7 +271,7 @@ public class RollingMillLoadTests {
     // requirement. Left in a dead mill it drops below rolling heat, and the pass then stays frozen at any
     // drive torque.
     var (world, net, mill, drive) = Run(driveTorque: 0f);
-    Assert.True(LightHotPass(mill, length: 4f));
+    Assert.True(HotPass(mill, length: 4f));
 
     Work(net, world, mill, 400); // a long wait on a dead line
     drive.Torque = 20f; // then ample drive torque

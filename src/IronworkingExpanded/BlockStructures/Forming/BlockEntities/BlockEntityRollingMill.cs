@@ -125,16 +125,17 @@ public class BlockEntityRollingMill
   #endregion
 
   // The pass currently under the rolls; _remaining == 0 means idle. Persisted so a bite survives a reload.
-  private float _draft;
-  private float _width;
+  // Neither the draft nor the width is kept: the draft is spent at the bite test and the load the stand puts
+  // on its run is a declared demand, so nothing downstream of BeginPass reads the pass's geometry.
   private float _tempC; // degrees Celsius
   private float _remaining; // stock still to draw through, in block-space units
   private bool _stalled;
 
   // The reduction this pass will make, held until the piece clears the rolls. Nothing is committed mid-pass,
-  // so an interruption cannot leave a piece half-rolled.
+  // so an interruption cannot leave a piece half-rolled. The gap rather than the gauge it lands on: which
+  // of the gap's two rounds this is belongs to the piece, and it is the piece that applies it.
   private float _pendingGap;
-  private int _pendingStrip;
+  private int _pendingSide;
 
   // Draws the stock on by however far the rolls turned. Reads the live network rather than the cached
   // broadcast, so progress stays in step with the torque balance this mill is loading. The dt is the
@@ -161,19 +162,17 @@ public class BlockEntityRollingMill
   /// <paramref name="tempC"/> in degrees Celsius. Refused when the rolls cannot bite it - a draft deeper than
   /// <c>δ_max = μ²R</c>, or cold stock - so an impossible pass is rejected up front instead of stalling the run.
   /// </summary>
-  /// <param name="draft">Thickness the chosen gap removes.</param>
-  /// <param name="width">Stock width.</param>
+  /// <param name="draft">Thickness the chosen gap removes. Read once, at the bite test.</param>
   /// <param name="length">Distance the piece must travel through the rolls.</param>
   /// <param name="tempC">Stock temperature.</param>
   /// <param name="piece">The stack held under the rolls until the pass completes.</param>
   public bool BeginPass(
     float draft,
-    float width,
     float length,
     float tempC,
     ItemStack? piece = null
   ) {
-    if (IsRolling || length <= 0f || width <= 0f)
+    if (IsRolling || length <= 0f)
       return false;
     if (
       !RollingPass.CanBite(
@@ -186,8 +185,6 @@ public class BlockEntityRollingMill
       return false;
 
     _piece = piece;
-    _draft = draft;
-    _width = width;
     _tempC = tempC;
     _remaining = length;
     _stalled = false;
@@ -254,11 +251,11 @@ public class BlockEntityRollingMill
   #region Feeding
 
   /// <summary>
-  /// Offers <paramref name="stack"/> to the rolls at gap <paramref name="gapIndex"/> on strip
-  /// <paramref name="strip"/>. On acceptance the piece goes under the rolls and lands on the output deck when
+  /// Offers <paramref name="stack"/> to the rolls at gap <paramref name="gapIndex"/> on side
+  /// <paramref name="side"/>. On acceptance the piece goes under the rolls and lands on the output deck when
   /// it clears. The verdict is returned on refusal too, so the caller can report which mistake was made.
   /// </summary>
-  public FeedDecision TryFeed(ItemStack? stack, int gapIndex, int strip) {
+  public FeedDecision TryFeed(ItemStack? stack, int gapIndex, int side) {
     if (IsRolling)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
 
@@ -267,14 +264,12 @@ public class BlockEntityRollingMill
         ? stack.Collectible.GetTemperature(Api.World, stack)
         : 0f;
 
-    // Re-divide the piece for this barrel first: a wide set takes it whole, a narrow one a side at a time.
+    // Divide the piece for this barrel first: a wide set takes it whole, a narrow one a side at a time.
     WorkPiece? piece = WorkPiece.FromStack(stack);
-    if (piece != null && RollSet != null) {
-      piece = piece.Resplit(
+    if (piece != null && RollSet != null)
+      piece = piece.ForSides(
         WorkPiece.SidesFor(piece.Width, RollSet.BarrelWidth)
       );
-      piece.ToStack(stack!);
-    }
 
     MillSchedule? schedule = ScheduleFor(piece);
     FeedDecision decision = MillFeed.Decide(
@@ -282,7 +277,7 @@ public class BlockEntityRollingMill
       schedule,
       piece,
       gapIndex,
-      strip,
+      side,
       tempC,
       IwexValues.RollingRollRadius,
       IwexValues.RollingTempC
@@ -290,19 +285,19 @@ public class BlockEntityRollingMill
     if (!decision.Accepted || piece == null || stack == null)
       return decision;
 
+    // Written back only on acceptance: a refused offer must leave the held stack exactly as it was, or
+    // measuring a piece against the wrong barrel would silently drop the round it is part way through.
+    piece.ToStack(stack);
+
     // The reduction is not applied yet: it is committed in CompletePass. An interrupted pass therefore leaves
     // the stock exactly as it went in.
     _pendingGap = schedule!.Gaps[gapIndex];
-    _pendingStrip = strip;
+    _pendingSide = side;
 
-    float gap = _pendingGap;
-    BeginPass(
-      decision.Draft,
-      piece.StripWidth(gap),
-      piece.StripLength(gap),
-      tempC,
-      stack
-    );
+    // The pass is measured at the gauge this round lands on. A piece too wide for the barrel presents a side
+    // at a time, and every side is the full length, so the travel is the same whichever side this is.
+    float target = piece.RoundTarget(_pendingGap);
+    BeginPass(decision.Draft, piece.LengthAt(target), tempC, stack);
     return decision;
   }
 
@@ -402,11 +397,14 @@ public class BlockEntityRollingMill
     ) {
       // The branch is recorded with the reduction: a stage is addressed by (thickness, family), so a
       // piece that did not carry the family it was worked on could not be drawn at a fork.
-      WorkPiece rolled = piece.Fed(_pendingStrip, _pendingGap) with {
+      WorkPiece rolled = piece.Feed(_pendingSide, _pendingGap) with {
         Family = RollSet?.Family ?? piece.Family,
       };
       rolled.ToStack(_piece);
-      ClaimFinishedPiece(rolled);
+      // Only the feed that completes a round moves the gauge, and only a moved gauge can have arrived at a
+      // stopping point.
+      if (rolled.Thickness < piece.Thickness)
+        ClaimFinishedPiece(rolled);
     }
     _pendingGap = 0f;
     EjectPiece();
@@ -418,16 +416,15 @@ public class BlockEntityRollingMill
   /// that yields more than one item off a piece.
   /// <para>
   /// One piece in, one piece out either way: a conversion changes what the piece is, never how many there
-  /// are. Only a piece rolled even across its whole width is finished - one still thicker on a side has more
-  /// passes to take, and claiming it there would let a player stop half way and keep the full item.
+  /// are. A half-step is never a stopping point - no ladder declares one as a rung - so a piece can only be
+  /// claimed where a whole gap has landed.
   /// </para>
   /// </summary>
   private void ClaimFinishedPiece(WorkPiece rolled) {
     if (
       _piece == null
       || Api == null
-      || !rolled.IsEven
-      || ScheduleFor(rolled)?.OutputAt(rolled.Thickest) is not { } code
+      || ScheduleFor(rolled)?.OutputAt(rolled.Thickness) is not { } code
     )
       return;
 
@@ -443,7 +440,7 @@ public class BlockEntityRollingMill
         "[iwex] Rolling mill: the stage ladder names output \"{0}\" at gap {1}, which resolves to no item. "
           + "The piece stays stock.",
         code,
-        rolled.Thickest
+        rolled.Thickness
       );
       return;
     }
@@ -474,8 +471,9 @@ public class BlockEntityRollingMill
   }
 
   /// <summary>
-  /// The resisting torque this mill imposes on its run: zero when idle, otherwise
-  /// <see cref="RollingPass.LoadTorque"/> for the current draft, width and stock temperature.
+  /// The resisting torque this mill imposes on its run. The stand has two states and the load follows them:
+  /// zero with the rolls empty, <see cref="IwexValues.RollingLoadTorque"/> with stock between them, times
+  /// whatever the stock's flow stress has climbed to as it cooled.
   /// <para>
   /// Independent of <paramref name="speed"/>, unlike the network's friction term which eases off as ω falls.
   /// That asymmetry is what lets a pass drag a run to a stall rather than to a slower equilibrium.
@@ -484,14 +482,11 @@ public class BlockEntityRollingMill
   public float LoadTorque(float speed) =>
     IsRolling
       ? RollingPass.LoadTorque(
-        _draft,
-        _width,
-        IwexValues.RollingRollRadius,
+        IwexValues.RollingLoadTorque,
         _tempC,
         IwexValues.RollingTempC,
         IwexValues.RollingColdStressMultiplier,
-        IwexValues.RollingColdSpanC,
-        IwexValues.RollingTorqueScale
+        IwexValues.RollingColdSpanC
       )
       : 0f;
 
@@ -581,13 +576,11 @@ public class BlockEntityRollingMill
 
   private ExBlockState State =>
     _state ??= new ExBlockState()
-      .Float("rmDraft", () => _draft, v => _draft = v)
-      .Float("rmWidth", () => _width, v => _width = v)
       .Float("rmTemp", () => _tempC, v => _tempC = v)
       .Float("rmRemaining", () => _remaining, v => _remaining = v)
       .Bool("rmStalled", () => _stalled, v => _stalled = v)
       .Float("rmPendingGap", () => _pendingGap, v => _pendingGap = v)
-      .Int("rmPendingStrip", () => _pendingStrip, v => _pendingStrip = v);
+      .Int("rmPendingSide", () => _pendingSide, v => _pendingSide = v);
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);

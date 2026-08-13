@@ -236,6 +236,14 @@ than content: a mod adding rails to our mill should depend on the framework, not
 furnaces. It hangs off `BlockEntityMachineStation`, exlib's container-plus-window base, which the
 rolling mill already derives from.
 
+✅ **Built 2026-08-12, and `MachineJob` turned out to be `ProcessJob`.** The sketch below and the terminal
+registry the shear needed are the same shape, so no second type was written - the job gained `minTier` and
+`seconds`, which is what a machine tool's work costs beyond a crop's. `ItemDie` carries a job set under a
+`machinejob` attribute, is recognised by *parsing* rather than by its code, and ships
+`ItemDie.Itemtype(domain, jobs)` - the public factory seam this page asks for below.
+⛔ `RenderSpec` is **not** built: no machine renders a job yet, so every field would be design with no
+consumer. The sketch stands as the design for when one does.
+
 `MoldSpec` and `RollSetSpec` differ on one axis — **terminal versus sequence**. The four machine tools
 are terminal; the mill and the bender are sequences. One schema covers both when the sequence is
 optional.
@@ -280,15 +288,17 @@ follows it.
 ✅ **One of the two is fixed (2026-08-11).** "Nothing can be rolled at all today" was exactly right:
 `WorkPiece.FromStack` read `stockForm` from the **stack tree** while `StockItemDefinitions` declares it
 on the **item type**, so every unrolled piece was refused as `WrongForm`. `FromStack` now falls back to
-the item type, stack state still winning once a piece has been rolled. `StockForm.All` being a closed
-static dict with no registration hook is untouched and still blocks a third-party stock form.
+the item type, stack state still winning once a piece has been rolled.
 
-⛔ **`StockForm.All` is a closed static dictionary with no registration hook**
-(`StockForm.cs:53-57`). A third party's `accepts` value dead-ends at `WrongForm`. This is the literal
-wall on mill extensibility and it must become a registry.
+✅ **Both are now fixed (2026-08-12).** `StockForm` is a registry - `Register` / `Unregister` / `TryGet` /
+`SeedDefaults`, and deliberately **no `Clear`**, since a mod emptying the table would take our stock and
+every shipped roll set with it. A third party's `accepts` value no longer dead-ends at `WrongForm`.
 
-⛔ **Nothing can be rolled at all today.** `stockForm` is written into the itemtype `attributes` block
-but read from the per-stack tree, so `WorkPiece.FromStack` always returns null.
+⛔ ~~`StockForm.All` is a closed static dictionary with no registration hook.~~ Was the literal wall on
+mill extensibility; retired with the extensibility layer.
+
+⛔ ~~Nothing can be rolled at all today.~~ `stockForm` was written to the itemtype and read from the stack
+tree; `FromStack` reads both.
 
 Good news: **the mill renders nothing during a pass** — no animator, its authored `cycle` clip never
 plays, and all four roll families render at once. The render layer is greenfield, not a retrofit.
@@ -309,10 +319,9 @@ plays, and all four roll families render at once. The render layer is greenfield
   derived from its travel at 45°/voxel — a screw's turn is coupled to its travel by the thread pitch.
   ⛔ The pose number rises as the gap *falls*, which inverts the mill's `Gaps` convention, where the
   number is the gap and the array descends.
-* `iwex:stock-slab` is stale — 400 u is shingled-bar size, and the current cast and shingled slabs are
-  far larger. Retiring it is not a delete: `HeatingHearthLayout.cs:56` maps it to `ShingledSlab`,
-  `FurnacePartsTests.cs:176` pins that, and `StockForm.Slab` is one of only two work forms the mill
-  accepts.
+* ~~`iwex:stock-slab` is stale — 400 u is shingled-bar size.~~ Fixed 2026-08-12: it is
+  `iwex:stock-shingledslab` at 1200 u, and the bar beside it is 400. The old codes resolve through
+  `StockForm.FormerNames` and `StockFormRenameMigration`.
 * The cast-iron ingot route is mid-change. `config/metals/castiron.json:9` still emits `"ingot"` and
   the "Spur Gear (Cast Iron)" recipe still consumes `iwex:ingot-castiron`, while the design has moved
   the ingot mould to crucible steel. Move the recipe with the route or it points at an unresolvable

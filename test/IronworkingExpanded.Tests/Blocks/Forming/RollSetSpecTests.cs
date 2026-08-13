@@ -19,7 +19,7 @@ public class RollSetSpecTests {
     {
       "schema": 1,
       "family": "flat",
-      "accepts": [ "bloom", "billet" ],
+      "accepts": [ "shingledbar", "billet" ],
       "barrelWidth": 4.0,
       "minTorque": 2.0
     }
@@ -51,7 +51,7 @@ public class RollSetSpecTests {
 
     Assert.Equal(1, spec.Schema);
     Assert.Equal("flat", spec.Family);
-    Assert.Equal(["bloom", "billet"], spec.Accepts);
+    Assert.Equal(["shingledbar", "billet"], spec.Accepts);
     Assert.Equal(4.0f, spec.BarrelWidth);
     Assert.Equal(2.0f, spec.MinTorque);
   }
@@ -82,7 +82,7 @@ public class RollSetSpecTests {
   public void A_set_that_bites_nothing_is_rejected() {
     Assert.Contains(
       "accepts",
-      Rejects(FlatSet.Replace("[ \"bloom\", \"billet\" ]", "[ ]"))
+      Rejects(FlatSet.Replace("[ \"shingledbar\", \"billet\" ]", "[ ]"))
     );
   }
 
@@ -104,8 +104,8 @@ public class RollSetSpecTests {
   public void A_set_only_bites_the_forms_it_declares() {
     RollSetSpec spec = Parse(FlatSet);
 
-    Assert.True(spec.AcceptsForm("bloom"));
-    Assert.False(spec.AcceptsForm("slab"));
+    Assert.True(spec.AcceptsForm("shingledbar"));
+    Assert.False(spec.AcceptsForm("shingledslab"));
     Assert.False(spec.AcceptsForm(null));
   }
 

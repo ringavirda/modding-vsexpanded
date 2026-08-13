@@ -1,8 +1,9 @@
 # Shear
-**Status** designed; the **registry is built** (2026-08-12) and the machine is not - no block, no BE, no
-recipe, no shape. `ProcessJob` / `ProcessJobRegistry` / `ProcessJobLoader` in exlib are the terminal shape
-this page's crop table will be declared in, at `assets/<domain>/config/processjobs/*.json`. No entry ships
-yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
+**Status** designed, **drawn**, and the **registry and the crop tally are built** (2026-08-12 / 08-13).
+Missing: the block, the BE, the runtime shape and the table itself. `ProcessJob` / `ProcessJobRegistry` /
+`ProcessJobLoader` in exlib are the terminal shape this page's crop table will be declared in, at
+`assets/<domain>/config/processjobs/*.json`, and `WorkPiece.Cropped` is the per-stack state a crop moves.
+No entry ships yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
 
 **Owns**
 * the crop station: the rule that every crop in the forming ladder passes through this one block, and that the
@@ -10,7 +11,8 @@ yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
 * the relocation of `Outputs` / `OutputAt` off `RollSetSpec` onto the shear, and the fact that they key on
   stage, not on gap (so a half-step is a legal product point);
 * the crop-not-convert rule: a crop takes one product's worth of metal and leaves the remainder on the deck as
-  stock;
+  stock - settled 2026-08-12, and generalised into the staged-crops / whole-item-converts split that
+  [process-extension](../mechanics/process-extension.md) now owns;
 * the shear-cuts-across / die-cuts-out verb split, and why the steam hammer never shears;
 * the cold-cut torque gate - that cold shearing is decided by `MinTorque` against network drive, not by tier
   and not by a thickness constant, and that this is `MinTorque`'s first and only consumer;
@@ -22,7 +24,7 @@ yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
 pulsed bite) ·
 [recoverability](../mechanics/recoverability.md) (the ≤ 32 / ≤ 48 invariant, the two mandatory crop points,
 and why cold shear is not a third escape) ·
-[multiblock & fillers](../mechanics/multiblock.md) (why a 1 × 1 station needs neither filler nor multiblock) ·
+[multiblock & fillers](../mechanics/multiblock.md) (the footprint machinery a 3 × 1 × 2 megablock does need) ·
 [density rule](../mechanics/density-rule.md) (why every crop divides exactly) ·
 [recipes & config](../mechanics/recipes-config.md) (the code-first def, the cost catalogue, goldens) ·
 [rolling mill](rolling-mill.md) (the stock it crops and the stage it arrives at) ·
@@ -60,14 +62,22 @@ away from the line.
 
 ## Structure
 
-1 × 1 × 1. No fillers, no multiblock, no projection. At one cell the block is simply its own
-`BlockNetworkNode` on the `"mpenergy"` graph, the same as the nail and heading benches. Nothing here needs the
-footprint machinery in [multiblock](../mechanics/multiblock.md); the one thing to copy from the mill is that a
-shape may overhang its cell as long as the block is `SolidNonOpaque` (`BlockRollingMill.cs:62-63`).
+⛔⛔ **3 × 1 × 2, not 1 × 1 × 1** *(corrected 2026-08-13 against the drawn shape, below)*. The art settles
+this: the machine measures 47 × 26 × 16 voxels, so it is a megablock and the
+[multiblock](../mechanics/multiblock.md) footprint machinery does apply after all. Three cells along the
+blade, one deep, two high - the mill's 3 × 3 × 2 without the second feed deck. The one thing still worth
+copying from the mill is that a shape may overhang its cell as long as the block is `SolidNonOpaque`
+(`BlockRollingMill.cs:62-63`).
+
+⛔ **The filler layout legend is the owner's and is not yet supplied** *(2026-08-13)*. What follows is the
+cell *count*, measured off the shape - which cells are fillers, which are graph nodes and how the ASCII
+legend reads are all still owed, for this machine and for the other nine mpenergy megablocks. Do not invent
+one: a wrong legend fails silently and `*` inside `@()` is a regex
+([multiblock](../mechanics/multiblock.md)).
 
 | Aspect | Proposal | Why |
 |---|---|---|
-| Footprint | 1 × 1 × 1 | cheap by design - the player builds one per mill line, and the nail-works reference is a row of small machines on one shaft |
+| Footprint | 3 × 1 × 2 cells | measured off the shape. The blade alone is 14 voxels wide, so a one-cell station was never going to hold it. The layout **within** those cells is pending |
 | Orientation | `ns` / `we`, shaft along the orientation axis, exactly as the mill (`BlockRollingMill.cs:41-59`, `:106`) | so a shear lines up on the same line shaft as the mills it serves |
 | Drive faces | connectors on the two faces along the shaft axis | a shear sits in the line, not on a spur |
 | Throat | the face opposite the blade nest; the player feeds from there | Fig 5's open throat; also what makes the feed face readable without a label |
@@ -77,15 +87,44 @@ shape may overhang its cell as long as the block is `SolidNonOpaque` (`BlockRoll
 
 ## Assets
 
-Nothing is drawn. No editable shape, no runtime shape, no texture set, no animation, no lang key, no handbook
-page.
+⛔⛔ **The machine is drawn, and this page said otherwise until 2026-08-13.** It is filed under the shop
+name - **cutter** - not the design's name, so a sweep for "shear" across `assets/editable/shapes/` found
+nothing and this table recorded the absence as fact. Search art by what a machinist would call the machine,
+not by what the design page is titled.
 
 | Asset | State |
 |---|---|
-| editable shape | missing - nothing under `assets/editable/shapes/` is a shear (`machine-megablock-nailcutter.json` is the [nail machine](nail-machine.md)) |
-| runtime shape | missing - `assets/iwex/shapes/forming/` holds only `rollingmill.json` and the ten stale `stock-*.json` |
+| editable shape | **drawn** - `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-cutter.json`, beside the nine other mpenergy machine tools. Textures `cast-iron1` + `iron5`, the mill's pair |
+| runtime shape | missing - needs the editable → runtime conversion (drop `editor`/`textureSizes`, repoint the two absolute texture paths at `iwex:block/metal/castiron` and `game:block/metal/sheet-plain/iron5`, flatten `Root`). `assets/iwex/shapes/forming/` holds only `rollingmill.json` and the ten stale `stock-*.json` |
+| blade-set item shape | **drawn** - `assets/editable/shapes/items/smithed/item-forged-machineshears.json`; two blades 4 × 12 × 1 on the vanilla `block/metal/plate/iron` texture |
 | reference art | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
 | lang | `assets/iwex/lang/en.json` carries no `shear-*` key |
+
+### What the shape already decides
+
+Measured off `machine-mp-megablock-cutter.json`, so these are facts rather than proposals.
+
+| Part | Extent (authored voxels) | What it settles |
+|---|---|---|
+| whole machine | x −16…31, y 0…26, z 0…16 | **3 × 1 × 2 cells**, principal in the middle, one cell either side along x |
+| `CutterBottom` / `CutterTop` | x −15…−1, 14 wide, at z 9–10 | the fixed and moving blades. **14 voxels of edge**, in the −x cell |
+| `CutterMass` | x −16…0, y 12–15, `rotationZ` −15° at rest | a lever guillotine: a weighted arm swinging about z, not a screw or a ram |
+| `Shaft` | x 6–10, y 7–9, **z 0–16** | the drive runs **along z**, across the blade, and spans the principal cell's full depth |
+| `Shaft2` | x 17–21, y 7–9, z 0–14 | a second shaft in the +x cell, geared to the first |
+| `PinionHub3` → `SpurHub1` | — | the reduction between them |
+
+The `cycle` clip (60 frames, `onAnimationEnd: Repeat`) turns `Shaft` **720°** against `Shaft2`'s **360°**,
+so the gearing is **2:1** and one revolution of the slow shaft is **one stroke**. `CutterMass` swings from
+its −15° rest to closed at **frame 44** and eases back, so the cut lands about three-quarters of the way
+through the clip rather than on frame 0 - the phase-lock the mill already needs applies here too
+([mp-energy](../mechanics/mp-energy.md)). An `idle` clip holds `Shaft` at zero.
+
+★★ **Two open items close on this.** The blades are 14 voxels of edge, which takes the widest plate the
+forming line makes (`flatwide`'s `MaxWidth` 15), so **the wide shear is this block** - not a second machine
+and not a hammer die. And the blade set is `item-forged-machineshears.json`, which
+[machining-line](../mechanics/machining-line.md) already assigns: forged and tempered, with **vanilla's
+temper ladder as the tier ladder**, so no new hardness system is owed. That page also notes the drawn
+shears measure 96 vx³ = 240 u and want **100 vx³ = 250 u** to divide off the rod.
 | handbook | `docs/iwex/handbook/` has no page; the sync pipeline joins on the `NN-` prefix and drift fails a test |
 
 ### The shear's products are already drawn — inside the mill's shape files
@@ -153,9 +192,9 @@ stock at a named stage  ──RMB on the throat──▶  one product  +  the re
 
 | Verb | Effect |
 |---|---|
-| RMB with stock on the throat face | crop: one product of the stage's `Outputs` entry leaves; the remainder stays a `WorkPiece` at the same stage |
+| RMB with stock on the throat face | crop: one product leaves and the remainder stays a `WorkPiece` at the same stage, with one more crop tallied against it. A piece with nothing left to take cannot be cropped |
 | RMB with a blade set | fit / swap the tooling, refused mid-stroke - mirror `TryFitRollSet` (`BlockEntityRollingMill.cs:143-155`) and its block-side handler (`BlockRollingMill.cs:296-320`) |
-| Sneak + RMB | take the fitted blade set back (or: crop the other half of a two-piece split - one of the two, not both; see Open) |
+| Sneak + RMB | take the fitted blade set back. The two-piece-split alternative is retired with the ruling above |
 | RMB with a wrench while jammed | free the piece unchanged, exactly as the mill does (`BlockRollingMill.cs:265-291`) |
 
 States. Idle → one stroke (a pulse of work drawn from the flywheel) → product ejected onto the far side,
@@ -185,7 +224,7 @@ column is what exists today and what it would be read from.
 | Key | Proposed value | file:line | What it does |
 |---|---|---|---|
 | `ShearStrokeMs` | 250 ms | - (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:41`) | stroke tick; the mill's own tick is a private const, not config, and the shear should not copy that mistake |
-| `ShearStrokeEnergy` | ≈ 1 stroke ≙ one mill pass's demand | - | drawn from the run as a pulse; sized against `RollingTorqueScale = 0.02` and its calibration note (`IwexConfig.cs`) |
+| `ShearStrokeEnergy` | ≈ 1 stroke ≙ one mill pass's demand | - | drawn from the run as a pulse; sized against `RollingLoadTorque = 0.34`, the mill's declared working demand (`IwexConfig.cs`). ★ A shear stroke is the same shape of number: a state the machine is in, not a formula over the cut |
 | `ShearColdTorqueMultiplier` | ×3 over the hot cut | - | the whole cold-cut gate is this number against `MinTorque` |
 | `ShearMinTorqueHot` | 0.2 | - | matches the `flat` set's shipped `minTorque` so a starter waterwheel carries a hot thin crop |
 | `RollSetSpec.MinTorque` | (existing field, moves here) | `RollSetSpec.cs:30` (doc), `:37` (field), `:198` (parsed) | parsed, stored and never consulted - a repo-wide grep finds no read. The shear is its first consumer |
@@ -197,7 +236,6 @@ are cited, not owned:
 |---|---|---|
 | `flat` | 0.2 | `RollSetItemDefinitions.cs:68` |
 | `grooved` | 0.3 | `:92` |
-| `slitting` | 0.4 | `:102` |
 | `flatwide` | 0.5 | `:80` |
 
 Hard-coded values that will bite:
@@ -236,11 +274,11 @@ Nothing exists. Where it hooks in:
 | `BlockShear` | `src/IronworkingExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` - `BlockNetworkNode` + `IExBlockDefProvider`, minus `IFillerHost`/`IFillerInteractionTarget` (no fillers at 1 × 1) |
 | `BlockEntityShear` | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:33` - `BlockEntityNetworkNode`, `IMpEnergyConsumer`, `NetworkType => "mpenergy"` (`:35-39`), `LoadTorque(speed)` (`:314-326`) returning 0 while idle |
 | speed read | inside the stroke tick | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed ?? 0f` - `BlockEntityRollingMill.cs:79-81` |
-| `ShearDecision` (pure) | `.../Forming/ShearFeed.cs` | `MillFeed.Decide` (`MillFeed.cs:95-128`) and `FeedDecision`/`FeedVerdict` (`:34`, `:6`) - a pure decision record is the house style and is what makes the rules testable headless |
-| the torque gate | inside that decision | `RollingPass.CanCarry(loadTorque, availableTorque, speed)` - `RollingPass.cs:126-127`, which has no caller in `src/` either. It is the natural home of the cold-cut check |
+| `ShearDecision` (pure) | **built 2026-08-13** - `.../Forming/ShearFeed.cs`, 13 tests | `ShearVerdict` has seven cases in the order a player can fix them: `NoBladeSet` → `NoJob` → `Spent` → `BladeTooSoft` → `NotTurning` → `NotEnoughDrive`. Needs no footprint, so it landed ahead of the layout |
+| the torque gate | **built** - inside that decision | `RollingPass.CanCarry` **now has its first production caller**. ★★ The gate reads `ProcessJob.MinTorque` and `.MinTier`, not `RollSetSpec`'s: the job already declares both, so the blade set needs no spec format of its own and the `Outputs`/`OutputAt` move below is the only relocation still owed |
 | `Outputs` / `OutputAt` | move off `RollSetSpec` (`:28`, `:35`, `:95-101`) onto the shear's own stage table | small, and it unblocks the whole product half of the forming line |
 | stage → product table | a code table with a `PathFor`-style formatter and a test that every reachable stage names a real item | the `HearthRows` / `SandBedLayout` treatment |
-| the crop itself | needs `WorkPiece.Mass` and `.Length` | `WorkPiece.cs:35` has neither; `StripLength(t)` (`:115`) is a derived per-strip figure nothing compares to a limit |
+| the crop itself | **built 2026-08-13** - `WorkPiece.Cropped`, `.Crop(count)`, `.CropsLeft(count)`, `.IsSpent(count)` (`WorkPiece.cs:119-142`) | one `int` on the stack, tallying crops **taken**. Neither mass nor length is involved |
 | def + recipe | `Forming/ShearItemDefinitions.cs`-style provider and a `ExRecipeDef` grid | `BlockRollingMill.Definitions` (`:44-64`), `CraftingStationRecipeDefinitions.cs:23-36` |
 
 Caller-side contract for anyone adding a product: declare a stage entry (`{stage, code, count, minTorque}`) -
@@ -297,18 +335,38 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
 - How the torque gate reads drive torque - see Gotchas. Options: add `DriveTorque` to `MpEnergyNetworkState`;
   gate on `StoredEnergy ≥ k` instead; or have the shear attempt the stroke and let a stall be the answer
   (cheapest, and consistent with the mill's "a pass that overdraws simply freezes").
-- Blade sets are named and unspecified. STATE.md's D9 lists them as crucible-steel consumers. Undecided:
-  whether they are tooling in the `RollSetSpec` idiom (fitted, swappable, one at a time), a durability
-  consumable, or both - and whether blade material gates thickness the way bit material gates the boring
-  machine.
-- Whether a crop yields two stacks or one plus a remainder.
-  [recoverability](../mechanics/recoverability.md)'s crop table says "into 6" and "into 5", which reads as a
-  full split in one action; the crop-not-convert rule reads as one product at a time. Both are defensible; they
-  are not the same interaction and the code cannot do both by accident.
-- The wide shear. The forming build list assigns "the wide shear" to the lpex steam hammer, i.e. a second
-  cutting station with a different reach. Whether that is this block re-tooled, a hammer die, or a third
-  machine is undecided; the verb split argues it must not be a die.
+- ~~Blade sets are named and unspecified.~~ **Closed 2026-08-13.** The item is drawn
+  (`item-forged-machineshears.json`) and [machining-line](../mechanics/machining-line.md)'s tooling table
+  already rules it: a **forged and tempered consumable**, one of two (the other being the universal machine
+  cutter), with **vanilla's temper ladder** standing in for a hardness system. Fitted and swappable in the
+  `RollSetSpec` idiom, since the block needs a tool slot either way. ⛔ Its mass wants to be 100 vx³ = 250 u
+  rather than the drawn 96 vx³, so it divides off the rod.
+- ~~Whether a crop yields two stacks or one plus a remainder.~~ **Settled 2026-08-12: one product plus a
+  remainder**, and the remainder is a **tally**, not a mass (corrected 2026-08-13). A stroke takes one
+  product off and writes the rest back as stock at the same stage with one more crop counted against it.
+  `count` in the built `ProcessJob` is the piece's total yield, so recoverability's "into 6" is that yield
+  and crop-not-convert is how it leaves. ⛔ The mandatory crops therefore stop being a special operation - a
+  player crops until the piece seats. See
+  [process-extension § What a count means](../mechanics/process-extension.md).
+- ~~The wide shear.~~ **Closed 2026-08-13 by the art.** The drawn blades are **14 voxels of edge**, which
+  takes `flatwide`'s `MaxWidth` 15 - the widest plate the forming line makes. There is no second cutting
+  station: this block covers the whole range, which is also what the verb split wanted (a die would have
+  made the steam hammer shear).
 - Stroke pacing is untuned. `k` for cooling, the stroke energy and the cold multiplier are all playtest knobs,
   and none of the mp-energy calibration has been playtested either.
-- `WorkPiece` cannot express a crop. No `Length`, no `Mass`; the two-round pass model that would simplify it is
-  also unbuilt. The shear cannot be finished before that lands.
+- ~~`WorkPiece` cannot express a crop.~~ **Ruled and built 2026-08-13.** Length is not defined
+  programmatically - it comes from the art - and cut points are **config**, because what a piece divides into
+  is the modder's choice and not something we can calculate. `ProcessJob.count` is already that declaration,
+  so a crop is **one `int` on the stack**. `WorkPiece.Mass` is **not** needed and is off the critical path.
+
+  ★★ Built as crops **taken**, not crops remaining. Counting up keeps zero meaning *untouched*, so a piece
+  that has never met a shear and one worked out to nothing cannot read alike, and no piece already in a world
+  needs migrating. It also leaves the **job's declared count as the authority**: retuning a crop row from 4
+  to 6 gives every existing piece the two extra crops instead of stranding it on the number it was cut
+  against.
+
+  ⛔⛔ **A part-cropped piece cannot be rolled.** `FeedVerdict.PartCropped` refuses it at the mill, before
+  the gap is even judged. Without that refusal a player crops three products out of a bar, rolls what is
+  left to the next stage, and it is worth that stage's whole count again - metal from nothing. The refusal
+  is what lets the tally be a single `int` per stage instead of a proportion carried between stages, and it
+  costs the player only the order they work in: finish the cut, then roll the pieces on.

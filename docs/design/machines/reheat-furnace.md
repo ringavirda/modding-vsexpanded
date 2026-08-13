@@ -266,8 +266,8 @@ Values this page owns. FSM tunables are shown as bindings; the values belong to
 
 | Prefix | Form | Item exists? |
 |---|---|---|
-| `stock-bloom` | `ShingledBloom` | yes, `iwex:stock-bloom` (`StockItemDefinitions.cs:38`) - but no survival route |
-| `stock-slab` | `ShingledSlab` | yes, `iwex:stock-slab` - no survival route |
+| `stock-shingledbar` | `ShingledBloom` | yes, `iwex:stock-shingledbar` (`StockItemDefinitions.cs:37`) - but no survival route. ⛔ the enum member still reads `ShingledBloom`; it names the hearth's drawn element group, which the rename did not touch |
+| `stock-shingledslab` | `ShingledSlab` | yes, `iwex:stock-shingledslab` - no survival route |
 | `castbillet` | `CastBillet` | no item defines this code |
 | `castbloom` | `CastBloom` | no item |
 | `castslab` | `CastSlab` | no item |

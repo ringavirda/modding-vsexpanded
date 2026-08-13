@@ -1,14 +1,14 @@
 {
-  "code": "stock-slab",
+  "code": "stock-shingledslab",
   "class": "iwex.ItemStockPiece",
   "shape": {
-    "base": "iwex:forming/stock-slab-30"
+    "base": "iwex:forming/stock-shingledslab-30"
   },
   "maxstacksize": 1,
   "materialDensity": 7800,
   "attributes": {
-    "materialUnits": 400,
-    "stockForm": "slab"
+    "materialUnits": 1200,
+    "stockForm": "shingledslab"
   },
   "combustibleProps": {
     "meltingPoint": 1500,

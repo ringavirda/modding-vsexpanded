@@ -14,8 +14,7 @@
       "states": [
         "flat",
         "flatwide",
-        "grooved",
-        "slitting"
+        "grooved"
       ]
     }
   ],
@@ -26,10 +25,10 @@
         "schema": 1,
         "family": "flat",
         "accepts": [
-          "bloom",
+          "shingledbar",
           "billet"
         ],
-        "barrelWidth": 6.0,
+        "barrelWidth": 4.0,
         "minTorque": 0.2
       }
     },
@@ -38,8 +37,8 @@
         "schema": 1,
         "family": "flat",
         "accepts": [
-          "slab",
-          "bloom"
+          "shingledslab",
+          "shingledbar"
         ],
         "barrelWidth": 16.0,
         "minTorque": 0.5
@@ -50,22 +49,11 @@
         "schema": 1,
         "family": "grooved",
         "accepts": [
-          "bloom",
+          "shingledbar",
           "billet"
         ],
         "barrelWidth": 16.0,
         "minTorque": 0.3
-      }
-    },
-    "*-slitting": {
-      "rollset": {
-        "schema": 1,
-        "family": "slitting",
-        "accepts": [
-          "plate"
-        ],
-        "barrelWidth": 16.0,
-        "minTorque": 0.4
       }
     }
   },

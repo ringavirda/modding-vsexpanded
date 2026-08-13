@@ -1,9 +1,9 @@
 # Rolling
 
-**Status** blocked - the reduction simulator is live and pinned by 123 test methods, and nothing can enter
-it: no stock item carries a stack-level `stockForm` (B3), the shipped `grooved` set cannot bite fresh stock
-(B4), only the middle deck cell is an input (B17), the crop station does not exist, and not one product item
-in the ladder below has been written.
+**Status** partly built - the reduction simulator and the **two-round model** are live and pinned, the
+three entry blockers (B3 / B4 / B17) are closed, and stock can be walked down a ladder in creative. What is
+still missing is both ends: nothing produces stock, and the crop station that ends a schedule does not
+exist, so not one product item in the ladder below has been written.
 **Mods** iwex (the mill block, the narrow `flat` and `grooved` sets, the reheat furnace, the shear) ·
 lpex (the wide roll sets and the four-stand hall) · smex (cast stock, two more stands, steel sets)
 
@@ -99,20 +99,26 @@ schedule ends when the player decides it does.
 
 | Term | Definition | Where |
 |---|---|---|
-| **feed** | one trip through the rolls, of one side of the piece | `WorkPiece.FeedsPerSide` (`WorkPiece.cs:38`) |
-| **sides** | `ceil(entryWidth / barrelWidth)`, recomputed for this barrel at every feed | `WorkPiece.SidesFor` (`WorkPiece.cs:49-50`) |
-| **round** | one feed per side | — |
-| **gap** | two rounds - round 1 lands the half-step, round 2 lands the gap | settled 2026-07-29 |
-| **feeds per gap** | `2 × sides` | `WorkPiece.PassesForGap` (`WorkPiece.cs:53-54`) |
+| **feed** | one trip through the rolls, of one side of the piece | `WorkPiece.Feed` (`WorkPiece.cs:97`) |
+| **sides** | `ceil(entryWidth / barrelWidth)`, recomputed for this barrel at every feed | `WorkPiece.SidesFor` (`WorkPiece.cs:52`) |
+| **round** | one feed per side; the gauge moves only when the last side lands | `WorkPiece.Fed` |
+| **gap** | two rounds - round 1 lands the half-step, round 2 lands the gap | `WorkPiece.RoundTarget` (`:87`) |
+| **feeds per gap** | `2 × sides` | `WorkPiece.PassesForGap` (`WorkPiece.cs:58`) |
 
 The half-step is a legal stage to leave a piece in, it is what the stage art already draws (`.75` and `.25`
 stages, [below](#the-drawn-stage-art-is-the-schedule)), and the cast billet's mandatory crop lands on one -
 which is why the shear must key on stage, not on gap ([recoverability](../mechanics/recoverability.md),
 [shear](../machines/shear.md)).
 
-Caution: a round is not a "pass" in the shipped code's sense. `WorkPiece.Turned` is a per-side turn-over
-flag and the shipped model reduces straight to the gap in two feeds with no intermediate thickness. The
-two-round model is settled but unbuilt, and building it is a net deletion - see [Open](#open).
+**Built 2026-08-12.** The piece carries one gauge, the gap it is half way through and a flag per side; the
+gap it is half way through is what tells round 2 from round 1, and a piece is therefore never lopsided. How
+that state is held is [rolling mill](../machines/rolling-mill.md)'s.
+
+★★ **Every feed count on this page is a cost, not an upper bound** *(built 2026-08-12)*. Halving the bite
+briefly doubled how far `δ_max` reached, so a bar could be walked to plate in two feeds against twelve.
+`δ_max` is now **0.36** - above one round's 0.25 draft and below one gap's 0.5 - so the next rung is the
+only rung that bites and the schedules below are what a player actually pays. Nothing checks the order; the
+friction limit is the whole rule.
 
 ### The section law
 
@@ -127,7 +133,7 @@ The section class also decides how a piece stacks on the hearth bed - square sec
 flat sections stack.
 
 Caution: neither law is in code. `RollingPass.SpreadWidth` (`:146`) uses a per-form exponent
-(`StockForm.Bloom` 0.846, `StockForm.Slab` 0.463 - `StockForm.cs:48`, `:54`) and
+(`StockForm.ShingledBar` 0.846, `StockForm.ShingledSlab` 0.463 - `StockForm.cs:48`, `:60`) and
 `RollingPass.LengthMultiplier` (`:168`) puts the balance into length. Every table below is the settled
 law; the shipped simulator does not reproduce it.
 
@@ -166,9 +172,10 @@ rounding leaves is absorbed by crop-not-convert.
 | `heavyplate` | 12 × 2 × 10 | 240 | 600 | wide 2.0 off either slab | rolled steel - a different item from the cast `castplate` ([fabrication](fabrication.md)) |
 | `boilerplate` | 15 × 1 × 16 | 240 | 600 | wide 1.0 off either slab | boiler shells · [stamping](stamping.md) · [bending](bending.md) |
 
-Not one of these items exists in `src/`. The only shipped stock items are `stock-bloom` (180 u) and
-`stock-slab` (400 u) (`StockItemDefinitions.cs:25-26`), and the four shipped roll sets name five output codes
-of which four resolve to nothing (`RollSetItemDefinitions.cs:66`, `:77`, `:90`, `:100`).
+Not one of the **products** exists in `src/`. The two wrought **stocks** do, at the settled names and
+masses since 2026-08-12: `stock-shingledbar` (400 u) and `stock-shingledslab` (1200 u)
+(`StockItemDefinitions.cs:23-26`). The roll sets no longer name a product at all, so the four dangling
+output codes are gone with them.
 
 ---
 
@@ -384,18 +391,16 @@ build the hall pays in walks. That is why there is no cheap fixed-gap "stand" bl
   geometry), but worth stating so nobody "fixes" it.
 * `item-shingled-slab.json` draws only the as-shingled stage. Both narrow schedules are fully drawn
   and no wide stage of any stock is, so the entire wide route currently has no stage art.
-* Nothing that follows the settled schedule is in the shipped config. `flat` ships barrel 6 and gaps
-  `2.0/1.5/1.0/0.5` (`RollSetItemDefinitions.cs:65`, `:67`); `grooved` ships `1.0/0.5` - whose first gap is a
-  2.0 draft against `δ_max = 1.0`, so it can never bite fresh stock (B4); `flatwide` ships as one
-  four-gap item (`:76`); `slitting` accepts `"plate"`, which is not a `StockForm` at all (`:98`,
-  `StockForm.cs:57-64`).
+* ~~The shipped config is not the settled schedule.~~ **It is, as of 2026-08-12**: both narrow families
+  walk 2.5 / 2.0 / 1.5 / 1.0 off the stock's ladder, `flat` runs barrel 4, and `slitting` is retired. What is
+  still unbuilt from this page is the **section law** - `RollingPass.SpreadWidth` is still the per-form
+  exponent, so the widths in the tables above are the law's and the code's are close but not equal.
 * Where the click lands along the deck picks the gap, and on a hall stand it carries no information,
   because `MillFeed.GapZone` returns 0 unconditionally for a single-gap set (`MillFeed.cs:62-65`). Two
   different feeding idioms for the same verb; only the narrow one needs teaching.
-* A refused offer still mutates the piece. `TryFeed` re-splits and writes back before `Decide` runs
-  (`BlockEntityRollingMill.cs:178-183`), and `Resplit` allocates a fresh `Turned` array (`WorkPiece.cs:73-76`),
-  so offering a piece to the wrong barrel silently clears its round state. Owned by
-  [rolling mill](../machines/rolling-mill.md); listed here because it is a walk-level surprise.
+* ~~A refused offer still mutates the piece.~~ **Fixed 2026-08-12** with the two-round model: the piece is
+  written back only once the decision is accepted, so offering it to the wrong barrel no longer clears the
+  round it is part way through. Owned by [rolling mill](../machines/rolling-mill.md).
 
 ---
 
@@ -404,8 +409,10 @@ build the hall pays in walks. That is why there is no cheap fixed-gap "stand" bl
 | # | Question | Weight |
 |---|---|---|
 | 1 | Settled 2026-08-05: the effective width cap is `min(roll-set barrel, stock-form cap)`. It is the only answer serving all three demands at once: the barrel becomes physical (a billet has no intrinsic maximum width, the rolls do), the bar carries a form cap of 9 so its terminal 9 × 1 plate stage is legal, and `skelp` stays capped at 8 - not optional, since skelp is the only feed for the conical roller → rolled pipe, i.e. hpex's 12 atm requirement. Barrel-only kills skelp; form-only makes the barrel decorative. The barrel caps a single pass's bite, not the piece: the narrow flat schedule already rolls a 9-wide piece on a 4-wide barrel by taking it a side at a time (§ above), which is why it is `min()`, not "the barrel wins". This ruling does not close the 50-voxel hole on castbloom's 1.0 stage - that needs a declared mandatory crop mid-gap, which the crop table already expresses for the billet's 2.25 half-step | settled |
-| 2 | Nothing can be rolled at all. B3 (no stack carries a `stockForm`), B4 (grooved cannot bite), B17 (only one deck cell is an input) | high |
-| 3 | The two-round model is unbuilt. The shipped `WorkPiece` is `Strips[]` + `Turned[]`, which the settled model deletes | high |
+| ~~2~~ | ~~Nothing can be rolled at all (B3 / B4 / B17)~~ | **closed** - all three, see [rolling mill § Blockers](../machines/rolling-mill.md#blockers) |
+| ~~3~~ | ~~The two-round model is unbuilt~~ | **built 2026-08-12** |
+| ~~3b~~ | ~~How far ahead may a player skip?~~ **Ruled and built 2026-08-12: `δ_max` calibrated under one gap** - `HotFriction` 0.5 → 0.3 gives 0.36, so an ordinary 0.25 round bites and a 0.5 skip skids. Every feed count on this page is now an exact cost rather than an upper bound, and `ShippedRollSetTests` guards both halves | done |
+| ~~3c~~ | ~~`RollingTorqueScale` is calibrated to nothing~~ **closed 2026-08-13** - the load became a declared state instead of a formula. `RollingLoadTorque` = 0.34 is 85 % of a bridged wheel's headroom by construction, so re-cutting a schedule can no longer move the mill's demand. Cooling remains the only thing that stalls a pass | done |
 | 4 | The section law is unbuilt. Every table on this page assumes it | high |
 | 5 | The shear does not exist, so no schedule can end. Build it first ([shear](../machines/shear.md)) | high |
 | 6 | The reheat cycle does not exist - the hearth holds stock and puts no heat into it, so the whole clock this page is built on does not tick | high |

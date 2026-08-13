@@ -172,8 +172,8 @@ public class FurnacePartsTests {
   #region Stock recognition
 
   [Theory]
-  [InlineData("stock-bloom", HeatingHearthLayout.Stock.ShingledBloom)]
-  [InlineData("stock-slab", HeatingHearthLayout.Stock.ShingledSlab)]
+  [InlineData("stock-shingledbar", HeatingHearthLayout.Stock.ShingledBloom)]
+  [InlineData("stock-shingledslab", HeatingHearthLayout.Stock.ShingledSlab)]
   [InlineData("castbillet", HeatingHearthLayout.Stock.CastBillet)]
   [InlineData("castbloom", HeatingHearthLayout.Stock.CastBloom)]
   [InlineData("castslab", HeatingHearthLayout.Stock.CastSlab)]

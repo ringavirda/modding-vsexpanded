@@ -9,10 +9,10 @@ using Vintagestory.API.MathTools;
 namespace IronworkingExpanded.BlockStructures.Forming.Items;
 
 /// <summary>
-/// A piece of rolling stock, drawn to match how far each side has been worked, so its state is legible in
-/// the hand between passes. The mesh is composed rather than authored: the form's base shape is
-/// tesselated once and then scaled per side from the same numbers the simulation uses
-/// (<see cref="StockMesh.SideOf"/>), which costs one shape per form instead of one per state. Meshes are
+/// A piece of rolling stock, drawn at the gauge it has been worked to, so its state is legible in the hand
+/// between passes. Two routes: the stage the family's shape file draws, and - for the half-step a round
+/// lands, which no ladder declares - the form's base shape scaled from the same numbers the simulation uses
+/// (<see cref="StockMesh.ScaleOf"/>), which costs one shape per form instead of one per state. Meshes are
 /// cached by geometry alone (<see cref="StockMesh.CacheKey"/>), a handful of entries per form, not per stack.
 /// </summary>
 [ItemRegister]
@@ -92,27 +92,23 @@ public class ItemStockPiece : Item {
     return mesh == null ? null : capi.Render.UploadMultiTextureMesh(mesh);
   }
 
-  /// <summary>Tesselates the base shape once and lays a scaled copy down for each side of the piece.</summary>
+  /// <summary>Tesselates the base shape and scales it to the piece's own section and length.</summary>
   private MultiTextureMeshRef? Compose(ICoreClientAPI capi, WorkPiece piece) {
     capi.Tesselator.TesselateItem(this, out MeshData? baseMesh);
     if (baseMesh == null)
       return null;
 
-    MeshData composed = new(4, 3);
-    var origin = new Vec3f(StockMesh.CentreX / 16f, 0f, 0.5f);
-    for (int side = 0; side < piece.Sides; side++) {
-      SidePlacement placement = StockMesh.SideOf(piece, side);
-      MeshData part = baseMesh.Clone();
-      part.Scale(
-        origin,
-        placement.Scale.X,
-        placement.Scale.Y,
-        placement.Scale.Z
-      );
-      part.Translate(placement.OffsetX / 16f, 0f, 0f);
-      composed.AddMeshData(part);
-    }
-    return capi.Render.UploadMultiTextureMesh(composed);
+    // Cloned before scaling. Nothing promises the tesselator hands back a mesh nobody else holds, and
+    // scaling one that is shared would resize every other piece of stock drawn from the same shape.
+    MeshData mesh = baseMesh.Clone();
+    Vec3f scale = StockMesh.ScaleOf(piece);
+    mesh.Scale(
+      new Vec3f(StockMesh.CentreX / 16f, 0f, 0.5f),
+      scale.X,
+      scale.Y,
+      scale.Z
+    );
+    return capi.Render.UploadMultiTextureMesh(mesh);
   }
 
   public override void OnUnloaded(ICoreAPI api) {

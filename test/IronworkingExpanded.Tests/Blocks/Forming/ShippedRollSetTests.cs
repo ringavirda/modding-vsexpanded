@@ -78,25 +78,37 @@ public class ShippedRollSetTests {
     foreach (
       (string type, StockForm form, MillSchedule schedule) in UsableRoutes()
     ) {
-      float thickness = form.BaseThickness;
+      // The real walk, round by round, not gap by gap: a gap is two rounds and the rolls are only ever
+      // asked for one round's draft. Checking the whole gap was the old one-bite model, and against a
+      // delta_max calibrated below a gap it would condemn every route a player can actually walk.
+      WorkPiece piece = WorkPiece.Fresh(form);
+      bool walkable = true;
       foreach (float gap in schedule.Gaps) {
-        float draft = thickness - gap;
-        if (
-          !RollingPass.CanBite(
-            draft,
-            IwexValues.RollingRollRadius,
-            // Hot: the cold case is a separate, deliberate refusal.
-            IwexValues.RollingTempC,
-            IwexValues.RollingTempC
-          )
-        ) {
-          broken.Add(
-            $"{type} on {form.Name}: {thickness} -> {gap} is a draft of {draft}, over "
-              + $"delta_max {RollingPass.MaxDraft(IwexValues.RollingRollRadius, RollingPass.HotFriction)}"
-          );
-          break;
+        for (int round = 0; round < WorkPiece.FeedsPerSide && walkable; round++) {
+          float draft = piece.Thickness - piece.RoundTarget(gap);
+          if (
+            !RollingPass.CanBite(
+              draft,
+              IwexValues.RollingRollRadius,
+              // Hot: the cold case is a separate, deliberate refusal.
+              IwexValues.RollingTempC,
+              IwexValues.RollingTempC
+            )
+          ) {
+            broken.Add(
+              $"{type} on {form.Name}: round {round + 1} of the {gap} gap is a draft of {draft} from "
+                + $"{piece.Thickness}, over delta_max "
+                + $"{RollingPass.MaxDraft(IwexValues.RollingRollRadius, RollingPass.HotFriction)}"
+            );
+            walkable = false;
+            break;
+          }
+
+          // One side: the shipped barrels are never outgrown by the width this walk reaches.
+          piece = piece.ForSides(1).Feed(0, gap);
         }
-        thickness = gap;
+        if (!walkable)
+          break;
       }
     }
 
@@ -135,10 +147,36 @@ public class ShippedRollSetTests {
         .OrderBy(t => t),
     ];
 
-    // "slitting" accepts only "plate", which is not a StockForm, and no ladder declares a slitting rung.
-    // It needs the plate form to exist before it is tooling rather than decoration - tracked with the
-    // rolled-product catalogue.
-    Assert.Equal(["slitting"], dead);
+    // None, since the slitting set was retired 2026-08-12. It accepted only "plate", which is not a
+    // StockForm, and no ladder declared a slitting rung, so it was tooling with no route at all. A set
+    // that reaches nothing must not ship again.
+    Assert.Empty(dead);
+  }
+
+  [Fact]
+  public void A_skipped_gap_is_refused_on_every_shipped_route() {
+    // The other half of the calibration, and the reason it was chosen over an ordering rule: delta_max sits
+    // below one gap's draft, so clicking past the next rung skids rather than buying a shortcut. Without
+    // this the twelve-feed schedule is an upper bound rather than a cost.
+    foreach (
+      (string type, StockForm form, MillSchedule schedule) in UsableRoutes()
+    ) {
+      if (schedule.Gaps.Length < 2)
+        continue; // a single-rung branch has nothing to skip
+
+      WorkPiece fresh = WorkPiece.Fresh(form);
+      float skipped = schedule.Gaps[1];
+
+      Assert.False(
+        RollingPass.CanBite(
+          fresh.Thickness - fresh.RoundTarget(skipped),
+          IwexValues.RollingRollRadius,
+          IwexValues.RollingTempC,
+          IwexValues.RollingTempC
+        ),
+        $"{type} on {form.Name}: fresh stock can skip straight to the {skipped} gap"
+      );
+    }
   }
 
   [Fact]

@@ -53,9 +53,7 @@ public class RollingMillClockTests {
 
   // A hot pass long enough that no single clamped tick can finish it.
   private static void Feed(BlockEntityRollingMill mill, float length) =>
-    Assert.True(
-      mill.BeginPass(draft: 0.5f, width: 4f, length: length, tempC: 1100f)
-    );
+    Assert.True(mill.BeginPass(draft: 0.25f, length: length, tempC: 1100f));
 
   #region What the mill publishes
 
@@ -71,9 +69,7 @@ public class RollingMillClockTests {
     Assert.False(ProductionReadiness.IsReady(mill));
     Assert.False(ProductionReadiness.StopsProductionWhenNotReady(mill));
 
-    Assert.True(
-      mill.BeginPass(draft: 0.5f, width: 4f, length: 4f, tempC: 1100f)
-    );
+    Assert.True(mill.BeginPass(draft: 0.25f, length: 4f, tempC: 1100f));
     Assert.True(ProductionReadiness.IsReady(mill));
   }
 

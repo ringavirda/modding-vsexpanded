@@ -228,10 +228,10 @@ that needs a curved plate is a boiler shell.
   "station in / named item out" against "`WorkPiece` gains a curvature axis" and recommends the station. The
   2026-07-29 settlement chose the curvature axis: a station cannot express a multi-pass schedule, because it
   has nowhere to keep the partly-bent piece. Once bending is multi-pass, per-piece state is mandatory.
-* That collides with the planned `WorkPiece` simplification ([rolling](rolling.md) § Open - the settled
-  two-round model deletes `Strips[]`, `Turned[]`, `StripWidth`, `StripLength`, `Thickest`, `Thinnest`,
-  `IsEven` and `Resplit`). A curvature axis must be added after the simplification, or the deletion gets
-  harder rather than easier.
+* The `WorkPiece` simplification it had to wait for **landed 2026-08-12**: the record is now one gauge,
+  the gap it is half way through and a flag per side, and the nine per-side members are gone. A curvature
+  axis is now an addition to a small record rather than a change to a lopsided one, which is exactly the
+  order that was wanted.
 * `skelp` has no producible geometry (see [rolling](rolling.md) § Gotchas), so the pipe route's input does not
   merely not-exist, it does not currently fall out of the ladder.
 * Making rolled pipe reachable does not make an HP line buildable. The welded joint family means rolled pipe

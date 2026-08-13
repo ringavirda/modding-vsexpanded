@@ -63,8 +63,8 @@ public class RollingMillFeedTests {
   }
 
   private static ItemStack Piece(TestWorld world) {
-    var stack = new ItemStack(world.RegisterItem("iwex:stock-bloom"));
-    WorkPiece.Fresh(StockForm.Bloom).ToStack(stack);
+    var stack = new ItemStack(world.RegisterItem("iwex:stock-shingledbar"));
+    WorkPiece.Fresh(StockForm.ShingledBar).ToStack(stack);
     return stack;
   }
 
@@ -180,7 +180,7 @@ public class RollingMillFeedTests {
     var (world, mill, _) = Mill();
     ItemStack piece = Piece(world);
 
-    Assert.True(mill.BeginPass(0.5f, 4f, 1f, 1100f, piece));
+    Assert.True(mill.BeginPass(0.25f, 1f, 1100f, piece));
     Assert.Empty(world.Drops); // still in the rolls
 
     Assert.True(mill.AdvancePass(10f, speed: 1f)); // plenty of travel: it clears
@@ -191,7 +191,7 @@ public class RollingMillFeedTests {
   [Fact]
   public void The_piece_is_not_duplicated_by_a_second_advance() {
     var (world, mill, _) = Mill();
-    mill.BeginPass(0.5f, 4f, 1f, 1100f, Piece(world));
+    mill.BeginPass(0.25f, 1f, 1100f, Piece(world));
     mill.AdvancePass(10f, 1f);
     mill.AdvancePass(10f, 1f); // idle now - must not drop again
 
@@ -201,7 +201,7 @@ public class RollingMillFeedTests {
   [Fact]
   public void A_piece_still_in_the_rolls_has_not_been_dropped() {
     var (world, mill, _) = Mill();
-    mill.BeginPass(0.5f, 4f, length: 100f, 1100f, Piece(world));
+    mill.BeginPass(0.25f, length: 100f, 1100f, Piece(world));
 
     mill.AdvancePass(1f, speed: 1f); // barely started
     Assert.True(mill.IsRolling);
@@ -212,7 +212,7 @@ public class RollingMillFeedTests {
   public void Pulling_the_stock_back_out_does_not_eject_it_through_the_mill() {
     // Cancelling means the piece was taken off the input side, so it must not appear on the output deck.
     var (world, mill, _) = Mill();
-    mill.BeginPass(0.5f, 4f, 100f, 1100f, Piece(world));
+    mill.BeginPass(0.25f, 100f, 1100f, Piece(world));
 
     mill.CancelPass();
 
@@ -224,7 +224,7 @@ public class RollingMillFeedTests {
   public void Breaking_the_mill_hands_back_a_piece_jammed_in_the_rolls() {
     // Breaking the machine must not swallow a stalled piece.
     var (world, mill, _) = Mill();
-    mill.BeginPass(0.5f, 4f, 100f, 1100f, Piece(world));
+    mill.BeginPass(0.25f, 100f, 1100f, Piece(world));
     mill.AdvancePass(1f, speed: 0f); // jammed
     Assert.True(mill.IsStalled);
 
@@ -237,7 +237,7 @@ public class RollingMillFeedTests {
   public void A_pass_can_be_run_without_a_piece_for_the_physics_alone() {
     // BeginPass takes no stack when only the load model is being driven, and must not invent a drop.
     var (world, mill, _) = Mill();
-    Assert.True(mill.BeginPass(0.5f, 4f, 1f, 1100f));
+    Assert.True(mill.BeginPass(0.25f, 1f, 1100f));
 
     Assert.True(mill.AdvancePass(10f, 1f));
     Assert.Empty(world.Drops);
@@ -261,7 +261,7 @@ public class RollingMillFeedTests {
         """
         { "rollset": {
             "family": "flat",
-            "accepts": [ "bloom" ],
+            "accepts": [ "shingledbar" ],
             "barrelWidth": 6.0 } }
         """
       )
@@ -281,9 +281,9 @@ public class RollingMillFeedTests {
     // no player could roll anything at all. The whole machine hangs off this one read.
     var (world, mill, _) = Fitted();
 
-    Item bloom = world.RegisterItem("iwex:stock-bloom-fresh");
+    Item bloom = world.RegisterItem("iwex:stock-shingledbar-fresh");
     bloom.Attributes = new Vintagestory.API.Datastructures.JsonObject(
-      Newtonsoft.Json.Linq.JToken.Parse("""{ "stockForm": "bloom" }""")
+      Newtonsoft.Json.Linq.JToken.Parse("""{ "stockForm": "shingledbar" }""")
     );
     var stack = new ItemStack(bloom);
     stack.Collectible.SetTemperature(world.World, stack, 1100f);
@@ -312,7 +312,7 @@ public class RollingMillFeedTests {
         """
         { "rollset": {
             "family": "claiming",
-            "accepts": [ "bloom" ],
+            "accepts": [ "shingledbar" ],
             "barrelWidth": 16.0 } }
         """
       )
@@ -334,9 +334,9 @@ public class RollingMillFeedTests {
           Newtonsoft.Json.Linq.JToken.Parse(
             $$"""
             {
-              "family": "bloom",
+              "family": "shingledbar",
               "stages": [
-                { "thickness": 2.0, "acceptedBy": [ "claiming" ], "code": "{{outputCode}}" }
+                { "thickness": 2.5, "acceptedBy": [ "claiming" ], "code": "{{outputCode}}" }
               ]
             }
             """
@@ -356,7 +356,7 @@ public class RollingMillFeedTests {
     var (world, mill, stock) = FittedWithOutput("iwex:nailplate");
     world.RegisterItem("iwex:nailplate");
 
-    // Two feeds: the first turns the piece, the second commits the reduction to the gap.
+    // Two feeds: the first lands the half-step, the second the gap the stage sits on.
     for (int i = 0; i < WorkPiece.FeedsPerSide; i++) {
       Assert.True(mill.TryFeed(stock, 0, 0).Accepted, $"feed {i} refused");
       Assert.True(RunPass(mill), $"pass {i} did not finish");
@@ -438,7 +438,7 @@ public class RollingMillFeedTests {
   [Fact]
   public void The_tooling_cannot_be_swapped_mid_pass() {
     var (_, mill, stock) = Fitted();
-    mill.TryFeed(stock, gapIndex: 0, strip: 0);
+    mill.TryFeed(stock, gapIndex: 0, side: 0);
     Assert.True(mill.IsRolling);
 
     Assert.False(mill.TryFitRollSet(null, out _));
@@ -446,38 +446,40 @@ public class RollingMillFeedTests {
   }
 
   [Fact]
-  public void An_accepted_feed_reduces_the_strip_and_sends_it_through() {
+  public void An_accepted_feed_reduces_the_piece_and_sends_it_through() {
     var (world, mill, stock) = Fitted();
 
-    // Nothing is committed on the way in: the thickness moves only once the piece has been through.
-    Assert.True(mill.TryFeed(stock, gapIndex: 0, strip: 0).Accepted);
+    // Nothing is committed on the way in: the gauge moves only once the piece has been through.
+    Assert.True(mill.TryFeed(stock, gapIndex: 0, side: 0).Accepted);
     Assert.True(mill.IsRolling);
-    Assert.Equal(3f, WorkPiece.FromStack(stock)!.Strips[0], 3);
+    Assert.Equal(3f, WorkPiece.FromStack(stock)!.Thickness, 3);
 
-    // The first trip marks the strip turned; the thickness moves on the second.
+    // The first trip lands the half-step of the 2.5 gap; the second lands the gap.
     Assert.True(RunPass(mill));
     WorkPiece once = WorkPiece.FromStack(world.Drops[0])!;
-    Assert.Equal(3f, once.Strips[0], 3);
-    Assert.True(once.IsTurned(0));
+    Assert.Equal(2.75f, once.Thickness, 3);
+    Assert.Equal(2.5f, once.Gap, 3);
 
-    Assert.True(mill.TryFeed(world.Drops[0], gapIndex: 0, strip: 0).Accepted);
+    Assert.True(mill.TryFeed(world.Drops[0], gapIndex: 0, side: 0).Accepted);
     Assert.True(RunPass(mill));
-    Assert.Equal(2f, WorkPiece.FromStack(world.Drops[^1])!.Strips[0], 3);
+    WorkPiece landed = WorkPiece.FromStack(world.Drops[^1])!;
+    Assert.Equal(2.5f, landed.Thickness, 3);
+    Assert.Equal(0f, landed.Gap, 3);
   }
 
   [Fact]
   public void A_refused_feed_leaves_the_piece_and_the_mill_alone() {
     var (world, mill, stock) = Fitted();
 
-    // Straight to the narrowest gap: too deep to bite.
+    // Straight to the narrowest gap: three rungs ahead, so far past delta_max.
     Assert.Equal(
       FeedVerdict.WontBite,
-      mill.TryFeed(stock, gapIndex: 3, strip: 0).Verdict
+      mill.TryFeed(stock, gapIndex: 3, side: 0).Verdict
     );
 
     Assert.False(mill.IsRolling);
     Assert.Empty(world.Drops);
-    Assert.Equal(3f, WorkPiece.FromStack(stock)!.Strips[0], 3); // unchanged
+    Assert.Equal(3f, WorkPiece.FromStack(stock)!.Thickness, 3); // unchanged
   }
 
   [Fact]
@@ -491,16 +493,16 @@ public class RollingMillFeedTests {
 
   [Fact]
   public void A_gap_costs_two_trips_through_the_mill() {
-    // One pass, carry back, pass again: only after the second is the strip at the gap thickness.
+    // One pass, carry back, pass again: only after the second is the piece at the gap.
     var (world, mill, stock) = Fitted();
 
-    mill.TryFeed(stock, gapIndex: 0, strip: 0);
+    mill.TryFeed(stock, gapIndex: 0, side: 0);
     RunPass(mill);
-    Assert.Equal(3f, WorkPiece.FromStack(stock)!.Strips[0], 3); // still as it went in
+    Assert.Equal(2.75f, WorkPiece.FromStack(stock)!.Thickness, 3); // half way
 
-    mill.TryFeed(stock, gapIndex: 0, strip: 0);
+    mill.TryFeed(stock, gapIndex: 0, side: 0);
     RunPass(mill);
-    Assert.Equal(2f, WorkPiece.FromStack(stock)!.Strips[0], 3); // now it has moved
+    Assert.Equal(2.5f, WorkPiece.FromStack(stock)!.Thickness, 3); // and there
   }
 
   [Fact]
@@ -508,7 +510,7 @@ public class RollingMillFeedTests {
     // An interrupted pass commits nothing, so the gap is redone from the top rather than yielding a
     // half-rolled piece.
     var (_, mill, stock) = Fitted();
-    mill.TryFeed(stock, gapIndex: 0, strip: 0);
+    mill.TryFeed(stock, gapIndex: 0, side: 0);
     mill.AdvancePass(1f, speed: 0f); // drive stopped
     Assert.True(mill.IsStalled);
 
@@ -517,8 +519,9 @@ public class RollingMillFeedTests {
     Assert.Same(stock, freed);
     Assert.False(mill.IsRolling);
     WorkPiece back = WorkPiece.FromStack(freed)!;
-    Assert.Equal(3f, back.Strips[0], 3);
-    Assert.False(back.IsTurned(0)); // the turn is not credited either
+    Assert.Equal(3f, back.Thickness, 3);
+    Assert.False(back.IsFed(0)); // the feed is not credited either
+    Assert.Equal(0f, back.Gap);
   }
 
   [Fact]
