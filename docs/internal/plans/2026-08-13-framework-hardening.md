@@ -1,10 +1,9 @@
 # Framework hardening — make exlib a library a stranger can adopt
 
-**Status** live, started 2026-08-13. **F0, F1, all of F2, F3.2, F3.4, F6.2, M.1 and M.2 are done**, each
+**Status** live, started 2026-08-13. **F0, F1, all of F2, all of F3, F6.2, M.1 and M.2 are done**, each
 verified on the full gate (`scripts/exmod.ps1 test all` — 15 targets, **4,019 tests**, green across
-1.20/1.21/1.22). **F3.1 is half done** — the two pages its guard could reach.
-Open: F1.4, the rest of F3 (F3.1's other two pages, F3.3), F4, F5, F6.1, F7, F8, and stage M from
-**M.4** onward (M.3 folded into M.4).
+1.20/1.21/1.22).
+Open: F1.4, F4, F5, F6.1, F7, F8, and stage M from **M.4** onward (M.3 folded into M.4).
 
 ★★ **The merge is ruled** (M1–M6 in [STATE.md](STATE.md), 2026-08-13): five mods become **`iiex`** and
 **`siex`**, full domain consolidation, pipe tier onto a variant, `heavyplate` absorbs `castplate`, and
@@ -146,8 +145,9 @@ This repo guards its goldens, its lang keys, its code literals and its released 
 The public API documentation is the one authored artifact with **no guard at all**, and it has drifted
 accordingly.
 
-- [ ] **F3.1** Fix the outright errors. **Two of four done 2026-08-14**, both found by F3.4 rather than
-      by hand — the guard was written first and then pointed at the wiki.
+- [x] **F3.1** Fix the outright errors. *Done 2026-08-14.* The first two were found by F3.4 rather than
+      by hand — the guard was written first and then pointed at the wiki. The other two were found by
+      reading the library, because the guard cannot see either.
       - [x] `Block-Networks.md` — the `public override` against a `protected virtual` member (CS0507) is
         `protected` now, and the members list no longer declares `AllowedOrientations` and
         `GetFallbackOrientation` abstract: both are virtual, the first with a definitions-derived
@@ -156,23 +156,60 @@ accordingly.
       - [x] `Source-Generators.md` — the `ExAttributeGenerator` section is gone and `ExLangKeyGenerator`
         documented in its place, with the `AdditionalFiles` item a consuming csproj needs and the note
         that only the primary domain feeds it. The page also states the analyzer-only packaging.
-      - [ ] `Getting-Started.md`, `Config-System.md` — below, still open.
-      - `Getting-Started.md` — drop the `partial` advice that routed readers to the deleted generator;
-        correct the claim that exlib "is compiled into lpex.dll" (it ships as its own zip, referenced
-        `Private=false`); add the `GamePath` fallback to the "consuming outside this repo" snippets.
-      - `Config-System.md` — rewrite around the shared sectioned document rather than per-mod files, and
-        drop the documented `Edit` method that does not exist on `ExConfigRegister<T>`.
-        ⛔ F3.4 does **not** catch this one: the wiki writes `Edit` on a lowercase local (`_store.Edit`),
-        and the guard only resolves members written against a type name. Prose claims about a method's
-        behaviour are outside it too. The guard narrows the surface; it does not close it.
+      - [x] `Getting-Started.md` — the `partial` advice is gone (with the sample class's own `partial`),
+        the "compiled into `lpex.dll`" claim is replaced by what actually happens, and the outside-this-repo
+        route now names `exlib.dll` rather than `ExpandedLib.dll` and defines `$(GamePath)` instead of
+        assuming it. Three defects the plan had not predicted came out of the same read, and all three
+        are worse than the ones it had: **the `ProjectReference` snippet was missing `<Private>false</Private>`**,
+        which makes the game refuse to load the reader's mod entirely and name no cause; the snippet
+        does not compile (`CommandRegistry` is in `.Commands`, not `.Entities`); and the dependency floor
+        was pinned at `0.7.0`, which a minimum-not-a-pin dependency lets a player satisfy with an exlib
+        predating two documented breaking changes. Added: the `[assembly: ExDomain]` section, scoped to
+        the cross-assembly path it actually governs.
+      - [x] `Config-System.md` — rewritten around the shared sectioned document, which the page had
+        never mentioned at all: it taught per-mod files, and the file name it taught as current
+        (`lpex_values.json`) is now a *legacy* name folded into the `lpex` section of `ex_values.json`.
+        The fabricated `Edit` is gone, and with it three more wrong behaviours the audit surfaced —
+        the write-back is **server-only**, an out-of-range value is **reset, not clamped**, and
+        `LegacyFileNames` **folds** rather than renames.
+        ⛔ F3.4 caught **none** of this, as predicted and then some: the `Edit` is written as a bare
+        declaration inside a fence whose `class ExConfigRegister<TConfig>` line the guard's
+        `ClassWithBase` regex cannot parse (no room for the type parameter), so the declaration rules
+        return before reaching it. Every other defect was prose or a JSON literal. The guard narrows the
+        surface; it does not close it.
 - [x] **F3.2** Correct the retired inheritance model. *Done 2026-08-14.* Both pages are now fronted
       with the three axes — form owns the base-class slot, process and membership are behaviours — and
       each names the escape its own reader needs: `BEBehaviorNetworkMember` for a block whose form is
       already spoken for, the production behaviour for the same case on the process axis.
       `BlockEntityNetworkNode` is described as what it is, a host for that behaviour, so the two routes
       visibly join.
-- [ ] **F3.3** Settle the preference-wiring order. It is stated in three places and two of them
-      contradict the library's own code.
+- [x] **F3.3** Settle the preference-wiring order. *Done 2026-08-14.* ★★ **The disputed constraint does
+      not exist in either direction, so the settlement is to delete the claim rather than pick a winner** —
+      picking one would have shipped a third wrong statement. `ExPreferences.LoadConfig` never reads the
+      registered set and `PreferenceRegistry.RegisterAll` never reads the config, so their relative order
+      is free; exlib itself does the opposite of what the wiki instructed, which is what the contradiction
+      actually was.
+
+      The real constraint is a different one nobody had written down: register preferences **before the
+      mod's own `CommandRegistry.RegisterAll`**, because a preference sub-command resolves its definition
+      **once, at registration time** (`MeasureSubCommand`), so a command built first holds a throwaway
+      fallback — or, for a consumer writing `Find(key)!`, throws at world load. `Registries.md` also told
+      consumers to call `LoadConfig` themselves, which exlib already does; that is now stated as
+      not-yours-to-call, alongside `ApplyForPlayer`, which exlib runs on `LevelFinalize`.
+
+      ⛔ Only one of the three statements was in the wiki. The other two were **source XML docs** —
+      `PreferenceRegistry`'s own summary carried both the wrong order and a claim the `.exmod` command
+      "builds a sub-command per registered preference", which nothing implements, and
+      `ExpandedLibModSystem` asserted the shipped order with a **false reason**. Fixed in place; see F3.5.
+
+- [x] **F3.5** Close the drift at its source. *Added and done 2026-08-14.* The wiki's two worst config
+      errors were lifted verbatim from stale XML docs in exlib, so fixing only the wiki would have
+      regenerated them on the next read. Corrected: `ExConfigRegister`'s class summary, `LegacyFileNames`,
+      `Load` and `Sanitize` docs; `PreferenceRegistry`'s summary; `ExpandedLibModSystem`'s class doc
+      (`exmod.json` → `exmod_preferences.json`) and its false inline reason; `IExConfigAccess.Range`
+      (documented `"0 to 1"`, formatter emits `"0..1"`/`"0+"`); and lpex's README, which listed a
+      `Preferences/` directory that moved to exlib. ★ This is the difference between fixing a page and
+      fixing a page's cause.
 - [x] **F3.4** **The guard.** *Done 2026-08-14.* `WikiParity` in `ExpandedLib.Testing`, driven by
       `WikiParityTests`. It checks three claims, each chosen because it is unambiguous and a reader acts
       on it: a member written against a type exlib owns must exist; an `Ex`-prefixed identifier written
@@ -328,6 +365,42 @@ tiers ship, separated by the variant, with distinct display names.
 
 ### Order is forced here, unlike the F stages
 
+- [x] **M.0 The tier goes into the asset path, not just the variant grammar.** *Added and done
+      2026-08-14, as M.4's hard prerequisite.* M.2 put the tier on the **code** and fixed the handbook
+      `groupBy`; it did not touch the **asset Location**, which is what `ExDefinitions` actually keys on.
+      `ExBlockDef.Location` is `{domain}:blocktypes/{assetName}.json` and `BlockPipe.Common` passed the
+      same `assetName` for every tier, so under one domain the plated and cast tiers collided on **six
+      blocktype Locations and one recipe Location**, last-writer-wins and unlogged — a whole tier deleted
+      by the first green build, which is M3 executed silently.
+
+      ★★ **Written as a failing assertion first** (`PipeTierLocationTests`, in exlib so it holds for any
+      tier pair a consumer adds): two tiers in one domain share no definition Location, no segment shape,
+      and exlib pins no shape to a content mod's domain. All three failed, naming the six Locations and
+      six shape paths, before anything was changed.
+
+      Built: `BlockPipe.Asset(tier, leaf)` → `pipe/{tier}/{leaf}`, used by both the segment factories and
+      `BlockPipePassthrough`; segment art moved to `assets/{iwex,lpex,hpex}/shapes/pipe/{plated,cast,rolled}/`;
+      the two recipe files split to `pipes-plated` / `pipes-cast`. All three tiers' goldens and the
+      generated block-code tables regenerated, never hand-edited.
+
+      ⛔ **Two of the six shape "collisions" were the design, not the bug.** The passthroughs deliberately
+      share one brick mesh across every tier and differ only by the sheet texture, so they keep one shape —
+      but it was written `iwex:pipe/passthrough`, a **content domain hardcoded inside exlib**, which
+      resolves to nothing the moment iwex is renamed. That art now lives in `assets/exlib/shapes/pipe/`
+      and the literal is gone. A blanket "move every pipe shape into a per-tier folder" would have been
+      wrong here.
+
+      ⛔ **Still open for M.4, and a naive rename sweep misses it:** `BlockPipePassthrough.Sheet` returns
+      `iwex:block/metal/castiron`, and `assets/hpex/shapes/pipe/rolled/*.json` name the same texture. The
+      texture is referenced by ~40 files across three mods, so it was left alone deliberately; the four
+      **hpex** references are outside both merging trees and a per-file sweep over "the two merging asset
+      trees" will not see them.
+
+      ★ A premise that did not survive: the scouting said no guard resolves a `shapeByType` target to a
+      file on disk. `DefinitionAssets.MissingShapes` has done exactly that all along and is wired into all
+      five suites — it resolves the **shape's own** domain, so the cross-domain move was verified rather
+      than assumed. Mutation-checked by hiding one moved file.
+
 **M.1 Decouple asset domain from mod id.** `EntityRegistry.RegisterAll` passed `mod.Info.ModID` to every
 provider and `<AssetDomain>` is a single MSBuild scalar. **Do this first**: it is what lets one assembly
 carry two domains during the transition, so the rename can land mod by mod instead of as one atomic cut.
@@ -431,14 +504,27 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       code relocates through `CodeRelocation`, which has already executed two cross-domain moves. The
       released `ppex:` codes get one more hop. Update `ReleasedCodes` and the coverage guard.
 
-      ✅ **The passthrough collision below is CLOSED** *(owner ruling + built 2026-08-14)*: they are a
-      tier, so they carry the `tier` variant like the segments —
-      `iwex:pipe-plated-passthrough-{brick}-*` and `lpex:pipe-cast-passthrough-{brick}-*`, with distinct
-      display names. Kept here because the reasoning is what M.4 is measured against. The migration
-      surgery M.2 avoided was two changes: `PipeMigration`'s brick branch now rebuilds its old smex code
-      from the variants instead of from the whole live path, and `LpexRenameMigration` moved the two
-      passthrough rows onto `CodeRelocation`'s rename overload — without which **120 released `ppex:`
-      codes lose their migration**, which is what the mutation check showed.
+      ⚠️ **The passthrough collision is closed at the CODE level and STILL OPEN at the asset-Location
+      level** *(correction 2026-08-14; this row previously read ✅ CLOSED and that was wrong)*. They carry
+      the `tier` variant as built — `iwex:pipe-plated-passthrough-{brick}-*` and
+      `lpex:pipe-cast-passthrough-{brick}-*`, distinct display names — and M.2's migration surgery below
+      is real. But **`ExDefinitions` keys on `ExBlockDef.Location`, not on the code**, and
+      `Location => {domain}:blocktypes/{assetName}.json` carries **no tier**: `BlockPipe.Common` passes
+      the same `assetName` (`pipe/straight`) for every tier and adds `tier` afterwards as a
+      *variant group*. Under one domain the two tiers' **six blocktype Locations and one recipe
+      Location collapse to one each**, last-writer-wins, ordered by load, with no error (F8.7) — which
+      is M3's exact prohibition, executed silently. The shape art collides the same way at
+      `assets/iiex/shapes/pipe/*.json`.
+
+      ⛔ **So M.4 has a hard prerequisite: put the tier into the asset name and the shape folder**
+      (stage **M.0** below) before any domain moves. It is an exlib change and it regenerates all three
+      tiers' goldens, hpex included.
+
+      The migration surgery M.2 did was two changes, both still correct:
+      `PipeMigration`'s brick branch rebuilds its old smex code from the variants instead of from the
+      whole live path, and `LpexRenameMigration` moved the two passthrough rows onto `CodeRelocation`'s
+      rename overload — without which **120 released `ppex:` codes lose their migration**, which is what
+      the mutation check showed.
 
       ⛔⛔ **The passthroughs collide, and they collide silently.** Found 2026-08-14 while scouting M.3.
       iwex and lpex **both** call `BlockPipePassthrough.Passthroughs(domain)` — iwex from

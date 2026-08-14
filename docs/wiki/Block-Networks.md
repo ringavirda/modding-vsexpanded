@@ -22,7 +22,7 @@ contract) - no Vintage Story block types involved - while **`ExpandedLib.Blocks.
 engine-facing shell (`BlockNetworkNode`, `BlockEntityNetworkNode`, `BlockNetworkModSystem`).
 
 Network tunables (litres per pipe, leak/evaporation rates, over-pressure grace, molten flow rate
-and minimum) live in exlib's own config, `ExlibValues` (`ModConfig/exlib_values.json`,
+and minimum) live in exlib's own config, `ExlibValues` (the `exlib` section of `ModConfig/ex_values.json`,
 `/exmod config exlib …`), since the network code that reads them lives here now. Content-specific
 numbers (pipe burst pressures, chimney draw rate, molten cooldown) stay in each mod's own config.
 

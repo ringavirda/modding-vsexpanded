@@ -62,6 +62,7 @@ public sealed class ExConfigEditResult {
   /// (e.g. <c>"number"</c>, <c>"true/false"</c>).</summary>
   public string? Expected { get; init; }
 
-  /// <summary>For <see cref="ExConfigEditStatus.OutOfRange"/>: the accepted range, e.g. <c>"0 to 1"</c>.</summary>
+  /// <summary>For <see cref="ExConfigEditStatus.OutOfRange"/>: the accepted range, <c>"0..1"</c> for a
+  /// bounded range or <c>"0+"</c> for a floor only.</summary>
   public string? Range { get; init; }
 }

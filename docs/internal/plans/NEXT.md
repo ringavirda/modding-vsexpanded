@@ -21,11 +21,10 @@ published mods were stamped **below** what `dist/Releases/` already holds (exlib
 guards: `ModinfoTests` asserts source > released, mutation-checked.
 
 **A framework-hardening plan is now live:**
-[2026-08-13-framework-hardening.md](2026-08-13-framework-hardening.md) — **F0, F1, all of F2, F6.2, M.1
-and M.2 are done**, and **F3.2 + F3.4** landed 2026-08-14; F1.4, the rest of F3, F4, F5, F6.1, F7,
-F8 and stage M from M.4 onward are open (M.3 folded into M.4). It is packaging,
-diagnostics and documentation for exlib as a *published library*, plus the merge; it does not compete
-with the forming line below.
+[2026-08-13-framework-hardening.md](2026-08-13-framework-hardening.md) — **F0, F1, all of F2, all of F3,
+F6.2, M.1 and M.2 are done** (F3 closed out 2026-08-14); F1.4, F4, F5, F6.1, F7, F8 and stage M from
+M.4 onward are open (M.3 folded into M.4). It is packaging, diagnostics and documentation for exlib as a
+*published library*, plus the merge; it does not compete with the forming line below.
 
 **M.2 landed 2026-08-14** — the pipe tier is a variant now, declared first, and the three per-tier
 registries are keyed on it rather than on `Code.Domain`. That was the one thing structurally blocking the
@@ -34,16 +33,29 @@ Each tier also renders its own name at last (Plated / Cast / Rolled Piping).
 
 ### ★ Where to pick up
 
-**F3, the rest of it.** The guard is built (**F3.4**, `WikiParity` — 129 symbols across 15 pages) and
-it found and closed **F3.1**'s `Block-Networks.md` and `Source-Generators.md` defects plus **F3.2**'s
-inheritance-model framing on both pages. What is left is what the guard cannot see:
+**M.4 — the `iiex` merge**, which now has a scouted, ordered five-stage execution ruling behind it.
+F3 is closed (2026-08-14) and **M.0 landed with it**, so nothing structural blocks the merge any more.
 
-- **F3.1's other two pages.** `Getting-Started.md` (the `partial` advice routing to a deleted generator,
-  the "compiled into lpex.dll" claim, the missing `GamePath` fallback) and `Config-System.md` (rewrite
-  around the shared sectioned document; drop the `Edit` that does not exist on `ExConfigRegister<T>`).
-  ⛔ The guard does not catch either: the `Edit` claim is written on a lowercase local, and the rest are
-  prose. It narrows the surface, it does not close it.
-- **F3.3**, the preference-wiring order — stated in three places, two of which contradict the library.
+⛔⛔ **M.0 exists because the plan was wrong, and the error was the dangerous kind.** M.4's passthrough row
+read *"✅ CLOSED"*; the collision was closed on the **block code** and wide open on the **asset Location**,
+which is the level `ExDefinitions` actually keys on. `ExBlockDef.Location` carries no variants, so the
+plated and cast tiers shared six blocktype Locations and one recipe Location — and a second def on an
+existing key **replaces it, last-writer-wins and unlogged**. Merging as planned would have deleted a whole
+pipe tier on the first green build, with every code-level guard, every `groupBy` guard and every migration
+guard still passing. That is M3's exact prohibition, executed silently. The row is corrected in place.
+
+★ M.0 put the tier into the asset path and the shape folder, moved the deliberately-shared brick mesh into
+exlib's own tree (it was pinned to `iwex:` **inside exlib**), and split the two colliding recipe files.
+Written as a failing assertion first — `PipeTierLocationTests` named all six Locations and six shape paths
+before anything changed, and it lives in exlib so it holds for any tier pair a consumer adds.
+
+⛔ **Read the execution ruling before starting M.4.** Its load-bearing findings: there is **no migration
+chain** — `CodeRelocation.Remap` walks the *live* registry, so `ppex → lpex → iiex` is one hop and the fix
+is to **retarget `newDomain` in place**, never to add a second hop; only **exlib, ppex and smex** ever
+shipped, so `iwex:`/`lpex:` codes need no migration at all; `PipeMigration`'s three branches are gated on
+**domain** and must become **tier** gates or a released ppex segment is claimed twice; and both smex and
+hpex list lpex *and* iwex explicitly, so the second `ProjectReference` must be **deleted**, not left to the
+transitive one — that failure is green everywhere and absent in game.
 
 ⛔ **M.3 is folded into M.4** *(2026-08-14)*. Its premise did not survive checking - smex hard-depends on
 lpex, so nothing is unbuildable - and there is no neutral way to do it early: the only non-`lpex:`
@@ -51,7 +63,20 @@ passthrough is the cheaper plated one, and the outlet has no non-`lpex:` home. U
 nested, so the codes simply relocate at the merge. Reasoning in the plan; the design ruling it cited
 ([gas-producer](../../design/machines/gas-producer.md) Open 9) is corrected in place.
 
-After that, **M.4** — the `iiex` merge itself, which now carries M.3's remainder and B23's setting.
+So **M.4** carries M.3's remainder and B23's setting. Its one open owner question — the colliding
+passthroughs — was **closed and built 2026-08-14**: they take the `tier` variant like the segments.
+
+★★ **What F3 leaves behind, and it is the reusable part.** The wiki's worst errors were not the wiki's:
+they were lifted verbatim from **stale XML doc comments in exlib**, so the page and its source said the
+same wrong thing and each corroborated the other. Fixing a page without fixing the comment it came from
+regenerates the defect on the next read. F3.5 was added mid-stage for exactly that, and the same check is
+worth making the next time any authored artifact is found drifted.
+
+⛔ **And `WikiParity` cannot see most of what F3 fixed** — every wrong snippet resolved. A green guard run
+is not evidence a page is correct, only that its symbols exist. Two structural gaps found while working:
+`ClassWithBase` cannot parse a generic `class X<T> : Base` line, so declaration checks silently return on
+those fences, and a member written on a lowercase local is invisible. Both are why F3.1's second half had
+to be done by reading the library.
 
 ## ★★ The mod split is ruled: five mods become two
 

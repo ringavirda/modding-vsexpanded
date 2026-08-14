@@ -27,12 +27,12 @@ with `AccessorName`) containing:
 So this:
 
 ```csharp
-[ExConfigRegister("lpex_values.json", "lpex", LegacyFileNames = ["lpex.json"], Manageable = true)]
+[ExConfigRegister("ex_values.json", "lpex", LegacyFileNames = ["lpex_values.json"], Manageable = true)]
 public class LpexConfig : IExVersionedConfig
 {
     public string? ConfigVersion { get; set; }
     public static readonly ExConfigMigration[] Migrations = [ /* ... */ ];
-    public float LitresPerPipe { get; set; } = 30f;
+    public float PumpWaterPerSecond { get; set; } = 16.67f;
 }
 ```
 
@@ -41,16 +41,16 @@ generates roughly:
 ```csharp
 public static partial class LpexValues
 {
-    public const string ConfigFileName = "lpex_values.json";
+    public const string ConfigFileName = "ex_values.json";
     private static readonly ExConfigRegister<LpexConfig> _store =
-        new(ConfigFileName, "lpex", LpexConfig.Migrations) { LegacyFileNames = ["lpex.json"] };
+        new(ConfigFileName, "lpex", LpexConfig.Migrations) { LegacyFileNames = ["lpex_values.json"] };
     private static LpexConfig _config => _store.Config;
 
     public static void Load(ICoreAPI api) { _store.Load(api); ExConfigProfiles.Register(_store); }
     public static void Edit(Action<LpexConfig> mutate) { mutate(_store.Config); _store.Save(); }
     public static void Save() => _store.Save();
 
-    public static float LitresPerPipe => _config.LitresPerPipe;
+    public static float PumpWaterPerSecond => _config.PumpWaterPerSecond;
 }
 ```
 

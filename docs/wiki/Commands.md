@@ -15,6 +15,7 @@ it just prints help; the useful behaviour lives in sub-commands. exlib ships the
 | `/exmod recipes [<mod> [<level>]]` | server | Switch a mod's [recipe-cost level](Recipe-Costs). |
 | `/exmod heal` | server | Sweep loaded chunks and recreate orphaned block entities ([healing](Migrations-and-Healing)). |
 | `.exmod network hi` / `.exmod network unhi` | client | Toggle the transparent per-network colour highlight ([block networks](Block-Networks)). |
+| `.exmod measure [metric\|imperial]` | client | Switch the display unit system ([preference](Registries)). |
 
 `/exmod config` and `/exmod recipes` are mod-agnostic: any mod that registers a manageable config
 or a recipe profile shows up automatically, no per-mod command code.

@@ -15,7 +15,7 @@ namespace ExpandedLib.Blocks.Networks;
 /// <para>
 /// Lives with the pipe base rather than with any one tier, as <see cref="BlockPipe.Segments"/> does;
 /// every tier calls <see cref="Passthroughs"/> with its own domain and tier. Unlike the segments, the
-/// geometry is identical across tiers, so all tiers share the <c>iwex:pipe/passthrough</c> shape and
+/// geometry is identical across tiers, so all tiers share the <c>exlib:pipe/passthrough</c> shape and
 /// override only the sheet texture - which is exactly why the tier has to be on the code: two of these
 /// are otherwise indistinguishable to the registry.
 /// </para>
@@ -59,6 +59,19 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
     tier == CastTier
       ? "iwex:block/metal/castiron"
       : "game:block/metal/corroded/normal4";
+
+  /// <summary>
+  /// The brick shell both passthrough blocktypes are drawn with, in exlib's own asset tree. Shared by
+  /// every tier deliberately - a passthrough differs from another tier's only by the sheet texture
+  /// (<see cref="Sheet"/>), so the mesh is one file rather than one per tier. It lives here rather
+  /// than in a content mod's tree because exlib emits these defs for all three tiers: pinned to one
+  /// mod's domain it resolves to nothing the moment that mod is renamed or merged, and a blocktype
+  /// whose shape resolves to nothing loads with no shape and no error.
+  /// </summary>
+  private const string PassthroughShape = "exlib:pipe/passthrough";
+
+  /// <summary>The bend counterpart of <see cref="PassthroughShape"/>, shared the same way.</summary>
+  private const string PassthroughBendShape = "exlib:pipe/passthroughbend";
 
   private static readonly string[] Bricks =
   [
@@ -128,23 +141,23 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
     Brick(
         domain,
         tier,
-        "pipe/passthrough",
+        BlockPipe.Asset(tier, "passthrough"),
         "*-passthrough-*-ns",
         "passthrough-*"
       )
       .VariantGroup("type", "passthrough")
       .VariantGroup("brick", Bricks)
       .VariantGroup("orientation", "ns", "we", "ud")
-      .ShapeByType("*-passthrough-*-ns", "iwex:pipe/passthrough", rotateY: 0)
-      .ShapeByType("*-passthrough-*-we", "iwex:pipe/passthrough", rotateY: 90)
-      .ShapeByType("*-passthrough-*-ud", "iwex:pipe/passthrough", rotateX: 90);
+      .ShapeByType("*-passthrough-*-ns", PassthroughShape, rotateY: 0)
+      .ShapeByType("*-passthrough-*-we", PassthroughShape, rotateY: 90)
+      .ShapeByType("*-passthrough-*-ud", PassthroughShape, rotateX: 90);
 
   private static ExBlockDef PassthroughBend(string domain, string? tier) {
-    const string s = "iwex:pipe/passthroughbend";
+    const string s = PassthroughBendShape;
     return Brick(
         domain,
         tier,
-        "pipe/passthroughbend",
+        BlockPipe.Asset(tier, "passthroughbend"),
         "*-passthroughbend-*-nw",
         "passthroughbend-*"
       )

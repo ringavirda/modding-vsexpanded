@@ -10,9 +10,10 @@ namespace ExpandedLib.Registries.Config;
 /// <summary>
 /// Shared loader and saver for a mod's JSON gameplay tunables. The config POCO's property
 /// initialisers are the defaults; a static accessor owns one of these stores. <see cref="Load"/>
-/// reads <c>ModConfig/&lt;fileName&gt;</c>, falls back to defaults when absent or invalid, applies any
-/// crossed <see cref="ExConfigMigration"/>, stamps the running mod version and writes the file back,
-/// so the file is created on first run and gains newly added keys on update.
+/// reads this mod's own section of the shared <see cref="ExConfigDocument"/> under
+/// <c>ModConfig/&lt;fileName&gt;</c>, falls back to defaults when absent or invalid, applies any
+/// crossed <see cref="ExConfigMigration"/> and stamps the running mod version, so the section is
+/// created on first run and gains newly added keys on update.
 /// </summary>
 /// <typeparam name="TConfig">The mod's config POCO; needs a parameterless constructor whose property
 /// initialisers define the defaults, and must record the version it was written under.</typeparam>
@@ -34,12 +35,14 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   /// <summary>The config file this store reads/writes under <c>ModConfig</c>.</summary>
   public string FileName => _fileName;
 
-  /// <summary>Former names of this config file. On <see cref="Load"/>, if <see cref="FileName"/> is
-  /// absent but one of these still exists in <c>ModConfig</c>, it is renamed to the current name
-  /// (first match wins). Set by the generated accessor from the attribute's <c>LegacyFileNames</c>.</summary>
+  /// <summary>Former per-mod file names this config was carried over from. On <see cref="Load"/>, if
+  /// this mod's section is absent but one of these still exists in <c>ModConfig</c>, its contents
+  /// become the section and the old file is renamed to <c>&lt;name&gt;.migrated</c> (first match
+  /// wins). Set by the generated accessor from the attribute's <c>LegacyFileNames</c>.</summary>
   public IReadOnlyList<string> LegacyFileNames { get; init; } = [];
 
-  /// <param name="fileName">Config file name under the game's <c>ModConfig</c> folder (e.g. <c>"lpex.json"</c>).</param>
+  /// <param name="fileName">Shared config document under the game's <c>ModConfig</c> folder (e.g.
+  /// <c>"ex_values.json"</c>); this store owns the <paramref name="modId"/> section of it.</param>
   /// <param name="modId">Owning mod id; resolves the running version and tags log lines.</param>
   /// <param name="migrations">Version-driven default resets (see <see cref="ExConfigMigration"/>).</param>
   public ExConfigRegister(
@@ -52,9 +55,10 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
     _migrations = migrations ?? [];
   }
 
-  /// <summary>Loads the config (falling back to defaults), applies version-change resets, stamps the
-  /// current mod version and writes the file back. Call once during mod startup, before any value is
-  /// read. Safe on either side; each side reads its own local copy.</summary>
+  /// <summary>Loads the config (falling back to defaults), applies version-change resets and stamps
+  /// the current mod version. Call once during mod startup, before any value is read. Runs on either
+  /// side and each reads its own local copy, but only the server writes the file back: in
+  /// singleplayer both sides load this store in one process against one file and would race.</summary>
   public void Load(ICoreAPI api) {
     _api = api;
     var doc = ExConfigDocument.ForFile(api, _fileName);
@@ -81,8 +85,8 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   /// <summary>
   /// Resets edited values that would break the sim back to their coded defaults: any numeric tunable
   /// that is NaN, infinite or outside its <see cref="ExConfigRangeAttribute"/> bounds (default:
-  /// non-negative), and any reference-typed value set to null. The repaired config is written back to
-  /// disk. Complex and collection properties carry their own repair.
+  /// non-negative), and any reference-typed value set to null. Every reset is named in a warning log
+  /// line. Complex and collection properties carry their own repair.
   /// </summary>
   private void Sanitize(TConfig config, ILogger logger) {
     var defaults = new TConfig();

@@ -18,14 +18,14 @@
     "general": [
       "*-passthroughbend-*-nw"
     ],
-    "lpex": [
+    "iwex": [
       "*-passthroughbend-*-nw"
     ]
   },
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-cast-passthroughbend-*"
+        "pipe-plated-passthroughbend-*"
       ]
     }
   },
@@ -46,7 +46,7 @@
   },
   "textures": {
     "normal4": {
-      "base": "iwex:block/metal/castiron"
+      "base": "game:block/metal/corroded/normal4"
     }
   },
   "renderpass": "OpaqueNoCull",
@@ -62,7 +62,7 @@
     {
       "code": "tier",
       "states": [
-        "cast"
+        "plated"
       ]
     },
     {
@@ -104,55 +104,55 @@
   ],
   "shapebytype": {
     "*-passthroughbend-*-nw": {
-      "base": "iwex:pipe/passthroughbend"
+      "base": "exlib:pipe/passthroughbend"
     },
     "*-passthroughbend-*-en": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 270
     },
     "*-passthroughbend-*-se": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 180
     },
     "*-passthroughbend-*-ws": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 90
     },
     "*-passthroughbend-*-dn": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateZ": 90
     },
     "*-passthroughbend-*-de": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 270,
       "rotateZ": 90
     },
     "*-passthroughbend-*-ds": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 180,
       "rotateZ": 90
     },
     "*-passthroughbend-*-dw": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 90,
       "rotateZ": 90
     },
     "*-passthroughbend-*-un": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateZ": 270
     },
     "*-passthroughbend-*-ue": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 270,
       "rotateZ": 270
     },
     "*-passthroughbend-*-us": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 180,
       "rotateZ": 270
     },
     "*-passthroughbend-*-uw": {
-      "base": "iwex:pipe/passthroughbend",
+      "base": "exlib:pipe/passthroughbend",
       "rotateY": 90,
       "rotateZ": 270
     }

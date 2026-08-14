@@ -48,7 +48,7 @@ public partial class BlockPipe
   /// The four plain pipe segments (straight / bend / T / X junction) of one <paramref name="tier"/>
   /// under <paramref name="domain"/>. All four share the <c>pipe</c> code at distinct asset paths and
   /// an identical common surface (<see cref="Common"/>); each adds only its variant list, shape
-  /// rotations and collision boxes. Each tier ships its own shapes at <c>{domain}:pipe/*</c>.
+  /// rotations and collision boxes. Each tier ships its own shapes at <c>{domain}:pipe/{tier}/*</c>.
   /// <para>
   /// A null <paramref name="tier"/> declares no tier axis: the segments come out as
   /// <c>pipe-{type}-{orientation}</c> and take the default rating, throughput and joint. That is the
@@ -63,6 +63,18 @@ public partial class BlockPipe
       TJunction(domain, tier),
       XJunction(domain, tier),
     ];
+
+  /// <summary>
+  /// The asset path a tier's segment is declared and drawn at: <c>pipe/{tier}/{leaf}</c>, or
+  /// <c>pipe/{leaf}</c> for a tierless family. The tier belongs in the path and not only in the
+  /// variant grammar because <see cref="ExDefinitions"/> keys on
+  /// <see cref="ExBlockDef.Location"/> - which carries the asset path and no variants - so two tiers
+  /// sharing a domain would land on one key and the later registration would replace the earlier,
+  /// last-writer-wins and unlogged. The shape lives at the same path for the same reason: two tiers'
+  /// segments are different art.
+  /// </summary>
+  internal static string Asset(string? tier, string leaf) =>
+    tier == null ? $"pipe/{leaf}" : $"pipe/{tier}/{leaf}";
 
   // The surface shared by every pipe blocktype; each type overlays its variants/shapes/boxes.
   private static ExBlockDef Common(
@@ -116,8 +128,8 @@ public partial class BlockPipe
   }
 
   private static ExBlockDef Straight(string domain, string? tier) {
-    string s = $"{domain}:pipe/straight";
-    return Common(domain, tier, "pipe/straight", 16, "*-straight-ns")
+    string s = $"{domain}:" + Asset(tier, "straight");
+    return Common(domain, tier, Asset(tier, "straight"), 16, "*-straight-ns")
       .VariantGroup("type", "straight")
       .VariantGroup("orientation", "ns", "we", "ud")
       .ShapeByType("*-straight-ns", s)
@@ -128,8 +140,8 @@ public partial class BlockPipe
   }
 
   private static ExBlockDef Bend(string domain, string? tier) {
-    string s = $"{domain}:pipe/bend";
-    return Common(domain, tier, "pipe/bend", 8, "*-bend-nw")
+    string s = $"{domain}:" + Asset(tier, "bend");
+    return Common(domain, tier, Asset(tier, "bend"), 8, "*-bend-nw")
       .VariantGroup("type", "bend")
       .VariantGroup(
         "orientation",
@@ -165,8 +177,8 @@ public partial class BlockPipe
   }
 
   private static ExBlockDef TJunction(string domain, string? tier) {
-    string s = $"{domain}:pipe/tjunction";
-    return Common(domain, tier, "pipe/tjunction", 8, "*-tjunction-uns")
+    string s = $"{domain}:" + Asset(tier, "tjunction");
+    return Common(domain, tier, Asset(tier, "tjunction"), 8, "*-tjunction-uns")
       .VariantGroup("type", "tjunction")
       .VariantGroup(
         "orientation",
@@ -202,8 +214,8 @@ public partial class BlockPipe
   }
 
   private static ExBlockDef XJunction(string domain, string? tier) {
-    string s = $"{domain}:pipe/xjunction";
-    return Common(domain, tier, "pipe/xjunction", 8, "*-xjunction-nswe")
+    string s = $"{domain}:" + Asset(tier, "xjunction");
+    return Common(domain, tier, Asset(tier, "xjunction"), 8, "*-xjunction-nswe")
       .VariantGroup("type", "xjunction")
       .VariantGroup("orientation", "nswe", "nsud", "weud")
       .ShapeByType("*-xjunction-nswe", s)

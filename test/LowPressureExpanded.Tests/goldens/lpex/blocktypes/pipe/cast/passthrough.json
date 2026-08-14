@@ -95,15 +95,15 @@
   ],
   "shapebytype": {
     "*-passthrough-*-ns": {
-      "base": "iwex:pipe/passthrough",
+      "base": "exlib:pipe/passthrough",
       "rotateY": 0
     },
     "*-passthrough-*-we": {
-      "base": "iwex:pipe/passthrough",
+      "base": "exlib:pipe/passthrough",
       "rotateY": 90
     },
     "*-passthrough-*-ud": {
-      "base": "iwex:pipe/passthrough",
+      "base": "exlib:pipe/passthrough",
       "rotateX": 90
     }
   }

@@ -75,55 +75,55 @@
   ],
   "shapebytype": {
     "*-bend-nw": {
-      "base": "hpex:pipe/bend"
+      "base": "hpex:pipe/rolled/bend"
     },
     "*-bend-en": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 270
     },
     "*-bend-se": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 180
     },
     "*-bend-ws": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 90
     },
     "*-bend-dn": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateZ": 90
     },
     "*-bend-de": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 270,
       "rotateZ": 90
     },
     "*-bend-ds": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 180,
       "rotateZ": 90
     },
     "*-bend-dw": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 90,
       "rotateZ": 90
     },
     "*-bend-un": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateZ": 270
     },
     "*-bend-ue": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 270,
       "rotateZ": 270
     },
     "*-bend-us": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 180,
       "rotateZ": 270
     },
     "*-bend-uw": {
-      "base": "hpex:pipe/bend",
+      "base": "hpex:pipe/rolled/bend",
       "rotateY": 90,
       "rotateZ": 270
     }

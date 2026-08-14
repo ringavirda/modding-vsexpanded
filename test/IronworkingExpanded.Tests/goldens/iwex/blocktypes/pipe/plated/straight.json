@@ -14,17 +14,17 @@
     "general": [
       "*-straight-ns"
     ],
-    "hpex": [
+    "iwex": [
       "*-straight-ns"
     ]
   },
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-rolled-straight-*",
-        "pipe-rolled-bend-*",
-        "pipe-rolled-tjunction-*",
-        "pipe-rolled-xjunction-*"
+        "pipe-plated-straight-*",
+        "pipe-plated-bend-*",
+        "pipe-plated-tjunction-*",
+        "pipe-plated-xjunction-*"
       ]
     }
   },
@@ -46,7 +46,7 @@
     {
       "code": "tier",
       "states": [
-        "rolled"
+        "plated"
       ]
     },
     {
@@ -66,14 +66,14 @@
   ],
   "shapebytype": {
     "*-straight-ns": {
-      "base": "hpex:pipe/straight"
+      "base": "iwex:pipe/plated/straight"
     },
     "*-straight-we": {
-      "base": "hpex:pipe/straight",
+      "base": "iwex:pipe/plated/straight",
       "rotateY": 90
     },
     "*-straight-ud": {
-      "base": "hpex:pipe/straight",
+      "base": "iwex:pipe/plated/straight",
       "rotateX": 90
     }
   },

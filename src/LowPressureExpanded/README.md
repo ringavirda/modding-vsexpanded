@@ -39,8 +39,6 @@ failure modes; all gameplay numbers live in the `lpex` section of
 - `BlockStructures/` - boiler, engine and manual-pump mega-block machines (multiblock
   structure + right-click construction + animation), including the abstract bases the
   `hpex` leaves derive from.
-- `Commands/` - `.exmod` sub-commands (the metric/imperial `measure` unit toggle).
-- `Preferences/` - the per-player display-unit preference definition.
 - `Patches/` - Harmony patches into vanilla (chimney look-at info).
 - `BlockMigrations/` - save migrations for renamed block codes.
 - `../../assets/lpex/` - shapes, lang, handbook pages (blocktypes/items/recipes are

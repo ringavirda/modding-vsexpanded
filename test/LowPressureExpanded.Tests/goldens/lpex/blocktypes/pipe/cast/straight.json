@@ -14,17 +14,17 @@
     "general": [
       "*-straight-ns"
     ],
-    "iwex": [
+    "lpex": [
       "*-straight-ns"
     ]
   },
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-plated-straight-*",
-        "pipe-plated-bend-*",
-        "pipe-plated-tjunction-*",
-        "pipe-plated-xjunction-*"
+        "pipe-cast-straight-*",
+        "pipe-cast-bend-*",
+        "pipe-cast-tjunction-*",
+        "pipe-cast-xjunction-*"
       ]
     }
   },
@@ -46,7 +46,7 @@
     {
       "code": "tier",
       "states": [
-        "plated"
+        "cast"
       ]
     },
     {
@@ -66,14 +66,14 @@
   ],
   "shapebytype": {
     "*-straight-ns": {
-      "base": "iwex:pipe/straight"
+      "base": "lpex:pipe/cast/straight"
     },
     "*-straight-we": {
-      "base": "iwex:pipe/straight",
+      "base": "lpex:pipe/cast/straight",
       "rotateY": 90
     },
     "*-straight-ud": {
-      "base": "iwex:pipe/straight",
+      "base": "lpex:pipe/cast/straight",
       "rotateX": 90
     }
   },

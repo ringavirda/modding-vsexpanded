@@ -15,7 +15,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [
       ExRecipeDef
-        .Create(domain, "grid", "pipes")
+        .Create(domain, "grid", "pipes-cast")
         // --- passthrough / outlet: a pipe segment wrapped in brick ---
         .Grid(r =>
           r.Name("Pipe Passthrough (Straight)")

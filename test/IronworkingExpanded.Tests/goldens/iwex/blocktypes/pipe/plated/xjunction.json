@@ -9,22 +9,22 @@
     "hit": "game:block/anvil",
     "walk": "game:walk/stone"
   },
-  "maxstacksize": 16,
+  "maxstacksize": 8,
   "creativeinventory": {
     "general": [
-      "*-straight-ns"
+      "*-xjunction-nswe"
     ],
-    "lpex": [
-      "*-straight-ns"
+    "iwex": [
+      "*-xjunction-nswe"
     ]
   },
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-cast-straight-*",
-        "pipe-cast-bend-*",
-        "pipe-cast-tjunction-*",
-        "pipe-cast-xjunction-*"
+        "pipe-plated-straight-*",
+        "pipe-plated-bend-*",
+        "pipe-plated-tjunction-*",
+        "pipe-plated-xjunction-*"
       ]
     }
   },
@@ -46,38 +46,47 @@
     {
       "code": "tier",
       "states": [
-        "cast"
+        "plated"
       ]
     },
     {
       "code": "type",
       "states": [
-        "straight"
+        "xjunction"
       ]
     },
     {
       "code": "orientation",
       "states": [
-        "ns",
-        "we",
-        "ud"
+        "nswe",
+        "nsud",
+        "weud"
       ]
     }
   ],
   "shapebytype": {
-    "*-straight-ns": {
-      "base": "lpex:pipe/straight"
+    "*-xjunction-nswe": {
+      "base": "iwex:pipe/plated/xjunction"
     },
-    "*-straight-we": {
-      "base": "lpex:pipe/straight",
-      "rotateY": 90
+    "*-xjunction-nsud": {
+      "base": "iwex:pipe/plated/xjunction",
+      "rotateZ": 90
     },
-    "*-straight-ud": {
-      "base": "lpex:pipe/straight",
-      "rotateX": 90
+    "*-xjunction-weud": {
+      "base": "iwex:pipe/plated/xjunction",
+      "rotateY": 90,
+      "rotateZ": 90
     }
   },
   "collisionboxes": [
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 1.0,
+      "y2": 0.6875,
+      "z2": 0.6875
+    },
     {
       "x1": 0.3125,
       "y1": 0.3125,
@@ -88,6 +97,14 @@
     }
   ],
   "selectionboxes": [
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 1.0,
+      "y2": 0.6875,
+      "z2": 0.6875
+    },
     {
       "x1": 0.3125,
       "y1": 0.3125,

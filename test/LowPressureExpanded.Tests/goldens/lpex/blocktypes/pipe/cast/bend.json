@@ -12,10 +12,10 @@
   "maxstacksize": 8,
   "creativeinventory": {
     "general": [
-      "*-tjunction-uns"
+      "*-bend-nw"
     ],
     "lpex": [
-      "*-tjunction-uns"
+      "*-bend-nw"
     ]
   },
   "attributes": {
@@ -52,115 +52,116 @@
     {
       "code": "type",
       "states": [
-        "tjunction"
+        "bend"
       ]
     },
     {
       "code": "orientation",
       "states": [
-        "uns",
-        "uwe",
-        "dns",
-        "dwe",
-        "nes",
-        "esw",
-        "swn",
-        "wne",
-        "dnu",
-        "deu",
-        "dsu",
-        "dwu"
+        "nw",
+        "se",
+        "en",
+        "ws",
+        "un",
+        "us",
+        "uw",
+        "ue",
+        "dn",
+        "ds",
+        "dw",
+        "de"
       ]
     }
   ],
   "shapebytype": {
-    "*-tjunction-wne": {
-      "base": "lpex:pipe/tjunction"
+    "*-bend-nw": {
+      "base": "lpex:pipe/cast/bend"
     },
-    "*-tjunction-nes": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-en": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 270
     },
-    "*-tjunction-esw": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-se": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 180
     },
-    "*-tjunction-swn": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-ws": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 90
     },
-    "*-tjunction-uwe": {
-      "base": "lpex:pipe/tjunction",
-      "rotateX": 90
-    },
-    "*-tjunction-uns": {
-      "base": "lpex:pipe/tjunction",
-      "rotateX": 90,
+    "*-bend-dn": {
+      "base": "lpex:pipe/cast/bend",
       "rotateZ": 90
     },
-    "*-tjunction-dwe": {
-      "base": "lpex:pipe/tjunction",
-      "rotateX": 270
-    },
-    "*-tjunction-dns": {
-      "base": "lpex:pipe/tjunction",
-      "rotateX": 270,
-      "rotateZ": 90
-    },
-    "*-tjunction-dnu": {
-      "base": "lpex:pipe/tjunction",
-      "rotateZ": 90
-    },
-    "*-tjunction-deu": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-de": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 270,
       "rotateZ": 90
     },
-    "*-tjunction-dsu": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-ds": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 180,
       "rotateZ": 90
     },
-    "*-tjunction-dwu": {
-      "base": "lpex:pipe/tjunction",
+    "*-bend-dw": {
+      "base": "lpex:pipe/cast/bend",
       "rotateY": 90,
       "rotateZ": 90
+    },
+    "*-bend-un": {
+      "base": "lpex:pipe/cast/bend",
+      "rotateZ": 270
+    },
+    "*-bend-ue": {
+      "base": "lpex:pipe/cast/bend",
+      "rotateY": 270,
+      "rotateZ": 270
+    },
+    "*-bend-us": {
+      "base": "lpex:pipe/cast/bend",
+      "rotateY": 180,
+      "rotateZ": 270
+    },
+    "*-bend-uw": {
+      "base": "lpex:pipe/cast/bend",
+      "rotateY": 90,
+      "rotateZ": 270
     }
   },
   "collisionboxes": [
     {
-      "x1": 0.0,
-      "y1": 0.3125,
-      "z1": 0.3125,
-      "x2": 1.0,
-      "y2": 0.6875,
-      "z2": 0.6875
-    },
-    {
       "x1": 0.3125,
       "y1": 0.3125,
       "z1": 0.0,
       "x2": 0.6875,
       "y2": 0.6875,
-      "z2": 0.3125
+      "z2": 0.6875
+    },
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 0.6875
     }
   ],
   "selectionboxes": [
     {
-      "x1": 0.0,
-      "y1": 0.3125,
-      "z1": 0.3125,
-      "x2": 1.0,
-      "y2": 0.6875,
-      "z2": 0.6875
-    },
-    {
       "x1": 0.3125,
       "y1": 0.3125,
       "z1": 0.0,
       "x2": 0.6875,
       "y2": 0.6875,
-      "z2": 0.3125
+      "z2": 0.6875
+    },
+    {
+      "x1": 0.0,
+      "y1": 0.3125,
+      "z1": 0.3125,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 0.6875
     }
   ]
 }

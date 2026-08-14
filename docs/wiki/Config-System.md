@@ -2,8 +2,38 @@
 
 `Registries/Config/` is a generic, versioned, source-generated config system for gameplay
 tunables. You write a plain POCO, tag it, and a generator emits a static accessor with typed
-getters, `Load`/`Save`/`Edit`, range validation, version-reset migrations, legacy-file renaming
+getters, `Load`/`Save`/`Edit`, range validation, version-reset migrations, legacy-file folding
 and optional live editing through `/exmod config`.
+
+## Where the values actually live
+
+Config files are **shared and mod-sectioned**. A file under `ModConfig` is one JSON document whose
+top-level keys are mod ids, each holding that mod's whole config object:
+
+```json
+{
+  "exlib": { "ConfigVersion": "0.7.2", "LitresPerPipe": 30.0 },
+  "lpex":  { "ConfigVersion": "0.6.9", "PumpWaterPerSecond": 16.67 },
+  "yourmod": { "ConfigVersion": "1.0.0", "YourValue": 5.0 }
+}
+```
+
+Each store reads and writes only its own section, so several mods share one file without seeing each
+other's keys, and each carries its own independent `ConfigVersion` and migration history. The shipped
+mods use two documents: `ex_values.json` for gameplay tunables and `ex_recipes.json` for recipe-cost
+levels.
+
+Three consequences worth knowing before you pick a file name:
+
+- **Your section key is your mod id.** Naming a file another mod already uses is legal and simply adds
+  a section to it.
+- **Two configs owned by the same mod id cannot share a file.** The second one to bind overwrites the
+  first's section. Give them different file names.
+- **`Save()` rewrites the whole document**, from the in-memory copy that every mod's section binds
+  into. That is safe by design - mod load is single-threaded, and between load and flush the
+  in-memory document is the authority - but it is why a whole-file parse failure is expensive: the
+  unreadable file is set aside as `<name>.corrupt` and *every* mod in it starts from coded defaults,
+  where a single unreadable section costs only its own mod.
 
 ## Declaring a config
 
@@ -11,9 +41,9 @@ Write a POCO implementing `IExVersionedConfig` and tag it `[ExConfigRegister]`:
 
 ```csharp
 [ExConfigRegister(
-    "lpex_values.json",                 // file name under ModConfig/
-    "lpex",                             // owning mod id (logging + version tracking)
-    LegacyFileNames = ["lpex.json"],    // former names - auto-renamed on load
+    "ex_values.json",                   // the shared document under ModConfig/
+    "lpex",                             // owning mod id - and this config's section key
+    LegacyFileNames = new string[] { "lpex_values.json", "lpex.json" },
     Manageable = true                   // expose to /exmod config
 )]
 public class LpexConfig : IExVersionedConfig
@@ -25,9 +55,6 @@ public class LpexConfig : IExVersionedConfig
         new() { ToVersion = "0.6.0", ResetFields = [nameof(PumpWaterPerSecond)] },
     ];
 
-    [ExConfigRange(1, 1_000_000)]
-    public float LitresPerPipe { get; set; } = 30f;
-
     [ExConfigRange(0, 1)]
     public float BoilerWaterIntakeFillFraction { get; set; } = 0.5f;
 
@@ -36,30 +63,30 @@ public class LpexConfig : IExVersionedConfig
 }
 ```
 
-The marker interface is tiny - it just lets the store track and migrate the file:
+The marker interface is tiny - it just lets the store track and migrate the mod's section:
 
 ```csharp
 public interface IExVersionedConfig
 {
-    string? ConfigVersion { get; set; }   // null on first run; set to the mod version that last wrote the file
+    string? ConfigVersion { get; set; }   // null on first run; set to the mod version that last wrote the section
 }
 ```
 
 ## Using the generated accessor
 
-The generator emits `LpexValues` (the name is the type name with `Config` -> `Values`; override
-with `AccessorName`). You get:
+The generator emits `LpexValues` (the name is the type name with a trailing `Config` replaced by
+`Values`; override with `AccessorName`). You get:
 
 ```csharp
 public static partial class LpexValues
 {
-    public const string ConfigFileName = "lpex_values.json";
+    public const string ConfigFileName = "ex_values.json";
 
-    public static void Load(ICoreAPI api);            // load + migrate + sanitize + write-back (and register if Manageable)
+    public static void Load(ICoreAPI api);            // load + migrate + sanitize (server also writes back)
     public static void Save();                        // persist live config
     public static void Edit(Action<LpexConfig> mutate);   // mutate + save
 
-    public static float  LitresPerPipe { get; }       // one read-only getter per config property
+    public static float  BoilerWaterIntakeFillFraction { get; }   // one read-only getter per config property
     public static float  PumpWaterPerSecond { get; }
     public static string RecipeLevel { get; }
     // ...
@@ -70,14 +97,25 @@ public static partial class LpexValues
 public override void Start(ICoreAPI api) => LpexValues.Load(api);   // call once at startup
 
 // Read anywhere:
-float litres = LpexValues.LitresPerPipe;
+float fraction = LpexValues.BoilerWaterIntakeFillFraction;
 
 // Change + persist (typically server-side admin):
 LpexValues.Edit(c => c.RecipeLevel = "cheap");
 ```
 
-`Load` is safe on both sides; each reads its local copy. It applies migrations, clamps
-out-of-range values to defaults, stamps the running mod version and writes the file back.
+`Load` runs on both sides and each reads its own copy: it folds any legacy file in, applies
+migrations, resets invalid values and stamps the running mod version.
+
+> ⚠ **Only the server writes the file back.** In singleplayer both sides load the same store in one
+> process against one file and would race over it, so the client migrates, sanitizes and stamps
+> **in memory only**. The server's copy is the authority. `Save()` before `Load()` is likewise a
+> silent no-op, because the store has no API handle yet - an `Edit()` that early mutates memory and
+> persists nothing.
+
+One nuance of the emitted surface: a getter is generated for every public, readable, non-static
+property except `ConfigVersion`, **including get-only ones**. Validation and `/exmod config` both
+require a setter, so a computed get-only property is readable through the accessor yet invisible to
+both.
 
 ## Range validation
 
@@ -86,17 +124,23 @@ out-of-range values to defaults, stamps the running mod version and writes the f
 public float Fraction { get; set; } = 0.5f;
 
 [ExConfigRange(1)]         // floor only; max = +infinity
-public float LitresPerPipe { get; set; } = 30f;
+public float Capacity { get; set; } = 30f;
 ```
 
 `ExConfigRange(double min[, double max])` is enforced both on live edits (rejected if out of
-bounds) and on load (file values out of bounds reset to the coded default). Numeric properties
-**without** the attribute default to a non-negative, finite range `[0, +inf)`.
+bounds) and on load. Numeric properties **without** the attribute default to a non-negative, finite
+range `[0, +inf)`.
+
+> ⚠ **On load an invalid value is reset, not clamped.** A file carrying `2000000` under
+> `[ExConfigRange(1, 1_000_000)]` comes back as the *coded default*, not as `1000000`. NaN and
+> infinity are treated the same way, and so is a reference-typed value nulled out in the file whose
+> coded default is non-null - a nulled string or collection would otherwise NRE its reader. Every
+> reset is named in a warning log line.
 
 ## Version-reset migrations
 
 When you change a default and want existing players to pick it up, declare a migration. On load,
-if the file's stamped version is below a migration's `ToVersion` and you're now at or past it, the
+if the section's stamped version is below a migration's `ToVersion` and you're now at or past it, the
 named fields reset to their coded defaults - everything else the player tuned is preserved.
 
 ```csharp
@@ -116,13 +160,18 @@ public static readonly ExConfigMigration[] Migrations =
 ```
 
 The generator forwards a static `Migrations` member on your config type into the store
-automatically.
+automatically - it must be static, named exactly `Migrations`, and be a field or a property.
 
 ## Legacy file names
 
-`LegacyFileNames` preserves player configs across a rename. On load, if the current file is absent
-but a legacy name exists, the first match is renamed to the current name - players keep their
-settings.
+`LegacyFileNames` carries player configs across a rename **or** across the move from a per-mod file
+into the shared document. On load, if this mod's **section** is absent and one of the legacy files
+still exists under `ModConfig`, that file's contents become the section and the old file is renamed
+to `<name>.migrated` rather than deleted, so the carry-over stays reversible. First existing name
+wins, and the fold never re-runs once the section exists.
+
+That is how the shipped mods moved: `lpex.json` became `lpex_values.json` became the `lpex` section
+of `ex_values.json`, and a player upgrading across either step keeps their settings.
 
 ## Live editing: `Manageable`
 
@@ -132,8 +181,8 @@ exposing it to the generic command:
 ```
 /exmod config                       # list manageable mods
 /exmod config lpex                  # list lpex's editable values
-/exmod config lpex LitresPerPipe    # show current value
-/exmod config lpex LitresPerPipe 40 # set it (immediate, no reload), validated + persisted
+/exmod config lpex PumpWaterPerSecond    # show current value
+/exmod config lpex PumpWaterPerSecond 20 # set it (immediate, no reload), validated + persisted
 ```
 
 Behind the command is a non-generic view over the store:
@@ -168,7 +217,8 @@ public static class ExConfigProfiles
 }
 ```
 
-Only simple-typed values (numbers, bools, strings) are surfaced for editing.
+Only simple-typed values are surfaced for editing: `string`, `bool`, `int`, `long`, `float` and
+`double`, and only when the property has a setter.
 
 ## The underlying store (if you skip the generator)
 
@@ -178,19 +228,33 @@ The generated accessor wraps `ExConfigRegister<TConfig>`; you can use it directl
 public sealed class ExConfigRegister<TConfig> : IExConfigAccess
     where TConfig : class, IExVersionedConfig, new()
 {
-    public TConfig Config { get; }
+    public TConfig Config { get; private set; }      // never null; holds coded defaults before Load
+    public string ModId { get; }
+    public string FileName { get; }
     public IReadOnlyList<string> LegacyFileNames { get; init; }
 
     public ExConfigRegister(string fileName, string modId, params ExConfigMigration[] migrations);
 
     public void Load(ICoreAPI api);
     public void Save();
-    public void Edit(Action<TConfig> mutate);
+
+    // the IExConfigAccess view the /exmod config command drives
+    public IReadOnlyList<string> ValueNames { get; }
+    public bool TryGet(string name, out string canonicalName, out string value);
+    public ExConfigEditResult Set(string name, string raw);
 }
 ```
 
-But the generator path is recommended - adding a property is then a one-line change with the
-getter, validation and command wiring all emitted for you.
+Three things the generator does for you that you then own:
+
+- **There is no `Edit` on the store.** Mutate `Config` and call `Save()` yourself.
+- **`Manageable` is an attribute flag only the generator honours.** A hand-rolled store must call
+  `ExConfigProfiles.Register` itself or it never appears in `/exmod config`.
+- **`LegacyFileNames` is init-only and not a constructor parameter**, so set it through an object
+  initializer.
+
+The generator path is recommended - adding a property is then a one-line change with the getter,
+validation and command wiring all emitted for you.
 
 ## Related pages
 

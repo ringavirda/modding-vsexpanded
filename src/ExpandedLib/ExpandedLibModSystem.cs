@@ -18,7 +18,7 @@ namespace ExpandedLib;
 /// entities and behaviours (the invisible structure filler, the multiblock structure behaviour) and points
 /// <see cref="StructureFillers"/> at this mod's filler block, so every dependent mod's mega-blocks reuse one
 /// shared filler. On the client it owns the per-player display-preferences store
-/// (<see cref="Registries.Preferences.ExPreferences"/>, backed by <c>exmod.json</c>) and the metric/imperial
+/// (<see cref="Registries.Preferences.ExPreferences"/>, backed by <c>exmod_preferences.json</c>) and the metric/imperial
 /// measure feature; dependent mods add further preferences and sub-commands from their own assemblies. The
 /// block-network graph manager (<see cref="Blocks.Networks.BlockNetworkModSystem"/>) and the block-code
 /// migrator (<see cref="Blocks.Migrations.BlockMigrationModSystem"/>) are separate auto-loaded ModSystems.
@@ -69,8 +69,8 @@ public class ExpandedLibModSystem : ModSystem {
   }
 
   public override void StartClientSide(ICoreClientAPI api) {
-    // The library's own display preferences, currently the metric/imperial unit system. Must be registered
-    // before the store loads so a saved choice has something to apply to.
+    // The library's own display preferences, currently the metric/imperial unit system. Registered
+    // before the .exmod sub-commands below, which resolve their preference once at registration time.
     PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
 
     // Load the per-player display-preference store, writing the file on first run. Dependent mods contribute

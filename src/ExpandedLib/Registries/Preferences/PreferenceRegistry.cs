@@ -14,9 +14,11 @@ public static class PreferenceRegistry {
   /// <summary>
   /// Registers every <see cref="PreferenceRegisterAttribute"/>-decorated
   /// <see cref="IExPreference"/> in <paramref name="asm"/> (default: the calling assembly) with
-  /// <see cref="ExPreferences"/>. Call from <c>ModSystem.StartClientSide</c> after
-  /// <see cref="ExPreferences.LoadConfig"/> and before the <c>.exmod</c> command registers, since
-  /// that command builds a sub-command per registered preference.
+  /// <see cref="ExPreferences"/>. Call from <c>ModSystem.StartClientSide</c>, before the mod's own
+  /// <see cref="Commands.CommandRegistry"/> call: a preference sub-command resolves its definition
+  /// once at registration time, so one built first holds no preference. Order against
+  /// <see cref="ExPreferences.LoadConfig"/> does not matter - neither reads the other's state, and
+  /// exlib applies saved choices on <c>LevelFinalize</c>, after every mod's StartClientSide.
   /// </summary>
   public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null) {
     asm ??= Assembly.GetCallingAssembly();

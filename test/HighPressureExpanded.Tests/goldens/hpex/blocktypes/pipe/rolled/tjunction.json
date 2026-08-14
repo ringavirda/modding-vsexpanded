@@ -12,10 +12,10 @@
   "maxstacksize": 8,
   "creativeinventory": {
     "general": [
-      "*-xjunction-nswe"
+      "*-tjunction-uns"
     ],
     "hpex": [
-      "*-xjunction-nswe"
+      "*-tjunction-uns"
     ]
   },
   "attributes": {
@@ -52,28 +52,77 @@
     {
       "code": "type",
       "states": [
-        "xjunction"
+        "tjunction"
       ]
     },
     {
       "code": "orientation",
       "states": [
-        "nswe",
-        "nsud",
-        "weud"
+        "uns",
+        "uwe",
+        "dns",
+        "dwe",
+        "nes",
+        "esw",
+        "swn",
+        "wne",
+        "dnu",
+        "deu",
+        "dsu",
+        "dwu"
       ]
     }
   ],
   "shapebytype": {
-    "*-xjunction-nswe": {
-      "base": "hpex:pipe/xjunction"
+    "*-tjunction-wne": {
+      "base": "hpex:pipe/rolled/tjunction"
     },
-    "*-xjunction-nsud": {
-      "base": "hpex:pipe/xjunction",
+    "*-tjunction-nes": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateY": 270
+    },
+    "*-tjunction-esw": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateY": 180
+    },
+    "*-tjunction-swn": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateY": 90
+    },
+    "*-tjunction-uwe": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateX": 90
+    },
+    "*-tjunction-uns": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateX": 90,
       "rotateZ": 90
     },
-    "*-xjunction-weud": {
-      "base": "hpex:pipe/xjunction",
+    "*-tjunction-dwe": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateX": 270
+    },
+    "*-tjunction-dns": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateX": 270,
+      "rotateZ": 90
+    },
+    "*-tjunction-dnu": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateZ": 90
+    },
+    "*-tjunction-deu": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateY": 270,
+      "rotateZ": 90
+    },
+    "*-tjunction-dsu": {
+      "base": "hpex:pipe/rolled/tjunction",
+      "rotateY": 180,
+      "rotateZ": 90
+    },
+    "*-tjunction-dwu": {
+      "base": "hpex:pipe/rolled/tjunction",
       "rotateY": 90,
       "rotateZ": 90
     }
@@ -93,7 +142,7 @@
       "z1": 0.0,
       "x2": 0.6875,
       "y2": 0.6875,
-      "z2": 1.0
+      "z2": 0.3125
     }
   ],
   "selectionboxes": [
@@ -111,7 +160,7 @@
       "z1": 0.0,
       "x2": 0.6875,
       "y2": 0.6875,
-      "z2": 1.0
+      "z2": 0.3125
     }
   ]
 }

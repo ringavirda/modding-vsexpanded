@@ -33,7 +33,7 @@ Six sealed attributes inherit it, each validating the target's base type:
 
 ```csharp
 [BlockRegister]                         // -> "yourmod.BlockPipe"
-public partial class BlockPipe : BlockNetworkNode { }
+public class BlockPipe : BlockNetworkNode { }
 
 [BlockRegister("pipeStraight")]         // -> "yourmod.pipeStraight"
 public class BlockPipeStraight : BlockPipe { }
@@ -63,8 +63,9 @@ public override void Start(ICoreAPI api)
     => EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);
 ```
 
-> Marking a registered block `partial` lets the [attribute generator](Source-Generators) surface
-> its JSON `attributes` as typed members - see that page.
+The same scan also picks up code-first definition providers in the assembly - any
+`IExBlockDefProvider`, `IExItemDefProvider` or `IExRecipeDefProvider` - so blocks, items and recipes
+declared in C# register through this one call too.
 
 ## Command registration
 
@@ -140,18 +141,31 @@ public sealed class MeasurePreference : IExPreference
 }
 ```
 
-Wire it up in `StartClientSide`, after loading the store and before commands register:
+Wire it up in `StartClientSide`, **before your own `CommandRegistry.RegisterAll`**:
 
 ```csharp
 public override void StartClientSide(ICoreClientAPI api)
 {
-    ExPreferences.LoadConfig(api);
     PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
+    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
 }
 ```
 
-The shared store persists to `ModConfig/exmod_preferences.json` keyed by player UID, applies each
-preference on join and when changed:
+That is the only ordering constraint, and it exists because a preference sub-command resolves its
+definition **once, at registration time**, into a local it then holds. A command registered before
+the preference it names finds nothing: written defensively you get a sub-command whose name, options
+and description come from a throwaway fallback the store does not hold; written as
+`ExPreferences.Find(key)!` you get an NRE at world load.
+
+> ⚠ **You do not load or apply the store yourself.** exlib calls `ExPreferences.LoadConfig` in its own
+> `StartClientSide`, and hooks `LevelFinalize` to apply every registered preference for the local
+> player - which is exactly why registering yours later in the same phase still works, and why
+> `ExPreferences.ApplyForPlayer` is not yours to call: `api.World.Player` is not ready during
+> `StartClientSide`. Calling `LoadConfig` again re-reads the file and re-points the store's
+> process-global API handle at your own; harmless at that phase, but it claims an ownership you do
+> not have.
+
+The shared store persists to `ModConfig/exmod_preferences.json` keyed by player UID:
 
 ```csharp
 public static class ExPreferences
@@ -160,13 +174,21 @@ public static class ExPreferences
 
     public static void Register(IExPreference preference);
     public static IExPreference? Find(string key);
-    public static void LoadConfig(ICoreAPI api);
+    public static void LoadConfig(ICoreAPI api);                                   // exlib calls this
     public static string GetForPlayer(string playerUid, string key);
     public static void SetForPlayer(string playerUid, string key, string value);   // store + apply + persist
-    public static void ApplyForPlayer(string playerUid);                           // apply all, on join
+    public static void ApplyForPlayer(string playerUid);                           // exlib calls this
     public static IEnumerable<IExPreference> All { get; }
 }
 ```
+
+The on-disk shape is the public `ExPreferencesConfig` - a map of player UID to that player's chosen
+values. The store is **process-global static state** shared by every Expanded mod, which is what lets
+one file and one `LevelFinalize` hook serve all of them.
+
+Two lookups fail quietly rather than throwing, both on an unregistered key: `GetForPlayer` yields
+`string.Empty`, and `SetForPlayer` persists the value but applies nothing. Register the preference
+before you read or write it.
 
 The `Key` doubles as the lang-key stem: `"measure"` drives `command-measure-desc`,
 `pref-measure-label`, `pref-measure-metric`, etc.
@@ -176,20 +198,28 @@ The `Key` doubles as the lang-key stem: `"measure"` drives `command-measure-desc
 ```csharp
 public override void Start(ICoreAPI api)
 {
-    EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);    // blocks/items/entities/behaviours
-    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);   // [CommandRegister]/[SubCommandRegister]
+    EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);    // blocks/items/entities/behaviours + def providers
     YourValues.Load(api);                                        // generated config accessor (Config System)
 }
 
 public override void StartClientSide(ICoreClientAPI api)
 {
-    ExPreferences.LoadConfig(api);
-    PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);
+    PreferenceRegistry.RegisterAll(api, Mod, GetType().Assembly);   // before the commands that name them
+    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);      // [CommandRegister]/[SubCommandRegister]
+}
+
+public override void StartServerSide(ICoreServerAPI api)
+{
+    CommandRegistry.RegisterAll(api, Mod, GetType().Assembly);
 }
 ```
+
+`CommandRegistry.RegisterAll` is safe to call from `Start` - each command declares its side, so it
+registers once either way - but every shipped mod calls it from the two side hooks instead. That is
+what keeps a client sub-command from being built before the preference it names exists.
 
 ## Related pages
 
 - [Config System](Config-System) - `[ExConfigRegister]` and the generated value accessor.
-- [Source Generators](Source-Generators) - what `partial` blocks and config classes generate.
+- [Source Generators](Source-Generators) - what config classes and lang files generate.
 - [Commands](Commands) - the shared `/exmod` root.

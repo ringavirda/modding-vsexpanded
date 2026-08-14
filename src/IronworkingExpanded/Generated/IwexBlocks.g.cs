@@ -1427,8 +1427,8 @@ public static class IwexBlocks
       $"iwex:burdenmaker-{brick}-{side}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/bend. Variant groups: tier(plated), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
-  public static class PipeBend
+  /// <summary><c>iwex:pipe</c> - pipe/plated/bend. Variant groups: tier(plated), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  public static class PipePlatedBend
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
@@ -1458,8 +1458,8 @@ public static class IwexBlocks
       $"iwex:pipe-plated-bend-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/passthrough. Variant groups: tier(plated), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
-  public static class PipePassthrough
+  /// <summary><c>iwex:pipe</c> - pipe/plated/passthrough. Variant groups: tier(plated), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
+  public static class PipePlatedPassthrough
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
@@ -1501,8 +1501,8 @@ public static class IwexBlocks
       $"iwex:pipe-plated-passthrough-{brick}-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/passthroughbend. Variant groups: tier(plated), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
-  public static class PipePassthroughbend
+  /// <summary><c>iwex:pipe</c> - pipe/plated/passthroughbend. Variant groups: tier(plated), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  public static class PipePlatedPassthroughbend
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
@@ -1553,8 +1553,8 @@ public static class IwexBlocks
       $"iwex:pipe-plated-passthroughbend-{brick}-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/straight. Variant groups: tier(plated), type(straight), orientation(ns|we|ud).</summary>
-  public static class PipeStraight
+  /// <summary><c>iwex:pipe</c> - pipe/plated/straight. Variant groups: tier(plated), type(straight), orientation(ns|we|ud).</summary>
+  public static class PipePlatedStraight
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
@@ -1575,8 +1575,8 @@ public static class IwexBlocks
       $"iwex:pipe-plated-straight-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/tjunction. Variant groups: tier(plated), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
-  public static class PipeTjunction
+  /// <summary><c>iwex:pipe</c> - pipe/plated/tjunction. Variant groups: tier(plated), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  public static class PipePlatedTjunction
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
@@ -1606,8 +1606,8 @@ public static class IwexBlocks
       $"iwex:pipe-plated-tjunction-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/xjunction. Variant groups: tier(plated), type(xjunction), orientation(nswe|nsud|weud).</summary>
-  public static class PipeXjunction
+  /// <summary><c>iwex:pipe</c> - pipe/plated/xjunction. Variant groups: tier(plated), type(xjunction), orientation(nswe|nsud|weud).</summary>
+  public static class PipePlatedXjunction
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
