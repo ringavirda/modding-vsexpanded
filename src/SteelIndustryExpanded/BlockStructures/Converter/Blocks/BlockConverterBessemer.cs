@@ -106,7 +106,15 @@ public partial class BlockConverterBessemer
             )
             .Stage(s =>
               s.RequireMetalPlate(domain, 4)
-                .Require("iiex:pipe-straight-ns-{metal}", 3, type: "block")
+                // The trailing-star wildcard the three gas-intake recipes use, rather than one
+                // orientation: a segment carries the orientation it was placed at, so an exact code
+                // would refuse a player holding the same pipe the other way round.
+                .Require(
+                  "iiex:pipe-cast-straight*",
+                  3,
+                  $"{domain}:rcc-ingredient-pipe",
+                  "block"
+                )
                 .RequireMetalNails(domain, 6)
                 .AddElements("Root/GasIntake")
             )

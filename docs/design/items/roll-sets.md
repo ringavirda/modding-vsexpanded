@@ -158,7 +158,7 @@ The meaning and the validation rule of every field belong to
 knows what an entry must contain and where to read the rule.
 
 *Re-cut 2026-08-12. `gaps` and `outputs` are gone: a set declares only what the tooling itself knows, and
-the states the metal passes through are the stock's stage ladder
+the states the metal passes through are the stock's process route
 ([process-extension](../mechanics/process-extension.md)).*
 
 | JSON key | C# member | Required? |

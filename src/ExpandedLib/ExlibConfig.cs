@@ -31,7 +31,8 @@ public class ExlibConfig : IExVersionedConfig {
     // is slag-block - so the fallback resolved to nothing and recovered nothing. Stamped at the current
     // source version rather than above it: 0.7.2 is released, and a migration above the version that
     // ships it never fires.
-    new() {
+    new()
+    {
       ToVersion = "0.7.3",
       ResetFields = [nameof(MetalRecoveryFallback)],
     },

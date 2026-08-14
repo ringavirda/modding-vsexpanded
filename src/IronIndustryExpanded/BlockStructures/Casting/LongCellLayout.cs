@@ -19,7 +19,7 @@ public static class LongCellLayout {
 
   /// <summary>
   /// The longest lane a filling may draw, in voxels. The interior runs <c>z −14 … 14</c> with 2-thick end
-  /// dams, so a lane cannot be longer. The item dimensions in the <c>iiex.md</c> ladder imply 25- and
+  /// dams, so a lane cannot be longer. The item dimensions in the <c>iiex.md</c> route imply 25- and
   /// 27-voxel pieces, which do not fit.
   /// </summary>
   public const int MaxLaneLength = 24;

@@ -1,9 +1,9 @@
 using ExpandedLib;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronIndustryExpanded.Tests;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.Tests;
 using Xunit;
 
 namespace SteelIndustryExpanded.Tests;

@@ -26,7 +26,14 @@ public class PipeTierLocationTests {
   /// mod's asset tree - which resolves to nothing the moment that mod is renamed or merged away, and a
   /// blocktype whose shape resolves to nothing loads with no shape rather than failing.</summary>
   private static readonly string[] ContentDomains =
-    ["iiex", "iiex", "smex", "hpex", "iiex", "siex"];
+  [
+    "iiex",
+    "iiex",
+    "smex",
+    "hpex",
+    "iiex",
+    "siex",
+  ];
 
   private static List<ExBlockDef> Segments(string tier) =>
     [.. BlockPipe.Segments(Domain, tier)];
@@ -101,8 +108,7 @@ public class PipeTierLocationTests {
       }
         .SelectMany(t => ShapesOf(Tier(t)))
         .Where(s =>
-          ContentDomains.Contains(s.Split(':')[0])
-          && s.Split(':')[0] != Domain
+          ContentDomains.Contains(s.Split(':')[0]) && s.Split(':')[0] != Domain
         )
         .Distinct()
         .OrderBy(s => s),

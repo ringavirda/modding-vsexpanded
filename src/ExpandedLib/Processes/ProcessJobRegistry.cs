@@ -6,7 +6,7 @@ namespace ExpandedLib.Processes;
 
 /// <summary>
 /// The merged catalogue of every terminal job, keyed by machine. Contributed to rather than owned, exactly
-/// as <see cref="StageLadderRegistry"/> is: a mod adds a crop, a heading or a nail job by shipping a file,
+/// as <see cref="ProcessRouteRegistry"/> is: a mod adds a crop, a heading or a nail job by shipping a file,
 /// and never by patching ours. A second job on one input is reported and the first stands, because taking
 /// the last writer would make the answer depend on mod load order. World-free, so it runs headless.
 /// See docs/design/mechanics/process-extension.md.

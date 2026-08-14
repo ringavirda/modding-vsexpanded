@@ -305,7 +305,7 @@ public class IiexConfig : IExVersionedConfig {
 
   /// <summary>
   /// Iron units the blast furnace recovers per unit of ore content in the burden it melts.
-  /// <c>docs/design/mechanics/metal-recovery.md</c> § "The ladder" fixes recovery at 8.5 u per nugget,
+  /// <c>docs/design/mechanics/metal-recovery.md</c> § "The route" fixes recovery at 8.5 u per nugget,
   /// and the chain is one nugget to one crushed item to one burden item, so per ore unit and per nugget
   /// are the same number. Must stay stated per ore unit: a per-charge-unit or per-band figure is this
   /// times the ore share (<c>BurdenMix.IronFrac</c>), which moves with the burden recipe.
@@ -640,6 +640,22 @@ public class IiexConfig : IExVersionedConfig {
   /// <summary>Ambient temperature (C) the stock cools toward on the mill floor.</summary>
   [ExConfigRange(-50, 500)]
   public float RollingAmbientC { get; set; } = 20f;
+  #endregion
+
+  #region Shear (the crop station that ends every mill schedule)
+
+  /// <summary>
+  /// How much more drive a cold cut asks of the run than a hot one, applied to the job's own
+  /// <c>minTorque</c>.
+  /// <para>
+  /// Far gentler than the mill's <see cref="RollingColdStressMultiplier"/>, and deliberately so: shearing
+  /// needs force rather than friction and cold metal parts more cleanly than hot, which smears. So a cold
+  /// cut is never refused for being cold - it is a power achievement rather than a tier gate, which is
+  /// what keeps the reheat furnace an economy and not a wall.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 100)]
+  public float ShearColdMultiplier { get; set; } = 2f;
   #endregion
 
   #region Burden grades

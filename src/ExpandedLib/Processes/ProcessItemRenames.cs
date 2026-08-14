@@ -21,22 +21,22 @@ public class ProcessItemRenames : IItemCodeMigration {
   /// <c>AssetsFinalize</c> has populated the registry.</summary>
   public IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(
     ICoreServerAPI api
-  ) => Remaps(StageLadderRegistry.Shared.Families.Count == 0 ? [] : Ladders());
+  ) => Remaps(ProcessRouteRegistry.Shared.Families.Count == 0 ? [] : Routes());
 
-  private static IEnumerable<StageLadder> Ladders() {
-    foreach (string family in StageLadderRegistry.Shared.Families)
-      if (StageLadderRegistry.Shared.Ladder(family) is { } ladder)
-        yield return ladder;
+  private static IEnumerable<ProcessRoute> Routes() {
+    foreach (string family in ProcessRouteRegistry.Shared.Families)
+      if (ProcessRouteRegistry.Shared.Route(family) is { } route)
+        yield return route;
   }
 
-  /// <summary>Every <c>(former, current)</c> pair <paramref name="ladders"/> declares. A stage naming no
+  /// <summary>Every <c>(former, current)</c> pair <paramref name="routes"/> declares. A stage naming no
   /// code has nothing to be renamed to; an opted-out one still carries its rename, because the stacks in
   /// a player's world do not care which mod built the item.</summary>
   public static IEnumerable<(AssetLocation Old, AssetLocation New)> Remaps(
-    IEnumerable<StageLadder> ladders
+    IEnumerable<ProcessRoute> routes
   ) {
-    foreach (StageLadder ladder in ladders)
-      foreach (ProcessStage stage in ladder.Stages) {
+    foreach (ProcessRoute route in routes)
+      foreach (ProcessStage stage in route.Stages) {
         if (stage.Code == null)
           continue;
         foreach (string former in stage.FormerCodes)

@@ -1,7 +1,7 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronIndustryExpanded.Tests;
 using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.Tests;
 using Vintagestory.API.MathTools;
 using Xunit;
 

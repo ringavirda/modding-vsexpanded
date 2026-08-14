@@ -28,40 +28,40 @@ public static class ProcessItemEmitter {
   /// and got no item, so a declaration that silently built nothing is visible in the log.
   /// </summary>
   public static IEnumerable<ExItemDef> Emit(
-    IEnumerable<StageLadder> ladders,
+    IEnumerable<ProcessRoute> routes,
     out List<string> skipped
   ) {
     skipped = [];
     return
     [
-      .. Buildable(ladders, skipped)
-        .Select(b => Build(b.Ladder, b.Stage, b.Code)),
+      .. Buildable(routes, skipped)
+        .Select(b => Build(b.Route, b.Stage, b.Code)),
     ];
   }
 
   /// <summary>The codes <see cref="Emit"/> would build, so a guard can assert no declaration names
   /// something unbuildable and nothing hand-authored collides with a generated code.</summary>
   public static IEnumerable<string> GeneratedCodes(
-    IEnumerable<StageLadder> ladders
-  ) => [.. Buildable(ladders, []).Select(b => b.Code.ToString())];
+    IEnumerable<ProcessRoute> routes
+  ) => [.. Buildable(routes, []).Select(b => b.Code.ToString())];
 
   // Every stopping point that opts in and resolves, deduplicated: a fork can reach one product down two
   // branches, and the object loader would reject a duplicate itemtype.
   private static List<(
-    StageLadder Ladder,
+    ProcessRoute Route,
     ProcessStage Stage,
     AssetLocation Code
-  )> Buildable(IEnumerable<StageLadder> ladders, List<string> skipped) {
-    var buildable = new List<(StageLadder, ProcessStage, AssetLocation)>();
+  )> Buildable(IEnumerable<ProcessRoute> routes, List<string> skipped) {
+    var buildable = new List<(ProcessRoute, ProcessStage, AssetLocation)>();
     var seen = new HashSet<string>();
 
-    foreach (StageLadder ladder in ladders)
-      foreach (ProcessStage stage in ladder.Stages) {
+    foreach (ProcessRoute route in routes)
+      foreach (ProcessStage stage in route.Stages) {
         // A render-only intermediate is a state, not a thing; an opted-out one exists already.
         if (stage.Code == null || !stage.Generate)
           continue;
 
-        string where = $"{ladder.Family} {stage.Thickness}";
+        string where = $"{route.Family} {stage.Thickness}";
         AssetLocation? code = Resolve(stage.Code);
         if (code == null || string.IsNullOrWhiteSpace(code.Path)) {
           skipped.Add($"{where}: '{stage.Code}' is not a usable item code");
@@ -77,7 +77,7 @@ public static class ProcessItemEmitter {
         if (!seen.Add(code.ToString()))
           continue;
 
-        buildable.Add((ladder, stage, code));
+        buildable.Add((route, stage, code));
       }
 
     return buildable;
@@ -93,7 +93,7 @@ public static class ProcessItemEmitter {
   }
 
   private static ExItemDef Build(
-    StageLadder ladder,
+    ProcessRoute route,
     ProcessStage stage,
     AssetLocation code
   ) {
@@ -104,8 +104,8 @@ public static class ProcessItemEmitter {
 
     // The family's shape file, drawn at this stage's element. A stage with no element is the whole file,
     // which is the right convention for a finished product with a model of its own.
-    def = def.Shape(ladder.Shape ?? FallbackShape);
-    if (ladder.Shape != null && stage.Element != null)
+    def = def.Shape(route.Shape ?? FallbackShape);
+    if (route.Shape != null && stage.Element != null)
       def = def.ShapeSelectiveElements(stage.Element);
 
     return def;

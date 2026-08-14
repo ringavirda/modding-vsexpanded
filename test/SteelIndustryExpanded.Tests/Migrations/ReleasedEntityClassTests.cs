@@ -46,7 +46,9 @@ public class ReleasedEntityClassTests {
     new HashSet<string>(
       Mods.SelectMany(m =>
         m.Asm.GetTypes()
-          .Where(t => t.Name.StartsWith("BlockEntity", StringComparison.Ordinal))
+          .Where(t =>
+            t.Name.StartsWith("BlockEntity", StringComparison.Ordinal)
+          )
           .Select(t => $"{m.Domain}.{t.Name}")
       ),
       StringComparer.Ordinal
@@ -54,9 +56,7 @@ public class ReleasedEntityClassTests {
 
   /// <summary>A released blocktype whose every code is recorded debt migrates nowhere, so its class
   /// cannot save state for a block that never arrives and is exempt.</summary>
-  private static bool BlockIsAbandoned(
-    ReleasedCodes.ShippedEntityClass row
-  ) {
+  private static bool BlockIsAbandoned(ReleasedCodes.ShippedEntityClass row) {
     var debt = new HashSet<string>(
       ReleasedCodeDebt.KnownUnmigrated,
       StringComparer.Ordinal
@@ -106,13 +106,16 @@ public class ReleasedEntityClassTests {
 
     var unknown = AliasedKeys()
       .Where(k => !shipped.Contains(k))
-      .Where(k => !devDomains.Any(d => k.StartsWith(d, StringComparison.Ordinal)))
+      .Where(k =>
+        !devDomains.Any(d => k.StartsWith(d, StringComparison.Ordinal))
+      )
       .OrderBy(s => s, StringComparer.Ordinal)
       .ToList();
 
     Assert.True(
       unknown.Count == 0,
-      "alias(es) for class strings no release ever wrote: " + string.Join(", ", unknown)
+      "alias(es) for class strings no release ever wrote: "
+        + string.Join(", ", unknown)
     );
   }
 }

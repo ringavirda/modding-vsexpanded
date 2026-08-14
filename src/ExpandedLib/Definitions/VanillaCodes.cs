@@ -23,7 +23,7 @@ public static class VanillaCodes {
 
   #region Refractory and brick
 
-  // A ladder of permissiveness, strictest first; a layout picks the rung matching what the cell is for:
+  // A route of permissiveness, strictest first; a layout picks the rung matching what the cell is for:
   //
   //   RefractoryTier(n) ⊂ Refractory ⊂ RefractoryOrFire ⊂ AnyBricks
   //
@@ -84,7 +84,7 @@ public static class VanillaCodes {
 
   #region Slabs
 
-  // The same ladder one rung lower, for half-height courses. Every slab code takes a facing: a slab opens a
+  // The same route one rung lower, for half-height courses. Every slab code takes a facing: a slab opens a
   // hearth mouth only when laid the right way round.
   //
   // `-free` is vanilla's no-snow cover state and its `-snow` sibling is a different block, so a slab cell

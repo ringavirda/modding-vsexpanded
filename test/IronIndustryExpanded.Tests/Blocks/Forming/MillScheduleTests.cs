@@ -8,9 +8,9 @@ using Xunit;
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// What a fitted roll set can do to one stock family: the branch of that family's stage ladder the set's
+/// What a fitted roll set can do to one stock family: the branch of that family's stage route the set's
 /// roller family accepts, walked thickest first. The set carries the tooling's own limits - what it will
-/// bite, how wide its barrel is, what torque it needs - and the ladder carries the states, so neither names
+/// bite, how wide its barrel is, what torque it needs - and the route carries the states, so neither names
 /// a product the other has to agree with. See docs/design/mechanics/process-extension.md.
 /// </summary>
 public class MillScheduleTests {
@@ -19,7 +19,7 @@ public class MillScheduleTests {
   // The narrow bar, forked: both families take the 3.0 entry, then grooved runs down to a rod and flat to a
   // beam. The half-steps carry no code, because a gap costs two passes and the piece is not claimable
   // half way through one.
-  private const string BarLadder = """
+  private const string BarRoute = """
     {
       "family": "shingledbar",
       "shape": "iiex:item/smithed/shingled-bar",
@@ -42,18 +42,18 @@ public class MillScheduleTests {
     }
     """;
 
-  private static StageLadderRegistry Registry(params string[] ladders) {
-    var registry = new StageLadderRegistry();
-    foreach (string json in ladders) {
+  private static ProcessRouteRegistry Registry(params string[] routes) {
+    var registry = new ProcessRouteRegistry();
+    foreach (string json in routes) {
       Assert.True(
-        StageLadder.TryParse(
+        ProcessRoute.TryParse(
           Json(json),
-          out StageLadder? ladder,
+          out ProcessRoute? route,
           out string? error
         ),
         error
       );
-      Assert.Empty(registry.Contribute(ladder!));
+      Assert.Empty(registry.Contribute(route!));
     }
     return registry;
   }
@@ -77,7 +77,7 @@ public class MillScheduleTests {
     MillSchedule? schedule = MillSchedule.For(
       Set(set),
       form,
-      Registry(BarLadder)
+      Registry(BarRoute)
     );
     Assert.NotNull(schedule);
     return schedule!;
@@ -86,7 +86,7 @@ public class MillScheduleTests {
   #region Which branch a set walks
 
   [Fact]
-  public void A_fitted_set_walks_only_its_own_branch_of_the_ladder() {
+  public void A_fitted_set_walks_only_its_own_branch_of_the_route() {
     Assert.Equal([3.0f, 2.5f, 2.0f], Schedule().Gaps);
     Assert.Equal(
       ["ShingledBar1", "Grooved250", "Grooved200"],
@@ -108,8 +108,8 @@ public class MillScheduleTests {
   }
 
   [Fact]
-  public void A_set_whose_family_the_ladder_never_names_has_no_schedule() {
-    // A slitting set against a ladder with no slitting stage: the tooling exists, the route does not.
+  public void A_set_whose_family_the_route_never_names_has_no_schedule() {
+    // A slitting set against a route with no slitting stage: the tooling exists, the route does not.
     Assert.Null(
       MillSchedule.For(
         Set(
@@ -119,34 +119,34 @@ public class MillScheduleTests {
           )
         ),
         "shingledbar",
-        Registry(BarLadder)
+        Registry(BarRoute)
       )
     );
   }
 
   [Fact]
   public void A_form_the_set_refuses_has_no_schedule() {
-    // The ladder is the states the metal can take; `accepts` is the tooling's own geometry. A narrow
+    // The route is the states the metal can take; `accepts` is the tooling's own geometry. A narrow
     // barrel refuses a slab whatever states the slab has.
     Assert.Null(
-      MillSchedule.For(Set(GroovedSet), "shingledslab", Registry(BarLadder))
+      MillSchedule.For(Set(GroovedSet), "shingledslab", Registry(BarRoute))
     );
   }
 
   [Fact]
-  public void A_form_with_no_ladder_at_all_has_no_schedule() {
+  public void A_form_with_no_route_at_all_has_no_schedule() {
     Assert.Null(
       MillSchedule.For(
         Set(GroovedSet.Replace("\"bloom\"", "\"billet\"")),
         "billet",
-        Registry(BarLadder)
+        Registry(BarRoute)
       )
     );
   }
 
   [Fact]
   public void A_bare_stand_has_no_schedule() {
-    Assert.Null(MillSchedule.For(null, "shingledbar", Registry(BarLadder)));
+    Assert.Null(MillSchedule.For(null, "shingledbar", Registry(BarRoute)));
   }
 
   #endregion

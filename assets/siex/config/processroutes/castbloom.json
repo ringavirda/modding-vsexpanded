@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "family": "castbloom",
+  "stages": [
+    {
+      "thickness": 3.5,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    },
+    {
+      "thickness": 3.0,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    },
+    {
+      "thickness": 2.5,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    },
+    {
+      "thickness": 2.0,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    },
+    {
+      "thickness": 1.5,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    },
+    {
+      "thickness": 1.0,
+      "acceptedBy": [
+        "flatwide"
+      ]
+    }
+  ]
+}

@@ -87,7 +87,7 @@ public sealed record WorkPiece(
   /// is the "in, and turned back" beat, and it is why a bite is never the whole reduction.
   /// </summary>
   public float RoundTarget(float gap) =>
-    ExpandedLib.Processes.StageLadder.SameThickness(Gap, gap)
+    ExpandedLib.Processes.ProcessRoute.SameThickness(Gap, gap)
       ? gap
       : (Thickness + gap) / 2f;
 
@@ -109,7 +109,7 @@ public sealed record WorkPiece(
     return this with {
       Thickness = target,
       // Round 1 records the gap it is half way through; round 2 lands it and the piece is between gaps again.
-      Gap = ExpandedLib.Processes.StageLadder.SameThickness(target, gap)
+      Gap = ExpandedLib.Processes.ProcessRoute.SameThickness(target, gap)
         ? 0f
         : gap,
       Fed = new bool[fed.Length],

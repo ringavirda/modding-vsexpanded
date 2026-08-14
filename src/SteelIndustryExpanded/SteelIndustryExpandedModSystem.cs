@@ -9,6 +9,7 @@ using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.CowperStove.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.Engine.BlockEntities;
+using SteelIndustryExpanded.BlockStructures.Forming;
 using SteelIndustryExpanded.BlockStructures.SmokeStack.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -64,6 +65,11 @@ public class SteelIndustryExpandedModSystem : ModSystem {
     // does not join a plated or cast one.
     BlockPipe.RegisterJoint(BlockPipe.RolledTier, BlockPipe.WeldedJoint);
 
+    // The cast stock forms. iiex pours billet, bloom and slab and owns the mill; registering the forms
+    // is what lets that mill bite them, so an iiex-only player holds cast stock the rolls refuse. Must
+    // precede any feed decision, and the mill makes none before a world is joined.
+    CastStockForms.Register();
+
     // The recipe cost catalogue, and the profile that lets exlib's shared apply pass and the generic
     // /exmod recipes siex <level> command drive it. See ExRecipeProfiles.
     SiexRecipeValues.Load(api);
@@ -113,7 +119,10 @@ public class SteelIndustryExpandedModSystem : ModSystem {
     // aliased there. These six stayed, so the domain rename is the only thing that moved them; each
     // still backs blocks that migrate, which is what bounds the list - ReleasedEntityClassTests
     // names any that is missing and rejects one whose blocktype is wholly recorded debt.
-    ("smex.BlockEntityConverterBessemer", typeof(BlockEntityConverterBessemer)),
+    (
+      "smex.BlockEntityConverterBessemer",
+      typeof(BlockEntityConverterBessemer)
+    ),
     ("smex.BlockEntityConverterControl", typeof(BlockEntityConverterControl)),
     (
       "smex.BlockEntityConverterTransmission",

@@ -346,6 +346,27 @@ public static class IiexBlocks
       $"iiex:forming-rollingmill-{orientation}";
   }
 
+  /// <summary><c>iiex:forming</c> - forming/shear. Variant groups: type(shear), orientation(ns|we).</summary>
+  public static class FormingShear
+  {
+    /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
+    public const string Code = "iiex:forming";
+
+    /// <summary>Any variant: <c>iiex:forming-shear-*</c>.</summary>
+    public const string Any = "iiex:forming-shear-*";
+
+    /// <summary>The <c>orientation</c> variant group.</summary>
+    public static class Orientation
+    {
+      public const string Ns = "ns";
+      public const string We = "we";
+    }
+
+    /// <summary>Pin only <c>orientation</c>: <c>iiex:forming-shear-{orientation}</c>.</summary>
+    public static string WithOrientation(string orientation) =>
+      $"iiex:forming-shear-{orientation}";
+  }
+
   /// <summary><c>iiex:furnace</c> - furnace/blastcore. Variant groups: type(blastcore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
   public static class FurnaceBlastcore
   {

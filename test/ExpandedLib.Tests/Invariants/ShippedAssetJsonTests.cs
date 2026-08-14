@@ -230,7 +230,8 @@ public class ShippedAssetJsonTests {
           "assets",
           domain,
           "textures",
-          m.Groups["path"].Value.Replace('/', Path.DirectorySeparatorChar) + ".png"
+          m.Groups["path"].Value.Replace('/', Path.DirectorySeparatorChar)
+            + ".png"
         );
         if (!File.Exists(file))
           missing.Add($"{relative}: '{m.Value}'");

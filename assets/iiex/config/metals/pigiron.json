@@ -1,12 +1,12 @@
 {
   "code": "pigiron",
   "moltenItem": "iiex:ingot-pigiron",
-  "solidDrop": "game:metalbit-iron",
+  "solidDrop": "iiex:metalbit-pigiron",
   "displayLangKey": "iiex:metal-pigiron",
   "castDomain": "iiex",
   "liquidThreshold": 0.75,
   "generateItemFamily": true,
-  "itemForms": ["ingot"],
+  "itemForms": ["ingot", "bits"],
   "texturePath": "game:block/metal/tarnished/iron",
   "density": 7000,
   "meltingPoint": 1150

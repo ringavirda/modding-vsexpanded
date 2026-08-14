@@ -55,11 +55,15 @@ public static class HeatingHearthLayout {
       return Stock.ShingledBloom;
     if (itemPath.StartsWith("stock-shingledslab"))
       return Stock.ShingledSlab;
-    if (itemPath.StartsWith("castbillet"))
+    // The cast three are one itemtype with a `form` variant, so they are matched on the whole code and not
+    // on a bare form name. These prefixes read `castbillet` before the long cell's stock became
+    // `caststock-{form}`, which left every cast piece unrecognised - and so unreheatable, on the tier that
+    // is on the crosswise seating from its first pass.
+    if (itemPath.StartsWith("caststock-billet"))
       return Stock.CastBillet;
-    if (itemPath.StartsWith("castbloom"))
+    if (itemPath.StartsWith("caststock-bloom"))
       return Stock.CastBloom;
-    if (itemPath.StartsWith("castslab"))
+    if (itemPath.StartsWith("caststock-slab"))
       return Stock.CastSlab;
     return null;
   }

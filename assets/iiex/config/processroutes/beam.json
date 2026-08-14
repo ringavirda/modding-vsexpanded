@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "family": "beam",
+  "shape": "iiex:forming/beam",
+  "stages": [
+    {
+      "thickness": 1.75,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened175",
+      "halfStep": true
+    },
+    {
+      "thickness": 1.5,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened150"
+    },
+    {
+      "thickness": 1.25,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened125",
+      "halfStep": true
+    },
+    {
+      "thickness": 1.0,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "CutPlate1"
+    }
+  ]
+}

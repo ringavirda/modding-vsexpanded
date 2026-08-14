@@ -76,7 +76,7 @@ public class ShearFeedTests {
 
   [Fact]
   public void A_stage_that_names_no_job_is_not_a_stopping_point() {
-    // The ladder stays open: a gauge nobody has declared a crop for is stock and leaves the machine as it
+    // The route stays open: a gauge nobody has declared a crop for is stock and leaves the machine as it
     // came, rather than being refused as a mistake.
     ShearDecision d = Offer(job: null, piece: Piece());
 

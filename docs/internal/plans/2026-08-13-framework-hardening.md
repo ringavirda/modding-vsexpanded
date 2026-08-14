@@ -3,7 +3,7 @@
 **Status** live, started 2026-08-13. **F0, F1, all of F2, all of F3, F6.2, M.0, M.1, M.2, M.3, M.4 and
 M.5 are done**, each verified on the full gate (`scripts/exmod.ps1 test all` — now **9 targets, 3,990
 tests** after both merges collapsed a suite each, green across 1.20/1.21/1.22).
-Open: F1.4, F4, F5, F6.1, F7, F8, and **M.6** and **M.8** of stage M.
+Open: F1.4, F4, F5, F6.1, F7, F8, and **M.8** of stage M.
 
 ★★ **The merge is ruled** (M1–M6 in [STATE.md](STATE.md), 2026-08-13): five mods become **`iiex`** and
 **`siex`**, full domain consolidation, pipe tier onto a variant, `heavyplate` absorbs `castplate`, and
@@ -554,16 +554,40 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       unmigrated released codes**; the block-entity aliases (trap 4) cost six, not the one predicted; and
       a case nobody had listed — **a config section is keyed by the mod id**, so the rename silently reset
       every player value — was fixed in exlib with `LegacySectionIds`.
-- [ ] **M.6 Stand up `test/Integration.Tests`.** ⛔ Two premises of this stage have expired. The directory
-      was **deleted 2026-08-14** as an orphan (zero tracked files, in neither the solution nor the suite
-      list), so this stage *creates* it. And "before hpex's test project disappears" has already happened:
-      `ReleasedCodeCoverageTests` and `ReleasedEntityClassTests` now live in **`SteelIndustryExpanded.Tests`**,
-      which after the merge is the only suite that sees all three mods — so they are correctly placed and
-      the move is **optional**, not urgent.
+- [x] **M.6 The cross-mod resolution checks.** *Done 2026-08-14.* The half that mattered is built; the
+      `test/Integration.Tests` half was **declined**, and both decisions are recorded here.
 
-      ★ What is *not* optional is the second half: the cross-mod resolution checks. Recipe ingredients and
-      RCC `Require` codes are verified in **no** direction today, which is the structural cause of B19 and
-      B23. That is the reason to do M.6, and it can be done wherever the guards live.
+      ★★ **`ReferencedCodes` (exlib.Testing) + `CrossModReferenceTests` (siex suite), 4 tests.** It
+      collects every code the mods *point at* rather than register — recipe outputs and ingredients across
+      all three recipe shapes, RCC `requireStacks`, and every stack a definition body names — then
+      resolves each against the union catalogue of the three mods. **928 references, 530 of them into a
+      mod domain**; the rest are `game:` codes this harness holds no registry for and deliberately skips.
+
+      ⛔⛔ **It found B23 on its first run** — `iiex:pipe-straight-ns-{metal}`, a code naming nothing, which
+      made the Bessemer vessel unbuildable in **every** game mode. Fixed to `iiex:pipe-cast-straight*`.
+      It also found five bare drop codes on the slag blocks (`slag-path-free` and kin) that parse as
+      `game:` and so named vanilla blocks that do not exist; all five now carry `iiex:`.
+
+      ★ **Stacks are found by shape, not by key** — any object with a `code` string beside a `type` of
+      `item`/`block`. Keying on attribute names would silently stop covering an attribute the moment one
+      was added, which is the exact failure the check exists to catch. It cost nothing: `variantgroups`
+      and filler `behaviors` also carry a `code`, and neither has that `type`, so the shape test separates
+      them cleanly.
+
+      ⛔ **Vanilla codes are out of scope, and that is a decision rather than an omission.** 398 of the 928
+      are `game:`. Judging them needs a per-version manifest built from `.game/<slug>/assets` — the mods
+      ship against 1.20/1.21/1.22 and a code added in 1.21 is a real defect for 1.20 — which is its own
+      unit of work. `A_large_minority_of_references_is_ours…` states both counts so a skip cannot read as
+      a pass.
+
+      ⛔ **A bare *wildcard* is not judged either.** The metal families emit `metalplate-*`, `rod-*` and
+      `metalnailsandstrips-*` into the mods' own domains alongside vanilla's, so an unqualified wildcard is
+      a net over both registries; only exact bare codes are reported.
+
+      ★ **`test/Integration.Tests` declined.** Both its premises had expired: the directory was deleted
+      2026-08-14 as an orphan, and `SteelIndustryExpanded.Tests` is already the only suite that sees all
+      three mods, so it is where a cross-mod guard belongs. A fourth project would add a build target and a
+      suite-list row to hold tests that are correctly placed today.
 - [x] **M.7 Re-justify the entity pages** that cite the retired per-mod closure rule. *Done 2026-08-14.*
       ★ It was **12 pages, not ~15**, and the citation was not prose but the `**Mod**` header itself.
       Every one now names a live mod. ⛔ Four of them carried **M.4 rename damage** that made them

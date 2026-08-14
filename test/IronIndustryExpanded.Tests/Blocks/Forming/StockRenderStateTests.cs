@@ -14,22 +14,22 @@ namespace IronIndustryExpanded.Tests;
 /// See docs/design/mechanics/process-extension.md.
 /// </summary>
 public class StockRenderStateTests {
-  private static StageLadder Ladder(string json) {
+  private static ProcessRoute Route(string json) {
     Assert.True(
-      StageLadder.TryParse(
+      ProcessRoute.TryParse(
         new JsonObject(JToken.Parse(json)),
-        out StageLadder? ladder,
+        out ProcessRoute? route,
         out string? error
       ),
       error
     );
-    return ladder!;
+    return route!;
   }
 
   // Both branches draw a 2.0 state, and they are different geometry - which is why thickness alone cannot
   // choose between them.
-  private static StageLadder Forked() =>
-    Ladder(
+  private static ProcessRoute Forked() =>
+    Route(
       """
       {
         "family": "shingledbar",
@@ -71,7 +71,7 @@ public class StockRenderStateTests {
 
   #endregion
 
-  #region Walking the ladder by thickness
+  #region Walking the route by thickness
 
   [Fact]
   public void The_drawn_stage_is_the_one_at_the_piece_s_gauge_on_its_own_branch() {
@@ -112,7 +112,7 @@ public class StockRenderStateTests {
   }
 
   [Fact]
-  public void A_gauge_the_ladder_does_not_draw_picks_no_element() {
+  public void A_gauge_the_route_does_not_draw_picks_no_element() {
     WorkPiece rolled = new WorkPiece(
       StockForm.ShingledBar,
       1.75f,
@@ -126,7 +126,7 @@ public class StockRenderStateTests {
   }
 
   [Fact]
-  public void A_ladder_with_no_shape_file_draws_no_element() {
+  public void A_route_with_no_shape_file_draws_no_element() {
     // An element name means nothing without the file holding it, and half a reference would render as
     // nothing at all rather than as the fallback.
     WorkPiece rolled = new WorkPiece(
@@ -140,7 +140,7 @@ public class StockRenderStateTests {
 
     Assert.Null(
       StockMesh.ElementFor(
-        Ladder(
+        Route(
           """
           {
             "family": "shingledbar",
@@ -154,7 +154,7 @@ public class StockRenderStateTests {
   }
 
   [Fact]
-  public void No_ladder_at_all_draws_no_element() {
+  public void No_route_at_all_draws_no_element() {
     Assert.Null(
       StockMesh.ElementFor(null, WorkPiece.Fresh(StockForm.ShingledBar))
     );

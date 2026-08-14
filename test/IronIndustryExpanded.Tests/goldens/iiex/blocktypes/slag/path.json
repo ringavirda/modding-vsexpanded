@@ -184,7 +184,7 @@
   "drops": [
     {
       "type": "block",
-      "code": "slag-path-free"
+      "code": "iiex:slag-path-free"
     }
   ]
 }

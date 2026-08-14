@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
+using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Blocks.Structures;
 
@@ -22,6 +23,7 @@ public sealed class FillerLayoutBuilder {
   };
   private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted =
     new();
+  private readonly Dictionary<char, IReadOnlyList<Cuboidf>> _boxes = new();
   private readonly List<(int Y, string Grid)> _layers = new();
   private readonly List<(int X, string Grid)> _slices = new();
   private readonly List<(int Z, string Grid)> _faces = new();
@@ -68,6 +70,22 @@ public sealed class FillerLayoutBuilder {
   ) {
     _symbols[symbol] = true;
     _hosted[symbol] = behaviors;
+    return this;
+  }
+
+  /// <summary>
+  /// Registers a character as a filler that fills only the half of its cell against <paramref name="half"/>
+  /// - a floor slab is <c>Slab('_', BlockFacing.DOWN)</c>, a slab against the north face
+  /// <c>Slab('-', BlockFacing.NORTH)</c>. The cell keeps collision over that half and leaves the rest open,
+  /// which is what lets a machine stand shorter than a whole cell without walling the space above it.
+  /// <para>
+  /// Attachment stays off, as it is for a plain filler: a partial cell is the machine's own volume, not a
+  /// shelf. The box is authored in the north orientation and rotated with the rest of the footprint.
+  /// </para>
+  /// </summary>
+  public FillerLayoutBuilder Slab(char symbol, BlockFacing half) {
+    _symbols[symbol] = false;
+    _boxes[symbol] = [FillerSlab.Half(half)];
     return this;
   }
 
@@ -125,7 +143,7 @@ public sealed class FillerLayoutBuilder {
       if (!_symbols.TryGetValue(cell.Symbol, out bool attach))
         throw new InvalidOperationException(
           $"Filler layout symbol '{cell.Symbol}' at ({cell.X},{cell.Y},{cell.Z}) is not registered "
-            + "(use Solid/Attach, or '#'/'+')."
+            + "(use Solid/Attach/Slab/Host, or '#'/'+')."
         );
       cells.Add(
         new FillerCellSpec(
@@ -133,7 +151,8 @@ public sealed class FillerLayoutBuilder {
           cell.Y,
           cell.Z,
           attach,
-          _hosted.TryGetValue(cell.Symbol, out var hosted) ? hosted : null
+          _hosted.TryGetValue(cell.Symbol, out var hosted) ? hosted : null,
+          _boxes.TryGetValue(cell.Symbol, out var boxes) ? boxes : null
         )
       );
     }

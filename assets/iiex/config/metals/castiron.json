@@ -1,7 +1,7 @@
 {
   "code": "castiron",
   "moltenItem": "iiex:ingot-castiron",
-  "solidDrop": "game:metalbit-iron",
+  "solidDrop": "iiex:metalbit-castiron",
   "displayLangKey": "iiex:metal-castiron",
   "castDomain": "iiex",
   "liquidThreshold": 0.75,

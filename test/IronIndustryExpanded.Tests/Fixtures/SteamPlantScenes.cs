@@ -1,11 +1,11 @@
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronIndustryExpanded.Tests;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Engine.Blocks;
+using IronIndustryExpanded.Tests;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

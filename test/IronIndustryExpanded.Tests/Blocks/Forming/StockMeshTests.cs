@@ -6,7 +6,7 @@ namespace IronIndustryExpanded.Tests;
 
 /// <summary>
 /// Scaling for the composed mesh - the route that draws the half-step, the state between two declared rungs
-/// that no ladder names and no art draws. The scale is taken from the same numbers the simulation uses, so
+/// that no route names and no art draws. The scale is taken from the same numbers the simulation uses, so
 /// the rendered piece matches its simulated dimensions. The final appearance is verified in-game.
 /// </summary>
 public class StockMeshTests {

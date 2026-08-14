@@ -1,10 +1,13 @@
 # NEXT — the single "what next" entry point
 
-**Status** live — updated 2026-08-14: the mod split is **BUILT**. Both merges are done, the mod set is
-`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 3,990 green. The framework-hardening plan
-is live and part-landed. The plan triage is **done**, so the docs point at things that exist and the
-open queues are stated rather than inferred. Every unit's docs-sync task updates this file (see the
-maintenance rule at the bottom).
+**Status** live — updated 2026-08-15: the mod split is **BUILT**. Both merges are done, the mod set is
+`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 4,105 green. The framework-hardening plan
+is live and part-landed; **M.6 landed and closed B23**, a wall that made the Bessemer vessel unbuildable
+in every game mode. ★★ **The forming line is complete on both tiers, and every rolled product is
+obtainable.** The owner's filler layouts arrived, the shear was built on them, **B3c closed the same day**,
+and the **cast stock forms** and the **rod fork** landed behind it — so a bar, a slab, a billet, a bloom, a
+cast slab and a vanilla rod all roll and crop, and both fastener benches have their input. Every unit's
+docs-sync task updates this file (see the maintenance rule at the bottom).
 
 Ownership, layout and the rules that govern this directory are in
 [../README.md](../README.md). In one line: `docs/design/**` owns decisions, this directory owns
@@ -150,7 +153,7 @@ Both merges landed first, so it was done once. What it produced, and what it del
   sources**. `naming.md` states the rule — rewriting one silently deletes a migration.
 
 ⛔ **What the triage confirmed rather than changed:** STATE's **B3c** stands. The mill, `WorkPiece`, the
-roll sets and the stage ladders are built, but `StockForm` carries only input forms, no rolled *product*
+roll sets and the process routes are built, but `StockForm` carries only input forms, no rolled *product*
 item exists, and `ShearFeed.cs` has no shear behind it.
 
 ★ **Unresolved doc citations: 340 → 298.** The remaining 218 distinct paths are overwhelmingly files the
@@ -158,14 +161,55 @@ item exists, and `ShearFeed.cs` has no shear behind it.
 considered and **declined**: it would fail on all 218 immediately and need an allow-list that is itself
 the drift.
 
+### ★ M.6 — DONE 2026-08-14, and it found a shipped wall
+
+`ReferencedCodes` + `CrossModReferenceTests` resolve every code the mods *point at* — recipe outputs and
+ingredients, RCC `requireStacks`, and every stack a definition body names — against the union catalogue of
+all three mods. **928 references, 530 into a mod domain.** Detail in
+[framework-hardening](2026-08-13-framework-hardening.md) M.6.
+
+⛔⛔ **It printed B23 on its first run.** `iiex:pipe-straight-ns-{metal}` named nothing, and
+`ExConstruction` hard-fails a non-wildcard miss *before* the creative shortcut, so the Bessemer vessel
+could not be raised in **any** game mode. It is now `iiex:pipe-cast-straight*`, the wildcard its own gas-intake
+recipes already use. ⛔ Only that wall is gone — **B19 still leaves the segment uncraftable**, so the
+vessel is creative-only until the cast tier gets recipes.
+
+★ **The second find generalises further than the first:** five slag blocks dropped `slag-path-free` and
+kin with **no domain**, which parses as `game:` and names vanilla blocks that do not exist. A bare code in
+a mod definition is never right; all five now carry `iiex:`, and the guard holds the rule.
+
+⛔ **Vanilla codes are deliberately unjudged** — 398 of the 928. Doing them needs a per-version manifest
+off `.game/<slug>/assets`, since we ship 1.20/1.21/1.22 and a code added in 1.21 is a real defect for 1.20.
+That is a unit of work, not a follow-up; the guard states both counts so the skip cannot read as a pass.
+
 ### ★ What is actually next
 
-Pick one; nothing blocks anything else.
+**Updated 2026-08-15.** The forming line is complete for every drawn route; what is queued is one designed
+station, one item merge and two rulings. Pick one; nothing among them blocks anything else.
 
-- **M.6's real half — the cross-mod resolution checks.** Recipe ingredients and RCC `Require` codes are
-  verified in **no** direction today, which is the structural cause of **B19** and **B23**. ⛔ Its other
-  half expired: the guards already live in `SteelIndustryExpanded.Tests`, the only suite that sees all
-  three mods, so moving them into a new `test/Integration.Tests` is optional, not urgent.
+- ★★ **The workbench — designed 2026-08-15, nothing built.**
+  [workbench.md](../../design/machines/workbench.md). A 5 × 5 bench for assemblies a player cannot make by
+  hand, whose recipes may declare an **interaction sequence** (hold RMB with hammer, hands, wrench, …).
+  ⛔⛔ Its justification is **stack size**, not room for layout: an ingredient's `quantity` is capped by what
+  a slot holds, so 48 rods against a 16 cap needs three cells. ★★ It needs **no recipe engine** — vanilla's
+  matcher is grid-size agnostic — and everything is JSON so a third party ships a bench without C#.
+  ⛔ Largest unbudgeted cost is **handbook rendering**: vanilla draws recipes in a 3 × 3 widget and a
+  sequence has no page at all. ⛔ Size the grid against a real bill of materials first; nothing shipped
+  needs 5 × 5 yet.
+- ★ **The diagram / sand-pattern catalogues as JSON config** *(owner-asked, not started)*. The same shape as
+  `ProcessRoute` and `MaterialRole`: a catalogue, a loader, a contributed-to registry. ⛔ It carries a
+  **guide payload** too — pages and images, since the design table doubles as the guide — and it is worth
+  deciding up front whether guide pages are their own catalogue *referencing* diagrams, rather than fields
+  inside a diagram entry. The workbench's discoverability leans on this, so it reasonably comes first.
+- ★ **M.8 — one `heavyplate` with a metal axis.** Unblocked apart from recipes: the cast art is redrawn to
+  600 u (matching the rolled one's 240 vx³ exactly) and `castplate` is struck as a name that never was a
+  second item. What remains: the metal variant, `castplate-heavy` re-massed 160 → 600, its casting-pattern
+  capacity following, and the migration. ⛔ **Recipe interchangeability is deferred by the owner** to the
+  recipe pass — do not infer it.
+- ★ **The mid-gap crop rule.** Now the highest-value forming item, because it is one ruling that unblocks
+  two declared routes and closes B12: what happens when a crop yields pieces that each still want a pass
+  (billet grooved 2.25 → 6, bloom wide 3.0 → 5). Today `FeedVerdict.PartCropped` refuses to roll a
+  part-cropped piece, which is exactly what makes those two rows unexpressible.
 - **B25 — the 72 recorded unmigrated codes.** ⛔ Sharper than it was: `BessemerToConverterMigration`'s
   right-hand sides emit word-spelled sides (`convertercontrol-north`) where the live blocks use letters,
   so those rows name no live block and do nothing. Paying this off needs content rulings on which retired
@@ -204,7 +248,12 @@ content, listed in that plan's *What is still open*.
   golden moved together.
 - **The skip bound.** `HotFriction` 0.5 → **0.3** (δ_max 1.0 → **0.36**), `ColdFriction` 0.09 → **0.055**.
   An ordinary 0.25 round bites, a 0.5 skip skids, and `MillSchedule.NextGap` stays uncalled — the walk is
-  enforced by friction and by nothing else. `ShippedRollSetTests` pins both halves: every shipped route
+  enforced by friction and by nothing else. ⛔ **Amended 2026-08-14 for `flatwide` only** (owner): its top
+  roller is movable and the player sets the gap by holding RMB on the mill's raise/lower cell, so one wide
+  set covers every wide gap instead of one item per gap. `flat` and `grooved` stay locked and stay
+  friction-walked, and friction still bounds the wide set — it decides whether the chosen gap bites. Not
+  built: it needs the two `i1` cells of [machines.txt](../workbench/machines.txt), which the mill lacks.
+  `ShippedRollSetTests` pins both halves: every shipped route
   walkable round by round, every skipped gap refused.
 
 ⛔⛔ **And it exposed a balance defect, now closed.** `RollingTorqueScale` was calibrated when a gap was one
@@ -257,8 +306,32 @@ the order they work in: finish the cut, then roll the pieces on — which is how
 [rolling](../../design/processes/rolling.md) already describes the mandatory crop ("each of the five pieces
 … rolled on through 1.5 to 1.0").
 
-**2 — the shear block.** It terminates every rolling schedule and unblocks the crop table and the rolled
-catalogue (**B3c** in content). The registry it declares against is **already built and tested**
+**2 — the shear block. BUILT 2026-08-14.** ★★ The owner's filler layouts arrived
+([machines.txt](../workbench/machines.txt)) and unblocked it the same day. `BlockShear`,
+`BlockEntityShear`, the runtime shape, the blade sets, both grid recipes, three locales, 11 station tests.
+The layout confirmed the 3 × 1 × 2 measured off the art, and building it needed two framework pieces:
+**slab footprint cells** (the runtime read a per-cell `collisionBox`, but nothing could author one) and
+**`MachineTool`** in exlib, the tiered-consumable contract the machining line's universal cutter reuses.
+
+★★ **And B3c closed the same day: the rolled catalogue is BUILT and the line makes a product.** Six items
+with their settled masses, three drawn shapes exported, and a crop table with four working routes — a
+shingled bar becomes 4 rods, 2 beams or 2 plates; a shingled slab becomes 2 boiler plates.
+
+⛔ **Three declared routes stay unreachable, each on its own blocker**, and the middle one is the surprise:
+the **rod fork** needs `stock-rod`; the **cast routes need cast stock forms — only `shingledbar` and
+`shingledslab` are registered, so cast stock cannot enter the mill at all**; and `heavyplate` waits on
+**M.8**. ⛔⛔ That last one means the **cast-slab route is not walkable**: its 2.0 crop is recoverability's
+mandatory one, so without a product to claim there a cast slab rolled to 1.0 lands at 80 long against the
+48 limit.
+
+The handbook page is deliberately skipped — the mill has none either and the forming shop wants one page
+for both stations.
+
+★ **It closed the drive-torque question without any of the three proposals.** `MpEnergyNetworkState`
+publishes `SupplyPower = driveTorque * Speed`, so torque comes back as `SupplyPower / Speed` — no new state
+field, and `NotEnoughDrive` stays a verdict that can fire.
+
+*What follows is the pre-build record.* The registry it declares against was **already built and tested**
 (`ProcessJob` / `ProcessJobRegistry`, at `config/processjobs/*.json`), the crop tally is built
 (`WorkPiece.Cropped`), and as of 2026-08-13 so is the decision — **`ShearFeed` / `ShearDecision`**, which
 needed no footprint and so landed ahead of the layout. ★★ Its gate reads `ProcessJob.MinTorque` and
@@ -270,13 +343,75 @@ sweeps for "shear" missed it — and it measures **3 × 1 × 2 cells**, not the 
 Two of its open items close on that: the **wide shear is this block** (14 voxels of edge takes `flatwide`'s
 15) and the **blade set** is machining-line.md's forged-and-tempered consumable.
 
-⛔ **Blocked on the owner: the filler layouts** for this and the nine other mpenergy megablocks. Not to be
-invented — a wrong legend fails silently. What is left after them: the block, the BE, the runtime shape
-(an editable → runtime conversion), the crop table itself, a recipe, lang and a handbook page.
+~~⛔ Blocked on the owner: the filler layouts.~~ **Supplied 2026-08-14** for all ten mpenergy megablocks
+and the three pipe machines, in [machines.txt](../workbench/machines.txt). ⛔ Read its per-machine notes,
+not just the global legend: `_` and `-` are **redefined per machine** (the lathe, planer and rolling mill
+all make `_` a vertical south slab where the global legend says horizontal bottom), and the steam hammer
+introduces `|`. A wrong legend fails silently.
 
 So the order is now: ~~item 4~~ → ~~the friction re-calibration~~ → ~~the torque state~~ → ~~the crop
-count~~ → **the shear block**, which is now the only thing between the forming line and a finished product.
-`WorkPiece.Mass` is deferred indefinitely.
+count~~ → ~~the shear block~~ → ~~the rolled catalogue (B3c)~~ — **the forming line is done end to end for
+the shingled route**. `WorkPiece.Mass` is deferred indefinitely.
+
+★★ **The cast stock art is DONE and the stages are generated** *(2026-08-14; the forms followed the same
+day — see above)*. It was **one** shape short,
+not three: `castbloom` was already 4 × 4 × 25 and `castslab` already 12 × 4 × 25, and only `castbillet` sat
+at 3 × 3 × 24 against the settled 27 — its parent half went 12 → 15. All 17 cast stage shapes now ship, and
+every generated width and length lands exactly on [rolled parts](../../design/items/rolled-parts.md)'s crop
+table. **Registering the three `StockForm`s is now ordinary code**, and it unblocks five crop rows.
+
+- ~~**Cast stock forms**~~ — ★★ **DONE 2026-08-14, and the cast side of the line now works end to end.**
+  The three forms are siex's (`CastStockForms`), their ladders and their five crop rows ship under
+  `assets/siex/config/`, and iiex's roll sets accept them. Gate 9 targets / **4,148**.
+
+  ★★ **The piece was never missing — the form was.** `iiex:caststock-{billet,bloom,slab}` has shipped
+  since U1 at exactly the settled 600 / 1000 / 3000, poured by the long cell's lane patterns; nothing had
+  ever told the mill what they were. So no item was minted and no art moved domain: the itemtype gained a
+  `stockForm` attribute and `ItemStockPiece`, and siex put the forms in the registry. **iiex ships the
+  pieces, siex makes them rollable** — an iiex-only player holds cast stock the rolls refuse, which is the
+  tier gate falling out of the split for free.
+
+  ⛔⛔ **The wide roll sets are cancelled, not built** *(owner ruling 2026-08-14)*. The wide stand's top
+  roller is the movable one and the player sets the gap on the mill, so **one wide set covers every wide
+  gap** — `rollset-flatwide35` / `-flatwide30` are struck from [steel roll sets](../../design/machines/steel-roll-sets.md),
+  and 3.5 / 3.0 are ordinary rungs on the two cast ladders instead. ⛔ Its cost is the one that page's
+  open question predicted: one item carries one `MinTorque`, so the **wide route has no torque gate at
+  all** and cast stock rolls behind the iron-tier 0.5. The shear side does gate — every cast crop asks
+  `minTier: 2`, the steel blade.
+
+  ⛔ **And it found a shipped wall of its own**: `HeatingHearthLayout.StockOf` still matched the prefixes
+  `castbillet` / `castbloom` / `castslab` against an item that became `caststock-{form}` back in U1, so
+  **no cast piece could be reheated at all** — on the one tier that is on the crosswise seating from its
+  first pass. The rows that pinned it were three literals; they read the shipped variant list now.
+
+  ★ Two other things worth keeping. `StockItemDefinitions` emitted one item per **registered** form, so
+  the first foreign form would have minted an iiex item for somebody else's stock and thrown on the mass
+  lookup; it emits the forms it masses now. And `bloom` is the shingled bar's *former* name, so a cast
+  bloom declaring the bare variant would have rolled as a 400 u wrought bar with the mass as the only
+  symptom — `FormOf` writes `cast` + variant and a guard holds it.
+
+  ⛔ **Two rows stay unreachable, and they are the same question**: the billet's grooved 2.25 and the
+  bloom's wide 3.0 — a crop that yields pieces each still wanting a pass, against a shear that does one
+  product plus a remainder. (`heavyplate` on M.8 is the third row, and is not this question.) The billet's
+  ladder is therefore flat-only, and B12 is now measured: a bloom rolled to 1.0 is 50 long against the 48
+  seating.
+- ~~**The rod fork**~~ — ★★ **DONE 2026-08-14.** Both branches work: a vanilla `game:rod-iron` fed at the
+  deck becomes 4 × `iiex:rivetrod` down the grooved branch or 1 × `iiex:nailplate` down the flat one, so
+  both fastener benches have their input. Gate 9 targets / **4,192**.
+
+  ★★ **Admission is a new extensibility seam, and it is keyed on CODES, not forms.**
+  `StockForm.RegisterFeedstock(offered, entersAs)` + `BlockEntityRollingMill.Admit` convert an offered
+  stack into a stock item at the deck, heat carried across — which is how the re-rollable rod stays
+  vanilla's `game:rod-*` and none of the 32 call sites that name it had to change. Idempotent, because
+  both the deck's gap mapping and the feed itself call it; ⛔ and it has to run **before** the mapping, or
+  feedstock picks its gap against a one-band schedule and is then fed at another.
+
+  ★ **The rod is the one family drawn at every rung**, so its ladder names a `shape` and a per-stage
+  `element` and `ItemStockPiece` renders the authored art instead of scaling the base. Every other form
+  composes. ⛔ Its `RolledStockStagesTests` blocker was real: the fixed `Gaps` list assumed every form
+  leaves the helve 3 thick, and a rod entering at 2.0 would have demanded a 3.0 shape of a state it can
+  never be in. The list is per-form now, mirroring the generator's own `stages_for`.
+- **M.8** — unblocks `heavyplate` and with it the cast-slab route's mandatory crop.
 
 ⛔ One thing still to settle: **pass duration** is the last consumer of computed length
 (`length / ωR` in `BeginPass`). Under art-declared length it reads a declared length off the stage or

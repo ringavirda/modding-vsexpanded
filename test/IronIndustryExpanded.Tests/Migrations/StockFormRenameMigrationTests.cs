@@ -54,7 +54,15 @@ public class StockFormRenameMigrationTests {
   public void A_third_party_rename_is_carried_the_same_way() {
     try {
       StockForm.Register(
-        new StockForm("bronzebar", 3f, 3f, 8f, 16f, 0.8f, ["bronzeblank"])
+        new StockForm(
+          "bronzebar",
+          3f,
+          3f,
+          8f,
+          16f,
+          0.8f,
+          FormerNames: ["bronzeblank"]
+        )
       );
 
       Assert.Equal(

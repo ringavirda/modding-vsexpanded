@@ -1,5 +1,6 @@
 {
   "code": "caststock",
+  "class": "iiex.ItemStockPiece",
   "shape": {
     "base": "iiex:item/castbillet"
   },
@@ -31,13 +32,16 @@
   },
   "attributesByType": {
     "*-billet": {
-      "materialUnits": 600
+      "materialUnits": 600,
+      "stockForm": "castbillet"
     },
     "*-bloom": {
-      "materialUnits": 1000
+      "materialUnits": 1000,
+      "stockForm": "castbloom"
     },
     "*-slab": {
-      "materialUnits": 3000
+      "materialUnits": 3000,
+      "stockForm": "castslab"
     }
   },
   "creativeinventory": {

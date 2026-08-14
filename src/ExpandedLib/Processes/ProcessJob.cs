@@ -42,7 +42,7 @@ public sealed record ProcessJob(
     if (Stage == null)
       return true;
     return stage != null
-      && StageLadder.SameThickness(Stage.Value, stage.Value)
+      && ProcessRoute.SameThickness(Stage.Value, stage.Value)
       && string.Equals(Family, family, StringComparison.OrdinalIgnoreCase);
   }
 }

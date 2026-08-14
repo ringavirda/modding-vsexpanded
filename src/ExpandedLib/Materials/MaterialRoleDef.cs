@@ -28,6 +28,12 @@ public class MaterialRoleDef {
   /// <summary>Per-role scalar: for the fuel role, the carbon value of one item (coke 2, charcoal 0.5).
   /// Null makes <see cref="MaterialRoleRegistry.ValueOf"/> return the caller's fallback.</summary>
   public float? Value { get; set; }
+
+  /// <summary>Mod id this assignment waits on, or null to apply always. A def naming a mod that is not
+  /// loaded is skipped silently - an absent mod is the ordinary case, not a defect - which is what lets
+  /// compatibility with another mod's ore, fuel or scrap ship as data rather than as a code contributor.
+  /// See docs/design/mechanics/material-roles.md.</summary>
+  public string? RequiresMod { get; set; }
 }
 
 /// <summary>The <c>config/materialroles.json</c> file shape: one <c>materials</c> array of role

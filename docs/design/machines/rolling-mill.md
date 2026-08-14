@@ -50,10 +50,20 @@ cold, and the flow-stress term makes cold iron load about ten times harder, so a
 to enter and drags the run to a stop; the carry-back between passes is a heat budget, answered by the
 reheat furnace.
 
-There is no screw-down: the barrel carries a fixed sequence of gaps and the stock is walked along it. The
-schedule is geometry - a jump deeper than `δ_max` skids rather than being forbidden by a rule, and since
-2026-08-12 `δ_max` is calibrated so that *any* skipped gap skids. The walk is enforced, and nothing enforces
-it: the only rule is friction.
+There is no screw-down on the narrow barrels: `flat` and `grooved` carry a fixed sequence of gaps and the
+stock is walked along it. The schedule is geometry - a jump deeper than `δ_max` skids rather than being
+forbidden by a rule, and since 2026-08-12 `δ_max` is calibrated so that *any* skipped gap skids. The walk is
+enforced, and nothing enforces it: the only rule is friction.
+
+⛔ **`flatwide` is the exception, ruled by the owner 2026-08-14 and not yet built.** Its top roller *is*
+movable: the player holds RMB on the mill's raise/lower cell to push it down and set the gap, the same
+gesture the [bending roller](bending-roller.md) uses for curvature. `flat` and `grooved` sets stay locked in
+place. Friction is unchanged by this and stays the bound - it decides whether the gap the player set will
+bite, so a screwed-down skip still skids. What changes is who picks the gap, not what happens after.
+
+★ The reason is content, not mechanism: one adjustable wide set collapses what would otherwise be a
+separate roll-set item per wide gap. It needs the two `i1` cells of the layout in
+[machines.txt](../../internal/workbench/machines.txt), which the mill does not have today.
 
 ---
 
@@ -184,7 +194,15 @@ is blocked by B8).
 | a roll set (any collectible with a `rollset` attribute) | anywhere on the machine | fits it, hands back the previous one; refused mid-pass with `iiex-rollingmill-busy` (`:293-320`) |
 | stock, right-click | the input deck | feeds the near side (`MillFeed.SideIndex(false, sides) = sides-1`) |
 | stock, sneak + right-click | the input deck | feeds the far side (index 0) |
+| **admitted feedstock** (today `game:rod-iron`) | the input deck | enters as the stock item `StockForm.Feedstock` names, at the same heat, then feeds exactly as stock does |
 | anything | the output deck | nothing - a two-high stand cannot be fed backwards |
+
+★ **Admission is how a piece that is not stock gets into the rolls** (`BlockEntityRollingMill.Admit`,
+2026-08-14). The rod the mill re-rolls stays vanilla's, so rather than minting a second one the deck
+converts `game:rod-iron` into `iiex:stock-rod` on entry - see [rolled parts](../items/rolled-parts.md)
+§ The rod is the fork. It is idempotent, because both the deck's gap mapping and the feed itself call it,
+and it runs before the schedule is resolved: a piece admitted after the mapping would pick its gap against
+a schedule of one band and then be fed at another.
 
 Where along the deck the click lands picks the gap: the hit point is taken into the mill's own frame, mapped
 to `0..1` along the barrel, and split into `gapCount` equal bands (`BlockRollingMill.cs:368-375`,
@@ -335,9 +353,9 @@ declared a slitting rung, so it was tooling with no route. No migration: remappi
 surviving one would hand the player an item they never had, which is the rule
 `CastingNameMigration` already set. `ShippedRollSetTests` now pins the dead-set list **empty**.
 
-### Shipped stage ladders — `StockItemDefinitions.cs`
+### Shipped process routes — `StockItemDefinitions.cs`
 
-Declared on the stock items under `attributes.stageladder`, merged into `StageLadderRegistry` at
+Declared on the stock items under `attributes.processroute`, merged into `ProcessRouteRegistry` at
 `AssetsFinalize` ([process-extension](../mechanics/process-extension.md)). No rung names a `code` yet:
 every shipped stage is a shear crop, so the mill ejects the piece it drew through.
 
@@ -534,7 +552,7 @@ gauge the player stopped at. See [shear](shear.md).
   `iiex-rollingmill-busy` (`BlockRollingMill.cs:312`). The gate that got you there only checked that the
   `rollset` attribute exists (`:293-294`).
 - ~~`RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==`.~~ **Fixed 2026-08-12.**
-  `Outputs` and `Gaps` are gone; the states are the stock's stage ladder
+  `Outputs` and `Gaps` are gone; the states are the stock's process route
   ([process-extension](../mechanics/process-extension.md)) and `MillSchedule.OutputAt` matches on the
   ladder's own tolerance. The set no longer names a product at all.
 - `RollSetSpec.MinTorque` is parsed, stored, validated and never read. No production call site; the

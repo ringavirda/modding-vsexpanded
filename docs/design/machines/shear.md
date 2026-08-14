@@ -1,9 +1,11 @@
 # Shear
-**Status** designed, **drawn**, and the **registry and the crop tally are built** (2026-08-12 / 08-13).
-Missing: the block, the BE, the runtime shape and the table itself. `ProcessJob` / `ProcessJobRegistry` /
-`ProcessJobLoader` in exlib are the terminal shape this page's crop table will be declared in, at
-`assets/<domain>/config/processjobs/*.json`, and `WorkPiece.Cropped` is the per-stack state a crop moves.
-No entry ships yet: see Open.   **Mod** iiex (`IronIndustryExpanded`)
+**Status** ★★ **BUILT 2026-08-14.** `BlockShear`, `BlockEntityShear`, the runtime shape, the blade sets,
+both grid recipes, three locales and 11 station tests all ship. The owner's filler layout
+([machines.txt](../../internal/workbench/machines.txt)) was the last blocker and it arrived; the footprint
+is drawn straight from it. ⛔ **The crop table itself is still empty and deliberately so** — seven of its
+nine products are items that do not exist, so the machine runs and has nothing declared to cut. That is
+B3c, and it is now the only thing between the forming line and a finished product.
+**Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the crop station: the rule that every crop in the forming ladder passes through this one block, and that the
@@ -69,11 +71,24 @@ blade, one deep, two high - the mill's 3 × 3 × 2 without the second feed deck.
 copying from the mill is that a shape may overhang its cell as long as the block is `SolidNonOpaque`
 (`BlockRollingMill.cs:62-63`).
 
-⛔ **The filler layout legend is the owner's and is not yet supplied** *(2026-08-13)*. What follows is the
-cell *count*, measured off the shape - which cells are fillers, which are graph nodes and how the ASCII
-legend reads are all still owed, for this machine and for the other nine mpenergy megablocks. Do not invent
-one: a wrong legend fails silently and `*` inside `@()` is a regex
-([multiblock](../mechanics/multiblock.md)).
+★★ **The filler layout arrived 2026-08-14** and is in
+[machines.txt](../../internal/workbench/machines.txt) under the shop name, *Mp cutter*. It confirms the
+3 × 1 × 2 measured off the shape:
+
+```
+S1 (XY slice, north is forward):
+    _ _ _
+    I O #
+```
+
+`I` is the blade nest — the window interface where stock goes in, cut pieces come out and blades are
+swapped. `O` is the principal and carries the north-south drive. `#` is the gear cell. The row of `_` is
+three **floor slabs**, so the machine stands a cell and a half tall without walling the space above it.
+
+★ **Slab footprint cells needed building.** `StructureFillers` already read a per-cell `collisionBox` at
+runtime, but nothing could author one: `FillerCellSpec` had no box and the layout builder had no verb. Both
+landed with this machine (`FillerSlab.Half(face)`, `FillerLayoutBuilder.Slab`), and every remaining machine
+in machines.txt needs them — six of the ten use slabs.
 
 | Aspect | Proposal | Why |
 |---|---|---|
@@ -330,11 +345,15 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
   already made once. It waits on the rolled catalogue. The two entries that would resolve today
   (`game:metalplate`, `game:rod-iron`) are not worth shipping alone, because the interaction they would drive
   is the one still undecided below.
-- Block, BE, def, recipe, shape, lang, handbook and tests are all absent. The forming build list says build
-  the shear first of the three benches, because the `Outputs` move depends on it.
-- How the torque gate reads drive torque - see Gotchas. Options: add `DriveTorque` to `MpEnergyNetworkState`;
-  gate on `StoredEnergy ≥ k` instead; or have the shear attempt the stroke and let a stall be the answer
-  (cheapest, and consistent with the mill's "a pass that overdraws simply freezes").
+- ~~Block, BE, def, recipe, shape, lang and tests are all absent.~~ **Built 2026-08-14.** ⛔ The handbook
+  page is the one piece deliberately skipped: the mill has none either, and the forming shop wants one page
+  covering both stations rather than half a page for each.
+- ~~How the torque gate reads drive torque.~~ **Closed 2026-08-14, and none of the three proposals was
+  needed.** `MpEnergyNetworkState` publishes `SupplyPower`, written as `driveTorque * Speed` every tick, so
+  drive torque comes back exactly as **`SupplyPower / Speed`** — no new state field, no stored-energy proxy,
+  and `NotEnoughDrive` stays a verdict that can actually fire. The division is always defined because a
+  stopped run is refused as `NotTurning` first. `ShearStationTests` pins it by halving the supply at the
+  same speed and watching the same stroke be refused, which a power comparison could not distinguish.
 - ~~Blade sets are named and unspecified.~~ **Closed 2026-08-13.** The item is drawn
   (`item-forged-machineshears.json`) and [machining-line](../mechanics/machining-line.md)'s tooling table
   already rules it: a **forged and tempered consumable**, one of two (the other being the universal machine

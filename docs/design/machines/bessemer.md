@@ -213,7 +213,7 @@ Raised in place by right-clicking the vessel with materials in the hotbar. Cost 
 |---|---|---|
 | 1 | — | `Root/GearShaft` |
 | 2 | 24 plate · 24 nails · 12 rod | `Root/BottomIron` |
-| 3 | 4 plate · 3 `iiex:pipe-straight-ns-{metal}` (resolves to nothing - B7) | `Root/GasIntake` |
+| 3 | 4 plate · 3 `iiex:pipe-cast-straight*` | `Root/GasIntake` |
 | 4 | 60 `refractorybrick-fired-tier3` · 48 `game:clay-fire` | `Root/BottomRefractory` |
 | 5 | 24 `refractorybrick-fired-tier3` · 24 fire clay | `Root/UpRefractory` |
 | 6 | 12 plate · 12 nails · 6 rod | `Root/UpIron` |
@@ -227,23 +227,31 @@ Spawning the vessel is separate from building it: RMB the control with 1 `iiex:l
 `:103`). Creative gets it free (`:1011-1013`). The spawn accepts only iiex's smithable large gear, never
 `game:gear-rusty`, so the vessel stays buildable in worlds with no loot (`:1052-1053`).
 
-### B7 — stage 3 can never be satisfied
+### B7 — stage 3 could never be satisfied *(fixed 2026-08-14)*
 
-`iiex:pipe-straight-ns-{metal}` does not exist. The pipe blocktype declares variant groups `tier`,
-`type` and `orientation` (`BlockPipe.cs:103`, `:121-122`, confirmed by
-`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/pipe/straight.json`), so the codes are
-`iiex:pipe-cast-straight-{ns|we|ud}` with no metal axis. ⛔ Since M4 (2026-08-14) the required code is
-wrong in two ways rather than one: it names a `{metal}` group that never existed **and** omits the `tier`
-segment that now does. The `{metal}` placeholder is filled from stage 2's
-`storeWildCard` (`ExConstruction.cs:112-123`, `:200-203`) and resolves to `…-ns-iron` / `…-ns-steel`, neither
-of which is a registered block. `TryConsumeIngredients` resolves every ingredient before the creative shortcut
-is considered and hard-fails a non-wildcard miss (`ExConstruction.cs:165-178`), so:
+Stage 3 required `iiex:pipe-straight-ns-{metal}`, which named nothing. The pipe blocktype declares variant
+groups `tier`, `type` and `orientation` (`BlockPipe.cs:103`, `:121-122`), so a plain segment is
+`iiex:pipe-cast-straight-{ns|we|ud}` with no metal axis: the required code named a `{metal}` group that
+never existed **and** omitted the `tier` segment M4 introduced. The `{metal}` placeholder was filled from
+stage 2's `storeWildCard` (`ExConstruction.cs:112-123`, `:200-203`) and resolved to `…-ns-iron` /
+`…-ns-steel`, neither a registered block. `TryConsumeIngredients` resolves every ingredient before the
+creative shortcut is considered and hard-fails a non-wildcard miss (`ExConstruction.cs:165-178`), so the
+vessel could not be completed in survival **or** in creative-instant. Stage 3 was a wall.
 
-> The Bessemer vessel cannot be completed, in survival or in creative-instant. Stage 3 is a wall.
+⛔ **It shipped and stayed shipped because nothing checked a code against a registry.** No test resolved a
+recipe ingredient or an RCC require in either direction, and a per-mod suite could not have: the code
+crosses from siex into iiex. M.6's `ReferencedCodes` closed that, and this was the first thing it printed.
 
-The fix is no longer one token: the target is `iiex:pipe-cast-straight-ns`. That segment exists, but it has
-no recipe either (B19, [cast pipes](cast-pipes.md)), which also makes the gas intake recipe uncraftable - so the
-converter is blocked in two independent places. Neither is on this page to fix.
+The requirement is now `iiex:pipe-cast-straight*`, the trailing-star wildcard the three gas-intake recipes
+already use (`RecipeIngredients.cs:18-19`), rather than a single orientation - a segment carries whichever
+orientation it was placed at, so an exact `-ns` would refuse a player holding the same pipe the other way
+round. Being a wildcard, a future miss degrades to a soft failure rather than the hard one above. The hint
+key is `siex:rcc-ingredient-pipe`, which a wildcard require needs because `ExConstruction` shows
+`Lang.Get(ing.Name)` in place of a resolved stack name (`ExConstruction.cs:199`).
+
+⛔ **Only one of the two walls is gone.** That segment still has no recipe (B19,
+[cast pipes](cast-pipes.md)), which also makes the gas-intake recipe uncraftable, so the vessel is
+completable in creative-instant and remains blocked in survival. B19 is not on this page to fix.
 
 ---
 
@@ -636,10 +644,10 @@ without anything noticing.
    D4 must be restated as a steel capacity and the fill gate changed to count product. This needs deciding
    before the number is changed, or the tier gets a third capacity iteration that still misses.
 
-3. **B7 blocks the build** (Construction). One code in `BlockConverterBessemer.cs:108`, now
-   `iiex:pipe-cast-straight-ns`. B19 blocks it again - that segment has no recipe, so even the corrected
-   code is creative-only, and the same block is 1 of the gas intake's grid ingredients. Both halves belong
-   in M.3, which owns this layout.
+3. ~~**B7 blocks the build**~~ **(fixed 2026-08-14).** Stage 3 now requires `iiex:pipe-cast-straight*`.
+   ⛔ **B19 still blocks it** - that segment has no recipe, so the corrected code is creative-only, and
+   the same block is 1 of the gas intake's grid ingredients. What remains is a content ruling on the cast
+   tier's four plain segments, not a change to this layout.
 
 4. **The rebuild is scheduled and nothing has started.** Four blocks → one RCC megablock, coordinate layout →
    ASCII, intake/transmission → behaviour-capable fillers, plus a migration for existing worlds. Until then

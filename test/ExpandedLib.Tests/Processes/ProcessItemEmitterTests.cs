@@ -11,23 +11,23 @@ namespace ExpandedLib.Tests;
 /// <summary>
 /// Items generated from the stage catalogue. A stage that names a <c>code</c> is a stopping point, and a
 /// stopping point is an item - so the rolled catalogue stops being hand-authored defs and falls out of the
-/// declaration instead. Emitted at inject time, which is why the ladders are config assets rather than item
+/// declaration instead. Emitted at inject time, which is why the routes are config assets rather than item
 /// attributes. See docs/design/mechanics/process-extension.md.
 /// </summary>
 public class ProcessItemEmitterTests {
-  private static StageLadder Ladder(string json) {
+  private static ProcessRoute Route(string json) {
     Assert.True(
-      StageLadder.TryParse(
+      ProcessRoute.TryParse(
         new JsonObject(JToken.Parse(json)),
-        out StageLadder? ladder,
+        out ProcessRoute? route,
         out string? error
       ),
       error
     );
-    return ladder!;
+    return route!;
   }
 
-  private const string BarLadder = """
+  private const string BarRoute = """
     {
       "family": "shingledbar",
       "shape": "iiex:item/smithed/shingled-bar",
@@ -38,8 +38,8 @@ public class ProcessItemEmitterTests {
     }
     """;
 
-  private static List<ExItemDef> Emit(params string[] ladders) =>
-    [.. ProcessItemEmitter.Emit(ladders.Select(Ladder), out _)];
+  private static List<ExItemDef> Emit(params string[] routes) =>
+    [.. ProcessItemEmitter.Emit(routes.Select(Route), out _)];
 
   private static JObject Json(ExItemDef def) => def.ToJson();
 
@@ -47,7 +47,7 @@ public class ProcessItemEmitterTests {
 
   [Fact]
   public void A_stage_that_names_a_code_becomes_an_item() {
-    ExItemDef def = Assert.Single(Emit(BarLadder));
+    ExItemDef def = Assert.Single(Emit(BarRoute));
 
     Assert.Equal("rolledrod", Json(def)["code"]!.ToString());
     Assert.Equal("iiex", def.Location.Domain);
@@ -56,14 +56,14 @@ public class ProcessItemEmitterTests {
   [Fact]
   public void A_stage_with_no_code_is_a_render_only_intermediate_and_builds_nothing() {
     // The 3.0 entry stage is a state the piece passes through, not a thing it becomes.
-    Assert.Single(Emit(BarLadder));
+    Assert.Single(Emit(BarRoute));
   }
 
   [Fact]
   public void The_owning_domain_comes_from_the_declared_code() {
-    // A modder's products land in their own domain, not ours, whoever's ladder they extend.
+    // A modder's products land in their own domain, not ours, whoever's route they extend.
     ExItemDef def = Assert.Single(
-      Emit(BarLadder.Replace("iiex:rolledrod", "othermod:splinerod"))
+      Emit(BarRoute.Replace("iiex:rolledrod", "othermod:splinerod"))
     );
 
     Assert.Equal("othermod", def.Location.Domain);
@@ -76,7 +76,7 @@ public class ProcessItemEmitterTests {
     // ships itself.
     Assert.Empty(
       Emit(
-        BarLadder.Replace(
+        BarRoute.Replace(
           "\"code\": \"iiex:rolledrod\"",
           "\"code\": \"iiex:rolledrod\", \"generate\": false"
         )
@@ -91,7 +91,7 @@ public class ProcessItemEmitterTests {
     List<ExItemDef> defs =
     [
       .. ProcessItemEmitter.Emit(
-        [Ladder(BarLadder.Replace("iiex:rolledrod", "game:rod-iron"))],
+        [Route(BarRoute.Replace("iiex:rolledrod", "game:rod-iron"))],
         out List<string> skipped
       ),
     ];
@@ -107,7 +107,7 @@ public class ProcessItemEmitterTests {
     List<ExItemDef> defs =
     [
       .. ProcessItemEmitter.Emit(
-        [Ladder(BarLadder.Replace("\"iiex:rolledrod\"", "\"iiex:\""))],
+        [Route(BarRoute.Replace("\"iiex:rolledrod\"", "\"iiex:\""))],
         out List<string> skipped
       ),
     ];
@@ -118,7 +118,7 @@ public class ProcessItemEmitterTests {
 
   [Fact]
   public void A_blank_code_is_not_a_stopping_point_at_all() {
-    Assert.Empty(Emit(BarLadder.Replace("\"iiex:rolledrod\"", "\"   \"")));
+    Assert.Empty(Emit(BarRoute.Replace("\"iiex:rolledrod\"", "\"   \"")));
   }
 
   [Fact]
@@ -127,8 +127,8 @@ public class ProcessItemEmitterTests {
     // itemtype.
     Assert.Single(
       Emit(
-        BarLadder,
-        BarLadder.Replace(
+        BarRoute,
+        BarRoute.Replace(
           "\"family\": \"shingledbar\"",
           "\"family\": \"castbillet\""
         )
@@ -142,9 +142,9 @@ public class ProcessItemEmitterTests {
 
   [Fact]
   public void The_item_is_drawn_by_its_own_element_of_the_family_shape() {
-    // The ladder names one shape file for the family and the stage names its element in it, so the
+    // The route names one shape file for the family and the stage names its element in it, so the
     // generated item renders as the stage the piece stopped at.
-    JObject shape = (JObject)Json(Assert.Single(Emit(BarLadder)))["shape"]!;
+    JObject shape = (JObject)Json(Assert.Single(Emit(BarRoute)))["shape"]!;
 
     Assert.Equal("iiex:item/smithed/shingled-bar", shape["base"]!.ToString());
     Assert.Equal(
@@ -158,7 +158,7 @@ public class ProcessItemEmitterTests {
     JObject shape = (JObject)
       Json(
         Assert.Single(
-          Emit(BarLadder.Replace("\"element\": \"Grooved200\", ", ""))
+          Emit(BarRoute.Replace("\"element\": \"Grooved200\", ", ""))
         )
       )["shape"]!;
 
@@ -195,7 +195,7 @@ public class ProcessItemEmitterTests {
   public void The_generated_codes_are_public_so_a_guard_can_check_them() {
     Assert.Equal(
       ["iiex:rolledrod"],
-      ProcessItemEmitter.GeneratedCodes([Ladder(BarLadder)])
+      ProcessItemEmitter.GeneratedCodes([Route(BarRoute)])
     );
   }
 
@@ -203,8 +203,8 @@ public class ProcessItemEmitterTests {
   public void An_opted_out_stage_is_not_in_the_generated_set() {
     Assert.Empty(
       ProcessItemEmitter.GeneratedCodes([
-        Ladder(
-          BarLadder.Replace(
+        Route(
+          BarRoute.Replace(
             "\"code\": \"iiex:rolledrod\"",
             "\"code\": \"iiex:rolledrod\", \"generate\": false"
           )

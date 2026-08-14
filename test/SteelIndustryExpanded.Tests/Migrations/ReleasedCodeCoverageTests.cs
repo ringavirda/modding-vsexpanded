@@ -179,7 +179,8 @@ public class ReleasedCodeCoverageTests {
 
     Assert.True(
       unknown.Length == 0,
-      $"{unknown.Length} recorded code(s) never shipped:\n  " + string.Join("\n  ", unknown)
+      $"{unknown.Length} recorded code(s) never shipped:\n  "
+        + string.Join("\n  ", unknown)
     );
   }
 

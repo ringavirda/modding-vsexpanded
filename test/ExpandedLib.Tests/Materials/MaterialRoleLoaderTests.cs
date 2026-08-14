@@ -105,6 +105,87 @@ public class MaterialRoleLoaderTests {
     Assert.Null(def.Value);
   }
 
+  #region Mod-gated rows
+
+  private static MaterialRoleCatalogue Gated() =>
+    new() {
+      Materials = new()
+      {
+        new MaterialRoleDef
+        {
+          Role = Roles.IronOre,
+          PathPrefix = "crushed-iron",
+        },
+        new MaterialRoleDef
+        {
+          Role = Roles.IronOre,
+          Code = "crushed-hematite",
+          RequiresMod = "industrialstory",
+        },
+      },
+    };
+
+  [Fact]
+  public void A_row_waiting_on_an_absent_mod_is_skipped() {
+    // Compatibility with another mod's ore ships as data, so the file always carries rows for mods the
+    // player may not have. Skipping is the ordinary path, not an error path.
+    MaterialRoleLoader.Overlay([Gated()], modPresent: _ => false);
+
+    Assert.True(
+      MaterialRoleRegistry.IsRole(
+        Roles.IronOre,
+        new AssetLocation("game:crushed-iron")
+      )
+    );
+    Assert.False(
+      MaterialRoleRegistry.IsRole(
+        Roles.IronOre,
+        new AssetLocation("game:crushed-hematite")
+      )
+    );
+  }
+
+  [Fact]
+  public void A_row_whose_mod_is_loaded_applies() {
+    MaterialRoleLoader.Overlay(
+      [Gated()],
+      modPresent: id => id == "industrialstory"
+    );
+
+    Assert.True(
+      MaterialRoleRegistry.IsRole(
+        Roles.IronOre,
+        new AssetLocation("game:crushed-hematite")
+      )
+    );
+  }
+
+  [Fact]
+  public void With_no_answer_about_mods_a_gated_row_stays_out() {
+    // The truthful headless reading. Defaulting the other way would let a bare test registry claim
+    // ores from mods that are not there, and every gated row would look like it always applied.
+    MaterialRoleLoader.Overlay([Gated()]);
+
+    Assert.False(
+      MaterialRoleRegistry.IsRole(
+        Roles.IronOre,
+        new AssetLocation("game:crushed-hematite")
+      )
+    );
+  }
+
+  [Fact]
+  public void MaterialRoleDef_binds_the_mod_gate() {
+    var cat = JsonConvert.DeserializeObject<MaterialRoleCatalogue>(
+      @"{ ""materials"": [
+          { ""role"": ""ironore"", ""code"": ""crushed-hematite"", ""requiresMod"": ""industrialstory"" } ] }"
+    )!;
+
+    Assert.Equal("industrialstory", cat.Materials![0].RequiresMod);
+  }
+
+  #endregion
+
   [Fact]
   public void MaterialRoleCatalogue_binds_the_materials_array() {
     var cat = JsonConvert.DeserializeObject<MaterialRoleCatalogue>(

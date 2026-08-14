@@ -26,7 +26,9 @@
         "family": "flat",
         "accepts": [
           "shingledbar",
-          "billet"
+          "castbillet",
+          "rod",
+          "beam"
         ],
         "barrelWidth": 4.0,
         "minTorque": 0.2
@@ -35,10 +37,13 @@
     "*-flatwide": {
       "rollset": {
         "schema": 1,
-        "family": "flat",
+        "family": "flatwide",
         "accepts": [
           "shingledslab",
-          "shingledbar"
+          "shingledbar",
+          "castbloom",
+          "castslab",
+          "heavyplate"
         ],
         "barrelWidth": 16.0,
         "minTorque": 0.5
@@ -50,7 +55,9 @@
         "family": "grooved",
         "accepts": [
           "shingledbar",
-          "billet"
+          "castbillet",
+          "rod",
+          "beam"
         ],
         "barrelWidth": 16.0,
         "minTorque": 0.3

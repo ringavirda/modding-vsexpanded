@@ -8,7 +8,7 @@ namespace IronIndustryExpanded.Tests;
 /// <summary>
 /// The roll-set tooling contract. A set carries what the tooling itself decides - which roller family it
 /// is, which stock it will bite, how wide its barrel is and what torque it needs to turn - and nothing
-/// about what the metal becomes. The states are the stock family's stage ladder
+/// about what the metal becomes. The states are the stock family's stage route
 /// (<see cref="MillScheduleTests"/>), so a set names no product and a product needs no set edited.
 /// See docs/design/items/roll-sets.md.
 /// </summary>
@@ -71,7 +71,7 @@ public class RollSetSpecTests {
 
   [Fact]
   public void A_set_belonging_to_no_roller_family_is_rejected() {
-    // The family is what selects the set's branch of a stage ladder, so a set without one can roll nothing.
+    // The family is what selects the set's branch of a stage route, so a set without one can roll nothing.
     Assert.Contains(
       "family",
       Rejects(FlatSet.Replace("\"family\"", "\"unused\""))

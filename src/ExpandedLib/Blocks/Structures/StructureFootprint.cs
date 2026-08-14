@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
+using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Blocks.Structures;
 
@@ -54,8 +55,28 @@ public readonly record struct FillerCellSpec(
   int Y,
   int Z,
   bool AllowAttach = false,
-  IReadOnlyList<FillerBehaviorSpec>? Behaviors = null
+  IReadOnlyList<FillerBehaviorSpec>? Behaviors = null,
+  IReadOnlyList<Cuboidf>? CollisionBoxes = null
 );
+
+/// <summary>
+/// The half-cell volumes a partially-filled footprint cell can take, named by the face the solid half sits
+/// against - <c>Down</c> is a floor slab, <c>North</c> a slab against the north face. Machine layouts are
+/// authored in these terms, so the drawing and the code use one vocabulary.
+/// </summary>
+public static class FillerSlab {
+  /// <summary>The half of the cell against <paramref name="face"/>, as a single north-orientation cuboid.
+  /// <see cref="StructureFillers.FootprintCells"/> rotates it into the placed orientation.</summary>
+  public static Cuboidf Half(BlockFacing face) =>
+    face.Index switch {
+      BlockFacing.indexNORTH => new Cuboidf(0f, 0f, 0f, 1f, 1f, 0.5f),
+      BlockFacing.indexSOUTH => new Cuboidf(0f, 0f, 0.5f, 1f, 1f, 1f),
+      BlockFacing.indexEAST => new Cuboidf(0.5f, 0f, 0f, 1f, 1f, 1f),
+      BlockFacing.indexWEST => new Cuboidf(0f, 0f, 0f, 0.5f, 1f, 1f),
+      BlockFacing.indexUP => new Cuboidf(0f, 0.5f, 0f, 1f, 1f, 1f),
+      _ => new Cuboidf(0f, 0f, 0f, 1f, 0.5f, 1f),
+    };
+}
 
 /// <summary>
 /// Computes mega-block footprints (the <c>fillerOffsets</c> tables) from a compact description instead of

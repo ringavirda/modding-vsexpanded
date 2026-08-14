@@ -22,7 +22,8 @@ public static class MaterialRoleLoader {
         api,
         "config/materialroles.json"
       ),
-      api.Logger.Warning
+      api.Logger.Warning,
+      api.ModLoader.IsModEnabled
     );
     // Contributors run after the clear and the JSON overlay so their registrations survive a reload.
     MaterialRoleRegistry.InvokeContributors(api);
@@ -33,9 +34,14 @@ public static class MaterialRoleLoader {
   /// role or with neither code nor path prefix. The caller must have cleared the registry first; this
   /// does not touch contributors. Exposed for unit tests.
   /// </summary>
+  /// <param name="modPresent">Answers whether a mod id is loaded, gating
+  /// <see cref="MaterialRoleDef.RequiresMod"/>. Null answers "nothing is loaded", which is the truthful
+  /// headless reading and the one that keeps another mod's rows out of a bare test registry.</param>
   internal static void Overlay(
     IEnumerable<MaterialRoleCatalogue> catalogues,
-    Action<string>? warn = null
+    Action<string>? warn = null,
+    // Qualified: Vintagestory.API.Common declares its own Func<,>, so the bare name is ambiguous here.
+    System.Func<string, bool>? modPresent = null
   ) {
     foreach (MaterialRoleCatalogue cat in catalogues) {
       if (cat.Materials == null)
@@ -55,6 +61,13 @@ public static class MaterialRoleLoader {
           );
           continue;
         }
+        // Silently, and before registering: a row waiting on a mod the player does not have is the
+        // ordinary case, so warning on it would fill the log with noise on every load.
+        if (
+          !string.IsNullOrEmpty(def.RequiresMod)
+          && !(modPresent?.Invoke(def.RequiresMod!) ?? false)
+        )
+          continue;
         MaterialRoleRegistry.Register(def);
       }
     }

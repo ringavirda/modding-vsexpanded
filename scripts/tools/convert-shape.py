@@ -19,6 +19,7 @@ motions (ONESHOT_CLIPS), which keep their authored ending.
 Usage:
     python scripts/convert-shape.py <editable-name> <runtime-path> [<editable-name> <runtime-path> ...]
     python scripts/convert-shape.py --check          # report unmapped textures across all editables
+    python scripts/convert-shape.py --merge <runtime-path> <editable-name> [<editable-name> ...]
 
 Example:
     python scripts/convert-shape.py mp-castiron-flywheel assets/iiex/shapes/mpenergy/flywheel.json
@@ -108,6 +109,47 @@ ONESHOT_CLIPS = {"paddle"}
 # `idle` keeps the built mesh visible and every shipped idle uses Repeat.
 
 
+# A rotation this far apart between a clip's first and last keyframe is a whole turn being unwound
+# across the wrap, not a pose difference. Matches LoopingAnimationTests.UnwindDegrees.
+UNWIND_DEGREES = 180
+ROT_AXES = ("X", "Y", "Z")
+
+
+def close_loop(anim):
+    """Makes a repeating clip's wrap explicit, which Blockbench cannot express.
+
+    Two rules, both guarded by LoopingAnimationTests and both invisible outside the game:
+
+      1. An element posed at the first keyframe but not the last drifts back to its frame-0 pose
+         across the wrap instead of returning through the drawn motion. Copying the first pose onto
+         the last keyframe makes the return land on time and hold.
+      2. A shaft that turns a whole revolution reads as `0 -> 360` and the animator unwinds it
+         backwards unless the last keyframe carries `rotShortestDistance<Axis>`.
+    """
+    frames = sorted(
+        (kf for kf in anim.get("keyframes", []) if "frame" in kf),
+        key=lambda kf: kf["frame"],
+    )
+    if len(frames) < 2:
+        return  # a single held pose has no wrap to close
+
+    first, last = frames[0], frames[-1]
+    first_elems = first.get("elements") or {}
+    last_elems = last.setdefault("elements", collections.OrderedDict())
+
+    for element, pose in first_elems.items():
+        if element not in last_elems:
+            last_elems[element] = collections.OrderedDict(pose)
+            continue
+        for axis in ROT_AXES:
+            key = "rotation" + axis
+            start, end = pose.get(key), last_elems[element].get(key)
+            if start is None or end is None:
+                continue
+            if abs(end - start) >= UNWIND_DEGREES:
+                last_elems[element]["rotShortestDistance" + axis] = True
+
+
 def convert(src_name, dest_path):
     src = os.path.join(EDITABLE, src_name + ".json")
     with open(src, encoding="utf-8") as fh:
@@ -128,6 +170,8 @@ def convert(src_name, dest_path):
         if name in ONESHOT_CLIPS:
             continue  # runs once and stops; its END is the event, so leave the authored EaseOut alone
         anim["onAnimationEnd"] = "Hold" if name in HOLD_CLIPS else "Repeat"
+        if name not in HOLD_CLIPS:
+            close_loop(anim)
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path, "w", encoding="utf-8") as fh:
@@ -165,11 +209,90 @@ def check_all():
         print("Every texture key in assets/editable/shapes is mapped.")
 
 
+def geometry_of(el):
+    """An element's boxes, name and nesting - everything a merge must agree on, and nothing it need not.
+    UVs and texture keys are deliberately excluded: the same piece re-drawn against another atlas is the
+    same piece."""
+    return (
+        el.get("name"),
+        el.get("from"),
+        el.get("to"),
+        el.get("rotationOrigin"),
+        [geometry_of(c) for c in el.get("children") or []],
+    )
+
+
+def merge(dest_path, src_names):
+    """Convert several editables into ONE runtime shape, taking the union of their top-level elements.
+
+    A stock family's stages have to live in one file: a process route names a single `shape`, and the
+    renderer addresses a stage as one element inside it. The maintainer authors them across several
+    editables (the shingled bar's stages above the 2.0 gap are in items/smithed/, the flat ones below it
+    in items/rolled/), which is convenient to draw and cannot be shipped as-is.
+
+    Elements are deduplicated by name, first file wins - the two bar editables both draw `Beam` at the gap
+    they meet on, because it is where the two halves of that route join. A name clash between two
+    genuinely different shapes is an authoring mistake and is reported rather than silently resolved.
+
+    ⛔ The clash test compares GEOMETRY, not the element. The same piece re-drawn in a second file keeps
+    its box and gets new UVs (the author lays it out against a different atlas), so a byte comparison
+    calls every legitimate join a conflict.
+    """
+    merged = None
+    seen = {}
+    for name in src_names:
+        src = os.path.join(EDITABLE, name + ".json")
+        if not os.path.exists(src):
+            sys.exit("%s: no such editable (%s)" % (name, src))
+        with open(src, encoding="utf-8") as fh:
+            d = json.load(fh, object_pairs_hook=collections.OrderedDict)
+        d.pop("editor", None)
+        d.pop("textureSizes", None)
+        for key in list((d.get("textures") or {}).keys()):
+            if key in TEXTURES:
+                d["textures"][key] = TEXTURES[key]
+
+        # Taken before the accumulator is emptied: for the first file `d` IS `merged`, so clearing
+        # merged["elements"] would throw away the very list about to be walked.
+        elements = list(d.get("elements", []))
+        if merged is None:
+            merged = d
+            merged["elements"] = []
+        else:
+            merged.setdefault("textures", {}).update(d.get("textures") or {})
+
+        for el in elements:
+            el_name = el.get("name")
+            if el_name in seen:
+                if geometry_of(el) != geometry_of(seen[el_name]):
+                    sys.exit(
+                        "element '%s' is drawn at a different SIZE in %s than in the file it first "
+                        "appeared in; merging would silently pick one" % (el_name, name)
+                    )
+                continue
+            seen[el_name] = el
+            merged["elements"].append(el)
+
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, "w", encoding="utf-8") as fh:
+        json.dump(merged, fh, indent=1, ensure_ascii=False)
+        fh.write("\n")
+    print(
+        "%-38s -> %-46s elements=%-5d (merged %d)"
+        % ("+".join(src_names), dest_path, len(merged["elements"]), len(src_names))
+    )
+    return True
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     if args == ["--check"]:
         check_all()
         sys.exit(0)
+    if args and args[0] == "--merge":
+        if len(args) < 3:
+            sys.exit(__doc__)
+        sys.exit(0 if merge(args[1], args[2:]) else 1)
     if not args or len(args) % 2:
         sys.exit(__doc__)
     ok = all(convert(args[i], args[i + 1]) for i in range(0, len(args), 2))

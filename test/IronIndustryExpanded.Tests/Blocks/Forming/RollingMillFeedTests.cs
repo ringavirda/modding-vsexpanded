@@ -296,8 +296,8 @@ public class RollingMillFeedTests {
 
   #region Claiming a finished item
 
-  // A mill fitted with a set whose one rung names a finished item. The shipped ladders name no code today
-  // (every stage is a shear crop), so the claim is driven through a ladder authored here and handed to
+  // A mill fitted with a set whose one rung names a finished item. The shipped routes name no code today
+  // (every stage is a shear crop), so the claim is driven through a route authored here and handed to
   // this mill alone rather than written into the shared catalogue.
   private static (
     TestWorld World,
@@ -318,18 +318,18 @@ public class RollingMillFeedTests {
       )
     );
     Assert.True(mill.TryFitRollSet(new ItemStack(setItem), out _));
-    ReflectionHelpers.SetProperty(mill, "Ladders", ClaimingLadder(outputCode));
+    ReflectionHelpers.SetProperty(mill, "Routes", ClaimingRoute(outputCode));
 
     ItemStack stock = Piece(world);
     stock.Collectible.SetTemperature(world.World, stock, 1100f);
     return (world, mill, stock);
   }
 
-  // A one-rung bloom ladder whose single stage is a stopping point.
-  private static StageLadderRegistry ClaimingLadder(string outputCode) {
-    var registry = new StageLadderRegistry();
+  // A one-rung bloom route whose single stage is a stopping point.
+  private static ProcessRouteRegistry ClaimingRoute(string outputCode) {
+    var registry = new ProcessRouteRegistry();
     Assert.True(
-      StageLadder.TryParse(
+      ProcessRoute.TryParse(
         new Vintagestory.API.Datastructures.JsonObject(
           Newtonsoft.Json.Linq.JToken.Parse(
             $$"""
@@ -342,12 +342,12 @@ public class RollingMillFeedTests {
             """
           )
         ),
-        out StageLadder? ladder,
+        out ProcessRoute? route,
         out string? error
       ),
       error
     );
-    Assert.Empty(registry.Contribute(ladder!));
+    Assert.Empty(registry.Contribute(route!));
     return registry;
   }
 
@@ -471,10 +471,12 @@ public class RollingMillFeedTests {
   public void A_refused_feed_leaves_the_piece_and_the_mill_alone() {
     var (world, mill, stock) = Fitted();
 
-    // Straight to the narrowest gap: three rungs ahead, so far past delta_max.
+    // Straight to the narrowest gap the bar's flat branch has - a whole rung past the one it could take,
+    // so the round's half-draft is far beyond delta_max. (The branch ends at 2.0: a bar taken that far IS
+    // a beam, and rolling it on is the beam's own route.)
     Assert.Equal(
       FeedVerdict.WontBite,
-      mill.TryFeed(stock, gapIndex: 3, side: 0).Verdict
+      mill.TryFeed(stock, gapIndex: 1, side: 0).Verdict
     );
 
     Assert.False(mill.IsRolling);

@@ -11,13 +11,13 @@ namespace IronIndustryExpanded.BlockStructures.Forming;
 /// <para>
 /// It declares what the tooling itself decides - which roller family it is, which stock it will bite, how
 /// wide its barrel is and what torque it needs to turn - and nothing about what the metal becomes. The
-/// states the metal passes through are the stock family's stage ladder, and the pair of them is a
+/// states the metal passes through are the stock family's stage route, and the pair of them is a
 /// <see cref="MillSchedule"/>, so a set names no product and a new product needs no set edited. See
 /// docs/design/machines/rolling-mill.md and docs/design/mechanics/process-extension.md.
 /// </para>
 /// </summary>
 /// <param name="Schema">Schema version of the declaration, so a parser can read every shipped form.</param>
-/// <param name="Family">The roller family - <c>flat</c> or <c>grooved</c> in what we ship, and whatever a mod names in what it ships. Selects this set's branch of a stage ladder.</param>
+/// <param name="Family">The roller family - <c>flat</c> or <c>grooved</c> in what we ship, and whatever a mod names in what it ships. Selects this set's branch of a stage route.</param>
 /// <param name="Accepts">Stock forms this set will bite (e.g. <c>bloom</c>, <c>billet</c>, <c>slab</c>). Empty accepts nothing.</param>
 /// <param name="BarrelWidth">Usable width of the roll barrel. Stock wider than this cannot be taken in one bite and needs side-by-side passes.</param>
 /// <param name="MinTorque">Drive torque the stand needs before this set will turn at all. Tiers gate on torque, not roll material.</param>
@@ -49,8 +49,8 @@ public sealed record RollSetSpec(
   public bool OverhangsBarrel(float width) =>
     BarrelWidth > 0f && width > BarrelWidth;
 
-  /// <summary>Whether this set will bite <paramref name="form"/> at all. Independent of the stage ladder:
-  /// the ladder says which states the metal has, this says whether the tooling can take that stock at
+  /// <summary>Whether this set will bite <paramref name="form"/> at all. Independent of the stage route:
+  /// the route says which states the metal has, this says whether the tooling can take that stock at
   /// all - a narrow barrel refuses a slab whatever states the slab has.</summary>
   public bool AcceptsForm(string? form) =>
     form != null && Accepts.Contains(form);
@@ -77,7 +77,7 @@ public sealed record RollSetSpec(
     string family = node["family"].AsString("");
     if (string.IsNullOrWhiteSpace(family)) {
       error =
-        "missing 'family' (nothing selects the set's branch of a stage ladder without it)";
+        "missing 'family' (nothing selects the set's branch of a stage route without it)";
       return false;
     }
 

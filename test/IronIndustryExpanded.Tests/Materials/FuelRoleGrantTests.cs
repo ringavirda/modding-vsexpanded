@@ -209,6 +209,9 @@ public class FuelRoleGrantTests {
       ?? throw new InvalidOperationException($"no 'materials' array in {path}");
 
     List<string> fromAsset = shipped
+      // Mod-gated rows are excluded on both sides: they apply only when their mod is loaded, which is
+      // never headless, so the seed is right not to carry them and the loader is right to skip them.
+      .Where(def => string.IsNullOrEmpty(def.RequiresMod))
       .Select(Row)
       .OrderBy(r => r, StringComparer.Ordinal)
       .ToList();

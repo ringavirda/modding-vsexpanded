@@ -2,7 +2,10 @@
   "code": "stock-shingledbar",
   "class": "iiex.ItemStockPiece",
   "shape": {
-    "base": "iiex:forming/stock-shingledbar-30"
+    "base": "iiex:forming/shingledbar",
+    "selectiveElements": [
+      "ShingledBar1"
+    ]
   },
   "maxstacksize": 1,
   "materialDensity": 7800,

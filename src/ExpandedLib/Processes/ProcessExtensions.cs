@@ -15,37 +15,37 @@ namespace ExpandedLib.Processes;
 /// See docs/design/mechanics/process-extension.md.
 /// </para>
 /// </summary>
-/// <param name="Ladders">The sequence registry contributions land in.</param>
+/// <param name="Routes">The sequence registry contributions land in.</param>
 /// <param name="Jobs">The terminal registry contributions land in.</param>
 public sealed record ProcessExtensions(
-  StageLadderRegistry Ladders,
+  ProcessRouteRegistry Routes,
   ProcessJobRegistry Jobs
 ) {
   /// <summary>The process-wide surface - the registries the loaders fill and every machine reads.</summary>
   public static ProcessExtensions Shared { get; } =
-    new(StageLadderRegistry.Shared, ProcessJobRegistry.Shared);
+    new(ProcessRouteRegistry.Shared, ProcessJobRegistry.Shared);
 
   /// <summary>
-  /// Adds <paramref name="stages"/> to the ladder for <paramref name="family"/>, merging exactly as a
+  /// Adds <paramref name="stages"/> to the route for <paramref name="family"/>, merging exactly as a
   /// declared file does: an unclaimed (thickness, accepting family) pair is added, one already drawn the
   /// same way is a no-op, and one redrawn differently is returned as a conflict with the first standing.
   /// </summary>
   /// <returns>One human-readable message per clash; empty when the contribution was taken whole.</returns>
-  /// <exception cref="ArgumentException">The stages do not form a valid ladder - the same refusals a
+  /// <exception cref="ArgumentException">The stages do not form a valid route - the same refusals a
   /// declared one meets, so neither route can register something the other would reject.</exception>
   public IReadOnlyList<string> AddStages(
     string family,
     IEnumerable<ProcessStage> stages,
     string? shape = null
   ) {
-    var ladder = new StageLadder(
-      StageLadder.CurrentSchema,
+    var route = new ProcessRoute(
+      ProcessRoute.CurrentSchema,
       family,
       shape,
       [.. stages]
     );
-    Validate(ladder);
-    return Ladders.Contribute(ladder);
+    Validate(route);
+    return Routes.Contribute(route);
   }
 
   /// <summary>
@@ -70,15 +70,15 @@ public sealed record ProcessExtensions(
   // The parser owns the rules, so the code route re-states none of them: it builds the same declaration a
   // file would have held, runs it through the same TryParse, and throws on a refusal the caller could have
   // read in a log had they shipped JSON instead.
-  private static void Validate(StageLadder ladder) {
+  private static void Validate(ProcessRoute route) {
     if (
-      !StageLadder.TryParse(
+      !ProcessRoute.TryParse(
         ExJson.Of(
           new {
-            schema = ladder.Schema,
-            family = ladder.Family,
-            shape = ladder.Shape,
-            stages = ladder.Stages.Select(s => new {
+            schema = route.Schema,
+            family = route.Family,
+            shape = route.Shape,
+            stages = route.Stages.Select(s => new {
               thickness = s.Thickness,
               element = s.Element,
               acceptedBy = s.AcceptedBy,
@@ -92,7 +92,7 @@ public sealed record ProcessExtensions(
         out string? error
       )
     )
-      throw new ArgumentException(error, nameof(ladder));
+      throw new ArgumentException(error, nameof(route));
   }
 
   private static void Validate(ProcessJobSet set) {

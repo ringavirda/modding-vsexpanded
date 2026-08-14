@@ -2,7 +2,10 @@
   "code": "stock-shingledslab",
   "class": "iiex.ItemStockPiece",
   "shape": {
-    "base": "iiex:forming/stock-shingledslab-30"
+    "base": "iiex:forming/shingledslab",
+    "selectiveElements": [
+      "ShingledSlab1"
+    ]
   },
   "maxstacksize": 1,
   "materialDensity": 7800,

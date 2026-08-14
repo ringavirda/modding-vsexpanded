@@ -87,7 +87,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
       .SingleSelectionBox(0f, 0f, 0f, 1f, 0.9375f, 1f)
       .SingleCollisionBox(0f, 0f, 0f, 1f, 0.9375f, 1f)
       .TpHandTransform(-1.23, -0.91, -0.8, -2, 25, -78, 0.4)
-      .Drop("block", "slag-path-free");
+      .Drop("block", "iiex:slag-path-free");
 
   private static ExBlockDef Slab(string domain) =>
     PathTabs(
@@ -125,7 +125,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
           scale = 0.4,
         }
       )
-      .Drop("block", "slag-pathslab-free");
+      .Drop("block", "iiex:slag-pathslab-free");
 
   private static ExBlockDef Stairs(string domain) {
     const string free = "iiex:legacy/basic/stairs/stonepath-stairs-free";
@@ -244,6 +244,6 @@ public class SlagPathDefinitions : IExBlockDefProvider {
         }
       )
       .TpHandTransform(-1.23, -0.91, -0.8, -2, 25, -78, 0.4)
-      .Drop("block", "slag-pathstairs-up-north-free");
+      .Drop("block", "iiex:slag-pathstairs-up-north-free");
   }
 }

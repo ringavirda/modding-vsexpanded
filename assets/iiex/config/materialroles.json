@@ -5,9 +5,19 @@
     { "role": "fuel", "code": "game:charcoal", "value": 1 },
     { "role": "scrap", "code": "game:metalbit-iron" },
     { "role": "scrap", "code": "game:metalbit-steel" },
+    { "role": "scrap", "code": "iiex:metalbit-castiron" },
+    { "role": "scrap", "code": "iiex:metalbit-pigiron" },
     { "role": "scrap", "code": "iiex:pig" },
     { "role": "scrap", "code": "iiex:pigchunk" },
     { "role": "scrap", "code": "iiex:pigbit" },
-    { "role": "ironore", "pathPrefix": "crushed-iron" }
+    { "role": "ironore", "pathPrefix": "crushed-iron" },
+
+    { "role": "ironore", "code": "crushed-hematite", "requiresMod": "industrialstory" },
+    { "role": "ironore", "code": "crushed-magnetite", "requiresMod": "industrialstory" },
+    { "role": "ironore", "code": "roasted-crushed-iron", "requiresMod": "industrialstory" },
+
+    { "role": "ironore", "code": "crushed-ore-hematite", "requiresMod": "em" },
+    { "role": "ironore", "code": "crushed-ore-limonite", "requiresMod": "em" },
+    { "role": "ironore", "code": "crushed-ore-magnetite", "requiresMod": "em" }
   ]
 }

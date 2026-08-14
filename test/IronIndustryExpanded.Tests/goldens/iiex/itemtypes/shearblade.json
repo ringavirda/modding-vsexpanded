@@ -1,0 +1,43 @@
+{
+  "code": "shearblade",
+  "shape": {
+    "base": "iiex:item/shearblade"
+  },
+  "variantgroups": [
+    {
+      "code": "metal",
+      "states": [
+        "iron",
+        "steel"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "attributesByType": {
+    "*-iron": {
+      "machinetool": {
+        "schema": 1,
+        "tier": 1
+      }
+    },
+    "*-steel": {
+      "machinetool": {
+        "schema": 1,
+        "tier": 2
+      }
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/plate/iron"
+    }
+  }
+}

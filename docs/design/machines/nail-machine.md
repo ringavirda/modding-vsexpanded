@@ -1,5 +1,5 @@
 # Nail machine
-**Status** designed - art drawn but untracked and wired to nothing; no block, no BE, no recipe   **Mod** iiex (`IronIndustryExpanded`)
+**Status** designed - art drawn but untracked and wired to nothing; no block, no BE, no recipe. ★ **Its input landed 2026-08-14**: `iiex:nailplate` ships and is obtainable, claimed off the rod's flat 1.0 rung, so this bench is no longer blocked on the forming line   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the cut-nail bench: 1 `nailplate` → 4 `game:metalnailsandstrips`, and the fact that this route mints nothing against vanilla's own anvil rate;
@@ -168,16 +168,16 @@ Where a caller hooks in. To add a bench of this family: `BlockNetworkNode` with 
 
 ## Gotchas
 
-- **`nailplate` does not exist.** Neither does any item that carries a `stockForm` on its stack - `StockItemDefinitions.cs:45` writes `stockForm` as a collectible attribute, while `WorkPiece.FromStack` reads the per-stack tree (`WorkPiece.cs:162-180`), so a fresh piece deserialises to `null` and `MillFeed.Decide` returns `WrongForm` (`MillFeed.cs:107-108`). That is blocker B3 seen from the item side, and the nail line sits downstream of it.
-- **The `flat` roll set cannot make the plate today.** Its accepted forms are `["bloom", "billet"]` (`RollSetItemDefinitions.cs:64`) and its outputs name `iiex:rolledplate-iron` / `iiex:rolledsheet-iron` (`:66`), items that do not exist and that the design rejects in favour of rolling into vanilla codes.
-- **Nails come from PLATE, never from rod.** Rod-nails are the 1870s wire nail - a different machine and far out of period. The rod fork goes to the [heading machine](heading-machine.md) instead.
+- ~~**`nailplate` does not exist.**~~ **Stale.** It ships as of B3c (`RolledItemDefinitions`, 2026-08-14), and the `stockForm` half went with B3 on 2026-08-11: `WorkPiece.FromStack` falls back to the collectible attribute when the stack tree carries none, so a fresh piece off the grid is a work piece. And the rod fork landed the same day: a player feeds `game:rod-iron` at the deck, it enters as `iiex:stock-rod`, and the flat 1.0 rung claims `iiex:nailplate` with no crop. **The nail line's input now exists and is obtainable**; what is left is this bench itself.
+- ~~**The `flat` roll set cannot make the plate today.**~~ **Stale.** The set no longer names outputs at all - a stopping point is a stage on the stock's ladder ([process-extension](../mechanics/process-extension.md)) - and its accepted forms are `["shingledbar", "castbillet"]`. Plate is the flat 1.0 crop of either, into vanilla `game:metalplate-iron`.
+- **Nails come from PLATE, never from rod.** Rod-nails are the 1870s wire nail - a different machine and far out of period. The rod fork's other branch goes to the rivet bench instead ([heading machine](heading-machine.md), whose premise the 2026-08-15 ruling contests).
 - **No gearing means no ratio.** The mpenergy network has exactly one ratio device, the transmission, and it is a separate block whose ratios are a `switch` on the variant (`BlockEntityTransmission.cs:59-64`). Do not smuggle a ratio into this bench because the drawing has a wheel on a shaft - the drawing has no gear train, which is the distinction from the heading machine's spur gear.
 - **A running clip must repeat.** With no clip active the animator drops the suppressed mesh back to the static shape; the chimney cap documents the trap in-source (`BlockEntityPuddlingChimneyCap.cs:31-33`).
 - **`SpinSpeed` assumes one revolution per clip** (`EnergyAnim.cs:16-22`). A wheel clip authored as two revolutions animates at half the true speed with no error anywhere.
 - **A run with no storage node has no state.** `MpEnergyNetwork.OnTick` nulls it at `Σ I ≤ 0` (`:81-89`) - a bench on a bare bridge never runs.
 - **Do not let the machine mint metal.** 4 per plate is the ceiling; any "efficiency" bonus breaks the anchor and invalidates the no-minting argument the forming line is balanced on.
 - **The shape's texture map contains an absolute Windows path.** It will resolve to nothing in game and fail silently as a missing texture.
-- **Nails come from plate here; the rod fork is the [heading machine](heading-machine.md)'s input** - do not conflate the two benches' inputs.
+- **Nails come from plate here; the 25 u `rivetrod` is the other bench's input** - do not conflate the two.
 
 ---
 

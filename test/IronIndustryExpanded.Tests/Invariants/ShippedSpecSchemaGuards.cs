@@ -60,17 +60,17 @@ public class ShippedSpecSchemaGuards {
 
   [Fact]
   public void Every_shipped_stage_catalogue_file_declares_its_schema() {
-    // The ladders are config assets rather than item attributes, so they are scanned off the source tree
+    // The routes are config assets rather than item attributes, so they are scanned off the source tree
     // instead of off an emitted def - but they are the same contract and the same template.
     string[] silent =
     [
-      .. StageLadderSeeds
+      .. ProcessRouteSeeds
         .Files()
         .Where(f => JToken.Parse(f.Json)[SpecSchema.Key] == null)
         .Select(f => f.Source),
     ];
 
-    Assert.NotEmpty(StageLadderSeeds.Files());
+    Assert.NotEmpty(ProcessRouteSeeds.Files());
     Assert.True(
       silent.Length == 0,
       "These shipped stage catalogues declare no schema:\n    "

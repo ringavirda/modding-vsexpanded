@@ -7,6 +7,7 @@ using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Definitions;
 
@@ -805,12 +806,32 @@ public sealed class ExBlockDef : IExDef {
         }
         entry["behaviors"] = behaviors;
       }
+      if (cell.CollisionBoxes is { Count: > 0 } boxes)
+        // One box writes `collisionBox`, several `collisionBoxes` - both are what StructureFillers.ReadBoxes
+        // accepts, and the singular form keeps the common slab cell readable in a golden.
+        entry[boxes.Count == 1 ? "collisionBox" : "collisionBoxes"] =
+          boxes.Count == 1
+            ? Corners(boxes[0])
+            : new JArray(boxes.Select(Corners));
       if (cell.AllowAttach)
         entry["allowAttach"] = true;
       array.Add(entry);
     }
     return array;
   }
+
+  // Just the two corners, in vanilla's own lowercase spelling. Serializing the Cuboidf itself writes its
+  // twenty-odd computed properties (Width, MidX, Center, ...), all of which the reader ignores and every
+  // one of which would land in a golden.
+  private static JObject Corners(Cuboidf box) =>
+    new() {
+      ["x1"] = box.X1,
+      ["y1"] = box.Y1,
+      ["z1"] = box.Z1,
+      ["x2"] = box.X2,
+      ["y2"] = box.Y2,
+      ["z2"] = box.Z2,
+    };
 
   /// <summary>Appends the exlib right-click construction behavior (<c>ExRightClickConstructable</c>), with
   /// its staged material/shape table authored through a typed builder.</summary>

@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "machine": "shear",
+  "jobs": [
+    {
+      "input": "iiex:caststock-billet",
+      "stage": 1.0,
+      "family": "flat",
+      "output": "game:metalplate-iron",
+      "count": 3,
+      "minTorque": 0.25,
+      "minTier": 2,
+      "seconds": 2
+    },
+    {
+      "input": "iiex:caststock-bloom",
+      "stage": 2.0,
+      "family": "flatwide",
+      "output": "iiex:blank",
+      "count": 5,
+      "minTorque": 0.3,
+      "minTier": 2,
+      "seconds": 3
+    },
+    {
+      "input": "iiex:caststock-bloom",
+      "stage": 1.0,
+      "family": "flatwide",
+      "output": "iiex:skelp",
+      "count": 5,
+      "minTorque": 0.3,
+      "minTier": 2,
+      "seconds": 3
+    },
+    {
+      "input": "iiex:caststock-slab",
+      "stage": 1.0,
+      "family": "flatwide",
+      "output": "iiex:boilerplate",
+      "count": 5,
+      "minTorque": 0.3,
+      "minTier": 2,
+      "seconds": 3
+    }
+  ]
+}

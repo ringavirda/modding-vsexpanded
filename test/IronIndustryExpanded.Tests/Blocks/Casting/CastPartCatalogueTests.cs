@@ -100,7 +100,7 @@ public class CastPartCatalogueTests {
   #region Long-cell patterns
 
   [Fact]
-  public void The_long_cell_pattern_set_is_exactly_the_cast_stock_ladder() {
+  public void The_long_cell_pattern_set_is_exactly_the_cast_stock_route() {
     // Derived from CastStockItemDefinitions.Forms so the two cannot drift: a cast stock cannot be added
     // without its pattern, or a pattern without its stock. Pattern names are plural where the impression
     // yields more than one piece (three billets, two blooms, one slab) while the item stays singular

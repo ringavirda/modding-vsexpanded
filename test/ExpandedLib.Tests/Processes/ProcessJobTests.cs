@@ -7,7 +7,7 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// The terminal registry: one input, one job, one output, and a count. The count is what makes it a shape
-/// of its own rather than a one-rung ladder - the shear crops a rod into four rods, so a job that could
+/// of its own rather than a one-rung route - the shear crops a rod into four rods, so a job that could
 /// name only one output could not express the crop table at all.
 /// See docs/design/mechanics/process-extension.md.
 /// </summary>
@@ -53,7 +53,7 @@ public class ProcessJobTests {
 
   [Fact]
   public void A_job_on_a_whole_item_needs_no_stage() {
-    // The nail bench eats a whole nail plate; only the shear crops a piece part way down a ladder.
+    // The nail bench eats a whole nail plate; only the shear crops a piece part way down a route.
     ProcessJob whole = Shear().Jobs[1];
 
     Assert.Null(whole.Stage);

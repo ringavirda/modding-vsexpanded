@@ -32,7 +32,7 @@
   "attributes": {
     "shatteredStack": {
       "type": "item",
-      "code": "game:metalbit-iron"
+      "code": "iiex:metalbit-pigiron"
     }
   },
   "behaviors": [

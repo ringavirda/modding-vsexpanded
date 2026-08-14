@@ -13,12 +13,12 @@ namespace ExpandedLib.Tests;
 /// </summary>
 public class ProcessExtensionsTests {
   private static ProcessExtensions Fresh() =>
-    new(new StageLadderRegistry(), new ProcessJobRegistry());
+    new(new ProcessRouteRegistry(), new ProcessJobRegistry());
 
   #region Sequences
 
   [Fact]
-  public void A_ladder_built_in_code_lands_where_a_declared_one_would() {
+  public void A_route_built_in_code_lands_where_a_declared_one_would() {
     ProcessExtensions ex = Fresh();
 
     Assert.Empty(
@@ -32,19 +32,19 @@ public class ProcessExtensionsTests {
       )
     );
 
-    StageLadder ladder = ex.Ladders.Ladder("bronzebar")!;
-    Assert.Equal("othermod:item/bronze-bar", ladder.Shape);
+    ProcessRoute route = ex.Routes.Route("bronzebar")!;
+    Assert.Equal("othermod:item/bronze-bar", route.Shape);
     Assert.Equal(
       ["Bronze200", "Bronze100"],
-      ladder.AcceptedBy("flat").Select(s => s.Element)
+      route.RungsFor("flat").Select(s => s.Element)
     );
   }
 
   [Fact]
-  public void Code_and_json_contribute_to_one_ladder() {
+  public void Code_and_json_contribute_to_one_route() {
     // The two routes are the same registry, so a mod may add a branch to a family declared in JSON.
     ProcessExtensions ex = Fresh();
-    StageLadderLoader.Load(
+    ProcessRouteLoader.Load(
       [
         (
           "iiex:bloom.json",
@@ -56,14 +56,14 @@ public class ProcessExtensionsTests {
           """
         ),
       ],
-      ex.Ladders
+      ex.Routes
     );
 
     ex.AddStages("bloom", [new ProcessStage(2.0f, null, ["serrated"], null)]);
 
     Assert.Equal(
       ["grooved", "serrated"],
-      ex.Ladders.Ladder("bloom")!.StageAt(2.0f, "serrated")!.AcceptedBy
+      ex.Routes.Route("bloom")!.StageAt(2.0f, "serrated")!.AcceptedBy
     );
   }
 
@@ -80,12 +80,12 @@ public class ProcessExtensionsTests {
     Assert.Single(conflicts);
     Assert.Equal(
       "Mine",
-      ex.Ladders.Ladder("bloom")!.StageAt(2.0f, "grooved")!.Element
+      ex.Routes.Route("bloom")!.StageAt(2.0f, "grooved")!.Element
     );
   }
 
   [Fact]
-  public void A_malformed_ladder_is_refused_by_the_same_rules_as_a_declared_one() {
+  public void A_malformed_route_is_refused_by_the_same_rules_as_a_declared_one() {
     // Not a second validation path: the code route builds a declaration and hands it to the same parser,
     // so a stage nothing accepts is refused here too.
     ProcessExtensions ex = Fresh();
@@ -142,7 +142,7 @@ public class ProcessExtensionsTests {
   public void The_shared_surface_is_the_one_the_loaders_fill() {
     // A mod calling the API and a mod shipping JSON must reach the same registries, or a C# contributor
     // would be invisible to every machine.
-    Assert.Same(StageLadderRegistry.Shared, ProcessExtensions.Shared.Ladders);
+    Assert.Same(ProcessRouteRegistry.Shared, ProcessExtensions.Shared.Routes);
     Assert.Same(ProcessJobRegistry.Shared, ProcessExtensions.Shared.Jobs);
   }
 }

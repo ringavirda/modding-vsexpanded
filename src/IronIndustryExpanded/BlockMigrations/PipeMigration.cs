@@ -24,7 +24,8 @@ public class PipeMigration : IBlockCodeMigration {
   /// domains below: both halves of a remap pair are historical facts once written.</summary>
   private const string Domain = "iiex";
 
-  public string Name => "Pipe tiers: material axis dropped, tier added to the code";
+  public string Name =>
+    "Pipe tiers: material axis dropped, tier added to the code";
 
   private static readonly HashSet<string> SegmentTypes =
   [
@@ -69,7 +70,11 @@ public class PipeMigration : IBlockCodeMigration {
       string? tier = block.Variant["tier"];
       // The domain still scopes the walk to our own blocks - hpex's rolled tier rides the same
       // registry and must not be claimed here. What it no longer does is pick the TIER.
-      if (block.Code.Domain != Domain || type == null || !path.StartsWith("pipe-"))
+      if (
+        block.Code.Domain != Domain
+        || type == null
+        || !path.StartsWith("pipe-")
+      )
         continue;
 
       // Current plated segments: old material-suffixed ppex codes and the older smex gaspipe. ppex

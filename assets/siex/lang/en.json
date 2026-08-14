@@ -96,6 +96,7 @@
   "rcc-ingredient-metalplate": "Iron or Steel Plate",
   "rcc-ingredient-rod": "Iron or Steel Rod",
   "rcc-ingredient-nailsandstrips": "Iron or Steel Nails & Strips",
+  "rcc-ingredient-pipe": "Cast Piping (Straight)",
   "structure-incomplete": "Structure incomplete!",
   "structure-incomplete-count": "Structure is not complete. {0} blocks are missing or incorrect.",
   "bessemer-status-idle": "Idle",

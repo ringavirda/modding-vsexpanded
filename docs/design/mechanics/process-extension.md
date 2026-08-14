@@ -1,7 +1,7 @@
 # Process Extension — how a machine learns what it can make
 
-**Status** settled 2026-08-12; the sequence half is **built** — `StageLadder`, `StageLadderRegistry`,
-`StageLadderLoader`, `SpecSchema`, `ProcessItemEmitter` and `ProcessItemRenames` in exlib, `MillSchedule`
+**Status** settled 2026-08-12; the sequence half is **built** — `ProcessRoute`, `ProcessRouteRegistry`,
+`ProcessRouteLoader`, `SpecSchema`, `ProcessItemEmitter` and `ProcessItemRenames` in exlib, `MillSchedule`
 and the shipped shingledbar/shingledslab catalogues in iiex. The rule and the two registry shapes are fixed; the schemas
 below are the contract a third-party mod writes against.
 **Mod** exlib (the contract and the emitter) · every mod (every registry)
@@ -116,7 +116,7 @@ nail machine, rivet machine, sand casting, the design table — is terminal.
 
 | Machine | Shape | Registry declares |
 |---|---|---|
-| rolling mill | sequence | roller families, the stage ladder, which family accepts each stage |
+| rolling mill | sequence | roller families, the process route, which family accepts each stage |
 | bending roller | sequence | curvature steps |
 | shear | terminal | the crop table: input, output, count |
 | drill · lathe · shaper · planer | terminal | the die's job ([machining-line](machining-line.md)) |
@@ -152,12 +152,12 @@ has, and no ladder can carry that. The two facts are independent, so neither is 
 
 ---
 
-## Sequence: the stage ladder
+## Sequence: the process route
 
 A stage declares its **thickness**, the **element** that draws it, which **machine families accept**
 it, and — only if it is a stopping point — the **code** of the item it becomes.
 
-It is declared as a **config asset**, at `assets/<domain>/config/stageladders/<anything>.json`. One file per
+It is declared as a **config asset**, at `assets/<domain>/config/processroutes/<anything>.json`. One file per
 stock family is the convention and nothing enforces it — the registry merges whatever arrives, so two mods
 may both contribute to one family.
 

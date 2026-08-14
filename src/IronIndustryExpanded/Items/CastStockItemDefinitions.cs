@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
 using IronIndustryExpanded.BlockStructures.Casting;
+using IronIndustryExpanded.BlockStructures.Forming.Items;
 
 namespace IronIndustryExpanded.Items;
 
@@ -48,6 +49,15 @@ public class CastStockItemDefinitions : IExItemDefProvider {
   public static int UnitsOf(string form) =>
     Forms.FirstOrDefault(f => f.Form == form).Units;
 
+  /// <summary>
+  /// The <see cref="BlockStructures.Forming.StockForm"/> a piece of <paramref name="form"/> is rolled
+  /// as. Composed rather than listed because the item code already spells it: <c>caststock-billet</c>
+  /// read without its <c>stock-</c> segment is <c>castbillet</c>, which is the form siex registers and
+  /// the name its stage art is filed under. It must never be the bare variant - <c>bloom</c> is the
+  /// shingled bar's former name, so a cast bloom declaring it would be rolled as a 400 u wrought bar.
+  /// </summary>
+  public static string FormOf(string form) => "cast" + form;
+
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [Stock(domain)];
 
@@ -58,11 +68,21 @@ public class CastStockItemDefinitions : IExItemDefProvider {
     var byType = new Dictionary<string, object>();
     foreach ((string form, int units, _) in Forms) {
       shapeByType["*-" + form] = new { @base = $"iiex:item/cast{form}" };
-      byType["*-" + form] = new { materialUnits = units };
+      // `stockForm` is what makes the piece a work piece: WorkPiece.FromStack falls back to the itemtype
+      // attribute when a fresh stack carries no state of its own. The form it names is siex's, so on an
+      // iiex-only install it resolves to nothing and the mill refuses the piece - which is the tier gate,
+      // not a defect. See docs/design/machines/steel-roll-sets.md.
+      byType["*-" + form] = new {
+        materialUnits = units,
+        stockForm = FormOf(form),
+      };
     }
 
     return ExItemDef
       .Create(domain, "caststock")
+      // Composes its own mesh per state, as the shingled stock does, so a part-rolled billet reads as
+      // part-rolled in the hand rather than as the piece that left the long cell.
+      .Class<ItemStockPiece>()
       .Shape("iiex:item/castbillet")
       .Raw("shapeByType", shapeByType)
       .VariantGroup("form", [.. Forms.Select(f => f.Form)])

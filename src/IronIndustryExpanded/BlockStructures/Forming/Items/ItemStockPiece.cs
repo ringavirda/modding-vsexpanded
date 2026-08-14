@@ -11,7 +11,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming.Items;
 /// <summary>
 /// A piece of rolling stock, drawn at the gauge it has been worked to, so its state is legible in the hand
 /// between passes. Two routes: the stage the family's shape file draws, and - for the half-step a round
-/// lands, which no ladder declares - the form's base shape scaled from the same numbers the simulation uses
+/// lands, which no route declares - the form's base shape scaled from the same numbers the simulation uses
 /// (<see cref="StockMesh.ScaleOf"/>), which costs one shape per form instead of one per state. Meshes are
 /// cached by geometry alone (<see cref="StockMesh.CacheKey"/>), a handful of entries per form, not per stack.
 /// </summary>
@@ -47,14 +47,14 @@ public class ItemStockPiece : Item {
   }
 
   /// <summary>
-  /// The mesh for a worked piece: the stage the family's shape file draws it at when the ladder has one,
+  /// The mesh for a worked piece: the stage the family's shape file draws it at when the route has one,
   /// and the composed mesh otherwise. Drawn art wins because it carries detail the scale cannot - a groove
   /// is not a thinner rectangle - while the composition covers every gauge nobody has drawn.
   /// </summary>
   private MultiTextureMeshRef? Build(ICoreClientAPI capi, WorkPiece piece) {
-    StageLadder? ladder = StageLadderRegistry.Shared.Ladder(piece.Form.Name);
-    return StockMesh.ElementFor(ladder, piece) is { } element
-      ? Drawn(capi, ladder!.Shape!, element)
+    ProcessRoute? route = ProcessRouteRegistry.Shared.Route(piece.Form.Name);
+    return StockMesh.ElementFor(route, piece) is { } element
+      ? Drawn(capi, route!.Shape!, element)
       : Compose(capi, piece);
   }
 

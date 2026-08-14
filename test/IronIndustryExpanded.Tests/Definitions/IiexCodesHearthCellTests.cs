@@ -160,7 +160,7 @@ public class IiexCodesHearthCellTests {
 
   /// <summary>
   /// <c>*:</c> admits the path from any mod, which is accepted for these cells. <c>VanillaCodes</c>'
-  /// masonry ladder stays domainless for the opposite reason: those alternations name vanilla's own
+  /// masonry route stays domainless for the opposite reason: those alternations name vanilla's own
   /// bricks and must not take a modded lookalike.
   /// </summary>
   [Fact]

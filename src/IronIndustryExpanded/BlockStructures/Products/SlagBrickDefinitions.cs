@@ -120,7 +120,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
       .CreativeTab("general", "*-down-free")
       .CreativeTab("construction", "*-down-free")
       .CreativeTab("iiex", "*-down-free")
-      .Drop("block", "slag-brickslab-down-free")
+      .Drop("block", "iiex:slag-brickslab-down-free")
       .Raw(
         "tpHandTransform",
         new {
@@ -286,7 +286,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
       .CreativeTab("general", "*-up-north-free")
       .CreativeTab("construction", "*-up-north-free")
       .CreativeTab("iiex", "*-up-north-free")
-      .Drop("block", "slag-brickstairs-up-north-free")
+      .Drop("block", "iiex:slag-brickstairs-up-north-free")
       .TpHandTransform(-1.23, -0.91, -0.8, -2, 25, -78, 0.4);
   }
 }

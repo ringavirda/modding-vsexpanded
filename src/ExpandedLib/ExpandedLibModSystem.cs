@@ -60,8 +60,8 @@ public class ExpandedLibModSystem : ModSystem {
 
     // The merged process-stage catalogue. Read again here rather than only at inject time so the
     // registry the machines consult is the post-patch one; the emitter's earlier read cannot be.
-    foreach (string error in Processes.StageLadderLoader.Load(api))
-      api.Logger.Error("[exlib] invalid stage ladder - " + error);
+    foreach (string error in Processes.ProcessRouteLoader.Load(api))
+      api.Logger.Error("[exlib] invalid stage route - " + error);
 
     // The terminal half of the same contract: every machine's job table.
     foreach (string error in Processes.ProcessJobLoader.Load(api))

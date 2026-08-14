@@ -1,0 +1,27 @@
+{
+  "code": "heavyplate",
+  "shape": {
+    "base": "iiex:forming/heavyplate",
+    "selectiveElements": [
+      "HeavyPlate1"
+    ]
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/sheet-plain/iron5"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7850,
+  "attributes": {
+    "materialUnits": 600
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "code": "boilerplate",
+  "shape": {
+    "base": "game:item/ingot"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/sheet-plain/iron5"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7850,
+  "attributes": {
+    "materialUnits": 600
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

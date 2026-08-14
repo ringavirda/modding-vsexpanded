@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "family": "heavyplate",
+  "shape": "iiex:forming/heavyplate",
+  "stages": [
+    {
+      "thickness": 1.75,
+      "acceptedBy": ["flatwide"],
+      "element": "Flattened175",
+      "halfStep": true
+    },
+    { "thickness": 1.5, "acceptedBy": ["flatwide"], "element": "Flattened150" },
+    {
+      "thickness": 1.25,
+      "acceptedBy": ["flatwide"],
+      "element": "Flattened125",
+      "halfStep": true
+    },
+    {
+      "thickness": 1.0,
+      "acceptedBy": ["flatwide"],
+      "element": "Boilerplate",
+      "code": "iiex:boilerplate",
+      "generate": false
+    }
+  ]
+}

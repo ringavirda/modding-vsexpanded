@@ -128,8 +128,7 @@ public class ModinfoTests {
         continue;
 
       string id = m.Groups["id"].Value;
-      id = id switch
-      {
+      id = id switch {
         "ppex" => "iiex", // renamed 2026-07; IiexRenameMigration carries the codes across
         _ => id,
       };

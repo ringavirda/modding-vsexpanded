@@ -92,7 +92,7 @@ public static class MillFeed {
   /// <para>
   /// The draft is this round's, not the gap's: a gap is taken in two rounds, so what the rolls have to bite
   /// is half the reduction at a time. That is what makes a schedule walkable at all - the whole reduction
-  /// would be past <c>δ_max</c> at every gap the settled ladder declares.
+  /// would be past <c>δ_max</c> at every gap the settled route declares.
   /// </para>
   /// <para>
   /// <paramref name="set"/> is taken alongside the schedule only to tell a bare stand from a fitted one

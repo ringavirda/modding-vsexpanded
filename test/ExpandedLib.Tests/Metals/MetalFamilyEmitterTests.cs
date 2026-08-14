@@ -69,13 +69,17 @@ public class MetalFamilyEmitterTests {
   }
 
   [Fact]
-  public void Pig_iron_emits_only_the_ingot_feedstock() {
+  public void Pig_iron_emits_its_ingot_and_the_bits_it_pays_out_in() {
     List<ExItemDef> defs = Emit(Shipped("iiex", "pigiron"));
 
-    // A feedstock: the blast furnace's cast target and nothing else (no plate/rod/nails, no tools).
-    ExItemDef only = Assert.Single(defs);
-    Assert.Equal("ingot-pigiron", only.Code);
-    Assert.Equal("iiex", only.Domain);
+    // A feedstock: the blast furnace's cast target, plus the bits a frozen heat sheds - and nothing
+    // else (no plate/rod/nails, no tools). The bits form is what stops pig iron paying out in vanilla
+    // iron, which smelts to a plain ingot and skips puddling.
+    Assert.Equal(
+      new[] { "ingot-pigiron", "metalbit-pigiron" },
+      defs.Select(d => d.Code).Order()
+    );
+    Assert.All(defs, d => Assert.Equal("iiex", d.Domain));
   }
 
   [Fact]
@@ -344,14 +348,14 @@ public class MetalFamilyEmitterTests {
   #region Wiring: scrap, smelt-back, domain
 
   [Fact]
-  public void The_ingot_sheds_the_metals_shared_scrap_on_shatter() {
-    // Cast iron's SolidDrop is the shared vanilla bit, so a shattered mold yields what MoltenChisel
-    // recovers.
+  public void The_ingot_sheds_the_metals_own_scrap_on_shatter() {
+    // A shattered mold yields exactly what MoltenChisel recovers - the metal's own bit since
+    // 2026-08-15, where it used to be the shared vanilla one.
     ExItemDef ingot = Emit(Shipped("iiex", "castiron"))
       .Single(d => d.Code == "ingot-castiron");
 
     Assert.Equal(
-      "game:metalbit-iron",
+      "iiex:metalbit-castiron",
       (string?)ingot.ToJson()["attributes"]!["shatteredStack"]!["code"]
     );
   }

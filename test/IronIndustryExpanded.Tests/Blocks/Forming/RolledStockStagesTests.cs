@@ -1,153 +1,159 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ExpandedLib.Processes;
+using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using Newtonsoft.Json.Linq;
+using Vintagestory.API.Datastructures;
 using Xunit;
 
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// The staged stock shapes are generated from the two authored bases (shingled bloom and slab) by
-/// <c>scripts/generate-rolled-stock.py</c>, one per gap in the roll schedule. Being derived, they can drift
-/// from the schedule they illustrate, so all three dimensions are checked against it: thickness and width are
-/// what the mechanics read, and length follows from volume conservation off the actual (possibly capped)
-/// width. See docs/design/items/stock.md.
+/// Stock art against the simulation that reads it. There are two kinds and one model: the per-form BASE
+/// shape an item is drawn at and the composed mesh is scaled from, and the per-stage elements a process
+/// route names. Both have to agree with <see cref="StockForm"/>, or a piece renders at a gauge it does not
+/// roll at. See docs/design/items/stock.md.
 /// </summary>
 public class RolledStockStagesTests {
-  private const string ShapeDir = "../../../../../assets/iiex/shapes/forming";
+  private static string ShapeDir =>
+    Path.Combine(DefinitionGoldens.RepoRoot(), "assets", "iiex", "shapes");
 
-  private static readonly float[] Gaps = [3f, 2f, 1.5f, 1f, 0.5f];
+  private static string RouteDir =>
+    Path.Combine(
+      DefinitionGoldens.RepoRoot(),
+      "assets",
+      "iiex",
+      "config",
+      "processroutes"
+    );
 
-  private static string StagePath(string form, float thickness) =>
-    Path.Combine(ShapeDir, $"stock-{form}-{(int)(thickness * 10)}.json");
+  private static string ShapePath(StockForm form) =>
+    Path.Combine(ShapeDir, form.Shape!.Replace("iiex:", "") + ".json");
 
-  private static (float Width, float Thickness, float Length) Measure(
-    string path
-  ) {
-    JObject shape = JObject.Parse(File.ReadAllText(path));
-    var xs = new List<float>();
-    var ys = new List<float>();
-    var zs = new List<float>();
-    foreach (JToken el in shape["elements"]!)
-      foreach (string key in new[] { "from", "to" }) {
-        xs.Add((float)el[key]![0]!);
-        ys.Add((float)el[key]![1]!);
-        zs.Add((float)el[key]![2]!);
-      }
-    return (xs.Max() - xs.Min(), ys.Max() - ys.Min(), zs.Max() - zs.Min());
+  public static TheoryData<string> Forms() {
+    var data = new TheoryData<string>();
+    foreach (string name in StockForm.All.Keys)
+      data.Add(name);
+    return data;
   }
 
-  public static TheoryData<string, float> Stages() {
-    var data = new TheoryData<string, float>();
-    foreach (string form in StockForm.All.Keys)
-      foreach (float thickness in Gaps)
-        data.Add(form, thickness);
+  private static StockForm Form(string name) => StockForm.All[name];
+
+  #region The base shape an item is drawn at
+
+  [Theory]
+  [MemberData(nameof(Forms))]
+  public void Every_form_ships_the_base_element_its_item_points_at(string name) {
+    // StockItemDefinitions renders exactly this element, and ItemStockPiece scales it for every gauge no
+    // route draws - so a form without it is an item with no art and no composed mesh either.
+    StockForm form = Form(name);
+    Assert.NotNull(form.Shape);
+    Assert.NotNull(form.BaseElement);
+    Assert.True(File.Exists(ShapePath(form)), $"missing {form.Shape}");
+
+    // Throws with the element named if it is not in the file, which is the whole check.
+    ShapeExtents.Of(ShapePath(form), form.BaseElement);
+  }
+
+  [Theory]
+  [MemberData(nameof(Forms))]
+  public void A_base_shape_is_drawn_at_the_section_its_form_declares(
+    string name
+  ) {
+    StockForm form = Form(name);
+    (float width, float thickness, float length) = ShapeExtents.Of(
+      ShapePath(form),
+      form.BaseElement
+    );
+
+    // Absolute, against the declaration - not against another stage. A relative check cannot see a whole
+    // family drawn short, which is how both shingled ladders once shipped two voxels under.
+    Assert.Equal(form.BaseWidth, width, 1);
+    Assert.Equal(form.BaseThickness, thickness, 2);
+    Assert.Equal(form.BaseLength, length, 1);
+  }
+
+  #endregion
+
+  #region The stages a route draws
+
+  /// <summary>Every (form, stage, element) a shipped route draws on a flat family.</summary>
+  public static TheoryData<string, float, string> DrawnStages() {
+    var data = new TheoryData<string, float, string>();
+    foreach (ProcessRoute route in Routes()) {
+      if (route.Shape == null || !StockForm.All.ContainsKey(route.Family))
+        continue;
+
+      foreach (ProcessStage stage in route.Stages) {
+        // Flat families only. A grooved pass constrains the spread instead of letting it run sideways, so
+        // its art is drawn square while the form spreads - one exponent per form cannot say both, and
+        // asserting the model over grooved art would assert something the design does not claim.
+        if (
+          stage.Element == null
+          || !stage.AcceptedBy.Any(f =>
+            f.StartsWith("flat", System.StringComparison.OrdinalIgnoreCase)
+          )
+        )
+          continue;
+        data.Add(route.Family, stage.Thickness, stage.Element);
+      }
+    }
     return data;
   }
 
   [Theory]
-  [MemberData(nameof(Stages))]
-  public void Every_stage_shape_exists(string form, float thickness) {
-    Assert.True(
-      File.Exists(StagePath(form, thickness)),
-      $"missing stage shape for {form} at t={thickness}"
-    );
-  }
-
-  [Theory]
-  [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_thick_as_its_gap(string form, float thickness) {
-    Assert.Equal(thickness, Measure(StagePath(form, thickness)).Thickness, 2);
-  }
-
-  [Theory]
-  [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_wide_as_the_spread_model_says(
-    string form,
-    float thickness
+  [MemberData(nameof(DrawnStages))]
+  public void A_drawn_stage_is_the_width_the_spread_model_gives_it(
+    string formName,
+    float thickness,
+    string element
   ) {
-    // Width decides whether the piece overhangs the barrel, and so how many passes the gap costs.
-    Assert.Equal(
-      StockForm.All[form].WidthAt(thickness),
-      Measure(StagePath(form, thickness)).Width,
-      2
+    // Within a tenth, not to the decimal. The art is authored to settled product sections and the model
+    // approximates them: a beam is drawn 4.5 wide because that is what a beam is, where the exponent says
+    // 4.23. The widest shipped disagreement is 6%, so 10% passes every authored stage and still catches a
+    // form whose exponent is simply wrong - the shingled slab drawn at e = 1 against a declared 0.463 was
+    // 24% out.
+    StockForm form = Form(formName);
+    float model = form.WidthAt(thickness);
+    float drawn = Measure(form, element).Width;
+
+    Assert.True(
+      System.MathF.Abs(drawn - model) <= model * 0.1f,
+      $"{formName} {element}: drawn {drawn} wide against the model's {model}"
     );
   }
 
   [Theory]
-  [MemberData(nameof(Stages))]
-  public void A_stage_shape_is_as_long_as_conserving_its_volume_demands(
-    string form,
-    float thickness
-  ) {
-    StockForm stock = StockForm.All[form];
-    float baseLength = Measure(StagePath(form, stock.BaseThickness)).Length;
-    float expected =
-      baseLength
-      * RollingPass.LengthMultiplier(
-        stock.BaseWidth,
-        stock.BaseThickness,
-        thickness,
-        stock.WidthAt(thickness)
-      );
-
-    Assert.Equal(expected, Measure(StagePath(form, thickness)).Length, 1);
-  }
+  [MemberData(nameof(DrawnStages))]
+  public void A_drawn_stage_is_as_thick_as_the_gauge_it_stands_for(
+    string formName,
+    float thickness,
+    string element
+  ) => Assert.Equal(thickness, Measure(Form(formName), element).Thickness, 2);
 
   [Theory]
-  [InlineData("shingledbar")]
-  [InlineData("shingledslab")]
-  public void A_piece_that_has_stopped_widening_runs_out_lengthways_instead(
-    string form
+  [MemberData(nameof(DrawnStages))]
+  public void A_drawn_stage_conserves_the_metal_it_started_with(
+    string formName,
+    float thickness,
+    string element
   ) {
-    // Once the width ceiling is reached the last gap cannot spread, so the piece elongates sharply. Length
-    // is left uncapped in the art for that reason.
-    StockForm stock = StockForm.All[form];
-    Assert.Equal(stock.MaxWidth, stock.WidthAt(0.5f), 2); // capped by the last gap
+    // Volume rather than length: past the width ceiling the reduction runs out lengthways, so a length
+    // check would have to fold the cap back in and this states the invariant directly.
+    StockForm form = Form(formName);
+    (float width, float t, float length) = Measure(form, element);
 
-    float atOne = Measure(StagePath(form, 1f)).Length;
-    float atHalf = Measure(StagePath(form, 0.5f)).Length;
+    float declared = form.BaseWidth * form.BaseThickness * form.BaseLength;
     Assert.True(
-      atHalf > atOne * 1.5f,
-      $"expected a sharp elongation, got {atOne} -> {atHalf}"
+      System.MathF.Abs(width * t * length - declared) <= declared * 0.1f,
+      $"{formName} {element}: {width * t * length} vx3 against the form's {declared}"
     );
   }
 
-  [Fact]
-  public void A_bloom_lands_on_plate_geometry_at_the_one_voxel_gap() {
-    // The schedule is tuned so the bloom reaches nearly its full width where it becomes one voxel thick.
-    // One voxel by about eight is the proportion of the vanilla metal plate the piece is cut into.
-    StockForm bloom = StockForm.ShingledBar;
-    float atPlateGap = bloom.WidthAt(1f);
+  #endregion
 
-    Assert.True(
-      atPlateGap > bloom.MaxWidth * 0.9f,
-      $"should be nearly {bloom.MaxWidth} wide, was {atPlateGap}"
-    );
-    Assert.True(atPlateGap <= bloom.MaxWidth);
-    Assert.Equal(1f, Measure(StagePath("shingledbar", 1f)).Thickness, 2);
-  }
-
-  [Fact]
-  public void A_bloom_outgrows_the_narrow_barrel_partway_down_the_schedule() {
-    // The bloom starts inside the narrow barrel and outgrows it partway down, so its early gaps cost two
-    // passes and its late ones cost four.
-    const float barrel = 6f; // RollSetItemDefinitions: the flat set's barrel
-    Assert.True(
-      StockForm.ShingledBar.WidthAt(3f) <= barrel,
-      "a fresh bloom should fit the narrow barrel"
-    );
-    Assert.True(
-      StockForm.ShingledBar.WidthAt(0.5f) > barrel,
-      "a rolled-out bloom should overhang it"
-    );
-  }
-
-  [Fact]
-  public void A_slab_never_fits_a_narrow_barrel_which_is_why_it_needs_wide_rolls() {
-    Assert.True(StockForm.ShingledSlab.WidthAt(3f) > 6f);
-  }
+  #region The barrel every form has to fit
 
   [Fact]
   public void No_form_is_ever_wider_than_the_wide_barrel_can_swallow() {
@@ -159,5 +165,36 @@ public class RolledStockStagesTests {
         stock.MaxWidth <= wideBarrel,
         $"{stock.Name} can outgrow the wide barrel"
       );
+  }
+
+  [Fact]
+  public void A_slab_never_fits_a_narrow_barrel_which_is_why_it_needs_wide_rolls() =>
+    Assert.True(StockForm.ShingledSlab.WidthAt(3f) > 6f);
+
+  #endregion
+
+  private static System.Collections.Generic.IEnumerable<ProcessRoute> Routes() {
+    foreach (string file in Directory.EnumerateFiles(RouteDir, "*.json"))
+      if (
+        ProcessRoute.TryParse(
+          new JsonObject(JToken.Parse(File.ReadAllText(file))),
+          out ProcessRoute? route,
+          out _
+        )
+      )
+        yield return route!;
+  }
+
+  private static (float Width, float Thickness, float Length) Measure(
+    StockForm form,
+    string element
+  ) {
+    string shape = Routes()
+      .First(r => r.Family == form.Name && r.Shape != null)
+      .Shape!;
+    return ShapeExtents.Of(
+      Path.Combine(ShapeDir, shape.Replace("iiex:", "") + ".json"),
+      element
+    );
   }
 }

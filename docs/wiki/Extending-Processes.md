@@ -74,10 +74,10 @@ choice, not something we can calculate for you. Two things follow that are worth
 
 ---
 
-## Sequence: a stage ladder
+## Sequence: a process route
 
 A ladder is one stock family's states: every gauge it can be worked to, across every machine family that
-works it. Drop a file at `assets/<yourdomain>/config/stageladders/<anything>.json`.
+works it. Drop a file at `assets/<yourdomain>/config/processroutes/<anything>.json`.
 
 ```json
 {
@@ -215,5 +215,5 @@ makes your content break on our schedule.
 | the machine refuses your piece | no stage its fitted tooling's family accepts, or the tooling does not accept that stock at all |
 | your item shows its raw code | no `item-<code>` lang entry — ship your own strings |
 | your patch added a route but no item | patches land after item generation; ship your own catalogue file instead |
-| nothing at all, and the log says "invalid stage ladder" | the message names the file and the field |
+| nothing at all, and the log says "invalid process route" | the message names the file and the field |
 | your stage was ignored | someone declared that `(thickness, family)` first; the log names the clash |

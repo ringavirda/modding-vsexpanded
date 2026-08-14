@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "family": "shingledbar",
+  "shape": "iiex:forming/shingledbar",
+  "stages": [
+    {
+      "thickness": 2.75,
+      "acceptedBy": ["grooved"],
+      "element": "Grooved275",
+      "halfStep": true
+    },
+    {
+      "thickness": 2.5,
+      "acceptedBy": ["grooved"],
+      "element": "Grooved250"
+    },
+    {
+      "thickness": 2.25,
+      "acceptedBy": ["grooved"],
+      "element": "Grooved225",
+      "halfStep": true
+    },
+    {
+      "thickness": 2.0,
+      "acceptedBy": ["grooved"],
+      "element": "CutRod1"
+    },
+    {
+      "thickness": 2.75,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened275",
+      "halfStep": true
+    },
+    {
+      "thickness": 2.5,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened250"
+    },
+    {
+      "thickness": 2.25,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Flattened225",
+      "halfStep": true
+    },
+    {
+      "thickness": 2.0,
+      "acceptedBy": ["flat", "flatwide"],
+      "element": "Beam",
+      "code": "iiex:beam",
+      "generate": false
+    }
+  ]
+}

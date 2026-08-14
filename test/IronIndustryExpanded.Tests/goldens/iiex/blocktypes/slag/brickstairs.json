@@ -182,7 +182,7 @@
   "drops": [
     {
       "type": "block",
-      "code": "slag-brickstairs-up-north-free"
+      "code": "iiex:slag-brickstairs-up-north-free"
     }
   ],
   "tpHandTransform": {

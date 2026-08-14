@@ -26,23 +26,28 @@ public class PigIronMetalTests {
   }
 
   [Fact]
-  public void Pig_iron_is_an_iwex_feedstock_dropping_shared_vanilla_scrap() {
+  public void Pig_iron_is_an_iwex_feedstock_paying_out_in_its_own_bits() {
     MetalDef def = ShippedDef();
 
     Assert.Equal("pigiron", def.Code);
     Assert.Equal("iiex:ingot-pigiron", def.MoltenItem);
     Assert.Equal("iiex", def.CastDomain);
-    Assert.Equal("game:metalbit-iron", def.SolidDrop);
+    // Not `game:metalbit-iron`, which it was until 2026-08-15. Twenty vanilla bits smelt to a plain iron
+    // ingot, so pig iron - the cheapest metal in the game, straight off the blast furnace - was a route
+    // to forgeable iron that skipped puddling entirely. It pays out in pig iron now, which remelts and
+    // converts and does not forge.
+    Assert.Equal("iiex:metalbit-pigiron", def.SolidDrop);
   }
 
   [Fact]
-  public void Pig_iron_generates_only_the_ingot_form_and_no_tools() {
+  public void Pig_iron_generates_the_ingot_and_its_bits_and_no_tools() {
     MetalDef def = ShippedDef();
 
     Assert.True(def.GenerateItemFamily);
-    // Only the ingot the blast furnace casts into: no plate/rod/nails, and Tools null so the emitter
-    // makes no pig-iron tools. Pig iron is never worked, only converted. See docs/design/materials.md.
-    Assert.Equal(new[] { "ingot" }, def.ItemForms);
+    // The ingot the blast furnace casts into, plus the bits it pays out as; no plate/rod/nails, and
+    // Tools null so the emitter makes no pig-iron tools. Pig iron is never worked, only converted.
+    // See docs/design/materials.md.
+    Assert.Equal(new[] { "ingot", "bits" }, def.ItemForms);
     Assert.Null(def.Tools);
   }
 }

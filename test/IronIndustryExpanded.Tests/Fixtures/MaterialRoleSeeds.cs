@@ -50,6 +50,18 @@ public static class MaterialRoleSeeds {
     MaterialRoleRegistry.Register(
       new MaterialRoleDef { Role = Roles.Scrap, Code = "game:metalbit-steel" }
     );
+    // Our own bits carry the scrap role too. They have to: cast and pig iron pay out in their own bits
+    // rather than in vanilla's, so without these rows the metal a chisel recovers is metal the cupola
+    // refuses - a dead end where a leak used to be.
+    MaterialRoleRegistry.Register(
+      new MaterialRoleDef {
+        Role = Roles.Scrap,
+        Code = "iiex:metalbit-castiron",
+      }
+    );
+    MaterialRoleRegistry.Register(
+      new MaterialRoleDef { Role = Roles.Scrap, Code = "iiex:metalbit-pigiron" }
+    );
     // The pig family carries the scrap role: the cupola charges pig and scrap directly, so without
     // these three rows a headless cupola accepts nothing and can never melt.
     MaterialRoleRegistry.Register(

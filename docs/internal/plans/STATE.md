@@ -17,17 +17,17 @@ the class name is the anchor.
 |---|---|---|
 | ~~B3a~~ | ~~**The mill's feed path rejects fresh stock.**~~ **Fixed 2026-08-11.** `WorkPiece.FromStack` now falls back to `stack.Collectible.Attributes` when the stack tree carries no `stockForm`, so fresh stock off the grid is a work piece. Stack state still wins once a piece has been rolled | `WorkPiece.FromStack` |
 | ~~B3b~~ | ~~**The mill never produces its product.**~~ **Mechanism built 2026-08-12.** `ClaimFinishedPiece` calls `OutputAt` from `CompletePass`: an even piece whose stage names an output is swapped for that item, heat carried across; otherwise it ejects stock for the shear. All four stale codes deleted (two contradicted settled rulings). ⛔ **The remaining gap is the key, not the wiring**: `Outputs` is keyed on gap alone, and flat 1.0 yields `nailplate` from a `rolledrod` but plate from a bloom — the key must become **(form, gap)** before the catalogue can be written | `BlockEntityRollingMill.ClaimFinishedPiece`, `RollSetSpec.Outputs` |
-| **B3c** | **No rolled product item exists.** The catalogue (`rolledrod`, `rod`, `nailplate`, `beam`, `blank`, `skelp`, `heavyplate`, `boilerplate`) has no `ExItemDef` anywhere. Art is drawn for four of them in `assets/editable/shapes/items/rolled/` (`beam`, `nailplate`, `rivetrod`, `rod`) and **none is exported** to `assets/iiex/shapes/`. The shear station that claims most of them is also unbuilt | `docs/design/items/rolled-parts.md`, `docs/design/machines/shear.md` |
+| ~~B3c~~ | ~~**No rolled product item exists.**~~ **Closed 2026-08-14, and all six are obtainable.** `RolledItemDefinitions` ships `rod`, `nailplate`, `beam`, `blank`, `skelp` and `boilerplate`; two crop tables plus one mill-claimed stage make **ten** routes work: bar → rod ×4, beam ×2 or plate ×2; slab → boilerplate ×2; billet → beam ×3 or plate ×3; bloom → blank ×5 or skelp ×5; cast slab → boilerplate ×5; and the fork — a vanilla `game:rod-iron` admitted at the deck becomes 4 × `rivetrod` grooved or 1 × `nailplate` flat. ★★ **Both tiers of the forming line produce a finished product, and both benches downstream have their input.** ⛔ Two declared rows stay unreachable on two blockers — the billet's grooved 2.25 and the bloom's wide 3.0 both need the **mid-gap crop** rule, since each yields pieces that still want a pass; `heavyplate` waits on M.8. See rolled-parts.md § *What is reachable today* | `docs/design/items/rolled-parts.md` |
 | ~~B4~~ | ~~**`grooved` cannot bite fresh stock.**~~ **Fixed 2026-08-12.** Gaps are `[2.5, 2.0, 1.5, 1.0]` (owner's numbers; the groove bottoms at 1.0), every step a 0.5 draft inside δ_max 1.0. Outputs are now `[]` — both stages are shear crops. Guarded behaviourally by `ShippedRollSetTests` — every shipped ladder must be walkable from its accepted form's fresh thickness, which a golden alone never checked | `RollSetItemDefinitions` |
-| **B5** | **hpex's rolled-pipe tier is uncraftable.** Four live blocktypes, four shapes, zero recipes | `hpex/Recipes/` carries machine recipes only |
+| **B5** | **siex's rolled-pipe tier is uncraftable.** Four live blocktypes, four shapes, zero recipes — re-confirmed 2026-08-14 by enumerating every recipe output across the three mods: not one names `pipe-rolled-*` | `siex/Recipes/` carries machine recipes only |
 | **B6** | **The "mandatory" pressure valve cannot be installed on an HP line.** It is cast-tier (flanged, `BlockPressureValve.cs:39`), so welded rolled pipe refuses to couple it. Since M4 the tier is a variant, so a rolled valve is now expressible — it needs a shape, a recipe and a name, not a framework change; and its gate clamps below the Cornish engine's engage pressures | `BlockEntityPressureValve`, `SiexConfig` |
 | **B15** | **The crucible furnace (designed) cannot reach crucible-steel heat** on the flat natural-draught factor — it settles ~1082 °C against the ~1600 the process needs. The stage-height draught model is the planned fix | `BlockEntityFurnaceCore` draught model |
 | ~~B17~~ | ~~**The mill's deck can only reach 2 of 4 gap zones.**~~ **Fixed 2026-08-12.** `IsInputDeck` now accepts the whole `MillFeed.DeckCells` row rather than the single cell beside the stand, so a click reaches the full barrel. It was worse than recorded: for **any** gap count above one the widest gap — the only one fresh stock can enter at — was unreachable, since the reachable span was the last third | `BlockEntityRollingMill.IsInputDeck`/`DeckRow` |
 | **B18** | **A refused pipe joint does not leak.** `ClassifyOpenings` counts an open face as a leak only when the neighbour block is air, so a welded segment butted against a cast one produces no leak, no warning and no signal — B6 is silent in play | `PipeNetwork.ClassifyOpenings` (exlib) *(re-verified 2026-08-07)* |
-| **B19** | **The cast pipe segments have no recipe at all** — the cast tier is creative-only, and the source comment admits it | `lpex MachineRecipeDefinitions` |
+| **B19** | **The cast pipe segments have no recipe at all** — the cast tier is creative-only, and the source comment admits it. ⛔ Sharpened 2026-08-14: it is the four **plain segments** (straight, bend, tjunction, xjunction) that have none. The cast tier's *fittings* — passthrough, passthroughbend, valve, pressure valve — are all craftable, so the tier reads as half-built rather than absent, and B23's stage 3 now names a real block a player still cannot make | `iiex MachineRecipeDefinitions` |
 | **B20** | **The Watt engine costs no gear.** Its pattern `_H_,PRP,PIP` has no `G` cell while the def declares a gear ingredient, so the gear is free | `lpex MachineRecipeDefinitions.WattEngine` *(re-verified 2026-08-07)* |
 | **B21** | **Sub-machine → engine lookup is off by 90° in every orientation**, so every sub-machine binds through a fallback loop that never verifies the engine points back — two engines two cells apart can cross-bind | `BlockEntityEngineSubmachine` |
-| **B23** | **The Bessemer vessel cannot be built at all — in survival or creative.** RCC stage 3 requires `lpex:pipe-straight-ns-{metal}`, but the pipe blocktype declares no `{metal}` group, and `ExConstruction` resolves ingredients before the creative shortcut and hard-fails a non-wildcard miss. Since M4 the correct target is `lpex:pipe-cast-straight-ns`, which has no recipe (B19). Two independent walls; M.3 owns the layout and should land both | `BlockConverterBessemer.cs:108` *(re-verified 2026-08-07)*, `ExConstruction` |
+| ~~B23~~ | ~~**The Bessemer vessel cannot be built at all — in survival or creative.**~~ **Fixed 2026-08-14** by M.6's resolution guard, which found it on its first run. Stage 3 now requires `iiex:pipe-cast-straight*` — the trailing-star wildcard the three gas-intake recipes already use, not one orientation, so a segment placed the other way round still counts. ⛔ Only the hard wall is gone: B19 still leaves that segment uncraftable, so the vessel is completable in creative-instant and not in survival | `BlockConverterBessemer.cs:107-117`, `ExConstruction` |
 | **B24** | **The rolled-joint test is a tautology.** It asserts `OpeningsCount > 0`, which comes from the rig's unsealed free end, not from the refused joint — so it passes identically whether the joint couples or not. B18 is exactly the bug it was written to catch | `RolledJointTests` |
 
 Fixed and dropped from the table: B1/B7 (iwex recipes reaching into lpex — iwex ships its own pipe and
@@ -38,9 +38,13 @@ flow and blast-draw order), B13 (the hearth parts ship their own filler footprin
 carves on the server), B16 (hopper columns rotate with the structure), B22 (the hpex migration names its
 two extracted paths literally, with a coverage guard test).
 
-Unverified, carried as a question rather than a claim: **B12** — a castbloom stage-length soft-lock
-recorded against the retired forming spec. The forming line has since been resettled
-([forming stock](../../design/items/stock.md)); re-check when cast stock lands.
+**B12 is now measured rather than carried as a question** — cast stock landed 2026-08-14, and the length
+is exactly what the design predicted: `castbloom` at its 1.0 rung is **8 × 1 × 50**, past the 48-voxel
+crosswise seating, so a bloom rolled straight there cannot be reheated. It is a cost rather than a lock,
+because the shear does not need heat — the piece still crops into five `skelp` at extra drive — and the
+clean escape, the wide 3.0 crop into five, is one of the two rows the mid-gap crop rule blocks. `castslab`
+has the same shape of hole at 2.0 pending M.8. Owned by
+[recoverability](../../design/mechanics/recoverability.md).
 
 ### Other known defects
 
@@ -162,7 +166,7 @@ Short dated statements; the reasoning lives on the owner pages.
 | # | Settled | Ruling |
 |---|---|---|
 | **D1** | 2026-07-29 | Pig mass **375 u** (5 × 3 × 10 vx³ under R9). Full bed **7500 u**; puddling charge = 9 pigs = **3375 u**. Shipped (`ItemPig.PigUnits`) — [pig](../../design/items/pig.md) |
-| **D2** | 2026-07-29 | Cast plate **`castplate` 10 × 2 × 10 = 500 u**, density-consistent. Every cast structural part gets a fabricated-steel substitute (see N3) — [cast-parts](../../design/items/cast-parts.md). ⛔ **Its second clause — "the rolled plate is a separate item, rolled steel not cast iron" — is superseded by M5**: one `heavyplate` with a metal axis, which `castplate` becomes a state of |
+| **D2** | 2026-07-29 · **amended 2026-08-15** | ~~Cast plate **`castplate` 10 × 2 × 10 = 500 u**~~ — ⛔ **struck by the owner: `castplate` is simply the old name of `castplate-heavy`, and there was never a second item.** No 500 u plate exists or should; the cast plate is **600 u** at 10 × 2 × 12, which the redrawn art now carries and which matches the rolled one exactly. What survives of D2 is its real clause: every cast structural part gets a fabricated substitute (see N3) — [cast-parts](../../design/items/cast-parts.md). Its other clause — "the rolled plate is a separate item" — is superseded by M5 |
 | **D3** | 2026-07-29 | **Alloys inherit their base's properties** as a *continuous penalty*, never a lockout: critical machinery built from lesser steel gets a lower max pressure — [alloys](../../design/items/alloys.md) |
 | **D4** | 2026-07-29 | Converter capacity **6000 u** — see Open for the pig-vs-steel accounting |
 | **D5b** | 2026-07-29 | **One number for the whole molten network: 50 u/s** — tap, bed pull and canal, because it is the same canal. Two sites are still hard-coded (see defects) |
@@ -204,10 +208,14 @@ Later rulings, one line each:
   walks curvature *up* in passes, so `WorkPiece` gains a curvature axis. A separate block, because three
   rolls bend and two reduce. Welding is implied by placement, not a verb —
   [bending-roller](../../design/machines/bending-roller.md), [bending](../../design/processes/bending.md).
-* **Fasteners (2026-07-30)** — two machines, two routes, **no dies, no bolts**: the nail machine shears
-  and heads nailplate in one pass; the rivet machine cuts and upsets rod @ 25 u; both **iwex**. iwex
-  machines accept nails or rivets (merely structural = substitutable); lpex's boiler requires rivets
-  (must-hold-pressure = not) — [fasteners](../../design/items/fasteners.md).
+* **Fasteners (2026-07-30, reaffirmed 2026-08-15)** — two machines, two routes, **no dies, no bolts**: the
+  nail machine shears and heads nailplate in one pass; the **rivet machine** cuts and upsets rod @ 25 u;
+  both **iwex**. iwex machines accept nails or rivets (merely structural = substitutable); lpex's boiler
+  requires rivets (must-hold-pressure = not) — [fasteners](../../design/items/fasteners.md).
+  ★ The 25 u blank ships as **`iiex:rivetrod`** (2026-08-14, named 2026-08-15) — named for the bench
+  because it is a *quarter* of vanilla's rod by section and by mass, so a bare `rod` would ship two items a
+  player cannot tell apart. ⛔ [heading-machine.md](../../design/machines/heading-machine.md) had
+  overwritten this row with a die-fed bolt route; its premise is now open and the row stands.
 * **Placement (2026-07-29)** — a machine lives with the content it **feeds**, not what it is made of. The
   test: an iwex-only player gets a complete early-19th-century loop — cast, puddle, roll, fasten — with no
   dangling ends pointing at steam, and iwex recipes never reach into lpex.

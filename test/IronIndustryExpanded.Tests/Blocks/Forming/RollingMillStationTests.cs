@@ -3,6 +3,7 @@ using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
+using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Forming.Blocks;
 using Vintagestory.API.Common;
@@ -195,6 +196,63 @@ public class RollingMillStationTests {
     // One-way: the next save carries only the container's form, so the migration stops running.
     Assert.Null(saved["rmRollSet"]);
     Assert.Null(saved["rmPiece"]);
+  }
+
+  #endregion
+
+  #region Feedstock is admitted at the deck
+
+  [Fact]
+  public void A_vanilla_rod_offered_at_the_deck_enters_as_our_stock() {
+    // The rod the mill re-rolls stays vanilla's - 30-odd call sites already ask for `game:rod-*` by name -
+    // so the fork works by converting at the deck rather than by minting a second rod. Without this a
+    // player holding an anvil-made rod gets WrongForm at a mill the design says takes it.
+    (TestWorld world, BlockEntityRollingMill mill, _) = Mill();
+    StockForm.SeedDefaults();
+    Item rod = world.RegisterItem("game:rod-iron");
+    RegisterStockRod(world);
+
+    ItemStack? admitted = mill.Admit(new ItemStack(rod));
+
+    Assert.Equal("iiex:stock-rod", admitted?.Collectible?.Code?.ToString());
+    Assert.Equal("rod", WorkPiece.FromStack(admitted)?.Form.Name);
+  }
+
+  [Fact]
+  public void A_piece_already_being_rolled_is_returned_untouched() {
+    // Admission is idempotent because both the deck mapping and the feed itself call it. A second
+    // conversion would hand back a fresh piece, silently discarding the gauge this one had reached.
+    (TestWorld world, BlockEntityRollingMill mill, _) = Mill();
+    StockForm.SeedDefaults();
+    world.RegisterItem("game:rod-iron");
+    RegisterStockRod(world);
+
+    var piece = new ItemStack(
+      world.GetItem(new AssetLocation("iiex:stock-rod"))!
+    );
+    Assert.Same(piece, mill.Admit(piece));
+  }
+
+  [Fact]
+  public void Anything_the_mill_does_not_admit_is_offered_to_the_rolls_as_it_is() {
+    // The refusal has to stay the feed's, not admission's: a piece nothing admits still reaches
+    // MillFeed.Decide, which is what reports WrongForm rather than the click doing nothing.
+    (TestWorld world, BlockEntityRollingMill mill, _) = Mill();
+    StockForm.SeedDefaults();
+    Item plate = world.RegisterItem("game:metalplate-iron");
+
+    var offered = new ItemStack(plate);
+    Assert.Same(offered, mill.Admit(offered));
+  }
+
+  /// <summary>The stock item a rod enters as, carrying the <c>stockForm</c> the shipped itemtype
+  /// declares - that attribute is what makes the admitted stack a work piece.</summary>
+  private static Item RegisterStockRod(TestWorld world) {
+    Item stock = world.RegisterItem("iiex:stock-rod");
+    stock.Attributes = new JsonObject(
+      Newtonsoft.Json.Linq.JToken.Parse("""{ "stockForm": "rod" }""")
+    );
+    return stock;
   }
 
   #endregion

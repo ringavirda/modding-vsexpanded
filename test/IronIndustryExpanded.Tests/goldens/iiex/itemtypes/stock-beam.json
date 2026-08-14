@@ -1,0 +1,30 @@
+{
+  "code": "stock-beam",
+  "class": "iiex.ItemStockPiece",
+  "shape": {
+    "base": "iiex:forming/beam",
+    "selectiveElements": [
+      "Beam"
+    ]
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 400,
+    "stockForm": "beam"
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

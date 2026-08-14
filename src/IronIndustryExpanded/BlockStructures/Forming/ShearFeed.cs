@@ -12,7 +12,7 @@ public enum ShearVerdict {
   NoBladeSet,
 
   /// <summary>Nothing is declared for this piece at this gauge on this branch. A stage that names no job is
-  /// not a stopping point, which is how the ladder stays open for a mod to close.</summary>
+  /// not a stopping point, which is how the route stays open for a mod to close.</summary>
   NoJob,
 
   /// <summary>The piece is worked out: every crop its job declares has already been taken.</summary>

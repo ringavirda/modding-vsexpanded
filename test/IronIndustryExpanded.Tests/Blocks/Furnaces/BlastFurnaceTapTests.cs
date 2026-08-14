@@ -190,10 +190,7 @@ public class BlastFurnaceTapTests {
     // registered MoltenItemOf falls back to "game:ingot-<code>", and with a pigiron MetalDef already
     // in the registry it is that def's carrier. Hard-coding the fallback made this test pass or fail
     // on which class the runner reached first, and a drain with no registered carrier yields 0.
-    world.RegisterItem(
-      MetalRegistry.MoltenItemOf("pigiron").ToString(),
-      1500f
-    );
+    world.RegisterItem(MetalRegistry.MoltenItemOf("pigiron").ToString(), 1500f);
 
     var furnace = new BlockEntityBlastFurnaceCold {
       Pos = new BlockPos(0, 16, 0),

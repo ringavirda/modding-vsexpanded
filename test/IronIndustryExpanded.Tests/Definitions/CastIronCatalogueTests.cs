@@ -114,16 +114,17 @@ public class CastIronCatalogueTests {
   }
 
   [Fact]
-  public void SolidDropOf_castiron_yields_the_shared_vanilla_scrap() {
+  public void SolidDropOf_castiron_yields_cast_iron_bits() {
     RegisterShipped();
 
-    // A mod alloy ships no scrap bit of its own: breaking or chiselling cast iron drops vanilla
-    // game:metalbit-iron, shared across the iron alloys. The metalbit-castiron resource item still
-    // exists, but is not what a broken casting sheds. See docs/design/materials.md.
+    // Until 2026-08-15 this was vanilla `game:metalbit-iron`, "shared across the iron alloys" - and
+    // twenty of those smelt to a plain iron ingot, so a metal poured out of a cupola became forgeable
+    // iron with no puddling anywhere in the route. `iiex:metalbit-castiron` was already generated and
+    // already had its lang; nothing dropped it. See docs/design/materials.md.
     AssetLocation bit = MetalRegistry.SolidDropOf(
       MetalRegistry.MoltenItemOf("castiron")
     );
-    Assert.Equal("game:metalbit-iron", bit.ToString());
+    Assert.Equal("iiex:metalbit-castiron", bit.ToString());
   }
 
   /// <summary>
@@ -150,9 +151,10 @@ public class CastIronCatalogueTests {
 
     Assert.Equal(["pigiron", "castiron"], metals);
     foreach (string metal in metals)
-      // A dead furnace's metal breaks into the shared vanilla scrap, not a per-metal bit.
+      // A dead furnace's metal breaks into that metal's OWN bits. Both used to break into the shared
+      // vanilla bit, which made a frozen hearth a source of forgeable iron.
       Assert.Equal(
-        "game:metalbit-iron",
+        $"iiex:metalbit-{metal}",
         MetalRegistry.SolidDropOf(MetalRegistry.MoltenItemOf(metal)).ToString()
       );
   }
@@ -192,8 +194,9 @@ public class CastIronCatalogueTests {
       def.ItemForms
     );
 
-    // The scrap drop is the shared vanilla bit, not a per-metal copy.
-    Assert.Equal("game:metalbit-iron", def.SolidDrop);
+    // The metal pays out in its own bits, which is what keeps cast iron out of the vanilla forging
+    // tree while leaving it recoverable in the cupola.
+    Assert.Equal("iiex:metalbit-castiron", def.SolidDrop);
   }
   #endregion
 

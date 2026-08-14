@@ -41,11 +41,11 @@ public class MillFeedTests {
       : throw new System.InvalidOperationException("fixture failed to parse");
 
   // The bloom's flat branch, the four gaps this set walks. Declared here rather than taken from the shipped
-  // ladder so the arithmetic below stays readable against the numbers it asserts.
-  private static StageLadderRegistry BloomLadder() {
-    var registry = new StageLadderRegistry();
+  // route so the arithmetic below stays readable against the numbers it asserts.
+  private static ProcessRouteRegistry BloomRoute() {
+    var registry = new ProcessRouteRegistry();
     if (
-      !StageLadder.TryParse(
+      !ProcessRoute.TryParse(
         new JsonObject(
           JToken.Parse(
             """
@@ -61,19 +61,19 @@ public class MillFeedTests {
             """
           )
         ),
-        out StageLadder? ladder,
+        out ProcessRoute? route,
         out string? error
       )
     )
       throw new System.InvalidOperationException(
-        "fixture ladder failed to parse: " + error
+        "fixture route failed to parse: " + error
       );
-    registry.Contribute(ladder!);
+    registry.Contribute(route!);
     return registry;
   }
 
   private static MillSchedule FlatSchedule =>
-    MillSchedule.For(FlatSet, "shingledbar", BloomLadder())
+    MillSchedule.For(FlatSet, "shingledbar", BloomRoute())
     ?? throw new System.InvalidOperationException("fixture has no schedule");
 
   private static FeedDecision Feed(
@@ -85,7 +85,7 @@ public class MillFeedTests {
   ) =>
     MillFeed.Decide(
       set ?? FlatSet,
-      MillSchedule.For(set ?? FlatSet, piece.Form.Name, BloomLadder()),
+      MillSchedule.For(set ?? FlatSet, piece.Form.Name, BloomRoute()),
       piece,
       gapIndex,
       side,

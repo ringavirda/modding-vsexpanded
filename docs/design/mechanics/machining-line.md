@@ -219,6 +219,16 @@ a player reaches is the hardness they get. This closes the "bit tiers and blade 
 together and neither has been" question in [boring machine](../machines/boring-machine.md) and
 [shear](../machines/shear.md) — there is one ladder and vanilla already expresses it.
 
+★★ **The contract is built: `MachineTool` in exlib** (2026-08-14, with the shear's blade sets, its first
+consumer). A tool carries `{ schema, tier }` under a `machinetool` attribute and nothing else, and is
+recognised by carrying a tier that parses rather than by its code — so a third party's cutter needs no
+naming blessing. `MachineTool.Itemtype` builds the whole itemtype from a mod's own tier table, the seam
+`ItemDie.Itemtype` opens for dies.
+
+⛔ **A tool is not a die, and the split is load-bearing.** A die *names the job*, so a bench with no die
+has no work at all; a tool names only its hardness and the jobs come from the declared table. The four
+cutter machines and the shear take tools; the heading, nail and rivet benches take dies.
+
 Consequences for the block layer: the four cutter machines get **one tool slot** in their window and
 render the fitted cutter by selective element. The mill and the benches keep their fitted-tooling
 gesture instead, because a roll set is a profile rather than a consumable.

@@ -78,8 +78,7 @@ public class SmexToIiexMigration : IBlockCodeMigration, IBlockEntityMigration {
     // smex 0.9.8 added a `refractory` tier to the same block, and those spellings are in worlds too;
     // the tier carried no meaning the charge door keeps, so all four land on the same block.
     foreach (
-      string old in
-      (string[])
+      string old in (string[])
         [
           "blastfurnacedoor",
           "blastfurnacedoor-tier1",

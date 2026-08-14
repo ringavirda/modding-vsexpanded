@@ -1,8 +1,7 @@
 # Stock
 
-**Status** blocked - two of the five forms exist as items and both are mis-massed; the other three exist only
-as art and as three dead branches of the reheat hearth's recogniser
-**Mod** iiex owns the forming line - the mill, the wide hall and the bending roller - and ships the two live items; siex owns the three cast forms and the steel roll sets (settled by M1/M.7, 2026-08-14)
+**Status** ★★ **all five forms are live 2026-08-14, and a sixth arrived with them.** The wrought pair ship as `iiex:stock-{shingledbar,shingledslab}`; the cast three are the pieces the long cell already poured, `iiex:caststock-{billet,bloom,slab}`, which now declare a `stockForm` and register as `castbillet` / `castbloom` / `castslab` from siex; and `rod` is the fork's work piece, which a player never crafts - vanilla's `game:rod-iron` is admitted at the mill's deck and enters as `iiex:stock-rod`. Every one has its stage art, its ladder and its crops
+**Mod** iiex owns the forming line - the mill, the wide hall and the bending roller - and ships all five stock items; siex owns the three cast **forms**, their ladders and their crop rows, which is what makes the cast pieces rollable at all (settled by M1/M.7, 2026-08-14)
 
 **Owns**
 
@@ -93,10 +92,17 @@ light ([STATE.md § B8](../../internal/plans/STATE.md)).
 
 ### What the code ships
 
-Only `stock-shingledbar` and `stock-shingledslab` exist. They are emitted one per `StockForm`
-(`StockItemDefinitions.cs:30`), so the item list and `StockForm.All` cannot diverge. Both were renamed onto
-the settled ladder and re-massed on 2026-08-12; `bloom` and `slab` survive only as `FormerNames`, which is
-what carries a piece already in a world across the rename.
+The wrought pair are `stock-shingledbar` and `stock-shingledslab`, emitted one per form from
+`StockItemDefinitions.Units` - **the forms this mod masses, not every registered form**. That distinction
+arrived with the cast three: `StockForm.All` is a shared registry any mod may add to, so enumerating it
+here would have minted an iiex item for somebody else's stock and thrown on the first form iiex holds no
+mass for. Both were renamed onto the settled ladder and re-massed on 2026-08-12; `bloom` and `slab` survive
+only as `FormerNames`, which is what carries a piece already in a world across the rename.
+
+⛔ **`bloom` resolving to the shingled bar is a live trap for the cast side.** A cast bloom that declared
+the bare variant `bloom` as its form would resolve - to a 400 u wrought piece - and roll as that, with the
+mass as the only symptom. Hence `CastStockItemDefinitions.FormOf`, which writes `cast` + variant, and
+`A_cast_bloom_is_never_read_as_the_wrought_bar_it_shares_a_word_with` in the siex suite.
 
 | Shipped item | `materialUnits` | file:line | Section × length | Rule says | Verdict |
 |---|---|---|---|---|---|
@@ -111,9 +117,18 @@ only, and wiring the authored art (drawn at 18, as two 9-long halves) closes it.
 The full cross-item audit - including the four shipped mold cavities and their four different implicit
 densities - is [density rule](../mechanics/density-rule.md)'s and is not repeated here.
 
-No `castbillet`, `castbloom` or `castslab` item exists anywhere in `src/`. The only code that names them is
-`HeatingHearthLayout.StockOf`'s prefix recogniser (`HeatingHearthLayout.cs:72-77`), so three of the five forms
-the reheat hearth can recognise can never be held.
+★★ **The cast three were never a missing item - they were a missing *form*.** `iiex:caststock-{billet,
+bloom,slab}` has shipped since U1 at exactly the settled masses (600 / 1000 / 3000), poured by the long
+cell's three lane patterns. What did not exist was anything telling the mill what they were. As of
+2026-08-14 the itemtype declares `stockForm` per variant and takes `ItemStockPiece` as its class, so a cast
+piece is a work piece that draws itself at whatever gauge it has been rolled to; siex registers the three
+forms and the mill bites them.
+
+⛔ **And the reheat hearth had not recognised one of them since the U1 rename.**
+`HeatingHearthLayout.StockOf` still tested the prefixes `castbillet` / `castbloom` / `castslab` against an
+item that had become `caststock-{form}`, so no cast piece could be reheated at all - on the tier that is on
+the crosswise seating from its first pass. Fixed with the forms; the guard is now read off the shipped
+variant list rather than written as three literals, which is what let the stale prefixes pass for months.
 
 ### Per-item properties — `StockItemDefinitions.Stock`
 
@@ -172,7 +187,7 @@ Every file below is untracked and referenced by no code, no test and no generato
 | `assets/editable/shapes/item-castbillet.json` | `CastBillet1` `:15-17` + child `:29-31` | 3 × 3 × 12 twice = 3 × 3 × 24 |
 | `assets/editable/shapes/item-castbloom.json` | `CastBloom1` `:15-17` + child `:29-31` | 4 × 4 × 12 twice = 4 × 4 × 24 |
 | `assets/editable/shapes/item-castslab.json` | `CastSlab1` `:15-17` + child `:29-31` | 12 × 4 × 14 twice = 12 × 4 × 28 |
-| `assets/iiex/shapes/item/{castbillet,castbloom,castslab}.json` | — | the same three, exported to the runtime domain, untracked, no item resolves them (a grep for these names in `src/` returns only `HeatingHearthLayout.cs:72-77`) |
+| `assets/iiex/shapes/item/{castbillet,castbloom,castslab}.json` | — | the same three, exported to the runtime domain. ⛔ Not orphaned, as this row used to say: `CastStockItemDefinitions`'s `shapeByType` has always resolved them as `iiex:item/cast{form}`, and they are what `ItemStockPiece` now scales to draw a part-rolled cast piece |
 
 All three cast shapes are drawn to the wrong length - 24 / 24 / 28 against the settled 27 / 25 / 25. The
 redraw and the move to the smex domain are queued with the ladder work (§ Open); the audit row is
@@ -235,10 +250,31 @@ the voxel.
 | `RolledStockStagesTests` | `test/IronIndustryExpanded.Tests/Blocks/Forming/RolledStockStagesTests.cs:22` | 9 methods pinning the ten generated shapes to the spread model |
 | `scripts/tools/generate-rolled-stock.py` | `:44-48`, `:87-120` | the dead generator |
 
-To add a stock form: add a `StockForm` and the item is emitted automatically (`:30`) - but its stage art must
-also be supplied or `RolledStockStagesTests` fails. To **rename** one, declare the old name in
+To add a stock form there are two routes, and the cast three are the second. **Where the mod also mints the
+item**, add a `StockForm` and a mass row in `StockItemDefinitions.Units` and the item is emitted from it -
+its stage art must be supplied too or `RolledStockStagesTests` fails. **Where the piece already exists**,
+register the form and have the itemtype declare `stockForm`; nothing is minted, and the two halves may sit
+in different mods, as siex's forms over iiex's `caststock` do.
+
+★ **A third route exists for a piece that is not ours at all**: `StockForm.RegisterFeedstock(offered,
+entersAs)` admits a code at the mill's deck and converts it into a stock item on entry. That is how the rod
+fork works without a second rod being minted - vanilla's `game:rod-iron` becomes `iiex:stock-rod`, and the
+32-odd call sites that ask for `game:rod-*` by name never had to change. It is keyed on codes rather than
+on forms, so a caller admitting their own feedstock never has to know a form exists.
+
+To **rename** one, declare the old name in
 `FormerNames`: the registry resolves a piece already in a world by it, and `StockFormRenameMigration` emits
-the item-code remap off the same field. The wrought pair is done; the three cast forms are still to add.
+the item-code remap off the same field.
+
+| Member | file:line | Role |
+|---|---|---|
+| `CastStockForms` | `src/SteelIndustryExpanded/BlockStructures/Forming/CastStockForms.cs` | the three cast forms and their sections; `Register()` from siex's `Start` |
+| `StockForm.Rod` / `.Feedstock` | `src/IronIndustryExpanded/BlockStructures/Forming/StockForm.cs` | the fork's work piece, and the offered-code → stock-item table that admits a vanilla rod |
+| `BlockEntityRollingMill.Admit` | `.../Forming/BlockEntities/BlockEntityRollingMill.cs` | applies that table at the deck, carrying the heat across. Idempotent - the deck mapping and the feed both call it |
+| `CastStockItemDefinitions.FormOf` | `src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs` | variant to form name - `cast` + variant, never the bare variant |
+| `CastStockFormsTests` | `test/SteelIndustryExpanded.Tests/Blocks/Forming/CastStockFormsTests.cs` | the cross-mod seam: declared form resolves, art matches the section |
+| `ShippedCastCropTableTests` | `test/SteelIndustryExpanded.Tests/Blocks/Forming/ShippedCastCropTableTests.cs` | the five cast crop rows, and that they merge with iiex's four rather than replacing them |
+| `ShapeExtents` | `test/ExpandedLib.Testing/ShapeExtents.cs` | composed shape extents, shared by both stock-art guards |
 
 ---
 
@@ -250,14 +286,30 @@ the item-code remap off the same field. The wrought pair is done; the three cast
   what the 48-voxel refusal needs.
 - ~~`stock-slab` is called "Cast Slab" in lang and is the wrought one.~~ Fixed with the rename; both keys
   moved, and no handbook page names either item, so the `NN-` join was not involved.
-- The two shipped forms are 2 voxels short and 2.7× light respectively, so any recipe or machine bill written
-  against them today will need re-costing when the ladder lands.
+- ~~The two shipped forms are 2 voxels short.~~ **Fixed 2026-08-14** by regenerating both from the remade
+  bases: `ShingledBar1` is now drawn 3 × 3 × **18** and `ShingledSlab1` 8 × 3 × 20, which are the
+  `BaseLength` values `StockForm` already declared. The stale stages came from a 16-long bar and passed
+  every guard, because `A_stage_shape_is_as_long_as_conserving_its_volume_demands` measures each stage
+  against **the base stage's own drawn length** rather than against `BaseLength` - a relative check cannot
+  see the whole family sitting 2 voxels short. Masses are unaffected; they are declared, not derived.
 - `MaxStackSize(1)` is load-bearing. Two pieces at different stages must never merge, and the heat is
   per-stack.
-- The billet's crop is mid-gap. It stops at the 2.25 half-step, which `RollSetSpec.TryParse` cannot even
-  declare as an output (it rejects any output gap not in `gaps`) - see [shear](../machines/shear.md).
-- The three cast shapes are drawn but the long cell that pours them does not exist - seven shapes, one enum
-  member, no block ([long cell](../machines/long-cell.md)).
+- ~~The billet's crop is mid-gap, which `RollSetSpec.TryParse` cannot declare as an output.~~ **Stale as of
+  2026-08-13.** That held while outputs lived on the roll set; the crop table is a `ProcessJob` now
+  (`config/processjobs/`) and 2.25 is an ordinary `stage` value with nothing to reject it.
+- ~~The three cast shapes need redrawing to 27 / 25 / 25.~~ **Done 2026-08-14, and it was one shape, not
+  three.** Measured properly, `castbloom` was already **4 × 4 × 25** and `castslab` already
+  **12 × 4 × 25**; only `castbillet` was short, at **3 × 3 × 24** against the settled 27. Its parent half
+  went 12 → 15 (the child stays at 12, which is also the bloom/slab idiom) and all three now match, so the
+  stage art generates and the five cast crop rows are unblocked.
+
+  ⛔⛔ **A first pass reported all three as wrong, because a child's `from`/`to` are relative to its
+  parent's `from`.** Read as absolute, the billet's two-halves-end-to-end drawing reads as three lanes side
+  by side - 9.5 × 3 × 24 - and every measurement two levels down is confidently wrong. Compose the parent
+  offsets before measuring anything.
+- The long cell that pours the cast stock does not exist - seven shapes, one enum member, no block
+  ([long cell](../machines/long-cell.md)). So cast stock is creative-only, which is where all stock is
+  today.
 - Don't read the editable files as one item each. `item-shingled-bar.json` holds nine stages of two routes;
   `item-rod-rolled.json` holds five. A box-sum over a whole file is meaningless
   ([density rule](../mechanics/density-rule.md) Gotcha 5).
@@ -271,9 +323,14 @@ the item-code remap off the same field. The wrought pair is done; the three cast
 - Nothing produces any stock. Puddling → helve shingling is the settled route for the wrought pair and
   neither is built (puddling additionally cannot light, [STATE.md § B8](../../internal/plans/STATE.md)); the long cell
   that would pour the cast three does not exist. Every piece of stock in the game today comes from creative.
-- This page's construction list: replace the two forms, delete the generator and its ten outputs, wire the
-  authored art, redraw the three cast shapes to 27 / 25 / 25 and move them to the smex domain, then add the
-  three cast `StockForm`s with their long-cell patterns and steel roll sets.
+- ~~This page's construction list.~~ **Done 2026-08-14**, and the last item came out differently than
+  written: the cast shapes needed no move to another domain, because the item they belong to is iiex's -
+  siex owns the forms, not the pieces.
+- **The billet's grooved branch is declared nowhere.** Its ladder is flat-only, because carried to the
+  grooved 2.0 gap a billet is 60.75 long, past the hearth in both seatings - the route wants the mid-gap
+  crop at the 2.25 half-step that [recoverability](../mechanics/recoverability.md) owns, and a crop that
+  yields six pieces each still needing a pass is not the one-product-plus-remainder the shear does today.
+  Roll-set `accepts` still lists the billet on both families, since that field is geometry.
 - The stage-art path scheme must move to `t × 100` before half-steps can have art at all - and under the
   settled two-round model the half-step is the only thing that needs art, because a piece can no longer be
   lopsided.

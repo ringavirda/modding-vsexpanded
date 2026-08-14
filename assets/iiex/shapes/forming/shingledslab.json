@@ -1,0 +1,763 @@
+{
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "iron": "game:block/metal/tarnished/iron"
+ },
+ "elements": [
+  {
+   "name": "ShingledSlab1",
+   "from": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "to": [
+    12.0,
+    3.0,
+    10.0
+   ],
+   "renderInEditor": false,
+   "rotationOrigin": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      4.0,
+      11.5,
+      12.0,
+      14.5
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      2.5,
+      3.0,
+      12.5,
+      6.0
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      3.5,
+      4.5,
+      11.5,
+      7.5
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      3.5,
+      11.5,
+      13.5,
+      14.5
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.5,
+      4.0,
+      8.5,
+      14.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      1.5,
+      5.5,
+      9.5,
+      15.5
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "ShingledSlab11",
+     "from": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "to": [
+      8.0,
+      3.0,
+      0.0
+     ],
+     "rotationOrigin": [
+      2.0,
+      0.0,
+      -10.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        7.0,
+        11.0,
+        15.0,
+        14.0
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        1.0,
+        1.0,
+        11.0,
+        4.0
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.5,
+        12.0,
+        8.5,
+        15.0
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        2.5,
+        7.5,
+        12.5,
+        10.5
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        3.5,
+        4.0,
+        11.5,
+        14.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        2.0,
+        4.5,
+        10.0,
+        14.5
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Flattened275",
+   "from": [
+    3.5,
+    0.0,
+    0.0
+   ],
+   "to": [
+    12.2,
+    2.75,
+    10.0
+   ],
+   "renderInEditor": false,
+   "rotationOrigin": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      8.5,
+      2.5
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.5
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      8.5,
+      2.5
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.5
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      8.5,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      8.5,
+      10.0
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "Flattened2",
+     "from": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "to": [
+      8.7,
+      2.75,
+      0.0
+     ],
+     "rotationOrigin": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        8.5,
+        2.5
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.5
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        8.5,
+        2.5
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.5
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        8.5,
+        10.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        8.5,
+        10.0
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Flattened250",
+   "from": [
+    3.0,
+    0.0,
+    0.0
+   ],
+   "to": [
+    12.6,
+    2.5,
+    10.0
+   ],
+   "renderInEditor": false,
+   "rotationOrigin": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      9.5,
+      2.5
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.5
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      9.5,
+      2.5
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.5
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      9.5,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      9.5,
+      10.0
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "Flattened3",
+     "from": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "to": [
+      9.6,
+      2.5,
+      0.0
+     ],
+     "rotationOrigin": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        9.5,
+        2.5
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.5
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        9.5,
+        2.5
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.5
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        9.5,
+        10.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        9.5,
+        10.0
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Flattened225",
+   "from": [
+    2.5,
+    0.0,
+    0.0
+   ],
+   "to": [
+    13.1,
+    2.25,
+    10.0
+   ],
+   "renderInEditor": false,
+   "rotationOrigin": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.5,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.0
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.5,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.5,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.5,
+      10.0
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "Flattened4",
+     "from": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "to": [
+      10.6,
+      2.25,
+      0.0
+     ],
+     "rotationOrigin": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.5,
+        2.0
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.0
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.5,
+        2.0
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.0
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.5,
+        10.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.5,
+        10.0
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "CutHeavyPlate1",
+   "from": [
+    2.0,
+    0.0,
+    0.0
+   ],
+   "to": [
+    14.0,
+    2.0,
+    10.0
+   ],
+   "rotationOrigin": [
+    4.0,
+    0.0,
+    0.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.0
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      10.0,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      10.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      10.0
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "CutHeavyPlate2",
+     "from": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "to": [
+      12.0,
+      2.0,
+      0.0
+     ],
+     "rotationOrigin": [
+      0.0,
+      0.0,
+      -10.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        2.0
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.0
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        2.0
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        10.0,
+        2.0
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        10.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        10.0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

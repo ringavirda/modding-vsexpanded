@@ -223,8 +223,9 @@
               },
               {
                 "type": "block",
-                "code": "iiex:pipe-straight-ns-{metal}",
-                "quantity": 3
+                "code": "iiex:pipe-cast-straight*",
+                "quantity": 3,
+                "name": "siex:rcc-ingredient-pipe"
               },
               {
                 "type": "item",

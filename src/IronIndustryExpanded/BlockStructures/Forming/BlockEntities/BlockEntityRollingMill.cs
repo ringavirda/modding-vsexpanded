@@ -208,18 +208,18 @@ public class BlockEntityRollingMill
   public bool HasRollSet => RollSet != null;
 
   /// <summary>The stage catalogue this mill reads its routes from - the process-wide one, which every mod's
-  /// ladders load into. Settable so a fixture can stand a route up without writing to the shared
+  /// routes load into. Settable so a fixture can stand a route up without writing to the shared
   /// catalogue.</summary>
-  public StageLadderRegistry Ladders { get; protected set; } =
-    StageLadderRegistry.Shared;
+  public ProcessRouteRegistry Routes { get; protected set; } =
+    ProcessRouteRegistry.Shared;
 
   /// <summary>
   /// What the fitted set can do to <paramref name="piece"/>: its branch of that stock family's stage
-  /// ladder. Null when the stand is bare, when the tooling will not bite this stock, or when nothing has
+  /// route. Null when the stand is bare, when the tooling will not bite this stock, or when nothing has
   /// declared a stage this set's family accepts.
   /// </summary>
   public MillSchedule? ScheduleFor(WorkPiece? piece) =>
-    piece == null ? null : MillSchedule.For(RollSet, piece.Form.Name, Ladders);
+    piece == null ? null : MillSchedule.For(RollSet, piece.Form.Name, Routes);
 
   /// <summary>
   /// Fits <paramref name="set"/> to the stand and hands back through <paramref name="previous"/> whatever was
@@ -258,6 +258,8 @@ public class BlockEntityRollingMill
   public FeedDecision TryFeed(ItemStack? stack, int gapIndex, int side) {
     if (IsRolling)
       return new FeedDecision(FeedVerdict.NoReduction, 0f);
+
+    stack = Admit(stack);
 
     float tempC =
       stack != null && Api != null
@@ -299,6 +301,40 @@ public class BlockEntityRollingMill
     float target = piece.RoundTarget(_pendingGap);
     BeginPass(decision.Draft, piece.LengthAt(target), tempC, stack);
     return decision;
+  }
+
+  /// <summary>
+  /// The stack the rolls should see for <paramref name="offered"/>: itself when it is already a work piece
+  /// or nothing admits it, and otherwise the stock item it enters as, at the same heat.
+  /// <para>
+  /// This is how a product that already exists is re-rolled without a second copy of it being minted -
+  /// vanilla's <c>game:rod-iron</c> enters as <c>iiex:stock-rod</c>, so the 30-odd call sites that ask for
+  /// a rod by name keep working and an anvil-made rod can be rolled into nail plate. Idempotent, so the
+  /// deck mapping and the feed itself may both call it.
+  /// </para>
+  /// </summary>
+  public ItemStack? Admit(ItemStack? offered) {
+    if (offered == null || Api == null || WorkPiece.FromStack(offered) != null)
+      return offered;
+
+    if (
+      StockForm.EntersAs(offered.Collectible?.Code?.ToString())
+        is not { } entersAs
+      || Api.World.GetItem(new AssetLocation(entersAs)) is not { } item
+    )
+      return offered;
+
+    // One piece at a time: stock is MaxStackSize 1, and the rolls take one piece per feed however many the
+    // player is holding.
+    var admitted = new ItemStack(item);
+    // The rod comes off an anvil hot and is walked to the mill, so the heat it arrives with is the heat it
+    // enters at. Minting it cold would make the first pass refuse on TooCold for no reason the player can see.
+    admitted.Collectible.SetTemperature(
+      Api.World,
+      admitted,
+      offered.Collectible.GetTemperature(Api.World, offered)
+    );
+    return admitted;
   }
 
   /// <summary>
@@ -412,12 +448,11 @@ public class BlockEntityRollingMill
 
   /// <summary>
   /// Swaps the piece for the finished item its stage names, when that stage needs no shear cut. A stage the
-  /// ladder names no code for stays stock and leaves the mill to be cropped elsewhere, which is every stage
-  /// that yields more than one item off a piece.
+  /// route names no code for stays stock and leaves the mill to be cropped elsewhere.
   /// <para>
-  /// One piece in, one piece out either way: a conversion changes what the piece is, never how many there
-  /// are. A half-step is never a stopping point - no ladder declares one as a rung - so a piece can only be
-  /// claimed where a whole gap has landed.
+  /// One piece in, one piece out: a claim changes what the piece is, never how many there are. A stage
+  /// whose yield is several items is a shear crop instead, which is what the shear's own table declares.
+  /// A half-step is never a stopping point, so a piece can only be claimed where a whole gap has landed.
   /// </para>
   /// </summary>
   private void ClaimFinishedPiece(WorkPiece rolled) {
@@ -437,7 +472,7 @@ public class BlockEntityRollingMill
       : null;
     if (finished == null) {
       Api.Logger.Warning(
-        "[iiex] Rolling mill: the stage ladder names output \"{0}\" at gap {1}, which resolves to no item. "
+        "[iiex] Rolling mill: the stage route names output \"{0}\" at gap {1}, which resolves to no item. "
           + "The piece stays stock.",
         code,
         rolled.Thickness

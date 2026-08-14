@@ -311,8 +311,9 @@ public partial class BlockRollingMill
       return true;
 
     // The deck's zones span the gaps this set has for this stock, so the click maps onto the branch the
-    // player is actually working rather than onto the ladder as a whole.
-    WorkPiece? offered = WorkPiece.FromStack(held);
+    // player is actually working rather than onto the route as a whole. Admitted first, or a piece of
+    // feedstock would map its click against a schedule of one gap and then be fed at another.
+    WorkPiece? offered = WorkPiece.FromStack(mill.Admit(held));
     MillSchedule? schedule = mill.ScheduleFor(offered);
     int gapCount = schedule?.Gaps.Length ?? 1;
     int gap = MillFeed.GapZone(

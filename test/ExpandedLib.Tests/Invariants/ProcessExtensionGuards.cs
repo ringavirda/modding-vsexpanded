@@ -26,7 +26,7 @@ public class ProcessExtensionGuards {
   // rather than from a hand-kept list means a machine adopting a registry joins this guard by doing so,
   // and cannot be added to the codebase outside its reach.
   private static readonly Regex ReadsARegistry = new(
-    @"StageLadderRegistry|ProcessJobRegistry|ProcessExtensions|MillSchedule|RollSetSpec|MoldSpec",
+    @"ProcessRouteRegistry|ProcessJobRegistry|ProcessExtensions|MillSchedule|RollSetSpec|MoldSpec",
     RegexOptions.Compiled
   );
 

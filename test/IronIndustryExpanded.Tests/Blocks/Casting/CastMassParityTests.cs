@@ -91,7 +91,7 @@ public class CastMassParityTests {
     Assert.Equal(MoldSize.Cell, spec.Size);
     Assert.Equal(new AssetLocation("iiex:castwheelsection"), spec.Output.Code);
     Assert.Equal(EnumItemClass.Item, spec.Output.Type);
-    // One lane: the cell casts one part per pour, where the long cell casts a ladder of them.
+    // One lane: the cell casts one part per pour, where the long cell casts a route of them.
     Assert.Single(spec.Cavity);
   }
 

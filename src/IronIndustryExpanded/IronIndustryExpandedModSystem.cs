@@ -69,8 +69,8 @@ public class IronIndustryExpandedModSystem : ModSystem {
       }
     );
 
-    // Other mods' iron ore types, used by the blast furnace's reinforced hopper.
-    IronOreCompat.Init(api);
+    // No ore-compat registration here any more: other mods' iron ore types are rows in
+    // assets/iiex/config/materialroles.json, each gated by `requiresMod`, and the loader applies them.
 
     // Blast-mix burn-to-slag is patched into the vanilla coal pile, and the vanilla chimney's
     // look-at info is patched to report a chimney venting a pipe (the gas draw itself runs in
@@ -180,18 +180,30 @@ public class IronIndustryExpandedModSystem : ModSystem {
     // the old block entity's tree, but that tree is read from a LIVE block entity - so without the
     // class key the game never constructs it, `oldState` arrives null, and every canal, barrel and
     // frozen pool migrates empty.
-    ("smex.BlockEntityMoltenCanal", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanal)),
+    (
+      "smex.BlockEntityMoltenCanal",
+      typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanal)
+    ),
     (
       "smex.BlockEntityMoltenCanalStart",
       typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalStart)
     ),
-    ("smex.BlockEntityMoltenCanalTap", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalTap)),
+    (
+      "smex.BlockEntityMoltenCanalTap",
+      typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalTap)
+    ),
     (
       "smex.BlockEntityMoltenCanalMoldPedestal",
       typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalMoldPedestal)
     ),
-    ("smex.BlockEntityMoltenBarrel", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenBarrel)),
-    ("smex.BlockEntitySlag", typeof(BlockStructures.Products.BlockEntities.BlockEntitySlag)),
+    (
+      "smex.BlockEntityMoltenBarrel",
+      typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenBarrel)
+    ),
+    (
+      "smex.BlockEntitySlag",
+      typeof(BlockStructures.Products.BlockEntities.BlockEntitySlag)
+    ),
     // Renamed as well as relocated: the two frozen-melt blocks merged into one variant-grouped
     // hearthmetal, the MP blower became the twin-tub, and siex's one BlockEntityBlastFurnace class
     // backed the charge DOOR (blastfurnace/door.json), not the core - the core shipped with none.

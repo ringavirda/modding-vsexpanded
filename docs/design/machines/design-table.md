@@ -16,6 +16,7 @@
 | Model A, the diagram item, the catalogue, migration state | [diagram-crafting](../mechanics/diagram-crafting.md) |
 | What any individual diagram builds | the recipe that consumes it (see the catalogue) |
 | The other station and the shared-window plan | [boring-machine](boring-machine.md) |
+| The workbench, its grid and the interaction sequence a diagram describes | [workbench](workbench.md) |
 | Pipe tiers and pressure numbers | [pipe-network](../mechanics/pipe-network.md) |
 
 ---

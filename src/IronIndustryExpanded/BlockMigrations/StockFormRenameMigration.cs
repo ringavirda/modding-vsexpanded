@@ -7,13 +7,13 @@ using Vintagestory.API.Server;
 namespace IronIndustryExpanded.BlockMigrations;
 
 /// <summary>
-/// Remaps stock whose <see cref="StockForm"/> was renamed onto the settled ladder - <c>bloom</c> and
+/// Remaps stock whose <see cref="StockForm"/> was renamed onto the settled route - <c>bloom</c> and
 /// <c>slab</c> onto <c>shingledbar</c> and <c>shingledslab</c> - so pieces in inventories, chests and ground
 /// storage survive it. An item whose code stops resolving is dropped on world load without an error.
 /// <para>
 /// Walked off <see cref="StockForm.FormerNames"/> rather than written out here, so a form that declares an
 /// old name gets its migration free and this file never has to be edited again - the same contract the stage
-/// ladder's <c>formerCodes</c> offers. The form name a rolled piece carries on its own stack is resolved by
+/// route's <c>formerCodes</c> offers. The form name a rolled piece carries on its own stack is resolved by
 /// the registry itself and rewritten the next time the piece is fed.
 /// </para>
 /// </summary>

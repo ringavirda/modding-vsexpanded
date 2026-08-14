@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Shear Blades",
+    "ingredientPattern": "PP,PP,_H",
+    "width": 2,
+    "height": 3,
+    "output": {
+      "type": "item",
+      "code": "iiex:shearblade-{metal}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

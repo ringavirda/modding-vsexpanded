@@ -7,7 +7,7 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// The vanilla layout block-code catalogue: codes the game declares, which no definition can generate.
-/// Covers what the goldens do not reach - the containment order between brick-ladder rungs no layout
+/// Covers what the goldens do not reach - the containment order between brick-route rungs no layout
 /// draws yet, and the facing helpers, whose interpolated side segment is what makes a cell
 /// orientation-checked. How a constant used by a shipped layout expands is recorded in that layout's
 /// blocktype golden.
@@ -29,7 +29,7 @@ public class VanillaCodesTests {
       new Vintagestory.API.Common.AssetLocation("game:" + blockCode)
     );
 
-  #region The brick ladder is really a ladder
+  #region The brick route is really a route
 
   [Theory]
   // Refractory: every tier, and only refractory.

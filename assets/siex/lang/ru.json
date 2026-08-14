@@ -96,6 +96,7 @@
   "rcc-ingredient-metalplate": "Железная или стальная пластина",
   "rcc-ingredient-rod": "Железный или стальной стержень",
   "rcc-ingredient-nailsandstrips": "Железные или стальные гвозди и пластины",
+  "rcc-ingredient-pipe": "Чугунная труба (прямая)",
   "structure-incomplete": "Конструкция не завершена!",
   "structure-incomplete-count": "Конструкция не завершена. Отсутствует или неверно установлено блоков: {0}.",
   "bessemer-status-idle": "Простой",

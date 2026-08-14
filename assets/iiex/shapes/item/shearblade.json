@@ -1,0 +1,159 @@
+{
+ "textureWidth": 16,
+ "textureHeight": 16,
+ "textures": {
+  "iron": "game:block/metal/tarnished/iron"
+ },
+ "elements": [
+  {
+   "name": "Shear1",
+   "from": [
+    9.0,
+    0.0,
+    2.0
+   ],
+   "to": [
+    13.0,
+    1.0,
+    14.0
+   ],
+   "rotationOrigin": [
+    9.0,
+    0.0,
+    2.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      4.0,
+      1.0
+     ]
+    },
+    "east": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      4.0,
+      1.0
+     ]
+    },
+    "west": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      12.0,
+      1.0
+     ]
+    },
+    "up": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      4.0,
+      12.0
+     ]
+    },
+    "down": {
+     "texture": "#iron",
+     "uv": [
+      0.0,
+      0.0,
+      4.0,
+      12.0
+     ]
+    }
+   },
+   "children": [
+    {
+     "name": "Shear11",
+     "from": [
+      -6.0,
+      0.0,
+      0.0
+     ],
+     "to": [
+      -2.0,
+      1.0,
+      12.0
+     ],
+     "rotationOrigin": [
+      -6.0,
+      0.0,
+      0.0
+     ],
+     "faces": {
+      "north": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        4.0,
+        1.0
+       ]
+      },
+      "east": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        1.0
+       ]
+      },
+      "south": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        4.0,
+        1.0
+       ]
+      },
+      "west": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        12.0,
+        1.0
+       ]
+      },
+      "up": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        4.0,
+        12.0
+       ]
+      },
+      "down": {
+       "texture": "#iron",
+       "uv": [
+        0.0,
+        0.0,
+        4.0,
+        12.0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

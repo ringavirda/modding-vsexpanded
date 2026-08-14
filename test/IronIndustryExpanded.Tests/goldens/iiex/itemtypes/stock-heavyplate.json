@@ -1,0 +1,30 @@
+{
+  "code": "stock-heavyplate",
+  "class": "iiex.ItemStockPiece",
+  "shape": {
+    "base": "iiex:forming/heavyplate",
+    "selectiveElements": [
+      "HeavyPlate1"
+    ]
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 600,
+    "stockForm": "heavyplate"
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

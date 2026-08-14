@@ -82,10 +82,34 @@ public class StockFormRegistryTests {
   [Fact]
   public void The_forms_we_ship_cannot_be_dropped_by_a_reset() {
     // A mod clearing the table would take our stock with it, so there is no clear - only a targeted
-    // removal, and re-seeding restores the shipped set.
+    // removal, and re-seeding restores the shipped set. Asserted as the whole set rather than as a count,
+    // so a seed that forgets one and a seed that gains one read differently.
     StockForm.SeedDefaults();
 
-    Assert.Contains("shingledbar", StockForm.All.Keys);
-    Assert.Equal(2, StockForm.All.Count);
+    Assert.Equal(
+      ["beam", "heavyplate", "rod", "shingledbar", "shingledslab"],
+      StockForm.All.Keys.Order()
+    );
+  }
+
+  [Fact]
+  public void The_mill_admits_a_vanilla_rod_and_it_enters_as_our_stock() {
+    // The re-rollable rod stays vanilla's, so the mill converts at the deck rather than the design minting
+    // a second rod. Without the row a player holding `game:rod-iron` gets WrongForm at a mill that the
+    // design says takes it.
+    StockForm.SeedDefaults();
+
+    Assert.Equal("iiex:stock-rod", StockForm.EntersAs("game:rod-iron"));
+    Assert.True(StockForm.TryGet("rod", out _));
+  }
+
+  [Fact]
+  public void Stock_is_never_feedstock_for_itself() {
+    // Admission is for pieces that are not work pieces yet. A stock item listed here would be converted
+    // into a fresh one on every feed, silently discarding the gauge it had been rolled to.
+    StockForm.SeedDefaults();
+
+    foreach (string entersAs in StockForm.Feedstock.Values)
+      Assert.Null(StockForm.EntersAs(entersAs));
   }
 }

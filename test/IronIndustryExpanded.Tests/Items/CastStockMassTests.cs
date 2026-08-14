@@ -5,7 +5,7 @@ using Xunit;
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// The cast-stock masses and the ladder arithmetic that depends on them: the three numbers must agree
+/// The cast-stock masses and the route arithmetic that depends on them: the three numbers must agree
 /// with the crop table in <c>iiex.md</c>, and the constants must not drift from the
 /// <see cref="CastStockItemDefinitions.Forms"/> table. Asserts nothing about voxel counts - the item
 /// shapes and the long cell's sand cavities draw the rammed sand and the fill glow, not metal content.
@@ -38,7 +38,7 @@ public class CastStockMassTests {
 
   #endregion
 
-  #region The ladder divides
+  #region The route divides
 
   [Theory]
   // 600 u is the wide tier's quantum; these are the divisions iiex.md's crop table is built on. A mass

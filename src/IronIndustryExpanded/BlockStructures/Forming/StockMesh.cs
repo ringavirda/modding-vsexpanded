@@ -8,7 +8,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming;
 /// (<see cref="WorkPiece.WidthAt"/> / <see cref="WorkPiece.LengthAt"/>), so the picture cannot drift from the
 /// piece's behaviour.
 /// <para>
-/// What it covers is the half-step. A piece is one gauge across its whole width, and the gauges a ladder
+/// What it covers is the half-step. A piece is one gauge across its whole width, and the gauges a route
 /// declares are drawn art; the state between two of them is the half-step a round lands, and nothing draws
 /// that. Under the per-side model this composed the lopsided piece that model allowed; a lopsided piece is
 /// no longer reachable.
@@ -49,27 +49,27 @@ public static class StockMesh {
   /// barrel it was never fed to.
   /// </remarks>
   public static bool IsBaseState(WorkPiece piece) =>
-    ExpandedLib.Processes.StageLadder.SameThickness(
+    ExpandedLib.Processes.ProcessRoute.SameThickness(
       piece.Thickness,
       piece.Form.BaseThickness
     );
 
   /// <summary>
-  /// The shape element <paramref name="ladder"/> draws <paramref name="piece"/> at, or null when there is
-  /// none and the composed mesh is the answer: no ladder, no shape file to hold the elements, a gauge the
-  /// ladder does not draw, or a piece that does not know which branch worked it.
+  /// The shape element <paramref name="route"/> draws <paramref name="piece"/> at, or null when there is
+  /// none and the composed mesh is the answer: no route, no shape file to hold the elements, a gauge the
+  /// route does not draw, or a piece that does not know which branch worked it.
   /// </summary>
   /// <remarks>
   /// A piece with no family is never guessed at. At a fork two families draw one gauge differently, so a
   /// guess is visibly wrong half the time.
   /// </remarks>
   public static string? ElementFor(
-    ExpandedLib.Processes.StageLadder? ladder,
+    ExpandedLib.Processes.ProcessRoute? route,
     WorkPiece piece
   ) =>
-    ladder?.Shape == null || piece.Family == null
+    route?.Shape == null || piece.Family == null
       ? null
-      : ladder.StageAt(piece.Thickness, piece.Family)?.Element;
+      : route.StageAt(piece.Thickness, piece.Family)?.Element;
 
   /// <summary>
   /// A key identifying the geometry of <paramref name="piece"/>, for caching composed meshes. The form, the

@@ -1,5 +1,14 @@
 # Heading machine
-**Status** designed - nothing built; no block, no BE, no die item, no recipe, no shape   **Mod** iiex (`IronIndustryExpanded`)
+**Status** designed - nothing built; no block, no BE, no die item, no recipe, no shape. ★ **Its input landed 2026-08-14**: the 25 u blank ships and is obtainable, four off a rod taken down the grooved branch to 1.0, so this bench is no longer blocked on the forming line. ⛔⛔ **But this page's premise is contested as of 2026-08-15** — see below   **Mod** iiex (`IronIndustryExpanded`)
+
+⛔⛔ **Owner ruling, 2026-08-15: the blank is a rivet rod, cut and upset by a RIVET MACHINE.** The item
+shipped accordingly as `iiex:rivetrod`. That restores [STATE.md](../../internal/plans/STATE.md)'s settled
+Fasteners row of 2026-07-30 — *"two machines, two routes, **no dies, no bolts**: the nail machine shears and
+heads nailplate in one pass; the rivet machine cuts and upsets rod @ 25 u"* — which **this page overwrote
+without recording that it was doing so**. Two things on it therefore stand unsupported until the bench is
+re-settled: the `ItemDie` tooling contract it owns, and the bolt as a product. Nothing here is built, so the
+cost of the contradiction is documentation rather than code — but [machining line](../mechanics/machining-line.md)
+cites the die contract, so re-settling it is not local to this file.
 
 **Owns**
 * the **`ItemDie` tooling contract** - the spec a die carries, how it is fitted, and the rule that a die-fed bench never names a product in code. Both this bench and the [nail machine](nail-machine.md) read it;

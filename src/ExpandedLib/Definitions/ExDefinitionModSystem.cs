@@ -36,22 +36,22 @@ public class ExDefinitionModSystem : ModSystem {
     )
       ExDefinitions.RegisterItem(def);
 
-    // The stopping points of every stage ladder. Read from the catalogue assets rather than from
-    // StageLadderRegistry, which is only populated at AssetsFinalize - and read here rather than there
-    // because these items must exist before the object loader builds them. That ordering is why ladders
+    // The stopping points of every stage route. Read from the catalogue assets rather than from
+    // ProcessRouteRegistry, which is only populated at AssetsFinalize - and read here rather than there
+    // because these items must exist before the object loader builds them. That ordering is why routes
     // are config assets and not item attributes.
-    var ladders = Processes.StageLadderLoader.Parse(
-      Processes.StageLadderLoader.Read(api),
-      out var ladderErrors
+    var routes = Processes.ProcessRouteLoader.Parse(
+      Processes.ProcessRouteLoader.Read(api),
+      out var routeErrors
     );
-    var generated = Processes.ProcessItemEmitter.Emit(ladders, out var skipped);
+    var generated = Processes.ProcessItemEmitter.Emit(routes, out var skipped);
     foreach (ExItemDef def in generated)
       ExDefinitions.RegisterItem(def);
 
-    // Reported here as well as at AssetsFinalize: a ladder that fails to parse generates no item, and the
+    // Reported here as well as at AssetsFinalize: a route that fails to parse generates no item, and the
     // finalize pass would only say the route was missing.
-    foreach (string error in ladderErrors)
-      api.Logger.Error("[exlib] invalid stage ladder - " + error);
+    foreach (string error in routeErrors)
+      api.Logger.Error("[exlib] invalid stage route - " + error);
     foreach (string note in skipped)
       api.Logger.Notification(
         "[exlib] stage names a code it does not build - " + note

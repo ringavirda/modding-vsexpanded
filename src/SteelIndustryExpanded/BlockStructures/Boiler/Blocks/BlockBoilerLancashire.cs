@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Boiler;
+using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 using Vintagestory.API.MathTools;
 
 namespace SteelIndustryExpanded.BlockStructures.Boiler.Blocks;

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "family": "shingledslab",
+  "shape": "iiex:forming/shingledslab",
+  "stages": [
+    {
+      "thickness": 2.75,
+      "acceptedBy": ["flatwide"],
+      "element": "Flattened275",
+      "halfStep": true
+    },
+    { "thickness": 2.5, "acceptedBy": ["flatwide"], "element": "Flattened250" },
+    {
+      "thickness": 2.25,
+      "acceptedBy": ["flatwide"],
+      "element": "Flattened225",
+      "halfStep": true
+    },
+    {
+      "thickness": 2.0,
+      "acceptedBy": ["flatwide"],
+      "element": "CutHeavyPlate1"
+    }
+  ]
+}

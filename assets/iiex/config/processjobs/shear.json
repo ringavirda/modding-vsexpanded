@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "machine": "shear",
+  "jobs": [
+    {
+      "input": "iiex:stock-shingledbar",
+      "stage": 2.0,
+      "family": "grooved",
+      "output": "game:rod-iron",
+      "count": 4,
+      "minTorque": 0.2,
+      "seconds": 2
+    },
+    {
+      "input": "iiex:stock-beam",
+      "stage": 1.0,
+      "family": "flat",
+      "output": "game:metalplate-iron",
+      "count": 2,
+      "minTorque": 0.2,
+      "seconds": 2
+    },
+    {
+      "input": "iiex:stock-shingledslab",
+      "stage": 2.0,
+      "family": "flatwide",
+      "output": "iiex:heavyplate",
+      "count": 2,
+      "minTorque": 0.3,
+      "seconds": 3
+    },
+    {
+      "input": "iiex:stock-rod",
+      "stage": 1.0,
+      "family": "grooved",
+      "output": "iiex:rivetrod",
+      "count": 4,
+      "minTorque": 0.2,
+      "seconds": 2
+    },
+    {
+      "input": "game:metalplate-iron",
+      "output": "iiex:nailplate",
+      "count": 2,
+      "minTorque": 0.2,
+      "seconds": 2
+    }
+  ]
+}

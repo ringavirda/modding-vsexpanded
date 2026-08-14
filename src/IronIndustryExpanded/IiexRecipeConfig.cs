@@ -138,6 +138,8 @@ public class IiexRecipeConfig : IExVersionedConfig {
       // The shop floor.
       ["designtable-grid"] = Grid("iiex:crafting-designtable-*"),
       ["rollingmill-grid"] = Grid("iiex:forming-rollingmill-*"),
+      ["shear-grid"] = Grid("iiex:forming-shear-*"),
+      ["shearblade-grid"] = Grid("iiex:shearblade-*"),
 
       // RCC constructions (the heavy multiblock build costs). The Lancashire boiler and Cornish
       // engine are catalogued in HpexRecipeConfig.

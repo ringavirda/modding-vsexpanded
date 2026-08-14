@@ -1,0 +1,27 @@
+{
+  "code": "beam",
+  "shape": {
+    "base": "iiex:item/rolled-beam",
+    "selectiveElements": [
+      "Beam"
+    ]
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/sheet-plain/iron5"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7850,
+  "attributes": {
+    "materialUnits": 400
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

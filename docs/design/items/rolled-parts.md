@@ -1,23 +1,26 @@
 # Rolled parts
 
-**Status** designed - not one item in this family exists in `src/`. Four dangling roll-set output codes are
-the only trace of it in code; the mill's `OutputAt` has no caller, so nothing has ever produced a rolled
-product
+**Status** ★★ **the catalogue is BUILT and all six items are obtainable, 2026-08-14** —
+`RolledItemDefinitions` ships `rivetrod`, `nailplate`, `beam`, `blank`, `skelp` and `boilerplate`, and two crop
+tables reach them: `assets/iiex/config/processjobs/shear.json` (wrought and the rod fork) and
+`assets/siex/config/processjobs/shear.json` (cast). **Both tiers of the forming line produce a finished
+product, and both branches of the fork work.** ⛔ Two declared rows are still unreachable: see
+[What is reachable today](#what-is-reachable-today)
 **Mod** iiex owns the rolled products, narrow and wide alike, and the forming line that makes them - the
 mill, the wide hall and the bending roller; siex only feeds bigger stock into iiex's train, and owns the
 steel roll sets (settled by M1/M.7, 2026-08-14)
 
 **Owns**
 
-* the rolled-product catalogue - `rolledrod`, `rod`, `nailplate`, `beam`, `blank`, `skelp`, `heavyplate`,
+* the rolled-product catalogue - `rolledrod`, `rivetrod`, `nailplate`, `beam`, `blank`, `skelp`, `heavyplate`,
   `boilerplate` and the mod's use of vanilla `game:metalplate` - each one's section × length, voxel volume,
   settled mass, owning mod, and what consumes it;
 * every crop point: which stage of which stock each product is claimed at, how many come off one piece, and
   which of those counts are exact and which are rounded;
 * the rod fork - one 100 u `rolledrod`, four feeds either way, two different products - and the rule that
   nails come from plate, never from rod;
-* that `heavyplate` (rolled steel) and `castplate` (cast iron) are two items, what each is for, and the state
-  of the one shape that currently serves both;
+* that the rolled and the cast heavy plate are **one item with a metal axis** at one mass, and what remains
+  of the merge (M.8);
 * the fabricated-substitute demand side: `beam` + plate + rivets is what gives these products their consumer
   list;
 * the art inventory for these products - what is drawn, what is missing, and which drawn element is which
@@ -65,17 +68,53 @@ No route mints a unit against the hand route. The chain is conserved end to end:
 
 ---
 
+## What is reachable today
+
+*Built 2026-08-14; the cast routes and the rod fork followed the same day.* The six items exist and carry
+their settled masses. What a player can actually obtain is **ten** routes — the five wrought and one rod
+crop row in iiex's table, the five cast ones in siex's, merged by machine at load, plus the flat 1.0 stage
+the mill claims as nail plate without a crop. What is left unreachable is two rows on two blockers, neither
+of them art:
+
+| Route | State | Blocked on |
+|---|---|---|
+| `shingledbar` → `game:rod-iron` ×4 (grooved 2.0) | **works** | — |
+| `shingledbar` → `beam` ×2 (flat 2.0) | **works** | — |
+| `shingledbar` → `game:metalplate-iron` ×2 (flat 1.0) | **works** | — |
+| `shingledslab` → `boilerplate` ×2 (flat 1.0) | **works** | — |
+| `castbillet` → `beam` ×3 (flat 2.0) | **works** *(2026-08-14)* | — |
+| `castbillet` → `game:metalplate-iron` ×3 (flat 1.0) | **works** *(2026-08-14)* | — |
+| `castbloom` → `blank` ×5 (wide 2.0) | **works** *(2026-08-14)* | — |
+| `castbloom` → `skelp` ×5 (wide 1.0) | **works** *(2026-08-14)* | — |
+| `castslab` → `boilerplate` ×5 (wide 1.0) | **works** *(2026-08-14)* | — |
+| `game:rod-iron` → `rivetrod` ×4 (grooved 1.0) | **works** *(2026-08-14)* | — |
+| `game:rod-iron` → `nailplate` (flat 1.0, no crop) | **works** *(2026-08-14)* | — the one whole-piece conversion: the mill itself claims it, since the stage names a `code` |
+| `castbillet` → `rolledrod` ×6 (grooved 2.25) | declared, unreachable | the **mid-gap crop**. 2.25 is a half-step, not a rung, and its six pieces each still need a pass — which is not the one-product-plus-remainder stroke the shear does. The billet's ladder is flat-only until that is ruled |
+| `castbloom` → plate ×5 (wide 3.0) | declared, unreachable | its crop yields **stock**, not a product: five pieces to be finished on the narrow flat set. Same open question as the billet's |
+| either slab → `heavyplate` | not declared | **M.8**, which merges `heavyplate` with `castplate-heavy` onto one metal axis. Shipping a rolled-only one now is the duplication that stage exists to remove |
+
+⛔⛔ **Deferring `heavyplate` still leaves the cast-slab route half-walkable.** The forms landed, so the
+slab now rolls and its 1.0 boilerplate crop works; what is missing is the **mandatory** 2.0 crop
+([recoverability](../mechanics/recoverability.md)), so a player who rolls straight past it reaches 1.0 at
+80 long against the 48 limit. M.8 is the whole of what is left there.
+
+`ShippedCropTableTests` (iiex) and `ShippedCastCropTableTests` (siex) hold both tables to reaching real
+rungs, naming real outputs and asking less drive than the mill does — the check the four dangling roll-set
+output codes never had. The cast one additionally pins the blade tier and the merge: contributing both
+tables gives ten rows, not five.
+
+---
+
 ## The catalogue
 
-Settled 2026-07-29. Every mass is the density rule applied to the drawn section. None of these items exists in
-`src/` - a repo-wide grep for `boilerplate`, `nailplate`, `skelp`, `rivetrod`, `beam` or `rod-` in the item
-providers returns nothing but the word "blank" in unrelated prose.
+Settled 2026-07-29, **built 2026-08-14**. Every mass is the density rule applied to the drawn section, and
+every one is now a `const` in `RolledItemDefinitions` with the section in its comment.
 
 | Item | Section × length | vx³ | Mass (u) | Mod | Made by | Consumed by |
 |---|---|---|---|---|---|---|
 | `game:rod-{metal}` | 2 × 2 × 10 | 40 | 100 | vanilla | shear crops the grooved 2.0 stage - 4 per `shingledbar`, 6 per `castbillet` | the mill again (the fork, below); it is `game:rod` rather than a drop-in for it |
-| `stock-rod` (the work piece) | 2 × 2 × 10 | 40 | 100 | iiex | auto-emitted by `StockItemDefinitions` from the `Rod` `StockForm` | what a rod becomes on entering the mill - `MaxStackSize 1`, stage-rendered, carries heat |
-| `rod` (was `rivetrod`) | 1 × 1 × 10 | 10 | 25 | iiex | shear crops the grooved 1.0 stage of a `rolledrod` - 4 per rod | [heading machine](../machines/heading-machine.md) → bolts (iiex die) or rivets (iiex die) |
+| `stock-rod` (the work piece) | 2 × 2 × 10 | 40 | 100 | iiex | **ships 2026-08-14**: auto-emitted by `StockItemDefinitions` from the `Rod` `StockForm` | what a rod becomes on entering the mill - `MaxStackSize 1`, stage-rendered, carries heat. `StockForm.Feedstock` is the conversion, and it is why no consumer of `game:rod-*` had to change |
+| `rivetrod` | 1 × 1 × 10 | 10 | 25 | iiex | shear crops the grooved 1.0 stage of a `rolledrod` - 4 per rod | the [rivet machine](../machines/heading-machine.md), which cuts and upsets it → rivets |
 | `nailplate` | 4 × 1 × 10 | 40 | 100 | iiex | one `rolledrod` taken flat 1.5 → 1.0 - 1 per rod, no crop | [nail machine](../machines/nail-machine.md) → 4 × `game:metalnailsandstrips` |
 | `beam` | 4.5 × 2 × 9 | 81 | 200 | iiex | shear crops the flat 2.0 stage in half - 2 per `shingledbar`, 3 per `castbillet` | fabricated steel frames (beam + plate + rivets); the iiex beam engine |
 | `game:metalplate` | 9 × 1 × 9 | 81 | 200 | vanilla | shear crops the flat 1.0 stage - 2 per bar, 3 per billet, 5 per `castbloom` (crop 5 at 3.0, then narrow flat); or a `boilerplate` stamped on the hammer → 3 | everything - `ExIngredients.Plate` (`ExIngredients.cs:28-29`) |
@@ -101,7 +140,7 @@ Section here is what the stock actually is at that stage, before the crop. The t
 | `shingledbar` 400 | grooved | 2.0 | 2 × 2 × 40.5 | ×4 | 2 × 2 × 10.125 | `rolledrod` | mass exact, length rounds 10.125 → 10 |
 | `shingledbar` | flat | 2.0 | 4.5 × 2 × 18 | ×2 | 4.5 × 2 × 9 | `beam` | exact |
 | `shingledbar` | flat | 1.0 | 9 × 1 × 18 | ×2 | 9 × 1 × 9 | `game:metalplate` | exact, vanilla geometry |
-| `rolledrod` 100 | grooved | 1.0 | 1 × 1 × 40 | ×4 | 1 × 1 × 10 | `rod` | exact |
+| `rolledrod` 100 | grooved | 1.0 | 1 × 1 × 40 | ×4 | 1 × 1 × 10 | `rivetrod` | exact |
 | `rolledrod` | flat | 1.0 | 4 × 1 × 10 | - | 4 × 1 × 10 | `nailplate` | exact, whole piece |
 | `castbillet` 600 | grooved | 2.25 (mandatory) | 2.25 × 2.25 × 48.0 | ×6 | finished to 2.0 individually | `rolledrod` | exact - 40.5 vx³ each |
 | `castbillet` | flat | 2.0 | 4.5 × 2 × 27 | ×3 | 4.5 × 2 × 9 | `beam` | exact |
@@ -131,11 +170,20 @@ alone.
 > The mill admits `game:rod-iron` at its deck and converts it to `iiex:stock-rod` on entry, so no consumer
 > needs editing - and an anvil-made rod can be rolled to nail plate before the player owns a puddling furnace.
 
+★★ **Built 2026-08-14, exactly as ruled.** `StockForm.Rod` (2 × 2 × 10, ceiling 4, e = 1) and its ladder
+`assets/iiex/config/processroutes/rod.json` ship, and the admission is `StockForm.Feedstock` — a table of
+*offered code → the stock item it enters as*, applied by `BlockEntityRollingMill.Admit`. Keeping it as
+codes rather than forms is what lets a caller admit their own feedstock without knowing a form exists.
+
+★ **The fork is where drawn stage art earns its place.** The rod's ladder names a `shape` and a per-stage
+`element`, so `ItemStockPiece` renders the authored `Grooved150` / `Flattened150` / `NailPlate` instead of
+scaling the base — a groove is not a thinner rectangle, and this is the one family drawn at every rung.
+
 One rod, four feeds, two products, chosen per rod: the set that is fitted decides what comes out.
 
 | Route | Set | Gaps | Feeds | Comes out as | Then |
 |---|---|---|---|---|---|
-| round | `grooved`, barrel 16 | 1.5 → 1.0 | 4 | 1 × 1 × 40 | shear ×4 → 4 `rod` @ 25 → heading machine → bolts or rivets |
+| round | `grooved`, barrel 16 | 1.5 → 1.0 | 4 | 1 × 1 × 40 | shear ×4 → 4 `rivetrod` @ 25 → rivet machine → rivets |
 | flat | `flat`, barrel 4 | 1.5 → 1.0 | 4 | 4 × 1 × 10 | no crop → 1 `nailplate` @ 100 → nail machine → 4 `game:metalnailsandstrips` |
 
 Both routes hold the rod at 10 long (the flat section law puts all reduction into width; the groove puts all
@@ -146,32 +194,48 @@ Nails come from plate, never from rod. A rod-drawn nail is the 1870s wire nail a
 nail-machine reference is a cut-nail bench working a strip. The flat branch exists to make a small plate.
 
 Nails and bolts are the iron fastener; rivets are the steam one, because a rivet joint is strong and tight, so
-it arrives with the first thing that holds pressure. Same rod, same bench, different die, which is why the
-bench is a heading machine ([heading machine](../machines/heading-machine.md)). There is no riveting machine:
-rivets are an ingredient.
+it arrives with the first thing that holds pressure.
+
+⛔⛔ **The bench and the blank's name are contested, and the owner ruled on 2026-08-15: it is a rivet rod,
+cut and upset by a rivet machine.** So the 25 u product is `iiex:rivetrod` (display "Rivet Rod"), and it is
+named for what it feeds. The naming half is not a matter of taste - the piece is **a quarter of vanilla's
+rod by section and by mass** (1 × 1 × 10 at 25 u against 2 × 2 × 10 at 100 u), so a bare `rod` puts two
+items a player cannot tell apart beside each other in the handbook and the crop table.
+[fasteners.md](fasteners.md)'s *"`rivetrod` is a dead name"* is struck by that ruling, and it agrees with
+[STATE.md](../../internal/plans/STATE.md)'s own settled Fasteners row - *"the rivet machine cuts and upsets
+rod @ 25 u"* - which the later heading-machine page had overwritten without noticing.
+
+⛔ **What is still open is the bench, not the blank**: the ruling restores the rivet machine, while
+[heading machine](../machines/heading-machine.md) owns the `ItemDie` contract and a bolt route that the
+2026-07-30 Fasteners row ("no dies, no bolts") never had. That page's premise needs re-settling; the item
+name does not wait on it.
 
 ---
 
-## `heavyplate` is not `castplate`
+## The rolled and the cast plate are one item
 
-Two items ([STATE.md § D2](../../internal/plans/STATE.md)):
+⛔ **Struck 2026-08-15 (owner): `castplate` was never a second item.** It is the old name of
+`castplate-heavy`, so the 500 u 10 × 2 × 10 plate this section used to describe does not exist and should
+not. The rolled route and the sand-cast route make **the same item at the same 600 u**, differing only in
+metal — cast iron out of the casting cell, wrought or steel off the wide rolls — and the redrawn cast art
+carries that mass (`item-sandcast-heavyplate.json`, 10 × 2 × 12 = 240 vx³ = 600 u, the rolled one's volume
+exactly).
 
-| | `castplate` | `heavyplate` |
+| | cast | rolled |
 |---|---|---|
-| Metal | cast iron | rolled steel |
-| Section | 10 × 2 × 10 = 200 vx³ | 12 × 2 × 10 = 240 vx³ |
-| Mass | 500 | 600 |
+| Metal | cast iron | wrought / steel |
+| Section | 10 × 2 × 12 | 12 × 2 × 10 |
+| Mass | **600** | **600** |
 | Made by | [casting cell](../machines/casting-cell.md), heavy-plate pattern | wide 2.0 off either slab |
-| Role | the cast-iron structural part | its fabricated substitute at the steel tier |
+| Role | structural only - it is cast iron | the same, plus everything cast iron is too brittle for |
 
-600 rather than 500 because 600 divides both slabs (1200 / 600 = 2, 3000 / 600 = 5) while 500 divides only the
-cast one.
+★ Because the masses and the volumes agree, the two are interchangeable in most recipes and the metal is
+what a recipe restricts when it needs to. Which recipes restrict is **deferred** until the recipe pass
+(owner, 2026-08-15).
 
-What code ships today is neither. There is one item, `castplate-heavy`, at 160 u
-(`CastPartItemDefinitions.cs:21`, `:33`), pointed at one shape `iiex:item/heavyplate` (`:36`) that is drawn
-12 × 2 × 12 = 288 vx³ - a third section again. The same shape is also the casting pattern's output
-([patterns](patterns.md)). Splitting the item means splitting the art, and neither of the two settled sections
-is drawn.
+⛔ **What ships today is still two items**: `castplate-heavy` at **160 u** (`CastPartItemDefinitions.cs:18`)
+and the rolled `heavyplate` at 600. M.8 is the merge — one item, a metal variant, the cast one re-massed
+160 → 600 with its casting-pattern capacity following.
 
 ---
 
@@ -182,8 +246,8 @@ Nothing in this family is exported to a runtime domain; every file below is an u
 | Product | Drawn where | Element | Measures |
 |---|---|---|---|
 | `rolledrod` | `assets/editable/shapes/item-rod-rolled.json` | `RolledRod200` `:16-18` | 2 × 2 × 10 - exact |
-| `rod` | `assets/editable/shapes/item-rod-nail.json` | `NailRod1` `:16-18` + 3 children `:30-32`, `:44-46`, `:58-60` | 4 × (1 × 1 × 10) - the file name is stale, this is the rod bundle |
-| `rod` (in situ) | `item-rod-rolled.json` | `CutNailRod1` `:108-110` + 3 children | the same bundle drawn as the cut of the 1.0 grooved stage |
+| `rivetrod` | `assets/editable/shapes/item-rod-nail.json` | `NailRod1` `:16-18` + 3 children `:30-32`, `:44-46`, `:58-60` | 4 × (1 × 1 × 10) - the file name is stale, this is the rod bundle |
+| `rivetrod` (in situ) | `item-rod-rolled.json` | `CutNailRod1` `:108-110` + 3 children | the same bundle drawn as the cut of the 1.0 grooved stage |
 | `beam` | `assets/editable/shapes/item-beam-rolled.json` | `Beam` `:16-18` + child `:31-33` | 4.5 × 2 × 18, i.e. two beams - the planned rename is `CutBeam1` |
 | `game:metalplate` | `item-beam-rolled.json` | `CutPlate1` `:140-142` + `CutPlate2` `:154-156` | 2 × (9 × 1 × 9) - vanilla geometry |
 | `nailplate` | - | - | missing, and so are all four flat stages of the rod (1.75 / 1.5 / 1.25 / 1.0) |
@@ -217,7 +281,7 @@ only related constants that ship are the cast part's, and they are the wrong ite
 The four dangling output codes the roll sets already name - `iiex:rolledplate-iron`, `iiex:rolledsheet-iron`,
 `iiex:wirerod-iron`, `iiex:nailrod-iron` - resolve to nothing; that fact and its cause (`TryParse` never
 resolves a code) belong to [rolling mill](../machines/rolling-mill.md). Under the settled catalogue they map,
-respectively, onto `game:metalplate`, deleted, `rod`, and deleted - the `slitting` set that produced the last
+respectively, onto `game:metalplate`, deleted, `rivetrod`, and deleted - the `slitting` set that produced the last
 one goes entirely.
 
 The pass counts behind each product ("12 feeds to plate on narrow rolls against 8 on wide") are the pass
@@ -251,7 +315,7 @@ model's and are [rolling mill](../machines/rolling-mill.md)'s; the throughput co
   stage is past the 48-voxel limit - the hole in the invariant that
   [recoverability](../mechanics/recoverability.md) flags as its highest-value open item.
 - ~~A product cannot be declared at a half-step today.~~ **Fixed 2026-08-12.** `RollSetSpec` no longer holds
-  `gaps` or `outputs` at all: the states are the stock's stage ladder, a half-step is an ordinary rung, and
+  `gaps` or `outputs` at all: the states are the stock's process route, a half-step is an ordinary rung, and
   a stopping point is a stage carrying a `code`
   ([process-extension](../mechanics/process-extension.md)). Gauges match on a tolerance, not `==`. The
   shear's own crop table is a terminal registry and is still unshipped - see [shear](../machines/shear.md).
@@ -263,7 +327,7 @@ model's and are [rolling mill](../machines/rolling-mill.md)'s; the throughput co
 ## Open
 
 - Nothing is built. No item definition, no recipe, no lang key, no handbook page for any of the nine. The
-  construction sequence is: `rolledrod` / `rod` / `beam` first, then `rivet` + `nailplate`, then `boilerplate`
+  construction sequence is: `rolledrod` / `rivetrod` / `beam` first, then `rivet` + `nailplate`, then `boilerplate`
   + rolled `heavyplate` together with the cast plate's re-mass (160 → 500).
 - The `heavyplate` section question above must be settled before the item is drawn, because the drawn section
   is what the mass is measured from.

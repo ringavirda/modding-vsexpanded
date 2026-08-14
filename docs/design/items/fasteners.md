@@ -1,9 +1,12 @@
 # Fasteners
 
-**Status** partial - nails ship and are the most-demanded ingredient in the suite; the rod they should
-be cut from, the bolt, the rivet and the ball do not exist in any form
+**Status** partial - nails ship and are the most-demanded ingredient in the suite; ★ **the 25 u blank the
+headed fasteners come from now exists and is obtainable** (`iiex:rivetrod`, four off a rolled rod at the
+grooved 1.0 rung, 2026-08-14). The bolt, the rivet and the ball still do not exist in any form, and no
+bench is built
 **Mod** the items are vanilla (`game:`) plus two generated variants from exlib; the benches are
-iiex (nail, heading) · iiex (rivet die) · hpex (ball die)
+iiex (nail, rivet) · hpex (ball die). ⛔ Whether the rivet bench is a die-fed heading machine is **open**
+again after the 2026-08-15 ruling - see Gotcha 4
 
 **Owns**
 * the fastener catalogue - nails-and-strips, bolt, rivet, bearing ball - and the 25 u rod all three
@@ -120,7 +123,7 @@ One `rolledrod` at 100 u, the same four feeds either way, and the player chooses
 
 | Branch | Set · gaps | Feeds | Yields | Mass out | Bench | Fastener |
 |---|---|---|---|---|---|---|
-| grooved | `grooved` 1.5 → 1.0 | 4 | 4 rods @ 1 × 1 × 10 | 4 × 25 = 100 u | heading | bolts (iiex die) or rivets (iiex die) |
+| grooved | `grooved` 1.5 → 1.0 | 4 | 4 `rivetrod` @ 1 × 1 × 10 | 4 × 25 = 100 u | rivet | rivets |
 | flat | `flat` 1.5 → 1.0 | 4 | 1 `nailplate` @ 4 × 1 × 10 | 100 u | nail | 4 nails-and-strips @ 25 |
 
 Both branches conserve mass exactly and cost the same labour, which makes it a choice rather than a ladder.
@@ -193,8 +196,10 @@ repo that is:
 | `CutNailRod1`–`4` | 1 × 1 × 10, four of them | 40.0 | 4 × 25 u |
 
 The element names are stale. `CutNailRod1…4` and the filename `item-rod-nail.json` both say nail, but under
-the settled rule the 25 u rod goes to the heading bench and nails come from plate
-([STATE.md § Fasteners](../../internal/plans/STATE.md)) - the right rename target is a plain rod name, not `rivetrod`.
+the settled rule the 25 u piece goes to the rivet bench and nails come from plate
+([STATE.md § Fasteners](../../internal/plans/STATE.md)) - so the rename target is **`rivetrod`**, which is
+also what the *other* drawing of the same bundle already calls it (`CutRivetRod1…4` in
+`item-rolled-rod.json`, exported as `iiex:item/rolled-rivetrod` and shipped as the item's shape).
 
 **Lang / handbook**: no key and no page for any fastener in any mod; nails and rod inherit vanilla's.
 
@@ -236,9 +241,14 @@ There is no fastener code. What exists is the demand side.
 
 3. **The 8-set vanilla plan is not a mint** - see Numbers. `nail-machine.md:28` still says it is.
 
-4. **`rivetrod` is a dead name.** The 1.0 grooved product is a plain rod at 25 u; the bench is a heading
-   machine, not a rivet machine. `STATE.md`'s tier diagram still draws a `rivet machine` and should be
-   corrected when the machines index is next touched.
+4. ~~**`rivetrod` is a dead name.**~~ ⛔⛔ **Struck by the owner, 2026-08-15: it is the correct name.** The
+   1.0 grooved product is `iiex:rivetrod` at 25 u, cut and upset by a **rivet machine** - which is what
+   `STATE.md`'s settled Fasteners row said all along, and its tier diagram needs no correction. The
+   argument this row made ("a plain rod") also missed the thing that decides it: the piece is **a quarter
+   of vanilla's rod by section and by mass** (1 × 1 × 10 at 25 u against 2 × 2 × 10 at 100 u), so a bare
+   `rod` ships two items a player cannot tell apart. ⛔ What the ruling leaves open is the **bench**:
+   [heading machine](../machines/heading-machine.md) owns an `ItemDie` contract and a bolt route that the
+   2026-07-30 row's "no dies, no bolts" never had, and the two cannot both stand.
 
 5. **Nails, bolts and rivets are not interchangeable in the fiction and must not become so in code.** The
    RCC dual path exists so an iiex machine can later accept rivets as an alternative - never so that a

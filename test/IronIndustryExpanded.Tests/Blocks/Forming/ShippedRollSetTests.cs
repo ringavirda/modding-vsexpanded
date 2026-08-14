@@ -10,13 +10,13 @@ using Xunit;
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// The shipped tooling and the shipped ladders, checked together as the route a player actually walks. A
-/// schedule is a branch of a stock family's ladder walked thickest first, and it is only usable if every
+/// The shipped tooling and the shipped routes, checked together as the route a player actually walks. A
+/// schedule is a branch of a stock family's route walked thickest first, and it is only usable if every
 /// consecutive step is a legal bite - a draft within <c>δ_max = μ²R</c>. One illegal rung anywhere makes the
 /// whole route unenterable.
 /// <para>
 /// The golden pins these numbers, but a golden only says the data changed; regenerating it accepts a
-/// broken ladder without complaint. That is how the grooved set shipped with a first gap of 1.0 against
+/// broken route without complaint. That is how the grooved set shipped with a first gap of 1.0 against
 /// 3.0 stock - a 2.0 draft against a 1.0 limit, so the rod route could never be entered at all.
 /// </para>
 /// </summary>
@@ -40,34 +40,34 @@ public class ShippedRollSetTests {
     }
   }
 
-  /// <summary>The shipped ladders in a registry of their own, so this suite measures the emitted data and
+  /// <summary>The shipped routes in a registry of their own, so this suite measures the emitted data and
   /// not whatever else a test has since contributed to the shared one.</summary>
-  private static StageLadderRegistry ShippedLadders() {
-    var registry = new StageLadderRegistry();
-    foreach (StageLadder ladder in StageLadderSeeds.Shipped())
-      Assert.Empty(registry.Contribute(ladder));
+  private static ProcessRouteRegistry ShippedRoutes() {
+    var registry = new ProcessRouteRegistry();
+    foreach (ProcessRoute route in ProcessRouteSeeds.Shipped())
+      Assert.Empty(registry.Contribute(route));
     return registry;
   }
 
   /// <summary>Every route the game can actually run: a shipped set, a stock form that really exists, and a
-  /// branch of that form's ladder the set works.</summary>
+  /// branch of that form's route the set works.</summary>
   private static IEnumerable<(
     string Type,
     StockForm Form,
     MillSchedule Schedule
   )> UsableRoutes() {
-    StageLadderRegistry ladders = ShippedLadders();
+    ProcessRouteRegistry routes = ShippedRoutes();
     foreach ((string type, RollSetSpec spec) in ShippedSets())
       foreach (StockForm form in StockForm.All.Values)
-        if (MillSchedule.For(spec, form.Name, ladders) is { } schedule)
+        if (MillSchedule.For(spec, form.Name, routes) is { } schedule)
           yield return (type, form, schedule);
   }
 
   [Fact]
-  public void Every_shipped_set_and_ladder_parses_and_the_corpus_is_not_empty() {
+  public void Every_shipped_set_and_route_parses_and_the_corpus_is_not_empty() {
     // Without this the checks below would pass by scanning nothing.
     Assert.NotEmpty(ShippedSets());
-    Assert.NotEmpty(StageLadderSeeds.Shipped());
+    Assert.NotEmpty(ProcessRouteSeeds.Shipped());
     Assert.NotEmpty(UsableRoutes());
   }
 
@@ -148,7 +148,7 @@ public class ShippedRollSetTests {
     ];
 
     // None, since the slitting set was retired 2026-08-12. It accepted only "plate", which is not a
-    // StockForm, and no ladder declared a slitting rung, so it was tooling with no route at all. A set
+    // StockForm, and no route declared a slitting rung, so it was tooling with no route at all. A set
     // that reaches nothing must not ship again.
     Assert.Empty(dead);
   }
@@ -180,7 +180,7 @@ public class ShippedRollSetTests {
   }
 
   [Fact]
-  public void A_stopping_point_is_the_ladder_s_to_name_and_no_set_names_one() {
+  public void A_stopping_point_is_the_route_s_to_name_and_no_set_names_one() {
     // The rule this whole layer exists for: a machine may not name a product. Every shipped set is
     // geometry and torque, and what the metal becomes is declared by the stock it is made of.
     foreach (
@@ -192,9 +192,9 @@ public class ShippedRollSetTests {
           Assert.True(
             schedule.OutputAt(gap) == null
               || schedule
-                .Ladder.StageAt(gap, schedule.Set.Family)!
+                .Route.StageAt(gap, schedule.Set.Family)!
                 .IsStoppingPoint,
-            $"{type} on {form.Name}: the product at {gap} came from somewhere other than the ladder"
+            $"{type} on {form.Name}: the product at {gap} came from somewhere other than the route"
           )
       );
   }

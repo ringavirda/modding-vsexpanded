@@ -30,7 +30,12 @@ public class LangKeyResolutionTests {
 
   /// <summary>Domains whose lang files are somebody else's to ship: vanilla's, and the compat targets
   /// under <c>.compat/</c>. Anything else a literal names must be one of ours and must resolve.</summary>
-  private static readonly HashSet<string> Foreign = ["game", "creative", "survival"];
+  private static readonly HashSet<string> Foreign =
+  [
+    "game",
+    "creative",
+    "survival",
+  ];
 
   [Fact]
   public void Every_literal_lang_key_resolves_in_english() {
@@ -46,7 +51,9 @@ public class LangKeyResolutionTests {
       // needed most: rename or merge away a domain and every literal still naming it silently stops
       // being checked instead of failing. A domain we do not ship is a dead key, so it fails.
       if (!langs.TryGetValue(domain, out HashSet<string>? keys)) {
-        missing.Add($"{domain}:{key} ({file}) - no lang tree ships domain '{domain}'");
+        missing.Add(
+          $"{domain}:{key} ({file}) - no lang tree ships domain '{domain}'"
+        );
         continue;
       }
       if (!keys.Contains(key))

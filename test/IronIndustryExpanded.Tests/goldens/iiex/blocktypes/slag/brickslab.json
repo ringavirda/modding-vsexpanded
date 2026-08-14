@@ -177,7 +177,7 @@
   "drops": [
     {
       "type": "block",
-      "code": "slag-brickslab-down-free"
+      "code": "iiex:slag-brickslab-down-free"
     }
   ],
   "tpHandTransform": {

@@ -52,6 +52,23 @@ Settled: Model A - the diagram is an ingredient, not a crafting engine.
   (a plain case of R7 - the catalogue interaction is what block info cannot express); nothing else in the
   suite gains one.
 
+### Amendment 2026-08-15: assembly may be work, at one station
+
+⛔⛔ **"Assembly is ordinary crafting" gains an exception, and "no new recipe engine" does not.** The
+[workbench](../machines/workbench.md) adds a 5 × 5 bench whose recipes may declare an **interaction
+sequence** - an ordered list of tool-held gestures - so a boiler or a fitting is assembled rather than
+clicked. Two things about it are worth stating here, where Model A is read:
+
+* **It adds no recipe format and no matcher.** Vanilla's `GridRecipe.Width`/`.Height` are settable and
+  `ConsumeInput` takes an arbitrary grid width, scanning sub-positions - so a 5 × 5 bench uses vanilla's own
+  matching and every existing 3 × 3 recipe works in it unchanged. Model A's clause stands.
+* **The reason for the bigger grid is stack size, not layout.** An ingredient's `quantity` is bounded by
+  what a slot holds, so 48 rods against a 16 cap needs three cells. That does not weaken "one cell per
+  distinct ingredient" below - three cells of rods is still rods, not a picture of the product.
+
+★ The sequence is declared per recipe in `config/craftsequences/`, keyed by machine and contributed to, so
+another mod can put labour on our recipe and we on theirs. Format and rules: [workbench](../machines/workbench.md).
+
 ### The recipe idiom
 
 A diagram-led grid is the plan plus its bill of materials: one cell per distinct ingredient, carrying

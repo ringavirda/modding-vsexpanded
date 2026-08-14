@@ -5,6 +5,7 @@ using System.Linq;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.Items;
 using Newtonsoft.Json;
 using Vintagestory.API.Common;
 using Xunit;
@@ -174,13 +175,25 @@ public class FurnacePartsTests {
   [Theory]
   [InlineData("stock-shingledbar", HeatingHearthLayout.Stock.ShingledBloom)]
   [InlineData("stock-shingledslab", HeatingHearthLayout.Stock.ShingledSlab)]
-  [InlineData("castbillet", HeatingHearthLayout.Stock.CastBillet)]
-  [InlineData("castbloom", HeatingHearthLayout.Stock.CastBloom)]
-  [InlineData("castslab", HeatingHearthLayout.Stock.CastSlab)]
+  [InlineData("caststock-billet", HeatingHearthLayout.Stock.CastBillet)]
+  [InlineData("caststock-bloom", HeatingHearthLayout.Stock.CastBloom)]
+  [InlineData("caststock-slab", HeatingHearthLayout.Stock.CastSlab)]
   public void The_hearth_recognises_every_form_it_has_a_bed_for(
     string path,
     HeatingHearthLayout.Stock want
   ) => Assert.Equal(want, HeatingHearthLayout.StockOf(path));
+
+  [Fact]
+  public void Every_cast_stock_code_the_mod_actually_ships_is_recognised() {
+    // The rows above are literals, and literals are what let the recogniser go on naming `castbillet`
+    // for months after the item became `caststock-billet` - a stale prefix matches nothing, so no cast
+    // piece could be reheated and every test still passed. This reads the shipped variant list instead.
+    foreach ((string form, _, _) in CastStockItemDefinitions.Forms)
+      Assert.True(
+        HeatingHearthLayout.StockOf($"caststock-{form}") != null,
+        $"the hearth does not recognise the shipped caststock-{form}"
+      );
+  }
 
   [Theory]
   [InlineData("pig")]

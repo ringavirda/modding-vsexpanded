@@ -1,17 +1,20 @@
 # Steel roll sets
 
-**Status** designed - nothing built. `RollSetItemDefinitions.Sets` holds four sets, all iiex, all
-iron-era (`RollSetItemDefinitions.cs:56-104`); no steel set, no cast `StockForm`, no `siex:rollset*` item and
-no recipe exists anywhere. The one field the whole steel tier gates on - `MinTorque` - is parsed, stored,
-validated and never read
-**Mod** siex (`SteelIndustryExpanded`) - the sets. The mill block and the hall both stay iiex.
+**Status** ★★ **partly overtaken 2026-08-14.** The cast forms, their ladders and their crop rows are
+**built** and siex-owned, so cast stock rolls today on iiex's three sets. ⛔⛔ **The per-gap wide sets this
+page proposed are cancelled** (owner, 2026-08-14): the wide stand's top roller is the movable one and the
+player sets the gap by working the mill's raise/lower cells, so **one wide roll set covers every wide gap**
+and there is no `rollset-flatwide35` / `-flatwide30` to build. What is genuinely unbuilt here is the steel
+**narrow** sets and the tier gate itself: `MinTorque` is still parsed, stored, validated and never read
+**Mod** siex (`SteelIndustryExpanded`) - the sets and the cast forms. The mill block, the hall and the
+cast stock items all stay iiex.
 
 **Owns**
 
 * what a steel roll set is in this suite - a torque grade, not a material grade - and why the name has to
   be read carefully;
-* the two extra wide gaps, 3.5 and 3.0, as smex content: why 4-thick cast stock needs them, that they
-  extend iiex's hall rather than replace it, and the art they are missing;
+* the two extra wide gaps, 3.5 and 3.0: why 4-thick cast stock needs them, that they extend iiex's hall
+  rather than replace it, and that they are **rungs on a ladder rather than sets of their own**;
 * the steel narrow sets that let `castbillet` run the iiex mill's own barrel;
 * the `MinTorque` tier as the steel line's only gate, what it must be wired into, and why it is vapour
   today;
@@ -76,10 +79,14 @@ What smex adds structurally is two more stands bolted onto the front of iiex's h
 
 ### The extended train
 
-| Stand | Gap | Ships with | Enters | Notes |
+⛔ **"Ships with" is now about the ladder, not the tooling.** All six gaps are the one `flatwide` set at
+six settings; what siex contributes at the front two is the two cast forms that declare 3.5 and 3.0 as
+rungs, and a stand a player builds a sixth copy of.
+
+| Stand | Gap | Rung comes from | Enters | Notes |
 |---|---|---|---|---|
-| 1 | 3.5 | smex | `castbloom` 4 × 4, `castslab` 12 × 4 | art not drawn |
-| 2 | 3.0 | smex | - | art not drawn; also the stand `castbloom` is cropped at ([wide hall](wide-hall.md) § What comes off the end) |
+| 1 | 3.5 | siex (cast ladders) | `castbloom` 4 × 4, `castslab` 12 × 4 | built 2026-08-14 |
+| 2 | 3.0 | siex (cast ladders) | - | built; also the stand `castbloom` is cropped at ([wide hall](wide-hall.md) § What comes off the end) |
 | 3 | 2.5 | iiex | `shingledslab` 8 × 3 | art not drawn |
 | 4 | 2.0 | iiex | - | drawn: `item-rollers-flatwide20.json` |
 | 5 | 1.5 | iiex | - | drawn: `item-finished-rollers-flatwide15.json` |
@@ -102,12 +109,12 @@ correspondence is [wide hall](wide-hall.md)'s.
 
 | Asset | Path | State |
 |---|---|---|
-| wide roll art, 3.5 | - | must be drawn - smex's |
-| wide roll art, 3.0 | - | must be drawn - smex's |
+| ~~wide roll art, 3.5~~ | - | no longer owed: one wide set at six settings, not six items |
+| ~~wide roll art, 3.0~~ | - | " |
 | cast roll blank | `assets/editable/shapes/item-sandcast-rollers-blank.json` | drawn - the roll is a cast part, so this is where a set's recipe should start |
 | narrow set art | `item-finished-rollers-flat.json`, `item-finished-rollers-grooved.json` | drawn, unwired |
 | item shape actually shipped | `game:item/ingot` | `RollSetItemDefinitions.cs:122` - every roll set renders as an ingot |
-| cast stock item shapes | `item-castbillet.json`, `item-castbloom.json`, `item-castslab.json` | deleted; must be redrawn to the settled sections and authored in the smex asset domain |
+| cast stock item shapes | `assets/iiex/shapes/item/cast{billet,bloom,slab}.json` + 17 stage shapes under `forming/` | **ship, at the settled sections** (2026-08-14). They stayed in the iiex domain, because the item they draw is iiex's - this page owns the forms, not the pieces |
 | handbook page | `docs/siex/handbook/` | stops at `04-bessemer.html` |
 
 Caution: a steel set is visually indistinguishable from an iron one. Both render `game:item/ingot`
@@ -170,13 +177,21 @@ Caution: it does not work today. `MinTorque` has no production call site anywher
 The wide family's shared schema - one gap per item, `barrelWidth` 16, `MaxWidth` 15 - is
 [wide hall](wide-hall.md)'s and is not restated here. What follows is only the smex entries.
 
+⛔⛔ **The first three rows are cancelled, and the resolution was the third one.** A wide set is not one
+gap: its top roller moves, so iiex's single `flatwide` covers 3.5 and 3.0 as ordinary rungs the moment a
+form declares them, which is what shipped on 2026-08-14 — `flatwide.accepts` gained `castbloom` and
+`castslab`, and the two cast ladders declare 3.5 down to 1.0. No wide steel set is owed.
+
 | Set (proposed) | Family | Gaps | Accepts | `MinTorque` (proposed) | Anchor |
 |---|---|---|---|---|---|
-| `rollset-flatwide35` | flat | 3.5 | `castbloom`, `castslab` | 1.0 | 2 × the shipped `flatwide` 0.5 (`RollSetItemDefinitions.cs:80`) |
-| `rollset-flatwide30` | flat | 3.0 | `castbloom`, `castslab` | 1.0 | " |
-| steel `flatwide` 2.5 … 1.0 | flat | as iiex's | + the two cast wide forms | 1.0 | or iiex's four are simply re-`accepts`-ed - see [Open](#open) |
+| ~~`rollset-flatwide35`~~ | ~~flat~~ | ~~3.5~~ | ~~`castbloom`, `castslab`~~ | — | cancelled: one wide set, movable roller |
+| ~~`rollset-flatwide30`~~ | ~~flat~~ | ~~3.0~~ | ~~`castbloom`, `castslab`~~ | — | cancelled, same |
+| ~~steel `flatwide`~~ | flat | as iiex's | + the two cast wide forms | — | **this is what happened**: iiex's own set was re-`accepts`-ed |
 | `rollset-grooved-steel` | grooved | 2.5 / 2.0 / 1.5 / 1.0 | `castbillet` | 0.6 | 2 × the shipped `grooved` 0.3 (`:92`) |
 | `rollset-flat-steel` | flat | 2.5 / 2.0 / 1.5 / 1.0 | `castbillet` | 0.4 | 2 × the shipped `flat` 0.2 (`:68`) |
+
+The two narrow rows stand, and they are now the whole of this page's build list. The billet runs on iiex's
+`flat` today, which is the iron-tier set — that is the tier gate missing, not the route.
 
 Caution: the ×2 is a placeholder, not a calibration. The field is unread, so no shipped behaviour depends
 on any value. The only real anchor is the drive side - one bridged waterwheel leaves roughly 0.4 N·m of
@@ -283,10 +298,10 @@ any tier: that a set below `MinTorque` is refused.
 
 | # | Question | Notes |
 |---|---|---|
-| 1 | Are steel wide sets separate items, or do iiex's four simply gain the cast forms in `accepts`? | The second is far cheaper and matches the "`wide-flat` is `flatwide` with a different `minTorque`" reading. But then a single item carries two torque grades, which the spec cannot express - one set, one `MinTorque`. Decide before authoring: if the gate is real, the families must be separate |
-| 2 | What `MinTorque` values? | Unanswerable until the field is read and the mp-energy numbers settle. Anchors: hot pass ≈ 0.338 N·m, one bridged waterwheel ≈ 0.4 N·m headroom ([rolling mill](rolling-mill.md), [mp-energy](../mechanics/mp-energy.md)) |
+| ~~1~~ | ~~Are steel wide sets separate items, or do iiex's four simply gain the cast forms in `accepts`?~~ | **Settled 2026-08-14 (owner): the wide family is ONE item.** Its top roller is movable and the player sets the gap on the stand, so per-gap wide sets are cancelled outright and iiex's `flatwide` gained `castbloom` / `castslab`. ⛔ The cost is exactly what this row warned of - one item, one `MinTorque` - so the wide route carries **no torque gate at all** and cast stock rolls behind the iron-tier 0.5. If the gate must be real on the wide side it needs a mechanism other than a second set |
+| 2 | What `MinTorque` values? | Unanswerable until the field is read and the mp-energy numbers settle. Anchors: hot pass ≈ 0.338 N·m, one bridged waterwheel ≈ 0.4 N·m headroom ([rolling mill](rolling-mill.md), [mp-energy](../mechanics/mp-energy.md)). ★ The **shear** side did get a gate in the meantime: every cast crop row asks `minTier: 2`, the steel blade, which is pinned |
 | 3 | Wire the per-consumer idle draw into the stands. | Settled 2026-08-05 on [mp-energy](../mechanics/mp-energy.md) § Idle draw: every connected consumer contributes a standing torque, with the clutch transmission as the disconnect. The shipped code still charges friction per run, not per node - until that lands, "steel needs a bigger plant" has no mechanism behind it |
-| 4 | Two roll shapes to draw (3.5, 3.0), plus wiring the ones already drawn | |
+| ~~4~~ | ~~Two roll shapes to draw (3.5, 3.0)~~ | Dropped with question 1 - there is no per-gap wide item to draw. Wiring the narrow art already drawn stands |
 | 5 | Recipes, and the cost-catalogue rows | none exist for any set in any tier |
 | 6 | Three `StockForm`s and their long-cell patterns | the cavity redraw is a separate build item |
 | 7 | Does D3's alloy-grade penalty touch roll sets? | Recommend no: the rolls are cast iron in every tier and the gate is torque, so grade has nothing to attach to. Recorded so it is not re-derived |

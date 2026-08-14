@@ -10,7 +10,7 @@ namespace ExpandedLib.Processes;
 /// Reads the terminal-job catalogue - every domain's <c>config/processjobs/*.json</c> - and populates
 /// <see cref="ProcessJobRegistry"/> from it. One file per machine is the convention and nothing enforces
 /// it: the registry merges whatever arrives, so two mods may both add jobs to one machine. The sibling of
-/// <see cref="StageLadderLoader"/>, and deliberately the same shape.
+/// <see cref="ProcessRouteLoader"/>, and deliberately the same shape.
 /// </summary>
 public static class ProcessJobLoader {
   /// <summary>The asset path every domain's jobs are read from.</summary>

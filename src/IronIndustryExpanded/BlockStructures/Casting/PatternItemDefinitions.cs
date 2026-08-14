@@ -127,7 +127,7 @@ public class PatternItemDefinitions : IExItemDefProvider {
       [Box(4, 10, 4, 12, 14, 12)],
       "iiex:castwheelsection"
     ),
-    // The long-cell stock ladder: one cell, three fillings, three products - three narrow lanes give
+    // The long-cell stock route: one cell, three fillings, three products - three narrow lanes give
     // billets, two give blooms, one a slab, so swapping the pattern changes what the station makes.
     //
     // Capacity is the whole impression, not one lane: a 3-lane billet pattern holds 3 x 600 u and yields
@@ -174,7 +174,7 @@ public class PatternItemDefinitions : IExItemDefProvider {
   private const string LongCell = "longcell";
 
   /// <summary>
-  /// The pattern types belonging to the long cell rather than the 1x1 casting cell, the cast stock ladder.
+  /// The pattern types belonging to the long cell rather than the 1x1 casting cell, the cast stock route.
   /// Derived from <see cref="CastStockItemDefinitions.Forms"/> so the two cannot drift.
   /// </summary>
   public static readonly string[] LongCellPatternTypes =

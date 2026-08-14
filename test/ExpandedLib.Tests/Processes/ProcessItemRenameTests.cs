@@ -15,21 +15,21 @@ namespace ExpandedLib.Tests;
 /// See docs/design/mechanics/process-extension.md.
 /// </summary>
 public class ProcessItemRenameTests {
-  private static StageLadder Ladder(string json) {
+  private static ProcessRoute Route(string json) {
     Assert.True(
-      StageLadder.TryParse(
+      ProcessRoute.TryParse(
         new JsonObject(JToken.Parse(json)),
-        out StageLadder? ladder,
+        out ProcessRoute? route,
         out string? error
       ),
       error
     );
-    return ladder!;
+    return route!;
   }
 
   private static List<(AssetLocation Old, AssetLocation New)> Remaps(
     string json
-  ) => [.. ProcessItemRenames.Remaps([Ladder(json)])];
+  ) => [.. ProcessItemRenames.Remaps([Route(json)])];
 
   [Fact]
   public void A_declared_former_code_becomes_a_remap_to_the_current_one() {
