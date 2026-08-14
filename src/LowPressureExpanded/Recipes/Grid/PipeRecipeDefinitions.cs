@@ -7,7 +7,7 @@ namespace LowPressureExpanded.Recipes.Grid;
 /// <summary>
 /// Grid recipes for the lpex pipe fittings (valve, pressure valve, passthrough, outlet), carried by a
 /// stand-alone provider because recipes have no natural block or item class. A fitting is a reworked
-/// plain plated pipe, so each recipe takes an <c>iwex:pipe-straight-*</c> segment as its base. The valve
+/// plain plated pipe, so each recipe takes an <c>iwex:pipe-plated-straight-*</c> segment as its base. The valve
 /// and pressure-valve recipes are authored twice, once for vanilla rusty gears and once for lpex's
 /// craftable gears, so either gear crafts them; the outputs have no metal variant.
 /// </summary>
@@ -24,7 +24,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("B", Brick(2))
             .Ingredient("P", StraightBlock(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("lpex:pipe-passthrough-{brick}-ns")
+            .OutputBlock("lpex:pipe-cast-passthrough-{brick}-ns")
         )
         .Grid(r =>
           r.Name("Pipe Passthrough (Bend)")
@@ -33,7 +33,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("B", Brick(2))
             .Ingredient("P", StraightBlock(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("lpex:pipe-passthroughbend-{brick}-nw")
+            .OutputBlock("lpex:pipe-cast-passthroughbend-{brick}-nw")
         )
         .Grid(r =>
           r.Name("Pipe Outlet")
@@ -54,7 +54,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("H", Hammer)
             .Ingredient("L", Plate(1))
             .Ingredient("G", Gear("game:gear-rusty", 2))
-            .OutputBlock("lpex:pipe-valve-sn")
+            .OutputBlock("lpex:pipe-cast-valve-sn")
         )
         .Grid(r =>
           r.Name("Piping (Pressure Valve)")
@@ -64,7 +64,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("H", Hammer)
             .Ingredient("L", Plate(1))
             .Ingredient("G", Gear("game:gear-rusty", 2))
-            .OutputBlock("lpex:pipe-pressurevalve-sn")
+            .OutputBlock("lpex:pipe-cast-pressurevalve-sn")
         )
         .Grid(r =>
           r.Name("Piping (Valve)")
@@ -74,7 +74,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("H", Hammer)
             .Ingredient("L", Plate(1))
             .Ingredient("G", Gear("lpex:gear-*", 2))
-            .OutputBlock("lpex:pipe-valve-sn")
+            .OutputBlock("lpex:pipe-cast-valve-sn")
         )
         .Grid(r =>
           r.Name("Piping (Pressure Valve)")
@@ -84,7 +84,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("H", Hammer)
             .Ingredient("L", Plate(1))
             .Ingredient("G", Gear("lpex:gear-*", 2))
-            .OutputBlock("lpex:pipe-pressurevalve-sn")
+            .OutputBlock("lpex:pipe-cast-pressurevalve-sn")
         ),
     ];
 
@@ -113,9 +113,9 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
     IngredientBuilder,
     IngredientBuilder
   > StraightBlock(int qty) =>
-    i => i.Block("iwex:pipe-straight-*").Quantity(qty);
+    i => i.Block("iwex:pipe-plated-straight-*").Quantity(qty);
 
   private static System.Func<IngredientBuilder, IngredientBuilder> ValvePipe(
     int qty
-  ) => i => i.Block("iwex:pipe-straight-ns").Quantity(qty);
+  ) => i => i.Block("iwex:pipe-plated-straight-ns").Quantity(qty);
 }

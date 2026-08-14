@@ -25,7 +25,7 @@
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-passthroughbend-*"
+        "pipe-cast-passthroughbend-*"
       ]
     }
   },
@@ -59,6 +59,12 @@
     "all": false
   },
   "variantgroups": [
+    {
+      "code": "tier",
+      "states": [
+        "cast"
+      ]
+    },
     {
       "code": "type",
       "states": [

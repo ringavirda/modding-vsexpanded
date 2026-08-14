@@ -21,10 +21,10 @@
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-straight-*",
-        "pipe-bend-*",
-        "pipe-tjunction-*",
-        "pipe-xjunction-*"
+        "pipe-plated-straight-*",
+        "pipe-plated-bend-*",
+        "pipe-plated-tjunction-*",
+        "pipe-plated-xjunction-*"
       ]
     }
   },
@@ -43,6 +43,12 @@
     "all": false
   },
   "variantgroups": [
+    {
+      "code": "tier",
+      "states": [
+        "plated"
+      ]
+    },
     {
       "code": "type",
       "states": [

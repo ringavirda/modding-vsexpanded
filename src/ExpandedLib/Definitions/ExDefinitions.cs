@@ -154,6 +154,8 @@ public static class ExDefinitions {
   // empty when it declares none. DeclaredOnly matters: several blocks subclass a def-providing base (the
   // special pipes extend BlockPipe), and without it a derived class would return the base's inherited defs.
   // All three provider interfaces name the factory "Definitions", so one generic lookup serves them all.
+  // A provider carrying [ExDefDomain] is handed that domain rather than the registering mod's, which is
+  // what lets one assembly emit into several domains.
   private static IEnumerable<TDef> DefinitionsOf<TDef>(
     Type type,
     string domain,
@@ -169,7 +171,9 @@ public static class ExDefinitions {
       types: [typeof(string)],
       modifiers: null
     );
-    return define?.Invoke(null, [domain]) as IEnumerable<TDef> ?? [];
+    string effective =
+      type.GetCustomAttribute<ExDefDomainAttribute>()?.Domain ?? domain;
+    return define?.Invoke(null, [effective]) as IEnumerable<TDef> ?? [];
   }
 
   /// <summary>

@@ -34,14 +34,10 @@ public partial class BlockFlywheel
   // The disc is thin in Z (face in the X-Y plane, axle along Z), so a coupled axle meets it on the north
   // or south shaft face and the hub cell hosts a port for each side. StructureFillers.FootprintCells
   // rotates these into the placed orientation, so the we variant's ports become east/west.
-  private static readonly FillerBehaviorSpec MpNorth = new(
-    "exlib.BEBehaviorMPFillerPort",
-    "north"
-  );
-  private static readonly FillerBehaviorSpec MpSouth = new(
-    "exlib.BEBehaviorMPFillerPort",
-    "south"
-  );
+  private static readonly FillerBehaviorSpec MpNorth =
+    FillerBehaviorSpec.Of<BEBehaviorMPFillerPort>("north");
+  private static readonly FillerBehaviorSpec MpSouth =
+    FillerBehaviorSpec.Of<BEBehaviorMPFillerPort>("south");
 
   /// <summary>Normal wheel footprint: a thin-in-Z 3×3 disc in the X-Y plane, principal at bottom-centre,
   /// its hub one cell up at <c>(0,1,0)</c> hosting the two shaft ports.</summary>

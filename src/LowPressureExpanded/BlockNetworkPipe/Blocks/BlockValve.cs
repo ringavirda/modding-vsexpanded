@@ -34,6 +34,9 @@ public partial class BlockValve : BlockPipe {
       .CreativeTab("general", "*-valve-sn")
       .CreativeTab("lpex", "*-valve-sn")
       .Behavior("Lockable")
+      // Cast-tier, and declared first like the segments': the valve is flanged and rated against the
+      // cast main it sits in, which nothing on the block said once the tier stopped being the domain.
+      .VariantGroup("tier", BlockPipe.CastTier)
       .VariantGroup("type", "valve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
       .ShapeByType("*-valve-ns", "lpex:pipe/valve")

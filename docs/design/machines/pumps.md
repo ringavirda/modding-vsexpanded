@@ -141,7 +141,7 @@ intake is silent - its only feedback is three HUD lines.
 
 | block | recipe | file:line |
 |---|---|---|
-| `pipe-fluidintake-s` | `_H_,PIP,NPN` - 1 `iwex:pipe-straight-*` + 3 plate + 4 nails + hammer | `MachineRecipeDefinitions.cs:39-47` |
+| `pipe-fluidintake-s` | `_H_,PIP,NPN` - 1 `iwex:pipe-plated-straight-*` + 3 plate + 4 nails + hammer | `MachineRecipeDefinitions.cs:39-47` |
 | `enginefluidpump-north` | `_HG,PIP,RIR` - 2 straight + 2 plate + 4 rod + 1 gear + hammer | `:83-93` |
 | `manualfluidpump-north` | `_GH,PIP,BRB` - 1 straight + 2 plate + 2 gear + 2 rod + 4 `game:supportbeam-*` + hammer | `:95-106` |
 | mechanical MP pump | no block, no recipe | — |

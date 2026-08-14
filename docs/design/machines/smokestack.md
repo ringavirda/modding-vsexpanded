@@ -169,7 +169,7 @@ One grid recipe, no RCC. `src/SteelmakingExpanded/Recipes/Grid/SmokeStackRecipeD
 
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
-| `smex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `lpex:pipe-straight*`, hammer | :19-28 |
+| `smex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `lpex:pipe-cast-straight*`, hammer | :19-28 |
 
 Authored with `.GridObject(...)` - a lone JSON object rather than an array - because it is the only recipe in
 its file (`:19`, and the doc comment at `:8-11`). It is "four bricks deep for the taller column" against the

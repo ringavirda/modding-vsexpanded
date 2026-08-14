@@ -21,10 +21,10 @@
   "attributes": {
     "handbook": {
       "groupBy": [
-        "pipe-straight-*",
-        "pipe-bend-*",
-        "pipe-tjunction-*",
-        "pipe-xjunction-*"
+        "pipe-rolled-straight-*",
+        "pipe-rolled-bend-*",
+        "pipe-rolled-tjunction-*",
+        "pipe-rolled-xjunction-*"
       ]
     }
   },
@@ -43,6 +43,12 @@
     "all": false
   },
   "variantgroups": [
+    {
+      "code": "tier",
+      "states": [
+        "rolled"
+      ]
+    },
     {
       "code": "type",
       "states": [

@@ -84,7 +84,7 @@ why `pipe`, and now `mpenergy`, look the way they do.
 > `pipe/straight`, not `pipes/straight`. `hopper/tall`, not `hopper-tall` filed under `furnaces/`.
 
 The family segment is what a player and a wildcard both reach for. Singular because the code is one block,
-not a collection: `iwex:pipe-straight-ns` reads correctly and `iwex:pipes-straight-ns` does not.
+not a collection: `iwex:pipe-plated-straight-ns` reads correctly and `iwex:pipes-plated-straight-ns` does not.
 
 smex already does this right and is the model: `converter-intake`, `cowperstove-intake`,
 `smokestack-intake` are three families each naming their own member, and the shared member word costs

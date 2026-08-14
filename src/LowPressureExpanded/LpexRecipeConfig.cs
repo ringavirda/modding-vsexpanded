@@ -69,15 +69,15 @@ public class LpexRecipeConfig : IExVersionedConfig {
       ["steamcondenser-grid"] = Grid("lpex:steamcondenser-*"),
 
       // Pipe grid recipes: straight, bend and junctions yield double in the cheap profile.
-      ["pipe-straight-grid"] = GridOut("lpex:pipe-straight-*", 4),
-      ["pipe-bend-grid"] = GridOut("lpex:pipe-bend-*", 2),
-      ["pipe-tjunction-grid"] = GridOut("lpex:pipe-tjunction-*", 2),
-      ["pipe-xjunction-grid"] = GridOut("lpex:pipe-xjunction-*", 2),
+      ["pipe-straight-grid"] = GridOut("lpex:pipe-cast-straight-*", 4),
+      ["pipe-bend-grid"] = GridOut("lpex:pipe-cast-bend-*", 2),
+      ["pipe-tjunction-grid"] = GridOut("lpex:pipe-cast-tjunction-*", 2),
+      ["pipe-xjunction-grid"] = GridOut("lpex:pipe-cast-xjunction-*", 2),
       ["pipe-fluidintake-grid"] = Grid("lpex:pipe-fluidintake-*"),
       ["pipe-outlet-grid"] = Grid("lpex:pipe-outlet-*"),
-      ["pipe-passthrough-grid"] = Grid("lpex:pipe-passthrough-*"),
-      ["pipe-passthroughbend-grid"] = Grid("lpex:pipe-passthroughbend-*"),
-      ["pipe-valve-grid"] = Grid("lpex:pipe-valve-*"),
-      ["pipe-pressurevalve-grid"] = Grid("lpex:pipe-pressurevalve-*"),
+      ["pipe-passthrough-grid"] = Grid("lpex:pipe-cast-passthrough-*"),
+      ["pipe-passthroughbend-grid"] = Grid("lpex:pipe-cast-passthroughbend-*"),
+      ["pipe-valve-grid"] = Grid("lpex:pipe-cast-valve-*"),
+      ["pipe-pressurevalve-grid"] = Grid("lpex:pipe-cast-pressurevalve-*"),
     };
 }

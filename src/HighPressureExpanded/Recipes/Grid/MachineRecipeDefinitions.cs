@@ -55,7 +55,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider {
   // gate; see docs/design/hpex.md.
   private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
     int qty
-  ) => i => i.Block("iwex:pipe-straight-*").Quantity(qty);
+  ) => i => i.Block("iwex:pipe-plated-straight-*").Quantity(qty);
 
   private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
     int qty

@@ -22,7 +22,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("P", Plate(1))
             .Ingredient("N", Nails(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("iwex:pipe-straight-ns", 2)
+            .OutputBlock("iwex:pipe-plated-straight-ns", 2)
         )
         .Grid(r =>
           r.Name("Piping (Bend)")
@@ -31,7 +31,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("P", Plate(1))
             .Ingredient("N", Nails(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("iwex:pipe-bend-nw")
+            .OutputBlock("iwex:pipe-plated-bend-nw")
         )
         .Grid(r =>
           r.Name("Piping (TJunction)")
@@ -40,7 +40,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("P", Plate(1))
             .Ingredient("N", Nails(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("iwex:pipe-tjunction-uns")
+            .OutputBlock("iwex:pipe-plated-tjunction-uns")
         )
         .Grid(r =>
           r.Name("Piping (XJunction)")
@@ -49,7 +49,7 @@ public class PipeRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("P", Plate(1))
             .Ingredient("N", Nails(1))
             .Ingredient("H", Hammer)
-            .OutputBlock("iwex:pipe-xjunction-nswe")
+            .OutputBlock("iwex:pipe-plated-xjunction-nswe")
         ),
     ];
 }

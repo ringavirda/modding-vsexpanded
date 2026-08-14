@@ -2,7 +2,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthrough.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier1",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -10,7 +10,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthrough.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier2",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -18,7 +18,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthrough.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier3",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -77,7 +77,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier1",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -85,7 +85,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier2",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -93,7 +93,7 @@
   {
     "op": "add",
     "file": "lpex:blocktypes/pipes/passthroughbend.json",
-    "path": "/variantgroups/1/states/-",
+    "path": "/variantgroups/2/states/-",
     "value": "refractorytier3",
     "side": "Server",
     "dependsOn": [{ "modid": "lpex" }]
@@ -241,7 +241,7 @@
         },
         "P": {
           "type": "block",
-          "code": "lpex:pipe-straight-*",
+          "code": "lpex:pipe-cast-straight-*",
           "quantity": 1
         }
       },
@@ -249,7 +249,7 @@
       "height": 3,
       "output": {
         "type": "block",
-        "code": "lpex:pipe-passthrough-refractory{tier}-ns"
+        "code": "lpex:pipe-cast-passthrough-refractory{tier}-ns"
       }
     },
     "side": "Server",
@@ -272,7 +272,7 @@
         },
         "P": {
           "type": "block",
-          "code": "lpex:pipe-straight-*",
+          "code": "lpex:pipe-cast-straight-*",
           "quantity": 1
         }
       },
@@ -280,7 +280,7 @@
       "height": 3,
       "output": {
         "type": "block",
-        "code": "lpex:pipe-passthroughbend-refractory{tier}-nw"
+        "code": "lpex:pipe-cast-passthroughbend-refractory{tier}-nw"
       }
     },
     "side": "Server",
@@ -303,7 +303,7 @@
         },
         "P": {
           "type": "block",
-          "code": "lpex:pipe-straight-*",
+          "code": "lpex:pipe-cast-straight-*",
           "quantity": 1
         },
         "H": {

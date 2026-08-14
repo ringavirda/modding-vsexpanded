@@ -4,6 +4,13 @@
 reading and feeding [block networks](Block-Networks) through connector faces. This is **not**
 multiblock-only - engines, sub-machines, furnaces and converters all build on it.
 
+> ⚠ **The base class is not the only way in.** Form, process and membership are three independent
+> axes: the base-class slot belongs to **form** (what the block *is*), while the production tick and
+> network membership are **behaviours**. `BlockEntityProductionMachine` below is the base a machine
+> derives from when form has nothing else to claim; a block entity whose form is already spoken for -
+> a container, a multiblock part - attaches the production behaviour and keeps its base. Do not spend
+> the slot twice.
+
 ## `BlockEntityProductionMachine`
 
 A base block entity that owns a server-side production tick. You write the per-tick logic and the

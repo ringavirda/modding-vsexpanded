@@ -14,9 +14,10 @@ namespace ExpandedLib.Blocks.Networks;
 /// out of the run (<see cref="IChimneyVentable"/>).
 /// <para>
 /// Lives with the pipe base rather than with any one tier, as <see cref="BlockPipe.Segments"/> does;
-/// every tier calls <see cref="Passthroughs"/> for its own domain. Unlike the segments, the geometry
-/// is identical across tiers, so all tiers share the <c>iwex:pipe/passthrough</c> shape and override
-/// only the sheet texture.
+/// every tier calls <see cref="Passthroughs"/> with its own domain and tier. Unlike the segments, the
+/// geometry is identical across tiers, so all tiers share the <c>iwex:pipe/passthrough</c> shape and
+/// override only the sheet texture - which is exactly why the tier has to be on the code: two of these
+/// are otherwise indistinguishable to the registry.
 /// </para>
 /// </summary>
 [BlockRegister]
@@ -25,20 +26,28 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
   /// fracture would be unreachable, so they are exempt from over-pressure failure.</summary>
   public override float BurstPressure => float.MaxValue;
 
-  /// <summary>The passthroughs for a tier <paramref name="domain"/>, registered by each tier's own
-  /// provider. Yields nothing for exlib itself, which authors the factory but ships no pipe content.
-  /// Must still return the real passthroughs for a tier domain:
-  /// <see cref="BlockNetworkNode.AllowedOrientations"/> derives its map from them.</summary>
+  /// <summary>The defs this class declares itself. As with <see cref="BlockPipe.Definitions"/>, only
+  /// the <c>type</c> and <c>orientation</c> pairs are read from these - they feed
+  /// <see cref="BlockNetworkNode.AllowedOrientations"/> - so they carry no tier and are never
+  /// registered. Yields nothing for exlib itself, which authors the factory but ships no pipe
+  /// content.</summary>
   public static new IEnumerable<ExBlockDef> Definitions(string domain) =>
-    domain == "exlib" ? [] : Passthroughs(domain);
+    domain == "exlib" ? [] : Passthroughs(domain, tier: null);
 
   /// <summary>
-  /// The passthrough + passthrough-bend blocktypes for one tier <paramref name="domain"/> (both back this
-  /// class). AllowedOrientations and the fallback orientation are derived from these by the base
-  /// <see cref="BlockPipe"/>.
+  /// The passthrough + passthrough-bend blocktypes of one <paramref name="tier"/> under
+  /// <paramref name="domain"/> (both back this class). AllowedOrientations and the fallback
+  /// orientation are derived from these by the base <see cref="BlockPipe"/>.
+  /// <para>
+  /// Tiered for the same reason the segments are, though a passthrough bears no pressure: two tiers
+  /// ship a passthrough apiece, and without the axis they carry one code between them and the later
+  /// registration silently replaces the earlier the moment both land in one domain.
+  /// </para>
   /// </summary>
-  public static IEnumerable<ExBlockDef> Passthroughs(string domain) =>
-    [Passthrough(domain), PassthroughBend(domain)];
+  public static IEnumerable<ExBlockDef> Passthroughs(
+    string domain,
+    string? tier
+  ) => [Passthrough(domain, tier), PassthroughBend(domain, tier)];
 
   /// <summary>
   /// The sheet texture a tier's pipe is made of, the only thing that differs between a plated
@@ -46,11 +55,10 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
   /// (<c>game:block/metal/sheet-plain</c>) is the trim around the opening and is the same on every
   /// tier, so repainting it would recolour the flange rather than the pipe.
   /// </summary>
-  private static string Sheet(string domain) =>
-    domain switch {
-      "lpex" => "iwex:block/metal/castiron",
-      _ => "game:block/metal/corroded/normal4",
-    };
+  private static string Sheet(string? tier) =>
+    tier == CastTier
+      ? "iwex:block/metal/castiron"
+      : "game:block/metal/corroded/normal4";
 
   private static readonly string[] Bricks =
   [
@@ -67,20 +75,19 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
   // The ceramic-brick surface shared by both passthrough blocktypes.
   private static ExBlockDef Brick(
     string domain,
+    string? tier,
     string assetName,
     string creative,
     string handbookGroup
-  ) =>
-    ExBlockDef
+  ) {
+    ExBlockDef def = ExBlockDef
       .Create(domain, "pipe", assetName)
-      // Pinned as literals, as BlockPipe.Common does: the generic .Class<T>() / .EntityClass<T>()
-      // overloads key off the definition's asset domain, not the type's owning mod, and
-      // EntityRegistry scans one assembly per mod. This factory runs with a tier domain while the
-      // class is registered by exlib, so a generated key would resolve to nothing and the block
-      // would fall back to plain vanilla Block: no network node, no IChimneyVentable, no burst
-      // exemption. Only the unresolved block entity is logged; the block half fails silently.
-      .Class("exlib.BlockPipePassthrough")
-      .EntityClass("exlib.BlockEntityPipePassthrough")
+      // Typed, and safe across assemblies: KeyFor resolves the domain from the TYPE's assembly, so
+      // this factory generates exlib's own keys even while running under a tier domain. It used to be
+      // pinned as literals because the overloads keyed off the definition's domain instead - which
+      // silently produced a key nobody registered, and the block half of that failure is not logged.
+      .Class<BlockPipePassthrough>()
+      .EntityClass<BlockEntityPipePassthrough>()
       .Material(EnumBlockMaterial.Ceramic)
       .Sound("walk", "game:walk/stone")
       .Sound("place", "game:block/ceramicplace")
@@ -92,7 +99,11 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
       .MaxStackSize(1)
       .CreativeTab("general", creative)
       .CreativeTab(domain, creative)
-      .Handbook(handbookGroup)
+      // Grouped within a tier, never across: an undomained groupBy selector is qualified with the
+      // block's own domain, so two tiers sharing a domain would merge into one handbook entry.
+      .Handbook(
+        tier == null ? $"pipe-{handbookGroup}" : $"pipe-{tier}-{handbookGroup}"
+      )
       .Behavior("Lockable")
       .TextureByType(
         "*",
@@ -100,19 +111,26 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
         "game:block/clay/brick/four/running/cream1",
         "game:block/clay/brick/four/running/{brick}1"
       )
-      .Texture("normal4", Sheet(domain))
+      .Texture("normal4", Sheet(tier))
       .RenderPass("OpaqueNoCull")
       .FaceCullMode("NeverCull")
       .LightAbsorption(0)
       .SideSolid(true)
       .SideOpaque(false);
 
-  private static ExBlockDef Passthrough(string domain) =>
+    // Declared first, before `type`, exactly as the segments do it: every selector below leads with a
+    // `*` so the new segment is absorbed, and declaring it last would move each code out from under
+    // them silently.
+    return tier == null ? def : def.VariantGroup("tier", tier);
+  }
+
+  private static ExBlockDef Passthrough(string domain, string? tier) =>
     Brick(
         domain,
+        tier,
         "pipe/passthrough",
         "*-passthrough-*-ns",
-        "pipe-passthrough-*"
+        "passthrough-*"
       )
       .VariantGroup("type", "passthrough")
       .VariantGroup("brick", Bricks)
@@ -121,13 +139,14 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
       .ShapeByType("*-passthrough-*-we", "iwex:pipe/passthrough", rotateY: 90)
       .ShapeByType("*-passthrough-*-ud", "iwex:pipe/passthrough", rotateX: 90);
 
-  private static ExBlockDef PassthroughBend(string domain) {
+  private static ExBlockDef PassthroughBend(string domain, string? tier) {
     const string s = "iwex:pipe/passthroughbend";
     return Brick(
         domain,
+        tier,
         "pipe/passthroughbend",
         "*-passthroughbend-*-nw",
-        "pipe-passthroughbend-*"
+        "passthroughbend-*"
       )
       .VariantGroup("type", "passthroughbend")
       .VariantGroup("brick", Bricks)

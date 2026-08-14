@@ -6,7 +6,7 @@
     "height": 1,
     "output": {
       "type": "block",
-      "code": "iwex:pipe-straight-ns",
+      "code": "iwex:pipe-plated-straight-ns",
       "quantity": 2
     },
     "ingredients": {
@@ -44,7 +44,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:pipe-bend-nw"
+      "code": "iwex:pipe-plated-bend-nw"
     },
     "ingredients": {
       "P": {
@@ -81,7 +81,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:pipe-tjunction-uns"
+      "code": "iwex:pipe-plated-tjunction-uns"
     },
     "ingredients": {
       "P": {
@@ -118,7 +118,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "iwex:pipe-xjunction-nswe"
+      "code": "iwex:pipe-plated-xjunction-nswe"
     },
     "ingredients": {
       "P": {

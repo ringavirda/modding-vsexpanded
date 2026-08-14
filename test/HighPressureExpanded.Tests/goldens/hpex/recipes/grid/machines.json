@@ -58,7 +58,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 2
       },
       "H": {
@@ -100,7 +100,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 2
       },
       "H": {

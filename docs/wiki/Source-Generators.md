@@ -1,9 +1,12 @@
 # Source Generators
 
 `ExpandedLib.Generators` is a Roslyn source-generator project (netstandard2.0) that removes two
-kinds of boilerplate at compile time: typed accessors for config classes, and typed members for a
-block's JSON attributes. Both run automatically on build - there is nothing to invoke, you just tag
-classes and mark them `partial`.
+kinds of boilerplate at compile time: typed accessors for config classes, and typed lang keys. Both
+run automatically on build - there is nothing to invoke.
+
+The project sets `IncludeBuildOutput=false` and is consumed as an **analyzer**, so it ships no
+runtime assembly. Outside this repository it comes in the `exlib-testing` bundle under
+`analyzers/`; wire it with `<Analyzer Include="analyzers/ExpandedLib.Generators.dll" />`.
 
 ## `ExConfigGenerator` - config accessors
 
@@ -51,52 +54,41 @@ public static partial class LpexValues
 }
 ```
 
-## `ExAttributeGenerator` - block/item attribute members
+## `ExLangKeyGenerator` - typed lang keys
 
-**Triggers on:** a class tagged `[BlockRegister]` or `[ItemRegister]` and declared `partial`.
+**Triggers on:** an `assets/{domain}/lang/en.json` supplied to the compiler as an `AdditionalFiles`
+item. There is no attribute and nothing to tag - the file is the input.
 
-**Inputs:** the matching block-type / item-type JSON in `blocktypes/` or `itemtypes/`.
+**Emits:** a `{Domain}Lang` class of `public const string` members, one per key in that file, so a
+mistyped key is a compile error instead of a raw key rendered in the player's UI. English is the
+source of truth; the other locales are never read by the generator.
 
-**Emits:** members on the partial class that source the JSON `attributes`, so you read
-`BurstPressure` instead of `Attributes?["burstPressure"].AsFloat(0f)`:
+A bare key `k` emits the value `"{domain}:{k}"`. A key that is already domain-qualified - a vanilla
+override such as `"game:placefailure-..."` - emits verbatim, so an override still resolves to the
+domain it overrides.
 
-- **`const` members** for values identical across every matching file (no `attributesByType`
-  override): `const bool` / `const string` / `const int` / `const float`.
-- **Instance properties** for values that vary, for objects/arrays, or for `attributesByType`
-  entries:
-  - `bool` -> `public bool Foo => Attributes?["foo"].AsBool(false) ?? false;`
-  - `string` -> `public string? Foo => Attributes?["foo"]?.AsString();`
-  - number -> `public float Foo => Attributes?["foo"].AsFloat(0f) ?? 0f;`
-  - object/array -> `public JsonObject? Foo => Attributes?["foo"];` (caller does `.AsObject<T>()`)
+The class is emitted into the consuming project's `RootNamespace`, so it resolves from any file in
+that project without a `using`.
 
-JSON keys are PascalCased for the member name (`"burstPressure"` -> `BurstPressure`). Members
-inherited unchanged from a `[BlockRegister]` ancestor are skipped; differing ones get the `new`
-keyword to avoid CS0108 hiding warnings; keys that would collide with an existing member are
-skipped with a comment.
+**The consuming csproj must feed it**, which is the step most easily missed - with no
+`AdditionalFiles` the generator runs, finds nothing and emits nothing, and the only symptom is that
+`{Domain}Lang` does not exist:
 
-```csharp
-[BlockRegister]
-public partial class BlockPipe : BlockNetworkNode { }   // <- partial + tagged
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="assets/$(AssetDomain)/lang/en.json" />
+</ItemGroup>
 ```
 
-```csharp
-// generated (given the matching blocktype JSON):
-public partial class BlockPipe
-{
-    public const string Material = "iron";                         // identical across all variants
-    public float BurstPressure => Attributes?["burstPressure"].AsFloat(0f) ?? 0f;   // varies by variant
-    public JsonObject? CustomData => Attributes?["customData"];
-}
-```
-
-This is also how `IFillerHost.FillerOffsets` gets implemented for free - the generator surfaces the
-`fillerOffsets` attribute as a member, satisfying the interface (see
-[Multiblock Structures](Multiblock-Structures)).
+In this repository that item lives once in `src/Directory.Build.props`, keyed on `$(AssetDomain)`,
+so a mod project declares its domain and nothing else. Only the **primary** domain is fed: a mod
+packing a second tree (an absorbed mod's assets, or a `game:` override) should not emit typed
+constants for someone else's keys.
 
 ## Notes
 
-- Generated code is re-emitted every build, so adding a config property or a JSON attribute is
-  instant - no boilerplate to duplicate or keep in sync.
+- Generated code is re-emitted every build, so adding a config property or a lang key is instant -
+  no boilerplate to duplicate or keep in sync.
 - The generator targets `netstandard2.0` (a Roslyn requirement); if you fork it, mind the usual
   netstandard2.0 source-generator constraints (no newer BCL APIs).
 
@@ -104,3 +96,4 @@ This is also how `IFillerHost.FillerOffsets` gets implemented for free - the gen
 
 - [Config System](Config-System) - the runtime side of `[ExConfigRegister]`.
 - [Registries](Registries) - `[BlockRegister]` / `[ItemRegister]` registration.
+- [Testing Harness](Testing-Harness) - the `exlib-testing` bundle these ship in.

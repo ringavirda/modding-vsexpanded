@@ -147,7 +147,7 @@ generator's own `cycle` clip is unused - instead the generator drives the engine
 ```
 _ H _          P = metalplate-* (iron/steel) ×1 each  → 4
 P R P          R = rod-* ×2                            → 2
-P I P          I = iwex:pipe-straight-* ×1             → 1
+P I P          I = iwex:pipe-plated-straight-* ×1      → 1
                H = hammer (tool)
 → lpex:enginewatt-north
 ```
@@ -179,7 +179,7 @@ match these exactly (unlike the boiler's).
 | Block | Pattern | Cost | file:line |
 |---|---|---|---|
 | MP generator | `_H_,GAG,PRP` | 2 plates · 2 rods · 4 gears · 1 `game:woodenaxle-ud` | `MachineRecipeDefinitions.cs:108-118` |
-| Fluid pump | `_HG,PIP,RIR` | 2 plates · 4 rods · 1 gear · 2 `iwex:pipe-straight-*` | `:83-93` |
+| Fluid pump | `_HG,PIP,RIR` | 2 plates · 4 rods · 1 gear · 2 `iwex:pipe-plated-straight-*` | `:83-93` |
 
 Cost catalogue entries: `enginewatt-grid`, `enginewatt-rcc`, `enginempgenerator-grid`,
 `enginefluidpump-grid` (`LpexRecipeConfig.cs:65`, `:69`, `:70`, `:71`).

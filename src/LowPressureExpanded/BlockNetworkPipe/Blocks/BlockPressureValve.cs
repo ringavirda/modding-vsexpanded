@@ -34,6 +34,9 @@ public partial class BlockPressureValve : BlockValve {
       .CreativeTab("general", "*-pressurevalve-sn")
       .CreativeTab("lpex", "*-pressurevalve-sn")
       .Behavior("Lockable")
+      // Cast-tier, as BlockValve. This is where MaxGatePressure's ceiling comes from: the valve never
+      // bursts itself, so its gate is capped by the rating of the tier it is made of.
+      .VariantGroup("tier", BlockPipe.CastTier)
       .VariantGroup("type", "pressurevalve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
       .ShapeByType("*-pressurevalve-ns", "lpex:pipe/pressurevalve")

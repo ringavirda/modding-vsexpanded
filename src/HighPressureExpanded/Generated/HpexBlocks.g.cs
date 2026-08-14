@@ -70,14 +70,14 @@ public static class HpexBlocks
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
 
-  /// <summary><c>hpex:pipe</c> - pipe/bend. Variant groups: type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  /// <summary><c>hpex:pipe</c> - pipe/bend. Variant groups: tier(rolled), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
   public static class PipeBend
   {
     /// <summary>The bare code, no variants: <c>hpex:pipe</c>.</summary>
     public const string Code = "hpex:pipe";
 
-    /// <summary>Any variant: <c>hpex:pipe-bend-*</c>.</summary>
-    public const string Any = "hpex:pipe-bend-*";
+    /// <summary>Any variant: <c>hpex:pipe-rolled-bend-*</c>.</summary>
+    public const string Any = "hpex:pipe-rolled-bend-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -96,19 +96,19 @@ public static class HpexBlocks
       public const string De = "de";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-bend-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-rolled-bend-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"hpex:pipe-bend-{orientation}";
+      $"hpex:pipe-rolled-bend-{orientation}";
   }
 
-  /// <summary><c>hpex:pipe</c> - pipe/straight. Variant groups: type(straight), orientation(ns|we|ud).</summary>
+  /// <summary><c>hpex:pipe</c> - pipe/straight. Variant groups: tier(rolled), type(straight), orientation(ns|we|ud).</summary>
   public static class PipeStraight
   {
     /// <summary>The bare code, no variants: <c>hpex:pipe</c>.</summary>
     public const string Code = "hpex:pipe";
 
-    /// <summary>Any variant: <c>hpex:pipe-straight-*</c>.</summary>
-    public const string Any = "hpex:pipe-straight-*";
+    /// <summary>Any variant: <c>hpex:pipe-rolled-straight-*</c>.</summary>
+    public const string Any = "hpex:pipe-rolled-straight-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -118,19 +118,19 @@ public static class HpexBlocks
       public const string Ud = "ud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-straight-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-rolled-straight-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"hpex:pipe-straight-{orientation}";
+      $"hpex:pipe-rolled-straight-{orientation}";
   }
 
-  /// <summary><c>hpex:pipe</c> - pipe/tjunction. Variant groups: type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  /// <summary><c>hpex:pipe</c> - pipe/tjunction. Variant groups: tier(rolled), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
   public static class PipeTjunction
   {
     /// <summary>The bare code, no variants: <c>hpex:pipe</c>.</summary>
     public const string Code = "hpex:pipe";
 
-    /// <summary>Any variant: <c>hpex:pipe-tjunction-*</c>.</summary>
-    public const string Any = "hpex:pipe-tjunction-*";
+    /// <summary>Any variant: <c>hpex:pipe-rolled-tjunction-*</c>.</summary>
+    public const string Any = "hpex:pipe-rolled-tjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -149,19 +149,19 @@ public static class HpexBlocks
       public const string Dwu = "dwu";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-tjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-rolled-tjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"hpex:pipe-tjunction-{orientation}";
+      $"hpex:pipe-rolled-tjunction-{orientation}";
   }
 
-  /// <summary><c>hpex:pipe</c> - pipe/xjunction. Variant groups: type(xjunction), orientation(nswe|nsud|weud).</summary>
+  /// <summary><c>hpex:pipe</c> - pipe/xjunction. Variant groups: tier(rolled), type(xjunction), orientation(nswe|nsud|weud).</summary>
   public static class PipeXjunction
   {
     /// <summary>The bare code, no variants: <c>hpex:pipe</c>.</summary>
     public const string Code = "hpex:pipe";
 
-    /// <summary>Any variant: <c>hpex:pipe-xjunction-*</c>.</summary>
-    public const string Any = "hpex:pipe-xjunction-*";
+    /// <summary>Any variant: <c>hpex:pipe-rolled-xjunction-*</c>.</summary>
+    public const string Any = "hpex:pipe-rolled-xjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -171,8 +171,8 @@ public static class HpexBlocks
       public const string Weud = "weud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-xjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>hpex:pipe-rolled-xjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"hpex:pipe-xjunction-{orientation}";
+      $"hpex:pipe-rolled-xjunction-{orientation}";
   }
 }

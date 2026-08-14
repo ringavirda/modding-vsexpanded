@@ -1,7 +1,8 @@
 # NEXT — the single "what next" entry point
 
-**Status** live — updated 2026-08-13 (torque state, crop count and the shear's decision landed). Every unit's docs-sync task updates
-this file (see the maintenance rule at the bottom).
+**Status** live — updated 2026-08-14: the mod split is **ruled** (M1–M6), a framework-hardening plan is
+live and part-landed, and the tree builds again. Earlier that day: torque state, crop count and the
+shear's decision. Every unit's docs-sync task updates this file (see the maintenance rule at the bottom).
 
 Ownership, layout and the rules that govern this directory are in
 [../README.md](../README.md). In one line: `docs/design/**` owns decisions, this directory owns
@@ -20,10 +21,57 @@ published mods were stamped **below** what `dist/Releases/` already holds (exlib
 guards: `ModinfoTests` asserts source > released, mutation-checked.
 
 **A framework-hardening plan is now live:**
-[2026-08-13-framework-hardening.md](2026-08-13-framework-hardening.md) — F0–F2 done, F3–F8 open. It is
-packaging, diagnostics and documentation for exlib as a *published library*; it does not touch content,
-and it does not compete with the forming line below. The mod-merge question it raises is **blocked on an
-owner ruling**, stated in that plan.
+[2026-08-13-framework-hardening.md](2026-08-13-framework-hardening.md) — **F0, F1, all of F2, F6.2, M.1
+and M.2 are done**, and **F3.2 + F3.4** landed 2026-08-14; F1.4, the rest of F3, F4, F5, F6.1, F7,
+F8 and stage M from M.4 onward are open (M.3 folded into M.4). It is packaging,
+diagnostics and documentation for exlib as a *published library*, plus the merge; it does not compete
+with the forming line below.
+
+**M.2 landed 2026-08-14** — the pipe tier is a variant now, declared first, and the three per-tier
+registries are keyed on it rather than on `Code.Domain`. That was the one thing structurally blocking the
+merge: with the tier off the domain, `iiex` can carry plated and cast at once without collapsing either.
+Each tier also renders its own name at last (Plated / Cast / Rolled Piping).
+
+### ★ Where to pick up
+
+**F3, the rest of it.** The guard is built (**F3.4**, `WikiParity` — 129 symbols across 15 pages) and
+it found and closed **F3.1**'s `Block-Networks.md` and `Source-Generators.md` defects plus **F3.2**'s
+inheritance-model framing on both pages. What is left is what the guard cannot see:
+
+- **F3.1's other two pages.** `Getting-Started.md` (the `partial` advice routing to a deleted generator,
+  the "compiled into lpex.dll" claim, the missing `GamePath` fallback) and `Config-System.md` (rewrite
+  around the shared sectioned document; drop the `Edit` that does not exist on `ExConfigRegister<T>`).
+  ⛔ The guard does not catch either: the `Edit` claim is written on a lowercase local, and the rest are
+  prose. It narrows the surface, it does not close it.
+- **F3.3**, the preference-wiring order — stated in three places, two of which contradict the library.
+
+⛔ **M.3 is folded into M.4** *(2026-08-14)*. Its premise did not survive checking - smex hard-depends on
+lpex, so nothing is unbuildable - and there is no neutral way to do it early: the only non-`lpex:`
+passthrough is the cheaper plated one, and the outlet has no non-`lpex:` home. Under M2 the loops are
+nested, so the codes simply relocate at the merge. Reasoning in the plan; the design ruling it cited
+([gas-producer](../../design/machines/gas-producer.md) Open 9) is corrected in place.
+
+After that, **M.4** — the `iiex` merge itself, which now carries M.3's remainder and B23's setting.
+
+## ★★ The mod split is ruled: five mods become two
+
+**M1–M6** in [STATE.md](STATE.md), 2026-08-13. `{iwex + lpex}` → **Iron Industry Expanded (`iiex`)**,
+the early-industrial loop; `{smex + hpex}` → **Steel Industry Expanded (`siex`)**, the steel loop.
+`exlib` unchanged. Full domain consolidation, so **every block code moves**.
+
+⛔⛔ **A merge collapses no tier (M3).** The plated pipe family and the iron gears are the early loop's
+**bootstrap rung** — a player plumbs and gears the works before steam exists and upgrades to cast
+afterwards. Two near-identical pipe families are progression, not duplication; do not delete one. The
+tier moves onto a `tier` variant group (M4), which supersedes
+[rolled-pipe](../../design/machines/rolled-pipe.md)'s *"the tier is the mod, not a variant axis"* —
+that ruling's premise was tier == mod, which is exactly what the merge removes.
+
+⛔ Closure is now per **loop**, not per mod (M2), and the loops are **nested**: the steel loop extends
+the early loop's machinery and cannot close alone. ~15 entity pages cite the retired per-mod rule and
+need re-justifying (stage M.7).
+
+Stage **M** carries it and **its order is forced** — decouple domain from mod id first (M.1, done), then
+the pipe tier variant (M.2, done), then the two merges. Sequencing is in the plan.
 
 ---
 

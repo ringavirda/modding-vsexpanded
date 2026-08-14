@@ -33,7 +33,7 @@ public class CowperOrientationTests {
       SmexBlocks.CowperstoveIntake.Any,
       side,
       [
-        (new Vec3i(0, 1, 2), "lpex:pipe-passthrough-*", "air passthrough"),
+        (new Vec3i(0, 1, 2), "lpex:pipe-cast-passthrough-*", "air passthrough"),
         (new Vec3i(0, 0, 2), "lpex:pipe-outlet*", "exhaust outlet"),
         (new Vec3i(0, 1, 0), "lpex:pipe-outlet*", "hot-blast outlet"),
         (

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExpandedLib.Definitions;
@@ -21,6 +22,12 @@ public static class EntityRegistry {
   public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null) {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
+
+    // Recorded before the scan so KeyFor can answer "which domain owns this type" for an assembly that
+    // declares no [assembly: ExDomain]. The attribute is preferred because it needs no prior call;
+    // this map only helps once the owning mod's Start has run, which is a load-order dependency the
+    // attribute exists to avoid.
+    _domainByAssembly[asm] = modId;
 
     foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
       var attr = type.GetCustomAttributes()
@@ -77,17 +84,42 @@ public static class EntityRegistry {
     ExDefinitions.DiscoverAndRegisterRecipes(modId, asm);
   }
 
+  // Assembly -> the domain its registrable types are keyed under, recorded by RegisterAll. Only a
+  // fallback: [assembly: ExDomain] answers the same question with no ordering dependency.
+  private static readonly Dictionary<Assembly, string> _domainByAssembly = [];
+
+  /// <summary>
+  /// The domain <paramref name="asm"/>'s registrable types are keyed under: its
+  /// <see cref="ExDomainAttribute"/> if it declares one, else the modid it was registered with, else
+  /// <paramref name="fallback"/>.
+  /// </summary>
+  public static string DomainOf(Assembly asm, string fallback) =>
+    asm.GetCustomAttribute<ExDomainAttribute>()?.Domain
+    ?? (
+      _domainByAssembly.TryGetValue(asm, out string? recorded)
+        ? recorded
+        : fallback
+    );
+
   /// <summary>
   /// The registry key a <see cref="RegisterAttribute"/>-decorated <paramref name="type"/> is
-  /// registered under: <c>{modId}.{Code ?? ClassName}</c>, or the bare key when
+  /// registered under: <c>{domain}.{Code ?? ClassName}</c>, or the bare key when
   /// <see cref="RegisterAttribute.PrefixModId"/> is false. Falls back to the convention default
-  /// <c>{modId}.{ClassName}</c> when <paramref name="type"/> carries no register attribute. The
+  /// <c>{domain}.{ClassName}</c> when <paramref name="type"/> carries no register attribute. The
   /// code-first definition builder (<c>ExBlockDef</c>'s type-safe <c>Class&lt;T&gt;()</c>) resolves
   /// class strings through here as well, so the two cannot disagree after a rename.
+  /// <para>
+  /// The domain comes from <paramref name="type"/>'s own assembly (<see cref="DomainOf"/>), not from
+  /// <paramref name="callerDomain"/>, so naming a class from a dependency yields the key that mod
+  /// registered. Keying off the caller's domain instead produced a key nobody had registered, which
+  /// fails at world load and, on the block half, without a log line.
+  /// <paramref name="callerDomain"/> is the last resort, for a type whose assembly neither declares a
+  /// domain nor has registered one.
+  /// </para>
   /// </summary>
-  public static string KeyFor(string modId, Type type) =>
+  public static string KeyFor(string callerDomain, Type type) =>
     KeyFor(
-      modId,
+      DomainOf(type.Assembly, callerDomain),
       type,
       type.GetCustomAttributes().OfType<RegisterAttribute>().FirstOrDefault()
     );

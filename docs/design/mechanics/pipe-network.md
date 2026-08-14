@@ -120,27 +120,30 @@ The network itself never changes phase. Two passive effects cool a run - a gas l
 
 ### 5. Burst pressure by tier, and joints
 
-Two orthogonal per-tier axes, both registered by domain from each mod's `ModSystem.Start`.
+Two orthogonal per-tier axes, both registered by **tier** from each mod's `ModSystem.Start`. The tier is the
+block's own `tier` variant (`BlockPipe.Tier`, `BlockPipe.cs:231`), the high-order segment of its code:
+`pipe-{tier}-{type}-{orientation}`. It was the code's *domain* until M4 (2026-08-14), which could not survive
+the merge putting plated and cast in one domain.
 
-**Rating** - `BlockPipe._burstByDomain` (`BlockPipe.cs:173`), resolved by the block's own code domain (`:186-187`):
+**Rating** - `BlockPipe._burstByTier` (`BlockPipe.cs:238`), resolved by the block's own tier (`:252-255`):
 
 | tier | domain | key | value | registration | config |
 |---|---|---|---|---|---|
-| plated | `iwex` | `PlatedPipeBurstPressure` | 2.5 | `IronworkingExpandedModSystem.cs:73` | `IwexConfig.cs:206` |
-| cast | `lpex` | `CastPipeBurstPressure` | 5.0 | `LowPressureExpandedModSystem.cs:60` | `LpexConfig.cs:50` |
-| rolled | `hpex` | `RolledPipeBurstPressure` | 12 | `HighPressureExpandedModSystem.cs:42` | `HpexConfig.cs:115` |
-| (unregistered domain) | - | `DefaultBurstPressure` | 5, hard-coded | - | `BlockPipe.cs:175` |
+| plated | `iwex` | `PlatedPipeBurstPressure` | 2.5 | `IronworkingExpandedModSystem.cs:67` | `IwexConfig.cs:206` |
+| cast | `lpex` | `CastPipeBurstPressure` | 5.0 | `LowPressureExpandedModSystem.cs:56` | `LpexConfig.cs:50` |
+| rolled | `hpex` | `RolledPipeBurstPressure` | 12 | `HighPressureExpandedModSystem.cs:39` | `HpexConfig.cs:115` |
+| (no tier, or unregistered) | - | `DefaultBurstPressure` | 5, hard-coded | - | `BlockPipe.cs:241` |
 
 The rating doubles as the tier's buffer size: a run holds `burst × pipes × LitresPerPipe`, so the plated tier is both the low-pressure tier and the small-buffer one.
 
-Only a plain segment participates: `CanBurst => GetType() == typeof(BlockPipe)` (`BlockPipe.cs:196`). Every fitting is a subclass and is therefore exempt by default - it neither bursts nor caps the run's pressure. Outlet and passthrough additionally override `BurstPressure => float.MaxValue` (`BlockPipeOutlet.cs:22`, `BlockPipePassthrough.cs:23`).
+Only a plain segment participates: `CanBurst => GetType() == typeof(BlockPipe)` (`BlockPipe.cs:262`). Every fitting is a subclass and is therefore exempt by default - it neither bursts nor caps the run's pressure. Outlet and passthrough additionally override `BurstPressure => float.MaxValue` (`BlockPipeOutlet.cs:22`, `BlockPipePassthrough.cs:26`). The outlet names no tier and would take the default anyway; the passthroughs are tiered, but for identity rather than rating - see below.
 
-**Joint** - `BlockPipe._jointByDomain` (`BlockPipe.cs:206`), two families:
+**Joint** - `BlockPipe._jointByTier` (`BlockPipe.cs:301`), two families:
 
 | family | constant | tiers | registration |
 |---|---|---|---|
-| `flanged` | `BlockPipe.FlangedJoint` (`:209`) | plated (iwex), cast (lpex) - both square in section, bolted through flanges | `IronworkingExpandedModSystem.cs:75`, `LowPressureExpandedModSystem.cs:62` |
-| `welded` | `BlockPipe.WeldedJoint` (`:212`) | rolled (hpex) - octagonal and welded, no flange to bolt to | `HighPressureExpandedModSystem.cs:45` |
+| `flanged` | `BlockPipe.FlangedJoint` (`:307`) | plated, cast - both square in section, bolted through flanges - **and every untiered fitting** (outlet, fluid intake, tuyere), which is what keeps them reachable from either | `IronworkingExpandedModSystem.cs:75`, `LowPressureExpandedModSystem.cs:65` |
+| `welded` | `BlockPipe.WeldedJoint` (`:310`) | rolled - octagonal and welded, no flange to bolt to | `HighPressureExpandedModSystem.cs:49` |
 
 ```csharp
 public override bool AcceptsNeighbour(Block neighbour) =>
@@ -210,7 +213,7 @@ excess = inState.Volume - allowed
 
 **Liquid** (`:221-268`): once `inState.Pressure` (the pump-set feed pressure on a brim-full line) tops the gate, water moves into the output's free space, or sprays out capped at `LiquidLeakRate` when there is no output run.
 
-The gate is player-dialled in `GatePressureStep` increments between `MinGatePressure` and the valve's own material rating (`:62-75`). `MaxGatePressure` reads `BlockPressureValve.BurstPressure` (`:41-42`), which resolves through the per-domain registry, so an lpex pressure valve tops out at 5 atm even though the valve itself never bursts (`CanBurst` is false for any subclass).
+The gate is player-dialled in `GatePressureStep` increments between `MinGatePressure` and the valve's own material rating (`:62-75`). `MaxGatePressure` reads `BlockPressureValve.BurstPressure` (`:41-42`), which resolves through the per-tier registry off the valve's own `tier` variant - `cast` (`BlockPressureValve.cs:39`) - so it tops out at 5 atm even though the valve itself never bursts (`CanBurst` is false for any subclass).
 
 ---
 
@@ -264,7 +267,9 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 
 ### Pipe geometry (code-first defs, shared by all three tiers)
 
-Every tier calls the same `BlockPipe.Segments(domain)` factory (`BlockPipe.cs:42-43`) - lpex via `CastPipeDefinitions.cs:17-18`, hpex via `RolledPipeDefinitions.cs:22-23`. Four blocktypes per tier: straight (`:80`), bend (`:94`), tjunction (`:122`), xjunction (`:151`). Collision/selection is a 5⁄16→11⁄16 core (`:89-90`). Max stack: 16 straight, 8 for the rest. Each tier ships its own shapes at `{domain}:pipes/*` - a tier is a different model, not a tint (`BlockPipe.cs:37-40`).
+Every tier calls the same `BlockPipe.Segments(domain, tier)` factory (`BlockPipe.cs:59-65`), each provider passing its own tier - iwex via `PlatedPipeDefinitions.cs:19`, lpex via `CastPipeDefinitions.cs:19`, hpex via `RolledPipeDefinitions.cs:17`. Four blocktypes per tier: straight (`:118`), bend (`:130`), tjunction (`:167`), xjunction (`:204`). Collision/selection is a 5⁄16→11⁄16 core (`:126-127`). Max stack: 16 straight, 8 for the rest. Each tier ships its own shapes at `{domain}:pipes/*` - a tier is a different model, not a tint.
+
+A null `tier` yields the same four blocktypes with no tier axis and the default rating, throughput and joint. That is what `BlockPipe.Definitions` uses to derive `AllowedOrientations` (the map reads only `type` and `orientation`, so no tier is needed and none is invented), and what a consumer shipping one pipe family gets.
 
 ---
 
@@ -295,7 +300,8 @@ Every tier calls the same `BlockPipe.Segments(domain)` factory (`BlockPipe.cs:42
 |---|---|---|---|
 | pipe straight/bend/T/X | iwex, lpex, hpex | `BlockPipe` | the only burstable blocks |
 | valve, pressure valve | lpex | `BlockValve`, `BlockPressureValve` | |
-| outlet, passthrough | lpex | `BlockPipeOutlet`, `BlockPipePassthrough` | `IChimneyVentable`; `BurstPressure = MaxValue` |
+| outlet | lpex | `BlockPipeOutlet` | `IChimneyVentable`; `BurstPressure = MaxValue`; names no tier |
+| passthrough, passthrough-bend | iwex (plated) **and** lpex (cast) | `BlockPipePassthrough` | `IChimneyVentable`; `BurstPressure = MaxValue`; **tiered** - see below |
 | fluid intake | lpex | `BlockFluidIntake` (`:14`) | BE is a bare `BlockEntityNetworkNode`, not an `IPipeNode` |
 | steam condenser | lpex | `BlockSteamCondenser` (`:22`) | `INetworkConnector` only |
 | boiler, engine, engine fluid pump, manual fluid pump | lpex | `BlockBoiler:46`, `BlockEngine:48`, `BlockEngineFluidPump:37`, `BlockManualFluidPump:31` | machine ports |
@@ -326,7 +332,7 @@ Every tier calls the same `BlockPipe.Segments(domain)` factory (`BlockPipe.cs:42
 
 10. The pressure valve is not a valve. It never severs and it never bursts; it is a scheduled once-per-second transfer between two adjacent runs. It appears in the graph as a normal pipe cell, and its two networks must be genuinely separate for it to do anything - one in the middle of a single run does nothing.
 
-11. The pressure valve's ceiling comes from a tier it may not be made of. `MaxGatePressure` reads `BurstPressure` off the block (`BlockEntityPressureValve.cs:41-42`), which resolves from `_burstByDomain[Code.Domain]`. The valve only exists in the lpex domain today, so the answer is 5 - but the valve is exempt from bursting, so this is a rating borrowed from the tier's plain pipe, not the valve's own strength.
+11. The pressure valve's ceiling comes from a tier it is not made of. `MaxGatePressure` reads `BurstPressure` off the block (`BlockEntityPressureValve.cs:41-42`), which resolves from `_burstByTier[Tier]`. The valve declares `tier: cast`, so the answer is 5 - but it is exempt from bursting, so this is a rating borrowed from that tier's plain pipe, not the valve's own strength. Sharper since M4: the valve's craft recipe consumes a **plated** segment (B19 leaves the cast tier uncraftable), so a valve is built from one tier and rated at another. The `tier` variant states which of the two governs; the recipe is the thing that is wrong, and it is wrong for a reason tracked elsewhere.
 
 12. Chimney vents are matched by code substring. `neighbour.Code?.Path.Contains("chimney")` (`ChimneyVent.cs:50`). Any block whose path contains "chimney", from any mod, becomes a gas sink on the top connector of a ventable fitting.
 

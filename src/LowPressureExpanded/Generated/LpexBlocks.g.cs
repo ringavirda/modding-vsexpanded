@@ -151,14 +151,14 @@ public static class LpexBlocks
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/bend. Variant groups: type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/bend. Variant groups: tier(cast), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
   public static class PipeBend
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-bend-*</c>.</summary>
-    public const string Any = "lpex:pipe-bend-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-bend-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-bend-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -177,9 +177,9 @@ public static class LpexBlocks
       public const string De = "de";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-bend-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-bend-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-bend-{orientation}";
+      $"lpex:pipe-cast-bend-{orientation}";
   }
 
   /// <summary><c>lpex:pipe</c> - pipe/fluidintake. Variant groups: type(fluidintake), orientation(n|s|w|e).</summary>
@@ -255,14 +255,14 @@ public static class LpexBlocks
       $"lpex:pipe-outlet-{brick}-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/passthrough. Variant groups: type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/passthrough. Variant groups: tier(cast), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
   public static class PipePassthrough
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-passthrough-*-*</c>.</summary>
-    public const string Any = "lpex:pipe-passthrough-*-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-passthrough-*-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-passthrough-*-*";
 
     /// <summary>The <c>brick</c> variant group.</summary>
     public static class Brick
@@ -285,27 +285,27 @@ public static class LpexBlocks
       public const string Ud = "ud";
     }
 
-    /// <summary>Pin only <c>brick</c>: <c>lpex:pipe-passthrough-{brick}-*</c>.</summary>
+    /// <summary>Pin only <c>brick</c>: <c>lpex:pipe-cast-passthrough-{brick}-*</c>.</summary>
     public static string WithBrick(string brick) =>
-      $"lpex:pipe-passthrough-{brick}-*";
+      $"lpex:pipe-cast-passthrough-{brick}-*";
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-passthrough-*-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-passthrough-*-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-passthrough-*-{orientation}";
+      $"lpex:pipe-cast-passthrough-*-{orientation}";
 
-    /// <summary>Every group resolved: <c>lpex:pipe-passthrough-{brick}-{orientation}</c>.</summary>
+    /// <summary>Every group resolved: <c>lpex:pipe-cast-passthrough-{brick}-{orientation}</c>.</summary>
     public static string Of(string brick, string orientation) =>
-      $"lpex:pipe-passthrough-{brick}-{orientation}";
+      $"lpex:pipe-cast-passthrough-{brick}-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/passthroughbend. Variant groups: type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/passthroughbend. Variant groups: tier(cast), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
   public static class PipePassthroughbend
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-passthroughbend-*-*</c>.</summary>
-    public const string Any = "lpex:pipe-passthroughbend-*-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-passthroughbend-*-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-passthroughbend-*-*";
 
     /// <summary>The <c>brick</c> variant group.</summary>
     public static class Brick
@@ -337,27 +337,27 @@ public static class LpexBlocks
       public const string De = "de";
     }
 
-    /// <summary>Pin only <c>brick</c>: <c>lpex:pipe-passthroughbend-{brick}-*</c>.</summary>
+    /// <summary>Pin only <c>brick</c>: <c>lpex:pipe-cast-passthroughbend-{brick}-*</c>.</summary>
     public static string WithBrick(string brick) =>
-      $"lpex:pipe-passthroughbend-{brick}-*";
+      $"lpex:pipe-cast-passthroughbend-{brick}-*";
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-passthroughbend-*-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-passthroughbend-*-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-passthroughbend-*-{orientation}";
+      $"lpex:pipe-cast-passthroughbend-*-{orientation}";
 
-    /// <summary>Every group resolved: <c>lpex:pipe-passthroughbend-{brick}-{orientation}</c>.</summary>
+    /// <summary>Every group resolved: <c>lpex:pipe-cast-passthroughbend-{brick}-{orientation}</c>.</summary>
     public static string Of(string brick, string orientation) =>
-      $"lpex:pipe-passthroughbend-{brick}-{orientation}";
+      $"lpex:pipe-cast-passthroughbend-{brick}-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/pressurevalve. Variant groups: type(pressurevalve), orientation(ns|we|ud|sn|ew|du).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/pressurevalve. Variant groups: tier(cast), type(pressurevalve), orientation(ns|we|ud|sn|ew|du).</summary>
   public static class PipePressurevalve
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-pressurevalve-*</c>.</summary>
-    public const string Any = "lpex:pipe-pressurevalve-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-pressurevalve-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-pressurevalve-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -370,19 +370,19 @@ public static class LpexBlocks
       public const string Du = "du";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-pressurevalve-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-pressurevalve-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-pressurevalve-{orientation}";
+      $"lpex:pipe-cast-pressurevalve-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/straight. Variant groups: type(straight), orientation(ns|we|ud).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/straight. Variant groups: tier(cast), type(straight), orientation(ns|we|ud).</summary>
   public static class PipeStraight
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-straight-*</c>.</summary>
-    public const string Any = "lpex:pipe-straight-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-straight-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-straight-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -392,19 +392,19 @@ public static class LpexBlocks
       public const string Ud = "ud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-straight-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-straight-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-straight-{orientation}";
+      $"lpex:pipe-cast-straight-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/tjunction. Variant groups: type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/tjunction. Variant groups: tier(cast), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
   public static class PipeTjunction
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-tjunction-*</c>.</summary>
-    public const string Any = "lpex:pipe-tjunction-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-tjunction-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-tjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -423,19 +423,19 @@ public static class LpexBlocks
       public const string Dwu = "dwu";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-tjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-tjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-tjunction-{orientation}";
+      $"lpex:pipe-cast-tjunction-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/valve. Variant groups: type(valve), orientation(ns|we|ud|sn|ew|du).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/valve. Variant groups: tier(cast), type(valve), orientation(ns|we|ud|sn|ew|du).</summary>
   public static class PipeValve
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-valve-*</c>.</summary>
-    public const string Any = "lpex:pipe-valve-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-valve-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-valve-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -448,19 +448,19 @@ public static class LpexBlocks
       public const string Du = "du";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-valve-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-valve-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-valve-{orientation}";
+      $"lpex:pipe-cast-valve-{orientation}";
   }
 
-  /// <summary><c>lpex:pipe</c> - pipe/xjunction. Variant groups: type(xjunction), orientation(nswe|nsud|weud).</summary>
+  /// <summary><c>lpex:pipe</c> - pipe/xjunction. Variant groups: tier(cast), type(xjunction), orientation(nswe|nsud|weud).</summary>
   public static class PipeXjunction
   {
     /// <summary>The bare code, no variants: <c>lpex:pipe</c>.</summary>
     public const string Code = "lpex:pipe";
 
-    /// <summary>Any variant: <c>lpex:pipe-xjunction-*</c>.</summary>
-    public const string Any = "lpex:pipe-xjunction-*";
+    /// <summary>Any variant: <c>lpex:pipe-cast-xjunction-*</c>.</summary>
+    public const string Any = "lpex:pipe-cast-xjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -470,9 +470,9 @@ public static class LpexBlocks
       public const string Weud = "weud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-xjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>lpex:pipe-cast-xjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"lpex:pipe-xjunction-{orientation}";
+      $"lpex:pipe-cast-xjunction-{orientation}";
   }
 
   /// <summary><c>lpex:steamcondenser</c> - steamcondenser. Variant groups: side(n|e|s|w).</summary>

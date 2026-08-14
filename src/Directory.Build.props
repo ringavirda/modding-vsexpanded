@@ -168,12 +168,11 @@
   -->
   <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\modinfo.json')">
     <ModVersion Condition="'$(ModVersion)' == ''"
-    >$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\modinfo.json')), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</ModVersion>
+      >$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\modinfo.json')), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</ModVersion>
     <Version>$(ModVersion)</Version>
     <FileVersion>$(ModVersion)</FileVersion>
     <InformationalVersion>$(ModVersion)</InformationalVersion>
-    <AssemblyVersion
-    >$([System.Version]::Parse('$(ModVersion)').Major).$([System.Version]::Parse('$(ModVersion)').Minor).0.0</AssemblyVersion>
+    <AssemblyVersion>$([System.Version]::Parse('$(ModVersion)').Major).$([System.Version]::Parse('$(ModVersion)').Minor).0.0</AssemblyVersion>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- CS1591 missing comment on a public member - the undocumented remainder, a separate pass.
@@ -247,11 +246,23 @@
     </Compile>
   </ItemGroup>
 
+  <!-- $(AssetDomain) is the mod's PRIMARY domain: its lang feed, and the one its own codes use.
+       $(AssetDomainsExtra) is an optional semicolon-separated list of FURTHER trees it packs - a mod
+       ships more than one while absorbing another's codes during a merge, because the absorbed tree
+       keeps shipping under its own domain until the codes relocate. iwex's game-domain lang override
+       is the same mechanism rather than a special case.
+
+       ⚠ These must stay ITEM conditions. Properties in this file are evaluated BEFORE the csproj sets
+       $(AssetDomain), so computing an intermediate property here is silently inert - no assets, no
+       AdditionalFiles, and no error. Items are evaluated after every property from both files, which
+       is why the original single-domain glob worked. -->
+  <!-- The Content globs that pack these trees live in ../Directory.Build.targets: they need a property
+       computed from $(AssetDomain), which the csproj sets AFTER this file is evaluated. Only the
+       PRIMARY domain feeds ExLangKeyGenerator - a packed foreign tree is either an override of someone
+       else's keys (assets/game/) or an absorbed mod's own, and neither should emit typed constants into
+       this mod's {Domain}Lang class - and an AdditionalFiles item needs no computed property, so it
+       stays here. -->
   <ItemGroup Condition="'$(AssetDomain)' != ''">
-    <Content Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\**\*">
-      <Link>assets\$(AssetDomain)\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\assets\$(AssetDomain)\lang\en.json" />
   </ItemGroup>
 
@@ -260,16 +271,12 @@
     OPT-IN GAME-DOMAIN OVERRIDE. A mod that sets <ShipGameLangOverride>true</> packs the shared
     assets/game/ tree (lang overrides that rename vanilla keys - iron -> "wrought iron", steel ->
     "shear steel"). Only ONE mod may opt in, or the override would ship duplicated; today that is
-    iwex. Mirrors the AssetDomain Content glob above (the <Link> keeps the out-of-cone files under
-    assets\game\ instead of flattening them to the output root). The lang files are pure overrides
-    (no new codes), so no AdditionalFiles feed - ExLangKeyGenerator only consumes the mod's own
-    domain, never game/.
+    iwex.
+
+    It is now a spelling of $(AssetDomains) rather than its own glob: the property block above
+    appends "game" to the list, and the shared Content glob packs it like any other tree. The lang
+    files are pure overrides (no new codes), and only the primary domain feeds
+    ExLangKeyGenerator, so nothing emits typed constants for game/.
     ============================================================================================
   -->
-  <ItemGroup Condition="'$(ShipGameLangOverride)' == 'true'">
-    <Content Include="$(MSBuildThisFileDirectory)..\assets\game\**\*">
-      <Link>assets\game\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 </Project>

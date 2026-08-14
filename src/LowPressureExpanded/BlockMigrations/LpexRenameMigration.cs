@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Blocks.Migrations;
+using ExpandedLib.Blocks.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
@@ -26,14 +27,24 @@ public class LpexRenameMigration : IBlockCodeMigration, IItemCodeMigration {
     "enginempgenerator",
     "manualfluidpump",
     "steamcondenser",
-    // The four fittings that shipped with no material variant, so a flat rename is all they need. Listed
-    // individually because a bare "pipe" base would also claim the segments and valves PipeMigration
-    // owns; CodeRelocation's trailing-separator rule keeps `pipe-passthrough` from swallowing
-    // `pipe-passthroughbend`.
+    // The two fittings that shipped with no material variant and still carry the same base code, so a
+    // flat rename is all they need. Listed individually because a bare "pipe" base would also claim the
+    // segments and valves PipeMigration owns.
     "pipe-outlet",
-    "pipe-passthrough",
-    "pipe-passthroughbend",
     "pipe-fluidintake",
+  ];
+
+  /// <summary>
+  /// Fittings whose base code changed as well as its domain: the passthroughs gained the <c>tier</c>
+  /// segment in M.2, so a flat rename no longer finds them and the released <c>ppex:</c> codes would
+  /// lose their migration - silently, but for <c>ReleasedCodeCoverageTests</c>.
+  /// <c>CodeRelocation</c>'s trailing-separator rule still keeps <c>…-passthrough</c> from swallowing
+  /// <c>…-passthroughbend</c>.
+  /// </summary>
+  private static readonly (string Old, string New)[] RenamedBlocks =
+  [
+    ("pipe-passthrough", $"pipe-{BlockPipe.CastTier}-passthrough"),
+    ("pipe-passthroughbend", $"pipe-{BlockPipe.CastTier}-passthroughbend"),
   ];
 
   /// <summary>The two items ppex shipped; both are still lpex items under the same name.</summary>
@@ -53,6 +64,19 @@ public class LpexRenameMigration : IBlockCodeMigration, IItemCodeMigration {
           "ppex",
           "lpex",
           @base,
+          legacySideWords: true
+        )
+      )
+        yield return pair;
+
+    foreach (var (old, live) in RenamedBlocks)
+      foreach (
+        var pair in CodeRelocation.Remap(
+          api,
+          "ppex",
+          old,
+          "lpex",
+          live,
           legacySideWords: true
         )
       )

@@ -6,7 +6,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-passthrough-{brick}-ns"
+      "code": "lpex:pipe-cast-passthrough-{brick}-ns"
     },
     "ingredients": {
       "B": {
@@ -27,7 +27,7 @@
       },
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -44,7 +44,7 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-passthroughbend-{brick}-nw"
+      "code": "lpex:pipe-cast-passthroughbend-{brick}-nw"
     },
     "ingredients": {
       "B": {
@@ -65,7 +65,7 @@
       },
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -103,7 +103,7 @@
       },
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -130,12 +130,12 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-valve-sn"
+      "code": "lpex:pipe-cast-valve-sn"
     },
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-ns",
+        "code": "iwex:pipe-plated-straight-ns",
         "quantity": 1
       },
       "H": {
@@ -167,12 +167,12 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-pressurevalve-sn"
+      "code": "lpex:pipe-cast-pressurevalve-sn"
     },
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-ns",
+        "code": "iwex:pipe-plated-straight-ns",
         "quantity": 1
       },
       "H": {
@@ -204,12 +204,12 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-valve-sn"
+      "code": "lpex:pipe-cast-valve-sn"
     },
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-ns",
+        "code": "iwex:pipe-plated-straight-ns",
         "quantity": 1
       },
       "H": {
@@ -241,12 +241,12 @@
     "height": 3,
     "output": {
       "type": "block",
-      "code": "lpex:pipe-pressurevalve-sn"
+      "code": "lpex:pipe-cast-pressurevalve-sn"
     },
     "ingredients": {
       "P": {
         "type": "block",
-        "code": "iwex:pipe-straight-ns",
+        "code": "iwex:pipe-plated-straight-ns",
         "quantity": 1
       },
       "H": {

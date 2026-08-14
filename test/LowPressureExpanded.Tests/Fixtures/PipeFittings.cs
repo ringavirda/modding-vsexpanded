@@ -7,8 +7,8 @@ namespace LowPressureExpanded.Tests;
 /// Real fitting blocks from the lpex (cast) pipe tier, for fixtures that must satisfy a machine's
 /// multiblock layout rather than merely act as a network node. A generic
 /// <c>PipeTestWorld.MakePipe</c> behaves identically on the graph but wears
-/// <c>iwex:pipe-straight-*</c>, so a layout cell asking for <c>lpex:pipe-outlet*</c> or
-/// <c>lpex:pipe-passthrough-*</c> stays unsatisfied and the machine never completes. Lives in the lpex
+/// <c>iwex:pipe-plated-straight-*</c>, so a layout cell asking for <c>lpex:pipe-outlet*</c> or
+/// <c>lpex:pipe-cast-passthrough-*</c> stays unsatisfied and the machine never completes. Lives in the lpex
 /// suite because lpex owns the fittings; smex and hpex reach it through the test-project chain.
 /// </summary>
 public static class PipeFittings {
@@ -40,8 +40,9 @@ public static class PipeFittings {
     Primed(
       TestBlocks.Configure(
         new BlockPipePassthrough(),
-        $"lpex:pipe-passthrough-fire-{orientation}",
+        $"lpex:pipe-cast-passthrough-fire-{orientation}",
         id,
+        ("tier", "cast"),
         ("type", "passthrough"),
         ("orientation", orientation)
       ),

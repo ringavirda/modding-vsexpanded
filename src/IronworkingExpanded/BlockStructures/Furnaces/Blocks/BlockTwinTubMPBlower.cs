@@ -33,10 +33,8 @@ public partial class BlockTwinTubMPBlower
   /// The mechanical-power intake hosted by the footprint's upper-rear cell: an axle on the
   /// (rotation-relative) west face drives the bellows. The same coupling the rolling mill uses.
   /// </summary>
-  private static readonly FillerBehaviorSpec MpPortWest = new(
-    "exlib.BEBehaviorMPFillerPort",
-    "west"
-  );
+  private static readonly FillerBehaviorSpec MpPortWest =
+    FillerBehaviorSpec.Of<BEBehaviorMPFillerPort>("west");
 
   /// <summary>
   /// The twin-tub blower blocktype. Orientation follows the pipe-fitting convention (a <c>type</c> +

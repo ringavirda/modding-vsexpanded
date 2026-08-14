@@ -206,7 +206,7 @@ the golden is `test/IronworkingExpanded.Tests/goldens/iwex/recipes/grid/blastfur
 | `iwex:furnace-blastcore-{tier}-n` | 4 × fired refractory brick (tier captured), 2 × rod, 4 × nails, 2 × plate |
 | `iwex:furnace-irontap-s` | 2 × tier-3 refractory brick, 12 × fire clay, 1 × plate, hammer, chisel |
 | `iwex:furnace-slagtap-s` | 2 × tier-3 refractory brick, 12 × fire clay, hammer, chisel |
-| `iwex:furnace-tuyere-s` | 2 × tier-3 refractory brick, 1 × `iwex:pipe-straight*` (`FurnaceRecipeDefinitions.cs:69`), hammer, chisel |
+| `iwex:furnace-tuyere-s` | 2 × tier-3 refractory brick, 1 × `iwex:pipe-plated-straight*` (`FurnaceRecipeDefinitions.cs:66`), hammer, chisel |
 | `iwex:hopper-tall-n` | 4 × plate, 3 × nails, hammer |
 | `iwex:furnace-twintubblower-n` | 2 × leather, planks, nails, hammer - the iron tier's only air source |
 

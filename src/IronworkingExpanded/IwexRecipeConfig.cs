@@ -90,10 +90,10 @@ public class IwexRecipeConfig : IExVersionedConfig {
       ["burdenmaker-grid"] = Grid("iwex:burdenmaker-*"),
 
       // Plated pipe - the iron tier's pipe set, first of the three tiers.
-      ["pipe-straight-grid"] = Grid("iwex:pipe-straight-*"),
-      ["pipe-bend-grid"] = Grid("iwex:pipe-bend-*"),
-      ["pipe-tjunction-grid"] = Grid("iwex:pipe-tjunction-*"),
-      ["pipe-xjunction-grid"] = Grid("iwex:pipe-xjunction-*"),
+      ["pipe-straight-grid"] = Grid("iwex:pipe-plated-straight-*"),
+      ["pipe-bend-grid"] = Grid("iwex:pipe-plated-bend-*"),
+      ["pipe-tjunction-grid"] = Grid("iwex:pipe-plated-tjunction-*"),
+      ["pipe-xjunction-grid"] = Grid("iwex:pipe-plated-xjunction-*"),
 
       // Mechanical energy: shafting, flywheels and the gear transmissions.
       ["mpenergy-shaft-grid"] = Grid("iwex:mpenergy-shaft-*"),

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using IronworkingExpanded.BlockStructures.Casting.BlockEntities;
@@ -34,8 +35,7 @@ public partial class BlockSandCastingCell : Block, IExBlockDefProvider {
       // The cast is held on a drain-fitting molten cell, which is not registered on the molten network.
       // The entity pulls into it from the launder face and overrides its capacity from the impressed
       // pattern.
-      .EntityBehavior(
-        "exlib.BEBehaviorMoltenCell",
+      .EntityBehavior<BEBehaviorMoltenCell>(
         new JObject { ["capacity"] = 200, ["drainFitting"] = true }
       )
       // The canal's 8-colour brick group, fire first so it is the default variant, plus the horizontal

@@ -25,6 +25,12 @@
   ],
   "variantgroups": [
     {
+      "code": "tier",
+      "states": [
+        "cast"
+      ]
+    },
+    {
       "code": "type",
       "states": [
         "pressurevalve"

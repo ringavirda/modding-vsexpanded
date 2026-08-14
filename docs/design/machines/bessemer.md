@@ -35,7 +35,7 @@ metal-type refusal, the missing `Ladle` ·
 [multiblock & fillers](../mechanics/multiblock.md) - `MultiblockLayout`, `StructureComplete`, filler footprints,
 `IFillerInteractionTarget` ·
 [recipes & config](../mechanics/recipes-config.md) - code-first defs, `ExRecipeCosts`, `/exmod` ·
-[cast pipes](cast-pipes.md) - the `lpex:pipe-straight-*` blocktype the build asks for ·
+[cast pipes](cast-pipes.md) - the `lpex:pipe-cast-straight-*` blocktype the build asks for ·
 [gears](gears.md) - `lpex:largegear-*` and `lpex:gear-*` ·
 [twin-tub blower](twin-tub-blower.md) and the engine air blower - where the blast comes from ·
 [long cell](long-cell.md) - what the steel is cast into ·
@@ -199,7 +199,7 @@ All in `Recipes/Grid/ConverterRecipeDefinitions.cs`; costs registered as `conver
 |---|---|---|---|
 | `smex:convertercontrol-north` | `H_R,NPP,PPR` | 12 rod, 4 plate, 8 nails, hammer (tool) | `:21-30` |
 | `smex:convertertransmission-north` | `HPR,AGP,NPR` | 12 rod, 4 plate, 8 nails, 16 gear, 1 `game:woodenaxle-ud`, hammer | `:46-57`; emitted twice - once for `game:gear-rusty` (`:31`), once for `lpex:gear-*` (`:43`) |
-| `smex:converter-intake-north` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `lpex:pipe-straight*`, hammer | `:32-42` |
+| `smex:converter-intake-north` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `lpex:pipe-cast-straight*`, hammer | `:32-42` |
 
 `Rod` / `Plate` / `Nails` are the `game:*-*` metal-capture staples (`ExIngredients.cs:27-46`); `PipeStar` is
 the trailing-star pipe wildcard shared with the cowper and smokestack intakes (`RecipeIngredients.cs:18-19`).
@@ -213,7 +213,7 @@ Raised in place by right-clicking the vessel with materials in the hotbar. Cost 
 |---|---|---|
 | 1 | — | `Root/GearShaft` |
 | 2 | 24 plate · 24 nails · 12 rod | `Root/BottomIron` |
-| 3 | 4 plate · 3 `lpex:pipe-straight-ns-{metal}` · 6 nails | `Root/GasIntake` |
+| 3 | 4 plate · 3 `lpex:pipe-straight-ns-{metal}` (resolves to nothing - B7) | `Root/GasIntake` |
 | 4 | 60 `refractorybrick-fired-tier3` · 48 `game:clay-fire` | `Root/BottomRefractory` |
 | 5 | 24 `refractorybrick-fired-tier3` · 24 fire clay | `Root/UpRefractory` |
 | 6 | 12 plate · 12 nails · 6 rod | `Root/UpIron` |
@@ -229,18 +229,20 @@ Spawning the vessel is separate from building it: RMB the control with 1 `lpex:l
 
 ### B7 — stage 3 can never be satisfied
 
-`lpex:pipe-straight-ns-{metal}` does not exist. The pipe blocktype declares variant groups `type` and
-`orientation` only (`BlockPipe.cs:84-85`, confirmed by
-`test/LowPressureExpanded.Tests/goldens/lpex/blocktypes/pipes/straight.json`), so the codes are
-`lpex:pipe-straight-{ns|we|ud}` with no metal axis. The `{metal}` placeholder is filled from stage 2's
+`lpex:pipe-straight-ns-{metal}` does not exist. The pipe blocktype declares variant groups `tier`,
+`type` and `orientation` (`BlockPipe.cs:103`, `:121-122`, confirmed by
+`test/LowPressureExpanded.Tests/goldens/lpex/blocktypes/pipe/straight.json`), so the codes are
+`lpex:pipe-cast-straight-{ns|we|ud}` with no metal axis. ⛔ Since M4 (2026-08-14) the required code is
+wrong in two ways rather than one: it names a `{metal}` group that never existed **and** omits the `tier`
+segment that now does. The `{metal}` placeholder is filled from stage 2's
 `storeWildCard` (`ExConstruction.cs:112-123`, `:200-203`) and resolves to `…-ns-iron` / `…-ns-steel`, neither
 of which is a registered block. `TryConsumeIngredients` resolves every ingredient before the creative shortcut
 is considered and hard-fails a non-wildcard miss (`ExConstruction.cs:165-178`), so:
 
 > The Bessemer vessel cannot be completed, in survival or in creative-instant. Stage 3 is a wall.
 
-One-token fix: drop the `-{metal}` suffix. The cast segment `lpex:pipe-straight-ns` exists, but it has no
-recipe either (B19, [cast pipes](cast-pipes.md)), which also makes the gas intake recipe uncraftable - so the
+The fix is no longer one token: the target is `lpex:pipe-cast-straight-ns`. That segment exists, but it has
+no recipe either (B19, [cast pipes](cast-pipes.md)), which also makes the gas intake recipe uncraftable - so the
 converter is blocked in two independent places. Neither is on this page to fix.
 
 ---
@@ -634,9 +636,10 @@ without anything noticing.
    D4 must be restated as a steel capacity and the fill gate changed to count product. This needs deciding
    before the number is changed, or the tier gets a third capacity iteration that still misses.
 
-3. **B7 blocks the build** (Construction). One token in `BlockConverterBessemer.cs:108`. B19 blocks it
-   again - `lpex:pipe-straight-*` has no recipe, so even the corrected code is creative-only, and the same
-   block is 1 of the gas intake's grid ingredients.
+3. **B7 blocks the build** (Construction). One code in `BlockConverterBessemer.cs:108`, now
+   `lpex:pipe-cast-straight-ns`. B19 blocks it again - that segment has no recipe, so even the corrected
+   code is creative-only, and the same block is 1 of the gas intake's grid ingredients. Both halves belong
+   in M.3, which owns this layout.
 
 4. **The rebuild is scheduled and nothing has started.** Four blocks → one RCC megablock, coordinate layout →
    ASCII, intake/transmission → behaviour-capable fillers, plus a migration for existing worlds. Until then

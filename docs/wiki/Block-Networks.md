@@ -7,6 +7,15 @@ the two concrete networks the mods use - the `PipeNetwork` (gas + water, registe
 mods share one implementation. Each mod just registers the type and supplies its own
 content-specific pieces through the seams below. You register your own network type the same way.
 
+> ⚠ **A block does not have to spend its base class on being a node.** Form, process and membership
+> are three independent axes: the base class belongs to **form** (what the block *is* - a container, a
+> multiblock part), while network membership and the production tick are **behaviours** you attach.
+> `BlockNetworkNode` below is the convenient answer when a block has no other form to be, and it is
+> what the shipped pipes use - but a block that must also be, say, a container hosts
+> `BEBehaviorNetworkMember` instead of inheriting from here. `BlockEntityNetworkNode` is itself only a
+> host for that behaviour, so the two routes join immediately. See
+> [Production Machines](Production-Machines) for the same split on the process axis.
+
 The code sits in two namespaces, and you will usually import both: **`ExpandedLib.Networks`** holds the
 graph model (`BlockNetwork` and its subclasses, `PipeNetworkState`, and every `I*Node`/`I*Connector`
 contract) - no Vintage Story block types involved - while **`ExpandedLib.Blocks.Networks`** holds the
@@ -66,20 +75,28 @@ through small interfaces the mods implement, never by naming a mod's block type:
 
 ```csharp
 [BlockRegister]
-public class BlockPipe : BlockNetworkNode
+public partial class MyPipe : BlockNetworkNode, IExBlockDefProvider
 {
     public override string NetworkType => "pipe";
 
-    // Shape "type" (from the variant map) -> valid orientation strings for that shape.
-    public override Dictionary<string, string[]> AllowedOrientations { get; } = new()
-    {
-        ["straight"] = ["ns", "we", "ud"],
-        ["bend"]     = ["ne", "es", "sw", "wn"],
-    };
-
-    public override string GetFallbackOrientation(string? type) => "ns";
+    // The orientation table is NOT hand-written: BlockNetworkNode derives it from this class's own
+    // code-first definitions, so the shape "type" -> orientations map lives in the variant groups and
+    // in one place only.
+    public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    [
+        ExBlockDef.Create(domain, "mypipe")
+            .Class<MyPipe>()
+            .VariantGroup("type", "straight")
+            .VariantGroup("orientation", "ns", "we", "ud"),
+    ];
 }
 ```
+
+**Only `NetworkType` is required.** `AllowedOrientations` is `virtual` with a definitions-derived
+default (`ExDefinitions.OrientationMap`), so overriding it duplicates the variant groups and is worth
+doing only for a block whose orientation is not a `type` x `orientation` pair. Its companion
+`GetFallbackOrientation` is `protected virtual` - override it `protected`, not `public`, or the
+compiler rejects the widening (CS0507).
 
 `BlockNetworkNode` does the heavy lifting: at placement it computes the best orientation from
 surrounding network blocks (`TryPlaceBlock`), recomputes on neighbour change
@@ -96,9 +113,10 @@ breaks placement and wrenching, so keep it exactly that.
 ### Key `BlockNetworkNode` members to know
 
 ```csharp
-public abstract string NetworkType { get; }
-public abstract Dictionary<string, string[]> AllowedOrientations { get; }
-public abstract string GetFallbackOrientation(string? type);
+public abstract string NetworkType { get; }              // the only member you must write
+
+public virtual Dictionary<string, string[]> AllowedOrientations { get; }   // derived from your defs
+protected virtual string GetFallbackOrientation(string? type);             // first state, else "ns"
 
 public virtual bool IsNetworkEndPoint { get; }          // fixed endpoint, excluded from neighbour discovery
 protected virtual bool IsFullCube { get; }              // full-cell blocks cycle the full topology on wrench

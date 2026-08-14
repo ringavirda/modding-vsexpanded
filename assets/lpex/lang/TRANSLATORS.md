@@ -8,7 +8,7 @@ Please read this before editing the lang files - these mods do a few non-obvious
 - Add one file per language next to `en.json`, named by its language code: `ru.json`, `uk.json`,
   `de.json`, … (the same codes Vintage Story uses).
 - **Translate values, never keys.** Every key must stay byte-for-byte identical to `en.json`.
-  Keys ending in `*` (e.g. `block-pipe-straight*`) and keys starting with `game:` are normal -
+  Keys ending in `*` (e.g. `block-pipe-cast-straight*`) and keys starting with `game:` are normal -
   leave the key as-is, translate the value.
 - Keep every format placeholder intact and in a sensible order: `{0}`, `{1}`, `{0:F0}`, `{0:F1}`.
   The number/format part after the colon (`:F0`) must not change.

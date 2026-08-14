@@ -11,7 +11,7 @@
     "ingredients": {
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "P": {
@@ -53,7 +53,7 @@
     "ingredients": {
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "P": {
@@ -110,7 +110,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "N": {
@@ -167,7 +167,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -204,7 +204,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -251,7 +251,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "R": {
@@ -360,7 +360,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -397,7 +397,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "H": {
@@ -444,7 +444,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-straight-*",
+        "code": "iwex:pipe-plated-straight-*",
         "quantity": 1
       },
       "R": {

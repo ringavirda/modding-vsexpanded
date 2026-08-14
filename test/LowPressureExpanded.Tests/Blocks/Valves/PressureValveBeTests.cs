@@ -18,12 +18,15 @@ namespace LowPressureExpanded.Tests;
 /// tree carries no gate value.
 /// </summary>
 public class PressureValveBeTests {
-  private static BlockPressureValve ValveBlock(string material = "iron") {
+  // The shipped code and variant shape. The `tier` variant is what BlockPipe.BurstPressure reads, so a
+  // fixture that omits it takes the 5 atm default - numerically identical to the cast tier's rating,
+  // which is why the omission would not show up in any assertion below.
+  private static BlockPressureValve ValveBlock() {
     var block = TestBlocks.Configure(
       new BlockPressureValve(),
-      $"lpex:pressurevalve-{material}-ns",
+      "lpex:pipe-cast-pressurevalve-ns",
       40,
-      ("material", material),
+      ("tier", "cast"),
       ("type", "pressurevalve"),
       ("orientation", "ns")
     );
@@ -32,11 +35,11 @@ public class PressureValveBeTests {
     return block;
   }
 
-  private static BlockEntityPressureValve Valve(string material = "iron") {
+  private static BlockEntityPressureValve Valve() {
     var world = new TestWorld();
     var be = new BlockEntityPressureValve {
       Pos = new BlockPos(0, 0, 0),
-      Block = ValveBlock(material),
+      Block = ValveBlock(),
     };
     world.Attach(be);
     return be;
@@ -51,6 +54,29 @@ public class PressureValveBeTests {
       ((BlockPressureValve)be.Block).BurstPressure,
       be.MaxGatePressure
     );
+  }
+
+  [Fact]
+  public void The_ceiling_is_the_cast_tier_s_rating_and_it_comes_from_the_variant() {
+    var be = Valve();
+    Assert.Equal("cast", ((BlockPressureValve)be.Block).Tier);
+    Assert.Equal(PipeTestWorld.CastTierBurst, be.MaxGatePressure, 3);
+
+    // Proves the number is resolved through the `tier` variant rather than the domain or the default,
+    // both of which answer 5 for this block. A rating registered against a tier no shipped block wears
+    // must reach a valve wearing it - and must not disturb the three shipped tiers.
+    const string probeTier = "castvalveprobe";
+    BlockPipe.RegisterBurst(probeTier, () => 9.5f);
+    var probe = TestBlocks.Configure(
+      new BlockPressureValve(),
+      $"lpex:pipe-{probeTier}-pressurevalve-ns",
+      41,
+      ("tier", probeTier),
+      ("type", "pressurevalve"),
+      ("orientation", "ns")
+    );
+    Assert.Equal(9.5f, probe.BurstPressure, 3);
+    Assert.Equal(PipeTestWorld.CastTierBurst, be.MaxGatePressure, 3);
   }
 
   #endregion
@@ -84,8 +110,8 @@ public class PressureValveBeTests {
   }
 
   [Fact]
-  public void Raising_clamps_at_the_material_ceiling_and_then_reports_no_change() {
-    var be = Valve("iron");
+  public void Raising_clamps_at_the_tier_ceiling_and_then_reports_no_change() {
+    var be = Valve();
 
     // Step up until it pins at the ceiling.
     for (int i = 0; i < 100 && be.AdjustGatePressure(true); i++) { }

@@ -61,9 +61,9 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
           .Size(3, 3)
           .Ingredient("B", Refractory(2))
           // iwex owns the base pipe block, so the ingredient is its plated segment. lpex registers no
-          // straight pipe at all (PipeMigration remaps those codes to iwex), so `lpex:pipe-straight*`
+          // straight pipe at all (PipeMigration remaps those codes to iwex), so `lpex:pipe-cast-straight*`
           // would match nothing and leave the furnace uncraftable.
-          .Ingredient("P", i => i.Block("iwex:pipe-straight*"))
+          .Ingredient("P", i => i.Block("iwex:pipe-plated-straight*"))
           .Ingredient("H", Hammer)
           .Ingredient("C", Chisel)
           .OutputBlock("iwex:furnace-tuyere-s")

@@ -1,8 +1,14 @@
 # Framework hardening — make exlib a library a stranger can adopt
 
-**Status** live, started 2026-08-13. **F0, F1 and F2 are done** and verified on the full gate
-(`scripts/exmod.ps1 test all` — 15 targets, 3,917 tests, green across 1.20/1.21/1.22). F3–F8 are
-unblocked and not started. The mod merge waits on an owner ruling (see *Blocked on the owner*).
+**Status** live, started 2026-08-13. **F0, F1, all of F2, F3.2, F3.4, F6.2, M.1 and M.2 are done**, each
+verified on the full gate (`scripts/exmod.ps1 test all` — 15 targets, **4,019 tests**, green across
+1.20/1.21/1.22). **F3.1 is half done** — the two pages its guard could reach.
+Open: F1.4, the rest of F3 (F3.1's other two pages, F3.3), F4, F5, F6.1, F7, F8, and stage M from
+**M.4** onward (M.3 folded into M.4).
+
+★★ **The merge is ruled** (M1–M6 in [STATE.md](STATE.md), 2026-08-13): five mods become **`iiex`** and
+**`siex`**, full domain consolidation, pipe tier onto a variant, `heavyplate` absorbs `castplate`, and
+the code-first builders become supported API. Stage **M** below carries it, and its order is forced.
 
 **Goal:** close the gap between what exlib does and what a consumer of the shipped zip can find, use and
 rely on — without changing the capability surface. Every stage here is packaging, diagnostics,
@@ -82,7 +88,7 @@ legitimate authoring in a mod that has never shipped.
 
 ---
 
-## F2 — the product wrapper *(cheapest, highest leverage)* — **F2.1–F2.2 done 2026-08-13**
+## F2 — the product wrapper *(cheapest, highest leverage)* — **done 2026-08-13**
 
 None of this is an API change. Together it is roughly a day and it changes exlib's category.
 
@@ -111,18 +117,26 @@ None of this is an API change. Together it is roughly a day and it changes exlib
       two cannot drift and a release still edits one file. `FileVersion` carries the full version;
       `AssemblyVersion` stays `major.minor.0.0`, because a binding identity that changed on every patch
       would break a dependent mod's assembly reference over a bugfix.
-- [ ] **F2.3** Ship `ExpandedLib.Generators`. It is `IncludeBuildOutput=false` and consumed only as an
-      in-repo analyzer `ProjectReference`, so the wiki's canonical config recipe produces `CS0103`
-      outside the monorepo with no diagnostic. Either an analyzer NuGet package or the dll under
-      `analyzers/` in the exlib-testing zip, with the `<Analyzer Include>` snippet documented.
-- [ ] **F2.4** Make the test harness runnable outside this repo. Five public helpers resolve paths by
-      walking up for a file literally named `VintageStory.sln` and throw otherwise, which kills the
-      block-code table, the definition goldens and the handbook sync for every outside consumer. Add an
-      injectable repo root checked before the probe, widened to any `*.sln`/`.git` marker.
-- [ ] **F2.5** Write the 0.8.0 CHANGELOG entry. The newest entry is 0.7.0 (2026-06-21) while 208 files and
-      **six entirely new public subsystems** — `Processes`, `Definitions`, `Metals`, `Materials`,
-      `Fluids`, `Heat` — landed after it. Gate it: the release step fails if modinfo's version has no
-      changelog entry.
+- [x] **F2.3** Generators shipped. *Done 2026-08-13.* `ExpandedLib.Generators.dll` goes into the
+      `exlib-testing` bundle under `analyzers/`, with the `<Analyzer Include>` and `<AdditionalFiles>`
+      snippets in the bundle README. The zip is the existing dev-library channel, so this needs no NuGet
+      publishing infrastructure. Chosen over a package deliberately: the generator's API still moves, and
+      the bundle already carries the harness a consumer needs alongside it.
+- [x] **F2.4** Harness portable. *Done 2026-08-13.* `DefinitionGoldens` now accepts
+      `RepoRootOverride` or `EXLIB_REPO_ROOT`, and its probe matches any `.sln`/`.slnx`/`.git` instead of
+      a file literally named `VintageStory.sln`. Every path-relative helper - goldens, block-code table,
+      handbook sync - previously threw outside this repository, which is most of what the bundle is for.
+
+      ⛔ Fifteen test files in this repo carry their own copy of the old probe. They work, because they
+      only ever run here, but each hardcodes the solution name. Collapsing them onto the harness helper is
+      a follow-on, not part of this stage.
+
+
+- [x] **F2.5** CHANGELOG caught up. *Done 2026-08-13.* A `0.7.3` entry covering the six public
+      subsystems that landed between 0.7.0 and 0.7.2 with no entry at all - code-first definitions, the
+      process-extension contract, the metal/material/liquid/heat catalogues - plus this stage's own
+      packaging and the two fixes. ⛔ The release-gate step that fails when modinfo's version has no
+      changelog entry is **not** built; without it this drifts again.
 
 ---
 
@@ -132,28 +146,51 @@ This repo guards its goldens, its lang keys, its code literals and its released 
 The public API documentation is the one authored artifact with **no guard at all**, and it has drifted
 accordingly.
 
-- [ ] **F3.1** Fix the outright errors:
-      - `Block-Networks.md` — the first example declares `public override` against a `protected virtual`
-        member (CS0507), and declares `AllowedOrientations` abstract where it is virtual with a
-        definitions-derived default.
-      - `Source-Generators.md` — delete the `ExAttributeGenerator` section; that generator was deleted in
-        `f4ddcea`. Document `ExLangKeyGenerator` in its place, including the `AdditionalFiles` a consuming
-        csproj needs.
+- [ ] **F3.1** Fix the outright errors. **Two of four done 2026-08-14**, both found by F3.4 rather than
+      by hand — the guard was written first and then pointed at the wiki.
+      - [x] `Block-Networks.md` — the `public override` against a `protected virtual` member (CS0507) is
+        `protected` now, and the members list no longer declares `AllowedOrientations` and
+        `GetFallbackOrientation` abstract: both are virtual, the first with a definitions-derived
+        default. The node example was rewritten around that default rather than hand-writing the
+        orientation table, which is what the code-first defs removed.
+      - [x] `Source-Generators.md` — the `ExAttributeGenerator` section is gone and `ExLangKeyGenerator`
+        documented in its place, with the `AdditionalFiles` item a consuming csproj needs and the note
+        that only the primary domain feeds it. The page also states the analyzer-only packaging.
+      - [ ] `Getting-Started.md`, `Config-System.md` — below, still open.
       - `Getting-Started.md` — drop the `partial` advice that routed readers to the deleted generator;
         correct the claim that exlib "is compiled into lpex.dll" (it ships as its own zip, referenced
         `Private=false`); add the `GamePath` fallback to the "consuming outside this repo" snippets.
       - `Config-System.md` — rewrite around the shared sectioned document rather than per-mod files, and
         drop the documented `Edit` method that does not exist on `ExConfigRegister<T>`.
-- [ ] **F3.2** Correct the retired inheritance model. `Block-Networks.md` and `Production-Machines.md`
-      both teach spending the base-class slot on being a graph node — the exact workaround the membership
-      behaviour was built to remove. Front them with the three axes: form = base class, process and
-      membership = behaviours.
+        ⛔ F3.4 does **not** catch this one: the wiki writes `Edit` on a lowercase local (`_store.Edit`),
+        and the guard only resolves members written against a type name. Prose claims about a method's
+        behaviour are outside it too. The guard narrows the surface; it does not close it.
+- [x] **F3.2** Correct the retired inheritance model. *Done 2026-08-14.* Both pages are now fronted
+      with the three axes — form owns the base-class slot, process and membership are behaviours — and
+      each names the escape its own reader needs: `BEBehaviorNetworkMember` for a block whose form is
+      already spoken for, the production behaviour for the same case on the process axis.
+      `BlockEntityNetworkNode` is described as what it is, a host for that behaviour, so the two routes
+      visibly join.
 - [ ] **F3.3** Settle the preference-wiring order. It is stated in three places and two of them
       contradict the library's own code.
-- [ ] **F3.4** **The guard.** A doc-parity test in `ExpandedLib.Testing`: extract every C# fenced block
-      from `docs/wiki/*.md`, reflect each member named against the assembly, fail on a mismatch. This is
-      the same idiom already used for goldens, lang keys and released codes — extended to the one surface
-      a third party is asked to build against. F3.1–F3.3 do not stay fixed without it.
+- [x] **F3.4** **The guard.** *Done 2026-08-14.* `WikiParity` in `ExpandedLib.Testing`, driven by
+      `WikiParityTests`. It checks three claims, each chosen because it is unambiguous and a reader acts
+      on it: a member written against a type exlib owns must exist; an `Ex`-prefixed identifier written
+      as code must name a type; and a declaration's shape must match the base — `public override` against
+      a `protected` member is CS0507, and `abstract` against an implemented member tells a consumer to
+      write something they need not. **129 symbols checked** across 15 pages.
+
+      ★ **It found all three of F3.1's predicted defects on its first run**, plus the members-list drift
+      the plan had recorded only for `AllowedOrientations`: `GetFallbackOrientation` was declared abstract
+      there too. Mutation-checked in both directions — reinstating the deleted generator name and widening
+      an override back to `public` each fail it.
+
+      ⛔ Two things learned building it. A declaration list is where a doc drifts furthest from the code,
+      and it has no `class X : Base` line to resolve against, so the base is taken from the section's own
+      heading (*"Key `BlockNetworkNode` members to know"*). And the generators **cannot be reflected** —
+      the project sets `IncludeBuildOutput=false` and ships no runtime assembly — so their names are read
+      out of `src/ExpandedLib.Generators/*.cs` instead of allowed by hand, which is what keeps a deleted
+      generator failing.
 
 ---
 
@@ -201,16 +238,31 @@ logs"*. Every one is opt-in, headless, and documented nowhere.
 
 ## F6 — the two hazards
 
-- [ ] **F6.1** **A migration whose source code is still live silently rewrites the player's world.**
-      `BlockMigrationModSystem` skips a source only when it resolves to nothing; it never checks the source
-      is *dead*. The destination is checked properly. This is the one item on the list that corrupts a save
-      rather than wasting time, and it is unrecoverable. Reject, with a named error, any remap whose source
-      is still a registered block; add a `Force` opt-in for the deliberate case.
-- [ ] **F6.2** **A mistyped network type throws out of chunk load.** exlib guards the blank-string case
-      with a comment stating the reason verbatim — *"one bad declaration would take a world down"* — and a
-      typo hits the same path unguarded. It only fires when the node is isolated, so it is intermittent and
-      position-dependent. Make it `TryCreateNetwork`: log an error naming the block code, the position, the
-      requested type and the registered types, and register no node.
+⛔⛔ **F6.1 was already guarded — the audit was wrong, and this is the third such claim.** The report said
+a migration naming a still-live source code "silently rewrites the player's world" with nothing catching
+it. `ReleasedCodeCoverageTests.No_migration_claims_a_code_that_is_still_alive` has covered exactly this
+since before the audit, and its own comment states the same reasoning the report presented as new —
+including that `BuildRemapTable`'s only source-side guard (`GetBlock(oldCode) != null`) passes for a live
+block. The code reading is accurate; the conclusion that nothing catches it was not.
+
+- [ ] **F6.1** What is genuinely left is narrower: that guard is a **test over our five mods**, so it does
+      not cover a third party using the migration framework — which is offered as public API. A runtime
+      check needs a way to tell a live registered block from a missing-block placeholder, and vsapi exposes
+      none (`GetBlock` resolves both, and `BlockId == 0` is the repo's only proxy). Worth doing when the
+      integration suite lands (M.6), scoped to third-party assemblies.
+- [x] **F6.2 A mistyped network type no longer throws out of chunk load.** *Done 2026-08-13.* exlib
+      guarded the blank-string case with a comment stating the reason verbatim — *"one bad declaration
+      would take a world down"* — and a typo hit the same path unguarded. `AddNode` now uses
+      `TryCreateNetwork` and, on a miss, logs an error naming the block code, the position, the requested
+      type and the registered types, then adds no node. Mutation-checked.
+
+      ★ Only an **isolated** node reaches the factory — one placed against an existing run joins that
+      network instead — so the crash was intermittent and position-dependent. That is why the fix is worth
+      more than the one-line diff suggests.
+
+      The throwing `CreateNetwork` is kept for the two internal callers (fracture split, root rebuild),
+      which take the type off a live network instance: there, a miss is an exlib invariant violation
+      rather than a mod declaring a bad type, and failing fast is correct.
 
 ---
 
@@ -263,31 +315,166 @@ Each is independently useful; none blocks the others.
 
 ---
 
-## Blocked on the owner
+## M — the merge *(ruled 2026-08-13; see M1–M6 in [STATE.md](STATE.md))*
 
-**The mod merge.** The 2026-08-13 design reading confirms the tier pairing `{iwex+lpex}` and
-`{smex+hpex}` is supported by four written rulings — material-gated power, rolling feedstock, fuel, and
-machine class. It also surfaces two things that need an explicit ruling before any code moves:
+Five mods become two: **`iiex`** (Iron Industry Expanded, absorbing iwex + lpex) and **`siex`** (Steel
+Industry Expanded, absorbing smex + hpex). `exlib` is unchanged. Full domain consolidation — every block
+code moves — with the pipe tier moving onto a `tier` variant group so M3's bootstrap rung survives it.
 
-1. **The corpus's stated unit of closure is the mod, not the pair.** [STATE.md](STATE.md)'s placement
-   rule — *"an iwex-only player gets a complete early-19th-century loop … and iwex recipes never reach
-   into lpex"* — is cited by name in about fifteen entity pages. Merging iwex and lpex deletes that rule's
-   subject. That is a legitimate ruling to make (it would dissolve the duplication the rule forces — iwex's
-   own pipe tier, its own spur and bevel gears) but it is a **new ruling, not a restatement**, and it needs
-   to land on a design page before the code follows.
-2. **Which mod id and ModDB listing survives** the merged upper mod. smex has the shipped history and the
-   audience; ppex/lpex has the older listing. Code cannot settle this.
+⛔⛔ **The constraint every task below is measured against (M3): a merge collapses no tier.** The plated
+pipe family and the iron gears are the early loop's bootstrap rung. It is tempting to read two
+near-identical pipe families as duplication and delete one — that would delete the progression. Both
+tiers ship, separated by the variant, with distinct display names.
 
-Two pieces of merge-adjacent work are **owed regardless of the ruling** and can proceed now:
+### Order is forced here, unlike the F stages
 
-- **De-`lpex:` the smex layouts.** Already ruled on the design side — *"the layout must not name `lpex:`
-  fittings, or a smex machine becomes unbuildable without lpex's cast tier."* It is the prerequisite for
-  smex-side independence under any packaging.
-- **Decouple asset domain from mod id.** `EntityRegistry.RegisterAll` passes `mod.Info.ModID` to every
-  provider, and `<AssetDomain>` is one MSBuild scalar. The repo already breaks the 1:1 convention — iwex
-  ships the foreign `game:` domain through `ShipGameLangOverride`. Letting a provider declare its own
-  domain makes any future merge a packaging change rather than a re-coding of every block, and it removes
-  the twelve magic cross-assembly class strings on its own. Useful whether or not the merge happens.
+**M.1 Decouple asset domain from mod id.** `EntityRegistry.RegisterAll` passed `mod.Info.ModID` to every
+provider and `<AssetDomain>` is a single MSBuild scalar. **Do this first**: it is what lets one assembly
+carry two domains during the transition, so the rename can land mod by mod instead of as one atomic cut.
+The repo already proves a mod can ship a foreign domain — iwex ships `game:` via `ShipGameLangOverride`.
+
+- [x] **M.1a Class keys resolve from the type's own assembly.** *Done 2026-08-13.*
+      `[assembly: ExDomain("<modid>")]` on each of the five mods; `EntityRegistry.DomainOf` prefers it,
+      falls back to the modid recorded by `RegisterAll`, then to the caller's domain. An assembly-level
+      attribute rather than a registration call because it carries **no load-order dependency** — a key
+      resolves before the owning mod's `Start` has run.
+
+      All **twelve** hand-typed cross-assembly strings are gone, replaced by
+      `Class<T>()` / `EntityClass<T>()` / `EntityBehavior<T>(props)` and a new
+      `FillerBehaviorSpec.Of<T>(face, properties)`. Two additions were needed to make that possible: the
+      typed `EntityBehavior<T>(JObject)` overload, and the filler factory.
+
+      ★★ **Every golden passed unchanged**, which is the parity proof: the typed calls emit byte-identical
+      JSON to the strings they replaced, so this is a pure authoring-safety change with no content diff.
+      Guards added and both mutation-checked — reverting `KeyFor` to the caller's domain fails one,
+      deleting a mod's `ExDomain` fails the other. Verified on the full gate, 15 targets, 3,921 tests.
+
+      ⛔ `BlockPipePassthrough` carried a six-line comment explaining that it pinned literals *because*
+      the typed overloads keyed off the definition's domain, and noting that the block half of that
+      failure is never logged. That comment was an accurate bug report; it is now deleted along with the
+      workaround.
+
+      ⛔ The repo enforces its comment style by test (`CommentStyleGuards`): doc comments ≤16 lines, no
+      `<b>`/`<i>`, no marker glyphs in code. Rationale belongs here and on design pages, not in the
+      source. Three violations were written and corrected.
+- [x] **M.1b A definition provider can declare its own domain.** *Done 2026-08-13.* `[ExDefDomain("…")]`
+      on a provider class overrides the domain its `Definitions(string)` factory is handed; absent, the
+      registering mod's domain still applies, so nothing existing changes. This is what lets an absorbing
+      assembly keep emitting the absorbed mod's codes while the relocation lands, instead of the merge
+      being one atomic cut. It is also the general form of what `MetalFamilyEmitter` already did ad hoc.
+      Mutation-checked.
+- [x] **M.1c A project can pack several asset trees.** *Done 2026-08-13.* `$(AssetDomainAbsorbed1)` /
+      `$(AssetDomainAbsorbed2)` alongside the primary `$(AssetDomain)`, with `ShipGameLangOverride` now
+      one more glob of the same shape rather than its own block. Verified end to end: lpex built with
+      `-p:AssetDomainAbsorbed1=smex` packs both trees with nesting intact.
+
+      ⛔ **The globs live in `src/Directory.Build.targets`, and they are deliberately repetitive.** The
+      glob path needs `$(AssetDomain)`, which the csproj sets *after* `Directory.Build.props` is
+      evaluated — the same trap as F2.1. Three shorter spellings were tried and all three fail while
+      looking correct:
+      - `@(domains->'…\%(Identity)\**\*')` in an `Include` — a value produced by an item transform is
+        never wildcard-expanded, so a literal `**\*` reaches the copy and it fails on a missing file.
+      - that transform built into a property first — item references are **not expanded in properties
+        during evaluation at all**; the property just holds the `@(…)` text (confirmed with
+        `-getProperty`).
+      - a batched target with an unqualified `%(RecursiveDir)` in `Link` — the metadata resolved against
+        whatever else was in scope, which silently re-linked the project's **own** `modicon.png` and
+        `modinfo.json` under `assets/<domain>/` and packed no asset files at all.
+
+      ★ Only the **primary** domain feeds `ExLangKeyGenerator`. A packed foreign tree is either an
+      override of someone else's keys or an absorbed mod's own, and neither should emit typed constants
+      into this mod's `{Domain}Lang` class.
+- [x] **M.2 The pipe `tier` variant** (M4). *Done 2026-08-14.* `tier` is declared **first**
+      (`pipe-{tier}-{type}-{orient}`) on the four segments of all three tiers and on both valves; the
+      bricks are untouched. `RegisterBurst`/`RegisterThroughput`/`RegisterJoint` are keyed on
+      `BlockPipe.Tier` — the block's own variant — with the untiered block falling back to the same
+      defaults every fitting relied on before, so nothing behavioural moved. Each tier now renders its
+      own name: **Plated / Cast / Rolled Piping**, ru and uk alongside (draft, pending the owner's read).
+      `rolled-pipe.md`, `cast-pipes.md` and `pipe-network.md` § 5 rewritten. Verified on the full gate,
+      15 targets, **4,017 tests**.
+
+      ★★ **The scouting's central claim held, and it was already guarded.** Tier-first keeps every
+      `*-straight-ns` selector matching, as `WildcardUtil.fastMatch`'s backtracking implies — but the
+      proof is not the reading: `EmittedBlocktypeShapeTests` has asserted since before this stage that
+      every emitted variant resolves a shape, and its own doc comment names *"inserting a variant group
+      ahead of an existing one"* as the hazard. Mutation-checked by declaring `tier` last **and
+      re-blessing the golden**, which is the realistic mistake; it still failed.
+
+      ⛔ **Two corrections to the scouting.** The four `Handbook("pipe-straight-*")` selectors must go to
+      **`pipe-{tier}-straight-*`**, not the scouted `pipe-*-straight-*`. An undomained groupBy selector
+      is qualified with the grouping block's own domain before matching
+      (`SlideshowItemstackTextComponent.cs:108-115`), so the three tiers group separately **today only
+      because they are three domains**; `pipe-*-straight-*` would merge them the moment the merge lands,
+      which is M3's exact prohibition. And `PipeMigration` *did* need an edit: the rows built from live
+      blocks follow the tier through `Code.Clone()` as scouted, but its three **legacy** blocks
+      (`gaspipe-blower`, `gaspipe-heated`, `gaspipe-intake`) name `iwex:pipe-straight-*` as a literal
+      target and had to be retargeted by hand.
+
+      ★ **A new guard, because the one surface I moved had none.** `groupBy` selectors are start-anchored
+      and an unmatched one is silent — the same failure class as `shapeByType`, which was guarded, on a
+      sibling key that was not. `Every_handbook_group_selector_matches_a_shipped_code` resolves each
+      selector the way the game does and matches it against every shipped code. It caught a real stale
+      golden during this stage.
+- [x] **M.3 De-`lpex:` the smex layouts — FOLDED INTO M.4** *(2026-08-14)*. Its premise did not survive
+      checking: smex hard-depends on lpex, so `BlockCowperStoveIntake.cs:53-54` always resolves and no
+      shipped machine is unbuildable. What remained was a code move the merge performs anyway — and
+      doing it early is not free, because there is no neutral target. A selector cannot span domains, so
+      pointing the cowper at the only non-`lpex:` passthrough (iwex's **plated** one) makes a steel-loop
+      machine cheaper to build, and the outlet has no non-`lpex:` home at all: giving iwex one means a
+      block, a recipe, lang and a handbook page whose only consumer is a steel-loop machine.
+
+      ★ Under **M2** the loops are nested and a siex layout naming an iiex code is exactly what is
+      expected, so `lpex:pipe-cast-passthrough-*` → `iiex:pipe-cast-passthrough-*` is a `CodeRelocation`
+      row in M.4 and nothing else. B23's setting is picked up there too. The design ruling this stage
+      cited ([gas-producer](../../design/machines/gas-producer.md) Open 9) is corrected in place.
+- [ ] **M.4 The `iiex` merge.** iwex + lpex into one assembly and one domain. Every `iwex:` and `lpex:`
+      code relocates through `CodeRelocation`, which has already executed two cross-domain moves. The
+      released `ppex:` codes get one more hop. Update `ReleasedCodes` and the coverage guard.
+
+      ✅ **The passthrough collision below is CLOSED** *(owner ruling + built 2026-08-14)*: they are a
+      tier, so they carry the `tier` variant like the segments —
+      `iwex:pipe-plated-passthrough-{brick}-*` and `lpex:pipe-cast-passthrough-{brick}-*`, with distinct
+      display names. Kept here because the reasoning is what M.4 is measured against. The migration
+      surgery M.2 avoided was two changes: `PipeMigration`'s brick branch now rebuilds its old smex code
+      from the variants instead of from the whole live path, and `LpexRenameMigration` moved the two
+      passthrough rows onto `CodeRelocation`'s rename overload — without which **120 released `ppex:`
+      codes lose their migration**, which is what the mutation check showed.
+
+      ⛔⛔ **The passthroughs collide, and they collide silently.** Found 2026-08-14 while scouting M.3.
+      iwex and lpex **both** call `BlockPipePassthrough.Passthroughs(domain)` — iwex from
+      `PlatedPipeDefinitions`, lpex from `CastPipeDefinitions` — so both ship
+      `pipe-{passthrough|passthroughbend}-{brick}-{orient}` off the same factory, at the same asset
+      path, with the same shape. The **only** difference is the metal sheet texture: corroded iron for
+      iwex, `iwex:block/metal/castiron` for lpex. Under one domain the two defs land on one
+      `ExDefinitions` key and the loser is dropped **last-writer-wins, ordered by load, with no error**
+      (F8.7). Unlike the segments this is not resolved by construction: M.2 deliberately left the
+      passthroughs untiered, because they bear no pressure and because `PipeMigration`'s brick branch
+      rebuilds its old code as `"gas" + path` from the whole live path.
+
+      ★ **It is an owner question, not an engineering one.** M3 says a merge collapses no tier, and the
+      pair *is* a plated/cast pair — but expressed as a texture, with identical mechanics
+      (`BurstPressure => float.MaxValue`, one shape, same flanged joint, same recipe shape). Either the
+      cosmetic distinction is progression and the passthroughs need the `tier` variant too (plus the
+      migration surgery M.2 avoided), or it is duplication and the two collapse to one blocktype (plus a
+      migration for whichever code retires). Decide before M.4, because after the merge one of them is
+      already gone and nothing said so.
+- [ ] **M.5 The `siex` merge.** smex + hpex, same shape. ⛔ smex **has shipped** (0.9.8, 213 concrete
+      codes), so this is the one half with real player worlds behind it — the migration is load-bearing,
+      not a formality.
+- [ ] **M.6 Stand up `test/Integration.Tests`** before hpex's test project disappears. It currently hosts
+      `ReleasedCodeCoverageTests` — the whole-repo "every shipped block still reaches a live block"
+      invariant — purely because it is the only suite that sees all five mods. Move it, and add the
+      cross-mod resolution checks (recipe ingredients and RCC `Require` codes are checked in **no**
+      direction today, which is the structural cause of B19 and B23).
+- [ ] **M.7 Re-justify the ~15 entity pages** that cite the retired per-mod closure rule, and settle the
+      forming-line ownership parenthetical that `rolled-parts.md` and `stock.md` both carry unresolved in
+      their own Mod header — *"(who owns the forming line)"*. Under M1 the mill, the wide hall and the
+      bending roller are all `iiex`; the steel roll sets and cast stock are `siex`. That is the answer the
+      ruling implies, but it should be written down rather than inferred.
+- [ ] **M.8 `heavyplate` absorbs `castplate`** (M5): one item, metal axis `{castiron, wrought, steel}`,
+      three routes (sand cast, rolled from a wrought or steel slab, planed from a larger plate). `castplate-heavy`
+      is live and shipped, so it needs an item migration. Rewrite `rolled-parts.md`'s
+      "`heavyplate` is not `castplate`" section and D2's second clause.
 
 ---
 

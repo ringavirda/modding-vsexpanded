@@ -62,17 +62,17 @@ public class IronworkingExpandedModSystem : ModSystem {
       _harmony.PatchAll(GetType().Assembly);
     }
 
-    // The plain (plated) pipe segment's ratings, read live from this mod's config. Higher pipe tiers
-    // register their own (lpex cast, hpex rolled), keyed by domain in BlockPipe.
+    // The plated pipe segment's ratings, read live from this mod's config. Higher pipe tiers register
+    // their own (lpex cast, hpex rolled), keyed by the block's `tier` variant in BlockPipe.
     BlockPipe.RegisterBurst(
-      Mod.Info.ModID,
+      BlockPipe.PlatedTier,
       () => IwexValues.PlatedPipeBurstPressure
     );
     BlockPipe.RegisterThroughput(
-      Mod.Info.ModID,
+      BlockPipe.PlatedTier,
       () => IwexValues.PlatedPipeThroughput
     );
-    BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.PlatedTier, BlockPipe.FlangedJoint);
 
     // Registers every [BlockRegister]/[ItemRegister]/[BlockEntityRegister]/etc. declared here, and
     // discovers any co-located code-first block definitions (IExBlockDefProvider) for injection.

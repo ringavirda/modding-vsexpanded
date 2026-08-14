@@ -166,7 +166,7 @@ Nothing in iwex could be constructed without lpex installed, which contradicted 
 
 | # | Item | Where it landed |
 |---|---|---|
-| 1 | `lpex:pipe-straight*` → **`iwex:pipe-straight*`** | `FurnaceRecipeDefinitions.cs:69`, with the reason at `:65` |
+| 1 | `lpex:pipe-straight*` → **`iwex:pipe-plated-straight*`** | `FurnaceRecipeDefinitions.cs:66`, with the reason at `:63-65` |
 | 2 | `lpex:gear-iron` → an **iwex cast gear** | `SpurGearItemDefinitions`; consumers rewritten (`BlockTransmission.cs:70`) |
 | 3 | **Twin-tub blower** recipe | `FurnaceRecipeDefinitions.cs:102` |
 | 4 | **Rolling mill** recipe | `FormingRecipeDefinitions.cs:51` |

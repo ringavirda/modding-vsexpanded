@@ -31,20 +31,17 @@ public partial class BlockSandCastingBed
 
   // Per-cell molten-cell configs hosted on the footprint fillers: a thin pass-through runner and a mold
   // that hoards its charge (drainFitting) until it hardens into pigs.
-  private static readonly FillerBehaviorSpec RunnerCell = new(
-    "exlib.BEBehaviorMoltenCell",
-    null,
-    new { capacity = 50 }
-  );
+  private static readonly FillerBehaviorSpec RunnerCell =
+    FillerBehaviorSpec.Of<BEBehaviorMoltenCell>(
+      properties: new { capacity = 50 }
+    );
 
   // A mold's capacity is its row's impression count at one pig each: the two end rows carry 2 impressions,
   // the middle rows 3. SandBedLayout.CapacityOf is the same expression the harvest reads, so the cavity
   // the bed pours into and the cavity it hands back cannot drift apart.
   private static FillerBehaviorSpec MoldCell(BedSlot slot) =>
-    new(
-      "exlib.BEBehaviorMoltenCell",
-      null,
-      new {
+    FillerBehaviorSpec.Of<BEBehaviorMoltenCell>(
+      properties: new {
         capacity = SandBedLayout.CapacityOf(slot, BedSlotState.Mold),
         drainFitting = true,
       }
@@ -66,8 +63,7 @@ public partial class BlockSandCastingBed
       .Behavior("ExOrientable")
       .FillerOffsets(Footprint())
       // The pour basin lives on the principal itself and is the internal flow's source.
-      .EntityBehavior(
-        "exlib.BEBehaviorMoltenCell",
+      .EntityBehavior<BEBehaviorMoltenCell>(
         new JObject { ["capacity"] = 200, ["flowSource"] = true }
       )
       // The RCC behaviour suppresses the default block mesh, so the built stages render only through a

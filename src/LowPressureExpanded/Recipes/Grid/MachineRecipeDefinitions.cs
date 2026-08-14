@@ -117,7 +117,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider {
   // in PipeRecipeDefinitions; lpex's own cast segments are a higher tier with no recipe of their own.
   private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
     int qty
-  ) => i => i.Block("iwex:pipe-straight-*").Quantity(qty);
+  ) => i => i.Block("iwex:pipe-plated-straight-*").Quantity(qty);
 
   private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
     int qty

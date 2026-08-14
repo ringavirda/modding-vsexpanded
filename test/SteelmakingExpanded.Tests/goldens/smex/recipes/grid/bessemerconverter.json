@@ -150,7 +150,7 @@
       },
       "L": {
         "type": "block",
-        "code": "lpex:pipe-straight*",
+        "code": "lpex:pipe-cast-straight*",
         "quantity": 1
       }
     }

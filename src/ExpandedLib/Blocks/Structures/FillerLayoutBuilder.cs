@@ -55,7 +55,7 @@ public sealed class FillerLayoutBuilder {
   /// principal's behalf - the ports a mega-block exposes on a footprint cell, such as an MP filler port
   /// driven by an axle on that face, or a stateful molten cell.
   /// <code>
-  ///   f.Host('M', new FillerBehaviorSpec("exlib.BEBehaviorMPFillerPort", "west"))
+  ///   f.Host('M', FillerBehaviorSpec.Of&lt;BEBehaviorMPFillerPort&gt;("west"))
   ///    .Slice(0, """
   ///              M##
   ///              0##

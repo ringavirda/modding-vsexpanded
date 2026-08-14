@@ -45,22 +45,34 @@ shared rules live in [conventions.md](conventions.md).
 
 ## Mods & dependency chain
 
-The dependency order follows the tech-tree order: iron → steam → steel → high-pressure → electric.
+**Two content mods, one per loop** (ruling M1, 2026-08-13). Each loop is a tier of capability the
+player unlocks and then re-tools around; the dependency order follows the tech-tree order.
 
 ```
-exlib ──▶ iwex ──▶ lpex ──▶ smex ──▶ hpex
-                                       ▲
-                                elex ──┘ (also needs smex + chemistry)
+exlib ──▶ iiex ──▶ siex ──▶ elex
+       (iron)   (steel)   (electric, planned last)
 ```
 
-| Mod | id | Tier | Owns | Depends on |
+| Mod | id | Loop | Owns | Depends on |
 |---|---|---|---|---|
 | **Expanded Library** | `exlib` | framework | network logic (Pipe/Molten/MP), definitions, registries, config, helpers, test harness | game |
-| **Ironworking Expanded** | `iwex` | iron (low-tech) | cold blast furnace, molten-canal network, burdenmaker, mechanical (MP) air blower, plated pipes, `gear-iron` | exlib |
-| **Low Pressure Expanded** | `lpex` | low steam power | Cornish boiler + Watt engine, cast pipes, steam pump + mechanical MP pump, MP power, fluid tank, the boring machine *(designed, art drawn - nothing built)* | iwex, exlib |
-| **Steelmaking Expanded** | `smex` | steel | hot blast furnace + cowper stoves, Bessemer, open hearth, ladle, billet/forming | lpex, iwex, exlib |
-| **High Pressure Expanded** | `hpex` | high steam (planned) | HP steam engines/boilers, large-scale/community machines (large blast furnace, large engines) | smex, … |
-| **Electrical Expanded** | `elex` | electric (planned, last) | full-realism AC/DC grid: dynamo, alternator, electrolysis, arc furnace, HSS | hpex, smex |
+| **Iron Industry Expanded** | `iiex` | **early industrial** | cold blast furnace + tub blowers, molten-canal network, burdenmaker, cupola, sand casting, puddling, the forming line (mill, wide hall, bending roller), **plated pipes**, iron gears — then the steam workshop it bootstraps into: Cornish boiler, Watt engine, pumps, **cast pipes**, MP power | exlib |
+| **Steel Industry Expanded** | `siex` | **steel** | hot blast furnace + cowper stoves, Bessemer, open hearth, ladle, the gas producer and fuel-gas power, steel roll sets and cast stock, hadfield and the alloy line — then the high-pressure machines it gates: Lancashire boiler, Cornish engine, HP hammer, **rolled pipes** | iiex, exlib |
+| **Electrical Expanded** | `elex` | electric (planned, last) | full-realism AC/DC grid: dynamo, alternator, electrolysis, arc furnace, HSS | siex, exlib |
+
+⛔ **A loop is a capability tier, not a self-contained game.** The loops are **nested**: the steel loop
+extends the early loop's machinery rather than replacing it, and cannot close on its own — the gas
+producer is fed by an early-loop boiler, rolled pipe is curled on the early loop's bending roller, and
+the ferroalloys hadfield needs are smelted in the early loop's cold blast furnace.
+
+⛔⛔ **A loop keeps every rung inside it.** The plated pipe tier, the iron gears and the rest of the
+early parts are the **bootstrap rung** — a player builds them before steam and upgrades afterwards. They
+are progression, not duplication, and the merge collapses none of them (ruling M3).
+
+*Historical:* these two mods were previously five — `iwex`, `lpex`, `smex`, `hpex` on a linear spine,
+with closure defined per mod. Ruling M1 merged them on the tier line; ruling M2 moved closure to the
+loop. Only `exlib`, `ppex` (now folded into `iiex`) and `smex` (now folded into `siex`) were ever
+published, so the migration is a code relocation rather than a player-facing loss.
 
 Content add-ons (opt-in, off the core spine; may ship as sections of their parent mod or as
 separate projects):
@@ -80,13 +92,18 @@ Scope questions are answered there, never here.
 
 ---
 
-## The low-tech combo
+## The low-tech stop
 
-`iwex` + `lpex` (optionally + `smex`) is a complete, self-contained experience: cold-iron
-smelting → low steam power → steel, all runnable on water/MP power (a vanilla waterwheel drives
-the mechanical blower and pump - no steam setup required to make iron). A player who wants to stay
-low-tech never installs `hpex` or `elex`. The pipe tiers keep this clean: `iwex` ships its own
-plated-pipe tier so it never depends on `lpex`'s cast pipes.
+`iiex` alone is a complete, self-contained experience: cold-iron smelting → casting and puddling →
+the forming line → low steam power, all of it startable on water/MP power (a vanilla waterwheel drives
+the mechanical blower and pump — no steam setup is required to make iron). A player who wants to stay
+low-tech never installs `siex` or `elex`, and loses nothing half-finished by stopping there.
+
+**The bootstrap rung is what makes that true, and it is deliberate.** The plated pipe tier and the iron
+gears exist so the early loop can plumb and gear itself *before* it has steam, cast pipe or a boring
+machine. Upgrading to the cast tier later is the reward, not the entry price. Ruling M3: a merge
+collapses no rung — the plated tier and the cast tier both live in `iiex`, separated by the `tier`
+variant rather than by which mod shipped them (ruling M4).
 
 ---
 
@@ -94,10 +111,13 @@ plated-pipe tier so it never depends on `lpex`'s cast pipes.
 
 Construction is gated by material, not recipe unlock:
 
-1. Cast iron (iwex) → Stage-II engines & LP machinery.
-2. Steam (lpex) → hot blast + Bessemer (smex).
-3. Hadfield steel + rolled pipe (smex) → HP boilers/engines (hpex).
-4. HP power + pure copper (hpex + copper) → electric tier (elex).
+1. Cast iron (`iiex`) → Stage-II engines & LP machinery. **Within the loop.**
+2. Steam (`iiex`) → hot blast + Bessemer (`siex`). **The loop boundary**, and the one place a material
+   gate crosses mods.
+3. Hadfield steel + cast steel stock (`siex`) → HP boilers/engines (`siex`). **Within the loop.**
+   ⛔ The rolled *pipe* is gated by the alloy and the stock, not by a machine: it is curled on the early
+   loop's bending roller, which the steel loop extends rather than replaces.
+4. HP power + pure copper (`siex` + copper) → electric tier (`elex`).
 
 No hard circular dependencies. See [materials.md](materials.md) for the material-gated power-tier rule
 (LP = cast iron, HP = hadfield steel).
@@ -106,14 +126,22 @@ No hard circular dependencies. See [materials.md](materials.md) for the material
 
 ## Suggested build order
 
-1. Iron (iwex). Coke oven, cold blast furnace (waterwheel-blown), cupola, sand casting, puddling
-   furnace, reheat furnace + rolling mill, cast/forged components.
-2. Low steam (lpex). Cornish boiler + Watt engine, blower/pump/flywheel, cast pipes, steam
-   hammer, boring machine, fluid tank.
-3. Steel (smex). Hot blast + cowpers + Bessemer, gas producer + open hearth, ladle, steel roll
-   sets.
-4. High steam (hpex). HP engines, large-scale machines, rolled-pipe fittings.
-5. Electric (elex). Dynamo → alternator → electrolysis → arc → HSS. Last, isolated.
+**Loop 1 — `iiex`, the early industrial loop.**
+
+1. Iron. Coke oven, cold blast furnace (waterwheel-blown via the tub blowers), cupola, sand casting,
+   puddling furnace, reheat furnace + rolling mill, cast/forged components — **plated pipes and iron
+   gears are the bootstrap rung here**, made before any steam exists.
+2. Low steam. Cornish boiler + Watt engine, blower/pump/flywheel, **cast pipes** (the upgrade from
+   plated), steam hammer, boring machine, fluid tank. The loop closes: the workshop can build itself.
+
+**Loop 2 — `siex`, the steel loop.** More expensive, more efficient, and built on loop 1's machines.
+
+3. Steel. Hot blast + cowpers + Bessemer, gas producer + open hearth, ladle, steel roll sets and cast
+   stock — the alloys and the stock only this loop can supply.
+4. High pressure. Lancashire boiler, Cornish engine, HP hammer, **rolled pipes**, large-scale machines.
+   Gated by hadfield and by cast steel stock, not by new forming machinery.
+
+**Then** — 5. Electric (`elex`). Dynamo → alternator → electrolysis → arc → HSS. Last, isolated.
 
 Off-spine branches (crucible, copper) and everything on [scope.md](scope.md)'s deferral list are not
 part of this order.

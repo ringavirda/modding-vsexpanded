@@ -16,9 +16,9 @@ public class PressureValveReadoutTests {
   private static BlockPressureValve ValveBlock() {
     var block = TestBlocks.Configure(
       new BlockPressureValve(),
-      "lpex:pressurevalve-iron-ns",
+      "lpex:pipe-cast-pressurevalve-ns",
       40,
-      ("material", "iron"),
+      ("tier", "cast"),
       ("type", "pressurevalve"),
       ("orientation", "ns")
     );

@@ -194,6 +194,14 @@ public static class DefinitionGoldens {
     }
   }
 
+  /// <summary>
+  /// The repo root every source-tree path is resolved against. Set it to use this harness outside this
+  /// repository; leave it null to probe upward from the test binary. Also settable with the
+  /// <c>EXLIB_REPO_ROOT</c> environment variable, which is the form a CI step or a
+  /// <c>dotnet test -e</c> invocation can supply without a code change.
+  /// </summary>
+  public static string? RepoRootOverride { get; set; }
+
   /// <summary>Resolves a repo-root-relative path (e.g. <c>test/LowPressureExpanded.Tests/goldens</c>) to an
   /// absolute path by walking up from the test binary to the solution root, so source-tree files are read
   /// and written in place.</summary>
@@ -210,17 +218,43 @@ public static class DefinitionGoldens {
       def.Location.Path.Replace('/', Path.DirectorySeparatorChar)
     );
 
-  private static string RepoRoot() {
+  // The harness ships as a consumable dev library (exlib-testing_*.zip), so the probe cannot look for
+  // this repo's own solution file by name: outside it, every path-relative helper - the goldens, the
+  // block-code table, the handbook sync - threw before doing anything. Any .sln/.slnx or a .git marks
+  // a repo root, and the override wins for a layout that has neither.
+  private static readonly string[] RootMarkers = ["*.sln", "*.slnx", ".git"];
+
+  /// <summary>
+  /// The resolved repo root - <see cref="RepoRootOverride"/>, else <c>EXLIB_REPO_ROOT</c>, else the
+  /// first directory above the test binary carrying a <c>.sln</c>/<c>.slnx</c>/<c>.git</c>. Public so a
+  /// helper that reads source-tree files does not need its own copy of the probe; fifteen test files in
+  /// this repository still carry one, each hardcoding this repository's solution name.
+  /// </summary>
+  public static string RepoRoot() {
+    string? configured =
+      RepoRootOverride ?? Environment.GetEnvironmentVariable("EXLIB_REPO_ROOT");
+    if (!string.IsNullOrWhiteSpace(configured))
+      return configured;
+
     var dir = new DirectoryInfo(AppContext.BaseDirectory);
-    while (
-      dir != null
-      && !File.Exists(Path.Combine(dir.FullName, "VintageStory.sln"))
-    )
+    while (dir != null && !IsRepoRoot(dir))
       dir = dir.Parent;
+
     return dir?.FullName
       ?? throw new InvalidOperationException(
-        "Could not locate the repo root (VintageStory.sln) from "
+        "Could not locate the repo root from "
           + AppContext.BaseDirectory
+          + ". Looked upward for a .sln, .slnx or .git. Set "
+          + $"{nameof(DefinitionGoldens)}.{nameof(RepoRootOverride)} or the EXLIB_REPO_ROOT "
+          + "environment variable when the harness runs outside a repository checkout."
       );
   }
+
+  private static bool IsRepoRoot(DirectoryInfo dir) =>
+    RootMarkers.Any(m =>
+      m.StartsWith('*')
+        ? dir.EnumerateFiles(m).Any()
+        : Directory.Exists(Path.Combine(dir.FullName, m))
+          || File.Exists(Path.Combine(dir.FullName, m))
+    );
 }

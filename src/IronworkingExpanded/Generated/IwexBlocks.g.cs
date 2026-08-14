@@ -1427,14 +1427,14 @@ public static class IwexBlocks
       $"iwex:burdenmaker-{brick}-{side}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/bend. Variant groups: type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/bend. Variant groups: tier(plated), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
   public static class PipeBend
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-bend-*</c>.</summary>
-    public const string Any = "iwex:pipe-bend-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-bend-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-bend-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -1453,19 +1453,19 @@ public static class IwexBlocks
       public const string De = "de";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-bend-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-bend-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-bend-{orientation}";
+      $"iwex:pipe-plated-bend-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/passthrough. Variant groups: type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/passthrough. Variant groups: tier(plated), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
   public static class PipePassthrough
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-passthrough-*-*</c>.</summary>
-    public const string Any = "iwex:pipe-passthrough-*-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-passthrough-*-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-passthrough-*-*";
 
     /// <summary>The <c>brick</c> variant group.</summary>
     public static class Brick
@@ -1488,27 +1488,27 @@ public static class IwexBlocks
       public const string Ud = "ud";
     }
 
-    /// <summary>Pin only <c>brick</c>: <c>iwex:pipe-passthrough-{brick}-*</c>.</summary>
+    /// <summary>Pin only <c>brick</c>: <c>iwex:pipe-plated-passthrough-{brick}-*</c>.</summary>
     public static string WithBrick(string brick) =>
-      $"iwex:pipe-passthrough-{brick}-*";
+      $"iwex:pipe-plated-passthrough-{brick}-*";
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-passthrough-*-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-passthrough-*-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-passthrough-*-{orientation}";
+      $"iwex:pipe-plated-passthrough-*-{orientation}";
 
-    /// <summary>Every group resolved: <c>iwex:pipe-passthrough-{brick}-{orientation}</c>.</summary>
+    /// <summary>Every group resolved: <c>iwex:pipe-plated-passthrough-{brick}-{orientation}</c>.</summary>
     public static string Of(string brick, string orientation) =>
-      $"iwex:pipe-passthrough-{brick}-{orientation}";
+      $"iwex:pipe-plated-passthrough-{brick}-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/passthroughbend. Variant groups: type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/passthroughbend. Variant groups: tier(plated), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
   public static class PipePassthroughbend
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-passthroughbend-*-*</c>.</summary>
-    public const string Any = "iwex:pipe-passthroughbend-*-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-passthroughbend-*-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-passthroughbend-*-*";
 
     /// <summary>The <c>brick</c> variant group.</summary>
     public static class Brick
@@ -1540,27 +1540,27 @@ public static class IwexBlocks
       public const string De = "de";
     }
 
-    /// <summary>Pin only <c>brick</c>: <c>iwex:pipe-passthroughbend-{brick}-*</c>.</summary>
+    /// <summary>Pin only <c>brick</c>: <c>iwex:pipe-plated-passthroughbend-{brick}-*</c>.</summary>
     public static string WithBrick(string brick) =>
-      $"iwex:pipe-passthroughbend-{brick}-*";
+      $"iwex:pipe-plated-passthroughbend-{brick}-*";
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-passthroughbend-*-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-passthroughbend-*-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-passthroughbend-*-{orientation}";
+      $"iwex:pipe-plated-passthroughbend-*-{orientation}";
 
-    /// <summary>Every group resolved: <c>iwex:pipe-passthroughbend-{brick}-{orientation}</c>.</summary>
+    /// <summary>Every group resolved: <c>iwex:pipe-plated-passthroughbend-{brick}-{orientation}</c>.</summary>
     public static string Of(string brick, string orientation) =>
-      $"iwex:pipe-passthroughbend-{brick}-{orientation}";
+      $"iwex:pipe-plated-passthroughbend-{brick}-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/straight. Variant groups: type(straight), orientation(ns|we|ud).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/straight. Variant groups: tier(plated), type(straight), orientation(ns|we|ud).</summary>
   public static class PipeStraight
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-straight-*</c>.</summary>
-    public const string Any = "iwex:pipe-straight-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-straight-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-straight-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -1570,19 +1570,19 @@ public static class IwexBlocks
       public const string Ud = "ud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-straight-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-straight-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-straight-{orientation}";
+      $"iwex:pipe-plated-straight-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/tjunction. Variant groups: type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/tjunction. Variant groups: tier(plated), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
   public static class PipeTjunction
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-tjunction-*</c>.</summary>
-    public const string Any = "iwex:pipe-tjunction-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-tjunction-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-tjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -1601,19 +1601,19 @@ public static class IwexBlocks
       public const string Dwu = "dwu";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-tjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-tjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-tjunction-{orientation}";
+      $"iwex:pipe-plated-tjunction-{orientation}";
   }
 
-  /// <summary><c>iwex:pipe</c> - pipe/xjunction. Variant groups: type(xjunction), orientation(nswe|nsud|weud).</summary>
+  /// <summary><c>iwex:pipe</c> - pipe/xjunction. Variant groups: tier(plated), type(xjunction), orientation(nswe|nsud|weud).</summary>
   public static class PipeXjunction
   {
     /// <summary>The bare code, no variants: <c>iwex:pipe</c>.</summary>
     public const string Code = "iwex:pipe";
 
-    /// <summary>Any variant: <c>iwex:pipe-xjunction-*</c>.</summary>
-    public const string Any = "iwex:pipe-xjunction-*";
+    /// <summary>Any variant: <c>iwex:pipe-plated-xjunction-*</c>.</summary>
+    public const string Any = "iwex:pipe-plated-xjunction-*";
 
     /// <summary>The <c>orientation</c> variant group.</summary>
     public static class Orientation
@@ -1623,9 +1623,9 @@ public static class IwexBlocks
       public const string Weud = "weud";
     }
 
-    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-xjunction-{orientation}</c>.</summary>
+    /// <summary>Pin only <c>orientation</c>: <c>iwex:pipe-plated-xjunction-{orientation}</c>.</summary>
     public static string WithOrientation(string orientation) =>
-      $"iwex:pipe-xjunction-{orientation}";
+      $"iwex:pipe-plated-xjunction-{orientation}";
   }
 
   /// <summary><c>iwex:slag-block</c> - slag/block. Variant groups: no variants.</summary>

@@ -57,9 +57,9 @@ internal sealed class RegulatedEnginePlant {
     string orient = $"{inletFace.Opposite.Code[0]}{inletFace.Code[0]}";
     var valveBlock = TestBlocks.Configure(
       new BlockPressureValve(),
-      $"lpex:pressurevalve-steel-{orient}",
+      $"lpex:pipe-cast-pressurevalve-{orient}",
       58,
-      ("material", "steel"),
+      ("tier", "cast"),
       ("type", "pressurevalve"),
       ("orientation", orient)
     );

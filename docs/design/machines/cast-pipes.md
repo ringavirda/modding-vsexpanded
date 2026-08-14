@@ -37,10 +37,26 @@ plumb a blast furnace; hpex ships welded rolled pipe (12 atm) for the high-press
 them at 5.0 atm - enough to carry a Cornish boiler's full choke pressure without bursting, which is the
 pressure the Watt engine's supply main has to survive.
 
-The tier is the mod, not a variant axis. There is no `material` variant: a cast pipe is
-`lpex:pipe-straight-ns`, a plated one is `iwex:pipe-straight-ns`, and the domain resolves both the burst
-rating and the joint family (`ExpandedLib/Blocks/Networks/BlockPipe.cs`). One material per tier, one model
-per tier.
+The tier is a variant axis, and the high-order one. There is still no `material` variant: a cast pipe is
+`lpex:pipe-cast-straight-ns`, a plated one is `iwex:pipe-plated-straight-ns`, and the `tier` variant resolves
+the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `:291-294`, `:321-324`). One
+material per tier, one model per tier - unchanged; what moved is where the tier is written down.
+
+Until 2026-08-14 this read *"the tier is the mod, not a variant axis"*, with the domain as the key. **M4
+supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts this tier and the plated one in a
+single domain, so the domain can no longer name a tier without collapsing the two - which M3 forbids.
+
+★ **The two valves are cast-tier too** (`BlockValve.cs:39`, `BlockPressureValve.cs:39`). That is where the
+pressure valve's 5 atm ceiling comes from, and it used to come from its domain. Every other fitting - outlet,
+outlet and fluid intake - names no tier and takes the defaults, which is the same flanged, non-bursting
+behaviour they had before.
+
+⛔⛔ **The passthroughs are tiered too, and not for their rating** *(2026-08-14)*. They bear no pressure -
+`BurstPressure => float.MaxValue` either way - but **iwex ships a plated pair off the same factory**,
+identical but for the sheet texture (corroded iron vs `iwex:block/metal/castiron`). Without the axis the
+two carry one code between them, and the moment the merge puts them in one domain the later registration
+replaces the earlier **last-writer-wins, ordered by load, with no error**. The tier is what keeps both.
+They are `lpex:pipe-cast-passthrough-{brick}-*` and `iwex:pipe-plated-passthrough-{brick}-*`.
 
 lpex's second and larger job is every fitting on the network. iwex ships segments and two machine
 fittings (tuyere, blower); hpex ships segments only. Valves, pressure valves, outlets and passthroughs are
@@ -59,7 +75,8 @@ lpex contributes four blocktypes by calling the shared factory under its own dom
 ```csharp
 public class CastPipeDefinitions : IExBlockDefProvider
 {
-  public static IEnumerable<ExBlockDef> Definitions(string domain) => BlockPipe.Segments(domain);
+  public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+    BlockPipe.Segments(domain, BlockPipe.CastTier);
 }
 ```
 — `CastPipeDefinitions.cs:15-19`. It is a stand-alone provider because the class it binds to lives in
@@ -68,10 +85,10 @@ iwex: the injected blocktypes name `iwex.BlockPipe` / `iwex.BlockEntityPipe` as 
 
 | blocktype | variants | max stack | file:line |
 |---|---|---|---|
-| `lpex:pipe-straight-*` | `ns` `we` `ud` | 16 | `BlockPipe.cs:80-91` |
-| `lpex:pipe-bend-*` | 12 (`nw` … `de`) | 8 | `BlockPipe.cs:94-119` |
-| `lpex:pipe-tjunction-*` | 12 | 8 | `BlockPipe.cs:122-148` |
-| `lpex:pipe-xjunction-*` | `nswe` `nsud` `weud` | 8 | `BlockPipe.cs:151-164` |
+| `lpex:pipe-cast-straight-*` | `ns` `we` `ud` | 16 | `BlockPipe.cs:118-128` |
+| `lpex:pipe-cast-bend-*` | 12 (`nw` … `de`) | 8 | `BlockPipe.cs:130-165` |
+| `lpex:pipe-cast-tjunction-*` | 12 | 8 | `BlockPipe.cs:167-202` |
+| `lpex:pipe-cast-xjunction-*` | `nswe` `nsud` `weud` | 8 | `BlockPipe.cs:204-216` |
 
 Collision/selection is the shared 5⁄16 → 11⁄16 core (`BlockPipe.cs:89-90`).
 
@@ -82,8 +99,8 @@ Collision/selection is the shared 5⁄16 → 11⁄16 core (`BlockPipe.cs:89-90`)
 | `pipe-valve-*` | `BlockValve : BlockPipe` | `BlockEntityValve : BlockEntityPipe` | orientation `ns we ud sn ew du` | `BlockValve.cs:19`, `:39` |
 | `pipe-pressurevalve-*` | `BlockPressureValve : BlockValve` | `BlockEntityPressureValve : BlockEntityPipe` | same six | `BlockPressureValve.cs:20`, `:39` |
 | `pipe-outlet-{brick}-*` | `BlockPipeOutlet : BlockPipe, IChimneyVentable` | `BlockEntityPipeOutlet` (empty) | 8 bricks × orientation `s n w e u d` | `BlockPipeOutlet.cs:18`, `:47-51` |
-| `pipe-passthrough-{brick}-*` | `BlockPipePassthrough : BlockPipe, IChimneyVentable` | `BlockEntityPipePassthrough` (empty) | 8 bricks × `ns we ud` | `BlockPipePassthrough.cs:19`, `:74` |
-| `pipe-passthroughbend-{brick}-*` | same class | same BE | 8 bricks × 12 orientations | `BlockPipePassthrough.cs:88-93` |
+| `pipe-cast-passthrough-{brick}-*` | `BlockPipePassthrough : BlockPipe, IChimneyVentable` | `BlockEntityPipePassthrough` (empty) | 8 bricks × `ns we ud` | `BlockPipePassthrough.cs:23`, `:78` |
+| `pipe-cast-passthroughbend-{brick}-*` | same class | same BE | 8 bricks × 12 orientations | `BlockPipePassthrough.cs:147-155` |
 
 The brick list is `fire black brown cream gray orange red tan` (`BlockPipePassthrough.cs:31-32`,
 `BlockPipeOutlet.cs:49`). Both brick fittings are `SideSolid(true)` so a wall can be built through them;
@@ -134,20 +151,20 @@ static art whose only feedback is the HUD line.
 
 | block | recipe | file:line |
 |---|---|---|
-| `pipe-passthrough-{brick}-ns` | `BHB,BPB,B_B` — 6 brick + 1 `iwex:pipe-straight-*` + hammer | `PipeRecipeDefinitions.cs:23-31` |
-| `pipe-passthroughbend-{brick}-nw` | `BPB,PHB,B_B` — 6 brick + 2 straight + hammer | `:32-40` |
+| `pipe-cast-passthrough-{brick}-ns` | `BHB,BPB,B_B` — 6 brick + 1 `iwex:pipe-plated-straight-*` + hammer | `PipeRecipeDefinitions.cs:23-31` |
+| `pipe-cast-passthroughbend-{brick}-nw` | `BPB,PHB,B_B` — 6 brick + 2 straight + hammer | `:32-40` |
 | `pipe-outlet-{brick}-n` | `BHB,BNB,BPB` — 12 brick + 1 straight + 2 nails + hammer | `:41-50` |
-| `pipe-valve-sn` | `_H_,GPL,_L_` — 1 `iwex:pipe-straight-ns` + 2 plate + 2 gears + hammer | `:52-61` (rusty gear) and `:72-81` (`lpex:gear-*`) |
-| `pipe-pressurevalve-sn` | `_H_,LPL,G_G` — 1 straight + 2 plate + 4 gears + hammer | `:62-71` and `:82-90` |
+| `pipe-cast-valve-sn` | `_H_,GPL,_L_` — 1 `iwex:pipe-plated-straight-ns` + 2 plate + 2 gears + hammer | `:52-61` (rusty gear) and `:72-81` (`lpex:gear-*`) |
+| `pipe-cast-pressurevalve-sn` | `_H_,LPL,G_G` — 1 straight + 2 plate + 4 gears + hammer | `:62-71` and `:82-90` |
 | `pipe-straight` / `bend` / `tjunction` / `xjunction` | none | — |
 
 Every fitting is worked from a plated (iwex) segment, not a cast one - `StraightBlock` and `ValvePipe` both
-resolve `iwex:pipe-straight-*` (`PipeRecipeDefinitions.cs:103-107`). The valve pair is authored twice so
+resolve `iwex:pipe-plated-straight-*` (`PipeRecipeDefinitions.cs:103-107`). The valve pair is authored twice so
 either `game:gear-rusty` or `lpex:gear-*` crafts it (`:14`).
 
 ### The cast segments are uncraftable
 
-Nothing outputs `lpex:pipe-straight-*` or its siblings:
+Nothing outputs `lpex:pipe-cast-straight-*` or its siblings:
 
 > *"lpex's own cast segments are a higher tier with no recipe of their own yet."*
 > — `MachineRecipeDefinitions.cs:126`
@@ -173,10 +190,10 @@ The intended route is cast segments assembled from cast pipe-parts bored on the 
 
 | key | match | file:line |
 |---|---|---|
-| `pipe-straight-grid` | `lpex:pipe-straight-*`, cheap output pinned to 4 | `LpexRecipeConfig.cs:76` |
-| `pipe-bend-grid` | `lpex:pipe-bend-*`, cheap 2 | `:77` |
-| `pipe-tjunction-grid` | `lpex:pipe-tjunction-*`, cheap 2 | `:78` |
-| `pipe-xjunction-grid` | `lpex:pipe-xjunction-*`, cheap 2 | `:79` |
+| `pipe-straight-grid` | `lpex:pipe-cast-straight-*`, cheap output pinned to 4 | `LpexRecipeConfig.cs:72` |
+| `pipe-bend-grid` | `lpex:pipe-cast-bend-*`, cheap 2 | `:73` |
+| `pipe-tjunction-grid` | `lpex:pipe-cast-tjunction-*`, cheap 2 | `:74` |
+| `pipe-xjunction-grid` | `lpex:pipe-cast-xjunction-*`, cheap 2 | `:75` |
 
 STATE.md's "Remove" list names only `pipe-straight-grid` (`STATE.md:652`) - all four are dead, and the
 comment above them at `:46-47` describes an authored output count ("straight 2, bend/t/x-junction 1") for
@@ -383,7 +400,7 @@ is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
 | `ppex:pipe-{valve\|pressurevalve}-{orient}-{iron\|steel}` | `lpex:pipe-{type}-{orient}` | `:77-83` |
 | `smex:gas{passthrough\|passthroughbend\|outlet}-…` | `lpex:pipe-…` | `:85-86` |
 | removed refractory brick tiers | fall back to `fire` | `:89-106` |
-| removed inline gas machines (`gaspipe-blower/heated/intake`) | `iwex:pipe-straight-{axis}` | `:120-143` |
+| removed inline gas machines (`gaspipe-blower/heated/intake`) | `iwex:pipe-plated-straight-{axis}` - a literal target, so unlike the rows above it did not follow the tier variant on its own | `:141-173` |
 
 The segment remaps point away from lpex. A world's old `ppex` steel pipes become iwex plated pipes, not cast
 ones, so nobody who upgrades ends up holding a cast segment either. The ppex → lpex flat rename itself is

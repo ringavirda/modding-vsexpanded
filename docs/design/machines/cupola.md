@@ -145,7 +145,7 @@ One grid recipe for the core; the rest is the shared fittings plus 52 refractory
 A full 3×3 with fire clay at its heart, so it can never collide with the blast-furnace core's pattern, and
 cheaper than it. Golden: `test/IronworkingExpanded.Tests/goldens/iwex/recipes/grid/cupola.json`.
 
-The tuyere recipe takes `iwex:pipe-straight*`. Details:
+The tuyere recipe takes `iwex:pipe-plated-straight*`. Details:
 [blast furnace § Construction](blast-furnace-cold.md#construction).
 
 ---

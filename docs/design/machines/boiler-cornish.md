@@ -153,7 +153,7 @@ B N B          B = game:burnedbrick-fire ×2 each
 
 Totals: 2 plates · 4 fire bricks · 2 nails-and-strips.
 
-The recipe also declares `Ingredient("I", StraightPipe(1))` (`:65`) - an `iwex:pipe-straight-*` that never
+The recipe also declares `Ingredient("I", StraightPipe(1))` (`:65`) - an `iwex:pipe-plated-straight-*` that never
 appears in the pattern. Dead ingredient.
 
 ### 2. The RCC stages — `BlockBoilerCornish.cs:128-149`

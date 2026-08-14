@@ -247,13 +247,35 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
   //
   // Built for the CURRENT game version only (net10.0 / 1.22); on 1.20/1.21 reference it from source.
   const string BundleReadme =
-    "ExpandedLib.Testing - headless Vintage Story test harness (dev library)\n"
+    "ExpandedLib dev bundle - headless test harness + source generators\n"
     + "\n"
-    + "Built for the current game version (1.22 / net10.0). Add both DLLs to your test project\n"
-    + "with <Private>false</Private>, reference VintagestoryAPI/VSSurvivalMod/VSEssentials from\n"
-    + "your own game install, add NSubstitute + xUnit from NuGet, and call\n"
-    + "VsAssemblyResolver.Register() + TestLang.Init() from a [ModuleInitializer]. See the wiki:\n"
-    + "https://github.com/ringavirda/modding-vsexpanded/wiki/Testing-Harness\n";
+    + "Built for the current game version (1.22 / net10.0).\n"
+    + "\n"
+    + "TEST HARNESS. Add ExpandedLib.Testing.dll and exlib.dll to your test project with\n"
+    + "<Private>false</Private>, reference VintagestoryAPI/VSSurvivalMod/VSEssentials from your own\n"
+    + "game install, add NSubstitute + xUnit from NuGet, and call VsAssemblyResolver.Register() +\n"
+    + "TestLang.Init() from a [ModuleInitializer].\n"
+    + "\n"
+    + "  Helpers that read the source tree (goldens, the block-code table, handbook sync) resolve a\n"
+    + "  repo root by looking upward for a .sln, .slnx or .git. If your layout has none, set the\n"
+    + "  EXLIB_REPO_ROOT environment variable or DefinitionGoldens.RepoRootOverride.\n"
+    + "\n"
+    + "SOURCE GENERATORS. analyzers/ExpandedLib.Generators.dll emits the typed config accessor for a\n"
+    + "POCO marked [ExConfigRegister] ({Mod}Values) and the typed lang keys ({Domain}Lang). Without it\n"
+    + "those names do not exist and you get CS0103. Reference it as an analyzer, not a library:\n"
+    + "\n"
+    + "  <ItemGroup>\n"
+    + "    <Analyzer Include=\"path\\to\\analyzers\\ExpandedLib.Generators.dll\" />\n"
+    + "    <AdditionalFiles Include=\"assets\\<yourdomain>\\lang\\en.json\" />\n"
+    + "  </ItemGroup>\n"
+    + "\n"
+    + "  The AdditionalFiles line is what feeds {Domain}Lang; omit it and only the config accessor is\n"
+    + "  generated.\n"
+    + "\n"
+    + "XML docs (exlib.xml, ExpandedLib.Testing.xml) sit beside their DLLs - keep them there for\n"
+    + "IntelliSense over the public surface.\n"
+    + "\n"
+    + "See the wiki: https://github.com/ringavirda/modding-vsexpanded/wiki/Testing-Harness\n";
 
   public override void Run(BuildContext context)
   {
@@ -300,6 +322,21 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
       $"{context.PublishDir(exlib, current)}/exlib.xml",
       $"{stageDir}/exlib.xml"
     );
+    // The source generators, under analyzers/. Without them the wiki's canonical config recipe -
+    // [ExConfigRegister] on a POCO, then {Mod}Values.Load(api) - does not compile outside this repo:
+    // the generated accessor never appears and the only signal is CS0103 on a name the reader was told
+    // would exist. IncludeBuildOutput=false keeps the generator out of the mods' own packages, so it is
+    // named here rather than picked up from a publish directory.
+    context.DotNetBuild(
+      "../../src/ExpandedLib.Generators/ExpandedLib.Generators.csproj",
+      new DotNetBuildSettings { Configuration = context.BuildConfiguration }
+    );
+    context.EnsureDirectoryExists($"{stageDir}/analyzers");
+    context.CopyFile(
+      $"../../src/ExpandedLib.Generators/bin/{context.BuildConfiguration}/netstandard2.0/ExpandedLib.Generators.dll",
+      $"{stageDir}/analyzers/ExpandedLib.Generators.dll"
+    );
+
     File.WriteAllText($"{stageDir}/README.txt", BundleReadme);
 
     context.Zip(

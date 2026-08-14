@@ -575,10 +575,19 @@ public sealed class ExBlockDef : IExDef {
   }
 
   /// <summary>Appends a block-entity behavior by type - resolves to <typeparamref name="T"/>'s
-  /// registered key (type-safe, for a mod's own block-entity behavior).</summary>
+  /// registered key. Safe across assemblies: the key is composed from <typeparamref name="T"/>'s own
+  /// assembly domain, not this definition's, so naming a dependency's behaviour yields the key that
+  /// mod registered.</summary>
   public ExBlockDef EntityBehavior<T>()
     where T : BlockEntityBehavior =>
     EntityBehavior(EntityRegistry.KeyFor(_domain, typeof(T)));
+
+  /// <summary>Appends a block-entity behavior by type, carrying a <c>properties</c> blob - the typed
+  /// counterpart of <see cref="EntityBehavior(string, JObject)"/>, for a behaviour that takes
+  /// per-block configuration (a molten cell's capacity, a port's face).</summary>
+  public ExBlockDef EntityBehavior<T>(JObject properties)
+    where T : BlockEntityBehavior =>
+    EntityBehavior(EntityRegistry.KeyFor(_domain, typeof(T)), properties);
 
   #endregion
 

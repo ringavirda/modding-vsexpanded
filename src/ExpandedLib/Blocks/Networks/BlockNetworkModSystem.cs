@@ -86,14 +86,33 @@ public class BlockNetworkModSystem : ModSystem {
       : null;
   }
 
-  private BlockNetwork CreateNetwork(string networkType) {
-    if (_factories.TryGetValue(networkType, out var factory))
-      return factory();
-    throw new InvalidOperationException(
-      $"No factory registered for network type '{networkType}'. "
-        + $"Call BlockNetworkModSystem.RegisterNetworkType before using this network type."
+  /// <summary>
+  /// The network instance for <paramref name="networkType"/>, or <c>null</c> when no factory is
+  /// registered for it. Returning null rather than throwing is deliberate: the only caller runs inside
+  /// chunk load, so a mistyped or unregistered type would take the world down over one bad block
+  /// declaration. The caller logs the position and the registered types and adds no node.
+  /// </summary>
+  private BlockNetwork? TryCreateNetwork(string networkType) =>
+    _factories.TryGetValue(networkType, out var factory) ? factory() : null;
+
+  /// <summary>Registered network types, for a diagnostic naming what the caller could have meant.</summary>
+  private string RegisteredTypes() =>
+    _factories.Count == 0
+      ? "(none)"
+      : string.Join(", ", _factories.Keys.Order());
+
+  /// <summary>
+  /// Creates a network of a type already proven registered, because the caller took it off a live
+  /// network instance (a fracture split, a root rebuild). Throwing here is correct: a miss is an exlib
+  /// invariant violation rather than a mod declaring a bad type, and the content-facing path
+  /// (<see cref="AddNode"/>) uses <see cref="TryCreateNetwork"/> instead.
+  /// </summary>
+  private BlockNetwork CreateNetwork(string networkType) =>
+    TryCreateNetwork(networkType)
+    ?? throw new InvalidOperationException(
+      $"No factory registered for network type '{networkType}', reached from an existing network of "
+        + $"that type. Registered: {RegisteredTypes()}."
     );
-  }
   #endregion
 
   #region Graph node manipulation
@@ -122,7 +141,23 @@ public class BlockNetworkModSystem : ModSystem {
 
     if (adjacentNetworks.Count == 0) {
       // Isolated new node - standalone network, no broadcast needed.
-      var net = CreateNetwork(networkType);
+      BlockNetwork? net = TryCreateNetwork(networkType);
+      if (net == null) {
+        // Only an isolated node reaches the factory - one placed against an existing run joins that
+        // network instead - so an unregistered type surfaces intermittently and by position. Naming
+        // the block and the registered types is what turns that into something a modder can act on.
+        ServerWorld?.Logger.Error(
+          "[exlib] Block network: '{0}' at {1} declares network type '{2}', which no mod registered. "
+            + "The block is placed but joins no network. Registered types: {3}. "
+            + "Call BlockNetworkModSystem.RegisterNetworkType from ModSystem.Start.",
+          world.GetBlock(pos)?.Code?.ToString() ?? "unknown block",
+          pos,
+          networkType,
+          RegisteredTypes()
+        );
+        return;
+      }
+
       net.Nodes.Add(pos);
       _networks[net.Id] = net;
       _posToNetwork[pos] = net.Id;

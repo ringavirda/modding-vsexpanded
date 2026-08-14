@@ -45,6 +45,21 @@ public class NetworkGraphTests {
   }
 
   [Fact]
+  public void AddNode_with_an_unregistered_type_logs_and_adds_no_node() {
+    // AddNode runs inside chunk load, so this used to throw a world down over one mistyped network
+    // declaration. Only an isolated node reaches the factory - one placed against an existing run
+    // joins that network instead - so the crash was intermittent and position-dependent, which is the
+    // worst shape for a first-time user of the framework.
+    var w = NewWorld();
+    var pos = new BlockPos(0, 0, 0);
+    w.Place(pos, TestNetworkBlock.Create("gass", "ns", 1));
+
+    w.AddNode(pos, "gass");
+
+    Assert.Null(w.NetworkAt(pos));
+  }
+
+  [Fact]
   public void AddNode_adjacent_same_type_merges_into_one_network() {
     var w = NewWorld();
     var positions = BuildLine(w, 3);

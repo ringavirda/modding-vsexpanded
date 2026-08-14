@@ -39,9 +39,21 @@
 Top rung of a three-rung pipe ladder: iwex plated at 2.5 atm, lpex cast at 5.0, hpex rolled at 12 - the only tier
 that can carry a Lancashire boiler's steam to a Cornish engine without sitting on its own burst clock.
 
-The tier is the mod, not a variant axis: a rolled pipe is `hpex:pipe-straight-ns`, and the domain resolves the
-burst rating, the throughput and the joint family (`BlockPipe.cs:193-194`, `:239-242`, `:268-271`). One material
-per tier, one model per tier.
+The tier is a variant axis, and the high-order one: a rolled pipe is `hpex:pipe-rolled-straight-ns`, and the
+`tier` variant resolves the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `:291-294`,
+`:321-324`). One material per tier, one model per tier - that part is unchanged; what moved is where the tier is
+written down.
+
+Until 2026-08-14 this section read *"the tier is the mod, not a variant axis"*, and the domain was the key.
+**M4 supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts iwex and lpex in one domain, so
+tier could no longer be `Code.Domain` without collapsing two tiers into one - which M3 forbids. The reasoning the
+old ruling rested on survives intact on the new axis. `BlockPipe.PlatedTier` / `.CastTier` / `.RolledTier`
+(`BlockPipe.cs:31`, `:34`, `:37`) are the three names.
+
+⛔ **`tier` is declared first, before `type`** (`BlockPipe.cs:103`). The game's selector matcher backtracks, so a
+leading `*` absorbs the new segment and the ~30 `ShapeByType("*-straight-ns", …)` selectors keep matching;
+declared last it would move every code out from under them and the blocks would load with no shape and no error.
+`EmittedBlocktypeShapeTests` catches that, and it catches it even after the goldens are re-blessed.
 
 The joint separates this tier from the other two. Plated and cast are square in section and bolted through flanges,
 so they interconnect and a player upgrades a line segment by segment. Rolled is octagonal and welded, with no
@@ -60,24 +72,25 @@ Nothing here is a multiblock. Every block on this page is a single cell and an i
 public class RolledPipeDefinitions : IExBlockDefProvider
 {
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
-    BlockPipe.Segments(domain);
+    BlockPipe.Segments(domain, BlockPipe.RolledTier);
 }
 ```
-`RolledPipeDefinitions.cs:20-23`. A stand-alone provider (not a partial of a block class) because the class it
+`RolledPipeDefinitions.cs:15-18`. A stand-alone provider (not a partial of a block class) because the class it
 binds to lives in exlib: the injected blocktypes name `exlib.BlockPipe` / `exlib.BlockEntityPipe` as their class
-keys (`BlockPipe.cs:62-63`). Discovered when the hpex assembly is scanned by `EntityRegistry.RegisterAll`.
+keys (`BlockPipe.cs:78-79`). Discovered when the hpex assembly is scanned by `EntityRegistry.RegisterAll`.
 
 | blocktype | variants | max stack | creative selector | file:line |
 |---|---|---|---|---|
-| `hpex:pipe-straight-*` | 3 - `ns` `we` `ud` | 16 | `*-straight-ns` | `BlockPipe.cs:87-98` |
-| `hpex:pipe-bend-*` | 12 - `nw` `se` `en` `ws` `un` `us` `uw` `ue` `dn` `ds` `dw` `de` | 8 | `*-bend-nw` | `:101-126` |
-| `hpex:pipe-tjunction-*` | 12 - `uns` `uwe` `dns` `dwe` `nes` `esw` `swn` `wne` `dnu` `deu` `dsu` `dwu` | 8 | `*-tjunction-uns` | `:129-155` |
-| `hpex:pipe-xjunction-*` | 3 - `nswe` `nsud` `weud` | 8 | `*-xjunction-nswe` | `:158-171` |
+| `hpex:pipe-rolled-straight-*` | 3 - `ns` `we` `ud` | 16 | `*-straight-ns` | `BlockPipe.cs:118-128` |
+| `hpex:pipe-rolled-bend-*` | 12 - `nw` `se` `en` `ws` `un` `us` `uw` `ue` `dn` `ds` `dw` `de` | 8 | `*-bend-nw` | `:130-165` |
+| `hpex:pipe-rolled-tjunction-*` | 12 - `uns` `uwe` `dns` `dwe` `nes` `esw` `swn` `wne` `dnu` `deu` `dsu` `dwu` | 8 | `*-tjunction-uns` | `:167-202` |
+| `hpex:pipe-rolled-xjunction-*` | 3 - `nswe` `nsud` `weud` | 8 | `*-xjunction-nswe` | `:204-216` |
 
-30 block variants in total. All four share `Common` (`BlockPipe.cs:53-84`): metal material and sounds, the
+30 block variants in total. All four share `Common` (`BlockPipe.cs:68-104`): metal material and sounds, the
 `Lockable` behaviour, `RenderPass("OpaqueNoCull")`, `FaceCullMode("NeverCull")`, `LightAbsorption(0)`,
-`SideSolid(false)`, `SideOpaque(false)`, a creative entry in both `general` and the `hpex` tab, and a
-`handbook.groupBy` naming all four codes. Collision/selection is the shared 5⁄16 → 11⁄16 core, one box per open
+`SideSolid(false)`, `SideOpaque(false)`, a creative entry in both `general` and the `hpex` tab, the `tier`
+variant group, and a `handbook.groupBy` naming all four of *this tier's* codes - grouping is per tier, so the
+rolled straight pipe never shares a handbook entry with the plated or cast one. Collision/selection is the shared 5⁄16 → 11⁄16 core, one box per open
 axis.
 
 Connector geometry is the default, `Orientation.Contains(face.Code[0])` (`BlockNetworkNode.cs`); hpex overrides
@@ -85,22 +98,28 @@ nothing (the single-face outlet override is lpex's, [cast pipes](cast-pipes.md))
 
 ### The three registrations
 
-All happen once in `ModSystem.Start`, keyed by domain:
+All happen once in `ModSystem.Start`, keyed by tier:
 
 ```csharp
-BlockPipe.RegisterBurst(Mod.Info.ModID, () => HpexValues.RolledPipeBurstPressure);    // :42
-BlockPipe.RegisterThroughput(Mod.Info.ModID, () => HpexValues.RolledPipeThroughput);  // :43
-BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.WeldedJoint);                       // :46
+BlockPipe.RegisterBurst(BlockPipe.RolledTier, () => HpexValues.RolledPipeBurstPressure);    // :39
+BlockPipe.RegisterThroughput(BlockPipe.RolledTier, () => HpexValues.RolledPipeThroughput);  // :43
+BlockPipe.RegisterJoint(BlockPipe.RolledTier, BlockPipe.WeldedJoint);                       // :49
 ```
-`HighPressureExpandedModSystem.cs:42-46`. The burst and throughput getters are `Func<float>`s read live, so `/exmod
+`HighPressureExpandedModSystem.cs:39-49`. The burst and throughput getters are `Func<float>`s read live, so `/exmod
 config hpex` retunes them without reconstructing networks. hpex registers no network type; the `pipe` network is
 exlib's framework and the HP blocks ride it.
 
-Dropping one fails differently from dropping another. `DefaultBurstPressure` is 5 (`BlockPipe.cs:182`), so a lost
+The key is the tier name, not `Mod.Info.ModID`, so the registration survives the merge that moves these blocks into
+`siex` unchanged - and a mod carrying two tiers registers twice.
+
+Dropping one fails differently from dropping another. `DefaultBurstPressure` is 5 (`BlockPipe.cs:241`), so a lost
 `RegisterBurst` visibly halves the tier, unlike cast, whose default is numerically identical and whose loss would
-be invisible ([cast pipes](cast-pipes.md) Gotcha 2). The joint default is `FlangedJoint` (`BlockPipe.cs:268-271`),
+be invisible ([cast pipes](cast-pipes.md) Gotcha 2). The joint default is `FlangedJoint` (`BlockPipe.cs:321-324`),
 so a lost `RegisterJoint` silently bolts rolled pipe onto plated pipe. `RolledJointTests` covers the joint case and
 not the burst one.
+
+★ A block that names **no** tier takes all three defaults - which is what every fitting does, and what a consumer
+shipping a single pipe family gets from `BlockPipe.Segments(domain, tier: null)`.
 
 ---
 
@@ -132,7 +151,7 @@ so an override would repaint some segments and miss others (`BlockPipe.cs:76-79`
 
 ### B5 — there is none
 
-Nothing anywhere outputs `hpex:pipe-straight-*` or any of its three siblings. `src/HighPressureExpanded/Recipes/`
+Nothing anywhere outputs `hpex:pipe-rolled-straight-*` or any of its three siblings. `src/HighPressureExpanded/Recipes/`
 contains one file, `Grid/MachineRecipeDefinitions.cs`, emitting two recipes: the Lancashire boiler frame and the
 Cornish engine frame. The golden `goldens/hpex/recipes/grid/machines.json` is the mod's complete recipe output -
 three entries (the boiler, and the engine twice, once per gear code).
@@ -237,7 +256,7 @@ Cornish boiler carry the same coincidence at 5.0 ([cast pipes](cast-pipes.md) §
 
 | hpex consumer | what it actually asks for | file:line |
 |---|---|---|
-| Cornish engine grid recipe | `iwex:pipe-straight-*` ×2 (plated) | `MachineRecipeDefinitions.cs:60-61` |
+| Cornish engine grid recipe | `iwex:pipe-plated-straight-*` ×2 | `MachineRecipeDefinitions.cs:58` |
 | Lancashire boiler grid recipe | no pipe at all | `:29-37` |
 | Lancashire boiler RCC stages | steel plate, nails, rod, fire brick | `BlockBoilerLancashire.cs:142-163` |
 | Lancashire boiler required structure | `lpex:pipe-passthrough-fire-*`, `lpex:pipe-passthroughbend-fire-u*`, `lpex:pipe-outlet-fire-u` (cast) | `:89-95` |
@@ -317,8 +336,8 @@ Plain block drops throughout. None of the four defs sets `NoDrops()`; `BlockPipe
 
 | block | drops | note |
 |---|---|---|
-| `hpex:pipe-straight-*` | itself | stack 16 |
-| `hpex:pipe-bend-*` / `tjunction-*` / `xjunction-*` | itself | stack 8 |
+| `hpex:pipe-rolled-straight-*` | itself | stack 16 |
+| `hpex:pipe-rolled-bend-*` / `rolled-tjunction-*` / `rolled-xjunction-*` | itself | stack 8 |
 | a burst segment | its items, plus a steam puff and a pop; the cell is set to air and the node removed, fracturing the run | [pipe network](../mechanics/pipe-network.md) § 5 |
 
 Salvage is 1:1 and lossless: none of these is a right-click construction, so `RccBrokenDropsRatio`
@@ -330,7 +349,7 @@ Salvage is 1:1 and lossless: none of these is a right-click construction, so `Rc
 
 | piece | file:line |
 |---|---|
-| `RolledPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/RolledPipeDefinitions.cs:20-23` |
+| `RolledPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/RolledPipeDefinitions.cs:15-18` |
 | burst + throughput + joint registration | `HighPressureExpandedModSystem.cs:42-46` |
 | `HpexConfig.RolledPipeBurstPressure` / `.RolledPipeThroughput` | `HpexConfig.cs:115`, `:121` |
 | `BlockPipe` (segments factory, burst/throughput/joint registries) | `src/ExpandedLib/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |

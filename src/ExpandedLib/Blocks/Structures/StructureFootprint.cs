@@ -17,7 +17,30 @@ public readonly record struct FillerBehaviorSpec(
   string Code,
   string? Face = null,
   object? Properties = null
-);
+) {
+  /// <summary>
+  /// The same spec named by type: <c>Of&lt;BEBehaviorMPFillerPort&gt;("west")</c> resolves
+  /// <typeparamref name="T"/>'s registered key, so renaming the behaviour class is a compile error.
+  /// The string overload remains for a vanilla behaviour or one this assembly cannot reference; a
+  /// hand-typed code that resolves to nothing is a per-cell warning at chunk load and the mega-block
+  /// still assembles, so the machine places and does nothing.
+  /// </summary>
+  public static FillerBehaviorSpec Of<T>(
+    string? face = null,
+    object? properties = null
+  )
+    where T : Vintagestory.API.Common.BlockEntityBehavior =>
+    new(
+      // The type's own assembly supplies the domain, so the fallback is unused for any type whose
+      // assembly declares [assembly: ExDomain].
+      ExpandedLib.Registries.Entities.EntityRegistry.KeyFor(
+        string.Empty,
+        typeof(T)
+      ),
+      face,
+      properties
+    );
+}
 
 /// <summary>
 /// One north-orientation footprint cell for a mega-block, authored in C#: the offset from the principal, whether

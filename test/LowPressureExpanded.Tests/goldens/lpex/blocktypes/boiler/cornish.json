@@ -372,8 +372,8 @@
       "blockNumbers": {
         "exlib:structurefiller": 1,
         "lpex:boilercornish-*": 2,
-        "lpex:pipe-passthrough-fire-*": 3,
-        "lpex:pipe-passthroughbend-fire-u*": 4,
+        "lpex:pipe-cast-passthrough-fire-*": 3,
+        "lpex:pipe-cast-passthroughbend-fire-u*": 4,
         "game:claybricks-good-fire": 5,
         "game:air": 6,
         "@(air|coalpile)": 7,

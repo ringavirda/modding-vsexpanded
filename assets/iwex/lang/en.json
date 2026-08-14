@@ -1,10 +1,10 @@
 {
-  "block-pipe-straight*": "Piping (Straight)",
-  "block-pipe-bend*": "Piping (Bend)",
-  "block-pipe-tjunction*": "Piping (T-Junction)",
-  "block-pipe-xjunction*": "Piping (X-Junction)",
-  "block-pipe-passthrough-*": "Pipe Passthrough (Straight)",
-  "block-pipe-passthroughbend-*": "Pipe Passthrough (Bend)",
+  "block-pipe-plated-straight*": "Plated Piping (Straight)",
+  "block-pipe-plated-bend*": "Plated Piping (Bend)",
+  "block-pipe-plated-tjunction*": "Plated Piping (T-Junction)",
+  "block-pipe-plated-xjunction*": "Plated Piping (X-Junction)",
+  "block-pipe-plated-passthrough-*": "Plated Pipe Passthrough (Straight)",
+  "block-pipe-plated-passthroughbend-*": "Plated Pipe Passthrough (Bend)",
   "pipe-info-leaking": "Leaking!",
   "pipe-info-status": "{0} of {1} at {2}",
   "pipe-info-flow": "Throughput: {0} of {1} at {2}",
@@ -419,6 +419,6 @@
   "blockdesc-furnace-chargepile": "The charge standing in a furnace shaft, in bands - fuel under burden, as it was laid. The furnace owns it; this is the window onto it.",
   "chargepile-help-take": "Take a handful off the top of the column",
   "game:ingameerror-iwex-chargepile-notinshaft": "Charge only stands in a furnace shaft.",
-  "blockdesc-pipe-passthrough-*": "A plated pipe set in masonry - carries the blast through a wall without leaking.",
-  "blockdesc-pipe-passthroughbend-*": "A bent plated pipe set in masonry."
+  "blockdesc-pipe-plated-passthrough-*": "A plated pipe set in masonry - carries the blast through a wall without leaking.",
+  "blockdesc-pipe-plated-passthroughbend-*": "A bent plated pipe set in masonry."
 }

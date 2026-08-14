@@ -1,10 +1,10 @@
 {
-  "block-pipe-straight*": "Труба (прямая)",
-  "block-pipe-bend*": "Труба (поворот)",
-  "block-pipe-tjunction*": "Труба (Т-образная)",
-  "block-pipe-xjunction*": "Труба (Х-образная)",
-  "block-pipe-passthrough-*": "Проходка трубы (прямая)",
-  "block-pipe-passthroughbend-*": "Проходка трубы (поворот)",
+  "block-pipe-plated-straight*": "Листовая труба (прямая)",
+  "block-pipe-plated-bend*": "Листовая труба (поворот)",
+  "block-pipe-plated-tjunction*": "Листовая труба (Т-образная)",
+  "block-pipe-plated-xjunction*": "Листовая труба (Х-образная)",
+  "block-pipe-plated-passthrough-*": "Листовая проходная труба (прямая)",
+  "block-pipe-plated-passthroughbend-*": "Листовая проходная труба (поворот)",
   "pipe-info-leaking": "Утечка!",
   "pipe-info-status": "{0} из {1} при {2}",
   "pipe-info-flow": "Пропускная способность: {0} {1} при {2}",
@@ -419,6 +419,6 @@
   "blockdesc-furnace-chargepile": "Шихта, стоящая в шахте печи, слоями - топливо под рудной шихтой, как её и загружали. Шихта принадлежит печи; это лишь окно в неё.",
   "chargepile-help-take": "Взять горсть с верха столба",
   "game:ingameerror-iwex-chargepile-notinshaft": "Шихта стоит только в шахте печи.",
-  "blockdesc-pipe-passthrough-*": "Клёпаная труба в кладке - проводит дутьё сквозь стену без утечек.",
-  "blockdesc-pipe-passthroughbend-*": "Изогнутая клёпаная труба в кладке."
+  "blockdesc-pipe-plated-passthrough-*": "Клёпаная труба в кладке - проводит дутьё сквозь стену без утечек.",
+  "blockdesc-pipe-plated-passthroughbend-*": "Изогнутая клёпаная труба в кладке."
 }

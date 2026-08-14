@@ -15,7 +15,7 @@ internal static class RecipeIngredients {
   /// </summary>
   internal static Func<IngredientBuilder, IngredientBuilder> PipeStar(
     int qty
-  ) => i => i.Block("lpex:pipe-straight*").Quantity(qty);
+  ) => i => i.Block("lpex:pipe-cast-straight*").Quantity(qty);
 
   /// <summary>
   /// Refractory brick of any tier, capturing the tier as <c>{tier}</c> so the crafted block resolves

@@ -35,18 +35,18 @@ public class HighPressureExpandedModSystem : ModSystem {
     );
 
     // Burst rating and throughput of the rolled (Hadfield steel) pipe tier, read live from this mod's
-    // config. Keyed by domain in BlockPipe, as iwex registers plated and lpex registers cast.
+    // config. Keyed by the block's `tier` variant in BlockPipe, as iwex registers plated and lpex cast.
     BlockPipe.RegisterBurst(
-      Mod.Info.ModID,
+      BlockPipe.RolledTier,
       () => HpexValues.RolledPipeBurstPressure
     );
     BlockPipe.RegisterThroughput(
-      Mod.Info.ModID,
+      BlockPipe.RolledTier,
       () => HpexValues.RolledPipeThroughput
     );
     // Rolled pipe is octagonal and welded, with no flange to bolt a lower tier onto, so an HP run
     // does not join a plated or cast one.
-    BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.WeldedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.RolledTier, BlockPipe.WeldedJoint);
 
     // The HP-machine recipe cost catalogue.
     HpexRecipeValues.Load(api);

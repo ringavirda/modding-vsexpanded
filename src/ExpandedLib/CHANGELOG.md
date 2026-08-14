@@ -5,6 +5,71 @@ All notable changes to this mod are documented here. The format is based on
 [Semantic Versioning](https://semver.org/). For changes before this file existed,
 see the git history.
 
+## [0.7.3] - 2026-08-13
+
+Six public subsystems landed between 0.7.0 and 0.7.2 without a changelog entry; they are
+recorded here together with 0.7.3's own packaging work.
+
+### Added
+
+- **Code-first definitions** (`ExBlockDef` / `ExItemDef` / `ExRecipeDef`). Blocks, items
+  and recipes are authored in C# and injected as synthetic assets at `ExecuteOrder 0.04` -
+  above the base index, below the JSON patch loader (0.05) and the object loader (0.2) - so
+  vanilla variant expansion, the atlas, block-id assignment and other mods' JSON patches all
+  still apply. Fluent builders with derived codes, an ASCII multiblock layout DSL validated
+  at load, and type-safe class binding.
+- **Process extension contract** (`StageLadderRegistry`, `ProcessJobRegistry`, `SpecSchema`,
+  `ProcessExtensions`, `ItemDie`). Merged catalogues read from `config/stageladders/*.json`
+  and `config/processjobs/*.json`, load-order-independent, with a versioned spec format:
+  an absent `schema` reads as 1, an older one falls back, and a **newer one is refused** with
+  an error naming both versions.
+- **Metal, material-role, liquid and heat catalogues** (`MetalRegistry`, `MaterialRoleRegistry`,
+  `ExLiquids`, `HeatBalance`), each backed by a JSON catalogue a dependent mod contributes to.
+- **XML documentation now ships** (`exlib.xml`, beside the dll in every zip), so a consumer
+  gets IntelliSense over the public surface instead of bare signatures.
+- **Source generators are distributed** in the `exlib-testing` bundle under `analyzers/`.
+  The config-accessor recipe in the wiki previously could not compile outside this repository.
+- **`[assembly: ExDomain]`** declares the domain an assembly's registered classes are keyed
+  under, so `Class<T>()` / `Behavior<T>()` resolve correctly across assemblies.
+- **`[ExDefDomain]`** lets one assembly emit definitions into more than one domain.
+- **`BlockPipe.Tier`** - a pipe's family, read from its `tier` variant, with
+  `PlatedTier` / `CastTier` / `RolledTier` naming the three this project ships. A pipe that
+  declares no tier takes the default rating, throughput and joint, which is what every
+  fitting does.
+
+### Changed
+
+- ⛔ **Breaking: a pipe's tier is a variant, not its domain.** `RegisterBurst`,
+  `RegisterThroughput` and `RegisterJoint` are keyed on the tier name rather than the mod id,
+  and `BlockPipe.Segments` takes the tier as a second argument
+  (`Segments(domain, tier)`; pass `null` for an untiered family). A mod may now ship several
+  tiers under one domain, which one domain per tier made impossible. Callers registering with
+  `Mod.Info.ModID` must pass their tier name instead - the registration is otherwise silently
+  unused and every segment falls back to the defaults.
+- ⛔ **Breaking: `BlockPipePassthrough.Passthroughs` takes the tier too**
+  (`Passthroughs(domain, tier)`, `null` for an untiered family). Two tiers shipping a passthrough
+  apiece carried one code between them, so under a single domain the later registration replaced
+  the earlier with no error; the tier is what keeps both. The sheet texture is now selected by tier
+  rather than by domain.
+- **Assembly identity is real.** Every release previously shipped `AssemblyVersion` and
+  `FileVersion` `1.0.0.0`; both are now read from the mod's own `modinfo.json`.
+  `AssemblyVersion` stays `major.minor.0.0` so a patch does not break a dependent's binding.
+- **Type-safe class binding works across assemblies.** `EntityRegistry.KeyFor` resolves the
+  domain from the *type's* assembly rather than the caller's. Naming a class from a dependency
+  previously produced a key nobody had registered - which compiles, fails at world load, and on
+  the block half is not logged.
+
+### Fixed
+
+- **An unregistered network type no longer takes a world down.** `AddNode` runs inside chunk
+  load; a mistyped `networkType` threw out of it. It now logs an error naming the block, the
+  position, the requested type and the registered types, and adds no node.
+- **The test harness runs outside this repository.** Its path helpers probed upward for a file
+  literally named `VintageStory.sln` and threw everywhere else, which disabled the goldens, the
+  block-code table and the handbook sync for any outside consumer. Any `.sln`/`.slnx`/`.git`
+  now marks a root, overridable with `EXLIB_REPO_ROOT`.
+- Nineteen XML doc references that pointed at nothing, surfaced by enabling the doc file.
+
 ## [0.7.0] - 2026-06-21
 
 ### Added

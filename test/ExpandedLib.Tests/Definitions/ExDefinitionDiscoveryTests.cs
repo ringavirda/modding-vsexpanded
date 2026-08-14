@@ -61,6 +61,42 @@ public class ExDefinitionDiscoveryTests {
     Assert.Equal("test.DiscoverableBlock", (string?)def.ToJson()["class"]);
   }
 
+  // A provider that emits somewhere other than the mod that ships it - the shape an absorbing assembly
+  // uses to keep emitting an absorbed mod's codes while the relocation lands.
+  [BlockRegister]
+  [ExDefDomain("borrowed")]
+  private sealed class ForeignDomainBlock : Block, IExBlockDefProvider {
+    public static IEnumerable<ExBlockDef> Definitions(string domain) =>
+      [ExBlockDef.Create(domain, "foreigndomain")];
+  }
+
+  [Fact]
+  public void A_provider_may_declare_a_domain_other_than_the_registering_mod_s() {
+    ExDefinitions.DiscoverAndRegister(
+      "test",
+      typeof(ForeignDomainBlock).Assembly
+    );
+
+    ExBlockDef def = Assert.Single(
+      ExDefinitions.Blocks,
+      d => d.Code == "foreigndomain"
+    );
+    Assert.Equal("borrowed", def.Domain);
+  }
+
+  [Fact]
+  public void A_provider_without_the_attribute_still_gets_the_registering_domain() {
+    ExDefinitions.DiscoverAndRegister(
+      "test",
+      typeof(DiscoverableBlock).Assembly
+    );
+
+    Assert.Equal(
+      "test",
+      Assert.Single(ExDefinitions.Blocks, d => d.Code == "discoverable").Domain
+    );
+  }
+
   [Fact]
   public void DiscoverAndRegister_ignores_classes_without_a_definition() {
     ExDefinitions.DiscoverAndRegister("test", typeof(PlainBlock).Assembly);

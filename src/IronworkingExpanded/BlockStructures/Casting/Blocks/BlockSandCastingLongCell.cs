@@ -50,8 +50,7 @@ public partial class BlockSandCastingLongCell
       .FillerOffsets(LongCellLayout.Footprint())
       // One pooled impression on the principal; the filler hosts nothing. drainFitting keeps the station
       // off the molten graph - it is fed by a canal.
-      .EntityBehavior(
-        "exlib.BEBehaviorMoltenCell",
+      .EntityBehavior<BEBehaviorMoltenCell>(
         new JObject {
           ["capacity"] = UnimpressedCapacity,
           ["drainFitting"] = true,

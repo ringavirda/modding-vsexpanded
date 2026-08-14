@@ -132,7 +132,7 @@ G H R          P = game:metalplate-steel ×1 each   → 4
 P N P          R = game:rod-steel ×4               → 4
 P I P          G = gear ×4                          → 4
                N = game:metalnailsandstrips-steel ×4
-               I = iwex:pipe-straight-* ×2
+               I = iwex:pipe-plated-straight-* ×2
                H = hammer (tool)
 → hpex:enginecornish-north
 ```

@@ -44,27 +44,36 @@ public static class PipeTestWorld {
   /// </summary>
   public const float RolledTierThroughput = 250f;
 
-  // Burst ratings are per-domain, registered by each mod's ModSystem, which the headless tests do not
+  // Burst ratings are per-tier, registered by each mod's ModSystem, which the headless tests do not
   // run. All three shipped tiers are seeded here so a pipe's BurstPressure resolves as it does in game.
   // The iwex value is read off the live config; the other two are the guarded constants above.
   static PipeTestWorld() {
-    BlockPipe.RegisterBurst("iwex", () => IwexValues.PlatedPipeBurstPressure);
-    BlockPipe.RegisterBurst("lpex", () => CastTierBurst);
-    BlockPipe.RegisterBurst("hpex", () => RolledTierBurst);
+    BlockPipe.RegisterBurst(
+      BlockPipe.PlatedTier,
+      () => IwexValues.PlatedPipeBurstPressure
+    );
+    BlockPipe.RegisterBurst(BlockPipe.CastTier, () => CastTierBurst);
+    BlockPipe.RegisterBurst(BlockPipe.RolledTier, () => RolledTierBurst);
 
     // Throughput is a third axis, independent of the other two: burst is how hard a run can be
     // pressurised, LitresPerPipe is how much it holds, this is how much it passes per second.
     // Unregistered, every tier falls back to one default and no tier can refuse a line.
-    BlockPipe.RegisterThroughput("iwex", () => IwexValues.PlatedPipeThroughput);
-    BlockPipe.RegisterThroughput("lpex", () => CastTierThroughput);
-    BlockPipe.RegisterThroughput("hpex", () => RolledTierThroughput);
+    BlockPipe.RegisterThroughput(
+      BlockPipe.PlatedTier,
+      () => IwexValues.PlatedPipeThroughput
+    );
+    BlockPipe.RegisterThroughput(BlockPipe.CastTier, () => CastTierThroughput);
+    BlockPipe.RegisterThroughput(
+      BlockPipe.RolledTier,
+      () => RolledTierThroughput
+    );
 
     // Joints are a further axis, separate from pressure: plated and cast are square and flanged so
     // they mate with each other, rolled is octagonal and welded so it mates only with itself.
     // Unregistered, every tier falls back to "flanged" and an HP main couples to a plated one.
-    BlockPipe.RegisterJoint("iwex", BlockPipe.FlangedJoint);
-    BlockPipe.RegisterJoint("lpex", BlockPipe.FlangedJoint);
-    BlockPipe.RegisterJoint("hpex", BlockPipe.WeldedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.PlatedTier, BlockPipe.FlangedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.CastTier, BlockPipe.FlangedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.RolledTier, BlockPipe.WeldedJoint);
   }
 
   /// <summary>
@@ -99,9 +108,20 @@ public static class PipeTestWorld {
   }
 
   /// <summary>
-  /// The mod domain that owns a pipe tier. There is one material per mod, so the name selects a tier:
-  /// <c>"iron"</c> plated (iwex), <c>"steel"</c> cast (lpex), <c>"hadfield"</c> rolled (hpex). The tier
-  /// sets the burst ceiling, so a line charged past it bursts.
+  /// The pipe tier a material name selects: <c>"iron"</c> plated, <c>"steel"</c> cast,
+  /// <c>"hadfield"</c> rolled. The tier sets the burst ceiling, so a line charged past it bursts, and
+  /// it is what the three registries above are keyed on.
+  /// </summary>
+  public static string TierOf(string material) =>
+    material switch {
+      "steel" => BlockPipe.CastTier,
+      "hadfield" or "rolled" => BlockPipe.RolledTier,
+      _ => BlockPipe.PlatedTier,
+    };
+
+  /// <summary>
+  /// The mod domain that ships a tier. Distinct from <see cref="TierOf"/>: a code still carries a
+  /// domain, but nothing about a pipe's behaviour is resolved from it any more.
   /// </summary>
   public static string DomainOf(string material) =>
     material switch {
@@ -112,20 +132,23 @@ public static class PipeTestWorld {
 
   /// <summary>
   /// A real <see cref="BlockPipe"/> primed with tier and orientation; <paramref name="material"/> names
-  /// a tier (see <see cref="DomainOf"/>). <c>OnLoaded</c>, which would parse these from the variants, is
-  /// skipped, so the protected <c>Type</c> and <c>Orientation</c> are set by reflection. One instance is
-  /// shared across every cell of a straight run, as the engine does.
+  /// a tier (see <see cref="TierOf"/>). <c>OnLoaded</c>, which would parse these from the variants, is
+  /// skipped, so the protected <c>Type</c> and <c>Orientation</c> are set by reflection. The
+  /// <c>tier</c> variant needs no such help - <see cref="BlockPipe.Tier"/> reads it live, which is why
+  /// a fixture that sets only the code would silently get the default rating. One instance is shared
+  /// across every cell of a straight run, as the engine does.
   /// </summary>
   public static BlockPipe MakePipe(
     string material = "iron",
     int id = 1,
     string orientation = "ns"
   ) {
-    string domain = DomainOf(material);
+    string tier = TierOf(material);
     var pipe = TestBlocks.Configure(
       new BlockPipe(),
-      $"{domain}:pipe-straight-{orientation}",
+      $"{DomainOf(material)}:pipe-{tier}-straight-{orientation}",
       id,
+      ("tier", tier),
       ("type", "straight"),
       ("orientation", orientation)
     );

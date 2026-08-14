@@ -54,15 +54,15 @@ public class LowPressureExpandedModSystem : ModSystem {
     // config. The base pipe block and the "pipe" network itself are registered by iwex; lpex
     // contributes its tier's strength and the cast segments and fittings.
     BlockPipe.RegisterBurst(
-      Mod.Info.ModID,
+      BlockPipe.CastTier,
       () => LpexValues.CastPipeBurstPressure
     );
     BlockPipe.RegisterThroughput(
-      Mod.Info.ModID,
+      BlockPipe.CastTier,
       () => LpexValues.CastPipeThroughput
     );
     // Cast pipe is square and plated like the plated tier, so the two runs interconnect.
-    BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);
+    BlockPipe.RegisterJoint(BlockPipe.CastTier, BlockPipe.FlangedJoint);
 
     // The shared structure-filler block and the network/structure framework live in the exlib mod
     // (a hard dependency), which points StructureFillers at exlib:structurefiller and registers its
