@@ -1,9 +1,9 @@
 # Framework hardening — make exlib a library a stranger can adopt
 
-**Status** live, started 2026-08-13. **F0, F1, all of F2, all of F3, F6.2, M.1 and M.2 are done**, each
-verified on the full gate (`scripts/exmod.ps1 test all` — 15 targets, **4,019 tests**, green across
-1.20/1.21/1.22).
-Open: F1.4, F4, F5, F6.1, F7, F8, and stage M from **M.4** onward (M.3 folded into M.4).
+**Status** live, started 2026-08-13. **F0, F1, all of F2, all of F3, F6.2, M.0, M.1, M.2, M.3, M.4 and
+M.5 are done**, each verified on the full gate (`scripts/exmod.ps1 test all` — now **9 targets, 3,990
+tests** after both merges collapsed a suite each, green across 1.20/1.21/1.22).
+Open: F1.4, F4, F5, F6.1, F7, F8, and **M.6** and **M.8** of stage M.
 
 ★★ **The merge is ruled** (M1–M6 in [STATE.md](STATE.md), 2026-08-13): five mods become **`iiex`** and
 **`siex`**, full domain consolidation, pipe tier onto a variant, `heavyplate` absorbs `castplate`, and
@@ -37,8 +37,8 @@ that the stages are independent and can land in any order, but they are listed b
 The two modified csprojs in `git status` are an accidental revert to a pre-split revision, not work in
 progress.
 
-- [x] **F0.1** Restore `src/SteelmakingExpanded/SteelmakingExpanded.csproj` and
-      `test/SteelmakingExpanded.Tests/SteelmakingExpanded.Tests.csproj` from HEAD. The lost
+- [x] **F0.1** Restore `src/SteelIndustryExpanded/SteelmakingExpanded.csproj` and
+      `test/SteelIndustryExpanded.Tests/SteelmakingExpanded.Tests.csproj` from HEAD. The lost
       `<ProjectReference>`s to iwex and lpex are the 36 CS0246s; the lost `<AssetDomain>smex</AssetDomain>`
       is worse — a release cut from this tree ships smex with **zero assets** and drops out of the
       shipped-asset guard at the same time.
@@ -391,14 +391,14 @@ tiers ship, separated by the variant, with distinct display names.
       wrong here.
 
       ⛔ **Still open for M.4, and a naive rename sweep misses it:** `BlockPipePassthrough.Sheet` returns
-      `iwex:block/metal/castiron`, and `assets/hpex/shapes/pipe/rolled/*.json` name the same texture. The
+      `iwex:block/metal/castiron`, and `assets/siex/shapes/pipe/rolled/*.json` name the same texture. The
       texture is referenced by ~40 files across three mods, so it was left alone deliberately; the four
       **hpex** references are outside both merging trees and a per-file sweep over "the two merging asset
       trees" will not see them.
 
       ★ A premise that did not survive: the scouting said no guard resolves a `shapeByType` target to a
       file on disk. `DefinitionAssets.MissingShapes` has done exactly that all along and is wired into all
-      five suites — it resolves the **shape's own** domain, so the cross-domain move was verified rather
+      five suites (as they then were) — it resolves the **shape's own** domain, so the cross-domain move was verified rather
       than assumed. Mutation-checked by hiding one moved file.
 
 **M.1 Decouple asset domain from mod id.** `EntityRegistry.RegisterAll` passed `mod.Info.ModID` to every
@@ -500,7 +500,7 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       expected, so `lpex:pipe-cast-passthrough-*` → `iiex:pipe-cast-passthrough-*` is a `CodeRelocation`
       row in M.4 and nothing else. B23's setting is picked up there too. The design ruling this stage
       cited ([gas-producer](../../design/machines/gas-producer.md) Open 9) is corrected in place.
-- [ ] **M.4 The `iiex` merge.** iwex + lpex into one assembly and one domain. Every `iwex:` and `lpex:`
+- [x] **M.4 The `iiex` merge — DONE 2026-08-14.** iwex + lpex into one assembly and one domain. Every `iwex:` and `lpex:`
       code relocates through `CodeRelocation`, which has already executed two cross-domain moves. The
       released `ppex:` codes get one more hop. Update `ReleasedCodes` and the coverage guard.
 
@@ -522,7 +522,7 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
 
       The migration surgery M.2 did was two changes, both still correct:
       `PipeMigration`'s brick branch rebuilds its old smex code from the variants instead of from the
-      whole live path, and `LpexRenameMigration` moved the two passthrough rows onto `CodeRelocation`'s
+      whole live path, and `PpexRenameMigration` moved the two passthrough rows onto `CodeRelocation`'s
       rename overload — without which **120 released `ppex:` codes lose their migration**, which is what
       the mutation check showed.
 
@@ -544,19 +544,36 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       migration surgery M.2 avoided), or it is duplication and the two collapse to one blocktype (plus a
       migration for whichever code retires). Decide before M.4, because after the merge one of them is
       already gone and nothing said so.
-- [ ] **M.5 The `siex` merge.** smex + hpex, same shape. ⛔ smex **has shipped** (0.9.8, 213 concrete
-      codes), so this is the one half with real player worlds behind it — the migration is load-bearing,
-      not a formality.
-- [ ] **M.6 Stand up `test/Integration.Tests`** before hpex's test project disappears. It currently hosts
-      `ReleasedCodeCoverageTests` — the whole-repo "every shipped block still reaches a live block"
-      invariant — purely because it is the only suite that sees all five mods. Move it, and add the
-      cross-mod resolution checks (recipe ingredients and RCC `Require` codes are checked in **no**
-      direction today, which is the structural cause of B19 and B23).
-- [ ] **M.7 Re-justify the ~15 entity pages** that cite the retired per-mod closure rule, and settle the
-      forming-line ownership parenthetical that `rolled-parts.md` and `stock.md` both carry unresolved in
-      their own Mod header — *"(who owns the forming line)"*. Under M1 the mill, the wide hall and the
-      bending roller are all `iiex`; the steel roll sets and cast stock are `siex`. That is the answer the
-      ruling implies, but it should be written down rather than inferred.
+- [x] **M.5 The `siex` merge.** *Done 2026-08-14.* smex + hpex are **`siex` 0.9.9**: one assembly, one
+      domain, one ModSystem, one config section, one suite. M1 is complete and the mod set is closed at
+      `exlib`/`iiex`/`siex`. Record, including the three things its plan got wrong:
+      [2026-08-14-m5-siex-merge-execution.md](2026-08-14-m5-siex-merge-execution.md).
+
+      ⛔⛔ **All three misses were caught by a guard, not by review** — the four traps above are real and
+      the documents did not save us from them. The stale `Domains` row (trap 3) was actively hiding **38
+      unmigrated released codes**; the block-entity aliases (trap 4) cost six, not the one predicted; and
+      a case nobody had listed — **a config section is keyed by the mod id**, so the rename silently reset
+      every player value — was fixed in exlib with `LegacySectionIds`.
+- [ ] **M.6 Stand up `test/Integration.Tests`.** ⛔ Two premises of this stage have expired. The directory
+      was **deleted 2026-08-14** as an orphan (zero tracked files, in neither the solution nor the suite
+      list), so this stage *creates* it. And "before hpex's test project disappears" has already happened:
+      `ReleasedCodeCoverageTests` and `ReleasedEntityClassTests` now live in **`SteelIndustryExpanded.Tests`**,
+      which after the merge is the only suite that sees all three mods — so they are correctly placed and
+      the move is **optional**, not urgent.
+
+      ★ What is *not* optional is the second half: the cross-mod resolution checks. Recipe ingredients and
+      RCC `Require` codes are verified in **no** direction today, which is the structural cause of B19 and
+      B23. That is the reason to do M.6, and it can be done wherever the guards live.
+- [x] **M.7 Re-justify the entity pages** that cite the retired per-mod closure rule. *Done 2026-08-14.*
+      ★ It was **12 pages, not ~15**, and the citation was not prose but the `**Mod**` header itself.
+      Every one now names a live mod. ⛔ Four of them carried **M.4 rename damage** that made them
+      nonsense rather than merely stale — `dies.md` read *"iiex (nail, bolt), iiex (rivet, stamping)"* and
+      `rolled-parts.md` *"iiex owns the narrow products; iiex owns the wide ones"*, both being two
+      different mods that the blanket rename collapsed onto one name.
+
+      The forming-line parenthetical is **settled and written down** in both `rolled-parts.md` and
+      `stock.md`: iiex owns the forming line — the mill, the wide hall and the bending roller — and siex
+      owns the cast forms and the steel roll sets.
 - [ ] **M.8 `heavyplate` absorbs `castplate`** (M5): one item, metal axis `{castiron, wrought, steel}`,
       three routes (sand cast, rolled from a wrought or steel slab, planed from a larger plate). `castplate-heavy`
       is live and shipped, so it needs an item migration. Rewrite `rolled-parts.md`'s

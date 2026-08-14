@@ -1,0 +1,109 @@
+{
+  "code": "rod-bessemersteel",
+  "materialDensity": 7820,
+  "storageFlags": 5,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "siex": [
+      "*"
+    ]
+  },
+  "maxstacksize": 16,
+  "shape": {
+    "base": "game:item/rod"
+  },
+  "textures": {
+    "metal": {
+      "base": "game:block/metal/ingot/steel"
+    }
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1,
+    "smeltedStack": {
+      "type": "item",
+      "code": "siex:ingot-bessemersteel"
+    }
+  },
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Stacking",
+        "placeRemoveSound": "game:sounds/block/ingot",
+        "stackingModel": "game:item/rod-pile",
+        "upSolid": false,
+        "modelItemsToStackSizeRatio": 1,
+        "stackingCapacity": 32,
+        "transferQuantity": 1,
+        "bulkTransferQuantity": 8,
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.14,
+          "z2": 1
+        },
+        "cbScaleYByLayer": 0.15
+      }
+    }
+  ],
+  "guiTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": -48,
+      "y": 134,
+      "z": 171
+    },
+    "origin": {
+      "x": 0.53,
+      "y": 0.2,
+      "z": 0.4
+    },
+    "scale": 2.8
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -0.9,
+      "y": -0.05,
+      "z": -0.78
+    },
+    "rotation": {
+      "x": 85,
+      "y": 0,
+      "z": 2
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 0.68
+  },
+  "groundTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 4
+  }
+}

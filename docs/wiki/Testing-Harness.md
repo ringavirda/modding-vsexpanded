@@ -192,7 +192,7 @@ half-turn out, or the anchor never loaded its attributes - the machine "works" i
 nothing in game. `StructureRig` builds the footprint instead, and lets the machine complete itself:
 
 ```csharp
-var rig = StructureRig.Around(world, furnace, BlockBlastFurnaceCoreHot.Definitions("smex").Single(), angle: 0);
+var rig = StructureRig.Around(world, furnace, BlockBlastFurnaceCoreHot.Definitions("siex").Single(), angle: 0);
 
 rig.Occupy(rig.Cell(0, 1, -1), tuyereBlock, new BlockEntityTuyere());  // cells the test cares about
 rig.Complete();   // fill the rest, Initialize, and wait for the machine's own monitor tick

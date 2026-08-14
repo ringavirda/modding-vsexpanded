@@ -157,7 +157,7 @@ Proposed, following the pattern the boiler and engine already use:
 - Right-click construction (RCC), not a grid recipe. It is a plate vessel of the same class as a boiler
   shell, and the RCC path already resolves salvage through `RccBrokenDropsRatio`
   (`IiexConfig.cs:116`, default 0.8) and the shared `ExRccSettings` registration
-  (`LowPressureExpandedModSystem.cs:29-32`).
+  (`IronIndustryExpandedModSystem.cs:29-32`).
 - Built from plate + rivets, the settled fabricated-part idiom (`STATE.md:417-442`): rivets are the
   ingredient, so no riveting machine is required, and the rivet die ships with iiex.
 - A cost key `fluidtank-rcc` in `IiexRecipeConfig.Defaults()` so `/exmod recipes iiex <level>` reaches it.

@@ -79,8 +79,8 @@ public class MetalFamilyEmitterTests {
   }
 
   [Fact]
-  public void Bessemer_steel_emits_its_four_forms_in_smex() {
-    List<ExItemDef> defs = Emit(Shipped("smex", "bessemersteel"));
+  public void Bessemer_steel_emits_its_four_forms_in_siex() {
+    List<ExItemDef> defs = Emit(Shipped("siex", "bessemersteel"));
 
     Assert.Equal(
       new[]
@@ -92,8 +92,8 @@ public class MetalFamilyEmitterTests {
       },
       Codes(Resources(defs))
     );
-    // Owned by smex (its molten item is smex:ingot-bessemersteel), not the folder or iiex.
-    Assert.All(defs, d => Assert.Equal("smex", d.Domain));
+    // Owned by siex (its molten item is siex:ingot-bessemersteel), not the folder or iiex.
+    Assert.All(defs, d => Assert.Equal("siex", d.Domain));
   }
 
   #endregion
@@ -241,7 +241,7 @@ public class MetalFamilyEmitterTests {
   public void Bessemer_steel_tools_carry_good_steel_tier_stats() {
     // The "good" preset: steel-grade durability, attack power and tool tier.
     JObject pick = ToolJson(
-      Emit(Shipped("smex", "bessemersteel")),
+      Emit(Shipped("siex", "bessemersteel")),
       "pickaxe-bessemersteel"
     );
 

@@ -75,7 +75,7 @@ Nothing: not one line of code, not one asset, not one lang key.
 | `grep -rniE "elex\|electric\|dynamo\|alternator\|voltage" assets/ .github/` | 0 hits |
 | Projects in `VintageStory.sln` | `ExpandedLib`, `ExpandedLib.Generators`, `ExpandedLib.Testing`, `HighPressureExpanded`, `IronIndustryExpanded`, `IronIndustryExpanded`, `SteelmakingExpanded` (+ their `.Tests`) and `CakeBuild`. No `ElectricalExpanded` |
 | Asset domains under `assets/` | `editable`, `exlib`, `game`, `hpex`, `iiex`, `iiex`, `smex`. No `elex/`, so no `assets/elex/lang/en.json` either |
-| Registered network types | exactly three, all in `src/IronIndustryExpanded/IronworkingExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
+| Registered network types | exactly three, all in `src/IronIndustryExpanded/IronIndustryExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
 
 The only electrical thing that exists anywhere in the repo is the row in the family list:
 [conventions.md](../../conventions.md) § Networks - "Electrical (AC + DC) — the elex tier (planned)".

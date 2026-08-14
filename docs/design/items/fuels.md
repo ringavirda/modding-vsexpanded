@@ -136,7 +136,7 @@ with a warning (`MaterialRoleLoader.cs:55-63`).
 Adding a fuel is one JSON line, no recompile (`MaterialRoleDef.cs:8-10`). The only registrations that need
 code are mod-gated ones, which go through the contributor seam
 (`MaterialRoleRegistry.RegisterContributor`, `:57-61`; the one live example is
-`IronOreCompat.Contribute`, `:34-51`, registered at `IronworkingExpandedModSystem.cs:64`). Contributors are
+`IronOreCompat.Contribute`, `:34-51`, registered at `IronIndustryExpandedModSystem.cs:64`). Contributors are
 re-invoked after every clear (`MaterialRoleLoader.cs:30-31`), which is what makes them survive a world
 reload; the whole load runs at `AssetsFinalize` (`ExpandedLibModSystem.cs:74`).
 

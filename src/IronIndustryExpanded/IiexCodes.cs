@@ -11,7 +11,7 @@ namespace IronIndustryExpanded;
 public static class IiexCodes {
   #region Furnace cells
 
-  // Both describe a shaft furnace's interior, and smex's hot furnace draws on them as well.
+  // Both describe a shaft furnace's interior, and siex's hot furnace draws on them as well.
 
   /// <summary>
   /// A shaft cell holding a layered charge, a vanilla pile, or nothing. The leading <c>*:</c> is required:

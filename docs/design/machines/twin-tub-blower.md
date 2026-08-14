@@ -78,7 +78,7 @@ the blast main butts against". That cell is a filler and cannot connect, and it 
 the `-n` connector face. See [Gotchas](#gotchas).
 
 Joint family is the shared flanged joint registered for the iiex domain
-(`IronworkingExpandedModSystem.cs:75`), so the blower couples to plated, cast and rolled segments alike; the
+(`IronIndustryExpandedModSystem.cs:75`), so the blower couples to plated, cast and rolled segments alike; the
 joint rule is per-tier and owned by [pipe network](../mechanics/pipe-network.md).
 
 The blower also carries the shared `MultiblockStructure` behaviour (`:51`) for uniformity. It is not a cell of
@@ -295,7 +295,7 @@ cell.
 | `PortSpeed` | `BlockEntityTwinTubMPBlower.cs:155-167` |
 | `GetBlockInfo` | `BlockEntityTwinTubMPBlower.cs:184-199` |
 | `PipeNetwork.TryProduceGas` (the ceiling clamp) | `ExpandedLib/Networks/PipeNetwork.cs:96`, `:116-125` |
-| burst / joint registration for the iiex domain | `IronworkingExpandedModSystem.cs:76-77` |
+| burst / joint registration for the iiex domain | `IronIndustryExpandedModSystem.cs:76-77` |
 
 ### Where a caller hooks in
 
@@ -372,7 +372,7 @@ cell.
 10. The blower carries `MultiblockStructure` for uniformity and it does nothing. Documented at `:52-55`; do
     not "fix" the missing anchor.
 
-11. `RegisterBurst` is keyed by domain, not by block (`IronworkingExpandedModSystem.cs:76`). The blower is an
+11. `RegisterBurst` is keyed by domain, not by block (`IronIndustryExpandedModSystem.cs:76`). The blower is an
     `iiex` pipe block, so it presents plated-pipe burst as a node of the run too - putting a blower in a
     cast-pipe run lowers that run's weakest-link burst to 2.5.
 

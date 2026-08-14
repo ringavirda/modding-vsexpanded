@@ -1,10 +1,10 @@
 # Steel roll sets
 
 **Status** designed - nothing built. `RollSetItemDefinitions.Sets` holds four sets, all iiex, all
-iron-era (`RollSetItemDefinitions.cs:56-104`); no steel set, no cast `StockForm`, no `smex:rollset*` item and
+iron-era (`RollSetItemDefinitions.cs:56-104`); no steel set, no cast `StockForm`, no `siex:rollset*` item and
 no recipe exists anywhere. The one field the whole steel tier gates on - `MinTorque` - is parsed, stored,
 validated and never read
-**Mod** smex (`SteelmakingExpanded`) - the sets. The mill block stays iiex; the hall stays iiex.
+**Mod** siex (`SteelIndustryExpanded`) - the sets. The mill block and the hall both stay iiex.
 
 **Owns**
 
@@ -108,7 +108,7 @@ correspondence is [wide hall](wide-hall.md)'s.
 | narrow set art | `item-finished-rollers-flat.json`, `item-finished-rollers-grooved.json` | drawn, unwired |
 | item shape actually shipped | `game:item/ingot` | `RollSetItemDefinitions.cs:122` - every roll set renders as an ingot |
 | cast stock item shapes | `item-castbillet.json`, `item-castbloom.json`, `item-castslab.json` | deleted; must be redrawn to the settled sections and authored in the smex asset domain |
-| handbook page | `docs/smex/handbook/` | stops at `04-bessemer.html` |
+| handbook page | `docs/siex/handbook/` | stops at `04-bessemer.html` |
 
 Caution: a steel set is visually indistinguishable from an iron one. Both render `game:item/ingot`
 (`RollSetItemDefinitions.cs:122`), and the fitted set is legible only from block info
@@ -122,8 +122,8 @@ mis-fit failure silent, and mis-fitting is possible in a way it never was at iro
 There is no recipe - for any roll set, in any tier. This is a blocker.
 
 Every shipped set is creative-only (`RollSetItemDefinitions.cs:127`, `.CreativeCommon("*")`), there are no
-recipe assets in the repo, and `SmexRecipeConfig.Defaults()` - the hand-maintained list of every grid and RCC
-recipe smex ships - has no roll-set row (`SmexRecipeConfig.cs:45-70`)
+recipe assets in the repo, and `SiexRecipeConfig.Defaults()` - the hand-maintained list of every grid and RCC
+recipe smex ships - has no roll-set row (`SiexRecipeConfig.cs:45-70`)
 ([recipes & config](../mechanics/recipes-config.md)).
 
 The route the art already implies: the roll is a cast part, `item-sandcast-rollers-blank.json` exists as a
@@ -141,7 +141,7 @@ top.
 Every verb, refusal message, stall rule and wrench recovery is [rolling mill](rolling-mill.md)'s. Fitting a
 steel set is fitting a roll set: right-click the machine holding any collectible carrying a `rollset`
 attribute (`BlockRollingMill.cs:293-320`) - the gate never looks at the item's domain, which is what makes
-a `smex:` set legal at an `iiex:` mill without a line of new code.
+a `siex:` set legal at an `iiex:` mill without a line of new code.
 
 ### What each stock runs on
 
@@ -224,22 +224,22 @@ smex ships its own item provider; it does not touch iiex's. The spec is authored
 owns the data, the machine only reads it, so any mod adds a rolling product with an item def alone"
 (`RollSetSpec.cs:10-11`), and the fit gate accepts any collectible with a `rollset` attribute regardless of
 domain (`BlockRollingMill.cs:293-320`). The steel family is therefore a new `IExItemDefProvider` in smex
-emitting `smex:rollset-*`, mirroring `RollSetItemDefinitions` exactly.
+emitting `siex:rollset-*`, mirroring `RollSetItemDefinitions` exactly.
 
 | Work | Where | Note |
 |---|---|---|
-| `SteelRollSetItemDefinitions` | `src/SteelmakingExpanded/BlockStructures/Forming/` (new folder) | copy the shape of `RollSetItemDefinitions.cs:17-128`: a `Sets` dictionary, `SetTypes` as "the single source the recipes and the handbook both derive from" (`:106-108`), `attributesByType` (`:126`) |
+| `SteelRollSetItemDefinitions` | `src/SteelIndustryExpanded/BlockStructures/Forming/` (new folder) | copy the shape of `RollSetItemDefinitions.cs:17-128`: a `Sets` dictionary, `SetTypes` as "the single source the recipes and the handbook both derive from" (`:106-108`), `attributesByType` (`:126`) |
 | three new `StockForm`s | `IronIndustryExpanded/.../StockForm.cs:57-64` | iiex-side - the forms are iiex types even though the stock is smex content. `StockItemDefinitions` emits one item per form automatically ([rolling mill](rolling-mill.md) § Where a caller hooks in) |
 | wire `MinTorque` | `MillFeed.Decide` (`MillFeed.cs:95-128`) + a new `FeedVerdict` member (`MillFeed.cs:6-29`) | the refusal must be its own verdict, not folded into `WontBite` - the fix is a bigger plant, exactly as `TooCold`'s fix is a furnace |
 | the two extra stands | - | no code: two more `BlockRollingMill` placements ([wide hall](wide-hall.md)) |
 | draw 3.5 and 3.0 | `assets/editable/shapes/` | |
-| recipes + cost rows | smex `Recipes/Grid/` + `SmexRecipeConfig.Defaults()` (`SmexRecipeConfig.cs:45-70`) | the catalogue is hand-maintained; a missing row means the set is not discountable by `/exmod steel` |
+| recipes + cost rows | smex `Recipes/Grid/` + `SiexRecipeConfig.Defaults()` (`SiexRecipeConfig.cs:45-70`) | the catalogue is hand-maintained; a missing row means the set is not discountable by `/exmod steel` |
 
 ### Tests
 
 `test/IronIndustryExpanded.Tests/Blocks/Forming/` holds 123 methods across nine files, `RollSetSpecTests` among
 them ([rolling mill](rolling-mill.md) § Tests). A smex steel family needs its own suite under
-`test/SteelmakingExpanded.Tests/`, and the first test worth writing is the one that does not exist for
+`test/SteelIndustryExpanded.Tests/`, and the first test worth writing is the one that does not exist for
 any tier: that a set below `MinTorque` is refused.
 
 ---

@@ -128,7 +128,7 @@ sub-machine's own back-reference does not do that - see [Gotchas](#gotchas) 1.
 | MP generator shape | `assets/iiex/shapes/engine/mpgenerator.json` | root `Cube2` + `Axle`; `idle` (30 f) · `cycle` (60 f) |
 | Fluid pump shape | `assets/iiex/shapes/engine/fluidpump.json` | root cubes + `Piston`; `idle` (30 f) · `cycle` (60 f) |
 | Fluid pump editable | `assets/editable/shapes/machine-pipe-megablock-mppump.json` | present (untracked in git) |
-| Handbook | `assets/iiex/config/handbook/02-engines.json` ↔ `docs/iiex/handbook/02-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
+| Handbook | `assets/iiex/config/handbook/07-engines.json` ↔ `docs/iiex/handbook/07-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
 
 All running clips use `onAnimationEnd: Repeat`, which they must: a `Hold` cycle would freeze and the
 RCC-suppressed mesh would vanish.
@@ -340,7 +340,7 @@ as "Air".
 
 ### Air blower — smex
 
-`smex:engineairblower`. Same base, same contract; its rate is smex's fact (`SmexConfig.cs:113`). It
+`siex:engineairblower`. Same base, same contract; its rate is smex's fact (`SiexConfig.cs:113`). It
 carries the identical `× 3` factor (`BlockEntityEngineAirBlower.cs:56`), so the discrepancy below is not
 a one-off typo.
 
@@ -446,7 +446,7 @@ Cornish engine overrides them.
 | cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
 | pressure-valve gate step / ceiling | `0.25 atm` / block burst rating | [pipe network](../mechanics/pipe-network.md) | `BlockEntityPressureValve.cs:31`, `:41-42` |
 | `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iiex's | [mp-energy](../mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IiexConfig.cs:451-477` |
-| air-blower output rate | smex's | smex | `SmexConfig.cs:113` |
+| air-blower output rate | smex's | smex | `SiexConfig.cs:113` |
 
 ```
 2.0  ────────────────  4.0  |  5.0
@@ -501,7 +501,7 @@ the RCC salvage.
 
 | Path | Returns |
 |---|---|
-| Mined | 1 × `iiex:enginewatt-<side>` + 80 % of the construction materials (`RccBrokenDropsRatio`, `IiexConfig.cs:116`, registered at `LowPressureExpandedModSystem.cs:28-31`) |
+| Mined | 1 × `iiex:enginewatt-<side>` + 80 % of the construction materials (`RccBrokenDropsRatio`, `IiexConfig.cs:116`, registered at `IronIndustryExpandedModSystem.cs:28-31`) |
 | Fillers | removed by `BlockFilledMegastructure`, never dropped |
 | Broken (burst) engine | still drops normally - the break costs nothing on break; the loss is the repair bill |
 | Sub-machine | ordinary block drop; independent of the engine |
@@ -652,7 +652,7 @@ without a sub-machine demanding power.
 
 16. Several summaries misdescribe this area.
     `IiexConfig.cs:221-224` documents `/exmod steam <level>` - the actual command is
-    `/exmod recipes iiex <level>` (`LowPressureExpandedModSystem.cs:34-46`); the config summaries name
+    `/exmod recipes iiex <level>` (`IronIndustryExpandedModSystem.cs:34-46`); the config summaries name
     `lpex_values.json` while the attribute registers `ex_values.json` with that as a legacy alias
     (`IiexConfig.cs:16-21`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:76`) prices a grid
     recipe that does not exist.

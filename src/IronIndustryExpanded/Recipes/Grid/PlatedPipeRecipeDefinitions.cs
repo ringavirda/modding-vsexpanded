@@ -7,7 +7,7 @@ namespace IronIndustryExpanded.Recipes.Grid;
 /// <summary>
 /// Grid recipes for the plated pipe tier: the four plain straight/bend/T/X segments, hammered together
 /// from a metal plate and nails. Plated is the bootstrap rung, craftable before any machine exists;
-/// the cast tier (<see cref="CastPipeRecipeDefinitions"/>) and hpex's rolled tier author their own
+/// the cast tier (<see cref="CastPipeRecipeDefinitions"/>) and siex's rolled tier author their own
 /// segment recipes for casting and rolling.
 /// </summary>
 public class PlatedPipeRecipeDefinitions : IExRecipeDefProvider {

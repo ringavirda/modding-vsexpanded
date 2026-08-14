@@ -1,0 +1,66 @@
+{
+  "code": "convertertransmission",
+  "class": "siex.BlockConverterTransmission",
+  "entityClass": "siex.BlockEntityConverterTransmission",
+  "entityBehaviors": [
+    {
+      "name": "siex.BEBehaviorMPConverterTransmission"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "siex": [
+      "*-n"
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "siex:converter/transmission",
+      "rotateY": 180
+    },
+    "*-e": {
+      "base": "siex:converter/transmission",
+      "rotateY": 90
+    },
+    "*-s": {
+      "base": "siex:converter/transmission",
+      "rotateY": 0
+    },
+    "*-w": {
+      "base": "siex:converter/transmission",
+      "rotateY": 270
+    }
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

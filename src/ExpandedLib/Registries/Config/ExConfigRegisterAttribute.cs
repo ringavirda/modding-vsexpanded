@@ -41,6 +41,13 @@ public sealed class ExConfigRegisterAttribute : Attribute {
   /// name (first match wins), carrying existing tuning over a rename.</summary>
   public string[]? LegacyFileNames { get; set; }
 
+  /// <summary>Mod ids whose section of <see cref="FileName"/> this config now owns - the mods this
+  /// one was renamed from or absorbed. A section is keyed by mod id, so without these a rename
+  /// silently discards the player's whole tuning for this mod; the values revert to their coded
+  /// defaults with no error. Distinct from <see cref="LegacyFileNames"/>, which carries a legacy
+  /// FILE into a section rather than one section into another.</summary>
+  public string[]? LegacySectionIds { get; set; }
+
   /// <summary>When <c>true</c>, the generated accessor registers this store with
   /// <see cref="ExpandedLib.Registries.Config.ExConfigProfiles"/> at load, exposing its simple-typed
   /// values to the generic <c>/exmod config &lt;mod&gt; &lt;value&gt; [&lt;new&gt;]</c> command. Leave

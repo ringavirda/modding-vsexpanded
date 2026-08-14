@@ -240,16 +240,16 @@ code already equals the path with `/` → `-`.
 
 | Code | Asset path | Breaks |
 |---|---|---|
-| `iiex:pipe` · `hpex:pipe` | `pipe/*` | ok - done 2026-08-03, moved atomically with iiex's |
+| `iiex:pipe` · `siex:pipe` | `pipe/*` | ok - done 2026-08-03, moved atomically with iiex's |
 | `iiex:steamcondenser` | `steamcondenser` | ok - done 2026-08-03, it is not a pipe, so it left the folder |
-| `iiex:boilercornish` · `hpex:boilerlancashire` | `boiler/cornish` · `boiler/lancashire` | N1 |
-| `iiex:enginewatt` `enginefluidpump` `enginempgenerator` · `hpex:enginecornish` | `engine/*` | N1 |
+| `iiex:boilercornish` · `siex:boilerlancashire` | `boiler/cornish` · `boiler/lancashire` | N1 |
+| `iiex:enginewatt` `enginefluidpump` `enginempgenerator` · `siex:enginecornish` | `engine/*` | N1 |
 | `iiex:manualfluidpump` | `manualfluidpump` | N1 ok, N2 |
-| `smex:blastfurnacecore` | `blastfurnace/core` | N1 |
-| `smex:hopperbell` · `hopperreinforced` | `blastfurnace/hopperbell` · `…reinforced` | N1, N2, N5 - same family as iiex's `hopper-tall` |
-| `smex:converterbessemer` `convertercontrol` `convertertransmission` · `converter` | `converter/{bessemer,control,transmission,intake}` | N1 |
-| `smex:cowperstoveheatsink` · `cowperstove` | `cowperstove/{heatsink,intake}` | N1 |
-| `smex:engineairblower` · `smokestack` | `engine/airblower` · `smokestack/intake` | N1 |
+| `siex:blastfurnacecore` | `blastfurnace/core` | N1 |
+| `siex:hopperbell` · `hopperreinforced` | `blastfurnace/hopperbell` · `…reinforced` | N1, N2, N5 - same family as iiex's `hopper-tall` |
+| `siex:converterbessemer` `convertercontrol` `convertertransmission` · `converter` | `converter/{bessemer,control,transmission,intake}` | N1 |
+| `siex:cowperstoveheatsink` · `cowperstove` | `cowperstove/{heatsink,intake}` | N1 |
+| `siex:engineairblower` · `smokestack` | `engine/airblower` · `smokestack/intake` | N1 |
 | `exlib:structurefiller` | `structurefiller` | ok - the only code in the suite that is already fully conformant and has no family |
 
 ### The family is the asset folder, singularised
@@ -279,7 +279,7 @@ code and must not move.
 | `moltencanals-title` / `moltencanals-text` | handbook topic keys (plural) | leave - not a block code |
 | `iiex:moltenbarrel-info-{empty,content,units,units-state}` | block-info UI strings | leave |
 
-The two a `smex:`-prefixed textual guard cannot see:
+The two a `siex:`-prefixed textual guard cannot see:
 
 | Missed form | Where | Why the guard failed |
 |---|---|---|
@@ -292,7 +292,7 @@ nothing in the suite knows what the old world actually contains except `Released
 strings are `smex:`-qualified, so they survived the sweep and the two rewritten sources simply stopped
 agreeing with them silently.
 
-The check that catches it: count `smex:`-qualified occurrences before and after and assert equality
+The check that catches it: count `siex:`-qualified occurrences before and after and assert equality
 (that caught nothing here), then read every `AssetLocation(domain, code)` and every migration table by
 hand. The domain-qualified form is the only one a textual guard can see.
 
@@ -320,8 +320,8 @@ Only `exlib`, `ppex` and `smex` have ever shipped. There has never been a releas
 a 60-code rename wave into roughly 45 paths of real migration work, and it is why the `slag` family
 needed one migration row for seven renames.
 
-Two guards hold the contract, both in `test/HighPressureExpanded.Tests/Migrations/ReleasedCodeCoverageTests.cs`
-(there because it is the only suite that references all five mods, and a migration chain crosses mods by
+Two guards hold the contract, both in `test/SteelIndustryExpanded.Tests/Migrations/ReleasedCodeCoverageTests.cs`
+(there because it is the only suite that references all three mods, and a migration chain crosses mods by
 design):
 
 * every released code still reaches a live block;
@@ -379,7 +379,7 @@ design):
    `base code.Replace('-','/') == assetName`, plus an allow-list of one for the canal. Cheap, and it would
    convert the inventory above from a work list into a red build that shrinks as families land.
 
-2. Pin "the orientation group is last." It already holds across all five mods (see above), so the test
+2. Pin "the orientation group is last." It already holds across all three mods (see above), so the test
    is green on the day it is written and stops the released-ppex mistake from recurring.
 
 3. The two design-renames scheduled beside this convention are both done. `moltenmetaltap` became

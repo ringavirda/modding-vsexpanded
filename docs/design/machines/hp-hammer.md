@@ -3,7 +3,7 @@
 **Status** designed - nothing built, nothing drawn. There is no block, no block entity, no die item, no
 recipe, no shape, no lang key and no config section. Its parent, the LP [steam hammer](steam-hammer.md), is
 also unbuilt, so nothing here can be started until that page's Open list is cleared.
-**Mod** hpex (`HighPressureExpanded`)
+**Mod** siex (`SteelIndustryExpanded`)
 
 ## Owns
 
@@ -117,10 +117,10 @@ Nothing exists for this machine, and its parent's art is untracked.
 | Asset | State |
 |---|---|
 | editable shape | none. No HP variant is drawn |
-| runtime shape | none. `assets/hpex/shapes/` holds only the Lancashire and Cornish assemblies |
+| runtime shape | none. `assets/siex/shapes/` holds only the Lancashire and Cornish assemblies |
 | die item art | none |
-| lang keys | none in `assets/hpex/lang/en.json` |
-| handbook page | none. `docs/hpex/handbook/` contains exactly one file, `00-highpressure.html` |
+| lang keys | none in `assets/siex/lang/en.json` |
+| handbook page | none. `docs/siex/handbook/` contains exactly one file, `00-highpressure.html` |
 | the LP hammer's three shapes | drawn, untracked in git, wired to nothing - see [steam hammer § Assets](steam-hammer.md) |
 
 A distinct block needs a distinct silhouette ([heading machine:36](heading-machine.md)). The cheapest
@@ -146,7 +146,7 @@ problems, all live:
 
 | Problem | Evidence |
 |---|---|
-| Hadfield does not exist in code. Three source mentions, all comments; no metal descriptor, no item, no alloy recipe | `HpexConfig.cs:107`, `HighPressureExpandedModSystem.cs:40`, `MachineRecipeDefinitions.cs:59` - the last one says the gate is still waiting on hadfield |
+| Hadfield does not exist in code. Three source mentions, all comments; no metal descriptor, no item, no alloy recipe | `SiexConfig.cs:107`, `SteelIndustryExpandedModSystem.cs:40`, `MachineRecipeDefinitions.cs:59` - the last one says the gate is still waiting on hadfield |
 | The two live hpex machines do not honour it. The HP builds take the plain plated iiex segment, not a hadfield one, and the source comment says tier-gating "waits on … the hadfield material gate" | `MachineRecipeDefinitions.cs:59-61` |
 | A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../internal/plans/STATE.md) |
 
@@ -248,24 +248,24 @@ owned elsewhere it must be sized against.
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `LancashireBoilerSteamPerSecond` | 48 L/s | `HpexConfig.cs:56` | the entire HP supply. Everything on the line shares it |
-| `LancashireBoilerMaxOutputPressure` | 12.0 atm | `HpexConfig.cs:60` | the choke - the highest pressure the line ever reaches |
-| `LancashireBoilerCapacity` | 1200 L | `HpexConfig.cs:46` | vessel |
-| `CornishEngineEngagePressure{Low,Normal,High}` | 5.0 / 6.0 / 7.0 atm | `HpexConfig.cs:70-72` | the only live HP band |
-| `CornishEngineBreakPressure{Low,Normal,High}` | 8.0 / 8.0 / 8.0 atm | `HpexConfig.cs:76-78` | the live HP consumer breaks at 8 |
-| `CornishEngineSteam{Low,Normal,High}` | 8 / 16 / 32 L/s | `HpexConfig.cs:84-86` | the precedent for a per-setting draw, and it eats up to ⅔ of the boiler alone |
-| `RolledPipeBurstPressure` | 12 atm | `HpexConfig.cs:115` | exactly equal to the boiler choke - zero headroom |
-| `RccBrokenDropsRatio` (hpex) | 0.8 | `HpexConfig.cs:124` | salvage; the HP hammer will inherit it |
-| `RecipeLevel` (hpex) | `"normal"` | `HpexConfig.cs:131` | the cost tier its grid recipe would be priced at |
+| `LancashireBoilerSteamPerSecond` | 48 L/s | `SiexConfig.cs:56` | the entire HP supply. Everything on the line shares it |
+| `LancashireBoilerMaxOutputPressure` | 12.0 atm | `SiexConfig.cs:60` | the choke - the highest pressure the line ever reaches |
+| `LancashireBoilerCapacity` | 1200 L | `SiexConfig.cs:46` | vessel |
+| `CornishEngineEngagePressure{Low,Normal,High}` | 5.0 / 6.0 / 7.0 atm | `SiexConfig.cs:70-72` | the only live HP band |
+| `CornishEngineBreakPressure{Low,Normal,High}` | 8.0 / 8.0 / 8.0 atm | `SiexConfig.cs:76-78` | the live HP consumer breaks at 8 |
+| `CornishEngineSteam{Low,Normal,High}` | 8 / 16 / 32 L/s | `SiexConfig.cs:84-86` | the precedent for a per-setting draw, and it eats up to ⅔ of the boiler alone |
+| `RolledPipeBurstPressure` | 12 atm | `SiexConfig.cs:115` | exactly equal to the boiler choke - zero headroom |
+| `RccBrokenDropsRatio` (hpex) | 0.8 | `SiexConfig.cs:124` | salvage; the HP hammer will inherit it |
+| `RecipeLevel` (hpex) | `"normal"` | `SiexConfig.cs:131` | the cost tier its grid recipe would be priced at |
 | Watt engine draw (LP, for scale) | 30 L/s fixed | [engine-watt](engine-watt.md) | the LP comparison the LP hammer was told to size against |
 
 ### The documented HP band and the shipped one
 
 | Source | Claim |
 |---|---|
-| `src/HighPressureExpanded/README.md:15` | the Cornish engine is 6-8 atm |
-| `docs/hpex/handbook/00-highpressure.html:19` | running at 6-8 atm |
-| the shipped config | engages at 5/6/7, breaks at 8 (`HpexConfig.cs:70-78`) |
+| `src/SteelIndustryExpanded/README.md:15` | the Cornish engine is 6-8 atm |
+| `docs/siex/handbook/05-highpressure.html:19` | running at 6-8 atm |
+| the shipped config | engages at 5/6/7, breaks at 8 (`SiexConfig.cs:70-78`) |
 
 The HP hammer is the natural occupant of the 8-12 atm band that nothing lives in today - a hammer has no
 break pressure; more steam is simply a harder blow. That must be a decision, not an accident: if the hammer
@@ -294,23 +294,23 @@ Inherit [steam hammer § Drops](steam-hammer.md) unchanged: the principal return
 die-set and anything piled on the anvil; a filler routes to the principal; the docked anvil carries its
 installed die out with it. Nothing may be destroyed on break.
 
-The one hpex-specific number is the salvage ratio: `RccBrokenDropsRatio` 0.8 (`HpexConfig.cs:124`) - hpex
+The one hpex-specific number is the salvage ratio: `RccBrokenDropsRatio` 0.8 (`SiexConfig.cs:124`) - hpex
 carries its own because exlib's salvage lookup keys on the broken block's domain.
 
 ---
 
 ## Code — where it will hook in
 
-Nothing exists; `grep -ri "hammer" src/HighPressureExpanded/` returns nothing. The build order is strictly
+Nothing exists; `grep -ri "hammer" src/SteelIndustryExpanded/` returns nothing. The build order is strictly
 after its parent's.
 
 | To build | Copy from | Note |
 |---|---|---|
 | the whole block | the LP [steam hammer](steam-hammer.md), once it exists | the LP class should be the base and this the leaf - the same relationship `BlockBoiler`/Lancashire and `BlockEngine`/Cornish already have |
-| the leaf pattern | `src/HighPressureExpanded/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over iiex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from iiex |
-| pressure-banded behaviour | `CornishEngine{Engage,Break}Pressure*` and its three-setting wrench throttle | `HpexConfig.cs:70-78` |
-| config | a new `HpHammer*` block in `HpexConfig` | `HpexConfig.cs:23` - `[ExConfigRegister("ex_values.json", "hpex", Manageable = true)]` |
-| costs | `HpexRecipeConfig` | `src/HighPressureExpanded/HpexRecipeConfig.cs` |
+| the leaf pattern | `src/SteelIndustryExpanded/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over iiex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from iiex |
+| pressure-banded behaviour | `CornishEngine{Engage,Break}Pressure*` and its three-setting wrench throttle | `SiexConfig.cs:70-78` |
+| config | a new `HpHammer*` block in `SiexConfig` | `SiexConfig.cs:23` - `[ExConfigRegister("ex_values.json", "hpex", Manageable = true)]` |
+| costs | `SiexRecipeConfig` | `src/SteelIndustryExpanded/SiexRecipeConfig.cs` |
 | the die spec extension | [heading machine](heading-machine.md)'s `ItemDie` | needs that page's sign-off - see [Operation](#operation) |
 
 The dependency this machine would need is declared but not real. `modinfo.json:14` declares a `smex`
@@ -339,14 +339,14 @@ ingredient codes, which is why the hadfield gate is still a comment.
   no signal - the machine simply never powers. Decide the joint family deliberately.
 * The pressure valve cannot protect it (B6). hpex's "mandatory" valve is iiex-domain and flanged, so
   welded hpex pipe refuses to couple it, and its gate clamps to its own 5 atm burst, below the Cornish
-  engine's 6/7 engage pressures (`BlockPipe.cs:239`, `BlockEntityPressureValve.cs:41`, `HpexConfig.cs:70-78`).
+  engine's 6/7 engage pressures (`BlockPipe.cs:239`, `BlockEntityPressureValve.cs:41`, `SiexConfig.cs:70-78`).
   A hammer with no break pressure does not need the valve, which is a point in favour of the 8-12 band, but
   do not claim the valve as protection.
-* `RolledPipeBurstPressure` (12) equals the boiler choke (12) - `HpexConfig.cs:115` vs `:60`. A hammer
+* `RolledPipeBurstPressure` (12) equals the boiler choke (12) - `SiexConfig.cs:115` vs `:60`. A hammer
   drawing hard can only lower line pressure, so it does not worsen this, but any headroom argument that
   assumes a margin is wrong.
 * The rolled pipe tier is uncraftable (B5) - four live blocktypes, four shapes, zero recipes
-  ([STATE.md:52](../../internal/plans/STATE.md); `src/HighPressureExpanded/Recipes/` contains exactly one file). So an
+  ([STATE.md:52](../../internal/plans/STATE.md); `src/SteelIndustryExpanded/Recipes/` contains exactly one file). So an
   HP hammer plumbed in "HP pipe" would be plumbed in a tier the player cannot build.
 * hadfield is a comment, not a material - see [Construction](#construction).
 * The LP hammer's drawn mesh already overhangs its declared footprint (57 voxels tall against 48 for

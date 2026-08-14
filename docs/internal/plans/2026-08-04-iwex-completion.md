@@ -1,5 +1,20 @@
 # iwex — the completion plan
 
+> **⛔ Reading note, added 2026-08-14.** This plan predates the `iwex`+`lpex` merge. Where it says
+> **`iwex`** as a *domain or assembly* it now means **`iiex`** (block codes, lang keys, asset paths,
+> namespaces). Where it says `iwex` as a *scope* - "finish iwex", "an iwex-only player" - the phrase no
+> longer refers to anything: ruling **M2** retired per-mod closure in favour of per-**loop**, and the
+> early loop is the whole of `iiex`. Paths and type names below were repointed at their live homes on
+> 2026-08-14; `iwex:` / `lpex:` **code literals** were deliberately left, being historical migration
+> sources.
+>
+> ★★ **Triaged 2026-08-14: U1 is BUILT — this plan is a record, not a queue.** Verified against `src/`:
+> `BlockEntitySandCastingLongCell`, `LongCellLayout`, the `MoldSize.LongCell` refusal, the four
+> long-cell patterns and the cast-part item set all exist, and U1.6's acceptance steps are ticked. The
+> Global Constraints and Commands blocks at the top are still the current house rules and are why this
+> file is kept. ⛔ The gate line says *"all three suites"* — it is **three** now (`exlib`, `iiex`,
+> `siex`); see [NEXT.md](NEXT.md).
+
 This file holds the U1 task detail, the Global Constraints and the Commands block. Sequencing and task
 detail for U2 onward live in [`2026-08-04-iwex-u2-u10-expansion.md`](2026-08-04-iwex-u2-u10-expansion.md).
 
@@ -23,23 +38,23 @@ Every unit's requirements implicitly include this section.
 - Never commit. The user owns the git history. Leave work in the tree; record the reasoning in
   `WORKLOG.md` at the repo root (newest first). Where a plan template says "commit", this plan says
   "append a WORKLOG entry".
-- Get the test signal from `bash scripts/run-tests.sh 1.21`, not `latest`. The 1.22 lane reports
+- Get the test signal from `./scripts/exmod.sh test 1.21`, not `latest`. The 1.22 lane reports
   ~20 failures caused by an upstream Vintage Story 1.22.6 change that made `IPlayer` unmockable. They are
   not ours and no change in this plan can fix them. 1.20 and 1.21 must be green.
 - Baseline to hold: 2506 tests, zero skips, on 1.20 and 1.21.
 - Check `assets/editable/shapes/` before asking anyone to draw anything. Most of the art is already
   drawn and merely unexported. `assets/editable/` is source-only and never shipped; every unit that
-  touches art exports *into* `assets/iwex/`.
+  touches art exports *into* `assets/iiex/`.
 - Density rule: 1 voxel³ = 2.5 units. Every new mass is derived from a drawn shape, never invented.
 - A `side` variant renders a single letter (`n`/`e`/`s`/`w`), as does an `orientation` variant. The
   only word-spelled facings left are groups sourced from vanilla's `abstract/horizontalorientation`
   worldproperty (the slag stairs). Reach a facing through the generated table —
-  `IwexBlocks.<Block>.WithSide(BlockFacing.NORTH)` — never by typing it.
+  `IiexBlocks.<Block>.WithSide(BlockFacing.NORTH)` — never by typing it.
 - A machine lives with the content it *feeds*, not with the content it is made of. iwex must never
   reach "upward" into lpex/smex for an ingredient.
 - Never force `StructureComplete` in a test. Build the real footprint with `StructureRig` and let
   the machine complete itself.
-- New numbers go through config (`IwexConfig` / `ExlibConfig`), never literals.
+- New numbers go through config (`IiexConfig` / `ExlibConfig`), never literals.
 - `AllowedX` / candidate-set properties must be cached fields, never recomputed per call.
 - Tests are grouped with `#region` blocks.
 - `BlockEntityFurnaceCore` is shared by the cold blast furnace, the hot blast furnace (smex), the
@@ -53,14 +68,14 @@ Every unit's requirements implicitly include this section.
 
 ```bash
 # One suite, one test class — the inner loop.
-dotnet test test/IronworkingExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~LongCellTests"
 
-# The gate. Must print PASS on all five suites.
-bash scripts/run-tests.sh 1.21
+# The gate. Must print PASS on all three suites.
+./scripts/exmod.sh test 1.21
 
 # Before declaring a unit done, also:
-bash scripts/run-tests.sh 1.20
+./scripts/exmod.sh test 1.20
 ```
 
 ---
@@ -79,17 +94,17 @@ with the largest downstream unlock.
 
 | File | Responsibility |
 |---|---|
-| `src/IronworkingExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` | **modify** — reject a `longcell` pattern |
-| `src/IronworkingExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs` | **create** — the 1×2 megablock + its code-first def |
-| `src/IronworkingExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs` | **create** — the station's block entity |
-| `src/IronworkingExpanded/BlockStructures/Casting/LongCellLayout.cs` | **create** — footprint + filler offsets, kept out of the block so it is testable without a world |
-| `src/IronworkingExpanded/Items/CastStockItemDefinitions.cs` | **create** — `castbillet`, `castbloom`, `castslab` |
-| `src/IronworkingExpanded/BlockStructures/Casting/PatternItemDefinitions.cs` | **modify** — the four long-cell patterns |
-| `src/IronworkingExpanded/Recipes/Grid/CastingRecipeDefinitions.cs` | **modify** — the long cell's build recipe |
-| `assets/iwex/shapes/casting/…` | **create** — seven exported long-cell shapes |
-| `assets/iwex/lang/{en,ru,uk}.json` | **modify** — names + descriptions for every new block and item |
-| `test/IronworkingExpanded.Tests/Blocks/Casting/LongCellTests.cs` | **create** |
-| `test/IronworkingExpanded.Tests/Items/CastStockMassTests.cs` | **create** |
+| `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` | **modify** — reject a `longcell` pattern |
+| `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs` | **create** — the 1×2 megablock + its code-first def |
+| `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs` | **create** — the station's block entity |
+| `src/IronIndustryExpanded/BlockStructures/Casting/LongCellLayout.cs` | **create** — footprint + filler offsets, kept out of the block so it is testable without a world |
+| `src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs` | **create** — `castbillet`, `castbloom`, `castslab` |
+| `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs` | **modify** — the four long-cell patterns |
+| `src/IronIndustryExpanded/Recipes/Grid/CastingRecipeDefinitions.cs` | **modify** — the long cell's build recipe |
+| `assets/iiex/shapes/casting/…` | **create** — seven exported long-cell shapes |
+| `assets/iiex/lang/{en,ru,uk}.json` | **modify** — names + descriptions for every new block and item |
+| `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs` | **create** |
+| `test/IronIndustryExpanded.Tests/Items/CastStockMassTests.cs` | **create** |
 
 ---
 
@@ -101,11 +116,11 @@ shape for. This task is deliberately first: it is a one-line guard, and it is th
 field mean anything before the block that consumes it exists.
 
 **Files:**
-- Modify: `src/IronworkingExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` (the `Imprint` method, ~`:238-264`)
-- Modify: `assets/iwex/lang/{en,ru,uk}.json`
-- Test: `test/IronworkingExpanded.Tests/Blocks/Casting/CastingCellTests.cs` — does not exist yet; the
+- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` (the `Imprint` method, ~`:238-264`)
+- Modify: `assets/iiex/lang/{en,ru,uk}.json`
+- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/CastingCellTests.cs` — does not exist yet; the
   folder holds only `SandCastingBedTests.cs`. Create it, and create the `CastingCellScenes` fixture it
-  needs in `test/IronworkingExpanded.Tests/Fixtures/` alongside `ColdBlastFurnaceScenes.cs`, which is the
+  needs in `test/IronIndustryExpanded.Tests/Fixtures/` alongside `ColdBlastFurnaceScenes.cs`, which is the
   model to copy (real blocks, real ticks, nothing forced)
 
 **Interfaces:**
@@ -115,7 +130,7 @@ field mean anything before the block that consumes it exists.
 
 - [x] **Step 1: Write the failing test**
 
-Create `test/IronworkingExpanded.Tests/Blocks/Casting/CastingCellTests.cs` with a `#region Pattern size`
+Create `test/IronIndustryExpanded.Tests/Blocks/Casting/CastingCellTests.cs` with a `#region Pattern size`
 (this repo groups test methods with `#region`):
 
 ```csharp
@@ -143,7 +158,7 @@ substituted `IServerPlayer`. Do not assert on the message text — the standing 
 - [x] **Step 2: Run the test and watch it fail**
 
 ```bash
-dotnet test test/IronworkingExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo \
   --filter "FullyQualifiedName~A_longcell_pattern_is_refused_by_the_one_by_one_cell"
 ```
@@ -168,7 +183,7 @@ In `BlockEntitySandCastingCell.Imprint`, immediately after the existing `spec ==
 
 - [x] **Step 4: Add the lang keys**
 
-In `assets/iwex/lang/en.json` (then translate for `ru`/`uk` — see the RU/UK conventions: single `-`, never
+In `assets/iiex/lang/en.json` (then translate for `ru`/`uk` — see the RU/UK conventions: single `-`, never
 an em-dash, EN is the source of truth):
 
 ```json
@@ -182,10 +197,10 @@ Same command as Step 2. Expected: PASS.
 - [x] **Step 6: Run the full 1.21 lane**
 
 ```bash
-bash scripts/run-tests.sh 1.21
+./scripts/exmod.sh test 1.21
 ```
 
-Expected: PASS on all five suites. If `LangCoverage` fails, a locale is missing the new key.
+Expected: PASS on all three suites. If `LangCoverage` fails, a locale is missing the new key.
 
 - [x] **Step 7: Append a WORKLOG entry** (do not commit)
 
@@ -200,8 +215,8 @@ the items exist means touching every recipe that consumes them, so it is settled
 defined.
 
 **Files:**
-- Create: `src/IronworkingExpanded/Items/CastStockItemDefinitions.cs`
-- Test: `test/IronworkingExpanded.Tests/Items/CastStockMassTests.cs`
+- Create: `src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs`
+- Test: `test/IronIndustryExpanded.Tests/Items/CastStockMassTests.cs`
 - Modify: `docs/design/machines/long-cell.md` (record the ruling)
 
 **Interfaces:**
@@ -248,7 +263,7 @@ Expected: `error CS0103: The name 'CastStockItemDefinitions' does not exist`.
 
 - [x] **Step 3: Create the item definitions**
 
-`src/IronworkingExpanded/Items/CastStockItemDefinitions.cs`, following the shape of the existing
+`src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs`, following the shape of the existing
 `CastPartItemDefinitions.cs` in the same folder (read it first — it is the pattern for the mass constant
 sitting next to the def):
 
@@ -309,7 +324,7 @@ change a number here without redrawing.
 - [x] **Step 4: Run the test and watch it pass**
 
 ```bash
-dotnet test test/IronworkingExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~CastStockMassTests"
 ```
 
@@ -319,7 +334,7 @@ Names + descriptions for all three forms in `en`/`ru`/`uk`. Then create the item
 
 ```bash
 EXLIB_WRITE_GOLDENS=iwex/itemtypes/caststock \
-  dotnet test test/IronworkingExpanded.Tests/IronworkingExpanded.Tests.csproj \
+  dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~GoldenTests"
 ```
 
@@ -340,8 +355,8 @@ Four patterns — `castslab`, `castblooms`, `castbillets`, `castframe` — each 
 the cavity boxes its filling shape was measured from.
 
 **Files:**
-- Modify: `src/IronworkingExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
-- Test: `test/IronworkingExpanded.Tests/Blocks/Casting/MoldSpecTests.cs`
+- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
+- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/MoldSpecTests.cs`
 
 **Interfaces:**
 - Consumes: `CastStockItemDefinitions.{Billet,Bloom,Slab}Units` (U1.2); the `Mold(...)` and `Box(...)`
@@ -436,7 +451,7 @@ what keeps the two stations one implementation.
 
 - [x] **Step 5: Add the four diagram textures**
 
-`assets/iwex/textures/item/diagram/diag-item-{castslab,castblooms,castbillets,castframe}.png`, 32×32 each.
+`assets/iiex/textures/item/diagram/diag-item-{castslab,castblooms,castbillets,castframe}.png`, 32×32 each.
 These are derived automatically from `PatternTypes`, so a missing one is a missing texture at runtime, not
 a compile error. This is the one genuinely-new art in U1.
 
@@ -449,11 +464,11 @@ a compile error. This is the one genuinely-new art in U1.
 ## U1.4 — The long cell block
 
 **Files:**
-- Create: `src/IronworkingExpanded/BlockStructures/Casting/LongCellLayout.cs`
-- Create: `src/IronworkingExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs`
-- Create: `src/IronworkingExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs`
-- Create: `assets/iwex/shapes/casting/{sandcastinglongcell,longcell-filling-base,longcell-filling-half,longcell-filling-billets,longcell-filling-blooms,longcell-filling-castslab,longcell-filling-castframe}.json`
-- Test: `test/IronworkingExpanded.Tests/Blocks/Casting/LongCellTests.cs`
+- Create: `src/IronIndustryExpanded/BlockStructures/Casting/LongCellLayout.cs`
+- Create: `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs`
+- Create: `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs`
+- Create: `assets/iiex/shapes/casting/{sandcastinglongcell,longcell-filling-base,longcell-filling-half,longcell-filling-billets,longcell-filling-blooms,longcell-filling-castslab,longcell-filling-castframe}.json`
+- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs`
 
 **Interfaces:**
 - Consumes: `BlockFilledMegastructure`, `IFillerHost`, `IFillerInteractionTarget` (exlib);
@@ -464,7 +479,7 @@ a compile error. This is the one genuinely-new art in U1.
 - [x] **Step 1: Export the seven shapes**
 
 From `assets/editable/shapes/molten-megablock-sandlongcell.json` and the five
-`molten-sandlongcellfilling-*.json` sources, plus a `-half` legacy mesh. Use `scripts/convert-shape.py` if
+`molten-sandlongcellfilling-*.json` sources, plus a `-half` legacy mesh. Use `scripts/tools/convert-shape.py` if
 it applies; otherwise export from the editor.
 
 They carry the `andesite` texture key (the rammed-sand key the casting cell's fillings use), so the
@@ -617,7 +632,7 @@ public void The_long_cell_pulls_from_the_canal_on_its_launder_face(string side)
 
 In `CastingRecipeDefinitions`: the casting cell's family at roughly double the size (its own recipe is the
 model — six bricks + fire clay + hammer + chisel). Output **`iwex:casting-sandlongcell-fire-n`** — a
-concrete, registered code. `IwexRecipeOutputTests` fails if it names nothing.
+concrete, registered code. `IiexRecipeOutputTests` fails if it names nothing.
 
 - [x] **Step 11: Lang keys, block golden (scoped, read it), full 1.21 lane, then 1.20**
 
@@ -631,10 +646,10 @@ The eleven drawn `molten-sandcellfilling-*` shapes are the redesigned 1×1 cast-
 `Molds` entry + one output item + one exported filling shape.
 
 **Files:**
-- Modify: `src/IronworkingExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
-- Modify: `src/IronworkingExpanded/Items/CastPartItemDefinitions.cs`
-- Create: `assets/iwex/shapes/casting/cell-filling-*.json` (export from `assets/editable/shapes/`)
-- Test: `test/IronworkingExpanded.Tests/Blocks/Casting/CastPartCatalogueTests.cs`
+- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
+- Modify: `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs`
+- Create: `assets/iiex/shapes/casting/cell-filling-*.json` (export from `assets/editable/shapes/`)
+- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/CastPartCatalogueTests.cs`
 
 **Parts:** `castshell`, `castcylinder`, `castwheelpart`, `castrods`, `castshafts`, `gearblanksmall`,
 `gearblanklarge`, `castingotmold`, `castplatemold`. `castframe` is U1.3's (it is a long-cell pattern);
@@ -702,10 +717,10 @@ too.
 - [x] **Step 1: Full three-lane run**
 
 ```bash
-bash scripts/run-tests.sh all
+./scripts/exmod.sh test all
 ```
 
-Expected: 1.20 and 1.21 PASS on all five suites; 1.22 shows only the known ~20 `IPlayer`
+Expected: 1.20 and 1.21 PASS on all three suites; 1.22 shows only the known ~20 `IPlayer`
 `TypeLoadException` failures. Any *other* 1.22 failure is yours.
 
 - [x] **Step 2: Play the gate in a real world**
@@ -720,7 +735,7 @@ Load a survival world with only exlib + iwex. Then:
 5. Try to ram a `castslab` pattern into the 1×1 cell. **Expected: refused with a message.**
 
 Steps 2–5 cannot be automated and are the only thing that proves the renderer, the interaction routing
-and the filler reroute actually work. `run-tests.sh` green is necessary, not sufficient.
+and the filler reroute actually work. A green gate is necessary, not sufficient.
 
 - [x] **Step 3: Update the docs**
 

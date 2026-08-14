@@ -5,7 +5,7 @@ attribute key returns zero hits (the only match for `die` is the word "die" in a
 `ExpandedLib/Blocks/Healing/BlockEntityHealModSystem.cs:18`). No spec record, no item def, no runtime shape,
 no lang key in any of the three languages, no recipe, no cost-catalogue row, no test. One die shape is drawn
 and untracked. Every one of the five settled dies is also downstream of at least one unbuilt machine.
-**Mod** four mods are settled to ship dies - iiex (nail, bolt), iiex (rivet, stamping), hpex (ball) -
+**Mod** both content mods are settled to ship dies - iiex (nail, bolt, rivet, stamping), siex (ball) -
 against one spec type whose home is undecided.
 
 ## Owns
@@ -211,7 +211,7 @@ first job - but it means:
 ## Construction
 
 No die of any kind has a recipe, an RCC path, or a cost-catalogue row. Neither
-`IiexRecipeConfig.DefaultCatalogue` nor `IiexRecipeConfig` nor `SmexRecipeConfig.Defaults()` carries a die
+`IiexRecipeConfig.DefaultCatalogue` nor `IiexRecipeConfig` nor `SiexRecipeConfig.Defaults()` carries a die
 entry ([recipes & config](../mechanics/recipes-config.md)).
 
 What is settled about how a die is made, all cited:
@@ -255,7 +255,7 @@ What that costs, and it is worse here than for the roll sets because there are f
 | Consequence | Detail |
 |---|---|
 | four `DieTypes` lists, no union | the "single source recipes and the handbook derive from" idiom (`RollSetItemDefinitions.cs:106-108`) fragments four ways |
-| four goldens, four lang sets | `iiex:die-nail`, `iiex:die-bolt`, `iiex:die-rivet`, `iiex:die-stamping`, `hpex:die-ball` |
+| four goldens, four lang sets | `iiex:die-nail`, `iiex:die-bolt`, `iiex:die-rivet`, `iiex:die-stamping`, `siex:die-ball` |
 | the spec type's home is undecided | `ItemDie` in iiex means iiex and hpex take an iiex reference. The chain allows it (`exlib ← iiex ← iiex ← smex ← hpex`), and `MoldSpec` set the precedent by staying in iiex (`MoldSpec.cs:6`) - but no other tooling spec has three downstream consumers. [heading machine § Open](../machines/heading-machine.md) records this as open; it is the same open question as [roll sets § Open 6](roll-sets.md) and [patterns § Open 9](patterns.md), and answering it once for all three is cheaper than three times |
 | the double-not-float rule must be re-derived four times | `RollSetItemDefinitions.cs:22-24` is a comment in iiex |
 | a die will be visually indistinguishable from another die unless the art lands with the item | the roll sets shipped without art and every one of them renders as an ingot; do not repeat it |

@@ -9,7 +9,7 @@ namespace ExpandedLib.Registries.Config;
 /// the generated accessor then registers its store with <see cref="ExConfigProfiles"/> at load.
 /// </summary>
 public interface IExConfigAccess {
-  /// <summary>The owning mod id, e.g. <c>"smex"</c>, as typed in <c>/exmod config smex ...</c>.</summary>
+  /// <summary>The owning mod id, e.g. <c>"siex"</c>, as typed in <c>/exmod config siex ...</c>.</summary>
   string ModId { get; }
 
   /// <summary>The config file this store reads/writes, for display.</summary>

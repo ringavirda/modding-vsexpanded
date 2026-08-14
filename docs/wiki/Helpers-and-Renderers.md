@@ -142,7 +142,7 @@ public static class ExContentGate
 Clearing a block's creative tabs and stacks also removes it from the handbook, so
 `HideFromCreativeAndHandbook` does both. Call it after content has resolved (from
 `StartServerSide`/`StartClientSide`, not `Start`), and pair it with a config toggle for
-"disable X" features (e.g. `smex` tool-mold gating behind `/exmod molds`).
+"disable X" features (e.g. `siex` tool-mold gating behind `/exmod molds`).
 
 ## `SurfaceRenderer` - flat fluid surfaces
 

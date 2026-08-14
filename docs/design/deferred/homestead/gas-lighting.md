@@ -81,7 +81,7 @@ The mechanic is shipped four times over, and a gas lamp would reuse it rather th
 | molten canal | `src/IronIndustryExpanded/BlockNetworkMolten/Blocks/BlockMoltenCanal.cs:253-256` | per-cell glow |
 | molten barrel | `.../Blocks/BlockMoltenBarrel.cs:95-102` | scaled to stored temperature |
 | cast mold | `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:103-108` | its own comment names the idiom: `GetLightHsv` + `MarkBlockDirty`-on-change, "as the molten barrel and the canals" |
-| cowper heat sink | `src/SteelmakingExpanded/BlockStructures/CowperStove/Blocks/BlockHeatsink.cs:38-53` | smex's copy |
+| cowper heat sink | `src/SteelIndustryExpanded/BlockStructures/CowperStove/Blocks/BlockHeatsink.cs:38-53` | smex's copy |
 | the shared scale | `src/ExpandedLib/Metals/MoltenMetal.cs:155-162` - block light 0–24, floored by `MetalGlowMinTemp` = 500 °C (`src/ExpandedLib/ExlibConfig.cs:70`) | exlib owns the scale; a lamp would be a constant on it instead of a temperature function |
 
 ### What it is up against, in vanilla

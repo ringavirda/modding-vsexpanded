@@ -62,8 +62,8 @@ Nothing. Not a stub, not a name.
 |---|---|
 | `grep -rniE "tiltingcrucible\|coppermatte\|blistercopper\|zincretort" src/ assets/` | 0 hits (excluding `bin/`, where the matches are the substring "matters") |
 | `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing: `MetalCatalogueLoader.cs:107` (a comment about worldproperty codes), `MetalToolEmitter.cs:223`, `:343` (vanilla shape paths), `IiexConfig.cs:104` (a comment naming copper's 1084 °C melting point) |
-| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`assets/smex/lang/en.json:171`, `assets/iiex/lang/en.json:133`) |
-| metal defs on disk | 4 files, all ferrous: `assets/iiex/config/metals/{castiron,pigiron,slag}.json`, `assets/smex/config/metals/bessemersteel.json` |
+| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`assets/siex/lang/en.json:171`, `assets/iiex/lang/en.json:133`) |
+| metal defs on disk | 4 files, all ferrous: `assets/iiex/config/metals/{castiron,pigiron,slag}.json`, `assets/siex/config/metals/bessemersteel.json` |
 | editable or runtime shape | none |
 
 Two design docs name it as a dependency: [alloying](../../processes/alloying.md):290 lists "tilting

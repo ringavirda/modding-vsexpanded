@@ -181,7 +181,7 @@ The suite pays the player in materials and never in gear. Bessemer steel is chea
 
 It closes a loop already in the tree. Crucible steel is made by melting blister steel in a sealed pot, and blister steel is a shipped vanilla item (`game:ingot-blistersteel`, refined on the anvil into `game:ingot-steel` by `survival/recipes/smithing/steel.json`), so vanilla's steel chain becomes crucible feedstock with no new upstream process - cementation stays vanilla.
 
-It belongs to iiex, not smex: the process is coke-fired, natural draught, no steam and no MP, a century older than Bessemer. It is the "cool gear" payoff an iiex-only player needs without requiring steam. Its gate is not tier but batch size: one pot at a time.
+It belongs to iiex, not siex: the process is coke-fired, natural draught, no steam and no MP, a century older than Bessemer. It is the "cool gear" payoff an iiex-only player needs without requiring steam. Its gate is not tier but batch size: one pot at a time.
 
 **Why not the cupola.** The distinction is physical:
 
@@ -224,7 +224,7 @@ Built in banks. Same multiply-don't-enlarge pattern as the cupola, the nail benc
 
 Pot count is fixed at four; stack height is not. The chimney leaves the layout entirely: the layout declares the minimum viable furnace including the stack base, and the core walks up from that base counting the courses the player actually built. `NaturalDraughtFor(courses)` reads that count. This is the suite's core trade - buy operating capability with build complexity - and it dissolves the calibration problem, because no single constant has to hit 1482 °C for the puddling furnace and 1600 °C here.
 
-A course is `. b . / b a b / . b .` - four brick-family blocks around one air cell. That is already what `smex:smokestack` draws (`BlockSmokeStackIntake.cs:50-53`) and what this furnace's own draft uses, so the validity check is one predicate for every machine.
+A course is `. b . / b a b / . b .` - four brick-family blocks around one air cell. That is already what `siex:smokestack` draws (`BlockSmokeStackIntake.cs:50-53`) and what this furnace's own draft uses, so the validity check is one predicate for every machine.
 
 | Rule | Why |
 |---|---|
@@ -260,7 +260,7 @@ Reusable art and parts that already exist:
 |---|---|---|
 | the refractory anchor cube | `BlockFurnaceCoreBase.Core` - north face carries an orientation marker, south face a two-letter type label | `BlockFurnaceCoreBase.cs:34-68` |
 | a damper on a lever | `BlockPuddlingChimneyCap` / `BlockEntityPuddlingChimneyCap` - `IsOpen`, `Toggle`, held `idle`/`open` poses | `BlockEntityPuddlingChimneyCap.cs:19-33` |
-| stacked brick courses | `smex:smokestack`'s brick-family alternation `@(claybricks-good-fire\|refractorybricks-good-.*\|brickcourse-…)` | `BlockSmokeStackIntake.cs:50-53` |
+| stacked brick courses | `siex:smokestack`'s brick-family alternation `@(claybricks-good-fire\|refractorybricks-good-.*\|brickcourse-…)` | `BlockSmokeStackIntake.cs:50-53` |
 | interactive floor cells | the hearth/filler idiom - which cell you click picks which hole | `BlockPuddlingHearth.cs:25-30`, `BlockHeatingHearth.cs:43-54` |
 | the pot itself | vanilla `crucible-{color}-fired` shape, retextured to refractory | `survival/blocktypes/clay/fired/crucible.json` |
 

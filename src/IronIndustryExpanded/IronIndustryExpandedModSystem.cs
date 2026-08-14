@@ -82,7 +82,7 @@ public class IronIndustryExpandedModSystem : ModSystem {
     }
 
     // Both pipe tiers' ratings, read live from this mod's config, keyed by the block's `tier` variant
-    // in BlockPipe; hpex registers the rolled tier's own. Cast is square and plated like the plated
+    // in BlockPipe; siex registers the rolled tier's own. Cast is square and plated like the plated
     // tier, so the two runs interconnect - which is the point of keeping both: plated is the
     // bootstrap rung a player plumbs the works with before steam exists.
     BlockPipe.RegisterBurst(
@@ -112,7 +112,7 @@ public class IronIndustryExpandedModSystem : ModSystem {
       api.RegisterBlockEntityClass(legacyKey, type);
 
     // iiex owns the networks its pipes and canals ride, and registers them before any dependent mod
-    // (hpex, smex) needs them. The unified "pipe" network (gas + liquid pools) carries a chimney-vent
+    // (siex, siex) needs them. The unified "pipe" network (gas + liquid pools) carries a chimney-vent
     // strategy that draws gas through a chimney-ventable fitting's top connector, at a rate read live
     // from this mod's config.
     var netManager = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
@@ -146,15 +146,17 @@ public class IronIndustryExpandedModSystem : ModSystem {
   /// codes and never touches it, no golden covers it, and an unresolved one drops the block entity -
   /// a boiler keeps its block and loses its water. So it needs its own table, and this is it.
   /// <para>
-  /// Bounded by what shipped. Only <c>ppex</c> 0.6.8 ever reached a player world, and the fifteen
-  /// <c>entityClass</c> values in that zip are the whole ground truth; <c>iwex</c>/<c>lpex</c> never
-  /// shipped, so their two entries cover development worlds only. Two of ppex's fifteen belong to
-  /// hpex (<c>BlockEntityBoilerLancashire</c>, <c>BlockEntityEngineCornish</c>) and are registered
-  /// there, and <c>ppex.BlockEntityMpFluidPump</c> has no live type until that pump is ported back
-  /// from the <c>0.9-support</c> branch.
+  /// Bounded by what shipped, read out of the release zips rather than out of source: the
+  /// <c>entityClass</c> values in <c>ppex_0.6.8.zip</c> (fifteen) and <c>smex_0.9.8.zip</c> (nineteen)
+  /// are the ground truth. <c>iwex</c>/<c>lpex</c> never shipped, so their two entries cover
+  /// development worlds only. Rows are omitted where the block itself has no migration - the eight
+  /// converter/cowper/tiered-part families in <c>ReleasedCodeDebt</c> - since an alias cannot save
+  /// state for a block that does not arrive. Two of ppex's belong to siex and are registered there;
+  /// <c>ppex.BlockEntityMpFluidPump</c> has no live type until that pump is ported back from the
+  /// <c>0.9-support</c> branch.
   /// </para>
   /// </summary>
-  private static readonly (string Key, System.Type Type)[] LegacyEntityClasses =
+  public static readonly (string Key, System.Type Type)[] LegacyEntityClasses =
   [
     // The pipe bases moved iwex -> exlib, so neither domain's key resolves by scan any more.
     ("ppex.BlockEntityPipe", typeof(BlockEntityPipe)),
@@ -173,6 +175,46 @@ public class IronIndustryExpandedModSystem : ModSystem {
     ("ppex.BlockEntityEngineFluidPump", typeof(BlockEntityEngineFluidPump)),
     ("ppex.BlockEntityEngineMpGenerator", typeof(BlockEntityEngineMPGenerator)),
     ("ppex.BlockEntityManualFluidPump", typeof(BlockEntityManualFluidPump)),
+    // The ironmaking and molten content that shipped in siex 0.9.8 and relocated here. These are the
+    // ones with real player worlds behind them: SmexToIiexMigration moves the block codes and copies
+    // the old block entity's tree, but that tree is read from a LIVE block entity - so without the
+    // class key the game never constructs it, `oldState` arrives null, and every canal, barrel and
+    // frozen pool migrates empty.
+    ("smex.BlockEntityMoltenCanal", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanal)),
+    (
+      "smex.BlockEntityMoltenCanalStart",
+      typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalStart)
+    ),
+    ("smex.BlockEntityMoltenCanalTap", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalTap)),
+    (
+      "smex.BlockEntityMoltenCanalMoldPedestal",
+      typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenCanalMoldPedestal)
+    ),
+    ("smex.BlockEntityMoltenBarrel", typeof(BlockNetworkMolten.BlockEntities.BlockEntityMoltenBarrel)),
+    ("smex.BlockEntitySlag", typeof(BlockStructures.Products.BlockEntities.BlockEntitySlag)),
+    // Renamed as well as relocated: the two frozen-melt blocks merged into one variant-grouped
+    // hearthmetal, the MP blower became the twin-tub, and siex's one BlockEntityBlastFurnace class
+    // backed the charge DOOR (blastfurnace/door.json), not the core - the core shipped with none.
+    (
+      "smex.BlockEntitySolidifiedIron",
+      typeof(BlockStructures.Products.BlockEntities.BlockEntityHearthMetal)
+    ),
+    (
+      "smex.BlockEntityMpBlower",
+      typeof(BlockStructures.Furnaces.BlockEntities.BlockEntityTwinTubMPBlower)
+    ),
+    (
+      "smex.BlockEntityBlastFurnace",
+      typeof(BlockStructures.Furnaces.BlockEntities.BlockEntityChargeDoor)
+    ),
+    (
+      "smex.BlockEntityBlastFurnaceTap",
+      typeof(BlockStructures.Furnaces.BlockEntities.BlockEntityFurnaceTap)
+    ),
+    (
+      "smex.BlockEntityTuyere",
+      typeof(BlockStructures.Furnaces.BlockEntities.BlockEntityTuyere)
+    ),
   ];
 
   #endregion

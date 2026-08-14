@@ -163,10 +163,10 @@ public class BlockEntityBlastFurnace : BlockEntityMultiblockMachine
         => SetStructureAngle(ExOrientation.AngleFromSide(Block.Variant["side"]));
 
     protected override string GetIncompleteMessage(int missingCount)
-        => Lang.Get("smex:blastfurnace-incomplete", missingCount);
+        => Lang.Get("siex:blastfurnace-incomplete", missingCount);
 
     protected override string GetCompleteMessage()
-        => Lang.Get("smex:blastfurnace-complete");
+        => Lang.Get("siex:blastfurnace-complete");
 
     protected override void OnProductionTick(float dt) { /* smelt while complete */ }
 }

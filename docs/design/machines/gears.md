@@ -153,7 +153,7 @@ The Bessemer gate takes a smithable iron/steel large gear so the converter vesse
 | `4gears` output | 4 | `:57` | hard-coded |
 | `largegear` output | 1 | `:84` | hard-coded |
 | allowed ingot variants | `iron`, `steel` | `:23` | hard-coded in `IngotMetal` |
-| `BessemerRequiredGears` | 1 | `SmexConfig.cs:100` | the only config-tunable gear count in the suite |
+| `BessemerRequiredGears` | 1 | `SiexConfig.cs:100` | the only config-tunable gear count in the suite |
 | `materialUnits` | absent | — | every other cast/formed item declares it (`CastPartItemDefinitions.cs:40`, `:53`; `BevelGearItemDefinitions.cs:22`; `ItemPig.cs:56`) - a gear cannot be scrap-valued |
 
 Grid gear counts are in the census above; none of them is a named constant - every one is a literal argument at the `Gear(...)` call site.
@@ -183,7 +183,7 @@ Items, so there is no break behaviour of their own.
 | `IngotMetal` | `:17-24` | the shared ingredient object |
 | `TwoGearRows` | `:27-34` | the 5-row plan; `:55` concatenates it with itself for the 4-gear plan |
 | `ExIngredients.Gear(code, qty)` | `src/ExpandedLib/Definitions/ExIngredients.cs:57-58` | the recipe-side helper; no metal capture |
-| Bessemer gate | `src/SteelmakingExpanded/.../BlockEntityConverterControl.Peripherals.cs:218-219` | `IsSpawnGear` + `HasSpawnMaterials` |
+| Bessemer gate | `src/SteelIndustryExpanded/.../BlockEntityConverterControl.Peripherals.cs:218-219` | `IsSpawnGear` + `HasSpawnMaterials` |
 
 ---
 
@@ -198,7 +198,7 @@ Items, so there is no break behaviour of their own.
 - The creative tab is still named "Pipes & Power". `assets/iiex/lang/en.json:2` maps `game:tabname-iiex` to "Pipes & Power" (ru: "Трубы и приводы", uk likewise), and `GearDefinitions.cs:25` puts both gears in that tab. The mod's display name is Low Pressure Expanded (`modinfo.json`).
 - The shipped route and the designed route disagree. Gears ship as an anvil smithing product; the designed route is rod → gear blank → the boring machine cuts the teeth, with a meshing gear cut from a cast blank. Both routes cannot be the primary one. The smithing route is the only one that works today - the [boring machine](boring-machine.md) is not built and `PatternItemDefinitions.Molds` has no gear-blank entry.
 - Steel gears have no distinct function. `metal` ∈ {iron, steel} on both items, but every consumer takes `iiex:gear-*` uncaptured, so a steel gear costs a steel ingot and buys nothing. The only place metal is mentioned is the Bessemer gate, which accepts either (`BlockEntityConverterControl.cs:1056-1057`).
-- The large gear has exactly one consumer in the repo, and it is a hotbar count in a block entity rather than a recipe (`BlockEntityConverterControl.cs:1063-1065`), defaulting to 1 (`SmexConfig.cs:100`) - a 10 × 10 voxel smithing plan for a single-use item.
+- The large gear has exactly one consumer in the repo, and it is a hotbar count in a block entity rather than a recipe (`BlockEntityConverterControl.cs:1063-1065`), defaulting to 1 (`SiexConfig.cs:100`) - a 10 × 10 voxel smithing plan for a single-use item.
 - A gear count is never a named constant. All ten grid quantities are literals at the call site, so rebalancing means editing ten files; the cost catalogue scales them at load, but only the grid ones ([recipes & config](../mechanics/recipes-config.md) owns that pipeline).
 
 ---

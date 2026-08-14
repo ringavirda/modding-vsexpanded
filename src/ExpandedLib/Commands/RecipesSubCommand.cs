@@ -10,7 +10,7 @@ namespace ExpandedLib.Commands;
 /// Adds <c>/exmod recipes [&lt;mod&gt; [&lt;level&gt;]]</c> over the recipe-cost levels a mod registers
 /// through <see cref="ExRecipeProfiles"/>. With no argument it lists the registered mods and their
 /// current level; with a mod code it reports that mod's level; with both it sets the level
-/// (e.g. <c>/exmod recipes smex cheap</c>) and persists it. The per-recipe numbers live in each mod's
+/// (e.g. <c>/exmod recipes siex cheap</c>) and persists it. The per-recipe numbers live in each mod's
 /// <c>*_recipes.json</c> and a change applies on the next world reload. Server-side, since recipe costs
 /// are host-authoritative; the <c>/exmod</c> root requires <c>controlserver</c>.
 /// </summary>

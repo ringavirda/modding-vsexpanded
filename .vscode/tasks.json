@@ -12,22 +12,12 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-smex",
+      "label": "build-siex",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelmakingExpanded/SteelmakingExpanded.csproj"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-hpex",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj"
+        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -43,10 +33,8 @@
         "-Dest",
         "${workspaceFolder}/bin/Mods",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
-        "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod",
-        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
+        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod"
       ],
       "problemMatcher": []
     },
@@ -216,7 +204,7 @@
     // ----------------------------------------------------------------------------------------
     // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
     // Each version is provisioned into .game/<slug> by scripts/exmod.ps1 (no machine-wide
-    // install needed); the build and launch read it from there. build-smex pulls exlib + iiex via
+    // install needed); the build and launch read it from there. build-siex pulls exlib + iiex via
     // project references, so a single build covers the chain.
     // ----------------------------------------------------------------------------------------
     {
@@ -232,24 +220,12 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-smex (1.21)",
+      "label": "build-siex (1.21)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelmakingExpanded/SteelmakingExpanded.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net8.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-hpex (1.21)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj",
+        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net8.0"
       ],
@@ -268,24 +244,12 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "build-smex (1.20)",
+      "label": "build-siex (1.20)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelmakingExpanded/SteelmakingExpanded.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net7.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-hpex (1.20)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/src/HighPressureExpanded/HighPressureExpanded.csproj",
+        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net7.0"
       ],
@@ -304,9 +268,7 @@
         "${workspaceFolder}/bin/Mods-1.21",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
         "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net8.0/Mods/mod",
-        "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net8.0/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net8.0/Mods/mod",
-        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
+        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/net8.0/Mods/mod"
       ],
       "problemMatcher": []
     },
@@ -323,9 +285,7 @@
         "${workspaceFolder}/bin/Mods-1.20",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
         "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net7.0/Mods/mod",
-        "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net7.0/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net7.0/Mods/mod",
-        "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
+        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/net7.0/Mods/mod"
       ],
       "problemMatcher": []
     },

@@ -123,7 +123,7 @@ The rule is that roasted ore must still smelt in a vanilla bloomery, via the sam
 lives in smex, not iiex:
 
 ```
-assets/smex/patches/vanilla/crushed.json:3-10
+assets/siex/patches/vanilla/crushed.json:3-10
   addmerge /combustiblePropsByType/*-iron
     meltingPoint 1482 · meltingDuration 30 · smeltedRatio 20 · smeltedStack game:ironbloom
 ```
@@ -240,7 +240,7 @@ the roasted rung is one key beside it ([metal recovery](../mechanics/metal-recov
    roast can run on the cheap coals a shaft never sees.
 
 5. The smex bloomery patch also raises crushed ore's stack size to 128
-   (`assets/smex/patches/vanilla/crushed.json:14-20`). A roasted-ore item has to pick a stack size against
+   (`assets/siex/patches/vanilla/crushed.json:14-20`). A roasted-ore item has to pick a stack size against
    that, and whichever side it picks changes how many hand-loads an ore hopper takes.
 
 ---

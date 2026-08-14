@@ -1,0 +1,43 @@
+{
+  "name": "Smoke Stack Intake",
+  "ingredientPattern": "BHB,_P_,BNB",
+  "width": 3,
+  "height": 3,
+  "output": {
+    "type": "block",
+    "code": "siex:smokestack-intake-{tier}-n"
+  },
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:refractorybrick-fired-*",
+      "name": "tier",
+      "allowedVariants": [
+        "tier1",
+        "tier2",
+        "tier3"
+      ],
+      "quantity": 4
+    },
+    "N": {
+      "type": "item",
+      "code": "game:metalnailsandstrips-*",
+      "name": "metal",
+      "allowedVariants": [
+        "iron",
+        "steel"
+      ],
+      "quantity": 2
+    },
+    "H": {
+      "type": "item",
+      "code": "game:hammer-*",
+      "isTool": true
+    },
+    "P": {
+      "type": "block",
+      "code": "iiex:pipe-cast-straight*",
+      "quantity": 1
+    }
+  }
+}

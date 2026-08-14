@@ -140,7 +140,7 @@ gaps where the settled train needs six, and includes the dropped 0.5.
 
 ### The stage shapes are generated, and the generator's inputs no longer exist
 
-`scripts/generate-rolled-stock.py` derives all ten `stock-*.json` files from two authored bases
+`scripts/tools/generate-rolled-stock.py` derives all ten `stock-*.json` files from two authored bases
 (`item-shingledbloom`, `item-shingledslab`), both gone from `assets/editable/shapes/`. The generated
 outputs still ship and `RolledStockStagesTests` still measures them off disk, so the tests pass while the
 pipeline cannot be re-run. The forming build list calls for deleting the generator and its ten outputs and

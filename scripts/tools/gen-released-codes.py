@@ -65,6 +65,25 @@ def collect(mod):
     return out
 
 
+def collect_entity_classes(mod):
+    """Every `entityClass` a released blocktype declares, with the blocktype it came from.
+
+    A class string is stored per block entity in the SAVE, not in any definition, so no code-level
+    migration touches it. An unregistered one means the game never constructs the block entity, the
+    migration's `oldState` arrives null, and the block migrates with its contents silently gone.
+    """
+    out = {}
+    pat = os.path.join(REL, mod, "assets", mod, "blocktypes", "**", "*.json")
+    for f in sorted(glob.glob(pat, recursive=True)):
+        d = json.load(open(f, encoding="utf-8-sig"))
+        cls = d.get("entityClass")
+        if not cls or "." not in cls:
+            continue  # vanilla's own (e.g. "ToolMold") carry no domain prefix
+        rel = f.replace(os.sep, "/").split("blocktypes/")[-1].replace(".json", "")
+        out.setdefault(cls, set()).add(rel)
+    return out
+
+
 def shipped_version(mod):
     """The version of `mod` on disk, taken from its zip name so the label cannot go stale.
 
@@ -140,8 +159,8 @@ def main():
     a("/// still reach a live block after migration; a code absent from it never shipped and needs no")
     a("/// migrator.")
     a("/// <para>")
-    a("/// Three mods have shipped: <c>exlib</c>, <c>ppex</c> (later iiex, with its HP half in hpex and its")
-    a("/// pipe base in iiex) and <c>smex</c> (whose ironmaking half became iiex); no iiex, iiex or hpex")
+    a("/// Three mods have shipped: <c>exlib</c>, <c>ppex</c> (now iiex, with its HP half extracted to")
+    a("/// hpex) and <c>smex</c> (whose ironmaking half became iiex); no iiex, siex or hpex")
     a("/// build has been released. <c>exlib</c> 0.7.0 ships no blocktype JSON, but its structure filler is")
     a("/// in released worlds because the shipped ppex and smex layouts name it in <c>blockNumbers</c>.")
     a("/// </para>")
@@ -156,6 +175,10 @@ def main():
     a("  /// expanded to. Property-sourced variant groups are sampled rather than enumerated (the game")
     a("  /// holds their states), so <see cref=\"Codes\"/> is representative for those, exact otherwise.</summary>")
     a("  public sealed record Shipped(string Domain, string AssetPath, string BaseCode, string[] Codes);")
+    a("")
+    a("  /// <summary>A block-entity class string a released blocktype declared, and the blocktypes that")
+    a("  /// declared it.</summary>")
+    a("  public sealed record ShippedEntityClass(string Domain, string Class, string[] AssetPaths);")
     a("")
 
     previous = parse_existing(OUT)
@@ -184,6 +207,17 @@ def main():
     a('  public static readonly IReadOnlyList<Shipped> Exlib =')
     a("  [")
     a('    new("exlib", "structurefiller", "exlib:structurefiller", ["exlib:structurefiller"]),')
+    a("  ];")
+    a("")
+    a("  /// <summary>Every block-entity class string a released blocktype declared, with the blocktypes")
+    a("  /// that declared it. A class string lives in the SAVE and no code migration touches it, so an")
+    a("  /// unregistered one drops the block entity: the block arrives, its contents do not.</summary>")
+    a("  public static readonly IReadOnlyList<ShippedEntityClass> EntityClasses =")
+    a("  [")
+    for mod in ("ppex", "smex"):
+        for cls, rels in sorted(collect_entity_classes(mod).items()):
+            rendered = ", ".join(f'"{r}"' for r in sorted(rels))
+            a(f'    new("{mod}", "{cls}", [{rendered}]),')
     a("  ];")
     a("")
     a("  /// <summary>Every shipped blocktype across all three released mods.</summary>")

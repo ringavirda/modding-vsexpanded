@@ -50,7 +50,7 @@ slag tap needs no second station and no second gesture (`BlockEntitySandCastingB
 A 3 × 1 × 4 filled megablock: one principal plus eleven invisible fillers. The footprint is generated from
 the slot table rather than hand-typed, so the carved surface and the footprint cannot disagree about where
 a slot is (`BlockSandCastingBed.cs:134-143`, `SandBedLayout.cs:177`). It is not in
-`docs/design/layouts.md` - it is a filler footprint, not an ASCII multiblock layout.
+`docs/internal/workbench/layouts.md` - it is a filler footprint, not an ASCII multiblock layout.
 
 | | West (dx −1) | Centre (dx 0) | East (dx +1) |
 |---|---|---|---|

@@ -1,5 +1,9 @@
 # A1 — Network membership as a behaviour: Implementation Plan
 
+**Status** DONE 2026-08-12, as stage A1 of the framework-composition arc
+([2026-08-10-framework-composition-staging.md](2026-08-10-framework-composition-staging.md)). Kept for the
+reasoning behind the behaviour split, not as work to do.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move network membership off the `BlockNetworkNode` base class into a `BlockEntityBehavior`, so the graph walk resolves a node by behaviour and one block entity can belong to several networks at once.

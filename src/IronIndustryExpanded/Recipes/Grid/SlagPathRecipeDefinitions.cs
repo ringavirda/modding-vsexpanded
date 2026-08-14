@@ -40,7 +40,7 @@ public class SlagPathRecipeDefinitions : IExRecipeDefProvider {
         ),
       // Cast slag bricks laid up on vanilla's stonebrick patterns verbatim: block from eight bricks
       // around one mortar, slab from six, stairs from eight in an L, each yielding two. The mortar
-      // can itself be slag, through smex's `mortarfromslag`.
+      // can itself be slag, through siex's `mortarfromslag`.
       ExRecipeDef
         .Create(domain, "grid", "slagbricks")
         .Grid(r =>

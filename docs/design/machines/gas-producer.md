@@ -3,7 +3,7 @@
 **Status** designed - nothing exists. No block, no block entity, no shape, no recipe, no config key, no
 lang key, no medium. `grep -ri "producer gas\|gasproducer"` over `src/`, `assets/` and `lang/` returns
 zero hits in code - every hit is prose in `docs/design/`
-**Mod** smex (`SteelmakingExpanded`)
+**Mod** siex (`SteelIndustryExpanded`)
 
 **Owns**
 
@@ -144,9 +144,9 @@ None. No shape, no texture, no animation, no handbook page, no lang key.
 
 | Asset | Path | State |
 |---|---|---|
-| producer shape | — | nothing in `assets/editable/shapes/` or `assets/smex/shapes/` matches `gas`/`producer` |
-| producer-gas medium | `assets/smex/config/liquids.json` | does not exist; `assets/smex/config/` holds only `handbook/` and `metals/` |
-| handbook page | `docs/smex/handbook/` | missing - stops at `04-bessemer.html` |
+| producer shape | — | nothing in `assets/editable/shapes/` or `assets/siex/shapes/` matches `gas`/`producer` |
+| producer-gas medium | `assets/siex/config/liquids.json` | does not exist; `assets/siex/config/` holds only `handbook/` and `metals/` |
+| handbook page | `docs/siex/handbook/` | missing - stops at `04-bessemer.html` |
 | build reference | `assets/editable/refs/` | missing - only `rivetsnails/` and `rolling/` exist |
 
 The one free asset is refractory brick. The producer is brickwork exactly as the cowper is
@@ -159,8 +159,8 @@ nothing else.
 
 There is no recipe. That is a blocker, and it is the same blocker the whole planned half of smex has.
 
-`SmexRecipeConfig.Defaults()` lists every grid and RCC recipe smex ships - converter ×3, cowper ×2, engine
-air blower, smokestack, two hoppers, and the converter RCC (`SmexRecipeConfig.cs:45-70`). There is no
+`SiexRecipeConfig.Defaults()` lists every grid and RCC recipe smex ships - converter ×3, cowper ×2, engine
+air blower, smokestack, two hoppers, and the converter RCC (`SiexRecipeConfig.cs:45-70`). There is no
 producer entry, and no open-hearth entry. A producer needs one row added there plus a
 `Recipes/Grid/GasProducerRecipeDefinitions.cs` in the shipped layout
 ([recipes & config](../mechanics/recipes-config.md)).
@@ -230,8 +230,8 @@ scaled against, so a retune of the anchor moves the proposal with it.
 
 | Key *(proposed)* | Value | Anchor (file:line) | What it does |
 |---|---|---|---|
-| `ProducerGasPerSecond` | 24 L/s | `SmexConfig.cs:139` - `CowperIntakeVolume` = 24 L/s per intake; `BlockEntityFurnaceCore.cs:208` - `ExhaustVolumePerTick` = 24 | gas injected into the offtake run per second. One producer = one cowper intake = one furnace gas outlet. Deliberately the tier's unit rate |
-| `ProducerAirPerSecond` | 8 L/s | `SmexConfig.cs:148` - `BessemerBlastPerSecond` = 8.0 | the limited blast. It must sit far below the furnace's `TuyereDrawFor(mix)` demand - being air-starved is the process, not a fault |
+| `ProducerGasPerSecond` | 24 L/s | `SiexConfig.cs:139` - `CowperIntakeVolume` = 24 L/s per intake; `BlockEntityFurnaceCore.cs:208` - `ExhaustVolumePerTick` = 24 | gas injected into the offtake run per second. One producer = one cowper intake = one furnace gas outlet. Deliberately the tier's unit rate |
+| `ProducerAirPerSecond` | 8 L/s | `SiexConfig.cs:148` - `BessemerBlastPerSecond` = 8.0 | the limited blast. It must sit far below the furnace's `TuyereDrawFor(mix)` demand - being air-starved is the process, not a fault |
 | `ProducerSteamPerSecond` | 8 L/s | `IiexConfig.cs:152` - `CornishBoilerSteamPerSecond` = 32; `:172` - `WattEngineSteamRate` = 30 | one quarter of a Cornish boiler's output, so a works can run a producer and an engine off one boiler |
 | `ProducerGasTempFactor` | 0.8 | `BlockEntityFurnaceCore.cs:211` - `ExhaustTempFactor` = 0.8 | offtake temperature = bed temperature × this. Producer gas is fed hot on purpose |
 | `ProducerMaxOutputPressure` | 1.0 atm | `ExlibConfig.cs:32` - `LitresPerPipe` = 30; `IiexConfig.cs:163` - plated burst 2.5 | a fuel main is not a blast main. Keeping the choke at 1 atm means the gas main never bursts and never needs the cast tier |
@@ -267,7 +267,7 @@ Run capacity (`nodes × LitresPerPipe`), gas pressure as a volume ratio, the 1-a
 grace and the vent strategy: [pipe network](../mechanics/pipe-network.md) § 3, § 5, § 6. `T_in`, `T_loss`,
 `fuelFactor`, `airFactor` and every `Bf*` key: [heat balance](../mechanics/heat-balance.md). Steam pressure,
 the boiler's choke and `SteamExpansionFactor`: [Cornish boiler](boiler-cornish.md). The cowper's
-`CowperMaxTemperature` 1240 °C and its four soak/cool rates: `SmexConfig.cs:119-140`, owned by
+`CowperMaxTemperature` 1240 °C and its four soak/cool rates: `SiexConfig.cs:119-140`, owned by
 [cowper](cowper.md).
 
 ---
@@ -279,7 +279,7 @@ Undefined - nothing is built. The two shipped patterns to choose between:
 | Pattern | Example | Fits a producer? |
 |---|---|---|
 | plain multiblock: break the anchor, the brick cells are ordinary blocks the player recovers by hand | cowper stove, smokestack | yes - a producer is brickwork with two ports |
-| RCC with a salvage ratio | Bessemer vessel, `RccBrokenDropsRatio` = 0.8 (`SmexConfig.cs:250`) | only if the producer becomes a right-click construction |
+| RCC with a salvage ratio | Bessemer vessel, `RccBrokenDropsRatio` = 0.8 (`SiexConfig.cs:250`) | only if the producer becomes a right-click construction |
 
 The ash is a drop question, not a decoration question. R2 requires the recovery to be declared
 (`../conventions.md:30-37`); a producer that eats coke and returns nothing is the same silent-loss shape R2
@@ -291,20 +291,20 @@ forbids.
 
 | Work | Where | Note |
 |---|---|---|
-| `BlockGasProducer` + `BlockEntityGasProducer` | `src/SteelmakingExpanded/BlockStructures/GasProducer/` | the shipped folder shape: `Blocks/` + `BlockEntities/` beside `CowperStove/`, `Converter/`, `SmokeStack/` |
+| `BlockGasProducer` + `BlockEntityGasProducer` | `src/SteelIndustryExpanded/BlockStructures/GasProducer/` | the shipped folder shape: `Blocks/` + `BlockEntities/` beside `CowperStove/`, `Converter/`, `SmokeStack/` |
 | subclass the fired core | `BlockEntityFurnaceCore` (`BlockEntityFurnaceCore.cs`) | the closest existing subclass is `BlockEntityHeatingFurnace` - it already overrides `RequiresBlast => false`, draws neither a tuyere nor an outlet glyph (so `CellRole.Tuyere` / `GasOutlet` answer empty), and reads a plain-fuel firebox rather than a burden. A producer is that, plus two gas ports - which for it means marking the two roles rather than un-emptying two arrays |
 | the charge read | override `ReadChargeMix` | the reheat furnace's version returns `new BurdenMix(0f, 0f, count)` - "a firebox is all coke and nothing else" (`BlockEntityHeatingFurnace.cs:63-87`). A producer bed is the same |
 | emit the gas | `IPipeNode.TryProduce(volume, temp, medium)` | exactly the furnace's outlet call (`BlockEntityFurnaceCore.cs:445-449`) with a different code |
 | draw air + steam | `be.ConnectedNetwork<PipeNetwork>(face)` then `TryConsumeGas` | `MachinePorts.cs:15`; the live example is the cowper's exhaust intake (`BlockEntityCowperStove.cs:107-115`) and the engine's steam draw (`BlockEntityEngine.cs:286`) |
 | the port block | implement `INetworkConnector` on the anchor | `BlockCowperStoveIntake.cs:134-142` is 9 lines: `NetworkType => "pipe"` plus a rotated `HasConnectorAt` |
-| register the medium | `assets/smex/config/liquids.json` | file does not exist; the loader picks it up with no code (`ExLiquids.cs:74-97`) |
-| config keys | `SmexConfig.cs` - a new `#region Gas producer` | beside `#region Cowper stove` (`:119-140`) |
-| recipe + cost entry | `Recipes/Grid/GasProducerRecipeDefinitions.cs` + a row in `SmexRecipeConfig.Defaults()` (`:45-70`) | both are required; the catalogue is hand-maintained |
+| register the medium | `assets/siex/config/liquids.json` | file does not exist; the loader picks it up with no code (`ExLiquids.cs:74-97`) |
+| config keys | `SiexConfig.cs` - a new `#region Gas producer` | beside `#region Cowper stove` (`:119-140`) |
+| recipe + cost entry | `Recipes/Grid/GasProducerRecipeDefinitions.cs` + a row in `SiexRecipeConfig.Defaults()` (`:45-70`) | both are required; the catalogue is hand-maintained |
 | do not register a new network type | — | `"gas"` is a dead network type - the unified pipe network absorbed gas and water, and only `"pipe"` / `"molten"` / `"mpenergy"` are ever registered ([pipe network](../mechanics/pipe-network.md) Gotcha 5) |
 
 ### Tests it will need
 
-The shipped per-mod suites live in `test/SteelmakingExpanded.Tests/`. The two that matter here have no
+The shipped per-mod suites live in `test/SteelIndustryExpanded.Tests/`. The two that matter here have no
 equivalent anywhere yet: a rate assertion (`../STATE.md:133-134` records that *"no test asserts any pump's
 rate as a number"*, which is how smex's blower ships at 43.2 L/s against a documented 14.4) and a
 medium-isolation test that a producer main joined to an air main is caught rather than silently blended.

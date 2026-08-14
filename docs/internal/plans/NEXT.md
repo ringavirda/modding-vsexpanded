@@ -1,8 +1,10 @@
 # NEXT — the single "what next" entry point
 
-**Status** live — updated 2026-08-14: the mod split is **ruled** (M1–M6), a framework-hardening plan is
-live and part-landed, and the tree builds again. Earlier that day: torque state, crop count and the
-shear's decision. Every unit's docs-sync task updates this file (see the maintenance rule at the bottom).
+**Status** live — updated 2026-08-14: the mod split is **BUILT**. Both merges are done, the mod set is
+`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 3,990 green. The framework-hardening plan
+is live and part-landed. The plan triage is **done**, so the docs point at things that exist and the
+open queues are stated rather than inferred. Every unit's docs-sync task updates this file (see the
+maintenance rule at the bottom).
 
 Ownership, layout and the rules that govern this directory are in
 [../README.md](../README.md). In one line: `docs/design/**` owns decisions, this directory owns
@@ -12,7 +14,7 @@ sequencing, `../worklog/` owns what landed.
 
 ## ⛔ Read first — the tree was not building, and the release identity was wrong
 
-Both fixed 2026-08-13, but they say something about the working rhythm. `src/SteelmakingExpanded/
+Both fixed 2026-08-13, but they say something about the working rhythm. `src/SteelIndustryExpanded/
 SteelmakingExpanded.csproj` and its test csproj had been reverted to a pre-split revision in the working
 tree: 36 CS0246s, and — worse — no `<AssetDomain>`, so a release cut from that tree would have shipped
 smex with **zero assets** while silently dropping out of the shipped-asset guard. Separately, all three
@@ -33,16 +35,46 @@ Each tier also renders its own name at last (Plated / Cast / Rolled Piping).
 
 ### ★ Where to pick up
 
-**M.5 — the `siex` merge** (`{smex + hpex}` → Steel Industry Expanded). **M.4 landed 2026-08-14**, so the
-pattern is now walked once and written down; M.5 is the same shape against a smaller surface.
+Both merges and the plan triage are done. The open options are listed under
+*[What is actually next](#-what-is-actually-next)* below — nothing among them blocks anything else.
 
-★★ **M.4 is DONE.** `iwex` + `lpex` are one mod, `iiex` 0.7.0 — one assembly (`iiex.dll`), one domain, one
-ModSystem, one config section, one test suite, `assets/iiex/`, `docs/iiex/`, handbook 00–09. The gate is
-**12 targets, 4,000 tests**, green on 1.20/1.21/1.22. Detail in
-[the worklog](../worklog/2026-08.md#2026-08-14---m4-iwex--lpex-are-one-mod-iiex); the execution ruling that
-drove it is [2026-08-14-m4-iiex-merge-execution.md](2026-08-14-m4-iiex-merge-execution.md).
+★★ **M.5 is DONE, and with it M1.** `smex` + `hpex` are one mod, **`siex` 0.9.9** — one assembly
+(`siex.dll`), one domain, one ModSystem, one config section, one test suite, `assets/siex/`,
+`docs/siex/`, handbook 00–05. `src/HighPressureExpanded`, `assets/hpex`, `docs/hpex` and
+`test/HighPressureExpanded.Tests` are gone. The gate is now **9 targets, 3,990 tests**, green on
+1.20/1.21/1.22. The mod set is `exlib`, `iiex`, `siex` and closed. Detail in
+[the worklog](../worklog/2026-08.md); the record, including what its plan got wrong, is
+[2026-08-14-m5-siex-merge-execution.md](2026-08-14-m5-siex-merge-execution.md).
 
-⛔⛔ **Read these four before attempting M.5 — each is a way to finish green and be wrong.**
+⛔⛔ **What M.5 proves about the merge traps: the guards caught what the reading missed.** All three of
+the plan's misses were found by a failing test, not by review.
+
+1. **The plan's migration table was incomplete** — it never listed the 38 released `smex:` codes whose
+   blocks *stayed*. They had been passing only because a stale `("smex", …)` row in
+   `ReleasedCodeCoverageTests.Domains` injected smex as a live domain. That is trap 3 below, caught in
+   the act: the vacuous pass is not hypothetical.
+2. **"Exactly one block-entity alias" was six.** `ReleasedEntityClassTests` named the five extras.
+3. **A config section is keyed by mod id**, so the rename silently discarded every player's tuning —
+   `LegacyFileNames` folds a legacy *file*, which is a different move. Now covered by
+   `LegacySectionIds` / `ExConfigDocument.FoldLegacySections` in exlib.
+
+★★ **Both merges also found live data loss in shipped content.** A block-entity **class string** lives in
+the save, appears in no definition, and nothing migrates it — so an unregistered class means the block
+migrates and its contents are silently dropped. smex 0.9.8 shipped 19 such classes and none were
+registered: 11 relocated ones are aliased in iiex and 6 retained ones in siex.
+`ReleasedEntityClassTests` now holds every shipped class to resolving.
+
+⛔ **A definition must never spell a block-entity class as a literal.** `.EntityClass("smex.BlockEntityX")`
+survives a domain rename intact and thereby names a class nothing registers. Use `.EntityClass<T>()` /
+`.EntityBehavior<T>()`, which compose the key from the assembly's own domain.
+
+⛔ **The coverage gate had not gated iiex since M.4** (fixed 2026-08-14). `FLOORS` is keyed by *assembly*
+name; M.4's rename left the old project name there. A key matching no package is silently ungated **and**
+dropped from TOTAL. It now fails the run instead, with the renamed-assembly hint. The floors were
+re-ratcheted off a measured full-solution run — exlib 73.6, iiex 60.3, siex 66.8, total 65.4 — having
+drifted far below the truth while two of the three keys gated nothing.
+
+⛔⛔ **The four merge traps, kept because they generalise beyond merges.**
 
 1. **A per-mod discriminator becomes a bug the moment the mods merge.** `PipeMigration` gated three
    branches on `Code.Domain`, and both pipe tiers carry the same `type` variants, so a mechanical
@@ -50,34 +82,35 @@ drove it is [2026-08-14-m4-iiex-merge-execution.md](2026-08-14-m4-iiex-merge-exe
    (the `tier` variant); keep the domain only to scope the walk. `RolledJointTests` had the same shape as
    a *test* — parameterised by domain as a tier proxy, so half its rows became literal duplicates.
 2. **`ExRecipeProfiles` and `ExConfigProfiles` key on the mod id and REPLACE silently.** Two config
-   sections under one assembly leave whichever registered first unreachable. The configs must merge, and
-   when they do, watch for catalogue keys that collide (`pipe-straight-grid` existed in both) — a
-   collection initialiser assigns through the indexer, so one set overwrites the other with no error.
+   sections under one assembly leave whichever registered first unreachable. When the catalogues merge,
+   watch for colliding keys — a collection initialiser assigns through the indexer, so one set overwrites
+   the other with no error. (M.4 hit this; M.5's catalogues did not collide.)
 3. **A stale row in `ReleasedCodeCoverageTests.Domains` makes the contract pass vacuously.**
    `DefinitionCodes.ForDomain` *injects* the domain rather than filtering, so a leftover row synthesises
-   phantom live blocks. Verified: leaving `("lpex", mergedAsm)` in place keeps all six tests green.
-   Delete every merged-away row and add the survivor **together**.
+   phantom live blocks. Delete every merged-away row and add the survivor **together**.
 4. **Block-entity class strings live in the SAVE.** `CodeRelocation` remaps codes and never touches them;
    an unresolved key drops the block entity. The ground truth is the `entityClass` values inside the
    shipped zip — read them out of `dist/Releases/`, not out of the source.
 
-★ Two mechanics worth reusing. The lang trees were merged by **JSON key union**, never a directory move:
-all three locale filenames collide, and a directory move leaves the locales mutually consistent while
-losing a whole mod's strings — the parity guard passes over it. And coverage was proved by diffing
-**distinct test-method names** across the merge (1139 → 1139), which distinguishes a deleted duplicate
-from a deleted check; the raw test count cannot.
+★ Two mechanics worth reusing. Lang trees merge by **JSON key union**, never a directory move: all three
+locale filenames collide, and a move leaves the locales mutually consistent while losing a whole mod's
+strings — the parity guard passes over it. Assert the arithmetic (M.5: 174 + 25 → 194, the 4 shared keys
+and 1 collision accounted for). And prove coverage by diffing **distinct test-method names** across the
+merge (M.4 1139 → 1139, M.5 219 → 219), which distinguishes a deleted duplicate from a deleted check;
+the raw test count cannot.
 
-⛔ **`smex` and `hpex` both name `iiex` explicitly and must keep doing so.** `<Private>false</Private>` does
-not propagate to a transitive reference, so dropping the explicit item lets the SDK synthesise one with
-`Private=true` and copy a second ModSystem-bearing dll into the output — Vintage Story then refuses to load
-the mod at all. Verify by **staging the output and counting dlls**, never by reading a csproj: that failure
-is green in every test run and visible only in game.
+⛔ **`siex` names `iiex` explicitly and must keep doing so.** `<Private>false</Private>` does not
+propagate to a transitive reference, so dropping the explicit item lets the SDK synthesise one with
+`Private=true` and copy a second ModSystem-bearing dll into the output — Vintage Story then refuses to
+load the mod at all. Verify by **staging the output and counting dlls**, never by reading a csproj: that
+failure is green in every test run and visible only in game.
 
-## ★★ The mod split is ruled: five mods become two
+## ★★ The mod split is BUILT: five mods became two
 
-**M1–M6** in [STATE.md](STATE.md), 2026-08-13. `{iwex + lpex}` → **Iron Industry Expanded (`iiex`)**,
-the early-industrial loop; `{smex + hpex}` → **Steel Industry Expanded (`siex`)**, the steel loop.
-`exlib` unchanged. Full domain consolidation, so **every block code moves**.
+**M1–M6** in [STATE.md](STATE.md), ruled 2026-08-13 and built 2026-08-14. `{iwex + lpex}` →
+**Iron Industry Expanded (`iiex`)**, the early-industrial loop; `{smex + hpex}` → **Steel Industry
+Expanded (`siex`)**, the steel loop. `exlib` unchanged. Full domain consolidation, so every block code
+moved and every one is covered by a migration.
 
 ⛔⛔ **A merge collapses no tier (M3).** The plated pipe family and the iron gears are the early loop's
 **bootstrap rung** — a player plumbs and gears the works before steam exists and upgrades to cast
@@ -90,12 +123,60 @@ that ruling's premise was tier == mod, which is exactly what the merge removes.
 the early loop's machinery and cannot close alone. ~15 entity pages cite the retired per-mod rule and
 need re-justifying (stage M.7).
 
-Stage **M** carries it and **its order is forced** — decouple domain from mod id first (M.1, done), then
-the pipe tier variant (M.2, done), then the two merges. Sequencing is in the plan.
+Stage **M** carried it in a forced order — decouple domain from mod id (M.1), then the pipe tier variant
+(M.2), then the two merges (M.4, M.5). All four are done. What remains of stage M is **M.7**, the
+re-justification of the ~15 entity pages that cite the retired per-mod closure rule, which is part of the
+plan triage below.
 
 ---
 
 ## What is next, right now
+
+### ★ The plan triage — DONE 2026-08-14
+
+Both merges landed first, so it was done once. What it produced, and what it deliberately did not:
+
+- **578 lines across 28 files** repointed at paths and types that exist. M.4's sweep never reached the
+  plans: they still named `src/IronworkingExpanded`, `assets/iwex`, `IwexConfig`, `LpexRenameMigration`
+  and 400-odd more. ⛔ Also **77 invocations of `scripts/run-tests.sh`, which no longer exists** — the
+  entry point is `scripts/exmod.sh test` / `exmod.ps1 test`.
+- **The iwex-era plans now carry verified unit state tables**, checked against `src/` rather than against
+  their checkboxes — which were never ticked, because completion is recorded in prose per unit. The live
+  queue in the expansion plan is **U4.4–U4.9, U6, U7.4, U8, U9, U10**; U1, U2, U3, U5 are records.
+- **M.7 done** — 12 pages, not ~15, and the citation was the `**Mod**` header, not prose. Forming-line
+  ownership is settled in writing: iiex owns the line (mill, wide hall, bending roller); siex owns the
+  cast forms and the steel roll sets.
+- ⛔ **101 `smex:`/`hpex:` code literals split by hand**: 94 rewritten, **7 left untouched as migration
+  sources**. `naming.md` states the rule — rewriting one silently deletes a migration.
+
+⛔ **What the triage confirmed rather than changed:** STATE's **B3c** stands. The mill, `WorkPiece`, the
+roll sets and the stage ladders are built, but `StockForm` carries only input forms, no rolled *product*
+item exists, and `ShearFeed.cs` has no shear behind it.
+
+★ **Unresolved doc citations: 340 → 298.** The remaining 218 distinct paths are overwhelmingly files the
+**open** units are specified to create, which is what an open plan looks like. A guard over this was
+considered and **declined**: it would fail on all 218 immediately and need an allow-list that is itself
+the drift.
+
+### ★ What is actually next
+
+Pick one; nothing blocks anything else.
+
+- **M.6's real half — the cross-mod resolution checks.** Recipe ingredients and RCC `Require` codes are
+  verified in **no** direction today, which is the structural cause of **B19** and **B23**. ⛔ Its other
+  half expired: the guards already live in `SteelIndustryExpanded.Tests`, the only suite that sees all
+  three mods, so moving them into a new `test/Integration.Tests` is optional, not urgent.
+- **B25 — the 72 recorded unmigrated codes.** ⛔ Sharper than it was: `BessemerToConverterMigration`'s
+  right-hand sides emit word-spelled sides (`convertercontrol-north`) where the live blocks use letters,
+  so those rows name no live block and do nothing. Paying this off needs content rulings on which retired
+  families get migrated and which get purged.
+- **The live iwex queue** — U4.4–U4.9 (delete the float pools), U6 (puddling), U7.4 + the shear (B3c),
+  U8, U9, U10.
+- **F4/F5** of the framework-hardening plan, and **M.8** (`heavyplate` absorbs `castplate`).
+- ⛔ **`src/SteelIndustryExpanded/modicon.png` is byte-identical to iiex's** — blocks publishing, and
+  needs art rather than code.
+
+### Then
 
 The extensibility layer is **complete** ([2026-08-12-extensibility.md](2026-08-12-extensibility.md), all
 seven tasks). The contract a third party writes against now exists and is guarded; what is left of it is

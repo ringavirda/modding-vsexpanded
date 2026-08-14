@@ -125,7 +125,7 @@ Derived from the layout glyph counts:
 | Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both are poses, not motion |
 | Textures | `fire1`, `iron3`, `iron4`, `iron5`, `iron` | declared in the shape |
 | Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)-(30,30,62)` | `BlockBoilerCornish.cs:43-51` |
-| Handbook | `assets/iiex/config/handbook/01-boilers.json` ↔ `docs/iiex/handbook/01-boilers.html` | present, and wrong in four places - see [Gotchas](#gotchas) |
+| Handbook | `assets/iiex/config/handbook/06-boilers.json` ↔ `docs/iiex/handbook/06-boilers.html` | present, and wrong in four places - see [Gotchas](#gotchas) |
 
 The RCC behaviour suppresses the default mesh, so the boiler is only visible through the animator holding
 `idle` (or `lidopen`). One clip must always be running or the vessel disappears; the seeding guard at
@@ -366,7 +366,7 @@ Shared by every boiler variant (LP and HP):
 | `BoilerChokeExtinguishSeconds` | `10 s` | `:101` | choked ⇒ fuel snuffed |
 | `BoilerBlastResistanceThreshold` | `20` | `:106` | blocks below this resistance shatter in the blast |
 | `BoilerExplosionDropRatio` | `0.4` | `:111` | salvage from a burst |
-| `RccBrokenDropsRatio` | `0.8` | `:116` | salvage from mining it intact; wired at `LowPressureExpandedModSystem.cs:28-31` |
+| `RccBrokenDropsRatio` | `0.8` | `:116` | salvage from mining it intact; wired at `IronIndustryExpandedModSystem.cs:28-31` |
 | `BoilerLidVentRate` | `200 L/s` | `:119` | open-lid blow-off |
 | `BoilerSteamLeakRate` | `16 L/s` | `:123` | unpiped-outlet bleed |
 | `BoilerWaterSurfaceLowLevel` | `0.2` | `:128` | rendered surface below the operating threshold |
@@ -518,7 +518,7 @@ Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `Fixtures/SteamPlantSc
 1. `CondenseInternal`'s anti-burst guard is unreachable on both shipped boilers. It refuses to condense at
    `InternalPressure >= SteamExpansionFactor` = 16 atm (`BlockEntityBoiler.cs:620`), but `CapSteamToCeiling`
    clamps pressure to `MaxOutputPressure` every tick - 5 for the Cornish, 12 for the Lancashire
-   (`HpexConfig.cs:60`). The guard is correct defensively but cannot fire today; it is not live protection.
+   (`SiexConfig.cs:60`). The guard is correct defensively but cannot fire today; it is not live protection.
 
 2. The class comment about the shape rotation is wrong. `BlockBoiler.cs:37-38` says "rotateYByType is offset
    to match" the `+180` body frame. It is not: `BoilerShell` calls `ShapeSpunPerOrientation(shapeBase)` with
@@ -528,12 +528,12 @@ Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `Fixtures/SteamPlantSc
    comment puts the water surface on the firebox side.
 
 3. The `"Cornish"` name collides across two mods. `iiex:boilercornish` is the low-pressure entry boiler;
-   `hpex:enginecornish` is the high-pressure engine. They are unrelated machines from different tiers that a
+   `siex:enginecornish` is the high-pressure engine. They are unrelated machines from different tiers that a
    player will meet in the same sentence ("a Cornish boiler cannot drive a Cornish engine" - literally true,
    `BlockEntityBoilerCornish.cs:5-8`).
 
-4. The handbook is wrong in four places (`assets/iiex/config/handbook/01-boilers.json`,
-   `docs/iiex/handbook/01-boilers.html`):
+4. The handbook is wrong in four places (`assets/iiex/config/handbook/06-boilers.json`,
+   `docs/iiex/handbook/06-boilers.html`):
    - "24 metal plates, 18 nails-and-strips" - the stages total 22 and 16.
    - "48 fire bricks" - the stages total 44.
    - "16 L of steam at 160-220 °C" - the Cornish tops out at 156.5 °C (5 atm); even a Lancashire at 12 atm

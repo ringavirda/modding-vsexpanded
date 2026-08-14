@@ -1,0 +1,102 @@
+{
+  "code": "metalnailsandstrips-bessemersteel",
+  "materialDensity": 7820,
+  "storageFlags": 5,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "siex": [
+      "*"
+    ]
+  },
+  "maxstacksize": 32,
+  "shape": {
+    "base": "game:item/resource/metalnailsandstrips"
+  },
+  "textures": {
+    "metal": {
+      "base": "game:block/metal/ingot/steel"
+    }
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 4,
+    "smeltedStack": {
+      "type": "item",
+      "code": "siex:ingot-bessemersteel",
+      "stacksize": 1
+    }
+  },
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Messy12",
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.125,
+          "z2": 1
+        }
+      }
+    }
+  ],
+  "guiTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": -30,
+      "y": -46,
+      "z": -180
+    },
+    "origin": {
+      "x": 0.58,
+      "y": 0.07,
+      "z": 0.55
+    },
+    "scale": 3.55
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -0.7,
+      "y": -0.2,
+      "z": -0.6
+    },
+    "rotation": {
+      "x": 94,
+      "y": 0,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.1,
+      "z": 0.5
+    },
+    "scale": 0.75
+  },
+  "groundTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 90,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 4
+  }
+}

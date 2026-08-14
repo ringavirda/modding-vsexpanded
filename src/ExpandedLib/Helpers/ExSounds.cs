@@ -5,7 +5,7 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Helpers;
 
 /// <summary>
-/// Shared catalogue of sound asset locations and play helpers used across the mod family (iiex + smex).
+/// Shared catalogue of sound asset locations and play helpers used across the mod family (iiex + siex).
 /// All sounds resolve from the vanilla "game" domain, which also covers the survival asset folder.
 /// Playing on the server replicates to nearby clients; each helper states whether it gates on side.
 /// </summary>

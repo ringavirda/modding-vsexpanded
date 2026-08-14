@@ -214,7 +214,7 @@ Both happen once, in `ModSystem.Start`, keyed by domain:
 BlockPipe.RegisterBurst(Mod.Info.ModID, () => IiexValues.CastPipeBurstPressure);  // :60
 BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);                  // :62
 ```
-— `LowPressureExpandedModSystem.cs:57-62`. The burst getter is a `Func<float>` read live, so a retune applies
+— `IronIndustryExpandedModSystem.cs:57-62`. The burst getter is a `Func<float>` read live, so a retune applies
 without reconstructing networks.
 
 Cast pipe is flanged, the same family as bolted, because both are square in section and bolted through
@@ -259,12 +259,12 @@ subclass, `BlockPipe.cs:196`). It is clamped again on load against a possibly-re
 ### B6 — the HP line cannot take the iiex pressure valve
 
 hpex tells the player, in its own README and handbook, to gate the Lancashire → Cornish line with a pressure
-valve (`src/HighPressureExpanded/README.md:22`, `docs/hpex/handbook/00-highpressure.html:29`,
-`docs/hpex/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
+valve (`src/SteelIndustryExpanded/README.md:22`, `docs/siex/handbook/05-highpressure.html:29`,
+`docs/siex/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
 independent failures:
 
-**1 — the joint refuses it.** hpex registers `WeldedJoint` (`HighPressureExpandedModSystem.cs:45`); iiex
-registers `FlangedJoint` (`LowPressureExpandedModSystem.cs:62`); `AcceptsNeighbour` couples a `BlockPipe` only
+**1 — the joint refuses it.** hpex registers `WeldedJoint` (`SteelIndustryExpandedModSystem.cs:45`); iiex
+registers `FlangedJoint` (`IronIndustryExpandedModSystem.cs:62`); `AcceptsNeighbour` couples a `BlockPipe` only
 to a matching family (`BlockPipe.cs:238-239`). The pressure valve is a `BlockPipe` subclass, so welded pipe
 will not bolt to it. hpex ships no fittings of its own - `RolledPipeDefinitions.cs` is segments only.
 
@@ -273,11 +273,11 @@ will not bolt to it. hpex ships no fittings of its own - `RolledPipeDefinitions.
 | quantity | value | file:line |
 |---|---|---|
 | iiex pressure-valve `MaxGatePressure` | 5.0 atm | `IiexConfig.cs:50` via `BlockEntityPressureValve.cs:41` |
-| Cornish engine engage, low throttle | 5.0 atm | `HpexConfig.cs:70` |
-| Cornish engine engage, normal | 6.0 atm | `HpexConfig.cs:71` |
-| Cornish engine engage, high | 7.0 atm | `HpexConfig.cs:72` |
-| Cornish engine break (all three) | 8.0 atm | `HpexConfig.cs:76-78` |
-| Lancashire boiler choke | 12.0 atm | `HpexConfig.cs:60` |
+| Cornish engine engage, low throttle | 5.0 atm | `SiexConfig.cs:70` |
+| Cornish engine engage, normal | 6.0 atm | `SiexConfig.cs:71` |
+| Cornish engine engage, high | 7.0 atm | `SiexConfig.cs:72` |
+| Cornish engine break (all three) | 8.0 atm | `SiexConfig.cs:76-78` |
+| Lancashire boiler choke | 12.0 atm | `SiexConfig.cs:60` |
 
 ```
 5.0   <   6.0        7.0        8.0        12.0
@@ -378,7 +378,7 @@ is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
 | piece | file:line |
 |---|---|
 | `CastPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/CastPipeDefinitions.cs:15-19` |
-| burst + joint registration | `LowPressureExpandedModSystem.cs:57-62` |
+| burst + joint registration | `IronIndustryExpandedModSystem.cs:57-62` |
 | `BlockValve : BlockPipe` | `BlockNetworkPipe/Blocks/BlockValve.cs:19` — def `:23-53`, toggle `:55-84`, help `:86-102` |
 | `BlockEntityValve : BlockEntityPipe` | `BlockNetworkPipe/BlockEntities/BlockEntityValve.cs:22` — `IsConnectionBroken` `:33`, `BuildAnimator` `:48-81`, `BuildShapeRotationTransform` `:88-108`, `OnExchanged` `:115-129`, `ToggleOpen` `:134-155`, `DiscardNetworkPool` `:162-166`, `FromTreeAttributes` `:214-228` |
 | `BlockPressureValve : BlockValve` | `BlockNetworkPipe/Blocks/BlockPressureValve.cs:20` — def `:24-53`, `IsNetworkEndPoint` `:55`, gate interaction `:59-88` |
@@ -398,7 +398,7 @@ is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
 |---|---|---|
 | `ppex:pipe-{segment}-{orient}-{iron\|steel}` | `iiex:pipe-{segment}-{orient}` | `:69-75` |
 | `ppex:pipe-{valve\|pressurevalve}-{orient}-{iron\|steel}` | `iiex:pipe-{type}-{orient}` | `:77-83` |
-| `smex:gas{passthrough\|passthroughbend\|outlet}-…` | `iiex:pipe-…` | `:85-86` |
+| `siex:gas{passthrough\|passthroughbend\|outlet}-…` | `iiex:pipe-…` | `:85-86` |
 | removed refractory brick tiers | fall back to `fire` | `:89-106` |
 | removed inline gas machines (`gaspipe-blower/heated/intake`) | `iiex:pipe-plated-straight-{axis}` - a literal target, so unlike the rows above it did not follow the tier variant on its own | `:141-173` |
 
@@ -431,7 +431,7 @@ paths are tested; neither transfer path is.
    recipe. See [Construction](#construction).
 
 2. `DefaultBurstPressure` is 5, identical to cast (`BlockPipe.cs:175`). If
-   `LowPressureExpandedModSystem.cs:60` were ever dropped, the tier would keep working at the same number and
+   `IronIndustryExpandedModSystem.cs:60` were ever dropped, the tier would keep working at the same number and
    nothing would surface the loss. The plated and rolled tiers do not have this problem.
 
 3. A refused joint does not leak, despite what the source says. `BlockNetworkNode.cs:751-754` and
@@ -476,7 +476,7 @@ paths are tested; neither transfer path is.
 10. The chimney vent is matched by code substring on the neighbour (`ChimneyVent.cs:50`) and requires
     `face == BlockFacing.UP` (`:49`). So only the `-u` outlet variant and the `ud` passthrough can ever vent:
     any other orientation has no top connector for a chimney to cap. The handbook's "capped with an ordinary
-    chimney stood upright on top of it" (`docs/iiex/handbook/03-fittings.html:31-33`) is right but
+    chimney stood upright on top of it" (`docs/iiex/handbook/08-fittings.html:31-33`) is right but
     under-specified.
 
 11. Fitting recipes consume iiex segments, so iiex's fittings are gated on iiex's craftability. With B1 live

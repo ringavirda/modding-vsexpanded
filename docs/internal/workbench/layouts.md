@@ -44,8 +44,8 @@ compile, at load, or at first placement — it becomes a `blockNumbers` entry ma
 structure simply can never complete. Referenced by name, a typo is a compile error.
 
 * `ExCodes` — vanilla and `exlib:` codes (`ExpandedLib.Definitions`)
-* `IwexCodes` — the `iwex:` codes more than one layout draws
-* `LpexCodes` — the `lpex:` pipe fittings
+* `IiexCodes` — the `iwex:` codes more than one layout draws
+* `IiexCodes` — the `lpex:` pipe fittings
 
 A code drawn by exactly one layout, for a block that layout owns (`iwex:puddlingchimneycap-north`), stays
 inline — it reads as part of the drawing.
@@ -134,8 +134,8 @@ carries its own code, and the roles are back to being the *lookup* (`MetalTapPos
 the drawing where they are) rather than identification:
 
 ```csharp
-.Legend('T', IwexBlocks.FurnaceIrontap.Any)   // was: two glyphs on one code
-.Legend('S', IwexBlocks.FurnaceSlagtap.Any)
+.Legend('T', IiexBlocks.FurnaceIrontap.Any)   // was: two glyphs on one code
+.Legend('S', IiexBlocks.FurnaceSlagtap.Any)
 .Role('T', CellRole.MetalTap)                 // unchanged - the consumer still reads the drawing
 .Role('S', CellRole.SlagTap)
 ```
@@ -161,8 +161,8 @@ goes up. The drawing can therefore state it, and `MultiblockFacings` rotates the
 single direction letters rotate, not just the full side words (`ExOrientation.IsHorizontalSideWord`).
 
 ```csharp
-.Legend('Y', IwexBlocks.FurnaceTuyere.WithOrientation("n"))   // the north wall's inlet
-.Legend('y', IwexBlocks.FurnaceTuyere.WithOrientation("s"))   // the south wall's
+.Legend('Y', IiexBlocks.FurnaceTuyere.WithOrientation("n"))   // the north wall's inlet
+.Legend('y', IiexBlocks.FurnaceTuyere.WithOrientation("s"))   // the south wall's
 .Role('Y', CellRole.Tuyere)
 .Role('y', CellRole.Tuyere)
 ```
@@ -211,7 +211,7 @@ statement this DSL can make. Two idioms follow, and both are used below:
 
 > Caution — **the drawing below is stale; read `BlockBlastFurnaceCoreCold.cs` instead** *(flagged
 > 2026-08-05)*. The grids still draw `Y` at **layer 1**, the pre-move position, and some legends do not
-> resolve (`ExCodes.Refractory`, `IwexCodes.Tuyere`, `IwexCodes.HopperTall`, `ExCodes.ChargeShaft`,
+> resolve (`ExCodes.Refractory`, `IiexCodes.Tuyere`, `IiexCodes.HopperTall`, `ExCodes.ChargeShaft`,
 > `ExCodes.Air` name nothing). In code the tuyeres sit at layer 2, `(0,2,-2)` / `(0,2,2)`, and the `P`
 > passthrough legend is **deleted** — a passthrough existed only to reach a tuyere buried in the brick,
 > and a tuyere on the wall face is itself the outermost cell.
@@ -222,10 +222,10 @@ statement this DSL can make. Two idioms follow, and both are used below:
   s.Origin(-3, -2)
     .Legend('#', ExCodes.Refractory)
     .Legend('C', "iwex:blastfurnacecore-*")
-    .Legend('T', IwexCodes.MoltenMetalTap)
-    .Legend('S', IwexCodes.MoltenMetalTap)   // same block as T; own glyph only for the role
-    .Legend('Y', IwexCodes.Tuyere)
-    .Legend('H', IwexCodes.HopperTall(BlockFacing.NORTH))
+    .Legend('T', IiexCodes.MoltenMetalTap)
+    .Legend('S', IiexCodes.MoltenMetalTap)   // same block as T; own glyph only for the role
+    .Legend('Y', IiexCodes.Tuyere)
+    .Legend('H', IiexCodes.HopperTall(BlockFacing.NORTH))
     .Legend('f', ExCodes.Filler)
     .Legend('c', ExCodes.ChargeShaft)
     .Legend('p', ExCodes.ChargeShaft)        // same code as c; own glyph only for the Pool role
@@ -317,10 +317,10 @@ nothing else moves.
   s.Origin(-1, -1)
     .Legend('#', ExCodes.Refractory)
     .Legend('C', "iwex:cupolafurnacecore-*")
-    .Legend('T', IwexCodes.MoltenMetalTap)
-    .Legend('S', IwexCodes.MoltenMetalTap)
-    .Legend('Y', IwexCodes.Tuyere)
-    .Legend('H', IwexCodes.HopperTall(BlockFacing.WEST))
+    .Legend('T', IiexCodes.MoltenMetalTap)
+    .Legend('S', IiexCodes.MoltenMetalTap)
+    .Legend('Y', IiexCodes.Tuyere)
+    .Legend('H', IiexCodes.HopperTall(BlockFacing.WEST))
     .Legend('f', ExCodes.Filler)
     .Legend('c', ExCodes.ChargeShaft)
     .Legend('p', ExCodes.ChargeShaft)
@@ -378,7 +378,7 @@ A **reverberatory** megablock: the fire is beside the hearth, not under the char
 .MultiblockLayout(s =>
   s.Origin(-6, -1)                            // C is at col 6 / row 1
     .Legend('#', ExCodes.Refractory)
-    .Legend('F', IwexBlocks.FurnaceFirebox.Any)        // the fuel BED - a required block
+    .Legend('F', IiexBlocks.FurnaceFirebox.Any)        // the fuel BED - a required block
     .Legend('-', ExCodes.FireSlab(BlockFacing.UP))     // vertical: never rotates
     .Legend('i', ExCodes.FireSlab(BlockFacing.SOUTH))  // orientation-checked
     .Legend('K', ExCodes.CokeOvenDoor)
@@ -458,7 +458,7 @@ The same reverberatory arrangement as the puddling furnace, one row deeper.
                                               // puddling furnace, and the one line that must not be
                                               // copied between the two near-identical drawings
     .Legend('#', ExCodes.Refractory)
-    .Legend('F', IwexBlocks.FurnaceFirebox.Any)
+    .Legend('F', IiexBlocks.FurnaceFirebox.Any)
     .Legend('-', ExCodes.FireSlab(BlockFacing.UP))
     .Legend('i', ExCodes.FireSlab(BlockFacing.SOUTH))
     .Legend('K', ExCodes.CokeOvenDoor)
@@ -603,7 +603,7 @@ Caution — roles are not authored, and this draft predates two decisions:
     .Legend('i', ExCodes.FireSlab(BlockFacing.SOUTH))
     .Legend('C', "iwex:beehiveovencore-north*")
     .Legend('D', "iwex:chargedoor-north*")
-    .Legend('T', IwexCodes.HopperTall(BlockFacing.SOUTH))
+    .Legend('T', IiexCodes.HopperTall(BlockFacing.SOUTH))
     .Legend('L', "iwex:chargelid-south*")
     .Legend('f', ExCodes.Filler)
     .Legend('c', ExCodes.CoalBed)
@@ -663,13 +663,13 @@ error. Removed here.
   s.Origin(-1, -2)
     .Legend('#', ExCodes.Filler)
     .Legend('L', "lpex:boilercornish*")
-    .Legend('p', LpexCodes.PipePassthroughFire)
-    .Legend('B', LpexCodes.PipePassthroughBendFireUp)
+    .Legend('p', IiexCodes.PipePassthroughFire)
+    .Legend('B', IiexCodes.PipePassthroughBendFireUp)
     .Legend('b', ExCodes.FireBricks)
     .Legend('a', ExCodes.Air)
     .Legend('c', ExCodes.CoalBed)
     .Legend('d', ExCodes.CokeOvenDoor)
-    .Legend('o', LpexCodes.PipeOutletFireUp)
+    .Legend('o', IiexCodes.PipeOutletFireUp)
     .Layer(1, """
              . b .
              . b .
@@ -720,13 +720,13 @@ lpex), which is why those legends keep the lpex domain.
   s.Origin(-1, -2)
     .Legend('#', ExCodes.Filler)
     .Legend('L', "hpex:boilerlancashire*")
-    .Legend('p', LpexCodes.PipePassthroughFire)
-    .Legend('B', LpexCodes.PipePassthroughBendFireUp)
+    .Legend('p', IiexCodes.PipePassthroughFire)
+    .Legend('B', IiexCodes.PipePassthroughBendFireUp)
     .Legend('b', ExCodes.FireBricks)
     .Legend('a', ExCodes.Air)
     .Legend('c', ExCodes.CoalBed)
     .Legend('d', ExCodes.CokeOvenDoor)
-    .Legend('o', LpexCodes.PipeOutletFireUp)
+    .Legend('o', IiexCodes.PipeOutletFireUp)
     .Layer(1, """
              . b .
              . b .
@@ -780,10 +780,10 @@ Pending: same internal-firebox change as the Cornish.
     .Legend('#', ExCodes.RefractoryTier(3))   // tier 3 exactly - the hot blast leaves no
                                               // cheaper tier viable. The one shell that pins its material
     .Legend('C', "smex:blastfurnacecore-*")
-    .Legend('T', IwexCodes.MoltenMetalTap)
-    .Legend('S', IwexCodes.MoltenMetalTap)
-    .Legend('Y', IwexCodes.Tuyere)
-    .Legend('P', LpexCodes.PipeOutlet)
+    .Legend('T', IiexCodes.MoltenMetalTap)
+    .Legend('S', IiexCodes.MoltenMetalTap)
+    .Legend('Y', IiexCodes.Tuyere)
+    .Legend('P', IiexCodes.PipeOutlet)
     .Legend('R', "smex:hopperreinforced*")
     .Legend('B', "smex:hopperbell*")
     .Legend('c', ExCodes.ChargeShaft)
@@ -981,8 +981,8 @@ moment roles were added — a *second* reason this cannot be adopted as drawn.
   s.Origin(-1, 0)
     .Legend('#', ExCodes.Refractory)
     .Legend('I', "smex:cowperstove-intake*")
-    .Legend('P', LpexCodes.PipeOutlet)
-    .Legend('X', LpexCodes.PipePassthroughAny)   // any brick, unlike the boilers' fire-only
+    .Legend('P', IiexCodes.PipeOutlet)
+    .Legend('X', IiexCodes.PipePassthroughAny)   // any brick, unlike the boilers' fire-only
     .Legend('H', "smex:cowperstoveheatsink*")
     .Legend('D', ExCodes.CokeOvenDoor)
     .Legend('a', ExCodes.Air)
@@ -1082,9 +1082,9 @@ offsets rather than an ASCII layout. The grid below is the drafted replacement.
     .Legend('B', "smex:convertertransmission*")
     .Legend('E', "smex:converterbessemer*")
     .Legend('F', "smex:converter-intake*")
-    .Legend('I', IwexCodes.MoltenCanalTap)
-    .Legend('J', IwexCodes.MoltenCanalStart)
-    .Legend('L', IwexCodes.MoltenCanalStraight)
+    .Legend('I', IiexCodes.MoltenCanalTap)
+    .Legend('J', IiexCodes.MoltenCanalStart)
+    .Legend('L', IiexCodes.MoltenCanalStraight)
     .Legend('#', ExCodes.Filler)
     .Layer(-2, """
               . . . .
@@ -1118,7 +1118,7 @@ offsets rather than an ASCII layout. The grid below is the drafted replacement.
 ```
 
 The canal codes are the one place a layout in another mod names iwex's molten network, which is why they
-are in `IwexCodes` — a rename in iwex would otherwise break this with nothing between the two but a string.
+are in `IiexCodes` — a rename in iwex would otherwise break this with nothing between the two but a string.
 
 ---
 

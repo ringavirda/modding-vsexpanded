@@ -212,7 +212,7 @@ The pattern's `mold` attribute (`AttributeKey = "mold"`, `:42`). Every field is 
 | `minPourTemp` | float | defaults `0` = check disabled | `:112` |
 
 Validation runs once at `AssetsFinalize`, server-side, and logs one error per malformed pattern
-(`PatternValidation.cs:19-31`, called from `IronworkingExpandedModSystem.cs:113-116`).
+(`PatternValidation.cs:19-31`, called from `IronIndustryExpandedModSystem.cs:113-116`).
 
 ### The shipped pattern catalogue — `PatternItemDefinitions.cs`
 

@@ -9,8 +9,8 @@ namespace ExpandedLib.Registries.Recipes;
 /// <c>Start</c>; the command and the library's apply pass find it by <see cref="Code"/>.
 /// </summary>
 public sealed class RecipeProfile {
-  /// <summary>The mod's short code used on the command line, e.g. <c>"smex"</c> in
-  /// <c>/exmod recipes smex cheap</c>.</summary>
+  /// <summary>The mod's short code used on the command line, e.g. <c>"siex"</c> in
+  /// <c>/exmod recipes siex cheap</c>.</summary>
   public required string Code { get; init; }
 
   /// <summary>The live, persisted catalogue this profile manages (e.g. <c>SmexRecipeValues.Recipes</c>).</summary>

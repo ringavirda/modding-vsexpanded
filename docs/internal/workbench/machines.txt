@@ -1,0 +1,287 @@
+Filler layouts for machines
+
+Legend:
+    "." - empty space
+    "O" - principal block in north orientation
+    "M" - full block filler with mp energy connection on north and south sides
+    "m" - full block filler with mp energy connection on east and west sides
+    "P" - full block filler with pipe connection
+    "I" - full block filler with main machine interactions
+    "i" - full block filler with additional machine interactions
+    "#" - full block filler
+    "-" - vertical north slab filler
+    "_" - horizontal bottom slab filler
+
+
+Mp bending machine
+Purpose: 
+Consumes plates, boilerplates, rods, beams and other similar items and
+produces bend variants after several passes.
+Mode of operation: 
+Rmb on input, resulting item is thrown from output. Rollers don't wear down.
+Note: 
+"I" here is loading plates, rods or beams, that need to be bended and that
+get thrown from the other side. Which cell of two is currently intractable is
+based on input shaft rotation direction (can only be one at a time). 
+"i" is the cell that has interaction about setting the height (gap) of the
+movable roller. Player pushes it down to achieve bigger bending curve.
+Layout (XZ layers, north is up):
+    L1:
+        # M #
+        I O I
+        - - -
+    L2:
+        _ # _
+        . i .
+        . # .
+    L3:
+        . _ .
+        . # .
+        . _ .
+
+
+Mp cutter (mp shears)
+Purpose:
+Consumes rolled stock and converts it into cut stock or final items. Cuts one
+item from stock at a time.
+Mode of operation: 
+Put item in window interface, pull resulting item after machine finishes
+operating. Shears wear down and need replacing, shear material affects how long
+they serve.
+Note: 
+"O" here also has north-south mp connection. 
+"I" here is where player gets window interface, puts items that need to be cut 
+into parts and where cut items get thrown out. Also here player replaces worn
+out shear blades or places new ones.
+Layout (XY slice, north is forward):
+    S1:
+        _ _ _
+        I O #
+
+
+Mp drilling press
+Purpose:
+Consumes items and shapes them by drilling holes, canals or removing small
+parts. Required for items with complex shapes.
+Mode of operation: 
+Put item in window interface, pull resulting item after machine finishes
+operating. Drill bit wears down and need replacing, material affects how it 
+serves.
+Note:
+"I" here is not a full block, but north vertical slab. It contains window
+interactions for putting items, removing finished ones, and replacing drill bit.
+Layout (YZ slice, north is right):
+    S1:
+    # # #
+    I # #
+    I O M
+
+
+Mp horizontal boring machine:
+Purpose:
+Special machine for drilling massive holes into big items or for shaping
+cylinders to precision.
+Mode of operation: 
+Put item in window interface, pull resulting item after machine finishes
+operating. Cutter of the bore wears down and need replacing, material affects 
+how long it serves.
+Note:
+"I" here is main window interface where player places worked items, removes
+finished ones and replaces machines's cutter.
+"i" is where player needs to hold rmb to move bed and actually operate the
+machine. Without player holding rmb on this cutter rotates, but nothing happens.
+It is also a vertical north slab filler.
+
+Layout (XZ layers, north is up)
+    L1:
+        m O #
+        . i .
+    L2:
+        # I #
+        . . .
+
+
+Mp lathe
+Purpose: Forming cylindrical shaped items, any rotational shape.
+Mode of operation:
+Put item in window interface, pull resulting item after machine finishes
+operating. Cutter of the lathe wears down and need replacing, material affects 
+how long it serves.
+Note:
+"_" here is vertical south slab filler.
+"I" here is main window interface where player places worked items, removes
+finished ones and replaces machines's cutter. There are two cells like that for
+player convenience.
+"i" is where player needs to hold rmb to move cutter turret and actually operate the
+machine. Without player holding rmb on this cutter rotates, but nothing happens.
+It is also a vertical south slab filler.
+
+Layout (XZ layers, north is up)
+    L1:
+        _ _ _
+        # O m
+    L2:
+        . i .
+        I I #
+
+
+Mp nail cutter
+Purpose: Consumes nail plate to produce nails and strips.
+Mode of operation:
+Put item in window interface, pull resulting item after machine finishes
+operating. Cutter wears down and need replacing, material affects how long it 
+serves.
+Note:
+"I" here is both window interface for items and cutter, but also is where player
+needs to hold rmb for machine to operate.
+
+Layout (YZ slice, north is right)
+    S1:
+        I m
+        O #
+
+
+Mp planer
+Purpose: Shaping massive horizontal parts to size or required form.
+Mode of operation:
+Put item in window interface, pull resulting item after machine finishes
+operating. Cutter wears down and need replacing, material affects how long it 
+serves.
+Note:
+"O" here has the same interactions as "I".
+"I" is where player interacts to place/remove items, replace cutter.
+"i" is where player holds rmb to operate the machine. It is also east vertical
+slab filler.
+"_" is south vertical slab filler.
+"-" is north vertical slab filler.
+Layout (XZ layers, north is up):
+    L1:
+        . # # M .
+        I I O # #
+        . . . - .
+    L2:
+        . . i _ .
+        . . i # .
+        . . i - .
+    L3:
+        . . . _ .
+        . . . # .
+        . . . - .
+
+
+Mp riveter
+Purpose:
+Consumes rivet rod to produce rivets.
+Mode of operation:
+Put rivet rod into input slot of window interface, hold rmb, remove rivets.
+Press parts wear down and their material affects longevity.
+Note:
+"I" here has both window interactions for items and press, as well as rmb hold
+interactions.
+Layout (XY slice, north is front):
+    S1:
+        # M #
+        I O #
+
+
+Mp rolling mill
+Purpose:
+Rolls stock items using flat, grooved or other rollers into shapes. Resulting
+items often elongated and need cutting with mp cutter into final items.
+Mode of operation:
+Consumes stock items and produces flattened or grooved or other variants 
+after several passes. Accepts items from one side, and throws out resulting
+items from another.
+Note:
+"I*" here is where player inputs stock items. There are two of these, and which
+one is active depends on input shaft rotation direction. The other one becomes
+the cell where items get thrown out.
+"I1" is south vertical slab filler.
+"I2" is north vertical slab filler.
+"i1" are fillers that hold interactions of razing and lowering of rollers if
+current rollers are flat wide. (the same mechanic as for bending machine. this
+way we can collapse all flat wide rollers into one item.) 
+"i1" is where player interacts to replace rollers. If those are flat or grooved,
+then those are locked in place. if those are flat wide, then top one can be
+moved.
+"-" are vertical north slab fillers.
+"_" are vertical south slab fillers.
+Layout (XZ layers, north is up):
+    L1:
+        _ I1 _
+        m O m
+        - I2 -
+    L2:
+        _ . _
+        i1 i2 i1
+        - . -
+
+
+Mp shaper
+Purpose:
+Consumes blank or stock items to shape into resulting items. Small flat shapes.
+Mode of operation:
+Put item in window interface, pull resulting item after machine finishes
+operating. Cutter of the lathe wears down and need replacing, material affects 
+how long it serves.
+Note:
+"I" here is both window item interaction and rmb hold interaction.
+Layout (YZ slice, north is right):
+    S1:
+        I # #
+        O m .
+
+Pipe steam hammer
+Purpose:
+Shingling of bars and slabs, die stamping of general shapes.
+Mode of operation:
+Connect to pipe network with enough pressure steam.
+If flat die is inserted, then put puddled ball, pig,
+blister steel bar or other appropriate item, hold rmb to pull lever, and steam
+hammer produces item according to recipe, after which resulting item is thrown
+on the ground.
+If stamp die is inserted, then blanks, plates or other appropriate items can be 
+placed on the anvil, rmb to pull leaver and stamp them into shapes. Also recipe
+based.
+Recipes declare how many hits hammer should do.
+Note:
+"P" here has pipe connection on west side.
+"O" has main interactions for placing items.
+"i" is where player holds rmb to pull control leaver.
+"|" is east vertical slab filler.
+"-" is west vertical slab filler.
+Layout (XY slice, north is front):
+    S1:
+        . # .
+        . P .
+        | # -
+        i O #
+
+Pipe mp blower
+Purpose:
+Supply cold blast furnace with pressurized air.
+Mode of operation:
+Connect to vanilla mp or mpenergy network.
+Note:
+"m" here has mp connection only on west side.
+"P" is output air pipe has pipe connection on north side.
+"_" is down slab filler.
+Layout (XZ slice, north is right):
+    S1:
+        m # _
+        O # P
+
+
+Pipe mp fluid pump
+Purpose:
+Supply boilers and other water machines with water with mp power.
+Mode of operation:
+Connect to vanilla mp or mpenergy network.
+Note:
+"O" here has vanilla mp or mpenergy connection on west side.
+"P" is full block fluid output cell, that has pipe connection on south face.
+"p" is full block fluid input cell, that has pipe connection on bottom face.
+Layout (XZ slice, north is right):
+    S1:
+        . . P
+        O # p

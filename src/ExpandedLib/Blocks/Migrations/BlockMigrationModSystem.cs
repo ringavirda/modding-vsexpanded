@@ -289,7 +289,7 @@ public class BlockMigrationModSystem : ChunkColumnSweeperModSystem {
 
   private void BuildRemapTable() {
     // ── Pass 1: collect every declared pair without resolving it against the world. ──────────────
-    // A chain's intermediate codes are dead by construction: in ppex:x → iiex:x → hpex:x, iiex:x is
+    // A chain's intermediate codes are dead by construction: in ppex:x → lpex:x → iiex:x, lpex:x is
     // precisely the code that no longer registers, so resolving while collecting would honour one hop.
     var declared =
       new Dictionary<
@@ -481,7 +481,7 @@ public class BlockMigrationModSystem : ChunkColumnSweeperModSystem {
   }
 
   // Scan every loaded assembly for parameterless implementations of T: this system lives in exlib,
-  // but iiex/smex declare their own migrations and removals.
+  // but iiex/siex declare their own migrations and removals.
   private static IEnumerable<T> Discover<T>()
     where T : class {
     var found = new List<Type>();

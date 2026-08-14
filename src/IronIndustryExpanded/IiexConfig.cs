@@ -149,12 +149,12 @@ public class IiexConfig : IExVersionedConfig {
   #region Pipes
   // iiex owns the base pipe block and the "pipe" network registration, plus the two lower tiers -
   // plated (the bootstrap rung, hammered from plate) and cast - so the pipe-content tunables live here.
-  // hpex registers the rolled tier's own. The generic pipe-network constants (LitresPerPipe, leak
+  // siex registers the rolled tier's own. The generic pipe-network constants (LitresPerPipe, leak
   // rates) live in exlib's own config.
 
   /// <summary>
   /// Burst pressure (atm) of a plain plated pipe segment; the weakest pipe limits a run. Higher tiers
-  /// register their own rating (cast 5 below, hpex rolled 12). It also sets the tier's capacity: a
+  /// register their own rating (cast 5 below, siex rolled 12). It also sets the tier's capacity: a
   /// network holds <c>burst x pipes x litresPerPipe</c>.
   /// </summary>
   public float PlatedPipeBurstPressure { get; set; } = 2.5f;
@@ -170,7 +170,7 @@ public class IiexConfig : IExVersionedConfig {
   public float PlatedPipeThroughput { get; set; } = 50f;
 
   /// <summary>Burst pressure (atm) of a plain cast pipe segment - the weakest pipe limits a run.
-  /// The plated tier above and the hpex rolled tier register their own ratings.</summary>
+  /// The plated tier above and the siex rolled tier register their own ratings.</summary>
   public float CastPipeBurstPressure { get; set; } = 5.0f;
 
   /// <summary>Throughput (L/s) of a plain cast pipe segment - the weakest segment caps a run.
@@ -681,7 +681,7 @@ public class IiexConfig : IExVersionedConfig {
   #region Boiler (shared FSM values - every boiler variant, LP and HP)
   // Each variant's own stat table (capacity, boil-water window, steam rate, choke pressure,
   // explosion radius) lives with the variant: the Cornish boiler's below, the Lancashire boiler's
-  // in hpex's config.
+  // in siex's config.
 
   /// <summary>Max output-network pressure (atm) a boiler can vent exhaust into; above it the fire goes out.</summary>
   public float ExhaustMaxOutputPressure { get; set; } = 0.8f;
@@ -787,7 +787,7 @@ public class IiexConfig : IExVersionedConfig {
   public float WattEngineWaterRate { get; set; } = 1f;
 
   // The Cornish engine's three-band control-rod table (engage/break pressures, steam, power, water
-  // and the overclock sound scalars) lives in hpex's config, with the block.
+  // and the overclock sound scalars) lives in siex's config, with the block.
 
   /// <summary>Steam-engine efficiency: an engine sets its sub-machine's output pressure
   /// (pump water, air blower) to its inlet steam pressure times this fraction.</summary>

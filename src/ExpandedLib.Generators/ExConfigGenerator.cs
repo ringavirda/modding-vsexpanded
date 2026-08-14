@@ -68,6 +68,19 @@ public sealed class ExConfigGenerator : IIncrementalGenerator {
           .ToImmutableArray()
         : ImmutableArray<string>.Empty;
 
+    var legacySectionArg = attr
+      .NamedArguments.FirstOrDefault(na => na.Key == "LegacySectionIds")
+      .Value;
+    var legacySections =
+      legacySectionArg.Kind == TypedConstantKind.Array
+      && !legacySectionArg.IsNull
+        ? legacySectionArg
+          .Values.Select(v => v.Value as string)
+          .Where(s => !string.IsNullOrEmpty(s))
+          .Select(s => s!)
+          .ToImmutableArray()
+        : ImmutableArray<string>.Empty;
+
     bool manageable =
       attr
         .NamedArguments.FirstOrDefault(na => na.Key == "Manageable")
@@ -105,6 +118,7 @@ public sealed class ExConfigGenerator : IIncrementalGenerator {
       hasMigrations,
       manageable,
       new EquatableArray<string>(legacyNames),
+      new EquatableArray<string>(legacySections),
       new EquatableArray<PropModel>(properties)
     );
   }
@@ -141,15 +155,12 @@ public sealed class ExConfigGenerator : IIncrementalGenerator {
     sb.AppendLine(
       $"  private static readonly ExConfigRegister<{m.ConfigTypeName}> _store ="
     );
-    var legacy = m.LegacyFileNames.AsSpan();
-    if (legacy.Length > 0) {
-      var quoted = new List<string>(legacy.Length);
-      foreach (var n in legacy)
-        quoted.Add($"\"{n}\"");
+    var initializers = new List<string>(2);
+    AddArrayInitializer(initializers, "LegacyFileNames", m.LegacyFileNames);
+    AddArrayInitializer(initializers, "LegacySectionIds", m.LegacySectionIds);
+    if (initializers.Count > 0) {
       sb.AppendLine($"    new(ConfigFileName, \"{m.ModId}\"{migrationsArg})");
-      sb.AppendLine(
-        $"    {{ LegacyFileNames = new string[] {{ {string.Join(", ", quoted)} }} }};"
-      );
+      sb.AppendLine($"    {{ {string.Join(", ", initializers)} }};");
     } else {
       sb.AppendLine($"    new(ConfigFileName, \"{m.ModId}\"{migrationsArg});");
     }
@@ -211,6 +222,22 @@ public sealed class ExConfigGenerator : IIncrementalGenerator {
     );
   }
 
+  /// <summary>Appends <c>Name = new string[] { ... }</c> for a non-empty list, so the store's object
+  /// initializer carries only the lists the attribute actually declared.</summary>
+  private static void AddArrayInitializer(
+    List<string> into,
+    string name,
+    EquatableArray<string> values
+  ) {
+    var span = values.AsSpan();
+    if (span.Length == 0)
+      return;
+    var quoted = new List<string>(span.Length);
+    foreach (var v in span)
+      quoted.Add($"\"{v}\"");
+    into.Add($"{name} = new string[] {{ {string.Join(", ", quoted)} }}");
+  }
+
   private static string DefaultAccessorName(string typeName) =>
     typeName.EndsWith("Config", StringComparison.Ordinal)
       ? typeName.Substring(0, typeName.Length - "Config".Length) + "Values"
@@ -226,6 +253,7 @@ internal sealed record ConfigModel(
   bool HasMigrations,
   bool Manageable,
   EquatableArray<string> LegacyFileNames,
+  EquatableArray<string> LegacySectionIds,
   EquatableArray<PropModel> Properties
 );
 

@@ -1,0 +1,66 @@
+{
+  "code": "converter",
+  "class": "siex.BlockConverterIntake",
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "siex": [
+      "*-n"
+    ]
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "intake"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "siex:converter/intake",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "siex:converter/intake",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "siex:converter/intake",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "siex:converter/intake",
+      "rotateY": 90
+    }
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

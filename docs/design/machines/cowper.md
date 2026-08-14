@@ -3,7 +3,7 @@
 **Status** scheduled for remake — the stove becomes gas-fired (settled 2026-08-02, gas budget and stove
 count 2026-08-05). The shipped code still burns solid coal: the charge rate is multiplied by a burning coal
 pile in the cell under the intake, identified by code substring (`BlockEntityCowperStove.cs:122`, `:134`).
-**Mod** smex
+**Mod** siex
 
 **Owns** — the facts this page is canonical for:
 

@@ -262,7 +262,7 @@ world - a partly-drained ladle cools faster as it empties. The parked-barrel lit
 | `BlockEntityMoltenMetalTap` | `BlockEntityMoltenMetalTap.cs:21` | the furnace-side spout; `TryPourMetal` at `:168` |
 | `MoltenMetal` | `MoltenMetal.cs:30` | temperature/cooldown/classification helpers shared by every fitting |
 | `MoltenChisel.BuildRecovery` | used at `BlockEntityMoltenCanal.cs:393` | the one recovery-drop builder |
-| registration | `IronworkingExpandedModSystem.cs:92-95` | `netManager.RegisterNetworkType("molten", () => new MoltenNetwork(netManager))` |
+| registration | `IronIndustryExpandedModSystem.cs:92-95` | `netManager.RegisterNetworkType("molten", () => new MoltenNetwork(netManager))` |
 
 **Where a caller hooks in**
 

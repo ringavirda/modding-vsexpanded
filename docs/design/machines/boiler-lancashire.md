@@ -67,7 +67,7 @@ systems; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
 | Class | `BlockBoilerLancashire : BlockBoiler : BlockFilledMegastructure` (`BlockBoilerLancashire.cs:15`) |
 | Block entity | `BlockEntityBoilerLancashire : BlockEntityBoiler` (`BlockEntityBoilerLancashire.cs:12`) - 25 lines, six stat overrides, nothing else |
 | Verified envelope | 3 × 3 × 10 - X −1..1, Y −1..1, Z −2..7 = 90 cells (`BlockBoilerLancashire.cs:85-141`) |
-| Filler footprint | 35 cells - `Origin(-1, 0)`, layer 0 `+ O +` then 5 × `+ + +`, layer 1 6 × `# + #` (`:56-82`). 23 attach-allowing, 12 plain (golden `goldens/hpex/blocktypes/boiler/lancashire.json`) |
+| Filler footprint | 35 cells - `Origin(-1, 0)`, layer 0 `+ O +` then 5 × `+ + +`, layer 1 6 × `# + #` (`:56-82`). 23 attach-allowing, 12 plain (golden `goldens/siex/blocktypes/boiler/lancashire.json`) |
 | Reserved body | 3 × 2 × 6 (X −1..1, Y 0..1, Z 0..5) minus the principal |
 | Principal | `(0,0,0)`, the `'L'` glyph |
 | Orientation | `side` from `abstract/horizontalorientation` (`BlockBoiler.cs:70`) |
@@ -110,7 +110,7 @@ Derived by counting the layout glyphs:
 
 Four of those five fittings are iiex cast-tier blocks, named as literal legends (`:89`, `:90`, `:95`),
 neither wildcarded across domains nor tier-parameterised, so the high-pressure boiler can only be walled in
-with low-pressure-tier plumbing. There is no `hpex:` passthrough, bend or outlet to substitute - hpex ships
+with low-pressure-tier plumbing. There is no `siex:` passthrough, bend or outlet to substitute - hpex ships
 segments only ([rolled pipe](rolled-pipe.md)). The three are also flanged, so a rolled steam main cannot
 reach any of them either; see [Gotchas](#gotchas) 1.
 
@@ -131,12 +131,12 @@ Identical mechanism to the Cornish ([Cornish boiler](boiler-cornish.md) § The t
 | Asset | Path | State |
 |---|---|---|
 | Editable shape | — | missing. Nothing under `assets/editable/shapes/` matches the Lancashire; the runtime shape is the only copy |
-| Runtime shape | `assets/hpex/shapes/boiler/lancashire.json` | root children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets |
+| Runtime shape | `assets/siex/shapes/boiler/lancashire.json` | root children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets |
 | Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both poses, not motion |
 | Textures | `fire1`, `iron3`, `steel32`, `iron5`, `steel3`, `steel42` | declared in the shape. Still carries `iron3` and `iron5`, so the steel boiler is part iron sheet |
 | Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)–(30,30,94)` | `BlockBoilerLancashire.cs:45-53` — 94/16 ≈ 5.9 cells along the 6-cell body, matching the Cornish's 62-for-4 inset |
-| Handbook | `assets/hpex/config/handbook/00-highpressure.json` ↔ `docs/hpex/handbook/00-highpressure.html` | present, shared with the Cornish engine, and wrong on three of the four build figures — see [Gotchas](#gotchas) 4 |
-| Mod icon | `src/HighPressureExpanded/modicon.png` | a copy of iiex's, placeholder (`docs/hpex/ASSETS-TODO.md`) |
+| Handbook | `assets/siex/config/handbook/05-highpressure.json` ↔ `docs/siex/handbook/05-highpressure.html` | present, shared with the Cornish engine, and wrong on three of the four build figures — see [Gotchas](#gotchas) 4 |
+| Mod icon | `src/SteelIndustryExpanded/modicon.png` | a copy of iiex's, placeholder (`docs/siex/ASSETS-TODO.md`) |
 
 The RCC behaviour suppresses the default mesh, so the vessel is only visible through the animator holding
 `idle` or `lidopen`. The seeding guard and the `BoilerAnimatableRenderer` light-sample swap are
@@ -155,11 +155,11 @@ B H B          P = game:metalplate-steel ×1 each   → 2
 P R P          B = game:burnedbrick-fire ×2 each   → 4
                R = game:rod-steel ×2               → 2
                H = hammer (tool)
-→ hpex:boilerlancashire-north
+→ siex:boilerlancashire-n
 ```
 
 Size is declared `3 × 2` (`:33`). Totals: 2 steel plate · 4 fire brick · 2 steel rod. Emitted once - the
-boiler recipe is not looped over gear codes (`:19-26`). Golden `goldens/hpex/recipes/grid/machines.json`.
+boiler recipe is not looped over gear codes (`:19-26`). Golden `goldens/siex/recipes/grid/machines.json`.
 No dead ingredient: every letter in the pattern is bound.
 
 ### 2. The RCC stages — `BlockBoilerLancashire.cs:142-163`
@@ -185,7 +185,7 @@ The material gate is inconsistent inside the stage table. Plates and rods are th
 for the nails.
 
 Catalogued twice for the cost system: `boilerlancashire-grid` and `boilerlancashire-rcc`
-(`HpexRecipeConfig.cs:50`, `:54`), level switched by `/exmod recipes hpex <level>`
+(`SiexRecipeConfig.cs:50`, `:54`), level switched by `/exmod recipes hpex <level>`
 ([recipes & config](../mechanics/recipes-config.md)).
 
 ---
@@ -282,20 +282,20 @@ power down by `frac`.
 
 ## Numbers
 
-### hpex config — `HpexConfig.cs`, file `ModConfig/ex_values.json`, section `hpex`
+### hpex config — `SiexConfig.cs`, file `ModConfig/ex_values.json`, section `hpex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `LancashireBoilerCapacity` | `1200 L` | `HpexConfig.cs:46` | one tank, shared between water and steam |
+| `LancashireBoilerCapacity` | `1200 L` | `SiexConfig.cs:46` | one tank, shared between water and steam |
 | `LancashireBoilerMinBoilWater` | `200 L` | `:49` | operating floor; also the bucket-drain floor |
 | `LancashireBoilerMaxBoilWater` | `800 L` | `:52` | manual-fill / condensation ceiling |
 | `LancashireBoilerSteamPerSecond` | `48 L/s` | `:56` | ⇒ 3 L/s of water consumed |
 | `LancashireBoilerMaxOutputPressure` | `12.0 atm` | `:60` | choke ceiling, hard cap and burst trigger |
 | `LancashireBoilerExplosionRadius` | `4` | `:63` | shatter radius; blast damage radius is `r + 2` = 6 |
-| `RccBrokenDropsRatio` | `0.8` | `:124` | salvage from mining it intact; wired at `HighPressureExpandedModSystem.cs:35-38` |
+| `RccBrokenDropsRatio` | `0.8` | `:124` | salvage from mining it intact; wired at `SteelIndustryExpandedModSystem.cs:35-38` |
 | `RecipeLevel` | `"normal"` | `:131` | `/exmod recipes hpex <level>` |
 
-`HpexConfig.Migrations` is empty (`:37`), so none of these is force-reset on upgrade; retuned values survive.
+`SiexConfig.Migrations` is empty (`:37`), so none of these is force-reset on upgrade; retuned values survive.
 
 ### Bound through the base — the six abstract stats
 
@@ -309,7 +309,7 @@ power down by `frac`.
 | `ExplosionRadius` | `LancashireBoilerExplosionRadius` | `:23-24` |
 
 Everything else the boiler needs is `IiexConfig`'s, tabulated by [Cornish boiler](boiler-cornish.md)
-§ Numbers (`HpexConfig.cs:14-18`).
+§ Numbers (`SiexConfig.cs:14-18`).
 
 ### Derived — owned here
 
@@ -369,7 +369,7 @@ Pinned by `HpMegablockDropTierTests.Lancashire_boiler_does_not_drop_itself_as_a_
 
 | Path | Returns |
 |---|---|
-| Mined intact | 80 % of the RCC materials - ~27 plate, ~19 nails, 8 rod, 48 brick - scattered by the RCC behaviour (`RccBrokenDropsRatio`, `HpexConfig.cs:124`, registered at `HighPressureExpandedModSystem.cs:35-38`) |
+| Mined intact | 80 % of the RCC materials - ~27 plate, ~19 nails, 8 rod, 48 brick - scattered by the RCC behaviour (`RccBrokenDropsRatio`, `SiexConfig.cs:124`, registered at `SteelIndustryExpandedModSystem.cs:35-38`) |
 | Burst | 40 % (`BoilerExplosionDropRatio`, iiex), pulled through `ExRightClickConstructable.GetConstructionDrops` |
 | Fillers | removed, never dropped |
 | Firebox masonry | ordinary block drops; player-placed, the boiler never touches it |
@@ -380,7 +380,7 @@ Pinned by `HpMegablockDropTierTests.Lancashire_boiler_does_not_drop_itself_as_a_
 come from config. The 80 % default is pinned by `Hp_machine_salvage_ratio_defaults_to_80_percent` (`:105-111`).
 
 The salvage ratio is looked up by the broken block's `Code.Domain`, so hpex must register its own copy even
-though iiex already registered an identical default (`HighPressureExpandedModSystem.cs:32-38`).
+though iiex already registered an identical default (`SteelIndustryExpandedModSystem.cs:32-38`).
 
 ---
 
@@ -397,11 +397,11 @@ though iiex already registered an identical default (`HighPressureExpandedModSys
 | `Construction` (four stages) | `:142-163` |
 | `BlockEntityBoilerLancashire : BlockEntityBoiler` | `BlockStructures/Boiler/BlockEntities/BlockEntityBoilerLancashire.cs:12` |
 | the six stat overrides | `:14-24` |
-| `HpexConfig` § Lancashire boiler | `HpexConfig.cs:39-64` |
+| `SiexConfig` § Lancashire boiler | `SiexConfig.cs:39-64` |
 | grid recipe | `Recipes/Grid/MachineRecipeDefinitions.cs:29-37` |
-| cost-catalogue keys | `HpexRecipeConfig.cs:50`, `:54` |
-| salvage-ratio registration | `HighPressureExpandedModSystem.cs:32-38` |
-| save migration off `iiex:` / `ppex:` | `BlockMigrations/HpexExtractionMigration.cs:34-46` — see [rolled pipe](rolled-pipe.md) § Gotchas 1, which owns that class |
+| cost-catalogue keys | `SiexRecipeConfig.cs:50`, `:54` |
+| salvage-ratio registration | `SteelIndustryExpandedModSystem.cs:32-38` |
+| save migration off `iiex:` / `ppex:` | `BlockMigrations/HpMachineDomainMigration.cs:34-46` — see [rolled pipe](rolled-pipe.md) § Gotchas 1, which owns that class |
 | everything that runs | `IronIndustryExpanded/BlockStructures/Boiler/BlockBoiler.cs`, `BlockEntityBoiler.cs` — [Cornish boiler](boiler-cornish.md) § Code |
 
 ### Where a caller hooks in
@@ -409,19 +409,19 @@ though iiex already registered an identical default (`HighPressureExpandedModSys
 - Another boiler variant: implement the six abstract stats on `BlockEntityBoiler` (`:46-68`) and call
   `BoilerShell`. This leaf adds nothing but numbers, a footprint, a layout and stages - 25 lines of BE and
   164 of block def.
-- Retuning the HP band: `LancashireBoilerMaxOutputPressure` is read live through `HpexValues`, so
+- Retuning the HP band: `LancashireBoilerMaxOutputPressure` is read live through `SiexValues`, so
   `/exmod config hpex` changes the choke, the hard cap and the burst trigger together - they are one number
   used three times.
 - Making the vessel longer: five things must move together - the footprint layer bounds, the layout row
   count, `steamConnectorOffset`, `exhaustOutletOffset` and `waterRendererBox.z2`. Nothing checks the
   relationship.
 
-### Tests — `test/HighPressureExpanded.Tests/`
+### Tests — `test/SteelIndustryExpanded.Tests/`
 
 | file | pins |
 |---|---|
 | `Definitions/HpMegablockDropTierTests.cs` | no self-drop · mining tier 4 · the full four-stage construction cost · salvage default 0.8 · no JSON `brokenDropsRatio` |
-| `Definitions/HpexDefinitionGoldenTests.cs` | the def reproduces `goldens/hpex/blocktypes/boiler/lancashire.json` byte-for-byte; the golden set exactly covers the defs; every shape reference resolves |
+| `Definitions/SiexDefinitionGoldenTests.cs` | the def reproduces `goldens/siex/blocktypes/boiler/lancashire.json` byte-for-byte; the golden set exactly covers the defs; every shape reference resolves |
 
 There is no behavioural test for this boiler at all. No FSM test, no burst test, no scene: the entire
 iiex boiler suite (`test/IronIndustryExpanded.Tests/Blocks/Boiler/`) runs against the Cornish stat table, so
@@ -445,8 +445,8 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    ([Cornish boiler](boiler-cornish.md)), so 200 L of water is permanently unrecoverable - a third more than
    the Cornish's stranded 150 L.
 
-4. The handbook is wrong on three of the four build figures (`docs/hpex/handbook/00-highpressure.html:12-15`,
-   `assets/hpex/lang/en.json` `handbook-highpressure-text`):
+4. The handbook is wrong on three of the four build figures (`docs/siex/handbook/05-highpressure.html:12-15`,
+   `assets/siex/lang/en.json` `handbook-highpressure-text`):
 
    | handbook | actual | source |
    |---|---|---|
@@ -455,15 +455,15 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    | "12 rods" | 10 | `:101` |
    | "64 fire bricks" | 60 | `:102` |
    | "its firebox uses 39 fire-brick blocks" | 39 yes | glyph count |
-   | "48 L/s and 12 atm, 1200 L vessel, needs 200 L to begin boiling" | all yes | `HpexConfig.cs:46-60` |
+   | "48 L/s and 12 atm, 1200 L vessel, needs 200 L to begin boiling" | all yes | `SiexConfig.cs:46-60` |
 
    The HTML ↔ lang copy is guarded by `HandbookParityTests`, but nothing compares either against the code, so
    these four numbers can drift freely ([handbook sync pipeline](../mechanics/recipes-config.md) is the
    pipeline; the drift is this page's).
 
 5. The handbook and the README both instruct the player to fit a pressure valve between this boiler and the
-   Cornish engine. They cannot (`src/HighPressureExpanded/README.md:20-23`,
-   `docs/hpex/handbook/00-highpressure.html:27-30`, `docs/hpex/moddb.html:52-58`) - B6, owned in full by
+   Cornish engine. They cannot (`src/SteelIndustryExpanded/README.md:20-23`,
+   `docs/siex/handbook/05-highpressure.html:27-30`, `docs/siex/moddb.html:52-58`) - B6, owned in full by
    [cast pipes](cast-pipes.md) § B6, and silent in play because of B18 ([rolled pipe](rolled-pipe.md)).
 
 6. The bigger vessel did not get a bigger flue or a bigger lid. `BoilerExhaustPerSecond` (16 L/s),
@@ -475,7 +475,7 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    vessel at 12. Owned by [Cornish boiler](boiler-cornish.md) Gotcha 1, which names the Lancashire.
 
 8. The name "Cornish" spans two mods and two tiers. `iiex:boilercornish` is the low-pressure entry boiler;
-   `hpex:enginecornish` is the high-pressure engine. A Cornish boiler cannot drive a Cornish engine (5 atm
+   `siex:enginecornish` is the high-pressure engine. A Cornish boiler cannot drive a Cornish engine (5 atm
    choke vs 6 atm engage at normal throttle) - see [Cornish boiler](boiler-cornish.md) Gotcha 3.
 
 9. The blast radius grew but the blast-resistance threshold did not. `BoilerBlastResistanceThreshold` is 20
@@ -494,8 +494,8 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
 
 - No behavioural test. The whole boiler suite exercises the Cornish's numbers. A Lancashire rig would pin the
   9.6 atm hand-prime ceiling, the 150 s live-feed climb and the radius-4 burst.
-- No editable shape. `assets/hpex/shapes/boiler/lancashire.json` is the only copy; the model cannot be
-  re-edited from source (`docs/hpex/ASSETS-TODO.md` lists the listing art but not this).
+- No editable shape. `assets/siex/shapes/boiler/lancashire.json` is the only copy; the model cannot be
+  re-edited from source (`docs/siex/ASSETS-TODO.md` lists the listing art but not this).
 - The iiex fitting lock-in needs a decision, not just a note (Gotcha 1). Either hpex ships passthrough /
   passthrough-bend / outlet in its own domain (which also fixes B6, since both the joint family and the
   pressure-valve ceiling read `Code.Domain`), or the legends become domain-wildcards and the tier distinction

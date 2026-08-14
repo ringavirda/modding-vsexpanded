@@ -18,16 +18,20 @@ import xml.etree.ElementTree as ET
 # assembly name in the report -> (display, min line %)
 # NOTE: a package missing from this map is silently ungated AND excluded from TOTAL (see main()),
 # so every shipped mod assembly belongs here - add a row when a mod is added.
+# Keyed by ASSEMBLY name - what cobertura writes as the package name - NOT the project folder. The
+# two matched while the mods left <AssemblyName> to default from the folder; every mod now sets it
+# explicitly, so these are exlib / iiex / siex. A key that names a folder matches no package and is
+# the silent-ungating case the note above describes, which is why the run asserts they all matched.
+#
+# Ratcheted 2026-08-14 off a full-solution run after the merges: exlib 73.6, iiex 60.3, siex 66.8,
+# total 65.4. The previous floors had drifted far below the real numbers because two of the three
+# keys named a folder and so gated nothing.
 FLOORS = {
-    "exlib": ("ExpandedLib", 33.0),
-    "IronIndustryExpanded": ("iiex", 25.0),
-    "IronIndustryExpanded": ("iiex", 39.0),
-    "SteelmakingExpanded": ("smex", 34.0),
-    # hpex is two thin stat-table leaves over iiex's bases; its own line count is small and mostly
-    # covered indirectly through its engine-plant scenarios.
-    "HighPressureExpanded": ("hpex", 25.0),
+    "exlib": ("ExpandedLib", 68.0),
+    "iiex": ("iiex", 55.0),
+    "siex": ("siex", 60.0),
 }
-TOTAL_FLOOR = 35.0
+TOTAL_FLOOR = 60.0
 
 
 def line_coverage(pkg):
@@ -46,11 +50,13 @@ def main(path):
     root = ET.parse(path).getroot()
     gc = gt = 0
     failures = []
+    matched = set()
     print(f"{'assembly':<14}{'lines':>14}{'%':>8}{'floor':>8}")
     for pkg in root.find("packages"):
         name = pkg.get("name")
         if name not in FLOORS:
             continue
+        matched.add(name)
         display, floor = FLOORS[name]
         cov, tot = line_coverage(pkg)
         gc += cov
@@ -65,6 +71,15 @@ def main(path):
     print(f"{'TOTAL':<14}{gc:>7}/{gt:<6}{total_pct:>7.1f}{TOTAL_FLOOR:>8.1f}")
     if total_pct < TOTAL_FLOOR:
         failures.append(f"TOTAL {total_pct:.1f}% < {TOTAL_FLOOR:.1f}%")
+
+    # A floor whose key names no package gates nothing and drops that assembly out of TOTAL, which
+    # reads exactly like a passing run. A rename is the way it happens - the key is the assembly
+    # name, and it moves when <AssemblyName> or the project folder does.
+    for missing in sorted(set(FLOORS) - matched):
+        failures.append(
+            f"{missing}: no package by that name in the report - the floor gated nothing "
+            f"(assembly renamed?)"
+        )
 
     if failures:
         print("\nCOVERAGE GATE FAILED:")

@@ -4,7 +4,7 @@
 lang-keyed in three languages, golden-pinned, and read by the mill's fit gesture. None of them can produce
 anything: four of the five output codes name items that do not exist, and the one field the steel tier is
 supposed to gate on is never read. The other eight settled sets (six iiex, two smex) exist only on paper.
-**Mod** iiex ships the itemtype and all four shipped sets. iiex and smex are settled to ship their own -
+**Mod** iiex ships the itemtype and all four shipped sets. siex is settled to ship its own -
 see [The cross-mod emit question](#the-cross-mod-emit-question).
 
 ## Owns
@@ -69,7 +69,7 @@ The roll set is where the suite's central idiom was invented. The casting patter
 
 1. a `sealed record` + `TryParse` next to the machine that reads it;
 2. a `*Validation.Validate(IEnumerable<CollectibleObject>)` static, called from the mod system's
-   `AssetsFinalize` (iiex's is `IronworkingExpandedModSystem.cs:113-116`);
+   `AssetsFinalize` (iiex's is `IronIndustryExpandedModSystem.cs:113-116`);
 3. an `IExItemDefProvider` emitting one itemtype with a `type` variant group and `attributesByType`;
 4. a `public static readonly string[]` of the variant names, so recipes and lang derive from one list
    (`RollSetItemDefinitions.SetTypes`, `:108`).
@@ -274,7 +274,7 @@ Ukrainian for a set that could never accept anything; it went with the set on 20
 
 There is no recipe for any roll set, in any tier. Every set is creative-only
 (`RollSetItemDefinitions.cs:127`), there are no hand-written recipe assets in the repo, and neither
-`IiexRecipeConfig.DefaultCatalogue` nor `SmexRecipeConfig.Defaults()` carries a roll-set cost row
+`IiexRecipeConfig.DefaultCatalogue` nor `SiexRecipeConfig.Defaults()` carries a roll-set cost row
 ([recipes & config](../mechanics/recipes-config.md)).
 
 The route the art implies: `item-rollers-castblank.json` is a drawn cast blank, and the rolls are chilled
@@ -303,7 +303,7 @@ question - whether four (iiex) or six (smex) sets plus their mills is a sane ask
 
 A second mod ships sets by emitting its own itemtype, not by extending iiex's. The fit gate never looks at
 the domain (`BlockRollingMill.cs:294`), and `attributesByType` is per-itemtype, so iiex would ship
-`iiex:rollset-*` from its own `IExItemDefProvider` and smex `smex:rollset-*` from its own
+`iiex:rollset-*` from its own `IExItemDefProvider` and smex `siex:rollset-*` from its own
 ([steel roll sets](../machines/steel-roll-sets.md) § Code). That works today with no iiex change.
 
 What it costs, and nobody has written it down:

@@ -300,7 +300,7 @@ vanilla's plank set. A vanilla wood added by an update is silently uncraftable-i
 | `MoldSpec` | `src/IronIndustryExpanded/BlockStructures/Casting/MoldSpec.cs:32` | the record; `TryParse` at `:49-116`; `AttributeKey` at `:42` |
 | `MoldSize` | `:9-16` | `Cell` · `LongCell`; enforced via `AcceptedSize` |
 | `PatternItemDefinitions` | `…/Casting/PatternItemDefinitions.cs` | `IExItemDefProvider`; shapes `:92-101`, `Molds` `:108-230`, `LongCellPatternTypes` `:233`, `PatternTypes` `:247`, `PatternWoods` `:253`, `Itemtype` `:272` |
-| `PatternValidation.Validate` | `…/Casting/PatternValidation.cs:19-31` | the `AssetsFinalize` sweep; pure over a collectible sequence; called from `IronworkingExpandedModSystem.cs` |
+| `PatternValidation.Validate` | `…/Casting/PatternValidation.cs:19-31` | the `AssetsFinalize` sweep; pure over a collectible sequence; called from `IronIndustryExpandedModSystem.cs` |
 | the recognition gate | `BlockEntitySandCastingCell.cs:188` | `FirstCodePart() == "pattern"` - domain-blind, the cross-mod contract |
 | the spec read + size gate | `BlockEntitySandCastingCell.cs:69`, `:77`, `:54` | where a pattern's spec is resolved and its size checked |
 | `DiagramItemDefinitions` | `…/Items/DiagramItemDefinitions.cs:26` | `PatternDiagramTypes` derived at `:56-58` |

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+  "type": "Code",
+  "modid": "siex",
+  "name": "Steel Industry Expanded",
+  "authors": ["fallenstar"],
+  "description": "Industrial iron and steel production: blast furnace, Bessemer converter and high-pressure steam power!",
+  "version": "0.9.9",
+  "dependencies": {
+    "game": "1.22.0",
+    "exlib": "0.7.3",
+    "iiex": "0.7.0"
+  }
+}

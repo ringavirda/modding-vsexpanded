@@ -10,7 +10,7 @@
 - That nothing in hpex consumes rolled pipe, including hpex's own two machines.
 - The 12 atm rating's two side-effects: the run buffer it implies, and its equality with the Lancashire
   boiler's choke.
-- `HpexExtractionMigration` and its remap table.
+- `HpMachineDomainMigration` and its remap table.
 - The hpex-side test coverage of the tier, including the one test whose assertion cannot detect the
   property it names.
 
@@ -39,7 +39,7 @@
 Top rung of a three-rung pipe ladder: iiex plated at 2.5 atm, iiex cast at 5.0, hpex rolled at 12 - the only tier
 that can carry a Lancashire boiler's steam to a Cornish engine without sitting on its own burst clock.
 
-The tier is a variant axis, and the high-order one: a rolled pipe is `hpex:pipe-rolled-straight-ns`, and the
+The tier is a variant axis, and the high-order one: a rolled pipe is `siex:pipe-rolled-straight-ns`, and the
 `tier` variant resolves the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `:291-294`,
 `:321-324`). One material per tier, one model per tier - that part is unchanged; what moved is where the tier is
 written down.
@@ -81,10 +81,10 @@ keys (`BlockPipe.cs:78-79`). Discovered when the hpex assembly is scanned by `En
 
 | blocktype | variants | max stack | creative selector | file:line |
 |---|---|---|---|---|
-| `hpex:pipe-rolled-straight-*` | 3 - `ns` `we` `ud` | 16 | `*-straight-ns` | `BlockPipe.cs:118-128` |
-| `hpex:pipe-rolled-bend-*` | 12 - `nw` `se` `en` `ws` `un` `us` `uw` `ue` `dn` `ds` `dw` `de` | 8 | `*-bend-nw` | `:130-165` |
-| `hpex:pipe-rolled-tjunction-*` | 12 - `uns` `uwe` `dns` `dwe` `nes` `esw` `swn` `wne` `dnu` `deu` `dsu` `dwu` | 8 | `*-tjunction-uns` | `:167-202` |
-| `hpex:pipe-rolled-xjunction-*` | 3 - `nswe` `nsud` `weud` | 8 | `*-xjunction-nswe` | `:204-216` |
+| `siex:pipe-rolled-straight-*` | 3 - `ns` `we` `ud` | 16 | `*-straight-ns` | `BlockPipe.cs:118-128` |
+| `siex:pipe-rolled-bend-*` | 12 - `nw` `se` `en` `ws` `un` `us` `uw` `ue` `dn` `ds` `dw` `de` | 8 | `*-bend-nw` | `:130-165` |
+| `siex:pipe-rolled-tjunction-*` | 12 - `uns` `uwe` `dns` `dwe` `nes` `esw` `swn` `wne` `dnu` `deu` `dsu` `dwu` | 8 | `*-tjunction-uns` | `:167-202` |
+| `siex:pipe-rolled-xjunction-*` | 3 - `nswe` `nsud` `weud` | 8 | `*-xjunction-nswe` | `:204-216` |
 
 30 block variants in total. All four share `Common` (`BlockPipe.cs:68-104`): metal material and sounds, the
 `Lockable` behaviour, `RenderPass("OpaqueNoCull")`, `FaceCullMode("NeverCull")`, `LightAbsorption(0)`,
@@ -101,11 +101,11 @@ nothing (the single-face outlet override is iiex's, [cast pipes](cast-pipes.md))
 All happen once in `ModSystem.Start`, keyed by tier:
 
 ```csharp
-BlockPipe.RegisterBurst(BlockPipe.RolledTier, () => HpexValues.RolledPipeBurstPressure);    // :39
-BlockPipe.RegisterThroughput(BlockPipe.RolledTier, () => HpexValues.RolledPipeThroughput);  // :43
+BlockPipe.RegisterBurst(BlockPipe.RolledTier, () => SiexValues.RolledPipeBurstPressure);    // :39
+BlockPipe.RegisterThroughput(BlockPipe.RolledTier, () => SiexValues.RolledPipeThroughput);  // :43
 BlockPipe.RegisterJoint(BlockPipe.RolledTier, BlockPipe.WeldedJoint);                       // :49
 ```
-`HighPressureExpandedModSystem.cs:39-49`. The burst and throughput getters are `Func<float>`s read live, so `/exmod
+`SteelIndustryExpandedModSystem.cs:39-49`. The burst and throughput getters are `Func<float>`s read live, so `/exmod
 config hpex` retunes them without reconstructing networks. hpex registers no network type; the `pipe` network is
 exlib's framework and the HP blocks ride it.
 
@@ -128,13 +128,13 @@ shipping a single pipe family gets from `BlockPipe.Segments(domain, tier: null)`
 | asset | path | state |
 |---|---|---|
 | Editable straight / bend / T / X | `assets/editable/shapes/pipe-block-rolled-{straight,bend,tjunction,xjunction}.json` | present. All four declare `cast-iron1` as an absolute local path into `assets/editable/textures/`, an editable-only artefact |
-| Runtime straight | `assets/hpex/shapes/pipes/straight.json` | `Cube2` (barrel, with 45°-rotated `Cube30`–`Cube33` chamfers) + `Cube6` and `Cube14` (the two end rings) |
-| Runtime bend | `assets/hpex/shapes/pipes/bend.json` | five top-level cubes, same chamfer construction |
-| Runtime T / X | `assets/hpex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
+| Runtime straight | `assets/siex/shapes/pipes/straight.json` | `Cube2` (barrel, with 45°-rotated `Cube30`–`Cube33` chamfers) + `Cube6` and `Cube14` (the two end rings) |
+| Runtime bend | `assets/siex/shapes/pipes/bend.json` | five top-level cubes, same chamfer construction |
+| Runtime T / X | `assets/siex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
 | Textures (all four) | `cast-iron1` → `iiex:block/metal/castiron`, `steel` → `game:block/metal/plate/steel` | |
 | Animations | - | none, on any of the four |
-| Lang | `assets/hpex/lang/en.json` | `block-pipe-{straight,bend,tjunction,xjunction}*` + `blockdesc-pipe-*` = "High-pressure rolled steel piping. The strongest of the three pipe tiers." |
-| Handbook | - | the tier appears in no handbook page. The defs declare a `groupBy` (`BlockPipe.cs:69-74`) but `assets/hpex/config/handbook/00-highpressure.json` is the only page hpex ships and it is about the boiler and the engine |
+| Lang | `assets/siex/lang/en.json` | `block-pipe-{straight,bend,tjunction,xjunction}*` + `blockdesc-pipe-*` = "High-pressure rolled steel piping. The strongest of the three pipe tiers." |
+| Handbook | - | the tier appears in no handbook page. The defs declare a `groupBy` (`BlockPipe.cs:69-74`) but `assets/siex/config/handbook/05-highpressure.json` is the only page hpex ships and it is about the boiler and the engine |
 
 The octagon is real geometry: `straight.json`'s barrel is a 4 × 1 core with four chamfer children rotated ±45° in Z
 (`Cube30`/`Cube31` under `Cube3`, `Cube32`/`Cube33` under `Cube4`), and the two end rings at z 0–1 and z 15–16 are
@@ -151,21 +151,21 @@ so an override would repaint some segments and miss others (`BlockPipe.cs:76-79`
 
 ### B5 — there is none
 
-Nothing anywhere outputs `hpex:pipe-rolled-straight-*` or any of its three siblings. `src/HighPressureExpanded/Recipes/`
+Nothing anywhere outputs `siex:pipe-rolled-straight-*` or any of its three siblings. `src/SteelIndustryExpanded/Recipes/`
 contains one file, `Grid/MachineRecipeDefinitions.cs`, emitting two recipes: the Lancashire boiler frame and the
-Cornish engine frame. The golden `goldens/hpex/recipes/grid/machines.json` is the mod's complete recipe output -
+Cornish engine frame. The golden `goldens/siex/recipes/grid/machines.json` is the mod's complete recipe output -
 three entries (the boiler, and the engine twice, once per gear code).
 
 iiex at least catalogues four `pipe-*-grid` cost keys against its missing recipes (`IiexRecipeConfig.cs:76-79`,
-[cast pipes](cast-pipes.md) § Dead recipe-cost keys). `HpexRecipeConfig.Defaults()` has four entries and none of
-them is a pipe (`HpexRecipeConfig.cs:46-56`):
+[cast pipes](cast-pipes.md) § Dead recipe-cost keys). `SiexRecipeConfig.Defaults()` has four entries and none of
+them is a pipe (`SiexRecipeConfig.cs:46-56`):
 
 | key | type | match |
 |---|---|---|
-| `boilerlancashire-rcc` | rcc | `hpex:boilerlancashire-*` |
-| `enginecornish-rcc` | rcc | `hpex:enginecornish-*` |
-| `boilerlancashire-grid` | grid | `hpex:boilerlancashire-*` |
-| `enginecornish-grid` | grid | `hpex:enginecornish-*` |
+| `boilerlancashire-rcc` | rcc | `siex:boilerlancashire-*` |
+| `enginecornish-rcc` | rcc | `siex:enginecornish-*` |
+| `boilerlancashire-grid` | grid | `siex:boilerlancashire-*` |
+| `enginecornish-grid` | grid | `siex:enginecornish-*` |
 
 So `/exmod recipes hpex cheap` cannot make rolled pipe cheaper: there is nothing to scale. The catalogue comment
 says it is "kept in sync by hand"; the pipe tier is not in it.
@@ -206,7 +206,7 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 
 | neighbour | couples? | why |
 |---|---|---|
-| `hpex:pipe-*` | yes | welded ↔ welded |
+| `siex:pipe-*` | yes | welded ↔ welded |
 | `iiex:pipe-*`, `iiex:pipe-*` | no | welded ↔ flanged |
 | iiex valve / pressure valve / outlet / passthrough / passthrough-bend | no | every fitting is a `BlockPipe` subclass, so it inherits its domain's joint |
 | iiex tuyere, twin-tub blower | no | same - both are `BlockPipe` subclasses in the flanged family |
@@ -241,7 +241,7 @@ no pressure drop.
 
 ### 12 == 12
 
-`RolledPipeBurstPressure` (`HpexConfig.cs:115`) and `LancashireBoilerMaxOutputPressure` (`HpexConfig.cs:60`) are
+`RolledPipeBurstPressure` (`SiexConfig.cs:115`) and `LancashireBoilerMaxOutputPressure` (`SiexConfig.cs:60`) are
 the same number, so a rolled main charged by a Lancashire at full choke sits exactly at its own burst threshold;
 `TickOverpressureAndBurst` compares with a `0.001` epsilon, so a main pinned at 12.000 is inside the 30-second
 grace window, not outside it.
@@ -270,20 +270,20 @@ segments getting craft recipes of their own, and on the hadfield material gate
 
 ## Numbers
 
-### hpex config — `HpexConfig.cs`, `ModConfig/ex_values.json`, section `hpex`
+### hpex config — `SiexConfig.cs`, `ModConfig/ex_values.json`, section `hpex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `RolledPipeBurstPressure` | 12 atm | `HpexConfig.cs:115` | the rolled tier's plain-segment rating; also the run's buffer multiplier, and the ceiling any future hpex pressure valve would inherit |
-| `RolledPipeThroughput` | 250 L/s | `HpexConfig.cs:121` | litres per second a rolled segment passes; the smallest across a run caps the run |
+| `RolledPipeBurstPressure` | 12 atm | `SiexConfig.cs:115` | the rolled tier's plain-segment rating; also the run's buffer multiplier, and the ceiling any future hpex pressure valve would inherit |
+| `RolledPipeThroughput` | 250 L/s | `SiexConfig.cs:121` | litres per second a rolled segment passes; the smallest across a run caps the run |
 
 That is the whole of hpex's pipe config. Everything else a rolled run uses - `LitresPerPipe`, `GasLeakRate`,
 `LiquidLeakRate`, `EvaporationLitresPerDay`, `PipeOverpressureSeconds` - is exlib's, and `ChimneyGasDrawRate` is
 iiex's; all are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers.
 
-Caution: `HpexConfig.cs`'s doc comment calls this "a rolled (hpex) Hadfield-steel pipe segment" and
-`HighPressureExpandedModSystem.cs` calls the tier "rolled (Hadfield steel)", the lang string calls it "rolled
-steel" (`assets/hpex/lang/en.json`), and the test fixture maps the material name `"hadfield"` onto the hpex domain
+Caution: `SiexConfig.cs`'s doc comment calls this "a rolled (hpex) Hadfield-steel pipe segment" and
+`SteelIndustryExpandedModSystem.cs` calls the tier "rolled (Hadfield steel)", the lang string calls it "rolled
+steel" (`assets/siex/lang/en.json`), and the test fixture maps the material name `"hadfield"` onto the hpex domain
 (`PipeTestWorld.cs`). No hadfield material exists in code ([Cornish engine](engine-cornish.md) Gotcha 6); the name
 is a design-doc term that appears in comments and a test fixture.
 
@@ -305,7 +305,7 @@ is a design-doc term that appears in comments and a test fixture.
 |---|---|---|---|---|---|---|
 | plated | iiex | 2.5 | 50 | flanged | `PlatedPipe*` | [pipe network](../mechanics/pipe-network.md) |
 | cast | iiex | 5.0 | 120 | flanged | `CastPipe*` | [cast pipes](cast-pipes.md) |
-| rolled | hpex | 12 | 250 | welded | `RolledPipe*` | this page (`HpexConfig.cs:115`, `:121`) |
+| rolled | hpex | 12 | 250 | welded | `RolledPipe*` | this page (`SiexConfig.cs:115`, `:121`) |
 
 ### Where 12 sits against the machines it exists for
 
@@ -336,12 +336,12 @@ Plain block drops throughout. None of the four defs sets `NoDrops()`; `BlockPipe
 
 | block | drops | note |
 |---|---|---|
-| `hpex:pipe-rolled-straight-*` | itself | stack 16 |
-| `hpex:pipe-rolled-bend-*` / `rolled-tjunction-*` / `rolled-xjunction-*` | itself | stack 8 |
+| `siex:pipe-rolled-straight-*` | itself | stack 16 |
+| `siex:pipe-rolled-bend-*` / `rolled-tjunction-*` / `rolled-xjunction-*` | itself | stack 8 |
 | a burst segment | its items, plus a steam puff and a pop; the cell is set to air and the node removed, fracturing the run | [pipe network](../mechanics/pipe-network.md) § 5 |
 
 Salvage is 1:1 and lossless: none of these is a right-click construction, so `RccBrokenDropsRatio`
-(`HpexConfig.cs`) does not apply to them even though it is registered for the hpex domain.
+(`SiexConfig.cs`) does not apply to them even though it is registered for the hpex domain.
 
 ---
 
@@ -350,24 +350,24 @@ Salvage is 1:1 and lossless: none of these is a right-click construction, so `Rc
 | piece | file:line |
 |---|---|
 | `RolledPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/RolledPipeDefinitions.cs:15-18` |
-| burst + throughput + joint registration | `HighPressureExpandedModSystem.cs:42-46` |
-| `HpexConfig.RolledPipeBurstPressure` / `.RolledPipeThroughput` | `HpexConfig.cs:115`, `:121` |
+| burst + throughput + joint registration | `SteelIndustryExpandedModSystem.cs:42-46` |
+| `SiexConfig.RolledPipeBurstPressure` / `.RolledPipeThroughput` | `SiexConfig.cs:115`, `:121` |
 | `BlockPipe` (segments factory, burst/throughput/joint registries) | `src/ExpandedLib/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |
 | `BlockEntityPipe` | `src/ExpandedLib/Blocks/Networks/BlockEntityPipe.cs` |
-| `HpexExtractionMigration : IBlockCodeMigration` | `BlockMigrations/HpexExtractionMigration.cs:34`, `GetRemaps` `:46-59` |
+| `HpMachineDomainMigration : IBlockCodeMigration` | `BlockMigrations/HpMachineDomainMigration.cs:34`, `GetRemaps` `:46-59` |
 | the migrator that applies it | `ExpandedLib/Blocks/Migrations/BlockMigrationModSystem.cs` |
-| goldens | `test/HighPressureExpanded.Tests/goldens/hpex/blocktypes/pipes/{straight,bend,tjunction,xjunction}.json` |
+| goldens | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/pipes/{straight,bend,tjunction,xjunction}.json` |
 
-### `HpexExtractionMigration`
+### `HpMachineDomainMigration`
 
 The Lancashire and the Cornish shipped as `iiex:` blocks, and before the `ppex → iiex` rename as `ppex:` ones, so a
 placed machine in an older save carries a code that no longer resolves. The migration names its two block bases
-literally (`ExtractedBases = ["boilerlancashire", "enginecornish"]`, `HpexExtractionMigration.cs:41`) and emits
+literally (`ExtractedBases = ["boilerlancashire", "enginecornish"]`, `HpMachineDomainMigration.cs:41`) and emits
 both historical domains for each:
 
 ```
-(iiex:<path>  →  hpex:<path>)
-(ppex:<path>  →  hpex:<path>)
+(iiex:<path>  →  siex:<path>)
+(ppex:<path>  →  siex:<path>)
 ```
 `:46-59`, via `CodeRelocation.Remap` with `legacySideWords` (both machines carried word-spelled sides in older
 saves). Both legacy domains are emitted because iiex's rename migration only covers blocks that are still iiex, so
@@ -378,13 +378,13 @@ Do not widen this migration to enumerate the hpex domain: `hpex:pipe-*` uses the
 cast pipes, so a domain-wide enumeration would claim `iiex:pipe-*` as a legacy source and rewrite every placed cast
 pipe into a rolled one. `ReleasedCodeCoverageTests` fails if any migration declares a live code as a legacy source.
 
-### Tests — `test/HighPressureExpanded.Tests/`
+### Tests — `test/SteelIndustryExpanded.Tests/`
 
 | file | pins |
 |---|---|
 | `Networks/RolledJointTests.cs` | five coupling cases (iiex↔iiex, iiex↔iiex, iiex↔iiex both ways, hpex↔hpex) · four refusal cases (hpex↔iiex and hpex↔iiex, both orderings - the symmetry an `AcceptsNeighbour` implementation is required to have) · the three declared joint families · a machine port is not a pipe and is unaffected |
-| `Fixtures/PipeBurstParityTests.cs` | `PipeTestWorld.RolledTierBurst` (12) equals `HpexValues.RolledPipeBurstPressure` - the shared iiex fixture cannot reference hpex, so a retune would otherwise leave every HP test running against a stale ceiling and still passing |
-| `Definitions/HpexDefinitionGoldenTests.cs` | the four pipe defs reproduce their goldens; the golden set exactly covers the defs; every shape reference resolves to a shipped file |
+| `Fixtures/PipeBurstParityTests.cs` | `PipeTestWorld.RolledTierBurst` (12) equals `SiexValues.RolledPipeBurstPressure` - the shared iiex fixture cannot reference hpex, so a retune would otherwise leave every HP test running against a stale ceiling and still passing |
+| `Definitions/SiexDefinitionGoldenTests.cs` | the four pipe defs reproduce their goldens; the golden set exactly covers the defs; every shape reference resolves to a shipped file |
 
 `RolledJointTests` is hosted here because it is the only suite that can see all three tiers.
 
@@ -422,8 +422,8 @@ it was written to catch. A real assertion needs both ends sealed with `IiexScene
    (`BlockPipe.cs:203`) exempts every subclass and hpex ships no subclasses, so there is no non-bursting hpex
    block to break up a run. `MinBurstPressure` on a pure rolled run is always 12, never `float.MaxValue`.
 
-5. **"Hadfield" is a documentation word with no code behind it.** Comments in `HpexConfig.cs` and
-   `HighPressureExpandedModSystem.cs` and one test fixture (`PipeTestWorld.cs`) use it; the shipped lang
+5. **"Hadfield" is a documentation word with no code behind it.** Comments in `SiexConfig.cs` and
+   `SteelIndustryExpandedModSystem.cs` and one test fixture (`PipeTestWorld.cs`) use it; the shipped lang
    string says "rolled steel"; nothing in `src/` defines it. See [Cornish engine](engine-cornish.md)
    Gotcha 6 and `../materials.md`.
 

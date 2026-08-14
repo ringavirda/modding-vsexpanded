@@ -1,5 +1,8 @@
 # Furnace and machine rebalance
 
+**Status** EXECUTED in the 0.9.7 shipping line. Plan of record: the numbers here are what shipped, so it
+is the reference for any furnace-side rebalance rather than a task list.
+
 Plan of record for the 0.9 shipping line. Written 2026-08-09, before implementation.
 
 Everything below is a maintainer ruling. Every number is settled; every phase 0 read is done.
@@ -182,7 +185,7 @@ Ordering afterwards: manual 2 < MP on a waterwheel 3.5 < MP on a Watt 10 < engin
 
 ### 3.1 Close the duplication
 
-`src/SteelmakingExpanded/assets/smex/patches/vanilla/metalbit.json` adds `crushingPropsByType` so
+`src/SteelIndustryExpanded/assets/siex/patches/vanilla/metalbit.json` adds `crushingPropsByType` so
 `metalbit-iron` crushes to `game:crushed-iron` 1:1. At the shipped 5.0 units per ore that loop is
 exactly break-even; at 8.5 it returns 1.7x and iron becomes unbounded.
 

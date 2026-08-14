@@ -1,0 +1,32 @@
+{
+  "code": "hopperreinforced",
+  "class": "siex.BlockHopperReinforced",
+  "entityClass": "siex.BlockEntityHopperReinforced",
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "siex": [
+      "*"
+    ]
+  },
+  "blockmaterial": "Metal",
+  "maxstacksize": 1,
+  "lightAbsorption": 0,
+  "shape": {
+    "base": "siex:blastfurnace/hopper-reinforced"
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "resistance": 1.75,
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  }
+}

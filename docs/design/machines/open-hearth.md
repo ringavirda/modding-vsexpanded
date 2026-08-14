@@ -111,7 +111,7 @@ would be built from.
 | hearth / bath | the shallow pool of metal; every interactive cell the player charges through | the reverberatory hearth idiom - `BlockPuddlingHearth.cs:25-30`, `BlockHeatingHearth.cs:43-54` (the clicked cell picks the slot) |
 | charge doors | scrap and pig go in here, not down a shaft | `game:cokeovendoor*` is already a layout legend on the cowper (`BlockCowperStoveIntake.cs:56`); the puddling charge door is a modelled block |
 | regenerator chambers ×2 | soak flue heat on one half-cycle, give it back to the incoming gas + air on the other | the cowper stove, exactly - `BlockEntityCowperStove.cs:25` already models a checker-brick regenerator: internal temperature climbs from an exhaust network (`:175-186`), bleeds into the medium it reheats (`:215-219`), capped by `CowperMaxTemperature` (`:64`), with heat-sink blocks reading the value out (`:279-290`) |
-| gas + air intakes | producer gas one side, air the other | `smex:cowperstove-intake*` and `iiex:pipe-passthrough-*` are already layout legends (`BlockCowperStoveIntake.cs:52-55`) |
+| gas + air intakes | producer gas one side, air the other | `siex:cowperstove-intake*` and `iiex:pipe-passthrough-*` are already layout legends (`BlockCowperStoveIntake.cs:52-55`) |
 | reversing valve | the one control the machine has: swap which chamber fires and which soaks | the damper-on-a-lever idiom - `BlockEntityPuddlingChimneyCap.cs:19-33` (`IsOpen` / `Toggle`, held `idle`/`open` poses) |
 | metal tap | one tap into a canal | `iiex:moltenmetaltap*`, unchanged ([molten canal](molten-canal.md)) |
 | slag | skimmed or tapped separately | `iiex:slag`, as every other furnace makes |
@@ -136,9 +136,9 @@ counted-scan approach that page proposes.
 | Asset | State |
 |---|---|
 | editable shape | missing - `assets/editable/shapes/` holds no open-hearth file |
-| runtime shape | missing; `assets/smex/shapes/` holds `converter/`, and the cowper/smokestack/engine sets - nothing else |
+| runtime shape | missing; `assets/siex/shapes/` holds `converter/`, and the cowper/smokestack/engine sets - nothing else |
 | textures | missing. The furnace core's south face carries a two-letter type label (`BlockFurnaceCoreBase.cs:34-68`); the cupola's `cf.png` is the precedent, and an open hearth needs its own so a built one reads apart |
-| metal def | missing - `assets/smex/config/metals/` contains only `bessemersteel.json` |
+| metal def | missing - `assets/siex/config/metals/` contains only `bessemersteel.json` |
 | producer-gas medium | missing - `assets/exlib/config/liquids.json` declares `Air`, `Steam`, `Exhaust`, `Water` and nothing else |
 | lang / handbook | no key, no page |
 
@@ -156,12 +156,12 @@ No recipe. Proposed, and expensive - this is the machine that says the steel tie
 |---|---|---|
 | hearth core | refractory brick ×4 + 2 rod + 1 plate + fire clay | `FurnaceRecipeDefinitions.cs:68-80` (the cupola core) |
 | hearth cells | tier-3 refractory brick, in bulk | the vessel's own RCC stages, `BlockConverterBessemer.cs:112-121` |
-| regenerator chambers | tier-3 refractory brick + `smex:cowperstove-intake` ×2 | `SmexRecipeConfig.cs:61-62` |
+| regenerator chambers | tier-3 refractory brick + `siex:cowperstove-intake` ×2 | `SiexRecipeConfig.cs:61-62` |
 | reversing valve | plate + nails on the chimney-cap chassis | `ExIngredients.cs:36` |
 | tap | `iiex:moltenmetaltap` | unchanged |
 
 Cost keys `openhearthcore-grid` and `openhearthreverser-grid` would go in
-`SmexRecipeConfig.DefaultCatalogue` (`SmexRecipeConfig.cs:45-70`).
+`SiexRecipeConfig.DefaultCatalogue` (`SiexRecipeConfig.cs:45-70`).
 
 Its real prerequisite is not a recipe but the gas producer, which is also unbuilt (see Open #1).
 
@@ -260,7 +260,7 @@ to `BfMaxFuelFactor`):
 Terms: `BfCombustionBaseTemp` 950, `BfCombustionCokeGain` 900, `BfMaxFuelFactor` 1.25,
 `BfNaturalDraughtFactor` 0.5, `BfPreheatCoefficient` 0.35, `BfRadiationLossBase` 120, `BfChargeLossFull` 310
 (`IiexConfig.cs:181`, `:184`, `:196`, `:207`, `:218`, `:221`, `:225`); `CowperMaxTemperature` 1240
-(`SmexConfig.cs:121`).
+(`SiexConfig.cs:121`).
 
 A Siemens furnace is blown - the regenerators are how the air gets there. So `RequiresBlast => true` with
 the regenerator feeding the intake is both the correct model and the one that works, and this machine does
@@ -274,16 +274,16 @@ margin over iron's melt line. Regenerated: 2072 °C, which the melt-speed factor
 
 | Key | Proposed | Measured against (file:line) | What it does |
 |---|---|---|---|
-| `OpenHearthCapacity` | 24 000 u = 8 slab pours | `BessemerConverterCapacity` 4800 (`SmexConfig.cs:145`), settled 6000 | "much larger per heat" as a number - 4× the converter |
-| `OpenHearthMeltingPoint` | 1500 °C | `BfIronMeltingPoint` 1482 (`IiexConfig.cs:271`); `BessemerRefineTemperature` 1500 (`SmexConfig.cs:194`) | steel's liquidus, same figure the converter refines above |
+| `OpenHearthCapacity` | 24 000 u = 8 slab pours | `BessemerConverterCapacity` 4800 (`SiexConfig.cs:145`), settled 6000 | "much larger per heat" as a number - 4× the converter |
+| `OpenHearthMeltingPoint` | 1500 °C | `BfIronMeltingPoint` 1482 (`IiexConfig.cs:271`); `BessemerRefineTemperature` 1500 (`SiexConfig.cs:194`) | steel's liquidus, same figure the converter refines above |
 | `OpenHearthMeltIntervalSec` | 60 s | `BfMeltIntervalSec` 10 (`IiexConfig.cs:286`), `CupolaMeltIntervalSec` 20 (`:333`) | the slow cadence - 6× the blast furnace's |
 | `OpenHearthSteelPerMeltCycle` | 400 u | `BfIronPerMeltCycle` 60, settled 200 (`IiexConfig.cs:289`) | ⇒ 6.7 u/s nominal, 13.3 u/s at the melt-speed cap |
 | `OpenHearthSlagPerMeltCycle` | 40 u | `CupolaSlagPerMeltCycle` 8 (`IiexConfig.cs:340`) | 10 % - basic practice makes more slag than the acid converter's 6 % |
-| `OpenHearthGasPerSecond` | 24 L/s | `CowperIntakeVolume` 24 (`SmexConfig.cs:139`), `BessemerBlastPerSecond` 8 (`:148`) | continuous fuel draw; three times the converter's blast |
+| `OpenHearthGasPerSecond` | 24 L/s | `CowperIntakeVolume` 24 (`SiexConfig.cs:139`), `BessemerBlastPerSecond` 8 (`:148`) | continuous fuel draw; three times the converter's blast |
 | `OpenHearthAirPerSecond` | 24 L/s | same | the regenerated air side |
 | `OpenHearthScrapFraction` | no key | - | absent by design. The ceiling is the existing charge-loss/melt-speed arithmetic, not a number |
-| `OpenHearthReversalSeconds` | 300 s | `CowperCoolingSpeedExhaust` 0.3 / `CowperCoolingSpeedAir` 0.0012 (`SmexConfig.cs:133`, `:136`) | how long a chamber fires before the lever should be thrown |
-| `OpenHearthMaxTemperature` | reuse `CowperMaxTemperature` 1240 | `SmexConfig.cs:121` | regenerator cap; a separate key only if the OH is meant to out-preheat a cowper |
+| `OpenHearthReversalSeconds` | 300 s | `CowperCoolingSpeedExhaust` 0.3 / `CowperCoolingSpeedAir` 0.0012 (`SiexConfig.cs:133`, `:136`) | how long a chamber fires before the lever should be thrown |
+| `OpenHearthMaxTemperature` | reuse `CowperMaxTemperature` 1240 | `SiexConfig.cs:121` | regenerator cap; a separate key only if the OH is meant to out-preheat a cowper |
 
 ### The rhythm arithmetic these produce
 
@@ -339,14 +339,14 @@ Nothing exists. `grep -ri "openhearth\|open hearth" src/` returns no hits at all
 
 | Piece | Where it would go | Model it on |
 |---|---|---|
-| `BlockOpenHearthCore` | `src/SteelmakingExpanded/BlockStructures/OpenHearth/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete furnace: `Core(domain, code, path, tiers…)`, then `.Class` / `.EntityClass` / faces / `.MultiblockLayout` |
+| `BlockOpenHearthCore` | `src/SteelIndustryExpanded/BlockStructures/OpenHearth/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete furnace: `Core(domain, code, path, tiers…)`, then `.Class` / `.EntityClass` / faces / `.MultiblockLayout` |
 | the layout | `.MultiblockLayout(s => s.Origin(…).Legend(…).Layer(…))` | `BlockCowperStoveIntake.cs:49-110` - the closest sibling; negative-Y layers are legal and used |
 | `BlockEntityOpenHearth` | `…/OpenHearth/BlockEntities/` | `BlockEntityCupolaFurnace.cs:28` (a furnace that is only property overrides) for the tunables shape; `BlockEntityBlastFurnace.cs:31` for the molten pools + taps |
 | regenerator chambers | reuse | `BlockEntityCowperStove.cs:25` - soak (`:175-186`), give back (`:215-219`), cap (`:64`), heat-sink readout (`:279-290`) |
 | the reversing lever | reuse | `BlockPuddlingChimneyCap` / `BlockEntityPuddlingChimneyCap.cs:19-33` |
 | charge doors / hearth cells | reuse | `BlockPuddlingHearth.cs:25-30`, `BlockHeatingHearth.cs:43-54` - the clicked cell picks the slot |
 | bulk-scrap acceptance | `MaterialRoleRegistry.IsRole(Roles.Scrap, stack)` | the converter already classifies scrap by role, not by path (`BlockEntityConverterControl.cs:619`) - reuse it and take whole stacks instead of `BessemerScrapUnitValue` bits |
-| metal def | `assets/smex/config/metals/openhearthsteel.json` | `bessemersteel.json` is the template. decide `generateItemFamily` and `tools` explicitly - see Gotchas |
+| metal def | `assets/siex/config/metals/openhearthsteel.json` | `bessemersteel.json` is the template. decide `generateItemFamily` and `tools` explicitly - see Gotchas |
 | heat | inherited, unmodified | override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `TuyereIntakeVolume`, `BlastPressureThreshold`, `BlastMixRequiredToFire` (`BlockEntityFurnaceCore.cs:111-128`) and nothing else |
 | the tap | already works | `iiex:moltenmetaltap*` ([molten canal](molten-canal.md)) |
 
@@ -366,7 +366,7 @@ which is the existing precedent for reading a regenerator's heat from outside it
 ### Tests
 
 None. When built, the shape of the suite is set by
-`test/SteelmakingExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` (`ConverterRig`) and
+`test/SteelIndustryExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` (`ConverterRig`) and
 `test/IronIndustryExpanded.Tests/Scenarios/CupolaScenarioTests.cs` - build the real footprint through
 `StructureRig`, never force `StructureComplete`, and drive the machine's own production tick.
 
@@ -392,7 +392,7 @@ None. When built, the shape of the suite is set by
    tools come from shear / crucible / HSS.
 
 5. The exhaust side already has a consumer and a vent. Spent flue gas should join the same exhaust network
-   the cowpers soak and the smokestack vents (`SmokestackGasIntakeVolume` 48 L/s, `SmexConfig.cs:255`), not
+   the cowpers soak and the smokestack vents (`SmokestackGasIntakeVolume` 48 L/s, `SiexConfig.cs:255`), not
    a private one. A furnace whose exhaust network is full counts a disruption
    ([heat balance](../mechanics/heat-balance.md)), so an open hearth on an undersized stack will die.
 

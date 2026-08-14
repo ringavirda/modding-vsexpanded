@@ -84,8 +84,8 @@ has is a form list, and blown iron's is the shortest on the ladder.
 
 | Form | Code | Exists as | Mass | Made by | Consumed by |
 |---|---|---|---|---|---|
-| molten charge | `smex:ingot-blowniron` carried in a `MoltenCharge` | the normal state - it should almost never be an inventory item | the converter's charge units ([Bessemer](../machines/bessemer.md#numbers)) | [Bessemer](../machines/bessemer.md) blow | [ladle](../machines/ladle.md), and nothing else |
-| ingot | `smex:ingot-blowniron` | the generated `ingot` form; exists only so a mold/canal has something to freeze into | vanilla ingot template, 1 → 1 smelt-back (`MetalFamilyEmitter.cs:145`, `:154`) | solidifying a pour | remelt in the [cupola](../machines/cupola.md) |
+| molten charge | `siex:ingot-blowniron` carried in a `MoltenCharge` | the normal state - it should almost never be an inventory item | the converter's charge units ([Bessemer](../machines/bessemer.md#numbers)) | [Bessemer](../machines/bessemer.md) blow | [ladle](../machines/ladle.md), and nothing else |
+| ingot | `siex:ingot-blowniron` | the generated `ingot` form; exists only so a mold/canal has something to freeze into | vanilla ingot template, 1 → 1 smelt-back (`MetalFamilyEmitter.cs:145`, `:154`) | solidifying a pour | remelt in the [cupola](../machines/cupola.md) |
 | bits | `game:metalbit-iron` (as `solidDrop`) | chisel-out / break recovery from a frozen vessel | 5 u per bit, the shared granularity ([recoverability](../mechanics/recoverability.md)) | a lost heat | scrap charge, remelt |
 | plate / rod / nails | - | must not exist | - | - | - |
 | tools | - | must not exist - no `tools` block at all | - | - | - |
@@ -97,12 +97,12 @@ guarantees nothing, and its def already says exactly that: `itemForms: ["ingot"]
 (`assets/iiex/config/metals/pigiron.json:9-13`).
 
 ```jsonc
-// assets/smex/config/metals/blowniron.json
+// assets/siex/config/metals/blowniron.json
 {
   "code": "blowniron",
-  "moltenItem": "smex:ingot-blowniron",
+  "moltenItem": "siex:ingot-blowniron",
   "solidDrop": "game:metalbit-iron",     // recoverable as ordinary iron scrap
-  "displayLangKey": "smex:metal-blowniron",
+  "displayLangKey": "siex:metal-blowniron",
   "castDomain": "smex",
   "generateItemFamily": true,
   "itemForms": ["ingot"],                // ← the whole ruling, in one line
@@ -169,13 +169,13 @@ Nothing exists. What it will need:
 
 | Asset | Path | State |
 |---|---|---|
-| metal def | `assets/smex/config/metals/blowniron.json` | missing - smex's `config/metals/` holds exactly one file, `bessemersteel.json` |
+| metal def | `assets/siex/config/metals/blowniron.json` | missing - smex's `config/metals/` holds exactly one file, `bessemersteel.json` |
 | shape | - | none needed. The generated `ingot` form paints `game:item/ingot` ([alloys § assets](alloys.md#assets)) |
 | texture | `game:block/metal/tarnished/iron` | vanilla, already used by pig iron (`pigiron.json:10`) - verified present. Dull by intent: this is not a metal to be proud of |
-| lang | `smex:metal-blowniron`, `smex:item-ingot-blowniron`, `smex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iiex:itemdesc-ingot-pigiron*` (`assets/iiex/lang/en.json:39`) |
+| lang | `siex:metal-blowniron`, `siex:item-ingot-blowniron`, `siex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iiex:itemdesc-ingot-pigiron*` (`assets/iiex/lang/en.json:39`) |
 | status lines | `smex-bessemer-status-*` | existing converter status text says "pour it, or blow on for soft iron" ([Bessemer Gotcha #1](../machines/bessemer.md#gotchas)); under N1 that sentence is wrong and has to change with the retype |
-| goldens | `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/blowniron/ingot.json` | missing - one file, exactly as `pigiron/` has one |
-| handbook | `docs/smex/handbook/04-bessemer.html` | already stale for the shipped machine ([Bessemer Gotcha #11](../machines/bessemer.md#gotchas)); N1 makes it wrong a second time |
+| goldens | `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/blowniron/ingot.json` | missing - one file, exactly as `pigiron/` has one |
+| handbook | `docs/siex/handbook/04-bessemer.html` | already stale for the shipped machine ([Bessemer Gotcha #11](../machines/bessemer.md#gotchas)); N1 makes it wrong a second time |
 
 ---
 
@@ -187,12 +187,12 @@ Nothing exists. No `blowniron` token, no def, no test.
 
 | # | Change | Where | Blocked by |
 |---|---|---|---|
-| 0 | the [ladle](../machines/ladle.md) exists - block, BE, additions, pour | `src/SteelmakingExpanded/BlockStructures/Ladle/` | nothing built |
+| 0 | the [ladle](../machines/ladle.md) exists - block, BE, additions, pour | `src/SteelIndustryExpanded/BlockStructures/Ladle/` | nothing built |
 | 0b | ferromanganese exists as a metal and as something the player can obtain | `assets/*/config/metals/`, [cold blast furnace](../machines/blast-furnace-cold.md), [cupola](../machines/cupola.md) | nothing built |
-| 1 | the metal def | `assets/smex/config/metals/blowniron.json` | (1 file) |
+| 1 | the metal def | `assets/siex/config/metals/blowniron.json` | (1 file) |
 | 2 | the retype target - the converter's `SteelCode` becomes blown iron | the four metal tokens at `BlockEntityConverterControl.cs:95-99`; the call site is `RetypeToSteel` (`:374-383`) - both owned by [Bessemer](../machines/bessemer.md#code) | needs 1 |
-| 3 | the tool preset - `bessemersteel.json`'s `tools: {preset:"good"}` goes, and its `itemForms` shrink to what a ladle product should have | `assets/smex/config/metals/bessemersteel.json:13-15` ([alloys Gotcha #1](alloys.md#gotchas)) | needs 0 |
-| 4 | lang + status text + handbook | `assets/smex/lang/en.json`, `docs/smex/handbook/04-bessemer.html` | needs 2 |
+| 3 | the tool preset - `bessemersteel.json`'s `tools: {preset:"good"}` goes, and its `itemForms` shrink to what a ladle product should have | `assets/siex/config/metals/bessemersteel.json:13-15` ([alloys Gotcha #1](alloys.md#gotchas)) | needs 0 |
+| 4 | lang + status text + handbook | `assets/siex/lang/en.json`, `docs/siex/handbook/04-bessemer.html` | needs 2 |
 
 Caution: change 2 alone is a regression, not a fix. With the ladle absent, retyping the blow's product to
 blown iron gives the steel tier no product at all - the converter would pour a metal with one item form,
@@ -206,7 +206,7 @@ items and 8 lang keys from the drift surface, and the content it deletes contrad
 * The item side is one JSON file - no C#. See [alloys § where a caller hooks in](alloys.md#code).
 * The machine side is four string constants already indirected through `MetalRegistry`
   (`BlockEntityConverterControl.cs:95-99`).
-* Tests: `test/SteelmakingExpanded.Tests/Definitions/BessemerSteelMetalTests.cs:30`/`:44` is the template -
+* Tests: `test/SteelIndustryExpanded.Tests/Definitions/BessemerSteelMetalTests.cs:30`/`:44` is the template -
   it asserts a metal is smex-owned and that its generated family matches its preset. A `BlownIronMetalTests`
   asserting the absence of plate/rod/nails/tools guards the ruling against being quietly undone.
 

@@ -68,7 +68,7 @@ A megablock but not a multiblock: it reserves a filler column and has no `Multib
 |---|---|
 | Class | `BlockEngineCornish : BlockEngine : BlockFilledMegastructure` (`BlockEngineCornish.cs:24`) |
 | Block entity | `BlockEntityEngineCornish : BlockEntityEngine : BlockEntityProductionMachine` (`BlockEntityEngineCornish.cs:19`) |
-| Footprint | 1 × 4 × 3 (X = 0, Y 0..3, Z 0..2) = 12 cells, 10 fillers, none attach-allowing (golden `goldens/hpex/blocktypes/engine/cornish.json`) |
+| Footprint | 1 × 4 × 3 (X = 0, Y 0..3, Z 0..2) = 12 cells, 10 fillers, none attach-allowing (golden `goldens/siex/blocktypes/engine/cornish.json`) |
 | Layout | `Origin(0, 3)`, one `Slice(0, …)` - a front elevation, rows run −Y from the top (`BlockEngineCornish.cs:46-59`) |
 | Principal | `(0,0,0)`, the `'O'` glyph |
 | Left empty | `(0,0,2)` - the sub-machine cell (the `'.'`) |
@@ -113,11 +113,11 @@ to at all.
 | Asset | Path | State |
 |---|---|---|
 | Editable shape | — | missing. No `assets/editable/shapes/` source for the Cornish engine |
-| Runtime shape | `assets/hpex/shapes/engine/cornish.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `ControlPistonSteam` · `Rod` - exactly the seven RCC stages, one more than the Watt's six |
+| Runtime shape | `assets/siex/shapes/engine/cornish.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `ControlPistonSteam` · `Rod` - exactly the seven RCC stages, one more than the Watt's six |
 | Animations | same file | `cyclepump` (60 f, `Repeat`) · `cyclemp` (60 f, `Repeat`) · `idlepump` (30 f, `Repeat`) · `idlemp` (30 f, `Repeat`) - the same four clips the Watt has, and they must Repeat ([Watt engine](engine-watt.md) § Assets) |
 | Textures | `fire1`, `iron3`, `iron5`, `steel5`, `iron` | the "steel" engine is mostly iron sheet in the art |
 | Broken-mesh subtrees | `Root/Cylinder/Cube21` and `Root/Piston` both exist, so the inherited `BrokenHiddenElements = ["Cube21","Piston"]` (`BlockEntityEngine.cs:460`) resolves - but `ControlPistonSteam` is not hidden, so a burst Cornish still displays its steam control gear intact |
-| Handbook | `assets/hpex/config/handbook/00-highpressure.json` ↔ `docs/hpex/handbook/00-highpressure.html` | present, shared with the boiler, and wrong about this engine's band and its build cost - [Gotchas](#gotchas) 4 |
+| Handbook | `assets/siex/config/handbook/05-highpressure.json` ↔ `docs/siex/handbook/05-highpressure.html` | present, shared with the boiler, and wrong about this engine's band and its build cost - [Gotchas](#gotchas) 4 |
 
 ---
 
@@ -134,7 +134,7 @@ P I P          G = gear ×4                          → 4
                N = game:metalnailsandstrips-steel ×4
                I = iiex:pipe-plated-straight-* ×2
                H = hammer (tool)
-→ hpex:enginecornish-north
+→ siex:enginecornish-n
 ```
 
 Totals: 4 steel plate · 4 steel rod · 4 gears · 4 steel nails-and-strips · 2 plated pipe segments.
@@ -147,7 +147,7 @@ The pipe ingredient is the plated (iiex) segment (`:60-61`), not a cast or rolle
 builds waits on those segments getting craft recipes of their own, and on the hadfield material gate
 (`:52-59`) - both open ([rolled pipe](rolled-pipe.md), [Gotchas](#gotchas) 6).
 
-Golden: `goldens/hpex/recipes/grid/machines.json`.
+Golden: `goldens/siex/recipes/grid/machines.json`.
 
 ### 2. The RCC stages — `BlockEngineCornish.cs:60-93`
 
@@ -178,7 +178,7 @@ be built entirely out of iron, and the stored variant drives the salvage.
 
 The handbook says the Cornish's "construction stages cost the same materials as the Watt engine - the
 difference in price lies in the engine's main block"
-(`docs/hpex/handbook/00-highpressure.html:23-25`). They differ by 42 plates.
+(`docs/siex/handbook/05-highpressure.html:23-25`). They differ by 42 plates.
 
 ### Repair — `BlockEngineCornish.cs:95-99`
 
@@ -193,7 +193,7 @@ Cornish is built from iron-or-steel and repaired from steel only. Matching is by
 interpolated into the translated `iiex:engine-repair-materials` line (Gotcha 15 there). Creative repairs are
 free (`BlockEngine.cs:399-401`).
 
-Cost-catalogue keys: `enginecornish-grid`, `enginecornish-rcc` (`HpexRecipeConfig.cs:51`, `:55`).
+Cost-catalogue keys: `enginecornish-grid`, `enginecornish-rcc` (`SiexRecipeConfig.cs:51`, `:55`).
 
 ---
 
@@ -215,7 +215,7 @@ Cost-catalogue keys: `enginecornish-grid`, `enginecornish-rcc` (`HpexRecipeConfi
 | Lang fragment | `ThrottleKey` → `low` / `normal` / `high` (`:27-30`) |
 | Change | `AdjustThrottle(direction)` clamps and `MarkDirty(true)`; returns `false` when already at the end (`:96-104`) |
 | Persistence | `tree.SetInt("throttle", …)` / `GetInt("throttle", 1)` (`:106-119`) - an old save with no key loads as normal |
-| HUD | `hpex:engine-info-throttle` = "Throttled {0} (runs {1})" with `ExMeasure.PressureRange(EngagePressure, BreakPressure)`, appended only when constructed and unbroken (`:121-137`) |
+| HUD | `siex:engine-info-throttle` = "Throttled {0} (runs {1})" with `ExMeasure.PressureRange(EngagePressure, BreakPressure)`, appended only when constructed and unbroken (`:121-137`) |
 
 Which cells answer: `IsThrottleCell` accepts the engine's own cell and the filler directly above it,
 `(0,1,0)` (`BlockEngineCornish.cs:191-194`). The own-cell path is `OnBlockInteractStart` (`:101-112`); the
@@ -236,13 +236,13 @@ The four refusals, in order (`TryThrottle`, `:138-188`):
 | 4 | already at the end of the range | `true` (consumed) + `SendIngameError("hpex-engine", …max/…min)` |
 
 On a real change: `ExSounds.ToggleSwitch` at the block and a `Notification` chat line
-(`hpex:engine-throttle-set`). Everything but the cell test runs server-side only (`:158`); the client still
+(`siex:engine-throttle-set`). Everything but the cell test runs server-side only (`:158`); the client still
 returns `true`, so the click is consumed on both sides and never reaches vanilla placement.
 
 ### What the rod actually moves
 
 Five overrides read `ThrottleIndex`. `BreakPressure` is not one of them in effect - all three settings
-resolve to 8.0 (`BlockEntityEngineCornish.cs:44-50`, `HpexConfig.cs:76-78`), so the band's ceiling is fixed
+resolve to 8.0 (`BlockEntityEngineCornish.cs:44-50`, `SiexConfig.cs:76-78`), so the band's ceiling is fixed
 and only its floor moves.
 
 | | low | normal | high | file:line |
@@ -308,11 +308,11 @@ numbers change, and they change per throttle setting:
 | Animation speed = `0.5 + power` | 0.7 | 0.9 | 1.3 | 0.8 |
 
 The pump's `× 3` is the undocumented factor [Watt engine](engine-watt.md) Gotcha 10 owns; the air blower
-carries the same one, and its rate is smex's (`SmexConfig.cs:113`).
+carries the same one, and its rate is smex's (`SiexConfig.cs:113`).
 
 `MpRatedLoad` is computed from a power this engine can never produce. `MpRatedLoad = MaxPower ×
 MpLoadPerEnginePower` (`BlockEntityEngine.cs:161`) and `MaxPower` is `CornishEngineMaxPower` = 1.0
-(`HpexConfig.cs:81`), but the largest `RunPower` is 0.8. Consequences:
+(`SiexConfig.cs:81`), but the largest `RunPower` is 0.8. Consequences:
 
 ```
 MpRatedLoad        = 1.0  × 0.875 = 0.875
@@ -326,18 +326,18 @@ speed at the stall threshold = 0.700 / 1.75 = 0.40 × rated
 network above half rated speed". That invariant holds for the Watt (`MaxPower == RunPower`) and is broken
 here: a Cornish-driven MP line drops to 0.4 × rated before the generator cuts demand, so it can sit stalled
 well below half speed with no recovery cut-out. Setting `CornishEngineMaxPower` to `0.8` would restore both
-properties. The key's doc comment calls it a "display reference" (`HpexConfig.cs:80`) - it is displayed
+properties. The key's doc comment calls it a "display reference" (`SiexConfig.cs:80`) - it is displayed
 nowhere; `MaxPower`'s only consumer in the entire repo is `MpRatedLoad`.
 
 ---
 
 ## Numbers
 
-### hpex config — `HpexConfig.cs`, file `ModConfig/ex_values.json`, section `hpex`
+### hpex config — `SiexConfig.cs`, file `ModConfig/ex_values.json`, section `hpex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `CornishEngineEngagePressureLow` | `5.0 atm` | `HpexConfig.cs:70` | inlet at/above which it runs, low rod |
+| `CornishEngineEngagePressureLow` | `5.0 atm` | `SiexConfig.cs:70` | inlet at/above which it runs, low rod |
 | `CornishEngineEngagePressureNormal` | `6.0 atm` | `:71` | normal rod |
 | `CornishEngineEngagePressureHigh` | `7.0 atm` | `:72` | high rod |
 | `CornishEngineBreakPressureLow` | `8.0 atm` | `:76` | above this it wears toward a burst |
@@ -349,9 +349,9 @@ nowhere; `MaxPower`'s only consumer in the entire repo is `MpRatedLoad`.
 | `CornishEngineWaterLow / Normal / High` | `0.3 / 0.6 / 1.2 L/s` | `:94-96` | condensate out the east face |
 | `CornishEngineOverclockVolume` | `1.8` | `:101` | high-rod sound volume factor |
 | `CornishEngineOverclockPitch` | `0.8` | `:102` | high-rod sound pitch factor |
-| `RccBrokenDropsRatio` | `0.8` | `:124` | salvage on mining, registered at `HighPressureExpandedModSystem.cs:35-38` |
+| `RccBrokenDropsRatio` | `0.8` | `:124` | salvage on mining, registered at `SteelIndustryExpandedModSystem.cs:35-38` |
 
-`HpexConfig.Migrations` is empty (`:37`) - nothing here is force-reset on upgrade.
+`SiexConfig.Migrations` is empty (`:37`) - nothing here is force-reset on upgrade.
 
 ### Derived — owned here
 
@@ -383,7 +383,7 @@ Constants, not per-setting:
 | `EngineOverPressureSeconds` | 60 s | [Watt engine](engine-watt.md) |
 | `MpLoadPerEnginePower` / `MpRatedSpeed` | 0.875 / 1.0 | [Watt engine](engine-watt.md) |
 | `PumpWaterPerSecond` (+ the `× 3`) | 16.67 L/s | [Watt engine](engine-watt.md) |
-| air-blower rate | smex's | `SmexConfig.cs` |
+| air-blower rate | smex's | `SiexConfig.cs` |
 | Lancashire choke / steam | 12 atm / 48 L/s | [Lancashire boiler](boiler-lancashire.md) |
 | rolled / cast / plated pipe burst | 12 / 5.0 / 2.5 | [rolled pipe](rolled-pipe.md), [cast pipes](cast-pipes.md), [pipe network](../mechanics/pipe-network.md) |
 | iiex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
@@ -425,7 +425,7 @@ override, and the golden has no `drops` key - pinned by
 
 | Path | Returns |
 |---|---|
-| Mined | 1 × `hpex:enginecornish-<side>` + 80 % of the RCC materials - ~37 plate, ~34 rod, ~11 nails, ~29 brick |
+| Mined | 1 × `siex:enginecornish-<side>` + 80 % of the RCC materials - ~37 plate, ~34 rod, ~11 nails, ~29 brick |
 | Fillers | removed by `BlockFilledMegastructure`, never dropped |
 | Broken (burst) engine | still drops normally - the break costs nothing on break; the loss is the repair bill and the downtime |
 | Sub-machine | ordinary block drop, independent of the engine |
@@ -454,11 +454,11 @@ There is no engine equivalent of the boiler's explosion salvage path: a Cornish 
 | `AdjustThrottle` | `:96-104` |
 | tree round-trip | `:106-119` |
 | `GetBlockInfo` (the throttle line) | `:121-137` |
-| `HpexConfig` § Cornish engine | `HpexConfig.cs:66-103` |
+| `SiexConfig` § Cornish engine | `SiexConfig.cs:66-103` |
 | grid recipe (looped over two gear codes) | `Recipes/Grid/MachineRecipeDefinitions.cs:39-50`, `:23-25` |
-| cost-catalogue keys | `HpexRecipeConfig.cs:51`, `:55` |
-| lang (`engine-throttle-*`, `blockhelp-engine-throttle-*`) | `assets/hpex/lang/en.json` |
-| save migration off `iiex:` / `ppex:` | `BlockMigrations/HpexExtractionMigration.cs:34-46` - owned by [rolled pipe](rolled-pipe.md) § Gotchas 1 |
+| cost-catalogue keys | `SiexRecipeConfig.cs:51`, `:55` |
+| lang (`engine-throttle-*`, `blockhelp-engine-throttle-*`) | `assets/siex/lang/en.json` |
+| save migration off `iiex:` / `ppex:` | `BlockMigrations/HpMachineDomainMigration.cs:34-46` - owned by [rolled pipe](rolled-pipe.md) § Gotchas 1 |
 | everything that runs | `IronIndustryExpanded/BlockStructures/Engine/BlockEngine.cs`, `BlockEntityEngine.cs` - [Watt engine](engine-watt.md) § Code |
 
 ### Where a caller hooks in
@@ -472,14 +472,14 @@ There is no engine equivalent of the boiler's explosion salvage path: a Cornish 
   (`BlockEntityEngine.cs:283-286`), so a Corliss is closer to "no rod, `RunPower` proportional to inlet" than
   to a fourth setting here.
 
-### Tests — `test/HighPressureExpanded.Tests/`
+### Tests — `test/SteelIndustryExpanded.Tests/`
 
 | file | pins |
 |---|---|
-| `Scenarios/HpSteamPlantScenarioTests.cs` | boiler-stand-in → Cornish → MP generator delivers a budget at 7 atm, and nothing without steam; → smex air blower pressurises past `SmexValues.BlastPressureThreshold`, and nothing without steam |
+| `Scenarios/HpSteamPlantScenarioTests.cs` | boiler-stand-in → Cornish → MP generator delivers a budget at 7 atm, and nothing without steam; → smex air blower pressurises past `SiexValues.BlastPressureThreshold`, and nothing without steam |
 | `Blocks/Engine/MPGeneratorBehaviorTests.cs` | the generator's constant-power torque curve, its 0.0005 drag, the soft speed cap, the axle axis from the side variant, and `PowerDemand` cutting out past `2 × MpRatedLoad` - all driven through a Cornish rig |
 | `Definitions/HpMegablockDropTierTests.cs` | keeps its self-drop · mining tier 3 · no JSON `brokenDropsRatio` |
-| `Definitions/HpexDefinitionGoldenTests.cs` | the def reproduces `goldens/hpex/blocktypes/engine/cornish.json`; shapes resolve |
+| `Definitions/SiexDefinitionGoldenTests.cs` | the def reproduces `goldens/siex/blocktypes/engine/cornish.json`; shapes resolve |
 | `Fixtures/HpSteamPlantScenes.cs` | `MPGeneratorPlant` / `AirBlowerPlant` - the only fixture in the repo that needs hpex and smex in one assembly |
 
 Nothing tests the throttle. There is no test that `AdjustThrottle` clamps, that the tree round-trips
@@ -496,13 +496,13 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 ## Gotchas
 
 1. Three documented bands, one real one. The engine engages at 5 / 6 / 7 and breaks at 8
-   (`HpexConfig.cs:70-78`). The documentation gives:
+   (`SiexConfig.cs:70-78`). The documentation gives:
 
    | source | band | wrong how |
    |---|---|---|
-   | `HpexConfig.cs:67-69` | "low works on a gentle 5-8, normal on 6-8, high demands a hot 7-8" | correct |
-   | `src/HighPressureExpanded/README.md:17` | "the efficient high-pressure beam engine (6-8 atm)" | drops low and high |
-   | `docs/hpex/handbook/00-highpressure.html:19` | "Running at 6-8 atm" | same |
+   | `SiexConfig.cs:67-69` | "low works on a gentle 5-8, normal on 6-8, high demands a hot 7-8" | correct |
+   | `src/SteelIndustryExpanded/README.md:17` | "the efficient high-pressure beam engine (6-8 atm)" | drops low and high |
+   | `docs/siex/handbook/05-highpressure.html:19` | "Running at 6-8 atm" | same |
 
    The in-game HUD is the only source that is always right, because it renders
    `ExMeasure.PressureRange(EngagePressure, BreakPressure)` from the live config
@@ -525,7 +525,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
    gesture on those two cells has to be added inside `TryThrottle`.
 
 5. `CornishEngineMaxPower = 1.0` is unreachable and mis-documented. Its doc comment calls it a "display
-   reference" (`HpexConfig.cs:80`); it is never displayed, and its only consumer is `MpRatedLoad`
+   reference" (`SiexConfig.cs:80`); it is never displayed, and its only consumer is `MpRatedLoad`
    (`BlockEntityEngine.cs:161`), which it inflates to 0.875 against a real maximum of 0.8. That breaks the
    "2 × rated load = half rated speed" invariant the overstress cut-out is documented against. See
    [Sub-machines](#sub-machines).
@@ -538,7 +538,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
    `../STATE.md:275-277` records the same. The only real gate on this engine is a bronze pickaxe to mine it.
 
 7. `modinfo.json` declares a dependency the build does not have and cannot enforce. `modinfo.json:9-15` lists
-   `smex: 0.1.0`; `HighPressureExpanded.csproj:86-100` references only ExpandedLib and IronIndustryExpanded,
+   `siex: 0.1.0`; `HighPressureExpanded.csproj:86-100` references only ExpandedLib and IronIndustryExpanded,
    and the comment at `:76-85` explains why - the Cornish drives smex's air blower purely through iiex's
    `BlockEntityEngine` contract, so there is no code edge. The declaration is a load-order statement, not a
    compile-time one; if smex is absent the engine simply has one fewer sub-machine.
@@ -560,7 +560,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 11. The steam-per-power ratio is flat, so "efficient" means "cheaper than a Watt", not "cheaper at low
     throttle". All three settings cost 40 L per unit; the handbook's "wringing the same power from less steam
     because it can regulate how much steam enters the cylinder"
-    (`docs/hpex/handbook/00-highpressure.html:17-19`) attributes the efficiency to the wrong mechanism.
+    (`docs/siex/handbook/05-highpressure.html:17-19`) attributes the efficiency to the wrong mechanism.
 
 12. The handbook's claims about this engine's cost and output are unsupported. "on High it will comfortably
     drive six helve hammers" (`:22`) is a number nothing in the repo computes - the same class of guess as
@@ -577,7 +577,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 
 - Nothing tests the throttle - the one feature the class exists for. A BE test (clamp, round-trip, band per
   setting) and a block test (filler-forwarded wrench click) would cost very little.
-- No editable shape. `assets/hpex/shapes/engine/cornish.json` is the only copy.
+- No editable shape. `assets/siex/shapes/engine/cornish.json` is the only copy.
 - Fix `CornishEngineMaxPower` (Gotcha 5): set it to 0.8 to restore the rated-speed and half-speed invariants,
   or change `MpRatedLoad` to read the current setting's `RunPower` and re-derive the stall guard's
   latch-safety argument.

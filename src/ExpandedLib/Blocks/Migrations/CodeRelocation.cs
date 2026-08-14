@@ -11,7 +11,7 @@ namespace ExpandedLib.Blocks.Migrations;
 /// both - pairing an explicitly named historical base code with a live one and carrying every variant
 /// suffix across unchanged. The historical base must be a literal string, never derived from the live
 /// registry and never a whole-domain enumeration; variants stay derived from the live registry, so a
-/// new orientation needs no migration edit. Only <c>exlib</c>, <c>ppex</c> and <c>smex</c> were ever
+/// new orientation needs no migration edit. Only <c>exlib</c>, <c>ppex</c> and <c>siex</c> were ever
 /// released, so those are the only domains a legacy code can carry; <c>ReleasedCodes</c> (from
 /// <c>dist/Releases/</c>) records what shipped and <c>ReleasedCodeCoverageTests</c> asserts coverage.
 /// </summary>

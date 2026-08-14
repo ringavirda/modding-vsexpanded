@@ -88,4 +88,65 @@ public class ExConfigDocumentTests {
     var b = ExConfigDocument.ForFile(api, "ex_values.json");
     Assert.Same(a, b);
   }
+
+  #region Legacy section carry-over (a mod renamed or absorbed another)
+
+  // A section is keyed by mod id, so a rename orphans the player's whole tuning: every value reverts
+  // to its coded default on the next load, with no error and no log line, because a missing section
+  // is indistinguishable from a fresh install. These cover the smex+hpex -> siex merge.
+
+  [Fact]
+  public void A_renamed_mod_takes_over_its_old_section() {
+    var existing = new JObject { ["smex"] = new JObject { ["Value"] = 7 } };
+    var doc = ExConfigDocument.ForFile(FakeApi(existing), "ex_values.json");
+
+    doc.FoldLegacySections("siex", ["smex"]);
+
+    Assert.Equal(7, doc.GetSection<Section>("siex")!.Value);
+    // The old key is cleared, so the carry-over cannot run twice and resurrect stale values.
+    Assert.False(doc.HasSection("smex"));
+  }
+
+  [Fact]
+  public void An_absorbed_mods_section_fills_only_the_gaps() {
+    var existing = new JObject {
+      ["smex"] = new JObject { ["Value"] = 7 },
+      ["hpex"] = new JObject { ["Value"] = 99, ["Other"] = 5 },
+    };
+    var doc = ExConfigDocument.ForFile(FakeApi(existing), "ex_values.json");
+
+    doc.FoldLegacySections("siex", ["smex", "hpex"]);
+
+    // The survivor is authoritative where both carried a key; the absorbed mod still contributes
+    // what the survivor had no value for, so neither half's tuning is silently dropped.
+    Assert.Equal(7, doc.GetSection<Section>("siex")!.Value);
+    Assert.Equal(5, doc.GetSection<JObject>("siex")!["Other"]!.Value<int>());
+    Assert.False(doc.HasSection("hpex"));
+  }
+
+  [Fact]
+  public void An_existing_section_is_never_replaced_by_a_legacy_one() {
+    var existing = new JObject {
+      ["siex"] = new JObject { ["Value"] = 1 },
+      ["smex"] = new JObject { ["Value"] = 2 },
+    };
+    var doc = ExConfigDocument.ForFile(FakeApi(existing), "ex_values.json");
+
+    doc.FoldLegacySections("siex", ["smex"]);
+
+    Assert.Equal(1, doc.GetSection<Section>("siex")!.Value);
+  }
+
+  [Fact]
+  public void Carry_over_is_a_no_op_when_no_legacy_section_is_present() {
+    var existing = new JObject { ["siex"] = new JObject { ["Value"] = 3 } };
+    var doc = ExConfigDocument.ForFile(FakeApi(existing), "ex_values.json");
+
+    doc.FoldLegacySections("siex", ["smex", "hpex"]);
+    doc.FoldLegacySections("siex", []);
+
+    Assert.Equal(3, doc.GetSection<Section>("siex")!.Value);
+  }
+
+  #endregion
 }

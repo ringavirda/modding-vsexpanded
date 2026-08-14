@@ -1,0 +1,64 @@
+using System;
+using System.Collections.Generic;
+using ExpandedLib.Definitions;
+using static ExpandedLib.Definitions.ExIngredients;
+
+namespace SteelIndustryExpanded.Recipes.Grid;
+
+/// <summary>
+/// Code-first grid recipes for the high-pressure machines: the Lancashire boiler and the Cornish
+/// engine. Like
+/// every gear-driven machine in the family, the Cornish engine crafts from vanilla rusty gears or
+/// from iiex's craftable gears; it is authored once and emitted for both gear codes, rusty first.
+/// </summary>
+public class MachineRecipeDefinitions : IExRecipeDefProvider {
+  public static IEnumerable<ExRecipeDef> Definitions(string domain) {
+    ExRecipeDef def = ExRecipeDef
+      .Create(domain, "grid", "machines")
+      .Grid(LancashireBoiler);
+
+    foreach (string gear in new[] { "game:gear-rusty", "iiex:gear-*" })
+      def = def.Grid(CornishEngine(gear));
+
+    return [def];
+  }
+
+  private static void LancashireBoiler(GridRecipeBuilder r) =>
+    r.Name("Lancashire Boiler")
+      .Pattern("BHB,PRP")
+      .Size(3, 2)
+      .Ingredient("P", PlateSteel(1))
+      .Ingredient("B", BrickFire(2))
+      .Ingredient("R", RodSteel(2))
+      .Ingredient("H", Hammer)
+      .OutputBlock("siex:boilerlancashire-n");
+
+  private static Action<GridRecipeBuilder> CornishEngine(string gear) =>
+    r =>
+      r.Name("Cornish Engine")
+        .Pattern("GHR,PNP,PIP")
+        .Size(3, 3)
+        .Ingredient("P", PlateSteel(1))
+        .Ingredient("R", RodSteel(4))
+        .Ingredient("G", Gear(gear, 4))
+        .Ingredient("I", StraightPipe(2))
+        .Ingredient("H", Hammer)
+        .Ingredient("N", NailsSteel(4))
+        .OutputBlock("siex:enginecornish-n");
+
+  // Ingredient factories specific to the HP machines; the shared vanilla ones (PlateSteel,
+  // NailsSteel, RodSteel, Gear, Hammer) come from ExIngredients through `using static`.
+  //
+  // The pipe ingredient is the plain plated (iiex) segment, as in every other machine and fitting
+  // recipe in the family. The pipe tiers carry no iron/steel material axis, so a material-suffixed
+  // code such as `...-steel` resolves to no block. Tier-gating the HP builds to the cast (iiex) or
+  // rolled (siex) segments waits on craft recipes for those segments and on the hadfield material
+  // gate; see docs/design/machines/rolled-pipe.md.
+  private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
+    int qty
+  ) => i => i.Block("iiex:pipe-plated-straight-*").Quantity(qty);
+
+  private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
+    int qty
+  ) => i => i.Item("game:burnedbrick-fire").Quantity(qty);
+}

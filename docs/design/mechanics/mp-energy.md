@@ -273,7 +273,7 @@ declares what it takes is the shape to copy for the next one.
 | `BlockRollingMillAxle` | `Forming/Blocks/BlockRollingMillAxle.cs:20` | invisible graph node, not a filler (see [multiblock](multiblock.md)) |
 | `BlockEntityRollingMill` | `Forming/BlockEntities/BlockEntityRollingMill.cs:33` | `LoadTorque` (`:314-326`), `AdvancePass` (`:333-371`) |
 | `EnergyAnim` | `BlockNetworkEnergy/EnergyAnim.cs:10` | `SpinSpeed`, `IsTurning`, `BranchSpinSign` - pure, so the convention is pinned headless |
-| Registration | `IronworkingExpandedModSystem.cs:100-103` | `RegisterNetworkType("mpenergy", () => new MpEnergyNetwork(netManager))` |
+| Registration | `IronIndustryExpandedModSystem.cs:100-103` | `RegisterNetworkType("mpenergy", () => new MpEnergyNetwork(netManager))` |
 
 ### Where a caller hooks in
 

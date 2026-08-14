@@ -18,7 +18,7 @@ public sealed class MultiblockBuilder {
   private readonly HashSet<(int, int, int)> _positions = new();
 
   /// <summary>Declares a <c>blockNumbers</c> entry: the block <paramref name="code"/> (a wildcard/selector,
-  /// e.g. <c>"smex:converterbessemer*"</c>) mapped to the number <paramref name="w"/> that offsets
+  /// e.g. <c>"siex:converterbessemer*"</c>) mapped to the number <paramref name="w"/> that offsets
   /// reference. Numbers should be unique per structure.</summary>
   public MultiblockBuilder Number(string code, int w) {
     _blockNumbers[code] = w;

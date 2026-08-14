@@ -2,9 +2,8 @@
 
 **Expanded Library** (`exlib`) is the shared framework mod behind the
 _Fallenstar Expanded_ family for [Vintage Story](https://www.vintagestory.at/) -
-currently [Iron Industry Expanded](https://mods.vintagestory.at/) (`iiex`),
-[High Pressure Expanded](https://mods.vintagestory.at/) (`hpex`) and
-[Steelmaking Expanded](https://mods.vintagestory.at/) (`smex`). It ships no
+currently [Iron Industry Expanded](https://mods.vintagestory.at/) (`iiex`) and
+[Steel Industry Expanded](https://mods.vintagestory.at/) (`siex`). It ships no
 gameplay content of its own; you can use it because another mod depends on it or
 because it gives you batteries-included systems that are tedious to build from
 scratch:

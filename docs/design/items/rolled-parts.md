@@ -3,8 +3,9 @@
 **Status** designed - not one item in this family exists in `src/`. Four dangling roll-set output codes are
 the only trace of it in code; the mill's `OutputAt` has no caller, so nothing has ever produced a rolled
 product
-**Mod** iiex owns the narrow products; iiex owns the wide ones; smex only feeds bigger stock into iiex's train
-(who owns the forming line)
+**Mod** iiex owns the rolled products, narrow and wide alike, and the forming line that makes them - the
+mill, the wide hall and the bending roller; siex only feeds bigger stock into iiex's train, and owns the
+steel roll sets (settled by M1/M.7, 2026-08-14)
 
 **Owns**
 

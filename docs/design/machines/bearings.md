@@ -6,7 +6,7 @@ comment, four uses of "load-bearing" in unrelated docstrings, and one "lid-beari
 not exist as a material either; it has no row in [materials.md](../materials.md). The three machines that
 would make the parts - the [heading machine](heading-machine.md), the [rolling mill](rolling-mill.md)'s rod
 route and the [bending roller](bending-roller.md) - are themselves designed-not-built or blocked.
-**Mod** hpex (`HighPressureExpanded`)
+**Mod** siex (`SteelIndustryExpanded`)
 
 ## Owns
 
@@ -141,7 +141,7 @@ Nothing exists.
 | race item | none |
 | ball die item | none. Do not repeat `RollSetItemDefinitions.cs:121`, which still points its tooling item at `game:item/ingot` as a placeholder |
 | chrome-steel metal | none - no descriptor, no ingot, no row in [materials.md](../materials.md) |
-| lang / handbook | no key in `assets/hpex/lang/en.json`; `docs/hpex/handbook/` holds one page, `00-highpressure.html`, which does not mention bearings |
+| lang / handbook | no key in `assets/siex/lang/en.json`; `docs/siex/handbook/` holds one page, `00-highpressure.html`, which does not mention bearings |
 | reference art | the 1867 machine-tool plate at `assets/editable/refs/rivetsnails/` covers the bench, not the bearing. Folder is untracked |
 
 A ball, a ring and an assembled bearing are sub-voxel shapes that can share one texture. Nothing here is
@@ -218,7 +218,7 @@ The chain is safe today, and both safeguards are accidental:
 Break 1 - chromite is a vanilla ore and vanilla already crushes it. `game:ore-chromite`,
 `game:nugget-chromite` and `game:crushed-chromite` all exist in the base game, and smex's own EM-compat patch
 preserves vanilla's 0.33-average nugget crushing for cassiterite, chromite and ilmenite
-(`assets/smex/patches/compat/em/nugget-crushing.json:3`). A player can obtain crushed chromite with nothing
+(`assets/siex/patches/compat/em/nugget-crushing.json:3`). A player can obtain crushed chromite with nothing
 but a hand pulverizer.
 
 If HP jaws were instead the only thing that cracked chromite, the loop would close:
@@ -272,7 +272,7 @@ where a die cares which metal it is fed.
 
 ## Numbers
 
-Nothing is in config. No `Bearing*` or `Ball*` key exists in `HpexConfig.cs`. Rows below are either owned
+Nothing is in config. No `Bearing*` or `Ball*` key exists in `SiexConfig.cs`. Rows below are either owned
 elsewhere (cited) or proposed (marked).
 
 ### Owned elsewhere — the constraints the bearing is sized against
@@ -285,9 +285,9 @@ elsewhere (cited) or proposed (marked).
 | `castbillet` | 3 × 3 × 27 = 243 vx³ = 600 u → 6 `rolledrod` | [stock](../items/stock.md) | one chrome-steel billet = 24 rods |
 | `HeadingMinTorque` (proposed at the bench) | 0.3 | [heading machine:116](heading-machine.md) | the ball die should not undercut it |
 | chromium per HSS heat | ~32 u on a 624 u OH base | [materials.md:108](../materials.md) | ferrochrome's second consumer |
-| vanilla chromite nugget crush yield | 0.33 avg | `assets/smex/patches/compat/em/nugget-crushing.json:3` | the bootstrap break |
-| `RccBrokenDropsRatio` (hpex) | 0.8 | `HpexConfig.cs:124` | what a broken bearing-bearing machine returns |
-| `RecipeLevel` (hpex) | `"normal"` | `HpexConfig.cs:131` | the cost tier the assembly recipe prices at |
+| vanilla chromite nugget crush yield | 0.33 avg | `assets/siex/patches/compat/em/nugget-crushing.json:3` | the bootstrap break |
+| `RccBrokenDropsRatio` (hpex) | 0.8 | `SiexConfig.cs:124` | what a broken bearing-bearing machine returns |
+| `RecipeLevel` (hpex) | `"normal"` | `SiexConfig.cs:131` | the cost tier the assembly recipe prices at |
 
 ### Proposed — every one of these is unchosen
 
@@ -315,7 +315,7 @@ which makes the rod the natural unit) or the ball mass changes. Choose before sh
 |---|---|
 | a bearing item | it is an item; nothing to break |
 | the ball die, fitted to a bench | spawned at the block - the bench's `OnBlockBroken` spawns fitted tooling before `base`, copying `BlockEntityRollingMill.OnBlockBroken` (`:374-383`) ([heading machine § Drops](heading-machine.md)) |
-| a machine built with bearings | hpex's RCC salvage ratio, `RccBrokenDropsRatio` 0.8 (`HpexConfig.cs:124`) - hpex carries its own because exlib's salvage lookup keys on the broken block's domain ([Lancashire boiler § Drops](boiler-lancashire.md)) |
+| a machine built with bearings | hpex's RCC salvage ratio, `RccBrokenDropsRatio` 0.8 (`SiexConfig.cs:124`) - hpex carries its own because exlib's salvage lookup keys on the broken block's domain ([Lancashire boiler § Drops](boiler-lancashire.md)) |
 
 Whether a salvaged Corliss returns its bearings intact or at 0.8 is a decision. A bearing is the one part in
 that machine for which "80 % of a bearing" is meaningless. The
@@ -333,8 +333,8 @@ Nothing exists.
 | the ball die item | wherever `DieItemDefinitions` lands, plus an hpex variant entry | `RollSetItemDefinitions.cs:17-128` - one item, a `type` variant group, per-variant specs via `.Raw("attributesByType", byType)` (`:126`) |
 | the `ItemDie` spec it fills in | iiex (or exlib) - unresolved, see below | `RollSetSpec.cs:31-201`, `MoldSpec.cs:32-48` |
 | ball / race / bearing items | `ExItemDef` in hpex | [recipes & config](../mechanics/recipes-config.md) |
-| the assembly grid recipe | `src/HighPressureExpanded/Recipes/Grid/` - today it holds exactly one file | `MachineRecipeDefinitions.cs` |
-| its cost key | `HpexRecipeConfig` | `src/HighPressureExpanded/HpexRecipeConfig.cs` |
+| the assembly grid recipe | `src/SteelIndustryExpanded/Recipes/Grid/` - today it holds exactly one file | `MachineRecipeDefinitions.cs` |
+| its cost key | `SiexRecipeConfig` | `src/SteelIndustryExpanded/SiexRecipeConfig.cs` |
 | ferrochrome as a burden family + metal | the cold furnace's product override path | [cold blast furnace](blast-furnace-cold.md), [cupola](cupola.md) (the existing data-override precedent) |
 | chrome steel as a metal | `MetalRegistry` + a [materials.md](../materials.md) row | [materials.md](../materials.md) |
 

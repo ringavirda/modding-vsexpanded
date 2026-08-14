@@ -3,7 +3,7 @@
 **Status** ruled 2026-08-07 - this page owns the together-or-nothing mass batch. One number is already
 shipped (the pig); the other five are settled on paper and land as one queued code + goldens batch. Every
 row cites the page that derived it.
-**Mod** iiex (every item in the batch) · the parity and scenario suites it re-runs span iiex and smex
+**Mod** iiex (every item in the batch) · the parity and scenario suites it re-runs span iiex and siex
 
 **Owns** - the facts this page is canonical for:
 

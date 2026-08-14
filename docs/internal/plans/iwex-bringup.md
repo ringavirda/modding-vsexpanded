@@ -1,11 +1,18 @@
 # iwex bring-up
 
-**Status** in progress — Stages 0 and 1 done (re-verified against `src/` on 2026-08-04)   **Mod** iwex
+**Status** in progress — Stages 0 and 1 done (re-verified against `src/` on 2026-08-04)   **Mod** iiex
+(the art queue below is the iron half of `iiex`; the mod was `iwex` until the 2026-08-14 merge)
 **Since** 2026-07-30
 **Owns** — the **art queue** and the **playtest gates**. Nothing else. The build *sequence* lives in the
 plans; blocker evidence lives in [STATE.md](STATE.md); numbers live on the entity pages.
 **Depends on** [STATE.md](STATE.md) · [machines/](../../design/machines) · [processes/](../../design/processes) · [items/](../../design/items)
 
+> ★ **Triaged 2026-08-14.** Still live, and still the only owner of the art queue and the playtest
+> gates. Its Stage 2-6 mapping is unchanged, but read the state table in
+> [the expansion plan](2026-08-04-iwex-u2-u10-expansion.md) first: of the units this file points at,
+> **U1 is built** and U6-U9 are open, so the art queue is what remains of Stage 2. Paths and type names
+> were repointed at their live homes the same day.
+>
 > **This file does not own the build order.** The sequence lives in
 > [`docs/internal/plans/2026-08-04-iwex-u2-u10-expansion.md`](../plans/2026-08-04-iwex-u2-u10-expansion.md), which
 > merges this stage list with the layered-charge furnace rework; Stages 2–6 below map to units
@@ -44,7 +51,7 @@ is either a wrong string, a missing item def, or a process that was never writte
 sit in `assets/editable/shapes/` under the `<family>-<kind>-<name>` naming scheme, and the runtime tree
 still carries the old exports. So the dominant art task is **export + wire**, not draw.
 
-### 1a. Already drawn — needs export to `assets/iwex/shapes/` and a code reference
+### 1a. Already drawn — needs export to `assets/iiex/shapes/` and a code reference
 
 Nothing to draw here. Listed so it is not re-drawn.
 
@@ -97,7 +104,7 @@ the bolt and die items left it by ruling (fasteners, 2026-07-30: no dies, no bol
 | **A4** | **Coke oven** (beehive) | megablock, natural draught | Stage 6 |
 
 **Textures.** iwex's texture set is in good shape (furnace faces, cast iron, slag). The one recurring need is
-**diagram icons**: `assets/iwex/textures/item/diagram/diag-{type}.png`, one per structure diagram and one per
+**diagram icons**: `assets/iiex/textures/item/diagram/diag-{type}.png`, one per structure diagram and one per
 casting pattern (`diag-item-{pattern}.png`), derived automatically from
 `PatternItemDefinitions.PatternTypes`. So each new pattern in Stage 2 and each new diagram-crafted block
 needs exactly one 32×32 icon. Machines built by grid/RCC (mill, burdenmaker, blower, hearths) need
@@ -183,7 +190,7 @@ the mill.
 | 3 | **B16** rotated cupola charged outside itself | `BlockEntityHopperTall.cs` — columns rotate by `DripAngle`; the diagonals were added too, so the drip is a 3×3 and not a plus |
 | 4 | **B9 / B10** molten flow | `MoltenNetwork.cs` — vertical edges are driven `downhillOnly`, each undirected edge once |
 | 5 | **B11** air drawn before the pressure test | `BlockEntityFurnaceCore.cs` — order inverted |
-| 6 | **D5b** throughput | `IwexValues.TapDrainPerTick = 50`, read by both taps |
+| 6 | **D5b** throughput | `IiexValues.TapDrainPerTick = 50`, read by both taps |
 
 **Gate met:** ore → burden → blast furnace → canal → pig bed → pigs → helve → anvil.
 

@@ -81,6 +81,52 @@ public sealed class ExConfigDocument {
   public void Flush() => _api.StoreModConfig(_doc, _fileName);
 
   /// <summary>
+  /// One-time migration of a section this mod used to be keyed under, for a mod that was renamed or
+  /// absorbed another: when <paramref name="modId"/> has no section but a legacy one is present, the
+  /// legacy section is moved across under the new key. First existing name wins; later names merge
+  /// only the keys the winner did not already supply, so absorbing two mods keeps both halves and the
+  /// survivor's value wins any collision.
+  /// <para>
+  /// A section key is the mod id, so a rename orphans the player's whole tuning silently - every
+  /// value reverts to its coded default with no error and no log line. Renaming the file cannot cover
+  /// this: <see cref="FoldLegacy"/> folds a legacy FILE into a section, which is a different move.
+  /// </para>
+  /// </summary>
+  public void FoldLegacySections(
+    string modId,
+    IReadOnlyList<string> legacySectionIds
+  ) {
+    if (legacySectionIds == null || legacySectionIds.Count == 0)
+      return;
+
+    foreach (var legacy in legacySectionIds) {
+      if (
+        string.IsNullOrWhiteSpace(legacy)
+        || string.Equals(legacy, modId, StringComparison.Ordinal)
+        || _doc[legacy] is not JObject old
+      )
+        continue;
+
+      if (_doc[modId] is JObject current) {
+        // A later legacy section fills only the gaps: the survivor's own tuning is authoritative.
+        foreach (var prop in old.Properties())
+          if (current[prop.Name] == null)
+            current[prop.Name] = prop.Value;
+      } else {
+        _doc[modId] = old;
+      }
+
+      _doc.Remove(legacy);
+      _api.Logger.Notification(
+        "[{0}] Carried the '{1}' section of '{2}' over to '{0}'.",
+        modId,
+        legacy,
+        _fileName
+      );
+    }
+  }
+
+  /// <summary>
   /// One-time migration of a legacy per-mod file into this document's <paramref name="modId"/>
   /// section: when the section is absent and a legacy file exists under <c>ModConfig</c>, its
   /// contents become the section and the old file is renamed to <c>&lt;name&gt;.migrated</c> rather

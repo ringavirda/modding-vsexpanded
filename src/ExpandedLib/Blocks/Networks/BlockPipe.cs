@@ -12,7 +12,7 @@ namespace ExpandedLib.Blocks.Networks;
 /// orientation tables shared by every straight/bend/junction variant. Each tier reuses this class
 /// and its block entity through the registered class keys <c>exlib.BlockPipe</c> /
 /// <c>exlib.BlockEntityPipe</c>, calling <see cref="Segments"/> from a thin per-mod
-/// <see cref="IExBlockDefProvider"/>: iiex the plated tier, iiex the cast tier, hpex the rolled
+/// <see cref="IExBlockDefProvider"/>: iiex the plated tier, iiex the cast tier, siex the rolled
 /// tier. One material per tier, so there is no <c>material</c> variant group; the tier itself is a
 /// variant (<see cref="Tier"/>), which is what lets one domain carry several.
 /// </summary>

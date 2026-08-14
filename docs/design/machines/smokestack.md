@@ -56,7 +56,7 @@ margin that lets a stove sit idle mid-swap without choking the furnace.
 iiex ships a cheaper, unrelated mechanism: a vanilla chimney placed on the top connector of an
 `IChimneyVentable` pipe fitting draws `ChimneyGasDrawRate` = 16 L/s out of the run
 (`exlib …/Blocks/Networks/ChimneyVent.cs`; `IiexConfig.cs:237`). That is a network strategy injected into every
-`"pipe"` network (`IronworkingExpandedModSystem.cs:96`) and it never touches this block. The smoke stack is an
+`"pipe"` network (`IronIndustryExpandedModSystem.cs:96`) and it never touches this block. The smoke stack is an
 `IPipeNode` consumer; the chimney vent is an `IPipeVentStrategy`. Three stacked courses of the smoke stack cost
 more than a vanilla chimney and vent three times as much.
 
@@ -64,14 +64,14 @@ more than a vanilla chimney and vent three times as much.
 
 ## Structure
 
-Anchor: `smex:smokestack-intake-{refractory}-{orientation}`, at the base front of the chimney. Layout authored
+Anchor: `siex:smokestack-intake-{refractory}-{orientation}`, at the base front of the chimney. Layout authored
 with `Origin(-1, 0)` - the negation of the `I` glyph's (col, row), per
 [multiblock](../mechanics/multiblock.md).
 
 | Source | Where |
 |---|---|
 | Definition (twelve cross-sections, y = −1 → y = 10) | `BlockSmokeStackIntake.cs:46-151` |
-| Golden (the arbiter) | `test/SteelmakingExpanded.Tests/goldens/smex/blocktypes/smokestack/intake.json` |
+| Golden (the arbiter) | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/smokestack/intake.json` |
 | Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2 |
 
 ### Cell census — 72 offsets
@@ -79,7 +79,7 @@ with `Origin(-1, 0)` - the negation of the `I` glyph's (col, row), per
 | Glyph | Required block | Count | file:line |
 |---|---|---|---|
 | `#` | `game:refractorybricks-good-tier*` (any tier) | 24 | BlockSmokeStackIntake.cs:48 |
-| `I` | `smex:smokestack-intake*` (the anchor) | 1 | :49 |
+| `I` | `siex:smokestack-intake*` (the anchor) | 1 | :49 |
 | `a` | `game:air` - the flue | 11 | :50 |
 | `B` | the brick-course alternation (below) | 36 | :51-54 |
 
@@ -147,7 +147,7 @@ borrows iiex's:
 
 | Asset | Path | State |
 |---|---|---|
-| intake shape | `iiex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `assets/smex/shapes/smokestack/` does not exist |
+| intake shape | `iiex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `assets/siex/shapes/smokestack/` does not exist |
 | intake texture | `front1` → `game:block/clay/refractory/{refractory}/front1` (`:162`) | tier-tinted |
 | the stack itself | vanilla `game:brickcourse-*` / `claybricks` / `refractorybricks` | the player picks |
 | plume | `ExParticles.RisingPlume` over the flue column, coloured by medium (`BlockEntitySmokeStack.cs:204-234`) | live |
@@ -157,19 +157,19 @@ No editable source exists.
 The intake is `sidesolid: false` (`:163`) where the [cowper](cowper.md)'s intake is `true` - the smoke stack's
 anchor is a pipe fitting first and a structure anchor second.
 
-Handbook: `assets/smex/config/handbook/02-hotblast.json` ↔ `docs/smex/handbook/02-hotblast.html`; the block
+Handbook: `assets/siex/config/handbook/02-hotblast.json` ↔ `docs/siex/handbook/02-hotblast.html`; the block
 declares `Handbook("smokestack-intake-*")` (`:42`).
 
 ---
 
 ## Construction
 
-One grid recipe, no RCC. `src/SteelmakingExpanded/Recipes/Grid/SmokeStackRecipeDefinitions.cs`; golden
-`test/SteelmakingExpanded.Tests/goldens/smex/recipes/grid/smokestack.json`.
+One grid recipe, no RCC. `src/SteelIndustryExpanded/Recipes/Grid/SmokeStackRecipeDefinitions.cs`; golden
+`test/SteelIndustryExpanded.Tests/goldens/siex/recipes/grid/smokestack.json`.
 
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
-| `smex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `iiex:pipe-cast-straight*`, hammer | :19-28 |
+| `siex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `iiex:pipe-cast-straight*`, hammer | :19-28 |
 
 Authored with `.GridObject(...)` - a lone JSON object rather than an array - because it is the only recipe in
 its file (`:19`, and the doc comment at `:8-11`). It is "four bricks deep for the taller column" against the
@@ -179,7 +179,7 @@ Whole-stack cost: 1 intake + 24 refractory bricks of any single tier + 36 brick-
 are the cheapest bulk in the suite: vanilla `brickcourse` is a decorative block, so a stack is essentially free
 once the player has clay.
 
-In the cost catalogue as `smokestack-intake-grid` (`SmexRecipeConfig.cs:63`), so `/exmod steel cheap` halves the
+In the cost catalogue as `smokestack-intake-grid` (`SiexRecipeConfig.cs:63`), so `/exmod steel cheap` halves the
 intake - but not the 60 bricks, which are structure, not recipe.
 
 ---
@@ -242,13 +242,13 @@ its pipe.
 
 ## Numbers
 
-### Owned — `src/SteelmakingExpanded/SmexConfig.cs`
+### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `SmokestackGasIntakeVolume` | 48 L/s | SmexConfig.cs:255 | Gas drawn off the network per production tick. Read fresh every tick (`BlockEntitySmokeStack.cs:171`), so `/exmod config smex` applies on the next second |
+| `SmokestackGasIntakeVolume` | 48 L/s | SiexConfig.cs:255 | Gas drawn off the network per production tick. Read fresh every tick (`BlockEntitySmokeStack.cs:171`), so `/exmod config smex` applies on the next second |
 
-Pre-0.9.0 configs are force-reset by `SmexConfig.Migrations` (`SmexConfig.cs:34-46`), which retunes the key from
+Pre-0.9.0 configs are force-reset by `SiexConfig.Migrations` (`SiexConfig.cs:34-46`), which retunes the key from
 4 → 48 L/s: the value matches the furnace's two outlets, so a stale 4 would silently choke every furnace built
 before that release.
 
@@ -280,7 +280,7 @@ before that release.
 
 | Broken block | Returns | file:line |
 |---|---|---|
-| intake | `smex:smokestack-intake-{tier}-n` - the fallback orientation, whatever it was facing; the brick tier is preserved | `exlib …/Blocks/Networks/BlockNetworkNode.cs:675-686` (inherited via `BlockPipePassthrough`) |
+| intake | `siex:smokestack-intake-{tier}-n` - the fallback orientation, whatever it was facing; the brick tier is preserved | `exlib …/Blocks/Networks/BlockNetworkNode.cs:675-686` (inherited via `BlockPipePassthrough`) |
 | refractory bricks, brick courses | vanilla | — |
 
 `OnPickBlock` returns the same canonical variant (`BlockNetworkNode.cs:688-689`), so middle-clicking a
@@ -336,7 +336,7 @@ is not available either.
 | `…:131-148` | node state round-trips through the tree |
 | `Scenarios/HotBlastScenarioTests.cs:44-79` | the safety-valve property: 12 ticks of a furnace spilling 38 L each keeps a 6-node main near empty with a stack, and pushes it over capacity without one |
 
-`SmokeStackRig` (`test/SteelmakingExpanded.Tests/Fixtures/SmokeStackScenes.cs:28-115`) raises the real 72-cell
+`SmokeStackRig` (`test/SteelIndustryExpanded.Tests/Fixtures/SmokeStackScenes.cs:28-115`) raises the real 72-cell
 chimney and lets the stack's own monitor tick complete it - per the megablock-rig rule, `StructureComplete` is
 never forced.
 
@@ -418,12 +418,12 @@ never forced.
    undecided - today the correct play is "build one stack, forget it exists".
 
 4. **No test asserts the rate as a number in a plant context.** `SmokeStackTests.cs:86` asserts the draw equals
-   `SmexValues.SmokestackGasIntakeVolume`, i.e. it checks the code against itself; the scenario test asserts
+   `SiexValues.SmokestackGasIntakeVolume`, i.e. it checks the code against itself; the scenario test asserts
    only that the main stays "near empty". If the config drifted away from 2 × `ExhaustVolumePerTick`, nothing
    would fail.
 
 5. **The handbook's stack paragraph is right and unusually specific** - "a smoke stack intake as its control
    block, 24 refractory bricks of any tier and 36 of any ordinary brick"
-   (`smex:handbook-hotblast-text`) matches the golden exactly. It is the only part of the smex handbook that
+   (`siex:handbook-hotblast-text`) matches the golden exactly. It is the only part of the smex handbook that
    currently does; the rest of that page and all of `01-blastfurnace` do not (see
    [hot blast furnace](blast-furnace-hot.md) Gotchas #8).

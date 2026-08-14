@@ -128,7 +128,7 @@ present batch sizes - watch it if the batch shrinks.
 
 Editable source: `assets/editable/shapes/machine-megablock-burdenmaker.json` → exported to
 `assets/iiex/shapes/ore/burdenmaker.json`. A `Root` element wraps the five groups in the editable, so the
-RCC stages can address them; the export is `scripts/convert-shape.py`, which is also the only place that
+RCC stages can address them; the export is `scripts/tools/convert-shape.py`, which is also the only place that
 can set the clip endings (`closed` = Repeat, `open` = Hold) - no C# test in this repo can see them.
 
 | Group | Absolute extent | Is |

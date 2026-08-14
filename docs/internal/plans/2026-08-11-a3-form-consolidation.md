@@ -1,5 +1,8 @@
 # A3 — form consolidation
 
+**Status** DONE 2026-08-12, as stage A3 of the framework-composition arc
+([2026-08-10-framework-composition-staging.md](2026-08-10-framework-composition-staging.md)).
+
 The block-entity base slot belongs to **form**. A1 made membership a behaviour, but nothing adopted
 it: `BlockEntityNetworkNode` still squats in the slot for machines whose form is not "a node". A3
 evicts it where it does not belong, which is precisely what lets a machine be a **container** — and

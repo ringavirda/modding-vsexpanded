@@ -91,7 +91,7 @@ choice, and it is why `acceptedBy` is per stage rather than per declaration.
 | Where | What |
 |---|---|
 | `src/ExpandedLib/Processes/` | `ProcessStage`, `StageLadder` (the `stageladder` attribute + parser), `StageLadderRegistry` (merge on `(thickness, family)`, first declaration wins, conflicts reported), `StageLadderLoader` (scans collectibles at `AssetsFinalize`, wired into `ExpandedLibModSystem`) |
-| `src/IronworkingExpanded/…/Forming/` | `MillSchedule` — the fitted set's branch of one family's ladder; `RollSetSpec` slimmed to `schema`/`family`/`accepts`/`barrelWidth`/`minTorque`; the shipped bloom and slab ladders on `StockItemDefinitions`; `MillFeed`, `BlockEntityRollingMill` and `BlockRollingMill` read a schedule |
+| `src/IronIndustryExpanded/…/Forming/` | `MillSchedule` — the fitted set's branch of one family's ladder; `RollSetSpec` slimmed to `schema`/`family`/`accepts`/`barrelWidth`/`minTorque`; the shipped bloom and slab ladders on `StockItemDefinitions`; `MillFeed`, `BlockEntityRollingMill` and `BlockRollingMill` read a schedule |
 | tests | `StageLadderTests`, `StageLadderRegistryTests`, `MillScheduleTests`, `StageLadderSeeds`; `RollSetSpecTests` and `ShippedRollSetTests` re-cut; three goldens regenerated |
 
 ⛔ **`accepts` stayed on the roll set and is not derived from the ladder.** They are independent facts: the

@@ -3,7 +3,7 @@
 **Status** partial - 3 metals of 16 exist as material identities (`pigiron`, `castiron`, `bessemersteel`;
 `slag` is a fourth entry but not a metal). The alloying mechanic itself does not exist: there is no
 [ladle](../machines/ladle.md), no ferroalloy, no window catalogue, and `MetalDef.Alloy` is read by nothing.
-**Mod** exlib owns the registry and the emitters; iiex and smex own the metals themselves
+**Mod** exlib owns the registry and the emitters; iiex and siex own the metals themselves
 
 **Owns** — the facts this page is canonical for:
 
@@ -63,7 +63,7 @@ different materials because one may become a boiler and one may not. The ladder 
 of guarantees, and a player climbs it because a machine refuses to be built from anything weaker.
 
 There is no ppm attribute, no hardness stat and no quality tag. The grade is the material identity:
-`smex:ingot-bessemersteel` and a future `smex:ingot-openhearthsteel` differ by nothing except which recipes
+`siex:ingot-bessemersteel` and a future `siex:ingot-openhearthsteel` differ by nothing except which recipes
 accept them.
 
 Three consequences:
@@ -198,9 +198,9 @@ Every metal's identity is JSON; the emitters supply the rest. `<domain>Values.X`
 
 | Field | `pigiron.json` | `castiron.json` | `bessemersteel.json` | `slag.json` |
 |---|---|---|---|---|
-| file | `assets/iiex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `assets/smex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
+| file | `assets/iiex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `assets/siex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
 | `code` | `pigiron` | `castiron` | `bessemersteel` | `slag` |
-| `moltenItem` | `iiex:ingot-pigiron` | `iiex:ingot-castiron` | `smex:ingot-bessemersteel` | `iiex:slag` |
+| `moltenItem` | `iiex:ingot-pigiron` | `iiex:ingot-castiron` | `siex:ingot-bessemersteel` | `iiex:slag` |
 | `solidDrop` | `game:metalbit-iron` | `game:metalbit-iron` | `game:metalbit-steel` | (convention) |
 | `castDomain` | `iiex` | `iiex` | `smex` | — |
 | `liquidThreshold` | 0.75 | 0.75 | (default 0.8) | (default) |
@@ -267,9 +267,9 @@ purpose, so a castable-but-brittle metal never leaks an anvil-forgeable `workite
 
 | Pipe tier | Material the docs claim | Burst | Registered as | file:line |
 |---|---|---|---|---|
-| plated (iiex) | wrought-iron plate | 2.5 atm | domain `iiex` | `IiexConfig.cs:163`, `IronworkingExpandedModSystem.cs:73` |
-| cast (iiex) | cast iron | 5.0 atm | domain `iiex` | `IiexConfig.cs:50`, `LowPressureExpandedModSystem.cs:60` |
-| rolled (hpex) | hadfield steel | 12 atm | domain `hpex` | `HpexConfig.cs:107-115`, `HighPressureExpandedModSystem.cs:42` |
+| plated (iiex) | wrought-iron plate | 2.5 atm | domain `iiex` | `IiexConfig.cs:163`, `IronIndustryExpandedModSystem.cs:73` |
+| cast (iiex) | cast iron | 5.0 atm | domain `iiex` | `IiexConfig.cs:50`, `IronIndustryExpandedModSystem.cs:60` |
+| rolled (hpex) | hadfield steel | 12 atm | domain `hpex` | `SiexConfig.cs:107-115`, `SteelIndustryExpandedModSystem.cs:42` |
 | (unregistered) | — | 5.0 atm | fallback | `ExpandedLib/Blocks/Networks/BlockPipe.cs:185` (`RegisterBurst`) |
 
 This is a continuous material→pressure ladder and the shape D3 asks for, but it is keyed on `Mod.Info.ModID`,
@@ -291,9 +291,9 @@ them and stays domain-keyed.
 | textures - pig iron | `game:block/metal/tarnished/iron` | vanilla, verified present |
 | textures - Bessemer steel | `game:block/metal/ingot/steel` | vanilla, verified present. It is the vanilla steel texture, so Bessemer steel is visually indistinguishable from `game:steel`, a different material on this ladder |
 | lang - iiex | `assets/iiex/lang/en.json:18-39` | complete: 2 metal names, 5 form names + descriptions, 8 tool names |
-| lang - smex | `assets/smex/lang/en.json:3-19` | complete: 1 metal name, 4 form names + descriptions, 8 tool names - the lang file is the most visible trace of the N1 conflict |
+| lang - smex | `assets/siex/lang/en.json:3-19` | complete: 1 metal name, 4 form names + descriptions, 8 tool names - the lang file is the most visible trace of the N1 conflict |
 | lang - exlib | `exlib:metal-unknown` | the empty-code label (`MetalRegistry.cs:100`) |
-| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/{castiron,pigiron}/`, `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
+| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/{castiron,pigiron}/`, `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
 | handbook | — | no page for the metal ladder at all. Nothing in game explains why two mild steels differ |
 
 ---

@@ -1,0 +1,215 @@
+[
+  {
+    "name": "Converter Control",
+    "ingredientPattern": "H_R,NPP,PPR",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "siex:convertercontrol-n"
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 12
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 8
+      }
+    }
+  },
+  {
+    "name": "Converter Transmission",
+    "ingredientPattern": "HPR,AGP,NPR",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "siex:convertertransmission-n"
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 12
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 8
+      },
+      "G": {
+        "type": "item",
+        "code": "game:gear-rusty",
+        "quantity": 16
+      },
+      "A": {
+        "type": "block",
+        "code": "game:woodenaxle-ud",
+        "quantity": 1
+      }
+    }
+  },
+  {
+    "name": "Converter Gas Intake",
+    "ingredientPattern": "HP_,LPP,RN_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "siex:converter-intake-n"
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 16
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 8
+      },
+      "L": {
+        "type": "block",
+        "code": "iiex:pipe-cast-straight*",
+        "quantity": 1
+      }
+    }
+  },
+  {
+    "name": "Converter Transmission",
+    "ingredientPattern": "HPR,AGP,NPR",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "siex:convertertransmission-n"
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 12
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 8
+      },
+      "G": {
+        "type": "item",
+        "code": "iiex:gear-*",
+        "quantity": 16
+      },
+      "A": {
+        "type": "block",
+        "code": "game:woodenaxle-ud",
+        "quantity": 1
+      }
+    }
+  }
+]

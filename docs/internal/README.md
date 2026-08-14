@@ -51,18 +51,21 @@ never in a code comment alone.
 |---|---|---|
 | [NEXT.md](plans/NEXT.md) | the entry point - what is next, right now | live |
 | [STATE.md](plans/STATE.md) | status and open decisions; the blocker table | live |
-| [2026-08-12-extensibility.md](plans/2026-08-12-extensibility.md) | third-party extension of our processes | **live, next** |
+| [2026-08-12-extensibility.md](plans/2026-08-12-extensibility.md) | third-party extension of our processes | **done 2026-08-12** |
 | [2026-08-10-backport-and-vanilla-backlog.md](plans/2026-08-10-backport-and-vanilla-backlog.md) | § A backport (58 open) · § B vanilla practice (12 open) | live |
-| [2026-08-04-iwex-u2-u10-expansion.md](plans/2026-08-04-iwex-u2-u10-expansion.md) | U2–U11, 87 tasks / 707 steps | live, paused |
-| [2026-08-04-iwex-completion.md](plans/2026-08-04-iwex-completion.md) | U1 remainder, Global Constraints, Commands | live |
-| [iwex-bringup.md](plans/iwex-bringup.md) | the art queue and the playtest gates | live |
-| [2026-08-05-iwex-plan-audit.md](plans/2026-08-05-iwex-plan-audit.md) | design-vs-plan findings, unstarted units | open findings |
-| [2026-08-05-iwex-plan-coherence.md](plans/2026-08-05-iwex-plan-coherence.md) | plan-internal coherence findings | open findings |
+| [2026-08-04-iwex-u2-u10-expansion.md](plans/2026-08-04-iwex-u2-u10-expansion.md) | U2–U11, 87 tasks / 707 steps | live, paused · **pre-merge, triage pending** |
+| [2026-08-04-iwex-completion.md](plans/2026-08-04-iwex-completion.md) | U1 remainder, Global Constraints, Commands | live · **pre-merge, triage pending** |
+| [iwex-bringup.md](plans/iwex-bringup.md) | the art queue and the playtest gates | live · **pre-merge** |
+| [2026-08-05-iwex-plan-audit.md](plans/2026-08-05-iwex-plan-audit.md) | design-vs-plan findings, unstarted units | open findings · **pre-merge** |
+| [2026-08-05-iwex-plan-coherence.md](plans/2026-08-05-iwex-plan-coherence.md) | plan-internal coherence findings | open findings · **pre-merge** |
 | [2026-08-10-framework-composition-staging.md](plans/2026-08-10-framework-composition-staging.md) | A0–A4 sequencing | **done 2026-08-12** |
 | [2026-08-10-a0-lifecycle-fixes.md](plans/2026-08-10-a0-lifecycle-fixes.md) | A0 task detail | done |
 | [2026-08-10-a1-network-membership-behaviour.md](plans/2026-08-10-a1-network-membership-behaviour.md) | A1 task detail | done |
 | [2026-08-11-a3-form-consolidation.md](plans/2026-08-11-a3-form-consolidation.md) | A3 task detail | done |
 | [furnace-and-machine-rebalance.md](plans/furnace-and-machine-rebalance.md) | the 0.9 rebalance plan of record | executed 0.9.7 |
+| [2026-08-13-framework-hardening.md](plans/2026-08-13-framework-hardening.md) | exlib as a published library, plus stage **M** (the mod merges) | live · **M.4 done, M.5 next** |
+| [2026-08-14-m4-iiex-merge-execution.md](plans/2026-08-14-m4-iiex-merge-execution.md) | the `iiex` merge, stage by stage | **executed 2026-08-14** |
+| [2026-08-14-m5-siex-merge-execution.md](plans/2026-08-14-m5-siex-merge-execution.md) | the `siex` merge, stage by stage | **executed 2026-08-14** · records three things the plan got wrong |
 
 A2 and A4 have no plan document. They were executed directly, which is why the paper trail thins
 out after A1 and why the arc reads as unfinished from the outside.

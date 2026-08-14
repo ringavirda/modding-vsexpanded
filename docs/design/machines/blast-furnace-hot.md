@@ -4,14 +4,14 @@
 
 **Owns** - the facts this page is canonical for:
 
-* the existence and identity of `smex:blastfurnacecore` as a distinct registered blocktype - its
+* the existence and identity of `siex:blastfurnacecore` as a distinct registered blocktype - its
   tier-3-only refractory faces, its `BF/H` label, and the fact that it carries no `tier` variant group;
 * the hot furnace's shipped 147-cell layout: the census per glyph, the per-layer cell counts, and every way
   it differs from the cold furnace's;
 * the two gas-outlet cells and the air throat between them - the only structural difference that makes this
   furnace "hot" - and the exhaust budget they emit;
-* the charging pair this furnace introduces: `smex:hopperreinforced` (the charge tank) and
-  `smex:hopperbell` (magazine + drip), including their capacities and how the drip reaches the shaft;
+* the charging pair this furnace introduces: `siex:hopperreinforced` (the charge tank) and
+  `siex:hopperbell` (magazine + drip), including their capacities and how the drip reaches the shaft;
 * the construction of all three smex blocks, and the fact that the core is absent from the recipe-cost
   catalogue;
 * the enlarged draft layout in [layouts.md](../../internal/workbench/layouts.md) § 1 - recorded as deferred.
@@ -62,7 +62,7 @@ engine's air blower rather than a hand-fed blower.
 
 ## Structure
 
-Anchor: `smex:blastfurnacecore-{side}` at the bottom centre of the furnace, in the hearth floor directly
+Anchor: `siex:blastfurnacecore-{side}` at the bottom centre of the furnace, in the hearth floor directly
 under the shaft. The hot core passes no brick tiers to the shared `BlockFurnaceCoreBase.Core(...)`
 fragment, so unlike `iiex:furnace-blastcore-{tier}-{side}` it is a single, tier-less block.
 
@@ -72,7 +72,7 @@ Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the nega
 | Source | Where |
 |---|---|
 | Definition (nine ASCII cross-sections, y = 0 → y = 8) | `BlockBlastFurnaceCoreHot.cs` |
-| Golden (the arbiter) | `test/SteelmakingExpanded.Tests/goldens/smex/blocktypes/blastfurnace/core.json` |
+| Golden (the arbiter) | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/blastfurnace/core.json` |
 | Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2, "Hot blast furnace" |
 
 ### Cell census — 147 offsets
@@ -80,13 +80,13 @@ Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the nega
 | Glyph | Required block | Count |
 |---|---|---|
 | `#` | `game:refractorybricks-good-tier3` - exact, no wildcard | 99 |
-| `C` | `smex:blastfurnacecore-*` (the anchor) | 1 |
+| `C` | `siex:blastfurnacecore-*` (the anchor) | 1 |
 | `T` | `iiex:furnace-irontap`, facing west - the east wall, pours out to (3, 0, 0) | 1 |
 | `S` | `iiex:furnace-slagtap`, facing east - the west wall, one course higher, pours to (−3, 1, 0) | 1 |
 | `Y` / `y` | `iiex:furnace-tuyere`, orientation n / s | 2 |
 | `P` | `iiex:pipe-outlet*` - the hot furnace's own addition | 2 |
-| `R` | `smex:hopperreinforced` | 1 |
-| `B` | `smex:hopperbell` | 1 |
+| `R` | `siex:hopperreinforced` | 1 |
+| `B` | `siex:hopperbell` | 1 |
 | `c` | the shaft - the same air / pile / hearth-metal alternation as the cold furnace's | 36 |
 | `p` | the crucible floor - same alternation plus `iiex:hearthmetal-*`, marked `Chargeable` and `Pool` | 2 |
 | `a` | `game:air` - the throat under the bell | 1 |
@@ -147,9 +147,9 @@ which are smex's.
 | Asset | Path | State |
 |---|---|---|
 | core block model | `game:block/basic/cube` | vanilla cube, per-face textured |
-| core faces | `game:block/clay/refractory/tier3/front1` on `all`; `smex:block/furnace/n` overlay north, `smex:block/furnace/bfh` overlay south | live - the "BF/H" label is what tells the three furnace anchors apart |
-| reinforced hopper shape | `assets/smex/shapes/blastfurnace/hopper-reinforced.json` | live; no animation |
-| bell hopper shape | `assets/smex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
+| core faces | `game:block/clay/refractory/tier3/front1` on `all`; `siex:block/furnace/n` overlay north, `siex:block/furnace/bfh` overlay south | live - the "BF/H" label is what tells the three furnace anchors apart |
+| reinforced hopper shape | `assets/siex/shapes/blastfurnace/hopper-reinforced.json` | live; no animation |
+| bell hopper shape | `assets/siex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
 | charge contents mesh | `iiex:shapes/ore/burden.json`, tesselated at runtime by the reinforced hopper | live - the only moving part either hopper shows |
 | tuyere / tap shapes | iiex - see [cold blast furnace](blast-furnace-cold.md) | |
 | outlet shape | `iiex:pipes/outlet` | see [pipe network](../mechanics/pipe-network.md) |
@@ -161,8 +161,8 @@ The reinforced hopper's fill is shown by raising the contents mesh between 9/16 
 proportion to `TankCount / Capacity`. The bell hopper is visually static; its drip is signalled by
 `ExParticles.FallingDust` + `ExSounds.StoneCrush`.
 
-Player-facing help: `assets/smex/config/handbook/01-blastfurnace.json` ↔
-`docs/smex/handbook/01-blastfurnace.html` (lang key `smex:handbook-blastfurnace-text`). It teaches burden
+Player-facing help: `assets/siex/config/handbook/01-blastfurnace.json` ↔
+`docs/siex/handbook/01-blastfurnace.html` (lang key `siex:handbook-blastfurnace-text`). It teaches burden
 charging: the [burdenmaker](burdenmaker.md), the alternating coke / burden rounds, positional ignition, the
 hang, and the tap-and-pool loop.
 
@@ -171,14 +171,14 @@ hang, and the tap-and-pool loop.
 ## Construction
 
 No RCC: three grid recipes plus hand-laid brick. All in
-`src/SteelmakingExpanded/Recipes/Grid/HotBlastFurnaceRecipeDefinitions.cs`; golden
-`test/SteelmakingExpanded.Tests/goldens/smex/recipes/grid/hotblastfurnace.json`.
+`src/SteelIndustryExpanded/Recipes/Grid/HotBlastFurnaceRecipeDefinitions.cs`; golden
+`test/SteelIndustryExpanded.Tests/goldens/siex/recipes/grid/hotblastfurnace.json`.
 
 | Output | Pattern | Ingredients |
 |---|---|---|
-| `smex:blastfurnacecore-n` | `BRP,BN_,BRP` | 4 × `game:refractorybrick-fired-tier3` (fixed, not `{tier}`), 2 × rod, 4 × nails, 2 × plate |
-| `smex:hopperreinforced` | `_H_,PSP,SPS` | 4 × plate, 3 × nails, hammer |
-| `smex:hopperbell` | `GHG,PSP,SPS` | 4 × plate, 3 × nails, hammer, 4 × gear |
+| `siex:blastfurnacecore-n` | `BRP,BN_,BRP` | 4 × `game:refractorybrick-fired-tier3` (fixed, not `{tier}`), 2 × rod, 4 × nails, 2 × plate |
+| `siex:hopperreinforced` | `_H_,PSP,SPS` | 4 × plate, 3 × nails, hammer |
+| `siex:hopperbell` | `GHG,PSP,SPS` | 4 × plate, 3 × nails, hammer, 4 × gear |
 
 The bell hopper is authored twice, once per gear source - `game:gear-rusty` and `iiex:gear-*` - the
 craftable-gear compatibility pattern, not a duplicate.
@@ -190,8 +190,8 @@ will not complete this furnace), 2 × `iiex:furnace-tuyere`, the iron and slag t
 
 ### The core is missing from the recipe-cost catalogue
 
-`SmexRecipeConfig.Defaults()` lists the cowper, smokestack and converter blocks, the air blower and both
-hoppers (`hopperbell-grid`, `hopperreinforced-grid`), but no entry for `smex:blastfurnacecore-*`.
+`SiexRecipeConfig.Defaults()` lists the cowper, smokestack and converter blocks, the air blower and both
+hoppers (`hopperbell-grid`, `hopperreinforced-grid`), but no entry for `siex:blastfurnacecore-*`.
 `/exmod steel cheap` therefore discounts every smex machine except the hot furnace core. One missing line;
 see [recipes & config](../mechanics/recipes-config.md) for the catalogue contract.
 
@@ -267,15 +267,15 @@ clears the melt line where the same charge on cold blast stalls short of it - th
 
 ## Numbers
 
-`SmexValues.X` is a generated accessor over `SmexConfig.X`; the file:line is the config declaration.
+`SiexValues.X` is a generated accessor over `SiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/SteelmakingExpanded/SmexConfig.cs`
+### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `HopperReinforcedCapacity` | 48 u | SmexConfig.cs:86 | Reinforced-hopper tank. Small by design (skip-hoist fed) |
-| `HopperMaxMagazineCapacity` | 48 u | SmexConfig.cs:89 | Bell-hopper magazine |
-| `HopperDropAmount` | 4 u | SmexConfig.cs:92 | Units dripped into the shaft per bell tick (1 s) ⇒ 4 u/s |
+| `HopperReinforcedCapacity` | 48 u | SiexConfig.cs:86 | Reinforced-hopper tank. Small by design (skip-hoist fed) |
+| `HopperMaxMagazineCapacity` | 48 u | SiexConfig.cs:89 | Bell-hopper magazine |
+| `HopperDropAmount` | 4 u | SiexConfig.cs:92 | Units dripped into the shaft per bell tick (1 s) ⇒ 4 u/s |
 
 ### Owned, hard-coded — not config
 
@@ -292,8 +292,8 @@ clears the melt line where the same charge on cold blast stalls short of it - th
 | `BfIronPerOreUnit`, `BfSlagPerOreUnit`, the pool caps, the tap drain keys, `ChargeItemsPerBand` and the column capacity arithmetic | [cold blast furnace](blast-furnace-cold.md) |
 | burden composition and the flux stamp | [burden](../items/burden.md) |
 | fuel carbon values (coke 2, charcoal 1) | [fuels](../items/fuels.md) |
-| `CowperIntakeVolume` (SmexConfig.cs:143), the regenerator rates | [cowper](cowper.md) |
-| `SmokestackGasIntakeVolume` (SmexConfig.cs:259) | [smokestack](smokestack.md) |
+| `CowperIntakeVolume` (SiexConfig.cs:143), the regenerator rates | [cowper](cowper.md) |
+| `SmokestackGasIntakeVolume` (SiexConfig.cs:259) | [smokestack](smokestack.md) |
 | `BlastPressureThreshold`, `AirBlowerOutputPerSecond` | unowned - no page covers the smex air blower yet; see Open #4 |
 | `LitresPerPipe`, burst, leak | [pipe network](../mechanics/pipe-network.md) |
 
@@ -362,7 +362,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
 3. The hopper pair is found by bare vertical neighbour reads. The bell pulls from whatever
    `BlockEntityHopperReinforced` is directly above it, and the multiblock never validates the pair. A
    detached bell charges nothing (the drip needs the anchored core), but the only warning is
-   `smex:hopper-info-nobell` on the hopper's info line, never on the bell's.
+   `siex:hopper-info-nobell` on the hopper's info line, never on the bell's.
 
 4. The exhaust outlets are write-only and the furnace never verifies them. The outlet cells are resolved
    off the layout's `CellRole.GasOutlet` marks, and the tick loop calls `TryProduce` on whatever
@@ -371,7 +371,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
    cowpers starve with no error anywhere.
 
 5. `blockdesc-blastfurnacecore*` calls the core "the refractory hearth grate"
-   (`assets/smex/lang/en.json:32`). It is a plain cube; the grate shape is gone.
+   (`assets/siex/lang/en.json:32`). It is a plain cube; the grate shape is gone.
 
 6. The core def has no `Handbook(...)` grouping, so its four `side` variants list separately in the in-game
    handbook where the cowper and smokestack intakes group into one entry.
@@ -387,7 +387,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
    drops the reinforced hopper the bell pulls from. Landing it means reconciling it against the current
    part blocks and the column model, not editing the ASCII.
 
-2. `smex:hopperreinforced` is a skip-hoist buffer with no skip hoist. The 48-unit tank is sized for a
+2. `siex:hopperreinforced` is a skip-hoist buffer with no skip hoist. The 48-unit tank is sized for a
    feeder that does not exist, so in play a full charge is many hand loads. Either build the feeder or
    raise the tank.
 
@@ -396,5 +396,5 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
 4. No page owns the smex air blower. `BlockEntityEngineAirBlower` is the suite's only pressurised air
    source at this tier and the thing that makes the tuyeres' pressure gate reachable, yet it has no design
    page. When writing one: `DoWork` multiplies the config value by a bare literal
-   (`SmexValues.AirBlowerOutputPerSecond * 3`), so the shipped output is three times what the config key
+   (`SiexValues.AirBlowerOutputPerSecond * 3`), so the shipped output is three times what the config key
    and its doc-comment advertise.

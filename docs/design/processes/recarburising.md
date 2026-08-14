@@ -114,7 +114,7 @@ two-reagent split is this page's (§ Numbers, settled 2026-08-07).
 ## Inputs and outputs
 
 Sizes are one settled converter heat: a 6000 u pig charge yielding 5400 u of metal (`BessemerSteelYield`
-0.90, `SmexConfig.cs:221`; the derivation and the 4800-vs-6000 dispute are
+0.90, `SiexConfig.cs:221`; the derivation and the 4800-vs-6000 dispute are
 [bessemer § Numbers](../machines/bessemer.md#numbers) and [§ Open #2](../machines/bessemer.md#open)).
 
 | In | Mass | Out | Mass |
@@ -160,7 +160,7 @@ two-reagent split is what makes "which ferroalloy" a real choice.
 
 The mild target is Bessemer steel at ~0.2 % C ([alloys](../items/alloys.md)), which is also the number the
 shipped converter already uses as its retype threshold (`BessemerSteelCarbonTarget` 0.002,
-`SmexConfig.cs:162`). For an addition of mass `m` and carbon fraction `c` into a base of `M` units at ~0 % C:
+`SiexConfig.cs:162`). For an addition of mass `m` and carbon fraction `c` into a base of `M` units at ~0 % C:
 
 ```
 m · c = 0.002 · (M + m)        ⇒        m = 0.002 · M / (c − 0.002)
@@ -205,7 +205,7 @@ cupola - which is why *"Bessemer plants kept a cupola melting spiegeleisen"*
 
 | Quantity | Arithmetic | Result |
 |---|---|---|
-| carbon the blow must remove, settled | `BessemerPigCarbonStart` 0.04 → ~0 (`SmexConfig.cs:159`) | the whole 4 % |
+| carbon the blow must remove, settled | `BessemerPigCarbonStart` 0.04 → ~0 (`SiexConfig.cs:159`) | the whole 4 % |
 | carbon the blow removes today | 0.04 → `BessemerSteelCarbonTarget` 0.002 (`:162`) | 3.8 % — it stops at the finished grade |
 | carbon recarburising puts back | 0 → 0.002 | 10.8 u on a 5400 u heat |
 | the shipped terminal that N1 wants | `BessemerOverblowCarbon` 0.0005 (`:167`), `IsOverblownIron()` (`BlockEntityConverterControl.cs:872`) | already implemented, under the name *over-blow* |
@@ -258,7 +258,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
    steel tier has no product at all - [ladle § Open #2](../machines/ladle.md#open) and
    [blown iron](../items/blown-iron.md) say the same. The safe order is: ferroalloy metal +
    `Roles.Ferroalloy` → ladle → `blowniron` metal → converter retype → strip `bessemersteel`'s tool preset
-   (`assets/smex/config/metals/bessemersteel.json`).
+   (`assets/siex/config/metals/bessemersteel.json`).
 
 3. **A ferroalloy addition moves two numbers.** Ferromanganese is high-carbon by definition
    ([cupola](../machines/cupola.md):61-67), so every recarburising addition is also a manganese addition. A
@@ -275,7 +275,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
 
 5. **The bath cools while the player fetches the reagent.** A ladle with no cooldown coefficient is a ladle
    that freezes during a walk to the chest. The knob exists on the converter
-   (`BessemerCooldownCoefficient` 0.5, `SmexConfig.cs:240`, on `MoltenCooldownSpeed` 24, `IiexConfig.cs:31`);
+   (`BessemerCooldownCoefficient` 0.5, `SiexConfig.cs:240`, on `MoltenCooldownSpeed` 24, `IiexConfig.cs:31`);
    the ladle needs its own, and its value is the working window. That number is
    [ladle](../machines/ladle.md)'s to set.
 
@@ -291,7 +291,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
 
 8. **There is no in-game teaching path.** A mandatory step with no handbook page is a wall, and this one has
    the worst possible failure mode: the player pours what looks like steel and it is not.
-   `docs/smex/handbook/` ↔ `assets/smex/lang/en.json` is where it goes.
+   `docs/siex/handbook/` ↔ `assets/siex/lang/en.json` is where it goes.
 
 ---
 

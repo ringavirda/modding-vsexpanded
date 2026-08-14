@@ -112,9 +112,9 @@ The converter cannot be a mixing site, and the shipped code says so twice.
 1. It refuses solid additions into a finished heat. `TryChargeScrap` accepts cold charge only onto an empty
    vessel or a raw pig heat, never into finished steel (`BlockEntityConverterControl.cs:631-635`). The one
    hand-drop port the converter has is closed exactly when an alloying addition would be made.
-2. There is no cool half of its heat. `BessemerRefineTemperature` is 1500 °C (`SmexConfig.cs:194`) and that
+2. There is no cool half of its heat. `BessemerRefineTemperature` is 1500 °C (`SiexConfig.cs:194`) and that
    is numerically equal to Bessemer steel's own melting point
-   (`assets/smex/config/metals/bessemersteel.json`), so the converter has no "hold and correct" band at all;
+   (`assets/siex/config/metals/bessemersteel.json`), so the converter has no "hold and correct" band at all;
    the moment the blast stops it is in the freeze window
    ([bessemer § Gotchas #2](../machines/bessemer.md#gotchas)).
 
@@ -143,7 +143,7 @@ charge carburises - ruinous for tool steel, and free for ferroalloys that are hi
 
 ## Inputs and outputs
 
-One settled converter heat: 6000 u of pig → 5400 u of metal (`BessemerSteelYield` 0.90, `SmexConfig.cs:221`;
+One settled converter heat: 6000 u of pig → 5400 u of metal (`BessemerSteelYield` 0.90, `SiexConfig.cs:221`;
 derivation at [bessemer § Numbers](../machines/bessemer.md#numbers)). Reagent strengths are the settled
 identity rows - see Numbers for where each comes from.
 
@@ -258,10 +258,10 @@ Every pressure ceiling that exists in the suite:
 | default, if a mod registers none | 5 atm | `BlockPipe.cs:182` | — |
 | iiex plated | 2.5 atm | `IiexConfig.cs:163` | domain `iiex` |
 | iiex cast | 5.0 atm | `IiexConfig.cs:50` | domain `iiex` |
-| hpex rolled | 12 atm | `HpexConfig.cs:115` | domain `hpex` |
+| hpex rolled | 12 atm | `SiexConfig.cs:115` | domain `hpex` |
 
 That is the whole list - `grep -n "MaxPressure\|BurstPressure\|SafetyPressure"` over `IiexConfig.cs` and
-`HpexConfig.cs` returns those two burst keys and nothing else. No boiler, cylinder or vessel has a
+`SiexConfig.cs` returns those two burst keys and nothing else. No boiler, cylinder or vessel has a
 material-keyed pressure limit at all, and `MetalDef` carries `IsAlloy` (`MetalDef.cs:57`) and `Alloy`
 (`:71`) but no grade field of any kind.
 

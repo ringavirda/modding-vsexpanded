@@ -285,16 +285,16 @@ What the config comment claims vs what ships:
 | Cornish normal | 0.4 | 6.7 L/s | 20.0 L/s | 3× |
 | Cornish high | 0.8 | 13.3 L/s | 40.0 L/s | 3× |
 
-Cornish powers from `HpexConfig.cs:89-91`.
+Cornish powers from `SiexConfig.cs:89-91`.
 
 Every downstream statement of the number is therefore wrong by 3×:
 
 | source | claim | truth |
 |---|---|---|
 | `IiexConfig.cs:197-198` (the doc comment on the key itself) | "Watt 0.3 → 5 L/s, Cornish 0.2/0.4/0.8 → 3.3/6.7/13.3" | 15 / 10 / 20 / 40 |
-| `docs/iiex/handbook/02-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
-| `docs/iiex/handbook/02-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SmexConfig.cs:113`) |
-| `SmexConfig.cs:110-112` | "Cornish 0.2/0.4/0.8 → 9.6/19.2/38.4, Watt 0.3 → 14.4" | 28.8 / 57.6 / 115.2 / 43.2 |
+| `docs/iiex/handbook/07-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
+| `docs/iiex/handbook/07-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SiexConfig.cs:113`) |
+| `SiexConfig.cs:110-112` | "Cornish 0.2/0.4/0.8 → 9.6/19.2/38.4, Watt 0.3 → 14.4" | 28.8 / 57.6 / 115.2 / 43.2 |
 
 ### Other hard-coded values
 
@@ -497,7 +497,7 @@ beside it said 5 L/s.
 
 9. **The manual pump is not wrench-orientable** (`BlockManualFluidPump.cs:18`). To reverse it,
    break and re-place. The crank-support side is the input side - the only in-world cue, and it is stated
-   only in the handbook (`docs/iiex/handbook/03-fittings.html:22-23`).
+   only in the handbook (`docs/iiex/handbook/08-fittings.html:22-23`).
 
 10. **The manual pump forwards every interaction phase from its filler** - start, step, stop and the
     interaction help all have an `IFillerInteractionTarget` twin (`BlockManualFluidPump.cs:137-215`). Miss one
@@ -507,11 +507,11 @@ beside it said 5 L/s.
     item falls through to the default behaviour so a wrench still works on the block.
 
 12. **`src/IronIndustryExpanded/README.md:42-43` lists `Commands/` and `Preferences/` directories that do not
-    exist** - the measure feature moved to exlib (`LowPressureExpandedModSystem.cs:93-96`). The same
+    exist** - the measure feature moved to exlib (`IronIndustryExpandedModSystem.cs:93-96`). The same
     README's machine list also omits the manual pump from "what it adds" while the code ships it.
 
 13. **`IiexConfig.cs:223` documents `/exmod steam <level>`. There is no such command** - the recipe level is
-    switched by the generic `/exmod recipes iiex <level>` (`LowPressureExpandedModSystem.cs:79-81`). The same
+    switched by the generic `/exmod recipes iiex <level>` (`IronIndustryExpandedModSystem.cs:79-81`). The same
     stale string is repeated at `IiexRecipeConfig.cs:13`.
 
 14. **The engine pump's source face is `DOWN`** (`BlockEngineFluidPump.cs:46`), i.e. the intake main must run
@@ -526,7 +526,7 @@ beside it said 5 L/s.
   `delivery = inlet × ratio`, `flow = budget ÷ delivery`, and gate the boiler intake on `InternalPressure`.
   Leave `SteamEngineEfficiency` alone - smex's blast pressure reads it.
 - **Delete or config-ify the `× 3`.** Whichever way it is resolved, `PumpWaterPerSecond` and its doc
-  comment, `AirBlowerOutputPerSecond` (`SmexConfig.cs:110-113`) and two handbook pages have to move together.
+  comment, `AirBlowerOutputPerSecond` (`SiexConfig.cs:110-113`) and two handbook pages have to move together.
   Nothing currently asserts any of these numbers, so nothing will catch the next drift either; a rate test
   is the cheap half of this fix.
 - **Build the mechanical MP pump.** The art is drawn and unwired; it is the device the settled power

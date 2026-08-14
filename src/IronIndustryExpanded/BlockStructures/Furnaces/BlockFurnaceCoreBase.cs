@@ -30,7 +30,7 @@ public abstract class BlockFurnaceCoreBase : Block {
   /// face and the furnace-type label on the south so the anchor reads apart from the surrounding wall
   /// bricks.
   /// </summary>
-  /// <param name="code">The blocktype <c>code</c>. iiex's cores pass <see cref="FurnaceCode"/>; smex
+  /// <param name="code">The blocktype <c>code</c>. iiex's cores pass <see cref="FurnaceCode"/>; siex
   /// passes its own, since a shared helper must not rename another mod's block.</param>
   /// <param name="type">The <c>type</c> state naming the family member, or <c>null</c> for a core that
   /// carries no <c>type</c> group at all.</param>
@@ -49,7 +49,7 @@ public abstract class BlockFurnaceCoreBase : Block {
 
     // Declared first so the code reads furnace-{type}-{tier}-{side}. See N7 in
     // docs/design/mechanics/naming.md. A null type leaves the block without a type group, which is what
-    // smex passes to keep its own code unchanged.
+    // siex passes to keep its own code unchanged.
     if (type != null)
       def = def.VariantGroup("type", type);
 

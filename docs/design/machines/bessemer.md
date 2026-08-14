@@ -2,7 +2,7 @@
 
 **Status** live; the only machine in the suite still authored as a coordinate layout, scheduled for a rebuild
 as a single RCC megablock. The vessel cannot be finished in survival (B7) - see Construction.
-**Mod** smex (`SteelmakingExpanded`)
+**Mod** siex (`SteelIndustryExpanded`)
 
 **Owns** - the facts this page is canonical for:
 
@@ -101,10 +101,10 @@ deletes all three behind a migration.
 
 | Block | Code | Class | Job |
 |---|---|---|---|
-| control | `smex:convertercontrol-{side}` | `BlockConverterControl.cs:18` | layout anchor, operator lever, and the brain - owns all state |
-| transmission | `smex:convertertransmission-{side}` | `BlockConverterTransmission.cs:16` | MP endpoint; the axle that tilts the vessel |
-| gas intake | `smex:converter-intake-{side}` | `BlockConverterIntake.cs:19` | fixed pipe connector (not a node) for the blast |
-| vessel | `smex:converterbessemer-{side}` | `BlockConverterBessemer.cs:28` | the 3×3×3 shell; RCC-built, control-spawned, never placed from an item |
+| control | `siex:convertercontrol-{side}` | `BlockConverterControl.cs:18` | layout anchor, operator lever, and the brain - owns all state |
+| transmission | `siex:convertertransmission-{side}` | `BlockConverterTransmission.cs:16` | MP endpoint; the axle that tilts the vessel |
+| gas intake | `siex:converter-intake-{side}` | `BlockConverterIntake.cs:19` | fixed pipe connector (not a node) for the blast |
+| vessel | `siex:converterbessemer-{side}` | `BlockConverterBessemer.cs:28` | the 3×3×3 shell; RCC-built, control-spawned, never placed from an item |
 
 The control is at (0,0,0) and the transmission at (0,−1,0) (`BlockConverterControl.cs:51-52`).
 
@@ -112,14 +112,14 @@ The control is at (0,0,0) and the transmission at (0,−1,0) (`BlockConverterCon
 
 Anchor: the control block, at its own `(0,0,0)`. Authored as explicit `.At(…)`/`.Fill(…)` calls rather than an
 ASCII layout - the last structure in the suite in this form (`BlockConverterControl.cs:40-71`). Golden:
-`test/SteelmakingExpanded.Tests/goldens/smex/blocktypes/converter/control.json` (33 offsets, verified).
+`test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/converter/control.json` (33 offsets, verified).
 
 | # | Required block | Count | Structure-local cells |
 |---|---|---|---|
-| 1 | `smex:convertercontrol*` | 1 | `(0,0,0)` |
-| 2 | `smex:convertertransmission*` | 1 | `(0,−1,0)` |
-| 3 | `smex:converterbessemer*` | 1 | `(0,0,2)` |
-| 4 | `smex:converter-intake*` | 1 | `(0,0,4)` |
+| 1 | `siex:convertercontrol*` | 1 | `(0,0,0)` |
+| 2 | `siex:convertertransmission*` | 1 | `(0,−1,0)` |
+| 3 | `siex:converterbessemer*` | 1 | `(0,0,2)` |
+| 4 | `siex:converter-intake*` | 1 | `(0,0,4)` |
 | 5 | `iiex:moltencanal-tap*` | 1 | `(1,1,2)` - the input tap |
 | 6 | `iiex:moltencanal-start*` | 1 | `(1,−2,2)` - the output start |
 | 7 | `iiex:moltencanal-straight*` | 2 | `(2,1,2)`, `(2,−2,2)` |
@@ -165,17 +165,17 @@ vessel-local `(0,1,0)`, directly above the vessel (`:63`, matched by `IsChiselCe
 
 | Asset | Path | State |
 |---|---|---|
-| vessel shape | `assets/smex/shapes/converter/bessemer.json` | live. Root children `GearShaft · BottomIron · GasIntake · BottomRefractory · UpRefractory · UpIron · InputLining` - one per RCC stage, in order. Textures `front1 · burned · iron3 · iron5` |
+| vessel shape | `assets/siex/shapes/converter/bessemer.json` | live. Root children `GearShaft · BottomIron · GasIntake · BottomRefractory · UpRefractory · UpIron · InputLining` - one per RCC stage, in order. Textures `front1 · burned · iron3 · iron5` |
 | vessel animations | same file | `idle` (`Repeat`), `filling` / `slagpouring` / `pouring` (all `Hold`, one keyframe each) - held tilt poses, not cycles, so `Hold` is correct here |
-| control shape | `assets/smex/shapes/converter/control.json` | live; animations `filling` / `pouring` (both `Hold`) - the lever throw. Textures `burned · iron4` |
-| intake shape | `assets/smex/shapes/converter/intake.json` | live, no animations |
-| transmission shape | `assets/smex/shapes/converter/transmission.json` | live, no animations; carries an `Axle` element |
+| control shape | `assets/siex/shapes/converter/control.json` | live; animations `filling` / `pouring` (both `Hold`) - the lever throw. Textures `burned · iron4` |
+| intake shape | `assets/siex/shapes/converter/intake.json` | live, no animations |
+| transmission shape | `assets/siex/shapes/converter/transmission.json` | live, no animations; carries an `Axle` element |
 | editable sources | `assets/editable/shapes/` | only the intake has one (`machine-pipe-block-converterintake.json`, currently untracked; the old `machine-converter-intake.json` is deleted in the tree). The vessel, control and transmission have no editable source at all - the runtime shapes are the only copy |
 | textures | — | none of its own; every texture key resolves to vanilla or shared iiex sheets |
 | particles | — | `ExParticles.RisingPlume` of `ExParticles.Smoke` from a box at vessel-local x ∈ [−0.375, 0], y ∈ [1.5, 2.0], z ∈ [0.3125, 0.6875], rotated per `side` (`BlockEntityConverterBessemer.cs:108-159`). Server-spawned, so it replicates |
 | sounds | — | `Embers` (4 s throttle), `Fire` (3 s), `Sizzle` / `MoltenMetal` (1.5 s), `MetalGrinding`, `CokeOvenDoorOpen`, `Extinguish` - all repurposed, none new (`BlockEntityConverterControl.cs:300-315`, `:466-474`, `:956-957`) |
-| lang | `assets/smex/lang/en.json:30-130` | complete - 4 block-help keys, 12 errors, 15 info lines, 22 status lines |
-| handbook | `docs/smex/handbook/04-bessemer.html` ↔ `smex:handbook-bessemer-text` (`lang/en.json:175`) | stale - see Gotchas #10 |
+| lang | `assets/siex/lang/en.json:30-130` | complete - 4 block-help keys, 12 errors, 15 info lines, 22 status lines |
+| handbook | `docs/siex/handbook/04-bessemer.html` ↔ `siex:handbook-bessemer-text` (`lang/en.json:175`) | stale - see Gotchas #10 |
 
 Rendering: the vessel is drawn by its animator, because `ExRightClickConstructable` suppresses the default
 mesh; `idle` is a permanent held pose that keeps the built elements visible
@@ -193,13 +193,13 @@ baking it into the mesh; `InitializeShapeAndAnimator` would do both and rotate t
 ### The three grid recipes
 
 All in `Recipes/Grid/ConverterRecipeDefinitions.cs`; costs registered as `convertercontrol-grid`,
-`convertertransmission-grid`, `converter-intake-grid` (`SmexRecipeConfig.cs:58-60`).
+`convertertransmission-grid`, `converter-intake-grid` (`SiexRecipeConfig.cs:58-60`).
 
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
-| `smex:convertercontrol-north` | `H_R,NPP,PPR` | 12 rod, 4 plate, 8 nails, hammer (tool) | `:21-30` |
-| `smex:convertertransmission-north` | `HPR,AGP,NPR` | 12 rod, 4 plate, 8 nails, 16 gear, 1 `game:woodenaxle-ud`, hammer | `:46-57`; emitted twice - once for `game:gear-rusty` (`:31`), once for `iiex:gear-*` (`:43`) |
-| `smex:converter-intake-north` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `iiex:pipe-cast-straight*`, hammer | `:32-42` |
+| `siex:convertercontrol-n` | `H_R,NPP,PPR` | 12 rod, 4 plate, 8 nails, hammer (tool) | `:21-30` |
+| `siex:convertertransmission-n` | `HPR,AGP,NPR` | 12 rod, 4 plate, 8 nails, 16 gear, 1 `game:woodenaxle-ud`, hammer | `:46-57`; emitted twice - once for `game:gear-rusty` (`:31`), once for `iiex:gear-*` (`:43`) |
+| `siex:converter-intake-n` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `iiex:pipe-cast-straight*`, hammer | `:32-42` |
 
 `Rod` / `Plate` / `Nails` are the `game:*-*` metal-capture staples (`ExIngredients.cs:27-46`); `PipeStar` is
 the trailing-star pipe wildcard shared with the cowper and smokestack intakes (`RecipeIngredients.cs:18-19`).
@@ -207,7 +207,7 @@ the trailing-star pipe wildcard shared with the cowper and smokestack intakes (`
 ### The vessel — 7 RCC stages
 
 Raised in place by right-clicking the vessel with materials in the hotbar. Cost key `converterbessemer-rcc`
-(`SmexRecipeConfig.cs:49-53`). Declared at `BlockConverterBessemer.cs:98-131`.
+(`SiexRecipeConfig.cs:49-53`). Declared at `BlockConverterBessemer.cs:98-131`.
 
 | Stage | Cost | Adds |
 |---|---|---|
@@ -223,7 +223,7 @@ Totals: 40 plate · 42 nails · 18 rod · 84 tier-3 refractory brick · 84 fire 
 handbook's totals are correct.)
 
 Spawning the vessel is separate from building it: RMB the control with 1 `iiex:largegear-iron|-steel` and 8
-`game:rod-iron|-steel` in the hotbar (`BlockEntityConverterControl.cs:1054-1066`, `SmexConfig.cs:100`,
+`game:rod-iron|-steel` in the hotbar (`BlockEntityConverterControl.cs:1054-1066`, `SiexConfig.cs:100`,
 `:103`). Creative gets it free (`:1011-1013`). The spawn accepts only iiex's smithable large gear, never
 `game:gear-rusty`, so the vessel stays buildable in worlds with no loot (`:1052-1053`).
 
@@ -253,7 +253,7 @@ converter is blocked in two independent places. Neither is on this page to fix.
 
 | In | Out |
 |---|---|
-| molten pig iron (`iiex:ingot-pigiron`) through the input tap | molten Bessemer steel (`smex:ingot-bessemersteel`) through the output cell |
+| molten pig iron (`iiex:ingot-pigiron`) through the input tap | molten Bessemer steel (`siex:ingot-bessemersteel`) through the output cell |
 | optional cold steel scrap - any exlib `Roles.Scrap` item, by role not by path | molten slag (`iiex:slag`) through the same output cell |
 | air at ≥ `BlastPressureThreshold` on the pipe across the intake's connector face | gas - 4 % of the pig mass, gone, not a material |
 | mechanical power on the transmission - to tilt only | on over-blow: soft ingot iron (`game:ingot-iron`) |
@@ -372,13 +372,13 @@ strands the heat, because the vessel cannot be tilted to pour.
 
 ## Numbers
 
-`SmexValues.X` is a generated accessor over `SmexConfig.X`; the file:line is the config declaration.
+`SiexValues.X` is a generated accessor over `SiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/SteelmakingExpanded/SmexConfig.cs`
+### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BessemerConverterCapacity` | 4800 u | SmexConfig.cs:145 | Vessel capacity, counting charge + cold scrap. Settled value is 6000 - see Open #2 |
+| `BessemerConverterCapacity` | 4800 u | SiexConfig.cs:145 | Vessel capacity, counting charge + cold scrap. Settled value is 6000 - see Open #2 |
 | `BessemerBlastPerSecond` | 8.0 L/s | :148 | Blast demanded per second while blowing |
 | `BlastPressureThreshold` | 2.5 atm | :108 | Minimum pipe pressure that counts as "blast". The source comment says 3 atm (`BlockEntityConverterControl.cs:791`) |
 | `BessemerPigCarbonStart` | 0.04 | :159 | Carbon fraction of fresh molten pig |
@@ -402,10 +402,10 @@ strands the heat, because the vessel cannot be tilted to pour.
 | `BessemerPourHoldSeconds` | 1.0 s | :97 | Hold time before the deep steel pour commits |
 | `BessemerRequiredGears` | 1 | :100 | Large gears consumed to spawn the vessel |
 | `BessemerRequiredRods` | 8 | :103 | Rods consumed to spawn the vessel |
-| `RccBrokenDropsRatio` | 0.8 | :250 | Construction-material salvage on break; read live via `ExRccSettings` (`SteelmakingExpandedModSystem.cs:61`) |
+| `RccBrokenDropsRatio` | 0.8 | :250 | Construction-material salvage on break; read live via `ExRccSettings` (`SteelIndustryExpandedModSystem.cs:61`) |
 
 Migrations that touch this machine: `0.9.0` resets `BessemerBlastPerSecond` (1 → 8 L/s,
-`SmexConfig.cs:38-46`); `0.9.2` resets the gear/rod spawn cost (4 rusty gears + 12 rods → 1 large gear + 8
+`SiexConfig.cs:38-46`); `0.9.2` resets the gear/rod spawn cost (4 rusty gears + 12 rods → 1 large gear + 8
 rods, `:51-60`); `0.9.5` resets `BessemerConverterCapacity` and retires `BessemerProcessDuration` /
 `BessemerProcessTemperature` entirely (`:66-73`).
 
@@ -459,7 +459,7 @@ time cost - see Gotchas #1.
 | `T_process = T_in − T_loss`, `HeatBalance.Compute`, `HeatBalanceHud.AppendLedger`, `IsHotBlast` | [heat balance](../mechanics/heat-balance.md) |
 | canal capacity, `MoltenFlowRate` (50), push/drain/soak, the metal-type refusal | [molten network](../mechanics/molten-network.md), [molten canal](molten-canal.md) |
 | pipe pool volume, pressure, burst, `TryConsumeGas` | [pipe network](../mechanics/pipe-network.md) |
-| `AirBlowerOutputPerSecond` (SmexConfig.cs:113) and the blower's undocumented ×3 | [twin-tub blower](twin-tub-blower.md) / iiex sub-machines |
+| `AirBlowerOutputPerSecond` (SiexConfig.cs:113) and the blower's undocumented ×3 | [twin-tub blower](twin-tub-blower.md) / iiex sub-machines |
 | Bessemer steel's composition, grade and bar from pressure work | [materials.md](../materials.md) |
 | cast slab / bloom / billet pour sizes | [long cell](long-cell.md) |
 
@@ -530,7 +530,7 @@ guard degrades to "no construction drops" and still removes the block (`BlockCon
 
 | File | Covers |
 |---|---|
-| `test/SteelmakingExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` | `ConverterRig` - builds the real footprint through `StructureRig`, places every service port under the code its own layout cell names, and lets the control's monitor tick complete the structure (`:150`). It does not force `StructureComplete`. Five block codes were wrong before this rig existed |
+| `test/SteelIndustryExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` | `ConverterRig` - builds the real footprint through `StructureRig`, places every service port under the code its own layout cell names, and lets the control's monitor tick complete the structure (`:150`). It does not force `StructureComplete`. Five block codes were wrong before this rig existed |
 | `Scenarios/BessemerScenarioTests.cs:28` `:56` | commissioning through the machine's own production tick; a breached shell stopping at the first gate |
 | `…:84` `:124` `:146` `:162` | charge → blow → pour; slag off the shallow tilt through the shared cell; over-blow to ingot iron; a second heat after pouring the first |
 | `…:189` `:210` `:228` `:240` `:249` | scrap yielding more steel; no blast ⇒ no refine; powered / stalled / no-network transmission |
@@ -540,7 +540,7 @@ guard degrades to "no construction drops" and still removes the block (`BlockCon
 | `Blocks/Converter/ConverterOrientationTests.cs:33` | every peripheral tracks the `side` variant in all four facings |
 | `Blocks/Converter/ConverterTransmissionTests.cs:32` `:42` `:58` | resistance, discovery face, one axis sign per axis |
 | `Definitions/MegablockDropTierTests.cs:41` `:57` `:69` | no self-drop, 80 % salvage, iron mining tier |
-| `Definitions/SmexDefinitionGoldenTests.cs:17` | all four converter blocktype goldens and the three grid recipes |
+| `Definitions/SiexDefinitionGoldenTests.cs:17` | all four converter blocktype goldens and the three grid recipes |
 
 No test asserts a rate as a number - not the blow length, not the pour rate, not the blast draw. The scenario
 suite checks directions (metal moved / did not move), which is why `BessemerPourRate` could go from 16 to 44
@@ -559,7 +559,7 @@ without anything noticing.
    those 12 ticks.
 
 2. **`BessemerRefineTemperature` (1500) equals Bessemer steel's melting point** (`meltingPoint: 1500`,
-   `assets/smex/config/metals/bessemersteel.json`). The moment `T_process` falls under the refine floor, a
+   `assets/siex/config/metals/bessemersteel.json`). The moment `T_process` falls under the refine floor, a
    steel bath is also below its own melting point, so `UpdateSolidified` latches on the next tick. The stall
    state is therefore a freeze for steel. It is a warning band for pig, whose melting point is 1150.
 
@@ -572,7 +572,7 @@ without anything noticing.
    tilt, not the drive.
 
 5. **Stale source comment**: `BlockEntityConverterControl.cs:791` says "air at or above the blast threshold
-   pressure (≥ 3 atm)". `BlastPressureThreshold` ships at 2.5 (`SmexConfig.cs:108`).
+   pressure (≥ 3 atm)". `BlastPressureThreshold` ships at 2.5 (`SiexConfig.cs:108`).
 
 6. **Stale source comments ×2 on the chisel hatch**: `BlockConverterBessemer.cs:24` and `:215` both name the
    "upper-rear `(0,1,1)` footprint cell". The shipped `chiselOffset` is `(0,1,0)` (`:63`, and the golden) -
@@ -580,7 +580,7 @@ without anything noticing.
 
 7. **Alignment is a raw string comparison.** `intake.Variant["side"] == (Block.Variant["side"] ?? "north")`
    (`:837`, `:852`). A variant renamed or a fifth facing added silently breaks both checks, and the layout -
-   which only wildcards `smex:converter-intake*` - still reports complete.
+   which only wildcards `siex:converter-intake*` - still reports complete.
 
 8. **The converter does not replay unloaded time.** `MaxAwayCatchupSteps` is not overridden (default 0), so a
    heat left in an unloaded chunk is not simulated - but the charge's temperature is vanilla time-based, so
@@ -590,7 +590,7 @@ without anything noticing.
     rounds up, then subtracts what was accepted, so a 0.4 u remainder pushes 1 u and leaves `_moltenSlag`
     negative. Harmless in play, but an R2 leak in a machine whose mass balance is otherwise exact.
 
-10. **The handbook page teaches the retired machine.** `docs/smex/handbook/04-bessemer.html` describes a
+10. **The handbook page teaches the retired machine.** `docs/siex/handbook/04-bessemer.html` describes a
     three-state converter (Filling / Normal / Pouring), a fixed "about 1800 °C for roughly five minutes"
     refine, and "break the converter with a steel pickaxe" as the only way to recover a frozen charge. The
     shipped machine has four states, an emergent temperature, a chisel-out path, cold scrap, slag and an
@@ -603,7 +603,7 @@ without anything noticing.
     residue that is still hot reports "too hot" rather than "too full". The block-info status line
     (`SolidifiedStatus`, `:1180-1190`) gets it right; the chisel feedback does not.
 
-12. **`SmexConfig` has two `#region Bessemer converter` blocks** (`:95` and `:142`) with the machine's keys
+12. **`SiexConfig` has two `#region Bessemer converter` blocks** (`:95` and `:142`) with the machine's keys
     split across them. Anything that reads the file top-down will miss half of them.
 
 13. **The transmission recipe asks for 16 gears in one grid cell** (`ConverterRecipeDefinitions.cs:55`) and is
@@ -618,11 +618,11 @@ without anything noticing.
 ## Open
 
 1. **The shipped product contradicts the settled design (N1).** The blow yields
-   `smex:ingot-bessemersteel` - a finished, directly usable material with `generateItemFamily: true`,
-   `itemForms: [ingot, plate, rod, nails]` and a full tool preset (`assets/smex/config/metals/
+   `siex:ingot-bessemersteel` - a finished, directly usable material with `generateItemFamily: true`,
+   `itemForms: [ingot, plate, rod, nails]` and a full tool preset (`assets/siex/config/metals/
    bessemersteel.json`), so Bessemer steel currently makes pickaxes and knives
-   (`assets/smex/lang/en.json:12-19`, goldens under
-   `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/bessemersteel/`). The settled design says the blow
+   (`assets/siex/lang/en.json:12-19`, goldens under
+   `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/bessemersteel/`). The settled design says the blow
    yields blown iron, which is unusable until it is recarburised in a [ladle](ladle.md) - and
    [materials.md](../materials.md) already says tools come from shear / crucible / HSS steel, never Bessemer.
    Three things have to change together: a `blowniron` metal def, the retype target at

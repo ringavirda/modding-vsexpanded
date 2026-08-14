@@ -236,7 +236,7 @@ Nothing exists.
 |---|---|
 | editable shape | missing - `assets/editable/shapes/` has 97 files and no ladle |
 | runtime shape | missing |
-| animations | missing. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/smex/shapes/converter/bessemer.json`) |
+| animations | missing. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/siex/shapes/converter/bessemer.json`) |
 | ferroalloy metal defs | missing - `assets/*/config/metals/` holds `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex). No `ferromanganese`, no `spiegeleisen`, no `ferrochrome`, no `hadfieldsteel`, no `blowniron`, no `wastealloy` |
 | powdered coke | missing as an item |
 | lang / handbook | no key, no page |
@@ -345,7 +345,7 @@ The second term is the latent heat of fusion expressed as a temperature: melting
 the bath has to supply. For iron, `L_f / c_p ≈ 550 K`, which is the physical value.
 
 Worked on a 5400 u bath (one settled converter heat's product, [Bessemer](bessemer.md#numbers)), against
-Bessemer steel's melting point of 1500 °C (`assets/smex/config/metals/bessemersteel.json`). The
+Bessemer steel's melting point of 1500 °C (`assets/siex/config/metals/bessemersteel.json`). The
 hadfield dose is ferromanganese at ~80 % Mn, so the real addition is 1000 u
 (`0.125 × 5400 / 0.675`, [alloying](../processes/alloying.md) § Numbers) - nothing in the suite produces
 pure manganese.
@@ -367,7 +367,7 @@ must be bought by lowering `LadleSolidChillC`.
 
 The bath also cools on its own while the player fetches the addition, at the vanilla per-in-game-hour
 rate. The [Bessemer](bessemer.md) halves that rate for its insulated vessel
-(`BessemerCooldownCoefficient` 0.5, `SmexConfig.cs:240`); the ladle needs the same knob, and the choice of
+(`BessemerCooldownCoefficient` 0.5, `SiexConfig.cs:240`); the ladle needs the same knob, and the choice of
 value is how long the player has to work.
 
 ### Zinc needs a coke cover
@@ -387,8 +387,8 @@ All proposed. No config section, no keys, no code. The right-hand column is what
 |---|---|---|---|
 | `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../internal/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IiexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
 | `LadlePullRate` | 25 u/tick | the casting bed's and cell's hard-coded `PullRatePerTick = 25` (`BlockEntitySandCastingBed.cs:44`, `BlockEntitySandCastingCell.cs:33`) | ship it as config, not a fourth hard-coded copy (D5b) |
-| `LadlePourRate` | 44 u/s | `BessemerPourRate` 44 (`SmexConfig.cs:231`) | match the converter so a ladle never becomes the bottleneck |
-| `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SmexConfig.cs:240`), on `IiexValues.MoltenCooldownSpeed` 24 (`IiexConfig.cs:31`) | how long the player has to work a mix |
+| `LadlePourRate` | 44 u/s | `BessemerPourRate` 44 (`SiexConfig.cs:231`) | match the converter so a ladle never becomes the bottleneck |
+| `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SiexConfig.cs:240`), on `IiexValues.MoltenCooldownSpeed` 24 (`IiexConfig.cs:31`) | how long the player has to work a mix |
 | `LadleSolidChillC` | 550 °C | `L_f/c_p` for iron. 800 makes the hadfield-solid case a hard refusal | the whole chill mechanic, in one number |
 | `LadleAlloyTolerance` | ±0.02 mass fraction | — | the width of every alloy window. One number for the whole table, not per-alloy |
 | `LadleCarbonPerCokeUnit` | fixed mass, not a percentage | `materials.md:122-125` - "each unit adds a fixed mass of carbon (its effect on % C is relative to the iron present)" | the carbon trim |
@@ -451,7 +451,7 @@ Once it exists, three things unlock at once with no further work: recarburisatio
 
 ### Tests
 
-None. When built: `test/SteelmakingExpanded.Tests/Blocks/Converter/ConverterControlProcessTests.cs` is the
+None. When built: `test/SteelIndustryExpanded.Tests/Blocks/Converter/ConverterControlProcessTests.cs` is the
 template for the arithmetic (mass conservation at `:237`, the three temperature cases at `:261`/`:279`/`:304`),
 and `Fixtures/SteelPlantScenes.cs:31` for a rig that builds the real thing rather than faking its state.
 The standing gap it must not repeat: no converter test asserts a rate as a number, which is how
@@ -509,7 +509,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
    resolver, window catalogue, ferroalloy metal defs, powdered coke, shape, recipe, lang, handbook, tests.
 
 2. **Blown iron does not exist either.** The [Bessemer](bessemer.md#open) currently pours a finished,
-   tool-capable `smex:ingot-bessemersteel`. Making the ladle mandatory means adding a `blowniron` metal def
+   tool-capable `siex:ingot-bessemersteel`. Making the ladle mandatory means adding a `blowniron` metal def
    and retyping the blow's output - which must not land before the ladle does, or the steel tier has no
    product at all.
 
@@ -533,4 +533,4 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 6. **No handbook page and no in-game teaching path.** Hadfield is called "the alloying-mechanic introduction"
    ([materials.md](../materials.md)); an introduction that nothing explains is a wall. The handbook pipeline
-   (`docs/smex/handbook/` ↔ `assets/smex/lang/en.json`) is where it goes.
+   (`docs/siex/handbook/` ↔ `assets/siex/lang/en.json`) is where it goes.

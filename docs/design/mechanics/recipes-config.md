@@ -154,11 +154,11 @@ The accessors are generated. `[ExConfigRegister(fileName, modId)]` makes `ExConf
 |---|---|---|---|---|---|
 | `ExlibConfig` | `ex_values.json` | `exlib` | yes | `exlib_values.json` | `ExlibConfig.cs:17-22` |
 | `IiexConfig` | `ex_values.json` | `iiex` | yes | `iwex_values.json`, `lpex_values.json`, `lpex.json` | `IiexConfig.cs:23-33` |
-| `SmexConfig` | `ex_values.json` | `smex` | yes | `smex_values.json`, `smex.json` | `SmexConfig.cs:13-18` |
-| `HpexConfig` | `ex_values.json` | `hpex` | yes | - | `HpexConfig.cs:23` |
+| `SiexConfig` | `ex_values.json` | `smex` | yes | `smex_values.json`, `smex.json` | `SiexConfig.cs:13-18` |
+| `SiexConfig` | `ex_values.json` | `hpex` | yes | - | `SiexConfig.cs:23` |
 | `IiexRecipeConfig` | `ex_recipes.json` | `iiex` | no | `iwex_recipes.json`, `lpex_recipes.json` | `IiexRecipeConfig.cs:22-26` |
-| `SmexRecipeConfig` | `ex_recipes.json` | `smex` | no | `smex_recipes.json` | `SmexRecipeConfig.cs:15-19` |
-| `HpexRecipeConfig` | `ex_recipes.json` | `hpex` | no | - | `HpexRecipeConfig.cs:17` |
+| `SiexRecipeConfig` | `ex_recipes.json` | `smex` | no | `smex_recipes.json` | `SiexRecipeConfig.cs:15-19` |
+| `SiexRecipeConfig` | `ex_recipes.json` | `hpex` | no | - | `SiexRecipeConfig.cs:17` |
 
 Both files live under the game's `ModConfig` folder. Folding a legacy file renames it to `<name>.migrated` rather than deleting it, so the carry-over is reversible (`ExConfigDocument.cs:99-139`).
 
@@ -184,8 +184,8 @@ Both files live under the game's `ModConfig` folder. Folding a legacy file renam
 |---|---|---|---|---|
 | iiex | `"normal"` | 14 (all grid) | none | `IiexConfig.cs:412`; `IiexRecipeConfig.cs:46-71` |
 | iiex | `"normal"` | 19 (2 rcc, 17 grid) | `0.8` | `IiexConfig.cs:224`, `:116`; `IiexRecipeConfig.cs:58-86` |
-| smex | `"normal"` | 10 | `0.8` | `SmexConfig.cs:265`, `:250`; `SmexRecipeConfig.cs:45-71` |
-| hpex | `"normal"` | 4 | `0.8` | `HpexConfig.cs:131`, `:124`; `HpexRecipeConfig.cs:43-57` |
+| smex | `"normal"` | 10 | `0.8` | `SiexConfig.cs:265`, `:250`; `SiexRecipeConfig.cs:45-71` |
+| hpex | `"normal"` | 4 | `0.8` | `SiexConfig.cs:131`, `:124`; `SiexRecipeConfig.cs:43-57` |
 
 The only pinned cost numbers anywhere are iiex's doubled cheap pipe outputs - straight 2 → 4, bend/T/X 1 → 2 (`IiexRecipeConfig.cs:46-53`, `:76-79`). Everything else in every `cheap` profile is `normal × 0.5`, computed at load.
 
@@ -196,8 +196,8 @@ The only pinned cost numbers anywhere are iiex's doubled cheap pipe outputs - st
 | `ExpandedLib.Tests` | 1 | `test/ExpandedLib.Tests/goldens/exlib/` |
 | `IronIndustryExpanded.Tests` | 103 | `test/IronIndustryExpanded.Tests/goldens/iiex/` |
 | `IronIndustryExpanded.Tests` | 22 | `test/IronIndustryExpanded.Tests/goldens/iiex/` |
-| `SteelmakingExpanded.Tests` | 29 | `test/SteelmakingExpanded.Tests/goldens/smex/` |
-| `HighPressureExpanded.Tests` | 7 | `test/HighPressureExpanded.Tests/goldens/hpex/` |
+| `SteelmakingExpanded.Tests` | 29 | `test/SteelIndustryExpanded.Tests/goldens/siex/` |
+| `HighPressureExpanded.Tests` | 7 | `test/SteelIndustryExpanded.Tests/goldens/siex/` |
 
 Counts are of committed `*.json` files under each domain root as of 2026-07-29; they are not asserted anywhere, only the missing/orphan sets are.
 
@@ -223,7 +223,7 @@ Counts are of committed `*.json` files under each domain root as of 2026-07-29; 
 | `ExConfigGenerator` | `src/ExpandedLib.Generators/ExConfigGenerator.cs:21` | `Emit` `:116` · `DefaultAccessorName` `:227` |
 | `DefinitionGoldens` / `DefinitionParity` / `DefinitionAssets` | `test/ExpandedLib.Testing/` | `CheckGolden` · `CheckCompleteness` · `Equal` · `MissingShapes` |
 
-Where a caller hooks in. A mod's `ModSystem.Start`, in this order (`IronworkingExpandedModSystem.cs:40-60` is the canonical example):
+Where a caller hooks in. A mod's `ModSystem.Start`, in this order (`IronIndustryExpandedModSystem.cs:40-60` is the canonical example):
 
 ```csharp
 IiexValues.Load(api);                      // tunables first - before any BE is constructed
@@ -249,13 +249,13 @@ Every tunables config's own `<summary>` names a file that does not exist. The do
 | `ExlibConfig.cs:7` (and `:13`) | `ModConfig/exlib_values.json`, "each mod's own config (`lpex_values.json` etc.)" | `ex_values.json` (`:18`) |
 | `IiexConfig.cs:11` (and `:545`) | `ModConfig/iwex_values.json`, "retune freely in `iwex_values.json`" | `ex_values.json` (`:15`) |
 | `IiexConfig.cs:8` | `ModConfig/lpex_values.json` | `ex_values.json` (`:17`) |
-| `SmexConfig.cs:9` | `ModConfig/smex_values.json` | `ex_values.json` (`:14`) |
+| `SiexConfig.cs:9` | `ModConfig/smex_values.json` | `ex_values.json` (`:14`) |
 | `IiexRecipeConfig.cs:8` | `ModConfig/lpex_recipes.json` "alongside the main `lpex_values.json`" | `ex_recipes.json` (`:17`) |
-| `SmexRecipeConfig.cs:8` | `ModConfig/smex_recipes.json` | `ex_recipes.json` (`:16`) |
+| `SiexRecipeConfig.cs:8` | `ModConfig/smex_recipes.json` | `ex_recipes.json` (`:16`) |
 
-`IiexRecipeConfig.cs:9`, `HpexConfig.cs:8-9` and `HpexRecipeConfig.cs:8-9` are correct. The same stale names appear in the mod-system comments: `IronworkingExpandedModSystem.cs:43`, `LowPressureExpandedModSystem.cs:26` and `:33`, `SteelmakingExpandedModSystem.cs:55` and `:63`. These are the only names anyone reads when hunting a config file; treat every `*_values.json` / `*_recipes.json` in a comment as a legacy name, not a live path.
+`IiexRecipeConfig.cs:9`, `SiexConfig.cs:8-9` and `SiexRecipeConfig.cs:8-9` are correct. The same stale names appear in the mod-system comments: `IronIndustryExpandedModSystem.cs:43`, `IronIndustryExpandedModSystem.cs:26` and `:33`, `SteelIndustryExpandedModSystem.cs:55` and `:63`. These are the only names anyone reads when hunting a config file; treat every `*_values.json` / `*_recipes.json` in a comment as a legacy name, not a live path.
 
-Two configs advertise commands that do not exist. `IiexRecipeConfig.cs:13` says `/exmod steam <level>` and `SmexRecipeConfig.cs:12` says `/exmod steel <level>`. The generic command is `/exmod recipes <mod> <level>` (`RecipesSubCommand.cs:10`). `RecipesSubCommand.cs:14` is itself half-stale - it says the numbers live in "each mod's `*_recipes.json`".
+Two configs advertise commands that do not exist. `IiexRecipeConfig.cs:13` says `/exmod steam <level>` and `SiexRecipeConfig.cs:12` says `/exmod steel <level>`. The generic command is `/exmod recipes <mod> <level>` (`RecipesSubCommand.cs:10`). `RecipesSubCommand.cs:14` is itself half-stale - it says the numbers live in "each mod's `*_recipes.json`".
 
 "byte-faithful" is not what the goldens check. `DefinitionGoldens.cs:19` calls a golden "the byte-faithful record of the JSON it injects", `ExRecipeDef.cs:12` says the injected JSON is "byte-faithful", and `ExRecipeDef.cs:67` and `GridRecipeBuilder.cs:11` speak of byte-for-byte parity with the hand-written form. `DefinitionParity` is semantic (`DefinitionParity.cs:9-21`): key order, number type, multiblock cell order and filler cell order are all normalised away. A change that reorders multiblock offsets will pass; that is intended, but the comment misleads.
 

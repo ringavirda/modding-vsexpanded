@@ -1,5 +1,9 @@
 # A0 — Lifecycle bug fixes: Implementation Plan
 
+**Status** DONE 2026-08-12, as stage A0 of the framework-composition arc
+([2026-08-10-framework-composition-staging.md](2026-08-10-framework-composition-staging.md)). Kept for the
+reasoning behind the five fixes, not as work to do.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the five verified block-entity lifecycle defects — a readout that can never reach the client, footprint cells orphaned by explosions, teardown that runs on removal but not on unload, an undisposed GUI, and stored item stacks that a schematic paste resolves to the wrong item.
@@ -25,10 +29,10 @@
 
 | File | Responsibility |
 |---|---|
-| `src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs` | Task 1 — vent readout reaches the client |
+| `src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs` | Task 1 — vent readout reaches the client |
 | `src/ExpandedLib/Blocks/Structures/BlockFilledMegastructure.cs` | Task 2 — footprint cleanup survives an explosion |
 | `src/ExpandedLib/Blocks/Structures/BlockEntityMultiblockStructure.cs` + 7 others | Task 3 — teardown symmetry |
-| `src/IronworkingExpanded/BlockStructures/Crafting/BlockEntities/BlockEntityDesignTable.cs` | Task 4 — dialog disposal |
+| `src/IronIndustryExpanded/BlockStructures/Crafting/BlockEntities/BlockEntityDesignTable.cs` | Task 4 — dialog disposal |
 | 8 block entities across iwex and smex | Task 5 — collectible mappings |
 
 ---
@@ -38,8 +42,8 @@
 `_lastVentVolume` is assigned only in `OnTick`, which is registered server-side only (`:51-52`). `ToTreeAttributes` writes only `gatePressure` (`:282-285`). `GetBlockInfo` reads `_lastVentVolume` (`:273`), so on the client it is permanently `0` and the `lpex:gaspressurevalve-info-overflow` line can never appear. The block also calls `MarkDirty(true)` when the value changes (`:99-100`) — paying for a chunk re-tesselation to sync a value it never sends.
 
 **Files:**
-- Modify: `src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs:99-101`, `:282-294`
-- Test: `test/LowPressureExpanded.Tests/Networks/PressureValveReadoutTests.cs` (create)
+- Modify: `src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs:99-101`, `:282-294`
+- Test: `test/IronIndustryExpanded.Tests/Networks/PressureValveReadoutTests.cs` (create)
 
 **Interfaces:**
 - Consumes: nothing.
@@ -47,7 +51,7 @@
 
 - [ ] **Step 1: Write the failing test**
 
-Create `test/LowPressureExpanded.Tests/Networks/PressureValveReadoutTests.cs`. Model it on an existing lpex block-entity test for fixture setup — read `test/LowPressureExpanded.Tests/` for the established pattern first. The test must assert the round trip, not the field:
+Create `test/IronIndustryExpanded.Tests/Networks/PressureValveReadoutTests.cs`. Model it on an existing lpex block-entity test for fixture setup — read `test/IronIndustryExpanded.Tests/` for the established pattern first. The test must assert the round trip, not the field:
 
 ```csharp
 [Fact]
@@ -69,7 +73,7 @@ public void The_vent_volume_survives_a_tree_round_trip() {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/LowPressureExpanded.Tests/LowPressureExpanded.Tests.csproj -f net8.0 -p:Legacy=true --filter PressureValveReadoutTests`
+Run: `dotnet test test/IronIndustryExpanded.Tests/LowPressureExpanded.Tests.csproj -f net8.0 -p:Legacy=true --filter PressureValveReadoutTests`
 Expected: FAIL — the restored value is `0`.
 
 - [ ] **Step 3: Write the field to the tree**
@@ -90,7 +94,7 @@ Then reconsider the `MarkDirty(true)` at `:99-100`. The mesh does not change whe
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/LowPressureExpanded.Tests/LowPressureExpanded.Tests.csproj -f net8.0 -p:Legacy=true --filter PressureValveReadoutTests`
+Run: `dotnet test test/IronIndustryExpanded.Tests/LowPressureExpanded.Tests.csproj -f net8.0 -p:Legacy=true --filter PressureValveReadoutTests`
 Expected: PASS.
 
 - [ ] **Step 5: Format, full suite, record**
@@ -165,12 +169,12 @@ Two of the eight are exlib base classes, so fixing those two covers everything b
 ```
 src/ExpandedLib/Blocks/Networks/BlockEntityNetworkNode.cs
 src/ExpandedLib/Blocks/Structures/BlockEntityMultiblockStructure.cs
-src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHopperTall.cs
-src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs
-src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntityFluidIntake.cs
-src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs
-src/SteelmakingExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperBell.cs
-src/SteelmakingExpanded/BlockStructures/SmokeStack/BlockEntities/BlockEntitySmokeStack.cs
+src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHopperTall.cs
+src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs
+src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntityFluidIntake.cs
+src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntityPressureValve.cs
+src/SteelIndustryExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperBell.cs
+src/SteelIndustryExpanded/BlockStructures/SmokeStack/BlockEntities/BlockEntitySmokeStack.cs
 ```
 
 ⛔ **The two paths are not identical and must not be blindly unified.** Removal means the block is gone: drop contents, deregister from a network, clear a highlight permanently. Unload means the chunk left memory while the block still exists: release client resources and listeners, but **do not** drop items, and **do not** deregister a network node — `BlockEntityNetworkNode.OnBlockRemoved` calls `NetworkSystem.RemoveNode`, and doing that on unload would fracture a live network every time a player walks away.
@@ -240,8 +244,8 @@ Re-run after the two bases: some of the remaining six may resolve through inheri
 Vanilla's precedent: `BEOpenableContainer` disposes in both `OnBlockUnloaded` and `OnBlockRemoved` (`.compat/vintagestory/vssurvivalmod/BlockEntity/BEOpenableContainer.cs:252-273`), via a `Dispose` that does `if (invDialog?.IsOpened() == true) invDialog?.TryClose(); invDialog?.Dispose();`.
 
 **Files:**
-- Modify: `src/IronworkingExpanded/BlockStructures/Crafting/BlockEntities/BlockEntityDesignTable.cs`
-- Test: `test/IronworkingExpanded.Tests/Blocks/Crafting/DesignTableDialogTests.cs` (create)
+- Modify: `src/IronIndustryExpanded/BlockStructures/Crafting/BlockEntities/BlockEntityDesignTable.cs`
+- Test: `test/IronIndustryExpanded.Tests/Blocks/Crafting/DesignTableDialogTests.cs` (create)
 
 **Interfaces:**
 - Consumes: the Task 3 guard now covers this file — adding `OnBlockRemoved` without `OnBlockUnloaded` would fail it.
@@ -270,14 +274,14 @@ Follow the vanilla shape: one private `CloseDialog()` that closes if open and nu
 Eight block entities store stacks without them:
 
 ```
-src/IronworkingExpanded/BlockNetworkMolten/BlockEntities/BlockEntityMoltenCanalMoldPedestal.cs
-src/IronworkingExpanded/BlockNetworkMolten/BlockEntities/BlockEntityMoltenCanalTap.cs
-src/IronworkingExpanded/BlockStructures/Forming/BlockEntities/BlockEntityRollingMill.cs
-src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHeatingHearth.cs
-src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHopperTall.cs
-src/SteelmakingExpanded/BlockStructures/Converter/BlockEntities/BlockEntityConverterControl.cs
-src/SteelmakingExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperBell.cs
-src/SteelmakingExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperReinforced.cs
+src/IronIndustryExpanded/BlockNetworkMolten/BlockEntities/BlockEntityMoltenCanalMoldPedestal.cs
+src/IronIndustryExpanded/BlockNetworkMolten/BlockEntities/BlockEntityMoltenCanalTap.cs
+src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityRollingMill.cs
+src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHeatingHearth.cs
+src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityHopperTall.cs
+src/SteelIndustryExpanded/BlockStructures/Converter/BlockEntities/BlockEntityConverterControl.cs
+src/SteelIndustryExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperBell.cs
+src/SteelIndustryExpanded/BlockStructures/HotBlastFurnace/BlockEntities/BlockEntityHopperReinforced.cs
 ```
 
 Two already do it correctly and are the template: `BlockEntityMoltenBarrel.cs:397-415` and `BlockEntityCastMold.cs:372-390`. Copy their shape.
@@ -286,7 +290,7 @@ Two already do it correctly and are the template: `BlockEntityMoltenBarrel.cs:39
 
 **Files:**
 - Modify: the eight files above
-- Test: `test/IronworkingExpanded.Tests/Blocks/CollectibleMappingTests.cs` (create), plus a smex counterpart
+- Test: `test/IronIndustryExpanded.Tests/Blocks/CollectibleMappingTests.cs` (create), plus a smex counterpart
 
 **Interfaces:**
 - Consumes: nothing.
@@ -346,11 +350,11 @@ Task 2 fixed `BlockFilledMegastructure`. Five blocks call `StructureFillers.Remo
 explosion, a worldedit delete, or any other `SetBlock`:
 
 ```
-src/IronworkingExpanded/BlockNetworkEnergy/Blocks/BlockFlywheel.cs:174 -> :182
-src/IronworkingExpanded/BlockStructures/Forming/Blocks/BlockRollingMill.cs:181 -> :189
-src/IronworkingExpanded/BlockStructures/Furnaces/Blocks/BlockTwinTubMPBlower.cs:143 -> :150
-src/LowPressureExpanded/BlockStructures/ManualPump/Blocks/BlockManualFluidPump.cs:105 -> :111
-src/SteelmakingExpanded/BlockStructures/Converter/Blocks/BlockConverterBessemer.cs:148 -> :164
+src/IronIndustryExpanded/BlockNetworkEnergy/Blocks/BlockFlywheel.cs:174 -> :182
+src/IronIndustryExpanded/BlockStructures/Forming/Blocks/BlockRollingMill.cs:181 -> :189
+src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockTwinTubMPBlower.cs:143 -> :150
+src/IronIndustryExpanded/BlockStructures/ManualPump/Blocks/BlockManualFluidPump.cs:105 -> :111
+src/SteelIndustryExpanded/BlockStructures/Converter/Blocks/BlockConverterBessemer.cs:148 -> :164
 ```
 
 They duplicate the cleanup because they cannot extend `BlockFilledMegastructure` — each has already

@@ -16,7 +16,7 @@ iiex (nail, heading) · iiex (rivet die) · hpex (ball die)
 * the consumer census: every place in the repo that requires a fastener, and the fact that the only
   fastener with any consumer is the vanilla one;
 * the two generated nail variants (`iiex:metalnailsandstrips-castiron`,
-  `smex:metalnailsandstrips-bessemersteel`) and the fact that no recipe in the suite can accept either.
+  `siex:metalnailsandstrips-bessemersteel`) and the fact that no recipe in the suite can accept either.
 
 **Does not own — cited only, never restated**
 
@@ -73,8 +73,8 @@ die catalogue.
 | `game:metalnailsandstrips-{metal}` | a bundle, no single section | - | 25 | vanilla anvil, 36-voxel plan | 36 sites - see the census |
 | `game:rod-{metal}` | 2 × 2 × 10 | 40 | 100 | vanilla anvil, 40-voxel plan; also the mill's `grooved` 1.0 gap (`RollSetItemDefinitions.cs:90`) | 27 sites |
 | `iiex:metalnailsandstrips-castiron` | vanilla shape | - | - | exlib metal-family emitter (`MetalFamilyEmitter.cs:458`, opted in at `assets/iiex/config/metals/castiron.json:9`) | nothing can accept it |
-| `smex:metalnailsandstrips-bessemersteel` | vanilla shape | - | - | ditto (`assets/smex/config/metals/bessemersteel.json:9`) | nothing can accept it |
-| `iiex:rod-castiron` · `smex:rod-bessemersteel` | vanilla `game:item/rod` shape | 40 | - | ditto (`MetalFamilyEmitter.cs:384`) | nothing can accept them |
+| `siex:metalnailsandstrips-bessemersteel` | vanilla shape | - | - | ditto (`assets/siex/config/metals/bessemersteel.json:9`) | nothing can accept it |
+| `iiex:rod-castiron` · `siex:rod-bessemersteel` | vanilla `game:item/rod` shape | 40 | - | ditto (`MetalFamilyEmitter.cs:384`) | nothing can accept them |
 
 ### Settled, not built — nothing below exists in `src/`
 
@@ -220,11 +220,11 @@ There is no fastener code. What exists is the demand side.
 ## Gotchas
 
 1. **The two generated nail variants can never be used.** `iiex:metalnailsandstrips-castiron` and
-   `smex:metalnailsandstrips-bessemersteel` are emitted as real items, but every consumer asks either
+   `siex:metalnailsandstrips-bessemersteel` are emitted as real items, but every consumer asks either
    `game:metalnailsandstrips-*` (`ExIngredients.cs:37` - the domain is explicit) or the RCC's domain-less
    `metalnailsandstrips-*` restricted to `allowedVariants: ["iron","steel"]`
    (`ConstructionStages.cs:110`, `:131`). Neither can match. The same holds for `iiex:rod-castiron` and
-   `smex:rod-bessemersteel`.
+   `siex:rod-bessemersteel`.
    Cast-iron nails are physically absurd anyway - brittle metal, and the emitter's own comment says so
    while emitting them (`MetalFamilyEmitter.cs:459-460`: "a cast/brittle alloy is never tong-worked").
    The Bessemer-steel ones are exactly what the steel tier wants and only need the wildcard widened.

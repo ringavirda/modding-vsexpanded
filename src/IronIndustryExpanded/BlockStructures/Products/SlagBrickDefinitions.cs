@@ -9,7 +9,7 @@ namespace IronIndustryExpanded.BlockStructures.Products;
 /// Slag-brick masonry: the block, slab and stairs laid up from eight cast <c>slagbrick</c>s and mortar.
 /// All three mirror vanilla's <c>stonebricks</c> family - plain cube, stone material, pickaxe-mined - and
 /// use vanilla block classes, so this file is definitions only. The bricks are cast from tapped slag in the
-/// bed's brick molds; the mortar comes from smex's <c>mortarfromslag</c>.
+/// bed's brick molds; the mortar comes from siex's <c>mortarfromslag</c>.
 /// </summary>
 public class SlagBrickDefinitions : IExBlockDefProvider {
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>

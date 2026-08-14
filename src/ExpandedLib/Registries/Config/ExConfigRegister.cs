@@ -41,6 +41,11 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
   /// wins). Set by the generated accessor from the attribute's <c>LegacyFileNames</c>.</summary>
   public IReadOnlyList<string> LegacyFileNames { get; init; } = [];
 
+  /// <summary>Mod ids whose section of <see cref="FileName"/> this store now owns - the mods it was
+  /// renamed from or absorbed. Carried over on <see cref="Load"/>. Set by the generated accessor from
+  /// the attribute's <c>LegacySectionIds</c>.</summary>
+  public IReadOnlyList<string> LegacySectionIds { get; init; } = [];
+
   /// <param name="fileName">Shared config document under the game's <c>ModConfig</c> folder (e.g.
   /// <c>"ex_values.json"</c>); this store owns the <paramref name="modId"/> section of it.</param>
   /// <param name="modId">Owning mod id; resolves the running version and tags log lines.</param>
@@ -64,6 +69,9 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
     var doc = ExConfigDocument.ForFile(api, _fileName);
     // One-time carry-over of the old per-mod file into this mod's section (no-op once it exists).
     doc.FoldLegacy(_modId, LegacyFileNames);
+    // And of a section this mod used to be keyed under, for a rename or a merge. Runs after the file
+    // fold so a legacy file that already became this section is what the legacy sections merge into.
+    doc.FoldLegacySections(_modId, LegacySectionIds);
 
     // GetSection returns null on a missing or unreadable section, so a corrupt file or a fresh
     // install starts from the coded defaults without throwing.

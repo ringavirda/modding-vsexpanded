@@ -39,7 +39,7 @@ Every network in the suite - pipe, molten, mpenergy - is a `BlockNetwork` subcla
 
 | operation | file:line | behaviour |
 |---|---|---|
-| register a type | `BlockNetworkModSystem.cs:35-38` | `RegisterNetworkType(name, factory)` in `ModSystem.Start`. iiex registers all three (`IronworkingExpandedModSystem.cs:94-108`) |
+| register a type | `BlockNetworkModSystem.cs:35-38` | `RegisterNetworkType(name, factory)` in `ModSystem.Start`. iiex registers all three (`IronIndustryExpandedModSystem.cs:94-108`) |
 | add a node | `BlockNetworkModSystem.cs:108` | isolated → new network; otherwise joins `adjacentNetworks[0]` and merges the rest into it (`:136-157`), each merge gated by `CanMerge` |
 | remove a node | `BlockNetworkModSystem.cs:173` | removes, then hands the rest to `ReviewConnectivity` (`:206`) |
 | review connectivity | `BlockNetworkModSystem.cs:206` | walks from any node (`:239`); all reached → `Settle`, same instance kept (`:307`); some unreached and every node readable → `Fracture`, each component rebuilt as its own network with `OnSplitFragment` (`:263`); some unreached and any node behind an unloaded chunk → **suspended**, network left whole (`:219-225`) |
@@ -129,9 +129,9 @@ the merge putting plated and cast in one domain.
 
 | tier | domain | key | value | registration | config |
 |---|---|---|---|---|---|
-| plated | `iiex` | `PlatedPipeBurstPressure` | 2.5 | `IronworkingExpandedModSystem.cs:67` | `IiexConfig.cs:206` |
-| cast | `iiex` | `CastPipeBurstPressure` | 5.0 | `LowPressureExpandedModSystem.cs:56` | `IiexConfig.cs:50` |
-| rolled | `hpex` | `RolledPipeBurstPressure` | 12 | `HighPressureExpandedModSystem.cs:39` | `HpexConfig.cs:115` |
+| plated | `iiex` | `PlatedPipeBurstPressure` | 2.5 | `IronIndustryExpandedModSystem.cs:67` | `IiexConfig.cs:206` |
+| cast | `iiex` | `CastPipeBurstPressure` | 5.0 | `IronIndustryExpandedModSystem.cs:56` | `IiexConfig.cs:50` |
+| rolled | `hpex` | `RolledPipeBurstPressure` | 12 | `SteelIndustryExpandedModSystem.cs:39` | `SiexConfig.cs:115` |
 | (no tier, or unregistered) | - | `DefaultBurstPressure` | 5, hard-coded | - | `BlockPipe.cs:241` |
 
 The rating doubles as the tier's buffer size: a run holds `burst × pipes × LitresPerPipe`, so the plated tier is both the low-pressure tier and the small-buffer one.
@@ -142,8 +142,8 @@ Only a plain segment participates: `CanBurst => GetType() == typeof(BlockPipe)` 
 
 | family | constant | tiers | registration |
 |---|---|---|---|
-| `flanged` | `BlockPipe.FlangedJoint` (`:307`) | plated, cast - both square in section, bolted through flanges - **and every untiered fitting** (outlet, fluid intake, tuyere), which is what keeps them reachable from either | `IronworkingExpandedModSystem.cs:75`, `LowPressureExpandedModSystem.cs:65` |
-| `welded` | `BlockPipe.WeldedJoint` (`:310`) | rolled - octagonal and welded, no flange to bolt to | `HighPressureExpandedModSystem.cs:49` |
+| `flanged` | `BlockPipe.FlangedJoint` (`:307`) | plated, cast - both square in section, bolted through flanges - **and every untiered fitting** (outlet, fluid intake, tuyere), which is what keeps them reachable from either | `IronIndustryExpandedModSystem.cs:75`, `IronIndustryExpandedModSystem.cs:65` |
+| `welded` | `BlockPipe.WeldedJoint` (`:310`) | rolled - octagonal and welded, no flange to bolt to | `SteelIndustryExpandedModSystem.cs:49` |
 
 ```csharp
 public override bool AcceptsNeighbour(Block neighbour) =>
@@ -175,7 +175,7 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 | 10 | `ClearIfEmptyAndIdle` | `:758-766` | drops `State` once drained and idle for `EmptyClearDelaySeconds` |
 | 11 | `TickOverpressureAndBurst` | `:774-809` | last, so it never mutates the node set while another pass reads it |
 
-The vent strategy is injected per network at registration, so the network core never hard-wires a policy. exlib ships `ChimneyVent` (`Blocks/Networks/ChimneyVent.cs:20`), and iiex injects it with its own draw rate when it registers the pipe network (`IronworkingExpandedModSystem.cs:94-97`). It classifies a vanilla-or-modded chimney (matched by code substring) capping the top connector of an `IChimneyVentable` fitting as a vent, and draws `ChimneyGasDrawRate` L/s per chimney with smoke and a fire-roar loop. A network with no strategy vents nothing - every open end is a leak.
+The vent strategy is injected per network at registration, so the network core never hard-wires a policy. exlib ships `ChimneyVent` (`Blocks/Networks/ChimneyVent.cs:20`), and iiex injects it with its own draw rate when it registers the pipe network (`IronIndustryExpandedModSystem.cs:94-97`). It classifies a vanilla-or-modded chimney (matched by code substring) capping the top connector of an `IChimneyVentable` fitting as a vent, and draws `ChimneyGasDrawRate` L/s per chimney with smoke and a fire-roar loop. A network with no strategy vents nothing - every open end is a leak.
 
 ### 7. Plain valve = in-line sever
 
@@ -237,7 +237,7 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 | `PlatedPipeThroughput` | `50` | `IiexConfig.cs:232` | L/s the plated tier passes; the run's cap is the weakest segment |
 | `ChimneyGasDrawRate` | `16.0` | `IiexConfig.cs:237` | L/s one chimney draws through a ventable fitting |
 | `CastPipeBurstPressure` | `5.0` | `IiexConfig.cs:50` | iiex tier rating |
-| `RolledPipeBurstPressure` | `12` | `HpexConfig.cs:115` | hpex tier rating |
+| `RolledPipeBurstPressure` | `12` | `SiexConfig.cs:115` | hpex tier rating |
 
 ### Hard-coded - not config
 
@@ -251,7 +251,7 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 | `DefaultBurstPressure` | `5` | `BlockPipe.cs:175` | fallback for a domain that never registered a rating |
 | gas-leak temperature drop | `5 °C`, floor `20 °C` | `PipeNetwork.cs:696-697` | per tick, not dt-scaled |
 | passive cooling | `PipeGasCoolPerSecond` 2 °C/s, floor `PipeAmbientTemperature` 20 °C | `ExlibConfig.cs:71`, `:75` | dt-scaled, applies whenever the run holds gas above ambient |
-| pipe throughput | plated 50 · cast 120 · rolled 250 L/s | `IiexConfig` / `IiexConfig` / `HpexConfig` | weakest segment caps the run; fittings and ports are exempt - a tuyere is the machine's intake, not a length of main |
+| pipe throughput | plated 50 · cast 120 · rolled 250 L/s | `IiexConfig` / `IiexConfig` / `SiexConfig` | weakest segment caps the run; fittings and ports are exempt - a tuyere is the machine's intake, not a length of main |
 | gas leak particle ramp | `1 → GasLeakRate`, clamp `0..4` | `PipeNetwork.cs:568-576` | density only |
 | water leak particle ramp | `1 → 5 L`, clamp `0..1` | `PipeNetwork.cs:577` | density only |
 | pressure broadcast epsilon | `0.02 atm` | `PipeNetwork.cs:551` | also the HUD sync threshold (`BlockEntityPipe.cs:233`) |
@@ -320,7 +320,7 @@ A null `tier` yields the same four blocktypes with no tier axis and the default 
 
 4. Leak loss is per-network, not per-opening. One open end and twenty leak the same volume (`PipeNetwork.cs:683-698`); `TotalLeaks` only gates whether it leaks and how dense the particles are. The comment at `:679-680` states this is deliberate ("bulk venting needs a chimney/stack").
 
-5. `"gas"` is a dead network type. `INetworkConnector.cs:17`, `BlockNetwork.cs:21` and `BlockNetworkModSystem.cs:25` all give `"gas"` as an example network type. Only `"pipe"`, `"molten"` and `"mpenergy"` are ever registered (`IronworkingExpandedModSystem.cs:88-103`). Stale comments.
+5. `"gas"` is a dead network type. `INetworkConnector.cs:17`, `BlockNetwork.cs:21` and `BlockNetworkModSystem.cs:25` all give `"gas"` as an example network type. Only `"pipe"`, `"molten"` and `"mpenergy"` are ever registered (`IronIndustryExpandedModSystem.cs:88-103`). Stale comments.
 
 6. A `RemoveNode` that does not fracture keeps the same network instance (`BlockNetworkModSystem.cs:305-315`). Anything cached on the instance survives. `PipeNetwork` handles this by overriding `OnTopologyChanged` to drop `_minBurstCache` (`:830-833`); `MoltenNetwork` does not override it at all - see [molten network](molten-network.md) Gotcha 5.
 

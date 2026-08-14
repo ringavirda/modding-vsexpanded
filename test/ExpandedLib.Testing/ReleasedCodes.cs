@@ -16,8 +16,8 @@ namespace ExpandedLib.Testing;
 /// still reach a live block after migration; a code absent from it never shipped and needs no
 /// migrator.
 /// <para>
-/// Three mods have shipped: <c>exlib</c>, <c>ppex</c> (later iiex, with its HP half in hpex and its
-/// pipe base in iiex) and <c>smex</c> (whose ironmaking half became iiex); no iiex, iiex or hpex
+/// Three mods have shipped: <c>exlib</c>, <c>ppex</c> (now iiex, with its HP half extracted to
+/// hpex) and <c>smex</c> (whose ironmaking half became iiex); no iiex, siex or hpex
 /// build has been released. <c>exlib</c> 0.7.0 ships no blocktype JSON, but its structure filler is
 /// in released worlds because the shipped ppex and smex layouts name it in <c>blockNumbers</c>.
 /// </para>
@@ -32,6 +32,10 @@ public static class ReleasedCodes
   /// expanded to. Property-sourced variant groups are sampled rather than enumerated (the game
   /// holds their states), so <see cref="Codes"/> is representative for those, exact otherwise.</summary>
   public sealed record Shipped(string Domain, string AssetPath, string BaseCode, string[] Codes);
+
+  /// <summary>A block-entity class string a released blocktype declared, and the blocktypes that
+  /// declared it.</summary>
+  public sealed record ShippedEntityClass(string Domain, string Class, string[] AssetPaths);
 
   /// <summary>ppex, every release up to and including 0.6.8 - 19 blocktypes, 292 concrete codes.</summary>
   public static readonly IReadOnlyList<Shipped> Ppex =
@@ -102,6 +106,46 @@ public static class ReleasedCodes
   public static readonly IReadOnlyList<Shipped> Exlib =
   [
     new("exlib", "structurefiller", "exlib:structurefiller", ["exlib:structurefiller"]),
+  ];
+
+  /// <summary>Every block-entity class string a released blocktype declared, with the blocktypes
+  /// that declared it. A class string lives in the SAVE and no code migration touches it, so an
+  /// unregistered one drops the block entity: the block arrives, its contents do not.</summary>
+  public static readonly IReadOnlyList<ShippedEntityClass> EntityClasses =
+  [
+    new("ppex", "ppex.BlockEntityBoilerCornish", ["boiler/cornish"]),
+    new("ppex", "ppex.BlockEntityBoilerLancashire", ["boiler/lancashire"]),
+    new("ppex", "ppex.BlockEntityEngineCornish", ["engine/cornish"]),
+    new("ppex", "ppex.BlockEntityEngineFluidPump", ["engine/fluidpump"]),
+    new("ppex", "ppex.BlockEntityEngineMpGenerator", ["engine/mpgenerator"]),
+    new("ppex", "ppex.BlockEntityEngineWatt", ["engine/watt"]),
+    new("ppex", "ppex.BlockEntityFluidIntake", ["pipes/fluidintake"]),
+    new("ppex", "ppex.BlockEntityManualFluidPump", ["manualfluidpump"]),
+    new("ppex", "ppex.BlockEntityMpFluidPump", ["mpfluidpump"]),
+    new("ppex", "ppex.BlockEntityPipe", ["pipes/bend", "pipes/straight", "pipes/tjunction", "pipes/xjunction"]),
+    new("ppex", "ppex.BlockEntityPipeOutlet", ["pipes/outlet"]),
+    new("ppex", "ppex.BlockEntityPipePassthrough", ["pipes/passthrough", "pipes/passthroughbend"]),
+    new("ppex", "ppex.BlockEntityPressureValve", ["pipes/pressurevalve"]),
+    new("ppex", "ppex.BlockEntitySteamCondenser", ["pipes/steamcondenser"]),
+    new("ppex", "ppex.BlockEntityValve", ["pipes/valve"]),
+    new("smex", "smex.BlockEntityBlastFurnace", ["blastfurnace/door"]),
+    new("smex", "smex.BlockEntityBlastFurnaceTap", ["blastfurnace/tap"]),
+    new("smex", "smex.BlockEntityConverterBessemer", ["converter/bessemer"]),
+    new("smex", "smex.BlockEntityConverterControl", ["converter/control"]),
+    new("smex", "smex.BlockEntityConverterTransmission", ["converter/transmission"]),
+    new("smex", "smex.BlockEntityCowperStove", ["cowperstove/intake"]),
+    new("smex", "smex.BlockEntityEngineAirBlower", ["engine/airblower"]),
+    new("smex", "smex.BlockEntityHeatSink", ["cowperstove/heatsink"]),
+    new("smex", "smex.BlockEntityMoltenBarrel", ["molten/barrel"]),
+    new("smex", "smex.BlockEntityMoltenCanal", ["molten/canalbrick/bend", "molten/canalbrick/straight", "molten/canalbrick/tjunction", "molten/canalbrick/xjunction", "molten/canalcobblestone/bend", "molten/canalcobblestone/straight", "molten/canalcobblestone/tjunction", "molten/canalcobblestone/xjunction"]),
+    new("smex", "smex.BlockEntityMoltenCanalMoldPedestal", ["molten/canalbrick/moldpedestal", "molten/canalcobblestone/moldpedestal"]),
+    new("smex", "smex.BlockEntityMoltenCanalStart", ["molten/canalbrick/start", "molten/canalcobblestone/start"]),
+    new("smex", "smex.BlockEntityMoltenCanalTap", ["molten/tap"]),
+    new("smex", "smex.BlockEntityMpBlower", ["blastfurnace/mpblower"]),
+    new("smex", "smex.BlockEntitySlag", ["blastfurnace/slag"]),
+    new("smex", "smex.BlockEntitySmokeStack", ["smokestack/intake"]),
+    new("smex", "smex.BlockEntitySolidifiedIron", ["blastfurnace/solidifiediron"]),
+    new("smex", "smex.BlockEntityTuyere", ["blastfurnace/tuyere"]),
   ];
 
   /// <summary>Every shipped blocktype across all three released mods.</summary>

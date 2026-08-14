@@ -20,7 +20,7 @@ public abstract class ChunkColumnSweeperModSystem : ModSystem {
   /// exact name: the headless test harness injects it by reflection.</summary>
   protected ICoreServerAPI _sapi = null!;
 
-  /// <summary>Log prefix, e.g. "[exlib]" / "[smex]" - the owning mod's id.</summary>
+  /// <summary>Log prefix, e.g. "[exlib]" / "[siex]" - the owning mod's id.</summary>
   protected string Tag => "[" + Mod.Info.ModID + "]";
 
   private bool _initialized;

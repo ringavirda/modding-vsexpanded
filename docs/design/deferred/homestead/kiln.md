@@ -58,7 +58,7 @@ the CaO produced there fluxes the slag. A furnace fed pre-burned quicklime pays 
 
 ### 2. Mortar already ships, without lime the mod ever made
 
-`src/SteelmakingExpanded/Recipes/Barrel/MortarRecipeDefinitions.cs:15-41` - a barrel recipe:
+`src/SteelIndustryExpanded/Recipes/Barrel/MortarRecipeDefinitions.cs:15-41` - a barrel recipe:
 
 | in | qty |
 |---|---|
@@ -92,7 +92,7 @@ $ grep -rniE "kiln|quicklime" src/ --include=*.cs
 ```
 
 The only `kiln` matches anywhere under `src/` are build residue in stale compiled output:
-`src/SteelmakingExpanded/bin/Debug/net7.0/…/SteelmakingExpanded.dll` and its `net8.0` twin contain an
+`src/SteelIndustryExpanded/bin/Debug/net7.0/…/SteelmakingExpanded.dll` and its `net8.0` twin contain an
 anonymous-type field named `beehivekiln` (a vanilla clay-firing attribute) that no current source file
 produces.
 
