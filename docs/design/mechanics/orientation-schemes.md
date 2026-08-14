@@ -120,7 +120,7 @@ The dividing line is not "facing vs node token". It is: who decides the orientat
 | The network, from a free run of neighbours | pipe straight/bend/junction, passthrough, molten canal mid-run | no - pin the block, never the orientation |
 | The network, but walled in by the structure | tuyere, pipe outlet - a single-faced node embedded in a furnace shell | yes, and it is needed - see below |
 
-The one node code a shipped layout pins today, `lpex:pipe-outlet-fire-u`, is harmless: it is vertical, so no
+The one node code a shipped layout pins today, `iiex:pipe-outlet-fire-u`, is harmless: it is vertical, so no
 rotation and no recalculation can move it.
 
 ### The embedded connector is the case that must be checked

@@ -19,7 +19,7 @@ public class MetalRegistryTests {
   [Theory]
   [InlineData("game:ingot-iron", "game:metalbit-iron")] // ingot-X → metalbit-X, same domain
   [InlineData("game:ingot-steel", "game:metalbit-steel")]
-  [InlineData("iwex:slag", "iwex:slag")] // non-ingot carrier drops as itself
+  [InlineData("iiex:slag", "iiex:slag")] // non-ingot carrier drops as itself
   public void SolidDropOf_reproduces_the_shatteredStack_convention(
     string molten,
     string expected
@@ -32,7 +32,7 @@ public class MetalRegistryTests {
 
   [Theory]
   [InlineData("game:ingot-iron", "Iron")] // strip ingot-, capitalise
-  [InlineData("iwex:slag", "Slag")] // non-ingot used verbatim, capitalised
+  [InlineData("iiex:slag", "Slag")] // non-ingot used verbatim, capitalised
   [InlineData("game:metalbit-copper", "Metalbit-copper")]
   public void DisplayName_reproduces_the_strip_and_capitalise_convention(
     string molten,
@@ -105,10 +105,10 @@ public class MetalRegistryTests {
     MetalRegistry.Register(
       new MetalDef {
         Code = "slag",
-        MoltenItem = "iwex:slag",
-        SolidDrop = "iwex:slagbit",
+        MoltenItem = "iiex:slag",
+        SolidDrop = "iiex:slagbit",
         UnitsPerBit = 3,
-        DisplayLangKey = "iwex:material-slag",
+        DisplayLangKey = "iiex:material-slag",
         LiquidThreshold = 0.9f,
         HardenedThreshold = 0.2f,
         GlowMinTemp = 520f,
@@ -117,10 +117,10 @@ public class MetalRegistryTests {
       }
     );
 
-    var slag = new AssetLocation("iwex:slag");
-    Assert.Equal("iwex:slagbit", MetalRegistry.SolidDropOf(slag).ToString());
+    var slag = new AssetLocation("iiex:slag");
+    Assert.Equal("iiex:slagbit", MetalRegistry.SolidDropOf(slag).ToString());
     Assert.Equal(3, MetalRegistry.UnitsPerBitOf(slag));
-    Assert.Equal("iwex:material-slag", MetalRegistry.DisplayName("iwex:slag"));
+    Assert.Equal("iiex:material-slag", MetalRegistry.DisplayName("iiex:slag"));
     Assert.Equal(0.9f, MetalRegistry.LiquidThresholdOf(slag));
     Assert.Equal(0.2f, MetalRegistry.HardenedThresholdOf(slag));
     Assert.Equal(520f, MetalRegistry.GlowMinTempOf(slag));
@@ -136,12 +136,12 @@ public class MetalRegistryTests {
     MetalRegistry.Register(
       new MetalDef {
         Code = "slag",
-        MoltenItem = "iwex:slag",
+        MoltenItem = "iiex:slag",
         LiquidThreshold = 0.9f,
         HardenedThreshold = 0.5f,
       }
     );
-    var slag = new AssetLocation("iwex:slag");
+    var slag = new AssetLocation("iiex:slag");
     var iron = new AssetLocation("game:ingot-iron"); // unregistered → global 0.8 / 0.3
     const float meltPoint = 1000f;
 
@@ -190,11 +190,11 @@ public class MetalRegistryTests {
   [Fact]
   public void ResolveByCode_of_a_registered_token_returns_its_molten_item() {
     MetalRegistry.Register(
-      new MetalDef { Code = "slag", MoltenItem = "iwex:slag" }
+      new MetalDef { Code = "slag", MoltenItem = "iiex:slag" }
     );
 
-    // Convention would have built game:ingot-slag; the registered def redirects to iwex:slag.
-    Assert.Equal("iwex:slag", MetalRegistry.MoltenItemOf("slag").ToString());
+    // Convention would have built game:ingot-slag; the registered def redirects to iiex:slag.
+    Assert.Equal("iiex:slag", MetalRegistry.MoltenItemOf("slag").ToString());
   }
 
   [Fact]
@@ -227,7 +227,7 @@ public class MetalRegistryTests {
   )]
   [InlineData("game:rod-{metal}", "game:ingot-steel", "game:rod-steel")]
   // A carrier with no dash substitutes its whole path, matching LastCodePart() on such an item.
-  [InlineData("game:metalplate-{metal}", "iwex:slag", "game:metalplate-slag")]
+  [InlineData("game:metalplate-{metal}", "iiex:slag", "game:metalplate-slag")]
   public void CastProductOf_an_unregistered_metal_only_substitutes_the_token(
     string template,
     string molten,
@@ -248,17 +248,17 @@ public class MetalRegistryTests {
     MetalRegistry.Register(
       new MetalDef {
         Code = "castiron",
-        MoltenItem = "iwex:ingot-castiron",
-        CastDomain = "iwex",
+        MoltenItem = "iiex:ingot-castiron",
+        CastDomain = "iiex",
       }
     );
 
     Assert.Equal(
-      "iwex:metalplate-castiron",
+      "iiex:metalplate-castiron",
       MetalRegistry
         .CastProductOf(
           new AssetLocation("game:metalplate-{metal}"),
-          new AssetLocation("iwex:ingot-castiron")
+          new AssetLocation("iiex:ingot-castiron")
         )
         .ToString()
     );
@@ -270,17 +270,17 @@ public class MetalRegistryTests {
     MetalRegistry.Register(
       new MetalDef {
         Code = "castiron",
-        MoltenItem = "iwex:ingot-castiron",
-        CastDomain = "iwex",
+        MoltenItem = "iiex:ingot-castiron",
+        CastDomain = "iiex",
       }
     );
 
     Assert.Equal(
-      "iwex:someliteralpart",
+      "iiex:someliteralpart",
       MetalRegistry
         .CastProductOf(
           new AssetLocation("game:someliteralpart"),
-          new AssetLocation("iwex:ingot-castiron")
+          new AssetLocation("iiex:ingot-castiron")
         )
         .ToString()
     );
@@ -305,13 +305,13 @@ public class MetalRegistryTests {
     MetalRegistry.Register(
       new MetalDef {
         Code = "castiron",
-        MoltenItem = "iwex:ingot-castiron",
-        CastDomain = "iwex",
+        MoltenItem = "iiex:ingot-castiron",
+        CastDomain = "iiex",
       }
     );
     Assert.Equal(
-      "iwex",
-      MetalRegistry.CastDomainOf(new AssetLocation("iwex:ingot-castiron"))
+      "iiex",
+      MetalRegistry.CastDomainOf(new AssetLocation("iiex:ingot-castiron"))
     );
   }
   #endregion

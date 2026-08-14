@@ -1,0 +1,206 @@
+{
+  "code": "mpenergy",
+  "class": "iiex.BlockTransmission",
+  "entityClass": "iiex.BlockEntityTransmission",
+  "blockmaterial": "Metal",
+  "requiredMiningTier": 0,
+  "resistance": 4.5,
+  "maxstacksize": 1,
+  "drops": [],
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    },
+    {
+      "name": "BlockEntityInteract"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    },
+    {
+      "name": "ExRightClickConstructable",
+      "properties": {
+        "stages": [
+          {
+            "addElements": [
+              "Base"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "iiex:spurgear",
+                "quantity": 2,
+                "name": "iiex:rcc-ingredient-transmissiongears"
+              },
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 4,
+                "name": "iiex:rcc-ingredient-transmissionshafts"
+              }
+            ],
+            "addElements": [
+              "MainShafts"
+            ]
+          },
+          {
+            "requireStacks": [
+              {
+                "type": "item",
+                "code": "game:ingot-iron",
+                "quantity": 2,
+                "name": "iiex:rcc-ingredient-transmissionsupport"
+              }
+            ],
+            "addElements": [
+              "SupportShaft"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "transmission"
+      ]
+    },
+    {
+      "code": "kind",
+      "states": [
+        "x2",
+        "x4",
+        "clutch"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-x2-n",
+      "*-x4-n",
+      "*-clutch-n"
+    ],
+    "iiex": [
+      "*-x2-n",
+      "*-x4-n",
+      "*-clutch-n"
+    ]
+  },
+  "shape": {
+    "selectiveElements": [
+      "Base/*"
+    ]
+  },
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/metal",
+    "hit": "game:block/metal",
+    "walk": "game:walk/stone"
+  },
+  "selectionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "collisionbox": {
+    "x1": 0.0,
+    "y1": 0.0,
+    "z1": 0.0,
+    "x2": 1.0,
+    "y2": 1.0,
+    "z2": 1.0
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "shapebytype": {
+    "*-x2-n": {
+      "base": "iiex:mpenergy/transmission-x2",
+      "rotateY": 0
+    },
+    "*-x2-e": {
+      "base": "iiex:mpenergy/transmission-x2",
+      "rotateY": 270
+    },
+    "*-x2-s": {
+      "base": "iiex:mpenergy/transmission-x2",
+      "rotateY": 180
+    },
+    "*-x2-w": {
+      "base": "iiex:mpenergy/transmission-x2",
+      "rotateY": 90
+    },
+    "*-x4-n": {
+      "base": "iiex:mpenergy/transmission-x4",
+      "rotateY": 0
+    },
+    "*-x4-e": {
+      "base": "iiex:mpenergy/transmission-x4",
+      "rotateY": 270
+    },
+    "*-x4-s": {
+      "base": "iiex:mpenergy/transmission-x4",
+      "rotateY": 180
+    },
+    "*-x4-w": {
+      "base": "iiex:mpenergy/transmission-x4",
+      "rotateY": 90
+    },
+    "*-clutch-n": {
+      "base": "iiex:mpenergy/transmission-clutch",
+      "rotateY": 0
+    },
+    "*-clutch-e": {
+      "base": "iiex:mpenergy/transmission-clutch",
+      "rotateY": 270
+    },
+    "*-clutch-s": {
+      "base": "iiex:mpenergy/transmission-clutch",
+      "rotateY": 180
+    },
+    "*-clutch-w": {
+      "base": "iiex:mpenergy/transmission-clutch",
+      "rotateY": 90
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "code": "pigworkitem",
+  "class": "iiex.ItemPigWorkItem",
+  "variantgroups": [
+    {
+      "code": "metal",
+      "states": [
+        "iron"
+      ]
+    }
+  ],
+  "texture": {
+    "base": "game:block/metal/ingot/iron"
+  },
+  "maxstacksize": 1,
+  "storageFlags": 5,
+  "materialDensity": 7000,
+  "attributes": {
+    "workableTemperature": 0
+  }
+}

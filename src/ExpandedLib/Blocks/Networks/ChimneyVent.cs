@@ -32,7 +32,7 @@ public sealed class ChimneyVent : IPipeVentStrategy {
   /// <summary>
   /// True when <paramref name="block"/> is a chimney. Matches on the code path because vanilla chimney
   /// blocks carry no attribute to test without a JSON patch, and the substring accepts modded variants
-  /// as well. Shared with lpex's chimney info patch so both classify identically.
+  /// as well. Shared with iiex's chimney info patch so both classify identically.
   /// </summary>
   public static bool IsChimney(Block? block) =>
     block?.Code?.Path?.Contains("chimney") == true;

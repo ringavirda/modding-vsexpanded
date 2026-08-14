@@ -1,0 +1,91 @@
+{
+  "code": "furnace",
+  "class": "iiex.BlockPuddlingChimneyCap",
+  "entityClass": "iiex.BlockEntityPuddlingChimneyCap",
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "maxstacksize": 1,
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "puddlingchimneycap"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iiex:furnace/puddlingchimneycap",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iiex:furnace/puddlingchimneycap",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iiex:furnace/puddlingchimneycap",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iiex:furnace/puddlingchimneycap",
+      "rotateY": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    ]
+  },
+  "replaceable": 400,
+  "resistance": 4.0,
+  "lightAbsorption": 0,
+  "sounds": {
+    "walk": "walk/metal",
+    "place": "block/anvil",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "block/rock-hit-pickaxe",
+        "break": "block/rock-break-pickaxe"
+      }
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

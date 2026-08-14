@@ -140,7 +140,7 @@ A class doc that argued its own case, cut to what a reader needs:
 /// <summary>
 /// Vanilla block codes used by the suite's multiblock layouts, named once here so that a typo in a
 /// <see cref="MultiblockLayoutBuilder.Legend"/> is a compile error rather than a blockNumbers entry
-/// that matches nothing. <see cref="ExCodes"/> holds exlib's own blocks, IwexCodes and LpexCodes
+/// that matches nothing. <see cref="ExCodes"/> holds exlib's own blocks, IiexCodes and IiexCodes
 /// each mod's; vanilla items used by recipes live in <see cref="ExIngredients"/>.
 /// </summary>
 ```

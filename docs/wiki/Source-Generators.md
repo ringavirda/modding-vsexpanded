@@ -27,8 +27,8 @@ with `AccessorName`) containing:
 So this:
 
 ```csharp
-[ExConfigRegister("ex_values.json", "lpex", LegacyFileNames = ["lpex_values.json"], Manageable = true)]
-public class LpexConfig : IExVersionedConfig
+[ExConfigRegister("ex_values.json", "iiex", LegacyFileNames = ["lpex_values.json"], Manageable = true)]
+public class IiexConfig : IExVersionedConfig
 {
     public string? ConfigVersion { get; set; }
     public static readonly ExConfigMigration[] Migrations = [ /* ... */ ];
@@ -39,15 +39,15 @@ public class LpexConfig : IExVersionedConfig
 generates roughly:
 
 ```csharp
-public static partial class LpexValues
+public static partial class IiexValues
 {
     public const string ConfigFileName = "ex_values.json";
-    private static readonly ExConfigRegister<LpexConfig> _store =
-        new(ConfigFileName, "lpex", LpexConfig.Migrations) { LegacyFileNames = ["lpex_values.json"] };
-    private static LpexConfig _config => _store.Config;
+    private static readonly ExConfigRegister<IiexConfig> _store =
+        new(ConfigFileName, "iiex", IiexConfig.Migrations) { LegacyFileNames = ["lpex_values.json"] };
+    private static IiexConfig _config => _store.Config;
 
     public static void Load(ICoreAPI api) { _store.Load(api); ExConfigProfiles.Register(_store); }
-    public static void Edit(Action<LpexConfig> mutate) { mutate(_store.Config); _store.Save(); }
+    public static void Edit(Action<IiexConfig> mutate) { mutate(_store.Config); _store.Save(); }
     public static void Save() => _store.Save();
 
     public static float PumpWaterPerSecond => _config.PumpWaterPerSecond;

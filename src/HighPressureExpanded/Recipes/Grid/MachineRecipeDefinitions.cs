@@ -8,7 +8,7 @@ namespace HighPressureExpanded.Recipes.Grid;
 /// <summary>
 /// Code-first grid recipes for the hpex machines: the Lancashire boiler and the Cornish engine. Like
 /// every gear-driven machine in the family, the Cornish engine crafts from vanilla rusty gears or
-/// from lpex's craftable gears; it is authored once and emitted for both gear codes, rusty first.
+/// from iiex's craftable gears; it is authored once and emitted for both gear codes, rusty first.
 /// </summary>
 public class MachineRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) {
@@ -16,7 +16,7 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider {
       .Create(domain, "grid", "machines")
       .Grid(LancashireBoiler);
 
-    foreach (string gear in new[] { "game:gear-rusty", "lpex:gear-*" })
+    foreach (string gear in new[] { "game:gear-rusty", "iiex:gear-*" })
       def = def.Grid(CornishEngine(gear));
 
     return [def];
@@ -48,14 +48,14 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider {
   // hpex-specific ingredient factories; the shared vanilla ones (PlateSteel, NailsSteel, RodSteel,
   // Gear, Hammer) come from ExIngredients through `using static`.
   //
-  // The pipe ingredient is the plain plated (iwex) segment, as in every other machine and fitting
+  // The pipe ingredient is the plain plated (iiex) segment, as in every other machine and fitting
   // recipe in the family. The pipe tiers carry no iron/steel material axis, so a material-suffixed
-  // code such as `...-steel` resolves to no block. Tier-gating the HP builds to the cast (lpex) or
+  // code such as `...-steel` resolves to no block. Tier-gating the HP builds to the cast (iiex) or
   // rolled (hpex) segments waits on craft recipes for those segments and on the hadfield material
   // gate; see docs/design/hpex.md.
   private static Func<IngredientBuilder, IngredientBuilder> StraightPipe(
     int qty
-  ) => i => i.Block("iwex:pipe-plated-straight-*").Quantity(qty);
+  ) => i => i.Block("iiex:pipe-plated-straight-*").Quantity(qty);
 
   private static Func<IngredientBuilder, IngredientBuilder> BrickFire(
     int qty

@@ -78,7 +78,7 @@ different deferral from the one everyone checks.
 
 | Probe | Result |
 |---|---|
-| `grep -rniE "dynamo\|commutator\|generator" src/ --include=*.cs` | dynamo: 0. commutator: 0. The only `generator` hits are `ExpandedLib.Generators` (the source generator) and `BEBehaviorEngineMPGenerator` - the lpex vanilla-MP engine behaviour, unrelated |
+| `grep -rniE "dynamo\|commutator\|generator" src/ --include=*.cs` | dynamo: 0. commutator: 0. The only `generator` hits are `ExpandedLib.Generators` (the source generator) and `BEBehaviorEngineMPGenerator` - the iiex vanilla-MP engine behaviour, unrelated |
 | `grep -rniE "elex\|electric\|dynamo" assets/` | 0 hits - no `assets/elex/` domain, so no blocktype, no shape, no lang key |
 | Projects in `VintageStory.sln` | no `ElectricalExpanded` (full list on [electrical-grid.md](electrical-grid.md) § What exists today) |
 
@@ -159,7 +159,7 @@ Nothing outside elex waits on it. It is a leaf of the ferrous line, not a link i
 ## Gotchas
 
 * **"Flywheel variant" is ambiguous, and the two readings are different code.** The Corliss's output is
-  *"MP (heavy flywheel drive)"*, and iwex already ships a flywheel block that is the `mpenergy` storage node
+  *"MP (heavy flywheel drive)"*, and iiex already ships a flywheel block that is the `mpenergy` storage node
   and the vanilla-MP bridge
   ([machines/flywheel-and-shafting.md](../../machines/flywheel-and-shafting.md)). So "Corliss flywheel
   variant" means either (a) a new variant of `BlockFlywheel` - a real graph node with `Inertia`, hub cells

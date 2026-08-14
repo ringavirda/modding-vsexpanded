@@ -4,7 +4,7 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using HighPressureExpanded.BlockStructures.Engine.BlockEntities;
-using LowPressureExpanded.BlockStructures.Engine;
+using IronIndustryExpanded.BlockStructures.Engine;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -18,7 +18,7 @@ namespace HighPressureExpanded.BlockStructures.Engine.Blocks;
 /// wrench, right-click raises the setting (low, normal, high) and ctrl+right-click lowers it. Ctrl
 /// rather than sneak, because vanilla diverts sneak+right-click to the held item, where the wrench's
 /// reverse-rotate consumes it. The rods answer on the engine's cell and the filler above it; repairs
-/// take steel only. All other behavior lives in lpex's <see cref="BlockEngine"/>.
+/// take steel only. All other behavior lives in iiex's <see cref="BlockEngine"/>.
 /// </summary>
 [BlockRegister]
 public partial class BlockEngineCornish

@@ -3,7 +3,7 @@
 **Status** designed - nothing built. No block, no block entity, no die item, no recipe, no lang key, no
 runtime shape. A repo-wide grep for `hammer` in `src/` returns only vanilla tool items (`item-hammer-iron`,
 `item-helvehammer-*`). Three editable shapes are drawn.
-**Mod** lpex (`LowPressureExpanded`)
+**Mod** iiex (`IronIndustryExpanded`)
 
 ## Owns
 
@@ -33,7 +33,7 @@ runtime shape. A repo-wide grep for `hammer` in `src/` returns only vanilla tool
 | the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](../mechanics/multiblock.md) |
 | code-first defs, RCC construction stages, the recipe-cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 | the ≤ 32 / ≤ 48 handling limits and the soft-lock definition | [recoverability](../mechanics/recoverability.md) |
-| the placement rule and the fastener split that put this machine in lpex | [STATE.md](../../internal/plans/STATE.md) |
+| the placement rule and the fastener split that put this machine in iiex | [STATE.md](../../internal/plans/STATE.md) |
 | the cast-vs-forged rule that makes dies forged and the frame cast | [casting](../processes/casting.md) |
 
 **Depends on** [pipe network](../mechanics/pipe-network.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
@@ -54,10 +54,10 @@ Two jobs, each a process with its own page; this page owns the machine that runs
 
 Nasmyth built the hammer in 1839 to forge a paddle shaft, so shingling is its period-correct job.
 
-It is lpex because of what it feeds, not what it is made of: its frame is cast iron and its dies are
-wrought/steel, both iwex materials, but its products are the shingled slab and the stamped plate, the wide
+It is iiex because of what it feeds, not what it is made of: its frame is cast iron and its dies are
+wrought/steel, both iiex materials, but its products are the shingled slab and the stamped plate, the wide
 route's inputs and outputs. The placement rule sends a machine to the mod that consumes it
-([STATE.md](../../internal/plans/STATE.md), row *steam hammer + stamping dies → lpex*).
+([STATE.md](../../internal/plans/STATE.md), row *steam hammer + stamping dies → iiex*).
 
 ### The hammer never shears
 
@@ -123,9 +123,9 @@ All three shapes are drawn and wired to nothing.
 | Hammer (editable) | `assets/editable/shapes/machine-pipe-megablock-steamhammer.json` | drawn, unwired |
 | Anvil (editable) | `assets/editable/shapes/machine-block-steamhammeranvil.json` | drawn, unwired |
 | Die-set, flat (editable) | `assets/editable/shapes/item-steamhammerdie-flat.json` | drawn, unwired |
-| Runtime shapes | `assets/lpex/shapes/…` | none. `assets/lpex/shapes/` holds only `boiler/`, `engine/`, `pipes/` |
-| Handbook page | `docs/lpex/handbook/` | none |
-| Lang keys | `assets/lpex/lang/en.json` | none |
+| Runtime shapes | `assets/iiex/shapes/…` | none. `assets/iiex/shapes/` holds only `boiler/`, `engine/`, `pipes/` |
+| Handbook page | `docs/iiex/handbook/` | none |
+| Lang keys | `assets/iiex/lang/en.json` | none |
 
 ### What the hammer shape actually draws
 
@@ -307,7 +307,7 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 
 | To build | Copy from | file:line |
 |---|---|---|
-| the block | any pipe-network megablock principal; the shape wants the pipe-consumer idiom | `LowPressureExpanded/BlockNetworkPipe/…` |
+| the block | any pipe-network megablock principal; the shape wants the pipe-consumer idiom | `IronIndustryExpanded/BlockNetworkPipe/…` |
 | the two network faces | machine ports are `INetworkConnector`s reading the adjacent cell | [pipe network](../mechanics/pipe-network.md) |
 | the footprint | ASCII layout DSL + `FillerOffsets`, as the mill does | `BlockRollingMill.cs:74-94` |
 | the lever cell | a behaviour-capable filler forwarding the held interaction | [multiblock & fillers](../mechanics/multiblock.md) |
@@ -325,7 +325,7 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 3. the staged work-item renderer;
 4. pile-reads-form shingling (≥ 6 balls → slab);
 5. the stamping die (`boilerplate` → 3 × `game:metalplate`), in the `rollset` / `pattern` tooling idiom;
-6. the rivet die - lpex's one entry in the [heading machine](heading-machine.md)'s die catalogue. The
+6. the rivet die - iiex's one entry in the [heading machine](heading-machine.md)'s die catalogue. The
    rivet die goes on the heading machine, not on this one ([STATE.md](../../internal/plans/STATE.md)).
 
 ---
@@ -350,8 +350,8 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 * Do not subclass a vanilla structure block for the anvil. `BlockAnvil` carries the sculpt mechanic;
   vanilla `BeeHiveKilnDoor` is the standing warning that subclassing vanilla blocks crashes on break unless
   `GetDrops` is overridden.
-* The forming shop is a cluster, not one megablock. The mill is iwex's block on mpenergy, the hammer is
-  lpex's on the pipe network, and the two never share a footprint. The "~3 s per pass" rate that appears in
+* The forming shop is a cluster, not one megablock. The mill is iiex's block on mpenergy, the hammer is
+  iiex's on the pipe network, and the two never share a footprint. The "~3 s per pass" rate that appears in
   older drafts of a combined forming-shop megablock describes the mill and must not be adopted for the
   hammer.
 
@@ -370,6 +370,6 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 | 7 | `boilerplate` does not exist | yes - nothing to stamp |
 | 8 | Art: three shapes to wire, re-texture with domain-relative paths, and fit to whatever footprint is chosen | |
 | 9 | What happens on a blow with no work under the die? Not designed - presumably a sound and nothing else, but the die/anvil pair should not damage itself | |
-| 10 | Does the hammer need heat on the work? Shingling is white-hot by definition and stamping a cold `boilerplate` should presumably refuse - but no threshold is named anywhere, and the mill's `RollingTempC` is an iwex key the hammer would be reaching upward into | |
+| 10 | Does the hammer need heat on the work? Shingling is white-hot by definition and stamping a cold `boilerplate` should presumably refuse - but no threshold is named anywhere, and the mill's `RollingTempC` is an iiex key the hammer would be reaching upward into | |
 | 11 | The HP double-action hammer is hpex's, gated at ≥ 2-voxel output. It has no page and no design beyond that line | |
 | 12 | Whether the anvil is a placeable block that docks or purely an `ItemStack` slot on the hammer. The design says the BE stores an `ItemStack` and tesselates it - so it is the latter, but it is also called "a separate docked block". Pick one and say so | |

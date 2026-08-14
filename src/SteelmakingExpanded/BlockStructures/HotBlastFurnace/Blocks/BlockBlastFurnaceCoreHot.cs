@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
-using LowPressureExpanded;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -63,30 +62,30 @@ public partial class BlockBlastFurnaceCoreHot
             // `Pos.AddCopy(facing.Opposite).DownCopy()`, so a tap faces into the furnace and drains out
             // the other way. `T` sits in the east wall at (2,1,0) declared west, so it pours to (3,0,0),
             // outside the drawn grid.
-            .Legend('T', IwexBlocks.FurnaceIrontap.WithSide(BlockFacing.WEST))
+            .Legend('T', IiexBlocks.FurnaceIrontap.WithSide(BlockFacing.WEST))
             // The slag tap is its own block, so this drawing states which notch goes where. `S` sits in
             // the west wall at (-2,2,0) declared east, so it pours to (-3,1,0) - the `.` at the west end
             // of layer 1's z=0 row. That cell is its runout: claim it back and the cinder notch has
             // nowhere to drain, while the structure still completes and the furnace still lights.
-            .Legend('S', IwexBlocks.FurnaceSlagtap.WithSide(BlockFacing.EAST))
+            .Legend('S', IiexBlocks.FurnaceSlagtap.WithSide(BlockFacing.EAST))
             // The blast inlets, orientation-pinned rather than wildcarded, which is why one block takes
             // two glyphs. A tuyere is walled in on three sides, so its cell admits exactly one connector
             // face - north out of the north wall, south out of the south - and
             // BlockNetworkNode.RecalculateAndSyncOrientations exchanges a placed node onto that face as
             // soon as the brick goes up; `MultiblockFacings` rotates the letter with the structure. A
-            // wildcarded legend (`iwex:furnace-tuyere-*`) would let a tuyere fitted facing into the hearth
+            // wildcarded legend (`iiex:furnace-tuyere-*`) would let a tuyere fitted facing into the hearth
             // complete the furnace.
-            .Legend('Y', IwexBlocks.FurnaceTuyere.WithOrientation("n"))
-            .Legend('y', IwexBlocks.FurnaceTuyere.WithOrientation("s"))
-            .Legend('P', LpexCodes.PipeOutlet)
+            .Legend('Y', IiexBlocks.FurnaceTuyere.WithOrientation("n"))
+            .Legend('y', IiexBlocks.FurnaceTuyere.WithOrientation("s"))
+            .Legend('P', IiexCodes.PipeOutlet)
             .Legend('R', SmexBlocks.BlastfurnaceHopperreinforced.Code)
             .Legend('B', SmexBlocks.BlastfurnaceHopperbell.Code)
-            .Legend('c', IwexCodes.ChargeShaft)
+            .Legend('c', IiexCodes.ChargeShaft)
             // The crucible floor, its own glyph so it can carry the pool role beside the burden one.
             // `HearthCell`, not `ChargeShaft`: the two differ by the hearth-metal code, and the pool
-            // stands on this course, so a cell that does not admit `iwex:hearthmetal-*` is rejected by
+            // stands on this course, so a cell that does not admit `iiex:hearthmetal-*` is rejected by
             // the structure the moment metal appears in it.
-            .Legend('p', IwexCodes.HearthCell)
+            .Legend('p', IiexCodes.HearthCell)
             .Legend('a', VanillaCodes.Air)
             // The burden column. The role, not the legend string, answers where charge stands, and this
             // drawing states it rather than inheriting it. The cells differ from the cold furnace on

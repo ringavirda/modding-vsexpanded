@@ -3,7 +3,7 @@
 **Status** partial - nails ship and are the most-demanded ingredient in the suite; the rod they should
 be cut from, the bolt, the rivet and the ball do not exist in any form
 **Mod** the items are vanilla (`game:`) plus two generated variants from exlib; the benches are
-iwex (nail, heading) · lpex (rivet die) · hpex (ball die)
+iiex (nail, heading) · iiex (rivet die) · hpex (ball die)
 
 **Owns**
 * the fastener catalogue - nails-and-strips, bolt, rivet, bearing ball - and the 25 u rod all three
@@ -15,7 +15,7 @@ iwex (nail, heading) · lpex (rivet die) · hpex (ball die)
 * the rod fork - one 100 u `rolledrod`, the same four feeds either way, two fastener families out;
 * the consumer census: every place in the repo that requires a fastener, and the fact that the only
   fastener with any consumer is the vanilla one;
-* the two generated nail variants (`iwex:metalnailsandstrips-castiron`,
+* the two generated nail variants (`iiex:metalnailsandstrips-castiron`,
   `smex:metalnailsandstrips-bessemersteel`) and the fact that no recipe in the suite can accept either.
 
 **Does not own — cited only, never restated**
@@ -54,11 +54,11 @@ sits on that ceiling: the mechanised route contains no anvil work at all - puddl
 Nails and bolts are the iron tier's fastener; rivets are the steam tier's. The reason is physical: a rivet
 makes a joint that is strong **and tight**; nails and bolts are strong but not tight. A boiler is riveted
 because it must hold steam; a flywheel is bolted because it merely must not fall apart. So the rivet
-arrives with the first thing that holds pressure - lpex's boiler - and not one step earlier. iwex machines
+arrives with the first thing that holds pressure - iiex's boiler - and not one step earlier. iiex machines
 that might want one use nails or bolts and accept rivets later through the standard RCC dual path
 ([STATE.md § Fasteners](../../internal/plans/STATE.md)).
 
-That rule places the dies, not the bench: a machine in lpex would strand iwex's own rod, so there is one
+That rule places the dies, not the bench: a machine in iiex would strand iiex's own rod, so there is one
 bench and the die is the difference - see [heading machine](../machines/heading-machine.md), which owns the
 die catalogue.
 
@@ -72,17 +72,17 @@ die catalogue.
 |---|---|---|---|---|---|
 | `game:metalnailsandstrips-{metal}` | a bundle, no single section | - | 25 | vanilla anvil, 36-voxel plan | 36 sites - see the census |
 | `game:rod-{metal}` | 2 × 2 × 10 | 40 | 100 | vanilla anvil, 40-voxel plan; also the mill's `grooved` 1.0 gap (`RollSetItemDefinitions.cs:90`) | 27 sites |
-| `iwex:metalnailsandstrips-castiron` | vanilla shape | - | - | exlib metal-family emitter (`MetalFamilyEmitter.cs:458`, opted in at `assets/iwex/config/metals/castiron.json:9`) | nothing can accept it |
+| `iiex:metalnailsandstrips-castiron` | vanilla shape | - | - | exlib metal-family emitter (`MetalFamilyEmitter.cs:458`, opted in at `assets/iiex/config/metals/castiron.json:9`) | nothing can accept it |
 | `smex:metalnailsandstrips-bessemersteel` | vanilla shape | - | - | ditto (`assets/smex/config/metals/bessemersteel.json:9`) | nothing can accept it |
-| `iwex:rod-castiron` · `smex:rod-bessemersteel` | vanilla `game:item/rod` shape | 40 | - | ditto (`MetalFamilyEmitter.cs:384`) | nothing can accept them |
+| `iiex:rod-castiron` · `smex:rod-bessemersteel` | vanilla `game:item/rod` shape | 40 | - | ditto (`MetalFamilyEmitter.cs:384`) | nothing can accept them |
 
 ### Settled, not built — nothing below exists in `src/`
 
 | Item | Section × length | vx³ | Mass (u) | Made by | Consumed by |
 |---|---|---|---|---|---|
 | **rod** (the headed-fastener feedstock) | 1 × 1 × 10 | 10 | 25 | [shear](../machines/shear.md) crop, 4 per `rolledrod` | the heading bench |
-| **bolt** | - (a bundle, like nails) | - | ≤ 25 per rod, mass-neutral | heading bench + bolt die (iwex) | plated pipe - see Gotcha 6 |
-| **rivet** | - (a bundle) | - | mass-neutral | heading bench + rivet die (lpex) | boiler shells · cast pipe · every fabricated substitute |
+| **bolt** | - (a bundle, like nails) | - | ≤ 25 per rod, mass-neutral | heading bench + bolt die (iiex) | plated pipe - see Gotcha 6 |
+| **rivet** | - (a bundle) | - | mass-neutral | heading bench + rivet die (iiex) | boiler shells · cast pipe · every fabricated substitute |
 | **bearing ball** | - | - | - | heading bench + ball die (hpex) | [bearings](../machines/bearings.md) |
 | `nailplate` | 4 × 1 × 10 | 40 | 100 | mill, `flat` 1.5 → 1.0 | the nail bench → 4 nails |
 | `rolledrod` | 2 × 2 × 10 | 40 | 100 | mill, `grooved` 2.0 | the shear → 4 rods |
@@ -120,7 +120,7 @@ One `rolledrod` at 100 u, the same four feeds either way, and the player chooses
 
 | Branch | Set · gaps | Feeds | Yields | Mass out | Bench | Fastener |
 |---|---|---|---|---|---|---|
-| grooved | `grooved` 1.5 → 1.0 | 4 | 4 rods @ 1 × 1 × 10 | 4 × 25 = 100 u | heading | bolts (iwex die) or rivets (lpex die) |
+| grooved | `grooved` 1.5 → 1.0 | 4 | 4 rods @ 1 × 1 × 10 | 4 × 25 = 100 u | heading | bolts (iiex die) or rivets (iiex die) |
 | flat | `flat` 1.5 → 1.0 | 4 | 1 `nailplate` @ 4 × 1 × 10 | 100 u | nail | 4 nails-and-strips @ 25 |
 
 Both branches conserve mass exactly and cost the same labour, which makes it a choice rather than a ladder.
@@ -147,11 +147,11 @@ Representative and largest bills:
 | Bessemer converter (3 RCC stages) | 42 | 18 | `SteelmakingExpanded/BlockStructures/Converter/Blocks/BlockConverterBessemer.cs:102`, `:109`, `:124`, `:103`, `:125` |
 | Lancashire boiler (3 stages) | 24 | - | `HighPressureExpanded/…/BlockBoilerLancashire.cs:146`, `:153`, `:158` |
 | Cornish engine (5 stages) | 14 | 42 | `HighPressureExpanded/…/BlockEngineCornish.cs:64-90` |
-| Cornish boiler (3 stages) | 16 | 8 | `LowPressureExpanded/…/BlockBoilerCornish.cs:132-145` |
-| Watt engine (5 stages) | 12 | 24 | `LowPressureExpanded/…/BlockEngineWatt.cs:54-76` |
-| each iwex pipe segment ×4 | 1 | - | `IronworkingExpanded/Recipes/Grid/PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52` |
-| tall hopper | 1 | - | `IronworkingExpanded/Recipes/Grid/FurnaceRecipeDefinitions.cs:60` |
-| plated molten barrel | 4 | - | `IronworkingExpanded/Recipes/Grid/MoltenRecipeDefinitions.cs:34` |
+| Cornish boiler (3 stages) | 16 | 8 | `IronIndustryExpanded/…/BlockBoilerCornish.cs:132-145` |
+| Watt engine (5 stages) | 12 | 24 | `IronIndustryExpanded/…/BlockEngineWatt.cs:54-76` |
+| each iiex pipe segment ×4 | 1 | - | `IronIndustryExpanded/Recipes/Grid/PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52` |
+| tall hopper | 1 | - | `IronIndustryExpanded/Recipes/Grid/FurnaceRecipeDefinitions.cs:60` |
+| plated molten barrel | 4 | - | `IronIndustryExpanded/Recipes/Grid/MoltenRecipeDefinitions.cs:34` |
 
 ### Ingredient helpers
 
@@ -175,7 +175,7 @@ is a literal drop-in.
 |---|---|---|
 | the rod schedule | `assets/editable/shapes/item-rod-rolled.json` | untracked |
 | the four cut rods | `assets/editable/shapes/item-rod-nail.json` | untracked |
-| runtime exports | `assets/iwex/shapes/…` | none - neither file has ever been exported |
+| runtime exports | `assets/iiex/shapes/…` | none - neither file has ever been exported |
 | `nailplate` art | - | does not exist anywhere |
 | bolt · rivet · ball art | - | does not exist anywhere |
 | textures | both editable files declare `iron5 → F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5` | the editable-folder convention: an absolute authoring path the export rewrites |
@@ -209,7 +209,7 @@ There is no fastener code. What exists is the demand side.
 | `ExIngredients.Nails` / `NailsSteel` / `Rod` / `RodSteel` | `src/ExpandedLib/Definitions/ExIngredients.cs:35-49` | live - the shared grid helpers |
 | `ConstructionStages.RequireMetalNails` / `RequireMetalRod` | `src/ExpandedLib/Definitions/ConstructionStages.cs:107-115`, shared body `:120-132` | live - the shared RCC helpers |
 | `MetalFamilyEmitter.Nails` / `.Rod` | `src/ExpandedLib/Metals/MetalFamilyEmitter.cs:458` / `:384` | live - generates the two unusable variants |
-| `RollSetItemDefinitions.Sets["grooved"]` | `src/IronworkingExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:86-93` | live def, unreachable - see Gotcha 7 |
+| `RollSetItemDefinitions.Sets["grooved"]` | `src/IronIndustryExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:86-93` | live def, unreachable - see Gotcha 7 |
 | ~~`RollSetItemDefinitions.Sets["slitting"]`~~ | — | **retired 2026-08-12**, with its three lang rows - see Gotcha 8 |
 | `ItemDie` (the spec), `DieItemDefinitions`, `BlockEntityDieBench` | *(proposed)* `…/BlockStructures/Forming/` | nothing - [heading machine § Code](../machines/heading-machine.md) owns the plan |
 | bolt / rivet / ball items | - | nothing |
@@ -219,11 +219,11 @@ There is no fastener code. What exists is the demand side.
 
 ## Gotchas
 
-1. **The two generated nail variants can never be used.** `iwex:metalnailsandstrips-castiron` and
+1. **The two generated nail variants can never be used.** `iiex:metalnailsandstrips-castiron` and
    `smex:metalnailsandstrips-bessemersteel` are emitted as real items, but every consumer asks either
    `game:metalnailsandstrips-*` (`ExIngredients.cs:37` - the domain is explicit) or the RCC's domain-less
    `metalnailsandstrips-*` restricted to `allowedVariants: ["iron","steel"]`
-   (`ConstructionStages.cs:110`, `:131`). Neither can match. The same holds for `iwex:rod-castiron` and
+   (`ConstructionStages.cs:110`, `:131`). Neither can match. The same holds for `iiex:rod-castiron` and
    `smex:rod-bessemersteel`.
    Cast-iron nails are physically absurd anyway - brittle metal, and the emitter's own comment says so
    while emitting them (`MetalFamilyEmitter.cs:459-460`: "a cast/brittle alloy is never tong-worked").
@@ -241,7 +241,7 @@ There is no fastener code. What exists is the demand side.
    corrected when the machines index is next touched.
 
 5. **Nails, bolts and rivets are not interchangeable in the fiction and must not become so in code.** The
-   RCC dual path exists so an iwex machine can later accept rivets as an alternative - never so that a
+   RCC dual path exists so an iiex machine can later accept rivets as an alternative - never so that a
    rivet silently substitutes for a nail in a joint that has to be tight.
 
 6. **The naming half closed 2026-08-05 - but the bolt still has no consumer.** The tier was renamed
@@ -249,7 +249,7 @@ There is no fastener code. What exists is the demand side.
    made from a plate and nails is self-consistent, and "bolted" only ever named the flange joint, which
    the `flanged` joint-family already records - and which the cast tier shares, so it never distinguished
    the tier at all.
-   All four iwex segments still require `Nails(1)` (`PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52`),
+   All four iiex segments still require `Nails(1)` (`PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52`),
    and bolts have no consumer anywhere. That is an open question - what should cost bolts? - rather than a
    naming inconsistency to be cleaned up by retargeting this recipe
    ([heading machine § Gotchas](../machines/heading-machine.md)).
@@ -296,7 +296,7 @@ There is no fastener code. What exists is the demand side.
    accept `*:metalnailsandstrips-*` would make Bessemer nails work and cast-iron nails work too, which is
    wrong; a per-metal `allowedVariants` list is the likelier answer.
 5. **Retargeting plated pipe onto bolts** (Gotcha 6) - the smallest change that gives the bolt a reason to
-   exist, and it also removes an iwex recipe's dependence on a fastener the player must hand-forge.
+   exist, and it also removes an iiex recipe's dependence on a fastener the player must hand-forge.
 6. **Whether rivets ever become craftable by hand.** An older note filed "bolts, nuts, studs, rivets" under
    anvil-forged; the settled design gives them a machine only. A hand fallback would soften the boiler gate
    but weakens the tier rule.

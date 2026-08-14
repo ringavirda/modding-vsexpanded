@@ -1,0 +1,816 @@
+[
+  {
+    "name": "Molten Canal (Straight)",
+    "ingredientPattern": "H_K,FCF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-straight-{rock}-ns",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Bend)",
+    "ingredientPattern": "HFK,FC_",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-bend-{rock}-nw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (T-Junction)",
+    "ingredientPattern": "HFK,FCF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-tjunction-{rock}-esw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (X-Junction)",
+    "ingredientPattern": "HFK,FCF,_F_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-xjunction-{rock}-nswe",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Start)",
+    "ingredientPattern": "HCK,FFF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-start-{rock}-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Mold Pedestal)",
+    "ingredientPattern": "HFK,CFC",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-moldpedestal-{rock}-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "C": {
+        "type": "block",
+        "code": "game:cobblestone-*",
+        "name": "rock",
+        "allowedVariants": [
+          "andesite",
+          "chalk",
+          "chert",
+          "conglomerate",
+          "limestone",
+          "claystone",
+          "granite",
+          "sandstone",
+          "shale",
+          "basalt",
+          "peridotite",
+          "phyllite",
+          "slate",
+          "obsidian",
+          "kimberlite",
+          "bauxite",
+          "suevite",
+          "whitemarble",
+          "redmarble",
+          "greenmarble"
+        ]
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Tap)",
+    "ingredientPattern": "HFK",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-tap-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Straight, Colored Brick)",
+    "ingredientPattern": "H_K,FBF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-straight-{brick}-ns",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Straight, Fire Brick)",
+    "ingredientPattern": "H_K,FBF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-straight-fire-ns",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Bend, Colored Brick)",
+    "ingredientPattern": "HFK,FB_",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-bend-{brick}-nw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Bend, Fire Brick)",
+    "ingredientPattern": "HFK,FB_",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-bend-fire-nw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (T-Junction, Colored Brick)",
+    "ingredientPattern": "HFK,FBF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-tjunction-{brick}-esw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (T-Junction, Fire Brick)",
+    "ingredientPattern": "HFK,FBF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-tjunction-fire-esw",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (X-Junction, Colored Brick)",
+    "ingredientPattern": "HFK,FBF,_F_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-xjunction-{brick}-nswe",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (X-Junction, Fire Brick)",
+    "ingredientPattern": "HFK,FBF,_F_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-xjunction-fire-nswe",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Start, Colored Brick)",
+    "ingredientPattern": "HBK,FFF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-start-{brick}-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Start, Fire Brick)",
+    "ingredientPattern": "HBK,FFF",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-start-fire-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Mold Pedestal, Colored Brick)",
+    "ingredientPattern": "HFK,BFB",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-moldpedestal-{brick}-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Molten Canal (Mold Pedestal, Fire Brick)",
+    "ingredientPattern": "HFK,BFB",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-canal-moldpedestal-fire-s",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 1
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  }
+]

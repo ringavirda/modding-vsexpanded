@@ -3,7 +3,7 @@
 **Status** blocked - designed, nothing exists. No mixing block, no alloy metal, no window catalogue, no
 ferroalloy, no grade field. The one code hook that could emit alloys (`MetalDef.Alloy`) is inert on purpose
 and must stay so.
-**Mods** smex (the open-hearth bath, the ladle) · iwex (the cold blast furnace that smelts the ferroalloys, the
+**Mods** smex (the open-hearth bath, the ladle) · iiex (the cold blast furnace that smelts the ferroalloys, the
 cupola that melts them) · hpex (the consumer - the hadfield material gate)
 
 **Owns** - the facts this page is canonical for:
@@ -256,11 +256,11 @@ Every pressure ceiling that exists in the suite:
 |---|---|---|---|
 | `BlockPipe.BurstPressure` | resolved at runtime | `src/ExpandedLib/Blocks/Networks/BlockPipe.cs:193-194` | the block's `Code.Domain`, via `_burstByDomain` (`:180`) |
 | default, if a mod registers none | 5 atm | `BlockPipe.cs:182` | — |
-| iwex plated | 2.5 atm | `IwexConfig.cs:163` | domain `iwex` |
-| lpex cast | 5.0 atm | `LpexConfig.cs:50` | domain `lpex` |
+| iiex plated | 2.5 atm | `IiexConfig.cs:163` | domain `iiex` |
+| iiex cast | 5.0 atm | `IiexConfig.cs:50` | domain `iiex` |
 | hpex rolled | 12 atm | `HpexConfig.cs:115` | domain `hpex` |
 
-That is the whole list - `grep -n "MaxPressure\|BurstPressure\|SafetyPressure"` over `LpexConfig.cs` and
+That is the whole list - `grep -n "MaxPressure\|BurstPressure\|SafetyPressure"` over `IiexConfig.cs` and
 `HpexConfig.cs` returns those two burst keys and nothing else. No boiler, cylinder or vessel has a
 material-keyed pressure limit at all, and `MetalDef` carries `IsAlloy` (`MetalDef.cs:57`) and `Alloy`
 (`:71`) but no grade field of any kind.
@@ -366,7 +366,7 @@ waiting on it.
 2. Decide how D3 is expressed, or drop it. As written it needs a per-material grade and a
    material-aware pressure read (Numbers). The cheap version is one scalar on `MetalDef` and one change in
    `BlockPipe.BurstPressure` (`src/ExpandedLib/Blocks/Networks/BlockPipe.cs:193-194`); the expensive version
-   is a grade on every pressure vessel in lpex and hpex. Nothing else in the suite is waiting on this.
+   is a grade on every pressure vessel in iiex and hpex. Nothing else in the suite is waiting on this.
 
 3. Size the ladle for base + both additions. ~6800 u, not 6000 (Numbers). This must be settled together
    with [bessemer § Open #2](../machines/bessemer.md#open) and [ladle § Open #3](../machines/ladle.md#open),

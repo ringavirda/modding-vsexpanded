@@ -16,7 +16,7 @@ public class ExPreferencesConfig {
 }
 
 /// <summary>
-/// Store for per-player display preferences shared by every Expanded mod (e.g. lpex's
+/// Store for per-player display preferences shared by every Expanded mod (e.g. iiex's
 /// metric/imperial unit system). Definitions register through <see cref="PreferenceRegistry"/>; this
 /// class persists each player's choices in <see cref="ConfigFileName"/> and applies them to live
 /// client state via <see cref="IExPreference.Apply"/>.

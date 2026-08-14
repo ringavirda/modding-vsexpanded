@@ -14,7 +14,7 @@ namespace SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 /// <summary>
 /// The reinforced hopper that feeds the blast furnace. A plain charge tank: right-click with charge
 /// fills it, empty-handed right-click empties it, and Ctrl plus empty-handed right-click toggles the
-/// dropping of the bell hopper below. The burden itself is made by iwex's burdenmaker.
+/// dropping of the bell hopper below. The burden itself is made by iiex's burdenmaker.
 /// </summary>
 [BlockRegister]
 public partial class BlockHopperReinforced : Block, IExBlockDefProvider {
@@ -171,7 +171,7 @@ public partial class BlockHopperReinforced : Block, IExBlockDefProvider {
   }
 
   private static ItemStack[] ResolveBurdenStack(IWorldAccessor world) {
-    Item? burden = world.GetItem(new AssetLocation("iwex", "burden"));
+    Item? burden = world.GetItem(new AssetLocation("iiex", "burden"));
     return burden == null ? [] : [new ItemStack(burden)];
   }
 

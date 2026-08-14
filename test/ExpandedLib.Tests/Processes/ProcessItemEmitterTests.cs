@@ -30,10 +30,10 @@ public class ProcessItemEmitterTests {
   private const string BarLadder = """
     {
       "family": "shingledbar",
-      "shape": "iwex:item/smithed/shingled-bar",
+      "shape": "iiex:item/smithed/shingled-bar",
       "stages": [
         { "thickness": 3.0, "element": "ShingledBar1", "acceptedBy": [ "grooved" ] },
-        { "thickness": 2.0, "element": "Grooved200", "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod" }
+        { "thickness": 2.0, "element": "Grooved200", "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod" }
       ]
     }
     """;
@@ -50,7 +50,7 @@ public class ProcessItemEmitterTests {
     ExItemDef def = Assert.Single(Emit(BarLadder));
 
     Assert.Equal("rolledrod", Json(def)["code"]!.ToString());
-    Assert.Equal("iwex", def.Location.Domain);
+    Assert.Equal("iiex", def.Location.Domain);
   }
 
   [Fact]
@@ -63,7 +63,7 @@ public class ProcessItemEmitterTests {
   public void The_owning_domain_comes_from_the_declared_code() {
     // A modder's products land in their own domain, not ours, whoever's ladder they extend.
     ExItemDef def = Assert.Single(
-      Emit(BarLadder.Replace("iwex:rolledrod", "othermod:splinerod"))
+      Emit(BarLadder.Replace("iiex:rolledrod", "othermod:splinerod"))
     );
 
     Assert.Equal("othermod", def.Location.Domain);
@@ -77,8 +77,8 @@ public class ProcessItemEmitterTests {
     Assert.Empty(
       Emit(
         BarLadder.Replace(
-          "\"code\": \"iwex:rolledrod\"",
-          "\"code\": \"iwex:rolledrod\", \"generate\": false"
+          "\"code\": \"iiex:rolledrod\"",
+          "\"code\": \"iiex:rolledrod\", \"generate\": false"
         )
       )
     );
@@ -91,7 +91,7 @@ public class ProcessItemEmitterTests {
     List<ExItemDef> defs =
     [
       .. ProcessItemEmitter.Emit(
-        [Ladder(BarLadder.Replace("iwex:rolledrod", "game:rod-iron"))],
+        [Ladder(BarLadder.Replace("iiex:rolledrod", "game:rod-iron"))],
         out List<string> skipped
       ),
     ];
@@ -107,7 +107,7 @@ public class ProcessItemEmitterTests {
     List<ExItemDef> defs =
     [
       .. ProcessItemEmitter.Emit(
-        [Ladder(BarLadder.Replace("\"iwex:rolledrod\"", "\"iwex:\""))],
+        [Ladder(BarLadder.Replace("\"iiex:rolledrod\"", "\"iiex:\""))],
         out List<string> skipped
       ),
     ];
@@ -118,7 +118,7 @@ public class ProcessItemEmitterTests {
 
   [Fact]
   public void A_blank_code_is_not_a_stopping_point_at_all() {
-    Assert.Empty(Emit(BarLadder.Replace("\"iwex:rolledrod\"", "\"   \"")));
+    Assert.Empty(Emit(BarLadder.Replace("\"iiex:rolledrod\"", "\"   \"")));
   }
 
   [Fact]
@@ -146,7 +146,7 @@ public class ProcessItemEmitterTests {
     // generated item renders as the stage the piece stopped at.
     JObject shape = (JObject)Json(Assert.Single(Emit(BarLadder)))["shape"]!;
 
-    Assert.Equal("iwex:item/smithed/shingled-bar", shape["base"]!.ToString());
+    Assert.Equal("iiex:item/smithed/shingled-bar", shape["base"]!.ToString());
     Assert.Equal(
       ["Grooved200"],
       shape["selectiveElements"]!.Select(e => e.ToString())
@@ -162,7 +162,7 @@ public class ProcessItemEmitterTests {
         )
       )["shape"]!;
 
-    Assert.Equal("iwex:item/smithed/shingled-bar", shape["base"]!.ToString());
+    Assert.Equal("iiex:item/smithed/shingled-bar", shape["base"]!.ToString());
     Assert.Null(shape["selectiveElements"]);
   }
 
@@ -194,7 +194,7 @@ public class ProcessItemEmitterTests {
   [Fact]
   public void The_generated_codes_are_public_so_a_guard_can_check_them() {
     Assert.Equal(
-      ["iwex:rolledrod"],
+      ["iiex:rolledrod"],
       ProcessItemEmitter.GeneratedCodes([Ladder(BarLadder)])
     );
   }
@@ -205,8 +205,8 @@ public class ProcessItemEmitterTests {
       ProcessItemEmitter.GeneratedCodes([
         Ladder(
           BarLadder.Replace(
-            "\"code\": \"iwex:rolledrod\"",
-            "\"code\": \"iwex:rolledrod\", \"generate\": false"
+            "\"code\": \"iiex:rolledrod\"",
+            "\"code\": \"iiex:rolledrod\", \"generate\": false"
           )
         ),
       ])

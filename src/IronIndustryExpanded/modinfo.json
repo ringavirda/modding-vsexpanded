@@ -1,0 +1,13 @@
+{
+  "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+  "type": "Code",
+  "modid": "iiex",
+  "name": "Iron Industry Expanded",
+  "authors": ["fallenstar"],
+  "description": "The iron tier end to end: ore burden and cold blast furnaces, molten canals and casting, then the steam power and piping that mechanise them.",
+  "version": "0.7.0",
+  "dependencies": {
+    "game": "1.22.0",
+    "exlib": "0.7.3"
+  }
+}

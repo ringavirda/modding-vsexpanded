@@ -3,8 +3,8 @@
 **Status** designed — the oven itself is not built. There is no core, no block entity, no oven recipe and
 no golden for the structure; what exists is the settled design, a draft layout in
 [layouts.md](../../internal/workbench/layouts.md) § 1, and the crown lid, which is built
-(`iwex:furnace-chargelid-{side}`, 2026-08-03).
-**Mod** iwex (`IronworkingExpanded`)
+(`iiex:furnace-chargelid-{side}`, 2026-08-03).
+**Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything about this machine: the two-chamber bank and its draft layout, the crown-charging
 decision (`hopper-tall` + the charge lid, not a trapdoor) and the reasoning behind it, the
@@ -92,10 +92,10 @@ lid state has something to say.
 | `#` | `game:claybricks-good-fire` | 89 | vanilla's own coke-oven brick |
 | `-` | `game:brickslabs-fire-up-free` | 8 | crown springing; vertical, never rotates |
 | `i` | `game:brickslabs-fire-south-free` | 4 | door shoulders; orientation-checked |
-| `C` | `iwex:beehiveovencore-*` | 1 | does not exist |
-| `T` | `iwex:hopper-tall*` | 2 | one per chamber, in the crown |
-| `L` | `iwex:furnace-chargelid-{side}` | 2 | built - the crown lid |
-| `D` | `iwex:chargedoor-{side}` | 2 | the drawing doors; the block exists |
+| `C` | `iiex:beehiveovencore-*` | 1 | does not exist |
+| `T` | `iiex:hopper-tall*` | 2 | one per chamber, in the crown |
+| `L` | `iiex:furnace-chargelid-{side}` | 2 | built - the crown lid |
+| `D` | `iiex:chargedoor-{side}` | 2 | the drawing doors; the block exists |
 | `f` | `exlib:structurefiller` | 4 | the hoppers' and doors' upper halves |
 | `a` | `game:air` | 4 | chamber crown void |
 | `c` | `@(air\|coalpile)` | 12 | the two chambers: 3 wide × 2 deep × 1 tall, each |
@@ -132,7 +132,7 @@ from above through the crown, which is what the hopper does. A trapdoor is only 
 
 Coking is destructive distillation and the hopper is not a sealed block. Coal must be heated without access
 to air, or it burns instead of coking. The hopper's tank is open storage with an open top, so the crown
-needs something above it that actually closes. That block is built: `iwex:furnace-chargelid-{side}`, a third
+needs something above it that actually closes. That block is built: `iiex:furnace-chargelid-{side}`, a third
 def on the charge-door chassis. (`chargelid` won over `ovenlid` because the part is not oven-specific - the
 draft crucible furnace wants it too - and the `furnace-` prefix is the shared furnace-part code.) Its facing
 lives in the block code, so `Legend` auto-detects the cardinal segment, the layout rotates it with the
@@ -142,7 +142,7 @@ direction still would not seal, so folding the lid into the hopper stays wrong.
 ### The lid as shipped
 
 Editable source `assets/editable/shapes/furnace-block-chargelid.json`, runtime
-`assets/iwex/shapes/furnace/chargelid.json`. Two top-level elements, `Masonry` and `Lid`, which is what
+`assets/iiex/shapes/furnace/chargelid.json`. Two top-level elements, `Masonry` and `Lid`, which is what
 `SelectiveElements` needs and what lets the hinge animate without dragging the brickwork.
 `rotationOrigin [2,3,2]` runs through `Cube8`, the burned-clay lip - the lid's leading edge being buried in
 that lip is the hinge barrel, not an overlap bug. At the `open` pose's −67.5° the far edge stays inside its
@@ -167,10 +167,10 @@ z-fighting is possible seen from below. A 0.01 nudge if it shows.
 
 | Need | State |
 |---|---|
-| the crown lid | built - see above; golden `test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnace/chargelid.json` |
+| the crown lid | built - see above; golden `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/chargelid.json` |
 | the core's block | reuse - a plain cube with a type-label overlay, like every other furnace core (`BlockFurnaceCoreBase`) |
-| the drawing door | reuse `iwex:chargedoor` verbatim, shape and all |
-| the crown hopper | reuse `iwex:hopper-tall` verbatim |
+| the drawing door | reuse `iiex:chargedoor` verbatim, shape and all |
+| the crown hopper | reuse `iiex:hopper-tall` verbatim |
 | the coke | vanilla `game:coke` - no new item |
 | the brick | vanilla `game:claybricks-good-fire` |
 | oven core shape / lang / handbook | missing - nothing drawn or written for the oven itself |
@@ -179,7 +179,7 @@ z-fighting is possible seen from below. A 0.01 nudge if it shows.
 
 ## Construction
 
-No oven recipe, because there is no oven block. The only two `iwex` blocks in the whole layout the player
+No oven recipe, because there is no oven block. The only two `iiex` blocks in the whole layout the player
 crafts new are the core and the lid - and the lid has no recipe yet either; the hoppers and doors have
 their own.
 
@@ -267,7 +267,7 @@ filler. What remains to be written:
 | `BlockBeehiveOvenCore : BlockFurnaceCoreBase` | def + layout, exactly like the puddling core: `Core(domain, …)` |
 | `BlockEntityBeehiveOven` | rides the furnace core for the charge walk, ignition, away-catch-up and state machine; the cycle itself is sealed + timer (§ Role) |
 | a grid recipe | a further group in `FurnaceRecipeDefinitions` |
-| goldens | `test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnace/beehive-core.json` |
+| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/beehive-core.json` |
 | a layout test | the furnace-parts test already asserts every layout code resolves to a real block; adding this structure extends it for free |
 
 ---
@@ -278,13 +278,13 @@ filler. What remains to be written:
 
 * **`K` is a dead legend.** The draft declares `.Legend('K', "game:trapdoor-plate-iron-1")` but no grid in
   any of the four layers uses `K`. Delete it with the decision it belongs to.
-* **`iwex:hopper-tall-south*` matches nothing.** The tall hopper's `side` variant uses single letters
+* **`iiex:hopper-tall-south*` matches nothing.** The tall hopper's `side` variant uses single letters
   (`hopper-tall-n` …), so the draft's spelled-out `-south*` suffix resolves to no block - which fails
   `BlockNumber` validation at load. Use the letter form, as the furnace layouts do.
-* **The draft's lid legend is misspelled.** The built block is `iwex:furnace-chargelid-{side}`; the draft
-  still writes `iwex:chargelid-south*` - wrong prefix and wrong side form.
+* **The draft's lid legend is misspelled.** The built block is `iiex:furnace-chargelid-{side}`; the draft
+  still writes `iiex:chargelid-south*` - wrong prefix and wrong side form.
 * **Vanilla's coking must not fire inside these chambers, and the draft is already right about why.** The
-  doors are `iwex:chargedoor`, not `game:cokeovendoor`, so vanilla's own coke-oven detection never sees a
+  doors are `iiex:chargedoor`, not `game:cokeovendoor`, so vanilla's own coke-oven detection never sees a
   sealed chamber. That is deliberate - the core owns the bulk cycle - but it means the walls being
   `cokeOvenViable` buys nothing mechanically, only thematically. Swap to `game:cokeovendoor` only if
   the intent ever becomes "let vanilla run it".
@@ -299,7 +299,7 @@ filler. What remains to be written:
 |---|---|---|
 | 1 | **Coke yield per coal and cycle time.** Undecided, and they are what make the machine worth building | small |
 | 2 | **The crown hopper only reaches one of six chamber cells** (above). Raise the hopper, lower the floor, or let the core spread the charge | medium |
-| 3 | **`iwex:beehiveovencore`** - block, block entity, layout in C#, goldens, recipe | medium |
+| 3 | **`iiex:beehiveovencore`** - block, block entity, layout in C#, goldens, recipe | medium |
 | 4 | **The lid has no recipe** | small |
 | 5 | The draft's dead/wrong legends must be cleaned before it is committed - the lid legend spelling, `K`, and `hopper-tall-south*` | small |
 | 6 | Does the second chamber get its own state, or do both chambers share one cycle? Two states is the honest model and the reason for a bank; one is far less code | small |

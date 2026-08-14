@@ -1,6 +1,6 @@
 # Cupola furnace
 
-**Status** live - buildable in survival end to end   **Mod** iwex
+**Status** live - buildable in survival end to end   **Mod** iiex
 
 **Owns** - the facts this page is canonical for:
 
@@ -13,7 +13,7 @@
 * the `Cupola*` config keys not already claimed by [heat balance](../mechanics/heat-balance.md):
   `CupolaCastIronPerMeltCycle`, `CupolaSlagPerMeltCycle`, `CupolaBlastMixPerMeltCycle`,
   `CupolaMaxMoltenCastIron`, `CupolaMaxMoltenSlag`, `CupolaChargeMetalUnitsPerBlock`;
-* its product identity - cast iron out of the lower tap, `iwex:hearthmetal-castiron` on the hearth - and its
+* its product identity - cast iron out of the lower tap, `iiex:hearthmetal-castiron` on the hearth - and its
   yield ratio to the blast furnace;
 * its construction recipe;
 * the design fact that the cupola is small on purpose and multiplied, and that its third job is melting
@@ -67,23 +67,23 @@ spiegeleisen. Nothing of this exists in `src/`: no ferroalloy metal descriptor, 
 
 ## Structure
 
-Anchor: `iwex:furnace-cupolacore-{tier}-{side}`, bottom centre of the lowest layer directly under the
+Anchor: `iiex:furnace-cupolacore-{tier}-{side}`, bottom centre of the lowest layer directly under the
 shaft - the same arrangement as the blast furnaces. `Origin(-1, -1)`, so the `C` glyph lands on the anchor's
 own (0, 0, 0).
 
 Source of truth: the seven ASCII cross-sections in `BlockCupolaFurnaceCore.cs` (y = 0 hearth floor → y = 6
-open stack). Golden: `test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnace/cupolacore.json`.
+open stack). Golden: `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/cupolacore.json`.
 
 ### Cell census — 64 offsets
 
 | Glyph | Required block | Count |
 |---|---|---|
 | `#` | refractory bricks (`VanillaCodes.Refractory`) | 52 |
-| `C` | `iwex:furnace-cupolacore` (the anchor) | 1 |
-| `I` | `iwex:furnace-irontap`, facing east - the west wall, pours out west | 1 |
-| `S` | `iwex:furnace-slagtap`, facing west - the east wall, pours out east | 1 |
-| `T` | `iwex:furnace-tuyere`, orientation `n` - the cupola is blown from one wall only | 1 |
-| `H` | `iwex:hopper-tall`, facing west | 1 |
+| `C` | `iiex:furnace-cupolacore` (the anchor) | 1 |
+| `I` | `iiex:furnace-irontap`, facing east - the west wall, pours out west | 1 |
+| `S` | `iiex:furnace-slagtap`, facing west - the east wall, pours out east | 1 |
+| `T` | `iiex:furnace-tuyere`, orientation `n` - the cupola is blown from one wall only | 1 |
+| `H` | `iiex:hopper-tall`, facing west | 1 |
 | `f` | `exlib:structurefiller` (the hopper's own top cell) | 1 |
 | `c` | the shaft - the air / pile / hearth-metal alternation | 4 |
 | `h` | the crucible floor - same alternation, own glyph for its pool role | 1 |
@@ -125,11 +125,11 @@ The cupola introduces one asset of its own; everything else it borrows.
 | Asset | Path | State |
 |---|---|---|
 | core block model | `game:block/basic/cube` | vanilla cube |
-| core faces | `game:block/clay/refractory/{tier}/front1`, with `iwex:block/furnace/n` north and `iwex:block/furnace/cf` south | `assets/iwex/textures/block/furnace/cf.png` — the cupola's only own art; the "CF" label is what makes a built cupola read apart from a blast furnace |
+| core faces | `game:block/clay/refractory/{tier}/front1`, with `iiex:block/furnace/n` north and `iiex:block/furnace/cf` south | `assets/iiex/textures/block/furnace/cf.png` — the cupola's only own art; the "CF" label is what makes a built cupola read apart from a blast furnace |
 | tuyere, tap, tall hopper, hearth metal | see [blast furnace § Assets](blast-furnace-cold.md#assets) | shared; not redefined here |
 
 No shape and no animation are unique to the cupola. There is no handbook page either -
-`assets/iwex/config/handbook/` ships `00-ironworking` … `04-designtable` and nothing for the cupola.
+`assets/iiex/config/handbook/` ships `00-ironworking` … `04-designtable` and nothing for the cupola.
 
 ---
 
@@ -140,12 +140,12 @@ One grid recipe for the core; the rest is the shared fittings plus 52 refractory
 
 | Output | Pattern | Ingredients |
 |---|---|---|
-| `iwex:furnace-cupolacore-{tier}-n` | `BRB,PCP,BRB` (3×3) | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × rod, 2 × plate, 8 × fire clay |
+| `iiex:furnace-cupolacore-{tier}-n` | `BRB,PCP,BRB` (3×3) | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × rod, 2 × plate, 8 × fire clay |
 
 A full 3×3 with fire clay at its heart, so it can never collide with the blast-furnace core's pattern, and
-cheaper than it. Golden: `test/IronworkingExpanded.Tests/goldens/iwex/recipes/grid/cupola.json`.
+cheaper than it. Golden: `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/cupola.json`.
 
-The tuyere recipe takes `iwex:pipe-plated-straight*`. Details:
+The tuyere recipe takes `iiex:pipe-plated-straight*`. Details:
 [blast furnace § Construction](blast-furnace-cold.md#construction).
 
 ---
@@ -161,7 +161,7 @@ surface:
 | Group | Members |
 |---|---|
 | **Charge identity** | `IsChargeItem` / `IsChargeCode` = scrap role or fuel; `ChargeUnitsPerBlock` = `CupolaChargeMetalUnitsPerBlock` |
-| **Product identity** | `MetalProductCode` = `"castiron"`, `MoltenProductInfoLangKey`, `SolidProductBlock` = `iwex:hearthmetal-castiron` |
+| **Product identity** | `MetalProductCode` = `"castiron"`, `MoltenProductInfoLangKey`, `SolidProductBlock` = `iiex:hearthmetal-castiron` |
 | **Tunables** | `MeltingPoint`, `TuyereIntakeVolume`, `ProductPerUnit`, `SlagPerUnit`, `MaxMoltenProduct`, `MaxMoltenSlagPool` |
 | **Geometry** | `ShaftCentre` only — everything else is layout roles |
 
@@ -185,7 +185,7 @@ What it does not override, and why each matters:
 |---|---|
 | metal, charged directly - pig, pig chunks, pig bits, iron/steel scrap (the `scrap` material role) - plus fuel in alternating rounds | molten cast iron down the lower tap |
 | pressurised air at its single tuyere | molten slag down the upper tap |
-| — | on extinguish: `iwex:hearthmetal-castiron` on the one hearth cell + burnt-out salvage in the column |
+| — | on extinguish: `iiex:hearthmetal-castiron` on the one hearth cell + burnt-out salvage in the column |
 
 Charging the metal itself avoids an intermediate remelt-burden item, which would need a producing machine of
 its own and would tie cast iron's survival source to that machine. Ore burden charged into a cupola burns but
@@ -216,9 +216,9 @@ larger charge. The pacing is geometry, not a constant.
 
 ## Numbers
 
-`IwexValues.X` is a generated accessor over `IwexConfig.X`. Only keys this page owns carry values.
+`IiexValues.X` is a generated accessor over `IiexConfig.X`. Only keys this page owns carry values.
 
-### Owned — `src/IronworkingExpanded/IwexConfig.cs`
+### Owned — `src/IronIndustryExpanded/IiexConfig.cs`
 
 | Key | Value | What it does |
 |---|---|---|
@@ -233,8 +233,8 @@ larger charge. The pacing is geometry, not a constant.
 
 | Constant | Value |
 |---|---|
-| metal token | `"castiron"` → `assets/iwex/config/metals/castiron.json` |
-| solid product block | `iwex:hearthmetal-castiron` |
+| metal token | `"castiron"` → `assets/iiex/config/metals/castiron.json` |
+| solid product block | `iiex:hearthmetal-castiron` |
 | charge identity | the `scrap` material role, or fuel |
 | `ShaftCentre` | `(0, 3, 0)` |
 
@@ -255,7 +255,7 @@ larger charge. The pacing is geometry, not a constant.
 |---|---|
 | cupola core | itself, same `{tier}-{side}` variant; `MaxStackSize` 4 |
 | tap / tuyere / tall hopper / refractory brick / charge pile | see [blast furnace § Drops](blast-furnace-cold.md#drops) — the same blocks, the same drops |
-| `iwex:hearthmetal-castiron` | metal bits × the stamped count |
+| `iiex:hearthmetal-castiron` | metal bits × the stamped count |
 
 Cast iron and pig iron both drop `game:metalbit-iron`: mod alloys shatter to vanilla bits as scrap via their
 `solidDrop`, so there is no branch.
@@ -268,8 +268,8 @@ Cast iron and pig iron both drop `game:metalbit-iron`: mod alloys shatter to van
 |---|---|---|
 | `BlockCupolaFurnaceCore` | `…/Furnaces/Blocks/BlockCupolaFurnaceCore.cs` | `partial`, `[BlockRegister]`; only a code-first def and the layout |
 | `BlockEntityCupolaFurnace` | `…/Furnaces/BlockEntities/BlockEntityCupolaFurnace.cs` | property overrides only — zero methods |
-| `BlockEntityShaftFurnace` (base) | iwex | everything the cupola does; see [blast furnace § Code](blast-furnace-cold.md#code) |
-| `BlockEntityFurnaceCore` (base) | iwex | the fired core; see [heat balance](../mechanics/heat-balance.md) |
+| `BlockEntityShaftFurnace` (base) | iiex | everything the cupola does; see [blast furnace § Code](blast-furnace-cold.md#code) |
+| `BlockEntityFurnaceCore` (base) | iiex | the fired core; see [heat balance](../mechanics/heat-balance.md) |
 | `BlockHearthMetal` | `…/Products/Blocks/BlockHearthMetal.cs` | the frozen pool, metal in the code |
 
 ### Where a caller hooks in
@@ -282,11 +282,11 @@ instance of the pattern.
 
 | File | Covers |
 |---|---|
-| `test/IronworkingExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every cupola offset resolves to the right layout glyph; exactly one tuyere; no exhaust outlets |
+| `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every cupola offset resolves to the right layout glyph; exactly one tuyere; no exhaust outlets |
 | `…/FurnaceOrientationMatrixTests.cs` | the same geometry in all four facings |
 | `…/ChargeCodeGateTests.cs` | the two charge seams agree — item gate and code gate answer alike |
 | `…/FurnaceHudDistributionTests.cs` | the cupola's metal tap says cast iron, not pig iron |
-| `test/LowPressureExpanded.Tests/Scenarios/CupolaScenarioTests.cs` | the full lifecycle: ignition, melt, tapping cast iron and slag, extinguish freeze + salvage, the ore-burden refusal |
+| `test/IronIndustryExpanded.Tests/Scenarios/CupolaScenarioTests.cs` | the full lifecycle: ignition, melt, tapping cast iron and slag, extinguish freeze + salvage, the ore-burden refusal |
 
 ---
 
@@ -319,14 +319,14 @@ instance of the pattern.
 ## Open
 
 1. **Ferroalloy melting is unbuilt**, and it is the cupola's designed third job. It needs a ferroalloy
-   metal descriptor in `assets/iwex/config/metals/`, a charge identity that carries it, and a
+   metal descriptor in `assets/iiex/config/metals/`, a charge identity that carries it, and a
    [ladle](ladle.md) - which does not exist as a type anywhere in `src/`.
 
-2. **No handbook page.** Every other live iwex machine family has one.
+2. **No handbook page.** Every other live iiex machine family has one.
 
 3. **The cupola's scenario suite lives in the wrong project.** `CupolaScenarioTests` and `CupolaScenes` are
-   in `test/LowPressureExpanded.Tests/`, testing an iwex machine - against the per-mod test-homing rule.
+   in `test/IronIndustryExpanded.Tests/`, testing an iiex machine - against the per-mod test-homing rule.
 
 4. **The [layouts.md](../../internal/workbench/layouts.md) workbench copy has drifted**: its cupola section still
-   spells the retired `iwex:cupolafurnacecore` anchor code and a `Y` tuyere glyph where the shipped drawing
+   spells the retired `iiex:cupolafurnacecore` anchor code and a `Y` tuyere glyph where the shipped drawing
    uses `T`. Regenerate it from the golden.

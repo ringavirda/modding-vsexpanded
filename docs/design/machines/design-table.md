@@ -1,6 +1,6 @@
 # Design Table
 
-**Status** built and craftable   **Mod** iwex
+**Status** built and craftable   **Mod** iiex
 
 **Owns**
 
@@ -26,7 +26,7 @@ The drafting station: it turns a drawing medium plus parchment into any diagram 
 It is the sole source of diagrams in survival, so its craft recipe is what puts the
 diagram → pattern → casting chain in survival reach.
 
-It is also the one window iwex owns - a plain case of R7: the interaction is "pick one plan from a
+It is also the one window iiex owns - a plain case of R7: the interaction is "pick one plan from a
 catalogue and read what it builds", which block info cannot express. The window is read-mostly: slots, a
 picker, text, one button. All other simulation state in the mod stays on block info.
 
@@ -38,11 +38,11 @@ is materials.
 ## Construction
 
 Grid recipe (`Recipes/Grid/CraftingStationRecipeDefinitions.cs`): pattern `CPC,PPP` - 2 candles +
-4 planks → `iwex:crafting-designtable-n`. No metal and no tool; the recurring cost sits on each draft.
+4 planks → `iiex:crafting-designtable-n`. No metal and no tool; the recurring cost sits on each draft.
 
 Block definition (`BlockStructures/Crafting/Blocks/BlockDesignTable.cs`): a single-cell block,
 `ExOrientable` with side variants, wood material, and always-lit candles as a static `lightHsv` `[5,7,12]`.
-The drawn shape (`iwex:crafting/designtable`) spans roughly two cells; the model overhangs the neighbouring
+The drawn shape (`iiex:crafting/designtable`) spans roughly two cells; the model overhangs the neighbouring
 cell rather than claiming it - see § Open.
 
 ---
@@ -67,8 +67,8 @@ the server only through the open/close/draft packet handshake in
 diverge. Draft requests are claim-checked server-side. The last-drafted diagram is persisted as
 `dt_selected`, and the window re-opens on it.
 
-Tests: `test/IronworkingExpanded.Tests/Blocks/Crafting/DesignTableBeTests.cs`,
-`DesignTableDraftTests.cs`, and the block-def golden `goldens/iwex/blocktypes/crafting/designtable.json`.
+Tests: `test/IronIndustryExpanded.Tests/Blocks/Crafting/DesignTableBeTests.cs`,
+`DesignTableDraftTests.cs`, and the block-def golden `goldens/iiex/blocktypes/crafting/designtable.json`.
 
 ---
 
@@ -104,7 +104,7 @@ line); `item-castbillets` / `item-castblooms` / `item-castslab` have names but n
 3. **The guide viewer.** Proposed: a third window region showing the `docs/setups` overview images
    in-game (a pan/zoom `LoadedTexture` pane, images downscaled to ~2048-2560 px and shipped under
    `assets/<domain>/textures/guides/`), or handbook entries linked from the table. Neither is started.
-4. **The shared station-window base.** The dialog is iwex-local; extracting the reusable parts to exlib is
+4. **The shared station-window base.** The dialog is iiex-local; extracting the reusable parts to exlib is
    deferred until the [boring machine](boring-machine.md), the second consumer, is built. See
    [diagram-crafting](../mechanics/diagram-crafting.md) § Stations.
 5. **The four missing lang entries** (§ Lang).

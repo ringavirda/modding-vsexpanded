@@ -4,7 +4,7 @@ using ExpandedLib.Blocks.Construction;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

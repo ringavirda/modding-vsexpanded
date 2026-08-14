@@ -66,10 +66,10 @@ public class SmexConfig : IExVersionedConfig {
   ];
 
   // The molten-metal system tunables (cooldown rates, canal flow, default capacities, canal-seal clay
-  // costs) live in IronworkingExpanded.IwexConfig / IwexValues alongside the molten subsystem itself.
+  // costs) live in IronIndustryExpanded.IiexConfig / IiexValues alongside the molten subsystem itself.
 
   #region Hopper feed (reinforced tank + bell drip)
-  // The reinforced hopper is a plain charge tank; iwex's burdenmaker makes the burden. Its buffer is
+  // The reinforced hopper is a plain charge tank; iiex's burdenmaker makes the burden. Its buffer is
   // small next to the tall hopper's 128 because it is meant to be fed by the skip hoist.
   /// <summary>Burden units the reinforced hopper tank holds.</summary>
   public int HopperReinforcedCapacity { get; set; } = 48;
@@ -98,7 +98,7 @@ public class SmexConfig : IExVersionedConfig {
 
   /// <summary>Air (L/s) the blower injects per unit of engine power (Cornish 0.2/0.4/0.8 →
   /// 9.6/19.2/38.4 L/s, Watt 0.3 → 14.4 L/s); output pressure tracks the engine's inlet steam ×
-  /// <see cref="LowPressureExpanded.LpexValues.SteamEngineEfficiency"/>.</summary>
+  /// <see cref="IronIndustryExpanded.IiexValues.SteamEngineEfficiency"/>.</summary>
   public float AirBlowerOutputPerSecond { get; set; } = 48f;
   #endregion
 
@@ -202,7 +202,7 @@ public class SmexConfig : IExVersionedConfig {
   public float BessemerScrapSteelYield { get; set; } = 0.97f;
 
   // --- Mass balance (R2: steel + slag ≤ input) -----------------------------------------------------
-  // Per 100 u pig → 90 u molten steel + 6 u molten slag (the same iwex:slag the furnaces make) + 4 u
+  // Per 100 u pig → 90 u molten steel + 6 u molten slag (the same iiex:slag the furnaces make) + 4 u
   // gas from the burned-off carbon. Slag accumulates into its own pool during the blow.
 
   /// <summary>Fraction of pig mass that becomes steel across the blow (materials.md).</summary>
@@ -223,7 +223,7 @@ public class SmexConfig : IExVersionedConfig {
   public float BessemerPowerSpeedThreshold { get; set; } = 0.1f;
 
   /// <summary>Multiplier on the converter charge's cooldown speed, against the base molten-system rate
-  /// <c>IwexValues.MoltenCooldownSpeed</c>. Below 1 the bath holds its heat longer (0.5 is half the
+  /// <c>IiexValues.MoltenCooldownSpeed</c>. Below 1 the bath holds its heat longer (0.5 is half the
   /// molten-system rate, so it cools twice as slowly).</summary>
   public float BessemerCooldownCoefficient { get; set; } = 0.5f;
 

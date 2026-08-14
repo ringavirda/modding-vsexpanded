@@ -33,14 +33,14 @@ public sealed class ExBlockDef : IExDef {
   }
 
   /// <summary>Starts a block definition for <paramref name="code"/> in <paramref name="domain"/>
-  /// (the mod id) - e.g. <c>Create("iwex", "solidifiediron")</c>. The synthetic asset is placed at
+  /// (the mod id) - e.g. <c>Create("iiex", "solidifiediron")</c>. The synthetic asset is placed at
   /// <c>blocktypes/{code}.json</c>.</summary>
   public static ExBlockDef Create(string domain, string code) =>
     new(domain, code, code);
 
   /// <summary>Starts a block definition whose asset path differs from its <paramref name="code"/>,
   /// for when several blocktype files share one code (e.g.
-  /// <c>Create("lpex", "pipe", "pipe/straight")</c> -&gt; code <c>pipe</c> at
+  /// <c>Create("iiex", "pipe", "pipe/straight")</c> -&gt; code <c>pipe</c> at
   /// <c>blocktypes/pipe/straight.json</c>). <paramref name="assetName"/> may include sub-folders.</summary>
   public static ExBlockDef Create(
     string domain,
@@ -66,7 +66,7 @@ public sealed class ExBlockDef : IExDef {
   // recipe outputs and the generated {Mod}Blocks table share one implementation. `BlockCodeEmitter`
   // emits its accessors by calling these.
 
-  /// <summary>The domain-qualified bare code, no variants: <c>iwex:furnace</c>.</summary>
+  /// <summary>The domain-qualified bare code, no variants: <c>iiex:furnace</c>.</summary>
   public string QualifiedCode => _domain + ":" + _code;
 
   /// <summary>
@@ -98,7 +98,7 @@ public sealed class ExBlockDef : IExDef {
   }
 
   /// <summary>
-  /// The wildcard matching every variant of this def: <c>iwex:furnace-irontap-*</c>. A single-state
+  /// The wildcard matching every variant of this def: <c>iiex:furnace-irontap-*</c>. A single-state
   /// group is baked in rather than wildcarded, since a <c>*</c> on a segment with one possible value
   /// only loses precision and lets the wildcard escape its family.
   /// </summary>
@@ -111,7 +111,7 @@ public sealed class ExBlockDef : IExDef {
   /// <summary>
   /// The code with <paramref name="group"/> pinned to <paramref name="state"/> and every other varying
   /// group wildcarded: <c>WithVariant("side", "north")</c> on the tall hopper gives
-  /// <c>iwex:hopper-tall-north</c>. Pinning makes a layout cell orientation-checked rather than merely
+  /// <c>iiex:hopper-tall-north</c>. Pinning makes a layout cell orientation-checked rather than merely
   /// occupied - a legend built from <see cref="Any"/> accepts a part fitted the wrong way round - and
   /// <c>MultiblockFacings</c> rotates the pinned segment with the structure.
   /// </summary>

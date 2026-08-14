@@ -3,10 +3,10 @@ using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using HighPressureExpanded.BlockStructures.Engine.BlockEntities;
 using HighPressureExpanded.BlockStructures.Engine.Blocks;
-using LowPressureExpanded.BlockStructures.Engine;
-using LowPressureExpanded.BlockStructures.Engine.BlockEntities;
-using LowPressureExpanded.BlockStructures.Engine.Blocks;
-using LowPressureExpanded.Tests;
+using IronIndustryExpanded.BlockStructures.Engine;
+using IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Engine.Blocks;
+using IronIndustryExpanded.Tests;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using SmexAirBlowerBe = SteelmakingExpanded.BlockStructures.Engine.BlockEntities.BlockEntityEngineAirBlower;
@@ -16,8 +16,8 @@ namespace HighPressureExpanded.Tests;
 
 /// <summary>
 /// Whole-plant fixtures for the high-pressure Cornish engine driving each of its sub-machines.
-/// Sub-machine wiring is identical whichever engine drives it, so these reuse lpex's
-/// <see cref="EnginePlant"/> pipe/axis helper and <see cref="LpexScenes.Cap"/>; only the engine and its
+/// Sub-machine wiring is identical whichever engine drives it, so these reuse iiex's
+/// <see cref="EnginePlant"/> pipe/axis helper and <see cref="IiexScenes.Cap"/>; only the engine and its
 /// pressure band differ.
 /// </summary>
 internal sealed class MPGeneratorPlant {
@@ -59,12 +59,12 @@ internal sealed class MPGeneratorPlant {
       41,
       material: "hadfield"
     );
-    scene.Block(_inlet.AddCopy(inletFace), LpexScenes.Cap(42));
+    scene.Block(_inlet.AddCopy(inletFace), IiexScenes.Cap(42));
 
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var genBlock = TestBlocks.Configure(
       new BlockEngineMPGenerator(),
-      "lpex:enginempgenerator-e",
+      "iiex:enginempgenerator-e",
       43,
       ("side", "east")
     );
@@ -109,7 +109,7 @@ internal sealed class MPGeneratorPlant {
 /// <para>
 /// Lives in the hpex suite because it is the only fixture needing hpex and smex in one assembly and the
 /// reference can only run this way: smex must not see hpex. The blower couples to the engine through
-/// lpex's <see cref="BlockEntityEngine"/> contract alone, so there is no hpex-to-smex code edge.
+/// iiex's <see cref="BlockEntityEngine"/> contract alone, so there is no hpex-to-smex code edge.
 /// </para>
 /// </summary>
 internal sealed class AirBlowerPlant {
@@ -146,7 +146,7 @@ internal sealed class AirBlowerPlant {
       46,
       material: "hadfield"
     );
-    scene.Block(_inlet.AddCopy(inletFace), LpexScenes.Cap(47));
+    scene.Block(_inlet.AddCopy(inletFace), IiexScenes.Cap(47));
 
     BlockPos subPos = engineBlock.SubmachinePos(pos);
     var blowerBlock = TestBlocks.Configure(
@@ -172,7 +172,7 @@ internal sealed class AirBlowerPlant {
       49,
       material: "hadfield"
     );
-    scene.Block(_blast.AddCopy(leftFace), LpexScenes.Cap(50));
+    scene.Block(_blast.AddCopy(leftFace), IiexScenes.Cap(50));
   }
 
   public AirBlowerPlant Steam(float atm) {

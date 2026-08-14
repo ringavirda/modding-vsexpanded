@@ -57,7 +57,7 @@ public static class ExDefinitions {
   /// source a block derives its runtime <c>AllowedOrientations</c> from, so the orientation list lives
   /// only in the variant groups. A def with no <c>type</c> states (e.g. a worldproperty-oriented block)
   /// has no pair to contribute and is skipped. Every type state a def declares is mapped, not just a
-  /// lone one: a def may carry several (<c>iwex:flywheel</c> declares <c>type(normal|large)</c> with
+  /// lone one: a def may carry several (<c>iiex:flywheel</c> declares <c>type(normal|large)</c> with
   /// <c>orientation(ns|we)</c>), and they share that def's single orientation group by construction.
   /// </summary>
   public static Dictionary<string, string[]> OrientationMap(

@@ -1,6 +1,6 @@
 # The fuel-gas system
 
-**Status** designed - nothing built  **Mods** smex owns the sources; iwex, lpex and hpex own consumers
+**Status** designed - nothing built  **Mods** smex owns the sources; iiex, iiex and hpex own consumers
 **Since** 2026-08-05
 
 **Owns** - the facts this page is canonical for:
@@ -119,7 +119,7 @@ spout showing the iron cap. The works states its condition by its silhouette; no
 An open-topped furnace cannot capture its gas; it burns it at the throat as the tunnel-head flame. So the
 transition begins at smex, and it falls out of the two drawings the design already ships:
 
-| | **cold blast** (iwex) | **hot blast** (smex) |
+| | **cold blast** (iiex) | **hot blast** (smex) |
 |---|---|---|
 | top | open stack, 3 air cells - "my open top is my chimney" | sealed: bell hopper over a 1-cell throat |
 | exhaust | none | 2 outlets, feeding cowpers and the main |
@@ -130,8 +130,8 @@ it costs nothing because it is already drawn.
 
 | tier | what gas does to it |
 |---|---|
-| **iwex** | a gas burner drops into the puddling / reheat firebox cell - the hearth untouched |
-| **lpex** | smex ships the gas Cornish variant |
+| **iiex** | a gas burner drops into the puddling / reheat firebox cell - the hearth untouched |
+| **iiex** | smex ships the gas Cornish variant |
 | **hpex** | both Lancashire variants ship |
 | **smex** | gas-native from the start |
 
@@ -164,7 +164,7 @@ none. Buy the plumbing and the producer, and stop stoking.
   dust catcher ──flue dust──> back into the burden
 ```
 
-The furnace powers its own blower. It also gives lpex a reason to touch iwex's output: the twin-tub blower is
+The furnace powers its own blower. It also gives iiex a reason to touch iiex's output: the twin-tub blower is
 the iron tier's only air source, so a gas-fired blowing engine is the steam tier's upgrade to it, bought with
 plumbing rather than a bigger blower.
 
@@ -174,7 +174,7 @@ no steam, so a gas-fired boiler is what makes producer gas bootstrappable at all
 ## 9. Open
 
 * **Where the dust catcher lives** as a block, and its footprint.
-* **The gas-fired blowing engine** - an lpex machine consuming gas and driving blast, replacing the twin-tub.
+* **The gas-fired blowing engine** - an iiex machine consuming gas and driving blast, replacing the twin-tub.
   Named nowhere yet.
 * **Flue-dust routing** - it should go wherever fine iron-bearing material goes (the same place `millscale`
   does) rather than inventing a disposal verb.

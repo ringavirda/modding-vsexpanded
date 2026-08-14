@@ -1,5 +1,5 @@
 # Molten Canal (the canal family)
-**Status** live   **Mod** iwex
+**Status** live   **Mod** iiex
 
 **Owns**
 - The canal family's blocktype inventory: which blocktypes exist, their variant groups, orientations,
@@ -97,13 +97,13 @@ defaults to facing south (toward the pour) rather than its first-listed north
 
 | Asset | Path | Used by |
 |---|---|---|
-| Shapes | `assets/iwex/shapes/molten/canal/{straight,bend,tjunction,xjunction,start,tap,moldpedestal}.json` | all tracked |
-| End cap | `assets/iwex/shapes/molten/canal/end.json` | `MoltenMeshes.cs:15-17`, authored facing south |
-| Barrel shapes | `assets/iwex/shapes/molten/barrel-{plated,cast}.json` | the barrel block, not the tap (Gotcha 1) |
+| Shapes | `assets/iiex/shapes/molten/canal/{straight,bend,tjunction,xjunction,start,tap,moldpedestal}.json` | all tracked |
+| End cap | `assets/iiex/shapes/molten/canal/end.json` | `MoltenMeshes.cs:15-17`, authored facing south |
+| Barrel shapes | `assets/iiex/shapes/molten/barrel-{plated,cast}.json` | the barrel block, not the tap (Gotcha 1) |
 | Animation | none | - |
 
 The base mesh is loaded by path, from the block's `type` variant, not from `Block.Shape`:
-`iwex:shapes/molten/canal/{Block.Variant["type"]}.json` (`BlockEntityMoltenCanal.cs:419-422`), then rotated
+`iiex:shapes/molten/canal/{Block.Variant["type"]}.json` (`BlockEntityMoltenCanal.cs:419-422`), then rotated
 by the block's own `rotateX/Y/Z`. The shape filename is coupled to the variant word, and a new canal type
 needs a file named after it.
 
@@ -137,7 +137,7 @@ every recipe is the shape's material worked over fire clay with a hammer and a c
 `F` is fire clay at quantity 2 everywhere except the tap, which uses 4 (`RecipeIngredients.cs:73-80`, the
 `clayQty` parameter). The tap has exactly one recipe: no skin, no coloured/fire pair.
 
-A diagram route exists for `straight` and `bend` only: a reusable `iwex:diagram-molten-{type}` tool plus one
+A diagram route exists for `straight` and `bend` only: a reusable `iiex:diagram-molten-{type}` tool plus one
 cobblestone (`DiagramRecipeDefinitions.cs:22-36`). It is creative-only until the design table can draft
 diagrams, and it coexists with the legacy recipes.
 
@@ -155,7 +155,7 @@ diagrams, and it coexists with the legacy recipes.
 | Wrench | cell empty and not solidified | rotate; refused while it holds metal or has clogged | `:241-250` |
 
 Sealing only ever severs an already-drained section, so a seal can never trap metal against itself. The
-refusal error is `iwex-canalnotempty` (`:439`).
+refusal error is `iiex-canalnotempty` (`:439`).
 
 The interaction help is state-driven: the chisel hint appears only on a solidified and hardened cell, the
 unseal hint only on a sealed one, and the seal hint only when `CanSeal` passes (`:531-582`).
@@ -178,7 +178,7 @@ A running pour tally is shown while metal is arriving and self-clears after an i
 
 | Modifier | Effect | file:line |
 |---|---|---|
-| sneak (Shift) + RMB, nothing parked | park a `BlockMoltenBarrel` or a large tool mold; a small mold is refused with `iwex-moldtoosmall` | `BlockMoltenCanalTap.cs:143-168` |
+| sneak (Shift) + RMB, nothing parked | park a `BlockMoltenBarrel` or a large tool mold; a small mold is refused with `iiex-moldtoosmall` | `BlockMoltenCanalTap.cs:143-168` |
 | sneak + RMB, something parked | retrieve it with its contents | `:112-141` |
 | Ctrl + RMB | toggle pouring | `:175` |
 | plain RMB | chisel out a clogged cell, else nothing | `:99-103` |
@@ -197,7 +197,7 @@ mesh (`:656-671`).
 
 ### Mold pedestal
 
-Same modifier scheme as the tap, for small molds only; a large one is refused with `iwex-moldtoolarge`
+Same modifier scheme as the tap, for small molds only; a large one is refused with `iiex-moldtoolarge`
 (`BlockMoltenCanalMoldPedestal.cs:148-158`). A plain RMB on a solidified pedestal routes straight to
 `MoltenChisel.TryChisel` rather than deferring to the base, because the tap block's handler would reject the
 pedestal's block entity (`:119-136`); Ctrl + RMB toggles pouring (`:141-146`).
@@ -214,8 +214,8 @@ The clay heat gate is the ceramic tier's ceiling. The pedestal fills a mold by d
 bypassing vanilla's `CanReceive`, so without the gate a clay mold on an iron run would silently trap a cast
 forever. `ClayHeatGate.WouldShatter(mold, pourTemp)` is true only for a small fired-clay tool mold above
 `ClayMoldHeatCeiling` (`ClayHeatGate.cs:29-31`). Shattering destroys the mold with no drop, plays a crack,
-and sends `iwex-clayshatter` to every player within 8 m (`:269-289`). Large anvil / helve-hammer molds are
-cast at iron temperatures in the tap and are exempt; iwex's own cast-iron molds are a different block class
+and sends `iiex-clayshatter` to every player within 8 m (`:269-289`). Large anvil / helve-hammer molds are
+cast at iron temperatures in the tap and are exempt; iiex's own cast-iron molds are a different block class
 and never satisfy the predicate.
 
 ---
@@ -263,7 +263,7 @@ Defaults when an attribute is absent: `fillStart` 14, `fillHeight` 1 (`BlockMolt
 | glow HSV | `[8, 7, level]` | `BlockMoltenCanal.cs:269` | level from `GlowLightLevel` |
 | end-cap rotations | N 180 · E 90 · W 270 · S 0 | `MoltenMeshes.cs:20-27` | the shape is authored facing south |
 | `MoldKinds.LargeToolTypes` | `helvehammer`, `anvil` | `MoldKinds.cs:13-18` | hard-coded; everything else is "small" |
-| `ClayHeatGate.ShatterErrorCode` | `iwex-clayshatter` | `ClayHeatGate.cs:24` | |
+| `ClayHeatGate.ShatterErrorCode` | `iiex-clayshatter` | `ClayHeatGate.cs:24` | |
 | fire clay code | `game:clay-fire` | `BlockMoltenCanal.cs:382` | |
 
 ---
@@ -314,7 +314,7 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
 
 ## Gotchas
 
-1. **The tap still references `iwex:moltenbarrel`, a block code that does not exist.** The barrel is a
+1. **The tap still references `iiex:moltenbarrel`, a block code that does not exist.** The barrel is a
    construction-variant block (`moltenbarrel-{plated,cast}`, `BlockMoltenBarrel.cs:50-53`) and
    `BarrelConstructionMigration` remaps old worlds. Four sites were not updated:
    - `BlockMoltenCanalTap.cs:73` - the accepted-content interaction hint silently omits the barrel;
@@ -322,7 +322,7 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
      renderer;
    - `BlockEntityMoltenCanalTap.cs:303` - `RemoveBarrel()` builds `new ItemStack(null)`, so retrieving a
      parked barrel is at best an invalid stack;
-   - `BlockEntityMoltenCanalTap.cs:630` - loads `iwex:shapes/molten/barrel.json`, which does not exist
+   - `BlockEntityMoltenCanalTap.cs:630` - loads `iiex:shapes/molten/barrel.json`, which does not exist
      (the files are `barrel-plated.json` / `barrel-cast.json`), so a parked barrel is invisible.
 
    Parking still works (`AddBarrel` tests `heldStack.Block is BlockMoltenBarrel`,
@@ -355,7 +355,7 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
    [casting bed](casting-bed.md) or [casting cell](casting-cell.md) is not a canal, so a run that ends at
    one always renders a capped face even though metal is flowing across it.
 
-7. **The base mesh is loaded by variant word.** `iwex:shapes/molten/canal/{type}.json`
+7. **The base mesh is loaded by variant word.** `iiex:shapes/molten/canal/{type}.json`
    (`BlockEntityMoltenCanal.cs:419-422`): the shape file name is the `type` variant. Renaming a type
    silently blanks the block.
 
@@ -400,6 +400,6 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
   will combine them.
 - **The tap has one recipe and no skin**, unlike every other endpoint. Whether it should gain the
   brick/cobble pair for consistency is unasked.
-- **Migration debt.** `moltencanal-*` predates the smex → iwex split; the migration chain is in
+- **Migration debt.** `moltencanal-*` predates the smex → iiex split; the migration chain is in
   `BlockMigrations/`, and the pre-split `smex:` codes are still handled. Nothing here is broken, but the
   variant scheme has changed at least twice (Gotcha 3 is the fossil).

@@ -46,13 +46,13 @@ public class MaterialRoleRegistryTests {
   [Fact]
   public void Code_match_is_domain_sensitive_for_a_non_game_code() {
     MaterialRoleRegistry.Register(
-      new MaterialRoleDef { Role = Roles.Charge, Code = "iwex:blastmix" }
+      new MaterialRoleDef { Role = Roles.Charge, Code = "iiex:blastmix" }
     );
 
     Assert.True(
       MaterialRoleRegistry.IsRole(
         Roles.Charge,
-        new AssetLocation("iwex:blastmix")
+        new AssetLocation("iiex:blastmix")
       )
     );
     // A different domain with the same path is a different item - it must not match.

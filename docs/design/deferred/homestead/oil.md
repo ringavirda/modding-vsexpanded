@@ -3,7 +3,7 @@
 **Status** deferred   **Would live in** Industrial Homestead
 **Deferred by** the metalworking-only cut - [scope.md](../../scope.md), which owns the decision
 ("a whole extraction industry with no metalworking consumer"). The specification comes from the archived
-lpex spec (git history) and is restated below.
+iiex spec (git history) and is restated below.
 
 **Owns**
 
@@ -19,7 +19,7 @@ lpex spec (git history) and is restated below.
 
 [scope.md](../../scope.md) - the cut, the carve-outs, elex's three dependency severities ·
 [conventions.md](../../conventions.md) - the phase-change/distillation model that stays, and R1 ·
-the archived lpex spec (git history) · [arc furnace](../elex/arc-furnace.md) - the electrode mechanic and
+the archived iiex spec (git history) · [arc furnace](../elex/arc-furnace.md) - the electrode mechanic and
 its carbon fallback · [pipe network](../../mechanics/pipe-network.md) - media, one-medium-per-run, burst and
 joints · [pumps](../../machines/pumps.md) - the lift device a derrick would reuse ·
 [fuels](../../items/fuels.md) - what the spine actually burns.
@@ -127,7 +127,7 @@ today.
 
 ### The derrick
 
-From the archived lpex spec:
+From the archived iiex spec:
 
 | | |
 |---|---|
@@ -152,7 +152,7 @@ at least one of the two deferred branches, and neither on its own.
 
 ### The products
 
-From the archived lpex spec:
+From the archived iiex spec:
 
 | Product | Intended consumer | Status of that consumer |
 |---|---|---|
@@ -191,11 +191,11 @@ its absence costs elex efficiency, where the acid's absence costs elex a whole p
    (`src/ExpandedLib/Fluids/LiquidPhase.cs:12`). So a still's take-offs cannot share a run: crude in,
    naphtha out, kerosene out and heavy out are four separate networks that must not touch, each with its own
    condenser bridging it - the steam condenser's connector-not-node shape
-   (`src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, discussed at
+   (`src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, discussed at
    [fluid tank](../../machines/fluid-tank.md):104-108) is the only pattern that allows it. This is the most
    expensive structural consequence of R1 for any deferred chemistry, and it is recorded nowhere else.
 
-3. petcoke is not coke - do not register it as fuel. `assets/iwex/config/materialroles.json:4` binds
+3. petcoke is not coke - do not register it as fuel. `assets/iiex/config/materialroles.json:4` binds
    the `fuel` role to `game:coke` with a carbon value of 2 (charcoal 1 at `:5`), and the furnace burns
    carbon computed from role membership ([burden](../../items/burden.md), [fuels](../../items/fuels.md)). A
    petcoke item quietly added to that role would change every charge's fuel arithmetic. If petcoke ever

@@ -1,6 +1,6 @@
 # Burdenmaker
 
-**Status** live (built 2026-08-07)   **Mod** iwex
+**Status** live (built 2026-08-07)   **Mod** iiex
 
 **Owns** - the facts this page is canonical for:
 
@@ -40,7 +40,7 @@ a stock house, two hoppers over a bunker with a gate between them, covering both
 buffering.
 
 No mechanism means no power: there is no MP port, so the burdenmaker is buildable before any power exists.
-That is what keeps nothing before cast iron requiring power, and why iwex has no dangling MP consumer
+That is what keeps nothing before cast iron requiring power, and why iiex has no dangling MP consumer
 upstream of the blast furnace.
 
 **Crate semantics.** Materials go in and come out freely, one or a stack at a time, with no batch state to
@@ -85,7 +85,7 @@ The hoppers' widths map exactly onto cells, so classification needs no geometry:
 Ctrl + right-click moves a whole stack, plain right-click one unit - the established idiom (ctrl, not
 sneak, because vanilla ground-storage placement takes sneak first).
 
-Help text is routed by cell off the same classifier - `iwex:burdenmaker-help-{addore, addore-stack, addflux,
+Help text is routed by cell off the same classifier - `iiex:burdenmaker-help-{addore, addore-stack, addflux,
 addflux-stack, take, gate}`. This machine has no GUI, so the interaction overlay is the only thing that
 tells the player the two hoppers differ; the wrong hopper simply refuses, silently. The accepted stacks in
 each hint are resolved from the material registry, so an ore contributed by another mod appears there
@@ -104,7 +104,7 @@ The 2 px of hopper geometry that reaches into y = 2 is accepted as overhang; no 
 
 ```
 crushed / roasted iron ore ──> large hopper ─┐
-                                             ├─ open the gate ─> bunker ─> iwex:burden
+                                             ├─ open the gate ─> bunker ─> iiex:burden
 game:lime ───────────────────> small hopper ─┘
 ```
 
@@ -127,7 +127,7 @@ present batch sizes - watch it if the batch shrinks.
 ## Assets
 
 Editable source: `assets/editable/shapes/machine-megablock-burdenmaker.json` → exported to
-`assets/iwex/shapes/ore/burdenmaker.json`. A `Root` element wraps the five groups in the editable, so the
+`assets/iiex/shapes/ore/burdenmaker.json`. A `Root` element wraps the five groups in the editable, so the
 RCC stages can address them; the export is `scripts/convert-shape.py`, which is also the only place that
 can set the clip endings (`closed` = Repeat, `open` = Hold) - no C# test in this repo can see them.
 
@@ -156,7 +156,7 @@ toggles driving `Lid`'s `offsetZ` (0 → 4). Two invariants any re-export must p
 
 A grid recipe places the shell (settled 2026-08-06): 12 same-colour fired bricks, `BBB,BBB` - the machine's
 own 3 × 2 floor plan - with the catalogue row
-`["burdenmaker-grid"] = Grid("iwex:burdenmaker-*")`. Brick only, because this is the only source of burden
+`["burdenmaker-grid"] = Grid("iiex:burdenmaker-*")`. Brick only, because this is the only source of burden
 and anything it asks for must already be makeable in a fresh world. The 3 × 2 shape also keeps it
 unambiguous against other wildcard-brick recipes.
 
@@ -171,8 +171,8 @@ last and dear:
 | 4 | `Root/Hoppers` | sheet iron |
 | 5 | `Root/Lids` | sheet iron + fittings |
 
-Nothing may require an lpex item. iwex declares no dependency on lpex, and this machine is the only source
-of burden - a cross-mod ingredient here once made burden unreachable for an iwex-only player. The
+Nothing may require an iiex item. iiex declares no dependency on iiex, and this machine is the only source
+of burden - a cross-mod ingredient here once made burden unreachable for an iiex-only player. The
 burdenmaker has no gear and must keep it that way.
 
 ---
@@ -207,17 +207,17 @@ nothing may be destroyed on break, and with no batch state there is no reason fo
 
 | Piece | Where |
 |---|---|
-| Shape export | `assets/iwex/shapes/ore/burdenmaker.json` |
+| Shape export | `assets/iiex/shapes/ore/burdenmaker.json` |
 | Block def, 8 fillers, 5 RCC stages | `BlockBurdenmaker.Definitions` |
 | Cell classifier | `BlockBurdenmaker.Classify(principal, clicked, angle)` |
 | Hoppers, basin, gate, drops, readout | `BlockEntityBurdenmaker` |
 | Per-cell interaction and per-cell help | `BlockBurdenmaker.HandleInteract` / `BuildInteractionHelp` |
-| Grid recipe + catalogue row | `OreProcessingRecipeDefinitions.Burdenmaker` · `IwexRecipeConfig` |
-| Handbook page | `docs/iwex/handbook/01-orehandling.html` (+ `00-ironworking.html`), all three locales |
+| Grid recipe + catalogue row | `OreProcessingRecipeDefinitions.Burdenmaker` · `IiexRecipeConfig` |
+| Handbook page | `docs/iiex/handbook/01-orehandling.html` (+ `00-ironworking.html`), all three locales |
 
 The handbook pair covers the burdenmaker and the two-stream charge, and is translated into `ru` and `uk`
-(2026-08-07) - the first two iwex handbook pages translated at all. The other three iwex pages are still
-English in the RU/UK files, a gap in this mod alone: lpex, hpex and smex all ship translated handbooks.
+(2026-08-07) - the first two iiex handbook pages translated at all. The other three iiex pages are still
+English in the RU/UK files, a gap in this mod alone: iiex, hpex and smex all ship translated handbooks.
 
 ---
 
@@ -225,7 +225,7 @@ English in the RU/UK files, a gap in this mod alone: lpex, hpex and smex all shi
 
 1. Whether roasted ore is a distinct input with a different flux requirement, or merely a better-yielding
    substitute for crushed ore. [roasting](../processes/roasting.md) is unbuilt and this is its first
-   consumer. The interaction help already promises it - `iwex:burdenmaker-help-addore` reads "crushed or
+   consumer. The interaction help already promises it - `iiex:burdenmaker-help-addore` reads "crushed or
    roasted iron ore" - while `materialroles.json` grants the `ironore` role to the `crushed-iron` path
    prefix only. The hint is forward-looking, not a description of what the machine takes today.
 

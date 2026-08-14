@@ -100,8 +100,8 @@ A bearing is an item, so "structure" is its bill of parts and where each part is
 
 | Part | Form | Made on | Owner of that machine |
 |---|---|---|---|
-| **balls** | chrome-steel rod @ 25 u → *n* balls | [heading machine](heading-machine.md) + the ball die | iwex ships the bench, hpex ships the die ([STATE.md:583](../../internal/plans/STATE.md)) |
-| **race** | a rolled ring | [bending roller](bending-roller.md) | lpex |
+| **balls** | chrome-steel rod @ 25 u → *n* balls | [heading machine](heading-machine.md) + the ball die | iiex ships the bench, hpex ships the die ([STATE.md:583](../../internal/plans/STATE.md)) |
+| **race** | a rolled ring | [bending roller](bending-roller.md) | iiex |
 | assembly | balls + race → bearing | a grid recipe | hpex |
 
 Both parts are products the forming line already makes ([STATE.md:483-484](../../internal/plans/STATE.md)). No new
@@ -206,14 +206,14 @@ The chain is safe today, and both safeguards are accidental:
 | Chain step | Machine | Tier / power | Bearing-gated? |
 |---|---|---|---|
 | chromite | vanilla ore + vanilla nugget crushing | none | no |
-| ferrochrome | [cold blast furnace](blast-furnace-cold.md) | iwex, MP blower | no |
-| melt / ladle the alloy | [cupola](cupola.md) · ladle · open hearth | iwex / smex, producer gas | no |
-| cast the billet | [long cell](long-cell.md) | iwex | no |
-| reheat | [reheat furnace](reheat-furnace.md) | iwex | no |
-| roll to rod | [rolling mill](rolling-mill.md) | iwex, mpenergy | no |
-| crop to 25 u | [shear](shear.md) | iwex, mpenergy | no |
-| head the balls | [heading machine](heading-machine.md) | iwex, mpenergy | no |
-| roll the race | [bending roller](bending-roller.md) | lpex, mpenergy | no |
+| ferrochrome | [cold blast furnace](blast-furnace-cold.md) | iiex, MP blower | no |
+| melt / ladle the alloy | [cupola](cupola.md) · ladle · open hearth | iiex / smex, producer gas | no |
+| cast the billet | [long cell](long-cell.md) | iiex | no |
+| reheat | [reheat furnace](reheat-furnace.md) | iiex | no |
+| roll to rod | [rolling mill](rolling-mill.md) | iiex, mpenergy | no |
+| crop to 25 u | [shear](shear.md) | iiex, mpenergy | no |
+| head the balls | [heading machine](heading-machine.md) | iiex, mpenergy | no |
+| roll the race | [bending roller](bending-roller.md) | iiex, mpenergy | no |
 
 Break 1 - chromite is a vanilla ore and vanilla already crushes it. `game:ore-chromite`,
 `game:nugget-chromite` and `game:crushed-chromite` all exist in the base game, and smex's own EM-compat patch
@@ -242,7 +242,7 @@ The safe requirement set, stated positively:
 | Compound / tandem Corliss *(planned)* | Cornish engine *(live)* |
 | elex's dynamo and alternator - Corliss flywheel variants | HP steam ore crusher *(planned)* - it is on the chromite path |
 | any future high-speed rotary machine | Large Cornish pumping engine · large blast furnace · skip hoist |
-| | every iwex, lpex and smex machine - nothing is retrofitted |
+| | every iiex, iiex and smex machine - nothing is retrofitted |
 
 The gate lands on the Corliss because the Corliss's selling point is that it is governed and fast.
 
@@ -331,7 +331,7 @@ Nothing exists.
 | Piece | Where | Model it on |
 |---|---|---|
 | the ball die item | wherever `DieItemDefinitions` lands, plus an hpex variant entry | `RollSetItemDefinitions.cs:17-128` - one item, a `type` variant group, per-variant specs via `.Raw("attributesByType", byType)` (`:126`) |
-| the `ItemDie` spec it fills in | iwex (or exlib) - unresolved, see below | `RollSetSpec.cs:31-201`, `MoldSpec.cs:32-48` |
+| the `ItemDie` spec it fills in | iiex (or exlib) - unresolved, see below | `RollSetSpec.cs:31-201`, `MoldSpec.cs:32-48` |
 | ball / race / bearing items | `ExItemDef` in hpex | [recipes & config](../mechanics/recipes-config.md) |
 | the assembly grid recipe | `src/HighPressureExpanded/Recipes/Grid/` - today it holds exactly one file | `MachineRecipeDefinitions.cs` |
 | its cost key | `HpexRecipeConfig` | `src/HighPressureExpanded/HpexRecipeConfig.cs` |
@@ -339,10 +339,10 @@ Nothing exists.
 | chrome steel as a metal | `MetalRegistry` + a [materials.md](../materials.md) row | [materials.md](../materials.md) |
 
 Where `ItemDie` lives is an open cross-mod question and the ball die is the case that forces it.
-[heading machine § Open](heading-machine.md) records it: the spec's obvious home is iwex beside
-`RollSetSpec`, but lpex ships the rivet die and hpex ships this one. hpex references `ExpandedLib` and
-`LowPressureExpanded` and, per its own csproj comment, does not reference smex
-(`HighPressureExpanded.csproj:81`). It does reference lpex, and lpex references iwex, so an iwex-homed
+[heading machine § Open](heading-machine.md) records it: the spec's obvious home is iiex beside
+`RollSetSpec`, but iiex ships the rivet die and hpex ships this one. hpex references `ExpandedLib` and
+`IronIndustryExpanded` and, per its own csproj comment, does not reference smex
+(`HighPressureExpanded.csproj:81`). It does reference iiex, and iiex references iiex, so an iiex-homed
 `ItemDie` is reachable from hpex through the chain. The chain permits it, but nobody has checked that a
 chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, which is
 [heading machine § Open](heading-machine.md)'s own last item.
@@ -357,7 +357,7 @@ chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, w
 * Never require a bearing on the Lancashire boiler, the Cornish engine or anything upstream of chrome steel.
   Those are the machines a player builds to reach hpex.
 * Do not retrofit. No existing recipe gains a bearing. Journal bearings are abstracted into build cost
-  ([STATE.md:486-488](../../internal/plans/STATE.md)); adding one to an iwex machine would invalidate saves.
+  ([STATE.md:486-488](../../internal/plans/STATE.md)); adding one to an iiex machine would invalidate saves.
 * The ball die must accept chrome-steel rod only. A wildcard `Accepts` deletes the whole chain.
 * A bearing must not be craftable from an anvil or a grid alone. That is the ruling in [Role](#role); a
   `steel + steel → bearing` recipe defeats the entire design.
@@ -385,7 +385,7 @@ chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, w
 | 3 | One race or two? [STATE.md:483](../../internal/plans/STATE.md) says *"balls + a rolled ring race"*, singular. A real bearing has an inner and an outer. Singular is simpler and is the settled text; two is the honest engineering. Pick and write it down | yes |
 | 4 | Chrome steel needs a `materials.md` row, a `MetalRegistry` entry and a grade under D3 | yes |
 | 5 | Ferrochrome needs the ferroalloy burden family, which is the cold furnace's unbuilt second act - no third burden family, no ferroalloy metal, nothing in `src/` ([cold blast furnace § Open](blast-furnace-cold.md)) | yes |
-| 6 | Where `ItemDie` lives. The ball die is the case that forces the iwex-vs-exlib decision ([heading machine § Open](heading-machine.md)) | yes |
+| 6 | Where `ItemDie` lives. The ball die is the case that forces the iiex-vs-exlib decision ([heading machine § Open](heading-machine.md)) | yes |
 | 7 | How many bearings a Corliss costs. It should fall out of the Corliss build table, which does not exist - the Corliss is planned with no bill beyond a rough hadfield mass | |
 | 8 | Is a bearing a wear part? Nothing in the suite wears out, and introducing wear for one item would be a new mechanic with one consumer. Default: no | |
 | 9 | Does the ball die need `MinTorque` above the bolt die's? Chrome steel is harder than wrought iron, and `MinTorque` is the suite's established way of saying "harder metal costs more drive" ([shear § the cold-cut torque gate](shear.md)). It makes the material gate a cost rather than a lockout, consistent with D3 | |

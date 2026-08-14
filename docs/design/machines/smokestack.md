@@ -13,7 +13,7 @@
   the `Orientation` field that nothing ever populates;
 * the stack's construction cost and its single grid recipe;
 * the stack's relationship to the [hot blast furnace](blast-furnace-hot.md)'s exhaust budget (they are the same
-  number), and to iwex's cheap one-block chimney vent (they are different mechanisms);
+  number), and to iiex's cheap one-block chimney vent (they are different mechanisms);
 * the fact that the stacked-brick-course column is the only precedent in the codebase for a variable-height
   chimney - and that it is not, itself, variable.
 
@@ -53,9 +53,9 @@ margin that lets a stove sit idle mid-swap without choking the furnace.
 
 ### Not to be confused with the chimney vent
 
-iwex ships a cheaper, unrelated mechanism: a vanilla chimney placed on the top connector of an
+iiex ships a cheaper, unrelated mechanism: a vanilla chimney placed on the top connector of an
 `IChimneyVentable` pipe fitting draws `ChimneyGasDrawRate` = 16 L/s out of the run
-(`exlib …/Blocks/Networks/ChimneyVent.cs`; `IwexConfig.cs:237`). That is a network strategy injected into every
+(`exlib …/Blocks/Networks/ChimneyVent.cs`; `IiexConfig.cs:237`). That is a network strategy injected into every
 `"pipe"` network (`IronworkingExpandedModSystem.cs:96`) and it never touches this block. The smoke stack is an
 `IPipeNode` consumer; the chimney vent is an `IPipeVentStrategy`. Three stacked courses of the smoke stack cost
 more than a vanilla chimney and vent three times as much.
@@ -143,11 +143,11 @@ directly behind the intake and the pipe joins its front face.
 ## Assets
 
 The smoke stack has no art of its own. Every visible block is vanilla brick except the intake, and the intake
-borrows lpex's:
+borrows iiex's:
 
 | Asset | Path | State |
 |---|---|---|
-| intake shape | `lpex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `assets/smex/shapes/smokestack/` does not exist |
+| intake shape | `iiex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `assets/smex/shapes/smokestack/` does not exist |
 | intake texture | `front1` → `game:block/clay/refractory/{refractory}/front1` (`:162`) | tier-tinted |
 | the stack itself | vanilla `game:brickcourse-*` / `claybricks` / `refractorybricks` | the player picks |
 | plume | `ExParticles.RisingPlume` over the flue column, coloured by medium (`BlockEntitySmokeStack.cs:204-234`) | live |
@@ -169,7 +169,7 @@ One grid recipe, no RCC. `src/SteelmakingExpanded/Recipes/Grid/SmokeStackRecipeD
 
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
-| `smex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `lpex:pipe-cast-straight*`, hammer | :19-28 |
+| `smex:smokestack-intake-{tier}-n` | `BHB,_P_,BNB` | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × nails, 1 × `iiex:pipe-cast-straight*`, hammer | :19-28 |
 
 Authored with `.GridObject(...)` - a lone JSON object rather than an array - because it is the only recipe in
 its file (`:19`, and the doc comment at `:8-11`). It is "four bricks deep for the taller column" against the
@@ -270,7 +270,7 @@ before that release.
 | Key / constant | Owner |
 |---|---|
 | `LitresPerPipe` (`ExpandedLib/ExlibConfig.cs:32`) - a main's per-node capacity | [pipe network](../mechanics/pipe-network.md) |
-| `ChimneyGasDrawRate` = 16 L/s (`IwexConfig.cs:237`) - the other venting mechanism | [pipe network](../mechanics/pipe-network.md) |
+| `ChimneyGasDrawRate` = 16 L/s (`IiexConfig.cs:237`) - the other venting mechanism | [pipe network](../mechanics/pipe-network.md) |
 | `ExhaustVolumePerTick`, `ProductionTickMs`, `IsChoked`, the disruption model | [heat balance](../mechanics/heat-balance.md) |
 | `CowperIntakeVolume` = 24 L/s | [cowper](cowper.md) |
 
@@ -294,7 +294,7 @@ The intake also carries `Behavior("Lockable")` (`BlockSmokeStackIntake.cs:154`) 
 
 | Type / member | file:line | Notes |
 |---|---|---|
-| `BlockSmokeStackIntake` | `…/SmokeStack/Blocks/BlockSmokeStackIntake.cs:18` | `: BlockPipePassthrough` - an lpex fitting subclass. `Definitions` is `static new` (`:27`) so it replaces, not extends, the passthrough's own defs |
+| `BlockSmokeStackIntake` | `…/SmokeStack/Blocks/BlockSmokeStackIntake.cs:18` | `: BlockPipePassthrough` - an iiex fitting subclass. `Definitions` is `static new` (`:27`) so it replaces, not extends, the passthrough's own defs |
 | ↳ `Definitions` | :27-165 | layout `:46-151`; variant groups `:155-157`; shapes `:158-161` |
 | `BlockEntitySmokeStack` | `…/BlockEntities/BlockEntitySmokeStack.cs:23` | `BlockEntityMultiblockStructure` + `INetworkNode` + `IPipeNode` - the unusual combination this page exists to document |
 | ↳ `Initialize` | :32-41 | `_system.AddNode(accessor, Pos, "pipe")` by hand, server-side, guarded on `GetNetworkAt(Pos) == null` |
@@ -385,7 +385,7 @@ never forced.
    clinker brick - a plausible choice for a chimney - gets a structure that will not complete and a build
    outline that highlights blocks they think they already placed.
 
-8. **The intake's shape is `lpex:pipes/outlet`, not a smoke-stack shape.** Cosmetically the anchor is
+8. **The intake's shape is `iiex:pipes/outlet`, not a smoke-stack shape.** Cosmetically the anchor is
    indistinguishable from a plain pipe outlet apart from its refractory tint; in a plant with a dozen outlets,
    finding the stack's control block means reading block names.
 

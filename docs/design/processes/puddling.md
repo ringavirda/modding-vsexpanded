@@ -2,8 +2,8 @@
 
 **Status** partial - the charge half is live and tested; the cycle is not built at all, and the
 furnace it runs in can currently neither complete its structure nor melt
-**Mods** iwex owns the whole process end to end. Only the downstream consumption crosses a mod boundary
-(the balls go to [shingling](shingling.md), whose slab half is lpex's)
+**Mods** iiex owns the whole process end to end. Only the downstream consumption crosses a mod boundary
+(the balls go to [shingling](shingling.md), whose slab half is iiex's)
 
 ## Owns
 
@@ -59,18 +59,18 @@ What the mod abstracts away
 |---|---|
 | ~1 hour of continuous, brutal manual work per heat | a handful of right-clicks on a timer |
 | dry (Cort) vs wet / pig-boiling (Hall) puddling | one process |
-| silicon, phosphorus and manganese chemistry; the slag's composition | one `fettlestock` oxide family, chemically undifferentiated ([`FettleRecipeDefinitions.cs:16-19`](../../../src/IronworkingExpanded/Recipes/Grid/FettleRecipeDefinitions.cs)) |
+| silicon, phosphorus and manganese chemistry; the slag's composition | one `fettlestock` oxide family, chemically undifferentiated ([`FettleRecipeDefinitions.cs:16-19`](../../../src/IronIndustryExpanded/Recipes/Grid/FettleRecipeDefinitions.cs)) |
 | "coming to nature" as a continuously observed state | a discrete ball-up step |
 | ball weights varying with the puddler's judgement | a fixed 200 u ball |
 
 What it keeps - each of these is a mechanic, not flavour:
 
 1. Fettling is a consumable, charged every heat. It is the reagent the reaction runs on, not a lining
-   ([`FettleItemDefinitions.cs:6-22`](../../../src/IronworkingExpanded/Items/FettleItemDefinitions.cs)).
+   ([`FettleItemDefinitions.cs:6-22`](../../../src/IronIndustryExpanded/Items/FettleItemDefinitions.cs)).
 2. Fuel never touches work. One coordinate change on the shared furnace core - see
    [puddling furnace](../machines/puddling-furnace.md).
 3. Two doors. The charge goes in through the big one; the bath is worked through the small one, so the
-   heat does not leave ([`BlockChargeDoor.cs:19-21`](../../../src/IronworkingExpanded/BlockStructures/Furnaces/Blocks/BlockChargeDoor.cs)).
+   heat does not leave ([`BlockChargeDoor.cs:19-21`](../../../src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockChargeDoor.cs)).
 4. Natural draught. No blower and no tuyeres - a damper on the stack is the only air control there is
    (`BlockEntityPuddlingFurnace.cs:44`, `:46-47`). It involves no pipe network.
 
@@ -82,7 +82,7 @@ One heat = one full pass of this table. "Built" is the state in the tree today.
 
 | # | Step | Where | Player verb | Built | Cite |
 |---|---|---|---|---|---|
-| 1 | Prepare fettle - 3 `fettlestock` → 3 `iwex:puddlingfettle` | crafting grid | grid craft | live | `FettleRecipeDefinitions.cs:29-42` |
+| 1 | Prepare fettle - 3 `fettlestock` → 3 `iiex:puddlingfettle` | crafting grid | grid craft | live | `FettleRecipeDefinitions.cs:29-42` |
 | 2 | Fettle the bed - one per row, 3 total | any hearth cell | RMB holding fettle | live | `BlockPuddlingHearth.cs:103-110`, `BlockEntityPuddlingHearth.cs:48-57` |
 | 3 | Charge 9 pigs - 3 per row | any hearth cell | RMB holding pig | live | `BlockPuddlingHearth.cs:112-121`, `BlockEntityPuddlingHearth.cs:63-72` |
 | 4 | Shut the big door | charge door | RMB | pose only | `BlockChargeDoor.cs:118-121` - `IsVenting` has no reader (`BlockEntityChargeDoor.cs:44`) |
@@ -110,22 +110,22 @@ rule.
 
 | Direction | Item | Qty | Mass each | Total | Cite |
 |---|---|---|---|---|---|
-| in | `iwex:pig` | 9 | 375 u | 3375 u | count `PuddlingHearthLayout.cs:22`; mass [density rule](../mechanics/density-rule.md) |
-| in | `iwex:puddlingfettle` | 3 | - (carries no mass constant) | - | `FettleItemDefinitions.cs:46` × 3 rows |
+| in | `iiex:pig` | 9 | 375 u | 3375 u | count `PuddlingHearthLayout.cs:22`; mass [density rule](../mechanics/density-rule.md) |
+| in | `iiex:puddlingfettle` | 3 | - (carries no mass constant) | - | `FettleItemDefinitions.cs:46` × 3 rows |
 | in | coke | not chosen | - | - | [Open](#open) |
 | out | wrought ball | 16 | 200 u | 3200 u | this page; ball mass [shingling](shingling.md) |
-| out | `iwex:tapcinder` | 3 (settled, code pending - [economy landing](../items/economy-landing.md)) | - | 175 u | this page; item at `FettleItemDefinitions.cs:77-78` |
+| out | `iiex:tapcinder` | 3 (settled, code pending - [economy landing](../items/economy-landing.md)) | - | 175 u | this page; item at `FettleItemDefinitions.cs:77-78` |
 
 ### The fettle loop
 
-`iwex:puddlingfettle` is made from any three `fettlestock` items, and there are three of them
+`iiex:puddlingfettle` is made from any three `fettlestock` items, and there are three of them
 (`FettleItemDefinitions.cs:43`, `:57`):
 
 | `fettlestock` material | Comes from | Cite |
 |---|---|---|
 | `game:crushed-iron` | mined and crushed ore - magnetite, hematite and limonite all reduce to this one item | `FettleItemDefinitions.cs:33` |
-| `iwex:tapcinder` | this process, step 11 | `FettleItemDefinitions.cs:77-78` |
-| `iwex:millscale` | the [rolling mill](../machines/rolling-mill.md) | `FettleItemDefinitions.cs:85-86` |
+| `iiex:tapcinder` | this process, step 11 | `FettleItemDefinitions.cs:77-78` |
+| `iiex:millscale` | the [rolling mill](../machines/rolling-mill.md) | `FettleItemDefinitions.cs:85-86` |
 
 The recipe is 1 : 1 - three stock in, three fettle out (`FettleRecipeDefinitions.cs:35-41`) - so a works
 that is already running displaces its ore cost one part at a time until fettling costs no ore at all. A new
@@ -189,7 +189,7 @@ break them.
 Nine pigs, because the bed is nine pigs. The charge is what the drawn hearth holds: three rows, three pigs
 each, stacked on their triangular section (`PuddlingHearthLayout.cs:17-19`), and the shipped shape draws
 exactly nine pig elements at the pig item's own geometry
-(`assets/iwex/shapes/furnaces/puddlinghearth.json`, `Pigs/Pig1…Pig9`, each 5 × 2 × 12 with a
+(`assets/iiex/shapes/furnaces/puddlinghearth.json`, `Pigs/Pig1…Pig9`, each 5 × 2 × 12 with a
 3 × 1 × 12 child = 156 vx³ - the same volume [density rule](../mechanics/density-rule.md) measures off
 `item-pig.json`). The art, the layout constant and the charge are one fact.
 
@@ -217,7 +217,7 @@ air-starve (`BlockEntityPuddlingFurnace.cs:44`).
 * The clean-out has no caller. `ClearBed()` (`BlockEntityPuddlingHearth.cs:83-91`) is the design's
   answer to where the cinder goes and nothing in the tree calls it. Until it does, step 11 of the loop
   does not exist and the fettle loop is open at one end.
-* The 175 u has no item count in code yet. `iwex:tapcinder` is a plain `Recovered` item with no
+* The 175 u has no item count in code yet. `iiex:tapcinder` is a plain `Recovered` item with no
   `materialUnits` attribute and no unit constant (`FettleItemDefinitions.cs:62-70`, `:77-78`). The count is
   settled at 3 - the number that closes the fettle loop - and lands with the mass batch
   ([economy landing](../items/economy-landing.md)).
@@ -238,7 +238,7 @@ air-starve (`BlockEntityPuddlingFurnace.cs:44`).
 * The hearth matches the held item on `Code.Path` alone, with no domain check
   (`BlockPuddlingHearth.cs:103`, `:112`). Any mod shipping an item whose path is `pig` or `puddlingfettle`
   charges this hearth, and the pig it charges is worth whatever this mod's constant says.
-* `iwex:puddlingfettle` carries no mass and no `materialUnits` (`FettleItemDefinitions.cs:88-95`), so
+* `iiex:puddlingfettle` carries no mass and no `materialUnits` (`FettleItemDefinitions.cs:88-95`), so
   the oxide side of the loop is counted in items while the iron side is counted in units. That is probably
   right, but it is undeclared.
 * The furnace cannot run today - the structure cannot complete, and even lit it could not melt:

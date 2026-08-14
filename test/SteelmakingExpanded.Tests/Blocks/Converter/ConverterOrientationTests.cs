@@ -1,11 +1,11 @@
 using System.Linq;
-using IronworkingExpanded;
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.MathTools;
 using Xunit;
-using static IronworkingExpanded.Tests.FurnaceLayoutRig;
+using static IronIndustryExpanded.Tests.FurnaceLayoutRig;
 
 namespace SteelmakingExpanded.Tests;
 
@@ -38,10 +38,10 @@ public class ConverterOrientationTests {
         (new Vec3i(0, -1, 0), "smex:convertertransmission*", "transmission"),
         (new Vec3i(0, 0, 2), "smex:converterbessemer*", "vessel"),
         (new Vec3i(0, 0, 4), "smex:converter-intake*", "gas intake"),
-        (new Vec3i(1, 1, 2), IwexBlocks.MoltenCanalTap.Any, "input tap"),
+        (new Vec3i(1, 1, 2), IiexBlocks.MoltenCanalTap.Any, "input tap"),
         (
           new Vec3i(1, -2, 2),
-          IwexBlocks.MoltenCanalBrickStart.Any,
+          IiexBlocks.MoltenCanalBrickStart.Any,
           "output start"
         ),
       ]

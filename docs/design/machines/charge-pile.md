@@ -1,10 +1,10 @@
 # Charge pile
 
-**Status** live (charge-column cutover, 2026-08-06)   **Mod** iwex
+**Status** live (charge-column cutover, 2026-08-06)   **Mod** iiex
 
 **Owns** - the facts this page is canonical for:
 
-* the pile block itself - `iwex:furnace-chargepile`, its band geometry, collision, glow, render path;
+* the pile block itself - `iiex:furnace-chargepile`, its band geometry, collision, glow, render path;
 * what interacting with a pile does: the top-band take, and what breaking one drops;
 * the rule that the pile stores nothing and the furnace holds the charge.
 
@@ -37,7 +37,7 @@ of 16.
   holding anything but air or the furnace's own pile is skipped - the column draws one block short and
   heals when the cell frees up, with no units lost. The pile has no creative-inventory entry and no
   handbook page; a hand placement outside a shaft cell is refused
-  (`iwex-chargepile-notinshaft`).
+  (`iiex-chargepile-notinshaft`).
 * **Bands do not snap to block boundaries.** The window is cut from the column's continuous band
   sequence, so a course taller than one block runs across the boundary as one stripe. Runs are
   run-length encoded (`ChargeBandRun`), and each material draws its own shape element, so coke, charcoal
@@ -85,8 +85,8 @@ block and keeping the column would duplicate the charge.
 | Constant / key | Value | Where | What it does |
 |---|---|---|---|
 | `ChargeColumn.BandsPerBlock` | 16 | `ChargeColumn.cs` (const, not config) | one band per voxel layer of the 16-voxel block |
-| `ChargeItemsPerBand` | 2 | `IwexConfig.cs` | a band is 2 items, so an ore-shaft block is 32 items |
-| `CupolaChargeMetalUnitsPerBlock` | 3000 u | `IwexConfig.cs` | a remelt pile counts metal units, not items - a 5 u bit and a 375 u pig go into the same pile |
+| `ChargeItemsPerBand` | 2 | `IiexConfig.cs` | a band is 2 items, so an ore-shaft block is 32 items |
+| `CupolaChargeMetalUnitsPerBlock` | 3000 u | `IiexConfig.cs` | a remelt pile counts metal units, not items - a 5 u bit and a 375 u pig go into the same pile |
 | `ChargeColumn.TempMergeEpsilon` | 1 °C | `ChargeColumn.cs` (const) | float-drift tolerance for coalescing consecutive loads into one stripe |
 | `replaceable` | 100 | block def | vanilla's default - a high value would let stray placements overwrite a charged shaft |
 
@@ -98,7 +98,7 @@ by multiplying before dividing, so both the item scale and the cupola's 187.5 u/
 `BlockChargePile.cs` (band geometry, boxes, break, placement guard) ·
 `BlockEntityChargePile.cs` (window, take, splice, render snapshot) ·
 `ChargeColumn.cs` (the data the pile draws) - all under
-`src/IronworkingExpanded/BlockStructures/Furnaces/`. Tests: `ChargePileTests`,
+`src/IronIndustryExpanded/BlockStructures/Furnaces/`. Tests: `ChargePileTests`,
 `ChargeMaterialisationTests`.
 
 ## Open
@@ -106,7 +106,7 @@ by multiplying before dividing, so both the item scale and the cupola's 187.5 u/
 1. **Hand-charging.** The band-order rule (fuel only above the last burden, lowest columns first) is
    enforced in `NextChargeColumn` for the hopper, but the pile's own interact path does not add charge
    yet - a held stack is ignored.
-2. **Proposed: the slag block becomes a slag pile.** `iwex:slag-block` is still a plain cube whose
+2. **Proposed: the slag block becomes a slag pile.** `iiex:slag-block` is still a plain cube whose
    `SlagCount` has no in-world producer; the settled design converts it to a player-placeable layered
    pile (place and take a course at a time, drops scaled to layers), which makes the player the
    producer without inventing a mechanic. Not built.

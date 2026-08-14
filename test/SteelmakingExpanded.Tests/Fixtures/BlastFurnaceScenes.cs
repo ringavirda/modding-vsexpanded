@@ -4,15 +4,15 @@ using ExpandedLib.Heat;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
-using IronworkingExpanded.Items;
-using LowPressureExpanded.BlockNetworkPipe;
-using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
-using LowPressureExpanded.Tests;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.Items;
+using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
@@ -58,18 +58,18 @@ internal sealed class BlastFurnaceRig {
   /// preheat - so retuning the heat balance moves the tests with it.
   /// </summary>
   public static float ColdBlastCeiling =>
-    IwexValues.BfCombustionBaseTemp
-    + IwexValues.BfCombustionCokeGain
-    - IwexValues.BfRadiationLossBase
-    - IwexValues.BfChargeLossFull;
+    IiexValues.BfCombustionBaseTemp
+    + IiexValues.BfCombustionCokeGain
+    - IiexValues.BfRadiationLossBase
+    - IiexValues.BfChargeLossFull;
 
   /// <param name="blastMix">Charge items laid into the shaft, spread across every column in proportion to
   /// its cell count, because the raceway course must be complete before a shaft furnace will light. 0 fills
   /// the shaft; negative leaves it empty for scenes that lay their own charge.</param>
-  /// <param name="burden">Composition to stamp on the charge. Null charges unstamped <c>iwex:burden</c>,
+  /// <param name="burden">Composition to stamp on the charge. Null charges unstamped <c>iiex:burden</c>,
   /// which <c>ReadChargeMix</c> reads as the reference grade - what keeps the calibration anchors here
   /// equal to the furnace's fixed ceilings.</param>
-  /// <param name="chargeCode">Item path the charge is laid as, in the iwex domain. Null follows the
+  /// <param name="chargeCode">Item path the charge is laid as, in the iiex domain. Null follows the
   /// default, <c>burden</c>. Pass <c>remeltburden</c> to charge the wrong family and exercise the
   /// conversion gate.</param>
   public BlastFurnaceRig(
@@ -80,19 +80,19 @@ internal sealed class BlastFurnaceRig {
     _burden = burden;
     _chargeCode = chargeCode;
     World = new TestWorld();
-    // The metal tap resolves its molten carrier through MetalRegistry: iwex:ingot-pigiron when the metal
+    // The metal tap resolves its molten carrier through MetalRegistry: iiex:ingot-pigiron when the metal
     // is registered, else the game:ingot-pigiron convention. Both codes are registered so GetItem resolves
     // whatever the tick asks for, independent of process-wide registry state.
-    World.RegisterItem("iwex:ingot-pigiron", 1500f);
+    World.RegisterItem("iiex:ingot-pigiron", 1500f);
     World.RegisterItem("game:ingot-pigiron", 1500f);
-    World.RegisterItem("iwex:slag");
-    World.RegisterItem("iwex:" + (chargeCode ?? "burden"));
+    World.RegisterItem("iiex:slag");
+    World.RegisterItem("iiex:" + (chargeCode ?? "burden"));
 
     // The charge pile and its entity class, so the furnace's own SyncChargeBlocks materialises real
     // BlockEntityChargePile windows onto its columns. The factory registration matters as much as the
     // block: without it the piles are placed but carry no entity.
     World.RegisterBlockEntityFactory(
-      "iwex.BlockEntityChargePile",
+      "iiex.BlockEntityChargePile",
       () => new BlockEntityChargePile()
     );
     Block chargePile = TestBlocks.Configure(
@@ -101,7 +101,7 @@ internal sealed class BlastFurnaceRig {
       71,
       ("type", "chargepile")
     );
-    chargePile.EntityClass = "iwex.BlockEntityChargePile";
+    chargePile.EntityClass = "iiex.BlockEntityChargePile";
     World.Register(chargePile);
 
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
@@ -177,7 +177,7 @@ internal sealed class BlastFurnaceRig {
     foreach (var (x, z) in keys)
       capacity += Furnace.ColumnCapacity(x, z);
 
-    string material = "iwex:" + (_chargeCode ?? "burden");
+    string material = "iiex:" + (_chargeCode ?? "burden");
 
     var want = new int[keys.Count];
     int assigned = 0;
@@ -221,7 +221,7 @@ internal sealed class BlastFurnaceRig {
   /// </summary>
   private void LayRounds(ChargeColumn column, string material, int units) {
     int perRound = System.Math.Max(2, Furnace.ChargeUnitsPerBlock);
-    float fuelFrac = _burden?.FuelFrac ?? IwexValues.BfDefaultFuelFrac;
+    float fuelFrac = _burden?.FuelFrac ?? IiexValues.BfDefaultFuelFrac;
     int fuelPerRound = System.Math.Max(1, (int)(perRound * fuelFrac));
 
     int left = units;
@@ -312,7 +312,7 @@ internal sealed class BlastFurnaceRig {
   }
 
   /// <summary>
-  /// A blast-fed tuyere cell: the real <c>iwex:furnace-tuyere-*</c> block on its own single-node network.
+  /// A blast-fed tuyere cell: the real <c>iiex:furnace-tuyere-*</c> block on its own single-node network.
   /// It must be the tuyere block and not a generic pipe - the two are identical as network nodes, but only
   /// the tuyere satisfies the layout, so a generic pipe leaves the furnace incomplete and inert.
   /// </summary>
@@ -361,7 +361,7 @@ internal sealed class BlastFurnaceRig {
       Pos = tapPos.Copy(),
       Block = TestBlocks.Configure(
         new Block(),
-        $"iwex:furnace-{BlockFurnaceTap.IronType}-{tapSide}",
+        $"iiex:furnace-{BlockFurnaceTap.IronType}-{tapSide}",
         30,
         ("type", BlockFurnaceTap.IronType),
         ("side", tapSide)

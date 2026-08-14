@@ -3,7 +3,7 @@
 Missing: the block, the BE, the runtime shape and the table itself. `ProcessJob` / `ProcessJobRegistry` /
 `ProcessJobLoader` in exlib are the terminal shape this page's crop table will be declared in, at
 `assets/<domain>/config/processjobs/*.json`, and `WorkPiece.Cropped` is the per-stack state a crop moves.
-No entry ships yet: see Open.   **Mod** iwex (`IronworkingExpanded`)
+No entry ships yet: see Open.   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the crop station: the rule that every crop in the forming ladder passes through this one block, and that the
@@ -42,7 +42,7 @@ the mill be a pure reduction machine: two verbs, two stations.
 |---|---|---|
 | reduce | [rolling mill](rolling-mill.md) | thins the piece; the player pulls it out at whatever stage they want. It only ever makes stock |
 | crop | this | turns stock at a stage into a product |
-| blank / stamp | [steam hammer](steam-hammer.md) (lpex) | punches a shape out of a strip - geometry, therefore forging work |
+| blank / stamp | [steam hammer](steam-hammer.md) (iiex) | punches a shape out of a strip - geometry, therefore forging work |
 
 - The mill has no product stage today. `RollSetSpec.OutputAt` (`RollSetSpec.cs:95`) has no caller anywhere in
   `src/`; `BlockEntityRollingMill.CompletePass` (`:282-288`) writes the thinned piece back onto the same stack
@@ -95,10 +95,10 @@ not by what the design page is titled.
 | Asset | State |
 |---|---|
 | editable shape | **drawn** - `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-cutter.json`, beside the nine other mpenergy machine tools. Textures `cast-iron1` + `iron5`, the mill's pair |
-| runtime shape | missing - needs the editable → runtime conversion (drop `editor`/`textureSizes`, repoint the two absolute texture paths at `iwex:block/metal/castiron` and `game:block/metal/sheet-plain/iron5`, flatten `Root`). `assets/iwex/shapes/forming/` holds only `rollingmill.json` and the ten stale `stock-*.json` |
+| runtime shape | missing - needs the editable → runtime conversion (drop `editor`/`textureSizes`, repoint the two absolute texture paths at `iiex:block/metal/castiron` and `game:block/metal/sheet-plain/iron5`, flatten `Root`). `assets/iiex/shapes/forming/` holds only `rollingmill.json` and the ten stale `stock-*.json` |
 | blade-set item shape | **drawn** - `assets/editable/shapes/items/smithed/item-forged-machineshears.json`; two blades 4 × 12 × 1 on the vanilla `block/metal/plate/iron` texture |
 | reference art | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
-| lang | `assets/iwex/lang/en.json` carries no `shear-*` key |
+| lang | `assets/iiex/lang/en.json` carries no `shear-*` key |
 
 ### What the shape already decides
 
@@ -125,7 +125,7 @@ and not a hammer die. And the blade set is `item-forged-machineshears.json`, whi
 [machining-line](../mechanics/machining-line.md) already assigns: forged and tempered, with **vanilla's
 temper ladder as the tier ladder**, so no new hardness system is owed. That page also notes the drawn
 shears measure 96 vx³ = 240 u and want **100 vx³ = 250 u** to divide off the rod.
-| handbook | `docs/iwex/handbook/` has no page; the sync pipeline joins on the `NN-` prefix and drift fails a test |
+| handbook | `docs/iiex/handbook/` has no page; the sync pipeline joins on the `NN-` prefix and drift fails a test |
 
 ### The shear's products are already drawn — inside the mill's shape files
 
@@ -163,7 +163,7 @@ clip must repeat or the animator drops the suppressed mesh back to the static sh
 ## Construction
 
 There is no recipe, a blocker of the same class as B3: the mill has none either (`grep rollingmill
-src/IronworkingExpanded/Recipes/` returns nothing), so the whole forming line is creative-only.
+src/IronIndustryExpanded/Recipes/` returns nothing), so the whole forming line is creative-only.
 
 Proposed cost, in the established idiom (`ExRecipeDef` grid, [recipes &
 config](../mechanics/recipes-config.md); the design table at `CraftingStationRecipeDefinitions.cs:27-35` is
@@ -173,10 +173,10 @@ the shortest worked example):
 |---|---|---|
 | frame | cast-iron plate ×4 (`castplate` / `castplate-heavy`) | cast bed - the shared cast-iron prerequisite that also unlocks the shafting, so there is no second tier to gate |
 | blade seat | `game:metalplate-iron` ×2 | proposed |
-| fasteners | `Nails(1)` - `ExIngredients.cs:36` | every other iwex machine bill uses the same helper (`PipeRecipeDefinitions.cs:25`) |
+| fasteners | `Nails(1)` - `ExIngredients.cs:36` | every other iiex machine bill uses the same helper (`PipeRecipeDefinitions.cs:25`) |
 | tool | `Hammer` - `ExIngredients.cs:22` | convention |
 
-A cost-catalogue key `shear-grid` belongs in `IwexRecipeConfig.DefaultCatalogue` (`IwexRecipeConfig.cs`) so the
+A cost-catalogue key `shear-grid` belongs in `IiexRecipeConfig.DefaultCatalogue` (`IiexRecipeConfig.cs`) so the
 recipe rescales with `RecipeLevel`.
 
 Blade sets are separate tooling, not part of the block: STATE.md's D9 names "the shear's blade sets" among
@@ -224,7 +224,7 @@ column is what exists today and what it would be read from.
 | Key | Proposed value | file:line | What it does |
 |---|---|---|---|
 | `ShearStrokeMs` | 250 ms | - (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:41`) | stroke tick; the mill's own tick is a private const, not config, and the shear should not copy that mistake |
-| `ShearStrokeEnergy` | ≈ 1 stroke ≙ one mill pass's demand | - | drawn from the run as a pulse; sized against `RollingLoadTorque = 0.34`, the mill's declared working demand (`IwexConfig.cs`). ★ A shear stroke is the same shape of number: a state the machine is in, not a formula over the cut |
+| `ShearStrokeEnergy` | ≈ 1 stroke ≙ one mill pass's demand | - | drawn from the run as a pulse; sized against `RollingLoadTorque = 0.34`, the mill's declared working demand (`IiexConfig.cs`). ★ A shear stroke is the same shape of number: a state the machine is in, not a formula over the cut |
 | `ShearColdTorqueMultiplier` | ×3 over the hot cut | - | the whole cold-cut gate is this number against `MinTorque` |
 | `ShearMinTorqueHot` | 0.2 | - | matches the `flat` set's shipped `minTorque` so a starter waterwheel carries a hot thin crop |
 | `RollSetSpec.MinTorque` | (existing field, moves here) | `RollSetSpec.cs:30` (doc), `:37` (field), `:198` (parsed) | parsed, stored and never consulted - a repo-wide grep finds no read. The shear is its first consumer |
@@ -271,7 +271,7 @@ Nothing exists. Where it hooks in:
 
 | Piece | Where it goes | Model it on |
 |---|---|---|
-| `BlockShear` | `src/IronworkingExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` - `BlockNetworkNode` + `IExBlockDefProvider`, minus `IFillerHost`/`IFillerInteractionTarget` (no fillers at 1 × 1) |
+| `BlockShear` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` - `BlockNetworkNode` + `IExBlockDefProvider`, minus `IFillerHost`/`IFillerInteractionTarget` (no fillers at 1 × 1) |
 | `BlockEntityShear` | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:33` - `BlockEntityNetworkNode`, `IMpEnergyConsumer`, `NetworkType => "mpenergy"` (`:35-39`), `LoadTorque(speed)` (`:314-326`) returning 0 while idle |
 | speed read | inside the stroke tick | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed ?? 0f` - `BlockEntityRollingMill.cs:79-81` |
 | `ShearDecision` (pure) | **built 2026-08-13** - `.../Forming/ShearFeed.cs`, 13 tests | `ShearVerdict` has seven cases in the order a player can fix them: `NoBladeSet` → `NoJob` → `Spent` → `BladeTooSoft` → `NotTurning` → `NotEnoughDrive`. Needs no footprint, so it landed ahead of the layout |

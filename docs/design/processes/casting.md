@@ -2,7 +2,7 @@
 
 **Status** partial - the loop is live at two stations (the bed and the cell) and unbuilt at the third (the
 long cell)
-**Mods** iwex (all three sand stations, the sand, the patterns for iron parts) · lpex (machine-part patterns -
+**Mods** iiex (all three sand stations, the sand, the patterns for iron parts) · iiex (machine-part patterns -
 none shipped) · smex (the steel the long cell would take)
 
 **Owns** - the facts this page is canonical for:
@@ -80,7 +80,7 @@ SHAKE OUT    right-click empty-handed            once per casting  → the impre
 
 | Verb | Casting bed | Casting cell | Long cell |
 |---|---|---|---|
-| **Commission** | 12 × `game:sand-{sand}` as RCC stage 3 (`BlockSandCastingBed.cs:84-93`) | 1 × `iwex:greensand`, `RamSand` (`CastingCellLogic.cs:78-79`) | — |
+| **Commission** | 12 × `game:sand-{sand}` as RCC stage 3 (`BlockSandCastingBed.cs:84-93`) | 1 × `iiex:greensand`, `RamSand` (`CastingCellLogic.cs:78-79`) | — |
 | **Impress** | carve - a bare right-click on a slot cell; no material, no pattern (`BlockEntitySandCastingBed.cs:343`) | ram a `pattern-*`, costing 1 of its durability (`CastingCellLogic.cs:81-82`) | — |
 | **Pour** | pulls from any horizontal neighbour of the principal (`BlockEntitySandCastingBed.cs:267-287`) | pulls from the launder face only (`BlockEntitySandCastingCell.cs:155-174`) | — |
 | **Freeze** | per-cell thermal tick; a mold hoards its charge because a drain fitting never gives back (`BlockEntitySandCastingBed.cs:302-303`) | same model, one cell | — |
@@ -106,7 +106,7 @@ its own product, and each is gated by which furnace the player has built.
 
 | Route | Melting furnace | Station | What comes out | State today |
 |---|---|---|---|---|
-| **Bulk** | [cold](../machines/blast-furnace-cold.md) / [hot blast furnace](../machines/blast-furnace-hot.md) - `MetalProductCode = "pigiron"` (`BlockEntityShaftFurnace.cs:151`) | [casting bed](../machines/casting-bed.md) | `iwex:pig` / `pigchunk` / `pigbit`, and `iwex:slagbrick` from the same carve | live |
+| **Bulk** | [cold](../machines/blast-furnace-cold.md) / [hot blast furnace](../machines/blast-furnace-hot.md) - `MetalProductCode = "pigiron"` (`BlockEntityShaftFurnace.cs:151`) | [casting bed](../machines/casting-bed.md) | `iiex:pig` / `pigchunk` / `pigbit`, and `iiex:slagbrick` from the same carve | live |
 | **Parts** | [cupola](../machines/cupola.md) - `MetalProductCode = "castiron"` (`BlockEntityCupolaFurnace.cs:95`) | [casting cell](../machines/casting-cell.md) | `castplate-heavy`, `cast-barrel`, and the two iron molds | live |
 | **Stock** | [Bessemer](../machines/bessemer.md) / [open hearth](../machines/open-hearth.md), through the [ladle](../machines/ladle.md) | [long cell](../machines/long-cell.md) | `castbillet` · `castbloom` · `castslab` | block does not exist; ladle does not exist |
 
@@ -127,7 +127,7 @@ cavity is fixed: no ramming, no pattern, no shake-out, and no way to make a shap
 anticipate.
 
 The two technologies are wired to each other: the cell's first products are the iron molds that replace the
-clay ones (`iwex:castmold-plate`, `iwex:castmold-doubleingot`, `PatternItemDefinitions.cs:81-94`), and those
+clay ones (`iiex:castmold-plate`, `iiex:castmold-doubleingot`, `PatternItemDefinitions.cs:81-94`), and those
 molds then demand 200 u a fill and drop a `game:metalplate-{metal}` or two `game:ingot-{metal}`
 (`BlockCastMold.cs:50-51`). Clay caps out below iron temperatures ([molten canal § the clay heat
 gate](../machines/molten-canal.md)); sand casting is the way past the cap.
@@ -138,7 +138,7 @@ gate](../machines/molten-canal.md)); sand casting is the way past the cap.
 
 A station never names a product. The casting cell reads what to cast off the held stack, and matches a
 pattern by `FirstCodePart() == "pattern"` alone (`BlockEntitySandCastingCell.cs:188`), domain-blind. A mod
-adds a castable part with one pattern item and one filling shape, and iwex does not change and does not learn
+adds a castable part with one pattern item and one filling shape, and iiex does not change and does not learn
 that mod's name.
 
 The three consequences that belong to the process rather than to the station:
@@ -164,13 +164,13 @@ item pages'.
 
 | Route | In | Out | Mass, shipped | Mass, settled |
 |---|---|---|---|---|
-| Bulk | molten pig off the furnace tap | `iwex:pig` | 375 u (`Items/ItemPig.cs:39`) | 375 u - landed |
-| Bulk | — | `iwex:pigchunk` / `pigbit` | 25 / 5 u (`ItemPig.cs:40-41`) | landed with the pig |
-| Bulk | molten slag off the upper tap, same carve | `iwex:slagbrick` | `= PigUnits` (`SlagItemDefinitions.cs:27`) | follows the pig |
-| Parts | molten cast iron | `iwex:castplate-heavy` | 160 u (`CastPartItemDefinitions.cs:21`) | 500 u as a cast plate; the 600 u `heavyplate` is a separate rolled item |
-| Parts | molten cast iron | `iwex:cast-barrel` | 200 u (`CastPartItemDefinitions.cs:24`) | unchanged |
-| Parts | molten cast iron | `iwex:castmold-plate` (block) | 136 u cavity (`PatternItemDefinitions.cs:83`) | open |
-| Parts | molten cast iron | `iwex:castmold-doubleingot` (block) | 152 u cavity (`:90`) | open |
+| Bulk | molten pig off the furnace tap | `iiex:pig` | 375 u (`Items/ItemPig.cs:39`) | 375 u - landed |
+| Bulk | — | `iiex:pigchunk` / `pigbit` | 25 / 5 u (`ItemPig.cs:40-41`) | landed with the pig |
+| Bulk | molten slag off the upper tap, same carve | `iiex:slagbrick` | `= PigUnits` (`SlagItemDefinitions.cs:27`) | follows the pig |
+| Parts | molten cast iron | `iiex:castplate-heavy` | 160 u (`CastPartItemDefinitions.cs:21`) | 500 u as a cast plate; the 600 u `heavyplate` is a separate rolled item |
+| Parts | molten cast iron | `iiex:cast-barrel` | 200 u (`CastPartItemDefinitions.cs:24`) | unchanged |
+| Parts | molten cast iron | `iiex:castmold-plate` (block) | 136 u cavity (`PatternItemDefinitions.cs:83`) | open |
+| Parts | molten cast iron | `iiex:castmold-doubleingot` (block) | 152 u cavity (`:90`) | open |
 | Stock | molten steel via the ladle | `castbillet` 3 × 3 × 27 | no item exists | 243 vx³ |
 | Stock | molten steel via the ladle | `castbloom` 4 × 4 × 25 | no item exists | 400 vx³ → 1000 u |
 | Stock | molten steel via the ladle | `castslab` 12 × 4 × 25 | no item exists | 1200 vx³ → 3000 u |
@@ -217,7 +217,7 @@ clicks per casting against the cell's 2, a 2.5× advantage rather than a free on
 
 The converter-charge-to-slab arithmetic is [Bessemer § Open #2](../machines/bessemer.md)'s.
 
-### Asset census — `assets/iwex/shapes/casting/`
+### Asset census — `assets/iiex/shapes/casting/`
 
 | Measure | Count | Note |
 |---|---|---|
@@ -243,8 +243,8 @@ against the tree.
 * Sand is not a consumable because foundry sand is milled and re-tempered. The loop charges the ram-up:
   [R2](../conventions.md)'s "declared recovery, nothing hidden" applied to a material that comes back.
 * A casting station is a hole full of sand, not a machine that knows what it makes, so the pattern carries
-  the spec. That is the cross-mod extension point: lpex's machine parts arrive as pattern definitions with
-  no iwex change.
+  the spec. That is the cross-mod extension point: iiex's machine parts arrive as pattern definitions with
+  no iiex change.
 * The three products have different shapes of decision: bulk pig is a stream that must not need babysitting,
   a machine part is a build, stock is volume only a converter can supply.
 
@@ -260,7 +260,7 @@ against the tree.
    the long cell exists the rule "the pattern is the spec" is not enforceable on the one field that says
    which station the spec is for.
 
-3. **The two stations use two different sands.** The cell takes prepared `iwex:greensand` and refuses
+3. **The two stations use two different sands.** The cell takes prepared `iiex:greensand` and refuses
    everything else on a full-code match (`CastingCellLogic.cs:109`); the bed bakes ordinary construction sand
    into a `{sand}` block variant. Same process, two materials, and the doc-comment that explains why green
    sand exists (`GreenSandItemDefinitions.cs:20-25`) does not mention the bed.

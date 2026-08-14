@@ -1,5 +1,5 @@
 # Watt Engine
-**Status** live   **Mod** lpex
+**Status** live   **Mod** iiex
 
 **Owns**
 - The shared engine model (`BlockEntityEngine`, base of every steam engine in the suite): the
@@ -17,7 +17,7 @@
 - The steam pool, pressure, one-medium rule, burst-by-tier, the pressure valve, leaks, the network tick -
   [pipe network](../mechanics/pipe-network.md).
 - The `"mpenergy"` network, `E = ½Iω²`, the flywheel, its hub bridge, `BEBehaviorMPFillerPort`, transmissions
-  and every `Mp*` / `Flywheel*` key in iwex's config - [mp-energy](../mechanics/mp-energy.md).
+  and every `Mp*` / `Flywheel*` key in iiex's config - [mp-energy](../mechanics/mp-energy.md).
 - Fillers, footprints, the layout DSL, per-cell collision - [multiblock](../mechanics/multiblock.md).
 - Code-first defs, the RCC builder, `brokenDropsRatio` resolution, the cost catalogue -
   [recipes-config](../mechanics/recipes-config.md).
@@ -40,7 +40,7 @@ low-pressure beam engines.
 
 Its place in the progression is not "more power". At iron tier a vanilla waterwheel or windmill is bridged
 into mpenergy through the flywheel's hub ([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge);
-in lpex the player replaces the vanilla producer with a steam engine + MP generator, and the flywheel,
+in iiex the player replaces the vanilla producer with a steam engine + MP generator, and the flywheel,
 shafts, transmissions and every consumer are untouched. Steam's advantage is siting and reliability: water
 needs a river, wind needs weather, steam runs anywhere any time.
 
@@ -122,13 +122,13 @@ sub-machine's own back-reference does not do that - see [Gotchas](#gotchas) 1.
 | Asset | Path | State |
 |---|---|---|
 | Editable shape (engine) | — | missing. No `assets/editable/shapes/` source for the Watt engine |
-| Runtime shape (engine) | `assets/lpex/shapes/engine/watt.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `Rod` - exactly the six RCC stages |
+| Runtime shape (engine) | `assets/iiex/shapes/engine/watt.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `Rod` - exactly the six RCC stages |
 | Engine animations | same file | `cyclepump` (60 f, `Repeat`) · `cyclemp` (60 f, `Repeat`) · `idlepump` (30 f) · `idlemp` (30 f) |
 | Engine textures | `fire1`, `iron3`, `iron5`, `iron` | |
-| MP generator shape | `assets/lpex/shapes/engine/mpgenerator.json` | root `Cube2` + `Axle`; `idle` (30 f) · `cycle` (60 f) |
-| Fluid pump shape | `assets/lpex/shapes/engine/fluidpump.json` | root cubes + `Piston`; `idle` (30 f) · `cycle` (60 f) |
+| MP generator shape | `assets/iiex/shapes/engine/mpgenerator.json` | root `Cube2` + `Axle`; `idle` (30 f) · `cycle` (60 f) |
+| Fluid pump shape | `assets/iiex/shapes/engine/fluidpump.json` | root cubes + `Piston`; `idle` (30 f) · `cycle` (60 f) |
 | Fluid pump editable | `assets/editable/shapes/machine-pipe-megablock-mppump.json` | present (untracked in git) |
-| Handbook | `assets/lpex/config/handbook/02-engines.json` ↔ `docs/lpex/handbook/02-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
+| Handbook | `assets/iiex/config/handbook/02-engines.json` ↔ `docs/iiex/handbook/02-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
 
 All running clips use `onAnimationEnd: Repeat`, which they must: a `Hold` cycle would freeze and the
 RCC-suppressed mesh would vanish.
@@ -147,9 +147,9 @@ generator's own `cycle` clip is unused - instead the generator drives the engine
 ```
 _ H _          P = metalplate-* (iron/steel) ×1 each  → 4
 P R P          R = rod-* ×2                            → 2
-P I P          I = iwex:pipe-plated-straight-* ×1      → 1
+P I P          I = iiex:pipe-plated-straight-* ×1      → 1
                H = hammer (tool)
-→ lpex:enginewatt-north
+→ iiex:enginewatt-north
 ```
 
 The builder also declares `Ingredient("G", Gear(gear, 2))` (`:78`) which never appears in the
@@ -157,7 +157,7 @@ pattern, and the whole recipe is emitted twice, once per gear code (`:29-33`), p
 byte-identical recipes that differ only in a dead ingredient. See [Gotchas](#gotchas) 9.
 
 The three genuinely gear-driven machines (fluid pump, manual pump, MP generator) do use `G`, and each
-accepts `game:gear-rusty` or `lpex:gear-*`.
+accepts `game:gear-rusty` or `iiex:gear-*`.
 
 ### 2. The RCC stages — `BlockEngineWatt.cs:50-79`
 
@@ -179,10 +179,10 @@ match these exactly (unlike the boiler's).
 | Block | Pattern | Cost | file:line |
 |---|---|---|---|
 | MP generator | `_H_,GAG,PRP` | 2 plates · 2 rods · 4 gears · 1 `game:woodenaxle-ud` | `MachineRecipeDefinitions.cs:108-118` |
-| Fluid pump | `_HG,PIP,RIR` | 2 plates · 4 rods · 1 gear · 2 `iwex:pipe-plated-straight-*` | `:83-93` |
+| Fluid pump | `_HG,PIP,RIR` | 2 plates · 4 rods · 1 gear · 2 `iiex:pipe-plated-straight-*` | `:83-93` |
 
 Cost catalogue entries: `enginewatt-grid`, `enginewatt-rcc`, `enginempgenerator-grid`,
-`enginefluidpump-grid` (`LpexRecipeConfig.cs:65`, `:69`, `:70`, `:71`).
+`enginefluidpump-grid` (`IiexRecipeConfig.cs:65`, `:69`, `:70`, `:71`).
 
 ---
 
@@ -262,7 +262,7 @@ placeable block still falls through to vanilla placement so the player can keep 
 
 | state | condition | lang key |
 |---|---|---|
-| `over` | `> 4 atm` | `lpex:engine-info-clock-over` - "Over-pressured!" |
+| `over` | `> 4 atm` | `iiex:engine-info-clock-over` - "Over-pressured!" |
 | `nominal` | `≥ 2 atm` | "Nominal" |
 | `under` | `> 0.01 atm` | "Not enough pressure" |
 | `idle` | otherwise | "Idle" |
@@ -286,7 +286,7 @@ and a `DoWork` override.
 | Throttle | `PowerDemand` - default `1` when an engine is found (`:59`); the engine multiplies both its steam draw and its power by it |
 | Engine lookup | lazy and retried: BEs initialise in arbitrary chunk-load order, so a one-shot `Initialize` lookup misses (`:41-53`) |
 
-### MP generator — `lpex:enginempgenerator`
+### MP generator — `iiex:enginempgenerator`
 
 This is a vanilla-MP torque source. `BEBehaviorEngineMPGenerator` derives from
 `BEBehaviorMPSubmachineBase : BEBehaviorMPBase` - it is a participant on the vanilla mechanical graph, not
@@ -320,7 +320,7 @@ it (`BlockEntityEngineMPGenerator.cs:36-45`).
 spin to match the engine's beam linkage (`:75-84`). `AxisSign` is set per axis, not per facing, or
 opposite facings on one axle line counter-rotate (`BEBehaviorMPSubmachineBase.cs:37-40`).
 
-### Fluid pump — `lpex:enginefluidpump`
+### Fluid pump — `iiex:enginefluidpump`
 
 Connectors on DOWN (source) and left (delivery), where "left" is `WEST` rotated by the
 sub-machine's own side angle (`BlockEngineFluidPump.cs:39-46`) - for a north-facing engine, `NORTH`.
@@ -397,11 +397,11 @@ Cornish engine overrides them.
 
 ## Numbers
 
-### lpex config — `LpexConfig.cs`, `ModConfig/ex_values.json`, section `lpex`
+### iiex config — `IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `WattEngineEngagePressure` | `2.0 atm` | `LpexConfig.cs:163` | inlet at/above which it runs - a gate, not a throttle |
+| `WattEngineEngagePressure` | `2.0 atm` | `IiexConfig.cs:163` | inlet at/above which it runs - a gate, not a throttle |
 | `WattEngineBreakPressure` | `4.0 atm` | `:166` | above this it wears toward a burst |
 | `WattEngineMaxPower` | `0.3` | `:169` | both `MaxPower` and `RunPower` - the Watt has no throttle |
 | `WattEngineSteamRate` | `30 L/s` | `:172` | fixed draw while engaged |
@@ -425,13 +425,13 @@ Cornish engine overrides them.
 | Pump output pressure at 4 atm inlet | `4 × 0.75` | `3.0 atm` |
 | Running animation speed | `0.5 + 0.3` | `0.8` |
 
-> Two shipped comments are wrong. `LpexConfig.cs:193-194` says "A Watt at full power (0.3) × this = ~0.5 =
+> Two shipped comments are wrong. `IiexConfig.cs:193-194` says "A Watt at full power (0.3) × this = ~0.5 =
 > four helve hammers". The product is 0.2625, not 0.5. The handbook says the same figure is "enough to
 > run two helve hammers". Both are guesses at a number neither of them computes; the value in the game
 > is 0.2625, and how many helve hammers that is depends on vanilla's per-machine resistance, which nothing
 > here measures.
 >
-> `LpexConfig.cs:197-198` says "Water (L/s) the engine fluid pump moves per unit of mechanical power
+> `IiexConfig.cs:197-198` says "Water (L/s) the engine fluid pump moves per unit of mechanical power
 > (Watt 0.3 → 5 L/s)". `BlockEntityEngineFluidPump.cs:48` multiplies by a bare literal `3`, so the
 > shipped figure is 15 L/s. The doc comment describes the config key correctly and the machine
 > incorrectly. The handbook repeats the 5 L/s. Both sub-machines carry the same undocumented `× 3`
@@ -441,11 +441,11 @@ Cornish engine overrides them.
 
 | quantity | value | owner | file:line |
 |---|---|---|---|
-| Cornish boiler choke ceiling | `5.0 atm` | [Cornish boiler](boiler-cornish.md) | `LpexConfig.cs:156` |
+| Cornish boiler choke ceiling | `5.0 atm` | [Cornish boiler](boiler-cornish.md) | `IiexConfig.cs:156` |
 | Cornish boiler steam output | `32 L/s` | [Cornish boiler](boiler-cornish.md) | `:152` |
-| cast (lpex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
+| cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
 | pressure-valve gate step / ceiling | `0.25 atm` / block burst rating | [pipe network](../mechanics/pipe-network.md) | `BlockEntityPressureValve.cs:31`, `:41-42` |
-| `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iwex's | [mp-energy](../mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IwexConfig.cs:451-477` |
+| `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iiex's | [mp-energy](../mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IiexConfig.cs:451-477` |
 | air-blower output rate | smex's | smex | `SmexConfig.cs:113` |
 
 ```
@@ -501,7 +501,7 @@ the RCC salvage.
 
 | Path | Returns |
 |---|---|
-| Mined | 1 × `lpex:enginewatt-<side>` + 80 % of the construction materials (`RccBrokenDropsRatio`, `LpexConfig.cs:116`, registered at `LowPressureExpandedModSystem.cs:28-31`) |
+| Mined | 1 × `iiex:enginewatt-<side>` + 80 % of the construction materials (`RccBrokenDropsRatio`, `IiexConfig.cs:116`, registered at `LowPressureExpandedModSystem.cs:28-31`) |
 | Fillers | removed by `BlockFilledMegastructure`, never dropped |
 | Broken (burst) engine | still drops normally - the break costs nothing on break; the loss is the repair bill |
 | Sub-machine | ordinary block drop; independent of the engine |
@@ -560,7 +560,7 @@ boiler's explosion salvage path.
   ([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge) - the
   "swap the waterwheel for an engine" progression.
 
-### Tests — `test/LowPressureExpanded.Tests/Blocks/Engine/`
+### Tests — `test/IronIndustryExpanded.Tests/Blocks/Engine/`
 
 | file | pins |
 |---|---|
@@ -590,12 +590,12 @@ without a sub-machine demanding power.
    read from JSON at all; the sub-machine blocktypes declare no `submachineOffset`. Stale comment on top
    of a duplicated constant. An engine that ever moved its drive cell would break the inversion silently.
 
-3. The name "flywheel" is overloaded across two mods. `lpex:enginempgenerator` is a pure vanilla-MP
+3. The name "flywheel" is overloaded across two mods. `iiex:enginempgenerator` is a pure vanilla-MP
    torque source with no inertia, no stored energy and no `"mpenergy"` membership, and is easy to
-   mislabel a flywheel. iwex's `iwex:mpenergy-flywheel` is a
+   mislabel a flywheel. iiex's `iiex:mpenergy-flywheel` is a
    real `IMpEnergyStorage` disc on the `"mpenergy"` network with `I = 10` (normal) / `150` (large) and the
    vanilla bridge in its hub ([mp-energy](../mechanics/mp-energy.md)). They are different blocks in
-   different networks. Calling the lpex generator a flywheel implies it buffers, which is the
+   different networks. Calling the iiex generator a flywheel implies it buffers, which is the
    property it does not have.
 
 4. `IsMPGenerator` is a code-substring match. `path.Contains("mpgenerator")` (`:533-540`). Any block
@@ -648,24 +648,24 @@ without a sub-machine demanding power.
 
 15. `RepairDescription` is an untranslated English string. `"iron/steel plate"` / `"iron/steel rod"` are
     literals in `BlockEngineWatt.cs:83-84`, interpolated into the translated
-    `lpex:engine-repair-materials` line.
+    `iiex:engine-repair-materials` line.
 
 16. Several summaries misdescribe this area.
-    `LpexConfig.cs:221-224` documents `/exmod steam <level>` - the actual command is
-    `/exmod recipes lpex <level>` (`LowPressureExpandedModSystem.cs:34-46`); the config summaries name
+    `IiexConfig.cs:221-224` documents `/exmod steam <level>` - the actual command is
+    `/exmod recipes iiex <level>` (`LowPressureExpandedModSystem.cs:34-46`); the config summaries name
     `lpex_values.json` while the attribute registers `ex_values.json` with that as a legacy alias
-    (`LpexConfig.cs:16-21`). The dead cost key `pipe-straight-grid` (`LpexRecipeConfig.cs:76`) prices a grid
+    (`IiexConfig.cs:16-21`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:76`) prices a grid
     recipe that does not exist.
 
 ---
 
 ## Open
 
-- No editable shape for the engine. `assets/lpex/shapes/engine/watt.json` is the only copy.
+- No editable shape for the engine. `assets/iiex/shapes/engine/watt.json` is the only copy.
 - The sub-machine back-reference should call `TryFindEngineFor` (Gotcha 1). Two engines two cells apart
   is a legal, buildable layout today and the binding is undefined.
 - Nothing consumes the engine's power except the pump, the generator and smex's blower. Per the settled
-  design, lpex is due to own the steam hammer, the wide rolling hall, stamping, the bending roller, the
+  design, iiex is due to own the steam hammer, the wide rolling hall, stamping, the bending roller, the
   boring machine and the rivet die - none of which exists in `src/` ([steam-hammer](steam-hammer.md),
   [wide-hall](wide-hall.md), [bending-roller](bending-roller.md) and
   [boring-machine](boring-machine.md) hold the designs).

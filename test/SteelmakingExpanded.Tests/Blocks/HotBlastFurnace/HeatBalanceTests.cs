@@ -1,8 +1,8 @@
 using ExpandedLib.Heat;
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
-using IronworkingExpanded.Items;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.Items;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -12,8 +12,8 @@ namespace SteelmakingExpanded.Tests;
 
 /// <summary>
 /// Heat-balance parity between the cold and hot blast furnaces, the one fact that needs both types in
-/// scope. The model itself - calibration table, contributors, clamps - is iwex's and is asserted there
-/// against the cold furnace's block entity; iwex cannot see the hot type, so their agreement is pinned
+/// scope. The model itself - calibration table, contributors, clamps - is iiex's and is asserted there
+/// against the cold furnace's block entity; iiex cannot see the hot type, so their agreement is pinned
 /// here.
 /// </summary>
 public class HeatBalanceTests {
@@ -21,7 +21,7 @@ public class HeatBalanceTests {
     Stand(new BlockEntityBlastFurnaceHot(), "smex:blastfurnacecore-n");
 
   private static BlockEntityBlastFurnaceCold ColdFurnace() =>
-    Stand(new BlockEntityBlastFurnaceCold(), "iwex:furnace-blastcore-tier1-n");
+    Stand(new BlockEntityBlastFurnaceCold(), "iiex:furnace-blastcore-tier1-n");
 
   // Two concrete overloads rather than one generic: a `where T : BlockEntity` constraint is resolved by
   // xUnit's discovery reflection before the module initializer registers VsAssemblyResolver.

@@ -47,7 +47,7 @@ public class SmexRecipeConfig : IExVersionedConfig {
       },
 
       // Converter and hot-blast machine grid recipes. Iron-tier content (blast-furnace components,
-      // molten transport, slag paths) is registered by IwexRecipeConfig, so /exmod recipes smex
+      // molten transport, slag paths) is registered by IiexRecipeConfig, so /exmod recipes smex
       // discounts steelmaking only.
       ["converter-intake-grid"] = Grid("smex:converter-intake-*"),
       ["convertercontrol-grid"] = Grid("smex:convertercontrol-*"),
@@ -57,7 +57,7 @@ public class SmexRecipeConfig : IExVersionedConfig {
       ["engineairblower-grid"] = Grid("smex:engineairblower-*"),
       ["smokestack-intake-grid"] = Grid("smex:smokestack-intake-*"),
 
-      // Hoppers, which belong to the hot blast furnace; the cold furnace in iwex charges through its
+      // Hoppers, which belong to the hot blast furnace; the cold furnace in iiex charges through its
       // own tall hopper.
       ["hopperbell-grid"] = Grid("smex:hopperbell"),
       ["hopperreinforced-grid"] = Grid("smex:hopperreinforced"),

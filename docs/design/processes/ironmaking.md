@@ -2,10 +2,10 @@
 
 **Status** live end to end (verified against source 2026-08-07) - every machine in the loop exists, has a
 recipe and simulates; the whole lifecycle is pinned by
-`test/IronworkingExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs`, which charges, lights, melts,
+`test/IronIndustryExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs`, which charges, lights, melts,
 taps and extinguishes the real 160-cell structure on the clock. The numbers are first-pass calibration,
 pinned by tests, not playtested
-**Mods** iwex (the whole loop), smex (the hot-blast variant of one step, and the converter that consumes the
+**Mods** iiex (the whole loop), smex (the hot-blast variant of one step, and the converter that consumes the
 alternative exit)
 
 **Owns** - the facts this page is canonical for:
@@ -67,7 +67,7 @@ What the mod abstracts away:
 |---|---|
 | Gas chemistry (CO/CO₂ ratio, indirect vs direct reduction, solution loss) | one `T_process` law plus a heat-only gas pass; carbon is burned at the raceway and nowhere else ([heat balance](../mechanics/heat-balance.md), [layered-charge](../layered-charge.md)) |
 | The full mass balance | a **yield per ore unit**: iron out is `BfIronPerOreUnit` × the ore content of the burden actually melted, slag at a fixed 6:1 ratio to it - proportional to the charge, but with no per-heat ledger of gangue, moisture or losses |
-| Silicon, sulphur and phosphorus in the pig; foundry vs forge grades | one product, `iwex:ingot-pigiron` |
+| Silicon, sulphur and phosphorus in the pig; foundry vs forge grades | one product, `iiex:ingot-pigiron` |
 | Burden distribution gear, the rotating chute | "lowest column first" - hopper charging self-levels, hand charging does not |
 | Cast house, runners, sows and pigs, a crane | a canal and a sand bed |
 | Days-long blow-in, months-long campaigns, relining | lighting is positional and near-instant; a campaign ends when the carbon in the shaft does |
@@ -88,12 +88,12 @@ converter exists.
 | 1 | dig / crush ore | vanilla | pan, crush | `game:crushed-iron` | - |
 | 2 | grind flux | vanilla quern | grind limestone / chalk / marble | `game:lime` | - |
 | 3 | make fuel | vanilla coke oven or charcoal pit | see [coking](coking.md) | `game:coke` / `game:charcoal` | - |
-| 4 | combine | [burdenmaker](../machines/burdenmaker.md) | load the two hoppers, open the gate | `iwex:burden` - ore + flux only, flux-graded | no - hand-loaded; the gate is one click |
+| 4 | combine | [burdenmaker](../machines/burdenmaker.md) | load the two hoppers, open the gate | `iiex:burden` - ore + flux only, flux-graded | no - hand-loaded; the gate is one click |
 | 5 | charge in rounds | [tall hopper](../machines/tall-hopper.md) | load coke, let it lay; load burden, let it lay | fuel and burden bands on the shaft's columns | the drip is automatic; the loads, and the ratio between them, are the player's |
 | 6 | blow | [twin-tub blower](../machines/twin-tub-blower.md) on an axle | build it, couple an axle | air into the blast main | yes, continuous |
 | 7 | light | nothing - the furnace derives its own state | none | a lit raceway | yes - see § Blow-in |
 | 8 | melt | [blast furnace](../machines/blast-furnace-cold.md) | none | molten pig + molten slag in the hearth pools | yes - carbon burned is the throttle |
-| 9 | tap | `iwex:furnace-irontap` (low) and `-slagtap` (high) | RMB empty-handed to toggle | metal into a [canal](../machines/molten-canal.md) start below the spout | opening is manual; draining is not |
+| 9 | tap | `iiex:furnace-irontap` (low) and `-slagtap` (high) | RMB empty-handed to toggle | metal into a [canal](../machines/molten-canal.md) start below the spout | opening is manual; draining is not |
 | 10 | cast | [casting bed](../machines/casting-bed.md) | carve the slots once; RMB each hardened mold | pigs / chunks / bits, slag bricks | flow is automatic; harvest is not |
 | 11 | clear and rotate | more beds | break out and re-carve | a bed ready for the next tap | no - see § The bed rotation |
 | B | direct charge | [bessemer](../machines/bessemer.md) | route the canal to the converter's input tap instead | molten pig into the vessel | yes |
@@ -130,10 +130,10 @@ under-fluxed / standard / over-fluxed, and nothing mechanical reads it yet ([bur
 
 ### The tap
 
-Two tap blocktypes since 2026-08-03 - `iwex:furnace-irontap` at the crucible floor, `iwex:furnace-slagtap`
+Two tap blocktypes since 2026-08-03 - `iiex:furnace-irontap` at the crucible floor, `iiex:furnace-slagtap`
 higher in the same wall - so the wrong hole cannot complete a structure; and the live layout legends are
 oriented (`BlockBlastFurnaceCoreCold.cs:66`, `:80`), so a tap facing the wrong way is a build-outline
-mismatch rather than a silent dead tap. Opening one is refused with `iwex:tap-err-nocanal` unless a
+mismatch rather than a silent dead tap. Opening one is refused with `iiex:tap-err-nocanal` unless a
 [canal](../machines/molten-canal.md) start sits below the spout, i.e. at `side.Opposite` + one down
 (`BlockFurnaceTap.cs`, pinned by `BlastFurnaceTapTests`).
 
@@ -208,7 +208,7 @@ The designed blow-in makes lighting a sequence with a material cost, built entir
   breaking the plug opens the tap (the same held-stack + cost + refund shape the canal's seal uses,
   `TapPlugClayCost` / `TapUnplugClayRefund`). The plug renders as its own shape state - no animator - and
   an opened tap does not close itself: it runs until the crucible empties or the player re-plugs it.
-* An open tap with no canal below stops refusing. Instead of the `iwex:tap-err-nocanal` refusal, an open tap
+* An open tap with no canal below stops refusing. Instead of the `iiex:tap-err-nocanal` refusal, an open tap
   with nothing to pour into reports the missing canal in its block info and delivers nothing.
 * A lit torch through an open tap lights the furnace. The click routes to the furnace core and ignites the
   lowest chargeable round - the flame reaches up from the tap-hole into the raceway above the crucible. A
@@ -231,11 +231,11 @@ left at its own raceway and cannot relight off its own salvage.
 
 | Input | Vanilla source | Role in the loop | file:line |
 |---|---|---|---|
-| crushed iron ore | pan / crush vanilla ore | the burden's ore stream - `ironore` role, path prefix `crushed-iron` | `assets/iwex/config/materialroles.json:11` |
+| crushed iron ore | pan / crush vanilla ore | the burden's ore stream - `ironore` role, path prefix `crushed-iron` | `assets/iiex/config/materialroles.json:11` |
 | `game:lime` | grind limestone / chalk / marble on a quern | the flux stream - burden's one remaining quality | `materialroles.json:3` |
 | `game:coke` | vanilla coke oven - [coking](coking.md) | fuel: 1.0 carbon per item (role value 2 against `BfFuelCarbonReference` 2) | `materialroles.json:4` |
 | `game:charcoal` | vanilla charcoal pit | fuel: 0.5 carbon per item (value 1) - two charcoal carry one coke's carbon ([fuels](../items/fuels.md)) | `materialroles.json:5` |
-| air | [twin-tub blower](../machines/twin-tub-blower.md) on any vanilla axle source | the throttle - carbon burns only as fast as air arrives | `IwexConfig.cs` § Twin-tub blower |
+| air | [twin-tub blower](../machines/twin-tub-blower.md) on any vanilla axle source | the throttle - carbon burns only as fast as air arrives | `IiexConfig.cs` § Twin-tub blower |
 
 Coke is not in the burden, and there is no separate fuel intake. The furnace has exactly one intake, the
 tall hopper, and it takes coke and burden alternately; the coke ratio is a charging rhythm, not a mixing
@@ -248,8 +248,8 @@ ratio. Raw coal holds no role and must never be granted one - the `fuel` role is
 | Out | Where it appears | Denomination | file:line |
 |---|---|---|---|
 | molten pig iron | iron tap → canal → bed | 375 u per pig / 25 per chunk / 5 per bit | `ItemPig.cs:39-41` |
-| molten slag | slag tap → canal → the same bed | `iwex:slagbrick`, 375 u (`SlagBrickUnits = ItemPig.PigUnits`) | `SlagItemDefinitions.cs:27` |
-| `iwex:hearthmetal` | on the hearth floor, on extinguish | `game:metalbit-*` × the stamped count | `BlockHearthMetal.cs` |
+| molten slag | slag tap → canal → the same bed | `iiex:slagbrick`, 375 u (`SlagBrickUnits = ItemPig.PigUnits`) | `SlagItemDefinitions.cs:27` |
+| `iiex:hearthmetal` | on the hearth floor, on extinguish | `game:metalbit-*` × the stamped count | `BlockHearthMetal.cs` |
 | burnt-out charge | in the shaft, on extinguish | re-cokeable salvage - § The extinguish payout | `BlockEntityShaftFurnace.cs:1242-1292` |
 | exhaust (hot furnace only) | the outlet cells | → cowpers + stack | [hot blast furnace](../machines/blast-furnace-hot.md) |
 
@@ -269,9 +269,9 @@ hands back when it dies, and the loop's recovery guarantee (R2).
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfUnitsPerSolidNugget` | 5 u | `IwexConfig.cs:496` | Molten units that freeze into one nugget of `iwex:hearthmetal` |
-| `BfBurnoutFuelRetainedBottom` | 0.0 | `IwexConfig.cs:500` | Fraction of a fuel band surviving at the raceway, where the blast burned hardest - and the reason a dead furnace cannot relight itself |
-| `BfBurnoutFuelRetainedTop` | 0.4 | `IwexConfig.cs:504` | Fraction surviving at the stockline, which the blast never reached |
+| `BfUnitsPerSolidNugget` | 5 u | `IiexConfig.cs:496` | Molten units that freeze into one nugget of `iiex:hearthmetal` |
+| `BfBurnoutFuelRetainedBottom` | 0.0 | `IiexConfig.cs:500` | Fraction of a fuel band surviving at the raceway, where the blast burned hardest - and the reason a dead furnace cannot relight itself |
+| `BfBurnoutFuelRetainedTop` | 0.4 | `IiexConfig.cs:504` | Fraction surviving at the stockline, which the blast never reached |
 
 How they are spent, on extinguish:
 
@@ -321,15 +321,15 @@ every per-coke figure below.
 
 | Quantity | Value | Derived from |
 |---|---|---|
-| cold shaft capacity | 38 cells × 32 items = 1 216 items | `ChargeItemsPerBand` 2 × 16 bands (`IwexConfig.cs:759`); 38 chargeable cells (the layout, [cold blast furnace](../machines/blast-furnace-cold.md)) - capacity is geometry, `ChargeCapacityUnits`, not a key |
-| a reference charge | 973 burden + 243 coke items | 4 : 1 - `BfBurdenPerCarbonUnit` (`IwexConfig.cs:383`) read as the 20 % grade |
+| cold shaft capacity | 38 cells × 32 items = 1 216 items | `ChargeItemsPerBand` 2 × 16 bands (`IiexConfig.cs:759`); 38 chargeable cells (the layout, [cold blast furnace](../machines/blast-furnace-cold.md)) - capacity is geometry, `ChargeCapacityUnits`, not a key |
+| a reference charge | 973 burden + 243 coke items | 4 : 1 - `BfBurdenPerCarbonUnit` (`IiexConfig.cs:383`) read as the 20 % grade |
 | coke to fill it | 243 items ≈ 3.8 stacks | coke stacks to 64 |
-| iron per coke item | 4 × 0.95 × 8.5 = 32.3 u | `BfBurdenPerCarbonUnit` × ore share × `BfIronPerOreUnit` (`IwexConfig.cs:470`; the 8.5 anchor is [roasting](roasting.md)'s) |
+| iron per coke item | 4 × 0.95 × 8.5 = 32.3 u | `BfBurdenPerCarbonUnit` × ore share × `BfIronPerOreUnit` (`IiexConfig.cs:470`; the 8.5 anchor is [roasting](roasting.md)'s) |
 | pig from the full charge | 973 × 0.95 × 8.5 ≈ 7 860 u ≈ 21 pigs | above; pig 375 u ([pig](../items/pig.md)) |
-| slag alongside | 973 × 0.95 × 8.5⁄6 ≈ 1 310 u ≈ 3.5 bricks | `BfSlagPerOreUnit` = 8.5/6 (`IwexConfig.cs:478`) |
+| slag alongside | 973 × 0.95 × 8.5⁄6 ≈ 1 310 u ≈ 3.5 bricks | `BfSlagPerOreUnit` = 8.5/6 (`IiexConfig.cs:478`) |
 | shaft-fulls per bed | 7 860 ÷ (20 × 375) = 1.05 | bed capacity 20 castings ([casting bed](../machines/casting-bed.md)) - the settled anchor: one shaft ≈ one bed |
-| campaign length, blown | 243 ÷ (0.175 × 2) ≈ 695 s ≈ 11½ min | `BfRacewayCarbonPerTuyerePerSecond` × 2 tuyeres (`IwexConfig.cs:352`) |
-| one burdenmaker batch | 512 ore + ~27 lime → ≈ 539 burden (≈ 4.2 stacks) | `BurdenmakerOreCapacity` (`IwexConfig.cs:703`); 5 % flux |
+| campaign length, blown | 243 ÷ (0.175 × 2) ≈ 695 s ≈ 11½ min | `BfRacewayCarbonPerTuyerePerSecond` × 2 tuyeres (`IiexConfig.cs:352`) |
+| one burdenmaker batch | 512 ore + ~27 lime → ≈ 539 burden (≈ 4.2 stacks) | `BurdenmakerOreCapacity` (`IiexConfig.cs:703`); 5 % flux |
 | batches per reference shaft | 973 ÷ 539 ≈ 1.8 | above |
 | the same charge on charcoal | 486 items ≈ 7.6 stacks, and it runs cooler | charcoal is 0.5 carbon/item; a charcoal course must also be richer to melt - break-even ≈ 0.32 by volume ([fuels](../items/fuels.md)) |
 
@@ -374,7 +374,7 @@ overflow once the steel tier is built rather than being replaced.
 ## Gotchas
 
 1. Tap facing is load-bearing, and the live legends enforce it (verified against source 2026-08-07). The
-   taps are typed blocks (`iwex:furnace-irontap` / `-slagtap`) and the layout legends are oriented - iron
+   taps are typed blocks (`iiex:furnace-irontap` / `-slagtap`) and the layout legends are oriented - iron
    `WithSide(WEST)`, slag `WithSide(EAST)`, tuyeres likewise (`BlockBlastFurnaceCoreCold.cs:66`, `:80`,
    `:94-95`) - so a wrong-facing or wrong-type part reads as a build-outline mismatch rather than a silent
    dead tap. The invariant, pinned by `BlastFurnaceTapTests`: the `side` variant faces into the furnace, and

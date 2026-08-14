@@ -70,11 +70,11 @@
       "blockNumbers": {
         "game:refractorybricks-good-tier3": 1,
         "smex:blastfurnacecore-*": 2,
-        "iwex:furnace-irontap-w": 3,
-        "iwex:furnace-slagtap-e": 4,
-        "iwex:furnace-tuyere-n": 5,
-        "iwex:furnace-tuyere-s": 6,
-        "lpex:pipe-outlet*": 7,
+        "iiex:furnace-irontap-w": 3,
+        "iiex:furnace-slagtap-e": 4,
+        "iiex:furnace-tuyere-n": 5,
+        "iiex:furnace-tuyere-s": 6,
+        "iiex:pipe-outlet*": 7,
         "smex:hopperreinforced": 8,
         "smex:hopperbell": 9,
         "*:@(air|coalpile|furnace-chargepile)": 10,
@@ -967,16 +967,16 @@
       ]
     },
     "multiblockFacings": {
-      "iwex:furnace-irontap-w": [
+      "iiex:furnace-irontap-w": [
         2
       ],
-      "iwex:furnace-slagtap-e": [
+      "iiex:furnace-slagtap-e": [
         2
       ],
-      "iwex:furnace-tuyere-n": [
+      "iiex:furnace-tuyere-n": [
         2
       ],
-      "iwex:furnace-tuyere-s": [
+      "iiex:furnace-tuyere-s": [
         2
       ]
     },

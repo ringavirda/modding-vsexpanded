@@ -13,7 +13,7 @@ namespace SteelmakingExpanded;
 /// Main mod system for Steelmaking Expanded. Auto-registers every block, block-entity, item and
 /// behavior class via <see cref="EntityRegistry"/>, adds the mod's creative tab, and registers the
 /// mod's recipe-cost profile and the bessemer converter's RCC salvage ratio. The molten-metal network
-/// belongs to iwex and the pipe network to lpex; this mod only consumes them.
+/// belongs to iiex and the pipe network to iiex; this mod only consumes them.
 /// </summary>
 public class SteelmakingExpandedModSystem : ModSystem {
   private Harmony? _harmony;

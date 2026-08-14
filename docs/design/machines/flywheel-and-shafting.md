@@ -3,7 +3,7 @@
 **Status** live and craftable - all five pieces place, connect, buffer, couple and animate, pinned by 45
 test methods across six files; grid recipes cover the spur gear, both flywheels, the shaft and the three
 transmission housings. The bevel-gear item still has no recipe.
-**Mod** iwex (`IronworkingExpanded`), folder `BlockNetworkEnergy/`
+**Mod** iiex (`IronIndustryExpanded`), folder `BlockNetworkEnergy/`
 
 **Owns** the five pieces of `"mpenergy"` hardware as content:
 
@@ -16,7 +16,7 @@ transmission housings. The bevel-gear item still has no recipe.
 * the transmission block - the 2 × 2 footprint, the three types × four sides, the three-stage RCC and
   what it costs, the clutch lever cell and its interaction routing, and its no-drops rule;
 * the bevel-gear item definition;
-* every asset in `assets/iwex/shapes/mpenergy/` and its wiring state, including the orphaned and
+* every asset in `assets/iiex/shapes/mpenergy/` and its wiring state, including the orphaned and
   retired editable sources;
 * the family's grid recipes (`Recipes/Grid/EnergyRecipeDefinitions.cs`) and the transmission's RCC cost.
 
@@ -49,7 +49,7 @@ spins it up at all, so there is no trickle-charging a pulse. The build ritual th
 up, then roll - is owned by [mp-energy](../mechanics/mp-energy.md).
 
 At iron tier the prime mover is vanilla, a waterwheel or windmill bridged through the flywheel's hub, so
-mechanical power exists long before a boiler does; in lpex the player swaps the producer for an engine and
+mechanical power exists long before a boiler does; in iiex the player swaps the producer for an engine and
 the network is unchanged.
 
 The large flywheel and both ratio transmissions have nothing to justify them yet. The rolling mill is the
@@ -101,7 +101,7 @@ A thin octagonal bar on the run's axis, three orientations - `ns`, `we` and `ud`
 cell depth, rotated per orientation by the base (`:46-47`); the block is neither side-solid nor side-opaque
 (`:48-49`), so a shaft reads as a shaft rather than a wall.
 
-The bevel is the same block with a gear on it. It is not placed: the player uses one `iwex:bevelgear` on
+The bevel is the same block with a gear on it. It is not placed: the player uses one `iiex:bevelgear` on
 a shaft and `SetBlock` swaps the block (and therefore the BE class - shaft `RemoveNode`, bevel `AddNode`) for
 `mpenergy-bevel-<same orientation>` (`BlockCastIronShaft.cs:62-88`). It declares the same three
 orientations as the shaft, and must: a `ud` run that could climb but never turn off would be a dead end
@@ -139,13 +139,13 @@ be placed against it; clicks before construction fall through to the RCC behavio
 
 | Piece | Runtime shape | Clips | Textures | Elements |
 |---|---|---|---|---|
-| Flywheel (normal) | `assets/iwex/shapes/mpenergy/flywheel.json` | `idle`, `cycle` (30 f) | `iron5`, `cast-iron1` | Supports · ShaftHousing · AxleShaft · Mass |
+| Flywheel (normal) | `assets/iiex/shapes/mpenergy/flywheel.json` | `idle`, `cycle` (30 f) | `iron5`, `cast-iron1` | Supports · ShaftHousing · AxleShaft · Mass |
 | Flywheel (large) | `.../flywheel-large.json` | `idle`, `cycle` (30 f) | `iron3`, `iron5`, `cast-iron1` | same four |
 | Shaft and bevel | `.../shaft.json` | none | `cast-iron1` | `Cube2` |
 | Bevel gear (block part) | `.../bevelgear.json` | none | `cast-iron1` | `HubS` - authored facing south |
 | Transmission x2 / x4 | `.../transmission-x2.json`, `-x4.json` | `idle`, `cycle` (30 f) | `plain`, `iron5`, `cast-iron1` | Base · MainShafts · SupportShaft |
 | Transmission clutch | `.../transmission-clutch.json` | `connected`, `disconnected`, `mainshaft1cycle`, `mainshaft2cycle`, `sideshaftcycle` (30 f) | `iron5`, `cast-iron1` | Base · MainShafts · SupportShaft |
-| Bevel-gear item | `iwex:item/gearbevel` (`assets/iwex/shapes/item/gearbevel.json`) | - | - | - |
+| Bevel-gear item | `iiex:item/gearbevel` (`assets/iiex/shapes/item/gearbevel.json`) | - | - | - |
 
 Every clip is authored as one revolution of its reference shaft; the playback convention that depends on
 that is owned by [mp-energy](../mechanics/mp-energy.md).
@@ -185,8 +185,8 @@ Grid recipes for the family live in `Recipes/Grid/EnergyRecipeDefinitions.cs`:
 
 | Output | Recipe | Note |
 |---|---|---|
-| `iwex:spurgear` ×1 | chisel + 2 × `game:ingot-iron` (`:43-50`) | the bootstrap route - wasteful on purpose |
-| `iwex:spurgear` ×2 | chisel + 1 × `iwex:ingot-castiron` (`:52-59`) | the cupola route - cast iron is the tier's cheap bulk metal |
+| `iiex:spurgear` ×1 | chisel + 2 × `game:ingot-iron` (`:43-50`) | the bootstrap route - wasteful on purpose |
+| `iiex:spurgear` ×2 | chisel + 1 × `iiex:ingot-castiron` (`:52-59`) | the cupola route - cast iron is the tier's cheap bulk metal |
 | flywheel (normal) | diagram (tool) + 4 `castwheelsection` + 4 `castplate-heavy` + 1 spurgear (`:91-101`) | costed in mass |
 | flywheel (large) | diagram (tool) + 8 `castwheelsection` + a normal flywheel (`:105-113`) | upgraded in place, not built from scratch |
 | shaft ×2 | hammer + rod + plate (`:124-132`) | the cheapest thing on the network by design |
@@ -197,7 +197,7 @@ Both flywheel grids are diagram-led flat material lists - the plan plus its bill
 per distinct ingredient ([diagram-crafting](../mechanics/diagram-crafting.md)); each size has its own
 diagram (a 5×5×2 wheel is a different drawing from a 3×3×1 one).
 
-The bevel is not crafted: it is made in world by using an `iwex:bevelgear` on a placed shaft, which is
+The bevel is not crafted: it is made in world by using an `iiex:bevelgear` on a placed shaft, which is
 also why its blocktype carries no creative entry and is `HandbookExclude()`d
 (`BlockCastIronBevel.cs:45`). The bevel-gear item has no recipe - its definition
 (`BevelGearItemDefinitions.cs:14-24`) is complete but sourceless: consumed to make a bevel, recovered when
@@ -209,11 +209,11 @@ A placed transmission housing is completed as a three-stage RightClickConstructa
 | Stage | Requires | Adds shape elements | Lang key |
 |---|---|---|---|
 | 1 | - | `Base` | - |
-| 2 | `iwex:spurgear` × 2 · `game:ingot-iron` × 4 | `MainShafts` | `iwex:rcc-ingredient-transmissiongears`, `…shafts` |
-| 3 | `game:ingot-iron` × 2 | `SupportShaft` | `iwex:rcc-ingredient-transmissionsupport` |
+| 2 | `iiex:spurgear` × 2 · `game:ingot-iron` × 4 | `MainShafts` | `iiex:rcc-ingredient-transmissiongears`, `…shafts` |
+| 3 | `game:ingot-iron` × 2 | `SupportShaft` | `iiex:rcc-ingredient-transmissionsupport` |
 
-Total 2 spur gears + 6 iron ingots on top of the housing. The stage gears are iwex's own cast gear;
-reaching upward for `lpex:gear-iron` makes the block unbuildable for an iwex-only player, and the placement
+Total 2 spur gears + 6 iron ingots on top of the housing. The stage gears are iiex's own cast gear;
+reaching upward for `iiex:gear-iron` makes the block unbuildable for an iiex-only player, and the placement
 rule forbids it (`BlockTransmission.cs:70-72`). `ShapeSelectiveElements("Base/*")` (`:87`) is what makes
 the unbuilt block show only its base. `NoDrops()` (`:52`) plus an empty `GetDrops` means the block itself
 never drops - the RCC scatters the construction materials instead.
@@ -238,7 +238,7 @@ cell must stay solid without culling its neighbours' faces (`BlockFlywheel.cs:10
 
 | Held | On | Result |
 |---|---|---|
-| `iwex:bevelgear` | a `mpenergy-shaft` | consumes one gear, swaps the cell for a bevel of the same axis (`BlockCastIronShaft.cs:62-88`) |
+| `iiex:bevelgear` | a `mpenergy-shaft` | consumes one gear, swaps the cell for a bevel of the same axis (`BlockCastIronShaft.cs:62-88`) |
 | anything else | a shaft | falls through to the base behaviour |
 
 There is no face or support to pick: the branches follow whatever perpendicular shafts are then placed
@@ -286,14 +286,14 @@ the block half only.
 | `sideSolid` / `sideOpaque` | `false` / `false` (both) | `:48-49`, `:55-56` |
 | handbook | shaft grouped `mpenergy-shaft-*`; bevel excluded | `:38`, `:45` |
 | gear rotation table | south = identity; N `π`; E `π/2`; W `3π/2`; U `−π/2`; D `+π/2` | `EnergyMeshes.cs:30-40` - hard-coded, pure, pinned |
-| shaft / gear shape refs | `iwex:shapes/mpenergy/shaft.json`, `…/bevelgear.json` | `EnergyMeshes.cs:16-21` - hard-coded `AssetLocation` statics |
+| shaft / gear shape refs | `iiex:shapes/mpenergy/shaft.json`, `…/bevelgear.json` | `EnergyMeshes.cs:16-21` - hard-coded `AssetLocation` statics |
 
 ### Bevel-gear item — `BevelGearItemDefinitions.cs`
 
 | Key | Value | file:line | Note |
 |---|---|---|---|
 | `GearUnits` | `40` | `:12` | hard-coded `private const`; the cast iron a gear is worth for remelt |
-| shape | `iwex:item/gearbevel` | `:18` | |
+| shape | `iiex:item/gearbevel` | `:18` | |
 | `maxStackSize` | `16` | `:19` | |
 | `materialDensity` | `7200` | `:20` | cast iron, not the 7800/7870 used for wrought/steel elsewhere |
 | `combustibleProps.meltingPoint` | `1150` | `:21` | cast iron melts well below wrought |
@@ -308,7 +308,7 @@ the block half only.
 | `miningTier` / `resistance` | `0` / `4.5` | `:46-47` |
 | `maxStackSize` | `1` | `:48` |
 | drops | `NoDrops()` + empty `GetDrops` | `:52`, `:220-225` |
-| RCC cost | 2 × `iwex:spurgear`, 6 × `game:ingot-iron` | `:67-80` |
+| RCC cost | 2 × `iiex:spurgear`, 6 × `game:ingot-iron` | `:67-80` |
 | selective elements | `Base/*` | `:87` |
 | collision / selection | full cube | `:89-90` |
 | `sideSolid` / `sideOpaque` | `false` / `false` | `:91-92` |
@@ -322,7 +322,7 @@ the block half only.
 |---|---|
 | Flywheel | the wheel (default `BlockNetworkNode` drop, `stackSize 1`). Fillers are cleared first so none is orphaned (`BlockFlywheel.cs:179-190`) |
 | Shaft | the shaft (default drop, `stackSize 64`) |
-| Bevel | the shaft it was made from + one `iwex:bevelgear` - an explicit `GetDrops` override, so the conversion is fully reversible (`BlockCastIronBevel.cs:118-135`). The shaft variant is reconstructed from `Orientation`, defaulting to `ns` |
+| Bevel | the shaft it was made from + one `iiex:bevelgear` - an explicit `GetDrops` override, so the conversion is fully reversible (`BlockCastIronBevel.cs:118-135`). The shaft variant is reconstructed from `Orientation`, defaulting to `ns` |
 | Transmission | nothing from the block. The RCC behaviour scatters whatever construction materials went in (`BlockTransmission.cs:52`, `:219-225`) |
 | A transmission filler | routes to the principal, per the shared filler system ([multiblock](../mechanics/multiblock.md)) |
 
@@ -365,7 +365,7 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Energy/` - six files, 45 methods: `FlywheelTests` (13),
+`test/IronIndustryExpanded.Tests/Blocks/Energy/` - six files, 45 methods: `FlywheelTests` (13),
 `CastIronBevelTests` (10), `TransmissionTests` (9), `EnergyAnimTests` (6), `CastIronShaftTests` (4),
 `EnergyMeshesTests` (3). The network model itself is pinned in
 `test/ExpandedLib.Tests/Networks/MpEnergyNetworkStateTests.cs` and `…TickTests.cs`.
@@ -419,7 +419,7 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
   turn the ratios and the large wheel into decisions.
 - The shared-shaft train is the first real multi-consumer test. Six stands idling on one line plus one
   under load is a sustained draw a single bridged waterwheel will not carry, which is the case for a
-  bigger prime mover, and it arrives when lpex hands one over. Nothing in the current model has been
+  bigger prime mover, and it arrives when iiex hands one over. Nothing in the current model has been
   exercised against more than one load.
 - Re-export the runtime shapes from the new editable sources, then delete the retired ones from the
   index.

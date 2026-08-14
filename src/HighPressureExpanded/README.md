@@ -2,9 +2,9 @@
 
 A [Vintage Story](https://www.vintagestory.at/) mod adding the high-pressure end of the
 steam chain. It is the top of the *Expanded* mod family:
-`exlib -> iwex -> lpex -> smex -> hpex`. Most players stay low-tech, so high pressure is
+`exlib -> iiex -> iiex -> smex -> hpex`. Most players stay low-tech, so high pressure is
 deliberately opt-in - a player who never installs `hpex` still has a complete
-`iwex + lpex + smex` experience.
+`iiex + iiex + smex` experience.
 
 ## What it adds
 
@@ -15,7 +15,7 @@ deliberately opt-in - a player who never installs `hpex` still has a complete
 - **Cornish engine** - the efficient high-pressure beam engine (6-8 atm). Its steam
   control rods are wrench-adjustable through Low / Normal / High, which raises both the
   steam it draws (8 / 16 / 32 L/s) and the pressure band it needs to engage. Drives any
-  of the sub-machines from `lpex`/`smex` (MP generator, fluid pump, air blower).
+  of the sub-machines from `iiex`/`smex` (MP generator, fluid pump, air blower).
 
 There is **no separate HP network**: the pipe network is one live pressure pool, and "high
 pressure" is simply steam carried above the low tier's band. The Lancashire's 12 atm
@@ -28,7 +28,7 @@ switched with `/exmod recipes hpex <level>`.
 
 ## Code layout
 
-Both machines are thin **leaves**: they inherit essentially everything from `lpex`'s
+Both machines are thin **leaves**: they inherit essentially everything from `iiex`'s
 `BlockBoiler`/`BlockEntityBoiler` and `BlockEngine`/`BlockEntityEngine` and override only
 their per-variant stat table, their construction stages and (for the engine) the throttle
 interaction.
@@ -37,11 +37,11 @@ interaction.
 - `BlockStructures/Engine/` - the Cornish engine block + block entity.
 - `Recipes/` - the two grid "frame" recipes, code-first.
 - `BlockMigrations/` - the save migration that moves placed HP machines off their old
-  `lpex:`/`ppex:` codes.
+  `iiex:`/`ppex:` codes.
 - `../../assets/hpex/` - shapes, lang, handbook page.
 
 This mod deliberately registers **no network type** (the `pipe` network is owned by
-`iwex`) and applies **no Harmony patches**.
+`iiex`) and applies **no Harmony patches**.
 
 ## Building
 

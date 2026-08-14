@@ -20,8 +20,8 @@
 [heat balance](../mechanics/heat-balance.md) (the `T_process` law, the preheat term, the raceway rate model,
 exhaust volume/temperature constants, and every `Bf*` key) ·
 [cold blast furnace](blast-furnace-cold.md) (the shaft machinery this furnace inherits - the charge-column
-model, the taps, tuyeres, yields, pools and drains; the iwex part blocks `iwex:furnace-tuyere`,
-`iwex:furnace-irontap` / `-slagtap` are defined there) · [charge-pile](charge-pile.md) (the pile block the
+model, the taps, tuyeres, yields, pools and drains; the iiex part blocks `iiex:furnace-tuyere`,
+`iiex:furnace-irontap` / `-slagtap` are defined there) · [charge-pile](charge-pile.md) (the pile block the
 columns draw) · [burdenmaker](burdenmaker.md) (where burden is made) · [burden](../items/burden.md) (the
 ore + flux item and its flux stamp) · [fuels](../items/fuels.md) (coke and charcoal carbon values) ·
 [cowper](cowper.md) (the preheat source) · [smokestack](smokestack.md) (the exhaust sink) ·
@@ -39,7 +39,7 @@ The steel tier's ironmaking anchor. It is the same machine as the
 can be recovered by a [cowper](cowper.md) and blown back in as preheated air.
 
 "Hot blast" is the preheat term in [heat balance](../mechanics/heat-balance.md)'s `T_in`, and the only
-reason this furnace can make it non-zero is that its layout marks two `lpex:pipe-outlet` cells
+reason this furnace can make it non-zero is that its layout marks two `iiex:pipe-outlet` cells
 `CellRole.GasOutlet` - cells the cold furnace's drawing does not have. Run the same structure on unheated
 air and it behaves as a cold furnace. There is no flag, no branch and no second copy of the model.
 
@@ -48,7 +48,7 @@ air and it behaves as a cold furnace. There is no flag, no branch and no second 
 | | Cold | Hot |
 |---|---|---|
 | Refractory tier | any (`tier*`) | tier 3 only |
-| Charging | one `iwex:hopper-tall` | reinforced hopper + bell hopper over a sealed top |
+| Charging | one `iiex:hopper-tall` | reinforced hopper + bell hopper over a sealed top |
 | Top | open stack | sealed: bell hopper over a 1-cell air throat |
 | Exhaust | none - the open top is the chimney | 2 outlets, 48 L/s, feeding cowpers + a smokestack |
 | Blast | ambient air off the [twin-tub blower](twin-tub-blower.md) | preheated air off a charged [cowper](cowper.md) |
@@ -64,7 +64,7 @@ engine's air blower rather than a hand-fed blower.
 
 Anchor: `smex:blastfurnacecore-{side}` at the bottom centre of the furnace, in the hearth floor directly
 under the shaft. The hot core passes no brick tiers to the shared `BlockFurnaceCoreBase.Core(...)`
-fragment, so unlike `iwex:furnace-blastcore-{tier}-{side}` it is a single, tier-less block.
+fragment, so unlike `iiex:furnace-blastcore-{tier}-{side}` it is a single, tier-less block.
 
 Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the negation of the `C` glyph's
 (col, row), per [multiblock](../mechanics/multiblock.md).
@@ -81,14 +81,14 @@ Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the nega
 |---|---|---|
 | `#` | `game:refractorybricks-good-tier3` - exact, no wildcard | 99 |
 | `C` | `smex:blastfurnacecore-*` (the anchor) | 1 |
-| `T` | `iwex:furnace-irontap`, facing west - the east wall, pours out to (3, 0, 0) | 1 |
-| `S` | `iwex:furnace-slagtap`, facing east - the west wall, one course higher, pours to (−3, 1, 0) | 1 |
-| `Y` / `y` | `iwex:furnace-tuyere`, orientation n / s | 2 |
-| `P` | `lpex:pipe-outlet*` - the hot furnace's own addition | 2 |
+| `T` | `iiex:furnace-irontap`, facing west - the east wall, pours out to (3, 0, 0) | 1 |
+| `S` | `iiex:furnace-slagtap`, facing east - the west wall, one course higher, pours to (−3, 1, 0) | 1 |
+| `Y` / `y` | `iiex:furnace-tuyere`, orientation n / s | 2 |
+| `P` | `iiex:pipe-outlet*` - the hot furnace's own addition | 2 |
 | `R` | `smex:hopperreinforced` | 1 |
 | `B` | `smex:hopperbell` | 1 |
 | `c` | the shaft - the same air / pile / hearth-metal alternation as the cold furnace's | 36 |
-| `p` | the crucible floor - same alternation plus `iwex:hearthmetal-*`, marked `Chargeable` and `Pool` | 2 |
+| `p` | the crucible floor - same alternation plus `iiex:hearthmetal-*`, marked `Chargeable` and `Pool` | 2 |
 | `a` | `game:air` - the throat under the bell | 1 |
 
 Per layer: y0 20 · y1 16 · y2 23 · y3 23 · y4 21 · y5 21 · y6 9 · y7 9 · y8 5.
@@ -122,7 +122,7 @@ The shaft is a 3 × 3 column stack from y = 2 to y = 5 plus the two crucible cel
 
 | Level | Cold furnace | Hot furnace |
 |---|---|---|
-| y = 6 | brick ring + `iwex:hopper-tall` + air | `P` `a` `P` - the two gas outlets flanking a one-cell throat |
+| y = 6 | brick ring + `iiex:hopper-tall` + air | `P` `a` `P` - the two gas outlets flanking a one-cell throat |
 | y = 7 | brick ring + hopper filler + air | brick ring + `B` bell hopper |
 | y = 8 | brick + air (open stack) | brick cross + `R` reinforced hopper |
 
@@ -150,9 +150,9 @@ which are smex's.
 | core faces | `game:block/clay/refractory/tier3/front1` on `all`; `smex:block/furnace/n` overlay north, `smex:block/furnace/bfh` overlay south | live - the "BF/H" label is what tells the three furnace anchors apart |
 | reinforced hopper shape | `assets/smex/shapes/blastfurnace/hopper-reinforced.json` | live; no animation |
 | bell hopper shape | `assets/smex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
-| charge contents mesh | `iwex:shapes/ore/burden.json`, tesselated at runtime by the reinforced hopper | live - the only moving part either hopper shows |
-| tuyere / tap shapes | iwex - see [cold blast furnace](blast-furnace-cold.md) | |
-| outlet shape | `lpex:pipes/outlet` | see [pipe network](../mechanics/pipe-network.md) |
+| charge contents mesh | `iiex:shapes/ore/burden.json`, tesselated at runtime by the reinforced hopper | live - the only moving part either hopper shows |
+| tuyere / tap shapes | iiex - see [cold blast furnace](blast-furnace-cold.md) | |
+| outlet shape | `iiex:pipes/outlet` | see [pipe network](../mechanics/pipe-network.md) |
 
 Editable sources: only `assets/editable/shapes/furnace-block-hopperreinforced.json` exists. The bell hopper
 has no editable counterpart and cannot be re-edited from source.
@@ -180,11 +180,11 @@ No RCC: three grid recipes plus hand-laid brick. All in
 | `smex:hopperreinforced` | `_H_,PSP,SPS` | 4 × plate, 3 × nails, hammer |
 | `smex:hopperbell` | `GHG,PSP,SPS` | 4 × plate, 3 × nails, hammer, 4 × gear |
 
-The bell hopper is authored twice, once per gear source - `game:gear-rusty` and `lpex:gear-*` - the
+The bell hopper is authored twice, once per gear source - `game:gear-rusty` and `iiex:gear-*` - the
 craftable-gear compatibility pattern, not a duplicate.
 
 Plus the raw structure: 99 `game:refractorybricks-good-tier3` (tier 3 exactly - a tier-1 or tier-2 wall
-will not complete this furnace), 2 × `iwex:furnace-tuyere`, the iron and slag taps and 2 × `lpex:pipe-outlet`
+will not complete this furnace), 2 × `iiex:furnace-tuyere`, the iron and slag taps and 2 × `iiex:pipe-outlet`
 (all from other mods; their recipes are the [cold blast furnace](blast-furnace-cold.md)'s and
 [pipe network](../mechanics/pipe-network.md)'s).
 
@@ -321,8 +321,8 @@ vanishing - [cold blast furnace](blast-furnace-cold.md).
 | `BlockEntityBlastFurnaceHot` | `…/BlockEntities/BlockEntityBlastFurnaceHot.cs` | empty body - `class … : BlockEntityShaftFurnace { }` |
 | `BlockHopperReinforced` / `BlockEntityHopperReinforced` | `…/Blocks/` · `…/BlockEntities/` | the tank: `Accepts` (delegated to the core), `TryDeposit`, `TryWithdraw`, `DrawBurden`, the bell toggle, the contents mesh, the HUD |
 | `BlockHopperBell` / `BlockEntityHopperBell` | same | the magazine: `PullFromTankAbove`, `DripIntoShaft` (via `NextChargeColumn`), `IsFurnaceFull`, the drop toggle |
-| `BlockEntityShaftFurnace` (abstract) | iwex | the actual machine - see [cold blast furnace](blast-furnace-cold.md) |
-| `BlockEntityFurnaceCore` | iwex | the heat model and the outlet loop - see [heat balance](../mechanics/heat-balance.md) |
+| `BlockEntityShaftFurnace` (abstract) | iiex | the actual machine - see [cold blast furnace](blast-furnace-cold.md) |
+| `BlockEntityFurnaceCore` | iiex | the heat model and the outlet loop - see [heat balance](../mechanics/heat-balance.md) |
 
 ### Where a caller hooks in
 
@@ -337,7 +337,7 @@ vanishing - [cold blast furnace](blast-furnace-cold.md).
 
 | File | Covers |
 |---|---|
-| `Blocks/HotBlastFurnace/FurnaceGeometryTests.cs` | every offset lands on the right glyph, via iwex's shared `FurnaceLayoutRig`; outlets are non-empty |
+| `Blocks/HotBlastFurnace/FurnaceGeometryTests.cs` | every offset lands on the right glyph, via iiex's shared `FurnaceLayoutRig`; outlets are non-empty |
 | `Blocks/HotBlastFurnace/FurnaceOrientationMatrixTests.cs` | the same geometry in all four facings |
 | `Blocks/HotBlastFurnace/BlastFurnaceTests.cs` / `BlastFurnaceLifecycleTests.cs` | shaft state, melt, extinguish freeze + burn-out, tree round-trips |
 | `Blocks/HotBlastFurnace/HopperReinforcedBeTests.cs` | deposit (1 and whole-stack), capacity and grade refusals, withdraw, `DrawBurden`, the Ctrl toggle, round-trip |
@@ -352,7 +352,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
 ## Gotchas
 
 1. The outlet legend is a bare wildcard. The taps and tuyeres are facing-pinned in the layout, but `P` is
-   `lpex:pipe-outlet*`, so an outlet fitted the wrong way round completes the structure and then joins the
+   `iiex:pipe-outlet*`, so an outlet fitted the wrong way round completes the structure and then joins the
    wrong neighbour - read in game as "I built it and it does not vent".
 
 2. The bell runs on its own tick, outside the machine framework. It is a plain `BlockEntity` with a 1000 ms

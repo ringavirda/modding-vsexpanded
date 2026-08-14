@@ -13,18 +13,18 @@ namespace ExpandedLib.Tests;
 public class ExRecipeDefTests {
   [Fact]
   public void Location_targets_the_recipes_category_folder() {
-    ExRecipeDef def = ExRecipeDef.Create("lpex", "grid", "pipes");
-    Assert.Equal("lpex", def.Domain);
+    ExRecipeDef def = ExRecipeDef.Create("iiex", "grid", "pipes");
+    Assert.Equal("iiex", def.Domain);
     Assert.Equal("grid", def.Category);
     Assert.Equal("pipes", def.Code);
-    Assert.Equal("lpex", def.Location.Domain);
+    Assert.Equal("iiex", def.Location.Domain);
     Assert.Equal("recipes/grid/pipes.json", def.Location.Path);
   }
 
   [Fact]
   public void ToJson_is_an_array_of_the_added_recipes_in_order() {
     ExRecipeDef def = ExRecipeDef
-      .Create("lpex", "grid", "x")
+      .Create("iiex", "grid", "x")
       .Grid(r => r.Name("first").Pattern("P").Size(1, 1).OutputItem("game:a"))
       .Grid(r => r.Name("second").Pattern("P").Size(1, 1).OutputItem("game:b"));
 
@@ -41,7 +41,7 @@ public class ExRecipeDefTests {
       (
         (JArray)
           ExRecipeDef
-            .Create("lpex", "grid", "x")
+            .Create("iiex", "grid", "x")
             .Grid(r =>
               r.Name("Piping (Straight)")
                 .Pattern("HPN")
@@ -51,7 +51,7 @@ public class ExRecipeDefTests {
                   i => i.Item("game:metalplate-*").Metal().Quantity(1)
                 )
                 .Ingredient("H", i => i.Item("game:hammer-*").Tool())
-                .OutputBlock("lpex:pipe-straight-ns-{metal}", 2)
+                .OutputBlock("iiex:pipe-straight-ns-{metal}", 2)
             )
             .ToJson()
       )[0];
@@ -73,7 +73,7 @@ public class ExRecipeDefTests {
     Assert.Equal(1, (int)recipe["ingredients"]!["P"]!["quantity"]!);
     Assert.Equal("block", (string?)recipe["output"]!["type"]);
     Assert.Equal(
-      "lpex:pipe-straight-ns-{metal}",
+      "iiex:pipe-straight-ns-{metal}",
       (string?)recipe["output"]!["code"]
     );
     Assert.Equal(2, (int)recipe["output"]!["quantity"]!);
@@ -85,7 +85,7 @@ public class ExRecipeDefTests {
       (
         (JArray)
           ExRecipeDef
-            .Create("lpex", "grid", "x")
+            .Create("iiex", "grid", "x")
             .Grid(r =>
               r.Pattern("H")
                 .Size(1, 1)
@@ -106,14 +106,14 @@ public class ExRecipeDefTests {
       (
         (JArray)
           ExRecipeDef
-            .Create("lpex", "grid", "x")
+            .Create("iiex", "grid", "x")
             .Grid(r =>
-              r.Pattern("P").Size(1, 1).OutputBlock("lpex:pipe-bend-nw-{metal}")
+              r.Pattern("P").Size(1, 1).OutputBlock("iiex:pipe-bend-nw-{metal}")
             )
             .ToJson()
       )[0]["output"]!;
 
-    Assert.Equal("lpex:pipe-bend-nw-{metal}", (string?)output["code"]);
+    Assert.Equal("iiex:pipe-bend-nw-{metal}", (string?)output["code"]);
     Assert.Null(output["quantity"]);
   }
 
@@ -122,9 +122,9 @@ public class ExRecipeDefTests {
     // A one-recipe file authored as a lone object (bunker, molten-barrel): the emitted token must be an
     // object, not a one-element array.
     ExRecipeDef def = ExRecipeDef
-      .Create("iwex", "grid", "bunker")
+      .Create("iiex", "grid", "bunker")
       .GridObject(r =>
-        r.Pattern("B").Size(1, 1).OutputBlock("iwex:bunker-{brick}-n", 1)
+        r.Pattern("B").Size(1, 1).OutputBlock("iiex:bunker-{brick}-n", 1)
       );
 
     JToken json = def.ToJson();

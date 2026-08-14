@@ -1,0 +1,22 @@
+{
+  "code": "bevelgear",
+  "shape": {
+    "base": "iiex:item/gearbevel"
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 40
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

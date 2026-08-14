@@ -1,0 +1,16 @@
+{
+  "code": "castiron",
+  "moltenItem": "iiex:ingot-castiron",
+  "solidDrop": "game:metalbit-iron",
+  "displayLangKey": "iiex:metal-castiron",
+  "castDomain": "iiex",
+  "liquidThreshold": 0.75,
+  "generateItemFamily": true,
+  "itemForms": ["ingot", "plate", "bits", "rod", "nails"],
+  "texturePath": "iiex:block/metal/castiron",
+  "density": 7200,
+  "meltingPoint": 1200,
+  "tools": {
+    "preset": "brittle"
+  }
+}

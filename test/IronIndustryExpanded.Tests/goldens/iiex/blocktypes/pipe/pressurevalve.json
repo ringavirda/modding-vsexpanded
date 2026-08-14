@@ -1,0 +1,110 @@
+{
+  "code": "pipe",
+  "class": "iiex.BlockPressureValve",
+  "entityClass": "iiex.BlockEntityPressureValve",
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-pressurevalve-sn"
+    ],
+    "iiex": [
+      "*-pressurevalve-sn"
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "tier",
+      "states": [
+        "cast"
+      ]
+    },
+    {
+      "code": "type",
+      "states": [
+        "pressurevalve"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we",
+        "ud",
+        "sn",
+        "ew",
+        "du"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-pressurevalve-ns": {
+      "base": "iiex:pipe/pressurevalve"
+    },
+    "*-pressurevalve-we": {
+      "base": "iiex:pipe/pressurevalve",
+      "rotateY": 90
+    },
+    "*-pressurevalve-ud": {
+      "base": "iiex:pipe/pressurevalve",
+      "rotateX": 90
+    },
+    "*-pressurevalve-sn": {
+      "base": "iiex:pipe/pressurevalve",
+      "rotateY": 180
+    },
+    "*-pressurevalve-ew": {
+      "base": "iiex:pipe/pressurevalve",
+      "rotateY": -90
+    },
+    "*-pressurevalve-du": {
+      "base": "iiex:pipe/pressurevalve",
+      "rotateX": -90
+    }
+  },
+  "textures": {
+    "iron4": {
+      "base": "game:block/metal/sheet-plain/iron4"
+    }
+  },
+  "collisionboxes": [
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 1.0
+    }
+  ],
+  "selectionboxes": [
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 1.0
+    }
+  ],
+  "renderpass": "OpaqueNoCull",
+  "faceCullMode": "NeverCull",
+  "lightAbsorption": 0,
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

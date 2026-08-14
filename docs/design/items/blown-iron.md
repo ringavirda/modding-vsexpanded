@@ -94,7 +94,7 @@ has is a form list, and blown iron's is the shortest on the ladder.
 
 `pigiron.json` is the template, not `bessemersteel.json` - pig iron is the ladder's other metal that
 guarantees nothing, and its def already says exactly that: `itemForms: ["ingot"]` and no `tools` key
-(`assets/iwex/config/metals/pigiron.json:9-13`).
+(`assets/iiex/config/metals/pigiron.json:9-13`).
 
 ```jsonc
 // assets/smex/config/metals/blowniron.json
@@ -172,7 +172,7 @@ Nothing exists. What it will need:
 | metal def | `assets/smex/config/metals/blowniron.json` | missing - smex's `config/metals/` holds exactly one file, `bessemersteel.json` |
 | shape | - | none needed. The generated `ingot` form paints `game:item/ingot` ([alloys § assets](alloys.md#assets)) |
 | texture | `game:block/metal/tarnished/iron` | vanilla, already used by pig iron (`pigiron.json:10`) - verified present. Dull by intent: this is not a metal to be proud of |
-| lang | `smex:metal-blowniron`, `smex:item-ingot-blowniron`, `smex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iwex:itemdesc-ingot-pigiron*` (`assets/iwex/lang/en.json:39`) |
+| lang | `smex:metal-blowniron`, `smex:item-ingot-blowniron`, `smex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iiex:itemdesc-ingot-pigiron*` (`assets/iiex/lang/en.json:39`) |
 | status lines | `smex-bessemer-status-*` | existing converter status text says "pour it, or blow on for soft iron" ([Bessemer Gotcha #1](../machines/bessemer.md#gotchas)); under N1 that sentence is wrong and has to change with the retype |
 | goldens | `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/blowniron/ingot.json` | missing - one file, exactly as `pigiron/` has one |
 | handbook | `docs/smex/handbook/04-bessemer.html` | already stale for the shipped machine ([Bessemer Gotcha #11](../machines/bessemer.md#gotchas)); N1 makes it wrong a second time |

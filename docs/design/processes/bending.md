@@ -3,13 +3,13 @@
 **Status** designed - nothing built and nothing drawn. No block, no block entity, no tooling item, no recipe,
 no shape, no lang key. A repo-wide grep of `src/` for `bend`, `roller` or `conical` returns only pipe bend
 segments. Neither of its inputs (`skelp`, `boilerplate`) exists as an item.
-Three of its four outputs do exist, but as cast parts rather than bent ones: `iwex:cast-barrel`,
-`iwex:castshell` and `iwex:castwheelsection` all ship out of the casting cell. What is missing is the
+Three of its four outputs do exist, but as cast parts rather than bent ones: `iiex:cast-barrel`,
+`iiex:castshell` and `iiex:castwheelsection` all ship out of the casting cell. What is missing is the
 fabricated route to a part that already exists, so the target item, its mass and its consumers are settled.
 `castshell` and `castwheelsection` are pinned at exactly the 600 u their bent equivalents below are costed at,
 so the two are alternatives rather than tiers ([cast parts](../items/cast-parts.md)). (`cast-barrel` is 200 u
 and predates the rule.)
-**Mods** lpex (the [bending roller](../machines/bending-roller.md), and the boiler shells that justify it) ·
+**Mods** iiex (the [bending roller](../machines/bending-roller.md), and the boiler shells that justify it) ·
 hpex (rolled pipe, the tier that consumes the pipe route) · smex (the cheap steel plate that makes it worth
 doing at volume)
 
@@ -97,7 +97,7 @@ A cold multi-pass schedule can be put down: walk away, come back, finish the she
 the suite races a cooling piece, so this is the first cold-forming machine in the suite.
 
 It is unbuilt and unwritten: nothing in code or config gates any machine on cold, and the mill's `RollingTempC`
-(`IwexConfig.cs:490`) is the only temperature threshold the forming line has.
+(`IiexConfig.cs:490`) is the only temperature threshold the forming line has.
 
 ### Welding is not a mechanic
 
@@ -184,7 +184,7 @@ owned elsewhere.
 |---|---|
 | a bent piece keeps its thickness, width and length | volume is conserved trivially; no mass arithmetic is needed, which is why this process mints nothing by construction |
 | a bent piece must still respect ≤ 32 / ≤ 48 | [recoverability](../mechanics/recoverability.md) - but a closed shell is not a long piece any more, and nothing says how a curved piece is measured |
-| cast iron cannot be bent - it shatters | every input is wrought or steel, which is a second reason the machine cannot be iwex even though its frame is cast |
+| cast iron cannot be bent - it shatters | every input is wrought or steel, which is a second reason the machine cannot be iiex even though its frame is cast |
 | the load is a steady draw, not a pulse | derived, not settled: it would be the first `mpenergy` consumer that is not pulsed, and the only one with no reason to carry its own flywheel |
 
 ### Sized against - owned elsewhere
@@ -216,7 +216,7 @@ Expressing bending as a roll set would have meant a `gaps` array that silently m
 roll-set idiom exists to prevent. The machine that makes boiler barrels, machine shells, molten barrels and
 wheel rims is also what turns `boilerplate` from a boiler ingredient into a general feedstock.
 
-Nothing at iron tier bends, which is why it is lpex. iwex's pipes are hammered from flat plates - what the
+Nothing at iron tier bends, which is why it is iiex. iiex's pipes are hammered from flat plates - what the
 `plated` tier's name records - and its structural parts are cast, not fabricated. The first thing in the suite
 that needs a curved plate is a boiler shell.
 
@@ -239,7 +239,7 @@ that needs a curved plate is a boiler shell.
   ([rolled pipe](../machines/rolled-pipe.md), [pipe network](../mechanics/pipe-network.md)). B5 and this
   process are the same work item; B6 is a different one and is not fixed by it.
 * There is no mill roll set that produces pipe. The mill makes the skelp; the curl is this machine's. The
-  machine is the bending roller and it is lpex - not a smex "conical pipe roller", and not a `pipe/skelp` roll
+  machine is the bending roller and it is iiex - not a smex "conical pipe roller", and not a `pipe/skelp` roll
   set on the mill.
 * No small-radius tooling exists for the bearing race, which N2 requires. Four routes are named and none of
   them is a ring.

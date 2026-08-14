@@ -34,7 +34,7 @@ public class HotBlastFurnaceRecipeDefinitions : IExRecipeDefProvider {
             .OutputBlock("smex:hopperreinforced")
         )
         .Grid(BellHopper("game:gear-rusty"))
-        .Grid(BellHopper("lpex:gear-*")),
+        .Grid(BellHopper("iiex:gear-*")),
     ];
 
   private static Action<GridRecipeBuilder> BellHopper(string gear) =>

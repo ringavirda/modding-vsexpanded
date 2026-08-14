@@ -1,8 +1,8 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using LowPressureExpanded;
-using LowPressureExpanded.BlockNetworkPipe;
-using LowPressureExpanded.BlockStructures.Engine.BlockEntities;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
 using Vintagestory.API.MathTools;
 using Xunit;
 
@@ -49,7 +49,7 @@ public class MPGeneratorBehaviorTests {
 
     float torque = mp.GetTorque(
       0,
-      LpexValues.MpRatedSpeed,
+      IiexValues.MpRatedSpeed,
       out float resistance
     );
 
@@ -61,7 +61,7 @@ public class MPGeneratorBehaviorTests {
   public void It_is_a_constant_power_source_more_torque_at_lower_speed() {
     var (_, plant, mp) = Rig(0.5f);
     float budget = plant.Engine.MpPowerBudget;
-    float rated = LpexValues.MpRatedSpeed;
+    float rated = IiexValues.MpRatedSpeed;
 
     float half = mp.GetTorque(0, 0.5f * rated, out _);
 
@@ -75,7 +75,7 @@ public class MPGeneratorBehaviorTests {
   [Fact]
   public void Torque_tapers_to_zero_past_the_soft_speed_cap() {
     var (_, _, mp) = Rig(0.5f);
-    float rated = LpexValues.MpRatedSpeed;
+    float rated = IiexValues.MpRatedSpeed;
 
     Assert.Equal(0f, mp.GetTorque(0, 1.5f * rated, out _), 4); // at the cap end
     Assert.Equal(0f, mp.GetTorque(0, 2f * rated, out _), 4); // beyond it
@@ -84,7 +84,7 @@ public class MPGeneratorBehaviorTests {
   [Fact]
   public void Without_steam_the_generator_makes_no_torque() {
     var (_, _, mp) = Rig(0f); // no available power
-    Assert.Equal(0f, mp.GetTorque(0, LpexValues.MpRatedSpeed, out _), 5);
+    Assert.Equal(0f, mp.GetTorque(0, IiexValues.MpRatedSpeed, out _), 5);
   }
 
   #endregion

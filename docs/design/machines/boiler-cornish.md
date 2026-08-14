@@ -1,5 +1,5 @@
 # Cornish Boiler
-**Status** live   **Mod** lpex
+**Status** live   **Mod** iiex
 
 **Owns**
 - The shared boiler model (`BlockEntityBoiler`, base of every boiler in the suite): the one tank shared
@@ -69,7 +69,7 @@ verifies a player-built firebox around itself before it will run
 | Principal | `(0,0,0)`, the `'L'` glyph of the layout |
 | Orientation | `side` variant from `abstract/horizontalorientation` (`BlockBoiler.cs:70`) |
 | `StructureAngle` | `AngleFromSide(side) + 180` (`BlockBoiler.cs:39-43`) - the body frame; the vessel extends along local `+z` |
-| Shape spin | `rotateYByType` = `AngleFromSide(side)`, no `+180` offset (`BlockBoiler.cs:73` → `ExBlockDef.cs:200-208`; golden `goldens/lpex/blocktypes/boiler/cornish.json`) - see [Gotchas](#gotchas) |
+| Shape spin | `rotateYByType` = `AngleFromSide(side)`, no `+180` offset (`BlockBoiler.cs:73` → `ExBlockDef.cs:200-208`; golden `goldens/iiex/blocktypes/boiler/cornish.json`) - see [Gotchas](#gotchas) |
 | Verified layout | `Origin(-1, -2)`, three layers (`BlockBoilerCornish.cs:77-127`); rendered in [layouts.md](../../internal/workbench/layouts.md) § Section 2 |
 | Completion monitor | every 3000 ms (`BlockEntityMultiblockStructure.cs:49`) |
 
@@ -83,7 +83,7 @@ principal (`BlockBoiler.cs:76-78`).
 | `fuelOffset` | `(0,0,-1)` | the coal pile - `@(air\|coalpile)` in the layout | `FuelWorldPos`, `BlockBoiler.cs:83-84` |
 | `lidOffset` | `(0,1,1)` | filler cell carrying the access lid; fill/drain/toggle only respond here | `LidWorldPos`, `:91-92` |
 | `steamConnectorOffset` | `(0,1,2)` | filler turned into an upward "pipe" port; the steam pipe goes in the cell above it, `(0,2,2)` | `SteamPipeWorldPos`, `:98-99` |
-| `exhaustOutletOffset` | `(0,1,4)` | `lpex:pipe-outlet-fire-u` - a real block the player builds, and a graph node in its own right | `ExhaustOutletWorldPos`, `:87-88` |
+| `exhaustOutletOffset` | `(0,1,4)` | `iiex:pipe-outlet-fire-u` - a real block the player builds, and a graph node in its own right | `ExhaustOutletWorldPos`, `:87-88` |
 | `lightSampleOffset` | `(0,1,2)` | body cell the animated mesh is lit from, instead of the firebox-adjacent principal | `LightSampleWorldPos`, `:106-107` |
 | `explosionCenterOffset` | `(0,1,2)` | blast centre, so the burst goes off inside the vessel | `ExplosionCenterPos`, `:113-114` |
 
@@ -108,9 +108,9 @@ Derived from the layout glyph counts:
 |---|---|---|
 | `game:claybricks-good-fire` | 33 | the shell: 21 on layer −1, 9 on layer 0, 3 on layer 1 |
 | `game:cokeovendoor*` | 1 | `(0,0,-2)` - the stoking door |
-| `lpex:pipe-passthrough-fire-*` | 2 | `(0,-1,-2)`, `(0,-1,-1)` - the feedwater line crossing the firebox wall |
-| `lpex:pipe-passthroughbend-fire-u*` | 1 | `(0,-1,0)` - turns the feed up into the boiler's DOWN port |
-| `lpex:pipe-outlet-fire-u` | 1 | `(0,1,4)` - the exhaust neck; cap it with a vanilla chimney |
+| `iiex:pipe-passthrough-fire-*` | 2 | `(0,-1,-2)`, `(0,-1,-1)` - the feedwater line crossing the firebox wall |
+| `iiex:pipe-passthroughbend-fire-u*` | 1 | `(0,-1,0)` - turns the feed up into the boiler's DOWN port |
+| `iiex:pipe-outlet-fire-u` | 1 | `(0,1,4)` - the exhaust neck; cap it with a vanilla chimney |
 | `@(air\|coalpile)` | 1 | `(0,0,-1)` - the fuel slot behind the door |
 | `game:air*` | 1 | `(0,0,4)` - must stay clear |
 
@@ -121,11 +121,11 @@ Derived from the layout glyph counts:
 | Asset | Path | State |
 |---|---|---|
 | Editable shape | — | missing. Nothing under `assets/editable/shapes/` matches the boiler; the runtime shape is the only copy |
-| Runtime shape | `assets/lpex/shapes/boiler/cornish.json` | present; root children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets |
+| Runtime shape | `assets/iiex/shapes/boiler/cornish.json` | present; root children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets |
 | Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both are poses, not motion |
 | Textures | `fire1`, `iron3`, `iron4`, `iron5`, `iron` | declared in the shape |
 | Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)-(30,30,62)` | `BlockBoilerCornish.cs:43-51` |
-| Handbook | `assets/lpex/config/handbook/01-boilers.json` ↔ `docs/lpex/handbook/01-boilers.html` | present, and wrong in four places - see [Gotchas](#gotchas) |
+| Handbook | `assets/iiex/config/handbook/01-boilers.json` ↔ `docs/iiex/handbook/01-boilers.html` | present, and wrong in four places - see [Gotchas](#gotchas) |
 
 The RCC behaviour suppresses the default mesh, so the boiler is only visible through the animator holding
 `idle` (or `lidopen`). One clip must always be running or the vessel disappears; the seeding guard at
@@ -148,12 +148,12 @@ P H P          P = metalplate-* (iron/steel) ×1 each
 B N B          B = game:burnedbrick-fire ×2 each
                N = metalnailsandstrips-* ×2
                H = hammer (tool)
-→ lpex:boilercornish-north
+→ iiex:boilercornish-north
 ```
 
 Totals: 2 plates · 4 fire bricks · 2 nails-and-strips.
 
-The recipe also declares `Ingredient("I", StraightPipe(1))` (`:65`) - an `iwex:pipe-plated-straight-*` that never
+The recipe also declares `Ingredient("I", StraightPipe(1))` (`:65`) - an `iiex:pipe-plated-straight-*` that never
 appears in the pattern. Dead ingredient.
 
 ### 2. The RCC stages — `BlockBoilerCornish.cs:128-149`
@@ -169,11 +169,11 @@ Right-click the placed block with the materials in the hotbar; each stage adds o
 | | **total** | **22** | **16** | **8** | **44** |
 
 Every metal requirement accepts `iron` or `steel` with `storeWildCard: "metal"` (golden
-`goldens/lpex/blocktypes/boiler/cornish.json`), so an iron-age player can build it and the stored variant
+`goldens/iiex/blocktypes/boiler/cornish.json`), so an iron-age player can build it and the stored variant
 drives the salvage.
 
 Catalogued twice for the cost system: `boilercornish-grid` and `boilercornish-rcc`
-(`LpexRecipeConfig.cs:64`, `:68`) - level switched by `/exmod recipes lpex <level>`
+(`IiexRecipeConfig.cs:64`, `:68`) - level switched by `/exmod recipes iiex <level>`
 ([recipes-config](../mechanics/recipes-config.md)).
 
 ---
@@ -319,7 +319,7 @@ unconditionally (`:411-416`) - the design's answer to a runaway boiler.
    (`:689-694`).
 
 The threshold of 20 sits below the resistance-45 boilers, engines and their fillers, so one boiler bursting
-cannot chain into the next (`LpexConfig.cs:103-106`).
+cannot chain into the next (`IiexConfig.cs:103-106`).
 
 ### The player's verbs
 
@@ -346,13 +346,13 @@ respect the metric/imperial preference.
 
 ## Numbers
 
-### lpex config — `LpexConfig.cs`, file `ModConfig/ex_values.json`, section `lpex`
+### iiex config — `IiexConfig.cs`, file `ModConfig/ex_values.json`, section `iiex`
 
 Shared by every boiler variant (LP and HP):
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `BoilingPoint` | `100 °C` | `LpexConfig.cs:52` | water⇄steam phase point; base of the saturation curve |
+| `BoilingPoint` | `100 °C` | `IiexConfig.cs:52` | water⇄steam phase point; base of the saturation curve |
 | `SteamExpansionFactor` | `16` | `:59` | litres of steam per litre of water (range-guarded ≥ 1) |
 | `SteamSaturationExponent` | `0.25` | `:65` | exponent of `T = 100 × (p+1)^n` |
 | `ExhaustMaxOutputPressure` | `0.8 atm` | `:74` | above this the exhaust run refuses gas ⇒ choke |
@@ -377,7 +377,7 @@ Cornish variant:
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `CornishBoilerCapacity` | `800 L` | `LpexConfig.cs:143` | one tank, shared between water and steam |
+| `CornishBoilerCapacity` | `800 L` | `IiexConfig.cs:143` | one tank, shared between water and steam |
 | `CornishBoilerMinBoilWater` | `150 L` | `:146` | operating floor; also the bucket-drain floor |
 | `CornishBoilerMaxBoilWater` | `500 L` | `:149` | manual-fill / condensation ceiling |
 | `CornishBoilerSteamPerSecond` | `32 L/s` | `:152` | ⇒ 2 L/s of water consumed |
@@ -390,11 +390,11 @@ Derived (auto intake fills to `Capacity × 0.5`): `MaxWaterIntakeFill` = 400 L (
 
 | quantity | value | owner | file:line |
 |---|---|---|---|
-| Watt engine engage pressure | `2.0 atm` | [Watt engine](engine-watt.md) | `LpexConfig.cs:163` |
+| Watt engine engage pressure | `2.0 atm` | [Watt engine](engine-watt.md) | `IiexConfig.cs:163` |
 | Watt engine break pressure | `4.0 atm` | [Watt engine](engine-watt.md) | `:166` |
 | Cornish boiler choke | `5.0 atm` | this page | `:156` |
-| cast (lpex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
-| plated (iwex) pipe burst | `2.5 atm` | [pipe network](../mechanics/pipe-network.md) | `IwexConfig.cs:163` |
+| cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
+| plated (iiex) pipe burst | `2.5 atm` | [pipe network](../mechanics/pipe-network.md) | `IiexConfig.cs:163` |
 | `LitresPerPipe` | `30 L` | [pipe network](../mechanics/pipe-network.md) | `ExlibConfig.cs:32` |
 | `EvaporationLitresPerDay` | `50 L/day` | [pipe network](../mechanics/pipe-network.md) | `ExlibConfig.cs:43` |
 
@@ -409,7 +409,7 @@ engine begins wearing toward a break, and nothing in the boiler knows about the 
 
 At 5.0 the boiler's ceiling equals the cast pipe's burst rating, so a boiler choking into a cast run holds
 that run exactly at its burst threshold. `TryProduceGas` takes `min(maxOutputPressure, MinBurstPressure)`
-([pipe network](../mechanics/pipe-network.md) § 3), so it is safe by a hair; a plated (iwex, 2.5 atm) segment
+([pipe network](../mechanics/pipe-network.md) § 3), so it is safe by a hair; a plated (iiex, 2.5 atm) segment
 anywhere in the steam run silently halves the usable ceiling.
 
 ### Hard-coded — not config
@@ -448,7 +448,7 @@ can still be handed its own code as a fallback drop at registration. Pinned by
 
 | Path | Returns |
 |---|---|
-| Mined intact | 80 % of the construction materials, scattered by the RCC behaviour (`RccBrokenDropsRatio`, `LpexConfig.cs:116`) |
+| Mined intact | 80 % of the construction materials, scattered by the RCC behaviour (`RccBrokenDropsRatio`, `IiexConfig.cs:116`) |
 | Burst | 40 % (`BoilerExplosionDropRatio`, `:111`), pulled through `ExRightClickConstructable.GetConstructionDrops` because a burst skips the normal break path (`BlockEntityBoiler.cs:697-704`) |
 | Fillers | removed, never dropped - `RemoveStructure` (`BlockBoiler.cs:117-118`) on the burst path, `BlockFilledMegastructure` on the break path |
 | Firebox masonry | ordinary block drops; it is player-placed and the boiler never touches it |
@@ -498,7 +498,7 @@ The engines keep their self-drop (they have a craftable frame); the boilers do n
 - Changing the feed model: `:326-350` is the only water-in path from a network. The pending
   intake-gate-on-`InternalPressure` design ([pumps](pumps.md)) replaces exactly this block.
 
-### Tests — `test/LowPressureExpanded.Tests/Blocks/Boiler/`
+### Tests — `test/IronIndustryExpanded.Tests/Blocks/Boiler/`
 
 | file | pins |
 |---|---|
@@ -527,13 +527,13 @@ Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `Fixtures/SteamPlantSc
    which is why the water box rotates by the former and the animator by the latter. Trusting the class
    comment puts the water surface on the firebox side.
 
-3. The `"Cornish"` name collides across two mods. `lpex:boilercornish` is the low-pressure entry boiler;
+3. The `"Cornish"` name collides across two mods. `iiex:boilercornish` is the low-pressure entry boiler;
    `hpex:enginecornish` is the high-pressure engine. They are unrelated machines from different tiers that a
    player will meet in the same sentence ("a Cornish boiler cannot drive a Cornish engine" - literally true,
    `BlockEntityBoilerCornish.cs:5-8`).
 
-4. The handbook is wrong in four places (`assets/lpex/config/handbook/01-boilers.json`,
-   `docs/lpex/handbook/01-boilers.html`):
+4. The handbook is wrong in four places (`assets/iiex/config/handbook/01-boilers.json`,
+   `docs/iiex/handbook/01-boilers.html`):
    - "24 metal plates, 18 nails-and-strips" - the stages total 22 and 16.
    - "48 fire bricks" - the stages total 44.
    - "16 L of steam at 160-220 °C" - the Cornish tops out at 156.5 °C (5 atm); even a Lancashire at 12 atm
@@ -581,7 +581,7 @@ Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `Fixtures/SteamPlantSc
 
 ## Open
 
-- No editable shape. The runtime `assets/lpex/shapes/boiler/cornish.json` is the only copy; there is no
+- No editable shape. The runtime `assets/iiex/shapes/boiler/cornish.json` is the only copy; there is no
   source file to re-edit the model from.
 - Feedwater does not fight back-pressure. The intake draws whatever the line offers regardless of
   `InternalPressure`, so a 1 atm manual pump feeds a 5 atm boiler. The settled fix - gate on

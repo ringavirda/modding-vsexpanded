@@ -392,9 +392,9 @@ Form — the freed base slot.
 | `.OnStationPacket` | same | where a machine adds its own actions, from `FirstMachinePacketId` |
 | `.CreateDialog` | same | null leaves the machine windowless, which the mill is today |
 | `MachineSlotSpec` / `MachineStationInventory` | `ExpandedLib/Blocks/Machines/MachineStationSlots.cs` | slots as data; built through `InventoryGeneric`'s own slot-factory delegate |
-| `BlockEntityRollingMill` | `IronworkingExpanded/.../BlockEntityRollingMill.cs` | the proof: container base, membership + process as behaviours |
+| `BlockEntityRollingMill` | `IronIndustryExpanded/.../BlockEntityRollingMill.cs` | the proof: container base, membership + process as behaviours |
 | `.MigrateLooseStacks` | same | the one-way adopt of a pre-A3 save's two root-level stacks |
-| `BlockEntityDesignTable` | `IronworkingExpanded/.../BlockEntityDesignTable.cs` | the promotion's first consumer; keeps only its slot rules and its draft |
+| `BlockEntityDesignTable` | `IronIndustryExpanded/.../BlockEntityDesignTable.cs` | the promotion's first consumer; keeps only its slot rules and its draft |
 
 Form and process.
 

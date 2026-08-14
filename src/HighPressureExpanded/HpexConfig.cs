@@ -9,7 +9,7 @@ namespace HighPressureExpanded;
 /// <see cref="HpexValues"/> rather than directly. The property defaults apply when the file or a key is
 /// missing; NaN, infinite and negative values are reset to their default on load. Only the per-variant
 /// stats the HP leaves override live here - the boiler and engine FSM knobs both leaves inherit stay in
-/// <c>LpexConfig</c>. Volumes are in litres, pressure in atm (volume / capacity).
+/// <c>IiexConfig</c>. Volumes are in litres, pressure in atm (volume / capacity).
 /// </summary>
 [ExConfigRegister("ex_values.json", "hpex", Manageable = true)]
 public class HpexConfig : IExVersionedConfig {
@@ -25,8 +25,8 @@ public class HpexConfig : IExVersionedConfig {
   public static readonly ExConfigMigration[] Migrations = [];
 
   #region Lancashire boiler
-  // The variant stat table the Lancashire leaf overrides on lpex's BlockEntityBoiler. The shared FSM
-  // knobs stay in LpexConfig.
+  // The variant stat table the Lancashire leaf overrides on iiex's BlockEntityBoiler. The shared FSM
+  // knobs stay in IiexConfig.
 
   /// <summary>Total internal capacity (L) shared between water and steam.</summary>
   public float LancashireBoilerCapacity { get; set; } = 1200f;
@@ -37,7 +37,7 @@ public class HpexConfig : IExVersionedConfig {
   /// <summary>Maximum water (L) the boiler will hold/boil - the rest of the capacity is reserved for steam.</summary>
   public float LancashireBoilerMaxBoilWater { get; set; } = 800f;
 
-  /// <summary>Steam (L/s) produced while boiling at full tilt (consumes this divided by lpex's
+  /// <summary>Steam (L/s) produced while boiling at full tilt (consumes this divided by iiex's
   /// <c>SteamExpansionFactor</c> litres of water).</summary>
   public float LancashireBoilerSteamPerSecond { get; set; } = 48f;
 

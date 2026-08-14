@@ -4,18 +4,18 @@ using System.Linq;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
-using static IronworkingExpanded.Tests.FurnaceLayoutRig;
+using static IronIndustryExpanded.Tests.FurnaceLayoutRig;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
-/// Geometry checks for the hot blast furnace. The shared assertions live in iwex's
+/// Geometry checks for the hot blast furnace. The shared assertions live in iiex's
 /// <see cref="FurnaceLayoutRig"/>, since a wrong tuyere or tap offset is the same bug on every furnace.
 /// What is specific here is that this furnace vents: its gas outlets must land on the pipe outlets its
 /// own layout declares, where the cold blast furnace and the cupola assert they have none.
@@ -41,7 +41,7 @@ public class FurnaceGeometryTests {
       SouthTuyereGlyph
     );
 
-    // The rig already checked that every declared outlet lands on "lpex:pipe-outlet*". This furnace is
+    // The rig already checked that every declared outlet lands on "iiex:pipe-outlet*". This furnace is
     // the only one of the three with a stack, so it is the only one that declares any.
     Assert.NotEmpty(outlets);
   }
@@ -121,7 +121,7 @@ public class FurnaceGeometryTests {
   /// The charge volume: the cells the layout marks <see cref="CellRole.Chargeable"/>. 38 of the shaft
   /// box's 45, because at the hearth floor only <c>(0,1,0)</c> and <c>(1,1,0)</c> are open and the rest of
   /// that level is the tuyere pair and brick. Identical to the cold furnace's set despite the different
-  /// shells. Run here because the iwex host never loads this assembly, so a smex layout that forgot the
+  /// shells. Run here because the iiex host never loads this assembly, so a smex layout that forgot the
   /// role, or hung it on the wrong glyph, would be invisible there.
   /// </summary>
   [Fact]
@@ -188,7 +188,7 @@ public class FurnaceGeometryTests {
     Assert.Equal(38, furnace.ChargeableCells.Count);
     Assert.Equal(
       Render(
-        furnace.CellsAccepting(new AssetLocation("iwex:furnace-chargepile"))
+        furnace.CellsAccepting(new AssetLocation("iiex:furnace-chargepile"))
       ),
       Render(furnace.CellsWithRole(CellRole.Chargeable))
     );
@@ -253,11 +253,11 @@ public class FurnaceGeometryTests {
     // and each code answers its own single cell, so a drawing using one letter for both inlets fails here
     // rather than shipping a furnace with an inlet facing into its own hearth. The letters are rotated by
     // the structure angle because the tuyere legends are orientation-pinned: a west-facing furnace wants
-    // `iwex:furnace-tuyere-e` in the cell drawn `n`. Asking with the authored letter at a rotated facing
+    // `iiex:furnace-tuyere-e` in the cell drawn `n`. Asking with the authored letter at a rotated facing
     // finds nothing and passes vacuously.
     AssetLocation Tuyere(string wall) =>
       new(
-        "iwex:furnace-tuyere-"
+        "iiex:furnace-tuyere-"
           + ExOrientation.RotateOrientationToken(
             wall,
             ExOrientation.AngleFromSide(side)
@@ -276,7 +276,7 @@ public class FurnaceGeometryTests {
     Assert.Single(furnace.CellsAccepting(Tuyere("s")));
     Assert.Equal(
       Render(
-        furnace.CellsAccepting(new AssetLocation("lpex:pipe-outlet-fire-u"))
+        furnace.CellsAccepting(new AssetLocation("iiex:pipe-outlet-fire-u"))
       ),
       Render(furnace.CellsWithRole(CellRole.GasOutlet))
     );
@@ -288,7 +288,7 @@ public class FurnaceGeometryTests {
     // `TryPourMetal` spouts at `facing.Opposite`, so the iron notch in the east wall is declared west.
     AssetLocation Tap(string type, string drawnSide) =>
       new(
-        $"iwex:furnace-{type}-"
+        $"iiex:furnace-{type}-"
           + ExOrientation.SideFromAngle(
             ExOrientation.AngleFromSide(drawnSide)
               + ExOrientation.AngleFromSide(side),
@@ -396,7 +396,7 @@ public class FurnaceGeometryTests {
   }
 
   /// <summary>
-  /// The furnace branch laws, run in a host that loads smex. The iwex suite runs the same three
+  /// The furnace branch laws, run in a host that loads smex. The iiex suite runs the same three
   /// assertions, but its host never loads this assembly, so a downstream furnace leaf breaking one would
   /// go unnoticed there. The scan is general: furnaces smex adds later are covered by the same lines.
   /// </summary>

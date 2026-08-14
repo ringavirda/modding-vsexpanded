@@ -5,7 +5,7 @@ namespace ExpandedLib.Helpers;
 /// <summary>
 /// Cross-mod hook for asking whether a tool-mold type is currently disabled by a config gate, without
 /// the asker referencing the mod that owns the molds. The tool molds and their availability flags live
-/// in smex, which registers its predicate here at startup; iwex queries it to purge a disabled mold
+/// in smex, which registers its predicate here at startup; iiex queries it to purge a disabled mold
 /// from a pedestal. With no predicate registered, nothing is reported disabled.
 /// </summary>
 public static class ExMoldGate {

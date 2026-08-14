@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Sand Casting Bed",
+    "ingredientPattern": "BBB,_H_",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:casting-sandbed-{brick}-n",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:burnedbrick-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

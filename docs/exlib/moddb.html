@@ -1,6 +1,6 @@
 <p>
   Shared framework mod for the
-  <a href="https://mods.vintagestory.at/lpex">Low Pressure Expanded</a> and
+  <a href="https://mods.vintagestory.at/iiex">Low Pressure Expanded</a> and
   <a href="https://mods.vintagestory.at/smex">Steelmaking Expanded</a> family. It
   ships no gameplay content of its own - install it only because another mod
   depends on it. It bundles the systems both of those mods are built on, so they
@@ -18,7 +18,7 @@
 
 <h2>What it provides</h2>
 <ul>
-  <li><strong>Block networks</strong> - a generic connected-graph framework with self-orienting node blocks, merge-on-join and fracture-on-break handling, and a single network manager. lpex registers its pipe network on it and smex its molten network.</li>
+  <li><strong>Block networks</strong> - a generic connected-graph framework with self-orienting node blocks, merge-on-join and fracture-on-break handling, and a single network manager. iiex registers its pipe network on it and smex its molten network.</li>
   <li><strong>Multiblock structures</strong> - structure-completion monitoring, the build-outline projection (Ctrl + Shift + right-click), crash-safe highlighting of incomplete parts, and the invisible filler block that gives single-cell mega-block machines proper per-cell collision.</li>
   <li><strong>Block-entity healing</strong> - recreates a block entity that was lost while its block survived (a load error or a server desync), so a machine never ends up an inert, unbreakable ghost. Runs on chunk load and on demand via <code>/exmod heal</code>.</li>
   <li><strong>Live config</strong> - every gameplay value is exposed through a JSON config that can also be read and changed in-game with <code>/exmod config</code>, applied immediately with no world reload.</li>
@@ -40,7 +40,7 @@
 <h2>FAQ</h2>
 <ul>
   <li><strong>Do I need to configure anything?</strong> No. It works out of the box; the dependent mods drive it.</li>
-  <li><strong>Can I remove it?</strong> Only once nothing else needs it. Removing it while lpex or smex is installed will break those mods.</li>
+  <li><strong>Can I remove it?</strong> Only once nothing else needs it. Removing it while iiex or smex is installed will break those mods.</li>
   <li><strong>I see unknown blocks after updating a dependent mod.</strong> Migrations run on load; if any slipped through, replace them in creative.</li>
 </ul>
 

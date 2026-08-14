@@ -7,7 +7,7 @@ namespace ExpandedLib.Tests;
 
 /// <summary>
 /// <see cref="BlockMigrationModSystem.FollowChain"/>, the walk that resolves a saved block code through
-/// a multi-hop rename history (<c>ppex</c> to <c>lpex</c> to <c>hpex</c>, <c>smex</c> to <c>iwex</c>) to
+/// a multi-hop rename history (<c>ppex</c> to <c>iiex</c> to <c>hpex</c>, <c>smex</c> to <c>iiex</c>) to
 /// its terminal code. Hops resolve against the declared remap table rather than against the world,
 /// because a chain's intermediate code is one that no longer registers.
 /// </summary>
@@ -44,18 +44,18 @@ public class MigrationChainTests {
 
   [Fact]
   public void A_single_hop_resolves_to_its_target() {
-    var hops = new Dictionary<string, string> { ["ppex:x"] = "lpex:x" };
+    var hops = new Dictionary<string, string> { ["ppex:x"] = "iiex:x" };
 
-    Assert.Equal(L("lpex:x"), Walk("ppex:x", hops, out _, out _));
+    Assert.Equal(L("iiex:x"), Walk("ppex:x", hops, out _, out _));
   }
 
   [Fact]
   public void A_multi_hop_chain_resolves_to_the_far_end() {
-    // The shipped shape: ppex, then lpex, then hpex. The middle code no longer registers, so it can
+    // The shipped shape: ppex, then iiex, then hpex. The middle code no longer registers, so it can
     // only be resolved from the table.
     var hops = new Dictionary<string, string> {
-      ["ppex:boilerlancashire-north"] = "lpex:boilerlancashire-n",
-      ["lpex:boilerlancashire-n"] = "hpex:boilerlancashire-n",
+      ["ppex:boilerlancashire-north"] = "iiex:boilerlancashire-n",
+      ["iiex:boilerlancashire-n"] = "hpex:boilerlancashire-n",
     };
 
     Assert.Equal(
@@ -69,11 +69,11 @@ public class MigrationChainTests {
   public void A_chain_entered_midway_still_reaches_the_far_end() {
     // A world that already ran the first migration holds the middle code, not the oldest one.
     var hops = new Dictionary<string, string> {
-      ["ppex:x"] = "lpex:x",
-      ["lpex:x"] = "hpex:x",
+      ["ppex:x"] = "iiex:x",
+      ["iiex:x"] = "hpex:x",
     };
 
-    Assert.Equal(L("hpex:x"), Walk("lpex:x", hops, out _, out _));
+    Assert.Equal(L("hpex:x"), Walk("iiex:x", hops, out _, out _));
   }
 
   #endregion
@@ -83,8 +83,8 @@ public class MigrationChainTests {
   [Fact]
   public void A_chain_ending_on_a_purge_reports_purged() {
     var hops = new Dictionary<string, string> {
-      ["smex:old"] = "iwex:interim",
-      ["iwex:interim"] = "iwex:retired",
+      ["smex:old"] = "iiex:interim",
+      ["iiex:interim"] = "iiex:retired",
     };
 
     var terminal = Walk(
@@ -92,11 +92,11 @@ public class MigrationChainTests {
       hops,
       out bool purged,
       out _,
-      "iwex:retired"
+      "iiex:retired"
     );
 
     Assert.True(purged);
-    Assert.Equal(L("iwex:retired"), terminal);
+    Assert.Equal(L("iiex:retired"), terminal);
   }
 
   [Fact]

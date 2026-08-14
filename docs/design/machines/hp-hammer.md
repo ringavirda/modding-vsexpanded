@@ -73,7 +73,7 @@ of those exist as items; see [Open](#open).
 ### The HP hammer does not shear either
 
 [shear](shear.md)'s rule applies unchanged at every tier: the shear cuts across, the die cuts out. A
-straight-line part is the iwex MP shear's job whatever the metal, and the cold-cut question is decided by
+straight-line part is the iiex MP shear's job whatever the metal, and the cold-cut question is decided by
 `MinTorque` at the shear, not by steam pressure here.
 
 ---
@@ -147,7 +147,7 @@ problems, all live:
 | Problem | Evidence |
 |---|---|
 | Hadfield does not exist in code. Three source mentions, all comments; no metal descriptor, no item, no alloy recipe | `HpexConfig.cs:107`, `HighPressureExpandedModSystem.cs:40`, `MachineRecipeDefinitions.cs:59` - the last one says the gate is still waiting on hadfield |
-| The two live hpex machines do not honour it. The HP builds take the plain plated iwex segment, not a hadfield one, and the source comment says tier-gating "waits on … the hadfield material gate" | `MachineRecipeDefinitions.cs:59-61` |
+| The two live hpex machines do not honour it. The HP builds take the plain plated iiex segment, not a hadfield one, and the source comment says tier-gating "waits on … the hadfield material gate" | `MachineRecipeDefinitions.cs:59-61` |
 | A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../internal/plans/STATE.md) |
 
 The grade penalty has an obvious axis on a hammer: blow energy is a function of admitted pressure, and a
@@ -234,7 +234,7 @@ The HP hammer needs a product family nothing else can make, and the placement ru
 forged rotating parts of the HP engines - the *forged heavy components (open die)* family made concrete. A
 crank, a connecting rod, a piston rod and an eccentric cannot be cast, rolled or bent, and they are hpex
 content. Its second customer is hardened die sets for itself and blade sets for the [shear](shear.md); its
-third is tools, which under D9 are crucible-steel work and reach back to iwex
+third is tools, which under D9 are crucible-steel work and reach back to iiex
 ([crucible furnace](crucible-furnace.md)). None of the three exists as an item; see [Open](#open).
 
 ---
@@ -307,7 +307,7 @@ after its parent's.
 | To build | Copy from | Note |
 |---|---|---|
 | the whole block | the LP [steam hammer](steam-hammer.md), once it exists | the LP class should be the base and this the leaf - the same relationship `BlockBoiler`/Lancashire and `BlockEngine`/Cornish already have |
-| the leaf pattern | `src/HighPressureExpanded/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over lpex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from lpex |
+| the leaf pattern | `src/HighPressureExpanded/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over iiex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from iiex |
 | pressure-banded behaviour | `CornishEngine{Engage,Break}Pressure*` and its three-setting wrench throttle | `HpexConfig.cs:70-78` |
 | config | a new `HpHammer*` block in `HpexConfig` | `HpexConfig.cs:23` - `[ExConfigRegister("ex_values.json", "hpex", Manageable = true)]` |
 | costs | `HpexRecipeConfig` | `src/HighPressureExpanded/HpexRecipeConfig.cs` |
@@ -337,7 +337,7 @@ ingredient codes, which is why the hadfield gate is still a comment.
   neighbour is air (`PipeNetwork.cs:632` vs `BlockNetworkNode.cs:751-754`), so if this machine is given a
   welded (hpex) joint family and the player butts a cast segment against it, they get no leak, no warning,
   no signal - the machine simply never powers. Decide the joint family deliberately.
-* The pressure valve cannot protect it (B6). hpex's "mandatory" valve is lpex-domain and flanged, so
+* The pressure valve cannot protect it (B6). hpex's "mandatory" valve is iiex-domain and flanged, so
   welded hpex pipe refuses to couple it, and its gate clamps to its own 5 atm burst, below the Cornish
   engine's 6/7 engage pressures (`BlockPipe.cs:239`, `BlockEntityPressureValve.cs:41`, `HpexConfig.cs:70-78`).
   A hammer with no break pressure does not need the valve, which is a point in favour of the 8-12 band, but

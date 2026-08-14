@@ -1,0 +1,51 @@
+{
+  "code": "caststock",
+  "shape": {
+    "base": "iiex:item/castbillet"
+  },
+  "shapeByType": {
+    "*-billet": {
+      "base": "iiex:item/castbillet"
+    },
+    "*-bloom": {
+      "base": "iiex:item/castbloom"
+    },
+    "*-slab": {
+      "base": "iiex:item/castslab"
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "form",
+      "states": [
+        "billet",
+        "bloom",
+        "slab"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributesByType": {
+    "*-billet": {
+      "materialUnits": 600
+    },
+    "*-bloom": {
+      "materialUnits": 1000
+    },
+    "*-slab": {
+      "materialUnits": 3000
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

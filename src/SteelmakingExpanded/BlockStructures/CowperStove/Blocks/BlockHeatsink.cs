@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ExpandedLib.Definitions;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

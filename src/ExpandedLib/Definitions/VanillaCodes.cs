@@ -7,7 +7,7 @@ namespace ExpandedLib.Definitions;
 /// so that a typo in a <see cref="MultiblockLayoutBuilder.Legend"/> is a compile error rather than a
 /// <c>blockNumbers</c> entry matching no block, which throws nowhere and leaves the structure unable to
 /// complete. Unlike the mods' own codes, these cannot be generated from an <c>ExBlockDef</c>.
-/// <see cref="ExCodes"/> holds exlib's own blocks and <c>IwexCodes</c> / <c>LpexCodes</c> each mod's;
+/// <see cref="ExCodes"/> holds exlib's own blocks and <c>IiexCodes</c> / <c>IiexCodes</c> each mod's;
 /// vanilla items named by recipes live in <see cref="ExIngredients"/>, and a string both need lives here.
 /// </summary>
 public static class VanillaCodes {
@@ -29,7 +29,7 @@ public static class VanillaCodes {
   //
   // All of these are domainless or `game:`-prefixed: `@(…)` is a regex over the path only, so a bare
   // alternation is implicitly `game:` and cannot admit a modded brick. Correct here, since these name
-  // vanilla's own masonry; see CoalBed and IwexCodes.ChargeShaft for where it is not.
+  // vanilla's own masonry; see CoalBed and IiexCodes.ChargeShaft for where it is not.
 
   /// <summary>Refractory brick pinned to one tier: <c>game:refractorybricks-good-tier{tier}</c>. For a
   /// shell whose heat leaves no cheaper tier viable; the hot blast furnace demands tier 3
@@ -186,7 +186,7 @@ public static class VanillaCodes {
   /// A plain fuel bed - vanilla coal pile or nothing: <c>@(air|coalpile)</c>. The alternation is domainless:
   /// vanilla's <c>WildcardUtil</c> compares domain and path separately and <c>@(…)</c> is a regex over the
   /// path only, so this is implicitly <c>game:</c> and can never admit a mod's own charge block - correct
-  /// for a firebox, wrong for a shaft (see <c>IwexCodes.ChargeShaft</c>). Air is an accepted occupant, so a
+  /// for a firebox, wrong for a shaft (see <c>IiexCodes.ChargeShaft</c>). Air is an accepted occupant, so a
   /// layout drawn with this completes with no fuel cell built at all.
   /// </summary>
   public const string CoalBed = "@(air|coalpile)";

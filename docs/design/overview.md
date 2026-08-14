@@ -69,7 +69,7 @@ the ferroalloys hadfield needs are smelted in the early loop's cold blast furnac
 early parts are the **bootstrap rung** — a player builds them before steam and upgrades afterwards. They
 are progression, not duplication, and the merge collapses none of them (ruling M3).
 
-*Historical:* these two mods were previously five — `iwex`, `lpex`, `smex`, `hpex` on a linear spine,
+*Historical:* these two mods were previously five — `iiex`, `iiex`, `smex`, `hpex` on a linear spine,
 with closure defined per mod. Ruling M1 merged them on the tier line; ruling M2 moved closure to the
 loop. Only `exlib`, `ppex` (now folded into `iiex`) and `smex` (now folded into `siex`) were ever
 published, so the migration is a code relocation rather than a player-facing loss.
@@ -79,7 +79,7 @@ separate projects):
 
 | Add-on | Parent | Adds | Scheduled? |
 |---|---|---|---|
-| **Crucible** | iwex | crucible-steel furnace (simple multiblock); cementation is vanilla - not implemented | off-spine, unscheduled |
+| **Crucible** | iiex | crucible-steel furnace (simple multiblock); cementation is vanilla - not implemented | off-spine, unscheduled |
 | **Copper** | smex | reverberatory furnace, Pierce-Smith converter, zinc retorts (no acid plant - sulfur comes from chemistry) | off-spine, unscheduled |
 
 ---

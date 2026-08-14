@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
-using IronworkingExpanded.BlockStructures.Products.BlockEntities;
-using IronworkingExpanded.Items;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
+using IronIndustryExpanded.Items;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
@@ -24,7 +24,7 @@ public class BlastFurnaceLifecycleTests {
   private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
-    world.RegisterItem("iwex:slag");
+    world.RegisterItem("iiex:slag");
     return world;
   }
 
@@ -60,7 +60,7 @@ public class BlastFurnaceLifecycleTests {
 
   /// <summary>Lays <paramref name="units"/> of unstamped burden into the column at structure-local
   /// <c>(x, z)</c> - charge carrying no composition, which the furnace burns as the standard grade. This is
-  /// the legacy <c>iwex:blastmix</c> shape, whose reading is pinned by
+  /// the legacy <c>iiex:blastmix</c> shape, whose reading is pinned by
   /// <c>Legacy_blast_mix_reads_as_a_standard_grade_burden</c>.</summary>
   private static ChargeColumn Blastmix(
     BlockEntityBlastFurnaceHot be,
@@ -96,7 +96,7 @@ public class BlastFurnaceLifecycleTests {
     BurdenMix? mix
   ) {
     ChargeColumn column = be.ChargeColumnAt(localX, localZ)!;
-    column.Push($"iwex:{itemPath}", units, ChargeTemp, mix ?? default);
+    column.Push($"iiex:{itemPath}", units, ChargeTemp, mix ?? default);
     return column;
   }
 
@@ -118,9 +118,9 @@ public class BlastFurnaceLifecycleTests {
   ) {
     ChargeColumn column = be.ChargeColumnAt(localX, localZ)!;
     column.Push(
-      "iwex:burden",
+      "iiex:burden",
       units,
-      IwexValues.BfIronMeltingPoint + 100f,
+      IiexValues.BfIronMeltingPoint + 100f,
       mix ?? default
     );
     return column;
@@ -142,12 +142,12 @@ public class BlastFurnaceLifecycleTests {
     int coke = (int)System.Math.Round(units * cokeFrac);
     column.Push("game:coke", coke, ChargeTemp, default);
     column.Push(
-      "iwex:burden",
+      "iiex:burden",
       units - coke,
       ChargeTemp,
       new BurdenMix(
-        1f - IwexValues.BfDefaultFluxFrac,
-        IwexValues.BfDefaultFluxFrac,
+        1f - IiexValues.BfDefaultFluxFrac,
+        IiexValues.BfDefaultFluxFrac,
         0f
       )
     );
@@ -208,8 +208,8 @@ public class BlastFurnaceLifecycleTests {
     Melt(be, 16);
 
     Assert.Equal(84, Units(column)); // 16 units of burden consumed
-    Assert.Equal(16 * IwexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
-    Assert.Equal(16 * IwexValues.BfSlagPerOreUnit * mix.IronFrac, Slag(be), 2);
+    Assert.Equal(16 * IiexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
+    Assert.Equal(16 * IiexValues.BfSlagPerOreUnit * mix.IronFrac, Slag(be), 2);
   }
 
   /// <summary>
@@ -222,9 +222,9 @@ public class BlastFurnaceLifecycleTests {
     var world = NewWorld();
     var be = Furnace(world);
     ChargeColumn column = be.ChargeColumnAt(0, 0)!;
-    float hot = IwexValues.BfIronMeltingPoint + 100f;
+    float hot = IiexValues.BfIronMeltingPoint + 100f;
     column.Push("game:coke", 10, hot, default); // the round's coke course, at the raceway
-    column.Push("iwex:burden", 90, hot, new BurdenMix(65f, 5f, 30f));
+    column.Push("iiex:burden", 90, hot, new BurdenMix(65f, 5f, 30f));
 
     Melt(be, 16);
 
@@ -247,9 +247,9 @@ public class BlastFurnaceLifecycleTests {
     var be = Furnace(world);
     var mix = new BurdenMix(65f, 5f, 30f);
     ChargeColumn column = be.ChargeColumnAt(0, 0)!;
-    float hot = IwexValues.BfIronMeltingPoint + 100f;
+    float hot = IiexValues.BfIronMeltingPoint + 100f;
     column.Push("game:charcoal", 10, hot, default); // the round's fuel course, at the raceway
-    column.Push("iwex:burden", 90, hot, mix);
+    column.Push("iiex:burden", 90, hot, mix);
 
     Melt(be, 16);
 
@@ -261,7 +261,7 @@ public class BlastFurnaceLifecycleTests {
     // The same claim stated in metal rather than in bands: a fuel band carries `default` mix, so a melt
     // that consumed the ten charcoal units would render nothing for them and the pool would come up
     // exactly ten units of burden short.
-    Assert.Equal(16 * IwexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
+    Assert.Equal(16 * IiexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
   }
 
   [Fact]
@@ -273,12 +273,12 @@ public class BlastFurnaceLifecycleTests {
     ReflectionHelpers.SetField(
       be,
       "_moltenIron",
-      IwexValues.BfMaxMoltenIron - 10f
+      IiexValues.BfMaxMoltenIron - 10f
     );
 
     Melt(be, 16);
 
-    Assert.Equal(IwexValues.BfMaxMoltenIron, Iron(be), 1); // capped, not 2400 + a cycle
+    Assert.Equal(IiexValues.BfMaxMoltenIron, Iron(be), 1); // capped, not 2400 + a cycle
   }
 
   /// <summary>
@@ -294,7 +294,7 @@ public class BlastFurnaceLifecycleTests {
 
     // Two courses in one column: lean at the raceway, rich laid on top of it.
     ChargeColumn column = HotBurdenIn(be, 0, 0, 50, lean);
-    column.Push("iwex:burden", 50, IwexValues.BfIronMeltingPoint + 100f, rich);
+    column.Push("iiex:burden", 50, IiexValues.BfIronMeltingPoint + 100f, rich);
 
     Melt(be, 16);
 
@@ -425,7 +425,7 @@ public class BlastFurnaceLifecycleTests {
     // The ore and flux come back at their shipped shares as raw amounts, but the fractions renormalise
     // over the two of them (0.05 of 0.80 is 6.25 %) because the fuel share is not contributed.
     Assert.Equal(
-      IwexValues.BfDefaultFluxFrac / (1f - IwexValues.BfDefaultFuelFrac),
+      IiexValues.BfDefaultFluxFrac / (1f - IiexValues.BfDefaultFuelFrac),
       mix.FluxFrac,
       3
     );
@@ -460,7 +460,7 @@ public class BlastFurnaceLifecycleTests {
     // `game:` domain, and every code gate reads it back through an AssetLocation that puts it back.
     ChargeColumn column = be.ChargeColumnAt(0, 0)!;
     column.Push("coke", 25, ChargeTemp, default);
-    column.Push("iwex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
+    column.Push("iiex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
 
     int total = CountCharge(be, out _, out BurdenMix mix);
 
@@ -484,7 +484,7 @@ public class BlastFurnaceLifecycleTests {
     // burden above it. Only the fuel differs, so any difference in the reading is the price and nothing else.
     ChargeColumn column = be.ChargeColumnAt(0, 0)!;
     column.Push("charcoal", 25, ChargeTemp, default);
-    column.Push("iwex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
+    column.Push("iiex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
 
     int total = CountCharge(be, out _, out BurdenMix mix);
 
@@ -499,7 +499,7 @@ public class BlastFurnaceLifecycleTests {
     var cokeFired = Furnace(NewWorld());
     ChargeColumn cokeColumn = cokeFired.ChargeColumnAt(0, 0)!;
     cokeColumn.Push("coke", 25, ChargeTemp, default);
-    cokeColumn.Push("iwex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
+    cokeColumn.Push("iiex:burden", 75, ChargeTemp, new BurdenMix(95f, 5f, 0f));
     Assert.Equal(100, CountCharge(cokeFired, out _, out BurdenMix cokeMix));
     Assert.Equal(0.25f, cokeMix.FuelFrac, 3);
     Assert.True(
@@ -527,7 +527,7 @@ public class BlastFurnaceLifecycleTests {
     // of the behaviour goes unasserted.
     Block iron = TestBlocks.Configure(
       new Block(),
-      "iwex:hearthmetal-pigiron",
+      "iiex:hearthmetal-pigiron",
       700
     );
     iron.EntityClass = "hearthmetal";
@@ -556,7 +556,7 @@ public class BlastFurnaceLifecycleTests {
       p => Assert.Equal(iron.BlockId, world.GetBlock(p).BlockId)
     );
 
-    int expectedTotal = (int)(50f / IwexValues.BfUnitsPerSolidNugget);
+    int expectedTotal = (int)(50f / IiexValues.BfUnitsPerSolidNugget);
     Assert.Equal(
       expectedTotal,
       floor.Sum(p =>
@@ -569,7 +569,7 @@ public class BlastFurnaceLifecycleTests {
   public void Extinguishing_burns_the_burden_out_by_height_instead_of_slagging_it() {
     var world = NewWorld();
     // Well clear of the coal piles' ids, which are derived from their Y.
-    Block slag = TestBlocks.Configure(new Block(), "iwex:slag", 701);
+    Block slag = TestBlocks.Configure(new Block(), "iiex:slag", 701);
     world.Register(slag);
     var be = Furnace(world);
 
@@ -595,8 +595,8 @@ public class BlastFurnaceLifecycleTests {
     BurdenMix high = BandIn(be, column, blocks - 1).Mix;
 
     // (b) Coke burns out by height: the bottom course sat on the tuyeres, the top one never saw blast.
-    Assert.Equal(0.20f * IwexValues.BfBurnoutFuelRetainedBottom, low.Fuel, 4);
-    Assert.Equal(0.20f * IwexValues.BfBurnoutFuelRetainedTop, high.Fuel, 4);
+    Assert.Equal(0.20f * IiexValues.BfBurnoutFuelRetainedBottom, low.Fuel, 4);
+    Assert.Equal(0.20f * IiexValues.BfBurnoutFuelRetainedTop, high.Fuel, 4);
     Assert.True(high.Fuel > low.Fuel);
 
     // (c) Iron and flux are preserved verbatim, so the salvage can be re-coked and charged again.
@@ -661,7 +661,7 @@ public class BlastFurnaceLifecycleTests {
       int rounds = be.ColumnCapacity(x, z) / perBlock;
       for (int i = 0; i < rounds; i++) {
         column.Push(fuelCode, fuel, ChargeTemp, default);
-        column.Push("iwex:burden", perBlock - fuel, ChargeTemp, mix);
+        column.Push("iiex:burden", perBlock - fuel, ChargeTemp, mix);
       }
     }
   }
@@ -730,7 +730,7 @@ public class BlastFurnaceLifecycleTests {
       $"the top of the shaft should keep more fuel than the bottom; {left[^1]} vs {left[0]}"
     );
     Assert.Equal(
-      (int)(charged * IwexValues.BfBurnoutFuelRetainedTop),
+      (int)(charged * IiexValues.BfBurnoutFuelRetainedTop),
       left[^1]
     );
 
@@ -850,9 +850,9 @@ public class BlastFurnaceLifecycleTests {
     // Hot, because the melt reads the band's own carried temperature - see HotBurdenIn.
     ChargeColumn column = be.ChargeColumnAt(0, 0)!;
     column.Push(
-      "iwex:remeltburden",
+      "iiex:remeltburden",
       100,
-      IwexValues.BfIronMeltingPoint + 100f,
+      IiexValues.BfIronMeltingPoint + 100f,
       new BurdenMix(60f, 5f, 35f)
     );
 
@@ -902,11 +902,11 @@ public class BlastFurnaceLifecycleTests {
     Assert.True(band.Mix.Flux > 0f);
     // The salvage must grade as real chargeable material rather than off-spec or empty.
     Assert.NotEqual(
-      "iwex:burden-profile-offspec",
+      "iiex:burden-profile-offspec",
       Burden.ProfileLangKey(band.Mix)
     );
     Assert.NotEqual(
-      "iwex:burden-profile-empty",
+      "iiex:burden-profile-empty",
       Burden.ProfileLangKey(band.Mix)
     );
   }
@@ -914,7 +914,7 @@ public class BlastFurnaceLifecycleTests {
   [Fact]
   public void A_wrong_family_charge_burns_out_on_extinguish_not_destroyed() {
     var world = NewWorld();
-    Block slag = TestBlocks.Configure(new Block(), "iwex:slag", 701);
+    Block slag = TestBlocks.Configure(new Block(), "iiex:slag", 701);
     world.Register(slag);
     var be = Furnace(world);
     BlockPos bottom = (BlockPos)
@@ -932,11 +932,11 @@ public class BlastFurnaceLifecycleTests {
     // Still remelt burden salvage - not slag, not destroyed: metal + flux kept, coke burned out.
     Assert.NotEqual(slag.BlockId, world.GetBlock(bottom).BlockId);
     ChargeSegment band = BandIn(be, column, 0);
-    Assert.Equal("iwex:remeltburden", band.Material);
+    Assert.Equal("iiex:remeltburden", band.Material);
     Assert.Equal(0.60f, band.Mix.Iron, 4);
     Assert.Equal(0.05f, band.Mix.Flux, 4);
     Assert.Equal(
-      0.35f * IwexValues.BfBurnoutFuelRetainedBottom,
+      0.35f * IiexValues.BfBurnoutFuelRetainedBottom,
       band.Mix.Fuel,
       4
     );
@@ -951,7 +951,7 @@ public class BlastFurnaceLifecycleTests {
     var world = NewWorld();
     Block iron = TestBlocks.Configure(
       new Block(),
-      "iwex:hearthmetal-pigiron",
+      "iiex:hearthmetal-pigiron",
       700
     );
     iron.EntityClass = "hearthmetal";
@@ -990,7 +990,7 @@ public class BlastFurnaceLifecycleTests {
     Shutdown(be);
 
     Assert.NotEqual(iron.BlockId, world.GetBlock(bottom).BlockId); // not overwritten
-    Assert.Equal("iwex:remeltburden", BandIn(be, column, 0).Material); // salvage survives
+    Assert.Equal("iiex:remeltburden", BandIn(be, column, 0).Material); // salvage survives
   }
 
   [Fact]

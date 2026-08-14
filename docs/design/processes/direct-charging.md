@@ -3,7 +3,7 @@
 **Status** designed - nothing in `src/` distinguishes a converter destination from any other, while every hop
 the route needs is already live, already typed and already agreeing on metal codes. There is no mechanism to
 build; there is a layout to allow.
-**Mods** iwex (the furnace tap, the canal, the seal) · smex (the converter; later the
+**Mods** iiex (the furnace tap, the canal, the seal) · smex (the converter; later the
 [open hearth](../machines/open-hearth.md))
 
 **Owns** - the facts this page is canonical for:
@@ -56,16 +56,16 @@ a casting bed. Hop by hop:
 | # | Hop | Who does it | file:line |
 |---|---|---|---|
 | 1 | Furnace pool → tap. `min(TapDrainPerTick, pool)` units per tick, stack size `ceil(units × TapIronStackFactor)`, stamped with the furnace's own `_internalTemp` | `BlockEntityShaftFurnace.DrainIronTap` | `BlockEntityShaftFurnace.cs:1288-1325` |
-| 2 | Tap → canal start. Pours to `Pos + side.Opposite`, one down; the tap refuses to open at all unless a `BlockMoltenCanalStart` is there | `BlockEntityFurnaceTap.TryPourMetal` | `BlockEntityFurnaceTap.cs`; the gate at `BlockFurnaceTap.cs` (`iwex:tap-err-nocanal`) |
+| 2 | Tap → canal start. Pours to `Pos + side.Opposite`, one down; the tap refuses to open at all unless a `BlockMoltenCanalStart` is there | `BlockEntityFurnaceTap.TryPourMetal` | `BlockEntityFurnaceTap.cs`; the gate at `BlockFurnaceTap.cs` (`iiex:tap-err-nocanal`) |
 | 3 | Start → run. The start is the BFS root; each edge is driven once per network tick | `MoltenNetwork.OnTick` / `FlowEdge` | see [molten network](../mechanics/molten-network.md) |
-| 4 | Run → the converter's own canal tap. The converter's layout already requires `iwex:moltencanal-tap*` at its local `(1,1,2)`, plus a start and two straights | `BlockConverterControl` layout | see [Bessemer § The layout](../machines/bessemer.md) |
+| 4 | Run → the converter's own canal tap. The converter's layout already requires `iiex:moltencanal-tap*` at its local `(1,1,2)`, plus a start and two straights | `BlockConverterControl` layout | see [Bessemer § The layout](../machines/bessemer.md) |
 | 5 | Tap cell → bath. The converter drains it directly, `min(cellAmount, space)` per tick, capturing type and temperature first | `BlockEntityConverterControl.TickFilling` | `:379`, tap-closed guard `:391`, drain `:430`, temperature capture `:428`, applied `:444` |
 | 6 | Bath ← identity check. The vessel accepts one metal at a time and re-seeds carbon by mass average on a pig fill | same | type gate `:412-419`, carbon reseed `:449-457` |
 
 The two ends already agree on the code. The furnace's product token is `"pigiron"`
 (`BlockEntityShaftFurnace.cs:151`) and the converter's `PigCode` resolves the same token through
-`MetalRegistry` (`BlockEntityConverterControl.cs`), both landing on `iwex:ingot-pigiron`
-(`assets/iwex/config/metals/pigiron.json`). Nothing has to be translated, and `FlowEdge`'s type refusal -
+`MetalRegistry` (`BlockEntityConverterControl.cs`), both landing on `iiex:ingot-pigiron`
+(`assets/iiex/config/metals/pigiron.json`). Nothing has to be translated, and `FlowEdge`'s type refusal -
 which would silently stop a mismatched run dead - never fires.
 
 The work is making the converter reachable, not building direct charging. The furnace end is buildable in
@@ -148,7 +148,7 @@ cold scrap.
 | **Transit time.** One `FlowEdge` per cell per 1 s network tick | an N-cell run adds ≈ N seconds of cooling before the metal arrives | [molten network § ordering](../mechanics/molten-network.md) |
 | **Standing thermal mass.** Every push volume-weight-averages the two charges' temperatures | an N-cell run holds up to 50 N units of previously-poured, already-cooling metal that the new charge averages down into on arrival | `BlockEntityMoltenCanal.cs:216-221`; capacity cited from [molten network](../mechanics/molten-network.md) |
 | **No conduction.** Cells exchange heat only when metal moves | a standing run cools cell by cell independently; nothing upstream keeps it warm | [molten network § Open](../mechanics/molten-network.md) |
-| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`assets/iwex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](../mechanics/molten-network.md) |
+| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`assets/iiex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](../mechanics/molten-network.md) |
 | **`SoakHeat` protects only the start.** A brim-full canal start being poured onto keeps taking heat | the rest of the run has no such protection | `BlockEntityMoltenCanal.cs:276` |
 
 ---
@@ -201,7 +201,7 @@ incentive is a step rather than a slope.
    closed tap fails twice over - `TickFilling` reports `bessemer-status-filling-tapclosed`
    (`BlockEntityConverterControl.cs:391-393`) and the tap has already severed itself from the graph
    (`BlockEntityMoltenCanalTap.cs:49-50`), so its cell never fills either. The layout wildcards
-   `iwex:moltencanal-tap*`, so a backwards tap also completes the structure and then never delivers
+   `iiex:moltencanal-tap*`, so a backwards tap also completes the structure and then never delivers
    ([Bessemer § Open #8](../machines/bessemer.md)).
 
 3. The converter's heat balance never reads the arrival temperature. `T_in` is
@@ -251,7 +251,7 @@ incentive is a step rather than a slope.
 3. Model the destination choice, or state that it is manual. A seal on a straight is the only real routing
    verb, it cannot be thrown while metal is moving, and an unsealed branch feeds both sinks at once. Either
    that is the design - in which case something should teach it - or the route wants a switchable fitting (a
-   plain valve on the branch is the obvious candidate; the block already exists in lpex).
+   plain valve on the branch is the obvious candidate; the block already exists in iiex).
 
 4. The bed rotation still has no code. *Bed count = cooling-and-clearing time ÷ pour time* is the rule that
    makes overflow provisioning a decision, and nothing models a clearing time

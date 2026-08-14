@@ -1,5 +1,5 @@
 # Tall Hopper
-**Status** live   **Mod** iwex
+**Status** live   **Mod** iiex
 
 **Owns**
 - The hopper's tank model: one `ItemStack`, one material and one stamped mix at a time,
@@ -84,7 +84,7 @@ projection.
 | Asset | Path | State |
 |---|---|---|
 | Editable shape | - | missing. There is no `assets/editable/shapes/` source for this block |
-| Runtime shape | `assets/iwex/shapes/hopper-tall.json` | present - flat cubes, 32 px tall (2 blocks) |
+| Runtime shape | `assets/iiex/shapes/hopper-tall.json` | present - flat cubes, 32 px tall (2 blocks) |
 | Animations | - | none authored, none needed (the hopper is not an RCC block and has no `Animatable` behaviour) |
 | Textures | `front1`, `iron3`, `iron2`, `iron5` | declared in the shape |
 
@@ -104,10 +104,10 @@ P S P        P = plate  × 1 each  → 4 plate
 S P S        S = nails  × 1 each  → 4 nails
 ```
 
-Output `iwex:hopper-tall-n` × 1. `Plate` and `Nails` come from the shared `ExIngredients` helpers.
+Output `iiex:hopper-tall-n` × 1. `Plate` and `Nails` come from the shared `ExIngredients` helpers.
 
-In the recipe-cost catalogue as `hoppertall-grid` (`IwexRecipeConfig.cs:90`), so it responds to
-`/exmod recipes iwex cheap`.
+In the recipe-cost catalogue as `hoppertall-grid` (`IiexRecipeConfig.cs:90`), so it responds to
+`/exmod recipes iiex cheap`.
 
 ---
 
@@ -135,7 +135,7 @@ charge material (burden, or the furnace's own fuel)
 | right-click empty-handed | withdraw the entire tank | `BlockHopperTall.cs:147-158`, `BlockEntityHopperTall.cs:160-168` |
 | ctrl+shift+right-click | toggle the furnace build outline | `BlockHopperTall.cs:124-131` |
 
-A mismatched material or stamp raises `iwex-hoppertall-wronggrade` (`:140-145`). A full tank is swallowed
+A mismatched material or stamp raises `iiex-hoppertall-wronggrade` (`:140-145`). A full tank is swallowed
 silently - that is a state the block info already shows, not an error.
 
 ### Acceptance
@@ -172,12 +172,12 @@ nothing else. A column's ceiling is its own cell count times the furnace's block
 
 ## Numbers
 
-### Config — `src/IronworkingExpanded/IwexConfig.cs`, `ModConfig/ex_values.json`, domain `iwex`
+### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `HopperTallCapacity` | `128 u` | `IwexConfig.cs:703` | tank size - exactly one burden stack |
-| `HopperTallDropPerSecond` | `8 u/s` | `IwexConfig.cs:707` | drip rate while a target column exists |
+| `HopperTallCapacity` | `128 u` | `IiexConfig.cs:703` | tank size - exactly one burden stack |
+| `HopperTallDropPerSecond` | `8 u/s` | `IiexConfig.cs:707` | drip rate while a target column exists |
 
 There is no per-cell cap key and no drop-depth key: a column's ceiling is geometry, and how far down to
 look is the anchor link's question, not this block's.
@@ -244,14 +244,14 @@ the material it held, not a re-stamped copy.
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Furnaces/HopperTallTests.cs` - tank fill/cap, the continuous drip
+`test/IronIndustryExpanded.Tests/Blocks/Furnaces/HopperTallTests.cs` - tank fill/cap, the continuous drip
 against the core's column contract, interaction routed from the top filler cell, persistence.
 
 ---
 
 ## Gotchas
 
-1. The interaction-help carousel shows only burden. `ResolveBurdenStack` resolves `iwex:burden` alone
+1. The interaction-help carousel shows only burden. `ResolveBurdenStack` resolves `iiex:burden` alone
    (`BlockHopperTall.cs:248-252`), while `Accepts` takes anything the core charges - including the
    machine's own fuel. The hints therefore under-describe the block; the fix is a code change (the item
    list cannot be resolved headlessly, so it has shipped as-is).

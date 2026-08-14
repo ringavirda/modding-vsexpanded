@@ -61,7 +61,7 @@ A-frame), which neither of the other two can draw in-plane (`:93-98`).
 .MultiblockLayout(s =>
   s.Origin(-3, -2)                                        // MultiblockLayoutBuilder.cs:32
    .Legend('#', "game:refractorybricks-good-tier*")        // :48
-   .Legend('C', "iwex:blastfurnacecore-*")
+   .Legend('C', "iiex:blastfurnacecore-*")
    .Legend('c', "@(air|coalpile)")
    .Layer(0, """
               . . # . # .
@@ -285,11 +285,11 @@ cell rather than inventing one.
 
 The role↔code cross-check does not generalise, and `Pool` and the taps are where it runs out.
 `Chargeable`, `Firebox`, `Tuyere` and `GasOutlet` each sit on a glyph with a distinguishing code
-(`chargepile`, `coalpile`, `iwex:tuyere*`, `lpex:pipe-outlet*`), so a test can play the role off
+(`chargepile`, `coalpile`, `iiex:tuyere*`, `iiex:pipe-outlet*`), so a test can play the role off
 `CellsAccepting` and catch a `Role()` hung on the wrong glyph. `Pool` cannot be checked that way by
 construction - its glyph is a deliberate duplicate of the shaft glyph. What stands in for it: the pool must
 be exactly the chargeable cells on the lowest level, it must be a proper subset of the burden column, and
-every cell must pass `OwnsCell`. The two taps get half an oracle: both are `iwex:moltenmetaltap*`, so
+every cell must pass `OwnsCell`. The two taps get half an oracle: both are `iiex:moltenmetaltap*`, so
 `CellsAccepting` pins their union - enough to catch a tap role hung on brick - but nothing about which is
 which. That half is stated by the physical relation: slag floats, so the slag tap is the higher of the two.
 

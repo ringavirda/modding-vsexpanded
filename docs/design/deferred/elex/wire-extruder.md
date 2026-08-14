@@ -4,7 +4,7 @@
 **Owns**
 * the D7 placement record — that wire is one machine at one tier, and the two prior rejections D7 reconciles rather than overturns;
 * what wire is for — cables and alternator windings, both elex-only;
-* the live code leftover — `iwex:wirerod-iron`, a roll-set output for an item that does not exist, on a gap that was retired.
+* the live code leftover — `iiex:wirerod-iron`, a roll-set output for an item that does not exist, on a gap that was retired.
 
 **Does not own** — cited only, never restated:
 
@@ -33,7 +33,7 @@ The archived elex spec calls the block a wire extruder, a megablock, MP-driven:
 | Field | Value |
 |---|---|
 | Block type | megablock |
-| Power | MP - needs lpex MP, not electric |
+| Power | MP - needs iiex MP, not electric |
 | In → out | copper rod / plate → wire, impure or pure |
 | Payoff | pure wire lowers cable R and unlocks alternator windings |
 
@@ -49,12 +49,12 @@ D7 reconciles two rejections that had already reached the same conclusion from o
 
 | Prior ruling | What it said | Status after D7 |
 |---|---|---|
-| iwex rejects wire at the iron tier | *"Wire / wire-rod / draw bench — Explicitly elex-era"* | stands - it rejected wire at the iron tier, not wire; the record now lives at [steel roll sets](../../machines/steel-roll-sets.md) |
+| iiex rejects wire at the iron tier | *"Wire / wire-rod / draw bench — Explicitly elex-era"* | stands - it rejected wire at the iron tier, not wire; the record now lives at [steel roll sets](../../machines/steel-roll-sets.md) |
 | the smex spec proposed a draw-die attachment on the rolling shop | *"useful only once there is an electrical grid to consume the wire, so effectively an elex-era attachment"* | removed - it was a duplicate of this machine, and it went with the archived smex spec |
 
 Both rejections agreed on the reason - no grid, no consumer - and disagreed only on where to put the machine. D7 puts it in elex.
 
-One clause of iwex's original rejection is stale: it rejected wire because *"elex is gated on deferred chemistry"*. [scope](../../scope.md) downgraded that gate to a degraded path, and D8 made the deferral a release-scheduling decision instead. The rejection survives either way - wire has no iron-tier consumer - but do not cite that clause as if it were still the argument.
+One clause of iiex's original rejection is stale: it rejected wire because *"elex is gated on deferred chemistry"*. [scope](../../scope.md) downgraded that gate to a degraded path, and D8 made the deferral a release-scheduling decision instead. The rejection survives either way - wire has no iron-tier consumer - but do not cite that clause as if it were still the argument.
 
 ---
 
@@ -62,21 +62,21 @@ One clause of iwex's original rejection is stale: it rejected wire because *"ele
 
 No block, no BE, no shape, no lang key, no item. The grep is not empty, though: there is one live reference, and it is a bug.
 
-### `iwex:wirerod-iron` is a roll-set output for an item that does not exist
+### `iiex:wirerod-iron` is a roll-set output for an item that does not exist
 
 ```
 $ grep -rn "wirerod" src/ assets/ test/
-src/IronworkingExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:90:      [Out(1.0, "game:rod-iron"), Out(0.5, "iwex:wirerod-iron")],
-test/IronworkingExpanded.Tests/goldens/iwex/itemtypes/rollset.json:96:            "code": "iwex:wirerod-iron"
+src/IronIndustryExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:90:      [Out(1.0, "game:rod-iron"), Out(0.5, "iiex:wirerod-iron")],
+test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/rollset.json:96:            "code": "iiex:wirerod-iron"
 ```
 
-Two hits, and neither is a definition. The grooved roll set names `iwex:wirerod-iron` as its 0.5-gap product; nothing anywhere emits an item with that code. Three rulings have already passed over it:
+Two hits, and neither is a definition. The grooved roll set names `iiex:wirerod-iron` as its 0.5-gap product; nothing anywhere emits an item with that code. Three rulings have already passed over it:
 
 | Fact | Consequence |
 |---|---|
 | wire-rod is rejected at the iron tier ([steel roll sets](../../machines/steel-roll-sets.md)) | the output should not exist at all |
 | the 0.5 gap itself is retired by decision, still live in three roll sets ([roll sets](../../items/roll-sets.md)) | the gap carrying it is dead weight too |
-| roll-set validation only checks that a spec parses (`src/IronworkingExpanded/BlockStructures/Forming/RollSetValidation.cs:20-33`) | a dangling output code raises nothing - the mill would simply produce nothing at that gap |
+| roll-set validation only checks that a spec parses (`src/IronIndustryExpanded/BlockStructures/Forming/RollSetValidation.cs:20-33`) | a dangling output code raises nothing - the mill would simply produce nothing at that gap |
 
 The leftover is baked into a golden (`rollset.json:96`), so removing it is a golden update, not a silent edit.
 
@@ -84,7 +84,7 @@ The leftover is baked into a golden (`rollset.json:96`), so removing it is a gol
 
 | Piece it would need | Status | Where |
 |---|---|---|
-| an MP-energy consumer contract | live | `src/ExpandedLib/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iwex ([mp-energy](../../mechanics/mp-energy.md)) |
+| an MP-energy consumer contract | live | `src/ExpandedLib/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iiex ([mp-energy](../../mechanics/mp-energy.md)) |
 | tooling that carries its own spec (a die series, as roll sets do) | live idiom | `RollSetSpec.cs:9-24`, fitted via `BlockEntityRollingMill.TryFitRollSet` (`BlockEntities/BlockEntityRollingMill.cs:143`) |
 | a stock item family with per-stage meshes | live | `StockItemDefinitions.cs`, `StockMesh.cs` ([stock](../../items/stock.md)) |
 | copper as a material | absent | `grep -rni copper src/ --include=*.cs -l` → 3 files, all vanilla-facing plumbing |
@@ -104,12 +104,12 @@ copper rod/plate ──MP wire machine──▶ wire ──▶ cable / heavy cab
 | Question | Answer on record |
 |---|---|
 | Which tier? | elex — **D7** ([STATE.md](../../../internal/plans/STATE.md)) |
-| Which power? | MP (lpex-tier), never electric |
+| Which power? | MP (iiex-tier), never electric |
 | Which feedstock? | copper rod or plate |
 | Two grades? | yes - impure and pure, and the grade is the whole payoff |
 | Ferrous wire? | no - rejected, and the freed grooved gap went to rivet stock instead ([fasteners](../../items/fasteners.md)) |
 
-iwex needed a product for the grooved 1.0 gap and explicitly chose rivets over wire: *"Wire is not the answer here … Rivets are in-tier, in-demand and already named as this machine's second die."* The iron tier had an open slot for wire and turned it down.
+iiex needed a product for the grooved 1.0 gap and explicitly chose rivets over wire: *"Wire is not the answer here … Rivets are in-tier, in-demand and already named as this machine's second die."* The iron tier had an open slot for wire and turned it down.
 
 Feedstock is the unresolved half. The steel-tier roll-set design once listed a `wire` set producing wire-rod from a billet, which is steel wire-rod; the extruder wants copper rod, which is non-ferrous and deferred. So the machine is deferred twice over - once with elex, once with copper - and steel wire-rod has no consumer under D7 either ([steel roll sets](../../machines/steel-roll-sets.md)).
 
@@ -124,14 +124,14 @@ Feedstock is the unresolved half. The steel-tier roll-set design once listed a `
 | **Alternator windings** | wall - but the binding gate is the metal, not the machine | windings need *pure* copper, which needs the [electrolysis cell](electrolysis-cell.md) |
 | **Silicon steel** (Hadfield, 1900) — the period-correct transformer/alternator core | not blocked by wire; queued and unwritten | see [alternator](alternator.md) § Silicon steel |
 | **Cold-drawn / thread-rolled bolts** | no | cold work is an elex-era four-high upgrade and was rejected for the iron tier along with cold rolling ([stock](../../items/stock.md)) |
-| **Anything in the ferrous release** | none | nothing on `exlib → iwex → lpex → smex → hpex` consumes wire |
+| **Anything in the ferrous release** | none | nothing on `exlib → iiex → iiex → smex → hpex` consumes wire |
 
 ---
 
 ## Gotchas
 
-* Delete `iwex:wirerod-iron` when the mill is next touched (`RollSetItemDefinitions.cs:90`), together with the retired 0.5 gap. It is an output naming a non-existent item, on a dead gap, for a rejected product, protected by a golden.
-* The machine's name is wrong for the process it models. Wire is drawn through dies, not extruded; extrusion presses (Bramah, 1820) were for lead pipe, and lead is non-ferrous and deferred. "Wire extruder" is the archived spec's name and this page does not overrule it - but if the block is ever built, draw bench is both the historical term and the one iwex already used when rejecting it.
+* Delete `iiex:wirerod-iron` when the mill is next touched (`RollSetItemDefinitions.cs:90`), together with the retired 0.5 gap. It is an output naming a non-existent item, on a dead gap, for a rejected product, protected by a golden.
+* The machine's name is wrong for the process it models. Wire is drawn through dies, not extruded; extrusion presses (Bramah, 1820) were for lead pipe, and lead is non-ferrous and deferred. "Wire extruder" is the archived spec's name and this page does not overrule it - but if the block is ever built, draw bench is both the historical term and the one iiex already used when rejecting it.
 * Do not make it electric to "fit the tier". The MP requirement is the bootstrap ([§ What it is](#what-it-is)); an electric wire machine makes the grid unbuildable.
 * Wire is not a fastener route. The mod's nails come from plate and its rivets from grooved rod ([fasteners](../../items/fasteners.md)); wire nails are a later technology and were considered and declined. Reintroducing wire must not quietly reopen that.
 
@@ -144,5 +144,5 @@ Feedstock is the unresolved half. The steel-tier roll-set design once listed a `
 | 1 | Rod or plate — or both? | the spec says "rod/plate". Plate implies a slitter first; rod is the single-input version and matches a draw bench |
 | 2 | Does it carry die tooling, like roll sets? | the `RollSetSpec` / `MoldSpec` idiom is right there, and a die series is literally a pass schedule. If yes, it inherits the "where does the spec type live" question ([dies](../../items/dies.md):314) |
 | 3 | Who rolls copper rod? | the mill's roll sets are iron and steel ([roll sets](../../items/roll-sets.md)); copper stock has no route at all, and it is non-ferrous |
-| 4 | Does steel wire-rod survive? | under D7 its only consumer would be a copper machine, so either the set goes or a ferrous wire product returns - and iwex already refused the second ([steel roll sets](../../machines/steel-roll-sets.md)) |
+| 4 | Does steel wire-rod survive? | under D7 its only consumer would be a copper machine, so either the set goes or a ferrous wire product returns - and iiex already refused the second ([steel roll sets](../../machines/steel-roll-sets.md)) |
 | 5 | Silicon steel: whose is it? | historically the transformer/alternator core material and queued for elex, but it is a steel - nothing is written, anywhere, and the alloy would want an open-hearth heat like every other spec'd grade ([alloys](../../items/alloys.md):104) |

@@ -1,7 +1,7 @@
 # Expanded Library (`exlib`)
 
 Shared framework mod for the *Expanded* family
-([Low Pressure Expanded](../LowPressureExpanded/README.md),
+([Low Pressure Expanded](../IronIndustryExpanded/README.md),
 [Steelmaking Expanded](../SteelmakingExpanded/README.md)). It ships no gameplay content
 of its own - install it because another mod depends on it.
 
@@ -11,7 +11,7 @@ of its own - install it because another mod depends on it.
   the layout rule prescribes: the graph model in `Networks/` (`BlockNetwork` + subclasses,
   `PipeNetworkState`, the `I*Node`/`I*Connector` contracts) and the engine-facing shell in
   `Blocks/Networks/` (`BlockNetworkNode`, node block entities, the `BlockNetworkModSystem`
-  manager). `lpex` registers the "pipe" network on it, `iwex` the "molten" network.
+  manager). `iiex` registers the "pipe" network on it, `iiex` the "molten" network.
 - **Multiblock structures** (`Blocks/Structures/`) - completion monitoring,
   build-outline projection (ctrl+shift+rmb), crash-safe incomplete-part highlighting,
   and the shared invisible `structurefiller` block that gives mega-block machines

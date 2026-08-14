@@ -14,7 +14,7 @@ namespace ExpandedLib.Definitions;
 /// </para>
 /// </summary>
 /// <example><code>
-/// [ExDefDomain("lpex")]
+/// [ExDefDomain("iiex")]
 /// public class CastPipeDefinitions : IExBlockDefProvider { }
 /// </code></example>
 [AttributeUsage(

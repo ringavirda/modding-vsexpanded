@@ -1,18 +1,18 @@
 # Wide hall (the plate-mill train)
 
 **Status** designed - nothing built, and almost nothing needs building. The hall is not a block: it is four
-[rolling mills](rolling-mill.md) - iwex's shipped block, unchanged - standing in a row on one drive shaft,
-each carrying a different single-gap wide roll set. What lpex must ship is the six wide roll-set items and
+[rolling mills](rolling-mill.md) - iiex's shipped block, unchanged - standing in a row on one drive shaft,
+each carrying a different single-gap wide roll set. What iiex must ship is the six wide roll-set items and
 whatever the shared-shaft drive needs; three of the six roll shapes are already drawn.
-**Mod** lpex (`LowPressureExpanded`) - the roll sets and the hall as content. The mill block stays iwex.
+**Mod** iiex (`IronIndustryExpanded`) - the roll sets and the hall as content. The mill block stays iiex.
 
 ## Owns
 
 * the hall as a build: that it is *N* ordinary mills on one shaft, that there is no cheap "stand" block, and
   the capital-against-labour trade that keeps re-tooling one mill legal;
-* the "entry gap is set by the stock's thickness" rule, and therefore how many stands a tier needs - lpex
+* the "entry gap is set by the stock's thickness" rule, and therefore how many stands a tier needs - iiex
   builds four, smex bolts two more onto the front;
-* the six single-gap `flatwide` roll sets (1.0 … 3.5, barrel 16, `MaxWidth` 15) as lpex content: the
+* the six single-gap `flatwide` roll sets (1.0 … 3.5, barrel 16, `MaxWidth` 15) as iiex content: the
   catalogue, which three are drawn, which three are missing, and the delete of `flatwide` 0.5;
 * the shared-shaft mechanics as they land on the shipped `mpenergy` code - what already works and what does
   not;
@@ -82,7 +82,7 @@ There is no hall block, no hall footprint and no hall block entity. A hall is a 
 | each stand | one `BlockRollingMill` - 3 × 3 × 2, principal + two axle-bus nodes + nine fillers | [rolling mill](rolling-mill.md) |
 | the drive line | the mills' own axle cells, butted end to end, optionally extended by `BlockCastIronShaft` / `BlockCastIronBevel` | [flywheel & shafting](flywheel-and-shafting.md) |
 | the reservoir | one flywheel on the run | [mp-energy](../mechanics/mp-energy.md) |
-| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in lpex | [STATE.md](../../internal/plans/STATE.md) |
+| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in iiex | [STATE.md](../../internal/plans/STATE.md) |
 
 ### The stands chain on their own axle bus
 
@@ -111,7 +111,7 @@ see [Open](#open).
 
 ## Assets
 
-The hall itself needs no art. What lpex must ship is the roll-set items.
+The hall itself needs no art. What iiex must ship is the roll-set items.
 
 | Asset | Path | State |
 |---|---|---|
@@ -119,7 +119,7 @@ The hall itself needs no art. What lpex must ship is the roll-set items.
 | wide roll art, gap 1.5 | `item-rollers-flatwide15.json` | drawn, unwired |
 | wide roll art, gap 1.0 | `item-rollers-flatwide10.json` | drawn, unwired |
 | wide roll art, gap 0.5 | `item-rollers-flatwide5.json` | drawn - the settled schedule deletes 0.5 |
-| wide roll art, gaps 2.5 / 3.0 / 3.5 | — | must be drawn. 2.5 is lpex's; 3.0 and 3.5 are smex's |
+| wide roll art, gaps 2.5 / 3.0 / 3.5 | — | must be drawn. 2.5 is iiex's; 3.0 and 3.5 are smex's |
 | cast roll blank | `item-rollers-castblank.json` | drawn - the roll is a cast part |
 | diagram textures | `assets/editable/textures/diag-item-rollersflatwide{5,10,15,20}.png` | drawn |
 | item shape actually shipped | `game:item/ingot` | every roll set renders as an ingot today (`RollSetItemDefinitions.cs:122`) |
@@ -152,7 +152,7 @@ blocker, owned by [rolling mill](rolling-mill.md) § Construction.
 | Question | Status |
 |---|---|
 | what one mill costs | open - no recipe exists at all |
-| whether four mills is a sane ask at lpex tier | open - the recipe/economy sanity of building four is the unresolved half of forming build item 15 ([rolling mill](rolling-mill.md) § Open) |
+| whether four mills is a sane ask at iiex tier | open - the recipe/economy sanity of building four is the unresolved half of forming build item 15 ([rolling mill](rolling-mill.md) § Open) |
 | what a wide roll set costs | open - no recipe; the roll is cast (chilled cast iron), so it should come off the sand cell as a `rollers-castblank` and be finished, not forged |
 | whether the hall needs its own recipe-cost level | open - [recipes & config](../mechanics/recipes-config.md) owns the catalogue; there is no hall entry |
 
@@ -190,13 +190,13 @@ B17 still blocks the narrow `flat` set and must still be fixed
 The schedules themselves - gaps, feeds, stage geometry and crops per stock - are
 [rolling](../processes/rolling.md)'s. What this page fixes is the stand count that falls out of them: the
 entry gap is set by the stock's thickness, so the 3-thick `shingledslab` enters at 2.5 and uses four stands
-(lpex's), and the 4-thick cast stock enters at 3.5 on the two more smex bolts onto the front - six in all.
+(iiex's), and the 4-thick cast stock enters at 3.5 on the two more smex bolts onto the front - six in all.
 The upgrade is an extension of the hall, and no stand in the line ever becomes obsolete.
 
-`castbillet` never sees the train - at 3 × 3 it is narrow stock and runs the iwex mill's grooved barrel with
+`castbillet` never sees the train - at 3 × 3 it is narrow stock and runs the iiex mill's grooved barrel with
 a steel roll set ([steel roll sets](steel-roll-sets.md)).
 
-Nothing is gated on an unreached mod: lpex's train eats lpex's own slabs, so the wide route is complete the
+Nothing is gated on an unreached mod: iiex's train eats iiex's own slabs, so the wide route is complete the
 moment steam is available; smex then feeds the same train pieces 2.5× bigger.
 
 ### What comes off the end
@@ -209,16 +209,16 @@ schedules. The crop is the [shear](shear.md)'s and the stamp is the [steam hamme
 
 ## Numbers
 
-### The six wide roll sets — proposed, lpex content
+### The six wide roll sets — proposed, iiex content
 
 | Gap | Barrel | `MaxWidth` | Ships with | Art |
 |---|---|---|---|---|
 | 3.5 | 16 | 15 | smex | missing |
 | 3.0 | 16 | 15 | smex | missing |
-| 2.5 | 16 | 15 | lpex | missing |
-| 2.0 | 16 | 15 | lpex | drawn - `flatwide20` |
-| 1.5 | 16 | 15 | lpex | drawn - `flatwide15` |
-| 1.0 | 16 | 15 | lpex | drawn - `flatwide10` |
+| 2.5 | 16 | 15 | iiex | missing |
+| 2.0 | 16 | 15 | iiex | drawn - `flatwide20` |
+| 1.5 | 16 | 15 | iiex | drawn - `flatwide15` |
+| 1.0 | 16 | 15 | iiex | drawn - `flatwide10` |
 | ~~0.5~~ | — | — | deleted | drawn - `flatwide5` |
 
 Every bite in the game is then exactly 0.5, so under the two-round pass model every gap costs the same two
@@ -241,7 +241,7 @@ nothing will now unlock. Reversible by re-adding 0.5 to the wide family alone.
 | `flatwide` barrel | `16.0` | `:79` | 16 - already agrees |
 | `flatwide` `minTorque` | `0.5` | `:80` | parsed, stored, validated and never read by any production code ([rolling mill](rolling-mill.md)) |
 | `flatwide` accepts | `["slab", "bloom"]` | `:75` | `shingledslab` + the two cast wide forms |
-| `flatwide` outputs | `iwex:rolledplate-iron`, `iwex:rolledsheet-iron` | `:77` | neither code exists anywhere in `src/`; `Outputs` moves to the [shear](shear.md) and keys on stage |
+| `flatwide` outputs | `iiex:rolledplate-iron`, `iiex:rolledsheet-iron` | `:77` | neither code exists anywhere in `src/`; `Outputs` moves to the [shear](shear.md) and keys on stage |
 | `RollSetSpec.IsWide` | `Gaps.Length == 1` | `RollSetSpec.cs:70` | already the right definition - and it has no callers |
 
 ### The hall on the shipped `mpenergy` model
@@ -288,8 +288,8 @@ cannot orphan the rest, which is build guidance, not a code rule.
 | `flatwide` → six single-gap items | `RollSetItemDefinitions.Sets` (`:73-81`) | config only; the mill *"never names a product in code — the tooling owns the data"* ([rolling mill](rolling-mill.md)) |
 | `MaxWidth` onto `RollSetSpec` | `RollSetSpec.cs:31`, off `StockForm.cs:32` | forming build item 4 ([rolling mill](rolling-mill.md) § Open) |
 | wire the drawn roll art | `RollSetItemDefinitions.cs:122` currently ships `game:item/ingot` | plus three new shapes |
-| draw gaps 2.5 (lpex), 3.0 / 3.5 (smex) | `assets/editable/shapes/` | |
-| a recipe for the mill and for each roll set | `IronworkingExpanded/Recipes/` and lpex's | the hall is four purchases; nothing costs anything yet |
+| draw gaps 2.5 (iiex), 3.0 / 3.5 (smex) | `assets/editable/shapes/` | |
+| a recipe for the mill and for each roll set | `IronIndustryExpanded/Recipes/` and iiex's | the hall is four purchases; nothing costs anything yet |
 | decide the hall layout axis | — | see [Open](#open) |
 | wire the per-consumer idle draw | `IMpEnergyConsumer.LoadTorque` | settled 2026-08-05, owned by [mp-energy](../mechanics/mp-energy.md) § Idle draw - see [Gotchas](#gotchas) |
 
@@ -328,7 +328,7 @@ There is no new block, no new block entity and no new footprint.
 * Stale in `RollSetItemDefinitions.cs:70-72`: the `flatwide` comment explains a four-gap wide set as
   "the same schedule with a barrel that swallows the work". The settled wide family is six one-gap items
   and the comment describes an item that is being deleted.
-* `overview.md`'s lpex row lists neither the wide hall nor the steam hammer among lpex's content.
+* `overview.md`'s iiex row lists neither the wide hall nor the steam hammer among iiex's content.
 
 ---
 
@@ -338,7 +338,7 @@ There is no new block, no new block entity and no new footprint.
 |---|---|---|
 | 1 | Which axis is the hall laid on? Stands chained on their own axle bus (zero extra parts, zig-zag walk) vs stands in a row along the feed axis fed through bevels off a parallel line shaft (straight walk, one bevel + shaft run per stand) | The second is what the reference photograph shows and what "walk down the line" describes. It costs [flywheel & shafting](flywheel-and-shafting.md) parts per stand, which is the only thing that makes the hall cost more power hardware than one mill |
 | 2 | Wire the per-consumer idle draw (settled 2026-08-05, [mp-energy](../mechanics/mp-energy.md) § Idle draw) | The shipped code still charges friction per run and zero idle load per stand, so the hall's power cost has no mechanism until it lands |
-| 3 | What does a mill cost, and is 4 × that sane at lpex tier? | The open half of forming build item 15 ([rolling mill](rolling-mill.md) § Open); nothing has a recipe |
+| 3 | What does a mill cost, and is 4 × that sane at iiex tier? | The open half of forming build item 15 ([rolling mill](rolling-mill.md) § Open); nothing has a recipe |
 | 4 | Three roll shapes to draw (2.5 / 3.0 / 3.5) and four to wire | |
 | 5 | Does `flatwide5` (0.5) get deleted or kept for a later re-add? | The art exists; the schedule drops it; `game:metalsheet` is the casualty |
 | 6 | Is re-tooling one mill actually playable? The claim is that it stays legal and costs handling. With `MaxWidth` on the roll set and single-gap items that is six tool swaps and six walk-arounds per schedule - verify in game that it is tedious, not impossible | |

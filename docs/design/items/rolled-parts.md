@@ -3,7 +3,7 @@
 **Status** designed - not one item in this family exists in `src/`. Four dangling roll-set output codes are
 the only trace of it in code; the mill's `OutputAt` has no caller, so nothing has ever produced a rolled
 product
-**Mod** iwex owns the narrow products; lpex owns the wide ones; smex only feeds bigger stock into lpex's train
+**Mod** iiex owns the narrow products; iiex owns the wide ones; smex only feeds bigger stock into iiex's train
 (who owns the forming line)
 
 **Owns**
@@ -73,15 +73,15 @@ providers returns nothing but the word "blank" in unrelated prose.
 | Item | Section × length | vx³ | Mass (u) | Mod | Made by | Consumed by |
 |---|---|---|---|---|---|---|
 | `game:rod-{metal}` | 2 × 2 × 10 | 40 | 100 | vanilla | shear crops the grooved 2.0 stage - 4 per `shingledbar`, 6 per `castbillet` | the mill again (the fork, below); it is `game:rod` rather than a drop-in for it |
-| `stock-rod` (the work piece) | 2 × 2 × 10 | 40 | 100 | iwex | auto-emitted by `StockItemDefinitions` from the `Rod` `StockForm` | what a rod becomes on entering the mill - `MaxStackSize 1`, stage-rendered, carries heat |
-| `rod` (was `rivetrod`) | 1 × 1 × 10 | 10 | 25 | iwex | shear crops the grooved 1.0 stage of a `rolledrod` - 4 per rod | [heading machine](../machines/heading-machine.md) → bolts (iwex die) or rivets (lpex die) |
-| `nailplate` | 4 × 1 × 10 | 40 | 100 | iwex | one `rolledrod` taken flat 1.5 → 1.0 - 1 per rod, no crop | [nail machine](../machines/nail-machine.md) → 4 × `game:metalnailsandstrips` |
-| `beam` | 4.5 × 2 × 9 | 81 | 200 | iwex | shear crops the flat 2.0 stage in half - 2 per `shingledbar`, 3 per `castbillet` | fabricated steel frames (beam + plate + rivets); the lpex beam engine |
+| `stock-rod` (the work piece) | 2 × 2 × 10 | 40 | 100 | iiex | auto-emitted by `StockItemDefinitions` from the `Rod` `StockForm` | what a rod becomes on entering the mill - `MaxStackSize 1`, stage-rendered, carries heat |
+| `rod` (was `rivetrod`) | 1 × 1 × 10 | 10 | 25 | iiex | shear crops the grooved 1.0 stage of a `rolledrod` - 4 per rod | [heading machine](../machines/heading-machine.md) → bolts (iiex die) or rivets (iiex die) |
+| `nailplate` | 4 × 1 × 10 | 40 | 100 | iiex | one `rolledrod` taken flat 1.5 → 1.0 - 1 per rod, no crop | [nail machine](../machines/nail-machine.md) → 4 × `game:metalnailsandstrips` |
+| `beam` | 4.5 × 2 × 9 | 81 | 200 | iiex | shear crops the flat 2.0 stage in half - 2 per `shingledbar`, 3 per `castbillet` | fabricated steel frames (beam + plate + rivets); the iiex beam engine |
 | `game:metalplate` | 9 × 1 × 9 | 81 | 200 | vanilla | shear crops the flat 1.0 stage - 2 per bar, 3 per billet, 5 per `castbloom` (crop 5 at 3.0, then narrow flat); or a `boilerplate` stamped on the hammer → 3 | everything - `ExIngredients.Plate` (`ExIngredients.cs:28-29`) |
-| `blank` | 8 × 2 × 5 | 80 | 200 | lpex | wide 2.0 off `castbloom` - 5 per bloom | [boring machine](../machines/boring-machine.md): cranks, gear blanks |
-| `skelp` | 8 × 1 × 10 | 80 | 200 | lpex | wide 1.0 off `castbloom` - 5 per bloom | [bending roller](../machines/bending-roller.md), conical → [rolled pipe](../machines/rolled-pipe.md) |
-| `heavyplate` | 12 × 2 × 10 | 240 | 600 | lpex | wide 2.0 off either slab - 2 per `shingledslab`, 5 per `castslab` | the fabricated substitute for cast `castplate`: machine frames, hearth plating |
-| `boilerplate` | 15 × 1 × 16 | 240 | 600 | lpex | wide 1.0 off either slab - 2 per `shingledslab`, 5 per `castslab` | boiler shells (RCC dual path, plate-or-boilerplate); or the hammer die → 3 plate |
+| `blank` | 8 × 2 × 5 | 80 | 200 | iiex | wide 2.0 off `castbloom` - 5 per bloom | [boring machine](../machines/boring-machine.md): cranks, gear blanks |
+| `skelp` | 8 × 1 × 10 | 80 | 200 | iiex | wide 1.0 off `castbloom` - 5 per bloom | [bending roller](../machines/bending-roller.md), conical → [rolled pipe](../machines/rolled-pipe.md) |
+| `heavyplate` | 12 × 2 × 10 | 240 | 600 | iiex | wide 2.0 off either slab - 2 per `shingledslab`, 5 per `castslab` | the fabricated substitute for cast `castplate`: machine frames, hearth plating |
+| `boilerplate` | 15 × 1 × 16 | 240 | 600 | iiex | wide 1.0 off either slab - 2 per `shingledslab`, 5 per `castslab` | boiler shells (RCC dual path, plate-or-boilerplate); or the hammer die → 3 plate |
 
 `blank` and `skelp` are the same 80 vx³ at two gauges - one at 2 thick for machining, one at 1 thick for
 curling into pipe. Five of each per bloom.
@@ -123,11 +123,11 @@ alone.
 
 ## The rod is the fork
 
-> Settled 2026-08-05: the rod is vanilla's, and the identity splits by role. `iwex:rolledrod` is not created.
-> The shear's claimed product is `game:rod-iron`; the re-rollable piece is `iwex:stock-rod`. Vanilla's rod is
+> Settled 2026-08-05: the rod is vanilla's, and the identity splits by role. `iiex:rolledrod` is not created.
+> The shear's claimed product is `game:rod-iron`; the re-rollable piece is `iiex:stock-rod`. Vanilla's rod is
 > `2 × 2 × 10 = 100 u` exactly ([fasteners](fasteners.md)), `game:rod-iron` is already the mill's only output
 > code that resolves, and 32 call sites across four mods ask for `game:rod-*` by name.
-> The mill admits `game:rod-iron` at its deck and converts it to `iwex:stock-rod` on entry, so no consumer
+> The mill admits `game:rod-iron` at its deck and converts it to `iiex:stock-rod` on entry, so no consumer
 > needs editing - and an anvil-made rod can be rolled to nail plate before the player owns a puddling furnace.
 
 One rod, four feeds, two products, chosen per rod: the set that is fitted decides what comes out.
@@ -167,7 +167,7 @@ Two items ([STATE.md § D2](../../internal/plans/STATE.md)):
 cast one.
 
 What code ships today is neither. There is one item, `castplate-heavy`, at 160 u
-(`CastPartItemDefinitions.cs:21`, `:33`), pointed at one shape `iwex:item/heavyplate` (`:36`) that is drawn
+(`CastPartItemDefinitions.cs:21`, `:33`), pointed at one shape `iiex:item/heavyplate` (`:36`) that is drawn
 12 × 2 × 12 = 288 vx³ - a third section again. The same shape is also the casting pattern's output
 ([patterns](patterns.md)). Splitting the item means splitting the art, and neither of the two settled sections
 is drawn.
@@ -188,7 +188,7 @@ Nothing in this family is exported to a runtime domain; every file below is an u
 | `nailplate` | - | - | missing, and so are all four flat stages of the rod (1.75 / 1.5 / 1.25 / 1.0) |
 | `blank` | - | - | missing |
 | `skelp` | - | - | missing |
-| `heavyplate` (rolled) | - | - | missing; `assets/iwex/shapes/item/heavyplate.json` is the cast part at 12 × 2 × 12 |
+| `heavyplate` (rolled) | - | - | missing; `assets/iiex/shapes/item/heavyplate.json` is the cast part at 12 × 2 × 12 |
 | `boilerplate` | - | - | missing |
 
 The rod's grooved stages are drawn - `Grooved175` (`item-rod-rolled.json:31-33`), `Grooved150` (`:46-48`
@@ -207,14 +207,14 @@ only related constants that ship are the cast part's, and they are the wrong ite
 
 | Constant | Value | file:line | Note |
 |---|---|---|---|
-| `CastPartItemDefinitions.HeavyPlateUnits` | 160 | `src/IronworkingExpanded/Items/CastPartItemDefinitions.cs:21` | the cast plate; settled 500, and this is not the rolled 600 |
+| `CastPartItemDefinitions.HeavyPlateUnits` | 160 | `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs:21` | the cast plate; settled 500, and this is not the rolled 600 |
 | `CastPartItemDefinitions.CastBarrelUnits` | 200 | `:24` | cited for scale only |
 | `ExIngredients.Plate(qty)` | `game:metalplate-*`, metal capture | `src/ExpandedLib/Definitions/ExIngredients.cs:28-29` | the consumer side of `game:metalplate` |
 | `ExIngredients.Nails(qty)` | `game:metalnailsandstrips-*` | `:36-37` | what `nailplate` ultimately feeds |
 | `ExIngredients.Rod(qty)` | `game:rod-*` | `:44-45` | what `rolledrod` is a drop-in for |
 
-The four dangling output codes the roll sets already name - `iwex:rolledplate-iron`, `iwex:rolledsheet-iron`,
-`iwex:wirerod-iron`, `iwex:nailrod-iron` - resolve to nothing; that fact and its cause (`TryParse` never
+The four dangling output codes the roll sets already name - `iiex:rolledplate-iron`, `iiex:rolledsheet-iron`,
+`iiex:wirerod-iron`, `iiex:nailrod-iron` - resolve to nothing; that fact and its cause (`TryParse` never
 resolves a code) belong to [rolling mill](../machines/rolling-mill.md). Under the settled catalogue they map,
 respectively, onto `game:metalplate`, deleted, `rod`, and deleted - the `slitting` set that produced the last
 one goes entirely.
@@ -269,7 +269,7 @@ model's and are [rolling mill](../machines/rolling-mill.md)'s; the throughput co
 - `blank`, `skelp`, `nailplate` and `boilerplate` have no art at all, and `nailplate` additionally has no
   stage art on the route that makes it.
 - Consumers are named but not written. No recipe consumes `heavyplate` or `boilerplate`; the boiler's dual
-  normal-plate-or-boilerplate RCC path is designed and unbuilt; `beam` is named for the lpex beam engine and
+  normal-plate-or-boilerplate RCC path is designed and unbuilt; `beam` is named for the iiex beam engine and
   nothing references it. The fabricated-substitute family (`castframe`, `castshell`, `castwheelsection`,
   `cast-barrel`) is the intended demand side and none of those recipes exist either.
 - Whether a crop yields one product plus a remainder, or a full split in one action, is undecided - the crop

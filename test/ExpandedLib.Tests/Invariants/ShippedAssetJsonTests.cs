@@ -200,6 +200,58 @@ public class ShippedAssetJsonTests {
     }
   }
 
+  /// <summary>
+  /// Every texture one of our own domains names, anywhere in a shipped JSON asset, must have a file
+  /// behind it. Shapes are resolved by <c>DefinitionAssets.MissingShapes</c>; textures had no guard at
+  /// all, and they are the more common half - a shape file carries a whole texture map, and a texture
+  /// that does not resolve renders as the missing-texture checker with nothing in any log.
+  /// </summary>
+  [Fact]
+  public void Every_texture_our_domains_name_resolves_to_a_file() {
+    // `game` is a shipped domain here because iiex packs a vanilla lang override, but vanilla's
+    // textures live in the game install rather than in this repository, so they are not resolvable.
+    var domains = ShippedDomains().Where(d => d != "game").ToHashSet();
+    var missing = new List<string>();
+
+    foreach (string relative in AssetFiles()) {
+      if (!relative.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        continue;
+      foreach (
+        Match m in TextureRef.Matches(
+          File.ReadAllText(Path.Combine(RepoRoot(), relative))
+        )
+      ) {
+        string domain = m.Groups["domain"].Value;
+        if (!domains.Contains(domain))
+          continue; // game: and other mods' textures live outside this repo
+
+        string file = Path.Combine(
+          RepoRoot(),
+          "assets",
+          domain,
+          "textures",
+          m.Groups["path"].Value.Replace('/', Path.DirectorySeparatorChar) + ".png"
+        );
+        if (!File.Exists(file))
+          missing.Add($"{relative}: '{m.Value}'");
+      }
+    }
+
+    Assert.True(
+      missing.Count == 0,
+      $"{missing.Count} texture reference(s) point where no file exists:\n  "
+        + string.Join("\n  ", missing.Take(30))
+        + (missing.Count > 30 ? $"\n  ... and {missing.Count - 30} more" : "")
+    );
+  }
+
+  // A domain-qualified texture path as a JSON string value: "iiex:block/metal/castiron". Variant
+  // placeholders are left to the shape guard's family matching; a path carrying one is skipped here.
+  private static readonly Regex TextureRef = new(
+    @"""(?<domain>[a-z]+):(?<path>block/[A-Za-z0-9_./-]+|item/[A-Za-z0-9_./-]+)""",
+    RegexOptions.Compiled
+  );
+
   private static JsonDocument Parse(string repoRelativePath) =>
     JsonDocument.Parse(
       File.ReadAllText(Path.Combine(RepoRoot(), repoRelativePath)),

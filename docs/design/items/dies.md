@@ -5,7 +5,7 @@ attribute key returns zero hits (the only match for `die` is the word "die" in a
 `ExpandedLib/Blocks/Healing/BlockEntityHealModSystem.cs:18`). No spec record, no item def, no runtime shape,
 no lang key in any of the three languages, no recipe, no cost-catalogue row, no test. One die shape is drawn
 and untracked. Every one of the five settled dies is also downstream of at least one unbuilt machine.
-**Mod** four mods are settled to ship dies - iwex (nail, bolt), lpex (rivet, stamping), hpex (ball) -
+**Mod** four mods are settled to ship dies - iiex (nail, bolt), iiex (rivet, stamping), hpex (ball) -
 against one spec type whose home is undecided.
 
 ## Owns
@@ -55,7 +55,7 @@ are the thicknesses this stand can reach" and a [pattern](patterns.md) says "thi
 fills", a die says: this input becomes that output, this many times. That is why one bench can be a bolt works
 or a rivet works - Fig 1 of the 1867 machine-tool plate is captioned "rivet making machine" and the same
 machine made bolts, the die being the whole difference ([STATE.md § Fasteners](../../internal/plans/STATE.md)). One
-block, a tooling slot, and lpex adds a rivet without touching iwex
+block, a tooling slot, and iiex adds a rivet without touching iiex
 ([heading machine](../machines/heading-machine.md)).
 
 It is also the cheapest cross-mod extension point in the suite. A pattern needs an impression shape drawn and
@@ -83,10 +83,10 @@ Blocked behind columns are this page's.
 
 | Die | Fits | Input | Output | Ships with | State | Blocked behind |
 |---|---|---|---|---|---|---|
-| nail | [nail machine](../machines/nail-machine.md) | `nailplate` 100 u | 4 × `game:metalnailsandstrips` | iwex | nothing | the bench · `nailplate` · the `flat` 1.5 → 1.0 schedule · B3 |
-| bolt | [heading machine](../machines/heading-machine.md) | rod @ 25 u | bolts | iwex | nothing | the bench · `rolledrod` · the bolt item · the [shear](../machines/shear.md) that crops the rod · B4 |
-| rivet | [heading machine](../machines/heading-machine.md) | rod @ 25 u | rivets | lpex | nothing | everything the bolt die is blocked behind, plus an lpex forming section that does not exist |
-| stamping | [steam hammer](../machines/steam-hammer.md) | `boilerplate` 600 u | 3 × `game:metalplate` | lpex | nothing; the drawn die art is a *flat* die, not the stamping die | the hammer · `boilerplate` · the wide hall · the whole `castslab` route |
+| nail | [nail machine](../machines/nail-machine.md) | `nailplate` 100 u | 4 × `game:metalnailsandstrips` | iiex | nothing | the bench · `nailplate` · the `flat` 1.5 → 1.0 schedule · B3 |
+| bolt | [heading machine](../machines/heading-machine.md) | rod @ 25 u | bolts | iiex | nothing | the bench · `rolledrod` · the bolt item · the [shear](../machines/shear.md) that crops the rod · B4 |
+| rivet | [heading machine](../machines/heading-machine.md) | rod @ 25 u | rivets | iiex | nothing | everything the bolt die is blocked behind, plus an iiex forming section that does not exist |
+| stamping | [steam hammer](../machines/steam-hammer.md) | `boilerplate` 600 u | 3 × `game:metalplate` | iiex | nothing; the drawn die art is a *flat* die, not the stamping die | the hammer · `boilerplate` · the wide hall · the whole `castslab` route |
 | ball | [heading machine](../machines/heading-machine.md) | chrome-steel rod | bearing balls | hpex | nothing | everything above, plus chrome steel, ferrochrome and the ring race ([bearings](../machines/bearings.md)) |
 
 Two benches and one hammer, five dies, four mods, one spec. The
@@ -168,9 +168,9 @@ that attribute in the codebase, or it would need a C# constant per output.
 |---|---|---|
 | die-set, flat (editable) | `assets/editable/shapes/item-steamhammerdie-flat.json` | drawn, untracked (`??`), wired to nothing. Renamed from `item-steamhammerdieflat.json`, which git still reports deleted |
 | die item art, every other die | — | nothing drawn for nail, bolt, rivet, ball or stamping |
-| runtime shape | `assets/{iwex,lpex,hpex}/shapes/` | none |
+| runtime shape | `assets/{iiex,iiex,hpex}/shapes/` | none |
 | lang | all three `lang/*.json` in every mod | no die key exists in any language |
-| handbook | `docs/{iwex,lpex}/handbook/` | none |
+| handbook | `docs/{iiex,iiex}/handbook/` | none |
 | reference art | `assets/editable/refs/rivetsnails/machine-tools-…-1867-technology-RY93PB.jpg` Fig 1 | the folder is untracked |
 
 Measured off the file (Blockbench voxels; one cell = 16). The die-set-renders-both-faces decision and the
@@ -211,7 +211,7 @@ first job - but it means:
 ## Construction
 
 No die of any kind has a recipe, an RCC path, or a cost-catalogue row. Neither
-`IwexRecipeConfig.DefaultCatalogue` nor `LpexRecipeConfig` nor `SmexRecipeConfig.Defaults()` carries a die
+`IiexRecipeConfig.DefaultCatalogue` nor `IiexRecipeConfig` nor `SmexRecipeConfig.Defaults()` carries a die
 entry ([recipes & config](../mechanics/recipes-config.md)).
 
 What is settled about how a die is made, all cited:
@@ -241,7 +241,7 @@ item-def half is this page's, and it is a near-verbatim copy of the roll set's:
 | `MaxStackSize(1)` | on the def | `RollSetItemDefinitions.cs:125` - every stateful/fitted item in the suite is stack 1 |
 | item shape | per type | do not copy `RollSetItemDefinitions.cs:122`'s `game:item/ingot` placeholder - [heading machine](../machines/heading-machine.md) § Assets names it explicitly as the thing not to repeat |
 | a validation sweep | `DieValidation.Validate(IEnumerable<CollectibleObject>)`, called from each mod system's `AssetsFinalize` | `RollSetValidation.cs:20-32` · `PatternValidation.cs:19-31` |
-| golden | `test/<Mod>.Tests/goldens/<domain>/itemtypes/die.json` | `goldens/iwex/itemtypes/rollset.json` |
+| golden | `test/<Mod>.Tests/goldens/<domain>/itemtypes/die.json` | `goldens/iiex/itemtypes/rollset.json` |
 | lang | `item-die-{type}` × 3 languages × N mods | `en.json:113-116` is the roll-set precedent |
 
 ### The cross-mod emit question
@@ -255,9 +255,9 @@ What that costs, and it is worse here than for the roll sets because there are f
 | Consequence | Detail |
 |---|---|
 | four `DieTypes` lists, no union | the "single source recipes and the handbook derive from" idiom (`RollSetItemDefinitions.cs:106-108`) fragments four ways |
-| four goldens, four lang sets | `iwex:die-nail`, `iwex:die-bolt`, `lpex:die-rivet`, `lpex:die-stamping`, `hpex:die-ball` |
-| the spec type's home is undecided | `ItemDie` in iwex means lpex and hpex take an iwex reference. The chain allows it (`exlib ← iwex ← lpex ← smex ← hpex`), and `MoldSpec` set the precedent by staying in iwex (`MoldSpec.cs:6`) - but no other tooling spec has three downstream consumers. [heading machine § Open](../machines/heading-machine.md) records this as open; it is the same open question as [roll sets § Open 6](roll-sets.md) and [patterns § Open 9](patterns.md), and answering it once for all three is cheaper than three times |
-| the double-not-float rule must be re-derived four times | `RollSetItemDefinitions.cs:22-24` is a comment in iwex |
+| four goldens, four lang sets | `iiex:die-nail`, `iiex:die-bolt`, `iiex:die-rivet`, `iiex:die-stamping`, `hpex:die-ball` |
+| the spec type's home is undecided | `ItemDie` in iiex means iiex and hpex take an iiex reference. The chain allows it (`exlib ← iiex ← iiex ← smex ← hpex`), and `MoldSpec` set the precedent by staying in iiex (`MoldSpec.cs:6`) - but no other tooling spec has three downstream consumers. [heading machine § Open](../machines/heading-machine.md) records this as open; it is the same open question as [roll sets § Open 6](roll-sets.md) and [patterns § Open 9](patterns.md), and answering it once for all three is cheaper than three times |
+| the double-not-float rule must be re-derived four times | `RollSetItemDefinitions.cs:22-24` is a comment in iiex |
 | a die will be visually indistinguishable from another die unless the art lands with the item | the roll sets shipped without art and every one of them renders as an ingot; do not repeat it |
 
 ---
@@ -294,7 +294,7 @@ What that costs, and it is worse here than for the roll sets because there are f
   ([steam hammer § Gotchas](../machines/steam-hammer.md), [shear](../machines/shear.md)).
 * smex ships no die. smex's forming contribution is roll sets and two mill stands
   ([steel roll sets](../machines/steel-roll-sets.md)). The hardened die tier is smex-and-above material, but
-  the die items belong to lpex and hpex.
+  the die items belong to iiex and hpex.
 
 ---
 
@@ -303,7 +303,7 @@ What that costs, and it is worse here than for the roll sets because there are f
 | # | Question | Notes |
 |---|---|---|
 | 1 | What is `Bench`'s value set? | blocking the first die item. `heading` / `nail` cannot name the hammer or the HP hammer, and the ≥ 2-voxel gate has no field of its own |
-| 2 | Where does the spec type live? | iwex (precedent, `MoldSpec.cs:6`) or exlib (three downstream consumers). Answer it once for `RollSetSpec`, `MoldSpec` and `ItemDie` together - [roll sets § Open 6](roll-sets.md), [patterns § Open 9](patterns.md) |
+| 2 | Where does the spec type live? | iiex (precedent, `MoldSpec.cs:6`) or exlib (three downstream consumers). Answer it once for `RollSetSpec`, `MoldSpec` and `ItemDie` together - [roll sets § Open 6](roll-sets.md), [patterns § Open 9](patterns.md) |
 | 3 | Does anything validate that a die conserves mass? | the invariant is real, four of five dies satisfy it, and no mechanism exists. It would be the first consumer of `materialUnits` in the codebase |
 | 4 | Cavity count vs `Count` - which is authoritative, and what does a zero-cavity (flat) die mean? | the drawn asset forces the question |
 | 5 | Ruled 2026-08-05: a die wears. | [tooling-wear.md](../mechanics/tooling-wear.md) owns the rule for the whole family (dies, roll sets, blade sets, boring bits, patterns) and the metal grade sets the life - which is what makes `STATE.md` D9's "longer-lasting machine heads" mean something. The [pattern](patterns.md)'s 24 impressions become the family's first instance. Only the numbers are still open |

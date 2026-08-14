@@ -35,8 +35,8 @@ metal-type refusal, the missing `Ladle` ·
 [multiblock & fillers](../mechanics/multiblock.md) - `MultiblockLayout`, `StructureComplete`, filler footprints,
 `IFillerInteractionTarget` ·
 [recipes & config](../mechanics/recipes-config.md) - code-first defs, `ExRecipeCosts`, `/exmod` ·
-[cast pipes](cast-pipes.md) - the `lpex:pipe-cast-straight-*` blocktype the build asks for ·
-[gears](gears.md) - `lpex:largegear-*` and `lpex:gear-*` ·
+[cast pipes](cast-pipes.md) - the `iiex:pipe-cast-straight-*` blocktype the build asks for ·
+[gears](gears.md) - `iiex:largegear-*` and `iiex:gear-*` ·
 [twin-tub blower](twin-tub-blower.md) and the engine air blower - where the blast comes from ·
 [long cell](long-cell.md) - what the steel is cast into ·
 [ladle](ladle.md) · [open hearth](open-hearth.md) · [cupola](cupola.md) ·
@@ -120,9 +120,9 @@ ASCII layout - the last structure in the suite in this form (`BlockConverterCont
 | 2 | `smex:convertertransmission*` | 1 | `(0,−1,0)` |
 | 3 | `smex:converterbessemer*` | 1 | `(0,0,2)` |
 | 4 | `smex:converter-intake*` | 1 | `(0,0,4)` |
-| 5 | `iwex:moltencanal-tap*` | 1 | `(1,1,2)` - the input tap |
-| 6 | `iwex:moltencanal-start*` | 1 | `(1,−2,2)` - the output start |
-| 7 | `iwex:moltencanal-straight*` | 2 | `(2,1,2)`, `(2,−2,2)` |
+| 5 | `iiex:moltencanal-tap*` | 1 | `(1,1,2)` - the input tap |
+| 6 | `iiex:moltencanal-start*` | 1 | `(1,−2,2)` - the output start |
+| 7 | `iiex:moltencanal-straight*` | 2 | `(2,1,2)`, `(2,−2,2)` |
 | 8 | `exlib:structurefiller` | 25 | z = 1 and z = 3 full 3×3; z = 2 minus the vessel and minus the tap |
 
 The 25 filler cells are the same 25 the vessel places for itself; the rebuild should make that explicit rather
@@ -171,7 +171,7 @@ vessel-local `(0,1,0)`, directly above the vessel (`:63`, matched by `IsChiselCe
 | intake shape | `assets/smex/shapes/converter/intake.json` | live, no animations |
 | transmission shape | `assets/smex/shapes/converter/transmission.json` | live, no animations; carries an `Axle` element |
 | editable sources | `assets/editable/shapes/` | only the intake has one (`machine-pipe-block-converterintake.json`, currently untracked; the old `machine-converter-intake.json` is deleted in the tree). The vessel, control and transmission have no editable source at all - the runtime shapes are the only copy |
-| textures | — | none of its own; every texture key resolves to vanilla or shared iwex sheets |
+| textures | — | none of its own; every texture key resolves to vanilla or shared iiex sheets |
 | particles | — | `ExParticles.RisingPlume` of `ExParticles.Smoke` from a box at vessel-local x ∈ [−0.375, 0], y ∈ [1.5, 2.0], z ∈ [0.3125, 0.6875], rotated per `side` (`BlockEntityConverterBessemer.cs:108-159`). Server-spawned, so it replicates |
 | sounds | — | `Embers` (4 s throttle), `Fire` (3 s), `Sizzle` / `MoltenMetal` (1.5 s), `MetalGrinding`, `CokeOvenDoorOpen`, `Extinguish` - all repurposed, none new (`BlockEntityConverterControl.cs:300-315`, `:466-474`, `:956-957`) |
 | lang | `assets/smex/lang/en.json:30-130` | complete - 4 block-help keys, 12 errors, 15 info lines, 22 status lines |
@@ -198,8 +198,8 @@ All in `Recipes/Grid/ConverterRecipeDefinitions.cs`; costs registered as `conver
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
 | `smex:convertercontrol-north` | `H_R,NPP,PPR` | 12 rod, 4 plate, 8 nails, hammer (tool) | `:21-30` |
-| `smex:convertertransmission-north` | `HPR,AGP,NPR` | 12 rod, 4 plate, 8 nails, 16 gear, 1 `game:woodenaxle-ud`, hammer | `:46-57`; emitted twice - once for `game:gear-rusty` (`:31`), once for `lpex:gear-*` (`:43`) |
-| `smex:converter-intake-north` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `lpex:pipe-cast-straight*`, hammer | `:32-42` |
+| `smex:convertertransmission-north` | `HPR,AGP,NPR` | 12 rod, 4 plate, 8 nails, 16 gear, 1 `game:woodenaxle-ud`, hammer | `:46-57`; emitted twice - once for `game:gear-rusty` (`:31`), once for `iiex:gear-*` (`:43`) |
+| `smex:converter-intake-north` | `HP_,LPP,RN_` | 16 rod, 4 plate, 8 nails, 1 `iiex:pipe-cast-straight*`, hammer | `:32-42` |
 
 `Rod` / `Plate` / `Nails` are the `game:*-*` metal-capture staples (`ExIngredients.cs:27-46`); `PipeStar` is
 the trailing-star pipe wildcard shared with the cowper and smokestack intakes (`RecipeIngredients.cs:18-19`).
@@ -213,7 +213,7 @@ Raised in place by right-clicking the vessel with materials in the hotbar. Cost 
 |---|---|---|
 | 1 | — | `Root/GearShaft` |
 | 2 | 24 plate · 24 nails · 12 rod | `Root/BottomIron` |
-| 3 | 4 plate · 3 `lpex:pipe-straight-ns-{metal}` (resolves to nothing - B7) | `Root/GasIntake` |
+| 3 | 4 plate · 3 `iiex:pipe-straight-ns-{metal}` (resolves to nothing - B7) | `Root/GasIntake` |
 | 4 | 60 `refractorybrick-fired-tier3` · 48 `game:clay-fire` | `Root/BottomRefractory` |
 | 5 | 24 `refractorybrick-fired-tier3` · 24 fire clay | `Root/UpRefractory` |
 | 6 | 12 plate · 12 nails · 6 rod | `Root/UpIron` |
@@ -222,17 +222,17 @@ Raised in place by right-clicking the vessel with materials in the hotbar. Cost 
 Totals: 40 plate · 42 nails · 18 rod · 84 tier-3 refractory brick · 84 fire clay · 3 pipe segments. (The
 handbook's totals are correct.)
 
-Spawning the vessel is separate from building it: RMB the control with 1 `lpex:largegear-iron|-steel` and 8
+Spawning the vessel is separate from building it: RMB the control with 1 `iiex:largegear-iron|-steel` and 8
 `game:rod-iron|-steel` in the hotbar (`BlockEntityConverterControl.cs:1054-1066`, `SmexConfig.cs:100`,
-`:103`). Creative gets it free (`:1011-1013`). The spawn accepts only lpex's smithable large gear, never
+`:103`). Creative gets it free (`:1011-1013`). The spawn accepts only iiex's smithable large gear, never
 `game:gear-rusty`, so the vessel stays buildable in worlds with no loot (`:1052-1053`).
 
 ### B7 — stage 3 can never be satisfied
 
-`lpex:pipe-straight-ns-{metal}` does not exist. The pipe blocktype declares variant groups `tier`,
+`iiex:pipe-straight-ns-{metal}` does not exist. The pipe blocktype declares variant groups `tier`,
 `type` and `orientation` (`BlockPipe.cs:103`, `:121-122`, confirmed by
-`test/LowPressureExpanded.Tests/goldens/lpex/blocktypes/pipe/straight.json`), so the codes are
-`lpex:pipe-cast-straight-{ns|we|ud}` with no metal axis. ⛔ Since M4 (2026-08-14) the required code is
+`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/pipe/straight.json`), so the codes are
+`iiex:pipe-cast-straight-{ns|we|ud}` with no metal axis. ⛔ Since M4 (2026-08-14) the required code is
 wrong in two ways rather than one: it names a `{metal}` group that never existed **and** omits the `tier`
 segment that now does. The `{metal}` placeholder is filled from stage 2's
 `storeWildCard` (`ExConstruction.cs:112-123`, `:200-203`) and resolves to `…-ns-iron` / `…-ns-steel`, neither
@@ -241,7 +241,7 @@ is considered and hard-fails a non-wildcard miss (`ExConstruction.cs:165-178`), 
 
 > The Bessemer vessel cannot be completed, in survival or in creative-instant. Stage 3 is a wall.
 
-The fix is no longer one token: the target is `lpex:pipe-cast-straight-ns`. That segment exists, but it has
+The fix is no longer one token: the target is `iiex:pipe-cast-straight-ns`. That segment exists, but it has
 no recipe either (B19, [cast pipes](cast-pipes.md)), which also makes the gas intake recipe uncraftable - so the
 converter is blocked in two independent places. Neither is on this page to fix.
 
@@ -253,8 +253,8 @@ converter is blocked in two independent places. Neither is on this page to fix.
 
 | In | Out |
 |---|---|
-| molten pig iron (`iwex:ingot-pigiron`) through the input tap | molten Bessemer steel (`smex:ingot-bessemersteel`) through the output cell |
-| optional cold steel scrap - any exlib `Roles.Scrap` item, by role not by path | molten slag (`iwex:slag`) through the same output cell |
+| molten pig iron (`iiex:ingot-pigiron`) through the input tap | molten Bessemer steel (`smex:ingot-bessemersteel`) through the output cell |
+| optional cold steel scrap - any exlib `Roles.Scrap` item, by role not by path | molten slag (`iiex:slag`) through the same output cell |
 | air at ≥ `BlastPressureThreshold` on the pipe across the intake's connector face | gas - 4 % of the pig mass, gone, not a material |
 | mechanical power on the transmission - to tilt only | on over-blow: soft ingot iron (`game:ingot-iron`) |
 
@@ -397,7 +397,7 @@ strands the heat, because the vessel cannot be tilted to pour.
 | `BessemerSlagYield` | 0.06 | :226 | Pig mass that becomes slag; the remaining 0.04 is gas |
 | `BessemerPourRate` | 44 u/s | :231 | Drain rate through the output cell |
 | `BessemerPowerSpeedThreshold` | 0.1 | :234 | Geared MP speed above which the converter counts as powered |
-| `BessemerCooldownCoefficient` | 0.5 | :240 | Multiplier on `IwexValues.MoltenCooldownSpeed` for the charge |
+| `BessemerCooldownCoefficient` | 0.5 | :240 | Multiplier on `IiexValues.MoltenCooldownSpeed` for the charge |
 | `BessemerChiselMaxFraction` | 0.2 | :246 | Residue fraction of capacity below which it can be chiselled instead of broken |
 | `BessemerPourHoldSeconds` | 1.0 s | :97 | Hold time before the deep steel pour commits |
 | `BessemerRequiredGears` | 1 | :100 | Large gears consumed to spawn the vessel |
@@ -445,8 +445,8 @@ All at shipped values, full blast, no scrap.
 | steel pour, 4800 capacity | `4320 / 44` | 98 s |
 | slag pour, 4800 capacity | `288 / 44` | 7 ticks |
 | chiselable residue ceiling | `0.2 × capacity` | ≤ 959 u (4800) / ≤ 1199 u (6000) |
-| charge cooldown | `IwexValues.MoltenCooldownSpeed 24 × 0.5` | 12 - the VS per-in-game-hour rate (`IwexConfig.cs:31`, `ExlibConfig.cs:58-60`) |
-| liquid / hardened thresholds | `0.8 × mp` / `0.3 × mp`; pig overrides liquid to 0.75 | steel liquid > 1200, hardened < 450; pig liquid > 862.5, hardened < 345 (`ExlibConfig.cs:63`, `:67`, `assets/iwex/config/metals/*.json`) |
+| charge cooldown | `IiexValues.MoltenCooldownSpeed 24 × 0.5` | 12 - the VS per-in-game-hour rate (`IiexConfig.cs:31`, `ExlibConfig.cs:58-60`) |
+| liquid / hardened thresholds | `0.8 × mp` / `0.3 × mp`; pig overrides liquid to 0.75 | steel liquid > 1200, hardened < 450; pig liquid > 862.5, hardened < 345 (`ExlibConfig.cs:63`, `:67`, `assets/iiex/config/metals/*.json`) |
 
 The blow length does not depend on charge size. Carbon is a fraction and the decarburisation rate is not
 divided by mass, so 500 u and 6000 u both blow in ~5 minutes. Every capacity decision is therefore free of
@@ -459,7 +459,7 @@ time cost - see Gotchas #1.
 | `T_process = T_in − T_loss`, `HeatBalance.Compute`, `HeatBalanceHud.AppendLedger`, `IsHotBlast` | [heat balance](../mechanics/heat-balance.md) |
 | canal capacity, `MoltenFlowRate` (50), push/drain/soak, the metal-type refusal | [molten network](../mechanics/molten-network.md), [molten canal](molten-canal.md) |
 | pipe pool volume, pressure, burst, `TryConsumeGas` | [pipe network](../mechanics/pipe-network.md) |
-| `AirBlowerOutputPerSecond` (SmexConfig.cs:113) and the blower's undocumented ×3 | [twin-tub blower](twin-tub-blower.md) / lpex sub-machines |
+| `AirBlowerOutputPerSecond` (SmexConfig.cs:113) and the blower's undocumented ×3 | [twin-tub blower](twin-tub-blower.md) / iiex sub-machines |
 | Bessemer steel's composition, grade and bar from pressure work | [materials.md](../materials.md) |
 | cast slab / bloom / billet pour sizes | [long cell](long-cell.md) |
 
@@ -607,7 +607,7 @@ without anything noticing.
     split across them. Anything that reads the file top-down will miss half of them.
 
 13. **The transmission recipe asks for 16 gears in one grid cell** (`ConverterRecipeDefinitions.cs:55`) and is
-    emitted twice - once for `game:gear-rusty`, once for `lpex:gear-*`. Both entries are otherwise identical.
+    emitted twice - once for `game:gear-rusty`, once for `iiex:gear-*`. Both entries are otherwise identical.
 
 14. **`ScrapHintStacks` is decorative.** The block-help preview hard-codes `game:metalbit-steel` and
     `game:metalbit-iron` (`BlockConverterControl.cs:285-295`), but the actual classification is the exlib
@@ -637,7 +637,7 @@ without anything noticing.
    before the number is changed, or the tier gets a third capacity iteration that still misses.
 
 3. **B7 blocks the build** (Construction). One code in `BlockConverterBessemer.cs:108`, now
-   `lpex:pipe-cast-straight-ns`. B19 blocks it again - that segment has no recipe, so even the corrected
+   `iiex:pipe-cast-straight-ns`. B19 blocks it again - that segment has no recipe, so even the corrected
    code is creative-only, and the same block is 1 of the gas intake's grid ingredients. Both halves belong
    in M.3, which owns this layout.
 
@@ -660,5 +660,5 @@ without anything noticing.
    clicked sees the least.
 
 8. **The layout does not check the tap's or the canal start's orientation**, the same trap the
-   [cupola](cupola.md#gotchas) has: `iwex:moltencanal-tap*` is a wildcard, so a backwards tap completes the
+   [cupola](cupola.md#gotchas) has: `iiex:moltencanal-tap*` is a wildcard, so a backwards tap completes the
    structure and then never pours in.

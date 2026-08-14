@@ -12,7 +12,7 @@ namespace ExpandedLib.Blocks.Networks;
 /// orientation tables shared by every straight/bend/junction variant. Each tier reuses this class
 /// and its block entity through the registered class keys <c>exlib.BlockPipe</c> /
 /// <c>exlib.BlockEntityPipe</c>, calling <see cref="Segments"/> from a thin per-mod
-/// <see cref="IExBlockDefProvider"/>: iwex the plated tier, lpex the cast tier, hpex the rolled
+/// <see cref="IExBlockDefProvider"/>: iiex the plated tier, iiex the cast tier, hpex the rolled
 /// tier. One material per tier, so there is no <c>material</c> variant group; the tier itself is a
 /// variant (<see cref="Tier"/>), which is what lets one domain carry several.
 /// </summary>
@@ -297,7 +297,7 @@ public partial class BlockPipe
   /// <para>
   /// Only a plain segment limits throughput, the same rule as <see cref="CanBurst"/>. Fittings are
   /// exempt because some are a machine's own port on a single-node network rather than a length of
-  /// main (the iwex tuyere), and limiting there would cap every furnace at that tier's rate.
+  /// main (the iiex tuyere), and limiting there would cap every furnace at that tier's rate.
   /// </para>
   /// </summary>
   public virtual float MaxThroughput =>

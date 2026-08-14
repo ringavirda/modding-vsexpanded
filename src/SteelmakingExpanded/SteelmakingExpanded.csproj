@@ -75,19 +75,17 @@
 
   <!--
     smex builds on the shared framework in exlib (network/structure base types, single
-    BlockNetworkModSystem identity), uses lpex's pipe network + pipe blocks directly, and depends
-    on the foundational iwex mod (the molten-metal network + canals/taps/barrels/pedestals live
-    there). Reference the built dlls; Private=false because the player installs exlib, lpex and
-    iwex as their own mods, so none of those dlls is bundled into smex's output.
+    BlockNetworkModSystem identity) and on iiex, whose pipe network, pipe blocks, molten-metal
+    network and canals/taps/barrels/pedestals it uses directly. Reference the built dlls;
+    Private=false because the player installs exlib and iiex as their own mods, so neither dll is
+    bundled into smex's output - a second ModSystem-bearing dll in the folder makes Vintage Story
+    refuse to load the mod at all.
   -->
   <ItemGroup>
     <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\LowPressureExpanded\LowPressureExpanded.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\IronworkingExpanded\IronworkingExpanded.csproj">
+    <ProjectReference Include="..\IronIndustryExpanded\IronIndustryExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>
     <!-- Source generator that emits the SmexValues accessor from the [ExConfig] SmexConfig POCO.

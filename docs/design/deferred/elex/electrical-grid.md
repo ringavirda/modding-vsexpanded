@@ -73,9 +73,9 @@ Nothing: not one line of code, not one asset, not one lang key.
 |---|---|
 | `grep -rniE "dynamo\|alternator\|rectifier\|synchronis\|electrolys\|voltage\|three-phase" src/ --include=*.cs` | 0 hits |
 | `grep -rniE "elex\|electric\|dynamo\|alternator\|voltage" assets/ .github/` | 0 hits |
-| Projects in `VintageStory.sln` | `ExpandedLib`, `ExpandedLib.Generators`, `ExpandedLib.Testing`, `HighPressureExpanded`, `IronworkingExpanded`, `LowPressureExpanded`, `SteelmakingExpanded` (+ their `.Tests`) and `CakeBuild`. No `ElectricalExpanded` |
-| Asset domains under `assets/` | `editable`, `exlib`, `game`, `hpex`, `iwex`, `lpex`, `smex`. No `elex/`, so no `assets/elex/lang/en.json` either |
-| Registered network types | exactly three, all in `src/IronworkingExpanded/IronworkingExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
+| Projects in `VintageStory.sln` | `ExpandedLib`, `ExpandedLib.Generators`, `ExpandedLib.Testing`, `HighPressureExpanded`, `IronIndustryExpanded`, `IronIndustryExpanded`, `SteelmakingExpanded` (+ their `.Tests`) and `CakeBuild`. No `ElectricalExpanded` |
+| Asset domains under `assets/` | `editable`, `exlib`, `game`, `hpex`, `iiex`, `iiex`, `smex`. No `elex/`, so no `assets/elex/lang/en.json` either |
+| Registered network types | exactly three, all in `src/IronIndustryExpanded/IronworkingExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
 
 The only electrical thing that exists anywhere in the repo is the row in the family list:
 [conventions.md](../../conventions.md) § Networks - "Electrical (AC + DC) — the elex tier (planned)".
@@ -146,7 +146,7 @@ electrical version of the pipe's burst - the consequence of ignoring a readable 
 | 3-phase rectifier | megablock (AC-driven) | three phase-offset lines → one smooth high-power DC bus |
 | Synchroniser | block | matches frequency + phase to parallel alternators and share load; synchroscope |
 | Battery (acid / dry cell) | megablock (store) | DC ↔ stored DC backup - the electric analogue of the gasholder |
-| Wire extruder | megablock | MP-driven, not electric (needs lpex MP): copper rod/plate → wire, impure or pure |
+| Wire extruder | megablock | MP-driven, not electric (needs iiex MP): copper rod/plate → wire, impure or pure |
 
 The wire extruder is the one block on this list that needs no grid to work - it is an MP machine. Under D7
 ([STATE.md](../../../internal/plans/STATE.md)) wire lives in elex, which is what puts it on this table at all.
@@ -203,11 +203,11 @@ only in the archived elex/hpex specs and nowhere in the mechanical design - is
 
 `mpenergy`'s live calibration ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Numbers):
 `MpMaxSpeed = 2.0` rad/s (`src/ExpandedLib/ExlibConfig.cs:98`) and `FlywheelBridgeChargePower = 1.0` N·m
-(`src/IronworkingExpanded/IwexConfig.cs:467`). One bridge at full speed therefore supplies
+(`src/IronIndustryExpanded/IiexConfig.cs:467`). One bridge at full speed therefore supplies
 τ·ω = 1 × 2 = 2 W, of which friction takes `0.05·2 + 0.5 = 0.6` N·m, leaving 0.8 W of usable headroom -
-the mill's calibration comment says exactly this at `src/IronworkingExpanded/IwexConfig.cs:508-520`. The
+the mill's calibration comment says exactly this at `src/IronIndustryExpanded/IiexConfig.cs:508-520`. The
 flywheel's own block-info suppresses the supply/demand line below 1 W
-(`src/IronworkingExpanded/BlockNetworkEnergy/BlockEntities/BlockEntityFlywheel.cs:302`).
+(`src/IronIndustryExpanded/BlockNetworkEnergy/BlockEntities/BlockEntityFlywheel.cs:302`).
 
 elex speaks in kW; the live mechanical network runs at ~2 W. `mpenergy`'s numbers are a first-pass
 calibration in arbitrary-but-consistent units and elex's are nominal physical ones, but they are not the

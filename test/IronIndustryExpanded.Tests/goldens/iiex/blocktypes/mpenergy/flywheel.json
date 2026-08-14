@@ -1,0 +1,407 @@
+{
+  "code": "mpenergy",
+  "class": "iiex.BlockFlywheel",
+  "entityClass": "iiex.BlockEntityFlywheel",
+  "blockmaterial": "Metal",
+  "sounds": {
+    "walk": "game:walk/metal",
+    "place": "game:block/anvil"
+  },
+  "maxstacksize": 1,
+  "attributes": {
+    "handbook": {
+      "groupBy": [
+        "mpenergy-flywheel-*"
+      ]
+    }
+  },
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "flywheel"
+      ]
+    },
+    {
+      "code": "size",
+      "states": [
+        "normal",
+        "large"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-normal-ns": {
+      "base": "iiex:mpenergy/flywheel",
+      "rotateY": 0
+    },
+    "*-normal-we": {
+      "base": "iiex:mpenergy/flywheel",
+      "rotateY": 90
+    },
+    "*-large-ns": {
+      "base": "iiex:mpenergy/flywheel-large",
+      "rotateY": 0
+    },
+    "*-large-we": {
+      "base": "iiex:mpenergy/flywheel-large",
+      "rotateY": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-normal-ns",
+      "*-large-ns"
+    ],
+    "iiex": [
+      "*-normal-ns",
+      "*-large-ns"
+    ]
+  },
+  "attributesByType": {
+    "*-normal-*": {
+      "fillerOffsets": [
+        {
+          "x": -1,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "behaviors": [
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "north"
+            },
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "south"
+            }
+          ],
+          "allowAttach": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        }
+      ]
+    },
+    "*-large-*": {
+      "fillerOffsets": [
+        {
+          "x": -2,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "behaviors": [
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "north"
+            },
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "south"
+            }
+          ],
+          "allowAttach": true
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": -2,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": -2,
+          "y": 4,
+          "z": 1
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "z": 1
+        },
+        {
+          "x": -2,
+          "y": 3,
+          "z": 1
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 1
+        },
+        {
+          "x": -2,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "behaviors": [
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "north"
+            },
+            {
+              "code": "exlib.BEBehaviorMPFillerPort",
+              "face": "south"
+            }
+          ],
+          "allowAttach": true
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": -2,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": -2,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1
+        }
+      ]
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

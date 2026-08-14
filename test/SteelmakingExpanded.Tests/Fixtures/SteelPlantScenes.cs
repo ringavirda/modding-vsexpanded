@@ -4,11 +4,11 @@ using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockNetworkMolten;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
-using LowPressureExpanded.BlockNetworkPipe;
-using LowPressureExpanded.BlockNetworkPipe.BlockEntities;
-using LowPressureExpanded.Tests;
+using IronIndustryExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.Converter;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
@@ -29,7 +29,7 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 internal sealed class ConverterRig {
   // Resolved the way the control resolves them, so a pushed code matches what it reads under a headless
-  // registry (game: convention) or a populated one (iwex:/smex:) alike.
+  // registry (game: convention) or a populated one (iiex:/smex:) alike.
   private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string Steel =>
     MetalRegistry.MoltenItemOf("bessemersteel").ToString();
@@ -56,12 +56,12 @@ internal sealed class ConverterRig {
     World = new TestWorld();
     // Both convention and shipped codes, so the resolved token always finds a real item.
     World.RegisterItem("game:ingot-pigiron", 1150f);
-    World.RegisterItem("iwex:ingot-pigiron", 1150f);
+    World.RegisterItem("iiex:ingot-pigiron", 1150f);
     World.RegisterItem("game:ingot-bessemersteel", 1500f);
     World.RegisterItem("smex:ingot-bessemersteel", 1500f);
     World.RegisterItem("game:ingot-iron", 1500f);
     World.RegisterItem("game:ingot-slag", 1200f);
-    World.RegisterItem("iwex:slag", 1200f);
+    World.RegisterItem("iiex:slag", 1200f);
     World.RegisterItem("game:metalbit-iron");
     World.RegisterItem("game:metalbit-steel");
     World.RegisterNetwork("pipe", s => new PipeNetwork(s));
@@ -90,10 +90,10 @@ internal sealed class ConverterRig {
 
     // Every service port, wearing the code its own layout cell names. A wrong code here is only visible
     // because the rig raises the real footprint and the completion check matches each cell against it.
-    Input = PlaceCanal(InputTapLocal, "iwex:molten-canal-tap-s", "tap", "s", 9);
+    Input = PlaceCanal(InputTapLocal, "iiex:molten-canal-tap-s", "tap", "s", 9);
     Output = PlaceCanal(
       OutputStartLocal,
-      "iwex:molten-canal-start-fire-s",
+      "iiex:molten-canal-start-fire-s",
       "start",
       "s",
       10
@@ -150,7 +150,7 @@ internal sealed class ConverterRig {
     // Blast supply: an Air pipe network docked against the intake's connector face.
     BlockFacing connFace = ((BlockConverterIntake)intakeBlock).ConnectorFace;
     BlockPos blastPos = intakePos.AddCopy(connFace);
-    // Cast (lpex), not plated (iwex): the converter's blast is a steam-tier service and runs past what
+    // Cast (iiex), not plated (iiex): the converter's blast is a steam-tier service and runs past what
     // the iron tier's pipe will pass, so a plated main here starves the blow.
     var blastPipe = PipeTestWorld.MakePipe(
       material: "steel",
@@ -415,7 +415,7 @@ internal sealed class CowperRig {
       angle: (ExOrientation.AngleFromSide("north") + 180) % 360
     );
 
-    // The two fitting cells the stove reads on discharge, placed before the fill with the real lpex
+    // The two fitting cells the stove reads on discharge, placed before the fill with the real iiex
     // fittings their layout cells name. A generic pipe would carry air as a network node but would not
     // satisfy the footprint.
     BlockPos airInPos = Structure.Cell(0, 1, 2);
@@ -468,7 +468,7 @@ internal sealed class CowperRig {
 
   /// <summary>A sealed 2-cell pipe run butted against <paramref name="face"/> of <paramref name="at"/>.</summary>
   private PipeNetwork SealedRunOn(BlockPos at, BlockFacing face, int firstId) {
-    // Cast (lpex) for the same reason as the converter's blast main: a cowper's hot-blast and exhaust
+    // Cast (iiex) for the same reason as the converter's blast main: a cowper's hot-blast and exhaust
     // runs are steam-tier services past the plated tier's throughput.
     var pipe = PipeTestWorld.MakePipe(
       material: "steel",

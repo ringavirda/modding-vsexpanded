@@ -1,0 +1,95 @@
+{
+  "code": "furnace",
+  "class": "iiex.BlockChargeDoor",
+  "entityClass": "iiex.BlockEntityChargeDoor",
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "blockmaterial": "Ceramic",
+  "maxstacksize": 1,
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "chargedoor"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iiex:furnace/chargedoor",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iiex:furnace/chargedoor",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iiex:furnace/chargedoor",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iiex:furnace/chargedoor",
+      "rotateY": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "replaceable": 400,
+  "resistance": 3.5,
+  "lightAbsorption": 3,
+  "sounds": {
+    "walk": "walk/stone",
+    "place": "block/ceramicplace",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "block/rock-hit-pickaxe",
+        "break": "block/rock-break-pickaxe"
+      }
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "attributes": {
+    "doorClips": {
+      "main": "open",
+      "mainShut": "closed"
+    },
+    "fillerOffsets": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    ]
+  }
+}

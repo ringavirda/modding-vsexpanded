@@ -2,8 +2,8 @@
 
 **Status** designed - nothing built. No steam hammer, no die item, no `ItemDie` spec, no `boilerplate`
 item, and no recipe of any kind. A repo-wide grep for `hammer` in `src/` returns only vanilla tool items.
-**Mods** lpex (the [steam hammer](../machines/steam-hammer.md) and the plate die) · hpex (the
-double-action hammer, for work ≥ 2 voxels thick) · iwex / smex supply the plate
+**Mods** iiex (the [steam hammer](../machines/steam-hammer.md) and the plate die) · hpex (the
+double-action hammer, for work ≥ 2 voxels thick) · iiex / smex supply the plate
 
 ## Owns
 
@@ -117,7 +117,7 @@ not restated.
 | Route | Stock | `boilerplate` per schedule | Stamps | Plates | Metal |
 |---|---|---|---|---|---|
 | narrow `flat` | `shingledbar` | — (the bar is cropped straight to plate at the 1.0 gap) | 0 | 2 | 400 u |
-| wide, lpex | `shingledslab` 1200 u | 2 | 2 | 6 | 1200 u |
+| wide, iiex | `shingledslab` 1200 u | 2 | 2 | 6 | 1200 u |
 | wide, smex | `castslab` 3000 u | 5 | 5 | 15 | 3000 u |
 
 The stamp is what turns the wide route's volume into something the game consumes. Rolled to 1.0 and
@@ -139,7 +139,7 @@ Nothing on this page is in config or in code. Every value below is either derive
 | batch size | = die cavity count, read off the die mesh | design constant | owned by [steam hammer](../machines/steam-hammer.md); a 3-cavity plate die is what makes the yield above legible without a tooltip |
 | output-thickness tier gate | LP ≤ 1 voxel · HP ≥ 2 voxels | design constant | [steam hammer](../machines/steam-hammer.md), [HP hammer](../machines/hp-hammer.md). A 1-voxel `boilerplate` sits exactly at the LP ceiling |
 | blows per stamp · steam per blow · minimum inlet pressure | unchosen | open | [steam hammer](../machines/steam-hammer.md) § Unchosen |
-| work temperature required | unchosen | open | nothing anywhere names a threshold; the mill's `RollingTempC` (`IwexConfig.cs:490`) is an iwex key the hammer would be reaching upward into |
+| work temperature required | unchosen | open | nothing anywhere names a threshold; the mill's `RollingTempC` (`IiexConfig.cs:490`) is an iiex key the hammer would be reaching upward into |
 
 ### The ceiling every future die inherits
 

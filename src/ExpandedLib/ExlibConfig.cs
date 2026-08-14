@@ -20,6 +20,23 @@ public class ExlibConfig : IExVersionedConfig {
   /// <summary>Mod version that last wrote this file. Managed by the config store - do not set by hand.</summary>
   public string? ConfigVersion { get; set; }
 
+  /// <summary>
+  /// Version-driven default resets. A tunable's coded default only reaches an existing install through
+  /// one of these: the file already on disk wins otherwise, so correcting a default without a row here
+  /// fixes nothing for anyone who has run the mod.
+  /// </summary>
+  public static readonly ExConfigMigration[] Migrations =
+  [
+    // 0.7.3: MetalRecoveryFallback named iiex:slag, which has never been a registered code - the block
+    // is slag-block - so the fallback resolved to nothing and recovered nothing. Stamped at the current
+    // source version rather than above it: 0.7.2 is released, and a migration above the version that
+    // ships it never fires.
+    new() {
+      ToVersion = "0.7.3",
+      ResetFields = [nameof(MetalRecoveryFallback)],
+    },
+  ];
+
   #region World
   /// <summary>World ambient reference temperature (°C) used by machine heat models: the temperature cold
   /// feeds enter at and the floor idle machines cool toward. Pipe runs cool toward their own
@@ -85,8 +102,10 @@ public class ExlibConfig : IExVersionedConfig {
 
   /// <summary>Item code recovered when a molten metal's solid drop cannot be resolved. A metal may override
   /// it per-entry in its <c>MetalDef</c>. Safe when the item is absent: the chisel and break drops guard a
-  /// null resolve.</summary>
-  public string MetalRecoveryFallback { get; set; } = "iwex:slag";
+  /// null resolve - which is why this read <c>iiex:slag</c> for so long without complaint. That code has
+  /// never been registered (the block is <c>slag-block</c>), so the fallback resolved to nothing and
+  /// recovered nothing.</summary>
+  public string MetalRecoveryFallback { get; set; } = "iiex:slag-block";
   #endregion
 
   #region Mechanical-energy network

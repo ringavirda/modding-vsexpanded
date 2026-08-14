@@ -68,7 +68,7 @@ recorded against the retired forming spec. The forming line has since been reset
 **live** = works in game · **shell** = block stands, logic missing · **designed** = spec only ·
 **art** = drawn, not wired.
 
-### Tier 1 — iwex (iron, water + cast iron)
+### Tier 1 — iiex (iron, water + cast iron)
 
 ```
 coal ──▶ beehive coke oven [designed] ──▶ coke
@@ -110,7 +110,7 @@ coke ─────────────────────────
 
 **Side choices at this tier:** cast parts vs wrought parts · rivets vs nails per rod · which burden grade.
 
-### Tier 2 — lpex (steam)
+### Tier 2 — iiex (steam)
 
 ```
 Cornish boiler [live] ──▶ Watt engine [live] ──▶ MP + cast pipes [live]
@@ -175,7 +175,7 @@ Short dated statements; the reasoning lives on the owner pages.
 | **N3** | 2026-07-29 | **All cast parts get fabricated substitutes** — beam + plate + rivets for frames, bent shells on the bending roller for shells/barrels/rims. The HP hammer's frame is in tension and is the first that **must** be fabricated — [fabrication](../../design/processes/fabrication.md) |
 | **E1–E4** | 2026-08-12 | **Extensibility is a product target.** Other mods must be able to add tooling to diagram crafting, sand casting, rolling, the steam hammer and the machining line. Both routes (JSON attributes primary, public C# registration API alongside); the die carries its job spec; **every spec attribute is versioned**; and this layer lands **before** the tier spine — the schemas are a public contract, so breaking changes go first. Plan: [extensibility](2026-08-12-extensibility.md) |
 | **F1** | 2026-08-12 | **Framework composition A0–A4 complete.** Form / process / membership are three independent axes; the block-entity base slot belongs to form. [staging](2026-08-10-framework-composition-staging.md) · [design](../../design/mechanics/framework-composition.md) |
-| **M1** | 2026-08-13 | **Two content mods, split on the tier line.** `{iwex + lpex}` → **Iron Industry Expanded (`iiex`)**, the early-industrial loop: cast and wrought iron build the machines, from the basic blast furnace with tub blowers through to a steam-powered workshop. `{smex + hpex}` → **Steel Industry Expanded (`siex`)**, the steel loop: alloys and stock only steel can supply, fuel-gas power, larger and more efficient machines. `exlib` is unchanged. Supersedes the per-mod closure rule below |
+| **M1** | 2026-08-13 · **first half built 2026-08-14** | **Two content mods, split on the tier line.** `iiex` exists: `{iwex + lpex}` merged, one assembly and one domain, gate 12/4,000 green. `siex` is stage M.5. `{iwex + lpex}` → **Iron Industry Expanded (`iiex`)**, the early-industrial loop: cast and wrought iron build the machines, from the basic blast furnace with tub blowers through to a steam-powered workshop. `{smex + hpex}` → **Steel Industry Expanded (`siex`)**, the steel loop: alloys and stock only steel can supply, fuel-gas power, larger and more efficient machines. `exlib` is unchanged. Supersedes the per-mod closure rule below |
 | **M2** | 2026-08-13 | **Closure is per LOOP, not per mod.** The old rule — *"an iwex-only player gets a complete early-19th-century loop … and iwex recipes never reach into lpex"* — is retired. About 15 entity pages cite it to justify a placement; each is re-justified against its loop instead. ⛔ The loops are **nested, not parallel**: the steel loop extends the early loop's machinery and cannot close on its own (the gas producer is fed by an early-loop boiler) |
 | **M3** | 2026-08-13 | ⛔⛔ **A merge collapses no tier.** The plated pipe tier, the iron gears and the rest of the early-loop parts are the **bootstrap rung** — deliberate progression, not duplication to be deduplicated. A player builds the plated tier before steam and upgrades to cast; both survive the merge intact. This is the constraint every merge task is measured against |
 | **M4** | 2026-08-13 · **built 2026-08-14** | **Full domain consolidation, and the pipe tier becomes a variant group.** One asset domain per merged mod, so every block code moves. Because tier can then no longer be `Code.Domain` — and M3 forbids losing it — the tier moves onto the block. ⛔ The code is **`pipe-{tier}-{type}-{orient}`**, tier **first**, not the `pipe-straight-ns-{tier}` this row first wrote: declared last it moves every code out from under the `*-straight-ns` shape selectors and the blocks load with no shape and no error. **Supersedes [rolled-pipe](../../design/machines/rolled-pipe.md)'s and [cast-pipes](../../design/machines/cast-pipes.md)'s "the tier is the mod, not a variant axis"**, whose premise (tier == mod) is exactly what M1 removes; both pages are rewritten. Resolves the ~150-code collision by construction, and the three tiers now have three distinct display names. The variant covers the four segments and both valves; the bricks (passthrough, outlet) bear no pressure, name no tier and take the defaults |

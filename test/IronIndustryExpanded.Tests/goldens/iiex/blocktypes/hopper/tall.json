@@ -1,0 +1,52 @@
+{
+  "code": "hopper-tall",
+  "class": "iiex.BlockHopperTall",
+  "entityClass": "iiex.BlockEntityHopperTall",
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "blockmaterial": "Ceramic",
+  "maxstacksize": 1,
+  "shape": {
+    "base": "iiex:hopper-tall"
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  },
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    ]
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ]
+}

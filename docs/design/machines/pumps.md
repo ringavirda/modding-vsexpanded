@@ -1,5 +1,5 @@
 # Pumps & the Fluid Intake
-**Status** live: fluid intake · engine fluid pump · manual fluid pump - designed: mechanical MP pump · injector   **Mod** lpex
+**Status** live: fluid intake · engine fluid pump · manual fluid pump - designed: mechanical MP pump · injector   **Mod** iiex
 
 **Owns**
 - The water chain as one machine: intake → source line → pump → delivery line, and the invariant that
@@ -49,7 +49,7 @@ empty "Air" pool at broadcast time and the HUD would mislabel a working water li
 
 ## Structure
 
-### Fluid intake — `lpex:pipe-fluidintake-{n,s,w,e}`
+### Fluid intake — `iiex:pipe-fluidintake-{n,s,w,e}`
 
 A single-cell network node (`BlockFluidIntake : BlockNetworkNode`, `BlockFluidIntake.cs:12`) on the
 `pipe` network (`:14`), placed on top of water. Its block entity is a bare `BlockEntityNetworkNode` and not
@@ -59,10 +59,10 @@ an `IPipeNode`, so it never appears as a consumer in the tick's classification p
 |---|---|
 | Variants | `orientation` `n` `s` `w` `e`; fallback `s`, not the first listed (`BlockFluidIntake.cs:39`) |
 | `IsFullCube` | `true` - opts into on-the-fly wrench-cycle recomputation so all four facings are reachable (`:46`) |
-| Placement | refused unless the block below has `LiquidCode == "water"`; `failureCode = "lpex-fluidintake-nowater"` (`:52-79`) |
+| Placement | refused unless the block below has `LiquidCode == "water"`; `failureCode = "iiex-fluidintake-nowater"` (`:52-79`) |
 | Self-break | suppressed. `OnNeighbourBlockChange` only re-syncs orientation; losing the water disables it rather than destroying it (`:86-96`) |
 
-### Engine fluid pump — `lpex:enginefluidpump-{side}`
+### Engine fluid pump — `iiex:enginefluidpump-{side}`
 
 A single-cell engine sub-machine (`BlockEngineFluidPump : BlockEngineSubmachine, INetworkConnector`,
 `BlockEngineFluidPump.cs:16`). It is a connector, not a node: it reads the runs across its faces and never
@@ -77,7 +77,7 @@ Placement snaps to the engine's sub-machine facing when one is nearby (`BlockEng
 BE locates its master engine by inverting `BlockEngine.SubmachinePos` with a horizontal fallback
 (`BlockEntityEngineSubmachine.cs:131-154`).
 
-### Manual fluid pump — `lpex:manualfluidpump-{side}`
+### Manual fluid pump — `iiex:manualfluidpump-{side}`
 
 Two cells tall, horizontally orientable, and - like the engine pump - an `INetworkConnector` and not a
 network node (`BlockManualFluidPump.cs:24-31`). The cell above is reserved by a single invisible filler
@@ -100,7 +100,7 @@ Specified as a walking-beam block driven from the MP network rather than from st
 boiler with the fire out. A grep for `MpPump` / `mppump` / `SteamPump` across the repo
 returns no source file. Its art is drawn: `assets/editable/shapes/machine-pipe-megablock-mppump.json`
 (elements `Base`, `BaseExtension`, `BasePipe`, `GearAxle`, `Piston`, `ReservoirConn`; `idle` 30 f, `cycle`
-60 f - the same clip pair every lpex machine uses).
+60 f - the same clip pair every iiex machine uses).
 
 ### Injector *(designed — nothing in `src/`)*
 
@@ -115,11 +115,11 @@ Union stubs rather than flanges, so the joint-family rule never applies to it
 
 | asset | path | state |
 |---|---|---|
-| Intake runtime shape | `assets/lpex/shapes/pipes/fluidintake.json` | `Cube2` `Cube11` `Cube26`; textures `iron3` `iron2` `iron`; no animation |
+| Intake runtime shape | `assets/iiex/shapes/pipes/fluidintake.json` | `Cube2` `Cube11` `Cube26`; textures `iron3` `iron2` `iron`; no animation |
 | Intake editable | — | none |
-| Engine pump runtime | `assets/lpex/shapes/engine/fluidpump.json` | `Cube2` `Cube6` `Cube10` `Cube17` `Piston`; `idle` 30 f, `cycle` 60 f |
+| Engine pump runtime | `assets/iiex/shapes/engine/fluidpump.json` | `Cube2` `Cube6` `Cube10` `Cube17` `Piston`; `idle` 30 f, `cycle` 60 f |
 | Engine pump editable | — | none |
-| Manual pump runtime | `assets/lpex/shapes/manualfluidpump.json` | `Pipe` `Casing` `Cylinder` `CrankSupport` `HandCrank` `Piston`; `cycle` 30 f, `idle` 30 f |
+| Manual pump runtime | `assets/iiex/shapes/manualfluidpump.json` | `Pipe` `Casing` `Cylinder` `CrankSupport` `HandCrank` `Piston`; `cycle` 30 f, `idle` 30 f |
 | Manual pump editable | `assets/editable/shapes/machine-pipe-megablock-manualpump.json` | identical element/clip set - the live source |
 | MP pump editable | `assets/editable/shapes/machine-pipe-megablock-mppump.json` | art only, wired to nothing |
 | Injector | — | not drawn |
@@ -141,17 +141,17 @@ intake is silent - its only feedback is three HUD lines.
 
 | block | recipe | file:line |
 |---|---|---|
-| `pipe-fluidintake-s` | `_H_,PIP,NPN` - 1 `iwex:pipe-plated-straight-*` + 3 plate + 4 nails + hammer | `MachineRecipeDefinitions.cs:39-47` |
+| `pipe-fluidintake-s` | `_H_,PIP,NPN` - 1 `iiex:pipe-plated-straight-*` + 3 plate + 4 nails + hammer | `MachineRecipeDefinitions.cs:39-47` |
 | `enginefluidpump-north` | `_HG,PIP,RIR` - 2 straight + 2 plate + 4 rod + 1 gear + hammer | `:83-93` |
 | `manualfluidpump-north` | `_GH,PIP,BRB` - 1 straight + 2 plate + 2 gear + 2 rod + 4 `game:supportbeam-*` + hammer | `:95-106` |
 | mechanical MP pump | no block, no recipe | — |
 | injector | no block, no recipe | — |
 
-The two gear-driven pumps are each authored twice, once for `game:gear-rusty` and once for `lpex:gear-*`,
-by a loop over both codes (`MachineRecipeDefinitions.cs:29-33`). The pipe ingredient is the plated iwex
+The two gear-driven pumps are each authored twice, once for `game:gear-rusty` and once for `iiex:gear-*`,
+by a loop over both codes (`MachineRecipeDefinitions.cs:29-33`). The pipe ingredient is the plated iiex
 segment in every case (`:127-128`).
 
-Cost-catalogue keys: `pipe-fluidintake-grid` (`LpexRecipeConfig.cs:80`), `enginefluidpump-grid` (`:70`),
+Cost-catalogue keys: `pipe-fluidintake-grid` (`IiexRecipeConfig.cs:80`), `enginefluidpump-grid` (`:70`),
 `manualfluidpump-grid` (`:72`) - all three live, all three backed by a real recipe.
 
 ---
@@ -208,8 +208,8 @@ Runs on the shared production tick: server-side, 1000 ms, `dt` clamped to 2 s
 (`BlockEntityEngineSubmachine.cs:160`).
 
 ```csharp
-float pressure = (Engine?.InletPressure ?? 0f) * LpexValues.SteamEngineEfficiency;   // :46-47
-float amount   = LpexValues.PumpWaterPerSecond * 3 * power * dt;                     // :48
+float pressure = (Engine?.InletPressure ?? 0f) * IiexValues.SteamEngineEfficiency;   // :46-47
+float amount   = IiexValues.PumpWaterPerSecond * 3 * power * dt;                     // :48
 
 float move  = Math.Min(amount, FluidPumpCore.OutputFreeCapacity(leftNet));           // :50
 float drawn = bottomNet?.TryConsumeLiquid(move, ba) ?? 0f;                           // :51
@@ -230,7 +230,7 @@ from a teleport, death or disconnect (`BlockEntityManualFluidPump.cs:116-121`). 
 discarded at load, because nobody is holding the button after a reload (`:64-66`).
 
 ```csharp
-float amount = LpexValues.ManualPumpWaterPerSecond * dt;                             // :142
+float amount = IiexValues.ManualPumpWaterPerSecond * dt;                             // :142
 float move   = Math.Min(amount, FluidPumpCore.OutputFreeCapacity(outputNet));        // :143
 float drawn  = inputNet?.TryConsumeLiquid(move, ba) ?? 0f;                           // :144
 if (drawn > 0f) outputNet?.TryProduceLiquid(drawn, 20f, 1f, ba);                     // :147  ← fixed 1 atm
@@ -253,18 +253,18 @@ Both pumps route through two helpers so the "find the intake / how much fits" lo
 
 ## Numbers
 
-### Config — `src/LowPressureExpanded/LpexConfig.cs`, `ModConfig/ex_values.json`, section `lpex`
+### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `PumpWaterPerSecond` | `16.67` | `LpexConfig.cs:199` | base water L/s per unit of engine power - then multiplied by a hard-coded 3 |
-| `ManualPumpWaterPerSecond` | `2` | `LpexConfig.cs:203` | hand-cranked transfer rate, at 1 atm |
-| `FluidIntakeWaterDepth` | `3` | `LpexConfig.cs:206` | the cube edge below the intake that must be water |
-| `FluidIntakeExclusionRange` | `6` | `LpexConfig.cs:209` | Euclidean radius that disables a crowded intake |
-| `SteamEngineEfficiency` | `0.75` | `LpexConfig.cs:183` | sets a sub-machine's output pressure = inlet × this. Shared with smex's blower - see the warning below |
+| `PumpWaterPerSecond` | `16.67` | `IiexConfig.cs:199` | base water L/s per unit of engine power - then multiplied by a hard-coded 3 |
+| `ManualPumpWaterPerSecond` | `2` | `IiexConfig.cs:203` | hand-cranked transfer rate, at 1 atm |
+| `FluidIntakeWaterDepth` | `3` | `IiexConfig.cs:206` | the cube edge below the intake that must be water |
+| `FluidIntakeExclusionRange` | `6` | `IiexConfig.cs:209` | Euclidean radius that disables a crowded intake |
+| `SteamEngineEfficiency` | `0.75` | `IiexConfig.cs:183` | sets a sub-machine's output pressure = inlet × this. Shared with smex's blower - see the warning below |
 
 `PumpWaterPerSecond` carries a config migration: version `0.6.0` force-resets it, from the retune
-5 → 16.67 when the pump started scaling off absolute engine power (`LpexConfig.cs:35-40`).
+5 → 16.67 when the pump started scaling off absolute engine power (`IiexConfig.cs:35-40`).
 
 ### hard-coded — the undocumented `× 3`
 
@@ -278,7 +278,7 @@ Neither factor is named, commented, or reachable from config. Both use the shape
 
 What the config comment claims vs what ships:
 
-| engine | power | `LpexConfig.cs:197-198` says | actually delivered | ratio |
+| engine | power | `IiexConfig.cs:197-198` says | actually delivered | ratio |
 |---|---|---|---|---|
 | Watt | 0.3 | 5 L/s | 15.0 L/s | 3× |
 | Cornish low | 0.2 | 3.3 L/s | 10.0 L/s | 3× |
@@ -291,9 +291,9 @@ Every downstream statement of the number is therefore wrong by 3×:
 
 | source | claim | truth |
 |---|---|---|
-| `LpexConfig.cs:197-198` (the doc comment on the key itself) | "Watt 0.3 → 5 L/s, Cornish 0.2/0.4/0.8 → 3.3/6.7/13.3" | 15 / 10 / 20 / 40 |
-| `docs/lpex/handbook/02-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
-| `docs/lpex/handbook/02-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SmexConfig.cs:113`) |
+| `IiexConfig.cs:197-198` (the doc comment on the key itself) | "Watt 0.3 → 5 L/s, Cornish 0.2/0.4/0.8 → 3.3/6.7/13.3" | 15 / 10 / 20 / 40 |
+| `docs/iiex/handbook/02-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
+| `docs/iiex/handbook/02-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SmexConfig.cs:113`) |
 | `SmexConfig.cs:110-112` | "Cornish 0.2/0.4/0.8 → 9.6/19.2/38.4, Watt 0.3 → 14.4" | 28.8 / 57.6 / 115.2 / 43.2 |
 
 ### Other hard-coded values
@@ -317,9 +317,9 @@ Every downstream statement of the number is therefore wrong by 3×:
 | quantity | value | from |
 |---|---|---|
 | Watt-driven pump, steady state | 15.0 L/s | `16.67 × 3 × 0.3` |
-| Manual pump, steady state | 2.0 L/s | `LpexConfig.cs:203` |
-| Boiler's maximum feed draw | 10 L/s | `BoilerWaterIntakeRate`, `LpexConfig.cs:95` ([Cornish boiler](boiler-cornish.md)) |
-| Boiler auto-fill ceiling (Cornish) | 800 × 0.5 = 400 L | `LpexConfig.cs:91`, `:143` ([Cornish boiler](boiler-cornish.md)) |
+| Manual pump, steady state | 2.0 L/s | `IiexConfig.cs:203` |
+| Boiler's maximum feed draw | 10 L/s | `BoilerWaterIntakeRate`, `IiexConfig.cs:95` ([Cornish boiler](boiler-cornish.md)) |
+| Boiler auto-fill ceiling (Cornish) | 800 × 0.5 = 400 L | `IiexConfig.cs:91`, `:143` ([Cornish boiler](boiler-cornish.md)) |
 
 One Watt-driven pump over-serves a boiler by 50 % (15 vs 10), and the hand crank supplies a fifth of the
 boiler's maximum draw, enough to prime it. The 3× bug therefore does not break the feed loop; it makes the
@@ -390,7 +390,7 @@ call sites.
 Both the MP pump and the injector feed a boiler with no engine dedicated to it.
 
 Under the settled power progression rule (`STATE.md:538-546`), at iron tier a vanilla waterwheel or windmill
-is bridged into mpenergy, and in lpex the player replaces that producer with a steam engine. A pump that runs
+is bridged into mpenergy, and in iiex the player replaces that producer with a steam engine. A pump that runs
 off the line shaft is therefore the device that lets a water-powered iron shop raise its first boiler without
 a bootstrap.
 
@@ -404,7 +404,7 @@ a bootstrap.
 | engine fluid pump | itself; plain block drops | `BlockEngineFluidPump.cs:22-35` |
 | manual fluid pump | itself; fillers cleared before `base.OnBlockBroken` so no invisible solid cell survives | `BlockManualFluidPump.cs:110-123` |
 
-None of the three is a right-click construction, so `RccBrokenDropsRatio` (`LpexConfig.cs:116`) does not
+None of the three is a right-click construction, so `RccBrokenDropsRatio` (`IiexConfig.cs:116`) does not
 apply - salvage is 1:1.
 
 ---
@@ -497,7 +497,7 @@ beside it said 5 L/s.
 
 9. **The manual pump is not wrench-orientable** (`BlockManualFluidPump.cs:18`). To reverse it,
    break and re-place. The crank-support side is the input side - the only in-world cue, and it is stated
-   only in the handbook (`docs/lpex/handbook/03-fittings.html:22-23`).
+   only in the handbook (`docs/iiex/handbook/03-fittings.html:22-23`).
 
 10. **The manual pump forwards every interaction phase from its filler** - start, step, stop and the
     interaction help all have an `IFillerInteractionTarget` twin (`BlockManualFluidPump.cs:137-215`). Miss one
@@ -506,13 +506,13 @@ beside it said 5 L/s.
 11. **`HandleStart` returns `null` to defer, not to refuse** (`BlockManualFluidPump.cs:150-166`): a held
     item falls through to the default behaviour so a wrench still works on the block.
 
-12. **`src/LowPressureExpanded/README.md:42-43` lists `Commands/` and `Preferences/` directories that do not
+12. **`src/IronIndustryExpanded/README.md:42-43` lists `Commands/` and `Preferences/` directories that do not
     exist** - the measure feature moved to exlib (`LowPressureExpandedModSystem.cs:93-96`). The same
     README's machine list also omits the manual pump from "what it adds" while the code ships it.
 
-13. **`LpexConfig.cs:223` documents `/exmod steam <level>`. There is no such command** - the recipe level is
-    switched by the generic `/exmod recipes lpex <level>` (`LowPressureExpandedModSystem.cs:79-81`). The same
-    stale string is repeated at `LpexRecipeConfig.cs:13`.
+13. **`IiexConfig.cs:223` documents `/exmod steam <level>`. There is no such command** - the recipe level is
+    switched by the generic `/exmod recipes iiex <level>` (`LowPressureExpandedModSystem.cs:79-81`). The same
+    stale string is repeated at `IiexRecipeConfig.cs:13`.
 
 14. **The engine pump's source face is `DOWN`** (`BlockEngineFluidPump.cs:46`), i.e. the intake main must run
     under the sub-machine. Nothing in the block's name, shape or lang says so; the handbook does not

@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Spur Gear",
+    "ingredientPattern": "_K_,III",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "item",
+      "code": "iiex:spurgear",
+      "quantity": 1
+    },
+    "ingredients": {
+      "I": {
+        "type": "item",
+        "code": "game:ingot-iron",
+        "quantity": 1
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Spur Gear (Cast Iron)",
+    "ingredientPattern": "_K_,_C_",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "item",
+      "code": "iiex:spurgear",
+      "quantity": 2
+    },
+    "ingredients": {
+      "C": {
+        "type": "item",
+        "code": "iiex:ingot-castiron",
+        "quantity": 1
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  }
+]

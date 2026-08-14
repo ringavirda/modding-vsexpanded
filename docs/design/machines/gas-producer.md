@@ -170,9 +170,9 @@ regenerative stove is"* (`CowperStoveRecipeDefinitions.cs:9-11`): tier-2 refract
 + hammer, in a 3 × 3 grid (`:21-27`). A producer is a brick shaft with a steam connection and a gas offtake;
 the same bill plus a second pipe is the right order of magnitude.
 
-Inherited trap: the cowper's layout hard-codes lpex fittings. `BlockCowperStoveIntake.cs:53-54` declares
-`lpex:pipe-outlet*` and `lpex:pipe-passthrough-*` as required structure cells, so a smex machine cannot be
-completed out of the iwex tier. This is the same defect the Lancashire boiler has against the rolled tier
+Inherited trap: the cowper's layout hard-codes iiex fittings. `BlockCowperStoveIntake.cs:53-54` declares
+`iiex:pipe-outlet*` and `iiex:pipe-passthrough-*` as required structure cells, so a smex machine cannot be
+completed out of the iiex tier. This is the same defect the Lancashire boiler has against the rolled tier
 ([boiler-lancashire](boiler-lancashire.md), and [pipe network](../mechanics/pipe-network.md) § joints). A
 producer's layout must name a fitting family, not a domain, or it inherits the bug on day one.
 
@@ -232,9 +232,9 @@ scaled against, so a retune of the anchor moves the proposal with it.
 |---|---|---|---|
 | `ProducerGasPerSecond` | 24 L/s | `SmexConfig.cs:139` - `CowperIntakeVolume` = 24 L/s per intake; `BlockEntityFurnaceCore.cs:208` - `ExhaustVolumePerTick` = 24 | gas injected into the offtake run per second. One producer = one cowper intake = one furnace gas outlet. Deliberately the tier's unit rate |
 | `ProducerAirPerSecond` | 8 L/s | `SmexConfig.cs:148` - `BessemerBlastPerSecond` = 8.0 | the limited blast. It must sit far below the furnace's `TuyereDrawFor(mix)` demand - being air-starved is the process, not a fault |
-| `ProducerSteamPerSecond` | 8 L/s | `LpexConfig.cs:152` - `CornishBoilerSteamPerSecond` = 32; `:172` - `WattEngineSteamRate` = 30 | one quarter of a Cornish boiler's output, so a works can run a producer and an engine off one boiler |
+| `ProducerSteamPerSecond` | 8 L/s | `IiexConfig.cs:152` - `CornishBoilerSteamPerSecond` = 32; `:172` - `WattEngineSteamRate` = 30 | one quarter of a Cornish boiler's output, so a works can run a producer and an engine off one boiler |
 | `ProducerGasTempFactor` | 0.8 | `BlockEntityFurnaceCore.cs:211` - `ExhaustTempFactor` = 0.8 | offtake temperature = bed temperature × this. Producer gas is fed hot on purpose |
-| `ProducerMaxOutputPressure` | 1.0 atm | `ExlibConfig.cs:32` - `LitresPerPipe` = 30; `IwexConfig.cs:163` - plated burst 2.5 | a fuel main is not a blast main. Keeping the choke at 1 atm means the gas main never bursts and never needs the cast tier |
+| `ProducerMaxOutputPressure` | 1.0 atm | `ExlibConfig.cs:32` - `LitresPerPipe` = 30; `IiexConfig.cs:163` - plated burst 2.5 | a fuel main is not a blast main. Keeping the choke at 1 atm means the gas main never bursts and never needs the cast tier |
 
 ### The medium
 
@@ -351,4 +351,4 @@ medium-isolation test that a producer main joined to an air main is caught rathe
 | **6** | **Air source.** Does it share the blast main, take its own blower, or draw natural draught like the reverberatory furnaces (`RequiresBlast => false`, `BlockEntityHeatingFurnace.cs:47`)? | sharing the blast main is dangerous: one pool, and the producer's low draw would sit on the same run as the furnace's high-pressure demand |
 | **7** | **Ash / R2 recovery** | undeclared |
 | **8** | **Recipe, cost-catalogue row, handbook page, lang keys** | none exist |
-| **9** | **Which tier's fittings does the layout name?** | ⛔ This row used to read *"the layout must not name `lpex:` fittings, or a smex machine becomes unbuildable without lpex's cast tier"*. **Checked 2026-08-14 and withdrawn**: smex hard-depends on lpex (`modinfo.json`), so `BlockCowperStoveIntake.cs:53-54` resolves and nothing is unbuildable. Under M2 the loops are nested and a steel-loop layout naming an early-loop code is expected, so the codes simply relocate at the merge. What survives is the real question - a cowper asks for the **cast** passthrough, and asking for the plated one instead would make it cheaper. Answer that when the producer's layout is drawn |
+| **9** | **Which tier's fittings does the layout name?** | ⛔ This row used to read *"the layout must not name `iiex:` fittings, or a smex machine becomes unbuildable without iiex's cast tier"*. **Checked 2026-08-14 and withdrawn**: smex hard-depends on iiex (`modinfo.json`), so `BlockCowperStoveIntake.cs:53-54` resolves and nothing is unbuildable. Under M2 the loops are nested and a steel-loop layout naming an early-loop code is expected, so the codes simply relocate at the merge. What survives is the real question - a cowper asks for the **cast** passthrough, and asking for the plated one instead would make it cheaper. Answer that when the producer's layout is drawn |

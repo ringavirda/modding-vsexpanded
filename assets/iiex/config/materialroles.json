@@ -1,0 +1,13 @@
+{
+  "materials": [
+    { "role": "flux", "code": "game:lime" },
+    { "role": "fuel", "code": "game:coke", "value": 2 },
+    { "role": "fuel", "code": "game:charcoal", "value": 1 },
+    { "role": "scrap", "code": "game:metalbit-iron" },
+    { "role": "scrap", "code": "game:metalbit-steel" },
+    { "role": "scrap", "code": "iiex:pig" },
+    { "role": "scrap", "code": "iiex:pigchunk" },
+    { "role": "scrap", "code": "iiex:pigbit" },
+    { "role": "ironore", "pathPrefix": "crushed-iron" }
+  ]
+}

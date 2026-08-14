@@ -13,7 +13,7 @@ top-level keys are mod ids, each holding that mod's whole config object:
 ```json
 {
   "exlib": { "ConfigVersion": "0.7.2", "LitresPerPipe": 30.0 },
-  "lpex":  { "ConfigVersion": "0.6.9", "PumpWaterPerSecond": 16.67 },
+  "iiex":  { "ConfigVersion": "0.6.9", "PumpWaterPerSecond": 16.67 },
   "yourmod": { "ConfigVersion": "1.0.0", "YourValue": 5.0 }
 }
 ```
@@ -42,11 +42,11 @@ Write a POCO implementing `IExVersionedConfig` and tag it `[ExConfigRegister]`:
 ```csharp
 [ExConfigRegister(
     "ex_values.json",                   // the shared document under ModConfig/
-    "lpex",                             // owning mod id - and this config's section key
-    LegacyFileNames = new string[] { "lpex_values.json", "lpex.json" },
+    "iiex",                             // owning mod id - and this config's section key
+    LegacyFileNames = new string[] { "iwex_values.json", "lpex_values.json" },
     Manageable = true                   // expose to /exmod config
 )]
-public class LpexConfig : IExVersionedConfig
+public class IiexConfig : IExVersionedConfig
 {
     public string? ConfigVersion { get; set; }      // managed for you; stamps the writing mod version
 
@@ -74,17 +74,17 @@ public interface IExVersionedConfig
 
 ## Using the generated accessor
 
-The generator emits `LpexValues` (the name is the type name with a trailing `Config` replaced by
+The generator emits `IiexValues` (the name is the type name with a trailing `Config` replaced by
 `Values`; override with `AccessorName`). You get:
 
 ```csharp
-public static partial class LpexValues
+public static partial class IiexValues
 {
     public const string ConfigFileName = "ex_values.json";
 
     public static void Load(ICoreAPI api);            // load + migrate + sanitize (server also writes back)
     public static void Save();                        // persist live config
-    public static void Edit(Action<LpexConfig> mutate);   // mutate + save
+    public static void Edit(Action<IiexConfig> mutate);   // mutate + save
 
     public static float  BoilerWaterIntakeFillFraction { get; }   // one read-only getter per config property
     public static float  PumpWaterPerSecond { get; }
@@ -94,13 +94,13 @@ public static partial class LpexValues
 ```
 
 ```csharp
-public override void Start(ICoreAPI api) => LpexValues.Load(api);   // call once at startup
+public override void Start(ICoreAPI api) => IiexValues.Load(api);   // call once at startup
 
 // Read anywhere:
-float fraction = LpexValues.BoilerWaterIntakeFillFraction;
+float fraction = IiexValues.BoilerWaterIntakeFillFraction;
 
 // Change + persist (typically server-side admin):
-LpexValues.Edit(c => c.RecipeLevel = "cheap");
+IiexValues.Edit(c => c.RecipeLevel = "cheap");
 ```
 
 `Load` runs on both sides and each reads its own copy: it folds any legacy file in, applies
@@ -155,7 +155,7 @@ public sealed class ExConfigMigration
 ```csharp
 public static readonly ExConfigMigration[] Migrations =
 [
-    new() { ToVersion = "0.6.0", ResetFields = [nameof(LpexConfig.PumpWaterPerSecond)] },
+    new() { ToVersion = "0.6.0", ResetFields = [nameof(IiexConfig.PumpWaterPerSecond)] },
 ];
 ```
 
@@ -170,7 +170,7 @@ still exists under `ModConfig`, that file's contents become the section and the 
 to `<name>.migrated` rather than deleted, so the carry-over stays reversible. First existing name
 wins, and the fold never re-runs once the section exists.
 
-That is how the shipped mods moved: `lpex.json` became `lpex_values.json` became the `lpex` section
+That is how the shipped mods moved: `ppex.json` became `lpex_values.json` became the `iiex` section
 of `ex_values.json`, and a player upgrading across either step keeps their settings.
 
 ## Live editing: `Manageable`
@@ -180,9 +180,9 @@ exposing it to the generic command:
 
 ```
 /exmod config                       # list manageable mods
-/exmod config lpex                  # list lpex's editable values
-/exmod config lpex PumpWaterPerSecond    # show current value
-/exmod config lpex PumpWaterPerSecond 20 # set it (immediate, no reload), validated + persisted
+/exmod config iiex                  # list iiex's editable values
+/exmod config iiex PumpWaterPerSecond    # show current value
+/exmod config iiex PumpWaterPerSecond 20 # set it (immediate, no reload), validated + persisted
 ```
 
 Behind the command is a non-generic view over the store:

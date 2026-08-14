@@ -15,7 +15,7 @@ Ironworking Expanded, Low Pressure Expanded, High Pressure Expanded and Steelmak
   sub-command names like `network hi`. **Do not translate command names** - they are typed by the
   player exactly as written.
 
-## Measurements / handbook (lpex & smex)
+## Measurements / handbook (iiex & smex)
 
 ExpandedLib itself has no units or handbook articles. The companion mods **Low Pressure Expanded**
 and **Steelmaking Expanded** do, and they convert measurements and rewrite handbook text at runtime.

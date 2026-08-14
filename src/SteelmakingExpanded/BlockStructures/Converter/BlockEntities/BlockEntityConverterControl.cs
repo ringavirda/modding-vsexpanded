@@ -8,8 +8,8 @@ using ExpandedLib.Materials;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using ExpandedLib.Renderers;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -70,7 +70,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
   // Molten-system cooldown speed scaled by the configured coefficient (0.5 cools twice as slowly),
   // so the insulated vessel holds a finished heat long enough to pour it.
   private static float ContentCooldownSpeed =>
-    IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
+    IiexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
 
   // Below this fraction of capacity a hardened residue can be chiselled out instead of breaking the
   // whole converter to salvage it.
@@ -79,7 +79,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
 
   // Molten item codes for the converter's metals, resolved through the shared registry so another mod
   // can redirect a token: molten pig in, Bessemer steel at the target, soft ingot iron on over-blow,
-  // and the same iwex:slag the furnaces make.
+  // and the same iiex:slag the furnaces make.
   private static string PigCode =>
     MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string SteelCode =>
@@ -112,7 +112,7 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
   // T_loss until it melts into the steel at the carbon target; there is no fixed scrap ceiling.
   private int _scrapUnits;
 
-  // The floating slag pool in units, the same iwex:slag the furnaces make. Accumulates during the
+  // The floating slag pool in units, the same iiex:slag the furnaces make. Accumulates during the
   // blow as impurities oxidise; a shallow tilt spills it off the top before the steel beneath.
   private float _moltenSlag;
 

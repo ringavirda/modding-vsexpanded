@@ -7,7 +7,7 @@ namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
 /// Grid recipe for smex's engine sub-machine, the air blower. It crafts from either vanilla rusty gears
-/// or lpex craftable gears, so the recipe is authored once and emitted once per gear code.
+/// or iiex craftable gears, so the recipe is authored once and emitted once per gear code.
 /// </summary>
 public class EngineRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
@@ -15,7 +15,7 @@ public class EngineRecipeDefinitions : IExRecipeDefProvider {
       ExRecipeDef
         .Create(domain, "grid", "airblower")
         .Grid(AirBlower("game:gear-rusty"))
-        .Grid(AirBlower("lpex:gear-*")),
+        .Grid(AirBlower("iiex:gear-*")),
     ];
 
   private static Action<GridRecipeBuilder> AirBlower(string gear) =>

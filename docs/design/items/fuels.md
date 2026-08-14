@@ -4,14 +4,14 @@
 charges, burns and tells apart, at a 2:1 carbon ratio; the firebox furnaces burn from their own fuel beds
 and read fuel identity by a substring list; the boilers read nothing; bulk coking and producer gas are
 designed only
-**Mod** the role data is iwex (`assets/iwex/config/materialroles.json`); the registry that serves it is
+**Mod** the role data is iiex (`assets/iiex/config/materialroles.json`); the registry that serves it is
 exlib; the cowper and the boilers burn vanilla coal piles
 
 **Owns** - the facts this page is canonical for:
 
 * the suite's fuel taxonomy: that "fuel" means the `fuel` material role, which two codes hold it, what the
   per-item value means, and that coal holds no role at all;
-* `assets/iwex/config/materialroles.json` as a file - every role it grants, and the fact that it is the
+* `assets/iiex/config/materialroles.json` as a file - every role it grants, and the fact that it is the
   only `materialroles.json` in the repo;
 * that granting `Roles.Fuel` grants a shaft-charge permit, and the taxonomy rule that follows from it -
   bituminous and anthracite must never receive the role;
@@ -106,7 +106,7 @@ computed from the charge, not from the item.
 
 ### The whole role file
 
-`assets/iwex/config/materialroles.json` is nine grants, and it is the only file of its kind in the repo (a
+`assets/iiex/config/materialroles.json` is nine grants, and it is the only file of its kind in the repo (a
 repo-wide `find` for `materialroles.json` under `assets/` returns exactly one path). exlib ships none - it
 is framework, and with no file and no contributor the registry is empty (`MaterialRoleLoader.cs:11-14`).
 
@@ -116,14 +116,14 @@ is framework, and with no file and no contributor the registry is empty (`Materi
 | `:4` | `fuel` | `game:coke` | 2 | `IsFuelCode` / `CarbonPerUnit` |
 | `:5` | `fuel` | `game:charcoal` | 1 | as coke |
 | `:6-7` | `scrap` | `game:metalbit-iron` · `game:metalbit-steel` | — | [cupola](../machines/cupola.md) remelt charge; Bessemer scrap charge |
-| `:8-10` | `scrap` | `iwex:pig` · `iwex:pigchunk` · `iwex:pigbit` | — | cupola remelt charge |
+| `:8-10` | `scrap` | `iiex:pig` · `iiex:pigchunk` · `iiex:pigbit` | — | cupola remelt charge |
 | `:11` | `ironore` | prefix `crushed-iron` | — | burdenmaker (`IronOreCompat.cs:28-29`) |
 
 There is no `charge` row. Prepared burden is recognised by its own item identity (`Burden.Is`), never by a
-role - the `charge` role is a taxonomy entry exlib defines (`MaterialRoleDef.cs:64`), iwex grants to
+role - the `charge` role is a taxonomy entry exlib defines (`MaterialRoleDef.cs:64`), iiex grants to
 nothing, and no code consults.
 
-Caution: `MaterialRoleSeeds` (`test/IronworkingExpanded.Tests/Fixtures/MaterialRoleSeeds.cs`) is a second,
+Caution: `MaterialRoleSeeds` (`test/IronIndustryExpanded.Tests/Fixtures/MaterialRoleSeeds.cs`) is a second,
 hand-written copy of this table for headless runs, and it has drifted before (`game:metalbit-steel` was
 scrap in the game and not in the tests).
 `FuelRoleGrantTests.Seed_matches_the_shipped_materialroles_json` compares the two as sets, in both
@@ -146,11 +146,11 @@ The value is coke-equivalent carbon per item, not a heat figure and not a burn t
 by a reference fuel:
 
 ```
-CarbonPerUnit(material) = ValueOf(Roles.Fuel, material) / IwexValues.BfFuelCarbonReference
+CarbonPerUnit(material) = ValueOf(Roles.Fuel, material) / IiexValues.BfFuelCarbonReference
                           coke 2/2 = 1.0    charcoal 1/2 = 0.5    non-fuel = 0
 ```
 
-`BfFuelCarbonReference` (= 2, coke's own value) says which fuel every coke figure in `IwexConfig` is
+`BfFuelCarbonReference` (= 2, coke's own value) says which fuel every coke figure in `IiexConfig` is
 written in. Move it and every one of them changes meaning; the ratio itself lives in the JSON and only the
 calibration point lives in config.
 
@@ -178,9 +178,9 @@ Three substrates, by machine family.
 
 ### Shaft furnaces — the charge column
 
-Fuel in a shaft stands in `iwex:furnace-chargepile` blocks the furnace owns and places, as its own bands in
+Fuel in a shaft stands in `iiex:furnace-chargepile` blocks the furnace owns and places, as its own bands in
 the charge column ([layered charge](../layered-charge.md)). The layout legend is
-`*:@(air|coalpile|furnace-chargepile)` (`IwexCodes.ChargeShaft`, `IwexCodes.cs:50`):
+`*:@(air|coalpile|furnace-chargepile)` (`IiexCodes.ChargeShaft`, `IiexCodes.cs:50`):
 
 | Machine | Legend site |
 |---|---|
@@ -193,7 +193,7 @@ The tall hopper drips into charge columns directly; it neither scans for nor see
 
 ### Firebox furnaces — the fuel bed
 
-The puddling and reheat furnaces hold fuel in a required `iwex:furnace-firebox` block per fuel cell
+The puddling and reheat furnaces hold fuel in a required `iiex:furnace-firebox` block per fuel cell
 (`BlockPuddlingFurnaceCore.cs:104`, `BlockHeatingFurnaceCore.cs:72`; the block and its layer arithmetic are
 [firebox](../machines/firebox.md)'s). The bed is `BEBehaviorFirebox` - one fuel per bed, 6 layers × 2 units
 per cell by default, refill and dig-out through the bed itself. A legend that admitted air here would let
@@ -213,7 +213,7 @@ Two machine families still burn a free-placed vanilla `game:coalpile` in an `@(a
 | Machine | Legend site | How it reads the pile |
 |---|---|---|
 | cowper stove (smex) | `BlockCowperStoveIntake.cs:59` | prefix test on the block below, then a substring branch on the pile's contents (`BlockEntityCowperStove.cs:98-99`, `:127-149`) |
-| Cornish boiler (lpex) | `BlockBoilerCornish.cs:87` | `GetBlockEntity(FuelWorldPos) as BlockEntityCoalPile`, then `IsBurning` + non-empty (`BlockEntityBoiler.cs:298-301`) |
+| Cornish boiler (iiex) | `BlockBoilerCornish.cs:87` | `GetBlockEntity(FuelWorldPos) as BlockEntityCoalPile`, then `IsBurning` + non-empty (`BlockEntityBoiler.cs:298-301`) |
 | Lancashire boiler (hpex) | `BlockBoilerLancashire.cs:96` | same shared `BlockEntityBoiler` read |
 
 The pile is vanilla, unmodified. `.game/1.20/assets/survival/blocktypes/coalpile.json` declares one block
@@ -248,7 +248,7 @@ It does not use the role registry, and the branch has sharp edges:
 
 Proposed: a `fuel` value the stove reads, or a second role (`hotfuel`?) - either way one JSON entry plus
 one line. The firebox's substring list (`BEBehaviorFirebox.Fuels`) is a second copy of the same idea in
-iwex, so the eventual `hotfuel` role has two customers waiting.
+iiex, so the eventual `hotfuel` role has two customers waiting.
 
 ---
 
@@ -258,11 +258,11 @@ None. The fuel line adds no shape, no texture, no animation and no lang key of i
 
 | Asset | Path | State |
 |---|---|---|
-| role catalogue | `assets/iwex/config/materialroles.json` | present, nine grants; the only one in the repo |
+| role catalogue | `assets/iiex/config/materialroles.json` | present, nine grants; the only one in the repo |
 | coke / charcoal / coal items | vanilla | untouched - no patch, no override, no recipe in any `Recipes/` provider references either code |
 | coal pile block | vanilla `game:coalpile` | untouched |
 | burden's coal-black look | `game:block/coal/orecoalmix` | borrowed by [burden](burden.md), not by a fuel |
-| charcoal in art | `assets/iwex/shapes/crafting/designtable.json:13` binds `game:block/coal/charcoal` for the sticks on the desk | decorative only |
+| charcoal in art | `assets/iiex/shapes/crafting/designtable.json:13` binds `game:block/coal/charcoal` for the sticks on the desk | decorative only |
 
 No recipe in the suite consumes coke or charcoal. A grep for `coke`/`charcoal` across every shipped recipe
 golden (`test/*/goldens/*/recipes/`) and every `Recipes/` provider returns nothing. Fuel enters the economy
@@ -280,7 +280,7 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 | `MaterialRoleCatalogue` | `…/MaterialRoleDef.cs:38` | the file shape: one `materials` array |
 | `MaterialRoleRegistry` | `…/MaterialRoleRegistry.cs:23` | `Register` `:37`, `Clear` `:52`, `RegisterContributor` `:57`, `IsRole` `:77`/`:89`, `ValueOf` `:94`/`:107`, `OfRole` `:113`, `Matches` `:121` |
 | `MaterialRoleLoader` | `…/MaterialRoleLoader.cs:16` | `Load` `:20` (clear → overlay → contributors), `Overlay` `:39` (pure, unit-testable) |
-| `IronOreCompat` | `src/IronworkingExpanded/Compat/IronOreCompat.cs:16` | the one live contributor: IndustrialStory and Expanded Matter ore codes, gated on `IsModEnabled` (`:34-51`) |
+| `IronOreCompat` | `src/IronIndustryExpanded/Compat/IronOreCompat.cs:16` | the one live contributor: IndustrialStory and Expanded Matter ore codes, gated on `IsModEnabled` (`:34-51`) |
 | `BlockEntityFurnaceCore.IsFuelCode` / `IsFuelStack` / `CarbonPerUnit` | `…/Furnaces/BlockEntityFurnaceCore.cs:1313`, `:1328`, `:1356` | the shaft-side fuel seams |
 | `BEBehaviorFirebox.IsFuel` | `…/Furnaces/BEBehaviorFirebox.cs:73-82` | the firebox-side fuel test - substring list, lignite excluded |
 

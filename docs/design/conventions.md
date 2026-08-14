@@ -13,7 +13,7 @@ owner page under [mechanics/](mechanics/).
 | Metal mass | **units (u)** | 100 u = 1 vanilla ingot |
 | Fluid/gas volume | **litres (L)** *(live)* | A pipe segment holds 30 L *(live)*; a run's capacity = node count × 30 L. Litres everywhere, never m³ |
 | Water → steam | **1 : 16** *(live)* | 1 L water boils to 16 L steam (`SteamExpansionFactor`) |
-| Mechanical power | **MP** *(live)* | Vanilla MP network; constant-power generator model (see lpex) |
+| Mechanical power | **MP** *(live)* | Vanilla MP network; constant-power generator model (see iiex) |
 | Steam/water flow | **L/s** | Per-tick flow, EMA-smoothed for the throughput readout *(live)* |
 | Temperature | **°C** | One network-wide pipe temperature *(live)*; molten canals are per-cell |
 | Pressure | **atm** | 1 atm = ambient. LP steam ≤ ~4–5 atm; HP ~8–12 atm (tunable) |
@@ -40,8 +40,8 @@ Referenced by name from the mod docs.
   rule downstream of it is currently unreachable. See [ladle](machines/ladle.md), which also records that a
   ladle must pull by code rather than join the graph, and therefore needs no exlib change.
 - **R4 - Powered forming only.** Billets and profiled stock cannot be worked on a vanilla anvil - only on
-  the [rolling mill](machines/rolling-mill.md) (iwex, MP) or the [steam hammer](machines/steam-hammer.md)
-  (lpex, LP steam).
+  the [rolling mill](machines/rolling-mill.md) (iiex, MP) or the [steam hammer](machines/steam-hammer.md)
+  (iiex, LP steam).
 - **R5 - Gate efficiency, not possibility.** The heat-balance and distillation models gate speed and
   efficiency, never hard-block a process: there is always one guaranteed path (high-coke + cold blast
   melts at the iron tier). Every threshold is config-tunable.
@@ -73,7 +73,7 @@ Referenced by name from the mod docs.
   decides it. Plus one rule with teeth: a path segment may only become a folder if it is not itself a
   block - `ExRecipeCosts` applies every catalogue entry in sequence, so a parent's wildcard silently
   swallows its children's costs. Owned by [naming](mechanics/naming.md), which carries the verified
-  inventory of what still breaks each rule. iwex is fully converted; what remains is the lpex/hpex/smex
+  inventory of what still breaks each rule. iiex is fully converted; what remains is the iiex/hpex/smex
   machine folders.
 
 ---
@@ -101,16 +101,16 @@ are not exlib networks - vanilla MP is the engine's own, and elex's grid is defe
 
 - **Mechanical energy (`mpenergy`)** *(live)* - the flywheel-buffered energy reservoir the heavy machines draw
   from: joules, not torque-at-a-speed. A vanilla waterwheel or windmill is bridged in at the flywheel's hub
-  face, and in lpex the player swaps that producer for a steam engine while the network stays identical.
-  Governed by R8. Owned by [mp-energy](mechanics/mp-energy.md); blocks ship in iwex under
+  face, and in iiex the player swaps that producer for a steam engine while the network stays identical.
+  Governed by R8. Owned by [mp-energy](mechanics/mp-energy.md); blocks ship in iiex under
   `BlockNetworkEnergy/`.
 - **Molten-canal** *(live)* - per-cell metal, flows cell→cell, end caps recomputed on tesselation. The
   ladle is the only merge/mix point (R3). Owned by [molten-network](mechanics/molten-network.md).
 - **Pipe (gas or water)** *(live)* - single medium per network (R1). Used for water, steam, compressed
   air, exhaust, coal gas and the chemistry fractions. Three material tiers of pipe block, ascending
-  burst pressure: plated (iwex - hammered from iron plates, 2.5 atm), cast (lpex - from cast
+  burst pressure: plated (iiex - hammered from iron plates, 2.5 atm), cast (iiex - from cast
   pipe-parts finished on the [boring machine](machines/boring-machine.md), 5 atm), and rolled
-  ([hpex](machines/rolled-pipe.md) - 12 atm, curled from skelp on lpex's
+  ([hpex](machines/rolled-pipe.md) - 12 atm, curled from skelp on iiex's
   [bending roller](machines/bending-roller.md)). Each tier ships its own model at
   `{domain}:pipes/*`.
   Connectors read the adjacent cell; valves sever/flow; pressure valves overflow.
@@ -129,8 +129,8 @@ are not exlib networks - vanilla MP is the engine's own, and elex's grid is defe
   - Every fitting (valve, outlet, passthrough) is a `BlockPipe` subclass, so the rule blocks a rolled
     run from the cast tier's fittings too. The HP tier needs its own fittings, and until it has them a
     rolled run is segments and machine ports only. Machine ports are not pipes and are unaffected.
-- **Mechanical power (MP)** *(live)* - vanilla MP network; drives the mechanical blower (iwex) and
-  mechanical pump (lpex) as well as engine sub-machines.
+- **Mechanical power (MP)** *(live)* - vanilla MP network; drives the mechanical blower (iiex) and
+  mechanical pump (iiex) as well as engine sub-machines.
 - **Electrical (AC + DC)** - the elex tier (planned).
 
 ### The per-mod project skeleton
@@ -151,7 +151,7 @@ mod has no such content", never "this mod files it somewhere else".
 | `Recipes/<Type>/` | code-first recipe providers (see below) |
 
 **Content-gated folders - present only when the tier has that content:** `BlockNetwork<Kind>/` (only
-for a network-owning mod - iwex owns `BlockNetworkPipe` and `BlockNetworkMolten`; lpex ships pipe
+for a network-owning mod - iiex owns `BlockNetworkPipe` and `BlockNetworkMolten`; iiex ships pipe
 fittings under its own `BlockNetworkPipe/` but does not own the graph), `Items/`, `Molds/`,
 `Commands/` and `Preferences/` (only with a client sub-feature), `Compat/` and `Helpers/` as needed.
 
@@ -319,7 +319,7 @@ into a mould by hand ([crucible-furnace](machines/crucible-furnace.md)), so the 
 the block entity: no pool, no taps, no `DrainProducts`. Every firebox machine that exists or is near-term
 (puddling, reheat, crucible) is non-pouring.
 
-Cost, as built: nothing in `src/` casts to `BlockEntityBlastFurnace` - not iwex, smex, lpex, hpex or
+Cost, as built: nothing in `src/` casts to `BlockEntityBlastFurnace` - not iiex, smex, iiex, hpex or
 exlib; every component talks to `BlockEntityFurnaceCore`. No golden moved: goldens record only the concrete
 leaf's `entityClass`, which did not change. `BlockEntityBlastFurnace.cs` became `BlockEntityShaftFurnace.cs`;
 puddling dropped its always-zero molten pool, so its save tree is now byte-identical to the reheat furnace's
@@ -329,7 +329,7 @@ The invariants are enforced. All four charge-store answers are declared on a bra
 there - `ShaftHoldsLayeredCharge`, `AcceptedFamilies` and `MinChargeToIgnite` on both branches,
 `ReadChargeMix` per branch. A leaf restating any of them is a compile error in every mod, not a test
 failure in one assembly. Two reflection guards back that up across the whole loaded assembly closure
-(`test/IronworkingExpanded.Tests/Invariants/FurnaceBranchGuards.cs`, invoked from the iwex and smex
+(`test/IronIndustryExpanded.Tests/Invariants/FurnaceBranchGuards.cs`, invoked from the iiex and smex
 suites): the branch owns the flag, and no firebox may ask for more fuel than `cells × MaxStackSize`.
 
 Caution: some design files still cite `BlockEntityBlastFurnace.cs:NNN` - a filename that no longer
@@ -373,7 +373,7 @@ authenticity, not a mechanic.
 
 Fire clay is not an option anywhere metal is held above 1200 °C, a trap two vessels have fallen into.
 Fired clay's ceiling is vanilla's own `maxHeatableTemp: 1200` plus this mod's at
-`IwexConfig.cs:65`; pig iron is 1482 °C and steel is higher. It is why the crucible pot had to become a new
+`IiexConfig.cs:65`; pig iron is 1482 °C and steel is higher. It is why the crucible pot had to become a new
 refractory item, and why the ladle's original `+ fire clay (the refractory lining)` costing was a lining
 that melts. What a vessel is lined with is decided by heat first, chemistry second, and cost last.
 
@@ -480,7 +480,7 @@ would gate iron behind cast iron (which the heating furnace needs), a deadlock.
 The blast furnace has a mass balance. Yield is priced per unit of ore content (`BfIronPerOreUnit`),
 charge mass is tracked through the melt, and product mass comes out the taps, which is the accounting
 recovery fractions require and what makes "slag comes out of the charge" possible. The guard-rail
-invariant is enforced: the iwex chain must never yield less iron per ore than a vanilla bloomery
+invariant is enforced: the iiex chain must never yield less iron per ore than a vanilla bloomery
 (`OreRecoveryGuardRailTests`).
 
 > **All figures above are placeholders.** Throughput and recovery get balanced once the furnaces are

@@ -352,12 +352,11 @@ function Invoke-Test([string[]]$Argv) {
   $coverage = Get-Flag $Argv '-Coverage'
 
   $tfms = [ordered]@{ '1.22' = 'net10.0'; '1.21' = 'net8.0'; '1.20' = 'net7.0' }
-  # Dependency order: exlib -> iwex -> lpex -> hpex/smex. One suite per mod; a test lives with the top
-  # mod it touches, so there is no shared cross-mod project.
+  # Dependency order: exlib -> iiex -> hpex/smex. One suite per mod; a test lives with the top mod it
+  # touches, so there is no shared cross-mod project.
   $projects = @(
     'ExpandedLib.Tests',
-    'IronworkingExpanded.Tests',
-    'LowPressureExpanded.Tests',
+    'IronIndustryExpanded.Tests',
     'HighPressureExpanded.Tests',
     'SteelmakingExpanded.Tests'
   )

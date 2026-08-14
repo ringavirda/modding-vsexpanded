@@ -1,0 +1,29 @@
+{
+  "code": "pig",
+  "class": "iiex.ItemPig",
+  "shape": {
+    "base": "iiex:pig"
+  },
+  "textures": {
+    "iron": {
+      "base": "game:block/metal/tarnished/iron"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7200,
+  "combustibleProps": {
+    "meltingPoint": 1150
+  },
+  "attributes": {
+    "materialUnits": 375,
+    "workableTemperature": 0
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

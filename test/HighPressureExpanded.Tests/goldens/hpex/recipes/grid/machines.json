@@ -58,7 +58,7 @@
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-plated-straight-*",
+        "code": "iiex:pipe-plated-straight-*",
         "quantity": 2
       },
       "H": {
@@ -95,12 +95,12 @@
       },
       "G": {
         "type": "item",
-        "code": "lpex:gear-*",
+        "code": "iiex:gear-*",
         "quantity": 4
       },
       "I": {
         "type": "block",
-        "code": "iwex:pipe-plated-straight-*",
+        "code": "iiex:pipe-plated-straight-*",
         "quantity": 2
       },
       "H": {

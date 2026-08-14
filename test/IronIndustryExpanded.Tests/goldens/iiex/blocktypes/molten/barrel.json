@@ -1,0 +1,80 @@
+{
+  "code": "molten-barrel",
+  "class": "iiex.BlockMoltenBarrel",
+  "entityClass": "iiex.BlockEntityMoltenBarrel",
+  "variantgroups": [
+    {
+      "code": "construction",
+      "states": [
+        "plated",
+        "cast"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "storageFlags": 2,
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "attributes": {
+    "maxUnits": 800,
+    "fillHeight": 8,
+    "fillStart": 2,
+    "fillQuadsByLevel": [
+      {
+        "x1": 4,
+        "z1": 4,
+        "x2": 12,
+        "z2": 12
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    },
+    {
+      "name": "UnstableFalling"
+    }
+  ],
+  "shapebytype": {
+    "*-plated": {
+      "base": "iiex:molten/barrel-plated"
+    },
+    "*-cast": {
+      "base": "iiex:molten/barrel-cast"
+    }
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -0.8,
+      "y": -1.0,
+      "z": -0.55
+    },
+    "rotation": {
+      "x": 20.0,
+      "y": 14.0,
+      "z": -90.0
+    },
+    "scale": 0.75
+  }
+}

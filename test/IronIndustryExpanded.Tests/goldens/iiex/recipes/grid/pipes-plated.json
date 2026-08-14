@@ -1,0 +1,151 @@
+[
+  {
+    "name": "Piping (Straight)",
+    "ingredientPattern": "HPN",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "block",
+      "code": "iiex:pipe-plated-straight-ns",
+      "quantity": 2
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (Bend)",
+    "ingredientPattern": "_H,NP,_N",
+    "width": 2,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:pipe-plated-bend-nw"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (TJunction)",
+    "ingredientPattern": "_H_,NPN,_N_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:pipe-plated-tjunction-uns"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Piping (XJunction)",
+    "ingredientPattern": "HN_,NPN,_N_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:pipe-plated-xjunction-nswe"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

@@ -1,8 +1,8 @@
 using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockNetworkMolten;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Common;
@@ -35,7 +35,7 @@ public class ConverterChiselTests {
     world.RegisterItem(Iron, IronMelt);
     world.RegisterItem(Steel, IronMelt);
     world.RegisterItem("game:ingot-pigiron", 1150f);
-    world.RegisterItem("iwex:ingot-pigiron", 1150f);
+    world.RegisterItem("iiex:ingot-pigiron", 1150f);
     world.RegisterItem("game:ingot-bessemersteel", IronMelt);
     world.RegisterItem("smex:ingot-bessemersteel", IronMelt);
     world.RegisterItem("game:metalbit-iron");
@@ -90,7 +90,7 @@ public class ConverterChiselTests {
     Charge(be)?.Units ?? 0;
 
   private static float ExpectedSlowedCooldown =>
-    IwexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
+    IiexValues.MoltenCooldownSpeed * SmexValues.BessemerCooldownCoefficient;
 
   #region Cooldown coefficient
 
@@ -131,7 +131,7 @@ public class ConverterChiselTests {
     // Default is 0.5 x the molten-system rate: the charge cools twice as slowly inside the vessel.
     Assert.Equal(0.5f, SmexValues.BessemerCooldownCoefficient, 3);
     Assert.Equal(
-      IwexValues.MoltenCooldownSpeed * 0.5f,
+      IiexValues.MoltenCooldownSpeed * 0.5f,
       ExpectedSlowedCooldown,
       3
     );
@@ -153,7 +153,7 @@ public class ConverterChiselTests {
       ReflectionHelpers.Invoke(be, "SyncContentCooldown");
 
       Assert.Equal(
-        IwexValues.MoltenCooldownSpeed * 10f,
+        IiexValues.MoltenCooldownSpeed * 10f,
         CooldownSpeedOf(content),
         3
       );

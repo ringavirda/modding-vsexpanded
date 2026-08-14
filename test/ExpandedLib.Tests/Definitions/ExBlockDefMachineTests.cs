@@ -19,13 +19,13 @@ public class ExBlockDefMachineTests {
     JObject shape = (JObject)
       ExBlockDef
         .Create("d", "c")
-        .Shape("iwex:ore/bunker")
+        .Shape("iiex:ore/bunker")
         .ShapeRotateYByType("*-n", 180)
         .ShapeRotateYByType("*-e", 90)
         .ShapeSelectiveElements("Root/InputBase/*")
         .ToJson()["shape"]!;
 
-    Assert.Equal("iwex:ore/bunker", (string?)shape["base"]);
+    Assert.Equal("iiex:ore/bunker", (string?)shape["base"]);
     Assert.Equal(180, (int)shape["rotateYByType"]!["*-n"]!);
     Assert.Equal(90, (int)shape["rotateYByType"]!["*-e"]!);
     Assert.Equal(
@@ -40,9 +40,9 @@ public class ExBlockDefMachineTests {
       ExBlockDef
         .Create("d", "c")
         .ShapeRotateYByType("*-s", 0)
-        .Shape("iwex:ore/bunker")
+        .Shape("iiex:ore/bunker")
         .ToJson()["shape"]!;
-    Assert.Equal("iwex:ore/bunker", (string?)shape["base"]);
+    Assert.Equal("iiex:ore/bunker", (string?)shape["base"]);
     Assert.Equal(0, (int)shape["rotateYByType"]!["*-s"]!);
   }
 
@@ -122,7 +122,7 @@ public class ExBlockDefMachineTests {
   public void Construction_emits_the_exact_staged_material_table() {
     JArray behaviors = (JArray)
       ExBlockDef
-        .Create("iwex", "bunker")
+        .Create("iiex", "bunker")
         .EntityBehavior("Animatable")
         .Construction(c =>
           c.Stage(s => s.AddElements("Root/InputBase"))
@@ -130,7 +130,7 @@ public class ExBlockDefMachineTests {
               s.Require(
                   "game:burnedbrick-{brick}",
                   8,
-                  "iwex:rcc-ingredient-brick"
+                  "iiex:rcc-ingredient-brick"
                 )
                 .AddElements("Root/Base")
             )
@@ -145,7 +145,7 @@ public class ExBlockDefMachineTests {
           { "name": "Animatable" },
           { "name": "ExRightClickConstructable", "properties": { "stages": [
             { "addElements": ["Root/InputBase"] },
-            { "requireStacks": [{ "type": "item", "code": "game:burnedbrick-{brick}", "name": "iwex:rcc-ingredient-brick", "quantity": 8 }], "addElements": ["Root/Base"] }
+            { "requireStacks": [{ "type": "item", "code": "game:burnedbrick-{brick}", "name": "iiex:rcc-ingredient-brick", "quantity": 8 }], "addElements": ["Root/Base"] }
           ]}}
         ]
       }
@@ -218,7 +218,7 @@ public class ExBlockDefMachineTests {
   public void FillerOffsets_from_a_computed_footprint_matches_the_bunker_count() {
     JArray offsets = (JArray)
       ExBlockDef
-        .Create("iwex", "bunker")
+        .Create("iiex", "bunker")
         .FillerOffsets(StructureFootprint.Rectangle(halfWidth: 1, depth: 6))
         .ToJson()["attributes"]!["fillerOffsets"]!;
     Assert.Equal(17, offsets.Count);

@@ -2,7 +2,7 @@
 
 **Status** settled 2026-08-12; the sequence half is **built** — `StageLadder`, `StageLadderRegistry`,
 `StageLadderLoader`, `SpecSchema`, `ProcessItemEmitter` and `ProcessItemRenames` in exlib, `MillSchedule`
-and the shipped shingledbar/shingledslab catalogues in iwex. The rule and the two registry shapes are fixed; the schemas
+and the shipped shingledbar/shingledslab catalogues in iiex. The rule and the two registry shapes are fixed; the schemas
 below are the contract a third-party mod writes against.
 **Mod** exlib (the contract and the emitter) · every mod (every registry)
 **Owns** the rule that a machine names no product, the two shapes a process registry takes, how a
@@ -61,9 +61,9 @@ exactly as a ladder is — a second job on one input is reported and the first s
   "schema": 1,
   "machine": "shear",
   "jobs": [
-    { "input": "iwex:stock-shingledbar", "stage": 2.0, "family": "grooved",
+    { "input": "iiex:stock-shingledbar", "stage": 2.0, "family": "grooved",
       "output": "game:rod-iron", "count": 4, "minTorque": 0.3 },
-    { "input": "iwex:nailplate", "output": "game:metalnailsandstrips", "count": 4 }
+    { "input": "iiex:nailplate", "output": "game:metalnailsandstrips", "count": 4 }
   ]
 }
 ```
@@ -165,7 +165,7 @@ may both contribute to one family.
 {
   "schema": 1,
   "family": "shingledbar",
-  "shape": "iwex:item/smithed/shingled-bar",
+  "shape": "iiex:item/smithed/shingled-bar",
   "stages": [
     { "thickness": 2.50, "element": "Grooved250",   "acceptedBy": ["grooved"] },
     { "thickness": 2.00, "element": "Grooved200",   "acceptedBy": ["grooved"], "code": "rolledrod" }

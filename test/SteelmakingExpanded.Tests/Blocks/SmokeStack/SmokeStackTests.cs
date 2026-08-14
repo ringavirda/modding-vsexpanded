@@ -1,6 +1,6 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using LowPressureExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockNetworkPipe;
 using SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -12,7 +12,7 @@ namespace SteelmakingExpanded.Tests;
 /// <summary>
 /// The smoke-stack multiblock is a gas-network sink: each production tick it draws
 /// <see cref="SmexValues.SmokestackGasIntakeVolume"/> litres of exhaust off the connected pipe network
-/// and vents it, keeping the run from choking the furnace. Spanning smex (the sink BE) and lpex (the
+/// and vents it, keeping the run from choking the furnace. Spanning smex (the sink BE) and iiex (the
 /// <see cref="PipeNetwork"/>), it lives in the smex suite as the top mod. Covers the IPipeNode reads on
 /// an unbuilt node, the structure-gated draw on a built <see cref="SmokeStackRig"/>, and the
 /// serialization round trip.

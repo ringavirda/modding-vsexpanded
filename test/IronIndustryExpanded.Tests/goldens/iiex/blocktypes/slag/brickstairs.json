@@ -1,0 +1,201 @@
+{
+  "code": "slag-brickstairs",
+  "blockmaterial": "Stone",
+  "attributes": {
+    "canChisel": true,
+    "noDownVariant": true,
+    "mapColorCode": "settlement",
+    "chiselShapeFromCollisionBox": true,
+    "partialAttachable": true,
+    "liquidBarrierOnSidesByType": {
+      "*-up-north-*": [
+        1.0,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "*-up-south-*": [
+        0.5,
+        0.5,
+        1.0,
+        0.5
+      ],
+      "*-up-west-*": [
+        0.5,
+        0.5,
+        0.5,
+        1.0
+      ],
+      "*-up-east-*": [
+        0.5,
+        1.0,
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "resistance": 4.0,
+  "mineTool": "pickaxe",
+  "sounds": {
+    "place": "game:block/stone",
+    "walk": "game:walk/stone",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "class": "BlockStairs",
+  "behaviors": [
+    {
+      "name": "WrenchOrientable",
+      "properties": {
+        "baseCode": "slag-brickstairs-up-*-{cover}"
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "updown",
+      "states": [
+        "up"
+      ]
+    },
+    {
+      "loadFromProperties": "game:abstract/horizontalorientation"
+    },
+    {
+      "code": "cover",
+      "states": [
+        "free",
+        "snow"
+      ]
+    }
+  ],
+  "replaceable": 160,
+  "shapebytype": {
+    "*-up-north-free": {
+      "base": "game:block/basic/stairs/normal",
+      "rotateY": 0
+    },
+    "*-up-west-free": {
+      "base": "game:block/basic/stairs/normal",
+      "rotateY": 90
+    },
+    "*-up-south-free": {
+      "base": "game:block/basic/stairs/normal",
+      "rotateY": 180
+    },
+    "*-up-east-free": {
+      "base": "game:block/basic/stairs/normal",
+      "rotateY": 270
+    },
+    "*-up-north-snow": {
+      "base": "game:block/basic/stairs/snow-normal",
+      "rotateY": 0
+    },
+    "*-up-west-snow": {
+      "base": "game:block/basic/stairs/snow-normal",
+      "rotateY": 90
+    },
+    "*-up-south-snow": {
+      "base": "game:block/basic/stairs/snow-normal",
+      "rotateY": 180
+    },
+    "*-up-east-snow": {
+      "base": "game:block/basic/stairs/snow-normal",
+      "rotateY": 270
+    }
+  },
+  "textures": {
+    "sides": {
+      "base": "iiex:block/slag/slagbrick"
+    }
+  },
+  "faceCullModeByType": {
+    "*-snow": "NeverCull",
+    "*-free": "Stairs"
+  },
+  "sideSolidOpaqueAoByType": {
+    "*-up-north-*": {
+      "all": false,
+      "down": true,
+      "north": true
+    },
+    "*-up-west-*": {
+      "all": false,
+      "down": true,
+      "west": true
+    },
+    "*-up-south-*": {
+      "all": false,
+      "down": true,
+      "south": true
+    },
+    "*-up-east-*": {
+      "all": false,
+      "down": true,
+      "east": true
+    }
+  },
+  "collisionSelectionBoxesByType": {
+    "*-up-*": [
+      {
+        "x1": 0,
+        "y1": 0,
+        "z1": 0,
+        "x2": 1,
+        "y2": 0.5,
+        "z2": 1
+      },
+      {
+        "x1": 0,
+        "y1": 0.5,
+        "z1": 0.5,
+        "x2": 1,
+        "y2": 1,
+        "z2": 1,
+        "rotateYByType": {
+          "*-north-*": 180,
+          "*-east-*": 90,
+          "*-south-*": 0,
+          "*-west-*": 270
+        }
+      }
+    ]
+  },
+  "creativeinventory": {
+    "general": [
+      "*-up-north-free"
+    ],
+    "construction": [
+      "*-up-north-free"
+    ],
+    "iiex": [
+      "*-up-north-free"
+    ]
+  },
+  "drops": [
+    {
+      "type": "block",
+      "code": "slag-brickstairs-up-north-free"
+    }
+  ],
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.23,
+      "y": -0.91,
+      "z": -0.8
+    },
+    "rotation": {
+      "x": -2.0,
+      "y": 25.0,
+      "z": -78.0
+    },
+    "scale": 0.4
+  }
+}

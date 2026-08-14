@@ -3,7 +3,7 @@
 **Status** shell - the multiblock, all five part blocks and the hearth rows are built and tested. Missing:
 heat-into-stock, the crosswise seating, and (like the [puddling furnace](puddling-furnace.md)) the ability
 for the structure to complete at all
-**Mod** iwex (`IronworkingExpanded`)
+**Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything specific to this machine: its multiblock layout and every cell offset in it, the
 reverberatory geometry overrides, the hearth's contents model as built (one piece per row, three rows,
@@ -55,7 +55,7 @@ loss to ≈0; a branch constant would cap that machine out of existence. Arithme
 
 A vanilla forge tops out at an ingot. A shingled bloom or a cast slab will not fit in one, so this furnace
 is the only way to put heat back into mill stock, and the [rolling mill](rolling-mill.md)'s "keep it hot or
-it jams" loop depends on it. `RollingCoolRate` (`IwexConfig.cs`) is tuned so that a single pass finishes
+it jams" loop depends on it. `RollingCoolRate` (`IiexConfig.cs`) is tuned so that a single pass finishes
 comfortably but a full schedule on one heat does not.
 
 The hearth's 3 × 2 footprint is where both handling limits of the
@@ -72,8 +72,8 @@ The shared core does not assume melting: this furnace overrides none of the molt
 
 ## Structure
 
-Anchor `iwex:furnace-heatingcore-{tier}-{side}`. Layout at `BlockHeatingFurnaceCore.cs:35-141`; shipped form
-is the golden at `test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnaces/heating-core.json`.
+Anchor `iiex:furnace-heatingcore-{tier}-{side}`. Layout at `BlockHeatingFurnaceCore.cs:35-141`; shipped form
+is the golden at `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnaces/heating-core.json`.
 
 **Footprint** 8 wide (X) × 4 deep (Z) × 5 tall (Y), 109 declared cells. `Origin(-6, -2)`, the negation of
 `C`'s (col 6, row 2). Same chassis as the [puddling furnace](puddling-furnace.md), one row deeper in Z,
@@ -86,10 +86,10 @@ two layouts (`BlockHeatingFurnaceCore.cs:59-66`).
 | `-` | `game:brickslabs-fire-up-free` | 8 |
 | `i` | `game:brickslabs-fire-south-free` (orientation-checked) | 2 |
 | `K` | the firebox stoking door (`VanillaCodes.Sealing`, south) | 1 |
-| `F` | `iwex:furnace-firebox-*` - the fuel bed, its own block ([firebox](firebox.md)) | 2 |
-| `C` | `iwex:furnace-heatingcore-*` | 1 |
-| `D` | `iwex:furnace-chargedoor-south` | 1 |
-| `H` | `iwex:furnace-heatinghearth-north` | 1 |
+| `F` | `iiex:furnace-firebox-*` - the fuel bed, its own block ([firebox](firebox.md)) | 2 |
+| `C` | `iiex:furnace-heatingcore-*` | 1 |
+| `D` | `iiex:furnace-chargedoor-south` | 1 |
+| `H` | `iiex:furnace-heatinghearth-north` | 1 |
 | `f` | `exlib:structurefiller` | 12 |
 | `a` / `A` | `game:air` - the ash pit under the firebox, the flame space and the flue bore (`A` carries `CellRole.Flue`) | 13 |
 
@@ -123,8 +123,8 @@ today.
 | Part | Editable | Runtime | Notes |
 |---|---|---|---|
 | core | - | `game:block/basic/cube` | `n` marker north, `hf` type label south (`BlockHeatingFurnaceCore.cs:48-58`) |
-| hearth | `assets/editable/shapes/furnace-megablock-heatinghearth.json` | `assets/iwex/shapes/furnaces/heatinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Items1`, `Items2`, `Items3`. No animations - pruned `OnTesselation` |
-| charge door | `assets/editable/shapes/furnace-megablock-chargedoor.json` | `assets/iwex/shapes/furnaces/chargedoor.json` | elements `Bricks`, `Rails`, `Door`; animations `closed`, `open` |
+| hearth | `assets/editable/shapes/furnace-megablock-heatinghearth.json` | `assets/iiex/shapes/furnaces/heatinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Items1`, `Items2`, `Items3`. No animations - pruned `OnTesselation` |
+| charge door | `assets/editable/shapes/furnace-megablock-chargedoor.json` | `assets/iiex/shapes/furnaces/chargedoor.json` | elements `Bricks`, `Rails`, `Door`; animations `closed`, `open` |
 
 Caution: the hearth art is authored per (row × stock form), 3 × 5 = 15 groups, and it does not agree with
 the stock it is meant to hold. The beds draw a 16-long piece while the settled shingled bar is 18. Three of
@@ -138,7 +138,7 @@ those three strings appear only in `HeatingHearthLayout.cs:72-77`. The fix is th
 
 No recipe exists for the core, the hearth, the charge door or the firebox. `FurnaceRecipeDefinitions.cs`
 defines recipe groups for the blast furnace, the tuyere, the tall hopper, the blower and the cupola, and
-none of the iwex grid goldens outputs a heating-furnace part. No RCC construction stages either; every part
+none of the iiex grid goldens outputs a heating-furnace part. No RCC construction stages either; every part
 is a plain placed block. Creative-only today.
 
 The vanilla half (refractory brick, fire-brick slabs, sealing door) is craftable already.
@@ -157,7 +157,7 @@ The vanilla half (refractory brick, fire-brick slabs, sealing door) is craftable
 | Ctrl + Shift + RMB | core, hearth, door | build outline + shopping list | `BlockHeatingHearth.cs` |
 
 One verb, decided by what the player holds, as at every other in-world station here. Refusals are named:
-`iwex-hearth-rowfull`, `iwex-hearth-notstock`, `iwex-hearth-centreblocks`.
+`iiex-hearth-rowfull`, `iiex-hearth-notstock`, `iiex-hearth-centreblocks`.
 
 What the hearth accepts is a whitelist keyed on the item code's leading segment
 (`HeatingHearthLayout.cs:64-79`). Whole stacks are never taken: each piece carries its own state, and the
@@ -266,8 +266,8 @@ Values this page owns. FSM tunables are shown as bindings; the values belong to
 
 | Prefix | Form | Item exists? |
 |---|---|---|
-| `stock-shingledbar` | `ShingledBloom` | yes, `iwex:stock-shingledbar` (`StockItemDefinitions.cs:37`) - but no survival route. ⛔ the enum member still reads `ShingledBloom`; it names the hearth's drawn element group, which the rename did not touch |
-| `stock-shingledslab` | `ShingledSlab` | yes, `iwex:stock-shingledslab` - no survival route |
+| `stock-shingledbar` | `ShingledBloom` | yes, `iiex:stock-shingledbar` (`StockItemDefinitions.cs:37`) - but no survival route. ⛔ the enum member still reads `ShingledBloom`; it names the hearth's drawn element group, which the rename did not touch |
+| `stock-shingledslab` | `ShingledSlab` | yes, `iiex:stock-shingledslab` - no survival route |
 | `castbillet` | `CastBillet` | no item defines this code |
 | `castbloom` | `CastBloom` | no item |
 | `castslab` | `CastSlab` | no item |
@@ -289,8 +289,8 @@ Values this page owns. FSM tunables are shown as bindings; the values belong to
 
 | Member | Bound to | File:line |
 |---|---|---|
-| `MeltingPoint` | `IwexValues.RollingTempC` - a reheat target, not a melting point | `BlockEntityHeatingFurnace.cs:61` |
-| ready-line lang key | `iwex:heatingfurnace-ready` | `BlockEntityHeatingFurnace.cs:67-68` |
+| `MeltingPoint` | `IiexValues.RollingTempC` - a reheat target, not a melting point | `BlockEntityHeatingFurnace.cs:61` |
+| ready-line lang key | `iiex:heatingfurnace-ready` | `BlockEntityHeatingFurnace.cs:67-68` |
 
 ---
 
@@ -375,7 +375,7 @@ against the golden. Identical in kind to the [puddling furnace](puddling-furnace
 second footprint layer on the hearth, or, if those cells are meant to be the flame space over the bed, they
 should be `a` rather than `f`.
 
-**This furnace uses no charge lid.** `iwex:furnace-chargelid-{side}` exists, but it is the coke oven's and
+**This furnace uses no charge lid.** `iiex:furnace-chargelid-{side}` exists, but it is the coke oven's and
 the crucible furnace's part; the code at `BlockHeatingFurnaceCore.cs` is the authority for what this layout
 requires.
 

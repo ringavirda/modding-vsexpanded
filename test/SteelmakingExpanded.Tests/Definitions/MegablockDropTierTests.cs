@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using ExpandedLib.Testing;
-using LowPressureExpanded.BlockStructures.Boiler.Blocks;
-using LowPressureExpanded.BlockStructures.Engine.Blocks;
+using IronIndustryExpanded.BlockStructures.Boiler.Blocks;
+using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Xunit;
 
@@ -23,9 +23,9 @@ public class MegablockDropTierTests {
   private const string Bessemer =
     "src/SteelmakingExpanded/assets/smex/blocktypes/converter/bessemer.json";
   private const string Watt =
-    "src/LowPressureExpanded/assets/lpex/blocktypes/engine/watt.json";
+    "src/IronIndustryExpanded/assets/iiex/blocktypes/engine/watt.json";
   private const string BoilerCornish =
-    "src/LowPressureExpanded/assets/lpex/blocktypes/boiler/cornish.json";
+    "src/IronIndustryExpanded/assets/iiex/blocktypes/boiler/cornish.json";
 
   #region Converter (control-spawned: no self-drop)
 
@@ -121,11 +121,11 @@ public class MegablockDropTierTests {
 
   [Fact]
   public void Engine_and_boiler_salvage_ratio_defaults_to_80_percent() {
-    // The salvage fraction lives on the player-tunable config (lpex RccBrokenDropsRatio), shared by
-    // every lpex engine and boiler and read live via ExRccSettings.
+    // The salvage fraction lives on the player-tunable config (iiex RccBrokenDropsRatio), shared by
+    // every iiex engine and boiler and read live via ExRccSettings.
     Assert.Equal(
       0.8f,
-      new LowPressureExpanded.LpexConfig().RccBrokenDropsRatio,
+      new IronIndustryExpanded.IiexConfig().RccBrokenDropsRatio,
       3
     );
   }
@@ -138,7 +138,7 @@ public class MegablockDropTierTests {
       DefinitionJson
         .Constructable(Block(path))
         .TryGetProperty("brokenDropsRatio", out _),
-      $"{path} brokenDropsRatio must move to config (lpex RccBrokenDropsRatio)"
+      $"{path} brokenDropsRatio must move to config (iiex RccBrokenDropsRatio)"
     );
   }
 
@@ -156,11 +156,11 @@ public class MegablockDropTierTests {
   private static string BlockJson(string repoRelativePath) =>
     repoRelativePath switch {
       BoilerCornish => BlockBoilerCornish
-        .Definitions("lpex")
+        .Definitions("iiex")
         .Single()
         .ToJson()
         .ToString(),
-      Watt => BlockEngineWatt.Definitions("lpex").Single().ToJson().ToString(),
+      Watt => BlockEngineWatt.Definitions("iiex").Single().ToJson().ToString(),
       Bessemer => BlockConverterBessemer
         .Definitions("smex")
         .Single()

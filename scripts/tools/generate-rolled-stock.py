@@ -38,7 +38,7 @@ import os
 IRON5 = "game:block/metal/sheet-plain/iron5"
 
 EDITABLE = "assets/editable/shapes"
-OUT_DIR = "assets/iwex/shapes/forming"
+OUT_DIR = "assets/iiex/shapes/forming"
 
 STAGES = [3.0, 2.0, 1.5, 1.0, 0.5]
 

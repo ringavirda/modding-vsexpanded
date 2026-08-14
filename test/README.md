@@ -10,10 +10,10 @@ mechanical - if you have to think about it, the answer is in one of the two tabl
 |---|---|---|
 | `ExpandedLib.Testing` | *(not a test project)* the headless harness itself - `TestWorld`, `Scene`, `SceneDiagram`, `TestBlocks`, content-free doubles | exlib only |
 | `ExpandedLib.Tests` | exlib framework | harness |
-| `IronworkingExpanded.Tests` | iwex | harness |
-| `LowPressureExpanded.Tests` | lpex | + iwex tests |
-| `SteelmakingExpanded.Tests` | smex | + lpex tests |
-| `HighPressureExpanded.Tests` | hpex | + lpex tests, + smex tests *(test-only)* |
+| `IronIndustryExpanded.Tests` | iiex | harness |
+| `IronIndustryExpanded.Tests` | iiex | + iiex tests |
+| `SteelmakingExpanded.Tests` | smex | + iiex tests |
+| `HighPressureExpanded.Tests` | hpex | + iiex tests, + smex tests *(test-only)* |
 
 **Homing rule:** a test file lives in the project of the **top mod whose _types_ it touches** - not
 the mod its folder is named after, and not the mod in its `namespace` line (all test files use one
@@ -22,7 +22,7 @@ strings** lie too: headless blocks are hand-configured, so a `"smex:…"` litera
 nothing about ownership.
 
 The test-project reference chain deliberately mirrors the mod chain. Content-specific fixtures live
-with their content (`PipeTestWorld` in iwex because pipes are iwex; the boiler/engine plants in lpex);
+with their content (`PipeTestWorld` in iiex because pipes are iiex; the boiler/engine plants in iiex);
 only **content-free** doubles may go in `ExpandedLib.Testing`, which ships as a standalone dev bundle
 and must stay mod-agnostic. `ReleasedCodes.cs` is the one sanctioned exception to "content-free doubles
 only": harness-owned release history - the shipped ppex/smex catalogues that migration coverage replays.
@@ -39,7 +39,7 @@ Every project uses the same top-level buckets, omitting the ones it has no conte
 |---|---|
 | `Fixtures/` | support types with **no `[Fact]`** - see the suffix vocabulary below |
 | `Definitions/` | code-first `ExBlockDef`/`ExItemDef`/`ExRecipeDef` providers, golden tests, metal/catalogue registration, shipped-JSON guards |
-| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the `src/` area** it covers (`Blocks/Boiler/` ↔ `src/…/BlockStructures/Boiler/`); network-block areas conventionally split finer than `src/` (lpex `Pipe/`, `Valves/`, `Condenser/`, `FluidIntake/` all cover `src` `BlockNetworkPipe`; iwex `Energy/` and `Molten/` cover `BlockNetworkEnergy`/`BlockNetworkMolten`; iwex `Blocks/Pipe/` covers the exlib pipe bases exercised at the iwex tier) |
+| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the `src/` area** it covers (`Blocks/Boiler/` ↔ `src/…/BlockStructures/Boiler/`); network-block areas conventionally split finer than `src/` (iiex `Pipe/`, `Valves/`, `Condenser/`, `FluidIntake/` all cover `src` `BlockNetworkPipe`; iiex `Energy/` and `Molten/` cover `BlockNetworkEnergy`/`BlockNetworkMolten`; iiex `Blocks/Pipe/` covers the exlib pipe bases exercised at the iiex tier) |
 | `Networks/` | the network model itself - graph walks, pools, flow, connectors |
 | `Items/` | item behaviour |
 | `Materials/` | material roles, metal parity, burden/composition classifiers |
@@ -65,9 +65,9 @@ Every project uses the same top-level buckets, omitting the ones it has no conte
 `EngineFixture` and `BoilerFixture` predate this vocabulary and are `*Rig`s in all but name; they are
 left alone deliberately - renaming them collides with the existing `BoilerRig` and buys nothing.
 
-A `*Rig` need not drive a *block*: `FurnaceLayoutRig` (iwex) drives the **assertion** shared by every
+A `*Rig` need not drive a *block*: `FurnaceLayoutRig` (iiex) drives the **assertion** shared by every
 furnace in the line - offsets against the shipped layout, at north and at all four orientations. It
-lives in iwex because the cells it checks are iwex types, and smex reaches it through the reference
+lives in iiex because the cells it checks are iiex types, and smex reaches it through the reference
 chain. That is the homing rule doing its job: the shared oracle sinks to the lowest mod that owns the
 types, and each suite above keeps only the facts that need one of *its* types (smex's furnace tests are
 now "the hot furnace vents", "its cells rotate", and "both furnaces agree").
@@ -90,10 +90,10 @@ Two things a fixture must get right, both of which used to be invisible:
   names the offending cell.
 
 **Pipe tier is a real choice in a fixture, not decoration.** `PipeTestWorld.MakePipe(material:)` selects
-a tier - `"iron"` bolted (iwex), `"steel"` cast (lpex), `"hadfield"` rolled (hpex) - and the tier sets
+a tier - `"iron"` bolted (iiex), `"steel"` cast (iiex), `"hadfield"` rolled (hpex) - and the tier sets
 the burst ceiling. LP steam at 3-5 atm does not belong on bolted pipe; charging it there bursts the run,
-which is exactly the gate the tier ladder exists to enforce. The iwex rating is read from live config;
-the other two are constants in the fixture (iwex cannot reference lpex or hpex) guarded by
+which is exactly the gate the tier ladder exists to enforce. The iiex rating is read from live config;
+the other two are constants in the fixture (iiex cannot reference iiex or hpex) guarded by
 `PipeBurstParityTests` in each of those suites - a stale copy silently retunes every burst test in three
 suites and they all still pass.
 
@@ -132,7 +132,7 @@ Two traps worth knowing, both of which fail *quietly*:
 - **Process-global statics race** across test classes, because xUnit parallelises them. Serialize
   every class touching one with a `[CollectionDefinition(…, DisableParallelization = true)]` - see
   `ExpandedLib.Tests/Helpers/ExMeasureCollection.cs` and
-  `IronworkingExpanded.Tests/Fixtures/FurnaceConfigCollection.cs`. **Joining is what serializes**: a
+  `IronIndustryExpanded.Tests/Fixtures/FurnaceConfigCollection.cs`. **Joining is what serializes**: a
   collection only orders the classes that opt in, so the *readers* of a mutated static must join it too,
   not just the writer. A writer alone looks fine and races anyway.
 

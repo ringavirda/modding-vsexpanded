@@ -16,19 +16,27 @@ namespace HighPressureExpanded.Tests;
 /// A code absent from <see cref="ReleasedCodes"/> never shipped and needs no migrator, which bounds a
 /// rename to the shipped paths.
 /// <para>
-/// Migration chains cross mods (<c>ppex</c> to <c>lpex</c> to <c>hpex</c>, <c>smex</c> to <c>iwex</c>),
+/// Migration chains cross mods (<c>ppex</c> to <c>iiex</c> to <c>hpex</c>, <c>smex</c> to <c>iiex</c>),
 /// so the assertion only holds where every migrator is visible: <c>HighPressureExpanded.Tests</c> is the
-/// only suite that references all five mods.
+/// only suite that references all four mods.
 /// </para>
 /// </summary>
 public class ReleasedCodeCoverageTests {
-  // One anchor per mod assembly. The generated code tables exist in every domain and are regenerated
-  // from the definitions themselves.
+  /// <summary>
+  /// One anchor per mod assembly. The generated code tables exist in every domain and are regenerated
+  /// from the definitions themselves.
+  /// <para>
+  /// Exactly one row per LIVE domain. <c>DefinitionCodes.ForDomain</c> INJECTS the domain rather
+  /// than filtering by it, so a stale row for a domain that no longer ships (or a duplicate of one
+  /// that does) synthesises phantom live blocks: the migrations then mint their historical rows
+  /// against those, and the whole contract passes over a world that will never exist. The iwex+lpex
+  /// merge had to delete both rows and add one, in a single change, for that reason.
+  /// </para>
+  /// </summary>
   private static readonly (string Domain, Assembly Asm)[] Domains =
   [
     ("exlib", typeof(BlockMigrationModSystem).Assembly),
-    ("iwex", typeof(IronworkingExpanded.IwexBlocks).Assembly),
-    ("lpex", typeof(LowPressureExpanded.LpexBlocks).Assembly),
+    ("iiex", typeof(IronIndustryExpanded.IiexBlocks).Assembly),
     ("hpex", typeof(HpexBlocks).Assembly),
     ("smex", typeof(SteelmakingExpanded.SmexBlocks).Assembly),
   ];
@@ -86,6 +94,10 @@ public class ReleasedCodeCoverageTests {
       .Select(r => r.Code.ToString())
       .ToHashSet();
 
+    var debt = new HashSet<string>(
+      ReleasedCodeDebt.KnownUnmigrated,
+      System.StringComparer.Ordinal
+    );
     var orphans = new List<string>();
     foreach (ReleasedCodes.Shipped shipped in ReleasedCodes.All)
       foreach (string code in shipped.Codes) {
@@ -97,6 +109,11 @@ public class ReleasedCodeCoverageTests {
         if (purged.Contains(terminal) || live.Contains(terminal))
           continue;
 
+        // Recorded, dated divergence from ppex 0.6.8 / smex 0.9.8 - excluded so this guard still
+        // fails on anything NEW, which is what makes it usable during a domain move.
+        if (debt.Contains(code))
+          continue;
+
         orphans.Add(
           terminal == code
             ? $"{code}  ({shipped.AssetPath}) - no migration declares it at all"
@@ -106,11 +123,63 @@ public class ReleasedCodeCoverageTests {
 
     Assert.True(
       orphans.Count == 0,
-      $"{orphans.Count} released block code(s) have no path to a live block. A player who built "
-        + "one of these loses it silently - BuildRemapTable drops an unresolvable pair with only a "
-        + "Logger.Warning.\n  "
+      $"{orphans.Count} released block code(s) have no path to a live block, beyond the "
+        + $"{debt.Count} recorded in ReleasedCodeDebt. A player who built one of these loses it "
+        + "silently - BuildRemapTable drops an unresolvable pair with only a Logger.Warning.\n  "
         + string.Join("\n  ", orphans.Take(40))
         + (orphans.Count > 40 ? $"\n  ... and {orphans.Count - 40} more" : "")
+    );
+  }
+
+  /// <summary>
+  /// The recorded list may only shrink. An entry that now reaches a live block or an explicit purge
+  /// has been resolved, and leaving it listed would silently re-exempt that code the next time it
+  /// breaks - so resolving one has to include deleting it from the list.
+  /// </summary>
+  [Fact]
+  public void No_recorded_divergence_has_quietly_been_resolved() {
+    IReadOnlyList<DefinitionCodes.Registered> registered = LiveBlocks();
+    var live = registered.Select(r => r.Code).ToHashSet();
+    TestWorld world = LiveWorld(registered);
+
+    var declared = new Dictionary<string, string>();
+    foreach (var r in BlockMigrationModSystem.DeclaredBlockRemaps(world.Api))
+      declared.TryAdd(r.OldCode.ToString(), r.NewCode.ToString());
+    var purged = BlockMigrationModSystem
+      .DeclaredRemovals(world.Api)
+      .Select(r => r.Code.ToString())
+      .ToHashSet();
+
+    var resolved = ReleasedCodeDebt
+      .KnownUnmigrated.Where(code =>
+        live.Contains(code)
+        || live.Contains(Terminal(code, declared))
+        || purged.Contains(Terminal(code, declared))
+      )
+      .ToList();
+
+    Assert.True(
+      resolved.Count == 0,
+      $"{resolved.Count} recorded code(s) now reach a live block or an explicit purge. Delete them "
+        + "from ReleasedCodeDebt.KnownUnmigrated - the list is only useful while every entry is "
+        + "real:\n  "
+        + string.Join("\n  ", resolved.Take(40))
+    );
+  }
+
+  /// <summary>Every recorded entry must be a code that actually shipped; a typo here exempts nothing
+  /// while reading as though it does.</summary>
+  [Fact]
+  public void Every_recorded_divergence_is_a_released_code() {
+    var released = ReleasedCodes.AllCodes.ToHashSet();
+    string[] unknown =
+    [
+      .. ReleasedCodeDebt.KnownUnmigrated.Where(c => !released.Contains(c)),
+    ];
+
+    Assert.True(
+      unknown.Length == 0,
+      $"{unknown.Length} recorded code(s) never shipped:\n  " + string.Join("\n  ", unknown)
     );
   }
 
@@ -120,9 +189,10 @@ public class ReleasedCodeCoverageTests {
 
   [Fact]
   public void The_released_manifest_covers_the_three_mods_that_shipped() {
-    // An emptied manifest would make the contract above vacuous.
-    Assert.Equal(18, ReleasedCodes.Ppex.Count);
-    Assert.Equal(27, ReleasedCodes.Smex.Count);
+    // An emptied manifest would make the contract above vacuous. The counts are every blocktype the
+    // mod has shipped across all its releases, not one release's - the manifest unions.
+    Assert.Equal(19, ReleasedCodes.Ppex.Count);
+    Assert.Equal(35, ReleasedCodes.Smex.Count);
     Assert.Single(ReleasedCodes.Exlib);
     Assert.All(ReleasedCodes.All, s => Assert.NotEmpty(s.Codes));
   }

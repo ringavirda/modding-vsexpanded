@@ -54,7 +54,7 @@ Nothing in this repo; the electrolyte exists in the base game.
 |---|---|---|
 | the cell, and the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit, a doc comment at `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58` about distillation fractions |
 | its grid hardware | `grep -rniE "arcfurnace\|electrode\|dynamo\|alternator\|rectifier" src/ assets/` | 0 hits |
-| copper anywhere | `grep -rni "copper" src/ --include=*.cs -l` | 3 files, all vanilla-facing plumbing - `MetalCatalogueLoader.cs`, `MetalToolEmitter.cs`, `IwexConfig.cs` |
+| copper anywhere | `grep -rni "copper" src/ --include=*.cs -l` | 3 files, all vanilla-facing plumbing - `MetalCatalogueLoader.cs`, `MetalToolEmitter.cs`, `IiexConfig.cs` |
 | an acid medium | `assets/exlib/config/liquids.json` | declares four liquids only: `Air`, `Steam`, `Exhaust`, `Water` |
 
 ### In vanilla — the electrolyte already ships

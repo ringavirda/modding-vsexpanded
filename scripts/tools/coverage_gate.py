@@ -20,10 +20,10 @@ import xml.etree.ElementTree as ET
 # so every shipped mod assembly belongs here - add a row when a mod is added.
 FLOORS = {
     "exlib": ("ExpandedLib", 33.0),
-    "IronworkingExpanded": ("iwex", 25.0),
-    "LowPressureExpanded": ("lpex", 39.0),
+    "IronIndustryExpanded": ("iiex", 25.0),
+    "IronIndustryExpanded": ("iiex", 39.0),
     "SteelmakingExpanded": ("smex", 34.0),
-    # hpex is two thin stat-table leaves over lpex's bases; its own line count is small and mostly
+    # hpex is two thin stat-table leaves over iiex's bases; its own line count is small and mostly
     # covered indirectly through its engine-plant scenarios.
     "HighPressureExpanded": ("hpex", 25.0),
 }

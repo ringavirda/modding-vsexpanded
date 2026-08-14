@@ -2,7 +2,7 @@
 
 **Status** live for the blast-furnace rung (`BfIronPerOreUnit`, shipped 2026-08-07 with the burden chain);
 the roasted rung is designed, not built
-**Mod** iwex carries the code; the ladder itself is cross-cutting
+**Mod** iiex carries the code; the ladder itself is cross-cutting
 
 **Owns**
 
@@ -47,8 +47,8 @@ else is measured against.
 
 | Number | Where | How it is applied |
 |---|---|---|
-| **8.5** | `IwexConfig.cs:470` (`BfIronPerOreUnit`) | iron units per unit of ore content in the melted burden; the shaft furnace scales it by the band's own ore share (`BlockEntityShaftFurnace.cs:174-175`) |
-| **8.5 / 6** | `IwexConfig.cs:478` (`BfSlagPerOreUnit`) | slag rendered alongside the iron, holding a 6:1 iron-to-slag ratio |
+| **8.5** | `IiexConfig.cs:470` (`BfIronPerOreUnit`) | iron units per unit of ore content in the melted burden; the shaft furnace scales it by the band's own ore share (`BlockEntityShaftFurnace.cs:174-175`) |
+| **8.5 / 6** | `IiexConfig.cs:478` (`BfSlagPerOreUnit`) | slag rendered alongside the iron, holding a 6:1 iron-to-slag ratio |
 | **5** | vanilla | untouched |
 | **9.2** | nowhere | ships only when roasting does |
 
@@ -63,7 +63,7 @@ reduces, so there is no ore share in its charge and it overrides the rate flat.
 2. **State recovery against ore content, never per burden item or per band.** The ore share of a band is a
    separate number that moves when the burden recipe does (taking coke out of the burden lifted it from
    ~0.75 to ~0.94); a per-band restatement bakes a snapshot of it into a constant.
-3. **The floor is pinned.** The iwex chain must never yield less iron per ore than a vanilla bloomery.
+3. **The floor is pinned.** The iiex chain must never yield less iron per ore than a vanilla bloomery.
    `OreRecoveryGuardRailTests` derives the chain's effective per-nugget yield from the shipped constants and
    asserts it stays at or above 5 - the one test that stops a recovery rebalance quietly turning the mod
    into a downgrade.

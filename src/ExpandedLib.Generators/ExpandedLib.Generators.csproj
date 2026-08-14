@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    Roslyn source generator that emits the static accessor class (e.g. LpexValues) for every config
+    Roslyn source generator that emits the static accessor class (e.g. IiexValues) for every config
     POCO marked [ExConfig]. Referenced as an Analyzer by the mod projects (see their .csproj); it is
     a compile-time component only and ships no runtime assembly. Must target netstandard2.0 - the
     framework the C# compiler loads analyzers under.

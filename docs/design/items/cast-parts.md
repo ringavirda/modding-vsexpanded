@@ -1,7 +1,7 @@
 # Cast parts
 
 **Status** partial - five items live (`castplate-heavy`, `cast-barrel`, `castshell`, `castwheelsection`,
-`bevelgear`); the rest of the family is art-only or absent   **Mod** iwex (`IronworkingExpanded`)
+`bevelgear`); the rest of the family is art-only or absent   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the cast-part catalogue: which cast-iron parts exist as items, which exist as art only, which exist only in
@@ -64,15 +64,15 @@ in the game.
 
 | Item | Section × length | vx³ | Mass (u) | Made by | Consumed by |
 |---|---|---|---|---|---|
-| `iwex:castplate-heavy` | drawn 12 × 2 × 12 | 288 | 160 (`CastPartItemDefinitions.HeavyPlateUnits`) | casting cell, `pattern-castheavyplate-*` | flywheel web ×4 (`EnergyRecipeDefinitions`) · rolling-mill housing ×7 (`FormingRecipeDefinitions`) |
-| `iwex:cast-barrel` | cored vessel, 4 wall slabs + base (hollow) | 603 naive, meaningless | 200 (`CastBarrelUnits`) | casting cell, `pattern-castbarrel-*` | `moltenbarrel-cast` grid craft (`MoltenRecipeDefinitions.cs:40-47`) |
-| `iwex:castshell` | three bent panels, 72 vx³ apiece | 216 naive | 600 (`CastShellUnits`, `CastPartItemDefinitions.cs:79`) | casting cell, `pattern-castshell-*` | nothing yet in code - the [ladle](../machines/ladle.md)'s cast variant (designed), then lpex's water tank, ore crusher, engine housings |
-| `iwex:castwheelsection` | three rim segments, 72 vx³ apiece | 216 naive | 600 (`CastWheelSectionUnits`, `:65`) | casting cell, `pattern-castwheelsection-*` | flywheel rim ×4, large flywheel rim ×8 (`EnergyRecipeDefinitions`) |
-| `iwex:bevelgear` | toothed disc (hollow/toothed) | 488 naive, meaningless | 40 (`BevelGearItemDefinitions.cs:12`) | no recipe at all | `BlockCastIronBevel.GearItemCode` (`BlockCastIronBevel.cs:26`) |
+| `iiex:castplate-heavy` | drawn 12 × 2 × 12 | 288 | 160 (`CastPartItemDefinitions.HeavyPlateUnits`) | casting cell, `pattern-castheavyplate-*` | flywheel web ×4 (`EnergyRecipeDefinitions`) · rolling-mill housing ×7 (`FormingRecipeDefinitions`) |
+| `iiex:cast-barrel` | cored vessel, 4 wall slabs + base (hollow) | 603 naive, meaningless | 200 (`CastBarrelUnits`) | casting cell, `pattern-castbarrel-*` | `moltenbarrel-cast` grid craft (`MoltenRecipeDefinitions.cs:40-47`) |
+| `iiex:castshell` | three bent panels, 72 vx³ apiece | 216 naive | 600 (`CastShellUnits`, `CastPartItemDefinitions.cs:79`) | casting cell, `pattern-castshell-*` | nothing yet in code - the [ladle](../machines/ladle.md)'s cast variant (designed), then iiex's water tank, ore crusher, engine housings |
+| `iiex:castwheelsection` | three rim segments, 72 vx³ apiece | 216 naive | 600 (`CastWheelSectionUnits`, `:65`) | casting cell, `pattern-castwheelsection-*` | flywheel rim ×4, large flywheel rim ×8 (`EnergyRecipeDefinitions`) |
+| `iiex:bevelgear` | toothed disc (hollow/toothed) | 488 naive, meaningless | 40 (`BevelGearItemDefinitions.cs:12`) | no recipe at all | `BlockCastIronBevel.GearItemCode` (`BlockCastIronBevel.cs:26`) |
 
-Settled 2026-08-05: `castshell` and `castwheelsection` are both iwex's. The [ladle](../machines/ladle.md) is
-ruled to iwex and its cast variant is built from shell segments (ladle.md § the 2026-08-05 ruling;
-`CastPartItemDefinitions.cs:19-28` records the same). iwex owns it, lpex consumes it (water tank, ore
+Settled 2026-08-05: `castshell` and `castwheelsection` are both iiex's. The [ladle](../machines/ladle.md) is
+ruled to iiex and its cast variant is built from shell segments (ladle.md § the 2026-08-05 ruling;
+`CastPartItemDefinitions.cs:19-28` records the same). iiex owns it, iiex consumes it (water tank, ore
 crusher, engine housings): the pattern and the part live in the same mod, so no cross-mod pattern
 indirection is needed.
 
@@ -87,7 +87,7 @@ being a choice. At 600 the two cost the same iron and differ only in the plant t
 times the cast item's `materialUnits`.
 
 One cast block also comes out of the cell and belongs to [casting cell](../machines/casting-cell.md), not
-here: `iwex:casting-mold-ingot` (`BlockCastMold.cs`). Since 2026-08-05 that is the only cast mold: the plate
+here: `iiex:casting-mold-ingot` (`BlockCastMold.cs`). Since 2026-08-05 that is the only cast mold: the plate
 mold was retired (the mill rolls plate) and the surviving tray became single-bay - 100 units, one ingot -
 because crucible steel has to be poured into something.
 
@@ -139,7 +139,7 @@ The molten barrel ships both routes as two `construction` variants of one blockt
 | Variant | Craft | file:line |
 |---|---|---|
 | `moltenbarrel-plated` | 6 × `game:metalplate-*` + 4 × fire clay + 4 × nails + hammer, 3 × 3 | `MoltenRecipeDefinitions.cs:28-37` |
-| `moltenbarrel-cast` | 1 × `iwex:cast-barrel` + 4 × fire clay, 2 × 1 | `MoltenRecipeDefinitions.cs:40-47` |
+| `moltenbarrel-cast` | 1 × `iiex:cast-barrel` + 4 × fire clay, 2 × 1 | `MoltenRecipeDefinitions.cs:40-47` |
 
 Two things are off the settled shape and are the work left to do: the fabricated route costs nails, not
 rivets, and it is a flat grid craft rather than a bend on the roller. The structure - one block, two
@@ -153,10 +153,10 @@ constructions, identical behaviour - is correct and should be copied for the res
 
 | Item | Constant | file:line | Drawn | Rule says | Verdict |
 |---|---|---|---|---|---|
-| `castplate-heavy` | `HeavyPlateUnits = 160` | `src/IronworkingExpanded/Items/CastPartItemDefinitions.cs:21` | 12 × 2 × 12 = 288 vx³ | 720 as drawn; 500 as settled at 10 × 2 × 10 | stale, and the art is wrong too |
+| `castplate-heavy` | `HeavyPlateUnits = 160` | `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs:21` | 12 × 2 × 12 = 288 vx³ | 720 as drawn; 500 as settled at 10 × 2 × 10 | stale, and the art is wrong too |
 | `cast-barrel` | `CastBarrelUnits = 200` | `…/CastPartItemDefinitions.cs:24` | hollow | not naively derivable | needs a solid-volume measure |
 | `castshell` / `castwheelsection` | `CastShellUnits` / `CastWheelSectionUnits`, both 600 | `:79` / `:65` | 216 naive each | declared for parity, not derived | pinned by `CastMassParityTests` |
-| `bevelgear` | `GearUnits = 40` | `src/IronworkingExpanded/Items/BevelGearItemDefinitions.cs:12` | toothed | not naively derivable | needs a solid-volume measure |
+| `bevelgear` | `GearUnits = 40` | `src/IronIndustryExpanded/Items/BevelGearItemDefinitions.cs:12` | toothed | not naively derivable | needs a solid-volume measure |
 
 The full audit of these against 1 vx³ = 2.5 u - including which are stale and why - is
 [density rule § Audit](../mechanics/density-rule.md)'s, not this page's.
@@ -168,9 +168,9 @@ cast-parts reader knows which of these items each defect belongs to. Do not re-d
 
 | Pattern | Capacity | Render box | Implied u/vx³ | Produces |
 |---|---|---|---|---|
-| `castheavyplate` | 160 | 2 × 10 × 8 = 160 | 1.00 | `iwex:castplate-heavy` |
-| `castingotmold` | 152 | drawn tray, one bay | — | block `iwex:casting-mold-ingot` (the plate mold was retired 2026-08-05) |
-| `castbarrel` | 200 | 8 × 8 × 8 = 512 | 0.39 | `iwex:cast-barrel` |
+| `castheavyplate` | 160 | 2 × 10 × 8 = 160 | 1.00 | `iiex:castplate-heavy` |
+| `castingotmold` | 152 | drawn tray, one bay | — | block `iiex:casting-mold-ingot` (the plate mold was retired 2026-08-05) |
+| `castbarrel` | 200 | 8 × 8 × 8 = 512 | 0.39 | `iiex:cast-barrel` |
 
 Four cavities, four densities, none of them 2.5.
 
@@ -192,10 +192,10 @@ Four cavities, four densities, none of them 2.5.
 
 ## Assets
 
-Every cast-part shape declares its own texture key `cast-iron1 → iwex:block/metal/castiron`, so the item defs
+Every cast-part shape declares its own texture key `cast-iron1 → iiex:block/metal/castiron`, so the item defs
 set no texture at all.
 
-### Runtime — `assets/iwex/shapes/`
+### Runtime — `assets/iiex/shapes/`
 
 | Shape | State |
 |---|---|
@@ -203,8 +203,8 @@ set no texture at all.
 | `item/gearbevel.json` | tracked |
 | `item/heavyplate.json` | untracked (`git status` reports `??`), and drawn 12 × 2 × 12 |
 | `casting/cell-filling-heavyplate.json`, `…-moltenbarrel.json` | tracked - the impressions for the plate and the barrel |
-| `iwex:item/castwheelsection.json` · `iwex:item/castshell.json` | untracked; exported 2026-08-04 from `item-sandcast-wheelsegment` / `item-sandcast-shell` |
-| `casting/cell-filling-castshell.json` · `…-flywheelpart.json` | untracked, referenced - the shell's by `iwex:pattern-castshell-*`, the other by `iwex:pattern-castwheelsection-*`. The filling keeps the older `flywheelpart` name |
+| `iiex:item/castwheelsection.json` · `iiex:item/castshell.json` | untracked; exported 2026-08-04 from `item-sandcast-wheelsegment` / `item-sandcast-shell` |
+| `casting/cell-filling-castshell.json` · `…-flywheelpart.json` | untracked, referenced - the shell's by `iiex:pattern-castshell-*`, the other by `iiex:pattern-castwheelsection-*`. The filling keeps the older `flywheelpart` name |
 | `casting/cell-filling-{axle,cylinder,gearblanklarge,gearblanksmall}.json` | untracked, and no pattern references any of them - [casting cell § Gotcha 10](../machines/casting-cell.md) owns this |
 | `casting/longcell-filling-castframe.json` | untracked; [long cell](../machines/long-cell.md) owns it |
 
@@ -234,12 +234,12 @@ be redrawn even if the split had never been decided.
 
 Textures: all twelve editable cast shapes carry an absolute authoring path
 (`F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1`) and all three exported runtime shapes
-carry `iwex:block/metal/castiron`. The absolute path is the editable-folder convention and the export
+carry `iiex:block/metal/castiron`. The absolute path is the editable-folder convention and the export
 rewrites it; it is not a per-file defect.
 
 Lang: `item-castplate-heavy`, `item-cast-barrel`, `item-bevelgear` and the `item-pattern-{type}-*` keys all
-exist in all three languages (`assets/iwex/lang/en.json:338-343`, `:99`).
-Handbook: no page - `docs/iwex/handbook/` holds five pages and none covers cast parts.
+exist in all three languages (`assets/iiex/lang/en.json:338-343`, `:99`).
+Handbook: no page - `docs/iiex/handbook/` holds five pages and none covers cast parts.
 
 ---
 
@@ -247,15 +247,15 @@ Handbook: no page - `docs/iwex/handbook/` holds five pages and none covers cast 
 
 | Member | file:line | Role |
 |---|---|---|
-| `CastPartItemDefinitions` | `src/IronworkingExpanded/Items/CastPartItemDefinitions.cs:18` | the family - four items |
+| `CastPartItemDefinitions` | `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs:18` | the family - four items |
 | `…HeavyPlateUnits` / `…CastBarrelUnits` / `…CastWheelSectionUnits` / `…CastShellUnits` | `:21` / `:24` / `:65` / `:79` | the masses; `public const`, read by `PatternItemDefinitions` |
 | `…Definitions` | `:84` | `[HeavyPlate, CastBarrel, CastWheelSection, CastShell]` |
-| `BevelGearItemDefinitions` | `src/IronworkingExpanded/Items/BevelGearItemDefinitions.cs:10` | the fifth cast-iron item, defined apart from the family |
+| `BevelGearItemDefinitions` | `src/IronIndustryExpanded/Items/BevelGearItemDefinitions.cs:10` | the fifth cast-iron item, defined apart from the family |
 | `PatternItemDefinitions.Molds` | `…/BlockStructures/Casting/PatternItemDefinitions.cs:108-230` | the cavities that produce cast parts; consumes the constants |
 | `MoltenRecipeDefinitions.MoltenBarrel` | `…/Recipes/Grid/MoltenRecipeDefinitions.cs:24-47` | the one shipped cast ↔ fabricated dual path |
 | `BlockMoltenBarrel.Definitions` | `…/BlockNetworkMolten/Blocks/BlockMoltenBarrel.cs:47-69` | the `construction` variant axis (`:53`) |
 | `BlockCastMold.Definitions` | `…/BlockStructures/Casting/Blocks/BlockCastMold.cs:27-51` | the cast block output |
-| goldens | `test/IronworkingExpanded.Tests/goldens/iwex/itemtypes/castplate-heavy.json`, `cast-barrel.json`, `pattern.json` | pin the emitted defs |
+| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/castplate-heavy.json`, `cast-barrel.json`, `pattern.json` | pin the emitted defs |
 
 Where a caller hooks in: adding a cast part is one `Molds` entry, one filling shape and one output item;
 nothing in the cell changes and no mod needs to be referenced
@@ -274,10 +274,10 @@ extra grid/RCC alternative on the same output.
      (`MetalFamilyEmitter.cs:466-477`);
    * the cupola charges only items holding the `scrap` role, plus fuel
      (`BlockEntityCupolaFurnace.cs:71-76`), and the role's holders are the two vanilla metalbits and the
-     pig family (`assets/iwex/config/materialroles.json:6-10`) - no cast part is among them.
+     pig family (`assets/iiex/config/materialroles.json:6-10`) - no cast part is among them.
 
    A heavy cast plate is a one-way item: 160 u of iron that can never come back. Same for the barrel blank
-   and the bevel gear. The generated `iwex:metalbit-castiron` is not in the scrap list either.
+   and the bevel gear. The generated `iiex:metalbit-castiron` is not in the scrap list either.
 
 2. `castplate-heavy`'s consumers are recipes for machines that are themselves unbuilt (flywheel web,
    rolling-mill housing), so the casting cell's flagship product still has nowhere to go in a playthrough.

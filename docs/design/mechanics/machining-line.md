@@ -4,7 +4,7 @@
 `assets/editable/shapes/machines/mpenergy/`; six sand-cast blanks and four structural blanks are
 drawn under `assets/editable/shapes/items/sandcast/`. No block, no block entity, no item, no recipe,
 no def, no lang key and no test exists for any of it.
-**Mods** iwex owns the blanks and the bootstrap gear · the machines' placement follows the content
+**Mods** iiex owns the blanks and the bootstrap gear · the machines' placement follows the content
 they feed, so the shaper is the earliest and the planer the latest
 
 ## Owns
@@ -92,7 +92,7 @@ has ever been offered both, so the shaper sets the precedent for which drive win
 ⛔ Every gear-taking recipe in the suite is currently authored **twice**, because `game:gear-rusty` is
 loot-only. A third route must not become a third copy of each recipe.
 
-This is the established shape, not a new mechanic: `iwex:spurgear` already ships two routes.
+This is the established shape, not a new mechanic: `iiex:spurgear` already ships two routes.
 
 ---
 
@@ -103,7 +103,7 @@ unlock the mill's tooling, and the planer arrives with steel.
 
 ### 1. Shaper
 
-Cuts teeth and small flats. **It closes a live hole**: `iwex:bevelgear` has no recipe at all today,
+Cuts teeth and small flats. **It closes a live hole**: `iiex:bevelgear` has no recipe at all today,
 so a survival run cannot turn a corner or change height without creative or salvage.
 
 | In | Out |
@@ -319,11 +319,11 @@ plays, and all four roll families render at once. The render layer is greenfield
   derived from its travel at 45°/voxel — a screw's turn is coupled to its travel by the thread pitch.
   ⛔ The pose number rises as the gap *falls*, which inverts the mill's `Gaps` convention, where the
   number is the gap and the array descends.
-* ~~`iwex:stock-slab` is stale — 400 u is shingled-bar size.~~ Fixed 2026-08-12: it is
-  `iwex:stock-shingledslab` at 1200 u, and the bar beside it is 400. The old codes resolve through
+* ~~`iiex:stock-slab` is stale — 400 u is shingled-bar size.~~ Fixed 2026-08-12: it is
+  `iiex:stock-shingledslab` at 1200 u, and the bar beside it is 400. The old codes resolve through
   `StockForm.FormerNames` and `StockFormRenameMigration`.
 * The cast-iron ingot route is mid-change. `config/metals/castiron.json:9` still emits `"ingot"` and
-  the "Spur Gear (Cast Iron)" recipe still consumes `iwex:ingot-castiron`, while the design has moved
+  the "Spur Gear (Cast Iron)" recipe still consumes `iiex:ingot-castiron`, while the design has moved
   the ingot mould to crucible steel. Move the recipe with the route or it points at an unresolvable
   ingredient — and nothing establishes what that does at load.
 * Neither tool shape's mass divides off the 25 u rod: the cutter measures 26 vx³ = 65 u and the shears
@@ -343,7 +343,7 @@ plays, and all four roll families render at once. The render layer is greenfield
 | 3 | The scale/swarf item and its remelt sink, without which the planer's slab route mints nothing | high |
 | 4 | Masses for every machined part and blank. [density rule](density-rule.md) has no settled figure for hollow or toothed geometry, which is what all of these are | high |
 | 5 | The hand gear's exact bill and durability cost, against the shaper route, so the ladder is a real choice | medium |
-| ~~6~~ | ~~Whether `MachineJob` lives in exlib or iwex~~ — **settled 2026-08-11: exlib**, and `ItemDie` with it. Both are mechanics other mods consume, which is the whole point of the string-keyed `Machine` field; a contract living in iwex would force a dependency on a *content* mod to use it. The station they hang off is already there — `BlockEntityMachineStation` | closed |
+| ~~6~~ | ~~Whether `MachineJob` lives in exlib or iiex~~ — **settled 2026-08-11: exlib**, and `ItemDie` with it. Both are mechanics other mods consume, which is the whole point of the string-keyed `Machine` field; a contract living in iiex would force a dependency on a *content* mod to use it. The station they hang off is already there — `BlockEntityMachineStation` | closed |
 | 7 | Seconds and `MinTorque` per job — none proposed anywhere | medium |
 | 8 | Footprints. The planer is 73 × 64 × 46 voxels and the bender 74 × 58 × 41; both overhang their cell heavily on negative axes | medium |
 | 9 | The drill press has one consumer (the gear web) and no shape yet. It needs a second job before it is more than a step in one chain — the test every other machine here had to pass | medium |

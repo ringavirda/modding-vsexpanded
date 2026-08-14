@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Sand Casting Long Cell (Colored Brick)",
+    "ingredientPattern": "BHB,BFB,BKB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:casting-sandlongcell-{brick}-n",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:brickcourse-four-running-*",
+        "name": "brick",
+        "allowedVariants": [
+          "black",
+          "brown",
+          "cream",
+          "gray",
+          "orange",
+          "red",
+          "tan"
+        ],
+        "quantity": 2
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Sand Casting Long Cell (Fire Brick)",
+    "ingredientPattern": "BHB,BFB,BKB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:casting-sandlongcell-fire-n",
+      "quantity": 1
+    },
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:claybricks-good-fire",
+        "quantity": 2
+      },
+      "F": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:chisel-*",
+        "isTool": true
+      }
+    }
+  }
+]

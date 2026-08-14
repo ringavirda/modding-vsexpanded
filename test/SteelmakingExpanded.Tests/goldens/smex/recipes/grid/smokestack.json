@@ -36,7 +36,7 @@
     },
     "P": {
       "type": "block",
-      "code": "lpex:pipe-cast-straight*",
+      "code": "iiex:pipe-cast-straight*",
       "quantity": 1
     }
   }

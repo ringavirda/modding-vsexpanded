@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
-using IronworkingExpanded.Items;
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.Items;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
@@ -26,7 +26,7 @@ public class BellHopperTests {
   private static BlockEntityHopperBell Bell(TestWorld world) {
     var be = new BlockEntityHopperBell {
       Pos = BellPos,
-      Block = TestBlocks.Configure(new Block(), "iwex:hopperbell", 90),
+      Block = TestBlocks.Configure(new Block(), "iiex:hopperbell", 90),
     };
     world.Place(BellPos, be.Block, be);
     world.Attach(be);
@@ -81,10 +81,10 @@ public class BellHopperTests {
       "north"
     );
 
-    rig.World.RegisterItem("iwex:burden");
+    rig.World.RegisterItem("iiex:burden");
     rig.World.RegisterItem("game:coke");
     rig.World.RegisterBlockEntityFactory(
-      "iwex.BlockEntityChargePile",
+      "iiex.BlockEntityChargePile",
       () => new BlockEntityChargePile()
     );
     Block pile = TestBlocks.Configure(
@@ -93,7 +93,7 @@ public class BellHopperTests {
       950,
       [("type", "chargepile")]
     );
-    pile.EntityClass = "iwex.BlockEntityChargePile";
+    pile.EntityClass = "iiex.BlockEntityChargePile";
     rig.World.Register(pile);
 
     // The cell and the code it wants come off the raised structure rather than being hand-written, so a
@@ -112,7 +112,7 @@ public class BellHopperTests {
   }
 
   private static Item BurdenItem(StructureRig rig) =>
-    rig.World.World.GetItem(new AssetLocation("iwex:burden"))!;
+    rig.World.World.GetItem(new AssetLocation("iiex:burden"))!;
 
   /// <summary>Every column of the furnace's shaft, in the ascending-<c>(x, z)</c> order the selection rule
   /// breaks its ties on.</summary>
@@ -165,7 +165,7 @@ public class BellHopperTests {
   [Fact]
   public void Magazine_and_dropping_round_trip_through_the_tree() {
     var world = new TestWorld();
-    var burden = world.RegisterItem("iwex:burden");
+    var burden = world.RegisterItem("iiex:burden");
     var src = Bell(world);
     ReflectionHelpers.SetField(src, "_magazine", new ItemStack(burden, 24));
     src.IsDropping = true;
@@ -207,7 +207,7 @@ public class BellHopperTests {
       shallowest = System.Math.Min(shallowest, core.ColumnCapacity(x, z));
 
     foreach (var (x, z) in keys)
-      core.ChargeColumnAt(x, z)!.Push("iwex:burden", shallowest, 20f, default);
+      core.ChargeColumnAt(x, z)!.Push("iiex:burden", shallowest, 20f, default);
     Assert.False(
       bell.IsFurnaceFull(),
       "a column with room left means the shaft is not full, however many others are topped out"
@@ -217,7 +217,7 @@ public class BellHopperTests {
       ChargeColumn column = core.ChargeColumnAt(x, z)!;
       int room = core.ColumnCapacity(x, z) - column.TotalUnits;
       if (room > 0)
-        column.Push("iwex:burden", room, 20f, default);
+        column.Push("iiex:burden", room, 20f, default);
     }
 
     Assert.True(bell.IsFurnaceFull());
@@ -274,7 +274,7 @@ public class BellHopperTests {
 
     // The grade rides along: the column holds the burden the tank was loaded with, not a count-only
     // charge.
-    Assert.Equal("iwex:burden", columns[0].Segments[0].Material);
+    Assert.Equal("iiex:burden", columns[0].Segments[0].Material);
   }
 
   [Fact]
@@ -301,7 +301,7 @@ public class BellHopperTests {
 
     foreach (var (x, z) in core.ShaftColumns.Keys)
       core.ChargeColumnAt(x, z)!
-        .Push("iwex:burden", core.ColumnCapacity(x, z), 20f, default);
+        .Push("iiex:burden", core.ColumnCapacity(x, z), 20f, default);
     int full = core.ShaftChargeUnits;
 
     ReflectionHelpers.Invoke(bell, "OnServerTick", 1f);
@@ -331,7 +331,7 @@ public class BellHopperTests {
 
     ItemStack magazine = Assert.Single(
       drops,
-      d => d.Collectible?.Code?.ToShortString() == "iwex:burden"
+      d => d.Collectible?.Code?.ToShortString() == "iiex:burden"
     );
     Assert.Equal(24, magazine.StackSize);
     // The grade comes back with it.

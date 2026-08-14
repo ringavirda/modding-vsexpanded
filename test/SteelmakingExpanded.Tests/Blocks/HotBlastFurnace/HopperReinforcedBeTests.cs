@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.BlockStructures.Furnaces.BlockEntities;
-using IronworkingExpanded.BlockStructures.Furnaces.Blocks;
-using IronworkingExpanded.Items;
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.Items;
+using IronIndustryExpanded.Tests;
 using NSubstitute;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.Blocks;
@@ -53,7 +53,7 @@ public class HopperReinforcedBeTests {
       "north"
     );
 
-    rig.World.RegisterItem("iwex:burden");
+    rig.World.RegisterItem("iiex:burden");
     rig.World.RegisterItem(CokeCode);
     rig.World.RegisterItem(CharcoalCode);
     rig.World.RegisterItem(FluxCode);
@@ -61,7 +61,7 @@ public class HopperReinforcedBeTests {
     // The charge pile and its entity class, so the core's SyncChargeBlocks materialises real windows onto
     // the columns the bell fills.
     rig.World.RegisterBlockEntityFactory(
-      "iwex.BlockEntityChargePile",
+      "iiex.BlockEntityChargePile",
       () => new BlockEntityChargePile()
     );
     Block pile = TestBlocks.Configure(
@@ -70,7 +70,7 @@ public class HopperReinforcedBeTests {
       950,
       ("type", "chargepile")
     );
-    pile.EntityClass = "iwex.BlockEntityChargePile";
+    pile.EntityClass = "iiex.BlockEntityChargePile";
     rig.World.Register(pile);
 
     var (bellPos, bellWanted) = rig.Cells.Single(c =>
@@ -115,7 +115,7 @@ public class HopperReinforcedBeTests {
   private static Item Item(StructureRig rig, string code) =>
     rig.World.World.GetItem(new AssetLocation(code))!;
 
-  private static Item BurdenItem(StructureRig rig) => Item(rig, "iwex:burden");
+  private static Item BurdenItem(StructureRig rig) => Item(rig, "iiex:burden");
 
   private static void Deposit(
     BlockEntityHopperReinforced be,
@@ -278,7 +278,7 @@ public class HopperReinforcedBeTests {
     // keeps.
     var world = new TestWorld();
     Item coke = world.RegisterItem(CokeCode);
-    Item burden = world.RegisterItem("iwex:burden");
+    Item burden = world.RegisterItem("iiex:burden");
     var orphan = new BlockEntityHopperReinforced {
       Pos = Anchor,
       Block = TestBlocks.Configure(new Block(), "smex:hopperreinforced", 91),

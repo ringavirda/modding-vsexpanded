@@ -111,10 +111,10 @@ would be built from.
 | hearth / bath | the shallow pool of metal; every interactive cell the player charges through | the reverberatory hearth idiom - `BlockPuddlingHearth.cs:25-30`, `BlockHeatingHearth.cs:43-54` (the clicked cell picks the slot) |
 | charge doors | scrap and pig go in here, not down a shaft | `game:cokeovendoor*` is already a layout legend on the cowper (`BlockCowperStoveIntake.cs:56`); the puddling charge door is a modelled block |
 | regenerator chambers ×2 | soak flue heat on one half-cycle, give it back to the incoming gas + air on the other | the cowper stove, exactly - `BlockEntityCowperStove.cs:25` already models a checker-brick regenerator: internal temperature climbs from an exhaust network (`:175-186`), bleeds into the medium it reheats (`:215-219`), capped by `CowperMaxTemperature` (`:64`), with heat-sink blocks reading the value out (`:279-290`) |
-| gas + air intakes | producer gas one side, air the other | `smex:cowperstove-intake*` and `lpex:pipe-passthrough-*` are already layout legends (`BlockCowperStoveIntake.cs:52-55`) |
+| gas + air intakes | producer gas one side, air the other | `smex:cowperstove-intake*` and `iiex:pipe-passthrough-*` are already layout legends (`BlockCowperStoveIntake.cs:52-55`) |
 | reversing valve | the one control the machine has: swap which chamber fires and which soaks | the damper-on-a-lever idiom - `BlockEntityPuddlingChimneyCap.cs:19-33` (`IsOpen` / `Toggle`, held `idle`/`open` poses) |
-| metal tap | one tap into a canal | `iwex:moltenmetaltap*`, unchanged ([molten canal](molten-canal.md)) |
-| slag | skimmed or tapped separately | `iwex:slag`, as every other furnace makes |
+| metal tap | one tap into a canal | `iiex:moltenmetaltap*`, unchanged ([molten canal](molten-canal.md)) |
+| slag | skimmed or tapped separately | `iiex:slag`, as every other furnace makes |
 
 The regenerative block family already exists: the cowper is the same device applied to air only. The open
 hearth applies it to gas and air together, and adds the reversal.
@@ -158,7 +158,7 @@ No recipe. Proposed, and expensive - this is the machine that says the steel tie
 | hearth cells | tier-3 refractory brick, in bulk | the vessel's own RCC stages, `BlockConverterBessemer.cs:112-121` |
 | regenerator chambers | tier-3 refractory brick + `smex:cowperstove-intake` ×2 | `SmexRecipeConfig.cs:61-62` |
 | reversing valve | plate + nails on the chimney-cap chassis | `ExIngredients.cs:36` |
-| tap | `iwex:moltenmetaltap` | unchanged |
+| tap | `iiex:moltenmetaltap` | unchanged |
 
 Cost keys `openhearthcore-grid` and `openhearthreverser-grid` would go in
 `SmexRecipeConfig.DefaultCatalogue` (`SmexRecipeConfig.cs:45-70`).
@@ -182,7 +182,7 @@ pig (canal or ingot) + BULK SCRAP + flux  ──▶  BATH  ◀── producer ga
 | In | Out |
 |---|---|
 | molten pig from a canal, or solid pig / cast iron charged through the doors | molten open-hearth steel down the tap |
-| bulk steel scrap - any `Roles.Scrap` item, in stacks, not in bits | molten slag (`iwex:slag`) |
+| bulk steel scrap - any `Roles.Scrap` item, in stacks, not in bits | molten slag (`iiex:slag`) |
 | flux (lime) - the open hearth is basic practice, unlike the acid Bessemer | spent flue gas → the same exhaust network the cowpers feed |
 | producer gas, continuously, on a pipe | - |
 | regenerated air | - |
@@ -259,7 +259,7 @@ to `BfMaxFuelFactor`):
 
 Terms: `BfCombustionBaseTemp` 950, `BfCombustionCokeGain` 900, `BfMaxFuelFactor` 1.25,
 `BfNaturalDraughtFactor` 0.5, `BfPreheatCoefficient` 0.35, `BfRadiationLossBase` 120, `BfChargeLossFull` 310
-(`IwexConfig.cs:181`, `:184`, `:196`, `:207`, `:218`, `:221`, `:225`); `CowperMaxTemperature` 1240
+(`IiexConfig.cs:181`, `:184`, `:196`, `:207`, `:218`, `:221`, `:225`); `CowperMaxTemperature` 1240
 (`SmexConfig.cs:121`).
 
 A Siemens furnace is blown - the regenerators are how the air gets there. So `RequiresBlast => true` with
@@ -268,17 +268,17 @@ not need the stack-height draught function the [crucible furnace](crucible-furna
 
 The regenerator therefore buys speed, not possibility - R5 exactly. Cold-air open hearth: 1645 °C, a 163 °C
 margin over iron's melt line. Regenerated: 2072 °C, which the melt-speed factor caps at 2.0×
-(`BfMeltSpeedMax`, `IwexConfig.cs:253`). Banking the producer down never stops the furnace; it halves it.
+(`BfMeltSpeedMax`, `IiexConfig.cs:253`). Banking the producer down never stops the furnace; it halves it.
 
 ### Proposed keys
 
 | Key | Proposed | Measured against (file:line) | What it does |
 |---|---|---|---|
 | `OpenHearthCapacity` | 24 000 u = 8 slab pours | `BessemerConverterCapacity` 4800 (`SmexConfig.cs:145`), settled 6000 | "much larger per heat" as a number - 4× the converter |
-| `OpenHearthMeltingPoint` | 1500 °C | `BfIronMeltingPoint` 1482 (`IwexConfig.cs:271`); `BessemerRefineTemperature` 1500 (`SmexConfig.cs:194`) | steel's liquidus, same figure the converter refines above |
-| `OpenHearthMeltIntervalSec` | 60 s | `BfMeltIntervalSec` 10 (`IwexConfig.cs:286`), `CupolaMeltIntervalSec` 20 (`:333`) | the slow cadence - 6× the blast furnace's |
-| `OpenHearthSteelPerMeltCycle` | 400 u | `BfIronPerMeltCycle` 60, settled 200 (`IwexConfig.cs:289`) | ⇒ 6.7 u/s nominal, 13.3 u/s at the melt-speed cap |
-| `OpenHearthSlagPerMeltCycle` | 40 u | `CupolaSlagPerMeltCycle` 8 (`IwexConfig.cs:340`) | 10 % - basic practice makes more slag than the acid converter's 6 % |
+| `OpenHearthMeltingPoint` | 1500 °C | `BfIronMeltingPoint` 1482 (`IiexConfig.cs:271`); `BessemerRefineTemperature` 1500 (`SmexConfig.cs:194`) | steel's liquidus, same figure the converter refines above |
+| `OpenHearthMeltIntervalSec` | 60 s | `BfMeltIntervalSec` 10 (`IiexConfig.cs:286`), `CupolaMeltIntervalSec` 20 (`:333`) | the slow cadence - 6× the blast furnace's |
+| `OpenHearthSteelPerMeltCycle` | 400 u | `BfIronPerMeltCycle` 60, settled 200 (`IiexConfig.cs:289`) | ⇒ 6.7 u/s nominal, 13.3 u/s at the melt-speed cap |
+| `OpenHearthSlagPerMeltCycle` | 40 u | `CupolaSlagPerMeltCycle` 8 (`IiexConfig.cs:340`) | 10 % - basic practice makes more slag than the acid converter's 6 % |
 | `OpenHearthGasPerSecond` | 24 L/s | `CowperIntakeVolume` 24 (`SmexConfig.cs:139`), `BessemerBlastPerSecond` 8 (`:148`) | continuous fuel draw; three times the converter's blast |
 | `OpenHearthAirPerSecond` | 24 L/s | same | the regenerated air side |
 | `OpenHearthScrapFraction` | no key | - | absent by design. The ceiling is the existing charge-loss/melt-speed arithmetic, not a number |
@@ -348,7 +348,7 @@ Nothing exists. `grep -ri "openhearth\|open hearth" src/` returns no hits at all
 | bulk-scrap acceptance | `MaterialRoleRegistry.IsRole(Roles.Scrap, stack)` | the converter already classifies scrap by role, not by path (`BlockEntityConverterControl.cs:619`) - reuse it and take whole stacks instead of `BessemerScrapUnitValue` bits |
 | metal def | `assets/smex/config/metals/openhearthsteel.json` | `bessemersteel.json` is the template. decide `generateItemFamily` and `tools` explicitly - see Gotchas |
 | heat | inherited, unmodified | override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `TuyereIntakeVolume`, `BlastPressureThreshold`, `BlastMixRequiredToFire` (`BlockEntityFurnaceCore.cs:111-128`) and nothing else |
-| the tap | already works | `iwex:moltenmetaltap*` ([molten canal](molten-canal.md)) |
+| the tap | already works | `iiex:moltenmetaltap*` ([molten canal](molten-canal.md)) |
 
 ### Where a caller hooks in
 
@@ -367,7 +367,7 @@ which is the existing precedent for reading a regenerator's heat from outside it
 
 None. When built, the shape of the suite is set by
 `test/SteelmakingExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` (`ConverterRig`) and
-`test/LowPressureExpanded.Tests/Scenarios/CupolaScenarioTests.cs` - build the real footprint through
+`test/IronIndustryExpanded.Tests/Scenarios/CupolaScenarioTests.cs` - build the real footprint through
 `StructureRig`, never force `StructureComplete`, and drive the machine's own production tick.
 
 ---

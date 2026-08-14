@@ -57,7 +57,7 @@ public static class MetalRegistry {
   /// <summary>
   /// Resolves a short metal token ("iron", "steel", "slag") to its descriptor. An unregistered token
   /// yields a transient convention descriptor whose <see cref="MetalDef.MoltenItem"/> is
-  /// <c>game:ingot-&lt;code&gt;</c>; a registered def (slag to <c>iwex:slag</c>) overrides it.
+  /// <c>game:ingot-&lt;code&gt;</c>; a registered def (slag to <c>iiex:slag</c>) overrides it.
   /// </summary>
   public static MetalDef ResolveByCode(string shortCode) =>
     _byCode.TryGet(shortCode, out var def)

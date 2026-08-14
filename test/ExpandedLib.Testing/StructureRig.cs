@@ -46,7 +46,7 @@ public sealed class StructureRig {
   /// <summary>
   /// Every cell of the rotated layout: world position and the (possibly wildcard) code it wants -
   /// vanilla's own rotated offset table. Codes for parts marked oriented turn with the structure, so a
-  /// cell authored <c>iwex:hopper-tall-north</c> wants a <c>-west</c> hopper at 90 deg; all others keep
+  /// cell authored <c>iiex:hopper-tall-north</c> wants a <c>-west</c> hopper at 90 deg; all others keep
   /// their authored, possibly domainless, form (<see cref="MultiblockFacings"/>).
   /// </summary>
   public IReadOnlyList<(BlockPos Pos, string Wanted)> Cells { get; }

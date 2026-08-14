@@ -2,8 +2,8 @@ using System;
 using ExpandedLib.Heat;
 using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockNetworkMolten;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded;
 using SteelmakingExpanded.BlockStructures.Converter;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
@@ -23,7 +23,7 @@ namespace SteelmakingExpanded.Tests;
 /// </summary>
 public class ConverterControlProcessTests {
   // Resolved the same way the control resolves them, so a headless registry (game: convention) and a
-  // populated one (iwex:/smex:) line up between what the test pushes and what the control reads.
+  // populated one (iiex:/smex:) line up between what the test pushes and what the control reads.
   private static string Pig => MetalRegistry.MoltenItemOf("pigiron").ToString();
   private static string Steel =>
     MetalRegistry.MoltenItemOf("bessemersteel").ToString();
@@ -38,18 +38,18 @@ public class ConverterControlProcessTests {
 
   private static TestWorld NewWorld() {
     var world = new TestWorld();
-    // Register both the convention (game:) and the shipped (iwex:/smex:) codes so the resolved token
+    // Register both the convention (game:) and the shipped (iiex:/smex:) codes so the resolved token
     // resolves to a real item whatever the static MetalRegistry state is under the test runner.
     foreach (
       var (code, melt) in new[]
       {
         ("game:ingot-pigiron", PigMelt),
-        ("iwex:ingot-pigiron", PigMelt),
+        ("iiex:ingot-pigiron", PigMelt),
         ("game:ingot-bessemersteel", 1500f),
         ("smex:ingot-bessemersteel", 1500f),
         ("game:ingot-iron", 1500f),
         ("game:ingot-slag", 1200f),
-        ("iwex:slag", 1200f),
+        ("iiex:slag", 1200f),
       }
     )
       world.RegisterItem(code, melt);

@@ -50,7 +50,7 @@ public static class ExIngredients {
     i => i.Item("game:clay-fire").Quantity(qty);
 
   /// <summary>A gear by explicit code - vanilla rusty (<c>game:gear-rusty</c>) or a mod's craftable gear
-  /// (<c>lpex:gear-*</c>). A recipe that accepts either kind emits one entry per gear code.</summary>
+  /// (<c>iiex:gear-*</c>). A recipe that accepts either kind emits one entry per gear code.</summary>
   public static Func<IngredientBuilder, IngredientBuilder> Gear(
     string code,
     int qty

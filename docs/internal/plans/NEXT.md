@@ -33,50 +33,45 @@ Each tier also renders its own name at last (Plated / Cast / Rolled Piping).
 
 ### ★ Where to pick up
 
-**M.4 — the `iiex` merge**, which now has a scouted, ordered five-stage execution ruling behind it.
-F3 is closed (2026-08-14) and **M.0 landed with it**, so nothing structural blocks the merge any more.
+**M.5 — the `siex` merge** (`{smex + hpex}` → Steel Industry Expanded). **M.4 landed 2026-08-14**, so the
+pattern is now walked once and written down; M.5 is the same shape against a smaller surface.
 
-⛔⛔ **M.0 exists because the plan was wrong, and the error was the dangerous kind.** M.4's passthrough row
-read *"✅ CLOSED"*; the collision was closed on the **block code** and wide open on the **asset Location**,
-which is the level `ExDefinitions` actually keys on. `ExBlockDef.Location` carries no variants, so the
-plated and cast tiers shared six blocktype Locations and one recipe Location — and a second def on an
-existing key **replaces it, last-writer-wins and unlogged**. Merging as planned would have deleted a whole
-pipe tier on the first green build, with every code-level guard, every `groupBy` guard and every migration
-guard still passing. That is M3's exact prohibition, executed silently. The row is corrected in place.
+★★ **M.4 is DONE.** `iwex` + `lpex` are one mod, `iiex` 0.7.0 — one assembly (`iiex.dll`), one domain, one
+ModSystem, one config section, one test suite, `assets/iiex/`, `docs/iiex/`, handbook 00–09. The gate is
+**12 targets, 4,000 tests**, green on 1.20/1.21/1.22. Detail in
+[the worklog](../worklog/2026-08.md#2026-08-14---m4-iwex--lpex-are-one-mod-iiex); the execution ruling that
+drove it is [2026-08-14-m4-iiex-merge-execution.md](2026-08-14-m4-iiex-merge-execution.md).
 
-★ M.0 put the tier into the asset path and the shape folder, moved the deliberately-shared brick mesh into
-exlib's own tree (it was pinned to `iwex:` **inside exlib**), and split the two colliding recipe files.
-Written as a failing assertion first — `PipeTierLocationTests` named all six Locations and six shape paths
-before anything changed, and it lives in exlib so it holds for any tier pair a consumer adds.
+⛔⛔ **Read these four before attempting M.5 — each is a way to finish green and be wrong.**
 
-⛔ **Read the execution ruling before starting M.4.** Its load-bearing findings: there is **no migration
-chain** — `CodeRelocation.Remap` walks the *live* registry, so `ppex → lpex → iiex` is one hop and the fix
-is to **retarget `newDomain` in place**, never to add a second hop; only **exlib, ppex and smex** ever
-shipped, so `iwex:`/`lpex:` codes need no migration at all; `PipeMigration`'s three branches are gated on
-**domain** and must become **tier** gates or a released ppex segment is claimed twice; and both smex and
-hpex list lpex *and* iwex explicitly, so the second `ProjectReference` must be **deleted**, not left to the
-transitive one — that failure is green everywhere and absent in game.
+1. **A per-mod discriminator becomes a bug the moment the mods merge.** `PipeMigration` gated three
+   branches on `Code.Domain`, and both pipe tiers carry the same `type` variants, so a mechanical
+   domain rewrite claimed every released segment code **twice**. Gate on the thing that actually varies
+   (the `tier` variant); keep the domain only to scope the walk. `RolledJointTests` had the same shape as
+   a *test* — parameterised by domain as a tier proxy, so half its rows became literal duplicates.
+2. **`ExRecipeProfiles` and `ExConfigProfiles` key on the mod id and REPLACE silently.** Two config
+   sections under one assembly leave whichever registered first unreachable. The configs must merge, and
+   when they do, watch for catalogue keys that collide (`pipe-straight-grid` existed in both) — a
+   collection initialiser assigns through the indexer, so one set overwrites the other with no error.
+3. **A stale row in `ReleasedCodeCoverageTests.Domains` makes the contract pass vacuously.**
+   `DefinitionCodes.ForDomain` *injects* the domain rather than filtering, so a leftover row synthesises
+   phantom live blocks. Verified: leaving `("lpex", mergedAsm)` in place keeps all six tests green.
+   Delete every merged-away row and add the survivor **together**.
+4. **Block-entity class strings live in the SAVE.** `CodeRelocation` remaps codes and never touches them;
+   an unresolved key drops the block entity. The ground truth is the `entityClass` values inside the
+   shipped zip — read them out of `dist/Releases/`, not out of the source.
 
-⛔ **M.3 is folded into M.4** *(2026-08-14)*. Its premise did not survive checking - smex hard-depends on
-lpex, so nothing is unbuildable - and there is no neutral way to do it early: the only non-`lpex:`
-passthrough is the cheaper plated one, and the outlet has no non-`lpex:` home. Under M2 the loops are
-nested, so the codes simply relocate at the merge. Reasoning in the plan; the design ruling it cited
-([gas-producer](../../design/machines/gas-producer.md) Open 9) is corrected in place.
+★ Two mechanics worth reusing. The lang trees were merged by **JSON key union**, never a directory move:
+all three locale filenames collide, and a directory move leaves the locales mutually consistent while
+losing a whole mod's strings — the parity guard passes over it. And coverage was proved by diffing
+**distinct test-method names** across the merge (1139 → 1139), which distinguishes a deleted duplicate
+from a deleted check; the raw test count cannot.
 
-So **M.4** carries M.3's remainder and B23's setting. Its one open owner question — the colliding
-passthroughs — was **closed and built 2026-08-14**: they take the `tier` variant like the segments.
-
-★★ **What F3 leaves behind, and it is the reusable part.** The wiki's worst errors were not the wiki's:
-they were lifted verbatim from **stale XML doc comments in exlib**, so the page and its source said the
-same wrong thing and each corroborated the other. Fixing a page without fixing the comment it came from
-regenerates the defect on the next read. F3.5 was added mid-stage for exactly that, and the same check is
-worth making the next time any authored artifact is found drifted.
-
-⛔ **And `WikiParity` cannot see most of what F3 fixed** — every wrong snippet resolved. A green guard run
-is not evidence a page is correct, only that its symbols exist. Two structural gaps found while working:
-`ClassWithBase` cannot parse a generic `class X<T> : Base` line, so declaration checks silently return on
-those fences, and a member written on a lowercase local is invisible. Both are why F3.1's second half had
-to be done by reading the library.
+⛔ **`smex` and `hpex` both name `iiex` explicitly and must keep doing so.** `<Private>false</Private>` does
+not propagate to a transitive reference, so dropping the explicit item lets the SDK synthesise one with
+`Private=true` and copy a second ModSystem-bearing dll into the output — Vintage Story then refuses to load
+the mod at all. Verify by **staging the output and counting dlls**, never by reading a csproj: that failure
+is green in every test run and visible only in game.
 
 ## ★★ The mod split is ruled: five mods become two
 

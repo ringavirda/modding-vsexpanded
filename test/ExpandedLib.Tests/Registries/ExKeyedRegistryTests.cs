@@ -11,9 +11,9 @@ public class ExKeyedRegistryTests {
   [Fact]
   public void Registers_and_looks_up_by_derived_code() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
-    reg.Register(new Item("lpex", 1));
+    reg.Register(new Item("iiex", 1));
 
-    Assert.True(reg.TryGet("lpex", out var found));
+    Assert.True(reg.TryGet("iiex", out var found));
     Assert.Equal(1, found.Value);
   }
 
@@ -29,10 +29,10 @@ public class ExKeyedRegistryTests {
   [Fact]
   public void Re_registering_a_code_replaces_the_item() {
     var reg = new ExKeyedRegistry<Item>(i => i.Code);
-    reg.Register(new Item("iwex", 1));
-    reg.Register(new Item("iwex", 2));
+    reg.Register(new Item("iiex", 1));
+    reg.Register(new Item("iiex", 2));
 
-    Assert.True(reg.TryGet("iwex", out var found));
+    Assert.True(reg.TryGet("iiex", out var found));
     Assert.Equal(2, found.Value);
     Assert.Single(reg.Codes);
   }

@@ -42,7 +42,7 @@ smex already ships a mortar recipe.
 
 ### 1. The spine's flux is raw crushed limestone, and that is metallurgically correct
 
-`assets/iwex/config/materialroles.json:3`
+`assets/iiex/config/materialroles.json:3`
 
 ```
 { "role": "flux", "code": "game:lime" }
@@ -63,7 +63,7 @@ the CaO produced there fluxes the slag. A furnace fed pre-burned quicklime pays 
 | in | qty |
 |---|---|
 | `game:slakedlimeportion` | 1 L |
-| `iwex:powderedslag` | 8 |
+| `iiex:powderedslag` | 8 |
 | **out** `game:mortar` | 4 |
 
 The one building-material payoff from lime already ships, off vanilla slaked lime, and it is slag cement.
@@ -100,11 +100,11 @@ No lang key, no handbook entry, no shape, no config key, no recipe.
 
 ### The specification survives only in git
 
-The row was removed from the old iwex design monolith at the cut and the monolith deleted; git history holds
+The row was removed from the old iiex design monolith at the cut and the monolith deleted; git history holds
 the only other copy:
 
 ```
-$ git show 791b43b:docs/design/iwex.md   # line 98
+$ git show 791b43b:docs/design/iiex.md   # line 98
 | **Lime kiln / cement** | — | — (coke-fired shaft) | limestone + coke → **quicklime**;
 quicklime + ground slag → **cement / concrete** | **recipe modes / barrel mixes, not separate
 machines** — quicklime is a continuous-shaft-kiln output on the same heat balance; cement is a
@@ -125,7 +125,7 @@ Everything that was ever decided, from the row above:
 | Inputs → outputs | limestone + coke → quicklime; quicklime + ground slag → cement / concrete |
 | Status when cut | *(planned)*, never started |
 
-Calcination at ~900 °C is below the iron melt lines the iwex heat model is tuned around, so a shaft kiln is a
+Calcination at ~900 °C is below the iron melt lines the iiex heat model is tuned around, so a shaft kiln is a
 furnace-core variant: no new FSM, no new blast demand, a melting point and a recipe. The suite already ships a
 continuous shaft furnace in the [cupola](../../machines/cupola.md); a Homestead build starts from that, not
 from a blank block.

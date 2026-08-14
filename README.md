@@ -7,8 +7,7 @@ steel making:
 | Mod                                                             | modid   | What it is                                                                                                   |
 | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
 | [Expanded Library](src/ExpandedLib/README.md)                   | `exlib` | Shared framework: block networks, multiblock structures, registries (entities/commands/config), save migrations, common helpers. |
-| [Ironworking Expanded](src/IronworkingExpanded/README.md)       | `iwex`  | Cold-blast ironmaking: the base (bolted) pipe tier + the `pipe`/`molten` networks, mechanical blowers, ore mixing, blast-furnace charge prep. |
-| [Low Pressure Expanded](src/LowPressureExpanded/README.md) | `lpex`  | Cast pipe tier + fittings, the Cornish boiler, the Watt engine and their sub-machines (MP generator, fluid pump). |
+| [Iron Industry Expanded](src/IronIndustryExpanded/README.md)    | `iiex`  | The whole iron tier: cold-blast ironmaking, the `pipe`/`molten`/`mpenergy` networks, the plated and cast pipe tiers with their fittings, the Cornish boiler and the Watt engine. |
 | [Steelmaking Expanded](src/SteelmakingExpanded/README.md)       | `smex`  | Hot blast furnace, cowper stoves, molten-metal casting, Bessemer converter, air blower.                      |
 | [High Pressure Expanded](src/HighPressureExpanded/README.md)    | `hpex`  | The high-pressure tier: the Lancashire boiler and the throttled Cornish engine.                              |
 
@@ -18,8 +17,7 @@ steel making:
 | ------------------------------- | ---------------------------------------------------------------------- |
 | `src/ExpandedLib/`              | The `exlib` framework mod (C# + minimal assets).                       |
 | `src/ExpandedLib.Generators/`   | Roslyn source generators (config value accessors, typed lang keys).    |
-| `src/IronworkingExpanded/`      | The `iwex` mod: base pipe tier, networks, cold-blast ironmaking.       |
-| `src/LowPressureExpanded/`      | The `lpex` mod: cast pipes/fittings + low-pressure steam machinery.    |
+| `src/IronIndustryExpanded/`     | The `iiex` mod: networks, pipes, ironmaking and low-pressure steam.    |
 | `src/SteelmakingExpanded/`      | The `smex` mod: the steel chain.                                       |
 | `src/HighPressureExpanded/`     | The `hpex` mod: the high-pressure steam leaves.                        |
 | `src/Directory.Build.props`     | Shared MSBuild config + the supported-game-version manifest.           |
@@ -30,8 +28,8 @@ steel making:
 | `dist/CakeBuild/`               | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
 | `VintageStory.sln`              | Solution tying the projects together.                                  |
 
-The dependency chain is `exlib -> iwex -> lpex -> smex`, with `hpex` on top of `lpex`
-(a benign diamond: `smex` also references `iwex`). Every reference is `Private=false`,
+The dependency chain is `exlib -> iiex -> smex`, with `hpex` on top of `smex`
+(a benign diamond: `hpex` also references `iiex`). Every reference is `Private=false`,
 so players install each mod separately; the network manager identity lives in `exlib` only.
 
 ## Code conventions
@@ -53,7 +51,7 @@ Code is organized by **feature**, and within each feature by Vintage Story's
   `[BlockRegister]` / `[ItemRegister]` / `[BlockEntityRegister]` /
   `[BlockBehaviorRegister]` (etc.) attribute and `EntityRegistry.RegisterAll` picks it
   up. Chat commands use `[CommandRegister]` / `[SubCommandRegister]` the same way.
-- Gameplay tunables live in a per-mod `*Values` accessor (`IwexValues`, `LpexValues`,
+- Gameplay tunables live in a per-mod `*Values` accessor (`IiexValues`, `IiexValues`,
   `SmexValues`, `HpexValues` - source-generated from the `[ExConfigRegister]` config
   classes), persisted as one section per mod in the shared `ModConfig/ex_values.json` and
   editable live with `/exmod config`. Recipe and construction costs live in the same

@@ -1,5 +1,5 @@
 # Fluid Tank / Cistern
-**Status** designed - no block, no block entity, no shape, no recipe, no config key. Nothing of it exists in `src/`   **Mod** lpex
+**Status** designed - no block, no block entity, no shape, no recipe, no config key. Nothing of it exists in `src/`   **Mod** iiex
 
 **Owns**
 - The tank's purpose and shape as a design: a medium-agnostic bulk buffer on the pipe network, and the one
@@ -52,7 +52,7 @@ Two things make it worth building:
    boiler wants a buffer between its pump and its feed.
 
 Medium-agnostic is load-bearing. The same block is the gasholder of the deferred domestic complex ("the
-core-lpex medium-agnostic storage node holding coal gas") and would be the buffer for producer gas at the
+core-iiex medium-agnostic storage node holding coal gas") and would be the buffer for producer gas at the
 open hearth. Building it as a water tank forecloses both.
 
 ---
@@ -129,14 +129,14 @@ makes capacity a build decision rather than a config number. See [Open](#open).
 
 | asset | path | state |
 |---|---|---|
-| Editable shape | — | not drawn. No candidate under `assets/editable/shapes/` - the two `molten-block-moltenbarrel*.json` shapes are iwex molten-network barrels, not this |
+| Editable shape | — | not drawn. No candidate under `assets/editable/shapes/` - the two `molten-block-moltenbarrel*.json` shapes are iiex molten-network barrels, not this |
 | Runtime shape | — | none |
 | Animations | — | none needed; a fill-level renderer is wanted instead (see below) |
-| Lang | — | no `block-fluidtank*` / `blockdesc-*` key in `assets/lpex/lang/en.json` |
-| Handbook | — | the tank appears in none of the five lpex pages (`assets/lpex/config/handbook/00…04`) |
+| Lang | — | no `block-fluidtank*` / `blockdesc-*` key in `assets/iiex/lang/en.json` |
+| Handbook | — | the tank appears in none of the five iiex pages (`assets/iiex/config/handbook/00…04`) |
 
 It should show its level. `BoilerWaterRenderer` draws the Cornish boiler's water surface between two
-configured heights (`BoilerWaterSurfaceLowLevel` / `HighLevel`, `LpexConfig.cs:128`, `:134`), and exlib's
+configured heights (`BoilerWaterSurfaceLowLevel` / `HighLevel`, `IiexConfig.cs:128`, `:134`), and exlib's
 shared liquid-surface renderer exists for exactly this - `Renderers/SurfaceRenderer`, "a liquid line inside
 a block - water tanks, molten canals" (`docs/wiki/Helpers-and-Renderers.md:149-151`). Under R7 ("nothing is
 hidden") a buffer whose whole purpose is "how much do I have banked" must not be readable only from
@@ -149,18 +149,18 @@ repeat that.
 
 ## Construction *(proposed)*
 
-There is no recipe, and there is no cost-catalogue key (`LpexRecipeConfig.cs:59-86` lists ten lpex entries;
+There is no recipe, and there is no cost-catalogue key (`IiexRecipeConfig.cs:59-86` lists ten iiex entries;
 none is a tank).
 
 Proposed, following the pattern the boiler and engine already use:
 
 - Right-click construction (RCC), not a grid recipe. It is a plate vessel of the same class as a boiler
   shell, and the RCC path already resolves salvage through `RccBrokenDropsRatio`
-  (`LpexConfig.cs:116`, default 0.8) and the shared `ExRccSettings` registration
+  (`IiexConfig.cs:116`, default 0.8) and the shared `ExRccSettings` registration
   (`LowPressureExpandedModSystem.cs:29-32`).
 - Built from plate + rivets, the settled fabricated-part idiom (`STATE.md:417-442`): rivets are the
-  ingredient, so no riveting machine is required, and the rivet die ships with lpex.
-- A cost key `fluidtank-rcc` in `LpexRecipeConfig.Defaults()` so `/exmod recipes lpex <level>` reaches it.
+  ingredient, so no riveting machine is required, and the rivet die ships with iiex.
+- A cost key `fluidtank-rcc` in `IiexRecipeConfig.Defaults()` so `/exmod recipes iiex <level>` reaches it.
 
 This makes the tank a rivet consumer. Rivets are the steam tier's fastener because a riveted joint is strong
 and tight (`STATE.md:486-496`); a water cistern under a couple of atmospheres is a riveted vessel and gives
@@ -208,20 +208,20 @@ receiver. A pressurised gas receiver is a different machine.
 
 | quantity | proposed | anchored on | file:line of the anchor |
 |---|---|---|---|
-| Capacity | 2000 L | a Cornish boiler drawing at its maximum feed rate for one full heat-up: `10 L/s × 180 s = 1800 L`, plus margin | `BoilerWaterIntakeRate` `LpexConfig.cs:95`; `BoilerHeatUpSeconds` `LpexConfig.cs:80` |
-| Transfer rate, each side | 20 L/s | above the boiler's 10 L/s draw and above a Watt-driven pump's real 15 L/s output, so the tank is never the bottleneck | `LpexConfig.cs:95`; [pumps](pumps.md) |
+| Capacity | 2000 L | a Cornish boiler drawing at its maximum feed rate for one full heat-up: `10 L/s × 180 s = 1800 L`, plus margin | `BoilerWaterIntakeRate` `IiexConfig.cs:95`; `BoilerHeatUpSeconds` `IiexConfig.cs:80` |
+| Transfer rate, each side | 20 L/s | above the boiler's 10 L/s draw and above a Watt-driven pump's real 15 L/s output, so the tank is never the bottleneck | `IiexConfig.cs:95`; [pumps](pumps.md) |
 | Delivery pressure | 1 atm, fixed | matches the intake's and the manual pump's gravity head | `BlockEntityFluidIntake.cs:49`, `BlockEntityManualFluidPump.cs:147` |
-| Tick period | 1000 ms, server-side | every other fitting and machine in lpex | `BlockEntitySteamCondenser.cs:42`, `BlockEntityPressureValve.cs:54` |
-| Config key | `FluidTankCapacity`, section `lpex` | — | would join `LpexConfig.cs` § Storage |
+| Tick period | 1000 ms, server-side | every other fitting and machine in iiex | `BlockEntitySteamCondenser.cs:42`, `BlockEntityPressureValve.cs:54` |
+| Config key | `FluidTankCapacity`, section `iiex` | — | would join `IiexConfig.cs` § Storage |
 
 ### What 2000 L buys, against shipped numbers
 
 | scenario | result |
 |---|---|
 | Cornish boiler at maximum feed draw, pump stopped | 2000 / 10 = 200 s unattended |
-| Cornish boiler auto-fill ceiling | 800 × 0.5 = 400 L → the tank holds 5 fills (`LpexConfig.cs:91`, `:143`) |
+| Cornish boiler auto-fill ceiling | 800 × 0.5 = 400 L → the tank holds 5 fills (`IiexConfig.cs:91`, `:143`) |
 | Filling the tank from a Watt-driven pump | 2000 / 15 = 133 s ([pumps](pumps.md)) |
-| Filling it by hand | 2000 / 2 = 1000 s - deliberately not a hand job (`ManualPumpWaterPerSecond`, `LpexConfig.cs:203`) |
+| Filling it by hand | 2000 / 2 = 1000 s - deliberately not a hand job (`ManualPumpWaterPerSecond`, `IiexConfig.cs:203`) |
 | Equivalent in pipe cells | 2000 / 30 = 67 pipes (`LitresPerPipe`, `ExlibConfig.cs:32`) |
 
 ### Build cost *(proposed)*
@@ -234,7 +234,7 @@ count follows; do not pick a number and back-fill the art.
 
 ## Drops *(proposed)*
 
-- RCC salvage at `RccBrokenDropsRatio` (0.8 by default, `LpexConfig.cs:116`), like the boiler and engine.
+- RCC salvage at `RccBrokenDropsRatio` (0.8 by default, `IiexConfig.cs:116`), like the boiler and engine.
 - The contents are lost. Water and gas are not items, nothing in the suite drops a medium, and the pipe
   network already discards content silently on an incompatible merge
   ([pipe network](../mechanics/pipe-network.md) Gotcha 14). Under
@@ -257,14 +257,14 @@ Nothing exists. The files a tank would add, and the shipped file each one copies
 | `BlockEntityFluidTank : BlockEntity` | `BlockEntitySteamCondenser` - 1000 ms server tick, `ConnectedNetwork(face)` per side, synced display flag | `BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:23`, `:34-35`, `:37-44` |
 | filler footprint (if 2 cells or more) | `BlockManualFluidPump` - the hand-rolled `IFillerHost` triad | `BlockStructures/ManualPump/Blocks/BlockManualFluidPump.cs:54`, `:77-123` |
 | fill-level renderer | `BoilerWaterRenderer` + exlib's `Renderers/SurfaceRenderer` | `BlockStructures/Boiler/BoilerWaterRenderer.cs`; `docs/wiki/Helpers-and-Renderers.md:149-151` |
-| `FluidTankCapacity` config key | `LpexConfig` § Storage (new region) | `LpexConfig.cs` |
-| `fluidtank-rcc` cost entry | `LpexRecipeConfig.Defaults()` | `LpexRecipeConfig.cs:59-86` |
+| `FluidTankCapacity` config key | `IiexConfig` § Storage (new region) | `IiexConfig.cs` |
+| `fluidtank-rcc` cost entry | `IiexRecipeConfig.Defaults()` | `IiexRecipeConfig.cs:59-86` |
 | RCC stages | the Cornish boiler / Watt engine construction stages | [recipes-config](../mechanics/recipes-config.md) |
-| tests | `Blocks/Condenser/CondenserBeTests.cs` is the closest shape (a connector BE bridging two runs) | `test/LowPressureExpanded.Tests/Blocks/Condenser/CondenserBeTests.cs` |
+| tests | `Blocks/Condenser/CondenserBeTests.cs` is the closest shape (a connector BE bridging two runs) | `test/IronIndustryExpanded.Tests/Blocks/Condenser/CondenserBeTests.cs` |
 
 ### The one thing that has no template
 
-Persisting the stored medium. Every other connector in lpex is stateless between ticks - the condenser holds
+Persisting the stored medium. Every other connector in iiex is stateless between ticks - the condenser holds
 nothing, the pressure valve holds only a gate setting. The tank is the first block that owns a pool outside
 a network, so it needs its own `ToTreeAttributes` / `FromTreeAttributes` for
 `(MediumType, Volume, Temperature)`, and it must survive the same trap the valve hit: a cached pool that
@@ -293,7 +293,7 @@ against a possibly-reconfigured rating (`BlockEntityPressureValve.cs:47-52`).
 
 4. The connector must be reciprocal. `GetConnectedNetworkAcross` returns a run only when the block over
    there presents a connector back (`BlockNetworkModSystem.cs:67-79`). A pipe merely sitting adjacent is
-   not plumbed in - the same rule every lpex machine port already lives by.
+   not plumbed in - the same rule every iiex machine port already lives by.
 
 5. A connector face with nothing across it is an open connector, not automatically a leak.
    `ClassifyOpenings` counts a face as a leak only when the neighbour is air (`PipeNetwork.cs:632`). A tank
@@ -330,5 +330,5 @@ against a possibly-reconfigured rating (`BlockEntityPressureValve.cs:47-52`).
   ([recoverability](../mechanics/recoverability.md)).
 - No art. Until a vessel is drawn there is no volume, so there is no build cost
   ([density rule](../mechanics/density-rule.md)).
-- `../overview.md:161` lists the fluid tank among lpex's content with no build-status marker; the overview
+- `../overview.md:161` lists the fluid tank among iiex's content with no build-status marker; the overview
   row should carry one.

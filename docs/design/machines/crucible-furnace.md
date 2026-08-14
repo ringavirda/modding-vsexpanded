@@ -1,12 +1,12 @@
 # Crucible steel furnace
-**Status** designed, shapes drawn 2026-08-01/02 - nothing built; no block, no BE, no pot item, no metal def, no recipe   **Mod** iwex (`IronworkingExpanded`)
+**Status** designed, shapes drawn 2026-08-01/02 - nothing built; no block, no BE, no pot item, no metal def, no recipe   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the draft crucible furnace (Huntsman, 1740): melting holes below floor level, ash pit and grate beneath, flue at the bottom, tall stack on top;
 * the two independent axes: hole count sets throughput, chimney height sets temperature, and that both need machinery the layout DSL does not have;
 * its charge and product: blister steel + coke + a sealed pot → crucible steel, the tool/weapon steel;
 * the pot as a consumable fireclay item - the documented exception to the clay heat gate;
-* why it is iwex and not smex, and why it is built in banks;
+* why it is iiex and not smex, and why it is built in banks;
 * the requirement that the natural-draught factor become a function of stack height, and the arithmetic behind it.
 
 **Does not own** - cited only: the `T_process = T_in − T_loss` law, the melt-speed factor, the Idle/Firing/Melting FSM and every `Bf*` / `Cupola*` key ([heat balance](../mechanics/heat-balance.md)) · what blister / shear / crucible steel are ([materials.md](../materials.md)) · the canal a pot pours into ([molten network](../mechanics/molten-network.md)) · the layout DSL ([multiblock](../mechanics/multiblock.md)) · the cupola's own numbers ([cupola](cupola.md)) · the tilting non-ferrous crucible, a different and deferred machine ([STATE.md](../../internal/plans/STATE.md)).
@@ -181,7 +181,7 @@ The suite pays the player in materials and never in gear. Bessemer steel is chea
 
 It closes a loop already in the tree. Crucible steel is made by melting blister steel in a sealed pot, and blister steel is a shipped vanilla item (`game:ingot-blistersteel`, refined on the anvil into `game:ingot-steel` by `survival/recipes/smithing/steel.json`), so vanilla's steel chain becomes crucible feedstock with no new upstream process - cementation stays vanilla.
 
-It belongs to iwex, not smex: the process is coke-fired, natural draught, no steam and no MP, a century older than Bessemer. It is the "cool gear" payoff an iwex-only player needs without requiring steam. Its gate is not tier but batch size: one pot at a time.
+It belongs to iiex, not smex: the process is coke-fired, natural draught, no steam and no MP, a century older than Bessemer. It is the "cool gear" payoff an iiex-only player needs without requiring steam. Its gate is not tier but batch size: one pot at a time.
 
 **Why not the cupola.** The distinction is physical:
 
@@ -249,7 +249,7 @@ Editable shapes are drawn (§ Settled, "Assets drawn"); nothing is exported or w
 | Asset | State |
 |---|---|
 | editable shapes | drawn - hearth interior, pot item, crushed blister-steel chunk (§ Settled) |
-| runtime shape | missing - nothing exported into `assets/iwex/shapes/` |
+| runtime shape | missing - nothing exported into `assets/iiex/shapes/` |
 | reference art | none in `assets/editable/refs/` - the Sheffield references are not in the repo |
 | pot item def | missing (see Construction) |
 | lang / handbook | no key, no page |
@@ -277,14 +277,14 @@ No recipe. Proposed, and cheap because the machine is meant to be duplicated:
 | stack courses | any of the brick family the smokestack already accepts | no new block needed |
 | damper | plate + nails, on the chimney-cap chassis | `ExIngredients.Nails` (`:36`) |
 
-Cost keys `cruciblefurnacecore-grid`, `cruciblehole-grid` in `IwexRecipeConfig.DefaultCatalogue` (`IwexRecipeConfig.cs:47-70`).
+Cost keys `cruciblefurnacecore-grid`, `cruciblehole-grid` in `IiexRecipeConfig.DefaultCatalogue` (`IiexRecipeConfig.cs:47-70`).
 
 ### The pot is fireclay, and it is a deliberate exception to the clay gate *(settled 2026-08-02)*
 
 | Source | Ceiling |
 |---|---|
 | vanilla `crucible-*-fired` | `maxHeatableTemp: 1200` (`survival/blocktypes/clay/fired/crucible.json`, `attributesByType`) |
-| this mod's own clay rule | `ClayMoldHeatCeiling = 1100` °C - "clay is bronze max" (`IwexConfig.cs:65`, gate at `ClayHeatGate.cs:21-32`) |
+| this mod's own clay rule | `ClayMoldHeatCeiling = 1100` °C - "clay is bronze max" (`IiexConfig.cs:65`, gate at `ClayHeatGate.cs:21-32`) |
 | crucible steel needs | ≈ 1600 °C |
 
 Those ceilings do not bar the pot. The clay ceiling governs molds, vessels reused indefinitely; the pot is a consumable that dies from exactly this abuse, so three heats at 1600 °C is the ceiling being enforced, paid in pots rather than in refusals. Sheffield pots were fireclay (Stourbridge clay, a high-alumina fireclay) and two or three heats was normal practice.
@@ -323,13 +323,13 @@ All proposed. No config section, no keys, no code. The right-hand column is what
 
 | Key | Proposed | file:line of the thing it derives from | What it does |
 |---|---|---|---|
-| `CrucibleMeltingPoint` | 1600 °C | cf. `BfIronMeltingPoint = 1482` (`IwexConfig.cs:271`), `CupolaCastIronMeltingPoint = 1200` (`:316`) | the process temperature crucible steel demands - the highest in the mod |
+| `CrucibleMeltingPoint` | 1600 °C | cf. `BfIronMeltingPoint = 1482` (`IiexConfig.cs:271`), `CupolaCastIronMeltingPoint = 1200` (`:316`) | the process temperature crucible steel demands - the highest in the mod |
 | firebox charge sizing | derived | the firebox branch sizes its fire through `ChargeCapacityUnits`, as the reheat furnace does | a firebox holds a fire, not a charge column |
-| `CruciblePotUnits` | 100 u (one vanilla ingot's worth) | cf. `MoldDefaultUnits = 100` (`IwexConfig.cs:92`) | one pot, one batch - the batch-size gate is the machine's balance |
+| `CruciblePotUnits` | 100 u (one vanilla ingot's worth) | cf. `MoldDefaultUnits = 100` (`IiexConfig.cs:92`) | one pot, one batch - the batch-size gate is the machine's balance |
 | `CrucibleMeltIntervalSec` | 60 | the firebox branch's melt-interval idiom | slow on purpose: tiny, slow, per-pot |
 | `CrucibleMaxFuelBurnTime` | 1200 | `BfMaxFuelBurnTime = 1200` (`:280`) | inherit |
 | `CrucibleHoleCount` | derived from the build, not config | - | throughput axis |
-| `BfNaturalDraughtFactor` | must become a function of stack height | currently a flat `0.5` (`IwexConfig.cs:276`), read at `BlockEntityFurnaceCore.cs:1859` | temperature axis - see below |
+| `BfNaturalDraughtFactor` | must become a function of stack height | currently a flat `0.5` (`IiexConfig.cs:276`), read at `BlockEntityFurnaceCore.cs:1859` | temperature axis - see below |
 
 ### Worked: a natural-draught furnace cannot reach 1600 °C under the shipped constants
 
@@ -337,9 +337,9 @@ Against [heat balance](../mechanics/heat-balance.md)'s own terms (the firebox br
 
 | Term | Value | Why |
 |---|---|---|
-| `fuelFactor` | 1.25 | `1 + 0.35 × (1.0 − 0.20)/0.20 = 2.4`, clamped by `BfMaxFuelFactor` (`IwexConfig.cs:196`) |
+| `fuelFactor` | 1.25 | `1 + 0.35 × (1.0 − 0.20)/0.20 = 2.4`, clamped by `BfMaxFuelFactor` (`IiexConfig.cs:196`) |
 | `airFactor` | 0.5 | `natural + (1 − natural) × 0` with no blast - `BfNaturalDraughtFactor` (`:207`) |
-| `T_in` | 1512.5 °C | `950 + 900 × 1.25 × 0.5` (`IwexConfig.cs:181`, `:184`) |
+| `T_in` | 1512.5 °C | `950 + 900 × 1.25 × 0.5` (`IiexConfig.cs:181`, `:184`) |
 | `T_loss` | 430 | radiation `120` (`:221`) + full charge loss `310` (`:225`) at 20 °C ambient |
 | `T_process` | 1082.5 °C | 500 °C short of what the process needs - and short even of iron's own 1482 line |
 
@@ -366,14 +366,14 @@ Nothing exists. `grep -i crucible src/` finds only the vanilla crucible pour pat
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockCrucibleFurnaceCore` | `src/IronworkingExpanded/BlockStructures/Furnaces/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete example: `Core(domain, code, path, tiers…)` then `.Class`/`.EntityClass`/faces/`.MultiblockLayout` |
+| `BlockCrucibleFurnaceCore` | `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete example: `Core(domain, code, path, tiers…)` then `.Class`/`.EntityClass`/faces/`.MultiblockLayout` |
 | the layout | `.MultiblockLayout(s => s.Origin(…).Legend(…).Layer(…))` | `BlockCupolaFurnaceCore.cs:59-125`; negative Y layers are legal and used (`BlockSmokeStackIntake.cs:55`) |
 | `BlockEntityCrucibleFurnace` | `.../Furnaces/BlockEntities/` | `BlockEntityHeatingFurnace.cs:31-136` - the thinnest furnace variant in the tree: firebox geometry (`:37-51`), plain-fuel charge read (`:70-89`), empty `SmeltCycle` (`:107`), tunables block (`:113-127`) |
 | melting hole | `.../Furnaces/Blocks/BlockCrucibleHole.cs` + BE | `BlockEntityFurnacePart` (`:32`) for the core link and the toggle animator; `BlockPuddlingHearth.cs:70-78` for cell → slot routing |
 | damper | reuse | `BlockPuddlingChimneyCap` / `BlockEntityPuddlingChimneyCap.cs:19` |
 | pot item | `.../Items/` | `StockItemDefinitions.cs:32-59` for the def shape; the vanilla crucible for the block behaviours (`GroundStorable`, `RightClickPickup`, `onTongTransform`) |
 | pour | already works | `BlockMoltenCanalStart.cs:77` accepts a `BlockSmeltedContainer` |
-| metal def | `assets/iwex/config/metals/cruciblesteel.json` | the shipped catalogue has `castiron`, `pigiron`, `slag` (iwex) and `bessemersteel` (smex) - a new metal is a JSON entry read by `MetalRegistry` |
+| metal def | `assets/iiex/config/metals/cruciblesteel.json` | the shipped catalogue has `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex) - a new metal is a JSON entry read by `MetalRegistry` |
 | heat | inherited | `ComputeHeatBalance` (`BlockEntityFurnaceCore.cs:743-798`); override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `RequiresBlast => false` - and, by drawing no tuyere or outlet glyph, no `CellRole.Tuyere`/`GasOutlet`. Exactly what the reheat furnace does |
 
 Where a caller hooks in: the stack-height draught term belongs in `ComputeHeatBalance`'s `natural` line (`BlockEntityFurnaceCore.cs:1859`) as `NaturalDraughtFor(stackCourses)` rather than a flat read, so every natural-draught furnace inherits it. That single edit is the crucible furnace's real prerequisite.
@@ -383,7 +383,7 @@ Where a caller hooks in: the stack-height draught term belongs in `ComputeHeatBa
 ## Gotchas
 
 - **The natural-draught ceiling is fatal, not tight.** See Numbers. Do not start this machine before the draught term lands, or it ships as a furnace that lights and never melts - blocker B2's failure mode on a different furnace.
-- **A fired-clay pot is wrong by this mod's own rule** (`IwexConfig.cs:65`) and by vanilla's (`maxHeatableTemp: 1200`). Reusing `game:crucible` unpatched contradicts the mod's own clay ceiling in the one place it matters most.
+- **A fired-clay pot is wrong by this mod's own rule** (`IiexConfig.cs:65`) and by vanilla's (`maxHeatableTemp: 1200`). Reusing `game:crucible` unpatched contradicts the mod's own clay ceiling in the one place it matters most.
 - **The layout DSL cannot express a variable height or a variable hole count.** Both axes need the counted-scan approach; neither is a layout edit.
 - **`ComponentScanAbove = 1`, `ComponentScanBelow = 8`** (`BlockEntityFurnaceCore.cs:1220-1222`). A part scans down eight cells at most, so an eight-course stack is the ceiling before the damper loses its core.
 - **The cupola must not gain a crucible mode.** It is already a pure data override of the blast furnace, and ferroalloys are its second act. Fuel contact is the whole distinction; a `crucible` burden family would erase it.
@@ -404,7 +404,7 @@ Where a caller hooks in: the stack-height draught term belongs in `ComputeHeatBa
 - Whether the pot takes a carbon trim (powdered coke), which is how Huntsman actually hit a grade.
 - What crucible steel is, mechanically. `materials.md:67` gives ~98.8 % Fe / ~1.2 % C. The metal def is still missing, but `MetalDef.Durability` + `MetalToolEmitter` already emit a whole tool family from one entry, so the machinery is there. D9 notes it raises vanilla's tool ceiling, deliberately, which nothing has been balanced against.
 - Whether the four pot cells are furnace parts or footprint fillers. Parts get the core link and an animator for free (`BlockEntityFurnacePart.cs:32-60`); fillers get per-cell interaction routing for free ([multiblock](../mechanics/multiblock.md)). The puddling hearth chose fillers, the tuyere chose parts. The hearth shape's per-pot element groups suit either.
-- Slag. A crucible melt makes essentially none - nothing to tap, nothing to plumb. Confirm the inherited `BfMaxMoltenSlag` path is simply not used rather than silently accumulating. Slag is still an input here (the thin flux cover), sourced from the blast furnace's own `iwex:slag` - a closed loop worth keeping.
+- Slag. A crucible melt makes essentially none - nothing to tap, nothing to plumb. Confirm the inherited `BfMaxMoltenSlag` path is simply not used rather than silently accumulating. Slag is still an input here (the thin flux cover), sourced from the blast furnace's own `iiex:slag` - a closed loop worth keeping.
 - The non-ferrous tilting crucible stays deferred with everything non-ferrous, but it shares this page's pot problem in reverse (a cast-iron vessel, lower temperatures) and should reuse whatever pot model lands here.
 
 Settled 2026-08-02: feedstock is blister, prepared by cold helve-crushing - shear steel is the hot branch of the same fork, so both stay useful; consumers are any vanilla steel item plus longer-lasting machine heads, a gate on nothing; the bank question closed as 4 fixed pots per furnace, build more furnaces, which removes the variable-hole-count problem - stack height is still variable, so the counted scan survives, and `ComponentScanBelow = 8` still caps it (the drafted chimney runs six courses over the hearth, two short of the limit).

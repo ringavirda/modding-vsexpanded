@@ -168,7 +168,7 @@ public class VanillaCodesTests {
 
   [Theory]
   // Vanilla's variant is the opposite of the wall face the door closes, the reverse of this family's
-  // own doors: `iwex:furnace-puddlingchargedoor-south` sits in the south wall, while the coke door in
+  // own doors: `iiex:furnace-puddlingchargedoor-south` sits in the south wall, while the coke door in
   // that same wall is spelled `north`. Derived from `liquidBarrierOnSidesByType`, which gives
   // `cokeovendoor-closed-north` a barrier at face index 2, with `BlockFacing.ALLFACES` running
   // N, E, S, W. `Sealing` is the only place the inversion is applied; layouts name the wall.

@@ -119,8 +119,8 @@ internal static class ModuleInit
 }
 ```
 
-Every test project in this repo (one per mod: `ExpandedLib.Tests`, `IronworkingExpanded.Tests`,
-`LowPressureExpanded.Tests`, `HighPressureExpanded.Tests`, `SteelmakingExpanded.Tests`) has exactly
+Every test project in this repo (one per mod: `ExpandedLib.Tests`, `IronIndustryExpanded.Tests`,
+`IronIndustryExpanded.Tests`, `HighPressureExpanded.Tests`, `SteelmakingExpanded.Tests`) has exactly
 this - a module initializer only runs for the assembly that declares it. `VsAssemblyResolver.Register`
 is idempotent and resolves the install via the `[AssemblyMetadata("GameInstallEnv")]` environment
 variable (e.g. `VINTAGE_STORY`) or, failing that, by walking up to `.game/<slug>`.
@@ -214,7 +214,7 @@ rig.Complete();   // fill the rest, Initialize, and wait for the machine's own m
 
 Place the real functional blocks (tuyeres, taps, outlets) **before** raising, and give them the code
 the layout asks for. A generic pipe behaves identically to a tuyere as a network node but does not
-satisfy an `iwex:tuyere*` cell.
+satisfy an `iiex:tuyere*` cell.
 
 ## Priming private state
 

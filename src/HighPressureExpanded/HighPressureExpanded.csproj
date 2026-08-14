@@ -75,38 +75,34 @@
 
   <!--
     hpex is the top of the steam chain: it holds only the high-pressure LEAVES (Lancashire boiler,
-    Cornish engine), which inherit essentially everything from lpex's boiler/engine bases
+    Cornish engine), which inherit essentially everything from iiex's boiler/engine bases
     (BlockBoiler/BlockEntityBoiler, BlockEngine/BlockEntityEngine, the geometry interfaces, the
     renderers and the sub-machine bases). exlib supplies the framework (networks, structures, RCC,
     definitions). It does NOT reference smex: the Cornish engine drives smex's air blower purely
-    through lpex's BlockEntityEngine base contract, so there is no code edge. Reference the built
-    dlls; Private=false because the player installs exlib/iwex/lpex as their own mods, so none of
+    through iiex's BlockEntityEngine base contract, so there is no code edge. Reference the built
+    dlls; Private=false because the player installs exlib/iiex/iiex as their own mods, so none of
     those dlls is bundled into hpex's output.
   -->
   <ItemGroup>
     <ProjectReference Include="..\ExpandedLib\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\LowPressureExpanded\LowPressureExpanded.csproj">
-      <Private>false</Private>
-    </ProjectReference>
     <!--
-      iwex arrives transitively through lpex, and declaring it explicitly here is the only thing
-      that lets Private=false apply to it. `<Private>false</Private>` suppresses copy-local for the
-      one item it sits on; it does not propagate to a project's transitive closure. Without the
-      explicit item the SDK synthesises a transitive ProjectReference for iwex with the default
-      Private=true and copies IronworkingExpanded.dll into hpex's output - a second assembly carrying
-      a ModSystem, which makes Vintage Story refuse to load the mod at all ("Found multiple .dll
-      files with ModSystems and/or ModInfo attributes"), leaving hpex silently absent from the
-      loaded-mod list. The control that proves it: exlib is transitive through lpex too, yet
-      exlib.dll is not in the output - because it is declared directly above, and the explicit item's
-      metadata beats the synthesised one. smex lists all three explicitly for the same reason.
-      This affects the release zip as well as local staging: dist/CakeBuild stages `publish/*`, and
-      publish copies runtime deps the same way.
+      ⛔ iiex must stay declared EXPLICITLY, not left to arrive transitively through exlib. Before the
+      merge that mattered for a second mod; it still matters for this one. `<Private>false</Private>`
+      suppresses copy-local for the one item it sits on and does NOT propagate to a project's
+      transitive closure, so without an explicit item the SDK synthesises a transitive
+      ProjectReference with the default Private=true and copies iiex.dll into hpex's output - a
+      second assembly carrying a ModSystem, which makes Vintage Story refuse to load the mod at all
+      ("Found multiple .dll files with ModSystems and/or ModInfo attributes"), leaving hpex silently
+      absent from the loaded-mod list. This affects the release zip as well as local staging:
+      dist/CakeBuild stages `publish/*`, and publish copies runtime deps the same way.
       DisableTransitiveProjectReferences is not the fix - it strips the compile reference too, and
-      hpex uses iwex types directly (BlockNetworkPipe.Blocks). modinfo.json already declares iwex.
+      hpex uses iiex types directly (BlockNetworkPipe.Blocks). modinfo.json already declares iiex.
+      ⛔ Verify by staging the output and counting ModSystem-bearing dlls, never by reading this file:
+      the failure is green in every test run and visible only in game.
     -->
-    <ProjectReference Include="..\IronworkingExpanded\IronworkingExpanded.csproj">
+    <ProjectReference Include="..\IronIndustryExpanded\IronIndustryExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>
     <!-- Source generator that emits the HpexValues accessor from the [ExConfig] HpexConfig POCO.

@@ -1,8 +1,8 @@
 using ExpandedLib.Heat;
 using ExpandedLib.Metals;
 using ExpandedLib.Testing;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.Items;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.Items;
 using SteelmakingExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -21,13 +21,13 @@ public class BlastFurnaceTests {
   private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
-    world.RegisterItem("iwex:slag");
+    world.RegisterItem("iiex:slag");
     // The furnace resolves the "slag" short token through MetalRegistry, which the game populates from
-    // assets/iwex/config/metals/slag.json at AssetsFinalize. The headless harness loads no assets, so
+    // assets/iiex/config/metals/slag.json at AssetsFinalize. The headless harness loads no assets, so
     // the same mapping is registered here. Iron and steel need none: they follow the game:ingot
     // convention.
     MetalRegistry.Register(
-      new MetalDef { Code = "slag", MoltenItem = "iwex:slag" }
+      new MetalDef { Code = "slag", MoltenItem = "iiex:slag" }
     );
     return world;
   }
@@ -105,7 +105,7 @@ public class BlastFurnaceTests {
       ReflectionHelpers.Invoke(be, "CreateMoltenStack", "slag", 8, 1300f);
 
     Assert.NotNull(stack);
-    Assert.Equal("iwex:slag", stack!.Collectible.Code.ToString());
+    Assert.Equal("iiex:slag", stack!.Collectible.Code.ToString());
   }
 
   [Fact]
@@ -216,7 +216,7 @@ public class BlastFurnaceTests {
       (HeatBalance)ReflectionHelpers.GetField(dst, "_lastHeatBalance")!
     );
     Assert.Equal(
-      "iwex:burden-profile-standard",
+      "iiex:burden-profile-standard",
       Burden.ProfileLangKey(
         (BurdenMix)ReflectionHelpers.GetField(dst, "_chargeMix")!
       )

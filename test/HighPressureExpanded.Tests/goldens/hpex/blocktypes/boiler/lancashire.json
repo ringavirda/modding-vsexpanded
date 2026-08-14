@@ -410,13 +410,13 @@
       "blockNumbers": {
         "exlib:structurefiller": 1,
         "hpex:boilerlancashire-*": 2,
-        "lpex:pipe-cast-passthrough-fire-*": 3,
-        "lpex:pipe-cast-passthroughbend-fire-u*": 4,
+        "iiex:pipe-cast-passthrough-fire-*": 3,
+        "iiex:pipe-cast-passthroughbend-fire-u*": 4,
         "game:claybricks-good-fire": 5,
         "game:air": 6,
         "@(air|coalpile)": 7,
         "game:cokeovendoor-*-south": 8,
-        "lpex:pipe-outlet-fire-u": 9
+        "iiex:pipe-outlet-fire-u": 9
       },
       "offsets": [
         {

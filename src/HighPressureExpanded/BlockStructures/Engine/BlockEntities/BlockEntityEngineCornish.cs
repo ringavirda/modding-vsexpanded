@@ -1,7 +1,7 @@
 using System;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded.BlockStructures.Engine;
+using IronIndustryExpanded.BlockStructures.Engine;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -12,7 +12,7 @@ namespace HighPressureExpanded.BlockStructures.Engine.BlockEntities;
 /// The Cornish engine, the steel high-pressure tier. Its steam control rods set how much steam it
 /// admits and so its power: low is half, normal nominal, high double. A higher setting also raises
 /// the operating band (<see cref="EngagePressure"/>, <see cref="BreakPressure"/>), so it needs a
-/// hotter line to engage. Breaking is handled by lpex's <see cref="BlockEntityEngine"/>.
+/// hotter line to engage. Breaking is handled by iiex's <see cref="BlockEntityEngine"/>.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityEngineCornish : BlockEntityEngine {

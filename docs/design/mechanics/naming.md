@@ -1,7 +1,7 @@
 # Block & item naming
 
-**Status** settled 2026-08-03 (N6 and N7 were added the same day) - iwex is converted apart from the
-burdenmaker; the lpex/hpex/smex machine folders remain
+**Status** settled 2026-08-03 (N6 and N7 were added the same day) - iiex is converted apart from the
+burdenmaker; the iiex/hpex/smex machine folders remain
 **Mod** cross-cutting (an authoring convention). The enforcement lives in `ExpandedLib.Testing`.
 
 **Owns**
@@ -34,7 +34,7 @@ and every layout that pins it. Nothing checks that those seven agree about anyth
 
 The rules below make one string serve as the code, the file path and the lang key, so that
 knowing any one of them tells you the other two. The wave is happening now because layouts pin codes, and
-the iwex bring-up needs layouts authored against names that will not move again.
+the iiex bring-up needs layouts authored against names that will not move again.
 
 This page is a convention, not a description of the tree. The inventory below is the work list.
 
@@ -45,7 +45,7 @@ This page is a convention, not a description of the tree. The inventory below is
 ### N1 — the rendered code **is** the asset path
 
 > A block's fully-rendered code, with `-` put back to `/`, is the path of its blocktype file.
-> `iwex:slag-pathslab-free` lives at `blocktypes/slag/pathslab.json`.
+> `iiex:slag-pathslab-free` lives at `blocktypes/slag/pathslab.json`.
 
 Stated exactly enough to test - the asset path with `/` → `-` must equal either:
 
@@ -84,7 +84,7 @@ why `pipe`, and now `mpenergy`, look the way they do.
 > `pipe/straight`, not `pipes/straight`. `hopper/tall`, not `hopper-tall` filed under `furnaces/`.
 
 The family segment is what a player and a wildcard both reach for. Singular because the code is one block,
-not a collection: `iwex:pipe-plated-straight-ns` reads correctly and `iwex:pipes-plated-straight-ns` does not.
+not a collection: `iiex:pipe-plated-straight-ns` reads correctly and `iiex:pipes-plated-straight-ns` does not.
 
 smex already does this right and is the model: `converter-intake`, `cowperstove-intake`,
 `smokestack-intake` are three families each naming their own member, and the shared member word costs
@@ -139,7 +139,7 @@ because the states live in the game's assets. Exactly two blocks are in that pos
 selector still matches, so only a concrete reference breaks. Two recipe outputs were rewritten to
 `-up-n-free` and shipped stairs nobody could craft; `{Mod}RecipeOutputTests` now fails on that class.
 
-Reach the spelling through `IwexBlocks.<Block>.WithSide(BlockFacing)` (or `WithHorizontalorientation`)
+Reach the spelling through `IiexBlocks.<Block>.WithSide(BlockFacing)` (or `WithHorizontalorientation`)
 rather than typing it. The emitter reads the def's own states, so the caller states a direction and the
 generated table picks the vocabulary.
 
@@ -165,7 +165,7 @@ variant groups. Compound words are squashed, not hyphenated - `rollingmill`, `sa
 the boundary meaning, and it is what makes `blastfurnace-core` and `hopper-tall` unparseable as a pair -
 one is a two-word name, the other is a family and a member, and they are spelled identically.
 
-The corollary is a real finding: iwex's `hopper-tall` is spelled right and smex's `hopperbell` /
+The corollary is a real finding: iiex's `hopper-tall` is spelled right and smex's `hopperbell` /
 `hopperreinforced` are spelled wrong. They are one family split across two mods and two spellings.
 
 ### N6 — a path segment may only become a folder if it is not itself a block
@@ -177,9 +177,9 @@ The corollary is a real finding: iwex's `hopper-tall` is spelled right and smex'
 first match. Two selectors hitting one recipe means the later entry overwrites the earlier's costs, in
 dictionary enumeration order, which is not a contract.
 
-Flat names were accidentally safe. `iwex:slagpath-*` could not match `slagpathslab-free`: the
+Flat names were accidentally safe. `iiex:slagpath-*` could not match `slagpathslab-free`: the
 character after `slagpath` is `s`, not `-`. Hierarchical names remove that accident -
-`iwex:slag-path-*` matches `slag-path-slab-free` exactly as intended. The hazard is created by
+`iiex:slag-path-*` matches `slag-path-slab-free` exactly as intended. The hazard is created by
 adopting N1/N2, so the fix has to be structural rather than a patched selector.
 
 Vanilla agrees: `game:claybricks`, `game:brickslab` - name suffixes, not folders.
@@ -192,11 +192,11 @@ Vanilla agrees: `game:claybricks`, `game:brickslab` - name suffixes, not folders
 N6's code-level twin. N6 is about folders; this is about the codes
 themselves, and it bites a construct N6 never sees: `SomeFamily.Code + "*"`, the idiom for "any member of
 this family". That wildcard is correct exactly as long as no other block's code starts with the same
-string - and `IwexCodes.Tuyere` and `IwexCodes.MoltenMetalTap` are both built that way and both fed
+string - and `IiexCodes.Tuyere` and `IiexCodes.MoltenMetalTap` are both built that way and both fed
 straight into multiblock `Legend`s.
 
 The failure lands in a layout. Give the tuyere base code `furnace` while a charge door has
-`furnace-chargedoor`, and `iwex:furnace*` accepts a charge door in a tuyere cell. The structure
+`furnace-chargedoor`, and `iiex:furnace*` accepts a charge door in a tuyere cell. The structure
 completes wrong, every code involved is real, every block resolves, and nothing fails.
 
 Like N6 this is a boundary rule, not a substring rule - `slag-path` and `slag-pathslab` are safe
@@ -208,7 +208,7 @@ family. Fixed by moving the flywheel's size into a `size` group and the transmis
 `kind`, freeing `type` to name the member: every rendered code came out byte-identical, so no golden
 code, lang key, recipe or layout moved. The whole change was in how the def is authored.
 
-Enforced by `CodePrefixCollision` + `{Iwex,Lpex,Hpex,Smex}CodePrefixTests` - one per mod, because a family
+Enforced by `CodePrefixCollision` + `{Iiex,Hpex,Smex}CodePrefixTests` - one per mod, because a family
 does not cross a domain.
 
 ---
@@ -219,7 +219,7 @@ Read off the generated tables (`src/*/Generated/*Blocks.g.cs`), which are emitte
 definitions, so this is what actually ships rather than what the call sites appear to say. "ok" = the base
 code already equals the path with `/` → `-`.
 
-### iwex
+### iiex
 
 | Code | Asset path | Breaks | Family / when |
 |---|---|---|---|
@@ -230,23 +230,23 @@ code already equals the path with `/` → `-`.
 | `casting-sandbed` · `casting-sandcell` · `casting-mold` | `casting/sandbed` · `…/sandcell` · `…/mold` | ok | done 2026-08-03 |
 | `molten-canal` | `molten/canal/{brick,cobblestone}/{type}` · `molten/canal/tap` | keeps the N1 skin exception | done 2026-08-03 |
 | `molten-barrel` | `molten/barrel` | ok | done 2026-08-03 |
-| all 14 furnace parts - one code `iwex:furnace` + `type(blastcore\|cupolacore\|heatingcore\|puddlingcore\|chargedoor\|puddlingchargedoor\|chargepile\|heatinghearth\|puddlinghearth\|puddlingchimneycap\|irontap\|slagtap\|tuyere\|twintubblower)` | `furnace/{type}` | ok | done 2026-08-03 |
+| all 14 furnace parts - one code `iiex:furnace` + `type(blastcore\|cupolacore\|heatingcore\|puddlingcore\|chargedoor\|puddlingchargedoor\|chargepile\|heatinghearth\|puddlinghearth\|puddlingchimneycap\|irontap\|slagtap\|tuyere\|twintubblower)` | `furnace/{type}` | ok | done 2026-08-03 |
 | `hopper-tall` (code unchanged) | `hopper/tall` | ok | done 2026-08-03 - left the furnace folder; N4 fixed with it |
 | `hearthmetal` + `metal(pigiron\|castiron)` | *(root)* | ok | done 2026-08-07 - `solidifiediron` / `solidifiedcastiron` merged into one block with the metal as a variant; migrations cover both old codes and the released `smex:solidifiediron` (`HearthMetalMigration.cs`) |
 | `burdenmaker` | `ore/burdenmaker` | N1, N2 | open - shipped after the sweep with a bare code against a family folder; `ore-burdenmaker` is the conformant spelling |
 | `pipe` | `pipe/{straight,bend,tjunction,xjunction}` | ok | done 2026-08-03 - all 3 mods at once |
 
-### lpex · hpex · smex · exlib
+### iiex · hpex · smex · exlib
 
 | Code | Asset path | Breaks |
 |---|---|---|
-| `lpex:pipe` · `hpex:pipe` | `pipe/*` | ok - done 2026-08-03, moved atomically with iwex's |
-| `lpex:steamcondenser` | `steamcondenser` | ok - done 2026-08-03, it is not a pipe, so it left the folder |
-| `lpex:boilercornish` · `hpex:boilerlancashire` | `boiler/cornish` · `boiler/lancashire` | N1 |
-| `lpex:enginewatt` `enginefluidpump` `enginempgenerator` · `hpex:enginecornish` | `engine/*` | N1 |
-| `lpex:manualfluidpump` | `manualfluidpump` | N1 ok, N2 |
+| `iiex:pipe` · `hpex:pipe` | `pipe/*` | ok - done 2026-08-03, moved atomically with iiex's |
+| `iiex:steamcondenser` | `steamcondenser` | ok - done 2026-08-03, it is not a pipe, so it left the folder |
+| `iiex:boilercornish` · `hpex:boilerlancashire` | `boiler/cornish` · `boiler/lancashire` | N1 |
+| `iiex:enginewatt` `enginefluidpump` `enginempgenerator` · `hpex:enginecornish` | `engine/*` | N1 |
+| `iiex:manualfluidpump` | `manualfluidpump` | N1 ok, N2 |
 | `smex:blastfurnacecore` | `blastfurnace/core` | N1 |
-| `smex:hopperbell` · `hopperreinforced` | `blastfurnace/hopperbell` · `…reinforced` | N1, N2, N5 - same family as iwex's `hopper-tall` |
+| `smex:hopperbell` · `hopperreinforced` | `blastfurnace/hopperbell` · `…reinforced` | N1, N2, N5 - same family as iiex's `hopper-tall` |
 | `smex:converterbessemer` `convertercontrol` `convertertransmission` · `converter` | `converter/{bessemer,control,transmission,intake}` | N1 |
 | `smex:cowperstoveheatsink` · `cowperstove` | `cowperstove/{heatsink,intake}` | N1 |
 | `smex:engineairblower` · `smokestack` | `engine/airblower` · `smokestack/intake` | N1 |
@@ -277,14 +277,14 @@ code and must not move.
 |---|---|---|
 | `smex:moltencanal-*`, `smex:moltenbarrel`, `smex:moltencanalstart-ns` | released codes - the migration sources | never rewrite; rewriting them silently deletes the migration |
 | `moltencanals-title` / `moltencanals-text` | handbook topic keys (plural) | leave - not a block code |
-| `iwex:moltenbarrel-info-{empty,content,units,units-state}` | block-info UI strings | leave |
+| `iiex:moltenbarrel-info-{empty,content,units,units-state}` | block-info UI strings | leave |
 
 The two a `smex:`-prefixed textual guard cannot see:
 
 | Missed form | Where | Why the guard failed |
 |---|---|---|
 | `new AssetLocation("smex", "moltenbarrel")` | `BarrelConstructionMigration` | the domain is a separate argument - the string `smex:moltenbarrel` never appears |
-| `("moltencanal", "molten-canal")` | `SmexToIwexMigration.Relocated` | a bare tuple of base codes; the left side is the shipped smex code |
+| `("moltencanal", "molten-canal")` | `SmexToIiexMigration.Relocated` | a bare tuple of base codes; the left side is the shipped smex code |
 
 A migration source is a historical fact, not a current code. Rewriting one leaves the migration
 internally consistent and matching nothing: every released block is orphaned and no test fails, because
@@ -315,7 +315,7 @@ The shipped set is recorded as data in `test/ExpandedLib.Testing/ReleasedCodes.c
 `dist/Releases/1.22.0` by `scripts/gen-released-codes.py` rather than from memory - 501 concrete codes
 across three domains.
 
-Only `exlib`, `ppex` and `smex` have ever shipped. There has never been a released `iwex`, `lpex` or
+Only `exlib`, `ppex` and `smex` have ever shipped. There has never been a released `iiex`, `iiex` or
 `hpex` build, so every block added after those splits carries no migration debt at all. This turns
 a 60-code rename wave into roughly 45 paths of real migration work, and it is why the `slag` family
 needed one migration row for seven renames.
@@ -326,7 +326,7 @@ design):
 
 * every released code still reaches a live block;
 * no migration claims a code that is still alive - the general form of the bug where 30 live
-  `lpex:pipe-*` blocks were declared as migration sources and silently converted.
+  `iiex:pipe-*` blocks were declared as migration sources and silently converted.
 
 ---
 
@@ -339,21 +339,21 @@ design):
 | N3 | — | nothing, but the generated table makes it visible: the summary line prints code and path together |
 | N4 | — | nothing |
 | N5 | — | nothing |
-| N6 | `CostSelectorOverlap` + `{Mod}CostSelectorTests` | real, and mutation-proven: re-pointing `slagpathslab-grid` at `iwex:slag-path-*` fails with both selectors and the colliding codes named |
+| N6 | `CostSelectorOverlap` + `{Mod}CostSelectorTests` | real, and mutation-proven: re-pointing `slagpathslab-grid` at `iiex:slag-path-*` fails with both selectors and the colliding codes named |
 | the wave itself | `ReleasedCodeCoverageTests`, `BlockCodeEmitter` drift tests, `LangCoverage`, `CodeLiterals`, goldens | five independent nets; a rename that drops any one of code / lang / literal / golden / migration fails |
 
 ---
 
 ## Gotchas
 
-1. A code can be a block and an item. `iwex:slag` was both; a scripted `"iwex:slag"` →
-   `"iwex:slag-block"` across the block's golden also hit its `smeltedStack`, which references the
+1. A code can be a block and an item. `iiex:slag` was both; a scripted `"iiex:slag"` →
+   `"iiex:slag-block"` across the block's golden also hit its `smeltedStack`, which references the
    item. Renaming a block never implies renaming the item of the same name - decide each separately and
    let the golden catch the overreach.
 
 2. Recipe-cost catalogue keys are player config and must not be renamed with the code. They are
    persisted in the user's config file; changing a key orphans their tuning. Re-point the entry's `Match`
-   selector and leave the key alone (`IwexRecipeConfig`).
+   selector and leave the key alone (`IiexRecipeConfig`).
 
 3. Never regenerate goldens wholesale. `EXLIB_WRITE_GOLDENS` rewrites an entire domain, and the
    working tree carries ~110 hand-blessed uncommitted goldens. Move and patch them by hand. The scoped
@@ -363,7 +363,7 @@ design):
    rename. Aligning texture paths is optional and was excluded to hold the diff to blocktypes.
 
 5. The pipe family cannot be renamed one mod at a time. `BlockPipe.Segments(domain)` is shared, so
-   iwex, lpex and hpex must move in one change or the joint families disagree mid-wave.
+   iiex, iiex and hpex must move in one change or the joint families disagree mid-wave.
 
 6. Lang wildcards must be re-spelled with the code. A key like `block-slagpath-*` becomes
    `block-slag-path-*`, and `Lang.GetMatching` has no dash-stripping fallback - a near-miss produces a
@@ -393,7 +393,7 @@ design):
    break its N1 conformance until the code moves with the path. Do not read an "ok" in the inventory as
    "nothing to do". (`castmold` and `rollingmillaxle` were in this group and are now genuinely fixed.)
 
-5. Whether the burdenmaker takes `ore-burdenmaker`. It is the one iwex family straggler; the code
+5. Whether the burdenmaker takes `ore-burdenmaker`. It is the one iiex family straggler; the code
    would move to match its `ore/` folder, and nothing shipped depends on the bare spelling.
 
 6. Whether `type` should ever equal the member folder. The pipes make member-as-`type` work

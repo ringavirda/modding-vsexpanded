@@ -12,7 +12,7 @@ from the archived smex spec, under a header that already marked itself unschedul
 * what the copper reverberatory was specified to be, and its second job as the copper-side waste-alloy
   recycler;
 * the fact that the machine is already built and the content is not - the reverberatory pattern ships live in
-  `iwex`, with a file-by-file account of which override does what;
+  `iiex`, with a file-by-file account of which override does what;
 * the feedstock knot: matte smelting needs a copper sulphide, and there is none in the game;
 * the temperature knot: a natural-draught reverberatory lands ~2 °C below copper's melting point under the
   shipped constants;
@@ -65,7 +65,7 @@ Nothing copper-side.
 |---|---|
 | `grep -rniE "coppermatte\|blistercopper\|piercesmith" src/ assets/` | 0 hits (excluding `bin/`) |
 | `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing - enumerated on [tilting crucible](tilting-crucible.md) § What exists today |
-| metal defs | 4 files, all ferrous (`assets/iwex/config/metals/`, `assets/smex/config/metals/`) |
+| metal defs | 4 files, all ferrous (`assets/iiex/config/metals/`, `assets/smex/config/metals/`) |
 | a copper burden family, ore, matte item or slag variant | none |
 
 The machine class is live, and a copper mode is an override of it rather than a new furnace:
@@ -154,11 +154,11 @@ elex's arc furnace. Defer both and the copper half of R2's recovery promise has 
 2. **Blown or natural draught** (see Gotchas). Changes the block, the ports and whether the twin-tub blower
    ecosystem reaches this tier.
 3. **Process temperature.** No `Copper*` key is proposed anywhere; there is no analogue to
-   `BfIronMeltingPoint = 1482` (`IwexConfig.cs:271`) or `CupolaCastIronMeltingPoint = 1200` (`:316`).
+   `BfIronMeltingPoint = 1482` (`IiexConfig.cs:271`) or `CupolaCastIronMeltingPoint = 1200` (`:316`).
 4. **Whether the waste-alloy recycler is the same mode or a second one.** [materials.md](../../materials.md)
    gives this furnace two jobs with different inputs; the cupola solves the identical problem with two burden
    families on one block.
 5. **Whether the copper add-on ships inside `smex` or as its own project.**
    [overview.md](../../overview.md) leaves that open for every add-on.
-6. **Slag: item, rate, consumer.** `iwex:slag` exists and is ferrous; copper slag is neither modelled nor
+6. **Slag: item, rate, consumer.** `iiex:slag` exists and is ferrous; copper slag is neither modelled nor
    named.

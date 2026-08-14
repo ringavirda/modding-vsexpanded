@@ -1,0 +1,467 @@
+using System.Collections.Generic;
+using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Definitions;
+using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
+using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
+
+namespace IronIndustryExpanded.BlockStructures.Boiler;
+
+/// <summary>
+/// Shared base for the boiler mega-blocks. Each occupies one grid cell but renders across a
+/// multi-cell volume reserved with invisible structure fillers (so the player gets real
+/// collision); construction is driven by the RightClickConstructable behavior in the block JSON.
+/// </summary>
+public abstract class BlockBoiler
+  : BlockFilledMegastructure,
+    INetworkConnector,
+    IFillerInteractionTarget,
+    IBoilerGeometry {
+  // Boiler geometry offsets, read at runtime from the block's own attributes, populated from the JSON file
+  // or the injected code-first def alike. Implemented here so the Lancashire and Cornish leaves share one
+  // copy and a leaf can drop its blocktype JSON without losing these accessors.
+  public JsonObject? FuelOffset => Attributes?["fuelOffset"];
+  public JsonObject? ExhaustOutletOffset => Attributes?["exhaustOutletOffset"];
+  public JsonObject? LidOffset => Attributes?["lidOffset"];
+  public JsonObject? SteamConnectorOffset =>
+    Attributes?["steamConnectorOffset"];
+  public JsonObject? LightSampleOffset => Attributes?["lightSampleOffset"];
+  public JsonObject? ExplosionCenterOffset =>
+    Attributes?["explosionCenterOffset"];
+  public JsonObject? WaterRendererBox => Attributes?["waterRendererBox"];
+
+  // The body extends along local +z, so the angle is offset 180° for HorizontalOrientable to raise it
+  // away from the player. rotateYByType is offset to match, keeping visual, fillers and connectors aligned.
+  private int Angle =>
+    (ExOrientation.AngleFromSide(Variant["side"]) + 180) % 360;
+
+  /// <summary>The structure/filler rotation angle, for multiblockStructure verification.</summary>
+  public override int StructureAngle => Angle;
+
+  // Water draws through a pipe on the bottom face; steam and exhaust leave via their outlet cells.
+  public string NetworkType => "pipe";
+
+  public bool HasConnectorAt(BlockFacing face) => face == BlockFacing.DOWN;
+
+  /// <summary>This boiler's geometry offsets (implemented on the base above; the leaves inherit them).</summary>
+  private IBoilerGeometry Geo => this;
+
+  /// <summary>
+  /// The code-first surface both boiler variants share: material, sounds, break resistance, the multiblock,
+  /// orientable and interact behaviors, the Animatable entity behavior, the side variant group, one base
+  /// shape spun per orientation, and the non-solid flags. Each leaf's <c>Definitions</c> starts here and
+  /// overlays only what differs - mining tier, geometry offsets, filler footprint, structure map and
+  /// construction stages.
+  /// </summary>
+  protected static ExBlockDef BoilerShell(ExBlockDef def, string shapeBase) =>
+    def.Material(EnumBlockMaterial.Metal)
+      .MetalSounds()
+      .Resistance(45f)
+      .MaxStackSize(1)
+      .NoDrops()
+      .Behavior("MultiblockStructure")
+      .Behavior("ExOrientable")
+      .Behavior("BlockEntityInteract")
+      .EntityBehavior("Animatable")
+      .SideVariant()
+      .CreativeCommon("*-n")
+      .ShapeSpunPerOrientation(shapeBase)
+      .ShapeSelectiveElements("Root/Base/*")
+      .NonSolid();
+
+  // Each offset lives solely in the def attribute - both boiler variants author all of them - so there is
+  // no hand-kept fallback to drift from it: a missing attribute resolves to the origin.
+  private BlockPos OffsetWorldPos(BlockPos boilerPos, JsonObject? offsetNode) =>
+    ExOrientation.WorldPosFromAttr(boilerPos, offsetNode, Vec3i.Zero, Angle);
+
+  /// <summary>World cell of the firebox slot.</summary>
+  public BlockPos FuelWorldPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.FuelOffset);
+
+  /// <summary>World cell of the exhaust gas outlet.</summary>
+  public BlockPos ExhaustOutletWorldPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.ExhaustOutletOffset);
+
+  /// <summary>World cell of the filler that carries the access lid.</summary>
+  public BlockPos LidWorldPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.LidOffset);
+
+  /// <summary>
+  /// World cell of the steam connector (the port filler atop the body); the steam pipe attaches
+  /// in the cell directly above it.
+  /// </summary>
+  public BlockPos SteamPipeWorldPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.SteamConnectorOffset);
+
+  /// <summary>
+  /// World cell the animated vessel mesh is lit from, read from <c>lightSampleOffset</c> and rotated by
+  /// angle. It points at a body cell instead of the firebox-adjacent cell vanilla would light the whole
+  /// footprint from, which tints the vessel red at night.
+  /// </summary>
+  public BlockPos LightSampleWorldPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.LightSampleOffset);
+
+  /// <summary>
+  /// World cell at the footprint centre, where the burst explosion is centred so it goes off
+  /// inside the boiler. Read from <c>explosionCenterOffset</c>, rotated by angle.
+  /// </summary>
+  public BlockPos ExplosionCenterPos(BlockPos boilerPos) =>
+    OffsetWorldPos(boilerPos, Geo.ExplosionCenterOffset);
+
+  /// <summary>Removes the boiler's reserved filler footprint (used by the explosion path).</summary>
+  public void RemoveStructure(IWorldAccessor world, BlockPos pos) =>
+    StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
+
+  // Placement, the filler footprint and break-time filler removal are handled by
+  // BlockFilledMegastructure; the boiler only adds its steam port right after the fillers land.
+  protected override void OnFootprintPlaced(
+    IWorldAccessor world,
+    BlockPos blockPos
+  ) => MarkSteamPort(world, blockPos);
+
+  /// <summary>
+  /// Turns the steam-connector filler cell (<see cref="SteamPipeWorldPos"/>) into an upward "pipe"
+  /// port, so a steam pipe placed above it connects straight into the boiler.
+  /// </summary>
+  private void MarkSteamPort(IWorldAccessor world, BlockPos boilerPos) {
+    if (world.Side != EnumAppSide.Server)
+      return;
+    BlockPos portCell = SteamPipeWorldPos(boilerPos);
+    if (
+      world.BlockAccessor.GetBlockEntity(portCell)
+      is BlockEntityStructureFiller be
+    ) {
+      be.PortFace = "u";
+      be.PortNetworkType = NetworkType; // "pipe"
+      be.MarkDirty(true);
+    }
+  }
+
+  // A broken boiler returns only its construction materials, scattered by the RightClickConstructable
+  // behaviour at brokenDropsRatio, never the boiler block itself. The JSON "drops": [] declares this but is
+  // not reliably honoured for a variant block - the per-pressure variant can still be handed its own code
+  // as a fallback drop at registration - so the empty drop list is enforced here.
+  public override ItemStack[] GetDrops(
+    IWorldAccessor world,
+    BlockPos pos,
+    IPlayer? byPlayer,
+    float dropQuantityMultiplier = 1f
+  ) => [];
+
+  #region Lid interactions
+
+  // The lid and manual fill live on one footprint cell (LidWorldPos). Interactions arrive on
+  // the boiler's own cell or forwarded from a filler; both funnel into the Handle* helpers,
+  // which gate on the clicked cell being the lid cell and otherwise defer to the default
+  // behavior (construction, structure projection).
+
+  /// <summary>Hold duration (seconds) required to toggle the lid open or closed.</summary>
+  private const float LidHoldSeconds = 0.5f;
+
+  public override bool OnBlockInteractStart(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection blockSel
+  ) =>
+    HandleInteractStart(world, byPlayer, blockSel, blockSel.Position)
+    ?? base.OnBlockInteractStart(world, byPlayer, blockSel);
+
+  bool IFillerInteractionTarget.OnFillerInteractStart(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  ) =>
+    HandleInteractStart(world, byPlayer, principalSel, clickedCell)
+    ?? base.OnBlockInteractStart(world, byPlayer, principalSel);
+
+  /// <summary>
+  /// Shared lid/fill click logic. <paramref name="sel"/> is the boiler's own cell (for BE lookup);
+  /// <paramref name="clickedCell"/> is the cell looked at. Returns <c>null</c> to defer.
+  /// </summary>
+  private bool? HandleInteractStart(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection sel,
+    BlockPos clickedCell
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(sel.Position)
+      is not BlockEntityBoiler be
+    )
+      return null;
+
+    // Ctrl+Shift is the structure-projection gesture; pre-construction clicks drive RCC.
+    if (byPlayer.Entity.Controls.CtrlKey && byPlayer.Entity.Controls.ShiftKey)
+      return null;
+    if (!be.IsConstructed)
+      return null;
+
+    // The lid and manual fill only respond on the lid-bearing cell.
+    if (!clickedCell.Equals(LidWorldPos(sel.Position)))
+      return null;
+
+    ItemSlot? slot = byPlayer.InventoryManager?.ActiveHotbarSlot;
+
+    // A water container while the lid is open → pour its entire contents in.
+    if (be.LidOpen && IsWaterContainer(slot?.Itemstack)) {
+      if (world.Side == EnumAppSide.Server && slot != null)
+        be.TryManualFill(byPlayer, slot);
+      return true;
+    }
+
+    // An empty liquid container while the lid is open → bail water out into it.
+    if (be.LidOpen && IsEmptyLiquidContainer(slot?.Itemstack)) {
+      if (world.Side == EnumAppSide.Server && slot != null)
+        be.TryManualDrain(byPlayer, slot);
+      return true;
+    }
+
+    // Empty hands → begin the lid hold; the toggle happens in the step loop past the threshold.
+    if (slot?.Empty != false) {
+      be.LidToggled = false;
+      return true;
+    }
+
+    return null;
+  }
+
+  public override bool OnBlockInteractStep(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection blockSel
+  ) =>
+    HandleInteractStep(
+      secondsUsed,
+      world,
+      byPlayer,
+      blockSel,
+      blockSel.Position
+    ) ?? base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
+
+  bool IFillerInteractionTarget.OnFillerInteractStep(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  ) =>
+    HandleInteractStep(secondsUsed, world, byPlayer, principalSel, clickedCell)
+    ?? base.OnBlockInteractStep(secondsUsed, world, byPlayer, principalSel);
+
+  private bool? HandleInteractStep(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection sel,
+    BlockPos clickedCell
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(sel.Position)
+        is not BlockEntityBoiler be
+      || !be.IsConstructed
+      || !clickedCell.Equals(LidWorldPos(sel.Position))
+    )
+      return null;
+
+    // Only the empty-handed hold uses the step loop; a held item ends the interaction at once.
+    if (byPlayer.InventoryManager?.ActiveHotbarSlot?.Empty != true)
+      return false;
+
+    // Toggle once past the threshold, then keep returning true until release so the engine
+    // doesn't restart the interaction (which would toggle the lid repeatedly).
+    if (secondsUsed >= LidHoldSeconds && !be.LidToggled) {
+      be.LidToggled = true;
+      if (world.Side == EnumAppSide.Server)
+        be.ToggleLid();
+    }
+
+    return true;
+  }
+
+  public override void OnBlockInteractStop(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection blockSel
+  ) {
+    if (!HandleInteractStop(world, byPlayer, blockSel))
+      base.OnBlockInteractStop(secondsUsed, world, byPlayer, blockSel);
+  }
+
+  void IFillerInteractionTarget.OnFillerInteractStop(
+    float secondsUsed,
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection principalSel,
+    BlockPos clickedCell
+  ) {
+    if (!HandleInteractStop(world, byPlayer, principalSel))
+      base.OnBlockInteractStop(secondsUsed, world, byPlayer, principalSel);
+  }
+
+  private bool HandleInteractStop(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockSelection sel
+  ) {
+    if (
+      world.BlockAccessor.GetBlockEntity(sel.Position)
+        is not BlockEntityBoiler be
+      || !be.IsConstructed
+    )
+      return false;
+
+    be.LidToggled = false;
+    return true;
+  }
+
+  private static bool IsWaterContainer(ItemStack? stack) {
+    if (stack?.Collectible is not BlockLiquidContainerBase cont)
+      return false;
+    ItemStack? content = cont.GetContent(stack);
+    return content?.Collectible?.Code?.Path?.Contains("water") == true;
+  }
+
+  /// <summary>An empty liquid container (e.g. an empty bucket) - the tool used to bail water out.</summary>
+  private static bool IsEmptyLiquidContainer(ItemStack? stack) {
+    if (stack?.Collectible is not BlockLiquidContainerBase cont)
+      return false;
+    return cont.GetContent(stack) == null;
+  }
+
+  public override WorldInteraction[] GetPlacedBlockInteractionHelp(
+    IWorldAccessor world,
+    BlockSelection selection,
+    IPlayer forPlayer
+  ) {
+    var help = HandleInteractionHelp(
+      world,
+      selection,
+      forPlayer,
+      selection.Position
+    );
+#if !GAME_GE_1_22
+    // Legacy lacks the vanilla IInteractableWithHelp path, so surface the construction help here.
+    help =
+      ExpandedLib.Blocks.Construction.ExRightClickConstructable.AppendConstructionHelp(
+        world,
+        selection,
+        help
+      );
+#endif
+    return help;
+  }
+
+  WorldInteraction[] IFillerInteractionTarget.GetFillerInteractionHelp(
+    IWorldAccessor world,
+    BlockSelection principalSel,
+    IPlayer forPlayer,
+    BlockPos clickedCell
+  ) => HandleInteractionHelp(world, principalSel, forPlayer, clickedCell);
+
+  private WorldInteraction[] HandleInteractionHelp(
+    IWorldAccessor world,
+    BlockSelection selection,
+    IPlayer forPlayer,
+    BlockPos clickedCell
+  ) {
+    var help = new List<WorldInteraction>(
+      base.GetPlacedBlockInteractionHelp(world, selection, forPlayer) ?? []
+    );
+
+    // The lid hints only show on a finished vessel, and only when looking at the
+    // lid-bearing cell.
+    if (
+      world.BlockAccessor.GetBlockEntity(selection.Position)
+        is not BlockEntityBoiler be
+      || !be.IsConstructed
+      || !clickedCell.Equals(LidWorldPos(selection.Position))
+    )
+      return help.ToArray();
+
+    // Empty-handed right click toggles the lid.
+    help.Add(
+      new WorldInteraction {
+        ActionLangCode = "iiex:blockhelp-boiler-lid",
+        MouseButton = EnumMouseButton.Right,
+        RequireFreeHand = true,
+      }
+    );
+
+    // The manual water fill/drain only work while the lid is open, so only advertise them then.
+    if (be.LidOpen) {
+      help.Add(
+        new WorldInteraction {
+          ActionLangCode = "iiex:blockhelp-boiler-fill",
+          MouseButton = EnumMouseButton.Right,
+          Itemstacks = WaterContainerStacks(world),
+        }
+      );
+      help.Add(
+        new WorldInteraction {
+          ActionLangCode = "iiex:blockhelp-boiler-drain",
+          MouseButton = EnumMouseButton.Right,
+          Itemstacks = EmptyContainerStacks(world),
+        }
+      );
+    }
+
+    return help.ToArray();
+  }
+
+  // True for the vanilla wood-bucket family, matched on the code path because those blocks carry no
+  // attribute to key on without a JSON patch. The substring keeps every bucket variant in the
+  // fill/drain interaction hints.
+  private static bool IsWoodBucket(Block? block) =>
+    block?.Code != null && block.Code.Path.Contains("woodbucket");
+
+  /// <summary>Water-filled liquid containers shown on the manual-fill interaction hint, resolved once.</summary>
+  private static ItemStack[]? _waterContainerStacks;
+
+  private static ItemStack[] WaterContainerStacks(IWorldAccessor world) {
+    if (_waterContainerStacks != null)
+      return _waterContainerStacks;
+
+    var waterStack = new ItemStack(
+      world.GetItem(new AssetLocation("game:waterportion"))
+    );
+    var list = new List<ItemStack>();
+    foreach (var block in world.Blocks) {
+      if (block is not BlockLiquidContainerBase cont || !IsWoodBucket(block))
+        continue;
+      var bucket = new ItemStack(block);
+      cont.SetContent(bucket, waterStack);
+      list.Add(bucket);
+    }
+    // Fall back to a bare water portion if no fillable bucket resolved.
+    if (list.Count == 0 && waterStack.Collectible != null)
+      list.Add(waterStack);
+
+    return _waterContainerStacks = list.ToArray();
+  }
+
+  /// <summary>Empty liquid containers shown on the manual-drain interaction hint, resolved once.</summary>
+  private static ItemStack[]? _emptyContainerStacks;
+
+  private static ItemStack[] EmptyContainerStacks(IWorldAccessor world) {
+    if (_emptyContainerStacks != null)
+      return _emptyContainerStacks;
+
+    var list = new List<ItemStack>();
+    foreach (var block in world.Blocks) {
+      if (block is not BlockLiquidContainerBase || !IsWoodBucket(block))
+        continue;
+      list.Add(new ItemStack(block));
+    }
+
+    return _emptyContainerStacks = list.ToArray();
+  }
+
+  #endregion
+}

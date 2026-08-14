@@ -38,16 +38,16 @@ public class ProcessItemRenameTests {
       {
         "family": "shingledbar",
         "stages": [
-          { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod",
-            "formerCodes": [ "iwex:wirerod" ] }
+          { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod",
+            "formerCodes": [ "iiex:wirerod" ] }
         ]
       }
       """
     );
 
     (AssetLocation old, AssetLocation now) = Assert.Single(remaps);
-    Assert.Equal("iwex:wirerod", old.ToString());
-    Assert.Equal("iwex:rolledrod", now.ToString());
+    Assert.Equal("iiex:wirerod", old.ToString());
+    Assert.Equal("iiex:rolledrod", now.ToString());
   }
 
   [Fact]
@@ -59,15 +59,15 @@ public class ProcessItemRenameTests {
       {
         "family": "shingledbar",
         "stages": [
-          { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod",
-            "formerCodes": [ "iwex:wirerod", "iwex:nailrod" ] }
+          { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod",
+            "formerCodes": [ "iiex:wirerod", "iiex:nailrod" ] }
         ]
       }
       """
     );
 
     Assert.Equal(2, remaps.Count);
-    Assert.All(remaps, r => Assert.Equal("iwex:rolledrod", r.New.ToString()));
+    Assert.All(remaps, r => Assert.Equal("iiex:rolledrod", r.New.ToString()));
   }
 
   [Fact]
@@ -77,7 +77,7 @@ public class ProcessItemRenameTests {
         """
         {
           "family": "shingledbar",
-          "stages": [ { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod" } ]
+          "stages": [ { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod" } ]
         }
         """
       )
@@ -94,8 +94,8 @@ public class ProcessItemRenameTests {
         {
           "family": "shingledbar",
           "stages": [
-            { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod",
-              "generate": false, "formerCodes": [ "iwex:wirerod" ] }
+            { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod",
+              "generate": false, "formerCodes": [ "iiex:wirerod" ] }
           ]
         }
         """
@@ -111,7 +111,7 @@ public class ProcessItemRenameTests {
         {
           "family": "shingledbar",
           "stages": [
-            { "thickness": 2.0, "acceptedBy": [ "grooved" ], "formerCodes": [ "iwex:wirerod" ] }
+            { "thickness": 2.0, "acceptedBy": [ "grooved" ], "formerCodes": [ "iiex:wirerod" ] }
           ]
         }
         """

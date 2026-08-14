@@ -49,10 +49,10 @@ public class MetalFamilyEmitterTests {
 
   [Fact]
   public void Cast_iron_emits_its_five_shipped_forms_in_iwex() {
-    List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
+    List<ExItemDef> defs = Emit(Shipped("iiex", "castiron"));
 
     // The three codes the cupola and solidified block reference, plus the two build stocks the
-    // iron-substitution recipes need, all in iwex - the domain its molten item names. The tool family
+    // iron-substitution recipes need, all in iiex - the domain its molten item names. The tool family
     // is emitted too and asserted separately.
     Assert.Equal(
       new[]
@@ -65,17 +65,17 @@ public class MetalFamilyEmitterTests {
       },
       Codes(Resources(defs))
     );
-    Assert.All(defs, d => Assert.Equal("iwex", d.Domain));
+    Assert.All(defs, d => Assert.Equal("iiex", d.Domain));
   }
 
   [Fact]
   public void Pig_iron_emits_only_the_ingot_feedstock() {
-    List<ExItemDef> defs = Emit(Shipped("iwex", "pigiron"));
+    List<ExItemDef> defs = Emit(Shipped("iiex", "pigiron"));
 
     // A feedstock: the blast furnace's cast target and nothing else (no plate/rod/nails, no tools).
     ExItemDef only = Assert.Single(defs);
     Assert.Equal("ingot-pigiron", only.Code);
-    Assert.Equal("iwex", only.Domain);
+    Assert.Equal("iiex", only.Domain);
   }
 
   [Fact]
@@ -92,7 +92,7 @@ public class MetalFamilyEmitterTests {
       },
       Codes(Resources(defs))
     );
-    // Owned by smex (its molten item is smex:ingot-bessemersteel), not the folder or iwex.
+    // Owned by smex (its molten item is smex:ingot-bessemersteel), not the folder or iiex.
     Assert.All(defs, d => Assert.Equal("smex", d.Domain));
   }
 
@@ -201,18 +201,18 @@ public class MetalFamilyEmitterTests {
 
   [Fact]
   public void Cast_iron_emits_the_full_brittle_tool_set() {
-    // A Tools { preset: brittle } spec yields the eight default tool items, each in iwex beside the
+    // A Tools { preset: brittle } spec yields the eight default tool items, each in iiex beside the
     // resource forms.
-    List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
+    List<ExItemDef> defs = Emit(Shipped("iiex", "castiron"));
 
     Assert.Equal(ToolCodes("castiron"), Codes(defs.Where(IsTool)));
-    Assert.All(defs.Where(IsTool), d => Assert.Equal("iwex", d.Domain));
+    Assert.All(defs.Where(IsTool), d => Assert.Equal("iiex", d.Domain));
   }
 
   [Fact]
   public void Cast_iron_tools_are_brittle_gold_tier_durability() {
     // Cast iron makes tools, but brittle ones: gold-tier durability of 150 against an iron pick's 1000.
-    List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
+    List<ExItemDef> defs = Emit(Shipped("iiex", "castiron"));
 
     foreach (string code in ToolCodes("castiron"))
       Assert.Equal(150, (int)ToolJson(defs, code)["durability"]!);
@@ -222,7 +222,7 @@ public class MetalFamilyEmitterTests {
   public void Cast_iron_tools_still_mine_at_a_decent_hard_rate() {
     // The brittle preset keeps a usable mining tier and speed: iron tier (4), 6.0 on stone/ore/metal.
     JObject pick = ToolJson(
-      Emit(Shipped("iwex", "castiron")),
+      Emit(Shipped("iiex", "castiron")),
       "pickaxe-castiron"
     );
 
@@ -234,7 +234,7 @@ public class MetalFamilyEmitterTests {
   public void Pig_iron_makes_no_tools() {
     // A feedstock (Tools null): the blast furnace's cast target only, never a tool.
     // See docs/design/materials.md.
-    Assert.DoesNotContain(Emit(Shipped("iwex", "pigiron")), IsTool);
+    Assert.DoesNotContain(Emit(Shipped("iiex", "pigiron")), IsTool);
   }
 
   [Fact]
@@ -254,7 +254,7 @@ public class MetalFamilyEmitterTests {
   public void Cast_iron_tools_bind_the_vanilla_tool_classes() {
     // The vanilla class is what makes a generated item behave as its tool (axe felling, scythe
     // harvest, chisel microblocks); a class typo would surface only at world load.
-    List<ExItemDef> defs = Emit(Shipped("iwex", "castiron"));
+    List<ExItemDef> defs = Emit(Shipped("iiex", "castiron"));
 
     Assert.Equal("ItemAxe", (string?)ToolJson(defs, "axe-castiron")["class"]);
     Assert.Equal(
@@ -347,7 +347,7 @@ public class MetalFamilyEmitterTests {
   public void The_ingot_sheds_the_metals_shared_scrap_on_shatter() {
     // Cast iron's SolidDrop is the shared vanilla bit, so a shattered mold yields what MoltenChisel
     // recovers.
-    ExItemDef ingot = Emit(Shipped("iwex", "castiron"))
+    ExItemDef ingot = Emit(Shipped("iiex", "castiron"))
       .Single(d => d.Code == "ingot-castiron");
 
     Assert.Equal(
@@ -378,11 +378,11 @@ public class MetalFamilyEmitterTests {
     // Plates, rods, nails and bits recover the alloy rather than vanilla iron. Tools carry no
     // combustibleProps, so this is scoped to the non-ingot resource forms.
     foreach (
-      ExItemDef def in Resources(Emit(Shipped("iwex", "castiron")))
+      ExItemDef def in Resources(Emit(Shipped("iiex", "castiron")))
         .Where(d => d.Code != "ingot-castiron")
     )
       Assert.Equal(
-        "iwex:ingot-castiron",
+        "iiex:ingot-castiron",
         (string?)def.ToJson()["combustibleProps"]!["smeltedStack"]!["code"]
       );
   }

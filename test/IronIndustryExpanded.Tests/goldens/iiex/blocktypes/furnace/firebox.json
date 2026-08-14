@@ -1,0 +1,113 @@
+{
+  "code": "furnace",
+  "class": "iiex.BlockFirebox",
+  "entityClass": "iiex.BlockEntityFirebox",
+  "entityBehaviors": [
+    {
+      "name": "iiex.BEBehaviorFirebox"
+    }
+  ],
+  "blockmaterial": "Ceramic",
+  "maxstacksize": 4,
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "firebox"
+      ]
+    },
+    {
+      "code": "tier",
+      "states": [
+        "tier1",
+        "tier2",
+        "tier3"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iiex:furnace/firebox",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iiex:furnace/firebox",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iiex:furnace/firebox",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iiex:furnace/firebox",
+      "rotateY": 90
+    }
+  },
+  "textures": {
+    "front1": {
+      "base": "game:block/clay/refractory/{tier}/front1"
+    },
+    "burned": {
+      "base": "game:block/clay/vessel/sides/burned"
+    },
+    "cast-iron1": {
+      "base": "iiex:block/metal/castiron"
+    },
+    "coke": {
+      "base": "game:block/coal/coke"
+    },
+    "bituminous": {
+      "base": "game:block/coal/bituminous"
+    },
+    "anthracite": {
+      "base": "game:block/coal/anthracite"
+    },
+    "charcoal": {
+      "base": "game:block/coal/charcoal"
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-tier1-n"
+    ],
+    "iiex": [
+      "*-tier1-n"
+    ]
+  },
+  "replaceable": 400,
+  "resistance": 3.5,
+  "lightAbsorption": 0,
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "sounds": {
+    "walk": "walk/stone",
+    "place": "block/ceramicplace",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "block/rock-hit-pickaxe",
+        "break": "block/rock-break-pickaxe"
+      }
+    }
+  }
+}

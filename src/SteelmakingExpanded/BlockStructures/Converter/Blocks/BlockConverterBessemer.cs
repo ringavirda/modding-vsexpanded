@@ -5,7 +5,7 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockNetworkMolten;
+using IronIndustryExpanded.BlockNetworkMolten;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -106,7 +106,7 @@ public partial class BlockConverterBessemer
             )
             .Stage(s =>
               s.RequireMetalPlate(domain, 4)
-                .Require("lpex:pipe-straight-ns-{metal}", 3, type: "block")
+                .Require("iiex:pipe-straight-ns-{metal}", 3, type: "block")
                 .RequireMetalNails(domain, 6)
                 .AddElements("Root/GasIntake")
             )

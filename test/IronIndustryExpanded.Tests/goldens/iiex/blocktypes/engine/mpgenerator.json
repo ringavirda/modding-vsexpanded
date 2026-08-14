@@ -1,0 +1,59 @@
+{
+  "code": "enginempgenerator",
+  "class": "iiex.BlockEngineMPGenerator",
+  "entityClass": "iiex.BlockEntityEngineMPGenerator",
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "entityBehaviors": [
+    {
+      "name": "iiex.BEBehaviorEngineMPGenerator"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "shapebytype": {
+    "*-n": {
+      "base": "iiex:engine/mpgenerator",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iiex:engine/mpgenerator",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iiex:engine/mpgenerator",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iiex:engine/mpgenerator",
+      "rotateY": 90
+    }
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

@@ -3,7 +3,7 @@
 **Status** ruled 2026-08-07 - this page owns the together-or-nothing mass batch. One number is already
 shipped (the pig); the other five are settled on paper and land as one queued code + goldens batch. Every
 row cites the page that derived it.
-**Mod** iwex (every item in the batch) · the parity and scenario suites it re-runs span iwex and smex
+**Mod** iiex (every item in the batch) · the parity and scenario suites it re-runs span iiex and smex
 
 **Owns** - the facts this page is canonical for:
 
@@ -56,7 +56,7 @@ batch.
 
 ## The guard-rail
 
-> **The iwex chain must never yield less iron per ore than a vanilla bloomery**
+> **The iiex chain must never yield less iron per ore than a vanilla bloomery**
 > ([conventions.md](../conventions.md):576-577).
 
 Asserted as part of this batch's acceptance, not filed as a someday test.

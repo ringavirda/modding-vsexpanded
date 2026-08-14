@@ -1,0 +1,4960 @@
+{
+  "textureWidth": 16,
+  "textureHeight": 16,
+  "textures": {
+    "cast-iron1": "iiex:block/metal/castiron"
+  },
+  "elements": [
+    {
+      "name": "HubS",
+      "from": [
+        5.0,
+        5.6,
+        16.0
+      ],
+      "to": [
+        11.0,
+        10.4,
+        19.0
+      ],
+      "rotationOrigin": [
+        8.0,
+        8.0,
+        16.0
+      ],
+      "rotationY": -180.0,
+      "rotationZ": 10.0,
+      "faces": {
+        "north": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            4.5
+          ]
+        },
+        "east": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            3.0,
+            4.5
+          ]
+        },
+        "south": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            4.5
+          ]
+        },
+        "west": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            3.0,
+            4.5
+          ]
+        },
+        "up": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            3.0
+          ]
+        },
+        "down": {
+          "texture": "#cast-iron1",
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            3.0
+          ]
+        }
+      },
+      "children": [
+        {
+          "name": "Hub5",
+          "from": [
+            0.6,
+            -0.6,
+            0.02
+          ],
+          "to": [
+            5.4,
+            5.4,
+            3.02
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                4.5,
+                6.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                6.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                4.5,
+                6.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                6.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                4.5,
+                3.0
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                4.5,
+                3.0
+              ]
+            }
+          }
+        },
+        {
+          "name": "Web10",
+          "from": [
+            1.3,
+            5.4,
+            -0.01
+          ],
+          "to": [
+            4.696,
+            7.6,
+            1.49
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_25",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_26",
+              "from": [
+                1.05,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.35,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube18",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_25",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_26",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_25",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_26",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web11",
+          "from": [
+            1.302,
+            5.4,
+            0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.51
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": 45.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_27",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_28",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube19",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_27",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_28",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_27",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_28",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web12",
+          "from": [
+            1.302,
+            5.4,
+            -0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.49
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": 90.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_29",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_30",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube20",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_29",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_30",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_29",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_30",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web13",
+          "from": [
+            1.302,
+            5.4,
+            0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.51
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": 135.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_31",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_32",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube21",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_31",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_32",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_31",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_32",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web14",
+          "from": [
+            1.302,
+            5.4,
+            -0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.49
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": -180.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_33",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_34",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube22",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_33",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_34",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_33",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_34",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web15",
+          "from": [
+            1.302,
+            5.4,
+            0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.51
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": -135.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_35",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_36",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube23",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_35",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_36",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_35",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_36",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web16",
+          "from": [
+            1.302,
+            5.4,
+            0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.51
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": -45.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_37",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_38",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube24",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_37",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_38",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_37",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_38",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Web17",
+          "from": [
+            1.302,
+            5.4,
+            -0.01
+          ],
+          "to": [
+            4.698,
+            7.6,
+            1.49
+          ],
+          "rotationOrigin": [
+            3.0,
+            2.4,
+            0.0
+          ],
+          "rotationZ": -90.0,
+          "faces": {
+            "north": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "east": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "south": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                2.0
+              ]
+            },
+            "west": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                1.5,
+                2.0
+              ]
+            },
+            "up": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            },
+            "down": {
+              "texture": "#cast-iron1",
+              "uv": [
+                0.0,
+                0.0,
+                3.0,
+                1.5
+              ]
+            }
+          },
+          "children": [
+            {
+              "name": "ConeTooth1_39",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth1_40",
+              "from": [
+                1.048,
+                2.0,
+                0.01
+              ],
+              "to": [
+                2.348,
+                5.0,
+                1.61
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                0.0
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    3.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    3.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              },
+              "children": [
+                {
+                  "name": "Cube25",
+                  "from": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "to": [
+                    1.0,
+                    0.0,
+                    1.0
+                  ],
+                  "rotationOrigin": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "faces": {
+                    "north": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "east": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "south": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "west": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "up": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    },
+                    "down": {
+                      "texture": "#cast-iron1",
+                      "uv": [
+                        0.0,
+                        0.0,
+                        1.0,
+                        1.0
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ConeTooth2_39",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth2_40",
+              "from": [
+                1.148,
+                1.0,
+                1.6
+              ],
+              "to": [
+                2.248,
+                3.6,
+                3.2
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                1.6
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.5
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.5,
+                    2.5
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.5
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_39",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            },
+            {
+              "name": "ConeTooth3_40",
+              "from": [
+                1.248,
+                0.0,
+                3.2
+              ],
+              "to": [
+                2.148,
+                2.2,
+                4.6
+              ],
+              "rotationOrigin": [
+                1.698,
+                -3.0,
+                3.2
+              ],
+              "rotationZ": 22.5,
+              "faces": {
+                "north": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "east": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "south": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    2.0
+                  ]
+                },
+                "west": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    1.0,
+                    2.0
+                  ]
+                },
+                "up": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                },
+                "down": {
+                  "texture": "#cast-iron1",
+                  "uv": [
+                    0.0,
+                    0.0,
+                    0.5,
+                    1.0
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

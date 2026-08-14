@@ -12,7 +12,7 @@ namespace ExpandedLib.Tests;
 /// Every literal <c>Lang.Get("domain:key")</c> in the mods must name a key the English lang file
 /// actually carries. A miss is not an error at runtime: <c>TranslationService.GetUnformatted</c> does
 /// one exact dictionary lookup and returns the key verbatim when it fails, so the player is shown
-/// <c>iwex:furnace-heatinghearth-loaded</c> where a sentence should be.
+/// <c>iiex:furnace-heatinghearth-loaded</c> where a sentence should be.
 /// <para>
 /// A lang file may write a key bare or domain-qualified and the game accepts both, so both sides are
 /// normalised to the bare form before comparison.
@@ -21,12 +21,16 @@ namespace ExpandedLib.Tests;
 public class LangKeyResolutionTests {
   /// <summary>
   /// A literal followed by <c>+</c>, or ending in a separator, is a prefix completed at runtime
-  /// (<c>"iwex:bf-state-" + state</c>); the whole key is not knowable statically.
+  /// (<c>"iiex:bf-state-" + state</c>); the whole key is not knowable statically.
   /// </summary>
   private static readonly Regex Call = new(
     @"Lang\.Get\w*\(\s*""([a-z]+):([A-Za-z0-9_.-]+)""(\s*\+)?",
     RegexOptions.Compiled
   );
+
+  /// <summary>Domains whose lang files are somebody else's to ship: vanilla's, and the compat targets
+  /// under <c>.compat/</c>. Anything else a literal names must be one of ours and must resolve.</summary>
+  private static readonly HashSet<string> Foreign = ["game", "creative", "survival"];
 
   [Fact]
   public void Every_literal_lang_key_resolves_in_english() {
@@ -34,9 +38,17 @@ public class LangKeyResolutionTests {
     var missing = new List<string>();
 
     foreach ((string domain, string key, string file) in LiteralKeys()) {
-      // Vanilla's own keys and other mods' are not ours to carry.
-      if (!langs.TryGetValue(domain, out HashSet<string>? keys))
+      // Vanilla's own keys are not ours to carry.
+      if (Foreign.Contains(domain))
         continue;
+
+      // An unknown domain used to be skipped, which made this guard go blind exactly when it was
+      // needed most: rename or merge away a domain and every literal still naming it silently stops
+      // being checked instead of failing. A domain we do not ship is a dead key, so it fails.
+      if (!langs.TryGetValue(domain, out HashSet<string>? keys)) {
+        missing.Add($"{domain}:{key} ({file}) - no lang tree ships domain '{domain}'");
+        continue;
+      }
       if (!keys.Contains(key))
         missing.Add($"{domain}:{key} ({file})");
     }

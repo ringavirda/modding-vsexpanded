@@ -12,7 +12,7 @@ namespace ExpandedLib.Testing;
 /// <summary>
 /// Finds domain-qualified block-code string literals in a mod's source that can never resolve because
 /// they name a variant-grouped block by its bare base code. A block declaring any variant group is
-/// never itself placeable, so <c>GetBlock("iwex:molten-barrel")</c> returns null once the barrel gains
+/// never itself placeable, so <c>GetBlock("iiex:molten-barrel")</c> returns null once the barrel gains
 /// a <c>construction</c> group, and defensive call sites turn that into silent loss of function.
 /// <para>
 /// Only domain-qualified literals are scanned, which excludes the definitions themselves: a def names
@@ -81,8 +81,8 @@ public static class CodeLiterals {
       string[] lines = File.ReadAllLines(file);
       for (int i = 0; i < lines.Length; i++) {
         // A shape or texture path uses the same `domain:path` syntax as a block code and can coincide
-        // with a base code exactly: `.ShapeByTypePerOrientation("lpex:manualfluidpump", 0)` names
-        // assets/lpex/shapes/manualfluidpump.json, not a block. The method a literal is passed to is
+        // with a base code exactly: `.ShapeByTypePerOrientation("iiex:manualfluidpump", 0)` names
+        // assets/iiex/shapes/manualfluidpump.json, not a block. The method a literal is passed to is
         // what distinguishes them, so the filter is on the line rather than on the literal.
         if (AssetReference.IsMatch(lines[i]))
           continue;

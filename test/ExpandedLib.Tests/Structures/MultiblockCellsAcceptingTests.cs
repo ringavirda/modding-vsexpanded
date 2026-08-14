@@ -31,11 +31,11 @@ public class MultiblockCellsAcceptingTests {
   private const string FireboxGlyph = "@(air|coalpile)";
 
   private static readonly AssetLocation ChargePile = new(
-    "iwex:furnace-chargepile"
+    "iiex:furnace-chargepile"
   );
   private static readonly AssetLocation CoalPile = new("game:coalpile");
   private static readonly AssetLocation Unrelated = new(
-    "iwex:furnace-tuyere-n"
+    "iiex:furnace-tuyere-n"
   );
 
   /// <summary>
@@ -136,7 +136,7 @@ public class MultiblockCellsAcceptingTests {
     StructureRig.Around(world, machine, Def()).Complete();
 
     // `@(air|coalpile)` is implicitly `game:`, so the firebox slot takes a coal pile and never takes
-    // `iwex:furnace-chargepile`; the shaft glyph takes both. One cell of difference.
+    // `iiex:furnace-chargepile`; the shaft glyph takes both. One cell of difference.
     Assert.Equal(Chargeable.Length + 1, machine.CellsAccepting(CoalPile).Count);
     Assert.Equal(Chargeable.Length, machine.CellsAccepting(ChargePile).Count);
     Assert.Contains(Anchor.AddCopy(-1, 0, 0), machine.CellsAccepting(CoalPile));

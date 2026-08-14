@@ -1,0 +1,558 @@
+{
+  "code": "furnace",
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "cupolacore"
+      ]
+    },
+    {
+      "code": "tier",
+      "states": [
+        "tier1",
+        "tier2",
+        "tier3"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "shape": {
+    "base": "game:block/basic/cube"
+  },
+  "blockmaterial": "Ceramic",
+  "maxstacksize": 4,
+  "replaceable": 700,
+  "resistance": 2.5,
+  "lightAbsorption": 99,
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "sounds": {
+    "walk": "game:walk/stone",
+    "place": "game:block/ceramicplace"
+  },
+  "materialDensity": 2000,
+  "class": "iiex.BlockCupolaFurnaceCore",
+  "entityClass": "iiex.BlockEntityCupolaFurnace",
+  "textures": {
+    "all": {
+      "base": "game:block/clay/refractory/{tier}/front1"
+    },
+    "north": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iiex:block/furnace/n"
+      ]
+    },
+    "south": {
+      "base": "game:block/clay/refractory/{tier}/front1",
+      "overlays": [
+        "iiex:block/furnace/cf"
+      ]
+    }
+  },
+  "attributes": {
+    "multiblockStructure": {
+      "blockNumbers": {
+        "game:refractorybricks-good-tier*": 1,
+        "iiex:furnace-cupolacore-*-n": 2,
+        "iiex:furnace-irontap-e": 3,
+        "iiex:furnace-slagtap-w": 4,
+        "iiex:furnace-tuyere-n": 5,
+        "iiex:hopper-tall-w": 6,
+        "exlib:structurefiller": 7,
+        "*:@(air|coalpile|furnace-chargepile)": 8,
+        "*:@(air|coalpile|furnace-chargepile|hearthmetal-.*)": 9,
+        "game:air": 10
+      },
+      "offsets": [
+        {
+          "x": -1,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 2
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0,
+          "w": 3
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 9
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0,
+          "w": 4
+        },
+        {
+          "x": -1,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": -1,
+          "w": 5
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "w": 8
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "w": 8
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 3,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "w": 8
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 0,
+          "w": 6
+        },
+        {
+          "x": -1,
+          "y": 4,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 0,
+          "w": 8
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": 0,
+          "w": 7
+        },
+        {
+          "x": -1,
+          "y": 5,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "z": 1,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": -1,
+          "w": 1
+        },
+        {
+          "x": -1,
+          "y": 6,
+          "z": 0,
+          "w": 1
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "w": 10
+        },
+        {
+          "x": 0,
+          "y": 6,
+          "z": 1,
+          "w": 1
+        }
+      ]
+    },
+    "multiblockFacings": {
+      "iiex:furnace-cupolacore-*-n": [
+        3
+      ],
+      "iiex:furnace-irontap-e": [
+        2
+      ],
+      "iiex:furnace-slagtap-w": [
+        2
+      ],
+      "iiex:furnace-tuyere-n": [
+        2
+      ],
+      "iiex:hopper-tall-w": [
+        2
+      ]
+    },
+    "multiblockRoles": {
+      "Chargeable": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 3,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 4,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 5,
+          "z": 0
+        }
+      ],
+      "Tuyere": [
+        {
+          "x": 0,
+          "y": 2,
+          "z": -1
+        }
+      ],
+      "MetalTap": [
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0
+        }
+      ],
+      "SlagTap": [
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0
+        }
+      ],
+      "Pool": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        }
+      ]
+    }
+  }
+}

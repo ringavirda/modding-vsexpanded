@@ -1,6 +1,6 @@
 # Tooling wear
 
-**Status** ruled 2026-08-05 - nothing built  **Mods** exlib owns the mechanism; iwex, lpex, hpex and smex own the tooling
+**Status** ruled 2026-08-05 - nothing built  **Mods** exlib owns the mechanism; iiex, iiex, hpex and smex own the tooling
 **Since** 2026-08-05
 
 **Owns** - the facts this page is canonical for:

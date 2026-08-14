@@ -1,26 +1,19 @@
 {
   "structure-missing-header": "Structure incomplete! Still needed:",
   "structure-missing-line": "  {0} x {1}",
-
   "block-structurefiller": "Machine",
-
   "blockhelp-rotate": "Rotate",
-
   "blockname-suffixed": "{0} ({1})",
   "blockname-listsep": ", ",
-
   "refractory-tier1": "Refractory Tier 1",
   "refractory-tier2": "Refractory Tier 2",
   "refractory-tier3": "Refractory Tier 3",
-
   "metal-unknown": "unknown",
   "metalstate-cold": "cold",
-
   "command-measure-desc": "Show or set the display unit system (metric/imperial)",
   "pref-measure-label": "Display units",
   "pref-measure-metric": "Metric (L, atm, °C)",
   "pref-measure-imperial": "Imperial (gal, psi, °F)",
-
   "unit-litres": "L",
   "unit-gallons": "gal",
   "unit-litres-per-second": "L/s",
@@ -34,7 +27,6 @@
   "unit-horsepower": "hp",
   "unit-kilojoules": "kJ",
   "unit-megajoules": "MJ",
-
   "command-exmod-desc-client": "Exlib client-side base command (.exmod). Has only network highlighting on its own; other mods extend it with their client-side options.",
   "command-exmod-help-client": "Client-side command - runs locally on your machine. Use a sub-command (see .help exmod). Available options depend on which mods are installed and what subcommands those add.",
   "command-exmod-desc-server": "Exlib server-side base command (/exmod). A shared root other mods extend with their server-side options.",
@@ -42,7 +34,6 @@
   "command-pref-current": "{0}: {1}",
   "command-pref-set": "{0} set to {1}.",
   "command-pref-invalid": "Unknown value '{0}' for {1}. Options: {2}.",
-
   "command-recipes-desc": "View or set a mod's recipe cost level (applies on next world reload)",
   "command-recipes-list": "Recipe cost levels (use /exmod recipes [mod] [level] to change):",
   "command-recipes-none": "No mods have registered recipe cost levels.",
@@ -51,7 +42,6 @@
   "command-recipes-retain": "{0} recipe costs are already at '{1}'.",
   "command-recipes-unknown": "Unknown mod '{0}'. Registered: {1}.",
   "command-recipes-invalid": "Unknown level '{0}'. Options: {1}.",
-
   "command-config-desc": "View or change a mod's config values live (/exmod config [mod] [value] [new])",
   "command-config-list": "Registered configs (use /exmod config [mod] to inspect):",
   "command-config-none": "No mods have registered editable configs.",
@@ -62,15 +52,23 @@
   "command-config-set": "{0} changed from {1} to {2}. Applied immediately.",
   "command-config-parsefail": "Could not read '{0}' as a value for {1} (expected {2}).",
   "command-config-range": "Value for {0} is out of range (allowed: {1}).",
-
   "command-network-desc": "Visualise block networks (pipes, molten canals, …)",
   "command-network-hi-desc": "Highlight every network block, coloured per network",
   "command-network-unhi-desc": "Stop highlighting network blocks",
   "network-hi-on": "Network highlighting enabled - each network has its own colour; updates live.",
   "network-hi-off": "Network highlighting disabled.",
-
   "command-heal-desc": "Recreate orphaned block entities (a placed block whose entity was lost) in loaded chunks",
   "command-heal-result": "Recreated {0} orphaned block entities in loaded chunks.",
-
-  "game:placefailure-exlib-noorientation": "Cannot connect to the neighbouring blocks - no valid orientation here."
+  "game:placefailure-exlib-noorientation": "Cannot connect to the neighbouring blocks - no valid orientation here.",
+  "pipe-info-empty": "Empty",
+  "pipe-info-flow": "Throughput: {0} of {1} at {2}",
+  "pipe-info-leaking": "Leaking!",
+  "pipe-info-overpressure": "Over pressure!",
+  "pipe-info-pressure": "Pressure: {0}(g)",
+  "pipe-info-status": "{0} of {1} at {2}",
+  "pipe-medium-air": "Air",
+  "pipe-medium-exhaust": "Exhaust",
+  "pipe-medium-steam": "Steam",
+  "pipe-medium-unknown": "Gas",
+  "pipe-medium-water": "Water"
 }

@@ -1,10 +1,10 @@
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded.BlockStructures.Boiler;
+using IronIndustryExpanded.BlockStructures.Boiler;
 
 namespace HighPressureExpanded.BlockStructures.Boiler.BlockEntities;
 
 /// <summary>
-/// The Lancashire boiler, the steel high-pressure tier. All behavior lives in lpex's
+/// The Lancashire boiler, the steel high-pressure tier. All behavior lives in iiex's
 /// <see cref="BlockEntityBoiler"/>; this supplies the variant stats only, read from hpex's own
 /// config section.
 /// </summary>

@@ -1,0 +1,191 @@
+<p>
+  The whole iron tier for Vintage Story, end to end: blend ore into a burden, smelt it in a
+  cold blast furnace, plumb the molten pig out through cast canals - then raise the steam plant
+  that mechanises the lot. Machines you watch work, and piping that has to be thought about.
+</p>
+<p>
+  This is the merge of two mods that were never really separable in play: the iron line needs
+  blast, and blast needs the pipes and engines. It continues the version line of
+  <strong>Pipes and Power Expanded</strong>, and a world built with that mod carries straight over.
+</p>
+
+<h2>Compatibility</h2>
+<ul>
+  <li><strong>Game version:</strong> built for Vintage Story 1.22. Legacy 1.20 and 1.21 builds are on the GitHub releases page.</li>
+  <li><strong>Multiplayer:</strong> works in singleplayer and on dedicated servers.</li>
+  <li><strong>Requires:</strong> <a href="https://mods.vintagestory.at/exlib">Expanded Library</a> (exlib). Install it before updating.</li>
+  <li><strong>Languages:</strong> English, Russian, Ukrainian.</li>
+  <li><strong>Save safety:</strong> safe to add to an existing world. Removing it leaves the placed machine and pipe blocks behind, so break them first if you uninstall.</li>
+</ul>
+
+<h2>Quick start</h2>
+<p>The iron line first. Each step has a full handbook article ("Ironworking:") in game.</p>
+<ol>
+  <li>Build a <strong>Burdenmaker</strong> and drive it from an axle. Feed it crushed iron ore, crushed coke and lime; it blends them into <strong>burden</strong>, which is the only thing the furnace eats.</li>
+  <li>Build the <strong>Cold Blast Furnace</strong>: place the core block, hold Ctrl + Shift + right-click for the build outline, and fill in every highlighted block until it reports complete.</li>
+  <li>Put a <strong>Tall Hopper</strong> over the shaft and an <strong>Ore Bunker</strong> beside it, so the furnace charges itself.</li>
+  <li>Run plated pipe from a <strong>Twin-Tub Blower</strong> to the two tuyeres. Seal the run - an open pipe end vents to atmosphere and the line will never hold pressure.</li>
+  <li>Ignite the charge. The furnace climbs on its own and enters Melting once it is clear of iron's melting point; a coke-rich burden gets there on cold blast, a lean one will not.</li>
+  <li>Open the lower tap. Pig iron solidifies at the tap and chisels free, or runs into a <strong>molten canal</strong> and on to a mold pedestal.</li>
+</ol>
+<p>Then the smallest self-sufficient steam line, start to finish:</p>
+<ol>
+  <li>Place a Fluid Intake on a pond, over a three-deep column of water.</li>
+  <li>Build a Cornish Boiler with its firebox, fill it through the top hatch with buckets, and light a coal pile behind its door. Vent the firebox through a chimney.</li>
+  <li>Raise a Watt Engine nearby and pipe the boiler's steam outlet to its inlet through a Pressure Valve gated at about 2-3 atm.</li>
+  <li>Drop a sub-machine into the engine's drive cell: a Fluid Pump (pipe the intake into it and its output back into the boiler to close the water loop), or a Mechanical Power Generator (run its axles to your machines).</li>
+  <li>Route the engine's condensate drain back toward the boiler. That is a steam plant that feeds itself.</li>
+</ol>
+<p>The in-game handbook has full articles under "Ironworking:" and "Steam Power:" if you want the detail.</p>
+
+<h2>Commands and config</h2>
+<ul>
+  <li><code>.exmod network hi</code> / <code>unhi</code> - highlights every networked block, a separate colour per network, so you can see where a run is continuous and where it is broken. Updates live as you build.</li>
+  <li><code>.exmod measure metric</code> / <code>imperial</code> - switches display units on pipes and machines (L, atm, degrees Celsius or gal, psi, Fahrenheit). Display only; the simulation is unchanged.</li>
+  <li><code>/exmod config iiex</code> - view or change any gameplay value live, applied immediately with no world reload (admin).</li>
+  <li><code>/exmod recipes iiex &lt;normal|cheap&gt;</code> - switch the crafting and construction cost level; applies on the next world reload (admin).</li>
+</ul>
+<p>
+  Two shared config files are generated under <code>VintagestoryData/ModConfig/</code>
+  on first run, each with one section per installed mod:
+</p>
+<ul>
+  <li><code>ex_values.json</code>, section <code>iiex</code> - the gameplay tunables (furnace heat balance, pipe burst pressure, boiler steam output and water draw, engine steam consumption). Editable live with <code>/exmod config iiex</code>.</li>
+  <li><code>ex_recipes.json</code>, section <code>iiex</code> - the per-recipe and per-construction cost numbers for each level (normal and cheap). Pick the active level with <code>/exmod recipes iiex</code> and fine-tune the numbers in this file; changes apply on the next world reload.</li>
+</ul>
+
+<h2>What it adds</h2>
+<ul>
+  <li><strong>Cold blast furnace</strong> - an open-topped multiblock that smelts ore burden to molten pig iron, with no fixed maximum temperature: what it reaches is a live balance of fuel, blast and heat loss, and block-info shows both sides of it.</li>
+  <li><strong>Cupola, puddling and heating furnaces</strong> - the re-melter, the wrought-iron hearth and the reheat stand.</li>
+  <li><strong>Burdenmaker and ore bunker</strong> - burden preparation and buffering, with the mix stamped onto the charge so the furnace can read it.</li>
+  <li><strong>Molten canals</strong> - per-cell liquid metal transport, with taps, mold pedestals and barrels. Cuttable from cobblestone, running brick or fire brick.</li>
+  <li><strong>Sand casting</strong> - a moldable casting bed, reusable patterns that carry the mold shape, and cast-iron molds for stock, machine parts and gears.</li>
+  <li><strong>Mechanical-energy network</strong> - flywheels store energy as spinning inertia rather than as a battery, transmissions gear it, and the rolling mill spends it forming stock through roll-set tooling.</li>
+  <li><strong>Two pipe tiers</strong> - plated, hammered from plate before any machine exists, and cast. Neither is retired: you plumb and gear the works in plated, then upgrade.</li>
+  <li><strong>Cornish boiler and Watt engine</strong> - the low-pressure steam plant, with MP-generator, fluid-pump and air-blower sub-machines.</li>
+  <li><strong>Cast iron</strong> - a full tool and part family, and a substitute for vanilla iron in build recipes.</li>
+  <li><strong>Slag</strong> - a byproduct with a use: paths, slabs and stairs.</li>
+  <li><strong>Diagrams and the design table</strong> - reusable crafting plans that pick a part's shape, so one grid pattern covers a whole family.</li>
+</ul>
+
+<h2>How it works</h2>
+<div class="spoiler">
+  <div class="spoiler-toggle">Pipe network (click to expand)</div>
+  <div class="spoiler-text">
+    <p>This mod adds iron and steel pipes with straight, bend and junction nodes. They connect automatically into a shared network that carries gases or fluids between structures and machines. The network simulates:</p>
+    <ul>
+      <li><strong>Medium</strong> - each network holds one type of material at a time: air, exhaust, steam or water.</li>
+      <li><strong>Temperature</strong> - whatever pushes material into the pipes can heat it, and that heat travels to the machines downstream.</li>
+      <li><strong>Pressure</strong> - measured in atm (gauge). Each pipe contributes 30 L of capacity to the shared pool.
+        <ul>
+          <li>Gases compress, so they can exceed a pipe's nominal volume and raise the pressure (pressure = current volume / capacity). A single pipe of 30 L holding 60 L of gas reads 2 atm. Gases never exceed the pressure of whatever pushes them in, so steam from a 5 atm boiler tops out at 5 atm.</li>
+          <li>Liquids do not move on their own - a powered fluid pump drives them, or a running engine pushes its condensate in. They do not compress, so they transfer the driving pressure directly: a pump on an engine fed 3 atm steam outputs water at about 2.25 atm (engine efficiency is 0.75).</li>
+        </ul>
+      </li>
+      <li><strong>Leaks</strong> - an uncapped connector face leaks. A leaking run cannot hold more than 1 atm and bleeds about 8 L/s of gas or 10 L/s of liquid. Cap every end against a block, valve, machine port or outlet.</li>
+      <li><strong>Bursts</strong> - an over-pressured pipe eventually bursts, splitting the network and spawning leaks. Each tier has its own rating: plated bursts above 2.5 atm, cast above 5, and the rolled tier from <a href="https://mods.vintagestory.at/hpex">High Pressure Expanded</a> above 12. The weakest pipe sets the limit for the whole run, and pipes are rated by throughput rather than bore.</li>
+    </ul>
+    <p>
+      <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/iiex/screenshots/fluid_pump.png?raw=true" alt="" width="840" height="472" />
+    </p>
+    <p>A few special blocks let you shape the network:</p>
+    <ul>
+      <li><strong>Valve</strong> - severs the network when closed, a normal node when open. Separates flows and gates a machine's feed.</li>
+      <li><strong>Pressure valve</strong> - a directional bridge that overflows from one network to another once the input side rises above its set gate. Holds a network at the pressure a machine needs.</li>
+      <li><strong>Steam condenser</strong> - the only way to bridge a gas and a fluid: it injects steam into a running water flow, condensing it into the water network.</li>
+      <li><strong>Outlets, passthroughs and fluid intakes</strong> - cross a structure wall, connect to a machine face, or draw fresh water from a pond.</li>
+    </ul>
+  </div>
+</div>
+<div class="spoiler">
+  <div class="spoiler-toggle">Boilers and engines (click to expand)</div>
+  <div class="spoiler-text">
+    <p>A boiler fills with water and heats it until it boils into steam. Both boilers are multiblock structures containing one large vessel block, so you finish both the multiblock and the vessel to make them operational.</p>
+    <ul>
+      <li><strong>Cornish boiler</strong> - a medium vessel for low-pressure steam: 2 L/s of water into 32 L/s of steam, up to 5 atm. Cheaper, can be built entirely from iron - a good starting point.</li>
+      <li><strong>Lancashire boiler</strong> - a larger vessel: 3 L/s of water into 48 L/s of steam, up to 12 atm. The pressure you need for the more advanced engines. Ships in the companion mod <a href="https://mods.vintagestory.at/hpex">High Pressure Expanded</a>.</li>
+    </ul>
+    <p>
+      <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/iiex/screenshots/lancashire_boilers_smoke.png?raw=true" alt="" width="841" height="473" />
+    </p>
+    <p>Fill a boiler through the top hatch with buckets (you can also draw water back out by hand). Once running, a fluid-pump engine keeps it topped up, so a hand-filled boiler runs until its coal burns out. The hatch doubles as an emergency vent. An over-pressured boiler can explode, so watch it.</p>
+    <p>A steam engine is a large block with a sub-machine slot. In the cell under its drive rod (opposite the cylinder) you place a sub-machine that turns the engine's power into work.</p>
+    <ul>
+      <li><strong>Watt engine</strong> - runs on low-pressure steam. Operating band 2-4 atm; within it the engine draws 30 L/s of steam.</li>
+      <li><strong>Cornish engine</strong> - higher pressure and throttleable. Normal: 6-8 atm, 16 L/s. Throttled down: 5 atm, 8 L/s. Throttled up: 7 atm, 32 L/s. Throttling halves or doubles the engine's power. Ships in the companion mod <a href="https://mods.vintagestory.at/hpex">High Pressure Expanded</a>.</li>
+    </ul>
+    <p>Both engines break if over-pressured. One Cornish boiler supplies one Watt engine, which keeps the early math simple; adding High Pressure Expanded for a Lancashire boiler and Cornish engine gives far more power and more to balance.</p>
+    <p>
+      <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/iiex/screenshots/cornish_engines.png?raw=true" alt="" width="839" height="472" />
+    </p>
+    <p>The sub-machines - two here, one more from smex:</p>
+    <ul>
+      <li><strong>Fluid pump</strong> - pushes fluid from its bottom connection out the front. Needs a fluid intake in the bottom network. A Watt engine yields about 5 L/s of water.</li>
+      <li><strong>Mechanical Power Generator</strong> - turns the engine's power into MP through axle connections; a Watt engine comfortably drives a couple of helve hammers.</li>
+      <li><strong>Air blower</strong> (from smex) - pressurises air to the levels the blast furnace and Bessemer converter need; its output pressure is capped by the engine's inlet steam pressure.</li>
+    </ul>
+    <p>Placing a sub-machine in the correct cell links it to the engine automatically. Every engine has a built-in steam condenser, so it recycles some steam; connect a pipe to the right side of the engine to route that condensate back to your boilers.</p>
+  </div>
+</div>
+
+<h2>Workable setups</h2>
+<p>Boilers and engines take a lot of iron and steel, which is why the iron line and the steam line ship together - and why this pairs naturally with <a href="https://mods.vintagestory.at/smex">Steelmaking Expanded</a> once you want steel. These diagrams mainly show how to balance the whole system.</p>
+<div class="spoiler">
+  <div class="spoiler-toggle">Warning! Scary diagrams!</div>
+  <div class="spoiler-text">
+    <p>Starter iron setup:</p>
+    <p><img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/setups/starter_iron_production_setup.png?raw=true" alt="" width="2211" height="1009" /></p>
+    <p>Starter steel setup:</p>
+    <p><img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/setups/starter_steel_production_setup.png?raw=true" alt="" width="2560" height="1466" /></p>
+    <p>Advanced steel setup:</p>
+    <p><img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/setups/improved_steel_production_setup.png?raw=true" alt="" width="2560" height="1183" /></p>
+  </div>
+</div>
+
+<h2>FAQ</h2>
+<ul>
+  <li><strong>My pipe will not go above 1 atm.</strong> A connector face somewhere is open and leaking. Cap every end against a block, valve, machine port or outlet.</li>
+  <li><strong>My boiler exploded.</strong> It was over-pressured. Vent through the top hatch, or gate the steam line with a pressure valve.</li>
+  <li><strong>My engine will not run, or it broke.</strong> The steam pressure is outside its band (Watt 2-4 atm, Cornish 6-8 atm), or it was over-pressured. Regulate the steam.</li>
+  <li><strong>My sub-machine does nothing.</strong> It must sit in the cell under the engine's drive rod, opposite the cylinder. Placed there it links automatically.</li>
+  <li><strong>I see unknown blocks after updating.</strong> Save migrations run on load; if any slipped through, replace them in creative.</li>
+</ul>
+
+<h2>Further reading</h2>
+<p>This mod loosely models real steam machinery. If you want to read more:</p>
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Steam_engine">https://en.wikipedia.org/wiki/Steam_engine</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Watt_steam_engine">https://en.wikipedia.org/wiki/Watt_steam_engine</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Cornish_engine">https://en.wikipedia.org/wiki/Cornish_engine</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Cornish_boiler">https://en.wikipedia.org/wiki/Cornish_boiler</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Lancashire_boiler">https://en.wikipedia.org/wiki/Lancashire_boiler</a></li>
+</ul>
+
+<h2>Notes</h2>
+<ul>
+  <li>The engines and sub-machines share a generic implementation, so adding a new one is mostly model and animation work - which I find tedious, so more may come later.</li>
+  <li>Because the steam system is standalone, a steam turbine and generator for electricity would be possible if a popular electrical-power mod ever makes it worthwhile.</li>
+  <li>Connecting everything takes a lot of pipe, so be ready for that.</li>
+  <li>There may still be bugs, especially around the merge. Please report them and I will try to fix them quickly. Balance suggestions are welcome in the comments.</li>
+</ul>
+
+<h2>Showcase</h2>
+<p>An excellent foundry build by Soria, showing how you can dress up the boilers and engines from this mod:</p>
+<p>
+  <img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/setups/soria_steel_foundry/0ro2PoE.png?raw=true" alt="" width="640" height="360" /><img src="https://github.com/ringavirda/modding-vsexpanded/blob/main/docs/setups/soria_steel_foundry/2k7bxxF.png?raw=true" alt="" width="640" height="360" />
+</p>
+
+<h2>Links and credits</h2>
+<ul>
+  <li><strong>Future plans:</strong> <a href="https://drive.google.com/file/d/1NKAGN_F59RsgQ9YKuhT-I6X0dYnarjIA/view?usp=sharing">roadmap diagram</a></li>
+  <li><strong>Source and releases:</strong> <a href="https://github.com/ringavirda/modding-vsexpanded">github.com/ringavirda/modding-vsexpanded</a></li>
+  <li><strong>Contact:</strong> discord fallenstar1975</li>
+  <li><strong>Logo art:</strong> <a href="https://x.com/ariburin_sfw">ariburin</a></li>
+</ul>
+<div class="spoiler">
+  <div class="spoiler-toggle">Video walkthrough</div>
+  <div class="spoiler-text">
+    <p><iframe src="//www.youtube-nocookie.com/embed/CK2DHt3eQig" width="560" height="314" allowfullscreen="allowfullscreen"></iframe></p>
+  </div>
+</div>

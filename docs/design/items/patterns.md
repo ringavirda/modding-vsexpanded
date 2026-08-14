@@ -1,11 +1,11 @@
 # Casting patterns
 
-**Status** live - 8 iwex types × 12 woods = 96 items, each carrying a `mold` spec that the casting
+**Status** live - 8 iiex types × 12 woods = 96 items, each carrying a `mold` spec that the casting
 stations read, validated at load and pinned by a golden. Both stations are served: five `cell` types and
 the three `longcell` stock types (the cast stock ladder). The craft chain works end to end except that its
 first link, the diagram, is creative-only. Five drawn impressions still have no pattern, and no second mod
 has shipped a pattern yet.
-**Mod** iwex owns the pattern system and every shipped entry; the `Itemtype()` factory is the seam a
+**Mod** iiex owns the pattern system and every shipped entry; the `Itemtype()` factory is the seam a
 second mod contributes through.
 
 Type names follow the drawn art (settled 2026-08-05) and are plural where the impression yields more than
@@ -52,7 +52,7 @@ one piece: `castbillets` (3 lanes), `castblooms` (2), `castslab` (1). The items 
 A pattern is **the wooden positive a sand mold is rammed around**, and in this mod it is the item that tells
 the casting cell what to cast. The cell never names a mod, a shape or a product in code; it reads the `mold`
 attribute off the held stack (`BlockEntitySandCastingCell.cs:69`, `:77`) and does what it says. So *"a mod
-adds a castable part with a pattern def alone - no cell change and no dependency on iwex beyond the shared
+adds a castable part with a pattern def alone - no cell change and no dependency on iiex beyond the shared
 attribute shape"* (`MoldSpec.cs:22-25`).
 
 That is the same contract [roll sets](roll-sets.md) carries and the designed [dies](dies.md) copy.
@@ -73,23 +73,23 @@ only reason the mold wildcard needs a trailing `-*`.
 ## The catalogue
 
 A pattern has no mass row. Like every tooling item in the suite it declares neither `materialUnits` nor
-`MaterialDensity` (confirmed by `test/IronworkingExpanded.Tests/goldens/iwex/itemtypes/pattern.json`), so the
+`MaterialDensity` (confirmed by `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/pattern.json`), so the
 [density rule](../mechanics/density-rule.md) has nothing to check on the pattern itself. It does carry a
 `capacity` for the part it casts, and that number belongs to
 [casting cell](../machines/casting-cell.md) § The shipped pattern catalogue.
 
-### Shipped — eight types × twelve woods = 96 items, all iwex
+### Shipped — eight types × twelve woods = 96 items, all iiex
 
 | Item | Casts | Output kind | Station | Impression shape |
 |---|---|---|---|---|
-| `iwex:pattern-castheavyplate-{wood}` | `iwex:castplate-heavy` | item | `cell` | `iwex:casting/cell-filling-heavyplate` |
-| `iwex:pattern-castingotmold-{wood}` | `iwex:casting-mold-ingot` | block | `cell` | `…/cell-filling-ingotmold` - the tray is one bay, 100 u, one ingot |
-| `iwex:pattern-castbarrel-{wood}` | `iwex:cast-barrel` | item | `cell` | `…/cell-filling-moltenbarrel` |
-| `iwex:pattern-castwheelsection-{wood}` | `iwex:castwheelsection` | item | `cell` | `…/cell-filling-flywheelpart` - the filling keeps the older name |
-| `iwex:pattern-castshell-{wood}` | `iwex:castshell` | item | `cell` | `…/cell-filling-castshell` |
-| `iwex:pattern-castbillets-{wood}` | cast billet stock ×3 | item | `longcell` | `…/longcell-filling-billets` |
-| `iwex:pattern-castblooms-{wood}` | cast bloom stock ×2 | item | `longcell` | `…/longcell-filling-blooms` |
-| `iwex:pattern-castslab-{wood}` | cast slab stock | item | `longcell` | `…/longcell-filling-castslab` |
+| `iiex:pattern-castheavyplate-{wood}` | `iiex:castplate-heavy` | item | `cell` | `iiex:casting/cell-filling-heavyplate` |
+| `iiex:pattern-castingotmold-{wood}` | `iiex:casting-mold-ingot` | block | `cell` | `…/cell-filling-ingotmold` - the tray is one bay, 100 u, one ingot |
+| `iiex:pattern-castbarrel-{wood}` | `iiex:cast-barrel` | item | `cell` | `…/cell-filling-moltenbarrel` |
+| `iiex:pattern-castwheelsection-{wood}` | `iiex:castwheelsection` | item | `cell` | `…/cell-filling-flywheelpart` - the filling keeps the older name |
+| `iiex:pattern-castshell-{wood}` | `iiex:castshell` | item | `cell` | `…/cell-filling-castshell` |
+| `iiex:pattern-castbillets-{wood}` | cast billet stock ×3 | item | `longcell` | `…/longcell-filling-billets` |
+| `iiex:pattern-castblooms-{wood}` | cast bloom stock ×2 | item | `longcell` | `…/longcell-filling-blooms` |
+| `iiex:pattern-castslab-{wood}` | cast slab stock | item | `longcell` | `…/longcell-filling-castslab` |
 
 The `Molds` table is `PatternItemDefinitions.cs:108-230`; the shape table is `:92-101`.
 
@@ -98,9 +98,9 @@ fired-clay one. That is the cell's bootstrap job and the only reason the `output
 `Mold` helper. No plate-mold pattern (retired 2026-08-05): `game:metalplate-*` is a rolled product, so
 casting plate in a tray duplicated the mill.
 
-Ownership of the shell and the wheel section (settled 2026-08-05): both are iwex's. The wheel section feeds
-iwex's flywheel (four segments, eight for the large wheel), and the shell builds the
-[ladle](../machines/ladle.md)'s cast variant, which is iwex's. The shape is *iwex owns it, lpex consumes it*
+Ownership of the shell and the wheel section (settled 2026-08-05): both are iiex's. The wheel section feeds
+iiex's flywheel (four segments, eight for the large wheel), and the shell builds the
+[ladle](../machines/ladle.md)'s cast variant, which is iiex's. The shape is *iiex owns it, iiex consumes it*
 (water tank, ore crusher, engine housings), which needs no cross-mod pattern indirection: the pattern and the
 part live in one mod (`PatternItemDefinitions.cs:144-147` records the reasoning in-source).
 
@@ -111,20 +111,20 @@ Each row is a drawn impression with no `Molds` entry. The mod column follows the
 
 | Pattern *(proposed)* | Would cast | Station | Impression already drawn | Owner |
 |---|---|---|---|---|
-| `castframe` | the machine frame | `longcell` | `longcell-filling-castframe.json` | lpex (machine parts) |
-| `cylinder` | engine cylinder blank | `cell` | `cell-filling-cylinder.json` | lpex |
-| `axle` | cast-iron axle blank | `cell` | `cell-filling-axle.json` | lpex |
-| `gearblanksmall` | small gear blank | `cell` | `cell-filling-gearblanksmall.json` | lpex |
-| `gearblanklarge` | large gear blank | `cell` | `cell-filling-gearblanklarge.json` | lpex |
+| `castframe` | the machine frame | `longcell` | `longcell-filling-castframe.json` | iiex (machine parts) |
+| `cylinder` | engine cylinder blank | `cell` | `cell-filling-cylinder.json` | iiex |
+| `axle` | cast-iron axle blank | `cell` | `cell-filling-axle.json` | iiex |
+| `gearblanksmall` | small gear blank | `cell` | `cell-filling-gearblanksmall.json` | iiex |
+| `gearblanklarge` | large gear blank | `cell` | `cell-filling-gearblanklarge.json` | iiex |
 
 The cross-mod seam is built and has no outside caller yet. `PatternItemDefinitions.Itemtype` builds a mod's
 whole `pattern` itemtype from its own mold table (`PatternItemDefinitions.cs:272-280`), the cell's
 recognition gate is domain-blind (`FirstCodePart() == "pattern"`, `BlockEntitySandCastingCell.cs:188`), and
-the spec is read off whichever pattern is held - so lpex ships its five without iwex naming a single lpex
-code. `src/LowPressureExpanded/` contains no casting folder and no pattern provider today, so the five rows
-above are the first exercise of that contract. Caution: an in-source comment still calls lpex's `castshell`
-"the first outside caller" (`PatternItemDefinitions.cs:276`) - the shell is iwex's and always compiled from
-iwex; the comment is stale.
+the spec is read off whichever pattern is held - so iiex ships its five without iiex naming a single iiex
+code. `src/IronIndustryExpanded/` contains no casting folder and no pattern provider today, so the five rows
+above are the first exercise of that contract. Caution: an in-source comment still calls iiex's `castshell`
+"the first outside caller" (`PatternItemDefinitions.cs:276`) - the shell is iiex's and always compiled from
+iiex; the comment is stale.
 
 A roll blank belongs on this list and is not on it.
 `assets/editable/shapes/item-rollers-castblank.json` is a drawn cast blank and the rolls are chilled cast
@@ -182,7 +182,7 @@ table exists so a pattern author knows what an entry must contain and where to r
 
 Caution: the parser's default and the authoring helper's default disagree, silently.
 `MoldSpec.TryParse` defaults `minPourTemp` to 0, which disables the misrun check entirely
-(`MoldSpec.cs:112`); `PatternItemDefinitions.Mold` defaults it to 1150. So every iwex pattern gets a misrun
+(`MoldSpec.cs:112`); `PatternItemDefinitions.Mold` defaults it to 1150. So every iiex pattern gets a misrun
 check and any third-party pattern that omits the key gets none, with no warning either way.
 
 ### `MoldSize` — authored and enforced
@@ -190,8 +190,8 @@ check and any third-party pattern that omits the key gets none, with no warning 
 `MoldSize` has two members, `Cell` and `LongCell` (`MoldSpec.cs:9`), and both sides of it are live:
 
 * enforced at the station - each station declares the one size it takes
-  (`BlockEntitySandCastingCell.AcceptedSize`, `:54`, refusing with `iwex-castingcell-wrongsize`; the long
-  cell overrides to `LongCell` with `iwex-longcell-wrongsize`, `BlockEntitySandCastingLongCell.cs:25-28`);
+  (`BlockEntitySandCastingCell.AcceptedSize`, `:54`, refusing with `iiex-castingcell-wrongsize`; the long
+  cell overrides to `LongCell` with `iiex-longcell-wrongsize`, `BlockEntitySandCastingLongCell.cs:25-28`);
 * authored on the items - the three long-cell stock patterns declare `size: longcell`
   (`PatternItemDefinitions.cs:198`, `:206`, `:214`); the five `cell` types take the helper's default.
 
@@ -214,11 +214,11 @@ moment the part's own item shape is.
 
 | Type | Borrowed item shape | Tracked? |
 |---|---|---|
-| `castheavyplate` | `iwex:item/heavyplate` | untracked (`??`) |
-| `castingotmold` | `iwex:item/ingotmold` | untracked, exported 2026-08-05 from `item-sandcast-ingotmold` |
-| `castbarrel` | `iwex:item/cast-barrel` | tracked |
-| `castwheelsection` / `castshell` | `iwex:item/castwheelsection` / `…/castshell` | untracked |
-| `castbillets` / `castblooms` / `castslab` | `iwex:item/castbillet` / `…/castbloom` / `…/castslab` | untracked; drawn to stale lengths ([stock](stock.md) § Assets) |
+| `castheavyplate` | `iiex:item/heavyplate` | untracked (`??`) |
+| `castingotmold` | `iiex:item/ingotmold` | untracked, exported 2026-08-05 from `item-sandcast-ingotmold` |
+| `castbarrel` | `iiex:item/cast-barrel` | tracked |
+| `castwheelsection` / `castshell` | `iiex:item/castwheelsection` / `…/castshell` | untracked |
+| `castbillets` / `castblooms` / `castslab` | `iiex:item/castbillet` / `…/castbloom` / `…/castslab` | untracked; drawn to stale lengths ([stock](stock.md) § Assets) |
 
 Caution: most of the shapes the item def references are untracked in git, so a clean clone renders those
 pattern families as `game:item/plate`, not as a missing-asset error.
@@ -228,7 +228,7 @@ pattern families as `game:item/plate`, not as a missing-asset error.
 A filling shape is named by a pattern's `mold.shape` and by nothing else, so a grep over every `*.cs` in
 `src/` and `test/` for each filename gives an exact answer:
 
-| Filling shape (`assets/iwex/shapes/casting/`) | Referenced by | Git | Belongs to |
+| Filling shape (`assets/iiex/shapes/casting/`) | Referenced by | Git | Belongs to |
 |---|---|---|---|
 | `cell-filling-base.json` | `CastingCellLogic.cs`, `BlockEntitySandCastingCell.cs` | tracked | the flat rammed sand |
 | `cell-filling-half.json` | `CastingCellLogic.cs` | tracked | the legacy half sand |
@@ -237,10 +237,10 @@ A filling shape is named by a pattern's `mold.shape` and by nothing else, so a g
 | `cell-filling-castshell.json` | `PatternItemDefinitions.cs` | `??` | `castshell` |
 | `cell-filling-flywheelpart.json` | `PatternItemDefinitions.cs` | `??` | `castwheelsection` |
 | `longcell-filling-billets.json` · `-blooms.json` · `-castslab.json` | `PatternItemDefinitions.cs` | `??` | the long-cell stock patterns |
-| `cell-filling-axle.json` | nothing | `??` | proposed lpex `axle` |
-| `cell-filling-cylinder.json` | nothing | `??` | proposed lpex `cylinder` |
-| `cell-filling-gearblanklarge.json` · `-gearblanksmall.json` | nothing | `??` | proposed lpex gear blanks |
-| `longcell-filling-castframe.json` | nothing | `??` | proposed lpex `castframe` |
+| `cell-filling-axle.json` | nothing | `??` | proposed iiex `axle` |
+| `cell-filling-cylinder.json` | nothing | `??` | proposed iiex `cylinder` |
+| `cell-filling-gearblanklarge.json` · `-gearblanksmall.json` | nothing | `??` | proposed iiex gear blanks |
+| `longcell-filling-castframe.json` | nothing | `??` | proposed iiex `castframe` |
 | `longcell-filling-base.json` · `-half.json` | nothing | `??` | the long cell's plain sand meshes - they belong to the block, not to a pattern |
 
 Five impressions still need a pattern (axle, both gear blanks, `cylinder`, `castframe`) plus the two block
@@ -255,7 +255,7 @@ tree.
 
 ### Lang
 
-Every shipped type carries `item-pattern-{type}-*` in en/ru/uk (`assets/iwex/lang/en.json:340` region), and
+Every shipped type carries `item-pattern-{type}-*` in en/ru/uk (`assets/iiex/lang/en.json:340` region), and
 each type's diagram carries its own row too - `item-diagram-item-{type}`, `en.json:148` region - so a new
 pattern type needs two lang rows per language, not one. There is no `item-pattern-*` catch-all, so a type
 added without its row shows a raw code.
@@ -278,7 +278,7 @@ design table [not built]  ──▶  diagram-item-{type}   (creative-only today)
 |---|---|---|
 | the diagram item | `DiagramItemDefinitions.cs:56-58` | `PatternDiagramTypes` is derived from `PatternItemDefinitions.PatternTypes` with an `"item-"` prefix - *"so a new castable part gets its diagram for free"* |
 | the craft | `PatternRecipeDefinitions.cs:20-41` | one grid recipe per type, pattern `DKP` 3 × 1: diagram (tool) + knife (tool) + 2 `game:plank-*`, the plank's wood captured into the output variant (`:33-37`) |
-| the output | `:39` | `iwex:pattern-{type}-{wood}` × 1 |
+| the output | `:39` | `iiex:pattern-{type}-{wood}` × 1 |
 
 One `Molds` entry buys three things. Adding a castable part is one mold row plus the output item and the
 filling shape, because the mold table is the single source the item variants
@@ -297,7 +297,7 @@ vanilla's plank set. A vanilla wood added by an update is silently uncraftable-i
 
 | Piece | file:line | Role |
 |---|---|---|
-| `MoldSpec` | `src/IronworkingExpanded/BlockStructures/Casting/MoldSpec.cs:32` | the record; `TryParse` at `:49-116`; `AttributeKey` at `:42` |
+| `MoldSpec` | `src/IronIndustryExpanded/BlockStructures/Casting/MoldSpec.cs:32` | the record; `TryParse` at `:49-116`; `AttributeKey` at `:42` |
 | `MoldSize` | `:9-16` | `Cell` · `LongCell`; enforced via `AcceptedSize` |
 | `PatternItemDefinitions` | `…/Casting/PatternItemDefinitions.cs` | `IExItemDefProvider`; shapes `:92-101`, `Molds` `:108-230`, `LongCellPatternTypes` `:233`, `PatternTypes` `:247`, `PatternWoods` `:253`, `Itemtype` `:272` |
 | `PatternValidation.Validate` | `…/Casting/PatternValidation.cs:19-31` | the `AssetsFinalize` sweep; pure over a collectible sequence; called from `IronworkingExpandedModSystem.cs` |
@@ -305,12 +305,12 @@ vanilla's plank set. A vanilla wood added by an update is silently uncraftable-i
 | the spec read + size gate | `BlockEntitySandCastingCell.cs:69`, `:77`, `:54` | where a pattern's spec is resolved and its size checked |
 | `DiagramItemDefinitions` | `…/Items/DiagramItemDefinitions.cs:26` | `PatternDiagramTypes` derived at `:56-58` |
 | `PatternRecipeDefinitions` | `…/Recipes/Grid/PatternRecipeDefinitions.cs:19` | one recipe per type |
-| golden | `test/…/goldens/iwex/itemtypes/pattern.json` | pins every spec and both variant groups |
-| tests | `test/IronworkingExpanded.Tests/Blocks/Casting/MoldSpecTests.cs` · `PatternValidationTests.cs` · `PatternCodeLayoutTests.cs` | schema · validation · the `pattern-{type}-{wood}` code layout |
+| golden | `test/…/goldens/iiex/itemtypes/pattern.json` | pins every spec and both variant groups |
+| tests | `test/IronIndustryExpanded.Tests/Blocks/Casting/MoldSpecTests.cs` · `PatternValidationTests.cs` · `PatternCodeLayoutTests.cs` | schema · validation · the `pattern-{type}-{wood}` code layout |
 
 Where a caller hooks in. To add a castable part from any mod: build a `pattern` itemtype off
 `PatternItemDefinitions.Itemtype` with its own mold table, ship a filling shape in its own domain, and the
-output item. Nothing in iwex changes and nothing needs to reference the calling mod
+output item. Nothing in iiex changes and nothing needs to reference the calling mod
 ([casting cell § Where a caller hooks in](../machines/casting-cell.md)). The generic machinery - the
 `attributesByType` wildcard, the validation sweep, the load-time error - is
 [roll sets § the idiom](roll-sets.md).
@@ -353,10 +353,10 @@ output item. Nothing in iwex changes and nothing needs to reference the calling 
 |---|---|---|
 | 1 | Done - `MoldSize` enforced at both stations | see § `MoldSize` - authored and enforced |
 | 2 | Done - the three long-cell stock patterns ship | `castslab`, `castblooms`, `castbillets`, pinned by `CastPartCatalogueTests` |
-| 3 | **lpex ships its five** (`cylinder`, `axle`, `gearblanksmall`, `gearblanklarge`, `castframe`) | lpex has no casting bootstrap yet; the shared `Itemtype()` factory is ready for it, so each is one mold row, one item and its art |
+| 3 | **iiex ships its five** (`cylinder`, `axle`, `gearblanksmall`, `gearblanklarge`, `castframe`) | iiex has no casting bootstrap yet; the shared `Itemtype()` factory is ready for it, so each is one mold row, one item and its art |
 | 4 | **Propose a roll-blank pattern** | `item-rollers-castblank.json` is drawn and would make [roll sets](roll-sets.md) craftable through the route the art already implies |
 | 5 | **Track the untracked item shapes and filling shapes** | a clean clone is visibly wrong today |
 | 6 | **Reconcile the two `minPourTemp` defaults** | either make the parser default to a sane temperature or make the key required |
 | 7 | **Derive capacity from the impression instead of hand-writing it** | ([casting cell § Open](../machines/casting-cell.md), [density rule](../mechanics/density-rule.md)) |
 | 8 | **A metal-pattern tier** | needs a variant-layout decision before it needs a number |
-| 9 | **Does `MoldSpec` move to exlib?** | it stayed in iwex by precedent (`MoldSpec.cs:6`) and nobody has re-examined it since the tooling family grew to three - the same open question as `RollSetSpec` and `ItemDie` ([roll sets § Open 6](roll-sets.md), [dies § Open](dies.md)) |
+| 9 | **Does `MoldSpec` move to exlib?** | it stayed in iiex by precedent (`MoldSpec.cs:6`) and nobody has re-examined it since the tooling family grew to three - the same open question as `RollSetSpec` and `ItemDie` ([roll sets § Open 6](roll-sets.md), [dies § Open](dies.md)) |

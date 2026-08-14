@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded.BlockNetworkPipe.Blocks;
+using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 using Vintagestory.API.Common;
 
@@ -150,10 +150,10 @@ public partial class BlockSmokeStackIntake
         .VariantGroup("type", "intake")
         .VariantGroup("refractory", "tier1", "tier2", "tier3")
         .VariantGroup("orientation", "n", "s", "w", "e")
-        .ShapeByType("*-intake-*-s", "lpex:pipe/outlet")
-        .ShapeByType("*-intake-*-e", "lpex:pipe/outlet", rotateY: 90)
-        .ShapeByType("*-intake-*-n", "lpex:pipe/outlet", rotateY: 180)
-        .ShapeByType("*-intake-*-w", "lpex:pipe/outlet", rotateY: 270)
+        .ShapeByType("*-intake-*-s", "iiex:pipe/outlet")
+        .ShapeByType("*-intake-*-e", "iiex:pipe/outlet", rotateY: 90)
+        .ShapeByType("*-intake-*-n", "iiex:pipe/outlet", rotateY: 180)
+        .ShapeByType("*-intake-*-w", "iiex:pipe/outlet", rotateY: 270)
         .Texture("front1", "game:block/clay/refractory/{refractory}/front1")
         .SideSolid(false)
         .SideOpaque(false),

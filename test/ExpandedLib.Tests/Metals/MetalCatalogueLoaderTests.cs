@@ -77,12 +77,12 @@ public class MetalCatalogueLoaderTests {
       NoCodes,
       new[]
       {
-        new MetalDef { Code = "slag", MoltenItem = "iwex:slag" },
+        new MetalDef { Code = "slag", MoltenItem = "iiex:slag" },
       }
     );
 
-    Assert.True(MetalRegistry.TryGet("iwex:slag", out _));
-    Assert.Equal("iwex:slag", MetalRegistry.MoltenItemOf("slag").ToString());
+    Assert.True(MetalRegistry.TryGet("iiex:slag", out _));
+    Assert.Equal("iiex:slag", MetalRegistry.MoltenItemOf("slag").ToString());
   }
 
   [Fact]
@@ -111,7 +111,7 @@ public class MetalCatalogueLoaderTests {
     const string json =
       @"{
         ""code"": ""hadfield"",
-        ""moltenItem"": ""iwex:ingot-hadfield"",
+        ""moltenItem"": ""iiex:ingot-hadfield"",
         ""isAlloy"": true,
         ""glowMinTemp"": 520,
         ""media"": [""molten""],
@@ -123,7 +123,7 @@ public class MetalCatalogueLoaderTests {
     var def = JsonConvert.DeserializeObject<MetalDef>(json)!;
 
     Assert.Equal("hadfield", def.Code);
-    Assert.Equal("iwex:ingot-hadfield", def.MoltenItem);
+    Assert.Equal("iiex:ingot-hadfield", def.MoltenItem);
     Assert.True(def.IsAlloy);
     Assert.Equal(520f, def.GlowMinTemp);
     Assert.Equal(new[] { "molten" }, def.Media);
@@ -137,11 +137,11 @@ public class MetalCatalogueLoaderTests {
   [Fact]
   public void MetalDef_minimal_json_leaves_every_optional_null() {
     var def = JsonConvert.DeserializeObject<MetalDef>(
-      @"{ ""code"": ""pigiron"", ""moltenItem"": ""iwex:ingot-pigiron"" }"
+      @"{ ""code"": ""pigiron"", ""moltenItem"": ""iiex:ingot-pigiron"" }"
     )!;
 
     Assert.Equal("pigiron", def.Code);
-    Assert.Equal("iwex:ingot-pigiron", def.MoltenItem);
+    Assert.Equal("iiex:ingot-pigiron", def.MoltenItem);
     Assert.Null(def.SolidDrop);
     Assert.Null(def.GlowMinTemp);
     Assert.Null(def.Media);
@@ -163,7 +163,7 @@ public class MetalCatalogueLoaderTests {
     const string json =
       @"{
         ""code"": ""castiron"",
-        ""moltenItem"": ""iwex:ingot-castiron"",
+        ""moltenItem"": ""iiex:ingot-castiron"",
         ""generateItemFamily"": true,
         ""itemForms"": [""ingot"", ""plate"", ""rod"", ""nails""],
         ""texturePath"": ""game:block/metal/tarnished/iron"",

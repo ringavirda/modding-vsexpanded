@@ -29,7 +29,7 @@ Three builders, one shape. Each is a fluent wrapper that accumulates a `JObject`
 | `ExItemDef` | `{domain}:itemtypes/{assetName}.json` | `ExItemDef.cs:64-65` |
 | `ExRecipeDef` | `{domain}:recipes/{category}/{assetName}.json` | `ExRecipeDef.cs:62-63` |
 
-`Create(domain, code)` names the asset after the code; the three-arg overload separates them, which is how several blocktype files share one `code` (the pipe family: `Create("lpex", "pipe", "pipes/straight")` - `ExBlockDef.cs:53-61`).
+`Create(domain, code)` names the asset after the code; the three-arg overload separates them, which is how several blocktype files share one `code` (the pipe family: `Create("iiex", "pipe", "pipes/straight")` - `ExBlockDef.cs:53-61`).
 
 Only the schema subset the migrated content needs is typed. Everything else reaches the JSON through escape hatches, so nothing expressible in JSON is unrepresentable in C#: `Attribute(key, poco)` (`ExBlockDef.cs:665`), `Attributes(poco)` (`:675`), `AttributeByType` (`:817`), `RawByType` (`:832`), `Raw(key, token|poco)` (`:845`, `:850`).
 
@@ -87,7 +87,7 @@ Salvage fraction resolution chain, evaluated live at break time so a `/exmod con
 
 ### 5. The goldens harness
 
-Every def has a committed file at `test/{Mod}.Tests/goldens/{domain}/{Location.Path}`. A mod's parity test is then four thin cases (`IwexDefinitionGoldenTests.cs:28-66`):
+Every def has a committed file at `test/{Mod}.Tests/goldens/{domain}/{Location.Path}`. A mod's parity test is then four thin cases (`IiexDefinitionGoldenTests.cs:28-66`):
 
 1. each def reproduces its golden - `DefinitionGoldens.CheckGolden` (`DefinitionGoldens.cs:94`);
 2. the golden set exactly covers the defs - missing (new def, no golden) and orphans (deleted def, stale golden) both empty (`:115`);
@@ -144,7 +144,7 @@ so the file is created on first run and gains newly added keys on every update.
 
 `Sanitize` resets any numeric property that is NaN/infinite or outside its range, and any reference-typed property the player nulled out whose coded default is non-null, then logs what it reset (`ExConfigRegister.cs:96-139`). `ApplyMigrations` fires each `ExConfigMigration` whose `ToVersion` falls in the gap between the file's stamped version and the running build, oldest first (`:143-208`).
 
-The accessors are generated. `[ExConfigRegister(fileName, modId)]` makes `ExConfigGenerator` emit a `static partial` class - `LpexConfig` → `LpexValues` - carrying `ConfigFileName`, the backing store, `Load(ICoreAPI)`, `Edit(Action<T>)`, `Save()`, and one read-only static property per config value (`ExConfigGenerator.cs:116-231`). A static `Migrations` member on the POCO is forwarded automatically (`:81-82`, `:144-145`). `Manageable = true` additionally registers the store with `ExConfigProfiles` from the generated `Load`, exposing its simple-typed values to `/exmod config` (`:176-186`).
+The accessors are generated. `[ExConfigRegister(fileName, modId)]` makes `ExConfigGenerator` emit a `static partial` class - `IiexConfig` → `IiexValues` - carrying `ConfigFileName`, the backing store, `Load(ICoreAPI)`, `Edit(Action<T>)`, `Save()`, and one read-only static property per config value (`ExConfigGenerator.cs:116-231`). A static `Migrations` member on the POCO is forwarded automatically (`:81-82`, `:144-145`). `Manageable = true` additionally registers the store with `ExConfigProfiles` from the generated `Load`, exposing its simple-typed values to `/exmod config` (`:176-186`).
 
 ## Numbers
 
@@ -153,12 +153,10 @@ The accessors are generated. `[ExConfigRegister(fileName, modId)]` makes `ExConf
 | Config class | Attribute file | Section | Manageable | Legacy names folded | file:line |
 |---|---|---|---|---|---|
 | `ExlibConfig` | `ex_values.json` | `exlib` | yes | `exlib_values.json` | `ExlibConfig.cs:17-22` |
-| `IwexConfig` | `ex_values.json` | `iwex` | yes | `iwex_values.json` | `IwexConfig.cs:14-19` |
-| `LpexConfig` | `ex_values.json` | `lpex` | yes | `lpex_values.json`, `lpex.json` | `LpexConfig.cs:16-21` |
+| `IiexConfig` | `ex_values.json` | `iiex` | yes | `iwex_values.json`, `lpex_values.json`, `lpex.json` | `IiexConfig.cs:23-33` |
 | `SmexConfig` | `ex_values.json` | `smex` | yes | `smex_values.json`, `smex.json` | `SmexConfig.cs:13-18` |
 | `HpexConfig` | `ex_values.json` | `hpex` | yes | - | `HpexConfig.cs:23` |
-| `IwexRecipeConfig` | `ex_recipes.json` | `iwex` | no | - | `IwexRecipeConfig.cs:21` |
-| `LpexRecipeConfig` | `ex_recipes.json` | `lpex` | no | `lpex_recipes.json` | `LpexRecipeConfig.cs:16-20` |
+| `IiexRecipeConfig` | `ex_recipes.json` | `iiex` | no | `iwex_recipes.json`, `lpex_recipes.json` | `IiexRecipeConfig.cs:22-26` |
 | `SmexRecipeConfig` | `ex_recipes.json` | `smex` | no | `smex_recipes.json` | `SmexRecipeConfig.cs:15-19` |
 | `HpexRecipeConfig` | `ex_recipes.json` | `hpex` | no | - | `HpexRecipeConfig.cs:17` |
 
@@ -184,20 +182,20 @@ Both files live under the game's `ModConfig` folder. Folding a legacy file renam
 
 | Mod | `RecipeLevel` default | Catalogue entries | RCC salvage ratio registered | file:line |
 |---|---|---|---|---|
-| iwex | `"normal"` | 14 (all grid) | none | `IwexConfig.cs:412`; `IwexRecipeConfig.cs:46-71` |
-| lpex | `"normal"` | 19 (2 rcc, 17 grid) | `0.8` | `LpexConfig.cs:224`, `:116`; `LpexRecipeConfig.cs:58-86` |
+| iiex | `"normal"` | 14 (all grid) | none | `IiexConfig.cs:412`; `IiexRecipeConfig.cs:46-71` |
+| iiex | `"normal"` | 19 (2 rcc, 17 grid) | `0.8` | `IiexConfig.cs:224`, `:116`; `IiexRecipeConfig.cs:58-86` |
 | smex | `"normal"` | 10 | `0.8` | `SmexConfig.cs:265`, `:250`; `SmexRecipeConfig.cs:45-71` |
 | hpex | `"normal"` | 4 | `0.8` | `HpexConfig.cs:131`, `:124`; `HpexRecipeConfig.cs:43-57` |
 
-The only pinned cost numbers anywhere are lpex's doubled cheap pipe outputs - straight 2 → 4, bend/T/X 1 → 2 (`LpexRecipeConfig.cs:46-53`, `:76-79`). Everything else in every `cheap` profile is `normal × 0.5`, computed at load.
+The only pinned cost numbers anywhere are iiex's doubled cheap pipe outputs - straight 2 → 4, bend/T/X 1 → 2 (`IiexRecipeConfig.cs:46-53`, `:76-79`). Everything else in every `cheap` profile is `normal × 0.5`, computed at load.
 
 ### Golden coverage
 
 | Suite | Goldens | Root |
 |---|---|---|
 | `ExpandedLib.Tests` | 1 | `test/ExpandedLib.Tests/goldens/exlib/` |
-| `IronworkingExpanded.Tests` | 103 | `test/IronworkingExpanded.Tests/goldens/iwex/` |
-| `LowPressureExpanded.Tests` | 22 | `test/LowPressureExpanded.Tests/goldens/lpex/` |
+| `IronIndustryExpanded.Tests` | 103 | `test/IronIndustryExpanded.Tests/goldens/iiex/` |
+| `IronIndustryExpanded.Tests` | 22 | `test/IronIndustryExpanded.Tests/goldens/iiex/` |
 | `SteelmakingExpanded.Tests` | 29 | `test/SteelmakingExpanded.Tests/goldens/smex/` |
 | `HighPressureExpanded.Tests` | 7 | `test/HighPressureExpanded.Tests/goldens/hpex/` |
 
@@ -228,15 +226,15 @@ Counts are of committed `*.json` files under each domain root as of 2026-07-29; 
 Where a caller hooks in. A mod's `ModSystem.Start`, in this order (`IronworkingExpandedModSystem.cs:40-60` is the canonical example):
 
 ```csharp
-IwexValues.Load(api);                      // tunables first - before any BE is constructed
-IwexRecipeValues.Load(api);                // then the catalogue
+IiexValues.Load(api);                      // tunables first - before any BE is constructed
+IiexRecipeValues.Load(api);                // then the catalogue
 ExRecipeProfiles.Register(new RecipeProfile {
     Code = Mod.Info.ModID,
-    Catalogue     = () => IwexRecipeValues.Recipes,
-    Defaults      = IwexRecipeConfig.DefaultCatalogue,
-    GetLevel      = () => IwexValues.RecipeLevel,
-    SetLevel      = level => IwexValues.Edit(c => c.RecipeLevel = level),
-    SaveCatalogue = IwexRecipeValues.Save,
+    Catalogue     = () => IiexRecipeValues.Recipes,
+    Defaults      = IiexRecipeConfig.DefaultCatalogue,
+    GetLevel      = () => IiexValues.RecipeLevel,
+    SetLevel      = level => IiexValues.Edit(c => c.RecipeLevel = level),
+    SaveCatalogue = IiexRecipeValues.Save,
 });
 ```
 
@@ -249,15 +247,15 @@ Every tunables config's own `<summary>` names a file that does not exist. The do
 | File | Comment claims | Attribute says |
 |---|---|---|
 | `ExlibConfig.cs:7` (and `:13`) | `ModConfig/exlib_values.json`, "each mod's own config (`lpex_values.json` etc.)" | `ex_values.json` (`:18`) |
-| `IwexConfig.cs:11` (and `:545`) | `ModConfig/iwex_values.json`, "retune freely in `iwex_values.json`" | `ex_values.json` (`:15`) |
-| `LpexConfig.cs:8` | `ModConfig/lpex_values.json` | `ex_values.json` (`:17`) |
+| `IiexConfig.cs:11` (and `:545`) | `ModConfig/iwex_values.json`, "retune freely in `iwex_values.json`" | `ex_values.json` (`:15`) |
+| `IiexConfig.cs:8` | `ModConfig/lpex_values.json` | `ex_values.json` (`:17`) |
 | `SmexConfig.cs:9` | `ModConfig/smex_values.json` | `ex_values.json` (`:14`) |
-| `LpexRecipeConfig.cs:8` | `ModConfig/lpex_recipes.json` "alongside the main `lpex_values.json`" | `ex_recipes.json` (`:17`) |
+| `IiexRecipeConfig.cs:8` | `ModConfig/lpex_recipes.json` "alongside the main `lpex_values.json`" | `ex_recipes.json` (`:17`) |
 | `SmexRecipeConfig.cs:8` | `ModConfig/smex_recipes.json` | `ex_recipes.json` (`:16`) |
 
-`IwexRecipeConfig.cs:9`, `HpexConfig.cs:8-9` and `HpexRecipeConfig.cs:8-9` are correct. The same stale names appear in the mod-system comments: `IronworkingExpandedModSystem.cs:43`, `LowPressureExpandedModSystem.cs:26` and `:33`, `SteelmakingExpandedModSystem.cs:55` and `:63`. These are the only names anyone reads when hunting a config file; treat every `*_values.json` / `*_recipes.json` in a comment as a legacy name, not a live path.
+`IiexRecipeConfig.cs:9`, `HpexConfig.cs:8-9` and `HpexRecipeConfig.cs:8-9` are correct. The same stale names appear in the mod-system comments: `IronworkingExpandedModSystem.cs:43`, `LowPressureExpandedModSystem.cs:26` and `:33`, `SteelmakingExpandedModSystem.cs:55` and `:63`. These are the only names anyone reads when hunting a config file; treat every `*_values.json` / `*_recipes.json` in a comment as a legacy name, not a live path.
 
-Two configs advertise commands that do not exist. `LpexRecipeConfig.cs:13` says `/exmod steam <level>` and `SmexRecipeConfig.cs:12` says `/exmod steel <level>`. The generic command is `/exmod recipes <mod> <level>` (`RecipesSubCommand.cs:10`). `RecipesSubCommand.cs:14` is itself half-stale - it says the numbers live in "each mod's `*_recipes.json`".
+Two configs advertise commands that do not exist. `IiexRecipeConfig.cs:13` says `/exmod steam <level>` and `SmexRecipeConfig.cs:12` says `/exmod steel <level>`. The generic command is `/exmod recipes <mod> <level>` (`RecipesSubCommand.cs:10`). `RecipesSubCommand.cs:14` is itself half-stale - it says the numbers live in "each mod's `*_recipes.json`".
 
 "byte-faithful" is not what the goldens check. `DefinitionGoldens.cs:19` calls a golden "the byte-faithful record of the JSON it injects", `ExRecipeDef.cs:12` says the injected JSON is "byte-faithful", and `ExRecipeDef.cs:67` and `GridRecipeBuilder.cs:11` speak of byte-for-byte parity with the hand-written form. `DefinitionParity` is semantic (`DefinitionParity.cs:9-21`): key order, number type, multiblock cell order and filler cell order are all normalised away. A change that reorders multiblock offsets will pass; that is intended, but the comment misleads.
 
@@ -269,7 +267,7 @@ The client runs the apply pass but must not persist it. `ExRecipeProfiles.Apply`
 
 Tool ingredients are not tunable. `ReadGrid` skips anything with `IsTool` (`ExRecipeCosts.cs:259-265`), so a hammer slot never appears in a profile and its durability cost cannot be discounted.
 
-A config value that may legitimately be negative needs an explicit range. With no `[ExConfigRange]` the accepted range is `[0, +∞)` (`ExConfigRegister.cs:455-459`), so a below-freezing ambient would be reset to its default on every load. `IwexConfig.RollingAmbientC` carries `[ExConfigRange(-50, 500)]` for exactly this reason (`IwexConfig.cs:536`).
+A config value that may legitimately be negative needs an explicit range. With no `[ExConfigRange]` the accepted range is `[0, +∞)` (`ExConfigRegister.cs:455-459`), so a below-freezing ambient would be reset to its default on every load. `IiexConfig.RollingAmbientC` carries `[ExConfigRange(-50, 500)]` for exactly this reason (`IiexConfig.cs:536`).
 
 Legacy folding runs once and only when the section is absent. `FoldLegacy` returns immediately if `HasSection(modId)` (`ExConfigDocument.cs:100-106`). Once a mod has written its section, an old per-mod file on disk is ignored forever - deleting the section to "reset" will re-fold a stale file.
 
@@ -281,15 +279,15 @@ Only declared defs are discovered. A class that inherits `IExBlockDefProvider` f
 
 Author model-transform decimals as `double`, not `float`. `0.32f` widens to a different `double` than the JSON-parsed `0.32` and breaks parity (`ExItemDef.cs:24-27`, `ExBlockDef.cs:133-137`). `ExBlockDef.WalkSpeedMultiplier` takes `double` for this reason alone.
 
-The regeneration test is green whether or not it does anything. `Regenerate_goldens_when_requested` is a no-op unless `EXLIB_WRITE_GOLDENS=1` (`IwexDefinitionGoldenTests.cs:61-66`). A passing suite proves nothing about regeneration.
+The regeneration test is green whether or not it does anything. `Regenerate_goldens_when_requested` is a no-op unless `EXLIB_WRITE_GOLDENS=1` (`IiexDefinitionGoldenTests.cs:61-66`). A passing suite proves nothing about regeneration.
 
-iwex registers no RCC salvage ratio. lpex, smex and hpex each call `RegisterBrokenDropsRatio` with 0.8; iwex does not, so any iwex-domain RCC block would fall through to the JSON `brokenDropsRatio` (default 1.0 on legacy). Today iwex ships no RCC entries in its catalogue, so this is latent rather than live.
+iiex registers no RCC salvage ratio. iiex, smex and hpex each call `RegisterBrokenDropsRatio` with 0.8; iiex does not, so any iiex-domain RCC block would fall through to the JSON `brokenDropsRatio` (default 1.0 on legacy). Today iiex ships no RCC entries in its catalogue, so this is latent rather than live.
 
 ## Open
 
-- No alternate-balance numbers ship. Every `cheap` value except lpex's four pinned pipe outputs is `normal × 0.5` derived at load, so the profile is a uniform discount rather than a designed second balance. Tuning it means editing the generated file, and nothing re-derives it afterwards (`EnsureScaledLevel` skips any entry that already has cost data - `ExRecipeCosts.cs:87-92`).
+- No alternate-balance numbers ship. Every `cheap` value except iiex's four pinned pipe outputs is `normal × 0.5` derived at load, so the profile is a uniform discount rather than a designed second balance. Tuning it means editing the generated file, and nothing re-derives it afterwards (`EnsureScaledLevel` skips any entry that already has cost data - `ExRecipeCosts.cs:87-92`).
 - Only grid and RCC are managed. `IsRcc` is a two-way branch (`ExRecipeCosts.cs:238-239`); smithing, clayforming, barrel and knapping recipes have no cost switch at all.
 - `ExRecipeDef` has a builder only for grid recipes. Every other category goes through `Add(poco)` / `Body(poco)` untyped (`ExRecipeDef.cs:76-104`), so those recipes get no compile-time shape checking and no schema help.
-- `ExConfigRegister` exposes only scalars to `/exmod config`. `IsEditableType` accepts string/bool/int/long/float/double (`ExConfigRegister.cs:316-322`); collection tunables - `IwexConfig.BurdenProfiles`, every recipe catalogue - are file-edit-only.
+- `ExConfigRegister` exposes only scalars to `/exmod config`. `IsEditableType` accepts string/bool/int/long/float/double (`ExConfigRegister.cs:316-322`); collection tunables - `IiexConfig.BurdenProfiles`, every recipe catalogue - are file-edit-only.
 - No test asserts golden counts. Completeness is symmetric (missing ∪ orphans = ∅), which catches a deleted or unmigrated def but not a def family that silently stopped being emitted on both sides.
 - `ExConfigDocument` has no schema version. The document itself carries none; only each section does, so a future change to the sectioning has nothing to migrate on.

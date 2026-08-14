@@ -1,10 +1,10 @@
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded.Tests;
 using Xunit;
 
 namespace HighPressureExpanded.Tests;
 
 /// <summary>
-/// The shared <c>PipeTestWorld</c> fixture lives in the iwex suite and cannot reference hpex, so it
+/// The shared <c>PipeTestWorld</c> fixture lives in the iiex suite and cannot reference hpex, so it
 /// restates the rolled-tier pipe constants. These assertions catch a retune of the <c>HpexValues</c>
 /// originals that would otherwise leave every HP-tier test running against stale numbers and passing.
 /// </summary>

@@ -14,7 +14,7 @@ persist, then apply the active level to live recipes.
 ```csharp
 public sealed class RecipeProfile
 {
-    public required string Code { get; init; }   // command code, e.g. "lpex" in `/exmod recipes lpex cheap`
+    public required string Code { get; init; }   // command code, e.g. "iiex" in `/exmod recipes iiex cheap`
 
     public required Func<IDictionary<string, RecipeCostEntry>> Catalogue { get; init; }       // live, persisted
     public required Func<IReadOnlyDictionary<string, RecipeCostEntry>> Defaults { get; init; } // fresh shipped copy
@@ -38,7 +38,7 @@ a level name to a scale factor applied to `normal` (each ingredient floored at 1
 public class RecipeCostEntry
 {
     public string Type { get; set; } = "grid";   // "grid" (match by output code) or "rcc" (match by block code)
-    public string Match { get; set; } = "";       // wildcard code, e.g. "lpex:enginewatt-*"
+    public string Match { get; set; } = "";       // wildcard code, e.g. "iiex:enginewatt-*"
     public Dictionary<string, RecipeProfileCost> Profiles { get; set; } = new();   // level name -> cost
 }
 
@@ -59,11 +59,11 @@ public class RecipeProfileCost
 ExRecipeProfiles.Register(new RecipeProfile
 {
     Code = Mod.Info.ModID,
-    Catalogue = () => LpexRecipeValues.Recipes,
-    Defaults  = LpexRecipeConfig.DefaultCatalogue,
-    GetLevel  = () => LpexValues.RecipeLevel,
-    SetLevel  = level => LpexValues.Edit(c => c.RecipeLevel = level),
-    SaveCatalogue = LpexRecipeValues.Save,
+    Catalogue = () => IiexRecipeValues.Recipes,
+    Defaults  = IiexRecipeConfig.DefaultCatalogue,
+    GetLevel  = () => IiexValues.RecipeLevel,
+    SetLevel  = level => IiexValues.Edit(c => c.RecipeLevel = level),
+    SaveCatalogue = IiexRecipeValues.Save,
 });
 ```
 

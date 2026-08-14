@@ -14,7 +14,7 @@ namespace ExpandedLib.Tests;
 /// from the game with no error, no failing code-level guard and no symptom beyond its absence.
 /// <para>
 /// Written against the exlib factories rather than the shipping providers, so it holds for any pair of
-/// tiers including ones a consumer adds. Two tiers share a domain the moment iwex and lpex merge; while
+/// tiers including ones a consumer adds. Two tiers share a domain the moment iiex and iiex merge; while
 /// the three tiers are three domains every collision here is latent.
 /// </para>
 /// </summary>
@@ -26,7 +26,7 @@ public class PipeTierLocationTests {
   /// mod's asset tree - which resolves to nothing the moment that mod is renamed or merged away, and a
   /// blocktype whose shape resolves to nothing loads with no shape rather than failing.</summary>
   private static readonly string[] ContentDomains =
-    ["iwex", "lpex", "smex", "hpex", "iiex", "siex"];
+    ["iiex", "iiex", "smex", "hpex", "iiex", "siex"];
 
   private static List<ExBlockDef> Segments(string tier) =>
     [.. BlockPipe.Segments(Domain, tier)];

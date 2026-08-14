@@ -1,6 +1,6 @@
 # Cold blast furnace
 
-**Status** live   **Mod** iwex
+**Status** live   **Mod** iiex
 
 **Owns** - the facts this page is canonical for:
 
@@ -9,12 +9,12 @@
 * the charge-column model as every shaft furnace runs it: per-column geometry capacity, bands, the
   item scale, world piles, and the charging rules;
 * the product identity: molten pig iron out of the lower tap, slag out of the upper, and the
-  `iwex:hearthmetal-pigiron` block the pool freezes into;
+  `iiex:hearthmetal-pigiron` block the pool freezes into;
 * the yield and pool keys - `BfIronPerOreUnit`, `BfSlagPerOreUnit`, `BfMaxMoltenIron`,
   `BfMaxMoltenSlag` - and the tap drain keys `TapDrainPerTick` / `TapIronStackFactor` /
   `TapSlagStackFactor`;
-* the iwex part blocks this machine introduces - `iwex:furnace-tuyere`, `iwex:furnace-irontap` /
-  `iwex:furnace-slagtap`, `iwex:hopper-tall`. The smex hot furnace and the [cupola](cupola.md) reuse
+* the iiex part blocks this machine introduces - `iiex:furnace-tuyere`, `iiex:furnace-irontap` /
+  `iiex:furnace-slagtap`, `iiex:hopper-tall`. The smex hot furnace and the [cupola](cupola.md) reuse
   these blocks; they do not redefine them. The hopper's tank and drip are
   [tall-hopper](tall-hopper.md)'s; the pile block is [charge-pile](charge-pile.md)'s;
 * the construction cost of the whole furnace.
@@ -63,25 +63,25 @@ Nothing of this exists in `src/`.
 
 ## Structure
 
-Anchor: `iwex:furnace-blastcore-{tier}-{side}` at the bottom centre of the furnace, in the hearth floor
+Anchor: `iiex:furnace-blastcore-{tier}-{side}` at the bottom centre of the furnace, in the hearth floor
 directly under the shaft. The layout is authored in the anchor's own north frame with `Origin(-3, -2)`,
 the negation of the `C` glyph's (col, row) so the core lands on its own (0, 0, 0) - see
 [multiblock](../mechanics/multiblock.md).
 
 Source of truth: the nine ASCII cross-sections in `BlockBlastFurnaceCoreCold.cs` (y = 0 hearth floor →
 y = 8 open stack; the open top is the cold furnace's chimney - it takes no exhaust outlets). Golden:
-`test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnace/blastcore.json`.
+`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/blastcore.json`.
 
 ### Cell census — 160 offsets
 
 | Glyph | Required block | Count |
 |---|---|---|
 | `#` | refractory bricks, any single tier | 111 |
-| `C` | `iwex:furnace-blastcore-*` (the anchor) | 1 |
-| `I` | `iwex:furnace-irontap`, facing west | 1 |
-| `S` | `iwex:furnace-slagtap`, facing east | 1 |
-| `Y` / `T` | `iwex:furnace-tuyere`, orientation n / s | 2 |
-| `H` | `iwex:hopper-tall`, facing east | 1 |
+| `C` | `iiex:furnace-blastcore-*` (the anchor) | 1 |
+| `I` | `iiex:furnace-irontap`, facing west | 1 |
+| `S` | `iiex:furnace-slagtap`, facing east | 1 |
+| `Y` / `T` | `iiex:furnace-tuyere`, orientation n / s | 2 |
+| `H` | `iiex:hopper-tall`, facing east | 1 |
 | `f` | `exlib:structurefiller` (the hopper's own top cell) | 1 |
 | `c` | the shaft - `*:@(air\|coalpile\|furnace-chargepile\|hearthmetal-.*)` | 36 |
 | `h` | the crucible floor - same alternation, own glyph for its second role | 3 |
@@ -142,7 +142,7 @@ column (x,z) = [ {coke, 3 u, 1180 °C}, {burden, 9 u, 1140 °C}, {coke, 3 u, 980
   lower than the other six. A furnace charged unevenly stands unevenly, and descent eats each column at
   its own rate.
 * The world blocks are windows. `SyncChargeBlocks` reconciles the world to the columns after every
-  change - charging, descent, burn-out, a break - placing and removing `iwex:furnace-chargepile`
+  change - charging, descent, burn-out, a break - placing and removing `iiex:furnace-chargepile`
   blocks as a column's height crosses block boundaries. A cell holding anything but air or the
   furnace's own pile is skipped and heals when it frees; the units are never dropped. The pile block
   itself - bands, glow, the top-band take, and the break that splices a window out mid-column - is
@@ -182,33 +182,33 @@ Hand-charging through the pile blocks is take-only today ([charge-pile](charge-p
 
 ## Assets
 
-The furnace has no shape of its own: it is vanilla refractory brick plus the small iwex part blocks.
+The furnace has no shape of its own: it is vanilla refractory brick plus the small iiex part blocks.
 The core is a vanilla cube with per-face refractory textures, an orientation marker on the north face
 and a "BF/C" type label on the south, so the three furnace anchors read apart at a glance. The two tap
-blocks share the single `iwex:furnace/tap` shape with an `open` pose; drawn per-type shapes
+blocks share the single `iiex:furnace/tap` shape with an `open` pose; drawn per-type shapes
 (`assets/editable/shapes/furnace-block-irontap.json` / `-slagtap.json`) exist and are not yet adopted -
 their channel heights are the visible iron cap of the live-crucible design (see Open). A lit furnace is
 signalled by sounds and by the charge piles' own glow; there is no looping furnace animation.
 
-Player-facing help: `assets/iwex/config/handbook/02-coldblastfurnace.json` ↔
-`docs/iwex/handbook/02-coldblastfurnace.html`.
+Player-facing help: `assets/iiex/config/handbook/02-coldblastfurnace.json` ↔
+`docs/iiex/handbook/02-coldblastfurnace.html`.
 
 ---
 
 ## Construction
 
 No RCC, no crafting station: the core and fittings are grid recipes and the rest of the furnace is
-hand-laid brick. All recipes live in `src/IronworkingExpanded/Recipes/Grid/FurnaceRecipeDefinitions.cs`;
-the golden is `test/IronworkingExpanded.Tests/goldens/iwex/recipes/grid/blastfurnace.json`.
+hand-laid brick. All recipes live in `src/IronIndustryExpanded/Recipes/Grid/FurnaceRecipeDefinitions.cs`;
+the golden is `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/blastfurnace.json`.
 
 | Output | Ingredients |
 |---|---|
-| `iwex:furnace-blastcore-{tier}-n` | 4 × fired refractory brick (tier captured), 2 × rod, 4 × nails, 2 × plate |
-| `iwex:furnace-irontap-s` | 2 × tier-3 refractory brick, 12 × fire clay, 1 × plate, hammer, chisel |
-| `iwex:furnace-slagtap-s` | 2 × tier-3 refractory brick, 12 × fire clay, hammer, chisel |
-| `iwex:furnace-tuyere-s` | 2 × tier-3 refractory brick, 1 × `iwex:pipe-plated-straight*` (`FurnaceRecipeDefinitions.cs:66`), hammer, chisel |
-| `iwex:hopper-tall-n` | 4 × plate, 3 × nails, hammer |
-| `iwex:furnace-twintubblower-n` | 2 × leather, planks, nails, hammer - the iron tier's only air source |
+| `iiex:furnace-blastcore-{tier}-n` | 4 × fired refractory brick (tier captured), 2 × rod, 4 × nails, 2 × plate |
+| `iiex:furnace-irontap-s` | 2 × tier-3 refractory brick, 12 × fire clay, 1 × plate, hammer, chisel |
+| `iiex:furnace-slagtap-s` | 2 × tier-3 refractory brick, 12 × fire clay, hammer, chisel |
+| `iiex:furnace-tuyere-s` | 2 × tier-3 refractory brick, 1 × `iiex:pipe-plated-straight*` (`FurnaceRecipeDefinitions.cs:66`), hammer, chisel |
+| `iiex:hopper-tall-n` | 4 × plate, 3 × nails, hammer |
+| `iiex:furnace-twintubblower-n` | 2 × leather, planks, nails, hammer - the iron tier's only air source |
 
 Plus the raw structure: 111 refractory bricks of any single tier and one `exlib:structurefiller`,
 which the tall hopper places itself. The cores take any refractory tier and inherit it; the taps and
@@ -224,7 +224,7 @@ tuyere are pinned to tier 3.
 |---|---|
 | fuel courses (coke or charcoal) and [burden](../items/burden.md) courses, dripped by the hopper | molten pig iron down the lower tap into a [canal start](../mechanics/molten-network.md) |
 | pressurised air at both tuyeres, off the [twin-tub blower](twin-tub-blower.md) through the [pipe network](../mechanics/pipe-network.md) | molten slag down the upper tap |
-| | on extinguish: the pool frozen as `iwex:hearthmetal-pigiron` on the hearth floor, plus burnt-out salvage in the columns |
+| | on extinguish: the pool frozen as `iiex:hearthmetal-pigiron` on the hearth floor, plus burnt-out salvage in the columns |
 
 ### The player's verbs
 
@@ -281,7 +281,7 @@ Melting renders burden at the raceway into two pools held on the furnace
 * An open tap drains its pool every tick - up to `TapDrainPerTick` units considered, stack size
   `ceil(units × factor)`, so at shipped values the iron tap passes up to 30 u/s and the slag tap
   40 u/s. Pour target is `Pos + facing.Opposite`, one down.
-* On extinguish the remaining pool freezes into `iwex:hearthmetal-pigiron` on a free pool cell, and the
+* On extinguish the remaining pool freezes into `iiex:hearthmetal-pigiron` on a free pool cell, and the
   columns burn out to salvage: fuel retention interpolates from 0 at the hearth to 0.4 at the
   stockline, so what the player digs back out is richer in coke toward the top.
 
@@ -289,22 +289,22 @@ Melting renders burden at the raceway into two pools held on the furnace
 
 ## Numbers
 
-`IwexValues.X` is a generated accessor over `IwexConfig.X`; the file:line is the config declaration.
+`IiexValues.X` is a generated accessor over `IiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/IronworkingExpanded/IwexConfig.cs`
+### Owned — `src/IronIndustryExpanded/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfIronPerOreUnit` | 8.5 u | IwexConfig.cs:470 | Molten pig per unit of ore content melted |
-| `BfSlagPerOreUnit` | 8.5 ÷ 6 u | IwexConfig.cs:478 | Molten slag per unit of ore content - the 6 : 1 iron-to-slag ratio stated directly |
-| `BfMaxMoltenIron` | 2400 u | IwexConfig.cs:555 | Pig pool ceiling; reaching it stalls production |
-| `BfMaxMoltenSlag` | 600 u | IwexConfig.cs:558 | Slag pool ceiling, same |
-| `TapDrainPerTick` | 50 u | IwexConfig.cs:587 | Units of pool considered per drain tick |
-| `TapIronStackFactor` | 0.6 | IwexConfig.cs:591 | Iron stack = `ceil(units × 0.6)` - up to 30 u/s |
-| `TapSlagStackFactor` | 0.8 | IwexConfig.cs:595 | Slag stack = `ceil(units × 0.8)` - up to 40 u/s |
-| `HopperTallCapacity` | 128 u | IwexConfig.cs:719 | Tall-hopper tank |
-| `HopperTallDropPerSecond` | 8 u/s | IwexConfig.cs:723 | Drip rate into the shaft |
-| `ChargeItemsPerBand` | 2 | IwexConfig.cs:759 | The band quantum - 32 items a block; capacity is cells × this × 16 |
+| `BfIronPerOreUnit` | 8.5 u | IiexConfig.cs:470 | Molten pig per unit of ore content melted |
+| `BfSlagPerOreUnit` | 8.5 ÷ 6 u | IiexConfig.cs:478 | Molten slag per unit of ore content - the 6 : 1 iron-to-slag ratio stated directly |
+| `BfMaxMoltenIron` | 2400 u | IiexConfig.cs:555 | Pig pool ceiling; reaching it stalls production |
+| `BfMaxMoltenSlag` | 600 u | IiexConfig.cs:558 | Slag pool ceiling, same |
+| `TapDrainPerTick` | 50 u | IiexConfig.cs:587 | Units of pool considered per drain tick |
+| `TapIronStackFactor` | 0.6 | IiexConfig.cs:591 | Iron stack = `ceil(units × 0.6)` - up to 30 u/s |
+| `TapSlagStackFactor` | 0.8 | IiexConfig.cs:595 | Slag stack = `ceil(units × 0.8)` - up to 40 u/s |
+| `HopperTallCapacity` | 128 u | IiexConfig.cs:719 | Tall-hopper tank |
+| `HopperTallDropPerSecond` | 8 u/s | IiexConfig.cs:723 | Drip rate into the shaft |
+| `ChargeItemsPerBand` | 2 | IiexConfig.cs:759 | The band quantum - 32 items a block; capacity is cells × this × 16 |
 
 No per-cell pile cap and no melt interval: capacity is geometry, the cadence is the descent, throttled
 by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
@@ -333,7 +333,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 | tuyere | the fallback-orientation variant |
 | tall hopper | itself plus the whole stack still in the tank |
 | a charge pile | that window's charge, spliced out of the column - [charge-pile](charge-pile.md) |
-| `iwex:hearthmetal-pigiron` (the frozen pool) | metal bits × the stamped count |
+| `iiex:hearthmetal-pigiron` (the frozen pool) | metal bits × the stamped count |
 | refractory brick | vanilla |
 
 ---
@@ -370,7 +370,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 
 | File | Covers |
 |---|---|
-| `test/IronworkingExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every offset resolves to the right glyph; no exhaust outlets |
+| `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every offset resolves to the right glyph; no exhaust outlets |
 | `…/FurnaceOrientationMatrixTests.cs` | the same geometry in all four facings |
 | `…/ShaftColumnsTests.cs` | structure-local column keying, the asymmetric-drawing rotation case, per-column floors |
 | `…/ChargeColumnTests.cs` / `ChargePileTests.cs` / `ChargeMaterialisationTests.cs` | the column data model, the pile window, the world sync |
@@ -378,7 +378,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 | `…/BlastFurnaceTapTests.cs` | tap toggle, pour targets in all four facings |
 | `…/OreRecoveryGuardRailTests.cs` | the 8.5 u/nugget yield against the bloomery floor |
 | `…/HeatBalanceTests.cs` | the heat model ([heat balance](../mechanics/heat-balance.md)) |
-| `test/IronworkingExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs` | the charge → light → melt → tap → extinguish walk on this furnace |
+| `test/IronIndustryExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs` | the charge → light → melt → tap → extinguish walk on this furnace |
 
 ---
 
@@ -404,7 +404,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 
 ## Open
 
-1. The live crucible. Settled design, partly built: `iwex:hearthmetal` exists as the frozen-pool block
+1. The live crucible. Settled design, partly built: `iiex:hearthmetal` exists as the frozen-pool block
    (one block, metal in the code) and two molten cells can coexist on one block entity, but the pool is
    still the float pair on the furnace, spawned solid only at extinguish. The remaining work makes the
    pool a live layered molten cell (iron under slag) in the crucible cells, deletes the float pair and

@@ -36,7 +36,7 @@ public class BlockMigrationMutationTests {
     var world = new TestWorld();
     var pos = new BlockPos(3, 4, 5, 0);
     var oldBlock = Block("smex:pipe-old", 20);
-    var newBlock = Block("iwex:pipe-new", 21);
+    var newBlock = Block("iiex:pipe-new", 21);
     world.Place(pos, oldBlock);
     world.Register(newBlock);
 
@@ -80,7 +80,7 @@ public class BlockMigrationMutationTests {
     const string newClass = "migratetest";
 
     var oldBlock = Block("smex:furnace-old", 30);
-    var newBlock = Block("iwex:furnace-new", 31);
+    var newBlock = Block("iiex:furnace-new", 31);
     newBlock.EntityClass = newClass;
     world.Register(oldBlock);
     world.Register(newBlock);
@@ -115,7 +115,7 @@ public class BlockMigrationMutationTests {
   public void RemapInventory_swaps_a_block_stack_preserving_size_and_attributes() {
     var world = new TestWorld();
     var oldBlock = Block("smex:slag", 40);
-    var newBlock = Block("iwex:slag", 41);
+    var newBlock = Block("iiex:slag", 41);
 
     var sys = System(world);
     sys._remap[oldBlock.Code] = new BlockMigrationModSystem.RemapEntry(
@@ -164,7 +164,7 @@ public class BlockMigrationMutationTests {
   public void RemapInventory_swaps_an_item_stack_preserving_size() {
     var world = new TestWorld();
     Item oldItem = world.RegisterItem("smex:olditem");
-    Item newItem = world.RegisterItem("iwex:newitem");
+    Item newItem = world.RegisterItem("iiex:newitem");
 
     var sys = System(world);
     sys._itemRemap[oldItem.Code] = new BlockMigrationModSystem.ItemRemapEntry(
@@ -191,9 +191,9 @@ public class BlockMigrationMutationTests {
     // replacements, and RemapInventory must resolve each stack by its own class.
     var world = new TestWorld();
     var oldSlagBlock = Block("smex:slag", 50);
-    var newSlagBlock = Block("iwex:slag", 51);
+    var newSlagBlock = Block("iiex:slag", 51);
     Item oldSlagItem = world.RegisterItem("smex:slag");
-    Item newSlagItem = world.RegisterItem("iwex:slag");
+    Item newSlagItem = world.RegisterItem("iiex:slag");
 
     var sys = System(world);
     sys._remap[oldSlagBlock.Code] = new BlockMigrationModSystem.RemapEntry(
@@ -225,7 +225,7 @@ public class BlockMigrationMutationTests {
   public void RemapInventory_leaves_unmapped_and_empty_slots_untouched() {
     var world = new TestWorld();
     var mapped = Block("smex:old", 60);
-    var newBlock = Block("iwex:new", 61);
+    var newBlock = Block("iiex:new", 61);
     var unmapped = Block("game:cobblestone", 62);
 
     var sys = System(world);

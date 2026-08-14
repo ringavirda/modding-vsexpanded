@@ -11,7 +11,7 @@ conventions live outside it: a page here is never also a task tracker.
 |---|---|
 | [plans/STATE.md](../internal/plans/STATE.md) | what is actually true right now - live vs designed vs blocked, every blocker with code evidence, and the open decisions. Read before trusting any page's status |
 | [plans/NEXT.md](../internal/plans/NEXT.md) | what is being built right now and what comes next |
-| [plans/iwex-bringup.md](../internal/plans/iwex-bringup.md) | the art queue and the playtest gates for bringing iwex online |
+| [plans/iiex-bringup.md](../internal/plans/iiex-bringup.md) | the art queue and the playtest gates for bringing iiex online |
 | [workbench/layouts.md](../internal/workbench/layouts.md) | multiblock layout scratchpad. Not a source of truth - the goldens are |
 | [vanilla/](../internal/vanilla/README.md) | the vendored Vintage Story source: where its types live, the practices it follows, the traps it hides. What the game does, cited to a line |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | code style, comment conventions, formatting |
@@ -42,7 +42,7 @@ conventions live outside it: a page here is never also a task tracker.
 
 [machines/](machines/) - one page per block, live and planned. Status is on the page.
 
-*iwex - iron* · [blast-furnace-cold](machines/blast-furnace-cold.md) · [cupola](machines/cupola.md) ·
+*iiex - iron* · [blast-furnace-cold](machines/blast-furnace-cold.md) · [cupola](machines/cupola.md) ·
 [puddling-furnace](machines/puddling-furnace.md) · [reheat-furnace](machines/reheat-furnace.md) ·
 [coke-oven](machines/coke-oven.md) · [crucible-furnace](machines/crucible-furnace.md) ·
 [firebox](machines/firebox.md) (shared fuel bed) ·
@@ -56,7 +56,7 @@ conventions live outside it: a page here is never also a task tracker.
 [nail-machine](machines/nail-machine.md) · [heading-machine](machines/heading-machine.md) ·
 [stock-rack](machines/stock-rack.md) · [flywheel-and-shafting](machines/flywheel-and-shafting.md)
 
-*lpex - steam* · [boiler-cornish](machines/boiler-cornish.md) · [engine-watt](machines/engine-watt.md) ·
+*iiex - steam* · [boiler-cornish](machines/boiler-cornish.md) · [engine-watt](machines/engine-watt.md) ·
 [cast-pipes](machines/cast-pipes.md) · [pumps](machines/pumps.md) · [fluid-tank](machines/fluid-tank.md) ·
 [ore-crusher](machines/ore-crusher.md) ·
 [steam-hammer](machines/steam-hammer.md) · [wide-hall](machines/wide-hall.md) ·

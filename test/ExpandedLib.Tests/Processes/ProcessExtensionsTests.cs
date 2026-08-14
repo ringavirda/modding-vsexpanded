@@ -47,7 +47,7 @@ public class ProcessExtensionsTests {
     StageLadderLoader.Load(
       [
         (
-          "iwex:bloom.json",
+          "iiex:bloom.json",
           """
           {
             "family": "bloom",

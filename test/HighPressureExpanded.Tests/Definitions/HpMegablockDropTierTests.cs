@@ -97,7 +97,7 @@ public class HpMegablockDropTierTests {
   [Fact]
   public void Hp_machine_salvage_ratio_defaults_to_80_percent() {
     // The salvage fraction lives on the player-tunable config, read via ExRccSettings keyed by the
-    // broken block's Code.Domain, so hpex carries its own copy rather than inheriting lpex's.
+    // broken block's Code.Domain, so hpex carries its own copy rather than inheriting iiex's.
     Assert.Equal(0.8f, new HpexConfig().RccBrokenDropsRatio, 3);
   }
 

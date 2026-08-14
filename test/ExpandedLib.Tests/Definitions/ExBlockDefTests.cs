@@ -10,20 +10,20 @@ namespace ExpandedLib.Tests;
 /// <summary>
 /// <see cref="ExBlockDef"/> builds the blocktype <see cref="JObject"/> the vanilla object loader
 /// consumes. Pins the token shape of each field plus a whole-block parity check against a verbatim copy
-/// of a shipped blocktype (iwex's <c>solidifiediron</c>): the emitted JSON must be semantically equal to
+/// of a shipped blocktype (iiex's <c>solidifiediron</c>): the emitted JSON must be semantically equal to
 /// the hand-authored file it replaces.
 /// </summary>
 public class ExBlockDefTests {
-  // Verbatim copy of iwex/blocktypes/blastfurnace/solidifiediron.json, the golden the builder must
-  // reproduce. Inline rather than read from the iwex asset so it survives that file's deletion when
+  // Verbatim copy of iiex/blocktypes/blastfurnace/solidifiediron.json, the golden the builder must
+  // reproduce. Inline rather than read from the iiex asset so it survives that file's deletion when
   // the block moves to code-first.
   private const string SolidifiedIronJson = """
     {
       "code": "solidifiediron",
-      "class": "iwex.BlockSolidifiedIron",
-      "entityClass": "iwex.BlockEntitySolidifiedIron",
+      "class": "iiex.BlockSolidifiedIron",
+      "entityClass": "iiex.BlockEntitySolidifiedIron",
       "blockmaterial": "Metal",
-      "creativeinventory": { "general": ["*"], "iwex": ["*"] },
+      "creativeinventory": { "general": ["*"], "iiex": ["*"] },
       "shape": { "base": "game:block/basic/cube" },
       "textures": { "all": { "base": "game:block/metal/sheet-plain/iron5" } },
       "resistance": 45.0,
@@ -49,12 +49,12 @@ public class ExBlockDefTests {
   [Fact]
   public void Builder_reproduces_a_real_shipped_blocktype_exactly() {
     ExBlockDef def = ExBlockDef
-      .Create("iwex", "solidifiediron")
-      .Class("iwex.BlockSolidifiedIron")
-      .EntityClass("iwex.BlockEntitySolidifiedIron")
+      .Create("iiex", "solidifiediron")
+      .Class("iiex.BlockSolidifiedIron")
+      .EntityClass("iiex.BlockEntitySolidifiedIron")
       .Material(EnumBlockMaterial.Metal)
       .CreativeTab("general", "*")
-      .CreativeTab("iwex", "*")
+      .CreativeTab("iiex", "*")
       .Shape("game:block/basic/cube")
       .TextureAll("game:block/metal/sheet-plain/iron5")
       .Resistance(45f)
@@ -91,11 +91,11 @@ public class ExBlockDefTests {
   public void Class_of_T_matches_KeyFor_so_a_rename_cannot_desync() {
     // The typed overload emits the same string the class registry keys on.
     JObject json = ExBlockDef
-      .Create("iwex", "x")
+      .Create("iiex", "x")
       .Class<CodeFirstBlock>()
       .ToJson();
     Assert.Equal(
-      EntityRegistry.KeyFor("iwex", typeof(CodeFirstBlock)),
+      EntityRegistry.KeyFor("iiex", typeof(CodeFirstBlock)),
       (string?)json["class"]
     );
   }
@@ -106,7 +106,7 @@ public class ExBlockDefTests {
   public void Code_is_set_from_Create() {
     Assert.Equal(
       "solidifiediron",
-      (string?)ExBlockDef.Create("iwex", "solidifiediron").ToJson()["code"]
+      (string?)ExBlockDef.Create("iiex", "solidifiediron").ToJson()["code"]
     );
   }
 
@@ -208,18 +208,18 @@ public class ExBlockDefTests {
   #region Location
   [Fact]
   public void Location_targets_the_blocktypes_json_the_loader_filters_on() {
-    AssetLocation loc = ExBlockDef.Create("iwex", "solidifiediron").Location;
-    Assert.Equal("iwex", loc.Domain);
+    AssetLocation loc = ExBlockDef.Create("iiex", "solidifiediron").Location;
+    Assert.Equal("iiex", loc.Domain);
     Assert.Equal("blocktypes/solidifiediron.json", loc.Path);
   }
 
   [Fact]
   public void A_distinct_asset_name_separates_the_path_from_the_shared_code() {
     // Several pipe defs share code "pipe" but need unique asset paths.
-    ExBlockDef def = ExBlockDef.Create("lpex", "pipe", "pipes/straight");
+    ExBlockDef def = ExBlockDef.Create("iiex", "pipe", "pipes/straight");
     Assert.Equal("pipe", (string?)def.ToJson()["code"]);
     Assert.Equal("blocktypes/pipes/straight.json", def.Location.Path);
-    Assert.Equal("lpex", def.Location.Domain);
+    Assert.Equal("iiex", def.Location.Domain);
   }
   #endregion
 
@@ -269,13 +269,13 @@ public class ExBlockDefTests {
   public void ShapeByType_emits_base_plus_only_the_set_rotations() {
     JObject json = ExBlockDef
       .Create("d", "c")
-      .ShapeByType("*-ns-*", "lpex:pipes/straight")
-      .ShapeByType("*-we-*", "lpex:pipes/straight", rotateY: 90)
-      .ShapeByType("*-ud-*", "lpex:pipes/straight", rotateX: 90)
+      .ShapeByType("*-ns-*", "iiex:pipes/straight")
+      .ShapeByType("*-we-*", "iiex:pipes/straight", rotateY: 90)
+      .ShapeByType("*-ud-*", "iiex:pipes/straight", rotateX: 90)
       .ToJson();
 
     var byType = (JObject)json["shapebytype"]!;
-    Assert.Equal("lpex:pipes/straight", (string?)byType["*-ns-*"]!["base"]);
+    Assert.Equal("iiex:pipes/straight", (string?)byType["*-ns-*"]!["base"]);
     Assert.Null(byType["*-ns-*"]!["rotateY"]); // unset rotations are omitted
     Assert.Equal(90, (int)byType["*-we-*"]!["rotateY"]!);
     Assert.Null(byType["*-we-*"]!["rotateX"]);
@@ -303,7 +303,7 @@ public class ExBlockDefTests {
   [Fact]
   public void Behavior_by_name_and_by_type_append_name_entries() {
     JObject json = ExBlockDef
-      .Create("lpex", "c")
+      .Create("iiex", "c")
       .Behavior("Lockable")
       .Behavior<FakeBehavior>()
       .ToJson();
@@ -311,7 +311,7 @@ public class ExBlockDefTests {
     var behaviors = (JArray)json["behaviors"]!;
     Assert.Equal("Lockable", (string?)behaviors[0]!["name"]);
     // Typed overload resolves the registered {modid}.{ClassName} key, same as the class binding.
-    Assert.Equal("lpex.FakeBehavior", (string?)behaviors[1]!["name"]);
+    Assert.Equal("iiex.FakeBehavior", (string?)behaviors[1]!["name"]);
   }
 
   [Fact]
@@ -432,14 +432,14 @@ public class ExBlockDefTests {
   [Fact]
   public void EntityBehavior_by_name_and_by_type_append_entityBehaviors_entries() {
     JObject json = ExBlockDef
-      .Create("lpex", "c")
+      .Create("iiex", "c")
       .EntityBehavior("Animatable")
       .EntityBehavior<FakeEntityBehavior>()
       .ToJson();
 
     var behaviors = (JArray)json["entityBehaviors"]!;
     Assert.Equal("Animatable", (string?)behaviors[0]!["name"]);
-    Assert.Equal("lpex.FakeEntityBehavior", (string?)behaviors[1]!["name"]);
+    Assert.Equal("iiex.FakeEntityBehavior", (string?)behaviors[1]!["name"]);
   }
 
   [Fact]

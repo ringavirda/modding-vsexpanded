@@ -3,7 +3,7 @@
 **Status** partial - 3 metals of 16 exist as material identities (`pigiron`, `castiron`, `bessemersteel`;
 `slag` is a fourth entry but not a metal). The alloying mechanic itself does not exist: there is no
 [ladle](../machines/ladle.md), no ferroalloy, no window catalogue, and `MetalDef.Alloy` is read by nothing.
-**Mod** exlib owns the registry and the emitters; iwex and smex own the metals themselves
+**Mod** exlib owns the registry and the emitters; iiex and smex own the metals themselves
 
 **Owns** — the facts this page is canonical for:
 
@@ -92,12 +92,12 @@ The ferrous ladder. "shipped" marks a metal whose `MetalDef` ships today. Scope 
 
 | Metal | Registry code | What it guarantees | Made by | Consumed by | Mod | Status |
 |---|---|---|---|---|---|---|
-| **Pig iron** | `pigiron` (shipped) | nothing - a feedstock, and the ladder's only metal that promises nothing | [cold blast furnace](../machines/blast-furnace-cold.md) | [cupola](../machines/cupola.md), [puddling](../machines/puddling-furnace.md), [Bessemer](../machines/bessemer.md) | iwex | live |
-| **Cast iron** | `castiron` (shipped) | it can be poured to shape, and it will shatter in tension | [cupola](../machines/cupola.md) | [cast parts](cast-parts.md); gates LP machinery | iwex | live |
-| **Wrought iron** | (= vanilla `game:iron`) | it can be forged, and it passes the pressure gate | [puddling](../machines/puddling-furnace.md) → shingling | the whole forming line; boilers | iwex | metal live (vanilla), route blocked (B8) |
+| **Pig iron** | `pigiron` (shipped) | nothing - a feedstock, and the ladder's only metal that promises nothing | [cold blast furnace](../machines/blast-furnace-cold.md) | [cupola](../machines/cupola.md), [puddling](../machines/puddling-furnace.md), [Bessemer](../machines/bessemer.md) | iiex | live |
+| **Cast iron** | `castiron` (shipped) | it can be poured to shape, and it will shatter in tension | [cupola](../machines/cupola.md) | [cast parts](cast-parts.md); gates LP machinery | iiex | live |
+| **Wrought iron** | (= vanilla `game:iron`) | it can be forged, and it passes the pressure gate | [puddling](../machines/puddling-furnace.md) → shingling | the whole forming line; boilers | iiex | metal live (vanilla), route blocked (B8) |
 | **Blister steel** | (vanilla `game:ingot-blistersteel`) | carburised bar - feedstock only, uneven | vanilla cementation | shear steel, [crucible](../machines/crucible-furnace.md) | vanilla | live |
 | **Shear steel** | (= vanilla `game:steel`) | the tool-grade baseline; the pre-Bessemer standard | vanilla piling + helve | vanilla tools | vanilla | live |
-| **Crucible steel** | (none) | the best edge in the game - homogeneous, slag-free high-C | [crucible furnace](../machines/crucible-furnace.md) | tools, weapons, [shear](../machines/shear.md) blade sets | iwex | designed |
+| **Crucible steel** | (none) | the best edge in the game - homogeneous, slag-free high-C | [crucible furnace](../machines/crucible-furnace.md) | tools, weapons, [shear](../machines/shear.md) blade sets | iiex | designed |
 | **Blown iron** | (none) | nothing - it is unusable. See [blown iron](blown-iron.md) | [Bessemer](../machines/bessemer.md) blow | [ladle](../machines/ladle.md), and nothing else | smex | designed (N1) |
 | **Bessemer steel** | `bessemersteel` (shipped) | structural volume, cheaply - and it is barred from pressure work | [ladle](../machines/ladle.md) recarburising blown iron | fabricated substitutes (N3), bulk machine frames | smex | live, but its def conflicts with N1 - see [Gotchas](#gotchas) |
 | **Open-hearth steel** | (none) | a spec - the pressure grade, and the only base an alloy can inherit cleanly | [open hearth](../machines/open-hearth.md) | boiler plate, pressure parts, HSS feedstock | smex | designed |
@@ -105,12 +105,12 @@ The ferrous ladder. "shipped" marks a metal whose `MetalDef` ships today. Scope 
 | **Hadfield steel** | (none) | it survives impact and abrasion - the HP machinery material gate | [ladle](../machines/ladle.md) / [open-hearth](../machines/open-hearth.md) bath + ~12.5 % Mn | every hpex machine; rolled pipe | smex | designed |
 | **Chrome steel** | (none) | hardness with accuracy - it holds a ground surface. Defined 2026-08-07: ~1 % C, ~1.5 % Cr | one route: the [ladle](../machines/ladle.md) + ferrochrome | [bearings](../machines/bearings.md), files | smex | designed - composition settled |
 | **HSS** | (none) | it stays hard hot - needs no tempering | arc furnace + W + Cr | endgame tools | elex | deferred (D8) |
-| **Spiegeleisen** | (none) | it scavenges oxygen and carries carbon - the historical fix for a blow; at a 10–15 % dose, the rail-grade route | [cold blast furnace](../machines/blast-furnace-cold.md) burden family | [ladle](../machines/ladle.md): recarburising | iwex → smex | designed |
-| **High-carbon ferromanganese** | (none) | it delivers manganese in bulk - the mild-steel trim and the ladle's alloying reagent | same burden family | [ladle](../machines/ladle.md): mild trim, hadfield | iwex → smex | designed |
-| **Ferrochrome** | (none) | it delivers chromium into a bath without an electric furnace | same burden family | chrome steel, later HSS | iwex → smex | designed |
-| **Ferrosilicon** | (none) | a second deoxidiser, and the cheap one | same burden family | steel practice generally | iwex → smex | later |
+| **Spiegeleisen** | (none) | it scavenges oxygen and carries carbon - the historical fix for a blow; at a 10–15 % dose, the rail-grade route | [cold blast furnace](../machines/blast-furnace-cold.md) burden family | [ladle](../machines/ladle.md): recarburising | iiex → smex | designed |
+| **High-carbon ferromanganese** | (none) | it delivers manganese in bulk - the mild-steel trim and the ladle's alloying reagent | same burden family | [ladle](../machines/ladle.md): mild trim, hadfield | iiex → smex | designed |
+| **Ferrochrome** | (none) | it delivers chromium into a bath without an electric furnace | same burden family | chrome steel, later HSS | iiex → smex | designed |
+| **Ferrosilicon** | (none) | a second deoxidiser, and the cheap one | same burden family | steel practice generally | iiex → smex | later |
 | **Waste alloy** | (none) | it guarantees only its base mass back - the off-spec outcome | a bad [ladle](../machines/ladle.md) mix | cupola / Bessemer scrap / arc | any | designed |
-| (slag) | `slag` (shipped) | not a metal - a registry entry so the molten system can carry it | every furnace | brick, fettle | iwex | live |
+| (slag) | `slag` (shipped) | not a metal - a registry entry so the molten system can carry it | every furnace | brick, fettle | iiex | live |
 
 ### D3 — an alloy inherits its base's grade, as a continuous penalty
 
@@ -198,11 +198,11 @@ Every metal's identity is JSON; the emitters supply the rest. `<domain>Values.X`
 
 | Field | `pigiron.json` | `castiron.json` | `bessemersteel.json` | `slag.json` |
 |---|---|---|---|---|
-| file | `assets/iwex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `assets/smex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
+| file | `assets/iiex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `assets/smex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
 | `code` | `pigiron` | `castiron` | `bessemersteel` | `slag` |
-| `moltenItem` | `iwex:ingot-pigiron` | `iwex:ingot-castiron` | `smex:ingot-bessemersteel` | `iwex:slag` |
+| `moltenItem` | `iiex:ingot-pigiron` | `iiex:ingot-castiron` | `smex:ingot-bessemersteel` | `iiex:slag` |
 | `solidDrop` | `game:metalbit-iron` | `game:metalbit-iron` | `game:metalbit-steel` | (convention) |
-| `castDomain` | `iwex` | `iwex` | `smex` | — |
+| `castDomain` | `iiex` | `iiex` | `smex` | — |
 | `liquidThreshold` | 0.75 | 0.75 | (default 0.8) | (default) |
 | `density` (kg/m³) | 7000 | 7200 | 7820 | — |
 | `meltingPoint` (°C) | 1150 | 1200 | 1500 | — |
@@ -225,7 +225,7 @@ comes from the convention branch (`ExpandedLib/Metals/MetalRegistry.cs:83-135`).
 | liquid threshold | 0.8 × melting point | `ExlibConfig.cs:63` |
 | hardened threshold | 0.3 × melting point | `:67` |
 | glow floor | 500 °C | `:70` |
-| recovery fallback | `iwex:slag` | `:75` |
+| recovery fallback | `iiex:slag` | `:75` |
 | melting point | deferred to the item's vanilla `combustibleProps` - never duplicated on the def | `MoltenMetal.cs:113-114` |
 
 The catalogue loads in two passes at `AssetsFinalize`: a baseline entry derived from every metal code in every
@@ -267,8 +267,8 @@ purpose, so a castable-but-brittle metal never leaks an anvil-forgeable `workite
 
 | Pipe tier | Material the docs claim | Burst | Registered as | file:line |
 |---|---|---|---|---|
-| plated (iwex) | wrought-iron plate | 2.5 atm | domain `iwex` | `IwexConfig.cs:163`, `IronworkingExpandedModSystem.cs:73` |
-| cast (lpex) | cast iron | 5.0 atm | domain `lpex` | `LpexConfig.cs:50`, `LowPressureExpandedModSystem.cs:60` |
+| plated (iiex) | wrought-iron plate | 2.5 atm | domain `iiex` | `IiexConfig.cs:163`, `IronworkingExpandedModSystem.cs:73` |
+| cast (iiex) | cast iron | 5.0 atm | domain `iiex` | `IiexConfig.cs:50`, `LowPressureExpandedModSystem.cs:60` |
 | rolled (hpex) | hadfield steel | 12 atm | domain `hpex` | `HpexConfig.cs:107-115`, `HighPressureExpandedModSystem.cs:42` |
 | (unregistered) | — | 5.0 atm | fallback | `ExpandedLib/Blocks/Networks/BlockPipe.cs:185` (`RegisterBurst`) |
 
@@ -284,16 +284,16 @@ them and stays domain-keyed.
 
 | Asset | Path | State |
 |---|---|---|
-| metal defs | `assets/{iwex,smex}/config/metals/*.json` | 4 files: `pigiron`, `castiron`, `slag` (iwex), `bessemersteel` (smex). No `blowniron`, `openhearthsteel`, `cruciblesteel`, `hadfieldsteel`, `chromesteel`, `ferromanganese`, `ferrochrome`, `wastealloy` |
+| metal defs | `assets/{iiex,smex}/config/metals/*.json` | 4 files: `pigiron`, `castiron`, `slag` (iiex), `bessemersteel` (smex). No `blowniron`, `openhearthsteel`, `cruciblesteel`, `hadfieldsteel`, `chromesteel`, `ferromanganese`, `ferrochrome`, `wastealloy` |
 | shapes | — | none, by design. Every generated form paints a `game:` shape (`item/ingot`, `item/plate`, `item/nugget`, `item/rod`, `item/resource/metalnailsandstrips`) and every tool a `game:item/tool/*` shape |
-| textures - cast iron | `assets/iwex/textures/block/metal/castiron.png` | live, referenced by `castiron.json:10` |
-| textures - cast iron alt | `assets/iwex/textures/block/metal/castiron-alt.png` | orphaned - no `.cs`, `.json` or golden in the repo references `castiron-alt` |
+| textures - cast iron | `assets/iiex/textures/block/metal/castiron.png` | live, referenced by `castiron.json:10` |
+| textures - cast iron alt | `assets/iiex/textures/block/metal/castiron-alt.png` | orphaned - no `.cs`, `.json` or golden in the repo references `castiron-alt` |
 | textures - pig iron | `game:block/metal/tarnished/iron` | vanilla, verified present |
 | textures - Bessemer steel | `game:block/metal/ingot/steel` | vanilla, verified present. It is the vanilla steel texture, so Bessemer steel is visually indistinguishable from `game:steel`, a different material on this ladder |
-| lang - iwex | `assets/iwex/lang/en.json:18-39` | complete: 2 metal names, 5 form names + descriptions, 8 tool names |
+| lang - iiex | `assets/iiex/lang/en.json:18-39` | complete: 2 metal names, 5 form names + descriptions, 8 tool names |
 | lang - smex | `assets/smex/lang/en.json:3-19` | complete: 1 metal name, 4 form names + descriptions, 8 tool names - the lang file is the most visible trace of the N1 conflict |
 | lang - exlib | `exlib:metal-unknown` | the empty-code label (`MetalRegistry.cs:100`) |
-| goldens | `test/IronworkingExpanded.Tests/goldens/iwex/itemtypes/{castiron,pigiron}/`, `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
+| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/{castiron,pigiron}/`, `test/SteelmakingExpanded.Tests/goldens/smex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
 | handbook | — | no page for the metal ladder at all. Nothing in game explains why two mild steels differ |
 
 ---

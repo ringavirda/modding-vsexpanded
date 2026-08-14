@@ -1,6 +1,6 @@
 # Ore crusher
 
-**Status** designed - nothing built   **Mod** lpex
+**Status** designed - nothing built   **Mod** iiex
 **Since** 2026-07-31
 
 **Owns** - the facts this page is canonical for:
@@ -19,7 +19,7 @@
 |---|---|
 | Energy in joules, load-driven speed, the governor, pulsed supply and burst | [mp-energy](../mechanics/mp-energy.md) |
 | The flywheel block, its ½Iω² reservoir and the vanilla-MP bridge | [flywheel-and-shafting](flywheel-and-shafting.md) |
-| The Watt engine and the Cornish boiler that feed the network at lpex | [engine-watt](engine-watt.md) · [boiler-cornish](boiler-cornish.md) |
+| The Watt engine and the Cornish boiler that feed the network at iiex | [engine-watt](engine-watt.md) · [boiler-cornish](boiler-cornish.md) |
 | What crushed ore is *for* | [layered-charge](../layered-charge.md) · [ironmaking](../processes/ironmaking.md) |
 | Roasting, the other ore-prep step | [roasting](../processes/roasting.md) |
 | Ferroalloys, and therefore what chromite is *for* | [blast-furnace-cold](blast-furnace-cold.md) § Its second act |
@@ -48,7 +48,7 @@ It exists for two reasons:
 2. **Harder ores.** Chromite and its relatives are beyond what a pulverizer will break, and they are what the
    [cold furnace's second act](blast-furnace-cold.md) needs.
 
-**It is throughput, never access.** An iwex-only player must reach a complete early-19th-century experience,
+**It is throughput, never access.** An iiex-only player must reach a complete early-19th-century experience,
 and the vanilla pulverizer route stays viable forever - just slower. Same rule as pig beds against direct
 charging: the early route never becomes impossible, only less good.
 
@@ -56,7 +56,7 @@ charging: the early route never becomes impossible, only less good.
 
 ## Why mp-energy and not a self-contained steam machine
 
-The reference engraving shows the engine built into the machine, and lpex has an engine + docked sub-machine
+The reference engraving shows the engine built into the machine, and iiex has an engine + docked sub-machine
 idiom (the pump, the blower) that would fit it. That is the wrong shape here, for four reasons.
 
 **1. The hardness gate becomes physics instead of a flag.** Chromite needs more joules per unit than hematite.
@@ -71,16 +71,16 @@ flywheels. mp-energy already designs for this shape of load (pulsed supply, gove
 
 > Hook a crusher straight to a waterwheel and it stalls on every rock. Add a flywheel and it runs smooth.
 
-[iwex-bringup](../../internal/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
+[iiex-bringup](../../internal/plans/iiex-bringup.md) records that mp-energy's weakness is too few consumers for the
 flywheel to justify itself. A machine that cannot run well without one teaches the flywheel rather than
 announcing it.
 
-**3. Being MP-driven does not make it iwex's.** The forming-line rule (iwex = MP · lpex = steam · smex =
+**3. Being MP-driven does not make it iiex's.** The forming-line rule (iiex = MP · iiex = steam · smex =
 extends, [settled 2026-07-29](../../internal/plans/STATE.md)) governs variants of one machine, not which mod owns every
-MP consumer. There is one crusher and it lives in lpex, because that is where it sits in the player's arc: a
-throughput upgrade bought once a steam plant exists, never required by the iwex loop, with a harder-ore half
-that serves the steel-era ferroalloys. Keeping it out of iwex also protects the rule that nothing before cast
-iron requires power - an iwex-tier crusher would sit upstream of the blast furnace and invite exactly the
+MP consumer. There is one crusher and it lives in iiex, because that is where it sits in the player's arc: a
+throughput upgrade bought once a steam plant exists, never required by the iiex loop, with a harder-ore half
+that serves the steel-era ferroalloys. Keeping it out of iiex also protects the rule that nothing before cast
+iron requires power - an iiex-tier crusher would sit upstream of the blast furnace and invite exactly the
 dependency the [burdenmaker](burdenmaker.md) was stripped of MP to avoid.
 
 **4. A docked sub-machine cannot be shared.** The pump and blower are effectively the engine's other end and
@@ -126,8 +126,8 @@ The crusher attaches to an ordinary MP line with no special connector, exactly a
 
 | Tier | Owns | Gives |
 |---|---|---|
-| **iwex** | [roasting](../processes/roasting.md) - an unbuilt pre-step; the [burdenmaker](burdenmaker.md) already accepts crushed *or roasted* ore | better ore |
-| **lpex** | this machine, plus the engine and boiler that make it run properly | more ore |
+| **iiex** | [roasting](../processes/roasting.md) - an unbuilt pre-step; the [burdenmaker](burdenmaker.md) already accepts crushed *or roasted* ore | better ore |
+| **iiex** | this machine, plus the engine and boiler that make it run properly | more ore |
 
 Neither obsoletes the other, and both feed the same burdenmaker.
 
@@ -158,14 +158,14 @@ Everything here is a decision, not a placeholder - none of it blocks the ones al
    work, which is entirely unbuilt - no third burden family, no ferroalloy metal descriptor, no ore. Until
    that lands the crusher is a throughput machine only, and it should be designed so that is enough on its
    own.
-6. **Art.** Nothing drawn. Not in [iwex-bringup](../../internal/plans/iwex-bringup.md)'s art queue, and it should be
+6. **Art.** Nothing drawn. Not in [iiex-bringup](../../internal/plans/iiex-bringup.md)'s art queue, and it should be
    added there before anyone plans to build it.
 
 ---
 
 ## Staging
 
-Not in the six-stage iwex bring-up. It is a throughput machine, and throughput only matters once the loop it
+Not in the six-stage iiex bring-up. It is a throughput machine, and throughput only matters once the loop it
 feeds is running and the player is bored of pulverizers - which is feedback the playtest build will supply.
 
 Slot it after the playtest, alongside or after [layered-charge](../layered-charge.md), and before the

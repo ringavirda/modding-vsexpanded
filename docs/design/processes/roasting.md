@@ -3,7 +3,7 @@
 **Status** designed - nothing is built. No item, no furnace mode, no recipe, no config key, no test, no lang
 string. The only thing in `src/` that names a roasted ore is a foreign mod's item code, registered by a
 compat shim
-**Mods** iwex - it would live entirely on the reheat furnace and the burdenmaker; no other mod participates
+**Mods** iiex - it would live entirely on the reheat furnace and the burdenmaker; no other mod participates
 
 **Owns** - the facts this page is canonical for:
 
@@ -87,7 +87,7 @@ Designed. Every step after the first is unbuilt.
 | 1 | crush ore | vanilla | crush | `game:crushed-iron` | vanilla |
 | 2 | charge the hearth | [reheat furnace](../machines/reheat-furnace.md) | RMB the hearth row with crushed ore | — | no - the hearth accepts stock only, matched by code prefix (`HeatingHearthLayout.cs:64-79`) |
 | 3 | fire the firebox | same | place fuel, light it | flame drawn over the hearth | yes - the shell burns and holds heat |
-| 4 | roast | same | wait | `iwex:crushedore-roasted` | no - no roasting mode, no timer, no product |
+| 4 | roast | same | wait | `iiex:crushedore-roasted` | no - no roasting mode, no timer, no product |
 | 5 | draw | same | RMB the hearth row | roasted ore | no |
 | 6 | combine | [burdenmaker](../machines/burdenmaker.md) | load the wide hopper, as raw ore | burden, carrying the benefit somehow | no - nothing distinguishes it |
 | 7 | melt | [blast furnace](../machines/blast-furnace-cold.md) | — | less coke per unit of pig | no - no term exists |
@@ -96,10 +96,10 @@ Designed. Every step after the first is unbuilt.
 
 | Search | Result |
 |---|---|
-| `iwex:crushedore-roasted` in `src/` or `assets/` | no hits anywhere in the repo |
+| `iiex:crushedore-roasted` in `src/` or `assets/` | no hits anywhere in the repo |
 | a roasting mode, timer, temperature or state on any furnace | none - `BlockEntityHeatingFurnace.cs:24-27` says so in its own class doc: *"neither is the roasting mode that will share this machine"* |
-| a `Roast*` config key | none in `IwexConfig.cs` |
-| a lang key for a roasted ore | none in `assets/iwex/lang/en.json` |
+| a `Roast*` config key | none in `IiexConfig.cs` |
+| a lang key for a roasted ore | none in `assets/iiex/lang/en.json` |
 | a test | none |
 | anything in `src/` naming a roasted ore | the compat row (`Compat/IronOreCompat.cs:41` - see § Gotchas) and the burdenmaker's own help text and doc-comments, which already offer *"crushed or roasted iron ore"* (`BlockBurdenmaker.cs:198`) |
 | design mentions | [conventions](../conventions.md) § Shared simulation model (the model), two furnace doc-comments (`BlockHeatingFurnaceCore.cs:15`, `BlockEntityHeatingFurnace.cs:26`), and the fettle route it would displace (`FettleRecipeDefinitions.cs:22-24`) |
@@ -110,9 +110,9 @@ Designed. Every step after the first is unbuilt.
 
 | | | Status |
 |---|---|---|
-| **In** | crushed iron ore - any item in `Roles.IronOre` (`assets/iwex/config/materialroles.json:11`, prefix `crushed-iron`, plus the mod-gated codes at `IronOreCompat.cs:39-49`) | the role exists |
+| **In** | crushed iron ore - any item in `Roles.IronOre` (`assets/iiex/config/materialroles.json:11`, prefix `crushed-iron`, plus the mod-gated codes at `IronOreCompat.cs:39-49`) | the role exists |
 | **In** | firebox fuel - the reverberatory firebox takes coke, bituminous, anthracite and charcoal and refuses lignite (`BEBehaviorFirebox.IsFuel`; the override is [reheat furnace](../machines/reheat-furnace.md)'s) | live |
-| **Out** | `iwex:crushedore-roasted` - no new art: vanilla's generic crushed-ore shape, retextured | does not exist |
+| **Out** | `iiex:crushedore-roasted` - no new art: vanilla's generic crushed-ore shape, retextured | does not exist |
 | **Out** | must also carry `combustibleProps` / `smeltedStack` so it still blooms | does not exist - and see the warning below |
 | **Out** *(second job)* | roasted oxide as fettle - "bull dog", the historically standard British fettling (`FettleItemDefinitions.cs:74`, `FettleRecipeDefinitions.cs:22-24`) | the hand-prepared grid recipe is the interim route |
 
@@ -120,7 +120,7 @@ Designed. Every step after the first is unbuilt.
 
 The rule is that roasted ore must still smelt in a vanilla bloomery, via the same
 `combustibleProps`/`smeltedStack` trick smex already applies to `crushed-iron`. That trick works, but it
-lives in smex, not iwex:
+lives in smex, not iiex:
 
 ```
 assets/smex/patches/vanilla/crushed.json:3-10
@@ -128,8 +128,8 @@ assets/smex/patches/vanilla/crushed.json:3-10
     meltingPoint 1482 · meltingDuration 30 · smeltedRatio 20 · smeltedStack game:ironbloom
 ```
 
-With iwex alone, crushed iron ore is not bloomable at all and the guarantee the design leans on is not
-present. If roasting lands in iwex, the patch (or an equivalent) has to land in iwex too, or the trap the
+With iiex alone, crushed iron ore is not bloomable at all and the guarantee the design leans on is not
+present. If roasting lands in iiex, the patch (or an equivalent) has to land in iiex too, or the trap the
 rule exists to prevent is moved one mod upstream.
 
 ---
@@ -175,7 +175,7 @@ There is exactly one heat-out term that means what the cold charge costs:
 
 | Key | Value | file:line | Doc |
 |---|---|---|---|
-| `BfChargeLossFull` | 310 °C | `IwexConfig.cs:300` | *"Heat loss (°C) from cold charge mass with the furnace loaded to its capacity (`ChargeCapacityUnits`) … it is linear: half-loaded pays half."* |
+| `BfChargeLossFull` | 310 °C | `IiexConfig.cs:300` | *"Heat loss (°C) from cold charge mass with the furnace loaded to its capacity (`ChargeCapacityUnits`) … it is linear: half-loaded pays half."* |
 
 Roasted ore should reduce that term and nothing else. It is the physically correct place - roasting removes
 mass the furnace would otherwise have to heat and decompose - and it needs no new mechanic, since the model
@@ -247,7 +247,7 @@ the roasted rung is one key beside it ([metal recovery](../mechanics/metal-recov
 
 ## Open
 
-1. The whole feature. In build order: the item (`iwex:crushedore-roasted` + a retexture + the
+1. The whole feature. In build order: the item (`iiex:crushedore-roasted` + a retexture + the
    `combustibleProps` route), a second hearth contents model, a roasting mode on the shared core, the
    `BfChargeLossFull` reduction and the roasted recovery key, and a cost - the fuel a roast burns. Five
    pieces, none started.

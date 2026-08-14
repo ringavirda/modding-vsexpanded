@@ -12,12 +12,16 @@ namespace ExpandedLib.Tests;
 /// </summary>
 public class MoltenChiselTests {
   private const string Iron = "game:ingot-iron";
+  private const string SlagFallback = "iiex:slag-block";
 
   private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
     world.RegisterItem("game:metalbit-iron");
-    world.RegisterItem("iwex:slag");
+    // The real code, not a convenient one. The fallback default read "iiex:slag" for a long time and
+    // this fixture registered exactly that, so a value naming a block that has never been registered
+    // looked alive here while resolving to nothing in game.
+    world.RegisterItem(SlagFallback);
     return world;
   }
 
@@ -86,7 +90,7 @@ public class MoltenChiselTests {
     );
 
     Assert.NotNull(drop);
-    Assert.Equal("iwex:slag", drop!.Collectible.Code.ToString());
+    Assert.Equal(SlagFallback, drop!.Collectible.Code.ToString());
     Assert.Equal(4, drop.StackSize);
   }
 }

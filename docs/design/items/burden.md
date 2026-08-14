@@ -1,14 +1,14 @@
 # Burden — the ore-bearing charge
 
-**Status** live (2026-08-07)   **Mod** iwex (`IronworkingExpanded`); the material-role registry it leans
+**Status** live (2026-08-07)   **Mod** iiex (`IronIndustryExpanded`); the material-role registry it leans
 on is exlib
 
 **Owns** - the facts this page is canonical for:
 
-* the burden item `iwex:burden` - its stack size, density, texture, combustible props and def;
+* the burden item `iiex:burden` - its stack size, density, texture, combustible props and def;
 * the `BurdenMix` stamp: which attributes are written, that they are stored as parts and read as
   fractions, and what an unstamped stack means;
-* the grade bands `IwexConfig.BurdenProfiles` and the classifier `Burden.ProfileLangKey` - three bands
+* the grade bands `IiexConfig.BurdenProfiles` and the classifier `Burden.ProfileLangKey` - three bands
   on flux, why they tile, and why `offspec` is unreachable in a stock config;
 * the two identity predicates `Burden.Is` (a stack) and `Burden.IsCode` (a column's material string),
   and why both must exist;
@@ -52,17 +52,17 @@ player charges, not by what they charged.
 
 | | |
 |---|---|
-| Code | `iwex:burden` - the only burden item (`ItemBurden.cs:32-33`) |
+| Code | `iiex:burden` - the only burden item (`ItemBurden.cs:32-33`) |
 | Stack | 128 (`ItemBurden.cs:41`) |
 | Density | `MaterialDensity(300)` (`:42`) |
 | Shape | `game:item/resource/crushed/normal`, texture code `#quartz` (`:43-44`) |
 | Texture | `game:block/coal/orecoalmix` (`:33`) |
 | Combustible | `burnTemperature: 600` / `burnDuration: 1500` (`:47`) |
 | Held | `holdbothhands` idle + ready (`:45-46`) |
-| Golden | `test/IronworkingExpanded.Tests/goldens/iwex/itemtypes/burden.json` |
+| Golden | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/burden.json` |
 
 It cannot be placed as a pile by hand. `ItemBurden` is a plain `Item`. What stands in a shaft is
-`iwex:furnace-chargepile`, a block the furnace owns and places
+`iiex:furnace-chargepile`, a block the furnace owns and places
 ([layered-charge](../layered-charge.md)); the player fills it through the tall hopper, never by hand.
 
 ### What a stack carries
@@ -91,7 +91,7 @@ indistinguishable from no stamp at all.
 
 ## Grades
 
-### The bands — `IwexConfig.BurdenProfiles` (`IwexConfig.cs:902`)
+### The bands — `IiexConfig.BurdenProfiles` (`IiexConfig.cs:902`)
 
 | Order | Key | MinFlux | MaxFlux |
 |---|---|---|---|
@@ -99,7 +99,7 @@ indistinguishable from no stamp at all.
 | 2 | `standard` | 0.03 | 0.08 |
 | 3 | `overfluxed` | 0.08 | — (1) |
 
-`BurdenProfile` is `Key` + `MinFlux` + `MaxFlux` and nothing else (`IwexConfig.cs:930`).
+`BurdenProfile` is `Key` + `MinFlux` + `MaxFlux` and nothing else (`IiexConfig.cs:930`).
 
 There is no iron bound and there will not be one. Burden is ore and flux only, so
 `IronFrac ≡ 1 − FluxFrac`; an iron bound would be a second knob for one quantity, and it fails silently:
@@ -120,8 +120,8 @@ Two statuses are returned directly rather than matched:
 | `empty` | `!mix.HasContent` | `Burden.cs:106-107` |
 | `offspec` | no band matched (edited config only) | `Burden.cs:114` |
 
-Lang keys: `iwex:burden-profile-{key}` (`assets/iwex/lang/en.json:251-255`) and the composition line
-`iwex:burden-composition` (`:250`), which prints two numbers - iron and flux (`ItemBurden.cs:95-101`).
+Lang keys: `iiex:burden-profile-{key}` (`assets/iiex/lang/en.json:251-255`) and the composition line
+`iiex:burden-composition` (`:250`), which prints two numbers - iron and flux (`ItemBurden.cs:95-101`).
 
 The same classifier names the grade at both ends: the burdenmaker's readout previews it before the
 gate opens (`BlockEntityBurdenmaker.cs:421-426`) and the held-item tooltip prints it afterwards
@@ -149,7 +149,7 @@ There are two charge seams and they must agree. `IsChargeItem(ItemStack)` is wha
 `IsChargeCode(string)` is what a column answers, because a `ChargeSegment` holds units of a substance,
 never a stack. Override one and not the other and the same material is taken through one route and refused
 through the other with nothing failing - a scrap-only cupola override that dropped its inherited
-`|| IsFuelCode` stopped the cupola counting its own coke, and 192 of 193 lpex tests stayed green over it.
+`|| IsFuelCode` stopped the cupola counting its own coke, and 192 of 193 iiex tests stayed green over it.
 
 Composition is read per material, not per band (`BlockEntityShaftFurnace.Accumulate`, `:442-476`):
 
@@ -180,9 +180,9 @@ out, so a dead furnace cannot relight off its own salvage. That salvage is
 | ↳ `IsCode` | `:69` | column identity - a segment is a material string |
 | ↳ `Write` / `Read` | `:72-78` / `:81-87` | the stamp |
 | ↳ `ProfileLangKey` | `:104-115` | the classifier |
-| `BurdenProfile` | `IwexConfig.cs:930` | `Key` + two flux bounds |
-| `IwexConfig.BurdenProfiles` | `IwexConfig.cs:902` | the band list; retunable live through `ModConfig/ex_values.json` |
-| Tests | `test/IronworkingExpanded.Tests/Materials/BurdenProfileTests.cs` | the three bands, the boundaries, config retuning, and that a stamped fuel part cannot move the grade |
+| `BurdenProfile` | `IiexConfig.cs:930` | `Key` + two flux bounds |
+| `IiexConfig.BurdenProfiles` | `IiexConfig.cs:902` | the band list; retunable live through `ModConfig/ex_values.json` |
+| Tests | `test/IronIndustryExpanded.Tests/Materials/BurdenProfileTests.cs` | the three bands, the boundaries, config retuning, and that a stamped fuel part cannot move the grade |
 
 ### Every writer and reader of the stamp
 
@@ -229,10 +229,10 @@ out, so a dead furnace cannot relight off its own salvage. That salvage is
    fix - whether an under-fluxed charge should slag badly, or simply be refused. Undecided, and it is the
    single largest gap between what this item says and what it is.
 
-2. `iwex:burden` has no handbook page of its own. `docs/iwex/handbook/01-orehandling.html` covers
+2. `iiex:burden` has no handbook page of its own. `docs/iiex/handbook/01-orehandling.html` covers
    preparing it and charging with it, but the stamp and the bands are documented only in tooltips.
 
-3. Roasted ore is promised and not delivered. `iwex:burdenmaker-help-addore` offers "crushed or roasted
+3. Roasted ore is promised and not delivered. `iiex:burdenmaker-help-addore` offers "crushed or roasted
    iron ore"; `materialroles.json` grants `ironore` to the `crushed-iron` path prefix only. Whether roasted
    ore is a distinct input with its own flux requirement or a better-yielding substitute is
    [roasting](../processes/roasting.md)'s call - see [burdenmaker § Open](../machines/burdenmaker.md).

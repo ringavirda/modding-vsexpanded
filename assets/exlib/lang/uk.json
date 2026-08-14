@@ -1,26 +1,19 @@
 {
   "structure-missing-header": "Конструкцію не завершено! Ще потрібно:",
   "structure-missing-line": "  {0} x {1}",
-
   "block-structurefiller": "Механизм",
-
   "blockhelp-rotate": "Повернути",
-
   "blockname-suffixed": "{0} ({1})",
   "blockname-listsep": ", ",
-
   "refractory-tier1": "шамотна цегла, рівень 1",
   "refractory-tier2": "шамотна цегла, рівень 2",
   "refractory-tier3": "шамотна цегла, рівень 3",
-
   "metal-unknown": "невідомо",
   "metalstate-cold": "холодний",
-
   "command-measure-desc": "Показати або задати систему відображення одиниць (метрична/імперська)",
   "pref-measure-label": "Одиниці відображення",
   "pref-measure-metric": "Метрична (л, атм, °C)",
   "pref-measure-imperial": "Імперська (гал, psi, °F)",
-
   "unit-litres": "л",
   "unit-gallons": "гал",
   "unit-litres-per-second": "л/с",
@@ -34,7 +27,6 @@
   "unit-horsepower": "к.с.",
   "unit-kilojoules": "кДж",
   "unit-megajoules": "МДж",
-
   "command-exmod-desc-client": "Клієнтська базова команда Exlib (.exmod). Сама по собі вміє може лише підсвічувати мережі; інші моди розширюють її своїми клієнтськими опціями.",
   "command-exmod-help-client": "Клієнтська команда - виконується локально на вашій машині. Використовуйте підкоманду (див. .help exmod). Доступні опції залежать від встановлених модів і доданих ними підкоманд.",
   "command-exmod-desc-server": "Серверна базова команда Exlib (/exmod). Спільний корінь, який інші моди розширюють своїми серверними опціями.",
@@ -42,7 +34,6 @@
   "command-pref-current": "{0}: {1}",
   "command-pref-set": "{0}: встановлено «{1}».",
   "command-pref-invalid": "Невідоме значення «{0}» для «{1}». Варіанти: {2}.",
-
   "command-recipes-desc": "Показати або задати рівень вартості рецептів мода (застосовується після перезавантаження світу)",
   "command-recipes-list": "Рівні вартості рецептів (для зміни: /exmod recipes [мод] [рівень]):",
   "command-recipes-none": "Жоден мод не зареєстрував рівні вартості рецептів.",
@@ -51,7 +42,6 @@
   "command-recipes-retain": "Вартість рецептів {0} вже на рівні «{1}».",
   "command-recipes-unknown": "Невідомий мод «{0}». Зареєстровані: {1}.",
   "command-recipes-invalid": "Невідомий рівень «{0}». Варіанти: {1}.",
-
   "command-config-desc": "Показати або змінити значення конфігурації мода на льоту (/exmod config [мод] [значення] [нове])",
   "command-config-list": "Зареєстровані конфігурації (для перегляду: /exmod config [мод]):",
   "command-config-none": "Жоден мод не зареєстрував редаговані конфігурації.",
@@ -62,15 +52,23 @@
   "command-config-set": "{0} змінено з {1} на {2}. Застосовано одразу.",
   "command-config-parsefail": "Не вдалося прочитати «{0}» як значення для {1} (очікується {2}).",
   "command-config-range": "Значення для {0} поза діапазоном (дозволено: {1}).",
-
   "command-network-desc": "Показати блочні мережі (труби, канали розплаву, …)",
   "command-network-hi-desc": "Підсвітити всі блоки мережі, розфарбувавши їх за мережами",
   "command-network-unhi-desc": "Припинити підсвічування блоків мережі",
   "network-hi-on": "Підсвічування мереж увімкнено - кожна мережа має свій колір; оновлюється в реальному часі.",
   "network-hi-off": "Підсвічування мереж вимкнено.",
-
   "command-heal-desc": "Відновити втрачені блок-сутності (встановлений блок без своєї сутністі) у завантажених чанках",
   "command-heal-result": "Відновлено втрачених блок-сутностей у завантажених чанках: {0}.",
-
-  "game:placefailure-exlib-noorientation": "Неможливо сформувати з'єднання - немає коректної орієнтації."
+  "game:placefailure-exlib-noorientation": "Неможливо сформувати з'єднання - немає коректної орієнтації.",
+  "pipe-info-empty": "Порожньо",
+  "pipe-info-flow": "Пропускна здатність: {0} з {1} при {2}",
+  "pipe-info-leaking": "Витік!",
+  "pipe-info-overpressure": "Перевищення тиску!",
+  "pipe-info-pressure": "Тиск: {0}(н)",
+  "pipe-info-status": "{0} з {1} при {2}",
+  "pipe-medium-air": "Повітря",
+  "pipe-medium-exhaust": "Вихлоп",
+  "pipe-medium-steam": "Пара",
+  "pipe-medium-unknown": "Газ",
+  "pipe-medium-water": "Вода"
 }

@@ -11,9 +11,9 @@ namespace ExpandedLib.Generators;
 
 /// <summary>
 /// Source generator that emits the static accessor class for every config POCO marked
-/// <c>[ExConfigRegister(fileName, modId)]</c>. For a config <c>LpexConfig</c> it generates a
-/// <c>LpexValues</c> static partial class holding the <c>ConfigFileName</c> const, the backing
-/// <c>ExConfigRegister&lt;LpexConfig&gt;</c>, a <c>Load(ICoreAPI)</c> method and one read-only
+/// <c>[ExConfigRegister(fileName, modId)]</c>. For a config <c>IiexConfig</c> it generates a
+/// <c>IiexValues</c> static partial class holding the <c>ConfigFileName</c> const, the backing
+/// <c>ExConfigRegister&lt;IiexConfig&gt;</c>, a <c>Load(ICoreAPI)</c> method and one read-only
 /// <c>public static</c> property per config value.
 /// </summary>
 [Generator(LanguageNames.CSharp)]

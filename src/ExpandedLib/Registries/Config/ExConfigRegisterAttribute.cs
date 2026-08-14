@@ -10,7 +10,7 @@ namespace ExpandedLib.Registries.Config;
 /// namespace; a <c>public static Migrations</c> member on the config is forwarded to the store.
 /// </summary>
 /// <example>
-/// <code>[ExConfig("lpex.json", "lpex")] on LpexConfig generates LpexValues.Load(api), LpexValues.BoilingPoint, ...</code>
+/// <code>[ExConfigRegister("ex_values.json", "iiex")] on IiexConfig generates IiexValues.Load(api), IiexValues.BoilingPoint, ...</code>
 /// </example>
 [AttributeUsage(
   AttributeTargets.Class,
@@ -18,7 +18,7 @@ namespace ExpandedLib.Registries.Config;
   Inherited = false
 )]
 public sealed class ExConfigRegisterAttribute : Attribute {
-  /// <param name="fileName">Config file name under the game's <c>ModConfig</c> folder (e.g. <c>"lpex.json"</c>).</param>
+  /// <param name="fileName">Config file name under the game's <c>ModConfig</c> folder (e.g. <c>"ex_values.json"</c>).</param>
   /// <param name="modId">Owning mod id; resolves the running version and tags log lines.</param>
   public ExConfigRegisterAttribute(string fileName, string modId) {
     FileName = fileName;
@@ -32,7 +32,7 @@ public sealed class ExConfigRegisterAttribute : Attribute {
   public string ModId { get; }
 
   /// <summary>Name of the generated accessor class. Defaults to the config type name with a trailing
-  /// <c>Config</c> swapped for <c>Values</c> (<c>LpexConfig</c> gives <c>LpexValues</c>), or the type
+  /// <c>Config</c> swapped for <c>Values</c> (<c>IiexConfig</c> gives <c>IiexValues</c>), or the type
   /// name plus <c>Values</c> when it has no <c>Config</c> suffix.</summary>
   public string? AccessorName { get; set; }
 

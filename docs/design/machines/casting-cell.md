@@ -1,5 +1,5 @@
 # Sand Casting Cell
-**Status** live   **Mod** iwex
+**Status** live   **Mod** iiex
 
 **Owns**
 - The 1 × 1 cell block: its variants, shape, textures, recipe, drops and interior geometry.
@@ -52,7 +52,7 @@ definition alone.
 
 A single block. No footprint, no fillers, no multiblock.
 
-Interior, from `assets/iwex/shapes/casting/sandcastingcell.json`: floor `y 0-2`, side walls at `x 0-2` and
+Interior, from `assets/iiex/shapes/casting/sandcastingcell.json`: floor `y 0-2`, side walls at `x 0-2` and
 `x 14-16` running `y 2-16`, a back wall at `z 0-2` running `y 2-16`, and the launder wall at `z 14-16`
 only `y 2-14` tall - so the interior is 12 × 14 × 12 with one short wall. The rammed sand fills
 `(2,2,2)-(14,14,14)` = 12³ = 1728 voxels (`cell-filling-base.json`). The launder spout itself is the
@@ -70,15 +70,15 @@ does not lie about where metal enters (`BlockEntitySandCastingCell.cs:155-174`).
 
 | Asset | Path | State |
 |---|---|---|
-| Block shape | `assets/iwex/shapes/casting/sandcastingcell.json` | tracked |
+| Block shape | `assets/iiex/shapes/casting/sandcastingcell.json` | tracked |
 | Editable source | `assets/editable/shapes/molten-block-sandcell.json` | present |
-| Flat sand | `assets/iwex/shapes/casting/cell-filling-base.json` (`iwex:casting/cell-filling-base`) | tracked · `CastingCellLogic.cs:128` |
+| Flat sand | `assets/iiex/shapes/casting/cell-filling-base.json` (`iiex:casting/cell-filling-base`) | tracked · `CastingCellLogic.cs:128` |
 | Legacy half sand | `…/cell-filling-half.json` | tracked · `CastingCellLogic.cs:132` |
 | Impression - heavy plate | `…/cell-filling-heavyplate.json` | tracked |
 | Impression - plate mold | `…/cell-filling-plate.json` | tracked |
 | Impression - ingot mold | `…/cell-filling-ingotmold.json` | untracked, exported 2026-08-05. `cell-filling-plate.json` and `-doubleingot.json` deleted with the molds they impressed |
 | Impression - barrel | `…/cell-filling-moltenbarrel.json` | tracked |
-| Impression - castshell, flywheelpart | `…/cell-filling-castshell.json`, `…-flywheelpart.json` | drawn, untracked in git - referenced by `iwex:pattern-castshell-*` and `iwex:pattern-castwheelsection-*` (the wheel-section filling keeps the older `flywheelpart` file name) |
+| Impression - castshell, flywheelpart | `…/cell-filling-castshell.json`, `…-flywheelpart.json` | drawn, untracked in git - referenced by `iiex:pattern-castshell-*` and `iiex:pattern-castwheelsection-*` (the wheel-section filling keeps the older `flywheelpart` file name) |
 | Impression - axle, cylinder, gearblanklarge, gearblanksmall | `…/cell-filling-*.json` | drawn, untracked in git, and no pattern references them - orphans; the full art census is [patterns](../items/patterns.md)'s |
 | Sand texture | `game:block/stone/sand/basalt` via the `andesite` key | `BlockSandCastingCell.cs:58`, `GreenSandItemDefinitions.cs:38` |
 | Brick texture | running-bond base + `{brick}1` tint overlay | `BlockSandCastingCell.cs:52-56` |
@@ -96,7 +96,7 @@ wood, so it reads as a wooden positive of the part (`PatternItemDefinitions.cs:5
 that shape declares. A type with no entry falls back to `game:item/plate`.
 
 > Several item shapes `PatternShapes` and `CastPartItemDefinitions` reference are untracked in git - among
-> them `assets/iwex/shapes/item/heavyplate.json` (drawn 12 × 2 × 12). The shapes exist; they are simply not
+> them `assets/iiex/shapes/item/heavyplate.json` (drawn 12 × 2 × 12). The shapes exist; they are simply not
 > committed.
 
 ---
@@ -110,7 +110,7 @@ bricks do not overlap (`CastingRecipeDefinitions.cs:50-73`).
 ```
 B H B        B = game:brickcourse-four-running-*  (captures {brick})   | game:claybricks-good-fire
 B F B        F = game:clay-fire  ×2                                     H = hammer (tool)
-B K B        K = chisel (tool)                     →  iwex:sandcastingcell-{brick}-north  ×1
+B K B        K = chisel (tool)                     →  iiex:sandcastingcell-{brick}-north  ×1
 ```
 
 Six bricks, fire clay, hammer and chisel - the `Fhk` trio shared with the
@@ -149,7 +149,7 @@ the labour of ramming up (`CastingCellLogic.cs:87-98`).
 | Cell holds metal? | Held | Result | Applied at |
 |---|---|---|---|
 | yes, hardened | empty hand | `Harvest` | `BlockEntitySandCastingCell.cs:260-282` |
-| yes, not hardened | empty hand | `TooHot` → `iwex-castingcell-toohot` | `:209-212` |
+| yes, not hardened | empty hand | `TooHot` → `iiex-castingcell-toohot` | `:209-212` |
 | yes | anything else | `None` - no re-ramming, no re-patterning while metal is present | `CastingCellLogic.cs:71-76` |
 | no | green sand, `sand != Full` | `RamSand` → `Full`, consumes 1 | `:218-230` |
 | no | `pattern-*`, `Full`, no impression | `Imprint` → set spec + capacity, damage the pattern | `:232-258` |
@@ -186,7 +186,7 @@ Then: contents cleared, pattern capacity dropped, pattern code cleared, sand bac
 |---|---|---|---|
 | hosted cell | `capacity 200`, `drainFitting true` | `:37-40` | the fallback capacity before a pattern is rammed |
 | variants | `brick` (fire + 7 colours) × `side` (4) | `:44-45` | code is `sandcastingcell-{brick}-{side}` |
-| shape | `iwex:casting/sandcastingcell`, spun per orientation | `:46` | north 0 · east 270 · south 180 · west 90 (`ExBlockDef.cs:200-209`) |
+| shape | `iiex:casting/sandcastingcell`, spun per orientation | `:46` | north 0 · east 270 · south 180 · west 90 (`ExBlockDef.cs:200-209`) |
 | max stack / resistance / mining tier | `16` / `3.5` / `0` | `:31-33` | |
 | selection / collision | `0..1` / `0..0.875` | `:61-62` | |
 
@@ -222,11 +222,11 @@ per wood. Default `minPourTemp` is 1150 °C (the `Mold(...)` default, `PatternIt
 
 | type | capacity (u) | cavity render box | filling shape | output | file:line |
 |---|---|---|---|---|---|
-| `castheavyplate` | `CastPartItemDefinitions.HeavyPlateUnits` = 160 | `(7,4,4)-(9,14,12)` | `iwex:casting/cell-filling-heavyplate` | item `iwex:castplate-heavy` | `:108-113` |
-| `castingotmold` | 152 | `(3,12,3)-(13,14,13)` | `…/cell-filling-ingotmold` | block `iwex:casting-mold-ingot` | `:120-126` |
-| `castbarrel` | `CastBarrelUnits` = 200 | `(4,4,4)-(12,12,12)` | `…/cell-filling-moltenbarrel` | item `iwex:cast-barrel` | `:130-135` |
-| `castshell` | `CastShellUnits` = 600 | `(4,4,4)-(12,14,12)` | `…/cell-filling-castshell` | item `iwex:castshell` | `:148-153` |
-| `castwheelsection` | `CastWheelSectionUnits` = 600 | `(4,10,4)-(12,14,12)` | `…/cell-filling-flywheelpart` | item `iwex:castwheelsection` | `:154-161` |
+| `castheavyplate` | `CastPartItemDefinitions.HeavyPlateUnits` = 160 | `(7,4,4)-(9,14,12)` | `iiex:casting/cell-filling-heavyplate` | item `iiex:castplate-heavy` | `:108-113` |
+| `castingotmold` | 152 | `(3,12,3)-(13,14,13)` | `…/cell-filling-ingotmold` | block `iiex:casting-mold-ingot` | `:120-126` |
+| `castbarrel` | `CastBarrelUnits` = 200 | `(4,4,4)-(12,12,12)` | `…/cell-filling-moltenbarrel` | item `iiex:cast-barrel` | `:130-135` |
+| `castshell` | `CastShellUnits` = 600 | `(4,4,4)-(12,14,12)` | `…/cell-filling-castshell` | item `iiex:castshell` | `:148-153` |
+| `castwheelsection` | `CastWheelSectionUnits` = 600 | `(4,10,4)-(12,14,12)` | `…/cell-filling-flywheelpart` | item `iiex:castwheelsection` | `:154-161` |
 
 | key | value | file:line |
 |---|---|---|
@@ -258,7 +258,7 @@ Cavity boxes are the fill glow; the true cavity is the shape. Measured against t
 | `CastingCellLogic` | `CastingCellLogic.cs:44` | pure; every rule that can be pinned without a world |
 | `…Decide` | `:59` | the one interaction resolver |
 | `…AfterShakeOut` | `:98` | `SandLevel.Full` - the "sand is not consumed" rule as a constant |
-| `…IsMoldingSand` | `:109` | full-code match on `iwex:greensand`, so another mod's `greensand` cannot satisfy it |
+| `…IsMoldingSand` | `:109` | full-code match on `iiex:greensand`, so another mod's `greensand` cannot satisfy it |
 | `…IsMisrun` | `:116` | `cavityFull && minPourTemp > 0 && temp < minPourTemp` |
 | `…CanIntake` | `:124` | the pull gate |
 | `…FillingShape` | `:142` | state → mesh; the fallback to flat sand when an impression's shape is unresolved |
@@ -274,7 +274,7 @@ Cavity boxes are the fill glow; the true cavity is the shape. Measured against t
 | Tests | `test/…/Casting/CastingCellLogicTests.cs`, `MoldSpecTests.cs`, `PatternValidationTests.cs`, `PatternCodeLayoutTests.cs` | state machine, schema, validation, the `pattern-{type}-{wood}` code layout |
 
 Where a caller hooks in: to add a castable part from any mod, ship a `pattern` item variant carrying a
-`mold` attribute, a filling shape in your own domain, and the output item. Nothing in iwex changes and
+`mold` attribute, a filling shape in your own domain, and the output item. Nothing in iiex changes and
 nothing needs to reference your mod. To feed a cell: end a [molten canal](molten-canal.md) on the block's
 `side` face.
 
@@ -319,11 +319,11 @@ nothing needs to reference your mod. To feed a cell: end a [molten canal](molten
    clears it (`CastingCellLogic.cs:9-17`, `:98`).
 
 9. `holdingPattern` matches any item whose first code part is `pattern` (`:188`), from any domain, before
-   the spec is read. A patternless `pattern-*` item gets `iwex-castingcell-badpattern` rather than falling
+   the spec is read. A patternless `pattern-*` item gets `iiex-castingcell-badpattern` rather than falling
    through (`:240-244`) - deliberate, but it means the cell claims the click.
 
 10. Drawn impression shapes without a pattern. `cell-filling-{axle,cylinder,gearblanklarge,
-    gearblanksmall}.json` exist in `assets/iwex/shapes/casting/` and are untracked, and no code gives them
+    gearblanksmall}.json` exist in `assets/iiex/shapes/casting/` and are untracked, and no code gives them
     a pattern or a capacity. The full art census is [patterns](../items/patterns.md)'s.
 
 11. Pattern durability is charged at ram-up, not at shake-out (`:251-253`), so a pattern is worn by 24
@@ -350,5 +350,5 @@ nothing needs to reference your mod. To feed a cell: end a [molten canal](molten
 - Metal-pattern tier. Wooden patterns wear out at 24; a metal tier for long runs is designed and unbuilt
   (`PatternItemDefinitions.cs:106-108`).
 - Spill on break. Like the [casting bed](casting-bed.md), a cell broken mid-cast voids its charge.
-- lpex ships nothing. The whole cross-mod half of the contract - cylinder, frame casting, flywheel segments,
+- iiex ships nothing. The whole cross-mod half of the contract - cylinder, frame casting, flywheel segments,
   gear blanks - is still aspirational. The contract itself works; nobody is on the other end of it.

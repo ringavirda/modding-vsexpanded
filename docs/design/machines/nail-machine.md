@@ -1,5 +1,5 @@
 # Nail machine
-**Status** designed - art drawn but untracked and wired to nothing; no block, no BE, no recipe   **Mod** iwex (`IronworkingExpanded`)
+**Status** designed - art drawn but untracked and wired to nothing; no block, no BE, no recipe   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the cut-nail bench: 1 `nailplate` → 4 `game:metalnailsandstrips`, and the fact that this route mints nothing against vanilla's own anvil rate;
@@ -21,7 +21,7 @@
 
 ## Role
 
-Nails are the most-demanded input in the mod - every bolted joint, every pipe run, every machine bill. `ExIngredients.Nails` (`ExIngredients.cs:36`) is reached for by name in machine after machine; all four iwex pipe segments cost one (`PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52`), and so does the tall hopper (`FurnaceRecipeDefinitions.cs:60`). What must be industrialised is making them at scale.
+Nails are the most-demanded input in the mod - every bolted joint, every pipe run, every machine bill. `ExIngredients.Nails` (`ExIngredients.cs:36`) is reached for by name in machine after machine; all four iiex pipe segments cost one (`PipeRecipeDefinitions.cs:25`, `:34`, `:43`, `:52`), and so does the tall hopper (`FurnaceRecipeDefinitions.cs:60`). What must be industrialised is making them at scale.
 
 The win is not yield: the whole route contains no anvil work at all. Puddle → roll → crop → cut, and one 400 u bar becomes 16 `metalnailsandstrips`. The machine's contribution is to collapse "crop the plate, shear each nail, taper each nail" into one operation on a whole 100 u plate.
 
@@ -52,11 +52,11 @@ The drawn shape is authored as a megablock and the design says 1 × 1. In `machi
 | Asset | Path | State |
 |---|---|---|
 | **editable shape** | `assets/editable/shapes/machine-megablock-nailcutter.json` | drawn, and untracked (`git status` reports it as `??`). Referenced by no code, no test, no def, no generator input |
-| runtime shape | `assets/iwex/shapes/…` | missing - never exported |
+| runtime shape | `assets/iiex/shapes/…` | missing - never exported |
 | textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
 | animations | none in the file (no `animations` key) | the crank stroke and the wheel spin both still have to be authored |
 | reference art | `assets/editable/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
-| lang / handbook | `assets/iwex/lang/en.json`, `docs/iwex/handbook/` | no key, no page |
+| lang / handbook | `assets/iiex/lang/en.json`, `docs/iiex/handbook/` | no key, no page |
 
 What is already drawn, read off the element tree:
 
@@ -81,10 +81,10 @@ Proposed cost - the cheapest of the three benches, because the player is meant t
 | trestle | `game:plank-*` ×4 | the A-frame is timber; planks-and-candles cheapness is already precedent (`CraftingStationRecipeDefinitions.cs:16-20`) |
 | head | `castplate` ×1 | the one cast part |
 | shears | `game:metalplate-iron` ×2 | proposed |
-| flywheel | *(built in, not a separate `iwex:mpenergy-flywheel`)* | the block-scale flywheel is a 3 × 3 megablock and far too big; this wheel is art |
+| flywheel | *(built in, not a separate `iiex:mpenergy-flywheel`)* | the block-scale flywheel is a 3 × 3 megablock and far too big; this wheel is art |
 | fasteners | `Nails(1)` (`ExIngredients.cs:36`) | the machine that makes nails costs nails - one bootstrap batch off the anvil, then it feeds itself |
 
-Cost-catalogue key `nailmachine-grid` in `IwexRecipeConfig.DefaultCatalogue` (`IwexRecipeConfig.cs:47-70`).
+Cost-catalogue key `nailmachine-grid` in `IiexRecipeConfig.DefaultCatalogue` (`IiexRecipeConfig.cs:47-70`).
 
 ---
 
@@ -119,7 +119,7 @@ All proposed; the bench has no config section and no keys. Values that exist tod
 | `NailStrokeMs` | 250 ms | — (mirror `PassTickMs`, hard-coded at `BlockEntityRollingMill.cs:42`) | stroke tick |
 | `NailStrokesPerPlate` | 4 | — | one stroke per nail, so a plate visibly takes four |
 | `NailMinTorque` | 0.15 | — | below the `flat` roll set's 0.2 (`RollSetItemDefinitions.cs:68`) - a nail bench must be the easiest load on the run |
-| `NailStrokeEnergy` | ≪ one mill pass | — | sized against `RollingLoadTorque = 0.34` — the mill's declared working demand, 85 % of one bridged wheel's headroom (`IwexConfig.cs`) |
+| `NailStrokeEnergy` | ≪ one mill pass | — | sized against `RollingLoadTorque = 0.34` — the mill's declared working demand, 85 % of one bridged wheel's headroom (`IiexConfig.cs`) |
 
 Masses are not owned here - `nailplate` 4 × 1 × 10 = 40 vx³ = 100 u and `game:metalnailsandstrips` at 25 u both come from the [density rule](../mechanics/density-rule.md) and the [fasteners](../items/fasteners.md) page; the ladder that produces them is the forming line's ([stock](../items/stock.md), [rolling](../processes/rolling.md)).
 
@@ -130,7 +130,7 @@ Hard-coded elsewhere, and relevant:
 | network tick (the run's `dt`) | 1000 ms | `BlockNetworkModSystem.cs:42-45` |
 | `EnergyAnim.StoppedFraction` | 0.01 | `EnergyAnim.cs:14` - below 1 % of ω_max the wheel reads as stopped |
 | `MpMaxSpeed` | 2.0 rad/s | `ExlibConfig.cs:98` |
-| `ShaftInertia` | 0.5 | `IwexConfig.cs:477` |
+| `ShaftInertia` | 0.5 | `IiexConfig.cs:477` |
 
 ---
 
@@ -153,7 +153,7 @@ Nothing exists. `grep -i "nailcutter\|nailmachine" src/` returns nothing.
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockNailMachine` | `src/IronworkingExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` (`BlockNetworkNode` + `IExBlockDefProvider`), minus the filler interfaces |
+| `BlockNailMachine` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` (`BlockNetworkNode` + `IExBlockDefProvider`), minus the filler interfaces |
 | `BlockEntityNailMachine` | `.../Forming/BlockEntities/` | shares a base with the [heading machine](heading-machine.md): `BlockEntityNetworkNode` + `IMpEnergyConsumer`, `LoadTorque` at idle = 0 (`BlockEntityRollingMill.cs:336-350`) |
 | stroke tick | a hosted `BEBehaviorProductionMachine`, server-side only | `BlockEntityRollingMill.cs:28`, `:48-53`; the gate is published as `IProductionReadiness` (`:59`, `:63`) rather than tested at the top of the stroke. The bounded `dt` (`BEBehaviorProductionMachine.cs:77`, `:146`) and the away-catch-up (`:107`, `:113`) come with it |
 | speed read | per stroke | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:89-93` |
@@ -169,7 +169,7 @@ Where a caller hooks in. To add a bench of this family: `BlockNetworkNode` with 
 ## Gotchas
 
 - **`nailplate` does not exist.** Neither does any item that carries a `stockForm` on its stack - `StockItemDefinitions.cs:45` writes `stockForm` as a collectible attribute, while `WorkPiece.FromStack` reads the per-stack tree (`WorkPiece.cs:162-180`), so a fresh piece deserialises to `null` and `MillFeed.Decide` returns `WrongForm` (`MillFeed.cs:107-108`). That is blocker B3 seen from the item side, and the nail line sits downstream of it.
-- **The `flat` roll set cannot make the plate today.** Its accepted forms are `["bloom", "billet"]` (`RollSetItemDefinitions.cs:64`) and its outputs name `iwex:rolledplate-iron` / `iwex:rolledsheet-iron` (`:66`), items that do not exist and that the design rejects in favour of rolling into vanilla codes.
+- **The `flat` roll set cannot make the plate today.** Its accepted forms are `["bloom", "billet"]` (`RollSetItemDefinitions.cs:64`) and its outputs name `iiex:rolledplate-iron` / `iiex:rolledsheet-iron` (`:66`), items that do not exist and that the design rejects in favour of rolling into vanilla codes.
 - **Nails come from PLATE, never from rod.** Rod-nails are the 1870s wire nail - a different machine and far out of period. The rod fork goes to the [heading machine](heading-machine.md) instead.
 - **No gearing means no ratio.** The mpenergy network has exactly one ratio device, the transmission, and it is a separate block whose ratios are a `switch` on the variant (`BlockEntityTransmission.cs:59-64`). Do not smuggle a ratio into this bench because the drawing has a wheel on a shaft - the drawing has no gear train, which is the distinction from the heading machine's spur gear.
 - **A running clip must repeat.** With no clip active the animator drops the suppressed mesh back to the static shape; the chimney cap documents the trap in-source (`BlockEntityPuddlingChimneyCap.cs:31-33`).

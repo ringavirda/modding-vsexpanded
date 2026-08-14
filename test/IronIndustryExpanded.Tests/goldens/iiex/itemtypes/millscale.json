@@ -1,0 +1,24 @@
+{
+  "code": "millscale",
+  "shape": {
+    "base": "game:item/food/flour"
+  },
+  "textures": {
+    "all": {
+      "base": "game:item/resource/crushed/hematite"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 2500,
+  "tags": [
+    "fettlestock"
+  ],
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

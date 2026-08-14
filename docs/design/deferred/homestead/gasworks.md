@@ -34,7 +34,7 @@ criterion that separates it from the gas producer). Do not re-argue either here.
 **Depends on** [scope.md](../../scope.md) · [gas-producer](../../machines/gas-producer.md) ·
 [coke oven](../../machines/coke-oven.md) · [pipe network](../../mechanics/pipe-network.md) ·
 [fluid tank](../../machines/fluid-tank.md) · [chemistry](chemistry.md) · [oil](oil.md) ·
-[gas lighting](gas-lighting.md) · the archived lpex spec (git history) · [arc furnace](../elex/arc-furnace.md)
+[gas lighting](gas-lighting.md) · the archived iiex spec (git history) · [arc furnace](../elex/arc-furnace.md)
 
 ---
 
@@ -72,7 +72,7 @@ The three machines are not three tiers of one thing. They are three policies abo
 
 | Machine | What happens to the volatiles | In scope? | Owner |
 |---|---|---|---|
-| Beehive coke oven | burned inside the oven for its own heat - recovered as nothing | yes (iwex) | [coke oven](../../machines/coke-oven.md):33-38 |
+| Beehive coke oven | burned inside the oven for its own heat - recovered as nothing | yes (iiex) | [coke oven](../../machines/coke-oven.md):33-38 |
 | Gas producer | never made - the bed is already coke, so there is nothing left to drive off | yes (smex) | [gas-producer](../../machines/gas-producer.md) |
 | Gasworks | collected and sold | deferred | *this page* |
 
@@ -95,7 +95,7 @@ Three relevant things do exist, and a gasworks would not have to build them:
 | Exists | Where | Why it matters |
 |---|---|---|
 | The still's engine, as an interface | `IMediumTaxonomy.TryVaporisation` (`src/ExpandedLib/Fluids/IMediumTaxonomy.cs:54-66`, declared at `:61`) - its summary says it "Generalises the boiler's water → steam step to every distillation fraction" | the fraction-by-boiling-point mechanic is already an API with one implementation (`ExLiquids.cs:181`) |
-| A medium-agnostic condenser, live | `BlockEntitySteamCondenser.HasCondensableGas` reads the taxonomy rather than hard-coding steam (`src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:236-255`); the summary names "any future condensable vapour a still routes through a condenser" | the condenser bank downstream of a hydraulic main is already a shipped block |
+| A medium-agnostic condenser, live | `BlockEntitySteamCondenser.HasCondensableGas` reads the taxonomy rather than hard-coding steam (`src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:236-255`); the summary names "any future condensable vapour a still routes through a condenser" | the condenser bank downstream of a hydraulic main is already a shipped block |
 | A vanilla tar item with no producer | `.game/1.20/assets/survival/itemtypes/liquid/tar.json` - `tarportion`, an `ItemLiquidPortion`, lang `"item-tarportion": "Tar"` (`.game/1.20/assets/game/lang/en.json:4147`) | `grep -rln "tarportion" .game/1.20/assets/` matches only that itemtype and the lang files - no recipe, no block, no drop, in 1.20 or 1.22. Vanilla defines tar and never makes any |
 
 The tar a gasworks would produce already has a vanilla item code, a texture and a translated name in
@@ -107,7 +107,7 @@ There is no `CoalGas`, no `CoalTar`, no `AmmoniacalLiquor`, and R1 gives a run e
 
 ## The design as it stands
 
-The archived lpex specification (git history), restated here in substance:
+The archived iiex specification (git history), restated here in substance:
 
 | Field | Archived spec |
 |---|---|
@@ -131,7 +131,7 @@ Two design notes travel with it:
 | 1 | R1 vs. a three-output machine | [conventions.md](../../conventions.md); owned by [pipe network](../../mechanics/pipe-network.md) | a run carries one medium. A gasworks emits gas, tar and liquor simultaneously. It therefore needs three separate ports onto three separate runs - or the liquids come off as items and sidestep the network entirely. The archived spec implies the first ("a gas main dropping tar/liquor"), but never says which |
 | 2 | Two gases always mix, silently | `ExLiquids.cs:106-115`, comment at `:114` - "two gases always mix (Air/Steam/Exhaust family)"; the merged run takes the higher-priority label (`:118-119`) | join a coal-gas main to a steam or air main and you get one pool, relabelled, with no warning and no refusal. [gas-producer](../../machines/gas-producer.md):309-315 already logs this for producer gas - a town-gas main is worse, because lighting mains are distributed around a settlement and will pass near the works' own air and exhaust runs |
 | 3 | No media to declare | `assets/exlib/config/liquids.json`; loader at `ExLiquids.Load` (`ExLiquids.cs:74-97`) | Homestead ships them as its own `config/liquids.json` and the loader overlays it with no code, so this is cheap. But the priorities have to be chosen against the shipped ladder (Air 0 `ExLiquids.cs:46`, Steam 10 `:52`, Exhaust 20 `:58`) and against `ProducerGas`, which [gas-producer](../../machines/gas-producer.md):240 proposes at 30 |
-| 4 | The gasholder is the fluid tank | the archived spec calls it "the core-lpex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | so it is one block with two skins, and its blocking problem - capacity is per-node and uniform - is already written up at [fluid tank](../../machines/fluid-tank.md). Do not design a second storage node. `fluid-tank.md:56-58` cites the archived gasholder as one of two reasons the tank must stay medium-agnostic |
+| 4 | The gasholder is the fluid tank | the archived spec calls it "the core-iiex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | so it is one block with two skins, and its blocking problem - capacity is per-node and uniform - is already written up at [fluid tank](../../machines/fluid-tank.md). Do not design a second storage node. `fluid-tank.md:56-58` cites the archived gasholder as one of two reasons the tank must stay medium-agnostic |
 
 ## The tar chain — who is downstream, and how badly
 
@@ -145,7 +145,7 @@ consumed inside the same mod.
 | ammoniacal liquor → ammonia | Homestead's absorption refrigeration charge | internal ([climate-control](climate-control.md)) | internal |
 | ammoniacal liquor → sulfur (the archived claim) | smex's copper add-on | see [chemistry](chemistry.md) | vanilla already ships sulfur, so this row may be moot |
 | town gas | gas lamps, and Homestead's cooking/heating | internal | see [gas lighting](gas-lighting.md) |
-| coke | the iron tier | nobody | iwex's [beehive oven](../../machines/coke-oven.md) already makes coke, in bulk, from vanilla brick |
+| coke | the iron tier | nobody | iiex's [beehive oven](../../machines/coke-oven.md) already makes coke, in bulk, from vanilla brick |
 
 The gasworks' largest product by mass is coke, which the metalworking line already has a dedicated machine
 for; its smallest product by mass, tar, is the only one anything in this suite ever wanted, and that
@@ -158,14 +158,14 @@ consumer has a working fallback.
 | elex arc furnace | graphite electrodes → lower electrode consumption rate | degraded path. The mechanic is one number, and carbon electrodes are what a 19th-century furnace actually ran on - [scope.md](../../scope.md). Graphite is a later-era luxury, not an unlock |
 | Homestead - lighting, dyes, kerosene wash, refrigeration | its own fuel gas and its own reagent stream | a wall, and a total one. The ammonia that charges the refrigeration loop is a gasworks by-product, so there is no Homestead without this machine |
 | smex copper add-on | sulfur | probably nothing - see [chemistry](chemistry.md) |
-| The ferrous line (`exlib → iwex → lpex → smex → hpex`) | nothing at all | the release target is defined in [scope.md](../../scope.md) and this machine is not on it |
+| The ferrous line (`exlib → iiex → iiex → smex → hpex`) | nothing at all | the release target is defined in [scope.md](../../scope.md) and this machine is not on it |
 
 ## Gotchas
 
 * "Just gas lighting" cannot ship without the gasworks. The archived design merged the old Heating and
   "Lights, Fuel & Colors" add-ons into one because the ammonia link makes refrigeration internal to
   gasmaking. Pull any consumer forward and the retort house comes with it.
-* Do not "solve" the tar problem by making iwex's coke oven a by-product oven. A beehive oven burned its
+* Do not "solve" the tar problem by making iiex's coke oven a by-product oven. A beehive oven burned its
   volatiles, which is why it was the cheap oven ([coke oven](../../machines/coke-oven.md):33-38, which
   states the oven yields coke only - no tar, no gas, no ammonia). [scope.md](../../scope.md) records that
   this and the producer-gas carve-out are the same decision; reversing one reverses both.

@@ -223,7 +223,7 @@
               },
               {
                 "type": "block",
-                "code": "lpex:pipe-straight-ns-{metal}",
+                "code": "iiex:pipe-straight-ns-{metal}",
                 "quantity": 3
               },
               {

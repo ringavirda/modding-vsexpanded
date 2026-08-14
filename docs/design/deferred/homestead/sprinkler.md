@@ -19,7 +19,7 @@
 
 **Depends on**
 
-[scope.md](../../scope.md) - the cut and the rule · the archived lpex spec (git history) ·
+[scope.md](../../scope.md) - the cut and the rule · the archived iiex spec (git history) ·
 [fluid tank](../../machines/fluid-tank.md) - the block it shared a table with and which was carved back in ·
 [pipe network](../../mechanics/pipe-network.md) - R1, run pressure, the connector-reciprocity rule ·
 [pumps](../../machines/pumps.md) - what would fill the tank that feeds it.
@@ -58,7 +58,7 @@ variant. The sprinkler needs none of that:
 It is out anyway, because the test is what the feature is for, not what it costs.
 
 The tank is the other half of the same ruling and it went the other way. Both blocks sat in one table
-titled "Storage & farm automation" (`git show 791b43b:docs/design/lpex.md`, line 119). The cut split that
+titled "Storage & farm automation" (`git show 791b43b:docs/design/iiex.md`, line 119). The cut split that
 table down the middle: the tank stayed because it is plumbing that a boiler feed wants
 ([fluid tank](../../machines/fluid-tank.md):50-54), and the sprinkler left.
 
@@ -95,7 +95,7 @@ So "water to 100 % then stop" is a block-entity call on each affected farmland, 
 
 ### The specification survives only in git
 
-The sprinkler's table row was removed from the old lpex design monolith when the cut was made, and the
+The sprinkler's table row was removed from the old iiex design monolith when the cut was made, and the
 monolith itself has since been deleted; git history is the only other copy of the row. It is reproduced in
 full below.
 
@@ -103,7 +103,7 @@ full below.
 
 ## The design as it stands
 
-From `git show 791b43b:docs/design/lpex.md`, line 124 (the table row) and line 126 (the note):
+From `git show 791b43b:docs/design/iiex.md`, line 124 (the table row) and line 126 (the note):
 
 > | **Mechanical sprinkler** | block (floor- or ceiling-mounted) | tank/pipe water → soil | waters soil in a
 > **3-block radius beneath** to 100 % moisture then **stops** (consumes only the deficit); a **wrench-set
@@ -131,7 +131,7 @@ rate.
 
 ### The relationship that was quietly severed
 
-The tank's original stated purpose was to serve this duty cycle (`791b43b:docs/design/lpex.md:126`); after
+The tank's original stated purpose was to serve this duty cycle (`791b43b:docs/design/iiex.md:126`); after
 the cut its justification was rewritten to the boiler feed ([fluid tank](../../machines/fluid-tank.md):45-54).
 The tank's 2000 L sizing therefore derives from the boiler ([fluid tank](../../machines/fluid-tank.md)
 § Numbers), i.e. from the second customer, not the first.
@@ -174,7 +174,7 @@ product feeds nothing; the sprinkler unblocks nothing because it is an end-user 
    refused whenever that line is doing its other job.
 
 4. Connector reciprocity. A sprinkler adjacent to a pipe is not plumbed in unless the pipe presents a
-   connector back ([pipe network](../../mechanics/pipe-network.md)) - the rule every lpex machine port
+   connector back ([pipe network](../../mechanics/pipe-network.md)) - the rule every iiex machine port
    already lives by, and a likely first bug for a block whose "in" face is not obviously the business end.
 
 5. Moisture is a vanilla BE field, so the mod is writing into vanilla farming state. That is a smaller

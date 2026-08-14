@@ -3,7 +3,7 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded;
+using IronIndustryExpanded;
 using SteelmakingExpanded.BlockStructures.CowperStove.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -50,8 +50,8 @@ public partial class BlockCowperStoveIntake
           s.Origin(-1, 0)
             .Legend('#', VanillaCodes.Refractory)
             .Legend('I', SmexBlocks.CowperstoveIntake.Any)
-            .Legend('P', LpexCodes.PipeOutlet)
-            .Legend('X', LpexCodes.PipePassthroughAny)
+            .Legend('P', IiexCodes.PipeOutlet)
+            .Legend('X', IiexCodes.PipePassthroughAny)
             .Legend('H', SmexBlocks.CowperstoveHeatsink.Any)
             .Legend('D', VanillaCodes.Sealing(BlockFacing.WEST))
             .Legend('a', VanillaCodes.Air)

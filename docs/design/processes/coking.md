@@ -3,7 +3,7 @@
 **Status** partial (verified against source 2026-08-07) - the product is live and charged, priced and burned
 as its own bands by every shaft furnace, but the mod builds no oven. Vanilla's 3 × 3 × 3 chamber is the only
 coke source in the game today; the bulk oven is designed only
-**Mods** iwex (the designed oven and every consumer). No other mod participates - hpex, lpex and smex only
+**Mods** iiex (the designed oven and every consumer). No other mod participates - hpex, iiex and smex only
 spend coke
 
 **Owns** - the facts this page is canonical for:
@@ -91,7 +91,7 @@ which is the tag the engine's chamber detection reads.
 ### Designed — the bulk oven
 
 A bank of two chambers sharing a wall, charged through the crown and drawn through a side door, with
-lid closed = coking as the operating rule. Layout, block list, why a `iwex:hopper-tall` and an `iwex:ovenlid`
+lid closed = coking as the operating rule. Layout, block list, why a `iiex:hopper-tall` and an `iiex:ovenlid`
 rather than a trapdoor, and why not `game:cokeovendoor`, all belong to
 [beehive coke oven](../machines/coke-oven.md). No part of it exists in `src/`.
 
@@ -102,7 +102,7 @@ A repo-wide search finds *(re-run 2026-08-07)*:
 | Search | Result |
 |---|---|
 | `beehiveoven`, `beehiveovencore`, `ovenlid`, `chargelid` in `src/` | no hits ([beehive coke oven](../machines/coke-oven.md) § Status) |
-| an iwex/lpex/smex/hpex coke *item* | none — the design uses vanilla `game:coke` verbatim |
+| an iiex/iiex/smex/hpex coke *item* | none — the design uses vanilla `game:coke` verbatim |
 | a recipe outputting coke | none |
 | a recipe consuming coke | none either — fuel enters the economy only by being charged |
 
@@ -165,13 +165,13 @@ every per-coke figure below - that is Neilson, and the point of hot blast.
 |---|---|---|
 | carbon per coke item | 2 ÷ 2 = 1.0 | role value 2 (`materialroles.json:4`) over `BfFuelCarbonReference` 2 ([fuels](../items/fuels.md)) |
 | carbon per charcoal item | 1 ÷ 2 = 0.5 — two charcoal carry one coke's carbon | role value 1 (`materialroles.json:5`) |
-| burden melted per coke item | 4 items | `BfBurdenPerCarbonUnit` (`IwexConfig.cs:383`) |
-| iron per coke item | 4 × 0.95 × 8.5 = 32.3 u | ore share at 5 % flux; `BfIronPerOreUnit` (`IwexConfig.cs:470`) |
+| burden melted per coke item | 4 items | `BfBurdenPerCarbonUnit` (`IiexConfig.cs:383`) |
+| iron per coke item | 4 × 0.95 × 8.5 = 32.3 u | ore share at 5 % flux; `BfIronPerOreUnit` (`IiexConfig.cs:470`) |
 | coke per cast pig (375 u) | 375 ÷ 32.3 = ≈ 11.6 items | `ItemPig.cs:39` |
 | pigs per stack of coke | 64 × 32.3 ÷ 375 = ≈ 5.5 | coke stacks to 64 |
 | charcoal per pig, same furnace | ≈ 23 items — and the course must be laid richer to melt at all | 2 : 1 carbon; break-even φ ≈ 0.32 by volume ([fuels](../items/fuels.md)) |
 | coke to charge a full cold shaft at reference | 1 216 ÷ 5 = ≈ 243 items ≈ 3.8 stacks | shaft capacity 38 cells × 32 items, one item in five coke ([ironmaking](ironmaking.md) § Derived) |
-| how long that coke burns, fully blown | 243 ÷ 0.35 = ≈ 11½ min | `BfRacewayCarbonPerTuyerePerSecond` × 2 tuyeres (`IwexConfig.cs:352`) |
+| how long that coke burns, fully blown | 243 ÷ 0.35 = ≈ 11½ min | `BfRacewayCarbonPerTuyerePerSecond` × 2 tuyeres (`IiexConfig.cs:352`) |
 
 Eleven-and-a-half coke per pig is the number that decides whether the bulk oven gets built. One vanilla
 chamber is a 3 × 3 × 3 structure that produces one pile of coke per 12 in-game hours; a single cold-furnace
@@ -192,9 +192,9 @@ reasoning lives in one place (`src/ExpandedLib/Definitions/VanillaCodes.cs:257-2
 
 | Structure | Mod | Glyph | file:line |
 |---|---|---|---|
-| reheat furnace — firebox stoking door | iwex | `K` | `BlockHeatingFurnaceCore.cs:78` |
-| puddling furnace — firebox stoking door | iwex | `K` | `BlockPuddlingFurnaceCore.cs:89` |
-| Cornish boiler — firedoor | lpex | `d` | `BlockBoilerCornish.cs:88` |
+| reheat furnace — firebox stoking door | iiex | `K` | `BlockHeatingFurnaceCore.cs:78` |
+| puddling furnace — firebox stoking door | iiex | `K` | `BlockPuddlingFurnaceCore.cs:89` |
+| Cornish boiler — firedoor | iiex | `d` | `BlockBoilerCornish.cs:88` |
 | Lancashire boiler — firedoor | hpex | `d` | `BlockBoilerLancashire.cs:97` |
 | cowper stove intake | smex | `D` | `BlockCowperStoveIntake.cs:57` |
 
@@ -270,12 +270,12 @@ the furnace will not blow, which is what raw coal in a blast furnace does.
 
 ## Gotchas
 
-1. **The mod's own oven must not use `game:cokeovendoor`.** Its doors are `iwex:chargedoor`, so vanilla's
+1. **The mod's own oven must not use `game:cokeovendoor`.** Its doors are `iiex:chargedoor`, so vanilla's
    chamber detection never fires inside the bulk oven's chambers
    ([beehive coke oven](../machines/coke-oven.md) § Gotchas). The consequence is that the walls being
    `cokeOvenViable` buys nothing mechanically - it is thematic only.
 
-2. **The reverberatory firebox filters its fuel.** The fuel bed is `iwex:furnace-firebox`, and
+2. **The reverberatory firebox filters its fuel.** The fuel bed is `iiex:furnace-firebox`, and
    `BEBehaviorFirebox.IsFuel` filters what it takes: coke, bituminous, anthracite and charcoal in;
    lignite explicitly refused (`BEBehaviorFirebox.cs:55-82`). A firebox burns the raw coals a shaft must
    never see, because it wants heat, not a reductant that survives a burden column
@@ -283,7 +283,7 @@ the furnace will not blow, which is what raw coal in a blast furnace does.
 
 3. **Coke is `ItemCoal`** (`coke.json:5`) - so a hand-piled lump of it is a `game:coalpile` like any other,
    which is what the heat-side machines read (the boilers' pile check, the cowper's under-stove pile). The
-   shaft family does not: a shaft's standing charge is `iwex:furnace-chargepile`, a window onto the
+   shaft family does not: a shaft's standing charge is `iiex:furnace-chargepile`, a window onto the
    furnace-owned column, and coke enters it only through the hopper
    ([layered charge](../layered-charge.md)). One item, two substrates, on purpose.
 
@@ -302,7 +302,7 @@ the furnace will not blow, which is what raw coal in a blast furnace does.
 
 ## Open
 
-1. **The whole bulk oven.** Block, block entity, layout in C#, goldens, recipe, the `iwex:ovenlid`, and the
+1. **The whole bulk oven.** Block, block entity, layout in C#, goldens, recipe, the `iiex:ovenlid`, and the
    crown-charging fix - [beehive coke oven](../machines/coke-oven.md) § Open, items 1–7. Nothing exists.
 
 2. **Yield and cycle time are undecided, and they are the only two numbers that matter.** The bulk oven must

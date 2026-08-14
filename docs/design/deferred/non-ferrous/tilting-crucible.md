@@ -3,7 +3,7 @@
 **Status** deferred - nothing exists: no block, no BE, no item, no shape, no lang key, no metal def, no
 config key, no test.
 **Would live in** unassigned. Its consumers are the copper add-on (parent `smex`,
-[overview.md](../../overview.md):80); its interface is the iwex-owned molten canal, and no doc places it in
+[overview.md](../../overview.md):80); its interface is the iiex-owned molten canal, and no doc places it in
 a mod. See § Open.
 **Deferred by** D8 - non-ferrous is later ([STATE.md](../../../internal/plans/STATE.md)); the cut and its reasoning
 are owned by [scope.md](../../scope.md) § Non-ferrous.
@@ -61,9 +61,9 @@ Nothing. Not a stub, not a name.
 | Probe | Result |
 |---|---|
 | `grep -rniE "tiltingcrucible\|coppermatte\|blistercopper\|zincretort" src/ assets/` | 0 hits (excluding `bin/`, where the matches are the substring "matters") |
-| `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing: `MetalCatalogueLoader.cs:107` (a comment about worldproperty codes), `MetalToolEmitter.cs:223`, `:343` (vanilla shape paths), `IwexConfig.cs:104` (a comment naming copper's 1084 °C melting point) |
-| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`assets/smex/lang/en.json:171`, `assets/lpex/lang/en.json:133`) |
-| metal defs on disk | 4 files, all ferrous: `assets/iwex/config/metals/{castiron,pigiron,slag}.json`, `assets/smex/config/metals/bessemersteel.json` |
+| `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing: `MetalCatalogueLoader.cs:107` (a comment about worldproperty codes), `MetalToolEmitter.cs:223`, `:343` (vanilla shape paths), `IiexConfig.cs:104` (a comment naming copper's 1084 °C melting point) |
+| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`assets/smex/lang/en.json:171`, `assets/iiex/lang/en.json:133`) |
+| metal defs on disk | 4 files, all ferrous: `assets/iiex/config/metals/{castiron,pigiron,slag}.json`, `assets/smex/config/metals/bessemersteel.json` |
 | editable or runtime shape | none |
 
 Two design docs name it as a dependency: [alloying](../../processes/alloying.md):290 lists "tilting
@@ -92,7 +92,7 @@ Settled 2026-07-29.
 > all; bronze needs ~950 °C, which a small chamber with coal under it reaches easily, so it needs no stack.
 
 The tier gate follows from the same numbers. A cast-iron vessel cannot hold molten steel: this mod's
-catalogue gives `castiron` a melting point of 1200 °C (`assets/iwex/config/metals/castiron.json`) against
+catalogue gives `castiron` a melting point of 1200 °C (`assets/iiex/config/metals/castiron.json`) against
 iron's 1538 °C (vanilla `worldproperties/block/metal.json`). The tilting machine is incapable of the ferrous
 job by construction, not by rule - the same argument
 [crucible-furnace](../../machines/crucible-furnace.md):128 makes in reverse about its own pot.
@@ -175,7 +175,7 @@ Nothing in the release target waits on this machine.
   can hand-pour molten bronze into a canal start today. What is missing is a machine-scale, repeatable
   non-ferrous feed.
 * The vessel margin is thin at the copper end, by this mod's own numbers. `castiron` melts at 1200 °C
-  (`assets/iwex/config/metals/castiron.json`); copper melts at 1084.62 °C. That is 115 °C of headroom, and
+  (`assets/iiex/config/metals/castiron.json`); copper melts at 1084.62 °C. That is 115 °C of headroom, and
   the fire has to be hotter than the charge, not equal to it. Tin, lead and zinc (232 / 327 / 419) are
   comfortable; copper is not. Either the copper charge sits in a clay/refractory pot inside the cast-iron
   chamber, or `castiron`'s melting point moves, or the machine's top metal is bronze rather than pure
@@ -185,10 +185,10 @@ Nothing in the release target waits on this machine.
   `:67`) - and recovery uses the convention `ingot-X → metalbit-X` in the same domain
   (`MetalRegistry.cs:86-89`), which vanilla happens to satisfy because `metalbit` loads its variants from the
   `block/metal` worldproperty. So frozen copper chisels back to `game:metalbit-copper` and R2 holds by luck.
-  If `SolidDropOf` ever failed to resolve, the fallback is `MetalRecoveryFallback = "iwex:slag"`
+  If `SolidDropOf` ever failed to resolve, the fallback is `MetalRecoveryFallback = "iiex:slag"`
   (`ExlibConfig.cs:75`) - the player's copper becomes slag. Write the metal defs.
 * The canal is not needed to cast bronze, only to merge it. `ClayMoldHeatCeiling = 1100 °C`
-  (`IwexConfig.cs:65`, gate at `ClayHeatGate.cs:31-32`, "clay is bronze max" at `ClayHeatGate.cs:8`) already
+  (`IiexConfig.cs:65`, gate at `ClayHeatGate.cs:31-32`, "clay is bronze max" at `ClayHeatGate.cs:8`) already
   admits every metal in the table above, copper included, by 16 °C at worst. The tilting crucible's value is
   the run, not the pour.
 * Do not give it a stack. A tall chimney on a bronze furnace is decoration, and it would make the two
@@ -207,9 +207,9 @@ Nothing in the release target waits on this machine.
 ## Open
 
 1. Which mod owns it. [overview.md](../../overview.md):80's Copper add-on row lists reverberatory,
-   Pierce-Smith and zinc retorts, not this machine; :79's Crucible/iwex row lists only the crucible-steel
-   furnace. It is in neither table. Its consumers are smex-copper, its interface is iwex's canal, and its
-   sibling is an iwex machine. Nobody has chosen, and the choice affects whether an iwex-only player can ever
+   Pierce-Smith and zinc retorts, not this machine; :79's Crucible/iiex row lists only the crucible-steel
+   furnace. It is in neither table. Its consumers are smex-copper, its interface is iiex's canal, and its
+   sibling is an iiex machine. Nobody has chosen, and the choice affects whether an iiex-only player can ever
    build it.
 2. Whether the vessel is cast iron all the way to copper (see Gotchas). This is the one question that changes
    the machine's appearance, its build recipe and its top metal.

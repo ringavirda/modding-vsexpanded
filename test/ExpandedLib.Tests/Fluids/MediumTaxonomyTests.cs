@@ -167,9 +167,9 @@ public class MediumTaxonomyTests {
 
   [Fact]
   public void Builtin_phase_change_leaves_the_volume_factor_to_the_caller() {
-    // The built-ins leave the factor at 0 (null in the def) so exlib carries no lpex expansion
+    // The built-ins leave the factor at 0 (null in the def) so exlib carries no iiex expansion
     // constant; consumers fall back to their own default, the condenser to
-    // LpexValues.SteamExpansionFactor.
+    // IiexValues.SteamExpansionFactor.
     ExLiquids.Taxonomy.CondensationTarget("Steam", out _, out float condFactor);
     ExLiquids.Taxonomy.VaporisationTarget("Water", out _, out float vapFactor);
     Assert.Equal(0f, condFactor);

@@ -4,7 +4,7 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Metals;
 using ExpandedLib.Networks;
-using IronworkingExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using SteelmakingExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -204,8 +204,8 @@ public partial class BlockEntityConverterControl {
   // gears cannot be obtained.
   private static bool IsSpawnGear(ItemStack stack) =>
     stack.Collectible?.Code?.ToString()
-      is "lpex:largegear-iron"
-        or "lpex:largegear-steel";
+      is "iiex:largegear-iron"
+        or "iiex:largegear-steel";
 
   private static bool IsSpawnRod(ItemStack stack) =>
     stack.Collectible?.Code?.ToString() is "game:rod-iron" or "game:rod-steel";

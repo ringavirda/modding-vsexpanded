@@ -21,13 +21,13 @@ public class StageLadderTests {
     {
       "schema": 1,
       "family": "shingledbar",
-      "shape": "iwex:item/smithed/shingled-bar",
+      "shape": "iiex:item/smithed/shingled-bar",
       "stages": [
         { "thickness": 3.00, "element": "ShingledBar1", "acceptedBy": [ "grooved", "flat" ] },
         { "thickness": 2.75, "element": "Grooved275", "acceptedBy": [ "grooved" ] },
-        { "thickness": 2.50, "element": "Grooved250", "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod" },
+        { "thickness": 2.50, "element": "Grooved250", "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod" },
         { "thickness": 2.75, "element": "Flattened275", "acceptedBy": [ "flat" ] },
-        { "thickness": 2.50, "element": "Flattened250", "acceptedBy": [ "flat" ], "code": "iwex:beam" }
+        { "thickness": 2.50, "element": "Flattened250", "acceptedBy": [ "flat" ], "code": "iiex:beam" }
       ]
     }
     """;
@@ -57,7 +57,7 @@ public class StageLadderTests {
     StageLadder ladder = Parse(NarrowLadder);
 
     Assert.Equal("shingledbar", ladder.Family);
-    Assert.Equal("iwex:item/smithed/shingled-bar", ladder.Shape);
+    Assert.Equal("iiex:item/smithed/shingled-bar", ladder.Shape);
     Assert.Equal(1, ladder.Schema);
     Assert.Equal(5, ladder.Stages.Length);
 
@@ -151,8 +151,8 @@ public class StageLadderTests {
 
     StageLadder optedOut = Parse(
       NarrowLadder.Replace(
-        "\"code\": \"iwex:rolledrod\"",
-        "\"code\": \"iwex:rolledrod\", \"generate\": false"
+        "\"code\": \"iiex:rolledrod\"",
+        "\"code\": \"iiex:rolledrod\", \"generate\": false"
       )
     );
     Assert.False(optedOut.StageAt(2.50f, "grooved")!.Generate);
@@ -164,13 +164,13 @@ public class StageLadderTests {
     // indistinguishable from a rename without the hint.
     StageLadder ladder = Parse(
       NarrowLadder.Replace(
-        "\"code\": \"iwex:rolledrod\"",
-        "\"code\": \"iwex:rolledrod\", \"formerCodes\": [ \"iwex:wirerod\" ]"
+        "\"code\": \"iiex:rolledrod\"",
+        "\"code\": \"iiex:rolledrod\", \"formerCodes\": [ \"iiex:wirerod\" ]"
       )
     );
 
     Assert.Equal(
-      ["iwex:wirerod"],
+      ["iiex:wirerod"],
       ladder.StageAt(2.50f, "grooved")!.FormerCodes
     );
     Assert.Empty(ladder.StageAt(2.75f, "grooved")!.FormerCodes);
@@ -232,7 +232,7 @@ public class StageLadderTests {
     StageLadder ladder = Parse(NarrowLadder);
 
     Assert.True(ladder.StageAt(2.50f, "grooved")!.IsStoppingPoint);
-    Assert.Equal("iwex:rolledrod", ladder.StageAt(2.50f, "grooved")!.Code);
+    Assert.Equal("iiex:rolledrod", ladder.StageAt(2.50f, "grooved")!.Code);
     Assert.False(ladder.StageAt(2.75f, "grooved")!.IsStoppingPoint);
   }
 

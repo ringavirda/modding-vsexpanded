@@ -1,6 +1,6 @@
 # Sand Casting Bed (pig bed)
 **Status** live — grid recipe + RCC construction, carving on both sides, basin interaction and harvest all
-work; the runtime shape is still untracked in git (§ Open)   **Mod** iwex
+work; the runtime shape is still untracked in git (§ Open)   **Mod** iiex
 
 **Owns**
 - The bed's geometry as a slot model: 4 rows × 3 slots = 12 cells, which slots are molds and which are the
@@ -84,7 +84,7 @@ geometry, and it is why a full bed is 20 castings and not a round 24 (`:150-151`
 
 | Asset | Path | State |
 |---|---|---|
-| Runtime shape | `assets/iwex/shapes/casting/sandcastingbed.json` | untracked in git (`??`) - drawn but never committed |
+| Runtime shape | `assets/iiex/shapes/casting/sandcastingbed.json` | untracked in git (`??`) - drawn but never committed |
 | Editable source | `assets/editable/shapes/sandcasting-bed.json` | deleted (`D` in the working tree) |
 | Sand texture | `GreenSandItemDefinitions.Texture` (`game:block/stone/sand/basalt` - green sand), bound to the shape's `andesite` key | `BlockSandCastingBed.cs:135` |
 | Brick texture | `game:block/clay/brick/four/running/cream1` + `{brick}1` overlay | `:129-133` |
@@ -99,7 +99,7 @@ uncarved (`:194-203`) - getting that backwards renders every finished bed as a c
 
 Element names are string literals against art, so a Blockbench re-export that re-rolls an auto-name produces
 a silently missing chunk of bed. `SandBedLayoutTests` walks the shipped shape and asserts every emittable
-name exists - which is also why the pre-rework `iwex:sandcasting-bed` shape must never come back
+name exists - which is also why the pre-rework `iiex:sandcasting-bed` shape must never come back
 (`BlockSandCastingBed.cs:102-106`).
 
 ---
@@ -107,7 +107,7 @@ name exists - which is also why the pre-rework `iwex:sandcasting-bed` shape must
 ## Construction
 
 A grid recipe places the bed block: `BBB,_H_` - 4 × `game:burnedbrick-*` (capturing `{brick}`) and a
-hammer, out to `iwex:casting-sandbed-{brick}-n`
+hammer, out to `iiex:casting-sandbed-{brick}-n`
 (`Recipes/Grid/CastingRecipeDefinitions.cs:48-64`). That places only the first course; the bulk of the cost
 is charged by the construction stages.
 
@@ -118,10 +118,10 @@ Once placed, it is raised by right-click construction in three stages
 |---|---|---|---|
 | 1 | 8 × `game:burnedbrick-{brick}` (captures `{brick}`) | `Base` | `:78-84` |
 | 2 | 16 × `game:burnedbrick-{brick}` | `BaseExtension` | `:86-89` |
-| 3 | 12 × `iwex:greensand` *(the prepared moulding sand - the raw-sand `{sand}` variant group is gone)* | `SandRunners` | `:96-103` |
+| 3 | 12 × `iiex:greensand` *(the prepared moulding sand - the raw-sand `{sand}` variant group is gone)* | `SandRunners` | `:96-103` |
 
 `brokenDropsRatio` is not set (`ConstructionStages.BrokenDropsRatio` is never called), so the bed salvages
-at the behaviour default. No iwex `RccBrokenDropsRatio` config is registered with `ExRccSettings`, so
+at the behaviour default. No iiex `RccBrokenDropsRatio` config is registered with `ExRccSettings`, so
 nothing overrides it.
 
 The last stage finishes the bed uncarved - every slot is plain sand. The runners and molds are the player's
@@ -142,7 +142,7 @@ canal delivers metal to any horizontal neighbour of the PRINCIPAL
 | Verb | Where | Effect | file:line |
 |---|---|---|---|
 | RMB an empty filler cell | any slot cell | carve it - runner on the spine, impressions on the flanks. There is nothing to choose: the state is decided by which cell was clicked | `BlockEntitySandCastingBed.cs:343-363` |
-| RMB a filler cell holding metal | any slot cell | harvest if `IsHardened`, else `iwex-castingbed-toohot` | `:371-409` |
+| RMB a filler cell holding metal | any slot cell | harvest if `IsHardened`, else `iiex-castingbed-toohot` | `:371-409` |
 | RMB the principal | basin cell | routes into the same carve/harvest path as the fillers; anything unhandled falls through to construction | `BlockSandCastingBed.cs:221-227` |
 
 Routing: `OnCellInteract = TryHarvest(...) || TryCarveAt(...)` (`BlockEntitySandCastingBed.cs:337-338`) -
@@ -164,7 +164,7 @@ network's with one extra clause - a drain fitting never gives metal back (`:302-
 [molten network § the other two copies of the driver](../mechanics/molten-network.md).
 
 **Harvest.** Units are denominated greedily into pigs / chunks / bits, conserving mass to within a sub-bit
-crumb (`:416-424`). Slag denominates into `iwex:slagbrick` at one brick per pig cavity (`:475-480`). A
+crumb (`:416-424`). Slag denominates into `iiex:slagbrick` at one brick per pig cavity (`:475-480`). A
 runner's stranded charge is never a casting - it comes back as recovered bits however good the metal was
 (`:426-436`, `:459-473`). Shaking a casting out destroys the impression: the slot drops to plain sand
 and stops being a channel until re-carved (`:402-406`).
@@ -257,7 +257,7 @@ defined as `= PigUnits` so both products share one cavity (`SlagItemDefinitions.
 | `…ApplyCapacity` | `:151` | re-sizes a slot's cell to the cavity actually cut into it |
 | Tests | `test/…/Casting/SandBedLayoutTests.cs` (428 lines), `test/…/Blocks/Casting/SandCastingBedTests.cs` (167 lines) | layout + element existence; denomination + flow edge |
 
-**Where a caller hooks in.** Nothing outside iwex consumes the bed. To feed it, end a
+**Where a caller hooks in.** Nothing outside iiex consumes the bed. To feed it, end a
 [molten canal](molten-canal.md) run on any horizontal neighbour of the principal cell - the intake reads
 adjacent cells of the principal only (`:272-286`), so a canal touching a filler delivers nothing.
 
@@ -295,7 +295,7 @@ adjacent cells of the principal only (`:272-286`), so a canal touching a filler 
 
 ## Open
 
-- **The runtime shape is untracked.** `assets/iwex/shapes/casting/sandcastingbed.json` is untracked in git,
+- **The runtime shape is untracked.** `assets/iiex/shapes/casting/sandcastingbed.json` is untracked in git,
   and its editable source (`assets/editable/shapes/sandcasting-bed.json`) is deleted in the working tree -
   the drawn bed has no committed source of truth (§ Assets).
 - **Bed rotation.** Beds are meant to work in a pour / cool / slag rotation, with the bed count derived

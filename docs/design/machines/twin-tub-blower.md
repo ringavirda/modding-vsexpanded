@@ -1,5 +1,5 @@
 # Twin-Tub Blower
-**Status** live (simulation complete; recipe landed 2026-08-04)   **Mod** iwex
+**Status** live (simulation complete; recipe landed 2026-08-04)   **Mod** iiex
 
 **Owns**
 - The blower's output rate and pressure ceiling, and the speed-response curve that scales both.
@@ -77,7 +77,7 @@ Caution: the source comment at `BlockTwinTubMPBlower.cs:78-79` says the housing'
 the blast main butts against". That cell is a filler and cannot connect, and it is on the opposite side from
 the `-n` connector face. See [Gotchas](#gotchas).
 
-Joint family is the shared flanged joint registered for the iwex domain
+Joint family is the shared flanged joint registered for the iiex domain
 (`IronworkingExpandedModSystem.cs:75`), so the blower couples to plated, cast and rolled segments alike; the
 joint rule is per-tier and owned by [pipe network](../mechanics/pipe-network.md).
 
@@ -92,7 +92,7 @@ any furnace layout, so the layout-ownership resolver finds no anchor and the pro
 | Asset | Path | State |
 |---|---|---|
 | Editable shape | — | missing. No source file under `assets/editable/shapes/` (the one that looks close, `machine-pipe-block-engine-airblower.json`, is smex's engine blower) |
-| Runtime shape | `assets/iwex/shapes/furnaces/twintubmpblower.json` | present - elements `Base`, `BaseExtention`, `BaseBeam`, `AxleGear`, `Tubs`, `PipeConn` |
+| Runtime shape | `assets/iiex/shapes/furnaces/twintubmpblower.json` | present - elements `Base`, `BaseExtention`, `BaseBeam`, `AxleGear`, `Tubs`, `PipeConn` |
 | Animations | same file | `cycle` (60 f, EaseOut) · `idle` (30 f, EaseOut) - authored, wired to nothing |
 | Textures | `iron3`, `iron2`, `iron`, `wood-generic` | declared in the shape |
 
@@ -100,8 +100,8 @@ Caution: the bellows never move. The block entity has no animator: no `Animatabl
 def (`BlockTwinTubMPBlower.cs:44-84`), no `ConstructedAnimator`, no `MPAnim.AdvanceFrame`, no `IRenderer`.
 The shape ships a full `cycle` clip and an `AxleGear` element positioned to be driven, and neither is ever
 posed. The axle phase-lock pattern to copy is `MPAnim.AdvanceFrame` (`src/ExpandedLib/Helpers/MPAnim.cs`),
-which lpex's engine drives from its render loop (`BlockEntityEngine.cs`). The only feedback a running blower
-gives is the HUD line (`iwex:blower-info-blowing`) and the pipe readout above it.
+which iiex's engine drives from its render loop (`BlockEntityEngine.cs`). The only feedback a running blower
+gives is the HUD line (`iiex:blower-info-blowing`) and the pipe readout above it.
 
 ---
 
@@ -110,11 +110,11 @@ gives is the HUD line (`iwex:blower-info-blowing`) and the pipe readout above it
 A grid recipe (landed 2026-08-04, the "Twin Tub Blower" recipe in `FurnaceRecipeDefinitions.cs:87-103`):
 pattern `LPL,PNP,_H_` - leather (`game:leather-normal-plain`; the recipe's own comment records why the
 concrete code matters, a bare `leather` is never a registered item), planks, nails and a hammer, out to
-`iwex:furnace-twintubblower-n`. Nothing in the recipe comes from iwex: the tier's only air source must be
+`iiex:furnace-twintubblower-n`. Nothing in the recipe comes from iiex: the tier's only air source must be
 buildable before anything the tier produces, and it is driven by a plain vanilla wood axle. The tuyere
 recipe (B1) is fixed too, so the iron-tier air path - blower, main, tuyere - is buildable end to end.
 
-In the recipe-cost catalogue as `twintubblower-grid` (`IwexRecipeConfig.cs:92`).
+In the recipe-cost catalogue as `twintubblower-grid` (`IiexRecipeConfig.cs:92`).
 
 ---
 
@@ -167,22 +167,22 @@ mechanical network.
 ### HUD - `GetBlockInfo`, `:184-199`
 
 The pipe readout first (medium, throughput, pressure - owned by
-[pipe network](../mechanics/pipe-network.md)), then either `iwex:blower-info-idle`
-("Bellows idle - no axle turning") or `iwex:blower-info-blowing` with the live flow rate formatted through
+[pipe network](../mechanics/pipe-network.md)), then either `iiex:blower-info-idle`
+("Bellows idle - no axle turning") or `iiex:blower-info-blowing` with the live flow rate formatted through
 `ExMeasure.FlowRate` (`ExMeasure.cs:81`) and the percentage of rated output.
 
 ---
 
 ## Numbers
 
-### Config - `src/IronworkingExpanded/IwexConfig.cs`, `ModConfig/ex_values.json`, domain `iwex`
+### Config - `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `TwinTubBlowerOutputPerSecond` | `45 L/s` | `IwexConfig.cs:808` | air delivered at full axle speed |
-| `TwinTubBlowerMaxPressure` | `2.2 atm` | `IwexConfig.cs:816` | pressure ceiling this producer will raise its run to - the gate number |
-| `TwinTubBlowerMinSpeed` | `0.5` | `IwexConfig.cs:819` | at/below this the bellows deliver nothing |
-| `TwinTubBlowerMaxSpeed` | `1.5` | `IwexConfig.cs:822` | at/above this the bellows deliver full output |
+| `TwinTubBlowerOutputPerSecond` | `45 L/s` | `IiexConfig.cs:808` | air delivered at full axle speed |
+| `TwinTubBlowerMaxPressure` | `2.2 atm` | `IiexConfig.cs:816` | pressure ceiling this producer will raise its run to - the gate number |
+| `TwinTubBlowerMinSpeed` | `0.5` | `IiexConfig.cs:819` | at/below this the bellows deliver nothing |
+| `TwinTubBlowerMaxSpeed` | `1.5` | `IiexConfig.cs:822` | at/above this the bellows deliver full output |
 
 ### HARD-CODED - not config
 
@@ -203,10 +203,10 @@ ordering can be checked in one place.
 
 | quantity | value | owner | file:line |
 |---|---|---|---|
-| rich charge (30 % carbon) demands | 1.25 atm | [heat balance](../mechanics/heat-balance.md) | derived from `IwexConfig.cs:178`, `:185` |
-| standard charge (20 % carbon) demands | 2.0 atm | [heat balance](../mechanics/heat-balance.md) | `IwexConfig.cs:178` (`BfBlastPressureAtReference`) |
-| blower ceiling | 2.2 atm | this page | `IwexConfig.cs:816` |
-| plated pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) | `IwexConfig.cs:214` |
+| rich charge (30 % carbon) demands | 1.25 atm | [heat balance](../mechanics/heat-balance.md) | derived from `IiexConfig.cs:178`, `:185` |
+| standard charge (20 % carbon) demands | 2.0 atm | [heat balance](../mechanics/heat-balance.md) | `IiexConfig.cs:178` (`BfBlastPressureAtReference`) |
+| blower ceiling | 2.2 atm | this page | `IiexConfig.cs:816` |
+| plated pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) | `IiexConfig.cs:214` |
 | lean charge (10 % carbon) demands | 2.75 atm | [heat balance](../mechanics/heat-balance.md) | derived, same two keys |
 
 ```
@@ -225,7 +225,7 @@ blower's own clamp is redundant with the pipe's and correct in either order.
 The real gate line is not 20 % carbon. Demanded pressure is
 `BfBlastPressureAtReference + (BfReferenceFuelFrac − f) × BfBlastPressureCokeSensitivity`, clamped to
 `[BfBlastPressureMin, BfBlastPressureMax]` (`BlockEntityFurnaceCore.RequiredBlastPressureFor`; keys at
-`IwexConfig.cs:178`, `:185`, `:188`, `:191`, `:264`), where f is the charge column's carbon fraction - fuel
+`IiexConfig.cs:178`, `:185`, `:188`, `:191`, `:264`), where f is the charge column's carbon fraction - fuel
 units weighted by `CarbonPerUnit` (coke 1.0, charcoal 0.5) over total charge units
 (`BlockEntityShaftFurnace.Accumulate`). Solving `2.0 + (0.20 − f) × 7.5 = 2.2` gives f ≈ 0.173: the bellows
 run any charge at or above ~17.3 % carbon. In courses, that is coke at ≥ ~17.3 % of the column by volume, or
@@ -236,11 +236,11 @@ above the line.
 
 | quantity | value | from |
 |---|---|---|
-| reference tuyere draw | `14 L/s` | `IwexConfig.cs:582` ([heat balance](../mechanics/heat-balance.md)) |
-| rich-charge draw factor | `clamp(0.30/0.20, 0.4, 1.8) = 1.5` | `IwexConfig.cs:264`, `:194`, `:197` |
+| reference tuyere draw | `14 L/s` | `IiexConfig.cs:582` ([heat balance](../mechanics/heat-balance.md)) |
+| rich-charge draw factor | `clamp(0.30/0.20, 0.4, 1.8) = 1.5` | `IiexConfig.cs:264`, `:194`, `:197` |
 | per-tuyere draw, rich charge | `21 L/s` | derived |
 | two-tuyere furnace, rich charge | 42 L/s | derived |
-| blower output | 45 L/s | `IwexConfig.cs:808` - this page |
+| blower output | 45 L/s | `IiexConfig.cs:808` - this page |
 
 45 ≥ 42, so one blower runs one blast furnace on its thirstiest charge, with 7 % headroom. A carbon-rich
 charge is the highest air demand the iron tier ever has to meet (a leaner one burns less coke, so draws less
@@ -267,7 +267,7 @@ rich-charged two-tuyere furnace draws. Reaching rated output takes gearing or a 
 ## Drops
 
 Plain block drops - the def sets neither `NoDrops()` nor a `GetDrops` override
-(`BlockTwinTubMPBlower.cs:44-84`), so breaking returns one `iwex:twintubmpblower` item (`MaxStackSize` is
+(`BlockTwinTubMPBlower.cs:44-84`), so breaking returns one `iiex:twintubmpblower` item (`MaxStackSize` is
 unset; the pipe `Common` surface is not applied to this def).
 
 `OnBlockBroken` clears the reserved filler volume before calling base, so no invisible solid cells are left
@@ -295,7 +295,7 @@ cell.
 | `PortSpeed` | `BlockEntityTwinTubMPBlower.cs:155-167` |
 | `GetBlockInfo` | `BlockEntityTwinTubMPBlower.cs:184-199` |
 | `PipeNetwork.TryProduceGas` (the ceiling clamp) | `ExpandedLib/Networks/PipeNetwork.cs:96`, `:116-125` |
-| burst / joint registration for the iwex domain | `IronworkingExpandedModSystem.cs:76-77` |
+| burst / joint registration for the iiex domain | `IronworkingExpandedModSystem.cs:76-77` |
 
 ### Where a caller hooks in
 
@@ -311,7 +311,7 @@ cell.
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Furnaces/TwinTubBlowerTests.cs` - four regions:
+`test/IronIndustryExpanded.Tests/Blocks/Furnaces/TwinTubBlowerTests.cs` - four regions:
 
 | region | what it pins |
 |---|---|
@@ -320,8 +320,8 @@ cell.
 | Speed response | the five-point linear curve, and that a retuned band moves with it |
 | Production / Footprint | produces into its own net, never exceeds the ceiling, 5 filler cells with the port at `(0,1,0)` facing west |
 
-> The ascending pipe-tier ordering (plated < cast < rolled) is asserted in the lpex suite - iwex cannot see
-> lpex's config.
+> The ascending pipe-tier ordering (plated < cast < rolled) is asserted in the iiex suite - iiex cannot see
+> iiex's config.
 
 ---
 
@@ -353,7 +353,7 @@ cell.
    charge's demand, with the blower still reporting "blowing 45 L/s (100 % of rated output)" - the HUD shows
    the rated figure, never the accepted one (`:193-197`).
 
-6. The HUD reports intent, not delivery. `iwex:blower-info-blowing` formats
+6. The HUD reports intent, not delivery. `iiex:blower-info-blowing` formats
    `TwinTubBlowerOutputPerSecond × fraction` (`:195`), which is what was offered. `ProduceAir` computes what
    was accepted and throws it away (`:131`). A blower against the ceiling reads as fully working.
 
@@ -373,7 +373,7 @@ cell.
     not "fix" the missing anchor.
 
 11. `RegisterBurst` is keyed by domain, not by block (`IronworkingExpandedModSystem.cs:76`). The blower is an
-    `iwex` pipe block, so it presents plated-pipe burst as a node of the run too - putting a blower in a
+    `iiex` pipe block, so it presents plated-pipe burst as a node of the run too - putting a blower in a
     cast-pipe run lowers that run's weakest-link burst to 2.5.
 
 ---
@@ -381,7 +381,7 @@ cell.
 ## Open
 
 - Wire the animation. The clips and the `AxleGear` element already exist; `MPAnim.AdvanceFrame`
-  (`src/ExpandedLib/Helpers/MPAnim.cs`, driven as lpex's engine does) is the pattern.
+  (`src/ExpandedLib/Helpers/MPAnim.cs`, driven as iiex's engine does) is the pattern.
 - No editable shape. The runtime shape is the only copy.
 - Report accepted, not rated, output. `ProduceAir` already returns the accepted litres; the HUD discards them.
   Fixing this makes the ceiling, the leak cap and a saturated main legible instead of invisible, which is
@@ -397,4 +397,4 @@ cell.
   while counting zero supply. The blower is the supply side of that bug and its fix will change what
   "45 L/s is enough" means.
 - No handbook page. The block ships with only `blockdesc-twintubmpblower*`
-  (`assets/iwex/lang/en.json:185`).
+  (`assets/iiex/lang/en.json:185`).

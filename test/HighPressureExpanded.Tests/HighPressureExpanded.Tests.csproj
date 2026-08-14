@@ -36,31 +36,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Copy exlib.dll + lpex.dll + hpex.dll into the test bin so the runner loads them headlessly;
-         their VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. lpex is
+    <!-- Copy exlib.dll + iiex.dll + hpex.dll into the test bin so the runner loads them headlessly;
+         their VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. iiex is
          needed for the boiler/engine bases the two HP leaves derive from. -->
     <ProjectReference Include="..\..\src\ExpandedLib\ExpandedLib.csproj" />
-    <ProjectReference Include="..\..\src\IronworkingExpanded\IronworkingExpanded.csproj" />
-    <ProjectReference Include="..\..\src\LowPressureExpanded\LowPressureExpanded.csproj" />
+    <ProjectReference Include="..\..\src\IronIndustryExpanded\IronIndustryExpanded.csproj" />
     <ProjectReference Include="..\..\src\HighPressureExpanded\HighPressureExpanded.csproj" />
     <!-- TEST-ONLY smex reference. The Cornish engine drives smex's air blower entirely through
-         lpex's BlockEntityEngine base contract, so hpex has no smex *code* edge - but the
+         iiex's BlockEntityEngine base contract, so hpex has no smex *code* edge - but the
          end-to-end air-blower scenario needs both types in one assembly, and smex must never
          reference hpex. This direction is the safe one: it matches the shipped chain (hpex's
          modinfo already declares a smex dependency) and cannot create a cycle. -->
     <ProjectReference Include="..\..\src\SteelmakingExpanded\SteelmakingExpanded.csproj" />
     <ProjectReference Include="..\ExpandedLib.Testing\ExpandedLib.Testing.csproj" />
-    <!-- Content-specific fixtures follow the mod chain: pipes from the iwex suite, the shared
-         engine/boiler plants from the lpex suite. -->
-    <ProjectReference Include="..\IronworkingExpanded.Tests\IronworkingExpanded.Tests.csproj" />
-    <ProjectReference Include="..\LowPressureExpanded.Tests\LowPressureExpanded.Tests.csproj" />
+    <!-- Content-specific fixtures follow the mod chain: pipes from the iiex suite, the shared
+         engine/boiler plants from the iiex suite. -->
+    <ProjectReference Include="..\IronIndustryExpanded.Tests\IronIndustryExpanded.Tests.csproj" />
   </ItemGroup>
 
-  <!-- The base pipe block + BE live in exlib, and the shared pipe builders in the iwex test project.
+  <!-- The base pipe block + BE live in exlib, and the shared pipe builders in the iiex test project.
        Expose both project-wide so the many scene/scenario files that build pipe runs do not each
        need the using (no ambiguity: these names exist only there). -->
   <ItemGroup>
     <Using Include="ExpandedLib.Blocks.Networks" />
-    <Using Include="IronworkingExpanded.Tests" />
+    <Using Include="IronIndustryExpanded.Tests" />
   </ItemGroup>
 </Project>

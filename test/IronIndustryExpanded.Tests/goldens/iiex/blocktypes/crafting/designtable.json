@@ -1,0 +1,45 @@
+{
+  "code": "crafting-designtable",
+  "class": "iiex.BlockDesignTable",
+  "entityClass": "iiex.BlockEntityDesignTable",
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "shape": {
+    "base": "iiex:crafting/designtable"
+  },
+  "blockmaterial": "Wood",
+  "lightHsv": [
+    5,
+    7,
+    12
+  ],
+  "maxstacksize": 1,
+  "resistance": 2.0,
+  "sounds": {
+    "walk": "game:walk/wood",
+    "place": "game:block/planks"
+  },
+  "materialDensity": 600
+}

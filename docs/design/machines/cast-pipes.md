@@ -1,14 +1,14 @@
 # Cast Pipes & Fittings
-**Status** live (segments + 5 fittings ship) · **blocked** for the cast segments themselves — no recipe   **Mod** lpex
+**Status** live (segments + 5 fittings ship) · **blocked** for the cast segments themselves — no recipe   **Mod** iiex
 
 **Owns**
-- The cast tier's identity: which blocktypes lpex contributes to the shared `pipe` network, where their
+- The cast tier's identity: which blocktypes iiex contributes to the shared `pipe` network, where their
   ratings and joint family are registered, and what the cast segments are made of (art, textures, stacks).
-- Every lpex fitting as a block: plain valve, pressure valve, outlet, passthrough, passthrough-bend -
+- Every iiex fitting as a block: plain valve, pressure valve, outlet, passthrough, passthrough-bend -
   their defs, variants, shapes, interactions, recipes and drops.
 - B6 in full: why hpex's "mandatory" pressure valve cannot be installed on an HP line, in two
   independent ways (joint family and gate ceiling), with the numbers on both sides.
-- The construction gap: which lpex pipe blocks have a grid recipe, which do not, and which recipe-cost
+- The construction gap: which iiex pipe blocks have a grid recipe, which do not, and which recipe-cost
   keys are dead.
 - The fact that no cast pipe-part item and no boring machine exist, so the cast tier's intended
   cast → bore → assemble route is entirely unbuilt.
@@ -17,8 +17,8 @@
 - The graph substrate, the one-medium pool, capacity, pressure formulas, leaks, vents, bursts, the tick
   order, the plain-valve sever semantics and the pressure-valve overflow arithmetic, and every exlib
   constant behind them - [pipe network](../mechanics/pipe-network.md), canonical for the
-  burst-by-tier table and the joint-family rule. This page states only lpex's rows of it and the
-  consequences specific to lpex blocks.
+  burst-by-tier table and the joint-family rule. This page states only iiex's rows of it and the
+  consequences specific to iiex blocks.
 - Pumps, the fluid intake, the water chain - [pumps](pumps.md).
 - The planned pipe-network buffer - [fluid tank](fluid-tank.md).
 - Code-first defs, the recipe-cost catalogue, `/exmod recipes` - [recipes-config](../mechanics/recipes-config.md).
@@ -32,13 +32,13 @@
 
 ## Role
 
-The middle rung of a three-rung pipe ladder. iwex ships plated pipe (2.5 atm) so an iron-age shop can
-plumb a blast furnace; hpex ships welded rolled pipe (12 atm) for the high-pressure tier. lpex sits between
+The middle rung of a three-rung pipe ladder. iiex ships plated pipe (2.5 atm) so an iron-age shop can
+plumb a blast furnace; hpex ships welded rolled pipe (12 atm) for the high-pressure tier. iiex sits between
 them at 5.0 atm - enough to carry a Cornish boiler's full choke pressure without bursting, which is the
 pressure the Watt engine's supply main has to survive.
 
 The tier is a variant axis, and the high-order one. There is still no `material` variant: a cast pipe is
-`lpex:pipe-cast-straight-ns`, a plated one is `iwex:pipe-plated-straight-ns`, and the `tier` variant resolves
+`iiex:pipe-cast-straight-ns`, a plated one is `iiex:pipe-plated-straight-ns`, and the `tier` variant resolves
 the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `:291-294`, `:321-324`). One
 material per tier, one model per tier - unchanged; what moved is where the tier is written down.
 
@@ -52,15 +52,15 @@ outlet and fluid intake - names no tier and takes the defaults, which is the sam
 behaviour they had before.
 
 ⛔⛔ **The passthroughs are tiered too, and not for their rating** *(2026-08-14)*. They bear no pressure -
-`BurstPressure => float.MaxValue` either way - but **iwex ships a plated pair off the same factory**,
-identical but for the sheet texture (corroded iron vs `iwex:block/metal/castiron`). Without the axis the
+`BurstPressure => float.MaxValue` either way - but **iiex ships a plated pair off the same factory**,
+identical but for the sheet texture (corroded iron vs `iiex:block/metal/castiron`). Without the axis the
 two carry one code between them, and the moment the merge puts them in one domain the later registration
 replaces the earlier **last-writer-wins, ordered by load, with no error**. The tier is what keeps both.
-They are `lpex:pipe-cast-passthrough-{brick}-*` and `iwex:pipe-plated-passthrough-{brick}-*`.
+They are `iiex:pipe-cast-passthrough-{brick}-*` and `iiex:pipe-plated-passthrough-{brick}-*`.
 
-lpex's second and larger job is every fitting on the network. iwex ships segments and two machine
+iiex's second and larger job is every fitting on the network. iiex ships segments and two machine
 fittings (tuyere, blower); hpex ships segments only. Valves, pressure valves, outlets and passthroughs are
-lpex-domain blocks, which is why a rolled run has none of them (see [B6](#b6--the-hp-line-cannot-take-the-lpex-pressure-valve)).
+iiex-domain blocks, which is why a rolled run has none of them (see [B6](#b6--the-hp-line-cannot-take-the-iiex-pressure-valve)).
 
 ---
 
@@ -70,7 +70,7 @@ Nothing here is a multiblock. Every block in this page is a single cell.
 
 ### The cast segments
 
-lpex contributes four blocktypes by calling the shared factory under its own domain:
+iiex contributes four blocktypes by calling the shared factory under its own domain:
 
 ```csharp
 public class CastPipeDefinitions : IExBlockDefProvider
@@ -80,15 +80,15 @@ public class CastPipeDefinitions : IExBlockDefProvider
 }
 ```
 — `CastPipeDefinitions.cs:15-19`. It is a stand-alone provider because the class it binds to lives in
-iwex: the injected blocktypes name `iwex.BlockPipe` / `iwex.BlockEntityPipe` as their class keys
-(`BlockPipe.cs:55-56`), so lpex ships no pipe C# class of its own for the plain segments.
+iiex: the injected blocktypes name `iiex.BlockPipe` / `iiex.BlockEntityPipe` as their class keys
+(`BlockPipe.cs:55-56`), so iiex ships no pipe C# class of its own for the plain segments.
 
 | blocktype | variants | max stack | file:line |
 |---|---|---|---|
-| `lpex:pipe-cast-straight-*` | `ns` `we` `ud` | 16 | `BlockPipe.cs:118-128` |
-| `lpex:pipe-cast-bend-*` | 12 (`nw` … `de`) | 8 | `BlockPipe.cs:130-165` |
-| `lpex:pipe-cast-tjunction-*` | 12 | 8 | `BlockPipe.cs:167-202` |
-| `lpex:pipe-cast-xjunction-*` | `nswe` `nsud` `weud` | 8 | `BlockPipe.cs:204-216` |
+| `iiex:pipe-cast-straight-*` | `ns` `we` `ud` | 16 | `BlockPipe.cs:118-128` |
+| `iiex:pipe-cast-bend-*` | 12 (`nw` … `de`) | 8 | `BlockPipe.cs:130-165` |
+| `iiex:pipe-cast-tjunction-*` | 12 | 8 | `BlockPipe.cs:167-202` |
+| `iiex:pipe-cast-xjunction-*` | `nswe` `nsud` `weud` | 8 | `BlockPipe.cs:204-216` |
 
 Collision/selection is the shared 5⁄16 → 11⁄16 core (`BlockPipe.cs:89-90`).
 
@@ -125,16 +125,16 @@ genuinely separate" that [pipe network](../mechanics/pipe-network.md) Gotcha 10 
 | asset | path | state |
 |---|---|---|
 | Editable shapes | — | none. No pipe or fitting source file exists under `assets/editable/shapes/` |
-| Cast straight | `assets/lpex/shapes/pipes/straight.json` | elements `Cube2` `Cube6` `Cube18`; textures `cast-iron1` → `iwex:block/metal/castiron`, `iron4`, `iron` |
-| Cast bend | `assets/lpex/shapes/pipes/bend.json` | `Cube2` `Cube18`; its body key is `iron42`, not `iron4` |
-| Cast T / X | `assets/lpex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
-| Valve | `assets/lpex/shapes/pipes/valve.json` | elements `Cube2` `Handle` `Lid`; `open` animation, 30 frames; textures `normal4`, `iron4`, `copper3` |
-| Pressure valve | `assets/lpex/shapes/pipes/pressurevalve.json` | single element `Cube2`; no animation; textures include `copper3` (the input-side ring the handbook points at) and `steel3` |
-| Outlet | `assets/lpex/shapes/pipes/outlet.json` | `Cube2` `Cube10` |
-| Passthrough / bend | `assets/lpex/shapes/pipes/passthrough.json`, `passthroughbend.json` | present |
+| Cast straight | `assets/iiex/shapes/pipes/straight.json` | elements `Cube2` `Cube6` `Cube18`; textures `cast-iron1` → `iiex:block/metal/castiron`, `iron4`, `iron` |
+| Cast bend | `assets/iiex/shapes/pipes/bend.json` | `Cube2` `Cube18`; its body key is `iron42`, not `iron4` |
+| Cast T / X | `assets/iiex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
+| Valve | `assets/iiex/shapes/pipes/valve.json` | elements `Cube2` `Handle` `Lid`; `open` animation, 30 frames; textures `normal4`, `iron4`, `copper3` |
+| Pressure valve | `assets/iiex/shapes/pipes/pressurevalve.json` | single element `Cube2`; no animation; textures include `copper3` (the input-side ring the handbook points at) and `steel3` |
+| Outlet | `assets/iiex/shapes/pipes/outlet.json` | `Cube2` `Cube10` |
+| Passthrough / bend | `assets/iiex/shapes/pipes/passthrough.json`, `passthroughbend.json` | present |
 
 `BlockPipe.Segments` resolves `{domain}:pipes/*` (`BlockPipe.cs:82`, `:96`, `:124`, `:153`) and each of the
-three tiers ships its own four shapes - iwex `iron3/iron4/iron42/iron`, lpex `cast-iron1` over an iwex
+three tiers ships its own four shapes - iiex `iron3/iron4/iron42/iron`, iiex `cast-iron1` over an iiex
 cast-iron texture, hpex `cast-iron1` + `game:block/metal/plate/steel`. There is no blanket texture override
 on the shared surface: the shapes disagree on key names (`iron4` vs `iron42`), so an override would repaint
 some segments and miss others (`BlockPipe.cs:69-72`).
@@ -151,22 +151,22 @@ static art whose only feedback is the HUD line.
 
 | block | recipe | file:line |
 |---|---|---|
-| `pipe-cast-passthrough-{brick}-ns` | `BHB,BPB,B_B` — 6 brick + 1 `iwex:pipe-plated-straight-*` + hammer | `PipeRecipeDefinitions.cs:23-31` |
+| `pipe-cast-passthrough-{brick}-ns` | `BHB,BPB,B_B` — 6 brick + 1 `iiex:pipe-plated-straight-*` + hammer | `PipeRecipeDefinitions.cs:23-31` |
 | `pipe-cast-passthroughbend-{brick}-nw` | `BPB,PHB,B_B` — 6 brick + 2 straight + hammer | `:32-40` |
 | `pipe-outlet-{brick}-n` | `BHB,BNB,BPB` — 12 brick + 1 straight + 2 nails + hammer | `:41-50` |
-| `pipe-cast-valve-sn` | `_H_,GPL,_L_` — 1 `iwex:pipe-plated-straight-ns` + 2 plate + 2 gears + hammer | `:52-61` (rusty gear) and `:72-81` (`lpex:gear-*`) |
+| `pipe-cast-valve-sn` | `_H_,GPL,_L_` — 1 `iiex:pipe-plated-straight-ns` + 2 plate + 2 gears + hammer | `:52-61` (rusty gear) and `:72-81` (`iiex:gear-*`) |
 | `pipe-cast-pressurevalve-sn` | `_H_,LPL,G_G` — 1 straight + 2 plate + 4 gears + hammer | `:62-71` and `:82-90` |
 | `pipe-straight` / `bend` / `tjunction` / `xjunction` | none | — |
 
-Every fitting is worked from a plated (iwex) segment, not a cast one - `StraightBlock` and `ValvePipe` both
-resolve `iwex:pipe-plated-straight-*` (`PipeRecipeDefinitions.cs:103-107`). The valve pair is authored twice so
-either `game:gear-rusty` or `lpex:gear-*` crafts it (`:14`).
+Every fitting is worked from a plated (iiex) segment, not a cast one - `StraightBlock` and `ValvePipe` both
+resolve `iiex:pipe-plated-straight-*` (`PipeRecipeDefinitions.cs:103-107`). The valve pair is authored twice so
+either `game:gear-rusty` or `iiex:gear-*` crafts it (`:14`).
 
 ### The cast segments are uncraftable
 
-Nothing outputs `lpex:pipe-cast-straight-*` or its siblings:
+Nothing outputs `iiex:pipe-cast-straight-*` or its siblings:
 
-> *"lpex's own cast segments are a higher tier with no recipe of their own yet."*
+> *"iiex's own cast segments are a higher tier with no recipe of their own yet."*
 > — `MachineRecipeDefinitions.cs:126`
 
 This is the same class of blocker as B5 (hpex's rolled tier, four blocktypes and zero recipes). The cast
@@ -182,25 +182,25 @@ The intended route is cast segments assembled from cast pipe-parts bored on the 
 | cast pipe-part item | does not exist. The art does: `assets/editable/shapes/item-cylinder-castblank.json`, `item-cylinder-pipesegment.json`, `item-cilinder-bored.json` |
 | `diagram-pipe-*` items | not built ([diagram crafting](../mechanics/diagram-crafting.md)) |
 
-`overview.md:70` lists the boring machine as shipped lpex content. It is not.
+`overview.md:70` lists the boring machine as shipped iiex content. It is not.
 
 ### Dead recipe-cost keys
 
-`LpexRecipeConfig.Defaults()` catalogues four segment entries whose recipes do not exist:
+`IiexRecipeConfig.Defaults()` catalogues four segment entries whose recipes do not exist:
 
 | key | match | file:line |
 |---|---|---|
-| `pipe-straight-grid` | `lpex:pipe-cast-straight-*`, cheap output pinned to 4 | `LpexRecipeConfig.cs:72` |
-| `pipe-bend-grid` | `lpex:pipe-cast-bend-*`, cheap 2 | `:73` |
-| `pipe-tjunction-grid` | `lpex:pipe-cast-tjunction-*`, cheap 2 | `:74` |
-| `pipe-xjunction-grid` | `lpex:pipe-cast-xjunction-*`, cheap 2 | `:75` |
+| `pipe-straight-grid` | `iiex:pipe-cast-straight-*`, cheap output pinned to 4 | `IiexRecipeConfig.cs:72` |
+| `pipe-bend-grid` | `iiex:pipe-cast-bend-*`, cheap 2 | `:73` |
+| `pipe-tjunction-grid` | `iiex:pipe-cast-tjunction-*`, cheap 2 | `:74` |
+| `pipe-xjunction-grid` | `iiex:pipe-cast-xjunction-*`, cheap 2 | `:75` |
 
 STATE.md's "Remove" list names only `pipe-straight-grid` (`STATE.md:652`) - all four are dead, and the
 comment above them at `:46-47` describes an authored output count ("straight 2, bend/t/x-junction 1") for
 recipes that were never written for this domain.
 
 Fittings are catalogued correctly: `pipe-outlet-grid`, `pipe-passthrough-grid`, `pipe-passthroughbend-grid`,
-`pipe-valve-grid`, `pipe-pressurevalve-grid` (`LpexRecipeConfig.cs:81-85`).
+`pipe-valve-grid`, `pipe-pressurevalve-grid` (`IiexRecipeConfig.cs:81-85`).
 
 ---
 
@@ -211,7 +211,7 @@ Fittings are catalogued correctly: `pipe-outlet-grid`, `pipe-passthrough-grid`, 
 Both happen once, in `ModSystem.Start`, keyed by domain:
 
 ```csharp
-BlockPipe.RegisterBurst(Mod.Info.ModID, () => LpexValues.CastPipeBurstPressure);  // :60
+BlockPipe.RegisterBurst(Mod.Info.ModID, () => IiexValues.CastPipeBurstPressure);  // :60
 BlockPipe.RegisterJoint(Mod.Info.ModID, BlockPipe.FlangedJoint);                  // :62
 ```
 — `LowPressureExpandedModSystem.cs:57-62`. The burst getter is a `Func<float>` read live, so a retune applies
@@ -225,7 +225,7 @@ flanges (`:61`), so an iron-tier main and a cast main interconnect and a line up
 Toggled by an empty-handed right-click (`BlockValve.cs:55-84`; a held item defers, `:67-68`), server-side
 only, with a door-open sound. The sever semantics, the `RemoveNode`+`AddNode` re-walk and the stale-pool
 discard are [pipe network](../mechanics/pipe-network.md) § 7's. The block's own side: `Lockable` behaviour,
-`MaxStackSize(1)`, and the `lpex:blockhelp-valve-toggle` interaction line appended to the base help
+`MaxStackSize(1)`, and the `iiex:blockhelp-valve-toggle` interaction line appended to the base help
 (`BlockValve.cs:86-102`).
 
 The valve holds its state in an animation pose, which needs two pieces of machinery:
@@ -251,19 +251,19 @@ This page owns the ceiling:
 public float MaxGatePressure => Block is BlockPressureValve v ? v.BurstPressure : 0f;
 ```
 — `BlockEntityPressureValve.cs:41-42`. `BurstPressure` resolves through `_burstByDomain[Code.Domain]`, and
-the block only exists in the lpex domain, so the gate tops out at 5.0 atm - borrowed from cast pipe's
+the block only exists in the iiex domain, so the gate tops out at 5.0 atm - borrowed from cast pipe's
 rating even though the valve itself is exempt from bursting (`CanBurst` is false for every `BlockPipe`
 subclass, `BlockPipe.cs:196`). It is clamped again on load against a possibly-reconfigured rating
 (`BlockEntityPressureValve.cs:48-52`).
 
-### B6 — the HP line cannot take the lpex pressure valve
+### B6 — the HP line cannot take the iiex pressure valve
 
 hpex tells the player, in its own README and handbook, to gate the Lancashire → Cornish line with a pressure
 valve (`src/HighPressureExpanded/README.md:22`, `docs/hpex/handbook/00-highpressure.html:29`,
 `docs/hpex/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
 independent failures:
 
-**1 — the joint refuses it.** hpex registers `WeldedJoint` (`HighPressureExpandedModSystem.cs:45`); lpex
+**1 — the joint refuses it.** hpex registers `WeldedJoint` (`HighPressureExpandedModSystem.cs:45`); iiex
 registers `FlangedJoint` (`LowPressureExpandedModSystem.cs:62`); `AcceptsNeighbour` couples a `BlockPipe` only
 to a matching family (`BlockPipe.cs:238-239`). The pressure valve is a `BlockPipe` subclass, so welded pipe
 will not bolt to it. hpex ships no fittings of its own - `RolledPipeDefinitions.cs` is segments only.
@@ -272,7 +272,7 @@ will not bolt to it. hpex ships no fittings of its own - `RolledPipeDefinitions.
 
 | quantity | value | file:line |
 |---|---|---|
-| lpex pressure-valve `MaxGatePressure` | 5.0 atm | `LpexConfig.cs:50` via `BlockEntityPressureValve.cs:41` |
+| iiex pressure-valve `MaxGatePressure` | 5.0 atm | `IiexConfig.cs:50` via `BlockEntityPressureValve.cs:41` |
 | Cornish engine engage, low throttle | 5.0 atm | `HpexConfig.cs:70` |
 | Cornish engine engage, normal | 6.0 atm | `HpexConfig.cs:71` |
 | Cornish engine engage, high | 7.0 atm | `HpexConfig.cs:72` |
@@ -296,16 +296,16 @@ rating 12) resolves both halves at once, because both the joint and the ceiling 
 
 ## Numbers
 
-### Config — `src/LowPressureExpanded/LpexConfig.cs`, `ModConfig/ex_values.json`, section `lpex`
+### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `CastPipeBurstPressure` | `5.0` atm | `LpexConfig.cs:50` | the cast tier's plain-segment rating; also the run's buffer multiplier and the pressure valve's gate ceiling |
+| `CastPipeBurstPressure` | `5.0` atm | `IiexConfig.cs:50` | the cast tier's plain-segment rating; also the run's buffer multiplier and the pressure valve's gate ceiling |
 
-That is the whole of lpex's pipe config. Everything else the fittings use - `LitresPerPipe`, `GasLeakRate`,
+That is the whole of iiex's pipe config. Everything else the fittings use - `LitresPerPipe`, `GasLeakRate`,
 `LiquidLeakRate`, `EvaporationLitresPerDay`, `PipeOverpressureSeconds` - is exlib's, and `ChimneyGasDrawRate`
-is iwex's; all six are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers
-(`LpexConfig.cs:43-46`).
+is iiex's; all six are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers
+(`IiexConfig.cs:43-46`).
 
 ### Hard-coded — not config
 
@@ -320,15 +320,15 @@ is iwex's; all six are tabulated by [pipe network](../mechanics/pipe-network.md)
 | downhill epsilon `0.001` | `BlockEntityPressureValve.cs:168` | gas will not cross a near-equal pressure |
 | valve open-anim `speed 2.5`, ease 8/8 | `BlockEntityValve.cs:176-180` | pose only |
 | collision/selection `0.3125 → 0.6875` | `BlockValve.cs:47-48`, `BlockPressureValve.cs:47-48` | the fitting core, matching the segment |
-| `FlangedJoint = "flanged"` | `BlockPipe.cs:255` (exlib) | the family string lpex registers |
+| `FlangedJoint = "flanged"` | `BlockPipe.cs:255` (exlib) | the family string iiex registers |
 | `DefaultBurstPressure = 5f` | `BlockPipe.cs:182` (exlib) | fallback for an unregistered domain — numerically identical to cast, so a missing `RegisterBurst` would be invisible |
 
 ### The tier ladder — one row owned here
 
 | tier | domain | burst | joint | owner |
 |---|---|---|---|---|
-| plated | iwex | 2.5 | flanged | [pipe network](../mechanics/pipe-network.md) |
-| cast | lpex | 5.0 | flanged | this page (`LpexConfig.cs:50`) |
+| plated | iiex | 2.5 | flanged | [pipe network](../mechanics/pipe-network.md) |
+| cast | iiex | 5.0 | flanged | this page (`IiexConfig.cs:50`) |
 | rolled | hpex | 12 | welded | [pipe network](../mechanics/pipe-network.md) |
 
 The rating doubles as the buffer size - a run holds `burst × pipes × LitresPerPipe`
@@ -336,13 +336,13 @@ The rating doubles as the buffer size - a run holds `burst × pipes × LitresPer
 same node count. That is the tier's whole mechanical benefit; there is no throughput or length advantage (see
 [Open](#open)).
 
-### Where 5.0 sits against lpex's own machines
+### Where 5.0 sits against iiex's own machines
 
 | quantity | value | owner |
 |---|---|---|
-| Watt engine engage | 2.0 atm | `LpexConfig.cs:163` ([Watt engine](engine-watt.md)) |
-| Watt engine break | 4.0 atm | `LpexConfig.cs:166` ([Watt engine](engine-watt.md)) |
-| Cornish boiler choke | 5.0 atm | `LpexConfig.cs:156` ([Cornish boiler](boiler-cornish.md)) |
+| Watt engine engage | 2.0 atm | `IiexConfig.cs:163` ([Watt engine](engine-watt.md)) |
+| Watt engine break | 4.0 atm | `IiexConfig.cs:166` ([Watt engine](engine-watt.md)) |
+| Cornish boiler choke | 5.0 atm | `IiexConfig.cs:156` ([Cornish boiler](boiler-cornish.md)) |
 | cast pipe burst | 5.0 atm | this page |
 | plated pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) |
 
@@ -367,7 +367,7 @@ the classes overrides `GetDrops`.
 | outlet, passthrough, passthrough-bend | itself, brick variant preserved | `MaxStackSize(1)` (`BlockPipeOutlet.cs:41`, `BlockPipePassthrough.cs:46`) |
 
 Salvage is 1:1 and lossless - none of these is a right-click construction, so `RccBrokenDropsRatio`
-(`LpexConfig.cs:116`) does not apply. A burst segment is the exception: it drops its items, puffs steam and
+(`IiexConfig.cs:116`) does not apply. A burst segment is the exception: it drops its items, puffs steam and
 is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
 [pipe network](../mechanics/pipe-network.md) § 5).
 
@@ -396,19 +396,19 @@ is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
 
 | old | new | file:line |
 |---|---|---|
-| `ppex:pipe-{segment}-{orient}-{iron\|steel}` | `iwex:pipe-{segment}-{orient}` | `:69-75` |
-| `ppex:pipe-{valve\|pressurevalve}-{orient}-{iron\|steel}` | `lpex:pipe-{type}-{orient}` | `:77-83` |
-| `smex:gas{passthrough\|passthroughbend\|outlet}-…` | `lpex:pipe-…` | `:85-86` |
+| `ppex:pipe-{segment}-{orient}-{iron\|steel}` | `iiex:pipe-{segment}-{orient}` | `:69-75` |
+| `ppex:pipe-{valve\|pressurevalve}-{orient}-{iron\|steel}` | `iiex:pipe-{type}-{orient}` | `:77-83` |
+| `smex:gas{passthrough\|passthroughbend\|outlet}-…` | `iiex:pipe-…` | `:85-86` |
 | removed refractory brick tiers | fall back to `fire` | `:89-106` |
-| removed inline gas machines (`gaspipe-blower/heated/intake`) | `iwex:pipe-plated-straight-{axis}` - a literal target, so unlike the rows above it did not follow the tier variant on its own | `:141-173` |
+| removed inline gas machines (`gaspipe-blower/heated/intake`) | `iiex:pipe-plated-straight-{axis}` - a literal target, so unlike the rows above it did not follow the tier variant on its own | `:141-173` |
 
-The segment remaps point away from lpex. A world's old `ppex` steel pipes become iwex plated pipes, not cast
-ones, so nobody who upgrades ends up holding a cast segment either. The ppex → lpex flat rename itself is
-`LpexRenameMigration` (`PipeMigration.cs:16-19`).
+The segment remaps point away from iiex. A world's old `ppex` steel pipes become iiex plated pipes, not cast
+ones, so nobody who upgrades ends up holding a cast segment either. The ppex → iiex flat rename itself is
+`IiexRenameMigration` (`PipeMigration.cs:16-19`).
 
 ### Tests
 
-`test/LowPressureExpanded.Tests/`
+`test/IronIndustryExpanded.Tests/`
 
 | file | what it pins |
 |---|---|
@@ -417,7 +417,7 @@ ones, so nobody who upgrades ends up holding a cast segment either. The ppex →
 | `Blocks/Valves/PressureValveBeTests.cs` | `MaxGatePressure_is_the_blocks_burst_rating`, step up/down, clamping at both ends, tree round-trip, legacy default 1 atm, vent-to-atmosphere above the gate, nothing at/below it |
 | `Blocks/Pipe/*` | pipe BE, serialization, tick |
 | `Scenarios/SteamSupplyScenarioTests.cs:21`, `:51` | the relief valve bleeding an over-pressured main into band; a gate above the charge never opening |
-| `Definitions/LpexDefinitionGoldenTests.cs` | the shipped defs against `goldens/lpex/blocktypes/pipes/*.json` |
+| `Definitions/IiexDefinitionGoldenTests.cs` | the shipped defs against `goldens/iiex/blocktypes/pipes/*.json` |
 
 No test covers gas-to-gas overflow into a second network (the downhill rule and the equalise formula,
 `BlockEntityPressureValve.cs:159-192`) or `OverflowLiquid` at all (`:221-268`). Both vent-to-atmosphere
@@ -462,7 +462,7 @@ paths are tested; neither transfer path is.
 7. `pressurevalve` inherits `BlockValve`, not the valve's entity. `BlockEntityPressureValve` extends
    `BlockEntityPipe` (`:25`), so it gets none of `BlockEntityValve`'s open/close state, animator or
    pool-discard logic - which is right (it never severs), but means the inherited
-   `lpex:blockhelp-valve-toggle` help line has to be filtered out by hand (`BlockPressureValve.cs:96`).
+   `iiex:blockhelp-valve-toggle` help line has to be filtered out by hand (`BlockPressureValve.cs:96`).
 
 8. Outlet and passthrough are exempt from bursting twice over - once as `BlockPipe` subclasses
    (`CanBurst`, `BlockPipe.cs:203`, exlib) and again via `BurstPressure => float.MaxValue`
@@ -476,18 +476,18 @@ paths are tested; neither transfer path is.
 10. The chimney vent is matched by code substring on the neighbour (`ChimneyVent.cs:50`) and requires
     `face == BlockFacing.UP` (`:49`). So only the `-u` outlet variant and the `ud` passthrough can ever vent:
     any other orientation has no top connector for a chimney to cap. The handbook's "capped with an ordinary
-    chimney stood upright on top of it" (`docs/lpex/handbook/03-fittings.html:31-33`) is right but
+    chimney stood upright on top of it" (`docs/iiex/handbook/03-fittings.html:31-33`) is right but
     under-specified.
 
-11. Fitting recipes consume iwex segments, so lpex's fittings are gated on iwex's craftability. With B1 live
+11. Fitting recipes consume iiex segments, so iiex's fittings are gated on iiex's craftability. With B1 live
     (the tuyere blocking the iron tier) this is a chain, not an independent path.
 
-12. The outlet's shape still points at a refractory texture. `assets/lpex/shapes/pipes/outlet.json` and
+12. The outlet's shape still points at a refractory texture. `assets/iiex/shapes/pipes/outlet.json` and
     `passthrough.json` declare `front1` → `game:block/clay/refractory/tier3/front1`, while the def overrides
     `front1` per brick variant (`BlockPipeOutlet.cs:58-63`). Harmless, but the refractory tiers were removed
     from these blocks - `PipeMigration.cs:89-106` migrates them away.
 
-13. Config-file naming is inconsistent in the docs, not the code. `LpexConfig.cs:9` says the file is
+13. Config-file naming is inconsistent in the docs, not the code. `IiexConfig.cs:9` says the file is
     `ModConfig/lpex_values.json`; the attribute at `:17-21` writes `ex_values.json` and lists
     `lpex_values.json` only as a legacy name. The attribute wins.
 
@@ -497,8 +497,8 @@ paths are tested; neither transfer path is.
 
 - B-class blocker: no recipe for the cast segments. Either write a grid recipe against the four
   already-catalogued cost keys, or build the cast → bore → assemble chain the design specifies. Until then
-  the four `pipe-*-grid` entries in `LpexRecipeConfig.cs:76-79` cost nothing.
-- B6 needs hpex-side fittings, not an lpex change. A welded valve + pressure valve registered in the hpex
+  the four `pipe-*-grid` entries in `IiexRecipeConfig.cs:76-79` cost nothing.
+- B6 needs hpex-side fittings, not an iiex change. A welded valve + pressure valve registered in the hpex
   domain fixes both halves (joint and 12-atm ceiling) with no core change, because both read `Code.Domain`.
 - No boring machine and no cast pipe-part item exist. The art for the parts is drawn and untracked (three
   `item-cylinder-*` / `item-cilinder-*` shapes); `overview.md:70` still claims the machine ships and should

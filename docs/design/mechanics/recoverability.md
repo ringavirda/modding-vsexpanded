@@ -1,6 +1,6 @@
 # The Recoverability Invariant
 **Status** designed - the lengthwise half is live, the crosswise half is unbuilt, and nothing enforces a
-length anywhere in code today   **Mod** iwex (`IronworkingExpanded`)
+length anywhere in code today   **Mod** iiex (`IronIndustryExpanded`)
 **Owns** the invariant itself and its exactly two escapes (≤ 32 lengthwise, ≤ 48 crosswise), their slot counts and access ordering, the definition of a soft-lock, why cold shear is not a third escape, the two known soft-locks and their crop points, and the distinction between the mill's 48-voxel refusal and the 32-voxel seating-mode switch.
 **Depends on** [density rule](density-rule.md) (every length here is a drawn shape's voxel count) · [rolling mill](../machines/rolling-mill.md) (the pass model that grows a piece past the limit, and the refusal that must enforce this) · [multiblock & filler structures](multiblock.md) (the hearth's 3 × 2 filler footprint, from which both limits derive) · [stock](../items/stock.md) · [rolling](../processes/rolling.md) (the stock ladder and its crop table)
 
@@ -92,7 +92,7 @@ into a longer state.
 ## Numbers
 
 Every value on this page is a design constant, not a config key. None of `32`, `48`, `2.25` or `2.0`
-exists anywhere in `src/` - a grep for `48` across `src/IronworkingExpanded/BlockStructures/Forming/`
+exists anywhere in `src/` - a grep for `48` across `src/IronIndustryExpanded/BlockStructures/Forming/`
 returns only unrelated `Array.Length` uses. The only number that is real in code is the hearth's slot count.
 
 | Key | Value | file:line | What it does |
@@ -142,7 +142,7 @@ Only the lengthwise half exists today, and it does not measure anything.
 
 | Type | Where | Role |
 |---|---|---|
-| `HearthRows` | `src/IronworkingExpanded/BlockStructures/Furnaces/HearthRows.cs:17` | the `Left`/`Centre`/`Right` enum (`:20-25`), `CanReach` (`:75`), `Reachable` (`:82`), `FromLocalOffset` (`:54`) |
+| `HearthRows` | `src/IronIndustryExpanded/BlockStructures/Furnaces/HearthRows.cs:17` | the `Left`/`Centre`/`Right` enum (`:20-25`), `CanReach` (`:75`), `Reachable` (`:82`), `FromLocalOffset` (`:54`) |
 | `HeatingHearthLayout` | `.../HeatingHearthLayout.cs:18` | `Rows = 3` (`:31`), `StockOf` (`:64`), `Element` (`:57`), `ElementsFor` (`:85`) |
 | `BlockEntityHeatingHearth` | `.../BlockEntities/BlockEntityHeatingHearth.cs:26` | one `ItemStack?` per row (`:30`), `TryLoad` (`:57`), `TryTake` (`:73`) |
 | `BlockHeatingHearth` | `.../Blocks/BlockHeatingHearth.cs:20` | the 3 × 2 footprint (`:43-54`), `RowAt` rotates a clicked cell back into the hearth's frame (`:73-78`) |
@@ -221,5 +221,5 @@ reheat. A piece that cannot be reheated is stranded whether or not there is some
 - A deeper reheat furnace would raise both limits at once, which is a better upgrade reward than a
   throughput multiplier - but it also means 32 and 48 must be derived from the built footprint, not
   hard-coded, when they are finally implemented.
-- The invariant is stated only for iwex's five forms. lpex's wide line and smex's cast tier add stock
+- The invariant is stated only for iiex's five forms. iiex's wide line and smex's cast tier add stock
   and roll sets; nothing yet says the invariant is re-checked when a downstream mod adds a form.

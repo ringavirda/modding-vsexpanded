@@ -2,7 +2,7 @@
 
 **Status** settled 2026-07-29. This is a decision record, not content: nothing here is built or
 buildable, and nothing here is a proposal.
-**Mods** all of them - `exlib` → `iwex` → `lpex` → `smex` → `hpex`, plus the deferred `elex` and the two
+**Mods** all of them - `exlib` → `iiex` → `iiex` → `smex` → `hpex`, plus the deferred `elex` and the two
 off-spine add-ons.
 
 **Owns**
@@ -114,7 +114,7 @@ fractionating still as a block, and every product built on it - are deferred.
 | Kept | Why | Owner |
 |---|---|---|
 | Fluid tank / cistern | it is plumbing: a shop with a Cornish boiler wants a buffer between its pump and its feed | [fluid-tank](machines/fluid-tank.md) |
-| Steam condenser *(live)* | a general phase-change block already shipped | lpex |
+| Steam condenser *(live)* | a general phase-change block already shipped | iiex |
 
 ---
 
@@ -208,7 +208,7 @@ on. That is the whole subset.
 
 ## The release target
 
-> The complete ferrous line: `exlib → iwex → lpex → smex → hpex`. A player can walk it without
+> The complete ferrous line: `exlib → iiex → iiex → smex → hpex`. A player can walk it without
 > leaving the spine.
 
 Two consequences follow, both scope facts rather than status facts:

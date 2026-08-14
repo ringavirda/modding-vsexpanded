@@ -23,7 +23,7 @@ public class ItemDieTests {
         "schema": 1,
         "machine": "heading",
         "jobs": [
-          { "input": "game:rod-iron", "output": "iwex:bolt", "count": 4,
+          { "input": "game:rod-iron", "output": "iiex:bolt", "count": 4,
             "minTier": 2, "seconds": 3.5, "minTorque": 0.4 }
         ]
       }
@@ -50,7 +50,7 @@ public class ItemDieTests {
 
     Assert.Equal("heading", Parse(BoltDie).Machine);
     Assert.Equal("game:rod-iron", job.Input);
-    Assert.Equal("iwex:bolt", job.Output);
+    Assert.Equal("iiex:bolt", job.Output);
     Assert.Equal(4, job.Count);
   }
 
@@ -73,7 +73,7 @@ public class ItemDieTests {
         {
           "machinejob": {
             "machine": "nail",
-            "jobs": [ { "input": "iwex:nailplate", "output": "game:metalnailsandstrips", "count": 4 } ]
+            "jobs": [ { "input": "iiex:nailplate", "output": "game:metalnailsandstrips", "count": 4 } ]
           }
         }
         """
@@ -116,7 +116,7 @@ public class ItemDieTests {
   public void The_job_for_a_piece_comes_off_the_fitted_die() {
     // What a machine does at its tool slot: read the fitted die, ask it for the job matching the piece.
     var die = new Item {
-      Code = new AssetLocation("iwex", "die-bolt"),
+      Code = new AssetLocation("iiex", "die-bolt"),
       Attributes = Json(BoltDie),
     };
 
@@ -127,18 +127,18 @@ public class ItemDieTests {
       null
     );
 
-    Assert.Equal("iwex:bolt", job!.Output);
+    Assert.Equal("iiex:bolt", job!.Output);
   }
 
   [Fact]
   public void A_die_that_does_not_take_this_piece_offers_no_job() {
     var die = new Item {
-      Code = new AssetLocation("iwex", "die-bolt"),
+      Code = new AssetLocation("iiex", "die-bolt"),
       Attributes = Json(BoltDie),
     };
 
     Assert.Null(
-      ItemDie.JobFor(new ItemStack(die), "iwex:nailplate", null, null)
+      ItemDie.JobFor(new ItemStack(die), "iiex:nailplate", null, null)
     );
   }
 

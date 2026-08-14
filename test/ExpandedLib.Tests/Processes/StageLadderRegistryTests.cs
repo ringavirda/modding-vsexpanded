@@ -31,10 +31,10 @@ public class StageLadderRegistryTests {
       """
       {
         "family": "shingledbar",
-        "shape": "iwex:item/smithed/shingled-bar",
+        "shape": "iiex:item/smithed/shingled-bar",
         "stages": [
           { "thickness": 3.00, "element": "ShingledBar1", "acceptedBy": [ "grooved" ] },
-          { "thickness": 2.50, "element": "Grooved250", "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod" }
+          { "thickness": 2.50, "element": "Grooved250", "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod" }
         ]
       }
       """
@@ -51,7 +51,7 @@ public class StageLadderRegistryTests {
 
     Assert.True(reg.TryGet("shingledbar", out StageLadder? merged));
     Assert.Equal(2, merged!.Stages.Length);
-    Assert.Equal("iwex:item/smithed/shingled-bar", merged.Shape);
+    Assert.Equal("iiex:item/smithed/shingled-bar", merged.Shape);
   }
 
   [Fact]
@@ -151,7 +151,7 @@ public class StageLadderRegistryTests {
         """
         {
           "family": "shingledbar",
-          "stages": [ { "thickness": 2.50, "element": "Flattened250", "acceptedBy": [ "flat" ], "code": "iwex:beam" } ]
+          "stages": [ { "thickness": 2.50, "element": "Flattened250", "acceptedBy": [ "flat" ], "code": "iiex:beam" } ]
         }
         """
       )
@@ -159,8 +159,8 @@ public class StageLadderRegistryTests {
 
     StageLadder merged = reg.Ladder("shingledbar")!;
     Assert.Equal(3, merged.Stages.Length);
-    Assert.Equal("iwex:rolledrod", merged.StageAt(2.50f, "grooved")!.Code);
-    Assert.Equal("iwex:beam", merged.StageAt(2.50f, "flat")!.Code);
+    Assert.Equal("iiex:rolledrod", merged.StageAt(2.50f, "grooved")!.Code);
+    Assert.Equal("iiex:beam", merged.StageAt(2.50f, "flat")!.Code);
   }
 
   #endregion
@@ -226,7 +226,7 @@ public class StageLadderRegistryTests {
     Assert.Single(conflicts);
     Assert.Contains("shape", conflicts[0]);
     Assert.Equal(
-      "iwex:item/smithed/shingled-bar",
+      "iiex:item/smithed/shingled-bar",
       reg.Ladder("shingledbar")!.Shape
     );
   }

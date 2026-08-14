@@ -3,8 +3,8 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded.BlockStructures.Engine;
-using LowPressureExpanded.BlockStructures.Engine.Blocks;
+using IronIndustryExpanded.BlockStructures.Engine;
+using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

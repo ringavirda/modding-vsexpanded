@@ -44,26 +44,33 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
   /// registration silently replaces the earlier the moment both land in one domain.
   /// </para>
   /// </summary>
+  /// <param name="sheet">The sheet texture this tier's pipe is made of - the only thing that differs
+  /// between one tier's passthrough and another's, since all tiers share the mesh. Supplied by the
+  /// caller rather than chosen here: the art lives in the tier's own asset tree, and a library that
+  /// named one would pin itself to that mod's domain and resolve to nothing once it is renamed.
+  /// Defaults to vanilla's corroded sheet.</param>
   public static IEnumerable<ExBlockDef> Passthroughs(
     string domain,
-    string? tier
-  ) => [Passthrough(domain, tier), PassthroughBend(domain, tier)];
+    string? tier,
+    string? sheet = null
+  ) =>
+    [
+      Passthrough(domain, tier, sheet ?? DefaultSheet),
+      PassthroughBend(domain, tier, sheet ?? DefaultSheet),
+    ];
 
   /// <summary>
-  /// The sheet texture a tier's pipe is made of, the only thing that differs between a plated
-  /// passthrough and a cast one. Overrides the <c>normal4</c> key only: <c>iron4</c>
+  /// The sheet texture used when a tier names none. Vanilla's, so exlib carries no dependency on any
+  /// content mod's asset tree. It overrides the <c>normal4</c> key only: <c>iron4</c>
   /// (<c>game:block/metal/sheet-plain</c>) is the trim around the opening and is the same on every
   /// tier, so repainting it would recolour the flange rather than the pipe.
   /// </summary>
-  private static string Sheet(string? tier) =>
-    tier == CastTier
-      ? "iwex:block/metal/castiron"
-      : "game:block/metal/corroded/normal4";
+  private const string DefaultSheet = "game:block/metal/corroded/normal4";
 
   /// <summary>
   /// The brick shell both passthrough blocktypes are drawn with, in exlib's own asset tree. Shared by
   /// every tier deliberately - a passthrough differs from another tier's only by the sheet texture
-  /// (<see cref="Sheet"/>), so the mesh is one file rather than one per tier. It lives here rather
+  /// (the caller-supplied sheet texture), so the mesh is one file rather than one per tier. It lives here rather
   /// than in a content mod's tree because exlib emits these defs for all three tiers: pinned to one
   /// mod's domain it resolves to nothing the moment that mod is renamed or merged, and a blocktype
   /// whose shape resolves to nothing loads with no shape and no error.
@@ -89,6 +96,7 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
   private static ExBlockDef Brick(
     string domain,
     string? tier,
+    string sheet,
     string assetName,
     string creative,
     string handbookGroup
@@ -124,7 +132,7 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
         "game:block/clay/brick/four/running/cream1",
         "game:block/clay/brick/four/running/{brick}1"
       )
-      .Texture("normal4", Sheet(tier))
+      .Texture("normal4", sheet)
       .RenderPass("OpaqueNoCull")
       .FaceCullMode("NeverCull")
       .LightAbsorption(0)
@@ -137,10 +145,15 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
     return tier == null ? def : def.VariantGroup("tier", tier);
   }
 
-  private static ExBlockDef Passthrough(string domain, string? tier) =>
+  private static ExBlockDef Passthrough(
+    string domain,
+    string? tier,
+    string sheet
+  ) =>
     Brick(
         domain,
         tier,
+        sheet,
         BlockPipe.Asset(tier, "passthrough"),
         "*-passthrough-*-ns",
         "passthrough-*"
@@ -152,11 +165,16 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
       .ShapeByType("*-passthrough-*-we", PassthroughShape, rotateY: 90)
       .ShapeByType("*-passthrough-*-ud", PassthroughShape, rotateX: 90);
 
-  private static ExBlockDef PassthroughBend(string domain, string? tier) {
+  private static ExBlockDef PassthroughBend(
+    string domain,
+    string? tier,
+    string sheet
+  ) {
     const string s = PassthroughBendShape;
     return Brick(
         domain,
         tier,
+        sheet,
         BlockPipe.Asset(tier, "passthroughbend"),
         "*-passthroughbend-*-nw",
         "passthroughbend-*"

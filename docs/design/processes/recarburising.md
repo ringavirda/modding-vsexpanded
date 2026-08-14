@@ -3,7 +3,7 @@
 **Status** blocked - designed, nothing exists. The step is mandatory under [STATE.md](../../internal/plans/STATE.md) N1
 and not one piece of it is built: no blown-iron metal, no ladle, no ferroalloy, no powdered coke, and the
 shipped converter still pours a finished tool-capable steel that skips the step entirely.
-**Mods** smex (the blow, the ladle) · iwex (the ferroalloy furnace, the cupola that melts it)
+**Mods** smex (the blow, the ladle) · iiex (the ferroalloy furnace, the cupola that melts it)
 
 **Owns** - the facts this page is canonical for:
 
@@ -275,12 +275,12 @@ only because there is a grade to overshoot. Blow to the end every time and there
 
 5. **The bath cools while the player fetches the reagent.** A ladle with no cooldown coefficient is a ladle
    that freezes during a walk to the chest. The knob exists on the converter
-   (`BessemerCooldownCoefficient` 0.5, `SmexConfig.cs:240`, on `MoltenCooldownSpeed` 24, `IwexConfig.cs:31`);
+   (`BessemerCooldownCoefficient` 0.5, `SmexConfig.cs:240`, on `MoltenCooldownSpeed` 24, `IiexConfig.cs:31`);
    the ladle needs its own, and its value is the working window. That number is
    [ladle](../machines/ladle.md)'s to set.
 
 6. **`Roles.Scrap` is the template, and it is a two-line change.** `MaterialRoleRegistry.IsRole(role, stack)`
-   (`MaterialRoleRegistry.cs:89`) plus one JSON row in `assets/iwex/config/materialroles.json` is the entire
+   (`MaterialRoleRegistry.cs:89`) plus one JSON row in `assets/iiex/config/materialroles.json` is the entire
    mechanism a hand-dropped ferroalloy needs - the same path `TryChargeScrap` uses
    (`BlockEntityConverterControl.cs:615-661`). No new system.
 

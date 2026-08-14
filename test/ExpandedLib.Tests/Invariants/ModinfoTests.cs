@@ -101,7 +101,7 @@ public class ModinfoTests {
   /// <summary>
   /// The highest version published per modid, read from the zip names under <c>dist/Releases/</c>
   /// rather than restated here, so recording a release needs no edit to this file. Keyed by the modid
-  /// the artifact becomes today: <c>ppex</c> was renamed to <c>lpex</c>, and a rename does not reset
+  /// the artifact becomes today: <c>ppex</c> was renamed to <c>iiex</c>, and a rename does not reset
   /// the version line, because a pre-rename config file is folded into the renamed mod's section and
   /// still carries the version that wrote it.
   /// </summary>
@@ -130,7 +130,7 @@ public class ModinfoTests {
       string id = m.Groups["id"].Value;
       id = id switch
       {
-        "ppex" => "lpex", // renamed 2026-07; LpexRenameMigration carries the codes across
+        "ppex" => "iiex", // renamed 2026-07; IiexRenameMigration carries the codes across
         _ => id,
       };
 

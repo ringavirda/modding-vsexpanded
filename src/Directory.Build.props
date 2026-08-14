@@ -249,7 +249,7 @@
   <!-- $(AssetDomain) is the mod's PRIMARY domain: its lang feed, and the one its own codes use.
        $(AssetDomainsExtra) is an optional semicolon-separated list of FURTHER trees it packs - a mod
        ships more than one while absorbing another's codes during a merge, because the absorbed tree
-       keeps shipping under its own domain until the codes relocate. iwex's game-domain lang override
+       keeps shipping under its own domain until the codes relocate. iiex's game-domain lang override
        is the same mechanism rather than a special case.
 
        ⚠ These must stay ITEM conditions. Properties in this file are evaluated BEFORE the csproj sets
@@ -271,7 +271,7 @@
     OPT-IN GAME-DOMAIN OVERRIDE. A mod that sets <ShipGameLangOverride>true</> packs the shared
     assets/game/ tree (lang overrides that rename vanilla keys - iron -> "wrought iron", steel ->
     "shear steel"). Only ONE mod may opt in, or the override would ship duplicated; today that is
-    iwex.
+    iiex.
 
     It is now a spelling of $(AssetDomains) rather than its own glob: the property block above
     appends "game" to the list, and the shared Content glob packs it like any other tree. The lang

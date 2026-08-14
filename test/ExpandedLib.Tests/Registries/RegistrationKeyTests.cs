@@ -30,23 +30,23 @@ public class RegistrationKeyTests {
   [Fact]
   public void Default_convention_is_modid_dot_classname() {
     Assert.Equal(
-      "iwex.ConventionBlock",
-      EntityRegistry.KeyFor("iwex", typeof(ConventionBlock))
+      "iiex.ConventionBlock",
+      EntityRegistry.KeyFor("iiex", typeof(ConventionBlock))
     );
   }
 
   [Fact]
   public void Explicit_code_replaces_the_class_name_but_keeps_the_prefix() {
     Assert.Equal(
-      "iwex.customcode",
-      EntityRegistry.KeyFor("iwex", typeof(CodedBlock))
+      "iiex.customcode",
+      EntityRegistry.KeyFor("iiex", typeof(CodedBlock))
     );
   }
 
   [Fact]
   public void PrefixModId_false_registers_under_a_bare_key() {
     // As used when replacing a vanilla class - no {modid}. prefix.
-    Assert.Equal("Vanilla", EntityRegistry.KeyFor("iwex", typeof(BareBlock)));
+    Assert.Equal("Vanilla", EntityRegistry.KeyFor("iiex", typeof(BareBlock)));
   }
 
   [Fact]
@@ -54,8 +54,8 @@ public class RegistrationKeyTests {
     // The types above live in this test assembly, which declares no [assembly: ExDomain] and is never
     // registered, so the caller's domain is the only answer available.
     Assert.Equal(
-      "iwex.NoAttributeBlock",
-      EntityRegistry.KeyFor("iwex", typeof(NoAttributeBlock))
+      "iiex.NoAttributeBlock",
+      EntityRegistry.KeyFor("iiex", typeof(NoAttributeBlock))
     );
   }
 
@@ -69,7 +69,7 @@ public class RegistrationKeyTests {
     // cross-assembly site worked around it with a hand-typed string, which a rename then broke.
     Assert.Equal(
       "exlib.BEBehaviorMoltenCell",
-      EntityRegistry.KeyFor("iwex", typeof(BEBehaviorMoltenCell))
+      EntityRegistry.KeyFor("iiex", typeof(BEBehaviorMoltenCell))
     );
   }
 
@@ -77,15 +77,15 @@ public class RegistrationKeyTests {
   public void DomainOf_prefers_the_declared_domain_over_the_fallback() {
     Assert.Equal(
       "exlib",
-      EntityRegistry.DomainOf(typeof(BEBehaviorMoltenCell).Assembly, "iwex")
+      EntityRegistry.DomainOf(typeof(BEBehaviorMoltenCell).Assembly, "iiex")
     );
   }
 
   [Fact]
   public void DomainOf_falls_back_when_an_assembly_declares_none() {
     Assert.Equal(
-      "iwex",
-      EntityRegistry.DomainOf(typeof(ConventionBlock).Assembly, "iwex")
+      "iiex",
+      EntityRegistry.DomainOf(typeof(ConventionBlock).Assembly, "iiex")
     );
   }
 

@@ -2,7 +2,7 @@
 
 **Status** shell - the multiblock, the part blocks and the charge half of the hearth are built; the
 puddling cycle is not, and the structure cannot currently complete (see [Open](#open))
-**Mod** iwex (`IronworkingExpanded`)
+**Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything specific to this machine: its multiblock layout and every cell offset in it, the
 reverberatory geometry (`CellRole.Firebox` on the drawing's one `F` cell - whose bounds are the base's
@@ -46,9 +46,9 @@ Puddling is a batch: nine pigs at a time, worked through a door with hand tools.
 
 ## Structure
 
-Anchor `iwex:puddlingfurnacecore-{tier}-{side}`. Layout authored at
+Anchor `iiex:puddlingfurnacecore-{tier}-{side}`. Layout authored at
 `BlockPuddlingFurnaceCore.cs:67-175`; the shipped form is the golden at
-`test/IronworkingExpanded.Tests/goldens/iwex/blocktypes/furnace/puddlingcore.json`. Layout grammar,
+`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/puddlingcore.json`. Layout grammar,
 origin rule and filler semantics: [multiblock](../mechanics/multiblock.md).
 
 **Footprint** 8 wide (X) × 3 deep (Z) × 8 tall (Y), 91 declared cells. `Origin(-6, -1)` - the negation
@@ -60,11 +60,11 @@ of the core glyph's `(col 6, row 1)`, so `C` lands on the placed block.
 | `-` | `game:brickslabs-fire-up-free` (vertical, never rotates) | 8 |
 | `i` | `game:brickslabs-fire-south-free` (orientation-checked, turns with the build) | 2 |
 | `K` | `game:cokeovendoor*` - the firebox stoking door | 1 |
-| `C` | `iwex:puddlingfurnacecore-*` | 1 |
-| `H` | `iwex:puddlinghearth-north` | 1 |
-| `D` | `iwex:puddlingchargedoor-south` | 1 |
-| `M` | `iwex:puddlingchimneycap-north` | 1 |
-| `F` | `iwex:furnace-firebox` (any tier, any facing) - `CellRole.Firebox` | 1 |
+| `C` | `iiex:puddlingfurnacecore-*` | 1 |
+| `H` | `iiex:puddlinghearth-north` | 1 |
+| `D` | `iiex:puddlingchargedoor-south` | 1 |
+| `M` | `iiex:puddlingchimneycap-north` | 1 |
+| `F` | `iiex:furnace-firebox` (any tier, any facing) - `CellRole.Firebox` | 1 |
 | `f` | `exlib:structurefiller` | 6 |
 | `a` | `game:air` - the ash pit and roof voids | 5 |
 | `A` | `game:air` - the chimney bore, `CellRole.Flue` | 4 |
@@ -103,9 +103,9 @@ left as air - the ash pit, which is not modelled ([firebox](firebox.md)).
 | Part | Editable | Runtime | Notes |
 |---|---|---|---|
 | core | - | `game:block/basic/cube` | a plain cube; the `n` marker and `pf` type label are texture overlays on the north/south faces (`BlockPuddlingFurnaceCore.cs:38-40`) |
-| hearth | `assets/editable/shapes/furnace-megablock-puddlinghearth.json` | `assets/iwex/shapes/furnaces/puddlinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Fettle` (3 cubes), `Pigs` (9). No animations - drawn by `OnTesselation` with a pruned element set |
-| charge door | `assets/editable/shapes/furnace-megablock-puddlingchargedoor.json` | `assets/iwex/shapes/furnaces/puddlingchargedoor.json` | elements `Bricks`, `Rails`, `Door`, `Tools`. Animations `closed-main`, `open-main`, `open-small`, `rabbling`, `paddle` |
-| chimney cap | `assets/editable/shapes/furnace-megablock-puddlingchimneycap.json` | `assets/iwex/shapes/furnaces/puddlingchimneycap.json` | elements `Base`, `ChimneyCap`, `ControlRod`; animations `idle` (= shut) and `open` |
+| hearth | `assets/editable/shapes/furnace-megablock-puddlinghearth.json` | `assets/iiex/shapes/furnaces/puddlinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Fettle` (3 cubes), `Pigs` (9). No animations - drawn by `OnTesselation` with a pruned element set |
+| charge door | `assets/editable/shapes/furnace-megablock-puddlingchargedoor.json` | `assets/iiex/shapes/furnaces/puddlingchargedoor.json` | elements `Bricks`, `Rails`, `Door`, `Tools`. Animations `closed-main`, `open-main`, `open-small`, `rabbling`, `paddle` |
+| chimney cap | `assets/editable/shapes/furnace-megablock-puddlingchimneycap.json` | `assets/iiex/shapes/furnaces/puddlingchimneycap.json` | elements `Base`, `ChimneyCap`, `ControlRod`; animations `idle` (= shut) and `open` |
 
 The charge door's `rabbling` and `paddle` clips are drawn but unreachable: code only ever plays
 `main` / `mainShut` / `small`, read from block attributes (`BlockEntityChargeDoor.cs:34-37`, `:70-95`).
@@ -120,18 +120,18 @@ Textures are vanilla (`fire1`, `burned`, `iron5`, `cast-iron1` on the door; `bur
 
 There is no recipe for any of it. This is a blocker, and it is broader than B1.
 
-`iwex` ships twenty grid-recipe goldens (`test/IronworkingExpanded.Tests/goldens/iwex/recipes/grid/`) and
+`iiex` ships twenty grid-recipe goldens (`test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/`) and
 none of them outputs `puddlingfurnacecore`, `puddlinghearth`, `puddlingchargedoor` or
 `puddlingchimneycap`. `FurnaceRecipeDefinitions.cs:16-17` defines exactly two recipe groups, blast furnace
 and cupola. The only puddling-adjacent recipe that exists is the consumable:
 
 | Recipe | Output | File |
 |---|---|---|
-| Puddling Fettle | `iwex:puddlingfettle` ×3 from 3 × any `fettlestock` | `FettleRecipeDefinitions.cs:29-42` |
+| Puddling Fettle | `iiex:puddlingfettle` ×3 from 3 × any `fettlestock` | `FettleRecipeDefinitions.cs:29-42` |
 
 The furnace is creative-only today, with no RCC construction stages either - every part is a plain placed
 block, not a [right-click-constructable](../mechanics/recipes-config.md). The bricks, slabs, grating and
-firebox door are vanilla and craftable already; only the four `iwex` blocks are missing. Unlike the
+firebox door are vanilla and craftable already; only the four `iiex` blocks are missing. Unlike the
 [blast furnace](blast-furnace-cold.md), nothing here needs a pipe, so B1 does not apply: a puddling-furnace
 recipe can be written today without unblocking anything else.
 
@@ -143,8 +143,8 @@ recipe can be written today without unblocking anything else.
 
 | Verb | Where | Effect | Code |
 |---|---|---|---|
-| RMB holding `iwex:puddlingfettle` | any hearth cell | lays fettling in that row, consumes 1 | `BlockPuddlingHearth.cs:103-110` |
-| RMB holding `iwex:pig` | any hearth cell | lays 1 pig in that row (row must be fettled) | `BlockPuddlingHearth.cs:112-121` |
+| RMB holding `iiex:puddlingfettle` | any hearth cell | lays fettling in that row, consumes 1 | `BlockPuddlingHearth.cs:103-110` |
+| RMB holding `iiex:pig` | any hearth cell | lays 1 pig in that row (row must be fettled) | `BlockPuddlingHearth.cs:112-121` |
 | RMB | charge door (either cell) | swings the main door | `BlockChargeDoor.cs:118-121` |
 | Sneak + RMB | charge door | swings the small working door | `BlockChargeDoor.cs:118-119` |
 | RMB | chimney cap | throws the damper | `BlockPuddlingChimneyCap.cs:79-80` |
@@ -230,7 +230,7 @@ Always-drawn structural groups: `Base/*`, `BaseExtension/*`, `Bed/*` (`PuddlingH
 
 | Member | Bound to | File:line |
 |---|---|---|
-| `MeltingPoint` | `IwexValues.BfIronMeltingPoint` - knowingly wrong; B8's surviving half | `BlockEntityPuddlingFurnace.cs:63` |
+| `MeltingPoint` | `IiexValues.BfIronMeltingPoint` - knowingly wrong; B8's surviving half | `BlockEntityPuddlingFurnace.cs:63` |
 | `RequiresBlast` / `TuyereIntakeVolume` / `BlastPressureThreshold` | `false` / `0` / `0` - the firebox branch | `BlockEntityFireboxFurnace.cs:39-50` |
 | `ShaftHoldsLayeredCharge` | `false`, sealed - a hearth can never inherit a shaft's charge column | `BlockEntityFireboxFurnace.cs` |
 | `ChargeCapacityUnits` | `FireboxCellCount × FireboxMixPerCell`, sealed - "lit" means the bed is full | `BlockEntityFireboxFurnace.cs:224-225` |
@@ -273,7 +273,7 @@ furnace the structure cannot yet complete ([Open](#open) #1), so it is unreachab
 | `PuddlingHearthLayout` (pure) | `BlockStructures/Furnaces/PuddlingHearthLayout.cs:15` |
 | `HearthRows` (pure, shared with reheat) | `BlockStructures/Furnaces/HearthRows.cs:17` |
 | `BlockEntityFurnacePart` (anchor link + toggle animator) | `BlockStructures/Furnaces/BlockEntityFurnacePart.cs:32` |
-| tests | `test/IronworkingExpanded.Tests/Blocks/Furnaces/FurnacePartsTests.cs:34` (every layout code resolves), `:61` (every hearth element exists in the shipped shape), `:94` (nine distinct pig elements), `:105` (the row groups are not in name order), `:125` (the access rule) |
+| tests | `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnacePartsTests.cs:34` (every layout code resolves), `:61` (every hearth element exists in the shipped shape), `:94` (nine distinct pig elements), `:105` (the row groups are not in name order), `:125` (the access rule) |
 
 **Where a caller hooks in.** The cycle goes in `SmeltCycle(chargeHandle)` - the core calls it on the melt
 cadence (`BlockEntityFurnaceCore.cs:710-715`). It will need the hearth, which the core does not currently

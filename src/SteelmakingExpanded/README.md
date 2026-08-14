@@ -3,17 +3,17 @@
 A [Vintage Story](https://www.vintagestory.at/) mod adding an industrial-era iron and
 steel production chain on top of vanilla metalworking. Requires
 [Expanded Library](../ExpandedLib/README.md) (`exlib`),
-[Ironworking Expanded](../IronworkingExpanded/README.md) (`iwex`) and
-[Low Pressure Expanded](../LowPressureExpanded/README.md) (`lpex`).
+[Ironworking Expanded](../IronIndustryExpanded/README.md) (`iiex`) and
+[Low Pressure Expanded](../IronIndustryExpanded/README.md) (`iiex`).
 
 ## What it adds
 
 - **Blast furnace** - a tall refractory multiblock charged through a hopper pair with
-  alternating bands of burden (crushed ore fluxed with lime in the `iwex` burdenmaker)
+  alternating bands of burden (crushed ore fluxed with lime in the `iiex` burdenmaker)
   and coke. Fired and held above iron's melting point, it pools molten iron and slag.
 - **Hot blast machinery** - cowper stoves that recycle furnace exhaust into scorching
   blast air, a smoke stack that vents the surplus, and a steam-driven air blower
-  (a `lpex` engine sub-machine) that pressurises the line.
+  (a `iiex` engine sub-machine) that pressurises the line.
 - **Bessemer converter** - stage II: a 3×3×3 vessel that takes mechanical power and a
   Blast line and blows molten iron into steel, poured back out through the same canals.
 - **Slag chain** - solidified slag grinds into powdered slag, usable as mortar
@@ -21,7 +21,7 @@ steel production chain on top of vanilla metalworking. Requires
 
 Liquid metal is plumbed, not carried: it drains through taps into the molten canal
 network. That network (canals, taps, mold pedestals, molten barrels) and the casting
-chain (sand casting, iron molds) belong to `iwex` - smex consumes them, it does not
+chain (sand casting, iron molds) belong to `iiex` - smex consumes them, it does not
 own them.
 
 The in-game **handbook** ships five articles (overview, blast furnace, hot blast,

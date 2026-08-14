@@ -36,7 +36,7 @@
 
 ## Role
 
-Top rung of a three-rung pipe ladder: iwex plated at 2.5 atm, lpex cast at 5.0, hpex rolled at 12 - the only tier
+Top rung of a three-rung pipe ladder: iiex plated at 2.5 atm, iiex cast at 5.0, hpex rolled at 12 - the only tier
 that can carry a Lancashire boiler's steam to a Cornish engine without sitting on its own burst clock.
 
 The tier is a variant axis, and the high-order one: a rolled pipe is `hpex:pipe-rolled-straight-ns`, and the
@@ -45,7 +45,7 @@ The tier is a variant axis, and the high-order one: a rolled pipe is `hpex:pipe-
 written down.
 
 Until 2026-08-14 this section read *"the tier is the mod, not a variant axis"*, and the domain was the key.
-**M4 supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts iwex and lpex in one domain, so
+**M4 supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts iiex and iiex in one domain, so
 tier could no longer be `Code.Domain` without collapsing two tiers into one - which M3 forbids. The reasoning the
 old ruling rested on survives intact on the new axis. `BlockPipe.PlatedTier` / `.CastTier` / `.RolledTier`
 (`BlockPipe.cs:31`, `:34`, `:37`) are the three names.
@@ -94,7 +94,7 @@ rolled straight pipe never shares a handbook entry with the plated or cast one. 
 axis.
 
 Connector geometry is the default, `Orientation.Contains(face.Code[0])` (`BlockNetworkNode.cs`); hpex overrides
-nothing (the single-face outlet override is lpex's, [cast pipes](cast-pipes.md)).
+nothing (the single-face outlet override is iiex's, [cast pipes](cast-pipes.md)).
 
 ### The three registrations
 
@@ -131,7 +131,7 @@ shipping a single pipe family gets from `BlockPipe.Segments(domain, tier: null)`
 | Runtime straight | `assets/hpex/shapes/pipes/straight.json` | `Cube2` (barrel, with 45°-rotated `Cube30`–`Cube33` chamfers) + `Cube6` and `Cube14` (the two end rings) |
 | Runtime bend | `assets/hpex/shapes/pipes/bend.json` | five top-level cubes, same chamfer construction |
 | Runtime T / X | `assets/hpex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
-| Textures (all four) | `cast-iron1` → `iwex:block/metal/castiron`, `steel` → `game:block/metal/plate/steel` | |
+| Textures (all four) | `cast-iron1` → `iiex:block/metal/castiron`, `steel` → `game:block/metal/plate/steel` | |
 | Animations | - | none, on any of the four |
 | Lang | `assets/hpex/lang/en.json` | `block-pipe-{straight,bend,tjunction,xjunction}*` + `blockdesc-pipe-*` = "High-pressure rolled steel piping. The strongest of the three pipe tiers." |
 | Handbook | - | the tier appears in no handbook page. The defs declare a `groupBy` (`BlockPipe.cs:69-74`) but `assets/hpex/config/handbook/00-highpressure.json` is the only page hpex ships and it is about the boiler and the engine |
@@ -140,7 +140,7 @@ The octagon is real geometry: `straight.json`'s barrel is a 4 × 1 core with fou
 (`Cube30`/`Cube31` under `Cube3`, `Cube32`/`Cube33` under `Cube4`), and the two end rings at z 0–1 and z 15–16 are
 the weld collars (`BlockPipe.cs:248-250`).
 
-Caution: the top steel tier's body texture key is `cast-iron1`, pointing at iwex's cast-iron texture, on all four
+Caution: the top steel tier's body texture key is `cast-iron1`, pointing at iiex's cast-iron texture, on all four
 rolled shapes as on the cast ones ([cast pipes](cast-pipes.md) § Assets); the `steel` key covers only part of the
 mesh. There is no blanket texture override on the shared surface - the three tiers' shapes disagree on key names,
 so an override would repaint some segments and miss others (`BlockPipe.cs:76-79`).
@@ -156,7 +156,7 @@ contains one file, `Grid/MachineRecipeDefinitions.cs`, emitting two recipes: the
 Cornish engine frame. The golden `goldens/hpex/recipes/grid/machines.json` is the mod's complete recipe output -
 three entries (the boiler, and the engine twice, once per gear code).
 
-lpex at least catalogues four `pipe-*-grid` cost keys against its missing recipes (`LpexRecipeConfig.cs:76-79`,
+iiex at least catalogues four `pipe-*-grid` cost keys against its missing recipes (`IiexRecipeConfig.cs:76-79`,
 [cast pipes](cast-pipes.md) § Dead recipe-cost keys). `HpexRecipeConfig.Defaults()` has four entries and none of
 them is a pipe (`HpexRecipeConfig.cs:46-56`):
 
@@ -182,11 +182,11 @@ rolled pipe` ([bending roller](bending-roller.md) § the one-machine-four-tools 
 | the bell-weld step | undecided - stage, grid recipe, or free with the roll? | [bending roller](bending-roller.md) § Open 6 |
 | a rolled pipe-part item | does not exist; `assets/editable/shapes/item-cylinder-pipesegment.json` is the only artefact | [cast pipes](cast-pipes.md) |
 
-The settled design places the bending roller in lpex, not smex ([bending roller](bending-roller.md)), so the
+The settled design places the bending roller in iiex, not smex ([bending roller](bending-roller.md)), so the
 machine that makes the high-pressure tier lives one mod below it and B5 cannot be closed inside hpex.
 
 A grid recipe would close B5 immediately and is the smaller of the two options; STATE.md makes B5 release-critical
-under D8 ("a player can walk exlib → iwex → lpex → smex → hpex without leaving the spine").
+under D8 ("a player can walk exlib → iiex → iiex → smex → hpex without leaving the spine").
 
 ---
 
@@ -207,9 +207,9 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 | neighbour | couples? | why |
 |---|---|---|
 | `hpex:pipe-*` | yes | welded ↔ welded |
-| `iwex:pipe-*`, `lpex:pipe-*` | no | welded ↔ flanged |
-| lpex valve / pressure valve / outlet / passthrough / passthrough-bend | no | every fitting is a `BlockPipe` subclass, so it inherits its domain's joint |
-| iwex tuyere, twin-tub blower | no | same - both are `BlockPipe` subclasses in the flanged family |
+| `iiex:pipe-*`, `iiex:pipe-*` | no | welded ↔ flanged |
+| iiex valve / pressure valve / outlet / passthrough / passthrough-bend | no | every fitting is a `BlockPipe` subclass, so it inherits its domain's joint |
+| iiex tuyere, twin-tub blower | no | same - both are `BlockPipe` subclasses in the flanged family |
 | Lancashire steam port, Cornish inlet/outlet, condenser, fluid intake, converter/cowper intake, air blower, smokestack | yes | machine ports are `INetworkConnector`s, not `BlockPipe`s, so the joint test does not apply |
 
 A rolled run is therefore segments plus machine ports and nothing else: no valve to shut it, no outlet to chimney
@@ -217,7 +217,7 @@ it, no passthrough to take it through a wall, no pressure valve to gate it. The 
 and deliberate (`BlockPipe.cs:273-282`); the design says the HP tier needs its own fittings ([pipe
 network](../mechanics/pipe-network.md) § Open).
 
-Two live consequences: B6 ([cast pipes](cast-pipes.md) § B6 - the "mandatory" pressure valve is lpex-domain and its
+Two live consequences: B6 ([cast pipes](cast-pipes.md) § B6 - the "mandatory" pressure valve is iiex-domain and its
 gate ceiling is 5.0, below the Cornish engine's normal engage pressure) and B18 ([pipe
 network](../mechanics/pipe-network.md) / [cast pipes](cast-pipes.md) Gotcha 3 - a refused joint does not leak,
 because `ClassifyOpenings` counts an open face only when the neighbour block is `air`, `PipeNetwork.cs:652`).
@@ -256,10 +256,10 @@ Cornish boiler carry the same coincidence at 5.0 ([cast pipes](cast-pipes.md) §
 
 | hpex consumer | what it actually asks for | file:line |
 |---|---|---|
-| Cornish engine grid recipe | `iwex:pipe-plated-straight-*` ×2 | `MachineRecipeDefinitions.cs:58` |
+| Cornish engine grid recipe | `iiex:pipe-plated-straight-*` ×2 | `MachineRecipeDefinitions.cs:58` |
 | Lancashire boiler grid recipe | no pipe at all | `:29-37` |
 | Lancashire boiler RCC stages | steel plate, nails, rod, fire brick | `BlockBoilerLancashire.cs:142-163` |
-| Lancashire boiler required structure | `lpex:pipe-passthrough-fire-*`, `lpex:pipe-passthroughbend-fire-u*`, `lpex:pipe-outlet-fire-u` (cast) | `:89-95` |
+| Lancashire boiler required structure | `iiex:pipe-passthrough-fire-*`, `iiex:pipe-passthroughbend-fire-u*`, `iiex:pipe-outlet-fire-u` (cast) | `:89-95` |
 | Cornish engine RCC stages | iron-or-steel plate, rod, nails, fire brick | `BlockEngineCornish.cs:60-93` |
 
 The recipe source records why the engine still takes a plated segment: tier-gating the HP builds waits on those
@@ -279,7 +279,7 @@ segments getting craft recipes of their own, and on the hadfield material gate
 
 That is the whole of hpex's pipe config. Everything else a rolled run uses - `LitresPerPipe`, `GasLeakRate`,
 `LiquidLeakRate`, `EvaporationLitresPerDay`, `PipeOverpressureSeconds` - is exlib's, and `ChimneyGasDrawRate` is
-iwex's; all are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers.
+iiex's; all are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers.
 
 Caution: `HpexConfig.cs`'s doc comment calls this "a rolled (hpex) Hadfield-steel pipe segment" and
 `HighPressureExpandedModSystem.cs` calls the tier "rolled (Hadfield steel)", the lang string calls it "rolled
@@ -303,8 +303,8 @@ is a design-doc term that appears in comments and a test fixture.
 
 | tier | domain | burst | throughput | joint | keys | owner of the row |
 |---|---|---|---|---|---|---|
-| plated | iwex | 2.5 | 50 | flanged | `PlatedPipe*` | [pipe network](../mechanics/pipe-network.md) |
-| cast | lpex | 5.0 | 120 | flanged | `CastPipe*` | [cast pipes](cast-pipes.md) |
+| plated | iiex | 2.5 | 50 | flanged | `PlatedPipe*` | [pipe network](../mechanics/pipe-network.md) |
+| cast | iiex | 5.0 | 120 | flanged | `CastPipe*` | [cast pipes](cast-pipes.md) |
 | rolled | hpex | 12 | 250 | welded | `RolledPipe*` | this page (`HpexConfig.cs:115`, `:121`) |
 
 ### Where 12 sits against the machines it exists for
@@ -316,7 +316,7 @@ is a design-doc term that appears in comments and a test fixture.
 | Lancashire hand-prime ceiling | 9.6 atm | [Lancashire boiler](boiler-lancashire.md) |
 | Lancashire choke | 12 atm | [Lancashire boiler](boiler-lancashire.md) |
 | rolled pipe burst | 12 atm | this page |
-| lpex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
+| iiex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
 
 ```
 2.5      5.0        6   7  |  8      9.6      12
@@ -360,41 +360,41 @@ Salvage is 1:1 and lossless: none of these is a right-click construction, so `Rc
 
 ### `HpexExtractionMigration`
 
-The Lancashire and the Cornish shipped as `lpex:` blocks, and before the `ppex → lpex` rename as `ppex:` ones, so a
+The Lancashire and the Cornish shipped as `iiex:` blocks, and before the `ppex → iiex` rename as `ppex:` ones, so a
 placed machine in an older save carries a code that no longer resolves. The migration names its two block bases
 literally (`ExtractedBases = ["boilerlancashire", "enginecornish"]`, `HpexExtractionMigration.cs:41`) and emits
 both historical domains for each:
 
 ```
-(lpex:<path>  →  hpex:<path>)
+(iiex:<path>  →  hpex:<path>)
 (ppex:<path>  →  hpex:<path>)
 ```
 `:46-59`, via `CodeRelocation.Remap` with `legacySideWords` (both machines carried word-spelled sides in older
-saves). Both legacy domains are emitted because lpex's rename migration only covers blocks that are still lpex, so
-it never produces an `lpex:boilerlancashire-*` hop for a chain to follow; emitting `ppex:` directly is the only
+saves). Both legacy domains are emitted because iiex's rename migration only covers blocks that are still iiex, so
+it never produces an `iiex:boilerlancashire-*` hop for a chain to follow; emitting `ppex:` directly is the only
 path for a pre-rename world.
 
-Do not widen this migration to enumerate the hpex domain: `hpex:pipe-*` uses the very paths lpex uses for its live
-cast pipes, so a domain-wide enumeration would claim `lpex:pipe-*` as a legacy source and rewrite every placed cast
+Do not widen this migration to enumerate the hpex domain: `hpex:pipe-*` uses the very paths iiex uses for its live
+cast pipes, so a domain-wide enumeration would claim `iiex:pipe-*` as a legacy source and rewrite every placed cast
 pipe into a rolled one. `ReleasedCodeCoverageTests` fails if any migration declares a live code as a legacy source.
 
 ### Tests — `test/HighPressureExpanded.Tests/`
 
 | file | pins |
 |---|---|
-| `Networks/RolledJointTests.cs` | five coupling cases (iwex↔iwex, lpex↔lpex, iwex↔lpex both ways, hpex↔hpex) · four refusal cases (hpex↔iwex and hpex↔lpex, both orderings - the symmetry an `AcceptsNeighbour` implementation is required to have) · the three declared joint families · a machine port is not a pipe and is unaffected |
-| `Fixtures/PipeBurstParityTests.cs` | `PipeTestWorld.RolledTierBurst` (12) equals `HpexValues.RolledPipeBurstPressure` - the shared iwex fixture cannot reference hpex, so a retune would otherwise leave every HP test running against a stale ceiling and still passing |
+| `Networks/RolledJointTests.cs` | five coupling cases (iiex↔iiex, iiex↔iiex, iiex↔iiex both ways, hpex↔hpex) · four refusal cases (hpex↔iiex and hpex↔iiex, both orderings - the symmetry an `AcceptsNeighbour` implementation is required to have) · the three declared joint families · a machine port is not a pipe and is unaffected |
+| `Fixtures/PipeBurstParityTests.cs` | `PipeTestWorld.RolledTierBurst` (12) equals `HpexValues.RolledPipeBurstPressure` - the shared iiex fixture cannot reference hpex, so a retune would otherwise leave every HP test running against a stale ceiling and still passing |
 | `Definitions/HpexDefinitionGoldenTests.cs` | the four pipe defs reproduce their goldens; the golden set exactly covers the defs; every shape reference resolves to a shipped file |
 
 `RolledJointTests` is hosted here because it is the only suite that can see all three tiers.
 
 Caution: `The_refused_joint_reads_as_an_open_end_not_a_seal` (`:92-108`) cannot detect what it claims. It butts one
-hpex cell against one iwex cell along +Z, produces gas, ticks, and asserts `net.State!.OpeningsCount > 0`. Both
+hpex cell against one iiex cell along +Z, produces gas, ticks, and asserts `net.State!.OpeningsCount > 0`. Both
 pipes are `ns`, so the network at `(0,0,0)` also has a north face against unplaced world, which `TestWorld` answers
 with `game:air`. `ClassifyOpenings` only tallies a face when `neighbour.FirstCodePart() == "air"`
 (`PipeNetwork.cs:652`), so the count that makes the assertion pass comes from the free end, not from the refused
 joint, and it would pass identically if the joint were accepted (two nodes, two air ends). B18 is precisely the bug
-it was written to catch. A real assertion needs both ends sealed with `LpexScenes.Cap`, at which point it fails.
+it was written to catch. A real assertion needs both ends sealed with `IiexScenes.Cap`, at which point it fails.
 
 ---
 
@@ -429,7 +429,7 @@ it was written to catch. A real assertion needs both ends sealed with `LpexScene
 
 6. **`overview.md` files rolled pipe under smex** - its build order says "Hadfield steel + rolled pipe
    (smex) → HP boilers/engines (hpex)" (`overview.md:108`). The blocks are hpex-domain
-   (`RolledPipeDefinitions.cs`), and the machine that would make them is lpex's bending roller
+   (`RolledPipeDefinitions.cs`), and the machine that would make them is iiex's bending roller
    ([bending roller](bending-roller.md)). The mod table also still marks hpex "planned"
    (`overview.md:71`); it ships.
 
@@ -442,7 +442,7 @@ it was written to catch. A real assertion needs both ends sealed with `LpexScene
    one whose loss is invisible, and the only registration `RolledJointTests` covers.
 
 9. **The tier is the domain, so a rolled segment carries no material variant.** There is no `-iron` /
-   `-steel` axis; `PipeMigration` (lpex) lands legacy `ppex:pipe-*-steel` codes on iwex plated, not on any
+   `-steel` axis; `PipeMigration` (iiex) lands legacy `ppex:pipe-*-steel` codes on iiex plated, not on any
    higher tier ([cast pipes](cast-pipes.md) § Migrations), so no upgrading world ends up holding a rolled
    segment either.
 

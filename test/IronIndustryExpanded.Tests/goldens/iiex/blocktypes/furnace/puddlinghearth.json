@@ -1,0 +1,91 @@
+{
+  "code": "furnace",
+  "class": "iiex.BlockPuddlingHearth",
+  "entityClass": "iiex.BlockEntityPuddlingHearth",
+  "blockmaterial": "Metal",
+  "maxstacksize": 1,
+  "behaviors": [
+    {
+      "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "puddlinghearth"
+      ]
+    },
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-n": {
+      "base": "iiex:furnace/puddlinghearth",
+      "rotateY": 0
+    },
+    "*-e": {
+      "base": "iiex:furnace/puddlinghearth",
+      "rotateY": 270
+    },
+    "*-s": {
+      "base": "iiex:furnace/puddlinghearth",
+      "rotateY": 180
+    },
+    "*-w": {
+      "base": "iiex:furnace/puddlinghearth",
+      "rotateY": 90
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      }
+    ]
+  },
+  "replaceable": 400,
+  "resistance": 6.0,
+  "lightAbsorption": 0,
+  "sounds": {
+    "walk": "walk/metal",
+    "place": "block/anvil",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "block/rock-hit-pickaxe",
+        "break": "block/rock-break-pickaxe"
+      }
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

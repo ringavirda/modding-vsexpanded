@@ -1,7 +1,7 @@
 # Diagram crafting
 
 **Status** built in part — the mechanic ships and three families use it; the pipe family and the
-consumed-diagram half are not migrated   **Mod** exlib (shape) + iwex (items, recipes, station); lpex and
+consumed-diagram half are not migrated   **Mod** exlib (shape) + iiex (items, recipes, station); iiex and
 smex contribute variants when their phases land
 
 **Owns**
@@ -63,12 +63,12 @@ shape, so a grid that mimics assembly encodes the same information twice. The fl
 
 ## The diagram item
 
-One itemtype per mod, `{mod}:diagram-{type}`, defined in `src/IronworkingExpanded/Items/DiagramItemDefinitions.cs`.
-Today only iwex ships one - 27 variants, each with its drawn texture.
+One itemtype per mod, `{mod}:diagram-{type}`, defined in `src/IronIndustryExpanded/Items/DiagramItemDefinitions.cs`.
+Today only iiex ships one - 27 variants, each with its drawn texture.
 
 * Shape: the shared folded-sheet `exlib:item/diag-base`; texture: a parchment base plus the
   per-type `diag-{type}` drawing overlaid on the sheet's top face
-  (`assets/iwex/textures/item/diagram/`, 27 files, one per variant).
+  (`assets/iiex/textures/item/diagram/`, 27 files, one per variant).
 * Held two-handed (`holdbothhands`) and inclined so the drawing angles toward the camera. The
   transforms are seed values; they can only be judged in-game.
 * A diagram is a plain item - it carries no logic. Pattern diagrams are derived from
@@ -80,7 +80,7 @@ Today only iwex ships one - 27 variants, each with its drawn texture.
 
 ## Catalogue
 
-27 shipped variants (19 structure + 8 pattern), all iwex. "Recipe" is whether a grid recipe consumes the
+27 shipped variants (19 structure + 8 pattern), all iiex. "Recipe" is whether a grid recipe consumes the
 diagram today; every consuming recipe uses `.Tool()`.
 
 | Family | Types | Recipe today | Planned use |
@@ -99,7 +99,7 @@ That is 12 diagram-led grid recipes repo-wide: 2 canal + 2 flywheel + 8 pattern.
 have items, textures and (mostly) lang text but nothing consumes them yet.
 
 **Shared plans.** The pipe diagrams are one plan for every pipe tier: the diagram picks the shape; each
-tier's own recipe and material pick the tier. A shared plan lives in the lowest mod that uses it (iwex),
+tier's own recipe and material pick the tier. A shared plan lives in the lowest mod that uses it (iiex),
 which the higher mods depend on. Tiers and their numbers: [pipe-network](pipe-network.md).
 
 ---
@@ -130,7 +130,7 @@ all.
   station-window precedent.
 * [Boring machine](../machines/boring-machine.md) - designed, art drawn, nothing built. The powered
   counterpart: part(s) + a reusable schematic → machined output, in a window.
-* The shared window base does not exist. `GuiDialogDesignTable` is iwex-local. Its picker enumerates
+* The shared window base does not exist. `GuiDialogDesignTable` is iiex-local. Its picker enumerates
   the loaded `diagram-*` items directly, which is what already lets another mod's diagrams appear with no
   catalogue registration - so the planned exlib extraction (slots + list + info panel, parameterised for a
   hand station and a powered one) is deferred until the boring machine, the second consumer, is built.

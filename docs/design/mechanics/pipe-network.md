@@ -1,6 +1,6 @@
 # Pipe Network
 
-**Status** live   **Mod** `exlib` owns the graph substrate and the base pipe blocks - `BlockPipe`/`BlockEntityPipe`, `BlockNetworkNode`, `BlockNetworkModSystem` and `ChimneyVent` live in `src/ExpandedLib/Blocks/Networks` (since 2026-08-07), `PipeNetwork`/`PipeNetworkState` in `src/ExpandedLib/Networks`; `iwex` owns the plated tier and the network registration; `lpex` owns the cast tier + every fitting; `hpex` owns the rolled tier (segments only).
+**Status** live   **Mod** `exlib` owns the graph substrate and the base pipe blocks - `BlockPipe`/`BlockEntityPipe`, `BlockNetworkNode`, `BlockNetworkModSystem` and `ChimneyVent` live in `src/ExpandedLib/Blocks/Networks` (since 2026-08-07), `PipeNetwork`/`PipeNetworkState` in `src/ExpandedLib/Networks`; `iiex` owns the plated tier and the network registration; `iiex` owns the cast tier + every fitting; `hpex` owns the rolled tier (segments only).
 
 **Owns**
 - The shared block-network graph substrate used by every network in the suite: node add/remove, merge, BFS fracture detection, `RebuildFromRoot`, per-second tick dispatch, the `dt` catch-up clamp, open-connector (leak) detection, the connector-reciprocity rule, `AcceptsNeighbour`, and `IsConnectionBroken` re-walk. Other network pages cite this one for those facts.
@@ -13,7 +13,7 @@
 **Depends on**
 - [molten network](molten-network.md) - the other consumer of the same graph substrate.
 - `ExpandedLib.Fluids.ExLiquids` / `assets/*/config/liquids.json` - the medium catalogue: which codes exist, their phase, their boil/condense points and volume factors. This page states only how the pipe network consults the catalogue, never what is in it.
-- The lpex steam machines that produce into and consume from a run, and their own rates -
+- The iiex steam machines that produce into and consume from a run, and their own rates -
   [Cornish boiler](../machines/boiler-cornish.md) · [Watt engine](../machines/engine-watt.md) ·
   [pumps & fluid intake](../machines/pumps.md).
 
@@ -39,7 +39,7 @@ Every network in the suite - pipe, molten, mpenergy - is a `BlockNetwork` subcla
 
 | operation | file:line | behaviour |
 |---|---|---|
-| register a type | `BlockNetworkModSystem.cs:35-38` | `RegisterNetworkType(name, factory)` in `ModSystem.Start`. iwex registers all three (`IronworkingExpandedModSystem.cs:94-108`) |
+| register a type | `BlockNetworkModSystem.cs:35-38` | `RegisterNetworkType(name, factory)` in `ModSystem.Start`. iiex registers all three (`IronworkingExpandedModSystem.cs:94-108`) |
 | add a node | `BlockNetworkModSystem.cs:108` | isolated → new network; otherwise joins `adjacentNetworks[0]` and merges the rest into it (`:136-157`), each merge gated by `CanMerge` |
 | remove a node | `BlockNetworkModSystem.cs:173` | removes, then hands the rest to `ReviewConnectivity` (`:206`) |
 | review connectivity | `BlockNetworkModSystem.cs:206` | walks from any node (`:239`); all reached → `Settle`, same instance kept (`:307`); some unreached and every node readable → `Fracture`, each component rebuilt as its own network with `OnSplitFragment` (`:263`); some unreached and any node behind an unloaded chunk → **suspended**, network left whole (`:219-225`) |
@@ -116,7 +116,7 @@ and additionally by 1 atm if the run is leaking, unless `bypassLeakCap` is set (
 
 `PipeNetworkState.Temperature` is one network-wide value (`PipeNetworkState.cs:20-21`, default 20 °C). Every producer blends it volume-weighted into the existing pool (`PipeNetwork.cs:130-136` gas, `:263-266` liquid), merges blend the same way (`:390-398`), and split fragments copy it (`:467`). `IPipeNode.Temperature` documents the rule explicitly - "uniform across the run - no spatial gradient" (`IPipeNode.cs:27`), echoed on the BE (`BlockEntityPipe.cs:29-31`).
 
-The network itself never changes phase. Two passive effects cool a run - a gas leak drops it 5 °C, and passive cooling sheds `PipeGasCoolPerSecond` (2 °C/s, dt-scaled) toward `PipeAmbientTemperature` whenever the run holds gas above ambient - but steam only becomes water at an active device that supplies the cooling: the steam condenser, which draws steam from one face and injects condensate into the water line crossing its other two (`BlockEntitySteamCondenser.cs:16-21, 73-136`). The condenser consults `CondensationTarget`/volume factor through the taxonomy and falls back to lpex's own steam-expansion default when the def leaves it open (`:87-91`).
+The network itself never changes phase. Two passive effects cool a run - a gas leak drops it 5 °C, and passive cooling sheds `PipeGasCoolPerSecond` (2 °C/s, dt-scaled) toward `PipeAmbientTemperature` whenever the run holds gas above ambient - but steam only becomes water at an active device that supplies the cooling: the steam condenser, which draws steam from one face and injects condensate into the water line crossing its other two (`BlockEntitySteamCondenser.cs:16-21, 73-136`). The condenser consults `CondensationTarget`/volume factor through the taxonomy and falls back to iiex's own steam-expansion default when the def leaves it open (`:87-91`).
 
 ### 5. Burst pressure by tier, and joints
 
@@ -129,8 +129,8 @@ the merge putting plated and cast in one domain.
 
 | tier | domain | key | value | registration | config |
 |---|---|---|---|---|---|
-| plated | `iwex` | `PlatedPipeBurstPressure` | 2.5 | `IronworkingExpandedModSystem.cs:67` | `IwexConfig.cs:206` |
-| cast | `lpex` | `CastPipeBurstPressure` | 5.0 | `LowPressureExpandedModSystem.cs:56` | `LpexConfig.cs:50` |
+| plated | `iiex` | `PlatedPipeBurstPressure` | 2.5 | `IronworkingExpandedModSystem.cs:67` | `IiexConfig.cs:206` |
+| cast | `iiex` | `CastPipeBurstPressure` | 5.0 | `LowPressureExpandedModSystem.cs:56` | `IiexConfig.cs:50` |
 | rolled | `hpex` | `RolledPipeBurstPressure` | 12 | `HighPressureExpandedModSystem.cs:39` | `HpexConfig.cs:115` |
 | (no tier, or unregistered) | - | `DefaultBurstPressure` | 5, hard-coded | - | `BlockPipe.cs:241` |
 
@@ -151,7 +151,7 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 ```
 - `BlockPipe.cs:238-239`. Rolled pipe joins only rolled pipe. Anything that is not a `BlockPipe` - a machine port, a condenser, a fluid intake - is unaffected, because those are ports on a machine, not lengths of run (`:227-236`). Two consequences the source calls out explicitly:
 
-- Because every fitting (valve, outlet, passthrough, tuyere, blower) is a `BlockPipe` subclass, a rolled run cannot reach lpex's fittings either. Until hpex ships its own, a rolled run is segments plus machine ports only (`BlockPipe.cs:231-235`).
+- Because every fitting (valve, outlet, passthrough, tuyere, blower) is a `BlockPipe` subclass, a rolled run cannot reach iiex's fittings either. Until hpex ships its own, a rolled run is segments plus machine ports only (`BlockPipe.cs:231-235`).
 - A refused joint reads as an open end, not a hidden wall, so the run leaks rather than silently merging. The refusal is checked in `IsValidNetworkNeighbour`, the same chokepoint the leak scan uses, so it cannot be connected from one direction and open from the other (`BlockNetworkNode.cs:749-761`, `BlockNetworkModSystem.cs:434-438`). `AcceptsNeighbour` implementations must be symmetric (`BlockNetworkNode.cs:755-761`).
 
 **Burst mechanics.** A run that sits at or above its weakest burstable pipe's rating with nowhere to vent accumulates `_overpressureSeconds`; at `PipeOverpressureSeconds` one random qualifying pipe fails (`PipeNetwork.cs:774-809, 858-882`). Any relief that drops the pressure below the rating resets the grace (`:799-800`), and the timer is transient - a reload resets it (`:74-76`). Failure drops the pipe's items, puffs steam, pops, removes the node (fracturing the run) and sets the cell to air (`:888-916`). Burst selection prefers the world RNG so a seeded world is deterministic (`:877`).
@@ -175,7 +175,7 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 | 10 | `ClearIfEmptyAndIdle` | `:758-766` | drops `State` once drained and idle for `EmptyClearDelaySeconds` |
 | 11 | `TickOverpressureAndBurst` | `:774-809` | last, so it never mutates the node set while another pass reads it |
 
-The vent strategy is injected per network at registration, so the network core never hard-wires a policy. exlib ships `ChimneyVent` (`Blocks/Networks/ChimneyVent.cs:20`), and iwex injects it with its own draw rate when it registers the pipe network (`IronworkingExpandedModSystem.cs:94-97`). It classifies a vanilla-or-modded chimney (matched by code substring) capping the top connector of an `IChimneyVentable` fitting as a vent, and draws `ChimneyGasDrawRate` L/s per chimney with smoke and a fire-roar loop. A network with no strategy vents nothing - every open end is a leak.
+The vent strategy is injected per network at registration, so the network core never hard-wires a policy. exlib ships `ChimneyVent` (`Blocks/Networks/ChimneyVent.cs:20`), and iiex injects it with its own draw rate when it registers the pipe network (`IronworkingExpandedModSystem.cs:94-97`). It classifies a vanilla-or-modded chimney (matched by code substring) capping the top connector of an `IChimneyVentable` fitting as a vent, and draws `ChimneyGasDrawRate` L/s per chimney with smoke and a fire-roar loop. A network with no strategy vents nothing - every open end is a leak.
 
 ### 7. Plain valve = in-line sever
 
@@ -233,10 +233,10 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `PlatedPipeBurstPressure` | `2.5` | `IwexConfig.cs:206` | iwex tier rating (and buffer multiplier) |
-| `PlatedPipeThroughput` | `50` | `IwexConfig.cs:232` | L/s the plated tier passes; the run's cap is the weakest segment |
-| `ChimneyGasDrawRate` | `16.0` | `IwexConfig.cs:237` | L/s one chimney draws through a ventable fitting |
-| `CastPipeBurstPressure` | `5.0` | `LpexConfig.cs:50` | lpex tier rating |
+| `PlatedPipeBurstPressure` | `2.5` | `IiexConfig.cs:206` | iiex tier rating (and buffer multiplier) |
+| `PlatedPipeThroughput` | `50` | `IiexConfig.cs:232` | L/s the plated tier passes; the run's cap is the weakest segment |
+| `ChimneyGasDrawRate` | `16.0` | `IiexConfig.cs:237` | L/s one chimney draws through a ventable fitting |
+| `CastPipeBurstPressure` | `5.0` | `IiexConfig.cs:50` | iiex tier rating |
 | `RolledPipeBurstPressure` | `12` | `HpexConfig.cs:115` | hpex tier rating |
 
 ### Hard-coded - not config
@@ -251,7 +251,7 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 | `DefaultBurstPressure` | `5` | `BlockPipe.cs:175` | fallback for a domain that never registered a rating |
 | gas-leak temperature drop | `5 °C`, floor `20 °C` | `PipeNetwork.cs:696-697` | per tick, not dt-scaled |
 | passive cooling | `PipeGasCoolPerSecond` 2 °C/s, floor `PipeAmbientTemperature` 20 °C | `ExlibConfig.cs:71`, `:75` | dt-scaled, applies whenever the run holds gas above ambient |
-| pipe throughput | plated 50 · cast 120 · rolled 250 L/s | `IwexConfig` / `LpexConfig` / `HpexConfig` | weakest segment caps the run; fittings and ports are exempt - a tuyere is the machine's intake, not a length of main |
+| pipe throughput | plated 50 · cast 120 · rolled 250 L/s | `IiexConfig` / `IiexConfig` / `HpexConfig` | weakest segment caps the run; fittings and ports are exempt - a tuyere is the machine's intake, not a length of main |
 | gas leak particle ramp | `1 → GasLeakRate`, clamp `0..4` | `PipeNetwork.cs:568-576` | density only |
 | water leak particle ramp | `1 → 5 L`, clamp `0..1` | `PipeNetwork.cs:577` | density only |
 | pressure broadcast epsilon | `0.02 atm` | `PipeNetwork.cs:551` | also the HUD sync threshold (`BlockEntityPipe.cs:233`) |
@@ -267,7 +267,7 @@ The gate is player-dialled in `GatePressureStep` increments between `MinGatePres
 
 ### Pipe geometry (code-first defs, shared by all three tiers)
 
-Every tier calls the same `BlockPipe.Segments(domain, tier)` factory (`BlockPipe.cs:59-65`), each provider passing its own tier - iwex via `PlatedPipeDefinitions.cs:19`, lpex via `CastPipeDefinitions.cs:19`, hpex via `RolledPipeDefinitions.cs:17`. Four blocktypes per tier: straight (`:118`), bend (`:130`), tjunction (`:167`), xjunction (`:204`). Collision/selection is a 5⁄16→11⁄16 core (`:126-127`). Max stack: 16 straight, 8 for the rest. Each tier ships its own shapes at `{domain}:pipes/*` - a tier is a different model, not a tint.
+Every tier calls the same `BlockPipe.Segments(domain, tier)` factory (`BlockPipe.cs:59-65`), each provider passing its own tier - iiex via `PlatedPipeDefinitions.cs:19`, iiex via `CastPipeDefinitions.cs:19`, hpex via `RolledPipeDefinitions.cs:17`. Four blocktypes per tier: straight (`:118`), bend (`:130`), tjunction (`:167`), xjunction (`:204`). Collision/selection is a 5⁄16→11⁄16 core (`:126-127`). Max stack: 16 straight, 8 for the rest. Each tier ships its own shapes at `{domain}:pipes/*` - a tier is a different model, not a tint.
 
 A null `tier` yields the same four blocktypes with no tier axis and the default rating, throughput and joint. That is what `BlockPipe.Definitions` uses to derive `AllowedOrientations` (the map reads only `type` and `orientation`, so no tier is needed and none is invented), and what a consumer shipping one pipe family gets.
 
@@ -284,7 +284,7 @@ A null `tier` yields the same four blocktypes with no tier axis and the default 
 | `INetworkConnector` | `INetworkConnector.cs:15` | the extension point for a machine port. Implement it to be a valid pipe target without joining the graph |
 | `IPipeNode` | `IPipeNode.cs:11` | the extension point for a producer/consumer. Implement it to inject/withdraw without inheriting `BlockEntityPipe` |
 | `IBurstablePipe` | `IBurstablePipe.cs:9` | opt into the burst model: `CanBurst` + `BurstPressure` |
-| `IPipeVentStrategy` | `IPipeVentStrategy.cs` | the injected vent policy; `ChimneyVent.cs:21` is iwex's implementation |
+| `IPipeVentStrategy` | `IPipeVentStrategy.cs` | the injected vent policy; `ChimneyVent.cs:21` is iiex's implementation |
 | `IMediumTaxonomy` | `IMediumTaxonomy.cs:9` | the injected medium policy; `ExLiquids.Taxonomy` is the default |
 | `PipeNetwork` | `PipeNetwork.cs:18` | the pool. `TryProduceGas` (`:96`), `ProduceGasMeasured` (`:175`), `TryConsumeGas` (`:200`), `TryProduceLiquid` (`:231`), `ProduceLiquidMeasured` (`:284`), `TryConsumeLiquid` (`:300`), `OnTick` (`:484`), `MinBurstPressure` (`:838`) |
 | `PipeNetworkState` | `PipeNetworkState.cs:12` | the state object + the two pressure formulas (`:55, 62`) |
@@ -298,14 +298,14 @@ A null `tier` yields the same four blocktypes with no tier axis and the default 
 
 | block | mod | class | notes |
 |---|---|---|---|
-| pipe straight/bend/T/X | iwex, lpex, hpex | `BlockPipe` | the only burstable blocks |
-| valve, pressure valve | lpex | `BlockValve`, `BlockPressureValve` | |
-| outlet | lpex | `BlockPipeOutlet` | `IChimneyVentable`; `BurstPressure = MaxValue`; names no tier |
-| passthrough, passthrough-bend | iwex (plated) **and** lpex (cast) | `BlockPipePassthrough` | `IChimneyVentable`; `BurstPressure = MaxValue`; **tiered** - see below |
-| fluid intake | lpex | `BlockFluidIntake` (`:14`) | BE is a bare `BlockEntityNetworkNode`, not an `IPipeNode` |
-| steam condenser | lpex | `BlockSteamCondenser` (`:22`) | `INetworkConnector` only |
-| boiler, engine, engine fluid pump, manual fluid pump | lpex | `BlockBoiler:46`, `BlockEngine:48`, `BlockEngineFluidPump:37`, `BlockManualFluidPump:31` | machine ports |
-| tuyere, twin-tub MP blower | iwex | `BlockTuyere:14`, `BlockTwinTubMPBlower:28` | `BlockPipe` subclasses - non-bursting, and flanged, so they refuse a rolled run |
+| pipe straight/bend/T/X | iiex, iiex, hpex | `BlockPipe` | the only burstable blocks |
+| valve, pressure valve | iiex | `BlockValve`, `BlockPressureValve` | |
+| outlet | iiex | `BlockPipeOutlet` | `IChimneyVentable`; `BurstPressure = MaxValue`; names no tier |
+| passthrough, passthrough-bend | iiex (plated) **and** iiex (cast) | `BlockPipePassthrough` | `IChimneyVentable`; `BurstPressure = MaxValue`; **tiered** - see below |
+| fluid intake | iiex | `BlockFluidIntake` (`:14`) | BE is a bare `BlockEntityNetworkNode`, not an `IPipeNode` |
+| steam condenser | iiex | `BlockSteamCondenser` (`:22`) | `INetworkConnector` only |
+| boiler, engine, engine fluid pump, manual fluid pump | iiex | `BlockBoiler:46`, `BlockEngine:48`, `BlockEngineFluidPump:37`, `BlockManualFluidPump:31` | machine ports |
+| tuyere, twin-tub MP blower | iiex | `BlockTuyere:14`, `BlockTwinTubMPBlower:28` | `BlockPipe` subclasses - non-bursting, and flanged, so they refuse a rolled run |
 | converter intake, cowper intake, engine air blower, smokestack | smex | `BlockConverterIntake:41`, `BlockCowperStoveIntake:134`, `BlockEngineAirBlower:39`, `BlockEntitySmokeStack:54` | machine ports |
 
 ---
@@ -402,7 +402,7 @@ also gives run length its first consequence: a long main costs flame temperature
 - No pressure drop along a run. Length is free for pressure: a one-block run and a 300-block run
   behave identically apart from capacity. Length is not free for temperature - see ruling 3 above. Whether
   pressure should also fall with distance remains undecided.
-- hpex has segments but no fittings. The welded joint means a rolled run cannot use lpex's valve / pressure valve / outlet / passthrough (`BlockPipe.cs:231-235`). Until hpex ships its own, a rolled run is straight pipe and machine ports.
+- hpex has segments but no fittings. The welded joint means a rolled run cannot use iiex's valve / pressure valve / outlet / passthrough (`BlockPipe.cs:231-235`). Until hpex ships its own, a rolled run is straight pipe and machine ports.
 - Gas leak loss is not dt-scaled (Gotcha 2) and the two leak paths should probably agree.
 - Burst selection is uniform-random among qualifying pipes (`PipeNetwork.cs:875-879`). There is no notion of the pipe nearest the producer, or of fatigue.
 - Only one pipe fails per burst event (`:878`), then the grace resets - so a run held over-pressure loses one pipe every `PipeOverpressureSeconds`, indefinitely.

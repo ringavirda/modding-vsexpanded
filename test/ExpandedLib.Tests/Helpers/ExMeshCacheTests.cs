@@ -70,7 +70,7 @@ public class ExMeshCacheTests {
       firebox,
       ExMeshCache.GetOrCreate(
         capi,
-        BlockNamed("iwex:firebox"),
+        BlockNamed("iiex:firebox"),
         "2",
         () => firebox
       )
@@ -79,7 +79,7 @@ public class ExMeshCacheTests {
       hearth,
       ExMeshCache.GetOrCreate(
         capi,
-        BlockNamed("iwex:hearth"),
+        BlockNamed("iiex:hearth"),
         "2",
         () => hearth
       )
@@ -116,9 +116,9 @@ public class ExMeshCacheTests {
   public void A_blocks_shape_path_is_resolved_without_mutating_the_shared_shape() {
     // WithPathPrefixOnce mutates in place, and Block.Shape is shared by every instance of that blocktype:
     // resolving without the clone corrupts the path for every other reader, cumulatively.
-    Block block = BlockNamed("iwex:firebox");
+    Block block = BlockNamed("iiex:firebox");
     block.Shape = new CompositeShape {
-      Base = new AssetLocation("iwex:block/firebox"),
+      Base = new AssetLocation("iiex:block/firebox"),
     };
     AssetLocation before = block.Shape.Base.Clone();
 

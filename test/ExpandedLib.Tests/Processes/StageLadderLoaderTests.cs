@@ -18,7 +18,7 @@ public class StageLadderLoaderTests {
       "schema": 1,
       "family": "bloom",
       "stages": [
-        { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iwex:rolledrod" },
+        { "thickness": 2.0, "acceptedBy": [ "grooved" ], "code": "iiex:rolledrod" },
         { "thickness": 1.0, "acceptedBy": [ "grooved" ] }
       ]
     }
@@ -33,7 +33,7 @@ public class StageLadderLoaderTests {
   public void A_catalogue_file_becomes_a_ladder() {
     List<StageLadder> ladders = Parse(
       out List<string> errors,
-      ("iwex:config/stageladders/bloom.json", BloomFile)
+      ("iiex:config/stageladders/bloom.json", BloomFile)
     );
 
     Assert.Empty(errors);
@@ -46,7 +46,7 @@ public class StageLadderLoaderTests {
     List<StageLadder> ladders = Parse(
       out List<string> errors,
       ("othermod:config/stageladders/broken.json", """{ "stages": [] }"""),
-      ("iwex:config/stageladders/bloom.json", BloomFile)
+      ("iiex:config/stageladders/bloom.json", BloomFile)
     );
 
     Assert.Single(ladders);
@@ -66,7 +66,7 @@ public class StageLadderLoaderTests {
   public void Loading_replaces_the_registry_rather_than_adding_to_it() {
     // A world reload in the same process must not accumulate a second copy of every rung.
     var registry = new StageLadderRegistry();
-    var files = new[] { ("iwex:config/stageladders/bloom.json", BloomFile) };
+    var files = new[] { ("iiex:config/stageladders/bloom.json", BloomFile) };
 
     StageLadderLoader.Load(files, registry);
     StageLadderLoader.Load(files, registry);
@@ -81,13 +81,13 @@ public class StageLadderLoaderTests {
 
     List<string> errors = StageLadderLoader.Load(
       [
-        ("iwex:config/stageladders/bloom.json", BloomFile),
+        ("iiex:config/stageladders/bloom.json", BloomFile),
         (
           "othermod:config/stageladders/bloom-serrated.json",
           """
           {
             "family": "bloom",
-            "stages": [ { "thickness": 2.0, "acceptedBy": [ "serrated" ], "code": "iwex:rolledrod" } ]
+            "stages": [ { "thickness": 2.0, "acceptedBy": [ "serrated" ], "code": "iiex:rolledrod" } ]
           }
           """
         ),
@@ -109,7 +109,7 @@ public class StageLadderLoaderTests {
 
     List<string> errors = StageLadderLoader.Load(
       [
-        ("iwex:config/stageladders/bloom.json", BloomFile),
+        ("iiex:config/stageladders/bloom.json", BloomFile),
         (
           "othermod:config/stageladders/hijack.json",
           """
@@ -125,7 +125,7 @@ public class StageLadderLoaderTests {
 
     Assert.Contains("hijack.json", Assert.Single(errors));
     Assert.Equal(
-      "iwex:rolledrod",
+      "iiex:rolledrod",
       registry.Ladder("bloom")!.StageAt(2.0f, "grooved")!.Code
     );
   }
@@ -135,11 +135,11 @@ public class StageLadderLoaderTests {
     // What the item emitter reads at inject time: the codes, off the same parse the registry uses.
     List<StageLadder> ladders = Parse(
       out _,
-      ("iwex:config/stageladders/bloom.json", BloomFile)
+      ("iiex:config/stageladders/bloom.json", BloomFile)
     );
 
     Assert.Equal(
-      ["iwex:rolledrod"],
+      ["iiex:rolledrod"],
       ladders
         .SelectMany(l => l.Stages)
         .Where(s => s.IsStoppingPoint)

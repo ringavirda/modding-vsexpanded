@@ -1,18 +1,18 @@
 # Steel roll sets
 
-**Status** designed - nothing built. `RollSetItemDefinitions.Sets` holds four sets, all iwex, all
+**Status** designed - nothing built. `RollSetItemDefinitions.Sets` holds four sets, all iiex, all
 iron-era (`RollSetItemDefinitions.cs:56-104`); no steel set, no cast `StockForm`, no `smex:rollset*` item and
 no recipe exists anywhere. The one field the whole steel tier gates on - `MinTorque` - is parsed, stored,
 validated and never read
-**Mod** smex (`SteelmakingExpanded`) - the sets. The mill block stays iwex; the hall stays lpex.
+**Mod** smex (`SteelmakingExpanded`) - the sets. The mill block stays iiex; the hall stays iiex.
 
 **Owns**
 
 * what a steel roll set is in this suite - a torque grade, not a material grade - and why the name has to
   be read carefully;
 * the two extra wide gaps, 3.5 and 3.0, as smex content: why 4-thick cast stock needs them, that they
-  extend lpex's hall rather than replace it, and the art they are missing;
-* the steel narrow sets that let `castbillet` run the iwex mill's own barrel;
+  extend iiex's hall rather than replace it, and the art they are missing;
+* the steel narrow sets that let `castbillet` run the iiex mill's own barrel;
 * the `MinTorque` tier as the steel line's only gate, what it must be wired into, and why it is vapour
   today;
 * the settled rejections in this area - the `shape` and `wire` sets, and the automation upgrade;
@@ -23,7 +23,7 @@ validated and never read
 | Fact | Owner |
 |---|---|
 | the mill block, its 3 × 3 × 2 footprint, the axle bus, placement/break/drops, the pass lifecycle, `RollingPass` physics (`δ_max = μ²R`, spread, elongation, cooling), the `rollset` spec format and `TryParse`'s rules, the shipped four-set catalogue, `WorkPiece`, `StockForm`, every `Rolling*` key, its blockers and gotchas | [rolling mill](rolling-mill.md) |
-| the hall as a build (N ordinary mills on one shaft), the wide family's shared schema - one gap per item, barrel 16, `MaxWidth` 15 - the four lpex sets, the drawn-gap-is-the-modelled-gap table, the shared-shaft mechanics and the hall's power profile | [wide hall](wide-hall.md) |
+| the hall as a build (N ordinary mills on one shaft), the wide family's shared schema - one gap per item, barrel 16, `MaxWidth` 15 - the four iiex sets, the drawn-gap-is-the-modelled-gap table, the shared-shaft mechanics and the hall's power profile | [wide hall](wide-hall.md) |
 | the energy model, `LoadTorque`, the four node contracts, every `Mp*` key - what a torque number means | [mp-energy](../mechanics/mp-energy.md) |
 | the drive that turns the stands | [flywheel & shafting](flywheel-and-shafting.md) |
 | every crop in the ladder, and the `Outputs` → stage move | [shear](shear.md) |
@@ -32,7 +32,7 @@ validated and never read
 | 1 vx³ = 2.5 u | [density rule](../mechanics/density-rule.md) |
 | the ≤ 32 / ≤ 48 handling limits and the soft-locks | [recoverability](../mechanics/recoverability.md) |
 | keeping stock hot between stands | [reheat furnace](reheat-furnace.md), [heat balance](../mechanics/heat-balance.md) |
-| bending - a different operation, and lpex's | [bending roller](bending-roller.md) |
+| bending - a different operation, and iiex's | [bending roller](bending-roller.md) |
 | code-first defs, recipes, the cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [rolling mill](rolling-mill.md) · [wide hall](wide-hall.md) ·
@@ -48,12 +48,12 @@ Steel changes exactly two things about rolling:
 
 | Change | Consequence |
 |---|---|
-| cast stock is 4 thick, not 3 | the wide train needs two more gaps at the front - 3.5 and 3.0 - before the first lpex stand can bite |
+| cast stock is 4 thick, not 3 | the wide train needs two more gaps at the front - 3.5 and 3.0 - before the first iiex stand can bite |
 | cast steel is harder | the sets need more drive behind them - `MinTorque` (`RollSetItemDefinitions.cs:11-13`) |
 
 Nothing about the machine changes: one mill block, used by three tiers, distinguished only by the tooling
 fitted to it and how many of them are built. smex adds items, not machinery, with the single exception of
-two more copies of a block iwex already ships.
+two more copies of a block iiex already ships.
 
 "Steel roll set" names the stock, not the roll. The rolls stay chilled cast iron in every tier: a roll
 takes steady compression, not shock, so it is cast rather than forged, and harder material tiers gate on
@@ -71,7 +71,7 @@ setting, which is R5 - gate efficiency, not possibility (`../conventions.md`).
 A roll set has no structure - it is an item. The machine it fits is
 [rolling mill](rolling-mill.md)'s; the row of machines it fits into is [wide hall](wide-hall.md)'s.
 
-What smex adds structurally is two more stands bolted onto the front of lpex's hall - two ordinary
+What smex adds structurally is two more stands bolted onto the front of iiex's hall - two ordinary
 `BlockRollingMill`s on the same drive shaft. No new block, no new footprint, no new block entity.
 
 ### The extended train
@@ -80,16 +80,16 @@ What smex adds structurally is two more stands bolted onto the front of lpex's h
 |---|---|---|---|---|
 | 1 | 3.5 | smex | `castbloom` 4 × 4, `castslab` 12 × 4 | art not drawn |
 | 2 | 3.0 | smex | - | art not drawn; also the stand `castbloom` is cropped at ([wide hall](wide-hall.md) § What comes off the end) |
-| 3 | 2.5 | lpex | `shingledslab` 8 × 3 | art not drawn |
-| 4 | 2.0 | lpex | - | drawn: `item-rollers-flatwide20.json` |
-| 5 | 1.5 | lpex | - | drawn: `item-finished-rollers-flatwide15.json` |
-| 6 | 1.0 | lpex | - | drawn: `item-finished-rollers-flatwide10.json` |
+| 3 | 2.5 | iiex | `shingledslab` 8 × 3 | art not drawn |
+| 4 | 2.0 | iiex | - | drawn: `item-rollers-flatwide20.json` |
+| 5 | 1.5 | iiex | - | drawn: `item-finished-rollers-flatwide15.json` |
+| 6 | 1.0 | iiex | - | drawn: `item-finished-rollers-flatwide10.json` |
 
 The entry gap is set by the stock's thickness, so the upgrade is an extension and no stand in the line
-ever becomes obsolete. An lpex player's four stands keep doing what they did; smex's two sit in front of
+ever becomes obsolete. An iiex player's four stands keep doing what they did; smex's two sit in front of
 them.
 
-`castbillet` never sees the train. At 3 × 3 it is narrow stock and runs the iwex mill's grooved barrel
+`castbillet` never sees the train. At 3 × 3 it is narrow stock and runs the iiex mill's grooved barrel
 with a steel set, which is why the steel families are not wide-only.
 
 ---
@@ -97,7 +97,7 @@ with a steel set, which is why the steel families are not wide-only.
 ## Assets
 
 No steel-specific art is needed, and none exists. A roll set's art is its gap, and the gap is a number, so
-the two smex sets need the same kind of shape the four lpex ones need. The gap-drawn-is-gap-modelled
+the two smex sets need the same kind of shape the four iiex ones need. The gap-drawn-is-gap-modelled
 correspondence is [wide hall](wide-hall.md)'s.
 
 | Asset | Path | State |
@@ -130,7 +130,7 @@ The route the art already implies: the roll is a cast part, `item-sandcast-rolle
 drawn blank, and the sand cell casts blanks, so a set should be cast then finished, not forged. That is the
 [casting cell](casting-cell.md)'s job and it costs no new mechanic.
 
-The economy question is smex's, not lpex's, and it is unanswered. lpex already owes an answer for four
+The economy question is smex's, not iiex's, and it is unanswered. iiex already owes an answer for four
 stands ([wide hall](wide-hall.md) § Construction); smex is asking for two more mills plus their sets on
 top.
 
@@ -141,13 +141,13 @@ top.
 Every verb, refusal message, stall rule and wrench recovery is [rolling mill](rolling-mill.md)'s. Fitting a
 steel set is fitting a roll set: right-click the machine holding any collectible carrying a `rollset`
 attribute (`BlockRollingMill.cs:293-320`) - the gate never looks at the item's domain, which is what makes
-a `smex:` set legal at an `iwex:` mill without a line of new code.
+a `smex:` set legal at an `iiex:` mill without a line of new code.
 
 ### What each stock runs on
 
 The schedules - which stock enters which set at which gap, how many feeds, and what each stage lands on -
 are [rolling](../processes/rolling.md)'s. What this page fixes is the family split: `castbillet` is narrow
-stock and runs the iwex mill's own grooved barrel with a steel narrow set; `castbloom` and `castslab` are
+stock and runs the iiex mill's own grooved barrel with a steel narrow set; `castbloom` and `castslab` are
 wide stock and enter the hall's six-stand train at 3.5. Masses, crop points and what each stage is claimed
 as belong to [rolling](../processes/rolling.md) and the [shear](shear.md).
 
@@ -174,7 +174,7 @@ The wide family's shared schema - one gap per item, `barrelWidth` 16, `MaxWidth`
 |---|---|---|---|---|---|
 | `rollset-flatwide35` | flat | 3.5 | `castbloom`, `castslab` | 1.0 | 2 × the shipped `flatwide` 0.5 (`RollSetItemDefinitions.cs:80`) |
 | `rollset-flatwide30` | flat | 3.0 | `castbloom`, `castslab` | 1.0 | " |
-| steel `flatwide` 2.5 … 1.0 | flat | as lpex's | + the two cast wide forms | 1.0 | or lpex's four are simply re-`accepts`-ed - see [Open](#open) |
+| steel `flatwide` 2.5 … 1.0 | flat | as iiex's | + the two cast wide forms | 1.0 | or iiex's four are simply re-`accepts`-ed - see [Open](#open) |
 | `rollset-grooved-steel` | grooved | 2.5 / 2.0 / 1.5 / 1.0 | `castbillet` | 0.6 | 2 × the shipped `grooved` 0.3 (`:92`) |
 | `rollset-flat-steel` | flat | 2.5 / 2.0 / 1.5 / 1.0 | `castbillet` | 0.4 | 2 × the shipped `flat` 0.2 (`:68`) |
 
@@ -220,7 +220,7 @@ run and does not route to its neighbours - [wide hall](wide-hall.md) § Drops.
 
 ## Code — what actually has to be written
 
-smex ships its own item provider; it does not touch iwex's. The spec is authored so that "the tooling
+smex ships its own item provider; it does not touch iiex's. The spec is authored so that "the tooling
 owns the data, the machine only reads it, so any mod adds a rolling product with an item def alone"
 (`RollSetSpec.cs:10-11`), and the fit gate accepts any collectible with a `rollset` attribute regardless of
 domain (`BlockRollingMill.cs:293-320`). The steel family is therefore a new `IExItemDefProvider` in smex
@@ -229,7 +229,7 @@ emitting `smex:rollset-*`, mirroring `RollSetItemDefinitions` exactly.
 | Work | Where | Note |
 |---|---|---|
 | `SteelRollSetItemDefinitions` | `src/SteelmakingExpanded/BlockStructures/Forming/` (new folder) | copy the shape of `RollSetItemDefinitions.cs:17-128`: a `Sets` dictionary, `SetTypes` as "the single source the recipes and the handbook both derive from" (`:106-108`), `attributesByType` (`:126`) |
-| three new `StockForm`s | `IronworkingExpanded/.../StockForm.cs:57-64` | iwex-side - the forms are iwex types even though the stock is smex content. `StockItemDefinitions` emits one item per form automatically ([rolling mill](rolling-mill.md) § Where a caller hooks in) |
+| three new `StockForm`s | `IronIndustryExpanded/.../StockForm.cs:57-64` | iiex-side - the forms are iiex types even though the stock is smex content. `StockItemDefinitions` emits one item per form automatically ([rolling mill](rolling-mill.md) § Where a caller hooks in) |
 | wire `MinTorque` | `MillFeed.Decide` (`MillFeed.cs:95-128`) + a new `FeedVerdict` member (`MillFeed.cs:6-29`) | the refusal must be its own verdict, not folded into `WontBite` - the fix is a bigger plant, exactly as `TooCold`'s fix is a furnace |
 | the two extra stands | - | no code: two more `BlockRollingMill` placements ([wide hall](wide-hall.md)) |
 | draw 3.5 and 3.0 | `assets/editable/shapes/` | |
@@ -237,7 +237,7 @@ emitting `smex:rollset-*`, mirroring `RollSetItemDefinitions` exactly.
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Forming/` holds 123 methods across nine files, `RollSetSpecTests` among
+`test/IronIndustryExpanded.Tests/Blocks/Forming/` holds 123 methods across nine files, `RollSetSpecTests` among
 them ([rolling mill](rolling-mill.md) § Tests). A smex steel family needs its own suite under
 `test/SteelmakingExpanded.Tests/`, and the first test worth writing is the one that does not exist for
 any tier: that a set below `MinTorque` is refused.
@@ -263,8 +263,8 @@ any tier: that a set below `MinTorque` is refused.
   upgrade.
 * Rejected: a fixed list of four named steel sets. What smex contributes is the cast stock, two stands
   and the steel roll-set family - an open family, not a catalogue of four items.
-* The steam hammer is lpex, not smex ([steam hammer](steam-hammer.md), STATE.md placement rule).
-* The bending roller is lpex, and it is not a roll set. "Conical pipe roller" is its old name. Bending
+* The steam hammer is iiex, not smex ([steam hammer](steam-hammer.md), STATE.md placement rule).
+* The bending roller is iiex, and it is not a roll set. "Conical pipe roller" is its old name. Bending
   changes curvature, which `WorkPiece` has no axis for - a different operation
   ([bending roller](bending-roller.md)).
 * The roll-set item is live; the steel family is not. And no roll set of any tier has a recipe.
@@ -283,7 +283,7 @@ any tier: that a set below `MinTorque` is refused.
 
 | # | Question | Notes |
 |---|---|---|
-| 1 | Are steel wide sets separate items, or do lpex's four simply gain the cast forms in `accepts`? | The second is far cheaper and matches the "`wide-flat` is `flatwide` with a different `minTorque`" reading. But then a single item carries two torque grades, which the spec cannot express - one set, one `MinTorque`. Decide before authoring: if the gate is real, the families must be separate |
+| 1 | Are steel wide sets separate items, or do iiex's four simply gain the cast forms in `accepts`? | The second is far cheaper and matches the "`wide-flat` is `flatwide` with a different `minTorque`" reading. But then a single item carries two torque grades, which the spec cannot express - one set, one `MinTorque`. Decide before authoring: if the gate is real, the families must be separate |
 | 2 | What `MinTorque` values? | Unanswerable until the field is read and the mp-energy numbers settle. Anchors: hot pass ≈ 0.338 N·m, one bridged waterwheel ≈ 0.4 N·m headroom ([rolling mill](rolling-mill.md), [mp-energy](../mechanics/mp-energy.md)) |
 | 3 | Wire the per-consumer idle draw into the stands. | Settled 2026-08-05 on [mp-energy](../mechanics/mp-energy.md) § Idle draw: every connected consumer contributes a standing torque, with the clutch transmission as the disconnect. The shipped code still charges friction per run, not per node - until that lands, "steel needs a bigger plant" has no mechanism behind it |
 | 4 | Two roll shapes to draw (3.5, 3.0), plus wiring the ones already drawn | |

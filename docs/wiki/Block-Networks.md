@@ -3,7 +3,7 @@
 A generic connected-graph framework: self-orienting node blocks, live network instances with
 merge/fracture handling, and a single manager `ModSystem`. It also ships
 the two concrete networks the mods use - the `PipeNetwork` (gas + water, registered as `"pipe"` by
-`lpex`) and the `MoltenNetwork` (metal canals, registered as `"molten"` by `iwex`) - so all three
+`iiex`) and the `MoltenNetwork` (metal canals, registered as `"molten"` by `iiex`) - so all three
 mods share one implementation. Each mod just registers the type and supplies its own
 content-specific pieces through the seams below. You register your own network type the same way.
 
@@ -48,9 +48,9 @@ Once, during `ModSystem.Start`, give the manager a factory for your network type
 public override void Start(ICoreAPI api)
 {
     var networks = api.ModLoader.GetModSystem<BlockNetworkModSystem>();
-    // lpex's pipe: the vent strategy is optional content (the vanilla-chimney gas draw).
-    networks.RegisterNetworkType("pipe", () => new PipeNetwork(networks, new LpexChimneyVent()));
-    // iwex's molten canals need no extra pieces beyond the IMoltenCell block entities.
+    // iiex's pipe: the vent strategy is optional content (the vanilla-chimney gas draw).
+    networks.RegisterNetworkType("pipe", () => new PipeNetwork(networks, new IiexChimneyVent()));
+    // iiex's molten canals need no extra pieces beyond the IMoltenCell block entities.
     networks.RegisterNetworkType("molten", () => new MoltenNetwork(networks));
 }
 ```
@@ -68,7 +68,7 @@ through small interfaces the mods implement, never by naming a mod's block type:
 | --- | --- | --- |
 | `IMoltenCell` | the canal block entities | Per-cell metal state + capability flags (`IsFlowSource`, `AcceptsSubMinimumFlow`) the molten flow driver reads. |
 | `IBurstablePipe` | `BlockPipe` | `{ CanBurst, BurstPressure }` - the pipe network walks nodes for the weakest burst rating. |
-| `IPipeVentStrategy` | `LpexChimneyVent` | Optional gas-vent (chimney) classification + draw, injected at `RegisterNetworkType`. |
+| `IPipeVentStrategy` | `IiexChimneyVent` | Optional gas-vent (chimney) classification + draw, injected at `RegisterNetworkType`. |
 | `INetworkNode.OnLeak` | `BlockEntityPipe` (override) | Leak feedback (particles/sound) for a node on a leaking run; default no-op. |
 
 ## Defining a node block

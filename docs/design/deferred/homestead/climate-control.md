@@ -2,7 +2,7 @@
 
 **Status** deferred   **Would live in** **Industrial Homestead** (the planned domestic/chemical mod)
 **Deferred by** the metalworking-only cut - [scope.md](../../scope.md), which owns the decision and the
-rule it applies. The specification survives from the archived lpex spec (git history) and is restated below.
+rule it applies. The specification survives from the archived iiex spec (git history) and is restated below.
 
 **Owns**
 
@@ -20,7 +20,7 @@ rule it applies. The specification survives from the archived lpex spec (git his
 **Depends on**
 
 [scope.md](../../scope.md) - the cut, the carve-outs, the rule · [conventions.md](../../conventions.md)
-- the phase-change/distillation model that stays, and R1/R7 · the archived lpex spec (git history) ·
+- the phase-change/distillation model that stays, and R1/R7 · the archived iiex spec (git history) ·
 [heat balance](../../mechanics/heat-balance.md) - the furnace-scale twin of the room balance ·
 [pipe network](../../mechanics/pipe-network.md) - one medium per run, uniform run temperature, where phase
 change is allowed · [Cornish boiler](../../machines/boiler-cornish.md):233-236, `:493-494` - the live consumer
@@ -96,7 +96,7 @@ Adjacent infrastructure built for other reasons would be reused verbatim:
 | Piece | State | File |
 |---|---|---|
 | The phase-change catalogue and taxonomy | live | `src/ExpandedLib/Fluids/LiquidDef.cs`, `IMediumTaxonomy.cs`, `ExLiquids.cs` |
-| The steam condenser - a connector, not a graph node, bridging two runs and condensing between them | live | `src/LowPressureExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, 1000 ms server tick at `:42` |
+| The steam condenser - a connector, not a graph node, bridging two runs and condensing between them | live | `src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, 1000 ms server tick at `:42` |
 | The exhaust passthrough + chimney vent, which the archived spec listed as the "+heat" waste-heat emitter | live | `src/ExpandedLib/Blocks/Networks/BlockPipePassthrough.cs`; `src/ExpandedLib/Blocks/Networks/ChimneyVent.cs` |
 | Reading ambient temperature from the world | live, twice, and only as ambient | `BlockEntityFurnaceCore.cs`, `BlockEntityTwinTubMPBlower.cs` (both `GetClimateAt`) |
 | The medium catalogue | four entries only - Air, Steam, Exhaust, Water | `assets/exlib/config/liquids.json` |
@@ -108,7 +108,7 @@ a chimney. What does not exist is a room for it to warm. The gap is the room mod
 
 ## The design as it stands
 
-Recorded so it is not redone. All of this comes from the archived lpex spec (git history).
+Recorded so it is not redone. All of this comes from the archived iiex spec (git history).
 
 ### The balance
 
@@ -154,7 +154,7 @@ contributing emitters, per R7 ([conventions.md](../../conventions.md)).
 ## What it would unblock
 
 Nothing in the metalworking line - not a wall, not even a degraded path. No shipped or planned machine in
-`exlib → iwex → lpex → smex → hpex` reads a room temperature; the only two `GetClimateAt` calls in the tree
+`exlib → iiex → iiex → smex → hpex` reads a room temperature; the only two `GetClimateAt` calls in the tree
 read ambient for a furnace's loss term and a blower's intake, and neither would change.
 
 Inside Homestead the picture inverts:

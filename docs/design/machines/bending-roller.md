@@ -4,7 +4,7 @@
 recipe, no shape, no lang key. A repo-wide grep of `src/` for `bend`, `roller` or `conical` returns only pipe
 bend segments. Generalised from the design's "conical pipe roller"
 ([STATE.md:429-434](../../internal/plans/STATE.md)).
-**Mod** lpex (`LowPressureExpanded`)
+**Mod** iiex (`IronIndustryExpanded`)
 
 ## Owns
 
@@ -12,7 +12,7 @@ bend segments. Generalised from the design's "conical pipe roller"
   and why it cannot be expressed as a roll set on the [rolling mill](rolling-mill.md);
 * the one-machine-four-tools catalogue: conical → pipe from skelp · cylindrical → shells and barrels from
   plate · large radius → wheel rims;
-* the placement: why nothing at iron tier bends, and therefore why this is lpex;
+* the placement: why nothing at iron tier bends, and therefore why this is iiex;
 * the machine's own proposed footprint, drive contract, verbs and drops;
 * the state of its art (there is none) and its build order.
 
@@ -93,16 +93,16 @@ operations, and only bending needs a machine ([STATE.md:417-427](../../internal/
 Rivets are the ingredient, so the joining is abstracted into the recipe and no riveting machine is required.
 A powered riveter stays available later as a pure throughput upgrade, but nothing is blocked without one
 ([STATE.md:436-438](../../internal/plans/STATE.md)). The rivet itself comes off the
-[heading machine](heading-machine.md) wearing lpex's rivet die.
+[heading machine](heading-machine.md) wearing iiex's rivet die.
 
-### Why lpex
+### Why iiex
 
 The placement rule sends a machine to the mod that consumes its output, not the one whose materials it is
-made of ([STATE.md:458-476](../../internal/plans/STATE.md), row *bending roller → lpex*):
+made of ([STATE.md:458-476](../../internal/plans/STATE.md), row *bending roller → iiex*):
 
-> Nothing at iron tier bends. iwex's pipes are plated from flat plates - which is what the `plated` tier's
+> Nothing at iron tier bends. iiex's pipes are plated from flat plates - which is what the `plated` tier's
 > name records - and its cast parts are cast, not fabricated. The first thing in the suite that needs a
-> curved plate is a boiler shell, and that is lpex's.
+> curved plate is a boiler shell, and that is iiex's.
 
 Historically plate bending rolls sat next to the shear and the punch in the boiler shop, which is what the
 1867 machine-tool plate at `assets/editable/refs/rivetsnails/` is a page of
@@ -136,7 +136,7 @@ Nothing is drawn. Not the machine, not a roll set, not a single output item.
 | Asset | Path | State |
 |---|---|---|
 | machine shape (editable) | — | none |
-| runtime shape | `assets/lpex/shapes/…` | none (`boiler/`, `engine/`, `pipes/` only) |
+| runtime shape | `assets/iiex/shapes/…` | none (`boiler/`, `engine/`, `pipes/` only) |
 | roll-tooling item shapes | — | none. `item-rollers-*.json` are the mill's roll sets; `item-rollers-castblank.json` is a cast roll blank, and would be the right feedstock for this machine's tooling too |
 | lang keys / handbook page | — | none |
 
@@ -167,7 +167,7 @@ lines, drawn from the shared catalogue rather than a bespoke casting -
 |---|---|
 | `castframe` ×2 (the standards) | the [casting cell](casting-cell.md) / [long cell](long-cell.md) |
 | `castplate-heavy` (the bed) | the same |
-| gear / pinion, rod, nails & strips | iwex's own |
+| gear / pinion, rod, nails & strips | iiex's own |
 | the rolls themselves - cast chilled, like the mill's | no `rollers-castblank` pattern is wired |
 
 Do not invent a new part item for it. The standing rule is "no new part item unless it is used by at least
@@ -279,7 +279,7 @@ Do not copy `RollingPass`. None of it applies - see [Role](#role).
 
 ## Gotchas
 
-* The settled placement is lpex ([STATE.md:476](../../internal/plans/STATE.md)), and the machine is the general
+* The settled placement is iiex ([STATE.md:476](../../internal/plans/STATE.md)), and the machine is the general
   bender, not a pipe-only one.
 * It is not an upgrade to the mill and must never be modelled as a roll set. The `gaps` array would have to
   mean radius; `RollSetSpec.IsWide` (`RollSetSpec.cs:70`) already means "one gap = one stand in a train",
@@ -295,13 +295,13 @@ Do not copy `RollingPass`. None of it applies - see [Role](#role).
 * hpex's rolled pipe tier is uncraftable - B5: four live blocktypes, four shapes, zero recipes
   ([STATE.md:52](../../internal/plans/STATE.md)). The skelp → segment → bell-weld → rolled pipe chain through this
   machine is the intended fix, so B5 and this page are the same work item.
-* A rolled run cannot use lpex's fittings. The welded joint family means rolled (hpex) pipe joins only
+* A rolled run cannot use iiex's fittings. The welded joint family means rolled (hpex) pipe joins only
   rolled pipe; there is no valve, outlet or passthrough for it until hpex ships its own
   ([pipe network](../mechanics/pipe-network.md)). Making rolled pipe reachable therefore does not by itself
   make an HP line buildable.
 * Cast iron cannot be bent any more than it can be rolled - it shatters
   ([cast-parts](../items/cast-parts.md)). Every input to this machine is wrought or steel, which is another
-  reason it cannot be an iwex machine even though its frame is cast.
+  reason it cannot be an iiex machine even though its frame is cast.
 * There is no mill roll set that produces pipe. The mill makes the skelp; the weld and the curl are this
   machine's.
 

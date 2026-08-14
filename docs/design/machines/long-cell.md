@@ -1,6 +1,6 @@
 # Sand Casting Long Cell
 **Status** built and craftable - block, block entity, footprint, recipe, the three cast-stock patterns and
-the size gate all ship; pinned by `LongCellTests.cs`   **Mod** iwex
+the size gate all ship; pinned by `LongCellTests.cs`   **Mod** iiex
 
 **Owns**
 - The long cell's block, block entity, footprint and recipe.
@@ -53,7 +53,7 @@ The impression is one pooled `BEBehaviorMoltenCell` on the principal (`drainFitt
 not a molten-graph node). Its pre-impression ceiling is `UnimpressedCapacity = 3400`
 (`BlockSandCastingLongCell.cs:43`); an impressed pattern's own `capacity` overrides it.
 
-Measured from `assets/iwex/shapes/casting/sandcastinglongcell.json`:
+Measured from `assets/iiex/shapes/casting/sandcastinglongcell.json`:
 
 | Part | Extent (16-space, principal-local) | Note |
 |---|---|---|
@@ -71,7 +71,7 @@ with 2-thick end dams, so a lane cannot exceed 24 voxels in length (`LongCellLay
 
 ## Assets
 
-Seven files, all in `assets/iwex/shapes/casting/`, currently untracked in git; their editable sources in
+Seven files, all in `assets/iiex/shapes/casting/`, currently untracked in git; their editable sources in
 `assets/editable/shapes/` are marked deleted in the working tree.
 
 | Runtime shape | Editable source | Draws |
@@ -141,7 +141,7 @@ shell at double the length, so double the brick and double the clay - 12 bricks 
 + chisel in a 3 × 3 grid. The cost is doubled through quantity, not through a taller pattern: the vanilla
 grid is 3 × 3, so a 3 × 4 pattern would have passed every test and been uncraftable in the world. Two routes
 as with the 1 × 1 cell - coloured brick capturing `{brick}`, and fire brick outputting the `fire` default.
-Cost key `sandcastinglongcell-grid` (`IwexRecipeConfig.cs:94`).
+Cost key `sandcastinglongcell-grid` (`IiexRecipeConfig.cs:94`).
 
 ---
 
@@ -152,7 +152,7 @@ launder face, shake out - with three differences:
 
 1. **The size gate is enforced both ways.** The BE overrides `AcceptedSize => MoldSize.LongCell`
    (`BlockEntitySandCastingLongCell.cs:25`); a 1 × 1 pattern is refused with
-   `iwex-longcell-wrongsize`, and the 1 × 1 cell refuses any non-`cell` pattern symmetrically.
+   `iiex-longcell-wrongsize`, and the 1 × 1 cell refuses any non-`cell` pattern symmetrically.
 2. **The impression spans two cells**, so the filler reroutes interaction to the principal
    (`IFillerInteractionTarget`), exactly as the [casting bed](casting-bed.md) does.
 3. **One pool, not two.** A multi-lane pattern still yields more than one item, but out of a single
@@ -177,8 +177,8 @@ molten-recovery rules.
 | `LongCellLayout` (pure) | `BlockStructures/Casting/LongCellLayout.cs` - `CellCount` 2, `MaxLaneLength` 24, `Footprint()` |
 | the three long patterns | `BlockStructures/Casting/PatternItemDefinitions.cs` - `castbillets` / `castblooms` / `castslab`, `size: "longcell"`, capacities from `CastStockItemDefinitions.Forms` |
 | the stock masses | `Items/CastStockItemDefinitions.cs` - `BilletUnits` 600, `BloomUnits` 1000, `SlabUnits` 3000 |
-| recipe | `Recipes/Grid/CastingRecipeDefinitions.cs:130-152`; cost key `IwexRecipeConfig.cs:94` |
-| tests | `test/IronworkingExpanded.Tests/Blocks/Casting/LongCellTests.cs`, `MoldSpecTests.cs`, `CastMassParityTests.cs` |
+| recipe | `Recipes/Grid/CastingRecipeDefinitions.cs:130-152`; cost key `IiexRecipeConfig.cs:94` |
+| tests | `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs`, `MoldSpecTests.cs`, `CastMassParityTests.cs` |
 
 ---
 
@@ -204,9 +204,9 @@ molten-recovery rules.
 ## Open
 
 - **Whether `castframe` stays.** The filling is drawn (`longcell-filling-castframe.json`) but no
-  `castframe` pattern exists in either mod - it is an lpex machine part, and iwex owning a pattern for
+  `castframe` pattern exists in either mod - it is an iiex machine part, and iiex owning a pattern for
   another mod's product is the coupling the spec-on-the-pattern design exists to avoid
-  (`PatternItemDefinitions.cs`, the `LongCellMolds` note). If the frame casting lands in lpex, it needs a
+  (`PatternItemDefinitions.cs`, the `LongCellMolds` note). If the frame casting lands in iiex, it needs a
   mass; if it does not, the shape is an orphan.
 - **Cut the billet lanes equal** (Gotcha 3) next time the fillings are redrawn.
 - **Recoverability.** A 24-voxel cast piece is inside the ≤ 32 lengthwise escape, but the forming line

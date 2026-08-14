@@ -8,7 +8,7 @@ namespace SteelmakingExpanded.Recipes.Grid;
 
 /// <summary>
 /// Grid recipes for the Bessemer converter's three parts: the control, the transmission and the gas
-/// intake. The two transmission variants (vanilla rusty gear, lpex craftable gear) are interleaved with
+/// intake. The two transmission variants (vanilla rusty gear, iiex craftable gear) are interleaved with
 /// the control and gas intake, so the recipes are listed in explicit source order rather than emitted
 /// from a gear loop.
 /// </summary>
@@ -39,7 +39,7 @@ public class ConverterRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("L", PipeStar(1))
             .OutputBlock("smex:converter-intake-n")
         )
-        .Grid(Transmission("lpex:gear-*")),
+        .Grid(Transmission("iiex:gear-*")),
     ];
 
   private static Action<GridRecipeBuilder> Transmission(string gear) =>

@@ -45,11 +45,11 @@ public class MultiblockFacingsTests {
   // Vertical facings do not move under a Y rotation, so they are not oriented parts.
   [InlineData("game:brickslabs-fire-up-free")]
   [InlineData("game:brickslabs-fire-down-free")]
-  [InlineData("lpex:pipe-outlet-fire-u")]
+  [InlineData("iiex:pipe-outlet-fire-u")]
   // No facing at all, the common case.
   [InlineData("exlib:structurefiller")]
   [InlineData("game:refractorybricks-good-tier*")]
-  [InlineData("iwex:furnace-puddlingcore-*")]
+  [InlineData("iiex:furnace-puddlingcore-*")]
   // A side word must be a whole segment; these are not facings.
   [InlineData("mod:westward-thing")]
   [InlineData("mod:pipe-northgate")]

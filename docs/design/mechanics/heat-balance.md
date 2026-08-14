@@ -1,6 +1,6 @@
 # Heat balance
 
-**Status** live   **Mod** iwex (the model) · exlib (the shared `T_process` law and the HUD formatter)
+**Status** live   **Mod** iiex (the model) · exlib (the shared `T_process` law and the HUD formatter)
 
 **Owns** the furnace heat model and everything that reads it directly:
 * the `T_process = T_in − T_loss` law as furnaces evaluate it, and every term in it - coke factor, air
@@ -33,7 +33,7 @@ Every fired machine in the suite - cold and hot blast furnace, cupola, puddling 
 (through the same exlib helper) the Bessemer converter - settles at a temperature instead of being given one.
 There is no maximum temperature anywhere in the model: a furnace chases wherever the heat it makes and the
 heat it loses balance. The two ceilings the furnace core once carried, 1420 °C natural and 1740 °C boosted,
-are both emergent now; `test/IronworkingExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs:76-78` records the
+are both emergent now; `test/IronIndustryExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs:76-78` records the
 migration.
 
 The cold and the hot blast furnace are therefore the same C# class (`BlockEntityBlastFurnaceCold.cs:12` is a
@@ -243,7 +243,7 @@ Blast furnace (2 tuyeres, 14 L/s base, threshold 2.0 atm):
 | ≥ 36 % | 1.20 atm | 25.2 L/s (cap) | 50.4 L/s |
 
 The tier gate falls out of where those land against the [blower](../machines/twin-tub-blower.md)'s ceiling
-(`IwexConfig.cs:777`, `:785`) and plated pipe's burst rating (`IwexConfig.cs:206`): the 30 % burden is
+(`IiexConfig.cs:777`, `:785`) and plated pipe's burst rating (`IiexConfig.cs:206`): the 30 % burden is
 blowable by the iron tier and the 10 % one is not, by pressure and by plumbing at once. The 20 % standard
 burden is comfortably inside both - nothing about the pressure model blocks it. What blocks it is heat.
 
@@ -343,41 +343,41 @@ and a ceiling here silently capped the advertised hot-blast temperature.
 `MaxAwayCatchupSteps` = 600 (`:48`) with a 1 s sub-tick, so a furnace replays up to 10 minutes of the game
 time it spent unloaded; each replayed `dt` still passes the 2× clamp
 (`ExpandedLib/Blocks/Machines/BEBehaviorProductionMachine.cs:77`, `:146`). `CacheAttributes()` runs at the
-top of every tick (`:430-433`), so `/exmod config iwex <key> <value>` takes effect on the next second - no
+top of every tick (`:430-433`), so `/exmod config iiex <key> <value>` takes effect on the next second - no
 reload.
 
 ---
 
 ## Numbers
 
-`IwexValues.X` is a generated accessor over `IwexConfig.X`; the file:line below is the config declaration.
+`IiexValues.X` is a generated accessor over `IiexConfig.X`; the file:line below is the config declaration.
 
-### Heat balance — `src/IronworkingExpanded/IwexConfig.cs`
+### Heat balance — `src/IronIndustryExpanded/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfCombustionBaseTemp` | 950 °C | IwexConfig.cs:250 | Floor of `T_in` - what a lit charge holds before any coke credit or draught |
-| `BfCombustionCokeGain` | 900 °C | IwexConfig.cs:253 | Coke's contribution at the reference ratio and full blast |
-| `BfReferenceFuelFrac` | 0.20 | IwexConfig.cs:256 | Coke fraction the gain is calibrated at; also the pivot for pressure and draw |
-| `BfCokeSensitivity` | 0.35 | IwexConfig.cs:259 | Slope of `fuelFactor` against coke ratio |
-| `BfMinFuelFactor` | 0.35 | IwexConfig.cs:262 | Floor on `fuelFactor` - slack at shipped values |
-| `BfMaxFuelFactor` | 1.25 | IwexConfig.cs:265 | Ceiling - binds at ≥ 34.29 % coke |
-| `BfDefaultFuelFrac` | 0.20 | IwexConfig.cs:269 | Coke assumed for unstamped charge. Must equal `BfReferenceFuelFrac` |
-| `BfDefaultFluxFrac` | 0.05 | IwexConfig.cs:273 | Flux assumed for unstamped charge, so it grades as standard not as a flux shortfall |
-| `BfNaturalDraughtFactor` | 0.5 | IwexConfig.cs:276 | `airFactor` with no blast at all |
-| `BfStarvationSupplyFrac` | 0.1 | IwexConfig.cs:283 | Supply fraction below which a lit blown furnace counts a disruption. 0 disables |
-| `BfPreheatCoefficient` | 0.35 | IwexConfig.cs:287 | °C of `T_in` per °C the blast is above ambient - the whole hot-blast mechanic |
-| `BfRadiationLossBase` | 120 °C | IwexConfig.cs:290 | Baseline stack radiation |
-| `BfChargeLossFull` | 310 °C | IwexConfig.cs:300 | Cold-charge loss at a furnace loaded to `ChargeCapacityUnits` - see the note below |
-| `BfAmbientReferenceTemp` | 20 °C | IwexConfig.cs:303 | Ambient the loss term is calibrated at; only colder costs |
-| `BfAmbientLossPerDegree` | 1.0 | IwexConfig.cs:306 | °C lost per °C below the reference |
-| `BfAmbientFallbackTemp` | 20 °C | IwexConfig.cs:309 | Ambient assumed when the climate lookup returns null |
-| `FireboxHeatRatePerSecond` | 4 °C/s | IwexConfig.cs:312 | Climb rate toward `T_process`. Firebox only - renamed from `BfHeatRatePerSecond`; the shaft assigns directly |
-| `FireboxCoolRatePerSecond` | 4 °C/s | IwexConfig.cs:315 | Fall rate toward `T_process`. Firebox only - renamed from `BfCoolRatePerSecond` |
-| `BfMeltMarginReference` | 200 °C | IwexConfig.cs:467 | Superheat worth one full `BfMeltMarginGain` step |
-| `BfMeltMarginGain` | 0.75 | IwexConfig.cs:471 | Melt-speed gained per reference step. 0 = flat rate |
-| `BfMeltSpeedMin` | 0.5 | IwexConfig.cs:474 | Slowest melt multiple - unreachable via the melt cycle |
-| `BfMeltSpeedMax` | 2.0 | IwexConfig.cs:477 | Fastest melt multiple |
+| `BfCombustionBaseTemp` | 950 °C | IiexConfig.cs:250 | Floor of `T_in` - what a lit charge holds before any coke credit or draught |
+| `BfCombustionCokeGain` | 900 °C | IiexConfig.cs:253 | Coke's contribution at the reference ratio and full blast |
+| `BfReferenceFuelFrac` | 0.20 | IiexConfig.cs:256 | Coke fraction the gain is calibrated at; also the pivot for pressure and draw |
+| `BfCokeSensitivity` | 0.35 | IiexConfig.cs:259 | Slope of `fuelFactor` against coke ratio |
+| `BfMinFuelFactor` | 0.35 | IiexConfig.cs:262 | Floor on `fuelFactor` - slack at shipped values |
+| `BfMaxFuelFactor` | 1.25 | IiexConfig.cs:265 | Ceiling - binds at ≥ 34.29 % coke |
+| `BfDefaultFuelFrac` | 0.20 | IiexConfig.cs:269 | Coke assumed for unstamped charge. Must equal `BfReferenceFuelFrac` |
+| `BfDefaultFluxFrac` | 0.05 | IiexConfig.cs:273 | Flux assumed for unstamped charge, so it grades as standard not as a flux shortfall |
+| `BfNaturalDraughtFactor` | 0.5 | IiexConfig.cs:276 | `airFactor` with no blast at all |
+| `BfStarvationSupplyFrac` | 0.1 | IiexConfig.cs:283 | Supply fraction below which a lit blown furnace counts a disruption. 0 disables |
+| `BfPreheatCoefficient` | 0.35 | IiexConfig.cs:287 | °C of `T_in` per °C the blast is above ambient - the whole hot-blast mechanic |
+| `BfRadiationLossBase` | 120 °C | IiexConfig.cs:290 | Baseline stack radiation |
+| `BfChargeLossFull` | 310 °C | IiexConfig.cs:300 | Cold-charge loss at a furnace loaded to `ChargeCapacityUnits` - see the note below |
+| `BfAmbientReferenceTemp` | 20 °C | IiexConfig.cs:303 | Ambient the loss term is calibrated at; only colder costs |
+| `BfAmbientLossPerDegree` | 1.0 | IiexConfig.cs:306 | °C lost per °C below the reference |
+| `BfAmbientFallbackTemp` | 20 °C | IiexConfig.cs:309 | Ambient assumed when the climate lookup returns null |
+| `FireboxHeatRatePerSecond` | 4 °C/s | IiexConfig.cs:312 | Climb rate toward `T_process`. Firebox only - renamed from `BfHeatRatePerSecond`; the shaft assigns directly |
+| `FireboxCoolRatePerSecond` | 4 °C/s | IiexConfig.cs:315 | Fall rate toward `T_process`. Firebox only - renamed from `BfCoolRatePerSecond` |
+| `BfMeltMarginReference` | 200 °C | IiexConfig.cs:467 | Superheat worth one full `BfMeltMarginGain` step |
+| `BfMeltMarginGain` | 0.75 | IiexConfig.cs:471 | Melt-speed gained per reference step. 0 = flat rate |
+| `BfMeltSpeedMin` | 0.5 | IiexConfig.cs:474 | Slowest melt multiple - unreachable via the melt cycle |
+| `BfMeltSpeedMax` | 2.0 | IiexConfig.cs:477 | Fastest melt multiple |
 
 > `BfChargeLossFull`'s denominator is `ChargeCapacityUnits` - derived from geometry and `sealed` on the
 > shaft, so no leaf can re-introduce a hand-picked total. Caution: a number that is both the numerator's
@@ -387,28 +387,28 @@ reload.
 > clamp at 1 whatever the denominator is. (A cold blast furnace holds 1 248 units - 39 chargeable
 > cells × 32.)
 
-### Raceway rate — `src/IronworkingExpanded/IwexConfig.cs`, shaft branch only
+### Raceway rate — `src/IronIndustryExpanded/IiexConfig.cs`, shaft branch only
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfRacewayCarbonPerTuyerePerSecond` | 0.175 u/s | IwexConfig.cs:343 | Carbon burned per tuyere per second at full blast, in blast-furnace charge units |
-| `BfBurdenPerCarbonUnit` | 4 | IwexConfig.cs:373 | Burden melted per unit of carbon burned - the coke rate, inverted. 4 is the 20 % reference read as a ratio, so a reference charge is eaten in the proportion it was laid |
-| `BfRacewayGasPerCokeUnit` | 20 | IwexConfig.cs:393 | Gas risen per unit of carbon burned |
-| `BfShaftGasTransferFrac` | 0.02 | IwexConfig.cs:409 | Fraction of the passing gas each charge unit absorbs; scales inversely with the unit size |
-| `BfFuelCarbonReference` | 2 | IwexConfig.cs:435 | Fuel-role value that counts as one full carbon unit - coke's. Charcoal (1) burns as half; a fuel granted the role with no value defaults to 1.0, deliberately the under-performing direction |
+| `BfRacewayCarbonPerTuyerePerSecond` | 0.175 u/s | IiexConfig.cs:343 | Carbon burned per tuyere per second at full blast, in blast-furnace charge units |
+| `BfBurdenPerCarbonUnit` | 4 | IiexConfig.cs:373 | Burden melted per unit of carbon burned - the coke rate, inverted. 4 is the 20 % reference read as a ratio, so a reference charge is eaten in the proportion it was laid |
+| `BfRacewayGasPerCokeUnit` | 20 | IiexConfig.cs:393 | Gas risen per unit of carbon burned |
+| `BfShaftGasTransferFrac` | 0.02 | IiexConfig.cs:409 | Fraction of the passing gas each charge unit absorbs; scales inversely with the unit size |
+| `BfFuelCarbonReference` | 2 | IiexConfig.cs:435 | Fuel-role value that counts as one full carbon unit - coke's. Charcoal (1) burns as half; a fuel granted the role with no value defaults to 1.0, deliberately the under-performing direction |
 
-### Blast demand — `src/IronworkingExpanded/IwexConfig.cs`
+### Blast demand — `src/IronIndustryExpanded/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfBlastPressureAtReference` | 2.0 atm | IwexConfig.cs:170 | Pressure a reference burden demands (the blast furnace's `BlastPressureThreshold`) |
-| `BfBlastPressureCokeSensitivity` | 7.5 | IwexConfig.cs:177 | atm added per unit of coke shortfall against the reference |
-| `BfBlastPressureMin` | 1.2 atm | IwexConfig.cs:180 | Floor - binds at ≥ 30.67 % coke |
-| `BfBlastPressureMax` | 6 atm | IwexConfig.cs:183 | Ceiling - dead at shipped values, the raw maximum is 3.5 |
-| `BfTuyereDrawMinFactor` | 0.4 | IwexConfig.cs:186 | Floor on the draw factor - binds at ≤ 8 % coke |
-| `BfTuyereDrawMaxFactor` | 1.8 | IwexConfig.cs:189 | Ceiling - binds at ≥ 36 % coke |
-| `TuyereIntakeVolume` | 14 L/s | IwexConfig.cs:573 | Blast furnace, per tuyere, at the reference coke fraction |
-| `CupolaTuyereIntakeVolume` | 12 L/s | IwexConfig.cs:627 | Cupola, single tuyere |
+| `BfBlastPressureAtReference` | 2.0 atm | IiexConfig.cs:170 | Pressure a reference burden demands (the blast furnace's `BlastPressureThreshold`) |
+| `BfBlastPressureCokeSensitivity` | 7.5 | IiexConfig.cs:177 | atm added per unit of coke shortfall against the reference |
+| `BfBlastPressureMin` | 1.2 atm | IiexConfig.cs:180 | Floor - binds at ≥ 30.67 % coke |
+| `BfBlastPressureMax` | 6 atm | IiexConfig.cs:183 | Ceiling - dead at shipped values, the raw maximum is 3.5 |
+| `BfTuyereDrawMinFactor` | 0.4 | IiexConfig.cs:186 | Floor on the draw factor - binds at ≤ 8 % coke |
+| `BfTuyereDrawMaxFactor` | 1.8 | IiexConfig.cs:189 | Ceiling - binds at ≥ 36 % coke |
+| `TuyereIntakeVolume` | 14 L/s | IiexConfig.cs:573 | Blast furnace, per tuyere, at the reference coke fraction |
+| `CupolaTuyereIntakeVolume` | 12 L/s | IiexConfig.cs:627 | Cupola, single tuyere |
 
 ### Cadence and melt points
 
@@ -419,22 +419,22 @@ geometry (`ChargeUnitScale` stretching the same carbon rate over ~3 000 metal un
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `BfIronMeltingPoint` | 1482 °C | IwexConfig.cs:507 | Iron's melt line - the shaft's `AtMeltingTemperature` and the firebox's `Firing` → `Melting` |
-| `FireboxMaxFuelBurnTime` | 1200 s | IwexConfig.cs:516 | Firing time before burnout. Does not run during `Melting` |
-| `FireboxMeltStartDelay` | 300 s | IwexConfig.cs:519 | Soak above the melt point before `Melting` |
-| `FireboxMeltIntervalSec` | 10 s | IwexConfig.cs:522 | Nominal melt-cycle period, divided by the melt-speed factor |
-| `CupolaCastIronMeltingPoint` | 1200 °C | IwexConfig.cs:568 | Cupola threshold - cast iron's remelt point |
-| `RollingTempC` | 900 °C | IwexConfig.cs:822 | Reheat furnace's threshold (a reheat target, not a melt point) - owned by [rolling](../processes/rolling.md) |
+| `BfIronMeltingPoint` | 1482 °C | IiexConfig.cs:507 | Iron's melt line - the shaft's `AtMeltingTemperature` and the firebox's `Firing` → `Melting` |
+| `FireboxMaxFuelBurnTime` | 1200 s | IiexConfig.cs:516 | Firing time before burnout. Does not run during `Melting` |
+| `FireboxMeltStartDelay` | 300 s | IiexConfig.cs:519 | Soak above the melt point before `Melting` |
+| `FireboxMeltIntervalSec` | 10 s | IiexConfig.cs:522 | Nominal melt-cycle period, divided by the melt-speed factor |
+| `CupolaCastIronMeltingPoint` | 1200 °C | IiexConfig.cs:568 | Cupola threshold - cast iron's remelt point |
+| `RollingTempC` | 900 °C | IiexConfig.cs:822 | Reheat furnace's threshold (a reheat target, not a melt point) - owned by [rolling](../processes/rolling.md) |
 
 Config-migration rule, learned here (2026-08-06): key deletions need no reset row - there is no field to bind,
 `nameof` on a deleted field will not compile, and an orphan key in an existing `ex_values.json` is ignored on
 load. Key renames do need one - without it, a player who had retuned the old key silently gets the shipped
-default under the new name while their value sits unread. The `0.3.0` row in `IwexConfig.Migrations` resets
+default under the new name while their value sits unread. The `0.3.0` row in `IiexConfig.Migrations` resets
 the five `Bf*` → `Firebox*` renames for exactly that reason.
 
 ### Hard-coded — not config, editable only in source
 
-All in `src/IronworkingExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs` unless noted. Every one of
+All in `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs` unless noted. Every one of
 these is a `virtual` member, so a subclass can override it - but no `/exmod config` key exists.
 
 | Constant | Value | file:line | What it does |
@@ -514,7 +514,7 @@ glyph, so `CellRole.Tuyere` and `CellRole.GasOutlet` answer empty. It does not t
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs` - the calibration anchor table
+`test/IronIndustryExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs` - the calibration anchor table
 (`:79-104`), the melt-line consequences (`:105-123`), preheat isolation (`:124-138`), both clamps
 (`:140-171`), the empty/overfull hearth (`:173-192`), unstamped charge (`:193-211`), and the one-sided ambient
 term (`:212-231`). Also `FurnaceHudDistributionTests.cs` for which component block shows which slice.
@@ -569,7 +569,7 @@ term (`:212-231`). Also `FurnaceHudDistributionTests.cs` for which component blo
     place in the model that ignores the climate it otherwise samples every tick.
 
 11. **`BfDefaultFuelFrac` must track `BfReferenceFuelFrac`.** The invariant is stated in the source
-    (`IwexConfig.cs:198-200`) and asserted indirectly by `HeatBalanceTests.cs:193-211`, but nothing in the
+    (`IiexConfig.cs:198-200`) and asserted indirectly by `HeatBalanceTests.cs:193-211`, but nothing in the
     config system enforces it. Change one and every legacy/unstamped charge silently re-grades.
 
 12. **The reheat furnace pins `fuelFactor` at its ceiling.** It reports `mix = new BurdenMix(0f, 0f, count)`
@@ -603,9 +603,9 @@ term (`:212-231`). Also `FurnaceHudDistributionTests.cs` for which component blo
    budget should run in both phases, or `FireboxMaxFuelBurnTime` should be documented as a warm-up budget
    rather than a run length.
 
-3. **There is no preheat source in iwex.** The only thing that raises `blastTemp` is the smex
+3. **There is no preheat source in iiex.** The only thing that raises `blastTemp` is the smex
    [cowper](../machines/cowper.md), which is two tiers downstream - so at the iron tier every furnace is
-   cold-blast by construction, and the preheat term is dead weight until steel. Whether iwex should get a
+   cold-blast by construction, and the preheat term is dead weight until steel. Whether iiex should get a
    modest recuperator is undecided.
 
 4. **The reheat furnace holds heat but does not transfer it.** `SmeltCycle` is empty

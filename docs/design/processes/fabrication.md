@@ -6,7 +6,7 @@ originals only `castplate-heavy` and `cast-barrel` exist as items
 nowhere in `src/`. No fabricated substitute exists for any of them, no rolled plate, beam or rivet exists to
 build one from, and the RCC machinery cannot currently express "either half" at all - see
 [Numbers](#numbers).
-**Mods** iwex owns the cast originals and the heading machine · lpex owns the
+**Mods** iiex owns the cast originals and the heading machine · iiex owns the
 [bending roller](../machines/bending-roller.md), the rivet die and the plate · smex supplies the cheap
 steel · hpex is the first consumer that has no choice
 
@@ -32,7 +32,7 @@ steel · hpex is the first consumer that has no choice
 | the casting stations, the `mold` / `MoldSpec` schema, patterns, ram / imprint / shake-out | [casting cell](../machines/casting-cell.md), [long cell](../machines/long-cell.md) |
 | bending - the machine, the pass model, cold work, the four tooling routes, and the no-welding-verb rule | [bending](bending.md), [bending roller](../machines/bending-roller.md) |
 | the schedules that produce `beam`, plate, `heavyplate` and `boilerplate` | [rolling](rolling.md) |
-| the rivet - the bench, the `ItemDie` contract, the nail/bolt/rivet/ball die split, and why the rivet die is lpex's | [heading machine](../machines/heading-machine.md) |
+| the rivet - the bench, the `ItemDie` contract, the nail/bolt/rivet/ball die split, and why the rivet die is iiex's | [heading machine](../machines/heading-machine.md) |
 | the converter, blown iron, mandatory recarburisation, ferroalloys, the ladle | [bessemer](../machines/bessemer.md), [open hearth](../machines/open-hearth.md), [ladle](../machines/ladle.md), [cupola](../machines/cupola.md) |
 | `1 vx³ = 2.5 u` and the measured mass of every shipped part | [density rule](../mechanics/density-rule.md) |
 | RCC construction stages, grid recipes, `ExRecipeCosts`, goldens | [recipes & config](../mechanics/recipes-config.md) |
@@ -82,7 +82,7 @@ The steel ladder is settled by what the product must guarantee, not by date:
 |---|---|---|
 | Bessemer | volume, and nothing else | structural fabrication - beams, plate, shells, frames |
 | open hearth | pressure grades and alloys | boilers, pressure parts, hadfield |
-| crucible (iwex, Huntsman 1740) | purity | tools and weapons |
+| crucible (iiex, Huntsman 1740) | purity | tools and weapons |
 | chrome steel | hardness and accuracy | bearings and files |
 | HSS | hot hardness | endgame cutting |
 
@@ -120,7 +120,7 @@ Bessemer ──▶ ladle ──▶ recarburise ──▶ long cell ──▶ cas
                       │                          bending roller              │
                       │                                   │                  │
                       └──────────────┬────────────────────┴──────────────────┘
-                                     │        + rivets  (heading machine, lpex die)
+                                     │        + rivets  (heading machine, iiex die)
                                      ▼
                      recipe / RCC stage ──▶ fabricated castframe · castshell ·
                                             cast-barrel · castwheelsection · castplate
@@ -135,14 +135,14 @@ Bessemer ──▶ ladle ──▶ recarburise ──▶ long cell ──▶ cas
 | 2 | [long cell](../machines/long-cell.md) | pour | `castslab` / `castbloom` / `castbillet` |
 | 3 | [rolling](rolling.md) | the wide train, or the narrow `flat` set | `heavyplate` · `boilerplate` · `beam` · plate |
 | 4 | [bending roller](../machines/bending-roller.md) | multi-pass, cold - only for the curved parts | a shell, a barrel, a rim |
-| 5 | [heading machine](../machines/heading-machine.md) + lpex's rivet die | one 25 u rod per blow | rivets |
+| 5 | [heading machine](../machines/heading-machine.md) + iiex's rivet die | one 25 u rod per blow | rivets |
 | 6 | a grid recipe or an RCC stage | assemble | the fabricated part |
 | 7 | any machine that wants the part | build | the bill must accept either half - see [Numbers](#numbers) |
 
 Only step 4 needs a machine that does not already exist for other reasons; steps 3, 5 and 6 are the mill, a
 bench and a recipe.
 
-Steps 4 and 5 are both lpex, so an iwex-only player can fabricate nothing that needs a rivet or a curve.
+Steps 4 and 5 are both iiex, so an iiex-only player can fabricate nothing that needs a rivet or a curve.
 Nothing at iron tier bends and rivets arrive with the first thing that holds pressure, so fabrication is a
 steam-tier process throughout, not a steel-tier one; only the volume that makes it worth doing is smex's.
 
@@ -168,7 +168,7 @@ Three ingredients cover every fabricated part:
 |---|---|---|---|
 | `beam` | 4.5 × 2 × 9 | 200 u | narrow `flat` 2.0, cropped in half ([rolling](rolling.md)) |
 | plate - `game:metalplate` · `heavyplate` · `boilerplate` | 9 × 1 × 9 · 12 × 2 × 10 · 15 × 1 × 16 | 200 · 600 · 600 u | the mill; the wide ones need [the hall](../machines/wide-hall.md) |
-| rivets | — | undefined | one 25 u rod per rivet at the [heading machine](../machines/heading-machine.md), wearing lpex's rivet die |
+| rivets | — | undefined | one 25 u rod per rivet at the [heading machine](../machines/heading-machine.md), wearing iiex's rivet die |
 
 `beam` is the panel's opposite number: `castframe` is the beam (carries load in one direction - standards,
 beds, housings), `castshell` is the panel (a wall section - cistern, crusher casing). Between them they build
@@ -200,7 +200,7 @@ the five pairs, or the dual path becomes ten separate recipes.
 |---|---|---|---|---|
 | settled (D2, re-affirmed 2026-08-07) | 10 × 2 × 10 | 200 | 500 u | — |
 | the C# constant | — | — | 160 u - follows | `CastPartItemDefinitions.cs:21` |
-| the shipped runtime shape | 12 × 2 × 12 | 288 | 720 u by the rule - follows | `assets/iwex/shapes/item/heavyplate.json` |
+| the shipped runtime shape | 12 × 2 × 12 | 288 | 720 u by the rule - follows | `assets/iiex/shapes/item/heavyplate.json` |
 | the newly drawn editable shape | 8 × 2 × 8 | 128 | 320 u by the rule - follows | `assets/editable/shapes/item-castplate.json` (untracked) |
 | the casting cavity box | `Box(7,4,4, 9,14,12)` = 2 × 10 × 8 | 160 | 160 u at an implicit 1 u/vx³ - follows | `PatternItemDefinitions.cs:73-78` |
 
@@ -280,8 +280,8 @@ may still cast everything else.
 * The long cell, which is what would cast `castframe`, does not exist. Seven shapes are drawn (including
   `longcell-filling-castframe.json`) and the only code is one `MoldSize` enum member
   ([long cell](../machines/long-cell.md)).
-* Fabrication is gated on lpex end to end - the bend is lpex's machine and the rivet is lpex's die - so
-  "cast vs fabricate" is never a choice an iwex-only player makes. That is consistent with the placement
+* Fabrication is gated on iiex end to end - the bend is iiex's machine and the rivet is iiex's die - so
+  "cast vs fabricate" is never a choice an iiex-only player makes. That is consistent with the placement
   rule, but it means the iron tier's structural parts have exactly one route and the "two routes" framing
   does not begin until steam.
 * Neither the balance nor the costs exist, so the design's own central claim (cast when you have a cupola,

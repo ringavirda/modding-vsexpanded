@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded;
+using IronIndustryExpanded;
 using SteelmakingExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -43,9 +43,9 @@ public partial class BlockConverterControl : Block, IExBlockDefProvider {
           // `Any` wildcards the skin group: the canal ships one def per rock skin, but both skins
           // produce the same `Any` string, so either entry spans both. MoltenCanalSkinsAgreeTests pins
           // that; if the skins stop rendering the same segments, this narrows to one of them.
-          .Number(IwexBlocks.MoltenCanalTap.Any, 5)
-          .Number(IwexBlocks.MoltenCanalBrickStart.Any, 6)
-          .Number(IwexBlocks.MoltenCanalBrickStraight.Any, 7)
+          .Number(IiexBlocks.MoltenCanalTap.Any, 5)
+          .Number(IiexBlocks.MoltenCanalBrickStart.Any, 6)
+          .Number(IiexBlocks.MoltenCanalBrickStraight.Any, 7)
           .Number(ExCodes.Filler, 8)
           // control + transmission below it
           .At(0, 0, 0, 1)

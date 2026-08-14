@@ -311,21 +311,21 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode {
     }
 
     if (_openingsCount > 0)
-      dsc.AppendLine(Lang.Get("iwex:pipe-info-leaking"));
+      dsc.AppendLine(Lang.Get("exlib:pipe-info-leaking"));
 
     // Throughput (L/s) rather than fill level: a line pushed and drained at once carries plenty yet
     // sits near 0 L stored, which would otherwise read as empty.
     if (IsLiquid) {
       dsc.AppendLine(
         Lang.Get(
-          "iwex:pipe-info-flow",
+          "exlib:pipe-info-flow",
           ExMeasure.FlowRate(_clientFlowRate),
-          Lang.Get("iwex:pipe-medium-water"),
+          Lang.Get("exlib:pipe-medium-water"),
           ExMeasure.Temperature(Temperature, "F1")
         )
       );
       dsc.AppendLine(
-        Lang.Get("iwex:pipe-info-pressure", ExMeasure.Pressure(Pressure))
+        Lang.Get("exlib:pipe-info-pressure", ExMeasure.Pressure(Pressure))
       );
     } else if (_clientMaxVolume > 0 && (Medium.Length > 0 || _clientFlowRate > 0)) {
       // A run drained as fast as it is fed holds nothing, and its medium label clears with the last
@@ -334,18 +334,18 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode {
       // whole blast. Name the gas while the run still knows it, and say gas when it does not.
       dsc.AppendLine(
         Lang.Get(
-          "iwex:pipe-info-flow",
+          "exlib:pipe-info-flow",
           ExMeasure.FlowRate(_clientFlowRate),
           Lang.Get(
             Medium.Length > 0
-              ? "iwex:pipe-medium-" + Medium.ToLowerInvariant()
-              : "iwex:pipe-medium-unknown"
+              ? "exlib:pipe-medium-" + Medium.ToLowerInvariant()
+              : "exlib:pipe-medium-unknown"
           ),
           ExMeasure.Temperature(Temperature, "F1")
         )
       );
       dsc.AppendLine(
-        Lang.Get("iwex:pipe-info-pressure", ExMeasure.Pressure(Pressure))
+        Lang.Get("exlib:pipe-info-pressure", ExMeasure.Pressure(Pressure))
       );
 
       // Production is capped at the burst rating, so only the weakest pipes in a run reach it and
@@ -355,9 +355,9 @@ public class BlockEntityPipe : BlockEntityNetworkNode, IPipeNode {
         && bp.CanBurst
         && Pressure >= bp.BurstPressure - 0.001f
       )
-        dsc.AppendLine(Lang.Get("iwex:pipe-info-overpressure"));
+        dsc.AppendLine(Lang.Get("exlib:pipe-info-overpressure"));
     } else
-      dsc.AppendLine(Lang.Get("iwex:pipe-info-empty"));
+      dsc.AppendLine(Lang.Get("exlib:pipe-info-empty"));
   }
 
   #endregion

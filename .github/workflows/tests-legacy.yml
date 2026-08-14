@@ -61,8 +61,8 @@ jobs:
         env:
           TFM: ${{ matrix.tfm }}
         run: |
-          for proj in ExpandedLib.Tests IronworkingExpanded.Tests \
-                      LowPressureExpanded.Tests HighPressureExpanded.Tests \
+          for proj in ExpandedLib.Tests IronIndustryExpanded.Tests \
+                      IronIndustryExpanded.Tests HighPressureExpanded.Tests \
                       SteelmakingExpanded.Tests; do
             echo "::group::$proj ($TFM)"
             dotnet test "test/$proj/$proj.csproj" -p:Legacy=true -f "$TFM" -c Debug

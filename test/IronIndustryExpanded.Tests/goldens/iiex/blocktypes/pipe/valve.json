@@ -1,0 +1,116 @@
+{
+  "code": "pipe",
+  "class": "iiex.BlockValve",
+  "entityClass": "iiex.BlockEntityValve",
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "blockmaterial": "Metal",
+  "sounds": {
+    "place": "game:block/anvil",
+    "break": "game:block/anvil",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone"
+  },
+  "maxstacksize": 1,
+  "creativeinventory": {
+    "general": [
+      "*-valve-sn"
+    ],
+    "iiex": [
+      "*-valve-sn"
+    ]
+  },
+  "behaviors": [
+    {
+      "name": "Lockable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "tier",
+      "states": [
+        "cast"
+      ]
+    },
+    {
+      "code": "type",
+      "states": [
+        "valve"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we",
+        "ud",
+        "sn",
+        "ew",
+        "du"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-valve-ns": {
+      "base": "iiex:pipe/valve"
+    },
+    "*-valve-we": {
+      "base": "iiex:pipe/valve",
+      "rotateY": 90
+    },
+    "*-valve-ud": {
+      "base": "iiex:pipe/valve",
+      "rotateX": 90
+    },
+    "*-valve-sn": {
+      "base": "iiex:pipe/valve",
+      "rotateY": 180
+    },
+    "*-valve-ew": {
+      "base": "iiex:pipe/valve",
+      "rotateY": -90
+    },
+    "*-valve-du": {
+      "base": "iiex:pipe/valve",
+      "rotateX": 90,
+      "rotateY": 180
+    }
+  },
+  "textures": {
+    "iron4": {
+      "base": "game:block/metal/sheet-plain/iron4"
+    }
+  },
+  "collisionboxes": [
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 1.0
+    }
+  ],
+  "selectionboxes": [
+    {
+      "x1": 0.3125,
+      "y1": 0.3125,
+      "z1": 0.0,
+      "x2": 0.6875,
+      "y2": 0.6875,
+      "z2": 1.0
+    }
+  ],
+  "renderpass": "OpaqueNoCull",
+  "faceCullMode": "NeverCull",
+  "lightAbsorption": 0,
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

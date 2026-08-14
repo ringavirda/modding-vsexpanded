@@ -44,8 +44,8 @@
         "${workspaceFolder}/bin/Mods",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/Mods/mod",
-        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/Mods/mod"
       ],
       "problemMatcher": []
@@ -216,7 +216,7 @@
     // ----------------------------------------------------------------------------------------
     // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
     // Each version is provisioned into .game/<slug> by scripts/exmod.ps1 (no machine-wide
-    // install needed); the build and launch read it from there. build-smex pulls exlib + lpex via
+    // install needed); the build and launch read it from there. build-smex pulls exlib + iiex via
     // project references, so a single build covers the chain.
     // ----------------------------------------------------------------------------------------
     {
@@ -303,9 +303,9 @@
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.21",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
-        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net8.0/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net8.0/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net8.0/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net8.0/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net8.0/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net8.0/Mods/mod"
       ],
       "problemMatcher": []
@@ -322,9 +322,9 @@
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.20",
         "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
-        "lpex=${workspaceFolder}/src/LowPressureExpanded/bin/Debug/net7.0/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net7.0/Mods/mod",
         "smex=${workspaceFolder}/src/SteelmakingExpanded/bin/Debug/net7.0/Mods/mod",
-        "iwex=${workspaceFolder}/src/IronworkingExpanded/bin/Debug/net7.0/Mods/mod",
+        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net7.0/Mods/mod",
         "hpex=${workspaceFolder}/src/HighPressureExpanded/bin/Debug/net7.0/Mods/mod"
       ],
       "problemMatcher": []

@@ -2,7 +2,7 @@
 
 **Status** designed - nothing built. No ball item, no shingling recipe on either machine, no `bar` stock
 form, and no steam hammer at all. The two product shapes are drawn and untracked
-**Mods** iwex - the ball, the helve route, `shingledbar` · lpex - the steam hammer and `shingledslab`
+**Mods** iiex - the ball, the helve route, `shingledbar` · iiex - the steam hammer and `shingledslab`
 
 ## Owns
 
@@ -71,13 +71,13 @@ gives the [reheat furnace](../machines/reheat-furnace.md) a job.
 |---|---|---|---|---|
 | 1 | Draw a white-hot ball from the hearth | [puddling furnace](../machines/puddling-furnace.md) | RMB the hearth row | no |
 | 2 | Pile balls on the anvil | vanilla anvil | RMB, one ball at a time - the same voxel accumulation as stacking ingots for a vanilla plate | no |
-| 3a | Strike - helve | helve hammer (MP, iwex) | run the helve; it works toward its one smithing recipe | no |
-| 3b | Strike - steam hammer | steam hammer (LP, lpex) | pull the lever; the machine reads the anvil at the first pull | no |
+| 3a | Strike - helve | helve hammer (MP, iiex) | run the helve; it works toward its one smithing recipe | no |
+| 3b | Strike - steam hammer | steam hammer (LP, iiex) | pull the lever; the machine reads the anvil at the first pull | no |
 | 4 | Carry the piece off | - | it is now generic wrought stock, cooling | the item exists (`stock-*`), the route into it does not |
 | 5 | Reheat / roll / crop | [reheat furnace](../machines/reheat-furnace.md) → [rolling mill](../machines/rolling-mill.md) → [shear](../machines/shear.md) | - | mill live, nothing feeds it |
 
 Implementation is the vanilla pipeline, not a new machine. The ball is a forgeable item (cf. vanilla's
-`ItemIronBloom`) and shingling is an anvil + helve + smithing-recipe interaction. iwex already drives that
+`ItemIronBloom`) and shingling is an anvil + helve + smithing-recipe interaction. iiex already drives that
 pipeline for a different purpose - a pig placed on the anvil becomes a marked work item and the helve
 shatters it (`Items/ItemPig.cs:98-119`, `Patches/AnvilPigBreakingPatches.cs`,
 `Recipes/Smithing/PigRecipeDefinitions.cs:20-35`) - so the template for the helve half already exists and is
@@ -89,8 +89,8 @@ tested.
 
 | Pile | Balls | Mass in | Product | Section × length | vx³ | Mass out | Machine | Mod |
 |---|---|---|---|---|---|---|---|---|
-| small | 2 | 400 u | `shingledbar` | 3 × 3 × 18 | 162 | 400 u | helve - its only recipe | iwex |
-| large | 6 | 1200 u | `shingledslab` | 8 × 3 × 20 | 480 | 1200 u | steam hammer only | lpex |
+| small | 2 | 400 u | `shingledbar` | 3 × 3 × 18 | 162 | 400 u | helve - its only recipe | iiex |
+| large | 6 | 1200 u | `shingledslab` | 8 × 3 × 20 | 480 | 1200 u | steam hammer only | iiex |
 
 Both are the generic wrought stock - the same item family the mill eats. The hammer sets no section; it
 only makes the lump into a piece. Both leave the hammer 3 voxels thick, which is the mill's entry
@@ -150,9 +150,9 @@ Measured off the files, children counted as additional solid per
 | `StockForm.All` | shingledbar, shingledslab - two entries | `StockForm.cs:80` | `bloom`/`slab` survive only as `FormerNames` |
 | `stock-shingledbar` mass | 400 u | `StockItemDefinitions.cs:24` | a 2-ball bar - correct |
 | `stock-shingledslab` mass | 1200 u | `StockItemDefinitions.cs:25` | a 6-ball slab - correct |
-| `stock-shingledbar-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `assets/iwex/shapes/forming/` | ⛔ the drawn shingled bar is 162 vx³ - the art still lags the form by 2 voxels of length |
+| `stock-shingledbar-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `assets/iiex/shapes/forming/` | ⛔ the drawn shingled bar is 162 vx³ - the art still lags the form by 2 voxels of length |
 | `stock-shingledslab-30.json` | two 8 × 3 × 10 cubes = 8 × 3 × 20 = 480 vx³ | " | same geometry as the drawn slab |
-| iwex smithing recipes | exactly one, and it is pig-breaking | `test/IronworkingExpanded.Tests/goldens/iwex/recipes/smithing/pig.json` | the helve's "one recipe" is not the shingling one |
+| iiex smithing recipes | exactly one, and it is pig-breaking | `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/smithing/pig.json` | the helve's "one recipe" is not the shingling one |
 
 ---
 
@@ -236,14 +236,14 @@ of the line entirely. Keeping the hammer to consolidation is what makes the form
 * Both editable shapes are untracked (`??`) and carry absolute `F:/repos/…/.game/1.22/…` texture paths
   for `iron5`. Those are Blockbench working paths; runtime shapes must use domain-relative references, and
   `editable/` is source-only by convention.
-* The helve's "one recipe" is not the shingling recipe. iwex ships exactly one smithing recipe and it
+* The helve's "one recipe" is not the shingling recipe. iiex ships exactly one smithing recipe and it
   is `iwexpigbreak` (`Recipes/Smithing/PigRecipeDefinitions.cs:20-35`, golden
-  `test/IronworkingExpanded.Tests/goldens/iwex/recipes/smithing/pig.json`). The claim in this page's Why
+  `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/smithing/pig.json`). The claim in this page's Why
   section is a design constraint that a second recipe must be written to satisfy - and, once written, must
   stay the only one.
 * Piling is a hot operation with no stated threshold. The stock item cools using vanilla's
   temperature attribute (`StockItemDefinitions.cs:44-55`) and the mill has a `RollingTempC` gate
-  (`IwexConfig.cs:490`), but nothing says how cold a ball may be before it will not weld - and a welded joint
+  (`IiexConfig.cs:490`), but nothing says how cold a ball may be before it will not weld - and a welded joint
   that did not take is the one failure mode shingling actually has.
 
 ---

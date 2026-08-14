@@ -17,9 +17,9 @@ public class ProcessJobTests {
       "schema": 1,
       "machine": "shear",
       "jobs": [
-        { "input": "iwex:stock-bloom", "stage": 2.0, "family": "grooved",
+        { "input": "iiex:stock-bloom", "stage": 2.0, "family": "grooved",
           "output": "game:rod-iron", "count": 4, "minTorque": 0.3 },
-        { "input": "iwex:nailplate", "output": "game:metalnailsandstrips", "count": 4 }
+        { "input": "iiex:nailplate", "output": "game:metalnailsandstrips", "count": 4 }
       ]
     }
     """;
@@ -30,7 +30,7 @@ public class ProcessJobTests {
   ) => ProcessJobLoader.Parse(files, out errors);
 
   private static ProcessJobSet Shear() =>
-    Assert.Single(Parse(out _, ("iwex:shear.json", ShearFile)));
+    Assert.Single(Parse(out _, ("iiex:shear.json", ShearFile)));
 
   #region Parsing
 
@@ -43,7 +43,7 @@ public class ProcessJobTests {
     Assert.Equal(2, set.Jobs.Length);
 
     ProcessJob crop = set.Jobs[0];
-    Assert.Equal("iwex:stock-bloom", crop.Input);
+    Assert.Equal("iiex:stock-bloom", crop.Input);
     Assert.Equal("game:rod-iron", crop.Output);
     Assert.Equal(4, crop.Count);
     Assert.Equal(2.0f, crop.Stage);
@@ -136,9 +136,9 @@ public class ProcessJobTests {
   [Fact]
   public void A_machine_finds_the_job_for_what_it_was_given() {
     var registry = new ProcessJobRegistry();
-    ProcessJobLoader.Load([("iwex:shear.json", ShearFile)], registry);
+    ProcessJobLoader.Load([("iiex:shear.json", ShearFile)], registry);
 
-    ProcessJob? job = registry.Job("shear", "iwex:nailplate", null, null);
+    ProcessJob? job = registry.Job("shear", "iiex:nailplate", null, null);
     Assert.Equal("game:metalnailsandstrips", job!.Output);
     Assert.Equal(4, job.Count);
   }
@@ -146,19 +146,19 @@ public class ProcessJobTests {
   [Fact]
   public void A_staged_job_matches_only_at_its_own_stage_and_branch() {
     var registry = new ProcessJobRegistry();
-    ProcessJobLoader.Load([("iwex:shear.json", ShearFile)], registry);
+    ProcessJobLoader.Load([("iiex:shear.json", ShearFile)], registry);
 
-    Assert.NotNull(registry.Job("shear", "iwex:stock-bloom", 2.0f, "grooved"));
-    Assert.Null(registry.Job("shear", "iwex:stock-bloom", 1.5f, "grooved"));
-    Assert.Null(registry.Job("shear", "iwex:stock-bloom", 2.0f, "flat"));
+    Assert.NotNull(registry.Job("shear", "iiex:stock-bloom", 2.0f, "grooved"));
+    Assert.Null(registry.Job("shear", "iiex:stock-bloom", 1.5f, "grooved"));
+    Assert.Null(registry.Job("shear", "iiex:stock-bloom", 2.0f, "flat"));
   }
 
   [Fact]
   public void Another_machine_does_not_see_this_one_s_jobs() {
     var registry = new ProcessJobRegistry();
-    ProcessJobLoader.Load([("iwex:shear.json", ShearFile)], registry);
+    ProcessJobLoader.Load([("iiex:shear.json", ShearFile)], registry);
 
-    Assert.Null(registry.Job("nailmachine", "iwex:nailplate", null, null));
+    Assert.Null(registry.Job("nailmachine", "iiex:nailplate", null, null));
   }
 
   [Fact]
@@ -167,7 +167,7 @@ public class ProcessJobTests {
     var registry = new ProcessJobRegistry();
     List<string> errors = ProcessJobLoader.Load(
       [
-        ("iwex:shear.json", ShearFile),
+        ("iiex:shear.json", ShearFile),
         (
           "othermod:shear-bronze.json",
           """
@@ -196,13 +196,13 @@ public class ProcessJobTests {
     var registry = new ProcessJobRegistry();
     List<string> errors = ProcessJobLoader.Load(
       [
-        ("iwex:shear.json", ShearFile),
+        ("iiex:shear.json", ShearFile),
         (
           "othermod:hijack.json",
           """
           {
             "machine": "shear",
-            "jobs": [ { "input": "iwex:nailplate", "output": "othermod:something", "count": 1 } ]
+            "jobs": [ { "input": "iiex:nailplate", "output": "othermod:something", "count": 1 } ]
           }
           """
         ),
@@ -213,14 +213,14 @@ public class ProcessJobTests {
     Assert.Contains("hijack.json", Assert.Single(errors));
     Assert.Equal(
       "game:metalnailsandstrips",
-      registry.Job("shear", "iwex:nailplate", null, null)!.Output
+      registry.Job("shear", "iiex:nailplate", null, null)!.Output
     );
   }
 
   [Fact]
   public void Loading_replaces_the_registry_rather_than_adding_to_it() {
     var registry = new ProcessJobRegistry();
-    var files = new[] { ("iwex:shear.json", ShearFile) };
+    var files = new[] { ("iiex:shear.json", ShearFile) };
 
     ProcessJobLoader.Load(files, registry);
     ProcessJobLoader.Load(files, registry);

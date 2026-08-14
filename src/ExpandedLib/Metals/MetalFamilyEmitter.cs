@@ -65,7 +65,7 @@ public static class MetalFamilyEmitter {
       )
         continue;
 
-      // Owning domain is the molten item's domain (iwex:ingot-castiron -> iwex); every generated form
+      // Owning domain is the molten item's domain (iiex:ingot-castiron -> iiex); every generated form
       // is co-located there so {form}-{code} resolves within one domain.
       string domain = new AssetLocation(metal.MoltenItem).Domain;
       foreach (

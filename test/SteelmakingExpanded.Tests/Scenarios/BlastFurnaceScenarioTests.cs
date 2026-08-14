@@ -1,7 +1,7 @@
 using ExpandedLib.Testing;
-using IronworkingExpanded;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.Items;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.Items;
 using SteelmakingExpanded;
 using Vintagestory.API.MathTools;
 using Xunit;
@@ -48,7 +48,7 @@ public class BlastFurnaceScenarioTests {
       "a charged, blown furnace should reach Melting on its own"
     );
     Assert.True(
-      rig.Temp > IwexValues.BfIronMeltingPoint,
+      rig.Temp > IiexValues.BfIronMeltingPoint,
       $"a blown furnace should settle above the melt line, was {rig.Temp} C"
     );
   }
@@ -78,8 +78,8 @@ public class BlastFurnaceScenarioTests {
     var hot = new BlastFurnaceRig().FeedBlast(950f).RunLive(2);
 
     Assert.True(
-      hot.Temp > IwexValues.BfIronMeltingPoint,
-      $"hot blast should drive the furnace past {IwexValues.BfIronMeltingPoint} C, was {hot.Temp}"
+      hot.Temp > IiexValues.BfIronMeltingPoint,
+      $"hot blast should drive the furnace past {IiexValues.BfIronMeltingPoint} C, was {hot.Temp}"
     );
 
     // Control: the same furnace on ambient blast holds below the line, so the difference is the preheat.
@@ -102,7 +102,7 @@ public class BlastFurnaceScenarioTests {
 
     // One tick in, the flame is already past iron's melt line.
     Assert.True(
-      rig.Temp > IwexValues.BfIronMeltingPoint,
+      rig.Temp > IiexValues.BfIronMeltingPoint,
       $"the raceway should be over the line at once, was {rig.Temp} C"
     );
     // The furnace is still Firing: the charge has not reached the melt line.
@@ -148,7 +148,7 @@ public class BlastFurnaceScenarioTests {
       "the open tap should pour metal into the canal start"
     );
     // The blast furnace makes pig iron, not plain iron: the metal reaching the canal is
-    // iwex/game:ingot-pigiron, never ingot-iron (plain iron is a Bessemer over-blow product).
+    // iiex/game:ingot-pigiron, never ingot-iron (plain iron is a Bessemer over-blow product).
     string metal = rig.CanalMetalType!;
     Assert.Contains("pigiron", metal);
     Assert.DoesNotContain("ingot-iron", metal);
@@ -213,7 +213,7 @@ public class BlastFurnaceScenarioTests {
 
     Assert.Equal(0f, rig.Heat.PreheatGain, 1); // no preheat on a cold blast
     Assert.True(
-      rig.Heat.TProcess > IwexValues.BfIronMeltingPoint,
+      rig.Heat.TProcess > IiexValues.BfIronMeltingPoint,
       $"a high-coke burden should melt on cold blast; settled at {rig.Heat.TProcess} C"
     );
   }
@@ -225,11 +225,11 @@ public class BlastFurnaceScenarioTests {
     var hot = new BlastFurnaceRig(burden: LowCoke).FeedBlast(950f).RunLive(2);
 
     Assert.True(
-      cold.Heat.TProcess < IwexValues.BfIronMeltingPoint,
+      cold.Heat.TProcess < IiexValues.BfIronMeltingPoint,
       $"a low-coke burden should stall on cold blast; settled at {cold.Heat.TProcess} C"
     );
     Assert.True(
-      hot.Heat.TProcess > IwexValues.BfIronMeltingPoint,
+      hot.Heat.TProcess > IiexValues.BfIronMeltingPoint,
       $"the same burden should melt once the blast is preheated; settled at {hot.Heat.TProcess} C"
     );
   }
@@ -241,14 +241,14 @@ public class BlastFurnaceScenarioTests {
     // the air factor rather than a branch (docs/design/mechanics/heat-balance.md). The rig charges
     // unstamped blast mix, which reads as the standard grade, so the demand is the reference pressure.
     var blown = new BlastFurnaceRig()
-      .FeedBlast(950f, pressure: IwexValues.BfBlastPressureAtReference * 2f)
+      .FeedBlast(950f, pressure: IiexValues.BfBlastPressureAtReference * 2f)
       .RunLive(2);
     var starved = new BlastFurnaceRig()
-      .FeedBlast(950f, pressure: IwexValues.BfBlastPressureAtReference / 2f)
+      .FeedBlast(950f, pressure: IiexValues.BfBlastPressureAtReference / 2f)
       .RunLive(2);
 
     Assert.Equal(1f, blown.Heat.AirFactor, 3);
-    Assert.Equal(IwexValues.BfNaturalDraughtFactor, starved.Heat.AirFactor, 3);
+    Assert.Equal(IiexValues.BfNaturalDraughtFactor, starved.Heat.AirFactor, 3);
     Assert.False(starved.Heat.BlastSupplied);
     Assert.True(
       starved.Heat.TProcess < blown.Heat.TProcess,
@@ -276,15 +276,15 @@ public class BlastFurnaceScenarioTests {
     // yield constant and two temperatures give the documented cold ~30 u/s and hot ~45 u/s.
     var rig = new BlastFurnaceRig();
 
-    rig.SetTemp(IwexValues.BfIronMeltingPoint);
+    rig.SetTemp(IiexValues.BfIronMeltingPoint);
     float atLine = rig.MeltSpeed;
     rig.SetTemp(
-      IwexValues.BfIronMeltingPoint + IwexValues.BfMeltMarginReference
+      IiexValues.BfIronMeltingPoint + IiexValues.BfMeltMarginReference
     );
     float wellPast = rig.MeltSpeed;
 
     Assert.Equal(1f, atLine, 2); // no margin, nominal rate
-    Assert.Equal(1f + IwexValues.BfMeltMarginGain, wellPast, 2);
+    Assert.Equal(1f + IiexValues.BfMeltMarginGain, wellPast, 2);
   }
 
   #endregion
@@ -332,10 +332,10 @@ public class BlastFurnaceScenarioTests {
     // T_in = coke x air flow, so an under-pressure line makes less heat than a full-pressure one,
     // everything else equal. Both blasts are cold (20 C), so the only difference is the air factor.
     var blown = new BlastFurnaceRig()
-      .FeedBlast(20f, pressure: IwexValues.BfBlastPressureAtReference * 2f)
+      .FeedBlast(20f, pressure: IiexValues.BfBlastPressureAtReference * 2f)
       .RunLive(2);
     var starved = new BlastFurnaceRig()
-      .FeedBlast(20f, pressure: IwexValues.BfBlastPressureAtReference / 2f)
+      .FeedBlast(20f, pressure: IiexValues.BfBlastPressureAtReference / 2f)
       .RunLive(2);
 
     Assert.True(
@@ -385,7 +385,7 @@ public class BlastFurnaceScenarioTests {
   [Fact]
   public void A_starved_blast_line_throttles_the_furnace_rather_than_extinguishing_it() {
     var rig = new BlastFurnaceRig(blastMix: 0)
-      .FeedBlast(pressure: IwexValues.BfBlastPressureAtReference / 2f)
+      .FeedBlast(pressure: IiexValues.BfBlastPressureAtReference / 2f)
       .RunLive(2);
 
     Assert.Equal(FurnaceState.Firing, rig.State);
@@ -412,7 +412,7 @@ public class BlastFurnaceScenarioTests {
       $"and it is still burning, only slower; {rig.CokeUnits} vs {coke}"
     );
     Assert.True(
-      rig.Temp < IwexValues.BfIronMeltingPoint,
+      rig.Temp < IiexValues.BfIronMeltingPoint,
       $"natural draught should sit below the melt line; was {rig.Temp} C"
     );
   }
@@ -481,12 +481,12 @@ public class BlastFurnaceScenarioTests {
   /// </summary>
   [Fact]
   public void A_live_config_change_applies_without_a_reload() {
-    float original = IwexValues.BfIronMeltingPoint;
+    float original = IiexValues.BfIronMeltingPoint;
     try {
       var rig = new BlastFurnaceRig().FeedBlast().RunLive(2);
 
       // Admin retunes the melt line mid-session.
-      IwexValues.Edit(c => c.BfIronMeltingPoint = 1234f);
+      IiexValues.Edit(c => c.BfIronMeltingPoint = 1234f);
       rig.Tick(1);
 
       Assert.Equal(
@@ -495,7 +495,7 @@ public class BlastFurnaceScenarioTests {
         3
       );
     } finally {
-      IwexValues.Edit(c => c.BfIronMeltingPoint = original);
+      IiexValues.Edit(c => c.BfIronMeltingPoint = original);
     }
   }
 

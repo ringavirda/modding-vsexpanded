@@ -172,7 +172,7 @@ that nothing measures core loss yet.
 |---|---|
 | the archived elex spec | both generators *"upgrade the **hpex Tandem Corliss** in place (**only it** can drive them; ~36 kW at the shaft)"* |
 | the archived hpex spec | the Tandem Corliss is *(planned)*, ~36 kW, *"the drive for the elex arc-furnace and alternator banks"* |
-| [mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Role | the prime mover is a vanilla waterwheel or windmill; *"in lpex the player swaps the vanilla producer for a steam engine; the network itself is unchanged"*. The chain stops there - the live mechanical design never mentions hpex or the Corliss |
+| [mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Role | the prime mover is a vanilla waterwheel or windmill; *"in iiex the player swaps the vanilla producer for a steam engine; the network itself is unchanged"*. The chain stops there - the live mechanical design never mentions hpex or the Corliss |
 
 The entire top of the mechanical chain - a governed HP engine, its 36 kW, and the two machines that hang off
 it - is specified only in the archived elex and hpex specs, in the vocabulary of the model `mpenergy`
@@ -184,9 +184,9 @@ replaced. Three concrete consequences:
    ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Torque governs, not power). The Corliss must be
    specified as a curve before a generator can read anything off it, and no such curve exists.
 2. The scale is off by ~4 orders of magnitude. The live bridge supplies `1 N·m × 2 rad/s = 2 W`
-   (`src/IronworkingExpanded/IwexConfig.cs:467`, `src/ExpandedLib/ExlibConfig.cs:98`), against elex's 36 kW.
+   (`src/IronIndustryExpanded/IiexConfig.cs:467`, `src/ExpandedLib/ExlibConfig.cs:98`), against elex's 36 kW.
    Worked out on [electrical-grid.md](electrical-grid.md) § How it relates.
-3. Even the lpex engine is not on that network yet. It is still a pure vanilla-MP source (it implements no
+3. Even the iiex engine is not on that network yet. It is still a pure vanilla-MP source (it implements no
    `IMpEnergy*`), reaching this network only indirectly through a vanilla axle into the flywheel hub
    ([mechanics/mp-energy.md](../../mechanics/mp-energy.md)). The Corliss would be the second engine to need
    that connection, and the first one never got it.

@@ -1,0 +1,346 @@
+[
+  {
+    "name": "Pattern (castheavyplate, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castheavyplate-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castheavyplate",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castingotmold, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castingotmold-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castingotmold",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castbarrel, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castbarrel-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castbarrel",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castshell, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castshell-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castshell",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castwheelsection, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castwheelsection-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castwheelsection",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castbillets, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castbillets-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castbillets",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castblooms, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castblooms-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castblooms",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Pattern (castslab, from diagram)",
+    "ingredientPattern": "DKP",
+    "width": 3,
+    "height": 1,
+    "output": {
+      "type": "item",
+      "code": "iiex:pattern-castslab-{wood}",
+      "quantity": 1
+    },
+    "ingredients": {
+      "D": {
+        "type": "item",
+        "code": "iiex:diagram-item-castslab",
+        "isTool": true
+      },
+      "K": {
+        "type": "item",
+        "code": "game:knife-*",
+        "isTool": true
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "name": "wood",
+        "allowedVariants": [
+          "birch",
+          "oak",
+          "maple",
+          "pine",
+          "acacia",
+          "kapok",
+          "baldcypress",
+          "larch",
+          "redwood",
+          "ebony",
+          "walnut",
+          "purpleheart"
+        ],
+        "quantity": 2
+      }
+    }
+  }
+]

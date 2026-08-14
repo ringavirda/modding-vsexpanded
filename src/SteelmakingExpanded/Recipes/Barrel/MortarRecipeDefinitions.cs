@@ -28,7 +28,7 @@ public class MortarRecipeDefinitions : IExRecipeDefProvider {
               new
               {
                 type = "item",
-                code = "iwex:powderedslag",
+                code = "iiex:powderedslag",
                 quantity = 8,
               },
             },

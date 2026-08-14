@@ -6,7 +6,7 @@ using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockNetworkPipe;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;

@@ -4,8 +4,8 @@
 three entry blockers (B3 / B4 / B17) are closed, and stock can be walked down a ladder in creative. What is
 still missing is both ends: nothing produces stock, and the crop station that ends a schedule does not
 exist, so not one product item in the ladder below has been written.
-**Mods** iwex (the mill block, the narrow `flat` and `grooved` sets, the reheat furnace, the shear) ·
-lpex (the wide roll sets and the four-stand hall) · smex (cast stock, two more stands, steel sets)
+**Mods** iiex (the mill block, the narrow `flat` and `grooved` sets, the reheat furnace, the shear) ·
+iiex (the wide roll sets and the four-stand hall) · smex (cast stock, two more stands, steel sets)
 
 ## Owns
 
@@ -148,8 +148,8 @@ mandatory are [recoverability](../mechanics/recoverability.md)'s.
 
 | Stock | Section × length | vx³ | Mass | Cast/forged by | Mod |
 |---|---|---|---|---|---|
-| `shingledbar` | 3 × 3 × 18 | 162 | 400 | 2 wrought balls on the helve | iwex |
-| `shingledslab` | 8 × 3 × 20 | 480 | 1200 | 6 wrought balls, [steam hammer](../machines/steam-hammer.md) only | lpex |
+| `shingledbar` | 3 × 3 × 18 | 162 | 400 | 2 wrought balls on the helve | iiex |
+| `shingledslab` | 8 × 3 × 20 | 480 | 1200 | 6 wrought balls, [steam hammer](../machines/steam-hammer.md) only | iiex |
 | `castbillet` | 3 × 3 × 27 | 243 | 600 | [long cell](../machines/long-cell.md), 3 lanes | smex |
 | `castbloom` | 4 × 4 × 25 | 400 | 1000 | long cell, 2 lanes | smex |
 | `castslab` | 12 × 4 × 25 | 1200 | 3000 | long cell, 1 lane | smex |
@@ -163,7 +163,7 @@ rounding leaves is absorbed by crop-not-convert.
 | Product | Section × length | vx³ | Mass | Rolled from | Goes to |
 |---|---|---|---|---|---|
 | `rolledrod` | 2 × 2 × 10 | 40 | 100 | grooved 2.0 | the fork, below |
-| rod @ 25 u | 1 × 1 × 10 | 10 | 25 | grooved 1.0, 4 per `rolledrod` | [heading machine](../machines/heading-machine.md) → bolts (iwex) / rivets (lpex die) |
+| rod @ 25 u | 1 × 1 × 10 | 10 | 25 | grooved 1.0, 4 per `rolledrod` | [heading machine](../machines/heading-machine.md) → bolts (iiex) / rivets (iiex die) |
 | `nailplate` | 4 × 1 × 10 | 40 | 100 | flat 1.0, 1 per `rolledrod` | [nail machine](../machines/nail-machine.md) → 4 × `game:metalnailsandstrips` |
 | `beam` | 4.5 × 2 × 9 | 81 | 200 | flat 2.0, cropped in half | the Watt engine's beam; `castframe` ([fabrication](fabrication.md)) |
 | `game:metalplate` | 9 × 1 × 9 | 81 | 200 | flat 1.0 | universal |
@@ -261,7 +261,7 @@ machines fed a narrow strip by hand, and a 9-wide 200 u plate will not go into o
 narrow line because the recoverability crop repeats the last round six times; its advantage is that it is
 steel and arrives as a cast, not that it rolls cheaper.
 
-### Wide — `shingledslab` on lpex's four stands (barrel 16, `MaxWidth` **15**)
+### Wide — `shingledslab` on iiex's four stands (barrel 16, `MaxWidth` **15**)
 
 | Stand | Round | w × t | Length | Feeds | Crop |
 |---|---|---|---|---|---|
@@ -306,7 +306,7 @@ Caution: the skelp does not fall out of this arithmetic - see [Gotchas](#gotchas
 | Route | Stock | Feeds | Stamps | Plates | Feeds / plate | Metal per schedule |
 |---|---|---|---|---|---|---|
 | narrow `flat` | `shingledbar` 400 u | 12 | — | 2 | 6.0 | 400 u |
-| wide, lpex | `shingledslab` 1200 u | 8 | 2 | 6 | 1.33 | 1200 u |
+| wide, iiex | `shingledslab` 1200 u | 8 | 2 | 6 | 1.33 | 1200 u |
 | wide, smex | `castslab` 3000 u | 28 | 5 | 15 | 1.87 | 3000 u |
 
 Same 200 u a plate in every row; no yield is minted anywhere. The wide route buys handling twice over:
@@ -321,9 +321,9 @@ demands.
 
 | Number | Value | Owner |
 |---|---|---|
-| `RollingTempC` - the hot/cold line, and the reheat target | 900 °C (`IwexConfig.cs:490`) | [rolling mill](../machines/rolling-mill.md) |
-| `RollingRollRadius` → `δ_max = μ²R` = 1.0 hot, 0.0324 cold | 4 (`IwexConfig.cs:506`); `HotFriction` 0.5 / `ColdFriction` 0.09 (`RollingPass.cs:33`, `:37`) | [rolling mill](../machines/rolling-mill.md) |
-| `RollingCoolRate` · `RollingAmbientC` | 0.005 · 20 (`IwexConfig.cs:533`, `:537`) | [rolling mill](../machines/rolling-mill.md) |
+| `RollingTempC` - the hot/cold line, and the reheat target | 900 °C (`IiexConfig.cs:490`) | [rolling mill](../machines/rolling-mill.md) |
+| `RollingRollRadius` → `δ_max = μ²R` = 1.0 hot, 0.0324 cold | 4 (`IiexConfig.cs:506`); `HotFriction` 0.5 / `ColdFriction` 0.09 (`RollingPass.cs:33`, `:37`) | [rolling mill](../machines/rolling-mill.md) |
+| `RollingCoolRate` · `RollingAmbientC` | 0.005 · 20 (`IiexConfig.cs:533`, `:537`) | [rolling mill](../machines/rolling-mill.md) |
 | reheat and cooling both on `k·A/V`; no ×2 furnace multiplier | — | [reheat furnace](../machines/reheat-furnace.md) |
 | ≤ 32 lengthwise (3 slots) / ≤ 48 crosswise (2 slots, LIFO) | — | [recoverability](../mechanics/recoverability.md) |
 | `MaxWidth` 15 on the wide sets, and why 15 beats 16 | — | [wide hall](../machines/wide-hall.md) |

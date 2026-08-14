@@ -1,6 +1,6 @@
 # Stock rack
 **Status** designed - nothing built; no block, no BE, no recipe, no shape, and the pile-placement code it
-depends on does not exist either   **Mod** iwex (`IronworkingExpanded`)
+depends on does not exist either   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the 1 × 1 × 3 wooden rack: its footprint, its capacity-by-layer rule and the numbers that fall out of it,
@@ -76,7 +76,7 @@ Nothing is drawn.
 | runtime shape | missing |
 | textures | plain vanilla planks; no new texture needed |
 | animations | none, ever - a rack is static and only its contents change, exactly like the reheat hearth (`BlockEntityHeatingHearth.cs:97-98`) |
-| lang / handbook | no key in `assets/iwex/lang/en.json`, no page in `docs/iwex/handbook/` |
+| lang / handbook | no key in `assets/iiex/lang/en.json`, no page in `docs/iiex/handbook/` |
 
 The rack's mesh is two things: a plank frame, and a composed pile. The frame is the only authored art. The
 pile is not authored at all - it is composed from each stored item's own shape, which is what makes the rack
@@ -119,7 +119,7 @@ No recipe. Proposed, and the cost is a design statement rather than a placeholde
 Precedent for a trivial cost is the design table - "planks and candles, no metal and no tool"
 (`CraftingStationRecipeDefinitions.cs:15-20`).
 
-Cost key `stockrack-grid` in `IwexRecipeConfig.DefaultCatalogue`. Whatever `RecipeLevel` does to it, it must
+Cost key `stockrack-grid` in `IiexRecipeConfig.DefaultCatalogue`. Whatever `RecipeLevel` does to it, it must
 stay cheap at the expensive end too.
 
 ---
@@ -212,10 +212,10 @@ Nothing exists. Where it hooks in:
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockStockRack` | `src/IronworkingExpanded/BlockStructures/Forming/Blocks/` (or a new `Storage/`) | `BlockPuddlingHearth.cs:25-62` - `BlockFilledMegastructure` + `IFillerHost` + `IFillerInteractionTarget` + `IExBlockDefProvider`, with `.FillerOffsets(...)` in the def and `StructureAngle` from the `side` variant |
+| `BlockStockRack` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` (or a new `Storage/`) | `BlockPuddlingHearth.cs:25-62` - `BlockFilledMegastructure` + `IFillerHost` + `IFillerInteractionTarget` + `IExBlockDefProvider`, with `.FillerOffsets(...)` in the def and `StructureAngle` from the `side` variant |
 | cell → slot routing | `RowAt`-style: rotate the world offset back into the block's frame before reading it | `BlockPuddlingHearth.cs:70-77`, `BlockHeatingHearth.cs` (`ExOrientation.RotateOffset(world, -StructureAngle)`) |
 | `BlockEntityStockRack` | `.../BlockEntities/` | `BlockEntityHeatingHearth.cs:26-174` end to end: the slot array (`:30`), `TryLoad`/`TryTake` (`:57`, `:73`), `Changed()` marking the block dirty client-side (`:86-91`), `OnTesselation` (`:99-126`), per-slot `SetItemstack` persistence with `ResolveBlockOrItem` (`:132-154`), and the block-info readout (`:160-171`) |
-| `StockPile.Place` | `src/ExpandedLib/` - not iwex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
+| `StockPile.Place` | `src/ExpandedLib/` - not iiex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
 | its inputs | `(item shape, stage element, mode, slot index, layer)` → a `Vec3f` offset + yaw | pure, therefore testable headless - the house style (`StockMesh.SideOf`, `StockMesh.cs:36`) |
 | mesh cache | one entry per `(form, stage)`, then `Clone()` → rotate about its own centre → translate to the slot | `StockMesh.CacheKey` (`:67-73`) is the existing key function; `BlockMoltenBarrel.cs:190` is the runtime-texture + cached-base-mesh precedent |
 | def + recipe | `IExBlockDefProvider.Definitions(domain)` + an `ExRecipeDef` grid | `BlockHeatingHearth.cs`, `CraftingStationRecipeDefinitions.cs:23-36` |
@@ -224,7 +224,7 @@ Where a caller hooks in: nothing needs to know about the rack. It accepts any it
 to a stage element and whose textures resolve. The one contract is the recognition predicate - today the
 hearth uses a code-prefix match (`HeatingHearthLayout.StockOf`, `:64-79`, matching `stock-shingledbar`, `stock-shingledslab`,
 `castbillet`, `castbloom`, `castslab`), which is the part that should become an attribute test so another
-mod's stock qualifies without an iwex edit.
+mod's stock qualifies without an iiex edit.
 
 ---
 

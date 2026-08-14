@@ -2,9 +2,9 @@ using ExpandedLib;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries.Entities;
-using LowPressureExpanded;
-using LowPressureExpanded.BlockNetworkPipe;
-using LowPressureExpanded.BlockStructures.Engine;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockStructures.Engine;
 using Vintagestory.API.MathTools;
 
 namespace SteelmakingExpanded.BlockStructures.Engine.BlockEntities;
@@ -47,7 +47,7 @@ public class BlockEntityEngineAirBlower : BlockEntityEngineSubmachine {
       return;
 
     float maxPressure =
-      (Engine?.InletPressure ?? 0f) * LpexValues.SteamEngineEfficiency;
+      (Engine?.InletPressure ?? 0f) * IiexValues.SteamEngineEfficiency;
     float amount = SmexValues.AirBlowerOutputPerSecond * 3 * power * dt;
 
     leftNet.TryProduceGas(

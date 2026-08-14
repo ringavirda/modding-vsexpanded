@@ -28,7 +28,7 @@ and its fuel ship together: "Gas lighting lives entirely in this add-on"
 
 **Depends on** [scope.md](../../scope.md) · [gasworks](gasworks.md) ·
 [fluid tank](../../machines/fluid-tank.md) · [pipe network](../../mechanics/pipe-network.md) ·
-the archived lpex spec (git history)
+the archived iiex spec (git history)
 
 ---
 
@@ -78,9 +78,9 @@ The mechanic is shipped four times over, and a gas lamp would reuse it rather th
 
 | Shipped light source | Where | Note |
 |---|---|---|
-| molten canal | `src/IronworkingExpanded/BlockNetworkMolten/Blocks/BlockMoltenCanal.cs:253-256` | per-cell glow |
+| molten canal | `src/IronIndustryExpanded/BlockNetworkMolten/Blocks/BlockMoltenCanal.cs:253-256` | per-cell glow |
 | molten barrel | `.../Blocks/BlockMoltenBarrel.cs:95-102` | scaled to stored temperature |
-| cast mold | `src/IronworkingExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:103-108` | its own comment names the idiom: `GetLightHsv` + `MarkBlockDirty`-on-change, "as the molten barrel and the canals" |
+| cast mold | `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:103-108` | its own comment names the idiom: `GetLightHsv` + `MarkBlockDirty`-on-change, "as the molten barrel and the canals" |
 | cowper heat sink | `src/SteelmakingExpanded/BlockStructures/CowperStove/Blocks/BlockHeatsink.cs:38-53` | smex's copy |
 | the shared scale | `src/ExpandedLib/Metals/MoltenMetal.cs:155-162` - block light 0–24, floored by `MetalGlowMinTemp` = 500 °C (`src/ExpandedLib/ExlibConfig.cs:70`) | exlib owns the scale; a lamp would be a constant on it instead of a temperature function |
 
@@ -101,7 +101,7 @@ The archived spec is two rows:
 | Block | What it is | IO |
 |---|---|---|
 | **Gas lamp** | block (fixture) | pipe coal gas → light |
-| **Gasholder** | "the core-lpex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | pipe ↔ bulk gas buffer - keeps lamps lit when the gasworks idles |
+| **Gasholder** | "the core-iiex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | pipe ↔ bulk gas buffer - keeps lamps lit when the gasworks idles |
 
 Plus one framing line and one product line:
 
@@ -145,7 +145,7 @@ Nothing.
 
 Every other deferred line has at least one waiting consumer, which is why they get severity ratings. Gas
 lighting is a pure leaf: it consumes coal gas and produces photons, and no recipe, machine or material in
-`exlib → iwex → lpex → smex → hpex → elex` reads either end of it.
+`exlib → iiex → iiex → smex → hpex → elex` reads either end of it.
 
 ## Gotchas
 

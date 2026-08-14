@@ -2,12 +2,12 @@
 
 **Status** built 2026-08-03 - block, block entity, composable pool behaviour, runtime shape, and both
 branch cutovers. Still open: the recipe (quantities) and the boilers' internal fireboxes.
-**Mod** iwex (`IronworkingExpanded`), shared by every fuel-bed machine in the suite
+**Mod** iiex (`IronIndustryExpanded`), shared by every fuel-bed machine in the suite
 
 **Owns** - the facts this page is canonical for:
 
 * the block that replaces free-placed `game:coalpile` in a firebox, and why that replacement is the same
-  move as `iwex:chargepile` in a shaft;
+  move as `iiex:chargepile` in a shaft;
 * the shared pool rule - which fireboxes merge, and what "fill one, fill all" costs;
 * the fuel list and why lignite is excluded;
 * the layer model and the per-fuel texture swap;
@@ -28,7 +28,7 @@ charge column, which is the shaft equivalent and deliberately a different model
 
 ## Why
 
-`iwex:furnace-firebox` is the firebox's answer to `iwex:chargepile`: a real block, holding real state,
+`iiex:furnace-firebox` is the firebox's answer to `iiex:chargepile`: a real block, holding real state,
 replacing a vanilla pile. It answers four problems of the free-placed `game:coalpile` under legend
 `@(air|coalpile)`:
 
@@ -85,12 +85,12 @@ layout terms the cell takes `ExCodes.Refractory` (any tier), not `ExCodes.Refrac
 | coke | the metallurgical default |
 | bituminous ("black coal") | historically the reverberatory fuel - burning raw coal without contaminating the iron is the entire reason the reverberatory furnace exists |
 | anthracite | the best natural coal for metalwork; already read by name in [cowper](cowper.md) (`BlockEntityCowperStove.cs:121-130`) |
-| charcoal | the pre-coke fuel, and the iwex-tier fallback |
+| charcoal | the pre-coke fuel, and the iiex-tier fallback |
 | lignite | low-rank, high-moisture, high-ash - it will not carry a metallurgical heat |
 
 One fuel per pool. The layer texture depicts what the player charged, so a pool holds a single fuel type
 and refuses a mismatched deposit - the same rule the tall hopper's tank already enforces
-(`iwex-hoppertall-wronggrade`).
+(`iiex-hoppertall-wronggrade`).
 
 Every texture already exists and vanilla names them all in `coalpile.json`: `block/coal/coke`,
 `block/coal/bituminous`, `block/coal/anthracite`, `block/coal/charcoal`, `block/coal/lignite`. The block
@@ -120,7 +120,7 @@ A one-cell firebox (puddling) is 2 units a layer, 12 units full; a two-cell fire
 24 full. Six layers × 2 × cells.
 
 This makes the ignition threshold derivable. `ChargeCapacityUnits` is
-`FireboxCellCount × IwexValues.FireboxMixPerCell`, and `FireboxMixPerCell` is 12 - exactly one cell's full
+`FireboxCellCount × IiexValues.FireboxMixPerCell`, and `FireboxMixPerCell` is 12 - exactly one cell's full
 six layers. So "lit" means the bed is full, on a hearth of any size, and the number falls out of the drawn
 shape.
 
@@ -136,7 +136,7 @@ off the block instead of a tooltip.
 
 Boilers host a firebox internally - their own shapes are being redrawn to carry one, rather than a separate
 `F` cell in the layout. So the fuel pool must be a composable behaviour that either a standalone
-`iwex:furnace-firebox` block or a boiler's own block entity can host. The mod already has the pattern:
+`iiex:furnace-firebox` block or a boiler's own block entity can host. The mod already has the pattern:
 `BEBehaviorMoltenCell` is composable and any block can carry it
 ([molten-network](../mechanics/molten-network.md)).
 
@@ -170,7 +170,7 @@ pool holds one fuel, so a break drops one stack rather than one per material.
 
 | | |
 |---|---|
-| The `Firebox` role glyph | `F` (`iwex:furnace-firebox`) replaced `c` (`@(air\|coalpile)`) in the layouts - a required block, so the furnace can no longer complete with no firebox built |
+| The `Firebox` role glyph | `F` (`iiex:furnace-firebox`) replaced `c` (`@(air\|coalpile)`) in the layouts - a required block, so the furnace can no longer complete with no firebox built |
 | `BlockEntityFireboxFurnace.ReadChargeMix` | reads the block's pool (`BlockEntityFireboxFurnace.cs:108-119`) - the firebox branch's cutover, mirroring the shaft's |
 | `BurnOutCharge` | runs over firebox cells against the pool, not piles |
 | The Harmony side-table | `Patches/CoalPileBlastmixPatches.cs` is deleted |
@@ -198,13 +198,13 @@ first smelt, so a firebox is not an early-game block.
 
 | Piece | File |
 |---|---|
-| the pool, composable | `src/IronworkingExpanded/BlockStructures/Furnaces/BEBehaviorFirebox.cs` |
-| the block | `.../Furnaces/Blocks/BlockFirebox.cs` - `iwex:furnace-firebox-{tier}-{side}` |
+| the pool, composable | `src/IronIndustryExpanded/BlockStructures/Furnaces/BEBehaviorFirebox.cs` |
+| the block | `.../Furnaces/Blocks/BlockFirebox.cs` - `iiex:furnace-firebox-{tier}-{side}` |
 | the block entity (draw + HUD only) | `.../Furnaces/BlockEntities/BlockEntityFirebox.cs` |
 | the branch cutover | `.../Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs` - `CollectCharge`, `ReadChargeMix`, `TryIgniteCharge`, `BurnOutCharge` |
 | the group | `BlockEntityFurnaceCore.FireboxCells` (`CellRole.Firebox`, never adjacency) |
 | the runtime retexture | `ExShapeElements.Retextured` in exlib |
-| the shape | `assets/iwex/shapes/furnace/firebox.json` |
+| the shape | `assets/iiex/shapes/furnace/firebox.json` |
 
 The pool is a distribution rule, not shared storage. Each cell keeps its own units;
 `BlockEntityFirebox.Charge` spreads a deposit across the owning furnace's `Firebox` cells and the furnace

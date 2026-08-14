@@ -4,9 +4,9 @@
 block entity, no item, no behaviour, no config key, no recipe, no shape, no lang key. A repo-wide search finds
 the word only in design documents and in two forward-looking source comments
 (`ExpandedLib/Blocks/Structures/BEBehaviorMoltenCell.cs:20` "later the ladle / casting cell";
-`IronworkingExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:12` naming a ladle as a possible pour
-source).   **Mod** iwex (static merger; smex extends it with alloy resolve-on-pour). The movable
-ladle is lpex's.
+`IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:12` naming a ladle as a possible pour
+source).   **Mod** iiex (static merger; smex extends it with alloy resolve-on-pour). The movable
+ladle is iiex's.
 
 > The absence is load-bearing. R3 reserves the ladle as the only block that merges molten canals,
 > so every alloying rule in [materials.md](../materials.md) is unreachable: the whole
@@ -16,8 +16,8 @@ ladle is lpex's.
 
 ## Settled rulings
 
-Home (settled 2026-08-05): iwex, not smex, and it does not pour through a canal tier of its own. The
-alloying role is smex-tier, the pouring role gates iwex casting, and the block is the same object
+Home (settled 2026-08-05): iiex, not smex, and it does not pour through a canal tier of its own. The
+alloying role is smex-tier, the pouring role gates iiex casting, and the block is the same object
 in both eras - smex later extends it with alloy resolve-on-pour rather than shipping a second one.
 
 Two shape variants, a real choice rather than a skin:
@@ -27,7 +27,7 @@ Two shape variants, a real choice rather than a skin:
 | **plate** | hammered iron plates | iron plates are vanilla items, so this variant is not gated on the rolling mill - the ladle can be built early and fast |
 | **cast** | cast iron | cheaper per unit, and reserves plates for things that need them |
 
-`castshell` returns to iwex for this. iwex owns it, lpex consumes it (water tank, ore crushers,
+`castshell` returns to iiex for this. iiex owns it, iiex consumes it (water tank, ore crushers,
 engines), which is the normal dependency direction and needs no cross-mod pattern indirection.
 
 Size: Bessemer-scale. A 3×3×3 footprint with a hemispherical vessel, holding ~24 000 u or more,
@@ -51,14 +51,14 @@ The ladle's roles, in order of what they gate:
 | **hold** | ~24 000 u of buffer between a furnace's tapping rhythm and the casting rhythm |
 | **alloy on pour** | mix by held proportion, resolve on pour, off-spec → waste alloy |
 
-### Two ladles — a static iwex merger and a movable lpex one (settled 2026-08-05)
+### Two ladles — a static iiex merger and a movable iiex one (settled 2026-08-05)
 
 | | mod | what it is | route it offers |
 |---|---|---|---|
-| **static ladle** | iwex | in-line canal merger, 3×3×3, ~24 000 u | cheap, low throughput - merges canals, gates every alloy, feeds moulds through canals |
-| **movable ladle** | lpex | steam-moved vessel on track | expensive, high throughput - gathers from several furnaces and pours a cavity out fast |
+| **static ladle** | iiex | in-line canal merger, 3×3×3, ~24 000 u | cheap, low throughput - merges canals, gates every alloy, feeds moulds through canals |
+| **movable ladle** | iiex | steam-moved vessel on track | expensive, high throughput - gathers from several furnaces and pours a cavity out fast |
 
-lpex is the home because moving a massive ladle needs power: a 24 000-unit vessel is not pushed by
+iiex is the home because moving a massive ladle needs power: a 24 000-unit vessel is not pushed by
 hand, so the machine belongs to the tier that has an engine. smex is the customer that needs it:
 3 000-unit slabs, poured from metal gathered across several converters or open hearths.
 
@@ -92,12 +92,12 @@ player's lever is to build the bigger machine.
 | heat en route | chills fast (thin section) | barely cools (square-cube) |
 | best at | one mould, near the furnace | many moulds, or big ones, far from it |
 
-### Skip hoist — smex's, not iwex's
+### Skip hoist — smex's, not iiex's
 
 The cold blast furnace is late-18th/early-19th century and was charged by hand - barrow over a bridge from
 a hillside, which the tall hopper stands in for. Skip hoists belong to the hot blast era, so that machine
-is smex's. The movable-entity subsystem still has two consumers, in different mods - lpex's movable ladle
-and smex's skip hoist - so it remains a shared system worth scoping once rather than twice; nothing in iwex
+is smex's. The movable-entity subsystem still has two consumers, in different mods - iiex's movable ladle
+and smex's skip hoist - so it remains a shared system worth scoping once rather than twice; nothing in iiex
 waits on it.
 
 **Owns** - the facts this page is canonical for:
@@ -237,7 +237,7 @@ Nothing exists.
 | editable shape | missing - `assets/editable/shapes/` has 97 files and no ladle |
 | runtime shape | missing |
 | animations | missing. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/smex/shapes/converter/bessemer.json`) |
-| ferroalloy metal defs | missing - `assets/*/config/metals/` holds `castiron`, `pigiron`, `slag` (iwex) and `bessemersteel` (smex). No `ferromanganese`, no `spiegeleisen`, no `ferrochrome`, no `hadfieldsteel`, no `blowniron`, no `wastealloy` |
+| ferroalloy metal defs | missing - `assets/*/config/metals/` holds `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex). No `ferromanganese`, no `spiegeleisen`, no `ferrochrome`, no `hadfieldsteel`, no `blowniron`, no `wastealloy` |
 | powdered coke | missing as an item |
 | lang / handbook | no key, no page |
 
@@ -251,7 +251,7 @@ converter vessel's tilt-pose animator pattern.
 ### Settled 2026-08-06 — a 3×3×3 megablock, built by RCC, lined with tier2 refractory brick
 
 Fired clay is disqualified as a lining by the mod's own rule: it is capped at 1200 °C (vanilla's
-`maxHeatableTemp: 1200`, and this mod's ceiling at `IwexConfig.cs:65`), while this vessel carries pig iron
+`maxHeatableTemp: 1200`, and this mod's ceiling at `IiexConfig.cs:65`), while this vessel carries pig iron
 at 1482 °C and steel above it - the same argument that forced the
 [crucible furnace](crucible-furnace.md) to invent a refractory pot. A clay-lined ladle is a ladle whose
 lining melts.
@@ -277,7 +277,7 @@ does not have, so it is a later call and not a reason to soften the pin now.
 | shell | 8 plate + 8 nails + 4 rod | `ExIngredients.cs:27-46`; cf. the converter control's `H_R,NPP,PPR` (`ConverterRecipeDefinitions.cs:24`) |
 | lining | tier2 refractory brick (`ExCodes.RefractoryTier(2)`) | the [Bessemer](bessemer.md)'s `Root/InputLining`, stage 7 - the same move [conventions](../conventions.md) proposes there |
 
-Cost key `ladle-grid` in `IwexRecipeConfig.DefaultCatalogue` (`IwexRecipeConfig.cs`).
+Cost key `ladle-grid` in `IiexRecipeConfig.DefaultCatalogue` (`IiexRecipeConfig.cs`).
 
 It should not need a gear or an axle. The [Bessemer](bessemer.md) tilts on mechanical power because it
 is a 3×3×3 vessel full of steel; a ladle is hand-tipped, like the molten barrel.
@@ -385,10 +385,10 @@ All proposed. No config section, no keys, no code. The right-hand column is what
 
 | Key | Proposed | Measured against (file:line) | What it does |
 |---|---|---|---|
-| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../internal/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IwexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
+| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../internal/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IiexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
 | `LadlePullRate` | 25 u/tick | the casting bed's and cell's hard-coded `PullRatePerTick = 25` (`BlockEntitySandCastingBed.cs:44`, `BlockEntitySandCastingCell.cs:33`) | ship it as config, not a fourth hard-coded copy (D5b) |
 | `LadlePourRate` | 44 u/s | `BessemerPourRate` 44 (`SmexConfig.cs:231`) | match the converter so a ladle never becomes the bottleneck |
-| `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SmexConfig.cs:240`), on `IwexValues.MoltenCooldownSpeed` 24 (`IwexConfig.cs:31`) | how long the player has to work a mix |
+| `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SmexConfig.cs:240`), on `IiexValues.MoltenCooldownSpeed` 24 (`IiexConfig.cs:31`) | how long the player has to work a mix |
 | `LadleSolidChillC` | 550 °C | `L_f/c_p` for iron. 800 makes the hadfield-solid case a hard refusal | the whole chill mechanic, in one number |
 | `LadleAlloyTolerance` | ±0.02 mass fraction | — | the width of every alloy window. One number for the whole table, not per-alloy |
 | `LadleCarbonPerCokeUnit` | fixed mass, not a percentage | `materials.md:122-125` - "each unit adds a fixed mass of carbon (its effect on % C is relative to the iron present)" | the carbon trim |
@@ -425,11 +425,11 @@ Nothing exists. The two comments that anticipate it:
 | Comment | Says |
 |---|---|
 | `ExpandedLib/Blocks/Structures/BEBehaviorMoltenCell.cs:20` | *"The principal that hosts a fixed cluster of them (the sand casting bed; later the ladle / casting cell) drives flow across the cluster itself"* |
-| `IronworkingExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:12` | names a ladle as a possible pour source for a mold |
+| `IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:12` | names a ladle as a possible pour source for a mold |
 
 | Piece | Where it would go | Model it on |
 |---|---|---|
-| `BlockLadle` | `src/IronworkingExpanded/BlockStructures/Ladle/Blocks/` | `BlockMoltenBarrel.cs` (a standing vessel with a rendered surface) for the block; `BlockConverterControl.cs:84-167` for modifier-key verb routing |
+| `BlockLadle` | `src/IronIndustryExpanded/BlockStructures/Ladle/Blocks/` | `BlockMoltenBarrel.cs` (a standing vessel with a rendered surface) for the block; `BlockConverterControl.cs:84-167` for modifier-key verb routing |
 | `BlockEntityLadle` | `…/Ladle/BlockEntities/` | `BlockEntityConverterControl.cs:44` - the closest existing analogue by far: it already holds a `MoltenCharge`, drains a neighbouring canal cell, pushes to another, tracks a per-heat tally (`_carbon`, `_pigCharged`, `_scrapUnits`), syncs a live cooldown coefficient, latches solidification, serialises the lot and prints a readout |
 | the bath | reuse | `MoltenCharge` (`ExpandedLib/Metals/MoltenCharge.cs:20`) - create, retype, temperature, live cooldown, `IsBelowMeltingPoint`, `BuildRecovery`, tree round-trip. Nothing here needs writing |
 | the merge | reuse | `GetMoltenCell(offset)?.DrainMetal(n)` on two or more neighbours (`BlockEntityConverterControl.cs:764-766`) |
@@ -528,7 +528,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 5. **Is the static ladle enough?** Historically a ladle is carried by crane from converter to casting
    floor; the settled static block means the canal has to reach every casting station, and the
-   [long cell](long-cell.md) is a large megablock. The movable lpex ladle (§ Settled rulings) is the
+   [long cell](long-cell.md) is a large megablock. The movable iiex ladle (§ Settled rulings) is the
    deferred answer - worth confirming the reach before the layout is drawn.
 
 6. **No handbook page and no in-game teaching path.** Hadfield is called "the alloying-mechanic introduction"

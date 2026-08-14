@@ -21,7 +21,7 @@ Usage:
     python scripts/convert-shape.py --check          # report unmapped textures across all editables
 
 Example:
-    python scripts/convert-shape.py mp-castiron-flywheel assets/iwex/shapes/mpenergy/flywheel.json
+    python scripts/convert-shape.py mp-castiron-flywheel assets/iiex/shapes/mpenergy/flywheel.json
 """
 
 import collections
@@ -36,7 +36,7 @@ EDITABLE = "assets/editable/shapes"
 # codebase (iron3/iron4/iron5 appear as both `sheet-plain` and `riveted`/`sheet`); the value here is the one
 # the mpenergy/casting families actually use. Add a key only after checking a shipped sibling.
 TEXTURES = {
-    "cast-iron1": "iwex:block/metal/castiron",
+    "cast-iron1": "iiex:block/metal/castiron",
     "iron": "game:block/metal/tarnished/iron",
     "iron2": "game:block/metal/sheet-plain/iron2",
     "iron3": "game:block/metal/riveted/iron3",

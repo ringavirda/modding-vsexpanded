@@ -3,7 +3,7 @@
 **Status** playable in creative - the block, the pass simulation, the two-round model, the pass clock and
 the save/load are live and pinned by 136 test methods across eleven files. Nothing in survival can craft it
 and no schedule can be finished, because the [shear](shear.md) that ends one does not exist.
-**Mod** iwex (`IronworkingExpanded`)
+**Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 
@@ -42,7 +42,7 @@ the 1 vx³ = 2.5 u rule ([density rule](../mechanics/density-rule.md)); code-fir
 The mill is where the mechanical-energy network is spent: the waterwheel, the bridge, the flywheel's
 inertia, the shaft run and the transmission's ratio all exist to deliver the torque one bite of hot iron
 demands. It is also the only route past the vanilla ingot - vanilla has no path from a puddled bloom to
-plate, sheet, rod or nail-rod, and the machines downstream (lpex's boilers especially) are made of rolled
+plate, sheet, rod or nail-rod, and the machines downstream (iiex's boilers especially) are made of rolled
 parts. Historical basis: Cort's 1783-84 pairing of puddling and grooved rolling.
 
 Hot work is the governing rule. `δ_max = μ²R` makes hot iron bite about thirty times deeper per pass than
@@ -104,13 +104,13 @@ is the cell a finished piece *lands* on. The deck the player *feeds* from is the
 
 | Asset | Path | State |
 |---|---|---|
-| Mill shape (runtime) | `assets/iwex/shapes/forming/rollingmill.json` | shipped; textures `iron5`, `cast-iron1`; clips `idle` + `cycle`, 30 frames each |
+| Mill shape (runtime) | `assets/iiex/shapes/forming/rollingmill.json` | shipped; textures `iron5`, `cast-iron1`; clips `idle` + `cycle`, 30 frames each |
 | Mill shape (editable) | `assets/editable/shapes/machine-mp-megablock-rollingmill.json` | drawn, not yet reflected in the runtime shape name |
 | Roll-set item art | `assets/editable/shapes/item-finished-rollers-{flat,flatwide5,flatwide10,flatwide15,grooved}.json`, `item-rollers-flatwide20.json`, `item-sandcast-rollers-blank.json` | drawn and not wired - the item ships `game:item/ingot` (`RollSetItemDefinitions.cs:122`) |
-| Stock stage shapes | `assets/iwex/shapes/forming/stock-{shingledbar,shingledslab}-{5,10,15,20,30}.json` | shipped, 10 files, generated. ⛔ the bar's are drawn **16 long** and the settled form is 18 - the art is item 7's, and nothing reads a shape's length |
+| Stock stage shapes | `assets/iiex/shapes/forming/stock-{shingledbar,shingledslab}-{5,10,15,20,30}.json` | shipped, 10 files, generated. ⛔ the bar's are drawn **16 long** and the settled form is 18 - the art is item 7's, and nothing reads a shape's length |
 | Stock base art (editable) | `item-shingled-bar.json`, `item-shingled-slab.json` | drawn; the generator still expects the `item-shingledbloom` / `item-shingledslab` names, which do not exist |
 | Axle cell | `exlib:block/empty` (`BlockRollingMillAxle.cs:39`) | intentionally invisible |
-| Handbook page | — | none. `docs/iwex/handbook/` has no forming page, yet the def declares `Handbook("rollingmill-*")` (`BlockRollingMill.cs:54`) |
+| Handbook page | — | none. `docs/iiex/handbook/` has no forming page, yet the def declares `Handbook("rollingmill-*")` (`BlockRollingMill.cs:54`) |
 
 ### The shape already draws four roll families, and nothing selects between them
 
@@ -132,7 +132,7 @@ with `.EntityBehavior("Animatable")` + a `ToggleAnimator`/`ConstructedAnimator`;
 |---|---|---|---|
 | `RollersFlat` | 2.0 / 1.5 / 1.0 / 0.5 | 2.0 / 1.5 / 1.0 / 0.5 (`:66`) | 2.5 / 2.0 / 1.5 / 1.0, barrel 4 |
 | `RollersGrooved` | 2.5 / 2.0 / 1.5 / 1.0 | 1.0 / 0.5 (`:89`) | 2.5 / 2.0 / 1.5 / 1.0, barrel 16 |
-| `RollersFlatWide*` | 2.0 / 1.5 / 1.0 / 0.5 (four) | one `flatwide` item, gaps 2.0/1.5/1.0/0.5 (`:76`) | six single-gap sets, 1.0 … 3.5, `MaxWidth` 15, and they are lpex |
+| `RollersFlatWide*` | 2.0 / 1.5 / 1.0 / 0.5 (four) | one `flatwide` item, gaps 2.0/1.5/1.0/0.5 (`:76`) | six single-gap sets, 1.0 … 3.5, `MaxWidth` 15, and they are iiex |
 | — | — | ~~`slitting`, gaps 0.5~~ | deleted, and now retired in code too (2026-08-12) |
 
 The grooved barrel was drawn to the settled schedule; the config does not match it. The wide art is four
@@ -158,7 +158,7 @@ drawn as two 9-long halves) is what closes it.
 
 There is no recipe. This is a blocker.
 
-`grep`ping `src/IronworkingExpanded/Recipes/` for `rollingmill`, `rollset` or `stock-` returns nothing, and
+`grep`ping `src/IronIndustryExpanded/Recipes/` for `rollingmill`, `rollset` or `stock-` returns nothing, and
 there are no hand-written recipe JSON assets anywhere in the repo
 ([recipes & config](../mechanics/recipes-config.md)). The mill, the four roll sets and both stock items are
 reachable only from the creative inventory (`.CreativeCommon(...)` at `BlockRollingMill.cs:60`,
@@ -181,7 +181,7 @@ is blocked by B8).
 | Held | Where | Result |
 |---|---|---|
 | a wrench (`Code.FirstCodePart() == "wrench"`, any domain) | anywhere on the machine, while rolling | frees the stuck piece, state unchanged (`BlockRollingMill.cs:265-291`) |
-| a roll set (any collectible with a `rollset` attribute) | anywhere on the machine | fits it, hands back the previous one; refused mid-pass with `iwex-rollingmill-busy` (`:293-320`) |
+| a roll set (any collectible with a `rollset` attribute) | anywhere on the machine | fits it, hands back the previous one; refused mid-pass with `iiex-rollingmill-busy` (`:293-320`) |
 | stock, right-click | the input deck | feeds the near side (`MillFeed.SideIndex(false, sides) = sides-1`) |
 | stock, sneak + right-click | the input deck | feeds the far side (index 0) |
 | anything | the output deck | nothing - a two-high stand cannot be fed backwards |
@@ -244,9 +244,9 @@ round by round, and every skipped gap refused.
 
 | State | Condition | Reported as |
 |---|---|---|
-| idle | `_remaining == 0` | `iwex:rollingmill-info-idle` |
-| rolling | `_remaining > 0`, travelling | `iwex:rollingmill-info-rolling` + temperature |
-| stalled | `_remaining > 0`, `travelled ≤ 0` (ω = 0 or stock below rolling heat) | `iwex:rollingmill-info-stalled` + temperature |
+| idle | `_remaining == 0` | `iiex:rollingmill-info-idle` |
+| rolling | `_remaining > 0`, travelling | `iiex:rollingmill-info-rolling` + temperature |
+| stalled | `_remaining > 0`, `travelled ≤ 0` (ω = 0 or stock below rolling heat) | `iiex:rollingmill-info-stalled` + temperature |
 
 A stall is not a lost pass: it resumes where it stopped once the run spins back up or the stock is re-heated.
 Since a stalled piece keeps cooling, past the bite threshold the only answer is the reheat furnace
@@ -281,17 +281,17 @@ otherwise, times whatever flow stress the piece's heat has climbed to. The conta
 roll force `F = Y·w·L_c` and `RollingTorqueScale` are all **gone**; see [Open](#open) for why a derived load
 was the wrong shape for this dial.
 
-### Config — iwex, `ex_values.json` (domain `iwex`)
+### Config — iiex, `ex_values.json` (domain `iiex`)
 
 | Key | Value | file | What it does |
 |---|---|---|---|
-| `RollingTempC` | `900` | `IwexConfig.cs` | the hot/cold line; range `[0, 3000]`. Below it friction collapses and flow stress climbs |
-| `RollingColdStressMultiplier` | `10` | `IwexConfig.cs` | flow stress of fully-cold stock; range `[1, 1000]` |
-| `RollingColdSpanC` | `400` | `IwexConfig.cs` | degrees below `RollingTempC` over which the multiplier is reached; range `[1, 3000]` |
-| `RollingRollRadius` | `4` | `IwexConfig.cs` | roll radius in block-space units; sets `δ_max` and the travel speed `v = ωR`; range `[0.01, 100]` |
-| `RollingLoadTorque` | `0.34` | `IwexConfig.cs` | N·m the stand draws while working, before the cold multiplier; range `[0, 10000]` |
-| `RollingCoolRate` | `0.005` | `IwexConfig.cs` | fraction of excess heat shed per second, under the rolls and during the carry-back; range `[0, 10]` |
-| `RollingAmbientC` | `20` | `IwexConfig.cs` | what the stock cools toward; range `[-50, 500]` |
+| `RollingTempC` | `900` | `IiexConfig.cs` | the hot/cold line; range `[0, 3000]`. Below it friction collapses and flow stress climbs |
+| `RollingColdStressMultiplier` | `10` | `IiexConfig.cs` | flow stress of fully-cold stock; range `[1, 1000]` |
+| `RollingColdSpanC` | `400` | `IiexConfig.cs` | degrees below `RollingTempC` over which the multiplier is reached; range `[1, 3000]` |
+| `RollingRollRadius` | `4` | `IiexConfig.cs` | roll radius in block-space units; sets `δ_max` and the travel speed `v = ωR`; range `[0.01, 100]` |
+| `RollingLoadTorque` | `0.34` | `IiexConfig.cs` | N·m the stand draws while working, before the cold multiplier; range `[0, 10000]` |
+| `RollingCoolRate` | `0.005` | `IiexConfig.cs` | fraction of excess heat shed per second, under the rolls and during the carry-back; range `[0, 10]` |
+| `RollingAmbientC` | `20` | `IiexConfig.cs` | what the stock cools toward; range `[-50, 500]` |
 
 `RollingLoadTorque` is calibrated against the network's numbers, not the mill's: one bridge drive (1 N·m)
 less friction at ω_max (0.05·2 + 0.5 = 0.6) leaves **0.4 N·m** of headroom, and 0.34 takes 85 % of it -
@@ -299,7 +299,7 @@ the *"about 15 % to spare"* the design always claimed. Retuning `MpFrictionCoeff
 `MpMaxSpeed` or `FlywheelBridgeChargePower` moves the mill's balance with it; see
 [mp-energy](../mechanics/mp-energy.md). Nothing about the stock moves it except heat, which is the point.
 
-Caution: the reheat furnace's `MeltingPoint` is bound to `IwexValues.RollingTempC`
+Caution: the reheat furnace's `MeltingPoint` is bound to `IiexValues.RollingTempC`
 (`BlockEntityHeatingFurnace.cs:61`) - the mill's hot/cold line doubles as the reheat furnace's target.
 Changing one changes the other silently.
 
@@ -472,7 +472,7 @@ To drive the mill, connect an `mpenergy` run to either shaft end. See
 
 ### Tests
 
-`test/IronworkingExpanded.Tests/Blocks/Forming/` - fifteen files. The two-round model is pinned by
+`test/IronIndustryExpanded.Tests/Blocks/Forming/` - fifteen files. The two-round model is pinned by
 `WorkPieceTests` (its own file, rewritten 2026-08-12), the round's draft by `MillFeedTests`, and the walk
 end to end by `RollingMillFeedTests`; `StockFormRegistryTests` and
 `Migrations/StockFormRenameMigrationTests` pin the rename and the former names.
@@ -531,7 +531,7 @@ gauge the player stopped at. See [shear](shear.md).
   `TryFeed` overwrites both before every pass.
 - A malformed roll set reports "busy". `TryFitRollSet` returns `false` both when a pass is running and
   when `TryParse` fails (`:163-182`), and `FitRollSet` maps every `false` to
-  `iwex-rollingmill-busy` (`BlockRollingMill.cs:312`). The gate that got you there only checked that the
+  `iiex-rollingmill-busy` (`BlockRollingMill.cs:312`). The gate that got you there only checked that the
   `rollset` attribute exists (`:293-294`).
 - ~~`RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==`.~~ **Fixed 2026-08-12.**
   `Outputs` and `Gaps` are gone; the states are the stock's stage ladder
@@ -586,7 +586,7 @@ Sizes are the forming build list's.
 | 5 | Section law `StockForm` → `RollSetSpec` (`square` \| `flat`); `SpreadWidth` gains a square branch | |
 | ~~6~~ | ~~`StockForm`: `bloom` / `slab` → `shingledbar` / `shingledslab`~~ | **done 2026-08-12** - with the masses (400 / 1200), the lang keys, an item-code migration and `FormerNames` on the record |
 | 7 | Wire the authored stock art; delete `generate-rolled-stock.py` and its ten outputs | its two inputs are already gone, and the bar's generated stages are 16 long where the form is 18 |
-| 15/16 | The wide train is lpex - four ordinary mills at 2.5 / 2.0 / 1.5 / 1.0 on one shared drive shaft, plus six single-gap `flatwide` items (1.0 … 3.5, `MaxWidth` 15). No new block: the mill block stays iwex and lpex ships the sets | smex bolts two more stands (3.5 / 3.0) onto the front |
+| 15/16 | The wide train is iiex - four ordinary mills at 2.5 / 2.0 / 1.5 / 1.0 on one shared drive shaft, plus six single-gap `flatwide` items (1.0 … 3.5, `MaxWidth` 15). No new block: the mill block stays iiex and iiex ships the sets | smex bolts two more stands (3.5 / 3.0) onto the front |
 
 Not on that list, and still open:
 

@@ -3,14 +3,14 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries.Entities;
 using HighPressureExpanded.BlockStructures.Boiler.BlockEntities;
-using LowPressureExpanded;
-using LowPressureExpanded.BlockStructures.Boiler;
+using IronIndustryExpanded;
+using IronIndustryExpanded.BlockStructures.Boiler;
 using Vintagestory.API.MathTools;
 
 namespace HighPressureExpanded.BlockStructures.Boiler.Blocks;
 
 /// <summary>
-/// The Lancashire boiler mega-block (steel, high-pressure tier). All behavior lives in lpex's
+/// The Lancashire boiler mega-block (steel, high-pressure tier). All behavior lives in iiex's
 /// <see cref="BlockBoiler"/>; hpex only supplies this leaf's definition.
 /// </summary>
 [BlockRegister]
@@ -102,19 +102,19 @@ public partial class BlockBoilerLancashire
             )
         )
       )
-      // The firebox/flue masonry the boiler is walled into. The pipe fittings it seats on are lpex's
-      // cast tier, so those legends keep the lpex domain.
+      // The firebox/flue masonry the boiler is walled into. The pipe fittings it seats on are iiex's
+      // cast tier, so those legends keep the iiex domain.
       .MultiblockLayout(s =>
         s.Origin(-1, -2)
           .Legend('#', ExCodes.Filler)
           .Legend('L', HpexBlocks.BoilerLancashire.Any)
-          .Legend('p', LpexCodes.PipePassthroughFire)
-          .Legend('B', LpexCodes.PipePassthroughBendFireUp)
+          .Legend('p', IiexCodes.PipePassthroughFire)
+          .Legend('B', IiexCodes.PipePassthroughBendFireUp)
           .Legend('b', VanillaCodes.FireBricks)
           .Legend('a', VanillaCodes.Air)
           .Legend('c', VanillaCodes.CoalBed)
           .Legend('d', VanillaCodes.Sealing(BlockFacing.NORTH))
-          .Legend('o', LpexCodes.PipeOutletFireUp)
+          .Legend('o', IiexCodes.PipeOutletFireUp)
           .Layer(
             1,
             """

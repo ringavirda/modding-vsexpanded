@@ -1,26 +1,19 @@
 {
   "structure-missing-header": "Конструкция не завершена! Ещё нужно:",
   "structure-missing-line": "  {0} x {1}",
-
   "block-structurefiller": "Механизм",
-
   "blockhelp-rotate": "Повернуть",
-
   "blockname-suffixed": "{0} ({1})",
   "blockname-listsep": ", ",
-
   "refractory-tier1": "огнеупорный кирпич, уровень 1",
   "refractory-tier2": "огнеупорный кирпич, уровень 2",
   "refractory-tier3": "огнеупорный кирпич, уровень 3",
-
   "metal-unknown": "неизвестно",
   "metalstate-cold": "холодный",
-
   "command-measure-desc": "Показать или задать систему единиц измерения (метрическая/имперская)",
   "pref-measure-label": "Единицы измерения",
   "pref-measure-metric": "Метрическая (л, атм, °C)",
   "pref-measure-imperial": "Имперская (гал, psi, °F)",
-
   "unit-litres": "л",
   "unit-gallons": "гал",
   "unit-litres-per-second": "л/с",
@@ -34,7 +27,6 @@
   "unit-horsepower": "л.с.",
   "unit-kilojoules": "кДж",
   "unit-megajoules": "МДж",
-
   "command-exmod-desc-client": "Клиентская базовая команда Exlib (.exmod). Сама по себе умеет только подсветку сетей; другие моды расширяют её своими клиентскими опциями.",
   "command-exmod-help-client": "Клиентская команда - выполняется локально на вашей машине. Используйте подкоманду (см. .help exmod). Доступные опции зависят от установленных модов и добавленных ими подкоманд.",
   "command-exmod-desc-server": "Серверная базовая команда Exlib (/exmod). Общий корень, который другие моды расширяют своими серверными опциями.",
@@ -42,7 +34,6 @@
   "command-pref-current": "{0}: {1}",
   "command-pref-set": "{0}: установлено «{1}».",
   "command-pref-invalid": "Неизвестное значение «{0}» для «{1}». Варианты: {2}.",
-
   "command-recipes-desc": "Показать или задать уровень стоимости рецептов мода (применяется после перезагрузки мира)",
   "command-recipes-list": "Уровни стоимости рецептов (для смены: /exmod recipes [мод] [уровень]):",
   "command-recipes-none": "Ни один мод не зарегистрировал уровни стоимости рецептов.",
@@ -51,7 +42,6 @@
   "command-recipes-retain": "Стоимость рецептов {0} уже на уровне «{1}».",
   "command-recipes-unknown": "Неизвестный мод «{0}». Зарегистрированы: {1}.",
   "command-recipes-invalid": "Неизвестный уровень «{0}». Варианты: {1}.",
-
   "command-config-desc": "Показать или изменить значения конфигурации мода на лету (/exmod config [мод] [значение] [новое])",
   "command-config-list": "Зарегистрированные конфигурации (для просмотра: /exmod config [мод]):",
   "command-config-none": "Ни один мод не зарегистрировал редактируемые конфигурации.",
@@ -62,15 +52,23 @@
   "command-config-set": "{0} изменено с {1} на {2}. Применено сразу.",
   "command-config-parsefail": "Не удалось прочитать «{0}» как значение для {1} (ожидается {2}).",
   "command-config-range": "Значение для {0} вне диапазона (допустимо: {1}).",
-
   "command-network-desc": "Показать блочные сети (трубы, каналы расплава, …)",
   "command-network-hi-desc": "Подсветить все блоки сети, раскрасив их по сетям",
   "command-network-unhi-desc": "Прекратить подсветку блоков сети",
   "network-hi-on": "Подсветка сетей включена - у каждой сети свой цвет; обновляется в реальном времени.",
   "network-hi-off": "Подсветка сетей выключена.",
-
   "command-heal-desc": "Восстановить потерянные блок-сущности (установленный блок без сущности) в загруженных чанках",
   "command-heal-result": "Восстановлено потерянных блок-сущностей в загруженных чанках: {0}.",
-
-  "game:placefailure-exlib-noorientation": "Невозможно сформировать соединение - нет подходящей ориентации."
+  "game:placefailure-exlib-noorientation": "Невозможно сформировать соединение - нет подходящей ориентации.",
+  "pipe-info-empty": "Пусто",
+  "pipe-info-flow": "Пропускная способность: {0} {1} при {2}",
+  "pipe-info-leaking": "Утечка!",
+  "pipe-info-overpressure": "Превышение давления!",
+  "pipe-info-pressure": "Давление: {0}(изб)",
+  "pipe-info-status": "{0} из {1} при {2}",
+  "pipe-medium-air": "воздуха",
+  "pipe-medium-exhaust": "выхлопа",
+  "pipe-medium-steam": "пара",
+  "pipe-medium-unknown": "газа",
+  "pipe-medium-water": "воды"
 }

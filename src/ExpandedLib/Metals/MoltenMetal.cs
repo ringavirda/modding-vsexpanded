@@ -159,7 +159,7 @@ public static class MoltenMetal {
       : (byte)0;
 
   /// <summary>
-  /// Human-readable metal name from an item code ("game:ingot-iron" → "Iron", "iwex:slag" → "Slag").
+  /// Human-readable metal name from an item code ("game:ingot-iron" → "Iron", "iiex:slag" → "Slag").
   /// Delegates to <see cref="MetalRegistry.DisplayName"/>, which honours a registered metal's
   /// localization key and otherwise applies the strip-and-capitalise convention.
   /// </summary>

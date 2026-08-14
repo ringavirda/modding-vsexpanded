@@ -18,7 +18,7 @@
         until the codes relocate.
       * $(ShipGameLangOverride) - the spelling retained for the assets/game/ lang override that
         renames vanilla keys (iron -> "wrought iron"). Only ONE mod may opt in or the override ships
-        duplicated; today that is iwex. It is now this same mechanism, not a separate glob.
+        duplicated; today that is iiex. It is now this same mechanism, not a separate glob.
 
     Wildcards are expanded from a property, never from an item transform: MSBuild expands them in a
     literal Include, but a value produced by a transform stays literal, and the copy then fails on a
@@ -56,7 +56,7 @@
     </Content>
 
     <!-- The assets/game/ lang override that renames vanilla keys (iron -> "wrought iron"). Only ONE
-         mod may opt in or the override ships duplicated; today that is iwex. -->
+         mod may opt in or the override ships duplicated; today that is iiex. -->
     <Content
       Condition="'$(ShipGameLangOverride)' == 'true'"
       Include="$(_ExAssetsRoot)\game\**\*"

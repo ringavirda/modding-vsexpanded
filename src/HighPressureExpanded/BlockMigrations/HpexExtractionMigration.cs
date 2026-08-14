@@ -12,7 +12,7 @@ namespace HighPressureExpanded.BlockMigrations;
 /// that no longer resolves.
 /// <para>
 /// Both legacy domains are emitted. Chain-following does not cover the <c>ppex</c> leg:
-/// <see cref="LowPressureExpanded.BlockMigrations.LpexRenameMigration"/> only covers blocks that are
+/// <see cref="IronIndustryExpanded.BlockMigrations.PpexRenameMigration"/> only covers blocks that are
 /// still lpex, which these are not, so it never produces a <c>lpex:boilerlancashire-*</c> hop to
 /// follow. Emitting <c>ppex:</c> directly is the only path for a pre-rename world.
 /// </para>

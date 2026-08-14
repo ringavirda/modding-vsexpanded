@@ -1,5 +1,5 @@
 # MP Energy Network
-**Status** live   **Mod** exlib (graph + physics) · iwex (every block)
+**Status** live   **Mod** exlib (graph + physics) · iiex (every block)
 **Owns** the `"mpenergy"` network: the one-spinning-shaft model (`E = ½Iω²`, `I·dω/dt = τ_drive − τ_load − τ_fric`), the four node contracts (`IMpEnergyProducer` / `IMpEnergyStorage` / `IMpEnergyConsumer` / `IMpEnergyDirection`), merge/split semantics, the vanilla-MP bridge at the flywheel hub and its torque curve, the transmission's two-network gear coupling, the direction flag, `MaxSpeed` and everything derived from it, the animation-speed convention, and every `Mp*` / `Flywheel*` / `ShaftInertia` config key.
 **Depends on** [multiblock](multiblock.md) (the fillers the flywheel/transmission/mill reserve their volume with, and why an axle cell is not a filler) · [conventions](../conventions.md) (R7, the network-family list)
 
@@ -15,7 +15,7 @@ A flywheel is inertia, not a battery: a drive that cannot out-torque the load pl
 spins the wheel up at all, so a run can never be trickle-charged into a pulse.
 
 At the iron tier the prime mover is a vanilla waterwheel or windmill, bridged into the run through the
-flywheel's hub cell. In lpex the player swaps it for a steam engine; the network itself is unchanged.
+flywheel's hub cell. In iiex the player swaps it for a steam engine; the network itself is unchanged.
 
 ---
 
@@ -197,15 +197,15 @@ Read live each tick through `ExlibValues` (`MpEnergyNetwork.cs:28-30`), so retun
 | `MpMaxSpeed` | `2.0` | `ExlibConfig.cs:126` | burst speed `ω_max` (rad/s); range `[0.1, 1000]`. Capacity `= ½Iω_max²` scales with its square |
 | `MpGearMeshLoss` | `0.02` | `ExlibConfig.cs:132` | transmission mesh loss, fraction of coupled energy lost per second; range `[0, 1]`; 0 = lossless |
 
-### Content constants - iwex config, `ex_values.json` (domain `iwex`)
+### Content constants - iiex config, `ex_values.json` (domain `iiex`)
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
-| `FlywheelInertiaNormal` | `10` | `IwexConfig.cs:804` | `I` of the 3×3×1 disc, the reference; range `[0.01, 1e6]` |
-| `FlywheelInertiaLarge` | `150` | `IwexConfig.cs:809` | `I` of the 5×5×2 disc - 15× the normal, since a disc's `I` scales with `R⁴·t`; so 15× the energy and 15× the spin-up |
-| `FlywheelBridgeChargePower` | `1.0` | `IwexConfig.cs:820` | bridge drive torque (N·m) at/above rated axle speed; range `[0, 1e6]` |
-| `FlywheelBridgeRatedAxleSpeed` | `1.0` | `IwexConfig.cs:825` | axle speed at which the bridge delivers full torque (vanilla MP rated speed is ~1); range `[0.01, 1000]` |
-| `ShaftInertia` | `0.5` | `IwexConfig.cs:830` | `I` a single cast-iron shaft (or bevel) segment adds - the "Buffer" node's rotating mass; range `[0, 1e6]` |
+| `FlywheelInertiaNormal` | `10` | `IiexConfig.cs:804` | `I` of the 3×3×1 disc, the reference; range `[0.01, 1e6]` |
+| `FlywheelInertiaLarge` | `150` | `IiexConfig.cs:809` | `I` of the 5×5×2 disc - 15× the normal, since a disc's `I` scales with `R⁴·t`; so 15× the energy and 15× the spin-up |
+| `FlywheelBridgeChargePower` | `1.0` | `IiexConfig.cs:820` | bridge drive torque (N·m) at/above rated axle speed; range `[0, 1e6]` |
+| `FlywheelBridgeRatedAxleSpeed` | `1.0` | `IiexConfig.cs:825` | axle speed at which the bridge delivers full torque (vanilla MP rated speed is ~1); range `[0.01, 1000]` |
+| `ShaftInertia` | `0.5` | `IiexConfig.cs:830` | `I` a single cast-iron shaft (or bevel) segment adds - the "Buffer" node's rotating mass; range `[0, 1e6]` |
 
 ### Hard-coded - not config
 
@@ -221,7 +221,7 @@ Read live each tick through `ExlibValues` (`MpEnergyNetwork.cs:28-30`), so retun
 | `BEBehaviorMPFillerPort.DefaultResistance` | `0.5` | `BEBehaviorMPFillerPort.cs:30` | vanilla-MP load a hosted port presents when its spec sets no `resistance` |
 | Port turning epsilon | `0.001` | `BEBehaviorMPFillerPort.cs:45`, `:57` | vanilla-network speed below which the port reads as stopped |
 | Block-info power gate | `> 1 W` | `BlockEntityFlywheel.cs:302` | supply/demand line is suppressed below this |
-| Bevel gear item | `"iwex:bevelgear"` | `BlockCastIronBevel.cs:26` | `const string GearItemCode` |
+| Bevel gear item | `"iiex:bevelgear"` | `BlockCastIronBevel.cs:26` | `const string GearItemCode` |
 
 The mill's own balance levers (`RollingLoadTorque`, `RollingTempC`, `RollingRollRadius`, …) are documented
 on its page, but `RollingLoadTorque` is derived from this page's numbers: one bridge drive (1 N·m) less
@@ -257,14 +257,14 @@ declares what it takes is the shape to copy for the next one.
 | `BEBehaviorMPFillerPort` | `Blocks/Structures/BEBehaviorMPFillerPort.cs:25` | the vanilla-MP participant a footprint cell hosts; `Speed`/`IsTurning`/`IsReversed`/`CurrentAngleRad` |
 | `BlockNetworkModSystem.GetNetworkAt` | `Blocks/Networks/BlockNetworkModSystem.cs:54-58` | how a non-node machine (the transmission, the mill's pass tick) reads a run |
 
-### iwex - the blocks
+### iiex - the blocks
 
 | Type | file:line | Notes |
 |---|---|---|
 | `BlockFlywheel` | `BlockNetworkEnergy/Blocks/BlockFlywheel.cs:33` | `normal` 3×3×1 / `large` 5×5×2 × `ns`/`we`; footprints at `:52-64`, `:68-92`; `StructureAngle` at `:144` |
 | `BlockEntityFlywheel` | `BlockNetworkEnergy/BlockEntities/BlockEntityFlywheel.cs:34` | storage + producer + direction; `BridgeDriveTorque` at `:70-77` is pure and pinned by tests |
 | `BlockCastIronShaft` | `Blocks/BlockCastIronShaft.cs:19` | `ns`/`we`/`ud`, so a run can climb; using a bevel gear on one swaps it for a bevel (`:62-88`) |
-| `BlockEntityCastIronShaft` | `BlockEntities/BlockEntityCastIronShaft.cs:14` | pass-through node + `Inertia => IwexValues.ShaftInertia` (`:24`) |
+| `BlockEntityCastIronShaft` | `BlockEntities/BlockEntityCastIronShaft.cs:14` | pass-through node + `Inertia => IiexValues.ShaftInertia` (`:24`) |
 | `BlockCastIronBevel` | `Blocks/BlockCastIronBevel.cs:21` | `HasConnectorAt => true` on every face (`:65-69`) - the junction; drops shaft + gear (`:118-135`) |
 | `BlockEntityCastIronBevel` | `BlockEntities/BlockEntityCastIronBevel.cs:19` | inherits the shaft's inertia; geared faces derived live from connected neighbours (`:23-37`), mesh composed in `OnTesselation` (`:54-80`) |
 | `BlockTransmission` | `Blocks/BlockTransmission.cs:29` | `x2`/`x4`/`clutch` × 4 sides; 2×2 footprint (`:57-63`); three-stage RCC (`:67-78`); clutch lever routed from the `(1,1,0)` cell (`:116-136`) |
@@ -325,9 +325,9 @@ Stale source comments, all still in the tree:
 
 | Says | Where | Truth |
 |---|---|---|
-| `FlywheelBridgeChargePower` names a power | `IwexConfig.cs:817-820` | its own summary says "Drive torque (N.m)", and `BridgeDriveTorque` returns N·m |
-| capacity unit is "MP.s" | `IwexConfig.cs:802` | joules - `MpEnergyNetworkState.cs:30-32` and `:15-16` are the authority |
-| "torque is not modelled here (the whole sub-machine ecosystem is speed-driven)" | `IwexConfig.cs:814` | `DriveTorque` returns N·m |
+| `FlywheelBridgeChargePower` names a power | `IiexConfig.cs:817-820` | its own summary says "Drive torque (N.m)", and `BridgeDriveTorque` returns N·m |
+| capacity unit is "MP.s" | `IiexConfig.cs:802` | joules - `MpEnergyNetworkState.cs:30-32` and `:15-16` are the authority |
+| "torque is not modelled here (the whole sub-machine ecosystem is speed-driven)" | `IiexConfig.cs:814` | `DriveTorque` returns N·m |
 | "Phase-1 scope … the vanilla-MP bridge … live with the flywheel/engine blocks in a later increment" | `MpEnergyNetwork.cs:14-16` | the bridge is built (`BlockEntityFlywheel.cs:56-77`) |
 | "The spin animation and any producers that spend the stored energy are follow-ups; until one lands the run simply sits idle" | `BlockFlywheel.cs:28-29` | both landed: spin animation at `BlockEntityFlywheel.cs:151-188`, the rolling mill is a live consumer |
 | the base is "Currently used for gas pipes and molten canals" | `BlockNetworkNode.cs:18` | it is also the base of every mpenergy node |
@@ -364,11 +364,11 @@ calibration, not part of this ruling.
   (`BlockEntityFlywheel.cs:56-61`), so a fully-charged run still shows full supply power in block info.
 - The flywheel cannot drive back into vanilla MP. The bridge is one-way (vanilla → mpenergy). The design's
   phase 4 wanted both directions.
-- Only one consumer exists: the rolling mill. The steam hammer (lpex) and any pulveriser/stamp are unbuilt,
+- Only one consumer exists: the rolling mill. The steam hammer (iiex) and any pulveriser/stamp are unbuilt,
   so the transmission's ratios and the large flywheel have nothing yet that justifies them in play.
 - The clutch's engaged state has no readout beyond the lever pose and the two shafts visibly turning at
   different speeds. Under R7 ("nothing is hidden") that is probably enough, but it has not been checked
   against the rule's wording.
 - Every number above is a first-pass calibration, not a playtested one. The only worked example is the
-  mill's, at `IwexConfig.cs:865`; `MpGearMeshLoss` in particular has never been exercised against a chain of
+  mill's, at `IiexConfig.cs:865`; `MpGearMeshLoss` in particular has never been exercised against a chain of
   transmissions.

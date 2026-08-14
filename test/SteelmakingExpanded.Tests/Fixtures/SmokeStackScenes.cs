@@ -1,7 +1,7 @@
 using System.Linq;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using IronworkingExpanded.Tests;
+using IronIndustryExpanded.Tests;
 using SteelmakingExpanded.BlockStructures.SmokeStack.BlockEntities;
 using SteelmakingExpanded.BlockStructures.SmokeStack.Blocks;
 using Vintagestory.API.Common;

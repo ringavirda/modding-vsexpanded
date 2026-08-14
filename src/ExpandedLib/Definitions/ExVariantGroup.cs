@@ -7,7 +7,7 @@ namespace ExpandedLib.Definitions;
 /// <summary>
 /// One variant group of an <see cref="ExBlockDef"/>, as rendered into the block's code. Groups are ordered
 /// and the order is the order their states appear in the code, so <c>type</c> before <c>tier</c> before
-/// <c>side</c> yields <c>iwex:furnace-blastcore-tier1-north</c>. Every code derivation
+/// <c>side</c> yields <c>iiex:furnace-blastcore-tier1-north</c>. Every code derivation
 /// (<see cref="ExBlockDef.Any"/>, <see cref="ExBlockDef.WithVariant"/>, the generated <c>{Mod}Blocks</c>
 /// table) walks the groups in this order.
 /// </summary>

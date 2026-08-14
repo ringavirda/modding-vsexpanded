@@ -104,7 +104,7 @@ public static class MultiblockCodes {
     path = code[(colon + 1)..];
     // A domain wildcard names no mod that could be held responsible for the code existing. The shaft legend
     // is written `*:@(air|coalpile|furnace-chargepile)` because vanilla's matcher compares domain and path
-    // separately: a bare alternation is implicitly `game:` and could never admit `iwex:furnace-chargepile`.
+    // separately: a bare alternation is implicitly `game:` and could never admit `iiex:furnace-chargepile`.
     if (domain == "*" || path.StartsWith('@'))
       return false;
     return domain != "game";

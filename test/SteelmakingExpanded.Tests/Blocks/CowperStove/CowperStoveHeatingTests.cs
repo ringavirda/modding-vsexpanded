@@ -1,13 +1,13 @@
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
-using LowPressureExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockNetworkPipe;
 using Xunit;
 
 namespace SteelmakingExpanded.Tests;
 
 /// <summary>
 /// The cowper stove charges its brick core from hot furnace exhaust drawn off the gas network across
-/// its connector face. Spanning smex (the regenerator) and lpex (the <see cref="PipeNetwork"/>), it
+/// its connector face. Spanning smex (the regenerator) and iiex (the <see cref="PipeNetwork"/>), it
 /// lives in the smex suite as the top mod of the two. Every case runs on a built
 /// <see cref="CowperRig"/>, so the stove's own <c>Initialize</c> derives the connector face and caches
 /// the tunables, and the shell has to stand for the stove to commission.

@@ -144,7 +144,7 @@ public static class DefinitionGoldens {
   /// <c>EXLIB_WRITE_GOLDENS=1</c> rewrites every golden in the domain, which accepts unread any drift in the
   /// files that were not being changed. Setting it to a comma-separated list of path fragments instead
   /// restricts the rewrite to goldens whose <c>domain/path</c> contains one of them
-  /// (<c>EXLIB_WRITE_GOLDENS=iwex/blocktypes/furnace/blastcore</c> blesses one file).
+  /// (<c>EXLIB_WRITE_GOLDENS=iiex/blocktypes/furnace/blastcore</c> blesses one file).
   /// </para>
   /// </summary>
   public static void WriteAll(string domain, Assembly asm, string goldenRoot) {
@@ -202,7 +202,7 @@ public static class DefinitionGoldens {
   /// </summary>
   public static string? RepoRootOverride { get; set; }
 
-  /// <summary>Resolves a repo-root-relative path (e.g. <c>test/LowPressureExpanded.Tests/goldens</c>) to an
+  /// <summary>Resolves a repo-root-relative path (e.g. <c>test/IronIndustryExpanded.Tests/goldens</c>) to an
   /// absolute path by walking up from the test binary to the solution root, so source-tree files are read
   /// and written in place.</summary>
   public static string SolutionRelative(string repoRelativePath) =>

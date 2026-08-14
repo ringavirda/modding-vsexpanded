@@ -29,14 +29,14 @@ fractionating still that feeds it)
 
 **Depends on** [scope.md](../../scope.md) · [gasworks](gasworks.md) · [oil](oil.md) ·
 [pipe network](../../mechanics/pipe-network.md) · [conventions.md](../../conventions.md) ·
-the archived lpex spec (git history) · [electrolysis cell](../elex/electrolysis-cell.md)
+the archived iiex spec (git history) · [electrolysis cell](../elex/electrolysis-cell.md)
 
 ---
 
 ## What it is
 
 The **benchtop / vat station**: one small block that runs a family of reactions by its charge, the way one
-still runs any distillation by what is put in it. In the archived lpex spec its recipe families are
+still runs any distillation by what is put in it. In the archived iiex spec its recipe families are
 **nitration, reduction, dyeing, kerosene acid-wash and acid-making**.
 
 Its period anchor for acid is the **lead chamber process** (Roebuck, 1746): burn sulfur with saltpetre, catch
@@ -88,7 +88,7 @@ defined-but-disabled - anything that needs those is still Homestead's problem.
 
 ## The design as it stands
 
-From the archived lpex spec (git history):
+From the archived iiex spec (git history):
 
 | Piece | Archived spec | Note |
 |---|---|---|
@@ -141,7 +141,7 @@ a scope-owned statement, so this page flags it rather than rewriting it; see [Op
   fallback" severity in the scope table. Both readings are moot: the sulfur is already in the game.
 * **No danger model exists.** Acid, like ammonia, would want a hazard layer, and the suite has none - the
   closest live analogue is molten-metal contact damage. Not a blocker; a missing system.
-* **Do not build an acid plant to get sulfur.** The archived lpex spec has the gasworks producing sulfur from
+* **Do not build an acid plant to get sulfur.** The archived iiex spec has the gasworks producing sulfur from
   ammoniacal liquor - historically defensible, and unnecessary in a game where sulfur is an ore.
 
 ## Open

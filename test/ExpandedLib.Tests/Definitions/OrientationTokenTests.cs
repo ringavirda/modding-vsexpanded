@@ -130,9 +130,9 @@ public class OrientationTokenTests {
   #region A node code in a layout
 
   [Theory]
-  [InlineData("lpex:pipe-straight-fire-ns", 3)]
-  [InlineData("iwex:mpenergy-shaft-we", 2)]
-  [InlineData("lpex:pipe-junction-iron-nsud", 3)]
+  [InlineData("iiex:pipe-straight-fire-ns", 3)]
+  [InlineData("iiex:mpenergy-shaft-we", 2)]
+  [InlineData("iiex:pipe-junction-iron-nsud", 3)]
   public void A_node_orientation_is_found_in_the_code(
     string code,
     int segment
@@ -149,21 +149,21 @@ public class OrientationTokenTests {
         ExBlockDef
           .Create("d", "c")
           .MultiblockLayout(s =>
-            s.Legend('p', "lpex:pipe-straight-fire-ns").Layer(0, "p")
+            s.Legend('p', "iiex:pipe-straight-fire-ns").Layer(0, "p")
           )
           .ToJson()["attributes"]!
     );
     MultiblockFacings facings = MultiblockFacings.FromAttributes(attrs);
 
     var authored = new Vintagestory.API.Common.AssetLocation(
-      "lpex:pipe-straight-fire-ns"
+      "iiex:pipe-straight-fire-ns"
     );
     Assert.Equal(
-      "lpex:pipe-straight-fire-we",
+      "iiex:pipe-straight-fire-we",
       facings.Rotate(authored, 90).ToString()
     );
     Assert.Equal(
-      "lpex:pipe-straight-fire-ns",
+      "iiex:pipe-straight-fire-ns",
       facings.Rotate(authored, 180).ToString()
     );
   }
@@ -175,7 +175,7 @@ public class OrientationTokenTests {
       ExBlockDef
         .Create("d", "c")
         .MultiblockLayout(s =>
-          s.Legend('o', "lpex:pipe-outlet-fire-u").Layer(0, "o")
+          s.Legend('o', "iiex:pipe-outlet-fire-u").Layer(0, "o")
         )
         .ToJson()["attributes"]!;
 

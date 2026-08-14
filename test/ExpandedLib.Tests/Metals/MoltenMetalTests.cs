@@ -29,7 +29,7 @@ public class MoltenMetalTests {
   [Theory]
   [InlineData("game:ingot-iron", "Iron")] // ingot- prefix dropped, capitalised
   [InlineData("game:ingot-steel", "Steel")]
-  [InlineData("iwex:slag", "Slag")] // non-ingot path used verbatim
+  [InlineData("iiex:slag", "Slag")] // non-ingot path used verbatim
   [InlineData("game:metalbit-copper", "Metalbit-copper")]
   public void DisplayName_strips_ingot_prefix_and_capitalises(
     string code,
@@ -51,7 +51,7 @@ public class MoltenMetalTests {
 
   [Fact]
   public void FormatTemperature_prints_the_rounded_value_when_warm() {
-    // With no formatter injected (lpex wires its own ExMeasure in-game), the exlib default prints
+    // With no formatter injected (iiex wires its own ExMeasure in-game), the exlib default prints
     // the metric "650 °C" form.
     Assert.StartsWith("650 ", MoltenMetal.FormatTemperature(650f));
   }

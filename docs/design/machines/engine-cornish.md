@@ -18,7 +18,7 @@
 - The shared engine model - the fixed-draw / pressure-gates-on-off law,
   `power = RunPower × demand × suppliedFraction`, the condensate path, the over-pressure wear → break →
   wrench-repair cycle, the broken-mesh swap, `ClockState`, the HUD, the sound triad, and every `Engine*` /
-  `Mp*` / `SteamEngine*` key in `LpexConfig` - [Watt engine](engine-watt.md). That page is canonical for all
+  `Mp*` / `SteamEngine*` key in `IiexConfig` - [Watt engine](engine-watt.md). That page is canonical for all
   of it.
 - The sub-machine contract - the drive cell, the 90°-clockwise facing snap in both directions, the `+180`
   body frame, `PowerDemand` as the throttle, the two-way animation phase-lock, the MP generator's
@@ -132,18 +132,18 @@ G H R          P = game:metalplate-steel ×1 each   → 4
 P N P          R = game:rod-steel ×4               → 4
 P I P          G = gear ×4                          → 4
                N = game:metalnailsandstrips-steel ×4
-               I = iwex:pipe-plated-straight-* ×2
+               I = iiex:pipe-plated-straight-* ×2
                H = hammer (tool)
 → hpex:enginecornish-north
 ```
 
 Totals: 4 steel plate · 4 steel rod · 4 gears · 4 steel nails-and-strips · 2 plated pipe segments.
 
-Emitted twice, once per gear code - `game:gear-rusty` then `lpex:gear-*` (`:23-25`), source order preserved.
+Emitted twice, once per gear code - `game:gear-rusty` then `iiex:gear-*` (`:23-25`), source order preserved.
 Both copies genuinely use their `G`, so the two recipes are real alternatives rather than byte-identical
 clones ([Watt engine](engine-watt.md) Gotcha 9).
 
-The pipe ingredient is the plated (iwex) segment (`:60-61`), not a cast or rolled one. Tier-gating the HP
+The pipe ingredient is the plated (iiex) segment (`:60-61`), not a cast or rolled one. Tier-gating the HP
 builds waits on those segments getting craft recipes of their own, and on the hadfield material gate
 (`:52-59`) - both open ([rolled pipe](rolled-pipe.md), [Gotchas](#gotchas) 6).
 
@@ -190,7 +190,7 @@ difference in price lies in the engine's main block"
 Steel only - the Watt accepts `metalplate-iron` or `metalplate-steel` (`BlockEngineWatt.cs:81-85`). The
 Cornish is built from iron-or-steel and repaired from steel only. Matching is by bare `Code.Path`
 ([Watt engine](engine-watt.md) Gotcha 14), and the display strings are untranslated English literals
-interpolated into the translated `lpex:engine-repair-materials` line (Gotcha 15 there). Creative repairs are
+interpolated into the translated `iiex:engine-repair-materials` line (Gotcha 15 there). Creative repairs are
 free (`BlockEngine.cs:399-401`).
 
 Cost-catalogue keys: `enginecornish-grid`, `enginecornish-rcc` (`HpexRecipeConfig.cs:51`, `:55`).
@@ -280,8 +280,8 @@ burstable segment ([pipe network](../mechanics/pipe-network.md) § 3, § 5). Cro
 
 | tier | burst | reaches low (5.0)? | normal (6.0)? | high (7.0)? |
 |---|---|---|---|---|
-| plated (iwex) | 2.5 | no | no | no |
-| cast (lpex) | 5.0 | only exactly at 5.000 - and that is already the burst threshold | no | no |
+| plated (iiex) | 2.5 | no | no | no |
+| cast (iiex) | 5.0 | only exactly at 5.000 - and that is already the burst threshold | no | no |
 | rolled (hpex) | 12 | yes | yes | yes |
 
 `TickOverpressureAndBurst` fires at `Pressure >= minBurst − 0.001` (`PipeNetwork.cs:788`), so a cast main held
@@ -386,13 +386,13 @@ Constants, not per-setting:
 | air-blower rate | smex's | `SmexConfig.cs` |
 | Lancashire choke / steam | 12 atm / 48 L/s | [Lancashire boiler](boiler-lancashire.md) |
 | rolled / cast / plated pipe burst | 12 / 5.0 / 2.5 | [rolled pipe](rolled-pipe.md), [cast pipes](cast-pipes.md), [pipe network](../mechanics/pipe-network.md) |
-| lpex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
+| iiex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
 
 ```
 2.0──4.0   |  5.0    6.0    7.0  |  8.0        12.0
 Watt band  | low-N  norm-N  hi-N | Cornish     Lancashire choke
            |    Cornish engage   | break       == rolled pipe burst
-5.0 = lpex pressure-valve ceiling ─┘ reaches ONLY the low setting
+5.0 = iiex pressure-valve ceiling ─┘ reaches ONLY the low setting
 ```
 
 ### Hard-coded — not config
@@ -458,8 +458,8 @@ There is no engine equivalent of the boiler's explosion salvage path: a Cornish 
 | grid recipe (looped over two gear codes) | `Recipes/Grid/MachineRecipeDefinitions.cs:39-50`, `:23-25` |
 | cost-catalogue keys | `HpexRecipeConfig.cs:51`, `:55` |
 | lang (`engine-throttle-*`, `blockhelp-engine-throttle-*`) | `assets/hpex/lang/en.json` |
-| save migration off `lpex:` / `ppex:` | `BlockMigrations/HpexExtractionMigration.cs:34-46` - owned by [rolled pipe](rolled-pipe.md) § Gotchas 1 |
-| everything that runs | `LowPressureExpanded/BlockStructures/Engine/BlockEngine.cs`, `BlockEntityEngine.cs` - [Watt engine](engine-watt.md) § Code |
+| save migration off `iiex:` / `ppex:` | `BlockMigrations/HpexExtractionMigration.cs:34-46` - owned by [rolled pipe](rolled-pipe.md) § Gotchas 1 |
+| everything that runs | `IronIndustryExpanded/BlockStructures/Engine/BlockEngine.cs`, `BlockEntityEngine.cs` - [Watt engine](engine-watt.md) § Code |
 
 ### Where a caller hooks in
 
@@ -538,8 +538,8 @@ names the wrong tier twice; a cast main would not hold 7 atm.
    `../STATE.md:275-277` records the same. The only real gate on this engine is a bronze pickaxe to mine it.
 
 7. `modinfo.json` declares a dependency the build does not have and cannot enforce. `modinfo.json:9-15` lists
-   `smex: 0.1.0`; `HighPressureExpanded.csproj:86-100` references only ExpandedLib and LowPressureExpanded,
-   and the comment at `:76-85` explains why - the Cornish drives smex's air blower purely through lpex's
+   `smex: 0.1.0`; `HighPressureExpanded.csproj:86-100` references only ExpandedLib and IronIndustryExpanded,
+   and the comment at `:76-85` explains why - the Cornish drives smex's air blower purely through iiex's
    `BlockEntityEngine` contract, so there is no code edge. The declaration is a load-order statement, not a
    compile-time one; if smex is absent the engine simply has one fewer sub-machine.
 

@@ -73,7 +73,7 @@
       },
       "G": {
         "type": "item",
-        "code": "lpex:gear-*",
+        "code": "iiex:gear-*",
         "quantity": 2
       },
       "H": {

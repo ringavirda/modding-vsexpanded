@@ -4,8 +4,8 @@ using System.Text;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
-using IronworkingExpanded.BlockStructures.Furnaces;
-using IronworkingExpanded.Items;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -208,7 +208,7 @@ public class BlockEntityHopperReinforced : BlockEntity {
     if (
       ExMeshCache.LoadShape(
         Api,
-        new AssetLocation("iwex:shapes/ore/burden.json")
+        new AssetLocation("iiex:shapes/ore/burden.json")
       )
       is not { } shape
     )

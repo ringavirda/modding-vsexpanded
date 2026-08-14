@@ -1,0 +1,284 @@
+{
+  "code": "slag-pathstairs",
+  "attributes": {
+    "reinforcable": true,
+    "mapColorCode": "road",
+    "inContainerTexture": {
+      "base": "iiex:block/slag/slag"
+    },
+    "noDownVariant": true,
+    "liquidBarrierOnSidesByType": {
+      "*-up-north-*": [
+        1.0,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "*-up-south-*": [
+        0.5,
+        0.5,
+        1.0,
+        0.5
+      ],
+      "*-up-west-*": [
+        0.5,
+        0.5,
+        0.5,
+        1.0
+      ],
+      "*-up-east-*": [
+        0.5,
+        1.0,
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "resistanceByType": {
+    "*-snow": 0.2,
+    "*-free": 2.4
+  },
+  "behaviorsByType": {
+    "*-snow": [
+      {
+        "name": "BreakSnowFirst"
+      }
+    ]
+  },
+  "blockmaterial": "Gravel",
+  "replaceable": 900,
+  "lightAbsorption": 99,
+  "sideopaque": {
+    "all": false,
+    "down": true
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "sounds": {
+    "place": "game:block/gravel",
+    "breakByType": {
+      "*-snow": "game:block/snow",
+      "*-free": "game:block/gravel"
+    },
+    "hitByType": {
+      "*-snow": "game:block/snow",
+      "*-free": "game:block/gravel"
+    },
+    "walk": "game:walk/gravel"
+  },
+  "creativeinventory": {
+    "general": [
+      "*-up-north-free"
+    ],
+    "decorative": [
+      "*-up-north-free"
+    ],
+    "iiex": [
+      "*-up-north-free"
+    ]
+  },
+  "class": "BlockStairs",
+  "behaviors": [
+    {
+      "name": "WrenchOrientable",
+      "properties": {
+        "baseCode": "slag-pathstairs-up-*-{cover}"
+      }
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "updown",
+      "states": [
+        "up"
+      ]
+    },
+    {
+      "loadFromProperties": "game:abstract/horizontalorientation"
+    },
+    {
+      "code": "cover",
+      "states": [
+        "free",
+        "snow"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-up-north-free": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-free",
+      "rotateY": 0
+    },
+    "*-up-west-free": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-free",
+      "rotateY": 90
+    },
+    "*-up-south-free": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-free",
+      "rotateY": 180
+    },
+    "*-up-east-free": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-free",
+      "rotateY": 270
+    },
+    "*-up-north-snow": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 0
+    },
+    "*-up-west-snow": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 90
+    },
+    "*-up-south-snow": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 180
+    },
+    "*-up-east-snow": {
+      "base": "iiex:legacy/basic/stairs/stonepath-stairs-snow",
+      "rotateY": 270
+    }
+  },
+  "textures": {
+    "normal1": {
+      "base": "iiex:block/slag/slag",
+      "overlays": [
+        "game:block/overlay/pebble1"
+      ],
+      "alternates": [
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble2"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble3"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble4"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble5"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble6"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble7"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble8"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble9"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble10"
+          ]
+        },
+        {
+          "base": "iiex:block/slag/slag",
+          "overlays": [
+            "game:block/overlay/pebble11"
+          ]
+        }
+      ]
+    }
+  },
+  "walkspeedmultiplier": 1.2,
+  "faceCullMode": "NeverCull",
+  "emitSideAo": {
+    "all": true
+  },
+  "sidesolidByType": {
+    "*-up-north-*": {
+      "all": false,
+      "down": true,
+      "north": true
+    },
+    "*-up-west-*": {
+      "all": false,
+      "down": true,
+      "west": true
+    },
+    "*-up-south-*": {
+      "all": false,
+      "down": true,
+      "south": true
+    },
+    "*-up-east-*": {
+      "all": false,
+      "down": true,
+      "east": true
+    }
+  },
+  "collisionSelectionBoxesByType": {
+    "*-up-*": [
+      {
+        "x1": 0,
+        "y1": 0,
+        "z1": 0,
+        "x2": 1,
+        "y2": 0.4375,
+        "z2": 1
+      },
+      {
+        "x1": 0,
+        "y1": 0.4375,
+        "z1": 0.5,
+        "x2": 1,
+        "y2": 0.9375,
+        "z2": 1,
+        "rotateYByType": {
+          "*-north-*": 180,
+          "*-east-*": 90,
+          "*-south-*": 0,
+          "*-west-*": 270
+        }
+      }
+    ]
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.23,
+      "y": -0.91,
+      "z": -0.8
+    },
+    "rotation": {
+      "x": -2.0,
+      "y": 25.0,
+      "z": -78.0
+    },
+    "scale": 0.4
+  },
+  "drops": [
+    {
+      "type": "block",
+      "code": "slag-pathstairs-up-north-free"
+    }
+  ]
+}
