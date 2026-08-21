@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Materials;
 using ExpandedLib.Metals;
@@ -26,9 +27,6 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 /// become a class tree".
 /// </remarks>
 public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
-  private float _moltenIron = 0;
-  private float _moltenSlag = 0;
-
   /// <summary>Fractional charge unit carried between ticks, so a rate under one unit a second still
   /// descends instead of rounding to nothing every tick and stalling the furnace outright.</summary>
   private float _meltCarry;
@@ -51,8 +49,6 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
   /// <summary>Which column the tick's carbon spend starts at, advanced every tick. See
   /// <see cref="CirculateGas"/> for why an even split cannot work on whole units.</summary>
   private int _burnRotation;
-  private float _maxMoltenIron;
-  private float _maxMoltenSlag;
 
   #region Tunables
 
@@ -171,11 +167,21 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
         1f - IiexValues.BfDefaultFuelFrac - IiexValues.BfDefaultFluxFrac
       );
 
-  /// <summary>Maximum molten product (units) the furnace holds before stalling.</summary>
-  protected virtual float MaxMoltenProduct => IiexValues.BfMaxMoltenIron;
+  /// <summary>
+  /// Capacity of the whole crucible floor (units), one band per pool cell. Read from the layout's cell
+  /// count rather than from the placed cells, so a furnace whose hearth blocks are not down yet reports
+  /// the room it will have rather than none - which would stall melting before it began.
+  /// </summary>
+  protected int MaxPooledMetalUnits =>
+    PoolCells.Count * IiexValues.HearthUnitsPerBand;
 
-  /// <summary>Maximum molten slag (units) the furnace holds before stalling.</summary>
-  protected virtual float MaxMoltenSlagPool => IiexValues.BfMaxMoltenSlag;
+  /// <summary>
+  /// Slag capacity of the crucible floor (units). The crucible is one shared volume - slag floats on the
+  /// iron rather than having a vessel of its own - so it is bounded by the same band as the metal.
+  /// <c>HearthSlagSpoutBand</c> is the height the slag notch sits at, which decides where slag leaves,
+  /// not how much of it fits.
+  /// </summary>
+  protected int MaxPooledSlagUnits => MaxPooledMetalUnits;
 
   #endregion
 
@@ -187,8 +193,6 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
   /// </summary>
   protected override void CacheAttributes() {
     base.CacheAttributes();
-    _maxMoltenIron = MaxMoltenProduct;
-    _maxMoltenSlag = MaxMoltenSlagPool;
   }
 
   #endregion
@@ -459,8 +463,97 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
     // Blocks disappear as the columns shorten, and every surviving pile republishes its snapshot.
     SyncChargeBlocks();
 
-    _moltenIron = Math.Min(_moltenIron + product, _maxMoltenIron);
-    _moltenSlag = Math.Min(_moltenSlag + slag, _maxMoltenSlag);
+    // A cell holds whole units where the old float pool did not, so the fraction each cycle renders is
+    // carried rather than truncated away - otherwise a furnace loses up to a unit of each per cycle, which
+    // over a campaign is a real yield cut. Deliberately not serialized: it is worth less than one unit, and
+    // a pool key on the furnace is exactly what moving the pool into the world removed.
+    _productCarry += product;
+    _slagCarry += slag;
+    int wholeProduct = (int)_productCarry;
+    int wholeSlag = (int)_slagCarry;
+    _productCarry -= wholeProduct;
+    _slagCarry -= wholeSlag;
+
+    PoolIntoHearth(wholeProduct, wholeSlag);
+  }
+
+  /// <summary>Fractions of a unit rendered but not yet poolable, carried to the next cycle.</summary>
+  private float _productCarry;
+  private float _slagCarry;
+
+  /// <summary>
+  /// Puts what the cycle rendered into the crucible floor: the hearth block goes down in every free pool
+  /// cell and the metal is spread across their cells, remainder to the first, so two identical furnaces
+  /// fill identically. Overflow past a cell's capacity is refused by the cell and is what
+  /// <see cref="LiquidCapacityReached"/> then reports.
+  /// </summary>
+  private void PoolIntoHearth(int product, int slag) {
+    if (Api.Side != EnumAppSide.Server || (product <= 0 && slag <= 0))
+      return;
+
+    List<BlockPos> cells = ClaimPoolCells();
+    if (cells.Count == 0)
+      return;
+
+    Spread(
+      cells,
+      product,
+      BlockEntityHearthMetal.IronCellKey,
+      MetalProductCode
+    );
+    Spread(cells, slag, BlockEntityHearthMetal.SlagCellKey, "slag");
+  }
+
+  /// <summary>Spreads <paramref name="units"/> of <paramref name="metal"/> over the named cell of each
+  /// claimed hearth block, remainder to the first cells.</summary>
+  private void Spread(
+    List<BlockPos> cells,
+    int units,
+    string cellKey,
+    string metal
+  ) {
+    if (units <= 0)
+      return;
+
+    string carrier = MetalRegistry.MoltenItemOf(metal).ToString();
+    int each = units / cells.Count;
+    int extra = units % cells.Count;
+
+    for (int i = 0; i < cells.Count; i++) {
+      int share = each + (i < extra ? 1 : 0);
+      if (share <= 0)
+        continue;
+
+      BEBehaviorMoltenCell? cell = Api
+        .World.BlockAccessor.GetBlockEntity(cells[i])
+        .MoltenCell(cellKey);
+      if (cell == null)
+        continue;
+
+      // Capacity follows the live config rather than a number baked into the block definition, and is
+      // the same band for both cells: one crucible volume, with slag floating on the metal.
+      cell.SetCapacity(IiexValues.HearthUnitsPerBand);
+      cell.PushMetalRaw(share, carrier, _internalTemp, Api.World);
+    }
+  }
+
+  /// <summary>Units of metal standing on the crucible floor, summed over the hearth blocks' iron cells.</summary>
+  protected int PooledMetalUnits =>
+    PooledUnits(BlockEntityHearthMetal.IronCellKey);
+
+  /// <summary>Units of slag standing on the crucible floor.</summary>
+  protected int PooledSlagUnits =>
+    PooledUnits(BlockEntityHearthMetal.SlagCellKey);
+
+  private int PooledUnits(string cellKey) {
+    int total = 0;
+    foreach (BlockPos pos in PoolCells)
+      total +=
+        Api.World.BlockAccessor.GetBlockEntity(pos)
+          .MoltenCell(cellKey)
+          ?.CellAmount
+        ?? 0;
+    return total;
   }
 
   /// <summary>
@@ -716,15 +809,54 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
   /// reversal and extinguish countdown are all unused on this branch.
   /// </summary>
   /// <remarks>
-  /// There is no "was lit" bit either: burn-out retains no fuel at the raceway
-  /// (<c>BfBurnoutFuelRetainedBottom</c> is 0), so a furnace that has gone out cannot re-derive itself
-  /// alight. A choked furnace suffocates and goes out; one that has merely lost its blast falls back to
-  /// natural draught and keeps burning. See <c>docs/design/layered-charge.md</c>.
+  /// <see cref="BlownIn"/> is the one exception, and it is not a state machine: it records that a player
+  /// lit the furnace, which no amount of looking at the charge can answer. A choked furnace suffocates and
+  /// goes out; one that has merely lost its blast falls back to natural draught and keeps burning. See
+  /// <c>docs/design/layered-charge.md</c>.
   /// </remarks>
   protected sealed override bool DerivesState => true;
 
+  /// <summary>
+  /// Whether a player has lit this furnace. Set by a flame held through an open tap-hole and cleared when
+  /// the furnace goes out, so blowing in is once per campaign: the residue burn takes the carbon at every
+  /// raceway with it (<c>BfBurnoutFuelRetainedBottom</c> is 0), and a recharged shaft has to be lit again.
+  /// </summary>
+  public bool BlownIn { get; private set; }
+
+  /// <summary>
+  /// Lights the furnace from a tap. The tap has already checked that it is open and that it belongs to
+  /// this furnace; what is left here is the flame itself. Whether the charge catches is
+  /// <see cref="DeriveState"/>'s to decide on the next production tick, so this asks none of the questions
+  /// it asks - "will it light" and "is it still alight" have to keep giving one answer.
+  /// </summary>
+  public override bool TryLightFromTap(BlockPos tapPos) {
+    if (BlownIn)
+      return false;
+
+    BlownIn = true;
+    ExSounds.Play(Api, tapPos, ExSounds.Ignite, 1f, 32f);
+    MarkDirty(true);
+    return true;
+  }
+
+  /// <summary>
+  /// Going out ends the blow-in with everything else it ends. The residue burn is what makes this safe to
+  /// latch rather than re-derive: it leaves no carbon at any raceway, so there is nothing for a stale flag
+  /// to relight.
+  /// </summary>
+  protected override void ExtinguishResidue() {
+    BlownIn = false;
+    base.ExtinguishResidue();
+  }
+
   protected sealed override FurnaceState DeriveState(object chargeHandle) {
     if (IsChoked || !RacewayHoldsCarbon(chargeHandle))
+      return FurnaceState.Idle;
+
+    // Nobody has put a flame in it. A charged, blown, structurally sound shaft sits cold until a player
+    // reaches a torch through an open tap-hole: this is the one bit of shaft state that is not derived,
+    // and the reason it has to be stored is that the charge alone cannot say whether it was lit.
+    if (!BlownIn)
       return FurnaceState.Idle;
 
     // A breached furnace keeps burning but can never be re-lit. Without this clause a player could knock a
@@ -940,8 +1072,15 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
 
   #region Products: capacity, drain, residue
 
+  // A furnace whose drawing marks no pool cell has no crucible to fill and so can never back up on its
+  // own output - the hearths are the case. Without the count test its empty pool would read as a full
+  // one (0 >= 0) and melting would be blocked for ever.
   protected override bool LiquidCapacityReached =>
-    _moltenIron >= _maxMoltenIron || _moltenSlag >= _maxMoltenSlag;
+    PoolCells.Count > 0
+    && (
+      PooledMetalUnits >= MaxPooledMetalUnits
+      || PooledSlagUnits >= MaxPooledSlagUnits
+    );
 
   protected override void DrainProducts(ref bool dirty) {
     DrainIronTap(ref dirty);
@@ -957,11 +1096,11 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
       Api.World.BlockAccessor.GetBlockEntity(lowerTapPos)
         is not BlockEntityFurnaceTap lowerTap
       || !lowerTap.IsPouring
-      || _moltenIron <= 0
+      || PooledMetalUnits <= 0
     )
       return;
 
-    int units = Math.Min(IiexValues.TapDrainPerTick, (int)_moltenIron);
+    int units = Math.Min(IiexValues.TapDrainPerTick, PooledMetalUnits);
     ItemStack? ironStack = CreateMoltenStack(
       MetalProductCode,
       (int)Math.Ceiling(units * IiexValues.TapIronStackFactor),
@@ -972,7 +1111,7 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
 
     int accepted = lowerTap.TryPourMetal(ironStack, _internalTemp);
     if (accepted > 0) {
-      _moltenIron -= accepted;
+      DrainFromCells(BlockEntityHearthMetal.IronCellKey, accepted);
       dirty = true;
       ExSounds.PlayThrottled(
         Api,
@@ -992,11 +1131,11 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
       Api.World.BlockAccessor.GetBlockEntity(higherTapPos)
         is not BlockEntityFurnaceTap higherTap
       || !higherTap.IsPouring
-      || _moltenSlag <= 0
+      || PooledSlagUnits <= 0
     )
       return;
 
-    int units = Math.Min(IiexValues.TapDrainPerTick, (int)_moltenSlag);
+    int units = Math.Min(IiexValues.TapDrainPerTick, PooledSlagUnits);
     ItemStack? slagStack = CreateMoltenStack(
       "slag",
       (int)Math.Ceiling(units * IiexValues.TapSlagStackFactor),
@@ -1007,7 +1146,7 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
 
     int accepted = higherTap.TryPourMetal(slagStack, _internalTemp);
     if (accepted > 0) {
-      _moltenSlag -= accepted;
+      DrainFromCells(BlockEntityHearthMetal.SlagCellKey, accepted);
       dirty = true;
       ExSounds.PlayThrottled(
         Api,
@@ -1027,21 +1166,23 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
   protected override AssetLocation SolidProductBlock { get; } =
     new("iiex", "hearthmetal-pigiron");
 
-  protected override float DrainedMetalUnits => _moltenIron;
-
-  protected override void StampSolidProduct(BlockPos pos, int units) {
-    if (
-      Api.World.BlockAccessor.GetBlockEntity(pos)
-      is BlockEntityHearthMetal solid
-    ) {
-      solid.MetalCount = units;
-      solid.MarkDirty(true);
+  /// <summary>
+  /// Takes <paramref name="amount"/> units out of the named cell across the crucible floor, cell by cell
+  /// until it is met. Draining in place rather than proportionally keeps the arithmetic the tap's own
+  /// regression numbers pin.
+  /// </summary>
+  private void DrainFromCells(string cellKey, int amount) {
+    int left = amount;
+    foreach (BlockPos pos in PoolCells) {
+      if (left <= 0)
+        break;
+      BEBehaviorMoltenCell? cell = Api
+        .World.BlockAccessor.GetBlockEntity(pos)
+        .MoltenCell(cellKey);
+      if (cell == null || cell.CellAmount <= 0)
+        continue;
+      left -= cell.DrainMetal(left);
     }
-  }
-
-  protected override void ClearMoltenPools() {
-    _moltenIron = 0;
-    _moltenSlag = 0;
   }
 
   #endregion
@@ -1053,14 +1194,19 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
     IWorldAccessor worldAccessForResolve
   ) {
     base.FromTreeAttributes(tree, worldAccessForResolve);
-    _moltenIron = tree.GetFloat("moltenIron", 0f);
-    _moltenSlag = tree.GetFloat("moltenSlag", 0f);
+    // The pool is no longer furnace state: it lives in the hearth blocks' own cells, which serialize
+    // themselves. The old "moltenIron"/"moltenSlag" keys are dropped rather than migrated - a running
+    // furnace re-pools within a cycle, and a dead one already froze.
+    //
+    // Defaulted to whatever the furnace was doing: a shaft saved before the blow-in existed carries no
+    // key, and reading that as "never lit" would put every running furnace in every existing world out on
+    // load - the state is derived, so it would be Idle again on the first tick with nothing to say why.
+    BlownIn = tree.GetBool("blownIn", State != FurnaceState.Idle);
   }
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    tree.SetFloat("moltenIron", _moltenIron);
-    tree.SetFloat("moltenSlag", _moltenSlag);
+    tree.SetBool("blownIn", BlownIn);
   }
 
   #endregion
@@ -1072,22 +1218,28 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
   // Self-gated so the readout appears only when there is metal to pour.
 
   public override void AppendMoltenMetalInfo(StringBuilder sb) {
-    if (
-      !StructureComplete || (State != FurnaceState.Melting && _moltenIron <= 0f)
-    )
+    int pooled = PooledMetalUnits;
+    if (!StructureComplete || (State != FurnaceState.Melting && pooled <= 0))
       return;
     sb.AppendLine(
-      Lang.Get(MoltenProductInfoLangKey, _moltenIron, _maxMoltenIron)
+      Lang.Get(
+        MoltenProductInfoLangKey,
+        (float)pooled,
+        (float)MaxPooledMetalUnits
+      )
     );
   }
 
   public override void AppendMoltenSlagInfo(StringBuilder sb) {
-    if (
-      !StructureComplete || (State != FurnaceState.Melting && _moltenSlag <= 0f)
-    )
+    int pooled = PooledSlagUnits;
+    if (!StructureComplete || (State != FurnaceState.Melting && pooled <= 0))
       return;
     sb.AppendLine(
-      Lang.Get(IiexLang.BfInfoMoltenslag, _moltenSlag, _maxMoltenSlag)
+      Lang.Get(
+        IiexLang.BfInfoMoltenslag,
+        (float)pooled,
+        (float)MaxPooledSlagUnits
+      )
     );
   }
 

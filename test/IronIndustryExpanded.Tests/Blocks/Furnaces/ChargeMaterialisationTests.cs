@@ -209,40 +209,40 @@ public class ChargeMaterialisationTests {
 
   #region The uneven floor
 
-  /// <summary>
-  /// The shipped cold blast furnace has no flat shaft floor: its drawing marks three crucible cells
-  /// <c>Chargeable</c> at y=1 (the middle row) and nine per course at y=2..5, so <c>ShaftBox</c>'s floor is 1
-  /// while six of the nine columns cannot hold charge below 2. Placing from the box floor would write a
-  /// charge block into the tuyere and brick cells either side of the crucible.
-  /// </summary>
+  /// <summary>The rig's stepped two-column shaft - see <c>FurnaceLayoutRig.SteppedShaftDef</c> for why the
+  /// shipped drawings cannot make these cases any more.</summary>
+  private static (BlockEntityBlastFurnaceCold Core, StructureRig Rig) Stepped(
+    string side = "north"
+  ) => Stood(SteppedShaftDef(), side);
+
   [Fact]
   public void A_column_fills_from_its_own_floor_not_the_shaft_boxs() {
-    (BlockEntityBlastFurnaceCold be, StructureRig rig) = Cold();
+    (BlockEntityBlastFurnaceCold be, StructureRig rig) = Stepped();
 
     // The premise, asserted rather than assumed: a flattened layout makes the rest of this test vacuous.
-    int crucibleFloor = ReadFloor(be, 0, 0);
-    int outerFloor = ReadFloor(be, -1, -1);
-    Assert.Equal(1, crucibleFloor);
-    Assert.Equal(2, outerFloor);
+    Assert.Equal(1, ReadFloor(be, 0, 0));
+    Assert.Equal(2, ReadFloor(be, 0, 1));
 
-    Charge(be, -1, -1, 1);
+    Charge(be, 0, 1, 1);
     Sync(be);
 
+    // Placing from the box floor would write into the brick under the stepped column.
     Vec3i only = Assert.Single(PlacedCells(be, rig));
-    Assert.Equal(new Vec3i(-1, outerFloor, -1), only);
+    Assert.Equal(new Vec3i(0, 2, 1), only);
   }
 
   [Fact]
   public void The_first_block_of_every_column_draws_the_bottom_of_that_column() {
     // `BlocksTall` counts from the column's own base, so the render window must too. Indexed off the shaft
-    // box, an outer column's first pile would ask for bands 16-31 of a column holding only 0-15 and render
-    // as an empty block.
-    (BlockEntityBlastFurnaceCold be, StructureRig rig) = Cold();
+    // box, the stepped column's first pile would ask for bands 16-31 of a column holding only 0-15 and
+    // render as an empty block.
+    (BlockEntityBlastFurnaceCold be, StructureRig rig) = Stepped();
 
-    Charge(be, -1, -1, 1);
     Charge(be, 0, 0, 1);
+    Charge(be, 0, 1, 1);
     Sync(be);
 
+    Assert.Equal(2, PlacedCells(be, rig).Count);
     foreach (Vec3i local in PlacedCells(be, rig)) {
       BlockPos world = be.ChargeableCells.First(c =>
         be.LocalOf(c).Equals(local)
@@ -254,19 +254,41 @@ public class ChargeMaterialisationTests {
 
   [Fact]
   public void A_cell_below_a_columns_floor_belongs_to_no_block_of_it() {
-    // The other side of the same rule: the tuyere course under an outer column is not that column's block
-    // -1, it is not part of the column at all.
-    (BlockEntityBlastFurnaceCold be, _) = Cold();
+    // The other side of the same rule, and the case the shipped drawings can no longer make: the brick
+    // course under the stepped column is not that column's block -1, it is not part of the column at all -
+    // even though its neighbour is chargeable at that very level, so the shaft box does contain it.
+    (BlockEntityBlastFurnaceCold be, _) = Stepped();
 
-    // The cell one below an outer column's floor, found by walking down from a cell of that column rather
-    // than by arithmetic on the anchor, because the local-to-world map turns with the facing.
+    // Found by walking down from a cell of that column rather than by arithmetic on the anchor, because
+    // the local-to-world map turns with the facing.
     BlockPos floorCell = be.ChargeableCells.First(c =>
-      be.LocalOf(c).Equals(new Vec3i(-1, 2, -1))
+      be.LocalOf(c).Equals(new Vec3i(0, 2, 1))
     );
     BlockPos below = floorCell.DownCopy();
 
     Assert.Null(be.ChargeColumnAt(below, out int index));
     Assert.Equal(-1, index);
+  }
+
+  [Fact]
+  public void Both_shipped_shafts_are_uniform_floored() {
+    // The premise the cases above had to leave the shipped drawings for. Stated rather than assumed: if a
+    // future layout goes ragged again, the synthetic fixture stops being the only cover and this fails to
+    // say so.
+    (BlockEntityBlastFurnaceCold cold, _) = Cold();
+    foreach (var (x, z) in cold.ShaftColumns.Keys)
+      Assert.Equal(2, ReadFloor(cold, x, z));
+
+    var cupola = new BlockEntityCupolaFurnace();
+    Stand(
+      cupola,
+      BlockCupolaFurnaceCore.Definitions("iiex").Single(),
+      Anchor,
+      "iiex:furnace-cupolacore-tier1",
+      "north"
+    );
+    foreach (var (x, z) in cupola.ShaftColumns.Keys)
+      Assert.Equal(2, ReadFloor(cupola, x, z));
   }
 
   private static int ReadFloor(BlockEntityFurnaceCore be, int x, int z) =>
@@ -383,17 +405,18 @@ public class ChargeMaterialisationTests {
   #region Cells the furnace does not own
 
   /// <summary>
-  /// The occupant used to test the guard that stops the shaft and the furnace writing over one cell. The
-  /// shipped drawings mark the crucible both <c>Chargeable</c> and <c>Pool</c>, so the furnace puts a block
-  /// there and an unguarded sync would read the cell as empty and take it back.
+  /// The occupant used to test the guard that stops this walk writing over a block it did not place. A
+  /// coal pile is what the shaft glyph itself admits, so the cell stays a legal part of the structure
+  /// while it stands there - the obstruction is a block the furnace does not own, not a broken furnace.
   /// </summary>
   /// <remarks>
-  /// <c>iiex:hearthmetal-pigiron</c> is the real occupant: <c>ConsumeForMelting</c> places hearth metal in a
-  /// free pool cell the moment melting starts and it stands for the campaign, so the two writers contend
-  /// every tick rather than once at shutdown. The guard itself is about a block this walk did not place,
-  /// not about any particular code, and still applies to a block a player put in an open shaft cell.
+  /// The guard's other consumer is siex's hot blast furnace, whose drawing still marks its crucible
+  /// <c>Chargeable</c> and <c>Pool</c> at once: <c>ConsumeForMelting</c> puts hearth metal in a free pool
+  /// cell the moment melting starts and it stands for the campaign, so on that furnace the two writers
+  /// contend every tick. Neither iwex shaft can reach that state any more - their crucible course is pool
+  /// only - so it is pinned in the smex suite instead.
   /// </remarks>
-  private const string Foreign = "iiex:hearthmetal-pigiron";
+  private const string Foreign = "game:coalpile";
 
   private static void PlaceForeign(StructureRig rig, BlockPos pos) {
     Block block = TestBlocks.Configure(new Block(), Foreign, 951);
@@ -401,28 +424,26 @@ public class ChargeMaterialisationTests {
     rig.World.Accessor.SetBlock(block.BlockId, pos);
   }
 
+  // Compared in full rather than through ToShortString, which drops the `game:` this code carries.
   private static bool HoldsForeign(StructureRig rig, BlockPos pos) =>
-    rig.World.Accessor.GetBlock(pos)?.Code?.ToShortString() == Foreign;
+    rig.World.Accessor.GetBlock(pos)?.Code?.ToString() == Foreign;
 
   [Fact]
   public void A_cell_holding_someone_elses_block_is_skipped_not_overwritten() {
     (BlockEntityBlastFurnaceCold be, StructureRig rig) = Cold();
 
-    // The crucible floor of the middle column: the cell that is Chargeable and Pool at once.
-    BlockPos crucible = be.ChargeableCells.First(c =>
-      be.LocalOf(c).Equals(new Vec3i(0, 1, 0))
+    // The middle column's own floor - the lowest cell the walk would write to.
+    BlockPos floor = be.ChargeableCells.First(c =>
+      be.LocalOf(c).Equals(new Vec3i(0, 2, 0))
     );
-    PlaceForeign(rig, crucible);
+    PlaceForeign(rig, floor);
 
     Charge(be, 0, 0, 2 * PerBlock);
     Sync(be);
 
-    Assert.True(
-      HoldsForeign(rig, crucible),
-      "the solidified iron was overwritten"
-    );
+    Assert.True(HoldsForeign(rig, floor), "the coal pile was overwritten");
     // The column draws the one block it can, above the obstruction rather than not at all.
-    Assert.Equal([new Vec3i(0, 2, 0)], PlacedCells(be, rig));
+    Assert.Equal([new Vec3i(0, 3, 0)], PlacedCells(be, rig));
   }
 
   [Fact]
@@ -433,7 +454,7 @@ public class ChargeMaterialisationTests {
 
     PlaceForeign(
       rig,
-      be.ChargeableCells.First(c => be.LocalOf(c).Equals(new Vec3i(0, 1, 0)))
+      be.ChargeableCells.First(c => be.LocalOf(c).Equals(new Vec3i(0, 2, 0)))
     );
     Charge(be, 0, 0, 2 * PerBlock);
     Sync(be);
@@ -448,19 +469,19 @@ public class ChargeMaterialisationTests {
     // rather than out of a retry list.
     (BlockEntityBlastFurnaceCold be, StructureRig rig) = Cold();
 
-    BlockPos crucible = be.ChargeableCells.First(c =>
-      be.LocalOf(c).Equals(new Vec3i(0, 1, 0))
+    BlockPos floor = be.ChargeableCells.First(c =>
+      be.LocalOf(c).Equals(new Vec3i(0, 2, 0))
     );
-    PlaceForeign(rig, crucible);
+    PlaceForeign(rig, floor);
     Charge(be, 0, 0, 2 * PerBlock);
     Sync(be);
     Assert.Single(PlacedCells(be, rig));
 
-    rig.World.Accessor.SetBlock(0, crucible);
+    rig.World.Accessor.SetBlock(0, floor);
     Sync(be);
 
     Assert.Equal(
-      [new Vec3i(0, 1, 0), new Vec3i(0, 2, 0)],
+      [new Vec3i(0, 2, 0), new Vec3i(0, 3, 0)],
       PlacedCells(be, rig)
     );
   }

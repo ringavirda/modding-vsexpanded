@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Heat;
 using ExpandedLib.Helpers;
+using ExpandedLib.Metals;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
@@ -11,8 +12,10 @@ using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using IronIndustryExpanded.Items;
 using IronIndustryExpanded.Tests;
+using NSubstitute;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
@@ -72,14 +75,27 @@ internal sealed class BlastFurnaceRig {
   /// <param name="chargeCode">Item path the charge is laid as, in the iiex domain. Null follows the
   /// default, <c>burden</c>. Pass <c>remeltburden</c> to charge the wrong family and exercise the
   /// conversion gate.</param>
+  /// <param name="blowIn">Whether to light the furnace once it stands. True by default: a shaft has not
+  /// caught by itself since U4.9, and every scenario here is about combustion, blast or tapping rather
+  /// than about ignition, so the ritual is performed once here instead of in twenty-five chains. Pass
+  /// false to watch a furnace that nobody has lit - see
+  /// <c>A_built_and_blown_furnace_stays_dark_until_a_torch_reaches_it</c>, which does the gesture itself.</param>
   public BlastFurnaceRig(
     int blastMix = 400,
     BurdenMix? burden = null,
-    string? chargeCode = null
+    string? chargeCode = null,
+    bool blowIn = true
   ) {
     _burden = burden;
     _chargeCode = chargeCode;
     World = new TestWorld();
+    // Server-side, as the cold-furnace rig is: this drives the production tick, and a world that
+    // identifies as neither side skips every `Side == Server` branch in it without saying so.
+    World.World.Side.Returns(EnumAppSide.Server);
+    // The pool stands in hearth blocks the furnace places, so they have to resolve before a melt can put
+    // anything anywhere.
+    HearthRig.Register(World, "iiex:hearthmetal-pigiron", 70);
+    World.RegisterItem(MetalRegistry.MoltenItemOf("pigiron").ToString(), 1500f);
     // The metal tap resolves its molten carrier through MetalRegistry: iiex:ingot-pigiron when the metal
     // is registered, else the game:ingot-pigiron convention. Both codes are registered so GetItem resolves
     // whatever the tick asks for, independent of process-wide registry state.
@@ -144,6 +160,11 @@ internal sealed class BlastFurnaceRig {
     // has arrived, so a push before completion lands nowhere and does so silently.
     if (blastMix >= 0)
       Lay(blastMix > 0 ? blastMix : ShaftCapacityUnits);
+
+    // After the charge: the flame is what the player brings, and it is the charge that decides whether it
+    // takes. Before it, the furnace would be blown in with an empty shaft, which is a different scene.
+    if (blowIn)
+      BlowIn();
   }
 
   /// <summary>Charge units the shaft can hold: every column's cell count times the furnace's block
@@ -339,6 +360,15 @@ internal sealed class BlastFurnaceRig {
     return this;
   }
 
+  /// <summary>
+  /// Lights the furnace - through the iron tap when one has been stood up, otherwise straight at the
+  /// furnace. A shaft does not catch by itself; see <c>BlowInRig</c>.
+  /// </summary>
+  public BlastFurnaceRig BlowIn() {
+    BlowInRig.BlowIn(World, Furnace, IronTap);
+    return this;
+  }
+
   /// <summary>Cuts the blast off: the blowers stop and the tuyeres are no longer re-fed.</summary>
   public BlastFurnaceRig CutBlast() {
     _blastTemp = -1f;
@@ -351,6 +381,10 @@ internal sealed class BlastFurnaceRig {
   /// <c>TryPourMetal</c> aims its runout outward; that is also the only orientation whose canal cell falls
   /// outside the footprint. A wrong code or facing shows up as a furnace that will not complete.
   /// </summary>
+  /// <summary>The iron tap, once <see cref="WithIronTapAndCanal"/> has stood one up - what the blow-in
+  /// reaches its flame through.</summary>
+  public BlockEntityFurnaceTap? IronTap { get; private set; }
+
   public BlastFurnaceRig WithIronTapAndCanal() {
     // The tap faces in, so its runout lands one cell further east, clear of the structure. Production
     // derives the pour cell from this same variant, so the two cannot drift. `w`, not `west`: a side
@@ -359,8 +393,9 @@ internal sealed class BlastFurnaceRig {
     BlockPos tapPos = Global(2, 1, 0);
     var tap = new BlockEntityFurnaceTap {
       Pos = tapPos.Copy(),
+      // The real block class, not a stand-in: the blow-in gesture runs through its interaction.
       Block = TestBlocks.Configure(
-        new Block(),
+        new BlockFurnaceTap(),
         $"iiex:furnace-{BlockFurnaceTap.IronType}-{tapSide}",
         30,
         ("type", BlockFurnaceTap.IronType),
@@ -369,7 +404,8 @@ internal sealed class BlastFurnaceRig {
     };
     World.Place(tapPos, tap.Block, tap);
     World.Attach(tap);
-    tap.TogglePouring(); // open
+    tap.SetPlugged(false); // open
+    IronTap = tap;
 
     // FacingFromSide, not BlockFacing.FromCode - vanilla's returns null for a letter.
     BlockPos canalPos = tapPos
@@ -534,8 +570,14 @@ internal sealed class BlastFurnaceRig {
   public float MeltSpeed =>
     (float)ReflectionHelpers.Invoke(Furnace, "MeltSpeedFactor")!;
 
+  // The pool is the crucible floor's own cells now; summing them leaves every scenario assertion reading
+  // as it did against the field.
   public float MoltenIron =>
-    (float)ReflectionHelpers.GetField(Furnace, "_moltenIron")!;
+    HearthRig.Pooled(
+      World,
+      Furnace.PoolCells,
+      BlockEntityHearthMetal.IronCellKey
+    );
   public int CanalIron => Canal?.CellAmount ?? 0;
 
   /// <summary>Full item code of the metal the tap poured into the canal.</summary>

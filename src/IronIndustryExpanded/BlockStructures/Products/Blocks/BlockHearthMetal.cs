@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Metals;
 using ExpandedLib.Registries.Entities;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -32,6 +34,23 @@ public partial class BlockHearthMetal : Block, IExBlockDefProvider {
         .VariantGroup("metal", "pigiron", "castiron")
         .Class<BlockHearthMetal>()
         .EntityClass<BlockEntityHearthMetal>()
+        // Two cells on one block: the crucible floor holds iron and the slag floating on it. Capacity is
+        // set at runtime from IiexConfig rather than baked here, because the config is live-editable and
+        // a number in JSON is not.
+        .EntityBehavior<BEBehaviorMoltenCell>(
+          new JObject
+          {
+            ["key"] = BlockEntityHearthMetal.IronCellKey,
+            ["solidifies"] = true,
+          }
+        )
+        .EntityBehavior<BEBehaviorMoltenCell>(
+          new JObject
+          {
+            ["key"] = BlockEntityHearthMetal.SlagCellKey,
+            ["solidifies"] = true,
+          }
+        )
         .Material(EnumBlockMaterial.Metal)
         .CreativeTab("general", "*")
         .CreativeTab("iiex", "*")

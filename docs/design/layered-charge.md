@@ -97,9 +97,7 @@ recovery ladder of [roasting](processes/roasting.md) and [ironmaking](processes/
 
 ## Still design-only
 
-* the blow-in ritual - torch on an open tap, the clay plug as the tap's closed state, and the lit
-  front climbing the shaft pile-to-pile;
-* the live crucible above;
+* the lit front climbing the shaft pile-to-pile (the rest of the blow-in ritual is built);
 * the slag pile conversion ([charge-pile](machines/charge-pile.md) Open 2);
 * hand-charging through the pile blocks (take works, add does not).
 

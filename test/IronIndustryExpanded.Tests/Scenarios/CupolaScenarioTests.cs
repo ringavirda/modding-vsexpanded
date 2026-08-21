@@ -27,7 +27,7 @@ public class CupolaScenarioTests {
 
   [Fact]
   public void A_charged_lit_shaft_fed_blast_ignites() {
-    var rig = new CupolaRig(burden: Remelt).FeedBlast();
+    var rig = new CupolaRig(burden: Remelt).FeedBlast().BlowIn();
 
     rig.Tick(1); // a full shaft with coke at the raceway + blast -> catches
 
@@ -42,7 +42,7 @@ public class CupolaScenarioTests {
   [Fact]
   public void The_cupola_lights_on_its_OWN_geometry_not_the_blast_furnaces_threshold() {
     // 160 units: far under what a blast furnace holds.
-    var rig = new CupolaRig(charge: 160, burden: Remelt).FeedBlast();
+    var rig = new CupolaRig(charge: 160, burden: Remelt).FeedBlast().BlowIn();
 
     rig.Tick(1);
 
@@ -58,7 +58,8 @@ public class CupolaScenarioTests {
   public void A_full_shaft_with_no_coke_at_the_raceway_stays_cold() {
     var rig = new CupolaRig(charge: -1, burden: Remelt)
       .FeedBlast()
-      .ChargeWithoutCoke();
+      .ChargeWithoutCoke()
+      .BlowIn();
 
     Assert.Equal(0, rig.CokeUnits);
     Assert.True(
@@ -75,7 +76,10 @@ public class CupolaScenarioTests {
 
   [Fact]
   public void Sustained_heat_above_the_cast_iron_melt_point_transitions_to_melting() {
-    var rig = new CupolaRig(burden: Remelt).FeedBlast().HeatSoak(SoakSeconds);
+    var rig = new CupolaRig(burden: Remelt)
+      .FeedBlast()
+      .BlowIn()
+      .HeatSoak(SoakSeconds);
 
     Assert.Equal(FurnaceState.Melting, rig.State);
     Assert.True(
@@ -90,7 +94,7 @@ public class CupolaScenarioTests {
 
   [Fact]
   public void Melting_renders_remelt_burden_into_molten_cast_iron() {
-    var rig = new CupolaRig(burden: Remelt).FeedBlast();
+    var rig = new CupolaRig(burden: Remelt).FeedBlast().BlowIn();
 
     // Waits on the product rather than the label: the render happens on the carbon burnt after the state
     // turns, so entering Melting and having melted something are separate moments.
@@ -105,7 +109,8 @@ public class CupolaScenarioTests {
     var rig = new CupolaRig(burden: Remelt)
       .FeedBlast()
       .WithCastIronTapAndCanal()
-      .WithSlagTapAndCanal();
+      .WithSlagTapAndCanal()
+      .BlowIn();
 
     Assert.True(
       rig.RunUntil(
@@ -130,7 +135,7 @@ public class CupolaScenarioTests {
   public void Extinguishing_freezes_cast_iron_and_leaves_salvageable_burden_and_no_slag() {
     // Put out by running its carbon out rather than by a fuel clock: a shaft has no timers, so a campaign
     // ends when the fuel does.
-    var rig = new CupolaRig(burden: Remelt).FeedBlast();
+    var rig = new CupolaRig(burden: Remelt).FeedBlast().BlowIn();
 
     Assert.True(
       rig.RunUntil(r => r.MoltenCastIron > 0f, SoakSeconds) > 0,
@@ -147,59 +152,55 @@ public class CupolaScenarioTests {
       rig.BlockAtLocal(0, 1, 0).Code?.ToString()
     );
     Assert.True(
-      rig.BlockEntityAtLocal(0, 1, 0)
-        is BlockEntityHearthMetal { MetalCount: > 0 },
-      "the frozen block should carry a positive cast-iron bit count"
+      rig.BlockEntityAtLocal(0, 1, 0) is BlockEntityHearthMetal,
+      "the hearth cell should carry the crucible block entity"
+    );
+    Assert.True(
+      rig.MoltenCastIron > 0f,
+      "the bath should still be standing on the crucible floor, not zeroed at shutdown"
     );
 
-    // Nothing on the extinguish path makes slag: the slag pool is simply cleared.
-    Assert.Equal(0f, rig.MoltenSlag, 3);
+    // The block the bath stands in is the metal one. Slag floats on it in the same crucible rather than
+    // making a block of its own, and it is no longer discarded at shutdown - nothing on this path
+    // destroys what the furnace made.
     Assert.NotEqual("iiex:slag", rig.BlockAtLocal(0, 1, 0).Code?.ToString());
   }
 
   /// <summary>
-  /// The freeze must treat a fuel band at the hearth as a free cell rather than as wrong-family charge. On
-  /// a shaft furnace fuel is charge, and <c>Burden.FamilyOfCode</c> answers <c>ore</c> for anything that is
-  /// not remelt burden, coke and charcoal included, so a <c>remelt</c> furnace scores every fuel band as
-  /// refused charge, <c>SolidifyBottomLayer</c> finds no cell to freeze into and <c>ClearMoltenPools</c>
-  /// zeroes the metal. An ordinary burn-out cannot reach that case - a shaft goes out when
-  /// <c>RacewayHoldsCarbon</c> fails over the same slice the freeze inspects - so the case breaks a running
-  /// cupola (<c>OnBlockRemoved</c>), which puts one out with its raceway still stocked.
+  /// Breaking a cupola while it is running must not cost the player the bath. This used to be a real way
+  /// to lose it: the freeze ran at shutdown, it scored a fuel band at the hearth as refused charge and
+  /// found no cell to freeze into, and the pool was then zeroed anyway. There is no shutdown freeze to
+  /// get wrong now - the metal was written into the crucible block as it was made - so the case is kept
+  /// as the guard that it stays that way, on the one path that puts a furnace out with its raceway still
+  /// stocked (<c>OnBlockRemoved</c>).
   /// </summary>
   [Fact]
-  public void Breaking_a_running_cupola_freezes_its_pool_over_the_coke_at_its_raceway() {
-    var rig = new CupolaRig(burden: Remelt).FeedBlast();
+  public void Breaking_a_running_cupola_leaves_the_bath_standing_in_its_crucible() {
+    var rig = new CupolaRig(burden: Remelt).FeedBlast().BlowIn();
     Assert.True(
       rig.RunUntil(r => r.MoltenCastIron > 0f, SoakSeconds) > 0,
       "the cupola should have made cast iron before it is broken"
     );
 
-    // The premise, stated rather than assumed: there is a molten bath, and the crucible cell that must
-    // receive it holds a fuel band.
+    // The premise, stated rather than assumed: there is a molten bath, and it is already standing in the
+    // crucible rather than waiting on a shutdown that might mishandle it.
     float bath = rig.MoltenCastIron;
     Assert.True(bath > 0f);
-    Assert.True(
-      rig.HoldsFuelAtLocal(0, 1, 0),
-      "the hearth cell must still hold fuel, or this case is the burn-out case again"
-    );
     Assert.Equal(
-      "iiex:furnace-chargepile",
+      "iiex:hearthmetal-castiron",
       rig.BlockAtLocal(0, 1, 0).Code?.ToString()
     );
 
     rig.Furnace.OnBlockRemoved(); // broken while running
 
-    // The bath froze where it stood. Asserted on the block, not on the pool figure: the pool is cleared
-    // either way, so a metal count alone cannot tell "frozen onto the hearth" from "silently destroyed".
+    // Every unit survives the break, in the block it was already in. Asserted as a figure as well as a
+    // block code: a block alone cannot tell "the bath is in there" from "an empty block over a deleted
+    // pool", which is the failure this case exists to catch.
     Assert.Equal(
       "iiex:hearthmetal-castiron",
       rig.BlockAtLocal(0, 1, 0).Code?.ToString()
     );
-    Assert.True(
-      rig.BlockEntityAtLocal(0, 1, 0)
-        is BlockEntityHearthMetal { MetalCount: > 0 },
-      "the frozen block should carry a positive cast-iron bit count"
-    );
+    Assert.Equal(bath, rig.MoltenCastIron, 3);
   }
 
   #endregion
@@ -212,7 +213,9 @@ public class CupolaScenarioTests {
 
   [Fact]
   public void A_cupola_will_not_convert_an_ore_burden_charge() {
-    var rig = new CupolaRig(burden: Remelt, chargeCode: "burden").FeedBlast();
+    var rig = new CupolaRig(burden: Remelt, chargeCode: "burden")
+      .FeedBlast()
+      .BlowIn();
 
     rig.RunUntil(_ => false, SoakSeconds);
 
@@ -226,7 +229,9 @@ public class CupolaScenarioTests {
   /// </summary>
   [Fact]
   public void A_wrong_family_shaft_still_reads_full_so_it_lights_and_burns() {
-    var rig = new CupolaRig(burden: Remelt, chargeCode: "burden").FeedBlast();
+    var rig = new CupolaRig(burden: Remelt, chargeCode: "burden")
+      .FeedBlast()
+      .BlowIn();
 
     int coke = rig.CokeUnits;
     bool everMelted = false;

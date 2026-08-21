@@ -89,10 +89,16 @@ public partial class BlockBlastFurnaceCoreHot
             .Legend('a', VanillaCodes.Air)
             // The burden column. The role, not the legend string, answers where charge stands, and this
             // drawing states it rather than inheriting it. The cells differ from the cold furnace on
-            // purpose: that one's crucible spans the full hearth course (39 cells) with its cinder notch
-            // level with the iron one, while this keeps a narrow two-cell crucible and a high slag tap.
+            // purpose: that one's crucible spans the full hearth course with its cinder notch level with
+            // the iron one, while this keeps a narrow two-cell crucible and a high slag tap.
             .Role('c', CellRole.Chargeable)
-            // Burden and pool at once, as the cold furnace's crucible is.
+            // Burden and pool at once, which is known-wrong and held deliberately. The cold furnace and
+            // the cupola separated the two when their crucible became live molten cells; this drawing
+            // cannot follow by dropping `Chargeable` alone, because that leaves a two-cell crucible under
+            // a 3x3 shaft - a bosh no furnace has - and bakes it into a golden. The crucible, the cinder
+            // notch a course too high and the tuyeres move together in the smex remake, one layout change
+            // and one blessing. What this costs meanwhile is pinned by CrucibleOverlapTests: two of the
+            // nine columns draw a block short for a campaign, and the units they hide still count.
             .Role('p', CellRole.Chargeable)
             .Role('p', CellRole.Pool)
             .Role('Y', CellRole.Tuyere)
@@ -102,6 +108,13 @@ public partial class BlockBlastFurnaceCoreHot
             .Role('P', CellRole.GasOutlet)
             // The two drains. The iron notch matches the cold furnace's cell, the cinder notch does not -
             // see the burden-column note above.
+            //
+            // Since the drawn tap shapes landed, that costs a second known-wrong thing, deferred with the
+            // crucible: each shape encodes its own notch height (iron channel at model Y 2-3, cinder at
+            // Y 10-11), so the course between the two notches is art and both taps belong at y=1. `S`
+            // sits at y=2 here, so this furnace draws its cinder notch a course higher than the metal it
+            // skims - the height is counted twice. Moving `S` down is a layout change and a blessing, and
+            // it belongs in the same remake that separates Pool from Chargeable.
             .Role('T', CellRole.MetalTap)
             .Role('S', CellRole.SlagTap)
             .Layer(

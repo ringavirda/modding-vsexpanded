@@ -153,52 +153,48 @@ public class ChargeableCellsTests {
     );
 
   /// <summary>The layout's chargeable cells, read off the shipped definition by its authored glyph. This
-  /// literal-string route is not how production finds them.</summary>
+  /// literal-string route is not how production finds them. The shaft glyph alone on both iwex furnaces:
+  /// their crucible course is pool, not burden.</summary>
   private static List<Vec3i> AuthoredChargeCells(ExBlockDef def) =>
-    ChargeCells(LayoutOf(def));
+    ChargeCells(LayoutOf(def), ShaftGlyph);
 
   #endregion
 
   #region The shipped furnaces
 
   [Fact]
-  public void The_cold_furnace_offers_the_thirty_nine_cells_its_layout_marks() {
+  public void The_cold_furnace_offers_the_thirty_six_cells_its_layout_marks() {
     BlockEntityBlastFurnaceCold core = Cold();
     List<Vec3i> authored = AuthoredChargeCells(ColdDef());
 
-    // The three-cell hearth-floor row plus the four full 3x3 levels above it. Counted so the set
-    // equality below cannot pass with both sides empty.
-    Assert.Equal(39, authored.Count);
+    // Four full 3x3 levels, y=2 up. The crucible course below them is pool only, so the burden rests on
+    // the hearthmetal the furnace stands there rather than sharing its cells. Counted so the set equality
+    // below cannot pass with both sides empty.
+    Assert.Equal(36, authored.Count);
     Assert.Equal(ExpectedAt(authored, 0), Render(core.ChargeableCells));
   }
 
   [Fact]
-  public void The_cold_furnaces_hearth_floor_is_three_cells_of_nine_not_the_whole_box() {
+  public void The_cold_furnaces_burden_starts_a_course_above_its_crucible() {
     BlockEntityBlastFurnaceCold core = Cold();
 
-    // The shaft box is 3x3 at y=1; the layout opens only the middle `h h h` row of those nine, the rest
-    // being the tuyere pair, the two taps and brick. Filling the box would place charge into a wall.
-    int floorY = Anchor.Y + 1;
-    Assert.Equal(
-      Render([
-        Anchor.AddCopy(-1, 1, 0),
-        Anchor.AddCopy(0, 1, 0),
-        Anchor.AddCopy(1, 1, 0),
-      ]),
-      Render(core.ChargeableCells.Where(c => c.Y == floorY))
-    );
-    // Above the tuyeres the full 3x3 opens, four levels of it.
+    // Nothing at y=1: that course is the crucible, and a burden pile resting there would share a cell
+    // with the live bath the furnace pools into. It is also where the tuyere pair and the two taps sit.
+    Assert.DoesNotContain(core.ChargeableCells, c => c.Y == Anchor.Y + 1);
+    // From y=2 up the full 3x3 opens, four levels of it, and the box is exactly those.
     for (int y = 2; y <= 5; y++)
       Assert.Equal(9, core.ChargeableCells.Count(c => c.Y == Anchor.Y + y));
+    Assert.Equal(36, core.ChargeableCells.Count);
   }
 
   [Fact]
-  public void The_cupola_offers_the_five_cells_of_its_single_column() {
+  public void The_cupola_offers_the_four_cells_of_its_single_column() {
     BlockEntityCupolaFurnace core = Cupola();
     List<Vec3i> authored = AuthoredChargeCells(CupolaDef());
 
-    // Five: four shaft cells plus the crucible floor.
-    Assert.Equal(5, authored.Count);
+    // Four shaft cells, the crucible below them being pool only. The fifth is not owed back: a cupola
+    // charges remelt, which carries far more metal per cell than the blast furnace's ore burden.
+    Assert.Equal(4, authored.Count);
     Assert.Equal(ExpectedAt(authored, 0), Render(core.ChargeableCells));
     // One column, however many levels of it. On this furnace the ShaftBox is exactly the charge volume
     // rather than merely containing it; the height is whatever the drawing says.
@@ -286,14 +282,15 @@ public class ChargeableCellsTests {
   }
 
   [Fact]
-  public void One_named_cell_of_the_shipped_hearth_floor_moves_at_every_facing() {
-    // The shipped layout's own asymmetry, named rather than counted: (1,1,0) sits off-centre on x, so it
-    // is a different world cell at each of the four facings and must be chargeable at all of them.
+  public void One_named_cell_of_the_shipped_shaft_moves_at_every_facing() {
+    // The shipped layout's own asymmetry, named rather than counted: (1,2,0) sits off-centre on x, so it
+    // is a different world cell at each of the four facings and must be chargeable at all of them. The
+    // volume as a set cannot say this - four square courses are closed under a quarter turn.
     var cells = new List<BlockPos>();
     foreach (string side in new[] { "north", "east", "south", "west" }) {
       BlockEntityBlastFurnaceCold core = Cold(side);
       Vec3i r = ExOrientation.RotateOffset(
-        new Vec3i(1, 1, 0),
+        new Vec3i(1, 2, 0),
         AngleFromSide(side)
       );
       BlockPos world = Anchor.AddCopy(r.X, r.Y, r.Z);
@@ -410,9 +407,18 @@ public class ChargeableCellsTests {
       }
     ) {
       Assert.NotEmpty(core.ChargeableCells);
+      // Less the crucible course. The hearth glyph still admits `furnace-chargepile` on purpose: a world
+      // saved before that course stopped being charged has piles standing there, and a code that refused
+      // them would read the furnace as broken on load. The next melt claims the cell for hearth metal.
       Assert.Equal(
-        Render(core.CellsAccepting(ChargePile)),
+        Render(core.CellsAccepting(ChargePile).Except(core.PoolCells)),
         Render(core.CellsWithRole(CellRole.Chargeable))
+      );
+      // And the difference is exactly that course rather than some third set, which the subtraction above
+      // would hide.
+      Assert.Equal(
+        Render(core.PoolCells),
+        Render(core.CellsAccepting(ChargePile).Except(core.ChargeableCells))
       );
       // The furnace's own accessor is that role, not something beside it.
       Assert.Same(
@@ -476,8 +482,8 @@ public class ChargeableCellsTests {
       int Count
     )[] furnaces =
     [
-      (ColdDef(), CellRole.Chargeable, CellRole.Firebox, 39),
-      (CupolaDef(), CellRole.Chargeable, CellRole.Firebox, 5),
+      (ColdDef(), CellRole.Chargeable, CellRole.Firebox, 36),
+      (CupolaDef(), CellRole.Chargeable, CellRole.Firebox, 4),
       (PuddlingDef(), CellRole.Firebox, CellRole.Chargeable, 1),
       (HeatingDef(), CellRole.Firebox, CellRole.Chargeable, 2),
     ];
@@ -489,7 +495,7 @@ public class ChargeableCellsTests {
       List<Vec3i> declared = RoleCellsOf(def, role);
       List<Vec3i> byGlyph =
         role == CellRole.Chargeable
-          ? ChargeCells(LayoutOf(def))
+          ? ChargeCells(LayoutOf(def), ShaftGlyph)
           : FireboxCells(LayoutOf(def));
 
       Assert.Equal(count, declared.Count);

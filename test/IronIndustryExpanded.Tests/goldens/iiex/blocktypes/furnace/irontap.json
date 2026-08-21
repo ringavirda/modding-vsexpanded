@@ -2,11 +2,6 @@
   "code": "furnace",
   "class": "iiex.BlockFurnaceTap",
   "entityClass": "iiex.BlockEntityFurnaceTap",
-  "entityBehaviors": [
-    {
-      "name": "Animatable"
-    }
-  ],
   "blockmaterial": "Ceramic",
   "maxstacksize": 1,
   "behaviors": [
@@ -36,19 +31,19 @@
   ],
   "shapebytype": {
     "*-n": {
-      "base": "iiex:furnace/tap",
+      "base": "iiex:furnace/irontap",
       "rotateY": 0
     },
     "*-e": {
-      "base": "iiex:furnace/tap",
+      "base": "iiex:furnace/irontap",
       "rotateY": 270
     },
     "*-s": {
-      "base": "iiex:furnace/tap",
+      "base": "iiex:furnace/irontap",
       "rotateY": 180
     },
     "*-w": {
-      "base": "iiex:furnace/tap",
+      "base": "iiex:furnace/irontap",
       "rotateY": 90
     }
   },

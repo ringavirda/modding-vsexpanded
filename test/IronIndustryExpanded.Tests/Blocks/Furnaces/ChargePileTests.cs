@@ -334,31 +334,35 @@ public class ChargePileTests {
   }
 
   /// <summary>
-  /// The shipped shaft has no single floor: its drawing marks three crucible cells <c>Chargeable</c> at
-  /// y=1 (the middle row only) and nine per course at y=2..5, so <c>ShaftBox</c>'s floor is 1 while six of
-  /// the nine columns cannot hold charge below 2.
+  /// <c>blockIndex</c> is measured from each column's own lowest chargeable cell rather than from the shaft
+  /// box, because <c>ChargeColumn.BlocksTall</c> counts from the column's base. Indexed off the box, the
+  /// stepped column's first pile would ask for bands 16-31 of a column holding only 0-15 and render empty.
   /// <para>
-  /// <c>blockIndex</c> is measured from each column's own lowest chargeable cell rather than from the box,
-  /// because <c>ChargeColumn.BlocksTall</c> counts from the column's base. Indexed off the box, an outer
-  /// column's first pile would ask for bands 16-31 of a column holding only 0-15 and render empty.
+  /// The stepped fixture, not a shipped drawing: both shipped shafts are uniform-floored since their
+  /// crucible course stopped being charged, and on a uniform floor the two readings agree.
   /// </para>
   /// </summary>
   [Fact]
-  public void A_shipped_furnace_indexes_each_column_from_its_own_floor() {
-    PileRig rig = Shipped();
+  public void A_pile_indexes_its_column_from_that_columns_own_floor() {
+    PileRig rig = Build(
+      new BlockEntityBlastFurnaceCold(),
+      "north",
+      SteppedShaftDef()
+    );
 
-    // The crucible row: floor y=1, so the hearth cell is block 0.
-    BlockEntityChargePile crucible = rig.Pile(0, 1, 0);
-    // An outer column: floor y=2, so y=5 is its block 3 - not 4.
-    BlockEntityChargePile outer = rig.Pile(-1, 5, 1);
+    // The deep column: floor y=1, so its lowest cell is block 0 and y=3 is block 2.
+    BlockEntityChargePile deep = rig.Pile(0, 1, 0);
+    // The stepped column: floor y=2, so y=3 is its block 1 - not 2.
+    BlockEntityChargePile stepped = rig.Pile(0, 3, 1);
 
-    Assert.Same(rig.Core.ChargeColumnAt(0, 0), crucible.Window.column);
-    Assert.Equal(0, crucible.Window.blockIndex);
-    Assert.Same(rig.Core.ChargeColumnAt(-1, 1), outer.Window.column);
-    Assert.Equal(3, outer.Window.blockIndex);
+    Assert.Same(rig.Core.ChargeColumnAt(0, 0), deep.Window.column);
+    Assert.Equal(0, deep.Window.blockIndex);
+    Assert.Same(rig.Core.ChargeColumnAt(0, 1), stepped.Window.column);
+    Assert.Equal(1, stepped.Window.blockIndex);
 
-    // The outer column's own floor is its block 0.
-    Assert.Equal(0, rig.Pile(-1, 2, 1).Window.blockIndex);
+    // The stepped column's own floor is its block 0, where the box would make it 1.
+    Assert.Equal(0, rig.Pile(0, 2, 1).Window.blockIndex);
+    Assert.Equal(2, rig.Pile(0, 3, 0).Window.blockIndex);
   }
 
   #endregion

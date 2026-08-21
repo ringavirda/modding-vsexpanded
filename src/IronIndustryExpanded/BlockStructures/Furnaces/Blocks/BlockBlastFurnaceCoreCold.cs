@@ -95,9 +95,8 @@ public partial class BlockBlastFurnaceCoreCold
             // ChargeShaft's domain wildcard is load-bearing: a bare alternation puts a lit furnace out the
             // moment the player charges it. See IiexCodes.ChargeShaft.
             .Legend('c', IiexCodes.ChargeShaft)
-            // The crucible floor: the same code as the shaft above it, given its own glyph only so it can
-            // carry a second role. Two glyphs on one code share one block number, so the structure
-            // requires nothing extra. See MultiblockLayoutBuilder.Build.
+            // The crucible floor: the shaft's occupants plus the hearthmetal block the furnace stands its
+            // bath in, which the shaft glyph does not admit. See IiexCodes.HearthCell.
             .Legend('h', IiexCodes.HearthCell)
             .Legend('a', VanillaCodes.Air)
             // The burden column, named on the drawing rather than derived from the legend string:
@@ -105,10 +104,10 @@ public partial class BlockBlastFurnaceCoreCold
             // shaft glyph keeps `chargepile` in its alternation, and nothing checks that coupling.
             // `a` is air as well and is not chargeable - it is the vent shaft above the stockline.
             .Role('c', CellRole.Chargeable)
-            // The crucible is both burden and pool: charge rests on it while the furnace runs and molten
-            // iron freezes onto it when the furnace is put out. The two occupy the same cells, so one
-            // glyph carries both roles.
-            .Role('h', CellRole.Chargeable)
+            // The crucible is pool only. Metal stands in it as hearthmetal blocks the furnace places as it
+            // melts, so a burden pile resting there would share a cell with a live bath: the lowest charge
+            // level is y=2, one course above this row. The glyph is still its own because its cell admits
+            // the hearthmetal block the shaft glyph does not.
             .Role('h', CellRole.Pool)
             // The blast intake. The role lets the furnace read its tuyere positions off its own drawing
             // instead of carrying a copy of these two offsets.

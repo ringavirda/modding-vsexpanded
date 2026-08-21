@@ -1,14 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using IronIndustryExpanded.Items;
+using Newtonsoft.Json.Linq;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.Blocks;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 using Xunit;
@@ -21,10 +25,17 @@ namespace SteelIndustryExpanded.Tests;
 /// firing/melting tick relies on and the gated <c>OnProductionTick</c> does not expose.
 /// </summary>
 public class BlastFurnaceLifecycleTests {
+  private const string HearthCode = "iiex:hearthmetal-pigiron";
+
   private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem("game:ingot-iron", 1500f);
     world.RegisterItem("iiex:slag");
+    foreach (string metal in new[] { "pigiron", "slag" })
+      world.RegisterItem(MetalRegistry.MoltenItemOf(metal).ToString(), 1500f);
+
+    // The pool lives in hearth blocks the furnace places, so the block and its cells have to resolve.
+    HearthRig.Register(world, HearthCode, 951);
     return world;
   }
 
@@ -185,11 +196,36 @@ public class BlastFurnaceLifecycleTests {
     return default;
   }
 
+  // The pool is the hearth blocks' own cells now, so these sum the crucible floor rather than reading a
+  // field. Rewriting the accessors leaves every assertion below reading as it did.
   private static float Iron(BlockEntityBlastFurnaceHot be) =>
-    (float)ReflectionHelpers.GetField(be, "_moltenIron")!;
+    Pooled(be, BlockEntityHearthMetal.IronCellKey);
 
   private static float Slag(BlockEntityBlastFurnaceHot be) =>
-    (float)ReflectionHelpers.GetField(be, "_moltenSlag")!;
+    Pooled(be, BlockEntityHearthMetal.SlagCellKey);
+
+  /// <summary>The fraction of a unit the last cycle rendered but could not pool, carried to the next. A
+  /// cell holds whole units, so a yield claim is stated over the pool plus this.</summary>
+  private static float Carry(
+    BlockEntityBlastFurnaceHot be,
+    string field = "_productCarry"
+  ) => (float)ReflectionHelpers.GetField(be, field)!;
+
+  private static float Pooled(BlockEntityBlastFurnaceHot be, string cellKey) {
+    int total = 0;
+    foreach (BlockPos pos in be.PoolCells)
+      total +=
+        be.Api.World.BlockAccessor.GetBlockEntity(pos)
+          .MoltenCell(cellKey)
+          ?.CellAmount
+        ?? 0;
+    return total;
+  }
+
+  /// <summary>Stands <paramref name="units"/> of iron on the crucible floor, the way a melt would, for a
+  /// test that needs a pool it did not melt itself.</summary>
+  private static void PoolIron(BlockEntityBlastFurnaceHot be, int units) =>
+    ReflectionHelpers.Invoke(be, "PoolIntoHearth", units, 0);
 
   #region ConsumeForMelting
 
@@ -208,8 +244,18 @@ public class BlastFurnaceLifecycleTests {
     Melt(be, 16);
 
     Assert.Equal(84, Units(column)); // 16 units of burden consumed
-    Assert.Equal(16 * IiexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
-    Assert.Equal(16 * IiexValues.BfSlagPerOreUnit * mix.IronFrac, Slag(be), 2);
+    // The pool holds whole units and the fraction is carried to the next cycle, so the yield claim is
+    // stated over both - which is exact, where asserting the pool alone would silently accept a truncation.
+    Assert.Equal(
+      16 * IiexValues.BfIronPerOreUnit * mix.IronFrac,
+      Iron(be) + Carry(be),
+      2
+    );
+    Assert.Equal(
+      16 * IiexValues.BfSlagPerOreUnit * mix.IronFrac,
+      Slag(be) + Carry(be, "_slagCarry"),
+      2
+    );
   }
 
   /// <summary>
@@ -261,7 +307,13 @@ public class BlastFurnaceLifecycleTests {
     // The same claim stated in metal rather than in bands: a fuel band carries `default` mix, so a melt
     // that consumed the ten charcoal units would render nothing for them and the pool would come up
     // exactly ten units of burden short.
-    Assert.Equal(16 * IiexValues.BfIronPerOreUnit * mix.IronFrac, Iron(be), 2);
+    // The pool holds whole units and the fraction is carried to the next cycle, so the yield claim is
+    // stated over both - which is exact, where asserting the pool alone would silently accept a truncation.
+    Assert.Equal(
+      16 * IiexValues.BfIronPerOreUnit * mix.IronFrac,
+      Iron(be) + Carry(be),
+      2
+    );
   }
 
   [Fact]
@@ -269,16 +321,16 @@ public class BlastFurnaceLifecycleTests {
     var world = NewWorld();
     var be = Furnace(world);
     HotBurdenIn(be, 0, 0, 100, new BurdenMix(65f, 5f, 30f));
-    // Already near the iron ceiling (2400 default).
-    ReflectionHelpers.SetField(
-      be,
-      "_moltenIron",
-      IiexValues.BfMaxMoltenIron - 10f
-    );
+
+    // The ceiling is the crucible floor's own: one band per pool cell, refused by the cell rather than
+    // clamped by the furnace. Fill it, then melt again and see that nothing more goes in.
+    int capacity = be.PoolCells.Count * IiexValues.HearthUnitsPerBand;
+    PoolIron(be, capacity);
+    Assert.Equal(capacity, Iron(be), 1);
 
     Melt(be, 16);
 
-    Assert.Equal(IiexValues.BfMaxMoltenIron, Iron(be), 1); // capped, not 2400 + a cycle
+    Assert.Equal(capacity, Iron(be), 1); // capped, not capacity + a cycle
   }
 
   /// <summary>
@@ -522,23 +574,15 @@ public class BlastFurnaceLifecycleTests {
   [Fact]
   public void Extinguishing_a_melt_solidifies_the_iron_across_the_bottom_layer() {
     var world = NewWorld();
-    // Give the block an entity class and factory so SetBlock spawns a real BlockEntityHearthMetal the way
-    // the engine would. Without it the nugget count has nothing to be stamped onto and the even-split half
-    // of the behaviour goes unasserted.
-    Block iron = TestBlocks.Configure(
-      new Block(),
-      "iiex:hearthmetal-pigiron",
-      700
+    // The hearth registered by NewWorld is the one to use: a second registration under the same code
+    // shadows it with a block whose entity has no molten cells, and every push into it is then silently
+    // refused.
+    Block iron = world.World.GetBlock(
+      new AssetLocation("iiex:hearthmetal-pigiron")
     );
-    iron.EntityClass = "hearthmetal";
-    world.RegisterBlockEntityFactory(
-      "hearthmetal",
-      () => new BlockEntityHearthMetal()
-    );
-    world.Register(iron);
 
     var be = Furnace(world); // no charge piles -> the burnout walk is a no-op
-    ReflectionHelpers.SetField(be, "_moltenIron", 50f);
+    PoolIron(be, 50);
 
     Shutdown(be);
 
@@ -546,23 +590,16 @@ public class BlastFurnaceLifecycleTests {
     // sound, the reset to ambient, the residue and the counters, but on a derived branch the label is a
     // read, and what decides it is `DeriveState` finding no carbon at the raceway.
     Assert.Equal(FurnaceState.Idle, be.State);
-    Assert.Equal(0f, Iron(be), 3); // the molten pool is gone
 
-    // The pool freezes onto every free cell of the hearth floor, with the nuggets split evenly.
+    // The metal is on the hearth floor, in the blocks that were holding it while the furnace ran. Going
+    // out changes nothing about where it is - there is no stamp step to get wrong and no pool to clear.
     BlockPos[] floor = BottomLayer(be);
     Assert.NotEmpty(floor);
     Assert.All(
       floor,
       p => Assert.Equal(iron.BlockId, world.GetBlock(p).BlockId)
     );
-
-    int expectedTotal = (int)(50f / IiexValues.BfUnitsPerSolidNugget);
-    Assert.Equal(
-      expectedTotal,
-      floor.Sum(p =>
-        ((BlockEntityHearthMetal)world.GetBlockEntity(p)!).MetalCount
-      )
-    );
+    Assert.Equal(50f, Iron(be), 3);
   }
 
   [Fact]
@@ -985,7 +1022,7 @@ public class BlastFurnaceLifecycleTests {
       world.GetBlock(bottom).Code?.ToShortString()
     );
 
-    ReflectionHelpers.SetField(be, "_moltenIron", 50f);
+    PoolIron(be, 50);
 
     Shutdown(be);
 

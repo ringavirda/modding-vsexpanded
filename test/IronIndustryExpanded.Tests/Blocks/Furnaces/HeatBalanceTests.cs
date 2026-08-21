@@ -67,7 +67,7 @@ public class HeatBalanceTests {
 
   /// <summary>
   /// A cold blast furnace loaded to capacity - the calibration reference, and what every row below means
-  /// by "a full hearth". 39 chargeable cells × 32 units a block.
+  /// by "a full hearth". 36 chargeable cells × 32 units a block.
   /// <para>
   /// It must stay a literal. The heat balance divides <c>mixCount / capacity</c>, so reading the reference
   /// off the same source as the denominator moves numerator and denominator together and the six expected
@@ -75,7 +75,7 @@ public class HeatBalanceTests {
   /// than assigned here.
   /// </para>
   /// </summary>
-  private const int FullHearth = 1248;
+  private const int FullHearth = 1152;
 
   /// <summary>
   /// Ties the hand-written reference above to the furnace's own geometry, so the table cannot stop

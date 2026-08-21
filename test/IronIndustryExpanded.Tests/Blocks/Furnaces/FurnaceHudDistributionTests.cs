@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -38,8 +39,15 @@ public class FurnaceHudDistributionTests {
 
   private static TestWorld NewWorld() {
     var world = new TestWorld();
+    // The pool stands in hearth blocks, so the HUD has nothing to read until they resolve.
+    HearthRig.Register(world, "iiex:hearthmetal-pigiron", 70);
+    HearthRig.Register(world, "iiex:hearthmetal-castiron", 71);
     world.RegisterItem("game:ingot-iron", 1500f);
     world.RegisterItem("iiex:slag");
+    // The cells hold their metal as a carrier stack, so the carrier for each pooled metal has to resolve
+    // or nothing goes in and the HUD reads an empty crucible.
+    foreach (string metal in new[] { "pigiron", "castiron", "slag" })
+      world.RegisterItem(MetalRegistry.MoltenItemOf(metal).ToString(), 1500f);
     return world;
   }
 
@@ -137,6 +145,10 @@ public class FurnaceHudDistributionTests {
 
   #endregion
 
+  /// <summary>Stands metal on the crucible floor the way a melt would, so the HUD has a pool to read.</summary>
+  private static void Pool(BlockEntity furnace, int iron, int slag) =>
+    ReflectionHelpers.Invoke(furnace, "PoolIntoHearth", iron, slag);
+
   #region Metal tap
 
   [Fact]
@@ -144,8 +156,7 @@ public class FurnaceHudDistributionTests {
     var world = NewWorld();
     var furnace = ColdFurnace(world);
     // Both pools loaded: the metal tap must show the metal pool and not the slag one.
-    ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
-    ReflectionHelpers.SetField(furnace, "_moltenSlag", 40f);
+    Pool(furnace, 80, 40);
 
     var tap = Tap(world, furnace.MetalTapPos!);
     string info = Info(tap);
@@ -175,8 +186,7 @@ public class FurnaceHudDistributionTests {
   public void The_slag_tap_surfaces_the_molten_slag_pool() {
     var world = NewWorld();
     var furnace = ColdFurnace(world);
-    ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
-    ReflectionHelpers.SetField(furnace, "_moltenSlag", 40f);
+    Pool(furnace, 80, 40);
 
     var tap = Tap(world, furnace.SlagTapPos!, BlockFurnaceTap.SlagType);
     string info = Info(tap);
@@ -215,7 +225,7 @@ public class FurnaceHudDistributionTests {
     world.World.ElapsedMilliseconds.Returns(10000L);
     var furnace = ColdFurnace(world);
     // Load the pools and shaft so the moved lines would print if they were still on the core.
-    ReflectionHelpers.SetField(furnace, "_moltenIron", 80f);
+    Pool(furnace, 80, 0);
     ReflectionHelpers.SetField(furnace, "_cachedMixCount", 100);
     // A furnace that has never ticked is Idle. `State` has no setter, so this states the premise rather
     // than arranging it.
@@ -249,7 +259,7 @@ public class FurnaceHudDistributionTests {
   public void The_cupola_metal_tap_shows_cast_iron_not_pig_iron() {
     var world = NewWorld();
     var furnace = CupolaFurnace(world);
-    ReflectionHelpers.SetField(furnace, "_moltenIron", 60f);
+    Pool(furnace, 60, 0);
 
     var tap = Tap(world, furnace.MetalTapPos!);
     string info = Info(tap);

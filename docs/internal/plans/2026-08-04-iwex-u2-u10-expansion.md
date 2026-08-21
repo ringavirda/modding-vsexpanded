@@ -15,7 +15,7 @@
 > |---|---|
 > | **U2** cutover to `ChargeColumn` | **DONE**, landed 2026-08-06 |
 > | **U3** counter-current furnace | **DONE**, landed 2026-08-06 |
-> | **U4** hearth / taps / plug | ⚠ **PART DONE** — U4.1–4.3 landed 2026-08-07; **U4.4–U4.9 open**. `_moltenIron` / `_moltenSlag` are still fields on `BlockEntityShaftFurnace`, so the float-pool model U4.4 deletes is still the live one |
+> | **U4** hearth / taps / plug | ✅ **DONE** — U4.1–4.3 landed 2026-08-07, U4.4–U4.9 on 2026-08-20/21. The float pools are gone, the crucible is pool-only, both taps draw their own shape with a clay plug for a closed state, and a shaft is blown in with a flame through an open tap-hole |
 > | **U5** burdenmaker | **DONE** |
 > | **U6** puddling | **OPEN** — the furnace shell exists, `StackDraught.cs` does not |
 > | **U7** reheat and rolling | ⚠ **PART DONE, mostly outside this plan** under the forming-line ruling of 2026-08-12: the mill, `WorkPiece`'s two-round model, the roll sets, `MillSchedule` and the stage ladders are built. **Not built:** the rolled *product* items (U7.4) — that is STATE's **B3c** — and the shear that cuts them |
@@ -24,7 +24,7 @@
 > | **U10** connector check | **OPEN** |
 > | **U11** ladle | **DESIGN ONLY** — art drawn, no code |
 >
-> ⛔ So the live queue in this file is **U4.4–U4.9, U6, U7.4, U8, U9, U10**. Everything above U4.4 is a
+> ⛔ So the live queue in this file is **U6, U7.4, U8, U9, U10**. Everything above U6 is a
 > record. Read the unit's own opening paragraph before starting one: several were re-scoped by later
 > rulings, and U7's was overtaken almost entirely.
 > U11 (the ladle) was appended 2026-08-06 from a user handoff, after the drawn art and the layout
@@ -245,7 +245,7 @@ question. Check first whether `BlockNetworkNode`'s graph walk depends on `Block`
 
 ## Execution order *(verified, and it differs from the parent plan)*
 
-Position (2026-08-07): Phase 0, U2, U3, U4.1–U4.3 and all of U5 are done. Next is U4.4–U4.9, then U6.
+Position (2026-08-21): Phase 0, U2, U3, all of U4 and all of U5 are done. Next is U6.
 The numbered ordering below is kept for the remaining units.
 1. Phase 0 — quick wins + baseline, no core edits, run before anything else: several are prerequisites of U2/U3 that are far cheaper to land now than inside a serialised unit (details in § *Phase 0 — quick wins*). **U2.0 (the pig re-mass) belongs here** — it is not a core edit, and **U2.2c reads `ItemPig.PigUnits`**, so running 2.2c first ships 150 while every doc quotes 375.
 1b. **U2.0 → U2.2c**, in that order, before the U2.3 cutover. Both were minted from MISSING_TASK findings on 2026-08-05; neither existed when the order below was written.
@@ -465,12 +465,33 @@ Done 2026-08-07. Record: docs/internal/worklog/2026-08.md and git history.
 
 #### U4.4 — The hearth as live molten cells — delete `_moltenIron` / `_moltenSlag` and the extinguish-only spawn
 
+⛔⛔ **Every line number below U4 is stale — locate by name, never by line** *(verified 2026-08-20)*. The
+plan was written against a ~500-line `BlockEntityShaftFurnace.cs`; it is **1103 lines** now. Measured
+drift: `_moltenIron`/`_moltenSlag` :41-42 -> **:29-30**; `_maxMolten*` :48-49 -> **:54-55**;
+`MaxMoltenProduct`/`MaxMoltenSlagPool` :92/:95 -> **:175/:178**; the pool write in `ConsumeForMelting`
+:204-239 -> **:462-463**; `DrainIronTap` :340-377 -> **:960-975**; `DrainSlagTap` :379-414 ->
+**:995-1010**; `ClearMoltenPools` :437-441 -> **:1042**; the tree keys :453-461 -> **:1056-1063**; the HUD
+appenders :473-495 -> **:1076-1090**; `IiexConfig` :274/:277/:333/:336 -> **:372/:375/:426/:429**.
+★ Everything the task *consumes* was re-verified and all of it exists. ⛔ Prose still says `iwex:` in
+places; the live codes are `iiex:`.
+
+★★ **Step 1 landed 2026-08-20**: `HearthMetalCellTests` ships six failing cases (the plan's five plus
+Step 8's standalone-cooling case). The cold blast furnace has **3 pool cells**. The headless world builds
+block entities from `RegisterBlockEntityFactory`, not from a block def, so the test configures the two
+cells the way the def's `behaviors` array will.
+
+
 What U4.3 left for this task: `BEBehaviorMoltenCell` takes a `key` config prop (default `mc_`) that
 prefixes its tree keys, with `MoltenCellHost.MoltenCell(key)` / `.MoltenCells()` as the accessors —
 `GetBehavior<T>()` returns only the first instance and must not be used on a two-cell host. Capacity is
 one shared volume: `IiexConfig.HearthUnitsPerBand` (640) and `HearthSlagSpoutBand` (10, the slag-spout
 height in bands); the runtime capacity setter is `SetCapacity` over `_runtimeCapacity`, and its tree key
 stays `patcap`.
+
+**DONE 2026-08-20.** Record: docs/internal/worklog/2026-08.md. Three findings the steps did not
+predict, all now in the worklog: a cell holds whole units so the melt's fractional yield needed a carry;
+`LiquidCapacityReached` read `0 >= 0` as a full crucible on the two hearths; and `HearthSlagSpoutBand` is a
+spout height, not a capacity.
 
 **Files**
 - Create: `test/IronIndustryExpanded.Tests/Blocks/Furnaces/HearthMetalCellTests.cs`
@@ -481,21 +502,51 @@ stays `patcap`.
 
 **Produces:** BlockEntityHearthMetal implements IChiselableMolten and hosts two BEBehaviorMoltenCell instances (iron + slag); BlockEntityShaftFurnace exposes `protected int PooledMetalUnits` / `PooledSlagUnits` computed by walking PoolCells; `_moltenIron`, `_moltenSlag`, `_maxMoltenIron`, `_maxMoltenSlag`, `MaxMoltenProduct`, `MaxMoltenSlagPool`, `ClearMoltenPools`, `DrainedMetalUnits`, `StampSolidProduct` and the `"moltenIron"`/`"moltenSlag"` tree keys are gone
 
-- [ ] **Step 1.** Write `HearthMetalCellTests` first, as five failing cases, none of which may force `StructureComplete`: (1) a furnace that reaches melting SetBlocks `iwex:hearthmetal-pigiron` into every `PoolCells` position and the cells hold metal; (2) a second melt cycle raises `CellAmount` on the same block rather than replacing it; (3) opening the iron tap drains it and the canal below receives; (4) cooling the cells below the melting point latches `Solidified` with the same `CellAmount` — nothing is lost at the freeze; (5) a chisel + hammer on a hardened hearth block returns bits equal to the frozen amount. Build the footprint with `StructureRig.Around(world, furnace, BlockBlastFurnaceCoreCold.Definitions("iwex").Single())` as `BlastFurnaceTapTests.cs:235-239` does.
-- [ ] **Step 2.** Add the two `BEBehaviorMoltenCell` declarations to the `hearthmetal` def: `.EntityBehavior("exlib.BEBehaviorMoltenCell", new JObject { ["key"] = "hm_iron_", ["solidifies"] = true })` and the same with `"hm_slag_"`. Capacity comes from config at runtime via the (renamed) capacity setter, not from the JSON, because `IiexConfig` is live-editable and a baked JSON number is not.
-- [ ] **Step 3.** Make `BlockEntityHearthMetal` implement `IChiselableMolten` following `BlockEntityMoltenCanal.cs:352-360` verbatim in shape: `HasChiselableContent => iron.Solidified || slag.Solidified`, `CanChiselOut => … && IsHardened`, `ChiselBlockedError => "iwex-hearthtoohot"`, `ChiselOut()` clearing and returning the recovery. Route the interaction through `MoltenChisel.TryChisel`. Add the lang key in en/ru/uk.
-- [ ] **Step 4.** In `BlockEntityShaftFurnace`, replace `_moltenIron`/`_moltenSlag` (:41-42) with reads over `PoolCells`. `ConsumeForMelting` (:204-239) stops doing `_moltenIron = Math.Min(_moltenIron + ironProduced, _maxMoltenIron)` and instead SetBlocks the hearth block where a pool cell is free (reuse the free-cell rule from `SolidifyBottomLayer`, BlockEntityFurnaceCore.cs:1477-1493 — empty, or a charge pile that is not holding rejected charge) and calls `PushMetalRaw(units, MetalRegistry.MoltenItemOf(MetalProductCode).ToString(), _internalTemp, Api.World)`. Overflow beyond `MaxUnitCapacity` is what `LiquidCapacityReached` now reports.
-- [ ] **Step 5.** Rewrite `DrainIronTap` (:340-377) and `DrainSlagTap` (:379-414) to draw from the cells rather than a float. Keep every arithmetic detail: `Math.Min(IiexValues.TapDrainPerTick, pooled)`, then `(int)Math.Ceiling(units * IiexValues.TapIronStackFactor)` / `TapSlagStackFactor`, then `tap.TryPourMetal(stack, _internalTemp)` and subtract only what was `accepted`. `BlastFurnaceTapTests.Retuning_the_tap_rate_moves_the_drain_with_it` (:212-272) and `The_slag_tap_drains_by_its_own_stack_factor_not_the_irons` (:287-346) pin the exact float-representation results 28 and 36 — those two numbers are the regression oracle for the whole rewrite; port the tests onto the cells, not the assertions.
-- [ ] **Step 6.** Delete `MaxMoltenProduct` (:92) / `MaxMoltenSlagPool` (:95), the `_maxMoltenIron` / `_maxMoltenSlag` cache (:48-49, :112-113), `ClearMoltenPools` (:437-441), the `"moltenIron"` / `"moltenSlag"` tree keys (:453-461), and the cupola's two overrides (BlockEntityCupolaFurnace.cs:71-73). Delete `IiexConfig.BfMaxMoltenIron` (:274), `BfMaxMoltenSlag` (:277), `CupolaMaxMoltenCastIron` (:333), `CupolaMaxMoltenSlag` (:336).
-- [ ] **Step 7.** On the core: `SolidifyBottomLayer` (BlockEntityFurnaceCore.cs:1466-1508) is now dead for the shaft branch — the pool is already in the world and freezes itself through `BEBehaviorMoltenCell.UpdateThermal` (:284-310). Remove it from `ExtinguishResidue` (:1453-1458) and delete the `SolidProductBlock` / `DrainedMetalUnits` / `StampSolidProduct` / `ClearMoltenPools` virtual quartet (:1394-1410) only after confirming no reverberatory hearth overrides them (grep: today only the shaft branch does). `BurnOutCharge()` must stay in `ExtinguishResidue` — it is the reverberatory hearths' path too.
-- [ ] **Step 8.** Drive `UpdateThermal` from somewhere: hosted molten cells are not auto-ticked (BEBehaviorMoltenCell.cs:18-25 — 'a hosted cell is not auto-registered in the shared molten network graph'). Give `BlockEntityHearthMetal` its own server tick calling `EnsureMetalStack` then `UpdateThermal`, and a client tick so the glow is not stale (see the `MoltenRenderer temperature staleness` precedent). Add a test that a hearth block with no furnace above it still cools and latches.
-- [ ] **Step 9.** Rewrite the two HUD appenders (:473-495) against the cell totals. They currently gate on `State != FurnaceState.Melting` — with U3's derived state that read is a per-tick recompute; keep the gate semantics (show while melting, or while a pool is still draining) but source both numbers from the cells and the cap from `MaxUnitCapacity` summed over `PoolCells`. `FurnaceHudDistributionTests.cs:150-280` sets `_moltenIron`/`_moltenSlag` by reflection and must be ported.
-- [ ] **Step 10.** Port the fixture accessors: `ColdBlastFurnaceScenes.MoltenIron`/`MoltenSlag` (:611-613) and `CupolaScenes` (:334-350) stop reflecting private floats and start summing the cells. Do this by rewriting the fixture, not the ~38 scenario assertions — the same lever U2 used.
-- [ ] **Step 11.** Port smex's hot furnace: `BlastFurnaceLifecycleTests.cs:114-117,151-164,341,628` and `BlastFurnaceTests.cs:88-90,148-149` reflect the same two fields and one asserts against the deleted `IiexValues.BfMaxMoltenIron`.
-- [ ] **Step 12.** Re-bless `goldens/iiex/blocktypes/hearthmetal.json` (the def gained two entity behaviours) with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/hearthmetal.json`.
-- [ ] **Step 13.** Run `./scripts/exmod.sh test 1.21` and `1.20`; append a WORKLOG entry.
+- [x] **Step 1.** Write `HearthMetalCellTests` first, as five failing cases, none of which may force `StructureComplete`: (1) a furnace that reaches melting SetBlocks `iwex:hearthmetal-pigiron` into every `PoolCells` position and the cells hold metal; (2) a second melt cycle raises `CellAmount` on the same block rather than replacing it; (3) opening the iron tap drains it and the canal below receives; (4) cooling the cells below the melting point latches `Solidified` with the same `CellAmount` — nothing is lost at the freeze; (5) a chisel + hammer on a hardened hearth block returns bits equal to the frozen amount. Build the footprint with `StructureRig.Around(world, furnace, BlockBlastFurnaceCoreCold.Definitions("iwex").Single())` as `BlastFurnaceTapTests.cs:235-239` does.
+- [x] **Step 2.** Add the two `BEBehaviorMoltenCell` declarations to the `hearthmetal` def: `.EntityBehavior("exlib.BEBehaviorMoltenCell", new JObject { ["key"] = "hm_iron_", ["solidifies"] = true })` and the same with `"hm_slag_"`. Capacity comes from config at runtime via the (renamed) capacity setter, not from the JSON, because `IiexConfig` is live-editable and a baked JSON number is not.
+- [x] **Step 3.** Make `BlockEntityHearthMetal` implement `IChiselableMolten` following `BlockEntityMoltenCanal.cs:352-360` verbatim in shape: `HasChiselableContent => iron.Solidified || slag.Solidified`, `CanChiselOut => … && IsHardened`, `ChiselBlockedError => "iwex-hearthtoohot"`, `ChiselOut()` clearing and returning the recovery. Route the interaction through `MoltenChisel.TryChisel`. Add the lang key in en/ru/uk.
+- [x] **Step 4.** In `BlockEntityShaftFurnace`, replace `_moltenIron`/`_moltenSlag` (:41-42) with reads over `PoolCells`. `ConsumeForMelting` (:204-239) stops doing `_moltenIron = Math.Min(_moltenIron + ironProduced, _maxMoltenIron)` and instead SetBlocks the hearth block where a pool cell is free (reuse the free-cell rule from `SolidifyBottomLayer`, BlockEntityFurnaceCore.cs:1477-1493 — empty, or a charge pile that is not holding rejected charge) and calls `PushMetalRaw(units, MetalRegistry.MoltenItemOf(MetalProductCode).ToString(), _internalTemp, Api.World)`. Overflow beyond `MaxUnitCapacity` is what `LiquidCapacityReached` now reports.
+- [x] **Step 5.** Rewrite `DrainIronTap` (:340-377) and `DrainSlagTap` (:379-414) to draw from the cells rather than a float. Keep every arithmetic detail: `Math.Min(IiexValues.TapDrainPerTick, pooled)`, then `(int)Math.Ceiling(units * IiexValues.TapIronStackFactor)` / `TapSlagStackFactor`, then `tap.TryPourMetal(stack, _internalTemp)` and subtract only what was `accepted`. `BlastFurnaceTapTests.Retuning_the_tap_rate_moves_the_drain_with_it` (:212-272) and `The_slag_tap_drains_by_its_own_stack_factor_not_the_irons` (:287-346) pin the exact float-representation results 28 and 36 — those two numbers are the regression oracle for the whole rewrite; port the tests onto the cells, not the assertions.
+- [x] **Step 6.** Delete `MaxMoltenProduct` (:92) / `MaxMoltenSlagPool` (:95), the `_maxMoltenIron` / `_maxMoltenSlag` cache (:48-49, :112-113), `ClearMoltenPools` (:437-441), the `"moltenIron"` / `"moltenSlag"` tree keys (:453-461), and the cupola's two overrides (BlockEntityCupolaFurnace.cs:71-73). Delete `IiexConfig.BfMaxMoltenIron` (:274), `BfMaxMoltenSlag` (:277), `CupolaMaxMoltenCastIron` (:333), `CupolaMaxMoltenSlag` (:336).
+- [x] **Step 7.** On the core: `SolidifyBottomLayer` (BlockEntityFurnaceCore.cs:1466-1508) is now dead for the shaft branch — the pool is already in the world and freezes itself through `BEBehaviorMoltenCell.UpdateThermal` (:284-310). Remove it from `ExtinguishResidue` (:1453-1458) and delete the `SolidProductBlock` / `DrainedMetalUnits` / `StampSolidProduct` / `ClearMoltenPools` virtual quartet (:1394-1410) only after confirming no reverberatory hearth overrides them (grep: today only the shaft branch does). `BurnOutCharge()` must stay in `ExtinguishResidue` — it is the reverberatory hearths' path too.
+- [x] **Step 8.** Drive `UpdateThermal` from somewhere: hosted molten cells are not auto-ticked (BEBehaviorMoltenCell.cs:18-25 — 'a hosted cell is not auto-registered in the shared molten network graph'). Give `BlockEntityHearthMetal` its own server tick calling `EnsureMetalStack` then `UpdateThermal`, and a client tick so the glow is not stale (see the `MoltenRenderer temperature staleness` precedent). Add a test that a hearth block with no furnace above it still cools and latches.
+- [x] **Step 9.** Rewrite the two HUD appenders (:473-495) against the cell totals. They currently gate on `State != FurnaceState.Melting` — with U3's derived state that read is a per-tick recompute; keep the gate semantics (show while melting, or while a pool is still draining) but source both numbers from the cells and the cap from `MaxUnitCapacity` summed over `PoolCells`. `FurnaceHudDistributionTests.cs:150-280` sets `_moltenIron`/`_moltenSlag` by reflection and must be ported.
+- [x] **Step 10.** Port the fixture accessors: `ColdBlastFurnaceScenes.MoltenIron`/`MoltenSlag` (:611-613) and `CupolaScenes` (:334-350) stop reflecting private floats and start summing the cells. Do this by rewriting the fixture, not the ~38 scenario assertions — the same lever U2 used.
+- [x] **Step 11.** Port smex's hot furnace: `BlastFurnaceLifecycleTests.cs:114-117,151-164,341,628` and `BlastFurnaceTests.cs:88-90,148-149` reflect the same two fields and one asserts against the deleted `IiexValues.BfMaxMoltenIron`.
+- [x] **Step 12.** Re-bless `goldens/iiex/blocktypes/hearthmetal.json` (the def gained two entity behaviours) with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/hearthmetal.json`.
+- [x] **Step 13.** Run `./scripts/exmod.sh test 1.21` and `1.20`; append a WORKLOG entry.
 
 #### U4.5 — The crucible becomes pool-only — drop `Chargeable` from the hearth glyph on both furnaces
+
+> **DONE 2026-08-21.** All 7 steps. Gate 9/9, **4,136** per version (iiex 1946, siex 314, exlib 1876).
+>
+> **Line numbers were stale again** (as U4.4's were): `BlockBlastFurnaceCoreCold.cs:115-121` is really
+> `:107-112`, `BlockCupolaFurnaceCore.cs:88-91` is `:78-82`, `CellRole.cs:110-116` is `:50-56`,
+> `FurnaceLayoutRig.cs:630-658` is `:500-535` and `:657-669`. Locate by name.
+>
+> ⛔ **Step 5's command does not work as written.** `EXLIB_WRITE_GOLDENS` matches against the def's own
+> `domain/path`, so the fragment is `iiex/blocktypes/furnace/blastcore` — a `test/.../goldens/` prefix
+> matches nothing and the run passes having written nothing. Same defect in U4.4 Step 12 and U4.6 Step 7.
+>
+> **Three things the plan did not predict:**
+> 1. **The glyph pair could not simply lose `HearthGlyph`** (Step 2's instruction). `AssertFurnaceGeometry`
+>    is shared with the smex suite, whose furnace still charges its crucible, so the set had to become a
+>    caller parameter — and `ChargeCells(layout)` with it. Hard-coding either would have made one of the
+>    two suites vacuous rather than red.
+> 2. **The shipped drawings stopped being ragged, which cost four tests their subject.** The uneven-floor
+>    region of `ChargeMaterialisationTests`, `ChargePileTests.A_shipped_furnace_indexes_each_column_from_its_own_floor`
+>    and the obstruction trio all read `(0,1,0)`. They now run on a shared `FurnaceLayoutRig.SteppedShaftDef`
+>    (two columns, floors at y=1 and y=2). `ChargeMaterialisationTests.Both_shipped_shafts_are_uniform_floored`
+>    states the premise so the fixture cannot be deleted as redundant later.
+> 3. **The cold furnace's capacity moved with it: 1248 → 1152 units** (39 → 36 cells × 32). The heat
+>    balance's calibration table is unaffected — every row saturates the charge-loss clamp — but a full
+>    hearth is 7.7 % smaller in play. Accepted on the same ground as the cupola's −20 %: the crucible was
+>    never a place burden should rest.
+>
+> **Not done, deliberately (Step 6):** siex's `BlockBlastFurnaceCoreHot` keeps its `Pool`+`Chargeable`
+> overlap. New `test/SteelIndustryExpanded.Tests/Blocks/HotBlastFurnace/CrucibleOverlapTests.cs` pins what
+> that costs — two of nine columns draw a block short while the bath stands, and the hidden units still
+> count toward `ShaftChargeUnits`. It touches no golden and fails the day the remake starts.
 
 **Files**
 - Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockBlastFurnaceCoreCold.cs:115-121`, `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockCupolaFurnaceCore.cs:88-91`, `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/blastcore.json`, `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/cupolacore.json`
@@ -505,15 +556,33 @@ stays `patcap`.
 
 **Produces:** Chargeable and Pool become disjoint cell sets on both iwex shaft furnaces; the shaft box is exactly the drawing's Chargeable cells
 
-- [ ] **Step 1.** Delete `.Role('h', CellRole.Chargeable)` at BlockBlastFurnaceCoreCold.cs:120 and BlockCupolaFurnaceCore.cs:90. Both files carry a comment predicting exactly this edit (BlockBlastFurnaceCoreCold.cs:115-119, CellRole.cs:110-116) — update those comments to past tense rather than leaving a prediction that already happened.
-- [ ] **Step 2.** Caution: `FurnaceLayoutRig` asserts `CellRole.Chargeable` against both `[ShaftGlyph, HearthGlyph]` (:630-641) precisely because the hearth row was chargeable. Once it is not, `HearthGlyph` must come out of that pair and the `Pool` assertion (:648-657) keeps it alone. Leaving both in is not a compile error and not a test failure — it just silently stops proving anything about which glyph carries which role, which is the exact vacuity the rig's own doc comment (:587-591) says has shipped seven times.
-- [ ] **Step 3.** Check `ChargeableCellsTests` and `ShaftColumnsTests`: the cold furnace's chargeable set drops from 39 to 36 cells and the cupola's from **5 to 4** (the cupola has four `c` cells plus the one `h`, and `The_cupola_offers_the_five_cells_of_its_single_column` pins 5 today). The shaft bounding box moves from y=1..5 to y=2..5 on the cold furnace, and y=1..5 to y=2..5 on the cupola. Any hard-coded count must move with it. **The cupola's −20 % is accepted and needs no rebalance** (user, 2026-08-05): its burden is *remelt* — pig, scrap and returns already through a furnace once — so it carries far more metal per unit charged than the blast furnace's ore burden. Four cells is right for what a cupola is; do not add a course to pay it back. Both shafts become **uniform-floored** as a result, so `ColumnFloorY` / `ChargeCellsOf` keep their coverage only through the synthetic fixtures in `ChargeMaterialisationTests` § *A hole in the column* — do not delete those as unused.
-- [ ] **Step 4.** Caution: Confirm the burden no longer stands on the crucible floor in play: with the crucible pool-only, the lowest charge level is y=2 and the raceway sits there. Verify `ChargeColumnAt` / the descent (U2/U3's) still terminates at y=2 and does not try to descend into a pool cell — add a test that a column's bottom segment does not consume into a `hearthmetal` block.
-- [ ] **Step 5.** Re-bless the two core goldens with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/blastcore.json,test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/cupolacore.json`.
-- [ ] **Step 6.** **Settled, not a decision to make: no.** Do not touch `src/SteelIndustryExpanded/.../BlockBlastFurnaceCoreHot.cs:105-106`. Its crucible is still the narrow two-cell one and its own comment (:98-102) explicitly defers 'whether the hot furnace should follow' to the smex remake. Say so in the WORKLOG rather than silently copying numbers across. **Re-confirmed 2026-08-05, and the deferral has a price nothing had written down.** After U4.4 the smex hot furnace becomes **the only shipped drawing where a live molten pool cell sits on a charge column's floor** — `Pool` and `Chargeable` on the same two cells, and those cells are the bottom of two of its nine columns. The known consequences, so nobody re-derives them: **two of nine columns render one block short for a whole campaign** while `hearthmetal` stands; the hidden units still count toward `ShaftChargeUnits`, so the HUD and the geometry disagree; `SolidifyBottomLayer` can freeze **over** live charge; and `ColumnFloorY` returns a cell the pool owns. **Why hold anyway:** dropping `Chargeable` alone leaves a **two-cell crucible under a 3×3 shaft** — a bosh no real furnace has — and bakes that shape into a golden, while the hearth's *actual* defect is the **cinder notch a course too high** at y=2. The remake moves crucible, notch and tuyeres in **one** layout change with **one** blessing; a half-fix now means the same golden is blessed twice from two different intents, which the plan's own collision rule forbids. **Land a smex regression test that pins the known-wrong behaviour** — the two short columns and the still-counted hidden units — so the deferral stops being invisible: the day the remake starts, it fails and names exactly what changed. It touches no golden.
-- [ ] **Step 7.** Run `./scripts/exmod.sh test 1.21` and `1.20`.
+- [x] **Step 1.** Delete `.Role('h', CellRole.Chargeable)` at BlockBlastFurnaceCoreCold.cs:120 and BlockCupolaFurnaceCore.cs:90. Both files carry a comment predicting exactly this edit (BlockBlastFurnaceCoreCold.cs:115-119, CellRole.cs:110-116) — update those comments to past tense rather than leaving a prediction that already happened.
+- [x] **Step 2.** Caution: `FurnaceLayoutRig` asserts `CellRole.Chargeable` against both `[ShaftGlyph, HearthGlyph]` (:630-641) precisely because the hearth row was chargeable. Once it is not, `HearthGlyph` must come out of that pair and the `Pool` assertion (:648-657) keeps it alone. Leaving both in is not a compile error and not a test failure — it just silently stops proving anything about which glyph carries which role, which is the exact vacuity the rig's own doc comment (:587-591) says has shipped seven times.
+- [x] **Step 3.** Check `ChargeableCellsTests` and `ShaftColumnsTests`: the cold furnace's chargeable set drops from 39 to 36 cells and the cupola's from **5 to 4** (the cupola has four `c` cells plus the one `h`, and `The_cupola_offers_the_five_cells_of_its_single_column` pins 5 today). The shaft bounding box moves from y=1..5 to y=2..5 on the cold furnace, and y=1..5 to y=2..5 on the cupola. Any hard-coded count must move with it. **The cupola's −20 % is accepted and needs no rebalance** (user, 2026-08-05): its burden is *remelt* — pig, scrap and returns already through a furnace once — so it carries far more metal per unit charged than the blast furnace's ore burden. Four cells is right for what a cupola is; do not add a course to pay it back. Both shafts become **uniform-floored** as a result, so `ColumnFloorY` / `ChargeCellsOf` keep their coverage only through the synthetic fixtures in `ChargeMaterialisationTests` § *A hole in the column* — do not delete those as unused.
+- [x] **Step 4.** Caution: Confirm the burden no longer stands on the crucible floor in play: with the crucible pool-only, the lowest charge level is y=2 and the raceway sits there. Verify `ChargeColumnAt` / the descent (U2/U3's) still terminates at y=2 and does not try to descend into a pool cell — add a test that a column's bottom segment does not consume into a `hearthmetal` block.
+- [x] **Step 5.** Re-bless the two core goldens with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/blastcore.json,test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/cupolacore.json`.
+- [x] **Step 6.** **Settled, not a decision to make: no.** Do not touch `src/SteelIndustryExpanded/.../BlockBlastFurnaceCoreHot.cs:105-106`. Its crucible is still the narrow two-cell one and its own comment (:98-102) explicitly defers 'whether the hot furnace should follow' to the smex remake. Say so in the WORKLOG rather than silently copying numbers across. **Re-confirmed 2026-08-05, and the deferral has a price nothing had written down.** After U4.4 the smex hot furnace becomes **the only shipped drawing where a live molten pool cell sits on a charge column's floor** — `Pool` and `Chargeable` on the same two cells, and those cells are the bottom of two of its nine columns. The known consequences, so nobody re-derives them: **two of nine columns render one block short for a whole campaign** while `hearthmetal` stands; the hidden units still count toward `ShaftChargeUnits`, so the HUD and the geometry disagree; `SolidifyBottomLayer` can freeze **over** live charge; and `ColumnFloorY` returns a cell the pool owns. **Why hold anyway:** dropping `Chargeable` alone leaves a **two-cell crucible under a 3×3 shaft** — a bosh no real furnace has — and bakes that shape into a golden, while the hearth's *actual* defect is the **cinder notch a course too high** at y=2. The remake moves crucible, notch and tuyeres in **one** layout change with **one** blessing; a half-fix now means the same golden is blessed twice from two different intents, which the plan's own collision rule forbids. **Land a smex regression test that pins the known-wrong behaviour** — the two short columns and the still-counted hidden units — so the deferral stops being invisible: the day the remake starts, it fails and names exactly what changed. It touches no golden.
+- [x] **Step 7.** Run `./scripts/exmod.sh test 1.21` and `1.20`.
 
 #### U4.6 — Adopt the two drawn tap shapes (this necessarily removes the `open` animation pose)
+
+> **DONE 2026-08-21, landed together with U4.7 and U4.8.** Gate 9/9, **4,151** per version.
+>
+> ⛔ **Step 1's command needs the editable's subfolder**: the converter joins `assets/editable/shapes` with
+> the name verbatim, so it is `furnaces/shaft/furnace-block-irontap`, not the bare name. Same for U4.7+.
+>
+> ⛔ **Step 5's `EXLIB_WRITE_GOLDENS` fragment form is the one U4.5 corrected**:
+> `iiex/blocktypes/furnace/irontap`, matched against the def's own `domain/path`.
+>
+> ★ **Step 3 resolved to "no change": the offset stays 0.** Both new shapes run their launder out past
+> z=16 (`TapCanal/Cube8` reaches z=20 on the iron tap and z=24 on the slag tap), which is the same
+> direction the old art's runout pointed and the direction a tap declared `-n` pours. The plan's "authored
+> spout-out" worry does not apply to the art that actually arrived.
+>
+> ★ **Step 2's premise verified, and it is why U4.7 came with it**: neither shape has an `animations` key
+> and both carry exactly the three top-level elements `Base` / `TapCanal` / `ClayPlug`.
+> `FurnaceTapPlugTests.Both_tap_shapes_carry_the_three_elements_the_prune_expects` pins both facts,
+> because the render path's keep-lists are written against them.
 
 **Files**
 - Create: `assets/iiex/shapes/furnace/irontap.json`, `assets/iiex/shapes/furnace/slagtap.json`
@@ -524,17 +593,37 @@ stays `patcap`.
 
 **Produces:** iwex:furnace-irontap-{side} draws `iwex:furnace/irontap` and iwex:furnace-slagtap-{side} draws `iwex:furnace/slagtap`; the tap block entity no longer runs an animator
 
-- [ ] **Step 1.** Export both shapes: `python scripts/tools/convert-shape.py furnace-block-irontap assets/iiex/shapes/furnace/irontap.json furnace-block-slagtap assets/iiex/shapes/furnace/slagtap.json`. Verify the output keeps the top-level `ClayPlug` element in both.
-- [ ] **Step 2.** Caution: Establish the fact that couples this task to U4.7 before writing any code: the two new shapes have **no `animations` array at all** (verified by walking both files), while the shipped `assets/iiex/shapes/furnace/tap.json` has one `open` clip and a `Lid` element. So `BlockEntityFurnaceTap.ApplyPourPose` (:98-116) calls `util.StartAnimation(Animation="open")` against a clip that will not exist. Adopting the shapes therefore deletes the pour pose whether or not you intend it. Plan U4.6 and U4.7 as one landing.
-- [ ] **Step 3.** Replace `.ShapeByTypePerOrientation("iwex:furnace/tap", 0)` (BlockFurnaceTap.cs:76) with a per-type call so each type gets its own shape — `Tap(domain, type)` already takes `type`, so `.ShapeByTypePerOrientation($"iwex:furnace/{type}", 0)` is a one-token change. Keep the offset at 0: the shapes are authored **spout-out** and the 180° belongs at the shape rotation, but the current rotation table (`n`->0, `e`->270, `s`->180, `w`->90) already renders the old spout-in art correctly. Look at each new shape's spout direction in-model before deciding whether `offset` becomes 180 — this is the one place the design doc's 'apply the reversal to the model only, never to TryPourMetal' can be got wrong invisibly.
-- [ ] **Step 4.** Caution: Do not touch `BlockEntityFurnaceTap.TryPourMetal` (:180-218). It spouts at `Pos.AddCopy(facing.Opposite).DownCopy()` and `BlastFurnaceTapTests.cs:160-186` pins `N→+z, S→−z, E→−x, W→+x` across all four sides. A tap in the east wall is declared `-w`. The cupola's drawing is the mirror of the blast furnaces' (`I` is west on the cold furnace, east on the cupola).
-- [ ] **Step 5.** Remove `.EntityBehavior("Animatable")` (BlockFurnaceTap.cs:62), the `_toggle` field (BlockEntityFurnaceTap.cs:27), `BuildAnimator` (:66-89) and `ApplyPourPose` (:98-116). `BuildAnimator`'s cache-key comment (:80-82) says 'the two tap types share a shape today but will not always' — that prediction now resolves; delete the comment with the code.
-- [ ] **Step 6.** Delete `assets/iiex/shapes/furnace/tap.json` and confirm `IiexDefinitionGoldenTests.Every_shape_reference_resolves_to_a_shipped_file` still passes (it is what catches a stale path).
-- [ ] **Step 7.** Re-bless both tap goldens with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/irontap.json,test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/slagtap.json`.
-- [ ] **Step 8.** Caution: Record the smex conflict explicitly in the WORKLOG: the shapes encode the notch height (iron channel Y 2-3, slag channel Y 10-11, verified in both files), which reads correctly only when both taps sit at y=1. On iwex's two furnaces they already do. On smex's hot furnace they do not — `T` is at y=1 (BlockBlastFurnaceCoreHot.cs:132) and `S` at y=2 (:142). smex therefore double-counts the height from this change onward. Either move `S` down in that drawing (a smex layout change with a golden re-bless) or write down that the hot furnace reads wrong until the smex remake. Do not leave it undecided.
-- [ ] **Step 9.** Run `./scripts/exmod.sh test 1.21`.
+- [x] **Step 1.** Export both shapes: `python scripts/tools/convert-shape.py furnace-block-irontap assets/iiex/shapes/furnace/irontap.json furnace-block-slagtap assets/iiex/shapes/furnace/slagtap.json`. Verify the output keeps the top-level `ClayPlug` element in both.
+- [x] **Step 2.** Caution: Establish the fact that couples this task to U4.7 before writing any code: the two new shapes have **no `animations` array at all** (verified by walking both files), while the shipped `assets/iiex/shapes/furnace/tap.json` has one `open` clip and a `Lid` element. So `BlockEntityFurnaceTap.ApplyPourPose` (:98-116) calls `util.StartAnimation(Animation="open")` against a clip that will not exist. Adopting the shapes therefore deletes the pour pose whether or not you intend it. Plan U4.6 and U4.7 as one landing.
+- [x] **Step 3.** Replace `.ShapeByTypePerOrientation("iwex:furnace/tap", 0)` (BlockFurnaceTap.cs:76) with a per-type call so each type gets its own shape — `Tap(domain, type)` already takes `type`, so `.ShapeByTypePerOrientation($"iwex:furnace/{type}", 0)` is a one-token change. Keep the offset at 0: the shapes are authored **spout-out** and the 180° belongs at the shape rotation, but the current rotation table (`n`->0, `e`->270, `s`->180, `w`->90) already renders the old spout-in art correctly. Look at each new shape's spout direction in-model before deciding whether `offset` becomes 180 — this is the one place the design doc's 'apply the reversal to the model only, never to TryPourMetal' can be got wrong invisibly.
+- [x] **Step 4.** Caution: Do not touch `BlockEntityFurnaceTap.TryPourMetal` (:180-218). It spouts at `Pos.AddCopy(facing.Opposite).DownCopy()` and `BlastFurnaceTapTests.cs:160-186` pins `N→+z, S→−z, E→−x, W→+x` across all four sides. A tap in the east wall is declared `-w`. The cupola's drawing is the mirror of the blast furnaces' (`I` is west on the cold furnace, east on the cupola).
+- [x] **Step 5.** Remove `.EntityBehavior("Animatable")` (BlockFurnaceTap.cs:62), the `_toggle` field (BlockEntityFurnaceTap.cs:27), `BuildAnimator` (:66-89) and `ApplyPourPose` (:98-116). `BuildAnimator`'s cache-key comment (:80-82) says 'the two tap types share a shape today but will not always' — that prediction now resolves; delete the comment with the code.
+- [x] **Step 6.** Delete `assets/iiex/shapes/furnace/tap.json` and confirm `IiexDefinitionGoldenTests.Every_shape_reference_resolves_to_a_shipped_file` still passes (it is what catches a stale path).
+- [x] **Step 7.** Re-bless both tap goldens with `EXLIB_WRITE_GOLDENS=test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/irontap.json,test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/slagtap.json`.
+- [x] **Step 8.** Caution: Record the smex conflict explicitly in the WORKLOG: the shapes encode the notch height (iron channel Y 2-3, slag channel Y 10-11, verified in both files), which reads correctly only when both taps sit at y=1. On iwex's two furnaces they already do. On smex's hot furnace they do not — `T` is at y=1 (BlockBlastFurnaceCoreHot.cs:132) and `S` at y=2 (:142). smex therefore double-counts the height from this change onward. Either move `S` down in that drawing (a smex layout change with a golden re-bless) or write down that the hot furnace reads wrong until the smex remake. Do not leave it undecided.
+- [x] **Step 9.** Run `./scripts/exmod.sh test 1.21`.
 
 #### U4.7 — The clay plug is the closed state — SelectiveElements, fireclay cost, no animator
+
+> **DONE 2026-08-21, with U4.6 and U4.8.**
+>
+> ★★ **Step 1's open ruling, settled: breaking the plug refunds nothing.** `TapUnplugClayRefund` exists as
+> a knob and ships at **0**, against `CanalUnsealClayRefund`'s 2. Reason written into the config comment:
+> ironmaking.md states the cost of a blow-in as *one whole clay plug*, which a refund would halve, and a
+> tap plug is knocked through rather than chiselled out whole. One number reverses it.
+>
+> ⛔ **Step 3's `SelectiveElements` title is wrong and the body is right** - it is `ExShapeElements.Pruned`,
+> for the reason the puddling hearth already gives: vanilla's per-segment prefix match can keep or drop the
+> wrong subtree silently.
+>
+> ★ **The legacy save key needed a fallback the plan did not name.** A tap saved before this unit carries
+> `isPouring` and no `plugged`, and `GetBool("plugged")` defaults to **false** - so a plain read would have
+> reported every existing tap OPEN, not stopped. The read is
+> `tree.GetBool("plugged", !tree.GetBool("isPouring"))`, pinned by
+> `A_tap_saved_before_the_plug_existed_keeps_the_state_it_had`.
+>
+> ⛔ **A class doc comment over 16 lines fails `CommentStyleGuards`**, which is how the first pass went red.
+> The rationale belongs in docs/design with a citation.
 
 **Files**
 - Create: `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceTapPlugTests.cs`
@@ -545,18 +634,24 @@ stays `patcap`.
 
 **Produces:** BlockEntityFurnaceTap.IsPlugged (per-BE bool, tree key "plugged") drives OnTesselation; `IsPouring` becomes `!IsPlugged`; IiexConfig gains TapPlugClayCost and TapUnplugClayRefund
 
-- [ ] **Step 1.** Write `FurnaceTapPlugTests` first: (1) a fresh tap is plugged and pours nothing; (2) breaking the plug with an empty hand opens it and consumes nothing (the plug is destroyed, not recovered) or refunds `TapUnplugClayRefund` — pick per the design ('opening breaks it out and consumes it' — layered-charge.md § The clay plug) and pin whichever; (3) re-plugging with fewer than `TapPlugClayCost` `game:clay-fire` fails with an ingame error and does not close the tap; (4) the plugged flag round-trips through the tree; (5) `TryPourMetal` returns 0 while plugged.
-- [ ] **Step 2.** Replace `IsPouring` (BlockEntityFurnaceTap.cs:25) with `IsPlugged` and express `IsPouring => !IsPlugged` so `BlockEntityShaftFurnace.DrainIronTap`/`DrainSlagTap` need no edit. Default `IsPlugged = true` — a newly built tap is stopped, which is what makes blowing in cost one plug.
-- [ ] **Step 3.** Render the plug with `OnTesselation`, copying `BlockEntityPuddlingHearth.OnTesselation` (src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs:107-130) verbatim in structure: load the block's own shape via `Api.Assets.TryGet(Block.Shape.Base.Clone().WithPathPrefixOnce("shapes/").WithPathAppendixOnce(".json"))`, call `ExShapeElements.Pruned(shape, keep)` with `["Base", "TapCanal", "ClayPlug"]` when plugged and `["Base", "TapCanal"]` when open, `ExMesh.RotateByShape(mesh, Block)`, and return `true`. This is why `ClayPlug` had to be a top-level element in both shapes — verified: both files have exactly three top-level elements, `Base` / `TapCanal` / `ClayPlug`, so the same two keep-lists drive both types with one code path.
-- [ ] **Step 4.** Add `MarkBlockDirty(Pos)` on the client in `FromTreeAttributes` (the existing `ApplyPourPose` call site, :136-137) so a remote plug/unplug re-tesselates. That is the exact pattern `BlockEntityPuddlingHearth.FromTreeAttributes` uses.
-- [ ] **Step 5.** Rewrite `BlockFurnaceTap.OnBlockInteractStart` (:97-166): keep the `TryToggleProjection` forward first (:106-113 — it must stay first or Ctrl+Shift+RMB stops previewing); then branch on held item. Empty hand + plugged -> break the plug open. Held `game:clay-fire` >= `TapPlugClayCost` + open -> consume and plug. Anything else -> fall through. Follow `BlockMoltenCanal.OnBlockInteractStart` (:395-440) for the held-stack + cost + `SendIngameError` shape.
-- [ ] **Step 6.** Add the interaction-help entries alongside the existing `iwex:blockhelp-tap-toggle` (:177-184), one for each verb, each `ShouldApply`-gated on the current plug state and the held item.
-- [ ] **Step 7.** Add lang keys in en/ru/uk: the two help lines, `iwex:tap-plugged` / `iwex:tap-open` (`tap-state` / `tap-open` / `tap-closed` already exist — reuse rather than duplicating), and the ingame-error code for insufficient clay. `LangParityTests` enforces all three files.
-- [ ] **Step 8.** Add `IiexConfig.TapPlugClayCost` and `TapUnplugClayRefund` (per the standing rule that new numbers go through config), doc-commented against `CanalSealClayCost` / `CanalUnsealClayRefund` so the two rituals are visibly the same family.
-- [ ] **Step 9.** Caution: Pin the thing that has no test today and would be silent if deleted: a tap that is open and whose crucible is empty must stay open. The old tap auto-drained while at temperature; with plugs 'an opened tap runs until the crucible empties and the player physically re-plugs it' (layered-charge.md). Assert that a full drain leaves `IsPlugged == false`.
-- [ ] **Step 10.** Run `./scripts/exmod.sh test 1.21`.
+- [x] **Step 1.** Write `FurnaceTapPlugTests` first: (1) a fresh tap is plugged and pours nothing; (2) breaking the plug with an empty hand opens it and consumes nothing (the plug is destroyed, not recovered) or refunds `TapUnplugClayRefund` — pick per the design ('opening breaks it out and consumes it' — layered-charge.md § The clay plug) and pin whichever; (3) re-plugging with fewer than `TapPlugClayCost` `game:clay-fire` fails with an ingame error and does not close the tap; (4) the plugged flag round-trips through the tree; (5) `TryPourMetal` returns 0 while plugged.
+- [x] **Step 2.** Replace `IsPouring` (BlockEntityFurnaceTap.cs:25) with `IsPlugged` and express `IsPouring => !IsPlugged` so `BlockEntityShaftFurnace.DrainIronTap`/`DrainSlagTap` need no edit. Default `IsPlugged = true` — a newly built tap is stopped, which is what makes blowing in cost one plug.
+- [x] **Step 3.** Render the plug with `OnTesselation`, copying `BlockEntityPuddlingHearth.OnTesselation` (src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs:107-130) verbatim in structure: load the block's own shape via `Api.Assets.TryGet(Block.Shape.Base.Clone().WithPathPrefixOnce("shapes/").WithPathAppendixOnce(".json"))`, call `ExShapeElements.Pruned(shape, keep)` with `["Base", "TapCanal", "ClayPlug"]` when plugged and `["Base", "TapCanal"]` when open, `ExMesh.RotateByShape(mesh, Block)`, and return `true`. This is why `ClayPlug` had to be a top-level element in both shapes — verified: both files have exactly three top-level elements, `Base` / `TapCanal` / `ClayPlug`, so the same two keep-lists drive both types with one code path.
+- [x] **Step 4.** Add `MarkBlockDirty(Pos)` on the client in `FromTreeAttributes` (the existing `ApplyPourPose` call site, :136-137) so a remote plug/unplug re-tesselates. That is the exact pattern `BlockEntityPuddlingHearth.FromTreeAttributes` uses.
+- [x] **Step 5.** Rewrite `BlockFurnaceTap.OnBlockInteractStart` (:97-166): keep the `TryToggleProjection` forward first (:106-113 — it must stay first or Ctrl+Shift+RMB stops previewing); then branch on held item. Empty hand + plugged -> break the plug open. Held `game:clay-fire` >= `TapPlugClayCost` + open -> consume and plug. Anything else -> fall through. Follow `BlockMoltenCanal.OnBlockInteractStart` (:395-440) for the held-stack + cost + `SendIngameError` shape.
+- [x] **Step 6.** Add the interaction-help entries alongside the existing `iwex:blockhelp-tap-toggle` (:177-184), one for each verb, each `ShouldApply`-gated on the current plug state and the held item.
+- [x] **Step 7.** Add lang keys in en/ru/uk: the two help lines, `iwex:tap-plugged` / `iwex:tap-open` (`tap-state` / `tap-open` / `tap-closed` already exist — reuse rather than duplicating), and the ingame-error code for insufficient clay. `LangParityTests` enforces all three files.
+- [x] **Step 8.** Add `IiexConfig.TapPlugClayCost` and `TapUnplugClayRefund` (per the standing rule that new numbers go through config), doc-commented against `CanalSealClayCost` / `CanalUnsealClayRefund` so the two rituals are visibly the same family.
+- [x] **Step 9.** Caution: Pin the thing that has no test today and would be silent if deleted: a tap that is open and whose crucible is empty must stay open. The old tap auto-drained while at temperature; with plugs 'an opened tap runs until the crucible empties and the player physically re-plugs it' (layered-charge.md). Assert that a full drain leaves `IsPlugged == false`.
+- [x] **Step 10.** Run `./scripts/exmod.sh test 1.21`.
 
 #### U4.8 — Move the no-canal gate from *cannot open* to *cannot pour*
+
+> **DONE 2026-08-21, folded into the U4.6+U4.7 landing.** Not scope creep: U4.7 Step 5 rewrites
+> `OnBlockInteractStart` wholesale and its replacement has no canal check in it, so keeping the gate would
+> have meant writing code the same landing deletes. The status line went in with it
+> (`BlockEntityFurnaceTap.HasCanalBelow`, reusing `iiex:tap-err-nocanal` as a status), and
+> `FurnaceTapPlugTests.An_open_tap_with_no_canal_below_still_opens_and_pours_nothing` is Step 1's case.
 
 **Files**
 - Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockFurnaceTap.cs:124-147`, `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityFurnaceTap.cs:142-172,180-218`, `assets/iiex/lang/en.json`, `assets/iiex/lang/ru.json`, `assets/iiex/lang/uk.json`
@@ -566,10 +661,10 @@ stays `patcap`.
 
 **Produces:** BlockFurnaceTap.OnBlockInteractStart no longer refuses to open a tap with no canal below; BlockEntityFurnaceTap surfaces the missing canal in GetBlockInfo instead
 
-- [ ] **Step 1.** Write the failing test: a tap with no `BlockMoltenCanalStart` beneath its spout can be unplugged (`IsPlugged` goes false) and `TryPourMetal` still returns 0. Today the first half fails — `BlockFurnaceTap.OnBlockInteractStart:124-147` refuses to open and raises `iwex:tap-err-nocanal`, which is exactly what makes the blow-in sequence (open a tap and torch it) impossible.
-- [ ] **Step 2.** Delete the `isOpening` canal precondition block (:124-147). Keep the `ExOrientation.FacingFromSide` call pattern wherever a facing is still needed — `BlockFacing.FromCode` returns null for a single-letter token and both call sites document that as the trap (BlockFurnaceTap.cs:128-131, BlockEntityFurnaceTap.cs:185-189).
-- [ ] **Step 3.** `TryPourMetal` (BlockEntityFurnaceTap.cs:196-200) already returns 0 with no canal start — no logic change needed there. What is missing is feedback: add a `GetBlockInfo` line on an open tap with no canal below, reusing `iwex:tap-err-nocanal` as a status rather than an error, so a player who opens a tap and gets nothing is told why. Silently returning 0 forever is the failure the `FacingFromSide` comment already flags as the worst kind.
-- [ ] **Step 4.** Run `./scripts/exmod.sh test 1.21`.
+- [x] **Step 1.** Write the failing test: a tap with no `BlockMoltenCanalStart` beneath its spout can be unplugged (`IsPlugged` goes false) and `TryPourMetal` still returns 0. Today the first half fails — `BlockFurnaceTap.OnBlockInteractStart:124-147` refuses to open and raises `iwex:tap-err-nocanal`, which is exactly what makes the blow-in sequence (open a tap and torch it) impossible.
+- [x] **Step 2.** Delete the `isOpening` canal precondition block (:124-147). Keep the `ExOrientation.FacingFromSide` call pattern wherever a facing is still needed — `BlockFacing.FromCode` returns null for a single-letter token and both call sites document that as the trap (BlockFurnaceTap.cs:128-131, BlockEntityFurnaceTap.cs:185-189).
+- [x] **Step 3.** `TryPourMetal` (BlockEntityFurnaceTap.cs:196-200) already returns 0 with no canal start — no logic change needed there. What is missing is feedback: add a `GetBlockInfo` line on an open tap with no canal below, reusing `iwex:tap-err-nocanal` as a status rather than an error, so a player who opens a tap and gets nothing is told why. Silently returning 0 forever is the failure the `FacingFromSide` comment already flags as the worst kind.
+- [x] **Step 4.** Run `./scripts/exmod.sh test 1.21`.
 
 #### U4.9 — Blow-in: a torch on an open tap lights the lowest charge round
 
@@ -585,6 +680,38 @@ stays `patcap`.
 > The payoff: blowing in costs **one clay plug** and is a deliberate sequence, which is what gives U4.7's
 > plug cost a counterpart at the other end of the campaign — *"tapping is a decision rather than a reflex"*.
 
+> **DONE 2026-08-21.** Gate 9/9, **4,160** per version.
+>
+> ⛔⛔ **The rescoping note above is wrong about the code, and Step 1's caution is why.** It was written
+> 2026-08-05, before U3.6 landed. The shared `_cachedIsFull → TryIgniteCharge` branch is **already
+> firebox-only**: `BlockEntityShaftFurnace.DerivesState` is `true`, so a shaft never reaches it. Nothing
+> needed pushing down. The shaft's auto-ignition was in `DeriveState`, which returned Firing the moment a
+> raceway course held carbon.
+>
+> ★★ **So the real work was adding the one thing the branch was designed not to have: a stored bit.**
+> `BlockEntityShaftFurnace.BlownIn` — set by the flame, cleared in `ExtinguishResidue`, serialized as
+> `blownIn`. Its own docstring said *"there is no 'was lit' bit either"* and gave the reason that makes one
+> safe: burn-out retains no fuel at the raceway, so nothing can relight off a stale flag.
+>
+> ★ **The torch asks none of `DeriveState`'s questions.** It sets the latch and stops; whether the charge
+> takes stays one question asked in one place. A torch on a shaft with no carbon at its tuyeres buys
+> nothing, which `A_lit_furnace_with_no_carbon_at_its_raceway_still_does_not_catch` pins.
+>
+> ★ **The predicate is vanilla's `BlockBehaviorCanIgnite`**, not a torch code — every `*-lit-*` block, and
+> deliberately not `ItemFirestarter`, which vanilla itself treats as a separate class of igniter.
+>
+> ⛔ **The ripple was 58 tests**, every scenario that expected a furnace to light itself. Fixed with the
+> fixture lever: `BlowInRig` performs the ritual through the tap block's own interaction, and each rig
+> gained a `BlowIn()` step. ⛔⛔ **Two of the three furnace rigs identified as neither side** — `EnumAppSide`
+> has no 0 member, so a substitute's default matched neither — which means every `Side == Server` branch in
+> the production tick was being skipped in the cupola and smex suites without saying so. Both are
+> server-side now.
+>
+> ★ **Two "on its own" claims were retired, not patched**: smex's
+> `A_built_and_blown_furnace_reaches_melting_on_its_own` became
+> `..._stays_dark_until_a_torch_reaches_it` and does the gesture, and the hopper's
+> `..._FUELLED_and_LIT_through_its_own_hopper` now says the hopper lays the fuel and a player lights it.
+
 **Files**
 - Create: `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceBlowInTests.cs`
 - Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockFurnaceTap.cs:95-187`, `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityFurnaceTap.cs`, `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs:1020-1036`, `assets/iiex/lang/en.json`, `assets/iiex/lang/ru.json`, `assets/iiex/lang/uk.json`
@@ -594,13 +721,13 @@ stays `patcap`.
 
 **Produces:** A public ignition entry point on BlockEntityFurnaceCore (e.g. `public bool TryLightFromTap(BlockPos tapPos)`) that the tap calls, replacing the automatic charge-is-full ignition branch as the player-driven route
 
-- [ ] **Step 1.** Caution: Establish that there is no existing torch mechanic anywhere in `src/` before writing anything — a repo-wide grep for `torch` finds only sound-asset names (`ExSounds.Ignite`, `ExSounds.TorchUnequip`). This is entirely new surface, and its shape depends on what U3 left of ignition. Read `BlockEntityFurnaceCore.cs:1020-1036` (the current `State == FurnaceState.Idle && _cachedIsFull && !IsChoked -> TryIgniteCharge -> _internalTemp = IgnitionTemp` branch) as it stands after U3 before deciding.
-- [ ] **Step 2.** Write the failing test: an unplugged tap on a charged, structurally complete furnace, clicked with a lit torch in hand, lights the lowest chargeable round; re-plugging and putting the blast on then takes the furnace to Firing. Do not force `StructureComplete` — build the footprint with `StructureRig`.
-- [ ] **Step 3.** Route the click through the anchor the tap already resolves (`Anchor.Resolve()`, BlockEntityFurnaceTap.cs:158) — the tap already knows its furnace for the HUD, so no new lookup is needed.
-- [ ] **Step 4.** Caution: Light the lowest charge round, not the tap's own cell. y=1 is crucible after U4.5, so there is no fuel at tap level; the flame reaches up into the raceway at y=2. Assert the ignited cell is in `ChargeableCells` and is the lowest of them — a test that only checks 'the furnace lit' would pass with the wrong cell.
-- [ ] **Step 5.** Gate on the tap being open. A plugged tap cannot be lit through, which is what makes the blow-in sequence cost one plug: open -> torch -> re-plug -> blast on.
-- [ ] **Step 6.** Add the interaction help + lang lines in en/ru/uk.
-- [ ] **Step 7.** Run `./scripts/exmod.sh test 1.21` and `1.20`; append a WORKLOG entry covering the whole unit.
+- [x] **Step 1.** Caution: Establish that there is no existing torch mechanic anywhere in `src/` before writing anything — a repo-wide grep for `torch` finds only sound-asset names (`ExSounds.Ignite`, `ExSounds.TorchUnequip`). This is entirely new surface, and its shape depends on what U3 left of ignition. Read `BlockEntityFurnaceCore.cs:1020-1036` (the current `State == FurnaceState.Idle && _cachedIsFull && !IsChoked -> TryIgniteCharge -> _internalTemp = IgnitionTemp` branch) as it stands after U3 before deciding.
+- [x] **Step 2.** Write the failing test: an unplugged tap on a charged, structurally complete furnace, clicked with a lit torch in hand, lights the lowest chargeable round; re-plugging and putting the blast on then takes the furnace to Firing. Do not force `StructureComplete` — build the footprint with `StructureRig`.
+- [x] **Step 3.** Route the click through the anchor the tap already resolves (`Anchor.Resolve()`, BlockEntityFurnaceTap.cs:158) — the tap already knows its furnace for the HUD, so no new lookup is needed.
+- [x] **Step 4.** Caution: Light the lowest charge round, not the tap's own cell. y=1 is crucible after U4.5, so there is no fuel at tap level; the flame reaches up into the raceway at y=2. Assert the ignited cell is in `ChargeableCells` and is the lowest of them — a test that only checks 'the furnace lit' would pass with the wrong cell.
+- [x] **Step 5.** Gate on the tap being open. A plugged tap cannot be lit through, which is what makes the blow-in sequence cost one plug: open -> torch -> re-plug -> blast on.
+- [x] **Step 6.** Add the interaction help + lang lines in en/ru/uk.
+- [x] **Step 7.** Run `./scripts/exmod.sh test 1.21` and `1.20`; append a WORKLOG entry covering the whole unit.
 
 ### Traps — each of these makes a green suite a lie
 

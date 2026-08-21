@@ -237,6 +237,48 @@ public class ColdBlastFurnaceScenarioTests {
   #region Melting
 
   /// <summary>
+  /// The crucible and the burden no longer share a cell, and the two writers no longer contend. While the
+  /// furnace melts, the hearth-metal blocks it stands its bath in occupy the whole y=1 course and the
+  /// burden stands from y=2 up; nothing of the shaft is drawn into the crucible and nothing of the bath is
+  /// drawn over by <c>SyncChargeBlocks</c>.
+  /// <para>
+  /// Run live rather than asserted off the layout, because the disjointness of the two roles is a static
+  /// fact that says nothing about which cells the two walks actually write to at runtime.
+  /// </para>
+  /// </summary>
+  [Fact]
+  public void A_melting_furnace_stands_its_bath_under_its_burden_not_in_it() {
+    var scene = ColdBlastFurnaceScenes.Complete();
+    Assert.True(
+      scene.RunUntil(s => s.MoltenIron > 0f, CampaignSeconds) > 0,
+      "the furnace should have melted something"
+    );
+
+    // The bath: the whole crucible course, and none of it a charge pile.
+    foreach (int x in new[] { -1, 0, 1 }) {
+      Assert.Equal(
+        "iiex:hearthmetal-pigiron",
+        scene.BlockAtLocal(x, 1, 0).Code?.ToString()
+      );
+      Assert.Null(scene.PileAtLocal(x, 1, 0));
+    }
+
+    // The burden: still standing, and its lowest block is the shaft's own floor rather than the crucible.
+    Assert.True(
+      scene.ColumnUnits > 0,
+      "a melting furnace should still have burden standing in its shaft"
+    );
+    Assert.NotNull(scene.PileAtLocal(0, 2, 0));
+
+    // The column reaches no further down than that. Asked of the machine rather than of the drawing: a
+    // descent that walked into the crucible would answer a column here.
+    Assert.Null(
+      scene.Core.ChargeColumnAt(scene.Structure.Cell(0, 1, 0), out int index)
+    );
+    Assert.Equal(-1, index);
+  }
+
+  /// <summary>
   /// The cold/hot trade: the <c>standard</c> grade (20 % coke) is the heat balance's calibration point and
   /// on cold blast settles at ~1420 C against a 1482 C melt line, reporting <c>bf-info-heatstall</c>. A
   /// burden that never melts makes no room for the column to descend, so the fire eats what carbon it can
@@ -588,8 +630,8 @@ public class ColdBlastFurnaceScenarioTests {
     );
     Assert.True(pooled > 0f);
 
-    // The pool froze across the bottom layer of the shaft as solid iron - not slag, not nothing. Three
-    // cells, because the crucible runs the full width of the hearth course.
+    // The pool froze across the crucible course, under the shaft, as solid iron - not slag, not nothing.
+    // Three cells, because the crucible runs the full width of the hearth course.
     var crucible = new[] { (-1, 1, 0), (0, 1, 0), (1, 1, 0) };
     foreach (var (x, y, z) in crucible)
       Assert.Equal(
@@ -597,22 +639,11 @@ public class ColdBlastFurnaceScenarioTests {
         scene.BlockAtLocal(x, y, z).Code?.ToString()
       );
 
-    // ...and it carries the metal rather than being a decorative block over a deleted pool: the cells
-    // together hold the whole pool at the configured units-per-nugget.
-    int nuggets = 0;
-    foreach (var (x, y, z) in crucible)
-      nuggets += Count(scene.BlockEntityAtLocal(x, y, z));
-    Assert.Equal(
-      Math.Max(1, (int)Math.Floor(pooled / IiexValues.BfUnitsPerSolidNugget)),
-      nuggets
-    );
-
-    // Nothing on the extinguish path makes slag: the slag pool is simply cleared.
-    Assert.Equal(0f, scene.MoltenIron, 3);
-    Assert.Equal(0f, scene.MoltenSlag, 3);
-
-    static int Count(Vintagestory.API.Common.BlockEntity? be) =>
-      be is BlockEntityHearthMetal solid ? solid.MetalCount : 0;
+    // ...and it carries the metal rather than being a decorative block over a deleted pool. The pool is
+    // the cells' own contents now, so the conservation claim is exact: every unit that was liquid when
+    // the furnace died is still standing on the crucible floor. Under the old stamp-at-shutdown model
+    // this could only be asserted through a lossy units-per-nugget conversion.
+    Assert.Equal(pooled, scene.MoltenIron, 3);
   }
 
   [Fact]
@@ -638,17 +669,17 @@ public class ColdBlastFurnaceScenarioTests {
     // `iiex:furnace-chargepile`: the shaft's charge is the furnace's own, not a vanilla container.
     Assert.Equal(
       "iiex:furnace-chargepile",
-      scene.BlockAtLocal(0, 1, 0).Code?.ToString()
+      scene.BlockAtLocal(0, 2, 0).Code?.ToString()
     );
     Assert.Equal(
       "iiex:furnace-chargepile",
       scene.BlockAtLocal(0, 5, 0).Code?.ToString()
     );
-    Assert.NotNull(scene.PileAtLocal(0, 1, 0));
+    Assert.NotNull(scene.PileAtLocal(0, 2, 0));
     Assert.NotNull(scene.PileAtLocal(0, 5, 0));
 
     BurdenMix charged = scene.ChargedMix;
-    BurdenMix bottom = scene.SalvageAtLocal(0, 1, 0); // sitting on the tuyeres
+    BurdenMix bottom = scene.SalvageAtLocal(0, 2, 0); // level with the tuyeres
     BurdenMix top = scene.SalvageAtLocal(0, 5, 0); // top of the charge column
 
     // The salvage is real: ore and flux come back untouched at both ends of the column.
@@ -812,11 +843,11 @@ public class ColdBlastFurnaceScenarioTests {
     );
 
     // Still charge piles, at both ends of the column - burned out, not destroyed and not slagged.
-    Assert.NotNull(scene.PileAtLocal(0, 1, 0));
+    Assert.NotNull(scene.PileAtLocal(0, 2, 0));
     Assert.NotNull(scene.PileAtLocal(0, 5, 0));
 
     BurdenMix charged = scene.ChargedMix;
-    BurdenMix bottom = scene.SalvageAtLocal(0, 1, 0); // sitting on the tuyeres
+    BurdenMix bottom = scene.SalvageAtLocal(0, 2, 0); // level with the tuyeres
     BurdenMix top = scene.SalvageAtLocal(0, 5, 0); // top of the charge column
 
     Assert.Equal(charged.Iron, bottom.Iron, 3);

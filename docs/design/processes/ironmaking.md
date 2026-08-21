@@ -200,25 +200,32 @@ owns the transfer), and first iron follows only once burden that has descended i
 there at melting temperature. Blowing in is therefore a process the player watches - minutes of Firing
 before the first Melting - not a transition they trigger.
 
-### The ritual — designed, not yet coded
+### The ritual — built
 
 The designed blow-in makes lighting a sequence with a material cost, built entirely out of the tap:
 
-* The clay plug is the tap's closed state. A newly built tap is plugged; plugging costs fire clay and
-  breaking the plug opens the tap (the same held-stack + cost + refund shape the canal's seal uses,
-  `TapPlugClayCost` / `TapUnplugClayRefund`). The plug renders as its own shape state - no animator - and
-  an opened tap does not close itself: it runs until the crucible empties or the player re-plugs it.
-* An open tap with no canal below stops refusing. Instead of the `iiex:tap-err-nocanal` refusal, an open tap
-  with nothing to pour into reports the missing canal in its block info and delivers nothing.
-* A lit torch through an open tap lights the furnace. The click routes to the furnace core and ignites the
-  lowest chargeable round - the flame reaches up from the tap-hole into the raceway above the crucible. A
-  plugged tap cannot be lit through.
+* **Built.** The clay plug is the tap's closed state. A newly built tap is plugged; plugging costs
+  `TapPlugClayCost` fire clay and an empty hand breaks the plug out, which destroys it -
+  `TapUnplugClayRefund` is 0, so the blow-in really does cost one whole plug. The plug renders as its own
+  shape state (the `ClayPlug` element, pruned when open) - no animator - and an opened tap does not close
+  itself: it runs until the crucible empties or the player re-plugs it.
+* **Built.** An open tap with no canal below no longer refuses to open. Instead of the
+  `iiex:tap-err-nocanal` refusal, an open tap with nothing to pour into reports the missing canal in its
+  block info and delivers nothing.
+* **Built.** A lit flame through an open tap lights the furnace. The click routes to the furnace core it
+  already resolves for its pool readout and sets `BlownIn`; a plugged tap cannot be lit through, which is
+  what makes the sequence cost a plug. The flame does not overrule the drawing: whether the charge catches
+  is still the raceway's question, asked in one place, so torching a shaft with no carbon in front of its
+  tuyeres buys nothing. The predicate is vanilla's own `CanIgnite` behaviour - every `*-lit-*` block -
+  rather than a torch code, and deliberately not the firestarter.
 * The sequence is: break the plug open → torch it → re-plug → blast on. Blowing in costs one clay plug.
 * A lit front then climbs the shaft pile-to-pile and stops dead at a burden-only gap
   ([layered-charge](../layered-charge.md) § Still design-only).
 
-Today none of this is coded: lit-ness is furnace-level, taps have no plug state, and the furnace catches by
-itself the moment its raceway course is complete. The firebox furnaces (puddling, heating, reheat) keep
+`BlownIn` is the one bit a shaft stores rather than derives, and it is cleared when the furnace goes out,
+so blowing in is once per campaign: the residue burn takes the carbon at every raceway with it, leaving
+nothing for a stale flag to relight. What is still design-only is the lit front climbing the shaft
+pile-to-pile. The firebox furnaces (puddling, heating, reheat) keep
 auto-ignition in the designed model too; the torch requirement is the shaft family's only. The burn-out
 guarantee is already in place either way: `BfBurnoutFuelRetainedBottom` = 0, so a dead furnace has no carbon
 left at its own raceway and cannot relight off its own salvage.

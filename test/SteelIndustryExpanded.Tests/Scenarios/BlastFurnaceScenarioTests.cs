@@ -32,9 +32,17 @@ public class BlastFurnaceScenarioTests {
   // listener on the clock, nothing invoked by reflection. They catch a process that never starts - a
   // structure that never completes, a tick that is never registered, a gate that never opens.
 
+  /// <summary>
+  /// The whole blow-in, on the furnace that stands up its own tap: a charged, blown, structurally sound
+  /// shaft sits dark until a flame is reached through an open tap-hole, and then runs to Melting on the
+  /// clock. The rig lights itself for every other scenario here; this is the one that does not, so the
+  /// ritual is stated somewhere rather than only assumed.
+  /// </summary>
   [Fact]
-  public void A_built_and_blown_furnace_reaches_melting_on_its_own() {
-    var rig = new BlastFurnaceRig(blastMix: 0).FeedBlast(950f);
+  public void A_built_and_blown_furnace_stays_dark_until_a_torch_reaches_it() {
+    var rig = new BlastFurnaceRig(blastMix: 0, blowIn: false)
+      .WithIronTapAndCanal()
+      .FeedBlast(950f);
 
     // Starts cold and idle.
     Assert.True(
@@ -43,9 +51,17 @@ public class BlastFurnaceScenarioTests {
     );
     Assert.Equal(FurnaceState.Idle, rig.State);
 
+    // Charged, blown and complete is not enough - it has everything but the flame.
+    rig.RunLive(30);
+    Assert.Equal(FurnaceState.Idle, rig.State);
+    Assert.False(rig.Furnace.BlownIn);
+
+    rig.BlowIn();
+
+    Assert.True(rig.Furnace.BlownIn);
     Assert.True(
       rig.RunUntil(r => r.State == FurnaceState.Melting, SoakSeconds) > 0,
-      "a charged, blown furnace should reach Melting on its own"
+      "a lit, charged, blown furnace should reach Melting on the clock"
     );
     Assert.True(
       rig.Temp > IiexValues.BfIronMeltingPoint,

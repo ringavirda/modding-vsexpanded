@@ -11,6 +11,22 @@
   ],
   "class": "iiex.BlockHearthMetal",
   "entityClass": "iiex.BlockEntityHearthMetal",
+  "entityBehaviors": [
+    {
+      "name": "exlib.BEBehaviorMoltenCell",
+      "properties": {
+        "key": "hm_iron_",
+        "solidifies": true
+      }
+    },
+    {
+      "name": "exlib.BEBehaviorMoltenCell",
+      "properties": {
+        "key": "hm_slag_",
+        "solidifies": true
+      }
+    }
+  ],
   "blockmaterial": "Metal",
   "creativeinventory": {
     "general": [

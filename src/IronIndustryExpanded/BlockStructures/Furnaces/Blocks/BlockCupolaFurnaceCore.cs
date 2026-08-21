@@ -69,16 +69,15 @@ public partial class BlockCupolaFurnaceCore
             .Legend('H', IiexBlocks.HopperTall.WithSide(BlockFacing.WEST))
             .Legend('f', ExCodes.Filler)
             .Legend('c', IiexCodes.ChargeShaft)
-            // The crucible floor. Same code as the shaft; it has its own glyph so it can carry the pool
-            // role alongside the burden one.
+            // The crucible floor: the shaft's occupants plus the hearthmetal block the furnace stands its
+            // bath in. Its own glyph, so it can carry the pool role where the shaft carries the burden.
             .Legend('h', IiexCodes.HearthCell)
             .Legend('a', VanillaCodes.Air)
-            // The burden column: five cells in one column. Cell roles, not legend glyphs, are what
+            // The burden column: four cells in one column, y=2 up. Cell roles, not legend glyphs, are what
             // callers query for where charge stands.
             .Role('c', CellRole.Chargeable)
-            // Burden and pool at once. The cupola's crucible is a single cell, so its whole molten charge
-            // freezes into one block when it is put out.
-            .Role('h', CellRole.Chargeable)
+            // Pool only, the course below the burden. The cupola's crucible is a single cell, so its whole
+            // molten charge stands in one hearthmetal block.
             .Role('h', CellRole.Pool)
             .Role('T', CellRole.Tuyere)
             // The two drains sit on opposite sides of the single crucible cell.

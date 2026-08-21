@@ -184,11 +184,12 @@ Hand-charging through the pile blocks is take-only today ([charge-pile](charge-p
 
 The furnace has no shape of its own: it is vanilla refractory brick plus the small iiex part blocks.
 The core is a vanilla cube with per-face refractory textures, an orientation marker on the north face
-and a "BF/C" type label on the south, so the three furnace anchors read apart at a glance. The two tap
-blocks share the single `iiex:furnace/tap` shape with an `open` pose; drawn per-type shapes
-(`assets/editable/shapes/furnace-block-irontap.json` / `-slagtap.json`) exist and are not yet adopted -
-their channel heights are the visible iron cap of the live-crucible design (see Open). A lit furnace is
-signalled by sounds and by the charge piles' own glow; there is no looping furnace animation.
+and a "BF/C" type label on the south, so the three furnace anchors read apart at a glance. Each tap draws
+its own shape (`iiex:furnace/irontap` / `iiex:furnace/slagtap`), and the two encode their notch heights -
+the iron channel at model Y 2-3, the cinder channel at Y 10-11 - so both taps sit at layout y=1 and the
+course between them is art, not geometry. Neither shape carries an animation: the closed state is the
+`ClayPlug` element, drawn or pruned. A lit furnace is signalled by sounds and by the charge piles' own
+glow; there is no looping furnace animation.
 
 Player-facing help: `assets/iiex/config/handbook/02-coldblastfurnace.json` ↔
 `docs/iiex/handbook/02-coldblastfurnace.html`.
@@ -236,7 +237,9 @@ tuyere are pinned to tier 3.
 | RMB empty-handed | same filler cell | withdraws the tank |
 | RMB empty-handed | a charge pile | takes one band off that column's top |
 | break a charge pile | the shaft | splices that window's units out and drops them - [charge-pile](charge-pile.md) |
-| RMB empty-handed | either tap | toggles pouring; pouring needs a canal start at the pour target |
+| RMB empty-handed | a plugged tap | breaks the clay plug out and opens it; the plug is destroyed |
+| RMB with a lit flame | an open tap | blows the furnace in - it stays dark until this happens |
+| RMB with fire clay | an open tap | stops it again, consuming `TapPlugClayCost` |
 | break any `#` | anywhere | structure lost - the furnace keeps burning but can never re-ignite (see below) |
 
 There is no door and no on/off switch. Clearing a dead furnace means digging its charge back out
@@ -247,10 +250,12 @@ through the piles or breaking its walls.
 State is derived every tick, not stored; the model is the shaft branch of the
 [heat balance](../mechanics/heat-balance.md). The behaviour this furnace shows:
 
-* Ignition is positional and pneumatic, with no quantity threshold. `TryIgniteCharge` requires charge
-  at every column's raceway (the complete bottom course - nine here, one on the cupola; the furnace's
-  own column count, no constant), carbon standing at the raceway, and air at pressure through the
-  tuyeres. A shaft piled high in one column never lights, however much is in it.
+* Ignition is a flame plus a position, with no quantity threshold. A player has to blow the furnace in -
+  a lit flame through an open tap-hole, which sets `BlownIn` - and the drawing decides whether the charge
+  takes: carbon standing at every column's raceway (the complete bottom course, the furnace's own column
+  count, no constant) and air at pressure through the tuyeres. A shaft piled high in one column never
+  lights, however much is in it, and neither does one nobody has torched. `BlownIn` clears when the
+  furnace goes out, so a recharged shaft is lit again from scratch.
 * Combustion happens at the raceway only, in front of the two tuyeres, and everything the furnace does
   per second follows from the carbon burned there: flame temperature, rising gas, descent, product.
   Coke burns whenever the furnace is lit - a furnace melting nothing is still burning its charge away -
@@ -276,14 +281,16 @@ Melting renders burden at the raceway into two pools held on the furnace
   stamped ore share (unstamped charge falls back to 0.75). Slag likewise at `BfSlagPerOreUnit`. The
   recovery ladder this implements - 8.5 u/nugget raw against the bloomery's 5 - is
   [ironmaking](../processes/ironmaking.md)'s and is pinned by `OreRecoveryGuardRailTests`.
-* The pools clamp at `BfMaxMoltenIron` / `BfMaxMoltenSlag` - product rendered over a full pool's cap is
-  lost, not queued, so an untapped furnace wastes its campaign.
+* The crucible holds `HearthUnitsPerBand` per pool cell, per metal - the cells' own capacity, not a
+  furnace-level cap. Product rendered over a full crucible is lost, not queued, so an untapped furnace
+  wastes its campaign.
 * An open tap drains its pool every tick - up to `TapDrainPerTick` units considered, stack size
   `ceil(units × factor)`, so at shipped values the iron tap passes up to 30 u/s and the slag tap
   40 u/s. Pour target is `Pos + facing.Opposite`, one down.
-* On extinguish the remaining pool freezes into `iiex:hearthmetal-pigiron` on a free pool cell, and the
-  columns burn out to salvage: fuel retention interpolates from 0 at the hearth to 0.4 at the
-  stockline, so what the player digs back out is richer in coke toward the top.
+* Extinguishing freezes nothing: the metal was written into `iiex:hearthmetal-pigiron` as it was made
+  and its cells latch solid on their own thermal update. What extinguish does is burn the columns out to
+  salvage - fuel retention interpolates from 0 at the hearth to 0.4 at the stockline, so what the player
+  digs back out is richer in coke toward the top.
 
 ---
 
@@ -375,7 +382,9 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 | `…/ShaftColumnsTests.cs` | structure-local column keying, the asymmetric-drawing rotation case, per-column floors |
 | `…/ChargeColumnTests.cs` / `ChargePileTests.cs` / `ChargeMaterialisationTests.cs` | the column data model, the pile window, the world sync |
 | `…/HopperTallTests.cs` | deposit/withdraw, drip, mismatched-deposit refusal, save round-trip |
-| `…/BlastFurnaceTapTests.cs` | tap toggle, pour targets in all four facings |
+| `…/BlastFurnaceTapTests.cs` | the pour handoff and its targets in all four facings |
+| `…/FurnaceTapPlugTests.cs` | the clay plug: both verbs, their cost, the legacy save key, the drawn elements |
+| `…/FurnaceBlowInTests.cs` | the blow-in: the gate, the gesture, once per campaign, the legacy save key |
 | `…/OreRecoveryGuardRailTests.cs` | the 8.5 u/nugget yield against the bloomery floor |
 | `…/HeatBalanceTests.cs` | the heat model ([heat balance](../mechanics/heat-balance.md)) |
 | `test/IronIndustryExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs` | the charge → light → melt → tap → extinguish walk on this furnace |
@@ -391,31 +400,24 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 2. The two taps share one sound throttle (`_lastTapSoundMs` on the shaft furnace), so a furnace
    pouring metal and slag together plays half the pour hisses it should.
 
-3. A full pool loses product silently. The melt keeps consuming burden while the pools sit at their
-   caps (`ConsumeForMelting` clamps with `Math.Min`), so everything rendered over the cap evaporates.
-   The disruption machinery that would stall a firebox furnace on `LiquidCapacityReached` does not run
-   on the shaft branch - keep the taps open.
-
-4. The crucible cells are contested until the live-crucible work lands. They are chargeable, and the
-   extinguish freeze needs a free pool cell; `SyncChargeBlocks` refuses to overwrite a block it did not
-   place, so the worst case is a column drawing one block short, never lost units.
+3. A full crucible loses product silently. The melt keeps consuming burden while the cells sit at
+   capacity, so everything rendered over it evaporates. The disruption machinery that would stall a
+   firebox furnace on `LiquidCapacityReached` does not run on the shaft branch - keep the taps open.
 
 ---
 
 ## Open
 
-1. The live crucible. Settled design, partly built: `iiex:hearthmetal` exists as the frozen-pool block
-   (one block, metal in the code) and two molten cells can coexist on one block entity, but the pool is
-   still the float pair on the furnace, spawned solid only at extinguish. The remaining work makes the
-   pool a live layered molten cell (iron under slag) in the crucible cells, deletes the float pair and
-   the two pool-cap keys in favour of a visible band height (`HearthUnitsPerBand`, 640 u - the slag
-   channel floor at 10/16 is the overflow level), and takes `Chargeable` off the crucible glyph
-   (39 → 36 cells). The drawn irontap/slagtap shapes land with it.
+1. ~~The live crucible.~~ **Built** (2026-08-20/21). The pool stands in `iiex:hearthmetal-*` blocks the
+   furnace places into its `Pool` cells as it melts, each carrying an iron cell and a slag cell at
+   `HearthUnitsPerBand` apiece; the float pair and the two pool-cap keys are gone, the crucible glyph
+   carries `Pool` alone (39 → 36 chargeable cells), and the drawn per-type tap shapes are adopted.
 
-2. Blow-in ritual. Ignition today is the derived positional gate. The settled sequence - open a tap,
-   torch it, re-plug it, blast on, with a lit front climbing the shaft pile-to-pile and a clay plug as
-   the tap's closed state - is designed, not built; the plug also replaces the free right-click pour
-   toggle with a consumable.
+2. ~~Blow-in ritual.~~ **Built** (2026-08-21). A tap arrives plugged; an empty hand breaks the plug out
+   and destroys it, a lit flame through the open hole sets `BlownIn`, and `TapPlugClayCost` fire clay
+   stops it again - break, torch, re-plug, blast on, one plug a campaign. The positional gate is
+   unchanged and still decides whether the charge catches. A lit front climbing the shaft pile-to-pile
+   is still design only.
 
 3. Direct charging to a converter is designed, not built. A ready converter is just a different canal
    destination - see [direct-charging](../processes/direct-charging.md). Nothing in `src/`

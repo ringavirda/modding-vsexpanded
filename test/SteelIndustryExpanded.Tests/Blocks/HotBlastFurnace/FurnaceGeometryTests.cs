@@ -37,6 +37,10 @@ public class FurnaceGeometryTests {
       "siex:blastfurnacecore-*",
       "hot furnace",
       TapGlyphs.ShaftFurnace,
+      // Both glyphs, where the two iwex furnaces charge the shaft alone: this drawing still marks its
+      // crucible course Chargeable beside Pool. Deferred to the smex remake, and pinned by
+      // HotFurnaceCrucibleOverlapTests - not a set to copy onto a new drawing.
+      [ShaftGlyph, HearthGlyph],
       NorthTuyereGlyph,
       SouthTuyereGlyph
     );
@@ -110,8 +114,8 @@ public class FurnaceGeometryTests {
     );
 
     // The two literals are the values `BlockEntityFurnaceCore.ShaftMin`/`ShaftMax` held, which this
-    // furnace never overrode. Its layout marks the same 38 chargeable cells the cold one does, so its box
-    // is the same 3x3x5 rather than the 4x4 its wider shell suggests.
+    // furnace never overrode: a 3x3x5 box rather than the 4x4 its wider shell suggests. The box still
+    // reaches down to the crucible course here, where the cold furnace's now starts a course above it.
     Assert.Equal((LocalShaftMin, LocalShaftMax), ShaftBoxOf(be));
     Assert.Equal(9, be.ShaftColumns.Count);
     Assert.NotNull(be.ChargeColumnAt(-1, -1));
@@ -120,15 +124,19 @@ public class FurnaceGeometryTests {
   /// <summary>
   /// The charge volume: the cells the layout marks <see cref="CellRole.Chargeable"/>. 38 of the shaft
   /// box's 45, because at the hearth floor only <c>(0,1,0)</c> and <c>(1,1,0)</c> are open and the rest of
-  /// that level is the tuyere pair and brick. Identical to the cold furnace's set despite the different
-  /// shells. Run here because the iiex host never loads this assembly, so a siex layout that forgot the
-  /// role, or hung it on the wrong glyph, would be invisible there.
+  /// that level is the tuyere pair and brick. Two more than the cold furnace's 36, those two being the
+  /// crucible cells this drawing still charges. Run here because the iiex host never loads this assembly,
+  /// so a siex layout that forgot the role, or hung it on the wrong glyph, would be invisible there.
   /// </summary>
   [Fact]
   public void The_hot_furnaces_charge_volume_is_the_thirty_eight_cells_its_layout_marks() {
     var rig = new BlastFurnaceRig();
     var authored = ChargeCells(
-      LayoutOf(BlockBlastFurnaceCoreHot.Definitions("siex").Single())
+      LayoutOf(BlockBlastFurnaceCoreHot.Definitions("siex").Single()),
+      ShaftGlyph,
+      // The crucible course counts here and does not on either iwex furnace - see the overlap note in
+      // the geometry case above.
+      HearthGlyph
     );
 
     Assert.Equal(38, authored.Count);

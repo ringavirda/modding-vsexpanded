@@ -110,6 +110,21 @@ public class IiexConfig : IExVersionedConfig {
 
   /// <summary>Fire-clay refunded when breaking a canal seal.</summary>
   public int CanalUnsealClayRefund { get; set; } = 2;
+
+  /// <summary>
+  /// Fire-clay consumed to stop a furnace tap with a clay plug - the same ritual as
+  /// <see cref="CanalSealClayCost"/>, on the other end of the same metal. A newly built tap is plugged, so
+  /// this is what blowing a furnace in costs each time.
+  /// </summary>
+  public int TapPlugClayCost { get; set; } = 4;
+
+  /// <summary>
+  /// Fire-clay recovered when a plug is broken out, where <see cref="CanalUnsealClayRefund"/> gives half
+  /// the seal back. Zero by default and deliberately so: a canal seal is chiselled out whole, while a tap
+  /// plug is knocked through and comes away as clinker-soaked rubble - and ironmaking.md states the cost
+  /// of the blow-in as one whole clay plug, which a refund would halve.
+  /// </summary>
+  public int TapUnplugClayRefund { get; set; } = 0;
   #endregion
 
   // Ignition has no tunable charge threshold: it is positional and pneumatic (a complete raceway course
@@ -368,12 +383,6 @@ public class IiexConfig : IExVersionedConfig {
   /// <summary>Temperature (°C) the hearth must reach (and hold) to start melting iron.</summary>
   public float BfIronMeltingPoint { get; set; } = 1482f;
 
-  /// <summary>Maximum molten iron (units) the furnace can hold before stalling.</summary>
-  public float BfMaxMoltenIron { get; set; } = 2400f;
-
-  /// <summary>Maximum molten slag (units) the furnace can hold before stalling.</summary>
-  public float BfMaxMoltenSlag { get; set; } = 600f;
-
   /// <summary>Seconds a fired furnace burns before it extinguishes.</summary>
   public int FireboxMaxFuelBurnTime { get; set; } = 1200;
 
@@ -421,12 +430,6 @@ public class IiexConfig : IExVersionedConfig {
   /// <summary>Temperature (°C) the hearth must reach and hold to melt cast iron - the near-eutectic
   /// remelt point, far below wrought iron's.</summary>
   public float CupolaCastIronMeltingPoint { get; set; } = 1200f;
-
-  /// <summary>Maximum molten cast iron (units) the cupola holds before stalling.</summary>
-  public float CupolaMaxMoltenCastIron { get; set; } = 1200f;
-
-  /// <summary>Maximum molten slag (units) the cupola holds before stalling.</summary>
-  public float CupolaMaxMoltenSlag { get; set; } = 300f;
 
   /// <summary>Molten cast iron (units) produced per melt cycle. Held equal to the blast furnace's
   /// per-cycle yield, so the cupola's slower output comes from its charge scale alone.</summary>

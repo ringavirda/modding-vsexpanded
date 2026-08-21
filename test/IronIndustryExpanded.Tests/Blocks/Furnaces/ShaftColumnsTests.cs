@@ -241,7 +241,7 @@ public class ShaftColumnsTests {
     // The corners are stated as literals rather than derived, so the box is pinned against a value the
     // code under test does not supply. The hot furnace inherits the same drawing shape and so the same
     // box.
-    Assert.Equal((new Vec3i(-1, 1, -1), new Vec3i(1, 5, 1)), ShaftBoxOf(be));
+    Assert.Equal((new Vec3i(-1, 2, -1), new Vec3i(1, 5, 1)), ShaftBoxOf(be));
     Assert.Equal(9, be.ShaftColumns.Count);
   }
 
@@ -300,7 +300,8 @@ public class ShaftColumnsTests {
   private static List<Vec3i> ChargeCellsInShaft(BlockEntityFurnaceCore be) {
     var (min, max) = ShaftBoxOf(be)!.Value;
     return ChargeCells(
-        LayoutOf(BlockBlastFurnaceCoreCold.Definitions("iiex").Single())
+        LayoutOf(BlockBlastFurnaceCoreCold.Definitions("iiex").Single()),
+        ShaftGlyph
       )
       .Where(c =>
         c.X >= min.X
@@ -313,28 +314,32 @@ public class ShaftColumnsTests {
       .ToList();
   }
 
+  /// <summary>
+  /// Since the crucible course stopped being chargeable this shaft is uniform-floored: its box and its
+  /// charge volume are the same 36 cells, every column nine deep. That makes the per-(column, y) placement
+  /// walk look redundant against the shipped drawing, and it is not - a layout may still hole a column.
+  /// The synthetic fixtures in <c>ChargeMaterialisationTests</c> are what hold that path's coverage now,
+  /// so this case states the shipped shape rather than pretending to cover the ragged one.
+  /// </summary>
   [Fact]
-  public void The_shaft_box_is_a_bounding_box_whose_lowest_level_is_mostly_not_chargeable() {
+  public void The_shaft_box_is_exactly_the_charge_volume_on_the_shipped_furnace() {
     BlockEntityBlastFurnaceCold be = Cold();
     List<Vec3i> charge = ChargeCellsInShaft(be);
 
-    // The columns come off ShaftBox, which is a bounding box: at the hearth floor the layout marks only
-    // three of its nine cells chargeable - the rest is the tuyere pair and brick - so six columns have no
-    // cell at y=1 at all. Block placement therefore has to go per (column, y) against the layout rather
-    // than fill the box.
-    Assert.Equal(
-      new (int X, int Z)[] { (-1, 0), (0, 0), (1, 0) },
-      charge
-        .Where(c => c.Y == 1)
-        .Select(c => (c.X, c.Z))
-        .OrderBy(k => k.X)
-        .ThenBy(k => k.Z)
-        .ToArray()
-    );
-    // Above the tuyeres the full set is open, four levels of it - which is the 36 the hopper's
+    // Nothing at the crucible course: y=1 is the pool, the tuyere pair and the two taps.
+    Assert.DoesNotContain(charge, c => c.Y == 1);
+    // From the tuyeres up the full set is open, four levels of it - which is the 36 the hopper's
     // "27 of 36" readout counts.
     for (int y = 2; y <= 5; y++)
       Assert.Equal(9, charge.Count(c => c.Y == y));
+    Assert.Equal(36, charge.Count);
+
+    // The box is tight around exactly those cells, so a box walk and a per-cell walk agree here.
+    var (min, max) = ShaftBoxOf(be)!.Value;
+    Assert.Equal(
+      $"{new Vec3i(-1, 2, -1)}..{new Vec3i(1, 5, 1)}",
+      $"{min}..{max}"
+    );
 
     // Every column still earns its place: each one is chargeable somewhere up the shaft.
     foreach (var (x, z) in Keys(be))
@@ -371,16 +376,15 @@ public class ShaftColumnsTests {
     // GetGlobalPos against independently-rotated offsets, and the resulting world cell against the
     // structure vanilla assembles. A key held in world space would be rotated a second time here.
     //
-    // The hearth-floor row (-1,1,0)/(0,1,0)/(1,1,0) is what makes this a rotation test rather than a
-    // shape that survives any mapping: it is a line, so a quarter turn lays it along z instead of x,
-    // unlike the 3x3 above it. Being centred, it separates north/south from east/west but not north from
-    // south; the four-way statement lives on the taps, in
+    // Since the crucible course stopped being charged, the shipped volume is four square levels and
+    // nothing in it distinguishes a facing - the whole rotation statement rests on the 3x2 case, whose
+    // box a quarter turn transposes. The four-way statement lives on the taps, in
     // FurnaceRoleCellsTests.The_four_facings_are_four_different_tuyere_and_tap_footprints.
     List<Vec3i> cells = ChargeCellsInShaft(be);
 
-    // Counted, so the loop below cannot pass by running zero times: 39 in the shipped box - the
-    // hearth-floor row of three plus four full levels of 9 - and 27 when the box is narrowed to 3x2.
-    Assert.Equal(shaft == "asymmetric" ? 27 : 39, cells.Count);
+    // Counted, so the loop below cannot pass by running zero times: 36 in the shipped box - four full
+    // levels of 9 - and 24 when the box is narrowed to 3x2.
+    Assert.Equal(shaft == "asymmetric" ? 24 : 36, cells.Count);
 
     foreach (Vec3i cell in cells) {
       Assert.Contains((cell.X, cell.Z), be.ShaftColumns.Keys);
@@ -390,9 +394,8 @@ public class ShaftColumnsTests {
         be.Pos,
         angle,
         cell,
-        // Both glyphs: the hearth course carries its own code - the same Chargeable role, but a string
-        // that also admits solidified metal - so the three cells at y=1 are not ShaftGlyph.
-        [ShaftGlyph, HearthGlyph],
+        // The shaft glyph alone: the crucible course, which carries its own code, is no longer charged.
+        [ShaftGlyph],
         $"column ({cell.X}, {cell.Z}) at y={cell.Y}"
       );
     }
@@ -408,7 +411,7 @@ public class ShaftColumnsTests {
       BlockEntityBlastFurnaceCold be = Cold(side);
       Assert.Contains((-1, -1), be.ShaftColumns.Keys);
 
-      Vec3i local = new(-1, 1, -1); // the shaft's north-west corner, on the hearth floor
+      Vec3i local = new(-1, 2, -1); // the shaft's north-west corner, on its lowest charge level
       Vec3i rotated = ExOrientation.RotateOffset(local, AngleFromSide(side));
       BlockPos world = Global(be, local);
 
@@ -540,15 +543,15 @@ public class ShaftColumnsTests {
     string[] hearthKeys = TreeKeys(hearth);
     string[] shaftKeys = TreeKeys(shaft);
 
-    // A puddling furnace pours nothing and cannot reach Melting, so it writes neither molten-pool key.
-    // Stated as a set difference rather than as a literal list of keys, so the furnace can grow: a key
-    // added to the core lands in both trees and this still holds, while a hearth that started writing a
-    // column key fails immediately.
+    // Neither writes a molten-pool key: the pool lives in the hearth blocks' own cells, which serialize
+    // themselves. What separates a shaft from a hearth in the save is its charge columns and its blow-in,
+    // which is the one bit a shaft stores rather than derives - a hearth catches by itself and has nothing
+    // to remember. Stated as a set difference rather than as a literal list of keys, so the furnace can
+    // grow: a key added to the core lands in both trees and this still holds, while a hearth that started
+    // writing a column key fails immediately.
     Assert.Empty(hearthKeys.Except(shaftKeys));
     Assert.Equal(
-      ColumnKeysOf(shaft)
-        .Concat(["moltenIron", "moltenSlag"])
-        .OrderBy(k => k, StringComparer.Ordinal),
+      ShaftOnlyKeys(shaft),
       shaftKeys.Except(hearthKeys).OrderBy(k => k, StringComparer.Ordinal)
     );
 
@@ -565,16 +568,23 @@ public class ShaftColumnsTests {
     string[] hearthKeys = TreeKeys(hearth);
     string[] shaftKeys = TreeKeys(shaft);
 
-    // A hearth melts nothing, so it overrides none of the core's molten-product members and writes
-    // neither pool key - which makes the shaft furnace's two the only other difference there can be.
+    // A hearth melts nothing, so it overrides none of the core's molten-product members and writes no pool
+    // key - which leaves the columns and the blow-in as the only difference there can be.
     Assert.Empty(hearthKeys.Except(shaftKeys));
     Assert.Equal(
-      ColumnKeysOf(shaft)
-        .Concat(["moltenIron", "moltenSlag"])
-        .OrderBy(k => k, StringComparer.Ordinal),
+      ShaftOnlyKeys(shaft),
       shaftKeys.Except(hearthKeys).OrderBy(k => k, StringComparer.Ordinal)
     );
   }
+
+  /// <summary>Everything a shaft writes that a hearth does not: its per-column keys, plus the one stored
+  /// bit its derived state cannot answer - whether a player has lit it.</summary>
+  private static IEnumerable<string> ShaftOnlyKeys(
+    BlockEntityFurnaceCore shaft
+  ) =>
+    ColumnKeysOf(shaft)
+      .Append("blownIn")
+      .OrderBy(k => k, StringComparer.Ordinal);
 
   [Fact]
   public void Reading_the_column_api_on_a_hearth_does_not_make_it_start_saving_columns() {
@@ -842,7 +852,7 @@ public class ShaftColumnsTests {
     // A cell the drawing draws as shaft and never marks. A box invented at the anchor - the one
     // degenerate pair two corners can express - covers exactly this cell, and no other assertion in the
     // suite separates that fallback from the guard.
-    BlockPos cell = rig.Cell(0, 1, 0);
+    BlockPos cell = rig.Cell(0, 2, 0);
 
     Assert.Null(ShaftBoxOf(be));
     Assert.Empty(be.ShaftColumns);
@@ -863,7 +873,7 @@ public class ShaftColumnsTests {
 
     Assert.NotEmpty(marked.ShaftColumns);
     Assert.NotNull(
-      marked.ChargeColumnAt(markedRig.Cell(0, 1, 0), out int markedIndex)
+      marked.ChargeColumnAt(markedRig.Cell(0, 2, 0), out int markedIndex)
     );
     Assert.Equal(0, markedIndex);
   }

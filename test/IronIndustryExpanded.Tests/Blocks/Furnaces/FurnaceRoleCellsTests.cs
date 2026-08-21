@@ -22,8 +22,9 @@ namespace IronIndustryExpanded.Tests;
 /// <see cref="CellRole.MetalTap"/> and <see cref="CellRole.SlagTap"/>. Each is checked cell for cell at
 /// all four facings; a count would not do, since the cold furnace's two tuyeres are a mirror pair. All
 /// but Pool are cross-checked against <c>CellsAccepting</c>, which the layout DSL does not do; Pool's
-/// glyph duplicates the shaft glyph, so "the pool is the chargeable cells on the lowest level" stands in
-/// instead. The hot blast furnace runs its own copy of this from the smex suite.
+/// glyph is the shaft glyph plus the hearth-metal block, too near it for a code oracle, so "the pool is
+/// the course directly below the burden" stands in instead. The hot blast furnace runs its own copy of
+/// this from the smex suite.
 /// </summary>
 public class FurnaceRoleCellsTests {
   #region Harness
@@ -485,36 +486,36 @@ public class FurnaceRoleCellsTests {
   [InlineData("cupola", "south")]
   [InlineData("cupola", "east")]
   [InlineData("cupola", "west")]
-  public void The_crucible_is_the_chargeable_cells_on_the_lowest_level(
+  public void The_crucible_is_the_course_directly_below_the_burden(
     string furnace,
     string side
   ) {
-    // Stands in for the code cross-check the other roles get: the Pool glyph points at the same code as
-    // the shaft glyph, since a crucible cell is burden and pool at once, so no block code can separate
-    // them. What can be stated independently is the relation - the pool is the charge volume's bottom
-    // course.
+    // Stands in for the code cross-check the other roles get: the Pool glyph accepts everything the shaft
+    // glyph does and one block more, so no block code separates the two cleanly. What can be stated
+    // independently is the relation - the pool lies one course under the charge volume's floor, on every
+    // cell of it and no other level.
     BlockEntityFurnaceCore core = Shaft(furnace, side);
 
+    Assert.NotEmpty(core.PoolCells);
     int floorY = core.ChargeableCells.Min(c => c.Y);
-    Assert.Equal(
-      Render(core.ChargeableCells.Where(c => c.Y == floorY)),
-      Render(core.PoolCells)
-    );
+    Assert.All(core.PoolCells, c => Assert.Equal(floorY - 1, c.Y));
   }
 
   [Theory]
   [InlineData("cold")]
   [InlineData("cupola")]
-  public void The_crucible_is_burden_and_pool_at_once(string furnace) {
-    // The overlap is intended: charge rests on the crucible while the furnace runs and metal freezes onto
-    // it when the furnace dies, and those are the same cells today - which is why the layout DSL lets one
-    // glyph carry two roles. Making the crucible pool-only changes this test; see
-    // docs/design/layered-charge.md.
+  public void The_crucible_is_pool_only_and_holds_no_burden(string furnace) {
+    // Disjoint, and it matters: the furnace stands its bath in hearthmetal blocks in these cells as it
+    // melts, so a cell that were burden too would put a charge pile where the metal already is. siex's
+    // hot blast furnace is the one drawing that still overlaps them, deferred to its remake.
     BlockEntityFurnaceCore core = Shaft(furnace, "north");
 
     Assert.NotEmpty(core.PoolCells);
-    Assert.All(core.PoolCells, c => Assert.Contains(c, core.ChargeableCells));
-    Assert.True(core.PoolCells.Count < core.ChargeableCells.Count);
+    Assert.NotEmpty(core.ChargeableCells);
+    Assert.All(
+      core.PoolCells,
+      c => Assert.DoesNotContain(c, core.ChargeableCells)
+    );
   }
 
   #endregion
@@ -705,14 +706,15 @@ public class FurnaceRoleCellsTests {
 
   /// <summary>
   /// The structure-local corners each furnace's box is expected to have, held as literals so the box is
-  /// pinned by something other than the layout it is derived from. The heating hearth's pair follows its
+  /// pinned by something other than the layout it is derived from. Both shafts start at y=2, the course
+  /// above their crucible, which is pool and no longer burden. The heating hearth's pair follows its
   /// layout origin, one row deeper than the puddling furnace's; the shape of that box - two cells,
   /// adjacent on z - is what its literals pin.
   /// </summary>
   private static (Vec3i Min, Vec3i Max) BoxBefore(string furnace) =>
     furnace switch {
-      "cold" => (new Vec3i(-1, 1, -1), new Vec3i(1, 5, 1)),
-      "cupola" => (new Vec3i(0, 1, 0), new Vec3i(0, 5, 0)),
+      "cold" => (new Vec3i(-1, 2, -1), new Vec3i(1, 5, 1)),
+      "cupola" => (new Vec3i(0, 2, 0), new Vec3i(0, 5, 0)),
       "puddling" => (new Vec3i(-5, 1, 0), new Vec3i(-5, 1, 0)),
       "heating" => (new Vec3i(-5, 1, -1), new Vec3i(-5, 1, 0)),
       _ => throw new KeyNotFoundException(furnace),

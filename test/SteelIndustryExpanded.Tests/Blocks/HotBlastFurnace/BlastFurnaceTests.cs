@@ -60,14 +60,14 @@ public class BlastFurnaceTests {
   // machine, and `BlastFurnaceScenarioTests` the charge-driven melt.
 
   /// <summary>
-  /// <c>Shutdown()</c> carries out what going out entails - reset to ambient, pools cleared, residue
-  /// laid down - without deciding the state, which the derived branch reads from the charge.
+  /// <c>Shutdown()</c> carries out what going out entails - reset to ambient and the residue laid down -
+  /// without deciding the state, which the derived branch reads from the charge. It does not clear the
+  /// pool: the metal is standing in the crucible blocks and going out is not a reason to destroy it.
   /// </summary>
   [Fact]
   public void Shutdown_resets_the_heat_and_the_pools_without_deciding_the_state() {
     var be = Furnace(NewWorld());
     ReflectionHelpers.SetField(be, "_internalTemp", 1500f);
-    ReflectionHelpers.SetField(be, "_moltenIron", 50f);
 
     ReflectionHelpers.Invoke(be, "Shutdown");
 
@@ -76,7 +76,6 @@ public class BlastFurnaceTests {
       (float)ReflectionHelpers.GetField(be, "_internalTemp")!,
       1
     );
-    Assert.Equal(0f, (float)ReflectionHelpers.GetField(be, "_moltenIron")!, 3);
   }
 
   #endregion
@@ -137,8 +136,6 @@ public class BlastFurnaceTests {
 
     ReflectionHelpers.SetProperty(src, nameof(src.IsChoked), true);
     ReflectionHelpers.SetField(src, "_internalTemp", 1456f);
-    ReflectionHelpers.SetField(src, "_moltenIron", 80f);
-    ReflectionHelpers.SetField(src, "_moltenSlag", 40f);
     ReflectionHelpers.SetField(src, "_cachedMixCount", 220);
     ReflectionHelpers.SetField(src, "_cachedIsFull", true);
 
@@ -155,16 +152,8 @@ public class BlastFurnaceTests {
       (float)ReflectionHelpers.GetField(dst, "_internalTemp")!,
       1
     );
-    Assert.Equal(
-      80f,
-      (float)ReflectionHelpers.GetField(dst, "_moltenIron")!,
-      1
-    );
-    Assert.Equal(
-      40f,
-      (float)ReflectionHelpers.GetField(dst, "_moltenSlag")!,
-      1
-    );
+    // The pool is deliberately absent from this round trip: it lives in the crucible blocks' own cells,
+    // which serialize themselves. `ShaftColumnsTests` pins that the furnace writes no pool key at all.
     Assert.Equal(220, (int)ReflectionHelpers.GetField(dst, "_cachedMixCount")!);
   }
 

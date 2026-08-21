@@ -14,16 +14,21 @@ using Vintagestory.GameContent;
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
 /// <summary>
-/// Block entity for a shaft-furnace tap-hole, iron notch and cinder notch alike. Tracks the pouring state
-/// (shown by the shape's open animation pose) and accepts molten metal pushed from the furnace to hand down
-/// into the canal start beneath it.
+/// Block entity for a shaft-furnace tap-hole, iron notch and cinder notch alike. Holds the plug state and
+/// accepts molten metal pushed from the furnace to hand down into the canal start beneath it.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
-  /// <summary>Whether the tap is currently open and pouring.</summary>
-  public bool IsPouring { get; private set; } = false;
+  /// <summary>
+  /// Whether the tap-hole is stopped with a clay plug. True on a newly built tap: a tap arrives closed,
+  /// which is what makes blowing a furnace in cost a plug. Drawn by <see cref="OnTesselation"/> rather
+  /// than posed by an animator.
+  /// </summary>
+  public bool IsPlugged { get; private set; } = true;
 
-  private ToggleAnimator? _toggle;
+  /// <summary>Whether the tap is open and pouring - the plug's other face. An opened tap does not close
+  /// itself: it runs until the crucible empties or the player re-plugs it.</summary>
+  public bool IsPouring => !IsPlugged;
 
   // Both taps of a furnace run this block entity; each scans up to its furnace core and shows the pool it
   // drains - the lower (metal) tap the metal, the upper the slag. Which one a tap is is decided by comparing
@@ -47,58 +52,69 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
   public BlockEntityMultiblockStructure? ResolveOwningAnchor() =>
     Anchor.Resolve();
 
-  #region Lifecycle
+  #region The plug
 
-  public override void Initialize(ICoreAPI api) {
-    base.Initialize(api);
-    _toggle = new ToggleAnimator(this, BuildAnimator);
-    _toggle.Initialize(ApplyPourPose);
-  }
-
-  // Non-RCC animated block: load the shape and initialise the animator through the shared toggle helper,
-  // which owns the null-animator ready guard, so a failed shape resolve degrades to "not ready", no pose.
-  private void BuildAnimator(BEBehaviorAnimatable animatable) {
-    var capi = (ICoreClientAPI)Api;
-    // Not mesh-cached: InitializeAnimator resolves joints into the shape it is handed, so each animator
-    // needs its own instance. Shape.TryGet parses afresh per call.
-    if (
-      ExMeshCache.LoadShape(capi, ExMeshCache.ShapePathOf(Block))
-      is not { } shape
-    )
+  /// <summary>Sets the plug state and republishes it. Server-side work: the flag is save data and the
+  /// client learns it through the tree.</summary>
+  public void SetPlugged(bool plugged) {
+    if (IsPlugged == plugged)
       return;
-
-    // The animator cache key is the block's own rendered code (furnace-irontap-north, ...), not a hand-written
-    // string: the two tap types share a shape today but need not always, and a stale key would serve one
-    // type's mesh for the other.
-    animatable.animUtil.InitializeAnimator(
-      Block.Code.Path,
-      shape,
-      capi.Tesselator.GetTextureSource(Block),
-      new Vec3f(0, Block.Shape.rotateY, 0)
-    );
-  }
-
-  /// <summary>Toggles the tap open/closed and updates its pour pose.</summary>
-  public void TogglePouring() {
-    IsPouring = !IsPouring;
+    IsPlugged = plugged;
     MarkDirty(true);
   }
 
-  private void ApplyPourPose() {
-    _toggle?.Pose(util => {
-      if (IsPouring)
-        util.StartAnimation(
-          new AnimationMetaData {
-            Animation = "open",
-            Code = "open",
-            AnimationSpeed = 1.5f,
-            EaseInSpeed = 6f,
-            EaseOutSpeed = 6f,
-          }.Init()
-        );
-      else
-        util.StopAnimation("open");
-    });
+  #endregion
+
+  #region Render
+
+  // The plug is a shape state, not a pose: a plugged tap draws `ClayPlug` and an open one does not. Both
+  // tap shapes carry exactly three top-level elements - Base, TapCanal, ClayPlug - so one pair of
+  // keep-lists drives both types through one code path.
+  private static readonly string[] PluggedElements =
+  [
+    "Base",
+    "TapCanal",
+    "ClayPlug",
+  ];
+  private static readonly string[] OpenElements = ["Base", "TapCanal"];
+
+  public override bool OnTesselation(
+    ITerrainMeshPool mesher,
+    ITesselatorAPI tesselator
+  ) {
+    if (Api is not ICoreClientAPI capi)
+      return base.OnTesselation(mesher, tesselator);
+
+    if (
+      ExMeshCache.GetOrCreate(
+        capi,
+        Block,
+        IsPlugged ? "plugged" : "open",
+        () => BuildTapMesh(tesselator)
+      ) is { } mesh
+    )
+      mesher.AddMeshData(mesh);
+
+    // True suppresses the default block mesh, which draws the plug whatever the state.
+    return true;
+  }
+
+  private MeshData? BuildTapMesh(ITesselatorAPI tesselator) {
+    if (
+      ExMeshCache.LoadShape(Api, ExMeshCache.ShapePathOf(Block))
+      is not { } shape
+    )
+      return null;
+
+    // Pruned rather than the engine's selectiveElements, whose per-segment prefix rule can keep or drop
+    // the wrong subtree without reporting it.
+    tesselator.TesselateShape(
+      Block,
+      ExShapeElements.Pruned(shape, IsPlugged ? PluggedElements : OpenElements),
+      out MeshData mesh
+    );
+    ExMesh.RotateByShape(mesh, Block);
+    return mesh;
   }
 
   #endregion
@@ -107,7 +123,7 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    tree.SetBool("isPouring", IsPouring);
+    tree.SetBool("plugged", IsPlugged);
   }
 
   public override void FromTreeAttributes(
@@ -115,10 +131,14 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    bool prev = IsPouring;
-    IsPouring = tree.GetBool("isPouring");
-    if (Api?.Side == EnumAppSide.Client && prev != IsPouring)
-      ApplyPourPose();
+    bool prev = IsPlugged;
+    // The legacy key decides for a tap saved before the plug existed: it was drawn open whenever
+    // `isPouring` was set, and reading a missing `plugged` as true would stop every open tap in an old
+    // world at load. A tap saved since carries `plugged` and the fallback is never reached.
+    IsPlugged = tree.GetBool("plugged", !tree.GetBool("isPouring"));
+    // The mesh is the state, so a remote plug or unplug has to re-tesselate.
+    if (Api?.Side == EnumAppSide.Client && prev != IsPlugged)
+      Api.World.BlockAccessor.MarkBlockDirty(Pos);
   }
 
   #endregion
@@ -130,9 +150,15 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
     dsc.AppendLine(
       Lang.Get(
         "iiex:tap-state",
-        Lang.Get(IsPouring ? "iiex:tap-open" : "iiex:tap-closed")
+        Lang.Get(IsPlugged ? "iiex:tap-closed" : "iiex:tap-open")
       )
     );
+
+    // An open tap with nothing under its spout used to be impossible - the block refused to open one -
+    // which is what made the blow-in ritual unbuildable. It opens now and delivers nothing, so the reason
+    // has to be readable here or the tap is silently dead.
+    if (!IsPlugged && !HasCanalBelow())
+      dsc.AppendLine(Lang.Get("iiex:tap-err-nocanal"));
 
     // Resolve the furnace this tap drains and show its pool - metal from the lower tap, slag from the upper.
     // A tap with no furnace shows only the open/closed line above, and so does a tap on a furnace whose
@@ -159,16 +185,11 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
   /// Returns the amount the canal actually consumed (0 if not pouring or nothing was transferred).
   /// </summary>
   public int TryPourMetal(ItemStack moltenMetal, float temperature) {
-    if (!IsPouring || moltenMetal == null)
+    if (IsPlugged || moltenMetal == null)
       return 0;
 
-    // ExOrientation.FacingFromSide, not BlockFacing.FromCode: FromCode returns null for a single-letter
-    // side token, and a null facing here makes the tap return 0 and never pour, with no error logged.
-    BlockFacing? facing = ExOrientation.FacingFromSide(Block.Variant["side"]);
-    if (facing == null)
+    if (SpoutPos() is not { } startPos)
       return 0;
-
-    BlockPos startPos = Pos.AddCopy(facing.Opposite).DownCopy();
 
     if (
       Api.World.BlockAccessor.GetBlockEntity(startPos)
@@ -193,6 +214,25 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
 
     return requested - amount;
   }
+
+  /// <summary>
+  /// The cell this tap pours into: one step opposite its declared facing, then down. A tap in the east
+  /// wall is declared <c>-w</c>, so it spouts east and out of the furnace. Null when the variant names no
+  /// facing.
+  /// </summary>
+  private BlockPos? SpoutPos() {
+    // ExOrientation.FacingFromSide, not BlockFacing.FromCode: FromCode returns null for a single-letter
+    // side token, and a null facing here makes the tap return 0 and never pour, with no error logged.
+    BlockFacing? facing = ExOrientation.FacingFromSide(Block.Variant["side"]);
+    return facing == null ? null : Pos.AddCopy(facing.Opposite).DownCopy();
+  }
+
+  /// <summary>Whether a canal start stands under the spout. What the block info reports; not a gate on
+  /// opening, which is the point of U4.8.</summary>
+  private bool HasCanalBelow() =>
+    SpoutPos() is { } pos
+    && Api?.World.BlockAccessor.GetBlockEntity(pos)
+      is BlockEntityMoltenCanalStart;
 
   #endregion
 }

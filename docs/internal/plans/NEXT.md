@@ -147,7 +147,7 @@ Both merges landed first, so it was done once. What it produced, and what it del
   entry point is `scripts/exmod.sh test` / `exmod.ps1 test`.
 - **The iwex-era plans now carry verified unit state tables**, checked against `src/` rather than against
   their checkboxes — which were never ticked, because completion is recorded in prose per unit. The live
-  queue in the expansion plan is **U4.4–U4.9, U6, U7.4, U8, U9, U10**; U1, U2, U3, U5 are records.
+  queue in the expansion plan is **U6, U7.4, U8, U9, U10**; U1–U5 are records.
 - **M.7 done** — 12 pages, not ~15, and the citation was the `**Mod**` header, not prose. Forming-line
   ownership is settled in writing: iiex owns the line (mill, wide hall, bending roller); siex owns the
   cast forms and the steel roll sets.
@@ -231,8 +231,10 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   right-hand sides emit word-spelled sides (`convertercontrol-north`) where the live blocks use letters,
   so those rows name no live block and do nothing. Paying this off needs content rulings on which retired
   families get migrated and which get purged.
-- **The live iwex queue** — U4.4–U4.9 (delete the float pools), U6 (puddling), U7.4 + the shear (B3c),
-  U8, U9, U10.
+- **The live iwex queue** — ~~all of U4~~ (2026-08-20/21), U6 (puddling), U7.4 + the shear (B3c),
+  U8, U9, U10. ★★ **U6 is the one that matters most**: it is the only source of wrought balls, and without
+  it iiex's own rolling mill has exactly one feedstock (a vanilla iron rod) — the cast ladders are siex's.
+  U6 also delivers `NaturalDraughtFor`, which is the recorded fix for **B15**.
 - **F4/F5** of the framework-hardening plan, and **M.8** (`heavyplate` absorbs `castplate`).
 - ⛔ **`src/SteelIndustryExpanded/modicon.png` is byte-identical to iiex's** — blocks publishing, and
   needs art rather than code.
@@ -484,7 +486,11 @@ Constraints and the Commands block; for everything else the expansion wins.
 | U3 (counter-current) | done 2026-08-06 |
 | U4.1–U4.3 (hearthmetal · tap normalisation · hearth cells) | done 2026-08-07 |
 | U5 (burdenmaker; ore mixer + bunker deleted in U5.7) | done 2026-08-07 |
-| **U4.4–U4.9** | unblocked (the extensibility layer landed 2026-08-12), but **deferred behind the forming line** by the ruling above. Fully specified, no open questions |
+| **U4.4** | **done 2026-08-20** — the float pools are gone; the hearth is live molten cells in blocks the furnace places. Gate 9 targets / 4,131. Three findings the plan did not predict, in [the worklog](../worklog/2026-08.md) |
+| **U4.5** | **done 2026-08-21** — the crucible carries `Pool` alone on both iiex furnaces; the burden starts a course above it. Cold 39→36 cells, cupola 5→4, both core goldens re-blessed. Gate 9 targets / 4,136. ⛔ The shipped shafts became uniform-floored, which retired four tests' subject onto a new shared stepped fixture. siex's hot furnace keeps the overlap deliberately, now pinned by `CrucibleOverlapTests` |
+| **U4.6–U4.8** | **done 2026-08-21**, as one landing. Each tap draws its own shape and carries its notch height in the art; the clay plug replaced the animator and the free right-click toggle; opening no longer needs a canal. Gate 9 targets / 4,151. ⛔ Renaming a saved flag to its own negation made the missing-key default the bug |
+| **U4.9** | **done 2026-08-21** — a shaft no longer lights itself: a flame through an open tap-hole sets `BlownIn`, cleared when it goes out, so blowing in is once per campaign. Gate 9 targets / 4,160. ⛔⛔ The plan's rescoping note was wrong — the auto-ignition branch was **already firebox-only**; the work was adding the stored bit the shaft was designed without. ⛔⛔ Two of three furnace rigs identified as **neither app side**, skipping every server-gated branch |
+| **U4** | **closed.** U4.1–U4.9 all landed |
 | U6 onward | after U4, per the plan's execution order |
 | U1 remainder | tracked in the completion plan, runnable any time |
 

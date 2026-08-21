@@ -427,10 +427,9 @@ public class FireboxChargeTests {
       Assert.False(
         (bool)ReflectionHelpers.GetProperty(hearth, "LiquidCapacityReached")!
       );
-      Assert.Equal(
-        0f,
-        (float)ReflectionHelpers.GetProperty(hearth, "DrainedMetalUnits")!
-      );
+      // The pool is the crucible floor's own cells now, so "pools nothing" is "marks no pool cell" -
+      // which is also what keeps the empty-pool read (0 of 0) from presenting as a full one.
+      Assert.Empty(hearth.PoolCells);
       Assert.Null(ReflectionHelpers.GetProperty(hearth, "SolidProductBlock"));
     }
   }

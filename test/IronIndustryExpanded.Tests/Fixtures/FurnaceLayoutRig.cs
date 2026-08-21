@@ -70,10 +70,10 @@ public static class FurnaceLayoutRig {
 
   /// <summary>
   /// The crucible-floor glyph: the same three occupants as <see cref="ShaftGlyph"/> plus the hearth-metal
-  /// block, since a frozen pool is a legitimate occupant of the hearth course. Inside <c>@(...)</c> the
-  /// body is a regex, so the metal member is <c>hearthmetal-.*</c> and the <c>.</c> is not a typo - see
-  /// <c>IiexCodes.HearthCell</c>. A different string from <see cref="ShaftGlyph"/> carrying the same
-  /// <c>CellRole.Chargeable</c>, which is why <see cref="ChargeCells"/> names both.
+  /// block the furnace stands its bath in. Inside <c>@(...)</c> the body is a regex, so the metal member
+  /// is <c>hearthmetal-.*</c> and the <c>.</c> is not a typo - see <c>IiexCodes.HearthCell</c>. On the two
+  /// iwex furnaces this glyph carries <c>CellRole.Pool</c> only; siex's hot furnace also marks it
+  /// <c>Chargeable</c>, which is why <see cref="ChargeCells"/> takes its glyphs from the caller.
   /// </summary>
   public const string HearthGlyph =
     "*:@(air|coalpile|furnace-chargepile|hearthmetal-.*)";
@@ -262,6 +262,56 @@ public static class FurnaceLayoutRig {
     return builder;
   }
 
+  /// <summary>
+  /// A cold-furnace core wearing a two-column shaft with a stepped floor: <c>(0,0)</c> is chargeable from
+  /// y=1, <c>(0,1)</c> only from y=2 with brick beneath it. The shaft box therefore floors at 1 while one
+  /// of its two columns cannot hold charge there.
+  /// <para>
+  /// Both shipped shafts became uniform-floored when their crucible course stopped being charged, so this
+  /// drawing is what separates "fill from the column's own floor" from "fill from the box's" - the
+  /// distinction <c>ColumnFloorY</c> and <c>ChargeCellsOf</c> exist for. Do not delete it as unused
+  /// because the shipped drawings pass without it.
+  /// </para>
+  /// </summary>
+  public static ExBlockDef SteppedShaftDef() =>
+    ExBlockDef
+      .Create("iiex", "furnace")
+      .MultiblockLayout(s =>
+        s.Origin(0, 0)
+          .Legend('C', "iiex:furnace-blastcore-*")
+          .Legend('#', "game:refractorybricks-good-tier*")
+          .Legend('c', ShaftGlyph)
+          .Role('c', CellRole.Chargeable)
+          .Layer(
+            0,
+            """
+            C
+            #
+            """
+          )
+          .Layer(
+            1,
+            """
+            c
+            #
+            """
+          )
+          .Layer(
+            2,
+            """
+            c
+            c
+            """
+          )
+          .Layer(
+            3,
+            """
+            c
+            c
+            """
+          )
+      );
+
   #endregion
 
   #region Layout reading
@@ -396,17 +446,19 @@ public static class FurnaceLayoutRig {
 
   #region Shaft geometry
 
-  /// <summary>The layout's chargeable cells - the shaft column the burden occupies. The literal-glyph
-  /// route, not how production finds them (it asks the cell's <see cref="CellRole.Chargeable"/> role), so
-  /// the two are independent oracles.</summary>
-  public static List<Vec3i> ChargeCells(Dictionary<Vec3i, string> layout) =>
-    layout
-      // Both glyphs: the shaft and the crucible floor are different code strings carrying the same
-      // Chargeable role - see HearthGlyph. Matching only the shaft leaves this oracle short by the
-      // hearth row.
-      .Where(kv => kv.Value == ShaftGlyph || kv.Value == HearthGlyph)
-      .Select(kv => kv.Key)
-      .ToList();
+  /// <summary>
+  /// The layout's chargeable cells - the shaft column the burden occupies. The literal-glyph route, not
+  /// how production finds them (it asks the cell's <see cref="CellRole.Chargeable"/> role), so the two are
+  /// independent oracles. <paramref name="glyphs"/> is the caller's: the two iwex furnaces charge
+  /// <see cref="ShaftGlyph"/> alone, while siex's hot furnace also charges its crucible course and so
+  /// names <see cref="HearthGlyph"/> too. Listing a glyph the drawing does not charge inflates the oracle
+  /// by that row and the role comparison fails, which is the point.
+  /// </summary>
+  public static List<Vec3i> ChargeCells(
+    Dictionary<Vec3i, string> layout,
+    params string[] glyphs
+  ) =>
+    layout.Where(kv => glyphs.Contains(kv.Value)).Select(kv => kv.Key).ToList();
 
   /// <summary>The layout's fuel-bed cells, by the same literal-glyph route as
   /// <see cref="ChargeCells"/>.</summary>
@@ -487,6 +539,7 @@ public static class FurnaceLayoutRig {
     string anchorGlyph,
     string furnace,
     TapGlyphs taps,
+    string[] chargeGlyphs,
     params string[] tuyereGlyphs
   ) {
     Dictionary<Vec3i, string> layout = LayoutOf(def);
@@ -505,22 +558,24 @@ public static class FurnaceLayoutRig {
     AssertRoleGlyphs(def, layout, CellRole.MetalTap, taps.Iron, "metal tap");
     AssertRoleGlyphs(def, layout, CellRole.SlagTap, taps.Slag, "slag tap");
 
-    // The shaft centre sits on the hearth course on both shipped furnaces.
+    // The shaft centre stands in the burden column proper, a course above the crucible.
     AssertGlyph(layout, Cell(be, "ShaftCentre"), ShaftGlyph, "shaft centre");
 
     // The burden column and the box it bounds: every cell the drawing marks Chargeable really is a shaft
-    // cell. Both glyphs, because the shaft and the crucible floor are different code strings carrying the
-    // same Chargeable role.
+    // cell. The set is the caller's because the three furnaces no longer agree: the two iwex furnaces
+    // charge the shaft alone, while siex's hot furnace still charges its crucible course too, which is
+    // the overlap its own remake is to resolve. Passing the pair where only the shaft is marked fails on
+    // the several-codes form's second half - the unused glyph - which is what keeps this honest.
     AssertRoleGlyphs(
       def,
       layout,
       CellRole.Chargeable,
-      [ShaftGlyph, HearthGlyph],
+      chargeGlyphs,
       "chargeable"
     );
     AssertShaftBoxIsTheDrawings(be, def, furnace);
 
-    // The crucible is drawn with its own glyph so it can carry Pool beside Chargeable.
+    // The crucible is drawn with its own glyph so it can carry Pool where the shaft carries the burden.
     AssertRoleGlyphs(
       def,
       layout,

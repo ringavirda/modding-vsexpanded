@@ -344,6 +344,44 @@ plays, and all four roll families render at once. The render layer is greenfield
 
 ---
 
+## Finding 2026-08-20: this is two families, not nine machines
+
+⛔ Recorded as a finding, not a ruling - one question below is still with the owner.
+
+**Owner:** *"all of the machining machines are the same machine with different shape, interaction cells and
+recipes loaded. The only machines that differ are rolling mill and bending machine, because those have in
+from one side and out from another mechanic."* Checked against
+[machines.txt](../../internal/workbench/machines.txt), and it is **seven** station machines, not five:
+cutter, drill press, horizontal bore, lathe, nail cutter, planer, riveter, shaper all read *"put item in
+window interface, pull resulting item after machine finishes operating"*.
+
+★★ **The two exceptions are the same as each other.** The mill and the bender share *both* mechanics -
+direction picks which of two cells is the input, and roller height is set by pushing down - and the mill's
+own note says so: *"the same mechanic as for bending machine."* So the line is two families.
+
+⛔⛔ **Six of the eight stations also need held RMB to operate**, which the *Mode of operation* lines do not
+say and only the per-machine *Notes* do: a separate `i` cell on the bore, lathe and planer; the `I` cell
+itself on the shaper, nail cutter and riveter; plus the steam hammer's lever. Hold-to-operate is the
+suite's dominant machine verb.
+
+★★ **Nearly all of the framework exists**: `ShapeByType`, `FillerOffsetsByType`,
+`ProcessJobRegistry.Jobs(machine)` off `config/processjobs/*.json`, `MachineTool`, and
+`BlockEntityMachineStation` - which both the shear and the mill already derive from. The one hardcoded
+thing is `BlockShear.MachineKey`, a `const`.
+
+⛔ **The one missing mechanic is hold-to-progress.** `ProcessJob.Seconds` is a duration; six machines want
+it consumed only while RMB is held. That is the same mechanic as the [workbench](../machines/workbench.md)'s
+craft sequence, so it should be built once for both.
+
+★ Building the pass-through family also pays off the **flatwide roller collapse**, which is ruled but not
+built for want of the mill's two `i1` cells - specified in the mill's own note.
+
+⛔ **Open, with the owner:** machines.txt gives the cutter a **window**, but `BlockShear` was built as
+click-with-stock-in-hand and has none. Does the shear adopt the window when the station family lands, or
+was the direct-click verb a deliberate change to the spec?
+
+---
+
 ## Open
 
 | # | Question | Weight |

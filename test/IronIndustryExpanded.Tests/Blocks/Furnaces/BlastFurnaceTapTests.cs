@@ -6,6 +6,7 @@ using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -14,9 +15,9 @@ using Xunit;
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// The blast-furnace tap: an open/closed spout that hands the furnace's molten metal down into the
-/// canal start beneath it. Covers the open/closed toggle, persistence, and the <c>TryPourMetal</c>
-/// handoff (gated on being open and on a receiving canal start below).
+/// The blast-furnace tap as a spout: what <c>TryPourMetal</c> hands down into the canal start beneath it,
+/// gated on the tap being unplugged and on a canal being there. The plug itself - the ritual, its cost and
+/// what it draws - is <c>FurnaceTapPlugTests</c>.
 /// </summary>
 [Collection(FurnaceConfigCollection.Name)]
 public class BlastFurnaceTapTests {
@@ -25,8 +26,25 @@ public class BlastFurnaceTapTests {
   private static TestWorld NewWorld() {
     var world = new TestWorld();
     world.RegisterItem(Iron, 1500f);
+    // The pool stands in hearth blocks the furnace places, so a drain test needs them resolvable.
+    HearthRig.Register(world, "iiex:hearthmetal-pigiron", 70);
     return world;
   }
+
+  /// <summary>Stands metal on the crucible floor the way a melt would, for a drain test that does not
+  /// melt it itself.</summary>
+  private static void Pool(
+    BlockEntityBlastFurnaceCold furnace,
+    int iron,
+    int slag
+  ) => ReflectionHelpers.Invoke(furnace, "PoolIntoHearth", iron, slag);
+
+  /// <summary>Units standing on the crucible floor, in the named cell.</summary>
+  private static float Pooled(
+    TestWorld world,
+    BlockEntityBlastFurnaceCold furnace,
+    string cellKey
+  ) => HearthRig.Pooled(world, furnace.PoolCells, cellKey);
 
   private static BlockEntityFurnaceTap Tap(
     TestWorld world,
@@ -77,42 +95,13 @@ public class BlastFurnaceTapTests {
       // Temperature carrier so the canal start's pour path works.
     };
 
-  #region Toggle / persistence
-
-  [Fact]
-  public void Defaults_closed_and_toggles_open() {
-    var be = Tap(NewWorld());
-    Assert.False(be.IsPouring);
-    be.TogglePouring();
-    Assert.True(be.IsPouring);
-    be.TogglePouring();
-    Assert.False(be.IsPouring);
-  }
-
-  [Fact]
-  public void Pour_state_round_trips_through_the_tree() {
-    var world = NewWorld();
-    var src = Tap(world);
-    src.TogglePouring();
-
-    var tree = new TreeAttribute();
-    src.ToTreeAttributes(tree);
-
-    var dst = Tap(world);
-    dst.FromTreeAttributes(tree, world.World);
-
-    Assert.True(dst.IsPouring);
-  }
-
-  #endregion
-
   #region TryPourMetal
 
   [Fact]
   public void A_closed_tap_pours_nothing() {
     var world = NewWorld();
     var tap = Tap(world);
-    CanalBelow(world, tap); // present, but tap is closed
+    CanalBelow(world, tap); // present, but the tap is still plugged
 
     int accepted = tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f);
 
@@ -124,7 +113,7 @@ public class BlastFurnaceTapTests {
     var world = NewWorld();
     var tap = Tap(world);
     var canal = CanalBelow(world, tap);
-    tap.TogglePouring();
+    tap.SetPlugged(false);
 
     int accepted = tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f);
 
@@ -137,7 +126,7 @@ public class BlastFurnaceTapTests {
   public void An_open_tap_over_nothing_pours_nothing() {
     var world = NewWorld();
     var tap = Tap(world);
-    tap.TogglePouring(); // open, but no canal beneath
+    tap.SetPlugged(false); // open, but no canal beneath
 
     Assert.Equal(0, tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f));
   }
@@ -163,7 +152,7 @@ public class BlastFurnaceTapTests {
     var world = NewWorld();
     var tap = Tap(world, side);
     var canal = CanalBelow(world, tap, side);
-    tap.TogglePouring();
+    tap.SetPlugged(false);
 
     int accepted = tap.TryPourMetal(IronStack(world, 20, 1400f), 1400f);
 
@@ -220,9 +209,9 @@ public class BlastFurnaceTapTests {
 
     var tap = Tap(world, pos: metalTapPos);
     var canal = CanalBelow(world, tap);
-    tap.TogglePouring();
+    tap.SetPlugged(false);
 
-    ReflectionHelpers.SetField(furnace, "_moltenIron", 500f);
+    Pool(furnace, 500, 0);
 
     int original = IiexValues.TapDrainPerTick;
     IiexValues.Edit(c => c.TapDrainPerTick = 45);
@@ -237,7 +226,7 @@ public class BlastFurnaceTapTests {
     Assert.Equal(28, canal.CellAmount);
     Assert.Equal(
       472f,
-      (float)ReflectionHelpers.GetField(furnace, "_moltenIron")!,
+      Pooled(world, furnace, BlockEntityHearthMetal.IronCellKey),
       3
     );
   }
@@ -283,9 +272,9 @@ public class BlastFurnaceTapTests {
 
     var tap = Tap(world, pos: slagTapPos);
     var canal = CanalBelow(world, tap);
-    tap.TogglePouring();
+    tap.SetPlugged(false);
 
-    ReflectionHelpers.SetField(furnace, "_moltenSlag", 500f);
+    Pool(furnace, 0, 500);
 
     int original = IiexValues.TapDrainPerTick;
     IiexValues.Edit(c => c.TapDrainPerTick = 45);
@@ -300,7 +289,7 @@ public class BlastFurnaceTapTests {
     Assert.Equal(36, canal.CellAmount);
     Assert.Equal(
       464f,
-      (float)ReflectionHelpers.GetField(furnace, "_moltenSlag")!,
+      Pooled(world, furnace, BlockEntityHearthMetal.SlagCellKey),
       3
     );
   }

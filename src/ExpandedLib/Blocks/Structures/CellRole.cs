@@ -49,9 +49,10 @@ public enum CellRole {
   SlagTap,
 
   /// <summary>
-  /// A cell holding a liquid pool: the hearth bath, and where metal freezes when it is not tapped. A
-  /// shaft furnace's lowest chargeable level is its pool floor, so those cells carry this role and
-  /// <see cref="Chargeable"/> together.
+  /// A cell holding a liquid pool: the hearth bath, and where metal freezes when it is not tapped. The
+  /// course below a shaft furnace's burden, and disjoint from <see cref="Chargeable"/> - a pool cell
+  /// stands a live bath, which is not somewhere charge may rest. The one drawing that still marks a cell
+  /// both is siex's hot blast furnace, deferred to its remake; see BlockBlastFurnaceCoreHot.
   /// </summary>
   Pool,
 

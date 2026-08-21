@@ -55,10 +55,9 @@ internal static class ColdBlastFurnaceScenes {
     int charge = 2 * 320,
     float fuelFrac = 0.30f
   ) =>
-    new ColdBlastFurnaceRig(
-      charge: charge,
-      burden: Mix(fuelFrac)
-    ).PressuriseBlast();
+    new ColdBlastFurnaceRig(charge: charge, burden: Mix(fuelFrac))
+      .PressuriseBlast()
+      .BlowIn();
 
   /// <summary>
   /// A complete, blown furnace charged to the brim with burden and no coke: a full shaft, a complete
@@ -68,7 +67,8 @@ internal static class ColdBlastFurnaceScenes {
   public static ColdBlastFurnaceRig NoCokeAtTheRaceway() =>
     new ColdBlastFurnaceRig(charge: -1, burden: HighCoke)
       .PressuriseBlast()
-      .ChargeWithoutCoke();
+      .ChargeWithoutCoke()
+      .BlowIn();
 
   /// <summary>
   /// <see cref="Complete"/> charged with the <c>standard</c> 20 % burden: it lights, holds at 1420 C and
@@ -77,7 +77,9 @@ internal static class ColdBlastFurnaceScenes {
   /// have two ends - in a part-charged shaft local (0,5,0), which the salvage cases read, is empty air.
   /// </summary>
   public static ColdBlastFurnaceRig StandardBurden(int charge = 0) =>
-    new ColdBlastFurnaceRig(charge: charge, burden: Standard).PressuriseBlast();
+    new ColdBlastFurnaceRig(charge: charge, burden: Standard)
+      .PressuriseBlast()
+      .BlowIn();
 
   /// <summary>
   /// A complete, blown furnace with its whole charge piled into one column - <paramref name="units"/> in
@@ -87,7 +89,8 @@ internal static class ColdBlastFurnaceScenes {
   public static ColdBlastFurnaceRig OneTallColumn(int units = 3 * 320) =>
     new ColdBlastFurnaceRig(charge: -1, burden: HighCoke)
       .PressuriseBlast()
-      .PileIntoOneColumn(units);
+      .PileIntoOneColumn(units)
+      .BlowIn();
 
   /// <summary>
   /// <see cref="Complete"/> with the iron tap installed backwards - facing east out of the east wall, so
@@ -95,11 +98,9 @@ internal static class ColdBlastFurnaceScenes {
   /// so this rig stands up one cell short, with <c>StructureComplete</c> false.
   /// </summary>
   public static ColdBlastFurnaceRig BackwardsIronTap(int charge = 2 * 320) =>
-    new ColdBlastFurnaceRig(
-      charge: charge,
-      burden: HighCoke,
-      ironTapSide: "e"
-    ).PressuriseBlast();
+    new ColdBlastFurnaceRig(charge: charge, burden: HighCoke, ironTapSide: "e")
+      .PressuriseBlast()
+      .BlowIn();
 }
 
 /// <summary>
@@ -195,19 +196,9 @@ internal sealed class ColdBlastFurnaceRig {
     World.RegisterItem("iiex:" + chargeCode);
 
     // The block the extinguished pool freezes into, with a factory for its entity class so the
-    // SetBlock in SolidifyBottomLayer spawns a real BlockEntityHearthMetal for StampSolidProduct.
-    World.RegisterBlockEntityFactory(
-      "iiex.BlockEntityHearthMetal",
-      () => new BlockEntityHearthMetal()
-    );
-    Block solid = TestBlocks.Configure(
-      new Block(),
-      "iiex:hearthmetal-pigiron",
-      70,
-      ("dummy", "x")
-    );
-    solid.EntityClass = "iiex.BlockEntityHearthMetal";
-    World.Register(solid);
+    // The melt places hearth blocks into the crucible floor and pools into their cells, so both the block
+    // and the cells have to resolve before anything can be melted.
+    HearthRig.Register(World, "iiex:hearthmetal-pigiron", 70);
 
     // The charge pile and its entity class, so the furnace's own SyncChargeBlocks materialises real
     // BlockEntityChargePile windows onto its columns. Without the factory the SetBlock still lands a block
@@ -632,6 +623,24 @@ internal sealed class ColdBlastFurnaceRig {
     return this;
   }
 
+  /// <summary>
+  /// Performs the blow-in on the iron tap - break the plug, torch it, re-plug - so the furnace can catch.
+  /// A shaft does not light itself; see <see cref="BlowInRig"/> for why this goes through the gesture.
+  /// </summary>
+  public ColdBlastFurnaceRig BlowIn() {
+    BlowInRig.BlowIn(World, Core, IronTap);
+    return this;
+  }
+
+  /// <summary>
+  /// The flame alone, on the iron tap as it stands - no plug work either side of it. For the case that a
+  /// plugged tap cannot be lit through, where the ritual's own unplug would defeat the point.
+  /// </summary>
+  public ColdBlastFurnaceRig TorchIronTap() {
+    BlowInRig.Torch(World, IronTap);
+    return this;
+  }
+
   /// <summary>Cuts the blast off (the blower stopped, the main was severed).</summary>
   public ColdBlastFurnaceRig CutBlast() {
     _blastTemp = -1f;
@@ -702,10 +711,11 @@ internal sealed class ColdBlastFurnaceRig {
   }
 
   /// <summary>
-  /// Right-clicks the iron tap with an empty hand - the production interaction, not a direct
-  /// <c>TogglePouring</c>.
+  /// Right-clicks the iron tap with an empty hand - the production interaction, which breaks the clay plug
+  /// out, rather than a direct <c>SetPlugged</c>.
   /// </summary>
-  /// <returns>Whether the tap opened. The block refuses a tap whose spout has no canal start under it.</returns>
+  /// <returns>Whether the tap opened. Since U4.8 a missing canal is no longer a reason to refuse, so this
+  /// is true wherever the spout points.</returns>
   public bool OpenIronTap() => Open(IronTap);
 
   /// <summary>Right-clicks the slag tap with an empty hand. See <see cref="OpenIronTap"/>.</summary>
@@ -738,11 +748,13 @@ internal sealed class ColdBlastFurnaceRig {
   public float Temp =>
     (float)ReflectionHelpers.GetField(Core, "_internalTemp")!;
 
+  // The pool is the crucible floor's own cells now; summing them leaves every scenario assertion reading
+  // as it did against the two fields.
   public float MoltenIron =>
-    (float)ReflectionHelpers.GetField(Core, "_moltenIron")!;
+    HearthRig.Pooled(World, Core.PoolCells, BlockEntityHearthMetal.IronCellKey);
 
   public float MoltenSlag =>
-    (float)ReflectionHelpers.GetField(Core, "_moltenSlag")!;
+    HearthRig.Pooled(World, Core.PoolCells, BlockEntityHearthMetal.SlagCellKey);
 
   /// <summary>Burden units the furnace read in its shaft on the last tick - what its own disruption check
   /// compares against.</summary>

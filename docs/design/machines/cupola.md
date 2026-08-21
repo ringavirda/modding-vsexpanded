@@ -292,10 +292,11 @@ instance of the pattern.
 
 ## Gotchas
 
-1. **A cupola dies fast from an empty raceway.** Ignition is positional - a complete raceway course of
-   carbon and air at pressure - and `RacewayHoldsCarbon` fails the tick the lowest course runs out of
-   carbon, with no grace. On a one-column furnace the lever is entirely what is in front of the tuyere, not
-   how much is loaded above it.
+1. **A cupola dies fast from an empty raceway.** Ignition is a blow-in plus a position - a lit flame
+   through an open tap-hole, then a complete raceway course of carbon and air at pressure - and
+   `RacewayHoldsCarbon` fails the tick the lowest course runs out of carbon, with no grace. On a
+   one-column furnace the lever is entirely what is in front of the tuyere, not how much is loaded above
+   it. Dying clears the blow-in, so a cupola that ran dry has to be torched again.
 
 2. **The cupola inherits `BlastPressureThreshold` from the blast furnace**, so its blast main must hold the
    same pressure - easy to miss when reading `BlockEntityCupolaFurnace.cs`, which overrides only

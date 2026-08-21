@@ -101,10 +101,6 @@ public class BlockEntityCupolaFurnace : BlockEntityShaftFurnace {
   // No per-cupola melt rate: production is metered by the carbon burned (`BfBurdenPerCarbonUnit`), and the
   // cupola is slower only because its single tuyere burns less of it.
 
-  protected override float MaxMoltenProduct =>
-    IiexValues.CupolaMaxMoltenCastIron;
-  protected override float MaxMoltenSlagPool => IiexValues.CupolaMaxMoltenSlag;
-
   #endregion
 
   #region Structure geometry

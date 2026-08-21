@@ -13,6 +13,7 @@ using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using IronIndustryExpanded.Items;
 using IronIndustryExpanded.Tests;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -59,6 +60,9 @@ internal sealed class CupolaRig {
     _burden = burden ?? new BurdenMix(60f, 5f, 35f);
     _chargeCode = chargeCode;
     World = new TestWorld();
+    // Server-side, as the cold-furnace rig is: this drives the production tick, and a world that
+    // identifies as neither side skips every `Side == Server` branch in it without saying so.
+    World.World.Side.Returns(EnumAppSide.Server);
 
     // The taps resolve their molten carrier through MetalRegistry: cast iron -> iiex:ingot-castiron when
     // the metal is registered, else the game:ingot-castiron convention. Register both codes (and both slag
@@ -67,19 +71,8 @@ internal sealed class CupolaRig {
     World.RegisterItem("game:ingot-castiron", 1200f);
     World.RegisterItem("iiex:slag", 1200f);
     World.RegisterItem("game:ingot-slag", 1200f);
-    // The block the extinguished pool freezes into (BlockEntityHearthMetal, so StampSolidProduct lands).
-    World.RegisterBlockEntityFactory(
-      "iiex.BlockEntityHearthMetal",
-      () => new BlockEntityHearthMetal()
-    );
-    Block solid = TestBlocks.Configure(
-      new Block(),
-      "iiex:hearthmetal-castiron",
-      70,
-      ("dummy", "x")
-    );
-    solid.EntityClass = "iiex.BlockEntityHearthMetal";
-    World.Register(solid);
+    // The block the melt pools into, with the two cells that hold the metal.
+    HearthRig.Register(World, "iiex:hearthmetal-castiron", 70);
 
     // The charge pile and its entity class, so the cupola's own SyncChargeBlocks materialises real
     // BlockEntityChargePile windows onto its column. The factory is needed as well as the block - see
@@ -319,6 +312,15 @@ internal sealed class CupolaRig {
   }
 
   /// <summary>Cuts the blast off.</summary>
+  /// <summary>
+  /// Lights the furnace - through the cast-iron tap when one has been stood up, otherwise straight at the
+  /// furnace. A shaft does not catch by itself; see <see cref="BlowInRig"/>.
+  /// </summary>
+  public CupolaRig BlowIn() {
+    BlowInRig.BlowIn(World, Furnace, CastIronTap);
+    return this;
+  }
+
   public CupolaRig CutBlast() {
     _blastTemp = -1f;
     return this;
@@ -334,6 +336,10 @@ internal sealed class CupolaRig {
 
   /// <summary>Places the cast-iron tap on the drawing's own <c>I</c> cell - the west wall, so the block
   /// faces east - with a canal start under its spout, open.</summary>
+  /// <summary>The cast-iron tap, once <see cref="WithCastIronTapAndCanal"/> has stood one up - what the
+  /// blow-in reaches its flame through.</summary>
+  public BlockEntityFurnaceTap? CastIronTap { get; private set; }
+
   public CupolaRig WithCastIronTapAndCanal() {
     CastIronCanal = TapAndCanal(
       Structure.Cell(-1, 1, 0),
@@ -367,8 +373,10 @@ internal sealed class CupolaRig {
   ) {
     var tap = new BlockEntityFurnaceTap {
       Pos = tapPos.Copy(),
+      // The real block class, not a stand-in: the blow-in gesture runs through its interaction, so a plain
+      // Block here would make every scene with a tap take the fixture's fallback instead.
       Block = TestBlocks.Configure(
-        new Block(),
+        new BlockFurnaceTap(),
         $"iiex:furnace-{type}-{side}",
         tapId,
         ("type", type),
@@ -377,7 +385,9 @@ internal sealed class CupolaRig {
     };
     World.Place(tapPos, tap.Block, tap);
     World.Attach(tap);
-    tap.TogglePouring(); // open
+    tap.SetPlugged(false); // open
+    if (type == BlockFurnaceTap.IronType)
+      CastIronTap = tap;
 
     // The tap pours into the canal start at Pos + facing.Opposite + down (its spout foot).
     BlockPos canalPos = tapPos
@@ -464,12 +474,12 @@ internal sealed class CupolaRig {
   }
 
   public CupolaRig SetMoltenCastIron(float v) {
-    ReflectionHelpers.SetField(Furnace, "_moltenIron", v);
+    ReflectionHelpers.Invoke(Furnace, "PoolIntoHearth", (int)v, 0);
     return this;
   }
 
   public CupolaRig SetMoltenSlag(float v) {
-    ReflectionHelpers.SetField(Furnace, "_moltenSlag", v);
+    ReflectionHelpers.Invoke(Furnace, "PoolIntoHearth", 0, (int)v);
     return this;
   }
 
@@ -477,9 +487,17 @@ internal sealed class CupolaRig {
   public float Temp =>
     (float)ReflectionHelpers.GetField(Furnace, "_internalTemp")!;
   public float MoltenCastIron =>
-    (float)ReflectionHelpers.GetField(Furnace, "_moltenIron")!;
+    HearthRig.Pooled(
+      World,
+      Furnace.PoolCells,
+      BlockEntityHearthMetal.IronCellKey
+    );
   public float MoltenSlag =>
-    (float)ReflectionHelpers.GetField(Furnace, "_moltenSlag")!;
+    HearthRig.Pooled(
+      World,
+      Furnace.PoolCells,
+      BlockEntityHearthMetal.SlagCellKey
+    );
   public int CastIronCanalUnits => CastIronCanal?.CellAmount ?? 0;
   public int SlagCanalUnits => SlagCanal?.CellAmount ?? 0;
 

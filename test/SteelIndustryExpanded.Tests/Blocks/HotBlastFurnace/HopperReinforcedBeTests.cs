@@ -319,6 +319,11 @@ public class HopperReinforcedBeTests {
     Click(rig, hopper, CokeCode, course);
     Assert.Equal(course, hopper.TankCount);
 
+    // The hopper lays the fuel; a player still has to light it. What this case is about is that the fuel
+    // the hopper drops reaches the raceway in a shape the furnace will burn, so the flame is handed over
+    // rather than gestured for - the gesture is BlastFurnaceScenarioTests' subject.
+    core.TryLightFromTap(core.Pos);
+
     bool lit = false;
     for (int i = 0; i < 30 && !lit; i++) {
       rig.World.AdvanceBlockEntityTime(1000);

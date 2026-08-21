@@ -836,9 +836,9 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
         bool has = standing?.BlockId == pile.BlockId;
 
         if (i < want && !has) {
-          // Never write over a block that is neither air nor this furnace's own pile. The cell it guards is
-          // the crucible, which the shipped drawings mark Chargeable and Pool at once: `iiex:hearthmetal`
-          // appears the moment melting starts, so without the guard the furnace and this walk would fight
+          // Never write over a block that is neither air nor this furnace's own pile - a coal pile a player
+          // left in an open shaft cell, or, on siex's hot furnace, the `iiex:hearthmetal` its drawing still
+          // lets stand in a chargeable cell, where without the guard the furnace and this walk would fight
           // over the same cell every tick. Skipping draws the column one block short while the cell is
           // taken; the units are still held by the column, so no charge is lost.
           if (standing != null && standing.BlockId != 0)
@@ -1533,84 +1533,63 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   protected virtual AssetLocation? SolidProductBlock => null;
 
   /// <summary>
-  /// Units of molten metal in the pool being frozen. Zero by default, so a furnace that only heats its charge
-  /// makes <see cref="SolidifyBottomLayer"/> return immediately.
-  /// </summary>
-  protected virtual float DrainedMetalUnits => 0f;
-
-  /// <summary>Stamps the frozen product's nugget count onto the block entity placed at <paramref name="pos"/>.</summary>
-  protected virtual void StampSolidProduct(BlockPos pos, int units) { }
-
-  /// <summary>Zeroes the furnace's molten pools once the residue has been placed.</summary>
-  protected virtual void ClearMoltenPools() { }
-
-  /// <summary>
-  /// Residue behaviour shared by every furnace: the molten pool freezes across the bottommost layer of the
-  /// shaft, and the remaining burden is burned out by height rather than destroyed, so the player can dig
-  /// it out, re-coke it in the mixer and charge it again.
+  /// Residue behaviour shared by every furnace: the remaining burden is burned out by height rather than
+  /// destroyed, so the player can dig it out, re-coke it in the mixer and charge it again.
+  /// <para>
+  /// The pool is no longer frozen here. It is already standing in the world as hearth blocks, whose own
+  /// cells latch solid on their thermal update - so a furnace that dies leaves its metal exactly where it
+  /// was, with nothing to stamp and nothing to zero.
+  /// </para>
   /// </summary>
   protected virtual void ExtinguishResidue() {
-    SolidifyBottomLayer();
     BurnOutCharge();
-    ClearMoltenPools();
   }
 
   /// <summary>
-  /// Freezes the molten pool onto the crucible floor - the layout's <see cref="CellRole.Pool"/> cells -
-  /// spread evenly over whichever of them are free. The split is deterministic (remainder to the first cells,
-  /// no world RNG), so two identical furnaces leave identical wrecks.
+  /// Lights this furnace from a flame held into the tap at <paramref name="tapPos"/>. False on every
+  /// furnace but a shaft: the firebox machines have no tap-hole to reach through and catch by themselves
+  /// once they are loaded, which is the ruled split - see docs/design/processes/ironmaking.md.
   /// </summary>
-  private void SolidifyBottomLayer() {
-    // A furnace that melts nothing reports 0 here and leaves at once.
-    float units = DrainedMetalUnits;
-    if (units <= 0f || SolidProductBlock is not { } solidCode)
-      return;
+  /// <returns>Whether the flame took. A shaft returns true once it is blown in, whether or not the charge
+  /// catches this tick: whether it does is the drawing's and the burden's business, not the torch's.</returns>
+  public virtual bool TryLightFromTap(BlockPos tapPos) => false;
 
-    Block? solid = Api.World.GetBlock(solidCode);
-    if (solid == null)
-      return;
+  /// <summary>
+  /// The pool cells this furnace may write metal into, with <see cref="SolidProductBlock"/> placed in
+  /// each one that was free. Free means empty, or a charge pile that was being consumed here: a pile
+  /// holding rejected charge is not free, because writing over it would destroy salvage the player is
+  /// owed. A cell already holding the product block is kept as it stands, so a campaign fills one block
+  /// rather than replacing it every cycle.
+  /// </summary>
+  protected List<BlockPos> ClaimPoolCells() {
+    var claimed = new List<BlockPos>();
+    if (SolidProductBlock is not { } productCode)
+      return claimed;
 
-    var cells = new List<BlockPos>();
+    Block? product = Api.World.GetBlock(productCode);
+    if (product == null)
+      return claimed;
+
     string pileCode = BlockChargePile.PileCode.Path;
     foreach (BlockPos pos in PoolCells) {
       Block occupant = Api.World.BlockAccessor.GetBlock(pos);
-      // Free means empty, or a charge pile that was being consumed here. A pile holding rejected charge is
-      // not free: freezing the pool over it would destroy salvage the player is owed. The occupant is
-      // `iiex:furnace-chargepile`, not `game:coalpile`; testing for the wrong code reads as "no free cell"
-      // and freezes no metal at all.
-      if (occupant.Id == 0)
-        cells.Add(pos);
-      else if (occupant.Code?.Path == pileCode && !PileHoldsRejectedCharge(pos))
-        cells.Add(pos);
-    }
-    if (cells.Count == 0)
-      return;
-
-    float perNugget = Math.Max(0.0001f, IiexValues.BfUnitsPerSolidNugget);
-    int totalNuggets = Math.Max(1, (int)Math.Floor(units / perNugget));
-    int each = totalNuggets / cells.Count;
-    int extra = totalNuggets % cells.Count;
-
-    for (int i = 0; i < cells.Count; i++) {
-      int nuggets = each + (i < extra ? 1 : 0);
-      if (nuggets <= 0)
+      if (occupant.Id == product.BlockId) {
+        claimed.Add(pos);
         continue;
-      Api.World.BlockAccessor.SetBlock(solid.BlockId, cells[i]);
-      StampSolidProduct(cells[i], nuggets);
+      }
+
+      bool free =
+        occupant.Id == 0
+        || (occupant.Code?.Path == pileCode && !PileHoldsRejectedCharge(pos));
+      if (!free)
+        continue;
+
+      Api.World.BlockAccessor.SetBlock(product.BlockId, pos);
+      claimed.Add(pos);
     }
+    return claimed;
   }
 
-  /// <summary>
-  /// Whether the charge standing in the pool cell at <paramref name="pos"/> is charge this furnace refused
-  /// to convert - the cell the solidify walk must not overwrite, so the salvage survives.
-  /// </summary>
-  /// <remarks>
-  /// It asks the column rather than the block, the pile being a window that holds nothing itself, and walks
-  /// only the units covering this block's index. It asks <see cref="IsChargeCode"/> and nothing else: a
-  /// family test here would read every fuel band as rejected charge, so a cupola put out with coke still at
-  /// its raceway would find no free pool cell and <see cref="ClearMoltenPools"/> would destroy the whole
-  /// bath. <see cref="BlockEntities.BlockEntityShaftFurnace.ReadChargeMix"/> carries the same guard.
-  /// </remarks>
   private bool PileHoldsRejectedCharge(BlockPos pos) {
     if (ChargeColumnAt(pos, out int blockIndex) is not { } column)
       return false;

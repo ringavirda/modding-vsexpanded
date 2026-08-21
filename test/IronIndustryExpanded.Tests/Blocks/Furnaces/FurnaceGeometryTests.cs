@@ -67,6 +67,8 @@ public class FurnaceGeometryTests {
       IiexBlocks.FurnaceBlastcore.WithSide(BlockFacing.NORTH),
       "cold furnace",
       TapGlyphs.ShaftFurnace,
+      // The shaft glyph alone: the crucible course below it is pool, not burden.
+      [ShaftGlyph],
       NorthTuyereGlyph,
       SouthTuyereGlyph
     );
@@ -97,6 +99,8 @@ public class FurnaceGeometryTests {
       // The mirrored pair: the cupola drains cast iron out its west wall and skims cinder off its east,
       // so both glyphs are the opposite facing. See TapGlyphs.
       TapGlyphs.Cupola,
+      // The shaft glyph alone, as on the cold furnace.
+      [ShaftGlyph],
       // One inlet, in the north wall - the cupola is blown from one side only.
       NorthTuyereGlyph
     );

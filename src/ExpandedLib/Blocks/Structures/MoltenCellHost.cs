@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
 
@@ -24,4 +25,12 @@ public static class MoltenCellHost {
     be
       ?.Behaviors.OfType<BEBehaviorMoltenCell>()
       .FirstOrDefault(c => c.Key == key);
+
+  /// <summary>
+  /// Every molten cell on <paramref name="be"/>, in declaration order. For a host that drives its cells
+  /// as a set - ticking them, or emptying them together - rather than addressing one by key.
+  /// </summary>
+  public static IEnumerable<BEBehaviorMoltenCell> MoltenCells(
+    this BlockEntity? be
+  ) => be?.Behaviors.OfType<BEBehaviorMoltenCell>() ?? [];
 }
