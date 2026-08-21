@@ -120,7 +120,7 @@ is the cell a finished piece *lands* on. The deck the player *feeds* from is the
 | Stock stage shapes | `assets/iiex/shapes/forming/stock-{shingledbar,shingledslab}-{5,10,15,20,30}.json` | shipped, 10 files, generated. ⛔ the bar's are drawn **16 long** and the settled form is 18 - the art is item 7's, and nothing reads a shape's length |
 | Stock base art (editable) | `item-shingled-bar.json`, `item-shingled-slab.json` | drawn; the generator still expects the `item-shingledbloom` / `item-shingledslab` names, which do not exist |
 | Axle cell | `exlib:block/empty` (`BlockRollingMillAxle.cs:39`) | intentionally invisible |
-| Handbook page | — | none. `docs/iiex/handbook/` has no forming page, yet the def declares `Handbook("rollingmill-*")` (`BlockRollingMill.cs:54`) |
+| Handbook page | `docs/iiex/handbook/10-formingshop.html` | **shipped 2026-08-21**, one page for the whole shop; the def's `Handbook("rollingmill-*")` group (`BlockRollingMill.cs:51`) now has a page behind it |
 
 ### The shape already draws four roll families, and nothing selects between them
 
@@ -636,11 +636,13 @@ Not on that list, and still open:
   stock-form cap)` and item 4's "MaxWidth moves to the roll set" is the older reading; the form keeps a cap
   (the bar's 9, skelp's 8) or those geometries stop being expressible. Item 5's section law is the same
   edit's other half.
-- Craftability. No recipe, no RCC, no construction stages - for the mill, the roll sets or the stock.
-  Everything is creative-only.
+- Craftability. ⛔ **The mill is craftable** (`rollingmill-grid`, four heavy cast plates, two rods, a
+  spur gear and a hammer) and **no roll set is**: the machining line ruled them lathe-turned from cast
+  blanks, and there is no lathe. So the machine can be built and cannot be run, which keeps the whole
+  forming line creative-only for one missing item. That is U7.10.
 - Art wiring. The roll sets ship `game:item/ingot` while the roll shapes sit drawn and unwired; the
   mill renders all four roll families at once and never plays its `cycle` clip.
-- A handbook page. The def declares a `rollingmill-*` handbook group with no page behind it.
+- ~~A handbook page.~~ **Written 2026-08-21** - `docs/iiex/handbook/10-formingshop.html`, in three locales, covering the shop rather than the mill alone.
 - `RollSetValidation` never checks that an output code resolves, which is how four dangling codes ship.
 - The reheat side. The mill's whole heat budget assumes a furnace that is a shell
   ([reheat furnace](reheat-furnace.md)); reheat and cooling should both scale on `k·A/V`, with no ×2

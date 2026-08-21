@@ -557,6 +557,61 @@ public class IiexConfig : IExVersionedConfig {
   public float ReverberatoryTransferLoss { get; set; } = 100f;
   #endregion
 
+  #region Coke oven
+
+  /// <summary>
+  /// How hot a coke-oven chamber must be before the oven works its charge at all.
+  /// <para>
+  /// An ignition heat, not a process temperature. The oven rides vanilla's coking rather than the heat
+  /// balance, so there is no coking temperature by ruling and this is a formality a lit, sealed chamber
+  /// clears rather than a gate it can strand short of. Stating a real coking temperature here would need a
+  /// near-zero transfer-loss override beside it, or the chamber stalls at whatever natural draught alone
+  /// reaches - which is the expense the ruling was made to avoid. See docs/design/machines/coke-oven.md.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(0, 2000)]
+  public float CokeOvenLightC { get; set; } = 400f;
+
+  /// <summary>
+  /// Seconds a sealed chamber bakes before its coal becomes coke.
+  /// <para>
+  /// Vanilla's own oven takes 12 game hours (<c>BECoalPile.cs:258</c>), which is the process this one
+  /// rides, and this is not that number: while a chunk is loaded the production tick counts real seconds
+  /// and only the away-catch-up counts game ones, so a literal 12 game hours would be a twelve-hour real
+  /// wait at the bench. Sized instead against the mod's own clock - three firebox charges
+  /// (<see cref="FireboxMaxFuelBurnTime"/>), a long bake rather than an errand. Untuned; the oven's case
+  /// against vanilla is made on yield and scale, which are exact and need no clock.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 86400)]
+  public float CokeOvenCycleSec { get; set; } = 3600f;
+
+  /// <summary>
+  /// Share of a chamber's coal that survives as coke, applied by truncation exactly as vanilla applies its
+  /// own (<c>BECoalPile.cs:260</c>) so a bake can never mint fuel.
+  /// <para>
+  /// Vanilla converts bituminous coal at <c>0.75</c>
+  /// (<c>itemtypes/resource/ore-ungraded.json</c>, <c>cokeConversionRateByType</c>). A firebox cell holds
+  /// 12 units, so 0.9 truncates to 10 - an effective 10/12, and still comfortably over vanilla's rate.
+  /// The arched crown is what the difference is attributed to.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(0.1, 1)]
+  public float CokeOvenYieldFrac { get; set; } = 0.9f;
+
+  /// <summary>
+  /// Path fragments of the coals that coke, matched as substrings the way the firebox matches its fuels.
+  /// <para>
+  /// Bituminous alone, by ruling: coal type becomes a real prospecting constraint on entering the iron
+  /// tier. Vanilla is looser and would take lignite at 0.5 as well; anthracite cokes in neither, having no
+  /// <c>cokeConversionRate</c> at all. A list rather than a constant so a modded coal can be admitted
+  /// without a patch.
+  /// </para>
+  /// </summary>
+  public List<string> CokeOvenCokingCoals { get; set; } = ["bituminous"];
+
+  #endregion
+
   #region Burdenmaker
   // See docs/design/machines/burdenmaker.md. Capacities: ore 512 (one full raw charge), bunker 1152,
   // flux 205 (512 / 2.5, the drawn hopper width ratio). The flux hopper is storage rather than a measure:

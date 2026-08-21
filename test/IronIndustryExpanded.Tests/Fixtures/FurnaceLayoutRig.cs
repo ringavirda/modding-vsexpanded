@@ -193,14 +193,19 @@ public static class FurnaceLayoutRig {
   public static void LoadFireboxes(
     StructureRig rig,
     BlockEntityFireboxFurnace furnace,
-    int unitsPerCell
+    int unitsPerCell,
+    string fuelCode = "game:coke",
+    System.Func<BlockPos, bool>? where = null
   ) {
-    Item coke = rig.World.RegisterItem("game:coke");
+    Item coke = rig.World.RegisterItem(fuelCode);
     foreach (BlockPos cell in furnace.FireboxCells.ToList()) {
+      // A cell outside the filter still gets its real block, or the structure stops being complete; it
+      // simply gets nothing in the bed.
+      int units = where == null || where(cell) ? unitsPerCell : 0;
       var be = new BlockEntityFirebox { Pos = cell.Copy() };
       var bed = new BEBehaviorFirebox(be);
-      if (unitsPerCell > 0)
-        bed.TryAdd(new ItemStack(coke, unitsPerCell), unitsPerCell);
+      if (units > 0)
+        bed.TryAdd(new ItemStack(coke, units), units);
       ReflectionHelpers.SetField(
         be,
         "Behaviors",
@@ -217,6 +222,67 @@ public static class FurnaceLayoutRig {
         be
       );
     }
+  }
+
+  /// <summary>
+  /// The coke oven's crown lids and drawing doors, in the drawing's own frame: layer 3 row 1 and layer 1
+  /// row 3, at columns 2 and 6 against <c>Origin(-4, -2)</c>. Spelled here rather than read off
+  /// <c>BlockEntityCokeOven</c>, so an expectation cannot agree with its subject by construction.
+  /// </summary>
+  public static readonly Vec3i[] CokeOvenLids = [new(-2, 3, -1), new(2, 3, -1)];
+
+  /// <summary>The coke oven's drawing doors, one per chamber.</summary>
+  public static readonly Vec3i[] CokeOvenDoors = [new(-2, 1, 1), new(2, 1, 1)];
+
+  /// <summary>
+  /// Puts a real charge lid and drawing door in each of the oven's four closure cells and returns them.
+  /// Without these the rig's stand-ins satisfy the layout but carry no block entity, and the seal reads a
+  /// missing closure as open - correctly, and every bake would then do nothing.
+  /// <para>
+  /// <paramref name="place"/> narrows which cells get a block entity; the rest still get the block the
+  /// layout requires, which is what a broken and replaced lid looks like from the core's side.
+  /// </para>
+  /// </summary>
+  public static List<BlockEntityChargeDoor> CloseCokeOven(
+    StructureRig rig,
+    string side = "north",
+    System.Func<Vec3i, bool>? place = null
+  ) {
+    var closures = new List<BlockEntityChargeDoor>();
+    // The layout rotates a part's required facing with the structure, so the authored `s` has to turn
+    // with it or the oven never completes at three of the four sides.
+    string letter = ExOrientation.RotateOrientationToken(
+      "s",
+      ExOrientation.AngleFromSide(side)
+    );
+
+    foreach (
+      (Vec3i local, string type) in CokeOvenLids
+        .Select(l => (l, "chargelid"))
+        .Concat(CokeOvenDoors.Select(d => (d, "chargedoor")))
+    ) {
+      BlockPos cell = rig.Cell(local.X, local.Y, local.Z);
+      BlockEntityChargeDoor? door =
+        place == null || place(local)
+          ? new BlockEntityChargeDoor { Pos = cell.Copy() }
+          : null;
+      rig.Occupy(
+        cell,
+        TestBlocks.Configure(
+          new Block(),
+          $"iiex:furnace-{type}-{letter}",
+          800,
+          (
+            "side",
+            ExOrientation.SideFromAngle(ExOrientation.AngleFromSide(side))
+          )
+        ),
+        door
+      );
+      if (door != null)
+        closures.Add(door);
+    }
+    return closures;
   }
 
   /// <summary>

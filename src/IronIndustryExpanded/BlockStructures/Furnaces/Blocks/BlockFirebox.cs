@@ -183,8 +183,14 @@ public partial class BlockFirebox : Block, IExBlockDefProvider {
 
     ItemSlot? active = byPlayer.InventoryManager?.ActiveHotbarSlot;
     if (active is { Empty: false }) {
-      if (!BEBehaviorFirebox.IsFuel(active.Itemstack)) {
-        (byPlayer as IServerPlayer)?.SendIngameError("iiex-firebox-notfuel");
+      if (!be.Accepts(active.Itemstack)) {
+        // Two refusals, because they mean different things to a player: this is not fuel at all, or it is
+        // fuel and this machine will not take it. The owning furnace decides which.
+        (byPlayer as IServerPlayer)?.SendIngameError(
+          BEBehaviorFirebox.IsFuel(active.Itemstack)
+            ? "iiex-firebox-refused"
+            : "iiex-firebox-notfuel"
+        );
         return true;
       }
       int taken = be.Charge(active.Itemstack);

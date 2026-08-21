@@ -53,11 +53,13 @@ One code path, three machines. What the shear, the nail machine and this bench s
 
 ## Structure
 
-1 × 1 × 1 on `"mpenergy"`, cast-iron shafting. As with the other two benches: at one cell the block is its own `BlockNetworkNode`, so no filler, no multiblock, no projection.
+⛔⛔ **This 1 × 1 × 1 is a proposal and every comparable one has been wrong.** The shear, the nail cutter and the riveter each claimed it, and each turned out to be a megablock the moment its art or its layout arrived - 6, 4 and 6 cells. This bench has neither: no shape under `assets/editable/shapes/` and no entry in `docs/internal/workbench/machines.txt`, so nothing here is settled. Treat the row below as the cheapest thing that could work, not as a measurement, and expect the drawing to overrule it.
+
+On `"mpenergy"` with cast-iron shafting, as the other benches are. ⛔ At more than one cell the principal has to be the `BlockNetworkNode` and the rest fillers, because a filler can never be a graph node (`BlockRollingMillAxle.cs:17`) - which is what puts the drive connector on the principal rather than on the drawn shaft cell on all three built benches.
 
 | Aspect | Proposal | Note |
 |---|---|---|
-| Footprint | 1 × 1 × 1 | cheap; the player builds several, and they line up on one shaft |
+| Footprint | 1 × 1 × 1, unverified | cheap; the player builds several, and they line up on one shaft. ⛔ No drawing and no layout back this |
 | Form | cast box bed; a large spur gear on one side; the working heading cylinder / drum on the far side of that gear | Fig 1 of the 1867 plate |
 | Orientation | `ns` / `we`, shaft along the orientation axis | `BlockRollingMill.cs:41-59`, `:106` |
 | Drive | connectors on the two shaft-axis faces | power passes through a row of benches |

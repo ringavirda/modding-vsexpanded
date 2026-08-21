@@ -121,5 +121,5 @@ machine; a blank mid-stroke was never converted.
 | 1 | ⛔ Nothing has been seen in game — the shape, the stroke animation and the working face are all unwalked | - |
 | 2 | The drive connector on `M` rather than the principal, once mpenergy has a filler-cell connector | medium |
 | 3 | The station window and hold-to-operate, which `machines.txt` specifies for this bench and which no station has yet | medium |
-| 4 | A handbook page. The forming shop has none, so neither bench is discoverable in game | small |
+| 4 | ~~A handbook page.~~ **Written 2026-08-21** - `docs/iiex/handbook/10-formingshop.html`, one page for the whole shop | done |
 | 5 | Die wear. `ItemDie` gives every die `MaxStackSize(1)` so it *can* carry wear, and nothing wears it yet | small |

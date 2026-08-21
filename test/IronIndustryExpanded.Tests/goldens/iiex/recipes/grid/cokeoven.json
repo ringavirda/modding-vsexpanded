@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Coke Oven Core",
+    "ingredientPattern": "BBB,BHB,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-cokeovencore-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:burnedbrick-fire",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Charge Lid",
+    "ingredientPattern": "_P_,BSB,_H_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-chargelid-s"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

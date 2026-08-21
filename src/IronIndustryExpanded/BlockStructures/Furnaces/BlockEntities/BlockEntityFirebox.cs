@@ -33,6 +33,16 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
   /// deposit lands where the player clicked, then the rest in the layout's cell order.
   /// See docs/design/machines/firebox.md.
   /// </summary>
+  /// <summary>
+  /// Whether this cell would take <paramref name="stack"/>, by the owning machine's rule rather than the
+  /// bed's. A firebox with no owning furnace falls back to the plain fuel test, which is also what it
+  /// charges by.
+  /// </summary>
+  public bool Accepts(ItemStack? stack) =>
+    Core is BlockEntityFireboxFurnace furnace
+      ? furnace.AcceptsFireboxFuel(stack)
+      : BEBehaviorFirebox.IsFuel(stack);
+
   public int Charge(ItemStack? stack) {
     if (stack == null || Bed is not { } here)
       return 0;

@@ -1,17 +1,19 @@
 # Shear
-**Status** ★★ **BUILT 2026-08-14.** `BlockShear`, `BlockEntityShear`, the runtime shape, the blade sets,
-both grid recipes, three locales and 11 station tests all ship. The owner's filler layout
-([machines.txt](../../internal/workbench/machines.txt)) was the last blocker and it arrived; the footprint
-is drawn straight from it. ⛔ **The crop table itself is still empty and deliberately so** — seven of its
-nine products are items that do not exist, so the machine runs and has nothing declared to cut. That is
-B3c, and it is now the only thing between the forming line and a finished product.
+**Status** ★★ **BUILT 2026-08-14, and cutting since the rolled catalogue landed.** `BlockShear`,
+`BlockEntityShear`, the runtime shape, the blade sets, both grid recipes, three locales, the handbook page
+and the station tests all ship, and `assets/iiex/config/processjobs/shear.json` declares five crops (siex
+adds its own). The owner's filler layout ([machines.txt](../../internal/workbench/machines.txt)) was the
+last blocker and it arrived; the footprint is drawn straight from it. ⛔ **Not walked in game**, and the
+line is still creative-only for a reason that is not this machine's: no roll set is craftable.
 **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the crop station: the rule that every crop in the forming ladder passes through this one block, and that the
   mill therefore has no claim gesture at all;
-* the relocation of `Outputs` / `OutputAt` off `RollSetSpec` onto the shear, and the fact that they key on
-  stage, not on gap (so a half-step is a legal product point);
+* that a crop keys on stage rather than on gap, so a half-step is a legal product point. ⛔ The
+  relocation of `Outputs` / `OutputAt` off `RollSetSpec` landed on **`MillSchedule`**, not here: a stage
+  whose whole piece converts belongs to the mill's ladder and a stage that yields several pieces is a crop,
+  which is the split [process-extension](../mechanics/process-extension.md) owns;
 * the crop-not-convert rule: a crop takes one product's worth of metal and leaves the remainder on the deck as
   stock - settled 2026-08-12, and generalised into the staged-crops / whole-item-converts split that
   [process-extension](../mechanics/process-extension.md) now owns;
@@ -46,9 +48,10 @@ the mill be a pure reduction machine: two verbs, two stations.
 | crop | this | turns stock at a stage into a product |
 | blank / stamp | [steam hammer](steam-hammer.md) (iiex) | punches a shape out of a strip - geometry, therefore forging work |
 
-- The mill has no product stage today. `RollSetSpec.OutputAt` (`RollSetSpec.cs:95`) has no caller anywhere in
-  `src/`; `BlockEntityRollingMill.CompletePass` (`:282-288`) writes the thinned piece back onto the same stack
-  and ejects it, so rolling produces nothing but thinner stock. The shear is where a schedule ends.
+- The mill has exactly one product stage, and it is the whole-piece conversion: `MillSchedule.OutputAt`
+  (`MillSchedule.cs:84`) is read by `BlockEntityRollingMill.ClaimFinishedPiece` (`:458`), which swaps the
+  piece for the item its stage names when that stage needs no cut. One piece in, one piece out. Every stage
+  whose yield is *several* pieces is a crop, and the shear is where that schedule ends.
 - Two mandatory crops in the ladder exist only to keep stock reheatable
   ([recoverability](../mechanics/recoverability.md)). Without a station that can cut, those crops cannot happen
   and the cast tier soft-locks.
@@ -110,10 +113,11 @@ not by what the design page is titled.
 | Asset | State |
 |---|---|
 | editable shape | **drawn** - `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-cutter.json`, beside the nine other mpenergy machine tools. Textures `cast-iron1` + `iron5`, the mill's pair |
-| runtime shape | missing - needs the editable → runtime conversion (drop `editor`/`textureSizes`, repoint the two absolute texture paths at `iiex:block/metal/castiron` and `game:block/metal/sheet-plain/iron5`, flatten `Root`). `assets/iiex/shapes/forming/` holds only `rollingmill.json` and the ten stale `stock-*.json` |
+| runtime shape | **shipped** - `assets/iiex/shapes/forming/shear.json`, converted by `scripts/tools/convert-shape.py` |
 | blade-set item shape | **drawn** - `assets/editable/shapes/items/smithed/item-forged-machineshears.json`; two blades 4 × 12 × 1 on the vanilla `block/metal/plate/iron` texture |
+| handbook | **shipped** - `docs/iiex/handbook/10-formingshop.html` and `assets/iiex/config/handbook/10-formingshop.json`, one page covering the whole shop rather than half a page per station |
 | reference art | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
-| lang | `assets/iiex/lang/en.json` carries no `shear-*` key |
+| lang | **shipped** in all three locales - the block name, the blades, three help verbs, two readouts and the six `ShearVerdict` refusals |
 
 ### What the shape already decides
 
@@ -140,7 +144,6 @@ and not a hammer die. And the blade set is `item-forged-machineshears.json`, whi
 [machining-line](../mechanics/machining-line.md) already assigns: forged and tempered, with **vanilla's
 temper ladder as the tier ladder**, so no new hardness system is owed. That page also notes the drawn
 shears measure 96 vx³ = 240 u and want **100 vx³ = 250 u** to divide off the rod.
-| handbook | `docs/iiex/handbook/` has no page; the sync pipeline joins on the `NN-` prefix and drift fails a test |
 
 ### The shear's products are already drawn — inside the mill's shape files
 
@@ -163,39 +166,30 @@ element of a family file, or a whole file as the stage.
 design (a rod taken flat, no crop), so it is a stopping point on the mill's ladder — a stage with a `code` —
 and not a job here. The `Cube2..11` elements in three of the files are modelling leftovers with no meaning.
 
-Draw Fig 5, the double shearing machine: the heaviest and most legible of the three, and its giant flywheel is
-the right visual promise for a machine that takes one enormous bite and then nothing. Elements the design asks
-for: a heavy cast bed / C-frame, a big flywheel on a geared shaft, a ram driven by a vertical connecting rod, a
-blade nest at one end and an open throat to feed.
-
-Animation: one stroke clip plus an `idle` rest pose. Two conventions are fixed by the network and must be
-obeyed - clips are authored as one revolution so playback is `ω / 2π` (`EnergyAnim.cs:23-24`), and a running
-clip must repeat or the animator drops the suppressed mesh back to the static shape
-(`BlockEntityPuddlingChimneyCap.cs:31-33`).
+This section was an art brief until 2026-08-13 and is kept as a record of what the drawing was asked
+for, because the drawing answers it: a heavy cast bed, a geared shaft, a lever guillotine rather than the ram
+the brief imagined, a blade nest at one end and an open throat to feed. The two network conventions it named
+are both obeyed by the shipped clip - one revolution per clip, so playback is `ω / 2π`
+(`EnergyAnim.cs:23-24`), and `onAnimationEnd: Repeat`, or the animator drops the suppressed mesh back to the
+static shape (`BlockEntityPuddlingChimneyCap.cs:31-33`).
 
 ---
 
 ## Construction
 
-There is no recipe, a blocker of the same class as B3: the mill has none either (`grep rollingmill
-src/IronIndustryExpanded/Recipes/` returns nothing), so the whole forming line is creative-only.
+**Shipped** - `FormingRecipeDefinitions.Shear` (`Recipes/Grid/FormingRecipeDefinitions.cs`), catalogued
+as `shear-grid` so it rescales with `RecipeLevel`. `PRP,PGP,_H_`: four heavy cast plates, two rods, one spur
+gear and a hammer. It costs one plate less than the mill because a guillotine has one moving mass where a
+stand has two journalled rolls, and the cast plate is what gates it - a cupola, a casting cell and a pattern
+stand between a player and the first one.
 
-Proposed cost, in the established idiom (`ExRecipeDef` grid, [recipes &
-config](../mechanics/recipes-config.md); the design table at `CraftingStationRecipeDefinitions.cs:27-35` is
-the shortest worked example):
+Blade sets are separate tooling and are craftable too - `shearblade-grid`, `PP,PP,_H` over
+`game:metalplate-*` captured as `metal`, so iron and steel blades come off one recipe. That capture is what
+makes the tier ladder vanilla's own temper ladder rather than a hardness system of ours.
 
-| Slot | Ingredient | Rationale |
-|---|---|---|
-| frame | cast-iron plate ×4 (`castplate` / `castplate-heavy`) | cast bed - the shared cast-iron prerequisite that also unlocks the shafting, so there is no second tier to gate |
-| blade seat | `game:metalplate-iron` ×2 | proposed |
-| fasteners | `Nails(1)` - `ExIngredients.cs:36` | every other iiex machine bill uses the same helper (`PipeRecipeDefinitions.cs:25`) |
-| tool | `Hammer` - `ExIngredients.cs:22` | convention |
-
-A cost-catalogue key `shear-grid` belongs in `IiexRecipeConfig.DefaultCatalogue` (`IiexRecipeConfig.cs`) so the
-recipe rescales with `RecipeLevel`.
-
-Blade sets are separate tooling, not part of the block: STATE.md's D9 names "the shear's blade sets" among
-crucible steel's consumers. They are unspecified - see Open.
+⛔ **The mill is craftable and its roll sets are not**, so the line is still creative-only in practice: the
+machining line ruled roll sets lathe-turned from cast blanks, and there is no lathe. That is U7.10, and it is
+the last thing between the forming shop and a survival demonstration.
 
 ---
 
@@ -233,8 +227,8 @@ third escape](../mechanics/recoverability.md).
 
 ## Numbers
 
-Everything on this page is proposed; the shear has no config section, no keys and no code. The right-hand
-column is what exists today and what it would be read from.
+The shear ships one config key. Everything else in this table stayed a proposal and was answered by the
+build in a different shape, which the right-hand column records.
 
 | Key | Proposed value | file:line | What it does |
 |---|---|---|---|
@@ -276,13 +270,13 @@ table).
 | the fitted blade set | spawned at the block, not destroyed - copy `BlockEntityRollingMill.OnBlockBroken` (`:374-383`), which spawns both the jammed piece and the roll set before calling base |
 | a piece in the throat | handed back unchanged - a crop is committed only on completion |
 
-There are no fillers, so none of [multiblock](../mechanics/multiblock.md)'s drop-rerouting applies.
+⛔ The footprint has fillers - two full cells and three slabs - so [multiblock](../mechanics/multiblock.md)'s drop-rerouting does apply, and it is why `OnBlockBroken` on the principal is the only place that can spawn the blades and the piece. Breaking any cell of the machine reroutes there.
 
 ---
 
 ## Code
 
-Nothing exists. Where it hooks in:
+**Built 2026-08-14.** The table below is kept as the record of what each piece was modelled on; the rows still reading as proposals are marked.
 
 | Piece | Where it goes | Model it on |
 |---|---|---|
@@ -339,15 +333,16 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
 
 ## Open
 
-- **The crop table is not shipped, deliberately.** The registry exists and the table is settled
-  ([rolled parts](../items/rolled-parts.md)), but seven of its nine products are items that do not exist, and
-  shipping a table of codes that resolve to nothing is exactly the mistake the four dangling roll-set outputs
-  already made once. It waits on the rolled catalogue. The two entries that would resolve today
-  (`game:metalplate`, `game:rod-iron`) are not worth shipping alone, because the interaction they would drive
-  is the one still undecided below.
-- ~~Block, BE, def, recipe, shape, lang and tests are all absent.~~ **Built 2026-08-14.** ⛔ The handbook
-  page is the one piece deliberately skipped: the mill has none either, and the forming shop wants one page
-  covering both stations rather than half a page for each.
+- ~~The crop table is not shipped, deliberately.~~ **Shipped** with the rolled catalogue -
+  `assets/iiex/config/processjobs/shear.json`, five crops: a shingled bar into four rods, a beam into two
+  plates, a shingled slab into two heavy plates, a rod into four rivet rods, and a plate into two nail
+  plates. The last two are what feed the fastener benches. Holding the table until its products existed was
+  right: a table of codes that resolve to nothing is the mistake the four dangling roll-set outputs already
+  made once.
+- ~~Block, BE, def, recipe, shape, lang and tests are all absent.~~ **Built 2026-08-14.** ~~The handbook
+  page is the one piece deliberately skipped.~~ **Written 2026-08-21** as one page for the whole shop -
+  `docs/iiex/handbook/10-formingshop.html` - exactly as the deferral intended: the mill, the shear, both
+  fastener benches, the heat and the rack, rather than half a page each.
 - ~~How the torque gate reads drive torque.~~ **Closed 2026-08-14, and none of the three proposals was
   needed.** `MpEnergyNetworkState` publishes `SupplyPower`, written as `driveTorque * Speed` every tick, so
   drive torque comes back exactly as **`SupplyPower / Speed`** — no new state field, no stored-energy proxy,

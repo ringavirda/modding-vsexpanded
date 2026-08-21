@@ -537,6 +537,33 @@ public static class IiexBlocks
     public const string Any = "iiex:furnace-chargepile";
   }
 
+  /// <summary><c>iiex:furnace</c> - furnace/cokeovencore. Variant groups: type(cokeovencore), side(n|e|s|w).</summary>
+  public static class FurnaceCokeovencore
+  {
+    /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
+    public const string Code = "iiex:furnace";
+
+    /// <summary>Any variant: <c>iiex:furnace-cokeovencore-*</c>.</summary>
+    public const string Any = "iiex:furnace-cokeovencore-*";
+
+    /// <summary>The <c>side</c> variant group.</summary>
+    public static class Side
+    {
+      public const string N = "n";
+      public const string E = "e";
+      public const string S = "s";
+      public const string W = "w";
+    }
+
+    /// <summary>Pin only <c>side</c>: <c>iiex:furnace-cokeovencore-{side}</c>.</summary>
+    public static string WithSide(string side) =>
+      $"iiex:furnace-cokeovencore-{side}";
+
+    /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:furnace-cokeovencore-{side}</c>.</summary>
+    public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
+      WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+  }
+
   /// <summary><c>iiex:furnace</c> - furnace/cupolacore. Variant groups: type(cupolacore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
   public static class FurnaceCupolacore
   {

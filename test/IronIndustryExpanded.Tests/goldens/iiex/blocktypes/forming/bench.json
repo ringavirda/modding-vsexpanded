@@ -8,13 +8,6 @@
     "place": "game:block/anvil"
   },
   "maxstacksize": 1,
-  "attributes": {
-    "handbook": {
-      "groupBy": [
-        "forming-nailcutter-*"
-      ]
-    }
-  },
   "variantgroups": [
     {
       "code": "type",

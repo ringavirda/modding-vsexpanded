@@ -187,6 +187,18 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   /// it as salvage. No height interpolation, unlike the shaft's burn-out: a firebox is one course of cells
   /// all at the same level and equally in the fire, so only the bottom fraction applies.
   /// </summary>
+  /// <summary>
+  /// Whether this machine's beds take <paramref name="stack"/> at all. A firebox burns any fuel, so the
+  /// branch answers with the bed's own test; a retort is pickier about what it will bake and overrides.
+  /// </summary>
+  /// <remarks>
+  /// Declared here rather than on <see cref="BEBehaviorFirebox"/>, whose <c>IsFuel</c> is static and knows
+  /// only the stack: what a cell accepts is the owning machine's rule, not the cell's. The deposit path
+  /// asks through <c>BlockEntityFirebox.Accepts</c>.
+  /// </remarks>
+  public virtual bool AcceptsFireboxFuel(ItemStack? stack) =>
+    BEBehaviorFirebox.IsFuel(stack);
+
   protected override void BurnOutCharge() {
     foreach (BlockPos cell in FireboxCells) {
       if (
@@ -212,22 +224,19 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   protected override float MeltIntervalSec => IiexValues.FireboxMeltIntervalSec;
 
   /// <summary>
-  /// Cells in the firebox this machine declares - the ceiling on what it can hold, at
-  /// <see cref="BEBehaviorFirebox.CellCapacity"/> units each (6 courses x 2 units, this mod's own figure
-  /// rather than vanilla's pile stack size). Derived from the drawing's
-  /// <see cref="ExpandedLib.Blocks.Structures.CellRole.Firebox"/> marks
-  /// (<see cref="BlockEntityFurnaceCore.ShaftBox"/>) so it cannot drift from the cells a player can load.
+  /// Cells the drawing marks <see cref="ExpandedLib.Blocks.Structures.CellRole.Firebox"/> - the ceiling on
+  /// what this machine can hold, at <see cref="BEBehaviorFirebox.CellCapacity"/> units each.
   /// </summary>
   /// <remarks>
-  /// A hearth whose drawing marks no firebox counts 0 cells, giving a <see cref="ChargeCapacityUnits"/> of
-  /// 0 that is never reached: <see cref="TryIgniteCharge"/> refuses an empty bed list.
+  /// The marked cells, never the <see cref="BlockEntityFurnaceCore.ShaftBox"/> around them: the two agree
+  /// only while a firebox is one solid cuboid, which the coke oven's two chambers either side of a shared
+  /// wall are not, and a box would price in the brick between them. Since
+  /// <see cref="MinChargeToIgnite"/> is sealed to this count, that oven could never have been lit. Read
+  /// local rather than world cells, so the count answers on an unplaced machine. A drawing marking no
+  /// firebox counts 0, which <see cref="TryIgniteCharge"/> refuses as an empty bed list.
   /// </remarks>
   protected int FireboxCellCount =>
-    ShaftBox is not { } box
-      ? 0
-      : (Math.Abs(box.max.X - box.min.X) + 1)
-        * (Math.Abs(box.max.Y - box.min.Y) + 1)
-        * (Math.Abs(box.max.Z - box.min.Z) + 1);
+    LocalCellsWithRole(ExpandedLib.Blocks.Structures.CellRole.Firebox).Count;
 
   /// <summary>
   /// A firebox fires when its own cells are loaded, so capacity is geometry rather than a constant.

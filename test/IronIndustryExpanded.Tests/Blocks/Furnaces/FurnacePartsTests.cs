@@ -48,10 +48,10 @@ public class FurnacePartsTests {
       "Layout codes with no block behind them:\n" + string.Join("\n", missing)
     );
 
-    // Guards against the collection silently yielding nothing. iiex ships four structures (cold blast,
-    // cupola, puddling, heating), each naming several mod-domain parts, so 12 is a safe floor.
+    // Guards against the collection silently yielding nothing. iiex ships five structures (cold blast,
+    // cupola, puddling, heating, coke oven), each naming several mod-domain parts, so 15 is a safe floor.
     Assert.True(
-      checkedCodes >= 12,
+      checkedCodes >= 15,
       $"only {checkedCodes} layout codes examined - is collection broken?"
     );
   }

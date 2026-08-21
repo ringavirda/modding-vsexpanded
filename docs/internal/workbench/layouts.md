@@ -591,66 +591,76 @@ Caution — roles are not authored, and this draft predates two decisions:
    needs it.
 3. **The damper is not drawn.** The design calls for a flue-base bypass used to preheat.
 
-## Beehive coke oven — `iwex:beehiveovencore` *(draft)*
+## Beehive coke oven — `iiex:furnace-cokeovencore` *(shipped 2026-08-21)*
 
-**Not in C#.** A bank of two chambers sharing one wall.
+**In C#** — `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockCokeOvenCore.cs`. A bank of two
+chambers sharing one wall. What ships differs from the draft that stood here in three ways, each recorded
+below the grid.
 
 ```csharp
 .MultiblockLayout(s =>
-  s.Origin(-4, -1)                            // C is at col 4 / row 1
-    .Legend('#', ExCodes.FireBricks)
-    .Legend('-', ExCodes.FireSlab(BlockFacing.UP))
-    .Legend('i', ExCodes.FireSlab(BlockFacing.SOUTH))
-    .Legend('C', "iwex:beehiveovencore-north*")
-    .Legend('D', "iwex:chargedoor-north*")
-    .Legend('T', IiexCodes.HopperTall(BlockFacing.SOUTH))
-    .Legend('L', "iwex:chargelid-south*")
+  s.Origin(-4, -2)                            // C is at col 4 / row 2
+    .Legend('#', VanillaCodes.FireBricks)
+    .Legend('c', IiexBlocks.FurnaceFirebox.Any)
+    .Legend('-', VanillaCodes.FireSlab(BlockFacing.UP))
+    .Legend('i', VanillaCodes.FireSlab(BlockFacing.SOUTH))
+    .Legend('C', IiexBlocks.FurnaceCokeovencore.Any)
+    .Legend('D', IiexBlocks.FurnaceChargedoor.WithSide(BlockFacing.SOUTH))
+    .Legend('L', IiexBlocks.FurnaceChargelid.WithSide(BlockFacing.SOUTH))
     .Legend('f', ExCodes.Filler)
-    .Legend('c', ExCodes.CoalBed)
-    .Legend('a', ExCodes.Air)
+    .Legend('a', VanillaCodes.Air)
+    .Role('c', CellRole.Firebox)
     .Layer(0, """
+              # # # # # # # # #
               # # # # # # # # #
               # # # # C # # # #
               # # # # # # # # #
-              # # # # # # # # #
               """)
     .Layer(1, """
+              # # # # # # # # #
+              # c c c # c c c #
+              # c c c # c c c #
               # i D i # i D i #
-              # c c c # c c c #
-              # c c c # c c c #
-              # # T # # # T # #
               """)
     .Layer(2, """
-              # # f # # # f # #
+              # # # # # # # # #
               # - a - # - a - #
               # - a - # - a - #
               # # f # # # f # #
               """)
     .Layer(3, """
               . # # # . # # # .
+              . # L # . # L # .
               . # # # . # # # .
-              . # # # . # # # .
-              . . L . . . L . .
+              . . # . . . # . .
               """)
 )
 ```
 
 Fire brick is exactly right here and vanilla agrees — `claybricks` carries
 `cokeOvenViableByType: { "*-fire": true }`, i.e. it **is** the game's coke-oven material. Coke itself is
-vanilla `game:coke`; we add no item.
+vanilla `game:coke`; we add no item. Because the doors are `iiex:furnace-chargedoor` and not
+`game:cokeovendoor`, vanilla's own coking cannot fire inside these chambers — deliberate, since the core
+owns the bulk cycle, and moot in any case: `BlockEntityCoalPile.TestCokable` needs twelve coke-oven-viable
+blocks in each pile's own 3 × 3 × 3, which a bulk chamber cannot offer.
 
-Because the doors are `iwex:chargedoor` and not `game:cokeovendoor`, vanilla's own coking will not fire
-inside these chambers. Deliberate — the core owns the bulk cycle. Swap to `ExCodes.CokeOvenDoor` only if we
-ever want vanilla to run it.
+**What changed from the draft**
 
-Caution — roles are not authored, and the reason is a real gap: no existing role fits. The `c` cells hold the
-coal being *coked* — it is the **workpiece**, not fuel for something else and not a burden column. So it is
-neither `Firebox` nor `Chargeable`, and forcing either would be a lie the consumers then read. Either the
-oven needs no role at all (it can walk its own chamber box), or the enum needs a `Retort`/`Charge` member.
-**Undecided.**
+1. ⛔⛔ **The `c` cells are firebox blocks, not `@(air|coalpile)`, and they carry `CellRole.Firebox`.**
+   Owner ruling, 2026-08-21. The draft's caution — *"no existing role fits; the coal is the workpiece"* —
+   was right and was overruled on purpose: a `Retort` member would behave identically to `Firebox`
+   everywhere it was read, and a role that is a synonym is worse than one that is slightly loose. See
+   [coke-oven.md](../../design/machines/coke-oven.md).
+2. ⛔⛔ **The two crown hoppers are gone**, with their two fillers. `BlockEntityHopperTall`'s drip feeds
+   `NextChargeColumn`, and `BlockEntityFireboxFurnace` seals `ShaftHoldsLayeredCharge = false`, so a firebox
+   furnace has no columns and the hopper would have charged **zero** cells. The chambers are charged the way
+   every other firebox in the mod is: one click on a chamber cell spreads across the whole bed.
+3. ★ **The doors face south and the hoppers' row became solid brick.** The draft drew the doors on the
+   north row; the family puts the labelled core face and the work door on the same south side, and
+   coke-oven.md's own "cells that matter" table already said so.
 
 The `K` legend was a leftover in an older draft — declared but drawn in no grid, which is now a build
-error. Removed here.
+error. Removed.
 
 ---
 

@@ -60,7 +60,10 @@ public partial class BlockFastenerBench
         .Sound("walk", "game:walk/metal")
         .Sound("place", "game:block/anvil")
         .MaxStackSize(1)
-        .Handbook("forming-nailcutter-*")
+        // No handbook groupBy. It is one wildcard for the whole blocktype, so either machine's value
+        // names the other's codes and a riveter would gather nail cutters into its own slideshow.
+        // Nothing is lost by omitting it: `groupBy` only ever gathers stacks the handbook already
+        // lists, and CreativeCommon("*-ns") means each machine puts exactly one stack there.
         .VariantGroup("type", NailCutter, Riveter)
         .VariantGroup("orientation", "ns", "we")
         .ShapeByType(

@@ -1,9 +1,10 @@
 # Beehive Coke Oven
 
-**Status** designed — the oven itself is not built. There is no core, no block entity, no oven recipe and
-no golden for the structure; what exists is the settled design, a draft layout in
-[layouts.md](../../internal/workbench/layouts.md) § 1, and the crown lid, which is built
-(`iiex:furnace-chargelid-{side}`, 2026-08-03).
+**Status** ★★ **FINISHED (2026-08-21, U9.1-U9.4).** `BlockCokeOvenCore`, `BlockEntityCokeOven`, the
+layout, the `co` face label, the coking cycle, per-chamber clocks, the seal gate, the accept list, the HUD,
+four config keys, both recipes, two cost rows, three locales, the goldens, handbook page 11 and 45 tests all
+ship. The oven is craftable and runs end to end. ⛔ **Not walked in game**, and ⛔ one charge still spreads
+across **both** chambers, since `BlockFirebox`'s deposit walk is per furnace.
 **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything about this machine: the two-chamber bank and its draft layout, the crown-charging
@@ -61,14 +62,33 @@ the cycle gates on sealed + timer, never on temperature.
 Draft only - [layouts.md](../../internal/workbench/layouts.md) § 1, "Beehive coke oven". Nothing below has been
 parsed by `StructureLayout` or pinned by a golden, unlike the shipped structures.
 
-Settled 2026-08-03 - vanilla coal piles are the charge, and the oven is all firebrick:
+⛔⛔ **Ruled 2026-08-21 by the owner: the chambers hold firebox blocks, not vanilla coal piles**, and
+they are marked `CellRole.Firebox`. That overturns the 2026-08-03 settlement below, whose reasoning had
+been overtaken twice:
+
+* **Vanilla's conversion could never have run in these chambers.** `BlockEntityCoalPile.TestCokable`
+  (`.compat/vintagestory/vssurvivalmod/BlockEntity/BECoalPile.cs:300-330`) demands, *per pile*, a closed
+  `BlockCokeOvenDoor` horizontally adjacent **and** ≥ 12 `cokeOvenViable` centre blocks with ≥ 8 corners in
+  that pile's own 3 × 3 × 3. In a 3 × 2 chamber the middle piles are surrounded by other piles, so the test
+  fails on every one of them. The page already knew the doors were deliberately wrong for it; what it
+  missed is that the geometry is wrong for it too. So *"a charge level modelled beside it would
+  re-implement what the game already does correctly"* was never on offer - the core has to drive the
+  conversion either way, and the pile would have been storage and render only.
+* **The suite has finished shedding the pile.** Both hearths take the [firebox](firebox.md) block, the
+  boilers carry internal fireboxes and the [cowper](cowper.md) loses its pile in a remake. This was already
+  flagged below as a caution; it is now the last one that would have been left.
+
+`BEBehaviorFirebox` is a fuel-bed abstraction - stacked layers, one substance per cell, its own save - and
+nothing here burns. Reusing it buys the branch's charge walk, ignition, save/load and away-catch-up
+unchanged. The role is `Firebox` for the same reason: the owner ruled against minting a near-identical
+`Retort` member that would behave identically.
+
+The 2026-08-03 settlement, kept for its other three points, which stand:
 
 * Not a reheat hearth. That hearth is a cast-iron bed, and a coke oven never had one. A beehive oven is
   a firebrick structure throughout - floor, walls and crown - and a cast bed would not survive the heat it
   is asked to hold for days.
-* The charge is vanilla `game:coalpile`. Coking is already implemented on the pile itself:
-  `BlockEntityCoalPile` carries the conversion and manages the quantity change from coal to coke. A charge
-  level modelled beside it would re-implement, less well, what the game already does correctly.
+* ~~The charge is vanilla `game:coalpile`.~~ **Overturned 2026-08-21** - see above.
 * The cycle is conventional: charge (the tall hopper places real coal-pile blocks into the chamber; the
   player may also walk in and stack them by hand) → seal (charge door and crown lid closed) → fire → wait
   (the piles convert to coke at the pile's own rate and its own quantity loss). The lid exists for exactly
@@ -76,30 +96,33 @@ Settled 2026-08-03 - vanilla coal piles are the charge, and the oven is all fire
 * Caution: this keeps a coal-pile dependency the rest of the suite is shedding. Everywhere else the vanilla
   pile is going - the two hearths take the [firebox](firebox.md) block, the boilers take internal fireboxes,
   the [cowper](cowper.md) loses its pile in a remake. The oven's piles are plain coal.
-* The oven fits no `CellRole`. Its `c` cells are neither `Firebox` (fuel heating something else) nor
-  `Chargeable` (a burden column) - the coal is the workpiece. Either the oven needs no role and walks its
-  own chamber box, or the enum gains a `Retort`. Undecided; see [layouts.md](../../internal/workbench/layouts.md).
+* ~~The oven fits no `CellRole`.~~ **Ruled 2026-08-21: `Firebox`.** The objection was right and was
+  overruled deliberately - the role does read "fuel heating something else" where the coal is the work -
+  because a `Retort` member would behave identically to `Firebox` everywhere it was consulted, and a second
+  role that is a synonym is worse than one that is slightly loose.
 
 A bank of two chambers sharing a wall. Each chamber is charged from above through the crown and drawn
 from the side through a door - the historically correct pair of openings, and mechanically the reason the
 lid state has something to say.
 
-**Footprint** 9 wide (X) × 4 deep (Z) × 4 tall (Y); 128 declared cells of a 144-cell box (16 `'.'`).
-`Origin(-4, -2)` - the negation of `C`'s `(col 4, row 2)` on layer 0.
+**Footprint** *(as built)* 9 wide (X) × 4 deep (Z) × 4 tall (Y); 128 declared cells of a 144-cell box
+(16 `'.'`). `Origin(-4, -2)` - the negation of `C`'s `(col 4, row 2)` on layer 0.
 
 | Glyph | Block | Count | Notes |
 |---|---|---|---|
-| `#` | `game:claybricks-good-fire` | 89 | vanilla's own coke-oven brick |
-| `-` | `game:brickslabs-fire-up-free` | 8 | crown springing; vertical, never rotates |
+| `#` | `game:claybricks-good-fire` | 93 | vanilla's own coke-oven brick |
+| `c` | `iiex:furnace-firebox-*` | 12 | the two chambers, 3 wide × 2 deep × 1 tall each, marked `CellRole.Firebox` |
+| `-` | `game:brickslabs-fire-up-free` | 8 | crown springing; the arch, and it never rotates |
 | `i` | `game:brickslabs-fire-south-free` | 4 | door shoulders; orientation-checked |
-| `C` | `iiex:beehiveovencore-*` | 1 | does not exist |
-| `T` | `iiex:hopper-tall*` | 2 | one per chamber, in the crown |
-| `L` | `iiex:furnace-chargelid-{side}` | 2 | built - the crown lid |
-| `D` | `iiex:chargedoor-{side}` | 2 | the drawing doors; the block exists |
-| `f` | `exlib:structurefiller` | 4 | the hoppers' and doors' upper halves |
 | `a` | `game:air` | 4 | chamber crown void |
-| `c` | `@(air\|coalpile)` | 12 | the two chambers: 3 wide × 2 deep × 1 tall, each |
-| `K` | *(dead legend - never used in any grid)* | 0 | see [Gotchas](#gotchas) |
+| `L` | `iiex:furnace-chargelid-s` | 2 | the crown lid, over each void |
+| `D` | `iiex:furnace-chargedoor-s` | 2 | the drawing doors |
+| `f` | `exlib:structurefiller` | 2 | the doors' upper halves |
+| `C` | `iiex:furnace-cokeovencore-*` | 1 | tier-less: fire brick throughout leaves no tier to match |
+
+⛔ **Two glyphs are gone from the draft.** `T` (the crown hoppers) and their two fillers - see the section
+below on why the hopper could never have charged this oven. `K` was a dead legend, declared and drawn in no
+grid, which is now a build error.
 
 **Cells that matter** (anchor frame, `C` = `(0,0,0)`; the two chambers mirror about X = 0):
 
@@ -107,14 +130,18 @@ lid state has something to say.
 |---|---|
 | `(0, 0, 0)` | the core, sitting inside the shared wall at the base |
 | `(-3…-1, 1, -1…0)` and `(1…3, 1, -1…0)` | the two 6-cell coking chambers |
-| `(±2, 1, -2)` | the crown hopper base; `(±2, 2, -2)` its filler; `(±2, 3, -2)` the lid |
 | `(±2, 1, 1)` | the drawing door; `(±2, 2, 1)` its filler |
+| `(±2, 2, -1)` | each chamber's crown void; `(±2, 3, -1)` the lid over it |
 | `(0, 0…3, *)` | the shared wall, all brick |
 
-**Filler accounting checks out** - 4 declared, 4 produced (each `hopper-tall` places one above itself, and
-each `chargedoor` likewise; the lid emits no filler). This is not true of the
-[puddling](puddling-furnace.md) or [reheat](reheat-furnace.md) layouts, both of which declare filler cells
-no part can produce - worth checking again once this layout is real.
+★ **The doors face south**, with the labelled `co` face of the core on the same side - the family
+convention, which every other furnace follows and which the draft grid had mirrored. The draft's own
+"cells that matter" table already had it this way round; the grid above it did not.
+
+**Filler accounting checks out** - 2 declared, 2 produced (each `chargedoor` places one above itself; the
+lid emits no filler), and it is enforced rather than asserted: `FurnaceFillerAccountingTests` walks every
+furnace layout at definition level, which is where the [puddling](puddling-furnace.md) and
+[reheat](reheat-furnace.md) mismatches were caught.
 
 ### Why `hopper-tall` + a lid, and not a trapdoor *(decided 2026-07-28)*
 
@@ -211,17 +238,30 @@ machine would be its first.
 Two chambers means the player alternates: one coking sealed while the other is drawn and recharged. The
 sharing wall is thermal as well as structural, which is why beehive ovens were built in banks.
 
-### The crown hopper can only auto-charge one cell of six
+### ⛔⛔ The crown hopper is gone, and it could never have charged this oven
 
-`BlockEntityHopperTall`'s drip never seeds above its own Y. In the draft the hopper's base cell sits at
-Y = 1 - the same level as the chamber floor - with layer-0 brick underneath, so the only cell it can seed
-is the chamber cell directly beside it, `(±2, 1, -1)`; once that pile is full the next cell up is Y = 2,
-which the seed check rejects. The other five cells of each chamber would have to be hand-placed.
+*(built 2026-08-21; this section was "can only auto-charge one cell of six", and the truth is worse.)*
 
-Three ways out, all live: raise the hopper a layer and drop the chamber floor; give the oven core its own
-charge-spreading walk (it owns the chamber volume anyway - and on the furnaces the charge walk is already
-the core's job, not the hopper's); or accept hand-charging and treat the hopper as a lid-with-a-tank. This
-has to be settled before the layout is committed to C#.
+`BlockEntityHopperTall.OnServerTick` drips into `core.NextChargeColumn(...)` - the **charge-column**
+system. `BlockEntityFireboxFurnace` seals `ShaftHoldsLayeredCharge = false`, so a firebox furnace has no
+columns at all and `NextChargeColumn` answers null. The hopper would hold its load for ever and charge
+**zero** cells, not one of six. It is a shaft-furnace device, and the coke oven is not a shaft furnace.
+
+So the layout ships **without hoppers**, which is this section's own second way out - *"give the oven core
+its own charge-spreading walk (on the furnaces the charge walk is already the core's job, not the
+hopper's)"* - and that walk already exists: `BlockFirebox.OnBlockInteractStart` spreads one deposit across
+every `CellRole.Firebox` cell of the owning furnace, which is how the puddling and reheat fireboxes are
+charged. The player opens a drawing door, clicks the chamber cell behind it, and the whole chamber fills
+for one interaction costing per cell.
+
+★ **The lid stays, and its reason is unchanged.** It was never load-bearing that the *hopper* was unsealed;
+what has to close is the chamber, and the lid is the one part of the crown that opens. It now sits directly
+over each chamber's crown void rather than over a hopper. Every argument in the section below - a trapdoor
+carries no facing in its code, so the orientation check has nothing to verify - applies exactly as written.
+
+⛔ **One deposit still spreads across both chambers**, because the spread is per furnace and the oven has
+two. Per-chamber independence is U9.2's (its Step 4 groups the cells into connected components); until
+then, charging is a whole-oven operation.
 
 ---
 
@@ -238,13 +278,36 @@ are to the draft and to the vanilla assets it reuses.
 | origin | `(-4, -2)` | draft | negation of `C`'s `(col 4, row 2)` |
 | output item | `game:coke` | vanilla | no new item |
 | wall material | `game:claybricks-good-fire` | vanilla | vanilla's own coke-oven-viable brick |
-| coke yield per coal | *(undecided)* | - | must at least match vanilla's, or the bulk oven is a downgrade |
-| cycle time | *(undecided)* | - | should reward the build without trivialising fuel |
-| lid gate | coking only while shut | design, above | reads `BlockEntityChargeDoor.IsVenting` |
+| units per cell | 12 | `BEBehaviorFirebox.CellCapacity` | 6 drawn courses x 2 units |
+| units per oven | **144** | 12 cells x 12 | against a vanilla pile's **16** |
+| `CokeOvenYieldFrac` | **0.9**, truncated | `IiexConfig.cs` | 10 of a cell's 12; vanilla's bituminous rate is **0.75** |
+| `CokeOvenCycleSec` | **3600** | `IiexConfig.cs` | untuned; three firebox charges |
+| `CokeOvenLightC` | 400 °C | `IiexConfig.cs` | a formality, not a process temperature |
+| `CokeOvenCokingCoals` | `["bituminous"]` | `IiexConfig.cs` | by ruling; vanilla would also coke lignite |
+| lid gate | coking only while shut | `BlockEntityCokeOven.Sealed` | **built** - reads `BlockEntityChargeDoor.IsVenting` on both the crown lid and the drawing door, and this is that property's first consumer anywhere in `src/` |
+| core recipe | `BBB,BHB,BBB` | `FurnaceRecipeDefinitions.cs` | 8 `game:burnedbrick-fire` + hammer; the cheapest core in the file, deliberately |
 
-The yield and the cycle time decide whether this machine is worth building. Neither has been chosen, and
-both have to be set against vanilla's own coke oven rather than in isolation - the bulk oven must be a
-better rate, not merely a bigger box.
+★★ **Vanilla's own figures, which these are set against**, read from
+`.game/1.20/assets/survival/itemtypes/resource/ore-ungraded.json` and
+`.compat/vintagestory/vssurvivalmod/BlockEntity/BECoalPile.cs`:
+
+| Vanilla | Value |
+|---|---|
+| bituminous → coke | **0.75** (`cokeConversionRateByType`) |
+| lignite → coke | **0.5** - so vanilla cokes it and this oven does not |
+| anthracite → coke | no entry, so **0** in both |
+| bake time | **12 game hours** (`BECoalPile.cs:258`) |
+| pile size | **16** coal (`MaxStackSize`, `:69`) |
+
+So the oven is **9× the charge at 10/12 against 3/4** - a better rate, not merely a bigger box, which is
+the bar the design set. The yield is truncated exactly as vanilla truncates its own, so a bake can never
+mint fuel.
+
+⛔ **The cycle length is deliberately not vanilla's 12 game hours.** While a chunk is loaded the production
+tick counts **real** seconds and only the away-catch-up converts game hours
+(`BEBehaviorProductionMachine.RunAwayCatchup` → `GameTime.SecondsBetween`, hours × 3600), so a literal 12
+game hours would be a twelve-hour real wait. It is sized against the mod's own clock and is the one number
+here still wanting playtest.
 
 ---
 

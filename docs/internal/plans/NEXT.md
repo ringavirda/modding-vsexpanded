@@ -258,6 +258,56 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   Both boilers moved to rivets **mass-neutrally** (Cornish 16 nail bundles → 32 rivets, Lancashire 24 → 48).
   `PressureVesselGate` asserts the negative - that no boiler stage accepts nails - which almost nothing else
   in the suite does.
+- **U9.4 is DONE** (2026-08-21), and with it **the coke oven is finished and craftable** - core recipe,
+  crown-lid recipe, two cost rows, golden, handbook page 11 in three locales.
+  ⛔⛔ **The step's own 2026-08-05 correction was stale**: it claimed `furnace-chargedoor` had no recipe
+  either and belonged to U6.11 - U6.11 shipped it, so only the chargelid was missing and the *original*
+  wording was right again. The step's instruction to grep rather than believe it is what caught this.
+  ⛔ The **cupola core still has no cost row** - confirmed and flagged in place, not fixed.
+  Next is **U9.5-U9.11**, crucible steel: seven tasks, entirely untouched.
+- **U9.3 is DONE** (2026-08-21) - the seal gate. A chamber cokes only with its crown lid and its drawing
+  door shut, and `BlockEntityChargeDoor.IsVenting` has its **first consumer anywhere in `src/`**.
+  ★★ **The proof it is real was that it broke every U9.2 cycle test**: their rig had no lids, and a missing
+  closure reads as open - which is the correct reading, since treating it as shut would let a player skip
+  the gate by demolishing it.
+  ★ **The core finds its lids, never the reverse** - a lid stands three courses above the anchor against
+  `ComponentScanAbove = 1`. Pinned as its own case.
+  ⛔ The per-chamber HUD lines went in `AppendHeatExtras`, not `AppendReadyInfo`: the ready hook is the
+  *unlit* line, and an oven refusing to coke is lit. Next is **U9.4**, the recipe - the oven is
+  creative-only until it lands.
+- **U9.2 is DONE** (2026-08-21) - the oven bakes: bituminous coal to `game:coke` on a per-chamber timer.
+  ★★ **Vanilla's own numbers are in `.game/`** and settled what the design page had as *(undecided)*:
+  `cokeConversionRateByType` gives bituminous **0.75** / lignite **0.5**, and `BECoalPile.cs:258` gives 12
+  game hours on a 16-coal pile. Ours is 0.9 truncated (10/12 effective) over 144 units - both pinned
+  against vanilla in tests.
+  ⛔⛔ **The obvious per-chamber test proves nothing**: "charge the west, only the west cokes" passes on a
+  single shared clock too. The case that bites charges the east **late**, mid-bake.
+  ⛔⛔ **`BurnOutCharge` had to be overridden** - it keeps only a fraction of each bed as salvage, and an
+  oven that goes out before reaching its light temperature would have eaten its own charge.
+  ⛔ The cycle length is **not** vanilla's 12 game hours: the loaded tick counts real seconds and only the
+  away-catch-up counts game ones. Untuned. Next is **U9.3**, the lid gate - until it lands nothing requires
+  the chamber to be sealed.
+- **U9.1 is DONE** (2026-08-21) - the beehive coke oven stands, completes at every facing and holds a
+  charge; `SmeltCycle` is empty, so it does not coke yet and has no recipe.
+  ⛔⛔ **`FireboxCellCount` was a bounding box.** `ChargeCapacityUnits` and the sealed `MinChargeToIgnite`
+  both derive from it, and the oven's twelve chamber cells sit either side of a shared wall: box 14, cells
+  12. It could never have been lit, silently. Now counted off `LocalCellsWithRole`, which is world-free;
+  every shipped hearth is a solid cuboid and is unchanged.
+  ⛔⛔ **The crown hopper is a shaft-furnace device** - its drip feeds `NextChargeColumn`, which the firebox
+  branch seals off - so it would have charged zero cells. Dropped; the chambers charge at the firebox like
+  every other firebox in the mod.
+  ⛔ **The plan and `coke-oven.md` named different charges**; the owner ruled fireboxes, on a fact from
+  vanilla neither page had. Next is **U9.2**, the coking cycle.
+- **U8 is DONE** (2026-08-21) - U8.11 closed it. The forming shop has a handbook page at last,
+  `docs/iiex/handbook/10-formingshop.html` in three locales, covering the mill, the shear, both fastener
+  benches, the reheat furnace and the rack. ⛔⛔ **The handbook sync test would never have caught its
+  absence**: `Problems()` reports an orphan on one side only, so a page with neither a source nor a
+  descriptor is invisible to it - five machines shipped undiscoverable with every suite green.
+  ⛔ **shear.md was stale in six sections**, and § Assets - the one Step 3 named - was not among them; it
+  had been fixed on 2026-08-13 and the *build* invalidated the rest eight days later.
+  ⛔ **U8's gate is not met and cannot be met by this plan**: it wants a survival walkthrough and no roll set
+  is craftable. That is **U7.10**, blocked on the unbuilt lathe, and it is the one thing between the forming
+  shop and a demonstration.
 - **The fastener benches are BUILT** (2026-08-21) - a nail cutter and a riveter, and with them the two
   rolled products that had no consumer at all. Nail plate 100 u makes 4 nail bundles, rivet rod 25 u makes 2
   rivet bundles at 12.5 u each, both exact. ★★ It is **one** blocktype with a `type` variant, taken straight

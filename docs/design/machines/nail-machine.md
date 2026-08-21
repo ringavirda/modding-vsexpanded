@@ -54,11 +54,11 @@ It is a bench, and the player builds several. The reference photograph is a hall
 | Asset | Path | State |
 |---|---|---|
 | **editable shape** | `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-nailcutter.json` | drawn and tracked. Exported to `assets/iiex/shapes/forming/nailcutter.json` (2026-08-21) through `convert-shape.py` |
-| runtime shape | `assets/iiex/shapes/…` | missing - never exported |
+| runtime shape | `assets/iiex/shapes/forming/nailcutter.json` | **shipped** (2026-08-21) |
 | textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
 | animations | `idle` and `cycle` | both authored and both exported as `Repeat` |
 | reference art | `assets/editable/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
-| lang / handbook | `assets/iiex/lang/en.json`, `docs/iiex/handbook/` | no key, no page |
+| lang / handbook | `assets/iiex/lang/{en,ru,uk}.json`, `docs/iiex/handbook/10-formingshop.html` | **both shipped**; the page covers the whole forming shop rather than this bench alone |
 
 What is already drawn, read off the element tree:
 
@@ -185,10 +185,11 @@ Where a caller hooks in. To add a bench of this family: `BlockNetworkNode` with 
 
 ## Open
 
-- **Nothing is built** - block, BE, def, recipe, runtime shape, animations, lang, handbook, tests.
-- **`nailplate` the item does not exist** (build item 12d), nor does the `flat` 1.5 → 1.0 schedule that rolls it from a rod (build item 4).
-- **Does the bench take a die at all?** The nail die is the only die it can ever hold, so a fitted-tooling slot may be pure ceremony. Against that: sharing one `ItemDie` code path with the heading machine is the reason the two benches share a base. Undecided.
-- **Atomic or per-stroke consumption.** Four strokes per plate reads better and costs a `strokesDone` field; one-shot is simpler and hides the machine's only animation.
-- **Footprint vs the drawn asset** - 1 × 1 with an overhanging shaft, or a genuine megablock. The filename says one thing and the design says the other.
-- **Whether the bench needs a torque gate at all.** Nails are the cheapest fastener in the game and gating them on drive would be the wrong friction; but a bench that runs at any speed makes the flywheel decorative.
+- ~~Nothing is built.~~ **Built 2026-08-21** - block, BE, def, recipe, runtime shape, animations, lang, handbook and tests all ship. ⛔ **Nothing has been walked in game.**
+- ~~`nailplate` the item does not exist.~~ **Shipped**, and the shear crops a plate into two of them.
+- ~~Does the bench take a die at all?~~ **Yes, ruled by the owner 2026-08-21** - and for a reason neither page had: the steam hammer's stamping wants dies too. It holds `iiex:die-nail`, and a rivet die fitted here is refused rather than quietly working.
+- ~~Atomic or per-stroke consumption.~~ **One stroke, one plate.** The plate converts whole - four bundles at once - which is what makes this a terminal station rather than another rung of the ladder.
+- ~~Footprint vs the drawn asset.~~ **Four cells**, from the owner's layout. The filename was right and the design page was wrong; see § Structure.
+- ~~Whether the bench needs a torque gate at all.~~ **It has one**, at `minTorque` 0.2 - the lightest on the line, matching the `flat` roll set, so a starter waterwheel carries it. The gate is what makes the flywheel load-bearing rather than decorative.
+- Die wear. `ItemDie` gives every die `MaxStackSize(1)` so it can carry wear, and nothing wears it yet.
 - **Tray capacity and whether it is a real inventory.** A visible box of nails is worth a lot of the machine's readability, and R7 (nothing is hidden) asks for the count to be legible.

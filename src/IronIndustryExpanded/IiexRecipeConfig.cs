@@ -79,6 +79,11 @@ public class IiexRecipeConfig : IExVersionedConfig {
       ["heatinghearth-grid"] = Grid("iiex:furnace-heatinghearth-*"),
       ["puddlingchargedoor-grid"] = Grid("iiex:furnace-puddlingchargedoor-*"),
       ["chargedoor-grid"] = Grid("iiex:furnace-chargedoor-*"),
+      ["chargelid-grid"] = Grid("iiex:furnace-chargelid-*"),
+      ["cokeoven-grid"] = Grid("iiex:furnace-cokeovencore-*"),
+      // Noted while adding these: the shipped cupola core recipe still has no cost row, so it
+      // does not rescale with RecipeLevel. Left alone rather than fixed in passing - it belongs
+      // to whichever unit owns the cupola.
       ["puddlingchimneycap-grid"] = Grid("iiex:furnace-puddlingchimneycap-*"),
       ["firebox-grid"] = Grid("iiex:furnace-firebox-*"),
 

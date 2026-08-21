@@ -13,7 +13,12 @@ namespace IronIndustryExpanded.Recipes.Grid;
 /// </summary>
 public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
-    [BlastFurnace(domain), Cupola(domain), Reverberatory(domain)];
+    [
+      BlastFurnace(domain),
+      Cupola(domain),
+      Reverberatory(domain),
+      CokeOven(domain),
+    ];
 
   private static ExRecipeDef BlastFurnace(string domain) =>
     ExRecipeDef
@@ -240,6 +245,51 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
           .Ingredient("R", Rod(1))
           .OutputBlock("iiex:furnace-firebox-{tier}-n")
       );
+
+  /// <summary>
+  /// The coke oven's core, and the crown lid that seals its chambers.
+  /// <para>
+  /// Fire brick rather than refractory, and deliberately the cheapest core in the file: coke is the fuel
+  /// half of every shaft charge and burns in both reverberatory fireboxes, so an oven priced against what
+  /// it unlocks would gate the whole iron tier behind the tier it is meant to open. Vanilla agrees about
+  /// the material - <c>claybricks</c> carries <c>cokeOvenViableByType: { "*-fire": true }</c>, so this is
+  /// the game's own coke-oven masonry.
+  /// </para>
+  /// </summary>
+  private static ExRecipeDef CokeOven(string domain) =>
+    ExRecipeDef
+      .Create(domain, "grid", "cokeoven")
+      // A beehive of brick round a void, which is what the pattern draws. It shares no pattern with the
+      // blast core ("BRP,BN_,BRP") or the cupola core ("BRB,PCP,BRB"); two recipes on one pattern whose
+      // ingredients overlap leave the loser silently unresolvable.
+      .Grid(r =>
+        r.Name("Coke Oven Core")
+          .Pattern("BBB,BHB,BBB")
+          .Size(3, 3)
+          .Ingredient("B", FireBrick(1))
+          .Ingredient("H", Hammer)
+          // The creative default variant, which is the letter and not the word.
+          .OutputBlock("iiex:furnace-cokeovencore-n")
+      )
+      // The crown lid: the charge door's chassis laid flat over a charging hole. Refractory like the door
+      // it shares a class with, not fire brick like the oven - it is a furnace part, and the draft
+      // crucible furnace wants it too.
+      .Grid(r =>
+        r.Name("Charge Lid")
+          .Pattern("_P_,BSB,_H_")
+          .Size(3, 3)
+          .Ingredient("B", Refractory(2))
+          .Ingredient("P", Plate(1))
+          .Ingredient("S", Nails(2))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:furnace-chargelid-s")
+      );
+
+  // Vanilla's fired fire-brick, the item behind `claybricks-good-fire`. Cheaper than refractory and the
+  // only masonry the coke oven asks for.
+  private static Func<IngredientBuilder, IngredientBuilder> FireBrick(
+    int qty
+  ) => i => i.Item("game:burnedbrick-fire").Quantity(qty);
 
   // The heavy cast plate a hearth's bottom is made of - U1's casting route, and the reason that route is
   // this unit's entry condition.
