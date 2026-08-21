@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Nail Die",
+    "ingredientPattern": "PP,_H",
+    "width": 2,
+    "height": 2,
+    "output": {
+      "type": "item",
+      "code": "iiex:die-nail",
+      "quantity": 1
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-iron",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Rivet Die",
+    "ingredientPattern": "P_,PH",
+    "width": 2,
+    "height": 2,
+    "output": {
+      "type": "item",
+      "code": "iiex:die-rivet",
+      "quantity": 1
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-iron",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

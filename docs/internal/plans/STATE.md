@@ -105,7 +105,7 @@ coke ─────────────────────────
    grooved 1.0   flat 1.0
    rivetrod      nailplate
         │           │
-   rivet machine  nail machine   [both designed] ──▶ rivets · nails-and-strips
+   rivet machine  nail machine   [both BUILT]    ──▶ rivets · nails-and-strips
                                   shear [designed] — owns every crop
 ```
 
@@ -208,10 +208,25 @@ Later rulings, one line each:
   walks curvature *up* in passes, so `WorkPiece` gains a curvature axis. A separate block, because three
   rolls bend and two reduce. Welding is implied by placement, not a verb —
   [bending-roller](../../design/machines/bending-roller.md), [bending](../../design/processes/bending.md).
-* **Fasteners (2026-07-30, reaffirmed 2026-08-15)** — two machines, two routes, **no dies, no bolts**: the
-  nail machine shears and heads nailplate in one pass; the **rivet machine** cuts and upsets rod @ 25 u;
-  both **iwex**. iwex machines accept nails or rivets (merely structural = substitutable); lpex's boiler
-  requires rivets (must-hold-pressure = not) — [fasteners](../../design/items/fasteners.md).
+* **Fasteners (2026-07-30, ~~reaffirmed 2026-08-15~~, amended 2026-08-21)** — two machines, two routes,
+  **no bolts**: the nail machine shears and heads nailplate in one pass; the **rivet machine** cuts and
+  upsets rod @ 25 u; both **iwex**. iwex machines accept nails or rivets (merely structural =
+  substitutable); the boiler requires rivets (must-hold-pressure = not) —
+  [fasteners](../../design/items/fasteners.md).
+  ⛔⛔ **"No dies" is struck (owner, 2026-08-21): the benches take dies after all.** This row and
+  [machining-line](../../design/mechanics/machining-line.md) § Tooling contradicted each other for nine
+  days - `ItemDie` shipped in exlib on the machining line's reading while this row said the family was
+  dropped. The owner's reason settles it and is new information: **dies are wanted for the steam hammer's
+  stamping as well**, so the contract has a second consumer and is not the nail bench's alone. What the
+  original ruling actually rejected was the **die-fed bolt route** and a heading bench standing in for two
+  machines; both stay rejected.
+  ★★ **BUILT 2026-08-21**: both benches, die-fed, as one blocktype with a `type` variant. The
+  substitution rule is built at **six sites** (four plated pipe segments, the tall hopper, the plated
+  molten barrel) rather than at every nail site - ⛔ Vintage Story has no OR across item codes, in a grid
+  ingredient or in an RCC `requireStacks` (which is an AND list), so substitution costs one duplicated
+  recipe per site and the scope was chosen to stop it multiplying against the two gear routes. Both
+  boilers moved to rivets **mass-neutrally**: Cornish 16 nail bundles → 32 rivets, Lancashire 24 → 48, the
+  same metal either way, because the gate is the change and not the price.
   ★ The 25 u blank ships as **`iiex:rivetrod`** (2026-08-14, named 2026-08-15) — named for the bench
   because it is a *quarter* of vanilla's rod by section and by mass, so a bare `rod` would ship two items a
   player cannot tell apart. ⛔ [heading-machine.md](../../design/machines/heading-machine.md) had

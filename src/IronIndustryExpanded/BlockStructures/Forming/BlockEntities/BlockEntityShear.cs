@@ -24,37 +24,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityShear
-  : BlockEntityMachineStation,
-    IMpEnergyConsumer,
-    IProductionReadiness {
-  private readonly HostMembership _membership;
-
-  public BlockEntityShear() {
-    // Added in the constructor for the reason the mill's are: BlockEntity fans FromTreeAttributes and
-    // Initialize out over Behaviors, so either one added later misses whichever has already run.
-    _membership = new HostMembership(this);
-    Behaviors.Add(_membership);
-    Behaviors.Add(new HostProcess(this));
-  }
-
-  /// <summary>The network manager the shear is registered with. Held by the membership, which is what
-  /// registers with it; the setter writes through so a fixture can inject a test graph.</summary>
-  public BlockNetworkModSystem? NetworkSystem {
-    get => _membership.NetworkSystem;
-    protected set => _membership.NetworkSystem = value;
-  }
-
-  /// <summary>The shear's place on the mechanical-energy graph. It carries no state of its own: the
-  /// stroke reads the live network each tick rather than caching a broadcast.</summary>
-  private sealed class HostMembership(BlockEntityShear owner)
-    : BEBehaviorNetworkMember(owner) {
-    public override string NetworkType {
-      get => "mpenergy";
-      protected set { }
-    }
-  }
-
+public class BlockEntityShear : BlockEntityMpBench {
   #region Inventory
 
   /// <summary>The fitted blade set - the tooling whose temper gates which jobs the shear will take.</summary>
@@ -83,45 +53,12 @@ public class BlockEntityShear
 
   #endregion
 
-  // The stroke advances on its own 250 ms clock rather than the network's 1 s tick, so the guillotine
-  // reads as continuous motion; the speed it samples is whatever the run settled at on the last tick.
-  private const int StrokeTickMs = 250;
-
-  /// <summary>The stroke clock. It keeps no copy of the shear's state and reads the gate off the block
-  /// entity each tick, so a piece offered between two ticks is cut on the next one.</summary>
-  // no away-catch-up: a stroke is drawn by the run that is turning now, so an absence has nothing to
-  // replay. A piece left mid-stroke is found exactly as it was left.
-  private sealed class HostProcess(BlockEntityShear owner)
-    : BEBehaviorProductionMachine(owner) {
-    protected override int ProductionTickMs => StrokeTickMs;
-
-    protected override void OnProductionTick(float dt) =>
-      owner.AdvanceStroke(dt);
-  }
-
-  #region Readiness
-
-  /// <summary>Whether the shear has work this tick. A stroke is the only thing its clock advances.</summary>
-  public bool IsReadyToProduce => IsStroking;
-
-  /// <summary>Always <c>false</c>: an idle shear keeps its clock, or a machine that gave the tick up when
-  /// it emptied would never finish the next stroke.</summary>
-  public bool StopsProductionWhenNotReady => false;
-
-  #endregion
-
   #region The stroke
 
-  // Seconds of stroke left; 0 means idle. Persisted so a bite survives a reload. The job is re-resolved
-  // on completion rather than stored, so retuning a crop table reaches a piece already under the blades.
-  private float _remaining;
+  // Heat of the piece under the blades, which is what the cold multiplier is applied to. The job is
+  // re-resolved on completion rather than stored, so retuning a crop table reaches a piece already under
+  // the blades.
   private float _tempC;
-
-  /// <summary>Whether a stroke is under way.</summary>
-  public bool IsStroking => _remaining > 0f;
-
-  /// <summary>Seconds of stroke left, for the block info readout.</summary>
-  public float Remaining => _remaining;
 
   /// <summary>The temper of the fitted blades, or <c>-1</c> when the nest is bare.</summary>
   public int BladeTier => MachineTool.TierOf(_blades);
@@ -189,32 +126,14 @@ public class BlockEntityShear
     _piece = stack.Clone();
     _piece.StackSize = 1;
     _tempC = tempC;
-    _remaining = decision.Job!.Seconds;
+    BeginStroke(decision.Job!.Seconds);
     MarkDirty(true);
     return decision;
   }
 
-  /// <summary>
-  /// Advances the stroke by <paramref name="dt"/> seconds. A stroke is drawn from a turning run, so a run
-  /// that stops holds the guillotine where it is rather than finishing the cut: it resumes when the run
-  /// does, and nothing is lost.
-  /// </summary>
-  /// <returns>True when the stroke completed on this advance.</returns>
-  public bool AdvanceStroke(float dt) {
-    if (!IsStroking || Speed <= 0f)
-      return false;
-
-    _remaining -= dt;
-    if (_remaining > 0f) {
-      MarkDirty();
-      return false;
-    }
-    CompleteStroke();
-    return true;
-  }
-
-  private void CompleteStroke() {
-    _remaining = 0f;
+  /// <summary>The cut itself: the crop is committed here and nowhere else, so an interrupted stroke leaves
+  /// the stock exactly as it went in.</summary>
+  protected override void CompleteStroke() {
     ItemStack? input = _piece;
     _piece = null;
 
@@ -234,27 +153,6 @@ public class BlockEntityShear
   }
 
   /// <summary>
-  /// The stack a job's output code names, or null when it names nothing. A dead code is a table fault
-  /// rather than a machine fault, so the stroke still consumes its input and the miss is logged once.
-  /// </summary>
-  private ItemStack? Resolve(string code, int quantity) {
-    var location = new AssetLocation(code);
-    Item? item = Api!.World.GetItem(location);
-    if (item != null)
-      return new ItemStack(item, quantity);
-
-    Block? block = Api.World.GetBlock(location);
-    if (block != null)
-      return new ItemStack(block, quantity);
-
-    Api.Logger.Warning(
-      "[iiex] shear job output '{0}' names no item or block; the stroke produced nothing.",
-      code
-    );
-    return null;
-  }
-
-  /// <summary>
   /// What is left of the input after one crop. A staged job leaves the piece as stock at the same stage
   /// with one more crop tallied; a whole-item job consumes it, so nothing comes back.
   /// </summary>
@@ -268,12 +166,6 @@ public class BlockEntityShear
     return input;
   }
 
-  private void Eject(ItemStack? stack) {
-    if (stack == null || Api?.World == null || Pos == null)
-      return;
-    Api.World.SpawnItemEntity(stack, Pos.ToVec3d().Add(0.5, 1.0, 0.5));
-  }
-
   /// <summary>
   /// Takes a piece back out from under the blades, backing the wrench interaction. The stack is returned
   /// unchanged, since the interrupted crop was never tallied. Returns null when nothing is stuck.
@@ -283,7 +175,7 @@ public class BlockEntityShear
       return null;
     ItemStack? piece = _piece;
     _piece = null;
-    _remaining = 0f;
+    AbandonStroke();
     MarkDirty(true);
     return piece;
   }
@@ -313,31 +205,12 @@ public class BlockEntityShear
 
   #region Network
 
-  private MpEnergyNetworkState? RunState =>
-    (NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State;
-
-  /// <summary>Shaft speed of the run this tick. Zero means at rest, which no stored energy overcomes.</summary>
-  private float Speed => RunState?.Speed ?? 0f;
-
-  /// <summary>
-  /// Drive torque the run is putting out this tick, recovered as <c>P / ω</c> from the supply power the
-  /// network already publishes.
-  /// <para>
-  /// This is what closes shear.md's open question about reading drive torque, and it needs neither a new
-  /// state field nor a stored-energy proxy: <c>SupplyPower</c> is written as <c>driveTorque * Speed</c>
-  /// each tick (<c>MpEnergyNetworkState.Step</c>), so the division is exact. A stopped run is refused as
-  /// <see cref="ShearVerdict.NotTurning"/> before this is read, which is also what keeps it defined.
-  /// </para>
-  /// </summary>
-  private float AvailableTorque =>
-    RunState is { Speed: > 0f } run ? run.SupplyPower / run.Speed : 0f;
-
   /// <summary>
   /// What the shear draws off the run: the stroke's own demand while a piece is under the blades and
   /// nothing when the nest is empty. An idle shear is a free passthrough on the line shaft, the same
   /// contract the mill's stand keeps.
   /// </summary>
-  public float LoadTorque(float speed) =>
+  public override float LoadTorque(float speed) =>
     IsStroking && JobFor(_piece) is { } job
       ? ShearFeed.RequiredTorque(
         job,
@@ -361,7 +234,7 @@ public class BlockEntityShear
     );
     if (IsStroking)
       dsc.AppendLine(
-        Lang.Get("iiex:shear-stroking", _remaining.ToString("0.0"))
+        Lang.Get("iiex:shear-stroking", Remaining.ToString("0.0"))
       );
   }
 
@@ -369,12 +242,10 @@ public class BlockEntityShear
 
   #region Persistence
 
-  private const string RemainingKey = "shearRemaining";
   private const string TempKey = "shearTempC";
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    tree.SetFloat(RemainingKey, _remaining);
     tree.SetFloat(TempKey, _tempC);
   }
 
@@ -383,7 +254,6 @@ public class BlockEntityShear
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _remaining = tree.GetFloat(RemainingKey);
     _tempC = tree.GetFloat(TempKey);
   }
 

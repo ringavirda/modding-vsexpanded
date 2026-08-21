@@ -124,9 +124,13 @@ def close_loop(anim):
 
     Two rules, both guarded by LoopingAnimationTests and both invisible outside the game:
 
-      1. An element posed at the first keyframe but not the last drifts back to its frame-0 pose
-         across the wrap instead of returning through the drawn motion. Copying the first pose onto
-         the last keyframe makes the return land on time and hold.
+      1. Every element the clip touches must be posed at BOTH ends of it, at the same pose. An element
+         missing from the last keyframe drifts back to its frame-0 pose across the wrap instead of
+         returning through the drawn motion; one missing from the first holds its mid-clip pose from
+         the loop point until the animator next reaches it, then jumps - a hitch at the same place
+         every cycle. The element's own earliest pose is the one written to both ends: it is the state
+         the artist drew it resting at, and for an element already posed at frame 0 that is frame 0's
+         pose, which is what this rule has always copied forward.
       2. A shaft that turns a whole revolution reads as `0 -> 360` and the animator unwinds it
          backwards unless the last keyframe carries `rotShortestDistance<Axis>`.
     """
@@ -138,10 +142,18 @@ def close_loop(anim):
         return  # a single held pose has no wrap to close
 
     first, last = frames[0], frames[-1]
-    first_elems = first.get("elements") or {}
+    first_elems = first.setdefault("elements", collections.OrderedDict())
     last_elems = last.setdefault("elements", collections.OrderedDict())
 
-    for element, pose in first_elems.items():
+    # The pose each element rests at, taken from the earliest keyframe that names it.
+    rest = collections.OrderedDict()
+    for kf in frames:
+        for element, pose in (kf.get("elements") or {}).items():
+            rest.setdefault(element, pose)
+
+    for element, pose in rest.items():
+        if element not in first_elems:
+            first_elems[element] = collections.OrderedDict(pose)
         if element not in last_elems:
             last_elems[element] = collections.OrderedDict(pose)
             continue

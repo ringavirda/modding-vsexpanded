@@ -1,0 +1,40 @@
+[
+  {
+    "name": "Nail Cutter",
+    "ingredientPattern": "_R_,PGP,_H_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:forming-nailcutter-ns",
+      "quantity": 1
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "iiex:castplate-heavy",
+        "quantity": 1
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "G": {
+        "type": "item",
+        "code": "iiex:spurgear",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

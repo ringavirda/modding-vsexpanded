@@ -1,0 +1,121 @@
+{
+  "code": "forming",
+  "class": "iiex.BlockFastenerBench",
+  "entityClass": "iiex.BlockEntityFastenerBench",
+  "blockmaterial": "Metal",
+  "sounds": {
+    "walk": "game:walk/metal",
+    "place": "game:block/anvil"
+  },
+  "maxstacksize": 1,
+  "attributes": {
+    "handbook": {
+      "groupBy": [
+        "forming-nailcutter-*"
+      ]
+    }
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "nailcutter",
+        "riveter"
+      ]
+    },
+    {
+      "code": "orientation",
+      "states": [
+        "ns",
+        "we"
+      ]
+    }
+  ],
+  "shapebytype": {
+    "*-nailcutter-ns": {
+      "base": "iiex:forming/nailcutter",
+      "rotateY": 0
+    },
+    "*-nailcutter-we": {
+      "base": "iiex:forming/nailcutter",
+      "rotateY": 90
+    },
+    "*-riveter-ns": {
+      "base": "iiex:forming/riveter",
+      "rotateY": 0
+    },
+    "*-riveter-we": {
+      "base": "iiex:forming/riveter",
+      "rotateY": 90
+    }
+  },
+  "attributesByType": {
+    "*-nailcutter-*": {
+      "fillerOffsets": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        }
+      ]
+    },
+    "*-riveter-*": {
+      "fillerOffsets": [
+        {
+          "x": -1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": -1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        }
+      ]
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*-ns"
+    ],
+    "iiex": [
+      "*-ns"
+    ]
+  },
+  "entityBehaviors": [
+    {
+      "name": "Animatable"
+    }
+  ],
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

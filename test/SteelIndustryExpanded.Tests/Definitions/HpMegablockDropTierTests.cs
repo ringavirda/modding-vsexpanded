@@ -89,7 +89,10 @@ public class HpMegablockDropTierTests {
     Dictionary<string, int> cost = ConstructionCost(Lancashire());
 
     Assert.Equal(34, cost["metalplate-steel"]); // 10 + 8 + 16
-    Assert.Equal(24, cost["metalnailsandstrips-*"]); // 8 + 8 + 8
+    // Riveted, not nailed: a pressure vessel is the one place the fastener is a gate. 48 bundles at
+    // 12.5 u is the 600 u the 24 nail bundles cost, so the move was mass-neutral.
+    Assert.Equal(48, cost["iiex:rivet"]); // 16 + 16 + 16
+    Assert.DoesNotContain("metalnailsandstrips-*", cost.Keys);
     Assert.Equal(10, cost["rod-steel"]); // 4 + 6
     Assert.Equal(60, cost["game:burnedbrick-fire"]); // 12 + 48
   }

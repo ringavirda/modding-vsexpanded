@@ -12,6 +12,39 @@ namespace IronIndustryExpanded.Recipes;
 /// </summary>
 internal static class RecipeIngredients {
   /// <summary>
+  /// The fasteners an ordinary structural joint accepts, in the order recipes are emitted for them. A
+  /// merely-structural joint takes either - a nail and a rivet both hold plate together - so a shop that
+  /// has built the riveter need not keep an anvil going for nails as well. A joint that must also be
+  /// tight is a different rule and lives on the boiler, which takes rivets alone.
+  /// See docs/design/items/fasteners.md and STATE.md.
+  /// </summary>
+  /// <remarks>
+  /// A list rather than one ingredient because Vintage Story has no OR across item codes - not in a grid
+  /// ingredient and not in an RCC <c>requireStacks</c> entry, which is an AND list. So substitution is one
+  /// recipe per fastener, the way the two gear routes are already authored. Six sites carry it rather than
+  /// every nail site: past that the duplication starts multiplying against the gear loop.
+  /// </remarks>
+  internal static string[] Fasteners(string domain) =>
+    [
+      "game:metalnailsandstrips-*",
+      $"{domain}:{Items.FastenerItemDefinitions.RivetCode}",
+    ];
+
+  /// <summary>
+  /// One fastener, by code. The metal capture rides along only where the code carries a variant to
+  /// capture: nails have a metal axis and the rivet has none. No output at the six sites reads
+  /// <c>{metal}</c>, so the two variants of a recipe differ in nothing but this ingredient - which is what
+  /// keeps them from clashing on their shared pattern.
+  /// </summary>
+  internal static System.Func<IngredientBuilder, IngredientBuilder> Fastener(
+    string code,
+    int quantity
+  ) =>
+    code.Contains('*')
+      ? i => i.Item(code).Metal().Quantity(quantity)
+      : i => i.Item(code).Quantity(quantity);
+
+  /// <summary>
   /// The vanilla rock types a molten canal can be cut from. Shared so the diagram-crafted canals
   /// (<see cref="Grid.DiagramRecipeDefinitions"/>) capture the same <c>{rock}</c> set as the
   /// hand-patterned ones (<see cref="Grid.MoltenRecipeDefinitions"/>); otherwise the two paths yield

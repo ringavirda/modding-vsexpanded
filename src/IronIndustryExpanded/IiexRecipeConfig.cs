@@ -153,6 +153,11 @@ public class IiexRecipeConfig : IExVersionedConfig {
       ["rollingmill-grid"] = Grid("iiex:forming-rollingmill-*"),
       ["shear-grid"] = Grid("iiex:forming-shear-*"),
       ["shearblade-grid"] = Grid("iiex:shearblade-*"),
+      // The two fastener benches and the dies they work with. The nail cutter is the cheap one on purpose:
+      // rivets out-yield nails, so build cost is the only reason to keep a nail route at all.
+      ["nailcutter-grid"] = Grid("iiex:forming-nailcutter-*"),
+      ["riveter-grid"] = Grid("iiex:forming-riveter-*"),
+      ["die-grid"] = Grid("iiex:die-*"),
 
       // RCC constructions (the heavy multiblock build costs). The Lancashire boiler and Cornish
       // engine are catalogued in HpexRecipeConfig.

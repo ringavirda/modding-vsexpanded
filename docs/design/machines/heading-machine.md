@@ -1,14 +1,20 @@
 # Heading machine
-**Status** designed - nothing built; no block, no BE, no die item, no recipe, no shape. ★ **Its input landed 2026-08-14**: the 25 u blank ships and is obtainable, four off a rod taken down the grooved branch to 1.0, so this bench is no longer blocked on the forming line. ⛔⛔ **But this page's premise is contested as of 2026-08-15** — see below   **Mod** iiex (`IronIndustryExpanded`)
+**Status** designed - nothing built; no block, no BE, no recipe, no shape. ★ **The die contract it owns IS built** (`ItemDie` in exlib, first used by the two fastener benches 2026-08-21). ★ **Its input landed 2026-08-14**: the 25 u blank ships and is obtainable, four off a rod taken down the grooved branch to 1.0, so this bench is no longer blocked on the forming line. ⛔⛔ **But this page's premise is contested as of 2026-08-15** — see below   **Mod** iiex (`IronIndustryExpanded`)
 
 ⛔⛔ **Owner ruling, 2026-08-15: the blank is a rivet rod, cut and upset by a RIVET MACHINE.** The item
-shipped accordingly as `iiex:rivetrod`. That restores [STATE.md](../../internal/plans/STATE.md)'s settled
-Fasteners row of 2026-07-30 — *"two machines, two routes, **no dies, no bolts**: the nail machine shears and
-heads nailplate in one pass; the rivet machine cuts and upsets rod @ 25 u"* — which **this page overwrote
-without recording that it was doing so**. Two things on it therefore stand unsupported until the bench is
-re-settled: the `ItemDie` tooling contract it owns, and the bolt as a product. Nothing here is built, so the
-cost of the contradiction is documentation rather than code — but [machining line](../mechanics/machining-line.md)
-cites the die contract, so re-settling it is not local to this file.
+shipped accordingly as `iiex:rivetrod`, and the riveter was **built 2026-08-21** — see
+[rivet machine](rivet-machine.md). So the bench described below is not the machine that makes rivets, and
+never was.
+
+★★ **The die half is settled, the bolt half is not (owner, 2026-08-21).** Asked directly which of this
+page and [STATE.md](../../internal/plans/STATE.md)'s *"no dies"* stood, the owner kept the dies, with a
+reason neither page had: **dies are wanted for the steam hammer's stamping as well**. So the `ItemDie`
+contract this page owns is vindicated and has two consumers, not one — and it now has its first shipped
+users, `iiex:die-nail` and `iiex:die-rivet`. ⛔ **The bolt stays rejected**: `content-waits-on-infrastructure`
+struck it as redundant against nails and rivets, and nothing here revives it.
+
+⛔ What is left unsettled on this page is therefore the **bench itself** — a heading machine for bearing
+balls, the one headed fastener neither built bench makes. Its die catalogue shrinks to that.
 
 **Owns**
 * the **`ItemDie` tooling contract** - the spec a die carries, how it is fitted, and the rule that a die-fed bench never names a product in code. Both this bench and the [nail machine](nail-machine.md) read it;

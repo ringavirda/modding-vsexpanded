@@ -1,0 +1,63 @@
+{
+  "code": "die",
+  "shape": {
+    "base": "game:item/ingot"
+  },
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "nail",
+        "rivet"
+      ]
+    }
+  ],
+  "maxstacksize": 1,
+  "attributesByType": {
+    "*-nail": {
+      "machinejob": {
+        "schema": 1,
+        "machine": "nailcutter",
+        "jobs": [
+          {
+            "input": "iiex:nailplate",
+            "output": "game:metalnailsandstrips-iron",
+            "count": 4,
+            "minTier": 0,
+            "minTorque": 0.2,
+            "seconds": 2.0
+          }
+        ]
+      }
+    },
+    "*-rivet": {
+      "machinejob": {
+        "schema": 1,
+        "machine": "riveter",
+        "jobs": [
+          {
+            "input": "iiex:rivetrod",
+            "output": "iiex:rivet",
+            "count": 2,
+            "minTier": 0,
+            "minTorque": 0.3,
+            "seconds": 3.0
+          }
+        ]
+      }
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/plate/iron"
+    }
+  }
+}

@@ -21,6 +21,13 @@ public partial class BlockBoilerLancashire
     IExBlockDefProvider {
   /// <summary>The Lancashire boiler blocktype: geometry offsets as attributes, filler footprint and
   /// structure map as ASCII layer diagrams, and the build sequence as a typed stage table.</summary>
+  /// <summary>
+  /// The fastener a pressure vessel is built with, and it is the iron tier's: a rivet is a rivet whatever
+  /// the shell is made of, and siex mints none of its own. See docs/design/items/fasteners.md.
+  /// </summary>
+  private const string RivetCode =
+    "iiex:" + IronIndustryExpanded.Items.FastenerItemDefinitions.RivetCode;
+
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Lancashire(domain)];
 
@@ -165,19 +172,19 @@ public partial class BlockBoilerLancashire
         c.Stage(s => s.AddElements("Root/Base"))
           .Stage(s =>
             s.Require("metalplate-steel", 10)
-              .RequireMetalNails(domain, 8)
+              .RequireRivets(domain, RivetCode, 16)
               .Require("game:burnedbrick-fire", 12)
               .AddElements("Root/BaseExtension")
           )
           .Stage(s =>
             s.Require("metalplate-steel", 8)
               .Require("rod-steel", 4)
-              .RequireMetalNails(domain, 8)
+              .RequireRivets(domain, RivetCode, 16)
               .AddElements("Root/Flues")
           )
           .Stage(s =>
             s.Require("metalplate-steel", 16)
-              .RequireMetalNails(domain, 8)
+              .RequireRivets(domain, RivetCode, 16)
               .Require("rod-steel", 6)
               .Require("game:burnedbrick-fire", 48)
               .AddElements("Root/Casing")

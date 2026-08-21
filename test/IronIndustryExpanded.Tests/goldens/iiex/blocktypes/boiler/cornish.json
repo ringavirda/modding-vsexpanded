@@ -51,14 +51,9 @@
               },
               {
                 "type": "item",
-                "code": "metalnailsandstrips-*",
-                "quantity": 4,
-                "name": "iiex:rcc-ingredient-nailsandstrips",
-                "allowedVariants": [
-                  "iron",
-                  "steel"
-                ],
-                "storeWildCard": "metal"
+                "code": "iiex:rivet",
+                "quantity": 8,
+                "name": "iiex:rcc-ingredient-rivet"
               },
               {
                 "type": "item",
@@ -96,14 +91,9 @@
               },
               {
                 "type": "item",
-                "code": "metalnailsandstrips-*",
-                "quantity": 4,
-                "name": "iiex:rcc-ingredient-nailsandstrips",
-                "allowedVariants": [
-                  "iron",
-                  "steel"
-                ],
-                "storeWildCard": "metal"
+                "code": "iiex:rivet",
+                "quantity": 8,
+                "name": "iiex:rcc-ingredient-rivet"
               }
             ],
             "addElements": [
@@ -125,14 +115,9 @@
               },
               {
                 "type": "item",
-                "code": "metalnailsandstrips-*",
-                "quantity": 8,
-                "name": "iiex:rcc-ingredient-nailsandstrips",
-                "allowedVariants": [
-                  "iron",
-                  "steel"
-                ],
-                "storeWildCard": "metal"
+                "code": "iiex:rivet",
+                "quantity": 16,
+                "name": "iiex:rcc-ingredient-rivet"
               },
               {
                 "type": "item",

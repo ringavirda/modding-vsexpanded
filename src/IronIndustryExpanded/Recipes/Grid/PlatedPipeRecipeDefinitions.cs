@@ -11,45 +11,51 @@ namespace IronIndustryExpanded.Recipes.Grid;
 /// segment recipes for casting and rolling.
 /// </summary>
 public class PlatedPipeRecipeDefinitions : IExRecipeDefProvider {
-  public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
-    [
-      ExRecipeDef
-        .Create(domain, "grid", "pipes-plated")
-        .Grid(r =>
-          r.Name("Piping (Straight)")
-            .Pattern("HPN")
-            .Size(3, 1)
-            .Ingredient("P", Plate(1))
-            .Ingredient("N", Nails(1))
-            .Ingredient("H", Hammer)
-            .OutputBlock("iiex:pipe-plated-straight-ns", 2)
-        )
-        .Grid(r =>
-          r.Name("Piping (Bend)")
-            .Pattern("_H,NP,_N")
-            .Size(2, 3)
-            .Ingredient("P", Plate(1))
-            .Ingredient("N", Nails(1))
-            .Ingredient("H", Hammer)
-            .OutputBlock("iiex:pipe-plated-bend-nw")
-        )
-        .Grid(r =>
-          r.Name("Piping (TJunction)")
-            .Pattern("_H_,NPN,_N_")
-            .Size(3, 3)
-            .Ingredient("P", Plate(1))
-            .Ingredient("N", Nails(1))
-            .Ingredient("H", Hammer)
-            .OutputBlock("iiex:pipe-plated-tjunction-uns")
-        )
-        .Grid(r =>
-          r.Name("Piping (XJunction)")
-            .Pattern("HN_,NPN,_N_")
-            .Size(3, 3)
-            .Ingredient("P", Plate(1))
-            .Ingredient("N", Nails(1))
-            .Ingredient("H", Hammer)
-            .OutputBlock("iiex:pipe-plated-xjunction-nswe")
-        ),
-    ];
+  public static IEnumerable<ExRecipeDef> Definitions(string domain) {
+    ExRecipeDef def = ExRecipeDef.Create(domain, "grid", "pipes-plated");
+    // One set of four segments per fastener. A plated joint is merely structural, so a nail and a rivet
+    // are interchangeable in it; the two sets share their patterns and differ only in that ingredient,
+    // which is what stops them colliding. See RecipeIngredients.Fasteners.
+    foreach (string fastener in RecipeIngredients.Fasteners(domain))
+      def = Segments(def, fastener);
+    return [def];
+  }
+
+  private static ExRecipeDef Segments(ExRecipeDef def, string fastener) =>
+    def.Grid(r =>
+        r.Name("Piping (Straight)")
+          .Pattern("HPN")
+          .Size(3, 1)
+          .Ingredient("P", Plate(1))
+          .Ingredient("N", RecipeIngredients.Fastener(fastener, 1))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:pipe-plated-straight-ns", 2)
+      )
+      .Grid(r =>
+        r.Name("Piping (Bend)")
+          .Pattern("_H,NP,_N")
+          .Size(2, 3)
+          .Ingredient("P", Plate(1))
+          .Ingredient("N", RecipeIngredients.Fastener(fastener, 1))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:pipe-plated-bend-nw")
+      )
+      .Grid(r =>
+        r.Name("Piping (TJunction)")
+          .Pattern("_H_,NPN,_N_")
+          .Size(3, 3)
+          .Ingredient("P", Plate(1))
+          .Ingredient("N", RecipeIngredients.Fastener(fastener, 1))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:pipe-plated-tjunction-uns")
+      )
+      .Grid(r =>
+        r.Name("Piping (XJunction)")
+          .Pattern("HN_,NPN,_N_")
+          .Size(3, 3)
+          .Ingredient("P", Plate(1))
+          .Ingredient("N", RecipeIngredients.Fastener(fastener, 1))
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:pipe-plated-xjunction-nswe")
+      );
 }

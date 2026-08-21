@@ -43,6 +43,25 @@ public class RolledItemDefinitions : IExItemDefProvider {
 
   private const string RolledIron = "game:block/metal/sheet-plain/iron5";
 
+  // The declared mass of every product, by code. Public so a ledger reads the number the item ships with
+  // rather than a literal of its own - a mass that moves must move every assertion about it with it.
+  private static readonly System.Collections.Generic.Dictionary<
+    string,
+    int
+  > Units = new() {
+    ["rivetrod"] = RivetRodUnits,
+    ["nailplate"] = NailPlateUnits,
+    ["beam"] = BeamUnits,
+    ["blank"] = BlankUnits,
+    ["skelp"] = SkelpUnits,
+    ["heavyplate"] = HeavyPlateUnits,
+    ["boilerplate"] = BoilerPlateUnits,
+  };
+
+  /// <summary>The metal a rolled product carries, or 0 for a code this mod rolls nothing for.</summary>
+  public static int UnitsOf(string code) =>
+    Units.TryGetValue(code, out int units) ? units : 0;
+
   public static IEnumerable<ExItemDef> Definitions(string domain) =>
     [
       RivetRod(domain),

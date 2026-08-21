@@ -18,6 +18,14 @@ public partial class BlockBoilerCornish
     IBoilerGeometry,
     IExBlockDefProvider {
   /// <summary>The Cornish boiler blocktype. Shorter body than the Lancashire.</summary>
+  /// <summary>
+  /// The fastener a pressure vessel is built with. A rivet makes a joint that is strong and tight; a nail
+  /// is strong and not tight, so a boiler takes rivets and nothing else - the one place in the suite where
+  /// the fastener is a gate rather than a substitution. See docs/design/items/fasteners.md.
+  /// </summary>
+  private const string RivetCode =
+    "iiex:" + Items.FastenerItemDefinitions.RivetCode;
+
   public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [Cornish(domain)];
 
@@ -150,19 +158,19 @@ public partial class BlockBoilerCornish
         c.Stage(s => s.AddElements("Root/Base"))
           .Stage(s =>
             s.RequireMetalPlate(domain, 6)
-              .RequireMetalNails(domain, 4)
+              .RequireRivets(domain, RivetCode, 8)
               .Require("game:burnedbrick-fire", 8)
               .AddElements("Root/BaseExtension")
           )
           .Stage(s =>
             s.RequireMetalPlate(domain, 8)
               .RequireMetalRod(domain, 4)
-              .RequireMetalNails(domain, 4)
+              .RequireRivets(domain, RivetCode, 8)
               .AddElements("Root/Flues")
           )
           .Stage(s =>
             s.RequireMetalPlate(domain, 8)
-              .RequireMetalNails(domain, 8)
+              .RequireRivets(domain, RivetCode, 16)
               .RequireMetalRod(domain, 4)
               .Require("game:burnedbrick-fire", 36)
               .AddElements("Root/Casing")

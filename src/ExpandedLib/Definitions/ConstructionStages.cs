@@ -98,6 +98,21 @@ public sealed class ConstructionStage {
   public ConstructionStage RequireMetalNails(string domain, int quantity) =>
     RequireMetal(domain, "metalnailsandstrips-*", "nailsandstrips", quantity);
 
+  /// <summary>
+  /// Requires rivets, which have no metal axis and so no wildcard to capture. Hint key
+  /// <c>{domain}:rcc-ingredient-rivet</c>.
+  /// <para>
+  /// The code is passed in rather than composed from <paramref name="domain"/>: the mod that ships the
+  /// rivet is not always the mod building with it, and a steel-tier boiler fastened with the iron tier's
+  /// rivets would otherwise ask for a <c>rivet</c> under its own domain that nothing registers.
+  /// </para>
+  /// </summary>
+  public ConstructionStage RequireRivets(
+    string domain,
+    string rivetCode,
+    int quantity
+  ) => Require(rivetCode, quantity, $"{domain}:rcc-ingredient-rivet");
+
   /// <summary>Requires an iron or steel metal rod (<c>rod-*</c>, stored under the <c>metal</c>
   /// wildcard). Hint key <c>{domain}:rcc-ingredient-rod</c>.</summary>
   public ConstructionStage RequireMetalRod(string domain, int quantity) =>

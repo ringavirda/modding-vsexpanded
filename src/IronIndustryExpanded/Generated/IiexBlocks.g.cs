@@ -331,6 +331,42 @@ public static class IiexBlocks
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
 
+  /// <summary><c>iiex:forming</c> - forming/bench. Variant groups: type(nailcutter|riveter), orientation(ns|we).</summary>
+  public static class FormingBench
+  {
+    /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
+    public const string Code = "iiex:forming";
+
+    /// <summary>Any variant: <c>iiex:forming-*-*</c>.</summary>
+    public const string Any = "iiex:forming-*-*";
+
+    /// <summary>The <c>type</c> variant group.</summary>
+    public static class Type
+    {
+      public const string Nailcutter = "nailcutter";
+      public const string Riveter = "riveter";
+    }
+
+    /// <summary>The <c>orientation</c> variant group.</summary>
+    public static class Orientation
+    {
+      public const string Ns = "ns";
+      public const string We = "we";
+    }
+
+    /// <summary>Pin only <c>type</c>: <c>iiex:forming-{type}-*</c>.</summary>
+    public static string WithType(string type) =>
+      $"iiex:forming-{type}-*";
+
+    /// <summary>Pin only <c>orientation</c>: <c>iiex:forming-*-{orientation}</c>.</summary>
+    public static string WithOrientation(string orientation) =>
+      $"iiex:forming-*-{orientation}";
+
+    /// <summary>Every group resolved: <c>iiex:forming-{type}-{orientation}</c>.</summary>
+    public static string Of(string type, string orientation) =>
+      $"iiex:forming-{type}-{orientation}";
+  }
+
   /// <summary><c>iiex:forming</c> - forming/millaxle. Variant groups: type(millaxle), orientation(ns|we).</summary>
   public static class FormingMillaxle
   {

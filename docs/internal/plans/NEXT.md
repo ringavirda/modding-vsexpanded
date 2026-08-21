@@ -246,6 +246,28 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   bath **freezes** when the fire goes out, and the ball wears **ingot iron**. ⛔ **Nothing here has been
   seen in game** - the bath, the two tool items and the working strokes are all unwalked; the owner chose
   to push on to U7 rather than stop and verify.
+- **The substitution rule is BUILT** (2026-08-21, U8.7) and **the boilers are riveted**. ⛔⛔ Settling it
+  needed an owner ruling on a contradiction nine days old: STATE.md said the benches have *"no dies"* while
+  `machining-line.md` said they take them, and `ItemDie` had already shipped on the second reading. **Dies
+  stay** - the new fact is that the **steam hammer's stamping** wants them too, so the contract has a second
+  consumer. The **bolt** stays struck. STATE.md records the amendment now.
+  ⛔ **Vintage Story has no OR across item codes** - not in a grid ingredient, not in an RCC `requireStacks`
+  (an AND list) - so "nails or rivets" costs one duplicated recipe per site. Owner scoped it to **six**: the
+  four plated pipe segments, the tall hopper, the plated molten barrel. A control test keeps the scope
+  honest.
+  Both boilers moved to rivets **mass-neutrally** (Cornish 16 nail bundles → 32 rivets, Lancashire 24 → 48).
+  `PressureVesselGate` asserts the negative - that no boiler stage accepts nails - which almost nothing else
+  in the suite does.
+- **The fastener benches are BUILT** (2026-08-21) - a nail cutter and a riveter, and with them the two
+  rolled products that had no consumer at all. Nail plate 100 u makes 4 nail bundles, rivet rod 25 u makes 2
+  rivet bundles at 12.5 u each, both exact. ★★ It is **one** blocktype with a `type` variant, taken straight
+  from the owner's ruling that the machining machines are one machine - and it is the first production
+  consumer of exlib's `ItemDie`, which had shipped with only tests behind it. ⛔ The plan's *"no die"* step
+  is stale; the design page ruled the other way and the design page won.
+  ⛔ **The drive connector sits on the principal rather than on the drawn shaft cell** - `BEBehaviorMPFillerPort`
+  is a vanilla-MP intake, not an mpenergy one - which is the same simplification the shear ships and wants
+  re-homing with it.
+  ⛔ **Nothing here has been seen in game.**
 - **U7 (reheat + rolling) is DONE** (2026-08-21) as far as later rulings allow, and **the forming loop
   closes**: a lit reheat hearth soaks the bed, so a piece that goes cold mid-schedule can be brought back to
   rolling heat. The soak paces on **`A/V`** - `2/t + 2/w`, which is `2/t` for a plate and `4/t` for a square

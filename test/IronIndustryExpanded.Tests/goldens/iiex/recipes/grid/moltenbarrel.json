@@ -42,6 +42,43 @@
     }
   },
   {
+    "name": "Molten Barrel (Plated)",
+    "ingredientPattern": "PHP,PCP,PNP",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:molten-barrel-plated"
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "C": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 4
+      },
+      "N": {
+        "type": "item",
+        "code": "iiex:rivet",
+        "quantity": 4
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
     "name": "Molten Barrel (Cast, lined)",
     "ingredientPattern": "BC",
     "width": 2,

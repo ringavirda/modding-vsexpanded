@@ -17,30 +17,33 @@ public class MoltenRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>
     [MoltenBarrel(domain), MoltenCanal(domain)];
 
-  private static ExRecipeDef MoltenBarrel(string domain) =>
-    ExRecipeDef
-      .Create(domain, "grid", "moltenbarrel")
-      // Fabricated route: plates hammered over a fire-clay lining, nailed shut.
-      .Grid(r =>
+  private static ExRecipeDef MoltenBarrel(string domain) {
+    ExRecipeDef def = ExRecipeDef.Create(domain, "grid", "moltenbarrel");
+    // Fabricated route: plates hammered over a fire-clay lining, fastened shut - once per fastener, since
+    // the seam is structural rather than pressure-tight and either serves.
+    foreach (string fastener in Fasteners(domain))
+      def = def.Grid(r =>
         r.Name("Molten Barrel (Plated)")
           .Pattern("PHP,PCP,PNP")
           .Size(3, 3)
           .Ingredient("P", Plate(1))
           .Ingredient("C", FireClay(4))
-          .Ingredient("N", Nails(4))
+          .Ingredient("N", Fastener(fastener, 4))
           .Ingredient("H", Hammer)
           .OutputBlock("iiex:molten-barrel-plated")
-      )
-      // Cast route: a sand-cast cast-barrel blank lined with fire clay. One blank replaces the six
-      // plates and the nails, so it is cheaper in bulk than the plated craft.
-      .Grid(r =>
-        r.Name("Molten Barrel (Cast, lined)")
-          .Pattern("BC")
-          .Size(2, 1)
-          .Ingredient("B", i => i.Item("iiex:cast-barrel").Quantity(1))
-          .Ingredient("C", FireClay(4))
-          .OutputBlock("iiex:molten-barrel-cast")
       );
+    return def
+    // Cast route: a sand-cast cast-barrel blank lined with fire clay. One blank replaces the six
+    // plates and the nails, so it is cheaper in bulk than the plated craft.
+    .Grid(r =>
+      r.Name("Molten Barrel (Cast, lined)")
+        .Pattern("BC")
+        .Size(2, 1)
+        .Ingredient("B", i => i.Item("iiex:cast-barrel").Quantity(1))
+        .Ingredient("C", FireClay(4))
+        .OutputBlock("iiex:molten-barrel-cast")
+    );
+  }
 
   private static ExRecipeDef MoltenCanal(string domain) =>
     ExRecipeDef

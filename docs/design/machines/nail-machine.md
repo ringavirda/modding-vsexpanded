@@ -6,7 +6,7 @@
 * its mechanism: a big spoked flywheel and a crank working internal shears, no gearing at all, on a wooden A-frame trestle with an inclined feed table and collecting trays;
 * the flip-between-shears rule that makes a cut nail tapered;
 * its footprint, drive contract, feed/collect verbs and drops;
-* the state of `machine-megablock-nailcutter.json` - the one drawn asset - and what has to happen to it.
+* the state of the drawn asset and what happened to it (exported 2026-08-21).
 
 **Depends on**
 [mp-energy](../mechanics/mp-energy.md) (the run it loads; a crank stroke is a pulsed load, which is why it carries its own flywheel) ·
@@ -33,17 +33,19 @@ It is a bench, and the player builds several. The reference photograph is a hall
 
 ## Structure
 
-1 × 1 × 1 on the `"mpenergy"` network, with cast-iron shafting. Not vanilla MP and not wooden axles: cast iron is the shared prerequisite for both the machine's frame and the shafting, so there is no second tier to gate.
+★★ **BUILT 2026-08-21 on a 4-cell footprint, not 1 × 1 × 1.** The authority is the owner's own layout in `docs/internal/workbench/machines.txt` - a `zy` elevation, `I m` over `O #`, so the bench is two cells deep and two tall with its working face above the principal. On the `"mpenergy"` network with cast-iron shafting: not vanilla MP and not wooden axles, since cast iron is the shared prerequisite for both the machine's frame and the shafting and there is no second tier to gate.
 
 | Aspect | Proposal | Note |
 |---|---|---|
-| Footprint | 1 × 1 × 1, its own `BlockNetworkNode` | no filler, no multiblock, no projection |
+| Footprint | 4 cells (`I m` / `O #`, a `zy` elevation), principal is the `BlockNetworkNode` | three fillers; the principal takes the drive |
 | Orientation | `ns` / `we`, shaft along the orientation axis | the mill's pattern (`BlockRollingMill.cs:41-59`, `StructureAngle` at `:106`) |
 | Drive | connectors on the two shaft-axis faces | a row of benches on one shaft must pass power through |
 | Feed face | the inclined table, opposite the trays | the table's job is to point at the face the player interacts with |
 | Gearing | none | the flywheel is on the drive shaft itself; wheel speed is shaft speed |
 
-The drawn shape is authored as a megablock and the design says 1 × 1. In `machine-megablock-nailcutter.json` the bench body fits one cell (x 0–16, z 0–16) but the shaft group runs x −2 → 2 and z 8 → 24, i.e. it pokes two voxels west and half a cell into the +Z neighbour. That is correct for a line shaft and needs no fillers - the mill already declares `SolidNonOpaque` for exactly this ("the stand overhangs its cell; the placed cell is solid but must not cull neighbour faces", `BlockRollingMill.cs:62-63`). Either keep 1 × 1 and accept the overhang, or rename the asset. Do not add a footprint to justify the filename.
+~~The drawn shape is authored as a megablock and the design says 1 × 1.~~ **Resolved 2026-08-21**: the owner's layout settled it at four cells, and the filename was right. The bench still declares `SolidNonOpaque` - the press overhangs its cell, and a solid cell that culled its neighbours' faces would leave holes.
+
+⛔ **The drive connector sits on the principal, not on the `m` cell the drawing marks.** `BEBehaviorMPFillerPort` is a **vanilla-MP** intake - the flywheel's bridge - and not an mpenergy connector, so there is no shipped way to put an mpenergy connector on a filler cell. Cosmetic rather than functional, and the shear ships the same simplification; all three want re-homing together when the station family lands.
 
 ---
 
@@ -51,10 +53,10 @@ The drawn shape is authored as a megablock and the design says 1 × 1. In `machi
 
 | Asset | Path | State |
 |---|---|---|
-| **editable shape** | `assets/editable/shapes/machine-megablock-nailcutter.json` | drawn, and untracked (`git status` reports it as `??`). Referenced by no code, no test, no def, no generator input |
+| **editable shape** | `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-nailcutter.json` | drawn and tracked. Exported to `assets/iiex/shapes/forming/nailcutter.json` (2026-08-21) through `convert-shape.py` |
 | runtime shape | `assets/iiex/shapes/…` | missing - never exported |
 | textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
-| animations | none in the file (no `animations` key) | the crank stroke and the wheel spin both still have to be authored |
+| animations | `idle` and `cycle` | both authored and both exported as `Repeat` |
 | reference art | `assets/editable/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
 | lang / handbook | `assets/iiex/lang/en.json`, `docs/iiex/handbook/` | no key, no page |
 

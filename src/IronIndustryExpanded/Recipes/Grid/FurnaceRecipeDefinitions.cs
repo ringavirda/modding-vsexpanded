@@ -73,7 +73,30 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
           .Pattern("_H_,PSP,SPS")
           .Size(3, 3)
           .Ingredient("P", Plate(1))
-          .Ingredient("S", Nails(1))
+          .Ingredient(
+            "S",
+            RecipeIngredients.Fastener(
+              RecipeIngredients.Fasteners(domain)[0],
+              1
+            )
+          )
+          .Ingredient("H", Hammer)
+          .OutputBlock("iiex:hopper-tall-n")
+      )
+      // The same hopper riveted rather than nailed. Its seams are structural, so either fastener serves;
+      // two recipes because nothing in the game expresses one ingredient as "either of these".
+      .Grid(r =>
+        r.Name("Tall Hopper")
+          .Pattern("_H_,PSP,SPS")
+          .Size(3, 3)
+          .Ingredient("P", Plate(1))
+          .Ingredient(
+            "S",
+            RecipeIngredients.Fastener(
+              RecipeIngredients.Fasteners(domain)[1],
+              1
+            )
+          )
           .Ingredient("H", Hammer)
           .OutputBlock("iiex:hopper-tall-n")
       )

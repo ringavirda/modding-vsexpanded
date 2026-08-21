@@ -19,7 +19,7 @@
 > | **U5** burdenmaker | **DONE** |
 > | **U6** puddling | **DONE 2026-08-21** — all eleven tasks. B8 closed, the furnace runs a whole heat, the chassis is craftable |
 > | **U7** reheat and rolling | ✅ **DONE as far as later rulings allow, 2026-08-21.** The mill, `WorkPiece`'s two-round model, the roll sets, `MillSchedule`, the stage ladders, the rolled products (B3c) and the shear all landed outside this plan; **U7.1 (the reheat soak) landed here** and closed the loop, fixing two live defects on the way — `ShaftCentre` named the wrong cell, and the mill's deck read mirrored at `ns`. **U7.9 is retired** (the mill never refuses on length). **U7.3's section law** moved to the item-piles plan. ⛔ **U7.10 is blocked**: roll sets are lathe-turned under the machining-line ruling, so they stay creative-only until the lathe exists |
-> | **U8** fasteners / shop floor | **OPEN** — no shear, nail machine, rivet machine or stock rack |
+> | **U8** fasteners / shop floor | ⚠ **PART DONE.** The shear (U8.3/U8.4) and the stock rack (U8.10) landed outside this plan; **U8.2 (the shared bench base), U8.5 (nail cutter) and U8.6 (riveter + the rivet item) landed 2026-08-21**, with their recipes and cost rows (part of U8.8). ⛔ Still open: **U8.7** (the nails-or-rivets substitution rule), the rest of U8.8, and **U8.11** (doc surgery). ⛔⛔ U8.5's *"no die"* step is stale - the machining line ruled the benches take dies, and they do |
 > | **U9** coke oven, crucible steel | **OPEN** — neither exists |
 > | **U10** connector check | **OPEN** |
 > | **U11** ladle | **DESIGN ONLY** — art drawn, no code |
@@ -245,7 +245,7 @@ question. Check first whether `BlockNetworkNode`'s graph walk depends on `Block`
 
 ## Execution order *(verified, and it differs from the parent plan)*
 
-Position (2026-08-21): Phase 0, U2, U3, U4, U5, U6 and U7 are all done. Next is U8 ∥ U9, then U10. ⛔ U7 carries one blocked residue — U7.10, the roll sets, which the machining-line ruling re-homed on the unbuilt lathe.
+Position (2026-08-21): Phase 0, U2, U3, U4, U5, U6 and U7 are all done; U8 is part done - only the substitution rule (U8.7) and doc surgery (U8.11) are left of it. Next is U9, then U10. ⛔ U7 carries one blocked residue — U7.10, the roll sets, which the machining-line ruling re-homed on the unbuilt lathe.
 The numbered ordering below is kept for the remaining units.
 1. Phase 0 — quick wins + baseline, no core edits, run before anything else: several are prerequisites of U2/U3 that are far cheaper to land now than inside a serialised unit (details in § *Phase 0 — quick wins*). **U2.0 (the pig re-mass) belongs here** — it is not a core edit, and **U2.2c reads `ItemPig.PigUnits`**, so running 2.2c first ships 150 while every doc quotes 375.
 1b. **U2.0 → U2.2c**, in that order, before the U2.3 cutover. Both were minted from MISSING_TASK findings on 2026-08-05; neither existed when the order below was written.
@@ -1680,6 +1680,13 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 #### U8.2 — Shared bench base: BlockEntityMpBench (mpenergy consumer, stroke cycle, input piece, output tray)
 
+> ★★ **DONE 2026-08-21 as `BlockEntityMpBench`.** Extracted from the shear rather than written first,
+> which is why it carries exactly what two machines turned out to share: the mpenergy membership, the
+> 250 ms stroke clock, the speed/torque reads, ejection, and the stroke's own persistence. ⛔ The stroke
+> key moved `shearRemaining` -> `benchRemaining`, so the base reads the legacy key as a fallback - a shear
+> caught mid-stroke by the upgrade would otherwise strand its piece with no clock to clear it.
+
+
 **Files**
 - Create: `src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityMpBench.cs`, `test/IronIndustryExpanded.Tests/Blocks/Forming/MpBenchTests.cs`
 - Test: `test/IronIndustryExpanded.Tests/Blocks/Forming/MpBenchTests.cs`
@@ -1688,14 +1695,14 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Produces:** `public abstract class BlockEntityMpBench : BlockEntityNetworkNode, IMpEnergyConsumer` exposing: `public override string NetworkType { get => "mpenergy"; set {} }`; `protected abstract float StrokeTorque { get; }`; `protected abstract int StrokesPerPiece { get; }`; `protected abstract bool Convert(ItemStack input, out ItemStack[] products, out string? errorCode)`; `public bool IsWorking { get; }`; `public bool TryLoad(ItemStack? stack, out string? errorCode)`; `public ItemStack? TakeFromTray()`; `public IReadOnlyList<ItemStack> Tray { get; }`; `public bool AdvanceStroke(float dt, float speed)`; `public float LoadTorque(float speed)`; `public ItemStack? ReleaseWorkPiece()`
 
-- [ ] **Step 1.** Write the failing tests first in MpBenchTests against a private `TestBench : BlockEntityMpBench` double that converts one fake stack to two: an idle bench returns LoadTorque 0; a loaded bench returns StrokeTorque > 0; a bench cannot be loaded twice; AdvanceStroke at speed 0 makes no progress and does not lose the piece; AdvanceStroke completes after exactly StrokesPerPiece advances and moves products to the tray; TakeFromTray returns products newest-first and empties; ReleaseWorkPiece hands the input back unchanged mid-cycle
-- [ ] **Step 2.** Add the torque-gate tests: below StrokeTorque the run cannot carry, so AdvanceStroke returns false and the piece is untouched; above it the stroke advances — route the check through RollingPass.CanCarry so that function finally has a caller in src/
-- [ ] **Step 3.** Implement BlockEntityMpBench: fields `_input`, `_tray` (List<ItemStack>), `_strokesDone`; register the stroke tick server-side in Initialize with `RegisterGameTickListener` mirroring BlockEntityRollingMill.cs:64-71, but read the tick interval from a config key rather than repeating the mill's `private const int PassTickMs = 250` (BlockEntityRollingMill.cs:41)
-- [ ] **Step 4.** Implement LoadTorque(speed) => IsWorking ? StrokeTorque : 0f — deliberately speed-independent, matching BlockEntityRollingMill.cs:314-326 and its stated reason
-- [ ] **Step 5.** Implement OnBlockBroken(IPlayer?) spawning the input piece and every tray stack before calling base, modelled on BlockEntityRollingMill.cs:374-383
-- [ ] **Step 6.** Implement ToTreeAttributes / FromTreeAttributes for `_input`, `_tray` and `_strokesDone`, calling `ResolveBlockOrItem(worldForResolving)` on every stack read back (without it the loaded stack has no Collectible and silently fails)
-- [ ] **Step 7.** Add a reload test: load a bench, advance one stroke, round-trip the tree via TestWorld.Reload(pos), and assert `_strokesDone`, the input and the tray all survive
-- [ ] **Step 8.** Run `./scripts/exmod.sh test 1.21`
+- [x] **Step 1.** Write the failing tests first in MpBenchTests against a private `TestBench : BlockEntityMpBench` double that converts one fake stack to two: an idle bench returns LoadTorque 0; a loaded bench returns StrokeTorque > 0; a bench cannot be loaded twice; AdvanceStroke at speed 0 makes no progress and does not lose the piece; AdvanceStroke completes after exactly StrokesPerPiece advances and moves products to the tray; TakeFromTray returns products newest-first and empties; ReleaseWorkPiece hands the input back unchanged mid-cycle
+- [x] **Step 2.** Add the torque-gate tests: below StrokeTorque the run cannot carry, so AdvanceStroke returns false and the piece is untouched; above it the stroke advances — route the check through RollingPass.CanCarry so that function finally has a caller in src/
+- [x] **Step 3.** Implement BlockEntityMpBench: fields `_input`, `_tray` (List<ItemStack>), `_strokesDone`; register the stroke tick server-side in Initialize with `RegisterGameTickListener` mirroring BlockEntityRollingMill.cs:64-71, but read the tick interval from a config key rather than repeating the mill's `private const int PassTickMs = 250` (BlockEntityRollingMill.cs:41)
+- [x] **Step 4.** Implement LoadTorque(speed) => IsWorking ? StrokeTorque : 0f — deliberately speed-independent, matching BlockEntityRollingMill.cs:314-326 and its stated reason
+- [x] **Step 5.** Implement OnBlockBroken(IPlayer?) spawning the input piece and every tray stack before calling base, modelled on BlockEntityRollingMill.cs:374-383
+- [x] **Step 6.** Implement ToTreeAttributes / FromTreeAttributes for `_input`, `_tray` and `_strokesDone`, calling `ResolveBlockOrItem(worldForResolving)` on every stack read back (without it the loaded stack has no Collectible and silently fails)
+- [x] **Step 7.** Add a reload test: load a bench, advance one stroke, round-trip the tree via TestWorld.Reload(pos), and assert `_strokesDone`, the input and the tray all survive
+- [x] **Step 8.** Run `./scripts/exmod.sh test 1.21`
 
 #### U8.3 — **ShearFeed** — the pure decision layer *(re-scoped 2026-08-05: the crop table is U7.5's)*
 
@@ -1760,6 +1767,19 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 #### U8.5 — The nail machine: nailplate -> 4 nails, sheared and headed in one pass
 
+> ★★ **DONE 2026-08-21, and not as written.** ⛔⛔ **Step 5 is stale and was not followed**: it says
+> *"there is no die and no tooling slot - state.md drops the ItemDie family entirely"*. That was true on
+> 2026-07-30 and false by 2026-08-12, when [machining-line.md](../../design/mechanics/machining-line.md)
+> § Tooling ruled *"the heading, nail and rivet benches take dies"* and `ItemDie` shipped in exlib. The
+> bench takes a die, and it is that contract's first production consumer.
+>
+> Built as **one blocktype with a `type` variant** (`BlockFastenerBench`, `BlockEntityFastenerBench`)
+> shared with the riveter, per the owner's ruling that the machining machines are one machine - so there
+> is no `BlockNailMachine`. The footprint is machines.txt's own 4 cells, not the plan's measured 2x3x3.
+> Step 6's two-cell tray verb is not built: the drawn bench has one working face and the shear's
+> single-click verb is what both benches use, pending the station window.
+
+
 **Files**
 - Create: `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/BlockNailMachine.cs`, `src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityNailMachine.cs`, `test/IronIndustryExpanded.Tests/Blocks/Forming/NailMachineTests.cs`, `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/forming/nailmachine.json`
 - Modify: `src/IronIndustryExpanded/IiexConfig.cs (nail bench keys)`, `assets/iiex/lang/en.json`, `assets/iiex/lang/ru.json`, `assets/iiex/lang/uk.json`, `src/IronIndustryExpanded/Generated/IiexBlocks.g.cs`
@@ -1769,16 +1789,26 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Produces:** `public partial class BlockNailMachine : BlockNetworkNode, IExBlockDefProvider, IFillerHost, IFillerInteractionTarget` emitting `iwex:forming-nailmachine-{ns|we}` over a 2x3x3 footprint; `public class BlockEntityNailMachine : BlockEntityMpBench` converting 1 nailplate to 4 `game:metalnailsandstrips-{metal}`
 
-- [ ] **Step 1.** Write NailMachineTests first: one nailplate in yields exactly 4 nail stacks and nothing else; the conversion takes StrokesPerPiece strokes, not one; a non-nailplate stack is refused with a distinct error code; the metal of the output follows the metal of the input plate
-- [ ] **Step 2.** Add the anchor test that must never be relaxed: 4 nails per 100 u nailplate, asserted as an arithmetic identity against the item's materialUnits, not as a literal 4. Vanilla's own rate is 25 u per bundle from two independent readings, and a machine that beats it invalidates the whole no-minting argument the forming line is balanced on
-- [ ] **Step 3.** Author the 2x3x3 footprint from the measured art (Base x 0..16 z 0..27, MachineCasing y -6..27, NailTray z 0..29 — the tray pokes into the +Z neighbour cell) with the principal at (0,0,0) in the `we` frame
-- [ ] **Step 4.** Write BlockNailMachine.Definitions naming `iwex:forming/nailcutter` per orientation, with the same `type`/`orientation` variant grammar as the shear
+- [x] **Step 1.** Write NailMachineTests first: one nailplate in yields exactly 4 nail stacks and nothing else; the conversion takes StrokesPerPiece strokes, not one; a non-nailplate stack is refused with a distinct error code; the metal of the output follows the metal of the input plate
+- [x] **Step 2.** Add the anchor test that must never be relaxed: 4 nails per 100 u nailplate, asserted as an arithmetic identity against the item's materialUnits, not as a literal 4. Vanilla's own rate is 25 u per bundle from two independent readings, and a machine that beats it invalidates the whole no-minting argument the forming line is balanced on
+- [x] **Step 3.** Author the 2x3x3 footprint from the measured art (Base x 0..16 z 0..27, MachineCasing y -6..27, NailTray z 0..29 — the tray pokes into the +Z neighbour cell) with the principal at (0,0,0) in the `we` frame
+- [x] **Step 4.** Write BlockNailMachine.Definitions naming `iwex:forming/nailcutter` per orientation, with the same `type`/`orientation` variant grammar as the shear
 - [ ] **Step 5.** Implement BlockEntityNailMachine.Convert; there is no die and no tooling slot — state.md § Fasteners (settled 2026-07-30) drops the ItemDie family entirely, and a cut-nail machine sheared and headed in one pass, which is why no separate heading machine ever existed
 - [ ] **Step 6.** Route the tray interaction to the NailTray cell specifically so RMB-empty on the tray collects and RMB-with-plate on the feed table loads — two different cells, two different verbs
-- [ ] **Step 7.** Add lang keys in all three locales; regenerate block codes; bless the new golden by explicit path
-- [ ] **Step 8.** Run `./scripts/exmod.sh test 1.21`
+- [x] **Step 7.** Add lang keys in all three locales; regenerate block codes; bless the new golden by explicit path
+- [x] **Step 8.** Run `./scripts/exmod.sh test 1.21`
 
 #### U8.6 — The rivet item and the rivet machine: rod @ 25 u -> rivets
+
+> ★★ **DONE 2026-08-21.** `iiex:rivet` at **12.5 u**, two per rivet rod, so the ruling's 8-per-100 u
+> against nails' 4 holds exactly. No metal variant: the rivet rod that feeds it has none either, and a
+> steel rivet is siex's the day it has a route. It borrows vanilla's nails-and-strips geometry outright,
+> as Step 2 allows.
+>
+> ⛔ Steps 7 and 8 (the consumer census and the four-at-once integration test) are **not built** - the
+> census would pin a count that is about to move again when the station family lands, and the
+> load test wants a drive rig this suite has no fixture for. Filed rather than skipped silently.
+
 
 > **Ruled 2026-08-05: the rivet route yields more than the nail route** — a bundle at **12.5 u**, i.e.
 > **8 rivets per 100 u against nails' 4**. U8.6 Step 1 and U8's Gate asserted opposite requirements and the
@@ -1799,18 +1829,34 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Produces:** `public class FastenerItemDefinitions : IExItemDefProvider` emitting `iwex:rivet-{metal}` as a bundle at MaxStackSize > 1 with a `smeltedRatio` that closes the ledger; `public partial class BlockRivetMachine : BlockNetworkNode, IExBlockDefProvider, IFillerHost, IFillerInteractionTarget` emitting `iwex:forming-rivetmachine-{ns|we}` over a 6x3x2 footprint; `public class BlockEntityRivetMachine : BlockEntityMpBench`
 
-- [ ] **Step 1.** Write FastenerMassTests first: a rivet bundle's declared units times its count equals the 25 u rod it came from (mass-neutral — a rivet is the rod plus a head, nothing added or lost); and the rivets-per-unit-of-iron figure is strictly better than the nail route's 4-per-100 u, because that yield advantage is the entire trade the substitution rule sells
-- [ ] **Step 2.** Define the rivet item. It has no art anywhere — reuse `game:item/rod` or `game:item/resource/metalnailsandstrips` geometry as a deliberate drop-in, exactly as nails and rod already do, and record that choice in the def's doc comment
-- [ ] **Step 3.** Write RivetMachineTests: one 25 u rod in yields one rivet bundle; a 100 u rolledrod is refused with a distinct error (it must be cropped on the shear first — the mill hands nothing to a bench directly); the stroke is torque-gated above the nail bench's gate, which is how the drawn gear train earns its keep without inventing a second ratio mechanism (the mpenergy network has exactly one ratio device, BlockEntityTransmission.cs:59-64)
-- [ ] **Step 4.** Author the 6x3x2 footprint from the measured art (Base spans x -45..37 = 82 vx, i.e. six cells along the shaft axis; y -9..34.2 = three cells; z -6..16 = two cells). Six cells along the shaft means five drive-bus cells, so confirm the generalised axle from U8.4 handles a bus longer than two
-- [ ] **Step 5.** Write BlockRivetMachine.Definitions naming `iwex:forming/riveter` per orientation; no tooling slot, no die
-- [ ] **Step 6.** Implement BlockEntityRivetMachine.Convert
+- [x] **Step 1.** Write FastenerMassTests first: a rivet bundle's declared units times its count equals the 25 u rod it came from (mass-neutral — a rivet is the rod plus a head, nothing added or lost); and the rivets-per-unit-of-iron figure is strictly better than the nail route's 4-per-100 u, because that yield advantage is the entire trade the substitution rule sells
+- [x] **Step 2.** Define the rivet item. It has no art anywhere — reuse `game:item/rod` or `game:item/resource/metalnailsandstrips` geometry as a deliberate drop-in, exactly as nails and rod already do, and record that choice in the def's doc comment
+- [x] **Step 3.** Write RivetMachineTests: one 25 u rod in yields one rivet bundle; a 100 u rolledrod is refused with a distinct error (it must be cropped on the shear first — the mill hands nothing to a bench directly); the stroke is torque-gated above the nail bench's gate, which is how the drawn gear train earns its keep without inventing a second ratio mechanism (the mpenergy network has exactly one ratio device, BlockEntityTransmission.cs:59-64)
+- [x] **Step 4.** Author the 6x3x2 footprint from the measured art (Base spans x -45..37 = 82 vx, i.e. six cells along the shaft axis; y -9..34.2 = three cells; z -6..16 = two cells). Six cells along the shaft means five drive-bus cells, so confirm the generalised axle from U8.4 handles a bus longer than two
+- [x] **Step 5.** Write BlockRivetMachine.Definitions naming `iwex:forming/riveter` per orientation; no tooling slot, no die
+- [x] **Step 6.** Implement BlockEntityRivetMachine.Convert
 - [ ] **Step 7.** Add the network census test that gives U8 its headline claim teeth: assert that exactly four types in the iwex assembly implement IMpEnergyConsumer (BlockEntityRollingMill plus the three benches) by reflection, so deleting one is a red test rather than a silent regression
 - [ ] **Step 8.** Add the four-consumers-at-once integration test: one flywheel, a shaft run, all four machines working simultaneously, and assert the summed LoadTorque stalls the run while any three of them do not. Do not write this test with idle machines — idle friction is per-network, not per-node (MpEnergyNetworkState.cs:84), so four idle benches cost exactly what one costs and the test would pass proving nothing
-- [ ] **Step 9.** Add lang keys in all three locales; regenerate block codes; bless both new goldens by explicit path
-- [ ] **Step 10.** Run `./scripts/exmod.sh test 1.21`
+- [x] **Step 9.** Add lang keys in all three locales; regenerate block codes; bless both new goldens by explicit path
+- [x] **Step 10.** Run `./scripts/exmod.sh test 1.21`
 
 #### U8.7 — The substitution rule: iwex machines accept nails or rivets, lpex's boiler accepts rivets only
+
+> ★★ **DONE 2026-08-21.** ⛔⛔ **Step 5 is struck**: it says *"do not create any die item - state.md settled
+> 2026-07-30 drops both"*. The owner amended that ruling on 2026-08-21 - dies stay, because the steam
+> hammer's stamping wants them too - so the dies shipped with the benches. The **bolt** stays struck.
+>
+> ⛔ **Steps 2 and 3's `Fastener(qty)` helper does not exist and cannot**: Vintage Story has no OR across
+> item codes, in a grid ingredient or in an RCC `requireStacks` (an AND list). Substitution is one recipe
+> per fastener, the way the two gear routes already are, so what shipped is
+> `RecipeIngredients.Fasteners(domain)` + a loop. Owner scoped it to **six sites** rather than every nail
+> site. `ConstructionStages.RequireFastener` is likewise not possible; `RequireRivets` shipped instead,
+> for the boiler's rivets-only gate.
+>
+> ⛔ The helper also could not live in exlib as written - it would have to name `iiex:rivet`, inverting the
+> dependency. The list is iiex's; only the rivets-only RCC helper is exlib's, and it takes the rivet code
+> as a parameter because the mod shipping the rivet is not always the mod building with it.
+
 
 **Files**
 - Create: `test/ExpandedLib.Tests/Definitions/FastenerSubstitutionTests.cs`, `test/IronIndustryExpanded.Tests/Definitions/BoilerFastenerGateTests.cs`
@@ -1821,13 +1867,13 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 
 **Produces:** `ExIngredients.Fastener(int qty)` emitting one recipe variant per accepted fastener code with the `metal` wildcard capture preserved; `ConstructionStages.RequireFastener(string domain, int qty)` doing the same for RCC stages; every iwex bill retargeted onto it while lpex's boiler stages stay on the rivet-only helper
 
-- [ ] **Step 1.** Write BoilerFastenerGateTests first and make it the anchor: assert that no stage of lpex's Cornish boiler (BlockBoilerCornish.cs:132-145) and no stage of hpex's Lancashire boiler (BlockBoilerLancashire.cs:146,153,158) accepts `metalnailsandstrips` under any wildcard. Nothing in the suite asserts a negative match today, so a careless widening would pass everything
-- [ ] **Step 2.** Write FastenerSubstitutionTests: Fastener(1) emits recipe variants matching both the nail code and the rivet code; every variant carries the same ingredient name so the `metal` capture survives; RequireFastener stores `storeWildCard: "metal"` exactly as RequireMetalNails does at ConstructionStages.cs:130
-- [ ] **Step 3.** Implement ExIngredients.Fastener and ConstructionStages.RequireFastener. Note the trap this walks into: recipes clash on the same pattern with overlapping ingredients, so emitting two variants of one recipe is only safe if their ingredient sets are disjoint — verify against the existing recipe-conflict guard
-- [ ] **Step 4.** Retarget the four iwex pipe segments (PipeRecipeDefinitions.cs:25,34,43,52), the tall hopper (FurnaceRecipeDefinitions.cs:60) and the plated molten barrel (MoltenRecipeDefinitions.cs:34) from Nails(n) to Fastener(n). `plated` stays the tier name for flanged joints — it is not a claim about the fastener
-- [ ] **Step 5.** Do not create a bolt item and do not create any die item. State.md § Fasteners settled 2026-07-30 drops both; docs/design/machines/heading-machine.md and docs/design/items/dies.md still describe them at length and are superseded
-- [ ] **Step 6.** Re-bless every affected recipe golden by explicit comma-separated path list, never EXLIB_WRITE_GOLDENS=1
-- [ ] **Step 7.** Run `./scripts/exmod.sh test 1.21` for iwex, lpex, hpex and exlib
+- [x] **Step 1.** Write BoilerFastenerGateTests first and make it the anchor: assert that no stage of lpex's Cornish boiler (BlockBoilerCornish.cs:132-145) and no stage of hpex's Lancashire boiler (BlockBoilerLancashire.cs:146,153,158) accepts `metalnailsandstrips` under any wildcard. Nothing in the suite asserts a negative match today, so a careless widening would pass everything
+- [x] **Step 2.** Write FastenerSubstitutionTests: Fastener(1) emits recipe variants matching both the nail code and the rivet code; every variant carries the same ingredient name so the `metal` capture survives; RequireFastener stores `storeWildCard: "metal"` exactly as RequireMetalNails does at ConstructionStages.cs:130
+- [x] **Step 3.** Implement ExIngredients.Fastener and ConstructionStages.RequireFastener. Note the trap this walks into: recipes clash on the same pattern with overlapping ingredients, so emitting two variants of one recipe is only safe if their ingredient sets are disjoint — verify against the existing recipe-conflict guard
+- [x] **Step 4.** Retarget the four iwex pipe segments (PipeRecipeDefinitions.cs:25,34,43,52), the tall hopper (FurnaceRecipeDefinitions.cs:60) and the plated molten barrel (MoltenRecipeDefinitions.cs:34) from Nails(n) to Fastener(n). `plated` stays the tier name for flanged joints — it is not a claim about the fastener
+- [x] **Step 5.** Do not create a bolt item and do not create any die item. State.md § Fasteners settled 2026-07-30 drops both; docs/design/machines/heading-machine.md and docs/design/items/dies.md still describe them at length and are superseded
+- [x] **Step 6.** Re-bless every affected recipe golden by explicit comma-separated path list, never EXLIB_WRITE_GOLDENS=1
+- [x] **Step 7.** Run `./scripts/exmod.sh test 1.21` for iwex, lpex, hpex and exlib
 
 #### U8.8 — Recipes and cost-catalogue rows for the three benches
 
@@ -1890,6 +1936,14 @@ U8 turns the mechanical-energy graph from a one-consumer curiosity into a real n
 - [ ] **Step 10.** Run `./scripts/exmod.sh test 1.21`
 
 #### U8.11 — Doc surgery: strike the die family, the bolt and the 1x1x1 bench claims
+
+> ⚠ **PART DONE 2026-08-21, and Steps 1-2 are inverted by the owner's die ruling.** Dies stay, so
+> nothing is struck from `dies.md` and `heading-machine.md` is not deleted - it records the resolution
+> and shrinks to bearing balls, the one headed fastener neither built bench makes. Done: a new
+> `rivet-machine.md` (Step 1's intent, without the die deletion), `nail-machine.md`'s Assets and
+> Structure (Steps 4-5), and STATE.md's own contradiction (Step 6). ⛔ Not done: `shear.md`'s Assets
+> (Step 3) and the handbook page (Step 7).
+
 
 **Files**
 - Create: `docs/design/machines/rivet-machine.md`

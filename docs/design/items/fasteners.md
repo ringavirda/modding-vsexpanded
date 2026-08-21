@@ -27,7 +27,7 @@ again after the 2026-08-15 ruling - see Gotcha 4
 |---|---|
 | 1 vx³ = 2.5 u and the audit of every mass | [density rule](../mechanics/density-rule.md) |
 | the nail bench, its mechanism, and the 1 `nailplate` → 4 nails conversion as a machine rate | [nail machine](../machines/nail-machine.md) |
-| the `ItemDie` tooling contract, the die catalogue and which mod ships each die, the bench itself | [heading machine](../machines/heading-machine.md) |
+| the `ItemDie` tooling contract, the die catalogue and which mod ships each die, the bench itself | [heading machine](../machines/heading-machine.md) · [machining line](../mechanics/machining-line.md) § Tooling |
 | the ball die's spec, the chrome-steel chain, the bootstrap invariant | [bearings](../machines/bearings.md) |
 | every crop - the shear owns the cut that turns a `rolledrod` into four rods | [shear](../machines/shear.md) |
 | the pass model, `δ_max = μ²R`, the two-round rule, gaps and barrel widths | [rolling mill](../machines/rolling-mill.md) · [steel roll sets](../machines/steel-roll-sets.md) · [roll sets](roll-sets.md) |
@@ -85,9 +85,9 @@ die catalogue.
 |---|---|---|---|---|---|
 | **rod** (the headed-fastener feedstock) | 1 × 1 × 10 | 10 | 25 | [shear](../machines/shear.md) crop, 4 per `rolledrod` | the heading bench |
 | **bolt** | - (a bundle, like nails) | - | ≤ 25 per rod, mass-neutral | heading bench + bolt die (iiex) | plated pipe - see Gotcha 6 |
-| **rivet** | - (a bundle) | - | mass-neutral | heading bench + rivet die (iiex) | boiler shells · cast pipe · every fabricated substitute |
+| ~~**rivet**~~ | - (a bundle) | - | **12.5 u**, 2 per rivet rod | ★★ **BUILT 2026-08-21**: the **riveter**, its own machine, + rivet die (iiex). ⛔ *not* the heading bench - machines.txt gives the riveter a machine of its own and that is what is drawn | boiler shells · cast pipe · every fabricated substitute |
 | **bearing ball** | - | - | - | heading bench + ball die (hpex) | [bearings](../machines/bearings.md) |
-| `nailplate` | 4 × 1 × 10 | 40 | 100 | mill, `flat` 1.5 → 1.0 | the nail bench → 4 nails |
+| ~~`nailplate`~~ | 4 × 1 × 10 | 40 | 100 | mill, `flat` 1.5 → 1.0 | ★★ **BUILT 2026-08-21**: the **nail cutter** + nail die → 4 `game:metalnailsandstrips-iron` |
 | `rolledrod` | 2 × 2 × 10 | 40 | 100 | mill, `grooved` 2.0 | the shear → 4 rods |
 
 ---

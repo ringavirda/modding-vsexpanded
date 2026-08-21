@@ -1,0 +1,24 @@
+{
+  "code": "rivet",
+  "shape": {
+    "base": "game:item/resource/metalnailsandstrips"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/plate/iron"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 7850,
+  "attributes": {
+    "materialUnits": 12.5
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}
