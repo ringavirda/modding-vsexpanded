@@ -1,0 +1,61 @@
+{
+  "code": "crafting-workbench",
+  "class": "iiex.BlockWorkbench",
+  "entityClass": "iiex.BlockEntityWorkbench",
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "shape": {
+    "base": "iiex:crafting/workbench",
+    "rotateYByType": {
+      "*-n": 180,
+      "*-e": 90,
+      "*-s": 0,
+      "*-w": 270
+    }
+  },
+  "blockmaterial": "Wood",
+  "maxstacksize": 1,
+  "resistance": 3.0,
+  "sounds": {
+    "walk": "game:walk/wood",
+    "place": "game:block/planks"
+  },
+  "materialDensity": 600,
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      }
+    ]
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

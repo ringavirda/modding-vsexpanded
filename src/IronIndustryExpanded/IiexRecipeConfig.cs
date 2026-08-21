@@ -137,6 +137,7 @@ public class IiexRecipeConfig : IExVersionedConfig {
 
       // The shop floor.
       ["designtable-grid"] = Grid("iiex:crafting-designtable-*"),
+      ["workbench-grid"] = Grid("iiex:crafting-workbench-*"),
       ["rollingmill-grid"] = Grid("iiex:forming-rollingmill-*"),
       ["shear-grid"] = Grid("iiex:forming-shear-*"),
       ["shearblade-grid"] = Grid("iiex:shearblade-*"),

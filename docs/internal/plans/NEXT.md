@@ -1,13 +1,15 @@
 # NEXT — the single "what next" entry point
 
-**Status** live — updated 2026-08-15: the mod split is **BUILT**. Both merges are done, the mod set is
-`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 4,105 green. The framework-hardening plan
-is live and part-landed; **M.6 landed and closed B23**, a wall that made the Bessemer vessel unbuildable
-in every game mode. ★★ **The forming line is complete on both tiers, and every rolled product is
-obtainable.** The owner's filler layouts arrived, the shear was built on them, **B3c closed the same day**,
-and the **cast stock forms** and the **rod fork** landed behind it — so a bar, a slab, a billet, a bloom, a
-cast slab and a vanilla rod all roll and crop, and both fastener benches have their input. Every unit's
-docs-sync task updates this file (see the maintenance rule at the bottom).
+**Status** live — updated 2026-08-20: the mod split is **BUILT**. Both merges are done, the mod set is
+`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 4,125 green. ★★ **The workbench is built**
+— the owner's art arrived 2026-08-20 and the bench stands on its two cells the same day. The
+framework-hardening plan is live and part-landed; **M.6 landed and closed B23**, a wall that made the
+Bessemer vessel unbuildable in every game mode. ★★ **The forming line is complete on both tiers, and
+every rolled product is obtainable.** The owner's filler layouts arrived, the shear was built on them,
+**B3c closed the same day**, and the **cast stock forms** and the **rod fork** landed behind it — so a
+bar, a slab, a billet, a bloom, a cast slab and a vanilla rod all roll and crop, and both fastener
+benches have their input. Every unit's docs-sync task updates this file (see the maintenance rule at the
+bottom).
 
 Ownership, layout and the rules that govern this directory are in
 [../README.md](../README.md). In one line: `docs/design/**` owns decisions, this directory owns
@@ -187,15 +189,30 @@ That is a unit of work, not a follow-up; the guard states both counts so the ski
 **Updated 2026-08-15.** The forming line is complete for every drawn route; what is queued is one designed
 station, one item merge and two rulings. Pick one; nothing among them blocks anything else.
 
-- ★★ **The workbench — designed 2026-08-15, nothing built.**
-  [workbench.md](../../design/machines/workbench.md). A 5 × 5 bench for assemblies a player cannot make by
-  hand, whose recipes may declare an **interaction sequence** (hold RMB with hammer, hands, wrench, …).
-  ⛔⛔ Its justification is **stack size**, not room for layout: an ingredient's `quantity` is capped by what
-  a slot holds, so 48 rods against a 16 cap needs three cells. ★★ It needs **no recipe engine** — vanilla's
-  matcher is grid-size agnostic — and everything is JSON so a third party ships a bench without C#.
-  ⛔ Largest unbudgeted cost is **handbook rendering**: vanilla draws recipes in a 3 × 3 widget and a
-  sequence has no page at all. ⛔ Size the grid against a real bill of materials first; nothing shipped
-  needs 5 × 5 yet.
+- ~~**The workbench**~~ — ★★ **BUILT 2026-08-20**, the day the owner's art arrived.
+  [workbench.md](../../design/machines/workbench.md). `BlockWorkbench` on the `O #` two-cell footprint,
+  `BlockEntityWorkbench`'s 5 × 5 grid over an output row, `GuiDialogWorkbench` with a live preview and a
+  repeat-while-held Craft button, the shape copy-out, the grid recipe, three locales and 12 tests. Gate 9
+  targets / **4,125**. ★★ It needed **no recipe engine**, as designed — the bench passes its own width to
+  vanilla's matcher and every existing 3 × 3 recipe matches inside it.
+  ⛔⛔ **The 5 × 5 is still unmeasured, and now it is measured as unjustified**: the largest `Quantity(n)`
+  anywhere in the tree is **8**, once, and every machine recipe is `.Size(3, 3)` or smaller. It ships at
+  5 × 5 because the matcher is size-agnostic and the window is a loop over the slot count, so widening or
+  narrowing is free either way — but the design's *"size the grid against a real bill of materials first"*
+  is unanswered until the boiler or the engine is written, and until one exists nothing needs the width.
+  ⛔ **Handbook rendering is still unpaid** — vanilla draws recipes in a 3 × 3 widget, so any recipe wider
+  than 3 has no "how do I make this" page. Nothing shipped is wider than 3 yet, so it does not bite today.
+  ⛔ **The interaction sequence is not built**: `config/craftsequences/` does not exist. The design makes it
+  opt-in — no declared sequence is a one-interaction craft — so the bench is complete without it, and the
+  world-side gesture path is what a sequence would add.
+  ⛔⛔ **Content waits on infrastructure** *(owner ruling 2026-08-20)*. Richer machine bills, 5 × 5 layouts
+  for big machines and an expanded component roster are all wanted — for pipe fittings, for engines, and for
+  the machines themselves — but they are **not** next: once the infrastructure is complete a recipe or a
+  machine item is a JSON row, so designing the roster now buys nothing and competes with the systems that
+  make it cheap. ⛔ Three parts were proposed and **rejected**, with reasons that generalise: **bolts**
+  (nails and rivets already cover fastening — it is redundancy, not a part), **springs** (would need a
+  machine of their own, and the machine count is the real budget), **packing/gaskets** (no consumer exists;
+  the need was invented for the bill). Do not re-propose them.
 - ★ **The diagram / sand-pattern catalogues as JSON config** *(owner-asked, not started)*. The same shape as
   `ProcessRoute` and `MaterialRole`: a catalogue, a loader, a contributed-to registry. ⛔ It carries a
   **guide payload** too — pages and images, since the design table doubles as the guide — and it is worth

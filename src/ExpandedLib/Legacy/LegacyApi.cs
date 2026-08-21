@@ -23,6 +23,16 @@ public static class LegacyApi {
     /// <summary>The 1.22 property name for the <c>resolvedIngredients</c> field.</summary>
     public CraftingRecipeIngredient[] ResolvedIngredients =>
       recipe.resolvedIngredients;
+
+    /// <summary>The 1.22 overload, which takes the world explicitly; the older surface reaches the
+    /// same world through the player, so the argument is redundant here. Arity separates this from
+    /// the three-argument instance method it forwards to.</summary>
+    public bool Matches(
+      IPlayer forPlayer,
+      IWorldAccessor world,
+      ItemSlot[] ingredients,
+      int gridWidth
+    ) => recipe.Matches(forPlayer, ingredients, gridWidth);
   }
 
   extension(CraftingRecipeIngredient ingredient) {

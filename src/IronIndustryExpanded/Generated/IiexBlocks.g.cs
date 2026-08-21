@@ -223,6 +223,33 @@ public static class IiexBlocks
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
 
+  /// <summary><c>iiex:crafting-workbench</c> - crafting/workbench. Variant groups: side(n|e|s|w).</summary>
+  public static class CraftingWorkbench
+  {
+    /// <summary>The bare code, no variants: <c>iiex:crafting-workbench</c>.</summary>
+    public const string Code = "iiex:crafting-workbench";
+
+    /// <summary>Any variant: <c>iiex:crafting-workbench-*</c>.</summary>
+    public const string Any = "iiex:crafting-workbench-*";
+
+    /// <summary>The <c>side</c> variant group.</summary>
+    public static class Side
+    {
+      public const string N = "n";
+      public const string E = "e";
+      public const string S = "s";
+      public const string W = "w";
+    }
+
+    /// <summary>Pin only <c>side</c>: <c>iiex:crafting-workbench-{side}</c>.</summary>
+    public static string WithSide(string side) =>
+      $"iiex:crafting-workbench-{side}";
+
+    /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:crafting-workbench-{side}</c>.</summary>
+    public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
+      WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+  }
+
   /// <summary><c>iiex:enginefluidpump</c> - engine/fluidpump. Variant groups: side(n|e|s|w).</summary>
   public static class EngineFluidpump
   {

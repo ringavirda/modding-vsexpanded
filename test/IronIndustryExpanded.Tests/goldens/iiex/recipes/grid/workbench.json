@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Workbench",
+    "ingredientPattern": "_H_,V_V,PPP",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:crafting-workbench-n",
+      "quantity": 1
+    },
+    "ingredients": {
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      },
+      "V": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "quantity": 2
+      }
+    }
+  }
+]

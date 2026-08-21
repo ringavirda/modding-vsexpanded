@@ -1,9 +1,10 @@
 # Workbench
 
-**Status** designed 2026-08-15, nothing built. Settled with the owner in one pass: the grid size, why it is
-not the player's grid, the interaction sequence, the repeat rule, the failure rule and the discoverability
-route. ⛔ Every part of it is a **JSON contract** — a third party ships a bench, a recipe and a sequence
-without writing C#, which is what E1–E4 asks of every station
+**Status** built 2026-08-20 apart from the interaction sequence. Designed with the owner 2026-08-15 in one
+pass: the grid size, why it is not the player's grid, the interaction sequence, the repeat rule, the failure
+rule and the discoverability route; the art and the footprint arrived 2026-08-20 and the block, its window
+and its crafting were built the same day. ⛔ Every part of it is a **JSON contract** — a third party ships a
+bench, a recipe and a sequence without writing C#, which is what E1–E4 asks of every station
 **Mod** exlib owns the sequence spec, its registry and the block base; iiex ships the block, its art and
 the shipped sequences
 
@@ -160,11 +161,48 @@ still no second recipe format.
 
 ---
 
+## The block, as built
+
+**Two cells, `O #`, and the art overhangs them on purpose** *(owner, 2026-08-20)*. The bench body — trestle
+rails, top, tool shelf — measures exactly X 0..32 / Y 0..16 / Z 0..16, so the footprint is the principal plus
+one plain filler at `x=+1`. The **vices are allowed outside it**: the east one reaches 6 voxels past the east
+face and both screws pass the south face. Ruled acceptable, because a vice hangs off the end of a bench and
+the cells it hangs into are air. ⛔ The consequence to know rather than rediscover: two benches placed side by
+side interpenetrate by those 6 voxels.
+
+⛔⛔ **The drawn frame is the `s` variant, and the two rotations must agree.** The vices mount on the +Z edge,
+which is the edge the player works from, so both the shape's `rotateYByType` and the block's `StructureAngle`
+carry +180 over `ExOrientation.AngleFromSide` — the casting bed's convention. They are declared in two
+different places, and a bench whose model faced one way while its reserved cell lay the other would put a
+solid invisible cell in the open; `WorkbenchTests.The_mesh_and_the_footprint_turn_together` holds them
+together per side.
+
+**The output is one row of five**, under the grid and the width of it. Five stacks is three of a 16-cap item's
+48 with room to spare, and matching the grid width keeps the window a single column of controls.
+
+**A craft is the Craft button, and the window shows what the grid makes.** The grid is loaded in the window,
+a passive preview slot runs the same matcher the bench crafts with, and the button crafts once per press and
+repeats while held. ⛔ This is where a **sequence** will differ: a window cannot hold a tool, so a declared
+sequence is worked on the block itself with the window closed, which is also why block interaction help is
+the design's second discoverability route. Nothing gates the repeat today because no sequence exists to be
+multi-step.
+
+**Either cell opens the window.** The bench declares no `IFillerInteractionTarget`, so the filler's plain
+forwarding routes a click anywhere on the block to the principal. The owner's layout writes `#` rather than
+`I` for the second cell; that distinction separates *which* interaction on a machine that has several, and
+the bench has one.
+
 ## Open
 
-* **Grid size is settled at 5 × 5 but unmeasured.** No shipped recipe needs it yet; the boiler and the engine
-  are the intended first customers and neither is written. Size it against a real bill of materials before
-  building, and note that vanilla's matcher makes widening later free.
+* ⛔⛔ **Grid size is settled at 5 × 5 and measured as unjustified.** Across every recipe in the tree the
+  largest ingredient `Quantity(n)` is **8**, once, and every machine recipe is `.Size(3, 3)` or smaller. It
+  ships at 5 × 5 because the cost is symmetric — vanilla's matcher is size-agnostic and the window is a loop
+  over the slot count, so widening or narrowing later is free — but no shipped recipe needs the width. The
+  boiler and the engine are the intended first customers and neither is written; size it against one of them
+  when it is.
+* **The interaction sequence is not built.** `config/craftsequences/` does not exist, so every recipe is a
+  one-interaction craft — which the design already makes the default, so the bench is complete without it.
+  What a sequence adds is the world-side gesture path and the interaction help that names the current step.
 * **Which recipes get a sequence** — the tedium rule says "assemblies where the labour is the point", which
   is a judgement, not a criterion. Worth a short list once the first few exist.
 * **Whether the bench needs a tier**, i.e. whether one bench serves the whole game or a later one is required
