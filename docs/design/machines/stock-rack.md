@@ -1,6 +1,63 @@
 # Stock rack
-**Status** designed - nothing built; no block, no BE, no recipe, no shape, and the pile-placement code it
-depends on does not exist either   **Mod** iiex (`IronIndustryExpanded`)
+**Status** **BUILT 2026-08-21** as `iiex:storage-rack`. Block, block entity, occupancy catalogue, recipe,
+lang and tests all ship; the composed-contents renderer is written but unverified in game (see § As built).
+**Mod** iiex (`IronIndustryExpanded`)
+
+> ## ⛔ Amendment 2026-08-21 - the owner's rule, which supersedes parts of this page
+>
+> The owner drew `assets/editable/shapes/machines/machine-megablock-storagerack.json` and ruled:
+>
+> * *"footprint xz slice `O # #`, 3 block 1 tall, 1 wide, 1 deep megablock. It has 3 cells and all have
+>   interactions."*
+> * *"It can store 3 stacks of items that occupy 1 block length, 1 stack of 2 block length + 1 stack of
+>   1 block length, or 1 stack of 3 block length item."*
+> * *"**Length is intended**, everything is configurable via json, including how many cells and which
+>   stack of specific item occupies."*
+>
+> **Capacity is length, not layers.** The [Operation](#operation) section's
+> `piecesPerLayer = floor(rackWidth / pieceWidth)` x `RackLayers` model and the [Numbers](#numbers)
+> worked table are **superseded**: a rack is a row of N cells, each stored stack occupies a contiguous
+> run of `L` cells, and the rack is full when the runs fill it. The three arrangements above are the
+> complete enumeration for N = 3. Nothing stacks upward.
+>
+> **What that dissolves.** The two stacking modes (`pyramid` / `flat`), the half-width offset, the
+> 0.866 y-step, the layer count and the jitter belong to the *reheat hearth's bed*, not to the rack.
+> The rack therefore **no longer depends on `PileLayout`**
+> ([plan](../../internal/plans/2026-08-15-item-piles.md), stage 1, unstarted) - which this page named as
+> its blocking prerequisite. It can be built on its own.
+>
+> **What that opens.** *Mixed contents* under [Open](#open) is answered: yes, by length - a 2-run beside
+> a 1-run is one of the three arrangements. *One inventory or per-layer* is answered: one ordered list of
+> runs.
+>
+> ### As built
+>
+> | Piece | Where |
+> |---|---|
+> | `BayRun` / `BayLayout` | `src/ExpandedLib/Storage/BayLayout.cs` - pure, world-free capacity |
+> | `BayOccupancy` + registry + loader | `src/ExpandedLib/Storage/` - contributed-to, `config/bayoccupancy/*.json` |
+> | `BlockStorageRack` | `src/IronIndustryExpanded/BlockStructures/Storage/Blocks/` |
+> | `BlockEntityStorageRack` | `.../Storage/BlockEntities/` |
+> | the shipped catalogue | `assets/iiex/config/bayoccupancy/storagerack.json` |
+> | recipe | `storagerack-grid`, 5 planks -> 2 racks |
+> | tests | `BayLayoutTests`, `BayOccupancyTests` (exlib), `StorageRackTests` (iiex) - 66 cases |
+>
+> ⛔ **The renderer is the one part no headless test can see.** It follows vanilla's
+> `BlockEntityDisplay`: meshes are built on the **main thread** (`Initialize` and every content change),
+> cached per load, and `OnTesselation` only adds them with a transform - because resolving a stored item's
+> texture may insert it into the block atlas and the tesselation pass runs on a chunk worker. The rack's
+> own frame is left to the default block mesh, so `OnTesselation` returns `base`, not `true`. What is
+> checked headlessly is only the centring math (`CentreOf`).
+>
+> ⛔ **The shipped occupancy numbers are a starting table**, grounded in `StockForm.BaseLength` rounded up
+> to whole cells, not measured in game. `caststock-slab` is the only 3-cell entry, so it is the only item
+> that exercises the whole-rack arrangement today.
+>
+> **Both numbers are config, not constants.** Cell count is the blocktype's own footprint (so a longer
+> rack is another blocktype, not a code change), and per-item occupancy is a JSON table. That widens the
+> page's "a rack is not a chest" rule: the rack takes what its catalogue lists, at the length the
+> catalogue declares, rather than what a hardcoded stock-code prefix matches. Piece size is still
+> **declared, never measured** off a drawn bounding box.
 
 **Owns**
 * the 1 × 1 × 3 wooden rack: its footprint, its capacity-by-layer rule and the numbers that fall out of it,
@@ -72,8 +129,8 @@ Nothing is drawn.
 
 | Asset | State |
 |---|---|
-| editable shape | missing - no rack anywhere in `assets/editable/shapes/` |
-| runtime shape | missing |
+| editable shape | `assets/editable/shapes/machines/machine-megablock-storagerack.json` - drawn 2026-08-21, 47 elements, three bays along -Z at z 0..16 / -16..0 / -32..-16, X -2..18 (2 vx of bracket overhang each side, no footprint widening), Y 0..16 |
+| runtime shape | `assets/iiex/shapes/storage/storagerack.json` - exported; both texture keys (`generic`, `iron5`) already mapped in `convert-shape.py` |
 | textures | plain vanilla planks; no new texture needed |
 | animations | none, ever - a rack is static and only its contents change, exactly like the reheat hearth (`BlockEntityHeatingHearth.cs:97-98`) |
 | lang / handbook | no key in `assets/iiex/lang/en.json`, no page in `docs/iiex/handbook/` |

@@ -66,6 +66,11 @@ public class ExpandedLibModSystem : ModSystem {
     // The terminal half of the same contract: every machine's job table.
     foreach (string error in Processes.ProcessJobLoader.Load(api))
       api.Logger.Error("[exlib] invalid process job - " + error);
+
+    // What each store's items occupy. Also each store's whitelist: an item no rule names is one no rack
+    // takes, so a missing file reads as an empty rack rather than as one that holds anything.
+    foreach (string error in Storage.BayOccupancyLoader.Load(api))
+      api.Logger.Error("[exlib] invalid bay occupancy - " + error);
   }
 
   public override void StartClientSide(ICoreClientAPI api) {

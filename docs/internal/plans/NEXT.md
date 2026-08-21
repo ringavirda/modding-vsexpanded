@@ -231,6 +231,10 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   right-hand sides emit word-spelled sides (`convertercontrol-north`) where the live blocks use letters,
   so those rows name no live block and do nothing. Paying this off needs content rulings on which retired
   families get migrated and which get purged.
+- **The storage rack is BUILT** (2026-08-21) — the owner drew it and ruled capacity is *length*, which
+  superseded `stock-rack.md`'s capacity-by-layer model and dissolved its dependency on the unbuilt
+  `PileLayout`. `config/bayoccupancy/` is a new contributed-to catalogue. ⛔ Its renderer is unverified in
+  game.
 - **The live iwex queue** — ~~all of U4~~ (2026-08-20/21), U6 (puddling), U7.4 + the shear (B3c),
   U8, U9, U10. ★★ **U6 is the one that matters most**: it is the only source of wrought balls, and without
   it iiex's own rolling mill has exactly one feedstock (a vanilla iron rod) — the cast ladders are siex's.

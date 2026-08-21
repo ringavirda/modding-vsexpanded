@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "store": "storagerack",
+  "items": [
+    { "item": "iiex:stock-rod", "cells": 1 },
+    { "item": "iiex:stock-heavyplate", "cells": 1 },
+    { "item": "iiex:boilerplate", "cells": 1 },
+    { "item": "iiex:pig", "cells": 1 },
+    { "item": "iiex:caststock-billet", "cells": 1 },
+    { "item": "iiex:caststock-bloom", "cells": 1 },
+
+    { "item": "iiex:stock-shingledbar", "cells": 2 },
+    { "item": "iiex:stock-beam", "cells": 2 },
+    { "item": "iiex:stock-shingledslab", "cells": 2 },
+
+    { "item": "iiex:caststock-slab", "cells": 3 }
+  ]
+}

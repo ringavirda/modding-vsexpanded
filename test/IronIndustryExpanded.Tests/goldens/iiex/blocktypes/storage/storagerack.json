@@ -1,0 +1,73 @@
+{
+  "code": "storage-rack",
+  "class": "iiex.BlockStorageRack",
+  "entityClass": "iiex.BlockEntityStorageRack",
+  "behaviors": [
+    {
+      "name": "ExOrientable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "side",
+      "states": [
+        "n",
+        "e",
+        "s",
+        "w"
+      ]
+    }
+  ],
+  "creativeinventory": {
+    "general": [
+      "*-n"
+    ],
+    "iiex": [
+      "*-n"
+    ]
+  },
+  "shape": {
+    "base": "iiex:storage/storagerack",
+    "rotateYByType": {
+      "*-n": 0,
+      "*-e": 270,
+      "*-s": 180,
+      "*-w": 90
+    }
+  },
+  "blockmaterial": "Wood",
+  "resistance": 3.0,
+  "materialDensity": 600,
+  "attributes": {
+    "fillerOffsets": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": -2,
+        "allowAttach": true
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": -1,
+        "allowAttach": true
+      }
+    ]
+  },
+  "sounds": {
+    "walk": "walk/wood",
+    "place": "block/planks",
+    "byTool": {
+      "Axe": {
+        "hit": "block/chop-hit-axe",
+        "break": "block/chop-break-axe"
+      }
+    }
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

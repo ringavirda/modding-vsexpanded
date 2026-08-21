@@ -38,5 +38,16 @@ public class CraftingStationRecipeDefinitions : IExRecipeDefProvider {
             .Ingredient("P", i => i.Item("game:plank-*").Quantity(2))
             .OutputBlock("iiex:crafting-workbench-n", 1)
         ),
+      ExRecipeDef
+        .Create(domain, "grid", "storagerack")
+        // Planks and nothing else, two racks a craft. A rack returns no efficiency - it is limited by the
+        // space given to it, not by its price - so its cost must never compete with a machine's.
+        .Grid(r =>
+          r.Name("Storage Rack")
+            .Pattern("P_P,PPP")
+            .Size(3, 2)
+            .Ingredient("P", i => i.Item("game:plank-*").Quantity(1))
+            .OutputBlock("iiex:storage-rack-n", 2)
+        ),
     ];
 }

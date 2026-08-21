@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Storage Rack",
+    "ingredientPattern": "P_P,PPP",
+    "width": 3,
+    "height": 2,
+    "output": {
+      "type": "block",
+      "code": "iiex:storage-rack-n",
+      "quantity": 2
+    },
+    "ingredients": {
+      "P": {
+        "type": "item",
+        "code": "game:plank-*",
+        "quantity": 1
+      }
+    }
+  }
+]

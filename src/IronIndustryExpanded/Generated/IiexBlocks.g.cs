@@ -2323,4 +2323,31 @@ public static class IiexBlocks
     public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
+
+  /// <summary><c>iiex:storage-rack</c> - storage/storagerack. Variant groups: side(n|e|s|w).</summary>
+  public static class StorageStoragerack
+  {
+    /// <summary>The bare code, no variants: <c>iiex:storage-rack</c>.</summary>
+    public const string Code = "iiex:storage-rack";
+
+    /// <summary>Any variant: <c>iiex:storage-rack-*</c>.</summary>
+    public const string Any = "iiex:storage-rack-*";
+
+    /// <summary>The <c>side</c> variant group.</summary>
+    public static class Side
+    {
+      public const string N = "n";
+      public const string E = "e";
+      public const string S = "s";
+      public const string W = "w";
+    }
+
+    /// <summary>Pin only <c>side</c>: <c>iiex:storage-rack-{side}</c>.</summary>
+    public static string WithSide(string side) =>
+      $"iiex:storage-rack-{side}";
+
+    /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:storage-rack-{side}</c>.</summary>
+    public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
+      WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+  }
 }
