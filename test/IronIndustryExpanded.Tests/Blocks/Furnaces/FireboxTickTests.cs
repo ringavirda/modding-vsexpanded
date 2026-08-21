@@ -4,6 +4,7 @@ using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
@@ -13,9 +14,10 @@ namespace IronIndustryExpanded.Tests;
 
 /// <summary>
 /// The firebox branch's production tick: a reverberatory hearth stood up complete and loaded with fuel
-/// lights itself and runs a fire clock. Both hearth layouts declare filler cells no part produces and so
-/// cannot complete in game; <c>StructureRig.Raise</c> synthesises a stand-in for every empty footprint cell,
-/// which is what lets the machine complete here and its <c>OnProductionTick</c> be driven.
+/// lights itself and runs a fire clock. <c>StructureRig.Raise</c> synthesises a stand-in for every empty
+/// footprint cell, which is what lets the machine complete here and its <c>OnProductionTick</c> be driven -
+/// so completion here says nothing about whether a player could build it. That is
+/// <see cref="FurnaceFillerAccountingTests"/>'s subject, and only a definition-level check can see it.
 /// <para>
 /// The tick is invoked directly rather than through a registered listener: <c>TestWorld.Attach</c> only
 /// links the API, and the listener is registered by <c>Initialize</c>, part of the core's placement
@@ -43,30 +45,68 @@ public class FireboxTickTests {
       "north"
     );
 
-    Item coke = new TestWorld().RegisterItem("game:coke");
-    foreach (BlockPos cell in hearth.FireboxCells.ToList()) {
-      var be = new BlockEntityFirebox { Pos = cell.Copy() };
-      var bed = new BEBehaviorFirebox(be);
-      if (unitsPerCell > 0)
-        bed.TryAdd(new ItemStack(coke, unitsPerCell), unitsPerCell);
-      ReflectionHelpers.SetField(
-        be,
-        "Behaviors",
-        new List<BlockEntityBehavior> { bed }
-      );
-      rig.Occupy(
-        cell,
-        TestBlocks.Configure(
-          new Block(),
-          "iiex:furnace-firebox-tier1-n",
-          900,
-          ("side", "north")
-        ),
-        be
-      );
+    LoadFireboxes(rig, hearth, unitsPerCell);
+    return hearth;
+  }
+
+  /// <summary>
+  /// A puddling furnace on its shipped layout, its one firebox cell loaded full. Same construction as
+  /// <see cref="LoadedHearth"/>; the two hearths are the same chassis one row apart.
+  /// </summary>
+  private static (
+    BlockEntityPuddlingFurnace Furnace,
+    StructureRig Rig
+  ) LoadedPuddler() {
+    var furnace = new BlockEntityPuddlingFurnace();
+    StructureRig rig = Stand(
+      furnace,
+      BlockPuddlingFurnaceCore.Definitions("iiex").Single(),
+      Anchor,
+      "iiex:furnace-puddlingcore-tier1",
+      "north"
+    );
+    LoadFireboxes(rig, furnace, BEBehaviorFirebox.CellCapacity);
+    return (furnace, rig);
+  }
+
+  /// <summary>
+  /// Puts a real hearth in the furnace's bed cell, fettled and charged to capacity, replacing the rig's
+  /// stand-in. Flanks before centre - a fettled centre blocks both flanks.
+  /// </summary>
+  private static BlockEntityPuddlingHearth ChargedBed(
+    StructureRig rig,
+    BlockEntityPuddlingFurnace furnace
+  ) {
+    BlockPos cell = rig.Cell(-2, 0, 0);
+    var bed = new BlockEntityPuddlingHearth { Pos = cell.Copy() };
+    rig.Occupy(
+      cell,
+      TestBlocks.Configure(
+        new BlockPuddlingHearth(),
+        "iiex:furnace-puddlinghearth-n",
+        1,
+        ("type", "puddlinghearth"),
+        ("side", "north")
+      ),
+      bed
+    );
+
+    foreach (
+      HearthRows.Row row in new[]
+      {
+        HearthRows.Row.Left,
+        HearthRows.Row.Right,
+        HearthRows.Row.Centre,
+      }
+    ) {
+      bed.TryFettle(row);
+      for (int i = 0; i < PuddlingHearthLayout.PigsPerRow; i++)
+        bed.TryChargePig(row);
     }
 
-    return hearth;
+    // The furnace resolved its parts when the structure completed, before this bed existed.
+    ReflectionHelpers.Invoke(furnace, "ScanForOutlets");
+    return bed;
   }
 
   /// <summary>Runs <paramref name="seconds"/> one-second production ticks through the furnace's own
@@ -81,6 +121,19 @@ public class FireboxTickTests {
 
   private static float Temp(BlockEntityFurnaceCore be) =>
     (float)ReflectionHelpers.GetField(be, "_internalTemp")!;
+
+  /// <summary>The fuel beds standing in a hearth's firebox cells, read the way the branch reads them.</summary>
+  private static IEnumerable<BEBehaviorFirebox> BedsOf(
+    BlockEntityFireboxFurnace hearth
+  ) =>
+    hearth
+      .FireboxCells.Select(cell =>
+        hearth
+          .Api.World.BlockAccessor.GetBlockEntity(cell)
+          ?.GetBehavior<BEBehaviorFirebox>()
+      )
+      .Where(bed => bed is not null)
+      .Select(bed => bed!);
 
   #endregion
 
@@ -133,48 +186,154 @@ public class FireboxTickTests {
   #region The fire cadence is live
 
   /// <summary>
-  /// A firebox cannot hold the shaft's disruption floor, so a lit hearth snuffs itself before the fuel
-  /// clock is reached. <c>ChargeCapacityUnits</c> is the firebox's own capacity, cells ×
-  /// <see cref="BEBehaviorFirebox.CellCapacity"/>, while <c>DisruptionMixFloor</c> is the shaft's 144,
-  /// inherited unchanged: a full hearth is both full enough to light and below the floor, so it fires,
-  /// counts one disruption and goes out when the extinguish grace expires. <c>MaxFuelBurnTime</c> is
-  /// unreachable while that holds. This describes the shipped behaviour; a fix has to rewrite the test.
+  /// A full hearth stays lit. While the branch carried the shaft's flat floor of 144 it could not: a full
+  /// firebox holds cells x <see cref="BEBehaviorFirebox.CellCapacity"/>, at most 24 u, so every lit tick
+  /// counted a disruption and the fire went out the moment the extinguish grace expired.
   /// </summary>
   [Fact]
-  public void A_full_firebox_is_below_the_shafts_disruption_floor_so_the_fuel_clock_is_never_reached() {
+  public void A_full_firebox_outlasts_the_extinguish_grace() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
       BEBehaviorFirebox.CellCapacity
     );
-
-    int canHold = hearth.FireboxCells.Count * BEBehaviorFirebox.CellCapacity;
-    int floor = Cadence(hearth, "DisruptionMixFloor");
-    int burn = Cadence(hearth, "MaxFuelBurnTime");
-
-    Assert.True(
-      burn > 1,
-      $"MaxFuelBurnTime must be a real duration, got {burn}"
-    );
-    Assert.True(
-      canHold < floor,
-      $"B8's fifth cause is fixed: a full firebox now holds {canHold} against a floor of {floor}. "
-        + "Rewrite this test as the two-sided fuel-clock assertion it was meant to be."
-    );
+    int grace = Cadence(hearth, "ExtinguishThresholdDefault");
+    Assert.True(grace > 0, $"the grace must be a real duration, got {grace}");
 
     Tick(hearth, 1);
     Assert.Equal(FurnaceState.Firing, hearth.State);
 
-    // It goes out on the disruption grace, long before the fuel clock could have run down.
-    int seconds = 1;
-    while (hearth.State != FurnaceState.Idle && seconds < burn) {
-      Tick(hearth, 1);
-      seconds++;
-    }
+    Tick(hearth, grace * 3);
 
-    Assert.Equal(FurnaceState.Idle, hearth.State);
-    Assert.True(
-      seconds < burn,
-      $"the hearth survived {seconds}s of a {burn}s fuel clock - the disruption no longer decides"
+    Assert.NotEqual(FurnaceState.Idle, hearth.State);
+  }
+
+  /// <summary>
+  /// And it goes on to melt, which no reverberatory hearth in this mod has ever done: the reheat furnace
+  /// works stock at <c>RollingTempC</c>, well inside what a firebox reaches, and only the inherited floor
+  /// stood between it and its melt phase.
+  /// </summary>
+  [Fact]
+  public void A_lit_hearth_crosses_into_its_melt_phase() {
+    BlockEntityHeatingFurnace hearth = LoadedHearth(
+      BEBehaviorFirebox.CellCapacity
     );
+
+    Tick(hearth, (int)IiexValues.FireboxMeltStartDelay + 2);
+
+    Assert.Equal(FurnaceState.Melting, hearth.State);
+  }
+
+  /// <summary>
+  /// The puddling furnace crosses into its melt phase - the first time in the mod's history it can. Three
+  /// things had to land together: it stays lit (B8's fifth cause), it works at 1400 C rather than iron's
+  /// 1482 (B8's surviving half), and its four courses of chimney carry it there. The damper reads open
+  /// because no cap block entity stands in this scene, which is the case the player sets up by hand.
+  /// </summary>
+  [Fact]
+  public void A_puddling_furnace_crosses_into_its_melt_phase() {
+    var (furnace, _) = LoadedPuddler();
+
+    Assert.True(furnace.StructureComplete);
+    Assert.Single(furnace.FireboxCells);
+
+    Tick(furnace, 1);
+    Assert.Equal(FurnaceState.Firing, furnace.State);
+
+    // It lights at IgnitionTemp and climbs at a fixed rate, then has to hold above the process
+    // temperature for the melt-start soak before the phase turns over.
+    Tick(
+      furnace,
+      ClimbToProcess(furnace) + (int)IiexValues.FireboxMeltStartDelay + 2
+    );
+
+    Assert.Equal(FurnaceState.Melting, furnace.State);
+  }
+
+  /// <summary>Seconds a freshly lit hearth needs to climb from its ignition temperature to its process
+  /// temperature, at the branch's fixed heat rate.</summary>
+  private static int ClimbToProcess(BlockEntityFurnaceCore be) =>
+    (int)
+      System.Math.Ceiling(
+        (Cadence(be, "MeltingPoint") - Cadence(be, "IgnitionTemp"))
+          / IiexValues.FireboxHeatRatePerSecond
+      );
+
+  /// <summary>
+  /// The whole first half of a heat, on the clock: a fettled and charged bed in a lit furnace loses its
+  /// pigs to a bath. This is what U6's gate calls melt-down, and it is driven entirely from the core's
+  /// <c>SmeltCycle</c> - the hearth registers no listener of its own, so the melt rides the bounded
+  /// away-catch-up instead of teleporting on reload.
+  /// </summary>
+  [Fact]
+  public void A_lit_puddling_furnace_melts_its_charge_down_to_a_bath() {
+    var (furnace, rig) = LoadedPuddler();
+    BlockEntityPuddlingHearth bed = ChargedBed(rig, furnace);
+
+    Assert.Equal(PuddlingHearthLayout.PigCapacity, bed.PigCount);
+
+    // Light it, carry it to the process temperature, hold there through the melt-start soak, then run
+    // enough melt cycles for a full charge to go down.
+    Tick(
+      furnace,
+      1
+        + ClimbToProcess(furnace)
+        + (int)IiexValues.FireboxMeltStartDelay
+        + (int)(
+          IiexValues.FireboxMeltIntervalSec
+          / IiexValues.PuddlingMeltFractionPerCycle
+        )
+        + 10
+    );
+
+    Assert.Equal(FurnaceState.Melting, furnace.State);
+    Assert.True(bed.HasBath, $"the bed is {bed.MeltProgress:P0} melted down");
+    Assert.Equal(0, bed.PigCount);
+    Assert.Equal(
+      PuddlingHearthLayout.PigCapacity * ItemPig.PigUnits,
+      bed.BathUnits
+    );
+  }
+
+  /// <summary>
+  /// A furnace whose bed was broken out mid-heat must not throw on the production tick. It reads as no
+  /// hearth and does nothing, which is the honest answer.
+  /// </summary>
+  [Fact]
+  public void A_furnace_with_no_hearth_ticks_without_throwing() {
+    var (furnace, _) = LoadedPuddler();
+
+    Assert.Null(furnace.Hearth);
+    Tick(
+      furnace,
+      1 + ClimbToProcess(furnace) + (int)IiexValues.FireboxMeltStartDelay + 5
+    );
+
+    Assert.Equal(FurnaceState.Melting, furnace.State);
+  }
+
+  /// <summary>
+  /// The floor still bites, from the other side: fuel drawn back out of a lit box below its share of the
+  /// bed counts a disruption, and the fire goes out on the grace. A firebox lights full and burns on a
+  /// clock rather than by consumption, so emptying it by hand is the only way under the floor.
+  /// </summary>
+  [Fact]
+  public void A_lit_firebox_raked_below_its_floor_goes_out_on_the_grace() {
+    BlockEntityHeatingFurnace hearth = LoadedHearth(
+      BEBehaviorFirebox.CellCapacity
+    );
+    int grace = Cadence(hearth, "ExtinguishThresholdDefault");
+    int floor = Cadence(hearth, "DisruptionMixFloor");
+
+    Tick(hearth, 1);
+    Assert.Equal(FurnaceState.Firing, hearth.State);
+
+    foreach (BEBehaviorFirebox bed in BedsOf(hearth))
+      bed.Consume(bed.Units - (floor / hearth.FireboxCells.Count) + 1);
+
+    Tick(hearth, grace - 1);
+    Assert.Equal(FurnaceState.Firing, hearth.State);
+
+    Tick(hearth, 2);
+    Assert.Equal(FurnaceState.Idle, hearth.State);
   }
 
   /// <summary>

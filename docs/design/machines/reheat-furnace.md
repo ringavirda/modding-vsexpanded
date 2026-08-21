@@ -136,10 +136,13 @@ those three strings appear only in `HeatingHearthLayout.cs:72-77`. The fix is th
 
 ## Construction
 
-No recipe exists for the core, the hearth, the charge door or the firebox. `FurnaceRecipeDefinitions.cs`
-defines recipe groups for the blast furnace, the tuyere, the tall hopper, the blower and the cupola, and
-none of the iiex grid goldens outputs a heating-furnace part. No RCC construction stages either; every part
-is a plain placed block. Creative-only today.
+**Craftable since 2026-08-21** (U6.11). `FurnaceRecipeDefinitions.cs` gained a `reverberatory` group
+carrying the whole chassis at once - both cores, both hearths, both doors, the damper and the shared
+firebox - and this furnace's core, hearth and charge door come out of it. They are authored together
+because grid-pattern collision is a property of the file: the puddling and reheat cores are the same
+chassis one row apart, so a clash between them would have surfaced only after one had blessed its golden.
+No RCC construction stages; every part is a plain placed block, and the layout already makes the player set
+the brickwork by hand off a projection.
 
 The vanilla half (refractory brick, fire-brick slabs, sealing door) is craftable already.
 
@@ -176,9 +179,17 @@ furnace overrides nothing there; see [firebox](firebox.md) and [heat balance](..
 
 ### What is missing
 
-`SmeltCycle` is empty (`BlockEntityHeatingFurnace.cs:53`): no heat goes into the stock. A lit reheat furnace
-holds its own temperature and nothing more; the pieces on the bed keep cooling on vanilla's own temperature
-attribute. There is no roasting mode and no damper.
+Roasting, and a damper. **The soak is built** (2026-08-21, U7.1) - see [Reheat rate](#reheat-rate) below.
+
+⛔ **Three of the five stock forms cannot be reheated anywhere.** `HeatingHearthLayout.StockOf` admits
+`stock-shingledbar`, `stock-shingledslab` and the three `caststock-*`, and nothing else - so `stock-rod`,
+`stock-beam` and `stock-heavyplate`, and the claimed `iiex:beam` / `iiex:heavyplate` / `game:rod-iron` they
+re-enter the mill as, have no bed art and are refused. A vanilla forge is no escape either: it takes only
+`ingot`, `metalplate`, `workitem` or a collectible declaring `forgable`
+(`vssurvivalmod/BlockEntity/BEForge.cs`), and no item in this repo declares it. A piece on one of those
+routes that goes cold can still be **sheared** - shearing is temperature-free - but it can never be rolled
+on. Three ways out, none of them free: bed art for the missing forms, `forgable` on the small ones (which
+undercuts the whole argument for this machine), or the crosswise seating of Open #4.
 
 ### The two seatings
 
@@ -204,16 +215,33 @@ In crosswise mode the hearth is one block: every interaction routes through any 
 spans three cells, so it must be drawn on the principal's mesh. Whether the outer cells get culled cannot
 be settled headlessly.
 
-### Reheat rate (proposed)
+### Reheat rate
 
-The soak is per piece and scales on `V/A` (surface area, not mass), which governs how fast heat crosses into
-a solid. The same constant should drive the cooling in `RollingPass.Cool` (`RollingPass.cs:190`), which
-today takes a flat `RollingCoolRate` rather than an area-derived one.
+**Built 2026-08-21 (U7.1), as designed.** The soak is per piece and paces on `A/V` - surface area per unit
+volume, not mass - because heat crosses a solid at its surface. `RollingPass.AreaOverVolume(w, t)` is
+`2/t + 2/w`, which collapses to the two figures this page quoted without either being written down: `2/t`
+for a piece wide against its gauge, `4/t` for a square bar. So the section falls out of the two dimensions a
+piece already carries and nothing needs a shape class of its own - which matters, since the
+`square | flat` property [is not in code](rolling-mill.md).
 
-No ×2 furnace multiplier: under an area law it puts every piece below a vanilla ingot's forge time. The
-hearth soaks at forge rate per piece; its advantages over a forge are that a forge cannot hold a slab at all
-and that the hearth soaks two or three pieces at once. The per-piece `V/A` table belongs to
-[rolling](../processes/rolling.md).
+The cooling under the rolls now runs on the same law: `RollingCoolRate` stopped being a flat fraction and
+became the `k` that multiplies `A/V`, so a piece rolled thin goes cold faster than one still thick. That was
+the half of this the design asked for and it changes the loop's shape - the last gap of a schedule is the
+thinnest and longest the piece ever is, and a flat rate made it the cheapest to hold hot.
+
+★ **`ReheatRateK` is calibrated against vanilla's forge rather than chosen.** A forge gains a work item
+1500 °C per game hour (`vssurvivalmod/BlockEntity/BEForge.cs`, `OnCommonTick200ms`), which at the default
+calendar speed brings a cold ingot to rolling heat in about 36 s. At `0.02` an as-shingled bar (3 × 3) takes
+about 40 s, a rod about 27 and a shingled slab about 58. So the hearth soaks at roughly forge rate per
+piece, with **no ×2 multiplier** - under an area law a multiplier would put every piece under a forge and
+the reheat would stop being a beat. Its advantages stay what they always were: a forge cannot hold a slab at
+all, and the bed soaks three pieces for one fire.
+
+The soak targets the chamber's own temperature, clamped at the stock's melting point - the approach is
+asymptotic, so that clamp holds a piece under its melting point however long it lies there, with no margin
+needed. It is hosted on the furnace's melt cycle rather than on a listener of the hearth's own, so it rides
+the core's bounded away-catch-up: a hearth ticking itself would look identical while the chunk was loaded
+and teleport the soak the moment it was not.
 
 ### Planned pile placement
 
@@ -303,11 +331,13 @@ Values this page owns. FSM tunables are shown as bindings; the values belong to
 | walls, slabs, firebox door | the vanilla blocks, individually |
 | firebox | see [firebox](firebox.md) |
 
-Caution: loaded stock is destroyed. Neither `BlockHeatingHearth` nor `BlockEntityHeatingHearth` overrides
-`GetDrops` or `OnBlockBroken`, so breaking a loaded bed silently eats up to three pieces of stock, each a
-unique, unstackable work piece carrying its own per-side thickness and heat. Same hole as the
-[puddling furnace](puddling-furnace.md)'s hearth, and worse here because the contents are irreplaceable
-rather than re-craftable.
+~~Caution: loaded stock is destroyed.~~ **Fixed 2026-08-21 (U7.1).** `BlockEntityHeatingHearth.OnBlockBroken`
+drops every piece on the bed. Each is unique - its own gauge, its own crop tally, its own heat - so a hearth
+that swallowed them would destroy work no recipe can make again.
+
+⛔ The same hole is still open on the [puddling furnace](puddling-furnace.md)'s hearth, and is not the same
+fix: that bed stores pig and fettle as **counts** rather than as stacks, so returning them means minting
+stacks rather than handing back what was taken.
 
 ---
 
@@ -385,14 +415,15 @@ requires.
 
 | # | Gap | Size |
 |---|---|---|
-| 1 | The structure cannot complete - 6 orphan filler cells (above). Blocks everything else in game | small |
-| 2 | Heat into stock. `SmeltCycle` is empty; the core does not resolve its own hearth | medium |
-| 3 | Reheat rate on `V/A`, no ×2, and the matching cooling law in `RollingPass.Cool` (today flat `RollingCoolRate`). `k` is the loop's pacing knob and nothing fixes it yet - tune in play | medium |
+| 1 | ~~The structure cannot complete - 6 orphan filler cells~~ **Closed 2026-08-21** (U6.1). The hearth's second course is declared; `FurnaceFillerAccountingTests` is the guard | - |
+| 2 | ~~Heat into stock~~ **Closed 2026-08-21** (U7.1). `SmeltCycle` soaks the bed; `ReheatSoakTests` is the guard, and it caught a second defect on the way - `ShaftCentre` named a cell one row out, so this furnace's hearth handle had always resolved to a fire slab | - |
+| 3 | ~~Reheat rate on `V/A`~~ **Closed 2026-08-21** (U7.1), both directions, with `ReheatRateK` calibrated against the vanilla forge. ⛔ Still unwalked in game: whether ~40 s a bar is the right beat is a play question | - |
 | 4 | The crosswise seating. One contents model with a mode tag; `HearthRows`' 3-row enum and the `ItemStack?[3]` both have to go. Verify in game that the outer cells are not culled | medium |
 | 5 | Composed-stock renderer + `StockPile.Place` in exlib, shared with the [stock rack](stock-rack.md). Deletes `HeatingHearthLayout`'s 15 authored groups and the `Items1/3/2` trap | medium |
 | 6 | No recipe for core, hearth, charge door or firebox | small |
 | 7 | Three of five recognised stock forms (`castbillet` / `castbloom` / `castslab`) have no item; the two that do have no survival route. Until the mill and the long cell produce stock, the hearth has nothing to hold | - |
 | 8 | Roasting mode - the second job this machine was designed for, and the route that should displace hand-prepared fettle (`FettleRecipeDefinitions.cs`) | medium |
 | 9 | No damper. This furnace has no air control of any kind; the [puddling](puddling-furnace.md) cap is not in its layout | small |
-| 10 | Loaded stock is destroyed on break (above) | small |
+| 10 | ~~Loaded stock is destroyed on break~~ **Closed 2026-08-21** (U7.1) | - |
 | 11 | A deeper furnace raises both handling limits at once - a far better upgrade reward than a throughput multiplier. Not designed | - |
+| 12 | ⛔ **Three of the five stock forms have no bed art and no forge route**, so `rod`, `beam` and `heavyplate` cannot be reheated at all (see *What is missing*). The shear is the only escape for a piece that goes cold on those routes | medium |

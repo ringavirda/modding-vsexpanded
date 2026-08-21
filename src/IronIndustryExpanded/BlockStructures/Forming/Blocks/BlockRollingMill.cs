@@ -356,11 +356,21 @@ public partial class BlockRollingMill
     BlockPos clickedCell,
     BlockSelection sel
   ) {
-    // World-space hit point relative to the principal, then rotated back into the authored frame.
-    double dx = clickedCell.X - principal.X + (sel.HitPosition?.X ?? 0.5);
-    double dz = clickedCell.Z - principal.Z + (sel.HitPosition?.Z ?? 0.5);
-    double localX = StructureAngle == 90 ? dz : dx;
-    return MillFeed.AlongBarrel(localX);
+    // The whole turn back into the authored frame, not a swap of axes: at 90 the barrel runs along -Z, so
+    // a mill that only swapped the axis read its deck mirrored and the schedule ran narrowest-to-widest.
+    //
+    // The hit point is centred on its cell before the turn and put back afterwards. It arrives in world
+    // axes measured from a corner, so rotating it uncentred moves the click to the far side of the cell -
+    // which is what made the old reading agree with the authored frame at the one cell where the offset
+    // happened to cancel, and disagree at the rest of the deck.
+    double hitX = (sel.HitPosition?.X ?? 0.5) - 0.5;
+    double hitZ = (sel.HitPosition?.Z ?? 0.5) - 0.5;
+    (double localX, _) = ExOrientation.UnrotateXZ(
+      clickedCell.X - principal.X + hitX,
+      clickedCell.Z - principal.Z + hitZ,
+      StructureAngle
+    );
+    return MillFeed.AlongBarrel(localX + 0.5);
   }
 
   public bool OnFillerInteractStep(

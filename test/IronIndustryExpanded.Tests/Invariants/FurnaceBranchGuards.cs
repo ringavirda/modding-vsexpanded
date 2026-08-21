@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExpandedLib.Definitions;
+using ExpandedLib.Heat;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 using Xunit;
 
@@ -194,6 +197,124 @@ public static class FurnaceBranchGuards {
       }
     }
   }
+
+  #endregion
+
+  #region Law 4 - no firebox counts a disruption it can never clear
+
+  /// <summary>
+  /// A lit furnace below <c>DisruptionMixFloor</c> counts a disruption on every tick and goes out when the
+  /// extinguish grace expires. A firebox holds <c>cells x capacity</c> units and nothing bypasses that
+  /// ceiling, so a floor above its own capacity is a hearth that is at once full enough to light and too
+  /// empty to stay lit: it fires and snuffs itself whatever the player does.
+  /// <para>
+  /// The floor is the shaft's number and the shaft branch no longer reads it - <c>DerivesState</c> makes
+  /// burning per column there, so the disruption block runs on the firebox branch alone. Inheriting it
+  /// unchanged is what put every reverberatory hearth out of reach.
+  /// </para>
+  /// </summary>
+  public static void NoFireboxCarriesAFloorAboveItsOwnCapacity() {
+    Type[] fireboxes = Leaves()
+      .Where(t => typeof(BlockEntityFireboxFurnace).IsAssignableFrom(t))
+      .ToArray();
+    Assert.NotEmpty(fireboxes);
+
+    foreach (Type leaf in fireboxes) {
+      List<ExBlockDef> layouts = LayoutsNaming(leaf);
+      Assert.True(
+        layouts.Count > 0,
+        $"{leaf.Name} is a firebox furnace that no code-first blocktype in {leaf.Assembly.GetName().Name} "
+          + "names as its entityClass, so there is no drawing to read its firebox out of"
+      );
+
+      foreach (ExBlockDef def in layouts) {
+        var be = (BlockEntity)Activator.CreateInstance(leaf)!;
+        FurnaceLayoutRig.OrientWithLayout(
+          be,
+          def,
+          $"{def.Code}-north",
+          "north"
+        );
+
+        int capacity = (int)
+          ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!;
+        int floor = (int)
+          ReflectionHelpers.GetProperty(be, "DisruptionMixFloor")!;
+
+        Assert.True(
+          floor <= capacity,
+          $"{leaf.Name} on {def.Code} counts a disruption below {floor} u but its firebox holds at most "
+            + $"{capacity} u - a full hearth is under the floor on the tick it lights, so it goes out on "
+            + "the extinguish grace and the fuel clock is never reached"
+        );
+      }
+    }
+  }
+
+  #endregion
+
+  #region Law 5 - every hearth can reach the temperature it works at
+
+  /// <summary>
+  /// A furnace whose threshold its own heat balance cannot reach is a machine that lights, holds and never
+  /// does anything - which is what the puddling furnace was while it carried iron's melting point. Stated
+  /// as reachability rather than as a number: every coefficient in the model is a proposal to calibrate in
+  /// play, and an <c>InlineData(1400f)</c> would go red on every retune while saying nothing about whether
+  /// the machine still works.
+  /// <para>
+  /// Read at the machine's best case - a full firebox, the damper open, both doors shut - because that is
+  /// the ceiling the player is aiming at. Whether the chimney is what carries it there is a per-machine
+  /// fact and not asserted here: it is load-bearing on the puddling furnace and a heat-treatment dial on
+  /// the reheat furnace, which works stock far below its own ceiling.
+  /// </para>
+  /// </summary>
+  public static void EveryFireboxReachesItsOwnProcessTemperature() {
+    Type[] fireboxes = Leaves()
+      .Where(t => typeof(BlockEntityFireboxFurnace).IsAssignableFrom(t))
+      .ToArray();
+    Assert.NotEmpty(fireboxes);
+
+    foreach (Type leaf in fireboxes)
+      foreach (ExBlockDef def in LayoutsNaming(leaf)) {
+        var be = (BlockEntity)Activator.CreateInstance(leaf)!;
+        be.Pos = new BlockPos(0, 16, 0);
+        new TestWorld().Attach(be);
+        FurnaceLayoutRig.OrientWithLayout(be, def, $"{def.Code}-north", "north");
+        ReflectionHelpers.Invoke(be, "CacheAttributes");
+
+        int capacity = (int)
+          ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!;
+        float threshold = (float)
+          ReflectionHelpers.GetProperty(be, "MeltingPoint")!;
+        int courses = (int)ReflectionHelpers.GetProperty(be, "StackCourses")!;
+
+        float withStack = Settles(be, capacity);
+        Assert.True(
+          withStack >= threshold,
+          $"{leaf.Name} on {def.Code} works at {threshold} C but its own {courses}-course stack settles "
+            + $"at {withStack} C - it lights, holds and never reaches its process. Move the losses or the "
+            + "stack, not the process temperature"
+        );
+      }
+  }
+
+  /// <summary>Where a full firebox settles, with the stack its drawing declares.</summary>
+  private static float Settles(BlockEntity be, int units) =>
+    (
+      (HeatBalance)
+        ReflectionHelpers.Invoke(
+          be,
+          "ComputeHeatBalance",
+          new BurdenMix(0f, 0f, units),
+          0f,
+          20f,
+          units
+        )!
+    ).TProcess;
+
+  #endregion
+
+  #region Shared
 
   /// <summary>
   /// Every code-first blocktype in <paramref name="leaf"/>'s own assembly that names it as its

@@ -55,12 +55,12 @@ public class BlockEntityPuddlingChimneyCap : BlockEntityFurnacePart {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(
       Lang.Get(
-        "iiex:chimneycap-state",
+        IiexLang.ChimneycapState,
         Lang.Get(IsOpen ? "iiex:chargedoor-open" : "iiex:chargedoor-closed")
       )
     );
     if (Core is null)
-      dsc.AppendLine(Lang.Get("iiex:furnacepart-nofurnace"));
+      dsc.AppendLine(Lang.Get(IiexLang.FurnacepartNofurnace));
   }
 
   #endregion

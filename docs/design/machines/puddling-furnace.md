@@ -10,7 +10,7 @@ charge box, so the redirection costs no C#; `ShaftCentre` = the hearth, the one 
 the hearth's charge model (3 rows × 3 pigs, fettle-before-pig, the reachability rule as this hearth applies
 it), the `PuddlingHearthLayout` element-name map and the Blockbench numbering trap in it, the chimney damper
 and the two-door charge door as blocks, the "cleaned, not tapped" slag decision, and the exact reason this
-furnace cannot melt today (B8).
+process temperature (B8, closed 2026-08-21).
 
 **Depends on**
 [heat balance](../mechanics/heat-balance.md) - owns `T_process = T_in − T_loss`, the coke/air/preheat and
@@ -230,13 +230,17 @@ Always-drawn structural groups: `Base/*`, `BaseExtension/*`, `Bed/*` (`PuddlingH
 
 | Member | Bound to | File:line |
 |---|---|---|
-| `MeltingPoint` | `IiexValues.BfIronMeltingPoint` - knowingly wrong; B8's surviving half | `BlockEntityPuddlingFurnace.cs:63` |
+| `MeltingPoint` | `IiexValues.PuddlingProcessTempC` = 1400 - a process temperature, not a melting point *(2026-08-21)* | `BlockEntityPuddlingFurnace.cs` |
+| `StackCourses` | `LocalCellsWithRole(CellRole.Flue).Count` = 4, off the drawing *(2026-08-21)* | `BlockEntityFireboxFurnace.cs` |
+| `DamperOpen` / `Venting` | the chimney cap's `IsOpen` and the door's `IsVenting` - the two operating inputs | `BlockEntityFireboxFurnace.cs` |
+| `ChargeLossFull` / `TransferLoss` | `FireboxChargeLossFull` 100 / `ReverberatoryTransferLoss` 100 *(2026-08-21)* | `BlockEntityFireboxFurnace.cs` |
+| `DisruptionMixFloor` | half the bed, sealed - B8's fifth cause *(2026-08-21)* | `BlockEntityFireboxFurnace.cs` |
 | `RequiresBlast` / `TuyereIntakeVolume` / `BlastPressureThreshold` | `false` / `0` / `0` - the firebox branch | `BlockEntityFireboxFurnace.cs:39-50` |
 | `ShaftHoldsLayeredCharge` | `false`, sealed - a hearth can never inherit a shaft's charge column | `BlockEntityFireboxFurnace.cs` |
 | `ChargeCapacityUnits` | `FireboxCellCount × FireboxMixPerCell`, sealed - "lit" means the bed is full | `BlockEntityFireboxFurnace.cs:224-225` |
 | `SmeltCycle` | empty - the cycle is unbuilt | `BlockEntityPuddlingFurnace.cs:74` |
 
-The melt-point line is B8 - see [Gotchas](#gotchas).
+B8 closed on 2026-08-21; see [Gotchas](#gotchas) for what each of its five causes turned out to be.
 
 ---
 
@@ -284,6 +288,11 @@ resolve at all: add a `BlockEntityPuddlingHearth` lookup at `GlobalOf(ShaftCentr
 
 ## Gotchas
 
+> **Closed 2026-08-21, all five causes.** The arithmetic below is the finding as it stood; what shipped is
+> in the two sections that follow it. The furnace now settles at **1421.6 °C** against a process
+> temperature of **1400** - twenty-one degrees of headroom, carried entirely by the chimney: the same
+> hearth on a bare flue reads 1192.5 °C, with the damper shut 907.1, with the main door open 1105.0.
+
 **B8 - the furnace cannot melt.** (Its first half, an unreachable ignition threshold, closed with the
 [firebox](firebox.md): "lit" is now the bed being full, derived from the drawn shape.) With no tuyeres,
 `blastSupplyFrac` is 0, so the air factor pins at the natural-draught value and `T_in` has a hard ceiling.
@@ -294,6 +303,59 @@ bites. Every term is [heat balance](../mechanics/heat-balance.md)'s; the arithme
 reverberatory furnace needs either its own melt point (puddling works pig in the pasty state, well below
 1482) or a draught model that the damper actually feeds. The code carries the defect knowingly
 (`BlockEntityPuddlingFurnace.cs:57-63`).
+
+#### What actually shipped, 2026-08-21
+
+Three pieces, in the order they landed:
+
+1. **The losses became per-machine.** `ChargeLossFull` and `TransferLoss` are virtuals on
+   `BlockEntityFurnaceCore`, defaulting to the blast furnace's behaviour so nothing moved for it. A firebox
+   pays **100 °C** for its bed rather than the shaft's 310 for a descending column, and **100 °C** across
+   the bridge to the work. `TransferLoss` is deliberately left virtual rather than made a branch constant:
+   the crucible furnace is a firebox machine whose pots stand in the coke with no bridge at all, and a
+   constant here would make it unbuildable.
+2. **The draught became a curve.** `StackDraught.NaturalDraughtFor(courses, damperOpen, venting)` replaces
+   the flat `BfNaturalDraughtFactor` read - `base + gain·√courses − friction·courses²`, which rises,
+   peaks and declines rather than clamping. The damper and the doors scale it, which is the first use
+   either `IsOpen` or `IsVenting` has ever had.
+3. **`StackCourses` is read off the drawing**, not walked up the world:
+   `LocalCellsWithRole(CellRole.Flue).Count`, which is 4 here and 2 on the reheat furnace. **Ruled
+   2026-08-21 (owner): this furnace has no player-built chimney** - *"it is fixed in layout because of the
+   cap"* - so there is nothing above the cap for a walk to find, and no cache to invalidate. The counted
+   walk arrives with the coke oven and crucible furnace, which do have player-built stacks. The cap moved
+   from `(-1,7,0)` to `(0,7,0)`, over the flue it caps, with its housing filler at `(0,7,1)`.
+
+The transfer loss landed at 100 °C rather than the 250 this page proposed, and the reason is the curve:
+250 was computed against a draught model that saturated at 0.85, giving `T_in` ≈ 1906. The settled peaking
+curve at four courses gives 1741.6, so the bridge loss comes down to keep the `T_process` the design
+intended. Every coefficient here is still a proposal to calibrate in play; what is settled is the shape.
+
+`IsVenting` also changed meaning: it is now **the main door only**. Not dumping the heat is the entire
+reason the small working door exists, and rabbling happens through it - if it vented, the bath would cool
+on every one of the sixteen gestures.
+
+#### B8's fifth cause, found and fixed 2026-08-21 - the hearth went out before it could get hot
+
+Ahead of every temperature argument below sat a plainer defect: a lit hearth **extinguished itself after
+30 seconds**, so no ceiling was ever tested in play. `DisruptionMixFloor` was a flat `144` on
+`BlockEntityFurnaceCore` - a shaft number, never overridden - and a lit furnace holding less than the floor
+counts a disruption on every tick and goes out when the extinguish grace expires. A firebox holds
+`cells x 12` units: **12** for the puddling furnace's one cell, **24** for the reheat furnace's two. Both
+are far under 144, so a full firebox was at once full enough to light and too empty to stay lit.
+
+The fix is on the branch, not the leaf: `BlockEntityFireboxFurnace` now derives its floor from its own
+capacity (`FireboxDisruptionFloorFraction`, half by default) and seals it, so a leaf cannot reintroduce a
+hand-picked number. The floor still bites from the other side - fuel raked back out of a lit box below half
+the bed puts the fire out on the grace - which is the mechanic it was always meant to be.
+
+It is firebox-only. The shaft branch derives its state per column (`DerivesState`) and never reaches the
+disruption block, so nothing about the shaft's own floor is blessed by this.
+
+The first thing the fix uncovered: the **reheat furnace now reaches its melt phase**, which no reverberatory
+hearth in this mod had ever done. Its `MeltingPoint` is `RollingTempC`, well inside what a firebox reaches -
+only the inherited floor stood between it and working.
+`FireboxTickTests.A_lit_hearth_crosses_into_its_melt_phase` is the check;
+`FurnaceBranchGuards.NoFireboxCarriesAFloorAboveItsOwnCapacity` is the law that keeps it.
 
 #### Settled 2026-08-05 - `PuddlingProcessTempC = 1400 °C`, and it is both of those fixes
 
@@ -358,10 +420,11 @@ a player cannot place one, and `IncompleteBlockCount` (`BlockEntityFurnaceCore.c
 
 | # | Gap | Size |
 |---|---|---|
-| 1 | The structure cannot complete - 3 orphan filler cells above the hearth (see [Gotchas](#gotchas)). Nothing else can be tested in game until this is fixed | small |
-| 2 | B8 - give the furnace `PuddlingProcessTempC` (settled at 1400 °C) together with the draught model the damper and doors are meant to feed | medium |
-| 3 | No recipe for any of the four blocks. Creative-only today | small |
-| 4 | The whole cycle: melt-down, rabbling (repeated RMB through the small door), balling up, drawing balls out, `ClearBed` returning fettle + tap cinder. `SmeltCycle` is the hook; `ClearBed` and the `rabbling`/`paddle` clips are already waiting | large |
-| 5 | The core does not resolve its own hearth. Needs a part lookup in `OnStructureCompleted` | small |
-| 6 | The damper (`IsOpen`) and the doors (`IsVenting`) are read by nothing. They are the intended draught model's two inputs | medium |
+| 1 | ~~The structure cannot complete - 3 orphan filler cells above the hearth~~ **Closed 2026-08-21.** The hearth's second course is declared and the chimney cap moved over the flue it caps; `FurnaceFillerAccountingTests` is the guard, and it covers all four furnace layouts in both directions | - |
+| 2 | ~~B8~~ **Closed 2026-08-21.** `PuddlingProcessTempC = 1400`, per-machine losses, and the draught curve the damper and doors feed. The furnace settles at 1421.6 °C with its four courses pulling, 1192.5 with no stack, 907.1 with the damper shut | - |
+| 3 | ~~No recipe for any of the four blocks~~ **Closed 2026-08-21** (U6.11). All four, plus the shared firebox, the reheat core and hearth, and the plain charge door - one `reverberatory` group, because grid-pattern collision is a property of the file. The rabble and paddle have their own grid recipes | - |
+| 4 | ~~The whole cycle~~ **Closed 2026-08-21** (U6.8-U6.10). Melt-down on the core's cadence, one ball per rabbling stroke through the small door, drawing out on the paddle, and `ClearBed` returning the spent fettle with exactly 3 tap cinder - which is what closes the fettle loop. A 3 s cooldown paces both strokes; the bath freezes if the fire goes out | - |
+| 5 | ~~The core does not resolve its own hearth~~ **Closed 2026-08-21** (U6.7). Resolved in `ScanForOutlets` beside the damper and the door, so all three refresh on the schedule the taps do; rotation is free through `GlobalOf` | - |
+| 6 | ~~The damper and the doors are read by nothing~~ **Closed 2026-08-21.** `StackDraught.NaturalDraughtFor(courses, damperOpen, venting)` reads both, and the block info names the draught and what is costing it | - |
+| 7a | ⛔ **Nothing has been seen in game.** The bath element, the two tool items, the working strokes on the door and the eight recipes are all unwalked | - |
 | 7 | Wrought-ball mass is unsettled - it belongs to [density rule](../mechanics/density-rule.md) and must land before yields here can be written. (The pig shipped at 375 u, `Items/ItemPig.cs:39`) | - |

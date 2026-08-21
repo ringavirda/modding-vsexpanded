@@ -235,8 +235,29 @@ public class IiexConfig : IExVersionedConfig {
   /// standard rather than as a flux shortfall. Keep at or above every grade's flux floor.</summary>
   public float BfDefaultFluxFrac { get; set; } = 0.05f;
 
-  /// <summary>Air factor with no pressurised blast at all - what the stack pulls by natural draught.</summary>
+  /// <summary>Air factor with no pressurised blast at all - what a bare flue pulls, with no stack over
+  /// it. <see cref="StackDraughtGain"/> and <see cref="StackDraughtFriction"/> carry it from there.</summary>
   public float BfNaturalDraughtFactor { get; set; } = 0.5f;
+
+  /// <summary>
+  /// How much air factor one course of chimney adds, against the square root of the count: draught force
+  /// rises with height but with diminishing returns.
+  /// </summary>
+  public float StackDraughtGain { get; set; } = 0.11f;
+
+  /// <summary>
+  /// How much air factor one course costs to flue friction and stack heat loss, against the square of the
+  /// count. Rising faster than the gain is what gives the curve a peak instead of a ceiling, so a stack
+  /// built past the optimum makes the furnace worse rather than merely no better.
+  /// </summary>
+  public float StackDraughtFriction { get; set; } = 0.00102f;
+
+  /// <summary>Share of its draught a stack keeps with the damper shut.</summary>
+  public float StackDamperShutFactor { get; set; } = 0.35f;
+
+  /// <summary>Share of its draught a stack keeps while a charge door stands open and spills the pull
+  /// into the room.</summary>
+  public float StackVentingFactor { get; set; } = 0.6f;
 
   /// <summary>Blast-supply fraction (arrived air / demanded air) below which a lit furnace counts as
   /// air-starved: sustained operation under this floor counts a disruption toward extinguish, after the
@@ -383,6 +404,45 @@ public class IiexConfig : IExVersionedConfig {
   /// <summary>Temperature (°C) the hearth must reach (and hold) to start melting iron.</summary>
   public float BfIronMeltingPoint { get; set; } = 1482f;
 
+  /// <summary>
+  /// Temperature (°C) a puddling furnace works its charge at. A process temperature, not a melting
+  /// point: puddling works pig in the pasty state, and this furnace never melts iron at all.
+  /// <para>
+  /// The mod's own two melting points bracket it, and that bracket is the process -
+  /// <see cref="CupolaCastIronMeltingPoint"/> 1200 &lt; 1400 &lt; <see cref="BfIronMeltingPoint"/> 1482.
+  /// Hot enough to melt pig down; too cool for decarburised iron to stay liquid. As carbon leaves the bath
+  /// its metal's own melting point climbs toward pure iron's ~1538, crosses the bath temperature partway
+  /// through, and the iron comes to nature - it balls up. The ball is emergent from the window, which is
+  /// what makes rabbling a verb rather than a wait. Both alternatives break it symmetrically: 1482 melts
+  /// the wrought iron and 1200 freezes it hard instead of pasty.
+  /// </para>
+  /// </summary>
+  public float PuddlingProcessTempC { get; set; } = 1400f;
+
+  /// <summary>
+  /// Share of a full charge that melts down per melt cycle. At the firebox's 10-second cadence the default
+  /// puts a full bed down in about two minutes of held heat - long enough that the player is tending the
+  /// fire rather than watching a bar, short enough that a heat is not an evening.
+  /// </summary>
+  public float PuddlingMeltFractionPerCycle { get; set; } = 0.08f;
+
+  /// <summary>
+  /// Tap cinder raked out when a puddling hearth is cleaned. Three, because three is what closes the
+  /// fettle loop: one heat's waste grid-crafts into exactly the three fettlings the next heat's three rows
+  /// want, so a running furnace never needs ore for its bed again. A fixed count rather than a division of
+  /// the bath's remainder - at any other number the player is topping the loop up or accumulating cinder
+  /// forever.
+  /// </summary>
+  public int PuddlingCinderPerHeat { get; set; } = 3;
+
+  /// <summary>
+  /// Seconds between working strokes through the small door - a gathering stroke or a draw-out, the two
+  /// sharing one cooldown because they are the same motion at the same door. Pacing lives here rather
+  /// than in a gesture count so it can be retuned without touching the yield: a heat is sixteen balls and
+  /// sixteen draw-outs whatever this is set to.
+  /// </summary>
+  public float PuddlingStrokeCooldownSec { get; set; } = 3f;
+
   /// <summary>Seconds a fired furnace burns before it extinguishes.</summary>
   public int FireboxMaxFuelBurnTime { get; set; } = 1200;
 
@@ -470,6 +530,31 @@ public class IiexConfig : IExVersionedConfig {
   /// <c>CokeL*</c> elements: raising this draws layers that do not exist and the top of the bed stops
   /// rendering. Change the shape first.</summary>
   public int FireboxLayersPerCell { get; set; } = 6;
+
+  /// <summary>
+  /// Fraction of its own capacity a lit firebox must still hold before it counts a disruption toward
+  /// going out. A firebox lights full and burns on a clock rather than by consumption, so this bites only
+  /// when fuel is drawn back out of a lit box. Stated as a fraction because the floor has to scale with
+  /// the hearth: the shaft's flat 144 is four times what a two-cell firebox can hold, which is what kept
+  /// every reverberatory hearth from staying lit.
+  /// </summary>
+  public float FireboxDisruptionFloorFraction { get; set; } = 0.5f;
+
+  /// <summary>
+  /// Heat (C) a full firebox machine's charge takes out of the fire. Far under the shaft's
+  /// <see cref="BfChargeLossFull"/>, which is a 320-unit column of cold ore descending through the flame:
+  /// a reverberatory hearth heats one bed charge and a crucible furnace a few pots. Paying a column's
+  /// penalty for a bed is what made a fuller firebox read as a colder furnace.
+  /// </summary>
+  public float FireboxChargeLossFull { get; set; } = 100f;
+
+  /// <summary>
+  /// Heat (C) lost carrying the flame over the bridge to the work, which is what a reverberatory furnace
+  /// is for: the fuel never touches the metal. It is also the ceiling that stops one melting iron -
+  /// against it the reheat furnace tops out below 1538 C at any stack height, with no cap constant saying
+  /// so. A firebox machine whose work stands in the fuel bed overrides this back to zero.
+  /// </summary>
+  public float ReverberatoryTransferLoss { get; set; } = 100f;
   #endregion
 
   #region Burdenmaker
@@ -633,12 +718,38 @@ public class IiexConfig : IExVersionedConfig {
   [ExConfigRange(0, 10_000)]
   public float RollingLoadTorque { get; set; } = 0.34f;
 
-  /// <summary>Fraction of its excess heat the stock sheds per second, during the carry-back as well as
-  /// under the rolls. Tuned so a single pass finishes comfortably (still well above rolling heat after
-  /// ~25 s) while a full schedule of round trips needs a reheat. Much above this a pass freezes
-  /// mid-bite.</summary>
+  /// <summary>
+  /// How fast the stock sheds its excess heat, per unit of surface area per unit volume
+  /// (<c>RollingPass.AreaOverVolume</c>) - so it is a property of the metal and the mill floor, and the
+  /// piece's own section decides the rate it comes out at. Tuned so a single pass finishes comfortably
+  /// (an as-shingled bar is still well above rolling heat after ~25 s) while a full schedule of round
+  /// trips needs a reheat. Much above this a pass freezes mid-bite.
+  /// <para>
+  /// A thin piece therefore cools faster than a thick one, which is the same law
+  /// <see cref="ReheatRateK"/> runs the other way. Both were flat rates once, and a flat rate makes the
+  /// last gap of a schedule - the thinnest, longest, most exposed the piece ever is - the cheapest to
+  /// hold hot.
+  /// </para>
+  /// </summary>
   [ExConfigRange(0, 10)]
   public float RollingCoolRate { get; set; } = 0.005f;
+
+  /// <summary>
+  /// How fast a piece on a reheat hearth takes the furnace's heat up, per unit of surface area per unit
+  /// volume - the soaking half of <see cref="RollingCoolRate"/>'s law, and the one knob pacing the
+  /// forming loop's economy.
+  /// <para>
+  /// Calibrated against vanilla's forge rather than chosen: a forge gains a work item 1500 C per game
+  /// hour (<c>BEForge.OnCommonTick200ms</c>), which at the default calendar speed brings a cold ingot to
+  /// rolling heat in about 36 s. At this value an as-shingled bar (3 x 3) takes about 40 s, a rod about
+  /// 27 and a shingled slab about 58. So the hearth soaks at roughly forge rate per piece and carries no
+  /// multiplier of its own: what it is for is that a forge cannot hold a slab at all and the bed soaks
+  /// three pieces at once. Deliberately unmultiplied - under an area law a x2 would put every piece under
+  /// a forge and the reheat would stop being a beat in the loop.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(0, 10)]
+  public float ReheatRateK { get; set; } = 0.02f;
 
   /// <summary>Ambient temperature (C) the stock cools toward on the mill floor.</summary>
   [ExConfigRange(-50, 500)]

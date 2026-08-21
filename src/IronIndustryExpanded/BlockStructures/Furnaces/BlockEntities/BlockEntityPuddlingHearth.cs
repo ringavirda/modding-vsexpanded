@@ -1,6 +1,8 @@
+using System;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
+using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -31,6 +33,147 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
     _fettled[(int)HearthRows.Row.Centre]
     || _pigs[(int)HearthRows.Row.Centre] > 0;
 
+  #region Melting
+
+  private float _meltProgress;
+
+  /// <summary>
+  /// How far the charge has melted down, 0-1. Advanced only from the furnace's own melt cycle, so it
+  /// rides the core's bounded away-catch-up: a listener registered here would look identical while the
+  /// chunk was loaded and teleport the heat the moment it was not.
+  /// </summary>
+  public float MeltProgress => _meltProgress;
+
+  /// <summary>True once the pigs are gone and the bath is standing.</summary>
+  public bool HasBath => _meltProgress >= 1f && _meltedUnits > 0;
+
+  private bool _frozen;
+
+  /// <summary>
+  /// True once the bath has gone solid in the bed. A puddling furnace that loses its fire loses the heat,
+  /// and the metal sets where it lies: nothing more can be gathered out of it and the bed has to be raked
+  /// and started over. Balls already lying on the bed are solid iron and survive.
+  /// </summary>
+  public bool IsFrozen => _frozen;
+
+  /// <summary>Sets the bath solid. Called by the furnace when its fire goes out, never by a player.</summary>
+  public void FreezeBath() {
+    if (!HasBath || _frozen)
+      return;
+    _frozen = true;
+    Changed();
+  }
+
+  private int _meltedUnits;
+
+  /// <summary>Metal units in the bath - what the charge weighed when it went down.</summary>
+  public int BathUnits => _meltedUnits;
+
+  /// <summary>
+  /// Melts <paramref name="fraction"/> of a full charge down. Returns true once the bath has just
+  /// formed, which is the tick the pigs stop being drawn. Nine pigs is the bed's capacity, not a gate:
+  /// a part-charged hearth melts what it has and makes a smaller bath.
+  /// </summary>
+  public bool MeltDown(float fraction) {
+    if (HasBath || PigCount == 0 || fraction <= 0f)
+      return false;
+
+    _meltProgress = GameMath.Clamp(_meltProgress + fraction, 0f, 1f);
+    if (_meltProgress < 1f) {
+      MarkDirty(true);
+      return false;
+    }
+
+    _meltedUnits = PigCount * ItemPig.PigUnits;
+    for (int i = 0; i < HeatingHearthLayout.Rows; i++)
+      _pigs[i] = 0;
+    Changed();
+    return true;
+  }
+
+  /// <summary>
+  /// The furnace this bed sits in, when it is part of one. <c>Core</c> itself is the part base's and is
+  /// protected, so the verbs on the block ask the bed rather than reaching past it.
+  /// </summary>
+  public BlockEntityPuddlingFurnace? Furnace =>
+    Core as BlockEntityPuddlingFurnace;
+
+  private int _balls;
+
+  /// <summary>Balls gathered out of the bath and not yet drawn off the bed.</summary>
+  public int BallsOnBed => _balls;
+
+  /// <summary>
+  /// Balls this bath still has in it - what the metal divides into, less what has been gathered. The
+  /// remainder that does not make a whole ball stays in the bath and comes out as tap cinder.
+  /// </summary>
+  public int BallsRemaining =>
+    Math.Max(
+      0,
+      _meltedUnits / WroughtBallItemDefinitions.BallUnits - _ballsMade
+    );
+
+  private int _ballsMade;
+
+  /// <summary>
+  /// Whether only the clean-out is left: the bath is gathered dry, or it has set solid and nothing more
+  /// can be got out of it either way.
+  /// </summary>
+  public bool IsWorkedOut => HasBath && (BallsRemaining == 0 || _frozen);
+
+  /// <summary>
+  /// One rabbling stroke: gathers the stiffening metal into a ball and leaves it on the bed. Refused on a
+  /// bed with no bath and on one already worked out.
+  /// </summary>
+  public bool TryRabble() {
+    if (!HasBath || _frozen || BallsRemaining == 0)
+      return false;
+    _ballsMade++;
+    _balls++;
+    Changed();
+    return true;
+  }
+
+  /// <summary>Takes one gathered ball off the bed. Refused when none is standing.</summary>
+  public bool TryDrawBall() {
+    if (_balls <= 0)
+      return false;
+    _balls--;
+    Changed();
+    return true;
+  }
+
+  private long _lastStrokeMs;
+
+  /// <summary>
+  /// Whether the puddler is ready for another stroke through the door. One cooldown covers both verbs:
+  /// they are the same motion at the same door, and pacing the two together is what keeps a heat's
+  /// thirty-two gestures from collapsing into thirty-two clicks.
+  /// </summary>
+  /// <remarks>
+  /// Not serialised. A cooldown that resets on reload costs nothing and keeps a transient out of the
+  /// save; the melt cadence is what paces a heat, and this only stops the gathering being instant.
+  /// </remarks>
+  public bool StrokeReady =>
+    Api == null
+    || Api.World.ElapsedMilliseconds - _lastStrokeMs
+      >= (long)(IiexValues.PuddlingStrokeCooldownSec * 1000f);
+
+  /// <summary>Starts the cooldown. Called when a stroke is accepted, not when one is refused.</summary>
+  public void MarkStroke() {
+    if (Api != null)
+      _lastStrokeMs = Api.World.ElapsedMilliseconds;
+  }
+
+  /// <summary>
+  /// Metal left in the bath once every whole ball has been taken - the remainder, raked out as tap cinder
+  /// when the bed is cleaned.
+  /// </summary>
+  public int CinderUnits =>
+    HasBath ? _meltedUnits % WroughtBallItemDefinitions.BallUnits : 0;
+
+  #endregion
+
   #region Charging
 
   /// <summary>
@@ -38,6 +181,8 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
   /// carries a pig (re-fettling would bury the charge), or if the loaded centre row blocks reach.
   /// </summary>
   public bool TryFettle(HearthRows.Row row) {
+    if (_meltProgress > 0f)
+      return false;
     if (!HearthRows.CanReach(row, CentreLoaded) && row != HearthRows.Row.Centre)
       return false;
     if (_fettled[(int)row] || _pigs[(int)row] > 0)
@@ -52,6 +197,8 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
   /// when the row already holds <c>PuddlingHearthLayout.PigsPerRow</c>.
   /// </summary>
   public bool TryChargePig(HearthRows.Row row) {
+    if (_meltProgress > 0f)
+      return false;
     if (!HearthRows.CanReach(row, CentreLoaded) && row != HearthRows.Row.Centre)
       return false;
     if (
@@ -76,6 +223,11 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       _pigs[i] = 0;
       _fettled[i] = false;
     }
+    _meltProgress = 0f;
+    _meltedUnits = 0;
+    _balls = 0;
+    _ballsMade = 0;
+    _frozen = false;
     Changed();
   }
 
@@ -105,7 +257,11 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       ExMeshCache.GetOrCreate(
         capi,
         Block,
-        string.Join(',', _pigs) + "|" + string.Join(',', _fettled),
+        string.Join(',', _pigs)
+          + "|"
+          + string.Join(',', _fettled)
+          + "|"
+          + HasBath,
         () => BuildBedMesh(tesselator)
       ) is { } mesh
     )
@@ -129,7 +285,7 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       Block,
       ExShapeElements.Pruned(
         shape,
-        PuddlingHearthLayout.ElementsFor(_pigs, _fettled)
+        PuddlingHearthLayout.ElementsFor(_pigs, _fettled, HasBath)
       ),
       out MeshData mesh
     );
@@ -147,6 +303,11 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       tree.SetInt("pigs" + i, _pigs[i]);
       tree.SetBool("fettled" + i, _fettled[i]);
     }
+    tree.SetFloat("meltProgress", _meltProgress);
+    tree.SetInt("meltedUnits", _meltedUnits);
+    tree.SetInt("balls", _balls);
+    tree.SetInt("ballsMade", _ballsMade);
+    tree.SetBool("bathFrozen", _frozen);
   }
 
   public override void FromTreeAttributes(
@@ -164,6 +325,18 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       );
       _fettled[i] = tree.GetBool("fettled" + i);
     }
+    // Clamped on read for the same reason the pigs are: an edited or older save must not put the bed in a
+    // state the element set has no drawing for.
+    _meltProgress = GameMath.Clamp(tree.GetFloat("meltProgress"), 0f, 1f);
+    _meltedUnits = GameMath.Clamp(
+      tree.GetInt("meltedUnits"),
+      0,
+      PuddlingHearthLayout.PigCapacity * ItemPig.PigUnits
+    );
+    int wholeBalls = _meltedUnits / WroughtBallItemDefinitions.BallUnits;
+    _ballsMade = GameMath.Clamp(tree.GetInt("ballsMade"), 0, wholeBalls);
+    _balls = GameMath.Clamp(tree.GetInt("balls"), 0, _ballsMade);
+    _frozen = tree.GetBool("bathFrozen");
     if (Api?.Side == EnumAppSide.Client)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);
   }
@@ -175,12 +348,12 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
     if (Core is null) {
-      dsc.AppendLine(Lang.Get("iiex:furnacepart-nofurnace"));
+      dsc.AppendLine(Lang.Get(IiexLang.FurnacepartNofurnace));
       return;
     }
     dsc.AppendLine(
       Lang.Get(
-        "iiex:puddlinghearth-charge",
+        IiexLang.PuddlinghearthCharge,
         PigCount,
         PuddlingHearthLayout.PigCapacity
       )
@@ -190,9 +363,9 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
       if (!_fettled[(int)row])
         unfettled++;
     if (unfettled > 0)
-      dsc.AppendLine(Lang.Get("iiex:puddlinghearth-needsfettle", unfettled));
+      dsc.AppendLine(Lang.Get(IiexLang.PuddlinghearthNeedsfettle, unfettled));
     if (CentreLoaded && !IsFullyCharged)
-      dsc.AppendLine(Lang.Get("iiex:hearth-centreblocks"));
+      dsc.AppendLine(Lang.Get(IiexLang.HearthCentreblocks));
   }
 
   #endregion

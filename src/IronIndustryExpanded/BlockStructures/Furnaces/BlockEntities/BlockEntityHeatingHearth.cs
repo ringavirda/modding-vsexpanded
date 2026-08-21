@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
+using IronIndustryExpanded.BlockStructures.Forming;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -12,8 +14,8 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
 /// <summary>
 /// The reheat furnace's hearth: three rows of stock in the flame's path, one piece per row. The bed is two
-/// cells deep so that a slab fits. Stock keeps cooling while it lies here; the reheat cycle that puts heat
-/// back into the pieces is not implemented, so the hearth only holds and draws them.
+/// cells deep so that a slab fits. A lit furnace soaks every piece lying here at its own pace
+/// (<see cref="SoakTick"/>); an unlit one holds them and lets the engine's own cooling have them.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
@@ -32,6 +34,23 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
       int n = 0;
       foreach (ItemStack? s in _rows)
         if (s != null)
+          n++;
+      return n;
+    }
+  }
+
+  /// <summary>How many of the loaded rows are at or above rolling heat, and so ready to carry to the
+  /// mill.</summary>
+  public int RowsAtRollingHeat {
+    get {
+      if (Api is not { } api)
+        return 0;
+      int n = 0;
+      foreach (ItemStack? s in _rows)
+        if (
+          s?.Collectible?.GetTemperature(api.World, s)
+          >= IiexValues.RollingTempC
+        )
           n++;
       return n;
     }
@@ -79,6 +98,79 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     MarkDirty(true);
     if (Api?.Side == EnumAppSide.Client)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);
+  }
+
+  /// <summary>
+  /// Drops every piece on the bed. Each is unique - its own gauge, its own crop tally, its own heat - so
+  /// breaking a loaded hearth without this destroys work that cannot be made again by repeating a recipe.
+  /// </summary>
+  public override void OnBlockBroken(IPlayer? byPlayer = null) {
+    if (Api?.Side == EnumAppSide.Server)
+      for (int i = 0; i < _rows.Length; i++)
+        if (_rows[i] is { } stack) {
+          _rows[i] = null;
+          Api.World.SpawnItemEntity(stack, Pos.ToVec3d().Add(0.5, 1.0, 0.5));
+        }
+    base.OnBlockBroken(byPlayer);
+  }
+
+  #endregion
+
+  #region Soak
+
+  /// <summary>
+  /// Puts <paramref name="dt"/> seconds of a chamber at <paramref name="furnaceC"/> into every piece on
+  /// the bed, each at its own pace: heat crosses a piece at its surface, so a rod comes up in a fraction
+  /// of the time a slab takes and thickness alone decides which. Nothing here is per-row - the bed soaks
+  /// three pieces at once for the same fire, which is the whole of the furnace's advantage over a forge.
+  /// </summary>
+  /// <remarks>
+  /// Driven from the furnace rather than from a listener of this hearth's own, so it rides the core's
+  /// bounded away-catch-up. A hearth ticking itself would look identical while the chunk was loaded and
+  /// teleport the soak the moment it was not.
+  /// </remarks>
+  /// <returns>Whether any piece moved, so a caller can mark the bed dirty once for the whole tick.</returns>
+  public bool SoakTick(float furnaceC, float dt) {
+    if (Api is not { Side: EnumAppSide.Server } api || dt <= 0f)
+      return false;
+
+    bool moved = false;
+    foreach (ItemStack? stack in _rows) {
+      if (stack?.Collectible is not { } collectible)
+        continue;
+      // The section is what paces the soak, and it lives on the work piece. A stack that resolves to none
+      // is not stock the mill would take either, so there is nothing here to bring to rolling heat.
+      if (WorkPiece.FromStack(stack) is not { } piece)
+        continue;
+
+      // A chamber hotter than the stock's own melting point would otherwise cook it on the bed. The
+      // approach is asymptotic, so clamping the target at the melting point is enough to keep a piece
+      // under it however long it soaks - no margin needed.
+      float melting = collectible.GetMeltingPoint(
+        api.World,
+        null,
+        new DummySlot(stack)
+      );
+      float target = melting > 0f ? Math.Min(furnaceC, melting) : furnaceC;
+
+      float was = collectible.GetTemperature(api.World, stack);
+      float now = RollingPass.Soak(
+        was,
+        target,
+        IiexValues.ReheatRateK
+          * RollingPass.AreaOverVolume(piece.Width, piece.Thickness),
+        dt
+      );
+      if (now <= was)
+        continue;
+
+      collectible.SetTemperature(api.World, stack, now, delayCooldown: false);
+      moved = true;
+    }
+
+    if (moved)
+      MarkDirty();
+    return moved;
   }
 
   #endregion
@@ -206,18 +298,18 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
     if (Core is null) {
-      dsc.AppendLine(Lang.Get("iiex:furnacepart-nofurnace"));
+      dsc.AppendLine(Lang.Get(IiexLang.FurnacepartNofurnace));
       return;
     }
     dsc.AppendLine(
       Lang.Get(
-        "iiex:heatinghearth-loaded",
+        IiexLang.HeatinghearthLoaded,
         LoadedRows,
         HeatingHearthLayout.Rows
       )
     );
     if (CentreLoaded && LoadedRows < HeatingHearthLayout.Rows)
-      dsc.AppendLine(Lang.Get("iiex:hearth-centreblocks"));
+      dsc.AppendLine(Lang.Get(IiexLang.HearthCentreblocks));
   }
 
   #endregion

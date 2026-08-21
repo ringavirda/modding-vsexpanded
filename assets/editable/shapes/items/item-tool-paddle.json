@@ -7,7 +7,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/ingot/iron",
+    "ironingot": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/ingot/iron",
     "iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
   },
   "elements": [
@@ -78,12 +78,12 @@
       "rotationOrigin": [6.0, 43.0, 7.0],
       "rotationX": -90.0,
       "faces": {
-        "north": { "texture": "#iron", "uv": [0.0, 0.0, 3.5, 2.5] },
-        "east": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 2.5] },
-        "south": { "texture": "#iron", "uv": [0.0, 0.0, 3.5, 2.5] },
-        "west": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 2.5] },
-        "up": { "texture": "#iron", "uv": [0.0, 0.0, 3.5, 4.0] },
-        "down": { "texture": "#iron", "uv": [0.0, 0.0, 3.5, 4.0] }
+        "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.5, 2.5] },
+        "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 2.5] },
+        "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.5, 2.5] },
+        "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 2.5] },
+        "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.5, 4.0] },
+        "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.5, 4.0] }
       },
       "children": [
         {
@@ -92,12 +92,12 @@
           "to": [4.0, 1.0, 6.0],
           "rotationOrigin": [0.0, 0.0, -2.0],
           "faces": {
-            "north": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 1.0] },
-            "east": { "texture": "#iron", "uv": [0.0, 0.0, 8.0, 1.0] },
-            "south": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 1.0] },
-            "west": { "texture": "#iron", "uv": [0.0, 0.0, 8.0, 1.0] },
-            "up": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 8.0] },
-            "down": { "texture": "#iron", "uv": [0.0, 0.0, 4.0, 8.0] }
+            "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 1.0] },
+            "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 8.0, 1.0] },
+            "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 1.0] },
+            "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 8.0, 1.0] },
+            "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 8.0] },
+            "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 4.0, 8.0] }
           }
         },
         {
@@ -106,12 +106,12 @@
           "to": [5.0, 2.0, 5.0],
           "rotationOrigin": [-1.0, 0.0, -1.0],
           "faces": {
-            "north": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 2.0] },
-            "east": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 2.0] },
-            "south": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 2.0] },
-            "west": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 2.0] },
-            "up": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 6.0] },
-            "down": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 6.0] }
+            "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 2.0] },
+            "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 2.0] },
+            "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 2.0] },
+            "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 2.0] },
+            "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 6.0] },
+            "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 6.0] }
           }
         },
         {
@@ -120,12 +120,12 @@
           "to": [4.0, 2.0, 6.0],
           "rotationOrigin": [1.0, 1.0, -2.0],
           "faces": {
-            "north": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "east": { "texture": "#iron", "uv": [0.0, 0.0, 8.0, 1.0] },
-            "south": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "west": { "texture": "#iron", "uv": [0.0, 0.0, 8.0, 1.0] },
-            "up": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 8.0] },
-            "down": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 8.0] }
+            "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 8.0, 1.0] },
+            "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 8.0, 1.0] },
+            "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 8.0] },
+            "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 8.0] }
           }
         },
         {
@@ -134,12 +134,12 @@
           "to": [4.0, 3.0, 5.0],
           "rotationOrigin": [1.0, 2.0, -1.0],
           "faces": {
-            "north": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "east": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 1.0] },
-            "south": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "west": { "texture": "#iron", "uv": [0.0, 0.0, 6.0, 1.0] },
-            "up": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 6.0] },
-            "down": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 6.0] }
+            "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 1.0] },
+            "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 6.0, 1.0] },
+            "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 6.0] },
+            "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 6.0] }
           }
         },
         {
@@ -148,12 +148,12 @@
           "to": [3.0, 4.0, 3.0],
           "rotationOrigin": [0.0, 3.0, 0.0],
           "faces": {
-            "north": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "east": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "south": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "west": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 1.0] },
-            "up": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 3.0] },
-            "down": { "texture": "#iron", "uv": [0.0, 0.0, 3.0, 3.0] }
+            "north": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "east": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "south": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "west": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 1.0] },
+            "up": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 3.0] },
+            "down": { "texture": "#ironingot", "uv": [0.0, 0.0, 3.0, 3.0] }
           }
         }
       ]

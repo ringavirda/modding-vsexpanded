@@ -40,11 +40,15 @@ public partial class BlockChargeDoor
       Door(domain, "puddlingchargedoor", "furnace/puddlingchargedoor")
         .Attribute(
           "doorClips",
+          // The two working clips are data, not code: the block entity plays whichever name the
+          // blocktype gives it, so a door drawn with different ones needs no C#.
           new
           {
             main = "open-main",
             mainShut = "closed-main",
             small = "open-small",
+            rabbling = "rabbling",
+            paddle = "paddle",
           }
         )
         .FillerOffsets(UpperHalf),
@@ -199,7 +203,7 @@ public partial class BlockChargeDoor
     {
       new()
       {
-        ActionLangCode = "iiex:chargedoor-help-toggle",
+        ActionLangCode = IiexLang.ChargedoorHelpToggle,
         MouseButton = EnumMouseButton.Right,
       },
     };
@@ -210,7 +214,7 @@ public partial class BlockChargeDoor
     )
       help.Add(
         new WorldInteraction {
-          ActionLangCode = "iiex:chargedoor-help-small",
+          ActionLangCode = IiexLang.ChargedoorHelpSmall,
           MouseButton = EnumMouseButton.Right,
           HotKeyCode = "shift",
         }

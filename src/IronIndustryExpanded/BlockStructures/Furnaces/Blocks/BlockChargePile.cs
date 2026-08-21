@@ -362,7 +362,7 @@ public partial class BlockChargePile : Block, IExBlockDefProvider {
     {
       new()
       {
-        ActionLangCode = "iiex:furnace-chargepile-help-take",
+        ActionLangCode = IiexLang.ChargepileHelpTake,
         MouseButton = EnumMouseButton.Right,
       },
     };

@@ -147,7 +147,7 @@ public partial class BlockPuddlingChimneyCap
     [
       new()
       {
-        ActionLangCode = "iiex:chimneycap-help-toggle",
+        ActionLangCode = IiexLang.ChimneycapHelpToggle,
         MouseButton = EnumMouseButton.Right,
       },
     ];

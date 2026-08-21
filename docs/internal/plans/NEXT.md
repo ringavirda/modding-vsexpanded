@@ -147,7 +147,7 @@ Both merges landed first, so it was done once. What it produced, and what it del
   entry point is `scripts/exmod.sh test` / `exmod.ps1 test`.
 - **The iwex-era plans now carry verified unit state tables**, checked against `src/` rather than against
   their checkboxes — which were never ticked, because completion is recorded in prose per unit. The live
-  queue in the expansion plan is **U6, U7.4, U8, U9, U10**; U1–U5 are records.
+  queue in the expansion plan is **U7, U8, U9, U10**; U1–U6 are records.
 - **M.7 done** — 12 pages, not ~15, and the citation was the `**Mod**` header, not prose. Forming-line
   ownership is settled in writing: iiex owns the line (mill, wide hall, bending roller); siex owns the
   cast forms and the steel roll sets.
@@ -235,10 +235,36 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   superseded `stock-rack.md`'s capacity-by-layer model and dissolved its dependency on the unbuilt
   `PileLayout`. `config/bayoccupancy/` is a new contributed-to catalogue. ⛔ Its renderer is unverified in
   game.
-- **The live iwex queue** — ~~all of U4~~ (2026-08-20/21), U6 (puddling), U7.4 + the shear (B3c),
-  U8, U9, U10. ★★ **U6 is the one that matters most**: it is the only source of wrought balls, and without
-  it iiex's own rolling mill has exactly one feedstock (a vanilla iron rod) — the cast ladders are siex's.
-  U6 also delivers `NaturalDraughtFor`, which is the recorded fix for **B15**.
+- **U6 (puddling) is DONE** (2026-08-21), all eleven tasks. The puddling furnace runs a whole heat -
+  fettle, charge, fire, melt down, rabble, draw out, clean - and the reverberatory chassis is craftable for
+  the first time, the shared `iiex:furnace-firebox` included (it had no recipe, so neither machine could be
+  built), and the rabble and paddle have grid recipes. **B8 is closed on all five counts**, and the fifth was found here: a firebox inherited the shaft's
+  flat disruption floor of 144 against a capacity of 12-24, so every reverberatory hearth lit and snuffed
+  itself in 30 s. `NaturalDraughtFor` exists, which is the recorded fix for **B15**.
+  Eight follow-up rulings landed the same day (worklog): a drawn ball leaves at the **bath's own
+  temperature** (it was leaving too cold to shingle), one **3 s cooldown** covers both working strokes, the
+  bath **freezes** when the fire goes out, and the ball wears **ingot iron**. ⛔ **Nothing here has been
+  seen in game** - the bath, the two tool items and the working strokes are all unwalked; the owner chose
+  to push on to U7 rather than stop and verify.
+- **U7 (reheat + rolling) is DONE** (2026-08-21) as far as later rulings allow, and **the forming loop
+  closes**: a lit reheat hearth soaks the bed, so a piece that goes cold mid-schedule can be brought back to
+  rolling heat. The soak paces on **`A/V`** - `2/t + 2/w`, which is `2/t` for a plate and `4/t` for a square
+  bar, so it needed no section class - and `ReheatRateK` is calibrated against vanilla's forge (~40 s for a
+  bar) rather than chosen. ★★ **The cooling moved onto the same law**, which is the half that changes the
+  game: a flat rate made the thinnest, longest stage of a schedule the *cheapest* to hold hot.
+  ⛔⛔ Two live defects fell out: this furnace's `ShaftCentre` had always pointed at a **fire slab**, and the
+  mill's deck read **mirrored at `ns`** - two errors that cancelled at exactly the one cell every test
+  clicks, putting the widest gap out of reach at the other two.
+  ⛔ **And the soak revealed a gap**: `rod`, `beam` and `heavyplate` have no bed art and no forge route, so
+  they cannot be reheated at all. The shear is their only escape. Filed as reheat-furnace Open #12, not
+  chosen.
+- ⛔⛔ **The one thing between the forming line and a survival demonstration: no roll set is craftable.**
+  U7.10 is **blocked by a ruling, not by work** - the machining line settled that roll sets are
+  **lathe-turned** from cast blanks, both drawn, so the lathe is the mill's missing supplier and a grid
+  recipe now would be deleted the day it lands. Building only the cast blank is an item nothing consumes.
+  This needs an owner ruling on the machine budget.
+- **The live iwex queue** — ~~all of U4~~ (2026-08-20/21), ~~U6~~ (2026-08-21), ~~U7~~ (2026-08-21),
+  **U8, U9, U10**. U8 (fasteners + shop floor) no longer waits on anything in U7.
 - **F4/F5** of the framework-hardening plan, and **M.8** (`heavyplate` absorbs `castplate`).
 - ⛔ **`src/SteelIndustryExpanded/modicon.png` is byte-identical to iiex's** — blocks publishing, and
   needs art rather than code.

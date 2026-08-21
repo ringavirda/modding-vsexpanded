@@ -23,6 +23,9 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider {
   /// <c>materialUnits</c>. 375 u is 5 x 3 x 10 = 150 vx³ at the mod's density rule of 2.5 u per vx³, and
   /// the cupola's charge band derives from it. See docs/design/items/pig.md.</summary>
   public const int PigUnits = 375;
+
+  /// <summary>The item code, so the hearth and the recipes name it once rather than each writing it out.</summary>
+  public const string Code = "pig";
   public const int ChunkUnits = 25;
   public const int BitUnits = 5;
 
@@ -37,7 +40,7 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider {
 
   private static ExItemDef Pig(string domain) =>
     ExItemDef
-      .Create(domain, "pig")
+      .Create(domain, Code)
       .Class<ItemPig>()
       .Shape("iiex:pig")
       // pig.json binds its single surface to the "#iron" texture code.

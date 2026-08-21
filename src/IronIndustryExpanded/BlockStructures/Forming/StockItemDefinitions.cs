@@ -32,6 +32,14 @@ public class StockItemDefinitions : IExItemDefProvider {
     ["heavyplate"] = 600,
   };
 
+  /// <summary>
+  /// The metal a piece of <paramref name="form"/> carries, or 0 for a form this mod pours no item for.
+  /// The masses are not free: the helve piles whole puddled balls, so a stock mass that is not a multiple
+  /// of the ball's would mint or lose metal on every piece shingled.
+  /// </summary>
+  public static int UnitsOf(string form) =>
+    Units.TryGetValue(form, out int units) ? units : 0;
+
   // The states each form can be worked into are not declared here. They are the stage catalogue, in
   // assets/iiex/config/processroutes/, because items are generated from it and that has to happen before
   // the object loader builds items - a route carried on this itemtype could not be read in time.

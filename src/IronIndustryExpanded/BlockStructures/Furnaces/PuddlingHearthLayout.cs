@@ -43,21 +43,35 @@ public static class PuddlingHearthLayout {
     return "Pigs/Pig" + ((int)row * PigsPerRow + index + 1);
   }
 
+  /// <summary>The group drawing the melted charge: one surface lying across the whole bed, which is what
+  /// a puddling furnace's bath is. Drawn in place of the pigs, never beside them.</summary>
+  public const string BathElement = "Bath/*";
+
   /// <summary>
   /// Every element that should be drawn for the given contents, as the tesselator's <c>selectiveElements</c>
   /// paths. The structural groups are always present; only the charge varies.
+  /// <para>
+  /// Once the charge has melted down the pigs are gone and the bath stands in their place. The fettling
+  /// stays drawn under it - it is a reagent the process consumes, not a lining, and it is still there
+  /// until the bed is cleaned out.
+  /// </para>
   /// </summary>
   public static string[] ElementsFor(
     IReadOnlyList<int> pigsPerRow,
-    IReadOnlyList<bool> fettled
+    IReadOnlyList<bool> fettled,
+    bool melted = false
   ) {
     var els = new List<string> { "Base/*", "BaseExtension/*", "Bed/*" };
     foreach (HearthRows.Row row in HearthRows.All) {
       if (fettled[(int)row])
         els.Add(FettleElement(row));
+      if (melted)
+        continue;
       for (int i = 0; i < pigsPerRow[(int)row]; i++)
         els.Add(PigElement(row, i));
     }
+    if (melted)
+      els.Add(BathElement);
     return [.. els];
   }
 }

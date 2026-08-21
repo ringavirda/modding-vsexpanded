@@ -4,6 +4,7 @@ using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries.Entities;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -44,9 +45,12 @@ public partial class BlockPuddlingHearth
         .SideVariant()
         .ShapeByTypePerOrientation("iiex:furnace/puddlinghearth", 0)
         .CreativeCommon("*-n")
-        // One filler each side: the bed is 3 cells across, one row per cell.
+        // One filler each side: the bed is 3 cells across, one row per cell. The course above is the
+        // low roof over the bed, which is what makes the hearth a chamber rather than a plate.
         .FillerOffsets(
-          StructureFootprint.Layout(f => f.Origin(-1, 0).Layer(0, "#0#"))
+          StructureFootprint.Layout(f =>
+            f.Origin(-1, 0).Layer(0, "#0#").Layer(1, "###")
+          )
         )
         .Replaceable(400)
         .Resistance(6f)
@@ -109,12 +113,12 @@ public partial class BlockPuddlingHearth
       return true;
 
     ItemSlot? active = byPlayer.InventoryManager?.ActiveHotbarSlot;
-    string? held = active?.Itemstack?.Collectible?.Code?.Path;
+    AssetLocation? held = active?.Itemstack?.Collectible?.Code;
     var player = byPlayer as IServerPlayer;
 
     // Fettle before pig: a row charged onto a bare plate would weld to it, so fettling is a per-heat cost
     // rather than part of the build.
-    if (held == "puddlingfettle") {
+    if (Holds(held, FettleItemDefinitions.Code)) {
       if (be.TryFettle(row))
         active!.TakeOut(1);
       else
@@ -122,7 +126,7 @@ public partial class BlockPuddlingHearth
       return true;
     }
 
-    if (held == "pig") {
+    if (Holds(held, ItemPig.Code)) {
       if (be.TryChargePig(row))
         active!.TakeOut(1);
       else
@@ -134,6 +138,136 @@ public partial class BlockPuddlingHearth
       return true;
     }
 
+    if (Holds(held, PuddlingToolItemDefinitions.RabbleCode))
+      return Rabble(world, be, player);
+
+    if (Holds(held, PuddlingToolItemDefinitions.PaddleCode))
+      return DrawOut(world, byPlayer, be, player);
+
+    // Empty-handed on a bed that is worked out: the clean-out, which is where the spent fettle and the
+    // tap cinder come from. Refused while a ball is still standing, or the heat's metal would be swept
+    // away with the waste.
+    if (held is null && be.IsWorkedOut)
+      return CleanOut(world, byPlayer, be, player);
+
+    return true;
+  }
+
+  /// <summary>
+  /// Rakes the bed out: the spent fettling and the tap cinder together, which is the whole "cleaned, not
+  /// tapped" decision. The cinder grid-crafts straight back into the next heat's fettling.
+  /// </summary>
+  private bool CleanOut(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntityPuddlingHearth be,
+    IServerPlayer? player
+  ) {
+    if (be.BallsOnBed > 0) {
+      player?.SendIngameError("iiex-hearth-ballstodraw");
+      return true;
+    }
+
+    int cinder = IiexValues.PuddlingCinderPerHeat;
+    be.ClearBed();
+    Give(world, byPlayer, be, FettleItemDefinitions.TapCinderCode, cinder);
+    return true;
+  }
+
+  private void Give(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntityPuddlingHearth be,
+    string path,
+    int count
+  ) {
+    if (count <= 0)
+      return;
+    Item? item = world.GetItem(new AssetLocation(Code.Domain, path));
+    if (item == null)
+      return;
+    var stack = new ItemStack(item, count);
+    if (byPlayer.InventoryManager?.TryGiveItemstack(stack) != true)
+      world.SpawnItemEntity(stack, be.Pos.ToVec3d().Add(0.5, 1.0, 0.5));
+  }
+
+  /// <summary>
+  /// Whether the held item is <paramref name="path"/> in this hearth's own domain. Matched on domain and
+  /// path together: on path alone, any mod shipping an item pathed <c>pig</c> would charge this hearth.
+  /// The domain is read off the block rather than written down, so a mod reusing this class gets its own.
+  /// </summary>
+  private bool Holds(AssetLocation? held, string path) =>
+    held is not null && held.Domain == Code.Domain && held.Path == path;
+
+  /// <summary>
+  /// One rabbling stroke, through the small working door. The door is the gate: the bath is worked
+  /// through it precisely so the main door can stay shut and the heat stay in.
+  /// </summary>
+  private bool Rabble(
+    IWorldAccessor world,
+    BlockEntityPuddlingHearth be,
+    IServerPlayer? player
+  ) {
+    if (be.Furnace is not { } furnace)
+      return true;
+    if (!furnace.SmallDoorOpen) {
+      player?.SendIngameError("iiex-hearth-doorshut");
+      return true;
+    }
+    if (!be.StrokeReady) {
+      player?.SendIngameError("iiex-hearth-toosoon");
+      return true;
+    }
+    if (!be.TryRabble()) {
+      player?.SendIngameError(
+        !be.HasBath ? "iiex-hearth-nobath"
+        : be.IsFrozen ? "iiex-hearth-bathfrozen"
+        : "iiex-hearth-workedout"
+      );
+      return true;
+    }
+    be.MarkStroke();
+    furnace.PlayWorkingStroke(drawingOut: false);
+    return true;
+  }
+
+  /// <summary>Draws one gathered ball out on the paddle, through the same door.</summary>
+  private bool DrawOut(
+    IWorldAccessor world,
+    IPlayer byPlayer,
+    BlockEntityPuddlingHearth be,
+    IServerPlayer? player
+  ) {
+    if (be.Furnace is not { } furnace)
+      return true;
+    if (!furnace.SmallDoorOpen) {
+      player?.SendIngameError("iiex-hearth-doorshut");
+      return true;
+    }
+    if (!be.StrokeReady) {
+      player?.SendIngameError("iiex-hearth-toosoon");
+      return true;
+    }
+    if (!be.TryDrawBall()) {
+      player?.SendIngameError("iiex-hearth-noball");
+      return true;
+    }
+    be.MarkStroke();
+
+    Item? ball = world.GetItem(
+      new AssetLocation(Code.Domain, WroughtBallItemDefinitions.Code)
+    );
+    if (ball != null) {
+      var stack = new ItemStack(ball);
+      // Straight off the bed at whatever the bath is holding, and the engine cools it in the hand from
+      // there. Not a constant: the ball has to leave hot enough to shingle without a reheat, which is the
+      // whole reason it goes straight under the helve, and a furnace barely holding its process
+      // temperature should hand out a cooler ball than one running properly.
+      stack.Collectible.SetTemperature(world, stack, furnace.BathTemperature);
+      if (byPlayer.InventoryManager?.TryGiveItemstack(stack) != true)
+        world.SpawnItemEntity(stack, be.Pos.ToVec3d().Add(0.5, 1.0, 0.5));
+    }
+    furnace.PlayWorkingStroke(drawingOut: true);
     return true;
   }
 
@@ -183,20 +317,37 @@ public partial class BlockPuddlingHearth
     [
       new()
       {
-        ActionLangCode = "iiex:hearth-help-fettle",
+        ActionLangCode = IiexLang.HearthHelpFettle,
         MouseButton = EnumMouseButton.Right,
-        Itemstacks = StackOf("puddlingfettle"),
+        Itemstacks = StackOf(FettleItemDefinitions.Code),
       },
       new()
       {
-        ActionLangCode = "iiex:hearth-help-charge",
+        ActionLangCode = IiexLang.HearthHelpCharge,
         MouseButton = EnumMouseButton.Right,
-        Itemstacks = StackOf("pig"),
+        Itemstacks = StackOf(ItemPig.Code),
+      },
+      new()
+      {
+        ActionLangCode = IiexLang.HearthHelpRabble,
+        MouseButton = EnumMouseButton.Right,
+        Itemstacks = StackOf(PuddlingToolItemDefinitions.RabbleCode),
+      },
+      new()
+      {
+        ActionLangCode = IiexLang.HearthHelpDraw,
+        MouseButton = EnumMouseButton.Right,
+        Itemstacks = StackOf(PuddlingToolItemDefinitions.PaddleCode),
+      },
+      new()
+      {
+        ActionLangCode = IiexLang.HearthHelpClean,
+        MouseButton = EnumMouseButton.Right,
       },
     ];
 
   private ItemStack[] StackOf(string path) {
-    Item? item = api.World.GetItem(new AssetLocation("iiex", path));
+    Item? item = api.World.GetItem(new AssetLocation(Code.Domain, path));
     return item == null ? [] : [new ItemStack(item)];
   }
 

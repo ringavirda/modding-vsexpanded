@@ -86,6 +86,24 @@ public class FurnacePartsTests {
       }
   }
 
+  /// <summary>
+  /// The bath elements the melted state names. <c>ExShapeElements.Pruned</c> drops an unknown name
+  /// without raising anything, so a typo here is an invisible hole in the mesh rather than an error - and
+  /// the melted bed would draw as bare fettling with the charge simply gone.
+  /// </summary>
+  [Fact]
+  public void The_bath_group_exists_in_the_shipped_hearth_shape() {
+    HashSet<string> art = PathsOf("puddlinghearth");
+
+    // ElementsFor emits the "/*" subtree marker; the art holds the bare group path.
+    Assert.Contains(PuddlingHearthLayout.BathElement[..^2], art);
+    // One slab per bed cell, or the bath covers part of a bed the pigs covered all of.
+    Assert.Equal(
+      HearthRows.All.Length,
+      art.Count(p => p.StartsWith("Bath/", StringComparison.Ordinal))
+    );
+  }
+
   [Fact]
   public void The_structural_groups_every_hearth_always_draws_exist() {
     foreach (string shape in new[] { "puddlinghearth", "heatinghearth" }) {

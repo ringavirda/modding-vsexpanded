@@ -217,8 +217,10 @@ equally in the fire, so the `BfBurnoutFuelRetainedBottom` fraction is the only h
 
 ## Open
 
-1. **Recipe.** The composition is settled (above); the quantities are not, so the block has no craft path
-   and is creative-only today.
+1. ~~**Recipe.**~~ **Closed 2026-08-21** (U6.11): firebars set in refractory brick, in the `reverberatory`
+   group with the rest of the chassis. It was a required cell in both reverberatory layouts and had no
+   recipe at all, so **neither machine could be built by a player** whatever else was fixed. A diagram is
+   still not part of it - diagram crafting is creative-only until the design table can draft them.
 2. **Boiler shapes.** Being redrawn to carry the firebox internally; the behaviour now exists for them to
    adopt.
 

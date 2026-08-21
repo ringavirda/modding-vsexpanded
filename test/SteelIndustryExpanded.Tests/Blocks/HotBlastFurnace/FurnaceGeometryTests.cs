@@ -404,7 +404,7 @@ public class FurnaceGeometryTests {
   }
 
   /// <summary>
-  /// The furnace branch laws, run in a host that loads siex. The iiex suite runs the same three
+  /// The furnace branch laws, run in a host that loads siex. The iiex suite runs the same five
   /// assertions, but its host never loads this assembly, so a downstream furnace leaf breaking one would
   /// go unnoticed there. The scan is general: furnaces siex adds later are covered by the same lines.
   /// </summary>
@@ -412,6 +412,8 @@ public class FurnaceGeometryTests {
   public void Every_furnace_this_host_can_see_obeys_the_branch_laws() {
     FurnaceBranchGuards.TheBranchOwnsTheLayeredChargeFlag();
     FurnaceBranchGuards.NoFireboxAsksForMoreThanItsCellsCanHold();
+    FurnaceBranchGuards.NoFireboxCarriesAFloorAboveItsOwnCapacity();
+    FurnaceBranchGuards.EveryFireboxReachesItsOwnProcessTemperature();
     FurnaceBranchGuards.NoFurnaceExposesASettableState();
   }
 }

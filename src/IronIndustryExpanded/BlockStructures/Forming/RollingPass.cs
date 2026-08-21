@@ -162,4 +162,37 @@ public static class RollingPass {
     float retained = MathF.Exp(-ratePerSecond * dt);
     return ambientC + (tempC - ambientC) * retained;
   }
+
+  /// <summary>
+  /// Stock temperature after <paramref name="dt"/> seconds lying in a chamber at
+  /// <paramref name="furnaceC"/>. The mirror of <see cref="Cool"/>: the same exponential approach run the
+  /// other way, so a piece nears the chamber without ever passing it however long it soaks. A piece
+  /// already at or above <paramref name="furnaceC"/> is left alone rather than dragged down - the engine's
+  /// own cooling owns that direction while the piece is in the world.
+  /// </summary>
+  public static float Soak(
+    float tempC,
+    float furnaceC,
+    float ratePerSecond,
+    float dt
+  ) {
+    if (dt <= 0f || ratePerSecond <= 0f || tempC >= furnaceC)
+      return tempC;
+    float remaining = MathF.Exp(-ratePerSecond * dt);
+    return furnaceC - (furnaceC - tempC) * remaining;
+  }
+
+  /// <summary>
+  /// Surface area per unit volume of a piece <paramref name="width"/> wide and
+  /// <paramref name="thickness"/> thick, ignoring its two ends: <c>2/t + 2/w</c>.
+  /// <para>
+  /// Heat crosses a solid at its surface, so this is what paces the soak and the cooling alike, and it is
+  /// why a thin piece both heats and loses heat faster than a thick one of the same mass. It collapses to
+  /// the two figures the forming design quotes without either being written down: <c>2/t</c> for a plate
+  /// wide against its gauge, <c>4/t</c> for a square bar. The section therefore falls out of the two
+  /// dimensions a piece already carries, and neither direction needs a shape class of its own.
+  /// </para>
+  /// </summary>
+  public static float AreaOverVolume(float width, float thickness) =>
+    width <= 0f || thickness <= 0f ? 0f : 2f / thickness + 2f / width;
 }

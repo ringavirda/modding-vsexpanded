@@ -68,6 +68,58 @@ public class ExOrientationTests {
     Assert.Equal(off, ExOrientation.RotateOffset(off, 360));
   }
 
+  /// <summary>
+  /// The continuous overload makes the same turn as the integer one. Two tables that were meant to agree
+  /// are exactly the shape that drifts, so this is the crossing check rather than a restatement of either.
+  /// </summary>
+  [Theory]
+  [InlineData(0)]
+  [InlineData(90)]
+  [InlineData(180)]
+  [InlineData(270)]
+  public void RotateXZ_agrees_with_the_integer_rotation(int angle) {
+    Vec3i cell = ExOrientation.RotateOffset(new Vec3i(3, 0, -4), angle);
+    var (x, z) = ExOrientation.RotateXZ(3d, -4d, angle);
+
+    Assert.Equal(cell.X, x, 6);
+    Assert.Equal(cell.Z, z, 6);
+  }
+
+  /// <summary>
+  /// Unrotating takes a world-frame point back to the one it was rotated from, at every angle. This is the
+  /// property a machine reading where along itself a player clicked depends on: swapping the axis alone
+  /// satisfies it at 0 and 90 in magnitude only, which is how a deck came to read mirrored at three of
+  /// the four facings.
+  /// </summary>
+  [Theory]
+  [InlineData(0)]
+  [InlineData(90)]
+  [InlineData(180)]
+  [InlineData(270)]
+  public void UnrotateXZ_takes_a_rotated_point_back(int angle) {
+    var (wx, wz) = ExOrientation.RotateXZ(2.5d, -1.25d, angle);
+    var (lx, lz) = ExOrientation.UnrotateXZ(wx, wz, angle);
+
+    Assert.Equal(2.5d, lx, 6);
+    Assert.Equal(-1.25d, lz, 6);
+  }
+
+  /// <summary>
+  /// And it is a real turn, not the identity: at 90 and 270 the local X comes off the world Z, at 180 it
+  /// comes off the world X reversed. Stated because a round-trip alone passes for a pair of no-ops.
+  /// </summary>
+  [Theory]
+  [InlineData(0, 2d)]
+  [InlineData(90, -3d)]
+  [InlineData(180, -2d)]
+  [InlineData(270, 3d)]
+  public void UnrotateXZ_reads_local_x_off_the_axis_the_facing_puts_it_on(
+    int angle,
+    double expectedX
+  ) {
+    Assert.Equal(expectedX, ExOrientation.UnrotateXZ(2d, 3d, angle).X, 6);
+  }
+
   [Fact]
   public void GlobalPos_adds_the_rotated_offset_to_origin() {
     var origin = new BlockPos(10, 20, 30);

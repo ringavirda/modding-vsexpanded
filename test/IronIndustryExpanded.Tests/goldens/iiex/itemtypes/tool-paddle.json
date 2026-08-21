@@ -1,0 +1,24 @@
+{
+  "code": "tool-paddle",
+  "shape": {
+    "base": "iiex:item/tool-paddle"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/sheet-plain/iron5"
+    }
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 200
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

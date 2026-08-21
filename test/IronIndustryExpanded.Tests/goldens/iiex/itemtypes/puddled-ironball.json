@@ -1,0 +1,31 @@
+{
+  "code": "puddled-ironball",
+  "class": "iiex.ItemPuddledBall",
+  "shape": {
+    "base": "iiex:item/puddled-ironball"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/ingot/iron"
+    }
+  },
+  "maxstacksize": 16,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 200
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

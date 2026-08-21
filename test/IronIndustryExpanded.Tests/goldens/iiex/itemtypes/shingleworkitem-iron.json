@@ -1,0 +1,23 @@
+{
+  "code": "shingleworkitem-iron",
+  "class": "iiex.ItemWorkItem",
+  "shape": {
+    "base": "game:item/workitem"
+  },
+  "textures": {
+    "all": {
+      "base": "game:block/metal/tarnished/iron"
+    }
+  },
+  "maxstacksize": 1,
+  "materialDensity": 7800,
+  "attributes": {
+    "materialUnits": 400
+  },
+  "combustibleProps": {
+    "meltingPoint": 1500,
+    "meltingDuration": 30,
+    "smeltedRatio": 1
+  },
+  "temperatureDamage": 4.0
+}

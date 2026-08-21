@@ -151,12 +151,15 @@ public partial class BlockPuddlingFurnaceCore
               . . . . . . # .
               """
             )
+            // The cap sits over the flue column at (0,7,0), with its own housing filler behind it at
+            // (0,7,1) - the cap is two cells deep along local +Z. The stack is fixed at the drawn height;
+            // this furnace has no player-built chimney, which is why the cap is part of the drawing at all.
             .Layer(
               7,
               """
               . . . . . . . .
-              . . . . . M . .
-              . . . . . . . .
+              . . . . . . M .
+              . . . . . . f .
               """
             )
         ),

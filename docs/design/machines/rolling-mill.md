@@ -205,8 +205,17 @@ and it runs before the schedule is resolved: a piece admitted after the mapping 
 a schedule of one band and then be fed at another.
 
 Where along the deck the click lands picks the gap: the hit point is taken into the mill's own frame, mapped
-to `0..1` along the barrel, and split into `gapCount` equal bands (`BlockRollingMill.cs:368-375`,
-`MillFeed.cs:62-89`).
+to `0..1` along the barrel, and split into `gapCount` equal bands (`BlockRollingMill.AlongBarrel`,
+`MillFeed.AlongBarrel` / `.GapZone`).
+
+⛔⛔ **That reading was wrong at `ns` until 2026-08-21 (U7.1), in two ways at once.** It swapped the axis
+(`localX = dz`) where the mill's own `RotateOffset` convention at 90° demands `-dz`, and it rotated the
+within-cell hit point without centring it first - so the click landed on the far side of its own cell. The
+two errors cancelled at exactly one deck cell, the one beside the stand, which is the cell every test and
+every casual play-test clicks. At the other two the deck read mirrored: the widest gap, the only one fresh
+stock can enter at, sat under the player's hand instead of at the far end, and no click could reach it.
+`ExOrientation.UnrotateXZ` is the fix - the inverse expressed as the opposite turn, so there is one rotation
+table and not two - and `RollingMillStationTests` drives the block's own reading at both facings.
 
 ### The pass
 
@@ -595,7 +604,7 @@ Sizes are the forming build list's.
 | # | Work | Notes |
 |---|---|---|
 | ~~0~~ | ~~Fix B3~~ | **done** - `FromStack` falls back to the collectible attribute |
-| ~~0b~~ | ~~Fix B17~~ | **done** - the whole deck row is an input |
+| ~~0b~~ | ~~Fix B17~~ | **done** - the whole deck row is an input. ⛔ The `ns` sign inversion it was hiding was **not** fixed with it; closed 2026-08-21 (U7.1), and it was worse than recorded - see above |
 | — | The skip bound: `δ_max` calibrated below one gap | **done 2026-08-12** - `HotFriction` 0.5 → 0.3, `ColdFriction` 0.09 → 0.055. Ruled, built and guarded in the same change |
 | 1 | `OutputAt`'s counterpart at the shear: the crop table, keyed on stage | the mill only ever makes stock; there is no claim gesture on the mill. The registry is built (`ProcessJob`), the shear block is not |
 | 2 | ~~`WorkPiece.Mass`~~; the 48-voxel refusal as a **declared** stage property | ⛔ ruled 2026-08-13: length comes from the art and cut points are config, so neither mass nor a computed length is wanted. A mandatory crop is a stage that says so. The crop tally itself is **built** - `WorkPiece.Cropped`, and the mill refuses a part piece ([shear](shear.md)) |

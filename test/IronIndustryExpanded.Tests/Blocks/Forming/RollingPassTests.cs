@@ -278,6 +278,98 @@ public class RollingPassTests {
 
   #endregion
 
+  #region The section law both directions run on
+
+  /// <summary>
+  /// The two figures the forming design quotes, neither of which is written down anywhere: a piece wide
+  /// against its gauge exposes <c>2/t</c>, a square bar <c>4/t</c>. They are the limits of one formula, so
+  /// the section falls out of the dimensions a piece already carries and nothing needs a shape class.
+  /// </summary>
+  [Fact]
+  public void Area_over_volume_collapses_to_the_plate_and_the_square_bar() {
+    // Square: w = t, so exactly 4/t.
+    Assert.Equal(4f / 3f, RollingPass.AreaOverVolume(3f, 3f), 4);
+    Assert.Equal(2f, RollingPass.AreaOverVolume(2f, 2f), 4);
+
+    // Wide against its gauge: approaches 2/t from above, and is within 5 % by 40 to 1.
+    float plate = RollingPass.AreaOverVolume(40f, 1f);
+    Assert.True(plate > 2f, $"{plate} should exceed the 2/t limit");
+    Assert.True(plate < 2.1f, $"{plate} is not near the 2/t limit");
+  }
+
+  /// <summary>
+  /// The whole point of an area law rather than a mass one: at equal metal the thinner piece exchanges heat
+  /// faster, in both directions. A mass law makes these two identical and the last gap of a schedule - the
+  /// thinnest and longest the piece ever is - the cheapest to keep hot.
+  /// </summary>
+  [Fact]
+  public void At_equal_mass_the_thinner_piece_exchanges_heat_faster() {
+    // 3 x 3 and 9 x 1: the same section area, so the same metal per unit length.
+    float square = RollingPass.AreaOverVolume(3f, 3f);
+    float flat = RollingPass.AreaOverVolume(9f, 1f);
+    Assert.True(flat > square, $"flat {flat} should beat square {square}");
+
+    Assert.True(
+      RollingPass.Cool(1200f, 20f, 0.005f * flat, 60f)
+        < RollingPass.Cool(1200f, 20f, 0.005f * square, 60f)
+    );
+  }
+
+  [Fact]
+  public void A_degenerate_section_has_no_rate() {
+    Assert.Equal(0f, RollingPass.AreaOverVolume(0f, 3f), 4);
+    Assert.Equal(0f, RollingPass.AreaOverVolume(3f, 0f), 4);
+    Assert.Equal(0f, RollingPass.AreaOverVolume(-1f, 3f), 4);
+  }
+
+  #endregion
+
+  #region Soaking, the mirror of the cooling
+
+  [Fact]
+  public void Stock_takes_up_the_chamber_heat_without_passing_it() {
+    float once = RollingPass.Soak(
+      20f,
+      furnaceC: 1400f,
+      ratePerSecond: 0.02f,
+      dt: 1f
+    );
+    Assert.True(
+      once > 20f && once < 60f,
+      $"a second should add a little heat, got {once}"
+    );
+
+    // Long enough and it approaches the chamber, never crossing it.
+    float hot = RollingPass.Soak(20f, 1400f, 0.02f, dt: 10_000f);
+    Assert.True(hot <= 1400f);
+    Assert.Equal(1400f, hot, 1);
+  }
+
+  /// <summary>
+  /// The soak only ever adds heat. A piece already hotter than the chamber is left where it is - the
+  /// engine's own cooling owns that direction, and a soak that dragged it down would fight it.
+  /// </summary>
+  [Fact]
+  public void Soaking_never_takes_heat_out_of_a_piece() {
+    Assert.Equal(1500f, RollingPass.Soak(1500f, 1400f, 0.02f, 100f), 4);
+    Assert.Equal(1400f, RollingPass.Soak(1400f, 1400f, 0.02f, 100f), 4);
+    Assert.Equal(1000f, RollingPass.Soak(1000f, 1400f, 0f, 100f), 4);
+    Assert.Equal(1000f, RollingPass.Soak(1000f, 1400f, 0.02f, 0f), 4);
+  }
+
+  /// <summary>Stepping the soak and running it in one go agree, so a cadence that catches up after a
+  /// reload lands where an uninterrupted one would.</summary>
+  [Fact]
+  public void Soaking_in_steps_matches_soaking_in_one_go() {
+    float stepped = 20f;
+    for (int i = 0; i < 60; i++)
+      stepped = RollingPass.Soak(stepped, 1400f, 0.02f, 1f);
+
+    Assert.Equal(RollingPass.Soak(20f, 1400f, 0.02f, 60f), stepped, 1);
+  }
+
+  #endregion
+
   private static float Torque(float tempC, float runningTorque = Demand) =>
     RollingPass.LoadTorque(
       runningTorque,

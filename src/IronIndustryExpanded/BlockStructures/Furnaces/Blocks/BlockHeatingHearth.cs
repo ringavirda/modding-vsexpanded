@@ -44,7 +44,7 @@ public partial class BlockHeatingHearth
         .ShapeByTypePerOrientation("iiex:furnace/heatinghearth", 0)
         .CreativeCommon("*-n")
         // 3 wide x 2 deep. The principal sits on the near row, at the door; the far row is depth for a
-        // slab, which does not fit in one cell.
+        // slab, which does not fit in one cell. The course above is the low roof over the bed.
         .FillerOffsets(
           StructureFootprint.Layout(f =>
             f.Origin(-1, -1)
@@ -53,6 +53,13 @@ public partial class BlockHeatingHearth
                 """
                 ###
                 #0#
+                """
+              )
+              .Layer(
+                1,
+                """
+                ###
+                ###
                 """
               )
           )
@@ -180,12 +187,12 @@ public partial class BlockHeatingHearth
     [
       new()
       {
-        ActionLangCode = "iiex:furnace-heatinghearth-help-load",
+        ActionLangCode = IiexLang.HeatinghearthHelpLoad,
         MouseButton = EnumMouseButton.Right,
       },
       new()
       {
-        ActionLangCode = "iiex:furnace-heatinghearth-help-take",
+        ActionLangCode = IiexLang.HeatinghearthHelpTake,
         MouseButton = EnumMouseButton.Right,
       },
     ];

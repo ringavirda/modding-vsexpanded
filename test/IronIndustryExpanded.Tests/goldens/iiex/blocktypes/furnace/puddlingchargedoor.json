@@ -83,7 +83,9 @@
     "doorClips": {
       "main": "open-main",
       "mainShut": "closed-main",
-      "small": "open-small"
+      "small": "open-small",
+      "rabbling": "rabbling",
+      "paddle": "paddle"
     },
     "fillerOffsets": [
       {

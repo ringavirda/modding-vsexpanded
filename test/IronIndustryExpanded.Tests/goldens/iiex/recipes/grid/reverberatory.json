@@ -1,0 +1,311 @@
+[
+  {
+    "name": "Puddling Furnace Core",
+    "ingredientPattern": "BBB,RCR,BPB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-puddlingcore-{tier}-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-*",
+        "name": "tier",
+        "allowedVariants": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "quantity": 4
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "C": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 8
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      }
+    }
+  },
+  {
+    "name": "Reheat Furnace Core",
+    "ingredientPattern": "BPB,RCR,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-heatingcore-{tier}-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-*",
+        "name": "tier",
+        "allowedVariants": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "quantity": 4
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "C": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 8
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      }
+    }
+  },
+  {
+    "name": "Puddling Hearth",
+    "ingredientPattern": "_H_,VVV,N_N",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-puddlinghearth-n"
+    },
+    "ingredients": {
+      "V": {
+        "type": "item",
+        "code": "iiex:castplate-heavy",
+        "quantity": 1
+      },
+      "N": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Reheat Hearth",
+    "ingredientPattern": "_H_,VVV,VVV",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-heatinghearth-n"
+    },
+    "ingredients": {
+      "V": {
+        "type": "item",
+        "code": "iiex:castplate-heavy",
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Puddling Charge Door",
+    "ingredientPattern": "_H_,PSP,BPB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-puddlingchargedoor-s"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Charge Door",
+    "ingredientPattern": "_H_,PSP,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-chargedoor-s"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "S": {
+        "type": "item",
+        "code": "game:metalnailsandstrips-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Chimney Cap",
+    "ingredientPattern": "_R_,BPB,_H_",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-puddlingchimneycap-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-tier3",
+        "quantity": 2
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Firebox",
+    "ingredientPattern": "BBB,RRR,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-firebox-{tier}-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-*",
+        "name": "tier",
+        "allowedVariants": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "quantity": 2
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      }
+    }
+  }
+]

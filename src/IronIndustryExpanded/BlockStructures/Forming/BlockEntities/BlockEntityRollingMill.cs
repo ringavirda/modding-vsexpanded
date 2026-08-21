@@ -526,6 +526,16 @@ public class BlockEntityRollingMill
       : 0f;
 
   /// <summary>
+  /// Surface area per unit volume of whatever is between the rolls, which is what paces its cooling. A
+  /// stand holding nothing readable falls back to <c>1</c>, so the rate is the bare configured one and a
+  /// piece is never left uncooled by a state the mill cannot describe.
+  /// </summary>
+  private float PieceAreaOverVolume =>
+    WorkPiece.FromStack(_piece) is { } piece
+      ? RollingPass.AreaOverVolume(piece.Width, piece.Thickness)
+      : 1f;
+
+  /// <summary>
   /// Advances the bite by how far the rolls turned over <paramref name="dt"/> seconds (<c>v = ωR</c>). A
   /// stopped run makes no progress and flags the pass <see cref="IsStalled"/> rather than losing it.
   /// </summary>
@@ -535,11 +545,13 @@ public class BlockEntityRollingMill
       return false;
 
     // The piece cools whether or not it is moving, so a stall is self-worsening: a stalled piece keeps
-    // stiffening and demands more torque the longer it sits.
+    // stiffening and demands more torque the longer it sits. The rate is the piece's own - heat leaves at
+    // its surface, so the thinner it is rolled the faster it goes cold, and the last gap of a schedule is
+    // the one the player has least time to finish.
     _tempC = RollingPass.Cool(
       _tempC,
       IiexValues.RollingAmbientC,
-      IiexValues.RollingCoolRate,
+      IiexValues.RollingCoolRate * PieceAreaOverVolume,
       dt
     );
 

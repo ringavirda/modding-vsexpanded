@@ -16,6 +16,8 @@ namespace ExpandedLib.Heat;
 /// <param name="PreheatGain">Share of <paramref name="TIn"/> from that preheat (C).</param>
 /// <param name="ChargeLoss">Share of <paramref name="TLoss"/> from cold charge mass (C).</param>
 /// <param name="AmbientLoss">Share of <paramref name="TLoss"/> from a below-reference ambient (C).</param>
+/// <param name="TransferLoss">Share of <paramref name="TLoss"/> spent carrying the flame to the work (C).
+/// Zero wherever fuel and work share a chamber; a reverberatory furnace pays it across the bridge.</param>
 public readonly record struct HeatBalance(
   float TIn,
   float TLoss,
@@ -27,7 +29,8 @@ public readonly record struct HeatBalance(
   float BlastTemp,
   float PreheatGain,
   float ChargeLoss,
-  float AmbientLoss
+  float AmbientLoss,
+  float TransferLoss = 0f
 ) {
   /// <summary>Whether the blast arrives preheated by a cowper rather than cold off the blower. The
   /// half-degree threshold keeps float noise from reading as a hot blast.</summary>
@@ -49,7 +52,8 @@ public readonly record struct HeatBalance(
     float blastTemp,
     float preheatGain,
     float chargeLoss,
-    float ambientLoss
+    float ambientLoss,
+    float transferLoss = 0f
   ) =>
     new(
       tIn,
@@ -62,6 +66,7 @@ public readonly record struct HeatBalance(
       blastTemp,
       preheatGain,
       chargeLoss,
-      ambientLoss
+      ambientLoss,
+      transferLoss
     );
 }

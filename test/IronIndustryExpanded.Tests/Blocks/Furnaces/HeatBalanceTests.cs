@@ -91,6 +91,40 @@ public class HeatBalanceTests {
   private static int Denominator(BlockEntityBlastFurnaceCold be) =>
     (int)ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!;
 
+  /// <summary>
+  /// A reheat furnace carrying its real drawing - the reverberatory side of the table. Same reason the
+  /// blast furnace above needs its layout: the charge-loss denominator is the machine's own firebox, and
+  /// a hearth stood on no layout counts zero cells and saturates the clamp on nothing.
+  /// </summary>
+  private static BlockEntityHeatingFurnace Hearth() {
+    var world = new TestWorld();
+    var be = new BlockEntityHeatingFurnace { Pos = new BlockPos(0, 16, 0) };
+    world.Attach(be);
+    FurnaceLayoutRig.OrientWithLayout(
+      be,
+      BlockHeatingFurnaceCore.Definitions("iiex").First(),
+      "iiex:furnace-heatingcore-tier1-n",
+      "north"
+    );
+    ReflectionHelpers.Invoke(be, "CacheAttributes");
+    return be;
+  }
+
+  /// <summary>
+  /// The heat balance of a firebox: pure fuel, no blast and no preheat, which is what
+  /// <c>BlockEntityFireboxFurnace.ReadChargeMix</c> hands the model.
+  /// </summary>
+  private static HeatBalance FireboxBalance(object be, int units) =>
+    (HeatBalance)
+      ReflectionHelpers.Invoke(
+        be,
+        "ComputeHeatBalance",
+        new BurdenMix(0f, 0f, units),
+        0f,
+        20f,
+        units
+      )!;
+
   #endregion
 
   #region The cold-charge denominator
@@ -178,6 +212,209 @@ public class HeatBalanceTests {
 
     Assert.Equal(expected, hb.TProcess, 1);
   }
+
+  #endregion
+
+  #region Calibration - the reverberatory branch
+
+  // Derived by hand from the same formula, not read off a run. A firebox burns pure fuel, so `FuelFrac`
+  // is 1.0 and `fuelFactor` clamps at BfMaxFuelFactor; it has no tuyeres, so `airFactor` is the natural
+  // draught its own stack pulls. The reheat furnace's drawing declares two flue courses:
+  //
+  //   natural   = 0.5 + 0.11 x sqrt(2) - 0.00102 x 4           = 0.65148
+  //   T_in      = 950 + 900 x 1.25 x 0.65148                   = 1682.9
+  //   T_loss    = 120 radiation + 100 charge + 0 ambient + 100 transfer = 320
+  //   T_process                                                = 1362.9
+  //
+  // Before the losses became per-machine a hearth paid the blast furnace's 310 C column penalty for a bed
+  // and no bridge loss at all. The transfer term is what a reverberatory furnace is for, and it is why
+  // one cannot melt iron at any height its drawing gives it.
+
+  /// <summary>
+  /// A reverberatory hearth's settled temperature at a full firebox, from the arithmetic above.
+  /// </summary>
+  [Fact]
+  public void A_full_firebox_settles_where_the_reverberatory_arithmetic_says() {
+    BlockEntityHeatingFurnace hearth = Hearth();
+    int capacity = (int)
+      ReflectionHelpers.GetProperty(hearth, "ChargeCapacityUnits")!;
+    Assert.True(
+      capacity > 0,
+      "the hearth must own a firebox, or the charge-loss clamp saturates on nothing"
+    );
+    Assert.Equal(
+      2,
+      (int)ReflectionHelpers.GetProperty(hearth, "StackCourses")!
+    );
+
+    HeatBalance hb = FireboxBalance(hearth, capacity);
+
+    Assert.Equal(1682.9f, hb.TIn, 1);
+    Assert.Equal(320f, hb.TLoss, 1);
+    Assert.Equal(1362.9f, hb.TProcess, 1);
+  }
+
+  /// <summary>
+  /// The two loss terms are per-machine, and the difference is the whole point: the same hearth carrying
+  /// the shaft's column penalty and no bridge loss reads hotter than it should by exactly
+  /// <c>BfChargeLossFull - FireboxChargeLossFull - ReverberatoryTransferLoss</c>.
+  /// </summary>
+  [Fact]
+  public void The_reverberatory_hearth_pays_a_bed_penalty_and_a_bridge_loss() {
+    BlockEntityHeatingFurnace hearth = Hearth();
+    int capacity = (int)
+      ReflectionHelpers.GetProperty(hearth, "ChargeCapacityUnits")!;
+
+    HeatBalance hb = FireboxBalance(hearth, capacity);
+
+    Assert.Equal(IiexValues.FireboxChargeLossFull, hb.ChargeLoss, 1);
+    Assert.Equal(IiexValues.ReverberatoryTransferLoss, hb.TransferLoss, 1);
+    // The shaft pays neither of the reverberatory's terms; nothing here changed for it.
+    Assert.Equal(
+      0f,
+      Balance(Furnace(), 0.20f, 1f, 20f, FullHearth).TransferLoss,
+      1
+    );
+    Assert.Equal(
+      IiexValues.BfChargeLossFull,
+      Balance(Furnace(), 0.20f, 1f, 20f, FullHearth).ChargeLoss,
+      1
+    );
+  }
+
+  /// <summary>
+  /// A reverberatory furnace cannot melt iron, and no constant says so - the bridge loss does. Stated
+  /// against the natural-draught ceiling, which is what the stack raises; the reheat furnace works stock
+  /// far below it and puddling is a pasty-state process for the same reason.
+  /// </summary>
+  [Fact]
+  public void No_reverberatory_hearth_reaches_irons_melting_point_on_a_bare_flue() {
+    BlockEntityHeatingFurnace hearth = Hearth();
+    int capacity = (int)
+      ReflectionHelpers.GetProperty(hearth, "ChargeCapacityUnits")!;
+
+    HeatBalance hb = FireboxBalance(hearth, capacity);
+
+    Assert.True(
+      hb.TProcess < IiexValues.BfIronMeltingPoint,
+      $"a bare-flue hearth settles at {hb.TProcess} C, at or above iron's "
+        + $"{IiexValues.BfIronMeltingPoint} C - the bridge loss has stopped doing its job"
+    );
+    Assert.True(
+      hb.TProcess > IiexValues.RollingTempC,
+      $"a bare-flue hearth settles at {hb.TProcess} C, below the {IiexValues.RollingTempC} C the reheat "
+        + "furnace works stock at - it would have nothing to do"
+    );
+  }
+
+  #endregion
+
+  #region The puddling furnace's chimney is load-bearing
+
+  // Its own arithmetic, hand-derived like the rows above. Four flue courses:
+  //
+  //   natural   = 0.5 + 0.11 x sqrt(4) - 0.00102 x 16          = 0.70368
+  //   T_in      = 950 + 900 x 1.25 x 0.70368                   = 1741.6
+  //   T_process = 1741.6 - 320                                 = 1421.6
+  //
+  // against a process temperature of 1400. Twenty-one degrees of headroom, and every way of losing the
+  // draught takes it away: no stack at all is 1192.5, a shut damper 907.1, an open main door 1105.0.
+
+  [Fact]
+  public void A_puddling_furnace_reaches_its_process_temperature_only_with_the_stack_pulling() {
+    Assert.Equal(1421.6f, PuddlingSettles(courses: 4), 1);
+    Assert.True(
+      PuddlingSettles(courses: 4) > IiexValues.PuddlingProcessTempC,
+      "the drawn chimney must carry the furnace over its process temperature"
+    );
+    Assert.True(
+      PuddlingSettles(courses: 0) < IiexValues.PuddlingProcessTempC,
+      "without its stack the furnace must fall short, or the chimney is decoration"
+    );
+  }
+
+  [Fact]
+  public void A_shut_damper_or_an_open_door_puts_the_process_out_of_reach() {
+    Assert.True(
+      PuddlingSettles(courses: 4, damperOpen: false)
+        < IiexValues.PuddlingProcessTempC,
+      "a shut damper must stall the process - it is the furnace's one air control"
+    );
+    Assert.True(
+      PuddlingSettles(courses: 4, venting: true)
+        < IiexValues.PuddlingProcessTempC,
+      "the main door standing open must stall it too, or closing up costs the player nothing"
+    );
+  }
+
+  /// <summary>
+  /// The process temperature is a window, not a ceiling: too cool and the pig never melts down, too hot
+  /// and the decarburised iron stays liquid instead of coming to nature. Both ends are this mod's own
+  /// melting points.
+  /// </summary>
+  [Fact]
+  public void The_process_temperature_sits_between_pigs_melting_point_and_irons() {
+    Assert.InRange(
+      IiexValues.PuddlingProcessTempC,
+      IiexValues.CupolaCastIronMeltingPoint,
+      IiexValues.BfIronMeltingPoint
+    );
+    Assert.True(
+      PuddlingSettles(courses: 4) < IiexValues.BfIronMeltingPoint,
+      "a reverberatory furnace must not reach iron's melting point - the ball would melt"
+    );
+  }
+
+  /// <summary>
+  /// The puddling furnace's settled temperature at a full firebox, computed from the shared model rather
+  /// than restated: the same formula the heat balance runs, at the stack and damper this case names.
+  /// </summary>
+  private static float PuddlingSettles(
+    int courses,
+    bool damperOpen = true,
+    bool venting = false
+  ) {
+    float natural = StackDraught.NaturalDraughtFor(
+      courses,
+      damperOpen,
+      venting
+    );
+    float tIn =
+      IiexValues.BfCombustionBaseTemp
+      + IiexValues.BfCombustionCokeGain * IiexValues.BfMaxFuelFactor * natural;
+    float tLoss =
+      IiexValues.BfRadiationLossBase
+      + IiexValues.FireboxChargeLossFull
+      + IiexValues.ReverberatoryTransferLoss;
+    return tIn - tLoss;
+  }
+
+  /// <summary>
+  /// The premise of every row above: the puddling furnace's drawing really does declare four flue
+  /// courses, so the arithmetic describes the shipped machine rather than a hypothetical one.
+  /// </summary>
+  [Fact]
+  public void The_puddling_furnaces_drawing_declares_the_stack_the_arithmetic_assumes() {
+    var world = new TestWorld();
+    var be = new BlockEntityPuddlingFurnace { Pos = new BlockPos(0, 16, 0) };
+    world.Attach(be);
+    FurnaceLayoutRig.OrientWithLayout(
+      be,
+      BlockPuddlingFurnaceCore.Definitions("iiex").First(),
+      "iiex:furnace-puddlingcore-tier1-n",
+      "north"
+    );
+
+    Assert.Equal(4, (int)ReflectionHelpers.GetProperty(be, "StackCourses")!);
+    Assert.Equal(
+      IiexValues.PuddlingProcessTempC,
+      (float)ReflectionHelpers.GetProperty(be, "MeltingPoint")!
+    );
+  }
+
+  #endregion
+
+  #region Whether a burden melts
 
   [Theory]
   [InlineData(0.30f, 20f, true)] // high coke on cold blast clears the melt line

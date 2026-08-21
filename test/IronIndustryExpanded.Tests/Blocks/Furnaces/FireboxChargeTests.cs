@@ -290,6 +290,23 @@ public class FireboxChargeTests {
   public void No_firebox_asks_for_more_fuel_than_its_cells_can_hold() =>
     FurnaceBranchGuards.NoFireboxAsksForMoreThanItsCellsCanHold();
 
+  /// <summary>
+  /// B8's fifth cause: the same ceiling read from the other end. A firebox that cannot hold its own
+  /// disruption floor lights and then snuffs itself on the extinguish grace, which is a furnace that has
+  /// never worked rather than one that is hard to keep lit.
+  /// </summary>
+  [Fact]
+  public void No_firebox_carries_a_disruption_floor_above_its_own_capacity() =>
+    FurnaceBranchGuards.NoFireboxCarriesAFloorAboveItsOwnCapacity();
+
+  /// <summary>
+  /// And it must be able to reach the temperature it works at, on the chimney its own drawing gives it.
+  /// A hearth that lights, holds and never crosses its process temperature is B8's other half.
+  /// </summary>
+  [Fact]
+  public void Every_firebox_reaches_its_own_process_temperature() =>
+    FurnaceBranchGuards.EveryFireboxReachesItsOwnProcessTemperature();
+
   #endregion
 
   #region B8's companion - a firebox refuses nothing

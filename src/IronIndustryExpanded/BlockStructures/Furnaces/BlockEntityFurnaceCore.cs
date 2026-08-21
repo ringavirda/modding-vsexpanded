@@ -66,6 +66,12 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   protected float _internalTemp = 20f;
 
+  /// <summary>
+  /// The temperature inside the furnace right now. Read-only: it is driven from the heat balance every
+  /// tick, so anything that assigned it would be writing a value the next tick throws away.
+  /// </summary>
+  public float InternalTemperature => _internalTemp;
+
   // Timers accumulate elapsed seconds (dt) so durations are independent of the
   // production-tick interval. Thresholds below are in seconds.
   protected float _secondsAboveMelting = 0;
@@ -189,6 +195,39 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   /// <summary>Mix floor below which a lit furnace counts a disruption toward extinguish.</summary>
   protected virtual int DisruptionMixFloor => 144;
+
+  /// <summary>
+  /// Heat (C) a full charge takes out of the fire - this machine's thermal sink at capacity, scaled down
+  /// linearly by how loaded it actually is. The default is the blast furnace's, a 320-unit column of cold
+  /// ore descending through the flame; a machine heating a bed or a few pots overrides it, or it pays a
+  /// column's penalty for a handful of work.
+  /// </summary>
+  protected virtual float ChargeLossFull => IiexValues.BfChargeLossFull;
+
+  /// <summary>
+  /// Flue courses over the fire - the height the natural-draught curve is read at. Zero on a furnace with
+  /// no stack of its own, which is every blown one: a packed shaft pulls almost nothing by itself and gets
+  /// its air from the tuyeres.
+  /// </summary>
+  protected virtual int StackCourses => 0;
+
+  /// <summary>Whether the chimney damper stands open. True where there is no damper to shut.</summary>
+  protected virtual bool DamperOpen => true;
+
+  /// <summary>Whether a door stands open, spilling the stack's pull into the room.</summary>
+  protected virtual bool Venting => false;
+
+  /// <summary>
+  /// Heat (C) lost carrying the flame from the fire to the work. Zero wherever the two share a chamber,
+  /// which is every shaft furnace; a reverberatory furnace pays it across the bridge, and that cost is
+  /// what keeps one from melting iron without any constant having to say so.
+  /// </summary>
+  /// <remarks>
+  /// A virtual rather than a branch constant on purpose. The crucible furnace is a firebox machine whose
+  /// pots stand in the coke bed with no bridge at all, so it overrides this back to ~0; a constant on the
+  /// branch would make that machine unbuildable. See <c>docs/design/machines/crucible-furnace.md</c>.
+  /// </remarks>
+  protected virtual float TransferLoss => 0f;
 
   /// <summary>
   /// Whether this furnace needs pressurised blast to stay lit. True for every blown furnace in the mod, so a
@@ -1357,7 +1396,11 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
       IiexValues.BfMaxFuelFactor
     );
 
-    float natural = IiexValues.BfNaturalDraughtFactor;
+    float natural = StackDraught.NaturalDraughtFor(
+      StackCourses,
+      DamperOpen,
+      Venting
+    );
     float airFactor =
       natural + (1f - natural) * GameMath.Clamp(blastSupplyFrac, 0f, 1f);
 
@@ -1371,13 +1414,14 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
     int requiredMix = Math.Max(1, ChargeCapacityUnits);
     float chargeLoss =
-      IiexValues.BfChargeLossFull
-      * GameMath.Clamp((float)mixCount / requiredMix, 0f, 1f);
+      ChargeLossFull * GameMath.Clamp((float)mixCount / requiredMix, 0f, 1f);
     float ambientLoss =
       IiexValues.BfAmbientLossPerDegree
       * Math.Max(0f, IiexValues.BfAmbientReferenceTemp - _ambientTemp);
+    float transferLoss = TransferLoss;
 
-    float tLoss = IiexValues.BfRadiationLossBase + chargeLoss + ambientLoss;
+    float tLoss =
+      IiexValues.BfRadiationLossBase + chargeLoss + ambientLoss + transferLoss;
 
     // The floor at ambient and the record shape belong to the exlib helper, shared with the converter;
     // the furnace supplies its coke-combustion T_in/T_loss and the contributors.
@@ -1392,7 +1436,8 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
       blastTemp,
       preheatGain,
       chargeLoss,
-      ambientLoss
+      ambientLoss,
+      transferLoss
     );
   }
 
@@ -2051,6 +2096,8 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
       FormatTemp
     );
 
+    AppendHeatExtras(sb);
+
     sb.AppendLine(
       Lang.Get(
         IiexLang.BfInfoBurdengrade,
@@ -2082,6 +2129,13 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   private static readonly System.Func<float, string> FormatTemp = t =>
     ExMeasure.Temperature(t);
+
+  /// <summary>
+  /// A branch's own heat-ledger lines, appended straight after the shared ledger. The shared formatter
+  /// names only the losses every machine has, so a term one branch pays and another does not - the
+  /// reverberatory transfer loss - would otherwise show up in the total with nothing accounting for it.
+  /// </summary>
+  protected virtual void AppendHeatExtras(StringBuilder sb) { }
 
   /// <summary>
   /// Appends the not-lit status line. The generic reasons (exhaust full, needs mix) are handled here; the

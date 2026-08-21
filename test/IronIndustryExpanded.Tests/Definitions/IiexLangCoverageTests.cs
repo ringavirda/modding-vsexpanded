@@ -33,6 +33,34 @@ public class IiexLangCoverageTests {
     );
   }
 
+  /// <summary>
+  /// The other direction, which <see cref="LangCoverage"/> cannot see: a key the C# asks for by hand.
+  /// Three block-help lines and six hearth errors shipped raw for want of this check.
+  /// </summary>
+  [Fact]
+  public void Every_key_the_source_asks_for_exists_in_every_locale() {
+    var missing = LangCallSites.Unresolvable(
+      Domain,
+      $"src/{nameof(IronIndustryExpanded)}",
+      $"assets/{Domain}/lang"
+    );
+
+    Assert.True(
+      missing.Count == 0,
+      $"{missing.Count} lang key(s) named in source that no locale carries - each renders as the raw "
+        + "key in game:\n  "
+        + string.Join("\n  ", missing)
+    );
+  }
+
+  /// <summary>The premise of the check above: a scan that matched nothing would pass it.</summary>
+  [Fact]
+  public void The_call_site_scan_finds_keys_to_check() {
+    Assert.NotEmpty(
+      LangCallSites.Keys(Domain, $"src/{nameof(IronIndustryExpanded)}")
+    );
+  }
+
   [Fact]
   public void No_block_description_key_is_orphaned() {
     // A missing description is not a defect; a key matching no live code is text that no longer

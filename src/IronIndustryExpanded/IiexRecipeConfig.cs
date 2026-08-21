@@ -71,6 +71,17 @@ public class IiexRecipeConfig : IExVersionedConfig {
       ["blastfurnacetap-grid"] = Grid("iiex:furnace-irontap-*"),
       ["blastfurnaceslagtap-grid"] = Grid("iiex:furnace-slagtap-*"),
 
+      // The reverberatory chassis: both cores, both hearths, both doors, the damper and the shared
+      // firebox. All carry side variants, so every matcher needs the trailing wildcard.
+      ["puddlingcore-grid"] = Grid("iiex:furnace-puddlingcore-*"),
+      ["heatingcore-grid"] = Grid("iiex:furnace-heatingcore-*"),
+      ["puddlinghearth-grid"] = Grid("iiex:furnace-puddlinghearth-*"),
+      ["heatinghearth-grid"] = Grid("iiex:furnace-heatinghearth-*"),
+      ["puddlingchargedoor-grid"] = Grid("iiex:furnace-puddlingchargedoor-*"),
+      ["chargedoor-grid"] = Grid("iiex:furnace-chargedoor-*"),
+      ["puddlingchimneycap-grid"] = Grid("iiex:furnace-puddlingchimneycap-*"),
+      ["firebox-grid"] = Grid("iiex:furnace-firebox-*"),
+
       // Molten transport: canals, taps, the mold pedestal and the standalone barrel. The barrel
       // carries a construction(plated|cast) group, so the bare code matches nothing and an
       // unwildcarded cost row is silently inert.

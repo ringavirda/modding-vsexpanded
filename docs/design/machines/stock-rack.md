@@ -265,7 +265,12 @@ block can have, and it is one missing line.
 
 ## Code
 
-Nothing exists. Where it hooks in:
+⛔ **Built 2026-08-21 - the table below is the pre-build proposal and its names are not the ones that
+shipped.** `StockPile.Place` became exlib's `BayLayout` (length, not piles), `BlockStockRack` became
+`BlockStorageRack`, and the whole `HearthRows`-versus-layers discussion is moot. Kept because the
+reasoning about *where* each piece belongs still holds. See § As built for what exists.
+
+Where it hooks in:
 
 | Piece | Where | Model it on |
 |---|---|---|
@@ -327,19 +332,27 @@ mod's stock qualifies without an iiex edit.
 
 ## Open
 
-- Nothing is built, and neither is `StockPile.Place`, which is a prerequisite shared with the reheat
-  furnace's composed-stock renderer.
-- `RackLayers = 5` is a guess. So is the 16-voxel width divisor. Both want an in-game eye - a five-high pile
-  of slabs may read as a wall rather than a rack.
-- Mixed contents. Can one rack hold bars and a slab? Capacity-by-layer makes "one form per layer" natural and
-  "any mix" awkward; nothing has decided.
-- One inventory or per-layer? LIFO implies a single ordered list; the rendering implies layers. A list plus a
-  derived layout is probably right, but that is an assertion, not a decision.
-- `allowAttach` on the two filler cells - see Gotchas.
-- Whether the recognition test becomes an attribute (`stockForm`, or a new `rackable`) so other mods' stock
-  qualifies. The hearth's code-prefix match (`HeatingHearthLayout.cs:64-79`) does not scale, and the rack is
-  precisely the block that should not care what it is holding.
-- Does the rack keep stock hot? It must not - heat is the reheat furnace's job and a rack that slowed cooling
-  would become the escape this page says it is not. Rendering glow while cooling normally is a real option.
-- No lang, no handbook page, no golden. The handbook pipeline joins on the `NN-` prefix and drift fails a
-  test, so the page has to land with the block.
+Everything above the amendment describes the page as it was written on 2026-08-15; the block shipped on
+2026-08-21 and what is genuinely still open is this.
+
+- ⛔ **The renderer has never been seen.** It is written - vanilla's `BlockEntityDisplay` pattern, meshes
+  built on the main thread and cached per load - but nothing headless can check what it draws, only where
+  it centres a run (`CentreOf`). First in-game look is the acceptance test.
+- ⛔ **The occupancy numbers are a starting table.** Grounded in `StockForm.BaseLength` rounded up to whole
+  cells, not measured. `caststock-slab` is the only 3-cell entry, so it alone exercises the whole-rack
+  arrangement; whether a rack of it reads as one slab or as a filled shelf is an in-game question.
+- **Item height is not modelled.** A run is a length and nothing else, so a piece is drawn at the rails'
+  height whatever its section. If a slab and a rod need to sit differently the transform grows a per-item
+  y, which is another catalogue column rather than a code change.
+- **The recognition test is the catalogue**, which answers the old question about `stockForm` /`rackable`
+  attributes: another mod qualifies its stock by shipping a `config/bayoccupancy/` file, and iiex is not
+  edited. What is untested is whether a *foreign* item's shape actually renders, since only iiex items are
+  listed today.
+- **No handbook page.** `HandbookParityTests` is one case per page that exists, not one per block, so
+  nothing failed - the page is simply missing. Lang keys and goldens did land.
+- **Does the rack keep stock hot?** It does not, and nothing was added to make it: heat is the reheat
+  furnace's job and a rack that slowed cooling would become the escape this page says it is not. Drawing
+  a glow while a piece cools normally is still an option nobody has taken.
+- **Vertical stacking is untested in play.** `allowAttach` is on for both filler cells (owner, 2026-08-21),
+  which is what lets a rack land on any cell of the one below - but also what lets a torch hang on an
+  invisible cell. Both halves want an eye.

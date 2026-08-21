@@ -39,6 +39,10 @@ EDITABLE = "assets/editable/shapes"
 TEXTURES = {
     "cast-iron1": "iiex:block/metal/castiron",
     "iron": "game:block/metal/tarnished/iron",
+    # Bright ingot iron, for a piece that is meant to read as freshly worked rather than as old stock:
+    # the puddled ball and the ball on the paddle's head. A separate key because `iron` is tarnished and
+    # a dozen shipped shapes want it that way.
+    "ironingot": "game:block/metal/ingot/iron",
     "iron2": "game:block/metal/sheet-plain/iron2",
     "iron3": "game:block/metal/riveted/iron3",
     "iron32": "game:block/metal/riveted/iron3",
@@ -150,6 +154,27 @@ def close_loop(anim):
                 last_elems[element]["rotShortestDistance" + axis] = True
 
 
+def unwrap_root(d):
+    """Lift the children of a lone top-level `Root` group to the top.
+
+    Blockbench authors often wrap everything in one group for easy handling. The runtime shape must not
+    carry it: element paths are what `selectiveElements` and `ExShapeElements.Pruned` match on, so a
+    shipped `Root/Base/*` matches nothing against code asking for `Base/*` - and Pruned drops an unknown
+    name WITHOUT raising, so the block renders as nothing with every test still green. Only a single
+    top-level group named Root is lifted; anything else is the author's own structure and is left alone.
+    """
+    elements = d.get("elements")
+    if not elements:
+        return
+    lifted = []
+    for el in elements:
+        if el.get("name") == "Root" and el.get("children"):
+            lifted.extend(el["children"])
+        else:
+            lifted.append(el)
+    d["elements"] = lifted
+
+
 def convert(src_name, dest_path):
     src = os.path.join(EDITABLE, src_name + ".json")
     with open(src, encoding="utf-8") as fh:
@@ -157,6 +182,7 @@ def convert(src_name, dest_path):
 
     d.pop("editor", None)
     d.pop("textureSizes", None)
+    unwrap_root(d)
 
     unmapped = []
     for key in list((d.get("textures") or {}).keys()):

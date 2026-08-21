@@ -5,6 +5,9 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
+using IronIndustryExpanded.BlockStructures.Furnaces;
+using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
+using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;
@@ -179,6 +182,41 @@ public static class FurnaceLayoutRig {
       AngleFromSide(side)
     );
     return complete ? rig.Complete() : rig.Raise();
+  }
+
+  /// <summary>
+  /// Replaces the rig's stand-ins in every cell the drawing marks <c>Firebox</c> with a real firebox block
+  /// and a bed holding <paramref name="unitsPerCell"/> of coke. The real code satisfies the same
+  /// <see cref="FireboxGlyph"/>, so the structure stays complete; zero units stands a lit-capable furnace
+  /// up with nothing to light.
+  /// </summary>
+  public static void LoadFireboxes(
+    StructureRig rig,
+    BlockEntityFireboxFurnace furnace,
+    int unitsPerCell
+  ) {
+    Item coke = rig.World.RegisterItem("game:coke");
+    foreach (BlockPos cell in furnace.FireboxCells.ToList()) {
+      var be = new BlockEntityFirebox { Pos = cell.Copy() };
+      var bed = new BEBehaviorFirebox(be);
+      if (unitsPerCell > 0)
+        bed.TryAdd(new ItemStack(coke, unitsPerCell), unitsPerCell);
+      ReflectionHelpers.SetField(
+        be,
+        "Behaviors",
+        new List<BlockEntityBehavior> { bed }
+      );
+      rig.Occupy(
+        cell,
+        TestBlocks.Configure(
+          new Block(),
+          "iiex:furnace-firebox-tier1-n",
+          900,
+          ("side", "north")
+        ),
+        be
+      );
+    }
   }
 
   /// <summary>

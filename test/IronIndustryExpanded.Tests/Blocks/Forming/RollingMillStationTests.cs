@@ -1,6 +1,7 @@
 using System.Linq;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
@@ -258,6 +259,73 @@ public class RollingMillStationTests {
   #endregion
 
   // Distinct codes per call, so two sets in one test are told apart by more than reference identity.
+  #region The deck reads the same way round at either facing
+
+  /// <summary>
+  /// Where along the barrel a click lands, driven through the block's own reading at both shipped
+  /// orientations. The mill is authored <c>we</c> and turns 90 degrees to <c>ns</c>, and the deck row runs
+  /// from local x 0 back to -2 - so the widest gap, the only one fresh stock can enter at, sits at the far
+  /// end. A reading that swapped the axis instead of turning it put that end under the player's hand and
+  /// ran the schedule backwards; nothing caught it, because the one cell it agreed on is the cell every
+  /// other test clicks.
+  /// </summary>
+  [Theory]
+  [InlineData("we")]
+  [InlineData("ns")]
+  public void The_deck_reads_the_same_way_along_the_barrel_at_either_facing(
+    string orientation
+  ) {
+    Block block = TestBlocks.Configure(
+      new BlockRollingMill(),
+      $"iiex:forming-rollingmill-{orientation}",
+      1,
+      ("type", "rollingmill"),
+      ("orientation", orientation)
+    );
+    var pos = new BlockPos(0, 1, 0);
+    int angle = ((BlockRollingMill)block).StructureAngle;
+
+    // The oracle is the forward rotation the mill lays its own deck out with; the reading under test is
+    // its inverse, so the two are independent directions rather than one formula restated.
+    foreach ((int localX, float expected) in Deck) {
+      BlockPos cell = ExOrientation.GlobalPos(pos, localX, 0, -1, angle);
+      Assert.Equal(
+        expected,
+        AlongBarrel((BlockRollingMill)block, pos, cell),
+        3
+      );
+    }
+  }
+
+  /// <summary>Every deck cell's local x, and the point along the barrel a click at its centre reads.</summary>
+  private static readonly (int LocalX, float Along)[] Deck =
+  [
+    (0, 2.5f / 3f),
+    (-1, 1.5f / 3f),
+    (-2, 0.5f / 3f),
+  ];
+
+  /// <summary>The block's own reading, by reflection - it is private, and the whole point is that no test
+  /// reached it before.</summary>
+  private static float AlongBarrel(
+    BlockRollingMill block,
+    BlockPos principal,
+    BlockPos cell
+  ) =>
+    (float)
+      ReflectionHelpers.Invoke(
+        block,
+        "AlongBarrel",
+        principal,
+        cell,
+        new BlockSelection {
+          Position = cell,
+          HitPosition = new Vec3d(0.5, 0.5, 0.5),
+        }
+      )!;
+
+  #endregion
+
   private static int _setCounter;
 
   /// <summary>A stack carrying a parseable roll-set spec, so the tooling slot accepts it.</summary>

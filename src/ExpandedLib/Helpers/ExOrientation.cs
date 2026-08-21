@@ -43,6 +43,34 @@ public static class ExOrientation {
   }
 
   /// <summary>
+  /// Rotates a continuous XZ offset by <paramref name="angle"/> - the same turn
+  /// <see cref="RotateOffset(int, int, int, int)"/> makes, for a hit point rather than a cell. Kept as its
+  /// own overload rather than folded into the integer one so neither has to round; a test pins the two
+  /// against each other at every angle.
+  /// </summary>
+  public static (double X, double Z) RotateXZ(double x, double z, int angle) {
+    angle = ((angle % 360) + 360) % 360;
+    return angle switch {
+      90 => (z, -x),
+      180 => (-x, -z),
+      270 => (-z, x),
+      _ => (x, z), // 0 or any unhandled value
+    };
+  }
+
+  /// <summary>
+  /// Takes a world-frame XZ offset back into the structure's authored frame - the inverse of
+  /// <see cref="RotateXZ"/>, expressed as the opposite turn so there is one table and not two. What a
+  /// machine reading where along itself a player clicked needs, since interaction arrives in world space
+  /// and every layout is authored facing north.
+  /// </summary>
+  public static (double X, double Z) UnrotateXZ(
+    double x,
+    double z,
+    int angle
+  ) => RotateXZ(x, z, -angle);
+
+  /// <summary>
   /// Converts a structure-local offset into a world position: <c>origin + RotateOffset(local, angle)</c>.
   /// </summary>
   public static BlockPos GlobalPos(

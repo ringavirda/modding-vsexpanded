@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Rabbling Bar",
+    "ingredientPattern": "_H_,_R_,P__",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "item",
+      "code": "iiex:tool-rabble",
+      "quantity": 1
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  },
+  {
+    "name": "Puddler's Paddle",
+    "ingredientPattern": "_H_,_R_,__P",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "item",
+      "code": "iiex:tool-paddle",
+      "quantity": 1
+    },
+    "ingredients": {
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      },
+      "P": {
+        "type": "item",
+        "code": "game:metalplate-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "H": {
+        "type": "item",
+        "code": "game:hammer-*",
+        "isTool": true
+      }
+    }
+  }
+]

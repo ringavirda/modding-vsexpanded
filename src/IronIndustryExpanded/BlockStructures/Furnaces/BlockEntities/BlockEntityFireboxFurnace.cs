@@ -1,6 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Helpers;
 using IronIndustryExpanded.Items;
+using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -31,6 +37,72 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   // this furnace does not have.
   protected override float TuyereIntakeVolume => 0f;
   protected override float BlastPressureThreshold => 0f;
+
+  /// <summary>
+  /// The stack over the fire, counted off the drawing's own <see cref="CellRole.Flue"/> marks rather than
+  /// walked up the world. A reverberatory furnace's chimney is fixed at the height its layout declares,
+  /// which is also why the cap is part of the drawing: there is nothing above it for a walk to find.
+  /// </summary>
+  protected override int StackCourses =>
+    LocalCellsWithRole(CellRole.Flue).Count;
+
+  /// <summary>
+  /// The damper the stack is regulated by, at the cell directly over the highest flue course. Derived
+  /// rather than declared, so a drawing that raises its chimney moves the cap with it. Null on a hearth
+  /// whose drawing carries no cap, which reads as an unregulated open stack.
+  /// </summary>
+  protected BlockEntityPuddlingChimneyCap? Cap { get; private set; }
+
+  /// <summary>The work door, whose opening spills the stack's pull into the room.</summary>
+  protected BlockEntityChargeDoor? Door { get; private set; }
+
+  /// <summary>
+  /// The bed the work stands on, at <c>ShaftCentre</c>. Typed as the shared part base because the two
+  /// reverberatory hearths hold different things - pigs and a bath here, stock on the reheat furnace - and
+  /// each leaf reads it as its own kind. Null until the structure completes, and null again the moment a
+  /// player breaks the bed out mid-heat, which every consumer has to tolerate.
+  /// </summary>
+  protected BlockEntityFurnacePart? HearthPart { get; private set; }
+
+  protected override bool DamperOpen => Cap?.IsOpen ?? true;
+
+  protected override bool Venting => Door?.IsVenting ?? false;
+
+  /// <summary>
+  /// Resolves the damper and the door alongside the outlets, so they are refreshed on exactly the
+  /// schedule the taps are - on completion, on load and on the two lit-tick recovery paths.
+  /// </summary>
+  protected override void ScanForOutlets() {
+    base.ScanForOutlets();
+
+    IReadOnlyList<BlockPos> flue = CellsWithRole(CellRole.Flue);
+    BlockPos? capPos =
+      flue.Count == 0
+        ? null
+        : flue.Aggregate((a, b) => b.Y > a.Y ? b : a).UpCopy();
+
+    Cap = capPos is null
+      ? null
+      : Api?.World.BlockAccessor.GetBlockEntity(capPos)
+        as BlockEntityPuddlingChimneyCap;
+    Door = DoorCell is not { } local
+      ? null
+      : Api?.World.BlockAccessor.GetBlockEntity(GlobalOf(local))
+        as BlockEntityChargeDoor;
+    // ShaftCentrePos is GlobalOf(ShaftCentre), so the rotation is already applied; hand-rotating here
+    // would turn the bed twice and find brick at three of the four facings.
+    HearthPart =
+      Api?.World.BlockAccessor.GetBlockEntity(ShaftCentrePos)
+      as BlockEntityFurnacePart;
+  }
+
+  /// <summary>
+  /// Where this hearth's work door stands, in structure-local coordinates. Hand-declared like
+  /// <c>ShaftCentre</c>, no role marking a door; both reverberatory drawings agree on it, being the same
+  /// chassis one row apart, and a leaf whose drawing does not overrides. Rotation is free -
+  /// <c>GlobalOf</c> applies the structure's own angle.
+  /// </summary>
+  protected virtual Vec3i? DoorCell => new(-2, 1, 1);
 
   #endregion
 
@@ -164,6 +236,67 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   /// </summary>
   protected sealed override int ChargeCapacityUnits =>
     FireboxCellCount * IiexValues.FireboxMixPerCell;
+
+  /// <summary>
+  /// A share of the bed rather than the shaft's flat 144, which is four times what the largest firebox in
+  /// the mod can hold: a hearth carrying it is at once full enough to light and under the floor, so it
+  /// fires and goes out on the extinguish grace with the fuel clock never reached.
+  /// </summary>
+  /// <remarks>
+  /// Firebox-only. The shaft branch derives its state per column and skips the disruption block entirely
+  /// (<c>DerivesState</c>), so this override changes nothing there and blesses nothing about the shaft's
+  /// own floor. Sealed for the same reason the capacity above is: a leaf picking a hand-sized number is
+  /// how the unreachable floor was born. <c>FurnaceBranchGuards.NoFireboxCarriesAFloorAboveItsOwnCapacity</c>
+  /// covers any branch that arrives unsealed.
+  /// </remarks>
+  protected sealed override int DisruptionMixFloor =>
+    (int)(ChargeCapacityUnits * IiexValues.FireboxDisruptionFloorFraction);
+
+  /// <summary>A bed charge or a few pots, not a descending column of cold ore.</summary>
+  protected override float ChargeLossFull => IiexValues.FireboxChargeLossFull;
+
+  /// <summary>
+  /// The bridge between the fire and the work. Left virtual: a firebox machine whose work stands in the
+  /// fuel bed rather than across a bridge - the crucible furnace, whose pots sit in the coke - pays none
+  /// of it and overrides this to zero.
+  /// </summary>
+  protected override float TransferLoss => IiexValues.ReverberatoryTransferLoss;
+
+  #endregion
+
+  #region HUD
+
+  /// <summary>
+  /// The two lines a naturally-aspirated furnace needs and a blown one does not: what its stack is
+  /// pulling, and what is taking heat out on the way to the work. Without the first, a damper shut or a
+  /// door left open reads as the furnace being mysteriously cold; without the second the transfer loss
+  /// shows up in the total with nothing accounting for it.
+  /// </summary>
+  protected override void AppendHeatExtras(StringBuilder sb) {
+    sb.AppendLine(
+      Lang.Get(
+        IiexLang.BfInfoDraught,
+        (int)
+          Math.Round(
+            StackDraught.NaturalDraughtFor(StackCourses, DamperOpen, Venting)
+              * 100f
+          ),
+        StackCourses
+      )
+    );
+    if (!DamperOpen)
+      sb.AppendLine(Lang.Get(IiexLang.BfInfoDraughtDamped));
+    if (Venting)
+      sb.AppendLine(Lang.Get(IiexLang.BfInfoDraughtVenting));
+
+    if (TransferLoss > 0f)
+      sb.AppendLine(
+        Lang.Get(
+          IiexLang.BfInfoTransferloss,
+          ExMeasure.Temperature(TransferLoss)
+        )
+      );
+  }
 
   #endregion
 }

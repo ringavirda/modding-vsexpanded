@@ -30,12 +30,17 @@ public class BlockEntityChargeDoor : BlockEntityFurnacePart {
     Block.Attributes?["doorClips"]?["mainShut"]?.AsString("closed") ?? "closed";
   private string? SmallClip =>
     Block.Attributes?["doorClips"]?["small"]?.AsString(null);
+  private string? RabblingClip =>
+    Block.Attributes?["doorClips"]?["rabbling"]?.AsString(null);
+  private string? PaddleClip =>
+    Block.Attributes?["doorClips"]?["paddle"]?.AsString(null);
 
   /// <summary>
-  /// True while either door stands open; any degree of opening lets the draught through. Written for the
-  /// furnace core's damper model, which does not read it yet.
+  /// True while the main door stands open, which is when the stack's pull spills into the room and the
+  /// hearth cools. The small working door does not count: not dumping the heat is the whole reason it is
+  /// there, and rabbling is done through it so the bath need not cool for every gesture.
   /// </summary>
-  public bool IsVenting => MainOpen || SmallOpen;
+  public bool IsVenting => MainOpen;
 
   #region Interaction
 
@@ -44,6 +49,18 @@ public class BlockEntityChargeDoor : BlockEntityFurnacePart {
     MainOpen = !MainOpen;
     MarkDirty(true);
     ApplyPose();
+  }
+
+  /// <summary>
+  /// Plays one working stroke through the door - the rabble gathering, or the paddle drawing a ball out.
+  /// One-shot, and a no-op on a door drawn without that clip. Routed through
+  /// <c>PoseOneOf</c> so the null-animator guard still holds.
+  /// </summary>
+  public void PlayStroke(bool drawingOut) {
+    string? clip = drawingOut ? PaddleClip : RabblingClip;
+    if (clip == null)
+      return;
+    PoseOneOf(clip, clip);
   }
 
   /// <summary>Swings the small working door. No-op on a door that has none.</summary>
@@ -119,21 +136,21 @@ public class BlockEntityChargeDoor : BlockEntityFurnacePart {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(
       Lang.Get(
-        "iiex:chargedoor-state",
+        IiexLang.ChargedoorState,
         Lang.Get(MainOpen ? "iiex:chargedoor-open" : "iiex:chargedoor-closed")
       )
     );
     if (HasSmallDoor)
       dsc.AppendLine(
         Lang.Get(
-          "iiex:chargedoor-state-small",
+          IiexLang.ChargedoorStateSmall,
           Lang.Get(
             SmallOpen ? "iiex:chargedoor-open" : "iiex:chargedoor-closed"
           )
         )
       );
     if (Core is null)
-      dsc.AppendLine(Lang.Get("iiex:furnacepart-nofurnace"));
+      dsc.AppendLine(Lang.Get(IiexLang.FurnacepartNofurnace));
   }
 
   #endregion

@@ -36,6 +36,9 @@ public class FettleItemDefinitions : IExItemDefProvider {
   /// <summary>Fettle spread by one hearth cell. Three cells, so a full ram-up costs three.</summary>
   public const int PerHearthCell = 1;
 
+  /// <summary>The recovered oxide raked out of a cleaned hearth, named once for the hearth and the recipes.</summary>
+  public const string TapCinderCode = "tapcinder";
+
   /// <summary>
   /// The loose-oxide texture, shared with the hearth's rendered fettle layer so the item in hand and the
   /// layer on the bed are visibly the same material. Crushed hematite rather than a nugget: fettle can be
@@ -71,7 +74,7 @@ public class FettleItemDefinitions : IExItemDefProvider {
   private static ExItemDef TapCinder(string domain) =>
     Recovered(
       domain,
-      "tapcinder",
+      TapCinderCode,
       SlagItemDefinitions.Texture,
       "game:item/ore/ungraded/coke"
     );
