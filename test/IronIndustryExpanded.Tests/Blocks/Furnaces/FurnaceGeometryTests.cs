@@ -69,8 +69,8 @@ public class FurnaceGeometryTests {
       TapGlyphs.ShaftFurnace,
       // The shaft glyph alone: the crucible course below it is pool, not burden.
       [ShaftGlyph],
-      NorthTuyereGlyph,
-      SouthTuyereGlyph
+      "n",
+      "s"
     );
 
   [Fact]
@@ -102,7 +102,7 @@ public class FurnaceGeometryTests {
       // The shaft glyph alone, as on the cold furnace.
       [ShaftGlyph],
       // One inlet, in the north wall - the cupola is blown from one side only.
-      NorthTuyereGlyph
+      "n"
     );
 
   [Fact]

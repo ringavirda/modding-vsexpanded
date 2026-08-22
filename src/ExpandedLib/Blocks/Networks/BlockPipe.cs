@@ -132,6 +132,7 @@ public partial class BlockPipe
     return Common(domain, tier, Asset(tier, "straight"), 16, "*-straight-ns")
       .VariantGroup("type", "straight")
       .VariantGroup("orientation", "ns", "we", "ud")
+      .NetworkOriented()
       .ShapeByType("*-straight-ns", s)
       .ShapeByType("*-straight-we", s, rotateY: 90)
       .ShapeByType("*-straight-ud", s, rotateX: 90)
@@ -158,6 +159,7 @@ public partial class BlockPipe
         "dw",
         "de"
       )
+      .NetworkOriented()
       .ShapeByType("*-bend-nw", s)
       .ShapeByType("*-bend-en", s, rotateY: 270)
       .ShapeByType("*-bend-se", s, rotateY: 180)
@@ -195,6 +197,7 @@ public partial class BlockPipe
         "dsu",
         "dwu"
       )
+      .NetworkOriented()
       .ShapeByType("*-tjunction-wne", s)
       .ShapeByType("*-tjunction-nes", s, rotateY: 270)
       .ShapeByType("*-tjunction-esw", s, rotateY: 180)
@@ -218,6 +221,7 @@ public partial class BlockPipe
     return Common(domain, tier, Asset(tier, "xjunction"), 8, "*-xjunction-nswe")
       .VariantGroup("type", "xjunction")
       .VariantGroup("orientation", "nswe", "nsud", "weud")
+      .NetworkOriented()
       .ShapeByType("*-xjunction-nswe", s)
       .ShapeByType("*-xjunction-nsud", s, rotateZ: 90)
       .ShapeByType("*-xjunction-weud", s, rotateY: 90, rotateZ: 90)

@@ -51,6 +51,7 @@ public partial class BlockRollingMill
         .Handbook("forming-rollingmill-*")
         .VariantGroup("type", "rollingmill")
         .VariantGroup("orientation", "ns", "we")
+        .NetworkOriented()
         // we = axle along X (authored, rotateY 0); ns = the 90 degree rotation (axle along Z).
         .ShapeByType("*-we", "iiex:forming/rollingmill", rotateY: 0)
         .ShapeByType("*-ns", "iiex:forming/rollingmill", rotateY: 90)

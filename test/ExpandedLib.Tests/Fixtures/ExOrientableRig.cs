@@ -208,6 +208,12 @@ public sealed class ExOrientableRig {
   /// <summary>The variant group this rig's blocks carry their orientation in.</summary>
   public string VariantKey => _variantKey;
 
+  /// <summary>The scheme the behaviour settled on, whether declared or fallen back to.</summary>
+  public ExpandedLib.Helpers.ExOrientationScheme Scheme => _behaviour.Scheme;
+
+  /// <summary>The declared scheme name that named no scheme, or null.</summary>
+  public string? UnresolvedScheme => _behaviour.UnresolvedScheme;
+
   #endregion
 
   #region Wiring

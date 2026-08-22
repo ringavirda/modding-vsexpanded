@@ -35,19 +35,19 @@ public class FurnaceRoleCellsTests {
   private static readonly BlockPos Anchor = new(0, 16, 0);
 
   // Codes for the roles with a distinguishing block behind them.
-  /// <summary>
-  /// The tuyere a cell wants once the furnace faces <paramref name="side"/>: the authored letter (<c>n</c>
-  /// for the north wall's inlet, <c>s</c> for the south's) rotated by the structure angle. The legends are
-  /// orientation-pinned, so <c>MultiblockFacings</c> swaps in the rotated letter at check time and the
-  /// authored letter finds nothing at a rotated facing.
-  /// </summary>
-  private static AssetLocation Tuyere(string wall, string side) =>
-    new(
-      "iiex:furnace-tuyere-"
-        + ExOrientation.RotateOrientationToken(
-          wall,
-          ExOrientation.AngleFromSide(side)
-        )
+  /// <summary>Every tuyere cell wants the one wildcarded code; which way each must open is the layout's
+  /// Connector mark, checked separately.</summary>
+  private static readonly AssetLocation AnyTuyere = new(
+    "iiex:furnace-tuyere-*"
+  );
+
+  /// <summary>The outward face a wall's inlet demands once the furnace faces <paramref name="side"/>: the
+  /// authored letter (<c>n</c> for the north wall's, <c>s</c> for the south's) rotated by the structure
+  /// angle, which is what <c>ConnectorFacesAt</c> answers.</summary>
+  private static string TuyereFace(string wall, string side) =>
+    ExOrientation.SideFromAngle(
+      ExOrientation.AngleFromSide(wall) + ExOrientation.AngleFromSide(side),
+      asLetter: true
     );
 
   private static readonly AssetLocation PipeOutlet = new(
@@ -106,6 +106,12 @@ public class FurnaceRoleCellsTests {
 
   private static ExBlockDef HeatingDef() =>
     BlockHeatingFurnaceCore.Definitions("iiex").Single();
+
+  private static ExBlockDef CokeOvenDef() =>
+    BlockCokeOvenCore.Definitions("iiex").Single();
+
+  private static ExBlockDef CrucibleDef() =>
+    BlockCrucibleFurnaceCore.Definitions("iiex").Single();
 
   private static BlockEntityFurnaceCore Shaft(string furnace, string side) =>
     furnace == "cold" ? Cold(side) : Cupola(side);
@@ -274,23 +280,30 @@ public class FurnaceRoleCellsTests {
     // differently - CellsAccepting resolves each transformed offset's wanted code, CellsWithRole matches
     // authored offsets and reads the transformed one at that index - hence all four facings.
     //
-    // The union has to be the role's cells and each code also has to answer its own cell: a drawing using
-    // the north letter for both inlets would pass the union and fail the per-code count.
+    // The code no longer separates the two inlets, so the demanded face does: a drawing using the north
+    // letter for both would pass the cell-set assertion and fail the face one.
     BlockEntityFurnaceCore core = Shaft(furnace, side);
 
     bool blownBothWalls = furnace != "cupola";
-    AssetLocation northWall = Tuyere("n", side);
-    AssetLocation southWall = Tuyere("s", side);
-
-    IEnumerable<BlockPos> accepted = core.CellsAccepting(northWall);
-    if (blownBothWalls)
-      accepted = accepted.Concat(core.CellsAccepting(southWall));
 
     Assert.NotEmpty(core.CellsWithRole(CellRole.Tuyere));
-    Assert.Equal(Render(accepted), Render(core.CellsWithRole(CellRole.Tuyere)));
+    Assert.Equal(
+      Render(core.CellsAccepting(AnyTuyere)),
+      Render(core.CellsWithRole(CellRole.Tuyere))
+    );
 
-    Assert.Single(core.CellsAccepting(northWall));
-    Assert.Equal(blownBothWalls ? 1 : 0, core.CellsAccepting(southWall).Count);
+    string[] demanded =
+    [
+      .. core.CellsWithRole(CellRole.Tuyere)
+        .SelectMany(core.ConnectorFacesAt)
+        .Select(f => ExOrientation.TokenOf(f, asLetter: true))
+        .OrderBy(f => f),
+    ];
+    string[] expected = blownBothWalls
+      ? [TuyereFace("n", side), TuyereFace("s", side)]
+      : [TuyereFace("n", side)];
+
+    Assert.Equal(expected.OrderBy(f => f), demanded);
   }
 
   [Fact]
@@ -585,25 +598,43 @@ public class FurnaceRoleCellsTests {
     );
   }
 
-  [Fact]
-  public void A_hearth_declares_none_of_the_five_roles_at_all() {
-    // The authoring half of the two cases above: empty because nothing was marked, not because the reader
-    // dropped something. Read off the emitted attribute rather than through the production reader. The
-    // five roles in the name are the shaft-furnace ones - Tuyere, GasOutlet, MetalTap, SlagTap, Pool - and
-    // a hearth marks Firebox and Flue instead.
-    //
-    // Flue marks the centre of the chimney column, not a fixed stack: the layout states the axis and the
-    // minimum height and the player builds the rest. The role has no consumer in iiex yet, so this
-    // exact-set assertion is the only thing standing behind the marks; it must not be relaxed to a subset.
-    foreach (ExBlockDef def in new[] { PuddlingDef(), HeatingDef() }) {
-      List<string> names = RoleNamesOf(def);
-      Assert.Equal(["Firebox", "Flue"], names);
-      foreach (CellRole role in Migrated)
-        Assert.DoesNotContain(role.ToString(), names);
+  /// <summary>
+  /// Every firebox machine's exact role set, one entry per drawing. The shaft roles - Tuyere, GasOutlet,
+  /// MetalTap, SlagTap, Pool - appear on none of them.
+  /// </summary>
+  /// <remarks>
+  /// Stated as the whole set, not as a subset, because these marks have few consumers and a role added by
+  /// a later edit would otherwise pass unnoticed: <c>StackCourses</c> counts Flue cells, so a coke oven
+  /// that gained one would silently acquire a natural draught it must not have, and a hearth that gained a
+  /// Pool would be claiming to hold a bath.
+  /// </remarks>
+  [Theory]
+  [InlineData("puddling")]
+  [InlineData("heating")]
+  [InlineData("cokeoven")]
+  [InlineData("crucible")]
+  public void A_firebox_machine_declares_only_the_roles_its_drawing_needs(
+    string furnace
+  ) {
+    (ExBlockDef def, string[] expected) = furnace switch {
+      "puddling" => (PuddlingDef(), new[] { "Firebox", "Flue" }),
+      "heating" => (HeatingDef(), new[] { "Firebox", "Flue" }),
+      // A sealed retort: marking a flue would hand it a draught it must not have.
+      "cokeoven" => (CokeOvenDef(), new[] { "Firebox" }),
+      // The only drawing in the mod that marks a damper, and the fire and the work are one cell.
+      "crucible" => (CrucibleDef(), new[] { "Firebox", "Flue", "Damper" }),
+      _ => throw new KeyNotFoundException(furnace),
+    };
 
-      // A role name emitted over no cells would satisfy the list above while answering nothing.
-      Assert.NotEmpty(RoleCellsOf(def, CellRole.Flue));
-    }
+    List<string> names = RoleNamesOf(def);
+
+    Assert.Equal(expected, names);
+    foreach (CellRole role in Migrated)
+      Assert.DoesNotContain(role.ToString(), names);
+
+    // A role name emitted over no cells would satisfy the list above while answering nothing.
+    foreach (string role in expected)
+      Assert.NotEmpty(RoleCellsOf(def, System.Enum.Parse<CellRole>(role)));
   }
 
   [Fact]

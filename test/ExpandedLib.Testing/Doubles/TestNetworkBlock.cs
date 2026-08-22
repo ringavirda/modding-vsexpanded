@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using ExpandedLib.Blocks.Behaviors;
 using ExpandedLib.Blocks.Networks;
+using Newtonsoft.Json.Linq;
+using Vintagestory.API.Datastructures;
 
 namespace ExpandedLib.Testing.Doubles;
 
@@ -41,4 +44,46 @@ public sealed class TestNetworkBlock : BlockNetworkNode {
       code ?? $"test:{networkType}-{orientation}-{id}",
       id
     );
+
+  /// <summary>
+  /// One block per token of <paramref name="orientations"/>, sharing the code stem
+  /// <paramref name="stem"/> and each carrying its own <see cref="BlockBehaviorExOrientable"/> in
+  /// network mode - the shape the engine builds from a def's <c>orientation</c> variant group, and the
+  /// one <c>CodeWithVariant</c> and <c>ApplyOrientation</c> walk between. Ids run from
+  /// <paramref name="firstId"/> upward.
+  /// </summary>
+  public static TestNetworkBlock[] Family(
+    string networkType,
+    string stem,
+    string scheme,
+    string[] orientations,
+    int firstId = 1
+  ) {
+    var family = new TestNetworkBlock[orientations.Length];
+
+    for (int i = 0; i < orientations.Length; i++) {
+      string token = orientations[i];
+      TestNetworkBlock block = TestBlocks.Configure(
+        new TestNetworkBlock(networkType, token),
+        $"{stem}-{token}",
+        firstId + i,
+        ("orientation", token)
+      );
+
+      var behaviour = new BlockBehaviorExOrientable(block);
+      behaviour.Initialize(
+        new JsonObject(
+          JToken.Parse($$"""{"mode":"network","scheme":"{{scheme}}"}""")
+        )
+      );
+      // Both arrays, as the engine's own registration fills them: `GetBehavior<T>` reads
+      // CollectibleBehaviors, while the block-behaviour fan-outs walk BlockBehaviors, and a double
+      // that fills only one silently answers null to half the production code.
+      block.BlockBehaviors = [behaviour];
+      block.CollectibleBehaviors = [behaviour];
+      family[i] = block;
+    }
+
+    return family;
+  }
 }

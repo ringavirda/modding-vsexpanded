@@ -286,7 +286,8 @@ public static class FurnaceBranchGuards {
           ReflectionHelpers.GetProperty(be, "ChargeCapacityUnits")!;
         float threshold = (float)
           ReflectionHelpers.GetProperty(be, "MeltingPoint")!;
-        int courses = (int)ReflectionHelpers.GetProperty(be, "StackCourses")!;
+        int courses = (int)
+          ReflectionHelpers.GetProperty(be, "RatedStackCourses")!;
 
         float withStack = Settles(be, capacity);
         Assert.True(
@@ -298,17 +299,27 @@ public static class FurnaceBranchGuards {
       }
   }
 
-  /// <summary>Where a full firebox settles, with the stack its drawing declares.</summary>
+  /// <summary>
+  /// Where a full firebox settles at the machine's own best case - its rated stack, the damper open, no
+  /// door venting.
+  /// </summary>
+  /// <remarks>
+  /// Stated rather than assumed. Reading the balance as it stands measures the moment: a furnace whose
+  /// chimney the player builds has no chimney in a bare rig, and one whose damper defaults shut is being
+  /// asked the wrong question. Both were true of the crucible furnace, and the guard passed for the two
+  /// hearths only because their absent cap happened to default open.
+  /// </remarks>
   private static float Settles(BlockEntity be, int units) =>
     (
       (HeatBalance)
         ReflectionHelpers.Invoke(
           be,
-          "ComputeHeatBalance",
+          "ComputeHeatBalanceAt",
           new BurdenMix(0f, 0f, units),
           0f,
           20f,
-          units
+          units,
+          (float)ReflectionHelpers.GetProperty(be, "BestNaturalDraught")!
         )!
     ).TProcess;
 

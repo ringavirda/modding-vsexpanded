@@ -86,7 +86,7 @@
         "iiex:furnace-cupolacore-*-n": 2,
         "iiex:furnace-irontap-e": 3,
         "iiex:furnace-slagtap-w": 4,
-        "iiex:furnace-tuyere-n": 5,
+        "iiex:furnace-tuyere-*": 5,
         "iiex:hopper-tall-w": 6,
         "exlib:structurefiller": 7,
         "*:@(air|coalpile|furnace-chargepile)": 8,
@@ -490,9 +490,6 @@
       "iiex:furnace-slagtap-w": [
         2
       ],
-      "iiex:furnace-tuyere-n": [
-        2
-      ],
       "iiex:hopper-tall-w": [
         2
       ]
@@ -546,6 +543,15 @@
           "x": 0,
           "y": 1,
           "z": 0
+        }
+      ]
+    },
+    "multiblockConnectors": {
+      "n": [
+        {
+          "x": 0,
+          "y": 2,
+          "z": -1
         }
       ]
     }

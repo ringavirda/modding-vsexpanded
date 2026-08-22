@@ -46,12 +46,26 @@ TEXTURES = {
     "iron2": "game:block/metal/sheet-plain/iron2",
     "iron3": "game:block/metal/riveted/iron3",
     "iron32": "game:block/metal/riveted/iron3",
-    "iron4": "game:block/metal/sheet-plain/iron4",
+    # iron4 is the `sheet` face and iron5 the `sheet-plain` one, uniformly across the suite. Until
+    # 2026-08-23 iron4 was mapped to sheet-plain, and because the remap overwrites by KEY it beat whatever
+    # the editable declared: the tuyere and the burdenmaker both author `sheet/iron4` and both shipped
+    # wearing sheet-plain. Only the shapes converted before this tool existed (the Cornish boiler, the
+    # reinforced hopper) still carry the authored value.
+    "iron4": "game:block/metal/sheet/iron4",
     "iron5": "game:block/metal/sheet-plain/iron5",
+    # The two raw coals a firebox burns. Coke and charcoal were already here; these complete the set so a
+    # fuel bed can be authored against the coal it actually holds.
+    "bituminous": "game:block/coal/bituminous",
+    "anthracite": "game:block/coal/anthracite",
     # Deliberately absent, do NOT add blindly:
-    #   iron42 - shipped shapes disagree (sheet-plain/iron4 vs sheet/iron4); it is a second slot the author
-    #            points at a different texture per shape, so it must be set by hand after converting a pipe.
+    #   iron42 - a second slot the author points at a different texture per shape, so it must be set by
+    #            hand after converting a pipe.
     #   lore-marked / scrolls-rotten (design table) - no shipped precedent yet.
+    #   steel32 / steel42 - the same second-slot problem as iron42, one tier up.
+    # UNDECIDED, surfaced 2026-08-21 when --check stopped scanning only the top directory: `basalt` (17
+    # shapes) and `hematite` (1). Neither is deliberate; both want a decision before the shapes that use
+    # them are exported. Not added here - a wrong mapping is silent, and this file's own rule is to cite a
+    # shipped sibling.
     "steel": "game:block/metal/plate/steel",
     # Cast billet/bloom/slab and the heating hearth: those pieces are cast from STEEL, so they wear the
     # steel sheet. Same `sheet-plain` family steel2/3/5 below already resolve to.
@@ -72,6 +86,9 @@ TEXTURES = {
     # Fuel in a bed or a band. Same texture the charge pile's `coke` element already ships
     # (BlockChargePile.cs:84); the firebox swaps it per fuel type at runtime off the same key.
     "coke": "game:block/coal/coke",
+    # The blister bars standing in a crucible pot. Vanilla's own ingot texture for the metal, the same
+    # family `ironingot` above resolves in.
+    "blistersteel": "game:block/metal/ingot/blistersteel",
     "candle": "game:block/candle",
     "andesite": "game:block/stone/sand/andesite",
     "burned": "game:block/clay/vessel/sides/burned",
@@ -100,9 +117,21 @@ HOLD_CLIPS = {
     "disconnected",
     "drill-down-pose",
     "leaverdown",
-    "open",
     "steamup",
 }
+
+# Every clip whose name ends this way is a held state, whatever it opens: `open`, `lidopen`,
+# `mainhatchopen`, `manhatchopen`. A suffix rather than a name list because the exact-match set is what let
+# the scar above happen twice - `open` was added by hand in 2026-08-04, and the boiler's `lidopen` and the
+# two hatch clips the reworked art introduced would each have needed remembering separately.
+HOLD_SUFFIXES = ("open",)
+
+
+def holds(name):
+    """Whether a clip is a held state pose, and so must end on Hold rather than Repeat."""
+    return bool(name) and (
+        name in HOLD_CLIPS or name.endswith(HOLD_SUFFIXES)
+    )
 
 # Clips that must run ONCE and stop, keeping Blockbench's EaseOut. Everything else defaults to Repeat,
 # because a spin or a held pose that eases out makes an RCC-suppressed mesh vanish - the scar this whole
@@ -166,14 +195,31 @@ def close_loop(anim):
                 last_elems[element]["rotShortestDistance" + axis] = True
 
 
+def _translate(el, dx, dy, dz):
+    """Shift one element's own coordinates, leaving its children alone.
+
+    A child's `from`/`to` are relative to its PARENT's `from`, so moving a parent moves its whole subtree
+    for free. `rotationOrigin` lives in that same parent-relative space and moves with it.
+    """
+    for key in ("from", "to", "rotationOrigin"):
+        v = el.get(key)
+        if isinstance(v, list) and len(v) == 3:
+            el[key] = [v[0] + dx, v[1] + dy, v[2] + dz]
+
+
 def unwrap_root(d):
-    """Lift the children of a lone top-level `Root` group to the top.
+    """Lift the children of a top-level `Root` group to the top, keeping them where they were drawn.
 
     Blockbench authors often wrap everything in one group for easy handling. The runtime shape must not
     carry it: element paths are what `selectiveElements` and `ExShapeElements.Pruned` match on, so a
     shipped `Root/Base/*` matches nothing against code asking for `Base/*` - and Pruned drops an unknown
-    name WITHOUT raising, so the block renders as nothing with every test still green. Only a single
-    top-level group named Root is lifted; anything else is the author's own structure and is left alone.
+    name WITHOUT raising, so the block renders as nothing with every test still green.
+
+    The group's own `from` is folded into each lifted child first. A wrapper is usually at [0,0,0] and the
+    fold is a no-op, but it need not be: the reworked Cornish boiler wraps at [16,0,16], and lifting its
+    children bare moved the whole machine one cell west and one cell north - silently, since a translated
+    model renders perfectly well in the wrong place. Only a top-level group named Root is lifted; anything
+    else is the author's own structure and is left alone.
     """
     elements = d.get("elements")
     if not elements:
@@ -181,6 +227,9 @@ def unwrap_root(d):
     lifted = []
     for el in elements:
         if el.get("name") == "Root" and el.get("children"):
+            origin = el.get("from") or [0, 0, 0]
+            for child in el["children"]:
+                _translate(child, origin[0], origin[1], origin[2])
             lifted.extend(el["children"])
         else:
             lifted.append(el)
@@ -207,9 +256,23 @@ def convert(src_name, dest_path):
         name = anim.get("name")
         if name in ONESHOT_CLIPS:
             continue  # runs once and stops; its END is the event, so leave the authored EaseOut alone
-        anim["onAnimationEnd"] = "Hold" if name in HOLD_CLIPS else "Repeat"
-        if name not in HOLD_CLIPS:
+        if holds(name):
+            anim["onAnimationEnd"] = "Hold"
+        else:
+            anim["onAnimationEnd"] = "Repeat"
             close_loop(anim)
+
+    # Refuse before writing. Until 2026-08-21 the file was written first and the unmapped keys
+    # reported after, so a failed run left the destination holding the editable's absolute
+    # `F:/...` authoring paths - a runtime shape resolving to nothing, produced by the very tool
+    # whose job is to prevent that. It silently replaced a correct shipped shape the first time it
+    # was noticed.
+    if unmapped:
+        print(
+            "%-38s -> REFUSED: unmapped textures %s - add them to TEXTURES first"
+            % (src_name, unmapped)
+        )
+        return False
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path, "w", encoding="utf-8") as fh:
@@ -221,17 +284,25 @@ def convert(src_name, dest_path):
         "%-38s -> %-46s elements=%-5d anims=%s"
         % (src_name, dest_path, len(d.get("elements", [])), anims or "-")
     )
-    if unmapped:
-        print("    !! UNMAPPED TEXTURES %s - add them to TEXTURES first" % unmapped)
-    return not unmapped
+    return True
 
 
 def check_all():
+    """Reports every texture key no mapping covers.
+
+    Walks the tree. It listed only the top level until 2026-08-21, and the editables had long since been
+    filed into subdirectories - so it was scanning 0 of 155 shapes and reporting that everything was
+    mapped. A guard that answers green because it is not looking is worse than none.
+    """
     missing = collections.Counter()
-    for f in sorted(os.listdir(EDITABLE)):
+    for f in sorted(
+        os.path.join(root, name)
+        for root, _, names in os.walk(EDITABLE)
+        for name in names
+    ):
         if not f.endswith(".json"):
             continue
-        with open(os.path.join(EDITABLE, f), encoding="utf-8") as fh:
+        with open(f, encoding="utf-8") as fh:
             try:
                 d = json.load(fh)
             except Exception:

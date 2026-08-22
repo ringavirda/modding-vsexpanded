@@ -101,6 +101,18 @@ internal static class ColdBlastFurnaceScenes {
     new ColdBlastFurnaceRig(charge: charge, burden: HighCoke, ironTapSide: "e")
       .PressuriseBlast()
       .BlowIn();
+
+  /// <summary>
+  /// <see cref="Complete"/> with the north tuyere fitted backwards - its connector pointing south, into
+  /// the hearth, where the drawing wants it open to the north for the player pipe. The furnace must not
+  /// complete: a tuyere blowing inward is the one mistake nothing in the engine catches.
+  /// </summary>
+  public static ColdBlastFurnaceRig BackwardsTuyere(int charge = 2 * 320) =>
+    new ColdBlastFurnaceRig(
+      charge: charge,
+      burden: HighCoke,
+      northTuyereFace: "s"
+    );
 }
 
 /// <summary>
@@ -172,12 +184,18 @@ internal sealed class ColdBlastFurnaceRig {
   /// <param name="ironTapSide">Side variant of the metal tap, defaulting to
   /// <see cref="IronTapFacing"/>; its opposite installs the tap backwards.</param>
   /// <param name="slagTapSide">Side variant of the slag tap; see <paramref name="ironTapSide"/>.</param>
+  /// <param name="northTuyereFace">Connector face of the tuyere in the north wall, defaulting to the
+  /// <c>n</c> the drawing wants; <c>s</c> fits it backwards, pointing into the hearth.</param>
+  /// <param name="southTuyereFace">Connector face of the tuyere in the south wall; see
+  /// <paramref name="northTuyereFace"/>.</param>
   public ColdBlastFurnaceRig(
     int charge = 640,
     BurdenMix? burden = null,
     string chargeCode = "burden",
     string? ironTapSide = null,
-    string? slagTapSide = null
+    string? slagTapSide = null,
+    string? northTuyereFace = null,
+    string? southTuyereFace = null
   ) {
     _burden = burden ?? ColdBlastFurnaceScenes.HighCoke;
     _chargeCode = chargeCode;
@@ -250,8 +268,8 @@ internal sealed class ColdBlastFurnaceRig {
     [
       // y=2, not y=1: the blast enters the top of the hearth rather than the molten pool, and the two
       // cells sit outboard at z=-2 and z=2.
-      Tuyere(Structure.Cell(0, 2, -2), 20, "n"),
-      Tuyere(Structure.Cell(0, 2, 2), 21, "s"),
+      Tuyere(Structure.Cell(0, 2, -2), 20, northTuyereFace ?? "n"),
+      Tuyere(Structure.Cell(0, 2, 2), 21, southTuyereFace ?? "s"),
     ];
 
     // Both taps, each closed, each with its runout canal placed where a correctly installed tap aims. The
@@ -302,7 +320,9 @@ internal sealed class ColdBlastFurnaceRig {
     // stands up incomplete instead; every other scene gets the strict form.
     bool tapsAsDrawn =
       (ironTapSide ?? IronTapFacing) == IronTapFacing
-      && (slagTapSide ?? SlagTapFacing) == SlagTapFacing;
+      && (slagTapSide ?? SlagTapFacing) == SlagTapFacing
+      && (northTuyereFace ?? "n") == "n"
+      && (southTuyereFace ?? "s") == "s";
     if (tapsAsDrawn)
       Structure.Complete();
     else {

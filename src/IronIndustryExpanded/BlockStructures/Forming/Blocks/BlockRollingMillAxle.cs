@@ -48,7 +48,8 @@ public partial class BlockRollingMillAxle
         .SingleCollisionBox(0f, 0f, 0f, 1f, 1f, 1f)
         .SingleSelectionBox(0f, 0f, 0f, 1f, 1f, 1f)
         .VariantGroup("type", "millaxle")
-        .VariantGroup("orientation", "ns", "we"),
+        .VariantGroup("orientation", "ns", "we")
+        .NetworkOriented(),
     ];
 
   #endregion

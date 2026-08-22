@@ -326,6 +326,11 @@ public sealed class TestWorld {
       item.CombustibleProps = new CombustibleProperties {
         MeltingPoint = (int)meltingPoint,
       };
+    // The collectible's own api handle. A real world sets it on load, and several vanilla members reach
+    // for it rather than for the world they are handed: CollectibleObject.Equals compares two stacks'
+    // attributes through `api.World`, so an item registered without one throws inside an equality check
+    // that reads as a null stack.
+    ReflectionHelpers.SetField(item, "api", Api);
     _itemsByCode[code] = item;
     _itemsById[item.ItemId] = item;
     return item;

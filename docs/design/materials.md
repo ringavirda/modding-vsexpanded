@@ -35,6 +35,28 @@ and the chill model.
 > ~1880 → Pierce-Smith 1909) / electric arc + HSS (~1900). Cowper hot-blast stoves belong only with the
 > hot blast furnace (smex), never cold blast.
 
+### ★★ Crucible steel raises vanilla's tool ceiling, deliberately, and gates nothing *(built 2026-08-21)*
+
+`iiex:cruciblesteel` is the top of the mod's metal ladder and the only metal in it that beats vanilla's own
+steel: `MetalToolEmitter`'s preset table tops out at `good` (durability 2600), which is what Bessemer steel
+rides, and crucible steel rides the same preset with an explicit **durability 3300** over it. That is a
+deliberate raise of the game's tool ceiling, and it is the one thing on this page that changes a number a
+player already knew.
+
+★ **Durability alone.** Attack power and mining tier stay at the preset's. Crucible steel's real advantage
+was **uniformity** - melted whole in a sealed pot, so no slag stringers and no soft spots - which reads as a
+tool that lasts, not one that hits harder or digs deeper. An override that moved mining tier would change
+what a player can mine, which is a progression gate; durability is not.
+
+⛔ **It gates nothing.** Wrought-iron and plain steel heads keep working everywhere they worked before, and
+nothing in the suite requires a crucible-steel tool. The machine tooling that *would* want it - drill bits,
+shear blades, roll sets - has **no durability or wear mechanic at all**
+([tooling-wear](mechanics/tooling-wear.md) is ruled and unbuilt), so "crucible-steel heads last longer"
+is not expressible yet and was explicitly out of scope.
+
+⛔ **Nothing has been balanced against this.** 3300 is a first number chosen for its ratio to `good`, not a
+playtested one.
+
 ---
 
 ## Semi-finished forms (rolling stock)

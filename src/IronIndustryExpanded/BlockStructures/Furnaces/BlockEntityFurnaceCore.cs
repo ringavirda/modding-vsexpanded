@@ -211,6 +211,28 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// </summary>
   protected virtual int StackCourses => 0;
 
+  /// <summary>
+  /// Flue courses this furnace is rated at: what its own drawing fixes, unless the chimney continues past
+  /// the drawing, in which case the machine names the height its process is designed around.
+  /// </summary>
+  /// <remarks>
+  /// Not the same question as <see cref="StackCourses"/>, which is what is standing. This is what the
+  /// machine is meant to have, so the block info can tell a player what to build towards and a
+  /// reachability check can measure the machine rather than the moment.
+  /// </remarks>
+  public virtual int RatedStackCourses => StackCourses;
+
+  /// <summary>
+  /// The air factor this furnace pulls with everything the player controls in its favour: its rated stack,
+  /// the damper open and no door venting. The ceiling, not the reading.
+  /// </summary>
+  public float BestNaturalDraught =>
+    StackDraught.NaturalDraughtFor(
+      RatedStackCourses,
+      damperOpen: true,
+      venting: false
+    );
+
   /// <summary>Whether the chimney damper stands open. True where there is no damper to shut.</summary>
   protected virtual bool DamperOpen => true;
 
@@ -1384,6 +1406,30 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
     float blastSupplyFrac,
     float blastTemp,
     int mixCount
+  ) =>
+    ComputeHeatBalanceAt(
+      charge,
+      blastSupplyFrac,
+      blastTemp,
+      mixCount,
+      StackDraught.NaturalDraughtFor(StackCourses, DamperOpen, Venting)
+    );
+
+  /// <summary>
+  /// The same balance at a stated natural draught rather than the one the chimney and damper are giving
+  /// now - what this furnace would reach if the stack were built and the damper thrown.
+  /// </summary>
+  /// <remarks>
+  /// Separated so reachability can be asked as a question about the machine: a furnace whose chimney the
+  /// player builds is below its process temperature for most of its life, and that is the design rather
+  /// than a defect.
+  /// </remarks>
+  protected HeatBalance ComputeHeatBalanceAt(
+    BurdenMix charge,
+    float blastSupplyFrac,
+    float blastTemp,
+    int mixCount,
+    float natural
   ) {
     float fuelFrac = charge.HasContent
       ? charge.FuelFrac
@@ -1396,11 +1442,6 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
       IiexValues.BfMaxFuelFactor
     );
 
-    float natural = StackDraught.NaturalDraughtFor(
-      StackCourses,
-      DamperOpen,
-      Venting
-    );
     float airFactor =
       natural + (1f - natural) * GameMath.Clamp(blastSupplyFrac, 0f, 1f);
 

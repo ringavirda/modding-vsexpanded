@@ -29,6 +29,7 @@ public partial class BlockTuyere : BlockPipe, IExBlockDefProvider {
         .Behavior("Lockable")
         .VariantGroup("type", "tuyere")
         .VariantGroup("orientation", "s", "n", "w", "e")
+        .NetworkOriented()
         .ShapeByType("*-s", "iiex:furnace/tuyere", rotateY: 0)
         .ShapeByType("*-e", "iiex:furnace/tuyere", rotateY: 90)
         .ShapeByType("*-n", "iiex:furnace/tuyere", rotateY: 180)

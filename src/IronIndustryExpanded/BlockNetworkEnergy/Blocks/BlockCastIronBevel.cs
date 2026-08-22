@@ -44,6 +44,7 @@ public partial class BlockCastIronBevel : BlockNetworkNode, IExBlockDefProvider 
         // Must mirror the shaft's three orientations: a bevel is grown from a shaft of the same axis, so a
         // missing variant means that axis can never branch (a `ud` run could climb but never turn off).
         .VariantGroup("orientation", "ns", "we", "ud")
+        .NetworkOriented()
         .ShapeByType("*-ns", "iiex:mpenergy/shaft", rotateY: 0)
         .ShapeByType("*-we", "iiex:mpenergy/shaft", rotateY: 90)
         .ShapeByType("*-ud", "iiex:mpenergy/shaft", rotateX: 90)

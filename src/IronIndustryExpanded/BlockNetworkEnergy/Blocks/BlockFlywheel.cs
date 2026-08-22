@@ -107,6 +107,7 @@ public partial class BlockFlywheel
         .VariantGroup("type", "flywheel")
         .VariantGroup("size", "normal", "large")
         .VariantGroup("orientation", "ns", "we")
+        .NetworkOriented()
         // North frame = shaft along Z (ns); we is the 90° rotation. Each size has its own disc shape.
         .ShapeByType("*-normal-ns", "iiex:mpenergy/flywheel", rotateY: 0)
         .ShapeByType("*-normal-we", "iiex:mpenergy/flywheel", rotateY: 90)

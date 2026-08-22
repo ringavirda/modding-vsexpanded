@@ -126,14 +126,17 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider {
   public int VoxelCountForHandbook(ItemStack stack) => PigBreaking.PigVoxels;
 
   // A solid 5x3x10 = 150-voxel block, the pig's 375 u at 2.5 u/vx³, positioned so it fully covers the
-  // smithing/pig recipe shape (x 4..8, y 0, z 6..7). The helve sheds the other 140 voxels, which the patch
-  // turns into chunks and bits. The anvil grid is [16, 6, 16], so a 3-tall fill and z 6..15 stay in bounds.
+  // smithing/pig recipe shape. A smithing pattern is centred on the anvil and transposed as it is laid
+  // out, so the 2x5 pattern lands at x 5..9, z 7..8 rather than where it reads; a block that missed it
+  // would make the helve conjure metal to fill the gap. The helve sheds the other 140 voxels, which the
+  // patch turns into chunks and bits. The anvil grid is [16, 6, 16], so a 3-tall fill and z 6..15 stay in
+  // bounds.
   private static void CreatePigVoxels(ref byte[,,] voxels) {
     voxels = new byte[16, 6, 16];
     for (int x = 0; x < 5; x++)
       for (int y = 0; y < 3; y++)
         for (int z = 0; z < 10; z++)
-          voxels[4 + x, y, 6 + z] = 1; // EnumVoxelMaterial.Metal
+          voxels[5 + x, y, 6 + z] = 1; // EnumVoxelMaterial.Metal
   }
 
   #endregion

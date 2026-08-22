@@ -246,6 +246,43 @@ public class ShippedAssetJsonTests {
     );
   }
 
+  /// <summary>
+  /// No shipped asset may carry an authoring-machine path. An editable shape names its textures by
+  /// absolute path into the artist's own checkout; the export rewrites every one into a
+  /// <c>domain:path</c> asset code, and a shape that still holds a raw path renders the missing-texture
+  /// checker on someone else's machine with nothing in any log.
+  /// </summary>
+  /// <remarks>
+  /// <see cref="Every_texture_our_domains_name_resolves_to_a_file"/> cannot see this: it matches
+  /// <c>domain:path</c> references and skips anything whose domain is not ours, so an absolute path is
+  /// invisible to it. The hole was found the hard way - <c>convert-shape.py</c> wrote its output before
+  /// checking for unmapped textures, so a refused conversion silently replaced a correct shipped shape
+  /// with the editable's <c>F:/...</c> paths, and every suite stayed green.
+  /// </remarks>
+  [Fact]
+  public void No_shipped_asset_carries_an_authoring_path() {
+    // A drive letter, and the two authoring-side trees. The drive letter is matched as exactly one
+    // letter before the colon, so a URL scheme - the handbook's own `handbooksearch://` - cannot trip
+    // it.
+    var authoring = new Regex(
+      @"\b[A-Za-z]:[\\/]|\.game/|assets/editable/",
+      RegexOptions.Compiled
+    );
+    var offenders = new List<string>();
+
+    foreach (string relative in AssetFiles()) {
+      string text = File.ReadAllText(Path.Combine(RepoRoot(), relative));
+      if (authoring.Match(text) is { Success: true } hit)
+        offenders.Add($"{relative}: contains '{hit.Value}'");
+    }
+
+    Assert.True(
+      offenders.Count == 0,
+      $"{offenders.Count} shipped asset(s) carry an authoring path - re-export them:\n  "
+        + string.Join("\n  ", offenders.Take(30))
+    );
+  }
+
   // A domain-qualified texture path as a JSON string value: "iiex:block/metal/castiron". Variant
   // placeholders are left to the shape guard's family matching; a path carrying one is skipped here.
   private static readonly Regex TextureRef = new(

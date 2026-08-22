@@ -55,6 +55,7 @@ public partial class BlockPipeOutlet : BlockPipe, IChimneyVentable {
         "tan"
       )
       .VariantGroup("orientation", "s", "n", "w", "e", "u", "d")
+      .NetworkOriented()
       .ShapeByType("*-outlet-*-s", "iiex:pipe/outlet")
       .ShapeByType("*-outlet-*-n", "iiex:pipe/outlet", rotateY: 180)
       .ShapeByType("*-outlet-*-e", "iiex:pipe/outlet", rotateY: 90)

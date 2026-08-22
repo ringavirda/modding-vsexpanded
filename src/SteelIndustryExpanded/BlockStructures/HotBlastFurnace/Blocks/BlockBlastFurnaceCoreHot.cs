@@ -68,15 +68,15 @@ public partial class BlockBlastFurnaceCoreHot
             // of layer 1's z=0 row. That cell is its runout: claim it back and the cinder notch has
             // nowhere to drain, while the structure still completes and the furnace still lights.
             .Legend('S', IiexBlocks.FurnaceSlagtap.WithSide(BlockFacing.EAST))
-            // The blast inlets, orientation-pinned rather than wildcarded, which is why one block takes
-            // two glyphs. A tuyere is walled in on three sides, so its cell admits exactly one connector
-            // face - north out of the north wall, south out of the south - and
-            // BlockNetworkNode.RecalculateAndSyncOrientations exchanges a placed node onto that face as
-            // soon as the brick goes up; `MultiblockFacings` rotates the letter with the structure. A
-            // wildcarded legend (`iiex:furnace-tuyere-*`) would let a tuyere fitted facing into the hearth
-            // complete the furnace.
-            .Legend('Y', IiexBlocks.FurnaceTuyere.WithOrientation("n"))
-            .Legend('y', IiexBlocks.FurnaceTuyere.WithOrientation("s"))
+            // The blast inlets. One block takes two glyphs because the two cells demand opposite faces:
+            // north out of the north wall, south out of the south. The demand is on the connector rather
+            // than on the code - a network node re-picks its orientation from its neighbours, so a pinned
+            // variant states a fact the node is free to contradict, and a bare wildcard would let a tuyere
+            // fitted facing into the hearth complete the furnace.
+            .Legend('Y', IiexBlocks.FurnaceTuyere.Any)
+            .Legend('y', IiexBlocks.FurnaceTuyere.Any)
+            .Connector('Y', BlockFacing.NORTH)
+            .Connector('y', BlockFacing.SOUTH)
             .Legend('P', IiexCodes.PipeOutlet)
             .Legend('R', SiexBlocks.BlastfurnaceHopperreinforced.Code)
             .Legend('B', SiexBlocks.BlastfurnaceHopperbell.Code)

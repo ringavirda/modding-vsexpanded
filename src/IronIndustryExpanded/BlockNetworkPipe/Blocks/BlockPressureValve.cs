@@ -39,6 +39,7 @@ public partial class BlockPressureValve : BlockValve {
       .VariantGroup("tier", BlockPipe.CastTier)
       .VariantGroup("type", "pressurevalve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
+      .NetworkOriented()
       .ShapeByType("*-pressurevalve-ns", "iiex:pipe/pressurevalve")
       .ShapeByType("*-pressurevalve-we", "iiex:pipe/pressurevalve", rotateY: 90)
       .ShapeByType("*-pressurevalve-ud", "iiex:pipe/pressurevalve", rotateX: 90)

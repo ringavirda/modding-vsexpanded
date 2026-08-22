@@ -18,6 +18,7 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
       Cupola(domain),
       Reverberatory(domain),
       CokeOven(domain),
+      Crucible(domain),
     ];
 
   private static ExRecipeDef BlastFurnace(string domain) =>
@@ -283,6 +284,45 @@ public class FurnaceRecipeDefinitions : IExRecipeDefProvider {
           .Ingredient("S", Nails(2))
           .Ingredient("H", Hammer)
           .OutputBlock("iiex:furnace-chargelid-s")
+      );
+
+  /// <summary>
+  /// The crucible furnace: a deep refractory pot over an ash pit, and the hearth of firebars and clay
+  /// stands the pots sit on.
+  /// </summary>
+  /// <remarks>
+  /// Priced like the other refractory cores rather than like the coke oven, because nothing downstream
+  /// waits on it: crucible steel is the end of the iron line, not a gate into it. The hearth is the
+  /// firebox recipe with its top course in fire clay - the four stands the pots stand on - which is also
+  /// what keeps the two off one pattern.
+  /// </remarks>
+  private static ExRecipeDef Crucible(string domain) =>
+    ExRecipeDef
+      .Create(domain, "grid", "cruciblefurnace")
+      // A fire-clay lining set in refractory on a rod-bound base. It shares no pattern with the other
+      // four cores - blast BRP/BN_/BRP, cupola BRB/PCP/BRB, puddling BBB/RCR/BPB, reheat BPB/RCR/BBB,
+      // coke oven BBB/BHB/BBB - and two recipes on one pattern whose ingredients overlap leave the loser
+      // silently unresolvable.
+      .Grid(r =>
+        r.Name("Crucible Furnace Core")
+          .Pattern("BBB,BCB,BRB")
+          .Size(3, 3)
+          .Ingredient("B", RefractoryTiered(4))
+          .Ingredient("C", FireClay(8))
+          .Ingredient("R", Rod(2))
+          .OutputBlock("iiex:furnace-cruciblecore-{tier}-n")
+      )
+      // The hearth: the firebox's own bars and brick with a course of fire clay over them, which is the
+      // four stands the pots stand on. The clay course is what tells it apart from the plain firebox
+      // (BBB/RRR/BBB) - a different item in the top row, so a given grid fills exactly one of the two.
+      .Grid(r =>
+        r.Name("Crucible Hearth")
+          .Pattern("CCC,RRR,BBB")
+          .Size(3, 3)
+          .Ingredient("C", FireClay(2))
+          .Ingredient("R", Rod(1))
+          .Ingredient("B", RefractoryTiered(2))
+          .OutputBlock("iiex:furnace-cruciblehearth-{tier}-n")
       );
 
   // Vanilla's fired fire-brick, the item behind `claybricks-good-fire`. Cheaper than refractory and the

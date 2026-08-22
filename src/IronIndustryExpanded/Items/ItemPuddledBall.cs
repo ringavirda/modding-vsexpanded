@@ -91,16 +91,22 @@ public class ItemPuddledBall : Item, IAnvilWorkable {
   /// Lays one ball's worth of metal into the lowest empty layer of the pile. Returns false when the pile
   /// is already the full bar, which is what refuses a third ball rather than silently eating it.
   /// </summary>
+  /// <remarks>
+  /// The pile starts <see cref="Shingling.OriginZ"/> voxels in along z, because that is where the bar
+  /// recipe lands: a smithing pattern is centred on the anvil before it is laid out. A pile laid at the
+  /// near edge would only half cover the shape, and the helve would spend the difference conjuring metal
+  /// at one end and crushing it away at the other.
+  /// </remarks>
   private static bool PileLayer(ref byte[,,] voxels, bool fresh) {
     if (fresh)
       voxels = new byte[16, 6, 16];
 
     for (int y = 0; y < Shingling.Layers; y++) {
-      if (voxels[0, y, 0] != 0)
+      if (voxels[0, y, Shingling.OriginZ] != 0)
         continue;
       for (int x = 0; x < Shingling.Width; x++)
         for (int z = 0; z < Shingling.Depth; z++)
-          voxels[x, y, z] = (byte)EnumVoxelMaterial.Metal;
+          voxels[x, y, Shingling.OriginZ + z] = (byte)EnumVoxelMaterial.Metal;
       return true;
     }
     return false;

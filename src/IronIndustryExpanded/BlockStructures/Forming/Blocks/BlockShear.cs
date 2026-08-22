@@ -52,6 +52,7 @@ public partial class BlockShear
         .Handbook("forming-shear-*")
         .VariantGroup("type", "shear")
         .VariantGroup("orientation", "ns", "we")
+        .NetworkOriented()
         // ns = shaft along Z (authored, rotateY 0); we = the 90 degree rotation.
         .ShapeByType("*-ns", "iiex:forming/shear", rotateY: 0)
         .ShapeByType("*-we", "iiex:forming/shear", rotateY: 90)

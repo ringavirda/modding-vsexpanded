@@ -9,7 +9,7 @@
   "textureSizes": {},
   "textures": {
     "normal4": "game:block/metal/corroded/normal4",
-    "iron4": "game:block/metal/sheet-plain/iron4"
+    "iron4": "block/metal/sheet/iron4"
   },
   "elements": [
     {

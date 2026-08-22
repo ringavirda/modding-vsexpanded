@@ -5,6 +5,13 @@
   "behaviors": [
     {
       "name": "MultiblockStructure"
+    },
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "Face"
+      }
     }
   ],
   "blockmaterial": "Ceramic",

@@ -1,0 +1,27 @@
+{
+  "code": "blisterchunk",
+  "shape": {
+    "base": "iiex:item/metalchunk"
+  },
+  "textures": {
+    "iron": {
+      "base": "game:block/metal/ingot/blistersteel"
+    }
+  },
+  "maxstacksize": 64,
+  "materialDensity": 7720,
+  "combustibleProps": {
+    "meltingPoint": 1602
+  },
+  "attributes": {
+    "materialUnits": 25
+  },
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  }
+}

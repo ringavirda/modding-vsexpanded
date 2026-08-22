@@ -1,0 +1,21 @@
+{
+  "code": "blisterworkitem",
+  "class": "iiex.ItemBlisterWorkItem",
+  "variantgroups": [
+    {
+      "code": "metal",
+      "states": [
+        "blistersteel"
+      ]
+    }
+  ],
+  "texture": {
+    "base": "game:block/metal/ingot/blistersteel"
+  },
+  "maxstacksize": 1,
+  "storageFlags": 5,
+  "materialDensity": 7720,
+  "attributes": {
+    "workableTemperature": 0
+  }
+}

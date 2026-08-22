@@ -89,7 +89,7 @@ public static class MultiblockCodes {
 
   // An alternation group or a domainless/vanilla code is out of scope; anything else with a domain that
   // is not "game" is ours to account for.
-  private static bool IsModDomainCode(
+  internal static bool IsModDomainCode(
     string code,
     out string domain,
     out string path
@@ -117,7 +117,7 @@ public static class MultiblockCodes {
   /// directions on whole segments, which keeps <c>hopper-tall</c> from being read as a variant of a
   /// non-existent <c>hopper</c>.
   /// </summary>
-  private static bool AnyProvides(
+  internal static bool AnyProvides(
     HashSet<string> definedCodes,
     string wantedPath
   ) {

@@ -61,6 +61,7 @@ public partial class BlockTwinTubMPBlower
         .MaxStackSize(1)
         .VariantGroup("type", "twintubblower")
         .VariantGroup("orientation", "n", "e", "s", "w")
+        .NetworkOriented()
         // The footprint is authored in the north frame, so north is the unrotated shape; FillerOffsets
         // and StructureAngle below share that frame.
         .ShapeByType("*-n", "iiex:furnace/twintubmpblower", rotateY: 0)

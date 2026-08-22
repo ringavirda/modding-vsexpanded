@@ -1,0 +1,119 @@
+{
+  "code": "ingot-cruciblesteel",
+  "materialDensity": 7820,
+  "storageFlags": 5,
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "iiex": [
+      "*"
+    ]
+  },
+  "class": "ItemIngot",
+  "maxstacksize": 16,
+  "shape": {
+    "base": "game:item/ingot"
+  },
+  "textures": {
+    "metal": {
+      "base": "game:block/metal/ingot/steel"
+    }
+  },
+  "combustibleProps": {
+    "meltingPoint": 1600,
+    "meltingDuration": 30,
+    "smeltedRatio": 1,
+    "smeltedStack": {
+      "type": "item",
+      "code": "iiex:ingot-cruciblesteel"
+    }
+  },
+  "attributes": {
+    "shatteredStack": {
+      "type": "item",
+      "code": "iiex:metalbit-cruciblesteel"
+    }
+  },
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Stacking",
+        "placeRemoveSound": "game:sounds/block/ingot",
+        "stackingModel": "game:block/metal/ingotpile",
+        "stackingTextures": {
+          "metal": "game:block/metal/ingot/steel"
+        },
+        "modelItemsToStackSizeRatio": 1,
+        "upSolid": true,
+        "stackingCapacity": 64,
+        "transferQuantity": 1,
+        "bulkTransferQuantity": 4,
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.125,
+          "z2": 1
+        },
+        "cbScaleYByLayer": 0.125
+      }
+    }
+  ],
+  "guiTransform": {
+    "translation": {
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 149,
+      "y": -36,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.1,
+      "z": 0.5
+    },
+    "scale": 3.5
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -0.77,
+      "y": -0.15,
+      "z": -0.64
+    },
+    "rotation": {
+      "x": 0,
+      "y": -71,
+      "z": 18
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0.1,
+      "z": 0.5
+    },
+    "scale": 0.75
+  },
+  "groundTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 4.8
+  }
+}

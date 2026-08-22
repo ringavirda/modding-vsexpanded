@@ -38,6 +38,7 @@ public partial class BlockCastIronShaft : BlockNetworkNode, IExBlockDefProvider 
         .Handbook("mpenergy-shaft-*")
         .VariantGroup("type", "shaft")
         .VariantGroup("orientation", "ns", "we", "ud")
+        .NetworkOriented()
         .ShapeByType("*-ns", "iiex:mpenergy/shaft", rotateY: 0)
         .ShapeByType("*-we", "iiex:mpenergy/shaft", rotateY: 90)
         .ShapeByType("*-ud", "iiex:mpenergy/shaft", rotateX: 90)

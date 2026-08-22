@@ -66,6 +66,7 @@ public partial class BlockFastenerBench
         // lists, and CreativeCommon("*-ns") means each machine puts exactly one stack there.
         .VariantGroup("type", NailCutter, Riveter)
         .VariantGroup("orientation", "ns", "we")
+        .NetworkOriented()
         .ShapeByType(
           $"*-{NailCutter}-ns",
           "iiex:forming/nailcutter",

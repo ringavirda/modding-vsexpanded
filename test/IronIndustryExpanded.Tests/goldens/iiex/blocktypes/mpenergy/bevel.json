@@ -27,6 +27,15 @@
       ]
     }
   ],
+  "behaviors": [
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "Axis"
+      }
+    }
+  ],
   "shapebytype": {
     "*-ns": {
       "base": "iiex:mpenergy/shaft",

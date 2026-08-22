@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Helpers;
 using ExpandedLib.Registries;
 using ExpandedLib.Registries.Entities;
 using Newtonsoft.Json.Linq;
@@ -22,6 +23,119 @@ public static class NetworkNodeContract {
   /// </summary>
   public static IReadOnlyList<string> Violations(string domain, Assembly asm) =>
     [.. TypeGroupViolations(domain, asm), .. MembershipViolations(domain, asm)];
+
+  /// <summary>
+  /// Every network-node def in <paramref name="asm"/> whose <c>ExOrientable</c> declaration does not
+  /// agree with the states it actually ships, reporting how many defs were examined. A node's
+  /// orientation is picked by its neighbours, so the behaviour has to be told both that
+  /// (<c>mode: "network"</c>, which moves its variant key from <c>side</c> to <c>orientation</c>) and
+  /// which vocabulary the block writes (<c>scheme</c>, which cannot be derived from the mode - a
+  /// straight, a bend, a tee and a cross are all networks and declare different sets).
+  /// </summary>
+  /// <remarks>Both halves fail silently. An absent declaration leaves <c>IsNetworkOriented</c> false,
+  /// so the behaviour writes the <c>side</c> variant the block does not have and every swap resolves
+  /// to no block; a misspelled scheme falls back to <see cref="ExOrientations.Axis"/>, whose three
+  /// tokens reject every real token on a bend, and the node simply stops re-orienting.
+  /// <paramref name="defsChecked"/> exists for the reason
+  /// <see cref="MultiblockCodes.Unresolvable(out int, ValueTuple{string, Assembly}[])"/> reports its
+  /// own count: a checker that examines nothing passes forever.</remarks>
+  public static IReadOnlyList<string> SchemeViolations(
+    string domain,
+    Assembly asm,
+    out int defsChecked
+  ) {
+    var problems = new List<string>();
+    IReadOnlySet<string> nodeClasses = NetworkNodeClassKeys(domain, asm);
+    int examined = 0;
+
+    foreach (IExDef any in DefinitionGoldens.Collect(domain, asm)) {
+      // Collected defs are blocks, items and recipe files together; only a block carries a class key.
+      if (any is not ExBlockDef def)
+        continue;
+      JObject json = def.ToJson();
+      if (!nodeClasses.Contains((string?)json["class"] ?? ""))
+        continue;
+
+      examined++;
+      string where = $"{def.Location} ({(string?)json["class"]})";
+
+      JObject[] declared =
+      [
+        .. ArrayAt(json["behaviors"])
+          .OfType<JObject>()
+          .Where(b => (string?)b["name"] == "ExOrientable"),
+      ];
+
+      if (declared.Length != 1) {
+        problems.Add(
+          $"{where} declares {declared.Length} `ExOrientable` behaviour(s), not 1 - a network node "
+            + "takes its orientation from its neighbours, so it needs exactly one to write the "
+            + "`orientation` variant through."
+        );
+        continue;
+      }
+
+      JToken? properties = declared[0]["properties"];
+      string? mode = (string?)properties?["mode"];
+      if (mode != "network") {
+        problems.Add(
+          $"{where} declares `ExOrientable` with mode '{mode ?? "<absent>"}', not 'network' - "
+            + "IsNetworkOriented stays false, so the behaviour writes the `side` variant this block "
+            + "does not have and every orientation swap resolves to no block, silently."
+        );
+        continue;
+      }
+
+      string[] states = def.VariantStates("orientation");
+      string? actual = ExOrientations.Resolve(states)?.Name;
+      string? scheme = (string?)properties?["scheme"];
+
+      if (actual == null) {
+        problems.Add(
+          $"{where} declares orientation states [{string.Join(",", states)}], which set-equal no "
+            + "scheme in ExOrientations.All - declare the scheme there rather than naming a near "
+            + "match, whose rotation fallback would map onto a token this block does not have."
+        );
+        continue;
+      }
+
+      if (scheme != actual)
+        problems.Add(
+          $"{where} names scheme '{scheme ?? "<absent>"}' but its `orientation` states are "
+            + $"{actual}'s - an unresolved name falls back to Axis, which rejects every token "
+            + "outside [ns,we,ud] and stops the node re-orienting with no exception and no log line."
+        );
+    }
+
+    defsChecked = examined;
+    return problems;
+  }
+
+  /// <summary>
+  /// The registered <c>class</c> keys, across exlib and <paramref name="asm"/>, that name a
+  /// <see cref="BlockNetworkNode"/>. Defs are matched on the key rather than scanned off the node
+  /// types themselves because a tier's segments are authored by a stand-alone provider - iiex's
+  /// plated pipes come from <c>PlatedPipeDefinitions</c>, not from <c>BlockPipe</c> - so a scan
+  /// filtered on the base class sees the nodes a mod subclasses and none of the ones it only
+  /// instantiates.
+  /// </summary>
+  private static IReadOnlySet<string> NetworkNodeClassKeys(
+    string domain,
+    Assembly asm
+  ) {
+    var keys = new HashSet<string>(StringComparer.Ordinal);
+
+    foreach (
+      Assembly a in new[] { typeof(BlockNetworkNode).Assembly, asm }.Distinct()
+    )
+      foreach (Type type in ReflectionScan.GetCandidateTypes(a)) {
+        if (!typeof(BlockNetworkNode).IsAssignableFrom(type) || type.IsAbstract)
+          continue;
+        keys.Add(EntityRegistry.KeyFor(domain, type));
+      }
+
+    return keys;
+  }
 
   /// <summary>
   /// Every <see cref="BlockNetworkNode"/> def in <paramref name="asm"/> that declares no <c>type</c>

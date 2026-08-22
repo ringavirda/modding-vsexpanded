@@ -21,6 +21,13 @@ public static class ClayHeatGate {
   /// it: a small fired-clay tool mold and metal hotter than the clay ceiling. The comparison is strict, so
   /// metal sitting exactly at the ceiling still casts.
   /// </summary>
+  /// <remarks>
+  /// The steel crucible is a documented exception. It holds metal far over this ceiling and passes because
+  /// the test is a TYPE test: a pot is a smelting container, never a <c>BlockToolMold</c>, so the
+  /// temperature is never compared. Deliberate - this ceiling governs molds, which are reused
+  /// indefinitely, while the pot dies of the abuse after <c>CruciblePotFirings</c> heats. No branch is
+  /// added, because there is nothing to branch on. See docs/design/machines/crucible-furnace.md.
+  /// </remarks>
   public static bool WouldShatter(Block? mold, float pourTemp) =>
     MoldKinds.FitsPedestal(mold) && pourTemp > IiexValues.ClayMoldHeatCeiling;
 }

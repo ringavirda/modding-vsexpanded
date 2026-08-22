@@ -1,0 +1,19 @@
+{
+  "ingredient": {
+    "type": "item",
+    "code": "game:ingot-blistersteel"
+  },
+  "name": "blistercrush",
+  "pattern": [
+    [
+      "#####",
+      "#####"
+    ]
+  ],
+  "code": "iiexblistercrush",
+  "output": {
+    "type": "item",
+    "code": "game:metalbit-blistersteel",
+    "quantity": 5
+  }
+}

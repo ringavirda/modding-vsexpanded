@@ -24,6 +24,7 @@ public partial class BlockFluidIntake : BlockNetworkNode, IExBlockDefProvider {
       .Material(EnumBlockMaterial.Metal)
       .VariantGroup("type", "fluidintake")
       .VariantGroup("orientation", "n", "s", "w", "e")
+      .NetworkOriented()
       .CreativeTab("general", "*-fluidintake-s")
       .CreativeTab("iiex", "*-fluidintake-s")
       .ShapeByType("*-n", "iiex:pipe/fluidintake", rotateY: 180)

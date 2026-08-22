@@ -77,6 +77,15 @@
       ]
     }
   ],
+  "behaviors": [
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "AxisFlat"
+      }
+    }
+  ],
   "shapebytype": {
     "*-we": {
       "base": "iiex:forming/rollingmill",

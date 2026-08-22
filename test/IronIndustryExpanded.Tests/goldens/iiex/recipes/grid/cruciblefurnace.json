@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Crucible Furnace Core",
+    "ingredientPattern": "BBB,BCB,BRB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-cruciblecore-{tier}-n"
+    },
+    "ingredients": {
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-*",
+        "name": "tier",
+        "allowedVariants": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "quantity": 4
+      },
+      "C": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 8
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 2
+      }
+    }
+  },
+  {
+    "name": "Crucible Hearth",
+    "ingredientPattern": "CCC,RRR,BBB",
+    "width": 3,
+    "height": 3,
+    "output": {
+      "type": "block",
+      "code": "iiex:furnace-cruciblehearth-{tier}-n"
+    },
+    "ingredients": {
+      "C": {
+        "type": "item",
+        "code": "game:clay-fire",
+        "quantity": 2
+      },
+      "R": {
+        "type": "item",
+        "code": "game:rod-*",
+        "name": "metal",
+        "allowedVariants": [
+          "iron",
+          "steel"
+        ],
+        "quantity": 1
+      },
+      "B": {
+        "type": "item",
+        "code": "game:refractorybrick-fired-*",
+        "name": "tier",
+        "allowedVariants": [
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "quantity": 2
+      }
+    }
+  }
+]

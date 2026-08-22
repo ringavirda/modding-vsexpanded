@@ -39,6 +39,7 @@ public partial class BlockValve : BlockPipe {
       .VariantGroup("tier", BlockPipe.CastTier)
       .VariantGroup("type", "valve")
       .VariantGroup("orientation", "ns", "we", "ud", "sn", "ew", "du")
+      .NetworkOriented()
       .ShapeByType("*-valve-ns", "iiex:pipe/valve")
       .ShapeByType("*-valve-we", "iiex:pipe/valve", rotateY: 90)
       .ShapeByType("*-valve-ud", "iiex:pipe/valve", rotateX: 90)

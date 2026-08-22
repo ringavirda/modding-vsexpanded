@@ -10,7 +10,7 @@
 	},
 	"textures": {
 		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1",
-		"iron4": "block/metal/sheet-plain/iron4",
+		"iron4": "block/metal/sheet/iron4",
 		"iron": "block/metal/tarnished/iron"
 	},
 	"elements": [

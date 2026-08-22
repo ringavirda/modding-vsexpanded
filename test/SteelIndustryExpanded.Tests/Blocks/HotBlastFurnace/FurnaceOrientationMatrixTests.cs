@@ -37,8 +37,8 @@ public class FurnaceOrientationMatrixTests {
       "siex:blastfurnacecore-*",
       side,
       TapGlyphs.ShaftFurnace,
-      NorthTuyereGlyph,
-      SouthTuyereGlyph
+      "n",
+      "s"
     );
   }
 }

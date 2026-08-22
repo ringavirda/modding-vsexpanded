@@ -519,77 +519,83 @@ than the puddling furnace's, and the one line that must not be copied between th
 drawings. Pending: a dynamic chimney here is what lets the player *tune* the reheat temperature by how tall
 they build the stack — which needs a `Flue` glyph on the `a` column.
 
-## Draft crucible furnace — `iwex:draftcruciblefurnacecore` *(draft)*
+## Crucible steel furnace — `iiex:furnace-cruciblecore` *(shipped 2026-08-22)*
 
-**Not in C#.** Pots are lifted out with tongs and poured by hand into cast-iron ingot moulds — the furnace
-itself never pours.
+**In C#** — `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockCrucibleFurnaceCore.cs`. One
+column: ash pit, hearth, damper, flue, and then the first course of a chimney the player carries up. Pots
+are lifted out with tongs and poured by hand into cast-iron ingot moulds — the furnace itself never pours.
 
 ```csharp
 .MultiblockLayout(s =>
-  s.Origin(-1, -3)
-    .Legend('#', ExCodes.Refractory)
-    .Legend('b', ExCodes.AnyBricks)           // was "game:claybricks*" - the outer shell is the
-                                              // player's choice of masonry
-    .Legend('H', "iwex:draftcruciblefurnacehearth*")
-    .Legend('C', "iwex:draftcruciblefurnacecore-*")
-    .Legend('L', "iwex:chargelid-north*")
-    .Legend('K', ExCodes.CokeOvenDoor)
-    .Legend('a', ExCodes.Air)
+  s.Origin(-3, -2)
+    .Legend('#', VanillaCodes.Refractory)
+    .Legend('b', VanillaCodes.AnyBricks)
+    .Legend('-', VanillaCodes.FireSlab(BlockFacing.UP))
+    .Legend('K', VanillaCodes.Sealing(BlockFacing.SOUTH))
+    .Legend('C', IiexBlocks.FurnaceCruciblecore.Any)
+    .Legend('H', IiexBlocks.FurnaceCruciblehearth.Any)
+    .Legend('D', IiexBlocks.FurnaceChargedoor.WithSide(BlockFacing.SOUTH))
+    .Legend('M', IiexBlocks.FurnacePuddlingchimneycap.WithSide(BlockFacing.SOUTH))
+    .Legend('f', ExCodes.Filler)
+    .Legend('a', VanillaCodes.Air)
+    .Legend('A', VanillaCodes.Air)
+    .Role('H', CellRole.Firebox)
+    .Role('A', CellRole.Flue)
+    .Role('M', CellRole.Damper)
+    .Layer(-1, """
+              . . . .
+              # # # .
+              # a # .
+              # K # .
+              """)
     .Layer(0, """
-              b b b
-              b b b
-              b b b
-              b C b
-              b b b
+              . . . .
+              # # # .
+              # H # C
+              - D - .
               """)
     .Layer(1, """
-              a a a
-              a a a
-              b K b
-              b a b
-              b b b
+              . . . .
+              . f . .
+              # M # .
+              . # . .
               """)
     .Layer(2, """
-              a a a
-              a a a
-              b b b
-              b a b
-              b b b
+              . . . .
+              . # . .
+              # A # .
+              . # . .
               """)
     .Layer(3, """
-              # # #
-              # H #
-              # a #
-              # a #
-              # # #
-              """)
-    .Layer(4, """
-              . . .
-              . L .
-              # # #
-              # a #
-              # # #
-              """)
-    .Layer(5, """
-              . . .
-              . . .
-              . b .
-              b a b
-              . b .
+              . . . .
+              . b . .
+              b A b .
+              . b . .
               """)
 )
 ```
 
-Caution — roles are not authored, and this draft predates two decisions:
+What ships differs from the draft that stood here, and each difference answers one of the three gaps the
+draft itself flagged.
 
-1. **There is no fuel cell at all.** The design now puts wrought-iron firebars in the hearth and a firebox
-   under the pots — so a `F` cell and a `Firebox` role are missing, and the layout cannot be right without
-   them.
-2. **The flue needs its own glyph.** The `a` column running up col 1 from y=1 to y=5 is the stack, but `a`
-   is also the open space at rows 0–1 of layers 1–2. `Flue` cannot be put on `a` without claiming both — so
-   the column wants a second glyph on the same code, idiom 1 above. `NaturalDraughtFor(courses, damper)`
-   needs it.
-3. **The damper is not drawn.** The design calls for a flue-base bypass used to preheat.
+1. **The fuel cell is the hearth.** The draft had none at all. The drawn art settled it: the hearth is one
+   16-voxel block holding four pots *and* the coke around them, so the layout gets one cell marked
+   `CellRole.Firebox`, not four holes. `MinChargeToIgnite` is sealed to `FireboxCellCount ×
+   FireboxMixPerCell`, so a one-cell hearth lights on 12 units.
+2. **The flue has its own glyph.** `A` and `a` are both `VanillaCodes.Air`; only `A` carries `Flue`, so the
+   role marks the column without also claiming the ash pit — idiom 1 above.
+3. **The damper is drawn, at the foot of the stack.** ⛔ The first production use of `CellRole.Damper`
+   anywhere. It is `BlockPuddlingChimneyCap`, the same mechanic at the other end of the flue, faced **south**
+   so its two-cell footprint puts the housing filler north of the flue rather than in it.
+
+⛔ **Only the base course of the chimney is drawn.** Everything above layer 3 is the player's, and height is
+the machine's temperature dial: the draught curve first clears 1600 °C at six courses and peaks at nine. The
+counted walk that reads what was actually built is not written — `BlockEntityCrucibleFurnace.StackCourses`
+reports the rated height instead, which is a placeholder and is marked as one in the code.
+
+⛔ **`DoorCell` had to be overridden.** The branch defaults to `(-2, 1, 1)`, the offset both reverberatory
+drawings agree on; on this drawing that cell is brick, so an inherited door resolves to nothing and
+`Venting` reads false with the mouth standing open.
 
 ## Beehive coke oven — `iiex:furnace-cokeovencore` *(shipped 2026-08-21)*
 

@@ -1,0 +1,17 @@
+{
+  "code": "cruciblesteel",
+  "moltenItem": "iiex:ingot-cruciblesteel",
+  "solidDrop": "iiex:metalbit-cruciblesteel",
+  "displayLangKey": "iiex:metal-cruciblesteel",
+  "castDomain": "iiex",
+  "isAlloy": true,
+  "generateItemFamily": true,
+  "itemForms": ["ingot", "plate", "bits", "rod", "nails"],
+  "texturePath": "game:block/metal/ingot/steel",
+  "density": 7820,
+  "meltingPoint": 1600,
+  "tools": {
+    "preset": "good",
+    "durability": 3300
+  }
+}

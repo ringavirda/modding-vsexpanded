@@ -42,6 +42,15 @@
       ]
     }
   ],
+  "behaviors": [
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "AxisFlat"
+      }
+    }
+  ],
   "shapebytype": {
     "*-normal-ns": {
       "base": "iiex:mpenergy/flywheel",

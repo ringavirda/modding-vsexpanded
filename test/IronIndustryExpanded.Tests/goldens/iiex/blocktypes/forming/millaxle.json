@@ -49,5 +49,14 @@
         "we"
       ]
     }
+  ],
+  "behaviors": [
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "AxisFlat"
+      }
+    }
   ]
 }

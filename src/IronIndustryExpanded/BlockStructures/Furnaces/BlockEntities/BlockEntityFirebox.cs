@@ -81,10 +81,22 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
   private int _renderLayers;
   private string _renderTexture = BlockFirebox.FuelTexture;
 
-  private void Snapshot() {
+  protected virtual void Snapshot() {
     _renderLayers = Bed?.LayerCount ?? 0;
     _renderTexture = BlockFirebox.TextureKeyOf(Bed?.FuelCode);
   }
+
+  /// <summary>
+  /// Everything about this block's state that changes its mesh, as a cache key. The bed's course count and
+  /// fuel are the whole of it here; a subclass drawing more than a bed extends it, and must, because the
+  /// mesh cache is shared across every block of the type.
+  /// </summary>
+  protected virtual string RenderKey(int layers, string texture) =>
+    $"{layers}|{texture}";
+
+  /// <summary>The element paths to draw for a bed of <paramref name="layers"/> courses.</summary>
+  protected virtual List<string> RenderElements(int layers) =>
+    BlockFirebox.ElementsFor(layers);
 
   /// <summary>
   /// Draws the rim and bars always, plus one <c>CokeL</c> course per standing layer, repointed at whichever
@@ -108,7 +120,7 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
     MeshData? mesh = ExMeshCache.GetOrCreate(
       capi,
       Block,
-      $"{layers}|{texture}",
+      RenderKey(layers, texture),
       () => {
         Shape? shape = ExMeshCache.LoadShape(
           capi,
@@ -117,10 +129,7 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
         if (shape == null)
           return null;
 
-        Shape drawn = ExShapeElements.Pruned(
-          shape,
-          BlockFirebox.ElementsFor(layers)
-        );
+        Shape drawn = ExShapeElements.Pruned(shape, RenderElements(layers));
         if (texture != BlockFirebox.FuelTexture)
           drawn = ExShapeElements.Retextured(
             drawn,

@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Behaviors;
+using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.BlockStructures.OreProcessing.Blocks;
@@ -124,5 +127,73 @@ public class IiexDefinitionBehaviorTests {
       BlockNetworkPipe.Blocks.BlockPipeOutlet.Definitions("iiex")
     );
     Assert.Equal(["s", "n", "w", "e", "u", "d"], outletOrientations["outlet"]);
+  }
+
+  /// <summary>
+  /// A node's drop is its own first-listed state, which is deliberately not the scheme's first token.
+  /// Declaring <c>ExOrientable</c> on every node must not change that: the behaviour's
+  /// <c>CanonicalStack</c> answers <see cref="ExOrientations.Face"/>'s <c>n</c>, and pointing either
+  /// drop site at it would silently move four shipped blocks onto a different item.
+  /// </summary>
+  [Fact]
+  public void A_tuyere_carrying_the_behaviour_still_drops_and_picks_its_own_first_state() {
+    var world = new TestWorld();
+    BlockTuyere placed = Tuyere(world, "n", 1, withBehaviour: true);
+    Tuyere(world, "s", 2, withBehaviour: true);
+    var pos = new Vintagestory.API.MathTools.BlockPos(0, 0, 0);
+
+    Assert.Equal(
+      "iiex:furnace-tuyere-s",
+      placed.GetDrops(world.World, pos, null)[0].Collectible.Code.ToString()
+    );
+    Assert.Equal(
+      "iiex:furnace-tuyere-s",
+      placed.OnPickBlock(world.World, pos).Collectible.Code.ToString()
+    );
+    // The premise, asserted rather than assumed: the behaviour is attached and does answer differently.
+    Assert.Equal("n", ExOrientations.Face.Tokens[0]);
+    Assert.Equal(
+      "iiex:furnace-tuyere-n",
+      placed
+        .GetBehavior<BlockBehaviorExOrientable>()!
+        .CanonicalStack(world.World)
+        .Collectible.Code.ToString()
+    );
+  }
+
+  /// <summary>One registered tuyere variant, optionally carrying the network-mode behaviour its def
+  /// declares - in both behaviour arrays, since <c>GetBehavior</c> reads only one of them.</summary>
+  private static BlockTuyere Tuyere(
+    TestWorld world,
+    string token,
+    int id,
+    bool withBehaviour
+  ) {
+    BlockTuyere block = TestBlocks.Configure(
+      new BlockTuyere(),
+      $"iiex:furnace-tuyere-{token}",
+      id,
+      ("type", "tuyere"),
+      ("orientation", token)
+    );
+    ReflectionHelpers.SetProperty(
+      block,
+      nameof(BlockNetworkNode.Type),
+      "tuyere"
+    );
+
+    if (withBehaviour) {
+      var behaviour = new BlockBehaviorExOrientable(block);
+      behaviour.Initialize(
+        new Vintagestory.API.Datastructures.JsonObject(
+          JToken.Parse("""{"mode":"network","scheme":"Face"}""")
+        )
+      );
+      block.BlockBehaviors = [behaviour];
+      block.CollectibleBehaviors = [behaviour];
+    }
+
+    world.Register(block);
+    return block;
   }
 }

@@ -150,6 +150,7 @@ public partial class BlockSmokeStackIntake
         .VariantGroup("type", "intake")
         .VariantGroup("refractory", "tier1", "tier2", "tier3")
         .VariantGroup("orientation", "n", "s", "w", "e")
+        .NetworkOriented()
         .ShapeByType("*-intake-*-s", "iiex:pipe/outlet")
         .ShapeByType("*-intake-*-e", "iiex:pipe/outlet", rotateY: 90)
         .ShapeByType("*-intake-*-n", "iiex:pipe/outlet", rotateY: 180)

@@ -1,4 +1,5 @@
 using ExpandedLib.Blocks.Behaviors;
+using ExpandedLib.Helpers;
 using Xunit;
 
 namespace ExpandedLib.Tests;
@@ -132,13 +133,46 @@ public class ExOrientableTests {
     string selectedFace,
     string token
   ) {
-    // No block in any of the five mods declares `mode: "omni"`, so TokenFor's vertical arm has no
-    // production caller and this is its only coverage.
+    // No block in either mod declares `mode: "omni"`, so TokenFor's vertical arm has no production
+    // caller and this is its only coverage.
     var rig = OmniProbe();
 
     Assert.True(rig.PlaceLooking("south", selectedFace));
 
     Assert.Equal($"exlib:probe-{token}", rig.PlacedCode);
+  }
+
+  [Fact]
+  public void A_network_block_that_names_no_scheme_falls_back_silently() {
+    // The fallback is deliberate - one misspelling in a JSON asset must not take a world down - but it
+    // is indistinguishable at runtime from a correct Axis block, so what reached it is recorded.
+    var rig = ExOrientableRig.WithVariants(
+      "exlib:axle",
+      "orientation",
+      ["ns", "we", "ud"],
+      mode: "network"
+    );
+
+    Assert.Equal(ExOrientations.Axis.Name, rig.Scheme.Name);
+    Assert.Null(rig.UnresolvedScheme);
+  }
+
+  [Fact]
+  public void A_network_block_that_names_a_scheme_wrongly_records_the_name() {
+    // Axis holds none of a bend's twelve tokens, so this block would refuse every orientation its own
+    // neighbours ask for and simply stop moving. A code-first def cannot reach here - NetworkOriented
+    // writes the name it resolved off the block's own states - so this is the JSON-authored case.
+    var rig = ExOrientableRig.WithVariants(
+      "exlib:bend",
+      "orientation",
+      ["nw", "se", "en", "ws"],
+      mode: "network",
+      scheme: "CanalBnd"
+    );
+
+    Assert.Equal(ExOrientations.Axis.Name, rig.Scheme.Name);
+    Assert.Equal("CanalBnd", rig.UnresolvedScheme);
+    Assert.False(rig.ApplyOrientation("se"));
   }
 
   private static ExOrientableRig OmniProbe() =>

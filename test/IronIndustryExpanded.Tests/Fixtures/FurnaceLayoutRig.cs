@@ -31,12 +31,11 @@ public static class FurnaceLayoutRig {
 
   // The wildcard a functional cell must resolve to in the layout, per role - one source for both oracles.
 
-  // Orientation-pinned rather than wildcarded: a tuyere is walled in on three sides, so its cell admits
-  // exactly one connector face, and `BlockNetworkNode.RecalculateAndSyncOrientations` exchanges a placed
-  // node onto that face as soon as the walls go up. `MultiblockFacings` rotates single direction letters
-  // with the structure - see `ExOrientation.IsHorizontalSideWord`.
-  public const string NorthTuyereGlyph = "iiex:furnace-tuyere-n";
-  public const string SouthTuyereGlyph = "iiex:furnace-tuyere-s";
+  // One wildcarded code for both inlets. The cell states which way the tuyere must open through the
+  // layout's Connector mark rather than by pinning the variant, because a network node re-picks its own
+  // orientation from its neighbours and is free to contradict a pin. The oracle for that half is
+  // AssertConnectorFaces, not the code.
+  public const string TuyereGlyph = "iiex:furnace-tuyere-*";
 
   // One code per tap role, facing-pinned rather than `-*`: a shared code makes a drawing that swapped `T`
   // and `S` indistinguishable from a correct one, and a wildcarded facing lets a tap be fitted the wrong
@@ -222,6 +221,43 @@ public static class FurnaceLayoutRig {
         be
       );
     }
+  }
+
+  /// <summary>
+  /// Puts a real crucible hearth in the furnace's one firebox cell, with <paramref name="unitsPerCell"/>
+  /// of fuel in its bed, and re-runs the outlet scan so the furnace picks it up. Its own helper rather
+  /// than <see cref="LoadFireboxes"/>, which places the firebox blocktype: this cell's drawing requires
+  /// the hearth, so the wrong code there would stop the structure completing.
+  /// </summary>
+  public static void SeatCrucibleHearth(
+    StructureRig rig,
+    BlockEntityFireboxFurnace furnace,
+    int unitsPerCell,
+    string fuelCode = "game:coke"
+  ) {
+    Item coke = rig.World.RegisterItem(fuelCode);
+    foreach (BlockPos cell in furnace.FireboxCells.ToList()) {
+      var be = new BlockEntityCrucibleHearth { Pos = cell.Copy() };
+      var bed = new BEBehaviorFirebox(be);
+      if (unitsPerCell > 0)
+        bed.TryAdd(new ItemStack(coke, unitsPerCell), unitsPerCell);
+      ReflectionHelpers.SetField(
+        be,
+        "Behaviors",
+        new List<BlockEntityBehavior> { bed }
+      );
+      rig.Occupy(
+        cell,
+        TestBlocks.Configure(
+          new Block(),
+          "iiex:furnace-cruciblehearth-tier1-n",
+          905,
+          ("side", "north")
+        ),
+        be
+      );
+    }
+    ReflectionHelpers.Invoke(furnace, "ScanForOutlets");
   }
 
   /// <summary>
@@ -644,17 +680,18 @@ public static class FurnaceLayoutRig {
     string furnace,
     TapGlyphs taps,
     string[] chargeGlyphs,
-    params string[] tuyereGlyphs
+    params string[] tuyereFaces
   ) {
     Dictionary<Vec3i, string> layout = LayoutOf(def);
 
     // The anchor stands in its own layout, at the layout's origin.
     AssertGlyph(layout, new Vec3i(0, 0, 0), anchorGlyph, "anchor");
 
-    // The tuyere set is the caller's, because the three shaft furnaces do not agree on it: the cold and
-    // hot furnaces are blown from both walls, the cupola only from the north. Each drawing is checked
-    // against its own blast arrangement rather than a shared wildcard.
-    AssertRoleGlyphs(def, layout, CellRole.Tuyere, tuyereGlyphs, "tuyere");
+    // Every tuyere cell holds the one wildcarded code, and the drawing states which way each must open.
+    // The face set is the caller's, because the three shaft furnaces do not agree on it: the cold and hot
+    // furnaces are blown from both walls, the cupola only from the north.
+    AssertRoleGlyphs(def, layout, CellRole.Tuyere, TuyereGlyph, "tuyere");
+    AssertConnectorFaces(def, CellRole.Tuyere, tuyereFaces);
 
     // Both drains, each its own [SingleCell] role on its own glyph and block - `T` the iron notch, `S` the
     // cinder notch - so a drawing that swaps the two fails here. The pair is the caller's because the
@@ -742,6 +779,75 @@ public static class FurnaceLayoutRig {
   }
 
   /// <summary>
+  /// The outward faces the placed <paramref name="be"/> demands across its tuyere cells, once the whole
+  /// structure has been turned to <paramref name="angle"/>: the authored set, each letter rotated. Read
+  /// through the machine rather than the drawing, because that is the route completion takes.
+  /// </summary>
+  private static void AssertRotatedConnectorFaces(
+    BlockEntity be,
+    string[] authoredFaces,
+    int angle
+  ) {
+    var machine = (BlockEntityMultiblockStructure)be;
+    var demanded = new List<string>();
+    foreach (BlockPos cell in machine.CellsWithRole(CellRole.Tuyere))
+      demanded.AddRange(
+        machine
+          .ConnectorFacesAt(cell)
+          .Select(f => ExOrientation.TokenOf(f, asLetter: true))
+      );
+
+    string expected = string.Join(
+      " ",
+      authoredFaces
+        .Select(f =>
+          ExOrientation.SideFromAngle(
+            ExOrientation.AngleFromSide(f) + angle,
+            asLetter: true
+          )
+        )
+        .OrderBy(f => f)
+    );
+    Assert.Equal(expected, string.Join(" ", demanded.OrderBy(f => f)));
+  }
+
+  /// <summary>
+  /// The authored outward faces a def's layout demands across every cell of <paramref name="role"/>:
+  /// exactly <paramref name="faces"/>, with each demanded by some cell and each cell demanding one. The
+  /// replacement for the several-codes glyph oracle the orientation pins used to give - without it, a
+  /// drawing that marked both inlets outward-north would pass on the wildcard alone.
+  /// </summary>
+  public static void AssertConnectorFaces(
+    ExBlockDef def,
+    CellRole role,
+    string[] faces
+  ) {
+    MultiblockConnectors connectors = MultiblockConnectors.FromAttributes(
+      new JsonObject((JObject)def.ToJson()["attributes"]!)
+    );
+    List<Vec3i> cells = RoleCellsOf(def, role);
+    Assert.True(cells.Count > 0, $"{def.Code}: no cell is marked {role}");
+
+    var demanded = new List<string>();
+    foreach (Vec3i cell in cells) {
+      IReadOnlyList<string> at = connectors.OutwardFacesAt(
+        (cell.X, cell.Y, cell.Z)
+      );
+      Assert.True(
+        at.Count > 0,
+        $"{def.Code}: the {role} cell {cell} demands no outward connector, so a node fitted "
+          + "backwards there would complete the structure"
+      );
+      demanded.AddRange(at);
+    }
+
+    Assert.Equal(
+      string.Join(" ", faces.OrderBy(f => f)),
+      string.Join(" ", demanded.OrderBy(f => f))
+    );
+  }
+
+  /// <summary>
   /// Pins that a furnace has no exhaust outlet: none marked by the layout, and no pipe outlet in the
   /// drawing for one to point at. On the cold blast furnace and the cupola the open top is the chimney.
   /// </summary>
@@ -767,7 +873,7 @@ public static class FurnaceLayoutRig {
     string anchorGlyph,
     string side,
     TapGlyphs taps,
-    params string[] tuyereGlyphs
+    params string[] tuyereFaces
   ) {
     int angle = AngleFromSide(side);
     BlockPos pos = be.Pos;
@@ -785,9 +891,13 @@ public static class FurnaceLayoutRig {
       layout,
       angle,
       CellRole.Tuyere,
-      tuyereGlyphs,
+      TuyereGlyph,
       "tuyere"
     );
+    // The code is one wildcard at every facing, so what has to turn is the demand. Read off the placed
+    // machine rather than off the drawing: the two rotate by different routes, and this is the one that
+    // completion consults.
+    AssertRotatedConnectorFaces(be, tuyereFaces, angle);
     AssertRotatedRole(
       be,
       def,

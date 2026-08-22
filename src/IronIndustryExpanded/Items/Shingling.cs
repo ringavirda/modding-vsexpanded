@@ -38,8 +38,13 @@ public static class Shingling {
   /// <summary>Voxels across the anvil the pile occupies, x 0..<see cref="Width"/>-1.</summary>
   public const int Width = 16;
 
-  /// <summary>Voxels deep the pile occupies, z 0..<see cref="Depth"/>-1.</summary>
+  /// <summary>Voxels deep the pile occupies, z <see cref="OriginZ"/>..<see cref="OriginZ"/>+<see cref="Depth"/>-1.</summary>
   public const int Depth = 5;
+
+  /// <summary>Anvil voxel the pile's short axis starts at. A smithing pattern is centred on the anvil
+  /// before it is laid out, so the bar's shape sits at (16 - <see cref="Depth"/>) / 2 rather than at the
+  /// near edge, and a pile laid at z 0 would only half cover it.</summary>
+  public const int OriginZ = (16 - Depth) / 2;
 
   /// <summary>Layers the pile stands, y 0..<see cref="Layers"/>-1 - one per ball.</summary>
   public const int Layers = BallsPerBar;

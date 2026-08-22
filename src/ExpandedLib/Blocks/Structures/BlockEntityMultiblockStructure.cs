@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ExpandedLib.Blocks.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -40,6 +41,7 @@ public abstract class BlockEntityMultiblockStructure
   private int _structureInitAngle;
   private MultiblockFacings _facings = MultiblockFacings.None;
   private MultiblockCellRoles _roles = MultiblockCellRoles.None;
+  private MultiblockConnectors _connectors = MultiblockConnectors.None;
   private long _completionTickId;
 
   /// <summary>Whether every block of the multiblock structure is currently in place.</summary>
@@ -123,6 +125,20 @@ public abstract class BlockEntityMultiblockStructure
   protected virtual void OnStructureLost() { }
 
   /// <summary>
+  /// One unsatisfied footprint cell: what stands there, the rotation-resolved code the layout wants, the
+  /// world position, and - when the code matched but the cell's connector faces the wrong way - the
+  /// outward face it must open to. <see cref="OutwardFace"/> is null for an ordinary code mismatch, and
+  /// the two cases read differently to a player: one wants a block placed, the other wants the block
+  /// already there turned.
+  /// </summary>
+  public readonly record struct MissingCell(
+    Block Actual,
+    AssetLocation Wanted,
+    BlockPos At,
+    string? OutwardFace
+  );
+
+  /// <summary>
   /// Whether losing the structure also unregisters the production tick. True by default. A machine that
   /// must keep running while broken overrides this, not <see cref="CanRunProduction"/>: that gate is only
   /// consulted by a listener that still exists, so overriding it alone leaves the machine frozen with its
@@ -161,6 +177,7 @@ public abstract class BlockEntityMultiblockStructure
     _structureInitAngle = angle + initAngleOffset;
     _facings = MultiblockFacings.FromAttributes(Block.Attributes);
     _roles = MultiblockCellRoles.FromAttributes(Block.Attributes);
+    _connectors = MultiblockConnectors.FromAttributes(Block.Attributes);
 
     if (Api is ICoreClientAPI capi && _highlightedStructure != null) {
       _highlightedStructure.ClearHighlights(Api.World, capi.World.Player);
@@ -279,6 +296,40 @@ public abstract class BlockEntityMultiblockStructure
   }
 
   /// <summary>
+  /// The outward faces this layout demands a network connector on at <paramref name="worldCell"/>,
+  /// rotation-correct for the placed facing; empty when that cell carries no connector mark or is not one
+  /// of this structure's cells. What <c>IncompleteBlockCount</c> tests each connector cell against, so a
+  /// report or a hint asks the same question completion does.
+  /// </summary>
+  public IReadOnlyList<BlockFacing> ConnectorFacesAt(BlockPos worldCell) {
+    EnsureStructureLoaded();
+    if (_connectors.IsEmpty || _structure?.TransformedOffsets is not { } turned)
+      return _noFaces;
+
+    List<BlockOffsetAndNumber> authored = _structure.Offsets;
+    for (int i = 0; i < turned.Count && i < authored.Count; i++) {
+      if (
+        Pos.X + turned[i].X != worldCell.X
+        || Pos.InternalY + turned[i].Y != worldCell.Y
+        || Pos.Z + turned[i].Z != worldCell.Z
+      )
+        continue;
+
+      return
+      [
+        .. _connectors
+          .OutwardFacesAt((authored[i].X, authored[i].Y, authored[i].Z))
+          .Select(ExOrientation.FacingFromSide)
+          .Where(f => f != null)
+          .Select(f => ExOrientation.RotateFacing(f!, _structureInitAngle)),
+      ];
+    }
+    return _noFaces;
+  }
+
+  private static readonly BlockFacing[] _noFaces = [];
+
+  /// <summary>
   /// The authored (north-frame) offsets this layout marks with <paramref name="role"/> - what
   /// <see cref="CellsWithRole"/> answers before rotation and before the anchor position is added; empty
   /// when the layout marks none. Suits a structure-local fact such as shaft height, which no facing moves.
@@ -341,17 +392,22 @@ public abstract class BlockEntityMultiblockStructure
       return;
 
     // Tally missing blocks by wanted code while counting, so one walk feeds both the projection and the
-    // missing-materials report.
+    // missing-materials report. A cell whose block is right but whose connector faces the wrong way is
+    // tallied apart: telling the player to fetch another tuyere when one is already standing there is
+    // worse than saying nothing.
     var missingByCode = new Dictionary<AssetLocation, int>();
-    int missingCount = IncompleteBlockCount(
-      (haveBlock, wantBlockCode) => {
-        // Air-satisfied or auto-filled slots aren't player-gathered, so leave them out.
-        if (IsAutoFilled(wantBlockCode))
-          return;
-        missingByCode.TryGetValue(wantBlockCode, out int count);
-        missingByCode[wantBlockCode] = count + 1;
+    var misfacing = new List<MissingCell>();
+    int missingCount = IncompleteBlockCount(cell => {
+      if (cell.OutwardFace != null) {
+        misfacing.Add(cell);
+        return;
       }
-    );
+      // Air-satisfied or auto-filled slots aren't player-gathered, so leave them out.
+      if (IsAutoFilled(cell.Wanted))
+        return;
+      missingByCode.TryGetValue(cell.Wanted, out int count);
+      missingByCode[cell.Wanted] = count + 1;
+    });
     bool wasComplete = StructureComplete;
     StructureComplete = missingCount == 0;
 
@@ -370,7 +426,7 @@ public abstract class BlockEntityMultiblockStructure
       }
 
       if (!StructureComplete && byPlayer is IServerPlayer serverPlayer)
-        SendMissingBlocksReport(serverPlayer, missingByCode);
+        SendMissingBlocksReport(serverPlayer, missingByCode, misfacing);
     }
 
     if (Api is ICoreClientAPI clientApi) {
@@ -397,32 +453,87 @@ public abstract class BlockEntityMultiblockStructure
   /// rotated with the structure first (<see cref="MultiblockFacings"/>), so a layout can demand a
   /// correctly-oriented slab or door.
   /// </summary>
-  /// <param name="onMissing">Called per unsatisfied cell with <c>(blockThere, wantedCode)</c>, the wanted
-  /// code already rotated, so a report names the variant the player must place.</param>
+  /// <param name="onMissing">Called per unsatisfied cell, the wanted code already rotated, so a report
+  /// names the variant the player must place - and, for a cell whose code matches but whose connector
+  /// faces the wrong way, the outward face it wants.</param>
   /// <returns>The count of unsatisfied cells, or 0 when the structure is not loaded.</returns>
-  protected int IncompleteBlockCount(
-    Action<Block, AssetLocation>? onMissing = null
-  ) {
-    if (_structure?.TransformedOffsets == null)
+  protected int IncompleteBlockCount(Action<MissingCell>? onMissing = null) {
+    if (_structure?.TransformedOffsets is not { } transformed)
       return 0;
 
+    List<BlockOffsetAndNumber> authored = _structure.Offsets;
     int missing = 0;
-    foreach (BlockOffsetAndNumber offset in _structure.TransformedOffsets) {
+
+    // Indexed rather than walked, because the connector demand is authored in the north frame and is
+    // read back at the same index InitForUse rotated it from - the alignment CellsWithRole relies on.
+    for (int i = 0; i < transformed.Count; i++) {
+      BlockOffsetAndNumber offset = transformed[i];
       if (WantedCodeAt(offset) is not AssetLocation wanted)
         continue;
 
-      Block actual = Api.World.BlockAccessor.GetBlockRaw(
+      var at = new BlockPos(
         Pos.X + offset.X,
         Pos.InternalY + offset.Y,
-        Pos.Z + offset.Z
+        Pos.Z + offset.Z,
+        Pos.dimension
       );
-      if (WildcardUtil.Match(wanted, actual.Code))
-        continue;
+      Block actual = Api.World.BlockAccessor.GetBlockRaw(at.X, at.Y, at.Z);
 
-      missing++;
-      onMissing?.Invoke(actual, wanted);
+      if (!WildcardUtil.Match(wanted, actual.Code)) {
+        missing++;
+        onMissing?.Invoke(new MissingCell(actual, wanted, at, null));
+        continue;
+      }
+
+      if (
+        i < authored.Count
+        && UnopenedFace(authored[i], at, actual) is string face
+      ) {
+        missing++;
+        onMissing?.Invoke(new MissingCell(actual, wanted, at, face));
+      }
     }
     return missing;
+  }
+
+  /// <summary>
+  /// The first outward face a connector cell demands that its occupant does not answer, or null when
+  /// the cell demands none or answers them all. The demand is authored in the north frame, so it turns
+  /// by the structure's own init angle - the same angle the wanted code was rotated by.
+  /// </summary>
+  /// <remarks>Satisfied by a superset, so a passthrough wearing <c>ns</c> answers a demand for north
+  /// and a legitimate re-pick by the network does not break a standing structure. An occupant that is
+  /// no <see cref="INetworkConnector"/> at all answers nothing, so a plain brick dropped into a
+  /// connector cell cannot satisfy the mark.</remarks>
+  private string? UnopenedFace(
+    BlockOffsetAndNumber authored,
+    BlockPos at,
+    Block actual
+  ) {
+    if (_connectors.IsEmpty)
+      return null;
+
+    foreach (
+      string letter in _connectors.OutwardFacesAt(
+        (authored.X, authored.Y, authored.Z)
+      )
+    ) {
+      if (ExOrientation.FacingFromSide(letter) is not BlockFacing authoredFace)
+        continue;
+
+      BlockFacing face = ExOrientation.RotateFacing(
+        authoredFace,
+        _structureInitAngle
+      );
+      if (
+        actual is INetworkMember member
+        && member.HasConnectorAt(Api.World.BlockAccessor, at, face)
+      )
+        continue;
+
+      return ExOrientation.TokenOf(face, asLetter: true);
+    }
+    return null;
   }
 
   /// <summary>
@@ -528,15 +639,22 @@ public abstract class BlockEntityMultiblockStructure
   /// </summary>
   private void SendMissingBlocksReport(
     IServerPlayer player,
-    Dictionary<AssetLocation, int> missingByCode
+    Dictionary<AssetLocation, int> missingByCode,
+    IReadOnlyList<MissingCell> misfacing
   ) {
-    if (missingByCode.Count == 0)
+    if (missingByCode.Count == 0 && misfacing.Count == 0)
       return;
 
     // The strings come from exlib's own asset domain, so the shared report does not borrow a consumer
     // mod's lang file. The generated ExlibLang accessors make a renamed or deleted key a compile error.
     var sb = new StringBuilder();
-    sb.Append(Lang.Get(ExlibLang.StructureMissingHeader));
+    sb.Append(
+      Lang.Get(
+        missingByCode.Count > 0
+          ? ExlibLang.StructureMissingHeader
+          : ExlibLang.StructureMisfacingHeader
+      )
+    );
 
     foreach (
       var entry in missingByCode
@@ -553,12 +671,43 @@ public abstract class BlockEntityMultiblockStructure
       );
     }
 
+    // One line per misfaced cell, naming the position, because two tuyeres in one wall are the same
+    // block and the same face and the player needs to know which one to turn.
+    foreach (MissingCell cell in misfacing) {
+      sb.Append('\n');
+      sb.Append(
+        Lang.Get(
+          ExlibLang.StructureMisfacingLine,
+          ResolveBlockName(cell.Wanted),
+          $"{cell.At.X}, {cell.At.Y}, {cell.At.Z}",
+          FaceName(cell.OutwardFace)
+        )
+      );
+    }
+
     player.SendMessage(
       GlobalConstants.GeneralChatGroup,
       sb.ToString(),
       EnumChatType.Notification
     );
   }
+
+  /// <summary>
+  /// The player-facing name of an outward face letter. Switched onto literal keys rather than composed
+  /// from the letter, so a deleted or renamed one is a compile error - a composed key names a family and
+  /// no guard in the repo checks that it resolves.
+  /// </summary>
+  private static string FaceName(string? letter) =>
+    Lang.Get(
+      letter switch {
+        "n" => ExlibLang.FacingN,
+        "e" => ExlibLang.FacingE,
+        "s" => ExlibLang.FacingS,
+        "w" => ExlibLang.FacingW,
+        "u" => ExlibLang.FacingU,
+        _ => ExlibLang.FacingD,
+      }
+    );
 
   /// <summary>
   /// Resolves a structure block code, which may be a wildcard such as "iiex:furnace-blastcore-*", to a

@@ -5,6 +5,8 @@ using System.Text;
 using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
+using ExpandedLib.Testing.Doubles;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -32,6 +34,7 @@ public sealed class StructureRig {
   private readonly TestWorld _world;
   private readonly BlockEntityMultiblockStructure _anchor;
   private readonly Dictionary<string, Block> _standIns = new();
+  private readonly IReadOnlyDictionary<BlockPos, string[]> _connectorFaces;
   private int _nextId = FirstStandInId;
 
   /// <summary>The rotation the structure was raised at, in degrees (0 = north).</summary>
@@ -55,12 +58,14 @@ public sealed class StructureRig {
     TestWorld world,
     BlockEntityMultiblockStructure anchor,
     int angle,
-    IReadOnlyList<(BlockPos, string)> cells
+    IReadOnlyList<(BlockPos, string)> cells,
+    IReadOnlyDictionary<BlockPos, string[]> connectorFaces
   ) {
     _world = world;
     _anchor = anchor;
     Angle = angle;
     Cells = cells;
+    _connectorFaces = connectorFaces;
   }
 
   /// <summary>
@@ -116,16 +121,43 @@ public sealed class StructureRig {
       new JsonObject(attributes)
     );
 
-    var cells = new List<(BlockPos, string)>();
-    foreach (BlockOffsetAndNumber offset in structure.TransformedOffsets!)
-      cells.Add(
-        (
-          anchor.Pos.AddCopy(offset.X, offset.Y, offset.Z),
-          Demand(facings, codeByNumber[offset.W], angle)
-        )
-      );
+    // The connector demands the layout ships, turned the same way. Without this mirror the rig counts a
+    // backwards node as satisfied while the machine counts it missing, and Complete() throws "0 of N
+    // cells unsatisfied" - a failure that invites loosening the production check to make it go away.
+    MultiblockConnectors connectors = MultiblockConnectors.FromAttributes(
+      new JsonObject(attributes)
+    );
 
-    return new StructureRig(world, anchor, angle, cells);
+    var cells = new List<(BlockPos, string)>();
+    var connectorFaces = new Dictionary<BlockPos, string[]>();
+    List<BlockOffsetAndNumber> authored = structure.Offsets;
+
+    for (int i = 0; i < structure.TransformedOffsets!.Count; i++) {
+      BlockOffsetAndNumber offset = structure.TransformedOffsets[i];
+      BlockPos at = anchor.Pos.AddCopy(offset.X, offset.Y, offset.Z);
+      cells.Add((at, Demand(facings, codeByNumber[offset.W], angle)));
+
+      if (connectors.IsEmpty || i >= authored.Count)
+        continue;
+      string[] wanted =
+      [
+        .. connectors
+          .OutwardFacesAt((authored[i].X, authored[i].Y, authored[i].Z))
+          .Select(letter =>
+            ExOrientation.TokenOf(
+              ExOrientation.RotateFacing(
+                ExOrientation.FacingFromSide(letter)!,
+                angle
+              ),
+              asLetter: true
+            )
+          ),
+      ];
+      if (wanted.Length > 0)
+        connectorFaces[at] = wanted;
+    }
+
+    return new StructureRig(world, anchor, angle, cells, connectorFaces);
   }
 
   /// <summary>
@@ -184,7 +216,15 @@ public sealed class StructureRig {
       if (concrete.Path == AirCode.Path)
         continue; // an air-satisfied slot: leaving the cell empty is the fill
 
-      _world.Place(pos, StandIn(concrete));
+      // A cell the layout demands a connector on needs a stand-in that is on a network and opens the
+      // right way; a plain block matches the code and answers no face, so the structure would never
+      // complete. A test that wants the backwards case Occupies the cell before raising.
+      _world.Place(
+        pos,
+        _connectorFaces.TryGetValue(pos, out string[]? faces)
+          ? ConnectorStandIn(concrete, faces)
+          : StandIn(concrete)
+      );
     }
     return this;
   }
@@ -198,12 +238,7 @@ public sealed class StructureRig {
     get {
       int missing = 0;
       foreach (var (pos, wanted) in Cells)
-        if (
-          !WildcardUtil.Match(
-            new AssetLocation(wanted),
-            _world.GetBlock(pos).Code
-          )
-        )
+        if (Unsatisfied(pos, wanted) != null)
           missing++;
       return missing;
     }
@@ -246,12 +281,56 @@ public sealed class StructureRig {
   /// <summary>A per-cell breakdown of what each unsatisfied cell wants and what it actually holds.</summary>
   private string UnsatisfiedReport() {
     var lines = new List<string>();
-    foreach (var (pos, wanted) in Cells) {
-      Block have = _world.GetBlock(pos);
-      if (!WildcardUtil.Match(new AssetLocation(wanted), have.Code))
-        lines.Add($"\n  {pos}: wants '{wanted}', has '{have.Code}'");
-    }
+    foreach (var (pos, wanted) in Cells)
+      if (Unsatisfied(pos, wanted) is string why)
+        lines.Add($"\n  {pos}: {why}");
     return string.Concat(lines);
+  }
+
+  /// <summary>
+  /// Why the cell at <paramref name="pos"/> does not satisfy <paramref name="wanted"/>, or null when it
+  /// does - the rig's mirror of the machine's own two-part check: the code, then the outward faces the
+  /// layout demands a connector on.
+  /// </summary>
+  private string? Unsatisfied(BlockPos pos, string wanted) {
+    Block have = _world.GetBlock(pos);
+    if (!WildcardUtil.Match(new AssetLocation(wanted), have.Code))
+      return $"wants '{wanted}', has '{have.Code}'";
+
+    if (!_connectorFaces.TryGetValue(pos, out string[]? faces))
+      return null;
+
+    foreach (string letter in faces) {
+      BlockFacing face = ExOrientation.FacingFromSide(letter)!;
+      if (
+        have is INetworkMember member
+        && member.HasConnectorAt(_world.Accessor, pos, face)
+      )
+        continue;
+      return $"wants '{wanted}' open to '{letter}', has '{have.Code}'";
+    }
+    return null;
+  }
+
+  /// <summary>
+  /// A stand-in for a connector cell: a network node whose connector faces are exactly the ones the
+  /// layout demands there. Cached per code and face set, since two cells sharing a code may face
+  /// opposite ways - which is the whole point of marking the connector rather than pinning the variant.
+  /// </summary>
+  private Block ConnectorStandIn(AssetLocation code, string[] faces) {
+    string token = string.Concat(faces);
+    string key = code + "|" + token;
+    if (_standIns.TryGetValue(key, out Block? cached))
+      return cached;
+
+    Block block = TestNetworkBlock.Create(
+      "rig",
+      token,
+      _nextId++,
+      code.ToString()
+    );
+    _standIns[key] = block;
+    return block;
   }
 
   /// <summary>One stand-in block per distinct code, so a 100-cell footprint registers a handful of blocks.</summary>

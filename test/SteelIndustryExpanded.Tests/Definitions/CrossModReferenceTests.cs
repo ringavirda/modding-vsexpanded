@@ -56,6 +56,26 @@ public class CrossModReferenceTests {
   }
 
   [Fact]
+  public void No_layout_in_any_mod_pins_a_network_nodes_orientation() {
+    // Cross-mod for the same reason the rest of this suite is: siex's hot furnace pins iiex's tuyere, so
+    // only a check holding all three registries at once can tell that code from a player-oriented one.
+    IReadOnlyList<string> pinned = PinnedNetworkNodes.Violations(
+      out int codesChecked,
+      [.. Domains.Select(d => (d.Key, d.Value))]
+    );
+
+    Assert.True(
+      pinned.Count == 0,
+      $"{pinned.Count} layout cell(s) pin a node that re-picks its own orientation:\n  "
+        + string.Join("\n  ", pinned)
+    );
+    Assert.True(
+      codesChecked > 0,
+      "no pinned codes examined - is collection broken?"
+    );
+  }
+
+  [Fact]
   public void No_definition_names_one_of_our_codes_without_its_domain() {
     IReadOnlyList<ReferencedCodes.Reference> ambiguous =
       ReferencedCodes.BareButOurs(All(), Domains);

@@ -62,6 +62,12 @@ public static class MaterialRoleSeeds {
     MaterialRoleRegistry.Register(
       new MaterialRoleDef { Role = Roles.Scrap, Code = "iiex:metalbit-pigiron" }
     );
+    MaterialRoleRegistry.Register(
+      new MaterialRoleDef {
+        Role = Roles.Scrap,
+        Code = "iiex:metalbit-cruciblesteel",
+      }
+    );
     // The pig family carries the scrap role: the cupola charges pig and scrap directly, so without
     // these three rows a headless cupola accepts nothing and can never melt.
     MaterialRoleRegistry.Register(

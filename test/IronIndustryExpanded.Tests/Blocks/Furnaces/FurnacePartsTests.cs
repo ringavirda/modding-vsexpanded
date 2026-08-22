@@ -48,11 +48,36 @@ public class FurnacePartsTests {
       "Layout codes with no block behind them:\n" + string.Join("\n", missing)
     );
 
-    // Guards against the collection silently yielding nothing. iiex ships five structures (cold blast,
-    // cupola, puddling, heating, coke oven), each naming several mod-domain parts, so 15 is a safe floor.
+    // Guards against the collection silently yielding nothing. iiex ships six structures (cold blast,
+    // cupola, puddling, heating, coke oven, crucible), each naming several mod-domain parts, so 18 is a
+    // safe floor.
     Assert.True(
-      checkedCodes >= 15,
+      checkedCodes >= 18,
       $"only {checkedCodes} layout codes examined - is collection broken?"
+    );
+  }
+
+  [Fact]
+  public void No_layout_pins_a_network_nodes_orientation() {
+    // The half the builder cannot judge: `iiex:furnace-tuyere-n` reads exactly like
+    // `iiex:hopper-tall-e`, and only the referenced def says which of the two re-picks its own
+    // orientation. A pinned node can be contradicted at any moment - Connector is what a layout should
+    // say instead.
+    IReadOnlyList<string> pinned = PinnedNetworkNodes.Violations(
+      out int checkedCodes,
+      (
+        "iiex",
+        typeof(BlockStructures.Furnaces.Blocks.BlockPuddlingHearth).Assembly
+      ),
+      ("exlib", typeof(ExpandedLib.Blocks.Structures.StructureFillers).Assembly)
+    );
+    Assert.True(
+      pinned.Count == 0,
+      "Layouts pinning a network node:\n" + string.Join("\n", pinned)
+    );
+    Assert.True(
+      checkedCodes > 0,
+      "no pinned codes examined - is collection broken?"
     );
   }
 

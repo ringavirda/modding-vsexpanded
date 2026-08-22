@@ -483,6 +483,36 @@ public sealed class ExBlockDef : IExDef {
   /// </summary>
   public ExBlockDef SideVariant() => VariantGroup("side", HorizontalSides);
 
+  /// <summary>
+  /// Declares this block's orientation as the network's to pick rather than the player's: the
+  /// <c>ExOrientable</c> behaviour in <c>network</c> mode, naming the scheme whose tokens are exactly
+  /// the <c>orientation</c> states already on this def. Call it after that variant group, which is
+  /// where the scheme is read from - there is no second list to keep in step, and no name to misspell.
+  /// </summary>
+  /// <exception cref="InvalidOperationException">The declared states set-equal no scheme in
+  /// <see cref="ExOrientations.All"/>, so the block would fall back to <see cref="ExOrientations.Axis"/>
+  /// at runtime and reject every token outside <c>[ns,we,ud]</c> - silently, with the node simply
+  /// ceasing to re-orient. Declare the scheme rather than accept a near match: the rotation fallback
+  /// maps by face set, so a scheme with one extra token rotates onto a variant this block has not
+  /// got.</exception>
+  public ExBlockDef NetworkOriented() {
+    string[] states = VariantStates(
+      Blocks.Behaviors.BlockBehaviorExOrientable.OrientationVariant
+    );
+    ExOrientationScheme scheme =
+      ExOrientations.Resolve(states)
+      ?? throw new InvalidOperationException(
+        $"{_domain}:{_code} declares orientation states [{string.Join(",", states)}], which "
+          + "set-equal no scheme in ExOrientations.All. Declare the group before NetworkOriented(), "
+          + "and declare the scheme in ExOrientations if the set is genuinely new."
+      );
+
+    return Behavior(
+      "ExOrientable",
+      new { mode = "network", scheme = scheme.Name }
+    );
+  }
+
   /// <summary>Sets <c>skipVariants</c> - variant-code wildcards the loader must not expand (e.g. rock types a
   /// block doesn't ship a texture for).</summary>
   public ExBlockDef SkipVariants(params string[] wildcards) =>
@@ -862,9 +892,12 @@ public sealed class ExBlockDef : IExDef {
     // object is deserialised by vanilla's own MultiblockStructure and must stay exactly its schema.
     if (layout.BuildFacings() is JObject facings)
       Nested("attributes")["multiblockFacings"] = facings;
-    // Cell roles ride in a sibling for the same reason. Both are omitted when the layout declares none.
+    // Cell roles and connector demands ride in siblings for the same reason. All three are omitted when
+    // the layout declares none, which is the additive guarantee that let each ship without a migration.
     if (layout.BuildRoles() is JObject roles)
       Nested("attributes")["multiblockRoles"] = roles;
+    if (layout.BuildConnectors() is JObject connectors)
+      Nested("attributes")["multiblockConnectors"] = connectors;
     return this;
   }
 

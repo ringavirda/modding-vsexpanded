@@ -41,8 +41,8 @@ public class FurnaceGeometryTests {
       // crucible course Chargeable beside Pool. Deferred to the smex remake, and pinned by
       // HotFurnaceCrucibleOverlapTests - not a set to copy onto a new drawing.
       [ShaftGlyph, HearthGlyph],
-      NorthTuyereGlyph,
-      SouthTuyereGlyph
+      "n",
+      "s"
     );
 
     // The rig already checked that every declared outlet lands on "iiex:pipe-outlet*". This furnace is
@@ -257,31 +257,31 @@ public class FurnaceGeometryTests {
     // landed on the glyph its author meant. Pool has no such oracle: its glyph duplicates the shaft glyph,
     // so it is pinned by the relation at the end of this method instead.
     //
-    // Two tuyere codes, `n` out of the north wall and `s` out of the south. The union is the role's cells
-    // and each code answers its own single cell, so a drawing using one letter for both inlets fails here
-    // rather than shipping a furnace with an inlet facing into its own hearth. The letters are rotated by
-    // the structure angle because the tuyere legends are orientation-pinned: a west-facing furnace wants
-    // `iiex:furnace-tuyere-e` in the cell drawn `n`. Asking with the authored letter at a rotated facing
-    // finds nothing and passes vacuously.
-    AssetLocation Tuyere(string wall) =>
-      new(
-        "iiex:furnace-tuyere-"
-          + ExOrientation.RotateOrientationToken(
-            wall,
-            ExOrientation.AngleFromSide(side)
-          )
+    // One wildcarded tuyere code for both inlets: the layout states which way each must open through its
+    // Connector mark rather than by pinning the variant, because a network node re-picks its orientation
+    // from its neighbours and is free to contradict a pin. So the code answers which cells, and the
+    // demanded faces answer which way - a drawing marking both inlets outward-north fails on the second.
+    // The faces rotate with the structure: a west-facing furnace wants `e` in the cell drawn `n`.
+    string Face(string wall) =>
+      ExOrientation.SideFromAngle(
+        ExOrientation.AngleFromSide(wall) + ExOrientation.AngleFromSide(side),
+        asLetter: true
       );
 
     Assert.Equal(
       Render(
-        furnace
-          .CellsAccepting(Tuyere("n"))
-          .Concat(furnace.CellsAccepting(Tuyere("s")))
+        furnace.CellsAccepting(new AssetLocation("iiex:furnace-tuyere-*"))
       ),
       Render(furnace.CellsWithRole(CellRole.Tuyere))
     );
-    Assert.Single(furnace.CellsAccepting(Tuyere("n")));
-    Assert.Single(furnace.CellsAccepting(Tuyere("s")));
+    Assert.Equal(
+      new[] { Face("n"), Face("s") }.OrderBy(f => f),
+      furnace
+        .CellsWithRole(CellRole.Tuyere)
+        .SelectMany(furnace.ConnectorFacesAt)
+        .Select(f => ExOrientation.TokenOf(f, asLetter: true))
+        .OrderBy(f => f)
+    );
     Assert.Equal(
       Render(
         furnace.CellsAccepting(new AssetLocation("iiex:pipe-outlet-fire-u"))

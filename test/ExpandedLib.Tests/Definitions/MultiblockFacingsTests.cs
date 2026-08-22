@@ -208,4 +208,48 @@ public class MultiblockFacingsTests {
     var attrs = new Vintagestory.API.Datastructures.JsonObject(Def(configure));
     return MultiblockFacings.FromAttributes(attrs);
   }
+
+  #region A pinned network node is unrepresentable
+
+  [Theory]
+  [InlineData("iiex:pipe-plated-straight-ns")]
+  [InlineData("iiex:mpenergy-shaft-we")]
+  [InlineData("iiex:pipe-plated-bend-nw")]
+  [InlineData("iiex:pipe-plated-tjunction-uns")]
+  [InlineData("iiex:molten-canal-brick-xjunction-nswe")]
+  public void A_legend_pinning_a_network_token_is_refused(string code) {
+    // A multi-letter direction token is spelled by nothing but a network node, and a network node
+    // re-picks its orientation from its neighbours - so the pin can be contradicted at any moment,
+    // leaving the structure uncompletable or breaking a complete one when the player plumbs nearby.
+    var thrown = Assert.Throws<InvalidOperationException>(() =>
+      Def(l => l.Legend('p', code).Layer(0, "p"))
+    );
+
+    Assert.Contains(code, thrown.Message);
+    Assert.Contains("'p'", thrown.Message);
+    Assert.Contains("Connector", thrown.Message);
+  }
+
+  [Fact]
+  public void LegendAnyFacing_is_the_documented_way_out() {
+    // The opt-out stays lax: a code meant literally, at every angle, is still expressible.
+    JToken? facings = Facings(l =>
+      l.LegendAnyFacing('p', "iiex:pipe-plated-straight-ns").Layer(0, "p")
+    );
+
+    Assert.Null(facings);
+  }
+
+  [Fact]
+  public void A_side_word_is_not_a_network_token() {
+    // The refusal matches the tokens the declared schemes spell, not any run of direction letters, so a
+    // player-oriented part keeps its pin - which is the whole point of multiblockFacings.
+    JToken? facings = Facings(l =>
+      l.Legend('s', "game:brickslabs-fire-south-free").Layer(0, "s")
+    );
+
+    Assert.NotNull(facings);
+  }
+
+  #endregion
 }

@@ -81,6 +81,11 @@ public class IiexRecipeConfig : IExVersionedConfig {
       ["chargedoor-grid"] = Grid("iiex:furnace-chargedoor-*"),
       ["chargelid-grid"] = Grid("iiex:furnace-chargelid-*"),
       ["cokeoven-grid"] = Grid("iiex:furnace-cokeovencore-*"),
+      ["cruciblecore-grid"] = Grid("iiex:furnace-cruciblecore-*"),
+      ["cruciblehearth-grid"] = Grid("iiex:furnace-cruciblehearth-*"),
+      // Clayformed rather than gridded, but the catalogue keys on the block a recipe outputs and
+      // the guard does not care which bench made it.
+      ["steelcrucible-clayforming"] = Grid("iiex:steelcrucible-*"),
       // Noted while adding these: the shipped cupola core recipe still has no cost row, so it
       // does not rescale with RecipeLevel. Left alone rather than fixed in passing - it belongs
       // to whichever unit owns the cupola.

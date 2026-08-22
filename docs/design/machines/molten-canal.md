@@ -385,6 +385,28 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
 
 ## Open
 
+### ⛔⛔ A hand pour into a molten barrel transfers nothing *(found 2026-08-22, unverified in game)*
+
+`BlockEntityMoltenBarrel.CanReceive` (`:104`) ends with `GetMoldedStacks(metal) is { Length: > 0 }`, and
+`GetMoldedStacks` (`:279-296`) reads `Block.Attributes["drop"]` then `Block.Attributes["drops"]`. The
+code-first def `BlockMoltenBarrel.Definitions` (`:59-62`) sets `maxUnits`, `fillHeight`, `fillStart` and
+`fillQuadsByLevel` and **neither drop key**, and there is no shipped blocktype JSON for `molten-barrel`. So
+`GetMoldedStacks` returns `Array.Empty` and **`CanReceive` is always false** - vanilla bails at
+`BlockSmeltedContainer.cs:135` and `:168`, and a crucible poured over a barrel moves no metal.
+
+⛔ The barrel still *advertises* the pour: `CanReceiveAny` (`:89`) is true, so the interaction help shows and
+vanilla sets `handHandling = PreventDefault`. A player gets the gesture and no result.
+
+⛔ **Nothing covers it.** `MoltenBarrelTests` asserts only `CanReceiveAny` (`:48`, `:77`) and calls
+`ReceiveLiquidMetal` directly, which never consults `CanReceive`.
+
+★ The fix is a decision, not a typo: a barrel is not a mold and casts no shape, so `GetMoldedStacks` is the
+wrong question for it. `CanReceive` most likely wants a capacity test - the same one `ReceiveLiquidMetal`
+already applies - rather than a molded-stack lookup copied from the mold path. Left for whoever owns the
+barrel. The tap path is unaffected: the furnace tap fills through the network, not through vanilla's
+crucible interaction.
+
+
 - **Throughput.** The canal edge, the tap drain and the pedestal drain run at three different rates (one of
   them unbounded), against a settled single 50 u/s. Owned by
   [molten network § Open](../mechanics/molten-network.md); the pedestal line is Gotcha 2 here.

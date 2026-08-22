@@ -1,5 +1,5 @@
 # Crucible steel furnace
-**Status** designed, shapes drawn 2026-08-01/02 - nothing built; no block, no BE, no pot item, no metal def, no recipe   **Mod** iiex (`IronIndustryExpanded`)
+**Status** ★★ **BUILT AND CLOSED 2026-08-22.** Pot, metal, feedstock prep, blocktypes, layout, the whole heat - seat, charge, preheat, melt, crack, pull - the counted player-built chimney, the R7 readout, grid recipes, cost rows, a handbook page in three locales, and an end-to-end gate scenario that runs bituminous coal to a crucible-steel ingot. ⛔ Nothing has been walked in game. ★★ The 1600 °C ceiling is **cleared** - a transfer loss of zero and half a firebox's charge loss put the process inside natural draught's reach, first at six courses and peaking at nine   **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns**
 * the draft crucible furnace (Huntsman, 1740): melting holes below floor level, ash pit and grate beneath, flue at the bottom, tall stack on top;
@@ -40,11 +40,53 @@
 Cold blister steel crushes; hot blister steel forges. One input, two products, selected by a property the player
 already manages. Pig helve-breaking is the same operation and already exists.
 
+### The crush, as built *(2026-08-22)*
+
+★★ **The fork is vanilla's own refusal.** `ItemIngot.TryPlaceOn` returns null for an ingot below half its
+melting point (blister melts at 1602, so the line is 801 °C), and the patch is a postfix that acts only on that
+null. Nothing in the mod reads a temperature, so the two routes cannot both open on one ingot. The recipe list is
+forked on the same answer - leaving both recipes on offer would put vanilla's shear-steel recipe in front of a cold
+ingot sitting on a cold-workable work item, and the helve would run it.
+
+★★ **The payout comes from two places, and has to.** A helve hit sheds exactly one voxel, so a payout that
+made change every hit would settle in bits and the run would end as twenty bits rather than the advertised split.
+The helve pays **chunks only** - 30 shed voxels, 75 u, three chunks - and the anvil hands the finished 10-voxel
+shape back as the recipe's own output, **five vanilla `game:metalbit-blistersteel`**. 100 u exactly.
+
+⛔⛔ **The hit that finishes the shape has to be counted against the recipe, not the anvil.** Vanilla completes
+the recipe from inside the hit and blanks the voxel grid, so the obvious `before - after` reads the whole remaining
+block as shed and pays a third of the ingot out twice. Skipping that hit instead - which is what the pig chain does
+- strands the run's last chunk on a work item that no longer exists.
+
+⛔⛔ **A smithing pattern does not land where it reads.** `LayeredVoxelRecipe.GenVoxels` centres the pattern
+and, for smithing, transposes it: pattern rows become the z extent and characters the x. A two-row, five-character
+pattern lands at x 5..9, z 7..8. Metal laid anywhere else is not a visible error - the helve's `FullyWorkable` pass
+**conjures metal** into any recipe cell that is empty, so a misaligned chain mints steel out of nothing at one end
+and crushes it away at the other. Both shipped chains were misaligned; `BlisterBreakingTests` now guards all three
+against vanilla's own layout pass.
+
 ### Why the damper carries the preheat
 
 Preheating in a vanilla forge does not work: a forge holds one stack and a pot tracking firings cannot stack, so it
 would mean four forge cycles per heat. The damper is the furnace's only heat control, so one lever throw replaces
 those four cycles and the damper becomes a two-phase rhythm instead of a setting.
+
+⛔⛔ **The polarity in this section's own table was backwards and is inverted as built** (2026-08-22). A Huntsman
+furnace melts at *full* draught - that is why these furnaces had famously tall stacks - so:
+
+| phase | damper | what happens |
+|---|---|---|
+| **preheat** | **shut** | a cooler fire; the pots come up gently over `CruciblePreheatSec` |
+| **melt** | **open** | full draught, the 1600 °C gate, `CrucibleMeltSec` per pot |
+
+Opening it on a pot that has not come up destroys that pot. Deterministic rather than a chance: the player
+controls the one input that decides it, so a coin toss would make a correctly-run furnace lose pots anyway and an
+incorrectly-run one sometimes get away with it. Neither teaches the rhythm.
+
+⛔⛔ **The preheat cannot live in the melt cycle.** `BlockEntityFurnaceCore` calls `SmeltCycle` only once the
+chamber is at process temperature, and a furnace with its damper shut never gets there - so the phase the damper is
+shut *for* would never run, and a pot taken into the full fire too early would never be looked at. It runs from
+`OnProductionTick` instead.
 
 Two things this needs when built: the crack must be legible in the moment (sound + a cracked-pot element, cheap
 because the shape's `Crucibles/CrucibleN` groups are already separate), and it must not eat the charge (see the
@@ -140,14 +182,29 @@ The same term fixes the "a fuller firebox is a colder furnace" inversion recorde
 All numbers above are proposals to calibrate in play. Settled: per-machine charge loss, `√courses` draught,
 saturating cap.
 
-### Still blocking, and unchanged: the draught
+### The draught ceiling, cleared *(2026-08-22)*
 
-§ Numbers' worked ceiling stands: a natural-draught firebox reaches `T_process = 1082.5 °C` against the ~1600 °C
-this process needs. The fix and the damper decision are the same piece of work. `BfNaturalDraughtFactor` becomes
-`NaturalDraughtFor(stackCourses, damperOpen)` - stack height is the temperature axis, the damper is the operating
-input, and one function at the firebox branch's `natural` read (`BlockEntityFurnaceCore.cs:1859`) delivers the
-fatal fix, the preheat mechanic and the cold-pot failure at once. It also retro-fixes B8 (the puddling furnace's
-identical ceiling) and the coke oven.
+★★ **Resolved.** U6.5 landed `StackDraught.NaturalDraughtFor(courses, damperOpen, venting)` and the firebox
+branch reads it, which was half the fix. The other half was measured when the blocktypes went in, and the
+answer was **not** in the draught curve: with the shipped gain and friction the curve peaks at nine courses,
+and a firebox carrying the reverberatory losses settles at **1471 °C** there - short at any height. Two
+per-machine loss overrides close the gap, and both are physical rather than tuned:
+
+| Term | Firebox branch | Crucible furnace | Why |
+|---|---|---|---|
+| `TransferLoss` | 100 (reverberatory) | **0** | the pots stand *in* the fire. Nothing is carried across a bridge, which is the case the base value of zero is written for |
+| `ChargeLossFull` | 100 | **50** (`CrucibleChargeLoss`) | the charge is walled off from the fire rather than lying in it: four sealed pots on stands, not a burden the flame plays over |
+
+Measured, at a full hearth with the damper open: **1604 °C at six courses, 1614 at seven, 1621 at the
+nine-course peak, declining after.** So six courses is the minimum that melts at all and nine is the optimum -
+the range between them is the operating margin `MeltSpeedFactor` is paid out of, and past nine a taller
+chimney is a waste of bricks rather than an exploit. A calibration, to be re-checked in play.
+
+⛔ The guard that caught this is `FurnaceBranchGuards.EveryFireboxReachesItsOwnProcessTemperature`, and it
+fired the moment the block entity existed. Its premise - "the stack its drawing declares" - does not hold for
+a machine whose chimney is the player's, which is why `StackCourses` currently reports the rated height
+instead of walking the world. That placeholder is the price of keeping the guard honest, and it goes when the
+walk lands.
 
 ### Machine tooling wear — ruled, not built
 
@@ -218,7 +275,7 @@ Built in banks. Same multiply-don't-enlarge pattern as the cupola, the nail benc
 | core | one hole row cell, the anchor | `BlockFurnaceCoreBase.Core(...)` (`BlockFurnaceCoreBase.cs:34-68`) - the same refractory-cube anchor every furnace uses |
 | flue | above the holes | joins the holes to the stack |
 | stack | as many courses as built | height = temperature |
-| damper | stack top | the one air control a natural-draught furnace has |
+| damper | **flue base**, one course over the hearth | the one air control a natural-draught furnace has. Not the stack top: the chimney above is the player's, so there is no top for a layout to draw |
 
 ### The stack is player-built and counted — settled 2026-08-02
 
@@ -249,10 +306,12 @@ Editable shapes are drawn (§ Settled, "Assets drawn"); nothing is exported or w
 | Asset | State |
 |---|---|
 | editable shapes | drawn - hearth interior, pot item, crushed blister-steel chunk (§ Settled) |
-| runtime shape | missing - nothing exported into `assets/iiex/shapes/` |
+| runtime shape | exported and wired - `assets/iiex/shapes/furnace/cruciblehearth.json` is the hearth blocktype's, `item/steelcrucible.json` the pot's, `item/metalchunk.json` the chunk's |
+| core face label | `assets/iiex/textures/block/furnace/cs.png` - already drawn, and unused until now; no new texture was needed |
 | reference art | none in `assets/editable/refs/` - the Sheffield references are not in the repo |
-| pot item def | missing (see Construction) |
-| lang / handbook | no key, no page |
+| pot item def | built - `BlockSteelCrucible`, three variants |
+| chunk item def | built - `BlisterItemDefinitions`, `iiex:blisterchunk`, 25 u, wearing `item/metalchunk` |
+| lang / handbook | pot and chunk keys in all three locales; no page |
 
 Reusable art and parts that already exist:
 
@@ -319,7 +378,22 @@ States. The shared `Idle → Firing → Melting` FSM applies unchanged ([heat ba
 
 ## Numbers
 
-All proposed. No config section, no keys, no code. The right-hand column is what exists and what the proposal is measured against.
+★★ **Shipped 2026-08-22.** The keys below are in `IiexConfig` under `Crucible*`; the table is kept as the
+derivation. Sized so one full bed of coke is one heat of four pots: 240 s of preheat, 300 to cross into
+melting and 600 melting is 1140 against `FireboxMaxFuelBurnTime` = 1200. Untuned.
+
+| Shipped key | Value | What it does |
+|---|---|---|
+| `CrucibleMeltingPointC` | 1600 | the process temperature, and the highest number in the mod |
+| `CrucibleStackCourses` | 9 | the draught curve's peak; what the readout tells the player to build towards |
+| `CrucibleChargeLoss` | 50 | half a firebox's - see § The draught ceiling, cleared |
+| `CruciblePotChargeUnits` | 110 | blister steel in, one crushed ingot and a tenth |
+| `CruciblePotYieldUnits` | 100 | crucible steel out; the ~9 % melt loss is the difference |
+| `CruciblePreheatSec` | 240 | how long a cold pot takes to come up, damper shut |
+| `CrucibleMeltSec` | 600 | how long one pot melts, damper open |
+| `CrucibleMeltIntervalSec` | 60 | the cycle the melt advances by, so a hotter fire finishes sooner |
+
+The original proposal, for the derivation:
 
 | Key | Proposed | file:line of the thing it derives from | What it does |
 |---|---|---|---|
@@ -362,16 +436,17 @@ This is the same ceiling as blocker B8 (the puddling furnace: natural draught ca
 
 ## Code
 
-Nothing exists. `grep -i crucible src/` finds only the vanilla crucible pour paths (`BlockMoltenCanalStart.cs:61-77`, `BlockMoltenBarrel.cs:78-91`) and the clay heat gate (`ClayHeatGate.cs`, `ToolMoldHeatGatePatch.cs`).
+The pot, the metal, the feedstock prep and the furnace's blocktypes exist; the machine's behaviour does not. `grep -i crucible src/` also finds the vanilla crucible pour paths (`BlockMoltenCanalStart.cs:61-77`, `BlockMoltenBarrel.cs:78-91`) and the clay heat gate (`ClayHeatGate.cs`, `ToolMoldHeatGatePatch.cs`).
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockCrucibleFurnaceCore` | `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete example: `Core(domain, code, path, tiers…)` then `.Class`/`.EntityClass`/faces/`.MultiblockLayout` |
-| the layout | `.MultiblockLayout(s => s.Origin(…).Legend(…).Layer(…))` | `BlockCupolaFurnaceCore.cs:59-125`; negative Y layers are legal and used (`BlockSmokeStackIntake.cs:55`) |
-| `BlockEntityCrucibleFurnace` | `.../Furnaces/BlockEntities/` | `BlockEntityHeatingFurnace.cs:31-136` - the thinnest furnace variant in the tree: firebox geometry (`:37-51`), plain-fuel charge read (`:70-89`), empty `SmeltCycle` (`:107`), tunables block (`:113-127`) |
-| melting hole | `.../Furnaces/Blocks/BlockCrucibleHole.cs` + BE | `BlockEntityFurnacePart` (`:32`) for the core link and the toggle animator; `BlockPuddlingHearth.cs:70-78` for cell → slot routing |
-| damper | reuse | `BlockPuddlingChimneyCap` / `BlockEntityPuddlingChimneyCap.cs:19` |
-| pot item | `.../Items/` | `StockItemDefinitions.cs:32-59` for the def shape; the vanilla crucible for the block behaviours (`GroundStorable`, `RightClickPickup`, `onTongTransform`) |
+| `BlockCrucibleFurnaceCore` | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockCrucibleFurnaceCore.cs` | One column, `Origin(-3, -2)`, layers -1..3. See [layouts.md](../../internal/workbench/layouts.md) |
+| the layout | **BUILT** | Marks `Firebox` (one cell), `Flue` (two) and `Damper` (one) - the first production use of `CellRole.Damper` anywhere |
+| `BlockEntityCrucibleFurnace` | **BUILT 2026-08-22** | Geometry, losses, the counted chimney walk, the damper read off `CellRole.Damper`, the preheat pass and the melt cycle. The placeholder `StackCourses` is gone |
+| the hearth | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockCrucibleHearth.cs` + `BlockEntityCrucibleHearth` | ★★ Not four holes but **one cell**, and a `BlockFirebox` subclass: the coke round the pots is the same fuel bed every other machine burns. Seating, charging and pulling are the hearth's; `CrucibleHole` holds one hole's rules, pure and world-free |
+| damper | **reused as planned, and read** | `BlockPuddlingChimneyCap`, faced south so its two-cell footprint puts the housing north of the flue. ⛔ The branch resolves *its* cap over the highest flue course, which on this furnace is the player's chimney - so `DamperOpen` is overridden to read `CellRole.Damper` instead, and defaults **shut**, which is the position a heat starts in |
+| the pot | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockSteelCrucible.cs` | ⛔⛔ A **block**, not an item, and this row said otherwise: only a `BlockSmeltedContainer` can be poured, which is what the molten path accepts. ⛔ **Three** variants (`raw|burned|smelted`) - a clayforming recipe can output only `-raw`. Vanilla's `GroundStorable`/`Unplaceable`/`RightClickPickup` trio, and a three-heat life in `CrucibleFiring` |
+| feedstock prep | **BUILT 2026-08-22** - `Items/BlisterBreaking.cs`, `Items/ItemBlisterWorkItem.cs`, `Patches/AnvilBlisterBreakingPatches.cs`, `Recipes/Smithing/BlisterRecipeDefinitions.cs` | ★★ The fork is **vanilla's own refusal**, not a temperature of ours: the patch runs after `ItemIngot.TryPlaceOn` and acts only where vanilla returned null. See § The crush |
 | pour | already works | `BlockMoltenCanalStart.cs:77` accepts a `BlockSmeltedContainer` |
 | metal def | `assets/iiex/config/metals/cruciblesteel.json` | the shipped catalogue has `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex) - a new metal is a JSON entry read by `MetalRegistry` |
 | heat | inherited | `ComputeHeatBalance` (`BlockEntityFurnaceCore.cs:743-798`); override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `RequiresBlast => false` - and, by drawing no tuyere or outlet glyph, no `CellRole.Tuyere`/`GasOutlet`. Exactly what the reheat furnace does |
@@ -397,14 +472,15 @@ Where a caller hooks in: the stack-height draught term belongs in `ComputeHeatBa
 
 ## Open
 
-- Nothing is built. Core, hearth, pot, metal def, recipes, runtime shapes, lang, handbook, tests.
-- The stack-height draught function - its cap, and whether it also scales with the temperature difference (the settled shape is rise, peak, decline; § Settled). The one thing the machine cannot start without, and it changes the puddling furnace and the coke oven too. It also carries the damper as its second input.
-- Calibrating each drawn chimney. With height fixed by design rather than chosen by the player, every natural-draught furnace's stack needs a course count that lands its own process temperature: this one ≈1600 °C, the puddling furnace clear of 1482, the coke oven its own. The drafted six courses here are a starting point, not a derived value.
+- Nothing structural. The machine is built, craftable and documented.
+- ⛔ Nothing about the machine has been walked in game. The whole heat is covered as pure rules plus a
+  headless rig; what a player actually sees - the pot meshes, the cover going on, the crack sound - is not.
+- The anneal. The historical rhythm shuts the damper again after the melt to steady the metal before
+  teeming; only the first two phases are built, because nothing yet reads a third.
+- Calibrating the other drawn chimneys. This furnace's is measured (§ The draught ceiling, cleared), but the puddling furnace's and the coke oven's stacks are fixed by their own drawings and neither count is derived from the temperature it has to land.
 - Tooling wear. The rule exists - tooling wears and grade sets its life ([tooling-wear](../mechanics/tooling-wear.md)) - but the mechanism is unbuilt, and the longer-lasting heads wait on it.
 - Whether the pot takes a carbon trim (powdered coke), which is how Huntsman actually hit a grade.
-- What crucible steel is, mechanically. `materials.md:67` gives ~98.8 % Fe / ~1.2 % C. The metal def is still missing, but `MetalDef.Durability` + `MetalToolEmitter` already emit a whole tool family from one entry, so the machinery is there. D9 notes it raises vanilla's tool ceiling, deliberately, which nothing has been balanced against.
-- Whether the four pot cells are furnace parts or footprint fillers. Parts get the core link and an animator for free (`BlockEntityFurnacePart.cs:32-60`); fillers get per-cell interaction routing for free ([multiblock](../mechanics/multiblock.md)). The puddling hearth chose fillers, the tuyere chose parts. The hearth shape's per-pot element groups suit either.
-- Slag. A crucible melt makes essentially none - nothing to tap, nothing to plumb. Confirm the inherited `BfMaxMoltenSlag` path is simply not used rather than silently accumulating. Slag is still an input here (the thin flux cover), sourced from the blast furnace's own `iiex:slag` - a closed loop worth keeping.
+- Slag as an *input* - the thin flux cover, sourced from the blast furnace's own `iiex:slag`. The shape draws it (`FillingSlag/Slag1..4`) and the hearth draws it on a finished melt, but nothing asks for it. ★ The accumulation worry is closed: the molten-slag path belongs to `BlockEntityShaftFurnace`, a branch this furnace is not on, and `BfMaxMoltenSlag` no longer exists.
 - The non-ferrous tilting crucible stays deferred with everything non-ferrous, but it shares this page's pot problem in reverse (a cast-iron vessel, lower temperatures) and should reuse whatever pot model lands here.
 
 Settled 2026-08-02: feedstock is blister, prepared by cold helve-crushing - shear steel is the hot branch of the same fork, so both stay useful; consumers are any vanilla steel item plus longer-lasting machine heads, a gate on nothing; the bank question closed as 4 fixed pots per furnace, build more furnaces, which removes the variable-hole-count problem - stack height is still variable, so the counted scan survives, and `ComponentScanBelow = 8` still caps it (the drafted chimney runs six courses over the hearth, two short of the limit).

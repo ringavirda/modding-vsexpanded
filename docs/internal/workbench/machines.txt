@@ -285,3 +285,40 @@ Layout (XZ slice, north is right):
     S1:
         . . P
         O # p
+
+Pipe steam cornish boiler
+Purpose: raise steam with enough pressure to drive basic Watt engine.
+Mode of operation: Supply water with pipe through water input, supply and light
+coal through main hatch, pipe output steam through output pipe, pipe output
+exhaust through exhaust output pipe. Make sure boiler doesn't explode.
+Note:
+"_" here is horizontal bottom slab filler.
+"I" is main interaction cell, that allows to open main hatch, input coal, fire
+coal, close main hatch.
+"E" is full filler with pipe connection at east, exhaust output.
+"W" is full filler with pipe connection at south, water input. It is also principal.
+"S" is full filler with pipe connection at up, steam output.
+"M" is horizontal bottom slab filler, with man hatch interactions, that allow to
+manually fill boiler with buckets or perform emergency venting of steam. 
+Layout (XZ layer, north is up):
+    L1:
+        # # E
+        # # #
+        # # #
+        # # #
+        # # #
+        # W #
+    L2:
+        # # #
+        # # #
+        # # #
+        # # #
+        # # #
+        # I #
+    L3:
+        . . .
+        . _ .
+        . S .
+        . _ .
+        . M .
+        . _ .

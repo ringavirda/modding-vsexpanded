@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Blocks.Behaviors;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
@@ -62,6 +63,10 @@ public abstract class BlockNetworkNode
   /// Determines the best orientation for this block at the target position by
   /// examining neighbouring network blocks, then delegates to <c>DoPlaceBlock</c>.
   /// </summary>
+  /// <remarks>Not a <c>BlockBehaviorExOrientable.ApplyOrientation</c> call site, unlike <c>Rotate</c>
+  /// and <c>RecalculateAndSyncOrientations</c>: that method exchanges the block standing at a position,
+  /// and here no block has been placed yet. What this shares with it is code resolution, not the swap -
+  /// the resolved code goes to <c>DoPlaceBlock</c>.</remarks>
   public override bool TryPlaceBlock(
     IWorldAccessor world,
     IPlayer byPlayer,
@@ -361,26 +366,37 @@ public abstract class BlockNetworkNode
     if (nextIndex < 0)
       nextIndex += choices.Length;
 
-    AssetLocation nextCode = CodeWithVariant("orientation", choices[nextIndex]);
-    Block? nextBlock = world.GetBlock(nextCode);
+    BlockBehaviorExOrientable? orientable =
+      GetBehavior<BlockBehaviorExOrientable>();
 
-    if (nextBlock != null && nextBlock.BlockId != BlockId) {
-      var netManager =
-        world.Api.ModLoader.GetModSystem<BlockNetworkModSystem>();
+    // Every node def declares the behaviour and a per-mod contract holds them to it, so a node without
+    // one was authored wrong. Refusing states that; swapping the block here instead would keep the
+    // wrench working and leave the missing declaration invisible.
+    if (orientable == null) {
+      world.Logger.Error(
+        "[exlib] {0} is a network node carrying no ExOrientable behaviour, so the wrench cannot "
+          + "re-orient it. Declare it with ExBlockDef.NetworkOriented().",
+        Code
+      );
+      return;
+    }
 
-      // Full remove + add with broadcast so clients see the new connectivity immediately.
-      netManager.RemoveNode(world.BlockAccessor, pos);
+    var netManager = world.Api.ModLoader.GetModSystem<BlockNetworkModSystem>();
 
-      world.BlockAccessor.ExchangeBlock(nextBlock.BlockId, pos);
-      world.BlockAccessor.MarkBlockDirty(pos);
+    // Full remove + add with broadcast so clients see the new connectivity immediately. The swap has
+    // to stay inside that sandwich: outside it the graph keeps the old connector faces while the block
+    // wears the new ones, which reads as connected and moves nothing.
+    netManager.RemoveNode(world.BlockAccessor, pos);
+
+    if (orientable.ApplyOrientation(world, pos, choices[nextIndex])) {
       be?.MarkDirty(true);
 
       // Recalculate adjacent blocks to keep their orientations consistent.
       foreach (var face in BlockFacing.ALLFACES)
         RecalculateAndSyncOrientations(world, pos.AddCopy(face));
-
-      netManager.AddNode(world.BlockAccessor, pos, NetworkType);
     }
+
+    netManager.AddNode(world.BlockAccessor, pos, NetworkType);
   }
 
   /// <summary>
@@ -637,6 +653,12 @@ public abstract class BlockNetworkNode
   /// Always drops the fallback-orientation item, so the player receives one item type regardless of
   /// the in-world orientation variant.
   /// </summary>
+  /// <remarks>The fallback is this def's first-listed state, which is deliberately not the scheme's
+  /// first token, so <c>BlockBehaviorExOrientable.CanonicalStack</c> must not replace it: a tuyere
+  /// declares <c>[s,n,w,e]</c> and drops <c>-s</c> where <see cref="ExOrientations.Face"/> starts at
+  /// <c>n</c>, and a fluid intake and a canal start override the fallback outright. This override and
+  /// <c>OnPickBlock</c> below do not call base, so the behaviour's own drop and pick overrides never
+  /// run - which is what makes declaring the behaviour on every node drop-neutral.</remarks>
   public override ItemStack[] GetDrops(
     IWorldAccessor worldMap,
     BlockPos pos,
@@ -802,20 +824,17 @@ public abstract class BlockNetworkNode
     beNet.PossibleOrientations = finalChoices;
     beNet.MarkDirty(true);
 
+    // On netBlock, never on `this`: the six calls from Rotate run this against each neighbour, and
+    // `this` is a different variant instance whose behaviour would resolve the wrong code. Missing, the
+    // swap is skipped silently rather than logged - this runs on every neighbour notification, so a log
+    // line here would repeat for as long as the block stands.
     if (
       netBlock.Orientation != null
       && !finalChoices.Contains(netBlock.Orientation)
-    ) {
-      AssetLocation newCode = netBlock.CodeWithVariant(
-        "orientation",
-        finalChoices[0]
-      );
-      Block? nextBlock = world.GetBlock(newCode);
-      if (nextBlock != null && nextBlock.BlockId != netBlock.BlockId) {
-        world.BlockAccessor.ExchangeBlock(nextBlock.BlockId, pos);
-        world.BlockAccessor.MarkBlockDirty(pos);
-      }
-    }
+    )
+      netBlock
+        .GetBehavior<BlockBehaviorExOrientable>()
+        ?.ApplyOrientation(world, pos, finalChoices[0]);
   }
   #endregion
 }

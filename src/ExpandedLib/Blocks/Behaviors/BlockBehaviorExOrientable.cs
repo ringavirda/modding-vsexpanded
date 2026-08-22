@@ -16,7 +16,9 @@ namespace ExpandedLib.Blocks.Behaviors;
 /// <para>
 /// Declared as <c>{ "name": "ExOrientable" }</c>, with <c>"properties": { "mode": "omni" }</c> for a
 /// block that may also point up or down and <c>{ "mode": "network", "scheme": "Axis" }</c> for one the
-/// network orients. See docs/design/mechanics/orientation-schemes.md.
+/// network orients - which every <c>BlockNetworkNode</c> def declares through
+/// <c>ExBlockDef.NetworkOriented</c>, so the scheme is read off the block's own states and there is no
+/// name left to misspell. See docs/design/mechanics/orientation-schemes.md.
 /// </para>
 /// </summary>
 [BlockBehaviorRegister("ExOrientable", PrefixModId = false)]
@@ -41,8 +43,11 @@ public class BlockBehaviorExOrientable : BlockBehavior {
   public bool IsOmni { get; private set; }
 
   /// <summary>Whether the network decides this block's orientation rather than the player. Such a
-  /// block re-picks its token whenever a neighbour changes, so a multiblock layout must not pin one;
-  /// nothing enforces that yet.</summary>
+  /// block re-picks its token whenever a neighbour changes, so a multiblock layout must not pin one -
+  /// which is now unrepresentable: <c>MultiblockLayoutBuilder.Legend</c> refuses a multi-letter token
+  /// outright, and a per-mod <c>PinnedNetworkNodes</c> check catches the single-letter cases the builder
+  /// cannot tell from a player-oriented block's. A layout states what it wants with <c>Connector</c>
+  /// instead.</summary>
   public bool IsNetworkOriented { get; private set; }
 
   /// <summary>The variant group this block's orientation lives in, by mode.</summary>
@@ -51,6 +56,12 @@ public class BlockBehaviorExOrientable : BlockBehavior {
 
   /// <summary>The token vocabulary this block declares.</summary>
   public ExOrientationScheme Scheme => _scheme;
+
+  /// <summary>The <c>scheme</c> name this block declared that names no scheme, or null when it named
+  /// one or named none. A code-first def cannot get here - <c>ExBlockDef.NetworkOriented</c> writes the
+  /// name it resolved off the block's own states - so this is the JSON-authored case, where nothing
+  /// checks the spelling at build.</summary>
+  public string? UnresolvedScheme { get; private set; }
 
   /// <inheritdoc/>
   public override void Initialize(JsonObject properties) {
@@ -65,9 +76,15 @@ public class BlockBehaviorExOrientable : BlockBehavior {
       // The token set is not derivable from the mode: a straight pipe, a bend, a tee and a cross are
       // all "network" and declare different sets, so the scheme is named explicitly.
       string? schemeName = properties?["scheme"].AsString();
-      _scheme =
-        ExOrientations.All.FirstOrDefault(s => s.Name == schemeName)
-        ?? ExOrientations.Axis;
+      ExOrientationScheme? named = ExOrientations.All.FirstOrDefault(s =>
+        s.Name == schemeName
+      );
+      // A name that resolves to nothing falls back rather than throwing, so one misspelling in a JSON
+      // asset does not take a world down - but Axis rejects every token outside [ns,we,ud], which on a
+      // bend stops the node re-orienting with no exception and no log line. Recorded so a test can see
+      // the difference between "named nothing" and "named something wrong".
+      UnresolvedScheme = named == null ? schemeName : null;
+      _scheme = named ?? ExOrientations.Axis;
     } else
       _scheme = IsOmni ? ExOrientations.FaceAll : ExOrientations.Face;
   }
@@ -77,7 +94,17 @@ public class BlockBehaviorExOrientable : BlockBehavior {
   /// returning whether it did. The player path passes the look-derived token, the network path whatever
   /// its connector scan chose. Returns false when the token is outside the block's scheme or resolves
   /// to no other block.
+  /// <para>
+  /// Two of <c>BlockNetworkNode</c>'s four orientation-rewrite sites call this: <c>Rotate</c> and
+  /// <c>RecalculateAndSyncOrientations</c>. The other two neither can nor should - <c>TryPlaceBlock</c>
+  /// resolves a code before any block stands at the position, and <c>GetDrops</c> answers the def's own
+  /// first-listed state, which is deliberately not the scheme's first token.
+  /// </para>
   /// </summary>
+  /// <remarks>The mesh update belongs here rather than at the call sites: every swap needs it, and a
+  /// headless test cannot see a missing one - the block changes, every server-side assertion passes,
+  /// and the player keeps looking at the old shape. <c>NetworkNodeOrientationTests</c> asserts the mark
+  /// explicitly for that reason.</remarks>
   public bool ApplyOrientation(IWorldAccessor world, BlockPos pos, string token) {
     if (!_scheme.Contains(token))
       return false;
@@ -89,6 +116,7 @@ public class BlockBehaviorExOrientable : BlockBehavior {
       return false;
 
     world.BlockAccessor.ExchangeBlock(oriented.BlockId, pos);
+    world.BlockAccessor.MarkBlockDirty(pos);
     return true;
   }
 
@@ -178,6 +206,11 @@ public class BlockBehaviorExOrientable : BlockBehavior {
 
   /// <summary>The base-token stack for this block, returned by both the drop and the middle-click so
   /// the two stack together in the inventory and in a grid recipe.</summary>
+  /// <remarks>The scheme's first token, which for a network node is not the same answer as its own
+  /// first-listed state - a tuyere declares <c>[s,n,w,e]</c> and drops <c>-s</c> where
+  /// <see cref="ExOrientations.Face"/> starts at <c>n</c>. <c>BlockNetworkNode</c> overrides both drop
+  /// and pick without calling base, so this never runs for a node; pointing either of its overrides
+  /// here would silently change what four shipped blocks drop.</remarks>
   public ItemStack CanonicalStack(IWorldAccessor world) {
     Block canonical =
       world.BlockAccessor.GetBlock(

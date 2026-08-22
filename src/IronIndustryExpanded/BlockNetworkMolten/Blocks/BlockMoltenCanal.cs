@@ -272,7 +272,7 @@ public partial class BlockMoltenCanal : BlockNetworkNode, IExBlockDefProvider {
       .Behavior("Lockable")
       .VariantGroup("type", type);
     skin.Variants(def);
-    def.VariantGroup("orientation", orientations);
+    def.VariantGroup("orientation", orientations).NetworkOriented();
     skin.Texture(def);
     foreach ((string wildcard, int? rotateY) in shapes)
       def.ShapeByType(wildcard, shapeBase, rotateY: rotateY);

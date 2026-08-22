@@ -612,6 +612,110 @@ public class IiexConfig : IExVersionedConfig {
 
   #endregion
 
+  #region Crucible steel
+
+  /// <summary>
+  /// Heats a steel crucible gives before it is finished.
+  /// <para>
+  /// The pot is the clay ceiling being enforced rather than waived: <see cref="ClayMoldHeatCeiling"/>
+  /// governs molds, which are reused indefinitely, while a fireclay pot is a consumable that dies from
+  /// exactly the abuse it exists for. Sheffield practice was two or three heats, and three is the
+  /// generous end of it. The count lives on the itemstack, which is why the pot stacks to one.
+  /// See docs/design/machines/crucible-furnace.md.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 100)]
+  public int CruciblePotFirings { get; set; } = 3;
+
+  /// <summary>
+  /// Temperature (C) a crucible furnace has to reach before a pot melts.
+  /// <para>
+  /// Crucible steel's own melting point, and the highest number in the mod: it is what the machine exists
+  /// to reach, and it is why the furnace needs a taller stack than anything else on natural draught. A
+  /// furnace that lights and never clears this melts nothing at all, so the figure is pinned against
+  /// <c>assets/iiex/config/metals/cruciblesteel.json</c> rather than tuned on its own.
+  /// See docs/design/machines/crucible-furnace.md.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(500, 2500)]
+  public float CrucibleMeltingPointC { get; set; } = 1600f;
+
+  /// <summary>
+  /// Flue courses a crucible furnace is rated at - the peak of the draught curve, and what the block info
+  /// tells the player to build towards.
+  /// <para>
+  /// <c>StackDraughtGain</c> and <c>StackDraughtFriction</c> put the optimum at nine courses; past it a
+  /// taller chimney is a waste of bricks rather than an exploit, which is the honest physics
+  /// <see cref="StackDraughtFriction"/> exists for. Six courses is where the furnace first clears its
+  /// melting point, so the range between the two is the operating margin the melt speed is paid out of.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 32)]
+  public int CrucibleStackCourses { get; set; } = 9;
+
+  /// <summary>
+  /// Heat (C) a full crucible hearth spends warming what it is carrying, where a plain firebox spends
+  /// <see cref="FireboxChargeLossFull"/>.
+  /// <para>
+  /// Half the firebox figure, because the charge is walled off from the fire rather than lying in it: four
+  /// small sealed pots standing in a packed bed, not a cold burden the flame plays over. Together with a
+  /// transfer loss of zero - the pots stand in the fire, so nothing is carried across a bridge - this is
+  /// what puts 1600 C inside a natural-draught furnace's reach at all. A calibration, to be re-checked in
+  /// play. See docs/design/machines/crucible-furnace.md.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(0, 500)]
+  public float CrucibleChargeLoss { get; set; } = 50f;
+
+  /// <summary>Blister-steel units one pot is charged with.</summary>
+  /// <remarks>
+  /// One vanilla ingot's worth plus a tenth: the melt loses about 9 % as slag and scale, so 110 in is
+  /// <see cref="CruciblePotYieldUnits"/> out. Crushing an ingot cold yields exactly 100 u
+  /// (<c>BlisterBreaking</c>), so a pot is one ingot and a bit - deliberately not a round one, because the
+  /// loss is the point.
+  /// </remarks>
+  [ExConfigRange(1, 1000)]
+  public int CruciblePotChargeUnits { get; set; } = 110;
+
+  /// <summary>Crucible-steel units one finished pot pours.</summary>
+  [ExConfigRange(1, 1000)]
+  public int CruciblePotYieldUnits { get; set; } = 100;
+
+  /// <summary>
+  /// Seconds a cold pot must be brought up gently before it will take the full fire.
+  /// <para>
+  /// The preheat is run with the damper shut, which is what makes it gentle: a pot taken straight into full
+  /// draught cracks. See <see cref="CrucibleMeltSec"/> for how the two phases add up to one bed of coke.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 3600)]
+  public float CruciblePreheatSec { get; set; } = 240f;
+
+  /// <summary>
+  /// Seconds of melting one pot takes once the fire is at temperature.
+  /// <para>
+  /// Sized so a heat fits one charge of fuel: 240 s of preheat, <see cref="FireboxMeltStartDelay"/> = 300
+  /// to cross into melting and 600 here is 1140 against <see cref="FireboxMaxFuelBurnTime"/> = 1200. One
+  /// full bed of coke is one heat of four pots. Untuned.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 7200)]
+  public float CrucibleMeltSec { get; set; } = 600f;
+
+  /// <summary>
+  /// Seconds between melt cycles in a crucible furnace, where a reverberatory hearth uses
+  /// <see cref="FireboxMeltIntervalSec"/>.
+  /// <para>
+  /// Slow on purpose - the process is tiny, slow and per-pot. Each cycle advances every melting pot by this
+  /// much, so a furnace running well above its melt line completes a heat sooner: the cadence is what
+  /// <c>MeltSpeedFactor</c> shortens, and the margin the tall stack buys is paid out here.
+  /// </para>
+  /// </summary>
+  [ExConfigRange(1, 600)]
+  public float CrucibleMeltIntervalSec { get; set; } = 60f;
+
+  #endregion
+
   #region Burdenmaker
   // See docs/design/machines/burdenmaker.md. Capacities: ore 512 (one full raw charge), bunker 1152,
   // flux 205 (512 / 2.5, the drawn hopper width ratio). The flux hopper is storage rather than a measure:

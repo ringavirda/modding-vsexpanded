@@ -161,6 +161,7 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
       .VariantGroup("type", "passthrough")
       .VariantGroup("brick", Bricks)
       .VariantGroup("orientation", "ns", "we", "ud")
+      .NetworkOriented()
       .ShapeByType("*-passthrough-*-ns", PassthroughShape, rotateY: 0)
       .ShapeByType("*-passthrough-*-we", PassthroughShape, rotateY: 90)
       .ShapeByType("*-passthrough-*-ud", PassthroughShape, rotateX: 90);
@@ -196,6 +197,7 @@ public partial class BlockPipePassthrough : BlockPipe, IChimneyVentable {
         "dw",
         "de"
       )
+      .NetworkOriented()
       .ShapeByType("*-passthroughbend-*-nw", s)
       .ShapeByType("*-passthroughbend-*-en", s, rotateY: 270)
       .ShapeByType("*-passthroughbend-*-se", s, rotateY: 180)

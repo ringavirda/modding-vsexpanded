@@ -51,8 +51,8 @@ public class FurnaceOrientationMatrixTests {
       IiexBlocks.FurnaceBlastcore.WithSide(BlockFacing.NORTH),
       side,
       TapGlyphs.ShaftFurnace,
-      NorthTuyereGlyph,
-      SouthTuyereGlyph
+      "n",
+      "s"
     );
   }
 
@@ -82,7 +82,7 @@ public class FurnaceOrientationMatrixTests {
       side,
       // The cupola's own hand, mirrored from the blast furnaces'. See TapGlyphs.
       TapGlyphs.Cupola,
-      NorthTuyereGlyph
+      "n"
     );
   }
 

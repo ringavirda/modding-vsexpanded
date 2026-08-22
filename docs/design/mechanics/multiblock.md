@@ -132,7 +132,7 @@ furnace still have visible gaps in its walls (`Blocks/Structures/MultiblockFacin
 
 1. Detection. `MultiblockLayoutBuilder.AddLegend` scans the code's path for a whole dash-separated
    segment that is a horizontal side word (`north`/`south`/`east`/`west` or `n`/`s`/`e`/`w`) and records its
-   index (`FindSideSegment`, `MultiblockLayoutBuilder.cs:117-126`). The last such segment wins,
+   index (`FindOrientationSegments`, `MultiblockLayoutBuilder.cs`). Every rotating segment is recorded,
    because block codes put the orientation at the end and a material name earlier could otherwise shadow it
    (`:113-115`). Only whole segments count, so `westward` or a `-we-` axis token is never mistaken for a
    facing.
@@ -209,6 +209,28 @@ says what the layout knows the cell is for, independent of what fills it. Both s
 | **Reading** | `MultiblockCellRoles.FromAttributes` (`MultiblockCellRoles.cs:71`), `CellsOf(role)` (`:51`) |
 | **Runtime** | `BlockEntityMultiblockStructure.CellsWithRole(role)` (`BlockEntityMultiblockStructure.cs:256`) → world `BlockPos`, cached |
 
+### Connector marks - what a cell must open onto
+
+A third sibling, and the one that replaced the orientation pins on the three shaft furnaces. A cell marked
+`Connector` is satisfied only by an occupant exposing a network connector on each of the named faces; a code
+match alone is not enough. It exists because a network node re-picks its own orientation from its
+neighbours, so pinning its variant in the legend states a fact the node is free to contradict - the
+structure can be left uncompletable, or a complete one broken when the player plumbs something nearby.
+
+| | |
+|---|---|
+| **Authoring** | `MultiblockLayoutBuilder.Connector(char, params BlockFacing[])`, authored in the north frame |
+| **Emission** | sibling attribute `attributes.multiblockConnectors`, face letter → authored offsets, omitted when nothing is marked |
+| **Reading** | `MultiblockConnectors.FromAttributes`, `OutwardFacesAt(authoredOffset)` - total and never-throwing, as `MultiblockCellRoles` is |
+| **Runtime** | rotated by `_structureInitAngle` inside `IncompleteBlockCount`, asked through `INetworkMember.HasConnectorAt`; `ConnectorFacesAt(worldCell)` answers the same set for a report |
+| **Refusal** | `MultiblockLayoutBuilder` throws on a legend pinning a multi-letter token; `PinnedNetworkNodes` catches the single-letter cases per mod |
+
+Satisfied by a superset: a passthrough wearing `ns` answers a demand for north, so a legitimate re-pick does
+not break a standing structure. An occupant that is not on a network answers nothing, so a brick dropped
+into a connector cell cannot satisfy the mark. The rig mirrors the same rule - `StructureRig.Missing` counts
+by code *and* connector, because a rig that counted by code alone would raise a footprint the machine then
+refuses, and `Complete()` would throw "0 of N cells unsatisfied".
+
 The rule for what earns a role: a role exists only where code asks the layout "where are my X cells?".
 A block that finds its own core - a charge door, a hopper, a hearth, a filler, the core itself - needs none,
 because that lookup runs the other way through `FindAnchorOwning<T>`. Absent for that reason:
@@ -231,6 +253,8 @@ duplicate `Legend`, which throws at the call):
 | role on a glyph no `Layer` draws | same silent empty set by the other route. Checked per glyph, so a role two glyphs share still fails when one is dropped |
 | one glyph, two codes | the cell gets one number, so one code silently stops being required |
 | `Chargeable` and `Firebox` in one layout | a burden column or a fuel bed, never both - the shaft/firebox furnace split made structural |
+| connector on a glyph with no `Legend`, or on one no `Layer` draws | the same silent empty set a role has, and the worse half of it: an undrawn demand reads as a structure with no facing requirement at all, which completes with the node backwards |
+| a `Legend` code carrying a multi-letter direction token | only a network node spells one, and a node re-picks its own orientation; `LegendAnyFacing` is the opt-out |
 | a `[SingleCell]` role drawn on ≠ 1 cell | `MetalTapCell`/`SlagTapCell` are a single `Vec3i`, so the migration writes `.Single()`; without this that throws at runtime instead. Counted over drawn cells, so two glyphs sharing the role fails too (`ValidateRoleArity`, `MultiblockLayoutBuilder.cs:236`) |
 
 Arity is part of a role's meaning. `MetalTap` and `SlagTap` are the two `[SingleCell]` roles - a hearth
@@ -567,11 +591,11 @@ still in coordinate form.
 
 | Type / member | file:line | Role |
 |---|---|---|
-| `ExBlockDef.MultiblockLayout(cfg)` | `Definitions/ExBlockDef.cs:796-810` | the entry point; writes `attributes.multiblockStructure` + the siblings `multiblockFacings` and `multiblockRoles` |
+| `ExBlockDef.MultiblockLayout(cfg)` | `Definitions/ExBlockDef.cs` | the entry point; writes `attributes.multiblockStructure` + the siblings `multiblockFacings`, `multiblockRoles` and `multiblockConnectors` |
 | `ExBlockDef.Multiblock(cfg)` | `:784-790` | raw coordinate form, for a layout not yet drawn (the bessemer converter) |
 | `ExBlockDef.FillerOffsets(cells)` | `:712-716` | writes `attributes.fillerOffsets` |
 | `ExBlockDef.FillerOffsetsByType(wc, cells)` | `:721-735` | per-variant footprint |
-| `MultiblockLayoutBuilder` | `Definitions/MultiblockLayoutBuilder.cs:20` | `Origin`/`Legend`/`LegendAnyFacing`/`Role`/`Layer`; `FindSideSegment` at `:117`, `BuildFacings` at `:146`, `BuildRoles` at `:161`, `ValidateRoleArity` at `:236`, `ValidateRoles` at `:258` |
+| `MultiblockLayoutBuilder` | `Definitions/MultiblockLayoutBuilder.cs:20` | `Origin`/`Legend`/`LegendAnyFacing`/`Role`/`Connector`/`Layer`; `RefuseNetworkToken`, `FindOrientationSegments`, `BuildFacings`, `BuildRoles`, `BuildConnectors`, `ValidateRoleArity`, `ValidateRoles` |
 | `CellRole` | `Blocks/Structures/CellRole.cs:42` | the nine roles, and the doc-comment naming what is absent |
 | `SingleCellAttribute` / `CellRoles` | `Blocks/Structures/CellRole.cs:113`, `:116` | the arity declaration and its cached reader |
 | `MultiblockBuilder` | `Definitions/MultiblockBuilder.cs:16` | `Number`/`At`/`Fill`/`Build` + the three guards |

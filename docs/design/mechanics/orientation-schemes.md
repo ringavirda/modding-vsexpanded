@@ -82,11 +82,23 @@ directed ones, where the ordered step catches it first and the fallback is never
 
 ## What exists today
 
+**Built (U10, 2026-08-22).** The declared-scheme registry this page proposes below is
+`src/ExpandedLib/Helpers/ExOrientations.cs`: twelve named schemes and the two-step `Rotate` (ordered
+spelling first, face-set fallback second). Every concrete `BlockNetworkNode` def declares
+`{"mode":"network","scheme":"<Name>"}` through `ExBlockDef.NetworkOriented`, which reads the scheme off
+the block's own `orientation` states rather than taking a name - so the misspelling this page worried
+about is unrepresentable in a code-first def, and a per-mod scheme-parity contract
+(`NetworkNodeContract.SchemeViolations`) catches anything authored another way. That is step 2 of the
+cost table below, done.
+
 `ExOrientation.IsOrientationToken` / `RotateOrientationToken` handle Face, SideWord and Axis, and
 canonicalise. That covers pipes, passthroughs, shafts, bevels, flywheels and mills.
 
-Bend, Tee and Cross are not recognised at all - `nw` and `uns` fail the axis-pair grammar, so a layout
-pinning a bend is not orientation-checked, and the gap is silent.
+Bend, Tee and Cross are not recognised **by `MultiblockFacings`** at all - `nw` and `uns` fail the
+axis-pair grammar, so a layout pinning a bend would get no facings entry and be silently unchecked at
+every angle. That gap is now closed from the other end rather than fixed: `MultiblockLayoutBuilder.Legend`
+**refuses** any code carrying a multi-letter token a declared scheme spells, bends and tees included, so
+no layout can reach it. `LegendAnyFacing` is the documented opt-out.
 
 The directed schemes are actively mishandled. `RotateOrientationToken("sn", 90)` returns `we`, not `ew` - it
 canonicalises, because with only the string to go on it cannot know the block declares both. That is
@@ -120,8 +132,12 @@ The dividing line is not "facing vs node token". It is: who decides the orientat
 | The network, from a free run of neighbours | pipe straight/bend/junction, passthrough, molten canal mid-run | no - pin the block, never the orientation |
 | The network, but walled in by the structure | tuyere, pipe outlet - a single-faced node embedded in a furnace shell | yes, and it is needed - see below |
 
-The one node code a shipped layout pins today, `iiex:pipe-outlet-fire-u`, is harmless: it is vertical, so no
-rotation and no recalculation can move it.
+**No shipped layout pins a node any more.** The three that did - the cold blast furnace's two tuyeres, the
+cupola's one, the hot furnace's two - moved onto `Connector` in U10.5, and two guards keep it that way: the
+builder's refusal above, and `PinnedNetworkNodes`, which resolves each pinned code to the def that provides
+it and fails when that def is network-oriented. The one remaining node code a layout names,
+`iiex:pipe-outlet-fire-u`, is harmless and untouched: it is vertical, so no rotation and no recalculation
+can move it.
 
 ### The embedded connector is the case that must be checked
 
@@ -145,11 +161,19 @@ Two ways to express it, differing in robustness rather than difficulty:
 
 | | |
 |---|---|
-| **Pin the cardinal** | Uses the oriented-parts mechanism exactly as it stands. Cheap. Breaks if the node ever legitimately re-picks |
-| **Require "connector faces out"** | The layout marks the cell; the check asks the node whether its connector points away from the structure. Immune to re-orientation as long as it still faces out, which is the actual requirement |
+| **Pin the cardinal** | Uses the oriented-parts mechanism exactly as it stands. Cheap. Breaks if the node ever legitimately re-picks. **Rejected, and now refused by the builder** |
+| **Require "connector faces out"** | The layout marks the cell; the check asks the node whether its connector points away from the structure. Immune to re-orientation as long as it still faces out, which is the actual requirement. **CHOSEN and BUILT (U10.4)** |
 
 The second is what the fiction means and what the player expects. It is also the subset test described below,
 narrowed to one face.
+
+**As built:** `MultiblockLayoutBuilder.Connector(char, params BlockFacing[])` marks a glyph's cells; the
+faces are authored in the structure's north frame and emitted as `attributes.multiblockConnectors`, a
+sibling of `multiblockStructure` alongside `multiblockFacings` and `multiblockRoles`, omitted entirely when
+a layout marks nothing. `BlockEntityMultiblockStructure.IncompleteBlockCount` rotates each demanded face by
+the structure's own init angle and asks the occupant through `INetworkMember.HasConnectorAt`; an occupant
+that is not on a network answers nothing, so a brick cannot satisfy the mark. A misfaced cell is reported
+apart from a missing one - the block is already there and wants turning, not fetching.
 
 ### What a layout actually wants from a node
 
@@ -160,7 +184,10 @@ That is a different feature from oriented parts, and it needs the same registry:
 "does token `T` include face `f`" is a lookup. It also composes correctly with self-orientation - a node that
 re-orients to serve more connections still satisfies a subset check.
 
-It is not built, and nothing in the DSL expresses it today.
+**Built as the connector check (U10.4).** The subset property is what the check rests on: a passthrough
+wearing `ns` satisfies a demand for north, so a legitimate re-pick by the network does not break a standing
+structure. The lookup goes through the occupant rather than the scheme - `HasConnectorAt(face)` - which
+answers the same question and also covers a node whose faces depend on runtime block-entity state.
 
 ---
 

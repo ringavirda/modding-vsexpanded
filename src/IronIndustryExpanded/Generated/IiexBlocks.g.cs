@@ -564,6 +564,92 @@ public static class IiexBlocks
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
   }
 
+  /// <summary><c>iiex:furnace</c> - furnace/cruciblecore. Variant groups: type(cruciblecore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  public static class FurnaceCruciblecore
+  {
+    /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
+    public const string Code = "iiex:furnace";
+
+    /// <summary>Any variant: <c>iiex:furnace-cruciblecore-*-*</c>.</summary>
+    public const string Any = "iiex:furnace-cruciblecore-*-*";
+
+    /// <summary>The <c>tier</c> variant group.</summary>
+    public static class Tier
+    {
+      public const string Tier1 = "tier1";
+      public const string Tier2 = "tier2";
+      public const string Tier3 = "tier3";
+    }
+
+    /// <summary>The <c>side</c> variant group.</summary>
+    public static class Side
+    {
+      public const string N = "n";
+      public const string E = "e";
+      public const string S = "s";
+      public const string W = "w";
+    }
+
+    /// <summary>Pin only <c>tier</c>: <c>iiex:furnace-cruciblecore-{tier}-*</c>.</summary>
+    public static string WithTier(string tier) =>
+      $"iiex:furnace-cruciblecore-{tier}-*";
+
+    /// <summary>Pin only <c>side</c>: <c>iiex:furnace-cruciblecore-*-{side}</c>.</summary>
+    public static string WithSide(string side) =>
+      $"iiex:furnace-cruciblecore-*-{side}";
+
+    /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:furnace-cruciblecore-*-{side}</c>.</summary>
+    public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
+      WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+
+    /// <summary>Every group resolved: <c>iiex:furnace-cruciblecore-{tier}-{side}</c>.</summary>
+    public static string Of(string tier, string side) =>
+      $"iiex:furnace-cruciblecore-{tier}-{side}";
+  }
+
+  /// <summary><c>iiex:furnace</c> - furnace/cruciblehearth. Variant groups: type(cruciblehearth), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  public static class FurnaceCruciblehearth
+  {
+    /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
+    public const string Code = "iiex:furnace";
+
+    /// <summary>Any variant: <c>iiex:furnace-cruciblehearth-*-*</c>.</summary>
+    public const string Any = "iiex:furnace-cruciblehearth-*-*";
+
+    /// <summary>The <c>tier</c> variant group.</summary>
+    public static class Tier
+    {
+      public const string Tier1 = "tier1";
+      public const string Tier2 = "tier2";
+      public const string Tier3 = "tier3";
+    }
+
+    /// <summary>The <c>side</c> variant group.</summary>
+    public static class Side
+    {
+      public const string N = "n";
+      public const string E = "e";
+      public const string S = "s";
+      public const string W = "w";
+    }
+
+    /// <summary>Pin only <c>tier</c>: <c>iiex:furnace-cruciblehearth-{tier}-*</c>.</summary>
+    public static string WithTier(string tier) =>
+      $"iiex:furnace-cruciblehearth-{tier}-*";
+
+    /// <summary>Pin only <c>side</c>: <c>iiex:furnace-cruciblehearth-*-{side}</c>.</summary>
+    public static string WithSide(string side) =>
+      $"iiex:furnace-cruciblehearth-*-{side}";
+
+    /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:furnace-cruciblehearth-*-{side}</c>.</summary>
+    public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
+      WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+
+    /// <summary>Every group resolved: <c>iiex:furnace-cruciblehearth-{tier}-{side}</c>.</summary>
+    public static string Of(string tier, string side) =>
+      $"iiex:furnace-cruciblehearth-{tier}-{side}";
+  }
+
   /// <summary><c>iiex:furnace</c> - furnace/cupolacore. Variant groups: type(cupolacore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
   public static class FurnaceCupolacore
   {
@@ -2385,6 +2471,28 @@ public static class IiexBlocks
     /// <summary>Pin only <c>side</c>, from a facing rather than a token: <c>iiex:steamcondenser-{side}</c>.</summary>
     public static string WithSide(Vintagestory.API.MathTools.BlockFacing side) =>
       WithSide(ExpandedLib.Helpers.ExOrientation.TokenOf(side, asLetter: true));
+  }
+
+  /// <summary><c>iiex:steelcrucible</c> - steelcrucible. Variant groups: type(raw|burned|smelted).</summary>
+  public static class Steelcrucible
+  {
+    /// <summary>The bare code, no variants: <c>iiex:steelcrucible</c>.</summary>
+    public const string Code = "iiex:steelcrucible";
+
+    /// <summary>Any variant: <c>iiex:steelcrucible-*</c>.</summary>
+    public const string Any = "iiex:steelcrucible-*";
+
+    /// <summary>The <c>type</c> variant group.</summary>
+    public static class Type
+    {
+      public const string Raw = "raw";
+      public const string Burned = "burned";
+      public const string Smelted = "smelted";
+    }
+
+    /// <summary>Pin only <c>type</c>: <c>iiex:steelcrucible-{type}</c>.</summary>
+    public static string WithType(string type) =>
+      $"iiex:steelcrucible-{type}";
   }
 
   /// <summary><c>iiex:storage-rack</c> - storage/storagerack. Variant groups: side(n|e|s|w).</summary>

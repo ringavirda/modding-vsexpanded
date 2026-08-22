@@ -144,14 +144,13 @@ public class OrientationTokenTests {
 
   [Fact]
   public void A_node_cell_rotates_with_the_structure() {
+    // Built as an attribute rather than through the layout DSL: the builder now refuses a pinned network
+    // token outright, so no code-first layout can produce this table. The runtime half stays reachable
+    // from a hand-authored JSON blocktype, and this is what it does when one arrives.
     var attrs = new Vintagestory.API.Datastructures.JsonObject(
-      (Newtonsoft.Json.Linq.JObject)
-        ExBlockDef
-          .Create("d", "c")
-          .MultiblockLayout(s =>
-            s.Legend('p', "iiex:pipe-straight-fire-ns").Layer(0, "p")
-          )
-          .ToJson()["attributes"]!
+      Newtonsoft.Json.Linq.JObject.Parse(
+        """{"multiblockFacings":{"iiex:pipe-straight-fire-ns":[3]}}"""
+      )
     );
     MultiblockFacings facings = MultiblockFacings.FromAttributes(attrs);
 

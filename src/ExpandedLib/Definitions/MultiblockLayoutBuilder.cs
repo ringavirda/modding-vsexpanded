@@ -5,6 +5,7 @@ using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Helpers;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 
 namespace ExpandedLib.Definitions;
 
@@ -24,7 +25,9 @@ public sealed class MultiblockLayoutBuilder {
   private readonly Dictionary<string, IReadOnlyList<int>> _facingSegment =
     new();
   private readonly Dictionary<char, List<CellRole>> _roleOf = new();
+  private readonly Dictionary<char, List<string>> _connectorOf = new();
   private JObject? _roles;
+  private JObject? _connectors;
 
   /// <summary>Sets where the top-left of every layer grid sits: <paramref name="xLeft"/> is the X of the first
   /// column, <paramref name="zTop"/> the Z of the first row. Defaults to <c>(0, 0)</c>.</summary>
@@ -65,6 +68,32 @@ public sealed class MultiblockLayoutBuilder {
     return this;
   }
 
+  /// <summary>
+  /// Demands that a glyph's cells hold a block exposing a network connector on each of
+  /// <paramref name="outward"/> - the layout's way of saying "this tuyere opens into the hearth" without
+  /// pinning the node's orientation variant, which the node's own neighbour scan is free to overwrite.
+  /// Faces are authored in the structure's north-default frame and turn with it. Optional; a layout that
+  /// never calls this emits nothing.
+  /// </summary>
+  /// <remarks>Satisfied by a superset: a passthrough wearing <c>ns</c> answers a demand for north, so a
+  /// legitimate re-pick by the network does not break a standing structure. Two glyphs may share one
+  /// code and demand different faces - they share a block number, which is what makes two connector
+  /// directions on one code representable.</remarks>
+  public MultiblockLayoutBuilder Connector(
+    char symbol,
+    params BlockFacing[] outward
+  ) {
+    if (!_connectorOf.TryGetValue(symbol, out List<string>? faces))
+      _connectorOf[symbol] = faces = [];
+
+    foreach (BlockFacing face in outward) {
+      string letter = ExOrientation.TokenOf(face, asLetter: true);
+      if (!faces.Contains(letter))
+        faces.Add(letter);
+    }
+    return this;
+  }
+
   private MultiblockLayoutBuilder AddLegend(
     char symbol,
     string code,
@@ -82,6 +111,7 @@ public sealed class MultiblockLayoutBuilder {
       );
     _legend.Add((symbol, code));
     if (oriented) {
+      RefuseNetworkToken(symbol, code);
       IReadOnlyList<int> segments = FindOrientationSegments(code);
       if (segments.Count > 0)
         // Keyed by the full domained form. `AssetLocation.ToShortString()` elides the `game` domain, so
@@ -89,6 +119,39 @@ public sealed class MultiblockLayoutBuilder {
         _facingSegment[new AssetLocation(code).ToString()] = segments;
     }
     return this;
+  }
+
+  /// <summary>
+  /// Refuses a legend code carrying a multi-letter direction token (<c>ns</c>, <c>nw</c>, <c>uns</c>,
+  /// <c>nswe</c>). Only a network node spells one - no player-oriented block does - and a network node
+  /// picks its own orientation from its neighbours, so pinning the variant states a fact the node is free
+  /// to contradict: the structure can be left uncompletable, or a complete one broken when the player
+  /// plumbs something nearby. Mark the cell with <see cref="Connector"/> instead, which says what the
+  /// layout actually wants.
+  /// </summary>
+  /// <remarks>Matched against the tokens the declared schemes spell rather than against a letter set, so
+  /// an ordinary segment that happens to be made of direction letters is not caught. Single-letter cases
+  /// are indistinguishable here - <c>furnace-tuyere-n</c> reads exactly like <c>hopper-tall-e</c> - and
+  /// are left to the per-mod <c>PinnedNetworkNodes</c> check, which can see the defs.
+  /// <see cref="LegendAnyFacing"/> is the documented opt-out.</remarks>
+  private static void RefuseNetworkToken(char symbol, string code) {
+    int colon = code.IndexOf(':');
+    string path = colon >= 0 ? code[(colon + 1)..] : code;
+
+    foreach (string part in path.Split('-')) {
+      if (
+        part.Length < 2
+        || !ExOrientations.All.Any(s => s.Tokens.Contains(part))
+      )
+        continue;
+
+      throw new InvalidOperationException(
+        $"Multiblock layout pins symbol '{symbol}' to '{code}', whose '{part}' segment is a network "
+          + "node's own orientation token. A network node takes its orientation from its neighbours, so "
+          + "the pin can be contradicted at any time; mark the cell with Connector instead, or use "
+          + "LegendAnyFacing if the code really is meant literally."
+      );
+    }
   }
 
   /// <summary>
@@ -140,6 +203,13 @@ public sealed class MultiblockLayoutBuilder {
   /// </summary>
   internal JObject? BuildRoles() => _roles;
 
+  /// <summary>
+  /// The connector table for <c>attributes.multiblockConnectors</c>: outward face letter -> the authored
+  /// offsets of the cells demanding it. Null when the layout marks nothing, and consumers then see
+  /// <see cref="MultiblockConnectors.None"/>. Computed by <see cref="Build"/>, which must run first.
+  /// </summary>
+  internal JObject? BuildConnectors() => _connectors;
+
   internal JObject Build() {
     var mb = new MultiblockBuilder();
     // Numbers are keyed by code, not by glyph, and handed out in legend-declaration order. `blockNumbers` is
@@ -159,6 +229,7 @@ public sealed class MultiblockLayoutBuilder {
     ValidateRoles(wOf);
 
     var roleCells = new Dictionary<CellRole, JArray>();
+    var connectorCells = new Dictionary<string, JArray>();
     var drawn = new HashSet<char>();
     foreach (LayoutCell cell in StructureLayout.Parse(_xLeft, _zTop, _layers)) {
       if (!wOf.TryGetValue(cell.Symbol, out int cellW))
@@ -178,6 +249,17 @@ public sealed class MultiblockLayoutBuilder {
                 ["z"] = cell.Z,
               }
             );
+
+      if (_connectorOf.TryGetValue(cell.Symbol, out List<string>? faces))
+        foreach (string face in faces)
+          FaceArray(connectorCells, face)
+            .Add(
+              new JObject {
+                ["x"] = cell.X,
+                ["y"] = cell.Y,
+                ["z"] = cell.Z,
+              }
+            );
     }
 
     // A role glyph the drawing never uses resolves to an empty set at runtime with no error anywhere.
@@ -190,9 +272,19 @@ public sealed class MultiblockLayoutBuilder {
             + "in any Layer, so the role would resolve to nothing at runtime."
         );
 
+    // Same silent-empty-set failure a role glyph has, and the worse half of it: an undrawn connector
+    // glyph reads as a structure with no facing demand at all, which completes with the node backwards.
+    foreach ((char symbol, List<string> faces) in _connectorOf)
+      if (!drawn.Contains(symbol))
+        throw new InvalidOperationException(
+          $"Multiblock layout demands symbol '{symbol}' open to {string.Join(", ", faces)} but never draws "
+            + "it in any Layer, so the demand would resolve to nothing at runtime."
+        );
+
     ValidateRoleArity(roleCells);
 
     _roles = EmitRoles(roleCells);
+    _connectors = EmitConnectors(connectorCells);
     return mb.Build();
   }
 
@@ -225,6 +317,13 @@ public sealed class MultiblockLayoutBuilder {
             + "entry for it."
         );
 
+    foreach ((char symbol, List<string> faces) in _connectorOf)
+      if (!wOf.ContainsKey(symbol))
+        throw new InvalidOperationException(
+          $"Multiblock layout demands symbol '{symbol}' open to {string.Join(", ", faces)} but has no Legend "
+            + "entry for it."
+        );
+
     if (
       _roleOf.Values.Any(r => r.Contains(CellRole.Chargeable))
       && _roleOf.Values.Any(r => r.Contains(CellRole.Firebox))
@@ -234,6 +333,33 @@ public sealed class MultiblockLayoutBuilder {
           + "fuel bed, never both."
       );
   }
+
+  private static JArray FaceArray(
+    Dictionary<string, JArray> connectorCells,
+    string face
+  ) {
+    if (!connectorCells.TryGetValue(face, out JArray? array))
+      connectorCells[face] = array = new JArray();
+    return array;
+  }
+
+  /// <summary>
+  /// Serialises the collected connector cells: faces in <c>n e s w u d</c> order, each face's cells in
+  /// drawing order, so an unrelated edit elsewhere in the layout leaves the table unchanged.
+  /// </summary>
+  private static JObject? EmitConnectors(
+    Dictionary<string, JArray> connectorCells
+  ) {
+    if (connectorCells.Count == 0)
+      return null;
+    var o = new JObject();
+    foreach (string face in FaceOrder)
+      if (connectorCells.TryGetValue(face, out JArray? cells))
+        o[face] = cells;
+    return o;
+  }
+
+  private static readonly string[] FaceOrder = ["n", "e", "s", "w", "u", "d"];
 
   private static JArray RoleArray(
     Dictionary<CellRole, JArray> roleCells,

@@ -420,6 +420,26 @@ public class ColdBlastFurnaceScenarioTests {
     );
   }
 
+  [Fact]
+  public void A_tuyere_fitted_backwards_never_completes_the_structure() {
+    // The one mistake nothing in the engine catches: a node whose connector points into the structure it
+    // is embedded in. ComputeValidOrientations relaxes to connectsAny for a single-axis shape and the
+    // solid-brick branch re-adds the current letter as required, so a tuyere already facing south stays
+    // in its own valid set and the neighbour scan never turns it round.
+    var wrong = ColdBlastFurnaceScenes.BackwardsTuyere();
+
+    Assert.False(
+      wrong.Core.StructureComplete,
+      "a tuyere blowing into the hearth must not complete the furnace"
+    );
+    // ...and it is the tuyere cell that is short, not some unrelated one.
+    Assert.Equal(1, wrong.Structure.Missing);
+    Assert.Contains(
+      wrong.Structure.Cell(0, 2, -2).ToString(),
+      wrong.Structure.MissingReport
+    );
+  }
+
   #endregion
 
   #region Tapping

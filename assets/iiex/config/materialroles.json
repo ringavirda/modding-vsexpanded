@@ -7,6 +7,7 @@
     { "role": "scrap", "code": "game:metalbit-steel" },
     { "role": "scrap", "code": "iiex:metalbit-castiron" },
     { "role": "scrap", "code": "iiex:metalbit-pigiron" },
+    { "role": "scrap", "code": "iiex:metalbit-cruciblesteel" },
     { "role": "scrap", "code": "iiex:pig" },
     { "role": "scrap", "code": "iiex:pigchunk" },
     { "role": "scrap", "code": "iiex:pigbit" },

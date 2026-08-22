@@ -65,6 +65,7 @@ public partial class BlockMoltenCanalTap : BlockMoltenCanal {
         .Behavior("Lockable")
         .VariantGroup("type", "tap")
         .VariantGroup("orientation", "n", "w", "s", "e")
+        .NetworkOriented()
         .ShapeByType("*-tap-n", "iiex:molten/canal/tap")
         .ShapeByType("*-tap-w", "iiex:molten/canal/tap", rotateY: 90)
         .ShapeByType("*-tap-s", "iiex:molten/canal/tap", rotateY: 180)

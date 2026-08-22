@@ -40,6 +40,13 @@
   "behaviors": [
     {
       "name": "Lockable"
+    },
+    {
+      "name": "ExOrientable",
+      "properties": {
+        "mode": "network",
+        "scheme": "AxisFlat"
+      }
     }
   ],
   "variantgroups": [

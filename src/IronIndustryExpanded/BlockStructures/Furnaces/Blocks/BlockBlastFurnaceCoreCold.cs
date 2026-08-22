@@ -75,18 +75,16 @@ public partial class BlockBlastFurnaceCoreCold
             // hearth base. Claiming it leaves the slag tap nowhere to pour - the structure still
             // completes and the furnace still lights, but the cinder never drains.
             .Legend('S', IiexBlocks.FurnaceSlagtap.WithSide(BlockFacing.EAST))
-            // The blast inlets: one block, two glyphs, because the legend pins orientation rather than
-            // wildcarding it. A tuyere is walled in on three sides, so its cell admits exactly one
-            // connector face and BlockNetworkNode.RecalculateAndSyncOrientations exchanges a placed node
-            // onto that face as soon as the brick goes up; MultiblockFacings rotates the letter with the
-            // structure. A wildcarded legend would accept a tuyere facing into the hearth.
-            // The letter names the face the connector sits on, so each tuyere points out at the player's
-            // pipe: `Y` is drawn in the north row (z=-1) and connects `n`, `T` in the south row and
-            // connects `s`. Swapping them is unbuildable - a pipe neighbour makes that face required in
-            // ComputeValidOrientations, so the placed tuyere is exchanged onto it and the cell demanding
-            // the opposite letter can never be satisfied.
-            .Legend('Y', IiexBlocks.FurnaceTuyere.WithOrientation("n"))
-            .Legend('T', IiexBlocks.FurnaceTuyere.WithOrientation("s"))
+            // The blast inlets: one block, two glyphs, because the two cells demand opposite faces. The
+            // demand is on the connector, not on the code - a network node re-picks its own orientation
+            // from its neighbours, so pinning the variant here states a fact the node is free to
+            // contradict. Each tuyere must open outward at the player's pipe: `Y` is drawn in the north
+            // row (z=-1) and opens `n`, `T` in the south row and opens `s`. Two glyphs on one code share
+            // one block number, which is what makes two directions on one block representable.
+            .Legend('Y', IiexBlocks.FurnaceTuyere.Any)
+            .Legend('T', IiexBlocks.FurnaceTuyere.Any)
+            .Connector('Y', BlockFacing.NORTH)
+            .Connector('T', BlockFacing.SOUTH)
             // No passthrough legend: the tuyere sits at (0,2,±2), the outermost cell, so the player's pipe
             // butts straight against it. A tuyere buried in the brick would need a claimed cell to carry
             // the blast through the wall.

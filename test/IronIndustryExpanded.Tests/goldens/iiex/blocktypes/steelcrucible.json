@@ -1,0 +1,119 @@
+{
+  "code": "steelcrucible",
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [
+        "raw",
+        "burned",
+        "smelted"
+      ]
+    }
+  ],
+  "classByType": {
+    "*-burned": "BlockSmeltingContainer",
+    "*-smelted": "iiex.BlockSteelCruciblePour"
+  },
+  "entityClassByType": {
+    "*-smelted": "SmeltedContainer"
+  },
+  "shape": {
+    "base": "iiex:item/steelcrucible"
+  },
+  "blockmaterial": "Ceramic",
+  "behaviors": [
+    {
+      "name": "GroundStorable",
+      "properties": {
+        "layout": "Quadrants",
+        "placeRemoveSound": "sounds/player/build",
+        "collisionBox": {
+          "x1": 0,
+          "y1": 0,
+          "z1": 0,
+          "x2": 1,
+          "y2": 0.4375,
+          "z2": 1
+        }
+      }
+    },
+    {
+      "name": "Unplaceable"
+    },
+    {
+      "name": "RightClickPickup"
+    }
+  ],
+  "attributes": {
+    "tempGlowMode": 1,
+    "shelvableByType": {
+      "*": true
+    },
+    "cookingContainerSlotsByType": {
+      "*-burned": 4
+    },
+    "storageTypeByType": {
+      "*-burned": 4
+    },
+    "maxContentDimensionsByType": {
+      "*-burned": {
+        "width": 0.125,
+        "height": 0.25,
+        "length": 0.125
+      }
+    },
+    "maxHeatableTempByType": {
+      "*-burned": 1600
+    },
+    "emptiedBlockCodeByType": {
+      "*-smelted": "steelcrucible-burned"
+    }
+  },
+  "combustibleProps": {
+    "*-raw": {
+      "meltingPoint": 600,
+      "meltingDuration": 45,
+      "smeltedRatio": 1,
+      "smeltingType": "fire",
+      "smeltedStack": {
+        "type": "block",
+        "code": "iiex:steelcrucible-burned"
+      },
+      "requiresContainer": false
+    },
+    "*-smelted": {
+      "meltingPoint": 2400,
+      "meltingDuration": 45,
+      "smeltedRatio": 1,
+      "smeltingType": "bake",
+      "smeltedStack": {
+        "type": "block",
+        "code": "iiex:steelcrucible-burned"
+      },
+      "requiresContainer": false
+    }
+  },
+  "maxstacksize": 1,
+  "replaceable": 300,
+  "resistance": 2.0,
+  "lightAbsorption": 0,
+  "sounds": {
+    "walk": "game:walk/stone"
+  },
+  "creativeinventory": {
+    "general": [
+      "*-raw",
+      "*-burned"
+    ],
+    "iiex": [
+      "*-raw",
+      "*-burned"
+    ]
+  },
+  "sidesolid": {
+    "all": true
+  },
+  "sideopaque": {
+    "all": false
+  }
+}

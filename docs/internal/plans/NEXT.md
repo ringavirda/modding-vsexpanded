@@ -186,6 +186,31 @@ That is a unit of work, not a follow-up; the guard states both counts so the ski
 
 ### ★ What is actually next
 
+★★ **A live plan landed 2026-08-23:**
+[2026-08-23-cornish-boiler-megablock.md](2026-08-23-cornish-boiler-megablock.md) — the Cornish boiler
+stops being a multiblock. The owner's reworked art carries the masonry, both hatches and the burner, so
+the player-built firebox goes away entirely and the boiler becomes a self-contained 3 × 6 × 3 megablock
+with its fuel bed inside its own block entity. **CB0 is done** (the shape tooling); CB1–CB9 are open,
+and **CB10's Lancashire conversion is blocking for a green suite** — it shares `BlockBoiler` and
+`BlockEntityBoiler` and cannot survive the base losing its coal-pile path.
+
+Three things it settles that reach past the boiler:
+
+1. ⛔⛔ **`convert-shape.py` had `iron4` mapped to `sheet-plain`** and the remap overwrites by key, so it
+   beat the editable on every shape it touched: the tuyere and the burdenmaker both ship `sheet-plain`
+   while their editables author `sheet`. Fixed, with 11 editables swept. **17 shipped shapes will flip
+   `iron4` on their next conversion** — per shape, with a code check, because `unwrap_root` now also
+   strips `Root`.
+2. ⛔⛔ **`unwrap_root` discarded a non-zero wrapper origin.** The reworked boiler wraps at `[16,0,16]`;
+   lifting bare moved the whole machine one cell west and one north, silently, since a translated model
+   renders perfectly well in the wrong place. Now folded into the lifted children.
+3. ★★ **Fuel admission moves to `combustibleProps`.** Vanilla gives every coal a `burnTemperature` and
+   a `burnDuration` and `docs/design/items/fuels.md` records that *not one of them is read anywhere in
+   `src/`*. They are now the whole fuel model, so a coal another mod ships works by declaring what it
+   already declares. **Lignite is admissible in a boiler** — the old exclusion was metallurgical
+   reasoning applied to a machine that only has to beat 157 °C — and the metallurgical refusal moves to
+   `BlockEntityFireboxFurnace.AcceptsFireboxFuel`.
+
 **Updated 2026-08-15.** The forming line is complete for every drawn route; what is queued is one designed
 station, one item merge and two rulings. Pick one; nothing among them blocks anything else.
 
@@ -258,6 +283,110 @@ station, one item merge and two rulings. Pick one; nothing among them blocks any
   Both boilers moved to rivets **mass-neutrally** (Cornish 16 nail bundles → 32 rivets, Lancashire 24 → 48).
   `PressureVesselGate` asserts the negative - that no boiler stage accepts nails - which almost nothing else
   in the suite does.
+- **U10 is DONE and the whole U2-U10 plan is CLOSED** (2026-08-22) - a multiblock layout can demand that
+  a cell **opens outward** (`Connector` -> `attributes.multiblockConnectors`) instead of pinning a network
+  node's orientation variant, which the node is free to contradict; the cold blast furnace, the cupola and
+  the hot blast furnace are migrated onto it, and pinning a node is now refused at build in two halves -
+  the builder for multi-letter tokens, `PinnedNetworkNodes` per mod for the single-letter ones. Every node
+  def declares `mode:"network"` with the scheme read off its own states. Gate 9/9 at **4,655** per version.
+  ⛔⛔ The scheme contract's natural filter **read a subset**: a base-class scan misses every def a
+  stand-alone provider authors (iiex's pipes), so it saw 26 of 38. ⛔⛔ `GetBehavior<T>()` reads
+  `CollectibleBehaviors`, not `BlockBehaviors`. ⛔⛔ The rig must **raise** a connector cell, not only count
+  it. ⛔ Nothing in U7-U10 has been walked in game.
+
+- **U9.11 is DONE and U9 is CLOSED** (2026-08-22) - the gate scenario runs bituminous coal to a
+  crucible-steel ingot through every machine the unit built, the furnace is craftable, and the handbook
+  page ships in three locales. Gate 9/9 at **4,623** per version.
+  ⛔⛔ **Three of seven steps named work that did not exist or was already done**: the pour target has been
+  shipped since the casting line, `scripts/test-floors.txt` is not a file (the floors are *coverage*
+  percentages), and Step 4's damper rhythm is the polarity U9.10 inverted.
+  ★★ The scenario forces nothing: both furnaces stand real footprints and light on their own ticks. ⛔ Two
+  links are arithmetic and marked as such - the helve crush and vanilla's held-item pour.
+  ⛔ Two silent harness defects fixed: a `TestWorld` item had **no api handle**, so vanilla's
+  `CollectibleObject.Equals` threw inside a pour; and an uninitialised `BlockEntityCastMold` reads as
+  **full at zero capacity** and refuses everything.
+  Next is **U10**, the connector check.
+- **U9.10 is DONE** (2026-08-22) - **the crucible furnace works**: seat, charge, preheat, melt, crack, pull,
+  the counted player-built chimney, the damper and the R7 readout. Gate 9/9 at **4,616** per version.
+  ⛔⛔ **The preheat cannot live in `SmeltCycle`** - the core calls it only above process temperature, and
+  the preheat is the phase the damper is *shut* for, so it would never have run. It runs from
+  `OnProductionTick`.
+  ★★ Step 1b's inversion shipped: **shut to preheat, open to melt**, and opening it early destroys the pot.
+  ⛔⛔ **The reachability guard was wrong in two ways**, not one: it read the stack *as it stands* and relied
+  on the damper defaulting open. Now stated through `RatedStackCourses`, `BestNaturalDraught` and a
+  `ComputeHeatBalanceAt` overload.
+  ⛔ **A partial charge ate metal** - a pot 10 u short swallowed a 25 u chunk and kept 10. All-or-nothing now.
+  ⛔⛔ **`BlockSmeltedContainer.SetContents`/`GetContents` are not public before 1.22**; the pot's contract is
+  the two stack attributes, read back through vanilla's method only where the version has it.
+  Next was **U9.11**, the gate.
+- **U9.9 is DONE** (2026-08-22) - the crucible furnace stands: core, hearth, layout, two block entities,
+  two goldens, 17 tests. Gate 9/9 at **4,585** per version.
+  ⛔⛔ **A guard caught it before any behaviour was written.** `EveryFireboxReachesItsOwnProcessTemperature`
+  went red on the first build, and the shortfall was **not** in the draught curve: a firebox carrying the
+  reverberatory losses peaks at 1471 C at nine courses, short at *every* height.
+  ★★ Two per-machine losses close it, both physical: **transfer loss 0** (the pots stand in the fire, so
+  nothing crosses a bridge) and **charge loss 50** (the charge is walled off from the fire, not lying in it).
+  Measured: **1604 C at six courses, 1621 at the nine-course peak**, declining after.
+  ⛔⛔ The guard's premise - "the stack its drawing declares" - does not hold for a machine whose chimney is
+  the player's, so `StackCourses` reports the rated height as a **marked placeholder** until U9.10 writes the
+  walk.
+  ⛔⛔ **`DoorCell` had to be overridden**: the branch's hand-declared default is brick on this drawing, so an
+  inherited door resolves to null and `Venting` reads false with the mouth open.
+  ★ The hearth is a `BlockFirebox` **subclass**, so the whole fuel-bed gesture set is inherited; no texture
+  was drawn (`cs.png` already existed, unused); the damper faces **south** or its housing lands in the flue.
+  Next was **U9.10**, the furnace's behaviour.
+- **U9.7 is DONE** (2026-08-22) - cold blister steel crushes to charge: a vanilla `ingot-blistersteel` too
+  cold for an anvil becomes `iiex:blisterchunk` under the helve. Gate 9/9 at **4,559** per version.
+  ★★ **The fork is vanilla's own refusal**, not a temperature of ours: the patch is a postfix on
+  `ItemIngot.TryPlaceOn` that fires only where vanilla returned null (blister melts at 1602, so the line is
+  801 °C). ⛔ One gate was not enough - the **recipe list** had to be forked on the same answer, or a cold
+  ingot would still have been offered vanilla's shear-steel recipe on our cold-workable work item.
+  ⛔⛔ **A smithing pattern does not land where it reads**: `GenVoxels` centres and transposes it, and a
+  chain whose metal misses the shape is silent because the helve **conjures metal** into any empty recipe
+  cell. **Both already-shipped chains were misaligned** - the pig and the shingling pile - and are fixed
+  here; all three are now guarded against vanilla's own layout pass.
+  ⛔⛔ **The payout comes from two places.** A helve hit sheds one voxel, so change-making settles in bits:
+  the helve pays chunks only, and the anvil hands the finished shape back as five vanilla bits. The hit that
+  finishes the shape must be counted against the recipe, not the blanked anvil, or a third of the ingot pays
+  out twice.
+  ⛔ The Harmony halves are **not covered live** - no anvil in the harness. ⛔ `IiexLangCoverageTests` covers
+  **block** codes only; an item's name key has no guard anywhere. Next was **U9.9**, the blocktypes.
+- **U9.6 is DONE** (2026-08-22) - the steel crucible: three variants on vanilla's chassis, clayformed
+  from fire clay, three heats and finished.
+  ⛔⛔ The research **rewrote the task title**: a clayforming recipe can output only a `-raw` variant, so a
+  two-variant pot is formable nowhere. And `maxHeatableTemp` has **no reader** - the firepit caps on
+  `maxTemperature`.
+  ⛔⛔ **`DoSmelt` casts unchecked** to `BlockSmeltedContainer`, so the smelted class must *be* one; and
+  `classByType` (first in the repo) needs `RawByType`, not `AttributeByType`, which files it where the
+  loader never looks.
+  ⛔⛔ **`smeltedStack.code` and `emptiedBlockCode` read the same string two different ways** - one defaults
+  to `game:`, the other to our own domain. Both pinned, or a guard that only checked qualification would
+  "fix" the working half into a crash.
+  ⛔ The pour and the pot's death are covered as contract + arithmetic, **not** live: no firepit in the
+  harness. Next was **U9.7** (blister crushing), then U9.9-U9.11, the furnace itself.
+- **U9.8 is DONE** (2026-08-21), taken out of order as a leaf - `iiex:cruciblesteel` is a metal, with the
+  whole generated family and a tool set.
+  ⛔ **No preset exists above `good`**, so the raise is an explicit `durability: 3300` riding it - and it is
+  **durability only**: moving mining tier would be a progression gate, durability is not. Recorded in
+  `docs/design/materials.md`.
+  ⛔⛔ **`solidDrop` could not copy bessemer steel's** `game:metalbit-steel` - iiex guards against paying
+  out in vanilla bits (siex does not, which is why that leak still ships there). It drops its own bit, and
+  that bit needed a `scrap` row in **both** `materialroles.json` and the harness's `MaterialRoleSeeds`
+  mirror, or a broken casting sheds metal the cupola refuses.
+  ⛔ A "highest melting point" loop that includes `slag` **asserts nothing** - slag declares none, and a
+  null compares false against any bound in C#.
+- **U9.5 is DONE** (2026-08-21) - the crucible art exports, and **both shape tools were lying**.
+  ⛔⛔ `convert-shape.py --check` used a flat `os.listdir` and the editables live in subdirectories, so it
+  was scanning **0 of 155** shapes and reporting everything mapped. Recursive now; `basalt` (17 shapes) and
+  `hematite` are genuinely undecided and recorded as such.
+  ⛔⛔ **The converter wrote its output before checking textures**, so a refused conversion replaced a
+  correct shipped shape with absolute `F:/...` authoring paths - and **no test could see it**, because the
+  texture guard only matches `domain:path`. Fixed both ends: it refuses before writing, and
+  `No_shipped_asset_carries_an_authoring_path` now fails on any drive letter, `.game/` or
+  `assets/editable/` in a shipped asset. Mutation-checked.
+  ⛔ Do **not** re-export `casting/cell-filling-ingotmold.json`: its editable was re-drawn against `basalt`
+  sand while all 16 shipped siblings render `andesite`. That is a decision about all 17 fillings.
+  Next is **U9.6**, the refractory pot.
 - **U9.4 is DONE** (2026-08-21), and with it **the coke oven is finished and craftable** - core recipe,
   crown-lid recipe, two cost rows, golden, handbook page 11 in three locales.
   ⛔⛔ **The step's own 2026-08-05 correction was stale**: it claimed `furnace-chargedoor` had no recipe

@@ -64,8 +64,9 @@ public partial class BlockCupolaFurnaceCore
             // The slag tap is its own block, so the drawing pins which notch goes where rather than
             // leaving both cells open to either.
             .Legend('S', IiexBlocks.FurnaceSlagtap.WithSide(BlockFacing.WEST))
-            // Orientation-pinned. The cupola is blown from one wall only, so one letter suffices.
-            .Legend('T', IiexBlocks.FurnaceTuyere.WithOrientation("n"))
+            // The cupola is blown from one wall only, so one glyph and one outward face suffice.
+            .Legend('T', IiexBlocks.FurnaceTuyere.Any)
+            .Connector('T', BlockFacing.NORTH)
             .Legend('H', IiexBlocks.HopperTall.WithSide(BlockFacing.WEST))
             .Legend('f', ExCodes.Filler)
             .Legend('c', IiexCodes.ChargeShaft)

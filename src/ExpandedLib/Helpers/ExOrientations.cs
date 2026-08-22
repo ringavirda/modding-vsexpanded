@@ -98,10 +98,13 @@ public sealed class ExOrientationScheme {
 /// listing states inline. Naming the scheme is what makes the <see cref="Axis"/> /
 /// <see cref="DirectedAxis"/> distinction expressible, since <c>ns</c> belongs to both.
 /// <para>
-/// Declaring a scheme does not make a block pinnable in a multiblock layout. A network node picks its
-/// own orientation from its neighbours (<c>BlockNetworkNode.RecalculateAndSyncOrientations</c>), so a
-/// pinned one can leave the structure uncompletable, or break a complete one when the player plumbs
-/// something nearby. See <c>docs/design/mechanics/orientation-schemes.md</c>.
+/// Declaring a scheme does not make a block pinnable in a multiblock layout, and no longer can. A
+/// network node picks its own orientation from its neighbours
+/// (<c>BlockNetworkNode.RecalculateAndSyncOrientations</c>), so a pinned one could leave the structure
+/// uncompletable, or break a complete one when the player plumbs something nearby;
+/// <c>MultiblockLayoutBuilder.Legend</c> refuses a code carrying any multi-letter token below, and a
+/// layout states what it wants with <c>Connector</c>. See
+/// <c>docs/design/mechanics/orientation-schemes.md</c>.
 /// </para>
 /// </summary>
 public static class ExOrientations {
