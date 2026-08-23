@@ -21,4 +21,8 @@ public class BlockEntityBoilerLancashire : BlockEntityBoiler {
     SiexValues.LancashireBoilerMaxOutputPressure;
   protected override int ExplosionRadius =>
     SiexValues.LancashireBoilerExplosionRadius;
+
+  /// <summary>The art draws one access lid, and it is the man hatch: the vessel is fired from a coal
+  /// pile in the masonry outside it, so there is no firing door to swing.</summary>
+  protected override string ManHatchAnimation => "lidopen";
 }

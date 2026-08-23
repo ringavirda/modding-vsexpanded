@@ -84,9 +84,8 @@ public class IntegrationScenarioTests {
 
     BlockPos attach = boiler.SteamPipeAttachPos; // pipe cell directly above the outlet connector
     var riser = IiexScenes.PipeLegend(scene);
-    // Only the top needs sealing: the riser's bottom sits on the boiler's own steam-outlet cell, which
-    // its raised shell occupies. A cap there overwrites that layout cell and breaks the structure on
-    // the next monitor tick.
+    // Only the top needs sealing: the riser's bottom sits on the boiler's own steam-outlet port cell,
+    // which its footprint occupies, so that end is already closed and plumbed into the vessel.
     riser
       .Layer("I", y: attach.Y, originX: attach.X, originZ: attach.Z) // riser cell 1
       .Layer("I", y: attach.Y + 1, originX: attach.X, originZ: attach.Z) // riser cell 2

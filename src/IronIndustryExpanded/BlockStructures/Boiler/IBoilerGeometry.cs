@@ -11,9 +11,17 @@ namespace IronIndustryExpanded.BlockStructures.Boiler;
 public interface IBoilerGeometry {
   JsonObject? FuelOffset { get; }
   JsonObject? ExhaustOutletOffset { get; }
-  JsonObject? LidOffset { get; }
+  JsonObject? MainHatchOffset { get; }
+  JsonObject? ManHatchOffset { get; }
   JsonObject? SteamConnectorOffset { get; }
   JsonObject? LightSampleOffset { get; }
   JsonObject? ExplosionCenterOffset { get; }
   JsonObject? WaterRendererBox { get; }
+
+  /// <summary>
+  /// North-orientation face the feedwater pipe couples to, as a side word or letter. A vessel whose
+  /// principal cell stands at the open end of the body takes water on a horizontal face; one walled in
+  /// on every side takes it from below. <c>null</c> falls back to <c>down</c>.
+  /// </summary>
+  string? FeedwaterFace { get; }
 }

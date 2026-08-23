@@ -46,7 +46,10 @@ public readonly record struct FillerBehaviorSpec(
 /// <summary>
 /// One north-orientation footprint cell for a mega-block, authored in C#: the offset from the principal, whether
 /// other blocks may attach to the filler placed there, and any per-cell hosted <see cref="FillerBehaviorSpec"/>
-/// behaviours (MP/pipe ports). This is the typed source the code-first <c>fillerOffsets</c> attribute is
+/// behaviours (MP/pipe ports). A cell may also carry a passive <see cref="PortFace"/> / <see cref="PortNetworkType"/>
+/// network port: the face code the cell answers back through <see cref="BlockStructureFiller.HasConnectorAt"/> for
+/// the principal, without hosting a <c>BEBehaviorNetworkMember</c> and so without joining the network as a graph
+/// node. This is the typed source the code-first <c>fillerOffsets</c> attribute is
 /// serialized from (<see cref="ExpandedLib.Definitions.ExBlockDef.FillerOffsets"/>), so a footprint is computed
 /// and validated in C# rather than hand-typed as a coordinate array.
 /// </summary>
@@ -56,7 +59,9 @@ public readonly record struct FillerCellSpec(
   int Z,
   bool AllowAttach = false,
   IReadOnlyList<FillerBehaviorSpec>? Behaviors = null,
-  IReadOnlyList<Cuboidf>? CollisionBoxes = null
+  IReadOnlyList<Cuboidf>? CollisionBoxes = null,
+  string? PortFace = null,
+  string? PortNetworkType = null
 );
 
 /// <summary>

@@ -1,11 +1,12 @@
 # Fuels — coke, charcoal, coal, and the beds they burn in
 
-**Status** built for the shaft and the firebox - coke and charcoal are two priced fuels a shaft furnace
-charges, burns and tells apart, at a 2:1 carbon ratio; the firebox furnaces burn from their own fuel beds
-and read fuel identity by a substring list; the boilers read nothing; bulk coking and producer gas are
-designed only
+**Status** built for the shaft, the firebox and the Cornish boiler - coke and charcoal are two priced
+fuels a shaft furnace charges, burns and tells apart, at a 2:1 carbon ratio; the firebox furnaces and the
+Cornish boiler burn from their own fuel beds and admit a fuel by its own
+`combustibleProps.BurnTemperature` against a floor, with the metallurgical exclusion of low-rank coal
+living on the furnace rather than the bed; bulk coking and producer gas are designed only
 **Mod** the role data is iiex (`assets/iiex/config/materialroles.json`); the registry that serves it is
-exlib; the cowper and the boilers burn vanilla coal piles
+exlib; the cowper and the Lancashire boiler still burn vanilla coal piles
 
 **Owns** - the facts this page is canonical for:
 
@@ -19,9 +20,13 @@ exlib; the cowper and the boilers burn vanilla coal piles
   prices at, and which direction that error runs in;
 * the fuel substrates - which machines hold fuel in firebox beds, which burn a vanilla coal pile, and how
   the C# finds each;
-* the firebox's own fuel list (`BEBehaviorFirebox.IsFuel`) as a taxonomy distinct from the role;
+* the firebox's own burn-temperature floor (`BEBehaviorFirebox.IsFuel`) as a taxonomy distinct from the
+  role, and the furnace-level metallurgical exclusion (`BlockEntityFireboxFurnace.AcceptsFireboxFuel`)
+  layered on top of it;
 * the cowper's substring classification as a third, incompatible fuel test;
-* the vanilla fuels' own published numbers, and the fact that nothing in `src/` reads any of them;
+* the vanilla fuels' own published numbers, and that `BurnTemperature` and `BurnDuration` are read
+  directly: the temperature is the bed's whole admission test and the Cornish boiler's rate term, the
+  duration is how fast that boiler draws its bed down;
 * producer gas's place in the taxonomy - the one gaseous fuel that stayed in scope, with no role, no medium
   and no code (everything else about it is [gas producer](../machines/gas-producer.md)'s).
 
@@ -51,8 +56,9 @@ exlib; the cowper and the boilers burn vanilla coal piles
 ## Role
 
 The suite adds no fuel item. It adds a classification - one JSON file that says which vanilla items count
-as carbon and how much each is worth - and two substrates: the firebox bed for the hearths, and the vanilla
-coal pile where it survives (the cowper and the boilers).
+as carbon and how much each is worth - and two substrates: the firebox bed, in a block for the hearths and
+as a hosted behaviour inside the Cornish boiler, and the vanilla coal pile where it survives (the cowper
+and the Lancashire boiler).
 
 A fuel-role grant decides four separate things:
 
@@ -63,21 +69,32 @@ A fuel-role grant decides four separate things:
 | How much carbon does a unit of it carry? | `CarbonPerUnit` → the role's value | `BlockEntityFurnaceCore.CarbonPerUnit` (`:1356`) |
 | What does the HUD call it? | the resolved item's own display name | `BlockEntityFurnaceCore.CourseFuelName` (`:2533`) |
 
-The heat side does not use the role. The firebox furnaces (puddling, reheat) burn from `BEBehaviorFirebox`
-beds, which accept fuel by a hard-coded substring list; the [cowper](../machines/cowper.md) classifies the
-pile below it by substring; the boilers read `IsBurning` and nothing else. "Can I burn X here?" has
-different answers depending on the machine family.
+The heat side does not use the role. The firebox furnaces (puddling, reheat, crucible, the coke oven) and
+the Cornish boiler burn from `BEBehaviorFirebox` beds, which admit fuel by
+`combustibleProps.BurnTemperature` against `IiexValues.BoilerFuelMinTemp` - not a list, so any item
+declaring a high enough burn temperature clears it. The owning machine narrows that with its own rule
+where it has one (`BlockEntityFireboxFurnace.AcceptsFireboxFuel`); a boiler declares none, so it burns
+whatever the bed takes. The [cowper](../machines/cowper.md) classifies the pile below it by substring; the
+Lancashire boiler reads `IsBurning` and nothing else. "Can I burn X here?" has different answers depending
+on the machine family.
 
 ### Two taxonomies, and they must stay apart
 
-| | The shaft asks | The firebox asks |
-|---|---|---|
-| Question | is this a carbon reductant that survives being under a burden column? | will this carry a metallurgical heat? |
-| Answer | `Roles.Fuel` | `BEBehaviorFirebox.IsFuel` - substring list |
-| Coke | yes | yes |
-| Charcoal | yes | yes |
-| Bituminous / anthracite | no | yes |
-| Lignite | no | no - excluded by name (`BEBehaviorFirebox.cs:69`) |
+| | The shaft asks | The bed asks | The furnace asks |
+|---|---|---|---|
+| Question | is this a carbon reductant that survives being under a burden column? | does this burn hot enough at all? | will this carry a metallurgical heat? |
+| Answer | `Roles.Fuel` | `BEBehaviorFirebox.IsFuel` - `BurnTemperature` ≥ `BoilerFuelMinTemp` | `BlockEntityFireboxFurnace.AcceptsFireboxFuel` |
+| Coke | yes | yes | yes |
+| Charcoal | yes | yes | yes |
+| Bituminous / anthracite | no | yes | yes |
+| Lignite | no | yes | no - low-rank coal, excluded by name (`BlockEntityFireboxFurnace.IsLowRank`) |
+
+The third column is a *furnace's* question, and a boiler never asks it: a vessel that only has to beat
+157 °C has no metallurgical stake in the rank of its coal, so the Cornish boiler burns lignite and takes
+a 9 % rate cut for it ([Cornish boiler](../machines/boiler-cornish.md) § Fuel drives the rate). The coke
+oven narrows the same seam a third way - it takes only the coals that coke - and each machine states its
+own refusal, because "will not carry a metallurgical heat" is nonsense from a retort refusing charcoal
+(`BlockEntityFireboxFurnace.RefuseFireboxFuel`, overridden at `BlockEntityCokeOven`).
 
 Granting `Roles.Fuel` to raw coal would silently make it chargeable into a blast furnace, because
 `BlockEntityShaftFurnace.IsChargeItem` accepts anything holding the role. Raw coal crushes to dust under a
@@ -95,14 +112,19 @@ but unacceptable.
 |---|---|---|---|---|---|
 | Coke | `game:coke` | `fuel`, 2 (`materialroles.json:4`) | 1340 × 40 (`.game/1.20/assets/survival/itemtypes/resource/coke.json`) | every shaft furnace (charge, band order, carbon, HUD); firebox beds | vanilla's coke oven - the suite adds none; the bulk [beehive oven](../machines/coke-oven.md) is designed, not built |
 | Charcoal | `game:charcoal` | `fuel`, 1 (`materialroles.json:5`) | 1300 × 40 (`…/resource/charcoal.json`) | as coke, at half its carbon; firebox beds | vanilla charcoal pit |
-| Anthracite | `game:ore-anthracite` | none | 1200 × 196 (`…/resource/ore-ungraded.json`) | firebox beds; the [cowper](../machines/cowper.md), by substring (§ The cowper's taxonomy) | mining |
-| Bituminous coal | `game:ore-bituminouscoal` | none | 1200 × 84 (`…/resource/ore-ungraded.json`) | firebox beds; the cowper, as "other coal" | mining |
-| Lignite | `game:ore-lignite` | none | 1100 × 77 (`…/resource/ore-ungraded.json`) | nothing - the firebox excludes it by name; the cowper reads it as "other coal" | mining |
+| Anthracite | `game:ore-anthracite` | none | 1200 × 196 (`…/resource/ore-ungraded.json`) | firebox beds; the Cornish boiler's bed; the [cowper](../machines/cowper.md), by substring (§ The cowper's taxonomy) | mining |
+| Bituminous coal | `game:ore-bituminouscoal` | none | 1200 × 84 (`…/resource/ore-ungraded.json`) | firebox beds; the Cornish boiler's bed; the coke oven's charge; the cowper, as "other coal" | mining |
+| Lignite | `game:ore-lignite` | none | 1100 × 77 (`…/resource/ore-ungraded.json`) | the Cornish boiler's bed, at a 9 % rate cut; a firebox bed takes it and the reverberatory furnace above then refuses it; the cowper reads it as "other coal" | mining |
 | Producer gas | — | none - no item, no medium, no code | — | nothing | nothing - see [gas producer](../machines/gas-producer.md) |
 
-Vanilla's own `burnTemperature` / `burnDuration` are reference figures only; not one of them is read
-anywhere in `src/`. Combustion temperature is [heat balance](../mechanics/heat-balance.md)'s `T_in`,
-computed from the charge, not from the item.
+Vanilla's own `burnTemperature` is read directly - it is the firebox bed's whole admission test
+(`BEBehaviorFirebox.IsFuel`/`BurnTemperatureOf`), against `IiexValues.BoilerFuelMinTemp`, and the Cornish
+boiler's rate term on top of that. `burnDuration` is read the same way (`BurnDurationOf`) and is what draws
+that boiler's bed down, one unit per the fuel's own declared seconds - which makes duration, not flame
+temperature, the thing that separates one boiler coal from another
+([Cornish boiler](../machines/boiler-cornish.md)). Combustion temperature for the shaft/heat-balance path
+remains [heat balance](../mechanics/heat-balance.md)'s `T_in`, computed from the charge, not from the item -
+that reading is unrelated to the firebox's own admission test.
 
 ### The whole role file
 
@@ -200,21 +222,38 @@ per cell by default, refill and dig-out through the bed itself. A legend that ad
 an empty firebox complete the furnace, which is why the block is required rather than an `@(air|coalpile)`
 cell (`BlockPuddlingFurnaceCore.cs:104-110`).
 
-`BEBehaviorFirebox.IsFuel` (`:73-82`) matches the code path against a substring list - `coke`,
-`bituminous`, `anthracite`, `charcoal` - and refuses `lignite` by name before the list is consulted
-(`:69`), so the exclusion cannot be undone by the list growing. A bed holds one fuel at a time (`Accepts`,
-`:154-156`).
+`BEBehaviorFirebox.IsFuel` (`:34-35`) reads the stack's own `combustibleProps.BurnTemperature` against
+`IiexValues.BoilerFuelMinTemp` - no list, so a fuel another mod ships is admitted by declaring what it
+already declares. Lignite clears this floor; a reverberatory hearth refuses it anyway, one layer up, in
+`BlockEntityFireboxFurnace.AcceptsFireboxFuel` (`:198-199`), whose private `IsLowRank` (`:203-204`) is the
+name check that used to live on the bed. A bed holds one fuel at a time (`Accepts`, `:160-162`).
 
-### Vanilla coal piles — the cowper and the boilers
+### Internal beds — the Cornish boiler
 
-Two machine families still burn a free-placed vanilla `game:coalpile` in an `@(air|coalpile)` cell
-(`VanillaCodes.CoalBed`, `VanillaCodes.cs:309`):
+The bed is a behaviour rather than a block feature, so a machine can host one with no firebox block in
+sight. The Cornish boiler declares `BEBehaviorFirebox` on its own block entity, with its own geometry -
+4 layers × 4 units = 16, drawn as the boiler shape's own `CoalLayers/L1`..`L4`
+(`BlockBoilerCornish.cs:49-56`) - and reads it back through `BlockEntityBoiler.Bed`
+(`BlockEntityBoiler.Client.cs:144`). No layout legend, no fuel cell, nothing for the player to place: the
+fire is inside the vessel, charged and lit through its main hatch.
 
-| Machine | Legend site | How it reads the pile |
+It declares no `AcceptsFireboxFuel` of its own, so every fuel the bed takes fires it, lignite included.
+What the fuel changes is the rate and how long the bed lasts, both read off the same `combustibleProps`
+([Cornish boiler](../machines/boiler-cornish.md) § Fuel drives the rate).
+
+### Vanilla coal piles — the cowper and the Lancashire boiler
+
+Two machines still burn a free-placed vanilla `game:coalpile`
+(`VanillaCodes.CoalBed` = `@(air|coalpile)`, `VanillaCodes.cs:192`):
+
+| Machine | How the cell is declared | How it reads the pile |
 |---|---|---|
-| cowper stove (smex) | `BlockCowperStoveIntake.cs:59` | prefix test on the block below, then a substring branch on the pile's contents (`BlockEntityCowperStove.cs:98-99`, `:127-149`) |
-| Cornish boiler (iiex) | `BlockBoilerCornish.cs:87` | `GetBlockEntity(FuelWorldPos) as BlockEntityCoalPile`, then `IsBurning` + non-empty (`BlockEntityBoiler.cs:298-301`) |
-| Lancashire boiler (hpex) | `BlockBoilerLancashire.cs:96` | same shared `BlockEntityBoiler` read |
+| cowper stove (siex) | layout legend `'c'` (`BlockCowperStoveIntake.cs:58`) | prefix test on the block below, then a substring branch on the pile's contents (`BlockEntityCowperStove.cs`) |
+| Lancashire boiler (siex) | **not declared at all** - the vessel lost its `MultiblockLayout` with the shared multiblock base, so nothing requires the pile. The boiler simply looks at its `fuelOffset` `(0,0,-1)`, a cell outside its own footprint | `GetBlockEntity(FuelWorldPos) as BlockEntityCoalPile`, then `IsBurning` + non-empty (`BlockEntityBoiler.PileIsBurning`, `:469-475`) |
+
+The shared `BlockEntityBoiler` carries both fire models and picks between them on whether the leaf declares
+a bed (`:308-310`). The pile branch goes away when the Lancashire is converted
+([Lancashire boiler](../machines/boiler-lancashire.md)).
 
 The pile is vanilla, unmodified. `.game/1.20/assets/survival/blocktypes/coalpile.json` declares one block
 whose texture set covers `charcoal`, `coke`, `ore-anthracite`, `ore-lignite`, `ore-bituminouscoal` and
@@ -228,7 +267,8 @@ a pile gives is the block entity's, not a drop table's. `StartsWith("coalpile")`
 |---|---|---|---|
 | blast furnace / cupola | burden or fuel, as separate bands in a charge column | a shaft full of coke lights and burns; it makes no iron, because there is no ore between the fuel | `BlockEntityShaftFurnace.cs:278-282`, `BlockEntityFurnaceCore.NextChargeColumn` |
 | firebox furnaces (reheat, puddling) | bed units, reported as pure fuel ("a firebox is all coke and nothing else") | nothing is refused at the read, because a bed only ever holds fuel it already accepted; identity is gated at the bed, not the walk | `BlockEntityFireboxFurnace.cs:108-126` |
-| boilers | `IsBurning` and "not empty". Nothing else. No item test, no stack consumption | any pile of anything fires a boiler forever | `BlockEntityBoiler.cs:298-301` |
+| Cornish boiler | its own bed's `Units`, plus the charged fuel's `BurnTemperature` and `BurnDuration` | the fuel is spent: one unit leaves the bed per the fuel's own declared seconds, and the bed going empty puts the fire out | `BlockEntityBoiler.cs:308-310`, `:491-504` |
+| Lancashire boiler | `IsBurning` and "not empty". Nothing else. No item test, no stack consumption | any pile of anything fires it forever | `BlockEntityBoiler.PileIsBurning`, `:469-475` |
 
 ---
 
@@ -247,8 +287,8 @@ It does not use the role registry, and the branch has sharp edges:
 * adding an anthracite-grade fuel through `materialroles.json` (the documented seam) has no effect here.
 
 Proposed: a `fuel` value the stove reads, or a second role (`hotfuel`?) - either way one JSON entry plus
-one line. The firebox's substring list (`BEBehaviorFirebox.Fuels`) is a second copy of the same idea in
-iiex, so the eventual `hotfuel` role has two customers waiting.
+one line. The firebox's own admission test (`BEBehaviorFirebox.IsFuel`) no longer keeps a list of its own -
+it reads `combustibleProps` directly - so this substring problem is now the cowper's alone.
 
 ---
 
@@ -282,7 +322,8 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 | `MaterialRoleLoader` | `…/MaterialRoleLoader.cs:16` | `Load` `:20` (clear → overlay → contributors), `Overlay` `:39` (pure, unit-testable) |
 | `IronOreCompat` | `src/IronIndustryExpanded/Compat/IronOreCompat.cs:16` | the one live contributor: IndustrialStory and Expanded Matter ore codes, gated on `IsModEnabled` (`:34-51`) |
 | `BlockEntityFurnaceCore.IsFuelCode` / `IsFuelStack` / `CarbonPerUnit` | `…/Furnaces/BlockEntityFurnaceCore.cs:1313`, `:1328`, `:1356` | the shaft-side fuel seams |
-| `BEBehaviorFirebox.IsFuel` | `…/Furnaces/BEBehaviorFirebox.cs:73-82` | the firebox-side fuel test - substring list, lignite excluded |
+| `BEBehaviorFirebox.IsFuel` | `…/Furnaces/BEBehaviorFirebox.cs:34-35` | the bed-side fuel test - `BurnTemperature` against `BoilerFuelMinTemp`, no list |
+| `BlockEntityFireboxFurnace.AcceptsFireboxFuel` | `…/Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs:197-198` | the furnace-side narrowing - refuses low-rank coal (`IsLowRank`, `:202-203`) that the bed itself would take |
 
 ### Where a caller hooks in
 
@@ -309,15 +350,16 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
    2026-08-06; `HopperTallTests.Charcoal_will_not_go_onto_a_column_topped_with_COKE` is the only case in
    the suite that can tell the two spellings apart.
 
-2. A boiler never consumes fuel. `OnProductionTick` reads `pile?.IsBurning` and whether slot 0 is empty,
-   and never decrements a stack (`BlockEntityBoiler.cs:298-311`). Whatever the vanilla pile does on its own
-   is the entire fuel economy of the steam tier.
+2. A coal-pile boiler never consumes fuel, and the two boilers are on opposite sides of that. The
+   Cornish's bed is drawn down one unit per the fuel's own `burnDuration` (`BlockEntityBoiler.cs:508-521`);
+   the Lancashire's read is `pile?.IsBurning` and whether slot 0 is empty, with no stack ever decremented
+   (`:469-475`), so whatever the vanilla pile does on its own is the entire fuel economy of that vessel.
 
-3. The firebox's fuel list is substrings, not codes. `BEBehaviorFirebox.IsFuel` matches path fragments, so
-   any modded `*coke*` or `*charcoal*` path is accepted by accident - the same hazard as the cowper's
-   anthracite test, adopted knowingly (`BEBehaviorFirebox.cs:41-46` cites the cowper as the precedent). It
-   also does not consult the role registry: bituminous and anthracite burn in a firebox while holding no
-   role, which is the two-taxonomy rule working as intended.
+3. The firebox's fuel test reads `combustibleProps.BurnTemperature` directly against
+   `IiexValues.BoilerFuelMinTemp` (`BEBehaviorFirebox.cs:34-35`), not a list or a substring - a modded fuel
+   is admitted by declaring what it already declares, with no code change needed. It does not consult the
+   role registry: bituminous and anthracite burn in a firebox while holding no role, which is the
+   two-taxonomy rule working as intended.
 
 4. `FirstCodePart() == "coal"` matches nothing in vanilla. The design table accepts a drawing medium if
    `code.Path == "charcoal" || code.FirstCodePart() == "coal"` (`BlockEntityDesignTable.cs:157-159`), but
@@ -351,10 +393,13 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 
 1. The heat side has no role. The `fuel` role drives charging, band order, pricing and naming across all
    three shaft furnaces; the machines that burn for heat rather than for carbon each carry their own test -
-   the firebox's substring list, the cowper's anthracite substring, the boilers' bare `IsBurning`. The fix
+   the firebox bed's burn-temperature floor, the cowper's anthracite substring, the Lancashire boiler's
+   bare `IsBurning`. The fix
    is not to widen `Roles.Fuel` to reach them, because that grants a shaft-charge permit as a side effect
    (§ Two taxonomies, and they must stay apart). It is a second role (`hotfuel`?) that coal may hold and
-   the shaft never asks about, with the firebox and the cowper as its first two consumers.
+   the shaft never asks about, with the firebox and the cowper as its first two consumers. The bed's own
+   floor has narrowed the gap: everything reading a bed now reads `combustibleProps`, so what is left
+   outside is the cowper and the one boiler still on a pile.
 
 2. Coal is not a shaft fuel anywhere, and it must not become one via `Roles.Fuel`. The handbook says raw
    coal "makes a charge the furnace will grade as off-spec", which is not what the code does: coal is
@@ -363,10 +408,9 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
    [coking](../processes/coking.md) forbids. Raw coal's legitimate fire is the firebox, where it already
    burns.
 
-3. Bulk coking is unbuilt, and it is the only supply route this page's taxonomy rests on. Coke is the one
-   item that carries the `fuel` role at full value, and nothing in the suite makes it. The
-   [beehive oven](../machines/coke-oven.md) - which owns the scaling argument, the yield and the cycle time
-   - has no block, no shape and no recipe.
+3. ~~Bulk coking is unbuilt.~~ **Closed 2026-08-21** (U9.1-U9.4): the
+   [beehive oven](../machines/coke-oven.md) stands, bakes and is craftable, so the one item carrying the
+   `fuel` role at full value has a supply route inside the suite.
 
 4. Producer gas is the one gaseous fuel that stayed in scope, and there is nothing to point at. No item, no
    `LiquidDef`, no medium string, no config key, and the machine that would make it has no consumer either.
@@ -377,7 +421,8 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 
 5. No fuel is recoverable from a fire that consumes it. R2 (declared recovery) is satisfied for burden - a
    dead furnace's column is re-cokeable ([ironmaking](../processes/ironmaking.md)) - and a firebox bed
-   gives layers back (`BEBehaviorFirebox.TryTakeLayer`) and keeps a salvage fraction on burn-out. A pile of
-   plain coke in a boiler firebox burns to nothing with no ash, no clinker and no drop. Whether that
-   matters is undecided; the [gas producer](../machines/gas-producer.md) raises the same question for its
-   bed.
+   gives layers back (`BEBehaviorFirebox.TryTakeLayer`) and keeps a salvage fraction on burn-out. A boiler
+   bed has neither route: the vessel offers no take-a-course verb at all - an empty hand at its main hatch
+   is the swing/light gesture - so a mischarged bed can only be burned off, and breaking the vessel takes
+   what is left with it. Whether that matters is undecided; the
+   [gas producer](../machines/gas-producer.md) raises the same question for its bed.

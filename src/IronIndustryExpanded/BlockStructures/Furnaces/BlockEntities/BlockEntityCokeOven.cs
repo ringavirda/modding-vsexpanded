@@ -8,6 +8,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
@@ -261,6 +262,13 @@ public class BlockEntityCokeOven : BlockEntityFireboxFurnace {
   /// </summary>
   public override bool AcceptsFireboxFuel(ItemStack? stack) =>
     IsCokingCoal(stack?.Collectible?.Code?.ToString());
+
+  /// <summary>
+  /// The branch's refusal names a metallurgical heat, which a retort never asks for - it is refusing
+  /// charcoal and coke for being already burned, not for burning too cool.
+  /// </summary>
+  public override void RefuseFireboxFuel(IServerPlayer? player) =>
+    player?.SendIngameError("iiex-firebox-notcoking");
 
   /// <summary>
   /// A sealed chamber does not burn its charge out. The branch's version keeps only a fraction of the bed

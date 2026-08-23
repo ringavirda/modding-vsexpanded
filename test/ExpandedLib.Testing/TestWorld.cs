@@ -313,18 +313,34 @@ public sealed class TestWorld {
   /// Registers a resolvable <see cref="Item"/> under <paramref name="code"/> so
   /// <c>World.GetItem(code)</c> returns it. <paramref name="meltingPoint"/> (°C, 0 = none) is exposed
   /// through the item's <see cref="CombustibleProperties"/> so melt-point classification
-  /// (liquid/cooling/hardened) works headlessly. Returns the created item.
+  /// (liquid/cooling/hardened) works headlessly; <paramref name="burnTemperature"/>/
+  /// <paramref name="burnDuration"/> do the same for burn classification (<c>BEBehaviorFirebox.IsFuel</c>
+  /// and friends). Left at 0 (no explicit override), a real vanilla fuel code
+  /// (<c>game:coke</c>, <c>game:charcoal</c>, <c>game:ore-bituminouscoal</c>, <c>game:ore-anthracite</c>,
+  /// <c>game:ore-lignite</c>) still gets its own shipped burn figures - see <see cref="VanillaFuelBurn"/> -
+  /// so a bare <c>RegisterItem("game:coke")</c> clears the combustibleProps-based admission gate the way
+  /// the real item does, with nothing for a caller to wire up. Returns the created item.
   /// </summary>
-  public Item RegisterItem(string code, float meltingPoint = 0f) {
+  public Item RegisterItem(
+    string code,
+    float meltingPoint = 0f,
+    float burnTemperature = 0f,
+    float burnDuration = 0f
+  ) {
     // A unique non-zero id so ItemStack.ResolveBlockOrItem (which re-resolves a cloned/loaded stack
     // by id) finds the item instead of nulling out its Collectible.
     var item = new Item {
       Code = new AssetLocation(code),
       ItemId = _nextItemId++,
     };
-    if (meltingPoint > 0f)
+    (float defaultTemp, float defaultDuration) = VanillaFuelBurn(code);
+    float temp = burnTemperature > 0f ? burnTemperature : defaultTemp;
+    float duration = burnDuration > 0f ? burnDuration : defaultDuration;
+    if (meltingPoint > 0f || temp > 0f)
       item.CombustibleProps = new CombustibleProperties {
         MeltingPoint = (int)meltingPoint,
+        BurnTemperature = (int)temp,
+        BurnDuration = (int)duration,
       };
     // The collectible's own api handle. A real world sets it on load, and several vanilla members reach
     // for it rather than for the world they are handed: CollectibleObject.Equals compares two stacks'
@@ -335,6 +351,25 @@ public sealed class TestWorld {
     _itemsById[item.ItemId] = item;
     return item;
   }
+
+  /// <summary>
+  /// Vanilla's own burn temperature and duration for the handful of real fuel codes the furnace suites
+  /// register by name, so <see cref="RegisterItem"/> can stand a headless item in for the real one without
+  /// every call site wiring up combustion figures by hand. Verified against
+  /// <c>.game/1.22/assets/survival/itemtypes/resource/{coke,charcoal,ore-ungraded}.json</c>. Empty for
+  /// anything else, including a mod's own items, which register their own combustion figures explicitly.
+  /// </summary>
+  private static (float temperature, float duration) VanillaFuelBurn(
+    string code
+  ) =>
+    code switch {
+      "game:coke" => (1340f, 40f),
+      "game:charcoal" => (1300f, 40f),
+      "game:ore-bituminouscoal" => (1200f, 84f),
+      "game:ore-anthracite" => (1200f, 196f),
+      "game:ore-lignite" => (1100f, 77f),
+      _ => (0f, 0f),
+    };
 
   public Item? GetItem(AssetLocation? code) =>
     code != null && _itemsByCode.TryGetValue(code.ToString(), out var i)

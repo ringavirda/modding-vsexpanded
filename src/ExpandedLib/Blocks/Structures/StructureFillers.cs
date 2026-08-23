@@ -13,25 +13,32 @@ namespace ExpandedLib.Blocks.Structures;
 /// collision/selection boxes (north orientation) for footprint cells the mega-block
 /// only partially fills, such as a slab. Attachment defaults to <c>false</c>;
 /// <c>CollisionBoxes</c> is <c>null</c> for the common full-cube cell.
+/// <see cref="PortFace"/>/<see cref="PortNetworkType"/> are both null, or both set, for a cell that
+/// carries a passive network port (north orientation).
 /// </summary>
 public readonly record struct FillerOffset(
   Vec3i Offset,
   bool AllowAttach,
   Cuboidf[]? CollisionBoxes,
-  FillerBehavior[]? Behaviors = null
+  FillerBehavior[]? Behaviors = null,
+  string? PortFace = null,
+  string? PortNetworkType = null
 );
 
 /// <summary>
 /// A resolved world-space filler cell carrying its per-cell attachment flag and, when
 /// the cell is only partially filled, its collision/selection boxes already rotated
 /// into the placed orientation. <see cref="Behaviors"/> carry their connector face
-/// already rotated to match.
+/// already rotated to match, as does <see cref="PortFace"/> when the cell carries a
+/// passive network port.
 /// </summary>
 public readonly record struct FillerCell(
   BlockPos Pos,
   bool AllowAttach,
   Cuboidf[]? CollisionBoxes,
-  FillerBehavior[]? Behaviors = null
+  FillerBehavior[]? Behaviors = null,
+  string? PortFace = null,
+  string? PortNetworkType = null
 );
 
 /// <summary>
@@ -57,7 +64,9 @@ public static class StructureFillers {
   /// <c>{ x, y, z }</c> plus an optional <c>allowAttach</c> bool defaulting to <c>false</c> (the filler
   /// at that cell rejects attached blocks). A cell the mega-block only partially fills declares its
   /// solid volume with either <c>collisionBox</c> (one <c>{x1,y1,z1,x2,y2,z2}</c> cuboid) or
-  /// <c>collisionBoxes</c> (an array of them); omit both for a full-cube cell.
+  /// <c>collisionBoxes</c> (an array of them); omit both for a full-cube cell. A cell may also declare
+  /// a passive network port as <c>portFace</c> (a single-letter face code) plus <c>portNetwork</c>; both
+  /// are omitted for a cell with no port.
   /// </summary>
   public static List<FillerOffset> ReadOffsets(JsonObject? offsetsNode) {
     var result = new List<FillerOffset>();
@@ -70,7 +79,9 @@ public static class StructureFillers {
           new Vec3i(entry["x"].AsInt(), entry["y"].AsInt(), entry["z"].AsInt()),
           entry["allowAttach"].AsBool(false),
           ReadBoxes(entry),
-          ReadBehaviors(entry)
+          ReadBehaviors(entry),
+          entry["portFace"].AsString(),
+          entry["portNetwork"].AsString()
         )
       );
     }
@@ -155,7 +166,11 @@ public static class StructureFillers {
           principalPos.AddCopy(r.X, r.Y, r.Z),
           off.AllowAttach,
           boxes,
-          RotateBehaviorFaces(off.Behaviors, angle)
+          RotateBehaviorFaces(off.Behaviors, angle),
+          off.PortFace == null
+            ? null
+            : ExOrientation.RotateSideWord(off.PortFace, angle),
+          off.PortNetworkType
         )
       );
     }
@@ -224,6 +239,8 @@ public static class StructureFillers {
         be.Principal = principalPos.Copy();
         be.AllowAttach = cell.AllowAttach;
         be.CollisionBoxes = cell.CollisionBoxes;
+        be.PortFace = cell.PortFace;
+        be.PortNetworkType = cell.PortNetworkType;
         // Stores and (re)creates the hosted behaviours now that the principal link is set, so an MP
         // port joins the network at placement rather than at the next reload.
         be.SetHostedBehaviors(cell.Behaviors);

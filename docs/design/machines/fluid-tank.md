@@ -80,9 +80,9 @@ and five more places re-derive the same expression independently rather than rea
 | pressure valve, gas branch | `BlockEntityPressureValve.cs:163` | the output run's ceiling ([cast pipes](cast-pipes.md)) |
 | pressure valve, liquid branch | `BlockEntityPressureValve.cs:247` | the output run's free space |
 | steam condenser | `BlockEntitySteamCondenser.cs:181` | through-flow headroom |
-| boiler steam push | `BlockEntityBoiler.cs:544` | fallback when the run has no state yet |
+| boiler steam push | `BlockEntityBoiler.cs:561` | fallback when the run has no state yet |
 
-There is no such thing as a node with its own capacity. Making the tank a graph node that contributes 2000 L
+There is no such thing as a node with its own capacity. Making the tank a graph node that contributes 4000 L
 means changing all fifteen sites to sum a per-node capacity, and then auditing every burst, pressure, merge
 and split path that assumes the pool scales with the node count. `PoolVolumeCeiling`
 (`PipeNetwork.cs:337-341`) multiplies `maxVolume` by the weakest burst rating, so a large-capacity node
@@ -96,7 +96,7 @@ This is why the tank has never been built. It is not a "write the block" task.
 |---|---|---|---|
 | A - capacity-bearing graph node | add `INetworkCapacity` (or read a per-node litres value) and sum it; fix all 15 sites | changes exlib's core pool model; touches burst, merge, split, and every content-mod re-derivation | highest risk, and the burst-headroom side effect has to be designed, not patched |
 | B - connector with its own tank | the tank is not a graph node. It is an `INetworkConnector` holding its own `float _volume` + `MediumType`, ticking once a second: pull from the fuller side, push to the emptier | zero exlib change. Every mechanism already exists | recommended |
-| C - a very long dead-end run | no new block; the player just builds 60 pipes | free | rejected: 60 cells for 1800 L is absurd, and a dead-end run is one open connector away from leaking itself dry |
+| C - a very long dead-end run | no new block; the player just builds 120 pipes | free | rejected: 120 cells for 3600 L is absurd, and a dead-end run is one open connector away from leaking itself dry |
 
 Route B's template already ships twice. The steam condenser is this shape - "a tjunction-shaped fixed port
 (not a network node) … the three adjacent runs stay separate networks (it's a connector, not a node); the BE
@@ -208,21 +208,21 @@ receiver. A pressurised gas receiver is a different machine.
 
 | quantity | proposed | anchored on | file:line of the anchor |
 |---|---|---|---|
-| Capacity | 2000 L | a Cornish boiler drawing at its maximum feed rate for one full heat-up: `10 L/s × 180 s = 1800 L`, plus margin | `BoilerWaterIntakeRate` `IiexConfig.cs:95`; `BoilerHeatUpSeconds` `IiexConfig.cs:80` |
-| Transfer rate, each side | 20 L/s | above the boiler's 10 L/s draw and above a Watt-driven pump's real 15 L/s output, so the tank is never the bottleneck | `IiexConfig.cs:95`; [pumps](pumps.md) |
+| Capacity | 4000 L | a Cornish boiler drawing at its maximum feed rate for one full heat-up: `20 L/s × 180 s = 3600 L`, plus margin | `BoilerWaterIntakeRate` `IiexConfig.cs:1011`; `BoilerHeatUpSeconds` `IiexConfig.cs:997` |
+| Transfer rate, each side | 30 L/s | above the boiler's 20 L/s draw and above a Watt-driven pump's real 15 L/s output, so the tank is never the bottleneck. It has to clear the draw, not match it: a tank transferring at exactly the boiler's rate is the bottleneck it was built to remove | `IiexConfig.cs:1011`; [pumps](pumps.md) |
 | Delivery pressure | 1 atm, fixed | matches the intake's and the manual pump's gravity head | `BlockEntityFluidIntake.cs:49`, `BlockEntityManualFluidPump.cs:147` |
 | Tick period | 1000 ms, server-side | every other fitting and machine in iiex | `BlockEntitySteamCondenser.cs:42`, `BlockEntityPressureValve.cs:54` |
 | Config key | `FluidTankCapacity`, section `iiex` | — | would join `IiexConfig.cs` § Storage |
 
-### What 2000 L buys, against shipped numbers
+### What 4000 L buys, against shipped numbers
 
 | scenario | result |
 |---|---|
-| Cornish boiler at maximum feed draw, pump stopped | 2000 / 10 = 200 s unattended |
-| Cornish boiler auto-fill ceiling | 800 × 0.5 = 400 L → the tank holds 5 fills (`IiexConfig.cs:91`, `:143`) |
-| Filling the tank from a Watt-driven pump | 2000 / 15 = 133 s ([pumps](pumps.md)) |
-| Filling it by hand | 2000 / 2 = 1000 s - deliberately not a hand job (`ManualPumpWaterPerSecond`, `IiexConfig.cs:203`) |
-| Equivalent in pipe cells | 2000 / 30 = 67 pipes (`LitresPerPipe`, `ExlibConfig.cs:32`) |
+| Cornish boiler at maximum feed draw, pump stopped | 4000 / 20 = 200 s unattended |
+| Cornish boiler auto-fill ceiling | 1600 × 0.5 = 800 L → the tank holds 5 fills (`IiexConfig.cs:1008`, `:1059`) |
+| Filling the tank from a Watt-driven pump | 4000 / 15 = 267 s ([pumps](pumps.md)) |
+| Filling it by hand | 4000 / 2 = 2000 s - deliberately not a hand job (`ManualPumpWaterPerSecond`, `IiexConfig.cs:1119`) |
+| Equivalent in pipe cells | 4000 / 30 = 133 pipes (`LitresPerPipe`, `ExlibConfig.cs:52`) |
 
 ### Build cost *(proposed)*
 
@@ -240,9 +240,9 @@ count follows; do not pick a number and back-fill the art.
   ([pipe network](../mechanics/pipe-network.md) Gotcha 14). Under
   [recoverability](../mechanics/recoverability.md)'s declared recovery this is fine, but it must be
   declared: the block-info line should say so, and the break should at minimum spill particles rather than
-  vanishing 2000 L in silence.
+  vanishing 4000 L in silence.
 
-Open: whether breaking a full tank should be refused, or should splash. A 2000 L vessel evaporating on a
+Open: whether breaking a full tank should be refused, or should splash. A 4000 L vessel evaporating on a
 mis-click is the kind of silent loss R7 exists to prevent.
 
 ---

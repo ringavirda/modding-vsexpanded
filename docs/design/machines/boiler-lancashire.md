@@ -1,32 +1,32 @@
 # Lancashire Boiler
-**Status** live   **Mod** hpex
+**Status** live   **Mod** siex
 
 **Owns**
 - The Lancashire variant's stat table - capacity, boil window, steam rate, choke pressure, blast radius -
   and every `LancashireBoiler*` key.
-- The Lancashire's structure: the 3 × 3 × 10 verified envelope, the 35-cell filler footprint, the six
-  geometry offsets, the firebox bill, and which cells the player touches.
+- The Lancashire's structure: the 35-cell filler footprint, the seven geometry offsets, the masonry bill
+  its retired layout used to demand, and which cells the player touches.
 - Its construction: the grid frame recipe and the four RCC stages with their exact totals (a test pins
   them), including the steel-vs-iron split inside those stages.
 - Its assets: shape, animations, textures, `waterRendererBox`, and the state of its handbook page.
 - The arithmetic that follows from its numbers: the 9.6 atm hand-prime ceiling, the boil-down time, the
   temperature at its ceiling, and how many Cornish engines one Lancashire feeds.
-- The fact that its own required structure hard-codes iiex cast-tier fittings, so an HP plant's boiler
-  cannot be walled in with HP-tier parts.
+- The fact that the masonry its retired layout demanded hard-codes iiex cast-tier fittings, so an HP
+  plant's boiler could never have been walled in with HP-tier parts.
 
 **Does not own** - cited only, never restated:
 - The shared boiler model - one tank shared between water and steam, `InternalPressure`, the
   `Idle → Heating → Boiling` FSM and its graces, feedwater intake and the pressurised-feed flash,
-  `PushSteam`'s connected-vessel equalisation, the steam ceiling cap, lid venting, internal condensation, the
+  `PushSteam`'s connected-vessel equalisation, the steam ceiling cap, man-hatch venting, internal condensation, the
   choke rule, the burst sequence, `GetBlockInfo`, the drop rules, and every shared `Boiler*` / `Steam*` key -
   [Cornish boiler](boiler-cornish.md), canonical for all of it.
 - The pipe pool, `LitresPerPipe`, pressure formulas, burst-by-tier, joints, leaks, chimney venting, the
   network tick order - [pipe network](../mechanics/pipe-network.md).
 - The rolled tier the Lancashire's steam main has to be made of, its 12 atm rating, its welded-joins-only
   rule and its missing recipe (B5) - [rolled pipe](rolled-pipe.md).
-- The iiex fittings this boiler's layout demands (passthrough, passthrough-bend, outlet) and B6 in
+- The iiex fittings the retired layout named (passthrough, passthrough-bend, outlet) and B6 in
   full - [cast pipes & fittings](cast-pipes.md).
-- Fillers, the ASCII layout DSL, `Origin`-is-the-negation, projection, per-cell collision -
+- Fillers, the footprint DSL, `Origin`-is-the-negation, per-cell collision, the declarative filler port -
   [multiblock](../mechanics/multiblock.md).
 - Code-first defs, the RCC `Construction` builder, the `brokenDropsRatio` chain, the recipe-cost catalogue -
   [recipes & config](../mechanics/recipes-config.md).
@@ -38,18 +38,25 @@
 
 ## Role
 
-The Lancashire is the Cornish boiler scaled up and pushed up a band: same class, same FSM, same firebox
-pattern, with a vessel half as large again that boils 50 % faster and chokes at 12 atm instead of 5.
+The Lancashire is the Cornish boiler pushed up a band: same class, same FSM, and a vessel that chokes at
+12 atm instead of 5. The two have parted company on size and on fire - the Cornish was rebalanced onto a
+larger footprint with a bed inside its own shape, and this one has neither yet.
 
 | | Cornish boiler | Lancashire |
 |---|---|---|
-| Capacity | 800 L | 1200 L |
-| Boil window | 150 – 500 L | 200 – 800 L |
-| Steam | 32 L/s | 48 L/s |
+| Capacity | 1600 L | 1200 L |
+| Boil window | 300 – 1000 L | 200 – 800 L |
+| Steam | 64 L/s | 48 L/s |
 | Choke | 5.0 atm | 12.0 atm |
 | Blast radius | 3 | 4 |
 | Pickaxe | tier 3 (bronze) | tier 4 (iron) |
-| Structure | 3 × 3 × 8, 23 fillers, 33 bricks | 3 × 3 × 10, 35 fillers, 39 bricks |
+| Footprint | 3 × 6 × 3, 40 fillers | 3 × 6 × 2, 35 fillers |
+| Fire | an internal `BEBehaviorFirebox` bed, 16 units, lit through its own main hatch | a free-placed `game:coalpile` at `(0,0,-1)`, required by nothing |
+| Fuel matters | rate and duration read off the coal's own `combustibleProps` | not at all: `IsBurning` and non-empty |
+
+⛔ The Lancashire is the smaller vessel now and still the higher tier. Its 48 L/s against the Cornish's
+64 buys pressure, not throughput, which is the right shape only if the Cornish engine's draw justifies it
+- and nothing has re-checked that since the rebalance.
 
 A boiler that chokes at 12 sits four atmospheres above the 8 atm break point of the only engine that can use
 it, and the device that is supposed to sit between them cannot be fitted
@@ -59,43 +66,68 @@ it, and the device that is supposed to sit between them cannot be fitted
 
 ## Structure
 
-A megablock and a multiblock at once, like the Cornish ([multiblock](../mechanics/multiblock.md) owns both
-systems; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
+A megablock and nothing else, like the Cornish ([multiblock](../mechanics/multiblock.md) owns the filler
+system; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
 
 | | |
 |---|---|
-| Class | `BlockBoilerLancashire : BlockBoiler : BlockFilledMegastructure` (`BlockBoilerLancashire.cs:15`) |
-| Block entity | `BlockEntityBoilerLancashire : BlockEntityBoiler` (`BlockEntityBoilerLancashire.cs:12`) - 25 lines, six stat overrides, nothing else |
-| Verified envelope | 3 × 3 × 10 - X −1..1, Y −1..1, Z −2..7 = 90 cells (`BlockBoilerLancashire.cs:85-141`) |
-| Filler footprint | 35 cells - `Origin(-1, 0)`, layer 0 `+ O +` then 5 × `+ + +`, layer 1 6 × `# + #` (`:56-82`). 23 attach-allowing, 12 plain (golden `goldens/siex/blocktypes/boiler/lancashire.json`) |
+| Class | `BlockBoilerLancashire : BlockBoiler : BlockFilledMegastructure` (`BlockBoilerLancashire.cs:17`) |
+| Block entity | `BlockEntityBoilerLancashire : BlockEntityBoiler` (`BlockEntityBoilerLancashire.cs:12`) - 28 lines, six stat overrides, nothing else |
+| Filler footprint | 35 cells - `Origin(-1, 0)`, layer 0 `+ O +` then 5 × `+ + +`, layer 1 6 × `# + #` with the middle of row 5 a `Port('S', UP, "pipe")` (`:95-122`). 22 attach-allowing, 13 plain (golden `goldens/siex/blocktypes/boiler/lancashire.json`) |
 | Reserved body | 3 × 2 × 6 (X −1..1, Y 0..1, Z 0..5) minus the principal |
-| Principal | `(0,0,0)`, the `'L'` glyph |
-| Orientation | `side` from `abstract/horizontalorientation` (`BlockBoiler.cs:70`) |
-| `StructureAngle` | `AngleFromSide(side) + 180` (`BlockBoiler.cs:39-43`) |
-| Shape spin | `rotateYByType` `*-north: 0` - no `+180`, so it differs from `StructureAngle` by 180° on purpose ([Cornish boiler](boiler-cornish.md) Gotcha 2) |
-| Resistance / stack | 45 / 1, from `BoilerShell` (`BlockBoiler.cs:63-64`) |
-| Mining tier | 4 (`BlockBoilerLancashire.cs:35`) - pinned by `HpMegablockDropTierTests.Lancashire_boiler_needs_an_iron_tier_pickaxe` |
-| Rendered layout | [layouts.md](../../internal/workbench/layouts.md) § Section 2, "Lancashire boiler (hpex)" - round-tripped from the golden |
+| Principal | `(0,0,0)`, the `'O'` glyph of the footprint DSL |
+| Orientation | `side` variant, from `BoilerShell` (`BlockBoiler.cs:124-140`) |
+| `StructureAngle` | `AngleFromSide(side) + 180` (`BlockBoiler.cs:44`, `:49-53`) |
+| Shape spin | `rotateYByType` `*-n: 0` - the leaf passes 0, not `BodySpinOffset`, so it differs from `StructureAngle` by 180° on purpose ([Cornish boiler](boiler-cornish.md) Gotcha 2) |
+| Resistance / stack | 45 / 1, from `BoilerShell` (`BlockBoiler.cs:131-132`) |
+| Mining tier | 4 (`BlockBoilerLancashire.cs:47`) - pinned by `HpMegablockDropTierTests.Lancashire_boiler_needs_an_iron_tier_pickaxe` |
+| Rendered footprint | [layouts.md](../../internal/workbench/layouts.md) § siex - round-tripped from the golden |
 
-### Geometry offsets — `BlockBoilerLancashire.cs:36-55`, resolved through `BlockBoiler.cs:79-114`
+### Geometry offsets — `BlockBoilerLancashire.cs:50-94`, resolved through `BlockBoiler.cs:135-174`
 
-All six rotate by `StructureAngle`; a missing attribute resolves to the principal (`BlockBoiler.cs:76-78`).
+All seven rotate by `StructureAngle`; a missing attribute resolves to the principal
+(`BlockBoiler.cs:142-145`).
 
 | Offset | Cell | What sits there |
 |---|---|---|
-| `fuelOffset` | `(0,0,-1)` | the coal pile — `@(air\|coalpile)` in the layout |
-| `lidOffset` | `(0,1,1)` | filler carrying the access lid; fill / drain / hold-toggle answer only here |
-| `steamConnectorOffset` | `(0,1,4)` | filler turned into an upward `"pipe"` port; the steam pipe goes at `(0,2,4)`, above it |
+| `fuelOffset` | `(0,0,-1)` | the coal pile the player sets there; nothing declares or requires the cell |
+| `manHatchOffset` | `(0,1,1)` | filler carrying the access hatch; fill / drain / hold-toggle answer only here |
+| `steamConnectorOffset` | `(0,1,4)` | the footprint's `Port(UP, "pipe")` cell; the steam pipe goes at `(0,2,4)`, above it |
 | `explosionCenterOffset` | `(0,1,3)` | blast centre — inside the vessel |
-| `lightSampleOffset` | `(0,1,3)` | body cell the animated mesh is lit from |
+| `lightSampleOffset` | `(0,1,2)` | body cell the animated mesh is lit from |
 | `exhaustOutletOffset` | `(0,1,6)` | `iiex:pipe-outlet-fire-u`, a player-built block and a graph node in its own right — outside the filler footprint (which stops at Z = 5) |
+| `waterRendererBox` | voxels `(-14,2,2)-(30,30,94)` | the in-vessel water surface |
 
-The steam port and the blast/light cells are different cells here (`(0,1,4)` vs `(0,1,3)`), so the Cornish's
-three-concerns-on-one-cell coincidence ([Cornish boiler](boiler-cornish.md) Gotcha 12) does not apply.
+No `mainHatchOffset` and no `feedwaterFace`: this leaf declares neither, so the main hatch resolves to the
+principal and is never reached (the branch is gated on the vessel having a bed, and this one has none),
+and the feedwater face falls back to DOWN.
 
-### The player-built firebox — `BlockBoilerLancashire.cs:85-141`
+The steam port `(0,1,4)`, the blast centre `(0,1,3)` and the light sample `(0,1,2)` are three different
+cells, so moving any one of them leaves the other two where they are. This is the same separation the
+Cornish now carries ([Cornish boiler](boiler-cornish.md) Gotcha 12).
 
-Derived by counting the layout glyphs:
+### The player-built firebox — dropped, pending this boiler's own conversion
+
+⛔ **The masonry surround is not a requirement.** `BlockEntityBoiler` derives from
+`BlockEntityProductionMachine`, not from a multiblock, so no boiler verifies a layout around itself; the
+only gate on running one is finishing its construction stages. The Lancashire therefore declares no
+`MultiblockLayout` at all, rather than a bill of masonry, flue passthroughs and an outlet neck that reads
+as enforced and enforces nothing. Verification does not come back here — the base class that performed
+it is gone by design.
+
+What the Lancashire still needs to run: a burning `game:coalpile` in its `fuelOffset` cell `(0,0,-1)`,
+and a steam pipe above the port cell its footprint declares at `(0,1,4)`. The surround is decoration
+until this boiler is given a firebox inside its own shape, the way the Cornish was.
+
+Its frames are already aligned and must stay that way. The art is drawn along local **-z** (casing,
+flues and base extension all run z -80..+16 voxels; the +z figures a naive read gives come from two
+elements measured before their own rotation is applied) while the footprint is authored along **+z**
+(`Origin(-1, 0)`, `O` in the first row). `StructureAngle`'s `+180` is exactly what reconciles them, so
+this leaf passes a shape spin of **0** where the Cornish passes 180 - the two differ on purpose, and
+making them alike would move the Lancashire's mesh six cells off its fillers. `BoilerFootprintGuards`
+asserts it in both suites, at all four orientations.
+
+The bill below is what the retired layout used to demand, kept as the record of what the art depicts:
 
 | Block | Count | Where |
 |---|---|---|
@@ -108,21 +140,23 @@ Derived by counting the layout glyphs:
 | `game:air*` | 1 | `(0,0,6)` — must stay clear |
 | `exlib:structurefiller` | 35 | placed by the megablock, not the player |
 
-Four of those five fittings are iiex cast-tier blocks, named as literal legends (`:89`, `:90`, `:95`),
-neither wildcarded across domains nor tier-parameterised, so the high-pressure boiler can only be walled in
-with low-pressure-tier plumbing. There is no `siex:` passthrough, bend or outlet to substitute - hpex ships
-segments only ([rolled pipe](rolled-pipe.md)). The three are also flanged, so a rolled steam main cannot
-reach any of them either; see [Gotchas](#gotchas) 1.
+Four of those five fittings were iiex cast-tier blocks, named as literal legends, neither wildcarded across
+domains nor tier-parameterised - so while the layout stood, the high-pressure boiler could only be walled in
+with low-pressure-tier plumbing. There is still no `siex:` passthrough, bend or outlet to substitute; hpex
+ships segments only ([rolled pipe](rolled-pipe.md)). The three are also flanged, so a rolled steam main
+cannot reach any of them either, which is the half of this that survived the layout; see
+[Gotchas](#gotchas) 1.
 
 ### The three ports
 
-Identical mechanism to the Cornish ([Cornish boiler](boiler-cornish.md) § The three ports); only cells differ.
+Same mechanism as the Cornish ([Cornish boiler](boiler-cornish.md) § The three ports), and this vessel
+takes the fallback on two of the three.
 
 | Port | Cell | Direction |
 |---|---|---|
-| Feedwater in | the boiler's own cell, DOWN face (`BlockBoiler.cs:48`) | pipe → boiler |
-| Steam out | `(0,2,4)`, above the port filler marked by `MarkSteamPort` (`BlockBoiler.cs:131-145`) | boiler → pipe |
-| Exhaust out | `(0,1,6)`, the outlet block itself | boiler → pipe |
+| Feedwater in | the principal's DOWN face - no `feedwaterFace` declared, so `FeedwaterWorldFace` falls back to DOWN (`BlockBoiler.cs:64-68`) | pipe → boiler |
+| Steam out | `(0,2,4)`, above the footprint's own `Port('S', UP, "pipe")` cell | boiler → pipe |
+| Exhaust out | `(0,1,6)`, a player-built outlet block. That cell declares no port, so `ExhaustWorldFace` answers null and the boiler reads the network *at* the cell rather than across a face (`BlockEntityBoiler.ExhaustNetwork`, `:458-465`) | boiler → pipe |
 
 ---
 
@@ -130,11 +164,11 @@ Identical mechanism to the Cornish ([Cornish boiler](boiler-cornish.md) § The t
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | — | missing. Nothing under `assets/editable/shapes/` matches the Lancashire; the runtime shape is the only copy |
-| Runtime shape | `assets/siex/shapes/boiler/lancashire.json` | root children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets |
-| Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both poses, not motion |
+| Editable shape | `assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json` | present; the runtime copy is converted from it. Not redrawn for the hatch rename or an internal firebox |
+| Runtime shape | `assets/siex/shapes/boiler/lancashire.json` | one top-level `Root`, children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets. The Cornish's `Root` is unwrapped; this one is not |
+| Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both poses, not motion. The shared base plays `manhatchopen`, so this leaf overrides `ManHatchAnimation` back to `lidopen` (`BlockEntityBoilerLancashire.cs:27`); without that override the pose loop would stop `idle` and start a clip that does not exist, and the vessel would vanish |
 | Textures | `fire1`, `iron3`, `steel32`, `iron5`, `steel3`, `steel42` | declared in the shape. Still carries `iron3` and `iron5`, so the steel boiler is part iron sheet |
-| Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)–(30,30,94)` | `BlockBoilerLancashire.cs:45-53` — 94/16 ≈ 5.9 cells along the 6-cell body, matching the Cornish's 62-for-4 inset |
+| Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)–(30,30,94)` | `BlockBoilerLancashire.cs:85-92` — 94/16 ≈ 5.9 cells along the 6-cell body |
 | Handbook | `assets/siex/config/handbook/05-highpressure.json` ↔ `docs/siex/handbook/05-highpressure.html` | present, shared with the Cornish engine, and wrong on three of the four build figures — see [Gotchas](#gotchas) 4 |
 | Mod icon | `src/SteelIndustryExpanded/modicon.png` | a copy of iiex's, placeholder (`docs/siex/ASSETS-TODO.md`) |
 
@@ -148,7 +182,7 @@ The RCC behaviour suppresses the default mesh, so the vessel is only visible thr
 
 Two steps, both required.
 
-### 1. The frame block — grid recipe (`MachineRecipeDefinitions.cs:29-37`)
+### 1. The frame block — grid recipe (`MachineRecipeDefinitions.cs:26-34`)
 
 ```
 B H B          P = game:metalplate-steel ×1 each   → 2
@@ -158,21 +192,26 @@ P R P          B = game:burnedbrick-fire ×2 each   → 4
 → siex:boilerlancashire-n
 ```
 
-Size is declared `3 × 2` (`:33`). Totals: 2 steel plate · 4 fire brick · 2 steel rod. Emitted once - the
-boiler recipe is not looped over gear codes (`:19-26`). Golden `goldens/siex/recipes/grid/machines.json`.
-No dead ingredient: every letter in the pattern is bound.
+Size is declared `3 × 2` (`:29`). Totals: 2 steel plate · 4 fire brick · 2 steel rod. Emitted once - the
+boiler recipe is not looped over gear codes (`:16-21`). Golden `goldens/siex/recipes/grid/machines.json`.
+No dead ingredient: every letter in the pattern is bound, which is what the Cornish's frame recipe was
+brought into line with.
 
-### 2. The RCC stages — `BlockBoilerLancashire.cs:142-163`
+### 2. The RCC stages — `BlockBoilerLancashire.cs:123-144`
 
 Right-click the placed block with the materials in the hotbar; each stage adds one element subtree.
 
-| # | Adds | `metalplate-steel` | `metalnailsandstrips-*` | `rod-steel` | `game:burnedbrick-fire` |
+| # | Adds | `metalplate-steel` | `iiex:rivet` | `rod-steel` | `game:burnedbrick-fire` |
 |---|---|---|---|---|---|
 | 1 | `Root/Base` | — | — | — | — |
-| 2 | `Root/BaseExtension` | 10 | 8 | — | 12 |
-| 3 | `Root/Flues` | 8 | 8 | 4 | — |
-| 4 | `Root/Casing` | 16 | 8 | 6 | 48 |
-| | **total** | **34** | **24** | **10** | **60** |
+| 2 | `Root/BaseExtension` | 10 | 16 | — | 12 |
+| 3 | `Root/Flues` | 8 | 16 | 4 | — |
+| 4 | `Root/Casing` | 16 | 16 | 6 | 48 |
+| | **total** | **34** | **48** | **10** | **60** |
+
+Rivets, not nails, and they are **iiex's**: a rivet is a rivet whatever the shell is made of, and siex
+mints none of its own (`BlockBoilerLancashire.cs:28-29`). `PressureVesselGate` asserts that no boiler
+stage accepts nails ([fasteners](../items/fasteners.md)).
 
 Pinned exactly by `HpMegablockDropTierTests.Lancashire_boiler_full_construction_cost_is_pinned`
 (`HpMegablockDropTierTests.cs:94-103`), because the 80 % salvage is taken from it.
@@ -220,15 +259,15 @@ Every mechanism is [Cornish boiler](boiler-cornish.md)'s; what follows is what t
 | Steam temperature at the ceiling | ≈ 189.9 °C | `100 × (12+1)^0.25`, formula owned by [Cornish boiler](boiler-cornish.md) |
 | Heat-up | 180 s | unchanged — iiex's `BoilerHeatUpSeconds` |
 | Exhaust | 16 L/s @ 0.6 × T | unchanged — `BoilerExhaustPerSecond` is fixed for every variant |
-| Lid vent / leak / condense rates | 200 / 16 / 200 L/s | unchanged — all iiex constants |
+| Man-hatch vent / leak / condense rates | 200 / 16 / 200 L/s | unchanged — all iiex constants |
 | Burst grace | 30 s | unchanged |
 
-Exhaust production, the choke test and every relief path are per-second constants shared with the 32 L/s
+Exhaust production, the choke test and every relief path are per-second constants shared with the 64 L/s
 Cornish (Gotcha 6), so the 16 L/s unpiped-outlet leak is a third of what the Lancashire makes.
 
 ### Hand-primed, the Lancashire can never reach 12 atm — and therefore can never burst
 
-Boiling stops the moment water falls below `MinBoilWater` (`BlockEntityBoiler.cs:352-354`, the
+Boiling stops the moment water falls below `MinBoilWater` (`BlockEntityBoiler.cs:369-371`, the
 `enoughWater` gate at `:357-405`), and manual pouring tops out at `MaxBoilWater`. So the entire steam a
 hand-primed boiler can make is:
 
@@ -255,8 +294,8 @@ internal pressure and make the injector the HP feed - is designed and unbuilt ([
 
 ### Burst
 
-Armed by `Boiling && burning && InternalPressure >= 12 atm` for 30 s (`BlockEntityBoiler.cs:419-437`);
-opening the lid resets it unconditionally. The sequence - 40 % salvage, `RemoveStructure`,
+Armed by `Boiling && burning && InternalPressure >= 12 atm` for 30 s (`BlockEntityBoiler.cs:436-454`);
+opening the man hatch resets it unconditionally. The sequence - 40 % salvage, `RemoveStructure`,
 `ShatterFragileBlocks` below resistance 20, `CreateExplosion(EntityBlast, r, r+2)` - is
 [Cornish boiler](boiler-cornish.md) § Burst's. Only the radius is this page's: `r = 4`, so
 shatter radius 4 and entity-damage radius 6, against the Cornish's 3 and 5.
@@ -269,7 +308,7 @@ pipes, ports and coal piles do not.
 
 | Lancashire output | engines it can hold at full draw | headroom |
 |---|---|---|
-| 48 L/s | 1 × Cornish @ High (32 L/s) | 16 L/s |
+| 48 L/s | 1 × Cornish engine @ High (32 L/s) | 16 L/s |
 | | 3 × Cornish @ Normal (3 × 16) | 0 L/s — exactly saturated |
 | | 6 × Cornish @ Low (6 × 8) | 0 L/s |
 | | 1 × Watt (30 L/s) + 1 × Cornish @ Low | 10 L/s |
@@ -388,17 +427,16 @@ though iiex already registered an identical default (`SteelIndustryExpandedModSy
 
 | Piece | file:line |
 |---|---|
-| `BlockBoilerLancashire : BlockBoiler, IFillerHost, IBoilerGeometry, IExBlockDefProvider` | `BlockStructures/Boiler/Blocks/BlockBoilerLancashire.cs:15` |
-| `Definitions(domain)` → the single def | `:24-25` |
-| `Lancashire(domain)` — the whole blocktype | `:27-163` |
-| geometry attributes | `:36-55` |
-| `FillerOffsets` (the 35-cell footprint) | `:56-82` |
-| `MultiblockLayout` (the 90-cell verified envelope) | `:85-141` |
-| `Construction` (four stages) | `:142-163` |
+| `BlockBoilerLancashire : BlockBoiler, IFillerHost, IBoilerGeometry, IExBlockDefProvider` | `BlockStructures/Boiler/Blocks/BlockBoilerLancashire.cs:17` |
+| `Definitions(domain)` → the single def | `:31-32` |
+| `Lancashire(domain)` — the whole blocktype | `:34-144` |
+| geometry attributes | `:50-94` |
+| `FillerOffsets` (the 35-cell footprint) | `:95-122` |
+| `Construction` (four stages) | `:123-144` |
 | `BlockEntityBoilerLancashire : BlockEntityBoiler` | `BlockStructures/Boiler/BlockEntities/BlockEntityBoilerLancashire.cs:12` |
-| the six stat overrides | `:14-24` |
+| the six stat overrides, plus the `ManHatchAnimation` override | `:13-27` |
 | `SiexConfig` § Lancashire boiler | `SiexConfig.cs:39-64` |
-| grid recipe | `Recipes/Grid/MachineRecipeDefinitions.cs:29-37` |
+| grid recipe | `Recipes/Grid/MachineRecipeDefinitions.cs:26-34` |
 | cost-catalogue keys | `SiexRecipeConfig.cs:50`, `:54` |
 | salvage-ratio registration | `SteelIndustryExpandedModSystem.cs:32-38` |
 | save migration off `iiex:` / `ppex:` | `BlockMigrations/HpMachineDomainMigration.cs:34-46` — see [rolled pipe](rolled-pipe.md) § Gotchas 1, which owns that class |
@@ -431,21 +469,25 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
 
 ## Gotchas
 
-1. The HP boiler's own structure is made of LP parts, and its steam main cannot be. The layout hard-codes
-   `iiex:pipe-passthrough-fire-*`, `iiex:pipe-passthroughbend-fire-u*` and `iiex:pipe-outlet-fire-u`
-   (`BlockBoilerLancashire.cs:89-95`). Those are `BlockPipe` subclasses in the flanged family, fine for the
-   feedwater and exhaust lines (flanged too) but never part of the rolled steam run, and there is no hpex
-   equivalent to swap in. The comment at `:83-84` frames this as a domain-naming choice, not a tier lock-in.
+1. The art depicts a firebox nothing asks for, and the fittings it depicts are iiex's. The retired layout
+   named `iiex:pipe-passthrough-fire-*`, `iiex:pipe-passthroughbend-fire-u*` and `iiex:pipe-outlet-fire-u`
+   as literal legends, so an HP vessel could only be walled in with LP-tier plumbing; with no layout in the
+   leaf, nothing demands them, and a player who builds what the model draws spends 39 fire bricks, a door
+   and four fittings on decoration. What outlives the deletion is the gap that made it awkward: hpex ships
+   pipe segments only ([rolled pipe](rolled-pipe.md)), and its segments are rolled while those three
+   fittings are flanged, so a rolled steam main still cannot reach an iiex fitting anywhere. That is B6's
+   problem now rather than this boiler's.
 
 2. Connecting feedwater is what arms the boiler, and nothing says so. Hand-primed it tops out at 9.6 atm and
    cannot burst; piped, it reaches 12 atm in 150 s of boiling. The intake does not consider
    `InternalPressure`, so even a 1 atm manual-pump line does it. See [Operation](#operation).
 
 3. `MinBoilWater` (200 L) is also the bucket-drain floor. `TryManualDrain` refuses below it
-   ([Cornish boiler](boiler-cornish.md)), so 200 L of water is permanently unrecoverable - a third more than
-   the Cornish's stranded 150 L.
+   ([Cornish boiler](boiler-cornish.md)), so 200 L of water is permanently unrecoverable - a third less than
+   the Cornish's stranded 300 L, and a sixth of this vessel's 1200 L against the just-under-a-fifth the
+   Cornish strands of its 1600 L. The larger boiler is the one that gives more back.
 
-4. The handbook is wrong on three of the four build figures (`docs/siex/handbook/05-highpressure.html:12-15`,
+4. The handbook is wrong on three of the four build figures (`docs/siex/handbook/05-highpressure.html:14-15`,
    `assets/siex/lang/en.json` `handbook-highpressure-text`):
 
    | handbook | actual | source |
@@ -454,7 +496,6 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    | "24 nails-and-strips" | 24 yes | `:100` |
    | "12 rods" | 10 | `:101` |
    | "64 fire bricks" | 60 | `:102` |
-   | "its firebox uses 39 fire-brick blocks" | 39 yes | glyph count |
    | "48 L/s and 12 atm, 1200 L vessel, needs 200 L to begin boiling" | all yes | `SiexConfig.cs:46-60` |
 
    The HTML ↔ lang copy is guarded by `HandbookParityTests`, but nothing compares either against the code, so
@@ -463,7 +504,7 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
 
 5. The handbook and the README both instruct the player to fit a pressure valve between this boiler and the
    Cornish engine. They cannot (`src/SteelIndustryExpanded/README.md:20-23`,
-   `docs/siex/handbook/05-highpressure.html:27-30`, `docs/siex/moddb.html:52-58`) - B6, owned in full by
+   `docs/siex/handbook/05-highpressure.html:31-34`, `docs/siex/moddb.html:52-58`) - B6, owned in full by
    [cast pipes](cast-pipes.md) § B6, and silent in play because of B18 ([rolled pipe](rolled-pipe.md)).
 
 6. The bigger vessel did not get a bigger flue or a bigger lid. `BoilerExhaustPerSecond` (16 L/s),
@@ -496,10 +537,11 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
   9.6 atm hand-prime ceiling, the 150 s live-feed climb and the radius-4 burst.
 - No editable shape. `assets/siex/shapes/boiler/lancashire.json` is the only copy; the model cannot be
   re-edited from source (`docs/siex/ASSETS-TODO.md` lists the listing art but not this).
-- The iiex fitting lock-in needs a decision, not just a note (Gotcha 1). Either hpex ships passthrough /
-  passthrough-bend / outlet in its own domain (which also fixes B6, since both the joint family and the
-  pressure-valve ceiling read `Code.Domain`), or the legends become domain-wildcards and the tier distinction
-  stops meaning anything at the firebox.
+- The rolled tier still reaches no fitting at all, and that needs a decision (Gotcha 1). It is no longer
+  this boiler's lock-in - there is no layout to name blocks in - but hpex ships segments only, so either it
+  ships passthrough / passthrough-bend / outlet in its own domain (which also fixes B6, since both the joint
+  family and the pressure-valve ceiling read `Code.Domain`), or a rolled run can never terminate in anything
+  but an iiex flanged part.
 - Feedwater is the settled-but-unbuilt half of this machine. [pumps](pumps.md) fixes the injector as the one
   device that covers the whole band; the block is iiex's and does not exist. Until then the boiler is either
   inert at 9.6 atm or armed by any water line at all.

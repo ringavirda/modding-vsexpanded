@@ -50,13 +50,15 @@ public class MachineRecipeDefinitions : IExRecipeDefProvider {
       .Ingredient("N", Nails(2))
       .OutputBlock("iiex:steamcondenser-n");
 
+  // A boiler frame is plate, brick and a fastener - no pipe. The vessel's own couplings are footprint
+  // port cells rather than fittings the player sets, so nothing in the frame is plumbing; the siex
+  // Lancashire's frame is the same shape for the same reason.
   private static void CornishBoiler(GridRecipeBuilder r) =>
     r.Name("Cornish Boiler")
       .Pattern("PHP,BNB")
       .Size(3, 2)
       .Ingredient("P", Plate(1))
       .Ingredient("B", BrickFire(2))
-      .Ingredient("I", StraightPipe(1))
       .Ingredient("N", Nails(2))
       .Ingredient("H", Hammer)
       .OutputBlock("iiex:boilercornish-n");

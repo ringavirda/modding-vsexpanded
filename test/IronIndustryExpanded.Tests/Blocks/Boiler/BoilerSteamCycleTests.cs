@@ -13,8 +13,8 @@ namespace IronIndustryExpanded.Tests;
 /// never run the pressure up toward a burst.
 /// </summary>
 public class BoilerSteamCycleTests {
-  private const float Capacity = 800f; // CornishBoilerCapacity
-  private const float MaxBoilWater = 500f; // CornishBoilerMaxBoilWater
+  private const float Capacity = 1600f; // CornishBoilerCapacity
+  private const float MaxBoilWater = 1000f; // CornishBoilerMaxBoilWater
   private const float VentRate = 200f; // BoilerLidVentRate (L/s)
   private const float Expansion = 16f; // SteamExpansionFactor
 
@@ -50,24 +50,24 @@ public class BoilerSteamCycleTests {
     // While boiling the floor is the steam filling the head-space above the water (Capacity - water),
     // so venting never collapses the working pressure to zero.
     var be = Boiler(
-      water: 500f,
-      steam: 400f,
+      water: 1000f,
+      steam: 700f,
       state: BlockEntityBoiler.BoilerState.Boiling
     );
-    // floor = 800 - 500 = 300; only 100 L sit above it, less than the 200 L/s cap.
+    // floor = 1600 - 1000 = 600; only 100 L sit above it, less than the 200 L/s cap.
     ReflectionHelpers.Invoke(be, "VentExcessSteam", 1f);
-    Assert.Equal(300f, Steam(be), 3);
+    Assert.Equal(600f, Steam(be), 3);
   }
 
   [Fact]
   public void Venting_does_nothing_below_the_floor() {
     var be = Boiler(
-      water: 500f,
-      steam: 250f,
+      water: 1000f,
+      steam: 550f,
       state: BlockEntityBoiler.BoilerState.Boiling
     );
     ReflectionHelpers.Invoke(be, "VentExcessSteam", 1f);
-    Assert.Equal(250f, Steam(be), 3); // floor 300 already above the steam present
+    Assert.Equal(550f, Steam(be), 3); // floor 600 already above the steam present
   }
 
   #endregion
@@ -77,7 +77,7 @@ public class BoilerSteamCycleTests {
   [Fact]
   public void Condensing_turns_steam_back_into_water_at_the_expansion_ratio() {
     var be = Boiler(water: 100f, steam: 200f);
-    // pressure 200/700 = 0.29 < 16, water room 400 L; half a second condenses 100 L steam.
+    // pressure 200/1500 ~= 0.13 < 16, water room 900 L; half a second condenses 100 L steam.
     ReflectionHelpers.Invoke(be, "CondenseInternal", 0.5f);
     Assert.Equal(100f, Steam(be), 3); // 200 - 100
     Assert.Equal(100f + 100f / Expansion, Water(be), 3); // +6.25 L water
@@ -85,10 +85,10 @@ public class BoilerSteamCycleTests {
 
   [Fact]
   public void Condensing_refuses_above_the_expansion_pressure_so_it_cannot_drive_a_burst() {
-    // pressure = steam / (Capacity - water); 13000 / 800 = 16.25 >= 16 -> refuse.
-    var be = Boiler(water: 0f, steam: 13000f);
+    // pressure = steam / (Capacity - water); 26000 / 1600 = 16.25 >= 16 -> refuse.
+    var be = Boiler(water: 0f, steam: 26000f);
     ReflectionHelpers.Invoke(be, "CondenseInternal", 1f);
-    Assert.Equal(13000f, Steam(be), 3);
+    Assert.Equal(26000f, Steam(be), 3);
     Assert.Equal(0f, Water(be), 3);
   }
 
@@ -166,8 +166,8 @@ public class BoilerSteamCycleTests {
 
   [Fact]
   public void Capping_discards_steam_above_the_choke_ceiling() {
-    // 5000 L steam over 800-300 = 500 L free space would read 10 atm, double the 5 atm ceiling.
-    var be = Boiler(water: 300f, steam: 5000f);
+    // 13000 L steam over 1600-300 = 1300 L free space would read 10 atm, double the 5 atm ceiling.
+    var be = Boiler(water: 300f, steam: 13000f);
 
     ReflectionHelpers.Invoke(be, "CapSteamToCeiling");
 
@@ -177,7 +177,7 @@ public class BoilerSteamCycleTests {
 
   [Fact]
   public void Capping_leaves_a_below_ceiling_boiler_untouched() {
-    // 1000 L over 500 L free = 2 atm, under the 5 atm ceiling, so nothing is discarded.
+    // 1000 L over 1300 L free ~= 0.77 atm, under the 5 atm ceiling, so nothing is discarded.
     var be = Boiler(water: 300f, steam: 1000f);
 
     ReflectionHelpers.Invoke(be, "CapSteamToCeiling");

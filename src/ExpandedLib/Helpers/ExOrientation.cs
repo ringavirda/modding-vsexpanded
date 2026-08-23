@@ -195,7 +195,13 @@ public static class ExOrientation {
   public static BlockFacing? FacingFromSide(string? side) {
     if (string.IsNullOrEmpty(side))
       return null;
-    // Vertical and any other non-horizontal token: hand it to vanilla unchanged (up/down/...).
+    // The vertical faces have single-letter spellings too - a footprint stores every port face as its
+    // facing's initial - and vanilla knows only the full words.
+    if (side is "u")
+      return BlockFacing.UP;
+    if (side is "d")
+      return BlockFacing.DOWN;
+    // Any other non-horizontal token: hand it to vanilla unchanged (up/down/...).
     if (!IsHorizontalSideWord(side))
       return BlockFacing.FromCode(side);
     // Horizontal, either spelling: go through the angle, which accepts both, and hand vanilla the word.

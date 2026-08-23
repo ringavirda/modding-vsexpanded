@@ -8,6 +8,7 @@ using ExpandedLib.Fluids;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkPipe;
+using IronIndustryExpanded.BlockStructures.Furnaces;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -22,11 +23,17 @@ namespace IronIndustryExpanded.BlockStructures.Boiler;
 /// Shared base for the steam boilers: a mega-block raised via the vanilla
 /// <c>RightClickConstructable</c> behavior, which suppresses the default mesh so the vessel is drawn
 /// through the animator (a permanent <c>idle</c> animation re-tessellated to the built elements as
-/// construction progresses). Peripheral cells are reserved with invisible structure fillers;
-/// verification, completeness, projection and tick scheduling live in the multiblock base. Per-variant
-/// stats come from the virtual hooks below.
+/// construction progresses). Peripheral cells are reserved with invisible structure fillers, so the
+/// whole vessel is self-contained: finishing the construction stages is the only gate on running it.
+/// Per-variant stats come from the virtual hooks below.
+/// <para>
+/// The fire is one of two models, chosen by whether the leaf blocktype declares a
+/// <see cref="BEBehaviorFirebox"/>. A vessel that does carries its bed inside its own shape and is
+/// charged and lit through its main hatch; one that does not is walled into masonry the player builds,
+/// and burns a vanilla coal pile the player tends in the firebox cell directly.
+/// </para>
 /// </summary>
-public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
+public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
   // Owns the RCC-suppressed-mesh animator triad shared by every constructed mega-block; the boiler
   // additionally swaps in its own renderer via the onAnimatorBuilt hook (see SwapBoilerRenderer).
   private ConstructedAnimator? _animator;
@@ -70,8 +77,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
   /// <summary>True once the player has finished the construction stages.</summary>
   public bool IsConstructed => _animator?.IsConstructed ?? false;
 
-  /// <summary>True only when the boiler may operate (built and structure complete).</summary>
-  public bool IsOperational => IsConstructed && StructureComplete;
+  /// <summary>A finished vessel is an operable one: the shell is the boiler's own footprint, so there
+  /// is nothing further to verify around it.</summary>
+  protected override bool CanRunProduction => IsConstructed;
 
   /// <summary>Operating phase. Heating advances on a timer, not on a modelled temperature.</summary>
   public enum BoilerState {
@@ -97,14 +105,28 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
   /// <summary>Seconds the boiler has been running without fire / with water out of range (drives the shutdown grace).</summary>
   private float _shutdownSeconds;
 
-  /// <summary>Whether the manual-access lid is open (held animation + venting + fill).</summary>
-  public bool LidOpen { get; private set; }
+  /// <summary>Whether the main (firing) hatch is open: the bed takes fuel and a light through it.</summary>
+  public bool MainHatchOpen { get; private set; }
+
+  /// <summary>Whether the man hatch is open (held animation + venting + bucket fill).</summary>
+  public bool ManHatchOpen { get; private set; }
+
+  /// <summary>Whether the fire is lit. The bed itself has no lit state - it is fuel in a cell - so the
+  /// vessel that fires it holds one.</summary>
+  private bool _lit;
+
+  /// <summary>Seconds of burn credited against the charged fuel's own duration, carried between ticks
+  /// so a fuel lasting longer than one tick is drawn down a whole unit at a time.</summary>
+  private float _fuelSeconds;
 
   /// <summary>
-  /// Transient, not serialized: set once a held right-click has toggled the lid, so the hold toggles
-  /// exactly once instead of flipping every frame.
+  /// Transient, not serialized: set once a held right-click has acted on the main hatch, so the hold
+  /// acts exactly once instead of firing every frame.
   /// </summary>
-  public bool LidToggled { get; set; }
+  public bool MainHatchToggled { get; set; }
+
+  /// <summary>Transient counterpart of <see cref="MainHatchToggled"/> for the man hatch.</summary>
+  public bool ManHatchToggled { get; set; }
 
   #endregion
 
@@ -123,9 +145,11 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     _state == BoilerState.Boiling
     && InternalPressure >= 0.9f * MaxOutputPressure;
 
-  /// <summary>Heating progress 0..1 (for the HUD); only meaningful in the Heating phase.</summary>
+  /// <summary>Heating progress 0..1 (for the HUD); only meaningful in the Heating phase. Shares
+  /// <see cref="EffectiveHeatUpSeconds"/> with the Heating-to-Boiling gate, so a cool fire cannot read
+  /// 100% before the vessel it describes has actually reached Boiling.</summary>
   public float HeatProgress =>
-    GameMath.Clamp(_heatingSeconds / IiexValues.BoilerHeatUpSeconds, 0f, 1f);
+    GameMath.Clamp(_heatingSeconds / EffectiveHeatUpSeconds, 0f, 1f);
 
   // In-game day stamp for natural water evaporation; unloaded time is not charged.
   private double _lastEvapDays = -1;
@@ -146,7 +170,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     _animator = new ConstructedAnimator(
       this,
       () => AnimCacheKey,
-      SwapBoilerRenderer
+      SwapBoilerRenderer,
+      () => this,
+      DrawnElements
     );
     _animator.Initialize(ApplyPose);
 
@@ -158,31 +184,31 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     // The base (BlockEntityProductionMachine) registers the server production tick.
   }
 
-  /// <summary>
-  /// (Re)loads the multiblock definition for the current orientation, using the same angle
-  /// the fillers use (see <see cref="BlockBoiler.StructureAngle"/>).
-  /// </summary>
-  protected override void UpdateStructureRotation() {
-    if (BoilerBlock == null)
-      return;
-    SetStructureAngle(BoilerBlock.StructureAngle);
-  }
-
-  protected override string GetIncompleteMessage(int missingCount) =>
-    Lang.Get("iiex:structure-incomplete-count", missingCount);
-
-  protected override string GetCompleteMessage() =>
-    Lang.Get("iiex:structure-complete");
-
   private BlockBoiler? BoilerBlock => Block as BlockBoiler;
 
   /// <summary>Per-variant animator cache key (also the shape selector); unique per block code + side.</summary>
   protected virtual string AnimCacheKey => Block.Code.Path;
 
+  /// <summary>
+  /// What the animator draws, given the element set <paramref name="built"/> the construction stages have
+  /// raised. A construction stage owns the coal group as a whole - a finished vessel has a grate, an
+  /// unfinished one does not - while how much of it is standing is the bed's, so the group's entry is
+  /// narrowed to one course per four charged units and drops out entirely on an empty bed. A vessel with
+  /// no bed of its own burns a pile in a cell outside the mesh and takes the stage set unchanged.
+  /// Internal so <c>BoilerBedRenderTests</c> can read the drawn set without a render client.
+  /// </summary>
+  internal string[]? DrawnElements(string[]? built) =>
+    Bed?.ComposeOver(built) ?? built;
+
+  /// <summary>The element set the animator is currently rendering, at the construction stage it stands
+  /// at.</summary>
+  internal string[]? DrawnElements() =>
+    DrawnElements(_animator?.Rcc?.shape?.SelectiveElements);
+
   public override void OnBlockRemoved() {
     _animator?.Dispose();
     DisposeClient();
-    // Base stops the monitor/production ticks and clears any structure projection.
+    // Base stops the production tick.
     base.OnBlockRemoved();
   }
 
@@ -232,34 +258,48 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     };
   }
 
+  /// <summary>Clip that holds the main (firing) hatch open. A vessel whose art draws one door under
+  /// another name overrides this.</summary>
+  protected virtual string MainHatchAnimation => "mainhatchopen";
+
+  /// <summary>Clip that holds the man hatch open.</summary>
+  protected virtual string ManHatchAnimation => "manhatchopen";
+
+  /// <summary>Clip that holds the vessel at rest. It poses the same hatch elements the hatch clips do,
+  /// so it yields to them rather than layering under them.</summary>
+  private const string IdleAnimation = "idle";
+
   private void ApplyPose() =>
     _animator?.Pose(util => {
-      // Animatable only draws while an animation runs. "idle" holds the built mesh at rest, "lidopen"
-      // holds it with the lid open, so the pose is swapped on lid state.
-      if (LidOpen) {
-        util.StopAnimation("idle");
-        util.StartAnimation(
-          new AnimationMetaData {
-            Animation = "lidopen",
-            Code = "lidopen",
-            AnimationSpeed = 1f,
-            EaseInSpeed = 6f,
-            EaseOutSpeed = 6f,
-          }.Init()
-        );
-      } else {
-        util.StopAnimation("lidopen");
-        util.StartAnimation(
-          new AnimationMetaData {
-            Animation = "idle",
-            Code = "idle",
-            AnimationSpeed = 1f,
-            EaseInSpeed = 6f,
-            EaseOutSpeed = 6f,
-          }.Init()
-        );
-      }
+      // Animatable only draws while an animation runs, so one clip is always held. An open hatch holds
+      // its own; a hatch whose clip is not running sits at the shape's authored rest, which is the
+      // closed pose. The hatch clips are started before idle stops, so the mesh never goes unposed.
+      HoldClip(util, MainHatchAnimation, MainHatchOpen);
+      HoldClip(util, ManHatchAnimation, ManHatchOpen);
+      HoldClip(util, IdleAnimation, !MainHatchOpen && !ManHatchOpen);
     });
+
+  /// <summary>Runs <paramref name="code"/> while <paramref name="running"/> and stops it otherwise.
+  /// Starting an already-active clip is a no-op, so this is safe to call on every repose.</summary>
+  private static void HoldClip(
+    BlockEntityAnimationUtil util,
+    string code,
+    bool running
+  ) {
+    if (!running) {
+      util.StopAnimation(code);
+      return;
+    }
+    util.StartAnimation(
+      new AnimationMetaData {
+        Animation = code,
+        Code = code,
+        AnimationSpeed = 1f,
+        EaseInSpeed = 6f,
+        EaseOutSpeed = 6f,
+      }.Init()
+    );
+  }
 
   #endregion
 
@@ -283,34 +323,31 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     ApplyEvaporation();
 
     BlockPos fuelPos = BoilerBlock?.FuelWorldPos(Pos) ?? Pos;
-    var pile = ba.GetBlockEntity(fuelPos) as BlockEntityCoalPile;
     bool fireOn =
-      pile?.IsBurning == true
-      && pile.inventory is { Count: > 0 }
-      && !pile.inventory[0].Empty;
+      Bed != null ? _lit && Bed.Units > 0 : PileIsBurning(ba, fuelPos);
 
-    PipeNetwork? exhaustNet =
-      BoilerBlock != null
-        ? this.NetworkAt<PipeNetwork>(BoilerBlock.ExhaustOutletWorldPos(Pos))
-        : null;
+    PipeNetwork? exhaustNet = ExhaustNetwork();
     bool draughtBlocked =
       (exhaustNet?.State?.Pressure ?? 0f)
       >= IiexValues.ExhaustMaxOutputPressure;
     bool burning = fireOn && !draughtBlocked;
 
+    if (burning)
+      BurnBedDown(dt);
+
     // Fire lit but exhaust outlet backed up to the vent cap means choked: combustion gas cannot
-    // escape. Held choked past the grace, the fuel pile is extinguished.
+    // escape. Held choked past the grace, the fire is put out.
     _choked = fireOn && draughtBlocked;
     if (
       _chokeTimer.Update(_choked, dt, IiexValues.BoilerChokeExtinguishSeconds)
     ) {
-      pile?.Extinguish();
+      Snuff(ba, fuelPos);
       ExSounds.Play(Api, fuelPos, ExSounds.Extinguish, 0.7f);
       _choked = false;
     }
 
     PipeNetwork? waterNet = this.ConnectedNetwork<PipeNetwork>(
-      BlockFacing.DOWN
+      BoilerBlock?.FeedwaterWorldFace ?? BlockFacing.DOWN
     );
     if (waterNet != null && _waterVolume < MaxWaterIntakeFill) {
       float feedPressure = waterNet.State?.Pressure ?? 0f;
@@ -358,7 +395,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
         } else {
           _shutdownSeconds = 0f;
           _heatingSeconds += dt;
-          if (_heatingSeconds >= IiexValues.BoilerHeatUpSeconds)
+          // A cool fire (low FuelRateMultiplier) stretches the heat-up the same way it throttles
+          // boiling: the vessel is heating-surface limited either way, not flame limited.
+          if (_heatingSeconds >= EffectiveHeatUpSeconds)
             _state = BoilerState.Boiling;
         }
         break;
@@ -387,10 +426,10 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
 
     _burning = burning && _state != BoilerState.Idle;
 
-    if (LidOpen) {
+    if (ManHatchOpen) {
       VentExcessSteam(dt);
       _overpressure.Reset();
-      _steamLeaking = false; // steam vents through the lid, not the outlet
+      _steamLeaking = false; // vents through the man hatch, not the outlet
     } else {
       // PushSteam reports back when the outlet is open to air (no pipe) and steam is jetting out
       // instead of pressurising, which drives the leak particles.
@@ -424,6 +463,103 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     MarkDirty(true);
   }
 
+  #endregion
+
+  #region Fire
+
+  /// <summary>
+  /// The exhaust network the flue gas leaves through. A vessel whose footprint declares a port on the
+  /// outlet cell reads across that port's face, since a port is a connector and not a graph node of its
+  /// own; one whose outlet is a real node block the player set there reads the network at the cell.
+  /// </summary>
+  private PipeNetwork? ExhaustNetwork() {
+    if (BoilerBlock is not { } block)
+      return null;
+    BlockPos outlet = block.ExhaustOutletWorldPos(Pos);
+    return block.ExhaustWorldFace is { } face
+      ? this.ConnectedNetworkAt<PipeNetwork>(outlet, face)
+      : this.NetworkAt<PipeNetwork>(outlet);
+  }
+
+  /// <summary>Whether the vanilla coal pile in the firebox cell is alight and still holds fuel - the
+  /// fire of a vessel walled into masonry, which has no bed of its own.</summary>
+  private static bool PileIsBurning(IBlockAccessor ba, BlockPos fuelPos) =>
+    ba.GetBlockEntity(fuelPos)
+      is BlockEntityCoalPile { IsBurning: true, inventory: { Count: > 0 } } pile
+    && !pile.inventory[0].Empty;
+
+  /// <summary>Puts the fire out, whichever model this vessel burns.</summary>
+  private void Snuff(IBlockAccessor ba, BlockPos fuelPos) {
+    if (Bed != null) {
+      _lit = false;
+      return;
+    }
+    (ba.GetBlockEntity(fuelPos) as BlockEntityCoalPile)?.Extinguish();
+  }
+
+  /// <summary>
+  /// Draws the bed down by the whole units this tick's burn has paid for. The fuel's own duration is
+  /// seconds per unit, so a long-burning coal costs the same bed far more running time than a short one
+  /// - which is the whole difference between the fuels a boiler can take.
+  /// </summary>
+  private void BurnBedDown(float dt) {
+    if (Bed is not { Units: > 0 })
+      return;
+    _fuelSeconds += dt;
+    float perUnit = Math.Max(1f, BurnSecondsPerUnit);
+    while (_fuelSeconds >= perUnit && Bed is { Units: > 0 }) {
+      Bed.Consume(1);
+      _fuelSeconds -= perUnit;
+    }
+    if (Bed is { Units: <= 0 }) {
+      _lit = false;
+      _fuelSeconds = 0f;
+    }
+  }
+
+  // One stack of the charged fuel, held against the code it was built for: a bed holds one fuel, so the
+  // stack is stable for the whole bed, and the production tick runs every second per boiler.
+  private string? _bedStackCode;
+  private ItemStack? _bedStack;
+
+  // Set once a code has been looked up, so a code that resolves to nothing - a fuel whose mod has been
+  // removed from a save that still holds a charged bed - is answered from the cache too, rather than
+  // re-searching the item and block registries on every tick for as long as the bed stands.
+  private bool _bedStackResolved;
+
+  /// <summary>The stack the bed is holding, or null when it is empty or its code no longer resolves.</summary>
+  private ItemStack? BedStack {
+    get {
+      string? code = Bed?.FuelCode;
+      if (code == null || Api == null) {
+        _bedStackCode = null;
+        _bedStackResolved = false;
+        return _bedStack = null;
+      }
+      if (_bedStackResolved && _bedStackCode == code)
+        return _bedStack;
+      var loc = new AssetLocation(code);
+      CollectibleObject? collectible =
+        Api.World.GetItem(loc) ?? (CollectibleObject?)Api.World.GetBlock(loc);
+      _bedStackCode = code;
+      _bedStackResolved = true;
+      return _bedStack =
+        collectible == null ? null : new ItemStack(collectible);
+    }
+  }
+
+  /// <summary>Seconds one unit of the charged fuel burns for, from its own combustibleProps.</summary>
+  private float BurnSecondsPerUnit =>
+    BEBehaviorFirebox.BurnDurationOf(BedStack);
+
+  /// <summary>Flame temperature (°C) of the charged fuel, or 0 when the bed is empty or unlit.</summary>
+  protected float BedBurnTemperature =>
+    _lit ? BEBehaviorFirebox.BurnTemperatureOf(BedStack) : 0f;
+
+  #endregion
+
+  #region Production arithmetic
+
   /// <summary>The boiler's feed liquid. Held untagged as <see cref="_waterVolume"/> and named here so the
   /// water-to-steam phase change reads its output medium and expansion factor from the medium taxonomy
   /// rather than hardcoding them.</summary>
@@ -453,12 +589,41 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
   /// expansion (<see cref="IiexValues.SteamExpansionFactor"/> by default) in litres of steam.</summary>
   private void BoilStep(float dt) {
     BoiledMedium(out float expansion);
-    float waterUse = Math.Min(_waterVolume, SteamPerSecond * dt / expansion);
+    float rate = SteamPerSecond * FuelRateMultiplier;
+    float waterUse = Math.Min(_waterVolume, rate * dt / expansion);
     if (waterUse <= 0f)
       return;
     _waterVolume -= waterUse;
     _steamVolume += waterUse * expansion;
   }
+
+  /// <summary>
+  /// How much of the vessel's rated output the burning fuel supports, 0..1. A boiler is limited by its
+  /// heating surface rather than by its flame: every coal is far hotter than the water, so the term
+  /// saturates at <see cref="IiexValues.BoilerFuelDesignTemp"/> and fuel choice is felt mainly as how
+  /// long a bed lasts. 1 with no bed (or an unlit one), so an empty boiler's arithmetic is the rated one
+  /// rather than collapsing to zero.
+  /// </summary>
+  public float FuelRateMultiplier {
+    get {
+      float flame = BedBurnTemperature;
+      if (flame <= 0f)
+        return 1f;
+      float sat = SteamTemperature();
+      float head = Math.Max(1f, IiexValues.BoilerFuelDesignTemp - sat);
+      return GameMath.Clamp((flame - sat) / head, 0f, 1f);
+    }
+  }
+
+  /// <summary>
+  /// Seconds this bed's fire actually needs to reach Boiling: the rated
+  /// <see cref="IiexValues.BoilerHeatUpSeconds"/> stretched by how far <see cref="FuelRateMultiplier"/>
+  /// falls short of 1. The single member both the Heating-to-Boiling gate and <see cref="HeatProgress"/>
+  /// read, so a cool fire cannot show complete before the vessel it describes has actually finished
+  /// heating.
+  /// </summary>
+  private float EffectiveHeatUpSeconds =>
+    IiexValues.BoilerHeatUpSeconds / FuelRateMultiplier;
 
   /// <summary>
   /// Saturated-steam temperature (°C): T = boiling point x absolutePressure^exponent. Boiler and pipe
@@ -478,16 +643,21 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
   /// drive the leak particles.
   /// </summary>
   private bool PushSteam(IBlockAccessor ba, float dt) {
-    // The steam connector is the port filler atop the body; the network it feeds sits in
-    // the cell directly above it.
-    var connectorPos = BoilerBlock?.SteamPipeWorldPos(Pos);
-    if (connectorPos == null || _steamVolume <= 0f)
+    if (BoilerBlock is not { } block || _steamVolume <= 0f)
       return false;
-    BlockPos pipePos = connectorPos.UpCopy();
+
+    // The steam connector is a port filler on the body; the network it feeds sits across that port's
+    // own face, read off the footprint the way ExhaustNetwork reads the outlet's, so the face the cell
+    // couples on and the face the vessel pushes through are one declaration rather than two. A cell
+    // declaring no port has no outlet to couple to, which reads the same as an unpiped neck below.
+    BlockFacing? face = block.SteamWorldFace;
+    BlockPos? pipePos =
+      face == null ? null : block.SteamPipeWorldPos(Pos).AddCopy(face);
 
     bool pipeAttached =
-      ba.GetBlock(pipePos) is BlockNetworkNode steamPipe
-      && steamPipe.HasConnectorAt(BlockFacing.DOWN);
+      pipePos != null
+      && ba.GetBlock(pipePos) is BlockNetworkNode steamPipe
+      && steamPipe.HasConnectorAt(face!.Opposite);
 
     if (!pipeAttached) {
       // Open neck - steam jets out instead of building pressure.
@@ -499,7 +669,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
       return leaked > 0f;
     }
 
-    PipeNetwork? steamNet = this.NetworkAt<PipeNetwork>(pipePos);
+    PipeNetwork? steamNet = this.NetworkAt<PipeNetwork>(pipePos!);
     if (steamNet == null)
       return false;
 
@@ -685,20 +855,74 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
 
   #endregion
 
-  #region Lid + manual fill
+  #region Hatches, firing and manual fill
 
-  /// <summary>Toggles the manual-access lid (sprint + RMB on the boiler).</summary>
-  public void ToggleLid() {
-    LidOpen = !LidOpen;
-
-    // Reuses the coke-oven door's metal hatch open/close sound.
-    var sound = LidOpen
-      ? ExSounds.CokeOvenDoorOpen
-      : ExSounds.CokeOvenDoorClose;
-    BlockPos lidPos = BoilerBlock?.LidWorldPos(Pos) ?? Pos;
-    ExSounds.PlayAt(Api.World, lidPos, sound, null, range: 32f);
-
+  /// <summary>Swings the main (firing) hatch.</summary>
+  public void ToggleMainHatch() {
+    MainHatchOpen = !MainHatchOpen;
+    PlayHatchSound(BoilerBlock?.MainHatchWorldPos(Pos), MainHatchOpen);
     MarkDirty(true);
+  }
+
+  /// <summary>Swings the man hatch, through which the vessel is filled by hand and vented.</summary>
+  public void ToggleManHatch() {
+    ManHatchOpen = !ManHatchOpen;
+    PlayHatchSound(BoilerBlock?.ManHatchWorldPos(Pos), ManHatchOpen);
+    MarkDirty(true);
+  }
+
+  // Reuses the coke-oven door's metal hatch open/close sound.
+  private void PlayHatchSound(BlockPos? at, bool opening) =>
+    ExSounds.PlayAt(
+      Api.World,
+      at ?? Pos,
+      opening ? ExSounds.CokeOvenDoorOpen : ExSounds.CokeOvenDoorClose,
+      null,
+      range: 32f
+    );
+
+  /// <summary>
+  /// Whether the next empty-handed hold at the main hatch lights the fire rather than swinging the
+  /// door: an open door over a bed charged to capacity and not already alight. A part-charged bed is
+  /// refused for the same reason a furnace refuses one - a fire is lit once, on a full bed.
+  /// </summary>
+  public bool CanLightBed => MainHatchOpen && !_lit && Bed is { IsFull: true };
+
+  /// <summary>Lights the charged bed. Does nothing when <see cref="CanLightBed"/> is false.</summary>
+  public void LightBed() {
+    if (!CanLightBed)
+      return;
+    _lit = true;
+    _fuelSeconds = 0f;
+    ExSounds.Play(Api, BoilerBlock?.FuelWorldPos(Pos) ?? Pos, ExSounds.Ignite);
+    MarkDirty(true);
+  }
+
+  /// <summary>
+  /// Charges the bed from <paramref name="slot"/> and deducts what it took, refusing with the same
+  /// three messages a firebox does: not fuel at all, a different fuel already in the bed, or full.
+  /// </summary>
+  public bool TryChargeBed(IPlayer byPlayer, ItemSlot? slot) {
+    if (Bed is not { } bed || slot?.Itemstack is not { } stack)
+      return false;
+
+    if (!BEBehaviorFirebox.IsFuel(stack)) {
+      (byPlayer as IServerPlayer)?.SendIngameError("iiex-firebox-notfuel");
+      return true;
+    }
+
+    int taken = bed.TryAdd(stack, bed.Free);
+    if (taken == 0) {
+      (byPlayer as IServerPlayer)?.SendIngameError(
+        bed.Accepts(stack) ? "iiex-firebox-full" : "iiex-firebox-wrongfuel"
+      );
+      return true;
+    }
+
+    slot.TakeOut(taken);
+    slot.MarkDirty();
+    MarkDirty(true);
+    return true;
   }
 
   /// <summary>
@@ -731,7 +955,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
 
     _waterVolume += removed;
 
-    BlockPos pourPos = BoilerBlock?.LidWorldPos(Pos) ?? Pos;
+    BlockPos pourPos = BoilerBlock?.ManHatchWorldPos(Pos) ?? Pos;
     ExSounds.PlayAt(Api.World, pourPos, ExSounds.WaterPour, null, range: 16f);
 
     MarkDirty(true);
@@ -782,7 +1006,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
 
     _waterVolume -= added;
 
-    BlockPos drainPos = BoilerBlock?.LidWorldPos(Pos) ?? Pos;
+    BlockPos drainPos = BoilerBlock?.ManHatchWorldPos(Pos) ?? Pos;
     ExSounds.PlayAt(Api.World, drainPos, ExSounds.WaterPour, null, range: 16f);
 
     MarkDirty(true);
@@ -800,7 +1024,10 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     tree.SetInt("boilerState", (int)_state);
     tree.SetFloat("heatingSeconds", _heatingSeconds);
     tree.SetFloat("shutdownSeconds", _shutdownSeconds);
-    tree.SetBool("lidOpen", LidOpen);
+    tree.SetBool("mainHatchOpen", MainHatchOpen);
+    tree.SetBool("manHatchOpen", ManHatchOpen);
+    tree.SetBool("lit", _lit);
+    tree.SetFloat("fuelSeconds", _fuelSeconds);
     tree.SetBool("burning", _burning);
     tree.SetBool("steamLeaking", _steamLeaking);
     _overpressure.ToTree(tree, "overpressure");
@@ -811,20 +1038,38 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
+    // The bed reads its own charge out of the same tree, through the base fan-out below, so its
+    // previous fuel and course count have to be taken before that runs.
+    string? prevFuel = Bed?.FuelCode;
+    int prevCourses = Bed?.LayerCount ?? 0;
+
     base.FromTreeAttributes(tree, worldForResolving);
     _waterVolume = tree.GetFloat("waterVolume");
     _steamVolume = tree.GetFloat("steamVolume");
     _state = (BoilerState)tree.GetInt("boilerState");
     _heatingSeconds = tree.GetFloat("heatingSeconds");
     _shutdownSeconds = tree.GetFloat("shutdownSeconds");
-    bool prevLidOpen = LidOpen;
-    LidOpen = tree.GetBool("lidOpen");
+    bool prevMain = MainHatchOpen;
+    bool prevMan = ManHatchOpen;
+    MainHatchOpen = tree.GetBool("mainHatchOpen");
+    ManHatchOpen = tree.GetBool("manHatchOpen");
+    _lit = tree.GetBool("lit");
+    _fuelSeconds = tree.GetFloat("fuelSeconds");
     _burning = tree.GetBool("burning");
     _steamLeaking = tree.GetBool("steamLeaking");
 
-    // Lid pose is push-based: replay it whenever the synced state flips.
-    if (Api?.Side == EnumAppSide.Client && prevLidOpen != LidOpen)
-      ApplyPose();
+    if (Api?.Side == EnumAppSide.Client) {
+      // The coal courses are drawn in whatever fuel is charged and one course per four units standing,
+      // and both are resolved while the mesh is built. A charge and a burn-down only change the tree, so
+      // the mesh is rebuilt here; the construction event that otherwise triggers a rebuild fires on a
+      // finished stage and never again.
+      if (prevFuel != Bed?.FuelCode || prevCourses != (Bed?.LayerCount ?? 0))
+        _animator?.Refresh();
+      // Hatch poses are push-based: replay them whenever a synced state flips.
+      else if (prevMain != MainHatchOpen || prevMan != ManHatchOpen)
+        ApplyPose();
+    }
+
     _overpressure.FromTree(tree, "overpressure");
     _choked = tree.GetBool("choked");
   }
@@ -841,12 +1086,8 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     if (!IsConstructed)
       return;
 
-    if (!StructureComplete) {
-      UpdateStructureRotation();
-      int missing = IncompleteBlockCount();
-      dsc.AppendLine(Lang.Get("iiex:structure-incomplete-count", missing));
-      return;
-    }
+    if (Bed is { } bed)
+      dsc.AppendLine(bed.InfoLine());
 
     dsc.AppendLine(
       Lang.Get(
@@ -866,7 +1107,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
       dsc.AppendLine(
         Lang.Get(
           "iiex:boiler-info-boiling",
-          ExMeasure.FlowRate(SteamPerSecond, "F0"),
+          // The rate actually being made, not the vessel's rated ceiling: with no bed (or an unlit
+          // one) FuelRateMultiplier is 1 and this reads the same as before.
+          ExMeasure.FlowRate(SteamPerSecond * FuelRateMultiplier, "F0"),
           ExMeasure.Temperature(SteamTemperature())
         )
       );
@@ -879,8 +1122,11 @@ public abstract partial class BlockEntityBoiler : BlockEntityMultiblockMachine {
     else
       dsc.AppendLine(Lang.Get("iiex:boiler-info-idle"));
 
-    if (LidOpen)
-      dsc.AppendLine(Lang.Get("iiex:boiler-info-lidopen"));
+    if (MainHatchOpen)
+      dsc.AppendLine(Lang.Get("iiex:boiler-info-mainhatchopen"));
+
+    if (ManHatchOpen)
+      dsc.AppendLine(Lang.Get("iiex:boiler-info-manhatchopen"));
 
     if (_choked)
       dsc.AppendLine(Lang.Get("iiex:boiler-info-choked"));

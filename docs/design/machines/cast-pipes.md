@@ -259,7 +259,7 @@ subclass, `BlockPipe.cs:196`). It is clamped again on load against a possibly-re
 ### B6 — the HP line cannot take the iiex pressure valve
 
 hpex tells the player, in its own README and handbook, to gate the Lancashire → Cornish line with a pressure
-valve (`src/SteelIndustryExpanded/README.md:22`, `docs/siex/handbook/05-highpressure.html:29`,
+valve (`src/SteelIndustryExpanded/README.md:22`, `docs/siex/handbook/05-highpressure.html:33`,
 `docs/siex/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
 independent failures:
 

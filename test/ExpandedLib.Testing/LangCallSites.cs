@@ -21,8 +21,9 @@ namespace ExpandedLib.Testing;
 public static class LangCallSites {
   #region Call-site scanning
 
-  // The two forms that take a domain-qualified key. Both are matched up to the opening quote only; the
-  // literals themselves come out of the balanced argument region, so a ternary's arms are seen too.
+  // The three forms that name a key. Each is matched up to the value only; the literals themselves come
+  // out of the region that follows - a call's balanced argument list, or an assignment's right-hand side -
+  // so a ternary's arms are seen too.
   private static readonly Regex LangCall = new(
     @"\bLang\.Get(?:IfExists|Matching)?\s*\(",
     RegexOptions.Compiled
@@ -36,13 +37,16 @@ public static class LangCallSites {
     RegexOptions.Compiled
   );
 
+  // Case-insensitive on purpose. A key is lower-case by convention, so a capital in one is a typo - and a
+  // pattern that only matched lower-case would SKIP that literal rather than fail on it, which is the
+  // quietest possible outcome for the one thing this file exists to catch.
   private static readonly Regex Literal = new(
     "\"([a-z0-9]+:[a-z0-9-]+)\"",
-    RegexOptions.Compiled
+    RegexOptions.Compiled | RegexOptions.IgnoreCase
   );
   private static readonly Regex BareLiteral = new(
     "\"([a-z0-9-]+)\"",
-    RegexOptions.Compiled
+    RegexOptions.Compiled | RegexOptions.IgnoreCase
   );
 
   /// <summary>
@@ -61,6 +65,29 @@ public static class LangCallSites {
     return source[(openParen + 1)..];
   }
 
+  /// <summary>
+  /// The right-hand side of an assignment starting at <paramref name="start"/>: everything up to the
+  /// first <c>,</c> or <c>;</c> outside brackets, or the bracket that closes the initializer or argument
+  /// list the assignment sits in. A ternary carries no brackets of its own, so both of its arms fall
+  /// inside the region - which is the whole reason this exists rather than reading the one literal that
+  /// happens to sit against the <c>=</c>.
+  /// </summary>
+  private static string AssignedRegion(string source, int start) {
+    int depth = 0;
+    for (int i = start; i < source.Length; i++) {
+      char c = source[i];
+      if (c is '(' or '[' or '{')
+        depth++;
+      else if (c is ')' or ']' or '}') {
+        if (depth == 0)
+          return source[start..i];
+        depth--;
+      } else if (depth == 0 && c is ',' or ';')
+        return source[start..i];
+    }
+    return source[start..];
+  }
+
   /// <summary>A literal glued to a neighbour with <c>+</c> is one piece of a key, not a key.</summary>
   private static bool IsConcatenated(string region, Match literal) {
     string before = region[..literal.Index].TrimEnd();
@@ -68,10 +95,16 @@ public static class LangCallSites {
     return before.EndsWith('+') || after.StartsWith('+');
   }
 
+  /// <summary>
+  /// The keys in <paramref name="region"/>. <paramref name="domain"/> filters domain-qualified literals
+  /// to the mod's own - a <c>Lang.Get("game:…")</c> is vanilla's key and not this lang file's problem.
+  /// <c>null</c> takes every domain, which is what an <c>ActionLangCode</c> wants: a block may legitimately
+  /// advertise a key from the library it is built on.
+  /// </summary>
   private static IEnumerable<string> KeysIn(
     string region,
     Regex literals,
-    string domain
+    string? domain
   ) {
     foreach (Match m in literals.Matches(region)) {
       if (IsConcatenated(region, m))
@@ -79,7 +112,8 @@ public static class LangCallSites {
       string value = m.Groups[1].Value;
       if (
         literals == Literal
-        && !value.StartsWith(domain + ':', StringComparison.Ordinal)
+        && domain != null
+        && !value.StartsWith(domain + ':', StringComparison.OrdinalIgnoreCase)
       )
         continue;
       yield return value;
@@ -119,9 +153,9 @@ public static class LangCallSites {
           found.Add((rel, key));
       }
       foreach (Match call in ActionLangCode.Matches(source)) {
-        Match literal = Literal.Match(source, call.Index + call.Length);
-        if (literal.Success && literal.Index == call.Index + call.Length)
-          found.Add((rel, literal.Groups[1].Value));
+        string region = AssignedRegion(source, call.Index + call.Length);
+        foreach (string key in KeysIn(region, Literal, null))
+          found.Add((rel, key));
       }
       foreach (Match call in ErrorCall.Matches(source)) {
         string region = ArgumentRegion(source, call.Index + call.Length - 1);

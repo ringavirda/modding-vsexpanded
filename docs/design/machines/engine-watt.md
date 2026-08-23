@@ -441,8 +441,8 @@ Cornish engine overrides them.
 
 | quantity | value | owner | file:line |
 |---|---|---|---|
-| Cornish boiler choke ceiling | `5.0 atm` | [Cornish boiler](boiler-cornish.md) | `IiexConfig.cs:156` |
-| Cornish boiler steam output | `32 L/s` | [Cornish boiler](boiler-cornish.md) | `:152` |
+| Cornish boiler choke ceiling | `5.0 atm` | [Cornish boiler](boiler-cornish.md) | `IiexConfig.cs:1072` |
+| Cornish boiler steam output | `64 L/s` | [Cornish boiler](boiler-cornish.md) | `:1068` |
 | cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
 | pressure-valve gate step / ceiling | `0.25 atm` / block burst rating | [pipe network](../mechanics/pipe-network.md) | `BlockEntityPressureValve.cs:31`, `:41-42` |
 | `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iiex's | [mp-energy](../mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IiexConfig.cs:451-477` |
@@ -453,9 +453,11 @@ Cornish engine overrides them.
 engage        band     break | boiler chokes
 ```
 
-One Cornish boiler makes 32 L/s and one Watt drinks 30 L/s: one boiler runs exactly one engine,
-with 2 L/s of headroom. A second engine on the same run starves both (each gets `frac ≈ 0.53`, so ~0.16
-power each). Nothing in the code says this; it is the ratio of two config values.
+One Cornish boiler makes 64 L/s and one Watt drinks 30 L/s: one boiler runs **two** engines at full
+power, with 4 L/s of headroom. A third on the same run starves all three (each gets `frac = 64/90 ≈ 0.71`,
+so ~0.21 power each). The run carries the pair without a second thought: the Cornish's 5 atm choke already
+forces the cast tier, and a cast pipe passes 120 L/s (`IiexConfig.cs:194`), twice what two engines draw.
+Nothing in the code says any of this; it is the ratio of config values.
 
 ### Hard-coded — not config
 

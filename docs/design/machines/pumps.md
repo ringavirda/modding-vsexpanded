@@ -317,13 +317,18 @@ Every downstream statement of the number is therefore wrong by 3×:
 | quantity | value | from |
 |---|---|---|
 | Watt-driven pump, steady state | 15.0 L/s | `16.67 × 3 × 0.3` |
-| Manual pump, steady state | 2.0 L/s | `IiexConfig.cs:203` |
-| Boiler's maximum feed draw | 10 L/s | `BoilerWaterIntakeRate`, `IiexConfig.cs:95` ([Cornish boiler](boiler-cornish.md)) |
-| Boiler auto-fill ceiling (Cornish) | 800 × 0.5 = 400 L | `IiexConfig.cs:91`, `:143` ([Cornish boiler](boiler-cornish.md)) |
+| Manual pump, steady state | 2.0 L/s | `IiexConfig.cs:1119` |
+| Boiler's maximum feed draw | 20 L/s | `BoilerWaterIntakeRate`, `IiexConfig.cs:1011` ([Cornish boiler](boiler-cornish.md)) |
+| Boiler auto-fill ceiling (Cornish) | 1600 × 0.5 = 800 L | `IiexConfig.cs:1008`, `:1059` ([Cornish boiler](boiler-cornish.md)) |
+| Cornish boiler's water consumption while boiling | 4 L/s | `CornishBoilerSteamPerSecond` 64 ÷ `SteamExpansionFactor` 16, `IiexConfig.cs:1068`, `:977` |
 
-One Watt-driven pump over-serves a boiler by 50 % (15 vs 10), and the hand crank supplies a fifth of the
-boiler's maximum draw, enough to prime it. The 3× bug therefore does not break the feed loop; it makes the
-pump's cost/benefit meaningless.
+The draw and the consumption are different numbers, and only the second one has to be met to keep a boiler
+running. A Watt-driven pump moves 15 L/s against a boiler that burns 4 L/s of water at full rate, so the
+feed loop is comfortable by a factor of nearly four. The 20 L/s draw is only how fast the intake refills a
+vessel that has fallen behind: a single pump fills at three quarters of that cap and never saturates it, so
+recovery from a hand-drained boiler is pump-limited rather than intake-limited. The hand crank's 2 L/s is
+half a boiling boiler's consumption - enough to prime, not enough to keep one running. The 3× bug therefore
+does not break the feed loop; it makes the pump's cost/benefit meaningless.
 
 ### Delivery pressure
 
@@ -335,7 +340,7 @@ pump's cost/benefit meaningless.
 
 That pressure is realised only once the delivery line is brim-full; below capacity a liquid run's pressure
 tracks its fill ratio ([pipe network](../mechanics/pipe-network.md) § 3). The only consumer that reads
-it is the boiler's steam boost (`BlockEntityBoiler.cs:342-349`).
+it is the boiler's steam boost (`BlockEntityBoiler.cs:359-366`).
 
 ---
 
@@ -349,7 +354,7 @@ operating point. A steam pump can never feed the boiler driving it.
 
 It does not bite today only because the boiler's feed has no pressure gate at all: `BlockEntityBoiler`
 draws whatever the line holds and rewards pressure above 1 atm with extra flash steam
-(`BlockEntityBoiler.cs:326-350`). The gate the feedwater design adds - draw only while
+(`BlockEntityBoiler.cs:343-367`). The gate the feedwater design adds - draw only while
 `feedPressure ≥ InternalPressure`, ramped over `BoilerFeedFullFlowMargin` - is what turns the reducer into a
 hard stop.
 
@@ -423,7 +428,7 @@ apply - salvage is 1:1.
 | `BlockManualFluidPump : Block, INetworkConnector, IFillerInteractionTarget, IFillerHost` | `BlockStructures/ManualPump/Blocks/BlockManualFluidPump.cs:24` - def `:43-57`, faces `:65-73`, filler triad `:77-123`, crank forwarding `:129-224` |
 | `BlockEntityManualFluidPump : BlockEntity` | `BlockStructures/ManualPump/BlockEntities/BlockEntityManualFluidPump.cs:26` - faces `:51-56`, `OnPumpStart/Step/Stop` `:81-95`, watchdog `:111-124`, `DoWork` `:131-156`, anim `:182-236`, sounds `:242-276` |
 | `PipeNetwork.ProduceLiquidMeasured` / `TryProduceLiquid` / `TryConsumeLiquid` | `ExpandedLib/Networks/PipeNetwork.cs:284`, `:231`, `:300` |
-| boiler feed draw (the consumer) | `BlockStructures/Boiler/BlockEntityBoiler.cs:326-350` |
+| boiler feed draw (the consumer) | `BlockStructures/Boiler/BlockEntityBoiler.cs:343-367` |
 | smex air blower (the `× 3` twin) | `SteelmakingExpanded/BlockStructures/Engine/BlockEntities/BlockEntityEngineAirBlower.cs:54-56` |
 
 ### Where a caller hooks in

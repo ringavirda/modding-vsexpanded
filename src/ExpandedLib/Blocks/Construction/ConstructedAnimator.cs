@@ -22,6 +22,11 @@ public sealed class ConstructedAnimator {
   private readonly BlockEntity _be;
   private readonly Func<string> _cacheKey;
   private readonly Action<BlockEntityAnimationUtil, MeshData>? _onAnimatorBuilt;
+  private readonly Func<ITexPositionSource?>? _texSource;
+
+  // System.Func spelled out: Vintagestory.API.Common declares its own Func<,> and the two are
+  // ambiguous under both usings.
+  private readonly System.Func<string[]?, string[]?>? _composeElements;
 
   private BEBehaviorAnimatable? _animatable;
   private ExRightClickConstructable? _rcc;
@@ -35,14 +40,27 @@ public sealed class ConstructedAnimator {
   /// util and the freshly-built mesh; used to swap in a custom <see cref="AnimatableRenderer"/>. Runs
   /// before the pose, so a renderer seeding its visibility from the active-animation set sees the
   /// pre-pose state.</param>
+  /// <param name="texSource">Optional texture source for the build, evaluated per build. A machine
+  /// whose shape carries a texture code it resolves itself - a fuel bed drawn in whatever fuel is
+  /// charged - supplies one; null leaves the block's own texture resolution in place, which is what
+  /// the tesselator falls back to.</param>
+  /// <param name="composeElements">Optional refinement of the element set, applied to every build.
+  /// A construction stage can only name an element group whole, so a machine whose art draws several
+  /// states of one group - a fuel bed's courses, a carved surface's slots - narrows the stage's entry
+  /// to what its own state says should stand. It runs inside <see cref="Rebuild"/>, so the stage
+  /// events, <see cref="Refresh"/> and an explicit rebuild all go through it.</param>
   public ConstructedAnimator(
     BlockEntity be,
     Func<string> cacheKey,
-    Action<BlockEntityAnimationUtil, MeshData>? onAnimatorBuilt = null
+    Action<BlockEntityAnimationUtil, MeshData>? onAnimatorBuilt = null,
+    Func<ITexPositionSource?>? texSource = null,
+    System.Func<string[]?, string[]?>? composeElements = null
   ) {
     _be = be;
     _cacheKey = cacheKey;
     _onAnimatorBuilt = onAnimatorBuilt;
+    _texSource = texSource;
+    _composeElements = composeElements;
   }
 
   /// <summary>True once the player has finished the construction stages. Valid on the server too, since
@@ -87,13 +105,28 @@ public sealed class ConstructedAnimator {
   }
 
   /// <summary>
-  /// (Re)builds the animator to render exactly the currently-built elements. Only the mesh is filtered
-  /// to <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape. Public so a
+  /// Rebuilds the mesh at the current construction stage and re-applies the pose. What a machine calls
+  /// when something the mesh is built FROM has changed without the built element set changing with it -
+  /// a texture source that now resolves differently, or a fuel bed that has burned a course down - since
+  /// the construction event only fires when a stage lands.
+  /// </summary>
+  public void Refresh() {
+    Rebuild(_rcc?.shape?.SelectiveElements);
+    _repose?.Invoke();
+  }
+
+  /// <summary>
+  /// (Re)builds the animator to render exactly the currently-built elements, narrowed by the
+  /// constructor's element composer where one was supplied. Only the mesh is filtered to
+  /// <paramref name="selectiveElements"/>; the animator hierarchy stays the full shape. Public so a
   /// wrench-rotatable machine can rebuild in its new orientation from <c>OnExchanged</c>.
   /// </summary>
   public void Rebuild(string[]? selectiveElements) {
     if (_be.Api is not ICoreClientAPI || _animatable == null)
       return;
+
+    if (_composeElements != null)
+      selectiveElements = _composeElements(selectiveElements);
 
     BlockEntityAnimationUtil util = _animatable.animUtil;
 
@@ -103,7 +136,7 @@ public sealed class ConstructedAnimator {
       _cacheKey(),
       null,
       out Shape resolvedShape,
-      null,
+      _texSource?.Invoke(),
       new TesselationMetaData { SelectiveElements = selectiveElements }
     );
 

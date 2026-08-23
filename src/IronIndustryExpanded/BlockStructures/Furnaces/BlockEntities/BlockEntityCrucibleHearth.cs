@@ -233,7 +233,13 @@ public class BlockEntityCrucibleHearth : BlockEntityFirebox {
     $"{layers}|{texture}|{_renderHoles}";
 
   protected override List<string> RenderElements(int layers) =>
-    [.. CrucibleHearthLayout.ElementsFor([.. _holes.Select(Drawn)], layers)];
+    [
+      .. CrucibleHearthLayout.ElementsFor(
+        [.. _holes.Select(Drawn)],
+        Bed,
+        layers
+      ),
+    ];
 
   // A lidded hole is a working one: the cover goes on once the pot starts taking heat, so an idle pot
   // stays visible and a pot in its heat is shut in.

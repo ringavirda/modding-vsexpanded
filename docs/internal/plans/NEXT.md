@@ -1,7 +1,8 @@
 # NEXT — the single "what next" entry point
 
-**Status** live — updated 2026-08-20: the mod split is **BUILT**. Both merges are done, the mod set is
-`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 4,125 green. ★★ **The workbench is built**
+**Status** live — updated 2026-08-23: the mod split is **BUILT**. Both merges are done, the mod set is
+`exlib`/`iiex`/`siex` and closed, and the gate is 9 targets / 4,700 green. ★★ **The Cornish boiler is a
+self-contained megablock** — see *[What is actually next](#-what-is-actually-next)*. ★★ **The workbench is built**
 — the owner's art arrived 2026-08-20 and the bench stands on its two cells the same day. The
 framework-hardening plan is live and part-landed; **M.6 landed and closed B23**, a wall that made the
 Bessemer vessel unbuildable in every game mode. ★★ **The forming line is complete on both tiers, and
@@ -186,15 +187,20 @@ That is a unit of work, not a follow-up; the guard states both counts so the ski
 
 ### ★ What is actually next
 
-★★ **A live plan landed 2026-08-23:**
-[2026-08-23-cornish-boiler-megablock.md](2026-08-23-cornish-boiler-megablock.md) — the Cornish boiler
-stops being a multiblock. The owner's reworked art carries the masonry, both hatches and the burner, so
-the player-built firebox goes away entirely and the boiler becomes a self-contained 3 × 6 × 3 megablock
-with its fuel bed inside its own block entity. **CB0 is done** (the shape tooling); CB1–CB9 are open,
-and **CB10's Lancashire conversion is blocking for a green suite** — it shares `BlockBoiler` and
-`BlockEntityBoiler` and cannot survive the base losing its coal-pile path.
+★★ **BUILT 2026-08-23:**
+[2026-08-23-cornish-boiler-megablock.md](2026-08-23-cornish-boiler-megablock.md) — the Cornish boiler is
+not a multiblock any more. The owner's reworked art carries the masonry, both hatches and the burner, so
+the player-built firebox is gone entirely and the boiler is a self-contained 3 × 6 × 3 megablock — 40
+fillers plus the principal — with its fuel bed inside its own block entity. **CB0–CB9 are done**; gate
+9 targets / **4,700**. Detail in [the worklog](../worklog/2026-08.md).
 
-Three things it settles that reach past the boiler:
+⛔ **CB10's Lancashire conversion did NOT turn out to be blocking**, and the plan was wrong to call it so.
+The shared base kept the coal-pile branch behind a `Bed != null` test, so the Lancashire still runs — but
+it lost its `MultiblockLayout` with the multiblock base, and its fire is now a free-placed `game:coalpile`
+that **nothing requires**. It is the last consumer of `@(air|coalpile)` in the suite apart from the
+cowper. See [boiler-lancashire.md](../../design/machines/boiler-lancashire.md) and CB10's list.
+
+Three things it settled that reach past the boiler:
 
 1. ⛔⛔ **`convert-shape.py` had `iron4` mapped to `sheet-plain`** and the remap overwrites by key, so it
    beat the editable on every shape it touched: the tuyere and the burdenmaker both ship `sheet-plain`
@@ -204,12 +210,24 @@ Three things it settles that reach past the boiler:
 2. ⛔⛔ **`unwrap_root` discarded a non-zero wrapper origin.** The reworked boiler wraps at `[16,0,16]`;
    lifting bare moved the whole machine one cell west and one north, silently, since a translated model
    renders perfectly well in the wrong place. Now folded into the lifted children.
-3. ★★ **Fuel admission moves to `combustibleProps`.** Vanilla gives every coal a `burnTemperature` and
-   a `burnDuration` and `docs/design/items/fuels.md` records that *not one of them is read anywhere in
-   `src/`*. They are now the whole fuel model, so a coal another mod ships works by declaring what it
+3. ★★ **Fuel admission moved to `combustibleProps`.** Vanilla gives every coal a `burnTemperature` and
+   a `burnDuration` and `docs/design/items/fuels.md` recorded that *not one of them was read anywhere in
+   `src/`*. They are the whole fuel model now, so a coal another mod ships works by declaring what it
    already declares. **Lignite is admissible in a boiler** — the old exclusion was metallurgical
-   reasoning applied to a machine that only has to beat 157 °C — and the metallurgical refusal moves to
-   `BlockEntityFireboxFurnace.AcceptsFireboxFuel`.
+   reasoning applied to a machine that only has to beat 157 °C — and the metallurgical refusal moved to
+   `BlockEntityFireboxFurnace.AcceptsFireboxFuel`. ⛔⛔ Every coal but lignite lands at a multiplier of
+   exactly **1.0**, so rate does not separate them and **burn duration does**: anthracite runs a bed for
+   52 minutes, coke for 11, both at 64 L/s.
+4. ★★ **The declarative filler port**, `Port(char, face, networkType)` — a footprint cell that answers
+   `HasConnectorAt` for its principal without joining the graph. `multiblock.md` now carries the
+   connector-versus-node table so the next machine does not re-derive it. ⛔ A port two cells away cannot
+   be probed with `ConnectedNetwork` from the principal; that answers `null` on a correctly plumbed
+   machine. Use `ConnectedNetworkAt`.
+5. ⛔⛔ **A shared refusal string was wrong for one of its two callers.** `iiex-firebox-refused` told a
+   coke oven's charcoal it "will not carry a metallurgical heat", which a retort never asks about. The
+   reason is now paired with the rule — `RefuseFireboxFuel` beside `AcceptsFireboxFuel`, overridden by the
+   oven. ⛔ `LangCallSites.BareLiteral` is lowercase-only, so a key with a capital in it would ship
+   unguarded; found while mutation-checking the new key.
 
 **Updated 2026-08-15.** The forming line is complete for every drawn route; what is queued is one designed
 station, one item merge and two rulings. Pick one; nothing among them blocks anything else.

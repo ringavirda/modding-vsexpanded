@@ -8,6 +8,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
@@ -42,6 +43,16 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
     Core is BlockEntityFireboxFurnace furnace
       ? furnace.AcceptsFireboxFuel(stack)
       : BEBehaviorFirebox.IsFuel(stack);
+
+  /// <summary>
+  /// Tells <paramref name="player"/> why this cell turned down a stack that burns hot enough to be fuel.
+  /// The narrowing is the owning machine's rule, so the reason is the owning machine's to give and reads
+  /// differently per machine - a hearth is refusing a coal too low-rank for metal work, a retort is
+  /// refusing a fuel that has already been burned. A cell with no owning furnace narrows nothing, so
+  /// <see cref="Accepts"/> cannot reach this from there and there is no machine to answer for.
+  /// </summary>
+  public void RefuseFuel(IServerPlayer? player) =>
+    (Core as BlockEntityFireboxFurnace)?.RefuseFireboxFuel(player);
 
   public int Charge(ItemStack? stack) {
     if (stack == null || Bed is not { } here)
@@ -94,9 +105,10 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
   protected virtual string RenderKey(int layers, string texture) =>
     $"{layers}|{texture}";
 
-  /// <summary>The element paths to draw for a bed of <paramref name="layers"/> courses.</summary>
+  /// <summary>The element paths to draw for a bed of <paramref name="layers"/> courses, at this bed's
+  /// own element name and prefix.</summary>
   protected virtual List<string> RenderElements(int layers) =>
-    BlockFirebox.ElementsFor(layers);
+    BlockFirebox.ElementsFor(Bed, layers);
 
   /// <summary>
   /// Draws the rim and bars always, plus one <c>CokeL</c> course per standing layer, repointed at whichever

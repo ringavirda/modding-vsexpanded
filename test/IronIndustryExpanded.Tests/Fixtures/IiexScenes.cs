@@ -55,18 +55,14 @@ internal sealed class BoilerFixture {
   public readonly BlockEntityBoilerCornish Be;
   public readonly BlockBoilerCornish Block;
 
-  /// <summary>The boiler's raised footprint.</summary>
-  public readonly ExpandedLib.Testing.StructureRig Structure;
-
   public BoilerFixture(
     Scene scene,
     BlockPos pos,
     int blockId = 10,
-    int coalId = 11
+    string fuelCode = "game:ore-bituminouscoal"
   ) {
     Block = TestBlocks.Configure(
       new BlockBoilerCornish(),
-      // The layout's anchor cell matches "iiex:boilercornish*".
       "iiex:boilercornish-n",
       blockId,
       ("side", "north")
@@ -74,22 +70,14 @@ internal sealed class BoilerFixture {
     Be = new BlockEntityBoilerCornish { Pos = pos.Copy(), Block = Block };
 
     scene.World.Place(pos, Block, Be);
-    scene.World.Attach(Be);
-    // Raises the real shell, Initializes, then completes the right-click construction: Initialize
-    // clears _rcc off the absent behaviors, so the fake has to follow it.
-    Structure = BoilerFakes.Commission(
-      scene.World,
-      Be,
-      BoilerFakes.CornishDef,
-      Block.StructureAngle
-    );
+    // Attaches the shipped attributes, Initializes, completes the right-click construction and hosts
+    // the declared fuel bed: Initialize clears _rcc off the absent behaviors, so the fake follows it.
+    BoilerFakes.Commission(scene.World, Be, BoilerFakes.CornishDef);
 
-    var fuelPos = Block.FuelWorldPos(pos);
-    scene.World.Place(
-      fuelPos,
-      TestBlocks.Configure(new Block(), "game:coalpile", coalId),
-      BoilerFakes.BurningPile(fuelPos)
-    );
+    var bed = Be.Bed!;
+    Item fuel = scene.World.RegisterItem(fuelCode);
+    bed.TryAdd(new ItemStack(fuel, bed.CellCapacity), bed.CellCapacity);
+    ReflectionHelpers.SetField(Be, "_lit", true);
   }
 
   public BoilerFixture Prime(BoilerState state, float water, float steam) {
@@ -102,7 +90,9 @@ internal sealed class BoilerFixture {
   public float SteamVolume =>
     (float)ReflectionHelpers.GetField(Be, "_steamVolume")!;
 
-  /// <summary>World cell of the steam pipe that attaches above the outlet connector.</summary>
+  /// <summary>World cell of the steam pipe, across the connector cell's own declared port face - read
+  /// off the footprint the way the boiler reads it, so a scene cannot plumb a face the vessel does not
+  /// push through.</summary>
   public BlockPos SteamPipeAttachPos =>
-    Block.SteamPipeWorldPos(Be.Pos).UpCopy();
+    Block.SteamPipeWorldPos(Be.Pos).AddCopy(Block.SteamWorldFace!);
 }

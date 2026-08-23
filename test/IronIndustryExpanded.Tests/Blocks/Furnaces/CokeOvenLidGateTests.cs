@@ -288,7 +288,7 @@ public class CokeOvenLidGateTests {
         ?.GetBehavior<BEBehaviorFirebox>();
       Assert.NotNull(bed);
       Assert.Equal(Bituminous, bed!.FuelCode);
-      Assert.Equal(BEBehaviorFirebox.CellCapacity, bed.Units);
+      Assert.Equal(BEBehaviorFirebox.DefaultCellCapacity, bed.Units);
     }
   }
 

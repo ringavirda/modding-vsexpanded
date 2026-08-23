@@ -330,24 +330,37 @@ public class FireboxChargeTests {
   }
 
   /// <summary>
-  /// A bed decides what it holds: the four metallurgical fuels go in, lignite does not, and neither does
-  /// anything that is not a fuel.
+  /// A bed decides what it holds by burn temperature alone: coke, charcoal and every coal that clears
+  /// the minimum go in, lignite included, and neither does anything that does not burn hot enough - burden
+  /// included, registered at its own real production figures (`ItemBurden.cs`: 600 °C, below the floor)
+  /// rather than left silent in the double, so the refusal asserts the floor rather than an unset field.
+  /// The metallurgical exclusion of low-rank coal is the owning furnace's own rule, not the bed's - see
+  /// <see cref="BlockEntityFireboxFurnace.AcceptsFireboxFuel"/> and
+  /// <c>A_reheat_furnace_still_burns_what_it_always_did</c>.
   /// </summary>
   [Theory]
-  [InlineData("game:coke", true)]
-  [InlineData("game:charcoal", true)]
-  [InlineData("game:ore-bituminouscoal", true)]
-  [InlineData("game:ore-anthracite", true)]
-  // Low-rank, high-moisture, high-ash: it will not carry a metallurgical heat.
-  [InlineData("game:ore-lignite", false)]
-  [InlineData("iiex:remeltburden", false)]
-  [InlineData("game:ingot-iron", false)]
-  public void A_bed_takes_the_four_metallurgical_fuels_and_nothing_else(
+  [InlineData("game:coke", 0f, 0f, true)]
+  [InlineData("game:charcoal", 0f, 0f, true)]
+  [InlineData("game:ore-bituminouscoal", 0f, 0f, true)]
+  [InlineData("game:ore-anthracite", 0f, 0f, true)]
+  [InlineData("game:ore-lignite", 0f, 0f, true)]
+  [InlineData("iiex:remeltburden", 600f, 1500f, false)]
+  [InlineData("game:ingot-iron", 0f, 0f, false)]
+  public void A_bed_takes_whatever_burns_hot_enough_and_nothing_else(
     string code,
+    float burnTemperature,
+    float burnDuration,
     bool accepted
   ) {
     var world = new TestWorld();
-    var stack = new ItemStack(world.RegisterItem(code), 4);
+    var stack = new ItemStack(
+      world.RegisterItem(
+        code,
+        burnTemperature: burnTemperature,
+        burnDuration: burnDuration
+      ),
+      4
+    );
 
     var bed = new BEBehaviorFirebox(
       new BlockEntityFirebox { Pos = Anchor.Copy() }
@@ -393,16 +406,16 @@ public class FireboxChargeTests {
       new BlockEntityFirebox { Pos = Anchor.Copy() }
     );
 
-    Assert.Equal(BEBehaviorFirebox.CellCapacity, bed.TryAdd(coke, 999));
+    Assert.Equal(bed.CellCapacity, bed.TryAdd(coke, 999));
     Assert.True(bed.IsFull);
-    Assert.Equal(BEBehaviorFirebox.LayersPerCell, bed.LayerCount);
+    Assert.Equal(bed.LayersPerCell, bed.LayerCount);
     Assert.Equal(0, bed.TryAdd(coke, 999));
 
     // Six courses of two, as the shape draws them. Literals: every relation above is the same
     // expression over the same source on both sides and holds for any capacity.
-    Assert.Equal(6, BEBehaviorFirebox.LayersPerCell);
-    Assert.Equal(2, BEBehaviorFirebox.UnitsPerLayer);
-    Assert.Equal(12, BEBehaviorFirebox.CellCapacity);
+    Assert.Equal(6, BEBehaviorFirebox.DefaultLayersPerCell);
+    Assert.Equal(2, BEBehaviorFirebox.DefaultUnitsPerLayer);
+    Assert.Equal(12, BEBehaviorFirebox.DefaultCellCapacity);
   }
 
   /// <summary>
@@ -424,8 +437,8 @@ public class FireboxChargeTests {
 
     ItemStack? course = bed.TryTakeLayer();
     Assert.NotNull(course);
-    Assert.Equal(BEBehaviorFirebox.UnitsPerLayer, course!.StackSize);
-    Assert.Equal(BEBehaviorFirebox.LayersPerCell - 1, bed.LayerCount);
+    Assert.Equal(bed.UnitsPerLayer, course!.StackSize);
+    Assert.Equal(bed.LayersPerCell - 1, bed.LayerCount);
     Assert.False(bed.IsFull);
   }
 

@@ -70,19 +70,23 @@ public static class CrucibleHearthLayout {
   public static string Cover(Hole hole) => "Covers/Cover" + Index(hole);
 
   /// <summary>
-  /// Every element to draw for the given hole contents over a bed standing
+  /// Every element to draw for the given hole contents over <paramref name="bed"/> standing
   /// <paramref name="bedLayers"/> courses: the structure and the bed always, then whatever each hole is
   /// carrying.
   /// </summary>
   /// <remarks>
-  /// The bed comes from <see cref="BlockFirebox.ElementsFor"/> unchanged, because the drawn hearth names
-  /// its coke courses exactly as the firebox does - one selector, not a second copy of the same six names.
+  /// The bed comes from <see cref="BlockFirebox.ElementsFor(BEBehaviorFirebox?, int)"/> unchanged, because
+  /// the drawn hearth names its coke courses exactly as the firebox does - one selector, not a second copy
+  /// of the same six names. <paramref name="bed"/> is threaded through rather than defaulted, so a hearth
+  /// whose behaviour declares its own <c>bedElement</c>/<c>layerPrefix</c> draws its own names instead of
+  /// silently falling back to the shipped ones.
   /// </remarks>
   public static string[] ElementsFor(
     IReadOnlyList<HoleContents> holes,
+    BEBehaviorFirebox? bed,
     int bedLayers
   ) {
-    List<string> els = BlockFirebox.ElementsFor(bedLayers);
+    List<string> els = BlockFirebox.ElementsFor(bed, bedLayers);
     foreach (Hole hole in All) {
       HoleContents held = holes[(int)hole];
       if (held.Pot)

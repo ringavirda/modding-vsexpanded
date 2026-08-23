@@ -670,119 +670,110 @@ error. Removed.
 
 ---
 
-# lpex — Low Pressure Expanded
+# iiex — the steam tier *(same mod as the iwex section above; the lpex heading is retired)*
 
-## Cornish boiler — `lpex:boilercornish` *(shipped)*
+## Cornish boiler — `iiex:boilercornish` *(shipped 2026-08-23 — footprint only, no layout)*
+
+**No `MultiblockLayout`.** The masonry, the grate and both hatches are in the boiler's own art, so there is
+nothing for a player to build around it and nothing to verify. What is drawn below is its **filler
+footprint** (`StructureFootprint.Layout`), which is a different mechanism: no legend, no roles, no
+completion monitor. See [boiler-cornish.md](../../design/machines/boiler-cornish.md).
 
 ```csharp
-.MultiblockLayout(s =>
-  s.Origin(-1, -2)
-    .Legend('#', ExCodes.Filler)
-    .Legend('L', "lpex:boilercornish*")
-    .Legend('p', IiexCodes.PipePassthroughFire)
-    .Legend('B', IiexCodes.PipePassthroughBendFireUp)
-    .Legend('b', ExCodes.FireBricks)
-    .Legend('a', ExCodes.Air)
-    .Legend('c', ExCodes.CoalBed)
-    .Legend('d', ExCodes.CokeOvenDoor)
-    .Legend('o', IiexCodes.PipeOutletFireUp)
-    .Layer(1, """
-             . b .
-             . b .
-             # # #
-             # # #
-             # # #
-             # # #
-             . o .
-             . b .
-             """)
-    .Layer(0, """
-             b d b
-             b c b
-             # L #
-             # # #
-             # # #
-             # # #
-             b a b
-             b b b
-             """)
-    .Layer(-1, """
-              b p b
-              b p b
-              b B b
-              b b b
-              b b b
-              b b b
-              b b b
-              b b b
-              """)
+.FillerOffsets(
+  StructureFootprint.Layout(f =>
+    f.Origin(-1, -5)
+      .Slab('_', BlockFacing.DOWN)
+      .Slab('M', BlockFacing.DOWN)
+      .Solid('I')
+      .Port('S', BlockFacing.UP, "pipe")
+      .Port('E', BlockFacing.EAST, "pipe")
+      .Layer(0, """
+                # # E
+                # # #
+                # # #
+                # # #
+                # # #
+                # O #
+                """)
+      .Layer(1, """
+                # # #
+                # # #
+                # # #
+                # # #
+                # # #
+                # I #
+                """)
+      .Layer(2, """
+                . . .
+                . _ .
+                . S .
+                . _ .
+                . M .
+                . _ .
+                """)
+  )
 )
 ```
 
-**Pending.** The boiler is getting an **internal** firebox — its own shape redrawn to carry one — rather
-than a separate `c` cell in the layout. When that lands the `c` glyph goes away entirely here.
+3 × 6 × 3 less the L3 corners: **40 fillers** around the principal, which `'O'` draws for readability and
+the DSL never fills.
+
+| Glyph | Cell | Kind | For |
+|---|---|---|---|
+| `O` | `(0,0,0)` | principal | the boiler block; feedwater couples on its own SOUTH face (`feedwaterFace`) |
+| `I` | `(0,1,0)` | `Solid` | main hatch — open, charge, light, shut |
+| `S` | `(0,2,-3)` | `Port(UP)` | steam out; the pipe sits at `(0,3,-3)` |
+| `M` | `(0,2,-1)` | `Slab(DOWN)` | man hatch — bucket fill, drain, emergency vent |
+| `E` | `(1,0,-5)` | `Port(EAST)` | exhaust out; the pipe sits at `(2,0,-5)` |
+| `_` | `(0,2,-4)`, `(0,2,-2)`, `(0,2,0)` | `Slab(DOWN)` | the walkable top of the barrel |
+| `#` | the other 33 | `Solid` | plain filler |
+
+`BoilerFootprintGuards` measures the drawn mesh against this footprint at all four orientations, so a
+change here that the art does not follow fails a test.
 
 ---
 
-# hpex — High Pressure Expanded
+# siex — the high-pressure tier *(same mod as the smex section below; the hpex heading is retired)*
 
-## Lancashire boiler — `hpex:boilerlancashire` *(shipped)*
+## Lancashire boiler — `siex:boilerlancashire` *(no layout — removed 2026-08-23)*
 
-The same setting as the Cornish, two rows longer. The pipe fittings are **lpex's** cast tier (hpex depends on
-lpex), which is why those legends keep the lpex domain.
+Its `MultiblockLayout` — masonry surround, flue passthroughs, coal-bed cell, outlet neck — was removed
+with the multiblock base the shared `BlockEntityBoiler` used to derive from. Nothing read it any more, so
+it was config that read as an enforced requirement while enforcing nothing.
+
+The vessel still needs a lit `game:coalpile` at `fuelOffset` `(0,0,-1)` to run, and that cell is outside
+its footprint and required by nothing — see
+[boiler-lancashire.md](../../design/machines/boiler-lancashire.md). Its own footprint:
 
 ```csharp
-.MultiblockLayout(s =>
-  s.Origin(-1, -2)
-    .Legend('#', ExCodes.Filler)
-    .Legend('L', "hpex:boilerlancashire*")
-    .Legend('p', IiexCodes.PipePassthroughFire)
-    .Legend('B', IiexCodes.PipePassthroughBendFireUp)
-    .Legend('b', ExCodes.FireBricks)
-    .Legend('a', ExCodes.Air)
-    .Legend('c', ExCodes.CoalBed)
-    .Legend('d', ExCodes.CokeOvenDoor)
-    .Legend('o', IiexCodes.PipeOutletFireUp)
-    .Layer(1, """
-             . b .
-             . b .
-             # # #
-             # # #
-             # # #
-             # # #
-             # # #
-             # # #
-             . o .
-             . b .
-             """)
-    .Layer(0, """
-             b d b
-             b c b
-             # L #
-             # # #
-             # # #
-             # # #
-             # # #
-             # # #
-             b a b
-             b b b
-             """)
-    .Layer(-1, """
-              b p b
-              b p b
-              b B b
-              b b b
-              b b b
-              b b b
-              b b b
-              b b b
-              b b b
-              b b b
-              """)
+.FillerOffsets(
+  StructureFootprint.Layout(f =>
+    f.Origin(-1, 0)
+      .Port('S', BlockFacing.UP, "pipe")
+      .Layer(0, """
+                + O +
+                + + +
+                + + +
+                + + +
+                + + +
+                + + +
+                """)
+      .Layer(1, """
+                # + #
+                # + #
+                # + #
+                # + #
+                # S #
+                # + #
+                """)
+  )
 )
 ```
 
-Pending: same internal-firebox change as the Cornish.
+⛔ The shape spin stays **0** here where the Cornish passes 180: this art grows along local `-z` while the
+footprint above is authored along `+z`, and `StructureAngle`'s own half turn is what reconciles them.
+`BoilerFootprintGuards` asserts it in the siex suite too.
 
 ---
 
@@ -1143,5 +1134,6 @@ are in `IiexCodes` — a rename in iwex would otherwise break this with nothing 
 Not everything multiblock is drawn here. These are **filler footprints** (`StructureFootprint.Layout`) — a
 mega-block covering its own cells — which is a different mechanism with no legend and no roles:
 
-* casting bed, burdenmaker, and the boilers' own bodies
+* casting bed and burdenmaker
+* both boilers, which are footprint-only now and drawn above under iiex / siex
 * gas producer — **no layout exists at all**, and no `MultiblockLayout` in `src/`

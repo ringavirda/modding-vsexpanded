@@ -178,7 +178,7 @@ be built entirely out of iron, and the stored variant drives the salvage.
 
 The handbook says the Cornish's "construction stages cost the same materials as the Watt engine - the
 difference in price lies in the engine's main block"
-(`docs/siex/handbook/05-highpressure.html:23-25`). They differ by 42 plates.
+(`docs/siex/handbook/05-highpressure.html:27-29`). They differ by 42 plates.
 
 ### Repair — `BlockEngineCornish.cs:95-99`
 
@@ -502,7 +502,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
    |---|---|---|
    | `SiexConfig.cs:67-69` | "low works on a gentle 5-8, normal on 6-8, high demands a hot 7-8" | correct |
    | `src/SteelIndustryExpanded/README.md:17` | "the efficient high-pressure beam engine (6-8 atm)" | drops low and high |
-   | `docs/siex/handbook/05-highpressure.html:19` | "Running at 6-8 atm" | same |
+   | `docs/siex/handbook/05-highpressure.html:23` | "Running at 6-8 atm" | same |
 
    The in-game HUD is the only source that is always right, because it renders
    `ExMeasure.PressureRange(EngagePressure, BreakPressure)` from the live config
@@ -560,7 +560,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 11. The steam-per-power ratio is flat, so "efficient" means "cheaper than a Watt", not "cheaper at low
     throttle". All three settings cost 40 L per unit; the handbook's "wringing the same power from less steam
     because it can regulate how much steam enters the cylinder"
-    (`docs/siex/handbook/05-highpressure.html:17-19`) attributes the efficiency to the wrong mechanism.
+    (`docs/siex/handbook/05-highpressure.html:21-23`) attributes the efficiency to the wrong mechanism.
 
 12. The handbook's claims about this engine's cost and output are unsupported. "on High it will comfortably
     drive six helve hammers" (`:22`) is a number nothing in the repo computes - the same class of guess as

@@ -532,6 +532,21 @@ public class IiexConfig : IExVersionedConfig {
   public int FireboxLayersPerCell { get; set; } = 6;
 
   /// <summary>
+  /// Flame temperature (°C) at which a boiler's grate saturates its heating surface. At or above it a
+  /// fuel raises steam at the vessel's full rate; below it the rate falls off linearly toward the
+  /// saturation temperature. Every coal vanilla ships except lignite clears it, so fuel choice is felt
+  /// mainly as burn duration - see docs/design/machines/boiler-cornish.md.
+  /// </summary>
+  public float BoilerFuelDesignTemp { get; set; } = 1200f;
+
+  /// <summary>
+  /// Lowest burn temperature (°C) an item may declare and still be firebox fuel. The floor is what keeps
+  /// firewood, peat and every other low-grade combustible out of a fuel bed now that admission is read
+  /// from <c>combustibleProps</c> rather than from a list of coal names.
+  /// </summary>
+  public float BoilerFuelMinTemp { get; set; } = 1000f;
+
+  /// <summary>
   /// Fraction of its own capacity a lit firebox must still hold before it counts a disruption toward
   /// going out. A firebox lights full and burns on a clock rather than by consumption, so this bites only
   /// when fuel is drawn back out of a lit box. Stated as a fraction because the floor has to scale with
@@ -993,7 +1008,7 @@ public class IiexConfig : IExVersionedConfig {
   public float BoilerWaterIntakeFillFraction { get; set; } = 0.5f;
 
   /// <summary>Maximum rate (L/s) the boiler draws water from its feed network through the automatic intake.</summary>
-  public float BoilerWaterIntakeRate { get; set; } = 10f;
+  public float BoilerWaterIntakeRate { get; set; } = 20f;
 
   /// <summary>Exhaust (L/s) a burning boiler vents into its exhaust network - fixed for every boiler variant.</summary>
   public float BoilerExhaustPerSecond { get; set; } = 16f;
@@ -1041,16 +1056,16 @@ public class IiexConfig : IExVersionedConfig {
 
   #region Cornish boiler
   /// <summary>Total internal capacity (L) of the Cornish boiler.</summary>
-  public float CornishBoilerCapacity { get; set; } = 800f;
+  public float CornishBoilerCapacity { get; set; } = 1600f;
 
   /// <summary>Minimum water (L) the Cornish boiler needs to begin heating/boiling.</summary>
-  public float CornishBoilerMinBoilWater { get; set; } = 150f;
+  public float CornishBoilerMinBoilWater { get; set; } = 300f;
 
   /// <summary>Maximum water (L) the Cornish boiler will hold/boil.</summary>
-  public float CornishBoilerMaxBoilWater { get; set; } = 500f;
+  public float CornishBoilerMaxBoilWater { get; set; } = 1000f;
 
   /// <summary>Steam (L/s) the Cornish boiler produces while boiling at full tilt.</summary>
-  public float CornishBoilerSteamPerSecond { get; set; } = 32f;
+  public float CornishBoilerSteamPerSecond { get; set; } = 64f;
 
   /// <summary>Steam pressure (atm) the Cornish boiler chokes at - above the Watt engine's 4 atm
   /// break, so a pressure valve between boiler and engine is mandatory.</summary>

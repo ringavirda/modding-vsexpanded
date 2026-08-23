@@ -19,8 +19,8 @@ public partial class BlockBoilerLancashire
     IFillerHost,
     IBoilerGeometry,
     IExBlockDefProvider {
-  /// <summary>The Lancashire boiler blocktype: geometry offsets as attributes, filler footprint and
-  /// structure map as ASCII layer diagrams, and the build sequence as a typed stage table.</summary>
+  /// <summary>The Lancashire boiler blocktype: geometry offsets as attributes, the filler footprint as
+  /// ASCII layer diagrams, and the build sequence as a typed stage table.</summary>
   /// <summary>
   /// The fastener a pressure vessel is built with, and it is the iron tier's: a rivet is a rivet whatever
   /// the shell is made of, and siex mints none of its own. See docs/design/items/fasteners.md.
@@ -37,9 +37,16 @@ public partial class BlockBoilerLancashire
           .Create(domain, "boilerlancashire", "boiler/lancashire")
           .Class<BlockBoilerLancashire>()
           .EntityClass<BlockEntityBoilerLancashire>(),
-        "siex:boiler/lancashire"
+        "siex:boiler/lancashire",
+        // Zero, not BodySpinOffset, and the two leaves differ on purpose: this art is drawn along local
+        // -z while the footprint below is authored along +z, so StructureAngle's own half turn is what
+        // brings them together and the mesh must take none. Adding the offset here would move the mesh
+        // six cells off its fillers. BoilerFootprintGuards asserts it at all four orientations.
+        0
       )
       .MiningTier(4)
+      // The masonry setting is what the pre-construction mesh shows.
+      .ShapeSelectiveElements("Root/Base/*")
       .Attributes(
         new {
           steamConnectorOffset = new {
@@ -47,7 +54,7 @@ public partial class BlockBoilerLancashire
             y = 1,
             z = 4,
           },
-          lidOffset = new {
+          manHatchOffset = new {
             x = 0,
             y = 1,
             z = 1,
@@ -57,6 +64,9 @@ public partial class BlockBoilerLancashire
             y = 0,
             z = -1,
           },
+          // Distinct cells on purpose: the blast is centred on the barrel's middle, the mesh is lit from
+          // a body cell clear of both the fire at z -1 and the steam port at z 4. Sharing one cell makes
+          // a later move of any of the three silently move the others.
           explosionCenterOffset = new {
             x = 0,
             y = 1,
@@ -65,7 +75,7 @@ public partial class BlockBoilerLancashire
           lightSampleOffset = new {
             x = 0,
             y = 1,
-            z = 3,
+            z = 2,
           },
           exhaustOutletOffset = new {
             x = 0,
@@ -85,6 +95,7 @@ public partial class BlockBoilerLancashire
       .FillerOffsets(
         StructureFootprint.Layout(f =>
           f.Origin(-1, 0)
+            .Port('S', BlockFacing.UP, "pipe")
             .Layer(
               0,
               """
@@ -103,70 +114,11 @@ public partial class BlockBoilerLancashire
               # + #
               # + #
               # + #
-              # + #
+              # S #
               # + #
               """
             )
         )
-      )
-      // The firebox/flue masonry the boiler is walled into. The pipe fittings it seats on are iiex's
-      // cast tier, so those legends keep the iiex domain.
-      .MultiblockLayout(s =>
-        s.Origin(-1, -2)
-          .Legend('#', ExCodes.Filler)
-          .Legend('L', SiexBlocks.BoilerLancashire.Any)
-          .Legend('p', IiexCodes.PipePassthroughFire)
-          .Legend('B', IiexCodes.PipePassthroughBendFireUp)
-          .Legend('b', VanillaCodes.FireBricks)
-          .Legend('a', VanillaCodes.Air)
-          .Legend('c', VanillaCodes.CoalBed)
-          .Legend('d', VanillaCodes.Sealing(BlockFacing.NORTH))
-          .Legend('o', IiexCodes.PipeOutletFireUp)
-          .Layer(
-            1,
-            """
-            . b .
-            . b .
-            # # #
-            # # #
-            # # #
-            # # #
-            # # #
-            # # #
-            . o .
-            . b .
-            """
-          )
-          .Layer(
-            0,
-            """
-            b d b
-            b c b
-            # L #
-            # # #
-            # # #
-            # # #
-            # # #
-            # # #
-            b a b
-            b b b
-            """
-          )
-          .Layer(
-            -1,
-            """
-            b p b
-            b p b
-            b B b
-            b b b
-            b b b
-            b b b
-            b b b
-            b b b
-            b b b
-            b b b
-            """
-          )
       )
       .Construction(c =>
         c.Stage(s => s.AddElements("Root/Base"))

@@ -5,21 +5,21 @@ using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoile
 namespace IronIndustryExpanded.Tests;
 
 /// <summary>
-/// The boiler's full production tick: the construction- and structure-gated state machine, driven
-/// through <see cref="BoilerRig"/>, which fakes the finished construction, the structure, and a burning
-/// firebox.
+/// The boiler's full production tick: the construction-gated state machine, driven through
+/// <see cref="BoilerRig"/>, which fakes the finished construction and lights the vessel's own charged
+/// fuel bed.
 /// </summary>
 public class BoilerTickTests {
   [Fact]
-  public void Rig_reports_a_constructed_operational_boiler() {
+  public void Rig_reports_a_constructed_boiler_over_a_charged_bed() {
     var rig = new BoilerRig();
     Assert.True(rig.Be.IsConstructed);
-    Assert.True(rig.Be.IsOperational);
+    Assert.True(rig.Bed.IsFull);
   }
 
   [Fact]
   public void Idle_starts_heating_when_fired_with_enough_water() {
-    var rig = new BoilerRig().SetState(BoilerState.Idle).SetWater(200f);
+    var rig = new BoilerRig().SetState(BoilerState.Idle).SetWater(400f);
 
     rig.Tick();
 
@@ -28,7 +28,7 @@ public class BoilerTickTests {
 
   [Fact]
   public void Idle_stays_idle_without_enough_water() {
-    // The Cornish boiler needs 150 L; 100 L is below the floor.
+    // The Cornish boiler needs 300 L; 100 L is below the floor.
     var rig = new BoilerRig().SetState(BoilerState.Idle).SetWater(100f);
 
     rig.Tick();
@@ -40,7 +40,7 @@ public class BoilerTickTests {
   public void Idle_stays_idle_when_the_fire_is_out() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Idle)
-      .SetWater(200f)
+      .SetWater(400f) // enough water on its own - isolates the fire-out variable
       .ExtinguishFire();
 
     rig.Tick();
@@ -52,7 +52,7 @@ public class BoilerTickTests {
   public void Heating_reaches_boiling_once_the_heat_up_time_elapses() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Heating)
-      .SetWater(200f)
+      .SetWater(400f)
       .SetHeatingSeconds(IiexValues.BoilerHeatUpSeconds - 1f);
 
     rig.Tick(); // crosses the heat-up threshold this tick
@@ -64,18 +64,18 @@ public class BoilerTickTests {
   public void Boiling_converts_water_into_steam() {
     var rig = new BoilerRig()
       .SetState(BoilerState.Boiling)
-      .SetWater(200f)
+      .SetWater(400f)
       .SetSteam(0f);
 
     rig.Tick();
 
     Assert.True(rig.SteamVolume > 0f, "boiling should generate steam");
-    // BoilStep consumes SteamPerSecond/expansion litres of water per second (32/16 = 2 L for the
-    // Cornish). The steam pool is not asserted exactly: with no pipe on the outlet, the open neck
-    // leaks some of it back out the same tick.
+    // BoilStep consumes SteamPerSecond/expansion litres of water per second (64/16 = 4 L for the
+    // Cornish, at the bituminous bed's rated FuelRateMultiplier of 1). The steam pool is not asserted
+    // exactly: with no pipe on the outlet, the open neck leaks some of it back out the same tick.
     float expectedWaterUse =
       IiexValues.CornishBoilerSteamPerSecond / IiexValues.SteamExpansionFactor;
-    Assert.Equal(200f - expectedWaterUse, rig.WaterVolume, 2);
+    Assert.Equal(400f - expectedWaterUse, rig.WaterVolume, 2);
   }
 
   [Fact]

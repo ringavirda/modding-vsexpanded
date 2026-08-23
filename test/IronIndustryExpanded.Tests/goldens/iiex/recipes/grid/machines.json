@@ -108,11 +108,6 @@
         "code": "game:burnedbrick-fire",
         "quantity": 2
       },
-      "I": {
-        "type": "block",
-        "code": "iiex:pipe-plated-straight-*",
-        "quantity": 1
-      },
       "N": {
         "type": "item",
         "code": "game:metalnailsandstrips-*",

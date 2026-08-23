@@ -155,7 +155,7 @@ public static class FurnaceBranchGuards {
   /// </para>
   /// </summary>
   public static void NoFireboxAsksForMoreThanItsCellsCanHold() {
-    int perCell = BEBehaviorFirebox.CellCapacity;
+    int perCell = BEBehaviorFirebox.DefaultCellCapacity;
 
     Type[] fireboxes = Leaves()
       .Where(t => typeof(BlockEntityFireboxFurnace).IsAssignableFrom(t))
@@ -191,7 +191,7 @@ public static class FurnaceBranchGuards {
           threshold <= cells * perCell,
           $"{leaf.Name} on {def.Code} wants {threshold} u to light but its {cells}-cell firebox holds at "
             + $"most {cells * perCell} u ({perCell} per cell = "
-            + $"{BEBehaviorFirebox.LayersPerCell} layers x {BEBehaviorFirebox.UnitsPerLayer} u) "
+            + $"{BEBehaviorFirebox.DefaultLayersPerCell} layers x {BEBehaviorFirebox.DefaultUnitsPerLayer} u) "
             + "- it can never fire"
         );
       }

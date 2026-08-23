@@ -5,6 +5,8 @@ using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
+using Newtonsoft.Json.Linq;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Xunit;
 using static IronIndustryExpanded.Tests.FurnaceLayoutRig;
@@ -226,15 +228,15 @@ public class CrucibleFurnaceLayoutTests {
   [Fact]
   public void A_hole_draws_one_element_for_each_thing_in_it() {
     var empty = new CrucibleHearthLayout.HoleContents[4];
-    string[] bare = CrucibleHearthLayout.ElementsFor(empty, 6);
+    string[] bare = CrucibleHearthLayout.ElementsFor(empty, null, 6);
 
-    Assert.Equal(BlockFirebox.ElementsFor(6), bare);
+    Assert.Equal(BlockFirebox.ElementsFor(null, 6), bare);
 
     var loaded = new CrucibleHearthLayout.HoleContents[4];
     loaded[0] = new(Pot: true, Charge: true, Slag: true, Cover: true);
     loaded[2] = new(Pot: true, Charge: false, Slag: false, Cover: false);
 
-    string[] drawn = CrucibleHearthLayout.ElementsFor(loaded, 6);
+    string[] drawn = CrucibleHearthLayout.ElementsFor(loaded, null, 6);
 
     Assert.Equal(bare.Length + 5, drawn.Length);
     Assert.Contains(
@@ -245,6 +247,33 @@ public class CrucibleFurnaceLayoutTests {
       CrucibleHearthLayout.Cover(CrucibleHearthLayout.Hole.SouthEast),
       drawn
     );
+  }
+
+  /// <summary>
+  /// A hearth's own bed names its courses, not always the shipped default. Threaded through explicitly
+  /// (<see cref="BlockEntityCrucibleHearth.RenderElements"/> passes its live <c>Bed</c>) rather than
+  /// defaulted, so a hearth declaring its own <c>bedElement</c>/<c>layerPrefix</c> draws those names
+  /// instead of silently falling back to <c>Coke/CokeLn</c>, which it does not have.
+  /// </summary>
+  [Fact]
+  public void The_bed_courses_come_from_the_bed_actually_handed_in() {
+    var world = new TestWorld();
+    var bed = new BEBehaviorFirebox(
+      new BlockEntityFirebox { Pos = Anchor.Copy() }
+    );
+    bed.Initialize(
+      world.Api,
+      new JsonObject(
+        new JObject { ["bedElement"] = "CoalLayers", ["layerPrefix"] = "L" }
+      )
+    );
+
+    var empty = new CrucibleHearthLayout.HoleContents[4];
+    string[] drawn = CrucibleHearthLayout.ElementsFor(empty, bed, 2);
+
+    Assert.Contains("CoalLayers/L1", drawn);
+    Assert.Contains("CoalLayers/L2", drawn);
+    Assert.DoesNotContain("Coke/CokeL1", drawn);
   }
 
   private static System.Collections.Generic.HashSet<string> ShapeElementNames() {

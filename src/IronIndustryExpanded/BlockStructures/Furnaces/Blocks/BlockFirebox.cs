@@ -82,9 +82,6 @@ public partial class BlockFirebox : Block, IExBlockDefProvider {
   /// <summary>The always-drawn part: the refractory rim and the cast-iron bars.</summary>
   public const string BaseElement = "Base";
 
-  /// <summary>The fuel bed's group. Its children are <c>CokeL1</c>..<c>CokeL6</c>, bottom-first.</summary>
-  public const string BedElement = "Coke";
-
   /// <summary>The texture key every bed face is authored against, and therefore the one
   /// <see cref="TextureKeyOf"/> repoints away from.</summary>
   public const string FuelTexture = "coke";
@@ -110,13 +107,15 @@ public partial class BlockFirebox : Block, IExBlockDefProvider {
   }
 
   /// <summary>The element paths a bed of <paramref name="layers"/> courses draws: the base always, then
-  /// one <c>CokeLn</c> per standing course.</summary>
-  public static List<string> ElementsFor(int layers) {
-    var keep = new List<string> { BaseElement };
-    for (int i = 1; i <= layers; i++)
-      keep.Add(BedElement + "/CokeL" + i);
-    return keep;
-  }
+  /// one course per standing layer at <paramref name="bed"/>'s own element name - or at the shipped
+  /// default when <paramref name="bed"/> is null, for a caller with no live bed to ask.</summary>
+  public static List<string> ElementsFor(BEBehaviorFirebox? bed, int layers) =>
+    [
+      BaseElement,
+      .. (
+        bed?.ElementsFor(layers) ?? BEBehaviorFirebox.DefaultElementsFor(layers)
+      ),
+    ];
 
   #endregion
 
@@ -185,12 +184,12 @@ public partial class BlockFirebox : Block, IExBlockDefProvider {
     if (active is { Empty: false }) {
       if (!be.Accepts(active.Itemstack)) {
         // Two refusals, because they mean different things to a player: this is not fuel at all, or it is
-        // fuel and this machine will not take it. The owning furnace decides which.
-        (byPlayer as IServerPlayer)?.SendIngameError(
-          BEBehaviorFirebox.IsFuel(active.Itemstack)
-            ? "iiex-firebox-refused"
-            : "iiex-firebox-notfuel"
-        );
+        // fuel and this machine will not take it. The second is the owning furnace's rule, so the furnace
+        // states it - the reason differs per machine and a shared wording is wrong for one of them.
+        if (BEBehaviorFirebox.IsFuel(active.Itemstack))
+          be.RefuseFuel(byPlayer as IServerPlayer);
+        else
+          (byPlayer as IServerPlayer)?.SendIngameError("iiex-firebox-notfuel");
         return true;
       }
       int taken = be.Charge(active.Itemstack);

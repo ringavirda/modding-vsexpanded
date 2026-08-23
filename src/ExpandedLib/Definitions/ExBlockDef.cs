@@ -787,7 +787,8 @@ public sealed class ExBlockDef : IExDef {
 
   /// <summary>Sets <c>attributes.fillerOffsets</c> - the mega-block's invisible per-cell collision
   /// reservation (see <see cref="StructureFootprint"/>). Each cell emits <c>{ x, y, z }</c>, plus
-  /// <c>allowAttach: true</c> only when set. The footprint is validated (no duplicate cell, none at the
+  /// <c>allowAttach: true</c> only when set, and <c>portFace</c>/<c>portNetwork</c> when the cell carries a
+  /// passive network port. The footprint is validated (no duplicate cell, none at the
   /// principal origin), so a bad table fails at load rather than clobbering a filler.</summary>
   public ExBlockDef FillerOffsets(IEnumerable<FillerCellSpec> cells) {
     Nested("attributes")["fillerOffsets"] = SerializeFillerCells(cells);
@@ -845,6 +846,10 @@ public sealed class ExBlockDef : IExDef {
             : new JArray(boxes.Select(Corners));
       if (cell.AllowAttach)
         entry["allowAttach"] = true;
+      if (cell.PortFace != null)
+        entry["portFace"] = cell.PortFace;
+      if (cell.PortNetworkType != null)
+        entry["portNetwork"] = cell.PortNetworkType;
       array.Add(entry);
     }
     return array;

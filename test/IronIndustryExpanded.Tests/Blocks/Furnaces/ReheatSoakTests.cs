@@ -90,7 +90,7 @@ public class ReheatSoakTests {
     BlockEntityHeatingFurnace Furnace,
     BlockEntityHeatingHearth Bed,
     StructureRig Rig
-  ) Fuelled() => Stood(unitsPerCell: BEBehaviorFirebox.CellCapacity);
+  ) Fuelled() => Stood(unitsPerCell: BEBehaviorFirebox.DefaultCellCapacity);
 
   /// <summary>Runs <paramref name="seconds"/> one-second production ticks through the furnace's own
   /// override, by reflection because <c>OnProductionTick</c> is <c>protected</c>.</summary>

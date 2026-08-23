@@ -8,6 +8,7 @@ using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -183,22 +184,40 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   }
 
   /// <summary>
+  /// Whether this machine's beds take <paramref name="stack"/> at all: hot enough to be firebox fuel at
+  /// all, and not a coal too low-rank to carry a metallurgical heat. A firebox burns any fuel, so the
+  /// branch answers with the bed's own test plus that one exclusion; a retort is pickier about what it
+  /// will bake and overrides.
+  /// </summary>
+  /// <remarks>
+  /// The rank exclusion is declared here rather than on <see cref="BEBehaviorFirebox"/>, whose
+  /// <c>IsFuel</c> is static and knows only the stack: what a cell accepts is the owning machine's rule,
+  /// not the cell's - a boiler burns what a reverberatory hearth refuses. The deposit path asks through
+  /// <c>BlockEntityFirebox.Accepts</c>.
+  /// </remarks>
+  public virtual bool AcceptsFireboxFuel(ItemStack? stack) =>
+    BEBehaviorFirebox.IsFuel(stack)
+    && !IsLowRank(stack?.Collectible?.Code?.Path);
+
+  /// <summary>Low-rank, high-moisture, high-ash coal, which will not carry a metallurgical heat however
+  /// well it raises steam.</summary>
+  private static bool IsLowRank(string? path) =>
+    path != null && path.Contains("lignite", StringComparison.Ordinal);
+
+  /// <summary>
+  /// Tells <paramref name="player"/> why this machine turned down a stack that burns hot enough to be
+  /// firebox fuel. Paired with <see cref="AcceptsFireboxFuel"/>: the machine that narrows the rule is the
+  /// only one that knows the reason, so a leaf overriding one overrides both or the player is given the
+  /// branch's answer for a rule it does not follow.
+  /// </summary>
+  public virtual void RefuseFireboxFuel(IServerPlayer? player) =>
+    player?.SendIngameError("iiex-firebox-refused");
+
+  /// <summary>
   /// Puts the bed out by burning most of it off, keeping <c>BfBurnoutFuelRetainedBottom</c> of what was in
   /// it as salvage. No height interpolation, unlike the shaft's burn-out: a firebox is one course of cells
   /// all at the same level and equally in the fire, so only the bottom fraction applies.
   /// </summary>
-  /// <summary>
-  /// Whether this machine's beds take <paramref name="stack"/> at all. A firebox burns any fuel, so the
-  /// branch answers with the bed's own test; a retort is pickier about what it will bake and overrides.
-  /// </summary>
-  /// <remarks>
-  /// Declared here rather than on <see cref="BEBehaviorFirebox"/>, whose <c>IsFuel</c> is static and knows
-  /// only the stack: what a cell accepts is the owning machine's rule, not the cell's. The deposit path
-  /// asks through <c>BlockEntityFirebox.Accepts</c>.
-  /// </remarks>
-  public virtual bool AcceptsFireboxFuel(ItemStack? stack) =>
-    BEBehaviorFirebox.IsFuel(stack);
-
   protected override void BurnOutCharge() {
     foreach (BlockPos cell in FireboxCells) {
       if (
@@ -225,7 +244,7 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
 
   /// <summary>
   /// Cells the drawing marks <see cref="ExpandedLib.Blocks.Structures.CellRole.Firebox"/> - the ceiling on
-  /// what this machine can hold, at <see cref="BEBehaviorFirebox.CellCapacity"/> units each.
+  /// what this machine can hold, at <see cref="BEBehaviorFirebox.DefaultCellCapacity"/> units each.
   /// </summary>
   /// <remarks>
   /// The marked cells, never the <see cref="BlockEntityFurnaceCore.ShaftBox"/> around them: the two agree

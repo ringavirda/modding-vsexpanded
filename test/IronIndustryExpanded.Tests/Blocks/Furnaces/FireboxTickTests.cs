@@ -65,7 +65,7 @@ public class FireboxTickTests {
       "iiex:furnace-puddlingcore-tier1",
       "north"
     );
-    LoadFireboxes(rig, furnace, BEBehaviorFirebox.CellCapacity);
+    LoadFireboxes(rig, furnace, BEBehaviorFirebox.DefaultCellCapacity);
     return (furnace, rig);
   }
 
@@ -142,7 +142,7 @@ public class FireboxTickTests {
   [Fact]
   public void A_loaded_hearth_lights_itself_on_its_own_production_tick() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity
+      BEBehaviorFirebox.DefaultCellCapacity
     );
 
     // The premise: swapping the stand-ins for real fireboxes must not break completion, or the tick
@@ -173,7 +173,7 @@ public class FireboxTickTests {
     // One unit short of full. TryIgniteCharge demands every bed IsFull, so the threshold is a real
     // comparison rather than "any fuel at all".
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity - 1
+      BEBehaviorFirebox.DefaultCellCapacity - 1
     );
 
     Tick(hearth, 10);
@@ -187,13 +187,13 @@ public class FireboxTickTests {
 
   /// <summary>
   /// A full hearth stays lit. While the branch carried the shaft's flat floor of 144 it could not: a full
-  /// firebox holds cells x <see cref="BEBehaviorFirebox.CellCapacity"/>, at most 24 u, so every lit tick
+  /// firebox holds cells x <see cref="BEBehaviorFirebox.DefaultCellCapacity"/>, at most 24 u, so every lit tick
   /// counted a disruption and the fire went out the moment the extinguish grace expired.
   /// </summary>
   [Fact]
   public void A_full_firebox_outlasts_the_extinguish_grace() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity
+      BEBehaviorFirebox.DefaultCellCapacity
     );
     int grace = Cadence(hearth, "ExtinguishThresholdDefault");
     Assert.True(grace > 0, $"the grace must be a real duration, got {grace}");
@@ -214,7 +214,7 @@ public class FireboxTickTests {
   [Fact]
   public void A_lit_hearth_crosses_into_its_melt_phase() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity
+      BEBehaviorFirebox.DefaultCellCapacity
     );
 
     Tick(hearth, (int)IiexValues.FireboxMeltStartDelay + 2);
@@ -318,7 +318,7 @@ public class FireboxTickTests {
   [Fact]
   public void A_lit_firebox_raked_below_its_floor_goes_out_on_the_grace() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity
+      BEBehaviorFirebox.DefaultCellCapacity
     );
     int grace = Cadence(hearth, "ExtinguishThresholdDefault");
     int floor = Cadence(hearth, "DisruptionMixFloor");
@@ -382,7 +382,7 @@ public class FireboxTickTests {
   [Fact]
   public void A_lit_hearth_climbs_toward_its_target_over_seconds_rather_than_arriving_in_one_tick() {
     BlockEntityHeatingFurnace hearth = LoadedHearth(
-      BEBehaviorFirebox.CellCapacity
+      BEBehaviorFirebox.DefaultCellCapacity
     );
 
     Tick(hearth, 1);

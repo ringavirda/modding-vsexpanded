@@ -232,7 +232,7 @@ scaled against, so a retune of the anchor moves the proposal with it.
 |---|---|---|---|
 | `ProducerGasPerSecond` | 24 L/s | `SiexConfig.cs:139` - `CowperIntakeVolume` = 24 L/s per intake; `BlockEntityFurnaceCore.cs:208` - `ExhaustVolumePerTick` = 24 | gas injected into the offtake run per second. One producer = one cowper intake = one furnace gas outlet. Deliberately the tier's unit rate |
 | `ProducerAirPerSecond` | 8 L/s | `SiexConfig.cs:148` - `BessemerBlastPerSecond` = 8.0 | the limited blast. It must sit far below the furnace's `TuyereDrawFor(mix)` demand - being air-starved is the process, not a fault |
-| `ProducerSteamPerSecond` | 8 L/s | `IiexConfig.cs:152` - `CornishBoilerSteamPerSecond` = 32; `:172` - `WattEngineSteamRate` = 30 | one quarter of a Cornish boiler's output, so a works can run a producer and an engine off one boiler |
+| `ProducerSteamPerSecond` | 8 L/s | `IiexConfig.cs:1068` - `CornishBoilerSteamPerSecond` = 64; `:1088` - `WattEngineSteamRate` = 30 | one eighth of a Cornish boiler's output. It is sized against the engine, not against the boiler: a producer and two Watt engines come to 68 L/s, so one boiler runs a producer and a single engine with half its output to spare, and a producer plus a pair of engines needs a second boiler or a throttled engine |
 | `ProducerGasTempFactor` | 0.8 | `BlockEntityFurnaceCore.cs:211` - `ExhaustTempFactor` = 0.8 | offtake temperature = bed temperature × this. Producer gas is fed hot on purpose |
 | `ProducerMaxOutputPressure` | 1.0 atm | `ExlibConfig.cs:32` - `LitresPerPipe` = 30; `IiexConfig.cs:163` - plated burst 2.5 | a fuel main is not a blast main. Keeping the choke at 1 atm means the gas main never bursts and never needs the cast tier |
 

@@ -95,7 +95,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void A_full_charge_bakes_to_coke_at_the_stated_yield() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(capacity);
 
     Bake(oven, Cycle);
@@ -115,7 +115,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void The_yield_beats_vanillas_own_oven() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
 
     Assert.True(
       IiexValues.CokeOvenYieldFrac > VanillaRate,
@@ -138,13 +138,15 @@ public class CokeOvenCycleTests {
   [Fact]
   public void The_oven_holds_far_more_than_a_vanilla_pile() {
     const int VanillaPileUnits = 16;
-    (BlockEntityCokeOven oven, _) = Charged(BEBehaviorFirebox.CellCapacity);
+    (BlockEntityCokeOven oven, _) = Charged(
+      BEBehaviorFirebox.DefaultCellCapacity
+    );
 
     int held = oven
       .Chambers.SelectMany(c => BedsOf(oven, c))
       .Sum(bed => bed.Units);
 
-    Assert.Equal(12 * BEBehaviorFirebox.CellCapacity, held);
+    Assert.Equal(12 * BEBehaviorFirebox.DefaultCellCapacity, held);
     Assert.True(
       held >= 4 * VanillaPileUnits,
       $"the oven holds {held} units against a vanilla pile's {VanillaPileUnits}"
@@ -157,7 +159,9 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void Nothing_converts_before_the_cycle_is_up() {
-    (BlockEntityCokeOven oven, _) = Charged(BEBehaviorFirebox.CellCapacity);
+    (BlockEntityCokeOven oven, _) = Charged(
+      BEBehaviorFirebox.DefaultCellCapacity
+    );
 
     Bake(oven, Cycle * 0.9f);
 
@@ -173,7 +177,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void A_second_cycle_does_not_bake_the_coke_again() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(capacity);
 
     Bake(oven, Cycle);
@@ -194,7 +198,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void A_chamber_of_coke_is_left_alone() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(capacity, Coke);
 
     Bake(oven, Cycle * 2f);
@@ -212,7 +216,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void A_chamber_of_charcoal_is_left_alone() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(capacity, "game:charcoal");
 
     Bake(oven, Cycle * 2f);
@@ -289,7 +293,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void Only_the_charged_chamber_bakes() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     var oven = new BlockEntityCokeOven();
     StructureRig rig = Stand(
       oven,
@@ -325,7 +329,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void A_chamber_charged_late_starts_its_own_clock() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, StructureRig rig) = Charged(
       capacity,
       Bituminous,
@@ -355,7 +359,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void An_emptied_chamber_loses_the_time_it_had_banked() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(
       capacity,
       Bituminous,
@@ -384,7 +388,7 @@ public class CokeOvenCycleTests {
   /// </summary>
   [Fact]
   public void Going_out_leaves_the_charge_where_it_was() {
-    int capacity = BEBehaviorFirebox.CellCapacity;
+    int capacity = BEBehaviorFirebox.DefaultCellCapacity;
     (BlockEntityCokeOven oven, _) = Charged(capacity);
 
     ReflectionHelpers.Invoke(oven, "BurnOutCharge", []);

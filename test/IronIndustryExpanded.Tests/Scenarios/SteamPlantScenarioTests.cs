@@ -80,9 +80,8 @@ public class SteamPlantScenarioTests {
     // The shared steam main: a single junction pipe carrying a down connector (the boiler attaches
     // there) and a north connector (the engine reads across its inlet face).
     EnginePlant.Pipe(scene, attach, "dn", 50);
-    // One more cell of main, so the engine house stands clear of the boiler. The down face is sealed by
-    // the boiler's own steam-port filler, which its raised shell occupies; a cap block there instead
-    // overwrites that layout cell and the next structure monitor tick finds the boiler broken.
+    // One more cell of main, so the engine house stands clear of the boiler. The down face below the
+    // junction is sealed by the boiler's own steam-port cell, which its footprint occupies.
     EnginePlant.Pipe(scene, attach.AddCopy(0, 0, -1), "ns", 51);
 
     // Watt engine at the far end of that main, its south inlet face on the last pipe. It sits two cells
@@ -96,9 +95,10 @@ public class SteamPlantScenarioTests {
     );
 
     scene.Build();
-    // Water near the top of the 800 L vessel + a hot steam charge => internal pressure
-    // steam/(Capacity-water) = 700/200 = 3.5 atm, which equalises the small main into the Watt band.
-    boiler.Prime(BoilerState.Heating, water: 600f, steam: 700f);
+    // Water at the 1000 L boil-water ceiling of the 1600 L vessel + a hot steam charge => internal
+    // pressure steam/(Capacity-water) = 2100/600 = 3.5 atm, which equalises the small main into the
+    // Watt band.
+    boiler.Prime(BoilerState.Heating, water: 1000f, steam: 2100f);
     pond.Prime(30f);
     scene.Step(5);
 

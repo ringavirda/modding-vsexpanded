@@ -65,7 +65,8 @@ public class CrucibleHearthShapeTests {
   public void The_fuel_bed_matches_what_the_firebox_mesher_emits() {
     var names = Names(Shape()["elements"]).ToHashSet();
     List<string> full = BlockFirebox.ElementsFor(
-      BEBehaviorFirebox.LayersPerCell
+      null,
+      BEBehaviorFirebox.DefaultLayersPerCell
     );
 
     // The base element the firebox always keeps is its own, not the hearth's; the courses are the shared

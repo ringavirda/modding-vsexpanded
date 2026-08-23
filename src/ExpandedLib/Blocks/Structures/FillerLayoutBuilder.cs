@@ -24,6 +24,8 @@ public sealed class FillerLayoutBuilder {
   private readonly Dictionary<char, IReadOnlyList<FillerBehaviorSpec>> _hosted =
     new();
   private readonly Dictionary<char, IReadOnlyList<Cuboidf>> _boxes = new();
+  private readonly Dictionary<char, (string Face, string Network)> _ports =
+    new();
   private readonly List<(int Y, string Grid)> _layers = new();
   private readonly List<(int X, string Grid)> _slices = new();
   private readonly List<(int Z, string Grid)> _faces = new();
@@ -89,6 +91,26 @@ public sealed class FillerLayoutBuilder {
     return this;
   }
 
+  /// <summary>
+  /// Registers a character as a filler carrying a passive network port on <paramref name="face"/>: the
+  /// cell answers <see cref="BlockStructureFiller.HasConnectorAt"/> for the principal without joining
+  /// the graph, which is what lets a pipe couple two cells away from the block that owns the machine.
+  /// The face is authored in the north orientation and rotated with the rest of the footprint.
+  /// <para>
+  /// Attachment stays off, as it is for a plain filler: a port is the machine's own coupling, not a
+  /// shelf.
+  /// </para>
+  /// </summary>
+  public FillerLayoutBuilder Port(
+    char symbol,
+    BlockFacing face,
+    string networkType
+  ) {
+    _symbols[symbol] = false;
+    _ports[symbol] = (face.Code[0].ToString(), networkType);
+    return this;
+  }
+
   /// <summary>Adds one horizontal Y-level grid (a floor plan; rows run +Z, columns +X). Layers may be declared
   /// in any Y order.</summary>
   public FillerLayoutBuilder Layer(int y, string grid) {
@@ -145,6 +167,7 @@ public sealed class FillerLayoutBuilder {
           $"Filler layout symbol '{cell.Symbol}' at ({cell.X},{cell.Y},{cell.Z}) is not registered "
             + "(use Solid/Attach/Slab/Host, or '#'/'+')."
         );
+      _ports.TryGetValue(cell.Symbol, out var port);
       cells.Add(
         new FillerCellSpec(
           cell.X,
@@ -152,7 +175,9 @@ public sealed class FillerLayoutBuilder {
           cell.Z,
           attach,
           _hosted.TryGetValue(cell.Symbol, out var hosted) ? hosted : null,
-          _boxes.TryGetValue(cell.Symbol, out var boxes) ? boxes : null
+          _boxes.TryGetValue(cell.Symbol, out var boxes) ? boxes : null,
+          port.Face,
+          port.Network
         )
       );
     }

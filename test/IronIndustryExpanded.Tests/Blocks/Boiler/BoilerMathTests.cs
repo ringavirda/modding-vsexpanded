@@ -13,7 +13,7 @@ namespace IronIndustryExpanded.Tests;
 /// </summary>
 public class BoilerMathTests {
   // The Cornish boiler's stats come from config POCO defaults (no Load needed headlessly).
-  private const float Capacity = 800f; // CornishBoilerCapacity
+  private const float Capacity = 1600f; // CornishBoilerCapacity
   private const float ChokePressure = 5f; // CornishBoilerMaxOutputPressure
 
   private static BlockEntityBoilerCornish Boiler(
@@ -32,8 +32,8 @@ public class BoilerMathTests {
 
   [Fact]
   public void InternalPressure_is_steam_over_free_vessel_space() {
-    var be = Boiler(water: 300f, steam: 200f);
-    // 200 / (800 - 300) = 0.4
+    var be = Boiler(water: 600f, steam: 400f);
+    // 400 / (1600 - 600) = 0.4
     Assert.Equal(0.4f, be.InternalPressure, 3);
   }
 
@@ -53,7 +53,7 @@ public class BoilerMathTests {
 
   [Fact]
   public void SteamTemperature_follows_the_saturation_curve() {
-    var be = Boiler(water: 0f, steam: 1600f); // P = 1600/800 = 2 atm gauge
+    var be = Boiler(water: 0f, steam: 3200f); // P = 3200/1600 = 2 atm gauge
     float expected =
       IiexValues.BoilingPoint
       * (float)Math.Pow(2f + 1f, IiexValues.SteamSaturationExponent);
@@ -107,9 +107,7 @@ public class BoilerMathTests {
   }
 
   [Fact]
-  public void A_fresh_boiler_is_not_constructed_or_operational() {
-    var be = Boiler(0f, 0f);
-    Assert.False(be.IsConstructed);
-    Assert.False(be.IsOperational);
+  public void A_fresh_boiler_is_not_constructed() {
+    Assert.False(Boiler(0f, 0f).IsConstructed);
   }
 }

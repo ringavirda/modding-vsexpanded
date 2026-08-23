@@ -4,7 +4,7 @@
 # to be kept in step. exmod.sh is a launcher for POSIX shells, not a second implementation - it finds
 # pwsh (bootstrapping it into .dotnet/tools if absent) and forwards here.
 #
-#   exmod test [latest|all|1.22|1.21|1.20] [-Throttle N] [-Coverage]
+#   exmod test [latest|all|1.22|1.21|1.20] [-Filter <expr>] [-Throttle N] [-Coverage]
 #   exmod format [-Check]
 #   exmod provision game -Version <x.y[.z]> [-Dest <path>] [-Kind server|client] [-Force]
 #   exmod provision dotnet [-Version latest|all|1.22|1.21|1.20] [-Force]
@@ -51,8 +51,12 @@ function Get-Positional([string[]]$Argv, [string[]]$ValueOpts, [string[]]$FlagOp
     if ($FlagOpts -contains $a) { continue }
     $out += $a
   }
-  # comma keeps a single-element result an array rather than letting PowerShell unroll it
-  return , $out
+  # Returned bare. Every call site wraps the result in @(), which is what keeps a none- or one-element
+  # result an array; returning `, $out` on top of that nests it, so the caller's [0] is the whole inner
+  # array and interpolates as one space-joined string. That reads as a single malformed positional -
+  # `exmod test 1.21 -Filter X` reported `Unknown version '1.21 -Filter X'` - and hides until a command
+  # is given two positionals, which is why it survived in `test` and `stage` alike.
+  return $out
 }
 
 function Assert-Windows([string]$What) {
@@ -346,10 +350,14 @@ function Invoke-ProvisionGame([string[]]$Argv) {
 # TFM. Each build auto-provisions its game version on demand (Directory.Build.props), so a clean
 # checkout just works.
 function Invoke-Test([string[]]$Argv) {
-  $positional = @(Get-Positional $Argv @('-Throttle') @('-Coverage'))
+  $positional = @(Get-Positional $Argv @('-Throttle', '-Filter') @('-Coverage'))
   $version = if ($positional.Count -gt 0) { $positional[0] } else { 'latest' }
   $throttle = [int](Get-Opt $Argv '-Throttle' 0)
   $coverage = Get-Flag $Argv '-Coverage'
+  # Passed straight to `dotnet test --filter`, so it takes that expression grammar
+  # (`FullyQualifiedName~Boiler`, `Name=X|Name=Y`). A bare class name works because the runner treats
+  # an unqualified term as a substring match on the fully qualified name.
+  $filter = Get-Opt $Argv '-Filter' ''
 
   $tfms = [ordered]@{ '1.22' = 'net10.0'; '1.21' = 'net8.0'; '1.20' = 'net7.0' }
   # Dependency order: exlib -> iiex -> siex. One suite per mod; a test lives with the top mod it
@@ -429,11 +437,13 @@ function Invoke-Test([string[]]$Argv) {
   Write-Host "Running tests in parallel..."
   $results = $built | ForEach-Object -ThrottleLimit $throttle -Parallel {
     $dotnet = $using:dotnet
+    $filter = $using:filter
     $item = $_
     if (-not $item.BuildOk) {
       return [pscustomobject]@{ Name = "$($item.Version)/$($item.Project)"; Ok = $false; Line = 'build failed' }
     }
     $testArgs = @('test', $item.Proj, '-f', $item.Tfm, '--no-build', '--nologo')
+    if ($filter) { $testArgs += @('--filter', $filter) }
     if ($item.Legacy) { $testArgs += '-p:Legacy=true' }
     $out = & $dotnet @testArgs 2>&1
     $ok = ($LASTEXITCODE -eq 0)
@@ -445,9 +455,19 @@ function Invoke-Test([string[]]$Argv) {
     $total = ($out | Select-String -Pattern 'Total:\s*(\d+)' -AllMatches |
       ForEach-Object { $_.Matches } | Select-Object -Last 1)
     if (-not $total) {
-      $ok = $false
-      $line = 'NO TEST SUMMARY - the assembly discovered no tests (a type-load failure during ' +
-      'discovery does this and still exits 0).'
+      # Under a filter, a suite holding nothing that matches is the ordinary case - the filter names a
+      # class that lives in one project of three - so it reports zero rather than failing. Without one,
+      # a missing summary is the failure it looks like: an assembly that fails to load during discovery
+      # prints "No test is available in ..." and exits 0 with no summary line, so the run would
+      # otherwise read as a blank PASS while every test in the suite had silently vanished.
+      if ($filter -and $ok) {
+        $line = 'no test matched the filter'
+      }
+      else {
+        $ok = $false
+        $line = 'NO TEST SUMMARY - the assembly discovered no tests (a type-load failure during ' +
+        'discovery does this and still exits 0).'
+      }
     }
 
     [pscustomobject]@{ Name = "$($item.Version)/$($item.Project)"; Ok = $ok; Line = $line }
@@ -613,7 +633,7 @@ switch ($Command) {
   }
   { $_ -in @('', $null, 'help', '-h', '--help') } {
     Write-Host "exmod - repo tasks`n"
-    Write-Host "  exmod test [latest|all|1.22|1.21|1.20] [-Throttle N] [-Coverage]"
+    Write-Host "  exmod test [latest|all|1.22|1.21|1.20] [-Filter <expr>] [-Throttle N] [-Coverage]"
     Write-Host "  exmod format [-Check]"
     Write-Host "  exmod provision game -Version <x.y[.z]> [-Dest <path>] [-Kind server|client] [-Force]"
     Write-Host "  exmod provision dotnet [-Version latest|all|1.22|1.21|1.20] [-Force]"

@@ -1,6 +1,6 @@
 # Multiblock & Filler Structures
 **Status** live   **Mod** exlib (the whole system; every mod authors layouts against it)
-**Owns** the ASCII layout DSL (`Origin` / `Legend` / `Layer` / `Slice` / `Face`, the `'.'`/`' '`/`'O'` glyph rules, `@(a|b)` alternation), the origin-is-the-negation-of-the-core rule, oriented-part rotation and the trapdoor caveat, cell roles (what a cell is for, attached to glyphs), the invisible-filler footprint system (per-cell collision, interaction/break/info rerouting, `allowAttach`, partial collision boxes), behaviour-capable filler cells, the completion/projection machinery, and the rule that a filler cell is a graph node exactly when it declares a membership.
+**Owns** the ASCII layout DSL (`Origin` / `Legend` / `Layer` / `Slice` / `Face`, the `'.'`/`' '`/`'O'` glyph rules, `@(a|b)` alternation), the origin-is-the-negation-of-the-core rule, oriented-part rotation and the trapdoor caveat, cell roles (what a cell is for, attached to glyphs), the invisible-filler footprint system (per-cell collision, interaction/break/info rerouting, `allowAttach`, partial collision boxes), behaviour-capable filler cells, the declarative filler port and the connector-versus-node choice, the completion/projection machinery, and the rule that a filler cell is a graph node exactly when it declares a membership.
 **Depends on** [mp-energy](mp-energy.md) (the `BEBehaviorMPFillerPort` a hosted cell carries, and the rolling mill's axle cells - the canonical case of the graph-node rule) · [conventions](../conventions.md) (block / megablock / multiblock vocabulary) · [layouts-workbench.md](../../internal/workbench/layouts.md) (the layout scratchpad)
 
 ---
@@ -16,8 +16,10 @@ exlib solves two separate problems:
   chamber), guided by an in-world projection of what is missing. A declared cell → block-code table that
   a monitor tick checks against the world.
 
-A block is frequently both: boilers are RCC megablocks whose construction is also gated by a multiblock
-projection (`conventions.md`, § Block-size vocabulary).
+A block can be both, and several furnace cores are: a reserved footprint of its own plus a layout of
+player-placed cells around it (`conventions.md`, § Block-size vocabulary). It is a choice, not a
+progression - the Cornish boiler is a megablock and nothing else, because its own art carries the masonry
+a layout used to demand ([Cornish boiler](../machines/boiler-cornish.md)).
 
 Both DSLs replace hand-typed coordinate arrays with a drawing, validated at load. A duplicate offset, a
 `w` with no `blockNumbers` entry, or an origin off by one is reported at load rather than failing silently
@@ -419,10 +421,12 @@ the filler-side counterpart of the multiblock DSL, on the same `StructureLayout`
 
 | Member | Meaning | file:line |
 |---|---|---|
-| `Origin(a, b)` | axis pair depends on the grid kind: `(xLeft,zTop)` for `Layer`, `(zLeft,yTop)` for `Slice`, `(xLeft,yTop)` for `Face` | `:32-37` |
-| `Solid(ch)` / `Attach(ch)` | register a glyph as plain / attach-allowing; `'#'` and `'+'` are the defaults | `:41-53` |
-| `Host(ch, …specs)` | register a glyph as an attach-allowing cell that hosts behaviours | `:69-77` |
-| `Layer(y,…)` / `Slice(x,…)` / `Face(z,…)` | the three grid kinds | `:81`, `:90`, `:100` |
+| `Origin(a, b)` | axis pair depends on the grid kind: `(xLeft,zTop)` for `Layer`, `(zLeft,yTop)` for `Slice`, `(xLeft,yTop)` for `Face` | `:37-42` |
+| `Solid(ch)` / `Attach(ch)` | register a glyph as plain / attach-allowing; `'#'` and `'+'` are the defaults | `:45-56` |
+| `Slab(ch, half)` | register a glyph as a half-height cell, emitting the matching `collisionBox` | `:88-98` |
+| `Host(ch, …specs)` | register a glyph as an attach-allowing cell that hosts behaviours | `:69-80` |
+| `Port(ch, face, networkType)` | register a glyph as a plain filler carrying a passive network port on `face` | `:104-113` |
+| `Layer(y,…)` / `Slice(x,…)` / `Face(z,…)` | the three grid kinds | `:116`, `:124`, `:133` |
 | `'O'` / `'0'` | the principal, for readability - skipped, never becomes a filler | `:126-127` |
 
 Build-time guards (`:106-150`):
@@ -490,6 +494,41 @@ Live users: the flywheel's hub cells hosting `exlib.BEBehaviorMPFillerPort` nort
 sand casting bed's per-cell `exlib.BEBehaviorMoltenCell` with different `{capacity, drainFitting}` per slot
 (`BlockSandCastingBed.cs:36-38, 140`).
 
+### The declarative filler port
+
+A *passive* port is the lighter of the two arms, and it is declared on the drawing rather than hosted:
+
+```csharp
+f.Port('S', BlockFacing.UP, "pipe")     // steam leaves through the top of this cell
+ .Port('E', BlockFacing.EAST, "pipe")   // flue gas leaves eastward from this one
+```
+
+`FillerLayoutBuilder.Port` (`:104-113`) registers the glyph as a plain, non-attaching filler and records
+`(face letter, networkType)`; the pair rides through `FillerCellSpec` → `fillerOffsets[].portFace` /
+`portNetwork` (`StructureFootprint.cs:56-65`, `ExBlockDef`), is read back by `StructureFillers.ReadOffsets`
+and is rotated into the placed orientation with the rest of the footprint. `BlockStructureFiller` then
+answers `INetworkConnector.NetworkTypeAt` / `HasConnectorAt` off the placed cell's `PortFace` /
+`PortNetworkType` - the same two fields a hosted behaviour would have had to be instantiated to provide.
+
+The face is authored in the north frame, so a machine reads it back off its own footprint rather than
+writing it a second time in code; `BlockBoiler.PortWorldFaceAt` (`BlockBoiler.cs:89-104`) is the worked
+example - it finds the cell at a declared offset, takes that cell's `PortFace`, and rotates it, so the face
+a machine probes across and the face the cell answers on cannot drift apart.
+
+**Connector or node - which arm to pick.** They are not interchangeable, and the choice is per machine:
+
+| | A declared **port** (connector) | A hosted **`BEBehaviorNetworkMember`** (node) |
+|---|---|---|
+| What the cell is | skin. It answers for the principal and is invisible to the graph | a member of the graph in its own right |
+| Costs | two strings in the footprint | a block entity behaviour instantiated, registered and torn down per cell |
+| Pick it when | the machine is the thing on the network and the cell is only where a pipe touches it | the run has to **pass through** the footprint, or the cell must be reachable as a node from more than one side |
+| Live examples | the Cornish boiler's steam and exhaust cells ([Cornish boiler](../machines/boiler-cornish.md)) | the rolling mill's drive line, where a shaft runs straight through (§ A filler cell is a graph node) |
+
+⛔ A connector cannot be probed from the principal. `ConnectedNetwork` runs its reciprocal test from the
+block entity's own cell, and a port two cells away is not that cell - so a machine reading a footprint port
+uses `ConnectedNetworkAt<TNet>(portCell, face)` instead (`MachinePorts.cs`). Reading from the principal
+answers `null` on a correctly plumbed machine, silently.
+
 ### A filler cell is a graph node when it declares one
 
 A footprint cell joins an exlib `BlockNetwork` the way any other cell does: by carrying a
@@ -516,8 +555,8 @@ f.Host('P', new FillerBehaviorSpec(
   the structure, so a footprint that rotates states its `face` instead.
 
 **A membership and a port on one cell.** `PortFace`/`PortNetworkType` still mean what they always
-meant: a face another network couples *to* on a cell that is not itself a node, as the lancashire
-boiler's water intake is. The two arms compose per network type - a membership answers for the network
+meant: a face another network couples *to* on a cell that is not itself a node, as both boilers' steam
+cells are. The two arms compose per network type - a membership answers for the network
 it names, the port for any other - and where both name the same one **the membership wins**: it is the
 cell's own participation and the thing that registered the node, so a port cannot move a node's faces.
 A membership that states no face of its own falls through to the port's, which turns an existing port
@@ -707,9 +746,12 @@ cell (`ExOrientation.GlobalPos(Pos, hx, hy, hz, angle)`) - `BlockEntityFlywheel.
   the shipped layouts (`role cells == CellsAccepting(that block)`) has run out: `Pool` shares its code with
   the shaft glyph on purpose, and `Flue`/`Damper` will be air cells among other air cells. Every role from
   here on needs a structural relation invented for it instead.
-- The boiler, cowper and smokestack layouts have firebox-ish cells and no `Firebox` role. They are not
-  `BlockEntityFurnaceCore` machines, nothing asks them for a fuel-bed cell set, and a role with no
-  consumer is the speculative kind the enum's own rule refuses.
+- The cowper and smokestack layouts have firebox-ish cells and no `Firebox` role, and the rule that
+  settled that still holds: they are not `BlockEntityFurnaceCore` machines, nothing asks them for a
+  fuel-bed cell set, and a role with no consumer is the speculative kind the enum's own rule refuses. The
+  boilers are outside this question entirely - neither declares a layout, and the Cornish's fuel bed is a
+  behaviour on its block entity rather than a cell anything could mark
+  ([firebox](../machines/firebox.md) § The pool is a behaviour, not a block feature).
 - The alternation syntax is undocumented anywhere but `layouts-workbench.md`. `@(a|b)` is vanilla
   `WildcardUtil`; nothing in exlib parses, validates or mentions it, so a malformed alternation fails
   as "this cell can never be satisfied" with no error.

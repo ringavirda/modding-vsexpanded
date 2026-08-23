@@ -4,7 +4,10 @@
 > (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use
 > checkbox (`- [ ]`) syntax for tracking.
 
-**Status** live, written 2026-08-23. CB0 landed the same day (the shape tooling); CB1 onward are open.
+**Status** BUILT 2026-08-23. CB0-CB9 are all done and the gate is 9 targets / 4,700; what remains is
+CB10, which is a follow-through list rather than a unit of work. The record of what each unit found is
+[the worklog](../worklog/2026-08.md); the execution ledger is
+`.superpowers/sdd/2026-08-23-cornish-boiler-megablock/progress.md`.
 
 **Goal:** Replace the Cornish boiler's player-built masonry firebox with a self-contained 3 × 6 × 3
 megablock that carries its own brickwork, burner and two hatches in its shape, burns fuel through
@@ -194,7 +197,7 @@ is identical to the editable's — X −1..1, Y 0..2, Z −5..0, same per-group 
 
 ---
 
-## CB1 — convert the shape
+## CB1 — convert the shape ✅ DONE 2026-08-23
 
 **Files:**
 - Create: `assets/iiex/shapes/boiler/cornish.json` (overwrite)
@@ -275,7 +278,7 @@ them; that is expected and handled there.)
 
 ---
 
-## CB2 — declarative filler ports (exlib)
+## CB2 — declarative filler ports (exlib) ✅ DONE 2026-08-23
 
 The spec puts pipe connections on two filler cells. Today the only way to do that is
 `BlockBoiler.MarkSteamPort`, which reaches into a filler BE after placement and sets `PortFace` /
@@ -471,7 +474,7 @@ Expected: PASS, including the pre-existing `StructureFillerBoxesTests`.
 
 ---
 
-## CB3 — a port read at an arbitrary cell (exlib)
+## CB3 — a port read at an arbitrary cell (exlib) ✅ DONE 2026-08-23
 
 `MachinePorts.ConnectedNetwork` is anchored to `be.Pos`. With the ports on filler cells, the boiler must
 read across a face from a cell that is not its own.
@@ -545,7 +548,7 @@ Expected: PASS — the re-expression must be behaviour-neutral.
 
 ---
 
-## CB4 — the firebox becomes configurable (iiex)
+## CB4 — the firebox becomes configurable (iiex) ✅ DONE 2026-08-23
 
 Three hardcoded things block a boiler bed: the layer count is a process-wide static, the bed's element
 path is a `const` on `BlockFirebox`, and the fuel list is a substring array with `lignite` excluded by
@@ -758,7 +761,7 @@ cowper's substring taxonomy in particular.
 
 ---
 
-## CB5 — the fuel texture comes off the atlas (iiex)
+## CB5 — the fuel texture comes off the atlas (iiex) ✅ DONE 2026-08-23
 
 The boiler blocktype declares no textures at all — `BlockBoiler.BoilerShell` has no `.Texture(...)` call
 and relies wholly on the shape's map. `BlockFirebox` declares all four fuel keys precisely so
@@ -808,7 +811,7 @@ does not resolve — a bed must never draw pink.
 
 ---
 
-## CB6 — the boiler becomes a megablock (iiex)
+## CB6 — the boiler becomes a megablock (iiex) ✅ DONE 2026-08-23
 
 The largest unit. Split into six tasks that each leave the tree compiling.
 
@@ -1209,7 +1212,7 @@ have a key in CB7 — `LangCallSites` scans call sites and will fail on an ungua
 
 ---
 
-## CB7 — fuel drives the steam, and the rebalance
+## CB7 — fuel drives the steam, and the rebalance ✅ DONE 2026-08-23
 
 **Files:**
 - Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntityBoiler.cs`
@@ -1295,7 +1298,7 @@ make the boiler un-burstable or instantly fatal.
 
 ---
 
-## CB8 — the tests
+## CB8 — the tests ✅ DONE 2026-08-23
 
 Every boiler fixture hard-wires the vanilla coal pile and the old scene.
 
@@ -1364,7 +1367,7 @@ Expected: 9 targets green.
 
 ---
 
-## CB9 — assets and docs
+## CB9 — assets and docs ✅ DONE 2026-08-23
 
 - [ ] **Step 1: Lang keys**
 
@@ -1447,15 +1450,25 @@ Expected: 9 targets green.
 
 Not required for the boiler to work; each is a loose end this change creates or exposes.
 
-- [ ] **The Lancashire.** It shares `BlockBoiler`, `IBoilerGeometry` and `BlockEntityBoiler`, has the
-  same `fuelOffset (0,0,-1)`, and `layouts.md` already says it wants "the same internal-firebox change
-  as the Cornish". After CB6 it has a base with no coal-pile path and a shell with no multiblock, so it
-  must be converted or it will not run. **Treat this as blocking for a green suite**, and give it its
-  own footprint and shape work — `assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json`
-  still has the old `lidopen` animation.
-- [ ] **The cowper's coal pile.** `BlockCowperStoveIntake` is the other `@(air|coalpile)` consumer.
-  `firebox.md` rules that once the boilers take internal fireboxes, nothing should still read a free
-  pile. Out of scope here; worth a line in `NEXT.md`.
+- [ ] **The Lancashire.** It shares `BlockBoiler`, `IBoilerGeometry` and `BlockEntityBoiler` and has the
+  same `fuelOffset (0,0,-1)`. ⛔ **This step's "blocking for a green suite" was wrong.** CB6 kept the
+  coal-pile branch on the shared base behind a `Bed != null` test, so the Lancashire still runs
+  unconverted — what it lost is its `MultiblockLayout`, which went with the multiblock base. Its fire is
+  now a free-placed `game:coalpile` that **nothing requires**, and its art keeps the `lidopen` clip
+  (`assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json`), which the leaf
+  works around by overriding `ManHatchAnimation`. Give it its own footprint and shape work when it comes
+  up; it is not urgent, only untidy.
+- [ ] **The cowper's coal pile.** `BlockCowperStoveIntake` is the other `@(air|coalpile)` consumer, and
+  after the Lancashire it will be the only one. `firebox.md` rules that once the boilers take internal
+  fireboxes, nothing should still read a free pile. Out of scope here.
+- [ ] **The Watt engine's dead gear ingredient.** `MachineRecipeDefinitions.WattEngine` declares
+  `Ingredient("G", Gear(gear, 2))` against pattern `"_H_,PRP,PIP"`, which has no `G` — the same defect
+  CB9 fixed on the boiler frame, and worse here, because the recipe is emitted once per gear code and the
+  two emissions are therefore identical. Fixing it is a recipe change (and a golden re-bless), not a
+  cleanup.
+- [ ] **`LangCallSites` only matches lowercase keys.** Its `BareLiteral` regex is `"([a-z0-9-]+)"`, so a
+  `SendIngameError` code carrying a capital is skipped and its key ships unguarded. Found by mutation
+  while proving the new `iiex-firebox-notcoking` key is covered.
 - [ ] **`ShapeExtents` as a machine guard.** `test/ExpandedLib.Testing/ShapeExtents.cs` already measures
   drawn mesh against declared extents but is wired only to the stock-art suites. A 3 × 6 × 3 boiler is
   the natural first machine consumer — it would have caught the sixth row automatically.
