@@ -7,16 +7,14 @@ way.
 
 ## Now
 
-**Phase 0 of [the 2026-09-04 roadmap](2026-09-04-roadmap.md)** — housekeeping after the WSL move — and
-the roadmap's open questions **Q0–Q7**, which the owner has not answered yet. Nothing else is in flight:
-the U2–U10 expansion, the framework-hardening stages up to M.6, the forming line, the workbench, the
-storage rack and the Cornish boiler megablock are all landed and recorded; the August steam-art pass is
-finished as art and waits for code (roadmap Phase 3).
+**Phase 1 of [the roadmap](2026-09-04-roadmap.md) — walk the iron loop in game.** The owner ruled the
+order on 2026-09-04 (Q0–Q5, Q7 answered; Q6, the indicator readouts, is still open). What remains of
+Phase 0 is the owner's renormalisation commit (`git add --renormalize .`). The assistant's next
+deliverable is the walkthrough script (roadmap item 3); the walk itself needs the owner in the client.
 
 ## Then
 
-Roadmap Phase 1 — walk the iron loop in game — as soon as Q0/Q1 are answered. It needs the owner in the
-client; the assistant prepares the walkthrough and fixes what it finds.
+Phase 2, the machining line, all stations at once — roadmap items 6–17.
 
 ## Rules
 

@@ -1,2 +1,5 @@
+# Normalise line endings on commit; the tree once arrived from Windows with 1,318 files flipped to CRLF.
+* text=auto
+
 # Shell scripts must stay LF-terminated or they fail to run (the shebang would carry a CR).
 *.sh text eol=lf
