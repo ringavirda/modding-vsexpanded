@@ -20,7 +20,7 @@ public class CrucibleHearthShapeTests {
   private static JObject Shape() =>
     JObject.Parse(
       File.ReadAllText(
-        DefinitionGoldens.SolutionRelative(Path.Replace('/', '\\'))
+        DefinitionGoldens.SolutionRelative(Path)
       )
     );
 

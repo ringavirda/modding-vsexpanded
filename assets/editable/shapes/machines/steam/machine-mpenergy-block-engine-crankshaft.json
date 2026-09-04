@@ -745,5 +745,64 @@
 		}
 	],
 	"animations": [
+		{
+			"name": "idle",
+			"code": "idle",
+			"quantityframes": 30,
+			"onActivityStopped": "EaseOut",
+			"onAnimationEnd": "Repeat",
+			"keyframes": [
+				{
+					"frame": 0,
+					"elements": {
+						"Shaft1": {
+							"rotationX": 0.0,
+							"rotationY": 0.0,
+							"rotationZ": 0.0
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "cycle",
+			"code": "cycle",
+			"quantityframes": 60,
+			"onActivityStopped": "EaseOut",
+			"onAnimationEnd": "Repeat",
+			"keyframes": [
+				{
+					"frame": 0,
+					"elements": {
+						"Shaft1": {
+							"rotationX": 0.0,
+							"rotationY": 0.0,
+							"rotationZ": -180.0
+						}
+					}
+				},
+				{
+					"frame": 30,
+					"elements": {
+						"Shaft1": {
+							"rotationX": 0.0,
+							"rotationY": 0.0,
+							"rotationZ": 0.0
+						}
+					}
+				},
+				{
+					"frame": 59,
+					"elements": {
+						"Shaft1": {
+							"rotationX": 0.0,
+							"rotationY": 0.0,
+							"rotationZ": 174.0,
+							"rotShortestDistanceZ": true
+						}
+					}
+				}
+			]
+		}
 	]
 }

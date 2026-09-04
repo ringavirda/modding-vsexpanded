@@ -1,5 +1,8 @@
 # Design docs vs plan — open findings (iwex)
 
+**Status** closed 2026-09-04 — every unit these findings were written against has landed (U2–U10 closed
+2026-08-22). Kept as a record of what the plans got wrong.
+
 > **⛔ Reading note, added 2026-08-14.** This plan predates the `iwex`+`lpex` merge. Where it says
 > **`iwex`** as a *domain or assembly* it now means **`iiex`** (block codes, lang keys, asset paths,
 > namespaces). Where it says `iwex` as a *scope* - "finish iwex", "an iwex-only player" - the phrase no

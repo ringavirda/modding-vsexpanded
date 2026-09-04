@@ -280,7 +280,7 @@ public class CrucibleFurnaceLayoutTests {
     var json = Newtonsoft.Json.Linq.JObject.Parse(
       System.IO.File.ReadAllText(
         DefinitionGoldens.SolutionRelative(
-          "assets\\iiex\\shapes\\furnace\\cruciblehearth.json"
+          "assets/iiex/shapes/furnace/cruciblehearth.json"
         )
       )
     );

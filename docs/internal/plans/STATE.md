@@ -1,6 +1,6 @@
 # STATE — status and open decisions
 
-Last updated 2026-08-14. **This file owns two things and nothing else: *status* and *open decisions*.**
+Last updated 2026-09-04. **This file owns two things and nothing else: *status* and *open decisions*.**
 It is the answer to "what is actually true right now". It does not own numbers, mechanics or lore — those
 live on the entity pages — and it does not own sequencing, which lives in `docs/internal/plans/` with
 [NEXT.md](NEXT.md) as the entry point.
@@ -20,11 +20,11 @@ the class name is the anchor.
 | ~~B3c~~ | ~~**No rolled product item exists.**~~ **Closed 2026-08-14, and all six are obtainable.** `RolledItemDefinitions` ships `rod`, `nailplate`, `beam`, `blank`, `skelp` and `boilerplate`; two crop tables plus one mill-claimed stage make **ten** routes work: bar → rod ×4, beam ×2 or plate ×2; slab → boilerplate ×2; billet → beam ×3 or plate ×3; bloom → blank ×5 or skelp ×5; cast slab → boilerplate ×5; and the fork — a vanilla `game:rod-iron` admitted at the deck becomes 4 × `rivetrod` grooved or 1 × `nailplate` flat. ★★ **Both tiers of the forming line produce a finished product, and both benches downstream have their input.** ⛔ Two declared rows stay unreachable on two blockers — the billet's grooved 2.25 and the bloom's wide 3.0 both need the **mid-gap crop** rule, since each yields pieces that still want a pass; `heavyplate` waits on M.8. See rolled-parts.md § *What is reachable today* | `docs/design/items/rolled-parts.md` |
 | ~~B4~~ | ~~**`grooved` cannot bite fresh stock.**~~ **Fixed 2026-08-12.** Gaps are `[2.5, 2.0, 1.5, 1.0]` (owner's numbers; the groove bottoms at 1.0), every step a 0.5 draft inside δ_max 1.0. Outputs are now `[]` — both stages are shear crops. Guarded behaviourally by `ShippedRollSetTests` — every shipped ladder must be walkable from its accepted form's fresh thickness, which a golden alone never checked | `RollSetItemDefinitions` |
 | **B5** | **siex's rolled-pipe tier is uncraftable.** Four live blocktypes, four shapes, zero recipes — re-confirmed 2026-08-14 by enumerating every recipe output across the three mods: not one names `pipe-rolled-*` | `siex/Recipes/` carries machine recipes only |
-| **B6** | **The "mandatory" pressure valve cannot be installed on an HP line.** It is cast-tier (flanged, `BlockPressureValve.cs:39`), so welded rolled pipe refuses to couple it. Since M4 the tier is a variant, so a rolled valve is now expressible — it needs a shape, a recipe and a name, not a framework change; and its gate clamps below the Cornish engine's engage pressures | `BlockEntityPressureValve`, `SiexConfig` |
-| **B15** | **The crucible furnace (designed) cannot reach crucible-steel heat** on the flat natural-draught factor — it settles ~1082 °C against the ~1600 the process needs. The stage-height draught model is the planned fix | `BlockEntityFurnaceCore` draught model |
+| **B6** | **The "mandatory" pressure valve cannot be installed on an HP line.** It is cast-tier (flanged, `BlockPressureValve.cs:39`), so welded rolled pipe refuses to couple it. Since M4 the tier is a variant, so a rolled valve is now expressible — it needs a shape, a recipe and a name, not a framework change; and its gate clamps below the Cornish engine's engage pressures. The shape exists since 2026-08-24 (`assets/editable/shapes/networks/pipe/pipe-block-rolled-pressurevalve.json`, derived from the owner's cast one); the block def, recipe and lift trigger are still owed | `BlockEntityPressureValve`, `SiexConfig` |
+| ~~B15~~ | ~~**The crucible furnace (designed) cannot reach crucible-steel heat**~~ **Fixed 2026-08-22 (U9.9).** The shortfall was never in the draught curve: two per-machine losses close it — transfer loss 0 (the pots stand in the fire) and charge loss 50 (the charge is walled off from it). Measured 1604 °C at six courses, 1621 at the nine-course peak, pinned by `EveryFireboxReachesItsOwnProcessTemperature` | `BlockEntityFurnaceCore`, `CrucibleFurnaceLayout` |
 | ~~B17~~ | ~~**The mill's deck can only reach 2 of 4 gap zones.**~~ **Fixed 2026-08-12.** `IsInputDeck` now accepts the whole `MillFeed.DeckCells` row rather than the single cell beside the stand, so a click reaches the full barrel. It was worse than recorded: for **any** gap count above one the widest gap — the only one fresh stock can enter at — was unreachable, since the reachable span was the last third | `BlockEntityRollingMill.IsInputDeck`/`DeckRow` |
 | **B18** | **A refused pipe joint does not leak.** `ClassifyOpenings` counts an open face as a leak only when the neighbour block is air, so a welded segment butted against a cast one produces no leak, no warning and no signal — B6 is silent in play | `PipeNetwork.ClassifyOpenings` (exlib) *(re-verified 2026-08-07)* |
-| **B19** | **The cast pipe segments have no recipe at all** — the cast tier is creative-only, and the source comment admits it. ⛔ Sharpened 2026-08-14: it is the four **plain segments** (straight, bend, tjunction, xjunction) that have none. The cast tier's *fittings* — passthrough, passthroughbend, valve, pressure valve — are all craftable, so the tier reads as half-built rather than absent, and B23's stage 3 now names a real block a player still cannot make | `iiex MachineRecipeDefinitions` |
+| **B19** | **The cast pipe segments have no recipe at all** — the cast tier is creative-only, and the source comment admits it. Sharpened 2026-08-14: it is the four **plain segments** (straight, bend, tjunction, xjunction) that have none. The cast tier's *fittings* — passthrough, passthroughbend, valve, pressure valve — are all craftable, so the tier reads as half-built rather than absent, and B23's stage 3 now names a real block a player still cannot make. The designed route is the horizontal bore finishing cast pipe-parts, i.e. the machining line ([roadmap](2026-09-04-roadmap.md) Phase 2) | `iiex MachineRecipeDefinitions` |
 | **B20** | **The Watt engine costs no gear.** Its pattern `_H_,PRP,PIP` has no `G` cell while the def declares a gear ingredient, so the gear is free | `lpex MachineRecipeDefinitions.WattEngine` *(re-verified 2026-08-07)* |
 | **B21** | **Sub-machine → engine lookup is off by 90° in every orientation**, so every sub-machine binds through a fallback loop that never verifies the engine points back — two engines two cells apart can cross-bind | `BlockEntityEngineSubmachine` |
 | ~~B23~~ | ~~**The Bessemer vessel cannot be built at all — in survival or creative.**~~ **Fixed 2026-08-14** by M.6's resolution guard, which found it on its first run. Stage 3 now requires `iiex:pipe-cast-straight*` — the trailing-star wildcard the three gas-intake recipes already use, not one orientation, so a segment placed the other way round still counts. ⛔ Only the hard wall is gone: B19 still leaves that segment uncraftable, so the vessel is completable in creative-instant and not in survival | `BlockConverterBessemer.cs:107-117`, `ExConstruction` |
@@ -32,11 +32,17 @@ the class name is the anchor.
 
 Fixed and dropped from the table: B1/B7 (iwex recipes reaching into lpex — iwex ships its own pipe and
 gear), B2 (withdrawn — the 1420 °C stall is the taught coke trade, named by the furnace every tick; the
-residual is band tuning), B8's ignition half (the firebox threshold is derived from the firebox's own cell
-count; the puddling *process* is still unwritten, which is shell status, not a blocker), B9–B11 (molten
-flow and blast-draw order), B13 (the hearth parts ship their own filler footprints), B14 (the casting bed
-carves on the server), B16 (hopper columns rotate with the structure), B22 (the hpex migration names its
-two extracted paths literally, with a coverage guard test).
+residual is band tuning), B8 (closed on all five counts 2026-08-21 with U6 — the puddling furnace runs a
+whole heat and its structure completes; the fifth count was a firebox inheriting the shaft's flat
+disruption floor), B9–B11 (molten flow and blast-draw order), B13 (the hearth parts ship their own filler
+footprints), B14 (the casting bed carves on the server), B16 (hopper columns rotate with the structure),
+B22 (the hpex migration names its two extracted paths literally, with a coverage guard test), B23 (M.6,
+2026-08-14).
+
+**Not blockers, but the largest open fact (2026-09-04):** nothing built since U4.4 — the hearth cells,
+taps and plug, blow-in, puddling, reheat, the mill's rolled catalogue, the shear, the fastener benches,
+the storage rack, the workbench, the coke oven, the crucible furnace and the Cornish boiler megablock —
+has been seen in game. Every one of them is green in the harness and unwalked. Roadmap Phase 1.
 
 **B12 is now measured rather than carried as a question** — cast stock landed 2026-08-14, and the length
 is exactly what the design predicted: `castbloom` at its 1.0 rung is **8 × 1 × 50**, past the 48-voxel
@@ -69,93 +75,99 @@ has the same shape of hole at 2.0 pending M.8. Owned by
 
 ## The ladder — what a player actually does
 
-**live** = works in game · **shell** = block stands, logic missing · **designed** = spec only ·
-**art** = drawn, not wired.
+**live** = built and green · **walked** = seen in game · **shell** = block stands, logic missing ·
+**designed** = spec only · **art** = drawn, not wired. A station marked *live* but not *walked* has
+never been seen by a player.
 
 ### Tier 1 — iiex (iron, water + cast iron)
 
 ```
-coal ──▶ beehive coke oven [designed] ──▶ coke
-ore ──▶ crusher ──▶ burdenmaker [live] ──▶ burden ───┐
-                    (lime in, no power)              ├──▶ tall hopper [live]
-coke ────────────────────────────────────────────────┘   (one material per load)
+coal ──▶ beehive coke oven [live] ──▶ coke
+ore ──▶ crusher ──▶ burdenmaker [live, walked] ──▶ burden ───┐
+                    (lime in, no power)                      ├──▶ tall hopper [live, walked]
+coke ────────────────────────────────────────────────────────┘
                                                                             │
-   twin-tub MP blower [live] ──blast──▶ COLD BLAST FURNACE [live] ◀─────────┘
-                                            │ molten canal [live]
+   twin-tub MP blower [live, walked] ──blast──▶ COLD BLAST FURNACE [live] ◀──┘
+                                            │ molten canal [live, walked]
+                                            │ hearth cells · taps · clay plug · blow-in [live, U4.4–4.9 unwalked]
               ┌─────────────────────────────┼──────────────────────────────┐
               ▼                             ▼                              ▼
-      pig beds [live]              cupola [live]                   (later: converter)
+      pig beds [live, walked]      cupola [live, walked]           (siex: converter)
       pigs 375u                    remelt ──▶ cast iron
               │                             │
-              │                    sand cells [live] / long cell [ART ONLY]
+              │                    sand cells + long cell [live]
               │                             ▼
-              │                    CAST PARTS — castplate-heavy [live], castframe/
-              │                    cylinder/gearblank/axle/flywheelpart [ART ONLY]
+              │                    CAST PARTS — castplate-heavy [live]; frames / cylinder /
+              │                    gear blanks / axle / flywheel part [ART ONLY, no consumer]
               ▼
-      puddling furnace [shell] ──▶ wrought balls ──▶ helve [vanilla] ──▶ shingledbar
+      puddling furnace [live] ──▶ wrought balls ──▶ helve shingling [live] ──▶ shingledbar
                                                                             │
-      reheat furnace [shell*] ──reheat──▶ ROLLING MILL [live but B3] ◀──────┘
-                                            │
+      reheat furnace [live] ──soak──▶ ROLLING MILL [live, creative-walked] ◀┘
+                                            │   roll sets ship but are NOT CRAFTABLE (lathe-turned by ruling)
               ┌──────────────┬──────────────┼───────────────┐
               ▼              ▼              ▼               ▼
-          rolledrod        beam       game:metalplate    (wide: needs lpex)
+        rod (vanilla)      beam          plate      wide: flatwide movable roller [not built]
               │
-        ┌─────┴─────┐          ← the fork: same 4 feeds, same 100 u, either way
+        ┌─────┴─────┐          ← the rod fork: same 4 feeds, same 100 u, either way
         ▼           ▼
    grooved 1.0   flat 1.0
    rivetrod      nailplate
         │           │
-   rivet machine  nail machine   [both BUILT]    ──▶ rivets · nails-and-strips
-                                  shear [designed] — owns every crop
-```
+   riveter       nail cutter   [live]   ──▶ rivets · nails-and-strips
+                                        shear [live] owns every crop · storage rack [live, renderer unverified]
+                                        workbench [live] · crucible furnace ──▶ crucible steel [live]
 
-\* The reheat furnace is further along than its own doc says: the hearth rows and all five part blocks
-**are** built (`BlockEntityHeatingHearth`). Only the heat-into-stock is missing.
+   MACHINING LINE — lathe · horizontal bore · shaper · planer · drill press [DESIGNED; nine shapes drawn]
+   The missing supplier: roll sets, cast pipe segments, gears beyond the hand-assembled one, cylinders.
+```
 
 **Side choices at this tier:** cast parts vs wrought parts · rivets vs nails per rod · which burden grade.
 
 ### Tier 2 — iiex (steam)
 
 ```
-Cornish boiler [live] ──▶ Watt engine [live] ──▶ MP + cast pipes [live]
-                                    │
+Cornish boiler megablock [live] ──▶ Watt engine [live, walked on the OLD art] ──▶ MP + cast pipes [live; segments uncraftable, B19]
+   normal-plate 4 atm variant [ART]     fluid pump · air blower · planetary [live; polished art NOT wired]
+   gauges, safety valve [ART]           horizontal engine · jet condenser · injector · indicator [ART, no code]
+                                        MP pump / MP blower, wooden and cast tiers [ART sketches v2]
               ┌─────────────────────┼──────────────────┐
               ▼                     ▼                  ▼
-      STEAM HAMMER [designed]   WIDE HALL          boring machine
-      6 balls → shingledslab    4 mills 2.5→1.0    [designed]
-      + STAMPING                [designed]
+      STEAM HAMMER [designed;   WIDE HALL          boring machine ──▶ folded into the machining line
+      owner's shape]            4 mills [needs the
+      6 balls → shingledslab    flatwide roller]
+      + STAMPING
               │                     │
               ▼                     ▼
-      boilerplate ──stamp──▶ 3 × metalplate    heavyplate
+      boilerplate ──stamp──▶ 3 × metalplate    heavyplate [M.8 parked]
 ```
 
-### Tier 3 — smex (steel)
+### Tier 3 — siex (steel)
 
 ```
-hot blast furnace [live] + cowpers [live] ──▶ molten pig
+hot blast furnace [live, walked] + cowpers [live, walked; gas-fired remake ruled] ──▶ molten pig
                                    │
                     ┌──────────────┴──────────────┐
                     ▼                             ▼
-          BESSEMER [live]                OPEN HEARTH [designed]
-          volume · structural            slow · quality · alloys · bulk scrap
+          BESSEMER [live, walked;        OPEN HEARTH [designed] ◀── gas producer [designed; four gaps]
+          creative-only until B19]
                     └──────────────┬──────────────┘
                                    ▼
-                            ladle [designed]
+                            ladle [designed] ── alloying · FeMn · hadfield [designed; no metal in code]
                                    ▼
-                        long cell ──▶ castbillet · castbloom · castslab
+                        long cell ──▶ castbillet · castbloom · castslab [live] ──▶ iiex mill + shear [live]
                                    ▼
-                        +2 mills (3.5/3.0) ──▶ the wide hall extended
-                                   ▼
-                        bending roller (conical rolls) ──▶ skelp ──▶ rolled pipe
+                        bending roller [designed] ──▶ skelp ──▶ rolled pipe [blocks live; no recipe, B5]
 ```
 
 **Side choices:** Bessemer vs open hearth (by what the product must guarantee) · direct-charge vs pig beds.
 
-### Tier 4 — hpex · Tier 5 — elex
+### Tier 4 — siex, high pressure · Tier 5 — elex
 
-hpex ships two live machines and four live pipe blocktypes but is **blocked by B5 and B6**, and its
-material gate (hadfield) **does not exist in code**. elex is **deferred**; [scope.md](../../design/scope.md) owns the
-deferral ruling and its carve-outs — this file keeps only the status word.
+The Lancashire boiler and the Cornish engine are live and walked (published as hpex), the four rolled
+pipe blocktypes are live, and the tier is **blocked by B5 and B6**; its material gate (hadfield) **does
+not exist in code**. The Cornish engine's pumping-only redesign and the tandem Corliss are ruled and their
+sketches shelved. elex is **deferred**; [scope.md](../../design/scope.md) owns the deferral ruling and
+its carve-outs — this file keeps only the status word.
 
 ---
 
@@ -271,11 +283,13 @@ Later rulings, one line each:
 
 ## What "complete" looks like
 
-The release target — a player walks `exlib → iwex → lpex → smex → hpex` without leaving the spine — is
-owned by [scope.md](../../design/scope.md). Today the walk breaks in three places: the mill's forming path
-(B3b, B4, B17 — B3a's feed half was fixed 2026-08-11), the missing long cell (the cast-stock route),
-and hpex (B5, B6, B23).
+The release target — a player walks `exlib → iiex → siex` without leaving the spine — is owned by
+[scope.md](../../design/scope.md). Today the walk breaks in three places: the forming line cannot be
+reached in survival (roll sets are lathe-turned and there is no lathe), the Bessemer cannot be raised in
+survival (the cast pipe segments have no recipe, B19), and the steel loop's second half — open hearth,
+ladle, alloying, hadfield, high pressure — is designed and unbuilt (B5, B6). The first two close on one
+unit, the machining line; the sequencing is in [the roadmap](2026-09-04-roadmap.md).
 
 Everything else is polish. The frameworks are mature, the networks work, the heat balance is calibrated,
 and the test harness is real. **The gap is not capability — it is that the last mile of each tier was
-never wired to the next.**
+never wired to the next, and that five weeks of built stations have not been seen in game.**

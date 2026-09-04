@@ -1,6 +1,10 @@
 # iwex bring-up
 
-**Status** in progress — Stages 0 and 1 done (re-verified against `src/` on 2026-08-04)   **Mod** iiex
+**Status** superseded 2026-09-04 by [2026-09-04-roadmap.md](2026-09-04-roadmap.md), whose Phase 1 is the
+playtest walk this file was for; the art queue below is exported except where the roadmap's state table
+says "art only". Kept as a record.
+
+**Former status** in progress — Stages 0 and 1 done (re-verified against `src/` on 2026-08-04)   **Mod** iiex
 (the art queue below is the iron half of `iiex`; the mod was `iwex` until the 2026-08-14 merge)
 **Since** 2026-07-30
 **Owns** — the **art queue** and the **playtest gates**. Nothing else. The build *sequence* lives in the

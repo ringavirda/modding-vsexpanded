@@ -1,7 +1,7 @@
 # Shingling
 
-**Status** designed - nothing built. No ball item, no shingling recipe on either machine, no `bar` stock
-form, and no steam hammer at all. The two product shapes are drawn and untracked
+**Status** partial - the ball item, the helve route and `shingledbar` are built (`ItemPuddledBall`,
+`ShinglingRecipeDefinitions`, U6 2026-08-21); the steam hammer and `shingledslab` are not
 **Mods** iiex - the ball, the helve route, `shingledbar` · iiex - the steam hammer and `shingledslab`
 
 ## Owns

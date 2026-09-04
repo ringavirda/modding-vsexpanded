@@ -1,7 +1,7 @@
 # Puddling Furnace
 
-**Status** shell - the multiblock, the part blocks and the charge half of the hearth are built; the
-puddling cycle is not, and the structure cannot currently complete (see [Open](#open))
+**Status** live - built and closed 2026-08-21 (U6, all eleven tasks): the furnace runs a whole heat - fettle,
+charge, fire, melt down, rabble, draw out, clean - and the chassis is craftable. Not yet seen in game
 **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything specific to this machine: its multiblock layout and every cell offset in it, the

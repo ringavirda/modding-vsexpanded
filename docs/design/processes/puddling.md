@@ -1,7 +1,7 @@
 # Puddling
 
-**Status** partial - the charge half is live and tested; the cycle is not built at all, and the
-furnace it runs in can currently neither complete its structure nor melt
+**Status** live - the whole heat is built (U6, 2026-08-21) and the ball leaves at the bath's own temperature;
+the stroke cooldown and the ball count are play-tuning numbers, and none of it has been seen in game
 **Mods** iiex owns the whole process end to end. Only the downstream consumption crosses a mod boundary
 (the balls go to [shingling](shingling.md), whose slab half is iiex's)
 

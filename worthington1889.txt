@@ -1,0 +1,441 @@
+
+Early Journal Content on JSTOR, Free to Anyone in the World 
+
+This article is one of nearly 500,000 scholarly works digitized and made freely available to everyone in 
+the world by JSTOR. 
+
+Known as the Early Journal Content, this set of works include research articles, news, letters, and other 
+writings published in more than 200 of the oldest leading academic journals. The works date from the 
+mid-seventeenth to the early twentieth centuries. 
+
+We encourage people to read and share the Early Journal Content openly and to tell others that this 
+resource exists. People may post this content online or redistribute in any way for non-commercial 
+purposes. 
+
+Read more about Early Journal Content at http://about.jstor.org/participate-jstor/individuals/early- 
+journal-content . 
+
+
+
+JSTOR is a digital library of academic journals, books, and primary source objects. JSTOR helps people 
+discover, use, and build upon a wide range of content through a powerful research and teaching 
+platform, and preserves this content for future generations. JSTOR is part of ITHAKA, a not-for-profit 
+organization that also includes Ithaka S+R and Portico. For more information about JSTOR, please 
+contact support@jstor.org. 
+
+
+
+134 
+
+
+
+SCIENCE. 
+
+
+
+[Vol. XIII. No. 316 
+
+
+
+up, in shape of the inchoate eidolon-fori of some nameless dreamy 
+inventor. . 
+
+Technical journalism, in the field of electrical power at least, 
+would seem to be at a low ebb in New York. 
+
+As for the current-generating plant and conductive system, they, 
+as well as the " Franklin," are entirely of the Daft design. The 
+former is on Fifteenth Street, about midway between Sixth and 
+Seventh Avenues, and wires of suitable size convey the current to 
+and fro between the stationary plant and the track-conductors. A 
+steam-engine of 250 horse-power drives four dynamo-generators of 
+50 horse-power each. 
+
+The conductor is a copper rod, five-eighths of an inch in diam- 
+eter, sustained by insulators attached to the guard-timbers along- 
+side the track. Elastic copper "brushes" pressing against and 
+sliding along this rod convey the current to the electro-motive 
+mechanism, which it traverses, causing revolution by its passage, 
+and completes its circuit through the wheels and track-rails. 
+
+Time and space will not admit of an analysis of the inherent and 
+incidental economy of electric propulsion ; but " he who runs may 
+read," whether or no the preference lies with the light, compara- 
+tively noiseless, cleanly electro-locomotor, devoid of steam, smoke, 
+cinder, and hot jets d'eau, or the ponderous, clamorous, steam- 
+locomotive, wasteful of fuel, destructive of road-bed, and inherently 
+hampered by nuisances from which its electric rival is absolutely 
+free. X. 
+
+
+
+THE WORTHINGTON INDEPENDENT CONDENSER. 
+
+That the practical results attained by condensing-engines should 
+approximate to those that theory indicates, it is important that the 
+condensing-apparatus employed should be the most efficient possi- 
+ble ; that it should maintain the highest vacuum, with the least cost 
+of production ; that it should be regular and reliable in action, and 
+simple in construction ; and that its application to the engine should 
+be unaccompanied by any risk of accident. These exacting re- 
+quirements, it is claimed, are fully met by the condenser shown in 
+the accompanying illustrations. 
+
+Exhaust-steam from an engine enters a vacuum with a velocity 
+of about 1,900 feet per second; and water, under atmospheric 
+pressure, with a velocity of 47 feet a second. Excepting the ma- 
+chine herein described, it may be said that in all forms of jet-con- 
+densers operated by air-pumps, the injection-water and the water 
+from the steam fall to the bottom of the condensing-chamber, come 
+to a standstill before entering the pump, and consequently lose the 
+valuable momentum acquired when entering the vacuous space. 
+In this condenser, however, the construction and arrangement are 
+such that the momentum of the steam and water is conserved, and 
+this force is utilized to assist the pump in its work. 
+
+By a careful adaptation of the injector principle, it is possible, in 
+an experimental way, to produce a vacuum, of low degree however, 
+without the use of a pump at all, — simply by the momentum given 
+to a flow of water by the impact of the exhaust-steam at the point 
+of condensation. A condenser dependent upon this alone is not 
+practical, because of its small range of action, the inferior vacuum 
+it obtains, and the low temperature of the discharge-water. A 
+change of the amount of steam to be condensed disturbs the theo- 
+retical conditions, and renders this kind of apparatus too unreliable 
+in practice. It is plain that the addition of a duplex pump to the 
+discharge of such an ejector condenser perfects and governs its 
+action. As the momentum of the water is not impaired, the highest 
+economy of operation is reached. 
+
+In this condenser, the air set free by the condensation of the 
+steam is intermingled with the water. The pump has the same 
+regularity of motion that is characteristic of Worthington pumping 
+machinery ; in fact, it acts as a water-pump, although the water is 
+aerated. There is here a great distinction between this condenser 
+pumping aerated water, and an air-pump pumping air and water 
+unmixed. In the latter case, the air-pump has a varying and ir- 
+regular duty to perform, and the inevitable result is an irregular and 
+slamming movement. 
+
+The lower of the accompanying illustrations is a longitudinal 
+section of one side of the condenser-pump, and also a section of the 
+condenser-cone, spray-pipe, exhaust-elbow, and injection^elbow. 
+
+
+
+A is the vapor- opening, to which is connected the pipe that con- 
+ducts to the apparatus the steam or vapor that is to be condensed, 
+and in which a vacuum is to be made and maintained. The injec- 
+tion-water used to produce the condensation of the steam or vapor 
+is conveyed by a proper pipe attached to the injection-opening at B. 
+C is the spray-pipe, and has at its lower extremity a number of 
+vertical slits, through which the water of injection passes, and be- 
+comes spread out into thin sheets. The spray-cone D, by means 
+of its serrated surface, breaks the water passing over it into fine 
+spray, and thus insures a rapid and thorough intermixture with the 
+steam. This spray-cone is adjustable by means of the handle E. 
+The piston-pump G is of the well-known Worthington type ; built, 
+however, with especial attention to the requirements of the service 
+which is now being considered. H H shows the position of the in- 
+duction, and //of the eduction valves, /is the discharge- opening. 
+At K may be seen the steam or engine end of the machine, the 
+standard form used on all Worthington steam-pumps. The steam- 
+valve is an ordinary slide-valve, working upon a flat surface over 
+ports or openings. The motion of this valve is produced by a 
+vibrating arm, Z, which swings through the whole length of the 
+stroke with long and easy leverage. 
+
+This valve motion is a prominent feature of the Worthington in- 
+dependent condenser. To it is due the complete exemption from 
+noise or concussive action. The two pumps are placed side by 
+side, and so combined as to act reciprocally upon the steam-valves 
+of each other. One piston acts to give steam to the other, after 
+which it finishes its own stroke and waits for its valve to be acted 
+upon before it can renew its motion. This pause allows all the 
+water- valves to seat quietly, and removes every thing like harsh- 
+ness of motion. 
+
+As one or the other, of the steam- valves must always be open, 
+there can be no dead point. The pump is therefore always ready 
+to start when steam is admitted, and is managed by the simple 
+opening and shutting of the throttle-valve. 
+
+The operation, of the condensing-apparatus is as follows : Steam 
+being admitted to the cylinders K, so as to set the pump in motion, 
+a vacuum is formed in the condenser, the engine-cylinder, the con- 
+necting exhaust-pipe, and the injection-pipe. This causes the in- 
+jection-water to enter through the injection-pipe attached at/?, and 
+spray-pipe C, into the condenser-cone F. The main engine being 
+then started, the exhaust-steam enters through the exhaust-pipe at 
+A, and, coming into contact with the cold water, is rapidly con- 
+densed. The velocity of the steam is communicated to the water, 
+and the whole passes through the cone F into the pump G at a 
+high velocity, carrying with it, in a thoroughly commingled condi- 
+tion, all the air or uncondensable vapor which enters the condenser 
+with the steam. The mingled air and water are discharged by the 
+pump through the valves and pipe at J t before sufficient time or 
+space has been allowed for separation to occur. 
+
+It will be seen that the zone in which the condensation takes 
+place is small, and the rapid effect is due only to the immense sur- 
+face exposed by the spraying water. In case the water accumu- 
+lates in the condenser-cone F, either by reason of an increased 
+supply or by a sluggishness or even stoppage of the pump, as soon 
+as the level of the water reaches the spray-pipe and the spray be- 
+comes submerged, the vast surface is reduced to a minimum, only 
+a small annular ring being exposed to the steam from the main en- 
+gine. The vacuum is immediately broken, and the exhaust-steam 
+escapes by blowing through the injection-pipe and through the 
+valves of the pump, and out the discharge-pipe at /, forcing the 
+water ahead of it : consequently flooding does not occur. 
+
+These condensers have been constructed from those of a very 
+small size up to those of enormous power. Two, which are 
+probably the largest independent condensers in the world, are now 
+applied to an engine of 8,000 horse-power, the injection-water of 
+which amounts to 15,000 gallons a minute, or what is equivalent to 
+about 20,000,000 gallons a day. Many of them are in use in con- 
+nection with stationary steam-engines, and with marine engines on 
+boats running in fresh water. The Worthington condenser is also 
+used in connection with surface condensers on sea-going steamers, 
+where it has a field of usefulness that is at once apparent to those 
+who will but consider its functions. It performs the duty of two 
+distinct pumps, -***- the air-pump and the circulating pump. It 
+
+
+
+February 22, 1889.] 
+
+
+
+SCIENCE. 
+
+
+
+135 
+
+
+
+produces a high vacuum, and causes a forced or positive move- 
+ment of the cooling- water. By its use, derangement of the surface- 
+condenser does not deprive the engine of the vacuum, as the inde- 
+
+
+
+of electric lighting, were located indiscriminately. The boilers and 
+engines were not the most economical, but answered well for a 
+time. Those companies that were fortunate enough to find them- 
+selves adjacent to water-supply, when they began to look around 
+for better results, have not waited long to avail themselves of the 
+increased output, or the corresponding saving in fuel, that is 
+to be had by changing the engines from non-condensing to 
+condensing. 
+
+Being perfectly adapted to high-speed dynamo-engines, many 
+electric light and power companies have found this independent 
+condenser exceedingly valuable in connection with their steam- 
+power. Twenty-five per cent saving in steam-consumption, and 
+hence in the fuel burned, is frequently obtained. The increase in 
+power often exceeds thirty per cent. In one of the above cases the 
+
+
+
+
+SECTIONAL VIEW OF THE WORTHINGTON INDEPENDENT CONDENSER. 
+
+
+
+pendent condenser can be used as a jet-condenser for the time 
+being. The fact that one pump is dispensed with, should, in itself, 
+commend the arrangement to the attention of engineers. 
+
+It is also a valuable adjunct to electric-lighting plants. Many of 
+the plants that were erected during the early period of the history 
+
+
+
+gain is used to save steam, and in another to increase the output 
+of power with same consumption of steam, and hence same fuel 
+burned. There is a medium between these methods, and fuel can 
+be saved and also power gained up to a sum total equal to the 
+value of the twelve pounds per square inch made available by the 
+
+
+
+136 
+
+
+
+SCIENCE. 
+
+
+
+[Vol. XIII. No. 316 
+
+
+
+vacuum. The independent condenser is also used in connection 
+with fire-pumps, mine-pumps, and water-works pumping-engines, 
+as well as with vacuum pans and other evaporating apparatus. 
+They are made by Henry R. Worthington of this city. 
+
+
+
+THE DEVELOPMENT OF THE POTTERY INDUSTRY 
+OF THE UNITED STATES. 
+
+Mr. William C. Day, in the recent issue of the " Report on the 
+Mineral Resources of the United States," traces the history of the 
+pottery industry, which has of late become of considerable impor- 
+tance. 
+
+The first pottery established in the United States was in New 
+York City, in its earliest days, when under Dutch rule. It was 
+situated near the North River, above the present Chambers Street, 
+the locality being at that time well out of town, in the country. 
+More than a century ago, perhaps, a small pottery was established 
+in Trenton, N.J., by some Frenchmen. Here porcelain, similar to 
+what is now known as French china, was made, and it is said that 
+the goods were very creditable. This establishment existed for 
+some years, but it attained no great importance. At Philadelphia 
+there was a similar pottery venture, also making porcelain or china 
+wares, which are well spoken of for quality. This enterprise was 
+sustained for a number of years, but failed to reach a permanent 
+existence. 
+
+There were other attempts to establish potteries in various parts 
+of the country from time to time, and the only one which seems to 
+have given the greatest concern to English manufacturers was one 
+established in South Carolina. This was contemporary with the 
+great Josiah Wedgwood, who has been called the father of the pot- 
+tery industry in Great Britain, from the fact that he made great 
+improvements in the quality of earthenware, which gave a very 
+great impetus to the business in England. This South Carolina 
+pottery proved quite alarming to Wedgwood, as he feared that it 
+might become a dangerous competitor in supplying the earthen- 
+ware markets of the colonies : he therefore petitioned Parliament 
+that the manufacture of such goods be prohibited. He seemed to 
+think, that, with the excellent materials found in South Carolina 
+for making earthenware, the industry would become a successful 
+one. His fears, however, proved groundless, as the unequal strug- 
+gle was of short duration. 
+
+One or two pottery enterprises, inaugurated within the past forty 
+years, making special articles of white crockery-ware rather than 
+a general assortment, maintained their existence only, and cannot 
+be termed successful. 
+
+The term " pottery industry," as understood at the present time, 
+does not include the many little potteries scattered all over the 
+United States, making stone-ware jugs, pie-plates, drain tile, yel- 
+low crockery, etc., and which employ from six to twenty men each. 
+These little establishments made the cheapest and commonest 
+class of pottery products, with which foreign competition was 
+powerless. Owing to the very low-priced class of such wares, the 
+expenses of their importation bore so large a proportion to their 
+cost at the foreign potteries, that competition was out of the ques- 
+tion. In fact, in many cases the crates in which the goods were 
+packed, and the inland transportation charges, equalled the original 
+cost of the goods themselves. The pottery industry, as now spoken 
+of, had therefore practically no existence in the United States in 
+1 861, the several hundreds of so-called potteries in this country 
+which statistics show then existed being all of the class above re- 
+ferred to. The Morrill Tariff Bill, and the increase of duty from 
+24 to 35 per cent, and the subsequent increase to 40 per cent, did 
+not act as inducements towards the establishment of any new en- 
+terprise. In 1863 the rapidly increasing premium on gold offered 
+the necessary inducement, and several pottery enterprises were in- 
+augurated. These manufactured at first the commonest class of 
+crockery-ware for domestic uses ; but as experience gave confidence, 
+and the wares gradually found favor, better grades were made, 
+until the standard of the china-ware used by the millions of 
+American citizens, and manufactured in this country, is recognized 
+as equal to that made anywhere. It is true that there are several 
+potteries in the United States who make more or less of very fine art 
+
+
+
+pieces, which are forcing recognition on account of their superior 
+excellence ; but the stability of the pottery industry rests upon the 
+fact that it supplies the wants of the people for fine and common 
+crockery for domestic uses, of which we in this country manufac- 
+ture about 60 per cent. The American potter does not claim to be 
+the peer of his foreign competitor in art productions, but he does- 
+claim to equal any foreign manufacturer in the class of china which 
+he produces for the American people. To-day the English potter 
+is copying American shapes, designs, and styles of decorations. 
+How different is this state of affairs from that which existed a few 
+years ago, when the American potter depended upon foreign ideas 
+for his shapes and designs ! With the development of the manu- 
+facturing process, talent for designing shapes and patterns or styles 
+of decoration has likewise progressed, until we have made our own 
+American shapes and designs, which foreigners have been com- 
+pelled to copy and adopt in order to find a market for their wares 
+in the United States. 
+
+This country still takes about 40 per cent of the total crockery- 
+ware exported by England. This is about the proportion that 
+has been maintained for many years, thus showing that the Ameri- 
+can potter has increased his output in keeping with the increased 
+consumption of the country. 
+
+In regard to the present prices of pottery, it may be said that the 
+consumer can now obtain for two dollars and a half what in 1861 
+would have cost four dollars. 
+
+The pottery industry gives directly employment to about ten 
+thousand people, to whom wages amounting annually to four million 
+dollars are paid ; this amount being nearly 50 per cent of the total 
+value of the output of the potteries. In addition to these, there are 
+many thousand more employed in the preparation of the materials 
+for the potter's use, such as mining the clays, quartz, and felspar, 
+and grinding and washing the materials. To these people nearly 
+as much more in wages is paid; in fact, a careful estimate shows 
+that 90 per cent of the cost of manufacturing pottery is paid for 
+labor in one form or another. 
+
+The decorating branch of this industry is one of its most inter- 
+esting features, and one in which great advances have been made 
+in late years. It gives employment of a light, interesting, and 
+elevating character to many young people, both male and female. 
+The growth of this branch has been wonderful, and has made the 
+demand for beautiful decoration, both simple and elaborate, very 
+general, and far more wide-spread throughout the country than 
+ever before. Formerly beautiful decoration was to be found only 
+in costly French and English wares, and the consumption was 
+consequently limited to the wealthiest classes : now beautiful dec- 
+orated wares are found in almost any household, where they have 
+been obtained at prices which would have been considered im- 
+possible a few years ago, and which have reduced very greatly the 
+cost for French and English decorated products, and to a very 
+great extent have enabled American decorated ware to supersede 
+the foreign. 
+
+
+
+HEALTH MATTERS. 
+
+
+
+Yellow-Fever. — Dr. George M. Sternberg, U.S.A., has been 
+relieved from duty at Baltimore, and is, by direction of the Presi- 
+dent, in pursuance of the authority contained in the provisions of 
+the Act of Congress approved March 3, 1887, "making appropria- 
+tions for sundry civil expenses of the government," etc., relating to 
+the methods of preventing the spread of epidemic diseases, to pro- 
+ceed to the Island of Cuba for the purpose named in the letter of 
+the President addressed to the secretary of war, April 17, 1888, and 
+upon completion of this duty to return to his proper station and 
+submit his report to the President. Dr. Sternberg is at the present 
+time at the Hoagland Laboratory, Brooklyn, of which he is 
+general director, engaged in making his preparations for his 
+proposed trip to Cuba to pursue his investigation in yellow- 
+fever. He expects to leave for Havana during the latter part 
+of March. 
+
+Legal Regulation of Medical Practice. —- The laws of 
+West Virginia require that every physician in that State must have 
+a certificate from the State Board of Health to entitle him to prac- 
+
+
+

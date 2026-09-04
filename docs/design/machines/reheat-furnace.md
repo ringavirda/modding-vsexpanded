@@ -1,8 +1,7 @@
 # Reheat (Heating) Furnace
 
-**Status** shell - the multiblock, all five part blocks and the hearth rows are built and tested. Missing:
-heat-into-stock, the crosswise seating, and (like the [puddling furnace](puddling-furnace.md)) the ability
-for the structure to complete at all
+**Status** live - built 2026-08-21 (U7): a lit hearth soaks stock on an A/V law and cooling runs on the same law.
+Still open: the crosswise seating, and bed art for rod, beam and heavyplate (Open #12). Not yet seen in game
 **Mod** iiex (`IronIndustryExpanded`)
 
 **Owns** everything specific to this machine: its multiblock layout and every cell offset in it, the

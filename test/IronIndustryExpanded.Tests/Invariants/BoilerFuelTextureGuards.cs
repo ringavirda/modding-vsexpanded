@@ -21,7 +21,7 @@ public class BoilerFuelTextureGuards {
   private static JObject Shape() =>
     JObject.Parse(
       File.ReadAllText(
-        DefinitionGoldens.SolutionRelative(ShapePath.Replace('/', '\\'))
+        DefinitionGoldens.SolutionRelative(ShapePath)
       )
     );
 

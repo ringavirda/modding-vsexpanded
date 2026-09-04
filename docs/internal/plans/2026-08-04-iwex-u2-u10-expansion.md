@@ -1,5 +1,8 @@
 # iwex U2–U11 — the verified expansion
 
+**Status** closed 2026-08-22 — every unit U2–U10 landed (U10 last). This file is a record; the live
+sequencing is [2026-09-04-roadmap.md](2026-09-04-roadmap.md).
+
 > **⛔ Reading note, added 2026-08-14.** This plan predates the `iwex`+`lpex` merge. Where it says
 > **`iwex`** as a *domain or assembly* it now means **`iiex`** (block codes, lang keys, asset paths,
 > namespaces). Where it says `iwex` as a *scope* - "finish iwex", "an iwex-only player" - the phrase no
