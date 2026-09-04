@@ -7,14 +7,19 @@ way.
 
 ## Now
 
-**Phase 1 of [the roadmap](2026-09-04-roadmap.md) — walk the iron loop in game.** The owner ruled the
-order on 2026-09-04 (Q0–Q5, Q7 answered; Q6, the indicator readouts, is still open). What remains of
-Phase 0 is the owner's renormalisation commit (`git add --renormalize .`). The assistant's next
-deliverable is the walkthrough script (roadmap item 3); the walk itself needs the owner in the client.
+**Phase 1 of [the roadmap](2026-09-04-roadmap.md) — walk the iron loop in game.** The script is
+written: [2026-09-04-phase1-walkthrough.md](2026-09-04-phase1-walkthrough.md), with sixteen defects the
+code reading already predicts at its top; the four that blocked casting and shingling (P1-P4) were
+fixed on 2026-09-05, uncommitted, and want confirming in game. The walk needs the owner in the client.
+The Phase 2 plan is written too ([2026-09-04-machining-line.md](2026-09-04-machining-line.md)) and
+waits for the walk's fix list. Open for the owner: the casting bed draws its rows opposite its fillers
+(P5, confirmed by the new footprint guard, unfixed); the per-mod layout proposal
+([2026-09-05-per-mod-layout.md](2026-09-05-per-mod-layout.md)); Q6 (indicator readouts).
 
 ## Then
 
-Phase 2, the machining line, all stations at once — roadmap items 6–17.
+Phase 2, the machining line, all stations at once — roadmap items 6–17, plan
+[2026-09-04-machining-line.md](2026-09-04-machining-line.md); the ladle (item 18, U11) fits any gap.
 
 ## Rules
 

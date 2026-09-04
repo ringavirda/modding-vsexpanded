@@ -34,6 +34,11 @@ public class BlockEntitySandCastingCell : BlockEntity {
   private SandLevel _sand = SandLevel.Empty;
   private string? _patternCode; // full item code of the impressed pattern; null = no impression
 
+  // The metal's temperature (degrees C) in the tick the cavity filled, which is what the misrun rule
+  // judges: by shake-out the cast has hardened far below any pour minimum. Null until the cavity fills,
+  // and for a cell saved before the value was kept, which shakes out as a clean cast.
+  private float? _fillTemperature;
+
   private MoldSpec? _spec; // resolved lazily from _patternCode
   private MoltenRenderer? _renderer;
 
@@ -173,16 +178,20 @@ public class BlockEntitySandCastingCell : BlockEntity {
       src.CellTemperature,
       Api.World
     );
-    if (accepted > 0)
-      src.DrainMetal(accepted);
+    if (accepted <= 0)
+      return;
+    src.DrainMetal(accepted);
+    if (cell.CellAmount >= cell.MaxUnitCapacity)
+      _fillTemperature = cell.CellTemperature;
   }
 
-  /// <summary>The horizontal face the launder, and so the feeding canal, sits on: the block's facing.
-  /// Resolved with <c>ExOrientation.FacingFromSide</c> because <c>BlockFacing.FromCode</c> returns null for
-  /// a single-letter side token, which the north fallback would then swallow. The fallback covers a missing
+  /// <summary>The horizontal face the launder, and so the feeding canal, sits on: the face the spout is
+  /// drawn on, which is the block's facing turned around. Resolved with
+  /// <c>ExOrientation.FacingFromSide</c> because <c>BlockFacing.FromCode</c> returns null for a
+  /// single-letter side token, which the north fallback would then swallow. The fallback covers a missing
   /// variant, not a misread one.</summary>
   public BlockFacing LaunderFace =>
-    ExOrientation.FacingFromSide(Block.Variant["side"]) ?? BlockFacing.NORTH;
+    ExOrientation.FacingFromSide(Block.Variant["side"])?.Opposite ?? BlockFacing.NORTH;
 
   #endregion
 
@@ -287,7 +296,7 @@ public class BlockEntitySandCastingCell : BlockEntity {
     bool full = cell.CellAmount >= cell.MaxUnitCapacity;
     bool misrun = CastingCellLogic.IsMisrun(
       full,
-      cell.CellTemperature,
+      _fillTemperature,
       spec.MinPourTemp
     );
 
@@ -299,6 +308,7 @@ public class BlockEntitySandCastingCell : BlockEntity {
     cell.ClearCapacity();
     _patternCode = null;
     _spec = null;
+    _fillTemperature = null;
     _sand = CastingCellLogic.AfterShakeOut;
     ExSounds.Play(Api, Pos, ExSounds.StoneCrush, 0.7f);
     MarkDirtyAndTesselate();
@@ -487,6 +497,10 @@ public class BlockEntitySandCastingCell : BlockEntity {
     tree.SetInt("cc_sand", (int)_sand);
     if (_patternCode != null)
       tree.SetString("cc_pattern", _patternCode);
+    if (_fillTemperature is { } fillTemperature)
+      tree.SetFloat("cc_filltemp", fillTemperature);
+    else
+      tree.RemoveAttribute("cc_filltemp");
   }
 
   public override void FromTreeAttributes(
@@ -496,6 +510,9 @@ public class BlockEntitySandCastingCell : BlockEntity {
     base.FromTreeAttributes(tree, world);
     _sand = (SandLevel)tree.GetInt("cc_sand");
     _patternCode = tree.GetString("cc_pattern", null);
+    _fillTemperature = tree.HasAttribute("cc_filltemp")
+      ? tree.GetFloat("cc_filltemp")
+      : null;
     // `cc_sandcode`, the rock type of the older per-variant sand, is not read: every cell holds green
     // sand, so a save carrying vanilla sand returns green sand on shake-out.
     _spec = null; // re-resolve lazily

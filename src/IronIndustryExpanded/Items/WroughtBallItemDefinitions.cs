@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using Vintagestory.GameContent;
 
 namespace IronIndustryExpanded.Items;
 
@@ -51,8 +50,13 @@ public class WroughtBallItemDefinitions : IExItemDefProvider {
       // The pile of balls on the anvil. Its own work item rather than vanilla's iron one so the helve has
       // exactly one matching recipe and needs no dialog - see Shingling.WorkItemCode.
       ExItemDef
-        .Create(domain, "shingleworkitem-iron")
-        .Class<ItemWorkItem>()
+        .Create(domain, "shingleworkitem")
+        // Its own registered work-item class: vanilla's answers NotWorkable to the helve for a recipe
+        // named neither plate nor blistersteel.
+        .Class<ItemShingleWorkItem>()
+        // The metal variant drives the vanilla voxel render, via the ingot-pile "iron" texture, and the
+        // base class reads it on load.
+        .VariantGroup("metal", "iron")
         .Shape("game:item/workitem")
         .TextureAll("game:block/metal/tarnished/iron")
         .MaxStackSize(1)

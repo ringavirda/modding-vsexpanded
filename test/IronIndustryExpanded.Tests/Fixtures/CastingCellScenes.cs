@@ -1,7 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Metals;
 using ExpandedLib.Testing;
+using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
+using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
@@ -16,18 +18,30 @@ namespace IronIndustryExpanded.Tests;
 
 /// <summary>
 /// A placed 1×1 sand casting cell with a real <see cref="BEBehaviorMoltenCell"/> under it, a player whose
-/// hotbar can be loaded with sand or a pattern, and a capture of the errors the cell sends back.
-/// Interactions go through <see cref="BlockEntitySandCastingCell.OnInteract"/> rather than the private
-/// handlers, so the routing decision (<c>CastingCellLogic.Decide</c>) stays under test. Errors are
-/// captured as codes only: the convention is <c>SendIngameError(code)</c> with the text in lang.
+/// hotbar can be loaded with sand or a pattern, a canal on the launder face to pour from, and a capture
+/// of the errors the cell sends back. Interactions go through
+/// <see cref="BlockEntitySandCastingCell.OnInteract"/> rather than the private handlers, so the routing
+/// decision (<c>CastingCellLogic.Decide</c>) stays under test. Errors are captured as codes only: the
+/// convention is <c>SendIngameError(code)</c> with the text in lang. Shake-out drops land in
+/// <see cref="Harvested"/>, since the player's inventory takes nothing.
 /// </summary>
 public sealed class CastingCellScenes {
   private const string Sand = "iiex:moldingsand";
+
+  /// <summary>
+  /// The pour metal: liquid well below the shipped pour minimum, so a cold pour still fills the cavity
+  /// and the misrun rule alone decides the outcome. Cast iron would freeze short first, which is the
+  /// other scrap rule.
+  /// </summary>
+  public const string Metal = "game:ingot-bronze";
+
+  private const float MetalMeltingPoint = 950f;
 
   private static readonly BlockPos At = new(32, 8, 32, 0);
 
   private readonly DummySlot _hotbar = new();
   private readonly List<string> _errors = [];
+  private BlockEntityMoltenCanal? _feed;
 
   private CastingCellScenes(TestWorld world, BlockEntitySandCastingCell cell) {
     World = world;
@@ -43,6 +57,13 @@ public sealed class CastingCellScenes {
 
   /// <summary>The last error code the cell sent, or null if it sent none since the last interaction.</summary>
   public string? LastError => _errors.Count == 0 ? null : _errors[^1];
+
+  /// <summary>Everything a shake-out produced, in order.</summary>
+  public IReadOnlyList<ItemStack> Harvested => World.Drops;
+
+  /// <summary>The item a misrun or short pour of <see cref="Metal"/> comes back as.</summary>
+  public string ScrapCode =>
+    MetalRegistry.SolidDropOf(new AssetLocation(Metal)).ToString();
 
   #region Building one
 
@@ -91,6 +112,13 @@ public sealed class CastingCellScenes {
 
     ReflectionHelpers.SetField(be, "_sand", sand);
 
+    world.RegisterItem(Metal, MetalMeltingPoint);
+    // What a misrun or short pour shakes out as; resolved through the registry so the fixture follows
+    // whatever solid drop the metal has at run time.
+    world.RegisterItem(
+      MetalRegistry.SolidDropOf(new AssetLocation(Metal)).ToString()
+    );
+
     return new CastingCellScenes(world, be);
   }
 
@@ -106,7 +134,9 @@ public sealed class CastingCellScenes {
     string type,
     string size = "cell",
     int capacity = 100,
-    string wood = "oak"
+    string wood = "oak",
+    float minPourTemp = 1150f, // the shipped patterns' minimum
+    int outputQuantity = 1
   ) {
     var attributes = JToken.Parse(
       $$"""
@@ -116,22 +146,33 @@ public sealed class CastingCellScenes {
           "shape": "iiex:casting/cell-filling-{{type}}",
           "capacity": {{capacity}},
           "cavity": [{ "x1": 3, "y1": 1, "z1": 3, "x2": 13, "y2": 4, "z2": 13 }],
-          "output": { "type": "item", "code": "iiex:cast-{{type}}" },
-          "minPourTemp": 1200
+          "output": { "type": "item", "code": "iiex:cast-{{type}}", "quantity": {{outputQuantity}} },
+          "minPourTemp": {{minPourTemp}}
         }
       }
       """
     );
+    return new ItemStack(
+      PatternItem($"iiex:pattern-{type}-{wood}", attributes, $"iiex:cast-{type}")
+    );
+  }
 
-    var item = new Item {
-      Code = new AssetLocation($"iiex:pattern-{type}-{wood}"),
-      ItemId = 900 + type.Length + wood.Length,
-      Attributes = new JsonObject(attributes),
-      // Imprint calls DamageItem. At the default durability of 0 the first use takes the stack to -1,
-      // the tool-breaks path, which nulls the slot and reaches for byEntity.SidedPos.
-      Durability = 64,
-    };
-    return new ItemStack(item);
+  /// <summary>
+  /// A pattern item registered in the world under <paramref name="code"/> and carrying
+  /// <paramref name="attributes"/>, with its <paramref name="outputCode"/> registered alongside.
+  /// Registered rather than merely held because a reloaded cell re-resolves its spec by the pattern's
+  /// code, and shake-out resolves the output against the world.
+  /// </summary>
+  private Item PatternItem(string code, JToken attributes, string outputCode) {
+    Item item =
+      World.GetItem(new AssetLocation(code)) ?? World.RegisterItem(code);
+    item.Attributes = new JsonObject(attributes);
+    // Imprint calls DamageItem. At the default durability of 0 the first use takes the stack to -1,
+    // the tool-breaks path, which nulls the slot and reaches for byEntity.SidedPos.
+    item.Durability = 64;
+    if (World.GetItem(new AssetLocation(outputCode)) == null)
+      World.RegisterItem(outputCode);
+    return item;
   }
 
   /// <summary>A stack of the green moulding sand the cell is rammed with.</summary>
@@ -162,6 +203,66 @@ public sealed class CastingCellScenes {
 
   /// <summary>Right-clicks with an empty hand, the shake-out gesture.</summary>
   public bool InteractEmptyHanded() => Interact(null);
+
+  /// <summary>One server tick of the cell: pull from the launder, then cool.</summary>
+  public CastingCellScenes Tick() {
+    ReflectionHelpers.Invoke(Cell, "OnServerTick", 1f);
+    return this;
+  }
+
+  /// <summary>
+  /// Feeds the impression from a canal cell on the launder face holding <see cref="Metal"/> at
+  /// <paramref name="temp"/>, ticking the cell until the cavity is full. The canal is topped up between
+  /// ticks, so the whole pour arrives at one temperature however large the impression.
+  /// </summary>
+  public CastingCellScenes PourUntilFull(float temp) {
+    BlockEntityMoltenCanal feed = FeedCanal();
+    BEBehaviorMoltenCell cell = Cell.GetBehavior<BEBehaviorMoltenCell>()!;
+    for (
+      int tick = 0;
+      tick < 400 && cell.CellAmount < cell.MaxUnitCapacity;
+      tick++
+    ) {
+      feed.PushMetalRaw(
+        feed.MaxUnitCapacity - feed.CellAmount,
+        Metal,
+        temp,
+        World.World
+      );
+      Tick();
+    }
+    return this;
+  }
+
+  /// <summary>
+  /// Lets the cast stand until it has hardened: one tick to stamp the metal's temperature carrier at
+  /// the current time, a long calendar jump, and a tick to read the cooled temperature back.
+  /// </summary>
+  public CastingCellScenes CoolToHardened() {
+    Tick();
+    World.AdvanceHours(200);
+    return Tick();
+  }
+
+  /// <summary>The canal cell on the launder face the cell drains, placed on first use.</summary>
+  private BlockEntityMoltenCanal FeedCanal() {
+    if (_feed != null)
+      return _feed;
+    BlockPos pos = Cell.Pos.AddCopy(Cell.LaunderFace);
+    var block = TestBlocks.Configure(
+      new BlockMoltenCanal(),
+      "iiex:molten-canal-straight-ns",
+      142,
+      ("type", "straight"),
+      ("orientation", "ns")
+    );
+    ReflectionHelpers.SetProperty(block, "Type", "straight");
+    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    _feed = new BlockEntityMoltenCanal { Pos = pos.Copy(), Block = block };
+    World.Place(pos, block, _feed);
+    World.Attach(_feed);
+    return _feed;
+  }
 
   #endregion
 

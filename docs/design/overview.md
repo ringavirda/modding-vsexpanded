@@ -56,8 +56,8 @@ exlib ──▶ iiex ──▶ siex ──▶ elex
 | Mod | id | Loop | Owns | Depends on |
 |---|---|---|---|---|
 | **Expanded Library** | `exlib` | framework | network logic (Pipe/Molten/MP), definitions, registries, config, helpers, test harness | game |
-| **Iron Industry Expanded** | `iiex` | **early industrial** | cold blast furnace + tub blowers, molten-canal network, burdenmaker, cupola, sand casting, puddling, the forming line (mill, wide hall, bending roller), **plated pipes**, iron gears — then the steam workshop it bootstraps into: Cornish boiler, Watt engine, pumps, **cast pipes**, MP power | exlib |
-| **Steel Industry Expanded** | `siex` | **steel** | hot blast furnace + cowper stoves, Bessemer, open hearth, ladle, the gas producer and fuel-gas power, steel roll sets and cast stock, hadfield and the alloy line — then the high-pressure machines it gates: Lancashire boiler, Cornish engine, HP hammer, **rolled pipes** | iiex, exlib |
+| **Iron Industry Expanded** | `iiex` | **early industrial** | cold blast furnace + tub blowers, molten-canal network, burdenmaker, cupola, sand casting, puddling, the forming line (mill, wide hall, bending roller), the static ladle (the canal merger), **plated pipes**, iron gears — then the steam workshop it bootstraps into: Cornish boiler, Watt engine, pumps, **cast pipes**, MP power | exlib |
+| **Steel Industry Expanded** | `siex` | **steel** | hot blast furnace + cowper stoves, Bessemer, open hearth, alloying on pour in the early loop's ladle, the gas producer and fuel-gas power, steel roll sets and cast stock, hadfield and the alloy line — then the high-pressure machines it gates: Lancashire boiler, Cornish engine, HP hammer, **rolled pipes** | iiex, exlib |
 | **Electrical Expanded** | `elex` | electric (planned, last) | full-realism AC/DC grid: dynamo, alternator, electrolysis, arc furnace, HSS | siex, exlib |
 
 ⛔ **A loop is a capability tier, not a self-contained game.** The loops are **nested**: the steel loop

@@ -87,7 +87,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:castplate-heavy"
+          "code": "iiex:castplate-heavy",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }
@@ -110,7 +111,8 @@
         ],
         "output": {
           "type": "block",
-          "code": "iiex:casting-mold-ingot"
+          "code": "iiex:casting-mold-ingot",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }
@@ -133,7 +135,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:cast-barrel"
+          "code": "iiex:cast-barrel",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }
@@ -156,7 +159,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:castshell"
+          "code": "iiex:castshell",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }
@@ -179,7 +183,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:castwheelsection"
+          "code": "iiex:castwheelsection",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }
@@ -218,7 +223,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:caststock-billet"
+          "code": "iiex:caststock-billet",
+          "quantity": 3
         },
         "minPourTemp": 1150.0
       }
@@ -249,7 +255,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:caststock-bloom"
+          "code": "iiex:caststock-bloom",
+          "quantity": 2
         },
         "minPourTemp": 1150.0
       }
@@ -272,7 +279,8 @@
         ],
         "output": {
           "type": "item",
-          "code": "iiex:caststock-slab"
+          "code": "iiex:caststock-slab",
+          "quantity": 1
         },
         "minPourTemp": 1150.0
       }

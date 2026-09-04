@@ -1,6 +1,14 @@
 {
-  "code": "shingleworkitem-iron",
-  "class": "iiex.ItemWorkItem",
+  "code": "shingleworkitem",
+  "class": "iiex.ItemShingleWorkItem",
+  "variantgroups": [
+    {
+      "code": "metal",
+      "states": [
+        "iron"
+      ]
+    }
+  ],
   "shape": {
     "base": "game:item/workitem"
   },

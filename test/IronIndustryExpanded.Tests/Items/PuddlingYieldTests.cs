@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using ExpandedLib.Registries.Entities;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -8,7 +9,9 @@ using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
 using Newtonsoft.Json.Linq;
+using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 using Xunit;
 
 namespace IronIndustryExpanded.Tests;
@@ -228,6 +231,53 @@ public class PuddlingYieldTests {
         .Collect("iiex", Mod)
         .Single(d => d.Location.Path == "recipes/smithing/shingle.json")
         .ToJson();
+
+  #endregion
+
+  #region Shingling under the helve
+
+  /// <summary>
+  /// The helve asks the standing work item, not the ball, whether it may work, and vanilla's work item
+  /// answers NotWorkable for any recipe named neither plate nor blistersteel. The pile's own class
+  /// answers FullyWorkable through the interface the anvil resolves it by, without consulting the
+  /// recipe, which is why no anvil is needed here.
+  /// </summary>
+  [Fact]
+  public void The_pile_is_fully_workable_under_the_helve() {
+    var pile = new ItemShingleWorkItem {
+      Code = new AssetLocation(Shingling.WorkItemCode),
+    };
+    IAnvilWorkable workable = pile;
+
+    Assert.Equal(
+      EnumHelveWorkableMode.FullyWorkable,
+      workable.GetHelveWorkableMode(new ItemStack(pile), null!)
+    );
+  }
+
+  /// <summary>
+  /// The ball resolves the work item by <see cref="Shingling.WorkItemCode"/>, so the def's code and its
+  /// one metal variant must spell that code, and the class it names must be the pile's own.
+  /// </summary>
+  [Fact]
+  public void The_ball_names_the_work_item_the_def_emits() {
+    var def = (JObject)
+      DefinitionGoldens
+        .Collect("iiex", Mod)
+        .Single(d => d.Location.Path == "itemtypes/shingleworkitem.json")
+        .ToJson();
+    string code = def["code"]!.Value<string>()!;
+    string[] states =
+    [
+      .. def["variantgroups"]![0]!["states"]!.Values<string>()!,
+    ];
+
+    Assert.Equal(Shingling.WorkItemCode, $"iiex:{code}-{Assert.Single(states)}");
+    Assert.Equal(
+      EntityRegistry.KeyFor("iiex", typeof(ItemShingleWorkItem)),
+      def["class"]!.Value<string>()
+    );
+  }
 
   #endregion
 }

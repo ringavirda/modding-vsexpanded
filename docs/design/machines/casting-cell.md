@@ -163,7 +163,8 @@ pattern is `pattern-{type}-{wood}` and there is no `pattern-{type}` item to look
 
 Each server tick, if `CanIntake` (impression present, cavity not full, not solidified -
 `CastingCellLogic.cs:124-125`), the cell drains the external `IMoltenCell` on its launder face only
-(`:155-174`). `LaunderFace` is `BlockFacing.FromCode(Variant["side"])` (`:173-174`).
+(`:155-174`). `LaunderFace` is the face the spout is drawn on: the block's facing, turned around
+(`ExOrientation.FacingFromSide(Variant["side"]).Opposite`, `:192-193`).
 
 ### Shake-out
 
@@ -196,7 +197,7 @@ Then: contents cleared, pattern capacity dropped, pattern code cleared, sand bac
 |---|---|---|---|
 | `PullRatePerTick` | *(see [molten network](../mechanics/molten-network.md) § Hard-coded)* | `:33` | hard-coded here; the value and the throughput conflict are that page's |
 | server / client tick | `1000 ms` | `:109`, `:113` | pull+cool / refresh the surface |
-| save keys | `cc_sand` (int), `cc_pattern` (string) | `:443-445` | `cc_sandcode` is no longer read (`:453-454`) |
+| save keys | `cc_sand` (int), `cc_pattern` (string), `cc_filltemp` (float, only once the cavity has filled) | `:443-445` | `cc_sandcode` is no longer read (`:453-454`); a cell saved without `cc_filltemp` shakes out as a clean cast |
 
 ### The mold spec — `MoldSpec.cs`
 
@@ -259,7 +260,7 @@ Cavity boxes are the fill glow; the true cavity is the shape. Measured against t
 | `…Decide` | `:59` | the one interaction resolver |
 | `…AfterShakeOut` | `:98` | `SandLevel.Full` - the "sand is not consumed" rule as a constant |
 | `…IsMoldingSand` | `:109` | full-code match on `iiex:greensand`, so another mod's `greensand` cannot satisfy it |
-| `…IsMisrun` | `:116` | `cavityFull && minPourTemp > 0 && temp < minPourTemp` |
+| `…IsMisrun` | `:116` | `cavityFull && minPourTemp > 0 && pourTemp < minPourTemp`, where `pourTemp` is the metal's temperature in the tick the cavity filled (`PullFromLaunder` keeps it), never the shake-out temperature; an unrecorded pour is not a misrun |
 | `…CanIntake` | `:124` | the pull gate |
 | `…FillingShape` | `:142` | state → mesh; the fallback to flat sand when an impression's shape is unresolved |
 | `SandLevel` / `CellAction` | `:3` / `:21` | `Half` is legacy - nothing produces it, saved cells clear on the next ram |
@@ -287,14 +288,11 @@ nothing needs to reference your mod. To feed a cell: end a [molten canal](molten
    into the 1 × 1 cell and casts there. There is nothing to fix it against yet because the
    [long cell](long-cell.md) does not exist.
 
-2. The launder face may be 180° off the drawn launder. The shape draws the launder on the +Z wall
-   (`[6,14,10]→[10,15,16]`), which is south in VS block space, and the `-north` variant is authored at
-   `rotateY 0` (`BlockSandCastingCell.cs:46`, `ExBlockDef.cs:200-209`). But `LaunderFace` resolves the
-   variant word literally - `north` → `BlockFacing.NORTH` (`BlockEntitySandCastingCell.cs:173-174`). The
-   [casting bed](casting-bed.md), which reuses the exact same launder geometry, applies a deliberate +180
-   for precisely this reason (`BlockSandCastingBed.cs:169-175`); the cell applies none. Whether the puller
-   reads the launder face correctly is an in-game-only check that has never been run. Confirm in game before
-   changing anything.
+2. Resolved: the launder face is the drawn launder's face, not the block's raw facing. The shape draws the
+   launder on the +Z wall (`[6,14,10]→[10,15,16]`), and the `-north` variant is authored at `rotateY 0`
+   (`BlockSandCastingCell.cs:46`, `ExBlockDef.cs:200-209`), so `north` needs `LaunderFace` to read south, not
+   north. `LaunderFace` turns the raw facing around (`BlockEntitySandCastingCell.cs:192-193`), guarded at
+   every side for both cells by `CastingCellFootprintGuards`.
 
 3. The declared `capacity 200` is a decoy. It only applies before a pattern is rammed (and after shake-out,
    via `ClearCapacity`). Every real cast runs at the pattern's own capacity - 152 / 160 / 200 / 600. The

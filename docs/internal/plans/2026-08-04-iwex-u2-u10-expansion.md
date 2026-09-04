@@ -2595,6 +2595,21 @@ Symbols are unchanged — navigate by symbol; the file list below predates the m
 
 # U11 — The ladle: a canal-merging vessel on a laid multiblock
 
+> **Triaged 2026-09-04** against today's source — the full record is
+> [../research/2026-09-04-u11-ladle-triage.md](../research/2026-09-04-u11-ladle-triage.md). The owner ruled
+> the static ladle **iiex and in the first release** (roadmap item 18). Corrections that change the steps:
+> **U11.1 is DONE** (the shear built `FillerCellSpec.CollisionBoxes`; the builder verb is `Slab(char,
+> BlockFacing)`, not `Partial`); `ExCodes.RefractoryTier` is `VanillaCodes.RefractoryTier(int)`;
+> `VanillaCodes.AnyBricksOrAir` does not exist yet; `LegendAnyFacing` exists and no shipped layout uses it;
+> `GetMoltenCell` moved to `BlockEntityConverterControl.Peripherals.cs`; the megablock-inside-multiblock link
+> is `IMultiblockComponent` + `MultiblockAnchorLink<T>` as the tall hopper does it; `WORKLOG.md` and
+> `scripts/test-floors.txt` do not exist (worklog is `docs/internal/worklog/`, floors are in
+> `scripts/tools/coverage_gate.py`). **Only one shape exists** — `networks/molten/molten-megablock-laddle.json`
+> (282 cubes, `idle`/`poursouth`/`nournorth` [sic]); the `laddlecore` shape below was never in git, so the
+> core stands on a down-slab or gets a drawing. Open before executing: the 8 px gap under the vessel on a
+> down-slab core; capacity 6 000 vs 24 000 u (ladle.md Open 3); whether the bath is a `BEBehaviorMoltenCell`
+> or a `MoltenCharge` field; the ladle's code family under `IiexCodePrefixTests`.
+
 *Appended 2026-08-06 from a user handoff. The art is **drawn** (`assets/editable/shapes/molten-megablock-laddle.json`,
 `assets/editable/shapes/molten-block-laddlecore.json`) and the **layout is specified by the user**, reproduced
 verbatim below — this section is the only copy of it, so do not paraphrase the grids.*

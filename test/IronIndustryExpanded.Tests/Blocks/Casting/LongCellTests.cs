@@ -4,6 +4,7 @@ using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
+using IronIndustryExpanded.Items;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -105,8 +106,8 @@ public class LongCellTests {
 
   [Fact]
   public void The_structure_angle_is_the_side_angle_plus_the_half_turn() {
-    // Must equal the angle the shape is spun by (ShapeSpunPerOrientation offset 180). The two are
-    // declared in different files, and a mismatch compiles but puts the filler opposite the model.
+    // The shape spins by the side angle alone; the +180 here reconciles the footprint's declared cell
+    // with the body the shape draws on the opposite side of it.
     foreach (string side in new[] { "n", "e", "s", "w" })
       Assert.Equal(
         ExOrientation.AngleFromSide(side) + 180,
@@ -157,6 +158,53 @@ public class LongCellTests {
     Assert.Equal(
       1800,
       rig.Cell.GetBehavior<BEBehaviorMoltenCell>()!.MaxUnitCapacity
+    );
+  }
+
+  #endregion
+
+  #region Yield
+
+  [Fact]
+  public void A_full_billet_pour_harvests_all_three_lanes() {
+    // Capacity is the whole impression (1800 u), and the three-lane pattern's output carries the lane
+    // count, so the harvest is three 600 u billets, not one.
+    var rig = CastingCellScenes.RammedFullLongCell();
+    rig.Interact(
+      rig.PatternStack(
+        "castbillet",
+        size: "longcell",
+        capacity: 1800,
+        outputQuantity: 3
+      )
+    );
+    rig.PourUntilFull(1200f).CoolToHardened();
+
+    rig.InteractEmptyHanded();
+
+    ItemStack part = Assert.Single(rig.Harvested);
+    Assert.Equal(3, part.StackSize);
+    Assert.Equal(1800, part.StackSize * CastStockItemDefinitions.BilletUnits);
+  }
+
+  #endregion
+
+  #region Intake
+
+  [Fact]
+  public void The_long_cell_pulls_metal_fed_at_its_launder_face() {
+    // The launder face is the block entity's own reckoning, not a literal offset: a filler at the wrong
+    // face would leave the cell fed by nothing, which is the bug this pins.
+    var rig = CastingCellScenes.RammedFullLongCell();
+    rig.Interact(
+      rig.PatternStack("castbillet", size: "longcell", capacity: 1800)
+    );
+
+    rig.PourUntilFull(1200f);
+
+    Assert.Equal(
+      1800,
+      rig.Cell.GetBehavior<BEBehaviorMoltenCell>()!.CellAmount
     );
   }
 

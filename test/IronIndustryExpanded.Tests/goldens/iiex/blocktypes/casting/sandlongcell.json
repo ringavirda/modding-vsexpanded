@@ -56,10 +56,10 @@
   "shape": {
     "base": "iiex:casting/sandcastinglongcell",
     "rotateYByType": {
-      "*-n": 180,
-      "*-e": 90,
-      "*-s": 0,
-      "*-w": 270
+      "*-n": 0,
+      "*-e": 270,
+      "*-s": 180,
+      "*-w": 90
     }
   },
   "textures": {

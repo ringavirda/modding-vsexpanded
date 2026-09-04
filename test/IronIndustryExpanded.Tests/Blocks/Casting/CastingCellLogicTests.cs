@@ -153,7 +153,7 @@ public class CastingCellLogicTests {
     Assert.True(
       CastingCellLogic.IsMisrun(
         cavityFull: true,
-        metalTemp: 1000f,
+        pourTemp: 1000f,
         minPourTemp: 1150f
       )
     );
@@ -170,7 +170,7 @@ public class CastingCellLogicTests {
     Assert.False(
       CastingCellLogic.IsMisrun(
         cavityFull: false,
-        metalTemp: 900f,
+        pourTemp: 900f,
         minPourTemp: 1150f
       )
     );
@@ -179,6 +179,13 @@ public class CastingCellLogicTests {
   [Fact]
   public void Zero_min_pour_temp_disables_the_misrun_check() {
     Assert.False(CastingCellLogic.IsMisrun(true, 20f, 0f));
+  }
+
+  [Fact]
+  public void An_unrecorded_pour_temperature_is_never_a_misrun() {
+    // A cell that filled before the pour temperature was kept has nothing to judge; scrapping its cast
+    // on load would turn a save into a misrun.
+    Assert.False(CastingCellLogic.IsMisrun(true, null, 1150f));
   }
 
   [Fact]

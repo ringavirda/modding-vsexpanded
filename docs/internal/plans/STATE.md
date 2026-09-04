@@ -96,6 +96,7 @@ coke ─────────────────────────
       pigs 375u                    remelt ──▶ cast iron
               │                             │
               │                    sand cells + long cell [live]
+              │                    static LADLE [designed; art + layout ready, U11] — merges lines, drops a flow
               │                             ▼
               │                    CAST PARTS — castplate-heavy [live]; frames / cylinder /
               │                    gear blanks / axle / flywheel part [ART ONLY, no consumer]
@@ -152,7 +153,7 @@ hot blast furnace [live, walked] + cowpers [live, walked; gas-fired remake ruled
           creative-only until B19]
                     └──────────────┬──────────────┘
                                    ▼
-                            ladle [designed] ── alloying · FeMn · hadfield [designed; no metal in code]
+                            the iiex ladle, alloy-on-pour [designed] ── alloying · FeMn · hadfield [designed; no metal in code]
                                    ▼
                         long cell ──▶ castbillet · castbloom · castslab [live] ──▶ iiex mill + shear [live]
                                    ▼

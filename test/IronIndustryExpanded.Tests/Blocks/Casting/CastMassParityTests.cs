@@ -85,6 +85,16 @@ public class CastMassParityTests {
   }
 
   [Fact]
+  public void A_multi_lane_pattern_declares_a_lane_per_output() {
+    // The output's quantity is how a multi-lane pour yields more than one piece. A pattern that dropped
+    // it would still parity-check on capacity alone (that check divides by materialUnits, not by
+    // quantity) while every real pour shook out one billet for three lanes' worth of metal.
+    Assert.Equal(3, MoldOf("castbillets").Output.Quantity);
+    Assert.Equal(2, MoldOf("castblooms").Output.Quantity);
+    Assert.Equal(1, MoldOf("castwheelsection").Output.Quantity);
+  }
+
+  [Fact]
   public void The_wheel_section_is_a_single_lane_cell_pattern() {
     MoldSpec spec = MoldOf("castwheelsection");
 

@@ -28,7 +28,8 @@ public class PatternItemDefinitions : IExItemDefProvider {
     string outputCode,
     string outputType = "item",
     float minPourTemp = 1150f,
-    string size = "cell"
+    string size = "cell",
+    int outputQuantity = 1
   ) =>
     new {
       mold = new {
@@ -37,7 +38,11 @@ public class PatternItemDefinitions : IExItemDefProvider {
         shape,
         capacity,
         cavity,
-        output = new { type = outputType, code = outputCode },
+        output = new {
+          type = outputType,
+          code = outputCode,
+          quantity = outputQuantity,
+        },
         minPourTemp,
       },
     };
@@ -149,7 +154,8 @@ public class PatternItemDefinitions : IExItemDefProvider {
         Box(10.5f, 11, -12, 13, 14, 12),
       ],
       "iiex:caststock-billet",
-      size: LongCell
+      size: LongCell,
+      outputQuantity: 3
     ),
     ["castblooms"] = Mold(
       "iiex:casting/longcell-filling-blooms",
@@ -157,7 +163,8 @@ public class PatternItemDefinitions : IExItemDefProvider {
       // 2 lanes, 3 wide x 4 deep x 24 long, rib at x 7-9 and 2-thick outer walls.
       [Box(4, 10, -12, 7, 14, 12), Box(9, 10, -12, 12, 14, 12)],
       "iiex:caststock-bloom",
-      size: LongCell
+      size: LongCell,
+      outputQuantity: 2
     ),
     ["castslab"] = Mold(
       "iiex:casting/longcell-filling-castslab",

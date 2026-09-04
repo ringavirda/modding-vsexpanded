@@ -99,11 +99,19 @@ public static class CastingCellLogic {
   /// pour temperature, so it yields scrap rather than the part. Temperatures in degrees Celsius; a
   /// <paramref name="minPourTemp"/> of 0 disables the check.
   /// </summary>
+  /// <param name="cavityFull">The impression holds its whole capacity.</param>
+  /// <param name="pourTemp">The metal's temperature when the cavity filled, not at shake-out; null when
+  /// no pour was recorded, which never counts as a misrun.</param>
+  /// <param name="minPourTemp">The pattern's minimum pour temperature.</param>
   public static bool IsMisrun(
     bool cavityFull,
-    float metalTemp,
+    float? pourTemp,
     float minPourTemp
-  ) => cavityFull && minPourTemp > 0f && metalTemp < minPourTemp;
+  ) =>
+    cavityFull
+    && minPourTemp > 0f
+    && pourTemp is { } poured
+    && poured < minPourTemp;
 
   /// <summary>
   /// Whether the cell can draw metal from its feed: an impression is present and the cavity is neither full

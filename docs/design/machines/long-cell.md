@@ -42,9 +42,11 @@ trick the [casting cell](casting-cell.md) plays for capital goods.
 ## Structure
 
 A 1 × 2 megablock: `BlockFilledMegastructure` with one filler at `(0, 0, 1)`
-(`LongCellLayout.Footprint()`), the body extending −Z in model space with
-`StructureAngle = AngleFromSide + 180` (`BlockSandCastingLongCell.cs:97`) - the same +180 convention as the
-[casting bed](casting-bed.md). The whole station is one casting: the filler is for collision and interaction
+(`LongCellLayout.Footprint()`), the body extending −Z in model space while the shape spins by the side angle
+alone (`ShapeSpunPerOrientation` carries no offset). `StructureAngle = AngleFromSide + 180`
+(`BlockSandCastingLongCell.cs:97`) carries the half turn instead, reconciling the +Z footprint with the −Z
+body - the same +180 convention as the [casting bed](casting-bed.md). The whole station is one casting: the
+filler is for collision and interaction
 only and hosts no molten cell of its own, which also keeps it clear of the no-filler-graph-node rule. Every
 click on the filler is rerouted to the principal through `IFillerInteractionTarget`
 (`BlockSandCastingLongCell.cs:121-151`), and the clicked cell is ignored - both cells do the same thing.
@@ -196,8 +198,9 @@ molten-recovery rules.
    fractional. Three castings out of one pour must read as identical or the item cannot be one item.
    Visual only - the masses come from `capacity`.
 
-4. **`StructureAngle` must equal the shape's `rotateYByType` offset** (`BlockSandCastingLongCell.cs:92-97`)
-   or the filler lands on the wrong side of the principal and the structure can never complete.
+4. **The shape spins by the side angle alone; `StructureAngle` carries the +180** on top of it
+   (`BlockSandCastingLongCell.cs:92-97`). Spinning the shape by the same +180 too would turn the body back
+   onto the footprint's declared cell instead of the one opposite it, which is where the body is drawn.
 
 ---
 

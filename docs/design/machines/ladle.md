@@ -100,6 +100,14 @@ is smex's. The movable-entity subsystem still has two consumers, in different mo
 and smex's skip hoist - so it remains a shared system worth scoping once rather than twice; nothing in iiex
 waits on it.
 
+Owner's note, 2026-09-04, on what the two consumers share: the skip hoist is the same structure as the
+movable ladle - a carried vessel on rails - differing only in track geometry. The hoist's rails run
+**diagonal** (an inclined track) between a **start block and a finish block**, and the car shuttles
+end to end; the ladle **moves to each next rail block** along a level run and stops where it is wanted.
+So the subsystem is one moving-structure entity with two motion rules - point-to-point on an incline,
+and step-wise along a path - and the track blocks are the same family with a slope variant. Not
+settled beyond that; it is the brief for the design session that scopes the subsystem.
+
 **Owns** - the facts this page is canonical for:
 
 * the ladle's status: exactly what exists (nothing) and the two comments that anticipate it;
@@ -187,8 +195,12 @@ brick.
 
 ## Structure
 
-Nothing is drawn yet, and there is no cell legend to lay out - a megablock is raised by RCC stages, not
-by a layout (§ *It is a megablock*). What it still owes is a shape, which nothing has drawn. The design:
+The shape is drawn (`assets/editable/shapes/networks/molten/molten-megablock-laddle.json`; the
+`molten-block-laddlecore.json` the expansion plan names for the multiblock core has never been in git) and the owner's layout is reproduced in the expansion
+plan's U11 section - a 3 × 3 × 3 RCC megablock whose fillers satisfy a 5 × 5 × 4 multiblock with optional canal
+sockets. Owner ruling 2026-09-04: the static ladle is iiex and ships in the first release, because it is the
+only practical way to merge molten lines and to drop a flow to a lower level (canals have no inclined runners).
+The design:
 
 ```
         canal (base metal) ─┐
@@ -230,13 +242,11 @@ casting bed and cell do it with a hard-coded pull rate.
 
 ## Assets
 
-Nothing exists.
-
 | Asset | State |
 |---|---|
-| editable shape | missing - `assets/editable/shapes/` has 97 files and no ladle |
-| runtime shape | missing |
-| animations | missing. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/siex/shapes/converter/bessemer.json`) |
+| editable shape | drawn - `assets/editable/shapes/networks/molten/molten-megablock-laddle.json` (282 cubes, `idle`, `poursouth`, `pournorth`; the last is misspelt `nournorth` in the file). The core block's shape is not drawn |
+| runtime shape | missing - U11.2 exports both |
+| animations | drawn; the pour clips are one-keyframe `Hold` poses. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/siex/shapes/converter/bessemer.json`) |
 | ferroalloy metal defs | missing - `assets/*/config/metals/` holds `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex). No `ferromanganese`, no `spiegeleisen`, no `ferrochrome`, no `hadfieldsteel`, no `blowniron`, no `wastealloy` |
 | powdered coke | missing as an item |
 | lang / handbook | no key, no page |

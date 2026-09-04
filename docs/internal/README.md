@@ -30,6 +30,7 @@ The split is fixed and worth restating every time it is tempting to blur it.
 | `internal/worklog/` | **what actually landed**, newest first, monthly | intent |
 | `internal/vanilla/` | a map of the vendored engine source at `.compat/vintagestory/` | our own code |
 | `internal/workbench/` | working scratch - measurements, layouts | anything settled |
+| `internal/research/` | **dated read-only snapshots of the code** - what a research agent found on one day, kept so the next session reads a map instead of re-deriving it | decisions, status |
 
 If a number, a rule or a mechanism is settled, it is settled on a **design page** - never in a plan,
 never in a code comment alone.
@@ -53,6 +54,8 @@ never in a code comment alone.
 | [NEXT.md](plans/NEXT.md) | the entry point - one paragraph on what is in flight, and a link | live |
 | [2026-09-04-roadmap.md](plans/2026-09-04-roadmap.md) | **the plan of record** - state per loop, assessment, phases 0-5, the open questions Q0-Q7 | live · **awaiting the owner's answers** |
 | [STATE.md](plans/STATE.md) | status and open decisions; the blocker table; the ladder | live · refreshed 2026-09-04 |
+| [2026-09-04-phase1-walkthrough.md](plans/2026-09-04-phase1-walkthrough.md) | the in-game walk of every unwalked iron-loop station, with the sixteen defects the code reading predicts | **ready** - the owner walks it |
+| [2026-09-04-machining-line.md](plans/2026-09-04-machining-line.md) | roadmap Phase 2: one `machinetool` blocktype over eight stations, window, hold-to-operate, blanks, tools, job tables, the mill's raise/lower cells | **ready** - executes after the walk |
 | [2026-08-23-cornish-boiler-megablock.md](plans/2026-08-23-cornish-boiler-megablock.md) | the boiler as a self-contained megablock | **built 2026-08-23** · CB10 follow-through open |
 | [2026-08-15-item-piles.md](plans/2026-08-15-item-piles.md) | the pile-placement foundation (reheat hearth only, since the rack ruled length) | written, nothing started · parked |
 | [2026-08-15-mid-gap-crop.md](plans/2026-08-15-mid-gap-crop.md) | a crop may yield stock, guarded | written, nothing started · parked |
@@ -83,3 +86,5 @@ out after A1 and why the arc reads as unfinished from the outside.
   source hides. Two things inside `vsapi` that nothing else documents: `docs/api/` is the full
   generated API reference and `docs/json-docs/` is the **JSON asset schema**.
 - [workbench/](workbench/) - `layouts.md`, the multiblock layout measurements.
+- [research/](research/README.md) - the 2026-09-04 station and machining-line snapshots that ground the
+  Phase 1 walkthrough and the Phase 2 plan.

@@ -69,7 +69,7 @@ public partial class BlockSandCastingLongCell
         "tan"
       )
       .SideVariant()
-      .ShapeSpunPerOrientation("iiex:casting/sandcastinglongcell", offset: 180)
+      .ShapeSpunPerOrientation("iiex:casting/sandcastinglongcell")
       .Texture(
         "fire1",
         "game:block/clay/brick/four/running/cream1",
@@ -93,10 +93,9 @@ public partial class BlockSandCastingLongCell
   #region Structure
 
   /// <summary>
-  /// Structure/filler rotation. The +180 pairs with the shape's <c>rotateYByType</c> offset, since the
-  /// model's body is authored extending opposite to the orientation convention. It must equal the angle
-  /// passed to the shape, or the filler lands on the wrong side of the principal and the structure can
-  /// never complete.
+  /// Structure/filler rotation. The shape spins by the side angle alone; the body it draws extends
+  /// opposite the footprint's declared cell, so the +180 here reconciles the two without touching the
+  /// shape's own spin.
   /// </summary>
   public override int StructureAngle =>
     ExOrientation.AngleFromSide(Variant["side"]) + 180;
