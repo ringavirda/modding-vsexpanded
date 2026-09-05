@@ -5,7 +5,7 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 
 > ## ⛔ Amendment 2026-08-21 - the owner's rule, which supersedes parts of this page
 >
-> The owner drew `assets/editable/shapes/machines/machine-megablock-storagerack.json` and ruled:
+> The owner drew `workbench/shapes/machines/machine-megablock-storagerack.json` and ruled:
 >
 > * *"footprint xz slice `O # #`, 3 block 1 tall, 1 wide, 1 deep megablock. It has 3 cells and all have
 >   interactions."*
@@ -34,11 +34,11 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 >
 > | Piece | Where |
 > |---|---|
-> | `BayRun` / `BayLayout` | `src/ExpandedLib/Storage/BayLayout.cs` - pure, world-free capacity |
-> | `BayOccupancy` + registry + loader | `src/ExpandedLib/Storage/` - contributed-to, `config/bayoccupancy/*.json` |
-> | `BlockStorageRack` | `src/IronIndustryExpanded/BlockStructures/Storage/Blocks/` |
+> | `BayRun` / `BayLayout` | `mods/exlib/src/Storage/BayLayout.cs` - pure, world-free capacity |
+> | `BayOccupancy` + registry + loader | `mods/exlib/src/Storage/` - contributed-to, `config/bayoccupancy/*.json` |
+> | `BlockStorageRack` | `mods/iiex/src/BlockStructures/Storage/Blocks/` |
 > | `BlockEntityStorageRack` | `.../Storage/BlockEntities/` |
-> | the shipped catalogue | `assets/iiex/config/bayoccupancy/storagerack.json` |
+> | the shipped catalogue | `mods/iiex/assets/iiex/config/bayoccupancy/storagerack.json` |
 > | recipe | `storagerack-grid`, 5 planks -> 2 racks |
 > | tests | `BayLayoutTests`, `BayOccupancyTests` (exlib), `StorageRackTests` (iiex) - 66 cases |
 >
@@ -129,11 +129,11 @@ Nothing is drawn.
 
 | Asset | State |
 |---|---|
-| editable shape | `assets/editable/shapes/machines/machine-megablock-storagerack.json` - drawn 2026-08-21, 47 elements, three bays along -Z at z 0..16 / -16..0 / -32..-16, X -2..18 (2 vx of bracket overhang each side, no footprint widening), Y 0..16 |
-| runtime shape | `assets/iiex/shapes/storage/storagerack.json` - exported; both texture keys (`generic`, `iron5`) already mapped in `convert-shape.py` |
+| editable shape | `workbench/shapes/machines/machine-megablock-storagerack.json` - drawn 2026-08-21, 47 elements, three bays along -Z at z 0..16 / -16..0 / -32..-16, X -2..18 (2 vx of bracket overhang each side, no footprint widening), Y 0..16 |
+| runtime shape | `mods/iiex/assets/iiex/shapes/storage/storagerack.json` - exported; both texture keys (`generic`, `iron5`) already mapped in `convert-shape.py` |
 | textures | plain vanilla planks; no new texture needed |
 | animations | none, ever - a rack is static and only its contents change, exactly like the reheat hearth (`BlockEntityHeatingHearth.cs:97-98`) |
-| lang / handbook | no key in `assets/iiex/lang/en.json`, no page in `docs/iiex/handbook/` |
+| lang / handbook | no key in `mods/iiex/assets/iiex/lang/en.json`, no page in `mods/iiex/docs/handbook/` |
 
 The rack's mesh is two things: a plank frame, and a composed pile. The frame is the only authored art. The
 pile is not authored at all - it is composed from each stored item's own shape, which is what makes the rack
@@ -274,10 +274,10 @@ Where it hooks in:
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockStockRack` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` (or a new `Storage/`) | `BlockPuddlingHearth.cs:25-62` - `BlockFilledMegastructure` + `IFillerHost` + `IFillerInteractionTarget` + `IExBlockDefProvider`, with `.FillerOffsets(...)` in the def and `StructureAngle` from the `side` variant |
+| `BlockStockRack` | `mods/iiex/src/BlockStructures/Forming/Blocks/` (or a new `Storage/`) | `BlockPuddlingHearth.cs:25-62` - `BlockFilledMegastructure` + `IFillerHost` + `IFillerInteractionTarget` + `IExBlockDefProvider`, with `.FillerOffsets(...)` in the def and `StructureAngle` from the `side` variant |
 | cell → slot routing | `RowAt`-style: rotate the world offset back into the block's frame before reading it | `BlockPuddlingHearth.cs:70-77`, `BlockHeatingHearth.cs` (`ExOrientation.RotateOffset(world, -StructureAngle)`) |
 | `BlockEntityStockRack` | `.../BlockEntities/` | `BlockEntityHeatingHearth.cs:26-174` end to end: the slot array (`:30`), `TryLoad`/`TryTake` (`:57`, `:73`), `Changed()` marking the block dirty client-side (`:86-91`), `OnTesselation` (`:99-126`), per-slot `SetItemstack` persistence with `ResolveBlockOrItem` (`:132-154`), and the block-info readout (`:160-171`) |
-| `StockPile.Place` | `src/ExpandedLib/` - not iiex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
+| `StockPile.Place` | `mods/exlib/src/` - not iiex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
 | its inputs | `(item shape, stage element, mode, slot index, layer)` → a `Vec3f` offset + yaw | pure, therefore testable headless - the house style (`StockMesh.SideOf`, `StockMesh.cs:36`) |
 | mesh cache | one entry per `(form, stage)`, then `Clone()` → rotate about its own centre → translate to the slot | `StockMesh.CacheKey` (`:67-73`) is the existing key function; `BlockMoltenBarrel.cs:190` is the runtime-texture + cached-base-mesh precedent |
 | def + recipe | `IExBlockDefProvider.Definitions(domain)` + an `ExRecipeDef` grid | `BlockHeatingHearth.cs`, `CraftingStationRecipeDefinitions.cs:23-36` |

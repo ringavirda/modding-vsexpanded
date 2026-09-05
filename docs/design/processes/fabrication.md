@@ -200,8 +200,8 @@ the five pairs, or the dual path becomes ten separate recipes.
 |---|---|---|---|---|
 | settled (D2, re-affirmed 2026-08-07) | 10 × 2 × 10 | 200 | 500 u | — |
 | the C# constant | — | — | 160 u - follows | `CastPartItemDefinitions.cs:21` |
-| the shipped runtime shape | 12 × 2 × 12 | 288 | 720 u by the rule - follows | `assets/iiex/shapes/item/heavyplate.json` |
-| the newly drawn editable shape | 8 × 2 × 8 | 128 | 320 u by the rule - follows | `assets/editable/shapes/item-castplate.json` (untracked) |
+| the shipped runtime shape | 12 × 2 × 12 | 288 | 720 u by the rule - follows | `mods/iiex/assets/iiex/shapes/item/heavyplate.json` |
+| the newly drawn editable shape | 8 × 2 × 8 | 128 | 320 u by the rule - follows | `workbench/shapes/item-castplate.json` (untracked) |
 | the casting cavity box | `Box(7,4,4, 9,14,12)` = 2 × 10 × 8 | 160 | 160 u at an implicit 1 u/vx³ - follows | `PatternItemDefinitions.cs:73-78` |
 
 500 u is canonical and 10 × 2 × 10 is the canonical geometry (ruled 2026-08-07). The three dissenting copies

@@ -42,9 +42,9 @@ Every unit's requirements implicitly include this section.
   ~20 failures caused by an upstream Vintage Story 1.22.6 change that made `IPlayer` unmockable. They are
   not ours and no change in this plan can fix them. 1.20 and 1.21 must be green.
 - Baseline to hold: 2506 tests, zero skips, on 1.20 and 1.21.
-- Check `assets/editable/shapes/` before asking anyone to draw anything. Most of the art is already
-  drawn and merely unexported. `assets/editable/` is source-only and never shipped; every unit that
-  touches art exports *into* `assets/iiex/`.
+- Check `workbench/shapes/` before asking anyone to draw anything. Most of the art is already
+  drawn and merely unexported. `workbench/` is source-only and never shipped; every unit that
+  touches art exports *into* `mods/iiex/assets/iiex/`.
 - Density rule: 1 voxel³ = 2.5 units. Every new mass is derived from a drawn shape, never invented.
 - A `side` variant renders a single letter (`n`/`e`/`s`/`w`), as does an `orientation` variant. The
   only word-spelled facings left are groups sourced from vanilla's `abstract/horizontalorientation`
@@ -68,7 +68,7 @@ Every unit's requirements implicitly include this section.
 
 ```bash
 # One suite, one test class — the inner loop.
-dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test mods/iiex/tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~LongCellTests"
 
 # The gate. Must print PASS on all three suites.
@@ -94,17 +94,17 @@ with the largest downstream unlock.
 
 | File | Responsibility |
 |---|---|
-| `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` | **modify** — reject a `longcell` pattern |
-| `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs` | **create** — the 1×2 megablock + its code-first def |
-| `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs` | **create** — the station's block entity |
-| `src/IronIndustryExpanded/BlockStructures/Casting/LongCellLayout.cs` | **create** — footprint + filler offsets, kept out of the block so it is testable without a world |
-| `src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs` | **create** — `castbillet`, `castbloom`, `castslab` |
-| `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs` | **modify** — the four long-cell patterns |
-| `src/IronIndustryExpanded/Recipes/Grid/CastingRecipeDefinitions.cs` | **modify** — the long cell's build recipe |
-| `assets/iiex/shapes/casting/…` | **create** — seven exported long-cell shapes |
-| `assets/iiex/lang/{en,ru,uk}.json` | **modify** — names + descriptions for every new block and item |
-| `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs` | **create** |
-| `test/IronIndustryExpanded.Tests/Items/CastStockMassTests.cs` | **create** |
+| `mods/iiex/src/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` | **modify** — reject a `longcell` pattern |
+| `mods/iiex/src/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs` | **create** — the 1×2 megablock + its code-first def |
+| `mods/iiex/src/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs` | **create** — the station's block entity |
+| `mods/iiex/src/BlockStructures/Casting/LongCellLayout.cs` | **create** — footprint + filler offsets, kept out of the block so it is testable without a world |
+| `mods/iiex/src/Items/CastStockItemDefinitions.cs` | **create** — `castbillet`, `castbloom`, `castslab` |
+| `mods/iiex/src/BlockStructures/Casting/PatternItemDefinitions.cs` | **modify** — the four long-cell patterns |
+| `mods/iiex/src/Recipes/Grid/CastingRecipeDefinitions.cs` | **modify** — the long cell's build recipe |
+| `mods/iiex/assets/iiex/shapes/casting/…` | **create** — seven exported long-cell shapes |
+| `mods/iiex/assets/iiex/lang/{en,ru,uk}.json` | **modify** — names + descriptions for every new block and item |
+| `mods/iiex/tests/Blocks/Casting/LongCellTests.cs` | **create** |
+| `mods/iiex/tests/Items/CastStockMassTests.cs` | **create** |
 
 ---
 
@@ -116,11 +116,11 @@ shape for. This task is deliberately first: it is a one-line guard, and it is th
 field mean anything before the block that consumes it exists.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` (the `Imprint` method, ~`:238-264`)
-- Modify: `assets/iiex/lang/{en,ru,uk}.json`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/CastingCellTests.cs` — does not exist yet; the
+- Modify: `mods/iiex/src/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingCell.cs` (the `Imprint` method, ~`:238-264`)
+- Modify: `mods/iiex/assets/iiex/lang/{en,ru,uk}.json`
+- Test: `mods/iiex/tests/Blocks/Casting/CastingCellTests.cs` — does not exist yet; the
   folder holds only `SandCastingBedTests.cs`. Create it, and create the `CastingCellScenes` fixture it
-  needs in `test/IronIndustryExpanded.Tests/Fixtures/` alongside `ColdBlastFurnaceScenes.cs`, which is the
+  needs in `mods/iiex/tests/Fixtures/` alongside `ColdBlastFurnaceScenes.cs`, which is the
   model to copy (real blocks, real ticks, nothing forced)
 
 **Interfaces:**
@@ -130,7 +130,7 @@ field mean anything before the block that consumes it exists.
 
 - [x] **Step 1: Write the failing test**
 
-Create `test/IronIndustryExpanded.Tests/Blocks/Casting/CastingCellTests.cs` with a `#region Pattern size`
+Create `mods/iiex/tests/Blocks/Casting/CastingCellTests.cs` with a `#region Pattern size`
 (this repo groups test methods with `#region`):
 
 ```csharp
@@ -158,7 +158,7 @@ substituted `IServerPlayer`. Do not assert on the message text — the standing 
 - [x] **Step 2: Run the test and watch it fail**
 
 ```bash
-dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test mods/iiex/tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo \
   --filter "FullyQualifiedName~A_longcell_pattern_is_refused_by_the_one_by_one_cell"
 ```
@@ -183,7 +183,7 @@ In `BlockEntitySandCastingCell.Imprint`, immediately after the existing `spec ==
 
 - [x] **Step 4: Add the lang keys**
 
-In `assets/iiex/lang/en.json` (then translate for `ru`/`uk` — see the RU/UK conventions: single `-`, never
+In `mods/iiex/assets/iiex/lang/en.json` (then translate for `ru`/`uk` — see the RU/UK conventions: single `-`, never
 an em-dash, EN is the source of truth):
 
 ```json
@@ -215,8 +215,8 @@ the items exist means touching every recipe that consumes them, so it is settled
 defined.
 
 **Files:**
-- Create: `src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs`
-- Test: `test/IronIndustryExpanded.Tests/Items/CastStockMassTests.cs`
+- Create: `mods/iiex/src/Items/CastStockItemDefinitions.cs`
+- Test: `mods/iiex/tests/Items/CastStockMassTests.cs`
 - Modify: `docs/design/machines/long-cell.md` (record the ruling)
 
 **Interfaces:**
@@ -263,7 +263,7 @@ Expected: `error CS0103: The name 'CastStockItemDefinitions' does not exist`.
 
 - [x] **Step 3: Create the item definitions**
 
-`src/IronIndustryExpanded/Items/CastStockItemDefinitions.cs`, following the shape of the existing
+`mods/iiex/src/Items/CastStockItemDefinitions.cs`, following the shape of the existing
 `CastPartItemDefinitions.cs` in the same folder (read it first — it is the pattern for the mass constant
 sitting next to the def):
 
@@ -324,7 +324,7 @@ change a number here without redrawing.
 - [x] **Step 4: Run the test and watch it pass**
 
 ```bash
-dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
+dotnet test mods/iiex/tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~CastStockMassTests"
 ```
 
@@ -334,7 +334,7 @@ Names + descriptions for all three forms in `en`/`ru`/`uk`. Then create the item
 
 ```bash
 EXLIB_WRITE_GOLDENS=iwex/itemtypes/caststock \
-  dotnet test test/IronIndustryExpanded.Tests/IronworkingExpanded.Tests.csproj \
+  dotnet test mods/iiex/tests/IronworkingExpanded.Tests.csproj \
   -f net8.0 -p:Legacy=true --nologo --filter "FullyQualifiedName~GoldenTests"
 ```
 
@@ -355,8 +355,8 @@ Four patterns — `castslab`, `castblooms`, `castbillets`, `castframe` — each 
 the cavity boxes its filling shape was measured from.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/MoldSpecTests.cs`
+- Modify: `mods/iiex/src/BlockStructures/Casting/PatternItemDefinitions.cs`
+- Test: `mods/iiex/tests/Blocks/Casting/MoldSpecTests.cs`
 
 **Interfaces:**
 - Consumes: `CastStockItemDefinitions.{Billet,Bloom,Slab}Units` (U1.2); the `Mold(...)` and `Box(...)`
@@ -451,7 +451,7 @@ what keeps the two stations one implementation.
 
 - [x] **Step 5: Add the four diagram textures**
 
-`assets/iiex/textures/item/diagram/diag-item-{castslab,castblooms,castbillets,castframe}.png`, 32×32 each.
+`mods/iiex/assets/iiex/textures/item/diagram/diag-item-{castslab,castblooms,castbillets,castframe}.png`, 32×32 each.
 These are derived automatically from `PatternTypes`, so a missing one is a missing texture at runtime, not
 a compile error. This is the one genuinely-new art in U1.
 
@@ -464,11 +464,11 @@ a compile error. This is the one genuinely-new art in U1.
 ## U1.4 — The long cell block
 
 **Files:**
-- Create: `src/IronIndustryExpanded/BlockStructures/Casting/LongCellLayout.cs`
-- Create: `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs`
-- Create: `src/IronIndustryExpanded/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs`
-- Create: `assets/iiex/shapes/casting/{sandcastinglongcell,longcell-filling-base,longcell-filling-half,longcell-filling-billets,longcell-filling-blooms,longcell-filling-castslab,longcell-filling-castframe}.json`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs`
+- Create: `mods/iiex/src/BlockStructures/Casting/LongCellLayout.cs`
+- Create: `mods/iiex/src/BlockStructures/Casting/Blocks/BlockSandCastingLongCell.cs`
+- Create: `mods/iiex/src/BlockStructures/Casting/BlockEntities/BlockEntitySandCastingLongCell.cs`
+- Create: `mods/iiex/assets/iiex/shapes/casting/{sandcastinglongcell,longcell-filling-base,longcell-filling-half,longcell-filling-billets,longcell-filling-blooms,longcell-filling-castslab,longcell-filling-castframe}.json`
+- Test: `mods/iiex/tests/Blocks/Casting/LongCellTests.cs`
 
 **Interfaces:**
 - Consumes: `BlockFilledMegastructure`, `IFillerHost`, `IFillerInteractionTarget` (exlib);
@@ -478,8 +478,8 @@ a compile error. This is the one genuinely-new art in U1.
 
 - [x] **Step 1: Export the seven shapes**
 
-From `assets/editable/shapes/molten-megablock-sandlongcell.json` and the five
-`molten-sandlongcellfilling-*.json` sources, plus a `-half` legacy mesh. Use `scripts/tools/convert-shape.py` if
+From `workbench/shapes/molten-megablock-sandlongcell.json` and the five
+`molten-sandlongcellfilling-*.json` sources, plus a `-half` legacy mesh. Use `infra/tools/convert-shape.py` if
 it applies; otherwise export from the editor.
 
 They carry the `andesite` texture key (the rammed-sand key the casting cell's fillings use), so the
@@ -646,10 +646,10 @@ The eleven drawn `molten-sandcellfilling-*` shapes are the redesigned 1×1 cast-
 `Molds` entry + one output item + one exported filling shape.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs`
-- Modify: `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs`
-- Create: `assets/iiex/shapes/casting/cell-filling-*.json` (export from `assets/editable/shapes/`)
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Casting/CastPartCatalogueTests.cs`
+- Modify: `mods/iiex/src/BlockStructures/Casting/PatternItemDefinitions.cs`
+- Modify: `mods/iiex/src/Items/CastPartItemDefinitions.cs`
+- Create: `mods/iiex/assets/iiex/shapes/casting/cell-filling-*.json` (export from `workbench/shapes/`)
+- Test: `mods/iiex/tests/Blocks/Casting/CastPartCatalogueTests.cs`
 
 **Parts:** `castshell`, `castcylinder`, `castwheelpart`, `castrods`, `castshafts`, `gearblanksmall`,
 `gearblanklarge`, `castingotmold`, `castplatemold`. `castframe` is U1.3's (it is a long-cell pattern);

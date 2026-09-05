@@ -70,7 +70,7 @@ the negation of the `C` glyph's (col, row) so the core lands on its own (0, 0, 0
 
 Source of truth: the nine ASCII cross-sections in `BlockBlastFurnaceCoreCold.cs` (y = 0 hearth floor →
 y = 8 open stack; the open top is the cold furnace's chimney - it takes no exhaust outlets). Golden:
-`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/blastcore.json`.
+`mods/iiex/tests/goldens/iiex/blocktypes/furnace/blastcore.json`.
 
 ### Cell census — 160 offsets
 
@@ -191,16 +191,16 @@ course between them is art, not geometry. Neither shape carries an animation: th
 `ClayPlug` element, drawn or pruned. A lit furnace is signalled by sounds and by the charge piles' own
 glow; there is no looping furnace animation.
 
-Player-facing help: `assets/iiex/config/handbook/02-coldblastfurnace.json` ↔
-`docs/iiex/handbook/02-coldblastfurnace.html`.
+Player-facing help: `mods/iiex/assets/iiex/config/handbook/02-coldblastfurnace.json` ↔
+`mods/iiex/docs/handbook/02-coldblastfurnace.html`.
 
 ---
 
 ## Construction
 
 No RCC, no crafting station: the core and fittings are grid recipes and the rest of the furnace is
-hand-laid brick. All recipes live in `src/IronIndustryExpanded/Recipes/Grid/FurnaceRecipeDefinitions.cs`;
-the golden is `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/blastfurnace.json`.
+hand-laid brick. All recipes live in `mods/iiex/src/Recipes/Grid/FurnaceRecipeDefinitions.cs`;
+the golden is `mods/iiex/tests/goldens/iiex/recipes/grid/blastfurnace.json`.
 
 | Output | Ingredients |
 |---|---|
@@ -298,7 +298,7 @@ Melting renders burden at the raceway into two pools held on the furnace
 
 `IiexValues.X` is a generated accessor over `IiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/IronIndustryExpanded/IiexConfig.cs`
+### Owned — `mods/iiex/src/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -377,7 +377,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 
 | File | Covers |
 |---|---|
-| `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every offset resolves to the right glyph; no exhaust outlets |
+| `mods/iiex/tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every offset resolves to the right glyph; no exhaust outlets |
 | `…/FurnaceOrientationMatrixTests.cs` | the same geometry in all four facings |
 | `…/ShaftColumnsTests.cs` | structure-local column keying, the asymmetric-drawing rotation case, per-column floors |
 | `…/ChargeColumnTests.cs` / `ChargePileTests.cs` / `ChargeMaterialisationTests.cs` | the column data model, the pile window, the world sync |
@@ -387,7 +387,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 | `…/FurnaceBlowInTests.cs` | the blow-in: the gate, the gesture, once per campaign, the legacy save key |
 | `…/OreRecoveryGuardRailTests.cs` | the 8.5 u/nugget yield against the bloomery floor |
 | `…/HeatBalanceTests.cs` | the heat model ([heat balance](../mechanics/heat-balance.md)) |
-| `test/IronIndustryExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs` | the charge → light → melt → tap → extinguish walk on this furnace |
+| `mods/iiex/tests/Scenarios/ColdBlastFurnaceScenarioTests.cs` | the charge → light → melt → tap → extinguish walk on this furnace |
 
 ---
 

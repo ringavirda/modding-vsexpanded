@@ -73,7 +73,7 @@ only reason the mold wildcard needs a trailing `-*`.
 ## The catalogue
 
 A pattern has no mass row. Like every tooling item in the suite it declares neither `materialUnits` nor
-`MaterialDensity` (confirmed by `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/pattern.json`), so the
+`MaterialDensity` (confirmed by `mods/iiex/tests/goldens/iiex/itemtypes/pattern.json`), so the
 [density rule](../mechanics/density-rule.md) has nothing to check on the pattern itself. It does carry a
 `capacity` for the part it casts, and that number belongs to
 [casting cell](../machines/casting-cell.md) § The shipped pattern catalogue.
@@ -121,13 +121,13 @@ The cross-mod seam is built and has no outside caller yet. `PatternItemDefinitio
 whole `pattern` itemtype from its own mold table (`PatternItemDefinitions.cs:272-280`), the cell's
 recognition gate is domain-blind (`FirstCodePart() == "pattern"`, `BlockEntitySandCastingCell.cs:188`), and
 the spec is read off whichever pattern is held - so iiex ships its five without iiex naming a single iiex
-code. `src/IronIndustryExpanded/` contains no casting folder and no pattern provider today, so the five rows
+code. `mods/iiex/src/` contains no casting folder and no pattern provider today, so the five rows
 above are the first exercise of that contract. Caution: an in-source comment still calls iiex's `castshell`
 "the first outside caller" (`PatternItemDefinitions.cs:276`) - the shell is iiex's and always compiled from
 iiex; the comment is stale.
 
 A roll blank belongs on this list and is not on it.
-`assets/editable/shapes/item-rollers-castblank.json` is a drawn cast blank and the rolls are chilled cast
+`workbench/shapes/item-rollers-castblank.json` is a drawn cast blank and the rolls are chilled cast
 iron in every tier, so the shortest route to a craftable roll set runs through a pattern entry that nobody
 has proposed ([roll sets § Construction](roll-sets.md)).
 
@@ -228,7 +228,7 @@ pattern families as `game:item/plate`, not as a missing-asset error.
 A filling shape is named by a pattern's `mold.shape` and by nothing else, so a grep over every `*.cs` in
 `src/` and `test/` for each filename gives an exact answer:
 
-| Filling shape (`assets/iiex/shapes/casting/`) | Referenced by | Git | Belongs to |
+| Filling shape (`mods/iiex/assets/iiex/shapes/casting/`) | Referenced by | Git | Belongs to |
 |---|---|---|---|
 | `cell-filling-base.json` | `CastingCellLogic.cs`, `BlockEntitySandCastingCell.cs` | tracked | the flat rammed sand |
 | `cell-filling-half.json` | `CastingCellLogic.cs` | tracked | the legacy half sand |
@@ -249,13 +249,13 @@ to teach why a cored mold is harder than a flat one, and it has neither a patter
 ([casting cell § Open](../machines/casting-cell.md)).
 
 The editable sources for the long-cell fillings are
-`assets/editable/shapes/molten-sandlongcellfilling-{billets,castblooms,castframe,castslab,full}.json`
+`workbench/shapes/molten-sandlongcellfilling-{billets,castblooms,castframe,castslab,full}.json`
 plus `molten-megablock-sandlongcell.json` (untracked); the older names are marked deleted in the working
 tree.
 
 ### Lang
 
-Every shipped type carries `item-pattern-{type}-*` in en/ru/uk (`assets/iiex/lang/en.json:340` region), and
+Every shipped type carries `item-pattern-{type}-*` in en/ru/uk (`mods/iiex/assets/iiex/lang/en.json:340` region), and
 each type's diagram carries its own row too - `item-diagram-item-{type}`, `en.json:148` region - so a new
 pattern type needs two lang rows per language, not one. There is no `item-pattern-*` catch-all, so a type
 added without its row shows a raw code.
@@ -297,7 +297,7 @@ vanilla's plank set. A vanilla wood added by an update is silently uncraftable-i
 
 | Piece | file:line | Role |
 |---|---|---|
-| `MoldSpec` | `src/IronIndustryExpanded/BlockStructures/Casting/MoldSpec.cs:32` | the record; `TryParse` at `:49-116`; `AttributeKey` at `:42` |
+| `MoldSpec` | `mods/iiex/src/BlockStructures/Casting/MoldSpec.cs:32` | the record; `TryParse` at `:49-116`; `AttributeKey` at `:42` |
 | `MoldSize` | `:9-16` | `Cell` · `LongCell`; enforced via `AcceptedSize` |
 | `PatternItemDefinitions` | `…/Casting/PatternItemDefinitions.cs` | `IExItemDefProvider`; shapes `:92-101`, `Molds` `:108-230`, `LongCellPatternTypes` `:233`, `PatternTypes` `:247`, `PatternWoods` `:253`, `Itemtype` `:272` |
 | `PatternValidation.Validate` | `…/Casting/PatternValidation.cs:19-31` | the `AssetsFinalize` sweep; pure over a collectible sequence; called from `IronIndustryExpandedModSystem.cs` |
@@ -306,7 +306,7 @@ vanilla's plank set. A vanilla wood added by an update is silently uncraftable-i
 | `DiagramItemDefinitions` | `…/Items/DiagramItemDefinitions.cs:26` | `PatternDiagramTypes` derived at `:56-58` |
 | `PatternRecipeDefinitions` | `…/Recipes/Grid/PatternRecipeDefinitions.cs:19` | one recipe per type |
 | golden | `test/…/goldens/iiex/itemtypes/pattern.json` | pins every spec and both variant groups |
-| tests | `test/IronIndustryExpanded.Tests/Blocks/Casting/MoldSpecTests.cs` · `PatternValidationTests.cs` · `PatternCodeLayoutTests.cs` | schema · validation · the `pattern-{type}-{wood}` code layout |
+| tests | `mods/iiex/tests/Blocks/Casting/MoldSpecTests.cs` · `PatternValidationTests.cs` · `PatternCodeLayoutTests.cs` | schema · validation · the `pattern-{type}-{wood}` code layout |
 
 Where a caller hooks in. To add a castable part from any mod: build a `pattern` itemtype off
 `PatternItemDefinitions.Itemtype` with its own mold table, ship a filling shape in its own domain, and the

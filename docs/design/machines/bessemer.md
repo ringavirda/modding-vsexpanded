@@ -112,7 +112,7 @@ The control is at (0,0,0) and the transmission at (0,−1,0) (`BlockConverterCon
 
 Anchor: the control block, at its own `(0,0,0)`. Authored as explicit `.At(…)`/`.Fill(…)` calls rather than an
 ASCII layout - the last structure in the suite in this form (`BlockConverterControl.cs:40-71`). Golden:
-`test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/converter/control.json` (33 offsets, verified).
+`mods/siex/tests/goldens/siex/blocktypes/converter/control.json` (33 offsets, verified).
 
 | # | Required block | Count | Structure-local cells |
 |---|---|---|---|
@@ -165,17 +165,17 @@ vessel-local `(0,1,0)`, directly above the vessel (`:63`, matched by `IsChiselCe
 
 | Asset | Path | State |
 |---|---|---|
-| vessel shape | `assets/siex/shapes/converter/bessemer.json` | live. Root children `GearShaft · BottomIron · GasIntake · BottomRefractory · UpRefractory · UpIron · InputLining` - one per RCC stage, in order. Textures `front1 · burned · iron3 · iron5` |
+| vessel shape | `mods/siex/assets/siex/shapes/converter/bessemer.json` | live. Root children `GearShaft · BottomIron · GasIntake · BottomRefractory · UpRefractory · UpIron · InputLining` - one per RCC stage, in order. Textures `front1 · burned · iron3 · iron5` |
 | vessel animations | same file | `idle` (`Repeat`), `filling` / `slagpouring` / `pouring` (all `Hold`, one keyframe each) - held tilt poses, not cycles, so `Hold` is correct here |
-| control shape | `assets/siex/shapes/converter/control.json` | live; animations `filling` / `pouring` (both `Hold`) - the lever throw. Textures `burned · iron4` |
-| intake shape | `assets/siex/shapes/converter/intake.json` | live, no animations |
-| transmission shape | `assets/siex/shapes/converter/transmission.json` | live, no animations; carries an `Axle` element |
-| editable sources | `assets/editable/shapes/` | only the intake has one (`machine-pipe-block-converterintake.json`, currently untracked; the old `machine-converter-intake.json` is deleted in the tree). The vessel, control and transmission have no editable source at all - the runtime shapes are the only copy |
+| control shape | `mods/siex/assets/siex/shapes/converter/control.json` | live; animations `filling` / `pouring` (both `Hold`) - the lever throw. Textures `burned · iron4` |
+| intake shape | `mods/siex/assets/siex/shapes/converter/intake.json` | live, no animations |
+| transmission shape | `mods/siex/assets/siex/shapes/converter/transmission.json` | live, no animations; carries an `Axle` element |
+| editable sources | `workbench/shapes/` | only the intake has one (`machine-pipe-block-converterintake.json`, currently untracked; the old `machine-converter-intake.json` is deleted in the tree). The vessel, control and transmission have no editable source at all - the runtime shapes are the only copy |
 | textures | — | none of its own; every texture key resolves to vanilla or shared iiex sheets |
 | particles | — | `ExParticles.RisingPlume` of `ExParticles.Smoke` from a box at vessel-local x ∈ [−0.375, 0], y ∈ [1.5, 2.0], z ∈ [0.3125, 0.6875], rotated per `side` (`BlockEntityConverterBessemer.cs:108-159`). Server-spawned, so it replicates |
 | sounds | — | `Embers` (4 s throttle), `Fire` (3 s), `Sizzle` / `MoltenMetal` (1.5 s), `MetalGrinding`, `CokeOvenDoorOpen`, `Extinguish` - all repurposed, none new (`BlockEntityConverterControl.cs:300-315`, `:466-474`, `:956-957`) |
-| lang | `assets/siex/lang/en.json:30-130` | complete - 4 block-help keys, 12 errors, 15 info lines, 22 status lines |
-| handbook | `docs/siex/handbook/04-bessemer.html` ↔ `siex:handbook-bessemer-text` (`lang/en.json:175`) | stale - see Gotchas #10 |
+| lang | `mods/siex/assets/siex/lang/en.json:30-130` | complete - 4 block-help keys, 12 errors, 15 info lines, 22 status lines |
+| handbook | `mods/siex/docs/handbook/04-bessemer.html` ↔ `siex:handbook-bessemer-text` (`lang/en.json:175`) | stale - see Gotchas #10 |
 
 Rendering: the vessel is drawn by its animator, because `ExRightClickConstructable` suppresses the default
 mesh; `idle` is a permanent held pose that keeps the built elements visible
@@ -382,7 +382,7 @@ strands the heat, because the vessel cannot be tilted to pour.
 
 `SiexValues.X` is a generated accessor over `SiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
+### Owned — `mods/siex/src/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -454,7 +454,7 @@ All at shipped values, full blast, no scrap.
 | slag pour, 4800 capacity | `288 / 44` | 7 ticks |
 | chiselable residue ceiling | `0.2 × capacity` | ≤ 959 u (4800) / ≤ 1199 u (6000) |
 | charge cooldown | `IiexValues.MoltenCooldownSpeed 24 × 0.5` | 12 - the VS per-in-game-hour rate (`IiexConfig.cs:31`, `ExlibConfig.cs:58-60`) |
-| liquid / hardened thresholds | `0.8 × mp` / `0.3 × mp`; pig overrides liquid to 0.75 | steel liquid > 1200, hardened < 450; pig liquid > 862.5, hardened < 345 (`ExlibConfig.cs:63`, `:67`, `assets/iiex/config/metals/*.json`) |
+| liquid / hardened thresholds | `0.8 × mp` / `0.3 × mp`; pig overrides liquid to 0.75 | steel liquid > 1200, hardened < 450; pig liquid > 862.5, hardened < 345 (`ExlibConfig.cs:63`, `:67`, `mods/iiex/assets/iiex/config/metals/*.json`) |
 
 The blow length does not depend on charge size. Carbon is a fraction and the decarburisation rate is not
 divided by mass, so 500 u and 6000 u both blow in ~5 minutes. Every capacity decision is therefore free of
@@ -538,7 +538,7 @@ guard degrades to "no construction drops" and still removes the block (`BlockCon
 
 | File | Covers |
 |---|---|
-| `test/SteelIndustryExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` | `ConverterRig` - builds the real footprint through `StructureRig`, places every service port under the code its own layout cell names, and lets the control's monitor tick complete the structure (`:150`). It does not force `StructureComplete`. Five block codes were wrong before this rig existed |
+| `mods/siex/tests/Fixtures/SteelPlantScenes.cs:31` | `ConverterRig` - builds the real footprint through `StructureRig`, places every service port under the code its own layout cell names, and lets the control's monitor tick complete the structure (`:150`). It does not force `StructureComplete`. Five block codes were wrong before this rig existed |
 | `Scenarios/BessemerScenarioTests.cs:28` `:56` | commissioning through the machine's own production tick; a breached shell stopping at the first gate |
 | `…:84` `:124` `:146` `:162` | charge → blow → pour; slag off the shallow tilt through the shared cell; over-blow to ingot iron; a second heat after pouring the first |
 | `…:189` `:210` `:228` `:240` `:249` | scrap yielding more steel; no blast ⇒ no refine; powered / stalled / no-network transmission |
@@ -567,7 +567,7 @@ without anything noticing.
    those 12 ticks.
 
 2. **`BessemerRefineTemperature` (1500) equals Bessemer steel's melting point** (`meltingPoint: 1500`,
-   `assets/siex/config/metals/bessemersteel.json`). The moment `T_process` falls under the refine floor, a
+   `mods/siex/assets/siex/config/metals/bessemersteel.json`). The moment `T_process` falls under the refine floor, a
    steel bath is also below its own melting point, so `UpdateSolidified` latches on the next tick. The stall
    state is therefore a freeze for steel. It is a warning band for pig, whose melting point is 1150.
 
@@ -598,7 +598,7 @@ without anything noticing.
     rounds up, then subtracts what was accepted, so a 0.4 u remainder pushes 1 u and leaves `_moltenSlag`
     negative. Harmless in play, but an R2 leak in a machine whose mass balance is otherwise exact.
 
-10. **The handbook page teaches the retired machine.** `docs/siex/handbook/04-bessemer.html` describes a
+10. **The handbook page teaches the retired machine.** `mods/siex/docs/handbook/04-bessemer.html` describes a
     three-state converter (Filling / Normal / Pouring), a fixed "about 1800 °C for roughly five minutes"
     refine, and "break the converter with a steel pickaxe" as the only way to recover a frozen charge. The
     shipped machine has four states, an emergent temperature, a chisel-out path, cold scrap, slag and an
@@ -627,10 +627,10 @@ without anything noticing.
 
 1. **The shipped product contradicts the settled design (N1).** The blow yields
    `siex:ingot-bessemersteel` - a finished, directly usable material with `generateItemFamily: true`,
-   `itemForms: [ingot, plate, rod, nails]` and a full tool preset (`assets/siex/config/metals/
+   `itemForms: [ingot, plate, rod, nails]` and a full tool preset (`mods/siex/assets/siex/config/metals/
    bessemersteel.json`), so Bessemer steel currently makes pickaxes and knives
-   (`assets/siex/lang/en.json:12-19`, goldens under
-   `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/bessemersteel/`). The settled design says the blow
+   (`mods/siex/assets/siex/lang/en.json:12-19`, goldens under
+   `mods/siex/tests/goldens/siex/itemtypes/bessemersteel/`). The settled design says the blow
    yields blown iron, which is unusable until it is recarburised in a [ladle](ladle.md) - and
    [materials.md](../materials.md) already says tools come from shear / crucible / HSS steel, never Bessemer.
    Three things have to change together: a `blowniron` metal def, the retype target at
@@ -652,7 +652,7 @@ without anything noticing.
 4. **The rebuild is scheduled and nothing has started.** Four blocks → one RCC megablock, coordinate layout →
    ASCII, intake/transmission → behaviour-capable fillers, plus a migration for existing worlds. Until then
    this machine is the only one in the suite whose structure cannot be read off
-   [layouts.md](../../internal/workbench/layouts.md).
+   [layouts.md](../../../workbench/layouts.md).
 
 5. **The blow length is charge-independent** (Numbers). If capacity is meant to be a meaningful choice, the
    decarburisation rate should divide by bath mass - at which point a 6000 u heat takes 1.25× a 4800 u heat

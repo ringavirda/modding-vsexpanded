@@ -92,7 +92,7 @@ into a longer state.
 ## Numbers
 
 Every value on this page is a design constant, not a config key. None of `32`, `48`, `2.25` or `2.0`
-exists anywhere in `src/` - a grep for `48` across `src/IronIndustryExpanded/BlockStructures/Forming/`
+exists anywhere in `src/` - a grep for `48` across `mods/iiex/src/BlockStructures/Forming/`
 returns only unrelated `Array.Length` uses. The only number that is real in code is the hearth's slot count.
 
 | Key | Value | file:line | What it does |
@@ -142,7 +142,7 @@ Only the lengthwise half exists today, and it does not measure anything.
 
 | Type | Where | Role |
 |---|---|---|
-| `HearthRows` | `src/IronIndustryExpanded/BlockStructures/Furnaces/HearthRows.cs:17` | the `Left`/`Centre`/`Right` enum (`:20-25`), `CanReach` (`:75`), `Reachable` (`:82`), `FromLocalOffset` (`:54`) |
+| `HearthRows` | `mods/iiex/src/BlockStructures/Furnaces/HearthRows.cs:17` | the `Left`/`Centre`/`Right` enum (`:20-25`), `CanReach` (`:75`), `Reachable` (`:82`), `FromLocalOffset` (`:54`) |
 | `HeatingHearthLayout` | `.../HeatingHearthLayout.cs:18` | `Rows = 3` (`:31`), `StockOf` (`:64`), `Element` (`:57`), `ElementsFor` (`:85`) |
 | `BlockEntityHeatingHearth` | `.../BlockEntities/BlockEntityHeatingHearth.cs:26` | one `ItemStack?` per row (`:30`), `TryLoad` (`:57`), `TryTake` (`:73`) |
 | `BlockHeatingHearth` | `.../Blocks/BlockHeatingHearth.cs:20` | the 3 × 2 footprint (`:43-54`), `RowAt` rotates a clicked cell back into the hearth's frame (`:73-78`) |

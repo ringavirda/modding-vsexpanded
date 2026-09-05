@@ -2,7 +2,7 @@
 
 **Status** live end to end (verified against source 2026-08-07) - every machine in the loop exists, has a
 recipe and simulates; the whole lifecycle is pinned by
-`test/IronIndustryExpanded.Tests/Scenarios/ColdBlastFurnaceScenarioTests.cs`, which charges, lights, melts,
+`mods/iiex/tests/Scenarios/ColdBlastFurnaceScenarioTests.cs`, which charges, lights, melts,
 taps and extinguishes the real 160-cell structure on the clock. The numbers are first-pass calibration,
 pinned by tests, not playtested
 **Mods** iiex (the whole loop), smex (the hot-blast variant of one step, and the converter that consumes the
@@ -238,7 +238,7 @@ left at its own raceway and cannot relight off its own salvage.
 
 | Input | Vanilla source | Role in the loop | file:line |
 |---|---|---|---|
-| crushed iron ore | pan / crush vanilla ore | the burden's ore stream - `ironore` role, path prefix `crushed-iron` | `assets/iiex/config/materialroles.json:11` |
+| crushed iron ore | pan / crush vanilla ore | the burden's ore stream - `ironore` role, path prefix `crushed-iron` | `mods/iiex/assets/iiex/config/materialroles.json:11` |
 | `game:lime` | grind limestone / chalk / marble on a quern | the flux stream - burden's one remaining quality | `materialroles.json:3` |
 | `game:coke` | vanilla coke oven - [coking](coking.md) | fuel: 1.0 carbon per item (role value 2 against `BfFuelCarbonReference` 2) | `materialroles.json:4` |
 | `game:charcoal` | vanilla charcoal pit | fuel: 0.5 carbon per item (value 1) - two charcoal carry one coke's carbon ([fuels](../items/fuels.md)) | `materialroles.json:5` |
@@ -385,7 +385,7 @@ overflow once the steel tier is built rather than being replaced.
    `WithSide(WEST)`, slag `WithSide(EAST)`, tuyeres likewise (`BlockBlastFurnaceCoreCold.cs:66`, `:80`,
    `:94-95`) - so a wrong-facing or wrong-type part reads as a build-outline mismatch rather than a silent
    dead tap. The invariant, pinned by `BlastFurnaceTapTests`: the `side` variant faces into the furnace, and
-   the tap pours to `side.Opposite`, one down. Caution: [layouts-workbench](../../internal/workbench/layouts.md)'s
+   the tap pours to `side.Opposite`, one down. Caution: [layouts-workbench](../../../workbench/layouts.md)'s
    cold draft, marked stale on that page, still carries bare tap legends (the hot draft's facings are
    correct); the source and the golden are the arbiters, not the workbench drafts.
 

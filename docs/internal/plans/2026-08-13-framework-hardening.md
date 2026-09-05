@@ -37,8 +37,8 @@ that the stages are independent and can land in any order, but they are listed b
 The two modified csprojs in `git status` are an accidental revert to a pre-split revision, not work in
 progress.
 
-- [x] **F0.1** Restore `src/SteelIndustryExpanded/SteelmakingExpanded.csproj` and
-      `test/SteelIndustryExpanded.Tests/SteelmakingExpanded.Tests.csproj` from HEAD. The lost
+- [x] **F0.1** Restore `mods/siex/src/SteelmakingExpanded.csproj` and
+      `mods/siex/tests/SteelmakingExpanded.Tests.csproj` from HEAD. The lost
       `<ProjectReference>`s to iwex and lpex are the 36 CS0246s; the lost `<AssetDomain>smex</AssetDomain>`
       is worse — a release cut from this tree ships smex with **zero assets** and drops out of the
       shipped-asset guard at the same time.
@@ -91,7 +91,7 @@ legitimate authoring in a mod that has never shipped.
 
 None of this is an API change. Together it is roughly a day and it changes exlib's category.
 
-- [x] **F2.1** `GenerateDocumentationFile` on, in `src/Directory.Build.props`. All five mods now emit an
+- [x] **F2.1** `GenerateDocumentationFile` on, in `mods/Directory.Build.props`. All five mods now emit an
       `.xml` beside their dll on all three TFMs; the mod zips pick it up for free (they copy the whole
       publish directory) and the exlib-testing bundle names it explicitly. `exlib.xml` is 8,860 lines.
       CS1591 (undocumented member), CS1573 (no `<param>` tag — this codebase documents in `<summary>`
@@ -226,7 +226,7 @@ accordingly.
       and it has no `class X : Base` line to resolve against, so the base is taken from the section's own
       heading (*"Key `BlockNetworkNode` members to know"*). And the generators **cannot be reflected** —
       the project sets `IncludeBuildOutput=false` and ships no runtime assembly — so their names are read
-      out of `src/ExpandedLib.Generators/*.cs` instead of allowed by hand, which is what keeps a deleted
+      out of `mods/exlib/generators/*.cs` instead of allowed by hand, which is what keeps a deleted
       generator failing.
 
 ---
@@ -254,7 +254,7 @@ accordingly.
 
 ## F5 — diagnostics: turn on the checks that are already written
 
-`test/ExpandedLib.Testing` holds ten validators whose own doc comments enumerate the exact silent
+`mods/exlib/testing` holds ten validators whose own doc comments enumerate the exact silent
 failures — *"fails silently in game"*, *"the block can never be placed, silently"*, *"neither throws nor
 logs"*. Every one is opt-in, headless, and documented nowhere.
 
@@ -386,12 +386,12 @@ tiers ship, separated by the variant, with distinct display names.
       ⛔ **Two of the six shape "collisions" were the design, not the bug.** The passthroughs deliberately
       share one brick mesh across every tier and differ only by the sheet texture, so they keep one shape —
       but it was written `iwex:pipe/passthrough`, a **content domain hardcoded inside exlib**, which
-      resolves to nothing the moment iwex is renamed. That art now lives in `assets/exlib/shapes/pipe/`
+      resolves to nothing the moment iwex is renamed. That art now lives in `mods/exlib/assets/exlib/shapes/pipe/`
       and the literal is gone. A blanket "move every pipe shape into a per-tier folder" would have been
       wrong here.
 
       ⛔ **Still open for M.4, and a naive rename sweep misses it:** `BlockPipePassthrough.Sheet` returns
-      `iwex:block/metal/castiron`, and `assets/siex/shapes/pipe/rolled/*.json` name the same texture. The
+      `iwex:block/metal/castiron`, and `mods/siex/assets/siex/shapes/pipe/rolled/*.json` name the same texture. The
       texture is referenced by ~40 files across three mods, so it was left alone deliberately; the four
       **hpex** references are outside both merging trees and a per-file sweep over "the two merging asset
       trees" will not see them.
@@ -441,7 +441,7 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       one more glob of the same shape rather than its own block. Verified end to end: lpex built with
       `-p:AssetDomainAbsorbed1=smex` packs both trees with nesting intact.
 
-      ⛔ **The globs live in `src/Directory.Build.targets`, and they are deliberately repetitive.** The
+      ⛔ **The globs live in `mods/Directory.Build.targets`, and they are deliberately repetitive.** The
       glob path needs `$(AssetDomain)`, which the csproj sets *after* `Directory.Build.props` is
       evaluated — the same trap as F2.1. Three shorter spellings were tried and all three fail while
       looking correct:
@@ -514,7 +514,7 @@ The repo already proves a mod can ship a foreign domain — iwex ships `game:` v
       *variant group*. Under one domain the two tiers' **six blocktype Locations and one recipe
       Location collapse to one each**, last-writer-wins, ordered by load, with no error (F8.7) — which
       is M3's exact prohibition, executed silently. The shape art collides the same way at
-      `assets/iiex/shapes/pipe/*.json`.
+      `mods/iiex/assets/iiex/shapes/pipe/*.json`.
 
       ⛔ **So M.4 has a hard prerequisite: put the tier into the asset name and the shape folder**
       (stage **M.0** below) before any domain moves. It is an exlib change and it regenerates all three

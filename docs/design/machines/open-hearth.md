@@ -135,11 +135,11 @@ counted-scan approach that page proposes.
 
 | Asset | State |
 |---|---|
-| editable shape | missing - `assets/editable/shapes/` holds no open-hearth file |
-| runtime shape | missing; `assets/siex/shapes/` holds `converter/`, and the cowper/smokestack/engine sets - nothing else |
+| editable shape | missing - `workbench/shapes/` holds no open-hearth file |
+| runtime shape | missing; `mods/siex/assets/siex/shapes/` holds `converter/`, and the cowper/smokestack/engine sets - nothing else |
 | textures | missing. The furnace core's south face carries a two-letter type label (`BlockFurnaceCoreBase.cs:34-68`); the cupola's `cf.png` is the precedent, and an open hearth needs its own so a built one reads apart |
-| metal def | missing - `assets/siex/config/metals/` contains only `bessemersteel.json` |
-| producer-gas medium | missing - `assets/exlib/config/liquids.json` declares `Air`, `Steam`, `Exhaust`, `Water` and nothing else |
+| metal def | missing - `mods/siex/assets/siex/config/metals/` contains only `bessemersteel.json` |
+| producer-gas medium | missing - `mods/exlib/assets/exlib/config/liquids.json` declares `Air`, `Steam`, `Exhaust`, `Water` and nothing else |
 | lang / handbook | no key, no page |
 
 Reusable art: the cowper's regenerator chamber, `game:cokeovendoor*`, the puddling chimney cap, the
@@ -310,7 +310,7 @@ existing systems is small and specific:
 
 | Need | Status |
 |---|---|
-| a `producergas` medium | a new entry in `assets/exlib/config/liquids.json` (phase `gas`, its own priority), loaded by `ExLiquids.Load` (`ExpandedLib/Fluids/ExLiquids.cs:74`). The shipped file has 4 media |
+| a `producergas` medium | a new entry in `mods/exlib/assets/exlib/config/liquids.json` (phase `gas`, its own priority), loaded by `ExLiquids.Load` (`ExpandedLib/Fluids/ExLiquids.cs:74`). The shipped file has 4 media |
 | a pipe run from producer to hearth | works today - [pipe network](../mechanics/pipe-network.md) |
 | R1: one medium per network | a producer-gas main and an air main are two separate networks; they cannot share a pipe. The open hearth therefore needs two intakes on two runs, exactly as the cowper does |
 | never stored | by design - no gasholder. Producer gas carries about a tenth of town gas's heating value, was fed hot so its sensible heat reached the regenerators, and is largely CO. Direct supply also makes the producer a live dependency: bank it down and the hearth cools |
@@ -339,14 +339,14 @@ Nothing exists. `grep -ri "openhearth\|open hearth" src/` returns no hits at all
 
 | Piece | Where it would go | Model it on |
 |---|---|---|
-| `BlockOpenHearthCore` | `src/SteelIndustryExpanded/BlockStructures/OpenHearth/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete furnace: `Core(domain, code, path, tiers…)`, then `.Class` / `.EntityClass` / faces / `.MultiblockLayout` |
+| `BlockOpenHearthCore` | `mods/siex/src/BlockStructures/OpenHearth/Blocks/` | `BlockCupolaFurnaceCore.cs:20-127` - the shortest complete furnace: `Core(domain, code, path, tiers…)`, then `.Class` / `.EntityClass` / faces / `.MultiblockLayout` |
 | the layout | `.MultiblockLayout(s => s.Origin(…).Legend(…).Layer(…))` | `BlockCowperStoveIntake.cs:49-110` - the closest sibling; negative-Y layers are legal and used |
 | `BlockEntityOpenHearth` | `…/OpenHearth/BlockEntities/` | `BlockEntityCupolaFurnace.cs:28` (a furnace that is only property overrides) for the tunables shape; `BlockEntityBlastFurnace.cs:31` for the molten pools + taps |
 | regenerator chambers | reuse | `BlockEntityCowperStove.cs:25` - soak (`:175-186`), give back (`:215-219`), cap (`:64`), heat-sink readout (`:279-290`) |
 | the reversing lever | reuse | `BlockPuddlingChimneyCap` / `BlockEntityPuddlingChimneyCap.cs:19-33` |
 | charge doors / hearth cells | reuse | `BlockPuddlingHearth.cs:25-30`, `BlockHeatingHearth.cs:43-54` - the clicked cell picks the slot |
 | bulk-scrap acceptance | `MaterialRoleRegistry.IsRole(Roles.Scrap, stack)` | the converter already classifies scrap by role, not by path (`BlockEntityConverterControl.cs:619`) - reuse it and take whole stacks instead of `BessemerScrapUnitValue` bits |
-| metal def | `assets/siex/config/metals/openhearthsteel.json` | `bessemersteel.json` is the template. decide `generateItemFamily` and `tools` explicitly - see Gotchas |
+| metal def | `mods/siex/assets/siex/config/metals/openhearthsteel.json` | `bessemersteel.json` is the template. decide `generateItemFamily` and `tools` explicitly - see Gotchas |
 | heat | inherited, unmodified | override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `TuyereIntakeVolume`, `BlastPressureThreshold`, `BlastMixRequiredToFire` (`BlockEntityFurnaceCore.cs:111-128`) and nothing else |
 | the tap | already works | `iiex:moltenmetaltap*` ([molten canal](molten-canal.md)) |
 
@@ -366,8 +366,8 @@ which is the existing precedent for reading a regenerator's heat from outside it
 ### Tests
 
 None. When built, the shape of the suite is set by
-`test/SteelIndustryExpanded.Tests/Fixtures/SteelPlantScenes.cs:31` (`ConverterRig`) and
-`test/IronIndustryExpanded.Tests/Scenarios/CupolaScenarioTests.cs` - build the real footprint through
+`mods/siex/tests/Fixtures/SteelPlantScenes.cs:31` (`ConverterRig`) and
+`mods/iiex/tests/Scenarios/CupolaScenarioTests.cs` - build the real footprint through
 `StructureRig`, never force `StructureComplete`, and drive the machine's own production tick.
 
 ---

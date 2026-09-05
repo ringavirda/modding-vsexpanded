@@ -49,7 +49,7 @@ variant. The sprinkler needs none of that:
 
 | Would it need… | |
 |---|---|
-| a new medium? | No - water, already declared (`assets/exlib/config/liquids.json`) |
+| a new medium? | No - water, already declared (`mods/exlib/assets/exlib/config/liquids.json`) |
 | a new network? | No - the pipe network is live |
 | a supply chain? | No - the fluid intake and both pumps ship ([pumps](../../machines/pumps.md)) |
 | a new vanilla system? | No - vanilla farmland already tracks moisture |
@@ -79,7 +79,7 @@ One asset does exist: exlib registers the vanilla watering-can trickle as a shar
 
 | | |
 |---|---|
-| `ExSounds.Watering` = `game:sounds/effect/watering`, documented as "the rhythmic water sound of a working hand pump" | `src/ExpandedLib/Helpers/ExSounds.cs:71-74` |
+| `ExSounds.Watering` = `game:sounds/effect/watering`, documented as "the rhythmic water sound of a working hand pump" | `mods/exlib/src/Helpers/ExSounds.cs:71-74` |
 | used by the manual pump | `BlockEntityManualFluidPump.cs:265-267` |
 | used by the engine fluid pump | `BlockEntityEngineFluidPump.cs:81` |
 

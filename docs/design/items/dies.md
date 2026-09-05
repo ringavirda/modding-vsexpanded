@@ -166,12 +166,12 @@ that attribute in the codebase, or it would need a C# constant per output.
 
 | Asset | Path | State |
 |---|---|---|
-| die-set, flat (editable) | `assets/editable/shapes/item-steamhammerdie-flat.json` | drawn, untracked (`??`), wired to nothing. Renamed from `item-steamhammerdieflat.json`, which git still reports deleted |
+| die-set, flat (editable) | `workbench/shapes/item-steamhammerdie-flat.json` | drawn, untracked (`??`), wired to nothing. Renamed from `item-steamhammerdieflat.json`, which git still reports deleted |
 | die item art, every other die | — | nothing drawn for nail, bolt, rivet, ball or stamping |
 | runtime shape | `assets/{iiex,iiex,hpex}/shapes/` | none |
 | lang | all three `lang/*.json` in every mod | no die key exists in any language |
 | handbook | `docs/{iiex,iiex}/handbook/` | none |
-| reference art | `assets/editable/refs/rivetsnails/machine-tools-…-1867-technology-RY93PB.jpg` Fig 1 | the folder is untracked |
+| reference art | `workbench/refs/rivetsnails/machine-tools-…-1867-technology-RY93PB.jpg` Fig 1 | the folder is untracked |
 
 Measured off the file (Blockbench voxels; one cell = 16). The die-set-renders-both-faces decision and the
 element roles are [steam hammer](../machines/steam-hammer.md)'s; the geometry below is this page's.

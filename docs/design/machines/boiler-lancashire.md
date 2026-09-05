@@ -81,7 +81,7 @@ system; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
 | Shape spin | `rotateYByType` `*-n: 0` - the leaf passes 0, not `BodySpinOffset`, so it differs from `StructureAngle` by 180° on purpose ([Cornish boiler](boiler-cornish.md) Gotcha 2) |
 | Resistance / stack | 45 / 1, from `BoilerShell` (`BlockBoiler.cs:131-132`) |
 | Mining tier | 4 (`BlockBoilerLancashire.cs:47`) - pinned by `HpMegablockDropTierTests.Lancashire_boiler_needs_an_iron_tier_pickaxe` |
-| Rendered footprint | [layouts.md](../../internal/workbench/layouts.md) § siex - round-tripped from the golden |
+| Rendered footprint | [layouts.md](../../../workbench/layouts.md) § siex - round-tripped from the golden |
 
 ### Geometry offsets — `BlockBoilerLancashire.cs:50-94`, resolved through `BlockBoiler.cs:135-174`
 
@@ -164,13 +164,13 @@ takes the fallback on two of the three.
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | `assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json` | present; the runtime copy is converted from it. Not redrawn for the hatch rename or an internal firebox |
-| Runtime shape | `assets/siex/shapes/boiler/lancashire.json` | one top-level `Root`, children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets. The Cornish's `Root` is unwrapped; this one is not |
+| Editable shape | `workbench/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json` | present; the runtime copy is converted from it. Not redrawn for the hatch rename or an internal firebox |
+| Runtime shape | `mods/siex/assets/siex/shapes/boiler/lancashire.json` | one top-level `Root`, children `Base` · `BaseExtension` · `Casing` · `Flues` - exactly the four RCC stage element sets. The Cornish's `Root` is unwrapped; this one is not |
 | Animations | same file | `idle` (30 f, `Hold`) · `lidopen` (30 f, `Hold`) - both poses, not motion. The shared base plays `manhatchopen`, so this leaf overrides `ManHatchAnimation` back to `lidopen` (`BlockEntityBoilerLancashire.cs:27`); without that override the pose loop would stop `idle` and start a clip that does not exist, and the vessel would vanish |
 | Textures | `fire1`, `iron3`, `steel32`, `iron5`, `steel3`, `steel42` | declared in the shape. Still carries `iron3` and `iron5`, so the steel boiler is part iron sheet |
 | Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-14,2,2)–(30,30,94)` | `BlockBoilerLancashire.cs:85-92` — 94/16 ≈ 5.9 cells along the 6-cell body |
-| Handbook | `assets/siex/config/handbook/05-highpressure.json` ↔ `docs/siex/handbook/05-highpressure.html` | present, shared with the Cornish engine, and wrong on three of the four build figures — see [Gotchas](#gotchas) 4 |
-| Mod icon | `src/SteelIndustryExpanded/modicon.png` | a copy of iiex's, placeholder (`docs/siex/ASSETS-TODO.md`) |
+| Handbook | `mods/siex/assets/siex/config/handbook/05-highpressure.json` ↔ `mods/siex/docs/handbook/05-highpressure.html` | present, shared with the Cornish engine, and wrong on three of the four build figures — see [Gotchas](#gotchas) 4 |
+| Mod icon | `mods/siex/src/modicon.png` | a copy of iiex's, placeholder (`mods/siex/docs/ASSETS-TODO.md`) |
 
 The RCC behaviour suppresses the default mesh, so the vessel is only visible through the animator holding
 `idle` or `lidopen`. The seeding guard and the `BoilerAnimatableRenderer` light-sample swap are
@@ -454,7 +454,7 @@ though iiex already registered an identical default (`SteelIndustryExpandedModSy
   count, `steamConnectorOffset`, `exhaustOutletOffset` and `waterRendererBox.z2`. Nothing checks the
   relationship.
 
-### Tests — `test/SteelIndustryExpanded.Tests/`
+### Tests — `mods/siex/tests/`
 
 | file | pins |
 |---|---|
@@ -462,7 +462,7 @@ though iiex already registered an identical default (`SteelIndustryExpandedModSy
 | `Definitions/SiexDefinitionGoldenTests.cs` | the def reproduces `goldens/siex/blocktypes/boiler/lancashire.json` byte-for-byte; the golden set exactly covers the defs; every shape reference resolves |
 
 There is no behavioural test for this boiler at all. No FSM test, no burst test, no scene: the entire
-iiex boiler suite (`test/IronIndustryExpanded.Tests/Blocks/Boiler/`) runs against the Cornish stat table, so
+iiex boiler suite (`mods/iiex/tests/Blocks/Boiler/`) runs against the Cornish stat table, so
 nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasserted anywhere.
 
 ---
@@ -487,8 +487,8 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    the Cornish's stranded 300 L, and a sixth of this vessel's 1200 L against the just-under-a-fifth the
    Cornish strands of its 1600 L. The larger boiler is the one that gives more back.
 
-4. The handbook is wrong on three of the four build figures (`docs/siex/handbook/05-highpressure.html:14-15`,
-   `assets/siex/lang/en.json` `handbook-highpressure-text`):
+4. The handbook is wrong on three of the four build figures (`mods/siex/docs/handbook/05-highpressure.html:14-15`,
+   `mods/siex/assets/siex/lang/en.json` `handbook-highpressure-text`):
 
    | handbook | actual | source |
    |---|---|---|
@@ -503,8 +503,8 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
    pipeline; the drift is this page's).
 
 5. The handbook and the README both instruct the player to fit a pressure valve between this boiler and the
-   Cornish engine. They cannot (`src/SteelIndustryExpanded/README.md:20-23`,
-   `docs/siex/handbook/05-highpressure.html:31-34`, `docs/siex/moddb.html:52-58`) - B6, owned in full by
+   Cornish engine. They cannot (`mods/siex/README.md:20-23`,
+   `mods/siex/docs/handbook/05-highpressure.html:31-34`, `mods/siex/docs/moddb.html:52-58`) - B6, owned in full by
    [cast pipes](cast-pipes.md) § B6, and silent in play because of B18 ([rolled pipe](rolled-pipe.md)).
 
 6. The bigger vessel did not get a bigger flue or a bigger lid. `BoilerExhaustPerSecond` (16 L/s),
@@ -535,8 +535,8 @@ nothing exercises a 1200 L / 12 atm vessel. The 9.6 atm ceiling above is unasser
 
 - No behavioural test. The whole boiler suite exercises the Cornish's numbers. A Lancashire rig would pin the
   9.6 atm hand-prime ceiling, the 150 s live-feed climb and the radius-4 burst.
-- No editable shape. `assets/siex/shapes/boiler/lancashire.json` is the only copy; the model cannot be
-  re-edited from source (`docs/siex/ASSETS-TODO.md` lists the listing art but not this).
+- No editable shape. `mods/siex/assets/siex/shapes/boiler/lancashire.json` is the only copy; the model cannot be
+  re-edited from source (`mods/siex/docs/ASSETS-TODO.md` lists the listing art but not this).
 - The rolled tier still reaches no fitting at all, and that needs a decision (Gotcha 1). It is no longer
   this boiler's lock-in - there is no layout to name blocks in - but hpex ships segments only, so either it
   ships passthrough / passthrough-bend / outlet in its own domain (which also fixes B6, since both the joint

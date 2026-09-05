@@ -24,3 +24,9 @@ pages; status lives in `../plans/STATE.md`. Line citations drift - cite by symbo
 | [2026-09-04-u11-ladle-triage.md](2026-09-04-u11-ladle-triage.md) | the U11 ladle unit verified task by task against today's source; the art measured; layouts verbatim; executable task list |
 
 Written 2026-09-04 for the roadmap's Phase 1 walkthrough and Phase 2 machining-line plan.
+
+Paths in these snapshots predate the 2026-09-05 per-mod layout: `src/<Project>/` -> `mods/<mod>/src/`,
+`test/<Project>.Tests/` -> `mods/<mod>/tests/`, `assets/<domain>/` -> `mods/<mod>/assets/<domain>/`,
+`assets/editable/` -> `workbench/`, `docs/wiki/` -> `mods/exlib/wiki/`, `dist/CakeBuild/` ->
+`infra/CakeBuild/`, `scripts/tools/` -> `infra/tools/` (mod = exlib/iiex/siex). The snapshots keep
+their old citations by rule; read them through this mapping rather than re-deriving a new snapshot.

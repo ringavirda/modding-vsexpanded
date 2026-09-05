@@ -173,13 +173,13 @@ the Lancashire still does ([Lancashire boiler](boiler-lancashire.md)).
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | `assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json` | the source the runtime copy is converted from: `Root` plus `CoalLayers`, the three current clips |
+| Editable shape | `workbench/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json` | the source the runtime copy is converted from: `Root` plus `CoalLayers`, the three current clips |
 | Editable shape, retired | `.../machine-pipe-megablock-boiler-cornish.json` | the pre-rework art - one `Root`, and the `lidopen` clip. Kept as the record of what the multiblock depicted; nothing converts from it |
-| Runtime shape | `assets/iiex/shapes/boiler/cornish.json` | `Root` is unwrapped, so the top level is `MasonryBase` · `BoilerCasing` · `Flues` · `BoilerEnds` · `MasonryTop` · `CasingSegment5` · `CoalLayers` |
+| Runtime shape | `mods/iiex/assets/iiex/shapes/boiler/cornish.json` | `Root` is unwrapped, so the top level is `MasonryBase` · `BoilerCasing` · `Flues` · `BoilerEnds` · `MasonryTop` · `CasingSegment5` · `CoalLayers` |
 | Animations | same file | `idle` (30 f, `Repeat`) · `mainhatchopen` (30 f, `Hold`) · `manhatchopen` (30 f, `Hold`) - all three are poses, not motion |
 | Textures | `cast-iron1`, `fire1`, `bituminous`, `iron3`, `iron4`, `iron5` | declared in the shape. `bituminous` is the fuel-layer code the bed repoints per charge |
 | Water surface | `BoilerWaterRenderer` + `waterRendererBox` `(-8,4,-60)-(14,30,12)` | `BlockBoilerCornish.cs:100-107` |
-| Handbook | `assets/iiex/config/handbook/06-boilers.json` ↔ `docs/iiex/handbook/06-boilers.html` | present and current |
+| Handbook | `mods/iiex/assets/iiex/config/handbook/06-boilers.json` ↔ `mods/iiex/docs/handbook/06-boilers.html` | present and current |
 
 The RCC behaviour suppresses the default mesh, so the boiler is only visible through the animator holding
 a pose. One clip must always be running or the vessel disappears, which is why `ApplyPose` starts a hatch
@@ -645,7 +645,7 @@ The engines keep their self-drop (they have a craftable frame); the boilers do n
 - Changing the feed model: `:349-373` is the only water-in path from a network. The pending
   intake-gate-on-`InternalPressure` design ([pumps](pumps.md)) replaces exactly this block.
 
-### Tests — `test/IronIndustryExpanded.Tests/Blocks/Boiler/`
+### Tests — `mods/iiex/tests/Blocks/Boiler/`
 
 | file | pins |
 |---|---|
@@ -685,7 +685,7 @@ the shipped shape). Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `F
    player will meet in the same sentence ("a Cornish boiler cannot drive a Cornish engine" - literally true,
    `BlockEntityBoilerCornish.cs:5-8`).
 
-4. The pipe article is still on the retired two-tier model. `docs/iiex/handbook/05-steampower.html:20-22`
+4. The pipe article is still on the retired two-tier model. `mods/iiex/docs/handbook/05-steampower.html:20-22`
    says "an iron pipe bursts above 5 atm while a stronger steel pipe holds up to 10 atm"; the model is
    plated 2.5 / cast 5.0 / rolled 12 ([pipe network](../mechanics/pipe-network.md)). The boilers page
    itself is current.

@@ -1,7 +1,7 @@
 # docs/internal — planning, records and reference
 
-Everything here is for whoever is building the mods. None of it ships: the packager takes `assets/`
-and the built dlls, never `docs/`.
+Everything here is for whoever is building the mods. None of it ships: the packager takes
+`mods/*/assets/` and the built dlls, never `docs/`.
 
 **Start at [plans/NEXT.md](plans/NEXT.md)**, which points at the plan of record,
 [plans/2026-09-04-roadmap.md](plans/2026-09-04-roadmap.md).
@@ -29,8 +29,10 @@ The split is fixed and worth restating every time it is tempting to blur it.
 | `internal/plans/` | **sequencing** - what order settled decisions get built in | decisions |
 | `internal/worklog/` | **what actually landed**, newest first, monthly | intent |
 | `internal/vanilla/` | a map of the vendored engine source at `.compat/vintagestory/` | our own code |
-| `internal/workbench/` | working scratch - measurements, layouts | anything settled |
 | `internal/research/` | **dated read-only snapshots of the code** - what a research agent found on one day, kept so the next session reads a map instead of re-deriving it | decisions, status |
+
+Working scratch - measurements, layouts - lives at the repo-root [`workbench/`](../../workbench/)
+alongside the editable shapes and textures it describes.
 
 If a number, a rule or a mechanism is settled, it is settled on a **design page** - never in a plan,
 never in a code comment alone.
@@ -85,6 +87,5 @@ out after A1 and why the arc reads as unfinished from the outside.
 - [vanilla/](vanilla/) - where every engine type lives, the practices vanilla follows, the traps its
   source hides. Two things inside `vsapi` that nothing else documents: `docs/api/` is the full
   generated API reference and `docs/json-docs/` is the **JSON asset schema**.
-- [workbench/](workbench/) - `layouts.md`, the multiblock layout measurements.
 - [research/](research/README.md) - the 2026-09-04 station and machining-line snapshots that ground the
   Phase 1 walkthrough and the Phase 2 plan.

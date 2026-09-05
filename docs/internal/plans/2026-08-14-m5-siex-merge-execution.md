@@ -198,7 +198,7 @@ names across the merge**, not by comparing test counts: duplicate classes that c
 to deleted checks in a raw count. (M.4: 1139 → 1139, and the two removed were deliberate.)
 
 **Suite membership is hardcoded in three places and only one fails loudly:**
-`VintageStory.sln` · `scripts/exmod.ps1` (`$projects`) · `dist/CakeBuild/Program.cs` (`ProjectFolders`).
+`VintageStory.sln` · `scripts/exmod.ps1` (`$projects`) · `infra/CakeBuild/Program.cs` (`ProjectFolders`).
 A stale name fails the build; a **dropped** name means that suite silently never runs. The gate goes
 from 12 targets to **9** (3 suites × 3 versions).
 
@@ -218,7 +218,7 @@ retired GUID's `Project(...)`/`EndProject` block **and** its configuration and n
   out of the parity guard with the suite green and no in-game symptom. Renumber during the move; the
   number is also the in-game ordering, so the order is an owner call.
 - `assets/{smex,hpex}` → `assets/siex`; `docs/{smex,hpex}` → `docs/siex`, handbook html renumbered to
-  match. `docs/siex/moddb.html` is an authoring merge of the two published pages.
+  match. `mods/siex/docs/moddb.html` is an authoring merge of the two published pages.
 
 ---
 

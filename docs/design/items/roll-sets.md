@@ -85,7 +85,7 @@ carries *a* code (`:105-110`). That omission is how four dangling roll-set codes
 
 A roll set has no mass row. It is tooling, not stock: the def declares neither `materialUnits` nor
 `MaterialDensity` (`RollSetItemDefinitions.cs:118-127`, confirmed by the golden
-`test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/rollset.json`), so the
+`mods/iiex/tests/goldens/iiex/itemtypes/rollset.json`), so the
 [density rule](../mechanics/density-rule.md) has nothing to check. The mass columns are replaced by which
 stock a set bites and where it sits.
 
@@ -220,7 +220,7 @@ All seven are untracked in git (`??`) and referenced by no code; the item ships 
 
 | Editable shape | Draws | Maps to | State |
 |---|---|---|---|
-| `assets/editable/shapes/item-rollers-flat.json` | four 4-voxel barrel segments named `20Gap`/`15Gap`/`10Gap`/`05Gap`, up-and-down roll pairs | iiex `flat` | drawn to the shipped schedule, not the settled one |
+| `workbench/shapes/item-rollers-flat.json` | four 4-voxel barrel segments named `20Gap`/`15Gap`/`10Gap`/`05Gap`, up-and-down roll pairs | iiex `flat` | drawn to the shipped schedule, not the settled one |
 | `item-rollers-grooved.json` | four 4-voxel segments named `25Gap`/`20Gap`/`15Gap`/`10Gap` | iiex/smex `grooved` | drawn to the settled schedule |
 | `item-rollers-flatwide20.json` · `…15` · `…10` | one 16-long roll pair each | iiex 2.0 / 1.5 / 1.0 | gap measurements are [wide hall](../machines/wide-hall.md)'s |
 | `item-rollers-flatwide5.json` | one 16-long roll pair | the 0.5 gap is deleted by the settled schedule | orphan unless 0.5 is re-added |
@@ -251,15 +251,15 @@ says so in the schema.
 
 | Fact | Detail |
 |---|---|
-| stale in-source comment | `RollSetItemDefinitions.cs:120-121` says *"the item-rollers source holds all the families in one file, so they ship together"*. That file - `assets/editable/shapes/item-rollers.json` - is deleted (`git status` reports ` D`); it was split into the seven files above |
-| absolute authoring paths | all seven declare `cast-iron1 → F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1`. That resolves to nothing in game and fails silently; `editable/` is source-only by convention |
+| stale in-source comment | `RollSetItemDefinitions.cs:120-121` says *"the item-rollers source holds all the families in one file, so they ship together"*. That file - `workbench/shapes/item-rollers.json` - is deleted (`git status` reports ` D`); it was split into the seven files above |
+| absolute authoring paths | all seven declare `cast-iron1 → F:/repos/modding-vsexpanded/workbench/textures/cast-iron1`. That resolves to nothing in game and fails silently; `editable/` is source-only by convention |
 | an animation on an item shape | `item-rollers-flat.json` and `item-rollers-grooved.json` each carry a 30-frame `cycle` clip with 2 keyframes and `onAnimationEnd: EaseOut`. Nothing plays an item shape's clip, and a looping clip must be `Repeat` or the mesh vanishes - if this art is ever hosted on the mill, both facts bite |
-| runtime shapes | none. `assets/iiex/shapes/forming/` holds `rollingmill.json` and the ten generated `stock-*.json` only |
-| handbook | none for the roll set in `docs/iiex/handbook/` |
+| runtime shapes | none. `mods/iiex/assets/iiex/shapes/forming/` holds `rollingmill.json` and the ten generated `stock-*.json` only |
+| handbook | none for the roll set in `mods/iiex/docs/handbook/` |
 
 ### Lang — the one part of the family that is complete
 
-| Key | en (`assets/iiex/lang/en.json`) | ru | uk |
+| Key | en (`mods/iiex/assets/iiex/lang/en.json`) | ru | uk |
 |---|---|---|---|
 | `item-rollset-flat` | "Flat Roll Set" - `:113` | `ru.json:130` | `uk.json:130` |
 | `item-rollset-flatwide` | "Wide Flat Roll Set" - `:114` | `:131` | `:131` |
@@ -290,14 +290,14 @@ question - whether four (iiex) or six (smex) sets plus their mills is a sane ask
 
 | Piece | file:line | Role |
 |---|---|---|
-| `RollSetSpec` | `src/IronIndustryExpanded/BlockStructures/Forming/RollSetSpec.cs:31` | the record; `TryParse` at `:108-201` |
+| `RollSetSpec` | `mods/iiex/src/BlockStructures/Forming/RollSetSpec.cs:31` | the record; `TryParse` at `:108-201` |
 | `RollSetItemDefinitions` | `…/Forming/RollSetItemDefinitions.cs:17` | `IExItemDefProvider`; `Sets` at `:56-104`, `SetTypes` at `:108`, the emit at `:112-128` |
 | `RollSetItemDefinitions.Set` / `.Out` | `:25-44` / `:46` | the authoring helpers that force `double` |
 | `RollSetValidation.Validate` | `…/Forming/RollSetValidation.cs:20-32` | the `AssetsFinalize` sweep; pure over a collectible sequence |
 | the fit gate | `BlockRollingMill.cs:294` | attribute-exists only, domain-blind |
 | the read | `BlockEntityRollingMill.cs:129`, `:148` | the only two production parses |
-| golden | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/rollset.json` | pins all four specs byte-for-byte |
-| tests | `test/IronIndustryExpanded.Tests/Blocks/Forming/RollSetSpecTests.cs` - 15 `[Fact]`/`[Theory]`, 230 lines | the schema; the mill's other eight files are [rolling mill](../machines/rolling-mill.md)'s |
+| golden | `mods/iiex/tests/goldens/iiex/itemtypes/rollset.json` | pins all four specs byte-for-byte |
+| tests | `mods/iiex/tests/Blocks/Forming/RollSetSpecTests.cs` - 15 `[Fact]`/`[Theory]`, 230 lines | the schema; the mill's other eight files are [rolling mill](../machines/rolling-mill.md)'s |
 
 ### The cross-mod emit question
 

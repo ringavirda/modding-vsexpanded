@@ -25,7 +25,7 @@ charge column, which is the shaft equivalent and deliberately a different model
 
 **Depends on** [puddling-furnace](puddling-furnace.md) · [reheat-furnace](reheat-furnace.md) ·
 [crucible-furnace](crucible-furnace.md) · [boiler-cornish](boiler-cornish.md) ·
-[boiler-lancashire](boiler-lancashire.md) · [cowper](cowper.md) · [layouts.md](../../internal/workbench/layouts.md) § 1
+[boiler-lancashire](boiler-lancashire.md) · [cowper](cowper.md) · [layouts.md](../../../workbench/layouts.md) § 1
 
 ---
 
@@ -49,7 +49,7 @@ With both piles landed, nothing in either branch touches a vanilla coal pile, an
 
 ## The block
 
-**Shape** `assets/editable/shapes/furnace-block-firebox.json`. Two zero-size top-level groups, which is what
+**Shape** `workbench/shapes/furnace-block-firebox.json`. Two zero-size top-level groups, which is what
 `SelectiveElements` wants:
 
 | Group | Contents |
@@ -61,7 +61,7 @@ The firebars are part of the block, which is why `G` (`game:refractorybrickgrati
 and reheat layouts - the grate stopped being a separate cell. The grating stays available as a legend
 option; it may be wanted again.
 
-Bars are drawn from `assets/editable/shapes/molten-sandcellfilling-castrods.json` - the normal rod shape in
+Bars are drawn from `workbench/shapes/molten-sandcellfilling-castrods.json` - the normal rod shape in
 cast iron, and therefore a sand-cast part.
 
 That makes the firebox a tech-tree edge, not a loop. The machines that have a firebox - puddling, reheat -
@@ -255,7 +255,7 @@ first smelt, so a firebox is not an early-game block.
 
 | Piece | File |
 |---|---|
-| the pool, composable | `src/IronIndustryExpanded/BlockStructures/Furnaces/BEBehaviorFirebox.cs` |
+| the pool, composable | `mods/iiex/src/BlockStructures/Furnaces/BEBehaviorFirebox.cs` |
 | its declared geometry | same file - `Initialize` (`:91-97`), `ElementsFor` (`:101-106`), `DefaultElementsFor` (`:113-118`) |
 | the block | `.../Furnaces/Blocks/BlockFirebox.cs` - `iiex:furnace-firebox-{tier}-{side}` |
 | the block entity (draw + HUD only) | `.../Furnaces/BlockEntities/BlockEntityFirebox.cs` |
@@ -263,7 +263,7 @@ first smelt, so a firebox is not an early-game block.
 | the group | `BlockEntityFurnaceCore.FireboxCells` (`CellRole.Firebox`, never adjacency) |
 | the one non-block host | `.../Boiler/Blocks/BlockBoilerCornish.cs:49-56` declares it; `.../Boiler/BlockEntityBoiler.cs` owns the fire around it |
 | the runtime retexture | `ExShapeElements.Retextured` in exlib |
-| the shape | `assets/iiex/shapes/furnace/firebox.json` |
+| the shape | `mods/iiex/assets/iiex/shapes/furnace/firebox.json` |
 
 The pool is a distribution rule, not shared storage. Each cell keeps its own units;
 `BlockEntityFirebox.Charge` spreads a deposit across the owning furnace's `Firebox` cells and the furnace

@@ -1,7 +1,7 @@
 # Multiblock & Filler Structures
 **Status** live   **Mod** exlib (the whole system; every mod authors layouts against it)
 **Owns** the ASCII layout DSL (`Origin` / `Legend` / `Layer` / `Slice` / `Face`, the `'.'`/`' '`/`'O'` glyph rules, `@(a|b)` alternation), the origin-is-the-negation-of-the-core rule, oriented-part rotation and the trapdoor caveat, cell roles (what a cell is for, attached to glyphs), the invisible-filler footprint system (per-cell collision, interaction/break/info rerouting, `allowAttach`, partial collision boxes), behaviour-capable filler cells, the declarative filler port and the connector-versus-node choice, the completion/projection machinery, and the rule that a filler cell is a graph node exactly when it declares a membership.
-**Depends on** [mp-energy](mp-energy.md) (the `BEBehaviorMPFillerPort` a hosted cell carries, and the rolling mill's axle cells - the canonical case of the graph-node rule) · [conventions](../conventions.md) (block / megablock / multiblock vocabulary) · [layouts-workbench.md](../../internal/workbench/layouts.md) (the layout scratchpad)
+**Depends on** [mp-energy](mp-energy.md) (the `BEBehaviorMPFillerPort` a hosted cell carries, and the rolling mill's axle cells - the canonical case of the graph-node rule) · [conventions](../conventions.md) (block / megablock / multiblock vocabulary) · [layouts-workbench.md](../../../workbench/layouts.md) (the layout scratchpad)
 
 ---
 

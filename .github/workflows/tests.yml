@@ -59,7 +59,7 @@ jobs:
             "dotnet test VintageStory.sln --no-restore -c Debug"
 
       - name: Coverage gate (mod assemblies)
-        run: python3 scripts/tools/coverage_gate.py coverage.xml
+        run: python3 infra/tools/coverage_gate.py coverage.xml
 
       - name: Upload coverage report
         if: always()

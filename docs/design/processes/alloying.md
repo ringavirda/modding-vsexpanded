@@ -114,7 +114,7 @@ The converter cannot be a mixing site, and the shipped code says so twice.
    hand-drop port the converter has is closed exactly when an alloying addition would be made.
 2. There is no cool half of its heat. `BessemerRefineTemperature` is 1500 °C (`SiexConfig.cs:194`) and that
    is numerically equal to Bessemer steel's own melting point
-   (`assets/siex/config/metals/bessemersteel.json`), so the converter has no "hold and correct" band at all;
+   (`mods/siex/assets/siex/config/metals/bessemersteel.json`), so the converter has no "hold and correct" band at all;
    the moment the blast stops it is in the freeze window
    ([bessemer § Gotchas #2](../machines/bessemer.md#gotchas)).
 
@@ -254,7 +254,7 @@ Every pressure ceiling that exists in the suite:
 
 | Rating | Value | file:line | Keyed by |
 |---|---|---|---|
-| `BlockPipe.BurstPressure` | resolved at runtime | `src/ExpandedLib/Blocks/Networks/BlockPipe.cs:193-194` | the block's `Code.Domain`, via `_burstByDomain` (`:180`) |
+| `BlockPipe.BurstPressure` | resolved at runtime | `mods/exlib/src/Blocks/Networks/BlockPipe.cs:193-194` | the block's `Code.Domain`, via `_burstByDomain` (`:180`) |
 | default, if a mod registers none | 5 atm | `BlockPipe.cs:182` | — |
 | iiex plated | 2.5 atm | `IiexConfig.cs:163` | domain `iiex` |
 | iiex cast | 5.0 atm | `IiexConfig.cs:50` | domain `iiex` |
@@ -365,7 +365,7 @@ waiting on it.
 
 2. Decide how D3 is expressed, or drop it. As written it needs a per-material grade and a
    material-aware pressure read (Numbers). The cheap version is one scalar on `MetalDef` and one change in
-   `BlockPipe.BurstPressure` (`src/ExpandedLib/Blocks/Networks/BlockPipe.cs:193-194`); the expensive version
+   `BlockPipe.BurstPressure` (`mods/exlib/src/Blocks/Networks/BlockPipe.cs:193-194`); the expensive version
    is a grade on every pressure vessel in iiex and hpex. Nothing else in the suite is waiting on this.
 
 3. Size the ladle for base + both additions. ~6800 u, not 6000 (Numbers). This must be settled together

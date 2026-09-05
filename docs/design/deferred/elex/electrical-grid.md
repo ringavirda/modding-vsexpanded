@@ -75,12 +75,12 @@ Nothing: not one line of code, not one asset, not one lang key.
 | `grep -rniE "elex\|electric\|dynamo\|alternator\|voltage" assets/ .github/` | 0 hits |
 | Projects in `VintageStory.sln` | `ExpandedLib`, `ExpandedLib.Generators`, `ExpandedLib.Testing`, `HighPressureExpanded`, `IronIndustryExpanded`, `IronIndustryExpanded`, `SteelmakingExpanded` (+ their `.Tests`) and `CakeBuild`. No `ElectricalExpanded` |
 | Asset domains under `assets/` | `editable`, `exlib`, `game`, `hpex`, `iiex`, `iiex`, `smex`. No `elex/`, so no `assets/elex/lang/en.json` either |
-| Registered network types | exactly three, all in `src/IronIndustryExpanded/IronIndustryExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
+| Registered network types | exactly three, all in `mods/iiex/src/IronIndustryExpandedModSystem.cs` (`"pipe"`, `"molten"`, `"mpenergy"`). No `"ac"`, no `"dc"` |
 
 The only electrical thing that exists anywhere in the repo is the row in the family list:
 [conventions.md](../../conventions.md) § Networks - "Electrical (AC + DC) — the elex tier (planned)".
 
-`assets/exlib/config/liquids.json` declares four media (`Air`, `Steam`, `Exhaust`, `Water`) and none of them
+`mods/exlib/assets/exlib/config/liquids.json` declares four media (`Air`, `Steam`, `Exhaust`, `Water`) and none of them
 is electrical, which is correct rather than a gap: the elex design rules that wires are a separate medium
 family and that R1 governs pipes, not wires.
 
@@ -202,12 +202,12 @@ only in the archived elex/hpex specs and nowhere in the mechanical design - is
 ### And the two models are 4 orders of magnitude apart
 
 `mpenergy`'s live calibration ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Numbers):
-`MpMaxSpeed = 2.0` rad/s (`src/ExpandedLib/ExlibConfig.cs:98`) and `FlywheelBridgeChargePower = 1.0` N·m
-(`src/IronIndustryExpanded/IiexConfig.cs:467`). One bridge at full speed therefore supplies
+`MpMaxSpeed = 2.0` rad/s (`mods/exlib/src/ExlibConfig.cs:98`) and `FlywheelBridgeChargePower = 1.0` N·m
+(`mods/iiex/src/IiexConfig.cs:467`). One bridge at full speed therefore supplies
 τ·ω = 1 × 2 = 2 W, of which friction takes `0.05·2 + 0.5 = 0.6` N·m, leaving 0.8 W of usable headroom -
-the mill's calibration comment says exactly this at `src/IronIndustryExpanded/IiexConfig.cs:508-520`. The
+the mill's calibration comment says exactly this at `mods/iiex/src/IiexConfig.cs:508-520`. The
 flywheel's own block-info suppresses the supply/demand line below 1 W
-(`src/IronIndustryExpanded/BlockNetworkEnergy/BlockEntities/BlockEntityFlywheel.cs:302`).
+(`mods/iiex/src/BlockNetworkEnergy/BlockEntities/BlockEntityFlywheel.cs:302`).
 
 elex speaks in kW; the live mechanical network runs at ~2 W. `mpenergy`'s numbers are a first-pass
 calibration in arbitrary-but-consistent units and elex's are nominal physical ones, but they are not the
@@ -222,7 +222,7 @@ never touches the shaft network, is a prerequisite to either generator page.
 | Add / remove / merge / split on placement | yes - `BlockNetworkModSystem` BFS, shared by all three live families |
 | A once-a-second tick | yes - `BlockNetworkModSystem.cs:42-45`, the shared `dt` |
 | A machine that reads two networks without merging them | yes - the transmission's pattern: `GetNetworkAt` on each port cell, projected onto a constraint (`BlockEntityTransmission.cs:256-305`). This is exactly the transformer / rectifier shape |
-| A block on two different network families at once | yes, but only via the flywheel's trick - host a behaviour for the other family on a footprint cell (`BEBehaviorMPFillerPort`), because `BlockNetworkNode.NetworkType` is one abstract string per block (`src/ExpandedLib/Blocks/Networks/BlockNetworkNode.cs:701`) |
+| A block on two different network families at once | yes, but only via the flywheel's trick - host a behaviour for the other family on a footprint cell (`BEBehaviorMPFillerPort`), because `BlockNetworkNode.NetworkType` is one abstract string per block (`mods/exlib/src/Blocks/Networks/BlockNetworkNode.cs:701`) |
 | Acyclic topology | no - nothing enforces it. Every live family pools its state, so a ring is harmless; a circuit solved as a tree is not. See § Gotchas |
 | A per-node solve (voltages differing along a run) | no - every live family computes one state for the whole network. This is new machinery, not a subclass |
 
@@ -294,7 +294,7 @@ never touches the shaft network, is a prerequisite to either generator page.
   two-family pattern (host a behaviour for the other side) or the transmission's (read both without
   merging). Both precedents are live and neither has been chosen.
 * **When the circuit re-solves.** The shared network tick is 1000 ms
-  (`src/ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs:42-45`). A sink cutting out changes the currents
+  (`mods/exlib/src/Blocks/Networks/BlockNetworkModSystem.cs:42-45`). A sink cutting out changes the currents
   of every other sink on its path, so a grid may need to iterate to a fixed point within one tick rather than
   step once like the shaft does.
 * **Where cable heat is stored.** `I²R` accumulating per segment implies a temperature on every cable block -

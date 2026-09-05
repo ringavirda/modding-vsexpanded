@@ -1,6 +1,6 @@
 # Code style
 
-How the C# in `src/` and `test/` is written and formatted. Domain rules - units, invariants,
+How the C# in `mods/*/src/` and `mods/*/tests/` is written and formatted. Domain rules - units, invariants,
 network semantics - live in [conventions.md](docs/design/conventions.md); this file is about the code itself.
 
 The mechanical parts are enforced, not trusted to review: formatting by `exmod format`, comment
@@ -26,7 +26,7 @@ exmod fix-registry [-InstallDir <path>]              (Windows only)
 
 ### The API patch
 
-`provision game` runs `scripts/tools/patch-api.cs` over the provisioned
+`provision game` runs `infra/tools/patch-api.cs` over the provisioned
 `.game/<slug>/VintagestoryAPI.dll` and makes `IPlayer.IsInInteractionRangeOf(BlockPos, float)` public.
 
 Vintage Story 1.22.6 ships that member as `internal abstract`. An interface member is a vtable slot

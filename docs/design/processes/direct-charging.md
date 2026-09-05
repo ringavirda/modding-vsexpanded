@@ -65,7 +65,7 @@ a casting bed. Hop by hop:
 The two ends already agree on the code. The furnace's product token is `"pigiron"`
 (`BlockEntityShaftFurnace.cs:151`) and the converter's `PigCode` resolves the same token through
 `MetalRegistry` (`BlockEntityConverterControl.cs`), both landing on `iiex:ingot-pigiron`
-(`assets/iiex/config/metals/pigiron.json`). Nothing has to be translated, and `FlowEdge`'s type refusal -
+(`mods/iiex/assets/iiex/config/metals/pigiron.json`). Nothing has to be translated, and `FlowEdge`'s type refusal -
 which would silently stop a mismatched run dead - never fires.
 
 The work is making the converter reachable, not building direct charging. The furnace end is buildable in
@@ -148,7 +148,7 @@ cold scrap.
 | **Transit time.** One `FlowEdge` per cell per 1 s network tick | an N-cell run adds ≈ N seconds of cooling before the metal arrives | [molten network § ordering](../mechanics/molten-network.md) |
 | **Standing thermal mass.** Every push volume-weight-averages the two charges' temperatures | an N-cell run holds up to 50 N units of previously-poured, already-cooling metal that the new charge averages down into on arrival | `BlockEntityMoltenCanal.cs:216-221`; capacity cited from [molten network](../mechanics/molten-network.md) |
 | **No conduction.** Cells exchange heat only when metal moves | a standing run cools cell by cell independently; nothing upstream keeps it warm | [molten network § Open](../mechanics/molten-network.md) |
-| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`assets/iiex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](../mechanics/molten-network.md) |
+| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`mods/iiex/assets/iiex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](../mechanics/molten-network.md) |
 | **`SoakHeat` protects only the start.** A brim-full canal start being poured onto keeps taking heat | the rest of the run has no such protection | `BlockEntityMoltenCanal.cs:276` |
 
 ---

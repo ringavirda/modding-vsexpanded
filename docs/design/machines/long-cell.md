@@ -55,7 +55,7 @@ The impression is one pooled `BEBehaviorMoltenCell` on the principal (`drainFitt
 not a molten-graph node). Its pre-impression ceiling is `UnimpressedCapacity = 3400`
 (`BlockSandCastingLongCell.cs:43`); an impressed pattern's own `capacity` overrides it.
 
-Measured from `assets/iiex/shapes/casting/sandcastinglongcell.json`:
+Measured from `mods/iiex/assets/iiex/shapes/casting/sandcastinglongcell.json`:
 
 | Part | Extent (16-space, principal-local) | Note |
 |---|---|---|
@@ -73,8 +73,8 @@ with 2-thick end dams, so a lane cannot exceed 24 voxels in length (`LongCellLay
 
 ## Assets
 
-Seven files, all in `assets/iiex/shapes/casting/`, currently untracked in git; their editable sources in
-`assets/editable/shapes/` are marked deleted in the working tree.
+Seven files, all in `mods/iiex/assets/iiex/shapes/casting/`, currently untracked in git; their editable sources in
+`workbench/shapes/` are marked deleted in the working tree.
 
 | Runtime shape | Editable source | Draws |
 |---|---|---|
@@ -180,7 +180,7 @@ molten-recovery rules.
 | the three long patterns | `BlockStructures/Casting/PatternItemDefinitions.cs` - `castbillets` / `castblooms` / `castslab`, `size: "longcell"`, capacities from `CastStockItemDefinitions.Forms` |
 | the stock masses | `Items/CastStockItemDefinitions.cs` - `BilletUnits` 600, `BloomUnits` 1000, `SlabUnits` 3000 |
 | recipe | `Recipes/Grid/CastingRecipeDefinitions.cs:130-152`; cost key `IiexRecipeConfig.cs:94` |
-| tests | `test/IronIndustryExpanded.Tests/Blocks/Casting/LongCellTests.cs`, `MoldSpecTests.cs`, `CastMassParityTests.cs` |
+| tests | `mods/iiex/tests/Blocks/Casting/LongCellTests.cs`, `MoldSpecTests.cs`, `CastMassParityTests.cs` |
 
 ---
 

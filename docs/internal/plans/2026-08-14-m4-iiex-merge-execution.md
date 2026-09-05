@@ -57,7 +57,7 @@ iwex's folder taxonomy is a superset of lpex's.
 
 - `<AssetDomain>iiex</AssetDomain>` **and** `<AssetDomainAbsorbed1>lpex</AssetDomainAbsorbed1>`.
   ⛔ Both in the same commit: the absorbed glob is `Condition`-guarded on the property being non-empty
-  (`src/Directory.Build.targets:68-74`), so an unset one is **inert with no error** — and a
+  (`mods/Directory.Build.targets:68-74`), so an unset one is **inert with no error** — and a
   `[ExDefDomain("lpex")]` def then loads with **no shape and no error**.
 - Explicit `<AssemblyName>iiex</AssemblyName>` and `<RootNamespace>IronIndustryExpanded</RootNamespace>`.
   ⛔ Neither mod sets these today, so the **folder name** silently controls both the dll name and the
@@ -138,7 +138,7 @@ Both smex and hpex reference lpex **and** iwex explicitly, and both become the s
   Not by reading a csproj — this failure is green in every test run and only visible in game.
 
 **Suite membership is hardcoded in three places and only one fails loudly:**
-`VintageStory.sln:18,20,22,30,34` · `scripts/exmod.ps1:357-363` · `dist/CakeBuild/Program.cs:47-48`.
+`VintageStory.sln:18,20,22,30,34` · `scripts/exmod.ps1:357-363` · `infra/CakeBuild/Program.cs:47-48`.
 A stale name fails the build; a **dropped** name means that suite silently never runs.
 Delete the `test/PipesAndPowerExpanded.Tests` orphan (csproj only, zero sources, in neither list) — it is
 standing proof this already happened once, during the ppex → lpex rename.
@@ -152,7 +152,7 @@ standing proof this already happened once, during the ppex → lpex rename.
 - ⛔ **Rename on the whole token `iwex`/`lpex`, not on `iwex:`.** ~35 keys embed the domain under a `game:`
   prefix or behind a hyphen (`game:tabname-iwex`, `game:ingameerror-iwex-*`, `iwex-hearth-*`), and the
   creative-tab key is derived at runtime from the domain. Then hand-review every `game:`-prefixed key so
-  nothing vanilla is caught, and leave `assets/game/lang/` alone.
+  nothing vanilla is caught, and leave `mods/iiex/assets/game/lang/` alone.
 - ⛔ **The handbook pages collide on number.** Both trees number `00-`–`04-`, and `HandbookSync.ByNumber`
   assigns by indexer, so five of ten pages drop out of the parity guard with the suite green, the pages
   still shipping and no in-game symptom. Renumber `00`–`09` during the move — the number is also the

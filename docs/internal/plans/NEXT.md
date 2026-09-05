@@ -12,9 +12,10 @@ written: [2026-09-04-phase1-walkthrough.md](2026-09-04-phase1-walkthrough.md), w
 code reading already predicts at its top; the four that blocked casting and shingling (P1-P4) were
 fixed on 2026-09-05, uncommitted, and want confirming in game. The walk needs the owner in the client.
 The Phase 2 plan is written too ([2026-09-04-machining-line.md](2026-09-04-machining-line.md)) and
-waits for the walk's fix list. Open for the owner: the casting bed draws its rows opposite its fillers
-(P5, confirmed by the new footprint guard, unfixed); the per-mod layout proposal
-([2026-09-05-per-mod-layout.md](2026-09-05-per-mod-layout.md)); Q6 (indicator readouts).
+waits for the walk's fix list. The casting bed (P5) and its east-west swap (A4) were fixed the same day. The per-mod layout
+([2026-09-05-per-mod-layout.md](2026-09-05-per-mod-layout.md)) landed the same day, uncommitted:
+sources, tests, assets, docs and wikis now live under `mods/<mod>/`. Still open: Q6 (indicator
+readouts).
 
 ## Then
 

@@ -1,8 +1,8 @@
 # The machining line — four machine tools, one job convention
 
 **Status** settled 2026-08-11 in design, nothing built. Nine machine shapes are drawn under
-`assets/editable/shapes/machines/mpenergy/`; six sand-cast blanks and four structural blanks are
-drawn under `assets/editable/shapes/items/sandcast/`. No block, no block entity, no item, no recipe,
+`workbench/shapes/machines/mpenergy/`; six sand-cast blanks and four structural blanks are
+drawn under `workbench/shapes/items/sandcast/`. No block, no block entity, no item, no recipe,
 no def, no lang key and no test exists for any of it.
 **Mods** iiex owns the blanks and the bootstrap gear · the machines' placement follows the content
 they feed, so the shaper is the earliest and the planer the latest
@@ -208,7 +208,7 @@ Two new wear items, not one per machine.
 
 | Tooling | Machines | Form |
 |---|---|---|
-| **machine cutter** | lathe · shaper · planer · bore | forged and tempered; material sets hardness and life. `assets/editable/shapes/items/smithed/item-forged-machinecutter.json` |
+| **machine cutter** | lathe · shaper · planer · bore | forged and tempered; material sets hardness and life. `workbench/shapes/items/smithed/item-forged-machinecutter.json` |
 | **shear blade** | shear | the same idea at a larger size, so its own item. `…/item-forged-machineshears.json` |
 | **drill bit** | drill press | its own item — a bit is not a cutter |
 | roll set | rolling mill | profile tooling — a shape, not a consumable. `RollSetSpec` ships |
@@ -317,7 +317,7 @@ plays, and all four roll families render at once. The render layer is greenfield
 
 ## Gotchas
 
-* ⛔ **Texture paths under `assets/editable/` are unprefixed on purpose.** VS Model Creator cannot
+* ⛔ **Texture paths under `workbench/` are unprefixed on purpose.** VS Model Creator cannot
   resolve domains and renders a prefixed shape untextured; vanilla textures go bare and ours go as an
   absolute local path. Domaining happens when a shape is copied into a mod's runtime assets. The
   "absolute path bug" entries on [boring machine](../machines/boring-machine.md) and
@@ -351,7 +351,7 @@ plays, and all four roll families render at once. The render layer is greenfield
 **Owner:** *"all of the machining machines are the same machine with different shape, interaction cells and
 recipes loaded. The only machines that differ are rolling mill and bending machine, because those have in
 from one side and out from another mechanic."* Checked against
-[machines.txt](../../internal/workbench/machines.txt), and it is **seven** station machines, not five:
+[machines.txt](../../../workbench/machines.txt), and it is **seven** station machines, not five:
 cutter, drill press, horizontal bore, lathe, nail cutter, planer, riveter, shaper all read *"put item in
 window interface, pull resulting item after machine finishes operating"*.
 

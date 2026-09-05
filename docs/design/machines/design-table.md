@@ -68,7 +68,7 @@ the server only through the open/close/draft packet handshake in
 diverge. Draft requests are claim-checked server-side. The last-drafted diagram is persisted as
 `dt_selected`, and the window re-opens on it.
 
-Tests: `test/IronIndustryExpanded.Tests/Blocks/Crafting/DesignTableBeTests.cs`,
+Tests: `mods/iiex/tests/Blocks/Crafting/DesignTableBeTests.cs`,
 `DesignTableDraftTests.cs`, and the block-def golden `goldens/iiex/blocktypes/crafting/designtable.json`.
 
 ---

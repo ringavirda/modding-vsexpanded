@@ -33,7 +33,7 @@ Every fired machine in the suite - cold and hot blast furnace, cupola, puddling 
 (through the same exlib helper) the Bessemer converter - settles at a temperature instead of being given one.
 There is no maximum temperature anywhere in the model: a furnace chases wherever the heat it makes and the
 heat it loses balance. The two ceilings the furnace core once carried, 1420 °C natural and 1740 °C boosted,
-are both emergent now; `test/IronIndustryExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs:76-78` records the
+are both emergent now; `mods/iiex/tests/Blocks/Furnaces/HeatBalanceTests.cs:76-78` records the
 migration.
 
 The cold and the hot blast furnace are therefore the same C# class (`BlockEntityBlastFurnaceCold.cs:12` is a
@@ -352,7 +352,7 @@ reload.
 
 `IiexValues.X` is a generated accessor over `IiexConfig.X`; the file:line below is the config declaration.
 
-### Heat balance — `src/IronIndustryExpanded/IiexConfig.cs`
+### Heat balance — `mods/iiex/src/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -387,7 +387,7 @@ reload.
 > clamp at 1 whatever the denominator is. (A cold blast furnace holds 1 248 units - 39 chargeable
 > cells × 32.)
 
-### Raceway rate — `src/IronIndustryExpanded/IiexConfig.cs`, shaft branch only
+### Raceway rate — `mods/iiex/src/IiexConfig.cs`, shaft branch only
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -397,7 +397,7 @@ reload.
 | `BfShaftGasTransferFrac` | 0.02 | IiexConfig.cs:409 | Fraction of the passing gas each charge unit absorbs; scales inversely with the unit size |
 | `BfFuelCarbonReference` | 2 | IiexConfig.cs:435 | Fuel-role value that counts as one full carbon unit - coke's. Charcoal (1) burns as half; a fuel granted the role with no value defaults to 1.0, deliberately the under-performing direction |
 
-### Blast demand — `src/IronIndustryExpanded/IiexConfig.cs`
+### Blast demand — `mods/iiex/src/IiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -434,7 +434,7 @@ the five `Bf*` → `Firebox*` renames for exactly that reason.
 
 ### Hard-coded — not config, editable only in source
 
-All in `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs` unless noted. Every one of
+All in `mods/iiex/src/BlockStructures/Furnaces/BlockEntityFurnaceCore.cs` unless noted. Every one of
 these is a `virtual` member, so a subclass can override it - but no `/exmod config` key exists.
 
 | Constant | Value | file:line | What it does |
@@ -514,7 +514,7 @@ glyph, so `CellRole.Tuyere` and `CellRole.GasOutlet` answer empty. It does not t
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Furnaces/HeatBalanceTests.cs` - the calibration anchor table
+`mods/iiex/tests/Blocks/Furnaces/HeatBalanceTests.cs` - the calibration anchor table
 (`:79-104`), the melt-line consequences (`:105-123`), preheat isolation (`:124-138`), both clamps
 (`:140-171`), the empty/overfull hearth (`:173-192`), unstamped charge (`:193-211`), and the one-sided ambient
 term (`:212-231`). Also `FurnaceHudDistributionTests.cs` for which component block shows which slice.

@@ -71,7 +71,7 @@ flywheels. mp-energy already designs for this shape of load (pulsed supply, gove
 
 > Hook a crusher straight to a waterwheel and it stalls on every rock. Add a flywheel and it runs smooth.
 
-[iiex-bringup](../../internal/plans/iiex-bringup.md) records that mp-energy's weakness is too few consumers for the
+[iiex-bringup](../../internal/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
 flywheel to justify itself. A machine that cannot run well without one teaches the flywheel rather than
 announcing it.
 
@@ -158,7 +158,7 @@ Everything here is a decision, not a placeholder - none of it blocks the ones al
    work, which is entirely unbuilt - no third burden family, no ferroalloy metal descriptor, no ore. Until
    that lands the crusher is a throughput machine only, and it should be designed so that is enough on its
    own.
-6. **Art.** Nothing drawn. Not in [iiex-bringup](../../internal/plans/iiex-bringup.md)'s art queue, and it should be
+6. **Art.** Nothing drawn. Not in [iiex-bringup](../../internal/plans/iwex-bringup.md)'s art queue, and it should be
    added there before anyone plans to build it.
 
 ---

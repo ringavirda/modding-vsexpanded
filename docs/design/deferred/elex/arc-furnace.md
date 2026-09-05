@@ -52,8 +52,8 @@ Nothing. Not a block, not an item, not a lang key, not a shape, not a metal regi
 | its asset domain | `ls assets/` | `editable` `exlib` `game` `hpex` `iiex` `iiex` `smex` - no `elex` |
 | the name | `grep -rni "elex\|ElectricalExpanded" src/` | 0 hits |
 | the machine and its grid hardware | `grep -rniE "arcfurnace\|arc-furnace\|electrode\|dynamo\|alternator\|rectifier\|synchroniser" src/ assets/` | 0 hits |
-| its product | `grep -rniE "electrolys\|hss\|highspeedsteel" src/ assets/` | 2 hits, both binary substring noise in art files (`assets/editable/refs/rolling/rolling-mill-for-puddling-ledebur-W31WYE.jpg`, `assets/editable/textures/vs_textures.psd`) - 0 in code |
-| the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit - a doc comment at `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58` |
+| its product | `grep -rniE "electrolys\|hss\|highspeedsteel" src/ assets/` | 2 hits, both binary substring noise in art files (`workbench/refs/rolling/rolling-mill-for-puddling-ledebur-W31WYE.jpg`, `workbench/textures/vs_textures.psd`) - 0 in code |
+| the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit - a doc comment at `mods/exlib/src/Fluids/IMediumTaxonomy.cs:58` |
 
 The frameworks it would sit on are live and shipped: the heat-balance law (`ExpandedLib/Heat/HeatBalance.cs:30`, `:55`), the molten network, the multiblock layout DSL, and the metal registry (`ExpandedLib/Metals/MetalCatalogueLoader.cs:58`).
 
@@ -91,9 +91,9 @@ Three shipped idioms cover it:
 
 | Need | Precedent to copy | Where |
 |---|---|---|
-| a wear-consumable tooling item with a durability count | `WoodenPatternDurability = 24` | `src/IronIndustryExpanded/BlockStructures/Casting/PatternItemDefinitions.cs:109` |
-| fit / swap tooling into a running machine, refusing mid-job | `TryFitRollSet` | `src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityRollingMill.cs:143` |
-| tooling that carries its own spec instead of the machine naming products | `RollSetSpec` / `MoldSpec` | `src/IronIndustryExpanded/BlockStructures/Forming/RollSetSpec.cs:9-24` |
+| a wear-consumable tooling item with a durability count | `WoodenPatternDurability = 24` | `mods/iiex/src/BlockStructures/Casting/PatternItemDefinitions.cs:109` |
+| fit / swap tooling into a running machine, refusing mid-job | `TryFitRollSet` | `mods/iiex/src/BlockStructures/Forming/BlockEntities/BlockEntityRollingMill.cs:143` |
+| tooling that carries its own spec instead of the machine naming products | `RollSetSpec` / `MoldSpec` | `mods/iiex/src/BlockStructures/Forming/RollSetSpec.cs:9-24` |
 | return the fitted tooling on break rather than destroying it | `BlockEntityRollingMill.OnBlockBroken` | same file, `:374-382` (cited by [boring machine](../../machines/boring-machine.md):219) |
 
 Caution: this inherits a load-time hole. `RollSetValidation` only checks that a spec parses (`RollSetValidation.cs:22-33`), never that an output code resolves. An electrode spec added the same way fails silently in the same way. See [wire extruder](wire-extruder.md) § What exists today for the live case.

@@ -129,16 +129,16 @@ makes capacity a build decision rather than a config number. See [Open](#open).
 
 | asset | path | state |
 |---|---|---|
-| Editable shape | — | not drawn. No candidate under `assets/editable/shapes/` - the two `molten-block-moltenbarrel*.json` shapes are iiex molten-network barrels, not this |
+| Editable shape | — | not drawn. No candidate under `workbench/shapes/` - the two `molten-block-moltenbarrel*.json` shapes are iiex molten-network barrels, not this |
 | Runtime shape | — | none |
 | Animations | — | none needed; a fill-level renderer is wanted instead (see below) |
-| Lang | — | no `block-fluidtank*` / `blockdesc-*` key in `assets/iiex/lang/en.json` |
-| Handbook | — | the tank appears in none of the five iiex pages (`assets/iiex/config/handbook/00…04`) |
+| Lang | — | no `block-fluidtank*` / `blockdesc-*` key in `mods/iiex/assets/iiex/lang/en.json` |
+| Handbook | — | the tank appears in none of the five iiex pages (`mods/iiex/assets/iiex/config/handbook/00…04`) |
 
 It should show its level. `BoilerWaterRenderer` draws the Cornish boiler's water surface between two
 configured heights (`BoilerWaterSurfaceLowLevel` / `HighLevel`, `IiexConfig.cs:128`, `:134`), and exlib's
 shared liquid-surface renderer exists for exactly this - `Renderers/SurfaceRenderer`, "a liquid line inside
-a block - water tanks, molten canals" (`docs/wiki/Helpers-and-Renderers.md:149-151`). Under R7 ("nothing is
+a block - water tanks, molten canals" (`mods/exlib/wiki/Helpers-and-Renderers.md:149-151`). Under R7 ("nothing is
 hidden") a buffer whose whole purpose is "how much do I have banked" must not be readable only from
 block-info.
 
@@ -256,11 +256,11 @@ Nothing exists. The files a tank would add, and the shipped file each one copies
 | `BlockFluidTank : Block, INetworkConnector, IExBlockDefProvider` | `BlockSteamCondenser` - connector, not node; horizontal orientation; rotated collision boxes | `BlockNetworkPipe/Blocks/BlockSteamCondenser.cs:20`, def `:26-53`, `GetCollisionBoxes` `:62-66` |
 | `BlockEntityFluidTank : BlockEntity` | `BlockEntitySteamCondenser` - 1000 ms server tick, `ConnectedNetwork(face)` per side, synced display flag | `BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:23`, `:34-35`, `:37-44` |
 | filler footprint (if 2 cells or more) | `BlockManualFluidPump` - the hand-rolled `IFillerHost` triad | `BlockStructures/ManualPump/Blocks/BlockManualFluidPump.cs:54`, `:77-123` |
-| fill-level renderer | `BoilerWaterRenderer` + exlib's `Renderers/SurfaceRenderer` | `BlockStructures/Boiler/BoilerWaterRenderer.cs`; `docs/wiki/Helpers-and-Renderers.md:149-151` |
+| fill-level renderer | `BoilerWaterRenderer` + exlib's `Renderers/SurfaceRenderer` | `BlockStructures/Boiler/BoilerWaterRenderer.cs`; `mods/exlib/wiki/Helpers-and-Renderers.md:149-151` |
 | `FluidTankCapacity` config key | `IiexConfig` § Storage (new region) | `IiexConfig.cs` |
 | `fluidtank-rcc` cost entry | `IiexRecipeConfig.Defaults()` | `IiexRecipeConfig.cs:59-86` |
 | RCC stages | the Cornish boiler / Watt engine construction stages | [recipes-config](../mechanics/recipes-config.md) |
-| tests | `Blocks/Condenser/CondenserBeTests.cs` is the closest shape (a connector BE bridging two runs) | `test/IronIndustryExpanded.Tests/Blocks/Condenser/CondenserBeTests.cs` |
+| tests | `Blocks/Condenser/CondenserBeTests.cs` is the closest shape (a connector BE bridging two runs) | `mods/iiex/tests/Blocks/Condenser/CondenserBeTests.cs` |
 
 ### The one thing that has no template
 

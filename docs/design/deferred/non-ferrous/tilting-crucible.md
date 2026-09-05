@@ -62,8 +62,8 @@ Nothing. Not a stub, not a name.
 |---|---|
 | `grep -rniE "tiltingcrucible\|coppermatte\|blistercopper\|zincretort" src/ assets/` | 0 hits (excluding `bin/`, where the matches are the substring "matters") |
 | `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing: `MetalCatalogueLoader.cs:107` (a comment about worldproperty codes), `MetalToolEmitter.cs:223`, `:343` (vanilla shape paths), `IiexConfig.cs:104` (a comment naming copper's 1084 °C melting point) |
-| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`assets/siex/lang/en.json:171`, `assets/iiex/lang/en.json:133`) |
-| metal defs on disk | 4 files, all ferrous: `assets/iiex/config/metals/{castiron,pigiron,slag}.json`, `assets/siex/config/metals/bessemersteel.json` |
+| `grep -niE "copper\|bronze\|brass\|zinc" assets/*/lang/en.json` | 2 hits, both about a texture: a copper-textured rim on the pressure valve (`mods/siex/assets/siex/lang/en.json:171`, `mods/iiex/assets/iiex/lang/en.json:133`) |
+| metal defs on disk | 4 files, all ferrous: `mods/iiex/assets/iiex/config/metals/{castiron,pigiron,slag}.json`, `mods/siex/assets/siex/config/metals/bessemersteel.json` |
 | editable or runtime shape | none |
 
 Two design docs name it as a dependency: [alloying](../../processes/alloying.md):290 lists "tilting
@@ -92,7 +92,7 @@ Settled 2026-07-29.
 > all; bronze needs ~950 °C, which a small chamber with coal under it reaches easily, so it needs no stack.
 
 The tier gate follows from the same numbers. A cast-iron vessel cannot hold molten steel: this mod's
-catalogue gives `castiron` a melting point of 1200 °C (`assets/iiex/config/metals/castiron.json`) against
+catalogue gives `castiron` a melting point of 1200 °C (`mods/iiex/assets/iiex/config/metals/castiron.json`) against
 iron's 1538 °C (vanilla `worldproperties/block/metal.json`). The tilting machine is incapable of the ferrous
 job by construction, not by rule - the same argument
 [crucible-furnace](../../machines/crucible-furnace.md):128 makes in reverse about its own pot.
@@ -175,7 +175,7 @@ Nothing in the release target waits on this machine.
   can hand-pour molten bronze into a canal start today. What is missing is a machine-scale, repeatable
   non-ferrous feed.
 * The vessel margin is thin at the copper end, by this mod's own numbers. `castiron` melts at 1200 °C
-  (`assets/iiex/config/metals/castiron.json`); copper melts at 1084.62 °C. That is 115 °C of headroom, and
+  (`mods/iiex/assets/iiex/config/metals/castiron.json`); copper melts at 1084.62 °C. That is 115 °C of headroom, and
   the fire has to be hotter than the charge, not equal to it. Tin, lead and zinc (232 / 327 / 419) are
   comfortable; copper is not. Either the copper charge sits in a clay/refractory pot inside the cast-iron
   chamber, or `castiron`'s melting point moves, or the machine's top metal is bronze rather than pure

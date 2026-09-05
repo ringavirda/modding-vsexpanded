@@ -5,14 +5,14 @@ fuels a shaft furnace charges, burns and tells apart, at a 2:1 carbon ratio; the
 Cornish boiler burn from their own fuel beds and admit a fuel by its own
 `combustibleProps.BurnTemperature` against a floor, with the metallurgical exclusion of low-rank coal
 living on the furnace rather than the bed; bulk coking and producer gas are designed only
-**Mod** the role data is iiex (`assets/iiex/config/materialroles.json`); the registry that serves it is
+**Mod** the role data is iiex (`mods/iiex/assets/iiex/config/materialroles.json`); the registry that serves it is
 exlib; the cowper and the Lancashire boiler still burn vanilla coal piles
 
 **Owns** - the facts this page is canonical for:
 
 * the suite's fuel taxonomy: that "fuel" means the `fuel` material role, which two codes hold it, what the
   per-item value means, and that coal holds no role at all;
-* `assets/iiex/config/materialroles.json` as a file - every role it grants, and the fact that it is the
+* `mods/iiex/assets/iiex/config/materialroles.json` as a file - every role it grants, and the fact that it is the
   only `materialroles.json` in the repo;
 * that granting `Roles.Fuel` grants a shaft-charge permit, and the taxonomy rule that follows from it -
   bituminous and anthracite must never receive the role;
@@ -128,7 +128,7 @@ that reading is unrelated to the firebox's own admission test.
 
 ### The whole role file
 
-`assets/iiex/config/materialroles.json` is nine grants, and it is the only file of its kind in the repo (a
+`mods/iiex/assets/iiex/config/materialroles.json` is nine grants, and it is the only file of its kind in the repo (a
 repo-wide `find` for `materialroles.json` under `assets/` returns exactly one path). exlib ships none - it
 is framework, and with no file and no contributor the registry is empty (`MaterialRoleLoader.cs:11-14`).
 
@@ -145,7 +145,7 @@ There is no `charge` row. Prepared burden is recognised by its own item identity
 role - the `charge` role is a taxonomy entry exlib defines (`MaterialRoleDef.cs:64`), iiex grants to
 nothing, and no code consults.
 
-Caution: `MaterialRoleSeeds` (`test/IronIndustryExpanded.Tests/Fixtures/MaterialRoleSeeds.cs`) is a second,
+Caution: `MaterialRoleSeeds` (`mods/iiex/tests/Fixtures/MaterialRoleSeeds.cs`) is a second,
 hand-written copy of this table for headless runs, and it has drifted before (`game:metalbit-steel` was
 scrap in the game and not in the tests).
 `FuelRoleGrantTests.Seed_matches_the_shipped_materialroles_json` compares the two as sets, in both
@@ -298,11 +298,11 @@ None. The fuel line adds no shape, no texture, no animation and no lang key of i
 
 | Asset | Path | State |
 |---|---|---|
-| role catalogue | `assets/iiex/config/materialroles.json` | present, nine grants; the only one in the repo |
+| role catalogue | `mods/iiex/assets/iiex/config/materialroles.json` | present, nine grants; the only one in the repo |
 | coke / charcoal / coal items | vanilla | untouched - no patch, no override, no recipe in any `Recipes/` provider references either code |
 | coal pile block | vanilla `game:coalpile` | untouched |
 | burden's coal-black look | `game:block/coal/orecoalmix` | borrowed by [burden](burden.md), not by a fuel |
-| charcoal in art | `assets/iiex/shapes/crafting/designtable.json:13` binds `game:block/coal/charcoal` for the sticks on the desk | decorative only |
+| charcoal in art | `mods/iiex/assets/iiex/shapes/crafting/designtable.json:13` binds `game:block/coal/charcoal` for the sticks on the desk | decorative only |
 
 No recipe in the suite consumes coke or charcoal. A grep for `coke`/`charcoal` across every shipped recipe
 golden (`test/*/goldens/*/recipes/`) and every `Recipes/` provider returns nothing. Fuel enters the economy
@@ -315,12 +315,12 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 
 | Type / member | file:line | Role |
 |---|---|---|
-| `Roles` (constants) | `src/ExpandedLib/Materials/MaterialRoleDef.cs:49` | `Flux` `:52`, `Fuel` `:55`, `IronOre` `:58`, `Scrap` `:61`, `Charge` `:64` - strings, not an enum, so a mod can invent a role by shipping one (`:44-48`) |
+| `Roles` (constants) | `mods/exlib/src/Materials/MaterialRoleDef.cs:49` | `Flux` `:52`, `Fuel` `:55`, `IronOre` `:58`, `Scrap` `:61`, `Charge` `:64` - strings, not an enum, so a mod can invent a role by shipping one (`:44-48`) |
 | `MaterialRoleDef` | `…/MaterialRoleDef.cs:18` | `Role` `:21`, `Code` `:25`, `PathPrefix` `:29`, `Value` `:33` |
 | `MaterialRoleCatalogue` | `…/MaterialRoleDef.cs:38` | the file shape: one `materials` array |
 | `MaterialRoleRegistry` | `…/MaterialRoleRegistry.cs:23` | `Register` `:37`, `Clear` `:52`, `RegisterContributor` `:57`, `IsRole` `:77`/`:89`, `ValueOf` `:94`/`:107`, `OfRole` `:113`, `Matches` `:121` |
 | `MaterialRoleLoader` | `…/MaterialRoleLoader.cs:16` | `Load` `:20` (clear → overlay → contributors), `Overlay` `:39` (pure, unit-testable) |
-| `IronOreCompat` | `src/IronIndustryExpanded/Compat/IronOreCompat.cs:16` | the one live contributor: IndustrialStory and Expanded Matter ore codes, gated on `IsModEnabled` (`:34-51`) |
+| `IronOreCompat` | `mods/iiex/src/Compat/IronOreCompat.cs:16` | the one live contributor: IndustrialStory and Expanded Matter ore codes, gated on `IsModEnabled` (`:34-51`) |
 | `BlockEntityFurnaceCore.IsFuelCode` / `IsFuelStack` / `CarbonPerUnit` | `…/Furnaces/BlockEntityFurnaceCore.cs:1313`, `:1328`, `:1356` | the shaft-side fuel seams |
 | `BEBehaviorFirebox.IsFuel` | `…/Furnaces/BEBehaviorFirebox.cs:34-35` | the bed-side fuel test - `BurnTemperature` against `BoilerFuelMinTemp`, no list |
 | `BlockEntityFireboxFurnace.AcceptsFireboxFuel` | `…/Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs:197-198` | the furnace-side narrowing - refuses low-rank coal (`IsLowRank`, `:202-203`) that the bed itself would take |

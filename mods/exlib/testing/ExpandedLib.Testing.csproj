@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- net10 (1.22) by default; opt into legacy game APIs with -p:Legacy=true to also test on
+         net8.0 (1.21) and net7.0 (1.20). $(GamePath) per TFM comes from ../../Directory.Build.props. -->
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
+    <!-- A single-TFM build keeps the stable flat output path; multi-target must append the TFM to
+         avoid the three builds colliding in one folder. -->
+    <AppendTargetFrameworkToOutputPath Condition="'$(Legacy)' != 'true'"
+      >false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ExpandedLib.Testing</RootNamespace>
+    <AssemblyName>ExpandedLib.Testing</AssemblyName>
+    <!-- Dev-only support library: never shipped, never copied into a Mods/mod folder. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSSurvivalMod">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)/Lib/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The harness fakes the big VS interfaces (IBlockAccessor, IServerWorldAccessor) by
+         wiring an NSubstitute proxy to a stateful in-memory store. -->
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

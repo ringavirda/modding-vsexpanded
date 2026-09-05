@@ -83,8 +83,8 @@ projection.
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | - | missing. There is no `assets/editable/shapes/` source for this block |
-| Runtime shape | `assets/iiex/shapes/hopper-tall.json` | present - flat cubes, 32 px tall (2 blocks) |
+| Editable shape | - | missing. There is no `workbench/shapes/` source for this block |
+| Runtime shape | `mods/iiex/assets/iiex/shapes/hopper-tall.json` | present - flat cubes, 32 px tall (2 blocks) |
 | Animations | - | none authored, none needed (the hopper is not an RCC block and has no `Animatable` behaviour) |
 | Textures | `front1`, `iron3`, `iron2`, `iron5` | declared in the shape |
 
@@ -172,7 +172,7 @@ nothing else. A column's ceiling is its own cell count times the furnace's block
 
 ## Numbers
 
-### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
+### Config — `mods/iiex/src/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
@@ -244,7 +244,7 @@ the material it held, not a re-stamped copy.
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Furnaces/HopperTallTests.cs` - tank fill/cap, the continuous drip
+`mods/iiex/tests/Blocks/Furnaces/HopperTallTests.cs` - tank fill/cap, the continuous drip
 against the core's column contract, interaction routed from the top filler cell, persistence.
 
 ---
@@ -284,7 +284,7 @@ against the core's column contract, interaction routed from the top filler cell,
   hopper - the player is the buffer. A chute/screw/skip-hoist feed is roadmap material, as a building
   rather than fewer clicks ([ironmaking](../processes/ironmaking.md)).
 - No editable shape. The runtime shape is the only copy; there is no source file under
-  `assets/editable/shapes/`.
+  `workbench/shapes/`.
 - No fill indicator. A 2-block machine with a hidden 128-unit buffer is the one place in the iron tier
   where "nothing is hidden" (R7) is only satisfied by the text HUD.
 - Fix the help carousel to show every material the anchored core accepts (Gotcha 1), and reword the

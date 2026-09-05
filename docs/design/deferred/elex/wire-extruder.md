@@ -66,8 +66,8 @@ No block, no BE, no shape, no lang key, no item. The grep is not empty, though: 
 
 ```
 $ grep -rn "wirerod" src/ assets/ test/
-src/IronIndustryExpanded/BlockStructures/Forming/RollSetItemDefinitions.cs:90:      [Out(1.0, "game:rod-iron"), Out(0.5, "iiex:wirerod-iron")],
-test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/rollset.json:96:            "code": "iiex:wirerod-iron"
+mods/iiex/src/BlockStructures/Forming/RollSetItemDefinitions.cs:90:      [Out(1.0, "game:rod-iron"), Out(0.5, "iiex:wirerod-iron")],
+mods/iiex/tests/goldens/iiex/itemtypes/rollset.json:96:            "code": "iiex:wirerod-iron"
 ```
 
 Two hits, and neither is a definition. The grooved roll set names `iiex:wirerod-iron` as its 0.5-gap product; nothing anywhere emits an item with that code. Three rulings have already passed over it:
@@ -76,7 +76,7 @@ Two hits, and neither is a definition. The grooved roll set names `iiex:wirerod-
 |---|---|
 | wire-rod is rejected at the iron tier ([steel roll sets](../../machines/steel-roll-sets.md)) | the output should not exist at all |
 | the 0.5 gap itself is retired by decision, still live in three roll sets ([roll sets](../../items/roll-sets.md)) | the gap carrying it is dead weight too |
-| roll-set validation only checks that a spec parses (`src/IronIndustryExpanded/BlockStructures/Forming/RollSetValidation.cs:20-33`) | a dangling output code raises nothing - the mill would simply produce nothing at that gap |
+| roll-set validation only checks that a spec parses (`mods/iiex/src/BlockStructures/Forming/RollSetValidation.cs:20-33`) | a dangling output code raises nothing - the mill would simply produce nothing at that gap |
 
 The leftover is baked into a golden (`rollset.json:96`), so removing it is a golden update, not a silent edit.
 
@@ -84,7 +84,7 @@ The leftover is baked into a golden (`rollset.json:96`), so removing it is a gol
 
 | Piece it would need | Status | Where |
 |---|---|---|
-| an MP-energy consumer contract | live | `src/ExpandedLib/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iiex ([mp-energy](../../mechanics/mp-energy.md)) |
+| an MP-energy consumer contract | live | `mods/exlib/src/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iiex ([mp-energy](../../mechanics/mp-energy.md)) |
 | tooling that carries its own spec (a die series, as roll sets do) | live idiom | `RollSetSpec.cs:9-24`, fitted via `BlockEntityRollingMill.TryFitRollSet` (`BlockEntities/BlockEntityRollingMill.cs:143`) |
 | a stock item family with per-stage meshes | live | `StockItemDefinitions.cs`, `StockMesh.cs` ([stock](../../items/stock.md)) |
 | copper as a material | absent | `grep -rni copper src/ --include=*.cs -l` → 3 files, all vanilla-facing plumbing |

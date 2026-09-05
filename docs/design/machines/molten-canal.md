@@ -97,9 +97,9 @@ defaults to facing south (toward the pour) rather than its first-listed north
 
 | Asset | Path | Used by |
 |---|---|---|
-| Shapes | `assets/iiex/shapes/molten/canal/{straight,bend,tjunction,xjunction,start,tap,moldpedestal}.json` | all tracked |
-| End cap | `assets/iiex/shapes/molten/canal/end.json` | `MoltenMeshes.cs:15-17`, authored facing south |
-| Barrel shapes | `assets/iiex/shapes/molten/barrel-{plated,cast}.json` | the barrel block, not the tap (Gotcha 1) |
+| Shapes | `mods/iiex/assets/iiex/shapes/molten/canal/{straight,bend,tjunction,xjunction,start,tap,moldpedestal}.json` | all tracked |
+| End cap | `mods/iiex/assets/iiex/shapes/molten/canal/end.json` | `MoltenMeshes.cs:15-17`, authored facing south |
+| Barrel shapes | `mods/iiex/assets/iiex/shapes/molten/barrel-{plated,cast}.json` | the barrel block, not the tap (Gotcha 1) |
 | Animation | none | - |
 
 The base mesh is loaded by path, from the block's `type` variant, not from `Block.Shape`:

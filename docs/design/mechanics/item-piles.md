@@ -201,10 +201,10 @@ Nothing exists. What it replaces, and where it hooks in:
 
 | Piece | Where | State |
 |---|---|---|
-| `PileLayout` | `src/ExpandedLib/Blocks/Structures/` | to write; pure, therefore tested headless first |
-| section class registry | `src/ExpandedLib/Processes/` beside `ProcessRoute` | to write; contributed to, like the other registries |
+| `PileLayout` | `mods/exlib/src/Blocks/Structures/` | to write; pure, therefore tested headless first |
+| section class registry | `mods/exlib/src/Processes/` beside `ProcessRoute` | to write; contributed to, like the other registries |
 | the hearth's bed | `BlockEntityHeatingHearth.OnTesselation` | authored groups today; composes instead |
-| the hearth's 15 groups | `assets/editable/shapes/furnaces/firebox/furnace-megablock-heatinghearth.json`, `Fillings/Items1`, `Items2`, `Items3` | deleted by the change |
+| the hearth's 15 groups | `workbench/shapes/furnaces/firebox/furnace-megablock-heatinghearth.json`, `Fillings/Items1`, `Items2`, `Items3` | deleted by the change |
 | the hearth's element map | `HeatingHearthLayout` | deleted with them |
 | the rack's shelf | `BlockEntityStockRack` | unwritten; this is its second consumer |
 

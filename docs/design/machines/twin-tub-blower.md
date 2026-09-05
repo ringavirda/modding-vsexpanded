@@ -91,15 +91,15 @@ any furnace layout, so the layout-ownership resolver finds no anchor and the pro
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | — | missing. No source file under `assets/editable/shapes/` (the one that looks close, `machine-pipe-block-engine-airblower.json`, is smex's engine blower) |
-| Runtime shape | `assets/iiex/shapes/furnaces/twintubmpblower.json` | present - elements `Base`, `BaseExtention`, `BaseBeam`, `AxleGear`, `Tubs`, `PipeConn` |
+| Editable shape | — | missing. No source file under `workbench/shapes/` (the one that looks close, `machine-pipe-block-engine-airblower.json`, is smex's engine blower) |
+| Runtime shape | `mods/iiex/assets/iiex/shapes/furnaces/twintubmpblower.json` | present - elements `Base`, `BaseExtention`, `BaseBeam`, `AxleGear`, `Tubs`, `PipeConn` |
 | Animations | same file | `cycle` (60 f, EaseOut) · `idle` (30 f, EaseOut) - authored, wired to nothing |
 | Textures | `iron3`, `iron2`, `iron`, `wood-generic` | declared in the shape |
 
 Caution: the bellows never move. The block entity has no animator: no `Animatable` entity behaviour in the
 def (`BlockTwinTubMPBlower.cs:44-84`), no `ConstructedAnimator`, no `MPAnim.AdvanceFrame`, no `IRenderer`.
 The shape ships a full `cycle` clip and an `AxleGear` element positioned to be driven, and neither is ever
-posed. The axle phase-lock pattern to copy is `MPAnim.AdvanceFrame` (`src/ExpandedLib/Helpers/MPAnim.cs`),
+posed. The axle phase-lock pattern to copy is `MPAnim.AdvanceFrame` (`mods/exlib/src/Helpers/MPAnim.cs`),
 which iiex's engine drives from its render loop (`BlockEntityEngine.cs`). The only feedback a running blower
 gives is the HUD line (`iiex:blower-info-blowing`) and the pipe readout above it.
 
@@ -175,7 +175,7 @@ The pipe readout first (medium, throughput, pressure - owned by
 
 ## Numbers
 
-### Config - `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
+### Config - `mods/iiex/src/IiexConfig.cs`, `ModConfig/ex_values.json`, domain `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
@@ -311,7 +311,7 @@ cell.
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Furnaces/TwinTubBlowerTests.cs` - four regions:
+`mods/iiex/tests/Blocks/Furnaces/TwinTubBlowerTests.cs` - four regions:
 
 | region | what it pins |
 |---|---|
@@ -381,7 +381,7 @@ cell.
 ## Open
 
 - Wire the animation. The clips and the `AxleGear` element already exist; `MPAnim.AdvanceFrame`
-  (`src/ExpandedLib/Helpers/MPAnim.cs`, driven as iiex's engine does) is the pattern.
+  (`mods/exlib/src/Helpers/MPAnim.cs`, driven as iiex's engine does) is the pattern.
 - No editable shape. The runtime shape is the only copy.
 - Report accepted, not rated, output. `ProduceAir` already returns the accepted litres; the HUD discards them.
   Fixing this makes the ceiling, the leak cap and a saturated main legible instead of invisible, which is
@@ -397,4 +397,4 @@ cell.
   while counting zero supply. The blower is the supply side of that bug and its fix will change what
   "45 L/s is enough" means.
 - No handbook page. The block ships with only `blockdesc-twintubmpblower*`
-  (`assets/iiex/lang/en.json:185`).
+  (`mods/iiex/assets/iiex/lang/en.json:185`).

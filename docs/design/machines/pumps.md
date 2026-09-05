@@ -98,7 +98,7 @@ Placement is refused with `notenoughspace` if the two-cell volume is not clear (
 
 Specified as a walking-beam block driven from the MP network rather than from steam, so it can feed a
 boiler with the fire out. A grep for `MpPump` / `mppump` / `SteamPump` across the repo
-returns no source file. Its art is drawn: `assets/editable/shapes/machine-pipe-megablock-mppump.json`
+returns no source file. Its art is drawn: `workbench/shapes/machine-pipe-megablock-mppump.json`
 (elements `Base`, `BaseExtension`, `BasePipe`, `GearAxle`, `Piston`, `ReservoirConn`; `idle` 30 f, `cycle`
 60 f - the same clip pair every iiex machine uses).
 
@@ -115,13 +115,13 @@ Union stubs rather than flanges, so the joint-family rule never applies to it
 
 | asset | path | state |
 |---|---|---|
-| Intake runtime shape | `assets/iiex/shapes/pipes/fluidintake.json` | `Cube2` `Cube11` `Cube26`; textures `iron3` `iron2` `iron`; no animation |
+| Intake runtime shape | `mods/iiex/assets/iiex/shapes/pipes/fluidintake.json` | `Cube2` `Cube11` `Cube26`; textures `iron3` `iron2` `iron`; no animation |
 | Intake editable | — | none |
-| Engine pump runtime | `assets/iiex/shapes/engine/fluidpump.json` | `Cube2` `Cube6` `Cube10` `Cube17` `Piston`; `idle` 30 f, `cycle` 60 f |
+| Engine pump runtime | `mods/iiex/assets/iiex/shapes/engine/fluidpump.json` | `Cube2` `Cube6` `Cube10` `Cube17` `Piston`; `idle` 30 f, `cycle` 60 f |
 | Engine pump editable | — | none |
-| Manual pump runtime | `assets/iiex/shapes/manualfluidpump.json` | `Pipe` `Casing` `Cylinder` `CrankSupport` `HandCrank` `Piston`; `cycle` 30 f, `idle` 30 f |
-| Manual pump editable | `assets/editable/shapes/machine-pipe-megablock-manualpump.json` | identical element/clip set - the live source |
-| MP pump editable | `assets/editable/shapes/machine-pipe-megablock-mppump.json` | art only, wired to nothing |
+| Manual pump runtime | `mods/iiex/assets/iiex/shapes/manualfluidpump.json` | `Pipe` `Casing` `Cylinder` `CrankSupport` `HandCrank` `Piston`; `cycle` 30 f, `idle` 30 f |
+| Manual pump editable | `workbench/shapes/machine-pipe-megablock-manualpump.json` | identical element/clip set - the live source |
+| MP pump editable | `workbench/shapes/machine-pipe-megablock-mppump.json` | art only, wired to nothing |
 | Injector | — | not drawn |
 
 Both live pumps are `Animatable` and hold one clip at a time - `cycle` while working, `idle` otherwise -
@@ -253,7 +253,7 @@ Both pumps route through two helpers so the "find the intake / how much fits" lo
 
 ## Numbers
 
-### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
+### Config — `mods/iiex/src/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
@@ -292,8 +292,8 @@ Every downstream statement of the number is therefore wrong by 3×:
 | source | claim | truth |
 |---|---|---|
 | `IiexConfig.cs:197-198` (the doc comment on the key itself) | "Watt 0.3 → 5 L/s, Cornish 0.2/0.4/0.8 → 3.3/6.7/13.3" | 15 / 10 / 20 / 40 |
-| `docs/iiex/handbook/07-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
-| `docs/iiex/handbook/07-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SiexConfig.cs:113`) |
+| `mods/iiex/docs/handbook/07-engines.html:22` | "about 5 L/s on a fully-powered engine" | ~15 L/s |
+| `mods/iiex/docs/handbook/07-engines.html:27` | air blower "roughly 16 L/s" | 48 × 3 × 0.3 = 43.2 L/s (`SiexConfig.cs:113`) |
 | `SiexConfig.cs:110-112` | "Cornish 0.2/0.4/0.8 → 9.6/19.2/38.4, Watt 0.3 → 14.4" | 28.8 / 57.6 / 115.2 / 43.2 |
 
 ### Other hard-coded values
@@ -502,7 +502,7 @@ beside it said 5 L/s.
 
 9. **The manual pump is not wrench-orientable** (`BlockManualFluidPump.cs:18`). To reverse it,
    break and re-place. The crank-support side is the input side - the only in-world cue, and it is stated
-   only in the handbook (`docs/iiex/handbook/08-fittings.html:22-23`).
+   only in the handbook (`mods/iiex/docs/handbook/08-fittings.html:22-23`).
 
 10. **The manual pump forwards every interaction phase from its filler** - start, step, stop and the
     interaction help all have an `IFillerInteractionTarget` twin (`BlockManualFluidPump.cs:137-215`). Miss one
@@ -511,7 +511,7 @@ beside it said 5 L/s.
 11. **`HandleStart` returns `null` to defer, not to refuse** (`BlockManualFluidPump.cs:150-166`): a held
     item falls through to the default behaviour so a wrench still works on the block.
 
-12. **`src/IronIndustryExpanded/README.md:42-43` lists `Commands/` and `Preferences/` directories that do not
+12. **`mods/iiex/README.md:42-43` lists `Commands/` and `Preferences/` directories that do not
     exist** - the measure feature moved to exlib (`IronIndustryExpandedModSystem.cs:93-96`). The same
     README's machine list also omits the manual pump from "what it adds" while the code ships it.
 

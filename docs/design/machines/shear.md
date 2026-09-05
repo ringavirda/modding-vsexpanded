@@ -1,8 +1,8 @@
 # Shear
 **Status** ★★ **BUILT 2026-08-14, and cutting since the rolled catalogue landed.** `BlockShear`,
 `BlockEntityShear`, the runtime shape, the blade sets, both grid recipes, three locales, the handbook page
-and the station tests all ship, and `assets/iiex/config/processjobs/shear.json` declares five crops (siex
-adds its own). The owner's filler layout ([machines.txt](../../internal/workbench/machines.txt)) was the
+and the station tests all ship, and `mods/iiex/assets/iiex/config/processjobs/shear.json` declares five crops (siex
+adds its own). The owner's filler layout ([machines.txt](../../../workbench/machines.txt)) was the
 last blocker and it arrived; the footprint is drawn straight from it. ⛔ **Not walked in game**, and the
 line is still creative-only for a reason that is not this machine's: no roll set is craftable.
 **Mod** iiex (`IronIndustryExpanded`)
@@ -75,7 +75,7 @@ copying from the mill is that a shape may overhang its cell as long as the block
 (`BlockRollingMill.cs:62-63`).
 
 ★★ **The filler layout arrived 2026-08-14** and is in
-[machines.txt](../../internal/workbench/machines.txt) under the shop name, *Mp cutter*. It confirms the
+[machines.txt](../../../workbench/machines.txt) under the shop name, *Mp cutter*. It confirms the
 3 × 1 × 2 measured off the shape:
 
 ```
@@ -106,17 +106,17 @@ in machines.txt needs them — six of the ten use slabs.
 ## Assets
 
 ⛔⛔ **The machine is drawn, and this page said otherwise until 2026-08-13.** It is filed under the shop
-name - **cutter** - not the design's name, so a sweep for "shear" across `assets/editable/shapes/` found
+name - **cutter** - not the design's name, so a sweep for "shear" across `workbench/shapes/` found
 nothing and this table recorded the absence as fact. Search art by what a machinist would call the machine,
 not by what the design page is titled.
 
 | Asset | State |
 |---|---|
-| editable shape | **drawn** - `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-cutter.json`, beside the nine other mpenergy machine tools. Textures `cast-iron1` + `iron5`, the mill's pair |
-| runtime shape | **shipped** - `assets/iiex/shapes/forming/shear.json`, converted by `scripts/tools/convert-shape.py` |
-| blade-set item shape | **drawn** - `assets/editable/shapes/items/smithed/item-forged-machineshears.json`; two blades 4 × 12 × 1 on the vanilla `block/metal/plate/iron` texture |
-| handbook | **shipped** - `docs/iiex/handbook/10-formingshop.html` and `assets/iiex/config/handbook/10-formingshop.json`, one page covering the whole shop rather than half a page per station |
-| reference art | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
+| editable shape | **drawn** - `workbench/shapes/machines/mpenergy/machine-mp-megablock-cutter.json`, beside the nine other mpenergy machine tools. Textures `cast-iron1` + `iron5`, the mill's pair |
+| runtime shape | **shipped** - `mods/iiex/assets/iiex/shapes/forming/shear.json`, converted by `infra/tools/convert-shape.py` |
+| blade-set item shape | **drawn** - `workbench/shapes/items/smithed/item-forged-machineshears.json`; two blades 4 × 12 × 1 on the vanilla `block/metal/plate/iron` texture |
+| handbook | **shipped** - `mods/iiex/docs/handbook/10-formingshop.html` and `mods/iiex/assets/iiex/config/handbook/10-formingshop.json`, one page covering the whole shop rather than half a page per station |
+| reference art | `workbench/refs/rivetsnails/machine-tools-1-rivet-making-machine-2-riveting-machine-3-shearing-machine-for-bars-of-all-lengths-and-scrap-iron-4-punching-and-shearing-machine-5-double-shearing-machine-1867-technology-RY93PB.jpg` - Figs 3, 4 and 5 |
 | lang | **shipped** in all three locales - the block name, the blades, three help verbs, two readouts and the six `ShearVerdict` refusals |
 
 ### What the shape already decides
@@ -147,7 +147,7 @@ shears measure 96 vx³ = 240 u and want **100 vx³ = 250 u** to divide off the r
 
 ### The shear's products are already drawn — inside the mill's shape files
 
-*Swept 2026-08-12, across `assets/editable/shapes/items/`.* The convention holds everywhere: an element drawn
+*Swept 2026-08-12, across `workbench/shapes/items/`.* The convention holds everywhere: an element drawn
 off the shared origin is **not a stage**, it is another machine's output, and it belongs in that machine's
 registry ([process-extension](../mechanics/process-extension.md)).
 
@@ -280,7 +280,7 @@ table).
 
 | Piece | Where it goes | Model it on |
 |---|---|---|
-| `BlockShear` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` - `BlockNetworkNode` + `IExBlockDefProvider`, minus `IFillerHost`/`IFillerInteractionTarget` (no fillers at 1 × 1) |
+| `BlockShear` | `mods/iiex/src/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` - `BlockNetworkNode` + `IExBlockDefProvider`, minus `IFillerHost`/`IFillerInteractionTarget` (no fillers at 1 × 1) |
 | `BlockEntityShear` | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:33` - `BlockEntityNetworkNode`, `IMpEnergyConsumer`, `NetworkType => "mpenergy"` (`:35-39`), `LoadTorque(speed)` (`:314-326`) returning 0 while idle |
 | speed read | inside the stroke tick | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed ?? 0f` - `BlockEntityRollingMill.cs:79-81` |
 | `ShearDecision` (pure) | **built 2026-08-13** - `.../Forming/ShearFeed.cs`, 13 tests | `ShearVerdict` has seven cases in the order a player can fix them: `NoBladeSet` → `NoJob` → `Spent` → `BladeTooSoft` → `NotTurning` → `NotEnoughDrive`. Needs no footprint, so it landed ahead of the layout |
@@ -334,14 +334,14 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
 ## Open
 
 - ~~The crop table is not shipped, deliberately.~~ **Shipped** with the rolled catalogue -
-  `assets/iiex/config/processjobs/shear.json`, five crops: a shingled bar into four rods, a beam into two
+  `mods/iiex/assets/iiex/config/processjobs/shear.json`, five crops: a shingled bar into four rods, a beam into two
   plates, a shingled slab into two heavy plates, a rod into four rivet rods, and a plate into two nail
   plates. The last two are what feed the fastener benches. Holding the table until its products existed was
   right: a table of codes that resolve to nothing is the mistake the four dangling roll-set outputs already
   made once.
 - ~~Block, BE, def, recipe, shape, lang and tests are all absent.~~ **Built 2026-08-14.** ~~The handbook
   page is the one piece deliberately skipped.~~ **Written 2026-08-21** as one page for the whole shop -
-  `docs/iiex/handbook/10-formingshop.html` - exactly as the deferral intended: the mill, the shear, both
+  `mods/iiex/docs/handbook/10-formingshop.html` - exactly as the deferral intended: the mill, the shear, both
   fastener benches, the heat and the rack, rather than half a page each.
 - ~~How the torque gate reads drive torque.~~ **Closed 2026-08-14, and none of the three proposals was
   needed.** `MpEnergyNetworkState` publishes `SupplyPower`, written as `driveTorque * Speed` every tick, so

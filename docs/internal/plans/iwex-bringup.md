@@ -52,10 +52,10 @@ is either a wrong string, a missing item def, or a process that was never writte
 ## Part 1 — The art queue
 
 **The most important finding for the art side: most of it is already drawn.** The untracked editable shapes
-sit in `assets/editable/shapes/` under the `<family>-<kind>-<name>` naming scheme, and the runtime tree
+sit in `workbench/shapes/` under the `<family>-<kind>-<name>` naming scheme, and the runtime tree
 still carries the old exports. So the dominant art task is **export + wire**, not draw.
 
-### 1a. Already drawn — needs export to `assets/iiex/shapes/` and a code reference
+### 1a. Already drawn — needs export to `mods/iiex/assets/iiex/shapes/` and a code reference
 
 Nothing to draw here. Listed so it is not re-drawn.
 
@@ -98,7 +98,7 @@ to the same volume. Check this when the shapes are wired, not after the recipes 
 
 ### 1b. Genuinely not drawn — the actual art queue
 
-Ordered by when the plan needs them. Nothing in `assets/editable/` matches any of these. The shear, the
+Ordered by when the plan needs them. Nothing in `workbench/` matches any of these. The shear, the
 rivet machine and the crucible-furnace parts have left this list — their shapes are drawn (see 1a) — and
 the bolt and die items left it by ruling (fasteners, 2026-07-30: no dies, no bolts).
 
@@ -108,7 +108,7 @@ the bolt and die items left it by ruling (fasteners, 2026-07-30: no dies, no bol
 | **A4** | **Coke oven** (beehive) | megablock, natural draught | Stage 6 |
 
 **Textures.** iwex's texture set is in good shape (furnace faces, cast iron, slag). The one recurring need is
-**diagram icons**: `assets/iiex/textures/item/diagram/diag-{type}.png`, one per structure diagram and one per
+**diagram icons**: `mods/iiex/assets/iiex/textures/item/diagram/diag-{type}.png`, one per structure diagram and one per
 casting pattern (`diag-item-{pattern}.png`), derived automatically from
 `PatternItemDefinitions.PatternTypes`. So each new pattern in Stage 2 and each new diagram-crafted block
 needs exactly one 32×32 icon. Machines built by grid/RCC (mill, burdenmaker, blower, hearths) need

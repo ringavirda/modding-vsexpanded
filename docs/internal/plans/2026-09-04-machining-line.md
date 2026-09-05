@@ -21,10 +21,10 @@ tool kind, hold or auto). Jobs stay `ProcessJob` rows in `config/processjobs/`, 
 when an input matches more than one. Blanks are sand patterns; intermediates and tools are items.
 
 **Tech stack:** C# multi-targeted net7/net8/net10 for VS 1.20/1.21/1.22, xUnit + NSubstitute on the
-exlib harness (`TestWorld`, `TestBlocks`), python3 for `scripts/tools/convert-shape.py`.
+exlib harness (`TestWorld`, `TestBlocks`), python3 for `infra/tools/convert-shape.py`.
 
 **Spec:** [machining-line.md](../../design/mechanics/machining-line.md) .
-[machines.txt](../workbench/machines.txt) . [process-extension.md](../../design/mechanics/process-extension.md)
+[machines.txt](../../../workbench/machines.txt) . [process-extension.md](../../design/mechanics/process-extension.md)
 . [tooling-wear.md](../../design/mechanics/tooling-wear.md) . [rolling-mill.md](../../design/machines/rolling-mill.md)
 section the movable roller. Code facts: [../research/](../research/README.md) - `station-base-and-jobs`,
 `station-window-and-hold`, `footprints-shapes-defs`, `blanks-tooling-consumers`, `mill-flatwide-cells`.
@@ -42,7 +42,7 @@ section the movable roller. Code facts: [../research/](../research/README.md) - 
 - **Goldens** re-blessed by path (`EXLIB_WRITE_GOLDENS=iiex/blocktypes/machining/machinetool`), never
   wholesale; block codes regenerated with `EXLIB_WRITE_BLOCKCODES=1`; handbook with
   `EXLIB_WRITE_HANDBOOK=1`.
-- **Lang:** every new key in `assets/iiex/lang/{en,ru,uk}.json` (ru/uk per the localisation glossary in
+- **Lang:** every new key in `mods/iiex/assets/iiex/lang/{en,ru,uk}.json` (ru/uk per the localisation glossary in
   memory); literals passed to `Lang.Get("iiex:...")`, `ActionLangCode = "iiex:..."` and
   `SendIngameError("iiex-...")` are scanned by `LangCallSites`; block names need `block-machinetool-{type}-*`.
 - **Codes:** `iiex:machinetool-{type}-{ns|we}`; `IiexCodePrefixTests` forbids a base code that prefixes
@@ -61,33 +61,33 @@ section the movable roller. Code facts: [../research/](../research/README.md) - 
 ## File structure
 
 **exlib (create)**
-- `src/ExpandedLib/Blocks/Machines/HoldToOperate.cs` - who is holding, with expiry.
-- `src/ExpandedLib/Blocks/Machines/StationWindowSpec.cs` - what a station window shows.
-- `src/ExpandedLib/Blocks/Machines/IStationWindowHost.cs` - what the window reads from a block entity.
-- `src/ExpandedLib/Blocks/Machines/GuiDialogMachineStation.cs` - the shared window (client).
+- `mods/exlib/src/Blocks/Machines/HoldToOperate.cs` - who is holding, with expiry.
+- `mods/exlib/src/Blocks/Machines/StationWindowSpec.cs` - what a station window shows.
+- `mods/exlib/src/Blocks/Machines/IStationWindowHost.cs` - what the window reads from a block entity.
+- `mods/exlib/src/Blocks/Machines/GuiDialogMachineStation.cs` - the shared window (client).
 
 **exlib (modify)**
-- `src/ExpandedLib/Blocks/Structures/IFillerInteractionTarget.cs` - cancel forward (default member).
-- `src/ExpandedLib/Blocks/Structures/BlockStructureFiller.cs` - forwards `OnBlockInteractCancel`.
-- `src/ExpandedLib/Blocks/Structures/StructureFootprint.cs`, `FillerLayoutBuilder.cs`,
-  `StructureFillers.cs`, `BlockEntityStructureFiller.cs`, `src/ExpandedLib/Definitions/ExBlockDef.cs`
+- `mods/exlib/src/Blocks/Structures/IFillerInteractionTarget.cs` - cancel forward (default member).
+- `mods/exlib/src/Blocks/Structures/BlockStructureFiller.cs` - forwards `OnBlockInteractCancel`.
+- `mods/exlib/src/Blocks/Structures/StructureFootprint.cs`, `FillerLayoutBuilder.cs`,
+  `StructureFillers.cs`, `BlockEntityStructureFiller.cs`, `mods/exlib/src/Definitions/ExBlockDef.cs`
   - a per-cell `role` string.
-- `src/ExpandedLib/Blocks/Machines/BlockEntityMachineStation.cs` - protected dialog access, client
+- `mods/exlib/src/Blocks/Machines/BlockEntityMachineStation.cs` - protected dialog access, client
   refresh hook.
-- `src/ExpandedLib/Processes/MachineTool.cs`, `ItemDie.cs` - durability and wear; `ItemDie.JobsFor`.
+- `mods/exlib/src/Processes/MachineTool.cs`, `ItemDie.cs` - durability and wear; `ItemDie.JobsFor`.
 
 **iiex (create)**
-- `src/IronIndustryExpanded/BlockStructures/Machining/MachineToolTypes.cs` - the per-type table.
-- `src/IronIndustryExpanded/BlockStructures/Machining/MachineToolFeed.cs` - verdict and decision.
-- `src/IronIndustryExpanded/BlockStructures/Machining/Blocks/BlockMachineTool.cs`
-- `src/IronIndustryExpanded/BlockStructures/Machining/BlockEntities/BlockEntityMachineTool.cs`
-- `src/IronIndustryExpanded/BlockStructures/Casting/CastBlankItemDefinitions.cs` - blanks.
-- `src/IronIndustryExpanded/Items/MachinedItemDefinitions.cs` - intermediates.
-- `src/IronIndustryExpanded/Items/MachineCutterItemDefinitions.cs`, `DrillBitItemDefinitions.cs`.
-- `assets/iiex/config/processjobs/{lathe,horizontalbore,shaper,planer,drillpress}.json`
-- `assets/iiex/shapes/machining/{type}.json` (eight exports), `assets/iiex/shapes/item/...` (blanks,
+- `mods/iiex/src/BlockStructures/Machining/MachineToolTypes.cs` - the per-type table.
+- `mods/iiex/src/BlockStructures/Machining/MachineToolFeed.cs` - verdict and decision.
+- `mods/iiex/src/BlockStructures/Machining/Blocks/BlockMachineTool.cs`
+- `mods/iiex/src/BlockStructures/Machining/BlockEntities/BlockEntityMachineTool.cs`
+- `mods/iiex/src/BlockStructures/Casting/CastBlankItemDefinitions.cs` - blanks.
+- `mods/iiex/src/Items/MachinedItemDefinitions.cs` - intermediates.
+- `mods/iiex/src/Items/MachineCutterItemDefinitions.cs`, `DrillBitItemDefinitions.cs`.
+- `mods/iiex/assets/iiex/config/processjobs/{lathe,horizontalbore,shaper,planer,drillpress}.json`
+- `mods/iiex/assets/iiex/shapes/machining/{type}.json` (eight exports), `mods/iiex/assets/iiex/shapes/item/...` (blanks,
   intermediates, tools).
-- `docs/iiex/handbook/13-machineshop.html` + `assets/iiex/config/handbook/13-machineshop.json`.
+- `mods/iiex/docs/handbook/13-machineshop.html` + `mods/iiex/assets/iiex/config/handbook/13-machineshop.json`.
 
 **iiex (delete)**
 - `BlockStructures/Forming/Blocks/BlockShear.cs`, `BlockFastenerBench.cs`;
@@ -102,23 +102,23 @@ section the movable roller. Code facts: [../research/](../research/README.md) - 
 - `IiexRecipeConfig.cs` - cost rows repointed and added.
 - `BlockStructures/Forming/RollSetSpec.cs`, `RollSetItemDefinitions.cs`, `Blocks/BlockRollingMill.cs`,
   `BlockEntities/BlockEntityRollingMill.cs`, `Forming/MillFeed.cs`, `IiexConfig.cs` - the i1 cells.
-- `scripts/tools/convert-shape.py` - `drill` clip one-shot; nothing else.
+- `infra/tools/convert-shape.py` - `drill` clip one-shot; nothing else.
 
 ---
 
 ### Task 1: HoldToOperate, the cancel forward and filler-cell roles (exlib)
 
 **Files:**
-- Create: `src/ExpandedLib/Blocks/Machines/HoldToOperate.cs`
-- Modify: `src/ExpandedLib/Blocks/Structures/IFillerInteractionTarget.cs`,
-  `src/ExpandedLib/Blocks/Structures/BlockStructureFiller.cs` (beside its `OnBlockInteractStop`
-  override), `src/ExpandedLib/Blocks/Structures/StructureFootprint.cs` (`FillerCellSpec`),
-  `src/ExpandedLib/Blocks/Structures/FillerLayoutBuilder.cs`,
-  `src/ExpandedLib/Blocks/Structures/StructureFillers.cs` (`ReadOffsets`),
-  `src/ExpandedLib/Blocks/Structures/BlockEntityStructureFiller.cs`,
-  `src/ExpandedLib/Definitions/ExBlockDef.cs` (the filler serialiser next to `collisionBoxes`)
-- Test: `test/ExpandedLib.Tests/Machines/HoldToOperateTests.cs`,
-  `test/ExpandedLib.Tests/Structures/FillerCellRoleTests.cs`
+- Create: `mods/exlib/src/Blocks/Machines/HoldToOperate.cs`
+- Modify: `mods/exlib/src/Blocks/Structures/IFillerInteractionTarget.cs`,
+  `mods/exlib/src/Blocks/Structures/BlockStructureFiller.cs` (beside its `OnBlockInteractStop`
+  override), `mods/exlib/src/Blocks/Structures/StructureFootprint.cs` (`FillerCellSpec`),
+  `mods/exlib/src/Blocks/Structures/FillerLayoutBuilder.cs`,
+  `mods/exlib/src/Blocks/Structures/StructureFillers.cs` (`ReadOffsets`),
+  `mods/exlib/src/Blocks/Structures/BlockEntityStructureFiller.cs`,
+  `mods/exlib/src/Definitions/ExBlockDef.cs` (the filler serialiser next to `collisionBoxes`)
+- Test: `mods/exlib/tests/Machines/HoldToOperateTests.cs`,
+  `mods/exlib/tests/Structures/FillerCellRoleTests.cs`
 
 **Interfaces:**
 - Produces `HoldToOperate { void Step(IPlayer, long nowMs); void End(IPlayer); bool IsHeld(long nowMs);
@@ -134,7 +134,7 @@ section the movable roller. Code facts: [../research/](../research/README.md) - 
 - [ ] **Step 1: write the failing tests**
 
 ```csharp
-// test/ExpandedLib.Tests/Machines/HoldToOperateTests.cs
+// mods/exlib/tests/Machines/HoldToOperateTests.cs
 namespace ExpandedLib.Tests;
 
 public class HoldToOperateTests {
@@ -169,7 +169,7 @@ public class HoldToOperateTests {
 ```
 
 ```csharp
-// test/ExpandedLib.Tests/Structures/FillerCellRoleTests.cs
+// mods/exlib/tests/Structures/FillerCellRoleTests.cs
 namespace ExpandedLib.Tests;
 
 public class FillerCellRoleTests {
@@ -191,13 +191,13 @@ public class FillerCellRoleTests {
 }
 ```
 
-- [ ] **Step 2: run them** - `dotnet test test/ExpandedLib.Tests --filter "HoldToOperateTests|FillerCellRoleTests"`.
+- [ ] **Step 2: run them** - `dotnet test mods/exlib/tests --filter "HoldToOperateTests|FillerCellRoleTests"`.
       Expected: compile failure (`HoldToOperate`, `Role` missing).
 
 - [ ] **Step 3: implement**
 
 ```csharp
-// src/ExpandedLib/Blocks/Machines/HoldToOperate.cs
+// mods/exlib/src/Blocks/Machines/HoldToOperate.cs
 namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
@@ -251,15 +251,15 @@ sets `PortFace` from the cell spec, persisted under `"role"` in `ToTreeAttribute
 ### Task 2: the shared station window (exlib)
 
 **Files:**
-- Create: `src/ExpandedLib/Blocks/Machines/StationWindowSpec.cs`,
-  `src/ExpandedLib/Blocks/Machines/IStationWindowHost.cs`,
-  `src/ExpandedLib/Blocks/Machines/GuiDialogMachineStation.cs`
-- Modify: `src/ExpandedLib/Blocks/Machines/BlockEntityMachineStation.cs` (the private `_dialog`
+- Create: `mods/exlib/src/Blocks/Machines/StationWindowSpec.cs`,
+  `mods/exlib/src/Blocks/Machines/IStationWindowHost.cs`,
+  `mods/exlib/src/Blocks/Machines/GuiDialogMachineStation.cs`
+- Modify: `mods/exlib/src/Blocks/Machines/BlockEntityMachineStation.cs` (the private `_dialog`
   field becomes `protected GuiDialogBlockEntity? Dialog { get; private set; }`; add
   `protected virtual void OnClientStateChanged()` invoked at the end of `FromTreeAttributes` when
-  `Api?.Side == EnumAppSide.Client`), `src/ExpandedLib/Processes/ItemDie.cs` (`JobsFor`)
-- Test: `test/ExpandedLib.Tests/Machines/StationWindowSpecTests.cs`,
-  `test/ExpandedLib.Tests/Processes/ItemDieJobsForTests.cs`
+  `Api?.Side == EnumAppSide.Client`), `mods/exlib/src/Processes/ItemDie.cs` (`JobsFor`)
+- Test: `mods/exlib/tests/Machines/StationWindowSpecTests.cs`,
+  `mods/exlib/tests/Processes/ItemDieJobsForTests.cs`
 
 **Interfaces:**
 - Produces
@@ -274,7 +274,7 @@ sets `PortFace` from the cell spec, persisted under `"role"` in `ToTreeAttribute
 - [ ] **Step 1: failing tests**
 
 ```csharp
-// test/ExpandedLib.Tests/Machines/StationWindowSpecTests.cs
+// mods/exlib/tests/Machines/StationWindowSpecTests.cs
 public class StationWindowSpecTests {
   [Fact]
   public void A_spec_without_a_tool_slot_says_so() {
@@ -284,7 +284,7 @@ public class StationWindowSpecTests {
   }
 }
 
-// test/ExpandedLib.Tests/Processes/ItemDieJobsForTests.cs
+// mods/exlib/tests/Processes/ItemDieJobsForTests.cs
 public class ItemDieJobsForTests {
   [Fact]
   public void Only_jobs_for_the_named_machine_and_input_come_back() {
@@ -306,7 +306,7 @@ public class ItemDieJobsForTests {
       `GuiDialogMachineStation` mirrors `GuiDialogDesignTable`'s structure:
 
 ```csharp
-// src/ExpandedLib/Blocks/Machines/GuiDialogMachineStation.cs
+// mods/exlib/src/Blocks/Machines/GuiDialogMachineStation.cs
 namespace ExpandedLib.Blocks.Machines;
 
 /// <summary>
@@ -394,8 +394,8 @@ The composer is client-only and is verified in game (Task 14); nothing headless 
 ### Task 3: tool wear (exlib)
 
 **Files:**
-- Modify: `src/ExpandedLib/Processes/MachineTool.cs`, `src/ExpandedLib/Processes/ItemDie.cs`
-- Test: `test/ExpandedLib.Tests/Processes/MachineToolWearTests.cs`
+- Modify: `mods/exlib/src/Processes/MachineTool.cs`, `mods/exlib/src/Processes/ItemDie.cs`
+- Test: `mods/exlib/tests/Processes/MachineToolWearTests.cs`
 
 **Interfaces:**
 - `MachineTool.Itemtype(string domain, string code, IReadOnlyDictionary<string,int> tiers, string shape = "game:item/ingot", string variantGroup = "type", IReadOnlyDictionary<string,int>? durability = null)` - emits `durabilityByType["*-{type}"]` when given.
@@ -443,18 +443,18 @@ public class MachineToolWearTests {
 ### Task 4: the machine-tool table and definitions (iiex)
 
 **Files:**
-- Create: `src/IronIndustryExpanded/BlockStructures/Machining/MachineToolTypes.cs`,
-  `src/IronIndustryExpanded/BlockStructures/Machining/Blocks/BlockMachineTool.cs` (definitions only
+- Create: `mods/iiex/src/BlockStructures/Machining/MachineToolTypes.cs`,
+  `mods/iiex/src/BlockStructures/Machining/Blocks/BlockMachineTool.cs` (definitions only
   in this task; interaction comes in Task 6)
 - Delete: `Forming/Blocks/BlockShear.cs`, `Forming/Blocks/BlockFastenerBench.cs` (their BEs go in Task 5),
-  `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/forming/shear.json`, `bench.json`
-- Modify: `src/IronIndustryExpanded/Recipes/Grid/FormingRecipeDefinitions.cs` (outputs
-  `iiex:machinetool-shear-ns`, `-nailcutter-ns`, `-riveter-ns`), `src/IronIndustryExpanded/IiexRecipeConfig.cs`
+  `mods/iiex/tests/goldens/iiex/blocktypes/forming/shear.json`, `bench.json`
+- Modify: `mods/iiex/src/Recipes/Grid/FormingRecipeDefinitions.cs` (outputs
+  `iiex:machinetool-shear-ns`, `-nailcutter-ns`, `-riveter-ns`), `mods/iiex/src/IiexRecipeConfig.cs`
   (rows `shear-grid`, `nailcutter-grid`, `riveter-grid` now match `iiex:machinetool-{type}-*`),
-  `assets/iiex/lang/{en,ru,uk}.json` (`block-machinetool-{type}-*` for all eight; drop `block-forming-shear-*`,
+  `mods/iiex/assets/iiex/lang/{en,ru,uk}.json` (`block-machinetool-{type}-*` for all eight; drop `block-forming-shear-*`,
   `block-forming-nailcutter-*`, `block-forming-riveter-*`)
-- Test: `test/IronIndustryExpanded.Tests/Definitions/MachineToolDefinitionTests.cs`; regenerate
-  `src/IronIndustryExpanded/Generated/IiexBlocks.g.cs`
+- Test: `mods/iiex/tests/Definitions/MachineToolDefinitionTests.cs`; regenerate
+  `mods/iiex/src/Generated/IiexBlocks.g.cs`
 
 **Interfaces:**
 - Produces `enum ToolKind { Blade, Cutter, DrillBit, Die }` and
@@ -508,7 +508,7 @@ public class MachineToolDefinitionTests {
       the right as the owner's file says):
 
 ```csharp
-// src/IronIndustryExpanded/BlockStructures/Machining/MachineToolTypes.cs
+// mods/iiex/src/BlockStructures/Machining/MachineToolTypes.cs
 namespace IronIndustryExpanded.BlockStructures.Machining;
 
 public enum ToolKind { Blade, Cutter, DrillBit, Die }
@@ -594,7 +594,7 @@ the drill press's seven, the bore's four, the lathe's seven, the nail cutter's t
 fifteen, the riveter's four, the shaper's three - if a count differs, recount the grid before touching
 the test.
 
-- [ ] **Step 4: bless the golden** - `EXLIB_WRITE_GOLDENS=iiex/blocktypes/machining/machinetool dotnet test test/IronIndustryExpanded.Tests --filter Regenerate_goldens_when_requested`;
+- [ ] **Step 4: bless the golden** - `EXLIB_WRITE_GOLDENS=iiex/blocktypes/machining/machinetool dotnet test mods/iiex/tests --filter Regenerate_goldens_when_requested`;
       `EXLIB_WRITE_BLOCKCODES=1 dotnet test ...` for `IiexBlocks.g.cs`; run the definition tests; PASS.
 - [ ] **Step 5: repoint recipes, cost rows and names; run the iiex suite.** Expected failures only in
       the deleted stations' tests (they go in Task 5) and in `IiexRecipeOutputTests` until outputs are
@@ -606,13 +606,13 @@ the test.
 ### Task 5: the block entity and the feed decision (iiex)
 
 **Files:**
-- Create: `src/IronIndustryExpanded/BlockStructures/Machining/MachineToolFeed.cs`,
-  `src/IronIndustryExpanded/BlockStructures/Machining/BlockEntities/BlockEntityMachineTool.cs`
+- Create: `mods/iiex/src/BlockStructures/Machining/MachineToolFeed.cs`,
+  `mods/iiex/src/BlockStructures/Machining/BlockEntities/BlockEntityMachineTool.cs`
 - Delete: `Forming/BlockEntities/BlockEntityShear.cs`, `BlockEntityFastenerBench.cs`, `Forming/ShearFeed.cs`,
-  `Forming/BenchFeed.cs`, `test/.../Blocks/Forming/ShearStationTests.cs`, `FastenerBenchTests.cs`
+  `Forming/BenchFeed.cs`, `mods/iiex/tests/.../Blocks/Forming/ShearStationTests.cs`, `FastenerBenchTests.cs`
 - Modify: `Forming/BlockEntities/BlockEntityMpBench.cs` - the production tick calls
   `protected virtual void OnIdleTick()` when not stroking (default no-op)
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Machining/MachineToolStationTests.cs`
+- Test: `mods/iiex/tests/Blocks/Machining/MachineToolStationTests.cs`
 
 **Interfaces:**
 - `enum MachineToolVerdict { Ok, NoTool, NoJob, Spent, ToolTooSoft, NotTurning, NotEnoughDrive, OutputFull, NotHeld }`
@@ -841,8 +841,8 @@ for a code. `OnIdleTick` is the new hook in `BlockEntityMpBench` called by its p
 ### Task 6: interaction routing, window and hold cells, lang (iiex)
 
 **Files:**
-- Modify: `BlockStructures/Machining/Blocks/BlockMachineTool.cs` (interaction), `assets/iiex/lang/{en,ru,uk}.json`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Machining/MachineToolInteractionTests.cs`
+- Modify: `BlockStructures/Machining/Blocks/BlockMachineTool.cs` (interaction), `mods/iiex/assets/iiex/lang/{en,ru,uk}.json`
+- Test: `mods/iiex/tests/Blocks/Machining/MachineToolInteractionTests.cs`
 
 **Interfaces:** `BlockMachineTool : BlockNetworkNode, IExBlockDefProvider, IFillerHost, IFillerInteractionTarget`
 with `string RolesAt(IWorldAccessor world, BlockPos principal, BlockPos clickedCell)` (the principal's
@@ -879,9 +879,9 @@ with `string RolesAt(IWorldAccessor world, BlockPos principal, BlockPos clickedC
 
 **Files:**
 - Modify: `MachineToolTypes.cs` (drive-cell hosting), `BlockMachineTool.cs` (connector faces),
-  `src/ExpandedLib/Blocks/Structures/FillerLayoutBuilder.cs` only if the spike needs a second `Port`
+  `mods/exlib/src/Blocks/Structures/FillerLayoutBuilder.cs` only if the spike needs a second `Port`
   overload
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Machining/MachineToolDriveTests.cs`
+- Test: `mods/iiex/tests/Blocks/Machining/MachineToolDriveTests.cs`
 
 **Spike first (one step, no product code):** stand a `lathe` in the Task 5 fixture with a cast shaft
 node (`BlockCastIronShaft`) placed against the `m` cell's east face, and assert
@@ -909,14 +909,14 @@ Keep whichever couples; record the result in the worklog line and in
 ### Task 8: shape exports and the art reconciliation list
 
 **Files:**
-- Create: `assets/iiex/shapes/machining/{shear,drillpress,horizontalbore,lathe,nailcutter,planer,riveter,shaper}.json`
-- Modify: `scripts/tools/convert-shape.py` (`ONESHOT_CLIPS` gains `"drill"`)
-- Delete: `assets/iiex/shapes/forming/{shear,nailcutter,riveter}.json` after the new files exist
+- Create: `mods/iiex/assets/iiex/shapes/machining/{shear,drillpress,horizontalbore,lathe,nailcutter,planer,riveter,shaper}.json`
+- Modify: `infra/tools/convert-shape.py` (`ONESHOT_CLIPS` gains `"drill"`)
+- Delete: `mods/iiex/assets/iiex/shapes/forming/{shear,nailcutter,riveter}.json` after the new files exist
 - Test: `Every_shape_reference_resolves_to_a_shipped_file` already covers the paths;
-  `test/IronIndustryExpanded.Tests/Invariants/MachineToolShapeExtentsTests.cs`
+  `mods/iiex/tests/Invariants/MachineToolShapeExtentsTests.cs`
 
 - [ ] **Step 1: failing test** - for each type, load the runtime shape, measure its extent in cells
-      (the `ShapeExtents` helper in `test/ExpandedLib.Testing/ShapeExtents.cs`), and assert it lies inside
+      (the `ShapeExtents` helper in `mods/exlib/testing/ShapeExtents.cs`), and assert it lies inside
       the footprint's bounding box **plus the overhang the owner accepts**, expressed as one allowance
       per type in the test's table. Seed the table from the measured extents in
       `research/2026-09-04-footprints-shapes-defs.md` section 3 and mark each row that exceeds its footprint:
@@ -925,7 +925,7 @@ Keep whichever couples; record the result in the worklog line and in
       (6 voxels into z=-2).
 - [ ] **Step 2: run; FAIL (the shapes are not exported).**
 - [ ] **Step 3: export** - 
-      `python3 scripts/tools/convert-shape.py machines/mpenergy/machine-mp-megablock-cutter assets/iiex/shapes/machining/shear.json`
+      `python3 infra/tools/convert-shape.py machines/mpenergy/machine-mp-megablock-cutter mods/iiex/assets/iiex/shapes/machining/shear.json`
       and the same for drillpress, horizontalboring->horizontalbore, lathe, nailcutter, planer, riveter,
       shaper; `--check` first; add `drill` to `ONESHOT_CLIPS` so the drill press's one-shot clip does not
       loop; the `iron`/`iron2` keys remap by key (plate -> tarnished / sheet) - accept it.
@@ -940,19 +940,19 @@ Keep whichever couples; record the result in the worklog line and in
 ### Task 9: cast blanks (iiex)
 
 **Files:**
-- Create: `src/IronIndustryExpanded/BlockStructures/Casting/CastBlankItemDefinitions.cs`,
-  `assets/iiex/shapes/item/castblank-{cylinder,cylinderheavy,gearsmall,gearlarge,shaft,rollers,pipepart}.json`
+- Create: `mods/iiex/src/BlockStructures/Casting/CastBlankItemDefinitions.cs`,
+  `mods/iiex/assets/iiex/shapes/item/castblank-{cylinder,cylinderheavy,gearsmall,gearlarge,shaft,rollers,pipepart}.json`
 - Modify: `PatternItemDefinitions.cs` (`Molds` rows and `PatternShapes` rows), `DiagramItemDefinitions.cs`
   (the item-diagram types gain seven), lang x3 (`item-castblank-*`, `item-pattern-cast{...}-*`,
   `item-diagram-item-cast{...}`), the storage-rack occupancy catalogue
-- Test: `test/IronIndustryExpanded.Tests/Definitions/CastBlankTests.cs`
+- Test: `mods/iiex/tests/Definitions/CastBlankTests.cs`
 
 **Interfaces:** items `iiex:castblank-{type}` (one itemtype, `type` group), patterns
 `iiex:pattern-cast{cylinder,cylinderheavy,gearsmall,gearlarge,shaft,rollers,pipepart}-{wood}`;
 `CastBlankItemDefinitions.Units[type]` in units.
 
 - [ ] **Step 1: compute the masses** - a script step, recorded in the worklog: for each drawn blank
-      under `assets/editable/shapes/items/sandcast/blanks/`, sum the volume of its named root's cubes in
+      under `workbench/shapes/items/sandcast/blanks/`, sum the volume of its named root's cubes in
       voxels, multiply by 2.5 u/vx^3, round to the nearest 5. The roller blank is two rollers; the pipe
       part has no drawing - take the cast straight segment's shell volume as the blank and flag it for art.
 - [ ] **Step 2: failing tests** - each blank has a pattern whose mold `Capacity` equals its units,
@@ -972,13 +972,13 @@ Keep whichever couples; record the result in the worklog line and in
 ### Task 10: machined intermediates and the tools (iiex)
 
 **Files:**
-- Create: `src/IronIndustryExpanded/Items/MachinedItemDefinitions.cs`,
-  `src/IronIndustryExpanded/Items/MachineCutterItemDefinitions.cs`,
-  `src/IronIndustryExpanded/Items/DrillBitItemDefinitions.cs`, shapes exported from
+- Create: `mods/iiex/src/Items/MachinedItemDefinitions.cs`,
+  `mods/iiex/src/Items/MachineCutterItemDefinitions.cs`,
+  `mods/iiex/src/Items/DrillBitItemDefinitions.cs`, shapes exported from
   `items/machined/*` and `items/smithed/item-forged-machinecutter`, `item-forged-machinedrill`
 - Modify: `Recipes/Grid/FormingRecipeDefinitions.cs` (tool recipes), `IiexRecipeConfig.cs` (rows),
   `ShearBladeItemDefinitions.cs` and `BenchDieItemDefinitions.cs` (durability), lang x3
-- Test: `test/IronIndustryExpanded.Tests/Definitions/MachinedItemTests.cs`
+- Test: `mods/iiex/tests/Definitions/MachinedItemTests.cs`
 
 **Interfaces:** `iiex:machined-{cylinder,cylinderheavy,cylinderbored,gearcone,gearfaced,geardrilled}`;
 `iiex:machinecutter-{iron,steel}` (tiers 1/2), `iiex:drillbit-{iron,steel}`; durability config keys
@@ -1001,9 +1001,9 @@ Keep whichever couples; record the result in the worklog line and in
 ### Task 11: job tables and their guard (iiex)
 
 **Files:**
-- Create: `assets/iiex/config/processjobs/{lathe,horizontalbore,shaper,planer,drillpress}.json`
-- Test: `test/IronIndustryExpanded.Tests/Definitions/ShippedJobTableTests.cs` (generalises
-  `ShippedCropTableTests` over every file), `test/IronIndustryExpanded.Tests/Invariants/JobCodesResolveTests.cs`
+- Create: `mods/iiex/assets/iiex/config/processjobs/{lathe,horizontalbore,shaper,planer,drillpress}.json`
+- Test: `mods/iiex/tests/Definitions/ShippedJobTableTests.cs` (generalises
+  `ShippedCropTableTests` over every file), `mods/iiex/tests/Invariants/JobCodesResolveTests.cs`
 
 The roster (`minTorque` and `seconds` are *tune* values; `minTier` 1 = iron tooling):
 
@@ -1040,7 +1040,7 @@ and plain raises, `Feed` uses `WideGapIndex` when the set is adjustable), `Formi
 (`FeedVerdict.GapOffLadder`), `IiexConfig.cs` (`RollingWideGapMin 1.0`, `Max 3.5`, `Step 0.5`,
 `HoldSeconds 0.5`), lang x3 (`rollingmill-help-raise/-lower`, `rollingmill-info-rollset/-gap`,
 `ingameerror-iiex-rollingmill-gaplocked/-gapoffladder`), handbook clause in `10-formingshop`.
-**Test:** `test/IronIndustryExpanded.Tests/Blocks/Forming/RollingMillWideGapTests.cs` with the eight
+**Test:** `mods/iiex/tests/Blocks/Forming/RollingMillWideGapTests.cs` with the eight
 cases the research names (clamp, refused while rolling, persists, feed uses the stored gap, 4.0 at 3.0
 won't bite, off-ladder refused, locked set refused, cells resolve at both facings) plus the
 `ShippedRollSetTests` addition (every adjustable rung on the step grid).
@@ -1053,7 +1053,7 @@ won't bite, off-ladder refused, locked set refused, cells resolve at both facing
 ### Task 13: recipes, cost rows, handbook, locales (iiex)
 
 **Files:** `Recipes/Grid/FormingRecipeDefinitions.cs` (five new machine recipes), `IiexRecipeConfig.cs`
-(`{type}-grid` rows), `docs/iiex/handbook/13-machineshop.html` + `assets/iiex/config/handbook/13-machineshop.json`,
+(`{type}-grid` rows), `mods/iiex/docs/handbook/13-machineshop.html` + `mods/iiex/assets/iiex/config/handbook/13-machineshop.json`,
 lang x3 (handbook text key, `handbook-machineshop-title`).
 
 Recipes (plates are heavy cast plates `V`, rods `R`, spur gear `G`, hammer `H`; costs are the owner's to

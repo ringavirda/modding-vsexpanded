@@ -188,7 +188,7 @@ in git):
 
 | File | Elements | Reads as |
 |---|---|---|
-| `assets/editable/shapes/item-shingled-bar.json` | `ShingledBar1` 3 × 3 × 9 (+ one 9-long child = 18) · `Grooved275` 2.75² × 11 (×2 = 22) · `Grooved250` 2.5² × 13 (×2 = 26) · `Grooved225` 2.25² × 16 (×2 = 32) · `CutRod1..4` 2 × 2 × 10 · `Flattened275` 3.25 × 2.75 × 9 · `Flattened250` 3.6 × 2.5 × 9 · `Flattened225` 4.0 × 2.25 × 9 · `Beam` 4.5 × 2 × 9 | both narrow schedules of the wrought bar, complete |
+| `workbench/shapes/item-shingled-bar.json` | `ShingledBar1` 3 × 3 × 9 (+ one 9-long child = 18) · `Grooved275` 2.75² × 11 (×2 = 22) · `Grooved250` 2.5² × 13 (×2 = 26) · `Grooved225` 2.25² × 16 (×2 = 32) · `CutRod1..4` 2 × 2 × 10 · `Flattened275` 3.25 × 2.75 × 9 · `Flattened250` 3.6 × 2.5 × 9 · `Flattened225` 4.0 × 2.25 × 9 · `Beam` 4.5 × 2 × 9 | both narrow schedules of the wrought bar, complete |
 | `item-beam-rolled.json` | `Beam` 4.5 × 2 × 9 · `Flattened175` 5.1 × 1.75 × 9 · `Flattened150` 6.0 × 1.5 × 9 · `Flattened125` 7.2 × 1.25 × 9 · `CutPlate1` + `CutPlate2` 9 × 1 × 9 | the bar's flat schedule continued past the beam, ending on two plates |
 | `item-rod-rolled.json` | `RolledRod200` 2 × 2 × 10 · `Grooved175` 1.75² × 13 · `Grooved150` 1.5² × 9 (×2 = 18) · `Grooved125` 1.25² × 13 (×2 = 26) · `CutNailRod1..4` 1 × 1 × 10 | the rod's grooved schedule |
 | `item-rod-nail.json` | `NailRod1..4` 1 × 1 × 10 | the four 25 u rods, already cut |

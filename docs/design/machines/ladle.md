@@ -195,7 +195,7 @@ brick.
 
 ## Structure
 
-The shape is drawn (`assets/editable/shapes/networks/molten/molten-megablock-laddle.json`; the
+The shape is drawn (`workbench/shapes/networks/molten/molten-megablock-laddle.json`; the
 `molten-block-laddlecore.json` the expansion plan names for the multiblock core has never been in git) and the owner's layout is reproduced in the expansion
 plan's U11 section - a 3 × 3 × 3 RCC megablock whose fillers satisfy a 5 × 5 × 4 multiblock with optional canal
 sockets. Owner ruling 2026-09-04: the static ladle is iiex and ships in the first release, because it is the
@@ -244,9 +244,9 @@ casting bed and cell do it with a hard-coded pull rate.
 
 | Asset | State |
 |---|---|
-| editable shape | drawn - `assets/editable/shapes/networks/molten/molten-megablock-laddle.json` (282 cubes, `idle`, `poursouth`, `pournorth`; the last is misspelt `nournorth` in the file). The core block's shape is not drawn |
+| editable shape | drawn - `workbench/shapes/networks/molten/molten-megablock-laddle.json` (282 cubes, `idle`, `poursouth`, `pournorth`; the last is misspelt `nournorth` in the file). The core block's shape is not drawn |
 | runtime shape | missing - U11.2 exports both |
-| animations | drawn; the pour clips are one-keyframe `Hold` poses. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`assets/siex/shapes/converter/bessemer.json`) |
+| animations | drawn; the pour clips are one-keyframe `Hold` poses. It needs `idle` + a held pour tilt - the [Bessemer](bessemer.md) vessel's `filling`/`pouring` clips are `Hold`, one keyframe, and that is the right shape for a tilt (`mods/siex/assets/siex/shapes/converter/bessemer.json`) |
 | ferroalloy metal defs | missing - `assets/*/config/metals/` holds `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex). No `ferromanganese`, no `spiegeleisen`, no `ferrochrome`, no `hadfieldsteel`, no `blowniron`, no `wastealloy` |
 | powdered coke | missing as an item |
 | lang / handbook | no key, no page |
@@ -355,7 +355,7 @@ The second term is the latent heat of fusion expressed as a temperature: melting
 the bath has to supply. For iron, `L_f / c_p ≈ 550 K`, which is the physical value.
 
 Worked on a 5400 u bath (one settled converter heat's product, [Bessemer](bessemer.md#numbers)), against
-Bessemer steel's melting point of 1500 °C (`assets/siex/config/metals/bessemersteel.json`). The
+Bessemer steel's melting point of 1500 °C (`mods/siex/assets/siex/config/metals/bessemersteel.json`). The
 hadfield dose is ferromanganese at ~80 % Mn, so the real addition is 1000 u
 (`0.125 × 5400 / 0.675`, [alloying](../processes/alloying.md) § Numbers) - nothing in the suite produces
 pure manganese.
@@ -439,7 +439,7 @@ Nothing exists. The two comments that anticipate it:
 
 | Piece | Where it would go | Model it on |
 |---|---|---|
-| `BlockLadle` | `src/IronIndustryExpanded/BlockStructures/Ladle/Blocks/` | `BlockMoltenBarrel.cs` (a standing vessel with a rendered surface) for the block; `BlockConverterControl.cs:84-167` for modifier-key verb routing |
+| `BlockLadle` | `mods/iiex/src/BlockStructures/Ladle/Blocks/` | `BlockMoltenBarrel.cs` (a standing vessel with a rendered surface) for the block; `BlockConverterControl.cs:84-167` for modifier-key verb routing |
 | `BlockEntityLadle` | `…/Ladle/BlockEntities/` | `BlockEntityConverterControl.cs:44` - the closest existing analogue by far: it already holds a `MoltenCharge`, drains a neighbouring canal cell, pushes to another, tracks a per-heat tally (`_carbon`, `_pigCharged`, `_scrapUnits`), syncs a live cooldown coefficient, latches solidification, serialises the lot and prints a readout |
 | the bath | reuse | `MoltenCharge` (`ExpandedLib/Metals/MoltenCharge.cs:20`) - create, retype, temperature, live cooldown, `IsBelowMeltingPoint`, `BuildRecovery`, tree round-trip. Nothing here needs writing |
 | the merge | reuse | `GetMoltenCell(offset)?.DrainMetal(n)` on two or more neighbours (`BlockEntityConverterControl.cs:764-766`) |
@@ -461,7 +461,7 @@ Once it exists, three things unlock at once with no further work: recarburisatio
 
 ### Tests
 
-None. When built: `test/SteelIndustryExpanded.Tests/Blocks/Converter/ConverterControlProcessTests.cs` is the
+None. When built: `mods/siex/tests/Blocks/Converter/ConverterControlProcessTests.cs` is the
 template for the arithmetic (mass conservation at `:237`, the three temperature cases at `:261`/`:279`/`:304`),
 and `Fixtures/SteelPlantScenes.cs:31` for a rig that builds the real thing rather than faking its state.
 The standing gap it must not repeat: no converter test asserts a rate as a number, which is how
@@ -543,4 +543,4 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 6. **No handbook page and no in-game teaching path.** Hadfield is called "the alloying-mechanic introduction"
    ([materials.md](../materials.md)); an introduction that nothing explains is a wall. The handbook pipeline
-   (`docs/siex/handbook/` ↔ `assets/siex/lang/en.json`) is where it goes.
+   (`mods/siex/docs/handbook/` ↔ `mods/siex/assets/siex/lang/en.json`) is where it goes.

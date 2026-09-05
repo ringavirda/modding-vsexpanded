@@ -121,14 +121,14 @@ sub-machine's own back-reference does not do that - see [Gotchas](#gotchas) 1.
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape (engine) | — | missing. No `assets/editable/shapes/` source for the Watt engine |
-| Runtime shape (engine) | `assets/iiex/shapes/engine/watt.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `Rod` - exactly the six RCC stages |
+| Editable shape (engine) | — | missing. No `workbench/shapes/` source for the Watt engine |
+| Runtime shape (engine) | `mods/iiex/assets/iiex/shapes/engine/watt.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `Rod` - exactly the six RCC stages |
 | Engine animations | same file | `cyclepump` (60 f, `Repeat`) · `cyclemp` (60 f, `Repeat`) · `idlepump` (30 f) · `idlemp` (30 f) |
 | Engine textures | `fire1`, `iron3`, `iron5`, `iron` | |
-| MP generator shape | `assets/iiex/shapes/engine/mpgenerator.json` | root `Cube2` + `Axle`; `idle` (30 f) · `cycle` (60 f) |
-| Fluid pump shape | `assets/iiex/shapes/engine/fluidpump.json` | root cubes + `Piston`; `idle` (30 f) · `cycle` (60 f) |
-| Fluid pump editable | `assets/editable/shapes/machine-pipe-megablock-mppump.json` | present (untracked in git) |
-| Handbook | `assets/iiex/config/handbook/07-engines.json` ↔ `docs/iiex/handbook/07-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
+| MP generator shape | `mods/iiex/assets/iiex/shapes/engine/mpgenerator.json` | root `Cube2` + `Axle`; `idle` (30 f) · `cycle` (60 f) |
+| Fluid pump shape | `mods/iiex/assets/iiex/shapes/engine/fluidpump.json` | root cubes + `Piston`; `idle` (30 f) · `cycle` (60 f) |
+| Fluid pump editable | `workbench/shapes/machine-pipe-megablock-mppump.json` | present (untracked in git) |
+| Handbook | `mods/iiex/assets/iiex/config/handbook/07-engines.json` ↔ `mods/iiex/docs/handbook/07-engines.html` | present, wrong by 3× on both sub-machine rates - see [Gotchas](#gotchas) |
 
 All running clips use `onAnimationEnd: Repeat`, which they must: a `Hold` cycle would freeze and the
 RCC-suppressed mesh would vanish.
@@ -562,7 +562,7 @@ boiler's explosion salvage path.
   ([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge) - the
   "swap the waterwheel for an engine" progression.
 
-### Tests — `test/IronIndustryExpanded.Tests/Blocks/Engine/`
+### Tests — `mods/iiex/tests/Blocks/Engine/`
 
 | file | pins |
 |---|---|
@@ -663,7 +663,7 @@ without a sub-machine demanding power.
 
 ## Open
 
-- No editable shape for the engine. `assets/iiex/shapes/engine/watt.json` is the only copy.
+- No editable shape for the engine. `mods/iiex/assets/iiex/shapes/engine/watt.json` is the only copy.
 - The sub-machine back-reference should call `TryFindEngineFor` (Gotcha 1). Two engines two cells apart
   is a legal, buildable layout today and the binding is undefined.
 - Nothing consumes the engine's power except the pump, the generator and smex's blower. Per the settled

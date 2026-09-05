@@ -78,11 +78,11 @@ The mechanic is shipped four times over, and a gas lamp would reuse it rather th
 
 | Shipped light source | Where | Note |
 |---|---|---|
-| molten canal | `src/IronIndustryExpanded/BlockNetworkMolten/Blocks/BlockMoltenCanal.cs:253-256` | per-cell glow |
+| molten canal | `mods/iiex/src/BlockNetworkMolten/Blocks/BlockMoltenCanal.cs:253-256` | per-cell glow |
 | molten barrel | `.../Blocks/BlockMoltenBarrel.cs:95-102` | scaled to stored temperature |
-| cast mold | `src/IronIndustryExpanded/BlockStructures/Casting/Blocks/BlockCastMold.cs:103-108` | its own comment names the idiom: `GetLightHsv` + `MarkBlockDirty`-on-change, "as the molten barrel and the canals" |
-| cowper heat sink | `src/SteelIndustryExpanded/BlockStructures/CowperStove/Blocks/BlockHeatsink.cs:38-53` | smex's copy |
-| the shared scale | `src/ExpandedLib/Metals/MoltenMetal.cs:155-162` - block light 0–24, floored by `MetalGlowMinTemp` = 500 °C (`src/ExpandedLib/ExlibConfig.cs:70`) | exlib owns the scale; a lamp would be a constant on it instead of a temperature function |
+| cast mold | `mods/iiex/src/BlockStructures/Casting/Blocks/BlockCastMold.cs:103-108` | its own comment names the idiom: `GetLightHsv` + `MarkBlockDirty`-on-change, "as the molten barrel and the canals" |
+| cowper heat sink | `mods/siex/src/BlockStructures/CowperStove/Blocks/BlockHeatsink.cs:38-53` | smex's copy |
+| the shared scale | `mods/exlib/src/Metals/MoltenMetal.cs:155-162` - block light 0–24, floored by `MetalGlowMinTemp` = 500 °C (`mods/exlib/src/ExlibConfig.cs:70`) | exlib owns the scale; a lamp would be a constant on it instead of a temperature function |
 
 ### What it is up against, in vanilla
 
@@ -154,7 +154,7 @@ lighting is a pure leaf: it consumes coal gas and produces photons, and no recip
   same observation [gas-producer](../../machines/gas-producer.md):316-320 makes when it argues "never stored"
   is a decision, not a mechanism. For lighting the accident inverts: the buffering the mains give for free is
   exactly what the holder was for. Do not "fix" it without noticing that.
-* **Two gases always mix, silently** (`src/ExpandedLib/Fluids/ExLiquids.cs:106-115`, comment at `:114`).
+* **Two gases always mix, silently** (`mods/exlib/src/Fluids/ExLiquids.cs:106-115`, comment at `:114`).
   A domestic lighting main threaded through a works will pass near air and exhaust runs, and one accidental
   junction merges the pools and relabels by priority (`:118-119`). Lighting is the worst case because the
   mains are long and everywhere, unlike a producer's short lock-step feed.
@@ -166,7 +166,7 @@ lighting is a pure leaf: it consumes coal gas and produces photons, and no recip
   should still say why (no gas, no pressure, valve shut), not just dark.
 * **[conventions.md](../../conventions.md) § Networks lists coal gas as a pipe medium.** Capability, not
   scope; already logged at [scope.md](../../scope.md).
-* **`assets/exlib/config/liquids.json` declares four media** - Air, Steam, Exhaust, Water - so there is no
+* **`mods/exlib/assets/exlib/config/liquids.json` declares four media** - Air, Steam, Exhaust, Water - so there is no
   medium a lamp could consume today even if the block existed. Owned by [gasworks](gasworks.md) § knots.
 
 ## Open

@@ -184,7 +184,7 @@ replaced. Three concrete consequences:
    ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Torque governs, not power). The Corliss must be
    specified as a curve before a generator can read anything off it, and no such curve exists.
 2. The scale is off by ~4 orders of magnitude. The live bridge supplies `1 N·m × 2 rad/s = 2 W`
-   (`src/IronIndustryExpanded/IiexConfig.cs:467`, `src/ExpandedLib/ExlibConfig.cs:98`), against elex's 36 kW.
+   (`mods/iiex/src/IiexConfig.cs:467`, `mods/exlib/src/ExlibConfig.cs:98`), against elex's 36 kW.
    Worked out on [electrical-grid.md](electrical-grid.md) § How it relates.
 3. Even the iiex engine is not on that network yet. It is still a pure vanilla-MP source (it implements no
    `IMpEnergy*`), reaching this network only indirectly through a vanilla axle into the flywheel hub

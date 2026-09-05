@@ -161,7 +161,7 @@ function Invoke-ProvisionDotnet([string[]]$Argv) {
 # regenerable build artifact; the shipped mods still target whatever API the player has installed.
 # Idempotent, and a no-op on versions that lack the member, so it disappears once upstream fixes it.
 function Publicize-GameApi([string]$ApiDll) {
-  $patcher = Join-Path $PSScriptRoot 'tools/patch-api.cs'
+  $patcher = Join-Path $RepoRoot 'infra/tools/patch-api.cs'
   if (-not (Test-Path $patcher) -or -not (Test-Path $ApiDll)) { return }
   & dotnet run $patcher -- $ApiDll
   if ($LASTEXITCODE -ne 0) {
@@ -361,12 +361,13 @@ function Invoke-Test([string[]]$Argv) {
 
   $tfms = [ordered]@{ '1.22' = 'net10.0'; '1.21' = 'net8.0'; '1.20' = 'net7.0' }
   # Dependency order: exlib -> iiex -> siex. One suite per mod; a test lives with the top mod it
-  # touches, so there is no shared cross-mod project.
-  $projects = @(
-    'ExpandedLib.Tests',
-    'IronIndustryExpanded.Tests',
-    'SteelIndustryExpanded.Tests'
-  )
+  # touches, so there is no shared cross-mod project. Keyed by mod folder, since each test project
+  # now sits at mods/<mod>/tests/.
+  $projects = [ordered]@{
+    exlib = 'ExpandedLib.Tests'
+    iiex  = 'IronIndustryExpanded.Tests'
+    siex  = 'SteelIndustryExpanded.Tests'
+  }
 
   $wanted = switch ($version) {
     'latest' { @('1.22') }
@@ -404,19 +405,20 @@ function Invoke-Test([string[]]$Argv) {
     if ($LASTEXITCODE -ne 0) { throw "Coverage collection failed." }
     $py = (Get-Command python -ErrorAction SilentlyContinue) ?? (Get-Command python3 -ErrorAction SilentlyContinue)
     if (-not $py) { throw "Python is required for the coverage gate but was not found (coverage.xml was still written)." }
-    & $py.Source (Join-Path $PSScriptRoot 'tools/coverage_gate.py') $cov
+    & $py.Source (Join-Path $RepoRoot 'infra/tools/coverage_gate.py') $cov
     if ($LASTEXITCODE -ne 0) { throw "Coverage gate failed." }
     Write-Host "Coverage gate passed."
     return
   }
 
   $work = foreach ($v in $wanted) {
-    foreach ($p in $projects) {
+    foreach ($mod in $projects.Keys) {
+      $p = $projects[$mod]
       [pscustomobject]@{
         Version = $v
         Tfm     = $tfms[$v]
         Project = $p
-        Proj    = (Join-Path $RepoRoot "test/$p/$p.csproj")
+        Proj    = (Join-Path $RepoRoot "mods/$mod/tests/$p.csproj")
         Legacy  = ($tfms[$v] -ne 'net10.0')   # legacy TFMs need the multi-target opt-in
       }
     }
@@ -489,7 +491,7 @@ function Invoke-Test([string[]]$Argv) {
 
 #region format
 
-# Formats every C# file under src/ and test/ in two passes, and the order is load-bearing. CSharpier
+# Formats every C# file under mods/ and infra/ in two passes, and the order is load-bearing. CSharpier
 # wraps lines to the printWidth in .csharpierrc but always emits Allman braces and cannot be
 # configured; dotnet format then applies .editorconfig, which moves the braces onto the same line.
 # Running the pair is idempotent. Running CSharpier alone afterwards would undo the brace style.
@@ -500,23 +502,23 @@ function Invoke-Format([string[]]$Argv) {
   $check = Get-Flag $Argv '-Check'
   Push-Location $RepoRoot
   try {
-    if ($check -and (git status --porcelain -- src test)) {
-      Write-Host "src/ or test/ has uncommitted changes - -Check needs a clean tree." -ForegroundColor Red
+    if ($check -and (git status --porcelain -- mods infra)) {
+      Write-Host "mods/ or infra/ has uncommitted changes - -Check needs a clean tree." -ForegroundColor Red
       exit 1
     }
 
-    csharpier format src test
+    csharpier format mods infra
     if ($LASTEXITCODE -ne 0) { throw "csharpier exited $LASTEXITCODE" }
 
-    foreach ($dir in @('src', 'test')) {
+    foreach ($dir in @('mods', 'infra')) {
       dotnet format whitespace $dir --folder
       if ($LASTEXITCODE -ne 0) { throw "dotnet format exited $LASTEXITCODE on $dir" }
     }
 
     if ($check) {
-      if (git status --porcelain -- src test) {
+      if (git status --porcelain -- mods infra) {
         Write-Host "`nThese files are not formatted:" -ForegroundColor Red
-        git diff --name-only -- src test | ForEach-Object { Write-Host "  $_" }
+        git diff --name-only -- mods infra | ForEach-Object { Write-Host "  $_" }
         Write-Host "`nRun scripts/exmod format and commit the result." -ForegroundColor Yellow
         exit 1
       }

@@ -138,8 +138,8 @@ Measured off the files, children counted as additional solid per
 
 | Shape | State | Elements | Drawn | Rule says | Settled | Verdict |
 |---|---|---|---|---|---|---|
-| `assets/editable/shapes/item-shingled-slab.json` | untracked | `ShingledSlab1` 8 × 3 × 10 + child `ShingledSlab11` 8 × 3 × 10 | 8 × 3 × 20 = 480 vx³ | 1200 u | 1200 u | exact |
-| `assets/editable/shapes/item-shingled-bar.json` | untracked | `ShingledBar1` 3 × 3 × 9 + child `SingledBar11` 3 × 3 × 9 | 3 × 3 × 18 = 162 vx³ | 405 u | 400 u | 5 u over - 400 is a rounding, and it needs saying |
+| `workbench/shapes/item-shingled-slab.json` | untracked | `ShingledSlab1` 8 × 3 × 10 + child `ShingledSlab11` 8 × 3 × 10 | 8 × 3 × 20 = 480 vx³ | 1200 u | 1200 u | exact |
+| `workbench/shapes/item-shingled-bar.json` | untracked | `ShingledBar1` 3 × 3 × 9 + child `SingledBar11` 3 × 3 × 9 | 3 × 3 × 18 = 162 vx³ | 405 u | 400 u | 5 u over - 400 is a rounding, and it needs saying |
 
 ### What ships instead
 
@@ -150,9 +150,9 @@ Measured off the files, children counted as additional solid per
 | `StockForm.All` | shingledbar, shingledslab - two entries | `StockForm.cs:80` | `bloom`/`slab` survive only as `FormerNames` |
 | `stock-shingledbar` mass | 400 u | `StockItemDefinitions.cs:24` | a 2-ball bar - correct |
 | `stock-shingledslab` mass | 1200 u | `StockItemDefinitions.cs:25` | a 6-ball slab - correct |
-| `stock-shingledbar-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `assets/iiex/shapes/forming/` | ⛔ the drawn shingled bar is 162 vx³ - the art still lags the form by 2 voxels of length |
+| `stock-shingledbar-30.json` | two 3 × 3 × 8 cubes = 3 × 3 × 16 = 144 vx³ | `mods/iiex/assets/iiex/shapes/forming/` | ⛔ the drawn shingled bar is 162 vx³ - the art still lags the form by 2 voxels of length |
 | `stock-shingledslab-30.json` | two 8 × 3 × 10 cubes = 8 × 3 × 20 = 480 vx³ | " | same geometry as the drawn slab |
-| iiex smithing recipes | exactly one, and it is pig-breaking | `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/smithing/pig.json` | the helve's "one recipe" is not the shingling one |
+| iiex smithing recipes | exactly one, and it is pig-breaking | `mods/iiex/tests/goldens/iiex/recipes/smithing/pig.json` | the helve's "one recipe" is not the shingling one |
 
 ---
 
@@ -238,7 +238,7 @@ of the line entirely. Keeping the hammer to consolidation is what makes the form
   `editable/` is source-only by convention.
 * The helve's "one recipe" is not the shingling recipe. iiex ships exactly one smithing recipe and it
   is `iwexpigbreak` (`Recipes/Smithing/PigRecipeDefinitions.cs:20-35`, golden
-  `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/smithing/pig.json`). The claim in this page's Why
+  `mods/iiex/tests/goldens/iiex/recipes/smithing/pig.json`). The claim in this page's Why
   section is a design constraint that a second recipe must be written to satisfy - and, once written, must
   stay the only one.
 * Piling is a hot operation with no stated threshold. The stock item cools using vanilla's

@@ -11,8 +11,8 @@ conventions live outside it: a page here is never also a task tracker.
 |---|---|
 | [plans/STATE.md](../internal/plans/STATE.md) | what is actually true right now - live vs designed vs blocked, every blocker with code evidence, and the open decisions. Read before trusting any page's status |
 | [plans/NEXT.md](../internal/plans/NEXT.md) | what is being built right now and what comes next |
-| [plans/iiex-bringup.md](../internal/plans/iiex-bringup.md) | the art queue and the playtest gates for bringing iiex online |
-| [workbench/layouts.md](../internal/workbench/layouts.md) | multiblock layout scratchpad. Not a source of truth - the goldens are |
+| [plans/iiex-bringup.md](../internal/plans/iwex-bringup.md) | the art queue and the playtest gates for bringing iiex online |
+| [workbench/layouts.md](../../workbench/layouts.md) | multiblock layout scratchpad. Not a source of truth - the goldens are |
 | [vanilla/](../internal/vanilla/README.md) | the vendored Vintage Story source: where its types live, the practices it follows, the traps it hides. What the game does, cited to a line |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | code style, comment conventions, formatting |
 
@@ -110,7 +110,7 @@ conventions live outside it: a page here is never also a task tracker.
 [mechanics/diagram-crafting](mechanics/diagram-crafting.md) and the design table at
 [machines/design-table](machines/design-table.md).
 
-[layouts-workbench.md](../internal/workbench/layouts.md) is the multiblock drafting workbench - layouts are drafted
+[layouts-workbench.md](../../workbench/layouts.md) is the multiblock drafting workbench - layouts are drafted
 there by hand, and the shipped ones are copied back as snapshots. The blocktype goldens are the truth; a
 snapshot can be stale.
 

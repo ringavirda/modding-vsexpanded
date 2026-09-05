@@ -62,7 +62,7 @@ Mean 2.450 u/vx³, spread ±2.5 %.
 
 The masses are vanilla's own, cross-checked two ways:
 * an ingot is 100 u - the mold fill quantity, and the scale the mod already uses (`MoldDefaultUnits` = 100,
-  `src/IronIndustryExpanded/IiexConfig.cs:138`; vanilla's tool molds are on the same scale at
+  `mods/iiex/src/IiexConfig.cs:138`; vanilla's tool molds are on the same scale at
   `assets/survival/blocktypes/clay/fired/toolmold.json:91-124`, 100 / 200 / 900);
 * the smithing recipes confirm the ingot count. `assets/survival/recipes/smithing/rod.json` is a 2-layer
   2 × 10 pattern = 40 voxels, inside one ingot's 42 → one ingot → 100 u.
@@ -83,7 +83,7 @@ VS shape space is 16 units per block edge, and one unit is one voxel edge, so an
 `(to − from)` product is directly its voxel³ volume. What the measurement must get right:
 
 * Children are drawn in the parent's local frame. A child that is offset out of the parent is
-  additional solid (`assets/iiex/shapes/item/castbillet.json`: `CastBillet1` at `z 0…12` with child
+  additional solid (`mods/iiex/assets/iiex/shapes/item/castbillet.json`: `CastBillet1` at `z 0…12` with child
   `CastBillet11` at `z −12…0` - two adjacent halves, total 3 × 3 × 24). A child that overlaps the parent is
   decoration and must not be counted.
 * Hollow and toothed geometry is not a box. `item/cast-barrel.json` (a cored vessel drawn as four wall
@@ -106,7 +106,7 @@ picks the nearest workable value. The drawn pig measures 156 vx³ → 390 u and 
 
 | Constant | Value | Where | Status |
 |---|---|---|---|
-| units per voxel³ | 2.5 | `src/IronIndustryExpanded/Items/PigBreaking.cs:36-37` - the only place in the codebase that expresses it, and even there it is derived (`ItemPig.PigUnits / PigVoxels`) rather than declared | no shared constant exists |
+| units per voxel³ | 2.5 | `mods/iiex/src/Items/PigBreaking.cs:36-37` - the only place in the codebase that expresses it, and even there it is derived (`ItemPig.PigUnits / PigVoxels`) rather than declared | no shared constant exists |
 | `PigBreaking.PigVoxels` | 150 | `PigBreaking.cs:22` | the anvil work-item footprint, chosen so 375 / 150 = 2.5 exactly; documented in-source as moving with `PigUnits` |
 | pig anvil footprint | 5 × 3 × 10 = 150 vx | `Items/ItemPig.cs:141-148` | a solid block positioned to cover the small `smithing/pig` recipe shape; not the drawn pig shape |
 
@@ -124,11 +124,11 @@ authoritative on its own; the table records where they disagree.
 
 | Item | Constant (file:line) | Ships | Shape file | Drawn vx³ | Rule says | Verdict |
 |---|---|---|---|---|---|---|
-| `pig` | `Items/ItemPig.cs:39` | 375 | `assets/iiex/shapes/pig.json` (5×2×12 + 3×1×12) | 156 | 390 → settled 375 | matches the settled mass |
+| `pig` | `Items/ItemPig.cs:39` | 375 | `mods/iiex/assets/iiex/shapes/pig.json` (5×2×12 + 3×1×12) | 156 | 390 → settled 375 | matches the settled mass |
 | `pigchunk` | `Items/ItemPig.cs:40` | 25 | `game:item/ore/ungraded/coke` (borrowed) | n/a | 1/15 of the pig | denomination - re-cuts with the pig |
 | `pigbit` | `Items/ItemPig.cs:41` | 5 | `game:item/nugget` (borrowed) | n/a | ⅕ of a chunk | denomination |
 | `slagbrick` | `Items/SlagItemDefinitions.cs:27` | `= PigUnits` | shares the pig's bed cavity | n/a | follows the pig | correct by construction |
-| `castplate-heavy` | `Items/CastPartItemDefinitions.cs:35` | 160 | `assets/iiex/shapes/item/heavyplate.json` (12×2×12) | 288 | 720 as drawn; settled 500 | stale, and the art must be redrawn |
+| `castplate-heavy` | `Items/CastPartItemDefinitions.cs:35` | 160 | `mods/iiex/assets/iiex/shapes/item/heavyplate.json` (12×2×12) | 288 | 720 as drawn; settled 500 | stale, and the art must be redrawn |
 | `cast-barrel` | `Items/CastPartItemDefinitions.cs` | 200 | `…/item/cast-barrel.json` (hollow) | 603 (meaningless) | not naively derivable | needs a solid-volume measure |
 | `bevelgear` | `Items/BevelGearItemDefinitions.cs:12` | 40 | `…/item/gearbevel.json` (toothed) | 488 (meaningless) | not naively derivable | needs a solid-volume measure |
 | `stock-shingledbar` | `BlockStructures/Forming/StockItemDefinitions.cs:24` | 400 | `…/forming/stock-shingledbar-*.json` | 144 as drawn | 405 for the settled 3 × 3 × 18 | mass settled 2026-08-12; the **art** is still the 16-long one |
@@ -161,15 +161,15 @@ evidence of how the number was picked, not a second definition of mass.
 
 | Member | file:line | Notes |
 |---|---|---|
-| `PigBreaking.UnitsPerVoxel` | `src/IronIndustryExpanded/Items/PigBreaking.cs:36-37` | `ItemPig.PigUnits / (float)PigVoxels` = 2.5. The only expression of the rule in code |
+| `PigBreaking.UnitsPerVoxel` | `mods/iiex/src/Items/PigBreaking.cs:36-37` | `ItemPig.PigUnits / (float)PigVoxels` = 2.5. The only expression of the rule in code |
 | `PigBreaking.PigVoxels` | `…/PigBreaking.cs:22` | 150 |
 | `PigBreaking.Emit` | `…/PigBreaking.cs:45-55` | Converts shed voxels → whole chunks + bits, carrying the sub-bit remainder on the work item. Pure and deterministic so conservation is unit-testable |
 | `ItemPig.PigUnits / ChunkUnits / BitUnits` | `…/ItemPig.cs:39-41` | 375 / 25 / 5 |
 | `ItemPig.CreatePigVoxels` | `…/ItemPig.cs:141-148` | Fills a 5 × 3 × 10 metal block on the anvil |
 | `ItemPig.TryPlaceOn` | `…/ItemPig.cs:104` | Places the work item and tags it so the helve patch acts only on pigs |
-| `AnvilPigBreakingPatches` | `src/IronIndustryExpanded/Patches/` | Pays the shed voxels out as chunks and bits |
+| `AnvilPigBreakingPatches` | `mods/iiex/src/Patches/` | Pays the shed voxels out as chunks and bits |
 | Consumers of the constants | `BlockStructures/Casting/BlockEntities/BlockEntitySandCastingBed.cs:418-422`, `:479`, `:619`; `BlockStructures/Casting/SandBedLayout.cs:167`; `BlockStructures/Casting/PatternItemDefinitions.cs:75` | Denomination and cavity maths |
-| Tests | `test/IronIndustryExpanded.Tests/Items/PigBreakingTests.cs` | Asserts the 2.5 u/voxel payout and end-to-end conservation |
+| Tests | `mods/iiex/tests/Items/PigBreakingTests.cs` | Asserts the 2.5 u/voxel payout and end-to-end conservation |
 
 Where a mass is declared today: as a C# `const` in the code-first item definition, then stamped onto the
 item as a `materialUnits` attribute - e.g. `ItemPig.cs:62`, `CastPartItemDefinitions.cs:110`,

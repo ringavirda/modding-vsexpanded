@@ -16,7 +16,7 @@ transmission housings. The bevel-gear item still has no recipe.
 * the transmission block - the 2 × 2 footprint, the three types × four sides, the three-stage RCC and
   what it costs, the clutch lever cell and its interaction routing, and its no-drops rule;
 * the bevel-gear item definition;
-* every asset in `assets/iiex/shapes/mpenergy/` and its wiring state, including the orphaned and
+* every asset in `mods/iiex/assets/iiex/shapes/mpenergy/` and its wiring state, including the orphaned and
   retired editable sources;
 * the family's grid recipes (`Recipes/Grid/EnergyRecipeDefinitions.cs`) and the transmission's RCC cost.
 
@@ -139,13 +139,13 @@ be placed against it; clicks before construction fall through to the RCC behavio
 
 | Piece | Runtime shape | Clips | Textures | Elements |
 |---|---|---|---|---|
-| Flywheel (normal) | `assets/iiex/shapes/mpenergy/flywheel.json` | `idle`, `cycle` (30 f) | `iron5`, `cast-iron1` | Supports · ShaftHousing · AxleShaft · Mass |
+| Flywheel (normal) | `mods/iiex/assets/iiex/shapes/mpenergy/flywheel.json` | `idle`, `cycle` (30 f) | `iron5`, `cast-iron1` | Supports · ShaftHousing · AxleShaft · Mass |
 | Flywheel (large) | `.../flywheel-large.json` | `idle`, `cycle` (30 f) | `iron3`, `iron5`, `cast-iron1` | same four |
 | Shaft and bevel | `.../shaft.json` | none | `cast-iron1` | `Cube2` |
 | Bevel gear (block part) | `.../bevelgear.json` | none | `cast-iron1` | `HubS` - authored facing south |
 | Transmission x2 / x4 | `.../transmission-x2.json`, `-x4.json` | `idle`, `cycle` (30 f) | `plain`, `iron5`, `cast-iron1` | Base · MainShafts · SupportShaft |
 | Transmission clutch | `.../transmission-clutch.json` | `connected`, `disconnected`, `mainshaft1cycle`, `mainshaft2cycle`, `sideshaftcycle` (30 f) | `iron5`, `cast-iron1` | Base · MainShafts · SupportShaft |
-| Bevel-gear item | `iiex:item/gearbevel` (`assets/iiex/shapes/item/gearbevel.json`) | - | - | - |
+| Bevel-gear item | `iiex:item/gearbevel` (`mods/iiex/assets/iiex/shapes/item/gearbevel.json`) | - | - | - |
 
 Every clip is authored as one revolution of its reference shaft; the playback convention that depends on
 that is owned by [mp-energy](../mechanics/mp-energy.md).
@@ -365,10 +365,10 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Energy/` - six files, 45 methods: `FlywheelTests` (13),
+`mods/iiex/tests/Blocks/Energy/` - six files, 45 methods: `FlywheelTests` (13),
 `CastIronBevelTests` (10), `TransmissionTests` (9), `EnergyAnimTests` (6), `CastIronShaftTests` (4),
 `EnergyMeshesTests` (3). The network model itself is pinned in
-`test/ExpandedLib.Tests/Networks/MpEnergyNetworkStateTests.cs` and `…TickTests.cs`.
+`mods/exlib/tests/Networks/MpEnergyNetworkStateTests.cs` and `…TickTests.cs`.
 
 ---
 

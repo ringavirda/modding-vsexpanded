@@ -217,7 +217,7 @@ clicks per casting against the cell's 2, a 2.5× advantage rather than a free on
 
 The converter-charge-to-slab arithmetic is [Bessemer § Open #2](../machines/bessemer.md)'s.
 
-### Asset census — `assets/iiex/shapes/casting/`
+### Asset census — `mods/iiex/assets/iiex/shapes/casting/`
 
 | Measure | Count | Note |
 |---|---|---|

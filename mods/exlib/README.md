@@ -1,0 +1,49 @@
+# Expanded Library (`exlib`)
+
+Shared framework mod for the *Expanded* family
+([Iron Industry Expanded](../iiex/README.md),
+[Steel Industry Expanded](../siex/README.md)). It ships no gameplay content
+of its own - install it because another mod depends on it.
+
+## What it provides
+
+- **Block networks** - a generic connected-graph framework, split across the two folders
+  the layout rule prescribes: the graph model in `Networks/` (`BlockNetwork` + subclasses,
+  `PipeNetworkState`, the `I*Node`/`I*Connector` contracts) and the engine-facing shell in
+  `Blocks/Networks/` (`BlockNetworkNode`, node block entities, the `BlockNetworkModSystem`
+  manager). `iiex` registers the "pipe" network on it, `iiex` the "molten" network.
+- **Multiblock structures** (`Blocks/Structures/`) - completion monitoring,
+  build-outline projection (ctrl+shift+rmb), crash-safe incomplete-part highlighting,
+  and the shared invisible `structurefiller` block that gives mega-block machines
+  per-cell collision.
+- **Production machines** (`Blocks/Machines/`) - `BlockEntityProductionMachine` base
+  (the tick lifecycle + operational gate) and `MachinePorts` helpers, shared by
+  engines, furnaces, converters and sub-machines.
+- **Block-entity healing** (`Blocks/Healing/`) - recreates a block entity that was
+  lost while its block survived (a load failure or desync), automatically on chunk
+  load and via `/exmod heal`.
+- **Registries** (`Registries/`) - attribute-driven registration:
+  - `Entities/` - `[BlockRegister]` / `[ItemRegister]` / `[BlockEntityRegister]` /
+    `[BlockBehaviorRegister]` / `[BlockEntityBehaviorRegister]` /
+    `[CollectibleBehaviorRegister]` for blocks, items, entities and behaviors.
+  - `Commands/` - `[CommandRegister]` / `[SubCommandRegister]` building the shared
+    `/exmod` (server) and `.exmod` (client) command root.
+  - `Config/` - generic versioned config store (`ExConfigRegister`) with
+    source-generated value accessors, range-gated values, migrations and live
+    `/exmod config` editing.
+  - `Recipes/` - per-mod recipe-cost profiles switchable with `/exmod recipes`.
+  - `Preferences/` - per-player display-preference store.
+- **Block migrations** (`Blocks/Migrations/`) - rewrites renamed/re-variantted block
+  codes (and matching item stacks) in old saves as chunks load.
+- **Shared helpers** (`Helpers/`, `Renderers/`) - `ExOrientation` (rotation math),
+  `ExParticles` / `ExSounds` (effect catalogues), `ExCreativeTabs`,
+  `ExInventory` / `ExItems`, `ExBlockNames` (variant display names), `ExContentGate`
+  (hide-from-creative/handbook + recipe removal), and the shared `SurfaceRenderer`.
+- **Legacy support** (`Legacy/`) - shims/polyfills that let the family build and run
+  against Vintage Story 1.21 and 1.20 alongside 1.22.
+
+## Building
+
+```sh
+dotnet build mods/exlib/src/ExpandedLib.csproj
+```

@@ -198,7 +198,7 @@ Every metal's identity is JSON; the emitters supply the rest. `<domain>Values.X`
 
 | Field | `pigiron.json` | `castiron.json` | `bessemersteel.json` | `slag.json` |
 |---|---|---|---|---|
-| file | `assets/iiex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `assets/siex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
+| file | `mods/iiex/assets/iiex/config/metals/pigiron.json:1-13` | `…/castiron.json:1-16` | `mods/siex/assets/siex/config/metals/bessemersteel.json:1-16` | `…/slag.json:1-4` |
 | `code` | `pigiron` | `castiron` | `bessemersteel` | `slag` |
 | `moltenItem` | `iiex:ingot-pigiron` | `iiex:ingot-castiron` | `siex:ingot-bessemersteel` | `iiex:slag` |
 | `solidDrop` | `game:metalbit-iron` | `game:metalbit-iron` | `game:metalbit-steel` | (convention) |
@@ -275,7 +275,7 @@ purpose, so a castable-but-brittle metal never leaks an anvil-forgeable `workite
 This is a continuous material→pressure ladder and the shape D3 asks for, but it is keyed on `Mod.Info.ModID`,
 so the rating belongs to the block's mod, not to the metal it was built from: a hadfield pipe on a Bessemer
 base and one on an open-hearth base are the same block and rate identically. D3 needs the key to move onto the
-metal. The pipe base classes live in exlib (`src/ExpandedLib/Blocks/Networks`); the burst registry sits with
+metal. The pipe base classes live in exlib (`mods/exlib/src/Blocks/Networks`); the burst registry sits with
 them and stays domain-keyed.
 
 ---
@@ -286,14 +286,14 @@ them and stays domain-keyed.
 |---|---|---|
 | metal defs | `assets/{iiex,smex}/config/metals/*.json` | 4 files: `pigiron`, `castiron`, `slag` (iiex), `bessemersteel` (smex). No `blowniron`, `openhearthsteel`, `cruciblesteel`, `hadfieldsteel`, `chromesteel`, `ferromanganese`, `ferrochrome`, `wastealloy` |
 | shapes | — | none, by design. Every generated form paints a `game:` shape (`item/ingot`, `item/plate`, `item/nugget`, `item/rod`, `item/resource/metalnailsandstrips`) and every tool a `game:item/tool/*` shape |
-| textures - cast iron | `assets/iiex/textures/block/metal/castiron.png` | live, referenced by `castiron.json:10` |
-| textures - cast iron alt | `assets/iiex/textures/block/metal/castiron-alt.png` | orphaned - no `.cs`, `.json` or golden in the repo references `castiron-alt` |
+| textures - cast iron | `mods/iiex/assets/iiex/textures/block/metal/castiron.png` | live, referenced by `castiron.json:10` |
+| textures - cast iron alt | `mods/iiex/assets/iiex/textures/block/metal/castiron-alt.png` | orphaned - no `.cs`, `.json` or golden in the repo references `castiron-alt` |
 | textures - pig iron | `game:block/metal/tarnished/iron` | vanilla, verified present |
 | textures - Bessemer steel | `game:block/metal/ingot/steel` | vanilla, verified present. It is the vanilla steel texture, so Bessemer steel is visually indistinguishable from `game:steel`, a different material on this ladder |
-| lang - iiex | `assets/iiex/lang/en.json:18-39` | complete: 2 metal names, 5 form names + descriptions, 8 tool names |
-| lang - smex | `assets/siex/lang/en.json:3-19` | complete: 1 metal name, 4 form names + descriptions, 8 tool names - the lang file is the most visible trace of the N1 conflict |
+| lang - iiex | `mods/iiex/assets/iiex/lang/en.json:18-39` | complete: 2 metal names, 5 form names + descriptions, 8 tool names |
+| lang - smex | `mods/siex/assets/siex/lang/en.json:3-19` | complete: 1 metal name, 4 form names + descriptions, 8 tool names - the lang file is the most visible trace of the N1 conflict |
 | lang - exlib | `exlib:metal-unknown` | the empty-code label (`MetalRegistry.cs:100`) |
-| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/{castiron,pigiron}/`, `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
+| goldens | `mods/iiex/tests/goldens/iiex/itemtypes/{castiron,pigiron}/`, `mods/siex/tests/goldens/siex/itemtypes/bessemersteel/` | 13 / 1 / 12 files - exactly `forms + tools` per def, so the goldens confirm the opt-in surface |
 | handbook | — | no page for the metal ladder at all. Nothing in game explains why two mild steels differ |
 
 ---

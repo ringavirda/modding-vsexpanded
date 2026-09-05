@@ -19,7 +19,7 @@ oriented parts and the trapdoor caveat, and the invisible-filler footprint syste
 [definitions, recipes & config](../mechanics/recipes-config.md) — owns code-first defs, goldens, RCC stages ·
 [heat balance](../mechanics/heat-balance.md) — owns the furnace core the oven rides ·
 [blast furnace](blast-furnace-cold.md), [cupola](cupola.md), [puddling furnace](puddling-furnace.md) — the
-consumers of what it makes · [layouts.md](../../internal/workbench/layouts.md) § 1
+consumers of what it makes · [layouts.md](../../../workbench/layouts.md) § 1
 
 ---
 
@@ -59,7 +59,7 @@ the cycle gates on sealed + timer, never on temperature.
 
 ## Structure
 
-Draft only - [layouts.md](../../internal/workbench/layouts.md) § 1, "Beehive coke oven". Nothing below has been
+Draft only - [layouts.md](../../../workbench/layouts.md) § 1, "Beehive coke oven". Nothing below has been
 parsed by `StructureLayout` or pinned by a golden, unlike the shipped structures.
 
 ⛔⛔ **Ruled 2026-08-21 by the owner: the chambers hold firebox blocks, not vanilla coal piles**, and
@@ -168,8 +168,8 @@ direction still would not seal, so folding the lid into the hopper stays wrong.
 
 ### The lid as shipped
 
-Editable source `assets/editable/shapes/furnace-block-chargelid.json`, runtime
-`assets/iiex/shapes/furnace/chargelid.json`. Two top-level elements, `Masonry` and `Lid`, which is what
+Editable source `workbench/shapes/furnace-block-chargelid.json`, runtime
+`mods/iiex/assets/iiex/shapes/furnace/chargelid.json`. Two top-level elements, `Masonry` and `Lid`, which is what
 `SelectiveElements` needs and what lets the hinge animate without dragging the brickwork.
 `rotationOrigin [2,3,2]` runs through `Cube8`, the burned-clay lip - the lid's leading edge being buried in
 that lip is the hinge barrel, not an overlap bug. At the `open` pose's −67.5° the far edge stays inside its
@@ -194,7 +194,7 @@ z-fighting is possible seen from below. A 0.01 nudge if it shows.
 
 | Need | State |
 |---|---|
-| the crown lid | built - see above; golden `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/chargelid.json` |
+| the crown lid | built - see above; golden `mods/iiex/tests/goldens/iiex/blocktypes/furnace/chargelid.json` |
 | the core's block | reuse - a plain cube with a type-label overlay, like every other furnace core (`BlockFurnaceCoreBase`) |
 | the drawing door | reuse `iiex:chargedoor` verbatim, shape and all |
 | the crown hopper | reuse `iiex:hopper-tall` verbatim |
@@ -272,7 +272,7 @@ are to the draft and to the vanilla assets it reuses.
 
 | Key | Proposed value | Source | What it does |
 |---|---|---|---|
-| chambers | 2 | [layouts.md](../../internal/workbench/layouts.md) § 1 | a bank sharing one wall |
+| chambers | 2 | [layouts.md](../../../workbench/layouts.md) § 1 | a bank sharing one wall |
 | cells per chamber | 6 (3 wide × 2 deep × 1 tall) | draft layer 1, `c` glyph | vs vanilla's 3 × 3 × 3 single chamber |
 | footprint | 9 × 4 × 4, 128 declared cells | draft | 89 brick, 12 fuel, 12 slab, 4 filler, 4 air, 2 hopper, 2 lid, 2 door, 1 core |
 | origin | `(-4, -2)` | draft | negation of `C`'s `(col 4, row 2)` |
@@ -330,7 +330,7 @@ filler. What remains to be written:
 | `BlockBeehiveOvenCore : BlockFurnaceCoreBase` | def + layout, exactly like the puddling core: `Core(domain, …)` |
 | `BlockEntityBeehiveOven` | rides the furnace core for the charge walk, ignition, away-catch-up and state machine; the cycle itself is sealed + timer (§ Role) |
 | a grid recipe | a further group in `FurnaceRecipeDefinitions` |
-| goldens | `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/beehive-core.json` |
+| goldens | `mods/iiex/tests/goldens/iiex/blocktypes/furnace/beehive-core.json` |
 | a layout test | the furnace-parts test already asserts every layout code resolves to a real block; adding this structure extends it for free |
 
 ---

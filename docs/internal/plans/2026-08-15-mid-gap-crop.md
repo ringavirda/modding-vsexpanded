@@ -44,11 +44,11 @@ one place.
 
 | File | Responsibility |
 |---|---|
-| `src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityShear.cs` | carries the input's heat onto what the stroke yields |
-| `src/ExpandedLib/Processes/ProcessJob.cs` | refuses a staged job whose output is its own input |
-| `src/IronIndustryExpanded/BlockStructures/Forming/WorkPiece.cs` | names the fresh-stack read path for what it is |
-| `test/IronIndustryExpanded.Tests/Blocks/Forming/ShearStationTests.cs` | heat carried; a stock-yielding crop is rollable |
-| `test/ExpandedLib.Tests/Processes/ProcessJobTests.cs` | the duplicator refused at load |
+| `mods/iiex/src/BlockStructures/Forming/BlockEntities/BlockEntityShear.cs` | carries the input's heat onto what the stroke yields |
+| `mods/exlib/src/Processes/ProcessJob.cs` | refuses a staged job whose output is its own input |
+| `mods/iiex/src/BlockStructures/Forming/WorkPiece.cs` | names the fresh-stack read path for what it is |
+| `mods/iiex/tests/Blocks/Forming/ShearStationTests.cs` | heat carried; a stock-yielding crop is rollable |
+| `mods/exlib/tests/Processes/ProcessJobTests.cs` | the duplicator refused at load |
 
 ---
 
@@ -62,9 +62,9 @@ moment a crop yields stock, because a piece that has to be rolled on must arrive
 The remainder needs nothing: `Remainder` hands back the same stack, so its temperature survives.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Forming/BlockEntities/BlockEntityShear.cs` —
+- Modify: `mods/iiex/src/BlockStructures/Forming/BlockEntities/BlockEntityShear.cs` —
   `CompleteStroke`, and a new private helper beside `Resolve`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Forming/ShearStationTests.cs`
+- Test: `mods/iiex/tests/Blocks/Forming/ShearStationTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -171,8 +171,8 @@ It belongs at load with the rest of `ProcessJobSet`'s validation, so a bad table
 than by a machine quietly minting metal.
 
 **Files:**
-- Modify: `src/ExpandedLib/Processes/ProcessJob.cs` — `ProcessJobSet.TryParse`, after the `count` check
-- Test: `test/ExpandedLib.Tests/Processes/ProcessJobTests.cs`
+- Modify: `mods/exlib/src/Processes/ProcessJob.cs` — `ProcessJobSet.TryParse`, after the `count` check
+- Test: `mods/exlib/tests/Processes/ProcessJobTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -304,9 +304,9 @@ The mechanism works by construction and nothing says so. On a schema that is the
 capability is one refactor away from being removed by someone who cannot see it is load-bearing.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Forming/WorkPiece.cs` — `FromStack` /
+- Modify: `mods/iiex/src/BlockStructures/Forming/WorkPiece.cs` — `FromStack` /
   `FromLegacyStack`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Forming/ShearStationTests.cs`
+- Test: `mods/iiex/tests/Blocks/Forming/ShearStationTests.cs`
 
 **Interfaces:**
 - Consumes: `CarryHeat` (Task 1).

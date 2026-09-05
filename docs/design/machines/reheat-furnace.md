@@ -23,7 +23,7 @@ the shared firebox branch's charge model ([heat balance](../mechanics/heat-balan
 [density rule](../mechanics/density-rule.md) · [rolling mill](rolling-mill.md) ·
 [puddling furnace](puddling-furnace.md) (the same chassis, one row shallower) · [firebox](firebox.md) ·
 [stock rack](stock-rack.md) (shares the planned `StockPile.Place`) ·
-[rolling](../processes/rolling.md) · [layouts-workbench.md](../../internal/workbench/layouts.md) § 1
+[rolling](../processes/rolling.md) · [layouts-workbench.md](../../../workbench/layouts.md) § 1
 
 ---
 
@@ -72,7 +72,7 @@ The shared core does not assume melting: this furnace overrides none of the molt
 ## Structure
 
 Anchor `iiex:furnace-heatingcore-{tier}-{side}`. Layout at `BlockHeatingFurnaceCore.cs:35-141`; shipped form
-is the golden at `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnaces/heating-core.json`.
+is the golden at `mods/iiex/tests/goldens/iiex/blocktypes/furnaces/heating-core.json`.
 
 **Footprint** 8 wide (X) × 4 deep (Z) × 5 tall (Y), 109 declared cells. `Origin(-6, -2)`, the negation of
 `C`'s (col 6, row 2). Same chassis as the [puddling furnace](puddling-furnace.md), one row deeper in Z,
@@ -122,8 +122,8 @@ today.
 | Part | Editable | Runtime | Notes |
 |---|---|---|---|
 | core | - | `game:block/basic/cube` | `n` marker north, `hf` type label south (`BlockHeatingFurnaceCore.cs:48-58`) |
-| hearth | `assets/editable/shapes/furnace-megablock-heatinghearth.json` | `assets/iiex/shapes/furnaces/heatinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Items1`, `Items2`, `Items3`. No animations - pruned `OnTesselation` |
-| charge door | `assets/editable/shapes/furnace-megablock-chargedoor.json` | `assets/iiex/shapes/furnaces/chargedoor.json` | elements `Bricks`, `Rails`, `Door`; animations `closed`, `open` |
+| hearth | `workbench/shapes/furnace-megablock-heatinghearth.json` | `mods/iiex/assets/iiex/shapes/furnaces/heatinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Items1`, `Items2`, `Items3`. No animations - pruned `OnTesselation` |
+| charge door | `workbench/shapes/furnace-megablock-chargedoor.json` | `mods/iiex/assets/iiex/shapes/furnaces/chargedoor.json` | elements `Bricks`, `Rails`, `Door`; animations `closed`, `open` |
 
 Caution: the hearth art is authored per (row × stock form), 3 × 5 = 15 groups, and it does not agree with
 the stock it is meant to hold. The beds draw a 16-long piece while the settled shingled bar is 18. Three of

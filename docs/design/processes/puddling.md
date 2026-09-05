@@ -59,18 +59,18 @@ What the mod abstracts away
 |---|---|
 | ~1 hour of continuous, brutal manual work per heat | a handful of right-clicks on a timer |
 | dry (Cort) vs wet / pig-boiling (Hall) puddling | one process |
-| silicon, phosphorus and manganese chemistry; the slag's composition | one `fettlestock` oxide family, chemically undifferentiated ([`FettleRecipeDefinitions.cs:16-19`](../../../src/IronIndustryExpanded/Recipes/Grid/FettleRecipeDefinitions.cs)) |
+| silicon, phosphorus and manganese chemistry; the slag's composition | one `fettlestock` oxide family, chemically undifferentiated ([`FettleRecipeDefinitions.cs:16-19`](../../../mods/iiex/src/Recipes/Grid/FettleRecipeDefinitions.cs)) |
 | "coming to nature" as a continuously observed state | a discrete ball-up step |
 | ball weights varying with the puddler's judgement | a fixed 200 u ball |
 
 What it keeps - each of these is a mechanic, not flavour:
 
 1. Fettling is a consumable, charged every heat. It is the reagent the reaction runs on, not a lining
-   ([`FettleItemDefinitions.cs:6-22`](../../../src/IronIndustryExpanded/Items/FettleItemDefinitions.cs)).
+   ([`FettleItemDefinitions.cs:6-22`](../../../mods/iiex/src/Items/FettleItemDefinitions.cs)).
 2. Fuel never touches work. One coordinate change on the shared furnace core - see
    [puddling furnace](../machines/puddling-furnace.md).
 3. Two doors. The charge goes in through the big one; the bath is worked through the small one, so the
-   heat does not leave ([`BlockChargeDoor.cs:19-21`](../../../src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockChargeDoor.cs)).
+   heat does not leave ([`BlockChargeDoor.cs:19-21`](../../../mods/iiex/src/BlockStructures/Furnaces/Blocks/BlockChargeDoor.cs)).
 4. Natural draught. No blower and no tuyeres - a damper on the stack is the only air control there is
    (`BlockEntityPuddlingFurnace.cs:44`, `:46-47`). It involves no pipe network.
 
@@ -189,7 +189,7 @@ break them.
 Nine pigs, because the bed is nine pigs. The charge is what the drawn hearth holds: three rows, three pigs
 each, stacked on their triangular section (`PuddlingHearthLayout.cs:17-19`), and the shipped shape draws
 exactly nine pig elements at the pig item's own geometry
-(`assets/iiex/shapes/furnaces/puddlinghearth.json`, `Pigs/Pig1…Pig9`, each 5 × 2 × 12 with a
+(`mods/iiex/assets/iiex/shapes/furnaces/puddlinghearth.json`, `Pigs/Pig1…Pig9`, each 5 × 2 × 12 with a
 3 × 1 × 12 child = 156 vx³ - the same volume [density rule](../mechanics/density-rule.md) measures off
 `item-pig.json`). The art, the layout constant and the charge are one fact.
 
@@ -224,10 +224,10 @@ air-starve (`BlockEntityPuddlingFurnace.cs:44`).
 * The wrought ball does not exist as an item. Nothing in `src/` produces, consumes or names one, so the
   entire output side of this table is unimplemented. See [shingling § Open](shingling.md#open).
 * The rabbling art exists three times and is wired to nothing.
-  1. `assets/editable/shapes/furnace-megablock-puddlingchargedoor.json` carries a `Tools` group with
+  1. `workbench/shapes/furnace-megablock-puddlingchargedoor.json` carries a `Tools` group with
      `Tools/Rabble` and `Tools/Paddle` racked on the door;
   2. it also carries `rabbling` (4 keyframes) and `paddle` (5 keyframes) animation clips;
-  3. `assets/editable/shapes/item-tool-rabble.json` and `item-tool-paddle.json` are drawn as standalone
+  3. `workbench/shapes/item-tool-rabble.json` and `item-tool-paddle.json` are drawn as standalone
      items - and both are untracked in git.
 
   Code only ever plays the three door clips read from block attributes

@@ -12,7 +12,7 @@
 
 **Does not own** - cited only: the oriented-parts feature and `multiblockFacings`
 ([multiblock](multiblock.md)) · the rotation convention itself, north 0° / west 90° (`ExOrientation`) ·
-the layout scratchpad ([layouts-workbench.md](../../internal/workbench/layouts.md)).
+the layout scratchpad ([layouts-workbench.md](../../../workbench/layouts.md)).
 
 ---
 
@@ -83,7 +83,7 @@ directed ones, where the ordered step catches it first and the fallback is never
 ## What exists today
 
 **Built (U10, 2026-08-22).** The declared-scheme registry this page proposes below is
-`src/ExpandedLib/Helpers/ExOrientations.cs`: twelve named schemes and the two-step `Rotate` (ordered
+`mods/exlib/src/Helpers/ExOrientations.cs`: twelve named schemes and the two-step `Rotate` (ordered
 spelling first, face-set fallback second). Every concrete `BlockNetworkNode` def declares
 `{"mode":"network","scheme":"<Name>"}` through `ExBlockDef.NetworkOriented`, which reads the scheme off
 the block's own `orientation` states rather than taking a name - so the misspelling this page worried
@@ -211,7 +211,7 @@ That buys three things at once:
    exactly the case that cannot be resolved from the string, and a registry can fail the build when a layout
    pins such a token without saying which scheme it means.
 
-This is the same move [`ExCodes`](../../internal/workbench/layouts.md) made for block codes, applied to variant states.
+This is the same move [`ExCodes`](../../../workbench/layouts.md) made for block codes, applied to variant states.
 
 ---
 

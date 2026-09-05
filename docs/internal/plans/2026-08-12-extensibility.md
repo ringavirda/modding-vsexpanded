@@ -90,8 +90,8 @@ choice, and it is why `acceptedBy` is per stage rather than per declaration.
 
 | Where | What |
 |---|---|
-| `src/ExpandedLib/Processes/` | `ProcessStage`, `StageLadder` (the `stageladder` attribute + parser), `StageLadderRegistry` (merge on `(thickness, family)`, first declaration wins, conflicts reported), `StageLadderLoader` (scans collectibles at `AssetsFinalize`, wired into `ExpandedLibModSystem`) |
-| `src/IronIndustryExpanded/…/Forming/` | `MillSchedule` — the fitted set's branch of one family's ladder; `RollSetSpec` slimmed to `schema`/`family`/`accepts`/`barrelWidth`/`minTorque`; the shipped bloom and slab ladders on `StockItemDefinitions`; `MillFeed`, `BlockEntityRollingMill` and `BlockRollingMill` read a schedule |
+| `mods/exlib/src/Processes/` | `ProcessStage`, `StageLadder` (the `stageladder` attribute + parser), `StageLadderRegistry` (merge on `(thickness, family)`, first declaration wins, conflicts reported), `StageLadderLoader` (scans collectibles at `AssetsFinalize`, wired into `ExpandedLibModSystem`) |
+| `mods/iiex/src/…/Forming/` | `MillSchedule` — the fitted set's branch of one family's ladder; `RollSetSpec` slimmed to `schema`/`family`/`accepts`/`barrelWidth`/`minTorque`; the shipped bloom and slab ladders on `StockItemDefinitions`; `MillFeed`, `BlockEntityRollingMill` and `BlockRollingMill` read a schedule |
 | tests | `StageLadderTests`, `StageLadderRegistryTests`, `MillScheduleTests`, `StageLadderSeeds`; `RollSetSpecTests` and `ShippedRollSetTests` re-cut; three goldens regenerated |
 
 ⛔ **`accepts` stayed on the roll set and is not derived from the ladder.** They are independent facts: the
@@ -213,7 +213,7 @@ added outside its reach. Art paths are exempt — a machine's own appearance is 
 
 ### Task 6 — Document it where a modder will look ✅ DONE 2026-08-12
 
-`docs/wiki/Extending-Processes.md`, linked from `_Sidebar.md` and `Home.md`. Both registry shapes with
+`mods/exlib/wiki/Extending-Processes.md`, linked from `_Sidebar.md` and `Home.md`. Both registry shapes with
 copy-pasteable JSON, the generation rules, the C# route, the schema promise, and a symptom table for when
 nothing appears.
 

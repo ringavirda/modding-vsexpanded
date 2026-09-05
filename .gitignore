@@ -71,5 +71,5 @@ coverage*.info
 # Local sources of other mods to maintain compatibility with (reference only).
 /.compat/
 
-# Release zips built by dist/CakeBuild.
+# Release zips built by infra/CakeBuild.
 /dist/Releases/

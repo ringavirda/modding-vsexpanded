@@ -258,7 +258,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
    steel tier has no product at all - [ladle § Open #2](../machines/ladle.md#open) and
    [blown iron](../items/blown-iron.md) say the same. The safe order is: ferroalloy metal +
    `Roles.Ferroalloy` → ladle → `blowniron` metal → converter retype → strip `bessemersteel`'s tool preset
-   (`assets/siex/config/metals/bessemersteel.json`).
+   (`mods/siex/assets/siex/config/metals/bessemersteel.json`).
 
 3. **A ferroalloy addition moves two numbers.** Ferromanganese is high-carbon by definition
    ([cupola](../machines/cupola.md):61-67), so every recarburising addition is also a manganese addition. A
@@ -280,7 +280,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
    [ladle](../machines/ladle.md)'s to set.
 
 6. **`Roles.Scrap` is the template, and it is a two-line change.** `MaterialRoleRegistry.IsRole(role, stack)`
-   (`MaterialRoleRegistry.cs:89`) plus one JSON row in `assets/iiex/config/materialroles.json` is the entire
+   (`MaterialRoleRegistry.cs:89`) plus one JSON row in `mods/iiex/assets/iiex/config/materialroles.json` is the entire
    mechanism a hand-dropped ferroalloy needs - the same path `TryChargeScrap` uses
    (`BlockEntityConverterControl.cs:615-661`). No new system.
 
@@ -291,7 +291,7 @@ only because there is a grade to overshoot. Blow to the end every time and there
 
 8. **There is no in-game teaching path.** A mandatory step with no handbook page is a wall, and this one has
    the worst possible failure mode: the player pours what looks like steel and it is not.
-   `docs/siex/handbook/` ↔ `assets/siex/lang/en.json` is where it goes.
+   `mods/siex/docs/handbook/` ↔ `mods/siex/assets/siex/lang/en.json` is where it goes.
 
 ---
 

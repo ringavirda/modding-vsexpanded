@@ -105,7 +105,7 @@ made of ([STATE.md:458-476](../../internal/plans/STATE.md), row *bending roller 
 > curved plate is a boiler shell, and that is iiex's.
 
 Historically plate bending rolls sat next to the shear and the punch in the boiler shop, which is what the
-1867 machine-tool plate at `assets/editable/refs/rivetsnails/` is a page of
+1867 machine-tool plate at `workbench/refs/rivetsnails/` is a page of
 ([STATE.md:433-434](../../internal/plans/STATE.md)).
 
 ---
@@ -136,7 +136,7 @@ Nothing is drawn. Not the machine, not a roll set, not a single output item.
 | Asset | Path | State |
 |---|---|---|
 | machine shape (editable) | — | none |
-| runtime shape | `assets/iiex/shapes/…` | none (`boiler/`, `engine/`, `pipes/` only) |
+| runtime shape | `mods/iiex/assets/iiex/shapes/…` | none (`boiler/`, `engine/`, `pipes/` only) |
 | roll-tooling item shapes | — | none. `item-rollers-*.json` are the mill's roll sets; `item-rollers-castblank.json` is a cast roll blank, and would be the right feedstock for this machine's tooling too |
 | lang keys / handbook page | — | none |
 
@@ -144,9 +144,9 @@ The three drawn references that bear on the shape:
 
 | Reference | Path |
 |---|---|
-| the 1867 machine-tool plate (shear · punch · rivet machine) | `assets/editable/refs/rivetsnails/machine-tools-1-rivet-making-machine-…-1867-technology-RY93PB.jpg` |
-| the hydraulic riveter (the upgrade this machine does not need) | `assets/editable/refs/rivetsnails/the-portable-hydraulic-riveter-…-2E4KE93.jpg` |
-| the mill hall, for the shafted-bench silhouette | `assets/editable/refs/rolling/C0229569-Zinc_rolling_mills,_19th_century.jpg` |
+| the 1867 machine-tool plate (shear · punch · rivet machine) | `workbench/refs/rivetsnails/machine-tools-1-rivet-making-machine-…-1867-technology-RY93PB.jpg` |
+| the hydraulic riveter (the upgrade this machine does not need) | `workbench/refs/rivetsnails/the-portable-hydraulic-riveter-…-2E4KE93.jpg` |
+| the mill hall, for the shafted-bench silhouette | `workbench/refs/rolling/C0229569-Zinc_rolling_mills,_19th_century.jpg` |
 
 Drawing notes transferred from the bench family ([heading machine](heading-machine.md)): a heavy cast bed or
 C-frame · a big flywheel on a geared shaft · a collecting tray under the working point that tells the player

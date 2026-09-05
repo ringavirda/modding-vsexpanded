@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ExpandedLib/ExpandedLib.csproj"
+        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -17,7 +17,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj"
+        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -32,9 +32,9 @@
         "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods",
-        "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/Mods/mod",
-        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/Mods/mod"
+        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/Mods/mod",
+        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/Mods/mod",
+        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/Mods/mod"
       ],
       "problemMatcher": []
     },
@@ -45,7 +45,7 @@
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dist/CakeBuild/CakeBuild.csproj"
+        "${workspaceFolder}/infra/CakeBuild/CakeBuild.csproj"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -213,7 +213,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ExpandedLib/ExpandedLib.csproj",
+        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net8.0"
       ],
@@ -225,7 +225,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj",
+        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net8.0"
       ],
@@ -237,7 +237,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ExpandedLib/ExpandedLib.csproj",
+        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net7.0"
       ],
@@ -249,7 +249,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/SteelIndustryExpanded/SteelIndustryExpanded.csproj",
+        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj",
         "-p:Legacy=true",
         "-p:TargetFramework=net7.0"
       ],
@@ -266,9 +266,9 @@
         "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.21",
-        "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net8.0/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net8.0/Mods/mod",
-        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/net8.0/Mods/mod"
+        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/net8.0/Mods/mod",
+        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/net8.0/Mods/mod",
+        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/net8.0/Mods/mod"
       ],
       "problemMatcher": []
     },
@@ -283,9 +283,9 @@
         "stage",
         "-Dest",
         "${workspaceFolder}/bin/Mods-1.20",
-        "exlib=${workspaceFolder}/src/ExpandedLib/bin/Debug/net7.0/Mods/mod",
-        "iiex=${workspaceFolder}/src/IronIndustryExpanded/bin/Debug/net7.0/Mods/mod",
-        "siex=${workspaceFolder}/src/SteelIndustryExpanded/bin/Debug/net7.0/Mods/mod"
+        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/net7.0/Mods/mod",
+        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/net7.0/Mods/mod",
+        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/net7.0/Mods/mod"
       ],
       "problemMatcher": []
     },

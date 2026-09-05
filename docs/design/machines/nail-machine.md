@@ -33,7 +33,7 @@ It is a bench, and the player builds several. The reference photograph is a hall
 
 ## Structure
 
-★★ **BUILT 2026-08-21 on a 4-cell footprint, not 1 × 1 × 1.** The authority is the owner's own layout in `docs/internal/workbench/machines.txt` - a `zy` elevation, `I m` over `O #`, so the bench is two cells deep and two tall with its working face above the principal. On the `"mpenergy"` network with cast-iron shafting: not vanilla MP and not wooden axles, since cast iron is the shared prerequisite for both the machine's frame and the shafting and there is no second tier to gate.
+★★ **BUILT 2026-08-21 on a 4-cell footprint, not 1 × 1 × 1.** The authority is the owner's own layout in `workbench/machines.txt` - a `zy` elevation, `I m` over `O #`, so the bench is two cells deep and two tall with its working face above the principal. On the `"mpenergy"` network with cast-iron shafting: not vanilla MP and not wooden axles, since cast iron is the shared prerequisite for both the machine's frame and the shafting and there is no second tier to gate.
 
 | Aspect | Proposal | Note |
 |---|---|---|
@@ -53,12 +53,12 @@ It is a bench, and the player builds several. The reference photograph is a hall
 
 | Asset | Path | State |
 |---|---|---|
-| **editable shape** | `assets/editable/shapes/machines/mpenergy/machine-mp-megablock-nailcutter.json` | drawn and tracked. Exported to `assets/iiex/shapes/forming/nailcutter.json` (2026-08-21) through `convert-shape.py` |
-| runtime shape | `assets/iiex/shapes/forming/nailcutter.json` | **shipped** (2026-08-21) |
-| textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
+| **editable shape** | `workbench/shapes/machines/mpenergy/machine-mp-megablock-nailcutter.json` | drawn and tracked. Exported to `mods/iiex/assets/iiex/shapes/forming/nailcutter.json` (2026-08-21) through `convert-shape.py` |
+| runtime shape | `mods/iiex/assets/iiex/shapes/forming/nailcutter.json` | **shipped** (2026-08-21) |
+| textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/workbench/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
 | animations | `idle` and `cycle` | both authored and both exported as `Repeat` |
-| reference art | `assets/editable/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
-| lang / handbook | `assets/iiex/lang/{en,ru,uk}.json`, `docs/iiex/handbook/10-formingshop.html` | **both shipped**; the page covers the whole forming shop rather than this bench alone |
+| reference art | `workbench/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
+| lang / handbook | `mods/iiex/assets/iiex/lang/{en,ru,uk}.json`, `mods/iiex/docs/handbook/10-formingshop.html` | **both shipped**; the page covers the whole forming shop rather than this bench alone |
 
 What is already drawn, read off the element tree:
 
@@ -155,7 +155,7 @@ Nothing exists. `grep -i "nailcutter\|nailmachine" src/` returns nothing.
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockNailMachine` | `src/IronIndustryExpanded/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` (`BlockNetworkNode` + `IExBlockDefProvider`), minus the filler interfaces |
+| `BlockNailMachine` | `mods/iiex/src/BlockStructures/Forming/Blocks/` | `BlockRollingMill.cs:31` (`BlockNetworkNode` + `IExBlockDefProvider`), minus the filler interfaces |
 | `BlockEntityNailMachine` | `.../Forming/BlockEntities/` | shares a base with the [heading machine](heading-machine.md): `BlockEntityNetworkNode` + `IMpEnergyConsumer`, `LoadTorque` at idle = 0 (`BlockEntityRollingMill.cs:336-350`) |
 | stroke tick | a hosted `BEBehaviorProductionMachine`, server-side only | `BlockEntityRollingMill.cs:28`, `:48-53`; the gate is published as `IProductionReadiness` (`:59`, `:63`) rather than tested at the top of the stroke. The bounded `dt` (`BEBehaviorProductionMachine.cs:77`, `:146`) and the away-catch-up (`:107`, `:113`) come with it |
 | speed read | per stroke | `(NetworkSystem?.GetNetworkAt(Pos) as MpEnergyNetwork)?.State?.Speed` - `BlockEntityRollingMill.cs:89-93` |

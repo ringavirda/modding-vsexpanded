@@ -16,7 +16,7 @@ on:
 # resolves assemblies from at runtime. No coverage gate here - the gate floors track the current
 # build (see tests.yml).
 #
-# Adding a game version means a row HERE and in the src/Directory.Build.props manifest (CI YAML
+# Adding a game version means a row HERE and in the mods/Directory.Build.props manifest (CI YAML
 # can't read MSBuild) - the only place the version list is duplicated.
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       # The .0 of each legacy series - the floor the mods stay source-compatible with. Keep in sync
-      # with the manifest in src/Directory.Build.props.
+      # with the manifest in mods/Directory.Build.props.
       matrix:
         include:
           - game: "1.21.0"
@@ -61,9 +61,11 @@ jobs:
         env:
           TFM: ${{ matrix.tfm }}
         run: |
-          for proj in ExpandedLib.Tests IronIndustryExpanded.Tests \
-                      SteelIndustryExpanded.Tests; do
+          for entry in exlib:ExpandedLib.Tests iiex:IronIndustryExpanded.Tests \
+                       siex:SteelIndustryExpanded.Tests; do
+            mod="${entry%%:*}"
+            proj="${entry##*:}"
             echo "::group::$proj ($TFM)"
-            dotnet test "test/$proj/$proj.csproj" -p:Legacy=true -f "$TFM" -c Debug
+            dotnet test "mods/$mod/tests/$proj.csproj" -p:Legacy=true -f "$TFM" -c Debug
             echo "::endgroup::"
           done

@@ -2,8 +2,8 @@
 
 **Status** ★★ **the catalogue is BUILT and all six items are obtainable, 2026-08-14** —
 `RolledItemDefinitions` ships `rivetrod`, `nailplate`, `beam`, `blank`, `skelp` and `boilerplate`, and two crop
-tables reach them: `assets/iiex/config/processjobs/shear.json` (wrought and the rod fork) and
-`assets/siex/config/processjobs/shear.json` (cast). **Both tiers of the forming line produce a finished
+tables reach them: `mods/iiex/assets/iiex/config/processjobs/shear.json` (wrought and the rod fork) and
+`mods/siex/assets/siex/config/processjobs/shear.json` (cast). **Both tiers of the forming line produce a finished
 product, and both branches of the fork work.** ⛔ Two declared rows are still unreachable: see
 [What is reachable today](#what-is-reachable-today)
 **Mod** iiex owns the rolled products, narrow and wide alike, and the forming line that makes them - the
@@ -171,7 +171,7 @@ alone.
 > needs editing - and an anvil-made rod can be rolled to nail plate before the player owns a puddling furnace.
 
 ★★ **Built 2026-08-14, exactly as ruled.** `StockForm.Rod` (2 × 2 × 10, ceiling 4, e = 1) and its ladder
-`assets/iiex/config/processroutes/rod.json` ship, and the admission is `StockForm.Feedstock` — a table of
+`mods/iiex/assets/iiex/config/processroutes/rod.json` ship, and the admission is `StockForm.Feedstock` — a table of
 *offered code → the stock item it enters as*, applied by `BlockEntityRollingMill.Admit`. Keeping it as
 codes rather than forms is what lets a caller admit their own feedstock without knowing a form exists.
 
@@ -245,15 +245,15 @@ Nothing in this family is exported to a runtime domain; every file below is an u
 
 | Product | Drawn where | Element | Measures |
 |---|---|---|---|
-| `rolledrod` | `assets/editable/shapes/item-rod-rolled.json` | `RolledRod200` `:16-18` | 2 × 2 × 10 - exact |
-| `rivetrod` | `assets/editable/shapes/item-rod-nail.json` | `NailRod1` `:16-18` + 3 children `:30-32`, `:44-46`, `:58-60` | 4 × (1 × 1 × 10) - the file name is stale, this is the rod bundle |
+| `rolledrod` | `workbench/shapes/item-rod-rolled.json` | `RolledRod200` `:16-18` | 2 × 2 × 10 - exact |
+| `rivetrod` | `workbench/shapes/item-rod-nail.json` | `NailRod1` `:16-18` + 3 children `:30-32`, `:44-46`, `:58-60` | 4 × (1 × 1 × 10) - the file name is stale, this is the rod bundle |
 | `rivetrod` (in situ) | `item-rod-rolled.json` | `CutNailRod1` `:108-110` + 3 children | the same bundle drawn as the cut of the 1.0 grooved stage |
-| `beam` | `assets/editable/shapes/item-beam-rolled.json` | `Beam` `:16-18` + child `:31-33` | 4.5 × 2 × 18, i.e. two beams - the planned rename is `CutBeam1` |
+| `beam` | `workbench/shapes/item-beam-rolled.json` | `Beam` `:16-18` + child `:31-33` | 4.5 × 2 × 18, i.e. two beams - the planned rename is `CutBeam1` |
 | `game:metalplate` | `item-beam-rolled.json` | `CutPlate1` `:140-142` + `CutPlate2` `:154-156` | 2 × (9 × 1 × 9) - vanilla geometry |
 | `nailplate` | - | - | missing, and so are all four flat stages of the rod (1.75 / 1.5 / 1.25 / 1.0) |
 | `blank` | - | - | missing |
 | `skelp` | - | - | missing |
-| `heavyplate` (rolled) | - | - | missing; `assets/iiex/shapes/item/heavyplate.json` is the cast part at 12 × 2 × 12 |
+| `heavyplate` (rolled) | - | - | missing; `mods/iiex/assets/iiex/shapes/item/heavyplate.json` is the cast part at 12 × 2 × 12 |
 | `boilerplate` | - | - | missing |
 
 The rod's grooved stages are drawn - `Grooved175` (`item-rod-rolled.json:31-33`), `Grooved150` (`:46-48`
@@ -272,9 +272,9 @@ only related constants that ship are the cast part's, and they are the wrong ite
 
 | Constant | Value | file:line | Note |
 |---|---|---|---|
-| `CastPartItemDefinitions.HeavyPlateUnits` | 160 | `src/IronIndustryExpanded/Items/CastPartItemDefinitions.cs:21` | the cast plate; settled 500, and this is not the rolled 600 |
+| `CastPartItemDefinitions.HeavyPlateUnits` | 160 | `mods/iiex/src/Items/CastPartItemDefinitions.cs:21` | the cast plate; settled 500, and this is not the rolled 600 |
 | `CastPartItemDefinitions.CastBarrelUnits` | 200 | `:24` | cited for scale only |
-| `ExIngredients.Plate(qty)` | `game:metalplate-*`, metal capture | `src/ExpandedLib/Definitions/ExIngredients.cs:28-29` | the consumer side of `game:metalplate` |
+| `ExIngredients.Plate(qty)` | `game:metalplate-*`, metal capture | `mods/exlib/src/Definitions/ExIngredients.cs:28-29` | the consumer side of `game:metalplate` |
 | `ExIngredients.Nails(qty)` | `game:metalnailsandstrips-*` | `:36-37` | what `nailplate` ultimately feeds |
 | `ExIngredients.Rod(qty)` | `game:rod-*` | `:44-45` | what `rolledrod` is a drop-in for |
 

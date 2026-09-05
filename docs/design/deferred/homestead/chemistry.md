@@ -61,10 +61,10 @@ it needs to have some.
 
 ```
 $ grep -rniE "acid|sulfur|sulphur|saltpet" src/ --include=*.cs
-src/SteelIndustryExpanded/BlockStructures/Converter/BlockEntities/BlockEntityConverterControl.cs:34:
+mods/siex/src/BlockStructures/Converter/BlockEntities/BlockEntityConverterControl.cs:34:
   /// The blow is an <b>acid</b> Bessemer (materials.md high-N mild steel) ...
-src/SteelIndustryExpanded/SiexConfig.cs:156:  // ... Acid process: no flux, self-forming siliceous slag ...
-src/SteelIndustryExpanded/SiexConfig.cs:201:  // ... (the real acid-Bessemer figure; ~30 % is too generous)
+mods/siex/src/SiexConfig.cs:156:  // ... Acid process: no flux, self-forming siliceous slag ...
+mods/siex/src/SiexConfig.cs:201:  // ... (the real acid-Bessemer figure; ~30 % is too generous)
 ```
 
 Every hit is the acid Bessemer - a refractory-lining term (siliceous vs. basic), not a reagent. There is no

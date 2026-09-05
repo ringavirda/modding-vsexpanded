@@ -141,8 +141,8 @@ Nothing exists.
 | race item | none |
 | ball die item | none. Do not repeat `RollSetItemDefinitions.cs:121`, which still points its tooling item at `game:item/ingot` as a placeholder |
 | chrome-steel metal | none - no descriptor, no ingot, no row in [materials.md](../materials.md) |
-| lang / handbook | no key in `assets/siex/lang/en.json`; `docs/siex/handbook/` holds one page, `00-highpressure.html`, which does not mention bearings |
-| reference art | the 1867 machine-tool plate at `assets/editable/refs/rivetsnails/` covers the bench, not the bearing. Folder is untracked |
+| lang / handbook | no key in `mods/siex/assets/siex/lang/en.json`; `mods/siex/docs/handbook/` holds one page, `00-highpressure.html`, which does not mention bearings |
+| reference art | the 1867 machine-tool plate at `workbench/refs/rivetsnails/` covers the bench, not the bearing. Folder is untracked |
 
 A ball, a ring and an assembled bearing are sub-voxel shapes that can share one texture. Nothing here is
 art-blocked.
@@ -218,7 +218,7 @@ The chain is safe today, and both safeguards are accidental:
 Break 1 - chromite is a vanilla ore and vanilla already crushes it. `game:ore-chromite`,
 `game:nugget-chromite` and `game:crushed-chromite` all exist in the base game, and smex's own EM-compat patch
 preserves vanilla's 0.33-average nugget crushing for cassiterite, chromite and ilmenite
-(`assets/siex/patches/compat/em/nugget-crushing.json:3`). A player can obtain crushed chromite with nothing
+(`mods/siex/assets/siex/patches/compat/em/nugget-crushing.json:3`). A player can obtain crushed chromite with nothing
 but a hand pulverizer.
 
 If HP jaws were instead the only thing that cracked chromite, the loop would close:
@@ -285,7 +285,7 @@ elsewhere (cited) or proposed (marked).
 | `castbillet` | 3 × 3 × 27 = 243 vx³ = 600 u → 6 `rolledrod` | [stock](../items/stock.md) | one chrome-steel billet = 24 rods |
 | `HeadingMinTorque` (proposed at the bench) | 0.3 | [heading machine:116](heading-machine.md) | the ball die should not undercut it |
 | chromium per HSS heat | ~32 u on a 624 u OH base | [materials.md:108](../materials.md) | ferrochrome's second consumer |
-| vanilla chromite nugget crush yield | 0.33 avg | `assets/siex/patches/compat/em/nugget-crushing.json:3` | the bootstrap break |
+| vanilla chromite nugget crush yield | 0.33 avg | `mods/siex/assets/siex/patches/compat/em/nugget-crushing.json:3` | the bootstrap break |
 | `RccBrokenDropsRatio` (hpex) | 0.8 | `SiexConfig.cs:124` | what a broken bearing-bearing machine returns |
 | `RecipeLevel` (hpex) | `"normal"` | `SiexConfig.cs:131` | the cost tier the assembly recipe prices at |
 
@@ -333,8 +333,8 @@ Nothing exists.
 | the ball die item | wherever `DieItemDefinitions` lands, plus an hpex variant entry | `RollSetItemDefinitions.cs:17-128` - one item, a `type` variant group, per-variant specs via `.Raw("attributesByType", byType)` (`:126`) |
 | the `ItemDie` spec it fills in | iiex (or exlib) - unresolved, see below | `RollSetSpec.cs:31-201`, `MoldSpec.cs:32-48` |
 | ball / race / bearing items | `ExItemDef` in hpex | [recipes & config](../mechanics/recipes-config.md) |
-| the assembly grid recipe | `src/SteelIndustryExpanded/Recipes/Grid/` - today it holds exactly one file | `MachineRecipeDefinitions.cs` |
-| its cost key | `SiexRecipeConfig` | `src/SteelIndustryExpanded/SiexRecipeConfig.cs` |
+| the assembly grid recipe | `mods/siex/src/Recipes/Grid/` - today it holds exactly one file | `MachineRecipeDefinitions.cs` |
+| its cost key | `SiexRecipeConfig` | `mods/siex/src/SiexRecipeConfig.cs` |
 | ferrochrome as a burden family + metal | the cold furnace's product override path | [cold blast furnace](blast-furnace-cold.md), [cupola](cupola.md) (the existing data-override precedent) |
 | chrome steel as a metal | `MetalRegistry` + a [materials.md](../materials.md) row | [materials.md](../materials.md) |
 

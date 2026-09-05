@@ -124,14 +124,14 @@ genuinely separate" that [pipe network](../mechanics/pipe-network.md) Gotcha 10 
 
 | asset | path | state |
 |---|---|---|
-| Editable shapes | — | none. No pipe or fitting source file exists under `assets/editable/shapes/` |
-| Cast straight | `assets/iiex/shapes/pipes/straight.json` | elements `Cube2` `Cube6` `Cube18`; textures `cast-iron1` → `iiex:block/metal/castiron`, `iron4`, `iron` |
-| Cast bend | `assets/iiex/shapes/pipes/bend.json` | `Cube2` `Cube18`; its body key is `iron42`, not `iron4` |
-| Cast T / X | `assets/iiex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
-| Valve | `assets/iiex/shapes/pipes/valve.json` | elements `Cube2` `Handle` `Lid`; `open` animation, 30 frames; textures `normal4`, `iron4`, `copper3` |
-| Pressure valve | `assets/iiex/shapes/pipes/pressurevalve.json` | single element `Cube2`; no animation; textures include `copper3` (the input-side ring the handbook points at) and `steel3` |
-| Outlet | `assets/iiex/shapes/pipes/outlet.json` | `Cube2` `Cube10` |
-| Passthrough / bend | `assets/iiex/shapes/pipes/passthrough.json`, `passthroughbend.json` | present |
+| Editable shapes | — | none. No pipe or fitting source file exists under `workbench/shapes/` |
+| Cast straight | `mods/iiex/assets/iiex/shapes/pipes/straight.json` | elements `Cube2` `Cube6` `Cube18`; textures `cast-iron1` → `iiex:block/metal/castiron`, `iron4`, `iron` |
+| Cast bend | `mods/iiex/assets/iiex/shapes/pipes/bend.json` | `Cube2` `Cube18`; its body key is `iron42`, not `iron4` |
+| Cast T / X | `mods/iiex/assets/iiex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
+| Valve | `mods/iiex/assets/iiex/shapes/pipes/valve.json` | elements `Cube2` `Handle` `Lid`; `open` animation, 30 frames; textures `normal4`, `iron4`, `copper3` |
+| Pressure valve | `mods/iiex/assets/iiex/shapes/pipes/pressurevalve.json` | single element `Cube2`; no animation; textures include `copper3` (the input-side ring the handbook points at) and `steel3` |
+| Outlet | `mods/iiex/assets/iiex/shapes/pipes/outlet.json` | `Cube2` `Cube10` |
+| Passthrough / bend | `mods/iiex/assets/iiex/shapes/pipes/passthrough.json`, `passthroughbend.json` | present |
 
 `BlockPipe.Segments` resolves `{domain}:pipes/*` (`BlockPipe.cs:82`, `:96`, `:124`, `:153`) and each of the
 three tiers ships its own four shapes - iiex `iron3/iron4/iron42/iron`, iiex `cast-iron1` over an iiex
@@ -179,7 +179,7 @@ The intended route is cast segments assembled from cast pipe-parts bored on the 
 | piece | state |
 |---|---|
 | boring machine block | no source file anywhere in `src/` — a grep for `boring` returns only unrelated cylinder-particle code |
-| cast pipe-part item | does not exist. The art does: `assets/editable/shapes/item-cylinder-castblank.json`, `item-cylinder-pipesegment.json`, `item-cilinder-bored.json` |
+| cast pipe-part item | does not exist. The art does: `workbench/shapes/item-cylinder-castblank.json`, `item-cylinder-pipesegment.json`, `item-cilinder-bored.json` |
 | `diagram-pipe-*` items | not built ([diagram crafting](../mechanics/diagram-crafting.md)) |
 
 `overview.md:70` lists the boring machine as shipped iiex content. It is not.
@@ -259,8 +259,8 @@ subclass, `BlockPipe.cs:196`). It is clamped again on load against a possibly-re
 ### B6 — the HP line cannot take the iiex pressure valve
 
 hpex tells the player, in its own README and handbook, to gate the Lancashire → Cornish line with a pressure
-valve (`src/SteelIndustryExpanded/README.md:22`, `docs/siex/handbook/05-highpressure.html:33`,
-`docs/siex/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
+valve (`mods/siex/README.md:22`, `mods/siex/docs/handbook/05-highpressure.html:33`,
+`mods/siex/docs/moddb.html:56`). It cannot be installed, and even if it could it would not reach. Two
 independent failures:
 
 **1 — the joint refuses it.** hpex registers `WeldedJoint` (`SteelIndustryExpandedModSystem.cs:45`); iiex
@@ -296,7 +296,7 @@ rating 12) resolves both halves at once, because both the joint and the ceiling 
 
 ## Numbers
 
-### Config — `src/IronIndustryExpanded/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
+### Config — `mods/iiex/src/IiexConfig.cs`, `ModConfig/ex_values.json`, section `iiex`
 
 | key | value | file:line | what it does |
 |---|---|---|---|
@@ -408,7 +408,7 @@ ones, so nobody who upgrades ends up holding a cast segment either. The ppex →
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/`
+`mods/iiex/tests/`
 
 | file | what it pins |
 |---|---|
@@ -476,13 +476,13 @@ paths are tested; neither transfer path is.
 10. The chimney vent is matched by code substring on the neighbour (`ChimneyVent.cs:50`) and requires
     `face == BlockFacing.UP` (`:49`). So only the `-u` outlet variant and the `ud` passthrough can ever vent:
     any other orientation has no top connector for a chimney to cap. The handbook's "capped with an ordinary
-    chimney stood upright on top of it" (`docs/iiex/handbook/08-fittings.html:31-33`) is right but
+    chimney stood upright on top of it" (`mods/iiex/docs/handbook/08-fittings.html:31-33`) is right but
     under-specified.
 
 11. Fitting recipes consume iiex segments, so iiex's fittings are gated on iiex's craftability. With B1 live
     (the tuyere blocking the iron tier) this is a chain, not an independent path.
 
-12. The outlet's shape still points at a refractory texture. `assets/iiex/shapes/pipes/outlet.json` and
+12. The outlet's shape still points at a refractory texture. `mods/iiex/assets/iiex/shapes/pipes/outlet.json` and
     `passthrough.json` declare `front1` → `game:block/clay/refractory/tier3/front1`, while the def overrides
     `front1` per brick variant (`BlockPipeOutlet.cs:58-63`). Harmless, but the refractory tiers were removed
     from these blocks - `PipeMigration.cs:89-106` migrates them away.

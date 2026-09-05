@@ -63,7 +63,7 @@ bite, so a screwed-down skip still skids. What changes is who picks the gap, not
 
 ★ The reason is content, not mechanism: one adjustable wide set collapses what would otherwise be a
 separate roll-set item per wide gap. It needs the two `i1` cells of the layout in
-[machines.txt](../../internal/workbench/machines.txt), which the mill does not have today.
+[machines.txt](../../../workbench/machines.txt), which the mill does not have today.
 
 ---
 
@@ -114,13 +114,13 @@ is the cell a finished piece *lands* on. The deck the player *feeds* from is the
 
 | Asset | Path | State |
 |---|---|---|
-| Mill shape (runtime) | `assets/iiex/shapes/forming/rollingmill.json` | shipped; textures `iron5`, `cast-iron1`; clips `idle` + `cycle`, 30 frames each |
-| Mill shape (editable) | `assets/editable/shapes/machine-mp-megablock-rollingmill.json` | drawn, not yet reflected in the runtime shape name |
-| Roll-set item art | `assets/editable/shapes/item-finished-rollers-{flat,flatwide5,flatwide10,flatwide15,grooved}.json`, `item-rollers-flatwide20.json`, `item-sandcast-rollers-blank.json` | drawn and not wired - the item ships `game:item/ingot` (`RollSetItemDefinitions.cs:122`) |
-| Stock stage shapes | `assets/iiex/shapes/forming/stock-{shingledbar,shingledslab}-{5,10,15,20,30}.json` | shipped, 10 files, generated. ⛔ the bar's are drawn **16 long** and the settled form is 18 - the art is item 7's, and nothing reads a shape's length |
+| Mill shape (runtime) | `mods/iiex/assets/iiex/shapes/forming/rollingmill.json` | shipped; textures `iron5`, `cast-iron1`; clips `idle` + `cycle`, 30 frames each |
+| Mill shape (editable) | `workbench/shapes/machine-mp-megablock-rollingmill.json` | drawn, not yet reflected in the runtime shape name |
+| Roll-set item art | `workbench/shapes/item-finished-rollers-{flat,flatwide5,flatwide10,flatwide15,grooved}.json`, `item-rollers-flatwide20.json`, `item-sandcast-rollers-blank.json` | drawn and not wired - the item ships `game:item/ingot` (`RollSetItemDefinitions.cs:122`) |
+| Stock stage shapes | `mods/iiex/assets/iiex/shapes/forming/stock-{shingledbar,shingledslab}-{5,10,15,20,30}.json` | shipped, 10 files, generated. ⛔ the bar's are drawn **16 long** and the settled form is 18 - the art is item 7's, and nothing reads a shape's length |
 | Stock base art (editable) | `item-shingled-bar.json`, `item-shingled-slab.json` | drawn; the generator still expects the `item-shingledbloom` / `item-shingledslab` names, which do not exist |
 | Axle cell | `exlib:block/empty` (`BlockRollingMillAxle.cs:39`) | intentionally invisible |
-| Handbook page | `docs/iiex/handbook/10-formingshop.html` | **shipped 2026-08-21**, one page for the whole shop; the def's `Handbook("rollingmill-*")` group (`BlockRollingMill.cs:51`) now has a page behind it |
+| Handbook page | `mods/iiex/docs/handbook/10-formingshop.html` | **shipped 2026-08-21**, one page for the whole shop; the def's `Handbook("rollingmill-*")` group (`BlockRollingMill.cs:51`) now has a page behind it |
 
 ### The shape already draws four roll families, and nothing selects between them
 
@@ -150,8 +150,8 @@ gaps where the settled train needs six, and includes the dropped 0.5.
 
 ### The stage shapes are generated, and the generator's inputs no longer exist
 
-`scripts/tools/generate-rolled-stock.py` derives all ten `stock-*.json` files from two authored bases
-(`item-shingledbloom`, `item-shingledslab`), both gone from `assets/editable/shapes/`. The generated
+`infra/tools/generate-rolled-stock.py` derives all ten `stock-*.json` files from two authored bases
+(`item-shingledbloom`, `item-shingledslab`), both gone from `workbench/shapes/`. The generated
 outputs still ship and `RolledStockStagesTests` still measures them off disk, so the tests pass while the
 pipeline cannot be re-run. The forming build list calls for deleting the generator and its ten outputs and
 wiring the new authored art instead.
@@ -168,7 +168,7 @@ drawn as two 9-long halves) is what closes it.
 
 There is no recipe. This is a blocker.
 
-`grep`ping `src/IronIndustryExpanded/Recipes/` for `rollingmill`, `rollset` or `stock-` returns nothing, and
+`grep`ping `mods/iiex/src/Recipes/` for `rollingmill`, `rollset` or `stock-` returns nothing, and
 there are no hand-written recipe JSON assets anywhere in the repo
 ([recipes & config](../mechanics/recipes-config.md)). The mill, the four roll sets and both stock items are
 reachable only from the creative inventory (`.CreativeCommon(...)` at `BlockRollingMill.cs:60`,
@@ -499,7 +499,7 @@ To drive the mill, connect an `mpenergy` run to either shaft end. See
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Forming/` - fifteen files. The two-round model is pinned by
+`mods/iiex/tests/Blocks/Forming/` - fifteen files. The two-round model is pinned by
 `WorkPieceTests` (its own file, rewritten 2026-08-12), the round's draft by `MillFeedTests`, and the walk
 end to end by `RollingMillFeedTests`; `StockFormRegistryTests` and
 `Migrations/StockFormRenameMigrationTests` pin the rename and the former names.
@@ -642,7 +642,7 @@ Not on that list, and still open:
   forming line creative-only for one missing item. That is U7.10.
 - Art wiring. The roll sets ship `game:item/ingot` while the roll shapes sit drawn and unwired; the
   mill renders all four roll families at once and never plays its `cycle` clip.
-- ~~A handbook page.~~ **Written 2026-08-21** - `docs/iiex/handbook/10-formingshop.html`, in three locales, covering the shop rather than the mill alone.
+- ~~A handbook page.~~ **Written 2026-08-21** - `mods/iiex/docs/handbook/10-formingshop.html`, in three locales, covering the shop rather than the mill alone.
 - `RollSetValidation` never checks that an output code resolves, which is how four dangling codes ship.
 - The reheat side. The mill's whole heat budget assumes a furnace that is a shell
   ([reheat furnace](reheat-furnace.md)); reheat and cooling should both scale on `k·A/V`, with no ×2

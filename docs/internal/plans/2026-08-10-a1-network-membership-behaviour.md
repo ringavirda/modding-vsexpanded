@@ -29,16 +29,16 @@ reasoning behind the behaviour split, not as work to do.
 
 | File | Responsibility |
 |---|---|
-| `src/ExpandedLib/Blocks/Networks/BEBehaviorNetworkMember.cs` | **create** — membership: type, faces, graph register/unregister, network-state persistence |
-| `src/ExpandedLib/Blocks/Networks/NetworkMembership.cs` | **create** — the type-keyed accessor `GetMember(be, networkType)`, since `GetBehavior<T>()` returns only the first match |
-| `src/ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs` | **modify** — `GetConnectedNeighbors` (`:351`) and the fracture walk (`:242`) resolve by behaviour; unloaded-chunk handling |
-| `src/ExpandedLib/Blocks/Networks/BlockEntityNetworkNode.cs` | **modify** — becomes a thin shim that owns one member behaviour; keeps its public surface |
-| `src/ExpandedLib/Networks/INetworkConnector.cs` | **modify** — doc narrowed to "port, not member" |
-| `src/ExpandedLib/Blocks/Migrations/NetworkMembershipMigration.cs` | **create** — old per-node tree keys to the behaviour's subtree |
-| `test/ExpandedLib.Testing/TestWorld.cs` | **modify** — `PlaceNode` helper that places a block *and* a member-bearing block entity |
-| `test/ExpandedLib.Testing/Doubles/TestNetworkBlock.cs` | **modify** — gains a member-bearing block entity double |
-| `test/ExpandedLib.Tests/Networks/NetworkMembershipTests.cs` | **create** — the behaviour's own contract |
-| `test/ExpandedLib.Tests/Networks/MultiMembershipTests.cs` | **create** — several memberships on one block entity |
+| `mods/exlib/src/Blocks/Networks/BEBehaviorNetworkMember.cs` | **create** — membership: type, faces, graph register/unregister, network-state persistence |
+| `mods/exlib/src/Blocks/Networks/NetworkMembership.cs` | **create** — the type-keyed accessor `GetMember(be, networkType)`, since `GetBehavior<T>()` returns only the first match |
+| `mods/exlib/src/Blocks/Networks/BlockNetworkModSystem.cs` | **modify** — `GetConnectedNeighbors` (`:351`) and the fracture walk (`:242`) resolve by behaviour; unloaded-chunk handling |
+| `mods/exlib/src/Blocks/Networks/BlockEntityNetworkNode.cs` | **modify** — becomes a thin shim that owns one member behaviour; keeps its public surface |
+| `mods/exlib/src/Networks/INetworkConnector.cs` | **modify** — doc narrowed to "port, not member" |
+| `mods/exlib/src/Blocks/Migrations/NetworkMembershipMigration.cs` | **create** — old per-node tree keys to the behaviour's subtree |
+| `mods/exlib/testing/TestWorld.cs` | **modify** — `PlaceNode` helper that places a block *and* a member-bearing block entity |
+| `mods/exlib/testing/Doubles/TestNetworkBlock.cs` | **modify** — gains a member-bearing block entity double |
+| `mods/exlib/tests/Networks/NetworkMembershipTests.cs` | **create** — the behaviour's own contract |
+| `mods/exlib/tests/Networks/MultiMembershipTests.cs` | **create** — several memberships on one block entity |
 
 ---
 
@@ -47,8 +47,8 @@ reasoning behind the behaviour split, not as work to do.
 Nothing depends on ordering here, and it is the smallest piece that can fail a review on its own: `GetBehavior<T>()` returning the first match is the reason a bespoke accessor exists, and that reason should be pinned by a test before anything uses it.
 
 **Files:**
-- Create: `src/ExpandedLib/Blocks/Networks/NetworkMembership.cs`
-- Test: `test/ExpandedLib.Tests/Networks/NetworkMembershipTests.cs`
+- Create: `mods/exlib/src/Blocks/Networks/NetworkMembership.cs`
+- Test: `mods/exlib/tests/Networks/NetworkMembershipTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -56,7 +56,7 @@ Nothing depends on ordering here, and it is the smallest piece that can fail a r
 
 - [ ] **Step 1: Write the failing test**
 
-Create `test/ExpandedLib.Tests/Networks/NetworkMembershipTests.cs`:
+Create `mods/exlib/tests/Networks/NetworkMembershipTests.cs`:
 
 ```csharp
 using ExpandedLib.Blocks.Networks;
@@ -104,12 +104,12 @@ public class NetworkMembershipTests {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
 Expected: FAIL — `NetworkMembership` and `TestMemberBlockEntity` do not exist (compile error).
 
 - [ ] **Step 3: Write the accessor and the test double**
 
-Create `src/ExpandedLib/Blocks/Networks/NetworkMembership.cs`:
+Create `mods/exlib/src/Blocks/Networks/NetworkMembership.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -143,7 +143,7 @@ public static class NetworkMembership {
 }
 ```
 
-Create the minimal `BEBehaviorNetworkMember` it needs — Task 2 fills it in. In `src/ExpandedLib/Blocks/Networks/BEBehaviorNetworkMember.cs`:
+Create the minimal `BEBehaviorNetworkMember` it needs — Task 2 fills it in. In `mods/exlib/src/Blocks/Networks/BEBehaviorNetworkMember.cs`:
 
 ```csharp
 using Vintagestory.API.Common;
@@ -163,7 +163,7 @@ public class BEBehaviorNetworkMember(BlockEntity blockentity)
 }
 ```
 
-Create `test/ExpandedLib.Testing/Doubles/TestMemberBlockEntity.cs`:
+Create `mods/exlib/testing/Doubles/TestMemberBlockEntity.cs`:
 
 ```csharp
 using ExpandedLib.Blocks.Networks;
@@ -201,7 +201,7 @@ public sealed class TestMemberBlockEntity : BlockEntity {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
 Expected: PASS, 3 tests.
 
 - [ ] **Step 5: Format, full suite, record**
@@ -217,9 +217,9 @@ Expected: all 15 targets pass. Raise `ExpandedLib.Tests` in `scripts/test-floors
 ## Task 2: The membership behaviour carries registration and persistence
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Networks/BEBehaviorNetworkMember.cs`
-- Modify: `src/ExpandedLib/Blocks/Networks/BlockEntityNetworkNode.cs:20-70`
-- Test: `test/ExpandedLib.Tests/Networks/NetworkMembershipTests.cs`
+- Modify: `mods/exlib/src/Blocks/Networks/BEBehaviorNetworkMember.cs`
+- Modify: `mods/exlib/src/Blocks/Networks/BlockEntityNetworkNode.cs:20-70`
+- Test: `mods/exlib/tests/Networks/NetworkMembershipTests.cs`
 
 **Interfaces:**
 - Consumes: `NetworkMembership.MemberOf` (Task 1).
@@ -260,7 +260,7 @@ Append to `NetworkMembershipTests.cs`:
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkMembershipTests`
 Expected: FAIL — `PlaceNode` does not exist, or the network is null because the behaviour does not register.
 
 - [ ] **Step 3: Move registration into the behaviour**
@@ -302,7 +302,7 @@ Then reduce `BlockEntityNetworkNode` to owning one member behaviour, keeping its
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter Network`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter Network`
 Expected: PASS, including the pre-existing `NetworkGraphTests` — the shim means nothing else has moved yet.
 
 - [ ] **Step 5: Format, full suite, record**
@@ -320,9 +320,9 @@ Expected: all 15 targets pass. This is the parity gate: if any existing network 
 The walk cannot flip until fixtures can produce block entities. 109 of 130 `Place` calls already pass one; 21 place a bare block and those are the ones that would silently stop being nodes.
 
 **Files:**
-- Modify: `test/ExpandedLib.Testing/TestWorld.cs:129-138`
-- Modify: `test/ExpandedLib.Testing/Doubles/TestNetworkBlock.cs`
-- Modify: `test/ExpandedLib.Tests/Networks/NetworkGraphTests.cs:21-34` (`BuildLine`)
+- Modify: `mods/exlib/testing/TestWorld.cs:129-138`
+- Modify: `mods/exlib/testing/Doubles/TestNetworkBlock.cs`
+- Modify: `mods/exlib/tests/Networks/NetworkGraphTests.cs:21-34` (`BuildLine`)
 
 **Interfaces:**
 - Consumes: `BEBehaviorNetworkMember` (Task 2).
@@ -347,7 +347,7 @@ Append to `NetworkGraphTests.cs`:
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter PlaceNode_creates`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter PlaceNode_creates`
 Expected: FAIL — `PlaceNode` does not exist.
 
 - [ ] **Step 3: Add `PlaceNode` and migrate `BuildLine`**
@@ -377,7 +377,7 @@ Rewrite `BuildLine` to call `PlaceNode` per cell instead of `Place` + a separate
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkGraphTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkGraphTests`
 Expected: PASS, all of them — the walk still reads the block, so nothing has regressed.
 
 - [ ] **Step 5: Migrate the remaining bare placements**
@@ -405,8 +405,8 @@ Expected: all 15 targets pass, with the same test counts as Task 2 plus one.
 The flip. Both block-type tests go.
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs:242`, `:351-377`
-- Test: `test/ExpandedLib.Tests/Networks/NetworkGraphTests.cs`
+- Modify: `mods/exlib/src/Blocks/Networks/BlockNetworkModSystem.cs:242`, `:351-377`
+- Test: `mods/exlib/tests/Networks/NetworkGraphTests.cs`
 
 **Interfaces:**
 - Consumes: `NetworkMembership.MemberOf` (Task 1), `BEBehaviorNetworkMember.HasConnectorAt` / `.IsConnectionBroken` (Task 2), `TestWorld.PlaceNode` (Task 3).
@@ -432,7 +432,7 @@ The flip. Both block-type tests go.
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter is_still_a_node`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter is_still_a_node`
 Expected: FAIL — `GetConnectedNeighbors` returns nothing because `world.GetBlock(pos) is not BlockNetworkNode`.
 
 - [ ] **Step 3: Resolve by behaviour**
@@ -465,7 +465,7 @@ Apply the same substitution at `:242`, the fracture walk's root check.
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkGraphTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter NetworkGraphTests`
 Expected: PASS, all.
 
 - [ ] **Step 5: Format, full suite, record**
@@ -483,10 +483,10 @@ Expected: all 15 targets pass. ⛔ A failure in `lpex`/`hpex`/`iwex` network tes
 The proof case, and the payoff that justifies A1. It retires `docs/design/mechanics/multiblock.md` § "A filler can NEVER be a graph node".
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Structures/BlockEntityStructureFiller.cs`
-- Modify: `src/ExpandedLib/Blocks/Structures/StructureFillers.cs` (footprint declaration accepts a membership)
+- Modify: `mods/exlib/src/Blocks/Structures/BlockEntityStructureFiller.cs`
+- Modify: `mods/exlib/src/Blocks/Structures/StructureFillers.cs` (footprint declaration accepts a membership)
 - Modify: `docs/design/mechanics/multiblock.md` § "A filler can NEVER be a graph node"
-- Test: `test/ExpandedLib.Tests/Networks/FillerNodeTests.cs` (create)
+- Test: `mods/exlib/tests/Networks/FillerNodeTests.cs` (create)
 
 **Interfaces:**
 - Consumes: everything from Tasks 1–4.
@@ -513,7 +513,7 @@ The proof case, and the payoff that justifies A1. It retires `docs/design/mechan
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter FillerNodeTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter FillerNodeTests`
 Expected: FAIL — `PlaceFillerNode` does not exist; the filler is not a node.
 
 - [ ] **Step 3: Let a footprint cell declare a membership**
@@ -524,7 +524,7 @@ Expected: FAIL — `PlaceFillerNode` does not exist; the filler is not a node.
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test test/ExpandedLib.Tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter FillerNodeTests`
+Run: `dotnet test mods/exlib/tests/ExpandedLib.Tests.csproj -f net8.0 -p:Legacy=true --filter FillerNodeTests`
 Expected: PASS.
 
 - [ ] **Step 5: Update the design page**
@@ -540,8 +540,8 @@ Replace the retirement banner in `multiblock.md` with the new rule, and delete t
 The walk currently treats an unloaded chunk as the end of the run, which phantom-fractures it. Vanilla returns `missingChunkPos` and re-discovers on chunk load.
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Networks/BlockNetworkModSystem.cs` (walk + a chunk-load hook)
-- Test: `test/ExpandedLib.Tests/Networks/NetworkGraphTests.cs`
+- Modify: `mods/exlib/src/Blocks/Networks/BlockNetworkModSystem.cs` (walk + a chunk-load hook)
+- Test: `mods/exlib/tests/Networks/NetworkGraphTests.cs`
 
 **Interfaces:**
 - Consumes: Task 4's walk.
@@ -582,10 +582,10 @@ Mirror `BEBehaviorMPBase.spreadTo` (`:518-527`) and `MechanicalPowerMod.Event_Ch
 ## Task 7: Migrate persisted state and narrow `INetworkConnector`
 
 **Files:**
-- Create: `src/ExpandedLib/Blocks/Migrations/NetworkMembershipMigration.cs`
-- Modify: `src/ExpandedLib/Networks/INetworkConnector.cs` (doc only)
+- Create: `mods/exlib/src/Blocks/Migrations/NetworkMembershipMigration.cs`
+- Modify: `mods/exlib/src/Networks/INetworkConnector.cs` (doc only)
 - Modify: `docs/design/mechanics/framework-composition.md` (status → live)
-- Test: `test/ExpandedLib.Tests/Blocks/NetworkMembershipMigrationTests.cs` (create)
+- Test: `mods/exlib/tests/Blocks/NetworkMembershipMigrationTests.cs` (create)
 
 **Interfaces:**
 - Consumes: Tasks 1–6.

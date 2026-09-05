@@ -99,7 +99,7 @@ Designed. Every step after the first is unbuilt.
 | `iiex:crushedore-roasted` in `src/` or `assets/` | no hits anywhere in the repo |
 | a roasting mode, timer, temperature or state on any furnace | none - `BlockEntityHeatingFurnace.cs:24-27` says so in its own class doc: *"neither is the roasting mode that will share this machine"* |
 | a `Roast*` config key | none in `IiexConfig.cs` |
-| a lang key for a roasted ore | none in `assets/iiex/lang/en.json` |
+| a lang key for a roasted ore | none in `mods/iiex/assets/iiex/lang/en.json` |
 | a test | none |
 | anything in `src/` naming a roasted ore | the compat row (`Compat/IronOreCompat.cs:41` - see § Gotchas) and the burdenmaker's own help text and doc-comments, which already offer *"crushed or roasted iron ore"* (`BlockBurdenmaker.cs:198`) |
 | design mentions | [conventions](../conventions.md) § Shared simulation model (the model), two furnace doc-comments (`BlockHeatingFurnaceCore.cs:15`, `BlockEntityHeatingFurnace.cs:26`), and the fettle route it would displace (`FettleRecipeDefinitions.cs:22-24`) |
@@ -110,7 +110,7 @@ Designed. Every step after the first is unbuilt.
 
 | | | Status |
 |---|---|---|
-| **In** | crushed iron ore - any item in `Roles.IronOre` (`assets/iiex/config/materialroles.json:11`, prefix `crushed-iron`, plus the mod-gated codes at `IronOreCompat.cs:39-49`) | the role exists |
+| **In** | crushed iron ore - any item in `Roles.IronOre` (`mods/iiex/assets/iiex/config/materialroles.json:11`, prefix `crushed-iron`, plus the mod-gated codes at `IronOreCompat.cs:39-49`) | the role exists |
 | **In** | firebox fuel - the reverberatory firebox takes coke, bituminous, anthracite and charcoal and refuses lignite (`BEBehaviorFirebox.IsFuel`; the override is [reheat furnace](../machines/reheat-furnace.md)'s) | live |
 | **Out** | `iiex:crushedore-roasted` - no new art: vanilla's generic crushed-ore shape, retextured | does not exist |
 | **Out** | must also carry `combustibleProps` / `smeltedStack` so it still blooms | does not exist - and see the warning below |
@@ -123,7 +123,7 @@ The rule is that roasted ore must still smelt in a vanilla bloomery, via the sam
 lives in smex, not iiex:
 
 ```
-assets/siex/patches/vanilla/crushed.json:3-10
+mods/siex/assets/siex/patches/vanilla/crushed.json:3-10
   addmerge /combustiblePropsByType/*-iron
     meltingPoint 1482 · meltingDuration 30 · smeltedRatio 20 · smeltedStack game:ironbloom
 ```
@@ -240,7 +240,7 @@ the roasted rung is one key beside it ([metal recovery](../mechanics/metal-recov
    roast can run on the cheap coals a shaft never sees.
 
 5. The smex bloomery patch also raises crushed ore's stack size to 128
-   (`assets/siex/patches/vanilla/crushed.json:14-20`). A roasted-ore item has to pick a stack size against
+   (`mods/siex/assets/siex/patches/vanilla/crushed.json:14-20`). A roasted-ore item has to pick a stack size against
    that, and whichever side it picks changes how many hand-loads an ore hopper takes.
 
 ---

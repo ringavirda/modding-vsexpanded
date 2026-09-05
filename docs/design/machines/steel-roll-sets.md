@@ -111,11 +111,11 @@ correspondence is [wide hall](wide-hall.md)'s.
 |---|---|---|
 | ~~wide roll art, 3.5~~ | - | no longer owed: one wide set at six settings, not six items |
 | ~~wide roll art, 3.0~~ | - | " |
-| cast roll blank | `assets/editable/shapes/item-sandcast-rollers-blank.json` | drawn - the roll is a cast part, so this is where a set's recipe should start |
+| cast roll blank | `workbench/shapes/item-sandcast-rollers-blank.json` | drawn - the roll is a cast part, so this is where a set's recipe should start |
 | narrow set art | `item-finished-rollers-flat.json`, `item-finished-rollers-grooved.json` | drawn, unwired |
 | item shape actually shipped | `game:item/ingot` | `RollSetItemDefinitions.cs:122` - every roll set renders as an ingot |
-| cast stock item shapes | `assets/iiex/shapes/item/cast{billet,bloom,slab}.json` + 17 stage shapes under `forming/` | **ship, at the settled sections** (2026-08-14). They stayed in the iiex domain, because the item they draw is iiex's - this page owns the forms, not the pieces |
-| handbook page | `docs/siex/handbook/` | stops at `04-bessemer.html` |
+| cast stock item shapes | `mods/iiex/assets/iiex/shapes/item/cast{billet,bloom,slab}.json` + 17 stage shapes under `forming/` | **ship, at the settled sections** (2026-08-14). They stayed in the iiex domain, because the item they draw is iiex's - this page owns the forms, not the pieces |
+| handbook page | `mods/siex/docs/handbook/` | stops at `04-bessemer.html` |
 
 Caution: a steel set is visually indistinguishable from an iron one. Both render `game:item/ingot`
 (`RollSetItemDefinitions.cs:122`), and the fitted set is legible only from block info
@@ -243,18 +243,18 @@ emitting `siex:rollset-*`, mirroring `RollSetItemDefinitions` exactly.
 
 | Work | Where | Note |
 |---|---|---|
-| `SteelRollSetItemDefinitions` | `src/SteelIndustryExpanded/BlockStructures/Forming/` (new folder) | copy the shape of `RollSetItemDefinitions.cs:17-128`: a `Sets` dictionary, `SetTypes` as "the single source the recipes and the handbook both derive from" (`:106-108`), `attributesByType` (`:126`) |
+| `SteelRollSetItemDefinitions` | `mods/siex/src/BlockStructures/Forming/` (new folder) | copy the shape of `RollSetItemDefinitions.cs:17-128`: a `Sets` dictionary, `SetTypes` as "the single source the recipes and the handbook both derive from" (`:106-108`), `attributesByType` (`:126`) |
 | three new `StockForm`s | `IronIndustryExpanded/.../StockForm.cs:57-64` | iiex-side - the forms are iiex types even though the stock is smex content. `StockItemDefinitions` emits one item per form automatically ([rolling mill](rolling-mill.md) § Where a caller hooks in) |
 | wire `MinTorque` | `MillFeed.Decide` (`MillFeed.cs:95-128`) + a new `FeedVerdict` member (`MillFeed.cs:6-29`) | the refusal must be its own verdict, not folded into `WontBite` - the fix is a bigger plant, exactly as `TooCold`'s fix is a furnace |
 | the two extra stands | - | no code: two more `BlockRollingMill` placements ([wide hall](wide-hall.md)) |
-| draw 3.5 and 3.0 | `assets/editable/shapes/` | |
+| draw 3.5 and 3.0 | `workbench/shapes/` | |
 | recipes + cost rows | smex `Recipes/Grid/` + `SiexRecipeConfig.Defaults()` (`SiexRecipeConfig.cs:45-70`) | the catalogue is hand-maintained; a missing row means the set is not discountable by `/exmod steel` |
 
 ### Tests
 
-`test/IronIndustryExpanded.Tests/Blocks/Forming/` holds 123 methods across nine files, `RollSetSpecTests` among
+`mods/iiex/tests/Blocks/Forming/` holds 123 methods across nine files, `RollSetSpecTests` among
 them ([rolling mill](rolling-mill.md) § Tests). A smex steel family needs its own suite under
-`test/SteelIndustryExpanded.Tests/`, and the first test worth writing is the one that does not exist for
+`mods/siex/tests/`, and the first test worth writing is the one that does not exist for
 any tier: that a set below `MinTorque` is refused.
 
 ---

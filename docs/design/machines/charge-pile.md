@@ -98,7 +98,7 @@ by multiplying before dividing, so both the item scale and the cupola's 187.5 u/
 `BlockChargePile.cs` (band geometry, boxes, break, placement guard) ·
 `BlockEntityChargePile.cs` (window, take, splice, render snapshot) ·
 `ChargeColumn.cs` (the data the pile draws) - all under
-`src/IronIndustryExpanded/BlockStructures/Furnaces/`. Tests: `ChargePileTests`,
+`mods/iiex/src/BlockStructures/Furnaces/`. Tests: `ChargePileTests`,
 `ChargeMaterialisationTests`.
 
 ## Open

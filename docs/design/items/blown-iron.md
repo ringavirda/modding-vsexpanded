@@ -94,10 +94,10 @@ has is a form list, and blown iron's is the shortest on the ladder.
 
 `pigiron.json` is the template, not `bessemersteel.json` - pig iron is the ladder's other metal that
 guarantees nothing, and its def already says exactly that: `itemForms: ["ingot"]` and no `tools` key
-(`assets/iiex/config/metals/pigiron.json:9-13`).
+(`mods/iiex/assets/iiex/config/metals/pigiron.json:9-13`).
 
 ```jsonc
-// assets/siex/config/metals/blowniron.json
+// mods/siex/assets/siex/config/metals/blowniron.json
 {
   "code": "blowniron",
   "moltenItem": "siex:ingot-blowniron",
@@ -169,13 +169,13 @@ Nothing exists. What it will need:
 
 | Asset | Path | State |
 |---|---|---|
-| metal def | `assets/siex/config/metals/blowniron.json` | missing - smex's `config/metals/` holds exactly one file, `bessemersteel.json` |
+| metal def | `mods/siex/assets/siex/config/metals/blowniron.json` | missing - smex's `config/metals/` holds exactly one file, `bessemersteel.json` |
 | shape | - | none needed. The generated `ingot` form paints `game:item/ingot` ([alloys § assets](alloys.md#assets)) |
 | texture | `game:block/metal/tarnished/iron` | vanilla, already used by pig iron (`pigiron.json:10`) - verified present. Dull by intent: this is not a metal to be proud of |
-| lang | `siex:metal-blowniron`, `siex:item-ingot-blowniron`, `siex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iiex:itemdesc-ingot-pigiron*` (`assets/iiex/lang/en.json:39`) |
+| lang | `siex:metal-blowniron`, `siex:item-ingot-blowniron`, `siex:itemdesc-ingot-blowniron*` | missing. The description is the only place the player learns why the ingot in their hand is worthless. Model on `iiex:itemdesc-ingot-pigiron*` (`mods/iiex/assets/iiex/lang/en.json:39`) |
 | status lines | `smex-bessemer-status-*` | existing converter status text says "pour it, or blow on for soft iron" ([Bessemer Gotcha #1](../machines/bessemer.md#gotchas)); under N1 that sentence is wrong and has to change with the retype |
-| goldens | `test/SteelIndustryExpanded.Tests/goldens/siex/itemtypes/blowniron/ingot.json` | missing - one file, exactly as `pigiron/` has one |
-| handbook | `docs/siex/handbook/04-bessemer.html` | already stale for the shipped machine ([Bessemer Gotcha #11](../machines/bessemer.md#gotchas)); N1 makes it wrong a second time |
+| goldens | `mods/siex/tests/goldens/siex/itemtypes/blowniron/ingot.json` | missing - one file, exactly as `pigiron/` has one |
+| handbook | `mods/siex/docs/handbook/04-bessemer.html` | already stale for the shipped machine ([Bessemer Gotcha #11](../machines/bessemer.md#gotchas)); N1 makes it wrong a second time |
 
 ---
 
@@ -187,12 +187,12 @@ Nothing exists. No `blowniron` token, no def, no test.
 
 | # | Change | Where | Blocked by |
 |---|---|---|---|
-| 0 | the [ladle](../machines/ladle.md) exists - block, BE, additions, pour | `src/SteelIndustryExpanded/BlockStructures/Ladle/` | nothing built |
+| 0 | the [ladle](../machines/ladle.md) exists - block, BE, additions, pour | `mods/siex/src/BlockStructures/Ladle/` | nothing built |
 | 0b | ferromanganese exists as a metal and as something the player can obtain | `assets/*/config/metals/`, [cold blast furnace](../machines/blast-furnace-cold.md), [cupola](../machines/cupola.md) | nothing built |
-| 1 | the metal def | `assets/siex/config/metals/blowniron.json` | (1 file) |
+| 1 | the metal def | `mods/siex/assets/siex/config/metals/blowniron.json` | (1 file) |
 | 2 | the retype target - the converter's `SteelCode` becomes blown iron | the four metal tokens at `BlockEntityConverterControl.cs:95-99`; the call site is `RetypeToSteel` (`:374-383`) - both owned by [Bessemer](../machines/bessemer.md#code) | needs 1 |
-| 3 | the tool preset - `bessemersteel.json`'s `tools: {preset:"good"}` goes, and its `itemForms` shrink to what a ladle product should have | `assets/siex/config/metals/bessemersteel.json:13-15` ([alloys Gotcha #1](alloys.md#gotchas)) | needs 0 |
-| 4 | lang + status text + handbook | `assets/siex/lang/en.json`, `docs/siex/handbook/04-bessemer.html` | needs 2 |
+| 3 | the tool preset - `bessemersteel.json`'s `tools: {preset:"good"}` goes, and its `itemForms` shrink to what a ladle product should have | `mods/siex/assets/siex/config/metals/bessemersteel.json:13-15` ([alloys Gotcha #1](alloys.md#gotchas)) | needs 0 |
+| 4 | lang + status text + handbook | `mods/siex/assets/siex/lang/en.json`, `mods/siex/docs/handbook/04-bessemer.html` | needs 2 |
 
 Caution: change 2 alone is a regression, not a fix. With the ladle absent, retyping the blow's product to
 blown iron gives the steel tier no product at all - the converter would pour a metal with one item form,
@@ -206,7 +206,7 @@ items and 8 lang keys from the drift surface, and the content it deletes contrad
 * The item side is one JSON file - no C#. See [alloys § where a caller hooks in](alloys.md#code).
 * The machine side is four string constants already indirected through `MetalRegistry`
   (`BlockEntityConverterControl.cs:95-99`).
-* Tests: `test/SteelIndustryExpanded.Tests/Definitions/BessemerSteelMetalTests.cs:30`/`:44` is the template -
+* Tests: `mods/siex/tests/Definitions/BessemerSteelMetalTests.cs:30`/`:44` is the template -
   it asserts a metal is smex-owned and that its generated family matches its preset. A `BlownIronMetalTests`
   asserting the absence of plate/rod/nails/tools guards the ruling against being quietly undone.
 

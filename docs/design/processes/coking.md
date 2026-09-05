@@ -188,7 +188,7 @@ clear the melt line.
 
 The vanilla coke-oven door is the most reused vanilla part in the suite. Five mod structures require one, and
 all five route through one helper - `VanillaCodes.Sealing` / `CokeOvenDoor` - so the wildcard-and-facing
-reasoning lives in one place (`src/ExpandedLib/Definitions/VanillaCodes.cs:257-289`):
+reasoning lives in one place (`mods/exlib/src/Definitions/VanillaCodes.cs:257-289`):
 
 | Structure | Mod | Glyph | file:line |
 |---|---|---|---|

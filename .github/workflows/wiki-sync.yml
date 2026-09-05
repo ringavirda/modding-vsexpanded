@@ -1,6 +1,6 @@
 name: Sync Wiki
 
-# Publishes the hand-authored wiki sources under docs/wiki/ to the repository's GitHub wiki
+# Publishes the hand-authored wiki sources under mods/exlib/wiki/ to the repository's GitHub wiki
 # (the separate <repo>.wiki.git). The in-repo copy is the single source of truth - it is reviewed
 # in PRs and versioned with the code; the wiki is a generated mirror, so never edit the wiki
 # directly (those edits would be overwritten on the next sync).
@@ -8,7 +8,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/wiki/**"
+      - "mods/exlib/wiki/**"
       - ".github/workflows/wiki-sync.yml"
   workflow_dispatch:
 
@@ -27,7 +27,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Publish docs/wiki to the GitHub wiki
+      - name: Publish mods/exlib/wiki to the GitHub wiki
         env:
           GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -37,7 +37,7 @@ jobs:
           git clone "$wiki_url" wiki
           # Replace the wiki contents with the in-repo sources (keep the wiki's .git).
           find wiki -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
-          cp -R docs/wiki/. wiki/
+          cp -R mods/exlib/wiki/. wiki/
 
           cd wiki
           git config user.name  "github-actions[bot]"

@@ -18,12 +18,12 @@ burdenmaker; the iiex/hpex/smex machine folders remain
 ([orientation-schemes](orientation-schemes.md)) · where a def, a recipe provider or an asset tree lives
 ([conventions.md](../conventions.md) § the per-mod project skeleton) · the cost catalogue's contents
 ([recipes & config](recipes-config.md)) · the layout DSL that consumes these codes
-([layouts](../../internal/workbench/layouts.md)).
+([layouts](../../../workbench/layouts.md)).
 
 **Depends on** [orientation-schemes](orientation-schemes.md) - N4 is its who-decides-the-orientation table,
 narrowed to a spelling question.
 **Depended on by** block renames & codegen
-· [layouts](../../internal/workbench/layouts.md) - a layout pins codes, so it can only be authored once the codes are final.
+· [layouts](../../../workbench/layouts.md) - a layout pins codes, so it can only be authored once the codes are final.
 
 ---
 
@@ -311,7 +311,7 @@ Open #2.
 > A code that never escaped needs no migrator, and writing one is worse than useless: it reads like
 > coverage while claiming a code nothing placed.
 
-The shipped set is recorded as data in `test/ExpandedLib.Testing/ReleasedCodes.cs`, extracted from
+The shipped set is recorded as data in `mods/exlib/testing/ReleasedCodes.cs`, extracted from
 `dist/Releases/1.22.0` by `scripts/gen-released-codes.py` rather than from memory - 501 concrete codes
 across three domains.
 
@@ -320,7 +320,7 @@ Only `exlib`, `ppex` and `smex` have ever shipped. There has never been a releas
 a 60-code rename wave into roughly 45 paths of real migration work, and it is why the `slag` family
 needed one migration row for seven renames.
 
-Two guards hold the contract, both in `test/SteelIndustryExpanded.Tests/Migrations/ReleasedCodeCoverageTests.cs`
+Two guards hold the contract, both in `mods/siex/tests/Migrations/ReleasedCodeCoverageTests.cs`
 (there because it is the only suite that references all three mods, and a migration chain crosses mods by
 design):
 

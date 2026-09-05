@@ -61,7 +61,7 @@ Two-cell vertical megablock, per [diagram crafting](../mechanics/diagram-craftin
 
 Both cells report powered/unpowered in block-info, so the machine's state is legible without opening the window (R7, [conventions.md:48-54](../conventions.md)).
 
-Measured bounding boxes from `assets/editable/shapes/machine-mp-megablock-boringmachine.json` (87 elements, 6 top-level groups):
+Measured bounding boxes from `workbench/shapes/machine-mp-megablock-boringmachine.json` (87 elements, 6 top-level groups):
 
 | Group | from → to (voxels) | Reads as |
 |---|---|---|
@@ -87,24 +87,24 @@ The art exists and is unwired. Nothing in `src/` references it.
 
 | Asset | State |
 |---|---|
-| editable shape | `assets/editable/shapes/machine-mp-megablock-boringmachine.json` - drawn, 87 elements, 4 animation clips. Untracked (`git status` reports `??`); the old path `assets/editable/shapes/machine-boringmachine.json` shows as deleted, i.e. this is a rename to the `machine-{drive}-{size}-{name}` convention |
-| runtime shape | missing - `assets/iiex/shapes/` holds only `boiler/`, `engine/` and `pipes/` (16 files); nothing is copied out of `editable/` |
+| editable shape | `workbench/shapes/machine-mp-megablock-boringmachine.json` - drawn, 87 elements, 4 animation clips. Untracked (`git status` reports `??`); the old path `workbench/shapes/machine-boringmachine.json` shows as deleted, i.e. this is a rename to the `machine-{drive}-{size}-{name}` convention |
+| runtime shape | missing - `mods/iiex/assets/iiex/shapes/` holds only `boiler/`, `engine/` and `pipes/` (16 files); nothing is copied out of `editable/` |
 | textures | see the path table below - not shippable as authored |
-| lang | `assets/iiex/lang/en.json` carries no `boringmachine-*` key |
-| handbook | `docs/iiex/handbook/` has 5 pages (`00-steampower` … `04-startersetup`); none is this machine. The sync pipeline joins on the `NN-` prefix and drift fails a test |
-| schematic textures | `diag-item-cylinder.png`, `diag-item-gear12.png`, `diag-item-gear24.png`, `diag-item-gearbevel.png`, `diag-item-rollers*.png` are drawn in `assets/editable/textures/` but not shipped - `assets/iiex/textures/item/diagram/` holds 22 files and none of them is a cutting schematic |
+| lang | `mods/iiex/assets/iiex/lang/en.json` carries no `boringmachine-*` key |
+| handbook | `mods/iiex/docs/handbook/` has 5 pages (`00-steampower` … `04-startersetup`); none is this machine. The sync pipeline joins on the `NN-` prefix and drift fails a test |
+| schematic textures | `diag-item-cylinder.png`, `diag-item-gear12.png`, `diag-item-gear24.png`, `diag-item-gearbevel.png`, `diag-item-rollers*.png` are drawn in `workbench/textures/` but not shipped - `mods/iiex/assets/iiex/textures/item/diagram/` holds 22 files and none of them is a cutting schematic |
 
 Texture paths - the same bug the design table had.
 
 | Key | Authored value | Verdict |
 |---|---|---|
-| `cast-iron1` | `F:/repos/modding-vsexpanded/assets/editable/textures/cast-iron1` | absolute local path, identical to the `paper` bug fixed on the [design table](design-table.md). Ships as `iiex:block/metal/castiron` (`assets/iiex/textures/block/metal/castiron.png`) |
+| `cast-iron1` | `F:/repos/modding-vsexpanded/workbench/textures/cast-iron1` | absolute local path, identical to the `paper` bug fixed on the [design table](design-table.md). Ships as `iiex:block/metal/castiron` (`mods/iiex/assets/iiex/textures/block/metal/castiron.png`) |
 | `iron5` | `block/metal/sheet-plain/iron5` | undomained → resolves to `iiex:block/…`, which does not exist. Needs `game:` |
 | `steel1` | `block/metal/sheet-plain/steel1` | undomained |
 | `iron` | `block/metal/tarnished/iron` | undomained |
 | `generic` | `block/wood/planks/generic` | undomained |
 
-The fixed design table is the worked example of what the runtime copy must look like - every key domained (`assets/iiex/shapes/crafting/designtable.json`).
+The fixed design table is the worked example of what the runtime copy must look like - every key domained (`mods/iiex/assets/iiex/shapes/crafting/designtable.json`).
 
 Animations - four clips, all authored, none loops.
 
@@ -231,8 +231,8 @@ Nothing exists. A repo-wide `grep -rni boring src/` returns one hit and it is a 
 
 | Piece | Where it goes | Model it on |
 |---|---|---|
-| `BlockBoringMachine` | `src/IronIndustryExpanded/BlockStructures/Machining/Blocks/` | `BlockDesignTable.cs:24` (`Block` + `IExBlockDefProvider` + `OnBlockInteractStart` → BE) plus `BlockTwinTubMPBlower` / `BlockFlywheel` for the filler footprint |
-| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityContainer` for the window inventory, hosting a `BEBehaviorProductionMachine` (`src/ExpandedLib/Blocks/Machines/BEBehaviorProductionMachine.cs:15`) for the timed job + away-catch-up. `BlockEntityRollingMill.cs:28`, `:48` is the worked example of the host pattern |
+| `BlockBoringMachine` | `mods/iiex/src/BlockStructures/Machining/Blocks/` | `BlockDesignTable.cs:24` (`Block` + `IExBlockDefProvider` + `OnBlockInteractStart` → BE) plus `BlockTwinTubMPBlower` / `BlockFlywheel` for the filler footprint |
+| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityContainer` for the window inventory, hosting a `BEBehaviorProductionMachine` (`mods/exlib/src/Blocks/Machines/BEBehaviorProductionMachine.cs:15`) for the timed job + away-catch-up. `BlockEntityRollingMill.cs:28`, `:48` is the worked example of the host pattern |
 | the window | `.../Machining/Gui/GuiDialogBoringMachine.cs` | `GuiDialogDesignTable.cs:23` - `GuiDialogBlockEntity`, `IsDuplicate` guard (`:50`), `Compose()` (`:77`), a dropdown + `AddDynamicText` info panel (`:138-140`), a button that sends one packet (`:173-182`) |
 | packet handshake | on the BE | `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) - the open/close/action protocol, the `Claims.TryAccess` audit (`:115-122`) and the `packetid < 1000 → InvNetworkUtil` route (`:125-129`) |
 | typed slots | inventory class | `InventoryDesignTable` (`:230-247`) + `ItemSlotDesignInput` (`:251`) / `ItemSlotDesignOutput` (`:276`) |
@@ -250,7 +250,7 @@ Caller-side contract for anyone adding a job: declare it on the schematic item, 
 ## Gotchas
 
 - `overview.md:70` lists the boring machine as shipped iiex content. It is not built - [diagram crafting](../mechanics/diagram-crafting.md) records that correctly. The other two overview mentions (`:127` "in scope and simply not built yet", `:160` build order) are consistent with planned and need no change; line 70 does.
-- `overview.md:70` also still calls iiex "Pipes & Power Expanded". The mod's display name is Low Pressure Expanded (`src/IronIndustryExpanded/modinfo.json`).
+- `overview.md:70` also still calls iiex "Pipes & Power Expanded". The mod's display name is Low Pressure Expanded (`mods/iiex/src/modinfo.json`).
 - ~~The timed job and the window inventory are two bases.~~ Retired: the production tick is a behaviour (`BEBehaviorProductionMachine`), so the base slot goes to `BlockEntityContainer` for the inventory - the shape `BlockEntityDesignTable` already has (`:27`) - and the machine adds the process in its constructor and publishes its gate through `IProductionReadiness`. [framework composition](../mechanics/framework-composition.md) owns the rule; `BlockEntityRollingMill` is the shipped host.
 - A custom GUI over a container desyncs without packet routing. `BlockEntityContainer` does not route the window's packets; the recorded scar is the hopper. `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) is the reference implementation, including the claim-access audit.
 - The drill clip does not repeat. All four clips are `onAnimationEnd: EaseOut`. Re-author `drill` and `base-move` to `Repeat` or the mesh blinks back to static.

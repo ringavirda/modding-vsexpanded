@@ -191,23 +191,23 @@ used by one provider stay private to it; captures two providers must agree on go
 shared cobblestone capture is what keeps the hand-patterned and diagram-crafted molten canals yielding the
 same `{rock}` variants).
 
-### Where the authoring copies of assets live (`assets/editable/`)
+### Where the authoring copies of assets live (`workbench/`)
 
-`assets/editable/shapes/*.json` are not duplicates of the shipped shapes - they are the same models
+`workbench/shapes/*.json` are not duplicates of the shipped shapes - they are the same models
 in the format the VS Model Creator needs. The editor requires texture paths that are absolute and
 domain-less; the game requires domain-prefixed asset paths. The two cannot be one file, so the
 editable copy is the hand-edited source and the domain copy is what ships. Do not "de-duplicate" them.
-The same holds for `assets/editable/textures/*.psd`, which export to the shipped PNGs.
+The same holds for `workbench/textures/*.psd`, which export to the shipped PNGs.
 
 **The three kinds of tree under `assets/`**, none of which is a mod domain in the same sense:
 
 | Tree | Ships? | Owner | What it is |
 |---|---|---|---|
 | `assets/<mod>/` | yes | that mod (`<AssetDomain>` in its csproj) | the mod's own domain — blocktypes, shapes, textures, lang, config |
-| `assets/editable/` | **no** | source-only | authoring copies: VS Model Creator shapes (domain-less absolute texture paths) and `.psd` sources |
-| `assets/game/` | yes, into `game:` | **exactly one mod** | overrides on vanilla's own domain, chiefly lang strings |
+| `workbench/` | **no** | source-only | authoring copies: VS Model Creator shapes (domain-less absolute texture paths) and `.psd` sources |
+| `mods/iiex/assets/game/` | yes, into `game:` | **exactly one mod** | overrides on vanilla's own domain, chiefly lang strings |
 
-`assets/game/` writes into vanilla's namespace, so two mods shipping the same `game:` key silently fight,
+`mods/iiex/assets/game/` writes into vanilla's namespace, so two mods shipping the same `game:` key silently fight,
 and which wins depends on load order. It therefore has a single owner in this repo rather than being a
 per-mod convenience.
 
@@ -232,10 +232,10 @@ exlib splits the network family across two folders:
 
 | Folder | Namespace | Holds |
 |---|---|---|
-| `src/ExpandedLib/Networks/` | `ExpandedLib.Networks` | the **graph model** — `BlockNetwork` and its subclasses, `PipeNetworkState`, and the contracts a participant implements (`INetworkNode`, `INetworkConnector`, `IPipeNode`, `IPipeVentStrategy`, `IMoltenCell`, `IBurstablePipe`, `IChimneyVentable`). No `Block`/`BlockEntity` in sight. |
-| `src/ExpandedLib/Blocks/Networks/` | `ExpandedLib.Blocks.Networks` | the **engine-facing shell** — `BlockNetworkNode`, `BlockEntityNetworkNode`, and the two `ModSystem`s that own the graph and its highlight. |
+| `mods/exlib/src/Networks/` | `ExpandedLib.Networks` | the **graph model** — `BlockNetwork` and its subclasses, `PipeNetworkState`, and the contracts a participant implements (`INetworkNode`, `INetworkConnector`, `IPipeNode`, `IPipeVentStrategy`, `IMoltenCell`, `IBurstablePipe`, `IChimneyVentable`). No `Block`/`BlockEntity` in sight. |
+| `mods/exlib/src/Blocks/Networks/` | `ExpandedLib.Blocks.Networks` | the **engine-facing shell** — `BlockNetworkNode`, `BlockEntityNetworkNode`, and the two `ModSystem`s that own the graph and its highlight. |
 
-The rule, generalized: a top-level folder under `src/ExpandedLib/` is a simulation domain - a model
+The rule, generalized: a top-level folder under `mods/exlib/src/` is a simulation domain - a model
 that can be reasoned about with no world loaded (`Networks`, `Metals`, `Fluids`, `Materials`, `Process`).
 `Blocks/` is where that model meets Vintage Story: types that derive `Block`, `BlockEntity`,
 `BlockBehavior` or `ModSystem`.
@@ -329,7 +329,7 @@ The invariants are enforced. All four charge-store answers are declared on a bra
 there - `ShaftHoldsLayeredCharge`, `AcceptedFamilies` and `MinChargeToIgnite` on both branches,
 `ReadChargeMix` per branch. A leaf restating any of them is a compile error in every mod, not a test
 failure in one assembly. Two reflection guards back that up across the whole loaded assembly closure
-(`test/IronIndustryExpanded.Tests/Invariants/FurnaceBranchGuards.cs`, invoked from the iiex and smex
+(`mods/iiex/tests/Invariants/FurnaceBranchGuards.cs`, invoked from the iiex and smex
 suites): the branch owns the flag, and no firebox may ask for more fuel than `cells × MaxStackSize`.
 
 Caution: some design files still cite `BlockEntityBlastFurnace.cs:NNN` - a filename that no longer

@@ -71,8 +71,8 @@ with `Origin(-1, 0)` - the negation of the `I` glyph's (col, row), per
 | Source | Where |
 |---|---|
 | Definition (twelve cross-sections, y = −1 → y = 10) | `BlockSmokeStackIntake.cs:46-151` |
-| Golden (the arbiter) | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/smokestack/intake.json` |
-| Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2 |
+| Golden (the arbiter) | `mods/siex/tests/goldens/siex/blocktypes/smokestack/intake.json` |
+| Round-tripped copy for editing | [layouts.md](../../../workbench/layouts.md) § Section 2 |
 
 ### Cell census — 72 offsets
 
@@ -147,7 +147,7 @@ borrows iiex's:
 
 | Asset | Path | State |
 |---|---|---|
-| intake shape | `iiex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `assets/siex/shapes/smokestack/` does not exist |
+| intake shape | `iiex:pipes/outlet` at `rotateY` 180/0/270/90 for n/s/w/e (`BlockSmokeStackIntake.cs:158-161`) | reused, not copied - the smoke stack ships no shape file; `mods/siex/assets/siex/shapes/smokestack/` does not exist |
 | intake texture | `front1` → `game:block/clay/refractory/{refractory}/front1` (`:162`) | tier-tinted |
 | the stack itself | vanilla `game:brickcourse-*` / `claybricks` / `refractorybricks` | the player picks |
 | plume | `ExParticles.RisingPlume` over the flue column, coloured by medium (`BlockEntitySmokeStack.cs:204-234`) | live |
@@ -157,15 +157,15 @@ No editable source exists.
 The intake is `sidesolid: false` (`:163`) where the [cowper](cowper.md)'s intake is `true` - the smoke stack's
 anchor is a pipe fitting first and a structure anchor second.
 
-Handbook: `assets/siex/config/handbook/02-hotblast.json` ↔ `docs/siex/handbook/02-hotblast.html`; the block
+Handbook: `mods/siex/assets/siex/config/handbook/02-hotblast.json` ↔ `mods/siex/docs/handbook/02-hotblast.html`; the block
 declares `Handbook("smokestack-intake-*")` (`:42`).
 
 ---
 
 ## Construction
 
-One grid recipe, no RCC. `src/SteelIndustryExpanded/Recipes/Grid/SmokeStackRecipeDefinitions.cs`; golden
-`test/SteelIndustryExpanded.Tests/goldens/siex/recipes/grid/smokestack.json`.
+One grid recipe, no RCC. `mods/siex/src/Recipes/Grid/SmokeStackRecipeDefinitions.cs`; golden
+`mods/siex/tests/goldens/siex/recipes/grid/smokestack.json`.
 
 | Output | Pattern | Ingredients | file:line |
 |---|---|---|---|
@@ -242,7 +242,7 @@ its pipe.
 
 ## Numbers
 
-### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
+### Owned — `mods/siex/src/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -336,7 +336,7 @@ is not available either.
 | `…:131-148` | node state round-trips through the tree |
 | `Scenarios/HotBlastScenarioTests.cs:44-79` | the safety-valve property: 12 ticks of a furnace spilling 38 L each keeps a 6-node main near empty with a stack, and pushes it over capacity without one |
 
-`SmokeStackRig` (`test/SteelIndustryExpanded.Tests/Fixtures/SmokeStackScenes.cs:28-115`) raises the real 72-cell
+`SmokeStackRig` (`mods/siex/tests/Fixtures/SmokeStackScenes.cs:28-115`) raises the real 72-cell
 chimney and lets the stack's own monitor tick complete it - per the megablock-rig rule, `StructureComplete` is
 never forced.
 

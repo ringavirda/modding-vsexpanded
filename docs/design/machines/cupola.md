@@ -72,7 +72,7 @@ shaft - the same arrangement as the blast furnaces. `Origin(-1, -1)`, so the `C`
 own (0, 0, 0).
 
 Source of truth: the seven ASCII cross-sections in `BlockCupolaFurnaceCore.cs` (y = 0 hearth floor → y = 6
-open stack). Golden: `test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/cupolacore.json`.
+open stack). Golden: `mods/iiex/tests/goldens/iiex/blocktypes/furnace/cupolacore.json`.
 
 ### Cell census — 64 offsets
 
@@ -125,11 +125,11 @@ The cupola introduces one asset of its own; everything else it borrows.
 | Asset | Path | State |
 |---|---|---|
 | core block model | `game:block/basic/cube` | vanilla cube |
-| core faces | `game:block/clay/refractory/{tier}/front1`, with `iiex:block/furnace/n` north and `iiex:block/furnace/cf` south | `assets/iiex/textures/block/furnace/cf.png` — the cupola's only own art; the "CF" label is what makes a built cupola read apart from a blast furnace |
+| core faces | `game:block/clay/refractory/{tier}/front1`, with `iiex:block/furnace/n` north and `iiex:block/furnace/cf` south | `mods/iiex/assets/iiex/textures/block/furnace/cf.png` — the cupola's only own art; the "CF" label is what makes a built cupola read apart from a blast furnace |
 | tuyere, tap, tall hopper, hearth metal | see [blast furnace § Assets](blast-furnace-cold.md#assets) | shared; not redefined here |
 
 No shape and no animation are unique to the cupola. There is no handbook page either -
-`assets/iiex/config/handbook/` ships `00-ironworking` … `04-designtable` and nothing for the cupola.
+`mods/iiex/assets/iiex/config/handbook/` ships `00-ironworking` … `04-designtable` and nothing for the cupola.
 
 ---
 
@@ -143,7 +143,7 @@ One grid recipe for the core; the rest is the shared fittings plus 52 refractory
 | `iiex:furnace-cupolacore-{tier}-n` | `BRB,PCP,BRB` (3×3) | 4 × `game:refractorybrick-fired-*` (tier captured as `{tier}`), 2 × rod, 2 × plate, 8 × fire clay |
 
 A full 3×3 with fire clay at its heart, so it can never collide with the blast-furnace core's pattern, and
-cheaper than it. Golden: `test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/cupola.json`.
+cheaper than it. Golden: `mods/iiex/tests/goldens/iiex/recipes/grid/cupola.json`.
 
 The tuyere recipe takes `iiex:pipe-plated-straight*`. Details:
 [blast furnace § Construction](blast-furnace-cold.md#construction).
@@ -218,7 +218,7 @@ larger charge. The pacing is geometry, not a constant.
 
 `IiexValues.X` is a generated accessor over `IiexConfig.X`. Only keys this page owns carry values.
 
-### Owned — `src/IronIndustryExpanded/IiexConfig.cs`
+### Owned — `mods/iiex/src/IiexConfig.cs`
 
 | Key | Value | What it does |
 |---|---|---|
@@ -233,7 +233,7 @@ larger charge. The pacing is geometry, not a constant.
 
 | Constant | Value |
 |---|---|
-| metal token | `"castiron"` → `assets/iiex/config/metals/castiron.json` |
+| metal token | `"castiron"` → `mods/iiex/assets/iiex/config/metals/castiron.json` |
 | solid product block | `iiex:hearthmetal-castiron` |
 | charge identity | the `scrap` material role, or fuel |
 | `ShaftCentre` | `(0, 3, 0)` |
@@ -282,11 +282,11 @@ instance of the pattern.
 
 | File | Covers |
 |---|---|
-| `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every cupola offset resolves to the right layout glyph; exactly one tuyere; no exhaust outlets |
+| `mods/iiex/tests/Blocks/Furnaces/FurnaceGeometryTests.cs` | every cupola offset resolves to the right layout glyph; exactly one tuyere; no exhaust outlets |
 | `…/FurnaceOrientationMatrixTests.cs` | the same geometry in all four facings |
 | `…/ChargeCodeGateTests.cs` | the two charge seams agree — item gate and code gate answer alike |
 | `…/FurnaceHudDistributionTests.cs` | the cupola's metal tap says cast iron, not pig iron |
-| `test/IronIndustryExpanded.Tests/Scenarios/CupolaScenarioTests.cs` | the full lifecycle: ignition, melt, tapping cast iron and slag, extinguish freeze + salvage, the ore-burden refusal |
+| `mods/iiex/tests/Scenarios/CupolaScenarioTests.cs` | the full lifecycle: ignition, melt, tapping cast iron and slag, extinguish freeze + salvage, the ore-burden refusal |
 
 ---
 
@@ -320,14 +320,14 @@ instance of the pattern.
 ## Open
 
 1. **Ferroalloy melting is unbuilt**, and it is the cupola's designed third job. It needs a ferroalloy
-   metal descriptor in `assets/iiex/config/metals/`, a charge identity that carries it, and a
+   metal descriptor in `mods/iiex/assets/iiex/config/metals/`, a charge identity that carries it, and a
    [ladle](ladle.md) - which does not exist as a type anywhere in `src/`.
 
 2. **No handbook page.** Every other live iiex machine family has one.
 
 3. **The cupola's scenario suite lives in the wrong project.** `CupolaScenarioTests` and `CupolaScenes` are
-   in `test/IronIndustryExpanded.Tests/`, testing an iiex machine - against the per-mod test-homing rule.
+   in `mods/iiex/tests/`, testing an iiex machine - against the per-mod test-homing rule.
 
-4. **The [layouts.md](../../internal/workbench/layouts.md) workbench copy has drifted**: its cupola section still
+4. **The [layouts.md](../../../workbench/layouts.md) workbench copy has drifted**: its cupola section still
    spells the retired `iiex:cupolafurnacecore` anchor code and a `Y` tuyere glyph where the shipped drawing
    uses `T`. Regenerate it from the golden.

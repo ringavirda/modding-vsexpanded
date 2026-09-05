@@ -117,10 +117,10 @@ Nothing exists for this machine, and its parent's art is untracked.
 | Asset | State |
 |---|---|
 | editable shape | none. No HP variant is drawn |
-| runtime shape | none. `assets/siex/shapes/` holds only the Lancashire and Cornish assemblies |
+| runtime shape | none. `mods/siex/assets/siex/shapes/` holds only the Lancashire and Cornish assemblies |
 | die item art | none |
-| lang keys | none in `assets/siex/lang/en.json` |
-| handbook page | none. `docs/siex/handbook/` contains exactly one file, `00-highpressure.html` |
+| lang keys | none in `mods/siex/assets/siex/lang/en.json` |
+| handbook page | none. `mods/siex/docs/handbook/` contains exactly one file, `00-highpressure.html` |
 | the LP hammer's three shapes | drawn, untracked in git, wired to nothing - see [steam hammer § Assets](steam-hammer.md) |
 
 A distinct block needs a distinct silhouette ([heading machine:36](heading-machine.md)). The cheapest
@@ -263,8 +263,8 @@ owned elsewhere it must be sized against.
 
 | Source | Claim |
 |---|---|
-| `src/SteelIndustryExpanded/README.md:15` | the Cornish engine is 6-8 atm |
-| `docs/siex/handbook/05-highpressure.html:23` | running at 6-8 atm |
+| `mods/siex/README.md:15` | the Cornish engine is 6-8 atm |
+| `mods/siex/docs/handbook/05-highpressure.html:23` | running at 6-8 atm |
 | the shipped config | engages at 5/6/7, breaks at 8 (`SiexConfig.cs:70-78`) |
 
 The HP hammer is the natural occupant of the 8-12 atm band that nothing lives in today - a hammer has no
@@ -301,16 +301,16 @@ carries its own because exlib's salvage lookup keys on the broken block's domain
 
 ## Code — where it will hook in
 
-Nothing exists; `grep -ri "hammer" src/SteelIndustryExpanded/` returns nothing. The build order is strictly
+Nothing exists; `grep -ri "hammer" mods/siex/src/` returns nothing. The build order is strictly
 after its parent's.
 
 | To build | Copy from | Note |
 |---|---|---|
 | the whole block | the LP [steam hammer](steam-hammer.md), once it exists | the LP class should be the base and this the leaf - the same relationship `BlockBoiler`/Lancashire and `BlockEngine`/Cornish already have |
-| the leaf pattern | `src/SteelIndustryExpanded/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over iiex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from iiex |
+| the leaf pattern | `mods/siex/src/BlockStructures/` - the Lancashire and Cornish engine are pure leaves over iiex bases | `HighPressureExpanded.csproj:81` documents the rule: hpex holds only the high-pressure leaves and inherits everything from iiex |
 | pressure-banded behaviour | `CornishEngine{Engage,Break}Pressure*` and its three-setting wrench throttle | `SiexConfig.cs:70-78` |
 | config | a new `HpHammer*` block in `SiexConfig` | `SiexConfig.cs:23` - `[ExConfigRegister("ex_values.json", "hpex", Manageable = true)]` |
-| costs | `SiexRecipeConfig` | `src/SteelIndustryExpanded/SiexRecipeConfig.cs` |
+| costs | `SiexRecipeConfig` | `mods/siex/src/SiexRecipeConfig.cs` |
 | the die spec extension | [heading machine](heading-machine.md)'s `ItemDie` | needs that page's sign-off - see [Operation](#operation) |
 
 The dependency this machine would need is declared but not real. `modinfo.json:14` declares a `smex`
@@ -346,7 +346,7 @@ ingredient codes, which is why the hadfield gate is still a comment.
   drawing hard can only lower line pressure, so it does not worsen this, but any headroom argument that
   assumes a margin is wrong.
 * The rolled pipe tier is uncraftable (B5) - four live blocktypes, four shapes, zero recipes
-  ([STATE.md:52](../../internal/plans/STATE.md); `src/SteelIndustryExpanded/Recipes/` contains exactly one file). So an
+  ([STATE.md:52](../../internal/plans/STATE.md); `mods/siex/src/Recipes/` contains exactly one file). So an
   HP hammer plumbed in "HP pipe" would be plumbed in a tier the player cannot build.
 * hadfield is a comment, not a material - see [Construction](#construction).
 * The LP hammer's drawn mesh already overhangs its declared footprint (57 voxels tall against 48 for

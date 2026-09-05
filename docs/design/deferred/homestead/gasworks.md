@@ -84,7 +84,7 @@ that the two decisions are really one decision.
 In `src/`, a repo-wide grep for `coalgas|coal.?gas|gasworks|gasholder|retort|distill|coaltar|petcoke|graphite|electrolys|ammonia|benzene|kerosene|aniline` (`--include=*.cs`) returns one hit, and it is a doc comment:
 
 ```
-src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58:  /// every distillation fraction. On <c>true</c> ...
+mods/exlib/src/Fluids/IMediumTaxonomy.cs:58:  /// every distillation fraction. On <c>true</c> ...
 ```
 
 Assets and lang are empty too - `grep -rniE "coal gas|gasworks|gasholder|retort|gas lamp|coal tar" assets/`
@@ -94,15 +94,15 @@ Three relevant things do exist, and a gasworks would not have to build them:
 
 | Exists | Where | Why it matters |
 |---|---|---|
-| The still's engine, as an interface | `IMediumTaxonomy.TryVaporisation` (`src/ExpandedLib/Fluids/IMediumTaxonomy.cs:54-66`, declared at `:61`) - its summary says it "Generalises the boiler's water → steam step to every distillation fraction" | the fraction-by-boiling-point mechanic is already an API with one implementation (`ExLiquids.cs:181`) |
-| A medium-agnostic condenser, live | `BlockEntitySteamCondenser.HasCondensableGas` reads the taxonomy rather than hard-coding steam (`src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:236-255`); the summary names "any future condensable vapour a still routes through a condenser" | the condenser bank downstream of a hydraulic main is already a shipped block |
+| The still's engine, as an interface | `IMediumTaxonomy.TryVaporisation` (`mods/exlib/src/Fluids/IMediumTaxonomy.cs:54-66`, declared at `:61`) - its summary says it "Generalises the boiler's water → steam step to every distillation fraction" | the fraction-by-boiling-point mechanic is already an API with one implementation (`ExLiquids.cs:181`) |
+| A medium-agnostic condenser, live | `BlockEntitySteamCondenser.HasCondensableGas` reads the taxonomy rather than hard-coding steam (`mods/iiex/src/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:236-255`); the summary names "any future condensable vapour a still routes through a condenser" | the condenser bank downstream of a hydraulic main is already a shipped block |
 | A vanilla tar item with no producer | `.game/1.20/assets/survival/itemtypes/liquid/tar.json` - `tarportion`, an `ItemLiquidPortion`, lang `"item-tarportion": "Tar"` (`.game/1.20/assets/game/lang/en.json:4147`) | `grep -rln "tarportion" .game/1.20/assets/` matches only that itemtype and the lang files - no recipe, no block, no drop, in 1.20 or 1.22. Vanilla defines tar and never makes any |
 
 The tar a gasworks would produce already has a vanilla item code, a texture and a translated name in
 fourteen languages, and nothing in the game produces it.
 
-What does not exist is the medium. `assets/exlib/config/liquids.json` declares exactly four - `Air`,
-`Steam`, `Exhaust`, `Water` - matching `ExLiquids.SeedDefaults()` (`src/ExpandedLib/Fluids/ExLiquids.cs:44-69`).
+What does not exist is the medium. `mods/exlib/assets/exlib/config/liquids.json` declares exactly four - `Air`,
+`Steam`, `Exhaust`, `Water` - matching `ExLiquids.SeedDefaults()` (`mods/exlib/src/Fluids/ExLiquids.cs:44-69`).
 There is no `CoalGas`, no `CoalTar`, no `AmmoniacalLiquor`, and R1 gives a run exactly one medium.
 
 ## The design as it stands
@@ -130,7 +130,7 @@ Two design notes travel with it:
 |---|---|---|---|
 | 1 | R1 vs. a three-output machine | [conventions.md](../../conventions.md); owned by [pipe network](../../mechanics/pipe-network.md) | a run carries one medium. A gasworks emits gas, tar and liquor simultaneously. It therefore needs three separate ports onto three separate runs - or the liquids come off as items and sidestep the network entirely. The archived spec implies the first ("a gas main dropping tar/liquor"), but never says which |
 | 2 | Two gases always mix, silently | `ExLiquids.cs:106-115`, comment at `:114` - "two gases always mix (Air/Steam/Exhaust family)"; the merged run takes the higher-priority label (`:118-119`) | join a coal-gas main to a steam or air main and you get one pool, relabelled, with no warning and no refusal. [gas-producer](../../machines/gas-producer.md):309-315 already logs this for producer gas - a town-gas main is worse, because lighting mains are distributed around a settlement and will pass near the works' own air and exhaust runs |
-| 3 | No media to declare | `assets/exlib/config/liquids.json`; loader at `ExLiquids.Load` (`ExLiquids.cs:74-97`) | Homestead ships them as its own `config/liquids.json` and the loader overlays it with no code, so this is cheap. But the priorities have to be chosen against the shipped ladder (Air 0 `ExLiquids.cs:46`, Steam 10 `:52`, Exhaust 20 `:58`) and against `ProducerGas`, which [gas-producer](../../machines/gas-producer.md):240 proposes at 30 |
+| 3 | No media to declare | `mods/exlib/assets/exlib/config/liquids.json`; loader at `ExLiquids.Load` (`ExLiquids.cs:74-97`) | Homestead ships them as its own `config/liquids.json` and the loader overlays it with no code, so this is cheap. But the priorities have to be chosen against the shipped ladder (Air 0 `ExLiquids.cs:46`, Steam 10 `:52`, Exhaust 20 `:58`) and against `ProducerGas`, which [gas-producer](../../machines/gas-producer.md):240 proposes at 30 |
 | 4 | The gasholder is the fluid tank | the archived spec calls it "the core-iiex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | so it is one block with two skins, and its blocking problem - capacity is per-node and uniform - is already written up at [fluid tank](../../machines/fluid-tank.md). Do not design a second storage node. `fluid-tank.md:56-58` cites the archived gasholder as one of two reasons the tank must stay medium-agnostic |
 
 ## The tar chain — who is downstream, and how badly

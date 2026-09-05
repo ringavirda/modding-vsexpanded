@@ -126,9 +126,9 @@ present batch sizes - watch it if the batch shrinks.
 
 ## Assets
 
-Editable source: `assets/editable/shapes/machine-megablock-burdenmaker.json` → exported to
-`assets/iiex/shapes/ore/burdenmaker.json`. A `Root` element wraps the five groups in the editable, so the
-RCC stages can address them; the export is `scripts/tools/convert-shape.py`, which is also the only place that
+Editable source: `workbench/shapes/machine-megablock-burdenmaker.json` → exported to
+`mods/iiex/assets/iiex/shapes/ore/burdenmaker.json`. A `Root` element wraps the five groups in the editable, so the
+RCC stages can address them; the export is `infra/tools/convert-shape.py`, which is also the only place that
 can set the clip endings (`closed` = Repeat, `open` = Hold) - no C# test in this repo can see them.
 
 | Group | Absolute extent | Is |
@@ -207,13 +207,13 @@ nothing may be destroyed on break, and with no batch state there is no reason fo
 
 | Piece | Where |
 |---|---|
-| Shape export | `assets/iiex/shapes/ore/burdenmaker.json` |
+| Shape export | `mods/iiex/assets/iiex/shapes/ore/burdenmaker.json` |
 | Block def, 8 fillers, 5 RCC stages | `BlockBurdenmaker.Definitions` |
 | Cell classifier | `BlockBurdenmaker.Classify(principal, clicked, angle)` |
 | Hoppers, basin, gate, drops, readout | `BlockEntityBurdenmaker` |
 | Per-cell interaction and per-cell help | `BlockBurdenmaker.HandleInteract` / `BuildInteractionHelp` |
 | Grid recipe + catalogue row | `OreProcessingRecipeDefinitions.Burdenmaker` · `IiexRecipeConfig` |
-| Handbook page | `docs/iiex/handbook/01-orehandling.html` (+ `00-ironworking.html`), all three locales |
+| Handbook page | `mods/iiex/docs/handbook/01-orehandling.html` (+ `00-ironworking.html`), all three locales |
 
 The handbook pair covers the burdenmaker and the two-stream charge, and is translated into `ru` and `uk`
 (2026-08-07) - the first two iiex handbook pages translated at all. The other three iiex pages are still

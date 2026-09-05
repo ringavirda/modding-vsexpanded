@@ -1,6 +1,6 @@
 # Pipe Network
 
-**Status** live   **Mod** `exlib` owns the graph substrate and the base pipe blocks - `BlockPipe`/`BlockEntityPipe`, `BlockNetworkNode`, `BlockNetworkModSystem` and `ChimneyVent` live in `src/ExpandedLib/Blocks/Networks` (since 2026-08-07), `PipeNetwork`/`PipeNetworkState` in `src/ExpandedLib/Networks`; `iiex` owns the plated tier and the network registration; `iiex` owns the cast tier + every fitting; `hpex` owns the rolled tier (segments only).
+**Status** live   **Mod** `exlib` owns the graph substrate and the base pipe blocks - `BlockPipe`/`BlockEntityPipe`, `BlockNetworkNode`, `BlockNetworkModSystem` and `ChimneyVent` live in `mods/exlib/src/Blocks/Networks` (since 2026-08-07), `PipeNetwork`/`PipeNetworkState` in `mods/exlib/src/Networks`; `iiex` owns the plated tier and the network registration; `iiex` owns the cast tier + every fitting; `hpex` owns the rolled tier (segments only).
 
 **Owns**
 - The shared block-network graph substrate used by every network in the suite: node add/remove, merge, BFS fracture detection, `RebuildFromRoot`, per-second tick dispatch, the `dt` catch-up clamp, open-connector (leak) detection, the connector-reciprocity rule, `AcceptsNeighbour`, and `IsConnectionBroken` re-walk. Other network pages cite this one for those facts.

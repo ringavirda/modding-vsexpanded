@@ -42,14 +42,14 @@ the puddling furnace from the heating hearth's row count, so no later stage can 
 
 | File | Responsibility |
 |---|---|
-| `src/IronIndustryExpanded/BlockStructures/Furnaces/PuddlingHearthLayout.cs` | the puddling furnace's own row count, replacing its borrow of the heating hearth's |
-| `src/ExpandedLib/Processes/SectionClass.cs` | the `Square \| Flat` enum, the family registry, and the resolution order |
-| `src/ExpandedLib/Processes/PieceSize.cs` | the declared `(Width, Height, Length)` triple and its JSON parse |
-| `src/ExpandedLib/Blocks/Structures/PileLayout.cs` | bed, mode, capacity, seat, jitter |
-| `test/ExpandedLib.Tests/Processes/SectionClassTests.cs` | resolution order, registry contribution, defaults |
-| `test/ExpandedLib.Tests/Processes/PieceSizeTests.cs` | parse, validation, absence |
-| `test/ExpandedLib.Tests/Blocks/PileLayoutTests.cs` | per-layer, capacity, seats, jitter reproducibility |
-| `test/IronIndustryExpanded.Tests/Blocks/PuddlingHearthLayoutTests.cs` | the decoupling, asserted |
+| `mods/iiex/src/BlockStructures/Furnaces/PuddlingHearthLayout.cs` | the puddling furnace's own row count, replacing its borrow of the heating hearth's |
+| `mods/exlib/src/Processes/SectionClass.cs` | the `Square \| Flat` enum, the family registry, and the resolution order |
+| `mods/exlib/src/Processes/PieceSize.cs` | the declared `(Width, Height, Length)` triple and its JSON parse |
+| `mods/exlib/src/Blocks/Structures/PileLayout.cs` | bed, mode, capacity, seat, jitter |
+| `mods/exlib/tests/Processes/SectionClassTests.cs` | resolution order, registry contribution, defaults |
+| `mods/exlib/tests/Processes/PieceSizeTests.cs` | parse, validation, absence |
+| `mods/exlib/tests/Blocks/PileLayoutTests.cs` | per-layer, capacity, seats, jitter reproducibility |
+| `mods/iiex/tests/Blocks/PuddlingHearthLayoutTests.cs` | the decoupling, asserted |
 
 ---
 
@@ -62,9 +62,9 @@ separate structure with different logic, nearer the crucible furnace's hearth th
 borrow first makes every later task incapable of reaching it.
 
 **Files:**
-- Create: `src/IronIndustryExpanded/BlockStructures/Furnaces/PuddlingHearthLayout.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs:21-22`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/PuddlingHearthLayoutTests.cs`
+- Create: `mods/iiex/src/BlockStructures/Furnaces/PuddlingHearthLayout.cs`
+- Modify: `mods/iiex/src/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs:21-22`
+- Test: `mods/iiex/tests/Blocks/PuddlingHearthLayoutTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -73,7 +73,7 @@ borrow first makes every later task incapable of reaching it.
 - [ ] **Step 1: Write the failing test**
 
 ```csharp
-// test/IronIndustryExpanded.Tests/Blocks/PuddlingHearthLayoutTests.cs
+// mods/iiex/tests/Blocks/PuddlingHearthLayoutTests.cs
 public class PuddlingHearthLayoutTests {
   [Fact]
   public void The_puddling_furnace_states_its_own_row_count() {
@@ -101,7 +101,7 @@ Expected: FAIL — `PuddlingHearthLayout` does not exist (CS0103).
 - [ ] **Step 3: Write the layout**
 
 ```csharp
-// src/IronIndustryExpanded/BlockStructures/Furnaces/PuddlingHearthLayout.cs
+// mods/iiex/src/BlockStructures/Furnaces/PuddlingHearthLayout.cs
 namespace IronIndustryExpanded.BlockStructures.Furnaces;
 
 /// <summary>
@@ -129,7 +129,7 @@ are — this task moves the *count*, not the row model.
 
 - [ ] **Step 5: Confirm nothing else in the puddling furnace reads the heating hearth**
 
-Run: `grep -rn "HeatingHearthLayout" src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs`
+Run: `grep -rn "HeatingHearthLayout" mods/iiex/src/BlockStructures/Furnaces/BlockEntities/BlockEntityPuddlingHearth.cs`
 Expected: no output. If any remains, repoint it the same way.
 
 - [ ] **Step 6: Run the full gate**
@@ -157,8 +157,8 @@ One property with two consumers: it chooses the deformation law
 property and its resolution; no consumer is wired.
 
 **Files:**
-- Create: `src/ExpandedLib/Processes/SectionClass.cs`
-- Test: `test/ExpandedLib.Tests/Processes/SectionClassTests.cs`
+- Create: `mods/exlib/src/Processes/SectionClass.cs`
+- Test: `mods/exlib/tests/Processes/SectionClassTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -174,7 +174,7 @@ property and its resolution; no consumer is wired.
 - [ ] **Step 1: Write the failing tests**
 
 ```csharp
-// test/ExpandedLib.Tests/Processes/SectionClassTests.cs
+// mods/exlib/tests/Processes/SectionClassTests.cs
 public class SectionClassTests {
   public SectionClassTests() => SectionClasses.SeedDefaults();
 
@@ -253,7 +253,7 @@ Expected: FAIL — `SectionClass` / `SectionClasses` do not exist.
 - [ ] **Step 3: Write the implementation**
 
 ```csharp
-// src/ExpandedLib/Processes/SectionClass.cs
+// mods/exlib/src/Processes/SectionClass.cs
 using System;
 using System.Collections.Generic;
 
@@ -360,8 +360,8 @@ The pile needs a width, a height and a length before anything is drawn — `TryL
 piece fits without tesselating it — so the size is declared, never measured off a shape's bounding box.
 
 **Files:**
-- Create: `src/ExpandedLib/Processes/PieceSize.cs`
-- Test: `test/ExpandedLib.Tests/Processes/PieceSizeTests.cs`
+- Create: `mods/exlib/src/Processes/PieceSize.cs`
+- Test: `mods/exlib/tests/Processes/PieceSizeTests.cs`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -375,7 +375,7 @@ piece fits without tesselating it — so the size is declared, never measured of
 - [ ] **Step 1: Write the failing tests**
 
 ```csharp
-// test/ExpandedLib.Tests/Processes/PieceSizeTests.cs
+// mods/exlib/tests/Processes/PieceSizeTests.cs
 public class PieceSizeTests {
   private static JsonObject Json(string raw) => new(JToken.Parse(raw));
 
@@ -423,7 +423,7 @@ Expected: FAIL — `PieceSize` does not exist.
 - [ ] **Step 3: Write the implementation**
 
 ```csharp
-// src/ExpandedLib/Processes/PieceSize.cs
+// mods/exlib/src/Processes/PieceSize.cs
 using Vintagestory.API.Datastructures;
 
 namespace ExpandedLib.Processes;
@@ -494,8 +494,8 @@ Capacity before seats, because `PerLayer` is the divisor every seat depends on a
 alone.
 
 **Files:**
-- Create: `src/ExpandedLib/Blocks/Structures/PileLayout.cs`
-- Test: `test/ExpandedLib.Tests/Blocks/PileLayoutTests.cs`
+- Create: `mods/exlib/src/Blocks/Structures/PileLayout.cs`
+- Test: `mods/exlib/tests/Blocks/PileLayoutTests.cs`
 
 **Interfaces:**
 - Consumes: `SectionClass` (Task 2), `PieceSize` (Task 3).
@@ -509,7 +509,7 @@ alone.
 - [ ] **Step 1: Write the failing tests**
 
 ```csharp
-// test/ExpandedLib.Tests/Blocks/PileLayoutTests.cs
+// mods/exlib/tests/Blocks/PileLayoutTests.cs
 public class PileLayoutTests {
   // One cell across, two deep - the reheat hearth's lengthwise bed.
   private static readonly PileBed Hearth = new(16f, 32f, 3);
@@ -579,7 +579,7 @@ Expected: FAIL — `PileLayout` does not exist.
 - [ ] **Step 3: Write the types and the capacity half**
 
 ```csharp
-// src/ExpandedLib/Blocks/Structures/PileLayout.cs
+// mods/exlib/src/Blocks/Structures/PileLayout.cs
 using System;
 using ExpandedLib.Processes;
 using Vintagestory.API.MathTools;
@@ -664,8 +664,8 @@ Run: `scripts/exmod.ps1 test all`. Append to the worklog. Do not commit.
 ## Task 5: `PileLayout` — seats and jitter
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Structures/PileLayout.cs`
-- Test: `test/ExpandedLib.Tests/Blocks/PileLayoutTests.cs`
+- Modify: `mods/exlib/src/Blocks/Structures/PileLayout.cs`
+- Test: `mods/exlib/tests/Blocks/PileLayoutTests.cs`
 
 **Interfaces:**
 - Consumes: everything from Task 4.
@@ -891,7 +891,7 @@ Named so the sequencing is visible; each gets written as its own plan against th
    not on the pile page.
 3. **The composed-stock renderer** — the hearth tesselates each piece from the item's own shape through
    `PileLayout.Seat`. Deletes the 15 authored groups in
-   `assets/editable/shapes/furnaces/firebox/furnace-megablock-heatinghearth.json` and
+   `workbench/shapes/furnaces/firebox/furnace-megablock-heatinghearth.json` and
    `HeatingHearthLayout`'s element map with them, and with them the `Items1/3/2` ordering trap.
    Carries all five documented traps: five-arg `ShapeTextureSource`, main-thread-only atlas insert
    against a chunk-worker `OnTesselation`, cache the clone not the seat, translate before the single

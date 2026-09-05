@@ -59,7 +59,7 @@ player charges, not by what they charged.
 | Texture | `game:block/coal/orecoalmix` (`:33`) |
 | Combustible | `burnTemperature: 600` / `burnDuration: 1500` (`:47`) |
 | Held | `holdbothhands` idle + ready (`:45-46`) |
-| Golden | `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/burden.json` |
+| Golden | `mods/iiex/tests/goldens/iiex/itemtypes/burden.json` |
 
 It cannot be placed as a pile by hand. `ItemBurden` is a plain `Item`. What stands in a shaft is
 `iiex:furnace-chargepile`, a block the furnace owns and places
@@ -120,7 +120,7 @@ Two statuses are returned directly rather than matched:
 | `empty` | `!mix.HasContent` | `Burden.cs:106-107` |
 | `offspec` | no band matched (edited config only) | `Burden.cs:114` |
 
-Lang keys: `iiex:burden-profile-{key}` (`assets/iiex/lang/en.json:251-255`) and the composition line
+Lang keys: `iiex:burden-profile-{key}` (`mods/iiex/assets/iiex/lang/en.json:251-255`) and the composition line
 `iiex:burden-composition` (`:250`), which prints two numbers - iron and flux (`ItemBurden.cs:95-101`).
 
 The same classifier names the grade at both ends: the burdenmaker's readout previews it before the
@@ -182,7 +182,7 @@ out, so a dead furnace cannot relight off its own salvage. That salvage is
 | ↳ `ProfileLangKey` | `:104-115` | the classifier |
 | `BurdenProfile` | `IiexConfig.cs:930` | `Key` + two flux bounds |
 | `IiexConfig.BurdenProfiles` | `IiexConfig.cs:902` | the band list; retunable live through `ModConfig/ex_values.json` |
-| Tests | `test/IronIndustryExpanded.Tests/Materials/BurdenProfileTests.cs` | the three bands, the boundaries, config retuning, and that a stamped fuel part cannot move the grade |
+| Tests | `mods/iiex/tests/Materials/BurdenProfileTests.cs` | the three bands, the boundaries, config retuning, and that a stamped fuel part cannot move the grade |
 
 ### Every writer and reader of the stamp
 
@@ -229,7 +229,7 @@ out, so a dead furnace cannot relight off its own salvage. That salvage is
    fix - whether an under-fluxed charge should slag badly, or simply be refused. Undecided, and it is the
    single largest gap between what this item says and what it is.
 
-2. `iiex:burden` has no handbook page of its own. `docs/iiex/handbook/01-orehandling.html` covers
+2. `iiex:burden` has no handbook page of its own. `mods/iiex/docs/handbook/01-orehandling.html` covers
    preparing it and charging with it, but the stamp and the bands are documented only in tooltips.
 
 3. Roasted ore is promised and not delivered. `iiex:burdenmaker-help-addore` offers "crushed or roasted

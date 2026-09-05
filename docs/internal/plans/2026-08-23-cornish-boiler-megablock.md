@@ -25,7 +25,7 @@ point so that duration — not flame temperature — is what distinguishes one c
 **Tech stack:** C# (net7.0/net8.0, multi-targeted 1.20/1.21/1.22), Vintage Story API, xUnit, code-first
 `ExBlockDef` definitions, Python 3 for the shape tooling.
 
-**Spec:** `docs/internal/workbench/machines.txt` § *Pipe steam cornish boiler* (the owner's layout and
+**Spec:** `workbench/machines.txt` § *Pipe steam cornish boiler* (the owner's layout and
 legend, revised 2026-08-23). Decisions cited from `docs/design/machines/boiler-cornish.md`,
 `docs/design/machines/firebox.md`, `docs/design/items/fuels.md`,
 `docs/design/mechanics/multiblock.md`, `docs/design/mechanics/gas-system.md`.
@@ -37,7 +37,7 @@ legend, revised 2026-08-23). Decisions cited from `docs/design/machines/boiler-c
 Every task's requirements implicitly include this section. Each line was verified against `src/` on
 2026-08-23; navigate by symbol, not by line number.
 
-- **Nothing has shipped.** `test/ExpandedLib.Testing/ReleasedCodes.cs` states "no iiex, siex or hpex
+- **Nothing has shipped.** `mods/exlib/testing/ReleasedCodes.cs` states "no iiex, siex or hpex
   build has been released". `iiex:boilercornish` needs no save migration and the footprint may change
   freely. `PpexRenameMigration` maps released `ppex:boilercornish` → `iiex:boilercornish`; per the
   owner's ruling of 2026-08-23, **iiex is a separate mod with reimplementations and owes ppex worlds
@@ -50,7 +50,7 @@ Every task's requirements implicitly include this section. Each line was verifie
 - **Test command:** `./scripts/exmod.sh test 1.21`. Use 1.21, not 1.22 — VS 1.22.6 broke `IPlayer`
   mocking. A full green run is 9 targets.
 - **Goldens** rewrite with `EXLIB_WRITE_GOLDENS=1`; the **handbook** with `EXLIB_WRITE_HANDBOOK=1`,
-  which writes `assets/iiex/lang/en.json` only — `ru.json` and `uk.json` are hand work.
+  which writes `mods/iiex/assets/iiex/lang/en.json` only — `ru.json` and `uk.json` are hand work.
 - **Design pages own decisions.** If a number here disagrees with `docs/design/**`, the design page
   wins and this plan is the thing to fix.
 
@@ -153,7 +153,7 @@ Old paths that no longer exist anywhere: `Root/Base`, `Root/BaseExtension`, `Roo
 ./scripts/exmod.sh test 1.21                       # full suite, 9 targets
 ./scripts/exmod.sh test 1.21 -Filter Boiler        # one area
 ./scripts/exmod.sh format -Check                   # formatting gate
-python scripts/tools/convert-shape.py --check      # unmapped textures across all editables
+python infra/tools/convert-shape.py --check      # unmapped textures across all editables
 EXLIB_WRITE_GOLDENS=1 ./scripts/exmod.sh test 1.21 -Filter DefinitionGoldens
 EXLIB_WRITE_HANDBOOK=1 ./scripts/exmod.sh test 1.21 -Filter HandbookSync
 ```
@@ -165,7 +165,7 @@ EXLIB_WRITE_HANDBOOK=1 ./scripts/exmod.sh test 1.21 -Filter HandbookSync
 Landed before the plan was written, because CB1 cannot convert the shape without it. Recorded here so
 the sequence reads whole.
 
-- `scripts/tools/convert-shape.py`
+- `infra/tools/convert-shape.py`
   - `TEXTURES["iron4"]` → `game:block/metal/sheet/iron4`. The map had it as `sheet-plain`, and because
     the remap overwrites by key it beat the editable: `iiex/shapes/furnace/tuyere.json` and
     `iiex/shapes/ore/burdenmaker.json` both ship `sheet-plain` while their editables author `sheet`.
@@ -200,8 +200,8 @@ is identical to the editable's — X −1..1, Y 0..2, Z −5..0, same per-group 
 ## CB1 — convert the shape ✅ DONE 2026-08-23
 
 **Files:**
-- Create: `assets/iiex/shapes/boiler/cornish.json` (overwrite)
-- Read: `assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json`
+- Create: `mods/iiex/assets/iiex/shapes/boiler/cornish.json` (overwrite)
+- Read: `workbench/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json`
 
 **Interfaces:**
 - Produces: the shipped shape whose top-level element names every later task references —
@@ -210,7 +210,7 @@ is identical to the editable's — X −1..1, Y 0..2, Z −5..0, same per-group 
 - [ ] **Step 1: Confirm the editable is clean**
 
 ```bash
-python scripts/tools/convert-shape.py --check
+python infra/tools/convert-shape.py --check
 ```
 
 Expected: no unmapped key attributed to `machines/steam/machine-pipe-megablock-boiler-cornish-new`.
@@ -220,7 +220,7 @@ Expected: no unmapped key attributed to `machines/steam/machine-pipe-megablock-b
 ```bash
 python - <<'EOF'
 import json
-p="assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json"
+p="workbench/shapes/machines/steam/machine-pipe-megablock-boiler-cornish-new.json"
 d=json.load(open(p,encoding='utf-8-sig'))
 bad=[]
 def walk(e,path=""):
@@ -239,9 +239,9 @@ unmatched path without raising, so the barrel would render as nothing with every
 - [ ] **Step 3: Convert**
 
 ```bash
-python scripts/tools/convert-shape.py \
+python infra/tools/convert-shape.py \
   machines/steam/machine-pipe-megablock-boiler-cornish-new \
-  assets/iiex/shapes/boiler/cornish.json
+  mods/iiex/assets/iiex/shapes/boiler/cornish.json
 ```
 
 Expected output names all seven top-level elements and `anims=['idle', 'mainhatchopen', 'manhatchopen']`.
@@ -251,7 +251,7 @@ Expected output names all seven top-level elements and `anims=['idle', 'mainhatc
 ```bash
 python - <<'EOF'
 import json
-d=json.load(open("assets/iiex/shapes/boiler/cornish.json",encoding='utf-8'))
+d=json.load(open("mods/iiex/assets/iiex/shapes/boiler/cornish.json",encoding='utf-8'))
 assert "editor" not in d and "textureSizes" not in d
 assert [e["name"] for e in d["elements"]] == ["MasonryBase","BoilerCasing","Flues",
         "BoilerEnds","MasonryTop","CasingSegment5","CoalLayers"], [e["name"] for e in d["elements"]]
@@ -292,11 +292,11 @@ reads only `x/y/z/allowAttach/collisionBox(es)/behaviors`, so there is nothing t
 > deliberately a connector and not a node. Keep it that way and make it declarable.
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Structures/StructureFootprint.cs` (`FillerCellSpec`)
-- Modify: `src/ExpandedLib/Blocks/Structures/FillerLayoutBuilder.cs`
-- Modify: `src/ExpandedLib/Blocks/Structures/StructureFillers.cs` (`ReadOffsets`, `FootprintCells`, `PlaceFillers`)
-- Modify: `src/ExpandedLib/Definitions/ExBlockDef.cs` (`FillerOffsets` serialization)
-- Test: `test/ExpandedLib.Tests/Structures/FillerPortTests.cs` (create)
+- Modify: `mods/exlib/src/Blocks/Structures/StructureFootprint.cs` (`FillerCellSpec`)
+- Modify: `mods/exlib/src/Blocks/Structures/FillerLayoutBuilder.cs`
+- Modify: `mods/exlib/src/Blocks/Structures/StructureFillers.cs` (`ReadOffsets`, `FootprintCells`, `PlaceFillers`)
+- Modify: `mods/exlib/src/Definitions/ExBlockDef.cs` (`FillerOffsets` serialization)
+- Test: `mods/exlib/tests/Structures/FillerPortTests.cs` (create)
 
 **Interfaces:**
 - Produces:
@@ -309,7 +309,7 @@ reads only `x/y/z/allowAttach/collisionBox(es)/behaviors`, so there is nothing t
 
 - [ ] **Step 1: Write the failing test**
 
-Create `test/ExpandedLib.Tests/Structures/FillerPortTests.cs`:
+Create `mods/exlib/tests/Structures/FillerPortTests.cs`:
 
 ```csharp
 using ExpandedLib.Blocks.Structures;
@@ -462,7 +462,7 @@ Append to `FillerPortTests.cs`:
 ```
 
 Adjust `def.Build()` to whatever the definition's actual materialisation call is — read
-`test/ExpandedLib.Tests/` for the established pattern before writing this, and match it.
+`mods/exlib/tests/` for the established pattern before writing this, and match it.
 
 - [ ] **Step 8: Run the suite**
 
@@ -480,8 +480,8 @@ Expected: PASS, including the pre-existing `StructureFillerBoxesTests`.
 read across a face from a cell that is not its own.
 
 **Files:**
-- Modify: `src/ExpandedLib/Blocks/Machines/MachinePorts.cs`
-- Test: `test/ExpandedLib.Tests/Machines/MachinePortsTests.cs` (create or extend)
+- Modify: `mods/exlib/src/Blocks/Machines/MachinePorts.cs`
+- Test: `mods/exlib/tests/Machines/MachinePortsTests.cs` (create or extend)
 
 **Interfaces:**
 - Consumes: nothing from CB2.
@@ -489,8 +489,8 @@ read across a face from a cell that is not its own.
 
 - [ ] **Step 1: Write the failing test**
 
-Model it on the existing pipe fixtures. Read `test/ExpandedLib.Testing/TestWorld.cs` and
-`test/ExpandedLib.Tests/Networks/FillerNodeTests.cs` first — `FillerNodeTests` already stands a
+Model it on the existing pipe fixtures. Read `mods/exlib/testing/TestWorld.cs` and
+`mods/exlib/tests/Networks/FillerNodeTests.cs` first — `FillerNodeTests` already stands a
 footprint cell up against a live network and is the closest working rig.
 
 The assertion: with a pipe placed east of cell `C`, `ConnectedNetworkAt<PipeNetwork>(C, EAST)` returns
@@ -563,12 +563,12 @@ name inside the shared static `IsFuel`.
 > `BlockEntityFireboxFurnace.AcceptsFireboxFuel`, which `BlockEntityCokeOven` already overrides.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/BEBehaviorFirebox.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/Blocks/BlockFirebox.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs`
-- Modify: `src/IronIndustryExpanded/IiexConfig.cs`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FireboxChargeTests.cs`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FireboxConfigTests.cs` (create)
+- Modify: `mods/iiex/src/BlockStructures/Furnaces/BEBehaviorFirebox.cs`
+- Modify: `mods/iiex/src/BlockStructures/Furnaces/Blocks/BlockFirebox.cs`
+- Modify: `mods/iiex/src/BlockStructures/Furnaces/BlockEntities/BlockEntityFireboxFurnace.cs`
+- Modify: `mods/iiex/src/IiexConfig.cs`
+- Test: `mods/iiex/tests/Blocks/Furnaces/FireboxChargeTests.cs`
+- Test: `mods/iiex/tests/Blocks/Furnaces/FireboxConfigTests.cs` (create)
 
 **Interfaces:**
 - Produces:
@@ -584,7 +584,7 @@ name inside the shared static `IsFuel`.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FireboxConfigTests.cs` with three facts:
+Create `mods/iiex/tests/Blocks/Furnaces/FireboxConfigTests.cs` with three facts:
 
 1. `DefaultsMatchConfig` — a behaviour with no properties reports `LayersPerCell == 6`,
    `UnitsPerLayer == 2`, `CellCapacity == 12`, `BedElement == "Coke"`, `LayerPrefix == "CokeL"`.
@@ -770,8 +770,8 @@ than raising. That approach cannot work for a coal another mod adds: code-first 
 load and the fuel is not known until then.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntityBoiler.Client.cs`
-- Reference: `src/IronIndustryExpanded/BlockStructures/Storage/BlockEntities/BlockEntityStorageRack.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockEntityBoiler.Client.cs`
+- Reference: `mods/iiex/src/BlockStructures/Storage/BlockEntities/BlockEntityStorageRack.cs`
 
 **Interfaces:**
 - Produces: `BlockEntityBoiler : ITexPositionSource` with `AtlasSize` and
@@ -816,13 +816,13 @@ does not resolve — a bed must never draw pink.
 The largest unit. Split into six tasks that each leave the tree compiling.
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/Blocks/BlockBoilerCornish.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockBoiler.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntityBoiler.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntityBoiler.Client.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntities/BlockEntityBoilerCornish.cs`
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/IBoilerGeometry.cs`
-- Modify: `src/IronIndustryExpanded/IiexConfig.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/Blocks/BlockBoilerCornish.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockBoiler.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockEntityBoiler.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockEntityBoiler.Client.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockEntities/BlockEntityBoilerCornish.cs`
+- Modify: `mods/iiex/src/BlockStructures/Boiler/IBoilerGeometry.cs`
+- Modify: `mods/iiex/src/IiexConfig.cs`
 
 ### CB6.1 — drop the multiblock
 
@@ -834,7 +834,7 @@ The largest unit. Split into six tasks that each leave the tree compiling.
 
 `BlockEntityBoiler.IsConstructed` is `_animator?.IsConstructed ?? false` — it reads the RCC through
 `ConstructedAnimator`, not the structure. Dropping structure verification does not ungate the machine.
-Confirm by reading `src/ExpandedLib/Blocks/Construction/ConstructedAnimator.cs` before editing.
+Confirm by reading `mods/exlib/src/Blocks/Construction/ConstructedAnimator.cs` before editing.
 
 - [ ] **Step 2: Swap the base class**
 
@@ -848,7 +848,7 @@ for the multiblock and non-multiblock cases. Change the declaration to
 
 Remove the whole `.MultiblockLayout(...)` call from `BlockBoilerCornish.Cornish`, and
 `.Behavior("MultiblockStructure")` from `BlockBoiler.BoilerShell`. Do the same in
-`src/SteelIndustryExpanded/BlockStructures/Boiler/Blocks/BlockBoilerLancashire.cs` — it shares the shell
+`mods/siex/src/BlockStructures/Boiler/Blocks/BlockBoilerLancashire.cs` — it shares the shell
 and would otherwise verify a structure its base no longer supports.
 
 - [ ] **Step 4: Build**
@@ -1031,7 +1031,7 @@ explicitly or the rear barrel course never appears.
 ```bash
 python - <<'EOF'
 import json
-d=json.load(open("assets/iiex/shapes/boiler/cornish.json",encoding='utf-8'))
+d=json.load(open("mods/iiex/assets/iiex/shapes/boiler/cornish.json",encoding='utf-8'))
 top={e["name"] for e in d["elements"]}
 for p in ["MasonryBase","BoilerCasing","CasingSegment5","Flues","CoalLayers","BoilerEnds","MasonryTop"]:
     assert p in top, f"MISSING {p}"
@@ -1215,9 +1215,9 @@ have a key in CB7 — `LangCallSites` scans call sites and will fail on an ungua
 ## CB7 — fuel drives the steam, and the rebalance ✅ DONE 2026-08-23
 
 **Files:**
-- Modify: `src/IronIndustryExpanded/BlockStructures/Boiler/BlockEntityBoiler.cs`
-- Modify: `src/IronIndustryExpanded/IiexConfig.cs`
-- Test: `test/IronIndustryExpanded.Tests/Blocks/Boiler/BoilerFuelTests.cs` (create)
+- Modify: `mods/iiex/src/BlockStructures/Boiler/BlockEntityBoiler.cs`
+- Modify: `mods/iiex/src/IiexConfig.cs`
+- Test: `mods/iiex/tests/Blocks/Boiler/BoilerFuelTests.cs` (create)
 
 **Interfaces:**
 - Consumes: `BEBehaviorFirebox.BurnTemperatureOf` / `.BurnDurationOf` from CB4.
@@ -1226,7 +1226,7 @@ have a key in CB7 — `LangCallSites` scans call sites and will fail on an ungua
 
 - [ ] **Step 1: Write the failing test**
 
-Create `test/IronIndustryExpanded.Tests/Blocks/Boiler/BoilerFuelTests.cs` asserting the ruled table:
+Create `mods/iiex/tests/Blocks/Boiler/BoilerFuelTests.cs` asserting the ruled table:
 
 ```csharp
   [Theory]
@@ -1303,11 +1303,11 @@ make the boiler un-burstable or instantly fatal.
 Every boiler fixture hard-wires the vanilla coal pile and the old scene.
 
 **Files:**
-- Modify: `test/IronIndustryExpanded.Tests/Fixtures/BoilerFakes.cs`
-- Modify: `test/IronIndustryExpanded.Tests/Fixtures/BoilerRig.cs`
-- Modify: `test/IronIndustryExpanded.Tests/Fixtures/IiexScenes.cs`
-- Modify: `test/IronIndustryExpanded.Tests/Blocks/Boiler/BoilerTickTests.cs`
-- Modify: `test/IronIndustryExpanded.Tests/Blocks/Boiler/BoilerDropTests.cs`
+- Modify: `mods/iiex/tests/Fixtures/BoilerFakes.cs`
+- Modify: `mods/iiex/tests/Fixtures/BoilerRig.cs`
+- Modify: `mods/iiex/tests/Fixtures/IiexScenes.cs`
+- Modify: `mods/iiex/tests/Blocks/Boiler/BoilerTickTests.cs`
+- Modify: `mods/iiex/tests/Blocks/Boiler/BoilerDropTests.cs`
 
 ### CB8.1 — the rig
 
@@ -1350,7 +1350,7 @@ EXLIB_WRITE_GOLDENS=1 ./scripts/exmod.sh test 1.21 -Filter DefinitionGoldens
 - [ ] **Step 2: Read the diff before accepting it**
 
 ```bash
-git diff test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/boiler/cornish.json
+git diff mods/iiex/tests/goldens/iiex/blocktypes/boiler/cornish.json
 ```
 
 Check: 40 filler cells, two of them carrying `portFace`; no `multiblockStructure`; four construction
@@ -1371,7 +1371,7 @@ Expected: 9 targets green.
 
 - [ ] **Step 1: Lang keys**
 
-Add every `ActionLangCode` CB6.6 introduced to `assets/iiex/lang/en.json`, then hand-translate into
+Add every `ActionLangCode` CB6.6 introduced to `mods/iiex/assets/iiex/lang/en.json`, then hand-translate into
 `ru.json` and `uk.json` following `docs/internal/` § RU/UK conventions. At minimum: main-hatch toggle,
 charge, ignite, man-hatch toggle, fill, drain, vent. Remove `boiler-info-lidopen` and add the two
 hatch-state HUD lines.
@@ -1419,7 +1419,7 @@ connector-versus-node choice explicitly so the next machine does not have to re-
 roles says the boiler has firebox-ish cells and no `Firebox` role "because nothing asks them for a fuel
 cell set" — still true; the bed is on the block entity, not on a cell. Confirm rather than change.
 
-- [ ] **Step 7: `docs/internal/workbench/layouts.md`**
+- [ ] **Step 7: `workbench/layouts.md`**
 
 The boiler section renders under retired domains (`lpex:boilercornish`, `ExCodes.FireBricks`). Re-render
 it from the new footprint, and drop the pending internal-firebox note — it landed.
@@ -1431,7 +1431,7 @@ per the maintenance rule at its foot.
 
 - [ ] **Step 9: The recipe's dead ingredient**
 
-`src/IronIndustryExpanded/Recipes/Grid/MachineRecipeDefinitions.cs` § `CornishBoiler` declares
+`mods/iiex/src/Recipes/Grid/MachineRecipeDefinitions.cs` § `CornishBoiler` declares
 `Ingredient("I", StraightPipe(1))` against pattern `"PHP,BNB"` — there is no `I` in it, so the frame
 silently costs no pipe. Either add `I` to the pattern or drop the ingredient; it is a one-line decision
 and the area is open.
@@ -1455,7 +1455,7 @@ Not required for the boiler to work; each is a loose end this change creates or 
   coal-pile branch on the shared base behind a `Bed != null` test, so the Lancashire still runs
   unconverted — what it lost is its `MultiblockLayout`, which went with the multiblock base. Its fire is
   now a free-placed `game:coalpile` that **nothing requires**, and its art keeps the `lidopen` clip
-  (`assets/editable/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json`), which the leaf
+  (`workbench/shapes/machines/steam/machine-pipe-megablock-boiler-lancashire.json`), which the leaf
   works around by overriding `ManHatchAnimation`. Give it its own footprint and shape work when it comes
   up; it is not urgent, only untidy.
 - [ ] **The cowper's coal pile.** `BlockCowperStoveIntake` is the other `@(air|coalpile)` consumer, and
@@ -1469,7 +1469,7 @@ Not required for the boiler to work; each is a loose end this change creates or 
 - [ ] **`LangCallSites` only matches lowercase keys.** Its `BareLiteral` regex is `"([a-z0-9-]+)"`, so a
   `SendIngameError` code carrying a capital is skipped and its key ships unguarded. Found by mutation
   while proving the new `iiex-firebox-notcoking` key is covered.
-- [ ] **`ShapeExtents` as a machine guard.** `test/ExpandedLib.Testing/ShapeExtents.cs` already measures
+- [ ] **`ShapeExtents` as a machine guard.** `mods/exlib/testing/ShapeExtents.cs` already measures
   drawn mesh against declared extents but is wired only to the stock-art suites. A 3 × 6 × 3 boiler is
   the natural first machine consumer — it would have caught the sixth row automatically.
 - [ ] **The four second-slot `iron4` shapes** from CB0.

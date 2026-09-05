@@ -218,10 +218,10 @@ function.
 
 | Asset | File |
 |---|---|
-| hearth interior (base, 4 pots, blister/slag fills, covers) | `assets/editable/shapes/furnace-draftcruciblehearth.json` |
-| the pot as an item | `assets/editable/shapes/item-steelcrucible.json` |
-| crushed blister-steel chunk | `assets/editable/shapes/item-shingled-metalchunk.json` |
-| layout draft | [layouts.md](../../internal/workbench/layouts.md) § 1 |
+| hearth interior (base, 4 pots, blister/slag fills, covers) | `workbench/shapes/furnace-draftcruciblehearth.json` |
+| the pot as an item | `workbench/shapes/item-steelcrucible.json` |
+| crushed blister-steel chunk | `workbench/shapes/item-shingled-metalchunk.json` |
+| layout draft | [layouts.md](../../../workbench/layouts.md) § 1 |
 
 No coke element in the hearth shape, though `#coke` is declared: the coke around the pots is the charge-pile
 problem the charge column already solves. `ChargeColumn` + `BandsAt` give layered coke that burns down and is
@@ -306,9 +306,9 @@ Editable shapes are drawn (§ Settled, "Assets drawn"); nothing is exported or w
 | Asset | State |
 |---|---|
 | editable shapes | drawn - hearth interior, pot item, crushed blister-steel chunk (§ Settled) |
-| runtime shape | exported and wired - `assets/iiex/shapes/furnace/cruciblehearth.json` is the hearth blocktype's, `item/steelcrucible.json` the pot's, `item/metalchunk.json` the chunk's |
-| core face label | `assets/iiex/textures/block/furnace/cs.png` - already drawn, and unused until now; no new texture was needed |
-| reference art | none in `assets/editable/refs/` - the Sheffield references are not in the repo |
+| runtime shape | exported and wired - `mods/iiex/assets/iiex/shapes/furnace/cruciblehearth.json` is the hearth blocktype's, `item/steelcrucible.json` the pot's, `item/metalchunk.json` the chunk's |
+| core face label | `mods/iiex/assets/iiex/textures/block/furnace/cs.png` - already drawn, and unused until now; no new texture was needed |
+| reference art | none in `workbench/refs/` - the Sheffield references are not in the repo |
 | pot item def | built - `BlockSteelCrucible`, three variants |
 | chunk item def | built - `BlisterItemDefinitions`, `iiex:blisterchunk`, 25 u, wearing `item/metalchunk` |
 | lang / handbook | pot and chunk keys in all three locales; no page |
@@ -440,7 +440,7 @@ The pot, the metal, the feedstock prep and the furnace's blocktypes exist; the m
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `BlockCrucibleFurnaceCore` | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockCrucibleFurnaceCore.cs` | One column, `Origin(-3, -2)`, layers -1..3. See [layouts.md](../../internal/workbench/layouts.md) |
+| `BlockCrucibleFurnaceCore` | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockCrucibleFurnaceCore.cs` | One column, `Origin(-3, -2)`, layers -1..3. See [layouts.md](../../../workbench/layouts.md) |
 | the layout | **BUILT** | Marks `Firebox` (one cell), `Flue` (two) and `Damper` (one) - the first production use of `CellRole.Damper` anywhere |
 | `BlockEntityCrucibleFurnace` | **BUILT 2026-08-22** | Geometry, losses, the counted chimney walk, the damper read off `CellRole.Damper`, the preheat pass and the melt cycle. The placeholder `StackCourses` is gone |
 | the hearth | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockCrucibleHearth.cs` + `BlockEntityCrucibleHearth` | ★★ Not four holes but **one cell**, and a `BlockFirebox` subclass: the coke round the pots is the same fuel bed every other machine burns. Seating, charging and pulling are the hearth's; `CrucibleHole` holds one hole's rules, pure and world-free |
@@ -448,7 +448,7 @@ The pot, the metal, the feedstock prep and the furnace's blocktypes exist; the m
 | the pot | **BUILT 2026-08-22** - `.../Furnaces/Blocks/BlockSteelCrucible.cs` | ⛔⛔ A **block**, not an item, and this row said otherwise: only a `BlockSmeltedContainer` can be poured, which is what the molten path accepts. ⛔ **Three** variants (`raw|burned|smelted`) - a clayforming recipe can output only `-raw`. Vanilla's `GroundStorable`/`Unplaceable`/`RightClickPickup` trio, and a three-heat life in `CrucibleFiring` |
 | feedstock prep | **BUILT 2026-08-22** - `Items/BlisterBreaking.cs`, `Items/ItemBlisterWorkItem.cs`, `Patches/AnvilBlisterBreakingPatches.cs`, `Recipes/Smithing/BlisterRecipeDefinitions.cs` | ★★ The fork is **vanilla's own refusal**, not a temperature of ours: the patch runs after `ItemIngot.TryPlaceOn` and acts only where vanilla returned null. See § The crush |
 | pour | already works | `BlockMoltenCanalStart.cs:77` accepts a `BlockSmeltedContainer` |
-| metal def | `assets/iiex/config/metals/cruciblesteel.json` | the shipped catalogue has `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex) - a new metal is a JSON entry read by `MetalRegistry` |
+| metal def | `mods/iiex/assets/iiex/config/metals/cruciblesteel.json` | the shipped catalogue has `castiron`, `pigiron`, `slag` (iiex) and `bessemersteel` (smex) - a new metal is a JSON entry read by `MetalRegistry` |
 | heat | inherited | `ComputeHeatBalance` (`BlockEntityFurnaceCore.cs:743-798`); override `MeltingPoint`, `MaxFuelBurnTime`, `MeltStartDelay`, `MeltIntervalSec`, `RequiresBlast => false` - and, by drawing no tuyere or outlet glyph, no `CellRole.Tuyere`/`GasOutlet`. Exactly what the reheat furnace does |
 
 Where a caller hooks in: the stack-height draught term belongs in `ComputeHeatBalance`'s `natural` line (`BlockEntityFurnaceCore.cs:1859`) as `NaturalDraughtFor(stackCourses)` rather than a flat read, so every natural-draught furnace inherits it. That single edit is the crucible furnace's real prerequisite.

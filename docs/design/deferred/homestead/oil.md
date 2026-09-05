@@ -93,7 +93,7 @@ $ grep -rniE "petcoke|kerosene|derrick|naphtha|crudeoil|petroleum" src/ --includ
 (0 results)
 ```
 
-No lang key, no handbook page, no recipe, no config key. `assets/exlib/config/liquids.json` declares exactly
+No lang key, no handbook page, no recipe, no config key. `mods/exlib/assets/exlib/config/liquids.json` declares exactly
 four media - Air, Steam, Exhaust, Water - so crude, kerosene and naphtha have no medium and, under R1, could
 not ride a pipe without one.
 
@@ -101,8 +101,8 @@ Two doc-comment traces of the model (comments, not code, and neither is content)
 
 | trace | file:line | what it says |
 |---|---|---|
-| the still generalisation | `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58` | `TryVaporisation` "generalises the boiler's water → steam step to every distillation fraction" |
-| the liquid phase's archetypes | `src/ExpandedLib/Fluids/LiquidPhase.cs:12` | "Water / Oil / molten-as-liquid - incompressible, mixes only with the same liquid code" |
+| the still generalisation | `mods/exlib/src/Fluids/IMediumTaxonomy.cs:58` | `TryVaporisation` "generalises the boiler's water → steam step to every distillation fraction" |
+| the liquid phase's archetypes | `mods/exlib/src/Fluids/LiquidPhase.cs:12` | "Water / Oil / molten-as-liquid - incompressible, mixes only with the same liquid code" |
 
 ### What the phase-change carve-out already gives a refinery for free
 
@@ -111,7 +111,7 @@ than steam-specific:
 
 | capability | where |
 |---|---|
-| per-medium boil point + vaporisation target + volume factor | `src/ExpandedLib/Fluids/LiquidDef.cs:36-48` |
+| per-medium boil point + vaporisation target + volume factor | `mods/exlib/src/Fluids/LiquidDef.cs:36-48` |
 | per-medium dew point + condensation target + volume factor | `:26-34` |
 | temperature-gated passive phase change both ways | `IMediumTaxonomy.cs:40-64`; `ExLiquids.cs:158-196` |
 | catalogue overlaid from any domain's `config/liquids.json` at `AssetsFinalize` | `ExLiquids.cs:8-19` |
@@ -188,14 +188,14 @@ its absence costs elex efficiency, where the acid's absence costs elex a whole p
 
 2. R1 makes a refinery *n* pipe runs, one per fraction. A run carries one medium at a time
    ([conventions.md](../../conventions.md)), and a liquid "mixes only with the same liquid code"
-   (`src/ExpandedLib/Fluids/LiquidPhase.cs:12`). So a still's take-offs cannot share a run: crude in,
+   (`mods/exlib/src/Fluids/LiquidPhase.cs:12`). So a still's take-offs cannot share a run: crude in,
    naphtha out, kerosene out and heavy out are four separate networks that must not touch, each with its own
    condenser bridging it - the steam condenser's connector-not-node shape
-   (`src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, discussed at
+   (`mods/iiex/src/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, discussed at
    [fluid tank](../../machines/fluid-tank.md):104-108) is the only pattern that allows it. This is the most
    expensive structural consequence of R1 for any deferred chemistry, and it is recorded nowhere else.
 
-3. petcoke is not coke - do not register it as fuel. `assets/iiex/config/materialroles.json:4` binds
+3. petcoke is not coke - do not register it as fuel. `mods/iiex/assets/iiex/config/materialroles.json:4` binds
    the `fuel` role to `game:coke` with a carbon value of 2 (charcoal 1 at `:5`), and the furnace burns
    carbon computed from role membership ([burden](../../items/burden.md), [fuels](../../items/fuels.md)). A
    petcoke item quietly added to that role would change every charge's fuel arithmetic. If petcoke ever
@@ -207,7 +207,7 @@ its absence costs elex efficiency, where the acid's absence costs elex a whole p
 
 5. Oil's fractions want their own `liquids.json`, not exlib's. The loader overlays per-domain catalogues
    over the compiled baseline (`ExLiquids.cs:8-19`), and the archived spec already assumed the add-on ships
-   its own. Adding crude to `assets/exlib/config/liquids.json` would put a deferred medium in the library
+   its own. Adding crude to `mods/exlib/assets/exlib/config/liquids.json` would put a deferred medium in the library
    every mod loads.
 
 6. [conventions.md](../../conventions.md) § Networks still lists "the chemistry fractions" among pipe

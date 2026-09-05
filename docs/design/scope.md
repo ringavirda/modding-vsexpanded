@@ -243,7 +243,7 @@ needs it.
   statement about what the pipe network can carry; misleading as a statement of scope.
 * Nothing on the deferral list exists in code. `grep -rni` over `src/` for
   `coalgas|sprinkler|gasholder|distill|retort|petcoke|graphite|electrolys` returns exactly one hit - a doc
-  comment in `src/ExpandedLib/Fluids/IMediumTaxonomy.cs` mentioning distillation fractions - and `copper`
+  comment in `mods/exlib/src/Fluids/IMediumTaxonomy.cs` mentioning distillation fractions - and `copper`
   appears only in vanilla-facing plumbing (the metal catalogue and tool emitter).
 
 ---

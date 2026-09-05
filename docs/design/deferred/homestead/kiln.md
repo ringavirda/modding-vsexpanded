@@ -42,7 +42,7 @@ smex already ships a mortar recipe.
 
 ### 1. The spine's flux is raw crushed limestone, and that is metallurgically correct
 
-`assets/iiex/config/materialroles.json:3`
+`mods/iiex/assets/iiex/config/materialroles.json:3`
 
 ```
 { "role": "flux", "code": "game:lime" }
@@ -50,7 +50,7 @@ smex already ships a mortar recipe.
 
 `game:lime` is vanilla crushed lime - raw limestone, uncalcined. The burdenmaker tests membership of that
 role directly (`BlockEntityBurdenmaker.cs:164-166`, via `MaterialRoleRegistry.IsRole(Roles.Flux, …)`,
-`src/ExpandedLib/Materials/MaterialRoleDef.cs`), and the flux fraction it stamps grades a
+`mods/exlib/src/Materials/MaterialRoleDef.cs`), and the flux fraction it stamps grades a
 [burden](../../items/burden.md).
 
 A blast furnace is charged with raw limestone; calcination happens inside the furnace as part of the burn, and
@@ -58,7 +58,7 @@ the CaO produced there fluxes the slag. A furnace fed pre-burned quicklime pays 
 
 ### 2. Mortar already ships, without lime the mod ever made
 
-`src/SteelIndustryExpanded/Recipes/Barrel/MortarRecipeDefinitions.cs:15-41` - a barrel recipe:
+`mods/siex/src/Recipes/Barrel/MortarRecipeDefinitions.cs:15-41` - a barrel recipe:
 
 | in | qty |
 |---|---|
@@ -92,7 +92,7 @@ $ grep -rniE "kiln|quicklime" src/ --include=*.cs
 ```
 
 The only `kiln` matches anywhere under `src/` are build residue in stale compiled output:
-`src/SteelIndustryExpanded/bin/Debug/net7.0/…/SteelmakingExpanded.dll` and its `net8.0` twin contain an
+`mods/siex/src/bin/Debug/net7.0/…/SteelmakingExpanded.dll` and its `net8.0` twin contain an
 anonymous-type field named `beehivekiln` (a vanilla clay-firing attribute) that no current source file
 produces.
 
@@ -165,7 +165,7 @@ this is the row to cut first.
    and solved it by refusing to reuse `game:cokeovendoor`, so vanilla's own coking cannot fire inside the
    mod's chambers ([coke-oven](../../machines/coke-oven.md) § Owns). Copy that decision.
 
-3. CO₂ has no medium and should not get one. `assets/exlib/config/liquids.json` declares four codes, and R1
+3. CO₂ has no medium and should not get one. `mods/exlib/assets/exlib/config/liquids.json` declares four codes, and R1
    gives a run exactly one medium ([conventions.md](../../conventions.md)). Calcination gas is flavour;
    venting it would mean a `LiquidDef`, a producer and a consumer for a stream nothing burns.
 

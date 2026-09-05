@@ -32,7 +32,7 @@ of the heading bench is bearing balls.
 
 One blocktype with the [nail cutter](nail-machine.md), separated by a `type` variant — the owner's ruling
 that the machining machines are the same machine with different shapes, cells and recipes. Six cells, an
-`xy` elevation from `docs/internal/workbench/machines.txt`:
+`xy` elevation from `workbench/machines.txt`:
 
 ```
 # M #
@@ -110,7 +110,7 @@ machine; a blank mid-stroke was never converted.
 | `BenchFeed` / `BenchVerdict` | the pure decision — die, job, turning, drive |
 | `BenchDieItemDefinitions` | both dies, through `ItemDie.Itemtype` |
 | `FastenerItemDefinitions` | the rivet |
-| tests | `test/IronIndustryExpanded.Tests/Blocks/Forming/FastenerBenchTests.cs` |
+| tests | `mods/iiex/tests/Blocks/Forming/FastenerBenchTests.cs` |
 
 ---
 
@@ -121,5 +121,5 @@ machine; a blank mid-stroke was never converted.
 | 1 | ⛔ Nothing has been seen in game — the shape, the stroke animation and the working face are all unwalked | - |
 | 2 | The drive connector on `M` rather than the principal, once mpenergy has a filler-cell connector | medium |
 | 3 | The station window and hold-to-operate, which `machines.txt` specifies for this bench and which no station has yet | medium |
-| 4 | ~~A handbook page.~~ **Written 2026-08-21** - `docs/iiex/handbook/10-formingshop.html`, one page for the whole shop | done |
+| 4 | ~~A handbook page.~~ **Written 2026-08-21** - `mods/iiex/docs/handbook/10-formingshop.html`, one page for the whole shop | done |
 | 5 | Die wear. `ItemDie` gives every die `MaxStackSize(1)` so it *can* carry wear, and nothing wears it yet | small |

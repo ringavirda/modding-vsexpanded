@@ -24,7 +24,7 @@ Confirm these in a minute each; they are the fix list's first rows. "Research" n
 | P2 | A full sand cast reads as a misrun at shake-out because the check runs against the cooled temperature: **every cast yields metal bits, never the part**. **Fixed 2026-09-05** (`cc_filltemp`, `IsMisrun` on the fill-tick temperature); confirm in game | casting-cells-detail section gaps 1 |
 | P3 | The long cell's only intake face is the face its own filler stands on, so **cast stock cannot be poured**. **Fixed 2026-09-05** (shape spin 0, `LaunderFace` = the spout face for both cells; `CastingCellFootprintGuards`); confirm in game | casting-cells-detail section gaps 2 |
 | P4 | A three-lane billet pour yields **one** billet, a two-lane bloom pour one bloom. **Fixed 2026-09-05** (lane count on the mold output: 3 billets, 2 blooms); confirm in game | casting-rack-workbench section 2 |
-| P5 | The long cell's and the casting bed's drawn bodies sit **opposite** their footprints. Long cell **fixed 2026-09-05**; the bed **confirmed** by the same guard at all four sides (draws its rows on the side opposite its fillers), unfixed - owner's call | casting-cells-detail section gaps 3 |
+| P5 | The long cell's and the casting bed's drawn bodies sit **opposite** their footprints. **Both fixed 2026-09-05** (`CastingCellFootprintGuards`, `CastingBedFootprintGuards`); confirm in game: place a bed at each facing, carve one flank and one spine cell, check the carve appears in the clicked cell and the pour glows inside it | casting-cells-detail section gaps 3 |
 | P6 | Chiselling a warm hearth block prints the raw key `ingameerror-iiex-hearthtoohot` (no lang entry) | blast-furnace-stations section 1 |
 | P7 | Twin-tub output is **linear** in shaft speed; the August saturating-curve ruling is not built, and its "% of rated output" line lies under a leak | blast-furnace-stations section 4 |
 | P8 | The flywheel prints "0.0 kW" and "0.0 kJ" at this calibration | mill-shear-benches section 1 |
@@ -87,9 +87,9 @@ Tick what you see; each is a one-line fix and none blocks the walk.
 | # | Where | What |
 |---|---|---|
 | A1 | nail cutter | the shipped footprint is the mirror of the drawn body; the machine pokes into a cell it does not own, and a fresh export moves it a cell north |
-| A2 | long cell, casting bed | the drawn body sits on the opposite side from the footprint (P5): long cell fixed 2026-09-05, bed confirmed and unfixed |
+| A2 | long cell, casting bed | the drawn body sits on the opposite side from the footprint (P5): both fixed 2026-09-05 |
 | A3 | 1 x 1 casting cell | the spout is drawn on the side opposite the face it pulls from - fixed 2026-09-05: both cells now pull at the drawn spout (`CastingCellFootprintGuards`) |
-| A4 | casting bed east-west | runners and moulds read swapped at those two facings |
+| A4 | casting bed east-west | runners and moulds read swapped at those two facings - fixed 2026-09-05 (the spine test read the X coordinate; it now reads the slot); confirm in game |
 | A5 | hearth metal | a flat metal cube: no fill height, no glow |
 | A6 | twin-tub blower, shafts, bevels, shear, benches, mill | no animation plays although the clips exist |
 

@@ -53,7 +53,7 @@ One code path, three machines. What the shear, the nail machine and this bench s
 
 ## Structure
 
-⛔⛔ **This 1 × 1 × 1 is a proposal and every comparable one has been wrong.** The shear, the nail cutter and the riveter each claimed it, and each turned out to be a megablock the moment its art or its layout arrived - 6, 4 and 6 cells. This bench has neither: no shape under `assets/editable/shapes/` and no entry in `docs/internal/workbench/machines.txt`, so nothing here is settled. Treat the row below as the cheapest thing that could work, not as a measurement, and expect the drawing to overrule it.
+⛔⛔ **This 1 × 1 × 1 is a proposal and every comparable one has been wrong.** The shear, the nail cutter and the riveter each claimed it, and each turned out to be a megablock the moment its art or its layout arrived - 6, 4 and 6 cells. This bench has neither: no shape under `workbench/shapes/` and no entry in `workbench/machines.txt`, so nothing here is settled. Treat the row below as the cheapest thing that could work, not as a measurement, and expect the drawing to overrule it.
 
 On `"mpenergy"` with cast-iron shafting, as the other benches are. ⛔ At more than one cell the principal has to be the `BlockNetworkNode` and the rest fillers, because a filler can never be a graph node (`BlockRollingMillAxle.cs:17`) - which is what puts the drive connector on the principal rather than on the drawn shaft cell on all three built benches.
 
@@ -76,11 +76,11 @@ Nothing is drawn.
 
 | Asset | State |
 |---|---|
-| editable shape | missing. The only bench shape in `assets/editable/shapes/` is `machine-megablock-nailcutter.json`, which is the [nail machine](nail-machine.md) - a different mechanism, and explicitly not to be reused |
+| editable shape | missing. The only bench shape in `workbench/shapes/` is `machine-megablock-nailcutter.json`, which is the [nail machine](nail-machine.md) - a different mechanism, and explicitly not to be reused |
 | runtime shape | missing |
 | die item art | missing - `RollSetItemDefinitions` still points its own tooling item at `game:item/ingot` as a placeholder (`RollSetItemDefinitions.cs:121`); do not repeat that |
-| reference | `assets/editable/refs/rivetsnails/machine-tools-…-1867-technology-RY93PB.jpg` Fig 1, plus `the-portable-hydraulic-riveter-…-2E4KE93.jpg` and `vintage-boomer-and-boschert-hydraulic-press-….jpg` for the press family. Folder is untracked |
-| lang / handbook | no key in `assets/iiex/lang/en.json`, no page in `docs/iiex/handbook/` |
+| reference | `workbench/refs/rivetsnails/machine-tools-…-1867-technology-RY93PB.jpg` Fig 1, plus `the-portable-hydraulic-riveter-…-2E4KE93.jpg` and `vintage-boomer-and-boschert-hydraulic-press-….jpg` for the press family. Folder is untracked |
+| lang / handbook | no key in `mods/iiex/assets/iiex/lang/en.json`, no page in `mods/iiex/docs/handbook/` |
 
 Animation: a heading stroke clip plus `idle`. Same two conventions as everywhere on this network - one revolution per clip (`EnergyAnim.cs:23-24`) and a running clip must repeat or the mesh vanishes (`BlockEntityPuddlingChimneyCap.cs:31-33`).
 
@@ -168,7 +168,7 @@ Nothing exists. `grep -i "heading\|rivetmachine" src/` finds nothing relevant.
 
 | Piece | Where | Model it on |
 |---|---|---|
-| `ItemDie` (record + `TryParse`) | `src/IronIndustryExpanded/BlockStructures/Forming/ItemDie.cs` | `RollSetSpec.cs:31-201` end to end - including the JSON shape decision: outputs as an array of objects, never a float-keyed object (`RollSetSpec.cs:159-161` explains why: `0.5` vs `"0.50"` never compare equal) |
+| `ItemDie` (record + `TryParse`) | `mods/iiex/src/BlockStructures/Forming/ItemDie.cs` | `RollSetSpec.cs:31-201` end to end - including the JSON shape decision: outputs as an array of objects, never a float-keyed object (`RollSetSpec.cs:159-161` explains why: `0.5` vs `"0.50"` never compare equal) |
 | `DieItemDefinitions` | `.../Forming/DieItemDefinitions.cs` | `RollSetItemDefinitions.cs:17-128` - one item, a `type` variant group, per-variant specs via `.Raw("attributesByType", byType)` (`:126`) |
 | `BlockEntityDieBench` (shared base) | `.../Forming/BlockEntities/` | `BlockEntityRollingMill.cs:24` - `BlockEntityNetworkNode` + `IMpEnergyConsumer` + `IProductionReadiness`; `NetworkType => "mpenergy"` (`:35-38`); `LoadTorque` 0 while idle (`:336-350`); tooling slot + `TryFit…` (`:147-182`); persistence via `SetItemstack` / `ResolveBlockOrItem` (`:428-460` - the resolve call is required or the loaded stack has no `Collectible`) |
 | `BlockHeadingMachine` | `.../Forming/Blocks/` | `BlockRollingMill.cs:31`, minus `IFillerHost` / `IFillerInteractionTarget` |

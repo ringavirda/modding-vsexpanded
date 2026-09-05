@@ -52,7 +52,7 @@ There is no block. The family is two items × one variant axis, both authored co
 | creative tabs | `general`, `items`, `iiex` - `:23-25` | same |
 | `materialUnits` | absent | absent |
 
-Both variants share one surface through the private `Common` helper (`:19-25`); only the shape, the stack size, the extra texture key and the three model transforms differ. Golden parity files: `test/IronIndustryExpanded.Tests/goldens/iiex/itemtypes/gear.json` and `…/largegear.json`.
+Both variants share one surface through the private `Common` helper (`:19-25`); only the shape, the stack size, the extra texture key and the three model transforms differ. Golden parity files: `mods/iiex/tests/goldens/iiex/itemtypes/gear.json` and `…/largegear.json`.
 
 ---
 
@@ -62,11 +62,11 @@ No new art: both gears reuse vanilla shapes retextured off the ingot texture, th
 
 | Asset | State |
 |---|---|
-| shapes | vanilla, referenced not copied (`GearDefinitions.cs:29`, `:61`) - nothing under `assets/iiex/shapes/` |
+| shapes | vanilla, referenced not copied (`GearDefinitions.cs:29`, `:61`) - nothing under `mods/iiex/assets/iiex/shapes/` |
 | textures | vanilla, `game:block/metal/ingot/{metal}` - the ingot texture tints the model, so iron and steel read differently with zero art |
 | model transforms | authored per item: gui / tp-hand / ground (`:31-57` for `gear`, `:64-90` for `largegear`) - hand-tuned values, not seeds |
-| lang | `assets/iiex/lang/en.json:4-7` - all four codes named; `ru.json:4-7` and `uk.json:4-7` complete |
-| handbook | none - `docs/iiex/handbook/` has 5 pages and no gear entry. The sync pipeline joins on the `NN-` prefix, so adding one is a page and a lang block |
+| lang | `mods/iiex/assets/iiex/lang/en.json:4-7` - all four codes named; `ru.json:4-7` and `uk.json:4-7` complete |
+| handbook | none - `mods/iiex/docs/handbook/` has 5 pages and no gear entry. The sync pipeline joins on the `NN-` prefix, so adding one is a page and a lang block |
 
 ---
 
@@ -176,26 +176,26 @@ Items, so there is no break behaviour of their own.
 
 | Piece | file:line | Note |
 |---|---|---|
-| `GearDefinitions : IExItemDefProvider` | `src/IronIndustryExpanded/Items/GearDefinitions.cs:12` | a never-instantiated stand-alone provider - both gears use the vanilla `Item` class, so there is no mod class to hang the defs on (`:6-11`) |
+| `GearDefinitions : IExItemDefProvider` | `mods/iiex/src/Items/GearDefinitions.cs:12` | a never-instantiated stand-alone provider - both gears use the vanilla `Item` class, so there is no mod class to hang the defs on (`:6-11`) |
 | `Common(ExItemDef)` | `:19-25` | the shared surface: variant axis, density, texture, three creative tabs |
 | `Gear(domain)` / `LargeGear(domain)` | `:27-57` / `:59-90` | shape + stack + transforms |
-| `GearRecipeDefinitions : IExRecipeDefProvider` | `src/IronIndustryExpanded/Recipes/Smithing/GearRecipeDefinitions.cs:14` | the three plans |
+| `GearRecipeDefinitions : IExRecipeDefProvider` | `mods/iiex/src/Recipes/Smithing/GearRecipeDefinitions.cs:14` | the three plans |
 | `IngotMetal` | `:17-24` | the shared ingredient object |
 | `TwoGearRows` | `:27-34` | the 5-row plan; `:55` concatenates it with itself for the 4-gear plan |
-| `ExIngredients.Gear(code, qty)` | `src/ExpandedLib/Definitions/ExIngredients.cs:57-58` | the recipe-side helper; no metal capture |
-| Bessemer gate | `src/SteelIndustryExpanded/.../BlockEntityConverterControl.Peripherals.cs:218-219` | `IsSpawnGear` + `HasSpawnMaterials` |
+| `ExIngredients.Gear(code, qty)` | `mods/exlib/src/Definitions/ExIngredients.cs:57-58` | the recipe-side helper; no metal capture |
+| Bessemer gate | `mods/siex/src/.../BlockEntityConverterControl.Peripherals.cs:218-219` | `IsSpawnGear` + `HasSpawnMaterials` |
 
 ---
 
 ## Gotchas
 
 - No iiex block requires an iiex gear. iiex's transmission RCC takes `iiex:spurgear` (`BlockTransmission.cs:72`); blocker B7 is closed.
-- `overview.md:69` credits `gear-iron` to iiex. It is not an iiex item - there is no `gear` def anywhere in `src/IronIndustryExpanded/` (iiex's own gear is `spurgear`). The row should say iiex.
+- `overview.md:69` credits `gear-iron` to iiex. It is not an iiex item - there is no `gear` def anywhere in `mods/iiex/src/` (iiex's own gear is `spurgear`). The row should say iiex.
 - The craftable gears augment `game:gear-rusty`, they do not replace it - every recipe is authored for both codes.
 - The Watt engine declares a gear it never places, and therefore ships as a duplicate recipe. `MachineRecipeDefinitions.cs:78` adds `Ingredient("G", Gear(gear, 2))` but the pattern is `_H_,PRP,PIP` (`:74`) - there is no `G` cell. The `foreach` at `:29-34` emits the recipe twice, so the shipped golden contains two Watt Engine recipes with byte-identical grids differing only in an unused ingredient (`goldens/iiex/recipes/grid/machines.json`, entries 3 and 7). Consequences: (a) the Watt engine costs no gear at all; (b) two recipes match the same 3×3 pattern with overlapping ingredients - the recorded recipe-conflict failure mode. Fix is one character in the pattern, or deleting the ingredient and the loop entry.
 - Gears carry no `materialUnits`. Every other formed part declares it (see Numbers), so gears are invisible to remelt/scrap arithmetic. `castplate-heavy` is 160 u and a bevel gear is 40 u (`BevelGearItemDefinitions.cs:12`), so a machine gear ought to be a small number, but choosing it is a [density rule](../mechanics/density-rule.md) decision, not this page's.
 - `largegear` carries a dead `rusty-iron` texture key. `Common` sets `rusty-iron` for both items (`GearDefinitions.cs:22`), and `LargeGear` adds `gold` (`:62`) because the `gear24` shape uses that key. The shipped golden has both (`goldens/iiex/itemtypes/largegear.json`). One of the two must be unused on the large gear; the explicit `.Texture("gold", …)` override is strong evidence it is `rusty-iron`. (Not verified against the vanilla shape - `D:/Gaming/Others/Vintagestory` is not readable from this checkout.)
-- The creative tab is still named "Pipes & Power". `assets/iiex/lang/en.json:2` maps `game:tabname-iiex` to "Pipes & Power" (ru: "Трубы и приводы", uk likewise), and `GearDefinitions.cs:25` puts both gears in that tab. The mod's display name is Low Pressure Expanded (`modinfo.json`).
+- The creative tab is still named "Pipes & Power". `mods/iiex/assets/iiex/lang/en.json:2` maps `game:tabname-iiex` to "Pipes & Power" (ru: "Трубы и приводы", uk likewise), and `GearDefinitions.cs:25` puts both gears in that tab. The mod's display name is Low Pressure Expanded (`modinfo.json`).
 - The shipped route and the designed route disagree. Gears ship as an anvil smithing product; the designed route is rod → gear blank → the boring machine cuts the teeth, with a meshing gear cut from a cast blank. Both routes cannot be the primary one. The smithing route is the only one that works today - the [boring machine](boring-machine.md) is not built and `PatternItemDefinitions.Molds` has no gear-blank entry.
 - Steel gears have no distinct function. `metal` ∈ {iron, steel} on both items, but every consumer takes `iiex:gear-*` uncaptured, so a steel gear costs a steel ingot and buys nothing. The only place metal is mentioned is the Bessemer gate, which accepts either (`BlockEntityConverterControl.cs:1056-1057`).
 - The large gear has exactly one consumer in the repo, and it is a hotbar count in a block entity rather than a recipe (`BlockEntityConverterControl.cs:1063-1065`), defaulting to 1 (`SiexConfig.cs:100`) - a 10 × 10 voxel smithing plan for a single-use item.
@@ -210,5 +210,5 @@ Items, so there is no break behaviour of their own.
 - Does the [boring machine](boring-machine.md) route replace smithing, or add to it? Options: keep smithing as the expensive hand route and make the machine cheaper per gear (the efficiency ladder the suite is built on), or retire smithing when the machine lands. The first fits the thesis. iiex's `spurgear` already ships the two-route pattern: chiselled from iron ingots, or cheaper from cast iron (`EnergyRecipeDefinitions.cs:39-59`).
 - Give steel gears a job, or delete them. Candidates: gate the hpex Cornish engine on steel gears (it already takes steel plate, rod and nails, `HighPressureExpanded/.../MachineRecipeDefinitions.cs:44-49`), or add durability/efficiency semantics. Doing nothing leaves a strictly dominated item.
 - `gearpinion` still has no item. The design's split is bill-of-materials gear (covered by `gear-iron` and `iiex:spurgear`) vs block-scale drive gear (`gearpinion`); the second half exists nowhere.
-- No handbook page. Both a page under `docs/iiex/handbook/` and its `NN-`-prefixed lang block are missing; the handbook-sync test fails on drift, so this is a two-file change.
+- No handbook page. Both a page under `mods/iiex/docs/handbook/` and its `NN-`-prefixed lang block are missing; the handbook-sync test fails on drift, so this is a two-file change.
 - `materialUnits` value. Needs a number before gears can participate in scrap/remelt.

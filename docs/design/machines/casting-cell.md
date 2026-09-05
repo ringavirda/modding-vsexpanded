@@ -52,7 +52,7 @@ definition alone.
 
 A single block. No footprint, no fillers, no multiblock.
 
-Interior, from `assets/iiex/shapes/casting/sandcastingcell.json`: floor `y 0-2`, side walls at `x 0-2` and
+Interior, from `mods/iiex/assets/iiex/shapes/casting/sandcastingcell.json`: floor `y 0-2`, side walls at `x 0-2` and
 `x 14-16` running `y 2-16`, a back wall at `z 0-2` running `y 2-16`, and the launder wall at `z 14-16`
 only `y 2-14` tall - so the interior is 12 × 14 × 12 with one short wall. The rammed sand fills
 `(2,2,2)-(14,14,14)` = 12³ = 1728 voxels (`cell-filling-base.json`). The launder spout itself is the
@@ -70,9 +70,9 @@ does not lie about where metal enters (`BlockEntitySandCastingCell.cs:155-174`).
 
 | Asset | Path | State |
 |---|---|---|
-| Block shape | `assets/iiex/shapes/casting/sandcastingcell.json` | tracked |
-| Editable source | `assets/editable/shapes/molten-block-sandcell.json` | present |
-| Flat sand | `assets/iiex/shapes/casting/cell-filling-base.json` (`iiex:casting/cell-filling-base`) | tracked · `CastingCellLogic.cs:128` |
+| Block shape | `mods/iiex/assets/iiex/shapes/casting/sandcastingcell.json` | tracked |
+| Editable source | `workbench/shapes/molten-block-sandcell.json` | present |
+| Flat sand | `mods/iiex/assets/iiex/shapes/casting/cell-filling-base.json` (`iiex:casting/cell-filling-base`) | tracked · `CastingCellLogic.cs:128` |
 | Legacy half sand | `…/cell-filling-half.json` | tracked · `CastingCellLogic.cs:132` |
 | Impression - heavy plate | `…/cell-filling-heavyplate.json` | tracked |
 | Impression - plate mold | `…/cell-filling-plate.json` | tracked |
@@ -96,7 +96,7 @@ wood, so it reads as a wooden positive of the part (`PatternItemDefinitions.cs:5
 that shape declares. A type with no entry falls back to `game:item/plate`.
 
 > Several item shapes `PatternShapes` and `CastPartItemDefinitions` reference are untracked in git - among
-> them `assets/iiex/shapes/item/heavyplate.json` (drawn 12 × 2 × 12). The shapes exist; they are simply not
+> them `mods/iiex/assets/iiex/shapes/item/heavyplate.json` (drawn 12 × 2 × 12). The shapes exist; they are simply not
 > committed.
 
 ---
@@ -321,7 +321,7 @@ nothing needs to reference your mod. To feed a cell: end a [molten canal](molten
    through (`:240-244`) - deliberate, but it means the cell claims the click.
 
 10. Drawn impression shapes without a pattern. `cell-filling-{axle,cylinder,gearblanklarge,
-    gearblanksmall}.json` exist in `assets/iiex/shapes/casting/` and are untracked, and no code gives them
+    gearblanksmall}.json` exist in `mods/iiex/assets/iiex/shapes/casting/` and are untracked, and no code gives them
     a pattern or a capacity. The full art census is [patterns](../items/patterns.md)'s.
 
 11. Pattern durability is charged at ram-up, not at shake-out (`:251-253`), so a pattern is worn by 24

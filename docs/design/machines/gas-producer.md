@@ -110,7 +110,7 @@ temperature and throw away its calorific value. See [Open](#open).
 
 ## Structure *(proposed — nothing is authored)*
 
-No layout exists. `docs/internal/workbench/layouts.md` has no producer entry, and no `MultiblockLayout` in `src/`
+No layout exists. `workbench/layouts.md` has no producer entry, and no `MultiblockLayout` in `src/`
 mentions one. The cells below become hard-coded structure-local offsets the moment the block entity is
 written.
 
@@ -144,10 +144,10 @@ None. No shape, no texture, no animation, no handbook page, no lang key.
 
 | Asset | Path | State |
 |---|---|---|
-| producer shape | — | nothing in `assets/editable/shapes/` or `assets/siex/shapes/` matches `gas`/`producer` |
-| producer-gas medium | `assets/siex/config/liquids.json` | does not exist; `assets/siex/config/` holds only `handbook/` and `metals/` |
-| handbook page | `docs/siex/handbook/` | missing - stops at `04-bessemer.html` |
-| build reference | `assets/editable/refs/` | missing - only `rivetsnails/` and `rolling/` exist |
+| producer shape | — | nothing in `workbench/shapes/` or `mods/siex/assets/siex/shapes/` matches `gas`/`producer` |
+| producer-gas medium | `mods/siex/assets/siex/config/liquids.json` | does not exist; `mods/siex/assets/siex/config/` holds only `handbook/` and `metals/` |
+| handbook page | `mods/siex/docs/handbook/` | missing - stops at `04-bessemer.html` |
+| build reference | `workbench/refs/` | missing - only `rivetsnails/` and `rolling/` exist |
 
 The one free asset is refractory brick. The producer is brickwork exactly as the cowper is
 (`BlockCowperStoveIntake.cs:51`, `game:refractorybricks-good-tier*`), so the machine needs one port shape and
@@ -245,7 +245,7 @@ A fourth `LiquidDef` has to exist. `ExLiquids.Load` re-seeds the four built-ins 
 |---|---|---|
 | `code` | `"ProducerGas"` | must equal the network `MediumType` string verbatim - `LiquidDef.cs:17-18` |
 | `phase` | `gas` | `LiquidPhase.Gas`; gas and liquid never mix, `ExLiquids.cs:110-113` |
-| `priority` | 30 | merge dominance. Shipped: Air 0, Steam 10, Exhaust 20 (`ExLiquids.cs:46-59`, `assets/exlib/config/liquids.json`). Above Exhaust so a producer main joined to anything else reads as producer gas rather than silently relabelling to Exhaust |
+| `priority` | 30 | merge dominance. Shipped: Air 0, Steam 10, Exhaust 20 (`ExLiquids.cs:46-59`, `mods/exlib/assets/exlib/config/liquids.json`). Above Exhaust so a producer main joined to anything else reads as producer gas rather than silently relabelling to Exhaust |
 | `condensesTo` / `boilPointC` | none | producer gas has no phase partner in this model |
 
 ### hard-coded — the three medium strings a fourth gas must pass
@@ -291,20 +291,20 @@ forbids.
 
 | Work | Where | Note |
 |---|---|---|
-| `BlockGasProducer` + `BlockEntityGasProducer` | `src/SteelIndustryExpanded/BlockStructures/GasProducer/` | the shipped folder shape: `Blocks/` + `BlockEntities/` beside `CowperStove/`, `Converter/`, `SmokeStack/` |
+| `BlockGasProducer` + `BlockEntityGasProducer` | `mods/siex/src/BlockStructures/GasProducer/` | the shipped folder shape: `Blocks/` + `BlockEntities/` beside `CowperStove/`, `Converter/`, `SmokeStack/` |
 | subclass the fired core | `BlockEntityFurnaceCore` (`BlockEntityFurnaceCore.cs`) | the closest existing subclass is `BlockEntityHeatingFurnace` - it already overrides `RequiresBlast => false`, draws neither a tuyere nor an outlet glyph (so `CellRole.Tuyere` / `GasOutlet` answer empty), and reads a plain-fuel firebox rather than a burden. A producer is that, plus two gas ports - which for it means marking the two roles rather than un-emptying two arrays |
 | the charge read | override `ReadChargeMix` | the reheat furnace's version returns `new BurdenMix(0f, 0f, count)` - "a firebox is all coke and nothing else" (`BlockEntityHeatingFurnace.cs:63-87`). A producer bed is the same |
 | emit the gas | `IPipeNode.TryProduce(volume, temp, medium)` | exactly the furnace's outlet call (`BlockEntityFurnaceCore.cs:445-449`) with a different code |
 | draw air + steam | `be.ConnectedNetwork<PipeNetwork>(face)` then `TryConsumeGas` | `MachinePorts.cs:15`; the live example is the cowper's exhaust intake (`BlockEntityCowperStove.cs:107-115`) and the engine's steam draw (`BlockEntityEngine.cs:286`) |
 | the port block | implement `INetworkConnector` on the anchor | `BlockCowperStoveIntake.cs:134-142` is 9 lines: `NetworkType => "pipe"` plus a rotated `HasConnectorAt` |
-| register the medium | `assets/siex/config/liquids.json` | file does not exist; the loader picks it up with no code (`ExLiquids.cs:74-97`) |
+| register the medium | `mods/siex/assets/siex/config/liquids.json` | file does not exist; the loader picks it up with no code (`ExLiquids.cs:74-97`) |
 | config keys | `SiexConfig.cs` - a new `#region Gas producer` | beside `#region Cowper stove` (`:119-140`) |
 | recipe + cost entry | `Recipes/Grid/GasProducerRecipeDefinitions.cs` + a row in `SiexRecipeConfig.Defaults()` (`:45-70`) | both are required; the catalogue is hand-maintained |
 | do not register a new network type | — | `"gas"` is a dead network type - the unified pipe network absorbed gas and water, and only `"pipe"` / `"molten"` / `"mpenergy"` are ever registered ([pipe network](../mechanics/pipe-network.md) Gotcha 5) |
 
 ### Tests it will need
 
-The shipped per-mod suites live in `test/SteelIndustryExpanded.Tests/`. The two that matter here have no
+The shipped per-mod suites live in `mods/siex/tests/`. The two that matter here have no
 equivalent anywhere yet: a rate assertion (`../STATE.md:133-134` records that *"no test asserts any pump's
 rate as a number"*, which is how smex's blower ships at 43.2 L/s against a documented 14.4) and a
 medium-isolation test that a producer main joined to an air main is caught rather than silently blended.

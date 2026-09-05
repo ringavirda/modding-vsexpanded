@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Primary build is the current game version, single-target. Opt into the older versions
+         with -p:Legacy=true; both the primary TFM and the full legacy set come from the manifest
+         in ../../Directory.Build.props (add a version there, not here). -->
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
+    <LangVersion>14</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath
+      Condition="'$(IsCurrentGame)' != 'true' and '$(TargetFramework)' != ''"
+      >bin\$(Configuration)\$(TargetFramework)\Mods\mod</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''"
+      >bin\$(Configuration)\Mods\mod</OutputPath>
+    <Nullable>enable</Nullable>
+    <!-- Stated rather than left to derive from the folder name, which otherwise silently controls
+         both: the dll the game loads, and the namespace ExLangKeyGenerator emits {Domain}Lang into. -->
+    <AssemblyName>iiex</AssemblyName>
+    <RootNamespace>IronIndustryExpanded</RootNamespace>
+    <!-- This mod's asset domain; the shared globs in ../../Directory.Build.props pull in
+         ../assets/ (Content + the en.json ExLangKeyGenerator feed). -->
+    <AssetDomain>iiex</AssetDomain>
+    <!-- iiex (and ONLY iiex) ships the game-domain lang override that renames vanilla iron ->
+         "wrought iron" and steel -> "shear steel" in display names (materials.md: wrought iron =
+         game:iron, shear steel = game:steel). It packs because assets/game/ lives inside this
+         mod's own asset tree, alongside assets/iiex/; siex must NOT carry a game/ tree, or the
+         override would ship duplicated. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="cairo-sharp">
+      <HintPath>$(GamePath)/Lib/cairo-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)/Lib/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="modicon.png" Condition="Exists('modicon.png')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Stamp the matching game version into the output modinfo for legacy builds; no-op on the
+       current version (its modinfo already carries $(CurrentGameVer).0). -->
+  <Target
+    Name="RewriteModinfoGameVersion"
+    AfterTargets="Build"
+    Condition="'$(GameVersion)' != ''"
+  >
+    <WriteLinesToFile
+      File="$(OutDir)modinfo.json"
+      Lines="$([System.IO.File]::ReadAllText('$(OutDir)modinfo.json').Replace('&quot;game&quot;: &quot;$(CurrentGameVer)&quot;', '&quot;game&quot;: &quot;$(GameVersion)&quot;'))"
+      Overwrite="true"
+    />
+  </Target>
+
+  <!--
+    iiex builds only on the shared framework in exlib (structure fillers, RCC, registration, single
+    BlockNetworkModSystem identity). It owns the base pipe block and the "pipe"/"molten"/"mpenergy"
+    networks, and since the merge it also owns everything iiex used to reference them for, so it has
+    no mod dependency of its own. Private=false because the player installs exlib as its own mod, so
+    its dll is not bundled into iiex's output.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <!-- Attribute/config source generators (compile-time only, ship nothing). -->
+    <ProjectReference
+      Include="..\..\exlib\generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+</Project>

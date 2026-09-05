@@ -112,12 +112,12 @@ to at all.
 
 | Asset | Path | State |
 |---|---|---|
-| Editable shape | — | missing. No `assets/editable/shapes/` source for the Cornish engine |
-| Runtime shape | `assets/siex/shapes/engine/cornish.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `ControlPistonSteam` · `Rod` - exactly the seven RCC stages, one more than the Watt's six |
+| Editable shape | — | missing. No `workbench/shapes/` source for the Cornish engine |
+| Runtime shape | `mods/siex/assets/siex/shapes/engine/cornish.json` | root children `Cylinder` · `BeamSupport` · `Beam` · `Piston` · `ControlPiston` · `ControlPistonSteam` · `Rod` - exactly the seven RCC stages, one more than the Watt's six |
 | Animations | same file | `cyclepump` (60 f, `Repeat`) · `cyclemp` (60 f, `Repeat`) · `idlepump` (30 f, `Repeat`) · `idlemp` (30 f, `Repeat`) - the same four clips the Watt has, and they must Repeat ([Watt engine](engine-watt.md) § Assets) |
 | Textures | `fire1`, `iron3`, `iron5`, `steel5`, `iron` | the "steel" engine is mostly iron sheet in the art |
 | Broken-mesh subtrees | `Root/Cylinder/Cube21` and `Root/Piston` both exist, so the inherited `BrokenHiddenElements = ["Cube21","Piston"]` (`BlockEntityEngine.cs:460`) resolves - but `ControlPistonSteam` is not hidden, so a burst Cornish still displays its steam control gear intact |
-| Handbook | `assets/siex/config/handbook/05-highpressure.json` ↔ `docs/siex/handbook/05-highpressure.html` | present, shared with the boiler, and wrong about this engine's band and its build cost - [Gotchas](#gotchas) 4 |
+| Handbook | `mods/siex/assets/siex/config/handbook/05-highpressure.json` ↔ `mods/siex/docs/handbook/05-highpressure.html` | present, shared with the boiler, and wrong about this engine's band and its build cost - [Gotchas](#gotchas) 4 |
 
 ---
 
@@ -178,7 +178,7 @@ be built entirely out of iron, and the stored variant drives the salvage.
 
 The handbook says the Cornish's "construction stages cost the same materials as the Watt engine - the
 difference in price lies in the engine's main block"
-(`docs/siex/handbook/05-highpressure.html:27-29`). They differ by 42 plates.
+(`mods/siex/docs/handbook/05-highpressure.html:27-29`). They differ by 42 plates.
 
 ### Repair — `BlockEngineCornish.cs:95-99`
 
@@ -457,7 +457,7 @@ There is no engine equivalent of the boiler's explosion salvage path: a Cornish 
 | `SiexConfig` § Cornish engine | `SiexConfig.cs:66-103` |
 | grid recipe (looped over two gear codes) | `Recipes/Grid/MachineRecipeDefinitions.cs:39-50`, `:23-25` |
 | cost-catalogue keys | `SiexRecipeConfig.cs:51`, `:55` |
-| lang (`engine-throttle-*`, `blockhelp-engine-throttle-*`) | `assets/siex/lang/en.json` |
+| lang (`engine-throttle-*`, `blockhelp-engine-throttle-*`) | `mods/siex/assets/siex/lang/en.json` |
 | save migration off `iiex:` / `ppex:` | `BlockMigrations/HpMachineDomainMigration.cs:34-46` - owned by [rolled pipe](rolled-pipe.md) § Gotchas 1 |
 | everything that runs | `IronIndustryExpanded/BlockStructures/Engine/BlockEngine.cs`, `BlockEntityEngine.cs` - [Watt engine](engine-watt.md) § Code |
 
@@ -472,7 +472,7 @@ There is no engine equivalent of the boiler's explosion salvage path: a Cornish 
   (`BlockEntityEngine.cs:283-286`), so a Corliss is closer to "no rod, `RunPower` proportional to inlet" than
   to a fourth setting here.
 
-### Tests — `test/SteelIndustryExpanded.Tests/`
+### Tests — `mods/siex/tests/`
 
 | file | pins |
 |---|---|
@@ -501,8 +501,8 @@ names the wrong tier twice; a cast main would not hold 7 atm.
    | source | band | wrong how |
    |---|---|---|
    | `SiexConfig.cs:67-69` | "low works on a gentle 5-8, normal on 6-8, high demands a hot 7-8" | correct |
-   | `src/SteelIndustryExpanded/README.md:17` | "the efficient high-pressure beam engine (6-8 atm)" | drops low and high |
-   | `docs/siex/handbook/05-highpressure.html:23` | "Running at 6-8 atm" | same |
+   | `mods/siex/README.md:17` | "the efficient high-pressure beam engine (6-8 atm)" | drops low and high |
+   | `mods/siex/docs/handbook/05-highpressure.html:23` | "Running at 6-8 atm" | same |
 
    The in-game HUD is the only source that is always right, because it renders
    `ExMeasure.PressureRange(EngagePressure, BreakPressure)` from the live config
@@ -560,7 +560,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 11. The steam-per-power ratio is flat, so "efficient" means "cheaper than a Watt", not "cheaper at low
     throttle". All three settings cost 40 L per unit; the handbook's "wringing the same power from less steam
     because it can regulate how much steam enters the cylinder"
-    (`docs/siex/handbook/05-highpressure.html:21-23`) attributes the efficiency to the wrong mechanism.
+    (`mods/siex/docs/handbook/05-highpressure.html:21-23`) attributes the efficiency to the wrong mechanism.
 
 12. The handbook's claims about this engine's cost and output are unsupported. "on High it will comfortably
     drive six helve hammers" (`:22`) is a number nothing in the repo computes - the same class of guess as
@@ -577,7 +577,7 @@ names the wrong tier twice; a cast main would not hold 7 atm.
 
 - Nothing tests the throttle - the one feature the class exists for. A BE test (clamp, round-trip, band per
   setting) and a block test (filler-forwarded wrench click) would cost very little.
-- No editable shape. `assets/siex/shapes/engine/cornish.json` is the only copy.
+- No editable shape. `mods/siex/assets/siex/shapes/engine/cornish.json` is the only copy.
 - Fix `CornishEngineMaxPower` (Gotcha 5): set it to 0.8 to restore the rated-speed and half-speed invariants,
   or change `MpRatedLoad` to read the current setting's `RunPower` and re-derive the stall guard's
   latch-safety argument.

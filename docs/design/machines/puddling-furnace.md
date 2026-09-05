@@ -23,7 +23,7 @@ config file layout · [density rule](../mechanics/density-rule.md) - owns `1 vx�
 derived from it, including the pig · [blast furnace](blast-furnace-cold.md) - the pig source ·
 [cupola](cupola.md) - the other pig consumer · [rolling mill](rolling-mill.md) and
 [reheat furnace](reheat-furnace.md) - where the wrought product goes next ·
-[ironmaking](../processes/ironmaking.md) · [layouts-workbench](../../internal/workbench/layouts.md) § 1
+[ironmaking](../processes/ironmaking.md) · [layouts-workbench](../../../workbench/layouts.md) § 1
 
 ---
 
@@ -48,7 +48,7 @@ Puddling is a batch: nine pigs at a time, worked through a door with hand tools.
 
 Anchor `iiex:puddlingfurnacecore-{tier}-{side}`. Layout authored at
 `BlockPuddlingFurnaceCore.cs:67-175`; the shipped form is the golden at
-`test/IronIndustryExpanded.Tests/goldens/iiex/blocktypes/furnace/puddlingcore.json`. Layout grammar,
+`mods/iiex/tests/goldens/iiex/blocktypes/furnace/puddlingcore.json`. Layout grammar,
 origin rule and filler semantics: [multiblock](../mechanics/multiblock.md).
 
 **Footprint** 8 wide (X) × 3 deep (Z) × 8 tall (Y), 91 declared cells. `Origin(-6, -1)` - the negation
@@ -103,9 +103,9 @@ left as air - the ash pit, which is not modelled ([firebox](firebox.md)).
 | Part | Editable | Runtime | Notes |
 |---|---|---|---|
 | core | - | `game:block/basic/cube` | a plain cube; the `n` marker and `pf` type label are texture overlays on the north/south faces (`BlockPuddlingFurnaceCore.cs:38-40`) |
-| hearth | `assets/editable/shapes/furnace-megablock-puddlinghearth.json` | `assets/iiex/shapes/furnaces/puddlinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Fettle` (3 cubes), `Pigs` (9). No animations - drawn by `OnTesselation` with a pruned element set |
-| charge door | `assets/editable/shapes/furnace-megablock-puddlingchargedoor.json` | `assets/iiex/shapes/furnaces/puddlingchargedoor.json` | elements `Bricks`, `Rails`, `Door`, `Tools`. Animations `closed-main`, `open-main`, `open-small`, `rabbling`, `paddle` |
-| chimney cap | `assets/editable/shapes/furnace-megablock-puddlingchimneycap.json` | `assets/iiex/shapes/furnaces/puddlingchimneycap.json` | elements `Base`, `ChimneyCap`, `ControlRod`; animations `idle` (= shut) and `open` |
+| hearth | `workbench/shapes/furnace-megablock-puddlinghearth.json` | `mods/iiex/assets/iiex/shapes/furnaces/puddlinghearth.json` | elements `Base`, `BaseExtension`, `Bed`, `Fettle` (3 cubes), `Pigs` (9). No animations - drawn by `OnTesselation` with a pruned element set |
+| charge door | `workbench/shapes/furnace-megablock-puddlingchargedoor.json` | `mods/iiex/assets/iiex/shapes/furnaces/puddlingchargedoor.json` | elements `Bricks`, `Rails`, `Door`, `Tools`. Animations `closed-main`, `open-main`, `open-small`, `rabbling`, `paddle` |
+| chimney cap | `workbench/shapes/furnace-megablock-puddlingchimneycap.json` | `mods/iiex/assets/iiex/shapes/furnaces/puddlingchimneycap.json` | elements `Base`, `ChimneyCap`, `ControlRod`; animations `idle` (= shut) and `open` |
 
 The charge door's `rabbling` and `paddle` clips are drawn but unreachable: code only ever plays
 `main` / `mainShut` / `small`, read from block attributes (`BlockEntityChargeDoor.cs:34-37`, `:70-95`).
@@ -120,7 +120,7 @@ Textures are vanilla (`fire1`, `burned`, `iron5`, `cast-iron1` on the door; `bur
 
 There is no recipe for any of it. This is a blocker, and it is broader than B1.
 
-`iiex` ships twenty grid-recipe goldens (`test/IronIndustryExpanded.Tests/goldens/iiex/recipes/grid/`) and
+`iiex` ships twenty grid-recipe goldens (`mods/iiex/tests/goldens/iiex/recipes/grid/`) and
 none of them outputs `puddlingfurnacecore`, `puddlinghearth`, `puddlingchargedoor` or
 `puddlingchimneycap`. `FurnaceRecipeDefinitions.cs:16-17` defines exactly two recipe groups, blast furnace
 and cupola. The only puddling-adjacent recipe that exists is the consumable:
@@ -277,7 +277,7 @@ furnace the structure cannot yet complete ([Open](#open) #1), so it is unreachab
 | `PuddlingHearthLayout` (pure) | `BlockStructures/Furnaces/PuddlingHearthLayout.cs:15` |
 | `HearthRows` (pure, shared with reheat) | `BlockStructures/Furnaces/HearthRows.cs:17` |
 | `BlockEntityFurnacePart` (anchor link + toggle animator) | `BlockStructures/Furnaces/BlockEntityFurnacePart.cs:32` |
-| tests | `test/IronIndustryExpanded.Tests/Blocks/Furnaces/FurnacePartsTests.cs:34` (every layout code resolves), `:61` (every hearth element exists in the shipped shape), `:94` (nine distinct pig elements), `:105` (the row groups are not in name order), `:125` (the access rule) |
+| tests | `mods/iiex/tests/Blocks/Furnaces/FurnacePartsTests.cs:34` (every layout code resolves), `:61` (every hearth element exists in the shipped shape), `:94` (nine distinct pig elements), `:105` (the row groups are not in name order), `:125` (the access rule) |
 
 **Where a caller hooks in.** The cycle goes in `SmeltCycle(chargeHandle)` - the core calls it on the melt
 cadence (`BlockEntityFurnaceCore.cs:710-715`). It will need the hearth, which the core does not currently

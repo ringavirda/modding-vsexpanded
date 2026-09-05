@@ -64,7 +64,7 @@ The two-high stand cannot be fed backwards, so every pass on one mill is a walk 
 share one drive shaft, so "feed side follows drive rotation" points all of them the same way and the stock
 only ever moves forward.
 
-The reference is `assets/editable/refs/rolling/C0229569-Zinc_rolling_mills,_19th_century.jpg` - a hall of
+The reference is `workbench/refs/rolling/C0229569-Zinc_rolling_mills,_19th_century.jpg` - a hall of
 identical stands on one line shaft, the same silhouette as the nail-works photograph behind the
 [nail machine](nail-machine.md).
 
@@ -115,13 +115,13 @@ The hall itself needs no art. What iiex must ship is the roll-set items.
 
 | Asset | Path | State |
 |---|---|---|
-| wide roll art, gap 2.0 | `assets/editable/shapes/item-rollers-flatwide20.json` | drawn, unwired |
+| wide roll art, gap 2.0 | `workbench/shapes/item-rollers-flatwide20.json` | drawn, unwired |
 | wide roll art, gap 1.5 | `item-rollers-flatwide15.json` | drawn, unwired |
 | wide roll art, gap 1.0 | `item-rollers-flatwide10.json` | drawn, unwired |
 | wide roll art, gap 0.5 | `item-rollers-flatwide5.json` | drawn - the settled schedule deletes 0.5 |
 | wide roll art, gaps 2.5 / 3.0 / 3.5 | — | must be drawn. 2.5 is iiex's; 3.0 and 3.5 are smex's |
 | cast roll blank | `item-rollers-castblank.json` | drawn - the roll is a cast part |
-| diagram textures | `assets/editable/textures/diag-item-rollersflatwide{5,10,15,20}.png` | drawn |
+| diagram textures | `workbench/textures/diag-item-rollersflatwide{5,10,15,20}.png` | drawn |
 | item shape actually shipped | `game:item/ingot` | every roll set renders as an ingot today (`RollSetItemDefinitions.cs:122`) |
 
 ### The drawn gap is literally the modelled gap
@@ -288,7 +288,7 @@ cannot orphan the rest, which is build guidance, not a code rule.
 | `flatwide` → six single-gap items | `RollSetItemDefinitions.Sets` (`:73-81`) | config only; the mill *"never names a product in code — the tooling owns the data"* ([rolling mill](rolling-mill.md)) |
 | `MaxWidth` onto `RollSetSpec` | `RollSetSpec.cs:31`, off `StockForm.cs:32` | forming build item 4 ([rolling mill](rolling-mill.md) § Open) |
 | wire the drawn roll art | `RollSetItemDefinitions.cs:122` currently ships `game:item/ingot` | plus three new shapes |
-| draw gaps 2.5 (iiex), 3.0 / 3.5 (smex) | `assets/editable/shapes/` | |
+| draw gaps 2.5 (iiex), 3.0 / 3.5 (smex) | `workbench/shapes/` | |
 | a recipe for the mill and for each roll set | `IronIndustryExpanded/Recipes/` and iiex's | the hall is four purchases; nothing costs anything yet |
 | decide the hall layout axis | — | see [Open](#open) |
 | wire the per-consumer idle draw | `IMpEnergyConsumer.LoadTorque` | settled 2026-08-05, owned by [mp-energy](../mechanics/mp-energy.md) § Idle draw - see [Gotchas](#gotchas) |

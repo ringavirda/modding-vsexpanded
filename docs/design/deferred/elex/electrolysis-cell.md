@@ -52,10 +52,10 @@ Nothing in this repo; the electrolyte exists in the base game.
 
 | Probe | Command | Result |
 |---|---|---|
-| the cell, and the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit, a doc comment at `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:58` about distillation fractions |
+| the cell, and the deferral generally | `grep -rniE "coalgas\|sprinkler\|gasholder\|distill\|retort\|petcoke\|graphite\|electrolys" src/` | 1 hit, a doc comment at `mods/exlib/src/Fluids/IMediumTaxonomy.cs:58` about distillation fractions |
 | its grid hardware | `grep -rniE "arcfurnace\|electrode\|dynamo\|alternator\|rectifier" src/ assets/` | 0 hits |
 | copper anywhere | `grep -rni "copper" src/ --include=*.cs -l` | 3 files, all vanilla-facing plumbing - `MetalCatalogueLoader.cs`, `MetalToolEmitter.cs`, `IiexConfig.cs` |
-| an acid medium | `assets/exlib/config/liquids.json` | declares four liquids only: `Air`, `Steam`, `Exhaust`, `Water` |
+| an acid medium | `mods/exlib/assets/exlib/config/liquids.json` | declares four liquids only: `Air`, `Steam`, `Exhaust`, `Water` |
 
 ### In vanilla — the electrolyte already ships
 
@@ -105,7 +105,7 @@ The impure dynamo's whole job is to refine the first batch and then never scale.
 
 Keeping the electrolyte a held liquid means:
 
-* no new medium is needed - `assets/exlib/config/liquids.json` stays at four entries, and R1 is never engaged, because R1 governs pipe networks and the bath is not on one ([conventions.md](../../conventions.md));
+* no new medium is needed - `mods/exlib/assets/exlib/config/liquids.json` stays at four entries, and R1 is never engaged, because R1 governs pipe networks and the bath is not on one ([conventions.md](../../conventions.md));
 * the [fluid tank](../../machines/fluid-tank.md) stays out of it - medium-agnostic or not, no acid main is wanted;
 * nothing in the phase-change model is touched.
 

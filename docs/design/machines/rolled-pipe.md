@@ -66,7 +66,7 @@ its own fittings before it is usable, and it has neither fittings nor a recipe.
 ## Structure
 
 Nothing here is a multiblock. Every block on this page is a single cell and an instance of the shared `BlockPipe` /
-`BlockEntityPipe`, which live in exlib (`src/ExpandedLib/Blocks/Networks/`); hpex ships no pipe C# class.
+`BlockEntityPipe`, which live in exlib (`mods/exlib/src/Blocks/Networks/`); hpex ships no pipe C# class.
 
 ```csharp
 public class RolledPipeDefinitions : IExBlockDefProvider
@@ -127,14 +127,14 @@ shipping a single pipe family gets from `BlockPipe.Segments(domain, tier: null)`
 
 | asset | path | state |
 |---|---|---|
-| Editable straight / bend / T / X | `assets/editable/shapes/pipe-block-rolled-{straight,bend,tjunction,xjunction}.json` | present. All four declare `cast-iron1` as an absolute local path into `assets/editable/textures/`, an editable-only artefact |
-| Runtime straight | `assets/siex/shapes/pipes/straight.json` | `Cube2` (barrel, with 45°-rotated `Cube30`–`Cube33` chamfers) + `Cube6` and `Cube14` (the two end rings) |
-| Runtime bend | `assets/siex/shapes/pipes/bend.json` | five top-level cubes, same chamfer construction |
-| Runtime T / X | `assets/siex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
+| Editable straight / bend / T / X | `workbench/shapes/pipe-block-rolled-{straight,bend,tjunction,xjunction}.json` | present. All four declare `cast-iron1` as an absolute local path into `workbench/textures/`, an editable-only artefact |
+| Runtime straight | `mods/siex/assets/siex/shapes/pipes/straight.json` | `Cube2` (barrel, with 45°-rotated `Cube30`–`Cube33` chamfers) + `Cube6` and `Cube14` (the two end rings) |
+| Runtime bend | `mods/siex/assets/siex/shapes/pipes/bend.json` | five top-level cubes, same chamfer construction |
+| Runtime T / X | `mods/siex/assets/siex/shapes/pipes/tjunction.json`, `xjunction.json` | present |
 | Textures (all four) | `cast-iron1` → `iiex:block/metal/castiron`, `steel` → `game:block/metal/plate/steel` | |
 | Animations | - | none, on any of the four |
-| Lang | `assets/siex/lang/en.json` | `block-pipe-{straight,bend,tjunction,xjunction}*` + `blockdesc-pipe-*` = "High-pressure rolled steel piping. The strongest of the three pipe tiers." |
-| Handbook | - | the tier appears in no handbook page. The defs declare a `groupBy` (`BlockPipe.cs:69-74`) but `assets/siex/config/handbook/05-highpressure.json` is the only page hpex ships and it is about the boiler and the engine |
+| Lang | `mods/siex/assets/siex/lang/en.json` | `block-pipe-{straight,bend,tjunction,xjunction}*` + `blockdesc-pipe-*` = "High-pressure rolled steel piping. The strongest of the three pipe tiers." |
+| Handbook | - | the tier appears in no handbook page. The defs declare a `groupBy` (`BlockPipe.cs:69-74`) but `mods/siex/assets/siex/config/handbook/05-highpressure.json` is the only page hpex ships and it is about the boiler and the engine |
 
 The octagon is real geometry: `straight.json`'s barrel is a 4 × 1 core with four chamfer children rotated ±45° in Z
 (`Cube30`/`Cube31` under `Cube3`, `Cube32`/`Cube33` under `Cube4`), and the two end rings at z 0–1 and z 15–16 are
@@ -151,7 +151,7 @@ so an override would repaint some segments and miss others (`BlockPipe.cs:76-79`
 
 ### B5 — there is none
 
-Nothing anywhere outputs `siex:pipe-rolled-straight-*` or any of its three siblings. `src/SteelIndustryExpanded/Recipes/`
+Nothing anywhere outputs `siex:pipe-rolled-straight-*` or any of its three siblings. `mods/siex/src/Recipes/`
 contains one file, `Grid/MachineRecipeDefinitions.cs`, emitting two recipes: the Lancashire boiler frame and the
 Cornish engine frame. The golden `goldens/siex/recipes/grid/machines.json` is the mod's complete recipe output -
 three entries (the boiler, and the engine twice, once per gear code).
@@ -180,7 +180,7 @@ rolled pipe` ([bending roller](bending-roller.md) § the one-machine-four-tools 
 | `skelp` item (8 × 1 × 10, 200 u) | does not exist | [bending roller](bending-roller.md), [wide hall](wide-hall.md) |
 | bending roller block | does not exist - no source file, no shape, no lang key | [bending roller](bending-roller.md) |
 | the bell-weld step | undecided - stage, grid recipe, or free with the roll? | [bending roller](bending-roller.md) § Open 6 |
-| a rolled pipe-part item | does not exist; `assets/editable/shapes/item-cylinder-pipesegment.json` is the only artefact | [cast pipes](cast-pipes.md) |
+| a rolled pipe-part item | does not exist; `workbench/shapes/item-cylinder-pipesegment.json` is the only artefact | [cast pipes](cast-pipes.md) |
 
 The settled design places the bending roller in iiex, not smex ([bending roller](bending-roller.md)), so the
 machine that makes the high-pressure tier lives one mod below it and B5 cannot be closed inside hpex.
@@ -283,7 +283,7 @@ iiex's; all are tabulated by [pipe network](../mechanics/pipe-network.md) § Num
 
 Caution: `SiexConfig.cs`'s doc comment calls this "a rolled (hpex) Hadfield-steel pipe segment" and
 `SteelIndustryExpandedModSystem.cs` calls the tier "rolled (Hadfield steel)", the lang string calls it "rolled
-steel" (`assets/siex/lang/en.json`), and the test fixture maps the material name `"hadfield"` onto the hpex domain
+steel" (`mods/siex/assets/siex/lang/en.json`), and the test fixture maps the material name `"hadfield"` onto the hpex domain
 (`PipeTestWorld.cs`). No hadfield material exists in code ([Cornish engine](engine-cornish.md) Gotcha 6); the name
 is a design-doc term that appears in comments and a test fixture.
 
@@ -352,11 +352,11 @@ Salvage is 1:1 and lossless: none of these is a right-click construction, so `Rc
 | `RolledPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/RolledPipeDefinitions.cs:15-18` |
 | burst + throughput + joint registration | `SteelIndustryExpandedModSystem.cs:42-46` |
 | `SiexConfig.RolledPipeBurstPressure` / `.RolledPipeThroughput` | `SiexConfig.cs:115`, `:121` |
-| `BlockPipe` (segments factory, burst/throughput/joint registries) | `src/ExpandedLib/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |
-| `BlockEntityPipe` | `src/ExpandedLib/Blocks/Networks/BlockEntityPipe.cs` |
+| `BlockPipe` (segments factory, burst/throughput/joint registries) | `mods/exlib/src/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |
+| `BlockEntityPipe` | `mods/exlib/src/Blocks/Networks/BlockEntityPipe.cs` |
 | `HpMachineDomainMigration : IBlockCodeMigration` | `BlockMigrations/HpMachineDomainMigration.cs:34`, `GetRemaps` `:46-59` |
 | the migrator that applies it | `ExpandedLib/Blocks/Migrations/BlockMigrationModSystem.cs` |
-| goldens | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/pipes/{straight,bend,tjunction,xjunction}.json` |
+| goldens | `mods/siex/tests/goldens/siex/blocktypes/pipes/{straight,bend,tjunction,xjunction}.json` |
 
 ### `HpMachineDomainMigration`
 
@@ -378,7 +378,7 @@ Do not widen this migration to enumerate the hpex domain: `hpex:pipe-*` uses the
 cast pipes, so a domain-wide enumeration would claim `iiex:pipe-*` as a legacy source and rewrite every placed cast
 pipe into a rolled one. `ReleasedCodeCoverageTests` fails if any migration declares a live code as a legacy source.
 
-### Tests — `test/SteelIndustryExpanded.Tests/`
+### Tests — `mods/siex/tests/`
 
 | file | pins |
 |---|---|

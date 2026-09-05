@@ -62,7 +62,7 @@ This is the shape the four machine tools need, and the reason A3 comes before th
 ## Global constraints
 
 - **No commits.** Work stays in the tree; the record goes to `docs/internal/worklog/2026-08.md`.
-- `.compat/` and `assets/editable/` are untouched.
+- `.compat/` and `workbench/` are untouched.
 - Three targets green: 1.22/net10.0, 1.21/net8.0, 1.20/net7.0. `-p:Legacy=true` on net8.0/net7.0,
   always an explicit `-f <tfm>`.
 - `CommentStyleGuards`: doc comments ≤16 lines, ≤3 `<para>`.

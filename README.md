@@ -6,24 +6,24 @@ steel making:
 
 | Mod                                                             | modid   | What it is                                                                                                   |
 | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
-| [Expanded Library](src/ExpandedLib/README.md)                   | `exlib` | Shared framework: block networks, multiblock structures, registries (entities/commands/config), save migrations, common helpers. |
-| [Iron Industry Expanded](src/IronIndustryExpanded/README.md)    | `iiex`  | The whole iron tier: cold-blast ironmaking, the `pipe`/`molten`/`mpenergy` networks, the plated and cast pipe tiers with their fittings, the Cornish boiler and the Watt engine. |
-| [Steel Industry Expanded](src/SteelIndustryExpanded/README.md)  | `siex`  | The whole steel tier: hot blast furnace, cowper stoves, molten-metal casting, Bessemer converter, air blower, plus the high-pressure Lancashire boiler and Cornish engine and the rolled pipe tier. |
+| [Expanded Library](mods/exlib/README.md)                   | `exlib` | Shared framework: block networks, multiblock structures, registries (entities/commands/config), save migrations, common helpers. |
+| [Iron Industry Expanded](mods/iiex/README.md)    | `iiex`  | The whole iron tier: cold-blast ironmaking, the `pipe`/`molten`/`mpenergy` networks, the plated and cast pipe tiers with their fittings, the Cornish boiler and the Watt engine. |
+| [Steel Industry Expanded](mods/siex/README.md)  | `siex`  | The whole steel tier: hot blast furnace, cowper stoves, molten-metal casting, Bessemer converter, air blower, plus the high-pressure Lancashire boiler and Cornish engine and the rolled pipe tier. |
 
 ## Repository layout
 
 | Path                            | Purpose                                                                |
 | ------------------------------- | ---------------------------------------------------------------------- |
-| `src/ExpandedLib/`              | The `exlib` framework mod (C# + minimal assets).                       |
-| `src/ExpandedLib.Generators/`   | Roslyn source generators (config value accessors, typed lang keys).    |
-| `src/IronIndustryExpanded/`     | The `iiex` mod: networks, pipes, ironmaking and low-pressure steam.    |
-| `src/SteelIndustryExpanded/`    | The `siex` mod: the steel chain and the high-pressure steam leaves.    |
-| `src/Directory.Build.props`     | Shared MSBuild config + the supported-game-version manifest.           |
-| `assets/<domain>/`              | Each mod's asset tree, hoisted to the repo root (see `<AssetDomain>`). |
-| `test/`                         | Headless xUnit test projects (per-mod unit tests + cross-mod integration). |
+| `mods/exlib/src/`               | The `exlib` framework mod (C# + minimal assets).                       |
+| `mods/exlib/generators/`        | Roslyn source generators (config value accessors, typed lang keys).    |
+| `mods/iiex/src/`                | The `iiex` mod: networks, pipes, ironmaking and low-pressure steam.    |
+| `mods/siex/src/`                | The `siex` mod: the steel chain and the high-pressure steam leaves.    |
+| `mods/Directory.Build.props`    | Shared MSBuild config + the supported-game-version manifest.           |
+| `mods/<mod>/assets/<domain>/`   | Each mod's own asset tree, the packaged layout verbatim.               |
+| `mods/<mod>/tests/`             | Headless xUnit test projects (per-mod unit tests + cross-mod integration). |
 | `scripts/`                      | Game/.NET provisioning, mod staging, test runners.                     |
-| `docs/`                         | Diagrams, screenshots, moddb listing + handbook sources.              |
-| `dist/CakeBuild/`               | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
+| `docs/`                         | Cross-mod design docs, internal plans, setups.                        |
+| `infra/CakeBuild/`              | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
 | `VintageStory.sln`              | Solution tying the projects together.                                  |
 
 The dependency chain is a straight line, `exlib -> iiex -> siex`. Every reference is
@@ -57,7 +57,7 @@ Code is organized by **feature**, and within each feature by Vintage Story's
   numbers), switched with `/exmod recipes` and applied on the next world reload. Both
   files auto-fold each mod's pre-merge standalone `*_values.json` / `*_recipes.json`.
 
-## Network system (`src/ExpandedLib/Networks/` + `Blocks/Networks/`)
+## Network system (`mods/exlib/src/Networks/` + `Blocks/Networks/`)
 
 Both the pipe and molten systems are instances of one generic block-network framework -
 and both concrete networks (`PipeNetwork`, `MoltenNetwork`) now live in `exlib` alongside
@@ -114,8 +114,8 @@ pwsh scripts/provision-game.ps1 -Version 1.22     # Windows
 scripts/provision-game.sh       -Version 1.22     # Linux/macOS
 
 dotnet build VintageStory.sln                                    # builds every mod + the tests
-dotnet build src/SteelIndustryExpanded/HighPressureExpanded.csproj # or one mod + its dependencies
-dotnet run --project dist/CakeBuild   # full Cake build: per-game-version release zips in dist/Releases/
+dotnet build mods/siex/src/HighPressureExpanded.csproj # or one mod + its dependencies
+dotnet run --project infra/CakeBuild   # full Cake build: per-game-version release zips in dist/Releases/
 ```
 
 ### Testing

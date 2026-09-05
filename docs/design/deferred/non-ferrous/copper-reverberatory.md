@@ -65,7 +65,7 @@ Nothing copper-side.
 |---|---|
 | `grep -rniE "coppermatte\|blistercopper\|piercesmith" src/ assets/` | 0 hits (excluding `bin/`) |
 | `grep -rni "copper" src/ --include=*.cs` | 4 hits, all vanilla-facing plumbing - enumerated on [tilting crucible](tilting-crucible.md) § What exists today |
-| metal defs | 4 files, all ferrous (`assets/iiex/config/metals/`, `assets/siex/config/metals/`) |
+| metal defs | 4 files, all ferrous (`mods/iiex/assets/iiex/config/metals/`, `mods/siex/assets/siex/config/metals/`) |
 | a copper burden family, ore, matte item or slag variant | none |
 
 The machine class is live, and a copper mode is an override of it rather than a new furnace:

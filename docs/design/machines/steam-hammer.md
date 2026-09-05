@@ -120,12 +120,12 @@ All three shapes are drawn and wired to nothing.
 
 | Asset | Path | State |
 |---|---|---|
-| Hammer (editable) | `assets/editable/shapes/machine-pipe-megablock-steamhammer.json` | drawn, unwired |
-| Anvil (editable) | `assets/editable/shapes/machine-block-steamhammeranvil.json` | drawn, unwired |
-| Die-set, flat (editable) | `assets/editable/shapes/item-steamhammerdie-flat.json` | drawn, unwired |
-| Runtime shapes | `assets/iiex/shapes/…` | none. `assets/iiex/shapes/` holds only `boiler/`, `engine/`, `pipes/` |
-| Handbook page | `docs/iiex/handbook/` | none |
-| Lang keys | `assets/iiex/lang/en.json` | none |
+| Hammer (editable) | `workbench/shapes/machine-pipe-megablock-steamhammer.json` | drawn, unwired |
+| Anvil (editable) | `workbench/shapes/machine-block-steamhammeranvil.json` | drawn, unwired |
+| Die-set, flat (editable) | `workbench/shapes/item-steamhammerdie-flat.json` | drawn, unwired |
+| Runtime shapes | `mods/iiex/assets/iiex/shapes/…` | none. `mods/iiex/assets/iiex/shapes/` holds only `boiler/`, `engine/`, `pipes/` |
+| Handbook page | `mods/iiex/docs/handbook/` | none |
+| Lang keys | `mods/iiex/assets/iiex/lang/en.json` | none |
 
 ### What the hammer shape actually draws
 

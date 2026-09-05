@@ -14,7 +14,7 @@
   `siex:hopperbell` (magazine + drip), including their capacities and how the drip reaches the shaft;
 * the construction of all three smex blocks, and the fact that the core is absent from the recipe-cost
   catalogue;
-* the enlarged draft layout in [layouts.md](../../internal/workbench/layouts.md) § 1 - recorded as deferred.
+* the enlarged draft layout in [layouts.md](../../../workbench/layouts.md) § 1 - recorded as deferred.
 
 **Does not own** - cited only, never restated:
 [heat balance](../mechanics/heat-balance.md) (the `T_process` law, the preheat term, the raceway rate model,
@@ -72,8 +72,8 @@ Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the nega
 | Source | Where |
 |---|---|
 | Definition (nine ASCII cross-sections, y = 0 → y = 8) | `BlockBlastFurnaceCoreHot.cs` |
-| Golden (the arbiter) | `test/SteelIndustryExpanded.Tests/goldens/siex/blocktypes/blastfurnace/core.json` |
-| Round-tripped copy for editing | [layouts.md](../../internal/workbench/layouts.md) § Section 2, "Hot blast furnace" |
+| Golden (the arbiter) | `mods/siex/tests/goldens/siex/blocktypes/blastfurnace/core.json` |
+| Round-tripped copy for editing | [layouts.md](../../../workbench/layouts.md) § Section 2, "Hot blast furnace" |
 
 ### Cell census — 147 offsets
 
@@ -148,21 +148,21 @@ which are smex's.
 |---|---|---|
 | core block model | `game:block/basic/cube` | vanilla cube, per-face textured |
 | core faces | `game:block/clay/refractory/tier3/front1` on `all`; `siex:block/furnace/n` overlay north, `siex:block/furnace/bfh` overlay south | live - the "BF/H" label is what tells the three furnace anchors apart |
-| reinforced hopper shape | `assets/siex/shapes/blastfurnace/hopper-reinforced.json` | live; no animation |
-| bell hopper shape | `assets/siex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
+| reinforced hopper shape | `mods/siex/assets/siex/shapes/blastfurnace/hopper-reinforced.json` | live; no animation |
+| bell hopper shape | `mods/siex/assets/siex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
 | charge contents mesh | `iiex:shapes/ore/burden.json`, tesselated at runtime by the reinforced hopper | live - the only moving part either hopper shows |
 | tuyere / tap shapes | iiex - see [cold blast furnace](blast-furnace-cold.md) | |
 | outlet shape | `iiex:pipes/outlet` | see [pipe network](../mechanics/pipe-network.md) |
 
-Editable sources: only `assets/editable/shapes/furnace-block-hopperreinforced.json` exists. The bell hopper
+Editable sources: only `workbench/shapes/furnace-block-hopperreinforced.json` exists. The bell hopper
 has no editable counterpart and cannot be re-edited from source.
 
 The reinforced hopper's fill is shown by raising the contents mesh between 9/16 and 14/16 of a block in
 proportion to `TankCount / Capacity`. The bell hopper is visually static; its drip is signalled by
 `ExParticles.FallingDust` + `ExSounds.StoneCrush`.
 
-Player-facing help: `assets/siex/config/handbook/01-blastfurnace.json` ↔
-`docs/siex/handbook/01-blastfurnace.html` (lang key `siex:handbook-blastfurnace-text`). It teaches burden
+Player-facing help: `mods/siex/assets/siex/config/handbook/01-blastfurnace.json` ↔
+`mods/siex/docs/handbook/01-blastfurnace.html` (lang key `siex:handbook-blastfurnace-text`). It teaches burden
 charging: the [burdenmaker](burdenmaker.md), the alternating coke / burden rounds, positional ignition, the
 hang, and the tap-and-pool loop.
 
@@ -171,8 +171,8 @@ hang, and the tap-and-pool loop.
 ## Construction
 
 No RCC: three grid recipes plus hand-laid brick. All in
-`src/SteelIndustryExpanded/Recipes/Grid/HotBlastFurnaceRecipeDefinitions.cs`; golden
-`test/SteelIndustryExpanded.Tests/goldens/siex/recipes/grid/hotblastfurnace.json`.
+`mods/siex/src/Recipes/Grid/HotBlastFurnaceRecipeDefinitions.cs`; golden
+`mods/siex/tests/goldens/siex/recipes/grid/hotblastfurnace.json`.
 
 | Output | Pattern | Ingredients |
 |---|---|---|
@@ -269,7 +269,7 @@ clears the melt line where the same charge on cold blast stalls short of it - th
 
 `SiexValues.X` is a generated accessor over `SiexConfig.X`; the file:line is the config declaration.
 
-### Owned — `src/SteelIndustryExpanded/SiexConfig.cs`
+### Owned — `mods/siex/src/SiexConfig.cs`
 
 | Key | Value | file:line | What it does |
 |---|---|---|---|
@@ -371,7 +371,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
    cowpers starve with no error anywhere.
 
 5. `blockdesc-blastfurnacecore*` calls the core "the refractory hearth grate"
-   (`assets/siex/lang/en.json:32`). It is a plain cube; the grate shape is gone.
+   (`mods/siex/assets/siex/lang/en.json:32`). It is a plain cube; the grate shape is gone.
 
 6. The core def has no `Handbook(...)` grouping, so its four `side` variants list separately in the in-game
    handbook where the cowper and smokestack intakes group into one entry.
@@ -380,7 +380,7 @@ The hot furnace, not the cold one, carries the suite's only end-to-end blast-fur
 
 ## Open
 
-1. Deferred - the enlarged draft. [layouts.md](../../internal/workbench/layouts.md) § 1 carries a 4 × 4-shaft
+1. Deferred - the enlarged draft. [layouts.md](../../../workbench/layouts.md) § 1 carries a 4 × 4-shaft
    redesign (four tuyeres, four exhaust outlets, four bell cells, no reinforced hopper). It is recorded,
    not scheduled. It predates the charge-column cutover and the typed-tap rename, so its legends are known
    to be stale (block codes that no longer exist, a slag-tap legend that duplicates the metal tap's) and it

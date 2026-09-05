@@ -80,12 +80,12 @@ shape, so a grid that mimics assembly encodes the same information twice. The fl
 
 ## The diagram item
 
-One itemtype per mod, `{mod}:diagram-{type}`, defined in `src/IronIndustryExpanded/Items/DiagramItemDefinitions.cs`.
+One itemtype per mod, `{mod}:diagram-{type}`, defined in `mods/iiex/src/Items/DiagramItemDefinitions.cs`.
 Today only iiex ships one - 27 variants, each with its drawn texture.
 
 * Shape: the shared folded-sheet `exlib:item/diag-base`; texture: a parchment base plus the
   per-type `diag-{type}` drawing overlaid on the sheet's top face
-  (`assets/iiex/textures/item/diagram/`, 27 files, one per variant).
+  (`mods/iiex/assets/iiex/textures/item/diagram/`, 27 files, one per variant).
 * Held two-handed (`holdbothhands`) and inclined so the drawing angles toward the camera. The
   transforms are seed values; they can only be judged in-game.
 * A diagram is a plain item - it carries no logic. Pattern diagrams are derived from

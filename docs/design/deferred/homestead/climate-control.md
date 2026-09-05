@@ -68,9 +68,9 @@ ammonia gas→liquid)", and it is still true of the shipped code:
 
 | The generalisation | Where it already lives |
 |---|---|
-| A medium declares what it condenses to, and below what temperature | `LiquidDef.CondensesTo` / `CondenseBelowC`, `src/ExpandedLib/Fluids/LiquidDef.cs:26-34` |
+| A medium declares what it condenses to, and below what temperature | `LiquidDef.CondensesTo` / `CondenseBelowC`, `mods/exlib/src/Fluids/LiquidDef.cs:26-34` |
 | …and what it boils into, and above what temperature | `LiquidDef.VaporisesTo` / `BoilPointC`, `:36-43` |
-| Passive, temperature-gated phase change either way | `IMediumTaxonomy.TryCondensation` / `TryVaporisation`, `src/ExpandedLib/Fluids/IMediumTaxonomy.cs:40-64`; implemented `ExLiquids.cs:158-196` |
+| Passive, temperature-gated phase change either way | `IMediumTaxonomy.TryCondensation` / `TryVaporisation`, `mods/exlib/src/Fluids/IMediumTaxonomy.cs:40-64`; implemented `ExLiquids.cs:158-196` |
 | Nothing hardcodes steam - the boiler asks the catalogue | [Cornish boiler](../../machines/boiler-cornish.md):233-236, `:493-494` |
 | The catalogue is data, overlaid per domain at `AssetsFinalize` | `ExLiquids.cs:8-19` |
 
@@ -95,11 +95,11 @@ Adjacent infrastructure built for other reasons would be reused verbatim:
 
 | Piece | State | File |
 |---|---|---|
-| The phase-change catalogue and taxonomy | live | `src/ExpandedLib/Fluids/LiquidDef.cs`, `IMediumTaxonomy.cs`, `ExLiquids.cs` |
-| The steam condenser - a connector, not a graph node, bridging two runs and condensing between them | live | `src/IronIndustryExpanded/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, 1000 ms server tick at `:42` |
-| The exhaust passthrough + chimney vent, which the archived spec listed as the "+heat" waste-heat emitter | live | `src/ExpandedLib/Blocks/Networks/BlockPipePassthrough.cs`; `src/ExpandedLib/Blocks/Networks/ChimneyVent.cs` |
+| The phase-change catalogue and taxonomy | live | `mods/exlib/src/Fluids/LiquidDef.cs`, `IMediumTaxonomy.cs`, `ExLiquids.cs` |
+| The steam condenser - a connector, not a graph node, bridging two runs and condensing between them | live | `mods/iiex/src/BlockNetworkPipe/BlockEntities/BlockEntitySteamCondenser.cs:16-21`, 1000 ms server tick at `:42` |
+| The exhaust passthrough + chimney vent, which the archived spec listed as the "+heat" waste-heat emitter | live | `mods/exlib/src/Blocks/Networks/BlockPipePassthrough.cs`; `mods/exlib/src/Blocks/Networks/ChimneyVent.cs` |
 | Reading ambient temperature from the world | live, twice, and only as ambient | `BlockEntityFurnaceCore.cs`, `BlockEntityTwinTubMPBlower.cs` (both `GetClimateAt`) |
-| The medium catalogue | four entries only - Air, Steam, Exhaust, Water | `assets/exlib/config/liquids.json` |
+| The medium catalogue | four entries only - Air, Steam, Exhaust, Water | `mods/exlib/assets/exlib/config/liquids.json` |
 
 The heating half's cheapest emitter is already a shipped block: the exhaust passthrough exists and vents into
 a chimney. What does not exist is a room for it to warm. The gap is the room model, not the plumbing.
@@ -179,11 +179,11 @@ Splitting them again re-creates the cross-add-on dependency that merge removed.
    condenser bridges a steam line and a water line without joining them
    (`BlockEntitySteamCondenser.cs:16-21`). Build it as one run and it cannot work.
 
-2. **Ammonia has no medium, and R1 means it needs one.** `assets/exlib/config/liquids.json` declares four
+2. **Ammonia has no medium, and R1 means it needs one.** `mods/exlib/assets/exlib/config/liquids.json` declares four
    codes; a run carries exactly one medium at a time ([conventions.md](../../conventions.md)). Ammonia
    needs a `LiquidDef` with both a `CondensesTo`/`CondenseBelowC` pair and its gas-phase mirror, and it is a
    liquid that mixes only with itself while its vapour joins the mixable gas family
-   (`src/ExpandedLib/Fluids/LiquidPhase.cs:9-13`) - so the two sides of the loop are two different media,
+   (`mods/exlib/src/Fluids/LiquidPhase.cs:9-13`) - so the two sides of the loop are two different media,
    which is the second reason they cannot share a run.
 
 3. **The closed loop is a lifecycle the network does not have.** Every run in the suite today is open -
