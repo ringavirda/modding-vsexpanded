@@ -13,8 +13,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
     <Nullable>enable</Nullable>
-    <AssemblyName>helloexpanded</AssemblyName>
-    <RootNamespace>HelloExpanded</RootNamespace>
+    <AssemblyName>hellomodule</AssemblyName>
+    <RootNamespace>HelloModule</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
 
   <!--
     Inside this monorepo, exlib is a plain ProjectReference with copy-local off - the player installs
-    exlib as its own mod, so it must not ship a second copy inside helloexpanded's folder. Outside the
+    exlib as its own mod, so it must not ship a second copy inside hellomodule's folder. Outside the
     repo you reference the built assembly instead:
 
     <ItemGroup>
@@ -43,18 +43,13 @@
     <ProjectReference Include="..\..\mods\exlib\src\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <!-- The config source generator emits HelloValues from HelloConfig's [ExConfigRegister];
-         ExLangKeyGenerator emits HelloExpandedLang. Compile-time only, ships nothing. -->
+    <!-- The config source generator emits HelloModuleValues from HelloModuleConfig's
+         [ExConfigRegister]; ExLangKeyGenerator emits HelloModuleLang. Compile-time only, ships nothing. -->
     <ProjectReference
       Include="..\..\mods\exlib\generators\ExpandedLib.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
     />
-    <!-- hellomodule ships its own BlockBehaviorGreeter, which BlockHello picks up by type; copy-local
-         off for the same reason as exlib above - the player installs hellomodule as its own mod. -->
-    <ProjectReference Include="..\HelloModule\HelloModule.csproj">
-      <Private>false</Private>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -75,6 +70,6 @@
       <Link>assets/%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <AdditionalFiles Include="assets/helloexpanded/lang/en.json" />
+    <AdditionalFiles Include="assets/hellomodule/lang/en.json" />
   </ItemGroup>
 </Project>

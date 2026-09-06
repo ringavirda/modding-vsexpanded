@@ -1,0 +1,13 @@
+{
+  "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
+  "type": "Code",
+  "modid": "hellomodule",
+  "name": "Hello Module",
+  "authors": ["fallenstar"],
+  "description": "Sample module walking through exlib's module system: a greeting catalogue, a block behaviour and a command another mod's block can pick up.",
+  "version": "1.0.0",
+  "dependencies": {
+    "game": "1.22.0",
+    "exlib": "0.7.3"
+  }
+}

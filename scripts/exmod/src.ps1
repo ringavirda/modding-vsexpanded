@@ -22,10 +22,12 @@ function Get-ExmodTestProjects {
     iiex          = 'IronIndustryExpanded.Tests'
     siex          = 'SteelIndustryExpanded.Tests'
     helloexpanded = 'HelloExpanded.Tests'
+    hellomodule   = 'HelloModule.Tests'
     exlibverify   = 'ExlibVerify.Tests'
   }
   $paths = @{
     helloexpanded = 'samples/HelloExpanded.Tests/HelloExpanded.Tests.csproj'
+    hellomodule   = 'samples/HelloModule.Tests/HelloModule.Tests.csproj'
     exlibverify   = 'infra/tools/ExlibVerify.Tests/ExlibVerify.Tests.csproj'
   }
   $out = [ordered]@{}
@@ -86,9 +88,9 @@ function Invoke-Build([string[]]$Argv) {
     $tfm = $GameTfms[$v]
     Write-Step "Building $v ($tfm, $configuration)"
     foreach ($mod in $targets.Keys) {
-      # helloexpanded targets $(CurrentGameTfm) only (see samples/HelloExpanded.csproj) - the
-      # legacy series buys a sample nothing, so it is skipped the same way `exmod test` skips it.
-      if ($mod -eq 'helloexpanded' -and $v -ne '1.22') {
+      # The samples target $(CurrentGameTfm) only (see samples/*/*.csproj) - the legacy series
+      # buys a sample nothing, so they are skipped the same way `exmod test` skips them.
+      if ($mod -in 'helloexpanded', 'hellomodule' -and $v -ne '1.22') {
         Write-Host "-- $mod ($v) skipped, targets $($GameTfms['1.22']) only --"
         continue
       }
@@ -101,7 +103,7 @@ function Invoke-Build([string[]]$Argv) {
 
     if ($withTests) {
       foreach ($mod in $testTargets.Keys) {
-        if ($mod -in 'helloexpanded', 'exlibverify' -and $v -ne '1.22') {
+        if ($mod -in 'helloexpanded', 'hellomodule', 'exlibverify' -and $v -ne '1.22') {
           Write-Host "-- $($testTargets[$mod].Project) ($v) skipped, targets $($GameTfms['1.22']) only --"
           continue
         }
@@ -184,7 +186,7 @@ function Invoke-Test([string[]]$Argv) {
       # The sample and the standalone tool only target $(CurrentGameTfm) (see
       # samples/HelloExpanded.csproj, infra/tools/ExlibVerify.Tests.csproj) - a legacy matrix buys
       # neither anything, so both are skipped rather than failed on '-f net8.0'/'net7.0'.
-      if ($mod -in 'helloexpanded', 'exlibverify' -and $v -ne '1.22') { continue }
+      if ($mod -in 'helloexpanded', 'hellomodule', 'exlibverify' -and $v -ne '1.22') { continue }
       [pscustomobject]@{
         Version = $v
         Tfm     = $GameTfms[$v]

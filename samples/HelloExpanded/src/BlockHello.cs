@@ -3,6 +3,7 @@ using ExpandedLib.Blocks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries;
+using HelloModule;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -10,8 +11,9 @@ namespace HelloExpanded;
 
 /// <summary>
 /// The whole "your first block" walk: one code-first definition (vanilla shape and texture, no JSON
-/// asset authored), and a sneak-click that resets its block entity's counter through
-/// <see cref="ExInteraction"/> rather than a hand-rolled click guard.
+/// asset authored), a sneak-click that resets its block entity's counter through
+/// <see cref="ExInteraction"/> rather than a hand-rolled click guard, and hellomodule's
+/// <see cref="BlockBehaviorGreeter"/> - the whole point of depending on another mod's module.
 /// </summary>
 [BlockRegister]
 public class BlockHello : Block, IExBlockDefProvider {
@@ -29,7 +31,8 @@ public class BlockHello : Block, IExBlockDefProvider {
         .MiningTier(1)
         .CreativeCommon("*")
         .SideVariant()
-        .Behavior<BlockBehaviorExOrientable>(),
+        .Behavior<BlockBehaviorExOrientable>()
+        .Behavior<BlockBehaviorGreeter>(),
     ];
 
   public override bool OnBlockInteractStart(

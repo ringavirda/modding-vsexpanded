@@ -1,0 +1,6 @@
+{
+  "item-greeting-hello": "Greeting Scroll (Hello)",
+  "item-greeting-welcome": "Greeting Scroll (Welcome)",
+  "hellomodule:command-greet-desc": "Prints how many greetings loaded",
+  "hellomodule:command-greet-result": "Greetings loaded: {0}"
+}

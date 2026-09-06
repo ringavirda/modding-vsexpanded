@@ -2,6 +2,8 @@
 // there; the API under test (TestWorld.LoadAssets) itself compiles and runs on every game version.
 #if GAME_GE_1_22
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Xunit;
@@ -17,6 +19,18 @@ public class AssetLoadingTests {
   [Fact]
   public void Hello_block_resolves_with_its_orientation_variants() {
     string samplePath = Path.Combine(RepoPaths.Root, "samples", "HelloExpanded");
+
+    // BlockHello's def carries hellomodule's BlockBehaviorGreeter; LoadAssets loads only the one mod
+    // named in its own path, so hellomodule's compiled dll must already be loaded for
+    // BlockHello.Definitions to resolve it - the same as the real game loader, which loads every
+    // installed mod's assembly into the one process before any of them runs.
+    string moduleBinPath = Path.Combine(RepoPaths.Root, "samples", "HelloModule", "bin");
+    Assembly.LoadFrom(
+      Directory
+        .EnumerateFiles(moduleBinPath, "hellomodule.dll", SearchOption.AllDirectories)
+        .First()
+    );
+
     using var world = new TestWorld();
 
     world.LoadAssets(samplePath);

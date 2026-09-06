@@ -518,3 +518,14 @@ the check); the wiki link check that `exmod check` runs is clean.
 - Task 1 (identity, discovery and ordering) done 2026-09-06. Gate green.
 - Task 2 (the host, the two drivers, registries per module assembly) done 2026-09-06. Gate green.
 - Task 3 (definition contributors) done 2026-09-06. Gate green.
+- Task 4 (the sample module, shipped as its own mod) done 2026-09-07. Gate green. The
+  no-`ModSystem` experiment: without one, the loader refused the mod - `[hellomodule] Exception:
+  .../hellomodule.dll declared as code mod, but there are no .dll files that contain at least one
+  ModSystem or has a ModInfo attribute` - so `HelloModuleModSystem : ModSystem { }` was added, an
+  empty placeholder purely to satisfy that check (the module itself is still driven by exlib's
+  `ExModuleModSystem`, not by it). After that, smoke logs `[exlib] modules hosted by exlib:
+  hellomodule, industry` and `[exlib] Injected 87 code-first item definition(s).` (85 + the two
+  greeting items). Deviation: `config/greetings/` holds two files (`default.json`, `welcome.json`,
+  one greeting each) rather than one `default.json` with two entries - `GetMany<GreetingDef>`
+  deserializes one file to one object, so a single file cannot hold two flat `GreetingDef` entries;
+  confirmed by hand against the shipped `AssetCatalogueLoader`/`Asset.ToObject` behaviour.

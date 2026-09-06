@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../mods/Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentGameTfm)</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Private=true, same as mods/iiex/tests: the vstest discoverer probes a test assembly's direct
+         references on disk BEFORE the harness's assembly resolver can run, and a reference missing
+         from the output folder makes discovery silently report zero tests rather than fail. -->
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VSSurvivalMod">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\mods\exlib\src\ExpandedLib.csproj" />
+    <ProjectReference Include="..\HelloModule\HelloModule.csproj" />
+    <ProjectReference Include="..\..\mods\exlib\testing\ExpandedLib.Testing.csproj" />
+  </ItemGroup>
+</Project>
