@@ -6,7 +6,7 @@
 > gate needs a clean tree); match the surrounding style by hand. Record each task in Progress at
 > the bottom when its gate is green.
 
-**Status** written 2026-09-06, not started. Step 1 of
+**Status** complete 2026-09-07. Step 1 of
 [2026-09-06-repo-restructure.md](2026-09-06-repo-restructure.md), ruling E6.
 
 **Goal:** the module system becomes exlib's extension mechanism. A module is an assembly that
@@ -629,3 +629,26 @@ the check); the wiki link check that `exmod check` runs is clean.
   340, HelloExpanded.Tests 2, HelloModule.Tests 4 (+1, F14), ExlibVerify.Tests 11. Smoke: `[exlib]
   modules hosted by exlib: hellomodule, industry` and `[exlib] Injected 87 code-first item
   definition(s).`, verified clean.
+- Task 5 (the prose) done 2026-09-07. Gate green. Wrote `wiki/Modules.md` covering the
+  one-ModSystem-dll rule and the extension story, the two assembly attributes, the two shipping
+  forms with the Task 4 no-`ModSystem` finding quoted, enabled-mod filtering, the phase table,
+  `IExDefinitionContributor`, `Requires` and its three exact error lines, `ExModules.IsLoaded` and
+  the `exlib:module:<id>` flag, `PatchHarmony`, Industry as the worked example (`AssemblyInfo.cs`
+  and `IndustryModule.cs` quoted verbatim), the sample module file by file, and a closing note on
+  third-party package naming. Edited `Registries.md` ("Shipping more than one assembly" is now a
+  short pointer to Modules), `Code-First-Definitions.md` (a "Definitions that depend on loaded
+  assets" section), `Getting-Started.md` (a paragraph on `HelloModule` beside the `HelloExpanded`
+  walk), `Home.md` (a modules bullet), `_Sidebar.md` (Modules under Registration),
+  `Supported-API.md` (module rows repointed at the new Modules page, `ExModules`'s description
+  updated for enabled-mod filtering), `README.md` (a Modules paragraph and a reworded Packages
+  paragraph), `CHANGELOG.md` (rewrote the stale pre-rewrite `[Unreleased]` module entry to describe
+  the shipped shape), `docs/design/conventions.md` (a `samples/` line under "How exlib is laid
+  out"), `docs/internal/README.md` (this plan's row marked complete), the repo-restructure plan
+  (E6's heading paragraph gains a landed sentence), and the worklog (one 2026-09-07 entry). Checked
+  `Lifecycle.md`'s 0.03 row and "Ordering rules" bullets against the code; both already read right
+  from Task 4b and needed no change. Gate: `test latest` six lanes green, unchanged from Task 4b's
+  counts (ExpandedLib.Tests 2439, IronIndustryExpanded.Tests 2453, SteelIndustryExpanded.Tests 340,
+  HelloExpanded.Tests 2, HelloModule.Tests 4, ExlibVerify.Tests 11) - a prose-only task changes no
+  test. `exmod check`'s `Invoke-Check` runs format/build/verify/test and has no wiki-link step of
+  its own, so the link check was done by hand: every relative and bare wiki-style link across
+  `mods/exlib/wiki/*.md` resolves to a real page or a real repo file; clean.

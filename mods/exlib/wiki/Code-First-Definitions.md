@@ -61,6 +61,28 @@ loader are both server-only stages - **the client receives the resolved block an
 network**, the same way it receives any other asset the server built. See [Lifecycle](Lifecycle) for
 where this sits relative to everything else that happens at world load.
 
+## Definitions that depend on loaded assets
+
+A provider's `Definitions(domain)` runs the moment `EntityRegistry.RegisterAll` discovers it, which
+can be before every mod's own assets are readable - fine for a definition that is complete in
+source, wrong for one built from a catalogue another mod's JSON contributes to. `IExDefinitionContributor`
+is the interface for that case:
+
+```csharp
+public interface IExDefinitionContributor {
+  void Contribute(ICoreAPI api);
+}
+```
+
+`EntityRegistry.RegisterAll` discovers an implementor the same way it discovers a provider;
+`ExDefinitions.RunContributors` instantiates and runs each one at `AssetsLoaded` 0.04, right before
+injection, regardless of which mod or module `Start` discovered it in - the one point in the phase
+sequence guaranteed to run after every `Start` has returned, so a contributor can read a catalogue
+`AssetCatalogueLoader` assembles from every domain's JSON and register definitions from it.
+Server-only, the same as `ExDefinitionModSystem` itself. Industry's metal-family item emission is a
+contributor for exactly this reason: the metals it builds items for come from `config/metals/`
+across every domain. See [Modules](Modules) for a module's own use of it.
+
 ## The builders
 
 ### `ExBlockDef`

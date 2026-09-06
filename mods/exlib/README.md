@@ -45,6 +45,11 @@ of its own - install it because another mod depends on it.
   (`Rendering/`) and the unit-display system (`Measure/`).
 - **Legacy support** (`Legacy/`) - shims/polyfills that let the family build and run
   against Vintage Story 1.21 and 1.20 alongside 1.22.
+- **Modules** (`Registries/ExModuleAttribute.cs`, `ExModules`, `ExModuleHost`) - an assembly that
+  extends the framework or a mod built on it without carrying a `ModSystem` of its own, driven
+  through a host mod's lifecycle instead: `ExpandedLib.Industry` is the first, shipped inside this
+  mod's own folder; a third party's own mod can be one too, depending on exlib. See the wiki's
+  [Modules](../wiki/Modules.md) page.
 
 ## Start from the sample
 
@@ -64,8 +69,10 @@ public, but it is the family's own content layer and changes without notice.
 
 ## Packages
 
-The mod ships as one download - one modinfo, one folder, two assemblies - and as four NuGet
-packages a mod project references at compile time:
+The mod ships as one download - one modinfo, one folder, `exlib.dll` and `exlib.industry.dll` - and
+the module system means that is not a hard limit of two: any assembly, inside this folder or
+shipped as its own mod, can declare `[assembly: ExModule]` and join exlib's lifecycle without a
+`ModSystem` of its own. It ships as four NuGet packages a mod project references at compile time:
 
 | Package | What it is |
 | --- | --- |

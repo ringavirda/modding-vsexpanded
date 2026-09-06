@@ -18,6 +18,7 @@
 
 **exlib - Registration**
 - [Registries](Registries)
+- [Modules](Modules)
 - [Code-First Definitions](Code-First-Definitions)
 - [Config System](Config-System)
 - [Commands](Commands)

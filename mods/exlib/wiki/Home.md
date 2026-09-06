@@ -17,7 +17,9 @@ scratch:
   source-generated, versioned, live-editable **config** system;
 - a shared `/exmod` (server) and `.exmod` (client) command root, **recipe-cost** profiles,
   per-player **preferences**, **block migrations**, orphaned-BE **healing**, and a grab-bag
-  of rotation / particle / sound / inventory **helpers**.
+  of rotation / particle / sound / inventory **helpers**;
+- a **module** system: an assembly that extends the framework or a mod built on it, driven through
+  a host mod's lifecycle instead of carrying a `ModSystem` of its own.
 
 This wiki documents both libraries the family publishes for reuse:
 

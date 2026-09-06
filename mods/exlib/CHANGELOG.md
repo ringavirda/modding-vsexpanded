@@ -9,13 +9,22 @@ see the git history.
 
 ### Added
 
-- `Registries/IExModule.cs` and `ExModules`: a mod may ship more than one assembly, but only one of
-  its dlls may contain mod systems - the game refuses to load a mod when a second one does, naming
-  neither. An assembly past the first declares an `IExModule` instead, marks itself with
-  `[assembly: ExDomain("<modid>")]`, and `ExModSystem` runs it through `StartPre`, `Start`,
-  `AssetsLoaded` and `AssetsFinalize` in `Order` order, registering its `[BlockRegister]` classes
-  for it first. A module that throws is logged and skipped rather than failing the phase. This is
-  how `exlib.industry.dll` ships inside the exlib mod folder.
+- **Modules**, exlib's extension mechanism: `[assembly: ExModule("<id>")]` marks an assembly as a
+  module, driven through the lifecycle of the mod named in `Host` (default `exlib`) instead of
+  carrying a `ModSystem` of its own, ordered against the rest of its host's modules by `Requires`.
+  `ExModules.For(api, host)` discovers and orders a host's modules, keeping only the ones whose
+  shipping mod (`Mod`) is enabled; `ExModuleHost` owns one driver instance's entry-point instances
+  and runs them, and their assembly's registries, through the same phases and order of operations
+  as `ExModSystem` runs for a main assembly. `PatchHarmony` opts a module into Harmony patching
+  under its own `<host>.<id>` id. `ExModules.IsLoaded(api, id)` and the `exlib:module:<id>`
+  world-config flag let another mod or a JSON patch condition gate on a module the way
+  `ExMods`/`exlib:mod:<id>` already do for a mod. `IExDefinitionContributor` runs at
+  `AssetsLoaded` 0.04, right before injection, regardless of host order, so a module (or a main
+  assembly) can register code-first definitions built from assets that are only readable once
+  every mod's `Start` has run - Industry's metal-family emission moved here from its own
+  `AssetsLoaded`. `ExpandedLib.Industry` is the first module, shipped inside the exlib mod folder
+  (`exlib.industry.dll`); `samples/HelloModule` proves the third-party form, a module shipped as
+  its own mod depending on exlib. See the wiki's [Modules](wiki/Modules.md) page.
 - `Catalogues/AssetCatalogueLoader.cs` is public. It reads every domain's
   `config/<yours>/*.json` under a path prefix into a typed object and reports what failed to
   parse - the primitive `ContributedCatalogueLoader<TSet, TRegistry>` is built on. Both of those

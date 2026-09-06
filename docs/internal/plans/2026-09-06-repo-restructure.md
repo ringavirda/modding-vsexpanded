@@ -193,6 +193,7 @@ mechanical power, metals and heat. Industry is the first module; other modders h
 electric and heating layers, which are the second and third. "Companion assembly" is one shipping
 form of a module, not the concept. `IExModule` and `ExModules` keep their names; the wiki's
 "Shipping more than one assembly" becomes a Modules page with Industry as the worked example.
+Landed 2026-09-07; see [the module-system plan](2026-09-06-exlib-module-system.md).
 
 What a module is:
 

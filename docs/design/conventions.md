@@ -259,6 +259,10 @@ fake world and its blocks), `Scenes/` (the layout DSL), `Rigs/` (drivers for mac
 structures), `Doubles/` (stand-ins), `Checks/` (the validators), `Repo/` (this repository's own
 history and paths). `mods/exlib/tests` mirrors `mods/exlib/src` folder for folder.
 
+`samples/` holds two: `HelloExpanded`, a mod built against exlib end to end (a block, a config
+value, a command, two tests), and `HelloModule`, a module shipped as its own mod that `HelloExpanded`
+depends on, proving the third-party module shape (see the wiki's Modules page).
+
 ### Catalogue registry verbs (ruled 2026-09-06)
 
 Every catalogue registry (`ProcessRouteRegistry`, `ProcessJobRegistry`, `BayOccupancyRegistry`,

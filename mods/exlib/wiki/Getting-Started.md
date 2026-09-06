@@ -355,6 +355,12 @@ it) launches the real dedicated server against the built mod, runs the content c
 verify`, and fails on a boot timeout or an `[Error]`/`[Fatal]` log line - the same lane this repo's CI
 runs on every mod, now covering the one you just read.
 
+`samples/HelloModule` is a second sample, alongside `HelloExpanded` rather than in place of it: a
+module shipped as its own mod, depending on exlib the same way `HelloExpanded` does, giving any
+mod's block a greeting through a block behaviour it registers under its own domain. Read it
+alongside [Modules](Modules) if you are extending exlib itself, or another mod built on it, rather
+than shipping gameplay content of your own.
+
 ## 9. Pick the system you need
 
 | You want to... | Read |
