@@ -1,0 +1,14 @@
+{
+  "tools": "0.0.0",
+  "series": ["1.22", "1.21", "1.20"],
+  "mods": {
+    "exlib": { "path": "mods/exlib" },
+    "iiex":  { "path": "mods/iiex" },
+    "siex":  { "path": "mods/siex" }
+  },
+  "samples": {
+    "helloexpanded": { "path": "samples/HelloExpanded", "tests": "samples/HelloExpanded.Tests" },
+    "hellomodule":   { "path": "samples/HelloModule",   "tests": "samples/HelloModule.Tests" }
+  },
+  "tests": ["infra/tools/ExlibVerify.Tests"]
+}

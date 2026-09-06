@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cake.Frosting" Version="6.1.0" />
-    <PackageReference Include="Cake.Json" Version="7.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Cake.Frosting" />
+    <PackageReference Include="Cake.Json" />
+    <PackageReference Include="Newtonsoft.Json" />
     <!-- Pin transitive NuGet.* deps (from Cake.NuGet) to patched 7.3.1 - fixes NU1901 GHSA-g4vj-cjjj-v7hg -->
-    <PackageReference Include="NuGet.Packaging" Version="7.3.1" />
-    <PackageReference Include="NuGet.Protocol" Version="7.3.1" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="NuGet.Protocol" />
   </ItemGroup>
 
   <!-- Resolve the game install the same way the mod builds do: the VINTAGE_STORY env-var override if

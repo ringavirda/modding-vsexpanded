@@ -33,6 +33,9 @@
     </Reference>
   </ItemGroup>
 
+  <!-- This template is instantiated by `dotnet new` outside this repo, where no
+       Directory.Packages.props exists - unlike every other project here, it keeps its own Version
+       attributes. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />

@@ -27,18 +27,12 @@
     <NoWarn>$(NoWarn);CS1591;CS1573;CS0419</NoWarn>
   </PropertyGroup>
 
-  <!-- NuGet pack metadata. Version tracks exlib's own modinfo.json - the two ship in lockstep,
-       and reading rather than duplicating means one release only ever bumps one number. -->
+  <!-- NuGet pack metadata. PackageId and Description stay here (IsPackable is already set above) -
+       the rest (version, authors, urls, license, readme filename, icon, tags, symbols) is shared
+       across the three packable exlib projects and lives in ../Directory.Build.props. -->
   <PropertyGroup>
     <PackageId>ExpandedLib.Testing</PackageId>
-    <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\src\modinfo.json'))</_ModinfoJson>
-    <PackageVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
-    <Authors>fallenstar</Authors>
     <Description>Headless xUnit test harness for ExpandedLib (Vintage Story) - loads the real game assemblies and drives network/block-entity logic under plain dotnet test.</Description>
-    <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -82,11 +76,11 @@
   <ItemGroup>
     <!-- The harness fakes the big VS interfaces (IBlockAccessor, IServerWorldAccessor) by
          wiring an NSubstitute proxy to a stateful in-memory store. -->
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="NSubstitute" />
     <!-- StaticStateCollection's guard reads xUnit's [Collection]/[CollectionDefinition] attributes off
          a test assembly; every consumer of this harness is an xUnit project, so this is not a new
          runtime dependency for anyone who links it. -->
-    <PackageReference Include="xunit.extensibility.core" Version="2.9.2" />
+    <PackageReference Include="xunit.extensibility.core" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,21 +25,16 @@
     <AssetDomain>exlib</AssetDomain>
   </PropertyGroup>
 
-  <!-- NuGet pack metadata. Version is read from modinfo.json rather than duplicated here, so a
-       release only ever bumps one number. The game assemblies above stay References with
-       Private=false - dotnet pack never bundles a Reference, only PackageReference/ProjectReference
-       content or explicit Content/None items, so they are never at risk of ending up in the nupkg. -->
+  <!-- NuGet pack metadata. PackageId, Description and IsPackable stay here - the rest (version,
+       authors, urls, license, readme filename, icon, tags, symbols) is shared across the three
+       packable exlib projects and lives in ../Directory.Build.props. The game assemblies above stay
+       References with Private=false - dotnet pack never bundles a Reference, only
+       PackageReference/ProjectReference content or explicit Content/None items, so they are never
+       at risk of ending up in the nupkg. -->
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>ExpandedLib</PackageId>
-    <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)modinfo.json'))</_ModinfoJson>
-    <PackageVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
-    <Authors>fallenstar</Authors>
     <Description>Shared framework library for the Fallenstar's Expanded mods (Vintage Story).</Description>
-    <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -102,10 +97,20 @@
     </Content>
   </ItemGroup>
 
+  <!-- Doubles as the game's mod icon (CopyToOutputDirectory) and the nupkg icon (Pack/PackagePath -
+       ../Directory.Build.props sets $(PackageIcon)). Kept as None rather than Content: the
+       ExcludeAssetsFromPack target below sets Pack=false on every @(Content) item, and NuGet's own
+       pack targets exclude a packed file by matching its PACKAGE-ROOT NAME against any excluded
+       Content, not by source identity - a Content item here would collide with this file's own
+       nupkg destination name and silently drop the icon (NU5046). -->
   <ItemGroup>
-    <Content Include="modicon.png" Condition="Exists('modicon.png')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None
+      Include="modicon.png"
+      Condition="Exists('modicon.png')"
+      CopyToOutputDirectory="PreserveNewest"
+      Pack="true"
+      PackagePath="modicon.png"
+    />
   </ItemGroup>
 
   <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's

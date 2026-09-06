@@ -35,20 +35,13 @@
     <NoWarn>$(NoWarn);CS1591;CS1573;CS0419</NoWarn>
   </PropertyGroup>
 
-  <!-- NuGet pack metadata. Version is read from exlib's modinfo.json, the same file
-       ExpandedLib.csproj and ExpandedLib.Testing.csproj read, so a release only ever bumps one
-       number. -->
+  <!-- NuGet pack metadata. PackageId, Description and IsPackable stay here - the rest (version,
+       authors, urls, license, readme filename, icon, tags, symbols) is shared across the three
+       packable exlib projects and lives in ../Directory.Build.props. -->
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>ExpandedLib.Industry</PackageId>
-    <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\src\modinfo.json'))</_ModinfoJson>
-    <PackageVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
-    <Authors>fallenstar</Authors>
     <Description>The Fallenstar's Expanded family's domain layer for Vintage Story - pipes, molten metal, mechanical power, metals, heat. Not general-purpose framework code; see ExpandedLib for that.</Description>
-    <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

@@ -341,4 +341,20 @@ link check in `exmod check` clean.
 
 ## Progress
 
-(nothing yet)
+- **Task 1** (2026-09-07): Central package management is live (`Directory.Packages.props` at the
+  root); every in-repo `PackageReference` dropped its `Version` attribute except the dotnet-new
+  template, which keeps its own (commented). `mods/exlib/Directory.Build.props` carries the shared
+  pack metadata for the three packable projects, imports `mods/Directory.Build.props` above it, and
+  reads the release version from `mods/exlib/src/modinfo.json` once. `exlib.slnf` and `exmod.json`
+  created per the Design section. Gate green: `build latest` warning-free, `test latest` all six
+  lanes at baseline (2438/2453/340/2/3/11), `nuget` produced 4 nupkg + 3 snupkg with
+  `ExpandedLib.<ver>.nupkg` carrying README.md, modicon.png, the dll and its xml doc and nothing
+  from `assets/`, `dotnet build exlib.slnf` and `dotnet build VintageStory.sln` both clean.
+  Deviation: `ExpandedLib.csproj`'s own `modicon.png` moved from a `Content` item to a `None` item
+  carrying both `CopyToOutputDirectory` and the pack metadata - the plan only said the icon "packs
+  to the package root," not how to reconcile that with the existing `Content` copy of the same file
+  for the built mod folder. Keeping it `Content` (as before) hit NU5046: the SDK's `_GetPackageFiles`
+  target excludes a packed file by its package-root name against any `Content` item marked
+  `Pack=false` (which `ExcludeAssetsFromPack` sets on every `Content` item), so a `Content`-typed
+  icon collides with itself and NuGet silently drops it. `None` isn't part of that exclusion sweep,
+  so one item does both jobs with no collision.

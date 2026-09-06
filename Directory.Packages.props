@@ -1,0 +1,44 @@
+<Project>
+  <!-- Central package management: every csproj's PackageReference drops its Version attribute and
+       the version moves here, one row per package id, so a bump touches one file instead of every
+       consumer. templates/exlib-tests/YourMod.Tests.csproj is the one exception - a dotnet-new
+       template instantiated outside this repo, where no Directory.Packages.props exists, so it
+       keeps its own Version attributes. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Read once here, the same regex the three packable csprojs use, so their PackageVersion rows
+         below don't repeat the file read three times over. -->
+    <_ExlibModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)mods\exlib\src\modinfo.json'))</_ExlibModinfoJson>
+    <_ExlibReleaseVersion
+      >$([System.Text.RegularExpressions.Regex]::Match($(_ExlibModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_ExlibReleaseVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shared across the five test projects and the harness. -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <!-- StaticStateCollection's guard reads xUnit's [Collection]/[CollectionDefinition] attributes
+         off a test assembly - the harness's own dependency, not a test-runner package. -->
+    <PackageVersion Include="xunit.extensibility.core" Version="2.9.2" />
+
+    <!-- The config/lang source generators; netstandard2.0 only, ships nothing. -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+
+    <!-- infra/CakeBuild. -->
+    <PackageVersion Include="Cake.Frosting" Version="6.1.0" />
+    <PackageVersion Include="Cake.Json" Version="7.0.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <!-- Pin transitive NuGet.* deps (from Cake.NuGet) to patched 7.3.1 - fixes NU1901 GHSA-g4vj-cjjj-v7hg -->
+    <PackageVersion Include="NuGet.Packaging" Version="7.3.1" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.3.1" />
+
+    <!-- The three packable exlib projects reference each other's package identity, not a fixed
+         version: the row tracks exlib's own modinfo.json, the same file the csprojs read today, so
+         a release still bumps one number. -->
+    <PackageVersion Include="ExpandedLib" Version="$(_ExlibReleaseVersion)" />
+    <PackageVersion Include="ExpandedLib.Industry" Version="$(_ExlibReleaseVersion)" />
+    <PackageVersion Include="ExpandedLib.Testing" Version="$(_ExlibReleaseVersion)" />
+  </ItemGroup>
+</Project>
