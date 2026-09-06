@@ -1,30 +1,6 @@
 <Project>
-  <!--
-    ============================================================================================
-    SHARED MOD ASSET GLOBS. Each mod's asset tree lives beside its src/ (mods/<mod>/assets/) - the
-    packaged layout verbatim, so non-code contributors (translators, shape and texture artists)
-    work inside one mod folder and never touch src/. It is a pure MSBuild relocation - invisible to
-    the game, which only cares about the assets/<domain>/... layout INSIDE the packaged mod.
-
-    Here rather than in Directory.Build.props because Link is derived from $(MSBuildProjectDirectory),
-    which the csproj sets before this file is imported: this file is imported after the csproj, so
-    the value is there. (Plain item groups keyed on $(AssetDomain) are fine in props - items are
-    evaluated after every property from both files.)
-
-    The whole tree is packed unconditionally - not one glob per domain - because a mod's assets/
-    folder can hold more than its own domain (iiex's assets/game/ overlay sits beside assets/iiex/,
-    the shared lang override that renames vanilla keys). Guarded on $(AssetDomain) so this is inert
-    for the non-mod projects that also see this file: ExpandedLib.Generators and every test project.
-
-    Link is derived from each file's own path via %(RecursiveDir), not from the domain, so the glob
-    stays one line regardless of how many domain folders a mod's assets/ tree holds. Without it
-    MSBuild flattens these out-of-cone files to the output root instead of assets/<domain>/....
-    ============================================================================================
-  -->
-  <ItemGroup Condition="'$(AssetDomain)' != ''">
-    <Content Include="$(MSBuildProjectDirectory)\..\assets\**\*">
-      <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <!-- GamePath resolution, provisioning, the capability constants, the asset globs and
+       LegacyUsings.cs all ship in the ExpandedLib package (build/ExpandedLib.targets) so a
+       package consumer gets them too; source mode imports the same file. -->
+  <Import Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.targets" />
 </Project>

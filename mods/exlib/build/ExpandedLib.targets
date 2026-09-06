@@ -1,0 +1,230 @@
+<Project>
+  <!--
+    ============================================================================================
+    VERSION MANIFEST, DERIVED FACTS. Shipped in the nupkg (build/ExpandedLib.targets) and imported
+    into every consuming project's targets stage, after its project body - so, unlike
+    ExpandedLib.props, everything here sees $(TargetFramework) and $(AssetDomain).
+
+    Capability-threshold compile constants: GAME_GE_<ver> for every version <= the one being built,
+    so code guards on a CAPABILITY THRESHOLD (#if GAME_GE_1_22) not a raw TFM (#if NET10_0). A
+    threshold stays correct as newer versions appear: 1.23 is also >= 1.22, so a "#if GAME_GE_1_22"
+    current-API path keeps covering it and a "#if !GAME_GE_1_22" legacy shim keeps covering only
+    < 1.22 - including 1.22 itself once it is no longer primary. (Mods are written against the
+    CURRENT API; a shim bridges an OLDER version up to it, so its guard is
+    "version < where-this-API-arrived".)
+    ============================================================================================
+  -->
+  <PropertyGroup Condition="'$(GameVer)' != ''">
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.20'))"
+      >$(DefineConstants);GAME_GE_1_20</DefineConstants>
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.21'))"
+      >$(DefineConstants);GAME_GE_1_21</DefineConstants>
+    <DefineConstants
+      Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(GameVer)', '1.22'))"
+      >$(DefineConstants);GAME_GE_1_22</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Game version stamped into the legacy output modinfo (current keeps the authored value). -->
+  <PropertyGroup>
+    <GameVersion Condition="'$(IsCurrentGame)' != 'true' and '$(GameVer)' != ''"
+      >$(GameVer)</GameVersion>
+  </PropertyGroup>
+
+  <!-- $(ExmodRepoRoot) - where a fresh clone's .game/ lives. The first directory above the project
+       that carries: exmod.json (the manifest names the repo outright); failing that, a .git
+       directory (checked via .git/HEAD - GetDirectoryNameOfFileAbove only tests files, not
+       directories); failing that, a .sln (no exact name to search for, so walked by hand - bounded
+       to six levels, generous for any project depth in this family). Overridable, so a workspace
+       holding several of these repos can point every one of them at one shared .game/; a project
+       with none of the three above it (a lone file dropped somewhere) falls back to its own folder. -->
+  <PropertyGroup Condition="'$(ExmodRepoRoot)' == ''">
+    <_ExmodRootByManifest>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'exmod.json'))</_ExmodRootByManifest>
+    <_ExmodRootByGit Condition="'$(_ExmodRootByManifest)' == ''"
+      >$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '.git/HEAD'))</_ExmodRootByGit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootByManifest)' == '' and '$(_ExmodRootByGit)' == ''">
+    <_ExmodSlnDir0>$(MSBuildProjectDirectory)</_ExmodSlnDir0>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir0)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir0)', '*.sln').Length) != 0">$(_ExmodSlnDir0)</_ExmodRootBySln>
+    <_ExmodSlnDir1 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir0)'))</_ExmodSlnDir1>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir1)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir1)', '*.sln').Length) != 0">$(_ExmodSlnDir1)</_ExmodRootBySln>
+    <_ExmodSlnDir2 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir1)'))</_ExmodSlnDir2>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir2)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir2)', '*.sln').Length) != 0">$(_ExmodSlnDir2)</_ExmodRootBySln>
+    <_ExmodSlnDir3 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir2)'))</_ExmodSlnDir3>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir3)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir3)', '*.sln').Length) != 0">$(_ExmodSlnDir3)</_ExmodRootBySln>
+    <_ExmodSlnDir4 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir3)'))</_ExmodSlnDir4>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir4)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir4)', '*.sln').Length) != 0">$(_ExmodSlnDir4)</_ExmodRootBySln>
+    <_ExmodSlnDir5 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir4)'))</_ExmodSlnDir5>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(_ExmodSlnDir5)' != '' and '$(_ExmodRootBySln)' == ''">
+    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir5)', '*.sln').Length) != 0">$(_ExmodSlnDir5)</_ExmodRootBySln>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ExmodRepoRoot)' == ''">
+    <ExmodRepoRoot Condition="'$(_ExmodRootByManifest)' != ''">$(_ExmodRootByManifest)</ExmodRepoRoot>
+    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootByGit)' != ''">$(_ExmodRootByGit)</ExmodRepoRoot>
+    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootBySln)' != ''">$(_ExmodRootBySln)</ExmodRepoRoot>
+    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == ''">$(MSBuildProjectDirectory)</ExmodRepoRoot>
+  </PropertyGroup>
+
+  <!-- $(GamePath) = the install for THIS TFM. Priority:
+         1. An explicit env-var override (its name is in $(GameInstallEnv)) - used by CI and by anyone
+            pointing the build at an external install.
+         2. Otherwise the in-repo install provisioned into .game/<slug> by scripts/exmod.*, under
+            $(ExmodRepoRoot).
+       Both the env-var name and the slug come from the manifest in ExpandedLib.props, so there are
+       no per-version branches and no machine-specific .env file to maintain. -->
+  <PropertyGroup Condition="'$(GameInstallEnv)' != ''">
+    <!-- The raw env-var value (empty when there's no override): lets the auto-provision target tell an
+         external install (leave alone) from the default in-repo .game/<slug> (safe to populate). -->
+    <_GamePathEnv>$([System.Environment]::GetEnvironmentVariable('$(GameInstallEnv)'))</_GamePathEnv>
+    <GamePath Condition="'$(GamePath)' == ''">$(_GamePathEnv)</GamePath>
+    <GamePath Condition="'$(GamePath)' == '' and '$(GameSlug)' != ''"
+      >$([System.IO.Path]::GetFullPath('$(ExmodRepoRoot)\.game\$(GameSlug)'))</GamePath>
+  </PropertyGroup>
+
+  <!-- Version to auto-provision: the primary tracks the latest patch (pass the major.minor series so
+       provision-game resolves it); the legacy targets pin the series .0 floor. -->
+  <PropertyGroup>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' == 'true'"
+      >$(GameSlug)</_ProvisionVersion>
+    <_ProvisionVersion Condition="'$(IsCurrentGame)' != 'true'"
+      >$(GameVer)</_ProvisionVersion>
+  </PropertyGroup>
+
+  <!-- Expose the install env-var name and the .game/<slug> folder to runtime code (the test harness
+       assembly resolver) so it loads the matching version's assemblies without its own per-TFM #if
+       ladder - resolving the same way the build does (env override first, else the in-repo install). -->
+  <ItemGroup Condition="'$(GameInstallEnv)' != ''">
+    <AssemblyMetadata Include="GameInstallEnv" Value="$(GameInstallEnv)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(GameSlug)' != ''">
+    <AssemblyMetadata Include="GameSlug" Value="$(GameSlug)" />
+  </ItemGroup>
+
+  <!-- The pre-current game APIs have less complete nullable-reference annotations, so passing null
+       to params they accept-but-don't-mark-nullable trips CS8625. Benign cross-version difference;
+       suppress it on the legacy targets only - the current build keeps full nullable checking.
+
+       CS1574 joins it for the same reason: a doc comment citing an API that only exists on the
+       current game version cannot resolve on an older one, and there is no single cref that works
+       across both. The current build keeps the warning, which is where it catches a cref that has
+       gone stale against our own code. -->
+  <PropertyGroup Condition="'$(IsCurrentGame)' != 'true'">
+    <NoWarn>$(NoWarn);CS8625;CS1574</NoWarn>
+  </PropertyGroup>
+
+  <!-- $(ExmodWrapper) - the launcher the auto-provision target calls: scripts/exmod.ps1 on Windows
+       (the one real implementation), scripts/exmod.sh elsewhere (the POSIX launcher, which also
+       bootstraps pwsh when the machine has none). Found by walking up from the project to the first
+       directory that carries it; overridable, for a workspace whose wrapper doesn't sit above the
+       project the usual way. Left empty (not defaulted to the in-repo relative path) when nothing is
+       found, so _AutoProvisionGame has nothing to call and _CheckGamePath below reports the missing
+       install instead of a failed Exec. -->
+  <PropertyGroup Condition="'$(ExmodWrapper)' == ''">
+    <_ExmodWrapperName Condition="$([MSBuild]::IsOSPlatform('Windows'))">scripts/exmod.ps1</_ExmodWrapperName>
+    <_ExmodWrapperName Condition="!$([MSBuild]::IsOSPlatform('Windows'))">scripts/exmod.sh</_ExmodWrapperName>
+    <_ExmodWrapperDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_ExmodWrapperName)'))</_ExmodWrapperDir>
+    <ExmodWrapper Condition="'$(_ExmodWrapperDir)' != ''">$(_ExmodWrapperDir)\$(_ExmodWrapperName)</ExmodWrapper>
+  </PropertyGroup>
+
+  <!-- Auto-provision the SERVER binaries into .game/<slug> when they're missing and no env override is
+       set, so a fresh `dotnet build` / `dotnet test` works seamlessly with no manual step. The playable
+       client is never fetched here - only the launch tasks pull it (provision-game ... -Kind client). -->
+  <Target
+    Name="_AutoProvisionGame"
+    Condition="'$(GameSlug)' != '' and '$(_GamePathEnv)' == '' and '$(ExmodWrapper)' != '' and !Exists('$(GamePath)\VintagestoryAPI.dll')"
+  >
+    <Message
+      Importance="high"
+      Text="Vintage Story $(_ProvisionVersion) not found - provisioning server binaries into .game\$(GameSlug) ..."
+    />
+    <Exec
+      Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="pwsh -NoProfile -ExecutionPolicy Bypass -File &quot;$(ExmodWrapper)&quot; provision game -Version $(_ProvisionVersion) -Kind server"
+    />
+    <Exec
+      Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+      Command="bash &quot;$(ExmodWrapper)&quot; provision game -Version $(_ProvisionVersion) -Kind server"
+    />
+  </Target>
+
+  <!-- Fail clearly (instead of a cryptic CS1705 assembly-version mismatch) if, after the auto-provision
+       attempt, the binaries still aren't there (e.g. offline, no wrapper found, or an env override
+       pointing nowhere). -->
+  <Target
+    Name="_CheckGamePath"
+    BeforeTargets="ResolveAssemblyReferences"
+    DependsOnTargets="_AutoProvisionGame"
+    Condition="'$(GamePath)' != ''"
+  >
+    <Error
+      Condition="!Exists('$(GamePath)\VintagestoryAPI.dll')"
+      Text="Can't find the Vintage Story $(GameVer) install (GamePath='$(GamePath)'). Provision it with 'scripts/exmod.sh provision game -Version $(_ProvisionVersion) -Kind server', or set the $(GameInstallEnv) environment variable to an existing install."
+    />
+  </Target>
+
+  <!--
+    ============================================================================================
+    SHARED MOD ASSET GLOBS. Each mod's asset tree lives beside its src/ (mods/<mod>/assets/), the
+    packaged layout verbatim - a mod's assets/ folder is exactly what its zip carries, so non-code
+    contributors (translators, shape/texture artists) work inside one mod folder and never touch
+    src/. $(ModAssetsRoot) resolves both shapes this family uses: a mod project under
+    mods/<mod>/src/ has its assets/ one level up (the default); a flat project (a sample, or a
+    third party with no src/ split) has it beside the csproj itself.
+
+    The whole tree is packed unconditionally - not one glob per domain - because a mod's assets/
+    folder can hold more than its own domain (iiex's assets/game/ overlay sits beside assets/iiex/,
+    the shared lang override that renames vanilla keys). Guarded on $(AssetDomain) so this is inert
+    for the non-mod projects that also see this file: ExpandedLib.Generators and every test project.
+
+    Link is derived from each file's own path via %(RecursiveDir), not from the domain, so the glob
+    stays one line regardless of how many domain folders a mod's assets/ tree holds. Without it
+    MSBuild flattens these out-of-cone files to the output root instead of assets/<domain>/....
+
+    $(AssetDomain) is also the mod's PRIMARY domain: its lang feed, and the one its own codes use. A
+    mod's assets/ folder can hold more than this one domain, but only the primary domain feeds
+    ExLangKeyGenerator - a second tree in the same folder is either an override of someone else's
+    keys or an absorbed mod's own, and neither should emit typed constants into this mod's
+    {Domain}Lang class.
+    ============================================================================================
+  -->
+  <PropertyGroup>
+    <ModAssetsRoot Condition="'$(ModAssetsRoot)' == '' and Exists('$(MSBuildProjectDirectory)\..\assets')"
+      >$(MSBuildProjectDirectory)\..\assets</ModAssetsRoot>
+    <ModAssetsRoot Condition="'$(ModAssetsRoot)' == ''"
+      >$(MSBuildProjectDirectory)\assets</ModAssetsRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(AssetDomain)' != ''">
+    <Content Include="$(ModAssetsRoot)\**\*">
+      <Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <AdditionalFiles Include="$(ModAssetsRoot)\$(AssetDomain)\lang\en.json" />
+  </ItemGroup>
+
+  <!-- One shared legacy-usings shim for every project that compiles mod code: the five mod projects,
+       all of which set $(AssetDomain), and ExpandedLib.Industry, which is mod code in a second
+       assembly and deliberately sets none (exlib's own project already globs the assets they share,
+       and setting it here would ship them twice). On the legacy TFMs it pulls exlib's Legacy
+       namespace into scope assembly-wide, and it compiles away on the current TFM. Linked here so
+       the projects share one file instead of per-project copies. -->
+  <ItemGroup
+    Condition="'$(AssetDomain)' != '' or '$(MSBuildProjectName)' == 'ExpandedLib.Industry'"
+  >
+    <Compile Include="$(MSBuildThisFileDirectory)LegacyUsings.cs">
+      <Link>LegacyUsings.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

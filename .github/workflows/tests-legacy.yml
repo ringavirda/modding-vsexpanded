@@ -16,8 +16,8 @@ on:
 # resolves assemblies from at runtime. No coverage gate here - the gate floors track the current
 # build (see tests.yml).
 #
-# Adding a game version means a row HERE, in the mods/Directory.Build.props manifest (CI YAML can't
-# read MSBuild), in $GameTfms in scripts/exmod.ps1, and in CakeBuild's GameTargets.
+# Adding a game version means a row HERE, in the mods/exlib/build/ExpandedLib.props manifest (CI
+# YAML can't read MSBuild), in $GameTfms in scripts/exmod.ps1, and in CakeBuild's GameTargets.
 
 jobs:
   test:
@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       # The .0 of each legacy series - the floor the mods stay source-compatible with. Keep in sync
-      # with the manifest in mods/Directory.Build.props.
+      # with the manifest in mods/exlib/build/ExpandedLib.props.
       matrix:
         include:
           - game: "1.21.0"

@@ -41,6 +41,18 @@
     <None Include="../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <!-- The shared build plumbing - imported from source by mods/Directory.Build.props/.targets -
+       ships in the package too, at the NuGet convention path for a package's own props/targets
+       (build/<PackageId>.props|targets), so a consumer that only references the package still gets
+       GamePath resolution, provisioning, the asset globs and LegacyUsings.cs. None rather than
+       Content: ExcludeAssetsFromPack below only sets Pack=false on @(Content), so these pack
+       untouched. -->
+  <ItemGroup>
+    <None Include="../build/ExpandedLib.props" Pack="true" PackagePath="build/" />
+    <None Include="../build/ExpandedLib.targets" Pack="true" PackagePath="build/" />
+    <None Include="../build/LegacyUsings.cs" Pack="true" PackagePath="build/" />
+  </ItemGroup>
+
   <!-- The shared glob in ../../Directory.Build.targets marks this mod's assets/modinfo/modicon as
        Content so the game's Mods/mod folder gets them; dotnet pack packs every Content item into
        the nupkg by default, which would ship the whole assets tree alongside the dll. The nupkg is

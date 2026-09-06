@@ -1,4 +1,4 @@
-// Shared by every mod project (linked in via Directory.Build.props, keyed on $(AssetDomain)).
+// Shared by every mod project (linked in via ExpandedLib.targets, keyed on $(AssetDomain)).
 // On the legacy target frameworks, bring exlib's LegacyApi/LegacyAnimUtil extension members
 // into scope across the assembly so the mod code keeps using the 1.22 API shapes unchanged.
 // Absent on the current version, where the real game members are used.

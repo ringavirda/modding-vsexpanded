@@ -61,4 +61,9 @@
       <Private>true</Private>
     </Reference>
   </ItemGroup>
+  <!-- Explicit import: GamePath (used above via HintPath) lives in ExpandedLib.targets,
+       imported after the project body - the mods/Directory.Build.props import above only
+       carries ExpandedLib.props (the props half), and this project sits outside mods/, so
+       the auto-imported mods/Directory.Build.targets never reaches it either. -->
+  <Import Project="../../../mods/exlib/build/ExpandedLib.targets" />
 </Project>

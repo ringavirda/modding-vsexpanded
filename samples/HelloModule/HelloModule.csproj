@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- samples/ sits outside mods/, so it does not inherit ../../mods/Directory.Build.props the way
-       every mod project does automatically (MSBuild only walks up from a project's own folder). A
-       real third-party mod has no such file at all - see the wiki's Getting-Started for the
-       standalone form; this import is the one thing here that is in-repo convenience only. -->
-  <Import Project="../../mods/Directory.Build.props" />
+  <!-- samples/ sits outside mods/, so it does not inherit mods/Directory.Build.props the way every
+       mod project does automatically (MSBuild only walks up from a project's own folder). Import
+       the shared build files directly instead - the props here, the targets at the bottom of this
+       file - which is exactly what a third-party mod's own project gets from the ExpandedLib
+       package; see the wiki's Getting-Started for the standalone form. -->
+  <Import Project="../../mods/exlib/build/ExpandedLib.props" />
 
   <PropertyGroup>
     <!-- Primary build is the current game version, single-target; the legacy lanes buy nothing for
@@ -61,10 +62,13 @@
     </Content>
   </ItemGroup>
 
-  <!-- A mod project under mods/<mod>/src/ gets these two from the shared globs in
-       ../../mods/Directory.Build.props and .targets (assets/ sits beside src/, one level up). This
-       project's assets/ is a direct sibling of the csproj instead, so the glob and the lang feed are
-       written out by hand rather than borrowed. -->
+  <!-- Imported last so the properties it needs from the project body ($(TargetFramework),
+       $(AssetDomain) - unset here, so its asset globs stay inert) are already evaluated; see
+       ExpandedLib.targets for what this pulls in (GamePath, provisioning, the capability
+       constants). This project carries no AssetDomain of its own, so its assets/ (a direct sibling
+       of the csproj, not one level up under src/) is still globbed by hand below. -->
+  <Import Project="../../mods/exlib/build/ExpandedLib.targets" />
+
   <ItemGroup>
     <Content Include="assets/**/*">
       <Link>assets/%(RecursiveDir)%(Filename)%(Extension)</Link>

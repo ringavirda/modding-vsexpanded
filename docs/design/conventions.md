@@ -247,6 +247,7 @@ activity, and a machine mod needs about six in total.
 | `Helpers/` | `ExpandedLib.Helpers` | everything content-neutral that saves a few lines: orientation, meshes, inventories, units, rendering |
 | `Legacy/` | `ExpandedLib.Legacy` | supporting 1.20 and 1.21 from one source tree |
 | `industry/<Pack>/` | `ExpandedLib.Industry.<Pack>` | reusing the family's content layer: pipes, molten, mechanical power, metals, heat. Its own project beside `src/`, shipping `exlib.industry.dll` inside the same mod folder |
+| `build/` | *(none)* | shipping the MSBuild plumbing itself: `ExpandedLib.props`/`.targets` and `LegacyUsings.cs`, packed under `build/` in the nupkg so `dotnet pack`'s own convention wires them into a consuming project with no manual `<Import>` |
 
 Rules with teeth: a folder that would hold one file is not a folder (the file goes beside its
 subject); a sub-folder appears at four files; a type's folder is decided by the activity that reaches

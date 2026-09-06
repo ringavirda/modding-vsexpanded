@@ -358,3 +358,54 @@ link check in `exmod check` clean.
   `Pack=false` (which `ExcludeAssetsFromPack` sets on every `Content` item), so a `Content`-typed
   icon collides with itself and NuGet silently drops it. `None` isn't part of that exclusion sweep,
   so one item does both jobs with no collision.
+
+- **Task 2** (2026-09-07): `mods/exlib/build/ExpandedLib.props`, `.targets` and `LegacyUsings.cs`
+  (moved from `mods/LegacyUsings.cs`) ship the plumbing; `mods/Directory.Build.props` shrinks to the
+  version-manifest defaults, the test-only settings and one `<Import>` of `ExpandedLib.props`;
+  `mods/Directory.Build.targets` is one `<Import>` of `ExpandedLib.targets`. `ExmodRepoRoot` walks up
+  for `exmod.json`, then `.git` (via `.git/HEAD`, since `GetDirectoryNameOfFileAbove` only tests
+  files), then a `.sln` (hand-walked, six levels - no exact name to search a glob for); falls back to
+  the project's own folder when none are found. `ExmodWrapper` walks up for `scripts/exmod.ps1`
+  (Windows) or `scripts/exmod.sh` (elsewhere); `_AutoProvisionGame` calls it, and is a no-op when
+  none is found, so `_CheckGamePath` reports the missing install with the same message as before.
+  `ModAssetsRoot` prefers `../assets` (the family's per-mod layout) and falls back to `./assets`
+  (the sample's flat layout). `ExpandedLib.csproj` packs `build/**` as three `None` items
+  (`Pack="true" PackagePath="build/"`); the two samples import `ExpandedLib.props`/`.targets`
+  directly (top/bottom) instead of `mods/Directory.Build.props`, since they sit outside `mods/` and
+  nothing auto-imports for them; `docs/design/conventions.md`'s exlib layout table gained a `build/`
+  row.
+
+  Gate green: `build latest` and `build all` warning-free (the latter modulo the pre-existing net7
+  MSB3277 conflicts); `test latest` at baseline (2439/2453/340/2/4/11, matching this task's stated
+  counts) and `test all` (twelve lanes) both green; `pack`
+  produced the three mod zips with `assets/<domain>/` inside and the legacy zips stamped with their
+  game version; `unzip -l dist/nuget/ExpandedLib.0.7.3.nupkg` shows `build/ExpandedLib.props`,
+  `build/ExpandedLib.targets`, `build/LegacyUsings.cs` and `lib/net10.0/exlib.xml`; the throwaway
+  copy of `HelloExpanded` under `/tmp` (no `exmod.json`/`.git`/`.sln` above it there) built clean and,
+  with `-p:ExmodRepoRoot=<repo>` set explicitly, resolved `GamePath` under this repo's `.game/1.22`,
+  `GAME_GE_1_22` in `DefineConstants`, the asset `Content` linked under `assets/`, and the en.json
+  `AdditionalFiles` feed - the explicit override is the right answer for a /tmp copy of a repo
+  project, since nothing under /tmp legitimately IS this repo; a real third party gets the same
+  result for free from the markers above its own project.
+
+  Deviations, both found by the gate rather than foreseeable from the plan text:
+  1. `GamePath` moving into `ExpandedLib.targets` broke every project outside `mods/` that only
+     imported `mods/Directory.Build.props` for it and never imported `.targets`
+     (`samples/HelloExpanded.Tests`, `samples/HelloModule.Tests`, `infra/tools/ExlibVerify` -
+     `mods/Directory.Build.targets` never auto-imports for them, same reason the two sample mod
+     projects need the explicit import). Fixed by adding one explicit
+     `<Import Project="…/ExpandedLib.targets" />` at the bottom of each (keeping their existing
+     `Directory.Build.props` import for the test-only settings that only live there), rather than
+     switching them to the two build files directly - `ExlibVerify.Tests` and both `.Tests` samples
+     still need `RunSettingsFilePath`/`xunit.runner.json`/the Legacy `Using`, which stayed in
+     `Directory.Build.props` per the plan and aren't in either build file.
+  2. The "Assembly identity and XML docs" block (in the Design section's `.targets` list) silently
+     stopped producing `exlib.xml` when moved there: `Microsoft.NET.Sdk.BeforeCommon.targets`
+     computes `$(_DocumentationFileProduced)` from `$(GenerateDocumentationFile)` as a plain
+     (non-`Target`) property near the top of `Microsoft.Common.CurrentVersion.targets` - evaluated
+     before `Directory.Build.targets` (and so this package's `.targets` half) is ever imported, so
+     setting it there arrives one static-evaluation pass too late and the SDK has already locked the
+     doc-file copy off, even though `Csc` still writes the `.xml` to `obj/`. The block depends only
+     on `Exists(modinfo.json)`, not `$(TargetFramework)`/`$(AssetDomain)`, so it moved to
+     `ExpandedLib.props` instead of the `.targets` bullet list's literal placement - same fix class
+     as the per-TFM manifest rows already living in props for the same early-evaluation reason.
