@@ -46,9 +46,11 @@ public class DefinitionContributorTests : IDisposable {
       throw new InvalidOperationException("boom");
   }
 
+#pragma warning disable CS9113 // x only needs to exist, to remove the parameterless constructor
   private sealed class NoCtorContributor(int x) : IExDefinitionContributor {
     public void Contribute(ICoreAPI api) { }
   }
+#pragma warning restore CS9113
 
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();

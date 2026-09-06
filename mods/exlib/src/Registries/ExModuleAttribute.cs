@@ -21,8 +21,14 @@ public sealed class ExModuleAttribute(string id) : Attribute {
   /// framework itself; a mod hosting its own modules sets its own id.</summary>
   public string Host { get; set; } = "exlib";
 
+  /// <summary>The Vintage Story mod id that ships this assembly. Defaults to <see cref="Id"/>; a
+  /// framework module shipped inside another mod's folder (Industry, inside exlib's) sets this to
+  /// that mod's id instead, so <see cref="ExModules.For"/> can tell "not yet enabled this world"
+  /// from "no longer part of the process".</summary>
+  public string Mod { get; set; } = id;
+
   /// <summary>Module ids this one runs after, within the same host. A missing or cyclic requirement
-  /// excludes the module from its host's ordered set; see <see cref="ExModules.Order"/>.</summary>
+  /// excludes the module from its host's ordered set; see <see cref="ExModules.For"/>.</summary>
   public string[] Requires { get; set; } = [];
 
   /// <summary>When true, the host patches this assembly's uncategorised <c>[HarmonyPatch]</c>

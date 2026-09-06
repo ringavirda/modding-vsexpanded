@@ -32,7 +32,6 @@ public class ExModuleModSystemTests {
   [Fact]
   public void StartPre_wires_loggers_and_sets_module_flags() {
     _ = typeof(IndustryModule);
-    ExModules.Reset();
     var world = new TestWorld();
     var system = NewSystem(FakeMod("exlib"));
 
@@ -46,7 +45,6 @@ public class ExModuleModSystemTests {
   [Fact]
   public void Phases_drive_the_framework_modules() {
     _ = typeof(IndustryModule);
-    ExModules.Reset();
     var world = new TestWorld();
     var system = NewSystem(FakeMod("exlib"));
 

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using ExpandedLib.Definitions;
 using ExpandedLib.Structures;
 using ExpandedLib.Industry;
 using ExpandedLib.Industry.Molten;
@@ -20,7 +22,20 @@ namespace ExpandedLib.Tests;
 /// the class registration (<c>RegisterAll</c>) and the code-first builder's type-safe <c>Class&lt;T&gt;()</c>.
 /// These pin the exact key it produces for each attribute shape so the two consumers can never desync.
 /// </summary>
-public class RegistrationKeyTests {
+public class RegistrationKeyTests : IDisposable {
+  // RegisterAll_keys_under_the_assemblys_declared_domain_not_the_mod registers Industry's assembly
+  // and discovers IndustryModule into ExDefinitions.Contributors; both are process-wide and must
+  // not leak into whatever test runs next.
+  public void Dispose() {
+    var field = typeof(EntityRegistry).GetField(
+      "_domainByAssembly",
+      BindingFlags.NonPublic | BindingFlags.Static
+    )!;
+    var map = (Dictionary<Assembly, string>)field.GetValue(null)!;
+    map.Remove(typeof(IndustryModule).Assembly);
+    ExDefinitions.Clear();
+  }
+
   [BlockRegister]
   private sealed class ConventionBlock : Block { }
 

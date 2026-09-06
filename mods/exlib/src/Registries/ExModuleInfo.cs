@@ -15,6 +15,10 @@ public sealed class ExModuleInfo {
   /// <summary>The mod id whose lifecycle drives this module.</summary>
   public required string Host { get; init; }
 
+  /// <summary>The Vintage Story mod id that ships this assembly; <see cref="ExModules.For"/> keeps
+  /// only the modules whose <see cref="Mod"/> is enabled on the world it is asked about.</summary>
+  public required string Mod { get; init; }
+
   /// <summary>Module ids this one runs after, within the same host.</summary>
   public required IReadOnlyList<string> Requires { get; init; }
 

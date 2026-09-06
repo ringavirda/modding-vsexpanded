@@ -19,13 +19,14 @@ public sealed class ExModuleHost {
   private readonly ExModuleSet _set;
   private readonly List<(ExModuleInfo Info, List<IExModule> Instances)> _resolved;
 
-  /// <summary>Builds the host for <paramref name="mod"/> from its discovered module set (see
-  /// <see cref="ExModules.For"/>), instantiating every entry point. A constructor that throws is
-  /// logged through <paramref name="mod"/>'s logger and that entry point is left out.</summary>
-  public ExModuleHost(Mod mod)
-    : this(mod, ExModules.For(mod.Info.ModID)) { }
+  /// <summary>Builds the host for <paramref name="mod"/> from its discovered, enabled module set
+  /// (see <see cref="ExModules.For"/>) against <paramref name="api"/>'s world, instantiating every
+  /// entry point. A constructor that throws is logged through <paramref name="mod"/>'s logger and
+  /// that entry point is left out.</summary>
+  public ExModuleHost(Mod mod, ICoreAPI api)
+    : this(mod, ExModules.For(api, mod.Info.ModID)) { }
 
-  /// <summary>As <see cref="ExModuleHost(Mod)"/>, against a hand-built <paramref name="set"/> rather
+  /// <summary>As <see cref="ExModuleHost(Mod, ICoreAPI)"/>, against a hand-built <paramref name="set"/> rather
   /// than discovery. For tests.</summary>
   internal ExModuleHost(Mod mod, ExModuleSet set) {
     _mod = mod;

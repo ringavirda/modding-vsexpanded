@@ -16,8 +16,8 @@ namespace ExpandedLib.Registries;
 /// </summary>
 public static class EntityRegistry {
   /// <summary>Log sink for the cross-mod domain-fallback warning (see <see cref="DomainOf"/>); set
-  /// once by <c>ExpandedLibModSystem.Start</c>. Null before startup and in tests that never wire it,
-  /// in which case the warning is silently skipped.</summary>
+  /// once by <see cref="ExModuleModSystem.StartPre"/> (0.03). Null before startup and in tests that
+  /// never wire it, in which case the warning is silently skipped.</summary>
   internal static ILogger? Logger { get; set; }
 
   /// <summary>

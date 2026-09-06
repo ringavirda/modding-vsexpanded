@@ -8,10 +8,12 @@ namespace ExpandedLib.Testing;
 /// <summary>
 /// A real (non-substitute) <see cref="IModLoader"/>: <see cref="Add"/> registers an enabled mod by
 /// id and version, <see cref="Register"/> registers a live <see cref="ModSystem"/> so
-/// <c>GetModSystem&lt;T&gt;</c> resolves it. Answers <see cref="IsModEnabled"/> and the three
+/// <c>GetModSystem&lt;T&gt;</c> resolves it. <see cref="IsModEnabled"/> and its three
 /// reflection-probed aliases (<see cref="IsModLoaded"/>, <see cref="HasMod"/>,
-/// <see cref="HasModId"/>) some mods call instead of the interface member, on the theory that it
-/// might not exist on an older API - all four agree here.
+/// <see cref="HasModId"/>) report every mod id as enabled: a fake world has no real mod list to
+/// consult (unlike <see cref="GetMod"/>/<see cref="Mods"/>, which only ever see what <see cref="Add"/>
+/// registered), so a caller that just wants to know "would this mod's stuff run" gets yes by
+/// default rather than a false negative for a mod nobody thought to add.
 /// </summary>
 public sealed class TestModLoader : IModLoader {
   private readonly Dictionary<string, Mod> _mods = new();
@@ -56,7 +58,7 @@ public sealed class TestModLoader : IModLoader {
 
   public Mod? GetMod(string modID) => _mods.GetValueOrDefault(modID);
 
-  public bool IsModEnabled(string modID) => _mods.ContainsKey(modID);
+  public bool IsModEnabled(string modID) => true;
 
   public ModSystem? GetModSystem(string fullName) =>
     _systems.FirstOrDefault(s => s.GetType().FullName == fullName);

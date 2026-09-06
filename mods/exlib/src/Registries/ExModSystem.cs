@@ -32,13 +32,14 @@ public abstract class ExModSystem : ModSystem {
   // than a previous world's.
   private ExModuleHost? _modules;
 
-  /// <summary>This mod's own modules (see <see cref="ExModules.For"/>), built on first use.</summary>
-  private ExModuleHost Modules => _modules ??= new ExModuleHost(Mod);
+  /// <summary>This mod's own modules (see <see cref="ExModules.For"/>), built against whichever
+  /// phase's <paramref name="api"/> runs first.</summary>
+  private ExModuleHost Modules(ICoreAPI api) => _modules ??= new ExModuleHost(Mod, api);
 
   /// <summary>Runs every own module's <see cref="IExModule.StartPre"/>, then calls
   /// <see cref="OnStartPre"/>. A mod with no modules of its own only gets the hook.</summary>
   public override void StartPre(ICoreAPI api) {
-    Modules.StartPre(api);
+    Modules(api).StartPre(api);
     OnStartPre(api);
   }
 
@@ -52,14 +53,14 @@ public abstract class ExModSystem : ModSystem {
     EntityRegistry.RegisterAll(api, Mod, Assembly);
     if (PatchHarmony)
       ExHarmony.PatchOnce(Mod, Assembly);
-    Modules.Start(api);
+    Modules(api).Start(api);
     OnStart(api);
   }
 
   /// <summary>Runs every own module's <see cref="IExModule.AssetsLoaded"/>, then calls
   /// <see cref="OnAssetsLoaded"/>.</summary>
   public override void AssetsLoaded(ICoreAPI api) {
-    Modules.AssetsLoaded(api);
+    Modules(api).AssetsLoaded(api);
     OnAssetsLoaded(api);
   }
 
@@ -69,7 +70,7 @@ public abstract class ExModSystem : ModSystem {
   /// <see cref="OnStartServerSide"/>.</summary>
   public override void StartServerSide(ICoreServerAPI api) {
     CommandRegistry.RegisterAll(api, Mod, Assembly);
-    Modules.StartServerSide(api);
+    Modules(api).StartServerSide(api);
     OnStartServerSide(api);
   }
 
@@ -81,7 +82,7 @@ public abstract class ExModSystem : ModSystem {
   public override void StartClientSide(ICoreClientAPI api) {
     PreferenceRegistry.RegisterAll(api, Mod, Assembly);
     CommandRegistry.RegisterAll(api, Mod, Assembly);
-    Modules.StartClientSide(api);
+    Modules(api).StartClientSide(api);
     OnStartClientSide(api);
   }
 
@@ -90,7 +91,7 @@ public abstract class ExModSystem : ModSystem {
   /// (<see cref="Start"/>/<see cref="StartServerSide"/>/<see cref="StartClientSide"/>); this hook is
   /// for validation against the now-final catalogues.</summary>
   public override void AssetsFinalize(ICoreAPI api) {
-    Modules.AssetsFinalize(api);
+    Modules(api).AssetsFinalize(api);
     OnAssetsFinalize(api);
   }
 

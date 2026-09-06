@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using ExpandedLib.Registries;
@@ -45,8 +46,8 @@ public static class ExDefinitions {
   private static readonly List<Type> _contributors = [];
 
   /// <summary>Log sink for exlib's own definition diagnostics (the re-registration notification); set
-  /// once by <see cref="ExDefinitionModSystem"/> or <see cref="ExpandedLibModSystem.Start"/>. Null
-  /// before startup and in tests that never wire it, in which case diagnostics are silently skipped.
+  /// once by <see cref="Registries.ExModuleModSystem.StartPre"/> (0.03). Null before startup and in
+  /// tests that never wire it, in which case diagnostics are silently skipped.
   /// </summary>
   public static ILogger? Logger { get; set; }
 
@@ -108,7 +109,7 @@ public static class ExDefinitions {
   public static IReadOnlyCollection<ExRecipeDef> Recipes => _recipes.Values;
 
   /// <summary>Every discovered <see cref="IExDefinitionContributor"/> type, in discovery order.</summary>
-  public static IReadOnlyList<Type> Contributors => _contributors;
+  public static IReadOnlyList<Type> Contributors => _contributors.AsReadOnly();
 
   /// <summary>Drops every registered definition (used by tests to isolate the static registry).</summary>
   public static void Clear() {
@@ -188,6 +189,9 @@ public static class ExDefinitions {
   /// passes, so a contributor needs no separate registration call. One without a parameterless
   /// constructor is logged through <see cref="Logger"/> as a warning naming the type and skipped.
   /// </summary>
+  /// <remarks>Plumbing with one caller (<see cref="Registries.EntityRegistry.RegisterAll"/>);
+  /// public because the harness needs it to seed a test's own contributors.</remarks>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   public static void DiscoverContributors(Assembly asm) {
     foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
       if (!typeof(IExDefinitionContributor).IsAssignableFrom(type))
@@ -209,8 +213,12 @@ public static class ExDefinitions {
   /// order, each isolated (a throw is logged through <paramref name="api"/>'s logger naming the type;
   /// the rest still run). Called by <see cref="ExDefinitionModSystem.AssetsLoaded"/> right before
   /// injection, after every mod's and module's <c>Start</c> has registered its contributors, so a
-  /// contribution depending on loaded assets is always in time.
+  /// contribution depending on loaded assets is always in time. Server-only - the caller's own
+  /// side check gates this, since the definition system does not run client-side.
   /// </summary>
+  /// <remarks>Plumbing with one caller (<see cref="ExDefinitionModSystem.AssetsLoaded"/>); public
+  /// because the harness needs it to replay contributors against real loaded assets.</remarks>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   public static void RunContributors(ICoreAPI api) {
     int ran = 0;
     foreach (Type type in _contributors) {

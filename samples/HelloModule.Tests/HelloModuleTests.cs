@@ -22,7 +22,9 @@ public class HelloModuleTests {
 
   [Fact]
   public void Is_discovered_as_a_framework_module() {
-    ExModuleSet set = ExModules.For("exlib");
+    var world = new TestWorld();
+
+    ExModuleSet set = ExModules.For(world.Api, "exlib");
 
     ExModuleInfo? info = set.Modules.FirstOrDefault(m => m.Id == "hellomodule");
 
@@ -48,7 +50,7 @@ public class HelloModuleTests {
   [Fact]
   public void Registers_its_behaviour_under_its_own_domain() {
     var world = new TestWorld();
-    var host = new ExModuleHost(FakeMod("exlib"));
+    var host = new ExModuleHost(FakeMod("exlib"), world.Api);
 
     host.Start(world.Api);
 
@@ -58,5 +60,15 @@ public class HelloModuleTests {
         "hellomodule.BlockBehaviorGreeter",
         typeof(BlockBehaviorGreeter)
       );
+  }
+
+  [Fact]
+  public void Resolves_its_behaviour_key_across_assemblies() {
+    // BlockHello's def names this behaviour through Class<BlockBehaviorGreeter>() from
+    // HelloExpanded's own domain; it must still resolve to hellomodule's, not the caller's.
+    Assert.Equal(
+      "hellomodule.BlockBehaviorGreeter",
+      EntityRegistry.KeyFor("helloexpanded", typeof(BlockBehaviorGreeter))
+    );
   }
 }

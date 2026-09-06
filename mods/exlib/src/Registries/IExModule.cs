@@ -7,9 +7,13 @@ namespace ExpandedLib.Registries;
 /// <summary>
 /// An entry point of a module: an assembly carrying <c>[assembly: ExModule]</c>. The host names in
 /// <c>Host</c> runs it through the phases of its own <see cref="ModSystem"/>, in the order
-/// <see cref="ExModules.Order"/> gives the module among the rest of the host's, after registering the
+/// <see cref="ExModules.For"/> gives the module among the rest of the host's, after registering the
 /// assembly's classes for it. Every method has an empty default, so a module overrides only the
-/// phases it needs. See the wiki's Modules page.
+/// phases it needs. Phase order per module: <see cref="StartPre"/>, <see cref="Start"/>,
+/// <see cref="AssetsLoaded"/>, <see cref="AssetsFinalize"/>, then
+/// <see cref="StartServerSide"/>/<see cref="StartClientSide"/> for the running side, then
+/// <see cref="Dispose"/> - the same order the engine calls a <see cref="ModSystem"/>'s own hooks in.
+/// See the wiki's Modules page.
 /// </summary>
 public interface IExModule {
   /// <summary>Runs in the host's <c>StartPre</c>, before any registration.</summary>

@@ -603,3 +603,29 @@ the check); the wiki link check that `exmod check` runs is clean.
   one greeting each) rather than one `default.json` with two entries - `GetMany<GreetingDef>`
   deserializes one file to one object, so a single file cannot hold two flat `GreetingDef` entries;
   confirmed by hand against the shipped `AssetCatalogueLoader`/`Asset.ToObject` behaviour.
+- Task 4b (the review findings) done 2026-09-07. Gate green. F3 first: `ExModuleAttribute.Mod`
+  added (default the module id, Industry declares `Mod = "exlib"`); `ExModules.For(ICoreAPI,
+  string)` and `ExModules.Enabled(ICoreAPI)`/`IsLoaded(ICoreAPI, string)` replace the string-only
+  overloads and `Reset()`; discovery memoises while `AppDomain.CurrentDomain.GetAssemblies().Length`
+  is unchanged and rescans otherwise; a disabled mod's module is skipped and logged once per `For`
+  call. `TestModLoader.IsModEnabled` now reports every id enabled (no real mod list to consult; see
+  its doc and `TestWorld.cs`'s `BuildApi`) - `DoublesTests`' two `IsModEnabled` cases were rewritten
+  to match rather than left asserting the old, now-false behaviour. `ExModuleHost(Mod, ICoreAPI)`
+  replaces the single-argument constructor; both drivers build the host lazily against whichever
+  phase's api runs first. F1/F2/F4-F13 applied as written (`ExDefinitions.Clear()` added to
+  `ExModuleHostTests`/`ExModSystemTests`/`RegistrationKeyTests`'s `Dispose`; duplicate-id detection
+  moved into `Order`, ids `OrdinalIgnoreCase` throughout `ExModules`; `ExModuleHostTests`' phase
+  test renamed `Runs_every_phase`, reordered to the engine's own AssetsLoaded/AssetsFinalize-before-
+  side-hooks sequence, and gained a `PreferenceRegister` assertion; `RecordingModule.Start`'s
+  assertion now records into a static `ObservedKey` checked from the test body, since the host's
+  isolation was swallowing it). F14: `HelloModuleTests` gained
+  `Resolves_its_behaviour_key_across_assemblies`; `AssetLoadingTests` asserts BlockHello's own def
+  (not the resolved `Block.BlockBehaviors`, which this isolated harness leaves empty regardless of
+  registration - see the test's comment) names `hellomodule.BlockBehaviorGreeter`. Deviation: the
+  pre-existing `DefinitionContributorTests.NoCtorContributor` unused-parameter warning (CS9113,
+  predates this task) was silenced with the file's own `#pragma`/`#pragma restore` idiom so `dotnet
+  build mods/exlib/tests -v q` is zero-warning as the gate requires. `test latest`: ExpandedLib.Tests
+  2439 (+1, F10's duplicate-id test), IronIndustryExpanded.Tests 2453, SteelIndustryExpanded.Tests
+  340, HelloExpanded.Tests 2, HelloModule.Tests 4 (+1, F14), ExlibVerify.Tests 11. Smoke: `[exlib]
+  modules hosted by exlib: hellomodule, industry` and `[exlib] Injected 87 code-first item
+  definition(s).`, verified clean.

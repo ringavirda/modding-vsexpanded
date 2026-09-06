@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ExpandedLib.Definitions;
 using ExpandedLib.Registries;
 using ExpandedLib.Testing;
 using HarmonyLib;
@@ -25,7 +26,8 @@ public class ExModSystemTests : IDisposable {
   // (EntityRegistry's own domain-fallback cache), so every test here would otherwise leave this
   // shared test assembly pointing at a throwaway test mod id for the rest of the run - breaking
   // any other test's EntityRegistry.KeyFor/DomainOf call against it. Reset on dispose, the same way
-  // ExHarmonyTests resets the Harmony patches it applies.
+  // ExHarmonyTests resets the Harmony patches it applies. RegisterAll also discovers this
+  // assembly's contributor-shaped types into ExDefinitions.Contributors, cleared here too.
   public void Dispose() {
     var field = typeof(EntityRegistry).GetField(
       "_domainByAssembly",
@@ -33,6 +35,7 @@ public class ExModSystemTests : IDisposable {
     )!;
     var map = (Dictionary<Assembly, string>)field.GetValue(null)!;
     map.Remove(typeof(ExModSystemTests).Assembly);
+    ExDefinitions.Clear();
   }
   [BlockRegister]
   private sealed class TestBlock : Block { }

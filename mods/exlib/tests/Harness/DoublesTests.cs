@@ -68,25 +68,27 @@ public class DoublesTests {
   #region TestModLoader
 
   [Fact]
-  public void IsModEnabled_and_every_alias_agree() {
+  public void IsModEnabled_and_every_alias_report_every_id_enabled() {
     using var world = new TestWorld();
 
+    // No real mod list to consult, so any id - added or not - reports enabled; see TestModLoader's
+    // own doc.
     Assert.True(world.Api.ModLoader.IsModEnabled("exlib"));
     Assert.True(world.Mods.IsModLoaded("exlib"));
     Assert.True(world.Mods.HasMod("exlib"));
     Assert.True(world.Mods.HasModId("exlib"));
 
-    Assert.False(world.Api.ModLoader.IsModEnabled("nonexistent"));
-    Assert.False(world.Mods.IsModLoaded("nonexistent"));
+    Assert.True(world.Api.ModLoader.IsModEnabled("nonexistent"));
+    Assert.True(world.Mods.IsModLoaded("nonexistent"));
   }
 
   [Fact]
-  public void A_mod_added_disabled_is_absent_from_every_check() {
+  public void A_mod_added_disabled_is_absent_from_GetMod_but_still_reports_enabled() {
     using var world = new TestWorld();
 
     world.Mods.Add("offmod", "1.0.0", enabled: false);
 
-    Assert.False(world.Api.ModLoader.IsModEnabled("offmod"));
+    Assert.True(world.Api.ModLoader.IsModEnabled("offmod"));
     Assert.Null(world.Api.ModLoader.GetMod("offmod"));
   }
 

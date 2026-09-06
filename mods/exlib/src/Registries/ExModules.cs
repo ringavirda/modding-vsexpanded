@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Vintagestory.API.Common;
 
 namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Discovers every module in the process - an assembly carrying <c>[assembly: ExModule]</c> - and
-/// orders each host's modules by <c>Requires</c>.
+/// orders each host's modules by <c>Requires</c>, keeping only the ones whose shipping mod is
+/// enabled on the world being asked about.
 /// </summary>
 /// <remarks>
 /// Discovery reads the assemblies the runtime has already loaded rather than any mod folder, so it
@@ -15,75 +17,96 @@ namespace ExpandedLib.Registries;
 /// every assembly in a mod folder while looking for its mod systems. See the wiki's Modules page.
 /// </remarks>
 public static class ExModules {
-  // Discovered once per process; the set of loaded assemblies only grows, and one appearing
-  // mid-lifecycle would be a mod folder the game has already finished inspecting.
+  // Memoised while AppDomain.CurrentDomain.GetAssemblies().Length is unchanged since the last scan;
+  // rescanned whenever it differs, so an assembly loaded mid-process (a test loading one after the
+  // first call, or the game's own mod folders finishing later than exlib's) is found on the very
+  // next call rather than never. Never cached across a count change - a shrink is as much a change
+  // as a growth, though the runtime does not actually unload assemblies.
   private static IReadOnlyList<ExModuleInfo>? _all;
+  private static int _lastAssemblyCount = -1;
 
-  // Error lines that belong to one module specifically (a bad entry point, or a duplicate id) and
-  // so must be repeated in every host set that ends up containing that module.
-  private static Dictionary<string, List<string>> _perModuleErrors = [];
-
-  // One host's ordered set, cached because every phase asks again and the answer cannot change once
-  // discovery has run.
-  private static readonly Dictionary<string, ExModuleSet> _byHost = new(
-    StringComparer.OrdinalIgnoreCase
-  );
+  // Entry-point ctor-validation errors, one list per ExModuleInfo instance rather than per id: two
+  // assemblies may legally declare the same id until Order's dedup runs, and each keeps its own
+  // entry-point errors independent of that.
+  private static Dictionary<ExModuleInfo, List<string>> _entryPointErrors = new();
 
   /// <summary>Every module of every host, discovered once from the assemblies the runtime has
-  /// loaded, sorted by assembly full name.</summary>
-  public static IReadOnlyList<ExModuleInfo> All {
-    get {
-      if (_all == null)
-        Discover();
-      return _all!;
-    }
-  }
+  /// loaded, sorted by assembly full name. Not filtered by whether its mod is enabled; see
+  /// <see cref="Enabled"/> for that.</summary>
+  public static IReadOnlyList<ExModuleInfo> All => Discover();
 
   /// <summary>
-  /// <paramref name="host"/>'s modules, in dependency order (see <see cref="Order"/>), cached per
-  /// host. Empty (with no errors) for a host with no modules, which is the normal case.
+  /// <paramref name="host"/>'s modules whose shipping mod (<see cref="ExModuleInfo.Mod"/>) is
+  /// enabled on <paramref name="api"/>'s world, in dependency order (see <see cref="Order"/>). A
+  /// module whose mod is not enabled is left out and logged once at Notification level through
+  /// <paramref name="api"/>'s logger, naming both. Empty (with no errors) for a host with no enabled
+  /// modules, which is the normal case.
   /// </summary>
-  public static ExModuleSet For(string host) {
-    if (_byHost.TryGetValue(host, out ExModuleSet? cached))
-      return cached;
+  public static ExModuleSet For(ICoreAPI api, string host) {
+    var candidates = new List<ExModuleInfo>();
+    foreach (ExModuleInfo module in All) {
+      if (!string.Equals(module.Host, host, StringComparison.OrdinalIgnoreCase))
+        continue;
+      if (!api.ModLoader.IsModEnabled(module.Mod)) {
+        api.Logger.Notification(
+          "[exlib] module {0} skipped: mod {1} is not enabled",
+          module.Id,
+          module.Mod
+        );
+        continue;
+      }
+      candidates.Add(module);
+    }
 
-    ExModuleSet ordered = Order(
-      All.Where(m => string.Equals(m.Host, host, StringComparison.OrdinalIgnoreCase))
-    );
+    ExModuleSet ordered = Order(candidates);
 
     List<string> errors = [.. ordered.Errors];
     foreach (ExModuleInfo module in ordered.Modules)
-      if (_perModuleErrors.TryGetValue(module.Id, out List<string>? lines))
+      if (_entryPointErrors.TryGetValue(module, out List<string>? lines))
         errors.AddRange(lines);
-    if (errors.Count > ordered.Errors.Count)
-      ordered = ordered with { Errors = errors };
-
-    _byHost[host] = ordered;
-    return ordered;
+    return errors.Count > ordered.Errors.Count ? ordered with { Errors = errors } : ordered;
   }
 
-  /// <summary>Whether a module of the given id was discovered, on any host.</summary>
-  public static bool IsLoaded(string moduleId) =>
-    All.Any(m => string.Equals(m.Id, moduleId, StringComparison.OrdinalIgnoreCase));
+  /// <summary>Every module of every host whose shipping mod is enabled on <paramref name="api"/>'s
+  /// world, unordered. Used to set <see cref="FlagKey"/> for every module a world actually runs,
+  /// regardless of which host drives it.</summary>
+  public static IReadOnlyList<ExModuleInfo> Enabled(ICoreAPI api) =>
+    [.. All.Where(m => api.ModLoader.IsModEnabled(m.Mod))];
+
+  /// <summary>Whether an enabled module of the given id was discovered, on any host.</summary>
+  public static bool IsLoaded(ICoreAPI api, string moduleId) =>
+    Enabled(api).Any(m => string.Equals(m.Id, moduleId, StringComparison.OrdinalIgnoreCase));
 
   /// <summary>The world-config key a module sets to true while it is loaded, for a JSON patch
   /// condition to gate on.</summary>
   public static string FlagKey(string moduleId) => "exlib:module:" + moduleId;
 
   /// <summary>
-  /// Orders <paramref name="modules"/> by <c>Requires</c> (Kahn's algorithm; ties broken by id) and
-  /// reports what could not be placed. A module naming a requirement not present in
-  /// <paramref name="modules"/> is excluded on its own; every module still part of a cycle after
-  /// that is excluded together, one error naming them all. Pure - takes no dependency on discovery,
-  /// for tests to build hand-made sets against.
+  /// Orders <paramref name="modules"/> by <c>Requires</c> (Kahn's algorithm; ties broken by id,
+  /// <see cref="StringComparer.OrdinalIgnoreCase"/> throughout) and reports what could not be
+  /// placed. Two modules sharing one id (any case) are a duplicate: the first (in
+  /// <paramref name="modules"/> order) stands, the rest are excluded, one error naming the first
+  /// and each excluded one's assembly. A module naming a <c>Requires</c> id not present among the
+  /// survivors is excluded on its own; every module still part of a cycle after that is excluded
+  /// together, one error naming them all. Pure - takes no dependency on discovery, for tests to
+  /// build hand-made sets against.
   /// </summary>
   internal static ExModuleSet Order(IEnumerable<ExModuleInfo> modules) {
-    var input = modules.ToList();
-    var byId = new Dictionary<string, ExModuleInfo>(StringComparer.Ordinal);
-    foreach (ExModuleInfo module in input)
-      byId[module.Id] = module;
-
     var errors = new List<string>();
+    var byId = new Dictionary<string, ExModuleInfo>(StringComparer.OrdinalIgnoreCase);
+    var input = new List<ExModuleInfo>();
+    foreach (ExModuleInfo module in modules) {
+      if (byId.TryGetValue(module.Id, out ExModuleInfo? existing)) {
+        errors.Add(
+          $"module {existing.Id} is declared by both {existing.Assembly.GetName().Name} and "
+            + $"{module.Assembly.GetName().Name}; {module.Assembly.GetName().Name} ignored"
+        );
+        continue;
+      }
+      byId[module.Id] = module;
+      input.Add(module);
+    }
+
     var survivors = new List<ExModuleInfo>();
     foreach (ExModuleInfo module in input) {
       List<string> missing = [.. module.Requires.Where(r => !byId.ContainsKey(r))];
@@ -97,9 +120,12 @@ public static class ExModules {
       survivors.Add(module);
     }
 
-    var survivorIds = new HashSet<string>(survivors.Select(m => m.Id), StringComparer.Ordinal);
-    var indegree = new Dictionary<string, int>(StringComparer.Ordinal);
-    var dependents = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+    var survivorIds = new HashSet<string>(
+      survivors.Select(m => m.Id),
+      StringComparer.OrdinalIgnoreCase
+    );
+    var indegree = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+    var dependents = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
     foreach (ExModuleInfo module in survivors) {
       indegree[module.Id] = module.Requires.Count(survivorIds.Contains);
       foreach (string required in module.Requires) {
@@ -111,7 +137,7 @@ public static class ExModules {
       }
     }
 
-    var ready = new SortedSet<string>(StringComparer.Ordinal);
+    var ready = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
     foreach (ExModuleInfo module in survivors)
       if (indegree[module.Id] == 0)
         ready.Add(module.Id);
@@ -132,7 +158,10 @@ public static class ExModules {
 
     if (orderedIds.Count < survivors.Count) {
       List<string> cycle = [
-        .. survivors.Select(m => m.Id).Except(orderedIds).OrderBy(id => id, StringComparer.Ordinal),
+        .. survivors
+          .Select(m => m.Id)
+          .Except(orderedIds, StringComparer.OrdinalIgnoreCase)
+          .OrderBy(id => id, StringComparer.OrdinalIgnoreCase),
       ];
       errors.Add(
         $"modules {string.Join(", ", cycle)} form a requires cycle; none of them are driven"
@@ -142,17 +171,13 @@ public static class ExModules {
     return new ExModuleSet([.. orderedIds.Select(id => byId[id])], errors);
   }
 
-  /// <summary>Clears every cache. For tests, which build one AppDomain's worth of modules more than
-  /// once and would otherwise see a previous run's discovery.</summary>
-  internal static void Reset() {
-    _all = null;
-    _perModuleErrors = [];
-    _byHost.Clear();
-  }
+  private static IReadOnlyList<ExModuleInfo> Discover() {
+    int count = AppDomain.CurrentDomain.GetAssemblies().Length;
+    if (_all != null && count == _lastAssemblyCount)
+      return _all;
 
-  private static void Discover() {
-    var byId = new Dictionary<string, ExModuleInfo>(StringComparer.Ordinal);
-    var perModuleErrors = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+    var found = new List<ExModuleInfo>();
+    var entryPointErrors = new Dictionary<ExModuleInfo, List<string>>();
 
     IEnumerable<Assembly> assemblies = AppDomain
       .CurrentDomain.GetAssemblies()
@@ -181,28 +206,21 @@ public static class ExModules {
       var info = new ExModuleInfo {
         Id = attr.Id,
         Host = attr.Host,
+        Mod = attr.Mod,
         Requires = attr.Requires,
         Assembly = asm,
         EntryPoints = entryPoints,
         PatchHarmony = attr.PatchHarmony,
       };
 
-      if (byId.TryGetValue(attr.Id, out ExModuleInfo? existing)) {
-        if (!perModuleErrors.TryGetValue(attr.Id, out List<string>? dupErrors))
-          perModuleErrors[attr.Id] = dupErrors = [];
-        dupErrors.Add(
-          $"module {attr.Id} is declared by both {existing.Assembly.GetName().Name} and "
-            + $"{asm.GetName().Name}; {asm.GetName().Name} ignored"
-        );
-        continue;
-      }
-
-      byId[attr.Id] = info;
+      found.Add(info);
       if (ctorErrors.Count > 0)
-        perModuleErrors[attr.Id] = ctorErrors;
+        entryPointErrors[info] = ctorErrors;
     }
 
-    _all = [.. byId.Values];
-    _perModuleErrors = perModuleErrors;
+    _all = found;
+    _entryPointErrors = entryPointErrors;
+    _lastAssemblyCount = count;
+    return _all;
   }
 }

@@ -814,6 +814,9 @@ public sealed partial class TestWorld : IDisposable {
     api.Logger.Returns(Log);
     coreApi.Logger.Returns(Log);
 
+    // Mods.IsModEnabled reports every id enabled (see TestModLoader's own doc), so a discovered
+    // module of any host - not only the ones a test happened to Add - is driven the same as in a
+    // real world.
     api.ModLoader.Returns(Mods);
     coreApi.ModLoader.Returns(Mods);
 

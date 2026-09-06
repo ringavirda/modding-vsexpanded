@@ -27,5 +27,7 @@ public class ExLiquidsCollection {
 [CollectionDefinition("ExDefinitions", DisableParallelization = true)]
 public class ExDefinitionsCollection {
   // Members: ExDefinitionDiscoveryTests, ExDefinitionInjectionTests, ExDefinitionsTests,
-  // DefinitionContributorTests.
+  // DefinitionContributorTests. ExModuleHostTests, ExModSystemTests and RegistrationKeyTests also
+  // register contributors through RegisterAll but already belong to another collection (or none);
+  // each clears ExDefinitions.Contributors from its own Dispose instead of joining this one.
 }
