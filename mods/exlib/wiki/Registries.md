@@ -236,7 +236,7 @@ public sealed class MyCompanionModule : IExModule {
 ```
 
 That is the whole of it. `ExModSystem` finds the modules of its own mod and runs them through
-`StartPre`, `Start`, `AssetsLoaded` and `AssetsFinalize`, lowest `Order` first, and it registers the
+`StartPre`, `Start`, `AssetsLoaded` and `AssetsFinalize`, and it registers the
 companion assembly's `[BlockRegister]`/`[BlockEntityRegister]`/etc classes before calling its
 `Start` - so a block class in a second assembly needs no more code than one in the first. The keys
 it registers under come from the mod, not the assembly, so moving a class between your own

@@ -1,5 +1,10 @@
 using System.Runtime.CompilerServices;
+using ExpandedLib.Registries;
 using ExpandedLib.Testing;
+
+// A module of a fake host of its own, never exlib: RegistrationKeyTests relies on this assembly
+// declaring no [assembly: ExDomain].
+[assembly: ExModule("exlibtests", Host = "exlibtest.host")]
 
 namespace ExpandedLib.Tests;
 

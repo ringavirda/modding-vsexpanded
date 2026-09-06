@@ -1,57 +1,121 @@
-using System;
+using System.Linq;
 using ExpandedLib.Industry;
 using ExpandedLib.Registries;
-using ExpandedLib.Testing;
-using NSubstitute;
-using Vintagestory.API.Common;
 using Xunit;
 
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Companion assemblies: a mod folder may hold more than one dll but only one of them may contain
-/// mod systems, so the rest declare an <see cref="IExModule"/> and the mod drives them. exlib itself
-/// is the worked example - <c>exlib.industry.dll</c> ships beside <c>exlib.dll</c> and is found here
-/// through the <c>[assembly: ExDomain("exlib")]</c> it carries.
+/// Discovery and ordering: a module is an assembly carrying <c>[assembly: ExModule]</c>, found by
+/// walking the assemblies the runtime has already loaded. exlib's own domain layer
+/// (<c>exlib.industry.dll</c>) is the worked example of a framework module; this test assembly is a
+/// module of a fake host of its own, declared in <c>ModuleInit.cs</c>.
 /// </summary>
 public class ExModulesTests {
-  private static Mod FakeMod(string modId, ILogger logger) {
-    var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Logger), logger);
-    return mod;
+  // Never given a parameterless constructor, on purpose: an entry point declared like this one is
+  // reported and left out rather than crashing discovery.
+  private sealed class NoCtorModule(int x) : IExModule {
+    public int X => x;
   }
 
   [Fact]
-  public void Finds_a_companion_assemblys_module_by_its_declared_domain() {
+  public void Finds_industry_as_a_framework_module() {
     // Touch the type first: discovery reads loaded assemblies, and the domain layer is only loaded
     // once something in this run has referenced it.
     _ = typeof(IndustryModule);
     ExModules.Reset();
 
-    Assert.Contains(ExModules.For("exlib"), m => m is IndustryModule);
+    ExModuleSet set = ExModules.For("exlib");
+
+    ExModuleInfo module = Assert.Single(set.Modules, m => m.Id == "industry");
+    Assert.Equal("exlib", module.Host);
+    Assert.Contains(typeof(IndustryModule), module.EntryPoints);
+    Assert.Empty(set.Errors);
   }
 
   [Fact]
-  public void Finds_nothing_for_a_mod_that_ships_one_assembly() {
+  public void Finds_this_assembly_as_a_module_of_its_declared_host() {
     ExModules.Reset();
 
-    Assert.Empty(ExModules.For("a-mod-with-no-companion-assembly"));
+    Assert.Contains(ExModules.For("exlibtest.host").Modules, m => m.Id == "exlibtests");
+    Assert.DoesNotContain(ExModules.For("exlib").Modules, m => m.Id == "exlibtests");
   }
 
   [Fact]
-  public void A_module_that_throws_is_logged_and_the_rest_of_the_mod_continues() {
+  public void Finds_nothing_for_a_mod_with_no_modules() {
+    ExModules.Reset();
+
+    ExModuleSet set = ExModules.For("a-mod-with-no-modules");
+
+    Assert.Empty(set.Modules);
+    Assert.Empty(set.Errors);
+  }
+
+  [Fact]
+  public void IsLoaded_answers_for_any_host() {
     _ = typeof(IndustryModule);
     ExModules.Reset();
-    var logger = new RecordingLogger();
 
-    // No throw escaping here is the assertion: a companion assembly is a part of the mod, and one
-    // failing must not take down the phase that drives it.
-    ExModules.Drive(
-      FakeMod("exlib", logger),
-      _ => throw new InvalidOperationException("module boom")
-    );
-
-    Assert.Contains(logger.Errors, e => e.Contains("module boom", StringComparison.Ordinal));
+    Assert.True(ExModules.IsLoaded("industry"));
+    Assert.True(ExModules.IsLoaded("exlibtests"));
+    Assert.False(ExModules.IsLoaded("nothing"));
   }
+
+  [Fact]
+  public void Orders_by_requires_then_by_id() {
+    ExModuleInfo a = HandBuilt("a");
+    ExModuleInfo b = HandBuilt("b");
+    ExModuleInfo c = HandBuilt("c", requires: ["b"]);
+
+    ExModuleSet set = ExModules.Order([c, a, b]);
+
+    Assert.Equal(["a", "b", "c"], set.Modules.Select(m => m.Id));
+    Assert.Empty(set.Errors);
+  }
+
+  [Fact]
+  public void A_missing_requirement_excludes_the_module_and_names_both() {
+    ExModuleInfo x = HandBuilt("x", requires: ["y"]);
+
+    ExModuleSet set = ExModules.Order([x]);
+
+    Assert.Empty(set.Modules);
+    string error = Assert.Single(set.Errors);
+    Assert.Contains("x", error);
+    Assert.Contains("y", error);
+  }
+
+  [Fact]
+  public void A_cycle_excludes_every_member_and_names_them() {
+    ExModuleInfo a = HandBuilt("a", requires: ["b"]);
+    ExModuleInfo b = HandBuilt("b", requires: ["a"]);
+
+    ExModuleSet set = ExModules.Order([a, b]);
+
+    Assert.Empty(set.Modules);
+    string error = Assert.Single(set.Errors);
+    Assert.Contains("a", error);
+    Assert.Contains("b", error);
+  }
+
+  [Fact]
+  public void An_entry_point_without_a_parameterless_constructor_is_reported() {
+    _ = typeof(NoCtorModule);
+    ExModules.Reset();
+
+    ExModuleSet set = ExModules.For("exlibtest.host");
+
+    Assert.Contains(set.Errors, e => e.Contains("NoCtorModule"));
+    ExModuleInfo module = Assert.Single(set.Modules, m => m.Id == "exlibtests");
+    Assert.DoesNotContain(typeof(NoCtorModule), module.EntryPoints);
+  }
+
+  private static ExModuleInfo HandBuilt(string id, string[]? requires = null) =>
+    new() {
+      Id = id,
+      Host = "h",
+      Requires = requires ?? [],
+      Assembly = typeof(ExModulesTests).Assembly,
+      EntryPoints = [],
+    };
 }

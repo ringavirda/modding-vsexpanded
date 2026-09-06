@@ -515,4 +515,4 @@ the check); the wiki link check that `exmod check` runs is clean.
 
 ## Progress
 
-(nothing yet)
+- Task 1 (identity, discovery and ordering) done 2026-09-06. Gate green.

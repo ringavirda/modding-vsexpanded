@@ -22,8 +22,11 @@ For a modder registering blocks, items, behaviours, commands, preferences or rec
 | `ExMods` | The three rungs for reacting to another mod being installed: IsLoaded/AtLeast, WhenLoaded, and a world-config flag a JSON patch condition can gate on. | [Registries](Registries) |
 | `ExHarmony` | The Harmony bootstrap every reference mod copied by hand: patch an assembly's uncategorised classes once per process, apply a category only when a required mod is loaded, and unpatch cleanly. | [Registries](Registries) |
 | `ExModSystem` | The zero-line registration rung: a `ModSystem` base whose `Start`/`StartServerSide`/`StartClientSide`/`AssetsFinalize` run the config, entity, command and preference registries for that phase, then an empty overridable hook. | [Registries](Registries) |
-| `IExModule` | The entry point of a companion assembly: a second dll in one mod folder, which cannot contain mod systems of its own, driven through the same lifecycle phases. | [Registries](Registries) |
-| `ExModules` | Finds and drives one mod's `IExModule`s, and registers their assemblies' classes for them. | [Registries](Registries) |
+| `ExModuleAttribute` | Declares an assembly as a module - an extension driven through the lifecycle of the mod named in `Host`, with a `Requires` order and an opt-in Harmony patch. | [Registries](Registries) |
+| `IExModule` | The entry point of a module: driven through the phases of its host's lifecycle, in the order `ExModules.For` gives it among the host's other modules. | [Registries](Registries) |
+| `ExModuleInfo` | One discovered module: its id, host, requirements, assembly and entry points. | [Registries](Registries) |
+| `ExModuleSet` | One host's modules in dependency order, and the errors that excluded any of them. | [Registries](Registries) |
+| `ExModules` | Finds every module in the process and orders each host's set. | [Registries](Registries) |
 | `BlockBehaviorRegisterAttribute` | Registers a BlockBehavior class. | [Registries](Registries) |
 | `BlockEntityBehaviorRegisterAttribute` | Registers a BlockEntityBehavior class. | [Registries](Registries) |
 | `BlockEntityRegisterAttribute` | Registers a BlockEntity class. | [Registries](Registries) |

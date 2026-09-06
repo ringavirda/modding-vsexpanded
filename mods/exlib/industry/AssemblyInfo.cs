@@ -5,3 +5,6 @@ using ExpandedLib.Registries;
 // ExBlockDef.Class<T>() before the mod's Start has run must still come back "exlib.Xxx" and
 // not fall back to whichever mod happened to be asking.
 [assembly: ExDomain("exlib")]
+
+// A framework module, hosted by exlib itself - the default Host on ExModuleAttribute.
+[assembly: ExModule("industry")]

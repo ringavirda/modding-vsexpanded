@@ -1,46 +1,46 @@
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Server;
 
 namespace ExpandedLib.Registries;
 
 /// <summary>
-/// The entry point of a companion assembly: a second dll inside one mod's folder, which cannot
-/// carry mod systems of its own. The mod's <see cref="ExModSystem"/> runs it through the same
-/// lifecycle phases in <see cref="Order"/> order, after registering its classes for it.
+/// An entry point of a module: an assembly carrying <c>[assembly: ExModule]</c>. The host names in
+/// <c>Host</c> runs it through the phases of its own <see cref="ModSystem"/>, in the order
+/// <see cref="ExModules.Order"/> gives the module among the rest of the host's, after registering the
+/// assembly's classes for it. Every method has an empty default, so a module overrides only the
+/// phases it needs. See the wiki's Modules page.
 /// </summary>
-/// <remarks>
-/// Only one dll per mod folder may contain mod systems at all, however many it declares; a second
-/// one that does makes the game refuse the whole mod. The assembly must carry
-/// <c>[assembly: ExDomain("&lt;modid&gt;")]</c>, which is what says whose module it is. Every method
-/// has an empty default, so a module overrides only the phases it needs. See the wiki's Registries
-/// page, "Shipping more than one assembly".
-/// </remarks>
 public interface IExModule {
-  /// <summary>
-  /// Order among the modules of one mod, lowest first; ties keep discovery order, which is the
-  /// order the runtime happens to have loaded the assemblies in and so is not worth relying on.
-  /// Defaults to 0.1, matching a <see cref="ModSystem"/>'s own default execute order.
-  /// </summary>
-  double Order => 0.1;
-
-  /// <summary>Runs in the owning mod's <c>StartPre</c>, before any registration.</summary>
+  /// <summary>Runs in the host's <c>StartPre</c>, before any registration.</summary>
   void StartPre(ICoreAPI api) { }
 
-  /// <summary>
-  /// Runs in the owning mod's <c>Start</c>, after this assembly's registered classes have been
-  /// registered for it.
-  /// </summary>
+  /// <summary>Runs in the host's <c>Start</c>, after this module's registered classes have been
+  /// registered for it.</summary>
   void Start(ICoreAPI api) { }
 
+  /// <summary>Runs in the host's <c>StartServerSide</c>, after this module's server commands have
+  /// been registered.</summary>
+  void StartServerSide(ICoreServerAPI api) { }
+
+  /// <summary>Runs in the host's <c>StartClientSide</c>, after this module's preferences and client
+  /// commands have been registered.</summary>
+  void StartClientSide(ICoreClientAPI api) { }
+
   /// <summary>
-  /// Runs in the owning mod's <c>AssetsLoaded</c>. A module contributing code-first definitions
-  /// registers them here: the driver is ordered below the definition system's own injection, so
-  /// anything registered in this phase is injected with the rest.
+  /// Runs in the host's <c>AssetsLoaded</c>: assets are readable here and a catalogue read belongs
+  /// in this phase, but it is not where a definition is contributed - a module that emits
+  /// code-first definitions from loaded assets implements <c>IExDefinitionContributor</c> instead,
+  /// which runs after every module's <c>Start</c> and before injection regardless of host order.
   /// </summary>
   void AssetsLoaded(ICoreAPI api) { }
 
   /// <summary>
-  /// Runs in the owning mod's <c>AssetsFinalize</c>, after the asset-patch pipeline has merged every
-  /// mod's JSON. A module loading a catalogue does it here.
+  /// Runs in the host's <c>AssetsFinalize</c>, after the asset-patch pipeline has merged every mod's
+  /// JSON. A module loading a catalogue does it here.
   /// </summary>
   void AssetsFinalize(ICoreAPI api) { }
+
+  /// <summary>Runs when the host disposes.</summary>
+  void Dispose() { }
 }
