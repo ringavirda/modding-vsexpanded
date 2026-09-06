@@ -1,14 +1,16 @@
 using System;
 using ExpandedLib;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Fluids;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
@@ -20,10 +22,11 @@ namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 /// and condensate spray out of the open face; with no water line at all, drawn steam vents as gas.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntitySteamCondenser : BlockEntity {
+public class BlockEntitySteamCondenser : ExBlockEntity {
   private long _tickId;
 
   // Client-display mirror, synced via the tree.
+  [Persist("condensing")]
   private bool _condensing;
 
   private BlockSteamCondenser? CondenserBlock => Block as BlockSteamCondenser;
@@ -259,18 +262,7 @@ public class BlockEntitySteamCondenser : BlockEntity {
     base.OnBlockUnloaded();
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("condensing", _condensing);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _condensing = tree.GetBool("condensing");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void GetBlockInfo(
     IPlayer forPlayer,

@@ -8,6 +8,27 @@ are four registry families - entities, commands, preferences, and [config](Confi
 The reflection scan tolerates partial load failures (`ReflectionScan.GetCandidateTypes`), so one
 unloadable type can't break registration of the rest.
 
+## ExModSystem: the zero-line rung
+
+Derive `ExModSystem` instead of `ModSystem` and there is nothing left to write - it runs every
+registry below for you, in the right phase and the right order:
+
+```csharp
+public class YourModSystem : ExModSystem { }
+```
+
+`Start` loads your `[ExConfigRegister]` config and runs `EntityRegistry.RegisterAll`;
+`StartServerSide` runs `CommandRegistry.RegisterAll`; `StartClientSide` runs
+`PreferenceRegistry.RegisterAll` then `CommandRegistry.RegisterAll` (preferences first, so a
+command naming one finds it already registered - **command registration runs once per side**,
+independently, not once for the whole mod). Override `OnStart`/`OnStartServerSide`/
+`OnStartClientSide`/`OnAssetsFinalize` for anything of your own that needs to run after
+registration; set `PatchHarmony => true` to fold `ExHarmony.PatchOnce`/`UnpatchAll` in too.
+
+The rest of this page documents the calls `ExModSystem` makes for you, for a mod system that needs
+a different order (see [Ordering rules](Lifecycle) - a preference read before a command that names
+it, say) or that isn't a `ModSystem` at all.
+
 ## Entity registration
 
 `Registries/Entities/` registers blocks, items, entities and behaviours. The base attribute:
@@ -34,16 +55,13 @@ Six sealed attributes inherit it, each validating the target's base type:
 ```csharp
 [BlockRegister]                         // -> "yourmod.BlockPipe"
 public class BlockPipe : BlockNetworkNode { }
-
-[BlockRegister("pipeStraight")]         // -> "yourmod.pipeStraight"
-public class BlockPipeStraight : BlockPipe { }
-
-[BlockRegister("MultiblockStructure", PrefixModId = false)]   // -> "MultiblockStructure" (replaces vanilla)
-public class BlockMultiblock : Block { }
-
-[BlockEntityRegister]                   // -> "yourmod.BlockEntityPipe" + aliases "yourmod.Pipe","Pipe","pipe"
-public class BlockEntityPipe : BlockEntity { }
 ```
+
+| Variant | Registers as |
+| --- | --- |
+| `[BlockRegister("pipeStraight")]` | `"yourmod.pipeStraight"` |
+| `[BlockRegister("MultiblockStructure", PrefixModId = false)]` | `"MultiblockStructure"` (replaces vanilla) |
+| `[BlockEntityRegister]` on `BlockEntityPipe` | `"yourmod.BlockEntityPipe"` + aliases `"yourmod.Pipe"`, `"Pipe"`, `"pipe"` |
 
 A class named `BlockEntityXxx` automatically also registers the short-name aliases
 `{modid}.{Xxx}`, `{Xxx}`, `{xxx}` (when you don't set an explicit `Code`), so your JSON can use the
@@ -182,9 +200,9 @@ public static class ExPreferences
 }
 ```
 
-The on-disk shape is the public `ExPreferencesConfig` - a map of player UID to that player's chosen
-values. The store is **process-global static state** shared by every Expanded mod, which is what lets
-one file and one `LevelFinalize` hook serve all of them.
+The on-disk shape is an internal map of player UID to that player's chosen values. The store is
+**process-global static state** shared by every Expanded mod, which is what lets one file and one
+`LevelFinalize` hook serve all of them.
 
 Two lookups fail quietly rather than throwing, both on an unregistered key: `GetForPlayer` yields
 `string.Empty`, and `SetForPlayer` persists the value but applies nothing. Register the preference
@@ -217,6 +235,77 @@ public override void StartServerSide(ICoreServerAPI api)
 `CommandRegistry.RegisterAll` is safe to call from `Start` - each command declares its side, so it
 registers once either way - but every shipped mod calls it from the two side hooks instead. That is
 what keeps a client sub-command from being built before the preference it names exists.
+
+## Other mods
+
+Three rungs, shortest first.
+
+A one-line check:
+
+```csharp
+if (ExMods.IsLoaded(api, "toolsmith")) { /* ... */ }
+if (ExMods.AtLeast(api, "toolsmith", "1.9.0")) { /* ... */ }
+```
+
+A JSON patch condition, no C# at all - exlib sets `ExMods.FlagKey(modId)` (`"exlib:mod:<modid>"`) to
+`true` in world config for every enabled mod, before the patch loader runs:
+
+```json
+{ "op": "add", "path": "/...", "condition": { "when": "exlib:mod:toolsmith", "isValue": "true" } }
+```
+
+A run-now callback, for code that only makes sense once:
+
+```csharp
+ExMods.WhenLoaded(api, "toolsmith", () => RegisterToolsmithCompat(api));
+```
+
+```csharp
+public static class ExMods
+{
+    public static bool IsLoaded(ICoreAPI api, string modId);
+    public static string? Version(ICoreAPI api, string modId);
+    public static bool AtLeast(ICoreAPI api, string modId, string minimumVersion);
+    public static bool WhenLoaded(ICoreAPI api, string modId, Action action);
+    public static string FlagKey(string modId);
+}
+```
+
+`IsLoaded` never throws: a null or blank id is just not loaded. `AtLeast` compares the way the game
+itself does, so a pre-release such as `"1.9.0-rc.1"` sorts below its own release `"1.9.0"`.
+
+## Harmony
+
+The bootstrap in three lines, once per mod system:
+
+```csharp
+public override void Start(ICoreAPI api)
+{
+    _harmony = ExHarmony.PatchOnce(Mod, GetType().Assembly);
+}
+
+public override void Dispose()
+{
+    ExHarmony.UnpatchAll(Mod);
+}
+```
+
+`PatchOnce` applies every uncategorised `[HarmonyPatch]` class in the assembly, guarded so it is a
+no-op on a second call however many dependent mods share the process. A class also carrying
+`[HarmonyPatchCategory("...")]` is left alone until you opt it in, gated on another mod being loaded:
+
+```csharp
+ExHarmony.PatchCategoryWhenLoaded(api, _harmony, GetType().Assembly, "compat-toolsmith", "toolsmith");
+```
+
+```csharp
+public static class ExHarmony
+{
+    public static Harmony PatchOnce(Mod mod, Assembly assembly);
+    public static bool PatchCategoryWhenLoaded(ICoreAPI api, Harmony harmony, Assembly assembly, string category, string requiredModId);
+    public static void UnpatchAll(Mod mod);
+}
+```
 
 ## Related pages
 

@@ -1,6 +1,7 @@
 using System;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Machines;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;

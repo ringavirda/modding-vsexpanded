@@ -113,6 +113,66 @@ public class ExMeshCacheTests {
   }
 
   [Fact]
+  public void GetOrCreateRef_uploads_once_per_key_and_reuses_the_ref() {
+    ICoreClientAPI capi = Capi();
+    var render = Substitute.For<IRenderAPI>();
+    capi.Render.Returns(render);
+    int uploads = 0;
+    render
+      .UploadMultiTextureMesh(Arg.Any<MeshData>())
+      .Returns(_ => {
+        uploads++;
+        return new MultiTextureMeshRef([], []);
+      });
+
+    MultiTextureMeshRef? first = null;
+    for (int i = 0; i < 3; i++) {
+      var got = ExMeshCache.GetOrCreateRef(
+        capi,
+        "group",
+        "key",
+        () => new MeshData()
+      );
+      first ??= got;
+      Assert.Same(first, got);
+    }
+
+    Assert.Equal(1, uploads);
+  }
+
+  [Fact]
+  public void DisposeGroup_disposes_every_ref_in_the_group_and_frees_the_slot() {
+    ICoreClientAPI capi = Capi();
+    var render = Substitute.For<IRenderAPI>();
+    capi.Render.Returns(render);
+    render
+      .UploadMultiTextureMesh(Arg.Any<MeshData>())
+      .Returns(_ => new MultiTextureMeshRef([], []));
+
+    var a = ExMeshCache.GetOrCreateRef(capi, "grp", "a", () => new MeshData());
+    var b = ExMeshCache.GetOrCreateRef(capi, "grp", "b", () => new MeshData());
+
+    ExMeshCache.DisposeGroup(capi, "grp");
+
+    Assert.True(a.Disposed);
+    Assert.True(b.Disposed);
+
+    // The group is gone, not merely emptied: asking again rebuilds from scratch.
+    int rebuilds = 0;
+    var c = ExMeshCache.GetOrCreateRef(
+      capi,
+      "grp",
+      "a",
+      () => {
+        rebuilds++;
+        return new MeshData();
+      }
+    );
+    Assert.Equal(1, rebuilds);
+    Assert.NotSame(a, c);
+  }
+
+  [Fact]
   public void A_blocks_shape_path_is_resolved_without_mutating_the_shared_shape() {
     // WithPathPrefixOnce mutates in place, and Block.Shape is shared by every instance of that blocktype:
     // resolving without the clone corrupts the path for every other reader, cumulatively.

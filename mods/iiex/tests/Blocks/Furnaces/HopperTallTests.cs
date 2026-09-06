@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
@@ -578,7 +579,7 @@ public class HopperTallTests {
     // The standard grade - 20 % of the round laid as coke - settles below iron's melt line on cold blast.
     Course(core, "coke", bands / 5, default);
     Course(core, "iiex:burden", bands - (bands / 5), grade);
-    ReflectionHelpers.Invoke(core, "OnProductionTick", 1f);
+    core.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
 
     Assert.Contains("iiex:bf-info-chargechills", Hud(be));
     Assert.DoesNotContain("iiex:bf-info-chargemelts", Hud(be));
@@ -588,7 +589,7 @@ public class HopperTallTests {
     var (rich, _, richBe) = Standing();
     Course(rich, "coke", bands * 2 / 5, default);
     Course(rich, "iiex:burden", bands - (bands * 2 / 5), grade);
-    ReflectionHelpers.Invoke(rich, "OnProductionTick", 1f);
+    rich.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
 
     Assert.Contains("iiex:bf-info-chargemelts", Hud(richBe));
     Assert.DoesNotContain("iiex:bf-info-chargechills", Hud(richBe));
@@ -613,12 +614,12 @@ public class HopperTallTests {
     int fuelBands = bands / 4;
     Course(coked, "coke", fuelBands, default);
     Course(coked, "iiex:burden", bands - fuelBands, grade);
-    ReflectionHelpers.Invoke(coked, "OnProductionTick", 1f);
+    coked.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
 
     var (charred, _, charredBe) = Standing();
     Course(charred, "charcoal", fuelBands, default);
     Course(charred, "iiex:burden", bands - fuelBands, grade);
-    ReflectionHelpers.Invoke(charred, "OnProductionTick", 1f);
+    charred.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
 
     // Stated first, because it is what makes the verdicts below mean anything: the two rounds are the same
     // volume, height and fuel-band count, so the only difference the model may use is CarbonPerUnit.
@@ -637,7 +638,7 @@ public class HopperTallTests {
     var (core, rig, be) = Standing();
     int perBand = core.ChargeUnitsPerBlock / ChargeColumn.BandsPerBlock;
     Columns(core)[0].Push("coke", 5 * perBand, 20f, default);
-    ReflectionHelpers.Invoke(core, "OnProductionTick", 1f);
+    core.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     string before = Hud(be);
 
     // Round-trip the core, since the readout is entirely its state, and read the hopper's line off the copy.
@@ -648,7 +649,7 @@ public class HopperTallTests {
       Block = core.Block,
     };
     rig.World.Attach(reloaded);
-    ReflectionHelpers.Invoke(reloaded, "UpdateStructureRotation");
+    reloaded.ApplyStructureRotation();
     reloaded.FromTreeAttributes(tree, rig.World.World);
 
     Assert.Equal(core.TopCourse, reloaded.TopCourse);

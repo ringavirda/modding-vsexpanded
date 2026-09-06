@@ -7,7 +7,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron2": "game:block/metal/sheet-plain/iron2"
+    "iron2": "block/metal/sheet-plain/iron2"
   },
   "elements": [
     {

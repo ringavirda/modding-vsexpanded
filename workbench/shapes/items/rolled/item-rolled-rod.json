@@ -9,7 +9,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
+		"iron5": "block/metal/sheet-plain/iron5"
 	},
 	"elements": [
 		{

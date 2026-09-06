@@ -226,22 +226,48 @@ Line breaks in an authoring file are wrapping, not content - VTML collapses whit
 so does the sync - so re-wrapping a page is a no-op. Attribute quotes are written `\"` because the files
 predate the tooling and were meant to be pasted straight into JSON; the sync un-escapes them.
 
-### Where the network code lives (the `Blocks/`-vs-top-level rule)
+### How exlib is laid out (ruled 2026-09-05; supersedes the `Blocks/`-vs-top-level rule)
 
-exlib splits the network family across two folders:
+A top-level folder under `mods/exlib/src/` is something a modder is doing, and it is one namespace.
+Sub-folders organise files; they never add a namespace segment. A consumer needs one `using` per
+activity, and a machine mod needs about six in total.
 
-| Folder | Namespace | Holds |
+| Folder | Namespace | A modder who is... |
 |---|---|---|
-| `mods/exlib/src/Networks/` | `ExpandedLib.Networks` | the **graph model** — `BlockNetwork` and its subclasses, `PipeNetworkState`, and the contracts a participant implements (`INetworkNode`, `INetworkConnector`, `IPipeNode`, `IPipeVentStrategy`, `IMoltenCell`, `IBurstablePipe`, `IChimneyVentable`). No `Block`/`BlockEntity` in sight. |
-| `mods/exlib/src/Blocks/Networks/` | `ExpandedLib.Blocks.Networks` | the **engine-facing shell** — `BlockNetworkNode`, `BlockEntityNetworkNode`, and the two `ModSystem`s that own the graph and its highlight. |
+| `Registries/` | `ExpandedLib.Registries` | registering blocks, items, behaviours, commands, preferences, recipe profiles; asking about other mods; patching with Harmony |
+| `Config/` | `ExpandedLib.Config` | declaring a config class, its ranges, migrations and live editing; syncing it to clients |
+| `Definitions/` | `ExpandedLib.Definitions` | writing block, item, recipe and layout definitions in C# |
+| `Blocks/` | `ExpandedLib.Blocks` | writing a block entity: declared state, orientation, right-click construction |
+| `Migrations/` | `ExpandedLib.Migrations` | renaming or removing codes in old saves, healing lost block entities |
+| `Structures/` | `ExpandedLib.Structures` | building a multiblock or megablock |
+| `Machines/` | `ExpandedLib.Machines` | building a machine that ticks, with ports, readiness and stations |
+| `Networks/` | `ExpandedLib.Networks` | building a connected network: the graph model and the engine-facing nodes together |
+| `Catalogues/` | `ExpandedLib.Catalogues` | shipping or extending data catalogues: processes, materials, liquids, storage, their loaders, reports and contributors |
+| `Checks/` | `ExpandedLib.Checks` | verifying content in the game or in a test |
+| `Helpers/` | `ExpandedLib.Helpers` | everything content-neutral that saves a few lines: orientation, meshes, inventories, units, rendering |
+| `Legacy/` | `ExpandedLib.Legacy` | supporting 1.20 and 1.21 from one source tree |
+| `Industry/<Pack>/` | `ExpandedLib.Industry.<Pack>` | reusing the family's content layer: pipes, molten, mechanical power, metals, heat |
 
-The rule, generalized: a top-level folder under `mods/exlib/src/` is a simulation domain - a model
-that can be reasoned about with no world loaded (`Networks`, `Metals`, `Fluids`, `Materials`, `Process`).
-`Blocks/` is where that model meets Vintage Story: types that derive `Block`, `BlockEntity`,
-`BlockBehavior` or `ModSystem`.
+Rules with teeth: a folder that would hold one file is not a folder (the file goes beside its
+subject); a sub-folder appears at four files; a type's folder is decided by the activity that reaches
+for it first, not by its base class - `BlockNetworkNode` sits in `Networks/` beside `BlockNetwork`
+because a modder building a network wants both. The retired rule split each family across a
+model folder and a `Blocks/` shell folder and asked consumers to import both; the split is gone.
 
-Consumers usually want both namespaces and import both; that is expected, not a smell. Not done: a
-`Simulation/` super-folder over the domain folders (YAGNI - there is nothing to disambiguate them from).
+`mods/exlib/testing` is one namespace, `ExpandedLib.Testing`, laid out the same way: `World/` (the
+fake world and its blocks), `Scenes/` (the layout DSL), `Rigs/` (drivers for machines and
+structures), `Doubles/` (stand-ins), `Checks/` (the validators), `Repo/` (this repository's own
+history and paths). `mods/exlib/tests` mirrors `mods/exlib/src` folder for folder.
+
+### Catalogue registry verbs (ruled 2026-09-06)
+
+Every catalogue registry (`ProcessRouteRegistry`, `ProcessJobRegistry`, `BayOccupancyRegistry`,
+`MaterialRoleRegistry`, `MetalRegistry`, `ExLiquids`) reads the same four verbs the same way:
+`Register` declares one entry from code, `Contribute` merges a whole parsed file's worth and reports
+its clashes, `Load` (always on the loader, never the registry) reads assets and repopulates the
+registry, and `Clear` empties it; `Contributors` is the static hook a `Load` re-runs after its own
+read, so a `Register` from `Start` survives the clear that precedes every reload. No catalogue
+registry declares a public `Add*` or `Load*` member of its own - `CatalogueNamingTests` guards it.
 
 The medium set is data-driven *(live)*: each medium is a `LiquidDef` in exlib's liquid taxonomy
 (code, gas/liquid phase, merge priority, boil/condense points). A mod adds a medium by shipping one

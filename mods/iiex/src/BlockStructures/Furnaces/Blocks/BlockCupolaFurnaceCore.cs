@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -76,14 +76,14 @@ public partial class BlockCupolaFurnaceCore
             .Legend('a', VanillaCodes.Air)
             // The burden column: four cells in one column, y=2 up. Cell roles, not legend glyphs, are what
             // callers query for where charge stands.
-            .Role('c', CellRole.Chargeable)
+            .Role('c', FurnaceCellRoles.Chargeable)
             // Pool only, the course below the burden. The cupola's crucible is a single cell, so its whole
             // molten charge stands in one hearthmetal block.
-            .Role('h', CellRole.Pool)
-            .Role('T', CellRole.Tuyere)
+            .Role('h', FurnaceCellRoles.Pool)
+            .Role('T', FurnaceCellRoles.Tuyere)
             // The two drains sit on opposite sides of the single crucible cell.
-            .Role('I', CellRole.MetalTap)
-            .Role('S', CellRole.SlagTap)
+            .Role('I', FurnaceCellRoles.MetalTap)
+            .Role('S', FurnaceCellRoles.SlagTap)
             .Layer(
               0,
               """

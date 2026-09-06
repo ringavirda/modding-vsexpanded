@@ -1,9 +1,10 @@
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -33,6 +34,8 @@ public class BlockEntityMoltenCanalStart
   // once no new metal has arrived for PourTallyTimeoutMs (server tracks the timestamp; the count is
   // synced to clients for display).
   private const long PourTallyTimeoutMs = 5000;
+
+  [Persist("pourTally")]
   private int _pourTally;
   private long _lastPourMs;
 
@@ -123,19 +126,6 @@ public class BlockEntityMoltenCanalStart
   }
 
   #endregion
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("pourTally", _pourTally);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _pourTally = tree.GetInt("pourTally");
-  }
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);

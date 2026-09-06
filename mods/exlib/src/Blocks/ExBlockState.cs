@@ -148,6 +148,20 @@ public sealed class ExBlockState {
       set
     );
 
+  /// <summary>
+  /// A field that manages its own serialization against the very tree every other field writes into -
+  /// several related attributes at once (<c>MoltenCharge.ToTree/FromTree</c>, which takes explicit key
+  /// names) or a private nested tree it builds itself (<c>tree[key] = subTree</c>, the shape a
+  /// <see cref="IPersistable"/> member uses). Unlike the typed helpers above, <paramref name="write"/>
+  /// and <paramref name="read"/> see the whole tree and choose their own attribute names;
+  /// <paramref name="key"/> only names the declaration for the duplicate-key guard and <see cref="Keys"/>.
+  /// </summary>
+  public ExBlockState Tree(
+    string key,
+    Action<ITreeAttribute> write,
+    Action<ITreeAttribute, IWorldAccessor> read
+  ) => Add(key, write, read);
+
   #endregion
 
   #region Applying

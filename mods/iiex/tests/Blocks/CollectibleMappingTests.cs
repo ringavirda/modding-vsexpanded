@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;

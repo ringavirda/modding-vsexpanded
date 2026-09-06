@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- samples/ sits outside mods/, so it does not inherit ../../mods/Directory.Build.props the way
+       every mod project does automatically (MSBuild only walks up from a project's own folder). A
+       real third-party mod has no such file at all - see the wiki's Getting-Started for the
+       standalone form; this import is the one thing here that is in-repo convenience only. -->
+  <Import Project="../../mods/Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Primary build is the current game version, single-target; the legacy lanes buy nothing for
+         a sample that exists to be read, so this stays on $(CurrentGameTfm) even with -p:Legacy=true. -->
+    <TargetFramework>$(CurrentGameTfm)</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
+    <Nullable>enable</Nullable>
+    <AssemblyName>helloexpanded</AssemblyName>
+    <RootNamespace>HelloExpanded</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    Inside this monorepo, exlib is a plain ProjectReference with copy-local off - the player installs
+    exlib as its own mod, so it must not ship a second copy inside helloexpanded's folder. Outside the
+    repo you reference the built assembly instead:
+
+    <ItemGroup>
+      <Reference Include="exlib">
+        <HintPath>libs/exlib.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+
+    See the wiki's Getting-Started "Reference exlib at compile time" for the whole standalone form,
+    including the $(GamePath) check it assumes.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\mods\exlib\src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <!-- The config source generator emits HelloValues from HelloConfig's [ExConfigRegister];
+         ExLangKeyGenerator emits HelloExpandedLang. Compile-time only, ships nothing. -->
+    <ProjectReference
+      Include="..\..\mods\exlib\generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="modicon.png" Condition="Exists('modicon.png')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- A mod project under mods/<mod>/src/ gets these two from the shared globs in
+       ../../mods/Directory.Build.props and .targets (assets/ sits beside src/, one level up). This
+       project's assets/ is a direct sibling of the csproj instead, so the glob and the lang feed are
+       written out by hand rather than borrowed. -->
+  <ItemGroup>
+    <Content Include="assets/**/*">
+      <Link>assets/%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <AdditionalFiles Include="assets/helloexpanded/lang/en.json" />
+  </ItemGroup>
+</Project>

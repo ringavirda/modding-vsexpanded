@@ -2,7 +2,7 @@
   "textureWidth": 16,
   "textureHeight": 16,
   "textures": {
-    "cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1",
+    "cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsexpanded/workbench/textures/materials/cast-iron1",
     "iron5": "block/metal/sheet-plain/iron5",
     "fire1": "block/clay/brick/four/running/fire1",
     "oak": "block/wood/debarked/oak"

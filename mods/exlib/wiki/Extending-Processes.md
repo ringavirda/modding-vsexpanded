@@ -36,9 +36,7 @@ convention; nothing enforces it.
   "schema": 1,
   "machine": "shear",
   "jobs": [
-    { "input": "yourmod:bronzestrip", "output": "yourmod:bronzerivet", "count": 6 },
-    { "input": "yourmod:bronzebar", "stage": 2.0, "family": "grooved",
-      "output": "yourmod:bronzerod", "count": 4, "minTorque": 0.3 }
+    { "input": "yourmod:bronzestrip", "output": "yourmod:bronzerivet", "count": 6 }
   ]
 }
 ```
@@ -56,7 +54,14 @@ the last writer would make the outcome depend on mod load order, which nobody ca
 
 ### A staged job crops; a whole-item job converts
 
-Whether you gave the job a `stage` decides what happens to the input, and it is the only thing that does:
+Whether you gave the job a `stage` decides what happens to the input, and it is the only thing that
+does. A staged job adds `stage` and `family` - a gauge on a branch of a process route - rather than
+converting the whole item:
+
+```json
+{ "input": "yourmod:bronzebar", "stage": 2.0, "family": "grooved",
+  "output": "yourmod:bronzerod", "count": 4, "minTorque": 0.3 }
+```
 
 | Job | The input | `count` reads as |
 |---|---|---|
@@ -170,7 +175,7 @@ JSON is the primary path and needs no dependency on us. If you would rather comp
 the dependency and call the same surface:
 
 ```csharp
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 
 // Sequence
 ProcessExtensions.Shared.AddStages("bronzebar", [
@@ -190,6 +195,90 @@ same declaration and runs it through the same parser, so there is one set of rul
 
 This surface is deliberately no wider than the JSON schema. Anything expressible only in C# is a gap in
 the schema, and the schema should grow instead — [open an issue](https://github.com/ringavirda/modding-vsexpanded/issues).
+
+⚠️ **Called directly, this is a one-time effect.** `AssetsFinalize` clears the registry before every
+load, JSON's included, so a call from `Start` would be wiped by your own mod's next world load. To
+survive it, register through `Contributors` instead, one section down.
+
+## From C#, and surviving the next load
+
+Every catalogue is contributed to rather than owned, and every registry exposes the same seam: a static
+`Contributors` property (`ExpandedLib.Registries.CatalogueContributors`). Register once, from `Start`;
+the owning loader re-runs every registered contributor after its own JSON read, on every
+`AssetsFinalize` — so a C# entry outlives the clear that would otherwise erase it.
+
+```csharp
+MetalRegistry.Contributors.Register(api =>
+    MetalRegistry.Register(new MetalDef { Code = "hadfield", MoltenItem = "yourmod:ingot-hadfield" }));
+```
+
+```csharp
+ExLiquids.Contributors.Register(api => ExLiquids.Register(new LiquidDef { Code = "Brine" }));
+```
+
+```csharp
+MaterialRoleRegistry.Contributors.Register(api =>
+    MaterialRoleRegistry.Register(new MaterialRoleDef { Role = Roles.Fuel, Code = "yourmod:coke" }));
+```
+
+```csharp
+ProcessRouteRegistry.Contributors.Register(api =>
+    ProcessExtensions.Shared.AddStages("bronzebar",
+        [new ProcessStage(2.0f, "Bronze200", ["flat"], null)]));
+```
+
+```csharp
+ProcessJobRegistry.Contributors.Register(api =>
+    ProcessExtensions.Shared.AddJobs("shear",
+        [new ProcessJob("yourmod:strip", "yourmod:rivet", 6, null, null, 0f)]));
+```
+
+```csharp
+BayOccupancyRegistry.Contributors.Register(api =>
+    BayOccupancyRegistry.Shared.Contribute(
+        new BayOccupancySet("storagerack", [new BayOccupancy("yourmod:stock-rod", 1)])));
+```
+
+A contributor that throws is logged with its target type and skipped — one bad C# contribution never
+costs the others theirs, the same guarantee a bad JSON file gets.
+
+## Adding a catalogue of your own
+
+The two rungs above cover extending *our* catalogues. Building your own - a hand-parsed JSON
+catalogue with the same contract (one asset path, an unknown-key audit, a merge that reports clashes,
+C# contributors that survive a reload) - is the third rung: derive `ContributedCatalogueLoader<TSet,
+TRegistry>` once.
+
+```csharp
+public sealed class YourCatalogueLoader : ContributedCatalogueLoader<YourEntry, YourRegistry> {
+    protected override string AssetPath => "config/yourcatalogue/";
+    protected override string CatalogueName => "yourcatalogue";
+    protected override IReadOnlyList<string> UnknownKeys(JsonObject root) => ...;
+    protected override bool TryParse(JsonObject root, out YourEntry set, out string? error) => ...;
+    protected override IReadOnlyList<string> Contribute(YourRegistry registry, YourEntry set) =>
+        registry.Contribute(set);
+    protected override int CountEntries(YourEntry set) => set.Count;
+    protected override CatalogueContributors Contributors(YourRegistry registry) => registry.Contributors;
+    protected override void Clear(YourRegistry registry) => registry.Clear();
+}
+```
+
+The base parses each file exactly once - the same parse counts entries and merges them, so the
+report and the registry never disagree - and threads each accepted entry's own source through to
+any clash it causes, never a fallback name recovered after the fact. `ProcessRouteLoader`,
+`ProcessJobLoader` and `BayOccupancyLoader` are this base with their own schema.
+
+## What the log tells you
+
+`AssetsFinalize` hands each catalogue's loader result to `CatalogueLoadReport.Log`, which writes one
+summary line, then one `Error` per malformed file or clash:
+
+```
+[exlib] processroutes: 3 file(s), 12 entr(ies), 0 error(s)
+```
+
+files read, entries accepted, and the errors, each naming its asset. Zero errors is not "probably
+fine" — it is what the log actually checked.
 
 ---
 
@@ -215,5 +304,5 @@ makes your content break on our schedule.
 | the machine refuses your piece | no stage its fitted tooling's family accepts, or the tooling does not accept that stock at all |
 | your item shows its raw code | no `item-<code>` lang entry — ship your own strings |
 | your patch added a route but no item | patches land after item generation; ship your own catalogue file instead |
-| nothing at all, and the log says "invalid process route" | the message names the file and the field |
+| nothing at all, and the log has an `Error` line under `processroutes` | the message names the file and the field |
 | your stage was ignored | someone declared that `(thickness, family)` first; the log names the clash |

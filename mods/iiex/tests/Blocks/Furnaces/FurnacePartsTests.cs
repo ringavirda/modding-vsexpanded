@@ -44,7 +44,7 @@ public class FurnacePartsTests {
         "iiex",
         typeof(BlockStructures.Furnaces.Blocks.BlockPuddlingHearth).Assembly
       ),
-      ("exlib", typeof(ExpandedLib.Blocks.Structures.StructureFillers).Assembly)
+      ("exlib", typeof(ExpandedLib.Structures.StructureFillers).Assembly)
     );
     Assert.True(
       missing.Count == 0,
@@ -72,7 +72,7 @@ public class FurnacePartsTests {
         "iiex",
         typeof(BlockStructures.Furnaces.Blocks.BlockPuddlingHearth).Assembly
       ),
-      ("exlib", typeof(ExpandedLib.Blocks.Structures.StructureFillers).Assembly)
+      ("exlib", typeof(ExpandedLib.Structures.StructureFillers).Assembly)
     );
     Assert.True(
       pinned.Count == 0,

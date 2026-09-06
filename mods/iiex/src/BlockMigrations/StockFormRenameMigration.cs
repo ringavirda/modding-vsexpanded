@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Migrations;
+using ExpandedLib.Migrations;
 using IronIndustryExpanded.BlockStructures.Forming;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;

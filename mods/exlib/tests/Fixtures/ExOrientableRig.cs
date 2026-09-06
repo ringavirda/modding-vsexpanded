@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Behaviors;
+using ExpandedLib.Blocks;
 using ExpandedLib.Testing;
-using NSubstitute;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
@@ -218,34 +216,19 @@ public sealed class ExOrientableRig {
 
   #region Wiring
 
-  private static IPlayer PlayerAt(double x, double y, double z) {
-    var player = Substitute.For<IPlayer>();
-    var entity = Substitute.For<EntityPlayer>();
-    entity.Pos.SetPos(x, y, z);
+  private IPlayer PlayerAt(double x, double y, double z) {
+    TestPlayer player = World.Player();
+    player.Entity.Pos.SetPos(x, y, z);
     // Zeroed rather than the real ~1.7 m: SuggestedHVOrientation adds LocalEyePos to the entity
     // position before taking the angle, so eye height tilts the vertical component only and zeroing
     // it keeps the horizontal arithmetic exact.
-    entity.LocalEyePos = new Vec3d(0, 0, 0);
-    player.Entity.Returns(entity);
-    return player;
+    player.Entity.LocalEyePos = new Vec3d(0, 0, 0);
+    return player.Player;
   }
 
   private void CaptureLoggedErrors() {
     LoggedErrors.Clear();
-    foreach (
-      var call in World
-        .World.Logger.ReceivedCalls()
-        .Where(c => c.GetMethodInfo().Name == nameof(ILogger.Error))
-    ) {
-      object?[] args = call.GetArguments();
-      if (args.Length == 0 || args[0] is not string format)
-        continue;
-      object?[] rest =
-        args.Length > 1 && args[1] is object?[] varargs
-          ? varargs
-          : [.. args.Skip(1)];
-      LoggedErrors.Add(rest.Length == 0 ? format : string.Format(format, rest));
-    }
+    LoggedErrors.AddRange(World.Log.Errors);
   }
 
   #endregion

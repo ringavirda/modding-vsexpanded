@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExpandedLib.Registries.Config;
+using ExpandedLib.Config;
 using Vintagestory.API.Common;
 
 namespace IronIndustryExpanded;
@@ -89,6 +89,16 @@ public class IiexConfig : IExVersionedConfig {
   /// mold. Always applies to cast molds, and to vanilla clay molds when
   /// <see cref="EnhanceVanillaMolds"/> is on.</summary>
   public float MoldBurnMinTemperature { get; set; } = 200f;
+
+  /// <summary>Item code recovered when a molten metal's solid drop cannot be resolved and the metal
+  /// declares no <c>RecoveryFallback</c> of its own. Not read at load: <c>IronIndustryExpandedModSystem
+  /// .Start</c> copies it into <c>ExpandedLib.Industry.Metals.MetalRegistry.DefaultRecoveryFallback</c>,
+  /// the field <c>MetalRegistry.FallbackOf</c> actually consults, and that method runs at interaction
+  /// time (a molten chisel hit), long after every mod's <c>Start</c> has run - mod start order is by
+  /// <c>ExecuteOrder</c>, not by dependency, so iiex cannot rely on running before a consumer. Moved
+  /// here from exlib's own config, since "what to drop instead" is iiex's own knowledge, not the
+  /// framework's.</summary>
+  public string MetalRecoveryFallback { get; set; } = "iiex:slag-block";
 
   // The per-connection flow driver (MoltenFlowRate, MoltenMinFlowAmount) lives in exlib's config
   // alongside MoltenNetwork. The cooldown values above are read by iiex's MoltenMetal/canal cells.
@@ -335,7 +345,7 @@ public class IiexConfig : IExVersionedConfig {
   /// over this reference, so <c>game:coke</c> (value 2) is 1.0 and <c>game:charcoal</c> (value 1) is 0.5;
   /// a fuel granted the role with no value takes the registry fallback of 1.0, half of coke. The per-fuel
   /// values live in <c>assets/iiex/config/materialroles.json</c>, read through
-  /// <see cref="ExpandedLib.Materials.MaterialRoleRegistry"/>. Moving this key changes the meaning of every coke figure here.
+  /// <see cref="ExpandedLib.Catalogues.MaterialRoleRegistry"/>. Moving this key changes the meaning of every coke figure here.
   /// </summary>
   public float BfFuelCarbonReference { get; set; } = 2f;
 

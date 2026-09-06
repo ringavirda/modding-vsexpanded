@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -46,7 +46,7 @@ public class MultiblockProjectionTests {
     world.Attach(be);
     // Prime _structure, the layout OwnsCell walks. Completeness is set explicitly rather than built in
     // the world: the resolver gates on the StructureComplete flag, not a live recount.
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     ReflectionHelpers.SetProperty(be, nameof(be.StructureComplete), complete);
     return be;
   }

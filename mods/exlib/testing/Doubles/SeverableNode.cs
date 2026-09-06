@@ -1,6 +1,6 @@
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// A <see cref="BlockEntityNetworkNode"/> whose connectivity can be toggled at runtime, covering the

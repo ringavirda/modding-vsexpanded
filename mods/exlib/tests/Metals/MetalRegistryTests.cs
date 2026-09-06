@@ -1,5 +1,6 @@
 using ExpandedLib;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using Vintagestory.API.Common;
 using Xunit;
 
@@ -73,11 +74,24 @@ public class MetalRegistryTests {
   }
 
   [Fact]
-  public void FallbackOf_defaults_to_the_global_recovery_fallback() {
-    Assert.Equal(
-      ExlibValues.MetalRecoveryFallback,
-      MetalRegistry.FallbackOf(new AssetLocation("game:ingot-iron")).ToString()
-    );
+  public void FallbackOf_is_null_with_no_default_set() {
+    // exlib ships no metal and no default of its own; a content mod opts in through
+    // MetalRegistry.DefaultRecoveryFallback (see FallbackOf_uses_the_registered_default).
+    Assert.Null(MetalRegistry.FallbackOf(new AssetLocation("game:ingot-iron")));
+  }
+
+  [Fact]
+  public void FallbackOf_uses_the_registered_default() {
+    var previous = MetalRegistry.DefaultRecoveryFallback;
+    try {
+      MetalRegistry.DefaultRecoveryFallback = new AssetLocation("test:fallback");
+      Assert.Equal(
+        "test:fallback",
+        MetalRegistry.FallbackOf(new AssetLocation("game:ingot-iron"))?.ToString()
+      );
+    } finally {
+      MetalRegistry.DefaultRecoveryFallback = previous;
+    }
   }
 
   [Fact]
@@ -124,7 +138,7 @@ public class MetalRegistryTests {
     Assert.Equal(0.9f, MetalRegistry.LiquidThresholdOf(slag));
     Assert.Equal(0.2f, MetalRegistry.HardenedThresholdOf(slag));
     Assert.Equal(520f, MetalRegistry.GlowMinTempOf(slag));
-    Assert.Equal("game:ingot-iron", MetalRegistry.FallbackOf(slag).ToString());
+    Assert.Equal("game:ingot-iron", MetalRegistry.FallbackOf(slag)!.ToString());
     Assert.Equal(new[] { "molten", "slurry" }, MetalRegistry.MediaOf(slag));
   }
 

@@ -1,5 +1,5 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Vintagestory.API.Common;
@@ -152,8 +152,8 @@ public static class PipeTestWorld {
       ("type", "straight"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(pipe, "Type", "straight");
-    ReflectionHelpers.SetProperty(pipe, "Orientation", orientation);
+    pipe.SetNetworkTypeForTest("straight");
+    pipe.ApplyOrientationForTest(orientation);
     return pipe;
   }
 
@@ -171,8 +171,8 @@ public static class PipeTestWorld {
       ("type", "tuyere"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(tuyere, "Type", "tuyere");
-    ReflectionHelpers.SetProperty(tuyere, "Orientation", orientation);
+    tuyere.SetNetworkTypeForTest("tuyere");
+    tuyere.ApplyOrientationForTest(orientation);
     return tuyere;
   }
 

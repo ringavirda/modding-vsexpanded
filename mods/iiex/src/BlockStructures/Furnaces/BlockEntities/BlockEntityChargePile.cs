@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
@@ -28,6 +29,8 @@ public class BlockEntityChargePile : BlockEntityFurnacePart {
   // runs off-thread, where walking the world for the anchor or enumerating ChargeColumn's segment list (a
   // List<T> the client clears and refills on every core sync) throws. The mesh therefore reads only the
   // snapshot published in #region Render snapshot.
+
+  protected override void DeclareState(ExBlockState state) { }
 
   #region Reading the column
 

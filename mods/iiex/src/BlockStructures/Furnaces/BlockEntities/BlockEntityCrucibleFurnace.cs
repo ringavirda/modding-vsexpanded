@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -27,7 +27,7 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 public class BlockEntityCrucibleFurnace : BlockEntityFireboxFurnace {
   #region Geometry
 
-  // No `ShaftMin`/`ShaftMax` override: the drawing marks its one `H` cell `CellRole.Firebox` and the base
+  // No `ShaftMin`/`ShaftMax` override: the drawing marks its one `H` cell `FurnaceCellRoles.Firebox` and the base
   // derives the same single-cell box from it. The fire and the work are the same cell here, which is what
   // separates this furnace from the two reverberatory hearths.
 
@@ -62,14 +62,14 @@ public class BlockEntityCrucibleFurnace : BlockEntityFireboxFurnace {
 
   /// <summary>The chimney damper, at the foot of the stack rather than over its top.</summary>
   /// <remarks>
-  /// Read off <see cref="CellRole.Damper"/> rather than off the branch's own cap, which it resolves at the
+  /// Read off <see cref="FurnaceCellRoles.Damper"/> rather than off the branch's own cap, which it resolves at the
   /// cell above the highest flue course. On this furnace everything above that course is the player's
   /// chimney, so the branch would find brick or sky and report an unregulated stack - which reads as
   /// permanently open, and permanently open is what destroys every pot.
   /// </remarks>
   public BlockEntityPuddlingChimneyCap? Damper {
     get {
-      IReadOnlyList<BlockPos> cells = CellsWithRole(CellRole.Damper);
+      IReadOnlyList<BlockPos> cells = CellsWithRole(FurnaceCellRoles.Damper);
       return cells.Count == 0
         ? null
         : Api?.World.BlockAccessor.GetBlockEntity(cells[0])
@@ -116,7 +116,7 @@ public class BlockEntityCrucibleFurnace : BlockEntityFireboxFurnace {
   /// a bounded walk; past the peak the draught declines anyway.
   /// </remarks>
   public int WalkChimney() {
-    IReadOnlyList<BlockPos> flue = CellsWithRole(CellRole.Flue);
+    IReadOnlyList<BlockPos> flue = CellsWithRole(FurnaceCellRoles.Flue);
     if (flue.Count == 0 || Api?.World == null)
       return 0;
 

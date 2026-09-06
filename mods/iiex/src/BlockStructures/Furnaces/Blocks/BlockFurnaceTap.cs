@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Client;
@@ -20,7 +21,7 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 /// what comes out runs into the canal start beneath the spout. Two blocktypes: the iron notch at the
 /// crucible floor and the cinder notch higher in the same wall, below the tuyeres. Each carries its own
 /// code, so a layout glyph names the tap it means and the wrong one built in a tap cell does not
-/// complete the structure; <see cref="CellRole.MetalTap"/> and <see cref="CellRole.SlagTap"/> serve only
+/// complete the structure; <see cref="FurnaceCellRoles.MetalTap"/> and <see cref="FurnaceCellRoles.SlagTap"/> serve only
 /// the lookup (<c>MetalTapPos</c> / <c>SlagTapPos</c>).
 /// <para>
 /// Each type draws its own shape, and the two encode their notch heights: both taps belong at layout y=1
@@ -269,7 +270,7 @@ public partial class BlockFurnaceTap : Block, IExBlockDefProvider {
   /// The stack a picked or mined tap becomes: this tap's own type, normalised to the <c>s</c> facing so a
   /// mined tap stacks with a crafted one instead of splitting the inventory four ways. The type is
   /// carried through, so an iron tap never comes back as a slag tap. <c>s</c> rather than
-  /// <see cref="ExpandedLib.Blocks.Behaviors.BlockBehaviorExOrientable"/>'s canonical <c>n</c>, to match the creative entry
+  /// <see cref="ExpandedLib.Blocks.BlockBehaviorExOrientable"/>'s canonical <c>n</c>, to match the creative entry
   /// (<c>*-s</c>) and both grid recipes; these overrides do not call base, so the behaviour's own
   /// normalisation never runs here. A code that resolves to no block falls back to <c>this</c>, so a
   /// wrong token stops normalisation silently rather than failing.

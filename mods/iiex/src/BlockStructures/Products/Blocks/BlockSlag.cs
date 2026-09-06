@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -25,7 +25,6 @@ public partial class BlockSlag : Block, IExBlockDefProvider {
         .Resistance(3.0f)
         .MaxStackSize(64)
         .MiningTier(2)
-        .MineTool(EnumTool.Pickaxe)
         .Sounds(
           "game:block/stone",
           "game:block/stone",

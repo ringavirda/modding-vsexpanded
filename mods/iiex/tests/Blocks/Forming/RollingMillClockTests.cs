@@ -1,5 +1,6 @@
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -35,8 +36,8 @@ public class RollingMillClockTests {
       ("type", "rollingmill"),
       ("orientation", "we")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "rollingmill");
-    ReflectionHelpers.SetProperty(block, "Orientation", "we");
+    block.SetNetworkTypeForTest("rollingmill");
+    block.ApplyOrientationForTest("we");
 
     var pos = new BlockPos(0, 0, 0);
     var mill = new BlockEntityRollingMill();

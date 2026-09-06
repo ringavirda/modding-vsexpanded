@@ -1,4 +1,4 @@
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 
 namespace IronIndustryExpanded.BlockStructures.Forming;
 

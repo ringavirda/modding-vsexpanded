@@ -16,10 +16,12 @@ content-specific pieces through the seams below. You register your own network t
 > host for that behaviour, so the two routes join immediately. See
 > [Production Machines](Production-Machines) for the same split on the process axis.
 
-The code sits in two namespaces, and you will usually import both: **`ExpandedLib.Networks`** holds the
-graph model (`BlockNetwork` and its subclasses, `PipeNetworkState`, and every `I*Node`/`I*Connector`
-contract) - no Vintage Story block types involved - while **`ExpandedLib.Blocks.Networks`** holds the
-engine-facing shell (`BlockNetworkNode`, `BlockEntityNetworkNode`, `BlockNetworkModSystem`).
+The model (`BlockNetwork` and every `I*Node`/`I*Connector` interface - no Vintage Story block types
+involved) and the engine-facing shell (`BlockNetworkNode`, `BlockEntityNetworkNode`,
+`BlockNetworkModSystem`) now share one namespace, **`ExpandedLib.Networks`**; a modder building a
+network imports it once. **`ExpandedLib.Industry.Pipes`** / **`ExpandedLib.Industry.Molten`** hold
+the shipped `PipeNetwork`/`PipeNetworkState` and `MoltenNetwork` themselves, alongside their own node
+blocks and block entities.
 
 Network tunables (litres per pipe, leak/evaporation rates, over-pressure grace, molten flow rate
 and minimum) live in exlib's own config, `ExlibValues` (the `exlib` section of `ModConfig/ex_values.json`,
@@ -73,15 +75,16 @@ through small interfaces the mods implement, never by naming a mod's block type:
 
 ## Defining a node block
 
+The orientation table is not hand-written: `BlockNetworkNode` derives it from this class's own
+code-first definitions, so the shape's `type` x `orientation` map lives in the variant groups and in
+one place only.
+
 ```csharp
 [BlockRegister]
 public partial class MyPipe : BlockNetworkNode, IExBlockDefProvider
 {
     public override string NetworkType => "pipe";
 
-    // The orientation table is NOT hand-written: BlockNetworkNode derives it from this class's own
-    // code-first definitions, so the shape "type" -> orientations map lives in the variant groups and
-    // in one place only.
     public static IEnumerable<ExBlockDef> Definitions(string domain) =>
     [
         ExBlockDef.Create(domain, "mypipe")

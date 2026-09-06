@@ -1,6 +1,7 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Vintagestory.API.MathTools;
@@ -110,7 +111,7 @@ public class FurnaceGeometryTests {
     // The cupola is the narrow furnace: a single tuyere, and an open top that is its own stack, so no
     // pipe outlet. Both blast furnaces mark two tuyeres, so a role copied from either drawing onto this
     // one is caught by the count.
-    Assert.Single(RoleCellsOf(CupolaDef(), CellRole.Tuyere));
+    Assert.Single(RoleCellsOf(CupolaDef(), FurnaceCellRoles.Tuyere));
     AssertNoExhaustOutlets(CupolaDef());
   }
 

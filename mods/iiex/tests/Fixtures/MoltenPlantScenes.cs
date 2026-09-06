@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -19,7 +19,7 @@ namespace IronIndustryExpanded.Tests;
 /// pedestal casting into a tool mold, or a canal tap draining into a parked barrel. The molten network
 /// flows the metal, the fittings drain it each server tick.
 /// </summary>
-internal sealed class CastingLine {
+internal sealed class CastingLine : MachineRig {
   private const string Iron = "game:ingot-iron";
 
   public readonly BlockEntityMoltenCanal Head;
@@ -39,7 +39,8 @@ internal sealed class CastingLine {
     BlockPos origin,
     int length,
     bool endsInPedestal
-  ) {
+  )
+    : base(scene.World) {
     _scene = scene;
     scene.World.RegisterItem(Iron, 1500f);
 
@@ -83,8 +84,8 @@ internal sealed class CastingLine {
       ("type", "straight"),
       ("orientation", "ns")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "straight");
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest("straight");
+    block.ApplyOrientationForTest("ns");
     return block;
   }
 
@@ -117,13 +118,13 @@ internal sealed class CastingLine {
   /// drain tick is driven here rather than by the scene's listener pump, keeping the order fixed.
   /// </summary>
   public CastingLine Run(int ticks) {
-    for (int i = 0; i < ticks; i++) {
-      _scene.Step(1); // molten network flow + cooling
+    // molten network flow + cooling, then each fitting drains its own cell
+    RunLive(ticks, _ => {
       if (Pedestal != null)
         ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
       if (Tap != null)
         ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
-    }
+    });
     return this;
   }
 
@@ -149,7 +150,7 @@ internal sealed class CastingLine {
 /// A canal's connectors come off its orientation string, so a west-east cell and a north-south one are
 /// different blocks - one glyph for both lays a run that is severed in the world.
 /// </summary>
-internal sealed class CastingYard {
+internal sealed class CastingYard : MachineRig {
   private const string Iron = "game:ingot-iron";
 
   public readonly BlockEntityMoltenCanal Head;
@@ -159,7 +160,8 @@ internal sealed class CastingYard {
   private readonly Scene _scene;
   private readonly List<BlockEntityMoltenCanal> _cells = [];
 
-  public CastingYard(Scene scene, BlockPos origin) {
+  public CastingYard(Scene scene, BlockPos origin)
+    : base(scene.World) {
     _scene = scene;
     scene.World.RegisterItem(Iron, 1500f);
 
@@ -238,8 +240,8 @@ internal sealed class CastingYard {
       ("type", "straight"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(block, "Type", "straight");
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+    block.SetNetworkTypeForTest("straight");
+    block.ApplyOrientationForTest(orientation);
     return block;
   }
 
@@ -274,11 +276,10 @@ internal sealed class CastingYard {
 
   /// <summary>Advances the yard: network flow, then each fitting drains its own cell.</summary>
   public CastingYard Run(int ticks) {
-    for (int i = 0; i < ticks; i++) {
-      _scene.Step(1);
+    RunLive(ticks, _ => {
       ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
       ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
-    }
+    });
     return this;
   }
 

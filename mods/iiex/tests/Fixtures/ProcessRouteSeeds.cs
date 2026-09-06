@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using Xunit;
 
@@ -10,7 +10,7 @@ namespace IronIndustryExpanded.Tests;
 /// <summary>
 /// The shipped stage routes, read off the source tree exactly as the game reads them out of the asset
 /// manager. Headless there is no asset manager for
-/// <see cref="ExpandedLib.Processes.ProcessRouteLoader"/> to read, so this stands in for it - and because it
+/// <see cref="ExpandedLib.Catalogues.ProcessRouteLoader"/> to read, so this stands in for it - and because it
 /// goes through the same parser on the same files, a route that would not load in game does not load here.
 /// </summary>
 public static class ProcessRouteSeeds {

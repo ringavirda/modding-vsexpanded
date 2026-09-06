@@ -1,0 +1,5 @@
+blockCode:string
+posx:int
+posy:int
+posz:int
+slagCount:int

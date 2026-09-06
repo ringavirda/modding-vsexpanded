@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
@@ -32,7 +32,7 @@ public class ItemBlisterWorkItem
         .Class<ItemBlisterWorkItem>()
         // The metal variant drives the vanilla voxel render, via the ingot-pile "blistersteel" texture.
         .VariantGroup("metal", "blistersteel")
-        .Raw("texture", new { @base = "game:block/metal/ingot/blistersteel" })
+        .RootKey("texture", new { @base = "game:block/metal/ingot/blistersteel" })
         .MaxStackSize(1)
         .StorageFlags(5)
         .MaterialDensity(7720)

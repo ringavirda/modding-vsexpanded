@@ -1,5 +1,6 @@
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -14,9 +15,11 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityChargeDoor : BlockEntityFurnacePart {
   /// <summary>Whether the main door stands open.</summary>
+  [Persist("mainOpen")]
   public bool MainOpen { get; private set; }
 
   /// <summary>Whether the small working door stands open. Always false on a door that has none.</summary>
+  [Persist("smallOpen")]
   public bool SmallOpen { get; private set; }
 
   /// <summary>True when this blocktype was authored with a small working door (the puddling variant).</summary>
@@ -104,21 +107,15 @@ public class BlockEntityChargeDoor : BlockEntityFurnacePart {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("mainOpen", MainOpen);
-    tree.SetBool("smallOpen", SmallOpen);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool wasMain = MainOpen;
     bool wasSmall = SmallOpen;
-    MainOpen = tree.GetBool("mainOpen");
-    SmallOpen = tree.GetBool("smallOpen");
+    base.FromTreeAttributes(tree, worldForResolving);
     // Re-pose only on a real change: FromTree runs on every sync, and re-starting a clip that is already
     // running restarts its ease and makes the door twitch.
     if (

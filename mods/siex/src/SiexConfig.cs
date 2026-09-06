@@ -1,4 +1,4 @@
-using ExpandedLib.Registries.Config;
+using ExpandedLib.Config;
 using Vintagestory.API.Common;
 
 namespace SteelIndustryExpanded;

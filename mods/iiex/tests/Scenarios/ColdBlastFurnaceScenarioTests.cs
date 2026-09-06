@@ -1,5 +1,6 @@
 using System;
-using ExpandedLib.Materials;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Catalogues;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using IronIndustryExpanded.Items;

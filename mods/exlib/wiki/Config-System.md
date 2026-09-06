@@ -1,6 +1,6 @@
 # Config System
 
-`Registries/Config/` is a generic, versioned, source-generated config system for gameplay
+`Config/` is a generic, versioned, source-generated config system for gameplay
 tunables. You write a plain POCO, tag it, and a generator emits a static accessor with typed
 getters, `Load`/`Save`/`Edit`, range validation, version-reset migrations, legacy-file folding
 and optional live editing through `/exmod config`.
@@ -195,6 +195,8 @@ public interface IExConfigAccess
     IReadOnlyList<string> ValueNames { get; }
     bool TryGet(string name, out string canonicalName, out string value);
     ExConfigEditResult Set(string name, string raw);
+    string ExportJson();
+    void ImportJson(string json);
 }
 
 public enum ExConfigEditStatus { Ok, UnknownValue, ParseFailed, OutOfRange }
@@ -220,6 +222,28 @@ public static class ExConfigProfiles
 Only simple-typed values are surfaced for editing: `string`, `bool`, `int`, `long`, `float` and
 `double`, and only when the property has a setter.
 
+## What the client sees
+
+Each side loads its own `ex_values.json` (or whatever file your config uses) independently -
+nothing crosses the wire on its own. That means a client's display, handbook and predictions
+normally read *its own* local tuning, not the host's, whenever it differs. `ExConfigSyncModSystem`
+closes that gap for every `Manageable` config, at three rungs:
+
+- **Nothing to do.** On join, the server sends every registered section (see `ExConfigProfiles`) to
+  the connecting client, which imports each one into its matching store. A `Manageable` config just
+  gets this for free.
+- **`/exmod config set` reaches players.** After a successful edit the command broadcasts the
+  changed section to everyone connected, so a live tweak takes effect without a reconnect - the same
+  as it already did for the host itself.
+- **`ImportJson` directly**, for a mod that carries its own transport (a config that is not
+  `Manageable`, or a sync path that needs different timing than join/edit): call
+  `IExConfigAccess.ExportJson()` on the sending side and `ImportJson(json)` on the receiving one.
+
+An import never touches the client's own config file - it replaces only the live, in-memory values
+every reader goes through the accessor's getters to see, the same way `Edit` does, minus the write.
+In singleplayer both sides already share one process and one store, so the import is a same-values
+no-op.
+
 ## The underlying store (if you skip the generator)
 
 The generated accessor wraps `ExConfigRegister<TConfig>`; you can use it directly if you prefer:
@@ -242,6 +266,10 @@ public sealed class ExConfigRegister<TConfig> : IExConfigAccess
     public IReadOnlyList<string> ValueNames { get; }
     public bool TryGet(string name, out string canonicalName, out string value);
     public ExConfigEditResult Set(string name, string raw);
+
+    // the IExConfigAccess view ExConfigSyncModSystem drives
+    public string ExportJson();
+    public void ImportJson(string json);
 }
 ```
 

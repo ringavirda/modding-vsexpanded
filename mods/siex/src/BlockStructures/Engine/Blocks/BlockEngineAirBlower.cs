@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Engine;
 using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using SteelIndustryExpanded.BlockStructures.Engine.BlockEntities;

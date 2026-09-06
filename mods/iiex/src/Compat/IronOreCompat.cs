@@ -1,4 +1,5 @@
-using ExpandedLib.Materials;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Catalogues;
 using Vintagestory.API.Common;
 
 namespace IronIndustryExpanded.Compat;

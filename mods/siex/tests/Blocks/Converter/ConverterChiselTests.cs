@@ -1,4 +1,5 @@
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten;
@@ -54,7 +55,7 @@ public class ConverterChiselTests {
       ),
     };
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     return be;
   }
 

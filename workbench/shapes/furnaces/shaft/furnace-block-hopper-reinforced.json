@@ -7,9 +7,9 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron3": "game:block/metal/riveted/iron3",
+    "iron3": "block/metal/riveted/iron3",
     "iron4": "block/metal/sheet/iron4",
-    "stone": "game:block/coal/orecoalmix"
+    "stone": "block/coal/orecoalmix"
   },
   "elements": [
     {

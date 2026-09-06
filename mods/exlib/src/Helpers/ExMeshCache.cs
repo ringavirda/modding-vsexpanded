@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -82,4 +83,57 @@ public static class ExMeshCache {
       .Shape.Base.Clone()
       .WithPathPrefixOnce("shapes/")
       .WithPathAppendixOnce(".json");
+
+  // Uploaded refs live behind their own prefix, and each group under it holds its own dictionary -
+  // a ref is GPU-backed and must be Dispose()d explicitly rather than merely dropped, unlike the plain
+  // MeshData cache above.
+  private const string RefPrefix = "exlib:meshref:";
+
+  /// <summary>
+  /// The uploaded GPU mesh ref for <paramref name="key"/> within <paramref name="group"/>, building and
+  /// uploading it through <paramref name="build"/> the first time it is asked for. A group is a set of
+  /// refs disposed together, e.g. every fill-level variant one blocktype has ever rendered; give it a
+  /// key stable across the block's lifetime, such as its code, and pass it again to
+  /// <see cref="DisposeGroup"/> when the block unloads.
+  /// </summary>
+  public static MultiTextureMeshRef GetOrCreateRef(
+    ICoreClientAPI capi,
+    string group,
+    string key,
+    Func<MeshData> build
+  ) {
+    Dictionary<string, MultiTextureMeshRef> refs = GetGroup(capi, group);
+    if (!refs.TryGetValue(key, out MultiTextureMeshRef? meshRef)) {
+      meshRef = capi.Render.UploadMultiTextureMesh(build());
+      refs[key] = meshRef;
+    }
+    return meshRef;
+  }
+
+  private static Dictionary<string, MultiTextureMeshRef> GetGroup(
+    ICoreClientAPI capi,
+    string group
+  ) =>
+    ObjectCacheUtil.GetOrCreate(
+      capi,
+      RefPrefix + group,
+      () => new Dictionary<string, MultiTextureMeshRef>()
+    );
+
+  /// <summary>
+  /// Disposes and drops every ref <see cref="GetOrCreateRef"/> has uploaded under <paramref name="group"/>
+  /// - the counterpart to call from <c>OnUnloaded</c>. A no-op when the group was never populated (e.g.
+  /// the block was never rendered).
+  /// </summary>
+  public static void DisposeGroup(ICoreAPI api, string group) {
+    string cacheKey = RefPrefix + group;
+    if (
+      api.ObjectCache.TryGetValue(cacheKey, out object? existing)
+      && existing is Dictionary<string, MultiTextureMeshRef> refs
+    ) {
+      foreach (MultiTextureMeshRef meshRef in refs.Values)
+        meshRef.Dispose();
+      api.ObjectCache.Remove(cacheKey);
+    }
+  }
 }

@@ -1,6 +1,5 @@
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Testing;
-using ExpandedLib.Testing.Doubles;
 using Vintagestory.API.MathTools;
 using Xunit;
 

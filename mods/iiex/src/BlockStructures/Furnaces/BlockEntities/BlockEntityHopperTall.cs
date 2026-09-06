@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -20,12 +22,13 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 /// so it holds one grade at a time and a mismatched deposit is refused. All player interaction arrives from
 /// the hopper's top filler cell through
 /// <see cref="IronIndustryExpanded.BlockStructures.Furnaces.Blocks.BlockHopperTall"/>
-/// (<see cref="ExpandedLib.Blocks.Structures.IFillerInteractionTarget"/>) rather than the base block.
+/// (<see cref="ExpandedLib.Structures.IFillerInteractionTarget"/>) rather than the base block.
 /// See docs/design/machines/tall-hopper.md.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent {
+public class BlockEntityHopperTall : ExBlockEntity, IMultiblockComponent {
   // The whole tank is one burden stack (item identity = family, attributes = grade). Null when empty.
+  [Persist]
   private ItemStack? _tank;
 
   // The hopper feeds the shaft below, so it also surfaces the furnace's burden slice: how much charge is
@@ -198,51 +201,15 @@ public class BlockEntityHopperTall : BlockEntity, IMultiblockComponent {
 
   #region Serialization
 
+  protected override void DeclareState(ExBlockState state) { }
+
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _tank = tree.GetItemstack("tank");
-    _tank?.ResolveBlockOrItem(worldForResolving);
     // A resolved-away stack (the item no longer exists) or a zero stack reads as empty.
     if (_tank?.Collectible == null || _tank.StackSize <= 0)
-      _tank = null;
-  }
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (_tank != null)
-      tree.SetItemstack("tank", _tank);
-  }
-
-  /// <summary>Maps the tank's burden stack, so a hopper pasted into another world resolves its
-  /// contents against that world's item ids rather than this one's.</summary>
-  public override void OnStoreCollectibleMappings(
-    Dictionary<int, AssetLocation> blockIdMapping,
-    Dictionary<int, AssetLocation> itemIdMapping
-  ) =>
-    _tank?.Collectible.OnStoreCollectibleMappings(
-      Api.World,
-      new DummySlot(_tank),
-      blockIdMapping,
-      itemIdMapping
-    );
-
-  public override void OnLoadCollectibleMappings(
-    IWorldAccessor worldForResolve,
-    Dictionary<int, AssetLocation> oldBlockIdMapping,
-    Dictionary<int, AssetLocation> oldItemIdMapping,
-    int schematicSeed,
-    bool resolveImports
-  ) {
-    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
-    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
-    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
-    if (
-      _tank?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
-      == false
-    )
       _tank = null;
   }
 

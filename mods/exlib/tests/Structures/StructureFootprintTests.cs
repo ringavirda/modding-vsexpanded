@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using Xunit;
 
 namespace ExpandedLib.Tests;

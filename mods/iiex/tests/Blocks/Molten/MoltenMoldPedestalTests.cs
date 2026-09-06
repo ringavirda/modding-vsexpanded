@@ -1,6 +1,7 @@
 using System;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten;

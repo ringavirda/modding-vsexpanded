@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Recipes;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Process-wide registry of <see cref="RecipeProfile"/>s keyed by mod code, for mods that expose

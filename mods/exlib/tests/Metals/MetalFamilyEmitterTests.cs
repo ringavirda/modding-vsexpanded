@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExpandedLib.Definitions;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -298,7 +299,7 @@ public class MetalFamilyEmitterTests {
       Tools = new MetalToolSpec { Preset = "good", ToolTypes = ["pickaxe"] },
     };
 
-    ExItemDef only = Assert.Single(Emit(m).Where(IsTool));
+    ExItemDef only = Assert.Single(Emit(m), IsTool);
     Assert.Equal("pickaxe-foo", only.Code);
   }
 
@@ -316,7 +317,7 @@ public class MetalFamilyEmitterTests {
       },
     };
 
-    ExItemDef only = Assert.Single(Emit(m).Where(IsTool));
+    ExItemDef only = Assert.Single(Emit(m), IsTool);
     Assert.Equal("pickaxe-foo", only.Code);
   }
 

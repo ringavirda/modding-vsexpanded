@@ -1,6 +1,6 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Registries;
 
 namespace IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
 

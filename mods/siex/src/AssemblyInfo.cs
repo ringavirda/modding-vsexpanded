@@ -1,4 +1,4 @@
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 
 // The domain every registrable type in this assembly is keyed under, and the assets/<domain>/ tree it
 // ships as. Declared here rather than derived from the mod id at registration time so a key resolves

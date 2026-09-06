@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -13,14 +14,14 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces;
 /// boilers carry a firebox inside their own shape and compose it from their own block entity.
 /// <para>
 /// State is per cell; the shared pool a furnace presents is a distribution rule, not shared storage -
-/// <see cref="Blocks.BlockFirebox"/> spreads a deposit across every <c>CellRole.Firebox</c> cell of the
+/// <see cref="Blocks.BlockFirebox"/> spreads a deposit across every <c>FurnaceCellRoles.Firebox</c> cell of the
 /// owning furnace. Keeping the units local means no cell owns the save and an orphaned firebox still holds
 /// the fuel it is drawing. See docs/design/machines/firebox.md.
 /// </para>
 /// </summary>
 [BlockEntityBehaviorRegister]
 public class BEBehaviorFirebox(BlockEntity blockentity)
-  : BlockEntityBehavior(blockentity) {
+  : ExBlockEntityBehavior(blockentity) {
   #region Fuel
 
   /// <summary>
@@ -286,23 +287,20 @@ public class BEBehaviorFirebox(BlockEntity blockentity)
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("fireboxUnits", Units);
-    // Written even when null so that emptying the bed clears the key; a stale code would make the next
-    // deposit fail as a fuel mismatch.
-    tree.SetString("fireboxFuel", FuelCode ?? "");
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldAccessForResolve
-  ) {
-    base.FromTreeAttributes(tree, worldAccessForResolve);
-    Units = tree.GetInt("fireboxUnits");
-    string fuel = tree.GetString("fireboxFuel") ?? "";
-    FuelCode = fuel.Length == 0 ? null : fuel;
-  }
+  // Hand-declared rather than [Persist]: the fuel code is written even when null so that emptying the
+  // bed clears the key (a stale code would make the next deposit fail as a fuel mismatch), which is not
+  // what ExBlockState.String's skip-on-null does.
+  protected override void DeclareState(ExBlockState state) =>
+    state
+      .Int("fireboxUnits", () => Units, v => Units = v)
+      .Tree(
+        "fireboxFuel",
+        t => t.SetString("fireboxFuel", FuelCode ?? ""),
+        (t, _) => {
+          string fuel = t.GetString("fireboxFuel") ?? "";
+          FuelCode = fuel.Length == 0 ? null : fuel;
+        }
+      );
 
   #endregion
 

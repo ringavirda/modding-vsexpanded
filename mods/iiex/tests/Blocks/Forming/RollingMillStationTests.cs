@@ -1,8 +1,8 @@
 using System.Linq;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;

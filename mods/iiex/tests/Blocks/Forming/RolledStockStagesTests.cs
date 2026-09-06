@@ -1,6 +1,6 @@
 using System.IO;
 using System.Linq;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using Newtonsoft.Json.Linq;
@@ -129,7 +129,7 @@ public class RolledStockStagesTests {
   [MemberData(nameof(DrawnStages))]
   public void A_drawn_stage_conserves_the_metal_it_started_with(
     string formName,
-    float thickness,
+    float _,
     string element
   ) {
     // Volume rather than length: past the width ceiling the reduction runs out lengthways, so a length

@@ -8,10 +8,10 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "front1": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/refractory/tier3/front1",
-    "burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned",
-    "iron3": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/riveted/iron3",
-    "iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
+    "front1": "block/clay/refractory/tier3/front1",
+    "burned": "block/clay/vessel/sides/burned",
+    "iron3": "block/metal/riveted/iron3",
+    "iron5": "block/metal/sheet-plain/iron5"
   },
   "elements": [
     {

@@ -2,8 +2,10 @@
   "code": "forming",
   "class": "iiex.BlockRollingMillAxle",
   "entityClass": "iiex.BlockEntityRollingMillAxle",
-  "handbook": {
-    "exclude": true
+  "attributes": {
+    "handbook": {
+      "exclude": true
+    }
   },
   "blockmaterial": "Metal",
   "shape": {

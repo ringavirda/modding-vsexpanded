@@ -27,14 +27,72 @@ public static class ExDefinitions {
     d.Location.ToString()
   );
 
+  // Location -> the assembly whose provider last registered it, so a re-registration from a different
+  // assembly (two mods claiming the same asset path) can be told apart from a mod simply reloading its
+  // own defs, which happens every world start.
+  private static readonly Dictionary<string, Assembly> _blockProviders = new(
+    StringComparer.Ordinal
+  );
+  private static readonly Dictionary<string, Assembly> _itemProviders = new(
+    StringComparer.Ordinal
+  );
+  private static readonly Dictionary<string, Assembly> _recipeProviders = new(
+    StringComparer.Ordinal
+  );
+
+  /// <summary>Log sink for exlib's own definition diagnostics (the re-registration notification); set
+  /// once by <see cref="ExDefinitionModSystem"/> or <see cref="ExpandedLibModSystem.Start"/>. Null
+  /// before startup and in tests that never wire it, in which case diagnostics are silently skipped.
+  /// </summary>
+  public static ILogger? Logger { get; set; }
+
   /// <summary>Registers (or replaces) a code-first block definition.</summary>
-  public static void RegisterBlock(ExBlockDef def) => _blocks.Register(def);
+  public static void RegisterBlock(ExBlockDef def) =>
+    RegisterBlock(def, Assembly.GetCallingAssembly());
+
+  internal static void RegisterBlock(ExBlockDef def, Assembly providerAssembly) {
+    TrackProvider(_blockProviders, def.Location.ToString(), providerAssembly);
+    _blocks.Register(def);
+  }
 
   /// <summary>Registers (or replaces) a code-first item definition.</summary>
-  public static void RegisterItem(ExItemDef def) => _items.Register(def);
+  public static void RegisterItem(ExItemDef def) =>
+    RegisterItem(def, Assembly.GetCallingAssembly());
+
+  internal static void RegisterItem(ExItemDef def, Assembly providerAssembly) {
+    TrackProvider(_itemProviders, def.Location.ToString(), providerAssembly);
+    _items.Register(def);
+  }
 
   /// <summary>Registers (or replaces) a code-first recipe file.</summary>
-  public static void RegisterRecipe(ExRecipeDef def) => _recipes.Register(def);
+  public static void RegisterRecipe(ExRecipeDef def) =>
+    RegisterRecipe(def, Assembly.GetCallingAssembly());
+
+  internal static void RegisterRecipe(ExRecipeDef def, Assembly providerAssembly) {
+    TrackProvider(_recipeProviders, def.Location.ToString(), providerAssembly);
+    _recipes.Register(def);
+  }
+
+  // Records which assembly registered `location` this time, and logs a Notification when that differs
+  // from the assembly that registered it last - two mods (or a mod and exlib itself) claiming the same
+  // asset path, rather than one mod's own reload.
+  private static void TrackProvider(
+    Dictionary<string, Assembly> providers,
+    string location,
+    Assembly providerAssembly
+  ) {
+    if (
+      providers.TryGetValue(location, out Assembly? prior)
+      && prior != providerAssembly
+    )
+      Logger?.Notification(
+        "[exlib] {0} re-registered by {1} (was {2})",
+        location,
+        providerAssembly.GetName().Name,
+        prior.GetName().Name
+      );
+    providers[location] = providerAssembly;
+  }
 
   /// <summary>Every registered block definition.</summary>
   public static IReadOnlyCollection<ExBlockDef> Blocks => _blocks.Values;
@@ -50,6 +108,9 @@ public static class ExDefinitions {
     _blocks.Clear();
     _items.Clear();
     _recipes.Clear();
+    _blockProviders.Clear();
+    _itemProviders.Clear();
+    _recipeProviders.Clear();
   }
 
   /// <summary>
@@ -75,7 +136,7 @@ public static class ExDefinitions {
   /// <summary>
   /// Scans <paramref name="asm"/> for <see cref="IExBlockDefProvider"/> classes and registers each
   /// one's co-located definition (built for <paramref name="domain"/>, the mod id). Called from
-  /// <see cref="Registries.Entities.EntityRegistry.RegisterAll"/> so a mod's block defs are discovered
+  /// <see cref="Registries.EntityRegistry.RegisterAll"/> so a mod's block defs are discovered
   /// alongside its class registration. Returns how many were registered.
   /// </summary>
   public static int DiscoverAndRegister(string domain, Assembly asm) =>
@@ -83,7 +144,7 @@ public static class ExDefinitions {
       domain,
       asm,
       typeof(IExBlockDefProvider),
-      RegisterBlock
+      def => RegisterBlock(def, asm)
     );
 
   /// <summary>
@@ -92,7 +153,12 @@ public static class ExDefinitions {
   /// Returns how many were registered.
   /// </summary>
   public static int DiscoverAndRegisterItems(string domain, Assembly asm) =>
-    Discover<ExItemDef>(domain, asm, typeof(IExItemDefProvider), RegisterItem);
+    Discover<ExItemDef>(
+      domain,
+      asm,
+      typeof(IExItemDefProvider),
+      def => RegisterItem(def, asm)
+    );
 
   /// <summary>
   /// Recipe-side sibling of <see cref="DiscoverAndRegister"/>: scans <paramref name="asm"/> for
@@ -104,7 +170,7 @@ public static class ExDefinitions {
       domain,
       asm,
       typeof(IExRecipeDefProvider),
-      RegisterRecipe
+      def => RegisterRecipe(def, asm)
     );
 
   // Discovers every concrete implementor of `providerInterface` in the assembly and registers each def its

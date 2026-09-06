@@ -1,4 +1,5 @@
-using ExpandedLib.Registries.Config;
+using ExpandedLib.Config;
+using System.ComponentModel;
 
 namespace ExpandedLib;
 
@@ -16,6 +17,7 @@ namespace ExpandedLib;
   LegacyFileNames = new string[] { "exlib_values.json" },
   Manageable = true
 )]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public class ExlibConfig : IExVersionedConfig {
   /// <summary>Mod version that last wrote this file. Managed by the config store - do not set by hand.</summary>
   public string? ConfigVersion { get; set; }
@@ -25,18 +27,10 @@ public class ExlibConfig : IExVersionedConfig {
   /// one of these: the file already on disk wins otherwise, so correcting a default without a row here
   /// fixes nothing for anyone who has run the mod.
   /// </summary>
-  public static readonly ExConfigMigration[] Migrations =
-  [
-    // 0.7.3: MetalRecoveryFallback named iiex:slag, which has never been a registered code - the block
-    // is slag-block - so the fallback resolved to nothing and recovered nothing. Stamped at the current
-    // source version rather than above it: 0.7.2 is released, and a migration above the version that
-    // ships it never fires.
-    new()
-    {
-      ToVersion = "0.7.3",
-      ResetFields = [nameof(MetalRecoveryFallback)],
-    },
-  ];
+  // Empty: the one existing row (0.7.3, MetalRecoveryFallback) went with the field when the slag
+  // recovery fallback moved to IiexConfig - it is iiex's own knowledge now, not exlib's, and the field
+  // no longer exists here for ResetFields to name.
+  public static readonly ExConfigMigration[] Migrations = [];
 
   #region World
   /// <summary>World ambient reference temperature (°C) used by machine heat models: the temperature cold
@@ -101,12 +95,9 @@ public class ExlibConfig : IExVersionedConfig {
   /// <summary>Below this temperature (°C) hot metal emits no incandescent block light.</summary>
   public float MetalGlowMinTemp { get; set; } = 500f;
 
-  /// <summary>Item code recovered when a molten metal's solid drop cannot be resolved. A metal may override
-  /// it per-entry in its <c>MetalDef</c>. Safe when the item is absent: the chisel and break drops guard a
-  /// null resolve - which is why this read <c>iiex:slag</c> for so long without complaint. That code has
-  /// never been registered (the block is <c>slag-block</c>), so the fallback resolved to nothing and
-  /// recovered nothing.</summary>
-  public string MetalRecoveryFallback { get; set; } = "iiex:slag-block";
+  // The recovery-item fallback (a metal's solid drop failing to resolve) moved to IiexConfig -
+  // "what to drop instead" is content knowledge, not a framework default; see
+  // ExpandedLib.Industry.Metals.MetalRegistry.DefaultRecoveryFallback and IiexConfig.MetalRecoveryFallback.
   #endregion
 
   #region Mechanical-energy network
@@ -136,5 +127,15 @@ public class ExlibConfig : IExVersionedConfig {
   /// mesh.</summary>
   [ExConfigRange(0, 1)]
   public float MpGearMeshLoss { get; set; } = 0.02f;
+  #endregion
+
+  #region Diagnostics
+  /// <summary>
+  /// Whether <c>ExpandedLibModSystem.AssetsFinalize</c> runs <c>ExpandedLib.Checks.ExlibChecks.All</c>
+  /// after the catalogues load and logs the results - the content guards a JSON-only mod otherwise
+  /// only gets by opening the xUnit harness. Also available on demand with <c>/exmod verify</c>
+  /// regardless of this setting. Off saves the one-time scan on a very large modpack's world load.
+  /// </summary>
+  public bool RunChecksOnLoad { get; set; } = true;
   #endregion
 }

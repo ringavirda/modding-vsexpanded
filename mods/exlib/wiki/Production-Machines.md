@@ -1,6 +1,6 @@
 # Production Machines
 
-`Blocks/Machines/` gives any block entity a clean periodic-work lifecycle, plus helpers for
+`Machines/` gives any block entity a clean periodic-work lifecycle, plus helpers for
 reading and feeding [block networks](Block-Networks) through connector faces. This is **not**
 multiblock-only - engines, sub-machines, furnaces and converters all build on it.
 
@@ -31,6 +31,27 @@ public abstract class BlockEntityProductionMachine : BlockEntity
 }
 ```
 
+Minimal machine:
+
+```csharp
+[BlockEntityRegister]
+public class BlockEntityKiln : BlockEntityProductionMachine
+{
+    protected override bool CanRunProduction => HasFuel && HasInput;
+
+    protected override void OnProductionTick(float dt)
+    {
+        // Advance the smelt. Runs once per ProductionTickMs while CanRunProduction is true.
+    }
+}
+```
+
+When `CanRunProduction` is `false` the tick routes to `OnIdleProductionTick` instead of stopping,
+so you can still run cooldown/settling logic. Override `AutoStartProduction` to `false` if the
+machine should register its tick only on a state change rather than on load (e.g. a machine that
+is dormant until switched on); then call `StartProductionTick()` / `StopProductionTick()` yourself.
+The tick is stopped automatically in `OnBlockRemoved` and `OnBlockUnloaded`.
+
 The tick itself lives in `BEBehaviorProductionMachine`, which this class hosts; a block entity whose
 one base slot is already spent hosts the same behaviour instead of deriving from here:
 
@@ -54,32 +75,18 @@ public class BlockEntityRollingMill : BlockEntityNetworkNode, IProductionReadine
 ```
 
 The gate goes through `IProductionReadiness` rather than an override, because a machine may publish
-more than one answer and the process reads every publisher on the block entity (see
-[Multiblock Structures](Multiblock-Structures)). A host that enables away-catch-up must also save the
-process's `LastTickHours` in its own `ToTreeAttributes` and hand it back through
-`RestoreLastTickHours` - a behaviour's tree lands in the block entity's flat tree, so exactly one of
-the two may write that key.
+more than one answer and the process reads every publisher on the block entity - the block entity
+itself and any of its behaviours:
 
-Minimal machine:
+| Publisher | Answers | Opt-out |
+|---|---|---|
+| `BlockEntityProductionMachine` | `CanRunProduction` | override the gate |
+| `BlockEntityMultiblockStructure` | `StructureComplete` | `StopsProductionOnStructureLost` |
+| `ExRightClickConstructable` ([Construction](Construction)) | `IsComplete` | `gatesProduction: false` |
 
-```csharp
-[BlockEntityRegister]
-public class BlockEntityKiln : BlockEntityProductionMachine
-{
-    protected override bool CanRunProduction => HasFuel && HasInput;
-
-    protected override void OnProductionTick(float dt)
-    {
-        // Advance the smelt. Runs once per ProductionTickMs while CanRunProduction is true.
-    }
-}
-```
-
-When `CanRunProduction` is `false` the tick routes to `OnIdleProductionTick` instead of stopping,
-so you can still run cooldown/settling logic. Override `AutoStartProduction` to `false` if the
-machine should register its tick only on a state change rather than on load (e.g. a machine that
-is dormant until switched on); then call `StartProductionTick()` / `StopProductionTick()` yourself.
-The tick is stopped automatically in `OnBlockRemoved` and `OnBlockUnloaded`.
+A host that enables away-catch-up must also save the process's `LastTickHours` in its own
+`ToTreeAttributes` and hand it back through `RestoreLastTickHours` - a behaviour's tree lands in the
+block entity's flat tree, so exactly one of the two may write that key.
 
 ## Machine ports
 
@@ -146,8 +153,29 @@ protected override void OnProductionTick(float dt)
 Any tick with `active: false` resets the accumulator, so the condition must hold *continuously*.
 Persist it with `ToTree`/`FromTree` so a near-burst boiler doesn't reset its grace across a reload.
 
+## Saved state
+
+`BlockEntityProductionMachine` carries the same `Persisted`/`DeclareState` convenience as
+`ExBlockEntity` (see [Block Entities](Block-Entities)), layered on top of the `pm_lastHours`
+away-catch-up stamp it already writes by hand. Three rungs, in the order to reach for them:
+
+1. **Attribute.** Mark the field `[Persist]` and write nothing else - the key defaults to the
+   field name with its leading underscore stripped.
+   ```csharp
+   [Persist] private float _tempC;
+   ```
+2. **`Persisted`.** Override `DeclareState` for anything the attribute can't express (a computed
+   getter/setter pair, a custom key, a value with its own tree shape).
+   ```csharp
+   protected override void DeclareState(ExBlockState s) =>
+       s.Float("temp", () => _tempC, v => _tempC = v);
+   ```
+3. **Hand-written.** Override `ToTreeAttributes`/`FromTreeAttributes` yourself and call `base` -
+   nothing here forces the other two rungs; a machine that already has the pair keeps it.
+
 ## Related pages
 
 - [Block Networks](Block-Networks) - what `ConnectedNetwork<TNet>` returns.
 - [Multiblock Structures](Multiblock-Structures) - `BlockEntityMultiblockMachine` is the multiblock
   that hosts the same process.
+- [Block Entities](Block-Entities) - `ExBlockEntity`, `ExBlockState`, `[Persist]` and `IPersistable`.

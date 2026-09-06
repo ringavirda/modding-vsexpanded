@@ -12,7 +12,7 @@ namespace ExpandedLib.Tests;
 public class ExlibLangCoverageTests {
   private const string Domain = "exlib";
   private static readonly Assembly Mod =
-    typeof(ExpandedLib.Blocks.Migrations.BlockMigrationModSystem).Assembly;
+    typeof(ExpandedLib.Migrations.BlockMigrationModSystem).Assembly;
 
   [Fact]
   public void Every_block_code_resolves_to_a_name_in_every_locale() {

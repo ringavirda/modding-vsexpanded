@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Metals;
+using ExpandedLib.Machines;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
@@ -425,7 +427,7 @@ internal sealed class CupolaRig {
           );
           net.BroadcastUpdate(World.Accessor);
         }
-      ReflectionHelpers.Invoke(Furnace, "OnProductionTick", 1f);
+      Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     }
     return this;
   }

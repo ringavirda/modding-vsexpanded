@@ -84,14 +84,14 @@ public class CastStockItemDefinitions : IExItemDefProvider {
       // part-rolled in the hand rather than as the piece that left the long cell.
       .Class<ItemStockPiece>()
       .Shape("iiex:item/castbillet")
-      .Raw("shapeByType", shapeByType)
+      .RootKey("shapeByType", shapeByType)
       .VariantGroup("form", [.. Forms.Select(f => f.Form)])
       // Each piece carries its own heat and is handled individually at the mill, so pieces never merge.
       .MaxStackSize(1)
       .MaterialDensity(7200)
       // Cast iron: remelts in a cupola at the cast-iron melting point, so off-cut stock is recoverable.
       .CombustibleProps(new { meltingPoint = 1150 })
-      .Raw("attributesByType", byType)
+      .RootKey("attributesByType", byType)
       .CreativeCommon("*");
   }
 }

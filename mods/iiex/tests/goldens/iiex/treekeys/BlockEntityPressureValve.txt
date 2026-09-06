@@ -1,0 +1,12 @@
+blockCode:string
+gatePressure:float
+lastVentVolume:float
+medium:string
+networkType:string
+orientation:string
+possibleOrientations:stringarray
+posx:int
+posy:int
+posz:int
+pressure:float
+temp:float

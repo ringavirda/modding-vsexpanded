@@ -1,3 +1,4 @@
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkPipe;
@@ -30,8 +31,8 @@ public class PressureValveBeTests {
       ("type", "pressurevalve"),
       ("orientation", "ns")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "pressurevalve");
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest("pressurevalve");
+    block.ApplyOrientationForTest("ns");
     return block;
   }
 

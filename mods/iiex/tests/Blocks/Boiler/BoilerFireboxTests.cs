@@ -60,7 +60,7 @@ public class BoilerFireboxTests {
     );
     rig.Be.TryChargeBed(Substitute.For<IPlayer>(), rock);
     Assert.Equal(0, rig.Bed.Units);
-    Assert.Equal(4, rock.Itemstack.StackSize);
+    Assert.Equal(4, rock.Itemstack!.StackSize);
 
     var coal = new DummySlot(
       new ItemStack(rig.World.RegisterItem(BoilerRig.DefaultFuel), 4)

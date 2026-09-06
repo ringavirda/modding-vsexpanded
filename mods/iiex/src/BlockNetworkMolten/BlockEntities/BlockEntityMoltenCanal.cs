@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -43,9 +43,11 @@ public class BlockEntityMoltenCanal
   public virtual bool AcceptsSubMinimumFlow => false;
 
   /// <summary>Units of liquid (or, once latched, solidified) metal held by this cell.</summary>
+  [Persist("cellAmount")]
   public int CellAmount { get; protected set; }
 
   /// <summary>Full code of the metal in this cell, e.g. "game:ingot-iron"; empty when empty.</summary>
+  [Persist("cellMetalType")]
   public string CellMetalType { get; protected set; } = "";
 
   /// <summary>This cell's metal temperature (°C), updated from <see cref="_cellMetalStack"/> each tick.</summary>
@@ -54,12 +56,15 @@ public class BlockEntityMoltenCanal
   // Server-side temperature carrier: an ItemStack so VS applies time-based cooling. Null on
   // clients and when empty; rebuilt lazily on load.
   private ItemStack? _cellMetalStack;
+
+  [Persist("cellTemperature")]
   private float _cellTemperature;
 
   // Client-only predicted fill from in-flight metal, for instant pour feedback.
   private float _pendingFillAmount;
 
   /// <summary>Whether this cell's metal has solidified.</summary>
+  [Persist("solidified")]
   public bool Solidified { get; protected set; } = false;
 
   /// <summary>
@@ -67,6 +72,7 @@ public class BlockEntityMoltenCanal
   /// the network at its position (acts as a manual valve) and renders capped ends on
   /// both of its connector faces.
   /// </summary>
+  [Persist("sealed")]
   public bool Sealed { get; protected set; } = false;
 
   /// <summary>
@@ -589,26 +595,14 @@ public class BlockEntityMoltenCanal
   #endregion
 
   #region Serialization / info
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("solidified", Solidified);
-    tree.SetBool("sealed", Sealed);
-    tree.SetInt("cellAmount", CellAmount);
-    tree.SetString("cellMetalType", CellMetalType);
-    tree.SetFloat("cellTemperature", _cellTemperature);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     byte oldGlow = GlowLightLevel;
-    Solidified = tree.GetBool("solidified");
-    Sealed = tree.GetBool("sealed");
-    CellAmount = tree.GetInt("cellAmount");
-    CellMetalType = tree.GetString("cellMetalType", "");
-    _cellTemperature = tree.GetFloat("cellTemperature");
+    base.FromTreeAttributes(tree, worldForResolving);
     // _cellMetalStack is rebuilt lazily server-side in EnsureMetalStack.
 
     // Invariant: an empty cell is never solidified (also scrubs phantom flags from old saves).

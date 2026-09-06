@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
@@ -67,8 +68,8 @@ public class FlywheelTests {
     world.RegisterNetwork("mpenergy", sys => new MpEnergyNetwork(sys));
 
     var block = FlywheelBlock(size, "ns");
-    ReflectionHelpers.SetProperty(block, "Type", size);
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest(size);
+    block.ApplyOrientationForTest("ns");
 
     var pos = new BlockPos(0, 0, 0);
     world.Place(pos, block, new BlockEntityFlywheel());

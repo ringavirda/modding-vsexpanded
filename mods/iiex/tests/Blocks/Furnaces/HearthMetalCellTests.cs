@@ -1,6 +1,7 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Metals;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
@@ -20,7 +21,7 @@ namespace IronIndustryExpanded.Tests;
 /// <summary>
 /// The hearth as live molten cells. The crucible floor is no longer two floats on the furnace that a
 /// shutdown stamps into a block: melting puts <c>iiex:hearthmetal-{metal}</c> into the layout's
-/// <see cref="ExpandedLib.Blocks.Structures.CellRole"/> pool cells the moment it starts, the metal lives
+/// <see cref="ExpandedLib.Structures.CellRole"/> pool cells the moment it starts, the metal lives
 /// in that block's own molten cells for the campaign, and freezing is the cell's own thermal latch rather
 /// than an extinguish-time stamp. See docs/internal/plans/2026-08-04-iwex-u2-u10-expansion.md § U4.4.
 /// <para>
@@ -44,7 +45,7 @@ public class HearthMetalCellTests {
   private static (TestWorld World, BlockEntityBlastFurnaceCold Furnace) Rig() {
     var world = new TestWorld();
     world.RegisterItem(
-      ExpandedLib.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
       1500f
     );
     world.RegisterItem("iiex:slag", 1500f);
@@ -52,9 +53,8 @@ public class HearthMetalCellTests {
     // The chisel recovery resolves through MetalRegistry.SolidDropOf; with no bit item registered it
     // yields null and the chisel case reads as "nothing was frozen" rather than "nothing resolved".
     world.RegisterItem(
-      ExpandedLib
-        .Metals.MetalRegistry.SolidDropOf(
-          ExpandedLib.Metals.MetalRegistry.MoltenItemOf("pigiron")
+      ExpandedLib.Industry.Metals.MetalRegistry.SolidDropOf(
+          ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron")
         )
         .ToString()
     );
@@ -76,7 +76,7 @@ public class HearthMetalCellTests {
       furnace,
       BlockBlastFurnaceCoreCold.Definitions("iiex").Single()
     );
-    ReflectionHelpers.Invoke(furnace, "UpdateStructureRotation");
+    furnace.ApplyStructureRotation();
     ReflectionHelpers.Invoke(furnace, "CacheAttributes");
     return (world, furnace);
   }
@@ -240,7 +240,7 @@ public class HearthMetalCellTests {
   public void A_hearth_block_with_no_furnace_above_it_still_cools_and_latches() {
     var world = new TestWorld();
     world.RegisterItem(
-      ExpandedLib.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
       1500f
     );
     Block hearth = TestBlocks.Configure(new Block(), HearthCode, 951);
@@ -251,7 +251,7 @@ public class HearthMetalCellTests {
     BEBehaviorMoltenCell cell = be.MoltenCell(IronCellKey)!;
     cell.PushMetalRaw(
       100,
-      ExpandedLib.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
       1500f,
       world.World
     );

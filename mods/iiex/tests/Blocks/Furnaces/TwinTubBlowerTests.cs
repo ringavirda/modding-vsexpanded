@@ -1,6 +1,7 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -195,8 +196,8 @@ public class TwinTubBlowerTests {
       ("type", "twintubblower"),
       ("orientation", "n")
     );
-    ReflectionHelpers.SetProperty(blowerBlock, "Type", "twintubblower");
-    ReflectionHelpers.SetProperty(blowerBlock, "Orientation", "n");
+    blowerBlock.SetNetworkTypeForTest("twintubblower");
+    blowerBlock.ApplyOrientationForTest("n");
 
     var blower = new BlockEntityTwinTubMPBlower();
     var pos = new BlockPos(0, 0, 0);

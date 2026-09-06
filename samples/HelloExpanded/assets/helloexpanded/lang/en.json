@@ -1,0 +1,7 @@
+{
+  "block-hello-*": "Hello Block",
+  "helloexpanded:ticks": "Ticks: {0}",
+  "helloexpanded:neighbours": "Hello neighbours: {0}",
+  "helloexpanded:command-hello-desc": "Prints the sample's tick interval",
+  "helloexpanded:command-hello-result": "Tick interval: {0} ms"
+}

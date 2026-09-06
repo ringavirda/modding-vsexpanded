@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -191,8 +191,8 @@ public class PuddlingYieldTests {
   [Fact]
   public void A_balls_voxels_are_its_metal_at_the_mods_own_density() {
     Assert.Equal(
-      PigBreaking.UnitsPerVoxel,
       WroughtBallItemDefinitions.BallUnits / (float)Shingling.BallVoxels,
+      PigBreaking.UnitsPerVoxel,
       4
     );
   }

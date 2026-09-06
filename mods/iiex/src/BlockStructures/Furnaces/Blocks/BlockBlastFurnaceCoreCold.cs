@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -101,21 +101,21 @@ public partial class BlockBlastFurnaceCoreCold
             // "which cells accept an iiex:furnace-chargepile" gives the same 36 cells only while the
             // shaft glyph keeps `chargepile` in its alternation, and nothing checks that coupling.
             // `a` is air as well and is not chargeable - it is the vent shaft above the stockline.
-            .Role('c', CellRole.Chargeable)
+            .Role('c', FurnaceCellRoles.Chargeable)
             // The crucible is pool only. Metal stands in it as hearthmetal blocks the furnace places as it
             // melts, so a burden pile resting there would share a cell with a live bath: the lowest charge
             // level is y=2, one course above this row. The glyph is still its own because its cell admits
             // the hearthmetal block the shaft glyph does not.
-            .Role('h', CellRole.Pool)
+            .Role('h', FurnaceCellRoles.Pool)
             // The blast intake. The role lets the furnace read its tuyere positions off its own drawing
             // instead of carrying a copy of these two offsets.
-            .Role('Y', CellRole.Tuyere)
-            .Role('T', CellRole.Tuyere)
+            .Role('Y', FurnaceCellRoles.Tuyere)
+            .Role('T', FurnaceCellRoles.Tuyere)
             // The two drains, named on the drawing rather than as Vec3i literals in the block entity.
             // Both roles are [SingleCell], so the build refuses a layout that draws either glyph twice and
             // the consumer can read a point instead of a set.
-            .Role('I', CellRole.MetalTap)
-            .Role('S', CellRole.SlagTap)
+            .Role('I', FurnaceCellRoles.MetalTap)
+            .Role('S', FurnaceCellRoles.SlagTap)
             .Layer(
               0,
               """

@@ -2,8 +2,10 @@
   "code": "structurefiller",
   "class": "exlib.BlockStructureFiller",
   "entityClass": "exlib.BlockEntityStructureFiller",
-  "handbook": {
-    "exclude": true
+  "attributes": {
+    "handbook": {
+      "exclude": true
+    }
   },
   "blockmaterial": "Metal",
   "shape": {

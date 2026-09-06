@@ -1,6 +1,6 @@
 # Multiblock Structures
 
-`Blocks/Structures/` provides everything a multi-cell machine needs: completion monitoring, a
+`Structures/` provides everything a multi-cell machine needs: completion monitoring, a
 build-outline projection (ctrl+shift+right-click), crash-safe incomplete-part highlighting, and a
 shared invisible **filler** block that gives a single-cell mega-block real per-cell collision.
 
@@ -12,6 +12,27 @@ There are two independent tools here - use one or both:
    multiblock pattern is complete, runs production only while complete, and shows a build outline
    of missing parts.
 
+## One grid, three uses
+
+Both DSLs below - `MultiblockLayoutBuilder.Layer`/`Slice`/`Face` and
+`FillerLayoutBuilder.Layer`/`Slice`/`Face` - draw over one core, `ExpandedLib.Structures.CellGrid`.
+`Layer` is a floor plan (rows +Z, columns +X, one grid per Y level); `Slice` is a front elevation at
+a fixed X (rows -Y from the top, columns +Z); `Face` is a front elevation at a fixed Z, looking
+along -Z (rows -Y from the top, columns +X). A layout may mix them - draw the floor with `Layer` and
+add a tall feature with `Slice` in the same builder.
+
+```csharp
+.Slice(0, """
+           M##
+           0##
+           """)
+```
+
+draws a two-cell-tall, three-wide elevation at X=0: the top row's leftmost cell is `M`, the bottom
+row's leftmost is the principal (`0`). `SymbolLegend<T>` is the matching legend core: it maps a
+grid's symbols to whatever a builder resolves them into, with one duplicate-mapping policy (`Throw`
+for a code-first layout, `Replace` for a filler footprint) and the "declared but never drawn" check.
+
 ## The filler system
 
 A "mega-block" is one block whose model spans more than its own cell. By default the engine only
@@ -20,23 +41,28 @@ gives it collision in its own cell. The filler system fixes that by placing invi
 
 ### Declaring the footprint
 
-Your controller block implements `IFillerHost` and declares its footprint cells in JSON via a
-`fillerOffsets` attribute. The simplest implementation is to let the
-[attribute generator](Source-Generators) surface the attribute:
+Your controller block implements `IFillerHost` and exposes the footprint through its
+`fillerOffsets` attribute node. `BlockFilledMegastructure` already implements this by reading the
+block's `Attributes["fillerOffsets"]`, so a block deriving from it only needs to supply that
+attribute - either in JSON, or code-first from an `ExBlockDef` builder with
+`FillerOffsets(IEnumerable<FillerCellSpec>)`, as `BlockBoilerCornish` does:
 
 ```csharp
-public interface IFillerHost
-{
-    JsonObject? FillerOffsets { get; }   // the block's `fillerOffsets` JSON node, or null
-}
-```
-
-```jsonc
-// in your blocktype attributes
-"fillerOffsets": [
-  { "x": 1, "y": 0, "z": 0, "allowAttach": true },
-  { "x": 0, "y": 1, "z": 0 }
-]
+.FillerOffsets(
+  StructureFootprint.Layout(f =>
+    f.Origin(-1, -5)
+      .Slab('_', BlockFacing.DOWN)
+      .Slab('M', BlockFacing.DOWN)
+      .Solid('I')
+      .Port('S', BlockFacing.UP, "pipe")
+      .Port('E', BlockFacing.EAST, "pipe")
+      .Layer(0, """
+      # # E
+      # # #
+      ...
+      """)
+  )
+)
 ```
 
 `allowAttach` (default `false`) controls whether other blocks may attach to that filler cell.
@@ -131,6 +157,43 @@ public abstract class BlockEntityMultiblockStructure : BlockEntity, IProductionR
     protected void SetStructureAngle(int angle, int initAngleOffset = 0);   // canonical UpdateStructureRotation body
 }
 ```
+
+### From JSON only
+
+A machine that is just a designed shape - no production tick, no per-cell behaviour - needs no C#
+at all. Three rungs, shortest first:
+
+1. **Zero-config**: `"class": "ExFilledMegastructure"` plus `"entityClass": "ExMultiblock"` and the
+   `MultiblockStructure` behaviour give per-cell collision, the completion monitor and the
+   incomplete/complete messages out of the box.
+2. **Declarative**: an `attributes.multiblockLayout` ASCII grid - the JSON twin of
+   `MultiblockLayoutBuilder` - states the shape in one place. `fillerOffsets` is derived from it (every
+   drawn cell but the principal's own) unless you declare your own.
+
+```json
+{
+  "class": "ExFilledMegastructure",
+  "entityClass": "ExMultiblock",
+  "behaviors": [{ "name": "MultiblockStructure" }],
+  "attributes": {
+    "multiblockLayout": {
+      "origin": [1, 0],
+      "legend": { "C": "mymod:kiln-core", "B": "mymod:kiln-brick" },
+      "layers": [["BBB", "BCB", "BBB"], ["B.B", "...", "B.B"]],
+      "core": "C"
+    }
+  }
+}
+```
+
+Orientation follows the block's own `side`/`orientation` variant; the messages are your domain's own
+`multiblock-<blockpath>-incomplete`/`-complete` lang keys when you declare them, else exlib's own. A
+malformed `multiblockLayout` logs one Error naming the block and the problem, and the structure never
+completes - it never throws at chunk load.
+
+3. **The explicit API**: for anything the grid cannot say - roles, connectors, oriented parts, a
+   production tick - drop to the code-first `ExBlockDef` builder above, or subclass
+   `BlockEntityMultiblockStructure` yourself.
 
 ## Multiblocks that also produce: `BlockEntityMultiblockMachine`
 
@@ -247,6 +310,23 @@ Three things to know:
 
 A layout that declares no oriented part emits no attribute at all and behaves exactly as before - which
 is why this needed no migration and changed no shipped structure's goldens.
+
+## Cell roles
+
+A `CellRole` is an open string key naming what a layout cell is for - exlib declares none of its own.
+Mint one with `CellRole.Of`, mark it on a glyph with `MultiblockLayoutBuilder.Role`, and read it back
+through `BlockEntityMultiblockStructure.CellsWithRole`:
+
+```csharp
+public static readonly CellRole Tuyere = CellRole.Of("tuyere");
+// ...
+.Role('t', Tuyere)
+// ...
+IReadOnlyList<BlockPos> tuyereCells = CellsWithRole(Tuyere);
+```
+
+Pass `single: true` to `CellRole.Of` if a layout may give the role at most one cell - the arity is
+then enforced at build time and a consumer may call `CellsWithRole(role).Single()` without risk.
 
 ## Related pages
 

@@ -1,0 +1,4 @@
+# MSBuild reads this file for every build started below it. Worker nodes are not kept alive
+# between builds: with node reuse on, each dotnet build leaves idle MSBuild.dll processes that
+# never exit on this WSL install (74 of them held 11 GB after a day of building).
+-nodeReuse:false

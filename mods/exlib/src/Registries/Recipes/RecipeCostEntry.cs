@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExpandedLib.Registries.Recipes;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// One managed recipe in a mod's cost catalogue: its kind, the wildcard code that locates it, and one

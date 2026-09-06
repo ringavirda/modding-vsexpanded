@@ -1,13 +1,11 @@
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
-using ExpandedLib.Processes;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 
@@ -58,6 +56,7 @@ public class BlockEntityShear : BlockEntityMpBench {
   // Heat of the piece under the blades, which is what the cold multiplier is applied to. The job is
   // re-resolved on completion rather than stored, so retuning a crop table reaches a piece already under
   // the blades.
+  [Persist("shearTempC")]
   private float _tempC;
 
   /// <summary>The temper of the fitted blades, or <c>-1</c> when the nest is bare.</summary>
@@ -236,25 +235,6 @@ public class BlockEntityShear : BlockEntityMpBench {
       dsc.AppendLine(
         Lang.Get("iiex:shear-stroking", Remaining.ToString("0.0"))
       );
-  }
-
-  #endregion
-
-  #region Persistence
-
-  private const string TempKey = "shearTempC";
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat(TempKey, _tempC);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _tempC = tree.GetFloat(TempKey);
   }
 
   #endregion

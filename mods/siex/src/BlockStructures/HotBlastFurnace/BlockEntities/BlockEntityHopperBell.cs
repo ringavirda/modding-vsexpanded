@@ -1,8 +1,9 @@
-using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
@@ -17,11 +18,12 @@ namespace SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 /// (its blast-mix proportions) rides along, so the furnace core reads the charge the burdenmaker stamped.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperBell : BlockEntity {
+public class BlockEntityHopperBell : ExBlockEntity {
   private long _tickId;
 
   // The magazine is one burden stack (grade carried in its attributes), pulled from the tank above and
   // dripped below. Null when empty.
+  [Persist]
   private ItemStack? _magazine;
 
   // The furnace this bell charges, resolved by the bounded multiblock scan every furnace part uses. The
@@ -85,55 +87,22 @@ public class BlockEntityHopperBell : BlockEntity {
     }
   }
 
+  // "isDropping" defaults true on load, unlike a bare [Persist] bool (default false) - a freshly built
+  // furnace feeds itself before the player finds the toggle - so it stays a Tree, routed through the
+  // property setter so a load still starts/stops the tick listener like any other change.
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "isDropping",
+      tree => tree.SetBool("isDropping", IsDropping),
+      (tree, _) => IsDropping = tree.GetBool("isDropping", true)
+    );
+
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _magazine = tree.GetItemstack("magazine");
-    _magazine?.ResolveBlockOrItem(worldForResolving);
     if (_magazine?.Collectible == null || _magazine.StackSize <= 0)
-      _magazine = null;
-    IsDropping = tree.GetBool("isDropping", true);
-  }
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (_magazine != null)
-      tree.SetItemstack("magazine", _magazine);
-    tree.SetBool("isDropping", IsDropping);
-  }
-
-  /// <summary>Maps the magazine's burden stack, so a bell hopper pasted into another world resolves
-  /// its buffered charge against that world's item ids rather than this one's.</summary>
-  public override void OnStoreCollectibleMappings(
-    Dictionary<int, AssetLocation> blockIdMapping,
-    Dictionary<int, AssetLocation> itemIdMapping
-  ) =>
-    _magazine?.Collectible?.OnStoreCollectibleMappings(
-      Api.World,
-      new DummySlot(_magazine),
-      blockIdMapping,
-      itemIdMapping
-    );
-
-  public override void OnLoadCollectibleMappings(
-    IWorldAccessor worldForResolve,
-    Dictionary<int, AssetLocation> oldBlockIdMapping,
-    Dictionary<int, AssetLocation> oldItemIdMapping,
-    int schematicSeed,
-    bool resolveImports
-  ) {
-    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
-    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
-    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
-    if (
-      _magazine?.FixMapping(
-        oldBlockIdMapping,
-        oldItemIdMapping,
-        worldForResolve
-      ) == false
-    )
       _magazine = null;
   }
 

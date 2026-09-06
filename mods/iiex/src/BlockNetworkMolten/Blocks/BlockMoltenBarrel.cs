@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -134,28 +135,14 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider {
     float temp = metal.Collectible.GetTemperature(capi.World, metal);
     int glow = (int)GameMath.Clamp((temp - 550f) / 2f, 0f, 255f);
 
-    var cache = GetMeshRefCache(capi);
     int fillStep = (int)GameMath.Clamp(fillRatio * 16f, 0f, 16f);
     string key = $"{metal.Collectible.Code}|{fillStep}|{glow / 16}";
-    if (!cache.TryGetValue(key, out var meshRef)) {
-      MeshData mesh = GenMeshWithContent(capi, metal, fillRatio, glow);
-      meshRef = cache[key] = capi.Render.UploadMultiTextureMesh(mesh);
-    }
-    renderinfo.ModelRef = meshRef;
-  }
-
-  private Dictionary<string, MultiTextureMeshRef> GetMeshRefCache(
-    ICoreClientAPI capi
-  ) {
-    string cacheKey = "moltenBarrelMeshRefs:" + Code;
-    if (
-      capi.ObjectCache.TryGetValue(cacheKey, out var existing)
-      && existing is Dictionary<string, MultiTextureMeshRef> dict
-    )
-      return dict;
-    var created = new Dictionary<string, MultiTextureMeshRef>();
-    capi.ObjectCache[cacheKey] = created;
-    return created;
+    renderinfo.ModelRef = ExMeshCache.GetOrCreateRef(
+      capi,
+      "moltenBarrelMeshRefs:" + Code,
+      key,
+      () => GenMeshWithContent(capi, metal, fillRatio, glow)
+    );
   }
 
   private MeshData GenMeshWithContent(
@@ -226,17 +213,8 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider {
   }
 
   public override void OnUnloaded(ICoreAPI api) {
-    if (api is ICoreClientAPI capi) {
-      string cacheKey = "moltenBarrelMeshRefs:" + Code;
-      if (
-        capi.ObjectCache.TryGetValue(cacheKey, out var existing)
-        && existing is Dictionary<string, MultiTextureMeshRef> dict
-      ) {
-        foreach (var meshRef in dict.Values)
-          meshRef.Dispose();
-        capi.ObjectCache.Remove(cacheKey);
-      }
-    }
+    if (api is ICoreClientAPI)
+      ExMeshCache.DisposeGroup(api, "moltenBarrelMeshRefs:" + Code);
     base.OnUnloaded(api);
   }
   #endregion
@@ -252,12 +230,8 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider {
     )
       return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
-    var heldItem = byPlayer
-      .InventoryManager
-      .ActiveHotbarSlot
-      ?.Itemstack
-      ?.Collectible;
-    if (heldItem?.Tool == EnumTool.Chisel) {
+    Interaction interaction = ExInteraction.Of(world, byPlayer, blockSel);
+    if (interaction.HeldIs(EnumTool.Chisel)) {
       // A chisel in hand resolves here either way: chip the hardened metal out (no tool wear, 10 units
       // per bit), or do nothing while the metal is not hardened.
       var outcome = MoltenChisel.TryChisel(
@@ -272,8 +246,8 @@ public partial class BlockMoltenBarrel : Block, IExBlockDefProvider {
       return outcome != ChiselOutcome.NotChiseling;
     }
 
-    if (byPlayer.Entity.Controls.ShiftKey) {
-      if (world.Side == EnumAppSide.Client)
+    if (interaction.Sneaking) {
+      if (interaction.IsClient)
         return true;
 
       var stack = new ItemStack(this);

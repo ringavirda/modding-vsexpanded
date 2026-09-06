@@ -54,7 +54,6 @@
   "resistance": 45.0,
   "maxstacksize": 8,
   "requiredMiningTier": 5,
-  "mineTool": "pickaxe",
   "sounds": {
     "place": "game:block/anvil",
     "break": "game:block/anvil",

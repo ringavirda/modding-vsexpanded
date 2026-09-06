@@ -1,0 +1,5 @@
+blockCode:string
+ironCount:int
+posx:int
+posy:int
+posz:int

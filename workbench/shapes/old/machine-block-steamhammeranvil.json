@@ -8,8 +8,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5",
-    "cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1"
+    "iron5": "block/metal/sheet-plain/iron5",
+    "cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsexpanded/workbench/textures/materials/cast-iron1"
   },
   "elements": [
     {

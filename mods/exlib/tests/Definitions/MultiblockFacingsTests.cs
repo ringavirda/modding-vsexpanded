@@ -1,5 +1,5 @@
 using System;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using Newtonsoft.Json.Linq;

@@ -1,4 +1,4 @@
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using NSubstitute;
 using SteelIndustryExpanded.BlockStructures.Converter;

@@ -2,7 +2,7 @@
 """Convert a hand-authored Blockbench shape in workbench/shapes/ into a shipped runtime shape.
 
 The editable files are the maintainer's working copies: they carry Blockbench's `editor` block, an empty
-`textureSizes`, and **absolute local texture paths** (F:/repos/.../workbench/textures/NAME). A shipped
+`textureSizes`, and **absolute local texture paths** (//wsl.localhost/<distro>/.../workbench/textures/NAME). A shipped
 shape needs none of that and needs its textures pointed at real asset domains instead.
 
 So conversion is exactly three things:

@@ -64,6 +64,21 @@ public static class ReflectionHelpers {
   public static void SetField(object target, string fieldName, object? value) =>
     FindField(target.GetType(), fieldName).SetValue(target, value);
 
+  /// <summary>Sets a (possibly non-public) static field on <paramref name="type"/> - the static
+  /// counterpart of <see cref="SetField"/>, for a process-wide static (e.g. the engine's
+  /// <c>GamePaths.AssetsPath</c>) a headless replay must prime before the production code that reads
+  /// it runs.</summary>
+  public static void SetStaticField(Type type, string fieldName, object? value) =>
+    (
+      type.GetField(
+        fieldName,
+        BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static
+      )
+      ?? throw new InvalidOperationException(
+        $"Static field '{fieldName}' not found on {type.Name}."
+      )
+    ).SetValue(null, value);
+
   /// <summary>Reads a (possibly non-public) instance field, walking up the type hierarchy.</summary>
   public static object? GetField(object target, string fieldName) =>
     FindField(target.GetType(), fieldName).GetValue(target);

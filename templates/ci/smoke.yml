@@ -1,0 +1,47 @@
+# The smoke lane for a mod that isn't this repo: boots the real Vintage Story dedicated server with
+# your built mod and fails the job on any [Error]/[Fatal] line or a non-clean /exmod verify. Copy
+# scripts/exmod.ps1 and scripts/exmod.sh from this repo into your own (they take no dependency on
+# anything else here) and drop this file in as .github/workflows/smoke.yml, then make the two edits
+# marked CHANGE below.
+
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  VS_VERSION: "1.22"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache Vintage Story install
+        uses: actions/cache@v4
+        with:
+          path: .game
+          key: vs-game-${{ env.VS_VERSION }}
+
+      # CHANGE 1: build your mod here so its output folder exists before the smoke step - the exact
+      # command depends on your project layout (a plain `dotnet build YourMod.csproj -c Release` for
+      # a single-project mod).
+      - name: Build the mod
+        run: dotnet build YourMod.csproj -c Release -clp:ErrorsOnly
+
+      # CHANGE 2: point -Mods at the folder `dotnet build` wrote your mod into (the one holding
+      # modinfo.json, the dll and assets/). Without -Mods, exmod smoke looks for
+      # mods/*/src/bin/Debug/Mods/mod, which is this repo's layout, not yours.
+      - name: Smoke-test the dedicated server boot
+        run: bash scripts/exmod.sh smoke -Version "$VS_VERSION" -Mods bin/Release/Mods/mod

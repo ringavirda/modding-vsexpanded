@@ -1,0 +1,9 @@
+{
+  "ingredientPattern": "A",
+  "width": 1,
+  "height": 1,
+  "ingredients": {
+    "A": { "type": "item", "code": "fixturemod:testitem" }
+  },
+  "output": { "type": "item", "code": "fixturemod:testitem", "quantity": 1 }
+}

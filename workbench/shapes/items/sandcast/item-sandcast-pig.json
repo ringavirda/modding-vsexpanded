@@ -7,7 +7,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/tarnished/iron"
+    "iron": "block/metal/tarnished/iron"
   },
   "elements": [
     {

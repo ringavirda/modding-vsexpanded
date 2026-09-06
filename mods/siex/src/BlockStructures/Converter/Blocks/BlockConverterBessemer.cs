@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten;
 using SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;
@@ -314,7 +315,7 @@ public partial class BlockConverterBessemer
     BlockSelection selection,
     IPlayer forPlayer
   ) =>
-    ExpandedLib.Blocks.Construction.ExRightClickConstructable.AppendConstructionHelp(
+    ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
       world,
       selection,
       base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)

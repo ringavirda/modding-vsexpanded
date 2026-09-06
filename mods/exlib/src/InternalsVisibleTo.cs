@@ -8,3 +8,8 @@ using System.Runtime.CompilerServices;
 // the design table is a BlockEntityMachineStation, whose ValidatePickRange seam a headless packet test
 // has to turn off (its substitute player is one the engine will never place in range).
 [assembly: InternalsVisibleTo("IronIndustryExpanded.Tests")]
+
+// siex's suites drive the same production/structure/network seams: a hot blast furnace is a
+// BlockEntityMultiblockMachine, a converter control a BlockEntityMultiblockStructure, and both carry
+// pipe/canal nodes that derive BlockNetworkNode.
+[assembly: InternalsVisibleTo("SteelIndustryExpanded.Tests")]

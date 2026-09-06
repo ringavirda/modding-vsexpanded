@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Definitions;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Definitions;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

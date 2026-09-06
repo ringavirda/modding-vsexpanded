@@ -7,8 +7,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "front1": "game:block/clay/refractory/tier3/front1",
-    "normal4": "game:block/metal/corroded/normal4",
+    "front1": "block/clay/refractory/tier3/front1",
+    "normal4": "block/metal/corroded/normal4",
     "iron4": "block/metal/sheet/iron4"
   },
   "elements": [

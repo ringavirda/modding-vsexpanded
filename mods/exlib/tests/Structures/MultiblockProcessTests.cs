@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;

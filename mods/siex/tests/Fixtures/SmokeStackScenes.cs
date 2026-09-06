@@ -1,4 +1,6 @@
 using System.Linq;
+using ExpandedLib.Machines;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.Tests;
@@ -92,7 +94,7 @@ internal sealed class SmokeStackRig {
 
   /// <summary>One production tick of the stack: draw its intake off the main and vent it.</summary>
   public SmokeStackRig Tick() {
-    ReflectionHelpers.Invoke(Stack, "OnProductionTick", 1f);
+    Stack.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     return this;
   }
 

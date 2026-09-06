@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Migrations;
+using ExpandedLib.Migrations;
 using ExpandedLib.Testing;
 using NSubstitute;
 using Vintagestory.API.Common;

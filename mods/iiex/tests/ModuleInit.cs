@@ -18,5 +18,6 @@ internal static class ModuleInit {
     // The mill reads its stopping points off the shared stage catalogue, which is populated from the loaded
     // collectibles in game and from the emitted stock defs here.
     ProcessRouteSeeds.SeedIiexRoutes();
+    ReleasedHistorySeed.Register();
   }
 }

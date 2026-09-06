@@ -72,7 +72,7 @@ public class StockItemDefinitions : IExItemDefProvider {
       .Attribute("stockForm", form.Name)
       // The piece comes off the helve at forging heat and cools in the hand. `temperature` is vanilla's own
       // attribute, so the engine does the cooling.
-      .Raw(
+      .RootKey(
         "combustibleProps",
         new {
           meltingPoint = 1500,
@@ -80,7 +80,6 @@ public class StockItemDefinitions : IExItemDefProvider {
           smeltedRatio = 1,
         }
       )
-      .Raw("temperatureDamage", 4f)
       .CreativeCommon("*");
   }
 }

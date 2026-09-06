@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExpandedLib.Definitions;
-using ExpandedLib.Storage;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Storage.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Storage.Blocks;

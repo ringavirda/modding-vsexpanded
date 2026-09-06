@@ -1,0 +1,6 @@
+blockCode:string
+gateOpen:bool
+inventory/qslots:int
+posx:int
+posy:int
+posz:int

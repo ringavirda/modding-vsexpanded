@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Helpers;
-using ExpandedLib.Processes;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

@@ -1,13 +1,15 @@
 using System;
 using ExpandedLib;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
@@ -22,6 +24,7 @@ namespace IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
 public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine {
   /// <summary>True while the pump has an active intake on its source line and is moving water;
   /// synced to clients to drive the water-drawing loop sound.</summary>
+  [Persist("drawingWater")]
   private bool _drawingWater;
 
   private ILoadedSound? _waterSound;
@@ -93,18 +96,7 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine {
     _waterSound = null;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("drawingWater", _drawingWater);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _drawingWater = tree.GetBool("drawingWater");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void OnBlockRemoved() {
     DisposeSounds();

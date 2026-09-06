@@ -11,6 +11,7 @@ namespace ExpandedLib.Definitions;
 public sealed class ConstructionStages {
   private readonly JArray _stages = new();
   private float? _brokenDropsRatio;
+  private bool? _gatesProduction;
 
   /// <summary>Appends one build stage configured through <paramref name="configure"/> (its required
   /// materials and the shape elements it reveals). Stage order is the build order.</summary>
@@ -28,10 +29,20 @@ public sealed class ConstructionStages {
     return this;
   }
 
+  /// <summary>Sets the top-level <c>gatesProduction</c>. Omit to leave the default (<c>true</c>): the
+  /// machine's production tick waits for construction to finish. Pass <c>false</c> for a machine that
+  /// must keep ticking while unfinished (see docs/design/mechanics/framework-composition.md).</summary>
+  public ConstructionStages GatesProduction(bool gates) {
+    _gatesProduction = gates;
+    return this;
+  }
+
   internal JObject Build() {
     var properties = new JObject { ["stages"] = _stages };
     if (_brokenDropsRatio.HasValue)
       properties["brokenDropsRatio"] = _brokenDropsRatio.Value;
+    if (_gatesProduction.HasValue)
+      properties["gatesProduction"] = _gatesProduction.Value;
     return properties;
   }
 }

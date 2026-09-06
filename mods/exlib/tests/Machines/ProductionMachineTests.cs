@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -109,6 +109,45 @@ public class ProductionMachineTests {
     world.FireBlockEntityTicks(dt: 3600f);
 
     Assert.Equal(2f, machine.LastIdleDt);
+  }
+
+  #endregion
+
+  #region Test seams (DriveProductionTick, DriveIdleTick)
+
+  // DriveProductionTick advances the same counter a registered tick would, without needing a
+  // TestWorld to fire one: the seam other suites' fixtures call instead of reflecting OnProductionTick.
+  [Fact]
+  public void DriveProductionTick_advances_the_same_counter_a_real_tick_advances() {
+    var machine = new TestProductionMachine { Pos = new BlockPos(0, 0, 0) };
+
+    machine.DriveProductionTick(1f);
+
+    Assert.Equal(1, machine.ProductionTicks);
+    Assert.Equal(0, machine.IdleTicks);
+    Assert.Equal(1f, machine.LastProductionDt);
+  }
+
+  [Fact]
+  public void DriveProductionTick_still_honours_the_readiness_gate() {
+    var machine = new TestProductionMachine { Pos = new BlockPos(0, 0, 0), Operational = false };
+
+    machine.DriveProductionTick(1f);
+
+    Assert.Equal(0, machine.ProductionTicks);
+    Assert.Equal(1, machine.IdleTicks);
+  }
+
+  // DriveIdleTick runs the idle path directly, bypassing CanRunProduction - for a fixture asserting
+  // idle behaviour itself rather than the gate that routes to it.
+  [Fact]
+  public void DriveIdleTick_runs_the_idle_path_even_while_operational() {
+    var machine = new TestProductionMachine { Pos = new BlockPos(0, 0, 0) };
+
+    machine.DriveIdleTick(1f);
+
+    Assert.Equal(0, machine.ProductionTicks);
+    Assert.Equal(1, machine.IdleTicks);
   }
 
   #endregion

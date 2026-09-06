@@ -1,0 +1,74 @@
+using System.Collections.Generic;
+using ExpandedLib.Testing;
+
+namespace IronIndustryExpanded.Tests;
+
+/// <summary>
+/// iiex's own contribution to the release-history registry: ppex's shipped history, since ppex
+/// became iiex. Registered once from <see cref="ModuleInit"/> so the harness itself carries no
+/// mod-specific history; consumers still read it through <see cref="ReleasedCodes"/>,
+/// <see cref="ReleasedVersions"/> and <see cref="ReleasedCodeDebt"/>.
+/// </summary>
+public static class ReleasedHistorySeed {
+  /// <summary>ppex, every release up to and including 0.6.8 - 19 blocktypes, 292 concrete codes.</summary>
+  private static readonly IReadOnlyList<ReleasedCodes.Shipped> Shipped =
+  [
+    new("ppex", "boiler/cornish", "ppex:boilercornish", ["ppex:boilercornish-east", "ppex:boilercornish-north", "ppex:boilercornish-south", "ppex:boilercornish-west"]),
+    new("ppex", "boiler/lancashire", "ppex:boilerlancashire", ["ppex:boilerlancashire-east", "ppex:boilerlancashire-north", "ppex:boilerlancashire-south", "ppex:boilerlancashire-west"]),
+    new("ppex", "engine/cornish", "ppex:enginecornish", ["ppex:enginecornish-east", "ppex:enginecornish-north", "ppex:enginecornish-south", "ppex:enginecornish-west"]),
+    new("ppex", "engine/fluidpump", "ppex:enginefluidpump", ["ppex:enginefluidpump-east", "ppex:enginefluidpump-north", "ppex:enginefluidpump-south", "ppex:enginefluidpump-west"]),
+    new("ppex", "engine/mpgenerator", "ppex:enginempgenerator", ["ppex:enginempgenerator-east", "ppex:enginempgenerator-north", "ppex:enginempgenerator-south", "ppex:enginempgenerator-west"]),
+    new("ppex", "engine/watt", "ppex:enginewatt", ["ppex:enginewatt-east", "ppex:enginewatt-north", "ppex:enginewatt-south", "ppex:enginewatt-west"]),
+    new("ppex", "manualfluidpump", "ppex:manualfluidpump", ["ppex:manualfluidpump-east", "ppex:manualfluidpump-north", "ppex:manualfluidpump-south", "ppex:manualfluidpump-west"]),
+    new("ppex", "mpfluidpump", "ppex:mpfluidpump", ["ppex:mpfluidpump-east", "ppex:mpfluidpump-north", "ppex:mpfluidpump-south", "ppex:mpfluidpump-west"]),
+    new("ppex", "pipes/bend", "ppex:pipe", ["ppex:pipe-bend-de-iron", "ppex:pipe-bend-de-steel", "ppex:pipe-bend-dn-iron", "ppex:pipe-bend-dn-steel", "ppex:pipe-bend-ds-iron", "ppex:pipe-bend-ds-steel", "ppex:pipe-bend-dw-iron", "ppex:pipe-bend-dw-steel", "ppex:pipe-bend-en-iron", "ppex:pipe-bend-en-steel", "ppex:pipe-bend-nw-iron", "ppex:pipe-bend-nw-steel", "ppex:pipe-bend-se-iron", "ppex:pipe-bend-se-steel", "ppex:pipe-bend-ue-iron", "ppex:pipe-bend-ue-steel", "ppex:pipe-bend-un-iron", "ppex:pipe-bend-un-steel", "ppex:pipe-bend-us-iron", "ppex:pipe-bend-us-steel", "ppex:pipe-bend-uw-iron", "ppex:pipe-bend-uw-steel", "ppex:pipe-bend-ws-iron", "ppex:pipe-bend-ws-steel"]),
+    new("ppex", "pipes/fluidintake", "ppex:pipe", ["ppex:pipe-fluidintake-e", "ppex:pipe-fluidintake-n", "ppex:pipe-fluidintake-s", "ppex:pipe-fluidintake-w"]),
+    new("ppex", "pipes/outlet", "ppex:pipe", ["ppex:pipe-outlet-black-d", "ppex:pipe-outlet-black-e", "ppex:pipe-outlet-black-n", "ppex:pipe-outlet-black-s", "ppex:pipe-outlet-black-u", "ppex:pipe-outlet-black-w", "ppex:pipe-outlet-brown-d", "ppex:pipe-outlet-brown-e", "ppex:pipe-outlet-brown-n", "ppex:pipe-outlet-brown-s", "ppex:pipe-outlet-brown-u", "ppex:pipe-outlet-brown-w", "ppex:pipe-outlet-cream-d", "ppex:pipe-outlet-cream-e", "ppex:pipe-outlet-cream-n", "ppex:pipe-outlet-cream-s", "ppex:pipe-outlet-cream-u", "ppex:pipe-outlet-cream-w", "ppex:pipe-outlet-fire-d", "ppex:pipe-outlet-fire-e", "ppex:pipe-outlet-fire-n", "ppex:pipe-outlet-fire-s", "ppex:pipe-outlet-fire-u", "ppex:pipe-outlet-fire-w", "ppex:pipe-outlet-gray-d", "ppex:pipe-outlet-gray-e", "ppex:pipe-outlet-gray-n", "ppex:pipe-outlet-gray-s", "ppex:pipe-outlet-gray-u", "ppex:pipe-outlet-gray-w", "ppex:pipe-outlet-orange-d", "ppex:pipe-outlet-orange-e", "ppex:pipe-outlet-orange-n", "ppex:pipe-outlet-orange-s", "ppex:pipe-outlet-orange-u", "ppex:pipe-outlet-orange-w", "ppex:pipe-outlet-red-d", "ppex:pipe-outlet-red-e", "ppex:pipe-outlet-red-n", "ppex:pipe-outlet-red-s", "ppex:pipe-outlet-red-u", "ppex:pipe-outlet-red-w", "ppex:pipe-outlet-tan-d", "ppex:pipe-outlet-tan-e", "ppex:pipe-outlet-tan-n", "ppex:pipe-outlet-tan-s", "ppex:pipe-outlet-tan-u", "ppex:pipe-outlet-tan-w"]),
+    new("ppex", "pipes/passthrough", "ppex:pipe", ["ppex:pipe-passthrough-black-ns", "ppex:pipe-passthrough-black-ud", "ppex:pipe-passthrough-black-we", "ppex:pipe-passthrough-brown-ns", "ppex:pipe-passthrough-brown-ud", "ppex:pipe-passthrough-brown-we", "ppex:pipe-passthrough-cream-ns", "ppex:pipe-passthrough-cream-ud", "ppex:pipe-passthrough-cream-we", "ppex:pipe-passthrough-fire-ns", "ppex:pipe-passthrough-fire-ud", "ppex:pipe-passthrough-fire-we", "ppex:pipe-passthrough-gray-ns", "ppex:pipe-passthrough-gray-ud", "ppex:pipe-passthrough-gray-we", "ppex:pipe-passthrough-orange-ns", "ppex:pipe-passthrough-orange-ud", "ppex:pipe-passthrough-orange-we", "ppex:pipe-passthrough-red-ns", "ppex:pipe-passthrough-red-ud", "ppex:pipe-passthrough-red-we", "ppex:pipe-passthrough-tan-ns", "ppex:pipe-passthrough-tan-ud", "ppex:pipe-passthrough-tan-we"]),
+    new("ppex", "pipes/passthroughbend", "ppex:pipe", ["ppex:pipe-passthroughbend-black-de", "ppex:pipe-passthroughbend-black-dn", "ppex:pipe-passthroughbend-black-ds", "ppex:pipe-passthroughbend-black-dw", "ppex:pipe-passthroughbend-black-en", "ppex:pipe-passthroughbend-black-nw", "ppex:pipe-passthroughbend-black-se", "ppex:pipe-passthroughbend-black-ue", "ppex:pipe-passthroughbend-black-un", "ppex:pipe-passthroughbend-black-us", "ppex:pipe-passthroughbend-black-uw", "ppex:pipe-passthroughbend-black-ws", "ppex:pipe-passthroughbend-brown-de", "ppex:pipe-passthroughbend-brown-dn", "ppex:pipe-passthroughbend-brown-ds", "ppex:pipe-passthroughbend-brown-dw", "ppex:pipe-passthroughbend-brown-en", "ppex:pipe-passthroughbend-brown-nw", "ppex:pipe-passthroughbend-brown-se", "ppex:pipe-passthroughbend-brown-ue", "ppex:pipe-passthroughbend-brown-un", "ppex:pipe-passthroughbend-brown-us", "ppex:pipe-passthroughbend-brown-uw", "ppex:pipe-passthroughbend-brown-ws", "ppex:pipe-passthroughbend-cream-de", "ppex:pipe-passthroughbend-cream-dn", "ppex:pipe-passthroughbend-cream-ds", "ppex:pipe-passthroughbend-cream-dw", "ppex:pipe-passthroughbend-cream-en", "ppex:pipe-passthroughbend-cream-nw", "ppex:pipe-passthroughbend-cream-se", "ppex:pipe-passthroughbend-cream-ue", "ppex:pipe-passthroughbend-cream-un", "ppex:pipe-passthroughbend-cream-us", "ppex:pipe-passthroughbend-cream-uw", "ppex:pipe-passthroughbend-cream-ws", "ppex:pipe-passthroughbend-fire-de", "ppex:pipe-passthroughbend-fire-dn", "ppex:pipe-passthroughbend-fire-ds", "ppex:pipe-passthroughbend-fire-dw", "ppex:pipe-passthroughbend-fire-en", "ppex:pipe-passthroughbend-fire-nw", "ppex:pipe-passthroughbend-fire-se", "ppex:pipe-passthroughbend-fire-ue", "ppex:pipe-passthroughbend-fire-un", "ppex:pipe-passthroughbend-fire-us", "ppex:pipe-passthroughbend-fire-uw", "ppex:pipe-passthroughbend-fire-ws", "ppex:pipe-passthroughbend-gray-de", "ppex:pipe-passthroughbend-gray-dn", "ppex:pipe-passthroughbend-gray-ds", "ppex:pipe-passthroughbend-gray-dw", "ppex:pipe-passthroughbend-gray-en", "ppex:pipe-passthroughbend-gray-nw", "ppex:pipe-passthroughbend-gray-se", "ppex:pipe-passthroughbend-gray-ue", "ppex:pipe-passthroughbend-gray-un", "ppex:pipe-passthroughbend-gray-us", "ppex:pipe-passthroughbend-gray-uw", "ppex:pipe-passthroughbend-gray-ws", "ppex:pipe-passthroughbend-orange-de", "ppex:pipe-passthroughbend-orange-dn", "ppex:pipe-passthroughbend-orange-ds", "ppex:pipe-passthroughbend-orange-dw", "ppex:pipe-passthroughbend-orange-en", "ppex:pipe-passthroughbend-orange-nw", "ppex:pipe-passthroughbend-orange-se", "ppex:pipe-passthroughbend-orange-ue", "ppex:pipe-passthroughbend-orange-un", "ppex:pipe-passthroughbend-orange-us", "ppex:pipe-passthroughbend-orange-uw", "ppex:pipe-passthroughbend-orange-ws", "ppex:pipe-passthroughbend-red-de", "ppex:pipe-passthroughbend-red-dn", "ppex:pipe-passthroughbend-red-ds", "ppex:pipe-passthroughbend-red-dw", "ppex:pipe-passthroughbend-red-en", "ppex:pipe-passthroughbend-red-nw", "ppex:pipe-passthroughbend-red-se", "ppex:pipe-passthroughbend-red-ue", "ppex:pipe-passthroughbend-red-un", "ppex:pipe-passthroughbend-red-us", "ppex:pipe-passthroughbend-red-uw", "ppex:pipe-passthroughbend-red-ws", "ppex:pipe-passthroughbend-tan-de", "ppex:pipe-passthroughbend-tan-dn", "ppex:pipe-passthroughbend-tan-ds", "ppex:pipe-passthroughbend-tan-dw", "ppex:pipe-passthroughbend-tan-en", "ppex:pipe-passthroughbend-tan-nw", "ppex:pipe-passthroughbend-tan-se", "ppex:pipe-passthroughbend-tan-ue", "ppex:pipe-passthroughbend-tan-un", "ppex:pipe-passthroughbend-tan-us", "ppex:pipe-passthroughbend-tan-uw", "ppex:pipe-passthroughbend-tan-ws"]),
+    new("ppex", "pipes/pressurevalve", "ppex:pipe", ["ppex:pipe-pressurevalve-du-iron", "ppex:pipe-pressurevalve-du-steel", "ppex:pipe-pressurevalve-ew-iron", "ppex:pipe-pressurevalve-ew-steel", "ppex:pipe-pressurevalve-ns-iron", "ppex:pipe-pressurevalve-ns-steel", "ppex:pipe-pressurevalve-sn-iron", "ppex:pipe-pressurevalve-sn-steel", "ppex:pipe-pressurevalve-ud-iron", "ppex:pipe-pressurevalve-ud-steel", "ppex:pipe-pressurevalve-we-iron", "ppex:pipe-pressurevalve-we-steel"]),
+    new("ppex", "pipes/steamcondenser", "ppex:steamcondenser", ["ppex:steamcondenser-east", "ppex:steamcondenser-north", "ppex:steamcondenser-south", "ppex:steamcondenser-west"]),
+    new("ppex", "pipes/straight", "ppex:pipe", ["ppex:pipe-straight-ns-iron", "ppex:pipe-straight-ns-steel", "ppex:pipe-straight-ud-iron", "ppex:pipe-straight-ud-steel", "ppex:pipe-straight-we-iron", "ppex:pipe-straight-we-steel"]),
+    new("ppex", "pipes/tjunction", "ppex:pipe", ["ppex:pipe-tjunction-deu-iron", "ppex:pipe-tjunction-deu-steel", "ppex:pipe-tjunction-dns-iron", "ppex:pipe-tjunction-dns-steel", "ppex:pipe-tjunction-dnu-iron", "ppex:pipe-tjunction-dnu-steel", "ppex:pipe-tjunction-dsu-iron", "ppex:pipe-tjunction-dsu-steel", "ppex:pipe-tjunction-dwe-iron", "ppex:pipe-tjunction-dwe-steel", "ppex:pipe-tjunction-dwu-iron", "ppex:pipe-tjunction-dwu-steel", "ppex:pipe-tjunction-esw-iron", "ppex:pipe-tjunction-esw-steel", "ppex:pipe-tjunction-nes-iron", "ppex:pipe-tjunction-nes-steel", "ppex:pipe-tjunction-swn-iron", "ppex:pipe-tjunction-swn-steel", "ppex:pipe-tjunction-uns-iron", "ppex:pipe-tjunction-uns-steel", "ppex:pipe-tjunction-uwe-iron", "ppex:pipe-tjunction-uwe-steel", "ppex:pipe-tjunction-wne-iron", "ppex:pipe-tjunction-wne-steel"]),
+    new("ppex", "pipes/valve", "ppex:pipe", ["ppex:pipe-valve-du-iron", "ppex:pipe-valve-du-steel", "ppex:pipe-valve-ew-iron", "ppex:pipe-valve-ew-steel", "ppex:pipe-valve-ns-iron", "ppex:pipe-valve-ns-steel", "ppex:pipe-valve-sn-iron", "ppex:pipe-valve-sn-steel", "ppex:pipe-valve-ud-iron", "ppex:pipe-valve-ud-steel", "ppex:pipe-valve-we-iron", "ppex:pipe-valve-we-steel"]),
+    new("ppex", "pipes/xjunction", "ppex:pipe", ["ppex:pipe-xjunction-nsud-iron", "ppex:pipe-xjunction-nsud-steel", "ppex:pipe-xjunction-nswe-iron", "ppex:pipe-xjunction-nswe-steel", "ppex:pipe-xjunction-weud-iron", "ppex:pipe-xjunction-weud-steel"]),
+  ];
+
+  /// <summary>Every block-entity class string a released ppex blocktype declared.</summary>
+  private static readonly IReadOnlyList<ReleasedCodes.ShippedEntityClass> EntityClasses =
+  [
+    new("ppex", "ppex.BlockEntityBoilerCornish", ["boiler/cornish"]),
+    new("ppex", "ppex.BlockEntityBoilerLancashire", ["boiler/lancashire"]),
+    new("ppex", "ppex.BlockEntityEngineCornish", ["engine/cornish"]),
+    new("ppex", "ppex.BlockEntityEngineFluidPump", ["engine/fluidpump"]),
+    new("ppex", "ppex.BlockEntityEngineMpGenerator", ["engine/mpgenerator"]),
+    new("ppex", "ppex.BlockEntityEngineWatt", ["engine/watt"]),
+    new("ppex", "ppex.BlockEntityFluidIntake", ["pipes/fluidintake"]),
+    new("ppex", "ppex.BlockEntityManualFluidPump", ["manualfluidpump"]),
+    new("ppex", "ppex.BlockEntityMpFluidPump", ["mpfluidpump"]),
+    new("ppex", "ppex.BlockEntityPipe", ["pipes/bend", "pipes/straight", "pipes/tjunction", "pipes/xjunction"]),
+    new("ppex", "ppex.BlockEntityPipeOutlet", ["pipes/outlet"]),
+    new("ppex", "ppex.BlockEntityPipePassthrough", ["pipes/passthrough", "pipes/passthroughbend"]),
+    new("ppex", "ppex.BlockEntityPressureValve", ["pipes/pressurevalve"]),
+    new("ppex", "ppex.BlockEntitySteamCondenser", ["pipes/steamcondenser"]),
+    new("ppex", "ppex.BlockEntityValve", ["pipes/valve"]),
+  ];
+
+  /// <summary>ppex codes with no path to a live block - see <see cref="ExpandedLib.Testing.ReleasedCodeDebt"/>.</summary>
+  private static readonly IReadOnlyList<string> Debt =
+  [
+    "ppex:mpfluidpump-east",
+    "ppex:mpfluidpump-north",
+    "ppex:mpfluidpump-south",
+    "ppex:mpfluidpump-west",
+  ];
+
+  public static void Register() =>
+    ReleasedHistory.Register(
+      "iiex",
+      Shipped,
+      EntityClasses,
+      new Dictionary<string, string> { ["ppex"] = "0.6.8" },
+      Debt
+    );
+}

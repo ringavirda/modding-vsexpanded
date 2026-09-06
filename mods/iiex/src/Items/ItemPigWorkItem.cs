@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
@@ -25,7 +25,7 @@ public class ItemPigWorkItem : ItemWorkItem, IAnvilWorkable, IExItemDefProvider 
         .Class<ItemPigWorkItem>()
         // The metal variant drives the vanilla voxel render, via the ingot-pile "iron" texture.
         .VariantGroup("metal", "iron")
-        .Raw("texture", new { @base = "game:block/metal/ingot/iron" })
+        .RootKey("texture", new { @base = "game:block/metal/ingot/iron" })
         .MaxStackSize(1)
         .StorageFlags(5)
         .MaterialDensity(7000)

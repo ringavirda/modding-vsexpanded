@@ -1,0 +1,9 @@
+blockCode:string
+lastConsumedAmount:float
+orientation:string
+pm_lastHours:double
+possibleOrientations:stringarray
+posx:int
+posy:int
+posz:int
+structureComplete:bool

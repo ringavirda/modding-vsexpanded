@@ -7,7 +7,7 @@
  "textureHeight": 16,
  "textureSizes": {},
  "textures": {
-  "steel": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/plate/steel"
+  "steel": "block/metal/plate/steel"
  },
  "elements": [
   {

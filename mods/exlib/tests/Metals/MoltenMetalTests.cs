@@ -1,4 +1,4 @@
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using Xunit;
 
 namespace ExpandedLib.Tests;

@@ -1,4 +1,4 @@
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
 namespace SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;

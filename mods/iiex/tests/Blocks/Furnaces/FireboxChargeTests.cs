@@ -130,7 +130,7 @@ public class FireboxChargeTests {
   #region B8, first cause - the threshold is the firebox's own capacity
 
   /// <summary>
-  /// The firebox cell count comes off the layout's <c>CellRole.Firebox</c> marks rather than being
+  /// The firebox cell count comes off the layout's <c>FurnaceCellRoles.Firebox</c> marks rather than being
   /// hand-set on the block entity, so the count and the cells a player can load cannot disagree. The
   /// hearth therefore has to be stood on its own blocktype for the layout to be read.
   /// </summary>

@@ -1,8 +1,8 @@
 using System;
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
-using ExpandedLib.Renderers;
 using IronIndustryExpanded.BlockNetworkPipe;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -23,7 +26,7 @@ namespace IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 /// (<see cref="MetalRegistry.CastProductOf"/>). See docs/design/processes/casting.md.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
+public class BlockEntityCastMold : ExBlockEntity, ILiquidMetalSink {
   /// <summary>The metal cast in the mold, or null when empty.</summary>
   public ItemStack? MetalContent;
 
@@ -346,23 +349,30 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
   }
 
   // Persist under the vanilla mold key ("fillLevel") so a carried, filled mold round-trips through
-  // MoltenContents and the shared spill/burn/carry handling recognises it.
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetItemstack("contents", MetalContent);
-    tree.SetInt(MoltenContents.MoldUnitsKey, CurrentUnitAmount);
-    tree.SetFloat("moldTemp", _moldTemperature);
-  }
+  // MoltenContents and the shared spill/burn/carry handling recognises it. "contents" is written
+  // unconditionally, even when empty - unlike ExBlockState.Stack, which skips a null value - so a Tree
+  // declaration carries it rather than [Persist].
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "contents",
+      tree => {
+        tree.SetItemstack("contents", MetalContent);
+        tree.SetInt(MoltenContents.MoldUnitsKey, CurrentUnitAmount);
+        tree.SetFloat("moldTemp", _moldTemperature);
+      },
+      (tree, world) => {
+        MetalContent = tree.GetItemstack("contents");
+        CurrentUnitAmount = tree.GetInt(MoltenContents.MoldUnitsKey);
+        _moldTemperature = tree.GetFloat("moldTemp");
+        MetalContent?.ResolveBlockOrItem(world);
+      }
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor world
   ) {
     base.FromTreeAttributes(tree, world);
-    MetalContent = tree.GetItemstack("contents");
-    CurrentUnitAmount = tree.GetInt(MoltenContents.MoldUnitsKey);
-    _moldTemperature = tree.GetFloat("moldTemp");
-    MetalContent?.ResolveBlockOrItem(world);
     if (Api?.Side == EnumAppSide.Client) {
       UpdateRenderer();
       UpdateGlow();
@@ -373,6 +383,7 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     MetalContent?.Collectible?.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(MetalContent),
@@ -388,6 +399,13 @@ public class BlockEntityCastMold : BlockEntity, ILiquidMetalSink {
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     // A false return means the destination world has no such item/block; FixMapping leaves Id at the
     // source world's value, which would resolve to whatever owns that id there. Null the stack instead
     // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.

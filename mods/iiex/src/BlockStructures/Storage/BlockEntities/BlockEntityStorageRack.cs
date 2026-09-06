@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Storage;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
+using ExpandedLib.Catalogues;
 using IronIndustryExpanded.BlockStructures.Storage.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -17,7 +18,7 @@ namespace IronIndustryExpanded.BlockStructures.Storage.BlockEntities;
 /// when the runs fill the row. Nothing stacks upward and nothing sits across the row.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityStorageRack : BlockEntity, ITexPositionSource {
+public class BlockEntityStorageRack : ExBlockEntity, ITexPositionSource {
   /// <summary>One stored stack and the cells it covers.</summary>
   /// <param name="Run">Where it lies in the row.</param>
   /// <param name="Stack">What lies there. Whole stacks are laid and taken: a piece carries its own state
@@ -257,38 +258,41 @@ public class BlockEntityStorageRack : BlockEntity, ITexPositionSource {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("loads", _loads.Count);
-    for (int i = 0; i < _loads.Count; i++) {
-      tree.SetInt($"load{i}Start", _loads[i].Run.Start);
-      tree.SetInt($"load{i}Length", _loads[i].Run.Length);
-      tree.SetItemstack($"load{i}Stack", _loads[i].Stack);
-    }
-  }
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "loads",
+      tree => {
+        tree.SetInt("loads", _loads.Count);
+        for (int i = 0; i < _loads.Count; i++) {
+          tree.SetInt($"load{i}Start", _loads[i].Run.Start);
+          tree.SetInt($"load{i}Length", _loads[i].Run.Length);
+          tree.SetItemstack($"load{i}Stack", _loads[i].Stack);
+        }
+      },
+      (tree, worldForResolving) => {
+        _loads.Clear();
+        int count = tree.GetInt("loads");
+        for (int i = 0; i < count; i++) {
+          ItemStack? stack = tree.GetItemstack($"load{i}Stack");
+          // Resolved, or the stack has no Collectible and every read of it - the catalogue lookup, the
+          // readout, the mesh - silently answers nothing while the rack looks loaded.
+          stack?.ResolveBlockOrItem(worldForResolving);
+          if (stack?.Collectible == null)
+            continue;
+
+          int length = tree.GetInt($"load{i}Length", 1);
+          _loads.Add(
+            new Load(new BayRun(tree.GetInt($"load{i}Start"), length), stack)
+          );
+        }
+      }
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-
-    _loads.Clear();
-    int count = tree.GetInt("loads");
-    for (int i = 0; i < count; i++) {
-      ItemStack? stack = tree.GetItemstack($"load{i}Stack");
-      // Resolved, or the stack has no Collectible and every read of it - the catalogue lookup, the
-      // readout, the mesh - silently answers nothing while the rack looks loaded.
-      stack?.ResolveBlockOrItem(worldForResolving);
-      if (stack?.Collectible == null)
-        continue;
-
-      int length = tree.GetInt($"load{i}Length", 1);
-      _loads.Add(
-        new Load(new BayRun(tree.GetInt($"load{i}Start"), length), stack)
-      );
-    }
-
     RebuildMeshes();
   }
 
@@ -298,6 +302,7 @@ public class BlockEntityStorageRack : BlockEntity, ITexPositionSource {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     foreach (Load load in _loads)
       load.Stack.Collectible?.OnStoreCollectibleMappings(
         Api.World,
@@ -314,6 +319,13 @@ public class BlockEntityStorageRack : BlockEntity, ITexPositionSource {
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     // A false return means the destination world has no such item; FixMapping leaves Id at the source
     // world's value, which would resolve to whatever owns that id there. Drop the load rather than keep a
     // mis-resolved one - and drop the whole run with it, so the cells it held come back free instead of

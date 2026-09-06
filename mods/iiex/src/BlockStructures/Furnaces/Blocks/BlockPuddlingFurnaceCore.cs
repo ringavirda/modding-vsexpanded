@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -93,8 +93,8 @@ public partial class BlockPuddlingFurnaceCore
             .Legend('a', VanillaCodes.Air)
             .Legend('A', VanillaCodes.Air)
             // A fuel bed, not a burden column. The builder refuses a layout claiming both roles.
-            .Role('F', CellRole.Firebox)
-            .Role('A', CellRole.Flue)
+            .Role('F', FurnaceCellRoles.Firebox)
+            .Role('A', FurnaceCellRoles.Flue)
             .Layer(
               0,
               """

@@ -1,0 +1,79 @@
+name: Release
+
+# Publishes a tagged version's mod zips, the dev bundle and the two NuGet packages as GitHub
+# release assets. Nothing is pushed to NuGet.org - see the commented step at the bottom - and no
+# tag is created by this workflow itself; it only runs once one exists.
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  VS_VERSION: "1.22"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache Vintage Story install
+        uses: actions/cache@v4
+        with:
+          path: .game
+          key: vs-game-${{ env.VS_VERSION }}
+
+      - name: Provision Vintage Story (server assemblies)
+        run: bash scripts/exmod.sh provision game -Version "$VS_VERSION" -Kind server
+
+      - name: Restore
+        run: dotnet restore VintageStory.sln
+
+      # The same gate every push runs, one more time against the tagged commit - a release never
+      # ships a build that hasn't just proven itself.
+      - name: Test
+        run: bash scripts/exmod.sh test latest
+
+      # Builds every mod for every supported game version and zips them into dist/Releases/, then
+      # (PackageTesting, on demand - see infra/CakeBuild/Program.cs) the harness dev bundle
+      # (exlib-testing_<version>.zip: ExpandedLib.Testing.dll + exlib.dll + docs + generators).
+      - name: Cake package (mod zips)
+        run: dotnet run --project infra/CakeBuild
+      - name: Cake package (testing dev bundle)
+        run: dotnet run --project infra/CakeBuild -- --target=PackageTesting
+
+      # The NuGet packages, built independently of Cake's own outputs (see the two csprojs' pack
+      # metadata: PackageId, Version read from modinfo.json, Authors, Description, RepositoryUrl,
+      # PackageReadmeFile - PackageLicenseExpression is not set; the repo has no LICENSE file yet).
+      # ExlibVerify.csproj packs the same way, as a .NET tool (PackAsTool, ToolCommandName
+      # exlib-verify) rather than a library.
+      - name: dotnet pack (NuGet)
+        run: |
+          dotnet pack mods/exlib/src/ExpandedLib.csproj -c Release -o dist/nuget
+          dotnet pack mods/exlib/testing/ExpandedLib.Testing.csproj -c Release -o dist/nuget
+          dotnet pack infra/tools/ExlibVerify/ExlibVerify.csproj -c Release -o dist/nuget
+
+      - name: Collect release assets
+        run: |
+          mkdir -p dist/assets
+          find dist/Releases -name '*.zip' -exec cp {} dist/assets/ \;
+          cp dist/nuget/*.nupkg dist/assets/
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/assets/*
+          generate_release_notes: true
+
+      # Not part of this workflow: publishing to NuGet.org is a separate, explicit decision (and
+      # needs PackageLicenseExpression set first - see the comment above). Uncomment once both are
+      # true, with a NUGET_API_KEY repository secret holding a NuGet.org API key.
+      # - name: Push to NuGet.org
+      #   run: dotnet nuget push "dist/nuget/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

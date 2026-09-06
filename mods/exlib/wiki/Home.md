@@ -2,8 +2,8 @@
 
 **Expanded Library** (`exlib`) is the shared framework mod behind the
 _Fallenstar Expanded_ family for [Vintage Story](https://www.vintagestory.at/) -
-currently [Iron Industry Expanded](https://mods.vintagestory.at/) (`iiex`) and
-[Steel Industry Expanded](https://mods.vintagestory.at/) (`siex`). It ships no
+currently [Iron Industry Expanded](https://github.com/ringavirda/modding-vsexpanded/tree/main/mods/iiex) (`iiex`) and
+[Steel Industry Expanded](https://github.com/ringavirda/modding-vsexpanded/tree/main/mods/siex) (`siex`). It ships no
 gameplay content of its own; you can use it because another mod depends on it or
 because it gives you batteries-included systems that are tedious to build from
 scratch:
@@ -32,14 +32,23 @@ This wiki documents both libraries the family publishes for reuse:
 ## Where to start
 
 - New here? Read **[Getting Started](Getting-Started)** - declare the dependency, set up a
-  project reference, and register your first attribute-marked block.
+  project reference, and register your first attribute-marked block. It walks
+  [`samples/HelloExpanded`](https://github.com/ringavirda/modding-vsexpanded/tree/main/samples/HelloExpanded),
+  a buildable, bootable, tested mod using the convenience layer end to end - read it alongside the page.
+- Wondering when exlib does what during world load, and what's safe to call where? **[Lifecycle](Lifecycle)**.
+- Wondering which types are the supported contract and which are internal plumbing? **[Supported
+  API](Supported-API)**.
+- Shipping a block, item or recipe from C# instead of JSON? **[Code-First Definitions](Code-First-Definitions)**.
 - Building plumbing/wiring of any kind? **[Block Networks](Block-Networks)**.
 - Building a furnace, boiler or other big machine? **[Multiblock Structures](Multiblock-Structures)**
   and **[Production Machines](Production-Machines)**.
+- Writing a block entity and want its fields saved for free? **[Block Entities](Block-Entities)**.
 - Adding to a process our mods already ship - a roll set, a mold, a crop, a die? **[Extending
   Processes](Extending-Processes)**. Our machines name no product; you declare one.
 - Want config, commands or recipe tuning? **[Registries](Registries)**,
   **[Config System](Config-System)**, **[Commands](Commands)**, **[Recipe Costs](Recipe-Costs)**.
+- Want the content guards (dangling codes, missing lang, ...) to run against your own source, or on
+  demand rather than only at load? **[Checks](Checks)**.
 - Writing tests? **[Testing Harness](Testing-Harness)** and **[Testing API Reference](Testing-API-Reference)**.
 
 ## A note on accuracy

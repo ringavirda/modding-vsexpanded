@@ -7,8 +7,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "ironingot": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/ingot/iron",
-    "iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
+    "ironingot": "block/metal/ingot/iron",
+    "iron5": "block/metal/sheet-plain/iron5"
   },
   "elements": [
     {

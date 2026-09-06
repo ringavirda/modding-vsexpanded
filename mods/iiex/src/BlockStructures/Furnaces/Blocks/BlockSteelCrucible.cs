@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
@@ -50,16 +50,16 @@ public partial class BlockSteelCrucible
         // vanilla registers the bare string in Core.cs, and nothing in the suite checks that a class
         // string resolves. `classByType` also has to be a top-level key, so it goes through RawByType -
         // AttributeByType would file it under `attributes`, where the loader never looks.
-        .RawByType("classByType", "*-burned", nameof(BlockSmeltingContainer))
+        .RootKeyByType("classByType", "*-burned", nameof(BlockSmeltingContainer))
         // The smelted class must be OURS and must derive from BlockSmeltedContainer: `DoSmelt` casts the
         // block it resolves without checking, so a class that is not one is an InvalidCastException on
         // the server, mid-tick.
-        .RawByType(
+        .RootKeyByType(
           "classByType",
           "*-smelted",
           EntityRegistry.KeyFor(domain, typeof(BlockSteelCruciblePour))
         )
-        .RawByType("entityClassByType", "*-smelted", "SmeltedContainer")
+        .RootKeyByType("entityClassByType", "*-smelted", "SmeltedContainer")
         .Shape($"{domain}:item/steelcrucible")
         .Material(EnumBlockMaterial.Ceramic)
         // The ground-storable / unplaceable / pick-up trio vanilla's crucible carries. It is a block that
@@ -110,7 +110,7 @@ public partial class BlockSteelCrucible
         .AttributeByType("emptiedBlockCodeByType", "*-smelted", BurnedCode)
         // The raw pot fires in a pit kiln, which is the only way to obtain one: a clayforming recipe can
         // output nothing but a `-raw` variant.
-        .RawByType(
+        .RootKeyByType(
           "combustibleProps",
           "*-raw",
           new
@@ -125,7 +125,7 @@ public partial class BlockSteelCrucible
         )
         // Deliberately out of reach, exactly as vanilla sets it: without this a player could bake the
         // metal out of a full pot in a firepit and skip the pour entirely.
-        .RawByType(
+        .RootKeyByType(
           "combustibleProps",
           "*-smelted",
           new

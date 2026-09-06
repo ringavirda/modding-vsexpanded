@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace ExpandedLib.Blocks.Construction;
+namespace ExpandedLib.Blocks;
 
 /// <summary>
 /// Owns the animator and <see cref="ExRightClickConstructable"/> lifecycle shared by constructed,

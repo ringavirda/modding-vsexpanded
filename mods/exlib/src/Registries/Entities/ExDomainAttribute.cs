@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpandedLib.Registries.Entities;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Declares the asset domain an assembly's registered classes and code-first definitions are keyed

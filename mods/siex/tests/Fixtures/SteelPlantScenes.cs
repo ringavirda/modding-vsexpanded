@@ -1,7 +1,10 @@
 using System;
 using System.Linq;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
@@ -215,7 +218,7 @@ internal sealed class ConverterRig {
   /// </summary>
   public ConverterRig ProductionTick(int times = 1) {
     for (int i = 0; i < times; i++)
-      ReflectionHelpers.Invoke(Control, "OnProductionTick", 1f);
+      Control.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     return this;
   }
 
@@ -559,7 +562,7 @@ internal sealed class CowperRig {
 
   /// <summary>One production tick of the stove with nothing fed in: the idle case.</summary>
   public CowperRig Tick() {
-    ReflectionHelpers.Invoke(Stove, "OnProductionTick", 1f);
+    Stove.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     return this;
   }
 

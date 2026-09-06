@@ -5,9 +5,9 @@ using Vintagestory.API.Datastructures;
 namespace ExpandedLib.Blocks;
 
 /// <summary>
-/// Block entity base that persists whatever it declares. Override <see cref="DeclareState"/>, name each
-/// field once, and the save, the load, the client sync and the collectible id mappings all follow from
-/// that declaration.
+/// Block entity base that persists whatever it declares. Mark a field <see cref="PersistAttribute"/> and
+/// it needs no <see cref="DeclareState"/> entry at all; anything else is named once there, and the save,
+/// the load, the client sync and the collectible id mappings all follow from that declaration.
 /// <para>
 /// A block entity whose base slot is already spent - a container, a multiblock, a network node - gets
 /// the same thing by owning an <see cref="ExBlockState"/> directly and calling it from its own two
@@ -18,17 +18,8 @@ public abstract class ExBlockEntity : BlockEntity {
   private ExBlockState? _state;
 
   /// <summary>This block entity's declared fields, built on first use.</summary>
-  protected ExBlockState State {
-    get {
-      if (_state != null)
-        return _state;
-      // Assigned before DeclareState runs: a subclass that declares a field whose accessor reads State
-      // would otherwise recurse forever rather than fail with something readable.
-      _state = new ExBlockState();
-      DeclareState(_state);
-      return _state;
-    }
-  }
+  protected ExBlockState Persisted =>
+    BlockEntityStateHost.GetOrCreate(this, ref _state, DeclareState);
 
   /// <summary>
   /// Declares the fields this block entity persists. Called once, lazily.
@@ -43,7 +34,7 @@ public abstract class ExBlockEntity : BlockEntity {
 
   public override void ToTreeAttributes(ITreeAttribute tree) {
     base.ToTreeAttributes(tree);
-    State.ToTree(tree);
+    Persisted.ToTree(tree);
   }
 
   public override void FromTreeAttributes(
@@ -51,7 +42,7 @@ public abstract class ExBlockEntity : BlockEntity {
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    State.FromTree(tree, worldForResolving);
+    Persisted.FromTree(tree, worldForResolving);
   }
 
   public override void OnStoreCollectibleMappings(
@@ -59,7 +50,7 @@ public abstract class ExBlockEntity : BlockEntity {
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    State.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
   }
 
   public override void OnLoadCollectibleMappings(
@@ -76,7 +67,7 @@ public abstract class ExBlockEntity : BlockEntity {
       schematicSeed,
       resolveImports
     );
-    State.LoadCollectibleMappings(
+    Persisted.LoadCollectibleMappings(
       worldForResolve,
       oldBlockIdMapping,
       oldItemIdMapping

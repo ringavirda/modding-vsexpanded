@@ -1,0 +1,8 @@
+[
+  {
+    "op": "replace",
+    "file": "fixturemod:itemtypes/testitem.json",
+    "path": "/noSuchProperty/nested",
+    "value": 64
+  }
+]

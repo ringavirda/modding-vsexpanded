@@ -1,4 +1,5 @@
-using ExpandedLib.Heat;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -16,6 +17,7 @@ namespace SteelIndustryExpanded.Tests;
 /// against the cold furnace's block entity; iiex cannot see the hot type, so their agreement is pinned
 /// here.
 /// </summary>
+[Collection("IiexFurnaceConfig")]
 public class HeatBalanceTests {
   private static BlockEntityBlastFurnaceHot HotFurnace() =>
     Stand(new BlockEntityBlastFurnaceHot(), "siex:blastfurnacecore-n");
@@ -42,12 +44,12 @@ public class HeatBalanceTests {
     return be;
   }
 
-  private static void StandUp(BlockEntity be, string code) {
+  private static void StandUp(BlockEntityMultiblockStructure be, string code) {
     var world = new TestWorld();
     be.Pos = new BlockPos(0, 16, 0);
     be.Block = TestBlocks.Configure(new Block(), code, 1, ("side", "north"));
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     ReflectionHelpers.Invoke(be, "CacheAttributes");
   }
 

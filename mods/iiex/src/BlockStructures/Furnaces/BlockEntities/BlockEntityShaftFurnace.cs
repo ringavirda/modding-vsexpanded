@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Materials;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Catalogues;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
@@ -1189,11 +1193,11 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
 
   #region Serialization
 
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldAccessForResolve
-  ) {
-    base.FromTreeAttributes(tree, worldAccessForResolve);
+  // Calls base.DeclareState first: BlockEntityFurnaceCore's own override is virtual, not the
+  // PersistScan-backed abstract of a bare ExBlockEntity, so skipping the base call here would silently
+  // drop the core's internalTemp/heat-balance/shaft-column declarations.
+  protected override void DeclareState(ExBlockState state) {
+    base.DeclareState(state);
     // The pool is no longer furnace state: it lives in the hearth blocks' own cells, which serialize
     // themselves. The old "moltenIron"/"moltenSlag" keys are dropped rather than migrated - a running
     // furnace re-pools within a cycle, and a dead one already froze.
@@ -1201,12 +1205,12 @@ public abstract class BlockEntityShaftFurnace : BlockEntityFurnaceCore {
     // Defaulted to whatever the furnace was doing: a shaft saved before the blow-in existed carries no
     // key, and reading that as "never lit" would put every running furnace in every existing world out on
     // load - the state is derived, so it would be Idle again on the first tick with nothing to say why.
-    BlownIn = tree.GetBool("blownIn", State != FurnaceState.Idle);
-  }
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("blownIn", BlownIn);
+    // Not a bare [Persist] bool (default false) for the same reason.
+    state.Tree(
+      "blownIn",
+      tree => tree.SetBool("blownIn", BlownIn),
+      (tree, _) => BlownIn = tree.GetBool("blownIn", State != FurnaceState.Idle)
+    );
   }
 
   #endregion

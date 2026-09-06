@@ -2,8 +2,11 @@
 
 - [Home](Home)
 - [Getting Started](Getting-Started)
+- [Lifecycle](Lifecycle)
+- [Supported API](Supported-API)
 
 **exlib - Blocks**
+- [Block Entities](Block-Entities)
 - [Block Networks](Block-Networks)
 - [Multiblock Structures](Multiblock-Structures)
 - [Production Machines](Production-Machines)
@@ -15,10 +18,12 @@
 
 **exlib - Registration**
 - [Registries](Registries)
+- [Code-First Definitions](Code-First-Definitions)
 - [Config System](Config-System)
 - [Commands](Commands)
 - [Recipe Costs](Recipe-Costs)
 - [Source Generators](Source-Generators)
+- [Checks](Checks)
 
 **exlib - Utilities**
 - [Helpers & Renderers](Helpers-and-Renderers)

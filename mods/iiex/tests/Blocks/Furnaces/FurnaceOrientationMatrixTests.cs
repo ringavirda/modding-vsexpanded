@@ -156,7 +156,7 @@ public class FurnaceOrientationMatrixTests {
 
   /// <summary>
   /// The tall hopper cannot join the matrix above: it is not a multiblock anchor and hardcodes
-  /// <see cref="ExpandedLib.Blocks.Structures.BlockFilledMegastructure.StructureAngle"/> to 0, so there
+  /// <see cref="ExpandedLib.Structures.BlockFilledMegastructure.StructureAngle"/> to 0, so there
   /// is no rotated structure to stand up.
   /// <para>
   /// Charge columns are keyed structure-local on the furnace core and the hopper asks the core which one

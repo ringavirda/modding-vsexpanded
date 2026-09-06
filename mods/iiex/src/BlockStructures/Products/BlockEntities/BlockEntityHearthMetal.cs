@@ -1,10 +1,10 @@
 using System.Text;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 
@@ -21,7 +21,7 @@ namespace IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHearthMetal : BlockEntity, IChiselableMolten {
+public class BlockEntityHearthMetal : ExBlockEntity, IChiselableMolten {
   /// <summary>Declared key of the iron cell. Two cells on one host cannot be told apart by
   /// <c>GetBehavior&lt;T&gt;()</c>, so both are addressed by key.</summary>
   public const string IronCellKey = "hm_iron_";
@@ -34,6 +34,9 @@ public class BlockEntityHearthMetal : BlockEntity, IChiselableMolten {
 
   /// <summary>Number of metal bits stored, used to scale the break drop. Persisted for blocks placed by
   /// the pre-cell furnace, whose metal was stamped here rather than held in a cell.</summary>
+  /// <remarks>Tree key stays "ironCount": the key is the save contract and must survive property and
+  /// block renames.</remarks>
+  [Persist("ironCount")]
   public int MetalCount { get; set; } = 2;
 
   /// <summary>The iron cell, or null on a block whose definition declares none.</summary>
@@ -117,18 +120,5 @@ public class BlockEntityHearthMetal : BlockEntity, IChiselableMolten {
 
   #endregion
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("ironCount", MetalCount);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    // Tree key stays "ironCount": the key is the save contract and must survive property and block
-    // renames.
-    MetalCount = tree.GetInt("ironCount", 2);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 }

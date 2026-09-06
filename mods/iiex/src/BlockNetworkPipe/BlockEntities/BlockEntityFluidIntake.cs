@@ -1,11 +1,11 @@
 using System.Text;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
@@ -21,9 +21,11 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode {
   public override string NetworkType { get; set; } = "pipe";
 
   /// <summary>True when the cube directly below the intake is fully water.</summary>
+  [Persist("intakeHasWater")]
   public bool HasWater { get; private set; }
 
   /// <summary>True when another fluid intake sits within the exclusion range.</summary>
+  [Persist("intakeCrowded")]
   public bool Crowded { get; private set; }
 
   /// <summary>True when this intake may actually draw water right now.</summary>
@@ -122,18 +124,5 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode {
       dsc.AppendLine(Lang.Get("iiex:fluidintake-info-active"));
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("intakeHasWater", HasWater);
-    tree.SetBool("intakeCrowded", Crowded);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    HasWater = tree.GetBool("intakeHasWater");
-    Crowded = tree.GetBool("intakeCrowded");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 }

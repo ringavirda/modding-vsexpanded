@@ -1,14 +1,15 @@
 using System;
 using System.Text;
 using ExpandedLib;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
@@ -29,7 +30,11 @@ public class BlockEntityPressureValve : BlockEntityPipe {
   /// <summary>Amount each interaction raises or lowers the gate pressure (atm).</summary>
   public const float GatePressureStep = 0.25f;
 
+  [Persist("lastVentVolume")]
   private float _lastVentVolume;
+
+  // Defaults to 1 atm when the key is absent (a save from before the gate existed), unlike a bare
+  // [Persist] float (default 0f) - so it stays a Tree.
   private float _gatePressure = 1f;
 
   /// <summary>Pressure (atm, gauge) above which this valve starts venting.</summary>
@@ -272,19 +277,11 @@ public class BlockEntityPressureValve : BlockEntityPipe {
       );
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("gatePressure", _gatePressure);
-    tree.SetFloat("lastVentVolume", _lastVentVolume);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    // A save with no stored gate reads back as the 1 atm default.
-    _gatePressure = tree.GetFloat("gatePressure", 1f);
-    _lastVentVolume = tree.GetFloat("lastVentVolume", 0f);
-  }
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "gatePressure",
+      tree => tree.SetFloat("gatePressure", _gatePressure),
+      // A save with no stored gate reads back as the 1 atm default.
+      (tree, world) => _gatePressure = tree.GetFloat("gatePressure", 1f)
+    );
 }

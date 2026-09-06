@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Materials;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Compat;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
@@ -24,7 +25,7 @@ namespace IronIndustryExpanded.BlockStructures.OreProcessing.BlockEntities;
 /// <c>docs/design/machines/burdenmaker.md</c>.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityBurdenmaker : BlockEntityContainer {
+public class BlockEntityBurdenmaker : ExBlockEntityContainer {
   // Slot layout. Fixed ranges, so "which tank" is a property of the index and never derived from a slot's
   // contents. Counts are sized against a worst-case stack of 64 so the configured unit capacity always
   // binds before the slots do; `MaxStackSize` belongs to the loaded item, so this cannot be derived at
@@ -42,6 +43,7 @@ public class BlockEntityBurdenmaker : BlockEntityContainer {
 
   private ConstructedAnimator? _animator;
 
+  [Persist]
   private bool _gateOpen;
 
   public override InventoryBase Inventory => _inventory;
@@ -240,7 +242,7 @@ public class BlockEntityBurdenmaker : BlockEntityContainer {
     int total = 0;
     for (int i = first; i < first + count; i++)
       if (!_inventory[i].Empty)
-        total += _inventory[i].Itemstack.StackSize;
+        total += _inventory[i].Itemstack?.StackSize ?? 0;
     return total;
   }
 
@@ -376,18 +378,7 @@ public class BlockEntityBurdenmaker : BlockEntityContainer {
 
   #region Persistence
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("gateOpen", _gateOpen);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _gateOpen = tree.GetBool("gateOpen");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   #endregion
 

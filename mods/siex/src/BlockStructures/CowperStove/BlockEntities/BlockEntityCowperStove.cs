@@ -1,17 +1,18 @@
 using System.Text;
 using ExpandedLib;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Structures;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -25,7 +26,11 @@ namespace SteelIndustryExpanded.BlockStructures.CowperStove.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityCowperStove : BlockEntityMultiblockMachine {
   private BlockFacing _connectorFace = BlockFacing.SOUTH;
+  [Persist("internalTemperature")]
   private float _internalTemperature = ExlibValues.AmbientTemperature;
+
+  // Defaults to the idle message when the key is absent, unlike a bare [Persist] string (default
+  // null) - so it stays a Tree declaration.
   private string _lastStatus = Lang.Get("siex:cowperstove-status-idle");
   private long _lastHeatSoundMs;
 
@@ -298,23 +303,16 @@ public class BlockEntityCowperStove : BlockEntityMultiblockMachine {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("internalTemperature", _internalTemperature);
-    tree.SetString("lastStatus", _lastStatus);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _internalTemperature = tree.GetFloat("internalTemperature");
-    _lastStatus = tree.GetString(
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
       "lastStatus",
-      Lang.Get("siex:cowperstove-status-idle")
+      tree => tree.SetString("lastStatus", _lastStatus),
+      (tree, _) =>
+        _lastStatus = tree.GetString(
+          "lastStatus",
+          Lang.Get("siex:cowperstove-status-idle")
+        )
     );
-  }
 
   #endregion
 }

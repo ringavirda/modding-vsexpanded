@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using ExpandedLib;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Heat;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Materials;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Renderers;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -92,36 +95,47 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
 
   #region Operational + charge state
   /// <summary>Current player-selected tilt state of the converter.</summary>
+  [Persist("opState")]
   public ConverterOpState OpState { get; private set; } =
     ConverterOpState.Normal;
 
   // The metal pool: molten pig on the way in, retyped in place to Bessemer steel at the carbon
-  // target, or to soft ingot iron on over-blow. Units are metal units.
+  // target, or to soft ingot iron on over-blow. Units are metal units. Not a bare [Persist]: MoltenCharge
+  // itself owns no default constructor and the null case (an empty converter) needs its own write.
   private MoltenCharge? _charge;
 
   // Carbon fraction of the bath (pig starts near 0.04). Falls as the blow oxidises it; drives the
   // retype and the HUD carbon percentage.
+  [Persist("carbon")]
   private float _carbon;
 
   // Pig mass basis for the mass-balance yields (total pig charged this heat), and the sub-unit carry
   // that keeps the per-tick integer shed from losing fractional mass.
+  [Persist("pigCharged")]
   private int _pigCharged;
+
+  [Persist("shedCarry")]
   private float _shedCarry;
 
   // Cold steel scrap charged alongside the pig, in molten units. Pure heat-sink mass that raises
   // T_loss until it melts into the steel at the carbon target; there is no fixed scrap ceiling.
+  [Persist("scrapUnits")]
   private int _scrapUnits;
 
   // The floating slag pool in units, the same iiex:slag the furnaces make. Accumulates during the
   // blow as impurities oxidise; a shallow tilt spills it off the top before the steel beneath.
+  [Persist("moltenSlag")]
   private float _moltenSlag;
 
+  [Persist("solidified")]
   private bool _solidified;
 
   // Heat balance from the last tick, serialized so the client HUD can print the contributors:
   // GetBlockInfo runs client-side and the client never blows the bath.
   private HeatBalance _lastHeatBalance;
 
+  // Defaults to the idle message when the key is absent, unlike a bare [Persist] string (default
+  // null) - so it stays a Tree declaration.
   private string _status = Lang.Get("siex:bessemer-status-idle");
 
   private ToggleAnimator? _toggle;
@@ -173,6 +187,8 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
   #region Production tick (server only, started by base when StructureComplete)
 
   protected override void OnProductionTick(float dt) {
+    // The vessel's ExRightClickConstructable publishes readiness on the vessel's own block entity, not
+    // this control's, so the readiness system never sees it; the control keeps checking by hand.
     if (!StructureComplete || !IsConverterConstructed()) {
       SetStatus(Lang.Get("siex:bessemer-status-notbuilt"));
       return;
@@ -902,42 +918,39 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("opState", (int)OpState);
-    tree.SetItemstack("content", _charge?.Stack);
-    tree.SetInt("contentUnits", _charge?.Units ?? 0);
-    tree.SetFloat("carbon", _carbon);
-    tree.SetInt("pigCharged", _pigCharged);
-    tree.SetFloat("shedCarry", _shedCarry);
-    tree.SetInt("scrapUnits", _scrapUnits);
-    tree.SetFloat("moltenSlag", _moltenSlag);
-    tree.SetBool("solidified", _solidified);
-    tree.SetString("status", _status);
-    WriteHeatBalance(tree);
+  protected override void DeclareState(ExBlockState state) {
+    // Flat pass-through, matching MoltenCharge.ToTree's own two keys, rather than
+    // ExpandedLib.Blocks.IPersistable, which would nest them under one key.
+    state.Tree(
+      "content",
+      tree => {
+        tree.SetItemstack("content", _charge?.Stack);
+        tree.SetInt("contentUnits", _charge?.Units ?? 0);
+      },
+      (tree, world) =>
+        _charge = MoltenCharge.FromTree(tree, "content", "contentUnits", world)
+    );
+    state.Tree(
+      "status",
+      tree => tree.SetString("status", _status),
+      (tree, _) =>
+        _status = tree.GetString(
+          "status",
+          Lang.Get("siex:bessemer-status-idle")
+        )
+    );
+    // Compound: the whole balance rides the tree, not just its result - GetBlockInfo runs client-side,
+    // where the bath is never blown and the pipes are never read, so anything the HUD prints must
+    // arrive here.
+    state.Tree("heatBalance", WriteHeatBalance, (tree, _) => ReadHeatBalance(tree));
   }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     var prevState = OpState;
-    OpState = (ConverterOpState)tree.GetInt("opState");
-    _charge = MoltenCharge.FromTree(
-      tree,
-      "content",
-      "contentUnits",
-      worldForResolving
-    );
-    _carbon = tree.GetFloat("carbon");
-    _pigCharged = tree.GetInt("pigCharged");
-    _shedCarry = tree.GetFloat("shedCarry");
-    _scrapUnits = tree.GetInt("scrapUnits");
-    _moltenSlag = tree.GetFloat("moltenSlag");
-    _solidified = tree.GetBool("solidified");
-    _status = tree.GetString("status", Lang.Get("siex:bessemer-status-idle"));
-    ReadHeatBalance(tree);
+    base.FromTreeAttributes(tree, worldForResolving);
 
     if (Api?.Side == EnumAppSide.Client && prevState != OpState)
       ApplyControlPose();

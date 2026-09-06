@@ -9,10 +9,10 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"iron3": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/riveted/iron3",
-		"iron42": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron4",
-		"iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet/iron5",
-		"iron": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/tarnished/iron"
+		"iron3": "block/metal/riveted/iron3",
+		"iron42": "block/metal/sheet-plain/iron4",
+		"iron5": "block/metal/sheet/iron5",
+		"iron": "block/metal/tarnished/iron"
 	},
 	"elements": [
 		{

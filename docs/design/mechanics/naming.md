@@ -357,7 +357,7 @@ design):
 
 3. Never regenerate goldens wholesale. `EXLIB_WRITE_GOLDENS` rewrites an entire domain, and the
    working tree carries ~110 hand-blessed uncommitted goldens. Move and patch them by hand. The scoped
-   `EXLIB_WRITE_BLOCKCODES=1` is safe - it writes only `{Mod}Blocks.g.cs`.
+   `exmod codes <mod>` is safe - it writes only `{Mod}Blocks.g.cs`.
 
 4. Textures are not block codes. `assets/{domain}/textures/block/slag/*` stayed put through the slag
    rename. Aligning texture paths is optional and was excluded to hold the diff to blocktypes.

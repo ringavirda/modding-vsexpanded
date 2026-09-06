@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -23,13 +24,15 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
   /// <summary>The fuel bed. Null only if the blocktype forgot to declare the behaviour.</summary>
   public BEBehaviorFirebox? Bed => GetBehavior<BEBehaviorFirebox>();
 
+  protected override void DeclareState(ExBlockState state) { }
+
   #region Charging
 
   /// <summary>
   /// Charges this bed and every other firebox cell of the owning furnace from <paramref name="stack"/>,
   /// returning the total units taken: fireboxes of one furnace share one pool, so one interaction fills the
   /// whole bed and the fuel cost scales with the cell count. Cells come from the owning core's
-  /// <c>CellRole.Firebox</c> list rather than by adjacency, so two furnaces built back to back do not merge
+  /// <c>FurnaceCellRoles.Firebox</c> list rather than by adjacency, so two furnaces built back to back do not merge
   /// their fuel, and a firebox with no core fills only itself. This cell is filled first so a single-unit
   /// deposit lands where the player clicked, then the rest in the layout's cell order.
   /// See docs/design/machines/firebox.md.

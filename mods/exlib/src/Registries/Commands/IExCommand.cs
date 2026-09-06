@@ -1,6 +1,6 @@
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Commands;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// A self-contained chat command. Each command lives in its own class, carries a

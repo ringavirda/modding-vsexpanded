@@ -1,6 +1,6 @@
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Commands;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// A chat sub-command that attaches itself to an existing top-level command rather than creating its

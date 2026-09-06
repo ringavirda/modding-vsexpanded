@@ -1,3 +1,5 @@
+using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
@@ -6,7 +8,6 @@ using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using IronIndustryExpanded.Tests;
 using Vintagestory.API.MathTools;
 using Xunit;
-using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
 
 namespace IronIndustryExpanded.Tests;
 
@@ -160,7 +161,7 @@ public class SteamPlantScenarioTests {
       62,
       ("orientation", "u")
     );
-    ReflectionHelpers.SetProperty(intakeBlock, "Orientation", "u");
+    intakeBlock.ApplyOrientationForTest("u");
     var intake = new BlockEntityFluidIntake {
       Pos = pondPos.Copy(),
       Block = intakeBlock,

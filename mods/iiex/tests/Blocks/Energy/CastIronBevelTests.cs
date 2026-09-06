@@ -23,8 +23,8 @@ public class CastIronBevelTests {
       ("type", "bevel"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(block, "Type", "bevel");
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+    block.SetNetworkTypeForTest("bevel");
+    block.ApplyOrientationForTest(orientation);
     return block;
   }
 
@@ -36,8 +36,8 @@ public class CastIronBevelTests {
       ("type", "shaft"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(block, "Type", "shaft");
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+    block.SetNetworkTypeForTest("shaft");
+    block.ApplyOrientationForTest(orientation);
     return block;
   }
 

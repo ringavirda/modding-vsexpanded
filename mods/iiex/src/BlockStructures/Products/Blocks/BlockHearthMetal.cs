@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
@@ -61,7 +62,6 @@ public partial class BlockHearthMetal : Block, IExBlockDefProvider {
         .Resistance(45f)
         .MaxStackSize(8)
         .MiningTier(5)
-        .MineTool(EnumTool.Pickaxe)
         .MetalSounds(),
     ];
 

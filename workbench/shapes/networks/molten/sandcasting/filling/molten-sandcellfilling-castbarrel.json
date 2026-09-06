@@ -9,8 +9,8 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned",
-		"basalt": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/stone/sand/basalt"
+		"burned": "block/clay/vessel/sides/burned",
+		"basalt": "block/stone/sand/basalt"
 	},
 	"elements": [
 		{

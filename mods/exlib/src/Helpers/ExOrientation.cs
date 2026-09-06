@@ -13,6 +13,41 @@ namespace ExpandedLib.Helpers;
 /// </summary>
 public static class ExOrientation {
   /// <summary>
+  /// A block code's path split on <c>-</c>, for code that inspects or rewrites one dash-segment at a
+  /// time (an orientation word, a network node's direction token) and rejoins the rest unchanged. A
+  /// leading <c>domain:</c> is stripped before splitting and is not part of any segment. Shared by
+  /// <see cref="ExpandedLib.Definitions.MultiblockLayoutBuilder.FindOrientationSegments"/> (finds which
+  /// segments name an orientation) and <see cref="ExpandedLib.Structures.MultiblockFacings.RotateSegments"/>
+  /// (rewrites the ones a layout marked).
+  /// </summary>
+  public readonly struct SegmentedCode {
+    /// <summary>The path's dash-segments, domain stripped. Mutable in place - a caller rewriting one or
+    /// more segments before <see cref="Join(IReadOnlyList{string})"/> owns this array exclusively.</summary>
+    public string[] Parts { get; }
+
+    public SegmentedCode(string code) {
+      int colon = code.IndexOf(':');
+      string path = colon >= 0 ? code[(colon + 1)..] : code;
+      Parts = path.Split('-');
+    }
+
+    /// <summary>Segment count.</summary>
+    public int Count => Parts.Length;
+
+    /// <summary>The segment at <paramref name="index"/>.</summary>
+    public string this[int index] => Parts[index];
+
+    /// <summary>True when <paramref name="index"/> names an actual segment.</summary>
+    public bool InRange(int index) => index >= 0 && index < Parts.Length;
+
+    /// <summary>Rejoins <see cref="Parts"/> (or a caller-modified copy of it) into a dash-separated path.</summary>
+    public static string Join(IReadOnlyList<string> parts) => string.Join('-', parts);
+
+    /// <summary>Rejoins <see cref="Parts"/> as authored, with no segment replaced.</summary>
+    public string Join() => Join(Parts);
+  }
+
+  /// <summary>
   /// The rotation angle a horizontal side variant names (north 0, west 90, south 180, east 270).
   /// Accepts the full <c>side</c> words and the single-letter <c>orientation</c> codes ("n"/"w"/"s"/"e").
   /// </summary>

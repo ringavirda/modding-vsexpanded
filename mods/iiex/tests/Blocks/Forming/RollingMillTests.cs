@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -117,7 +118,7 @@ public class RollingMillTests {
       ("type", "shaft"),
       ("orientation", "we")
     );
-    ReflectionHelpers.SetProperty(axle, "Orientation", "we");
+    axle.ApplyOrientationForTest("we");
 
     // A we axle is a two-ended bus: connectors east and west, none north or south.
     Assert.True(axle.HasConnectorAt(BlockFacing.EAST));
@@ -138,8 +139,8 @@ public class RollingMillTests {
     world.RegisterNetwork("mpenergy", sys => new MpEnergyNetwork(sys));
 
     var block = MillBlock("we");
-    ReflectionHelpers.SetProperty(block, "Type", "rollingmill");
-    ReflectionHelpers.SetProperty(block, "Orientation", "we");
+    block.SetNetworkTypeForTest("rollingmill");
+    block.ApplyOrientationForTest("we");
 
     var pos = new BlockPos(0, 0, 0);
     world.Place(pos, block, new BlockEntityRollingMill());

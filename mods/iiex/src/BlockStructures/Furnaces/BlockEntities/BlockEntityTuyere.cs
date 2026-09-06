@@ -1,6 +1,7 @@
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Networks;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 

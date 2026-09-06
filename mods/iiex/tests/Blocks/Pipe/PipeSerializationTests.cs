@@ -1,3 +1,4 @@
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;

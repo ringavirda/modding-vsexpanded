@@ -1,7 +1,7 @@
 using System.Text;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Processes;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Machines;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 

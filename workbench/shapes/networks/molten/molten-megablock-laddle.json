@@ -9,7 +9,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1",
+		"cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsexpanded/workbench/textures/materials/cast-iron1",
 		"front1": "block/clay/refractory/tier2/front1",
 		"iron3": "block/metal/riveted/iron3",
 		"iron5": "block/metal/sheet-plain/iron5"

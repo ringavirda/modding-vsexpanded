@@ -1,8 +1,9 @@
 using System.Text;
 using ExpandedLib;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -16,7 +17,8 @@ namespace SteelIndustryExpanded.BlockStructures.CowperStove.BlockEntities;
 /// stove and renders an incandescent glow above 500 °C.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHeatSink : BlockEntity {
+public class BlockEntityHeatSink : ExBlockEntity {
+  [Persist("temperature")]
   private float _temperature = ExlibValues.AmbientTemperature;
 
   /// <summary>Current heat-sink temperature in °C. Assigning it re-lights the block when the glow level
@@ -37,21 +39,15 @@ public class BlockEntityHeatSink : BlockEntity {
   // The shared incandescence scale: canals, barrels and the heat sink glow alike.
   private static byte GetLightLevel(float temp) => MoltenMetal.GlowLevel(temp);
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("temperature", Temperature);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-
-    float newTemp = tree.GetFloat("temperature");
     byte oldLight = GetLightLevel(_temperature);
-    byte newLight = GetLightLevel(newTemp);
-    _temperature = newTemp;
+    base.FromTreeAttributes(tree, worldForResolving);
+    byte newLight = GetLightLevel(_temperature);
 
     if (oldLight != newLight && Api?.Side == EnumAppSide.Client) {
       Api.World.BlockAccessor.MarkBlockDirty(Pos);

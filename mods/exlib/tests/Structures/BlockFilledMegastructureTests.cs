@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Datastructures;
 using Xunit;

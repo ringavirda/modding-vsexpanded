@@ -1,5 +1,5 @@
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -22,7 +22,7 @@ public class BlockEntityPuddlingFurnace : BlockEntityFireboxFurnace {
   #region Reverberatory geometry
 
   // No shaft bounds are declared here: the base derives the one-cell firebox from the layout cell marked
-  // CellRole.Firebox.
+  // FurnaceCellRoles.Firebox.
 
   /// <summary>The hearth's own cell, where the work sits, away from the fire.</summary>
   protected override Vec3i ShaftCentre => new(-2, 0, 0);

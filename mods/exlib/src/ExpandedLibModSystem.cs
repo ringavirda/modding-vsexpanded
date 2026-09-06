@@ -1,12 +1,9 @@
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Fluids;
-using ExpandedLib.Materials;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Commands;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Registries.Preferences;
-using ExpandedLib.Registries.Recipes;
+using ExpandedLib.Structures;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Registries;
 using HarmonyLib;
+using System.ComponentModel;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -18,16 +15,22 @@ namespace ExpandedLib;
 /// entities and behaviours (the invisible structure filler, the multiblock structure behaviour) and points
 /// <see cref="StructureFillers"/> at this mod's filler block, so every dependent mod's mega-blocks reuse one
 /// shared filler. On the client it owns the per-player display-preferences store
-/// (<see cref="Registries.Preferences.ExPreferences"/>, backed by <c>exmod_preferences.json</c>) and the metric/imperial
+/// (<see cref="Registries.ExPreferences"/>, backed by <c>exmod_preferences.json</c>) and the metric/imperial
 /// measure feature; dependent mods add further preferences and sub-commands from their own assemblies. The
-/// block-network graph manager (<see cref="Blocks.Networks.BlockNetworkModSystem"/>) and the block-code
-/// migrator (<see cref="Blocks.Migrations.BlockMigrationModSystem"/>) are separate auto-loaded ModSystems.
+/// block-network graph manager (<see cref="Networks.BlockNetworkModSystem"/>) and the block-code
+/// migrator (<see cref="Migrations.BlockMigrationModSystem"/>) are separate auto-loaded ModSystems.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public class ExpandedLibModSystem : ModSystem {
   // Client-side Harmony instance for the handbook unit patch (see StartClientSide).
   private Harmony? _harmony;
 
   public override void Start(ICoreAPI api) {
+    // Wired before anything registers a def or a class, so the re-registration notification and the
+    // cross-mod Class<T>() fallback warning are live for every mod's own Start.
+    Definitions.ExDefinitions.Logger = api.Logger;
+    EntityRegistry.Logger = api.Logger;
+
     // Load the library's own gameplay tunables, chiefly the block-network constants the concrete networks
     // in this assembly read. Before this runs the accessor holds the coded defaults, so reads are safe.
     ExlibValues.Load(api);
@@ -52,25 +55,28 @@ public class ExpandedLibModSystem : ModSystem {
   /// still yields a usable catalogue, and exlib's single dll means this fires once whatever is installed.
   /// </summary>
   public override void AssetsFinalize(ICoreAPI api) {
-    MetalCatalogueLoader.Load(api);
-    ExLiquids.Load(api);
+    // The content guards - dangling recipe codes, uncovered lang, pinned network nodes and the rest -
+    // run here so a JSON-only mod gets them as a log line without ever opening the xUnit harness.
+    // Also available on demand with /exmod verify; ExlibConfig.RunChecksOnLoad opts out of this pass.
+    if (ExlibValues.RunChecksOnLoad)
+      Checks.ExlibChecks.Log(api.Logger, Checks.ExlibChecks.All(api));
+
+    MetalCatalogueLoader.Load(api).Log(api.Logger);
+    LiquidCatalogueLoader.Load(api).Log(api.Logger);
     // The material-role catalogue (flux/fuel/ore/scrap/charge classification) and its mod-gated code
     // contributors. Must load after the metal and liquid registries; exlib ships no role content itself.
-    MaterialRoleLoader.Load(api);
+    MaterialRoleLoader.Load(api).Log(api.Logger);
 
     // The merged process-stage catalogue. Read again here rather than only at inject time so the
     // registry the machines consult is the post-patch one; the emitter's earlier read cannot be.
-    foreach (string error in Processes.ProcessRouteLoader.Load(api))
-      api.Logger.Error("[exlib] invalid stage route - " + error);
+    ProcessRouteLoader.Load(api).Log(api.Logger);
 
     // The terminal half of the same contract: every machine's job table.
-    foreach (string error in Processes.ProcessJobLoader.Load(api))
-      api.Logger.Error("[exlib] invalid process job - " + error);
+    ProcessJobLoader.Load(api).Log(api.Logger);
 
     // What each store's items occupy. Also each store's whitelist: an item no rule names is one no rack
     // takes, so a missing file reads as an empty rack rather than as one that holds anything.
-    foreach (string error in Storage.BayOccupancyLoader.Load(api))
-      api.Logger.Error("[exlib] invalid bay occupancy - " + error);
+    BayOccupancyLoader.Load(api).Log(api.Logger);
   }
 
   public override void StartClientSide(ICoreClientAPI api) {
@@ -84,10 +90,7 @@ public class ExpandedLibModSystem : ModSystem {
 
     // The handbook unit-conversion patch that makes authored metric prose read in imperial. Client only,
     // and guarded so it is applied once however many dependent mods are installed.
-    if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
-      _harmony = new Harmony(Mod.Info.ModID);
-      _harmony.PatchAll(GetType().Assembly);
-    }
+    _harmony = ExHarmony.PatchOnce(Mod, GetType().Assembly);
 
     // Apply the local player's saved choices once the world (and player) are ready.
     api.Event.LevelFinalize += () =>
@@ -112,7 +115,7 @@ public class ExpandedLibModSystem : ModSystem {
   }
 
   public override void Dispose() {
-    _harmony?.UnpatchAll(Mod.Info.ModID);
+    ExHarmony.UnpatchAll(Mod);
     _harmony = null;
     base.Dispose();
   }

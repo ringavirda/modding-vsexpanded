@@ -44,9 +44,9 @@ public class SlagPathDefinitions : IExBlockDefProvider {
         "inContainerTexture",
         new { @base = Items.SlagItemDefinitions.Texture }
       )
-      .RawByType("resistanceByType", "*-snow", 0.2)
-      .RawByType("resistanceByType", "*-free", 2.4)
-      .RawByType(
+      .RootKeyByType("resistanceByType", "*-snow", 0.2)
+      .RootKeyByType("resistanceByType", "*-free", 2.4)
+      .RootKeyByType(
         "behaviorsByType",
         "*-snow",
         new[] { new { name = "BreakSnowFirst" } }
@@ -104,7 +104,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
       .SideSolid(new { all = false, down = true })
       .SingleSelectionBox(0f, 0f, 0f, 1f, 0.4375f, 1f)
       .SingleCollisionBox(0f, 0f, 0f, 1f, 0.4375f, 1f)
-      .Raw(
+      .RootKey(
         "tpHandTransform",
         new {
           translation = new {
@@ -175,7 +175,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
       .WalkSpeedMultiplier(1.2)
       .FaceCullMode("NeverCull")
       .EmitSideAo(true)
-      .RawByType(
+      .RootKeyByType(
         "sidesolidByType",
         "*-up-north-*",
         new {
@@ -184,7 +184,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
           north = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sidesolidByType",
         "*-up-west-*",
         new {
@@ -193,7 +193,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
           west = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sidesolidByType",
         "*-up-south-*",
         new {
@@ -202,7 +202,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
           south = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sidesolidByType",
         "*-up-east-*",
         new {
@@ -211,7 +211,7 @@ public class SlagPathDefinitions : IExBlockDefProvider {
           east = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "collisionSelectionBoxesByType",
         "*-up-*",
         new object[]

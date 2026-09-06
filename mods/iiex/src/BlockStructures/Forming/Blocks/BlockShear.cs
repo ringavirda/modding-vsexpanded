@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Processes;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

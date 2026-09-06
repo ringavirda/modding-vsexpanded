@@ -68,7 +68,7 @@ public class ExRecipeDefTests {
     Assert.Equal("metal", (string?)recipe["ingredients"]!["P"]!["name"]);
     Assert.Equal(
       ["iron", "steel"],
-      recipe["ingredients"]!["P"]!["allowedVariants"]!.ToObject<string[]>()
+      recipe["ingredients"]!["P"]!["allowedVariants"]!.ToObject<string[]>()!
     );
     Assert.Equal(1, (int)recipe["ingredients"]!["P"]!["quantity"]!);
     Assert.Equal("block", (string?)recipe["output"]!["type"]);

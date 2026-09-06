@@ -1,7 +1,7 @@
 [
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier1",
     "side": "Server",
@@ -9,7 +9,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier2",
     "side": "Server",
@@ -17,7 +17,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier3",
     "side": "Server",
@@ -25,14 +25,14 @@
   },
   {
     "op": "remove",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/texturesByType/*",
     "side": "Server",
     "dependsOn": [{ "modid": "iiex" }]
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/texturesByType/*-refractorytier1-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
@@ -42,7 +42,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/texturesByType/*-refractorytier2-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
@@ -52,7 +52,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/texturesByType/*-refractorytier3-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
@@ -62,7 +62,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthrough.json",
+    "file": "iiex:blocktypes/pipe/cast/passthrough.json",
     "path": "/texturesByType/*",
     "value": {
       "front1": {
@@ -76,7 +76,7 @@
 
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier1",
     "side": "Server",
@@ -84,7 +84,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier2",
     "side": "Server",
@@ -92,7 +92,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/variantgroups/2/states/-",
     "value": "refractorytier3",
     "side": "Server",
@@ -100,14 +100,14 @@
   },
   {
     "op": "remove",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/texturesByType/*",
     "side": "Server",
     "dependsOn": [{ "modid": "iiex" }]
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/texturesByType/*-refractorytier1-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
@@ -117,7 +117,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/texturesByType/*-refractorytier2-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
@@ -127,7 +127,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/texturesByType/*-refractorytier3-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
@@ -137,7 +137,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/passthroughbend.json",
+    "file": "iiex:blocktypes/pipe/cast/passthroughbend.json",
     "path": "/texturesByType/*",
     "value": {
       "front1": {
@@ -151,7 +151,7 @@
 
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier1",
     "side": "Server",
@@ -159,7 +159,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier2",
     "side": "Server",
@@ -167,7 +167,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/variantgroups/1/states/-",
     "value": "refractorytier3",
     "side": "Server",
@@ -175,14 +175,14 @@
   },
   {
     "op": "remove",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/texturesByType/*",
     "side": "Server",
     "dependsOn": [{ "modid": "iiex" }]
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/texturesByType/*-refractorytier1-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier1/front1" }
@@ -192,7 +192,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/texturesByType/*-refractorytier2-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier2/front1" }
@@ -202,7 +202,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/texturesByType/*-refractorytier3-*",
     "value": {
       "front1": { "base": "game:block/clay/refractory/tier3/front1" }
@@ -212,7 +212,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:blocktypes/pipes/outlet.json",
+    "file": "iiex:blocktypes/pipe/outlet.json",
     "path": "/texturesByType/*",
     "value": {
       "front1": {
@@ -226,7 +226,7 @@
 
   {
     "op": "add",
-    "file": "iiex:recipes/grid/pipes.json",
+    "file": "iiex:recipes/grid/pipes-cast.json",
     "path": "/-",
     "value": {
       "name": "Pipe Passthrough (Straight, Refractory)",
@@ -257,7 +257,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:recipes/grid/pipes.json",
+    "file": "iiex:recipes/grid/pipes-cast.json",
     "path": "/-",
     "value": {
       "name": "Pipe Passthrough (Bend, Refractory)",
@@ -288,7 +288,7 @@
   },
   {
     "op": "add",
-    "file": "iiex:recipes/grid/pipes.json",
+    "file": "iiex:recipes/grid/pipes-cast.json",
     "path": "/-",
     "value": {
       "name": "Pipe Outlet (Refractory)",

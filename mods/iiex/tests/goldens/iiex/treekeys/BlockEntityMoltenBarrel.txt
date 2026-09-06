@@ -1,0 +1,6 @@
+blockCode:string
+contents:itemstack
+currentUnitAmount:int
+posx:int
+posy:int
+posz:int

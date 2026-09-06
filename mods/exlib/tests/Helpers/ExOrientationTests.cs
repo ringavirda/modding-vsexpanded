@@ -232,4 +232,45 @@ public class ExOrientationTests {
     Assert.Equal(0.5f, x, 3);
     Assert.Equal(0.5f, z, 3);
   }
+
+  #region SegmentedCode
+
+  [Fact]
+  public void SegmentedCode_strips_the_domain_and_splits_on_dashes() {
+    var code = new ExOrientation.SegmentedCode(
+      "iiex:brickslabs-fire-south-free"
+    );
+
+    Assert.Equal(4, code.Count);
+    Assert.Equal("brickslabs", code[0]);
+    Assert.Equal("fire", code[1]);
+    Assert.Equal("south", code[2]);
+    Assert.Equal("free", code[3]);
+  }
+
+  [Fact]
+  public void SegmentedCode_join_round_trips_an_unmodified_path() {
+    var code = new ExOrientation.SegmentedCode("pipe-straight-fire-ns");
+    Assert.Equal("pipe-straight-fire-ns", code.Join());
+  }
+
+  [Fact]
+  public void SegmentedCode_join_reflects_an_in_place_edit() {
+    var code = new ExOrientation.SegmentedCode(
+      "iiex:brickslabs-fire-south-free"
+    );
+    code.Parts[2] = "north";
+    Assert.Equal("brickslabs-fire-north-free", code.Join());
+  }
+
+  [Fact]
+  public void SegmentedCode_inrange_rejects_an_out_of_bounds_index() {
+    var code = new ExOrientation.SegmentedCode("a-b-c");
+    Assert.True(code.InRange(0));
+    Assert.True(code.InRange(2));
+    Assert.False(code.InRange(-1));
+    Assert.False(code.InRange(3));
+  }
+
+  #endregion
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Behaviors;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks;
+using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;

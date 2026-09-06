@@ -1,4 +1,5 @@
 using System.Linq;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
@@ -96,7 +97,7 @@ public class ReheatSoakTests {
   /// override, by reflection because <c>OnProductionTick</c> is <c>protected</c>.</summary>
   private static void Tick(BlockEntityFurnaceCore be, int seconds) {
     for (int i = 0; i < seconds; i++)
-      ReflectionHelpers.Invoke(be, "OnProductionTick", 1f);
+      be.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
   }
 
   /// <summary>

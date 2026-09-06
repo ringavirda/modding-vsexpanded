@@ -1,11 +1,13 @@
 using System.Text;
 using ExpandedLib;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Fluids;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Structures;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -23,6 +25,7 @@ public class BlockEntitySmokeStack
   : BlockEntityMultiblockMachine,
     INetworkNode,
     IPipeNode {
+  [Persist("lastConsumedAmount")]
   private float _lastConsumedAmount;
   private BlockNetworkModSystem? _system;
   private long _lastVentSoundMs;
@@ -253,28 +256,27 @@ public class BlockEntitySmokeStack
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("lastConsumedAmount", _lastConsumedAmount);
-    tree.SetString("orientation", Orientation);
-    tree.SetStrings("possibleOrientations", PossibleOrientations);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _lastConsumedAmount = tree.GetFloat("lastConsumedAmount");
-    Orientation = tree.GetString("orientation");
-    // The old encoding of this key was a JSON string; it is read second so worlds saved before the
-    // cutover keep their rotation choices, and converts on the stack's next save.
-    PossibleOrientations =
-      tree.GetStrings("possibleOrientations")
-      ?? ExTree.SafeDeserialize(
-        tree.GetString("possibleOrientations"),
-        PossibleOrientations
-      );
+  // "orientation" is written unconditionally, even when null - unlike ExBlockState's string helper (and
+  // [Persist]'s string primitive), which skip a null value - so it stays a Tree.
+  protected override void DeclareState(ExBlockState state) {
+    state.Tree(
+      "orientation",
+      tree => tree.SetString("orientation", Orientation),
+      (tree, _) => Orientation = tree.GetString("orientation")
+    );
+    state.Tree(
+      "possibleOrientations",
+      tree => tree.SetStrings("possibleOrientations", PossibleOrientations),
+      (tree, _) =>
+        // The old encoding of this key was a JSON string; it is read second so worlds saved before the
+        // cutover keep their rotation choices, and converts on the stack's next save.
+        PossibleOrientations =
+          tree.GetStrings("possibleOrientations")
+          ?? ExTree.SafeDeserialize(
+            tree.GetString("possibleOrientations"),
+            PossibleOrientations
+          )
+    );
   }
 
   #endregion

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;

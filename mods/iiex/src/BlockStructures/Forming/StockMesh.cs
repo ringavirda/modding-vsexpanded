@@ -49,7 +49,7 @@ public static class StockMesh {
   /// barrel it was never fed to.
   /// </remarks>
   public static bool IsBaseState(WorkPiece piece) =>
-    ExpandedLib.Processes.ProcessRoute.SameThickness(
+    ExpandedLib.Catalogues.ProcessRoute.SameThickness(
       piece.Thickness,
       piece.Form.BaseThickness
     );
@@ -64,7 +64,7 @@ public static class StockMesh {
   /// guess is visibly wrong half the time.
   /// </remarks>
   public static string? ElementFor(
-    ExpandedLib.Processes.ProcessRoute? route,
+    ExpandedLib.Catalogues.ProcessRoute? route,
     WorkPiece piece
   ) =>
     route?.Shape == null || piece.Family == null

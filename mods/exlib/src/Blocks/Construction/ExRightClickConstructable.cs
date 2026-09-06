@@ -5,18 +5,21 @@
 // 1.20/1.21, where the vanilla behavior does not exist, it is a full reimplementation backed by
 // ExRightClickConstruction. Owning the JSON name on every version gives the mod C# a single type to
 // reference and leaves vanilla blocks (e.g. the waterwheel) on vanilla's own behavior.
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Machines;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Blocks.Construction;
+namespace ExpandedLib.Blocks;
 
 #if GAME_GE_1_22
 using System;
+using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
 [BlockEntityBehaviorRegister("ExRightClickConstructable", PrefixModId = false)]
 public class ExRightClickConstructable(BlockEntity blockentity)
-  : BEBehaviorRightClickConstructable(blockentity)
+  : BEBehaviorRightClickConstructable(blockentity),
+    IProductionReadiness
 {
   /// <summary>
   /// The materials this block would scatter at <paramref name="ratio"/> (0..1) of the consumed stacks,
@@ -37,6 +40,24 @@ public class ExRightClickConstructable(BlockEntity blockentity)
       rcc.CurrentCompletedStage = built;
     }
   }
+
+  /// <summary>Whether construction gates production, read from the <c>gatesProduction</c> JSON property
+  /// (default <c>true</c>). <c>false</c> opts a machine that must tick while unfinished out of the gate
+  /// below, while still exposing <see cref="BEBehaviorRightClickConstructable.IsComplete"/> for whatever
+  /// reads it directly.</summary>
+  public bool GatesProduction { get; private set; } = true;
+
+  public override void Initialize(ICoreAPI api, JsonObject properties)
+  {
+    base.Initialize(api, properties);
+    GatesProduction = properties["gatesProduction"].AsBool(true);
+  }
+
+  /// <summary>Ready once construction is complete, or always when <see cref="GatesProduction"/> opts out.</summary>
+  public bool IsReadyToProduce => !GatesProduction || IsComplete;
+
+  /// <summary>Stops the production tick while unfinished, unless <see cref="GatesProduction"/> opts out.</summary>
+  public bool StopsProductionWhenNotReady => GatesProduction;
 
   // The salvage fraction, taken from the owning mod's (player-tunable) config when it registered one,
   // else the JSON/default brokenDropsRatio. Read live so a /exmod config change applies immediately.
@@ -69,13 +90,27 @@ using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 [BlockEntityBehaviorRegister("ExRightClickConstructable", PrefixModId = false)]
-public class ExRightClickConstructable : BlockEntityBehavior, IInteractable {
+public class ExRightClickConstructable
+  : BlockEntityBehavior,
+    IInteractable,
+    IProductionReadiness {
   private readonly ExRightClickConstruction rcc = new();
   private float brokenDropsRatio = 1f;
 
   public CompositeShape shape { get; protected set; }
   public bool IsComplete => rcc.CurrentCompletedStage == rcc.Stages.Length - 1;
   public event Action<CompositeShape>? OnShapeChanged;
+
+  /// <summary>Whether construction gates production, read from the <c>gatesProduction</c> JSON property
+  /// (default <c>true</c>). <c>false</c> opts a machine that must tick while unfinished out of the gate
+  /// below, while still exposing <see cref="IsComplete"/> for whatever reads it directly.</summary>
+  public bool GatesProduction { get; private set; } = true;
+
+  /// <summary>Ready once construction is complete, or always when <see cref="GatesProduction"/> opts out.</summary>
+  public bool IsReadyToProduce => !GatesProduction || IsComplete;
+
+  /// <summary>Stops the production tick while unfinished, unless <see cref="GatesProduction"/> opts out.</summary>
+  public bool StopsProductionWhenNotReady => GatesProduction;
 
   public ExRightClickConstructable(BlockEntity blockentity)
     : base(blockentity) {
@@ -85,6 +120,7 @@ public class ExRightClickConstructable : BlockEntityBehavior, IInteractable {
   public override void Initialize(ICoreAPI api, JsonObject properties) {
     base.Initialize(api, properties);
     brokenDropsRatio = properties["brokenDropsRatio"].AsFloat(1f);
+    GatesProduction = properties["gatesProduction"].AsBool(true);
     var stages = properties["stages"].AsObject<ExConstructionStage[]>(null);
     rcc.LateInit(stages, api, "Block " + Block.Code);
     UpdateShape();

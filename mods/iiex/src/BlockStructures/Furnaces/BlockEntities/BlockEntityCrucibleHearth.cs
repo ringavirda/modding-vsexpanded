@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 
@@ -58,7 +58,7 @@ public class BlockEntityCrucibleHearth : BlockEntityFirebox {
   /// were consumed. Sized in items rather than units so the caller can take exactly that many out of the
   /// player's hand.
   /// </summary>
-  public int Charge(ItemStack? blister) {
+  public new int Charge(ItemStack? blister) {
     int perItem = UnitsPerItem(blister);
     if (perItem <= 0)
       return 0;
@@ -255,37 +255,36 @@ public class BlockEntityCrucibleHearth : BlockEntityFirebox {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    for (int i = 0; i < _holes.Length; i++) {
-      CrucibleHole hole = _holes[i];
-      tree.SetBool($"hole{i}pot", hole.Pot);
-      tree.SetInt($"hole{i}firings", hole.Firings);
-      tree.SetInt($"hole{i}charge", hole.Charge);
-      tree.SetFloat($"hole{i}preheat", hole.Preheat);
-      tree.SetFloat($"hole{i}melt", hole.Melt);
-      tree.SetInt($"hole{i}metal", hole.Metal);
-    }
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    for (int i = 0; i < _holes.Length; i++)
-      _holes[i]
-        .Restore(
-          tree.GetBool($"hole{i}pot"),
-          tree.GetInt($"hole{i}firings"),
-          tree.GetInt($"hole{i}charge"),
-          tree.GetFloat($"hole{i}preheat"),
-          tree.GetFloat($"hole{i}melt"),
-          tree.GetInt($"hole{i}metal")
-        );
-    // After the holes, because the base re-snapshots the mesh from what it reads and the holes are half of
-    // what that mesh draws.
-    base.FromTreeAttributes(tree, worldForResolving);
-  }
+  // Restoring the holes happens inside this declaration, which base.FromTreeAttributes reaches before
+  // BlockEntityFirebox re-snapshots the mesh from what it reads - the holes are half of what that mesh
+  // draws, so the order still matters and still holds with no override needed here.
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "holes",
+      tree => {
+        for (int i = 0; i < _holes.Length; i++) {
+          CrucibleHole hole = _holes[i];
+          tree.SetBool($"hole{i}pot", hole.Pot);
+          tree.SetInt($"hole{i}firings", hole.Firings);
+          tree.SetInt($"hole{i}charge", hole.Charge);
+          tree.SetFloat($"hole{i}preheat", hole.Preheat);
+          tree.SetFloat($"hole{i}melt", hole.Melt);
+          tree.SetInt($"hole{i}metal", hole.Metal);
+        }
+      },
+      (tree, world) => {
+        for (int i = 0; i < _holes.Length; i++)
+          _holes[i]
+            .Restore(
+              tree.GetBool($"hole{i}pot"),
+              tree.GetInt($"hole{i}firings"),
+              tree.GetInt($"hole{i}charge"),
+              tree.GetFloat($"hole{i}preheat"),
+              tree.GetFloat($"hole{i}melt"),
+              tree.GetInt($"hole{i}metal")
+            );
+      }
+    );
 
   #endregion
 

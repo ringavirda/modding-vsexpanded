@@ -1,5 +1,6 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;

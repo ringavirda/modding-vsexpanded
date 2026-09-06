@@ -1,0 +1,8 @@
+[
+  {
+    "op": "replace",
+    "file": "fixturemod:itemtypes/nosuchitem.json",
+    "path": "/maxstacksize",
+    "value": 64
+  }
+]

@@ -1,11 +1,10 @@
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Commands;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Registries.Preferences;
-using ExpandedLib.Registries.Recipes;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using HarmonyLib;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
@@ -40,7 +39,7 @@ public class IronIndustryExpandedModSystem : ModSystem {
   private Harmony? _harmony;
 
   public override void Dispose() {
-    _harmony?.UnpatchAll(Mod.Info.ModID);
+    ExHarmony.UnpatchAll(Mod);
     _harmony = null;
     base.Dispose();
   }
@@ -49,8 +48,13 @@ public class IronIndustryExpandedModSystem : ModSystem {
     // Gameplay tunables from ModConfig/ex_values.json (writes defaults on first run). Must run
     // before any block entity is constructed so the molten-system values apply.
     IiexValues.Load(api);
+    // exlib's MetalRegistry ships no recovery-item default of its own; iiex supplies the family's,
+    // read once at load rather than live, matching every other config value MetalRegistry consults.
+    MetalRegistry.DefaultRecoveryFallback = new AssetLocation(
+      IiexValues.MetalRecoveryFallback
+    );
     // Drives the exlib RCC salvage ratio for the engines and boilers from the live config.
-    ExpandedLib.Blocks.Construction.ExRccSettings.RegisterBrokenDropsRatio(
+    ExpandedLib.Blocks.ExRccSettings.RegisterBrokenDropsRatio(
       Mod.Info.ModID,
       () => IiexValues.RccBrokenDropsRatio
     );
@@ -76,10 +80,7 @@ public class IronIndustryExpandedModSystem : ModSystem {
     // look-at info is patched to report a chimney venting a pipe (the gas draw itself runs in
     // PipeNetwork's tick). Both are patches rather than replaced registered classes, so other mods
     // touching the same vanilla blocks can coexist.
-    if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
-      _harmony = new Harmony(Mod.Info.ModID);
-      _harmony.PatchAll(GetType().Assembly);
-    }
+    _harmony = ExHarmony.PatchOnce(Mod, GetType().Assembly);
 
     // Both pipe tiers' ratings, read live from this mod's config, keyed by the block's `tier` variant
     // in BlockPipe; siex registers the rolled tier's own. Cast is square and plated like the plated

@@ -5,6 +5,27 @@ All notable changes to this mod are documented here. The format is based on
 [Semantic Versioning](https://semver.org/). For changes before this file existed,
 see the git history.
 
+## [Unreleased]
+
+### Fixed
+
+- The iiex refractory-pipe compat patch (`patches/compat/iiex/refractory.json`) targeted
+  `iiex:blocktypes/pipes/{passthrough,passthroughbend,outlet}.json` and
+  `iiex:recipes/grid/pipes.json`, which stopped existing when those pipes went code-first; the
+  patch silently failed to apply. Retargeted at the synthetic assets iiex's defs now inject
+  (`iiex:blocktypes/pipe/cast/{passthrough,passthroughbend}.json`,
+  `iiex:blocktypes/pipe/outlet.json`, `iiex:recipes/grid/pipes-cast.json`).
+
+### Internal
+
+- Every block entity that hand-wrote its `ToTreeAttributes`/`FromTreeAttributes` pair now declares
+  its state through `[Persist]` or `Persisted`; the save format is unchanged (proved by a
+  `TreeKeys` golden per class).
+- Test fixtures adopt exlib's compile-checked reflection seams (`DriveProductionTick`/
+  `DriveIdleTick`, `DriveMonitorTick`/`ApplyStructureRotation`,
+  `SetNetworkTypeForTest`/`ApplyOrientationForTest`) in place of hand-rolled `ReflectionHelpers`
+  calls; test behaviour is unchanged.
+
 ## [0.9.9] - 2026-08-14
 
 ### Changed

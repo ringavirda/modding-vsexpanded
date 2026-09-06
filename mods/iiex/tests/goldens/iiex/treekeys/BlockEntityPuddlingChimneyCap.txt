@@ -1,0 +1,5 @@
+blockCode:string
+damperOpen:bool
+posx:int
+posy:int
+posz:int

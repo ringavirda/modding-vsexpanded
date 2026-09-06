@@ -1,8 +1,7 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// Medium-less concrete <see cref="BlockNetwork"/> for exercising the graph engine

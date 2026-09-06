@@ -1,5 +1,5 @@
 using System.IO;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using Newtonsoft.Json;
 using Xunit;

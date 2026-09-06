@@ -1,12 +1,12 @@
 using System.Linq;
 using System.Text;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -72,7 +72,7 @@ public class FurnaceHudDistributionTests {
     var be = new T();
     world.Place(pos, block, be);
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     ReflectionHelpers.Invoke(be, "CacheAttributes");
     ReflectionHelpers.SetProperty(be, nameof(be.StructureComplete), true);
     return be;

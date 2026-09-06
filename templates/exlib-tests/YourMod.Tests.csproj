@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- The GamePath template parameter at `dotnet new` time wins; otherwise this falls back to the VINTAGE_STORY
+         environment variable at build time (MSBuild exposes every env var as a property of the
+         same name). Edit by hand later if your install moves. Two properties, not one Condition
+         on $(GamePath) itself - the template engine treats a Condition referencing the same name
+         as the symbol it's substituting as a template-time conditional and strips it. -->
+    <_GamePathOverride>GAME_PATH_PLACEHOLDER</_GamePathOverride>
+    <GamePath Condition="'$(_GamePathOverride)' != ''">$(_GamePathOverride)</GamePath>
+    <GamePath Condition="'$(_GamePathOverride)' == ''">$(VINTAGE_STORY)</GamePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Private=true, not false: the vstest discoverer probes a test assembly's direct references
+         on disk BEFORE the harness's VsAssemblyResolver can run, and a reference missing from the
+         output folder makes discovery silently report zero tests rather than fail. -->
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VSSurvivalMod">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VSEssentials">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <!-- The harness, from NuGet. Swap for the ProjectReference alternative below if you keep exlib
+         as a source checkout (a git submodule or sibling clone of modding-vsexpanded) instead of
+         consuming the published package. -->
+    <PackageReference Include="ExpandedLib.Testing" Version="0.7.3" />
+    <PackageReference Include="ExpandedLib" Version="0.7.3" />
+    <!--
+    <ProjectReference Include="..\modding-vsexpanded\mods\exlib\src\ExpandedLib.csproj" />
+    <ProjectReference Include="..\modding-vsexpanded\mods\exlib\testing\ExpandedLib.Testing.csproj" />
+    -->
+  </ItemGroup>
+
+  <!-- Your mod's own project, referenced only if it sits where this template expects (a sibling
+       folder named after the ModName parameter). Missing on purpose until you point it at the real path - the
+       template still builds and its two content checks pass vacuously without it. -->
+  <ItemGroup Condition="Exists('..\YourModProject\YourModProject.csproj')">
+    <ProjectReference Include="..\YourModProject\YourModProject.csproj" />
+  </ItemGroup>
+</Project>

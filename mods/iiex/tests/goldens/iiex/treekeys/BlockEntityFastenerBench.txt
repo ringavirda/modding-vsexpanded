@@ -1,0 +1,6 @@
+benchRemaining:float
+blockCode:string
+inventory/qslots:int
+posx:int
+posy:int
+posz:int

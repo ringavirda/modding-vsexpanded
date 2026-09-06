@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 
 namespace IronIndustryExpanded.BlockStructures.Forming;
 

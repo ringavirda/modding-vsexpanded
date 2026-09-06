@@ -64,7 +64,7 @@ public class FettleItemDefinitions : IExItemDefProvider {
       .TextureAll(texture)
       .MaxStackSize(64)
       .MaterialDensity(2500)
-      .Raw("tags", new[] { StockTag })
+      .RootKey("tags", new[] { StockTag })
       .CreativeCommon("*");
 
   /// <summary>

@@ -1,4 +1,5 @@
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;

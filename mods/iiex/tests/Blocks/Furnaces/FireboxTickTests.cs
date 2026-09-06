@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Machines;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -113,7 +114,7 @@ public class FireboxTickTests {
   /// override, by reflection because <c>OnProductionTick</c> is <c>protected</c>.</summary>
   private static void Tick(BlockEntityFurnaceCore be, int seconds) {
     for (int i = 0; i < seconds; i++)
-      ReflectionHelpers.Invoke(be, "OnProductionTick", 1f);
+      be.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
   }
 
   private static int Cadence(BlockEntityFurnaceCore be, string member) =>

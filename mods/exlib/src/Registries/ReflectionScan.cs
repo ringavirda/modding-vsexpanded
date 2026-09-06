@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Vintagestory.API.Common;
@@ -7,8 +8,9 @@ namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Shared reflection helper for the attribute-driven registries
-/// (<see cref="Entities.EntityRegistry"/>, <see cref="Commands.CommandRegistry"/>,
-/// <see cref="Preferences.PreferenceRegistry"/>).
+/// (<see cref="EntityRegistry"/>, <see cref="CommandRegistry"/>,
+/// <see cref="PreferenceRegistry"/>) and for <c>BlockMigrationModSystem</c>'s
+/// cross-assembly discovery.
 /// </summary>
 public static class ReflectionScan {
   /// <summary>
@@ -27,6 +29,19 @@ public static class ReflectionScan {
         .ToArray()!;
     }
   }
+
+  /// <summary>
+  /// Returns every concrete class across <paramref name="assemblies"/>, sorted by assembly full
+  /// name then type full name so a scan over <see cref="AppDomain.GetAssemblies"/> (whose own
+  /// order is not guaranteed) is reproducible run to run. Each assembly tolerates a partial load
+  /// the same way <see cref="GetCandidateTypes(Assembly)"/> does.
+  /// </summary>
+  public static Type[] GetCandidateTypes(IEnumerable<Assembly> assemblies) =>
+    assemblies
+      .SelectMany(GetCandidateTypes)
+      .OrderBy(t => t.Assembly.FullName, StringComparer.Ordinal)
+      .ThenBy(t => t.FullName, StringComparer.Ordinal)
+      .ToArray();
 
   /// <summary>
   /// Validates that <paramref name="type"/> is assignable to <typeparamref name="T"/> and, if so,
@@ -54,5 +69,33 @@ public static class ReflectionScan {
 
     instance = (T)Activator.CreateInstance(type)!;
     return true;
+  }
+
+  /// <summary>
+  /// Registers every <typeparamref name="TAttr"/>-decorated <typeparamref name="TInstance"/> in
+  /// <paramref name="assembly"/>: the shared find-attribute / <see cref="TryActivate{T}"/> /
+  /// register loop behind <see cref="CommandRegistry"/> and <see cref="PreferenceRegistry"/>. A
+  /// type carrying the attribute but not assignable to <typeparamref name="TInstance"/>, or with
+  /// no parameterless constructor, is warned about by <see cref="TryActivate{T}"/> and skipped
+  /// rather than registered.
+  /// </summary>
+  public static void ForEachAttributed<TAttr, TInstance>(
+    ICoreAPI api,
+    string modId,
+    Assembly assembly,
+    Action<TAttr, TInstance> register
+  )
+    where TAttr : Attribute
+    where TInstance : class {
+    foreach (Type type in GetCandidateTypes(assembly)) {
+      var attr = type.GetCustomAttribute<TAttr>();
+      if (attr == null)
+        continue;
+
+      if (!TryActivate<TInstance>(api, modId, type, out TInstance instance))
+        continue;
+
+      register(attr, instance);
+    }
   }
 }

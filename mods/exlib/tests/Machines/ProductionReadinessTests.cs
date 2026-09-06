@@ -1,11 +1,15 @@
 using System.Linq;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
+#if GAME_GE_1_22
+using Vintagestory.GameContent;
+#endif
 
 namespace ExpandedLib.Tests;
 
@@ -24,6 +28,27 @@ internal sealed class TestReadinessPublisher(BlockEntity blockentity)
 
 /// <summary>A block entity that publishes no readiness at all, as a plain block does.</summary>
 internal sealed class TestPlainBlockEntity : BlockEntity { }
+
+/// <summary>A machine that hosts a real <see cref="ExRightClickConstructable"/>, as the shipped
+/// mega-blocks (boiler, engine, transmission) declare it from their JSON definition, so the
+/// behaviour's own readiness answer is exercised through the publisher path rather than an
+/// ad hoc forwarder. The `_rcc` field name matches what <see cref="RccFake"/> primes.</summary>
+internal sealed class TestConstructedMachine : BlockEntityProductionMachine {
+  // Set only through reflection (RccFake.Complete), never by compiled code - the same pattern
+  // PersistAttributeTests' [Persist] fixtures use for a field PersistScan reaches by name.
+#pragma warning disable CS0169 // field is set only via reflection, never by name
+  private ExRightClickConstructable? _rcc;
+#pragma warning restore CS0169
+  public int ProductionTicks;
+  public int IdleTicks;
+
+  // Construction now publishes its own gate; nothing else on this machine does.
+  protected override bool CanRunProduction => true;
+
+  protected override void OnProductionTick(float dt) => ProductionTicks++;
+
+  protected override void OnIdleProductionTick(float dt) => IdleTicks++;
+}
 
 /// <summary>A multiblock whose response to losing its pattern is set per test.</summary>
 internal sealed class TestBreachMegablock : BlockEntityMultiblockMachine {
@@ -197,6 +222,79 @@ public class ProductionReadinessTests {
     world.AdvanceBlockEntityTime(1000);
 
     Assert.True(machine.IdleTicks > 0);
+  }
+
+  #endregion
+
+  #region Construction gates production
+
+  /// <summary>
+  /// Adds a real <see cref="ExRightClickConstructable"/> to <paramref name="machine"/>, primed with two
+  /// stages and none completed, and registers it as a publisher. Mirrors the field <see cref="RccFake"/>
+  /// primes on the real mega-blocks (see its own remarks on `rcc` vs the reimplementation's field).
+  /// </summary>
+  private static ExRightClickConstructable AddIncompleteRcc(
+    TestConstructedMachine machine
+  ) {
+    var rcc = new ExRightClickConstructable(machine);
+#if GAME_GE_1_22
+    ReflectionHelpers.SetField(
+      rcc,
+      "rcc",
+      new RightClickConstruction {
+        Stages = [
+          new Vintagestory.GameContent.ConstructionStage(),
+          new Vintagestory.GameContent.ConstructionStage(),
+        ],
+        CurrentCompletedStage = 0,
+      }
+    );
+#else
+    ReflectionHelpers.SetField(
+      rcc,
+      "rcc",
+      new ExRightClickConstruction {
+        Stages = [new ExConstructionStage(), new ExConstructionStage()],
+        CurrentCompletedStage = 0,
+      }
+    );
+#endif
+    machine.Behaviors.Add(rcc);
+    return rcc;
+  }
+
+  [Fact]
+  public void A_machine_hosting_an_incomplete_construction_is_not_ready_and_stops() {
+    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+    AddIncompleteRcc(machine);
+
+    Assert.False(ProductionReadiness.IsReady(machine));
+    Assert.True(ProductionReadiness.StopsProductionWhenNotReady(machine));
+  }
+
+  [Fact]
+  public void A_machine_hosting_a_completed_construction_is_ready() {
+    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+
+    // RccFake primes the machine's own `_rcc` field; the behaviour it plants there is added to
+    // Behaviors afterward so the readiness scan and the fake share the identical instance.
+    RccFake.Complete(machine);
+    var rcc = (ExRightClickConstructable)
+      ReflectionHelpers.GetField(machine, "_rcc")!;
+    machine.Behaviors.Add(rcc);
+
+    Assert.True(ProductionReadiness.IsReady(machine));
+    Assert.True(ProductionReadiness.StopsProductionWhenNotReady(machine));
+  }
+
+  [Fact]
+  public void GatesProduction_false_neither_blocks_nor_stops() {
+    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+    ExRightClickConstructable rcc = AddIncompleteRcc(machine);
+    ReflectionHelpers.SetProperty(rcc, nameof(rcc.GatesProduction), false);
+
+    Assert.True(ProductionReadiness.IsReady(machine));
+    Assert.False(ProductionReadiness.StopsProductionWhenNotReady(machine));
   }
 
   #endregion

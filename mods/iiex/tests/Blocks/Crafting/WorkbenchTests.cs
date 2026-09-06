@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Crafting.BlockEntities;

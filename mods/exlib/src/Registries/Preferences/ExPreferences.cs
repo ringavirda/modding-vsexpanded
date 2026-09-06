@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Registries.Config;
+using ExpandedLib.Config;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Preferences;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// On-disk shape of the per-player preferences file: for each player UID, a map of preference key to
 /// chosen value. Keyed by UID so every player on a server keeps their own choices.
 /// </summary>
-public class ExPreferencesConfig {
+internal class ExPreferencesConfig {
   /// <summary>playerUID -&gt; (preferenceKey -&gt; value).</summary>
   public Dictionary<string, Dictionary<string, string>> Players { get; set; } =
   [];

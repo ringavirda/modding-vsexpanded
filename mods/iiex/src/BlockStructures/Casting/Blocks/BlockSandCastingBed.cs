@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;

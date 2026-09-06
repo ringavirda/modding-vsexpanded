@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
@@ -91,7 +91,7 @@ public partial class BlockBlastFurnaceCoreHot
             // drawing states it rather than inheriting it. The cells differ from the cold furnace on
             // purpose: that one's crucible spans the full hearth course with its cinder notch level with
             // the iron one, while this keeps a narrow two-cell crucible and a high slag tap.
-            .Role('c', CellRole.Chargeable)
+            .Role('c', FurnaceCellRoles.Chargeable)
             // Burden and pool at once, which is known-wrong and held deliberately. The cold furnace and
             // the cupola separated the two when their crucible became live molten cells; this drawing
             // cannot follow by dropping `Chargeable` alone, because that leaves a two-cell crucible under
@@ -99,13 +99,13 @@ public partial class BlockBlastFurnaceCoreHot
             // notch a course too high and the tuyeres move together in the smex remake, one layout change
             // and one blessing. What this costs meanwhile is pinned by CrucibleOverlapTests: two of the
             // nine columns draw a block short for a campaign, and the units they hide still count.
-            .Role('p', CellRole.Chargeable)
-            .Role('p', CellRole.Pool)
-            .Role('Y', CellRole.Tuyere)
-            .Role('y', CellRole.Tuyere)
+            .Role('p', FurnaceCellRoles.Chargeable)
+            .Role('p', FurnaceCellRoles.Pool)
+            .Role('Y', FurnaceCellRoles.Tuyere)
+            .Role('y', FurnaceCellRoles.Tuyere)
             // The only furnace of the three that vents; the cold furnace and the cupola declare no
             // outlet cells at all.
-            .Role('P', CellRole.GasOutlet)
+            .Role('P', FurnaceCellRoles.GasOutlet)
             // The two drains. The iron notch matches the cold furnace's cell, the cinder notch does not -
             // see the burden-column note above.
             //
@@ -115,8 +115,8 @@ public partial class BlockBlastFurnaceCoreHot
             // sits at y=2 here, so this furnace draws its cinder notch a course higher than the metal it
             // skims - the height is counted twice. Moving `S` down is a layout change and a blessing, and
             // it belongs in the same remake that separates Pool from Chargeable.
-            .Role('T', CellRole.MetalTap)
-            .Role('S', CellRole.SlagTap)
+            .Role('T', FurnaceCellRoles.MetalTap)
+            .Role('S', FurnaceCellRoles.SlagTap)
             .Layer(
               0,
               """

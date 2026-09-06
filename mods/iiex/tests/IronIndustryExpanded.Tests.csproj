@@ -62,6 +62,6 @@
        Exposed project-wide so the many scene/scenario files that build pipe runs do not each need
        the using; no ambiguity, since these names exist only there. -->
   <ItemGroup>
-    <Using Include="ExpandedLib.Blocks.Networks" />
+    <Using Include="ExpandedLib.Networks" />
   </ItemGroup>
 </Project>

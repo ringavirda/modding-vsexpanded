@@ -1,11 +1,8 @@
 using System.Reflection;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using ExpandedLib.Registries;
-using ExpandedLib.Registries.Entities;
 using ExpandedLib.Testing;
-using ExpandedLib.Testing.Doubles;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;

@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Boiler;

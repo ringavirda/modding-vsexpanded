@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ExpandedLib;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -214,7 +215,8 @@ public abstract partial class BlockEntityBoiler : ITexPositionSource {
       if (
         !string.Equals(textureCode, FuelTextureCode, StringComparison.Ordinal)
       )
-        return capi.Tesselator.GetTextureSource(Block)[textureCode];
+        return capi.Tesselator.GetTextureSource(Block)[textureCode]
+          ?? new TextureAtlasPosition();
 
       AssetLocation path = FuelTexturePath() ?? DefaultFuelTexture;
       return AtlasPositionOf(capi, path)

@@ -1,0 +1,8 @@
+blockCode:string
+engaged:bool
+northSpeed:float
+pm_lastHours:double
+posx:int
+posy:int
+posz:int
+southSpeed:float

@@ -40,6 +40,30 @@ partially built or finished construction when it is broken.
 > **Wildcard ingredients.** Stages with wildcard `requireStacks` ingredients must set
 > `storeWildCard`, or breaking the block NREs inside vanilla `GetDrops`.
 
+## Construction gates production
+
+`ExRightClickConstructable` publishes `IProductionReadiness` (see [Production
+Machines](Production-Machines)): `IsReadyToProduce` is `IsComplete` and `StopsProductionWhenNotReady`
+is `true`. A host that carries the behaviour and hosts a production tick gets this for free - declare
+the stages and the tick already waits for them, with no gate to write by hand.
+
+```jsonc
+"entityBehaviors": [
+  { "name": "ExRightClickConstructable", "properties": { "stages": [ /* ... */ ], "gatesProduction": false } }
+]
+```
+
+A machine that must keep ticking while unfinished (rendering a break, holding a status message) sets
+`gatesProduction: false`, either in raw JSON or through the definition builder:
+
+```csharp
+.Construction(c => c.Stage(s => s.AddElements("frame")).GatesProduction(false))
+```
+
+With the opt-out, `IsReadyToProduce` is always `true` and `StopsProductionWhenNotReady` is `false` -
+the behaviour publishes nothing that blocks or stops the tick, while `IsComplete` still answers
+whatever else reads it directly (rendering, `GetBlockInfo`).
+
 ## `ExRccSettings`
 
 A small registry letting each mod expose a **player-tunable salvage fraction** for its broken RCC

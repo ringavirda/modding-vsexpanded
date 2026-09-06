@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -35,8 +36,8 @@ public class RollingMillFeedTests {
       ("type", "rollingmill"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(block, "Type", "rollingmill");
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+    block.SetNetworkTypeForTest("rollingmill");
+    block.ApplyOrientationForTest(orientation);
 
     var pos = new BlockPos(0, 0, 0);
     var mill = new BlockEntityRollingMill();

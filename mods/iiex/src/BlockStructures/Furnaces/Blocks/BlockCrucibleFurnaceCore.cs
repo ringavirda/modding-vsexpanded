@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -81,12 +81,12 @@ public partial class BlockCrucibleFurnaceCore
             .Legend('A', VanillaCodes.Air)
             // The fire and the work are the same cell: the coke is packed round the pots rather than
             // burning beside them. One firebox cell, so the hearth lights on one cell's worth of fuel.
-            .Role('H', CellRole.Firebox)
-            .Role('A', CellRole.Flue)
+            .Role('H', FurnaceCellRoles.Firebox)
+            .Role('A', FurnaceCellRoles.Flue)
             // The first production use of the role. The crucible furnace's damper sits at the foot of the
             // stack rather than its top, which is the only place a layout can draw one when the chimney
             // above it is the player's to build.
-            .Role('M', CellRole.Damper)
+            .Role('M', FurnaceCellRoles.Damper)
             .Layer(
               -1,
               """

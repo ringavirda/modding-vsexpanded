@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Behaviors;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks;
+using ExpandedLib.Networks;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Datastructures;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// Minimal concrete <see cref="BlockNetworkNode"/> for graph tests: its connector set is the

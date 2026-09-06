@@ -25,7 +25,7 @@ public class CowperStoveTests {
       ),
     };
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation"); // establish the angle
+    be.ApplyStructureRotation(); // establish the angle
     return be;
   }
 

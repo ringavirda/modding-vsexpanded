@@ -1,13 +1,14 @@
 using System.Text;
 using ExpandedLib;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Structures;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -15,7 +16,7 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 /// <summary>
 /// Mechanically driven pair of bellows that pushes cold ambient air into the blast main, the iron tier's
 /// only air source. It is a pipe node that generates rather than a machine feeding a neighbouring network:
-/// the block is a <see cref="ExpandedLib.Blocks.Networks.BlockPipe"/> and produces into its own network, the
+/// the block is a <see cref="ExpandedLib.Industry.Pipes.BlockPipe"/> and produces into its own network, the
 /// way the fluid intake does for water. Drive comes from a <see cref="BEBehaviorMPFillerPort"/> on the
 /// footprint's upper-rear cell.
 /// <para>
@@ -34,6 +35,7 @@ public class BlockEntityTwinTubMPBlower : BlockEntityPipe {
 
   // Axle speed sampled on the last blow tick. Written server-side and serialized because the client
   // cannot read the port behaviour's live state and needs it for the HUD.
+  [Persist("blowerSpeed")]
   private float _lastSpeed;
 
   private long _blowTickId;
@@ -142,18 +144,7 @@ public class BlockEntityTwinTubMPBlower : BlockEntityPipe {
     return port is { IsTurning: true } ? port.Speed : 0f;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("blowerSpeed", _lastSpeed);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _lastSpeed = tree.GetFloat("blowerSpeed");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     // Pipe readout first (medium, throughput, pressure), then the bellows' own state.

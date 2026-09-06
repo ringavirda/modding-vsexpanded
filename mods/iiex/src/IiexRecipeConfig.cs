@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Registries.Config;
-using ExpandedLib.Registries.Recipes;
+using ExpandedLib.Config;
+using ExpandedLib.Registries;
 
 namespace IronIndustryExpanded;
 

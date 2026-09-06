@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Testing;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Crafting.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -29,7 +29,7 @@ public partial class BlockDesignTable : Block, IExBlockDefProvider {
         .Shape("iiex:crafting/designtable")
         .Material(EnumBlockMaterial.Wood)
         // Always-lit candles: a warm, dim glow.
-        .Raw("lightHsv", new[] { 5, 7, 12 })
+        .RootKey("lightHsv", new[] { 5, 7, 12 })
         .MaxStackSize(1)
         .Resistance(2f)
         .Sound("walk", "game:walk/wood")

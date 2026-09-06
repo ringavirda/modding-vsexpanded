@@ -35,7 +35,6 @@
     }
   },
   "resistance": 4.0,
-  "mineTool": "pickaxe",
   "sounds": {
     "place": "game:block/stone",
     "walk": "game:walk/stone",

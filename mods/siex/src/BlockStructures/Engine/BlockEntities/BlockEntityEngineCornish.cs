@@ -1,6 +1,7 @@
 using System;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Engine;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -94,17 +95,17 @@ public class BlockEntityEngineCornish : BlockEntityEngine {
     return true;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("throttle", _throttle);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _throttle = tree.GetInt("throttle", 1);
+  // Calls base.DeclareState first: BlockEntityEngine's own override is virtual, not the
+  // PersistScan-backed abstract of a bare ExBlockEntity, so skipping the base call here would silently
+  // drop the engine's animSpeed/overpressure declarations. "throttle" defaults to 1 (normal) when the
+  // key is absent, unlike a bare [Persist] int (default 0) - so it stays a Tree.
+  protected override void DeclareState(ExBlockState state) {
+    base.DeclareState(state);
+    state.Tree(
+      "throttle",
+      tree => tree.SetInt("throttle", _throttle),
+      (tree, _) => _throttle = tree.GetInt("throttle", 1)
+    );
   }
 
   public override void GetBlockInfo(

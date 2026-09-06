@@ -1,8 +1,9 @@
 using System;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.Converter.Blocks;

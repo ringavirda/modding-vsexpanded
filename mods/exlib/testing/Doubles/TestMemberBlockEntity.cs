@@ -1,8 +1,8 @@
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// A bare block entity carrying a chosen set of network memberships, for testing the accessor and

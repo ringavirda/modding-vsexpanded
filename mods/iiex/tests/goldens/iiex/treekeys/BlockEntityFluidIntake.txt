@@ -1,0 +1,9 @@
+blockCode:string
+intakeCrowded:bool
+intakeHasWater:bool
+networkType:string
+orientation:string
+possibleOrientations:stringarray
+posx:int
+posy:int
+posz:int

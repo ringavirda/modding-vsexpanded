@@ -1,0 +1,7 @@
+blockCode:string
+contents:itemstack
+fillLevel:int
+moldTemp:float
+posx:int
+posy:int
+posz:int

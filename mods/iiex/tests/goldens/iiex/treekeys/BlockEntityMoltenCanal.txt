@@ -1,0 +1,12 @@
+blockCode:string
+cellAmount:int
+cellMetalType:string
+cellTemperature:float
+networkType:string
+orientation:string
+possibleOrientations:stringarray
+posx:int
+posy:int
+posz:int
+sealed:bool
+solidified:bool

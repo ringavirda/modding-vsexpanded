@@ -7,7 +7,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "ironingot": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/ingot/iron"
+    "ironingot": "block/metal/ingot/iron"
   },
   "elements": [
     {

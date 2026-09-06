@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;

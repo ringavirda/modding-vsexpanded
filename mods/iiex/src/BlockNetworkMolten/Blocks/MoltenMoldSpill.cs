@@ -1,5 +1,5 @@
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

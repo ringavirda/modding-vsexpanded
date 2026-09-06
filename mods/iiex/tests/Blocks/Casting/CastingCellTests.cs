@@ -42,7 +42,7 @@ public class CastingCellTests {
     // pattern that slipped through would leave a 1x1 cell holding a long cell's capacity.
     var rig = CastingCellScenes.RammedFull();
     int before = rig
-      .Cell.GetBehavior<ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell>()!
+      .Cell.GetBehavior<ExpandedLib.Industry.Molten.BEBehaviorMoltenCell>()!
       .MaxUnitCapacity;
 
     rig.Interact(
@@ -51,7 +51,7 @@ public class CastingCellTests {
 
     Assert.Equal(
       before,
-      rig.Cell.GetBehavior<ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell>()!.MaxUnitCapacity
+      rig.Cell.GetBehavior<ExpandedLib.Industry.Molten.BEBehaviorMoltenCell>()!.MaxUnitCapacity
     );
   }
 

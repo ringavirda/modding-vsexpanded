@@ -1,0 +1,6 @@
+blockCode:string
+drawingWater:bool
+pm_lastHours:double
+posx:int
+posy:int
+posz:int

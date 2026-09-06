@@ -1,4 +1,5 @@
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 using Xunit;
@@ -129,7 +130,7 @@ public class VanillaCodesTests {
     // south, east, north, west.
     Assert.Equal(
       "brickslabs-*-east-free",
-      Blocks.Structures.MultiblockFacings.RotateSegments(
+      MultiblockFacings.RotateSegments(
         "brickslabs-*-south-free",
         [2],
         90
@@ -222,7 +223,7 @@ public class VanillaCodesTests {
     // north + 90 is west under the family's convention (north 0, west 90, south 180, east 270).
     Assert.Equal(
       "brickstairs-fire-up-west-free",
-      Blocks.Structures.MultiblockFacings.RotateSegments(
+      MultiblockFacings.RotateSegments(
         new Vintagestory.API.Common.AssetLocation(code).Path,
         segments,
         90

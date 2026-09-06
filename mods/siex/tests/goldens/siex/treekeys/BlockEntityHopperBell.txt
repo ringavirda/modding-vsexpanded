@@ -1,0 +1,5 @@
+blockCode:string
+isDropping:bool
+posx:int
+posy:int
+posz:int

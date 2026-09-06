@@ -8,8 +8,10 @@
     "place": "game:block/anvil"
   },
   "maxstacksize": 64,
-  "handbook": {
-    "exclude": true
+  "attributes": {
+    "handbook": {
+      "exclude": true
+    }
   },
   "variantgroups": [
     {

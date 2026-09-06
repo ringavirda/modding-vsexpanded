@@ -1,10 +1,10 @@
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Crafting.Gui;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.Util;
 
 namespace IronIndustryExpanded.BlockStructures.Crafting.BlockEntities;
@@ -44,6 +44,7 @@ public class BlockEntityDesignTable : BlockEntityMachineStation {
 
   /// <summary>Code of the diagram last drafted, persisted so the window re-opens on it. Null until the first
   /// draft.</summary>
+  [Persist("dt_selected")]
   public string? SelectedType { get; set; }
 
   #region Interaction
@@ -134,17 +135,5 @@ public class BlockEntityDesignTable : BlockEntityMachineStation {
   #endregion
 
   // The container base persists the inventory; only the selected diagram is carried here.
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (SelectedType != null)
-      tree.SetString("dt_selected", SelectedType);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor world
-  ) {
-    base.FromTreeAttributes(tree, world);
-    SelectedType = tree.GetString("dt_selected", null);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 }

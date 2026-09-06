@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Forming;

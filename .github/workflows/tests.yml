@@ -59,7 +59,7 @@ jobs:
             "dotnet test VintageStory.sln --no-restore -c Debug"
 
       - name: Coverage gate (mod assemblies)
-        run: python3 infra/tools/coverage_gate.py coverage.xml
+        run: python3 infra/tools/coverage_gate.py coverage.xml infra/test/coverage-floors.json
 
       - name: Upload coverage report
         if: always()
@@ -67,3 +67,27 @@ jobs:
         with:
           name: coverage
           path: coverage.xml
+
+  smoke:
+    needs: test
+    runs-on: ubuntu-latest
+
+    # A separate job runs on its own fresh checkout with none of `test`'s build output, so `exmod
+    # smoke` builds whatever mod isn't already built (see Get-DefaultSmokeMods in scripts/exmod.ps1).
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache Vintage Story install
+        uses: actions/cache@v4
+        with:
+          path: .game
+          key: vs-game-${{ env.VS_VERSION }}
+
+      - name: Smoke-test the dedicated server boot
+        run: bash scripts/exmod.sh smoke -Version "$VS_VERSION"

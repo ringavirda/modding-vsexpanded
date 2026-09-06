@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Machines;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Crafting.BlockEntities;
 using NSubstitute;

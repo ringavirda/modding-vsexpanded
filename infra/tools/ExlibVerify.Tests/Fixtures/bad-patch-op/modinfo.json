@@ -1,0 +1,7 @@
+{
+  "type": "content",
+  "modid": "fixturemod",
+  "name": "Fixture Mod",
+  "version": "1.0.0",
+  "dependencies": { "game": "1.22.0" }
+}

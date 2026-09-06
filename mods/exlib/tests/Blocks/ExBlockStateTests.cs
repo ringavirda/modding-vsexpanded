@@ -193,4 +193,85 @@ public class ExBlockStateTests {
   }
 
   #endregion
+
+  #region The Tree primitive
+
+  [Fact]
+  public void Tree_writes_and_reads_a_nested_tree() {
+    int stored = 0;
+    ExBlockState state = new ExBlockState().Tree(
+      "wrapped",
+      t => {
+        var sub = new TreeAttribute();
+        sub.SetInt("value", stored);
+        t["wrapped"] = sub;
+      },
+      (t, _) => {
+        if (t.GetTreeAttribute("wrapped") is { } sub)
+          stored = sub.GetInt("value");
+      }
+    );
+
+    stored = 9;
+    var tree = new TreeAttribute();
+    state.ToTree(tree);
+
+    ITreeAttribute wrapped = tree.GetTreeAttribute("wrapped");
+    Assert.NotNull(wrapped);
+    Assert.Equal(9, wrapped.GetInt("value"));
+
+    stored = 0;
+    state.FromTree(tree, new TestWorld().World);
+    Assert.Equal(9, stored);
+  }
+
+  [Fact]
+  public void Tree_gives_write_and_read_the_same_flat_tree_every_other_field_uses() {
+    // MoltenCharge.ToTree/FromTree takes explicit key names on whatever tree it is given; Tree lets it
+    // write flat, multi-attribute state rather than forcing every declaration into its own subtree.
+    string? a = null;
+    int b = 0;
+    ExBlockState state = new ExBlockState().Tree(
+      "pair",
+      t => {
+        t.SetString("a", a);
+        t.SetInt("b", b);
+      },
+      (t, _) => {
+        a = t.GetString("a");
+        b = t.GetInt("b");
+      }
+    );
+
+    a = "hot";
+    b = 7;
+    var tree = new TreeAttribute();
+    state.ToTree(tree);
+
+    Assert.Equal("hot", tree.GetString("a"));
+    Assert.Equal(7, tree.GetInt("b"));
+
+    a = null;
+    b = 0;
+    state.FromTree(tree, new TestWorld().World);
+    Assert.Equal("hot", a);
+    Assert.Equal(7, b);
+  }
+
+  [Fact]
+  public void The_key_set_is_stable_across_two_round_trips() {
+    ExBlockState state = new Bag().Declare();
+    IReadOnlyList<string> before = state.Keys;
+
+    var tree = new TreeAttribute();
+    var world = new TestWorld();
+    state.ToTree(tree);
+    state.FromTree(tree, world.World);
+    state.ToTree(tree);
+    state.FromTree(tree, world.World);
+
+    Assert.Equal(before, state.Keys);
+  }
+
+  #endregion
 }

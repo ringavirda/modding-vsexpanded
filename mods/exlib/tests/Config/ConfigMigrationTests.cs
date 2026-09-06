@@ -1,4 +1,4 @@
-using ExpandedLib.Registries.Config;
+using ExpandedLib.Config;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Vintagestory.API.Common;

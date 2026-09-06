@@ -8,7 +8,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "normal4": "game:block/metal/corroded/normal4",
+    "normal4": "block/metal/corroded/normal4",
     "iron4": "block/metal/sheet/iron4"
   },
   "elements": [

@@ -12,5 +12,6 @@ internal static class ModuleInit {
   internal static void Init() {
     VsAssemblyResolver.Register();
     TestLang.Init();
+    ReleasedHistorySeed.Register();
   }
 }

@@ -14,9 +14,11 @@ namespace ExpandedLib;
 /// <c>VanillaCodes</c>.
 /// </para>
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class ExlibBlocks
 {
   /// <summary><c>exlib:structurefiller</c> - structurefiller. Variant groups: no variants.</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class Structurefiller
   {
     /// <summary>The bare code, no variants: <c>exlib:structurefiller</c>.</summary>

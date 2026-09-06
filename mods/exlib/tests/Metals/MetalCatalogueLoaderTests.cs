@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Catalogues;
 using Newtonsoft.Json;
 using Vintagestory.API.Common;
 using Xunit;
@@ -207,6 +208,47 @@ public class MetalCatalogueLoaderTests {
     Assert.Null(def.Tools.AttackPower);
     Assert.Null(def.Tools.MiningTier);
     Assert.Null(def.Tools.ToolTypes);
+  }
+  #endregion
+
+  #region Load(ICoreAPI) - strict binding and the report
+  [Fact]
+  public void An_unknown_key_is_reported_by_file_and_key() {
+    ICoreAPI api = FakeAssetApi.Create(
+      "config/metals/",
+      (
+        "iiex:config/metals/bad.json",
+        """{ "code": "iron", "moltenItem": "game:ingot-iron", "thicknes": 2 }"""
+      )
+    );
+
+    CatalogueLoadReport report = MetalCatalogueLoader.Load(api);
+
+    Assert.Equal("metals", report.Catalogue);
+    string error = Assert.Single(report.Errors);
+    Assert.Contains("bad.json", error);
+    Assert.Contains("thicknes", error);
+  }
+
+  [Fact]
+  public void A_valid_catalogue_reports_its_file_and_entry_counts_with_no_errors() {
+    ICoreAPI api = FakeAssetApi.Create(
+      "config/metals/",
+      (
+        "iiex:config/metals/iron.json",
+        """{ "code": "iron", "moltenItem": "game:ingot-iron" }"""
+      ),
+      (
+        "iiex:config/metals/copper.json",
+        """{ "code": "copper", "moltenItem": "game:ingot-copper" }"""
+      )
+    );
+
+    CatalogueLoadReport report = MetalCatalogueLoader.Load(api);
+
+    Assert.Equal(2, report.Files);
+    Assert.Equal(2, report.Entries);
+    Assert.Empty(report.Errors);
   }
   #endregion
 

@@ -1,0 +1,7 @@
+blockCode:string
+networkType:string
+orientation:string
+possibleOrientations:stringarray
+posx:int
+posy:int
+posz:int

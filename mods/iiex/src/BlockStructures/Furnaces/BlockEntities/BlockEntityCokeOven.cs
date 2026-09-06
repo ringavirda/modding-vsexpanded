@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -43,7 +44,7 @@ public class BlockEntityCokeOven : BlockEntityFireboxFurnace {
   protected override Vec3i? DoorCell => new(2, 1, 1);
 
   /// <summary>
-  /// The chambers, as the connected groups of this oven's <c>CellRole.Firebox</c> cells - one per chamber
+  /// The chambers, as the connected groups of this oven's <c>FurnaceCellRoles.Firebox</c> cells - one per chamber
   /// on the shipped drawing, because the shared wall between them carries no marked cell. Derived rather
   /// than declared, so an oven of three chambers or of one would need no code.
   /// <para>
@@ -294,21 +295,24 @@ public class BlockEntityCokeOven : BlockEntityFireboxFurnace {
 
   #region Persistence
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("cokeChambers", _baked.Length);
-    for (int i = 0; i < _baked.Length; i++)
-      tree.SetFloat("cokeBaked" + i, _baked[i]);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolve
-  ) {
-    base.FromTreeAttributes(tree, worldForResolve);
-    _baked = new float[Math.Max(0, tree.GetInt("cokeChambers"))];
-    for (int i = 0; i < _baked.Length; i++)
-      _baked[i] = tree.GetFloat("cokeBaked" + i);
+  // Calls base.DeclareState first: BlockEntityFurnaceCore's own override is virtual, not the
+  // PersistScan-backed abstract of a bare ExBlockEntity, so skipping the base call here would silently
+  // drop the core's internalTemp/heat-balance/shaft-column declarations.
+  protected override void DeclareState(ExBlockState state) {
+    base.DeclareState(state);
+    state.Tree(
+      "cokeChambers",
+      tree => {
+        tree.SetInt("cokeChambers", _baked.Length);
+        for (int i = 0; i < _baked.Length; i++)
+          tree.SetFloat("cokeBaked" + i, _baked[i]);
+      },
+      (tree, _) => {
+        _baked = new float[Math.Max(0, tree.GetInt("cokeChambers"))];
+        for (int i = 0; i < _baked.Length; i++)
+          _baked[i] = tree.GetFloat("cokeBaked" + i);
+      }
+    );
   }
 
   #endregion

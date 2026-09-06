@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpandedLib.Registries.Entities;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Base for the kind-specific registration attributes. A class carries exactly one;

@@ -1,4 +1,5 @@
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Xunit;
@@ -79,18 +80,27 @@ public class MoltenChiselTests {
 
   [Fact]
   public void BuildRecovery_falls_back_to_slag_when_requested() {
-    var world = NewWorld();
+    // exlib ships no default of its own (MetalRegistry.DefaultRecoveryFallback is null); a content mod
+    // sets this at load. Set/restored here rather than left standing, since the registry is a
+    // process-wide static other tests share.
+    var previous = MetalRegistry.DefaultRecoveryFallback;
+    MetalRegistry.DefaultRecoveryFallback = new AssetLocation(SlagFallback);
+    try {
+      var world = NewWorld();
 
-    ItemStack? drop = MoltenChisel.BuildRecovery(
-      world.World,
-      new AssetLocation("game:ingot-gold"),
-      900f,
-      20,
-      slagFallback: true
-    );
+      ItemStack? drop = MoltenChisel.BuildRecovery(
+        world.World,
+        new AssetLocation("game:ingot-gold"),
+        900f,
+        20,
+        slagFallback: true
+      );
 
-    Assert.NotNull(drop);
-    Assert.Equal(SlagFallback, drop!.Collectible.Code.ToString());
-    Assert.Equal(4, drop.StackSize);
+      Assert.NotNull(drop);
+      Assert.Equal(SlagFallback, drop!.Collectible.Code.ToString());
+      Assert.Equal(4, drop.StackSize);
+    } finally {
+      MetalRegistry.DefaultRecoveryFallback = previous;
+    }
   }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
@@ -18,8 +18,8 @@ namespace IronIndustryExpanded.Tests;
 
 /// <summary>
 /// The five cell sets a furnace reads off its own drawing rather than declaring in C#:
-/// <see cref="CellRole.Tuyere"/>, <see cref="CellRole.GasOutlet"/>, <see cref="CellRole.Pool"/>,
-/// <see cref="CellRole.MetalTap"/> and <see cref="CellRole.SlagTap"/>. Each is checked cell for cell at
+/// <see cref="FurnaceCellRoles.Tuyere"/>, <see cref="FurnaceCellRoles.GasOutlet"/>, <see cref="FurnaceCellRoles.Pool"/>,
+/// <see cref="FurnaceCellRoles.MetalTap"/> and <see cref="FurnaceCellRoles.SlagTap"/>. Each is checked cell for cell at
 /// all four facings; a count would not do, since the cold furnace's two tuyeres are a mirror pair. All
 /// but Pool are cross-checked against <c>CellsAccepting</c>, which the layout DSL does not do; Pool's
 /// glyph is the shaft glyph plus the hearth-metal block, too near it for a code oracle, so "the pool is
@@ -88,11 +88,11 @@ public class FurnaceRoleCellsTests {
   /// <summary>The roles every shaft furnace answers non-empty for.</summary>
   private static readonly CellRole[] Migrated =
   [
-    CellRole.Tuyere,
-    CellRole.GasOutlet,
-    CellRole.MetalTap,
-    CellRole.SlagTap,
-    CellRole.Pool,
+    FurnaceCellRoles.Tuyere,
+    FurnaceCellRoles.GasOutlet,
+    FurnaceCellRoles.MetalTap,
+    FurnaceCellRoles.SlagTap,
+    FurnaceCellRoles.Pool,
   ];
 
   private static ExBlockDef ColdDef() =>
@@ -199,16 +199,16 @@ public class FurnaceRoleCellsTests {
 
     // Reference identity rather than equal contents: on a shipped layout the pool is a subset of the
     // burden column, so a PoolCells answering Chargeable would still be a plausible set of cells.
-    Assert.Same(core.CellsWithRole(CellRole.Pool), core.PoolCells);
+    Assert.Same(core.CellsWithRole(FurnaceCellRoles.Pool), core.PoolCells);
 
     // `Single()` is legal here only because the layout build refuses a second cell - see
     // Each_tap_is_exactly_one_cell_and_the_build_refuses_a_second.
     Assert.Equal(
-      core.CellsWithRole(CellRole.MetalTap).Single(),
+      core.CellsWithRole(FurnaceCellRoles.MetalTap).Single(),
       core.MetalTapPos
     );
     Assert.Equal(
-      core.CellsWithRole(CellRole.SlagTap).Single(),
+      core.CellsWithRole(FurnaceCellRoles.SlagTap).Single(),
       core.SlagTapPos
     );
   }
@@ -243,10 +243,10 @@ public class FurnaceRoleCellsTests {
     foreach (
       CellRole role in new[]
       {
-        CellRole.Tuyere,
-        CellRole.Pool,
-        CellRole.MetalTap,
-        CellRole.SlagTap,
+        FurnaceCellRoles.Tuyere,
+        FurnaceCellRoles.Pool,
+        FurnaceCellRoles.MetalTap,
+        FurnaceCellRoles.SlagTap,
       }
     ) {
       Assert.NotEmpty(core.CellsWithRole(role));
@@ -286,15 +286,15 @@ public class FurnaceRoleCellsTests {
 
     bool blownBothWalls = furnace != "cupola";
 
-    Assert.NotEmpty(core.CellsWithRole(CellRole.Tuyere));
+    Assert.NotEmpty(core.CellsWithRole(FurnaceCellRoles.Tuyere));
     Assert.Equal(
       Render(core.CellsAccepting(AnyTuyere)),
-      Render(core.CellsWithRole(CellRole.Tuyere))
+      Render(core.CellsWithRole(FurnaceCellRoles.Tuyere))
     );
 
     string[] demanded =
     [
-      .. core.CellsWithRole(CellRole.Tuyere)
+      .. core.CellsWithRole(FurnaceCellRoles.Tuyere)
         .SelectMany(core.ConnectorFacesAt)
         .Select(f => ExOrientation.TokenOf(f, asLetter: true))
         .OrderBy(f => f),
@@ -310,8 +310,8 @@ public class FurnaceRoleCellsTests {
   public void The_cupola_takes_one_tuyere_and_the_blast_furnace_two() {
     // The cupola is the narrow furnace. A role copied wholesale from the blast furnace onto the cupola's
     // drawing agrees with the tuyere glyph and is still wrong.
-    Assert.Single(RoleCellsOf(CupolaDef(), CellRole.Tuyere));
-    Assert.Equal(2, RoleCellsOf(ColdDef(), CellRole.Tuyere).Count);
+    Assert.Single(RoleCellsOf(CupolaDef(), FurnaceCellRoles.Tuyere));
+    Assert.Equal(2, RoleCellsOf(ColdDef(), FurnaceCellRoles.Tuyere).Count);
   }
 
   [Fact]
@@ -324,7 +324,7 @@ public class FurnaceRoleCellsTests {
         (IReadOnlyList<BlockPos>)ReflectionHelpers.GetField(core, "_tuyeres")!;
 
       Assert.Equal(
-        Render(core.CellsWithRole(CellRole.Tuyere)),
+        Render(core.CellsWithRole(FurnaceCellRoles.Tuyere)),
         Render(tuyeres)
       );
       Assert.NotEmpty(tuyeres);
@@ -354,11 +354,11 @@ public class FurnaceRoleCellsTests {
 
     Assert.Equal(
       Render(core.CellsAccepting(IronTap(furnace, side))),
-      Render(core.CellsWithRole(CellRole.MetalTap))
+      Render(core.CellsWithRole(FurnaceCellRoles.MetalTap))
     );
     Assert.Equal(
       Render(core.CellsAccepting(SlagTap(furnace, side))),
-      Render(core.CellsWithRole(CellRole.SlagTap))
+      Render(core.CellsWithRole(FurnaceCellRoles.SlagTap))
     );
     Assert.Single(core.CellsAccepting(IronTap(furnace, side)));
     Assert.Single(core.CellsAccepting(SlagTap(furnace, side)));
@@ -367,7 +367,7 @@ public class FurnaceRoleCellsTests {
     // the two asserts above pass on a layout that wildcarded the facing.
     Assert.Empty(
       core.CellsAccepting(SlagTap(furnace, side))
-        .Intersect(core.CellsWithRole(CellRole.MetalTap))
+        .Intersect(core.CellsWithRole(FurnaceCellRoles.MetalTap))
     );
   }
 
@@ -397,8 +397,8 @@ public class FurnaceRoleCellsTests {
     // The [SingleCell] arity guard: a drain is a point, so the consumer reads `Single()` and the build has
     // to refuse a second cell. Stated on the real tap glyph, not only on exlib's synthetic fixture.
     foreach (ExBlockDef def in new[] { ColdDef(), CupolaDef() }) {
-      Assert.Single(RoleCellsOf(def, CellRole.MetalTap));
-      Assert.Single(RoleCellsOf(def, CellRole.SlagTap));
+      Assert.Single(RoleCellsOf(def, FurnaceCellRoles.MetalTap));
+      Assert.Single(RoleCellsOf(def, FurnaceCellRoles.SlagTap));
     }
 
     InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
@@ -409,7 +409,7 @@ public class FurnaceRoleCellsTests {
             s.Origin(0, 0)
               .Legend('C', "iiex:furnace-blastcore-*")
               .Legend('T', IronTapGlyph)
-              .Role('T', CellRole.MetalTap)
+              .Role('T', FurnaceCellRoles.MetalTap)
               .Layer(0, "C")
               // The same glyph twice: two drains, one role.
               .Layer(1, "T T")
@@ -433,8 +433,8 @@ public class FurnaceRoleCellsTests {
               .Legend('C', "iiex:furnace-blastcore-*")
               .Legend('T', IronTapGlyph)
               .Legend('S', SlagTapGlyph)
-              .Role('T', CellRole.SlagTap)
-              .Role('S', CellRole.SlagTap)
+              .Role('T', FurnaceCellRoles.SlagTap)
+              .Role('S', FurnaceCellRoles.SlagTap)
               .Layer(0, "C")
               .Layer(1, "T S")
           )
@@ -453,20 +453,20 @@ public class FurnaceRoleCellsTests {
     // accessor, so both are stated: the emitted attribute carries no GasOutlet key, and the drawing has no
     // pipe-outlet cell for one to point at.
     foreach (ExBlockDef def in new[] { ColdDef(), CupolaDef() }) {
-      Assert.DoesNotContain(CellRole.GasOutlet.ToString(), RoleNamesOf(def));
+      Assert.DoesNotContain(FurnaceCellRoles.GasOutlet.ToString(), RoleNamesOf(def));
       Assert.DoesNotContain(OutletGlyph, LayoutOf(def).Values);
     }
 
     foreach (string furnace in new[] { "cold", "cupola" }) {
       BlockEntityFurnaceCore core = Shaft(furnace, "north");
-      Assert.Empty(core.CellsWithRole(CellRole.GasOutlet));
+      Assert.Empty(core.CellsWithRole(FurnaceCellRoles.GasOutlet));
       Assert.Empty(
         (IReadOnlyList<BlockPos>)
           ReflectionHelpers.GetField(core, "_gasOutlets")!
       );
       // The same footprint answers for the roles it does mark, so the empty above is about outlets rather
       // than about a layout that failed to load.
-      Assert.NotEmpty(core.CellsWithRole(CellRole.Tuyere));
+      Assert.NotEmpty(core.CellsWithRole(FurnaceCellRoles.Tuyere));
     }
   }
 
@@ -483,7 +483,7 @@ public class FurnaceRoleCellsTests {
         HeatingDef(),
       }
     )
-      Assert.Empty(RoleCellsOf(def, CellRole.GasOutlet));
+      Assert.Empty(RoleCellsOf(def, FurnaceCellRoles.GasOutlet));
   }
 
   #endregion
@@ -543,10 +543,10 @@ public class FurnaceRoleCellsTests {
     // declaration pointed at on an 8-wide hearth drawing.
     foreach (BlockEntityFireboxFurnace hearth in Hearths()) {
       Assert.Empty(hearth.PoolCells);
-      Assert.Empty(hearth.CellsWithRole(CellRole.Tuyere));
-      Assert.Empty(hearth.CellsWithRole(CellRole.GasOutlet));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.Tuyere));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.GasOutlet));
       // The drawing did load: the role it does mark answers.
-      Assert.NotEmpty(hearth.CellsWithRole(CellRole.Firebox));
+      Assert.NotEmpty(hearth.CellsWithRole(FurnaceCellRoles.Firebox));
     }
 
     // What the two inherited cells actually hold: one air cell and one brick.
@@ -567,12 +567,12 @@ public class FurnaceRoleCellsTests {
     // asking the drawing answers null. The cells named below are the ones the inherited MetalTapCell
     // (2,1,0) and the puddling SlagTapCell override (-3,1,1) pointed at; neither is a tap.
     foreach (BlockEntityFireboxFurnace hearth in Hearths()) {
-      Assert.Empty(hearth.CellsWithRole(CellRole.MetalTap));
-      Assert.Empty(hearth.CellsWithRole(CellRole.SlagTap));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.MetalTap));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.SlagTap));
       Assert.Null(hearth.MetalTapPos);
       Assert.Null(hearth.SlagTapPos);
       // The drawing did load, so the nulls above are an absence rather than a failure to read.
-      Assert.NotEmpty(hearth.CellsWithRole(CellRole.Firebox));
+      Assert.NotEmpty(hearth.CellsWithRole(FurnaceCellRoles.Firebox));
     }
 
     // What those cells hold, read off the drawings. Both hearths are 8 columns wide, so a local X of 2 is
@@ -616,25 +616,29 @@ public class FurnaceRoleCellsTests {
   public void A_firebox_machine_declares_only_the_roles_its_drawing_needs(
     string furnace
   ) {
-    (ExBlockDef def, string[] expected) = furnace switch {
-      "puddling" => (PuddlingDef(), new[] { "Firebox", "Flue" }),
-      "heating" => (HeatingDef(), new[] { "Firebox", "Flue" }),
+    (ExBlockDef def, CellRole[] expected) = furnace switch {
+      // Sorted by key (ordinal), matching the order MultiblockLayoutBuilder emits them in.
+      "puddling" => (PuddlingDef(), new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }),
+      "heating" => (HeatingDef(), new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }),
       // A sealed retort: marking a flue would hand it a draught it must not have.
-      "cokeoven" => (CokeOvenDef(), new[] { "Firebox" }),
+      "cokeoven" => (CokeOvenDef(), new[] { FurnaceCellRoles.Firebox }),
       // The only drawing in the mod that marks a damper, and the fire and the work are one cell.
-      "crucible" => (CrucibleDef(), new[] { "Firebox", "Flue", "Damper" }),
+      "crucible" => (
+        CrucibleDef(),
+        new[] { FurnaceCellRoles.Damper, FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }
+      ),
       _ => throw new KeyNotFoundException(furnace),
     };
 
     List<string> names = RoleNamesOf(def);
 
-    Assert.Equal(expected, names);
+    Assert.Equal(expected.Select(r => r.ToString()), names);
     foreach (CellRole role in Migrated)
       Assert.DoesNotContain(role.ToString(), names);
 
     // A role name emitted over no cells would satisfy the list above while answering nothing.
-    foreach (string role in expected)
-      Assert.NotEmpty(RoleCellsOf(def, System.Enum.Parse<CellRole>(role)));
+    foreach (CellRole role in expected)
+      Assert.NotEmpty(RoleCellsOf(def, role));
   }
 
   [Fact]
@@ -686,7 +690,7 @@ public class FurnaceRoleCellsTests {
     Assert.Equal(
       4,
       Sides
-        .Select(s => Render(Cupola(s).CellsWithRole(CellRole.Tuyere)))
+        .Select(s => Render(Cupola(s).CellsWithRole(FurnaceCellRoles.Tuyere)))
         .Distinct()
         .Count()
     );
@@ -881,8 +885,8 @@ public class FurnaceRoleCellsTests {
     // Chargeable-only derivation gives them no box, and a hearth with no box collects no fuel and never
     // lights.
     foreach (BlockEntityFireboxFurnace hearth in Hearths()) {
-      Assert.Empty(hearth.CellsWithRole(CellRole.Chargeable));
-      Assert.NotEmpty(hearth.CellsWithRole(CellRole.Firebox));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.Chargeable));
+      Assert.NotEmpty(hearth.CellsWithRole(FurnaceCellRoles.Firebox));
       Assert.NotNull(ShaftBoxOf(hearth));
     }
   }

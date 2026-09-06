@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
@@ -26,7 +26,7 @@ public partial class BlockChargePile : Block, IExBlockDefProvider {
   /// <summary>
   /// The block code <c>SyncChargeBlocks</c> places into a chargeable cell. A shaft cell must accept this
   /// code or the furnace reads incomplete as soon as it is charged; the charge volume itself comes from
-  /// <see cref="CellRole.Chargeable"/>, not from this string. Must match the code the def renders
+  /// <see cref="FurnaceCellRoles.Chargeable"/>, not from this string. Must match the code the def renders
   /// (<c>iiex:furnace-chargepile</c>) - any other code resolves to null and every <c>SetBlock</c> is
   /// skipped without error.
   /// </summary>

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

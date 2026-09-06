@@ -25,6 +25,41 @@
     <AssetDomain>exlib</AssetDomain>
   </PropertyGroup>
 
+  <!-- NuGet pack metadata. Version is read from modinfo.json rather than duplicated here, so a
+       release only ever bumps one number. The game assemblies above stay References with
+       Private=false - dotnet pack never bundles a Reference, only PackageReference/ProjectReference
+       content or explicit Content/None items, so they are never at risk of ending up in the nupkg. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>ExpandedLib</PackageId>
+    <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)modinfo.json'))</_ModinfoJson>
+    <PackageVersion
+      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
+    <Authors>fallenstar</Authors>
+    <Description>Shared framework library for the Fallenstar's Expanded mods (Vintage Story).</Description>
+    <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- No LICENSE file exists in this repository yet, so PackageLicenseExpression is left unset
+         rather than guessed at - set it here once the owner has picked one. Nothing in this repo
+         publishes a package (see release.yml's commented push step), so this is not blocking. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- The shared glob in ../../Directory.Build.targets marks this mod's assets/modinfo/modicon as
+       Content so the game's Mods/mod folder gets them; dotnet pack packs every Content item into
+       the nupkg by default, which would ship the whole assets tree alongside the dll. The nupkg is
+       a compile-time reference, not the mod - only the dll, its xml docs and the readme belong in
+       it. A plain ItemGroup runs too early to see those items (Directory.Build.targets is imported
+       after this file), so the override happens in a Target instead. -->
+  <Target Name="ExcludeAssetsFromPack" BeforeTargets="_GetPackageFiles;GenerateNuspec">
+    <ItemGroup>
+      <Content Update="@(Content)" Pack="false" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>

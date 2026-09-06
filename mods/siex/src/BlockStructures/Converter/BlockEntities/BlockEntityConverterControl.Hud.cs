@@ -1,7 +1,7 @@
 using System.Text;
-using ExpandedLib.Heat;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Molten;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 

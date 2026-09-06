@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Boiler;
 using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;

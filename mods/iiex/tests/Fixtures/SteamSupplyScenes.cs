@@ -1,4 +1,5 @@
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkPipe;
@@ -18,7 +19,7 @@ namespace IronIndustryExpanded.Tests;
 /// main above the gate holds the line near the gate, so the engine runs in its band rather than climbing
 /// toward a burst. A Cornish boiler can out-pressure a Watt engine, which is what the valve regulates.
 /// </summary>
-internal sealed class RegulatedEnginePlant {
+internal sealed class RegulatedEnginePlant : MachineRig {
   public readonly BlockEntityEngineWatt Engine;
   public readonly BlockEntityPressureValve Valve;
 
@@ -26,7 +27,8 @@ internal sealed class RegulatedEnginePlant {
   private readonly BlockPos _main;
   private readonly BlockPos _drain;
 
-  public RegulatedEnginePlant(Scene scene, BlockPos enginePos, float gateAtm) {
+  public RegulatedEnginePlant(Scene scene, BlockPos enginePos, float gateAtm)
+    : base(scene.World) {
     _scene = scene;
 
     var engineBlock = TestBlocks.Configure(
@@ -63,8 +65,8 @@ internal sealed class RegulatedEnginePlant {
       ("type", "pressurevalve"),
       ("orientation", orient)
     );
-    ReflectionHelpers.SetProperty(valveBlock, "Type", "pressurevalve");
-    ReflectionHelpers.SetProperty(valveBlock, "Orientation", orient);
+    valveBlock.SetNetworkTypeForTest("pressurevalve");
+    valveBlock.ApplyOrientationForTest(orient);
     BlockPos vPos = m1.AddCopy(inletFace);
     Valve = new BlockEntityPressureValve {
       Pos = vPos.Copy(),
@@ -135,10 +137,7 @@ internal sealed class RegulatedEnginePlant {
   /// deplete as the engine draws.
   /// </summary>
   public RegulatedEnginePlant RunCharged(float atm, int seconds) {
-    for (int i = 0; i < seconds; i++) {
-      Charge(atm);
-      _scene.Step(1);
-    }
+    RunWhile(() => Charge(atm), seconds);
     return this;
   }
 
@@ -155,7 +154,7 @@ internal sealed class RegulatedEnginePlant {
 /// water at a fixed 1 atm into an output main, the line that runs up into a boiler before any steam
 /// engine exists. The intake is the generator; the pump only moves what stands in the input line.
 /// </summary>
-internal sealed class ManualPumpPlant {
+internal sealed class ManualPumpPlant : MachineRig {
   public readonly BlockEntityManualFluidPump Pump;
   public readonly BlockEntityFluidIntake Intake;
 
@@ -163,7 +162,8 @@ internal sealed class ManualPumpPlant {
   private readonly BlockPos _pond;
   private readonly BlockPos _output;
 
-  public ManualPumpPlant(Scene scene, BlockPos pos) {
+  public ManualPumpPlant(Scene scene, BlockPos pos)
+    : base(scene.World) {
     _scene = scene;
 
     var pumpBlock = TestBlocks.Configure(
@@ -225,10 +225,7 @@ internal sealed class ManualPumpPlant {
   /// <summary>Cranks the pump for <paramref name="seconds"/> ticks (a player holding right-click).</summary>
   public ManualPumpPlant Crank(int seconds) {
     Pump.OnPumpStart();
-    for (int i = 0; i < seconds; i++) {
-      Pump.OnPumpStep(); // refresh the watchdog as a held button would
-      _scene.Step(1);
-    }
+    RunWhile(Pump.OnPumpStep, seconds); // OnPumpStep refreshes the watchdog as a held button would
     return this;
   }
 

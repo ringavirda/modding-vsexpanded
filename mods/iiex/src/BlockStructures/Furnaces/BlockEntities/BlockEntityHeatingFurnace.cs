@@ -1,5 +1,5 @@
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -23,7 +23,7 @@ public class BlockEntityHeatingFurnace : BlockEntityFireboxFurnace {
   #region Reverberatory geometry
 
   // No `ShaftMin`/`ShaftMax` override: the layout marks both `F` cells (col 1, rows 1-2 of layer 1, i.e.
-  // `(-5, 1, -1)` and `(-5, 1, 0)` after the Origin(-6,-2) shift) as `CellRole.Firebox`, and the base
+  // `(-5, 1, -1)` and `(-5, 1, 0)` after the Origin(-6,-2) shift) as `FurnaceCellRoles.Firebox`, and the base
   // derives the same two-cell box from it. Two fuel cells along one side, not a column under the work.
 
   /// <summary>

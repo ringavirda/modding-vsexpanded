@@ -8,10 +8,10 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron3": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/riveted/iron3",
-    "iron4": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5",
-    "iron": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/tarnished/iron",
-    "generic": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/wood/planks/generic"
+    "iron3": "block/metal/riveted/iron3",
+    "iron4": "block/metal/sheet-plain/iron5",
+    "iron": "block/metal/tarnished/iron",
+    "generic": "block/wood/planks/generic"
   },
   "elements": [
     {

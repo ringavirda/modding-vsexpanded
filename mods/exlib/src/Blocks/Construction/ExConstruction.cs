@@ -14,7 +14,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace ExpandedLib.Blocks.Construction;
+namespace ExpandedLib.Blocks;
 
 /// <summary>One construction stage: shape elements it adds/removes and the materials it needs.</summary>
 public class ExConstructionStage {

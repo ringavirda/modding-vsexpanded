@@ -1,0 +1,6 @@
+blockCode:string
+drawingWater:bool
+posx:int
+posy:int
+posz:int
+pumping:bool

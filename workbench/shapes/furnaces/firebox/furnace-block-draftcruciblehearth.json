@@ -8,11 +8,11 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "front1": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/refractory/tier3/front1",
-    "burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned",
-    "coke": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/coal/coke",
-    "blistersteel": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/ingot/blistersteel",
-    "iron5": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5"
+    "front1": "block/clay/refractory/tier3/front1",
+    "burned": "block/clay/vessel/sides/burned",
+    "coke": "block/coal/coke",
+    "blistersteel": "block/metal/ingot/blistersteel",
+    "iron5": "block/metal/sheet-plain/iron5"
   },
   "elements": [
     {

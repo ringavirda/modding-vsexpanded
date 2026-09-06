@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Xunit;
 

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -465,21 +467,55 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("isPouring", IsPouring);
+  // "isPouring" defaults true on load, unlike a bare [Persist] bool (default false), because a tap
+  // saved before the flag existed poured freely - so it stays a Tree. The content block below writes
+  // "barrelContents"/"moldStack"/"moldContents" unconditionally, even when empty, unlike
+  // ExBlockState.Stack, which skips a null value - so it stays a Tree too.
+  protected override void DeclareState(ExBlockState state) {
+    state.Tree(
+      "isPouring",
+      tree => tree.SetBool("isPouring", IsPouring),
+      (tree, world) => IsPouring = tree.GetBool("isPouring", true)
+    );
+    state.Tree(
+      "tapContent",
+      tree => {
+        tree.SetBool("isBarrel", IsBarrel);
+        tree.SetString("barrelCode", BarrelCode?.ToString() ?? "");
+        tree.SetItemstack("barrelContents", BarrelMetalContent);
+        tree.SetInt("barrelCurrentUnits", BarrelCurrentUnits);
+        tree.SetInt("barrelMaxUnits", BarrelMaxUnits);
 
-    tree.SetBool("isBarrel", IsBarrel);
-    tree.SetString("barrelCode", BarrelCode?.ToString() ?? "");
-    tree.SetItemstack("barrelContents", BarrelMetalContent);
-    tree.SetInt("barrelCurrentUnits", BarrelCurrentUnits);
-    tree.SetInt("barrelMaxUnits", BarrelMaxUnits);
+        tree.SetBool("isMold", IsMold);
+        tree.SetItemstack("moldStack", MoldStack);
+        tree.SetItemstack("moldContents", MoldMetalContent);
+        tree.SetInt("moldCurrentUnits", MoldCurrentUnits);
+        tree.SetInt("moldMaxUnits", MoldMaxUnits);
+      },
+      (tree, world) => {
+        IsBarrel = tree.GetBool("isBarrel");
+        // Empty when the save carries no code; ParkedBarrelCode then falls back to plated.
+        string savedBarrel = tree.GetString("barrelCode", "");
+        BarrelCode = savedBarrel.Length > 0
+          ? new AssetLocation(savedBarrel)
+          : null;
+        BarrelMetalContent = tree.GetItemstack("barrelContents");
+        BarrelMetalContent?.ResolveBlockOrItem(world);
+        BarrelCurrentUnits = tree.GetInt("barrelCurrentUnits");
+        BarrelMaxUnits = tree.GetInt(
+          "barrelMaxUnits",
+          IiexValues.BarrelDefaultMaxUnits
+        );
 
-    tree.SetBool("isMold", IsMold);
-    tree.SetItemstack("moldStack", MoldStack);
-    tree.SetItemstack("moldContents", MoldMetalContent);
-    tree.SetInt("moldCurrentUnits", MoldCurrentUnits);
-    tree.SetInt("moldMaxUnits", MoldMaxUnits);
+        IsMold = tree.GetBool("isMold");
+        MoldStack = tree.GetItemstack("moldStack");
+        MoldStack?.ResolveBlockOrItem(world);
+        MoldMetalContent = tree.GetItemstack("moldContents");
+        MoldMetalContent?.ResolveBlockOrItem(world);
+        MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
+        MoldMaxUnits = tree.GetInt("moldMaxUnits", IiexValues.MoldDefaultUnits);
+      }
+    );
   }
 
   public override void FromTreeAttributes(
@@ -489,27 +525,6 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
     bool wasBarrel = IsBarrel;
     bool wasMold = IsMold;
     base.FromTreeAttributes(tree, worldForResolving);
-    IsPouring = tree.GetBool("isPouring", true);
-
-    IsBarrel = tree.GetBool("isBarrel");
-    // Empty when the save carries no code; ParkedBarrelCode then falls back to plated.
-    string savedBarrel = tree.GetString("barrelCode", "");
-    BarrelCode = savedBarrel.Length > 0 ? new AssetLocation(savedBarrel) : null;
-    BarrelMetalContent = tree.GetItemstack("barrelContents");
-    BarrelMetalContent?.ResolveBlockOrItem(worldForResolving);
-    BarrelCurrentUnits = tree.GetInt("barrelCurrentUnits");
-    BarrelMaxUnits = tree.GetInt(
-      "barrelMaxUnits",
-      IiexValues.BarrelDefaultMaxUnits
-    );
-
-    IsMold = tree.GetBool("isMold");
-    MoldStack = tree.GetItemstack("moldStack");
-    MoldStack?.ResolveBlockOrItem(worldForResolving);
-    MoldMetalContent = tree.GetItemstack("moldContents");
-    MoldMetalContent?.ResolveBlockOrItem(worldForResolving);
-    MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
-    MoldMaxUnits = tree.GetInt("moldMaxUnits", IiexValues.MoldDefaultUnits);
 
     if (IsBarrel != wasBarrel || IsMold != wasMold) {
       _moldMesh = null;
@@ -526,6 +541,7 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     BarrelMetalContent?.Collectible?.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(BarrelMetalContent),
@@ -553,6 +569,13 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     // A false return means the destination world has no such item/block; FixMapping leaves Id at the
     // source world's value, which would resolve to whatever owns that id there. Null the stack instead
     // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.

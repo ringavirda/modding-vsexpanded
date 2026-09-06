@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
@@ -10,30 +10,36 @@ using Vintagestory.API.MathTools;
 namespace ExpandedLib.Definitions;
 
 /// <summary>
-/// Authors a <c>multiblockStructure</c> from ASCII layer diagrams: <see cref="Legend"/> maps characters to
-/// block codes, one <see cref="Layer"/> per Y level draws the build as a top-down grid (grid rules in
-/// <see cref="StructureLayout"/>). Block numbers and offsets are generated and validated through
-/// <see cref="MultiblockBuilder"/>: every cell resolves to a legend entry, no cell is drawn twice. The game
-/// reads the offsets as an unordered set and the <c>w</c> numbers as a private index, so the generated
-/// ordering carries no meaning. See docs/design/mechanics/multiblock.md.
+/// Authors a <c>multiblockStructure</c> from ASCII grids: <see cref="Legend"/> maps characters to block
+/// codes, drawn as one <see cref="Layer"/> per Y level (a top-down floor plan), one <see cref="Slice"/>
+/// per X level or one <see cref="Face"/> per Z level (elevations; grid rules in
+/// <see cref="ExpandedLib.Structures.CellGrid"/>) - a layout may mix them. Block numbers and offsets are
+/// generated and validated through <see cref="MultiblockBuilder"/>: every cell resolves to a legend
+/// entry, no cell is drawn twice. The game reads the offsets as an unordered set and the <c>w</c> numbers
+/// as a private index, so the generated ordering carries no meaning. See docs/design/mechanics/multiblock.md.
 /// </summary>
 public sealed class MultiblockLayoutBuilder {
-  private int _xLeft;
-  private int _zTop;
+  private int _originA;
+  private int _originB;
   private readonly List<(char Symbol, string Code)> _legend = new();
   private readonly List<(int Y, string Grid)> _layers = new();
+  private readonly List<(int X, string Grid)> _slices = new();
+  private readonly List<(int Z, string Grid)> _faces = new();
   private readonly Dictionary<string, IReadOnlyList<int>> _facingSegment =
     new();
   private readonly Dictionary<char, List<CellRole>> _roleOf = new();
   private readonly Dictionary<char, List<string>> _connectorOf = new();
+  private char? _core;
   private JObject? _roles;
   private JObject? _connectors;
 
-  /// <summary>Sets where the top-left of every layer grid sits: <paramref name="xLeft"/> is the X of the first
-  /// column, <paramref name="zTop"/> the Z of the first row. Defaults to <c>(0, 0)</c>.</summary>
+  /// <summary>Sets where the top-left of every grid sits: <paramref name="xLeft"/>/<paramref name="zTop"/>
+  /// for a horizontal <see cref="Layer"/>, reinterpreted as <c>(zLeft, yTop)</c> for a fixed-X
+  /// <see cref="Slice"/> and <c>(xLeft, yTop)</c> for a fixed-Z <see cref="Face"/>, since each grid kind
+  /// draws a different pair of axes. Defaults to <c>(0, 0)</c>.</summary>
   public MultiblockLayoutBuilder Origin(int xLeft, int zTop) {
-    _xLeft = xLeft;
-    _zTop = zTop;
+    _originA = xLeft;
+    _originB = zTop;
     return this;
   }
 
@@ -54,8 +60,8 @@ public sealed class MultiblockLayoutBuilder {
     AddLegend(symbol, code, oriented: false);
 
   /// <summary>
-  /// Marks what a glyph's cells are for (<see cref="CellRole.Tuyere"/>, <see cref="CellRole.Flue"/>) so a
-  /// machine can ask the layout for them instead of carrying a hand-written offset list. Optional; a layout
+  /// Marks what a glyph's cells are for - a tuyere, a flue - so a machine can ask the layout for them
+  /// instead of carrying a hand-written offset list. Optional; a layout
   /// that never calls this emits nothing. Roles attach to the glyph rather than the code, so one code can
   /// serve several purposes in a layout; a glyph may carry several roles and each is kept, and restating one
   /// is a no-op. Callable before or after the glyph's <see cref="Legend"/>; both are validated at build time.
@@ -91,6 +97,18 @@ public sealed class MultiblockLayoutBuilder {
       if (!faces.Contains(letter))
         faces.Add(letter);
     }
+    return this;
+  }
+
+  /// <summary>
+  /// Marks <paramref name="symbol"/> as the anchor - the block the player places, which must land on
+  /// the layout's own <c>(0,0,0)</c>. Optional; a layout that never calls this has its <c>Origin</c>
+  /// unchecked, same as before this method existed. <see cref="Build"/> then throws when the declared
+  /// <see cref="Origin"/> does not put the marked glyph there, which otherwise builds the whole
+  /// structure offset from the block the player placed with no error anywhere.
+  /// </summary>
+  public MultiblockLayoutBuilder Core(char symbol) {
+    _core = symbol;
     return this;
   }
 
@@ -163,20 +181,34 @@ public sealed class MultiblockLayoutBuilder {
   /// via <see cref="ExOrientation.IsOrientationToken"/>.
   /// </summary>
   internal static IReadOnlyList<int> FindOrientationSegments(string code) {
-    int colon = code.IndexOf(':');
-    string path = colon >= 0 ? code[(colon + 1)..] : code;
-    string[] parts = path.Split('-');
+    var segmented = new ExOrientation.SegmentedCode(code);
     var found = new List<int>();
-    for (int i = 0; i < parts.Length; i++)
-      if (ExOrientation.RotatesUnderY(parts[i]))
+    for (int i = 0; i < segmented.Count; i++)
+      if (ExOrientation.RotatesUnderY(segmented[i]))
         found.Add(i);
     return found;
   }
 
-  /// <summary>Adds one Y-level grid (see <see cref="StructureLayout"/> for the drawing rules). Layers may be
+  /// <summary>Adds one horizontal Y-level grid (a floor plan; rows run +Z, columns +X). Layers may be
   /// declared in any Y order.</summary>
   public MultiblockLayoutBuilder Layer(int y, string grid) {
     _layers.Add((y, grid));
+    return this;
+  }
+
+  /// <summary>Adds one vertical X-level grid (a front elevation; rows run down in -Y from the top, columns
+  /// run +Z). Suits a structure that stacks in Y, such as a beam column. Slices may be declared in any X
+  /// order.</summary>
+  public MultiblockLayoutBuilder Slice(int x, string grid) {
+    _slices.Add((x, grid));
+    return this;
+  }
+
+  /// <summary>Adds one vertical Z-level grid (a front elevation looking along -Z; rows run down in -Y from
+  /// the top, columns run +X). Suits a thin-in-Z, north-facing structure whose face lies in the X-Y
+  /// plane. Faces may be declared in any Z order.</summary>
+  public MultiblockLayoutBuilder Face(int z, string grid) {
+    _faces.Add((z, grid));
     return this;
   }
 
@@ -227,17 +259,25 @@ public sealed class MultiblockLayoutBuilder {
     }
 
     ValidateRoles(wOf);
+    if (_core is char core && !wOf.ContainsKey(core))
+      throw new InvalidOperationException(
+        $"Multiblock layout marks '{core}' as the anchor but has no Legend entry for it."
+      );
 
     var roleCells = new Dictionary<CellRole, JArray>();
     var connectorCells = new Dictionary<string, JArray>();
     var drawn = new HashSet<char>();
-    foreach (LayoutCell cell in StructureLayout.Parse(_xLeft, _zTop, _layers)) {
+    (int X, int Y, int Z)? anchor = DrawnCells(out List<LayoutCell> cells);
+    foreach (LayoutCell cell in cells) {
       if (!wOf.TryGetValue(cell.Symbol, out int cellW))
         throw new InvalidOperationException(
           $"Multiblock layout uses symbol '{cell.Symbol}' at ({cell.X},{cell.Y},{cell.Z}) with no Legend entry."
         );
       mb.At(cell.X, cell.Y, cell.Z, cellW);
       drawn.Add(cell.Symbol);
+
+      if (_core == cell.Symbol)
+        anchor ??= (cell.X, cell.Y, cell.Z);
 
       if (_roleOf.TryGetValue(cell.Symbol, out List<CellRole>? roles))
         foreach (CellRole role in roles)
@@ -281,6 +321,19 @@ public sealed class MultiblockLayoutBuilder {
             + "it in any Layer, so the demand would resolve to nothing at runtime."
         );
 
+    if (_core is char coreSymbol) {
+      if (anchor is null)
+        throw new InvalidOperationException(
+          $"Multiblock layout marks '{coreSymbol}' as the anchor but never draws it in any Layer."
+        );
+      if (anchor.Value != (0, 0, 0))
+        throw new InvalidOperationException(
+          $"Multiblock layout declares Origin({_originA},{_originB}) but anchor '{coreSymbol}' lands at "
+            + $"({anchor.Value.X},{anchor.Value.Y},{anchor.Value.Z}), not (0,0,0) - Origin should be "
+            + $"({_originA - anchor.Value.X},{_originB - anchor.Value.Z})."
+        );
+    }
+
     ValidateRoleArity(roleCells);
 
     _roles = EmitRoles(roleCells);
@@ -289,7 +342,42 @@ public sealed class MultiblockLayoutBuilder {
   }
 
   /// <summary>
-  /// Enforces <see cref="SingleCellAttribute"/>: a role declared single-cell is drawn exactly once, so a
+  /// Draws every declared <see cref="Layer"/>, <see cref="Slice"/> and <see cref="Face"/> grid (a layout
+  /// may mix them) and returns their cells in that order through <paramref name="cells"/>. The anchor is
+  /// wherever <see cref="Core"/>'s glyph landed in whichever grid drew it first; null when
+  /// <see cref="Core"/> was never called or its glyph was never drawn.
+  /// </summary>
+  private (int X, int Y, int Z)? DrawnCells(out List<LayoutCell> cells) {
+    var options = new GridOptions(Anchor: _core);
+    cells = new List<LayoutCell>();
+    (int X, int Y, int Z)? anchor = null;
+
+    if (_layers.Count > 0) {
+      var grid = new CellGrid(GridPlane.Horizontal, _originA, _originB, options);
+      foreach ((int y, string g) in _layers)
+        grid.Add(y, g);
+      cells.AddRange(grid.Cells);
+      anchor ??= grid.AnchorCell;
+    }
+    if (_slices.Count > 0) {
+      var grid = new CellGrid(GridPlane.SliceX, _originA, _originB, options);
+      foreach ((int x, string g) in _slices)
+        grid.Add(x, g);
+      cells.AddRange(grid.Cells);
+      anchor ??= grid.AnchorCell;
+    }
+    if (_faces.Count > 0) {
+      var grid = new CellGrid(GridPlane.FaceZ, _originA, _originB, options);
+      foreach ((int z, string g) in _faces)
+        grid.Add(z, g);
+      cells.AddRange(grid.Cells);
+      anchor ??= grid.AnchorCell;
+    }
+    return anchor;
+  }
+
+  /// <summary>
+  /// Enforces <see cref="CellRole.IsSingle"/>: a role declared single-cell is drawn exactly once, so a
   /// consumer can call <c>Single()</c> on the runtime accessor without risking an
   /// <see cref="InvalidOperationException"/>. Counted over the drawn cells, so drawing one glyph twice fails
   /// as well as giving two glyphs the same single-cell role.
@@ -304,10 +392,10 @@ public sealed class MultiblockLayoutBuilder {
   }
 
   /// <summary>
-  /// The two role checks that need no drawing: every role glyph has a <see cref="Legend"/> entry, since a
-  /// role on an undefined glyph would answer empty for ever with no error anywhere; and the layout is a
-  /// shaft or a firebox rather than both, since <see cref="CellRole.Chargeable"/> with
-  /// <see cref="CellRole.Firebox"/> claims a burden column and a plain fuel bed at once.
+  /// The role check that needs no drawing: every role glyph has a <see cref="Legend"/> entry, since a
+  /// role on an undefined glyph would answer empty for ever with no error anywhere. A layout's own
+  /// mutually-exclusive-role rules, if it has any, are the declaring mod's to enforce - exlib knows no
+  /// role's meaning, so it cannot know which pairs contradict each other.
   /// </summary>
   private void ValidateRoles(Dictionary<char, int> wOf) {
     foreach ((char symbol, List<CellRole> roles) in _roleOf)
@@ -323,15 +411,6 @@ public sealed class MultiblockLayoutBuilder {
           $"Multiblock layout demands symbol '{symbol}' open to {string.Join(", ", faces)} but has no Legend "
             + "entry for it."
         );
-
-    if (
-      _roleOf.Values.Any(r => r.Contains(CellRole.Chargeable))
-      && _roleOf.Values.Any(r => r.Contains(CellRole.Firebox))
-    )
-      throw new InvalidOperationException(
-        "Multiblock layout marks cells both Chargeable and Firebox; a furnace holds a burden column or a "
-          + "fuel bed, never both."
-      );
   }
 
   private static JArray FaceArray(
@@ -371,15 +450,21 @@ public sealed class MultiblockLayoutBuilder {
   }
 
   /// <summary>
-  /// Serialises the collected role cells: roles in enum-declaration order, each role's cells in drawing
-  /// order, so an unrelated edit elsewhere in the layout leaves the table unchanged. Keys are the enum's own
-  /// names, read back case-insensitively.
+  /// Serialises the collected role cells: roles sorted by key (ordinal), each role's cells in drawing
+  /// order, so an unrelated edit elsewhere in the layout leaves the table unchanged. `multiblockRoles` is
+  /// read back as a map, so this order carries no meaning beyond being stable. Keys are the role's own
+  /// key, read back exactly.
   /// </summary>
   private static JObject? EmitRoles(Dictionary<CellRole, JArray> roleCells) {
     if (roleCells.Count == 0)
       return null;
     var o = new JObject();
-    foreach (CellRole role in roleCells.Keys.OrderBy(r => (int)r))
+    foreach (
+      CellRole role in roleCells.Keys.OrderBy(
+        r => r.Key,
+        StringComparer.Ordinal
+      )
+    )
       o[role.ToString()] = roleCells[role];
     return o;
   }

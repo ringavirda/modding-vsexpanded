@@ -252,7 +252,7 @@ public class PatternItemDefinitions : IExItemDefProvider {
       // shape declares (cast iron) with the plank's debarked wood, giving a wooden positive of the part.
       // `Shape` is the fallback for a type with no dedicated art.
       .Shape("game:item/plate")
-      .Raw("shapeByType", shapeByType)
+      .RootKey("shapeByType", shapeByType)
       .TextureAll("game:block/wood/debarked/{wood}")
       // type first, wood last: the mold-spec wildcard (*-{type}-*) and the lang key (item-pattern-{type}-*)
       // both key off the type with the wood as a trailing variant.
@@ -260,8 +260,8 @@ public class PatternItemDefinitions : IExItemDefProvider {
       .VariantGroup("wood", PatternWoods)
       .MaxStackSize(1)
       // Durable tool: each ram-up (Imprint) damages it.
-      .Raw("durability", WoodenPatternDurability)
-      .Raw("attributesByType", byType)
+      .RootKey("durability", WoodenPatternDurability)
+      .RootKey("attributesByType", byType)
       .CreativeCommon("*");
   }
 }

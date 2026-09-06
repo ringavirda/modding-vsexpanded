@@ -25,6 +25,16 @@
       <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- ExHarmonyTests and HarmonyFixtureTests patch a test-only class through HarmonyLib directly. -->
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)/Lib/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- TestChannelsTests declares its own [ProtoContract] packet. -->
+    <Reference Include="protobuf-net">
+      <HintPath>$(GamePath)/Lib/protobuf-net.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -41,5 +51,12 @@
          VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
     <ProjectReference Include="..\src\ExpandedLib.csproj" />
     <ProjectReference Include="..\testing\ExpandedLib.Testing.csproj" />
+    <!-- ExModSystemTests needs a real [ExConfigRegister] config in THIS assembly so its generated
+         accessor carries [ExConfigAccessor] for ExConfig.LoadAll to find. -->
+    <ProjectReference
+      Include="..\generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
   </ItemGroup>
 </Project>

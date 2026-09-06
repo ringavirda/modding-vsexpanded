@@ -8,10 +8,10 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "front1": "game:block/clay/refractory/tier3/front1",
-    "burned": "game:block/clay/vessel/sides/burned",
-    "iron3": "game:block/metal/riveted/iron3",
-    "iron5": "game:block/metal/sheet-plain/iron5"
+    "front1": "block/clay/refractory/tier3/front1",
+    "burned": "block/clay/vessel/sides/burned",
+    "iron3": "block/metal/riveted/iron3",
+    "iron5": "block/metal/sheet-plain/iron5"
   },
   "elements": [
     {

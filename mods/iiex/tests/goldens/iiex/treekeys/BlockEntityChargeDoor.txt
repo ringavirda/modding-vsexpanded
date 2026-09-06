@@ -1,0 +1,6 @@
+blockCode:string
+mainOpen:bool
+posx:int
+posy:int
+posz:int
+smallOpen:bool

@@ -1,3 +1,5 @@
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 
@@ -17,17 +19,18 @@ public static class PipeFittings {
   /// exhaust and hot-blast cells both call for.
   /// </summary>
   public static BlockPipeOutlet Outlet(int id, string orientation = "ns") =>
-    Primed(
-      TestBlocks.Configure(
-        new BlockPipeOutlet(),
-        $"iiex:pipe-outlet-{orientation}",
-        id,
-        ("type", "outlet"),
-        ("orientation", orientation)
-      ),
-      "outlet",
-      orientation
-    );
+    (BlockPipeOutlet)
+      Primed(
+        TestBlocks.Configure(
+          new BlockPipeOutlet(),
+          $"iiex:pipe-outlet-{orientation}",
+          id,
+          ("type", "outlet"),
+          ("orientation", orientation)
+        ),
+        "outlet",
+        orientation
+      );
 
   /// <summary>
   /// A pipe passthrough: the brick-cased segment that carries a line through a structure wall, which
@@ -37,25 +40,31 @@ public static class PipeFittings {
     int id,
     string orientation = "ns"
   ) =>
-    Primed(
-      TestBlocks.Configure(
-        new BlockPipePassthrough(),
-        $"iiex:pipe-cast-passthrough-fire-{orientation}",
-        id,
-        ("tier", "cast"),
-        ("type", "passthrough"),
-        ("orientation", orientation)
-      ),
-      "passthrough",
-      orientation
-    );
+    (BlockPipePassthrough)
+      Primed(
+        TestBlocks.Configure(
+          new BlockPipePassthrough(),
+          $"iiex:pipe-cast-passthrough-fire-{orientation}",
+          id,
+          ("tier", "cast"),
+          ("type", "passthrough"),
+          ("orientation", orientation)
+        ),
+        "passthrough",
+        orientation
+      );
 
   // OnLoaded, which parses these off the variants, is skipped headlessly, so set the protected
   // Type/Orientation the network code reads. Matches the priming PipeTestWorld.MakePipe does.
-  private static T Primed<T>(T block, string type, string orientation)
-    where T : class {
-    ReflectionHelpers.SetProperty(block, "Type", type);
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+  // Not generic over the block type: a generic helper constrained on a game type has made a whole
+  // test assembly fail discovery before (see Testing-Harness.md).
+  private static BlockNetworkNode Primed(
+    BlockNetworkNode block,
+    string type,
+    string orientation
+  ) {
+    block.SetNetworkTypeForTest(type);
+    block.ApplyOrientationForTest(orientation);
     return block;
   }
 }

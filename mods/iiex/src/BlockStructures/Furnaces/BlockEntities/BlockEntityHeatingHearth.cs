@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Forming;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -232,26 +233,31 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    for (int i = 0; i < HeatingHearthLayout.Rows; i++)
-      if (_rows[i] is { } stack)
-        tree.SetItemstack("row" + i, stack);
-      else
-        tree.RemoveAttribute("row" + i);
-  }
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "rows",
+      tree => {
+        for (int i = 0; i < HeatingHearthLayout.Rows; i++)
+          if (_rows[i] is { } stack)
+            tree.SetItemstack("row" + i, stack);
+          else
+            tree.RemoveAttribute("row" + i);
+      },
+      (tree, worldForResolving) => {
+        for (int i = 0; i < HeatingHearthLayout.Rows; i++) {
+          _rows[i] = tree.GetItemstack("row" + i);
+          // Stacks read off a tree carry no resolved collectible; without this the render path reads a
+          // null Code and the piece does not draw.
+          _rows[i]?.ResolveBlockOrItem(worldForResolving);
+        }
+      }
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    for (int i = 0; i < HeatingHearthLayout.Rows; i++) {
-      _rows[i] = tree.GetItemstack("row" + i);
-      // Stacks read off a tree carry no resolved collectible; without this the render path reads a null
-      // Code and the piece does not draw.
-      _rows[i]?.ResolveBlockOrItem(worldForResolving);
-    }
     if (Api?.Side == EnumAppSide.Client)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);
   }
@@ -262,6 +268,7 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     foreach (ItemStack? stack in _rows)
       stack?.Collectible?.OnStoreCollectibleMappings(
         Api.World,
@@ -278,6 +285,13 @@ public class BlockEntityHeatingHearth : BlockEntityFurnacePart {
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     // A false return means the destination world has no such item/block; FixMapping leaves Id at the
     // source world's value, which would resolve to whatever owns that id there. Null the stack instead
     // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809. An index loop, not a

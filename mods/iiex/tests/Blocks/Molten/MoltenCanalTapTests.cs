@@ -1,5 +1,5 @@
 using System;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten;

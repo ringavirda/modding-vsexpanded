@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExpandedLib.Registries.Recipes;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// A mod's registration with the shared recipe-cost framework: everything <see cref="ExRecipeProfiles"/>

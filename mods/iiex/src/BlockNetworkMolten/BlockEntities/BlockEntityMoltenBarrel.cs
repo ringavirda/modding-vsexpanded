@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -21,7 +22,7 @@ namespace IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityMoltenBarrel
-  : BlockEntity,
+  : ExBlockEntity,
     ILiquidMetalSink,
     IChiselableMolten {
   /// <summary>The metal currently stored, or <c>null</c> when empty.</summary>
@@ -347,20 +348,27 @@ public class BlockEntityMoltenBarrel
     return jstack.ResolvedItemstack;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetItemstack("contents", MetalContent);
-    tree.SetInt("currentUnitAmount", CurrentUnitAmount);
-  }
+  // "contents" is written unconditionally, even when empty - unlike ExBlockState.Stack, which skips a
+  // null value - so a Tree declaration carries it rather than [Persist].
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "contents",
+      tree => {
+        tree.SetItemstack("contents", MetalContent);
+        tree.SetInt("currentUnitAmount", CurrentUnitAmount);
+      },
+      (tree, world) => {
+        MetalContent = tree.GetItemstack("contents");
+        CurrentUnitAmount = tree.GetInt("currentUnitAmount");
+        MetalContent?.ResolveBlockOrItem(world);
+      }
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolve
   ) {
     base.FromTreeAttributes(tree, worldForResolve);
-    MetalContent = tree.GetItemstack("contents");
-    CurrentUnitAmount = tree.GetInt("currentUnitAmount");
-    MetalContent?.ResolveBlockOrItem(worldForResolve);
     if (Api?.Side == EnumAppSide.Client) {
       UpdateRenderer();
       UpdateGlow();
@@ -398,6 +406,7 @@ public class BlockEntityMoltenBarrel
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     MetalContent?.Collectible?.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(MetalContent),
@@ -413,6 +422,13 @@ public class BlockEntityMoltenBarrel
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     if (MetalContent == null)
       return;
 

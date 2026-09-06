@@ -1,6 +1,6 @@
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Pipes;
 using HarmonyLib;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Machines;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Crafting.Gui;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

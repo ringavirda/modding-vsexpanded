@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using Newtonsoft.Json.Linq;
 using Xunit;

@@ -6,8 +6,10 @@
 #
 #   exmod test [latest|all|1.22|1.21|1.20] [-Filter <expr>] [-Throttle N] [-Coverage]
 #   exmod format [-Check]
+#   exmod codes <exlib|iiex|siex>
 #   exmod provision game -Version <x.y[.z]> [-Dest <path>] [-Kind server|client] [-Force]
 #   exmod provision dotnet [-Version latest|all|1.22|1.21|1.20] [-Force]
+#   exmod smoke [-Version <x.y>] [-Mods <dir>[,<dir>...]] [-Timeout 180] [-KeepData]
 #   exmod stage -Dest <path> <name>=<src> [<name>=<src> ...]
 #   exmod fix-registry [-InstallDir <path>]     (Windows only)
 
@@ -18,6 +20,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# MSBuild worker nodes are not kept alive after a build: on this install idle nodes never exit and
+# a day of building left 74 of them holding 11 GB. Directory.Build.rsp says the same for builds
+# started outside this script.
+$env:MSBUILDDISABLENODEREUSE = '1'
+# glibc 2.41 and later refuse to load a shared object that needs an executable stack; MonoMod's
+# native helper for the .NET 7 lane (game 1.20) is one, so every Harmony patch there fails without
+# this tunable. Harmless on older glibc and on the other lanes.
+if (-not $OnWindows) { $env:GLIBC_TUNABLES = 'glibc.rtld.execstack=2' }
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $OnWindows = [System.OperatingSystem]::IsWindows()
@@ -118,10 +128,12 @@ function Invoke-ProvisionDotnet([string[]]$Argv) {
     if ($OnWindows) {
       & $installer @InstallArgs
     } else {
-      # The shell installer takes POSIX-style flags rather than PowerShell parameter names.
+      # The shell installer takes POSIX-style kebab-case flags rather than PowerShell parameter
+      # names: -InstallDir becomes --install-dir, -Channel becomes --channel.
       $sh = @()
       for ($i = 0; $i -lt $InstallArgs.Count; $i += 2) {
-        $sh += ('--' + $InstallArgs[$i].TrimStart('-').ToLower())
+        $name = $InstallArgs[$i].TrimStart('-')
+        $sh += ('--' + [regex]::Replace($name, '(?<!^)([A-Z])', '-$1').ToLower())
         $sh += $InstallArgs[$i + 1]
       }
       & bash $installer @sh --no-path
@@ -180,6 +192,9 @@ function Publicize-GameApi([string]$ApiDll) {
 #                           the server.
 #
 # Each platform only ever fetches its own archive, so a Linux checkout never pulls Windows binaries.
+# "Superset" assumes the client at the default slot was built for the platform doing the provisioning;
+# when it was not (e.g. this slug's slot still holds a Windows client after a move to Linux/macOS), a
+# default -Dest is redirected to "<dest>-server" rather than overwriting the client the owner plays from.
 function Invoke-ProvisionGame([string[]]$Argv) {
   $version = Get-Opt $Argv '-Version'
   $dest = Get-Opt $Argv '-Dest'
@@ -200,8 +215,11 @@ function Invoke-ProvisionGame([string[]]$Argv) {
   }
 
   $slug = ($version -split '\.')[0..1] -join '.'
+  $destGiven = [bool]$dest
   if (-not $dest) { $dest = ".game/$slug" }
-  $destFull = Join-Path $RepoRoot $dest
+  # An absolute -Dest is used as given; Join-Path would otherwise concatenate it onto the repo root
+  # (an absolute second segment does not make Join-Path treat it as rooted).
+  $destFull = if ([System.IO.Path]::IsPathRooted($dest)) { $dest } else { Join-Path $RepoRoot $dest }
   $cacheDir = Join-Path $RepoRoot '.game/.cache'
   New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null
 
@@ -218,14 +236,34 @@ function Invoke-ProvisionGame([string[]]$Argv) {
     # being skipped by a slug folder that already exists.
     $apiMarker = Join-Path $destFull 'VintagestoryAPI.dll'
     $clientMarker = Join-Path $destFull 'Vintagestory.dll'
+    # Present only in a tarball/zip built for this platform - a client left over from another OS (e.g.
+    # a Windows package on a box that has since moved to Linux) has Vintagestory.dll but none of these.
+    $nativeMarker = Join-Path $destFull 'Lib/libe_sqlite3.so'
     $stamp = Join-Path $destFull '.vsversion'
     $installed = if (Test-Path $stamp) { (Get-Content $stamp -Raw).Trim() } else { '' }
     $clientPresent = Test-Path $clientMarker
+    $clientUsableHere = $clientPresent -and ($OnWindows -or (Test-Path $nativeMarker))
+
+    if (-not $destGiven -and $kind -eq 'server' -and $clientPresent -and -not $clientUsableHere) {
+      # The default slot holds a client for a different platform. It is still the install the owner
+      # plays from (perhaps from before a Linux/macOS migration) and must not be overwritten just
+      # because it cannot serve this platform's dedicated server; provision alongside it instead.
+      Write-Host "Vintage Story client at $dest is not usable as this platform's server (no native Lib/*.so) - provisioning a separate server layout."
+      $dest = "$dest-server"
+      $destFull = Join-Path $RepoRoot $dest
+      $apiMarker = Join-Path $destFull 'VintagestoryAPI.dll'
+      $clientMarker = Join-Path $destFull 'Vintagestory.dll'
+      $nativeMarker = Join-Path $destFull 'Lib/libe_sqlite3.so'
+      $stamp = Join-Path $destFull '.vsversion'
+      $installed = if (Test-Path $stamp) { (Get-Content $stamp -Raw).Trim() } else { '' }
+      $clientPresent = Test-Path $clientMarker
+      $clientUsableHere = $clientPresent -and ($OnWindows -or (Test-Path $nativeMarker))
+    }
 
     if (-not $force) {
-      # A server request must never downgrade an existing client: the client already satisfies the
-      # build and tests, and this is what stops an auto-provisioning build clobbering it.
-      if ($kind -eq 'server' -and $clientPresent) {
+      # A server request must never downgrade an existing usable client: the client already satisfies
+      # the build and tests, and this is what stops an auto-provisioning build clobbering it.
+      if ($kind -eq 'server' -and $clientUsableHere) {
         Write-Host "Vintage Story client already at $dest - keeping it (it satisfies the server binaries)."
         Publicize-GameApi $apiMarker
         return
@@ -343,6 +381,206 @@ function Invoke-ProvisionGame([string[]]$Argv) {
 
 #endregion
 
+#region smoke
+
+# An unusual, fixed port for every smoke boot: a game the owner is actually playing on this machine
+# binds the default 42420 (or whatever their own serverconfig.json says), and this must never collide
+# with it.
+$SmokePort = 42499
+
+# Finds a working dedicated-server install for $version's slug (".game/<slug>-server" first, since
+# that is where Invoke-ProvisionGame redirects a server request away from an existing client that
+# cannot serve it - see its header comment - then the plain ".game/<slug>"), provisioning one if
+# neither is present. Returns the full path to the install directory.
+function Resolve-SmokeServer([string]$version) {
+  $slug = ($version -split '\.')[0..1] -join '.'
+  $candidates = @(".game/$slug-server", ".game/$slug")
+  foreach ($c in $candidates) {
+    $full = Join-Path $RepoRoot $c
+    if (Test-Path (Join-Path $full 'VintagestoryServer.dll')) { return $full }
+  }
+  Write-Host "No dedicated-server install found for $version - provisioning one..."
+  Invoke-ProvisionGame @('-Version', $version, '-Kind', 'server')
+  foreach ($c in $candidates) {
+    $full = Join-Path $RepoRoot $c
+    if (Test-Path (Join-Path $full 'VintagestoryServer.dll')) { return $full }
+  }
+  throw "Provisioning completed but no VintagestoryServer.dll was found under $($candidates -join ' or ')."
+}
+
+# Every mod folder under mods/*/src that has already been built (src/bin/Debug/Mods/mod/modinfo.json);
+# a mod missing that output is built first, so a fresh clone (or a fresh CI runner) still works.
+function Get-DefaultSmokeMods() {
+  $out = @()
+  foreach ($modDir in Get-ChildItem (Join-Path $RepoRoot 'mods') -Directory) {
+    $srcDir = Join-Path $modDir.FullName 'src'
+    if (-not (Test-Path (Join-Path $srcDir 'modinfo.json'))) { continue }
+    $built = Join-Path $srcDir 'bin/Debug/Mods/mod'
+    if (-not (Test-Path (Join-Path $built 'modinfo.json'))) {
+      $csproj = Get-ChildItem $srcDir -Filter '*.csproj' -File | Select-Object -First 1
+      if (-not $csproj) { throw "No .csproj under $srcDir to build $($modDir.Name)." }
+      Write-Host "Building $($modDir.Name) (not yet built) ..."
+      dotnet build $csproj.FullName -clp:ErrorsOnly
+      if ($LASTEXITCODE -ne 0) { throw "Build of $($modDir.Name) failed." }
+    }
+    $out += $built
+  }
+  # samples/<sample> holds its csproj (and modinfo.json) at its own root rather than under src/, so
+  # the built output sits at samples/<sample>/bin/Debug/Mods/mod instead of .../src/bin/....
+  foreach ($sampleDir in Get-ChildItem (Join-Path $RepoRoot 'samples') -Directory) {
+    if (-not (Test-Path (Join-Path $sampleDir.FullName 'modinfo.json'))) { continue }
+    $built = Join-Path $sampleDir.FullName 'bin/Debug/Mods/mod'
+    if (-not (Test-Path (Join-Path $built 'modinfo.json'))) {
+      $csproj = Get-ChildItem $sampleDir.FullName -Filter '*.csproj' -File | Select-Object -First 1
+      if (-not $csproj) { throw "No .csproj under $($sampleDir.FullName) to build $($sampleDir.Name)." }
+      Write-Host "Building $($sampleDir.Name) (not yet built) ..."
+      dotnet build $csproj.FullName -clp:ErrorsOnly
+      if ($LASTEXITCODE -ne 0) { throw "Build of $($sampleDir.Name) failed." }
+    }
+    $out += $built
+  }
+  return $out
+}
+
+# Resolves each -Mods entry to one or more mod folders (a folder holding modinfo.json directly, or a
+# folder of such folders), so `-Mods path/to/one/mod` and `-Mods path/to/several/mods` both work.
+function Expand-SmokeModDirs([string[]]$Dirs) {
+  $out = @()
+  foreach ($d in $Dirs) {
+    $full = if ([System.IO.Path]::IsPathRooted($d)) { $d } else { Join-Path $RepoRoot $d }
+    if (-not (Test-Path $full)) { throw "Mod path not found: $full" }
+    if (Test-Path (Join-Path $full 'modinfo.json')) {
+      $out += $full
+    }
+    else {
+      $subs = @(Get-ChildItem $full -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'modinfo.json') })
+      if (-not $subs) { throw "'$full' is neither a mod folder (no modinfo.json) nor a folder of mod folders." }
+      $out += @($subs.FullName)
+    }
+  }
+  return $out
+}
+
+# Boots the real dedicated server with the given mods, waits for it to come up, runs /exmod verify and
+# stops it - the zero-effort rung: no test code, just "does the server load this without erroring".
+#
+#   -Version <x.y>     game series to smoke against (default 1.22).
+#   -Mods <dir>[,...]  mod folder(s) or folder(s)-of-mod-folders to load instead of every built mod.
+#   -Timeout N         seconds to wait for "Dedicated Server now running" (default 180).
+#   -KeepData          don't delete the scratch dataPath/mods afterwards (for inspecting the failure).
+function Invoke-Smoke([string[]]$Argv) {
+  $version = Get-Opt $Argv '-Version' '1.22'
+  $modsOpt = Get-Opt $Argv '-Mods' $null
+  $timeout = [int](Get-Opt $Argv '-Timeout' 180)
+  $keepData = Get-Flag $Argv '-KeepData'
+
+  $serverDir = Resolve-SmokeServer $version
+
+  $modDirs = if ($modsOpt) { Expand-SmokeModDirs @($modsOpt -split ',') } else { Get-DefaultSmokeMods }
+  if (-not $modDirs) { throw "No mods found to smoke-test (nothing under mods/*/src/bin/Debug/Mods/mod, and -Mods was not given)." }
+
+  $scratch = Join-Path $RepoRoot ".game/.smoke-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+  $scratchData = Join-Path $scratch 'data'
+  $scratchMods = Join-Path $scratch 'mods'
+  New-Item -ItemType Directory -Force -Path $scratchData, $scratchMods | Out-Null
+
+  foreach ($m in $modDirs) {
+    # A modinfo.json broken enough that this can't even read it is exactly the kind of mistake the
+    # smoke lane exists to catch, so it is copied in under its folder name regardless and left for the
+    # real mod loader to report - not failed here, which would only ever say "some folder's modinfo.json
+    # doesn't parse" instead of naming the mod and the game's own error.
+    $modid = (Split-Path $m -Leaf)
+    try {
+      $modinfo = Get-Content (Join-Path $m 'modinfo.json') -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+      if ($modinfo.modid) { $modid = $modinfo.modid }
+    } catch {
+      Write-Host "Warning: $m/modinfo.json did not parse ($($_.Exception.Message)) - copying it in under '$modid' anyway so the server reports it." -ForegroundColor Yellow
+    }
+    Copy-Item -Recurse -Force -Path $m -Destination (Join-Path $scratchMods $modid)
+  }
+  Write-Host "Smoke-testing $($modDirs.Count) mod(s) against Vintage Story $version at $serverDir"
+
+  $logPath = Join-Path $scratchData 'Logs/server-main.log'
+  $proc = $null
+  try {
+    # GLIBC_TUNABLES and MSBUILDDISABLENODEREUSE are already in $env: from the top of this script and
+    # are inherited by the child unchanged; nothing extra to set here.
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = 'dotnet'
+    foreach ($a in @(
+        (Join-Path $serverDir 'VintagestoryServer.dll'), '--dataPath', $scratchData,
+        '--addModPath', $scratchMods, '--port', $SmokePort
+      )) { $psi.ArgumentList.Add($a) }
+    $psi.RedirectStandardInput = $true
+    $psi.UseShellExecute = $false
+    $psi.WorkingDirectory = $serverDir
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    $proc.StandardInput.AutoFlush = $true
+
+    Write-Host "Waiting up to ${timeout}s for the server to come up..."
+    $deadline = [DateTime]::UtcNow.AddSeconds($timeout)
+    $ready = $false
+    while ([DateTime]::UtcNow -lt $deadline) {
+      if ((Test-Path $logPath) -and (Select-String -Path $logPath -Pattern 'Dedicated Server now running' -Quiet)) {
+        $ready = $true
+        break
+      }
+      if ($proc.HasExited) { break }
+      Start-Sleep -Seconds 1
+    }
+    if (-not $ready) {
+      $tail = if (Test-Path $logPath) { Get-Content $logPath -Tail 60 } else { '(no log written)' }
+      throw "Server did not report ready within ${timeout}s (exited: $($proc.HasExited)).`n$($tail -join "`n")"
+    }
+    Write-Host "Server is up; running /exmod verify..."
+
+    $proc.StandardInput.WriteLine('/exmod verify')
+    $verifyDeadline = [DateTime]::UtcNow.AddSeconds(10)
+    while ([DateTime]::UtcNow -lt $verifyDeadline) {
+      if (Select-String -Path $logPath -Pattern 'check\(s\) run, \d+ error\(s\) found\.' -Quiet) { break }
+      Start-Sleep -Milliseconds 500
+    }
+
+    $proc.StandardInput.WriteLine('/stop')
+    if (-not $proc.WaitForExit(30000)) {
+      Write-Host "Server did not exit after /stop within 30s - killing it."
+      $proc.Kill($true)
+      $proc.WaitForExit(10000) | Out-Null
+    }
+
+    $log = Get-Content $logPath -Raw
+    Write-Host ""
+    Write-Host "===== [exlib] notification lines ====="
+    Select-String -Path $logPath -Pattern '\[exlib\]' | ForEach-Object { Write-Host $_.Line }
+    Write-Host ""
+    Write-Host "===== Error/Fatal lines ====="
+    Select-String -Path $logPath -Pattern '\[Error\]|\[Fatal\]' | ForEach-Object { Write-Host $_.Line }
+
+    $hasErrors = [bool](Select-String -Path $logPath -Pattern '\[Error\]|\[Fatal\]' -Quiet)
+    $verifyMatch = [regex]::Match($log, '(\d+) check\(s\) run, (\d+) error\(s\) found\.')
+    $verifyErrors = if ($verifyMatch.Success) { [int]$verifyMatch.Groups[2].Value } else { 0 }
+
+    Write-Host ""
+    if ($hasErrors) { throw "Smoke failed: the server log holds [Error] or [Fatal] line(s)." }
+    if ($verifyErrors -gt 0) { throw "Smoke failed: /exmod verify reported $verifyErrors error(s)." }
+    Write-Host "Smoke passed: server booted, verified clean and stopped."
+  }
+  finally {
+    if ($proc -and -not $proc.HasExited) {
+      try { $proc.Kill($true) } catch { }
+    }
+    if ($proc) { $proc.Dispose() }
+    if (-not $keepData) {
+      Remove-Item -Recurse -Force $scratch -ErrorAction SilentlyContinue
+    }
+    else {
+      Write-Host "Kept scratch data at $scratch"
+    }
+  }
+}
+
+#endregion
+
 #region test
 
 # Runs the suite per game version, each version's projects in parallel. The mods stay single-target;
@@ -360,13 +598,22 @@ function Invoke-Test([string[]]$Argv) {
   $filter = Get-Opt $Argv '-Filter' ''
 
   $tfms = [ordered]@{ '1.22' = 'net10.0'; '1.21' = 'net8.0'; '1.20' = 'net7.0' }
-  # Dependency order: exlib -> iiex -> siex. One suite per mod; a test lives with the top mod it
-  # touches, so there is no shared cross-mod project. Keyed by mod folder, since each test project
-  # now sits at mods/<mod>/tests/.
+  # Dependency order: exlib -> iiex -> siex -> helloexpanded -> exlibverify. One suite per mod; a
+  # test lives with the top mod it touches, so there is no shared cross-mod project. Keyed by mod
+  # folder, since each test project now sits at mods/<mod>/tests/ - except helloexpanded (a sample
+  # at samples/HelloExpanded.Tests/) and exlibverify (a standalone tool at
+  # infra/tools/ExlibVerify.Tests/), hence $projectPaths below.
   $projects = [ordered]@{
-    exlib = 'ExpandedLib.Tests'
-    iiex  = 'IronIndustryExpanded.Tests'
-    siex  = 'SteelIndustryExpanded.Tests'
+    exlib         = 'ExpandedLib.Tests'
+    iiex          = 'IronIndustryExpanded.Tests'
+    siex          = 'SteelIndustryExpanded.Tests'
+    helloexpanded = 'HelloExpanded.Tests'
+    exlibverify   = 'ExlibVerify.Tests'
+  }
+  # Path override for the projects that don't live at mods/<mod>/tests/<Project>.csproj.
+  $projectPaths = @{
+    helloexpanded = 'samples/HelloExpanded.Tests/HelloExpanded.Tests.csproj'
+    exlibverify   = 'infra/tools/ExlibVerify.Tests/ExlibVerify.Tests.csproj'
   }
 
   $wanted = switch ($version) {
@@ -413,12 +660,17 @@ function Invoke-Test([string[]]$Argv) {
 
   $work = foreach ($v in $wanted) {
     foreach ($mod in $projects.Keys) {
+      # The sample and the standalone tool only target $(CurrentGameTfm) (see
+      # samples/HelloExpanded.csproj, infra/tools/ExlibVerify.Tests.csproj) - a legacy matrix buys
+      # neither anything, so both are skipped rather than failed on '-f net8.0'/'net7.0'.
+      if ($mod -in 'helloexpanded', 'exlibverify' -and $v -ne '1.22') { continue }
       $p = $projects[$mod]
+      $relPath = if ($projectPaths.ContainsKey($mod)) { $projectPaths[$mod] } else { "mods/$mod/tests/$p.csproj" }
       [pscustomobject]@{
         Version = $v
         Tfm     = $tfms[$v]
         Project = $p
-        Proj    = (Join-Path $RepoRoot "mods/$mod/tests/$p.csproj")
+        Proj    = (Join-Path $RepoRoot $relPath)
         Legacy  = ($tfms[$v] -ne 'net10.0')   # legacy TFMs need the multi-target opt-in
       }
     }
@@ -531,6 +783,43 @@ function Invoke-Format([string[]]$Argv) {
 
 #endregion
 
+#region codes
+
+# Regenerates one mod's `{Mod}Blocks.g.cs` code-code table from its code-first block definitions,
+# through the standalone infra/tools/BlockCodeEmitter console tool. Builds the mod first (so the
+# emitter reads today's definitions), writes the table, then rebuilds so a change that no longer
+# compiles is caught here rather than by the next `exmod test`.
+function Invoke-Codes([string[]]$Argv) {
+  $projects = @{
+    exlib = 'mods/exlib/src/ExpandedLib.csproj'
+    iiex  = 'mods/iiex/src/IronIndustryExpanded.csproj'
+    siex  = 'mods/siex/src/SteelIndustryExpanded.csproj'
+  }
+  $mod = if ($Argv.Count -gt 0) { $Argv[0] } else { $null }
+  if (-not $mod -or -not $projects.Contains($mod)) {
+    throw "codes needs a mod: one of $($projects.Keys -join ', ')."
+  }
+
+  Push-Location $RepoRoot
+  try {
+    Write-Host "Building $mod..."
+    dotnet build $projects[$mod] -clp:ErrorsOnly
+    if ($LASTEXITCODE -ne 0) { throw "Build of $mod failed." }
+
+    Write-Host "Regenerating $mod's block-code table..."
+    dotnet run --project infra/tools/BlockCodeEmitter/BlockCodeEmitter.csproj -- $mod
+    if ($LASTEXITCODE -ne 0) { throw "BlockCodeEmitter failed for $mod." }
+
+    Write-Host "Rebuilding $mod against the regenerated table..."
+    dotnet build $projects[$mod] -clp:ErrorsOnly
+    if ($LASTEXITCODE -ne 0) { throw "Rebuild of $mod failed after regenerating its block codes." }
+  } finally {
+    Pop-Location
+  }
+}
+
+#endregion
+
 #region stage
 
 # Copies built mods into a Mods folder for a manual playtest. Each entry is <name>=<source>.
@@ -621,7 +910,9 @@ function Invoke-FixRegistry([string[]]$Argv) {
 
 switch ($Command) {
   'test' { Invoke-Test $Arguments }
+  'smoke' { Invoke-Smoke $Arguments }
   'format' { Invoke-Format $Arguments }
+  'codes' { Invoke-Codes $Arguments }
   'stage' { Invoke-Stage $Arguments }
   'fix-registry' { Invoke-FixRegistry $Arguments }
   'provision' {
@@ -637,8 +928,10 @@ switch ($Command) {
     Write-Host "exmod - repo tasks`n"
     Write-Host "  exmod test [latest|all|1.22|1.21|1.20] [-Filter <expr>] [-Throttle N] [-Coverage]"
     Write-Host "  exmod format [-Check]"
+    Write-Host "  exmod codes <exlib|iiex|siex>"
     Write-Host "  exmod provision game -Version <x.y[.z]> [-Dest <path>] [-Kind server|client] [-Force]"
     Write-Host "  exmod provision dotnet [-Version latest|all|1.22|1.21|1.20] [-Force]"
+    Write-Host "  exmod smoke [-Version <x.y>] [-Mods <dir>[,<dir>...]] [-Timeout 180] [-KeepData]"
     Write-Host "  exmod stage -Dest <path> <name>=<src> [...]"
     Write-Host "  exmod fix-registry [-InstallDir <path>]     (Windows only)"
   }

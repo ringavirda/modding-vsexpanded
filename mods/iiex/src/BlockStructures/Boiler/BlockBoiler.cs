@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
@@ -435,7 +435,7 @@ public abstract class BlockBoiler
 #if !GAME_GE_1_22
     // Legacy lacks the vanilla IInteractableWithHelp path, so surface the construction help here.
     help =
-      ExpandedLib.Blocks.Construction.ExRightClickConstructable.AppendConstructionHelp(
+      ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
         world,
         selection,
         help

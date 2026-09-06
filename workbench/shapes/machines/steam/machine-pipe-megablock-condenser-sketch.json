@@ -9,7 +9,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"cast-iron1": "F:/repos/modding-vsexpanded/assets/editable/textures/materials/cast-iron1",
+		"cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsexpanded/workbench/textures/materials/cast-iron1",
 		"fire1": "block/clay/brick/four/running/fire1",
 		"quartz": "block/glass/quartz",
 		"brass": "block/metal/plate/brass",

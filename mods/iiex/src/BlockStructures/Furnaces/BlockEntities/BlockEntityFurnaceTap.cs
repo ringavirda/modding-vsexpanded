@@ -1,8 +1,8 @@
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Renderers;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -18,7 +18,7 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 /// accepts molten metal pushed from the furnace to hand down into the canal start beneath it.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
+public class BlockEntityFurnaceTap : ExBlockEntity, IMultiblockComponent {
   /// <summary>
   /// Whether the tap-hole is stopped with a clay plug. True on a newly built tap: a tap arrives closed,
   /// which is what makes blowing a furnace in cost a plug. Drawn by <see cref="OnTesselation"/> rather
@@ -121,21 +121,24 @@ public class BlockEntityFurnaceTap : BlockEntity, IMultiblockComponent {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("plugged", IsPlugged);
-  }
+  // The legacy key decides for a tap saved before the plug existed: it was drawn open whenever
+  // `isPouring` was set, and reading a missing `plugged` as true would stop every open tap in an old
+  // world at load. A tap saved since carries `plugged` and the fallback is never reached. The negation
+  // is not a [Persist(Legacy:)] fallback - that reads the old key's value as-is - so it stays a Tree.
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "plugged",
+      tree => tree.SetBool("plugged", IsPlugged),
+      (tree, world) =>
+        IsPlugged = tree.GetBool("plugged", !tree.GetBool("isPouring"))
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool prev = IsPlugged;
-    // The legacy key decides for a tap saved before the plug existed: it was drawn open whenever
-    // `isPouring` was set, and reading a missing `plugged` as true would stop every open tap in an old
-    // world at load. A tap saved since carries `plugged` and the fallback is never reached.
-    IsPlugged = tree.GetBool("plugged", !tree.GetBool("isPouring"));
+    base.FromTreeAttributes(tree, worldForResolving);
     // The mesh is the state, so a remote plug or unplug has to re-tesselate.
     if (Api?.Side == EnumAppSide.Client && prev != IsPlugged)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);

@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
@@ -23,8 +23,9 @@ namespace SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 /// from it (<see cref="DrawBurden"/>) into its own magazine and drips that down the shaft.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityHopperReinforced : BlockEntity {
+public class BlockEntityHopperReinforced : ExBlockEntity {
   // The whole tank is one charge stack (item identity = family/fuel, attributes = grade). Null when empty.
+  [Persist]
   private ItemStack? _tank;
 
   // The furnace this hopper ultimately charges, resolved by the bounded multiblock scan every furnace part
@@ -222,51 +223,15 @@ public class BlockEntityHopperReinforced : BlockEntity {
 
   #region Serialization
 
+  protected override void DeclareState(ExBlockState state) { }
+
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    _tank = tree.GetItemstack("tank");
-    _tank?.ResolveBlockOrItem(worldForResolving);
     // A stack whose item no longer resolves, or a zero stack, reads as empty.
     if (_tank?.Collectible == null || _tank.StackSize <= 0)
-      _tank = null;
-  }
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (_tank != null)
-      tree.SetItemstack("tank", _tank);
-  }
-
-  /// <summary>Maps the tank's charge stack, so a reinforced hopper pasted into another world resolves
-  /// its contents against that world's item ids rather than this one's.</summary>
-  public override void OnStoreCollectibleMappings(
-    Dictionary<int, AssetLocation> blockIdMapping,
-    Dictionary<int, AssetLocation> itemIdMapping
-  ) =>
-    _tank?.Collectible.OnStoreCollectibleMappings(
-      Api.World,
-      new DummySlot(_tank),
-      blockIdMapping,
-      itemIdMapping
-    );
-
-  public override void OnLoadCollectibleMappings(
-    IWorldAccessor worldForResolve,
-    Dictionary<int, AssetLocation> oldBlockIdMapping,
-    Dictionary<int, AssetLocation> oldItemIdMapping,
-    int schematicSeed,
-    bool resolveImports
-  ) {
-    // A false return means the destination world has no such item/block; FixMapping leaves Id at the
-    // source world's value, which would resolve to whatever owns that id there. Null the stack instead
-    // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.
-    if (
-      _tank?.FixMapping(oldBlockIdMapping, oldItemIdMapping, worldForResolve)
-      == false
-    )
       _tank = null;
   }
 

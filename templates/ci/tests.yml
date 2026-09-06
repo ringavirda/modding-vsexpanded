@@ -1,0 +1,63 @@
+# Provisioning + test job for a third-party repository consuming exlib and its test harness. Copy
+# scripts/exmod.ps1 and scripts/exmod.sh from this repo into yours (they take no dependency on
+# anything else here) and drop this file in as .github/workflows/tests.yml, then make the two edits
+# marked CHANGE below. See templates/ci/smoke.yml for the matching dedicated-server boot check.
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  VS_VERSION: "1.22"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache Vintage Story install
+        uses: actions/cache@v4
+        with:
+          path: .game
+          key: vs-game-${{ env.VS_VERSION }}
+
+      # Provisions the freely-downloadable dedicated-server archive into .game/<slug> - it carries
+      # VintagestoryAPI.dll/VSSurvivalMod.dll/VSEssentials.dll, so no game licence or purchase is
+      # needed to build and test a mod headlessly. See scripts/exmod.ps1's `provision game`.
+      - name: Provision Vintage Story (server assemblies)
+        run: bash scripts/exmod.sh provision game -Version "$VS_VERSION" -Kind server
+
+      # CHANGE 1: point at your own solution or test project. Set GamePath so $(GamePath)-based
+      # HintPaths in your csproj resolve to the install just provisioned.
+      - name: Restore
+        run: dotnet restore YourMod.sln
+        env:
+          VINTAGE_STORY: ${{ github.workspace }}/.game/1.22
+
+      # CHANGE 2: same solution/project as above.
+      - name: Run tests
+        run: dotnet test YourMod.sln --no-restore -c Debug
+        env:
+          VINTAGE_STORY: ${{ github.workspace }}/.game/1.22
+
+      # A JSON-only mod (or a code mod with no xUnit suite of its own yet) has nothing above this
+      # step to run - `dotnet tool install ExpandedLib.Verify` gives it the same idea without a
+      # build: parse errors, patches that don't apply, dangling recipe/handbook codes. See
+      # mods/exlib/wiki/Checks.md, "Without the game: exlib-verify". CHANGE 3: point at your own
+      # mod folder if you uncomment this.
+      # - name: dotnet tool install ExpandedLib.Verify
+      #   run: dotnet tool install --global ExpandedLib.Verify
+      # - name: exlib-verify
+      #   run: exlib-verify . --game ${{ github.workspace }}/.game/1.22

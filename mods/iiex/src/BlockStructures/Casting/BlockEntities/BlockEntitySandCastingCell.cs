@@ -1,10 +1,12 @@
 using System;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -28,11 +30,15 @@ namespace IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 /// </para>
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntitySandCastingCell : BlockEntity {
+public class BlockEntitySandCastingCell : ExBlockEntity {
   private const int PullRatePerTick = 25;
 
+  [Persist("cc_sand")]
   private SandLevel _sand = SandLevel.Empty;
-  private string? _patternCode; // full item code of the impressed pattern; null = no impression
+
+  // full item code of the impressed pattern; null = no impression
+  [Persist("cc_pattern")]
+  private string? _patternCode;
 
   // The metal's temperature (degrees C) in the tick the cavity filled, which is what the misrun rule
   // judges: by shake-out the cast has hardened far below any pour minimum. Null until the cavity fills,
@@ -492,27 +498,26 @@ public class BlockEntitySandCastingCell : BlockEntity {
     );
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("cc_sand", (int)_sand);
-    if (_patternCode != null)
-      tree.SetString("cc_pattern", _patternCode);
-    if (_fillTemperature is { } fillTemperature)
-      tree.SetFloat("cc_filltemp", fillTemperature);
-    else
-      tree.RemoveAttribute("cc_filltemp");
-  }
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "cc_filltemp",
+      tree => {
+        if (_fillTemperature is { } fillTemperature)
+          tree.SetFloat("cc_filltemp", fillTemperature);
+        else
+          tree.RemoveAttribute("cc_filltemp");
+      },
+      (tree, world) =>
+        _fillTemperature = tree.HasAttribute("cc_filltemp")
+          ? tree.GetFloat("cc_filltemp")
+          : null
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor world
   ) {
     base.FromTreeAttributes(tree, world);
-    _sand = (SandLevel)tree.GetInt("cc_sand");
-    _patternCode = tree.GetString("cc_pattern", null);
-    _fillTemperature = tree.HasAttribute("cc_filltemp")
-      ? tree.GetFloat("cc_filltemp")
-      : null;
     // `cc_sandcode`, the rock type of the older per-variant sand, is not read: every cell holds green
     // sand, so a save carrying vanilla sand returns green sand on shake-out.
     _spec = null; // re-resolve lazily

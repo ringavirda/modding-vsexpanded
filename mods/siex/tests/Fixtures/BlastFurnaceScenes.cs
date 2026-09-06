@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Heat;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
@@ -473,7 +475,7 @@ internal sealed class BlastFurnaceRig {
   public BlastFurnaceRig Tick(int ticks = 1) {
     for (int i = 0; i < ticks; i++) {
       FeedTuyeres();
-      ReflectionHelpers.Invoke(Furnace, "OnProductionTick", 1f);
+      Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     }
     return this;
   }

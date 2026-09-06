@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using Newtonsoft.Json;
 using Xunit;

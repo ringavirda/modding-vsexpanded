@@ -1,0 +1,15 @@
+balls:int
+ballsMade:int
+bathFrozen:bool
+blockCode:string
+fettled0:bool
+fettled1:bool
+fettled2:bool
+meltProgress:float
+meltedUnits:int
+pigs0:int
+pigs1:int
+pigs2:int
+posx:int
+posy:int
+posz:int

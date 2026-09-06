@@ -1,4 +1,4 @@
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

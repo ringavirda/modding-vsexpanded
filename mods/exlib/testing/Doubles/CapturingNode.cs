@@ -1,9 +1,8 @@
-using ExpandedLib.Blocks.Networks;
 using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// Block entity that records the network broadcasts and open-connector notifications it receives, so

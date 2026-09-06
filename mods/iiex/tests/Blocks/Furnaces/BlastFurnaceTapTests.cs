@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
@@ -191,7 +191,7 @@ public class BlastFurnaceTapTests {
       ),
     };
     world.Attach(furnace);
-    // The furnace must carry its shipped layout: the drain point comes from the layout (CellRole.MetalTap)
+    // The furnace must carry its shipped layout: the drain point comes from the layout (FurnaceCellRoles.MetalTap)
     // rather than a literal offset, so a block with no attributes has no tap and DrainIronTap returns
     // before it looks. StructureRig.Around attaches the attributes; nothing is raised, because completion
     // is not under test here.
@@ -200,7 +200,7 @@ public class BlastFurnaceTapTests {
       furnace,
       BlockBlastFurnaceCoreCold.Definitions("iiex").Single()
     );
-    ReflectionHelpers.Invoke(furnace, "UpdateStructureRotation");
+    furnace.ApplyStructureRotation();
     ReflectionHelpers.Invoke(furnace, "CacheAttributes");
 
     // The lower (metal) tap's world cell, read exactly as DrainIronTap reads it, so the rig follows the
@@ -264,7 +264,7 @@ public class BlastFurnaceTapTests {
       furnace,
       BlockBlastFurnaceCoreCold.Definitions("iiex").Single()
     );
-    ReflectionHelpers.Invoke(furnace, "UpdateStructureRotation");
+    furnace.ApplyStructureRotation();
     ReflectionHelpers.Invoke(furnace, "CacheAttributes");
 
     // The higher (slag) tap's world cell, read exactly as DrainSlagTap reads it.

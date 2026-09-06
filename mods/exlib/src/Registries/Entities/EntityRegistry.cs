@@ -5,7 +5,7 @@ using System.Reflection;
 using ExpandedLib.Definitions;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Entities;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Reflection-driven class registration for mods built on ExpandedLib. Scans an assembly for types
@@ -15,6 +15,11 @@ namespace ExpandedLib.Registries.Entities;
 /// with the game under the matching registry, keyed <c>{modid}.{ClassName}</c> by convention.
 /// </summary>
 public static class EntityRegistry {
+  /// <summary>Log sink for the cross-mod domain-fallback warning (see <see cref="DomainOf"/>); set
+  /// once by <c>ExpandedLibModSystem.Start</c>. Null before startup and in tests that never wire it,
+  /// in which case the warning is silently skipped.</summary>
+  internal static ILogger? Logger { get; set; }
+
   /// <summary>
   /// Registers every <see cref="RegisterAttribute"/>-decorated class in <paramref name="asm"/>
   /// (default: the calling mod's own assembly). Call once from <c>ModSystem.Start</c>.
@@ -93,13 +98,23 @@ public static class EntityRegistry {
   /// <see cref="ExDomainAttribute"/> if it declares one, else the modid it was registered with, else
   /// <paramref name="fallback"/>.
   /// </summary>
-  public static string DomainOf(Assembly asm, string fallback) =>
-    asm.GetCustomAttribute<ExDomainAttribute>()?.Domain
-    ?? (
-      _domainByAssembly.TryGetValue(asm, out string? recorded)
-        ? recorded
-        : fallback
+  public static string DomainOf(Assembly asm, string fallback) {
+    string? declared = asm.GetCustomAttribute<ExDomainAttribute>()?.Domain;
+    if (declared != null)
+      return declared;
+    if (_domainByAssembly.TryGetValue(asm, out string? recorded))
+      return recorded;
+
+    // Neither source can answer, so the caller's own domain stands in - which is wrong whenever the
+    // type belongs to a different mod, and fails at world load with no error naming the cause.
+    Logger?.Warning(
+      "[exlib] {0} declares no [assembly: ExDomain] and was never registered; Class<T>()/Behavior<T>() "
+        + "resolve its types under '{1}' instead, which is wrong unless that is really this assembly's own domain.",
+      asm.GetName().Name,
+      fallback
     );
+    return fallback;
+  }
 
   /// <summary>
   /// The registry key a <see cref="RegisterAttribute"/>-decorated <paramref name="type"/> is

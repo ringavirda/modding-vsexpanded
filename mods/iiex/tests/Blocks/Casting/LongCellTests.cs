@@ -1,6 +1,7 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;

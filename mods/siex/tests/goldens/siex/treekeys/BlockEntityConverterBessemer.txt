@@ -1,0 +1,7 @@
+blockCode:string
+chargeUnits:int
+opState:int
+posx:int
+posy:int
+posz:int
+solidified:bool

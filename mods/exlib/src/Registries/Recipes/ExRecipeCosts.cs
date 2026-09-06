@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Util;
 
-namespace ExpandedLib.Registries.Recipes;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Rewrites the ingredient quantities and grid output count of grid crafting recipes and

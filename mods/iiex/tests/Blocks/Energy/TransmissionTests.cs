@@ -1,4 +1,5 @@
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
@@ -37,8 +38,8 @@ public class TransmissionTests {
       ("type", "shaft"),
       ("orientation", orientation)
     );
-    ReflectionHelpers.SetProperty(block, "Type", "shaft");
-    ReflectionHelpers.SetProperty(block, "Orientation", orientation);
+    block.SetNetworkTypeForTest("shaft");
+    block.ApplyOrientationForTest(orientation);
     return block;
   }
 

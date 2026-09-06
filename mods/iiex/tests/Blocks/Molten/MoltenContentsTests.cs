@@ -1,4 +1,4 @@
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Molten;
 using IronIndustryExpanded.BlockNetworkMolten;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;

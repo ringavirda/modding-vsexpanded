@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 
@@ -159,6 +159,19 @@ public sealed class ExItemDef : IExDef {
     return this;
   }
 
+  /// <summary>Appends a <c>variantgroups</c> entry sourced from a worldproperty (<c>{ loadFromProperties }</c>
+  /// with no <c>code</c>) - the vanilla form for the horizontal-orientation property, whose group code is
+  /// implied by the property itself.</summary>
+  public ExItemDef VariantGroupFromProperties(string propertiesPath) {
+    NestedArray("variantgroups")
+      .Add(new JObject { ["loadFromProperties"] = propertiesPath });
+    return this;
+  }
+
+  /// <summary>Sets <c>skipVariants</c> - variant-code wildcards the loader must not expand.</summary>
+  public ExItemDef SkipVariants(params string[] wildcards) =>
+    Set("skipVariants", new JArray(wildcards));
+
   /// <summary>Adds a <c>creativeinventory.{tab}</c> selector list (accumulates across calls).</summary>
   public ExItemDef CreativeTab(string tab, params string[] selectors) {
     Nested("creativeinventory")[tab] = new JArray(selectors);
@@ -172,20 +185,190 @@ public sealed class ExItemDef : IExDef {
 
   #endregion
 
+  #region Shape/texture *ByType maps
+
+  /// <summary>Maps a variant wildcard (e.g. <c>*-iron-*</c>) to a base shape reference, with optional axis
+  /// rotations, under <c>shapebytype</c> (expansion stays in vanilla).</summary>
+  public ExItemDef ShapeByType(
+    string wildcard,
+    string baseShape,
+    int? rotateX = null,
+    int? rotateY = null,
+    int? rotateZ = null
+  ) {
+    var shape = new JObject { ["base"] = baseShape };
+    if (rotateX.HasValue)
+      shape["rotateX"] = rotateX.Value;
+    if (rotateY.HasValue)
+      shape["rotateY"] = rotateY.Value;
+    if (rotateZ.HasValue)
+      shape["rotateZ"] = rotateZ.Value;
+    Nested("shapebytype")[wildcard] = shape;
+    return this;
+  }
+
+  /// <summary>Maps a variant wildcard to a texture key -&gt; base reference under <c>texturesByType</c>
+  /// (accumulates keys per wildcard). Any <paramref name="overlays"/> are emitted as an
+  /// <c>overlays</c> array on the texture.</summary>
+  public ExItemDef TextureByType(
+    string wildcard,
+    string textureKey,
+    string baseTexture,
+    params string[] overlays
+  ) {
+    var byType = Nested("texturesByType");
+    if (byType[wildcard] is not JObject entry) {
+      entry = new JObject();
+      byType[wildcard] = entry;
+    }
+    var texture = new JObject { ["base"] = baseTexture };
+    if (overlays.Length > 0)
+      texture["overlays"] = new JArray(overlays);
+    entry[textureKey] = texture;
+    return this;
+  }
+
+  #endregion
+
+  #region Behaviors
+
+  /// <summary>Appends a collectible behavior by its registered name (a vanilla behavior, e.g.
+  /// <c>"GroundStorable"</c>).</summary>
+  public ExItemDef Behavior(string name) {
+    NestedArray("behaviors").Add(new JObject { ["name"] = name });
+    return this;
+  }
+
+  /// <summary>Appends a collectible behavior carrying a <c>properties</c> blob (a POCO/anonymous object/token).</summary>
+  public ExItemDef Behavior(string name, object properties) {
+    NestedArray("behaviors")
+      .Add(
+        new JObject {
+          ["name"] = name,
+          ["properties"] =
+            properties as JToken ?? JToken.FromObject(properties),
+        }
+      );
+    return this;
+  }
+
+  /// <summary>Appends a collectible behavior by type - resolves to <typeparamref name="T"/>'s registered
+  /// <c>{modid}.{ClassName}</c> key (type-safe, for a mod's own behavior).</summary>
+  public ExItemDef Behavior<T>()
+    where T : CollectibleBehavior =>
+    Behavior(EntityRegistry.KeyFor(_domain, typeof(T)));
+
+  #endregion
+
   #region Model transforms
 
   /// <summary>Sets the <c>guiTransform</c> from a POCO/anonymous object/token. Item transforms are authored
   /// as objects because their shapes vary: some omit <c>translation</c> or <c>origin</c>.</summary>
   public ExItemDef GuiTransform(object transform) =>
-    Raw("guiTransform", transform);
+    RootKey("guiTransform", transform);
+
+  /// <summary>Sets the <c>guiTransform</c> from translation, rotation, origin and uniform scale - the
+  /// positional counterpart of <see cref="GuiTransform(object)"/>, for the common case of a fully
+  /// specified transform. All the held/ground/gui transforms share this <c>{ translation, rotation,
+  /// origin, scale }</c> object shape.</summary>
+  public ExItemDef GuiTransform(
+    double tx,
+    double ty,
+    double tz,
+    double rx,
+    double ry,
+    double rz,
+    double ox,
+    double oy,
+    double oz,
+    double scale
+  ) => GuiTransform(Transform(tx, ty, tz, rx, ry, rz, ox, oy, oz, scale));
+
+  /// <summary>Sets the <c>fpHandTransform</c> (held in first person; deprecated in favour of
+  /// <see cref="TpHandTransform(object)"/> but still read by the loader) from a POCO/anonymous object/token.</summary>
+  public ExItemDef FpHandTransform(object transform) =>
+    RootKey("fpHandTransform", transform);
+
+  /// <summary>Sets the <c>fpHandTransform</c> from translation, rotation, origin and uniform scale.</summary>
+  public ExItemDef FpHandTransform(
+    double tx,
+    double ty,
+    double tz,
+    double rx,
+    double ry,
+    double rz,
+    double ox,
+    double oy,
+    double oz,
+    double scale
+  ) => FpHandTransform(Transform(tx, ty, tz, rx, ry, rz, ox, oy, oz, scale));
 
   /// <summary>Sets the <c>tpHandTransform</c> (held in third person) from a POCO/anonymous object/token.</summary>
   public ExItemDef TpHandTransform(object transform) =>
-    Raw("tpHandTransform", transform);
+    RootKey("tpHandTransform", transform);
+
+  /// <summary>Sets the <c>tpHandTransform</c> from translation, rotation, origin and uniform scale.</summary>
+  public ExItemDef TpHandTransform(
+    double tx,
+    double ty,
+    double tz,
+    double rx,
+    double ry,
+    double rz,
+    double ox,
+    double oy,
+    double oz,
+    double scale
+  ) => TpHandTransform(Transform(tx, ty, tz, rx, ry, rz, ox, oy, oz, scale));
 
   /// <summary>Sets the <c>groundTransform</c> (dropped on the ground) from a POCO/anonymous object/token.</summary>
   public ExItemDef GroundTransform(object transform) =>
-    Raw("groundTransform", transform);
+    RootKey("groundTransform", transform);
+
+  /// <summary>Sets the <c>groundTransform</c> from translation, rotation, origin and uniform scale.</summary>
+  public ExItemDef GroundTransform(
+    double tx,
+    double ty,
+    double tz,
+    double rx,
+    double ry,
+    double rz,
+    double ox,
+    double oy,
+    double oz,
+    double scale
+  ) => GroundTransform(Transform(tx, ty, tz, rx, ry, rz, ox, oy, oz, scale));
+
+  private static JObject Transform(
+    double tx,
+    double ty,
+    double tz,
+    double rx,
+    double ry,
+    double rz,
+    double ox,
+    double oy,
+    double oz,
+    double scale
+  ) =>
+    new() {
+      ["translation"] = new JObject {
+        ["x"] = tx,
+        ["y"] = ty,
+        ["z"] = tz,
+      },
+      ["rotation"] = new JObject {
+        ["x"] = rx,
+        ["y"] = ry,
+        ["z"] = rz,
+      },
+      ["origin"] = new JObject {
+        ["x"] = ox,
+        ["y"] = oy,
+        ["z"] = oz,
+      },
+      ["scale"] = scale,
+    };
 
   #endregion
 
@@ -224,13 +407,80 @@ public sealed class ExItemDef : IExDef {
     return this;
   }
 
-  /// <summary>Sets an arbitrary top-level key to an arbitrary token.</summary>
-  public ExItemDef Raw(string key, JToken token) => Set(key, token);
+  /// <summary>Sets <c>attributes.handbook.groupBy</c> - the handbook variant grouping (so a family of
+  /// variants shows as one collapsed handbook entry).</summary>
+  public ExItemDef Handbook(params string[] groupBy) {
+    Nested("attributes")["handbook"] = new JObject {
+      ["groupBy"] = new JArray(groupBy),
+    };
+    return this;
+  }
+
+  /// <summary>Sets <c>attributes.handbook.exclude</c> - hides the item from the survival handbook. The
+  /// handbook system reads this nested under <c>attributes</c>, same as <see cref="Handbook"/>'s
+  /// grouping; a bare top-level <c>handbook</c> key is never read.</summary>
+  public ExItemDef HandbookExclude() {
+    JObject attributes = Nested("attributes");
+    JObject handbook = attributes["handbook"] as JObject ?? new JObject();
+    handbook["exclude"] = true;
+    attributes["handbook"] = handbook;
+    return this;
+  }
+
+  /// <summary>Adds a <c>{wildcard: value}</c> entry to a <c>{key}ByType</c> map under <c>attributes</c>
+  /// (accumulates across calls) - e.g. <c>AttributeByType("widthByType", "*", 1)</c>. <paramref name="value"/>
+  /// may be a scalar, POCO or token.</summary>
+  public ExItemDef AttributeByType(string key, string wildcard, object value) {
+    JObject attrs = Nested("attributes");
+    if (attrs[key] is not JObject map) {
+      map = new JObject();
+      attrs[key] = map;
+    }
+    map[wildcard] = value as JToken ?? JToken.FromObject(value);
+    return this;
+  }
+
+  /// <summary>Adds a <c>{wildcard: value}</c> entry to a top-level <c>{key}ByType</c> map (accumulates) - for
+  /// the per-type transform maps (<c>guiTransformByType</c>/<c>tpHandTransformByType</c>/<c>groundTransformByType</c>),
+  /// whose values are transform objects with <c>{ translation, rotation, origin, scale }</c>.</summary>
+  public ExItemDef RootKeyByType(string key, string wildcard, object value) {
+    if (_root[key] is not JObject map) {
+      map = new JObject();
+      _root[key] = map;
+    }
+    map[wildcard] = value as JToken ?? JToken.FromObject(value);
+    return this;
+  }
+
+  /// <summary>Sets an arbitrary top-level key to an arbitrary token - the escape hatch for itemtype
+  /// schema with no dedicated method. Read only when <paramref name="key"/> is a real itemtype key
+  /// the game's object loader understands (see <see cref="KnownRootKeys"/>); a mistyped key is
+  /// written into the JSON and never read by anything.</summary>
+  public ExItemDef RootKey(string key, JToken token) => Set(key, token);
 
   /// <summary>Sets an arbitrary top-level key from a POCO/anonymous object: the object-valued companion to
-  /// <see cref="Raw(string, JToken)"/>.</summary>
-  public ExItemDef Raw(string key, object value) =>
+  /// <see cref="RootKey(string, JToken)"/>.</summary>
+  public ExItemDef RootKey(string key, object value) =>
     Set(key, value as JToken ?? JToken.FromObject(value));
+
+  /// <summary>Obsolete name for <see cref="RootKeyByType(string, string, object)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExItemDef RawByType(string key, string wildcard, object value) =>
+    RootKeyByType(key, wildcard, value);
+
+  /// <summary>Obsolete name for <see cref="RootKey(string, JToken)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExItemDef Raw(string key, JToken token) => RootKey(key, token);
+
+  /// <summary>Obsolete name for <see cref="RootKey(string, object)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExItemDef Raw(string key, object value) => RootKey(key, value);
 
   #endregion
 

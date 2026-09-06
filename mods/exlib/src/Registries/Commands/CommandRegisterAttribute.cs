@@ -1,7 +1,7 @@
 using System;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Commands;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Marks an <see cref="IExCommand"/> class for automatic registration by

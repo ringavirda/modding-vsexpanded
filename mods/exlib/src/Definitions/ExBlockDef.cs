@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Newtonsoft.Json.Linq;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -211,9 +212,12 @@ public sealed class ExBlockDef : IExDef {
   /// <summary>Sets <c>requiredMiningTier</c>.</summary>
   public ExBlockDef MiningTier(int tier) => Set("requiredMiningTier", tier);
 
-  /// <summary>Sets <c>mineTool</c> (emitted lower-case, matching the vanilla blocktype convention).</summary>
-  public ExBlockDef MineTool(EnumTool tool) =>
-    Set("mineTool", tool.ToString().ToLowerInvariant());
+  /// <summary>Does nothing; <c>mineTool</c> is not a key the vanilla loader reads. Vanilla derives
+  /// mining-tool preference from <see cref="Material"/> (the tool's per-material mining-speed table)
+  /// and <see cref="MiningTier"/> (the tool tier required at all) - there is no per-block "required
+  /// tool" key to emit. Call those two instead.</summary>
+  [Obsolete("mineTool is not a blocktype key the game reads; use Material and MiningTier instead.")]
+  public ExBlockDef MineTool(EnumTool tool) => this;
 
   /// <summary>Sets <c>drops</c> to an empty array - the block never drops itself (mega-blocks hand back
   /// only their materials and contents).</summary>
@@ -497,7 +501,7 @@ public sealed class ExBlockDef : IExDef {
   /// got.</exception>
   public ExBlockDef NetworkOriented() {
     string[] states = VariantStates(
-      Blocks.Behaviors.BlockBehaviorExOrientable.OrientationVariant
+      Blocks.BlockBehaviorExOrientable.OrientationVariant
     );
     ExOrientationScheme scheme =
       ExOrientations.Resolve(states)
@@ -703,11 +707,24 @@ public sealed class ExBlockDef : IExDef {
   /// <summary>Sets <c>renderpass</c> (e.g. <c>"OpaqueNoCull"</c>).</summary>
   public ExBlockDef RenderPass(string pass) => Set("renderpass", pass);
 
+  /// <summary>Sets <c>renderpass</c> from the enum (type-safe).</summary>
+  public ExBlockDef RenderPass(EnumChunkRenderPass pass) =>
+    RenderPass(pass.ToString());
+
   /// <summary>Sets <c>faceCullMode</c> (e.g. <c>"NeverCull"</c>).</summary>
   public ExBlockDef FaceCullMode(string mode) => Set("faceCullMode", mode);
 
+  /// <summary>Sets <c>faceCullMode</c> from the enum (type-safe). Block-only: <c>faceCullMode</c>
+  /// culls faces of a placed block against its neighbours, a concept items have no equivalent of.</summary>
+  public ExBlockDef FaceCullMode(EnumFaceCullMode mode) =>
+    FaceCullMode(mode.ToString());
+
   /// <summary>Sets <c>drawtype</c> (e.g. <c>"json"</c> for a shape-driven block, or <c>"empty"</c>).</summary>
   public ExBlockDef DrawType(string drawType) => Set("drawtype", drawType);
+
+  /// <summary>Sets <c>drawtype</c> from the enum (type-safe).</summary>
+  public ExBlockDef DrawType(EnumDrawType drawType) =>
+    DrawType(drawType.ToString());
 
   /// <summary>Sets <c>lightAbsorption</c>.</summary>
   public ExBlockDef LightAbsorption(int absorption) =>
@@ -779,11 +796,17 @@ public sealed class ExBlockDef : IExDef {
     return this;
   }
 
-  /// <summary>Sets the top-level <c>handbook.exclude</c> flag - hides the block from the survival handbook (for
-  /// an internal block a player never crafts, e.g. the invisible structure filler). Distinct from
-  /// <see cref="Handbook"/>, which sets the grouping under <c>attributes</c>.</summary>
-  public ExBlockDef HandbookExclude() =>
-    Set("handbook", new JObject { ["exclude"] = true });
+  /// <summary>Sets <c>attributes.handbook.exclude</c> - hides the block from the survival handbook (for
+  /// an internal block a player never crafts, e.g. the invisible structure filler). The handbook system
+  /// reads this nested under <c>attributes</c>, same as <see cref="Handbook"/>'s grouping; a bare
+  /// top-level <c>handbook</c> key is never read.</summary>
+  public ExBlockDef HandbookExclude() {
+    JObject attributes = Nested("attributes");
+    JObject handbook = attributes["handbook"] as JObject ?? new JObject();
+    handbook["exclude"] = true;
+    attributes["handbook"] = handbook;
+    return this;
+  }
 
   /// <summary>Sets <c>attributes.fillerOffsets</c> - the mega-block's invisible per-cell collision
   /// reservation (see <see cref="StructureFootprint"/>). Each cell emits <c>{ x, y, z }</c>, plus
@@ -814,7 +837,10 @@ public sealed class ExBlockDef : IExDef {
     return this;
   }
 
-  private static JArray SerializeFillerCells(IEnumerable<FillerCellSpec> cells) {
+  /// <summary>Shared with <see cref="ExpandedLib.Structures.JsonMultiblockLayout"/>, which derives a
+  /// footprint from a JSON <c>multiblockLayout</c> rather than a code-first cell list, so the two paths
+  /// emit the same <c>fillerOffsets</c> shape.</summary>
+  internal static JArray SerializeFillerCells(IEnumerable<FillerCellSpec> cells) {
     var list = cells as IReadOnlyList<FillerCellSpec> ?? cells.ToArray();
     StructureFootprint.Validate(list);
 
@@ -928,7 +954,7 @@ public sealed class ExBlockDef : IExDef {
   /// <summary>Adds a <c>{wildcard: value}</c> entry to a top-level <c>{key}ByType</c> map (accumulates) - for
   /// the per-type transform maps (<c>guiTransformByType</c>/<c>tpHandTransformByType</c>/<c>groundTransformByType</c>),
   /// whose values are transform objects with <c>{ translation, rotation, origin, scale }</c>.</summary>
-  public ExBlockDef RawByType(string key, string wildcard, object value) {
+  public ExBlockDef RootKeyByType(string key, string wildcard, object value) {
     if (_root[key] is not JObject map) {
       map = new JObject();
       _root[key] = map;
@@ -938,14 +964,35 @@ public sealed class ExBlockDef : IExDef {
   }
 
   /// <summary>Sets an arbitrary top-level key to an arbitrary token - the escape hatch for blocktype
-  /// schema with no dedicated method.</summary>
-  public ExBlockDef Raw(string key, JToken token) => Set(key, token);
+  /// schema with no dedicated method. Read only when <paramref name="key"/> is a real blocktype key
+  /// the game's object loader understands (see <see cref="KnownRootKeys"/>); a mistyped key is
+  /// written into the JSON and never read by anything.</summary>
+  public ExBlockDef RootKey(string key, JToken token) => Set(key, token);
 
   /// <summary>Sets an arbitrary top-level key from a POCO/anonymous object - the object-valued companion to
-  /// <see cref="Raw(string, JToken)"/>, for the block-root transforms (<c>guiTransform</c>/<c>tpHandTransform</c>/
+  /// <see cref="RootKey(string, JToken)"/>, for the block-root transforms (<c>guiTransform</c>/<c>tpHandTransform</c>/
   /// <c>groundTransform</c>) whose shape varies per block (some carry <c>origin</c>, some omit <c>rotation</c>).</summary>
-  public ExBlockDef Raw(string key, object value) =>
+  public ExBlockDef RootKey(string key, object value) =>
     Set(key, value as JToken ?? JToken.FromObject(value));
+
+  /// <summary>Obsolete name for <see cref="RootKeyByType(string, string, object)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExBlockDef RawByType(string key, string wildcard, object value) =>
+    RootKeyByType(key, wildcard, value);
+
+  /// <summary>Obsolete name for <see cref="RootKey(string, JToken)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExBlockDef Raw(string key, JToken token) => RootKey(key, token);
+
+  /// <summary>Obsolete name for <see cref="RootKey(string, object)"/>.</summary>
+  [Obsolete(
+    "Raw writes a top-level key the game reads only when it is a real blocktype key; use RootKey, or Attribute for attributes.{key}"
+  )]
+  public ExBlockDef Raw(string key, object value) => RootKey(key, value);
 
   #endregion
 

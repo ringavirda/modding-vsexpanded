@@ -319,7 +319,7 @@ public class FurnaceTapPlugTests {
       var paths = new HashSet<string>();
       foreach (var entry in def.ToJson()["shapebytype"]!.Children<JProperty>())
         paths.Add((string)entry.Value["base"]!);
-      byType[def.ToJson()["variantgroups"]![0]["states"]![0]!.ToString()] =
+      byType[def.ToJson()["variantgroups"]![0]!["states"]![0]!.ToString()] =
         paths;
     }
 

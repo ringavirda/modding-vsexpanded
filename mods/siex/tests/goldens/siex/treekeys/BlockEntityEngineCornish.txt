@@ -1,0 +1,12 @@
+animSpeed:float
+availPower:float
+blockCode:string
+broken:bool
+inletPressure:float
+overPressure:float
+pm_lastHours:double
+posx:int
+posy:int
+posz:int
+running:bool
+throttle:int

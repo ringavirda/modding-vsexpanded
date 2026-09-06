@@ -13,6 +13,7 @@ it just prints help; the useful behaviour lives in sub-commands. exlib ships the
 | --- | --- | --- |
 | `/exmod config [<mod> [<value> [<new>]]]` | server | Edit any [manageable config](Config-System) value live. |
 | `/exmod recipes [<mod> [<level>]]` | server | Switch a mod's [recipe-cost level](Recipe-Costs). |
+| `/exmod verify [<mod>]` | server | Run the [content checks](Checks) - dangling codes, missing lang, pinned network nodes - for one mod or all. |
 | `/exmod heal` | server | Sweep loaded chunks and recreate orphaned block entities ([healing](Migrations-and-Healing)). |
 | `.exmod network hi` / `.exmod network unhi` | client | Toggle the transparent per-network colour highlight ([block networks](Block-Networks)). |
 | `.exmod measure [metric\|imperial]` | client | Switch the display unit system ([preference](Registries)). |
@@ -29,21 +30,14 @@ Implement `IExSubCommand`, tag it with the side, and point `ParentName` at `"exm
 public sealed class StatusSubCommand : IExSubCommand
 {
     public string ParentName => "exmod";
-
-    public void Register(ICoreAPI api, Mod mod, IChatCommand parent)
-    {
-        parent.BeginSubCommand("status")
-              .WithDescription(Lang.Get(mod.Info.ModID + ":command-status-desc"))
-              .RequiresPrivilege(Privilege.controlserver)
-              .HandleWith(args =>
-              {
-                  // ...
-                  return TextCommandResult.Success("ok");
-              })
-              .EndSubCommand();
-    }
+    public void Register(ICoreAPI api, Mod mod, IChatCommand parent) =>
+        parent.BeginSubCommand("status").HandleWith(args => TextCommandResult.Success("ok")).EndSubCommand();
 }
 ```
+
+You'll usually also want `.WithDescription(Lang.Get(mod.Info.ModID + ":command-status-desc"))` and,
+for anything that changes server state, `.RequiresPrivilege(Privilege.controlserver)` - both chain
+onto `BeginSubCommand` the same way.
 
 A client-side sub-command casts `api` to `ICoreClientAPI` and is gated with
 `[SubCommandRegister(Side = EnumAppSide.Client)]`. The registry creates the `exmod` parent if it
@@ -51,6 +45,26 @@ doesn't exist yet, so order between mods doesn't matter.
 
 Register your sub-commands with `CommandRegistry.RegisterAll(api, Mod, GetType().Assembly)` - see
 **[Registries](Registries)**.
+
+## Your own /exmod sub-command for a registry
+
+`/exmod config` and `/exmod recipes` are both "list every code, show one, set something on it" over
+an `ExKeyedRegistry`. Derive `RegistrySubCommand<T>` instead of `IExSubCommand` to get that for free:
+
+```csharp
+public sealed class MyThingsSubCommand() : RegistrySubCommand<MyThing>(
+    "mythings", "mymod:command-mythings-desc",
+    () => MyThings.Codes, code => MyThings.TryGet(code, out var t) ? t : null) {
+    protected override string Describe(MyThing t) => t.Code;
+    protected override TextCommandResult Set(MyThing t, string[] args) => /* ... */;
+    // NoneRegisteredKey, ListHeaderKey, UnknownCodeKey: three more lang-key overrides, same shape.
+}
+```
+
+`Set` sees the words typed after the code - none of them means "show this entry", so a command that
+needs no separate show step can treat that case as the read. `.exmod measure` is not built this way:
+it edits one preference chosen at registration, not an entry picked from a registry by code, so it
+stays a plain `IExSubCommand` alongside `verify`, `heal` and `network`.
 
 ## VTML pitfall in command output
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;
@@ -30,7 +30,7 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   // Natural draught: nothing to blow, so nothing can starve it.
   protected override bool RequiresBlast => false;
 
-  // A hearth's drawing marks no tuyere and no gas outlet, so CellRole.Tuyere and CellRole.GasOutlet
+  // A hearth's drawing marks no tuyere and no gas outlet, so FurnaceCellRoles.Tuyere and FurnaceCellRoles.GasOutlet
   // answer empty on their own.
 
   // Neither value is ever read, because the tick only applies them inside the (empty) tuyere loop. 0f
@@ -40,12 +40,12 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   protected override float BlastPressureThreshold => 0f;
 
   /// <summary>
-  /// The stack over the fire, counted off the drawing's own <see cref="CellRole.Flue"/> marks rather than
+  /// The stack over the fire, counted off the drawing's own <see cref="FurnaceCellRoles.Flue"/> marks rather than
   /// walked up the world. A reverberatory furnace's chimney is fixed at the height its layout declares,
   /// which is also why the cap is part of the drawing: there is nothing above it for a walk to find.
   /// </summary>
   protected override int StackCourses =>
-    LocalCellsWithRole(CellRole.Flue).Count;
+    LocalCellsWithRole(FurnaceCellRoles.Flue).Count;
 
   /// <summary>
   /// The damper the stack is regulated by, at the cell directly over the highest flue course. Derived
@@ -76,7 +76,7 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   protected override void ScanForOutlets() {
     base.ScanForOutlets();
 
-    IReadOnlyList<BlockPos> flue = CellsWithRole(CellRole.Flue);
+    IReadOnlyList<BlockPos> flue = CellsWithRole(FurnaceCellRoles.Flue);
     BlockPos? capPos =
       flue.Count == 0
         ? null
@@ -119,7 +119,7 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
 
   /// <summary>
   /// The branch's charge walk: every <see cref="BEBehaviorFirebox"/> bed in the cells this hearth's own
-  /// drawing marks <see cref="ExpandedLib.Blocks.Structures.CellRole.Firebox"/>.
+  /// drawing marks <see cref="FurnaceCellRoles.Firebox"/>.
   /// </summary>
   /// <remarks>
   /// Walks the role's cells, not the bounding box: <see cref="BlockEntityFurnaceCore.ShaftBox"/> is a box
@@ -243,19 +243,19 @@ public abstract class BlockEntityFireboxFurnace : BlockEntityFurnaceCore {
   protected override float MeltIntervalSec => IiexValues.FireboxMeltIntervalSec;
 
   /// <summary>
-  /// Cells the drawing marks <see cref="ExpandedLib.Blocks.Structures.CellRole.Firebox"/> - the ceiling on
+  /// Cells the drawing marks <see cref="FurnaceCellRoles.Firebox"/> - the ceiling on
   /// what this machine can hold, at <see cref="BEBehaviorFirebox.DefaultCellCapacity"/> units each.
   /// </summary>
   /// <remarks>
   /// The marked cells, never the <see cref="BlockEntityFurnaceCore.ShaftBox"/> around them: the two agree
   /// only while a firebox is one solid cuboid, which the coke oven's two chambers either side of a shared
   /// wall are not, and a box would price in the brick between them. Since
-  /// <see cref="MinChargeToIgnite"/> is sealed to this count, that oven could never have been lit. Read
+  /// <see cref="TryIgniteCharge"/> is sealed to this count, that oven could never have been lit. Read
   /// local rather than world cells, so the count answers on an unplaced machine. A drawing marking no
   /// firebox counts 0, which <see cref="TryIgniteCharge"/> refuses as an empty bed list.
   /// </remarks>
   protected int FireboxCellCount =>
-    LocalCellsWithRole(ExpandedLib.Blocks.Structures.CellRole.Firebox).Count;
+    LocalCellsWithRole(FurnaceCellRoles.Firebox).Count;
 
   /// <summary>
   /// A firebox fires when its own cells are loaded, so capacity is geometry rather than a constant.

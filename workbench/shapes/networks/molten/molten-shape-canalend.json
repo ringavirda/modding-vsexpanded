@@ -8,7 +8,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned"
+		"burned": "block/clay/vessel/sides/burned"
 	},
 	"elements": [
 		{

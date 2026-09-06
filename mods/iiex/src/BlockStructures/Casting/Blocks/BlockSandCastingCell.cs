@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
@@ -12,7 +13,7 @@ namespace IronIndustryExpanded.BlockStructures.Casting.Blocks;
 /// <summary>
 /// The 1×1 sand casting cell: a hollow brick shell placed empty, rammed with sand and impressed with a
 /// wooden pattern, then filled from a canal on its launder face. Wires the code-first definition and the
-/// hosted <see cref="ExpandedLib.Blocks.Structures.BEBehaviorMoltenCell"/>, and routes right-clicks to
+/// hosted <see cref="ExpandedLib.Industry.Molten.BEBehaviorMoltenCell"/>, and routes right-clicks to
 /// <see cref="BlockEntitySandCastingCell.OnInteract"/>.
 /// </summary>
 [BlockRegister]

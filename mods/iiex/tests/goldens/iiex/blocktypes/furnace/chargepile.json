@@ -67,7 +67,9 @@
       }
     }
   },
-  "handbook": {
-    "exclude": true
+  "attributes": {
+    "handbook": {
+      "exclude": true
+    }
   }
 }

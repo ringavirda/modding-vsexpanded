@@ -1,4 +1,4 @@
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 
 namespace IronIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 

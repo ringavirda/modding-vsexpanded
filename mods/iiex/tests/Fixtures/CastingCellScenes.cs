@@ -1,14 +1,15 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Metals;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -256,8 +257,8 @@ public sealed class CastingCellScenes {
       ("type", "straight"),
       ("orientation", "ns")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "straight");
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest("straight");
+    block.ApplyOrientationForTest("ns");
     _feed = new BlockEntityMoltenCanal { Pos = pos.Copy(), Block = block };
     World.Place(pos, block, _feed);
     World.Attach(_feed);

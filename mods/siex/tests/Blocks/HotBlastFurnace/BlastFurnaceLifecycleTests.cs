@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Metals;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -51,14 +52,14 @@ public class BlastFurnaceLifecycleTests {
     };
     world.Attach(be);
     // Attach the shipped layout to the placed block before the rotation update reads it: the crucible
-    // floor is the drawing's own CellRole.Pool, so a furnace with no attributes has no crucible to freeze
+    // floor is the drawing's own FurnaceCellRoles.Pool, so a furnace with no attributes has no crucible to freeze
     // onto. The structure is not raised - these tests drive the melt directly and never need it complete.
     StructureRig.Around(
       world,
       be,
       BlockBlastFurnaceCoreHot.Definitions("siex").Single()
     );
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     ReflectionHelpers.Invoke(be, "CacheAttributes");
     return be;
   }
@@ -566,7 +567,7 @@ public class BlastFurnaceLifecycleTests {
 
   /// <summary>
   /// World cells of the crucible floor, where the molten pool freezes - the layout's own
-  /// <c>CellRole.Pool</c> cells, which is where the furnace itself reads them from.
+  /// <c>FurnaceCellRoles.Pool</c> cells, which is where the furnace itself reads them from.
   /// </summary>
   private static BlockPos[] BottomLayer(BlockEntityBlastFurnaceHot be) =>
     [.. be.PoolCells];
@@ -579,7 +580,7 @@ public class BlastFurnaceLifecycleTests {
     // refused.
     Block iron = world.World.GetBlock(
       new AssetLocation("iiex:hearthmetal-pigiron")
-    );
+    )!;
 
     var be = Furnace(world); // no charge piles -> the burnout walk is a no-op
     PoolIron(be, 50);

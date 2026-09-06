@@ -123,7 +123,7 @@ public class SlagItemDefinitions : IExItemDefProvider {
       .Attribute("materialUnits", SlagBrickUnits)
       // Vanilla's brick behaviours: a thrown brick does damage, and loose bricks stack into a ground pile
       // instead of lying as scattered items.
-      .Raw(
+      .RootKey(
         "behaviors",
         new object[]
         {

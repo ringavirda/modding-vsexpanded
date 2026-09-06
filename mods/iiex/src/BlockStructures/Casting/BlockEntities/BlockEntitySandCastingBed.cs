@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Blocks;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
 using IronIndustryExpanded.Items;
@@ -32,7 +33,7 @@ namespace IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 /// See docs/design/machines/casting-bed.md.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntitySandCastingBed : BlockEntity {
+public class BlockEntitySandCastingBed : ExBlockEntity {
   // Units drained from an adjacent external molten cell per server tick (1 s).
   private const int PullRatePerTick = 25;
 
@@ -250,14 +251,13 @@ public class BlockEntitySandCastingBed : BlockEntity {
     if (Basin is not { } basin)
       return;
 
-    foreach (BlockFacing face in BlockFacing.HORIZONTALS) {
-      if (
-        world.BlockAccessor.GetBlockEntity(Pos.AddCopy(face))
-          is not IMoltenCell src
-        || src.Solidified
-        || src.Sealed
-        || src.CellAmount <= 0
+    foreach (
+      var (_, src) in world.BlockAccessor.Neighbours<IMoltenCell>(
+        Pos,
+        BlockFacing.HORIZONTALS
       )
+    ) {
+      if (src.Solidified || src.Sealed || src.CellAmount <= 0)
         continue;
 
       int want = Math.Min(PullRatePerTick, src.CellAmount);
@@ -641,33 +641,36 @@ public class BlockEntitySandCastingBed : BlockEntity {
   // the save format.
   private const string SlotsKey = "bed_slots";
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    var packed = new byte[_slots.Length];
-    for (int i = 0; i < _slots.Length; i++)
-      packed[i] = (byte)_slots[i];
-    tree.SetBytes(SlotsKey, packed);
-  }
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      SlotsKey,
+      tree => {
+        var packed = new byte[_slots.Length];
+        for (int i = 0; i < _slots.Length; i++)
+          packed[i] = (byte)_slots[i];
+        tree.SetBytes(SlotsKey, packed);
+      },
+      (tree, world) => {
+        byte[]? packed = tree.GetBytes(SlotsKey);
+        for (int i = 0; i < _slots.Length; i++) {
+          // A missing or truncated array reads as uncarved sand, as does a state the slot cannot hold, so
+          // an unknown persisted value renders a flat slot rather than nothing.
+          BedSlotState slotState =
+            packed != null && i < packed.Length
+              ? (BedSlotState)packed[i]
+              : BedSlotState.Sand;
+          _slots[i] = SandBedLayout.Slots[i].Accepts(slotState)
+            ? slotState
+            : BedSlotState.Sand;
+        }
+      }
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor world
   ) {
     base.FromTreeAttributes(tree, world);
-
-    byte[]? packed = tree.GetBytes(SlotsKey);
-    for (int i = 0; i < _slots.Length; i++) {
-      // A missing or truncated array reads as uncarved sand, as does a state the slot cannot hold, so an
-      // unknown persisted value renders a flat slot rather than nothing.
-      BedSlotState state =
-        packed != null && i < packed.Length
-          ? (BedSlotState)packed[i]
-          : BedSlotState.Sand;
-      _slots[i] = SandBedLayout.Slots[i].Accepts(state)
-        ? state
-        : BedSlotState.Sand;
-    }
-
     if (Api?.Side == EnumAppSide.Client)
       RebuildSurface();
   }

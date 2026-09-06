@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -16,7 +16,7 @@ namespace IronIndustryExpanded.Tests;
 
 /// <summary>
 /// <c>BlockEntityFurnaceCore.ChargeableCells</c> - which world cells of a furnace's own footprint hold the
-/// burden column. The set comes off the layout's <see cref="CellRole.Chargeable"/> marks rather than off
+/// burden column. The set comes off the layout's <see cref="FurnaceCellRoles.Chargeable"/> marks rather than off
 /// which cells would accept an <c>iiex:furnace-chargepile</c>; both routes answer the same cells today and
 /// these pin that they do, element-wise and at all four facings.
 /// <para>
@@ -89,7 +89,7 @@ public class ChargeableCellsTests {
           .Legend('C', "iiex:furnace-blastcore-*")
           .Legend('#', "game:refractorybricks-good-tier*")
           .Legend('c', ShaftGlyph)
-          .Role('c', CellRole.Chargeable)
+          .Role('c', FurnaceCellRoles.Chargeable)
           .Layer(0, "C #")
           .Layer(
             1,
@@ -327,15 +327,15 @@ public class ChargeableCellsTests {
     // A hearth answering empty for Chargeable means something only if the same structure answers
     // something for Firebox; otherwise it says only that this footprint failed to load.
     foreach (BlockEntityFireboxFurnace hearth in Hearths()) {
-      Assert.Empty(hearth.CellsWithRole(CellRole.Chargeable));
-      Assert.NotEmpty(hearth.CellsWithRole(CellRole.Firebox));
+      Assert.Empty(hearth.CellsWithRole(FurnaceCellRoles.Chargeable));
+      Assert.NotEmpty(hearth.CellsWithRole(FurnaceCellRoles.Firebox));
 
       // The role landed on the right glyph: the fuel bed is exactly the cells that take a firebox.
       // Nothing in the DSL relates a role to the code its glyph carries, so this comparison is the only
       // check between a mistyped Role() call and a silently wrong cell set.
       Assert.Equal(
         Render(hearth.CellsAccepting(Firebox)),
-        Render(hearth.CellsWithRole(CellRole.Firebox))
+        Render(hearth.CellsWithRole(FurnaceCellRoles.Firebox))
       );
     }
   }
@@ -412,7 +412,7 @@ public class ChargeableCellsTests {
       // them would read the furnace as broken on load. The next melt claims the cell for hearth metal.
       Assert.Equal(
         Render(core.CellsAccepting(ChargePile).Except(core.PoolCells)),
-        Render(core.CellsWithRole(CellRole.Chargeable))
+        Render(core.CellsWithRole(FurnaceCellRoles.Chargeable))
       );
       // And the difference is exactly that course rather than some third set, which the subtraction above
       // would hide.
@@ -422,7 +422,7 @@ public class ChargeableCellsTests {
       );
       // The furnace's own accessor is that role, not something beside it.
       Assert.Same(
-        core.CellsWithRole(CellRole.Chargeable),
+        core.CellsWithRole(FurnaceCellRoles.Chargeable),
         core.ChargeableCells
       );
     }
@@ -482,10 +482,10 @@ public class ChargeableCellsTests {
       int Count
     )[] furnaces =
     [
-      (ColdDef(), CellRole.Chargeable, CellRole.Firebox, 36),
-      (CupolaDef(), CellRole.Chargeable, CellRole.Firebox, 4),
-      (PuddlingDef(), CellRole.Firebox, CellRole.Chargeable, 1),
-      (HeatingDef(), CellRole.Firebox, CellRole.Chargeable, 2),
+      (ColdDef(), FurnaceCellRoles.Chargeable, FurnaceCellRoles.Firebox, 36),
+      (CupolaDef(), FurnaceCellRoles.Chargeable, FurnaceCellRoles.Firebox, 4),
+      (PuddlingDef(), FurnaceCellRoles.Firebox, FurnaceCellRoles.Chargeable, 1),
+      (HeatingDef(), FurnaceCellRoles.Firebox, FurnaceCellRoles.Chargeable, 2),
     ];
 
     foreach (var (def, role, other, count) in furnaces) {
@@ -494,7 +494,7 @@ public class ChargeableCellsTests {
 
       List<Vec3i> declared = RoleCellsOf(def, role);
       List<Vec3i> byGlyph =
-        role == CellRole.Chargeable
+        role == FurnaceCellRoles.Chargeable
           ? ChargeCells(LayoutOf(def), ShaftGlyph)
           : FireboxCells(LayoutOf(def));
 
@@ -503,29 +503,11 @@ public class ChargeableCellsTests {
     }
   }
 
-  [Fact]
-  public void A_furnace_layout_claiming_both_fuel_roles_does_not_build() {
-    // The other direction of the same guard, on the real glyphs rather than exlib's synthetic fixture:
-    // the shaft/firebox class split makes a drawing with both unrepresentable, not merely unusual.
-    InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
-      () =>
-        ExBlockDef
-          .Create("iiex", "impossiblefurnacecore")
-          .MultiblockLayout(s =>
-            s.Origin(0, 0)
-              .Legend('C', "iiex:furnace-blastcore-*")
-              .Legend('c', ShaftGlyph)
-              .Legend('k', FireboxGlyph)
-              .Role('c', CellRole.Chargeable)
-              .Role('k', CellRole.Firebox)
-              .Layer(0, "C")
-              .Layer(1, "c k")
-          )
-    );
-
-    Assert.Contains("Chargeable", ex.Message);
-    Assert.Contains("Firebox", ex.Message);
-  }
+  // A_furnace_layout_claiming_both_fuel_roles_does_not_build used to pin exlib's own guard against a
+  // layout drawing both Chargeable and Firebox. exlib's MultiblockLayoutBuilder no longer knows what
+  // either role means, so it cannot enforce this - CellRole is an open string key now, and the
+  // shaft/firebox exclusivity is a fact about iiex's furnace class tree, not about multiblock layouts in
+  // general. No shipped drawing marks both; nothing in iiex currently re-enforces it at build time.
 
   #endregion
 

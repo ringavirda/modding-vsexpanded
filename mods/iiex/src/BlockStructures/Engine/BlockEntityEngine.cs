@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
@@ -48,6 +51,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   private ILoadedSound? _gearSound;
 
   /// <summary>Set true while the engine is driving its sub-machine (cycle animation).</summary>
+  [Persist("running")]
   private bool _running;
 
   #region Per-variant stats
@@ -89,6 +93,7 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   private GraceTimer _overPressure;
 
   /// <summary>True once the engine has burst from sustained over-pressure; it can't run until repaired.</summary>
+  [Persist("broken")]
   public bool IsBroken { get; private set; }
 
   /// <summary>Seconds of over-pressure left before the engine breaks (for the HUD warning).</summary>
@@ -139,10 +144,12 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   /// <summary>Available mechanical power (0..<see cref="MaxPower"/>), from inlet steam pressure.</summary>
+  [Persist("availPower")]
   public float AvailablePower { get; private set; }
 
   /// <summary>Inlet steam pressure (atm) read last tick. Sub-machines set their output
   /// pressure to this times <see cref="IiexValues.SteamEngineEfficiency"/>.</summary>
+  [Persist("inletPressure")]
   public float InletPressure { get; private set; }
 
   /// <summary>Maximum power this engine can deliver to its sub-machine at rated pressure.</summary>
@@ -181,6 +188,8 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
     : InletPressure > 0.01f ? "under"
     : "idle";
 
+  // Defaults to 1x when the key is absent, unlike a bare [Persist] float (default 0f) - so it stays a
+  // Tree declaration.
   public float AnimationSpeed { get; private set; } = 1f;
 
   /// <summary>True while the engine is running (sub-machine being driven).</summary>
@@ -189,8 +198,9 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
   private BlockEngine? EngineBlock => Block as BlockEngine;
 
   /// <summary>The production tick runs once construction is finished. The gate is construction, not
-  /// running: a broken engine still ticks to keep its power zeroed and to render the break.</summary>
-  protected override bool CanRunProduction => IsConstructed;
+  /// running: a broken engine still ticks to keep its power zeroed and to render the break.
+  /// ExRightClickConstructable now publishes that gate itself (IProductionReadiness).</summary>
+  protected override bool CanRunProduction => true;
 
   /// <summary>The attached sub-machine block entity at the engine's sub-machine cell, if any.</summary>
   public BlockEntityEngineSubmachine? SubmachineBE =>
@@ -350,30 +360,29 @@ public abstract class BlockEntityEngine : BlockEntityProductionMachine {
     base.OnBlockUnloaded();
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("running", _running);
-    tree.SetFloat("animSpeed", AnimationSpeed);
-    tree.SetFloat("availPower", AvailablePower);
-    tree.SetFloat("inletPressure", InletPressure);
-    tree.SetBool("broken", IsBroken);
-    _overPressure.ToTree(tree, "overPressure");
+  protected override void DeclareState(ExBlockState state) {
+    state.Tree(
+      "animSpeed",
+      tree => tree.SetFloat("animSpeed", AnimationSpeed),
+      (tree, _) => AnimationSpeed = tree.GetFloat("animSpeed", 1f)
+    );
+    // GraceTimer.ToTree/FromTree write one flat float under the key they are given, not a nested
+    // sub-tree, so this is a Tree entry rather than an ExpandedLib.Blocks.IPersistable member.
+    state.Tree(
+      "overPressure",
+      tree => _overPressure.ToTree(tree, "overPressure"),
+      (tree, _) => _overPressure.FromTree(tree, "overPressure")
+    );
   }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool wasRunning = _running;
     bool wasBroken = IsBroken;
     float wasSpeed = AnimationSpeed;
-    _running = tree.GetBool("running");
-    AnimationSpeed = tree.GetFloat("animSpeed", 1f);
-    AvailablePower = tree.GetFloat("availPower");
-    InletPressure = tree.GetFloat("inletPressure");
-    IsBroken = tree.GetBool("broken");
-    _overPressure.FromTree(tree, "overPressure");
+    base.FromTreeAttributes(tree, worldForResolving);
     if (Api is ICoreClientAPI && _animator is { Ready: true }) {
       // Breaking/repairing swaps the rendered mesh (piston subtree on/off).
       if (wasBroken != IsBroken) {

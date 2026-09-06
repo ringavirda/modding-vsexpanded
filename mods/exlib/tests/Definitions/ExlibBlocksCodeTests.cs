@@ -10,7 +10,7 @@ namespace ExpandedLib.Tests;
 /// </summary>
 public class ExlibBlocksCodeTests {
   private static readonly Assembly Mod =
-    typeof(ExpandedLib.Blocks.Structures.StructureFillers).Assembly;
+    typeof(ExpandedLib.Structures.StructureFillers).Assembly;
 
   [Fact]
   public void Generated_block_codes_match_the_definitions() {

@@ -36,7 +36,7 @@ public class WroughtBallItemDefinitions : IExItemDefProvider {
         .Attribute("materialUnits", BallUnits)
         // The ball comes off the hearth at welding heat and cools in the hand; `temperature` is vanilla's
         // own attribute, so the engine does the cooling.
-        .Raw(
+        .RootKey(
           "combustibleProps",
           new
           {
@@ -45,7 +45,6 @@ public class WroughtBallItemDefinitions : IExItemDefProvider {
             smeltedRatio = 1,
           }
         )
-        .Raw("temperatureDamage", 4f)
         .CreativeCommon("*"),
       // The pile of balls on the anvil. Its own work item rather than vanilla's iron one so the helve has
       // exactly one matching recipe and needs no dialog - see Shingling.WorkItemCode.
@@ -62,7 +61,7 @@ public class WroughtBallItemDefinitions : IExItemDefProvider {
         .MaxStackSize(1)
         .MaterialDensity(7800)
         .Attribute("materialUnits", BallUnits * Shingling.BallsPerBar)
-        .Raw(
+        .RootKey(
           "combustibleProps",
           new
           {
@@ -70,7 +69,6 @@ public class WroughtBallItemDefinitions : IExItemDefProvider {
             meltingDuration = 30,
             smeltedRatio = 1,
           }
-        )
-        .Raw("temperatureDamage", 4f),
+        ),
     ];
 }

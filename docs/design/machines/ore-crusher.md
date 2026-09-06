@@ -1,6 +1,6 @@
 # Ore crusher
 
-**Status** designed - nothing built   **Mod** iiex
+**Status** designed, shape drafted (2026-09-06) - no code   **Mod** iiex
 **Since** 2026-07-31
 
 **Owns** - the facts this page is canonical for:
@@ -11,7 +11,10 @@
   than merely available;
 * the hardness gate - harder ores cost more energy per unit, expressed as a threshold rather than a tier
   flag;
-* the rule that the crusher is throughput, never access.
+* the rule that the crusher is throughput, never access;
+* the block form: one pan, 1 x 2 x 2 cells, fed by a vanilla chute from above and discharging below;
+* the drive: the eccentric shaft is the mp shaft, through both side faces; the network's flywheel block
+  is the crusher's flywheel.
 
 **Does not own** - cited only, never restated:
 
@@ -88,8 +91,12 @@ scale off its absolute power. A crusher is a general load that should compete wi
 network. Docking it would make the most power-hungry machine in the chain the one machine that cannot share a
 power plant.
 
-The engraving still works as the art - twin pans, gear drive, two big flywheels - with the boiler simply not
-modelled as part of it.
+The engraving still works as the art with the boiler not modelled as part of it. Re-examined 2026-09-06 for
+historicity and immersion, the decision holds: Blake crushers in fixed installations were belt- or gear-driven
+from line shafting (water or steam); the engine-on-frame units of the engraving were portable road-metal
+breakers. An mp-driven crusher with the network's 3 x 3 flywheel block on its shaft reproduces the engraving's
+silhouette at the right scale - the flywheel taller than the machine - while the steam plant stays the
+player's, shared with every other load.
 
 ---
 
@@ -141,25 +148,44 @@ will double up and a player with EM installed will get twice the ore.
 
 ---
 
+## Form, feed and drive (settled 2026-09-06)
+
+**One pan, 1 x 2 x 2 cells.** A single Blake jaw the player stacks, per the stacking argument. Front cells
+hold the jaws over a sheet discharge hopper, rear cells the drive and the toggle frame. In the north
+authored frame with the front lower cell as principal:
+
+| cell | holds |
+|---|---|
+| front lower (0,0,0) | four cast legs on a base ring, sheet hopper trough with its floor and a 6 x 6 spout ending on the bottom face at (8, 0, 8) |
+| front upper (0,1,0) | the cheeks around the jaw chamber, the corrugated fixed jaw, the swing jaw on its pivot shaft; the mouth (11 x 5) centred under the top face at (8, 32, 8) |
+| rear upper (0,1,1) | the eccentric shaft with its sheave, the strapped pitman, both toggles, the toggle seat on the rear frame |
+| rear lower (0,0,1) | rear legs, rear standard |
+
+**Fed by chutes.** A vanilla chute standing on the front upper cell pushes ore down into the mouth; a chute or
+container under the front lower cell takes crushed ore from the spout. The block's inventory accepts from
+above and offers downward on those two cells; no window interaction is needed for material.
+
+**The eccentric shaft is the mp shaft.** It crosses both side faces of the rear upper cell at their centres
+((0, 24, 24) and (16, 24, 24)), so crushers chain along one line and the network's flywheel block stands on
+that shaft beside the machine: the crusher carries no flywheel of its own and no buffer - one flywheel
+system, not two. The throw is exaggerated for legibility (jaw bottom 1.2 units) against the eccentric's 0.8.
+
+**Art.** `workbench/shapes/machines/mpenergy/machine-mp-megablock-crusher-sketch.json`, built by
+`builders/vsexpanded/crusher.py` in the tools repo; the pitman, toggle and jaw poses are solved from the link
+lengths per frame. Awaiting the owner's Model Creator pass, then a machines.txt line.
+
 ## Open
 
 Everything here is a decision, not a placeholder - none of it blocks the ones already made above.
 
-1. **Block form and footprint.** The engraving is a twin-pan unit; whether the block is one machine with two
-   pans, or a single pan the player stacks, is undecided. The stacking argument above pushes toward small and
-   repeatable, which argues for a single pan.
-2. **Whether it carries its own buffer.** Recommended: the shaped flywheels are visual only, and the
-   network's flywheel block does the real buffering - one flywheel system, not two. Not yet decided.
-3. **Output rates and the energy-per-unit table**, including where chromite's threshold sits relative to
+1. **Output rates and the energy-per-unit table**, including where chromite's threshold sits relative to
    hematite's. Cannot be set until [mp-energy](../mechanics/mp-energy.md) has live numbers.
-4. **Whether it accepts raw ore blocks or only vanilla-crushable items**, and whether it produces the same
+2. **Whether it accepts raw ore blocks or only vanilla-crushable items**, and whether it produces the same
    `game:crushed-*` items or its own.
-5. **Chromite does not exist.** The harder-ore half of this machine's purpose is gated behind the ferroalloy
+3. **Chromite does not exist.** The harder-ore half of this machine's purpose is gated behind the ferroalloy
    work, which is entirely unbuilt - no third burden family, no ferroalloy metal descriptor, no ore. Until
    that lands the crusher is a throughput machine only, and it should be designed so that is enough on its
    own.
-6. **Art.** Nothing drawn. Not in [iiex-bringup](../../internal/plans/iwex-bringup.md)'s art queue, and it should be
-   added there before anyone plans to build it.
 
 ---
 

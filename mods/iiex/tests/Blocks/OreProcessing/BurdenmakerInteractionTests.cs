@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.OreProcessing.BlockEntities;

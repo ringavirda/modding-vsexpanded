@@ -1,0 +1,5 @@
+blockCode:string
+plugged:bool
+posx:int
+posy:int
+posz:int

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.MathTools;
 
@@ -88,8 +88,8 @@ public partial class BlockCokeOvenCore
             // The chambers, marked so the branch's charge walk finds them. The role reads "fuel heating
             // something else" and here the coal is the work; owner ruling 2026-08-21 kept it anyway rather
             // than mint a near-identical Retort member.
-            .Role('c', CellRole.Firebox)
-            // No CellRole.Flue anywhere. A sealed retort has no stack, and marking one would hand the
+            .Role('c', FurnaceCellRoles.Firebox)
+            // No FurnaceCellRoles.Flue anywhere. A sealed retort has no stack, and marking one would hand the
             // oven a natural draught it must not have - StackCourses counts exactly these cells.
             .Layer(
               0,

@@ -1,7 +1,8 @@
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Newtonsoft.Json.Linq;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Xunit;
 
@@ -29,7 +30,6 @@ public class ExBlockDefTests {
       "resistance": 45.0,
       "maxstacksize": 8,
       "requiredMiningTier": 5,
-      "mineTool": "pickaxe",
       "sounds": {
         "place": "game:block/anvil",
         "break": "game:block/anvil",
@@ -60,7 +60,6 @@ public class ExBlockDefTests {
       .Resistance(45f)
       .MaxStackSize(8)
       .MiningTier(5)
-      .MineTool(EnumTool.Pickaxe)
       .Sound("place", "game:block/anvil")
       .Sound("break", "game:block/anvil")
       .Sound("hit", "game:block/anvil")
@@ -122,14 +121,11 @@ public class ExBlockDefTests {
   }
 
   [Fact]
-  public void MineTool_is_lower_cased_to_match_the_vanilla_convention() {
-    Assert.Equal(
-      "pickaxe",
-      (string?)
-        ExBlockDef.Create("d", "c").MineTool(EnumTool.Pickaxe).ToJson()[
-          "mineTool"
-        ]
-    );
+  public void MineTool_is_a_no_op_since_the_game_never_reads_the_key() {
+#pragma warning disable CS0618 // exercising the obsolete no-op on purpose
+    JObject json = ExBlockDef.Create("d", "c").MineTool(EnumTool.Pickaxe).ToJson();
+#pragma warning restore CS0618
+    Assert.Null(json["mineTool"]);
   }
 
   [Fact]
@@ -174,20 +170,20 @@ public class ExBlockDefTests {
   }
 
   [Fact]
-  public void Raw_sets_an_arbitrary_top_level_token_as_the_escape_hatch() {
+  public void RootKey_sets_an_arbitrary_top_level_token_as_the_escape_hatch() {
     JObject json = ExBlockDef
       .Create("d", "c")
-      .Raw("someFutureField", new JValue(42))
+      .RootKey("someFutureField", new JValue(42))
       .ToJson();
     Assert.Equal(42, (int)json["someFutureField"]!);
   }
 
   [Fact]
-  public void Raw_from_a_poco_sets_a_top_level_object_for_root_transforms() {
+  public void RootKey_from_a_poco_sets_a_top_level_object_for_root_transforms() {
     // The object overload, for block-root transforms whose shape varies per block (here: no rotation).
     JObject json = ExBlockDef
       .Create("d", "c")
-      .Raw(
+      .RootKey(
         "guiTransform",
         new {
           translation = new {
@@ -390,10 +386,10 @@ public class ExBlockDefTests {
   }
 
   [Fact]
-  public void HandbookExclude_sets_the_top_level_handbook_exclude_flag() {
+  public void HandbookExclude_sets_the_nested_handbook_exclude_flag() {
     JObject json = ExBlockDef.Create("d", "c").HandbookExclude().ToJson();
-    Assert.True((bool)json["handbook"]!["exclude"]!);
-    Assert.Null(json["attributes"]); // top-level handbook, not attributes.handbook
+    Assert.True((bool)json["attributes"]!["handbook"]!["exclude"]!);
+    Assert.Null(json["handbook"]); // the handbook system reads attributes.handbook, not a top-level key
   }
 
   [Fact]
@@ -546,6 +542,42 @@ public class ExBlockDefTests {
     Assert.Equal(0, (int)json["lightAbsorption"]!);
     Assert.False((bool)json["sidesolid"]!["all"]!);
     Assert.False((bool)json["sideopaque"]!["all"]!);
+  }
+
+  [Fact]
+  public void RenderPass_enum_overload_matches_the_string_overload() {
+    JObject fromEnum = ExBlockDef
+      .Create("d", "c")
+      .RenderPass(EnumChunkRenderPass.OpaqueNoCull)
+      .ToJson();
+    JObject fromString = ExBlockDef
+      .Create("d", "c")
+      .RenderPass("OpaqueNoCull")
+      .ToJson();
+    Assert.True(JToken.DeepEquals(fromEnum, fromString));
+  }
+
+  [Fact]
+  public void FaceCullMode_enum_overload_matches_the_string_overload() {
+    JObject fromEnum = ExBlockDef
+      .Create("d", "c")
+      .FaceCullMode(EnumFaceCullMode.NeverCull)
+      .ToJson();
+    JObject fromString = ExBlockDef
+      .Create("d", "c")
+      .FaceCullMode("NeverCull")
+      .ToJson();
+    Assert.True(JToken.DeepEquals(fromEnum, fromString));
+  }
+
+  [Fact]
+  public void DrawType_enum_overload_matches_the_string_overload() {
+    JObject fromEnum = ExBlockDef
+      .Create("d", "c")
+      .DrawType(EnumDrawType.JSON)
+      .ToJson();
+    JObject fromString = ExBlockDef.Create("d", "c").DrawType("JSON").ToJson();
+    Assert.True(JToken.DeepEquals(fromEnum, fromString));
   }
 
   #endregion

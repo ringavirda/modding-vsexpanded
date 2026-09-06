@@ -8,8 +8,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "iron2": "game:block/metal/sheet-plain/iron2",
-    "generic": "game:block/wood/planks/generic"
+    "iron2": "block/metal/sheet-plain/iron2",
+    "generic": "block/wood/planks/generic"
   },
   "elements": [
     {

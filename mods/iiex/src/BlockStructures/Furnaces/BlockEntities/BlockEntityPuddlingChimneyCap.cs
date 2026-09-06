@@ -1,5 +1,6 @@
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -15,6 +16,7 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityPuddlingChimneyCap : BlockEntityFurnacePart {
   /// <summary>Whether the damper stands open, letting the stack pull.</summary>
+  [Persist("damperOpen")]
   public bool IsOpen { get; private set; }
 
   /// <summary>Throws the damper open or shut.</summary>
@@ -31,18 +33,14 @@ public class BlockEntityPuddlingChimneyCap : BlockEntityFurnacePart {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("damperOpen", IsOpen);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool was = IsOpen;
-    IsOpen = tree.GetBool("damperOpen");
+    base.FromTreeAttributes(tree, worldForResolving);
     if (Api?.Side == EnumAppSide.Client && was != IsOpen)
       ApplyPose();
   }

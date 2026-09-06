@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExpandedLib.Registries.Preferences;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// A single per-player, client-side display preference (e.g. the metric/imperial unit system). Each

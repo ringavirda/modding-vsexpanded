@@ -1,6 +1,6 @@
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Testing;
-using ExpandedLib.Testing.Doubles;
 using Vintagestory.API.MathTools;
 using Xunit;
 

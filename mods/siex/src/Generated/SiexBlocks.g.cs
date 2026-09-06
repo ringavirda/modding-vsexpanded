@@ -14,9 +14,11 @@ namespace SteelIndustryExpanded;
 /// <c>VanillaCodes</c>.
 /// </para>
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class SiexBlocks
 {
   /// <summary><c>siex:blastfurnacecore</c> - blastfurnace/core. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class BlastfurnaceCore
   {
     /// <summary>The bare code, no variants: <c>siex:blastfurnacecore</c>.</summary>
@@ -44,6 +46,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:hopperbell</c> - blastfurnace/hopperbell. Variant groups: no variants.</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class BlastfurnaceHopperbell
   {
     /// <summary>The bare code, no variants: <c>siex:hopperbell</c>.</summary>
@@ -51,6 +54,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:hopperreinforced</c> - blastfurnace/hopperreinforced. Variant groups: no variants.</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class BlastfurnaceHopperreinforced
   {
     /// <summary>The bare code, no variants: <c>siex:hopperreinforced</c>.</summary>
@@ -58,6 +62,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:boilerlancashire</c> - boiler/lancashire. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class BoilerLancashire
   {
     /// <summary>The bare code, no variants: <c>siex:boilerlancashire</c>.</summary>
@@ -85,6 +90,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:converterbessemer</c> - converter/bessemer. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class ConverterBessemer
   {
     /// <summary>The bare code, no variants: <c>siex:converterbessemer</c>.</summary>
@@ -112,6 +118,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:convertercontrol</c> - converter/control. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class ConverterControl
   {
     /// <summary>The bare code, no variants: <c>siex:convertercontrol</c>.</summary>
@@ -139,6 +146,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:converter</c> - converter/intake. Variant groups: type(intake), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class ConverterIntake
   {
     /// <summary>The bare code, no variants: <c>siex:converter</c>.</summary>
@@ -166,6 +174,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:convertertransmission</c> - converter/transmission. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class ConverterTransmission
   {
     /// <summary>The bare code, no variants: <c>siex:convertertransmission</c>.</summary>
@@ -193,6 +202,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:cowperstoveheatsink</c> - cowperstove/heatsink. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CowperstoveHeatsink
   {
     /// <summary>The bare code, no variants: <c>siex:cowperstoveheatsink</c>.</summary>
@@ -220,6 +230,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:cowperstove</c> - cowperstove/intake. Variant groups: type(intake), refractory(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CowperstoveIntake
   {
     /// <summary>The bare code, no variants: <c>siex:cowperstove</c>.</summary>
@@ -263,6 +274,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:engineairblower</c> - engine/airblower. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class EngineAirblower
   {
     /// <summary>The bare code, no variants: <c>siex:engineairblower</c>.</summary>
@@ -290,6 +302,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:enginecornish</c> - engine/cornish. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class EngineCornish
   {
     /// <summary>The bare code, no variants: <c>siex:enginecornish</c>.</summary>
@@ -317,6 +330,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:pipe</c> - pipe/rolled/bend. Variant groups: tier(rolled), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeRolledBend
   {
     /// <summary>The bare code, no variants: <c>siex:pipe</c>.</summary>
@@ -348,6 +362,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:pipe</c> - pipe/rolled/straight. Variant groups: tier(rolled), type(straight), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeRolledStraight
   {
     /// <summary>The bare code, no variants: <c>siex:pipe</c>.</summary>
@@ -370,6 +385,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:pipe</c> - pipe/rolled/tjunction. Variant groups: tier(rolled), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeRolledTjunction
   {
     /// <summary>The bare code, no variants: <c>siex:pipe</c>.</summary>
@@ -401,6 +417,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:pipe</c> - pipe/rolled/xjunction. Variant groups: tier(rolled), type(xjunction), orientation(nswe|nsud|weud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeRolledXjunction
   {
     /// <summary>The bare code, no variants: <c>siex:pipe</c>.</summary>
@@ -423,6 +440,7 @@ public static class SiexBlocks
   }
 
   /// <summary><c>siex:smokestack</c> - smokestack/intake. Variant groups: type(intake), refractory(tier1|tier2|tier3), orientation(n|s|w|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SmokestackIntake
   {
     /// <summary>The bare code, no variants: <c>siex:smokestack</c>.</summary>

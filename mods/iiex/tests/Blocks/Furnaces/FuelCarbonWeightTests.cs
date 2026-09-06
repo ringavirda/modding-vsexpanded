@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Materials;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;

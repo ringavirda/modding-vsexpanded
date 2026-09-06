@@ -1,4 +1,5 @@
-using ExpandedLib.Fluids;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkPipe;
 using Xunit;

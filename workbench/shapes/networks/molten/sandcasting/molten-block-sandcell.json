@@ -9,8 +9,8 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"fire1": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/brick/four/running/fire1",
-		"burned": "F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/clay/vessel/sides/burned"
+		"fire1": "block/clay/brick/four/running/fire1",
+		"burned": "block/clay/vessel/sides/burned"
 	},
 	"elements": [
 		{

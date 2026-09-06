@@ -7,8 +7,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "burned": "game:block/clay/vessel/sides/burned",
-    "granite1": "game:block/stone/cobblestone/granite1"
+    "burned": "block/clay/vessel/sides/burned",
+    "granite1": "block/stone/cobblestone/granite1"
   },
   "elements": [
     {

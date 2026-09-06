@@ -7,7 +7,7 @@ namespace ExpandedLib.Registries;
 /// A process-wide, case-insensitive registry of items keyed by a string code derived from each item.
 /// Register or replace by derived code, look up by code, and enumerate the registered codes and
 /// values. Backs the mod-keyed catalogues (<see cref="Config.ExConfigProfiles"/>,
-/// <see cref="Recipes.ExRecipeProfiles"/>). Domain behaviour such as the recipe apply pipeline stays
+/// <see cref="ExRecipeProfiles"/>). Domain behaviour such as the recipe apply pipeline stays
 /// on the owning class; this holds the keyed storage only.
 /// </summary>
 /// <typeparam name="T">The registered item type.</typeparam>

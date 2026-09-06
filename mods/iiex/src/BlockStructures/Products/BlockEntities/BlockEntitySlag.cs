@@ -1,8 +1,8 @@
 using System.Text;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 
@@ -15,9 +15,10 @@ namespace IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 /// and persists correctly. It is not dead code.
 /// </remarks>
 [BlockEntityRegister]
-public class BlockEntitySlag : BlockEntity {
+public class BlockEntitySlag : ExBlockEntity {
   /// <summary>Number of slag units stored, used to scale the break drop. Read from the save tree only;
   /// see the type's remarks.</summary>
+  [Persist("slagCount")]
   public int SlagCount { get; set; } = 0;
 
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
@@ -25,16 +26,5 @@ public class BlockEntitySlag : BlockEntity {
     dsc.AppendLine(Lang.Get("iiex:slag-info-count", SlagCount));
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetInt("slagCount", SlagCount);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    SlagCount = tree.GetInt("slagCount", 0);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 }

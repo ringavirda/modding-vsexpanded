@@ -8,7 +8,7 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "burned": "game:block/clay/vessel/sides/burned",
+    "burned": "block/clay/vessel/sides/burned",
     "iron4": "block/metal/sheet/iron4"
   },
   "elements": [

@@ -1,9 +1,8 @@
 using ExpandedLib.Blocks;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
+using ExpandedLib.Industry.MechanicalPower;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 
 namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 
@@ -78,7 +77,11 @@ public abstract class BlockEntityMpBench
 
   #region The stroke
 
-  // Seconds of stroke left; 0 means idle. Persisted so a stroke survives a reload.
+  // Seconds of stroke left; 0 means idle. Persisted so a stroke survives a reload. The legacy key is
+  // what the shear wrote before the stroke clock moved onto this base, read as a fallback so a shear
+  // caught mid-stroke by the upgrade finishes its cut instead of stranding the piece with no clock to
+  // clear it.
+  [Persist(RemainingKey, Legacy = LegacyShearKey)]
   private float _remaining;
 
   /// <summary>Whether a stroke is under way.</summary>
@@ -181,24 +184,9 @@ public abstract class BlockEntityMpBench
   #region Persistence
 
   private const string RemainingKey = "benchRemaining";
-
-  // What the shear wrote before the stroke clock moved onto this base. Read as a fallback so a shear
-  // caught mid-stroke by the upgrade finishes its cut instead of stranding the piece in its slot with no
-  // clock to clear it.
   private const string LegacyShearKey = "shearRemaining";
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat(RemainingKey, _remaining);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _remaining = tree.GetFloat(RemainingKey, tree.GetFloat(LegacyShearKey));
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   #endregion
 }

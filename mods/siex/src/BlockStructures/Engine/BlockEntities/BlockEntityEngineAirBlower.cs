@@ -1,7 +1,9 @@
 using ExpandedLib;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockStructures.Engine;

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
@@ -24,8 +24,10 @@ public partial class ItemPig : Item, IAnvilWorkable, IExItemDefProvider {
   /// the cupola's charge band derives from it. See docs/design/items/pig.md.</summary>
   public const int PigUnits = 375;
 
-  /// <summary>The item code, so the hearth and the recipes name it once rather than each writing it out.</summary>
-  public const string Code = "pig";
+  /// <summary>The item code, so the hearth and the recipes name it once rather than each writing it out.
+  /// <c>new</c>d against <see cref="RegistryObject.Code"/> deliberately: unrelated to that instance
+  /// property, just a same-named constant.</summary>
+  public new const string Code = "pig";
   public const int ChunkUnits = 25;
   public const int BitUnits = 5;
 

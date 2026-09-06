@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExpandedLib.Registries.Recipes;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Everything one cost profile (e.g. <c>cheap</c>) changes for a single recipe, self-contained: a

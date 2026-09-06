@@ -2,11 +2,11 @@ using System;
 using System.Reflection;
 using Vintagestory.API.Common;
 
-namespace ExpandedLib.Registries.Commands;
+namespace ExpandedLib.Registries;
 
 /// <summary>
 /// Reflection-driven chat-command registration, the command-side counterpart to
-/// <see cref="Entities.EntityRegistry"/>. Scans an assembly for <see cref="IExCommand"/> classes
+/// <see cref="EntityRegistry"/>. Scans an assembly for <see cref="IExCommand"/> classes
 /// carrying <see cref="CommandRegisterAttribute"/> (top-level commands) and
 /// <see cref="IExSubCommand"/> classes carrying <see cref="SubCommandRegisterAttribute"/> (options
 /// attaching to an existing command), and builds each one.
@@ -26,44 +26,27 @@ public static class CommandRegistry {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
 
-    foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
-      var attr = type.GetCustomAttribute<CommandRegisterAttribute>();
-      if (attr != null) {
+    ReflectionScan.ForEachAttributed<CommandRegisterAttribute, IExCommand>(
+      api,
+      modId,
+      asm,
+      (attr, command) => {
         if (attr.Side != EnumAppSide.Universal && attr.Side != api.Side)
-          continue;
-
-        if (
-          !ReflectionScan.TryActivate<IExCommand>(
-            api,
-            modId,
-            type,
-            out var command
-          )
-        )
-          continue;
-
+          return;
         command.Register(api, mod);
-        continue;
       }
+    );
 
-      var subAttr = type.GetCustomAttribute<SubCommandRegisterAttribute>();
-      if (subAttr != null) {
-        if (subAttr.Side != EnumAppSide.Universal && subAttr.Side != api.Side)
-          continue;
-
-        if (
-          !ReflectionScan.TryActivate<IExSubCommand>(
-            api,
-            modId,
-            type,
-            out var sub
-          )
-        )
-          continue;
-
+    ReflectionScan.ForEachAttributed<SubCommandRegisterAttribute, IExSubCommand>(
+      api,
+      modId,
+      asm,
+      (attr, sub) => {
+        if (attr.Side != EnumAppSide.Universal && attr.Side != api.Side)
+          return;
         IChatCommand parent = api.ChatCommands.GetOrCreate(sub.ParentName);
         sub.Register(api, mod, parent);
       }
-    }
+    );
   }
 }

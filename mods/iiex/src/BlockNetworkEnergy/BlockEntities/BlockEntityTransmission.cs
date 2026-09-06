@@ -1,11 +1,11 @@
 using System;
 using ExpandedLib;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkEnergy.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -37,11 +37,15 @@ public class BlockEntityTransmission : BlockEntityProductionMachine {
   private BlockNetworkModSystem? _networks;
 
   // Clutch coupling state (persisted). x2/x4 are always coupled; the clutch only transfers while engaged.
+  [Persist("engaged")]
   private bool _engaged;
 
   // The two side speeds (rad/s) the coupler last saw, synced to clients so the gear train can animate; the
   // transmission is not a graph node and gets no network broadcast of its own (see SyncSideSpeeds).
+  [Persist("southSpeed")]
   private float _southSpeed;
+
+  [Persist("northSpeed")]
   private float _northSpeed;
 
   /// <summary>True once the player has finished the three construction stages.</summary>
@@ -69,7 +73,10 @@ public class BlockEntityTransmission : BlockEntityProductionMachine {
   public bool IsEngaged => _engaged;
 
   protected override int ProductionTickMs => 250;
-  protected override bool CanRunProduction => IsConstructed;
+
+  // ExRightClickConstructable now publishes readiness itself (IProductionReadiness), so the tick
+  // already waits for construction; nothing else gates it.
+  protected override bool CanRunProduction => true;
 
   public override void Initialize(ICoreAPI api) {
     base.Initialize(api);
@@ -277,25 +284,17 @@ public class BlockEntityTransmission : BlockEntityProductionMachine {
     return true;
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("engaged", _engaged);
-    tree.SetFloat("southSpeed", _southSpeed);
-    tree.SetFloat("northSpeed", _northSpeed);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool wasEngaged = _engaged;
     float wasSouth = _southSpeed;
     float wasNorth = _northSpeed;
 
-    _engaged = tree.GetBool("engaged", false);
-    _southSpeed = tree.GetFloat("southSpeed");
-    _northSpeed = tree.GetFloat("northSpeed");
+    base.FromTreeAttributes(tree, worldForResolving);
 
     // A client receiving a lever throw or a speed sync re-poses. The animator may not exist yet on first load
     // and Initialize applies the initial pose, so only an actual change is acted on here.

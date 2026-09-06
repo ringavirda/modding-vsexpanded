@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
@@ -364,6 +364,34 @@ public class StructureRigTests {
     world.Initialize(machine);
 
     Assert.False(machine.StructureComplete);
+  }
+
+  #endregion
+
+  #region Test seams (DriveMonitorTick, ApplyStructureRotation)
+
+  [Fact]
+  public void DriveMonitorTick_completes_the_structure_without_a_registered_listener() {
+    var (world, machine) = Stand();
+    StructureRig.Around(world, machine, Def()).Raise();
+    world.Initialize(machine);
+    Assert.False(machine.StructureComplete);
+
+    machine.DriveMonitorTick();
+
+    Assert.True(machine.StructureComplete);
+    Assert.Equal(1, machine.CompletedCount);
+  }
+
+  [Fact]
+  public void ApplyStructureRotation_loads_the_structure_DriveMonitorTick_then_sees() {
+    var (world, machine) = Stand();
+    StructureRig.Around(world, machine, Def()).Raise(); // deliberately not Initialize()d
+
+    machine.ApplyStructureRotation();
+    machine.DriveMonitorTick();
+
+    Assert.True(machine.StructureComplete);
   }
 
   #endregion

@@ -1,4 +1,5 @@
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
 using Vintagestory.API.MathTools;
 using Xunit;
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -311,7 +311,7 @@ public class ChargeMaterialisationTests {
           .Legend('C', "iiex:furnace-blastcore-*")
           .Legend('#', "game:refractorybricks-good-tier*")
           .Legend('c', ShaftGlyph)
-          .Role('c', CellRole.Chargeable)
+          .Role('c', FurnaceCellRoles.Chargeable)
           .Layer(0, "C")
           .Layer(1, "c")
           .Layer(2, "c")
@@ -389,7 +389,7 @@ public class ChargeMaterialisationTests {
           .Legend('C', "iiex:furnace-blastcore-*")
           .Legend('#', "game:refractorybricks-good-tier*")
           .Legend('c', ShaftGlyph)
-          .Role('c', CellRole.Chargeable)
+          .Role('c', FurnaceCellRoles.Chargeable)
           .Layer(0, "C #")
           .Layer(
             1,

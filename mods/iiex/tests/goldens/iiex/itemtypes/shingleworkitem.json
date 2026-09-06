@@ -26,6 +26,5 @@
     "meltingPoint": 1500,
     "meltingDuration": 30,
     "smeltedRatio": 1
-  },
-  "temperatureDamage": 4.0
+  }
 }

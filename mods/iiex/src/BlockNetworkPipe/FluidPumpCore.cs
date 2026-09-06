@@ -1,4 +1,5 @@
 using ExpandedLib;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Common;

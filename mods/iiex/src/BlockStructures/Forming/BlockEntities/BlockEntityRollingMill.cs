@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
-using ExpandedLib.Processes;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Forming.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -127,14 +127,22 @@ public class BlockEntityRollingMill
   // The pass currently under the rolls; _remaining == 0 means idle. Persisted so a bite survives a reload.
   // Neither the draft nor the width is kept: the draft is spent at the bite test and the load the stand puts
   // on its run is a declared demand, so nothing downstream of BeginPass reads the pass's geometry.
+  [Persist("rmTemp")]
   private float _tempC; // degrees Celsius
+
+  [Persist("rmRemaining")]
   private float _remaining; // stock still to draw through, in block-space units
+
+  [Persist("rmStalled")]
   private bool _stalled;
 
   // The reduction this pass will make, held until the piece clears the rolls. Nothing is committed mid-pass,
   // so an interruption cannot leave a piece half-rolled. The gap rather than the gauge it lands on: which
   // of the gap's two rounds this is belongs to the piece, and it is the piece that applies it.
+  [Persist("rmPendingGap")]
   private float _pendingGap;
+
+  [Persist("rmPendingSide")]
   private int _pendingSide;
 
   // Draws the stock on by however far the rolls turned. Reads the live network rather than the cached
@@ -332,7 +340,7 @@ public class BlockEntityRollingMill
     admitted.Collectible.SetTemperature(
       Api.World,
       admitted,
-      offered.Collectible.GetTemperature(Api.World, offered)
+      offered.Collectible!.GetTemperature(Api.World, offered)
     );
     return admitted;
   }
@@ -615,31 +623,15 @@ public class BlockEntityRollingMill
 
   #region Persistence
 
-  // The pass, declared once and read and written from that one declaration. The mill's base slot is
-  // spent on being a station, so it owns an ExBlockState rather than deriving from ExBlockEntity - the
-  // composable half of the same mechanism. The two stacks are absent here on purpose: they are the
-  // container's now, written into its "inventory" subtree with their id mappings.
-  private ExBlockState? _state;
-
-  private ExBlockState State =>
-    _state ??= new ExBlockState()
-      .Float("rmTemp", () => _tempC, v => _tempC = v)
-      .Float("rmRemaining", () => _remaining, v => _remaining = v)
-      .Bool("rmStalled", () => _stalled, v => _stalled = v)
-      .Float("rmPendingGap", () => _pendingGap, v => _pendingGap = v)
-      .Int("rmPendingSide", () => _pendingSide, v => _pendingSide = v);
-
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    State.ToTree(tree);
-  }
+  // The two stacks are absent from DeclareState on purpose: they are the container's now, written into
+  // its "inventory" subtree with their id mappings.
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    State.FromTree(tree, worldForResolving);
     MigrateLooseStacks(tree, worldForResolving);
   }
 

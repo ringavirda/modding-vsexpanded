@@ -1,4 +1,3 @@
-using ExpandedLib.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Common;

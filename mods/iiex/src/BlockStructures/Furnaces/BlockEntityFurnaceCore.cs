@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Heat;
-using ExpandedLib.Helpers;
-using ExpandedLib.Materials;
+using ExpandedLib.Blocks;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Catalogues;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
@@ -40,6 +43,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   protected override int MaxAwayCatchupSteps => 600;
 
   /// <summary>Whether the exhaust network is full, stalling production.</summary>
+  [Persist("isChoked")]
   public bool IsChoked { get; protected set; }
 
   /// <summary>
@@ -50,13 +54,18 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// </summary>
   public FurnaceState State => _state;
 
+  [Persist("bfState")]
   private FurnaceState _state = FurnaceState.Idle;
 
+  [Persist("cachedMixCount")]
   protected int _cachedMixCount = 0;
+
+  [Persist("cachedIsFull")]
   protected bool _cachedIsFull = false;
 
   // Unrecognised charge: still burns, but blocks conversion to molten while present. Cached and
   // serialized because GetBlockInfo runs client-side, where the charge is never walked.
+  [Persist("cachedRejectedCount")]
   protected int _cachedRejectedCount = 0;
 
   // World cells, refreshed by ScanForOutlets. Held as IReadOnlyList because they are handed straight back
@@ -64,6 +73,8 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   protected IReadOnlyList<BlockPos> _gasOutlets = [];
   protected IReadOnlyList<BlockPos> _tuyeres = [];
 
+  // Defaults to 20C when the key is absent, unlike a bare [Persist] float (default 0f) - so it stays a
+  // Tree declaration rather than an attribute.
   protected float _internalTemp = 20f;
 
   /// <summary>
@@ -74,10 +85,19 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   // Timers accumulate elapsed seconds (dt) so durations are independent of the
   // production-tick interval. Thresholds below are in seconds.
+  [Persist("secondsAboveMelting")]
   protected float _secondsAboveMelting = 0;
+
+  [Persist("meltSeconds")]
   protected float _meltSeconds = 0;
+
+  [Persist("extinguishSeconds")]
   protected float _extinguishSeconds = 0;
+
+  [Persist("belowMeltingSeconds")]
   protected float _belowMeltingSeconds = 0;
+
+  [Persist("fuelBurnSeconds")]
   protected float _fuelBurnSeconds = 0;
 
   // Sound throttles (world-elapsed ms): the furnace fire ambience and the molten
@@ -105,6 +125,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   // Whether the fire is starving for air (blast supply under the floor while lit). Serialized because
   // GetBlockInfo runs client-side, where the tuyere network is never read, so the HUD can name the stall.
+  [Persist("airStarved")]
   protected bool _airStarved;
 
   protected override int CompletionTickMs => 3000;
@@ -385,7 +406,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   /// <summary>
   /// The bounding box, in structure-local coordinates, of the cells this furnace's drawing marks as fuel -
-  /// <see cref="CellRole.Chargeable"/> on a shaft furnace, <see cref="CellRole.Firebox"/> on a reverberatory
+  /// <see cref="FurnaceCellRoles.Chargeable"/> on a shaft furnace, <see cref="FurnaceCellRoles.Firebox"/> on a reverberatory
   /// hearth - or null when it marks neither.
   /// </summary>
   /// <remarks>
@@ -423,27 +444,27 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// <summary>The two roles a fuel cell can carry. A layout may declare either, never both.</summary>
   private static readonly CellRole[] _fuelRoles =
   [
-    CellRole.Chargeable,
-    CellRole.Firebox,
+    FurnaceCellRoles.Chargeable,
+    FurnaceCellRoles.Firebox,
   ];
 
   /// <summary>
   /// Every world cell of this furnace's footprint that its layout marks as a liquid pool, for the placed
   /// facing - the crucible floor the molten metal freezes across when the furnace is put out. A crucible cell
-  /// carries <see cref="CellRole.Pool"/> and <see cref="CellRole.Chargeable"/> at once: burden rests on it
+  /// carries <see cref="FurnaceCellRoles.Pool"/> and <see cref="FurnaceCellRoles.Chargeable"/> at once: burden rests on it
   /// while the furnace runs, metal freezes onto it when the furnace dies.
   /// </summary>
-  public IReadOnlyList<BlockPos> PoolCells => CellsWithRole(CellRole.Pool);
+  public IReadOnlyList<BlockPos> PoolCells => CellsWithRole(FurnaceCellRoles.Pool);
 
   /// <summary>
   /// Every world cell of this furnace's footprint that its layout marks as a fuel bed, for the placed facing
   /// - the firebox cells, as opposed to the <see cref="ShaftBox"/> bounding box that contains them. A deposit
   /// into any one of them is spread across all of them (<c>BlockEntityFirebox.Charge</c>); grouping by role
   /// rather than adjacency keeps two hearths built back to back from merging their fuel. A shaft furnace
-  /// answers empty, its drawing marking <see cref="CellRole.Chargeable"/> instead.
+  /// answers empty, its drawing marking <see cref="FurnaceCellRoles.Chargeable"/> instead.
   /// </summary>
   public IReadOnlyList<BlockPos> FireboxCells =>
-    CellsWithRole(CellRole.Firebox);
+    CellsWithRole(FurnaceCellRoles.Firebox);
 
   /// <summary>
   /// Every world cell of this furnace's footprint that its layout marks as burden column, for the placed
@@ -458,7 +479,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// column. Cached by the base per role and invalidated when the structure reloads.
   /// </remarks>
   public IReadOnlyList<BlockPos> ChargeableCells =>
-    CellsWithRole(CellRole.Chargeable);
+    CellsWithRole(FurnaceCellRoles.Chargeable);
 
   /// <summary>World cell of a structure-local offset for the placed rotation.</summary>
   protected BlockPos GlobalOf(Vec3i local) =>
@@ -641,7 +662,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
     IiexValues.ChargeItemsPerBand * ChargeColumn.BandsPerBlock;
 
   /// <summary>
-  /// The <see cref="CellRole.Chargeable"/> cells of column
+  /// The <see cref="FurnaceCellRoles.Chargeable"/> cells of column
   /// <c>(<paramref name="localX"/>, <paramref name="localZ"/>)</c> in structure-local coordinates, ordered
   /// bottom-up - empty when that is not a column of this shaft.
   /// </summary>
@@ -663,7 +684,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   }
 
   /// <summary>
-  /// The structure-local <c>y</c> of the lowest <see cref="CellRole.Chargeable"/> cell in column
+  /// The structure-local <c>y</c> of the lowest <see cref="FurnaceCellRoles.Chargeable"/> cell in column
   /// <c>(<paramref name="localX"/>, <paramref name="localZ"/>)</c>, or null when the column has none. Charge
   /// rests on the lowest open cell of its own column, which is not the same height for every column of a
   /// furnace whose hearth has a well. The floor only, not what block indices are measured from - see
@@ -1552,12 +1573,12 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   /// <summary>
   /// Re-reads the gas-outlet and tuyere world cells for the current rotation off the layout's
-  /// <see cref="CellRole.GasOutlet"/> and <see cref="CellRole.Tuyere"/> marks. Asked as roles, an absence
+  /// <see cref="FurnaceCellRoles.GasOutlet"/> and <see cref="FurnaceCellRoles.Tuyere"/> marks. Asked as roles, an absence
   /// needs no declaration: a drawing that carries no outlet or tuyere glyph answers empty.
   /// </summary>
   protected virtual void ScanForOutlets() {
-    _gasOutlets = CellsWithRole(CellRole.GasOutlet);
-    _tuyeres = CellsWithRole(CellRole.Tuyere);
+    _gasOutlets = CellsWithRole(FurnaceCellRoles.GasOutlet);
+    _tuyeres = CellsWithRole(FurnaceCellRoles.Tuyere);
   }
 
   /// <summary>
@@ -1716,7 +1737,7 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// Puts a running furnace out before the block goes, so the pool freezes and the charge burns out to
   /// residue rather than vanishing with the block entity.
   /// removal-only teardown: a chunk unload leaves the furnace placed and still lit, and the away-catch-up
-  /// in <see cref="ExpandedLib.Blocks.Machines.BEBehaviorProductionMachine"/> replays the time it spent
+  /// in <see cref="ExpandedLib.Machines.BEBehaviorProductionMachine"/> replays the time it spent
   /// unloaded. Extinguishing here would put out every furnace whose player walked away.
   /// </summary>
   public override void OnBlockRemoved() {
@@ -1729,25 +1750,18 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
 
   #region Serialization
 
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldAccessForResolve
-  ) {
-    base.FromTreeAttributes(tree, worldAccessForResolve);
-    IsChoked = tree.GetBool("isChoked");
-    _state = (FurnaceState)tree.GetInt("bfState", 0);
-    _internalTemp = tree.GetFloat("internalTemp", 20f);
-    _secondsAboveMelting = tree.GetFloat("secondsAboveMelting", 0);
-    _meltSeconds = tree.GetFloat("meltSeconds", 0);
-    _extinguishSeconds = tree.GetFloat("extinguishSeconds", 0);
-    _belowMeltingSeconds = tree.GetFloat("belowMeltingSeconds", 0);
-    _fuelBurnSeconds = tree.GetFloat("fuelBurnSeconds", 0);
-    _cachedMixCount = tree.GetInt("cachedMixCount", 0);
-    _cachedIsFull = tree.GetBool("cachedIsFull", false);
-    _cachedRejectedCount = tree.GetInt("cachedRejectedCount", 0);
-    _airStarved = tree.GetBool("airStarved", false);
-    ReadHeatBalance(tree);
-    ReadShaftColumns(tree);
+  protected override void DeclareState(ExBlockState state) {
+    // ExBlockState.Float has no default-value parameter (it always reads back 0f for a missing key),
+    // and "internalTemp" is 20C on a furnace saved before the field existed - so it stays a Tree.
+    state.Tree(
+      "internalTemp",
+      tree => tree.SetFloat("internalTemp", _internalTemp),
+      (tree, _) => _internalTemp = tree.GetFloat("internalTemp", 20f)
+    );
+    // Compound entries: each spans several attributes the pair below builds/reads as one unit, so they
+    // stay Tree declarations rather than a scatter of typed primitives.
+    state.Tree("heatBalance", WriteHeatBalance, (tree, _) => ReadHeatBalance(tree));
+    state.Tree("shaftColumns", WriteShaftColumns, (tree, _) => ReadShaftColumns(tree));
   }
 
   // The whole balance rides the tree, not only its result: GetBlockInfo runs on the client, which never
@@ -1792,24 +1806,6 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
     tree.SetFloat("chargeFuel", _chargeMix.Fuel);
   }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("isChoked", IsChoked);
-    tree.SetInt("bfState", (int)State);
-    tree.SetFloat("internalTemp", _internalTemp);
-    tree.SetFloat("secondsAboveMelting", _secondsAboveMelting);
-    tree.SetFloat("meltSeconds", _meltSeconds);
-    tree.SetFloat("extinguishSeconds", _extinguishSeconds);
-    tree.SetFloat("belowMeltingSeconds", _belowMeltingSeconds);
-    tree.SetFloat("fuelBurnSeconds", _fuelBurnSeconds);
-    tree.SetInt("cachedMixCount", _cachedMixCount);
-    tree.SetBool("cachedIsFull", _cachedIsFull);
-    tree.SetInt("cachedRejectedCount", _cachedRejectedCount);
-    tree.SetBool("airStarved", _airStarved);
-    WriteHeatBalance(tree);
-    WriteShaftColumns(tree);
-  }
-
   #endregion
 
   #region Component HUD slices
@@ -1831,17 +1827,17 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// <summary>
   /// World cell of the lower (metal) tap for the placed rotation, or null on a furnace whose drawing has no
   /// metal tap. A tap compares its own position against this to know it is the metal tap. Nullable because
-  /// <see cref="CellRole.MetalTap"/> is <c>[SingleCell]</c>: a layout that declares it declares exactly one
+  /// <see cref="FurnaceCellRoles.MetalTap"/> is <c>[SingleCell]</c>: a layout that declares it declares exactly one
   /// cell, but may decline to declare it at all, as the two hearths do.
   /// </summary>
-  public BlockPos? MetalTapPos => SingleCellWithRole(CellRole.MetalTap);
+  public BlockPos? MetalTapPos => SingleCellWithRole(FurnaceCellRoles.MetalTap);
 
   /// <summary>World cell of the higher (slag) tap for the placed rotation, or <c>null</c> on a furnace
   /// whose drawing has no slag tap. See <see cref="MetalTapPos"/>.</summary>
-  public BlockPos? SlagTapPos => SingleCellWithRole(CellRole.SlagTap);
+  public BlockPos? SlagTapPos => SingleCellWithRole(FurnaceCellRoles.SlagTap);
 
   /// <summary>
-  /// The one world cell a <see cref="SingleCellAttribute">single-cell</see> role names, or null when the
+  /// The one world cell a <see cref="CellRole.IsSingle">single-cell</see> role names, or null when the
   /// layout does not mark it. The build-time arity guard is what makes reading a point out of a cell set
   /// legal here; null means a layout declared nothing, not that it declared too much.
   /// </summary>

@@ -1,5 +1,5 @@
-using ExpandedLib.Heat;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Items;
@@ -43,7 +43,7 @@ public class BlastFurnaceTests {
       ),
     };
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     ReflectionHelpers.Invoke(be, "CacheAttributes");
     return be;
   }

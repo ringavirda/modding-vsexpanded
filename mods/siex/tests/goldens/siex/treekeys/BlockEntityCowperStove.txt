@@ -1,0 +1,8 @@
+blockCode:string
+internalTemperature:float
+lastStatus:string
+pm_lastHours:double
+posx:int
+posy:int
+posz:int
+structureComplete:bool

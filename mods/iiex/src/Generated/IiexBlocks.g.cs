@@ -14,9 +14,11 @@ namespace IronIndustryExpanded;
 /// <c>VanillaCodes</c>.
 /// </para>
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class IiexBlocks
 {
   /// <summary><c>iiex:boilercornish</c> - boiler/cornish. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class BoilerCornish
   {
     /// <summary>The bare code, no variants: <c>iiex:boilercornish</c>.</summary>
@@ -44,6 +46,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:casting-mold</c> - casting/mold. Variant groups: tooltype(ingot).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CastingMold
   {
     /// <summary>The bare code, no variants: <c>iiex:casting-mold</c>.</summary>
@@ -54,6 +57,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:casting-sandbed</c> - casting/sandbed. Variant groups: brick(black|brown|cream|gray|orange|red|tan), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CastingSandbed
   {
     /// <summary>The bare code, no variants: <c>iiex:casting-sandbed</c>.</summary>
@@ -101,6 +105,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:casting-sandcell</c> - casting/sandcell. Variant groups: brick(fire|black|brown|cream|gray|orange|red|tan), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CastingSandcell
   {
     /// <summary>The bare code, no variants: <c>iiex:casting-sandcell</c>.</summary>
@@ -149,6 +154,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:casting-sandlongcell</c> - casting/sandlongcell. Variant groups: brick(fire|black|brown|cream|gray|orange|red|tan), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CastingSandlongcell
   {
     /// <summary>The bare code, no variants: <c>iiex:casting-sandlongcell</c>.</summary>
@@ -197,6 +203,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:crafting-designtable</c> - crafting/designtable. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CraftingDesigntable
   {
     /// <summary>The bare code, no variants: <c>iiex:crafting-designtable</c>.</summary>
@@ -224,6 +231,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:crafting-workbench</c> - crafting/workbench. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class CraftingWorkbench
   {
     /// <summary>The bare code, no variants: <c>iiex:crafting-workbench</c>.</summary>
@@ -251,6 +259,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:enginefluidpump</c> - engine/fluidpump. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class EngineFluidpump
   {
     /// <summary>The bare code, no variants: <c>iiex:enginefluidpump</c>.</summary>
@@ -278,6 +287,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:enginempgenerator</c> - engine/mpgenerator. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class EngineMpgenerator
   {
     /// <summary>The bare code, no variants: <c>iiex:enginempgenerator</c>.</summary>
@@ -305,6 +315,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:enginewatt</c> - engine/watt. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class EngineWatt
   {
     /// <summary>The bare code, no variants: <c>iiex:enginewatt</c>.</summary>
@@ -332,6 +343,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:forming</c> - forming/bench. Variant groups: type(nailcutter|riveter), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FormingBench
   {
     /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
@@ -368,6 +380,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:forming</c> - forming/millaxle. Variant groups: type(millaxle), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FormingMillaxle
   {
     /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
@@ -389,6 +402,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:forming</c> - forming/rollingmill. Variant groups: type(rollingmill), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FormingRollingmill
   {
     /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
@@ -410,6 +424,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:forming</c> - forming/shear. Variant groups: type(shear), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FormingShear
   {
     /// <summary>The bare code, no variants: <c>iiex:forming</c>.</summary>
@@ -431,6 +446,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/blastcore. Variant groups: type(blastcore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceBlastcore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -474,6 +490,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/chargedoor. Variant groups: type(chargedoor), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceChargedoor
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -501,6 +518,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/chargelid. Variant groups: type(chargelid), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceChargelid
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -528,6 +546,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/chargepile. Variant groups: type(chargepile).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceChargepile
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -538,6 +557,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/cokeovencore. Variant groups: type(cokeovencore), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceCokeovencore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -565,6 +585,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/cruciblecore. Variant groups: type(cruciblecore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceCruciblecore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -608,6 +629,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/cruciblehearth. Variant groups: type(cruciblehearth), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceCruciblehearth
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -651,6 +673,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/cupolacore. Variant groups: type(cupolacore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceCupolacore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -694,6 +717,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/firebox. Variant groups: type(firebox), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceFirebox
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -737,6 +761,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/heatingcore. Variant groups: type(heatingcore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceHeatingcore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -780,6 +805,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/heatinghearth. Variant groups: type(heatinghearth), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceHeatinghearth
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -807,6 +833,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/irontap. Variant groups: type(irontap), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceIrontap
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -834,6 +861,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/puddlingchargedoor. Variant groups: type(puddlingchargedoor), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnacePuddlingchargedoor
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -861,6 +889,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/puddlingchimneycap. Variant groups: type(puddlingchimneycap), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnacePuddlingchimneycap
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -888,6 +917,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/puddlingcore. Variant groups: type(puddlingcore), tier(tier1|tier2|tier3), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnacePuddlingcore
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -931,6 +961,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/puddlinghearth. Variant groups: type(puddlinghearth), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnacePuddlinghearth
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -958,6 +989,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/slagtap. Variant groups: type(slagtap), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceSlagtap
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -985,6 +1017,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/tuyere. Variant groups: type(tuyere), orientation(s|n|w|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceTuyere
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -1012,6 +1045,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:furnace</c> - furnace/twintubblower. Variant groups: type(twintubblower), orientation(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class FurnaceTwintubblower
   {
     /// <summary>The bare code, no variants: <c>iiex:furnace</c>.</summary>
@@ -1039,6 +1073,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:hearthmetal</c> - hearthmetal. Variant groups: metal(pigiron|castiron).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class Hearthmetal
   {
     /// <summary>The bare code, no variants: <c>iiex:hearthmetal</c>.</summary>
@@ -1060,6 +1095,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:hopper-tall</c> - hopper/tall. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class HopperTall
   {
     /// <summary>The bare code, no variants: <c>iiex:hopper-tall</c>.</summary>
@@ -1087,6 +1123,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:manualfluidpump</c> - manualfluidpump. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class Manualfluidpump
   {
     /// <summary>The bare code, no variants: <c>iiex:manualfluidpump</c>.</summary>
@@ -1114,6 +1151,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-barrel</c> - molten/barrel. Variant groups: construction(plated|cast).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenBarrel
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-barrel</c>.</summary>
@@ -1135,6 +1173,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/bend. Variant groups: type(bend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickBend
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1179,6 +1218,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/moldpedestal. Variant groups: type(moldpedestal), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(n|w|s|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickMoldpedestal
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1227,6 +1267,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/start. Variant groups: type(start), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(n|w|s|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickStart
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1275,6 +1316,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/straight. Variant groups: type(straight), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickStraight
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1317,6 +1359,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/tjunction. Variant groups: type(tjunction), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nes|esw|swn|wne).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickTjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1361,6 +1404,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/brick/xjunction. Variant groups: type(xjunction), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nswe).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalBrickXjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1388,6 +1432,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/bend. Variant groups: type(bend), rock(from block/rockwithdeposit), orientation(nw|se|en|ws).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneBend
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1419,6 +1464,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/moldpedestal. Variant groups: type(moldpedestal), rock(from block/rockwithdeposit), orientation(n|w|s|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneMoldpedestal
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1454,6 +1500,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/start. Variant groups: type(start), rock(from block/rockwithdeposit), orientation(n|w|s|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneStart
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1489,6 +1536,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/straight. Variant groups: type(straight), rock(from block/rockwithdeposit), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneStraight
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1518,6 +1566,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/tjunction. Variant groups: type(tjunction), rock(from block/rockwithdeposit), orientation(nes|esw|swn|wne).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneTjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1549,6 +1598,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/cobblestone/xjunction. Variant groups: type(xjunction), rock(from block/rockwithdeposit), orientation(nswe).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalCobblestoneXjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1563,6 +1613,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:molten-canal</c> - molten/canal/tap. Variant groups: type(tap), orientation(n|w|s|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MoltenCanalTap
   {
     /// <summary>The bare code, no variants: <c>iiex:molten-canal</c>.</summary>
@@ -1590,6 +1641,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:mpenergy</c> - mpenergy/bevel. Variant groups: type(bevel), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MpenergyBevel
   {
     /// <summary>The bare code, no variants: <c>iiex:mpenergy</c>.</summary>
@@ -1612,6 +1664,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:mpenergy</c> - mpenergy/flywheel. Variant groups: type(flywheel), size(normal|large), orientation(ns|we).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MpenergyFlywheel
   {
     /// <summary>The bare code, no variants: <c>iiex:mpenergy</c>.</summary>
@@ -1648,6 +1701,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:mpenergy</c> - mpenergy/shaft. Variant groups: type(shaft), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MpenergyShaft
   {
     /// <summary>The bare code, no variants: <c>iiex:mpenergy</c>.</summary>
@@ -1670,6 +1724,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:mpenergy</c> - mpenergy/transmission. Variant groups: type(transmission), kind(x2|x4|clutch), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class MpenergyTransmission
   {
     /// <summary>The bare code, no variants: <c>iiex:mpenergy</c>.</summary>
@@ -1713,6 +1768,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:burdenmaker</c> - ore/burdenmaker. Variant groups: brick(black|brown|cream|gray|orange|red|tan), side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class OreBurdenmaker
   {
     /// <summary>The bare code, no variants: <c>iiex:burdenmaker</c>.</summary>
@@ -1760,6 +1816,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/bend. Variant groups: tier(cast), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastBend
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1791,6 +1848,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/passthrough. Variant groups: tier(cast), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastPassthrough
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1834,6 +1892,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/passthroughbend. Variant groups: tier(cast), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastPassthroughbend
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1886,6 +1945,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/straight. Variant groups: tier(cast), type(straight), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastStraight
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1908,6 +1968,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/tjunction. Variant groups: tier(cast), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastTjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1939,6 +2000,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/cast/xjunction. Variant groups: tier(cast), type(xjunction), orientation(nswe|nsud|weud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeCastXjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1961,6 +2023,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/fluidintake. Variant groups: type(fluidintake), orientation(n|s|w|e).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeFluidintake
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -1988,6 +2051,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/outlet. Variant groups: type(outlet), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(s|n|w|e|u|d).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeOutlet
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2034,6 +2098,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/bend. Variant groups: tier(plated), type(bend), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedBend
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2065,6 +2130,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/passthrough. Variant groups: tier(plated), type(passthrough), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedPassthrough
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2108,6 +2174,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/passthroughbend. Variant groups: tier(plated), type(passthroughbend), brick(fire|black|brown|cream|gray|orange|red|tan), orientation(nw|se|en|ws|un|us|uw|ue|dn|ds|dw|de).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedPassthroughbend
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2160,6 +2227,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/straight. Variant groups: tier(plated), type(straight), orientation(ns|we|ud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedStraight
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2182,6 +2250,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/tjunction. Variant groups: tier(plated), type(tjunction), orientation(uns|uwe|dns|dwe|nes|esw|swn|wne|dnu|deu|dsu|dwu).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedTjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2213,6 +2282,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/plated/xjunction. Variant groups: tier(plated), type(xjunction), orientation(nswe|nsud|weud).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePlatedXjunction
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2235,6 +2305,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/pressurevalve. Variant groups: tier(cast), type(pressurevalve), orientation(ns|we|ud|sn|ew|du).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipePressurevalve
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2260,6 +2331,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:pipe</c> - pipe/valve. Variant groups: tier(cast), type(valve), orientation(ns|we|ud|sn|ew|du).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class PipeValve
   {
     /// <summary>The bare code, no variants: <c>iiex:pipe</c>.</summary>
@@ -2285,6 +2357,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-block</c> - slag/block. Variant groups: no variants.</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagBlock
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-block</c>.</summary>
@@ -2292,6 +2365,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-bricks</c> - slag/bricks. Variant groups: no variants.</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagBricks
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-bricks</c>.</summary>
@@ -2299,6 +2373,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-brickslab</c> - slag/brickslab. Variant groups: rot(north|east|south|west|up|down), cover(free|snow).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagBrickslab
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-brickslab</c>.</summary>
@@ -2339,6 +2414,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-brickstairs</c> - slag/brickstairs. Variant groups: updown(up), horizontalorientation(from game:abstract/horizontalorientation), cover(free|snow).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagBrickstairs
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-brickstairs</c>.</summary>
@@ -2372,6 +2448,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-path</c> - slag/path. Variant groups: cover(free|snow).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagPath
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-path</c>.</summary>
@@ -2393,6 +2470,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-pathslab</c> - slag/pathslab. Variant groups: cover(free|snow).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagPathslab
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-pathslab</c>.</summary>
@@ -2414,6 +2492,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:slag-pathstairs</c> - slag/pathstairs. Variant groups: updown(up), horizontalorientation(from game:abstract/horizontalorientation), cover(free|snow).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class SlagPathstairs
   {
     /// <summary>The bare code, no variants: <c>iiex:slag-pathstairs</c>.</summary>
@@ -2447,6 +2526,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:steamcondenser</c> - steamcondenser. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class Steamcondenser
   {
     /// <summary>The bare code, no variants: <c>iiex:steamcondenser</c>.</summary>
@@ -2474,6 +2554,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:steelcrucible</c> - steelcrucible. Variant groups: type(raw|burned|smelted).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class Steelcrucible
   {
     /// <summary>The bare code, no variants: <c>iiex:steelcrucible</c>.</summary>
@@ -2496,6 +2577,7 @@ public static class IiexBlocks
   }
 
   /// <summary><c>iiex:storage-rack</c> - storage/storagerack. Variant groups: side(n|e|s|w).</summary>
+  [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
   public static class StorageStoragerack
   {
     /// <summary>The bare code, no variants: <c>iiex:storage-rack</c>.</summary>

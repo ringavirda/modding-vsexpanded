@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Fallenstar",
+  "classifications": ["Test", "Vintage Story"],
+  "identity": "ExpandedLib.Templates.Tests",
+  "name": "exlib headless test project",
+  "shortName": "exlib-tests",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "YourMod.Tests",
+  "preferNameDirectory": true,
+  "symbols": {
+    "ModName": {
+      "type": "parameter",
+      "datatype": "string",
+      "isRequired": true,
+      "replaces": "YourModProject",
+      "description": "The mod project's own name, e.g. 'Demo' for a mod at ../Demo/Demo.csproj (sibling of this test project)."
+    },
+    "GamePath": {
+      "type": "parameter",
+      "datatype": "string",
+      "isRequired": false,
+      "defaultValue": "",
+      "replaces": "GAME_PATH_PLACEHOLDER",
+      "description": "Path to a Vintage Story install. Leave unset to fall back to the VINTAGE_STORY environment variable at build time (the generated csproj reads it directly)."
+    }
+  }
+}

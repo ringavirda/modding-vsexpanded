@@ -1,3 +1,4 @@
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;

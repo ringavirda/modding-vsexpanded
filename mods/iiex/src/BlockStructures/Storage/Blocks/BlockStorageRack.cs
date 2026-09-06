@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Storage;
+using ExpandedLib.Registries;
+using ExpandedLib.Catalogues;
 using IronIndustryExpanded.BlockStructures.Storage.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

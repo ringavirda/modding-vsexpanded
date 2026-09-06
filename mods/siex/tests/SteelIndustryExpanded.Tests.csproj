@@ -49,13 +49,16 @@
     <!-- Content-specific fixtures follow the mod chain: the pipe builders come from the iiex suite,
          the boiler/engine plants from the iiex suite. -->
     <ProjectReference Include="..\..\iiex\tests\IronIndustryExpanded.Tests.csproj" />
+    <!-- ReleasedCodeCoverageTests/ReleasedEntityClassTests are the only suite that checks all three
+         mods' shipped history together, so exlib's release-history registration has to load here too. -->
+    <ProjectReference Include="..\..\exlib\tests\ExpandedLib.Tests.csproj" />
   </ItemGroup>
 
   <!-- The base pipe block + BE live in exlib, and the shared pipe builders in the iiex test project.
        Expose both project-wide so the many scene/scenario files that build pipe runs do not each
        need the using (no ambiguity: these names exist only there). -->
   <ItemGroup>
-    <Using Include="ExpandedLib.Blocks.Networks" />
+    <Using Include="ExpandedLib.Networks" />
     <Using Include="IronIndustryExpanded.Tests" />
   </ItemGroup>
 </Project>

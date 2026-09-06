@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
@@ -11,8 +11,8 @@ using Xunit;
 namespace SteelIndustryExpanded.Tests;
 
 /// <summary>
-/// The hot blast furnace's crucible is the last drawing where <see cref="CellRole.Pool"/> and
-/// <see cref="CellRole.Chargeable"/> share cells, and this file pins the behaviour that follows from it -
+/// The hot blast furnace's crucible is the last drawing where <see cref="FurnaceCellRoles.Pool"/> and
+/// <see cref="FurnaceCellRoles.Chargeable"/> share cells, and this file pins the behaviour that follows from it -
 /// which is known-wrong, not intended. The two iwex shafts separated the roles when their crucible became
 /// live molten cells; this one holds because dropping <c>Chargeable</c> alone would leave a two-cell
 /// crucible under a 3x3 shaft, a bosh no furnace has, and because the hearth's real defect is a cinder

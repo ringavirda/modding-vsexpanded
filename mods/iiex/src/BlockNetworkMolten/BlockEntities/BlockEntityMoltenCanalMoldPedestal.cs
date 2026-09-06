@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -365,14 +367,35 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("isMold", IsMold);
-    tree.SetBool("isPouring", IsPouring);
-    tree.SetItemstack("moldStack", MoldStack);
-    tree.SetItemstack("moldContents", MoldMetalContent);
-    tree.SetInt("moldCurrentUnits", MoldCurrentUnits);
-    tree.SetInt("moldMaxUnits", MoldMaxUnits);
+  // "isPouring" defaults true on load, unlike a bare [Persist] bool (default false), because a
+  // pedestal saved before the flag existed poured freely - so it stays a Tree. "moldStack"/
+  // "moldContents" are written unconditionally, even when empty, unlike ExBlockState.Stack, which
+  // skips a null value - so they stay a Tree too.
+  protected override void DeclareState(ExBlockState state) {
+    state.Tree(
+      "isPouring",
+      tree => tree.SetBool("isPouring", IsPouring),
+      (tree, world) => IsPouring = tree.GetBool("isPouring", true)
+    );
+    state.Tree(
+      "moldContent",
+      tree => {
+        tree.SetBool("isMold", IsMold);
+        tree.SetItemstack("moldStack", MoldStack);
+        tree.SetItemstack("moldContents", MoldMetalContent);
+        tree.SetInt("moldCurrentUnits", MoldCurrentUnits);
+        tree.SetInt("moldMaxUnits", MoldMaxUnits);
+      },
+      (tree, world) => {
+        IsMold = tree.GetBool("isMold");
+        MoldStack = tree.GetItemstack("moldStack");
+        MoldStack?.ResolveBlockOrItem(world);
+        MoldMetalContent = tree.GetItemstack("moldContents");
+        MoldMetalContent?.ResolveBlockOrItem(world);
+        MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
+        MoldMaxUnits = tree.GetInt("moldMaxUnits", IiexValues.MoldDefaultUnits);
+      }
+    );
   }
 
   public override void FromTreeAttributes(
@@ -380,15 +403,6 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-
-    IsMold = tree.GetBool("isMold");
-    IsPouring = tree.GetBool("isPouring", true);
-    MoldStack = tree.GetItemstack("moldStack");
-    MoldStack?.ResolveBlockOrItem(worldForResolving);
-    MoldMetalContent = tree.GetItemstack("moldContents");
-    MoldMetalContent?.ResolveBlockOrItem(worldForResolving);
-    MoldCurrentUnits = tree.GetInt("moldCurrentUnits");
-    MoldMaxUnits = tree.GetInt("moldMaxUnits", IiexValues.MoldDefaultUnits);
     UpdateRenderer();
   }
 
@@ -398,6 +412,7 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
     Dictionary<int, AssetLocation> blockIdMapping,
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
+    base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
     MoldStack?.Collectible?.OnStoreCollectibleMappings(
       Api.World,
       new DummySlot(MoldStack),
@@ -419,6 +434,13 @@ public class BlockEntityMoltenCanalMoldPedestal : BlockEntityMoltenCanal {
     int schematicSeed,
     bool resolveImports
   ) {
+    base.OnLoadCollectibleMappings(
+      worldForResolve,
+      oldBlockIdMapping,
+      oldItemIdMapping,
+      schematicSeed,
+      resolveImports
+    );
     // A false return means the destination world has no such item/block; FixMapping leaves Id at the
     // source world's value, which would resolve to whatever owns that id there. Null the stack instead
     // of keeping a mis-resolved one, matching vanilla's BEIngotMold.cs:806-809.

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
+using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Tests;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.Blocks;
@@ -88,7 +89,7 @@ public class FurnaceGeometryTests {
     Assert.NotEmpty(gasOutlets);
     // The cells the layout marks, not merely some non-empty set.
     Assert.Equal(
-      Render(furnace.CellsWithRole(CellRole.GasOutlet)),
+      Render(furnace.CellsWithRole(FurnaceCellRoles.GasOutlet)),
       Render(gasOutlets)
     );
 
@@ -122,7 +123,7 @@ public class FurnaceGeometryTests {
   }
 
   /// <summary>
-  /// The charge volume: the cells the layout marks <see cref="CellRole.Chargeable"/>. 38 of the shaft
+  /// The charge volume: the cells the layout marks <see cref="FurnaceCellRoles.Chargeable"/>. 38 of the shaft
   /// box's 45, because at the hearth floor only <c>(0,1,0)</c> and <c>(1,1,0)</c> are open and the rest of
   /// that level is the tuyere pair and brick. Two more than the cold furnace's 36, those two being the
   /// crucible cells this drawing still charges. Run here because the iiex host never loads this assembly,
@@ -169,7 +170,7 @@ public class FurnaceGeometryTests {
   }
 
   /// <summary>
-  /// The <see cref="CellRole.Chargeable"/> role and the charge-pile block code answer the same cells,
+  /// The <see cref="FurnaceCellRoles.Chargeable"/> role and the charge-pile block code answer the same cells,
   /// element-wise, at every facing, and every one is inside the completed footprint. Nothing in the layout
   /// DSL relates a role to the code its glyph carries, so the <c>CellsAccepting</c> comparison, which
   /// rotates by a different route than <c>CellsWithRole</c>, is the only check that a <c>Role()</c> landed
@@ -198,7 +199,7 @@ public class FurnaceGeometryTests {
       Render(
         furnace.CellsAccepting(new AssetLocation("iiex:furnace-chargepile"))
       ),
-      Render(furnace.CellsWithRole(CellRole.Chargeable))
+      Render(furnace.CellsWithRole(FurnaceCellRoles.Chargeable))
     );
     foreach (BlockPos cell in furnace.ChargeableCells)
       Assert.True(
@@ -210,7 +211,7 @@ public class FurnaceGeometryTests {
   /// <summary>
   /// Tuyere, GasOutlet, Pool, MetalTap and SlagTap cells match the values the deleted C# arrays held,
   /// element-wise, at every facing. This is the only furnace that vents, so it is the only one where
-  /// <see cref="CellRole.GasOutlet"/> is non-empty; every other suite pins that role by asserting absence.
+  /// <see cref="FurnaceCellRoles.GasOutlet"/> is non-empty; every other suite pins that role by asserting absence.
   /// </summary>
   [Theory]
   [InlineData("north")]
@@ -234,11 +235,11 @@ public class FurnaceGeometryTests {
     // BlockEntityFurnaceCore; this furnace overrode none of the five.
     (CellRole Role, Vec3i[] Before)[] migrated =
     [
-      (CellRole.Tuyere, [new(0, 1, -1), new(0, 1, 1)]),
-      (CellRole.GasOutlet, [new(0, 6, -1), new(0, 6, 1)]),
-      (CellRole.Pool, [new(0, 1, 0), new(1, 1, 0)]),
-      (CellRole.MetalTap, [new(2, 1, 0)]),
-      (CellRole.SlagTap, [new(-2, 2, 0)]),
+      (FurnaceCellRoles.Tuyere, [new(0, 1, -1), new(0, 1, 1)]),
+      (FurnaceCellRoles.GasOutlet, [new(0, 6, -1), new(0, 6, 1)]),
+      (FurnaceCellRoles.Pool, [new(0, 1, 0), new(1, 1, 0)]),
+      (FurnaceCellRoles.MetalTap, [new(2, 1, 0)]),
+      (FurnaceCellRoles.SlagTap, [new(-2, 2, 0)]),
     ];
 
     foreach (var (role, before) in migrated) {
@@ -272,12 +273,12 @@ public class FurnaceGeometryTests {
       Render(
         furnace.CellsAccepting(new AssetLocation("iiex:furnace-tuyere-*"))
       ),
-      Render(furnace.CellsWithRole(CellRole.Tuyere))
+      Render(furnace.CellsWithRole(FurnaceCellRoles.Tuyere))
     );
     Assert.Equal(
       new[] { Face("n"), Face("s") }.OrderBy(f => f),
       furnace
-        .CellsWithRole(CellRole.Tuyere)
+        .CellsWithRole(FurnaceCellRoles.Tuyere)
         .SelectMany(furnace.ConnectorFacesAt)
         .Select(f => ExOrientation.TokenOf(f, asLetter: true))
         .OrderBy(f => f)
@@ -286,7 +287,7 @@ public class FurnaceGeometryTests {
       Render(
         furnace.CellsAccepting(new AssetLocation("iiex:pipe-outlet-fire-u"))
       ),
-      Render(furnace.CellsWithRole(CellRole.GasOutlet))
+      Render(furnace.CellsWithRole(FurnaceCellRoles.GasOutlet))
     );
 
     // Each tap notch carries its own block code, so each tap role is pinned on its own; the array
@@ -308,11 +309,11 @@ public class FurnaceGeometryTests {
 
     Assert.Equal(
       Render(furnace.CellsAccepting(Tap("irontap", "west"))),
-      Render(furnace.CellsWithRole(CellRole.MetalTap))
+      Render(furnace.CellsWithRole(FurnaceCellRoles.MetalTap))
     );
     Assert.Equal(
       Render(furnace.CellsAccepting(Tap("slagtap", "east"))),
-      Render(furnace.CellsWithRole(CellRole.SlagTap))
+      Render(furnace.CellsWithRole(FurnaceCellRoles.SlagTap))
     );
     Assert.Single(furnace.CellsAccepting(Tap("irontap", "west")));
     Assert.Single(furnace.CellsAccepting(Tap("slagtap", "east")));

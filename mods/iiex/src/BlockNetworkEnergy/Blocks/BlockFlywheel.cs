@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -171,7 +172,7 @@ public partial class BlockFlywheel
   public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos) {
     // Runs on every removal path (a player break, an explosion, a worldedit delete), unlike
     // OnBlockBroken, so the reserved volume is never left behind as orphan solid cells. Mirrors
-    // ExpandedLib.Blocks.Structures.BlockFilledMegastructure.OnBlockRemoved.
+    // ExpandedLib.Structures.BlockFilledMegastructure.OnBlockRemoved.
     StructureFillers.RemoveFillers(world, pos, FootprintCells(pos));
     base.OnBlockRemoved(world, pos);
   }

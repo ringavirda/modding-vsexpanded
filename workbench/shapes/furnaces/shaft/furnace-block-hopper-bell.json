@@ -8,8 +8,8 @@
   "textureHeight": 16,
   "textureSizes": {},
   "textures": {
-    "normal4": "game:block/metal/corroded/normal4",
-    "steel5": "game:block/metal/sheet/steel5"
+    "normal4": "block/metal/corroded/normal4",
+    "steel5": "block/metal/sheet/steel5"
   },
   "elements": [
     {

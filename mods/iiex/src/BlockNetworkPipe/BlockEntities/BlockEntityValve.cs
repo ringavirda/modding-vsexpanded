@@ -1,9 +1,10 @@
 using System;
 using System.Text;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks;
+using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Renderers;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -21,6 +22,7 @@ namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityValve : BlockEntityPipe {
+  [Persist("valveOpen")]
   private bool _open;
 
   private ToggleAnimator? _toggle;
@@ -188,18 +190,14 @@ public class BlockEntityValve : BlockEntityPipe {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("valveOpen", _open);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
     bool prev = _open;
-    _open = tree.GetBool("valveOpen");
+    base.FromTreeAttributes(tree, worldForResolving);
     // Closed at save time means the isolated cell holds nothing. Drop any persisted pool before
     // Initialize captures it for restore, so a stale pressurised state cannot burst it on load.
     if (!_open)

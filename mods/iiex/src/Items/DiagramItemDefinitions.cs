@@ -87,7 +87,7 @@ public class DiagramItemDefinitions : IExItemDefProvider {
       // Held two-handed and inclined so the drawing on the top face angles toward the camera. The
       // transforms below are seed values: there is no headless way to judge them.
       .HeldTpIdleAnimation("holdbothhands")
-      .Raw(
+      .RootKey(
         "fpHandTransform",
         new {
           translation = new {

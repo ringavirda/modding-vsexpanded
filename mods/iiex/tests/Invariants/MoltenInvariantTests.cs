@@ -1,4 +1,5 @@
 using System;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
@@ -28,8 +29,8 @@ public class MoltenInvariantTests {
       ("type", "straight"),
       ("orientation", "ns")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "straight");
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest("straight");
+    block.ApplyOrientationForTest("ns");
     return block;
   }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -48,7 +49,7 @@ public partial class BlockCastMold : Block, IExBlockDefProvider {
       .Sound("walk", "game:walk/stone")
       // The cast a full, hardened mold yields; the entity resolves it in the metal's cast domain.
       // 100 units per ingot, matching vanilla's ingot arithmetic.
-      .RawByType(
+      .RootKeyByType(
         "attributesByType",
         "casting-mold-ingot",
         new {
@@ -101,9 +102,9 @@ public partial class BlockCastMold : Block, IExBlockDefProvider {
       world.BlockAccessor.GetBlockEntity(pos) is BlockEntityCastMold mold
       && mold is { CurrentUnitAmount: > 0, MetalContent: { } metal }
     )
-      ExpandedLib.Metals.MoltenContents.Write(
+      ExpandedLib.Industry.Molten.MoltenContents.Write(
         moldStack,
-        ExpandedLib.Metals.MoltenContents.MoldUnitsKey,
+        ExpandedLib.Industry.Molten.MoltenContents.MoldUnitsKey,
         metal,
         mold.CurrentUnitAmount
       );

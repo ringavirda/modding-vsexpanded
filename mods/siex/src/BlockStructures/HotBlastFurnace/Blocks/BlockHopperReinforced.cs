@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Definitions;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using SteelIndustryExpanded.BlockStructures.HotBlastFurnace.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

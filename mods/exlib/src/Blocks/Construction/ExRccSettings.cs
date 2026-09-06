@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ExpandedLib.Blocks.Construction;
+namespace ExpandedLib.Blocks;
 
 /// <summary>
 /// Player-tunable settings for the right-click construction system, supplied by each mod from its own

@@ -1,4 +1,6 @@
 using System.Linq;
+using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Boiler;
@@ -9,7 +11,6 @@ using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Xunit;
-using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
 
 namespace IronIndustryExpanded.Tests;
 
@@ -19,7 +20,7 @@ namespace IronIndustryExpanded.Tests;
 /// <list type="bullet">
 /// <item>a real <see cref="BlockBoilerCornish"/> carrying its shipped attributes, so the geometry
 /// offsets and the footprint are the ones that ship;</item>
-/// <item>a complete <see cref="ExpandedLib.Blocks.Construction.ExRightClickConstructable"/>, so
+/// <item>a complete <see cref="ExpandedLib.Blocks.ExRightClickConstructable"/>, so
 /// <c>IsConstructed</c> is true;</item>
 /// <item>the fuel bed its blocktype declares, charged and lit, so the fire is on.</item>
 /// </list>
@@ -68,7 +69,7 @@ internal sealed class BoilerRig {
   /// <summary>Runs the production tick directly, bypassing the tick-listener scheduling.</summary>
   public void Tick(float dt = 1f, int times = 1) {
     for (int i = 0; i < times; i++)
-      ReflectionHelpers.Invoke(Be, "OnProductionTick", dt);
+      Be.DriveProductionTick(dt);
   }
 
   public BoilerState State =>

@@ -1,15 +1,16 @@
 using System;
 using ExpandedLib;
-using ExpandedLib.Blocks.Machines;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Networks;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Renderers;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -22,12 +23,14 @@ namespace IronIndustryExpanded.BlockStructures.ManualPump.BlockEntities;
 /// and each tick the standing input water is moved out first, then the intake refills it.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityManualFluidPump : BlockEntity {
+public class BlockEntityManualFluidPump : ExBlockEntity {
   // --- Synced run state (server-authoritative, mirrored to clients for animation/sound) ---
   /// <summary>True while a player is actively cranking the pump (holding right-click).</summary>
+  [Persist("pumping")]
   private bool _pumping;
 
   /// <summary>True while the pump has an active intake on its input line and is moving water.</summary>
+  [Persist("drawingWater")]
   private bool _drawingWater;
 
   // Server-side watchdog: world ms of the last interaction step. The stop event normally clears
@@ -268,20 +271,7 @@ public class BlockEntityManualFluidPump : BlockEntity {
 
   #region Persistence + lifecycle
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetBool("pumping", _pumping);
-    tree.SetBool("drawingWater", _drawingWater);
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    _pumping = tree.GetBool("pumping");
-    _drawingWater = tree.GetBool("drawingWater");
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void OnBlockRemoved() {
     if (_serverTickId != 0)

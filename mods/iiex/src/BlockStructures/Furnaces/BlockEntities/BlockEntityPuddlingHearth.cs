@@ -1,7 +1,8 @@
 using System;
 using System.Text;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -297,17 +298,46 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
+  protected override void DeclareState(ExBlockState state) {
+    // Clamped on read so an edited or older save cannot ask for a pig element the shape does not have,
+    // which the tesselator drops without reporting; the melt/ball chain is clamped the same way, and in
+    // declaration order so each clamp reads the field the one before it just set.
     for (int i = 0; i < HeatingHearthLayout.Rows; i++) {
-      tree.SetInt("pigs" + i, _pigs[i]);
-      tree.SetBool("fettled" + i, _fettled[i]);
+      int row = i;
+      state.Int(
+        "pigs" + row,
+        () => _pigs[row],
+        v => _pigs[row] = GameMath.Clamp(v, 0, PuddlingHearthLayout.PigsPerRow)
+      );
+      state.Bool("fettled" + row, () => _fettled[row], v => _fettled[row] = v);
     }
-    tree.SetFloat("meltProgress", _meltProgress);
-    tree.SetInt("meltedUnits", _meltedUnits);
-    tree.SetInt("balls", _balls);
-    tree.SetInt("ballsMade", _ballsMade);
-    tree.SetBool("bathFrozen", _frozen);
+    state.Float(
+      "meltProgress",
+      () => _meltProgress,
+      v => _meltProgress = GameMath.Clamp(v, 0f, 1f)
+    );
+    state.Int(
+      "meltedUnits",
+      () => _meltedUnits,
+      v =>
+        _meltedUnits = GameMath.Clamp(
+          v,
+          0,
+          PuddlingHearthLayout.PigCapacity * ItemPig.PigUnits
+        )
+    );
+    state.Int(
+      "ballsMade",
+      () => _ballsMade,
+      v =>
+        _ballsMade = GameMath.Clamp(
+          v,
+          0,
+          _meltedUnits / WroughtBallItemDefinitions.BallUnits
+        )
+    );
+    state.Int("balls", () => _balls, v => _balls = GameMath.Clamp(v, 0, _ballsMade));
+    state.Bool("bathFrozen", () => _frozen, v => _frozen = v);
   }
 
   public override void FromTreeAttributes(
@@ -315,28 +345,6 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
     IWorldAccessor worldForResolving
   ) {
     base.FromTreeAttributes(tree, worldForResolving);
-    for (int i = 0; i < HeatingHearthLayout.Rows; i++) {
-      // Clamped on read so an edited or older save cannot ask for a pig element the shape does not have,
-      // which the tesselator drops without reporting.
-      _pigs[i] = GameMath.Clamp(
-        tree.GetInt("pigs" + i),
-        0,
-        PuddlingHearthLayout.PigsPerRow
-      );
-      _fettled[i] = tree.GetBool("fettled" + i);
-    }
-    // Clamped on read for the same reason the pigs are: an edited or older save must not put the bed in a
-    // state the element set has no drawing for.
-    _meltProgress = GameMath.Clamp(tree.GetFloat("meltProgress"), 0f, 1f);
-    _meltedUnits = GameMath.Clamp(
-      tree.GetInt("meltedUnits"),
-      0,
-      PuddlingHearthLayout.PigCapacity * ItemPig.PigUnits
-    );
-    int wholeBalls = _meltedUnits / WroughtBallItemDefinitions.BallUnits;
-    _ballsMade = GameMath.Clamp(tree.GetInt("ballsMade"), 0, wholeBalls);
-    _balls = GameMath.Clamp(tree.GetInt("balls"), 0, _ballsMade);
-    _frozen = tree.GetBool("bathFrozen");
     if (Api?.Side == EnumAppSide.Client)
       Api.World.BlockAccessor.MarkBlockDirty(Pos);
   }

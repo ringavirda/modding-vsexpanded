@@ -1,5 +1,6 @@
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Networks;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 
 namespace IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
 

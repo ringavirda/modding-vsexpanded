@@ -1,4 +1,5 @@
-using ExpandedLib.Materials;
+using ExpandedLib.Industry.Materials;
+using ExpandedLib.Catalogues;
 
 namespace IronIndustryExpanded.Tests;
 

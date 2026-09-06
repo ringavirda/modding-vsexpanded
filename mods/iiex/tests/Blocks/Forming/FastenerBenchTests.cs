@@ -1,7 +1,8 @@
 using System.Linq;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
-using ExpandedLib.Processes;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -146,8 +147,8 @@ public class FastenerBenchTests {
     int plate = RolledItemDefinitions.UnitsOf("nailplate");
 
     Assert.Equal(
-      plate,
-      BenchDieItemDefinitions.NailsPerPlate * VanillaBundleUnits
+      BenchDieItemDefinitions.NailsPerPlate * VanillaBundleUnits,
+      plate
     );
   }
 
@@ -156,8 +157,8 @@ public class FastenerBenchTests {
   [Fact]
   public void A_rivet_rod_is_worth_exactly_its_own_metal_in_bundles() {
     Assert.Equal(
-      RolledItemDefinitions.UnitsOf("rivetrod"),
       FastenerItemDefinitions.RivetsPerRod * FastenerItemDefinitions.RivetUnits,
+      RolledItemDefinitions.UnitsOf("rivetrod"),
       3
     );
   }

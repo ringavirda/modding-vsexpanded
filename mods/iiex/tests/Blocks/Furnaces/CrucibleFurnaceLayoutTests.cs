@@ -1,5 +1,5 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
@@ -16,7 +16,7 @@ namespace IronIndustryExpanded.Tests;
 /// <summary>
 /// The crucible furnace's drawing: one column - ash pit, hearth, damper, flue - and then the first course
 /// of a chimney the player carries up. The first furnace in the family whose fire and work are the same
-/// cell, and the first anywhere to mark <see cref="CellRole.Damper"/>.
+/// cell, and the first anywhere to mark <see cref="FurnaceCellRoles.Damper"/>.
 /// </summary>
 public class CrucibleFurnaceLayoutTests {
   #region Harness
@@ -58,7 +58,7 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_fire_and_the_work_are_one_cell() {
-    Assert.Equal([new Vec3i(-2, 0, 0)], RoleCellsOf(Def, CellRole.Firebox));
+    Assert.Equal([new Vec3i(-2, 0, 0)], RoleCellsOf(Def, FurnaceCellRoles.Firebox));
   }
 
   /// <summary>
@@ -68,7 +68,7 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_flue_is_a_column_over_the_hearth_ending_at_the_stack_base() {
-    var flue = RoleCellsOf(Def, CellRole.Flue).OrderBy(c => c.Y).ToList();
+    var flue = RoleCellsOf(Def, FurnaceCellRoles.Flue).OrderBy(c => c.Y).ToList();
 
     Assert.Equal([new Vec3i(-2, 2, 0), new Vec3i(-2, 3, 0)], flue);
     Assert.All(flue, c => Assert.Equal(new Vec3i(-2, c.Y, 0), c));
@@ -81,12 +81,12 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_damper_is_at_the_foot_of_the_stack_not_its_top() {
-    var damper = RoleCellsOf(Def, CellRole.Damper);
-    var flue = RoleCellsOf(Def, CellRole.Flue);
+    var damper = RoleCellsOf(Def, FurnaceCellRoles.Damper);
+    var flue = RoleCellsOf(Def, FurnaceCellRoles.Flue);
 
     Assert.Equal([new Vec3i(-2, 1, 0)], damper);
     Assert.All(flue, c => Assert.True(c.Y > damper[0].Y));
-    Assert.Equal(RoleCellsOf(Def, CellRole.Firebox)[0].Y + 1, damper[0].Y);
+    Assert.Equal(RoleCellsOf(Def, FurnaceCellRoles.Firebox)[0].Y + 1, damper[0].Y);
   }
 
   /// <summary>
@@ -96,7 +96,8 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_drawing_marks_exactly_firebox_flue_and_damper() {
-    Assert.Equal(["Firebox", "Flue", "Damper"], RoleNamesOf(Def));
+    // Sorted by key (ordinal): "Damper" < "Firebox" < "Flue".
+    Assert.Equal(["Damper", "Firebox", "Flue"], RoleNamesOf(Def));
   }
 
   #endregion

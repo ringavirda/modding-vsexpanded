@@ -1,6 +1,6 @@
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 
-namespace ExpandedLib.Testing.Doubles;
+namespace ExpandedLib.Testing;
 
 /// <summary>
 /// The smallest concrete <see cref="BlockEntityNetworkNode"/>: everything on the base class, one

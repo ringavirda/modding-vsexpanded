@@ -19,7 +19,6 @@
     "meltingDuration": 30,
     "smeltedRatio": 1
   },
-  "temperatureDamage": 4.0,
   "creativeinventory": {
     "general": [
       "*"

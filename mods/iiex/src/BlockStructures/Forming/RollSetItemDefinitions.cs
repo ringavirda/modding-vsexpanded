@@ -100,7 +100,7 @@ public class RollSetItemDefinitions : IExItemDefProvider {
       .TextureAll("iiex:block/metal/castiron")
       .VariantGroup("type", SetTypes)
       .MaxStackSize(1)
-      .Raw("attributesByType", byType)
+      .RootKey("attributesByType", byType)
       .CreativeCommon("*");
   }
 }

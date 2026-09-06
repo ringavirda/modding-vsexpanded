@@ -22,8 +22,8 @@ public class PressureValveReadoutTests {
       ("type", "pressurevalve"),
       ("orientation", "ns")
     );
-    ReflectionHelpers.SetProperty(block, "Type", "pressurevalve");
-    ReflectionHelpers.SetProperty(block, "Orientation", "ns");
+    block.SetNetworkTypeForTest("pressurevalve");
+    block.ApplyOrientationForTest("ns");
     return block;
   }
 

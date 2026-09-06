@@ -1,7 +1,7 @@
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Blocks;
+using ExpandedLib.Networks;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -21,24 +21,8 @@ public class BlockEntityRollingMillAxle : BlockEntityNetworkNode {
   }
 
   /// <summary>The mill principal that owns this axle cell (<c>null</c> only if orphaned).</summary>
+  [Persist("pr")]
   public BlockPos? Principal { get; set; }
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (Principal != null) {
-      tree.SetInt("prX", Principal.X);
-      tree.SetInt("prY", Principal.Y);
-      tree.SetInt("prZ", Principal.Z);
-    }
-  }
-
-  public override void FromTreeAttributes(
-    ITreeAttribute tree,
-    IWorldAccessor worldForResolving
-  ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    Principal = tree.HasAttribute("prX")
-      ? new BlockPos(tree.GetInt("prX"), tree.GetInt("prY"), tree.GetInt("prZ"))
-      : null;
-  }
+  protected override void DeclareState(ExBlockState state) { }
 }

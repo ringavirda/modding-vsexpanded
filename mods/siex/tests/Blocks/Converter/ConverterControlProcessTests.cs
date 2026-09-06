@@ -1,6 +1,7 @@
 using System;
-using ExpandedLib.Heat;
-using ExpandedLib.Metals;
+using ExpandedLib.Industry.Heat;
+using ExpandedLib.Industry.Metals;
+using ExpandedLib.Industry.Molten;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
@@ -69,7 +70,7 @@ public class ConverterControlProcessTests {
       ),
     };
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
     return be;
   }
 

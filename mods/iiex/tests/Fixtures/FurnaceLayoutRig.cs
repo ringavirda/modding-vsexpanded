@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Testing;
@@ -74,7 +74,7 @@ public static class FurnaceLayoutRig {
   /// The crucible-floor glyph: the same three occupants as <see cref="ShaftGlyph"/> plus the hearth-metal
   /// block the furnace stands its bath in. Inside <c>@(...)</c> the body is a regex, so the metal member
   /// is <c>hearthmetal-.*</c> and the <c>.</c> is not a typo - see <c>IiexCodes.HearthCell</c>. On the two
-  /// iwex furnaces this glyph carries <c>CellRole.Pool</c> only; siex's hot furnace also marks it
+  /// iwex furnaces this glyph carries <c>FurnaceCellRoles.Pool</c> only; siex's hot furnace also marks it
   /// <c>Chargeable</c>, which is why <see cref="ChargeCells"/> takes its glyphs from the caller.
   /// </summary>
   public const string HearthGlyph =
@@ -109,7 +109,11 @@ public static class FurnaceLayoutRig {
   /// variant its <c>ExOrientable</c> behaviour stamps, then runs the block entity's own rotation update so
   /// the structure angle is derived rather than assigned.
   /// </summary>
-  public static void Orient(BlockEntity be, string blockCode, string side) {
+  public static void Orient(
+    BlockEntityMultiblockStructure be,
+    string blockCode,
+    string side
+  ) {
     var world = new TestWorld();
     be.Block = TestBlocks.Configure(
       new Block(),
@@ -118,7 +122,7 @@ public static class FurnaceLayoutRig {
       ("side", SideToken(side))
     );
     world.Attach(be);
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
   }
 
   /// <summary>
@@ -129,7 +133,7 @@ public static class FurnaceLayoutRig {
   /// machine has to complete.
   /// </summary>
   public static void OrientWithLayout(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     string blockCode,
     string side
@@ -142,7 +146,7 @@ public static class FurnaceLayoutRig {
     be.Block.Attributes = new JsonObject(attributes);
     // The angle was already resolved against a block with no layout, so the load has to be re-run:
     // SetStructureAngle short-circuits UpdateStructureRotation only once _structure is non-null.
-    ReflectionHelpers.Invoke(be, "UpdateStructureRotation");
+    be.ApplyStructureRotation();
   }
 
   /// <summary>
@@ -336,7 +340,7 @@ public static class FurnaceLayoutRig {
   #region Odd-shaped fixture layouts
 
   /// <summary>
-  /// A cold-furnace core wearing a hand-drawn footprint whose <see cref="CellRole.Chargeable"/> volume is
+  /// A cold-furnace core wearing a hand-drawn footprint whose <see cref="FurnaceCellRoles.Chargeable"/> volume is
   /// exactly the solid box <paramref name="min"/>..<paramref name="max"/>, so the shaft box is exactly
   /// those corners. A shipped shaft is square or a single column and a square set is closed under 90 deg
   /// rotation, so only an asymmetric drawing exposes a transposed derivation loop.
@@ -386,7 +390,7 @@ public static class FurnaceLayoutRig {
           .Legend('C', "iiex:furnace-blastcore-*")
           .Legend('#', "game:refractorybricks-good-tier*")
           .Legend('c', ShaftGlyph)
-          .Role('c', CellRole.Chargeable);
+          .Role('c', FurnaceCellRoles.Chargeable);
 
         // y = 0 carries the anchor; every level of the box carries the volume. A brick outside both still
         // needs its own level drawn.
@@ -421,7 +425,7 @@ public static class FurnaceLayoutRig {
           .Legend('C', "iiex:furnace-blastcore-*")
           .Legend('#', "game:refractorybricks-good-tier*")
           .Legend('c', ShaftGlyph)
-          .Role('c', CellRole.Chargeable)
+          .Role('c', FurnaceCellRoles.Chargeable)
           .Layer(
             0,
             """
@@ -456,26 +460,9 @@ public static class FurnaceLayoutRig {
 
   #region Layout reading
 
-  /// <summary>
-  /// The wanted block code at each structure-local cell, read out of the generated
-  /// <c>multiblockStructure</c> attribute with block numbers resolved through <c>blockNumbers</c> - the
-  /// table the game builds the structure from, not a restatement of the ASCII drawing.
-  /// </summary>
-  public static Dictionary<Vec3i, string> LayoutOf(ExBlockDef def) {
-    JObject structure = (JObject)
-      def.ToJson()["attributes"]!["multiblockStructure"]!;
-
-    var codeByNumber = ((JObject)structure["blockNumbers"]!)
-      .Properties()
-      .ToDictionary(p => (int)p.Value!, p => p.Name);
-
-    var cells = new Dictionary<Vec3i, string>();
-    foreach (JToken offset in (JArray)structure["offsets"]!)
-      cells[
-        new Vec3i((int)offset["x"]!, (int)offset["y"]!, (int)offset["z"]!)
-      ] = codeByNumber[(int)offset["w"]!];
-    return cells;
-  }
+  /// <summary>Forwards to <see cref="LayoutTable.From"/>.</summary>
+  public static Dictionary<Vec3i, string> LayoutOf(ExBlockDef def) =>
+    LayoutTable.From(def);
 
   /// <summary>
   /// The authored (north-frame) cells a def's layout marks with <paramref name="role"/>, read out of the
@@ -499,36 +486,12 @@ public static class FurnaceLayoutRig {
       ? roles.Properties().Select(p => p.Name).ToList()
       : [];
 
-  /// <summary>
-  /// The wanted block code at each world-relative cell of the structure the game builds from the anchor's
-  /// definition, rotated by <paramref name="angle"/> through vanilla <see cref="MultiblockStructure"/> -
-  /// the independent half of the rotated oracle. Loaded and rotated the way the production block entity
-  /// does; the test block carries no attributes, so this reads the definition, not the instance.
-  /// </summary>
+  /// <summary>Forwards to <see cref="LayoutTable.Rotated"/> - the independent half of the rotated
+  /// oracle.</summary>
   public static Dictionary<Vec3i, string> RotatedLayoutOf(
     ExBlockDef def,
     int angle
-  ) {
-    JObject json = (JObject)def.ToJson()["attributes"]!["multiblockStructure"]!;
-
-    // Authored glyph per block number, read straight off the JSON as LayoutOf does, so a domainless or
-    // wildcard code keeps its authored form rather than being re-domained by an AssetLocation round-trip.
-    var codeByNumber = ((JObject)json["blockNumbers"]!)
-      .Properties()
-      .ToDictionary(p => (int)p.Value!, p => p.Name);
-
-    // The rotation comes from vanilla MultiblockStructure, rotated the way the production block entity
-    // does at placement.
-    MultiblockStructure structure = new JsonObject(
-      json
-    ).AsObject<MultiblockStructure>()!;
-    structure.InitForUse(angle);
-
-    var cells = new Dictionary<Vec3i, string>();
-    foreach (BlockOffsetAndNumber o in structure.TransformedOffsets)
-      cells[new Vec3i(o.X, o.Y, o.Z)] = codeByNumber[o.W];
-    return cells;
-  }
+  ) => LayoutTable.Rotated(def, angle);
 
   public static string At(Dictionary<Vec3i, string> layout, Vec3i cell) {
     Assert.True(
@@ -588,7 +551,7 @@ public static class FurnaceLayoutRig {
 
   /// <summary>
   /// The layout's chargeable cells - the shaft column the burden occupies. The literal-glyph route, not
-  /// how production finds them (it asks the cell's <see cref="CellRole.Chargeable"/> role), so the two are
+  /// how production finds them (it asks the cell's <see cref="FurnaceCellRoles.Chargeable"/> role), so the two are
   /// independent oracles. <paramref name="glyphs"/> is the caller's: the two iwex furnaces charge
   /// <see cref="ShaftGlyph"/> alone, while siex's hot furnace also charges its crucible course and so
   /// names <see cref="HearthGlyph"/> too. Listing a glyph the drawing does not charge inflates the oracle
@@ -631,8 +594,8 @@ public static class FurnaceLayoutRig {
   public static (Vec3i min, Vec3i max)? AuthoredFuelBox(ExBlockDef def) {
     List<Vec3i> cells =
     [
-      .. RoleCellsOf(def, CellRole.Chargeable),
-      .. RoleCellsOf(def, CellRole.Firebox),
+      .. RoleCellsOf(def, FurnaceCellRoles.Chargeable),
+      .. RoleCellsOf(def, FurnaceCellRoles.Firebox),
     ];
     if (cells.Count == 0)
       return null;
@@ -648,7 +611,7 @@ public static class FurnaceLayoutRig {
   /// emitted role attribute. Equality rather than containment, so a padded box fails here.
   /// </summary>
   public static void AssertShaftBoxIsTheDrawings(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     string furnace
   ) {
@@ -674,7 +637,7 @@ public static class FurnaceLayoutRig {
   /// <returns>The gas-outlet cells. Emptiness is the caller's to state, since "no outlets" is correct for
   /// both iiex furnaces - see <see cref="AssertNoExhaustOutlets"/>.</returns>
   public static List<Vec3i> AssertFurnaceGeometry(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     string anchorGlyph,
     string furnace,
@@ -690,14 +653,14 @@ public static class FurnaceLayoutRig {
     // Every tuyere cell holds the one wildcarded code, and the drawing states which way each must open.
     // The face set is the caller's, because the three shaft furnaces do not agree on it: the cold and hot
     // furnaces are blown from both walls, the cupola only from the north.
-    AssertRoleGlyphs(def, layout, CellRole.Tuyere, TuyereGlyph, "tuyere");
-    AssertConnectorFaces(def, CellRole.Tuyere, tuyereFaces);
+    AssertRoleGlyphs(def, layout, FurnaceCellRoles.Tuyere, TuyereGlyph, "tuyere");
+    AssertConnectorFaces(def, FurnaceCellRoles.Tuyere, tuyereFaces);
 
     // Both drains, each its own [SingleCell] role on its own glyph and block - `T` the iron notch, `S` the
     // cinder notch - so a drawing that swaps the two fails here. The pair is the caller's because the
     // cupola drains the opposite hand to the blast furnaces.
-    AssertRoleGlyphs(def, layout, CellRole.MetalTap, taps.Iron, "metal tap");
-    AssertRoleGlyphs(def, layout, CellRole.SlagTap, taps.Slag, "slag tap");
+    AssertRoleGlyphs(def, layout, FurnaceCellRoles.MetalTap, taps.Iron, "metal tap");
+    AssertRoleGlyphs(def, layout, FurnaceCellRoles.SlagTap, taps.Slag, "slag tap");
 
     // The shaft centre stands in the burden column proper, a course above the crucible.
     AssertGlyph(layout, Cell(be, "ShaftCentre"), ShaftGlyph, "shaft centre");
@@ -710,7 +673,7 @@ public static class FurnaceLayoutRig {
     AssertRoleGlyphs(
       def,
       layout,
-      CellRole.Chargeable,
+      FurnaceCellRoles.Chargeable,
       chargeGlyphs,
       "chargeable"
     );
@@ -720,14 +683,14 @@ public static class FurnaceLayoutRig {
     AssertRoleGlyphs(
       def,
       layout,
-      CellRole.Pool,
+      FurnaceCellRoles.Pool,
       // HearthGlyph alone: every pool cell is a crucible cell, and the several-codes form also requires
       // each listed glyph to be held by some cell.
       HearthGlyph,
       "pool"
     );
 
-    List<Vec3i> outlets = RoleCellsOf(def, CellRole.GasOutlet);
+    List<Vec3i> outlets = RoleCellsOf(def, FurnaceCellRoles.GasOutlet);
     foreach (Vec3i outlet in outlets)
       AssertGlyph(layout, outlet, OutletGlyph, "gas outlet");
     return outlets;
@@ -784,13 +747,13 @@ public static class FurnaceLayoutRig {
   /// through the machine rather than the drawing, because that is the route completion takes.
   /// </summary>
   private static void AssertRotatedConnectorFaces(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     string[] authoredFaces,
     int angle
   ) {
     var machine = (BlockEntityMultiblockStructure)be;
     var demanded = new List<string>();
-    foreach (BlockPos cell in machine.CellsWithRole(CellRole.Tuyere))
+    foreach (BlockPos cell in machine.CellsWithRole(FurnaceCellRoles.Tuyere))
       demanded.AddRange(
         machine
           .ConnectorFacesAt(cell)
@@ -853,7 +816,7 @@ public static class FurnaceLayoutRig {
   /// </summary>
   public static void AssertNoExhaustOutlets(ExBlockDef def) {
     Assert.DoesNotContain(OutletGlyph, LayoutOf(def).Values);
-    Assert.Empty(RoleCellsOf(def, CellRole.GasOutlet));
+    Assert.Empty(RoleCellsOf(def, FurnaceCellRoles.GasOutlet));
   }
 
   #endregion
@@ -868,7 +831,7 @@ public static class FurnaceLayoutRig {
   /// on a glyph that is not its own. Non-empty is asserted for every role but the outlets.
   /// </summary>
   public static void AssertFurnaceMatrix(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     string anchorGlyph,
     string side,
@@ -890,7 +853,7 @@ public static class FurnaceLayoutRig {
       def,
       layout,
       angle,
-      CellRole.Tuyere,
+      FurnaceCellRoles.Tuyere,
       TuyereGlyph,
       "tuyere"
     );
@@ -903,7 +866,7 @@ public static class FurnaceLayoutRig {
       def,
       layout,
       angle,
-      CellRole.MetalTap,
+      FurnaceCellRoles.MetalTap,
       taps.Iron,
       "metal tap"
     );
@@ -912,7 +875,7 @@ public static class FurnaceLayoutRig {
       def,
       layout,
       angle,
-      CellRole.SlagTap,
+      FurnaceCellRoles.SlagTap,
       taps.Slag,
       "slag tap"
     );
@@ -932,14 +895,14 @@ public static class FurnaceLayoutRig {
       def,
       layout,
       angle,
-      CellRole.Pool,
+      FurnaceCellRoles.Pool,
       // HearthGlyph alone, not the pair: the several-codes form also requires every listed glyph to be
       // held by some cell, and every pool cell is a crucible cell.
       HearthGlyph,
       "pool"
     );
 
-    foreach (Vec3i outlet in RoleCellsOf(def, CellRole.GasOutlet))
+    foreach (Vec3i outlet in RoleCellsOf(def, FurnaceCellRoles.GasOutlet))
       AssertRotatedCell(
         be,
         layout,
@@ -954,7 +917,7 @@ public static class FurnaceLayoutRig {
   /// <summary>Every cell a def marks with <paramref name="role"/>, rotated and checked through both
   /// oracles - and there is at least one, so the loop cannot pass by running zero times.</summary>
   private static void AssertRotatedRole(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     Dictionary<Vec3i, string> layout,
     int angle,
@@ -970,7 +933,7 @@ public static class FurnaceLayoutRig {
   /// <c>MultiblockFacings</c>, which runs at completion-check time.
   /// </summary>
   private static void AssertRotatedRole(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     Dictionary<Vec3i, string> layout,
     int angle,
@@ -1015,7 +978,7 @@ public static class FurnaceLayoutRig {
   /// <param name="cells">Structure-local offset and the glyph it must resolve to, per cell. These machines
   /// expose no cell properties of their own.</param>
   public static void AssertPlus180Matrix(
-    BlockEntity be,
+    BlockEntityMultiblockStructure be,
     ExBlockDef def,
     string anchorGlyph,
     string side,

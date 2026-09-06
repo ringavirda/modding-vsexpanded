@@ -1,0 +1,10 @@
+blockCode:string
+inventory/qslots:int
+posx:int
+posy:int
+posz:int
+rmPendingGap:float
+rmPendingSide:int
+rmRemaining:float
+rmStalled:bool
+rmTemp:float

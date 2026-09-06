@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry.Pipes;
 
 namespace SteelIndustryExpanded.BlockNetworkPipe;
 

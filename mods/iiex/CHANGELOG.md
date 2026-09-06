@@ -10,6 +10,21 @@ version line this mod continues. The iron half of the mod is new in 0.7.0.
 
 ## [Unreleased]
 
+### Internal
+
+- Every block entity that hand-wrote its `ToTreeAttributes`/`FromTreeAttributes` pair now declares
+  its state through `[Persist]` or `Persisted`; the save format is unchanged (proved by a
+  `TreeKeys` golden per class). The last two hand-written pairs move onto exlib's new bases:
+  `BlockEntityBurdenmaker` onto `ExBlockEntityContainer` and `BEBehaviorFirebox` onto
+  `ExBlockEntityBehavior`, both with their save keys unchanged.
+- `FurnaceCellRoles` moves onto exlib's `CellRole` (now a string-keyed record struct); the nine
+  furnace roles and their single-cell rule are unchanged. `IronIndustryExpandedModSystem` sets
+  `MetalRegistry.DefaultRecoveryFallback` from `IiexConfig.MetalRecoveryFallback` at `.Start`, so
+  the slag recovery fallback the family shares now lives in config rather than hardcoded in exlib.
+- The boiler, engine and transmission drop their hand-written `CanRunProduction => IsConstructed`
+  gates now that `ExRightClickConstructable` publishes `IProductionReadiness` itself; behaviour is
+  unchanged (construction still gates production by default, `GatesProduction` opts a machine out).
+
 ### Changed
 
 - **Merged into one mod.** Ironworking Expanded (`iiex`) and Low Pressure Expanded

@@ -1,9 +1,10 @@
 using System;
 using System.Text;
-using ExpandedLib.Blocks.Construction;
+using ExpandedLib.Blocks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Metals;
-using ExpandedLib.Registries.Entities;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Molten;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkMolten;
 using SteelIndustryExpanded.BlockStructures.Converter.Blocks;
 using Vintagestory.API.Client;
@@ -22,10 +23,17 @@ namespace SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
 /// <see cref="BlockEntityConverterControl"/>; solidified drops are handed back on break.
 /// </summary>
 [BlockEntityRegister]
-public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten {
+public class BlockEntityConverterBessemer : ExBlockEntity, IChiselableMolten {
+  [Persist("ctrl")]
   private BlockPos? _controlPos;
+
+  [Persist("opState")]
   private ConverterOpState _opState = ConverterOpState.Normal;
+
+  [Persist("solidified")]
   private bool _solidified;
+
+  [Persist("chargeUnits")]
   private int _chargeUnits;
 
   // Owns the RCC-suppressed-mesh animator triad (shared by every constructed mega-block).
@@ -243,34 +251,14 @@ public class BlockEntityConverterBessemer : BlockEntity, IChiselableMolten {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    if (_controlPos != null) {
-      tree.SetInt("ctrlX", _controlPos.X);
-      tree.SetInt("ctrlY", _controlPos.Y);
-      tree.SetInt("ctrlZ", _controlPos.Z);
-    }
-    tree.SetInt("opState", (int)_opState);
-    tree.SetBool("solidified", _solidified);
-    tree.SetInt("chargeUnits", _chargeUnits);
-  }
+  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
   ) {
-    base.FromTreeAttributes(tree, worldForResolving);
-    if (tree.HasAttribute("ctrlX"))
-      _controlPos = new BlockPos(
-        tree.GetInt("ctrlX"),
-        tree.GetInt("ctrlY"),
-        tree.GetInt("ctrlZ")
-      );
-
     var prevState = _opState;
-    _opState = (ConverterOpState)tree.GetInt("opState");
-    _solidified = tree.GetBool("solidified");
-    _chargeUnits = tree.GetInt("chargeUnits");
+    base.FromTreeAttributes(tree, worldForResolving);
 
     if (Api?.Side == EnumAppSide.Client && prevState != _opState)
       ApplyPose();

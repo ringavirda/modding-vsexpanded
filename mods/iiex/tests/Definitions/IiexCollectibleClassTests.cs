@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries;
-using ExpandedLib.Registries.Entities;
 using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;

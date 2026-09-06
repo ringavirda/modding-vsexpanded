@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
+using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Vintagestory.API.MathTools;
@@ -59,7 +60,7 @@ public class CokeOvenLayoutTests {
   /// </summary>
   [Fact]
   public void The_drawing_marks_twelve_chamber_cells_six_to_a_chamber() {
-    List<Vec3i> marked = RoleCellsOf(Def, CellRole.Firebox);
+    List<Vec3i> marked = RoleCellsOf(Def, FurnaceCellRoles.Firebox);
 
     Assert.Equal(12, marked.Count);
     Assert.Equal(6, marked.Count(c => c.X < 0));
@@ -77,7 +78,7 @@ public class CokeOvenLayoutTests {
   /// </summary>
   [Fact]
   public void The_shared_wall_carries_no_chamber_cell() {
-    Assert.DoesNotContain(RoleCellsOf(Def, CellRole.Firebox), c => c.X == 0);
+    Assert.DoesNotContain(RoleCellsOf(Def, FurnaceCellRoles.Firebox), c => c.X == 0);
   }
 
   /// <summary>
@@ -87,8 +88,8 @@ public class CokeOvenLayoutTests {
   /// </summary>
   [Fact]
   public void The_drawing_marks_no_flue_and_no_other_role() {
-    Assert.Empty(RoleCellsOf(Def, CellRole.Flue));
-    Assert.Equal([nameof(CellRole.Firebox)], RoleNamesOf(Def));
+    Assert.Empty(RoleCellsOf(Def, FurnaceCellRoles.Flue));
+    Assert.Equal([nameof(FurnaceCellRoles.Firebox)], RoleNamesOf(Def));
   }
 
   /// <summary>

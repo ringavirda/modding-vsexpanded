@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Metals;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
@@ -9,8 +10,8 @@ using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -85,7 +86,7 @@ public class CrucibleSteelScenarioTests {
         )
       );
 
-      BlockPos cell = Furnace.CellsWithRole(CellRole.Damper).Single();
+      BlockPos cell = Furnace.CellsWithRole(FurnaceCellRoles.Damper).Single();
       Damper = new BlockEntityPuddlingChimneyCap { Pos = cell.Copy() };
       Rig.Occupy(
         cell,
@@ -109,7 +110,7 @@ public class CrucibleSteelScenarioTests {
         907
       );
       BlockPos above = Furnace
-        .CellsWithRole(CellRole.Flue)
+        .CellsWithRole(FurnaceCellRoles.Flue)
         .Aggregate((a, b) => b.Y > a.Y ? b : a)
         .UpCopy();
 
@@ -122,7 +123,7 @@ public class CrucibleSteelScenarioTests {
 
     /// <summary>Charges the hearth's bed with <paramref name="units"/> of fuel per cell.</summary>
     public void Fuel(int units) {
-      Item coke = Rig.World.World.GetItem(new AssetLocation(Coke));
+      Item coke = Rig.World.World.GetItem(new AssetLocation(Coke))!;
       foreach (BlockPos cell in Furnace.FireboxCells)
         if (
           Rig.World.GetBlockEntity(cell) is BlockEntityCrucibleHearth bed
@@ -156,13 +157,13 @@ public class CrucibleSteelScenarioTests {
 
     public void Tick(int seconds) {
       for (int i = 0; i < seconds; i++)
-        ReflectionHelpers.Invoke(Furnace, "OnProductionTick", 1f);
+        Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
     }
 
     /// <summary>Ticks until <paramref name="until"/> holds, up to <paramref name="ceiling"/> seconds.</summary>
     public int RunUntil(System.Func<bool> until, int ceiling) {
       for (int t = 1; t <= ceiling; t++) {
-        ReflectionHelpers.Invoke(Furnace, "OnProductionTick", 1f);
+        Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
         if (until())
           return t;
       }

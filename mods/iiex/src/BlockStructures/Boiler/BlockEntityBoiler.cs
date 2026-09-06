@@ -1,12 +1,13 @@
 using System;
 using ExpandedLib;
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Machines;
-using ExpandedLib.Blocks.Networks;
-using ExpandedLib.Blocks.Structures;
-using ExpandedLib.Fluids;
-using ExpandedLib.Helpers;
+using ExpandedLib.Blocks;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
+using ExpandedLib.Catalogues;
+using ExpandedLib.Helpers;
+using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Industry.Pipes;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using Vintagestory.API.Client;
@@ -78,8 +79,9 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
   public bool IsConstructed => _animator?.IsConstructed ?? false;
 
   /// <summary>A finished vessel is an operable one: the shell is the boiler's own footprint, so there
-  /// is nothing further to verify around it.</summary>
-  protected override bool CanRunProduction => IsConstructed;
+  /// is nothing further to verify around it. ExRightClickConstructable now publishes that readiness
+  /// itself (IProductionReadiness), so nothing further gates the tick here.</summary>
+  protected override bool CanRunProduction => true;
 
   /// <summary>Operating phase. Heating advances on a timer, not on a modelled temperature.</summary>
   public enum BoilerState {
@@ -91,32 +93,41 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
   #region Operating state (serialized)
 
   /// <summary>Water held in the boiler (L).</summary>
+  [Persist("waterVolume")]
   private float _waterVolume;
 
   /// <summary>Steam held internally (L); drives the internal pressure.</summary>
+  [Persist("steamVolume")]
   private float _steamVolume;
 
   /// <summary>Current operating phase.</summary>
+  [Persist("boilerState")]
   private BoilerState _state = BoilerState.Idle;
 
   /// <summary>Seconds spent in the Heating phase (boils once it reaches the heat-up time).</summary>
+  [Persist("heatingSeconds")]
   private float _heatingSeconds;
 
   /// <summary>Seconds the boiler has been running without fire / with water out of range (drives the shutdown grace).</summary>
+  [Persist("shutdownSeconds")]
   private float _shutdownSeconds;
 
   /// <summary>Whether the main (firing) hatch is open: the bed takes fuel and a light through it.</summary>
+  [Persist("mainHatchOpen")]
   public bool MainHatchOpen { get; private set; }
 
   /// <summary>Whether the man hatch is open (held animation + venting + bucket fill).</summary>
+  [Persist("manHatchOpen")]
   public bool ManHatchOpen { get; private set; }
 
   /// <summary>Whether the fire is lit. The bed itself has no lit state - it is fuel in a cell - so the
   /// vessel that fires it holds one.</summary>
+  [Persist("lit")]
   private bool _lit;
 
   /// <summary>Seconds of burn credited against the charged fuel's own duration, carried between ticks
   /// so a fuel lasting longer than one tick is drawn down a whole unit at a time.</summary>
+  [Persist("fuelSeconds")]
   private float _fuelSeconds;
 
   /// <summary>
@@ -155,10 +166,12 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
   private double _lastEvapDays = -1;
 
   // Client-display mirror, synced via the tree.
+  [Persist("burning")]
   private bool _burning;
 
   /// <summary>Set server-side when steam is escaping the outlet with no pipe attached;
   /// synced to drive the leak particle plume.</summary>
+  [Persist("steamLeaking")]
   private bool _steamLeaking;
 
   #region Lifecycle
@@ -312,6 +325,7 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
   private GraceTimer _chokeTimer;
 
   /// <summary>Whether the boiler is currently choked (can't expel exhaust). Synced for the HUD line.</summary>
+  [Persist("choked")]
   private bool _choked;
 
   protected override void OnProductionTick(float dt) {
@@ -1017,22 +1031,14 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
 
   #region Serialization
 
-  public override void ToTreeAttributes(ITreeAttribute tree) {
-    base.ToTreeAttributes(tree);
-    tree.SetFloat("waterVolume", _waterVolume);
-    tree.SetFloat("steamVolume", _steamVolume);
-    tree.SetInt("boilerState", (int)_state);
-    tree.SetFloat("heatingSeconds", _heatingSeconds);
-    tree.SetFloat("shutdownSeconds", _shutdownSeconds);
-    tree.SetBool("mainHatchOpen", MainHatchOpen);
-    tree.SetBool("manHatchOpen", ManHatchOpen);
-    tree.SetBool("lit", _lit);
-    tree.SetFloat("fuelSeconds", _fuelSeconds);
-    tree.SetBool("burning", _burning);
-    tree.SetBool("steamLeaking", _steamLeaking);
-    _overpressure.ToTree(tree, "overpressure");
-    tree.SetBool("choked", _choked);
-  }
+  // GraceTimer.ToTree/FromTree write one flat float under the key they are given, not a nested
+  // sub-tree, so this is a Tree entry rather than an ExpandedLib.Blocks.IPersistable member.
+  protected override void DeclareState(ExBlockState state) =>
+    state.Tree(
+      "overpressure",
+      tree => _overpressure.ToTree(tree, "overpressure"),
+      (tree, _) => _overpressure.FromTree(tree, "overpressure")
+    );
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,
@@ -1042,21 +1048,10 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
     // previous fuel and course count have to be taken before that runs.
     string? prevFuel = Bed?.FuelCode;
     int prevCourses = Bed?.LayerCount ?? 0;
-
-    base.FromTreeAttributes(tree, worldForResolving);
-    _waterVolume = tree.GetFloat("waterVolume");
-    _steamVolume = tree.GetFloat("steamVolume");
-    _state = (BoilerState)tree.GetInt("boilerState");
-    _heatingSeconds = tree.GetFloat("heatingSeconds");
-    _shutdownSeconds = tree.GetFloat("shutdownSeconds");
     bool prevMain = MainHatchOpen;
     bool prevMan = ManHatchOpen;
-    MainHatchOpen = tree.GetBool("mainHatchOpen");
-    ManHatchOpen = tree.GetBool("manHatchOpen");
-    _lit = tree.GetBool("lit");
-    _fuelSeconds = tree.GetFloat("fuelSeconds");
-    _burning = tree.GetBool("burning");
-    _steamLeaking = tree.GetBool("steamLeaking");
+
+    base.FromTreeAttributes(tree, worldForResolving);
 
     if (Api?.Side == EnumAppSide.Client) {
       // The coal courses are drawn in whatever fuel is charged and one course per four units standing,
@@ -1069,9 +1064,6 @@ public abstract partial class BlockEntityBoiler : BlockEntityProductionMachine {
       else if (prevMain != MainHatchOpen || prevMan != ManHatchOpen)
         ApplyPose();
     }
-
-    _overpressure.FromTree(tree, "overpressure");
-    _choked = tree.GetBool("choked");
   }
 
   #endregion

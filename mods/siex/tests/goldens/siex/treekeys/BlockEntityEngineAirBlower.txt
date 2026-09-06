@@ -1,0 +1,5 @@
+blockCode:string
+pm_lastHours:double
+posx:int
+posy:int
+posz:int

@@ -21,7 +21,6 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
     def.Material(EnumBlockMaterial.Stone)
       .Attribute("canChisel", true)
       .Resistance(4f)
-      .MineTool(EnumTool.Pickaxe)
       .Sound("place", "game:block/stone")
       .Sound("walk", "game:walk/stone")
       .SoundByTool(
@@ -77,51 +76,51 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
       .ShapeByType("*-snow", "game:block/basic/slab/snow-slab-{rot}")
       .ShapeByType("*", "game:block/basic/slab/slab-{rot}")
       .Texture("sides", SlagItemDefinitions.BrickTexture)
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-north-*",
         new { all = false, north = true }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-east-*",
         new { all = false, east = true }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-south-*",
         new { all = false, south = true }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-west-*",
         new { all = false, west = true }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-up-*",
         new { all = false, up = true }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-down-*",
         new { all = false, down = true }
       )
       .SideAo(true)
-      .RawByType("emitSideAoByType", "*-up-*", new { all = false, up = true })
-      .RawByType(
+      .RootKeyByType("emitSideAoByType", "*-up-*", new { all = false, up = true })
+      .RootKeyByType(
         "emitSideAoByType",
         "*-down-*",
         new { all = false, down = true }
       )
-      .RawByType("emitSideAoByType", "*", new { all = false })
-      .Raw("collisionbox", SlabBox())
-      .Raw("selectionbox", SlabBox())
+      .RootKeyByType("emitSideAoByType", "*", new { all = false })
+      .RootKey("collisionbox", SlabBox())
+      .RootKey("selectionbox", SlabBox())
       .CreativeTab("general", "*-down-free")
       .CreativeTab("construction", "*-down-free")
       .CreativeTab("iiex", "*-down-free")
       .Drop("block", "iiex:slag-brickslab-down-free")
-      .Raw(
+      .RootKey(
         "tpHandTransform",
         new {
           translation = new {
@@ -215,7 +214,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
       .ShapeByType("*-up-east-snow", snow, rotateY: 270)
       .Texture("sides", SlagItemDefinitions.BrickTexture)
       .FaceCullModeByTypeStairs()
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-up-north-*",
         new {
@@ -224,7 +223,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
           north = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-up-west-*",
         new {
@@ -233,7 +232,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
           west = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-up-south-*",
         new {
@@ -242,7 +241,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
           south = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "sideSolidOpaqueAoByType",
         "*-up-east-*",
         new {
@@ -251,7 +250,7 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
           east = true,
         }
       )
-      .RawByType(
+      .RootKeyByType(
         "collisionSelectionBoxesByType",
         "*-up-*",
         new object[]
@@ -294,6 +293,6 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
 file static class SlagBrickDefExtensions {
   /// <summary>Stairs cull as stairs when bare and never when snow-capped, matching vanilla.</summary>
   internal static ExBlockDef FaceCullModeByTypeStairs(this ExBlockDef def) =>
-    def.RawByType("faceCullModeByType", "*-snow", "NeverCull")
-      .RawByType("faceCullModeByType", "*-free", "Stairs");
+    def.RootKeyByType("faceCullModeByType", "*-snow", "NeverCull")
+      .RootKeyByType("faceCullModeByType", "*-free", "Stairs");
 }

@@ -1,9 +1,8 @@
-using ExpandedLib.Blocks.Construction;
-using ExpandedLib.Blocks.Networks;
+using ExpandedLib.Blocks;
+using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
-using ExpandedLib.Registries.Commands;
-using ExpandedLib.Registries.Entities;
-using ExpandedLib.Registries.Recipes;
+using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Registries;
 using HarmonyLib;
 using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
@@ -32,7 +31,7 @@ public class SteelIndustryExpandedModSystem : ModSystem {
   private Harmony? _harmony;
 
   public override void Dispose() {
-    _harmony?.UnpatchAll(Mod.Info.ModID);
+    ExHarmony.UnpatchAll(Mod);
     _harmony = null;
     base.Dispose();
   }
@@ -86,10 +85,7 @@ public class SteelIndustryExpandedModSystem : ModSystem {
 
     // Harmony bootstrap. This assembly declares no patches; the call is kept so that one added later
     // applies without further wiring.
-    if (!Harmony.HasAnyPatches(Mod.Info.ModID)) {
-      _harmony = new Harmony(Mod.Info.ModID);
-      _harmony.PatchAll(GetType().Assembly);
-    }
+    _harmony = ExHarmony.PatchOnce(Mod, GetType().Assembly);
 
     // Auto-register every [BlockRegister] / [ItemRegister] / [BlockEntityRegister] block, item and
     // behavior declared in this assembly, and discover the co-located code-first block/recipe

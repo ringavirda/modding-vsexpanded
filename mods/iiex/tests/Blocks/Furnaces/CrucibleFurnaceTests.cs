@@ -1,7 +1,8 @@
 using System.Linq;
-using ExpandedLib.Blocks.Structures;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Heat;
+using ExpandedLib.Industry.Heat;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -72,7 +73,7 @@ public class CrucibleFurnaceTests {
     BlockEntityCrucibleFurnace furnace,
     bool open
   ) {
-    BlockPos cell = furnace.CellsWithRole(CellRole.Damper).Single();
+    BlockPos cell = furnace.CellsWithRole(FurnaceCellRoles.Damper).Single();
     var cap = new BlockEntityPuddlingChimneyCap { Pos = cell.Copy() };
     rig.Occupy(
       cell,
@@ -97,13 +98,13 @@ public class CrucibleFurnaceTests {
   ) {
     Block pot = rig.World.World.GetBlock(
       new AssetLocation("iiex:steelcrucible-burned")
-    );
+    )!;
     Item chunk = rig.World.World.GetItem(
       new AssetLocation(BlisterBreaking.ChunkCode)
-    );
+    )!;
     Item bit = rig.World.World.GetItem(
       new AssetLocation(BlisterBreaking.BitCode)
-    );
+    )!;
     for (int i = 0; i < pots; i++) {
       hearth.Seat(new ItemStack(pot));
       hearth.Charge(new ItemStack(chunk, 4));
@@ -389,7 +390,7 @@ public class CrucibleFurnaceTests {
 
     // Knock one brick out of the third course.
     BlockPos top = furnace
-      .CellsWithRole(CellRole.Flue)
+      .CellsWithRole(FurnaceCellRoles.Flue)
       .Aggregate((a, b) => b.Y > a.Y ? b : a);
     rig.World.Place(
       top.UpCopy().UpCopy().UpCopy().AddCopy(BlockFacing.NORTH),
@@ -420,7 +421,7 @@ public class CrucibleFurnaceTests {
     BuildChimney(rig, furnace, 4);
 
     BlockPos top = furnace
-      .CellsWithRole(CellRole.Flue)
+      .CellsWithRole(FurnaceCellRoles.Flue)
       .Aggregate((a, b) => b.Y > a.Y ? b : a);
     rig.World.Place(
       top.UpCopy().UpCopy().UpCopy(),
@@ -444,7 +445,7 @@ public class CrucibleFurnaceTests {
     int drawn = (int)ReflectionHelpers.GetProperty(furnace, "StackCourses")!;
     BuildChimney(rig, furnace, 4);
 
-    ReflectionHelpers.Invoke(furnace, "OnProductionTick", 1f);
+    furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
 
     Assert.Equal(
       drawn + 4,
@@ -463,7 +464,7 @@ public class CrucibleFurnaceTests {
       907
     );
     BlockPos above = furnace
-      .CellsWithRole(CellRole.Flue)
+      .CellsWithRole(FurnaceCellRoles.Flue)
       .Aggregate((a, b) => b.Y > a.Y ? b : a)
       .UpCopy();
 
