@@ -28,9 +28,11 @@ history of the moved files travels with them through `git filter-repo` on a fres
 
 - `git filter-repo` refuses to run in a clone that has a remote or uncommitted state; run it on a
   fresh `git clone --no-local` of this repo under `/tmp`, never in the working checkout.
-- `gh` is installed but not authenticated; creating the GitHub repository is the owner's step
-  (`gh auth login`, then `gh repo create ringavirda/extools --public`). Until it exists, the Pi
-  remote is the origin and the wrapper's `EXTOOLS_URL` override points at it.
+- `gh` is installed and authenticated. Every repository this restructure creates is created
+  **private** (owner ruling 2026-09-06); the owner flips it public when ready. While extools is
+  private, a wrapper clone of the pinned tag needs the owner's git credentials, which the
+  workspace machine and the owner's CI have; the wrapper's `EXTOOLS_URL` override points a
+  machine without them at the Pi remote.
 - The wrapper must keep working on Windows PowerShell 7 and on POSIX shells; `exmod.sh` keeps its
   pwsh bootstrap into `.dotnet/tools`.
 - The wrapper runs before any manifest is read, so it parses the pin out of `exmod.json` with a
@@ -104,8 +106,8 @@ and creates them in the repo otherwise. Nothing else in the tool changes for the
 3. Add `wrappers/exmod.ps1` (new), `scripts/` copies of both wrappers, `exmod.json`, README,
    CHANGELOG, the CI workflow, a `.gitignore` for `.game`, `.dotnet`, `bin`, `obj`.
 4. Move the result to `/home/fallen/src/extools` for now (it moves under the workspace in step 5);
-   `git init --bare git/extools.git` on the Pi; remote `pi`; push; tag `v0.1.0`; push the tag.
-   GitHub when the owner has authenticated `gh`.
+   `git init --bare git/extools.git` on the Pi; `gh repo create ringavirda/extools --private
+   --source . --remote origin`; push both remotes; tag `v0.1.0`; push the tag.
 
 **Gate:** in `/home/fallen/src/extools`, `bash scripts/exmod.sh help` lists every command;
 `bash scripts/exmod.sh test latest` runs the verify tests green (provisioning the game into its

@@ -82,7 +82,9 @@ a guard keeps each mod's `modinfo.json` exlib dependency floor equal to that pin
   Directory.Build.props        the workspace switch (L2)
 ```
 
-The family folder's local name is the owner's choice and nothing below depends on it. The exlib
+The family folder's local name is the owner's choice and nothing below depends on it. Every
+new GitHub repository is created private (owner ruling 2026-09-06) and made public by the owner
+when ready; the trusted-publishing policy and the wrapper clone work either way. The exlib
 repo is the mod: one modinfo, one zip, N assemblies,
 one folder per shipped package so that a fifth module is a fifth folder:
 
