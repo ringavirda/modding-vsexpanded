@@ -29,6 +29,12 @@ public class ExDefinitionModSystem : ModSystem {
     if (api.Side != EnumAppSide.Server)
       return;
 
+    // Every mod's and module's Start has already run by AssetsLoaded (a separate phase, not just a
+    // later ExecuteOrder), so a contributor sees the same fully-registered state the rest of this
+    // method reads. Before the route emission below, since a contributed item def is injected the
+    // same way as any other.
+    ExDefinitions.RunContributors(api);
+
     var origin = new ExDefinitionOrigin();
 
     // The stopping points of every stage route. Read from the catalogue assets rather than from

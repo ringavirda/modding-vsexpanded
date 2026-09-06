@@ -90,6 +90,10 @@ public static class EntityRegistry {
     ExDefinitions.DiscoverAndRegister(domain, asm);
     ExDefinitions.DiscoverAndRegisterItems(domain, asm);
     ExDefinitions.DiscoverAndRegisterRecipes(domain, asm);
+
+    // A definition contributor is asset-dependent (Task 3: IExDefinitionContributor), so it is
+    // discovered here with the rest of the assembly's scan but only run later, at AssetsLoaded 0.04.
+    ExDefinitions.DiscoverContributors(asm);
   }
 
   // Assembly -> the domain its registrable types are keyed under, recorded by RegisterAll. Only a

@@ -40,6 +40,10 @@ public static class ExDefinitions {
     StringComparer.Ordinal
   );
 
+  // Types, never instances (see the module system's static-state rule): a contributor is
+  // instantiated fresh by RunContributors, not held across worlds.
+  private static readonly List<Type> _contributors = [];
+
   /// <summary>Log sink for exlib's own definition diagnostics (the re-registration notification); set
   /// once by <see cref="ExDefinitionModSystem"/> or <see cref="ExpandedLibModSystem.Start"/>. Null
   /// before startup and in tests that never wire it, in which case diagnostics are silently skipped.
@@ -103,6 +107,9 @@ public static class ExDefinitions {
   /// <summary>Every registered recipe file.</summary>
   public static IReadOnlyCollection<ExRecipeDef> Recipes => _recipes.Values;
 
+  /// <summary>Every discovered <see cref="IExDefinitionContributor"/> type, in discovery order.</summary>
+  public static IReadOnlyList<Type> Contributors => _contributors;
+
   /// <summary>Drops every registered definition (used by tests to isolate the static registry).</summary>
   public static void Clear() {
     _blocks.Clear();
@@ -111,6 +118,7 @@ public static class ExDefinitions {
     _blockProviders.Clear();
     _itemProviders.Clear();
     _recipeProviders.Clear();
+    _contributors.Clear();
   }
 
   /// <summary>
@@ -172,6 +180,51 @@ public static class ExDefinitions {
       typeof(IExRecipeDefProvider),
       def => RegisterRecipe(def, asm)
     );
+
+  /// <summary>
+  /// Scans <paramref name="asm"/> for concrete <see cref="IExDefinitionContributor"/> types with a
+  /// parameterless constructor and records each once (types, never instances). Called from
+  /// <see cref="Registries.EntityRegistry.RegisterAll"/> alongside the three <c>DiscoverAndRegister*</c>
+  /// passes, so a contributor needs no separate registration call. One without a parameterless
+  /// constructor is logged through <see cref="Logger"/> as a warning naming the type and skipped.
+  /// </summary>
+  public static void DiscoverContributors(Assembly asm) {
+    foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
+      if (!typeof(IExDefinitionContributor).IsAssignableFrom(type))
+        continue;
+      if (type.GetConstructor(Type.EmptyTypes) == null) {
+        Logger?.Warning(
+          "[exlib] {0} implements IExDefinitionContributor but has no parameterless constructor; skipped.",
+          type.FullName
+        );
+        continue;
+      }
+      if (!_contributors.Contains(type))
+        _contributors.Add(type);
+    }
+  }
+
+  /// <summary>
+  /// Instantiates and runs every discovered <see cref="IExDefinitionContributor"/>, in discovery
+  /// order, each isolated (a throw is logged through <paramref name="api"/>'s logger naming the type;
+  /// the rest still run). Called by <see cref="ExDefinitionModSystem.AssetsLoaded"/> right before
+  /// injection, after every mod's and module's <c>Start</c> has registered its contributors, so a
+  /// contribution depending on loaded assets is always in time.
+  /// </summary>
+  public static void RunContributors(ICoreAPI api) {
+    int ran = 0;
+    foreach (Type type in _contributors) {
+      try {
+        ((IExDefinitionContributor)Activator.CreateInstance(type)!).Contribute(api);
+        ran++;
+      } catch (Exception e) {
+        api.Logger.Error("[exlib] definition contributor {0} threw; skipped.", type.FullName);
+        api.Logger.Error(e);
+      }
+    }
+    if (ran > 0)
+      api.Logger.Notification("[exlib] Ran {0} definition contributor(s).", ran);
+  }
 
   // Discovers every concrete implementor of `providerInterface` in the assembly and registers each def its
   // static `Definitions(string)` factory returns; shared by the three public passes above, which differ only

@@ -15,7 +15,7 @@ namespace ExpandedLib.Industry;
 /// <c>exlib</c> domain its <c>[assembly: ExDomain]</c> names, so the keys a shipped blocktype and a
 /// player's save already hold - <c>exlib.BlockPipe</c> and the rest - are unchanged.
 /// </summary>
-public sealed class IndustryModule : IExModule {
+public sealed class IndustryModule : IExModule, IExDefinitionContributor {
   /// <summary>
   /// Refractory tier (cowper stove and smoke stack intakes) is the one variant group
   /// <see cref="ExBlockNames"/>' built-in material/rock/brick clause does not cover. Registered in
@@ -27,14 +27,12 @@ public sealed class IndustryModule : IExModule {
   /// <summary>
   /// Emits the generated metal resource item family (ingot/plate/rod/nails/bits per opted-in metal)
   /// and registers each with <see cref="ExDefinitions.RegisterItem(ExItemDef)"/>, so the definition
-  /// system's injection later in this same phase builds them like any other code-first item. Read
+  /// system's injection at <c>AssetsLoaded</c> 0.04 builds them like any other code-first item. Read
   /// straight from the <c>config/metals/</c> assets rather than off <see cref="MetalRegistry"/>,
-  /// which stays empty until <c>AssetsFinalize</c>.
+  /// which stays empty until <c>AssetsFinalize</c>. No side check: <see cref="ExDefinitions.RunContributors"/>
+  /// only runs on the server, which is already <see cref="ExDefinitionModSystem"/>'s own guard.
   /// </summary>
-  public void AssetsLoaded(ICoreAPI api) {
-    if (api.Side != EnumAppSide.Server)
-      return;
-
+  public void Contribute(ICoreAPI api) {
     foreach (
       ExItemDef def in MetalFamilyEmitter.Emit(
         AssetCatalogueLoader.GetMany<MetalDef>(api, "config/metals/")

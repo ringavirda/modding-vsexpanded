@@ -26,5 +26,6 @@ public class ExLiquidsCollection {
 
 [CollectionDefinition("ExDefinitions", DisableParallelization = true)]
 public class ExDefinitionsCollection {
-  // Members: ExDefinitionDiscoveryTests, ExDefinitionInjectionTests, ExDefinitionsTests.
+  // Members: ExDefinitionDiscoveryTests, ExDefinitionInjectionTests, ExDefinitionsTests,
+  // DefinitionContributorTests.
 }

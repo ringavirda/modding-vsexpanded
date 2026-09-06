@@ -30,8 +30,9 @@ public interface IExModule {
   /// <summary>
   /// Runs in the host's <c>AssetsLoaded</c>: assets are readable here and a catalogue read belongs
   /// in this phase, but it is not where a definition is contributed - a module that emits
-  /// code-first definitions from loaded assets implements <c>IExDefinitionContributor</c> instead,
-  /// which runs after every module's <c>Start</c> and before injection regardless of host order.
+  /// code-first definitions from loaded assets implements
+  /// <see cref="Definitions.IExDefinitionContributor"/> instead, which runs after every module's
+  /// <c>Start</c> and before injection regardless of host order.
   /// </summary>
   void AssetsLoaded(ICoreAPI api) { }
 
