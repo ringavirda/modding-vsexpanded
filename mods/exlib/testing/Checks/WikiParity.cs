@@ -124,9 +124,22 @@ public static class WikiParity {
     Assembly assembly,
     IEnumerable<string>? knownAbsent = null,
     IEnumerable<string>? alsoDefined = null
+  ) => Check(wikiDirectory, [assembly], knownAbsent, alsoDefined);
+
+  /// <summary>
+  /// As the single-assembly overload, resolving against several at once. One mod can ship more than
+  /// one assembly and still document them in one wiki - exlib ships its framework and its domain
+  /// layer as <c>exlib.dll</c> and <c>exlib.industry.dll</c> - and a check that saw only the first
+  /// would report every symbol from the second as a name the mod does not have.
+  /// </summary>
+  public static Report Check(
+    string wikiDirectory,
+    IReadOnlyList<Assembly> assemblies,
+    IEnumerable<string>? knownAbsent = null,
+    IEnumerable<string>? alsoDefined = null
   ) {
     var exempt = new HashSet<string>(knownAbsent ?? [], StringComparer.Ordinal);
-    Dictionary<string, Type> types = PublicTypesBySimpleName(assembly);
+    Dictionary<string, Type> types = PublicTypesBySimpleName(assemblies);
     var defined = new HashSet<string>(
       types.Keys.Concat(alsoDefined ?? []),
       StringComparer.Ordinal
@@ -355,14 +368,11 @@ public static class WikiParity {
   // A name shared by two types keeps the first; the check only asks whether a member exists, and an
   // ambiguity that made a real drift invisible would need two types of one name, which this repo has none of.
   private static Dictionary<string, Type> PublicTypesBySimpleName(
-    Assembly assembly
+    IReadOnlyList<Assembly> assemblies
   ) {
     var map = new Dictionary<string, Type>(StringComparer.Ordinal);
-    foreach (Type t in assembly.GetExportedTypes()) {
-      int tick = t.Name.IndexOf('`');
-      string simple = tick < 0 ? t.Name : t.Name[..tick];
-      map.TryAdd(simple, t);
-    }
+    foreach (Type t in assemblies.SelectMany(a => a.GetExportedTypes()))
+      map.TryAdd(StripArity(t.Name), t);
     return map;
   }
 
@@ -376,11 +386,24 @@ public static class WikiParity {
       | BindingFlags.Static
       | BindingFlags.FlattenHierarchy;
 
-    for (Type? t = type; t != null; t = t.BaseType)
+    for (Type? t = type; t != null; t = t.BaseType) {
       if (t.GetMember(member, flags).Length > 0)
         return true;
+      // A nested generic type is named with its arity at runtime (ReadResult`1) while the wiki
+      // writes it the way a caller does (ReadResult<T>), which the caller's own arity has already
+      // been stripped from by the time it arrives here. Without this, documenting any nested
+      // generic type reads as a member the type does not have.
+      if (t.GetNestedTypes(flags).Any(n => StripArity(n.Name) == member))
+        return true;
+    }
 
     return type.GetInterfaces().Any(i => i.GetMember(member, flags).Length > 0);
+  }
+
+  // `ExConfigRegister`1` as written by a caller: `ExConfigRegister`.
+  private static string StripArity(string name) {
+    int tick = name.IndexOf('`');
+    return tick < 0 ? name : name[..tick];
   }
 
   // Fenced csharp blocks plus inline code spans, each with the 1-based line it starts on.

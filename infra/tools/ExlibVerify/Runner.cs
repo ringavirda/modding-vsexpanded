@@ -145,7 +145,16 @@ public static class Runner {
     // assets/ folder actually carries, not over ModId as a string.
     string[] primaryDomains = AssetDomains(primary);
     string[] patchDomains = [.. primaryDomains, .. extras.SelectMany(AssetDomains)];
-    findings.AddRange(PatchChecker.Run(store, patchDomains, loadedModIds));
+    // A mod that ships an assembly can register assets that never exist on disk (exlib's code-first
+    // definitions inject one per definition), so patches aimed into its domain cannot be resolved
+    // here. Naming those domains is what keeps that an informational note rather than a false error.
+    var codeDomains = new HashSet<string>(StringComparer.Ordinal);
+    foreach (ModSource mod in extras.Prepend(primary))
+      if (mod.ShipsCode)
+        foreach (string domain in AssetDomains(mod))
+          codeDomains.Add(domain);
+
+    findings.AddRange(PatchChecker.Run(store, patchDomains, loadedModIds, codeDomains));
 
     BlockItemCatalogue catalogue = BlockItemCatalogue.Build(store);
     foreach (string domain in primaryDomains)

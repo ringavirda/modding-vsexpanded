@@ -1,4 +1,4 @@
-"""Emit mods/exlib/testing/ReleasedCodes.cs from the shipped release artifacts.
+"""Emit mods/exlib/testing/Repo/ReleasedCodes.cs from the shipped release artifacts.
 
 Faithfulness matters more than brevity here: the whole point of the manifest is that it is
 extracted from dist/Releases rather than remembered, so this script is the derivation and is
@@ -22,7 +22,7 @@ import re
 import itertools
 
 REL = "dist/Releases/1.22.0"
-OUT = "mods/exlib/testing/ReleasedCodes.cs"
+OUT = "mods/exlib/testing/Repo/ReleasedCodes.cs"
 # One shipped row as the output renders it, so the previous emission can be read back in.
 ROW = re.compile(
     r'new\("(?P<dom>\w+)",\s*"(?P<path>[^"]+)",\s*"(?P<base>[^"]+)",\s*\[(?P<codes>[^\]]*)\]\)'

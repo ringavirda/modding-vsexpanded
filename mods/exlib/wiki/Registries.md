@@ -211,6 +211,43 @@ before you read or write it.
 The `Key` doubles as the lang-key stem: `"measure"` drives `command-measure-desc`,
 `pref-measure-label`, `pref-measure-metric`, etc.
 
+## Shipping more than one assembly
+
+One dll may declare as many mod systems as it likes. The limit is on files: **a mod folder may hold
+several dlls, but only one of them may contain mod systems at all.** When a second one does, the
+game refuses to load the mod, with
+
+```
+Found multiple .dll files with ModSystems and/or ModInfo attributes
+```
+
+and no indication of which files collided. exlib itself hits this - it ships `exlib.dll` and
+`exlib.industry.dll` in one folder - so the framework has an answer for it.
+
+An assembly past the first declares an `IExModule` instead of a `ModSystem`, and marks itself with
+the mod it belongs to:
+
+```csharp
+[assembly: ExDomain("mymod")]
+
+public sealed class MyCompanionModule : IExModule {
+  public void AssetsFinalize(ICoreAPI api) => MyCatalogue.Load(api).Log(api.Logger);
+}
+```
+
+That is the whole of it. `ExModSystem` finds the modules of its own mod and runs them through
+`StartPre`, `Start`, `AssetsLoaded` and `AssetsFinalize`, lowest `Order` first, and it registers the
+companion assembly's `[BlockRegister]`/`[BlockEntityRegister]`/etc classes before calling its
+`Start` - so a block class in a second assembly needs no more code than one in the first. The keys
+it registers under come from the mod, not the assembly, so moving a class between your own
+assemblies does not change the name a shipped blocktype or a player's save already holds.
+
+Two details worth knowing. Discovery reads the assemblies the runtime has loaded rather than the mod
+folder, so a zipped mod behaves the same as an unzipped one. And a module that throws is logged and
+skipped rather than failing the phase: a companion assembly is a part of the mod, not the whole of
+it, and the rest should still load.
+
+
 ## Registration cheat-sheet
 
 ```csharp

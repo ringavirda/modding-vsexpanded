@@ -16,8 +16,8 @@ on:
 # resolves assemblies from at runtime. No coverage gate here - the gate floors track the current
 # build (see tests.yml).
 #
-# Adding a game version means a row HERE and in the mods/Directory.Build.props manifest (CI YAML
-# can't read MSBuild) - the only place the version list is duplicated.
+# Adding a game version means a row HERE, in the mods/Directory.Build.props manifest (CI YAML can't
+# read MSBuild), in $GameTfms in scripts/exmod.ps1, and in CakeBuild's GameTargets.
 
 jobs:
   test:
@@ -30,8 +30,10 @@ jobs:
       matrix:
         include:
           - game: "1.21.0"
+            series: "1.21"
             tfm: net8.0
           - game: "1.20.0"
+            series: "1.20"
             tfm: net7.0
 
     steps:
@@ -57,15 +59,8 @@ jobs:
       - name: Provision Vintage Story (server assemblies)
         run: bash scripts/exmod.sh provision game -Version "${{ matrix.game }}" -Kind server
 
+      # The same command a contributor runs locally. It knows which projects exist for a legacy
+      # series (the sample and the standalone tool target the current one only), builds them serially
+      # and runs the lanes in parallel with a per-lane summary.
       - name: Test (legacy ${{ matrix.tfm }})
-        env:
-          TFM: ${{ matrix.tfm }}
-        run: |
-          for entry in exlib:ExpandedLib.Tests iiex:IronIndustryExpanded.Tests \
-                       siex:SteelIndustryExpanded.Tests; do
-            mod="${entry%%:*}"
-            proj="${entry##*:}"
-            echo "::group::$proj ($TFM)"
-            dotnet test "mods/$mod/tests/$proj.csproj" -p:Legacy=true -f "$TFM" -c Debug
-            echo "::endgroup::"
-          done
+        run: bash scripts/exmod.sh test ${{ matrix.series }}

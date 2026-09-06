@@ -5,7 +5,7 @@
       "name": "Steelmaking Expanded (latest)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "launch-prep (smex)",
+      "preLaunchTask": "launch-prep (latest)",
       "program": "${workspaceFolder}/.game/1.22/Vintagestory.dll",
       "args": [
         "--tracelog",
@@ -24,7 +24,7 @@
       "name": "Steelmaking Expanded (1.21)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "launch-prep (smex 1.21)",
+      "preLaunchTask": "launch-prep (1.21)",
       "program": "${workspaceFolder}/.game/1.21/Vintagestory.dll",
       "args": [
         "--tracelog",
@@ -43,7 +43,7 @@
       "name": "Steelmaking Expanded (1.20)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "launch-prep (smex 1.20)",
+      "preLaunchTask": "launch-prep (1.20)",
       "program": "${workspaceFolder}/.game/1.20/Vintagestory.dll",
       "args": [
         "--tracelog",

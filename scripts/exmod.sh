@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # POSIX entry point for Linux and macOS.
 #
-# exmod is implemented once, in exmod.ps1, which runs unchanged on all three platforms under
-# PowerShell 7 - the platform differences live in $OnWindows branches inside it. This launcher finds
-# pwsh and forwards to it, so a Linux or macOS checkout gets a native ./scripts/exmod.sh without a
-# second copy of the logic that can drift out of step with the first.
+# exmod is implemented once, in exmod.ps1 and the command files beside it in exmod/, which run
+# unchanged on all three platforms under PowerShell 7 - the platform differences live in $OnWindows
+# branches inside them. This launcher finds pwsh and forwards to it, so a Linux or macOS checkout
+# gets a native ./scripts/exmod.sh without a second copy of the logic that can drift out of step
+# with the first.
 #
+#   ./scripts/exmod.sh                 the command list, grouped
+#   ./scripts/exmod.sh help test       one command in detail
 #   ./scripts/exmod.sh test 1.21
-#   ./scripts/exmod.sh format -Check
 #   ./scripts/exmod.sh provision game -Version 1.22 -Kind server
 #
 # If pwsh is missing it is installed into .dotnet/tools as a dotnet tool, which keeps the bootstrap

@@ -71,5 +71,8 @@ coverage*.info
 # Local sources of other mods to maintain compatibility with (reference only).
 /.compat/
 
-# Release zips built by infra/CakeBuild.
+# Release zips built by infra/CakeBuild, the NuGet packages built by `exmod nuget`, and the flat
+# asset folder the release workflow collects both into.
 /dist/Releases/
+/dist/nuget/
+/dist/assets/

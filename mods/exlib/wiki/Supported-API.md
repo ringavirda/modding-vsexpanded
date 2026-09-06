@@ -1,6 +1,6 @@
 # Supported API
 
-This page is the supported contract: every public type of `exlib.dll` outside `ExpandedLib.Industry` is listed below, and a type not listed here has been marked `[EditorBrowsable(Never)]` because the game engine has to see it, not because a mod is meant to call it. `ExpandedLib.Industry` is also public and reusable, but it is the family's own content layer and changes without notice; it is documented on the family's own pages, not here. A public member on this page is removed only after one full release spent marked `[Obsolete]` naming its replacement, and every currently-obsolete member is listed at the bottom of this page for as long as it lasts.
+This page is the supported contract: every public type of `exlib.dll` is listed below, and a type not listed here has been marked `[EditorBrowsable(Never)]` because the game engine has to see it, not because a mod is meant to call it. The family's content layer ships as a second assembly, `exlib.industry.dll`, beside it in the same mod folder and as the `ExpandedLib.Industry` package; it is public and reusable but it changes without notice, and its types are listed at the bottom of this page under that heading rather than covered by the promise above. A public member on this page is removed only after one full release spent marked `[Obsolete]` naming its replacement, and every currently-obsolete member is listed at the very bottom for as long as it lasts.
 
 ## `ExpandedLib`
 
@@ -22,6 +22,8 @@ For a modder registering blocks, items, behaviours, commands, preferences or rec
 | `ExMods` | The three rungs for reacting to another mod being installed: IsLoaded/AtLeast, WhenLoaded, and a world-config flag a JSON patch condition can gate on. | [Registries](Registries) |
 | `ExHarmony` | The Harmony bootstrap every reference mod copied by hand: patch an assembly's uncategorised classes once per process, apply a category only when a required mod is loaded, and unpatch cleanly. | [Registries](Registries) |
 | `ExModSystem` | The zero-line registration rung: a `ModSystem` base whose `Start`/`StartServerSide`/`StartClientSide`/`AssetsFinalize` run the config, entity, command and preference registries for that phase, then an empty overridable hook. | [Registries](Registries) |
+| `IExModule` | The entry point of a companion assembly: a second dll in one mod folder, which cannot contain mod systems of its own, driven through the same lifecycle phases. | [Registries](Registries) |
+| `ExModules` | Finds and drives one mod's `IExModule`s, and registers their assemblies' classes for them. | [Registries](Registries) |
 | `BlockBehaviorRegisterAttribute` | Registers a BlockBehavior class. | [Registries](Registries) |
 | `BlockEntityBehaviorRegisterAttribute` | Registers a BlockEntityBehavior class. | [Registries](Registries) |
 | `BlockEntityRegisterAttribute` | Registers a BlockEntity class. | [Registries](Registries) |
@@ -230,6 +232,8 @@ For a modder shipping or extending data catalogues: processes, materials, liquid
 
 | Type | What it is for | Page |
 | --- | --- | --- |
+| `AssetCatalogueLoader` | Reads every domain's `config/<mine>/*.json` under a path into a typed object and tells the caller what failed - the plain primitive `ContributedCatalogueLoader<TSet, TRegistry>` builds on. | [Extending-Processes](Extending-Processes) |
+| `AssetCatalogueLoader.ReadResult<T>` | One path's read: the parsed items, their sources, the file count, and one error per asset that did not parse. | [Extending-Processes](Extending-Processes) |
 | `CatalogueContributors` | Code contributions to one catalogue, re-invoked after every load so a C# entry survives the clear that precedes each AssetsFinalize read. | [Extending-Processes](Extending-Processes) |
 | `CatalogueLoadReport` | One catalogue's load outcome: files read, entries accepted, and the errors, each naming its asset. | [Extending-Processes](Extending-Processes) |
 | `ContributedCatalogueLoader<TSet, TRegistry>` | The base every hand-parsed catalogue with C# contributors derives from: read, audit keys, parse once, merge, invoke contributors, report. | [Extending-Processes](Extending-Processes) |
@@ -313,7 +317,7 @@ that target.
 
 ## ExpandedLib.Industry
 
-Public and reusable, but the family's content layer rather than the framework: it changes without notice and is documented on the pages below, not on this one.
+A separate assembly and package, `exlib.industry.dll` / `ExpandedLib.Industry`, referenced alongside `ExpandedLib` by a mod that wants it. Public and reusable, but the family's content layer rather than the framework: it changes without notice, and the one-release deprecation promise above does not cover it.
 
 ### `ExpandedLib.Industry.Pipes`
 

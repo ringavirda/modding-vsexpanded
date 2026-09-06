@@ -8,13 +8,14 @@ namespace ExpandedLib.Catalogues;
 /// <see cref="MaterialRoleRegistry"/>, so a content mod gives an item a role by shipping or patching
 /// one JSON entry rather than by recompiling.
 /// <para>
-/// A def matches an item by <see cref="Code"/> (exact, domain-normalised like
-/// <see cref="ExpandedLib.Industry.Metals.MetalRegistry"/>) or by <see cref="PathPrefix"/> (a domain-blind
+/// A def matches an item by <see cref="Code"/> (exact, domain-normalised like the family layer's
+/// <c>MetalRegistry</c>) or by <see cref="PathPrefix"/> (a domain-blind
 /// <c>Code.Path.StartsWith</c> test). At least one of the two must be set.
 /// </para>
 /// </summary>
 public class MaterialRoleDef {
-  /// <summary>The role this def grants, one of the <see cref="Industry.Materials.Roles"/> constants.</summary>
+  /// <summary>The role this def grants, one of the <c>Roles</c> constants in the family layer's
+  /// <c>Materials</c> namespace.</summary>
   public string Role { get; set; } = "";
 
   /// <summary>Exact item code to match ("game:lime"), domain-normalised. Null matches by

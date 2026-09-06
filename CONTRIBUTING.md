@@ -15,13 +15,38 @@ finds `pwsh` (installing it into `.dotnet/tools` if the machine has none) and fo
 is deliberately no second implementation: the previous `.ps1`/`.sh` pairs had already drifted, with
 the same VS Code task provisioning a different game build on Windows than on Linux.
 
+`exmod help <command>` prints one command in detail, flags included - the list below is a map, not
+a manual.
+
 ```
-exmod test [latest|all|1.22|1.21|1.20] [-Throttle N] [-Coverage]
-exmod format [-Check]
-exmod provision game -Version <x.y[.z]> [-Kind server|client] [-Force]
-exmod provision dotnet [-Version latest|all|1.22|1.21|1.20]
-exmod stage -Dest <path> <name>=<src> ...
-exmod fix-registry [-InstallDir <path>]              (Windows only)
+first run
+  setup           provision .NET and the game, then restore the solution
+  provision       one half of that on its own: provision dotnet | provision game
+
+source
+  build           compile the mods for one game series or all of them
+  test            run the test suites, one lane per game series
+  format          rewrite with CSharpier, then dotnet format
+  verify          check the shipped assets the way the game loads them, with no game running
+  codes           regenerate a mod's block-code table
+  check           format, build, verify and test in one pass - the gate
+  clean           delete build output
+
+run
+  client          the game client, with the built mods
+  server          a dedicated server, with the built mods
+  smoke           boot a server, verify it, stop it
+  stage           copy built mods into a Mods folder
+  logs            the newest client or server log
+
+package
+  pack            build every mod for every game series and zip them into dist/Releases
+  bundle          the developer bundle: test harness, generators, XML docs
+  nuget           the NuGet packages
+  release         check that a version is ready to tag (read-only; it never writes git)
+
+machine
+  fix-registry    repoint Windows' Vintage Story file association (Windows only)
 ```
 
 ### The API patch

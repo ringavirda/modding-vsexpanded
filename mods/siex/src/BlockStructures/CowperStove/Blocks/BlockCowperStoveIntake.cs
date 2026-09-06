@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded;

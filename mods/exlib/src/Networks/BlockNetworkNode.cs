@@ -5,7 +5,6 @@ using System.Linq;
 using ExpandedLib.Blocks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
-using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Networks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

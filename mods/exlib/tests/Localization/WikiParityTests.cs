@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry;
 using ExpandedLib.Testing;
 using Xunit;
 
@@ -53,10 +54,12 @@ public class WikiParityTests {
         yield return m.Groups["name"].Value;
   }
 
+  // Both assemblies the exlib mod ships: the framework and the domain layer beside it. The wiki
+  // documents them as one library, so a symbol from either one resolves.
   private static WikiParity.Report Run() =>
     WikiParity.Check(
       WikiDirectory,
-      typeof(ExDefinitions).Assembly,
+      [typeof(ExDefinitions).Assembly, typeof(IndustryModule).Assembly],
       KnownAbsent,
       GeneratorTypeNames()
     );

@@ -27,10 +27,15 @@ public static class PatchChecker {
   /// the mod under test plus every <c>--mods</c> entry; vanilla's own domains never carry one.</param>
   /// <param name="loadedModIds">Every mod id considered "installed" for a patch's <c>dependsOn</c>
   /// check - the mod under test, every <c>--mods</c> entry, and the game's own built-in ids.</param>
+  /// <param name="codeDomains">Domains belonging to a mod that ships a compiled assembly. A patch
+  /// target missing from one of these is reported as unverifiable rather than as an error: that mod
+  /// can inject the asset at load time (see <see cref="ModSource.ShipsCode"/>), and this tool reads
+  /// only what is on disk.</param>
   public static List<Finding> Run(
     AssetStore store,
     IReadOnlyList<string> patchDomains,
-    IReadOnlySet<string> loadedModIds
+    IReadOnlySet<string> loadedModIds,
+    IReadOnlySet<string> codeDomains
   ) {
     var findings = new List<Finding>();
 
@@ -42,7 +47,7 @@ public static class PatchChecker {
         for (int i = 0; i < patches.Count; i++) {
           if (patches[i] is not JObject spec)
             continue;
-          ApplyOne(store, domain, path, i, spec, loadedModIds, findings);
+          ApplyOne(store, domain, path, i, spec, loadedModIds, codeDomains, findings);
         }
       }
     }
@@ -57,6 +62,7 @@ public static class PatchChecker {
     int index,
     JObject spec,
     IReadOnlySet<string> loadedModIds,
+    IReadOnlySet<string> codeDomains,
     List<Finding> findings
   ) {
     string source = $"{sourceDomain}:{sourcePath} [{index}]";
@@ -138,13 +144,17 @@ public static class PatchChecker {
     }
 
     if (store.TryGet(targetDomain, targetPath) == null) {
+      bool injectable = codeDomains.Contains(targetDomain);
       findings.Add(
         new Finding(
-          FindingLevel.Error,
+          injectable ? FindingLevel.Info : FindingLevel.Error,
           "PatchTarget",
           source,
           null,
-          $"target file not found: {targetDomain}:{targetPath}"
+          injectable
+            ? $"target file not on disk: {targetDomain}:{targetPath} - that mod ships code and can "
+              + "inject it at load, so this patch is not verifiable headlessly"
+            : $"target file not found: {targetDomain}:{targetPath}"
         )
       );
       return;

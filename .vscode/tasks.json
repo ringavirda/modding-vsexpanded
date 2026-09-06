@@ -2,52 +2,37 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build-exlib",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj"
+      "label": "launch-prep (latest)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "provision-game (1.22)",
+        "stage-mods (latest)"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": []
     },
     {
-      "label": "build-siex",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "stage-mods (all mods)",
+      "label": "stage-mods (latest)",
       "type": "process",
       "command": "pwsh",
       "args": [
         "-NoProfile",
         "-File",
         "${workspaceFolder}/scripts/exmod.ps1",
-        "stage",
-        "-Dest",
-        "${workspaceFolder}/bin/Mods",
-        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/Mods/mod",
-        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/Mods/mod",
-        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/Mods/mod"
+        "stage"
       ],
       "problemMatcher": []
     },
     {
       "label": "Publish mods",
       "type": "process",
-      "command": "dotnet",
+      "command": "pwsh",
       "args": [
-        "run",
-        "--project",
-        "${workspaceFolder}/infra/CakeBuild/CakeBuild.csproj"
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "pack"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": []
     },
 
     // ----------------------------------------------------------------------------------------
@@ -127,51 +112,6 @@
       "problemMatcher": []
     },
     {
-      "label": "provision-dotnet (latest)",
-      "type": "process",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/scripts/exmod.ps1",
-        "provision",
-        "dotnet",
-        "-Version",
-        "latest"
-      ],
-      "problemMatcher": []
-    },
-    {
-      "label": "provision-dotnet (1.21)",
-      "type": "process",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/scripts/exmod.ps1",
-        "provision",
-        "dotnet",
-        "-Version",
-        "1.21"
-      ],
-      "problemMatcher": []
-    },
-    {
-      "label": "provision-dotnet (1.20)",
-      "type": "process",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/scripts/exmod.ps1",
-        "provision",
-        "dotnet",
-        "-Version",
-        "1.20"
-      ],
-      "problemMatcher": []
-    },
-    {
       "label": "provision-game (1.22)",
       "type": "process",
       "command": "pwsh",
@@ -188,107 +128,12 @@
       ],
       "problemMatcher": []
     },
-    {
-      "label": "launch-prep (smex)",
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "provision-dotnet (latest)",
-        "provision-game (1.22)",
-        "build-smex",
-        "build-hpex",
-        "stage-mods (all mods)"
-      ],
-      "problemMatcher": []
-    },
 
     // ----------------------------------------------------------------------------------------
-    // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). Opt-in multi-target via -p:Legacy.
-    // Each version is provisioned into .game/<slug> by scripts/exmod.ps1 (no machine-wide
-    // install needed); the build and launch read it from there. build-siex pulls exlib + iiex via
-    // project references, so a single build covers the chain.
+    // Legacy game versions (1.21 -> net8.0, 1.20 -> net7.0). `exmod stage -Version <x.y>` builds
+    // the mods for that series (opting into -p:Legacy=true itself) and stages them into
+    // bin/Mods-<x.y>, so launch-prep for a legacy series is provisioning plus that one call.
     // ----------------------------------------------------------------------------------------
-    {
-      "label": "build-exlib (1.21)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net8.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-siex (1.21)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net8.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-exlib (1.20)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/exlib/src/ExpandedLib.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net7.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "build-siex (1.20)",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/mods/siex/src/SteelIndustryExpanded.csproj",
-        "-p:Legacy=true",
-        "-p:TargetFramework=net7.0"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "stage-mods 1.21 (all mods)",
-      "type": "process",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/scripts/exmod.ps1",
-        "stage",
-        "-Dest",
-        "${workspaceFolder}/bin/Mods-1.21",
-        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/net8.0/Mods/mod",
-        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/net8.0/Mods/mod",
-        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/net8.0/Mods/mod"
-      ],
-      "problemMatcher": []
-    },
-    {
-      "label": "stage-mods 1.20 (all mods)",
-      "type": "process",
-      "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/scripts/exmod.ps1",
-        "stage",
-        "-Dest",
-        "${workspaceFolder}/bin/Mods-1.20",
-        "exlib=${workspaceFolder}/mods/exlib/src/bin/Debug/net7.0/Mods/mod",
-        "iiex=${workspaceFolder}/mods/iiex/src/bin/Debug/net7.0/Mods/mod",
-        "siex=${workspaceFolder}/mods/siex/src/bin/Debug/net7.0/Mods/mod"
-      ],
-      "problemMatcher": []
-    },
     {
       "label": "provision-game (1.21)",
       "type": "process",
@@ -324,26 +169,48 @@
       "problemMatcher": []
     },
     {
-      "label": "launch-prep (smex 1.21)",
+      "label": "launch-prep (1.21)",
       "dependsOrder": "sequence",
       "dependsOn": [
-        "provision-dotnet (1.21)",
         "provision-game (1.21)",
-        "build-smex (1.21)",
-        "build-hpex (1.21)",
-        "stage-mods 1.21 (all mods)"
+        "stage-mods (1.21)"
       ],
       "problemMatcher": []
     },
     {
-      "label": "launch-prep (smex 1.20)",
+      "label": "launch-prep (1.20)",
       "dependsOrder": "sequence",
       "dependsOn": [
-        "provision-dotnet (1.20)",
         "provision-game (1.20)",
-        "build-smex (1.20)",
-        "build-hpex (1.20)",
-        "stage-mods 1.20 (all mods)"
+        "stage-mods (1.20)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "stage-mods (1.21)",
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "stage",
+        "-Version",
+        "1.21"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "stage-mods (1.20)",
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/scripts/exmod.ps1",
+        "stage",
+        "-Version",
+        "1.20"
       ],
       "problemMatcher": []
     }

@@ -1,6 +1,5 @@
 using ExpandedLib.Structures;
 using ExpandedLib.Catalogues;
-using ExpandedLib.Industry.Metals;
 using ExpandedLib.Registries;
 using HarmonyLib;
 using System.ComponentModel;
@@ -48,11 +47,11 @@ public class ExpandedLibModSystem : ModSystem {
   }
 
   /// <summary>
-  /// Populates the shared metal catalogue from the loaded metal worldproperties and every domain's
-  /// <c>config/metals</c>, after the asset-patch pipeline has merged all mods' JSON and before recipe and
-  /// world finalize. Runs on both sides: the <c>config</c> and <c>worldproperties</c> categories are
-  /// Universal. Consumers fall back to convention values for any metal not enriched here, so a partial load
-  /// still yields a usable catalogue, and exlib's single dll means this fires once whatever is installed.
+  /// Populates the shared liquid catalogue from every domain's <c>config/liquids</c>, after the
+  /// asset-patch pipeline has merged all mods' JSON and before recipe and world finalize. Runs on
+  /// both sides: the <c>config</c> category is Universal. Consumers fall back to convention values
+  /// for any liquid not enriched here, so a partial load still yields a usable catalogue, and
+  /// exlib's single dll means this fires once whatever is installed.
   /// </summary>
   public override void AssetsFinalize(ICoreAPI api) {
     // The content guards - dangling recipe codes, uncovered lang, pinned network nodes and the rest -
@@ -61,10 +60,11 @@ public class ExpandedLibModSystem : ModSystem {
     if (ExlibValues.RunChecksOnLoad)
       Checks.ExlibChecks.Log(api.Logger, Checks.ExlibChecks.All(api));
 
-    MetalCatalogueLoader.Load(api).Log(api.Logger);
     LiquidCatalogueLoader.Load(api).Log(api.Logger);
     // The material-role catalogue (flux/fuel/ore/scrap/charge classification) and its mod-gated code
-    // contributors. Must load after the metal and liquid registries; exlib ships no role content itself.
+    // contributors. Must load after the metal and liquid registries - the domain layer's own IExModule.AssetsFinalize
+    // (ExecuteOrder 0.03) loads the metal registry before this default-order pass runs; exlib ships
+    // no role content itself.
     MaterialRoleLoader.Load(api).Log(api.Logger);
 
     // The merged process-stage catalogue. Read again here rather than only at inject time so the

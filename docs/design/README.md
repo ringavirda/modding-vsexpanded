@@ -54,7 +54,8 @@ conventions live outside it: a page here is never also a task tracker.
 [long-cell](machines/long-cell.md) · [molten-canal](machines/molten-canal.md) ·
 [rolling-mill](machines/rolling-mill.md) · [shear](machines/shear.md) ·
 [nail-machine](machines/nail-machine.md) · [heading-machine](machines/heading-machine.md) ·
-[stock-rack](machines/stock-rack.md) · [flywheel-and-shafting](machines/flywheel-and-shafting.md)
+[stock-rack](machines/stock-rack.md) · [flywheel-and-shafting](machines/flywheel-and-shafting.md) ·
+[iron-chutes](machines/iron-chutes.md)
 
 *iiex - steam* · [boiler-cornish](machines/boiler-cornish.md) · [engine-watt](machines/engine-watt.md) ·
 [cast-pipes](machines/cast-pipes.md) · [pumps](machines/pumps.md) · [fluid-tank](machines/fluid-tank.md) ·

@@ -38,8 +38,7 @@
     <Description>Headless xUnit test harness for ExpandedLib (Vintage Story) - loads the real game assemblies and drives network/block-entity logic under plain dotnet test.</Description>
     <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <!-- See ExpandedLib.csproj's matching comment: no LICENSE file exists yet, so
-         PackageLicenseExpression is left unset rather than guessed at. -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -92,6 +91,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <!-- DefinitionGoldens replays the generated metal family through MetalFamilyEmitter/MetalDef to
+         golden-check it like any other code-first def. -->
+    <ProjectReference Include="..\industry\ExpandedLib.Industry.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

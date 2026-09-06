@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExpandedLib.Definitions;
+using ExpandedLib.Industry;
 using ExpandedLib.Registries;
 using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
@@ -27,6 +28,9 @@ public class IiexCollectibleClassTests {
   [
     Iiex,
     typeof(EntityRegistry).Assembly,
+    // exlib ships two assemblies from one mod folder, and the pipe blocks live in the second one.
+    // A def naming exlib.BlockPipe resolves against the domain layer, not the framework.
+    typeof(IndustryModule).Assembly,
   ];
 
   /// <summary>Where a bare, unprefixed key may resolve: vanilla's content and API assemblies.</summary>

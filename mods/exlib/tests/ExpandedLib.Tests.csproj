@@ -50,6 +50,7 @@
          present to provide it). It is a normal managed assembly; its VS deps are resolved by
          VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
     <ProjectReference Include="..\src\ExpandedLib.csproj" />
+    <ProjectReference Include="..\industry\ExpandedLib.Industry.csproj" />
     <ProjectReference Include="..\testing\ExpandedLib.Testing.csproj" />
     <!-- ExModSystemTests needs a real [ExConfigRegister] config in THIS assembly so its generated
          accessor carries [ExConfigAccessor] for ExConfig.LoadAll to find. -->

@@ -1,7 +1,8 @@
 # Provisioning + test job for a third-party repository consuming exlib and its test harness. Copy
-# scripts/exmod.ps1 and scripts/exmod.sh from this repo into yours (they take no dependency on
-# anything else here) and drop this file in as .github/workflows/tests.yml, then make the two edits
-# marked CHANGE below. See templates/ci/smoke.yml for the matching dedicated-server boot check.
+# scripts/exmod.sh, scripts/exmod.ps1 and scripts/exmod/provision.ps1 from this repo into yours -
+# the dispatcher skips any command file that is not there, so those three are all `provision` needs
+# - and drop this file in as .github/workflows/tests.yml, then make the two edits marked CHANGE
+# below. See templates/ci/smoke.yml for the matching dedicated-server boot check.
 
 name: Tests
 

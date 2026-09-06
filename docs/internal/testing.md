@@ -14,7 +14,7 @@ exlib-tests` (`templates/exlib-tests/`, identity `ExpandedLib.Templates.Tests`) 
 | Project | Covers | References |
 |---|---|---|
 | `ExpandedLib.Testing` | *(not a test project)* the headless harness itself, one namespace laid out by activity: `World/`, `Scenes/`, `Rigs/`, `Doubles/`, `Checks/`, `Repo/` | exlib only |
-| `ExpandedLib.Tests` | exlib framework | harness |
+| `ExpandedLib.Tests` | exlib: both the framework (`exlib.dll`) and the family's domain layer beside it (`exlib.industry.dll`) | harness + industry |
 | `IronIndustryExpanded.Tests` | iiex | harness |
 | `SteelIndustryExpanded.Tests` | siex | + iiex tests |
 | `HelloExpanded.Tests` | the sample third-party mod, `samples/HelloExpanded` | harness only - deliberately outside the `exlib -> iiex -> siex` chain, the shape a stranger's project takes |
@@ -22,7 +22,7 @@ exlib-tests` (`templates/exlib-tests/`, identity `ExpandedLib.Templates.Tests`) 
 **Homing rule:** a test file lives in the project of the **top mod whose _types_ it touches** - not
 the mod its folder is named after, and not the mod in its `namespace` line (all test files use one
 flat `<Mod>.Tests` namespace regardless of folder, so folders are free to move). Block **code
-strings** lie too: headless blocks are hand-configured, so a `"siex:…"` literal in a test proves
+strings** lie too: headless blocks are hand-configured, so a `"siex:..."` literal in a test proves
 nothing about ownership.
 
 The test-project reference chain deliberately mirrors the mod chain. Content-specific fixtures live
@@ -39,7 +39,7 @@ Every project uses the same top-level buckets, omitting the ones it has no conte
 |---|---|
 | `Fixtures/` | support types with **no `[Fact]`** - see the suffix vocabulary below |
 | `Definitions/` | code-first `ExBlockDef`/`ExItemDef`/`ExRecipeDef` providers, golden tests, metal/catalogue registration, shipped-JSON guards |
-| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the mod's `src/` area** it covers (`Blocks/Boiler/` ↔ `mods/iiex/src/BlockStructures/Boiler/`); network-block areas conventionally split finer than `src/` (iiex `Pipe/`, `Valves/`, `Condenser/`, `FluidIntake/` all cover `src` `BlockNetworkPipe`; iiex `Energy/` and `Molten/` cover `BlockNetworkEnergy`/`BlockNetworkMolten`; iiex `Blocks/Pipe/` covers the exlib pipe bases exercised at the iiex tier) |
+| `Blocks/<Family>/` | block-entity behaviour, one subfolder **named after the mod's `src/` area** it covers (`Blocks/Boiler/` <-> `mods/iiex/src/BlockStructures/Boiler/`); network-block areas conventionally split finer than `src/` (iiex `Pipe/`, `Valves/`, `Condenser/`, `FluidIntake/` all cover `src` `BlockNetworkPipe`; iiex `Energy/` and `Molten/` cover `BlockNetworkEnergy`/`BlockNetworkMolten`; iiex `Blocks/Pipe/` covers the exlib pipe bases exercised at the iiex tier) |
 | `Networks/` | the network model itself - graph walks, pools, flow, connectors |
 | `Items/` | item behaviour |
 | `Materials/` | material roles, metal parity, burden/composition classifiers |
@@ -83,7 +83,7 @@ now "the hot furnace vents", "its cells rotate", and "both furnaces agree").
 Multiblock machines belong in `Blocks/<Family>/` or `Scenarios/` like anything else, but they must be
 stood up with `StructureRig` rather than a forced `StructureComplete` - see
 [mods/exlib/wiki/Testing-Harness.md](../../mods/exlib/wiki/Testing-Harness.md#standing-up-a-mega-block-with-structurerig).
-**Every machine in the repo now does.** The only two `SetProperty(be, "StructureComplete", …)` sites
+**Every machine in the repo now does.** The only two `SetProperty(be, "StructureComplete", ...)` sites
 left are deliberate: `MultiblockProjectionTests` and `FurnaceHudDistributionTests` gate on the flag
 itself rather than on a live recount, which is the thing under test.
 
@@ -177,7 +177,7 @@ Two traps worth knowing, both of which fail *quietly*:
   ("could not find dependent assembly 'VintagestoryAPI'") instead of erroring. Fix is
   `<Private>true</Private>` on that project's `VintagestoryAPI` reference.
 - **Process-global statics race** across test classes, because xUnit parallelises them. Serialize
-  every class touching one with a `[CollectionDefinition(…, DisableParallelization = true)]` - see
+  every class touching one with a `[CollectionDefinition(..., DisableParallelization = true)]` - see
   `ExpandedLib.Tests/Helpers/ExMeasureCollection.cs` and
   `IronIndustryExpanded.Tests/Fixtures/FurnaceConfigCollection.cs`. **Joining is what serializes**: a
   collection only orders the classes that opt in, so the *readers* of a mutated static must join it too,
@@ -195,8 +195,8 @@ source - `EXLIB_WRITE_HANDBOOK=1` to import, `EXLIB_EXPORT_HANDBOOK=1` to write 
 ## Packaging and release
 
 `ExpandedLib` and `ExpandedLib.Testing` are `dotnet pack`-able NuGet packages (`PackageId`,
-`Version` read from `modinfo.json`, `Authors`, `Description`, `RepositoryUrl`, `PackageReadmeFile` -
-`PackageLicenseExpression` is unset until the repository has a `LICENSE` file). `.github/workflows/release.yml`
+`Version` read from `modinfo.json`, `Authors`, `Description`, `RepositoryUrl`, `PackageReadmeFile`,
+`PackageLicenseExpression` MIT, matching the repository's `LICENSE`). `.github/workflows/release.yml`
 builds both on a `v*` tag, alongside the Cake `Package`/`PackageTesting` mod zips and dev bundle, and
 attaches everything to the GitHub release; nothing is pushed to NuGet.org (the step is present and
 commented). `templates/ci/tests.yml` and `templates/ci/smoke.yml` are the copy-into-your-own-repo

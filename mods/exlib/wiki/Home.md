@@ -26,8 +26,9 @@ This wiki documents both libraries the family publishes for reuse:
 - **`exlib.testing`** (`ExpandedLib.Testing`) - a headless xUnit harness that loads the real game
   assemblies and exercises network/block-entity logic under `dotnet test`, no game launch
   required. It's a build-/test-time developer library, not something installed in the game: you
-  consume it by referencing the project from source, or the `ExpandedLib.Testing.dll` published
-  with each GitHub release. (It isn't on NuGet - the API still moves a lot release to release.)
+  consume it as the `ExpandedLib.Testing` NuGet package, by referencing the project from source, or
+  from the `ExpandedLib.Testing.dll` published with each GitHub release. Its API still moves
+  between releases, so pin the version you build against.
 
 ## Where to start
 

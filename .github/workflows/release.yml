@@ -1,6 +1,6 @@
 name: Release
 
-# Publishes a tagged version's mod zips, the dev bundle and the two NuGet packages as GitHub
+# Publishes a tagged version's mod zips, the dev bundle and the three NuGet packages as GitHub
 # release assets. Nothing is pushed to NuGet.org - see the commented step at the bottom - and no
 # tag is created by this workflow itself; it only runs once one exists.
 on:
@@ -14,6 +14,13 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    # id-token is what lets this job exchange a GitHub OIDC token for a short-lived NuGet.org key
+    # (Trusted Publishing - no stored API key). Naming any permission drops the rest to none, so
+    # contents:write is restated here for the release-creation step below.
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -49,14 +56,15 @@ jobs:
       - name: Cake package (testing dev bundle)
         run: dotnet run --project infra/CakeBuild -- --target=PackageTesting
 
-      # The NuGet packages, built independently of Cake's own outputs (see the two csprojs' pack
+      # The NuGet packages, built independently of Cake's own outputs (see the csprojs' pack
       # metadata: PackageId, Version read from modinfo.json, Authors, Description, RepositoryUrl,
-      # PackageReadmeFile - PackageLicenseExpression is not set; the repo has no LICENSE file yet).
+      # PackageReadmeFile, PackageLicenseExpression=MIT).
       # ExlibVerify.csproj packs the same way, as a .NET tool (PackAsTool, ToolCommandName
       # exlib-verify) rather than a library.
       - name: dotnet pack (NuGet)
         run: |
           dotnet pack mods/exlib/src/ExpandedLib.csproj -c Release -o dist/nuget
+          dotnet pack mods/exlib/industry/ExpandedLib.Industry.csproj -c Release -o dist/nuget
           dotnet pack mods/exlib/testing/ExpandedLib.Testing.csproj -c Release -o dist/nuget
           dotnet pack infra/tools/ExlibVerify/ExlibVerify.csproj -c Release -o dist/nuget
 
@@ -72,8 +80,28 @@ jobs:
           files: dist/assets/*
           generate_release_notes: true
 
-      # Not part of this workflow: publishing to NuGet.org is a separate, explicit decision (and
-      # needs PackageLicenseExpression set first - see the comment above). Uncomment once both are
-      # true, with a NUGET_API_KEY repository secret holding a NuGet.org API key.
-      # - name: Push to NuGet.org
-      #   run: dotnet nuget push "dist/nuget/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+      # Publishing to NuGet.org through Trusted Publishing: nuget.org validates a short-lived OIDC
+      # token from this workflow against a policy naming this repository and this file, then issues a
+      # temporary key good for one hour. Nothing long-lived is stored here, so there is no key to
+      # rotate or leak.
+      #
+      # OFF until the NUGET_USER repository variable holds the nuget.org profile name (Settings ->
+      # Secrets and variables -> Actions -> Variables). Setting it is the opt-in: a tag pushed before
+      # then still builds and attaches every release asset, and publishes nothing.
+      #
+      # The matching policy is created at nuget.org -> your name -> Trusted Publishing: this
+      # repository's owner and name, workflow file release.yml, no environment, scope "Push new
+      # packages and package versions" (none of the IDs exist yet), glob ExpandedLib*.
+      #
+      # The key is requested immediately before the push because it expires in an hour, and each
+      # token buys exactly one key.
+      - name: NuGet login (OIDC, no stored key)
+        if: vars.NUGET_USER != ''
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push to NuGet.org
+        if: vars.NUGET_USER != ''
+        run: dotnet nuget push "dist/nuget/*.nupkg" --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

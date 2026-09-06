@@ -62,8 +62,29 @@ missing from that list has been hidden from IntelliSense with `[EditorBrowsable(
 the engine has to see it, not because a mod is meant to call it. `ExpandedLib.Industry` is also
 public, but it is the family's own content layer and changes without notice.
 
+## Packages
+
+The mod ships as one download - one modinfo, one folder, two assemblies - and as four NuGet
+packages a mod project references at compile time:
+
+| Package | What it is |
+| --- | --- |
+| `ExpandedLib` | the framework: `exlib.dll` |
+| `ExpandedLib.Industry` | this family's content layer: `exlib.industry.dll`, beside it in the same mod folder |
+| `ExpandedLib.Testing` | the headless xUnit harness, for a test project rather than a mod |
+| `ExpandedLib.Verify` | a .NET tool, `exlib-verify`, that checks a JSON-only mod's assets with no game running |
+
+They are built for the current Vintage Story version only. The mod zips on the GitHub releases
+page cover the older versions; the packages do not, because a mod targeting an older version
+builds against a different .NET and a different game API.
+
+None of them carries the game's own assemblies: a consuming project references
+`VintagestoryAPI.dll` and friends from its own install, the same way any Vintage Story mod does.
+At runtime the player installs this mod, and the game loads it like any other dependency.
+
 ## Building
 
 ```sh
-dotnet build mods/exlib/src/ExpandedLib.csproj
+dotnet build mods/exlib/src/ExpandedLib.csproj        # the framework
+dotnet build mods/exlib/industry/ExpandedLib.Industry.csproj   # the family layer
 ```

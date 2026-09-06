@@ -154,6 +154,28 @@ public sealed class BuildTask : FrostingTask<BuildContext>
             ),
           }
         );
+
+        // ExpandedLib.Industry is not its own ModProject - it is a second assembly inside exlib's
+        // zip rather than a mod of its own - so it has no entry in Projects and nothing above
+        // builds it. (It does ship as its own NuGet package; that is dotnet pack's business.) Its
+        // OutputPath mirrors ExpandedLib.csproj's exactly (same mod-output/publish folder per
+        // target), so publishing it here lands exlib.industry.dll right beside exlib.dll with no
+        // extra copy step.
+        if (project.ModFolder == "exlib")
+        {
+          context.DotNetPublish(
+            "../../mods/exlib/industry/ExpandedLib.Industry.csproj",
+            new DotNetPublishSettings
+            {
+              Configuration = context.BuildConfiguration,
+              Framework = target.Tfm,
+              MSBuildSettings = new DotNetMSBuildSettings().WithProperty(
+                "Legacy",
+                "true"
+              ),
+            }
+          );
+        }
       }
     }
   }
@@ -196,6 +218,9 @@ public sealed class PackageTask : FrostingTask<BuildContext>
             $"../../mods/{project.ModFolder}/src/modicon.png",
             $"{stageDir}/modicon.png"
           );
+        // The licence travels inside the zip. A download from ModDB carries no repository context of
+        // its own, so this is the only copy the person holding the file has.
+        context.CopyFile("../../LICENSE", $"{stageDir}/LICENSE.txt");
 
         // Authoritative modinfo: the source declares the current game version, so point the game
         // dependency at this target's version (no-op for the current one). A source that declares any
@@ -238,9 +263,9 @@ public sealed class PackageTask : FrostingTask<BuildContext>
 [IsDependentOn(typeof(PackageTask))]
 public sealed class PackageTestingTask : FrostingTask<BuildContext>
 {
-  // The headless test harness (mods/exlib/testing) is a DEVELOPER library, not a game mod, so
-  // it isn't a mod zip and isn't on NuGet (its API still moves a lot release to release). We ship it
-  // as a dev bundle attached to the GitHub release: ExpandedLib.Testing.dll plus the exlib.dll it
+  // The headless test harness (mods/exlib/testing) is a DEVELOPER library, not a game mod, so it is
+  // not a mod zip. It ships as the ExpandedLib.Testing NuGet package and, for anyone not consuming
+  // packages, as a dev bundle attached to the GitHub release: ExpandedLib.Testing.dll plus the exlib.dll it
   // compiles against (exlib's AssemblyName is "exlib"), which a downstream test project references
   // directly (the game assemblies and NSubstitute the consumer supplies - see the wiki
   // "Consuming outside this repo").
@@ -341,6 +366,7 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
     );
 
     File.WriteAllText($"{stageDir}/README.txt", BundleReadme);
+    context.CopyFile("../../LICENSE", $"{stageDir}/LICENSE.txt");
 
     context.Zip(
       stageDir,

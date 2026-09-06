@@ -1,0 +1,113 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Primary build is the current game version, single-target. Opt into the older versions
+         with -p:Legacy=true; both the primary TFM and the full legacy set come from the manifest
+         in ../../Directory.Build.props (add a version there, not here). -->
+    <TargetFramework Condition="'$(Legacy)' != 'true'"
+      >$(CurrentGameTfm)</TargetFramework>
+    <TargetFrameworks Condition="'$(Legacy)' == 'true'"
+      >$(AllGameTfms)</TargetFrameworks>
+    <LangVersion>14</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Lands in exlib's own mod output, not a folder of its own: the game loads every assembly it
+         finds in a mod folder, so this dll ships beside exlib.dll with no extra staging step. The
+         current version keeps the flat output path; legacy TFMs get their own subfolder so the
+         three builds don't overwrite each other - same layout as ExpandedLib.csproj's own output. -->
+    <OutputPath
+      Condition="'$(IsCurrentGame)' != 'true' and '$(TargetFramework)' != ''"
+      >..\src\bin\$(Configuration)\$(TargetFramework)\Mods\mod</OutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''"
+      >..\src\bin\$(Configuration)\Mods\mod</OutputPath>
+    <Nullable>enable</Nullable>
+    <!-- Assembly name matches the mod-relative dll the docs and the split plan name it by. -->
+    <AssemblyName>exlib.industry</AssemblyName>
+    <RootNamespace>ExpandedLib.Industry</RootNamespace>
+    <!-- Deliberately unset: the assets under ../assets/ are exlib's own domain and are already
+         globbed once by ExpandedLib.csproj (AssetDomain=exlib there). Setting it here would pull
+         the same Content items into this project too and ship them twice in the packaged zip. -->
+    <!-- ../../Directory.Build.props only wires GenerateDocumentationFile/NoWarn for a project with
+         its own modinfo.json (one of the five mods); this project has none - it is not itself a
+         mod, exlib's own project is - so it opts in for itself the same way
+         ExpandedLib.Testing.csproj does, and for the same reason: the nupkg should carry
+         IntelliSense docs. Same NoWarn as a mod project gets there, and CS1574 (a stale cref) stays
+         a warning for the same reason. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS0419</NoWarn>
+  </PropertyGroup>
+
+  <!-- NuGet pack metadata. Version is read from exlib's modinfo.json, the same file
+       ExpandedLib.csproj and ExpandedLib.Testing.csproj read, so a release only ever bumps one
+       number. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>ExpandedLib.Industry</PackageId>
+    <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\src\modinfo.json'))</_ModinfoJson>
+    <PackageVersion
+      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
+    <Authors>fallenstar</Authors>
+    <Description>The Fallenstar's Expanded family's domain layer for Vintage Story - pipes, molten metal, mechanical power, metals, heat. Not general-purpose framework code; see ExpandedLib for that.</Description>
+    <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VintagestoryLib">
+      <HintPath>$(GamePath)/VintagestoryLib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSSurvivalMod.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="VGameContent">
+      <HintPath>$(GamePath)/Mods/VSEssentials.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="cairo-sharp">
+      <HintPath>$(GamePath)/Lib/cairo-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)/Lib/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>$(GamePath)/Lib/protobuf-net.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The framework this assembly builds on. Private=false, the same way the mods reference
+         exlib: the game already has exlib.dll loaded from the same mod folder, so this project
+         must not copy a second one alongside its own output. -->
+    <ProjectReference Include="..\src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's
+       [ExConfigRegister]; ExLangKeyGenerator emits the ExlibLang key constants. Compile-time
+       only (Analyzer), ships nothing. Industry's own code reads both, so it needs the same
+       generator reference ExpandedLib.csproj carries. -->
+  <ItemGroup>
+    <ProjectReference
+      Include="..\generators\ExpandedLib.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
+</Project>

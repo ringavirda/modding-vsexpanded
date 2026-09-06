@@ -27,16 +27,33 @@ public abstract class ExModSystem : ModSystem {
   /// nothing for the check.</summary>
   protected virtual bool PatchHarmony => false;
 
+  /// <summary>Runs every companion assembly's <see cref="IExModule.StartPre"/>, then calls
+  /// <see cref="OnStartPre"/>. A mod shipping one assembly has no companions and only gets the
+  /// hook.</summary>
+  public override void StartPre(ICoreAPI api) {
+    ExModules.Drive(Mod, m => m.StartPre(api));
+    OnStartPre(api);
+  }
+
   /// <summary>Loads every <c>[ExConfigRegister]</c> accessor in <see cref="Assembly"/> through
   /// <see cref="ExConfig.LoadAll"/>, then registers every <c>[BlockRegister]</c>/etc class and
-  /// code-first definition through <see cref="EntityRegistry.RegisterAll"/>, then calls
+  /// code-first definition through <see cref="EntityRegistry.RegisterAll"/>, then registers and
+  /// starts every companion assembly (see <see cref="IExModule"/>), then calls
   /// <see cref="OnStart"/>. Also patches Harmony when <see cref="PatchHarmony"/> is true.</summary>
   public override void Start(ICoreAPI api) {
     ExConfig.LoadAll(api, Assembly);
     EntityRegistry.RegisterAll(api, Mod, Assembly);
     if (PatchHarmony)
       ExHarmony.PatchOnce(Mod, Assembly);
+    ExModules.Start(Mod, api);
     OnStart(api);
+  }
+
+  /// <summary>Runs every companion assembly's <see cref="IExModule.AssetsLoaded"/>, then calls
+  /// <see cref="OnAssetsLoaded"/>.</summary>
+  public override void AssetsLoaded(ICoreAPI api) {
+    ExModules.Drive(Mod, m => m.AssetsLoaded(api));
+    OnAssetsLoaded(api);
   }
 
   /// <summary>Registers every <c>[CommandRegister]</c>/<c>[SubCommandRegister]</c> class in
@@ -56,10 +73,14 @@ public abstract class ExModSystem : ModSystem {
     OnStartClientSide(api);
   }
 
-  /// <summary>Calls <see cref="OnAssetsFinalize"/>. Registration happens earlier
+  /// <summary>Runs every companion assembly's <see cref="IExModule.AssetsFinalize"/>, then calls
+  /// <see cref="OnAssetsFinalize"/>. Registration happens earlier
   /// (<see cref="Start"/>/<see cref="StartServerSide"/>/<see cref="StartClientSide"/>); this hook is
   /// for validation against the now-final catalogues.</summary>
-  public override void AssetsFinalize(ICoreAPI api) => OnAssetsFinalize(api);
+  public override void AssetsFinalize(ICoreAPI api) {
+    ExModules.Drive(Mod, m => m.AssetsFinalize(api));
+    OnAssetsFinalize(api);
+  }
 
   /// <summary>Unpatches this assembly's Harmony instance when <see cref="PatchHarmony"/> patched it
   /// in <see cref="Start"/>.</summary>
@@ -68,6 +89,13 @@ public abstract class ExModSystem : ModSystem {
       ExHarmony.UnpatchAll(Mod);
     base.Dispose();
   }
+
+  /// <summary>Runs before any registration, in <see cref="StartPre"/>. Empty by default.</summary>
+  protected virtual void OnStartPre(ICoreAPI api) { }
+
+  /// <summary>Runs in <see cref="AssetsLoaded"/>, after every companion module's own. Empty by
+  /// default.</summary>
+  protected virtual void OnAssetsLoaded(ICoreAPI api) { }
 
   /// <summary>Runs after config and entity registration in <see cref="Start"/>. Empty by default.</summary>
   protected virtual void OnStart(ICoreAPI api) { }

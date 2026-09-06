@@ -237,10 +237,15 @@
     layout INSIDE the packaged mod.
     ============================================================================================
   -->
-  <!-- One shared legacy-usings shim for every mod project (all of which set $(AssetDomain)): on the
-       legacy TFMs it pulls exlib's Legacy namespace into scope assembly-wide, and it compiles away on
-       the current TFM. Linked here so the five projects share one file instead of per-project copies. -->
-  <ItemGroup Condition="'$(AssetDomain)' != ''">
+  <!-- One shared legacy-usings shim for every project that compiles mod code: the five mod projects,
+       all of which set $(AssetDomain), and ExpandedLib.Industry, which is mod code in a second
+       assembly and deliberately sets none (exlib's own project already globs the assets they share,
+       and setting it here would ship them twice). On the legacy TFMs it pulls exlib's Legacy
+       namespace into scope assembly-wide, and it compiles away on the current TFM. Linked here so
+       the projects share one file instead of per-project copies. -->
+  <ItemGroup
+    Condition="'$(AssetDomain)' != '' or '$(MSBuildProjectName)' == 'ExpandedLib.Industry'"
+  >
     <Compile Include="$(MSBuildThisFileDirectory)LegacyUsings.cs">
       <Link>LegacyUsings.cs</Link>
     </Compile>

@@ -7,8 +7,8 @@ namespace ExpandedLib.Catalogues;
 
 /// <summary>
 /// Process-wide catalogue of pipe and canal media (<see cref="LiquidDef"/>) and the single
-/// <see cref="IMediumTaxonomy"/> the pipe network reads. Mirrors <see cref="ExpandedLib.Industry.Metals.MetalRegistry"/>:
-/// populated at <c>AssetsFinalize</c> from every domain's <c>config/liquids.json</c> via
+/// <see cref="IMediumTaxonomy"/> the pipe network reads. Mirrors the family layer's
+/// <c>MetalRegistry</c>: populated at <c>AssetsFinalize</c> from every domain's <c>config/liquids.json</c> via
 /// <see cref="AssetCatalogueLoader"/>, over a compiled-in baseline. The four built-ins (Air, Steam,
 /// Exhaust, Water) are seeded in the static constructor and again at the start of every
 /// <see cref="Load"/>, so a run without an asset load never sees an unknown medium.

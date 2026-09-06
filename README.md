@@ -95,59 +95,85 @@ The repo bootstraps almost everything itself. You only need, up front:
 - **Git** and **PowerShell 7+** (`pwsh`) on Windows, or **bash** on Linux/macOS.
 - A **.NET 10 SDK** on PATH (see `global.json`) is recommended for normal `dotnet build`.
   If it (or any required runtime) is missing, the test runner downloads a self-contained
-  .NET into `.dotnet/` and uses it — so a clone with no .NET at all can still run the tests.
+  .NET into `.dotnet/` and uses it - so a clone with no .NET at all can still run the tests.
 
 Everything else is fetched on demand into gitignored folders:
 
-- **Game binaries** → `.game/<version>` (`scripts/provision-game.*`).
+- **Game binaries** -> `.game/<version>` (`exmod provision game`).
 - **.NET runtimes** the game versions need (net10/net8/net7, incl. the Windows Desktop
-  runtime) → `.dotnet/` (`scripts/provision-dotnet.*`). Each Vintage Story version is pinned
-  to one .NET major and won't roll forward, and the legacy test hosts need those runtimes —
+  runtime) -> `.dotnet/` (`exmod provision dotnet`). Each Vintage Story version is pinned
+  to one .NET major and won't roll forward, and the legacy test hosts need those runtimes -
   so a fork that only has .NET 10 still gets 8/7 provisioned automatically.
+
+### Setup
+
+Every repo task goes through `exmod`, one entry point for every stage of the repo's life.
+`scripts/exmod.ps1` holds the implementation and runs on all three platforms under
+PowerShell 7; `scripts/exmod.sh` is a POSIX launcher that finds `pwsh` (installing it into
+`.dotnet/tools` if the machine has none) and forwards to it. A fresh clone is:
+
+```sh
+bash scripts/exmod.sh setup      # Linux/macOS
+pwsh scripts/exmod.ps1 setup     # Windows
+```
+
+`setup` provisions a .NET runtime and the game (the dedicated-server archive - a plain
+zip/tarball, no installer, and no game licence needed to build or test) for the current
+series, then restores the solution. `exmod provision dotnet` and
+`exmod provision game -Version <x.y[.z]>` do the two halves on their own; `-Version` takes
+a full patch (`1.22.3`) or a major.minor series (`1.22` -> latest patch).
 
 ### Build
 
 ```sh
-# Build/test: the dedicated-server archive (a plain zip/tarball - no installer) is enough.
-# -Version takes a full patch (1.22.3) or a major.minor series (1.22 -> latest patch).
-pwsh scripts/provision-game.ps1 -Version 1.22     # Windows
-scripts/provision-game.sh       -Version 1.22     # Linux/macOS
-
-dotnet build VintageStory.sln                                    # builds every mod + the tests
-dotnet build mods/siex/src/HighPressureExpanded.csproj # or one mod + its dependencies
-dotnet run --project infra/CakeBuild   # full Cake build: per-game-version release zips in dist/Releases/
+exmod build latest      # this repo's current game series
+exmod build all         # every supported series (1.22, 1.21, 1.20)
 ```
+
+or drive `dotnet` directly - `dotnet build VintageStory.sln` builds every mod and its
+tests, `dotnet build mods/siex/src/SteelIndustryExpanded.csproj` builds one mod and its
+dependencies. `exmod pack` builds every mod for every game series and zips the release
+into `dist/Releases/`.
 
 ### Testing
 
-`dotnet test` runs the latest (1.22) suite. To run a version separately (the VS Code
-"Test: …" tasks do the same), or all of them in parallel:
-
 ```sh
-pwsh scripts/run-tests.ps1 -Version latest      # or 1.21 / 1.20 / all
-scripts/run-tests.sh latest                     # Linux/macOS
-pwsh scripts/run-tests.ps1 -Coverage            # latest + coverage gate (needs Python)
+exmod test latest      # all suites, current game version
+exmod test all         # also 1.21 (net8.0) and 1.20 (net7.0)
 ```
 
 Each run builds the test projects for that version (auto-provisioning its game binaries
-and, if missing, its .NET runtime) and executes the projects in parallel.
+and, if missing, its .NET runtime) and executes the projects in parallel. `exmod help test`
+has the rest of the flags (throttling a run, the coverage gate).
 
-To actually **launch** the game (the GUI client) add `-Kind client`. On Windows the
-client only ships as an Inno Setup installer, so this runs a silent install into
-`.game/<version>`; on Linux/macOS it's a plain client tarball. Because every VS
-installer shares one uninstall id, the Windows client install snapshots and restores
-the existing "Vintage Story" Add/Remove-Programs entry so it never clobbers a
-machine-wide install. If an earlier run already broke that entry, repoint it with:
+### Playing it
 
-```powershell
-scripts/fix-vs-registry.ps1 -InstallDir "D:\Path\To\Vintagestory"
+```sh
+exmod client      # the game client, with the built mods
+exmod server      # a dedicated server, with the built mods
 ```
 
-If you already have a game install you'd rather use, set the `VINTAGE_STORY`
-environment variable to it and the build/launch will use that instead.
+On Windows the client only ships as an Inno Setup installer, so `exmod client` runs a
+silent install into `.game/<version>`; on Linux/macOS it's a plain client tarball. Because
+every VS installer shares one uninstall id, the Windows client install snapshots and
+restores the existing "Vintage Story" Add/Remove-Programs entry so it never clobbers a
+machine-wide install. If an earlier run already broke that entry, repoint it (Windows only)
+with:
+
+```powershell
+exmod fix-registry -InstallDir "D:\Path\To\Vintagestory"
+```
+
+If you already have a game install you'd rather use, set the `VINTAGE_STORY` environment
+variable to it and the build/launch will use that instead.
 
 If you use VS Code, the included launch config provisions the client, builds, stages
 the mods, and runs the game automatically - with all saves and configs written under a
 single shared `.gamedata/` in the repo (both `.game/` and `.gamedata/` are gitignored).
 The primary launch config tracks the latest patch of the current series; the legacy
 (1.21 / 1.20) configs pin the series `.0` floor.
+
+## License
+
+MIT - see [`LICENSE`](LICENSE). Every packaged mod zip and the developer bundle carry a
+copy as `LICENSE.txt`.

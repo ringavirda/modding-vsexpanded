@@ -80,9 +80,9 @@ Reference the harness, xUnit, the test SDK and NSubstitute, plus the game API DL
 
 #### Provisioning the game install: why `IPlayer` can be mocked at all
 
-`scripts/exmod.ps1 provision game` (both `-Kind server` and `-Kind client`) runs `Publicize-GameApi`
+`exmod provision game` (both `-Kind server` and `-Kind client`) runs `Publicize-GameApi`
 on the provisioned `VintagestoryAPI.dll` after every fetch, every re-check of an existing install and
-every version bump - see the function in `scripts/exmod.ps1`. It flips the accessibility bits on
+every version bump - see the function in `scripts/exmod/provision.ps1`. It flips the accessibility bits on
 `IPlayer.IsInInteractionRangeOf(BlockPos, float)`, which the game ships as `internal abstract`: an
 interface member no external assembly is allowed to implement, so `Substitute.For<IPlayer>()` (and
 `IServerPlayer`, which inherits the same member) cannot construct a proxy at all without this patch.

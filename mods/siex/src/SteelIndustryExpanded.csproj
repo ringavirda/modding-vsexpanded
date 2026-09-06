@@ -91,6 +91,9 @@
     <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\exlib\industry\ExpandedLib.Industry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\iiex\src\IronIndustryExpanded.csproj">
       <Private>false</Private>
     </ProjectReference>

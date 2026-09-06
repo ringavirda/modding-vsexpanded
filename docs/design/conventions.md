@@ -246,7 +246,7 @@ activity, and a machine mod needs about six in total.
 | `Checks/` | `ExpandedLib.Checks` | verifying content in the game or in a test |
 | `Helpers/` | `ExpandedLib.Helpers` | everything content-neutral that saves a few lines: orientation, meshes, inventories, units, rendering |
 | `Legacy/` | `ExpandedLib.Legacy` | supporting 1.20 and 1.21 from one source tree |
-| `Industry/<Pack>/` | `ExpandedLib.Industry.<Pack>` | reusing the family's content layer: pipes, molten, mechanical power, metals, heat |
+| `industry/<Pack>/` | `ExpandedLib.Industry.<Pack>` | reusing the family's content layer: pipes, molten, mechanical power, metals, heat. Its own project beside `src/`, shipping `exlib.industry.dll` inside the same mod folder |
 
 Rules with teeth: a folder that would hold one file is not a folder (the file goes beside its
 subject); a sub-folder appears at four files; a type's folder is decided by the activity that reaches

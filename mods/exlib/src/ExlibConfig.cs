@@ -97,7 +97,7 @@ public class ExlibConfig : IExVersionedConfig {
 
   // The recovery-item fallback (a metal's solid drop failing to resolve) moved to IiexConfig -
   // "what to drop instead" is content knowledge, not a framework default; see
-  // ExpandedLib.Industry.Metals.MetalRegistry.DefaultRecoveryFallback and IiexConfig.MetalRecoveryFallback.
+  // MetalRegistry.DefaultRecoveryFallback (Industry) and IiexConfig.MetalRecoveryFallback.
   #endregion
 
   #region Mechanical-energy network

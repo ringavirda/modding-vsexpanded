@@ -1,5 +1,4 @@
 using ExpandedLib.Catalogues;
-using ExpandedLib.Industry.Metals;
 using ExpandedLib.Registries;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,16 +30,6 @@ public class ExDefinitionModSystem : ModSystem {
       return;
 
     var origin = new ExDefinitionOrigin();
-
-    // Register the generated metal-family resource items (ingot/plate/rod/nails/bits per opted-in metal)
-    // so they inject through the same item path below. The catalogue is read directly rather than off
-    // MetalRegistry, which is only populated at AssetsFinalize and so is still empty in this phase.
-    foreach (
-      ExItemDef def in MetalFamilyEmitter.Emit(
-        AssetCatalogueLoader.GetMany<MetalDef>(api, "config/metals/")
-      )
-    )
-      ExDefinitions.RegisterItem(def);
 
     // The stopping points of every stage route. Read from the catalogue assets rather than from
     // ProcessRouteRegistry, which is only populated at AssetsFinalize - and read here rather than there

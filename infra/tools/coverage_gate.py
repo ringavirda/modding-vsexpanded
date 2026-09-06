@@ -60,7 +60,7 @@ def main(path, floors_path):
     gc = gt = 0
     failures = []
     matched = set()
-    print(f"{'assembly':<14}{'lines':>14}{'%':>8}{'floor':>8}")
+    print(f"{'assembly':<22}{'lines':>14}{'%':>8}{'floor':>8}")
     for pkg in root.find("packages"):
         name = pkg.get("name")
         if name not in floors:
@@ -72,12 +72,12 @@ def main(path, floors_path):
         gt += tot
         pct = 100 * cov / tot if tot else 0
         flag = "" if pct >= floor else "  << BELOW FLOOR"
-        print(f"{display:<14}{cov:>7}/{tot:<6}{pct:>7.1f}{floor:>8.1f}{flag}")
+        print(f"{display:<22}{cov:>7}/{tot:<6}{pct:>7.1f}{floor:>8.1f}{flag}")
         if pct < floor:
             failures.append(f"{display} {pct:.1f}% < {floor:.1f}%")
 
     total_pct = 100 * gc / gt if gt else 0
-    print(f"{'TOTAL':<14}{gc:>7}/{gt:<6}{total_pct:>7.1f}{total_floor:>8.1f}")
+    print(f"{'TOTAL':<22}{gc:>7}/{gt:<6}{total_pct:>7.1f}{total_floor:>8.1f}")
     if total_pct < total_floor:
         failures.append(f"TOTAL {total_pct:.1f}% < {total_floor:.1f}%")
 

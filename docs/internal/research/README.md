@@ -24,6 +24,7 @@ pages; status lives in `../plans/STATE.md`. Line citations drift - cite by symbo
 | [2026-09-04-u11-ladle-triage.md](2026-09-04-u11-ladle-triage.md) | the U11 ladle unit verified task by task against today's source; the art measured; layouts verbatim; executable task list |
 | [2026-09-06-ease-audit.md](2026-09-06-ease-audit.md) | exlib convenience plan Task V7: first-snippet line counts and rungs for every wiki capability page, ranked proposed doc fixes; three cross-cutting ease facts against source |
 | [2026-09-06-asset-loading-spike.md](2026-09-06-asset-loading-spike.md) | Task T13 spike: the working in-process call sequence to load a mod's real assets through the game's own AssetManager/patch loader/object loader, walls hit and worked around (ReadOnlySpan tag registries, protobuf-net, vanilla class registration), the `TestWorld.LoadAssets` design landed from it |
+| [2026-09-06-exlib-repo-split.md](2026-09-06-exlib-repo-split.md) | whether exlib should move to its own repository: what a split buys and costs, the measurements, the subtree-mirror middle ground, and the two things that would have to move first |
 
 Written 2026-09-04 for the roadmap's Phase 1 walkthrough and Phase 2 machining-line plan.
 

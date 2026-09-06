@@ -51,15 +51,10 @@ jobs:
       - name: Restore
         run: dotnet restore VintageStory.sln
 
+      # Collects cobertura over the solution and ratchets it against infra/test/coverage-floors.json.
+      # The same command a contributor runs locally, so the gate cannot drift from what CI enforces.
       - name: Run tests with coverage
-        run: |
-          dotnet tool install -g dotnet-coverage
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          dotnet-coverage collect -f cobertura -o coverage.xml \
-            "dotnet test VintageStory.sln --no-restore -c Debug"
-
-      - name: Coverage gate (mod assemblies)
-        run: python3 infra/tools/coverage_gate.py coverage.xml infra/test/coverage-floors.json
+        run: bash scripts/exmod.sh test -Coverage
 
       - name: Upload coverage report
         if: always()

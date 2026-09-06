@@ -1,10 +1,10 @@
 namespace ExpandedLib.Catalogues;
 
 /// <summary>
-/// Medium policy the pipe network consults instead of hardcoded medium strings, injected like
-/// <see cref="ExpandedLib.Industry.Pipes.IPipeVentStrategy"/>. Supplied to
-/// <see cref="ExpandedLib.Industry.Pipes.PipeNetwork"/> at <c>RegisterNetworkType</c>; a network constructed
-/// without one falls back to <see cref="ExLiquids.Taxonomy"/>, which always knows the four built-ins.
+/// Medium policy the pipe network consults instead of hardcoded medium strings, injected like the
+/// family layer's <c>IPipeVentStrategy</c>. Supplied to the family layer's <c>PipeNetwork</c> at
+/// <c>RegisterNetworkType</c>; a network constructed without one falls back to
+/// <see cref="ExLiquids.Taxonomy"/>, which always knows the four built-ins.
 /// </summary>
 public interface IMediumTaxonomy {
   /// <summary>True when <paramref name="code"/> is a liquid (incompressible, single-family) rather

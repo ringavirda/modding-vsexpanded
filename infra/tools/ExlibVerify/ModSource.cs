@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.IO.Compression;
 using Newtonsoft.Json.Linq;
 
@@ -20,6 +21,15 @@ public sealed class ModSource {
   /// <summary>The original path this source was loaded from - a folder or a zip file - used only
   /// for messages, never for reading.</summary>
   public string OriginalPath { get; }
+
+  /// <summary>
+  /// Whether the mod ships a compiled assembly beside its <c>modinfo.json</c>. A mod that does can
+  /// register assets this tool never sees: exlib's code-first definitions inject a synthetic
+  /// blocktype/item/recipe JSON per definition before the patch loader runs, so a patch aimed at
+  /// one of those resolves in the game and finds nothing on disk. Checks that would otherwise call
+  /// such a target missing report it as unverifiable instead.
+  /// </summary>
+  public bool ShipsCode => Directory.EnumerateFiles(RootDir, "*.dll").Any();
 
   private ModSource(string modId, string rootDir, string originalPath) {
     ModId = modId;

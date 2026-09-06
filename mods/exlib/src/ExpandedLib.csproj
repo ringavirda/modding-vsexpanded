@@ -39,9 +39,7 @@
     <Description>Shared framework library for the Fallenstar's Expanded mods (Vintage Story).</Description>
     <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <!-- No LICENSE file exists in this repository yet, so PackageLicenseExpression is left unset
-         rather than guessed at - set it here once the owner has picked one. Nothing in this repo
-         publishes a package (see release.yml's commented push step), so this is not blocking. -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

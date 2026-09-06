@@ -174,6 +174,107 @@ system, not two. The throw is exaggerated for legibility (jaw bottom 1.2 units) 
 `builders/vsexpanded/crusher.py` in the tools repo; the pitman, toggle and jaw poses are solved from the link
 lengths per frame. Awaiting the owner's Model Creator pass, then a machines.txt line.
 
+---
+
+## Implementation notes
+
+Nothing here is built. These are the decisions an implementer should not have to re-make, in the order they
+will need them.
+
+### The block
+
+| | |
+|---|---|
+| Mod, folder | iiex, beside the other ore-processing blocks (`BlockStructures/OreProcessing/`) |
+| Code | `iiex:orecrusher-{side}`, four horizontal orientations |
+| Definition | code-first `ExBlockDef`, per [recipes & config](../mechanics/recipes-config.md); no hand-written JSON |
+| Footprint | 1 x 2 x 2 = 4 cells, three of them fillers |
+| Principal cell | the front lower cell, so the real block entity is the one the discharge chute talks to |
+| Placement | ordinary placement, no RCC stages: the stacking argument wants it cheap to put down |
+
+The machines.txt layout, north-facing, `O` principal, `P` the cells a chute couples to:
+
+```
+    L1 (y=0):        L2 (y=1):
+        P                P
+        #                #
+```
+
+Front cells (z=0) carry the jaws and the hopper, rear cells (z=1) the drive.
+
+### Feed and discharge
+
+Vanilla's `BlockEntityItemFlow` moves a stack by fetching a `BlockEntityContainer` at the neighbouring
+position (`BEItemFlow.cs:266`) and pushing into its inventory. So both coupled cells must present a
+container to their neighbour:
+
+| Cell | Face | Must present |
+|---|---|---|
+| front upper filler | its top face, (8, 32, 8) | a container whose input slot the chute above can push ore into |
+| front lower principal | its bottom face, (8, 0, 8) | a container whose output slot the chute below can pull crushed ore from |
+
+The principal cell is the discharge, so that side is a plain `BlockEntityContainer` with an output slot. The
+feed cell is a filler and must project its container to the principal, the way the other megablocks route
+per-cell interactions ([multiblock](../mechanics/multiblock.md)). Getting this wrong is silent: the chute
+simply never pushes.
+
+Two slots is enough, input and output. No GUI is needed for material; a hand-held stack in the input slot is
+the same path a chute uses.
+
+### Drive
+
+The eccentric shaft is the mp shaft. It crosses both side faces of the rear upper cell at their centres, so
+crushers chain along one line and the flywheel block stands beside them on the same shaft.
+
+| | |
+|---|---|
+| Contract | `IMpEnergyConsumer.LoadTorque(speed)`, per [mp-energy](../mechanics/mp-energy.md) |
+| Base | `BlockEntityMpBench` is the shape to follow: it carries `BEBehaviorNetworkMember`, exposes `Speed` and `AvailableTorque` off the run state, and leaves `LoadTorque` abstract |
+| Reference implementation | `BlockEntityRollingMill.LoadTorque` - zero when the rolls are empty, a config torque when stock is between them |
+| Buffer | none in the crusher; the network's flywheel block does the buffering |
+
+**The load must be pulsed, not flat.** That is the whole argument for the machine. `LoadTorque` returns
+near zero over the return stroke and the full crushing torque over the nip, keyed off the same cycle phase
+the animation uses. A flat load would run smoothly off a waterwheel and teach nothing.
+
+**The hardness gate is a threshold, not a flag.** Energy per unit is a per-ore number; an ore whose figure
+the run cannot clear at the speed it is turning simply does not break. No branch on tier, no "steam version"
+- the same shape as `RequiredBlastPressureFor`. Numbers wait for live mp-energy figures.
+
+Config keys follow the family convention, `IiexValues.Crusher*`.
+
+### Animation
+
+Two clips, both already in the sketch: `cycle` at 60 frames Repeat, `idle` at 30. `cycle` is speed-driven and
+phase-locked to the run the way the other mp machines do it. The keyframed elements are `Shaft`, `Pitman`,
+`ToggleRear`, `ToggleFront` and `SwingJaw`; every other part rides as a child. Nothing else moves.
+
+### Art
+
+`workbench/shapes/machines/mpenergy/machine-mp-megablock-crusher-sketch.json`, 113 cubes. Groups: `Frame`
+(legs, sills, side beams, cheeks with their bored bosses and bushes, rear rail, bearing block, post, toggle
+seat), `Jaws` (fixed jaw with five ribs, pivot shaft, swing jaw with matching ribs and its toggle lug),
+`Drive` (mp shaft, eccentric sheave, strap, pitman, both toggles, oil cup), `Hopper` (trough, sloped sides,
+floor and the bored spout with its band). Key figures, for anyone editing it:
+
+| | |
+|---|---|
+| mouth | 11 wide by 5 deep, under (8, 32, 8) |
+| jaw tilt at rest | 15.9 degrees, discharge gap 0.75 over the fixed jaw's ribs |
+| eccentric | throw 0.8, sheave 7 across, on the shaft at (8, 24, 24) |
+| jaw movement | 1.2 at the bottom, exaggerated over the eccentric so it reads in game |
+| spout | 6 x 6 with a 5 x 5 bore, ending on the bottom face |
+
+### Recipe and drops
+
+A cast frame with wrought jaws: cast parts for the cheeks and legs, plate for the jaws, a shaft. The cost
+catalogue derives the rest. Drops follow the family default rather than a hand-written list.
+
+### Tests
+
+Golden def parity (every family member has one), the footprint and its fillers, and a chute round trip:
+a chute above pushes ore in, a chute below pulls crushed ore out.
+
 ## Open
 
 Everything here is a decision, not a placeholder - none of it blocks the ones already made above.

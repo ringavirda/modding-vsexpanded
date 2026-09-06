@@ -93,6 +93,9 @@
     <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\exlib\industry\ExpandedLib.Industry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
     <!-- Attribute/config source generators (compile-time only, ship nothing). -->
     <ProjectReference
       Include="..\..\exlib\generators\ExpandedLib.Generators.csproj"

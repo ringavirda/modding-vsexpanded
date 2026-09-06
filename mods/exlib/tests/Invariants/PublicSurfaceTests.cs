@@ -119,10 +119,12 @@ public class PublicSurfaceTests {
   public void Every_listed_type_exists() {
     string page = File.ReadAllText(PagePath);
 
-    // A name resolves when it is (a) a public or nested-public type of the exlib assembly, (b) a
-    // generator type (source-extracted, no runtime assembly), or (c) a public type declared in
-    // exlib's source but compiled only under a legacy `#if !GAME_GE_*` guard - absent from this
-    // lane's assembly, but real on the lane(s) that compile it.
+    // A name resolves when it is (a) a public or nested-public type of exlib.dll or
+    // exlib.industry.dll - the page documents the family layer's types alongside core ones under
+    // the same feature-oriented headings, not split by assembly - (b) a generator type
+    // (source-extracted, no runtime assembly), or (c) a public type declared in exlib's source but
+    // compiled only under a legacy `#if !GAME_GE_*` guard - absent from this lane's assembly, but
+    // real on the lane(s) that compile it.
     var resolvable = new Dictionary<string, HashSet<int>>();
     void Add(string name, int arity) {
       if (!resolvable.TryGetValue(name, out var arities))
@@ -133,6 +135,7 @@ public class PublicSurfaceTests {
     foreach (
       Type t in typeof(ExpandedLibModSystem)
         .Assembly.GetTypes()
+        .Concat(typeof(Industry.IndustryModule).Assembly.GetTypes())
         .Where(IsPubliclyVisible)
         .Where(t => !IsCompilerSynthesized(t))
     ) {

@@ -9,6 +9,22 @@ see the git history.
 
 ### Added
 
+- `Registries/IExModule.cs` and `ExModules`: a mod may ship more than one assembly, but only one of
+  its dlls may contain mod systems - the game refuses to load a mod when a second one does, naming
+  neither. An assembly past the first declares an `IExModule` instead, marks itself with
+  `[assembly: ExDomain("<modid>")]`, and `ExModSystem` runs it through `StartPre`, `Start`,
+  `AssetsLoaded` and `AssetsFinalize` in `Order` order, registering its `[BlockRegister]` classes
+  for it first. A module that throws is logged and skipped rather than failing the phase. This is
+  how `exlib.industry.dll` ships inside the exlib mod folder.
+- `Catalogues/AssetCatalogueLoader.cs` is public. It reads every domain's
+  `config/<yours>/*.json` under a path prefix into a typed object and reports what failed to
+  parse - the primitive `ContributedCatalogueLoader<TSet, TRegistry>` is built on. Both of those
+  were already supported API while the loader under them was not, so a mod could derive the
+  contributor base but not read a catalogue of its own.
+- `ExBlockNames.AddVariantQualifier(variantGroup, langPrefix)`: the block-name decorator handles
+  `material`, `rock` and `brick` itself, and any other variant group is now registered by the mod
+  that owns it rather than hardcoded. `ExBlockNames` moved from the family layer to
+  `ExpandedLib.Helpers` with it - nothing about it was family-specific except the one clause.
 - `Registries/ExModSystem.cs`: an abstract `ModSystem` base that runs `ExConfig.LoadAll`,
   `EntityRegistry.RegisterAll`, `CommandRegistry.RegisterAll` and `PreferenceRegistry.RegisterAll`
   in the right phase and order for you (preferences before commands on the client), with an
@@ -47,9 +63,12 @@ see the git history.
   uploads the mod zips, the dev bundle and both nupkgs as GitHub release assets. `templates/ci/tests.yml`
   joins the existing `templates/ci/smoke.yml` for a third-party repository.
 - `ExpandedLib.csproj` and `ExpandedLib.Testing.csproj` are packable: `PackageId`, `Version` read
-  from `modinfo.json`, `Authors`, `Description`, `RepositoryUrl`, `PackageReadmeFile`. Nothing is
-  pushed to NuGet.org by this repo yet - see `release.yml`'s commented push step, which also names
-  why `PackageLicenseExpression` isn't set (no `LICENSE` file exists in the repository yet).
+  from `modinfo.json`, `Authors`, `Description`, `RepositoryUrl`, `PackageReadmeFile`,
+  `PackageLicenseExpression`. Nothing is pushed to NuGet.org by this repo yet - see `release.yml`'s
+  commented push step.
+- `LICENSE`: the repository is MIT licensed. `PackageLicenseExpression` is set to MIT on
+  `ExpandedLib`, `ExpandedLib.Testing` and `ExpandedLib.Verify`, and every packaged mod zip and
+  the developer bundle now carry a copy as `LICENSE.txt`.
 - The testing docs are rewritten as a whole for the current shape (four test projects, the
   template, the release workflow): `docs/internal/testing.md`, the wiki's `Testing-Harness.md` and
   `Testing-API-Reference.md`, and a new source-tree guard, `HarnessSurfaceTests`, that fails when a
@@ -254,6 +273,24 @@ see the git history.
 
 ### Changed
 
+- ⛔ **Breaking: `ExpandedLib.Industry` is its own assembly and its own NuGet package.** The
+  family's content layer - pipes, molten metal, mechanical power, metals, heat - now builds as
+  `exlib.industry.dll` from `mods/exlib/industry/`, and ships beside `exlib.dll` inside the same
+  exlib mod folder, so nothing changes for a player: one mod, one modinfo, one download. A mod
+  that uses those types adds a reference to `ExpandedLib.Industry` alongside `ExpandedLib`; no
+  namespace, type name or registered class key moved, so a save and a shipped blocktype JSON are
+  unaffected. The framework assembly no longer references the domain layer in either direction,
+  which the compiler now enforces and `IndustryBoundaryTests` proves.
+- The metal catalogue and the generated metal item family are loaded by the domain layer's own
+  `IndustryModule` rather than by exlib's mod systems calling into it, through the new companion
+  assembly mechanism below. Its driver runs at ExecuteOrder 0.03, under `ExDefinitionModSystem`'s
+  0.04 so the emitted items are registered before that system injects them, and under
+  `ExpandedLibModSystem`'s default 0.1 so metals still load before liquids and material roles.
+- `scripts/exmod.ps1` is split from one 900-line file into a dispatcher plus one file per
+  lifecycle stage under `scripts/exmod/` (`provision.ps1`, `src.ps1`, `run.ps1`, `dist.ps1`,
+  `windows.ps1`); each command registers itself next to its own implementation, so `exmod`
+  prints a grouped command list and `exmod help <command>` prints one command in detail.
+  `scripts/exmod.sh` is unchanged. See [Contributing](../../CONTRIBUTING.md) "Running things".
 - ⛔ **Breaking: construction now gates production by default.** A machine whose blocktype carries
   `ExRightClickConstructable` and hosts a production tick used to tick through its own unfinished
   construction unless it named the gate itself; the behaviour's new `IProductionReadiness` answer
@@ -334,6 +371,12 @@ see the git history.
 
 ### Fixed
 
+- `exlib-verify` reported a patch aimed at a code-first definition as a missing target. exlib
+  injects one synthetic blocktype/item/recipe asset per definition before the patch loader runs,
+  so those files exist in a running game and never on disk - siex's iiex refractory-pipe compat
+  patch alone produced 27 errors for patches that apply correctly. A target missing from a domain
+  whose mod ships an assembly is now an informational finding naming why it cannot be checked
+  headlessly; a target missing from a JSON-only domain is still an error.
 - ⛔ **Breaking: `AssetCheckSource.Domains` now covers only exlib and the mods that depend on it.**
   It used to answer every loaded mod, vanilla's own `game`/`survival`/`creative` included, whose own
   incomplete non-English locales alone produced on the order of 164,000 findings on a full-tree
