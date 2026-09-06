@@ -76,7 +76,7 @@ shipped as its own mod, can declare `[assembly: ExModule]` and join exlib's life
 
 | Package | What it is |
 | --- | --- |
-| `ExpandedLib` | the framework: `exlib.dll` |
+| `ExpandedLib` | the framework: `exlib.dll`, the config/lang source generators, and the build/ plumbing (`GamePath` resolution, provisioning, asset globs) - a consumer needs no props of its own beyond a `TargetFramework` |
 | `ExpandedLib.Industry` | this family's content layer: `exlib.industry.dll`, beside it in the same mod folder |
 | `ExpandedLib.Testing` | the headless xUnit harness, for a test project rather than a mod |
 | `ExpandedLib.Verify` | a .NET tool, `exlib-verify`, that checks a JSON-only mod's assets with no game running |

@@ -43,62 +43,33 @@ up when your `Start`/`StartServerSide`/`StartClientSide` run.
 ## 2. Reference exlib at compile time
 
 The project is called `ExpandedLib` and that is its root namespace, but the assembly it builds is
-**`exlib.dll`** - the assembly name matches the mod id. That is the file you reference, and there is
-no `ExpandedLib.dll` anywhere outside `obj/`.
+**`exlib.dll`** - the assembly name matches the mod id. That is the file the package ships, and
+there is no `ExpandedLib.dll` anywhere outside `obj/`.
 
-Inside this monorepo it is a plain `ProjectReference` with copy-local turned **off**:
+Reference the `ExpandedLib` NuGet package, with runtime assets excluded - the player installs
+`exlib` as its own mod, so it must not ship a second copy inside your mod's output:
 
 ```xml
 <ItemGroup>
-  <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
-    <Private>false</Private>
-  </ProjectReference>
+  <PackageReference Include="ExpandedLib" Version="<latest>" ExcludeAssets="runtime" />
 </ItemGroup>
 ```
 
-> ⚠ **`<Private>false</Private>` is not optional, and omitting it fails silently.** Without it the SDK
+> ⚠ **`ExcludeAssets="runtime"` is not optional, and omitting it fails silently.** Without it the SDK
 > copies `exlib.dll` into your mod's output, and Vintage Story refuses to load a mod folder carrying a
 > second assembly with `ModSystem`s in it - *"Found multiple .dll files with ModSystems and/or ModInfo
-> attributes"*. Your mod is then simply absent from the loaded-mod list. The player installs `exlib`
-> as its own mod, so you never bundle a copy.
->
-> It also **does not propagate transitively.** If you reference another mod that itself references
-> `exlib`, the SDK synthesises a transitive reference with the default copy-local *on*. Declare every
-> such project explicitly, each with its own `<Private>false</Private>`; the explicit item's metadata
-> beats the synthesised one.
+> attributes"*. Your mod is then simply absent from the loaded-mod list.
 
-Outside this repo you reference the same assembly as a file. `exlib` ships as `exlib_<version>.zip`,
-which the game loads without unpacking, so take `exlib.dll` out of that zip (or out of the
-[exlib-testing bundle](Testing-Harness), which carries it alongside the harness) and keep it beside
-your project:
+The package carries the config and lang source generators (as analyzers) and the whole
+`GamePath`/provisioning/asset-glob build behind it, so a project referencing only `ExpandedLib`
+needs no props of its own beyond a `TargetFramework` - no `$(GamePath)` to define, no `<Error>`
+target to write. `$(GamePath)` still resolves the same way the [Testing Harness](Testing-Harness)
+page assumes: from the `VINTAGE_STORY` environment variable, or `-p:GamePath=...` on the command
+line.
 
-```xml
-<PropertyGroup>
-  <!-- The Vintage Story install. Set VINTAGE_STORY, or pass -p:GamePath=... on the command line. -->
-  <GamePath Condition="'$(GamePath)' == ''">$(VINTAGE_STORY)</GamePath>
-</PropertyGroup>
-
-<Target Name="CheckGamePath" BeforeTargets="BeforeBuild" Condition="'$(GamePath)' == ''">
-  <Error Text="Set the VINTAGE_STORY environment variable to your game install." />
-</Target>
-
-<ItemGroup>
-  <Reference Include="exlib">
-    <HintPath>libs/exlib.dll</HintPath>
-    <Private>false</Private>
-  </Reference>
-  <Reference Include="VintagestoryAPI">
-    <HintPath>$(GamePath)/VintagestoryAPI.dll</HintPath>
-    <Private>false</Private>
-  </Reference>
-</ItemGroup>
-```
-
-`$(GamePath)` is this wiki's convention for the install directory and the
-[Testing Harness](Testing-Harness) page assumes it too, but nothing defines it for you - the
-definition above is the whole of it. Stop at the environment variable and a hard error rather than
-guessing per-OS install locations; this repo defines none, and a wrong guess fails later and less
-clearly than the `<Error>` does.
+Inside this monorepo the sample switches to a plain `ProjectReference` against the checkout instead
+(see `samples/HelloExpanded.csproj`) so exlib's own change history builds against itself without a
+release round-trip; nothing about that switch is part of the package's public contract.
 
 ## 3. Register your content
 

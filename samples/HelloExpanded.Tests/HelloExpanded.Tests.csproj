@@ -34,14 +34,27 @@
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
+  <!-- Dual mode, same switch as HelloExpanded.csproj: source mode ProjectReferences exlib and the
+       harness straight from the checkout, package mode takes them from NuGet. The harness's
+       reference stays plain (no ExcludeAssets) in both branches - a test project loads exlib.dll
+       and ExpandedLib.Testing.dll at test time, unlike the mod project which never ships either. -->
+  <ItemGroup Condition="'$(ExlibRoot)' != ''">
+    <ProjectReference Include="$(ExlibRoot)src\ExpandedLib.csproj" />
+    <ProjectReference Include="$(ExlibRoot)testing\ExpandedLib.Testing.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' == ''">
+    <PackageReference Include="ExpandedLib" />
+    <PackageReference Include="ExpandedLib.Testing" />
+  </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\mods\exlib\src\ExpandedLib.csproj" />
     <ProjectReference Include="..\HelloExpanded\HelloExpanded.csproj" />
-    <ProjectReference Include="..\..\mods\exlib\testing\ExpandedLib.Testing.csproj" />
   </ItemGroup>
   <!-- Explicit import: GamePath (used above via HintPath) lives in ExpandedLib.targets,
        imported after the project body - the mods/Directory.Build.props import above only
        carries ExpandedLib.props (the props half), and this project sits outside mods/, so
-       the auto-imported mods/Directory.Build.targets never reaches it either. -->
-  <Import Project="../../mods/exlib/build/ExpandedLib.targets" />
+       the auto-imported mods/Directory.Build.targets never reaches it either. Source mode only
+       ($(ExlibRoot) != ''): in package mode the ExpandedLib PackageReference above pulls the same
+       file in automatically, and importing both ways would double it up. -->
+  <Import Project="../../mods/exlib/build/ExpandedLib.targets" Condition="'$(ExlibRoot)' != ''" />
 </Project>

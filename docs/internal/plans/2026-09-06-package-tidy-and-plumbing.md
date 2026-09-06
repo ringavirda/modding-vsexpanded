@@ -409,3 +409,61 @@ link check in `exmod check` clean.
      on `Exists(modinfo.json)`, not `$(TargetFramework)`/`$(AssetDomain)`, so it moved to
      `ExpandedLib.props` instead of the `.targets` bullet list's literal placement - same fix class
      as the per-TFM manifest rows already living in props for the same early-evaluation reason.
+
+- **Task 3** (2026-09-07): `ExpandedLib.csproj` packs `ExpandedLib.Generators.dll` under
+  `analyzers/dotnet/cs/` from `@(Analyzer)`, the item the existing analyzer `ProjectReference`
+  already resolves once the generator project has built - filtered to
+  `%(Analyzer.ReferenceSourceTarget) == 'ProjectReference'`, since `@(Analyzer)` also carries the
+  SDK's own built-in analyzers (net analyzers, the interop generators) by the time `_GetPackageFiles`
+  runs; confirmed present in the packed nupkg under both `-c Debug` and `-c Release`. The four sample
+  csprojs carry the dual-mode item groups from the Design section (`ExlibRoot != ''`:
+  `ProjectReference` to `$(ExlibRoot)src|generators|testing\...`; `ExlibRoot == ''`: `PackageReference`
+  `ExpandedLib` with `ExcludeAssets="runtime"` in the two mod projects, plain in the two test
+  projects, plus `ExpandedLib.Testing` in the test projects); `HelloExpanded` keeps its
+  `ProjectReference` to `HelloModule` unconditioned in both modes (a sample dependency inside this
+  repo, not a package). `mods/Directory.Build.props` sets `ExlibRoot` to
+  `$(MSBuildThisFileDirectory)exlib\` when empty and conditions its own `Import` of
+  `ExpandedLib.props` on `ExlibRoot != ''`; `templates/exlib-tests/YourMod.Tests.csproj` dropped the
+  commented `ProjectReference` alternative (its `Version` attributes were already at 0.7.3, matching
+  `modinfo.json`, so no bump was needed); `Getting-Started.md`'s "Reference exlib at compile time"
+  now shows the `PackageReference` form (the `libs/exlib.dll` `HintPath` and the manual
+  `$(GamePath)`/`<Error>` block are gone - the package supplies both) and `README.md`'s Packages
+  table gained one clause on the same point.
+
+  Deviations, both forced by the trap the task names ("the explicit imports ... must be conditioned
+  on source mode ... handle that and say how") once actually wired up:
+  1. Conditioning `ExpandedLib.props`/`.targets`'s imports in the two sample **mod** csprojs
+     (`HelloExpanded.csproj`, `HelloModule.csproj`) on `$(ExlibRoot) != ''` needs `$(ExlibRoot)`
+     resolved before the `Import` line runs, and these two projects build standalone (a bare
+     `dotnet build` of just that `.csproj`, per `exmod build`'s target list) - no other file reaches
+     them first to set the default the way `mods/Directory.Build.props` does for everything under
+     `mods/` and (via its own unconditional `Import` at the top of the two `.Tests` csprojs) for the
+     sample's test projects. Fixed by duplicating the same one-line `ExlibRoot` default directly in
+     each of the two mod csprojs, commented as a duplicate of the canonical line, rather than having
+     them import `mods/Directory.Build.props` wholesale - that file's version manifest and
+     test-only settings are not part of what a package consumer's own project carries, and this
+     project already exists to model exactly that shape.
+  2. The same standalone-build fact broke restore outright: `<TargetFramework>$(CurrentGameTfm)`
+     in the two mod csprojs only ever resolved through the (now conditional) `ExpandedLib.props`
+     import, so in package mode restore failed with "Invalid framework identifier ''" before any
+     package could be fetched - the exact chicken-and-egg the traps section already names ("the
+     target framework list can never come from the package. It stays in the consumer") but which
+     the sample hadn't previously had to honor, since its import was unconditional before this task.
+     Fixed the same way as (1): a guarded `CurrentGameTfm` default duplicated in each of the two mod
+     csprojs, evaluated before the conditional `Import`.
+
+  Gate green: `build latest` warning-free; `test latest` at baseline
+  (2439/2453/340/2/4/11, matching Task 2's counts exactly). Package mode: freshly packed
+  `dist/nuget` (`ExpandedLib`, `ExpandedLib.Industry`, `ExpandedLib.Testing`, `ExpandedLib.Verify`
+  0.7.3), a throwaway `nuget.config` under `/tmp` naming `dist/nuget` and nuget.org, `obj/` cleared
+  in all four sample projects first. `dotnet restore` + `dotnet build --no-build -v q` (0 warnings)
+  + `dotnet test --no-build`, all with `-p:ExlibRoot=` and `--configfile /tmp/<file>`, green for both
+  `HelloExpanded.Tests` (2 passed) and `HelloModule.Tests` (4 passed); `project.assets.json` for both
+  names `ExpandedLib`/`ExpandedLib.Testing` as `"type": "package"` with `"path"` under
+  `expandedlib/0.7.3` and `expandedlib.testing/0.7.3`, and `project.restore.sources` lists only
+  `/home/fallen/src/modding-vsexpanded/dist/nuget` and nuget.org - confirming the local feed, not a
+  cached copy, resolved them. `HelloExpanded`'s `ModuleInit`, block and config code compiled
+  unchanged in both modes. Cleanup: the `/tmp` `nuget.config` deleted, all four sample `obj/`
+  folders cleared and a plain `dotnet restore` re-run to leave them in source mode, `build latest`
+  and `test latest` re-confirmed green afterward at the same counts, `git status` shows only the
+  nine files listed above modified (`dist/nuget/` stays untracked/ignored, no stray `nuget.config`).

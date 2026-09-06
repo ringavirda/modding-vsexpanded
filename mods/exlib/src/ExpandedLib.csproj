@@ -127,7 +127,8 @@
 
   <!-- The config source generator emits the ExlibValues accessor from ExlibConfig's
        [ExConfigRegister]; ExLangKeyGenerator emits the ExlibLang key constants. Compile-time
-       only (Analyzer), ships nothing. -->
+       only (Analyzer), ships nothing as a lib reference - but the nupkg ships the dll itself
+       under analyzers/dotnet/cs/ below, so a package consumer gets the same generators. -->
   <ItemGroup>
     <ProjectReference
       Include="..\generators\ExpandedLib.Generators.csproj"
@@ -135,6 +136,24 @@
       ReferenceOutputAssembly="false"
     />
   </ItemGroup>
+
+  <!-- Pack the generators as analyzers at the NuGet convention path (analyzers/dotnet/cs/) so a
+       package consumer's compiler loads them the same way this project's own ProjectReference
+       above does. @(Analyzer) also carries the SDK's own built-in analyzers (net analyzers, the
+       interop generators) once the project has built, so filter to the one whose
+       ReferenceSourceTarget marks it as ours - resolved by that ProjectReference, which orders the
+       generator project's build first (Build always builds its project references before its own). -->
+  <Target Name="PackGeneratorsAsAnalyzers" BeforeTargets="_GetPackageFiles;GenerateNuspec">
+    <ItemGroup>
+      <_GeneratorAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <None
+        Include="@(_GeneratorAnalyzer)"
+        Pack="true"
+        PackagePath="analyzers/dotnet/cs/%(Filename)%(Extension)"
+        Visible="false"
+      />
+    </ItemGroup>
+  </Target>
 
   <!-- Stamp the matching game version into the output modinfo for legacy builds, so the mod
        isn't rejected by the older game's version-dependency check. $(GameVersion) is only set

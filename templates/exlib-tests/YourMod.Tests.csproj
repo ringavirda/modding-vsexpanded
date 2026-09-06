@@ -41,15 +41,10 @@
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <!-- The harness, from NuGet. Swap for the ProjectReference alternative below if you keep exlib
-         as a source checkout (a git submodule or sibling clone of modding-vsexpanded) instead of
-         consuming the published package. -->
+    <!-- The harness, from NuGet - it and ExpandedLib carry the generators and the build/ plumbing,
+         so nothing else in this file needs to know about either. -->
     <PackageReference Include="ExpandedLib.Testing" Version="0.7.3" />
     <PackageReference Include="ExpandedLib" Version="0.7.3" />
-    <!--
-    <ProjectReference Include="..\modding-vsexpanded\mods\exlib\src\ExpandedLib.csproj" />
-    <ProjectReference Include="..\modding-vsexpanded\mods\exlib\testing\ExpandedLib.Testing.csproj" />
-    -->
   </ItemGroup>
 
   <!-- Your mod's own project, referenced only if it sits where this template expects (a sibling

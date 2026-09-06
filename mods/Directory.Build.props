@@ -47,10 +47,22 @@
   </PropertyGroup>
   <!-- =================== end VERSION MANIFEST =================== -->
 
+  <!-- The source-mode switch: non-empty means "build ExpandedLib from this checkout", which is
+       what every mod under mods/ and the sample's default build both want, so it defaults on here.
+       A standalone clone of the sample or the template has no such checkout and forces the empty
+       string with -p:ExlibRoot= (a global property, so it wins over this default) to take the
+       ExpandedLib package instead - see the sample csprojs' dual-mode item groups. -->
+  <PropertyGroup>
+    <ExlibRoot Condition="'$(ExlibRoot)' == ''">$(MSBuildThisFileDirectory)exlib\</ExlibRoot>
+  </PropertyGroup>
+
   <!-- The rest of the shared plumbing - GamePath resolution, provisioning, the capability
        constants, the asset globs, LegacyUsings.cs - ships in the ExpandedLib package so a package
-       consumer gets it too; source mode imports the same two files so both run identical logic. -->
-  <Import Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.props" />
+       consumer gets it too; source mode imports the same two files so both run identical logic.
+       Conditioned on $(ExlibRoot): in package mode a project importing this file also carries a
+       PackageReference to ExpandedLib, whose build/ExpandedLib.props NuGet imports automatically,
+       and importing both ways would double it up. -->
+  <Import Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.props" Condition="'$(ExlibRoot)' != ''" />
 
   <!--
     ============================================================================================
