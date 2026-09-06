@@ -25,15 +25,6 @@ public class ExpandedLibModSystem : ModSystem {
   private Harmony? _harmony;
 
   public override void Start(ICoreAPI api) {
-    // Wired before anything registers a def or a class, so the re-registration notification and the
-    // cross-mod Class<T>() fallback warning are live for every mod's own Start.
-    Definitions.ExDefinitions.Logger = api.Logger;
-    EntityRegistry.Logger = api.Logger;
-
-    // Load the library's own gameplay tunables, chiefly the block-network constants the concrete networks
-    // in this assembly read. Before this runs the accessor holds the coded defaults, so reads are safe.
-    ExlibValues.Load(api);
-
     // Auto-register the library's [BlockRegister]/[BlockEntityRegister]/[BlockBehaviorRegister] classes
     // (filler block + entity, the MultiblockStructure behaviour) under the exlib domain.
     EntityRegistry.RegisterAll(api, Mod, GetType().Assembly);

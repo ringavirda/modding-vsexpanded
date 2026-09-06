@@ -27,66 +27,81 @@ public abstract class ExModSystem : ModSystem {
   /// nothing for the check.</summary>
   protected virtual bool PatchHarmony => false;
 
-  /// <summary>Runs every companion assembly's <see cref="IExModule.StartPre"/>, then calls
-  /// <see cref="OnStartPre"/>. A mod shipping one assembly has no companions and only gets the
-  /// hook.</summary>
+  // Lazy so a phase called on its own (tests do this) still works without StartPre having run
+  // first, and per instance so a rejoined world's ExModSystem drives fresh module instances rather
+  // than a previous world's.
+  private ExModuleHost? _modules;
+
+  /// <summary>This mod's own modules (see <see cref="ExModules.For"/>), built on first use.</summary>
+  private ExModuleHost Modules => _modules ??= new ExModuleHost(Mod);
+
+  /// <summary>Runs every own module's <see cref="IExModule.StartPre"/>, then calls
+  /// <see cref="OnStartPre"/>. A mod with no modules of its own only gets the hook.</summary>
   public override void StartPre(ICoreAPI api) {
-    ExModules.Drive(Mod, m => m.StartPre(api));
+    Modules.StartPre(api);
     OnStartPre(api);
   }
 
   /// <summary>Loads every <c>[ExConfigRegister]</c> accessor in <see cref="Assembly"/> through
   /// <see cref="ExConfig.LoadAll"/>, then registers every <c>[BlockRegister]</c>/etc class and
   /// code-first definition through <see cref="EntityRegistry.RegisterAll"/>, then registers and
-  /// starts every companion assembly (see <see cref="IExModule"/>), then calls
-  /// <see cref="OnStart"/>. Also patches Harmony when <see cref="PatchHarmony"/> is true.</summary>
+  /// starts every own module (see <see cref="IExModule"/>), then calls <see cref="OnStart"/>. Also
+  /// patches Harmony when <see cref="PatchHarmony"/> is true.</summary>
   public override void Start(ICoreAPI api) {
     ExConfig.LoadAll(api, Assembly);
     EntityRegistry.RegisterAll(api, Mod, Assembly);
     if (PatchHarmony)
       ExHarmony.PatchOnce(Mod, Assembly);
-    ExModules.Start(Mod, api);
+    Modules.Start(api);
     OnStart(api);
   }
 
-  /// <summary>Runs every companion assembly's <see cref="IExModule.AssetsLoaded"/>, then calls
+  /// <summary>Runs every own module's <see cref="IExModule.AssetsLoaded"/>, then calls
   /// <see cref="OnAssetsLoaded"/>.</summary>
   public override void AssetsLoaded(ICoreAPI api) {
-    ExModules.Drive(Mod, m => m.AssetsLoaded(api));
+    Modules.AssetsLoaded(api);
     OnAssetsLoaded(api);
   }
 
   /// <summary>Registers every <c>[CommandRegister]</c>/<c>[SubCommandRegister]</c> class in
-  /// <see cref="Assembly"/> on the server, then calls <see cref="OnStartServerSide"/>.</summary>
+  /// <see cref="Assembly"/> on the server, then registers and runs every own module's server
+  /// commands and <see cref="IExModule.StartServerSide"/>, then calls
+  /// <see cref="OnStartServerSide"/>.</summary>
   public override void StartServerSide(ICoreServerAPI api) {
     CommandRegistry.RegisterAll(api, Mod, Assembly);
+    Modules.StartServerSide(api);
     OnStartServerSide(api);
   }
 
   /// <summary>Registers every <c>[PreferenceRegister]</c> class, then every
   /// <c>[CommandRegister]</c>/<c>[SubCommandRegister]</c> class in <see cref="Assembly"/> on the
-  /// client - preferences first, so a command naming one finds it already registered - then calls
-  /// <see cref="OnStartClientSide"/>.</summary>
+  /// client - preferences first, so a command naming one finds it already registered - then
+  /// registers and runs every own module's client preferences, commands and
+  /// <see cref="IExModule.StartClientSide"/>, then calls <see cref="OnStartClientSide"/>.</summary>
   public override void StartClientSide(ICoreClientAPI api) {
     PreferenceRegistry.RegisterAll(api, Mod, Assembly);
     CommandRegistry.RegisterAll(api, Mod, Assembly);
+    Modules.StartClientSide(api);
     OnStartClientSide(api);
   }
 
-  /// <summary>Runs every companion assembly's <see cref="IExModule.AssetsFinalize"/>, then calls
+  /// <summary>Runs every own module's <see cref="IExModule.AssetsFinalize"/>, then calls
   /// <see cref="OnAssetsFinalize"/>. Registration happens earlier
   /// (<see cref="Start"/>/<see cref="StartServerSide"/>/<see cref="StartClientSide"/>); this hook is
   /// for validation against the now-final catalogues.</summary>
   public override void AssetsFinalize(ICoreAPI api) {
-    ExModules.Drive(Mod, m => m.AssetsFinalize(api));
+    Modules.AssetsFinalize(api);
     OnAssetsFinalize(api);
   }
 
-  /// <summary>Unpatches this assembly's Harmony instance when <see cref="PatchHarmony"/> patched it
-  /// in <see cref="Start"/>.</summary>
+  /// <summary>Disposes this mod's modules, unpatches this assembly's Harmony instance when
+  /// <see cref="PatchHarmony"/> patched it in <see cref="Start"/>, and clears the module host so a
+  /// rejoined world builds a fresh one.</summary>
   public override void Dispose() {
+    _modules?.Dispose();
     if (PatchHarmony)
       ExHarmony.UnpatchAll(Mod);
+    _modules = null;
     base.Dispose();
   }
 

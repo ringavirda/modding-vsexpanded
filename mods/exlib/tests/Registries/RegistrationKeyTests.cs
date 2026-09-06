@@ -4,8 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ExpandedLib.Structures;
+using ExpandedLib.Industry;
 using ExpandedLib.Industry.Molten;
+using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Registries;
+using ExpandedLib.Testing;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Xunit;
 
@@ -88,6 +92,17 @@ public class RegistrationKeyTests {
       "iiex",
       EntityRegistry.DomainOf(typeof(ConventionBlock).Assembly, "iiex")
     );
+  }
+
+  [Fact]
+  public void RegisterAll_keys_under_the_assemblys_declared_domain_not_the_mod() {
+    var world = new TestWorld();
+    var mod = Substitute.For<Mod>();
+    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = "notexlib" });
+
+    EntityRegistry.RegisterAll(world.Api, mod, typeof(IndustryModule).Assembly);
+
+    world.Api.Received().RegisterBlockClass("exlib.BlockPipe", typeof(BlockPipe));
   }
 
   [Fact]

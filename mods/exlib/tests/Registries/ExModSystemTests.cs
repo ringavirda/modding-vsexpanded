@@ -80,6 +80,16 @@ public class ExModSystemTests : IDisposable {
     private static void Prefix() { }
   }
 
+  // A module of "exlibtest.host" through the test assembly's own [assembly: ExModule] (see
+  // ModuleInit.cs); Hosting_a_module_runs_it_through_the_mods_phases proves ExModSystem drives it.
+  private sealed class RecordingModule : IExModule {
+    public static readonly List<string> Phases = [];
+
+    public void Start(ICoreAPI api) => Phases.Add("Start");
+
+    public void Dispose() => Phases.Add("Dispose");
+  }
+
   private sealed class RecordingModSystem(bool patchHarmony) : ExModSystem {
     public List<string> Order { get; } = [];
     protected override bool PatchHarmony => patchHarmony;
@@ -105,6 +115,10 @@ public class ExModSystemTests : IDisposable {
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
     ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
+    // The module host logs through this when an entry point of a hosted module throws (see
+    // Hosting_a_module_runs_it_through_the_mods_phases, which shares this test assembly's
+    // "exlibtests" module with ExModuleHostTests' own throwing case).
+    ReflectionHelpers.SetProperty(mod, nameof(Mod.Logger), new RecordingLogger());
     return mod;
   }
 
@@ -125,6 +139,19 @@ public class ExModSystemTests : IDisposable {
       );
     Assert.Equal(42, ExModSystemTestValues.Tunable);
     Assert.Equal(["OnStart"], system.Order);
+  }
+
+  [Fact]
+  public void Hosting_a_module_runs_it_through_the_mods_phases() {
+    RecordingModule.Phases.Clear();
+    var world = new TestWorld();
+    var system = NewSystem(FakeMod("exlibtest.host"));
+
+    system.Start(world.Api);
+    system.Dispose();
+
+    Assert.Contains("Start", RecordingModule.Phases);
+    Assert.Contains("Dispose", RecordingModule.Phases);
   }
 
   #endregion

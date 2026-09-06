@@ -18,16 +18,28 @@ public static class ExHarmony {
   // duplicate patches; cleared on UnpatchAll so a later re-patch after unpatching applies again.
   private static readonly HashSet<string> AppliedCategories = [];
 
+  // Harmony.HasAnyPatches(id) answers for the id as a whole, so once any category had been applied
+  // under an id, PatchOnce's own guard read it as already done and never applied the uncategorised
+  // patches at all. Tracked here per "<id>::<assembly full name>" instead, one entry per assembly a
+  // given id has uncategorised-patched, independent of whatever categories share that id.
+  private static readonly HashSet<string> UncategorizedPatched = [];
+
   /// <summary>
   /// Applies every uncategorised <c>[HarmonyPatch]</c> class in <paramref name="assembly"/> under
-  /// <paramref name="mod"/>'s id, once per process however many times this is called (guarded by
-  /// <see cref="Harmony.HasAnyPatches(string)"/>). A class carrying <c>[HarmonyPatchCategory]</c> is
-  /// left unpatched; apply it explicitly through <see cref="PatchCategoryWhenLoaded"/>. Returns the
-  /// <see cref="Harmony"/> instance, to pass to <see cref="UnpatchAll"/> in <c>Dispose</c>.
+  /// <paramref name="mod"/>'s id, once per process however many times this is called for the same
+  /// assembly. A class carrying <c>[HarmonyPatchCategory]</c> is left unpatched; apply it explicitly
+  /// through <see cref="PatchCategoryWhenLoaded"/>. Returns the <see cref="Harmony"/> instance, to
+  /// pass to <see cref="UnpatchAll"/> in <c>Dispose</c>.
   /// </summary>
-  public static Harmony PatchOnce(Mod mod, Assembly assembly) {
-    var harmony = new Harmony(mod.Info.ModID);
-    if (!Harmony.HasAnyPatches(mod.Info.ModID))
+  public static Harmony PatchOnce(Mod mod, Assembly assembly) =>
+    PatchOnce(mod.Info.ModID, assembly);
+
+  /// <summary>As <see cref="PatchOnce(Mod, Assembly)"/>, under an explicit <paramref name="id"/>
+  /// rather than a mod's own - for a module patched under its <see cref="ExModuleInfo.HarmonyId"/>,
+  /// distinct from its host's.</summary>
+  public static Harmony PatchOnce(string id, Assembly assembly) {
+    var harmony = new Harmony(id);
+    if (UncategorizedPatched.Add(id + "::" + assembly.FullName))
       harmony.PatchAllUncategorized(assembly);
     return harmony;
   }
@@ -55,9 +67,13 @@ public static class ExHarmony {
 
   /// <summary>Unpatches everything registered under <paramref name="mod"/>'s id. Safe to call twice
   /// (Harmony's own unpatch is a no-op with nothing left to remove).</summary>
-  public static void UnpatchAll(Mod mod) {
-    string id = mod.Info.ModID;
+  public static void UnpatchAll(Mod mod) => UnpatchAll(mod.Info.ModID);
+
+  /// <summary>As <see cref="UnpatchAll(Mod)"/>, under an explicit <paramref name="id"/> - a module's
+  /// <see cref="ExModuleInfo.HarmonyId"/>.</summary>
+  public static void UnpatchAll(string id) {
     new Harmony(id).UnpatchAll(id);
     AppliedCategories.RemoveWhere(key => key.StartsWith(id + "::"));
+    UncategorizedPatched.RemoveWhere(key => key.StartsWith(id + "::"));
   }
 }

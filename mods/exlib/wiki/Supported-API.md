@@ -20,13 +20,14 @@ For a modder registering blocks, items, behaviours, commands, preferences or rec
 | `ExKeyedRegistry<T>` | A process-wide, case-insensitive registry of items keyed by a string code derived from each item. | [Registries](Registries) |
 | `ReflectionScan` | Shared reflection helper for the attribute-driven registries (EntityRegistry, CommandRegistry, PreferenceRegistry). | [Registries](Registries) |
 | `ExMods` | The three rungs for reacting to another mod being installed: IsLoaded/AtLeast, WhenLoaded, and a world-config flag a JSON patch condition can gate on. | [Registries](Registries) |
-| `ExHarmony` | The Harmony bootstrap every reference mod copied by hand: patch an assembly's uncategorised classes once per process, apply a category only when a required mod is loaded, and unpatch cleanly. | [Registries](Registries) |
-| `ExModSystem` | The zero-line registration rung: a `ModSystem` base whose `Start`/`StartServerSide`/`StartClientSide`/`AssetsFinalize` run the config, entity, command and preference registries for that phase, then an empty overridable hook. | [Registries](Registries) |
+| `ExHarmony` | The Harmony bootstrap every reference mod copied by hand: patch an assembly's uncategorised classes once per process (by mod id or by an explicit string id), apply a category only when a required mod is loaded, and unpatch cleanly. | [Registries](Registries) |
+| `ExModSystem` | The zero-line registration rung: a `ModSystem` base whose `Start`/`StartServerSide`/`StartClientSide`/`AssetsFinalize` run the config, entity, command and preference registries for that phase and host the mod's own modules through `ExModuleHost`, then an empty overridable hook. | [Registries](Registries) |
 | `ExModuleAttribute` | Declares an assembly as a module - an extension driven through the lifecycle of the mod named in `Host`, with a `Requires` order and an opt-in Harmony patch. | [Registries](Registries) |
 | `IExModule` | The entry point of a module: driven through the phases of its host's lifecycle, in the order `ExModules.For` gives it among the host's other modules. | [Registries](Registries) |
 | `ExModuleInfo` | One discovered module: its id, host, requirements, assembly and entry points. | [Registries](Registries) |
 | `ExModuleSet` | One host's modules in dependency order, and the errors that excluded any of them. | [Registries](Registries) |
 | `ExModules` | Finds every module in the process and orders each host's set. | [Registries](Registries) |
+| `ExModuleHost` | One driver instance's modules: owns their entry-point instances and runs them through the same registries and phases as a main assembly. | [Registries](Registries) |
 | `BlockBehaviorRegisterAttribute` | Registers a BlockBehavior class. | [Registries](Registries) |
 | `BlockEntityBehaviorRegisterAttribute` | Registers a BlockEntityBehavior class. | [Registries](Registries) |
 | `BlockEntityRegisterAttribute` | Registers a BlockEntity class. | [Registries](Registries) |

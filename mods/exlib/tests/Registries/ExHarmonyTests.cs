@@ -71,6 +71,52 @@ public class ExHarmonyTests {
   }
 
   [Fact]
+  public void PatchOnce_is_once_per_assembly_and_id() {
+    const string id = "exlibtest.exharmony-once-string-id";
+    MethodBase original = typeof(UncategorizedTarget).GetMethod(
+      nameof(UncategorizedTarget.Method)
+    )!;
+
+    try {
+      ExHarmony.PatchOnce(id, typeof(ExHarmonyTests).Assembly);
+      ExHarmony.PatchOnce(id, typeof(ExHarmonyTests).Assembly);
+
+      Assert.Equal(1, Harmony.GetPatchInfo(original)?.Prefixes.Count);
+    } finally {
+      ExHarmony.UnpatchAll(id);
+    }
+  }
+
+  [Fact]
+  public void An_earlier_category_patch_does_not_suppress_the_uncategorised_ones() {
+    var mod = FakeMod("exlibtest.exharmony-category-then-uncategorized");
+    var harmony = new Harmony(mod.Info.ModID);
+    var api = FakeApi("required-mod");
+    MethodBase categorized = typeof(CategorizedTarget).GetMethod(
+      nameof(CategorizedTarget.Method)
+    )!;
+    MethodBase uncategorized = typeof(UncategorizedTarget).GetMethod(
+      nameof(UncategorizedTarget.Method)
+    )!;
+
+    try {
+      ExHarmony.PatchCategoryWhenLoaded(
+        api,
+        harmony,
+        typeof(ExHarmonyTests).Assembly,
+        TestCategory,
+        "required-mod"
+      );
+      ExHarmony.PatchOnce(mod, typeof(ExHarmonyTests).Assembly);
+
+      Assert.Equal(1, Harmony.GetPatchInfo(categorized)?.Prefixes.Count);
+      Assert.Equal(1, Harmony.GetPatchInfo(uncategorized)?.Prefixes.Count);
+    } finally {
+      ExHarmony.UnpatchAll(mod);
+    }
+  }
+
+  [Fact]
   public void PatchCategoryWhenLoaded_false_and_unpatched_when_the_mod_is_absent() {
     var mod = FakeMod("exlibtest.exharmony-category-absent");
     var harmony = new Harmony(mod.Info.ModID);

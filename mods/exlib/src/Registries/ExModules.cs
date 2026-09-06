@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Vintagestory.API.Common;
 
 namespace ExpandedLib.Registries;
 
@@ -27,13 +26,6 @@ public static class ExModules {
   // One host's ordered set, cached because every phase asks again and the answer cannot change once
   // discovery has run.
   private static readonly Dictionary<string, ExModuleSet> _byHost = new(
-    StringComparer.OrdinalIgnoreCase
-  );
-
-  // Interim: entry-point instances, one list per host, flattened from For(host) in module then
-  // entry-point order and cached exactly as the pre-module-system code cached its instances.
-  // ExModuleHost replaces this in Task 2.
-  private static readonly Dictionary<string, IReadOnlyList<IExModule>> _instancesByHost = new(
     StringComparer.OrdinalIgnoreCase
   );
 
@@ -156,7 +148,6 @@ public static class ExModules {
     _all = null;
     _perModuleErrors = [];
     _byHost.Clear();
-    _instancesByHost.Clear();
   }
 
   private static void Discover() {
@@ -213,44 +204,5 @@ public static class ExModules {
 
     _all = [.. byId.Values];
     _perModuleErrors = perModuleErrors;
-  }
-
-  // Interim: everything below drives modules through instances the same way the pre-module-system
-  // ExModules did, so ExModSystem and ExModuleModSystem keep working unchanged until ExModuleHost
-  // replaces both the instances and these two methods in Task 2.
-
-  internal static void Drive(Mod mod, Action<IExModule> phase) {
-    foreach (IExModule module in Instances(mod.Info.ModID)) {
-      try {
-        phase(module);
-      } catch (Exception e) {
-        mod.Logger.Error(
-          "Module {0} threw; the rest of the host continues without what it does.",
-          module.GetType().FullName
-        );
-        mod.Logger.Error(e);
-      }
-    }
-  }
-
-  internal static void Start(Mod mod, ICoreAPI api) {
-    var registered = new HashSet<Assembly>();
-    foreach (ExModuleInfo info in For(mod.Info.ModID).Modules)
-      if (registered.Add(info.Assembly))
-        EntityRegistry.RegisterAll(api, mod, info.Assembly);
-    Drive(mod, m => m.Start(api));
-  }
-
-  private static IReadOnlyList<IExModule> Instances(string host) {
-    if (_instancesByHost.TryGetValue(host, out IReadOnlyList<IExModule>? cached))
-      return cached;
-
-    var instances = new List<IExModule>();
-    foreach (ExModuleInfo info in For(host).Modules)
-      foreach (Type type in info.EntryPoints)
-        instances.Add((IExModule)Activator.CreateInstance(type)!);
-
-    _instancesByHost[host] = instances;
-    return instances;
   }
 }

@@ -12,7 +12,7 @@ namespace ExpandedLib.Registries;
 /// carrying a <see cref="RegisterAttribute"/> (the kind-specific <c>[BlockRegister]</c>,
 /// <c>[ItemRegister]</c>, <c>[BlockEntityRegister]</c>, <c>[BlockBehaviorRegister]</c>,
 /// <c>[BlockEntityBehaviorRegister]</c>, <c>[CollectibleBehaviorRegister]</c>) and registers each
-/// with the game under the matching registry, keyed <c>{modid}.{ClassName}</c> by convention.
+/// with the game under the matching registry, keyed <c>{domain}.{ClassName}</c> by convention.
 /// </summary>
 public static class EntityRegistry {
   /// <summary>Log sink for the cross-mod domain-fallback warning (see <see cref="DomainOf"/>); set
@@ -27,12 +27,15 @@ public static class EntityRegistry {
   public static void RegisterAll(ICoreAPI api, Mod mod, Assembly? asm = null) {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
+    // A module's own [assembly: ExDomain] outranks its host's mod id: exlib hosting a framework
+    // module keys that module's classes under the domain it declares, not under "exlib".
+    string domain = asm.GetCustomAttribute<ExDomainAttribute>()?.Domain ?? modId;
 
     // Recorded before the scan so KeyFor can answer "which domain owns this type" for an assembly that
     // declares no [assembly: ExDomain]. The attribute is preferred because it needs no prior call;
     // this map only helps once the owning mod's Start has run, which is a load-order dependency the
     // attribute exists to avoid.
-    _domainByAssembly[asm] = modId;
+    _domainByAssembly[asm] = domain;
 
     foreach (Type type in ReflectionScan.GetCandidateTypes(asm)) {
       var attr = type.GetCustomAttributes()
@@ -41,7 +44,7 @@ public static class EntityRegistry {
       if (attr == null)
         continue;
 
-      string key = KeyFor(modId, type, attr);
+      string key = KeyFor(domain, type, attr);
 
       switch (attr) {
         case BlockRegisterAttribute
@@ -54,7 +57,7 @@ public static class EntityRegistry {
           break;
         case BlockEntityRegisterAttribute
           when Validate<BlockEntity>(api, modId, type, "block entity"):
-          RegisterBlockEntity(api, modId, key, attr, type);
+          RegisterBlockEntity(api, domain, key, attr, type);
           break;
         case BlockBehaviorRegisterAttribute
           when Validate<BlockBehavior>(api, modId, type, "block behavior"):
@@ -84,9 +87,9 @@ public static class EntityRegistry {
     // Code-first definitions live next to the classes they describe: a type implementing
     // IExBlockDefProvider / IExItemDefProvider / IExRecipeDefProvider is picked up from the same
     // assembly scan, so no central list registers them.
-    ExDefinitions.DiscoverAndRegister(modId, asm);
-    ExDefinitions.DiscoverAndRegisterItems(modId, asm);
-    ExDefinitions.DiscoverAndRegisterRecipes(modId, asm);
+    ExDefinitions.DiscoverAndRegister(domain, asm);
+    ExDefinitions.DiscoverAndRegisterItems(domain, asm);
+    ExDefinitions.DiscoverAndRegisterRecipes(domain, asm);
   }
 
   // Assembly -> the domain its registrable types are keyed under, recorded by RegisterAll. Only a
@@ -174,7 +177,7 @@ public static class EntityRegistry {
   /// </summary>
   private static void RegisterBlockEntity(
     ICoreAPI api,
-    string modId,
+    string domain,
     string key,
     RegisterAttribute attr,
     Type type
@@ -186,7 +189,7 @@ public static class EntityRegistry {
       return;
 
     string shortId = type.Name[prefix.Length..];
-    api.RegisterBlockEntityClass($"{modId}.{shortId}", type);
+    api.RegisterBlockEntityClass($"{domain}.{shortId}", type);
     api.RegisterBlockEntityClass(shortId, type);
     api.RegisterBlockEntityClass(shortId.ToLowerInvariant(), type);
   }

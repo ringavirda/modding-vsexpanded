@@ -516,3 +516,4 @@ the check); the wiki link check that `exmod check` runs is clean.
 ## Progress
 
 - Task 1 (identity, discovery and ordering) done 2026-09-06. Gate green.
+- Task 2 (the host, the two drivers, registries per module assembly) done 2026-09-06. Gate green.
