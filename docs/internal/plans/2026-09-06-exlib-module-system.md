@@ -484,6 +484,80 @@ against `mods/exlib/wiki/Lifecycle.md` and the vendored loader facts, and whethe
 the third-party form or merely compiles. Findings go back to a `builder`; no second review unless a
 finding is Critical.
 
+### Task 4b: the review findings
+
+The architect review of Tasks 1-4 (2026-09-07) returned three Major and eleven Minor findings;
+all are applied in one pass, no second review. In order of weight:
+
+**F3 (Major) - discovery is a permanent process-wide snapshot, not the world's enabled mods.**
+`ExModules` scans loaded assemblies once and caches forever; a module assembly still in the
+process from an earlier world but disabled for this one would be driven, and one loaded after the
+first scan is invisible for the process's life (the suite's own `AssetLoadingTests` loads an
+assembly mid-run). The fix changes the surface before it is published:
+
+- `ExModuleAttribute` gains `Mod` (string, default the module id): the id of the Vintage Story
+  mod that ships the assembly. Industry declares `Mod = "exlib"`; the sample's default is right.
+  `ExModuleInfo` carries it.
+- `ExModules.For(ICoreAPI api, string host)` replaces `For(string host)`: discovers (a scan is
+  reused only while `AppDomain.CurrentDomain.GetAssemblies().Length` is unchanged since the last
+  one, never across a count change), keeps the modules whose `Mod` is enabled through
+  `api.ModLoader.IsModEnabled`, orders. A module skipped for a disabled mod is one Notification
+  line naming both. `ExModules.Enabled(ICoreAPI api)` is every enabled module of every host, for
+  the flags; `IsLoaded(ICoreAPI api, string moduleId)` answers for enabled modules only. The
+  per-host cache and `Reset()` go.
+- `ExModuleHost(Mod mod, ICoreAPI api)`; both drivers build the host in the first phase that runs
+  (`_modules ??= new ExModuleHost(Mod, api)`), so a phase called on its own still works.
+- `TestWorld`'s mod loader reports every mod id enabled (the fake world has no mod list to
+  consult; the doc says so), so every existing test keeps its shape; the discovery tests drop
+  their `Reset()` calls and take the api.
+
+**F1 (Major) - test pollution of the contributor list.** `ExModuleHostTests`, `ExModSystemTests`
+and `RegistrationKeyTests` register assemblies (the test assembly; Industry) and never clear
+`ExDefinitions.Contributors`, so `TestContributor`, `ThrowingContributor` and `IndustryModule` stay
+recorded and run inside any later `TestWorld.LoadAssets`. Not a production leak (types only,
+deduplicated, fresh instance per run). Fix: `ExDefinitions.Clear()` in the `Dispose` of those
+three classes, and the `ExDefinitionsCollection` member comment names them.
+
+**F2 (Major) - `IExDefinitionContributor` runs on the server only** and neither the interface doc
+nor `RunContributors` says so. One sentence on each.
+
+Minor, applied in the same pass:
+
+- F4 `EntityRegistry.Logger` and `ExDefinitions.Logger` docs name `ExpandedLibModSystem.Start` as
+  the writer; it is `ExModuleModSystem.StartPre` (0.03).
+- F5 `Lifecycle.md`'s 0.1 row says `ExpandedLibModSystem.Start` loaded `ExlibValues`; it is the
+  0.03 `StartPre`. Add the 0.03 row while there (Task 5 rewrites the page's prose, not this table).
+- F6 `ExModuleModSystem`'s type doc says "any dll shipped beside exlib.dll"; it is any loaded
+  assembly declaring `[assembly: ExModule]` with host `exlib`, inside exlib's folder or as its own
+  mod.
+- F7 hosts compare case-insensitively, ids ordinally: `Foo` and `foo` both survive, and
+  `Requires = ["Industry"]` misses `industry`. Ids are `OrdinalIgnoreCase` everywhere in
+  `ExModules`.
+- F8 the crefs to the internal `ExModules.Order` in `ExModuleAttribute` and `IExModule` point at
+  `For` instead.
+- F9 `ExDefinitions.Contributors` hands out its backing list (`AsReadOnly()`), and
+  `DiscoverContributors`/`RunContributors` are plumbing with one caller each:
+  `[EditorBrowsable(EditorBrowsableState.Never)]`, public because the harness needs them.
+- F10 `ExModuleHostTests.Runs_every_phase_in_order` asserts nothing about the side-hook
+  registries: assert `ExPreferences.Find` for a `[PreferenceRegister]` class in the test file after
+  `StartClientSide`. Duplicate-id detection moves into `Order`'s pure path so it is testable; add
+  the test.
+- F11 the same test replays its own call order, and that order puts the side hooks before
+  `AssetsLoaded`; the engine's order is StartPre, Start, AssetsLoaded, AssetsFinalize,
+  StartClientSide/StartServerSide, Dispose (`docs/internal/vanilla/api-map.md`). Reorder the
+  calls, rename the test `Runs_every_phase`, and state the phase order in `IExModule`'s type doc.
+- F12 an assertion inside `RecordingModule.Start` is swallowed by the host's isolation; record
+  the observed key in a static and assert in the test body.
+- F13 `GreetingDef`'s doc says nothing about `AssetCatalogueLoader.GetMany` reading one object per
+  file, which is why the sample ships one greeting per file. One sentence.
+- F14 `HelloModuleTests` gains `Resolves_its_behaviour_key_across_assemblies`
+  (`EntityRegistry.KeyFor("helloexpanded", typeof(BlockBehaviorGreeter))` is
+  `hellomodule.BlockBehaviorGreeter`), and `AssetLoadingTests` asserts the resolved block carries
+  that behaviour code.
+
+**Gate:** `build latest` warning-free; `test latest` six lanes green; `smoke` boots, the module
+line reads `modules hosted by exlib: hellomodule, industry`, the injected-item count is 87.
+
 ### Task 5: the prose
 
 **Files:**
