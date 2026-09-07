@@ -1,6 +1,6 @@
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using Xunit;
 
 namespace ExpandedLib.Tests;

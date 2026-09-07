@@ -17,9 +17,12 @@
     ============================================================================================
   -->
   <PropertyGroup>
-    <CurrentGameTfm Condition="'$(CurrentGameTfm)' == ''">net10.0</CurrentGameTfm>
-    <CurrentGameVer Condition="'$(CurrentGameVer)' == ''">1.22.0</CurrentGameVer>
-    <AllGameTfms Condition="'$(AllGameTfms)' == ''">net7.0;net8.0;net10.0</AllGameTfms>
+    <CurrentGameTfm Condition="'$(CurrentGameTfm)' == ''"
+      >net10.0</CurrentGameTfm>
+    <CurrentGameVer Condition="'$(CurrentGameVer)' == ''"
+      >1.22.0</CurrentGameVer>
+    <AllGameTfms Condition="'$(AllGameTfms)' == ''"
+      >net7.0;net8.0;net10.0</AllGameTfms>
   </PropertyGroup>
 
   <PropertyGroup>

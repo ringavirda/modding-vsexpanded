@@ -1,5 +1,5 @@
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

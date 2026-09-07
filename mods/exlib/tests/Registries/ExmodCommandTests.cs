@@ -42,7 +42,8 @@ public class ExmodCommandTests {
     cmd.WithDescription(Arg.Do<string>(d => spy.Description = d)).Returns(cmd);
     cmd.WithArgs(Arg.Any<ICommandArgumentParser[]>()).Returns(cmd);
     cmd.RequiresPrivilege(Arg.Any<string>()).Returns(cmd);
-    cmd.HandleWith(Arg.Do<OnCommandDelegate>(h => spy.Handler = h)).Returns(cmd);
+    cmd.HandleWith(Arg.Do<OnCommandDelegate>(h => spy.Handler = h))
+      .Returns(cmd);
     cmd.BeginSubCommand(Arg.Any<string>())
       .Returns(ci => {
         string name = ci.Arg<string>();
@@ -58,13 +59,15 @@ public class ExmodCommandTests {
   /// second call for the same root returns a fresh fake wrapping the same spy, exactly as
   /// <see cref="CommandRegistry.RegisterAll"/> relies on when a sub-command resolves a parent another
   /// mod (or another pass of this loop) already created.</summary>
-  private static (IChatCommandApi Api, Dictionary<string, CommandSpy> Roots) FakeChatCommandApi(
-    ICoreAPI ownerApi
-  ) {
+  private static (
+    IChatCommandApi Api,
+    Dictionary<string, CommandSpy> Roots
+  ) FakeChatCommandApi(ICoreAPI ownerApi) {
     var roots = new Dictionary<string, CommandSpy>();
     var chatApi = Substitute.For<IChatCommandApi>();
     chatApi.Parsers.Returns(new CommandArgumentParsers(ownerApi));
-    chatApi.GetOrCreate(Arg.Any<string>())
+    chatApi
+      .GetOrCreate(Arg.Any<string>())
       .Returns(ci => {
         string name = ci.Arg<string>();
         if (!roots.TryGetValue(name, out var spy))
@@ -80,7 +83,9 @@ public class ExmodCommandTests {
 
   private static Mod FakeMod() {
     var mod = Substitute.For<Mod>();
-    typeof(Mod).GetProperty("Info")!.SetValue(mod, new ModInfo { ModID = "exlib", Version = "1.0.0" });
+    typeof(Mod)
+      .GetProperty("Info")!
+      .SetValue(mod, new ModInfo { ModID = "exlib", Version = "1.0.0" });
     return mod;
   }
 
@@ -141,9 +146,17 @@ public class ExmodCommandTests {
     Assert.True(roots.TryGetValue("exmod", out var exmod));
     Assert.NotNull(exmod.Handler);
     Assert.True(exmod.SubCommands.TryGetValue("network", out var network));
-    Assert.True(network.SubCommands.TryGetValue("hi", out var hi) && hi.Handler != null);
-    Assert.True(network.SubCommands.TryGetValue("unhi", out var unhi) && unhi.Handler != null);
-    Assert.True(exmod.SubCommands.TryGetValue("measure", out var measure) && measure.Handler != null);
+    Assert.True(
+      network.SubCommands.TryGetValue("hi", out var hi) && hi.Handler != null
+    );
+    Assert.True(
+      network.SubCommands.TryGetValue("unhi", out var unhi)
+        && unhi.Handler != null
+    );
+    Assert.True(
+      exmod.SubCommands.TryGetValue("measure", out var measure)
+        && measure.Handler != null
+    );
     // Server-only options never attach on this side.
     Assert.False(exmod.SubCommands.ContainsKey("config"));
     Assert.False(exmod.SubCommands.ContainsKey("recipes"));
@@ -163,7 +176,10 @@ public class ExmodCommandTests {
     var world = new TestWorld();
     world.Mods.Add("stub", "1.0.0");
 
-    TextCommandResult result = VerifySubCommand.Dispatch(world.Api, "nosuchmod");
+    TextCommandResult result = VerifySubCommand.Dispatch(
+      world.Api,
+      "nosuchmod"
+    );
 
     Assert.Equal(EnumCommandStatus.Error, result.Status);
     Assert.Contains("command-verify-unknown", result.StatusMessage);
@@ -232,7 +248,12 @@ public class ExmodCommandTests {
     ICoreClientAPI api = ClientApiFor(world, "test");
     var pref = new MeasurePreference();
 
-    TextCommandResult result = MeasureSubCommand.Dispatch(api, "exlib", pref, rawWord: null);
+    TextCommandResult result = MeasureSubCommand.Dispatch(
+      api,
+      "exlib",
+      pref,
+      rawWord: null
+    );
 
     Assert.Equal(EnumCommandStatus.Success, result.Status);
   }
@@ -243,7 +264,12 @@ public class ExmodCommandTests {
     ICoreClientAPI api = ClientApiFor(world, "test");
     var pref = new MeasurePreference();
 
-    TextCommandResult result = MeasureSubCommand.Dispatch(api, "exlib", pref, "furlongs");
+    TextCommandResult result = MeasureSubCommand.Dispatch(
+      api,
+      "exlib",
+      pref,
+      "furlongs"
+    );
 
     Assert.Equal(EnumCommandStatus.Error, result.Status);
   }
@@ -255,7 +281,12 @@ public class ExmodCommandTests {
     ICoreClientAPI api = ClientApiFor(world, uid);
     var pref = new MeasurePreference();
 
-    TextCommandResult result = MeasureSubCommand.Dispatch(api, "exlib", pref, "imperial");
+    TextCommandResult result = MeasureSubCommand.Dispatch(
+      api,
+      "exlib",
+      pref,
+      "imperial"
+    );
 
     Assert.Equal(EnumCommandStatus.Success, result.Status);
     Assert.Equal("imperial", ExPreferences.GetForPlayer(uid, pref.Key));

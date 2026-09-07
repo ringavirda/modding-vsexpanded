@@ -19,18 +19,17 @@ public static class PipeFittings {
   /// exhaust and hot-blast cells both call for.
   /// </summary>
   public static BlockPipeOutlet Outlet(int id, string orientation = "ns") =>
-    (BlockPipeOutlet)
-      Primed(
-        TestBlocks.Configure(
-          new BlockPipeOutlet(),
-          $"iiex:pipe-outlet-{orientation}",
-          id,
-          ("type", "outlet"),
-          ("orientation", orientation)
-        ),
-        "outlet",
-        orientation
-      );
+    (BlockPipeOutlet)Primed(
+      TestBlocks.Configure(
+        new BlockPipeOutlet(),
+        $"iiex:pipe-outlet-{orientation}",
+        id,
+        ("type", "outlet"),
+        ("orientation", orientation)
+      ),
+      "outlet",
+      orientation
+    );
 
   /// <summary>
   /// A pipe passthrough: the brick-cased segment that carries a line through a structure wall, which
@@ -40,19 +39,18 @@ public static class PipeFittings {
     int id,
     string orientation = "ns"
   ) =>
-    (BlockPipePassthrough)
-      Primed(
-        TestBlocks.Configure(
-          new BlockPipePassthrough(),
-          $"iiex:pipe-cast-passthrough-fire-{orientation}",
-          id,
-          ("tier", "cast"),
-          ("type", "passthrough"),
-          ("orientation", orientation)
-        ),
-        "passthrough",
-        orientation
-      );
+    (BlockPipePassthrough)Primed(
+      TestBlocks.Configure(
+        new BlockPipePassthrough(),
+        $"iiex:pipe-cast-passthrough-fire-{orientation}",
+        id,
+        ("tier", "cast"),
+        ("type", "passthrough"),
+        ("orientation", orientation)
+      ),
+      "passthrough",
+      orientation
+    );
 
   // OnLoaded, which parses these off the variants, is skipped headlessly, so set the protected
   // Type/Orientation the network code reads. Matches the priming PipeTestWorld.MakePipe does.

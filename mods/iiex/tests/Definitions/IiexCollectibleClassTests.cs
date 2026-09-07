@@ -119,7 +119,11 @@ public class IiexCollectibleClassTests {
     var live = RegisteredKeys<ItemRegisterAttribute>();
 
     Assert.False(
-      Resolves(EntityRegistry.KeyFor("iiex", typeof(ItemWorkItem)), live, typeof(Item))
+      Resolves(
+        EntityRegistry.KeyFor("iiex", typeof(ItemWorkItem)),
+        live,
+        typeof(Item)
+      )
     );
     Assert.True(Resolves("ItemIngot", live, typeof(Item)));
     Assert.True(

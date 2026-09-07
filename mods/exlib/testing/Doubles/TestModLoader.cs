@@ -71,7 +71,8 @@ public sealed class TestModLoader : IModLoader {
         : _systems.FirstOrDefault(s => s.GetType() == typeof(T))
     );
 
-  public bool IsModSystemEnabled(string fullName) => GetModSystem(fullName) != null;
+  public bool IsModSystemEnabled(string fullName) =>
+    GetModSystem(fullName) != null;
 
   /// <summary>Alias for <see cref="IsModEnabled"/>; not part of <see cref="IModLoader"/>, but some
   /// mods reflect for it instead, guessing the member name might differ across API versions.</summary>

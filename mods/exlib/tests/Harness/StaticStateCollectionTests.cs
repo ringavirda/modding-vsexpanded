@@ -14,16 +14,17 @@ namespace ExpandedLib.Tests;
 /// </summary>
 public class StaticStateCollectionTests {
   private static Assembly BuildAssembly(bool defineTheCollection) {
-    var name = new AssemblyName($"StaticStateCollectionTests.Dynamic.{Guid.NewGuid():N}");
+    var name = new AssemblyName(
+      $"StaticStateCollectionTests.Dynamic.{Guid.NewGuid():N}"
+    );
     AssemblyBuilder asm = AssemblyBuilder.DefineDynamicAssembly(
       name,
       AssemblyBuilderAccess.Run
     );
     ModuleBuilder module = asm.DefineDynamicModule(name.Name!);
 
-    ConstructorInfo collectionCtor = typeof(CollectionAttribute).GetConstructor(
-      [typeof(string)]
-    )!;
+    ConstructorInfo collectionCtor =
+      typeof(CollectionAttribute).GetConstructor([typeof(string)])!;
     TypeBuilder member = module.DefineType("Member", TypeAttributes.Public);
     member.SetCustomAttribute(
       new CustomAttributeBuilder(collectionCtor, ["Dynamic-Test-Collection"])
@@ -31,9 +32,8 @@ public class StaticStateCollectionTests {
     member.CreateType();
 
     if (defineTheCollection) {
-      ConstructorInfo definitionCtor = typeof(CollectionDefinitionAttribute).GetConstructor(
-        [typeof(string)]
-      )!;
+      ConstructorInfo definitionCtor =
+        typeof(CollectionDefinitionAttribute).GetConstructor([typeof(string)])!;
       TypeBuilder definition = module.DefineType(
         "CollectionDefinition",
         TypeAttributes.Public
@@ -51,9 +51,8 @@ public class StaticStateCollectionTests {
   public void Fails_when_a_collection_name_has_no_definition() {
     Assembly withoutDefinition = BuildAssembly(defineTheCollection: false);
 
-    var ex = Assert.Throws<InvalidOperationException>(
-      () =>
-        StaticStateCollection.EveryCollectionNameHasADefinition(withoutDefinition)
+    var ex = Assert.Throws<InvalidOperationException>(() =>
+      StaticStateCollection.EveryCollectionNameHasADefinition(withoutDefinition)
     );
 
     Assert.Contains("Dynamic-Test-Collection", ex.Message);
@@ -63,9 +62,8 @@ public class StaticStateCollectionTests {
   public void Passes_when_every_collection_name_has_a_definition() {
     Assembly withDefinition = BuildAssembly(defineTheCollection: true);
 
-    Exception? ex = Record.Exception(
-      () =>
-        StaticStateCollection.EveryCollectionNameHasADefinition(withDefinition)
+    Exception? ex = Record.Exception(() =>
+      StaticStateCollection.EveryCollectionNameHasADefinition(withDefinition)
     );
 
     Assert.Null(ex);

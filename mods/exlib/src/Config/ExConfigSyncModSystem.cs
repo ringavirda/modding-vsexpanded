@@ -49,8 +49,7 @@ public class ExConfigSyncModSystem : ModSystem {
 
   #region Client
   public override void StartClientSide(ICoreClientAPI api) {
-    api
-      .Network.RegisterChannel(ChannelName)
+    api.Network.RegisterChannel(ChannelName)
       .RegisterMessageType<ConfigSyncPacket>()
       .SetMessageHandler<ConfigSyncPacket>(packet => HandlePacket(api, packet));
   }

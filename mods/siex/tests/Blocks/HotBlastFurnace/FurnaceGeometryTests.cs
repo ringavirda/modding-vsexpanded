@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Tests;

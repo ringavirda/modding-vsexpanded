@@ -16,7 +16,12 @@ public class BessemerSteelMetalTests {
   private static MetalDef ShippedDef() {
     MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
-        Path.Combine(RepoPaths.Assets("siex"), "config", "metals", "bessemersteel.json")
+        Path.Combine(
+          RepoPaths.Assets("siex"),
+          "config",
+          "metals",
+          "bessemersteel.json"
+        )
       )
     );
     Assert.NotNull(def);

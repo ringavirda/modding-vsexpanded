@@ -21,11 +21,16 @@ public class DoublesTests {
   public void Held_stack_reads_back_through_the_players_active_hotbar_slot() {
     using var world = new TestWorld();
     TestPlayer player = world.Player();
-    var stack = new ItemStack(new Item { Code = new AssetLocation("game:pick-iron") });
+    var stack = new ItemStack(
+      new Item { Code = new AssetLocation("game:pick-iron") }
+    );
 
     player.Hold(stack);
 
-    Assert.Same(stack, player.Player.InventoryManager.ActiveHotbarSlot.Itemstack);
+    Assert.Same(
+      stack,
+      player.Player.InventoryManager.ActiveHotbarSlot.Itemstack
+    );
   }
 
   [Fact]

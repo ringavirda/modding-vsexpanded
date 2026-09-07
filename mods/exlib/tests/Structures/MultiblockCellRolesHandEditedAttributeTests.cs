@@ -56,7 +56,8 @@ public class MultiblockCellRolesHandEditedAttributeTests {
     // than something to reject - see A_third_party_role_needs_nothing_from_exlib for the same point made
     // through the layout builder rather than raw JSON.
     Assert.NotEmpty(
-      ReadRoles("""{ "99": [ {"x":0,"y":0,"z":0} ] }""").CellsOf(CellRole.Of("99"))
+      ReadRoles("""{ "99": [ {"x":0,"y":0,"z":0} ] }""")
+        .CellsOf(CellRole.Of("99"))
     );
     Assert.NotEmpty(
       ReadRoles("""{ "Nonsense": [ {"x":0,"y":0,"z":0} ] }""")

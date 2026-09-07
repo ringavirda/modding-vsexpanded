@@ -85,7 +85,8 @@ public class IndustryBoundaryTests {
 
     Assert.True(
       stray.Count == 0,
-      "namespace(s) outside the folder-mapped contract set: " + string.Join(", ", stray)
+      "namespace(s) outside the folder-mapped contract set: "
+        + string.Join(", ", stray)
     );
   }
 
@@ -113,12 +114,16 @@ public class IndustryBoundaryTests {
 
   private static bool IsIndustryNamespace(string? ns) =>
     ns != null
-    && (ns == "ExpandedLib.Industry" || ns.StartsWith(IndustryNamespacePrefix + "."));
+    && (
+      ns == "ExpandedLib.Industry"
+      || ns.StartsWith(IndustryNamespacePrefix + ".")
+    );
 
   [Fact]
   public void The_framework_assembly_does_not_reference_the_Industry_one() {
     string industry = typeof(IndustryModule).Assembly.GetName().Name!;
-    var referenced = typeof(ExpandedLibModSystem).Assembly.GetReferencedAssemblies()
+    var referenced = typeof(ExpandedLibModSystem)
+      .Assembly.GetReferencedAssemblies()
       .Select(a => a.Name)
       .ToList();
 
@@ -145,7 +150,11 @@ public class IndustryBoundaryTests {
     var hits = new List<string>();
 
     foreach (
-      string path in Directory.EnumerateFiles(srcRoot, "*.cs", SearchOption.AllDirectories)
+      string path in Directory.EnumerateFiles(
+        srcRoot,
+        "*.cs",
+        SearchOption.AllDirectories
+      )
     ) {
       string[] lines = File.ReadAllLines(path);
       for (int i = 0; i < lines.Length; i++)

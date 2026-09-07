@@ -24,11 +24,9 @@ public static class PreferenceRegistry {
     asm ??= Assembly.GetCallingAssembly();
     string modId = mod.Info.ModID;
 
-    ReflectionScan.ForEachAttributed<PreferenceRegisterAttribute, IExPreference>(
-      api,
-      modId,
-      asm,
-      (attr, pref) => ExPreferences.Register(pref)
-    );
+    ReflectionScan.ForEachAttributed<
+      PreferenceRegisterAttribute,
+      IExPreference
+    >(api, modId, asm, (attr, pref) => ExPreferences.Register(pref));
   }
 }

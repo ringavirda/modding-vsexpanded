@@ -21,9 +21,15 @@ public class ConstructionTests {
 
   #region GatesProduction / readiness
 
-  private static ExRightClickConstructable Behavior(TestWorld world, bool? gatesProduction) {
+  private static ExRightClickConstructable Behavior(
+    TestWorld world,
+    bool? gatesProduction
+  ) {
     var block = TestBlocks.Configure(new Block(), "stub:rccblock", 4999);
-    var be = new StubBlockEntity { Block = block, Pos = new BlockPos(0, 0, 0, 0) };
+    var be = new StubBlockEntity {
+      Block = block,
+      Pos = new BlockPos(0, 0, 0, 0),
+    };
     be.Initialize(world.Api);
     var behavior = new ExRightClickConstructable(be);
 
@@ -75,7 +81,8 @@ public class ConstructionTests {
 
   #region ExRccSettings
 
-  private static string FreshDomain() => "rcctest-" + System.Guid.NewGuid().ToString("N")[..8];
+  private static string FreshDomain() =>
+    "rcctest-" + System.Guid.NewGuid().ToString("N")[..8];
 
   [Fact]
   public void An_unregistered_domain_leaves_the_ratio_unset() {
@@ -103,7 +110,8 @@ public class ConstructionTests {
   private static ExRightClickConstructable CompletedRcc(BlockEntity be) {
     var rcc = new ExRightClickConstructable(be);
 #if GAME_GE_1_22
-    var construction = new RightClickConstruction {
+    var construction = new RightClickConstruction
+    {
       Stages = [new ConstructionStage()],
       CurrentCompletedStage = 0,
     };
@@ -126,7 +134,9 @@ public class ConstructionTests {
 
   [Fact]
   public void IsConstructed_follows_the_resolved_behaviors_own_IsComplete() {
-    var be = new StubBlockEntity { Block = TestBlocks.Configure(new Block(), "stub:rccblock2", 5000) };
+    var be = new StubBlockEntity {
+      Block = TestBlocks.Configure(new Block(), "stub:rccblock2", 5000),
+    };
     var animator = new ConstructedAnimator(be, () => "key");
     ReflectionHelpers.SetField(animator, "_rcc", CompletedRcc(be));
 

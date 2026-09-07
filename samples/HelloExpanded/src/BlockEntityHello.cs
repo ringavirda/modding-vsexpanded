@@ -32,8 +32,8 @@ public class BlockEntityHello : BlockEntityProductionMachine {
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.Lang("helloexpanded:ticks", _ticks);
-    int neighbours = Api.World.BlockAccessor
-      .Neighbours<BlockEntityHello>(Pos)
+    int neighbours = Api
+      .World.BlockAccessor.Neighbours<BlockEntityHello>(Pos)
       .Count();
     dsc.Lang("helloexpanded:neighbours", neighbours);
   }

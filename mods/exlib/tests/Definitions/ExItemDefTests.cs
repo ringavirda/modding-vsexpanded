@@ -373,58 +373,58 @@ public class ExItemDefTests {
   // (verified against the vendored ItemType.cs/CollectibleType.cs/BlockType.cs), or the method exists
   // only to serve a block-specific mechanism (block-entity behaviors, megablocks, world placement and
   // orientation, the block-code emitter). One reason per name.
-  private static readonly HashSet<string> BlockOnlyMethodNames =
-    new() {
-      // No block-entity analogue: items carry no BlockEntity.
-      "EntityClass",
-      "EntityBehavior",
-      // BlockType-only fields (verified absent from CollectibleType/ItemType).
-      "Material",
-      "Resistance",
-      "Replaceable",
-      "WalkSpeedMultiplier",
-      "MiningTier", // requiredMiningTier; an item's ToolTier is a different, unmirrored concept.
-      "LightAbsorption",
-      "NoDrops",
-      "Drop",
-      "CollisionBox",
-      "SelectionBox",
-      "SingleCollisionBox",
-      "SingleSelectionBox",
-      "SideSolid",
-      "SideOpaque",
-      "SideAo",
-      "EmitSideAo",
-      "NonSolid", // derived from SideSolid/SideOpaque, both BlockType-only.
-      "SolidNonOpaque",
-      "RenderPass", // no shipped itemtype sets renderpass; chunk render passes are a placed-block concept.
-      "FaceCullMode", // culls a placed block's faces against its neighbours; no itemtype equivalent.
-      "DrawType", // selects how a placed block is meshed in the chunk; no itemtype equivalent.
-      // sounds.* is a BlockType-only field (an item's HeldSounds is a separate, unrelated key).
-      "Sound",
-      "Sounds",
-      "MetalSounds",
-      "SoundByTool",
-      "SoundByType",
-      // World placement/orientation: items are never placed with a facing side.
-      "ShapeRotateYByType",
-      "ShapeSpunPerOrientation",
-      "ShapeByTypePerOrientation",
-      "SideVariant",
-      "NetworkOriented",
-      // MineTool is a dead no-op on the block builder (mineTool is not a key the loader reads);
-      // never had an item counterpart to propagate.
-      "MineTool",
-      // Derives a placed/legend code from VariantGroups for BlockCodeEmitter's generated {Mod}Blocks
-      // table; items have no code-emitter counterpart.
-      "WithVariant",
-      // Megablocks are blocks; items cannot be (part of) a multiblock structure.
-      "FillerOffsets",
-      "FillerOffsetsByType",
-      "Construction",
-      "Multiblock",
-      "MultiblockLayout",
-    };
+  private static readonly HashSet<string> BlockOnlyMethodNames = new()
+  {
+    // No block-entity analogue: items carry no BlockEntity.
+    "EntityClass",
+    "EntityBehavior",
+    // BlockType-only fields (verified absent from CollectibleType/ItemType).
+    "Material",
+    "Resistance",
+    "Replaceable",
+    "WalkSpeedMultiplier",
+    "MiningTier", // requiredMiningTier; an item's ToolTier is a different, unmirrored concept.
+    "LightAbsorption",
+    "NoDrops",
+    "Drop",
+    "CollisionBox",
+    "SelectionBox",
+    "SingleCollisionBox",
+    "SingleSelectionBox",
+    "SideSolid",
+    "SideOpaque",
+    "SideAo",
+    "EmitSideAo",
+    "NonSolid", // derived from SideSolid/SideOpaque, both BlockType-only.
+    "SolidNonOpaque",
+    "RenderPass", // no shipped itemtype sets renderpass; chunk render passes are a placed-block concept.
+    "FaceCullMode", // culls a placed block's faces against its neighbours; no itemtype equivalent.
+    "DrawType", // selects how a placed block is meshed in the chunk; no itemtype equivalent.
+    // sounds.* is a BlockType-only field (an item's HeldSounds is a separate, unrelated key).
+    "Sound",
+    "Sounds",
+    "MetalSounds",
+    "SoundByTool",
+    "SoundByType",
+    // World placement/orientation: items are never placed with a facing side.
+    "ShapeRotateYByType",
+    "ShapeSpunPerOrientation",
+    "ShapeByTypePerOrientation",
+    "SideVariant",
+    "NetworkOriented",
+    // MineTool is a dead no-op on the block builder (mineTool is not a key the loader reads);
+    // never had an item counterpart to propagate.
+    "MineTool",
+    // Derives a placed/legend code from VariantGroups for BlockCodeEmitter's generated {Mod}Blocks
+    // table; items have no code-emitter counterpart.
+    "WithVariant",
+    // Megablocks are blocks; items cannot be (part of) a multiblock structure.
+    "FillerOffsets",
+    "FillerOffsetsByType",
+    "Construction",
+    "Multiblock",
+    "MultiblockLayout",
+  };
 
   [Fact]
   public void Every_block_builder_method_that_applies_to_items_exists_on_the_item_builder() {
@@ -441,7 +441,9 @@ public class ExItemDefTests {
       .Select(m => m.Name)
       .ToHashSet();
 
-    var missing = blockMethodNames.Where(n => !itemMethodNames.Contains(n)).ToList();
+    var missing = blockMethodNames
+      .Where(n => !itemMethodNames.Contains(n))
+      .ToList();
     Assert.True(
       missing.Count == 0,
       "ExItemDef is missing a method for: " + string.Join(", ", missing)

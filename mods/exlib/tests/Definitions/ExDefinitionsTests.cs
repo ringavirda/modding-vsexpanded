@@ -25,7 +25,10 @@ public class ExDefinitionsTests {
     Assembly asm = Assembly.GetExecutingAssembly();
 
     ExDefinitions.RegisterBlock(ExBlockDef.Create("d", "c"), asm);
-    ExDefinitions.RegisterBlock(ExBlockDef.Create("d", "c").Resistance(9f), asm);
+    ExDefinitions.RegisterBlock(
+      ExBlockDef.Create("d", "c").Resistance(9f),
+      asm
+    );
 
     logger.DidNotReceive().Notification(Arg.Any<string>(), Arg.Any<object[]>());
   }

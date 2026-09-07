@@ -130,11 +130,7 @@ public class VanillaCodesTests {
     // south, east, north, west.
     Assert.Equal(
       "brickslabs-*-east-free",
-      MultiblockFacings.RotateSegments(
-        "brickslabs-*-south-free",
-        [2],
-        90
-      )
+      MultiblockFacings.RotateSegments("brickslabs-*-south-free", [2], 90)
     );
   }
 

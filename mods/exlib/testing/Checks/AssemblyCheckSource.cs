@@ -21,7 +21,9 @@ internal sealed class AssemblyCheckSource : ICheckSource {
   private readonly Dictionary<string, Assembly> _assemblies;
   private readonly Dictionary<string, string> _langDirs;
 
-  internal AssemblyCheckSource(params (string Domain, Assembly Assembly)[] sources)
+  internal AssemblyCheckSource(
+    params (string Domain, Assembly Assembly)[] sources
+  )
     : this(sources, []) { }
 
   internal AssemblyCheckSource(
@@ -70,10 +72,14 @@ internal sealed class AssemblyCheckSource : ICheckSource {
   }
 
   public IEnumerable<(string Locale, JObject Json)> Lang(string domain) {
-    if (!_langDirs.TryGetValue(domain, out string? dir) || !Directory.Exists(dir))
+    if (
+      !_langDirs.TryGetValue(domain, out string? dir) || !Directory.Exists(dir)
+    )
       yield break;
 
-    foreach (string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f))
+    foreach (
+      string file in Directory.EnumerateFiles(dir, "*.json").OrderBy(f => f)
+    )
       yield return (
         Path.GetFileNameWithoutExtension(file),
         JObject.Parse(File.ReadAllText(file))

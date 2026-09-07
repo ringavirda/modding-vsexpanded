@@ -3,9 +3,7 @@
        mods/Directory.Build.props sets for every project under mods/ - this file only adds to it,
        it never replaces it. GetPathOfFileAbove starts its search one directory above this file
        (mods/), so it lands on mods/Directory.Build.props, not this one. -->
-  <Import
-    Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
-  />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <!-- Pack metadata shared by the three packable exlib projects (ExpandedLib, ExpandedLib.Industry,
        ExpandedLib.Testing) - everything that is identical across them, so a release edits it once
@@ -20,8 +18,7 @@
     <!-- Version is read from exlib's own modinfo.json rather than duplicated, so a release only
          ever bumps one number - the three packages ship in lockstep. -->
     <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)src\modinfo.json'))</_ModinfoJson>
-    <PackageVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
+    <PackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
 
     <Authors>fallenstar</Authors>
     <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>
@@ -45,6 +42,10 @@
        from the nupkg - NU5046). Industry and Testing carry no modicon.png of their own, so the
        plain Include below is all they need. -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'ExpandedLib.Industry' or '$(MSBuildProjectName)' == 'ExpandedLib.Testing'">
-    <None Include="$(MSBuildThisFileDirectory)src\modicon.png" Pack="true" PackagePath="modicon.png" />
+    <None
+      Include="$(MSBuildThisFileDirectory)src\modicon.png"
+      Pack="true"
+      PackagePath="modicon.png"
+    />
   </ItemGroup>
 </Project>

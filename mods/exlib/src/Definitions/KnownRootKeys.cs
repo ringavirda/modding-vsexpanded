@@ -42,10 +42,15 @@ public static class KnownRootKeys {
 
     for (Type? level = type; level != null; level = level.BaseType) {
       foreach (FieldInfo field in level.GetFields(flags))
-        keys.Add(KeyName(field.Name, field.GetCustomAttribute<JsonPropertyAttribute>()));
+        keys.Add(
+          KeyName(field.Name, field.GetCustomAttribute<JsonPropertyAttribute>())
+        );
       foreach (PropertyInfo property in level.GetProperties(flags))
         keys.Add(
-          KeyName(property.Name, property.GetCustomAttribute<JsonPropertyAttribute>())
+          KeyName(
+            property.Name,
+            property.GetCustomAttribute<JsonPropertyAttribute>()
+          )
         );
     }
 

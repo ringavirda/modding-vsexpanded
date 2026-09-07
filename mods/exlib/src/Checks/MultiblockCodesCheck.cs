@@ -37,13 +37,17 @@ public static class MultiblockCodesCheck {
     foreach (ExBlockDef def in source.BlockDefinitions(domain)) {
       if (
         def.ToJson()["attributes"]?["multiblockStructure"]?["blockNumbers"]
-          is not JObject numbers
+        is not JObject numbers
       )
         continue;
 
       foreach (var entry in numbers) {
         if (
-          !IsModDomainCode(entry.Key, out string wantDomain, out string wantPath)
+          !IsModDomainCode(
+            entry.Key,
+            out string wantDomain,
+            out string wantPath
+          )
         )
           continue;
 

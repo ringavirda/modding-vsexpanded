@@ -21,7 +21,8 @@ public static class LayoutTable {
   /// table the game builds the structure from, not a restatement of the ASCII drawing.
   /// </summary>
   public static Dictionary<Vec3i, string> From(ExBlockDef def) {
-    JObject structure = (JObject)def.ToJson()["attributes"]!["multiblockStructure"]!;
+    JObject structure = (JObject)
+      def.ToJson()["attributes"]!["multiblockStructure"]!;
 
     var codeByNumber = ((JObject)structure["blockNumbers"]!)
       .Properties()
@@ -29,8 +30,9 @@ public static class LayoutTable {
 
     var cells = new Dictionary<Vec3i, string>();
     foreach (JToken offset in (JArray)structure["offsets"]!)
-      cells[new Vec3i((int)offset["x"]!, (int)offset["y"]!, (int)offset["z"]!)] =
-        codeByNumber[(int)offset["w"]!];
+      cells[
+        new Vec3i((int)offset["x"]!, (int)offset["y"]!, (int)offset["z"]!)
+      ] = codeByNumber[(int)offset["w"]!];
     return cells;
   }
 
@@ -52,7 +54,9 @@ public static class LayoutTable {
 
     // The rotation comes from vanilla MultiblockStructure, rotated the way the production block entity
     // does at placement.
-    MultiblockStructure structure = new JsonObject(json).AsObject<MultiblockStructure>()!;
+    MultiblockStructure structure = new JsonObject(
+      json
+    ).AsObject<MultiblockStructure>()!;
     structure.InitForUse(angle);
 
     var cells = new Dictionary<Vec3i, string>();

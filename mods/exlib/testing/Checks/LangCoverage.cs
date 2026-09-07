@@ -60,7 +60,9 @@ public static class LangCoverage {
         string key = "block-" + code;
         if (
           !exact.Contains(key)
-          && !wildcardPrefixes.Any(p => key.StartsWith(p, StringComparison.Ordinal))
+          && !wildcardPrefixes.Any(p =>
+            key.StartsWith(p, StringComparison.Ordinal)
+          )
         )
           errors.Add($"{locale}: {key}");
       }

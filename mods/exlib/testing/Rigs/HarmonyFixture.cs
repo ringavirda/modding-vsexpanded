@@ -34,7 +34,11 @@ public sealed class HarmonyFixture : IDisposable {
   /// </summary>
   public HarmonyFixture(string modId, Assembly patches, string? category = null) {
     _mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(_mod, nameof(Mod.Info), new ModInfo { ModID = modId });
+    ReflectionHelpers.SetProperty(
+      _mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
 
     if (category == null) {
       Harmony = ExHarmony.PatchOnce(_mod, patches);
@@ -54,10 +58,12 @@ public sealed class HarmonyFixture : IDisposable {
   /// <summary>True when <paramref name="original"/> carries a patch owned by this fixture's mod id
   /// (through <see cref="Harmony.GetPatchInfo(MethodBase)"/>).</summary>
   public bool IsPatched(MethodBase original) =>
-    HarmonyLib.Harmony.GetPatchInfo(original)?.Owners.Contains(Harmony.Id) ?? false;
+    HarmonyLib.Harmony.GetPatchInfo(original)?.Owners.Contains(Harmony.Id)
+    ?? false;
 
   /// <summary>Every original method this fixture's Harmony instance has patched.</summary>
-  public IReadOnlyList<MethodBase> PatchedMethods => Harmony.GetPatchedMethods().ToList();
+  public IReadOnlyList<MethodBase> PatchedMethods =>
+    Harmony.GetPatchedMethods().ToList();
 
   /// <summary>Reverts every patch registered under this fixture's mod id. Safe to call twice.</summary>
   public void Dispose() => ExHarmony.UnpatchAll(_mod);

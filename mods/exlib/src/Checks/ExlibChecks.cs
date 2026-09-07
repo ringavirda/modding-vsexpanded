@@ -13,7 +13,11 @@ namespace ExpandedLib.Checks;
 public static class ExlibChecks {
   // One entry per check. Order is the order results and log lines come out in - cheapest and most
   // load-bearing (does a def even resolve to a real block) first.
-  private static readonly System.Func<ICheckSource, string, CheckResult>[] _checks =
+  private static readonly System.Func<
+    ICheckSource,
+    string,
+    CheckResult
+  >[] _checks =
   [
     DefinitionCatalogueCheck.Run,
     MultiblockCodesCheck.Run,
@@ -33,8 +37,10 @@ public static class ExlibChecks {
   /// <paramref name="source"/> covers it - <c>/exmod verify &lt;domain&gt;</c> uses this to let a
   /// modder point at a domain <see cref="ICheckSource.Domains"/> would not scope in on its own.
   /// </summary>
-  public static IReadOnlyList<CheckResult> For(ICheckSource source, string domain) =>
-    [.. _checks.Select(run => run(source, domain))];
+  public static IReadOnlyList<CheckResult> For(
+    ICheckSource source,
+    string domain
+  ) => [.. _checks.Select(run => run(source, domain))];
 
   /// <summary>Runs every check against the live game state, over a fresh <see cref="AssetCheckSource"/>.</summary>
   public static IReadOnlyList<CheckResult> All(ICoreAPI api) =>

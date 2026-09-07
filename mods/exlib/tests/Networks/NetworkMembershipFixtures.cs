@@ -45,6 +45,8 @@ internal static class NetworkMembershipFixtures {
       w.Log.Errors,
       message =>
         message.Contains(fragment, StringComparison.Ordinal)
-        && mustMention.All(m => message.Contains(m.ToString()!, StringComparison.Ordinal))
+        && mustMention.All(m =>
+          message.Contains(m.ToString()!, StringComparison.Ordinal)
+        )
     );
 }

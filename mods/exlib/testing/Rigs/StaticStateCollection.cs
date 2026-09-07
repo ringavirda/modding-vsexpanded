@@ -35,11 +35,15 @@ public static class StaticStateCollection {
     foreach (Type type in SafeTypes(assembly)) {
       foreach (string name in AttributeNames<CollectionAttribute>(type))
         used.Add(name);
-      foreach (string name in AttributeNames<CollectionDefinitionAttribute>(type))
+      foreach (
+        string name in AttributeNames<CollectionDefinitionAttribute>(type)
+      )
         defined.Add(name);
     }
 
-    var undefined = used.Except(defined).OrderBy(n => n, StringComparer.Ordinal).ToList();
+    var undefined = used.Except(defined)
+      .OrderBy(n => n, StringComparer.Ordinal)
+      .ToList();
     if (undefined.Count > 0)
       throw new InvalidOperationException(
         $"{undefined.Count} collection name(s) are used by [Collection(...)] but never declared by a "

@@ -39,8 +39,14 @@ public class ExModulesTests {
   public void Finds_this_assembly_as_a_module_of_its_declared_host() {
     var world = new TestWorld();
 
-    Assert.Contains(ExModules.For(world.Api, "exlibtest.host").Modules, m => m.Id == "exlibtests");
-    Assert.DoesNotContain(ExModules.For(world.Api, "exlib").Modules, m => m.Id == "exlibtests");
+    Assert.Contains(
+      ExModules.For(world.Api, "exlibtest.host").Modules,
+      m => m.Id == "exlibtests"
+    );
+    Assert.DoesNotContain(
+      ExModules.For(world.Api, "exlib").Modules,
+      m => m.Id == "exlibtests"
+    );
   }
 
   [Fact]

@@ -1,7 +1,7 @@
 using ExpandedLib.Blocks;
+using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Machines;
 using ExpandedLib.Networks;
-using ExpandedLib.Industry.MechanicalPower;
 using Vintagestory.API.Common;
 
 namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;

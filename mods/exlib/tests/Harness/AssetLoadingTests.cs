@@ -16,19 +16,34 @@ namespace ExpandedLib.Tests;
 /// the engine's own object loader from HelloExpanded's code-first definition, with its variants
 /// intact - not a <see cref="TestWorld.RegisterItem"/> stand-in.
 /// </summary>
-public class AssetLoadingTests {
+public class AssetLoadingTests
+{
   [Fact]
-  public void Hello_block_resolves_with_its_orientation_variants() {
-    string samplePath = Path.Combine(RepoPaths.Root, "samples", "HelloExpanded");
+  public void Hello_block_resolves_with_its_orientation_variants()
+  {
+    string samplePath = Path.Combine(
+      RepoPaths.Root,
+      "samples",
+      "HelloExpanded"
+    );
 
     // BlockHello's def carries hellomodule's BlockBehaviorGreeter; LoadAssets loads only the one mod
     // named in its own path, so hellomodule's compiled dll must already be loaded for
     // BlockHello.Definitions to resolve it - the same as the real game loader, which loads every
     // installed mod's assembly into the one process before any of them runs.
-    string moduleBinPath = Path.Combine(RepoPaths.Root, "samples", "HelloModule", "bin");
+    string moduleBinPath = Path.Combine(
+      RepoPaths.Root,
+      "samples",
+      "HelloModule",
+      "bin"
+    );
     Assembly.LoadFrom(
       Directory
-        .EnumerateFiles(moduleBinPath, "hellomodule.dll", SearchOption.AllDirectories)
+        .EnumerateFiles(
+          moduleBinPath,
+          "hellomodule.dll",
+          SearchOption.AllDirectories
+        )
         .First()
     );
 
@@ -37,8 +52,11 @@ public class AssetLoadingTests {
     world.LoadAssets(samplePath);
 
     Block? resolved = null;
-    foreach (string side in new[] { "n", "e", "s", "w" }) {
-      Block? block = world.World.GetBlock(new AssetLocation($"helloexpanded:hello-{side}"));
+    foreach (string side in new[] { "n", "e", "s", "w" })
+    {
+      Block? block = world.World.GetBlock(
+        new AssetLocation($"helloexpanded:hello-{side}")
+      );
       Assert.NotNull(block);
       Assert.Equal("HelloExpanded.BlockHello", block.GetType().FullName);
       Assert.Equal(side, block.Variant["side"]);
@@ -57,7 +75,10 @@ public class AssetLoadingTests {
         .GetMethod("Definitions", BindingFlags.Public | BindingFlags.Static)!
         .Invoke(null, ["helloexpanded"])!;
     object def = Assert.Single(defs.Cast<object>());
-    string json = def.GetType().GetMethod("ToJson")!.Invoke(def, null)!.ToString()!;
+    string json = def.GetType()
+      .GetMethod("ToJson")!
+      .Invoke(def, null)!
+      .ToString()!;
     Assert.Contains("hellomodule.BlockBehaviorGreeter", json);
   }
 }

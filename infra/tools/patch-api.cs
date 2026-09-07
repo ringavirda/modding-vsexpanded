@@ -31,7 +31,8 @@ using System.Reflection.PortableExecutable;
 // Every non-public overload of these members is made public. Matching on name alone is deliberate:
 // an interface proxy must implement ALL overloads, so publicizing only one still leaves the type
 // unmockable.
-var targets = new (string Type, string Method, string Reason)[] {
+var targets = new (string Type, string Method, string Reason)[]
+{
   (
     "Vintagestory.API.Common.IPlayer",
     "IsInInteractionRangeOf",
@@ -73,8 +74,10 @@ using (var pe = new PEReader(readStream)) {
     TypeDefinition? type = null;
     foreach (TypeDefinitionHandle h in md.TypeDefinitions) {
       TypeDefinition candidate = md.GetTypeDefinition(h);
-      if (md.GetString(candidate.Name) == name
-        && md.GetString(candidate.Namespace) == ns) {
+      if (
+        md.GetString(candidate.Name) == name
+        && md.GetString(candidate.Namespace) == ns
+      ) {
         type = candidate;
         break;
       }
@@ -88,34 +91,43 @@ using (var pe = new PEReader(readStream)) {
     int found = 0;
     foreach (MethodDefinitionHandle h in type.Value.GetMethods()) {
       MethodDefinition method = md.GetMethodDefinition(h);
-      if (md.GetString(method.Name) != methodName) continue;
+      if (md.GetString(method.Name) != methodName)
+        continue;
       found++;
 
       if ((method.Attributes & AccessMask) == MethodAttributes.Public) {
         Console.WriteLine(
-          $"patch-api: {typeName}.{methodName} (row {MetadataTokens.GetRowNumber(h)}) already public - no change");
+          $"patch-api: {typeName}.{methodName} (row {MetadataTokens.GetRowNumber(h)}) already public - no change"
+        );
         continue;
       }
 
-      long offset = metadataStart
+      long offset =
+        metadataStart
         + tableOffset
         + (long)(MetadataTokens.GetRowNumber(h) - 1) * rowSize
         + FlagsColumnOffset;
       ushort from = (ushort)method.Attributes;
-      ushort to = (ushort)((method.Attributes & ~AccessMask) | MethodAttributes.Public);
+      ushort to = (ushort)(
+        (method.Attributes & ~AccessMask) | MethodAttributes.Public
+      );
       edits.Add((offset, from, to, $"{typeName}.{methodName}  [{reason}]"));
     }
 
     if (found == 0) {
       // Expected on versions that predate the member, and on versions where it was removed again.
-      Console.WriteLine($"patch-api: {typeName}.{methodName} not present - skipped");
+      Console.WriteLine(
+        $"patch-api: {typeName}.{methodName} not present - skipped"
+      );
       missing++;
     }
   }
 }
 
 if (edits.Count == 0) {
-  Console.WriteLine($"patch-api: nothing to change ({missing} target(s) absent)");
+  Console.WriteLine(
+    $"patch-api: nothing to change ({missing} target(s) absent)"
+  );
   return 0;
 }
 
@@ -129,7 +141,8 @@ using (var fs = File.Open(path, FileMode.Open, FileAccess.ReadWrite)) {
     ushort actual = (ushort)(buffer[0] | (buffer[1] << 8));
     if (actual != from) {
       Console.Error.WriteLine(
-        $"patch-api: refusing to write - expected flags 0x{from:x4} at offset {offset}, found 0x{actual:x4}");
+        $"patch-api: refusing to write - expected flags 0x{from:x4} at offset {offset}, found 0x{actual:x4}"
+      );
       return 3;
     }
 

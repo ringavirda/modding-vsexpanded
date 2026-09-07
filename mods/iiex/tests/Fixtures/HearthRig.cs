@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry.Molten;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using Newtonsoft.Json.Linq;

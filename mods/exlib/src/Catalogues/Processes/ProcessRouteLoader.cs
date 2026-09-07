@@ -54,8 +54,9 @@ public sealed class ProcessRouteLoader
   protected override IReadOnlyList<string> UnknownKeys(JsonObject root) =>
     [
       .. JsonKeyAudit.UnknownKeys(root, RootKeys),
-      .. (root["stages"].AsArray() ?? [])
-        .SelectMany(stage => JsonKeyAudit.UnknownKeys(stage, StageKeys)),
+      .. (root["stages"].AsArray() ?? []).SelectMany(stage =>
+        JsonKeyAudit.UnknownKeys(stage, StageKeys)
+      ),
     ];
 
   protected override bool TryParse(
@@ -75,10 +76,12 @@ public sealed class ProcessRouteLoader
 
   protected override int CountEntries(ProcessRoute set) => set.Stages.Length;
 
-  protected override CatalogueContributors Contributors(ProcessRouteRegistry registry) =>
-    ProcessRouteRegistry.Contributors;
+  protected override CatalogueContributors Contributors(
+    ProcessRouteRegistry registry
+  ) => ProcessRouteRegistry.Contributors;
 
-  protected override void Clear(ProcessRouteRegistry registry) => registry.Clear();
+  protected override void Clear(ProcessRouteRegistry registry) =>
+    registry.Clear();
 
   /// <summary>
   /// Parses the catalogue out of already-read files, each a <c>(source, json)</c> pair whose source is

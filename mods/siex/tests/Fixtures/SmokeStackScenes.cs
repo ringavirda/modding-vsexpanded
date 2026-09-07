@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Machines;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.Tests;

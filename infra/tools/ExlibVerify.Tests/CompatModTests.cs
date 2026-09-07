@@ -23,7 +23,12 @@ public class CompatModTests {
     if (!Directory.Exists(modPath))
       return;
 
-    int exit = Runner.Run([modPath], TextWriter.Null, TextWriter.Null, out var findings);
+    int exit = Runner.Run(
+      [modPath],
+      TextWriter.Null,
+      TextWriter.Null,
+      out var findings
+    );
     Assert.NotEqual(2, exit); // 2 means the tool itself failed to load the mod or the game.
     Assert.NotEmpty(findings); // A hybrid mod this size always has at least one finding to report.
   }
@@ -38,7 +43,12 @@ public class CompatModTests {
     if (!Directory.Exists(modPath))
       return;
 
-    int exit = Runner.Run([modPath], TextWriter.Null, TextWriter.Null, out var findings);
+    int exit = Runner.Run(
+      [modPath],
+      TextWriter.Null,
+      TextWriter.Null,
+      out var findings
+    );
     Assert.NotEqual(2, exit);
     Assert.NotEmpty(findings);
   }

@@ -142,7 +142,11 @@ public abstract class BlockEntityProductionMachine
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(
+      Api.World,
+      blockIdMapping,
+      itemIdMapping
+    );
   }
 
   public override void OnLoadCollectibleMappings(
@@ -176,7 +180,8 @@ public abstract class BlockEntityProductionMachine
 
   /// <summary>Test seam: runs one production tick exactly as the registered listener would, including
   /// the readiness gate. See <see cref="BEBehaviorProductionMachine.DriveProductionTick"/>.</summary>
-  internal void DriveProductionTick(float dt) => _process.DriveProductionTick(dt);
+  internal void DriveProductionTick(float dt) =>
+    _process.DriveProductionTick(dt);
 
   /// <summary>Test seam: runs the idle-tick path directly, bypassing the readiness gate. See
   /// <see cref="BEBehaviorProductionMachine.DriveIdleTick"/>.</summary>

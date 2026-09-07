@@ -1,9 +1,9 @@
-using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using HarmonyLib;
 using IronIndustryExpanded.BlockNetworkMolten;

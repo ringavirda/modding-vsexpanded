@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.BlockStructures.OreProcessing.Blocks;

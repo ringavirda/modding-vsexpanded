@@ -85,7 +85,9 @@ public class ConfigAttributesTests {
     api.LoadModConfig<JObject>(Arg.Any<string>()).Returns(doc);
 
     var mod = Substitute.For<Mod>();
-    typeof(Mod).GetProperty("Info")!.SetValue(mod, new ModInfo { Version = "1.0.0" });
+    typeof(Mod)
+      .GetProperty("Info")!
+      .SetValue(mod, new ModInfo { Version = "1.0.0" });
     var modLoader = Substitute.For<IModLoader>();
     modLoader.GetMod("newmod").Returns(mod);
     api.ModLoader.Returns(modLoader);
@@ -139,7 +141,8 @@ public class ConfigAttributesTests {
 
   #region ExConfigProfiles
 
-  private static string FreshModId() => "profilestest-" + System.Guid.NewGuid().ToString("N")[..8];
+  private static string FreshModId() =>
+    "profilestest-" + System.Guid.NewGuid().ToString("N")[..8];
 
   [Fact]
   public void A_registered_config_is_found_by_its_mod_id() {

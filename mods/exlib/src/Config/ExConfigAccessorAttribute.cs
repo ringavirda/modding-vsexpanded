@@ -8,7 +8,11 @@ namespace ExpandedLib.Config;
 /// <see cref="ExConfig.LoadAll"/> can find every generated accessor in an assembly by reflection and
 /// call its <c>Load(ICoreAPI)</c>, without a hand-maintained list of config types.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+  AttributeTargets.Class,
+  AllowMultiple = false,
+  Inherited = false
+)]
 public sealed class ExConfigAccessorAttribute : Attribute {
   /// <param name="configType">The config POCO this accessor was generated for.</param>
   public ExConfigAccessorAttribute(Type configType) => ConfigType = configType;

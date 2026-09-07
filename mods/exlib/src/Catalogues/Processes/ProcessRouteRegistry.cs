@@ -33,9 +33,7 @@ public sealed class ProcessRouteRegistry {
   /// </summary>
   public IReadOnlyList<string> Contribute(ProcessRoute route) {
     if (!_byFamily.TryGet(route.Family, out ProcessRoute? merged)) {
-      _byFamily.Register(
-        route with { Schema = ProcessRoute.CurrentSchema }
-      );
+      _byFamily.Register(route with { Schema = ProcessRoute.CurrentSchema });
       return [];
     }
 
@@ -53,9 +51,7 @@ public sealed class ProcessRouteRegistry {
       foreach (string family in incoming.AcceptedBy)
         Absorb(stages, incoming, family, route.Family, conflicts);
 
-    _byFamily.Register(
-      merged with { Shape = shape, Stages = [.. stages] }
-    );
+    _byFamily.Register(merged with { Shape = shape, Stages = [.. stages] });
     return conflicts;
   }
 

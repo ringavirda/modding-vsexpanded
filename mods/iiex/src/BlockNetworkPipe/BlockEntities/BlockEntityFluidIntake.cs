@@ -1,7 +1,7 @@
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;
 using Vintagestory.API.Common;

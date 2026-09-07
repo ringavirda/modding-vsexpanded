@@ -20,7 +20,10 @@ public class ItemCodeMigrationTests {
   private sealed class RenameMigration : IItemCodeMigration {
     public string Name => "rename test";
 
-    public IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(ICoreServerAPI api) =>
+    public IEnumerable<(
+      AssetLocation oldCode,
+      AssetLocation newCode
+    )> GetRemaps(ICoreServerAPI api) =>
       [(new AssetLocation("stub:olditem"), new AssetLocation("stub:newitem"))];
   }
 
@@ -54,7 +57,9 @@ public class ItemCodeMigrationTests {
     Item newItem = world.RegisterItem("stub:newitem");
 
     var sys = System(world);
-    foreach (var (oldCode, newCode) in new RenameMigration().GetRemaps(world.Api))
+    foreach (
+      var (oldCode, newCode) in new RenameMigration().GetRemaps(world.Api)
+    )
       sys._itemRemap[oldCode] = new BlockMigrationModSystem.ItemRemapEntry(
         world.GetItem(newCode)!,
         oldCode,

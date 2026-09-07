@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;

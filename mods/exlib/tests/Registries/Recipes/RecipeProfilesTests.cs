@@ -16,7 +16,8 @@ namespace ExpandedLib.Tests;
 public class RecipeProfilesTests {
   // Distinct per test so parallel test classes touching the same process-wide registry never collide
   // on a code, the same idiom ConfigSyncTests uses for ExConfigProfiles.
-  private static string FreshCode() => "stubmod-" + System.Guid.NewGuid().ToString("N")[..8];
+  private static string FreshCode() =>
+    "stubmod-" + System.Guid.NewGuid().ToString("N")[..8];
 
   private static RecipeProfile Profile(
     string code,

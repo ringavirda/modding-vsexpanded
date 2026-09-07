@@ -111,7 +111,12 @@ public class CellGridTests {
 
   [Fact]
   public void The_empty_glyph_is_configurable() {
-    var grid = new CellGrid(GridPlane.Horizontal, 0, 0, new GridOptions(Empty: '_'));
+    var grid = new CellGrid(
+      GridPlane.Horizontal,
+      0,
+      0,
+      new GridOptions(Empty: '_')
+    );
     grid.Add(0, "_A.");
 
     // '_' is now empty (skipped); '.' is now an ordinary drawn glyph.

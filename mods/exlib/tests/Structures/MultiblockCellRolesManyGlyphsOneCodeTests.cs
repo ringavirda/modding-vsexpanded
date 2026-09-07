@@ -44,10 +44,7 @@ public class MultiblockCellRolesManyGlyphsOneCodeTests {
       5,
       machine.CellsAccepting(new AssetLocation("game:air")).Count
     );
-    Assert.Equal(
-      ExpectedAt(FlueCells, 0),
-      Render(machine.CellsWithRole(Flue))
-    );
+    Assert.Equal(ExpectedAt(FlueCells, 0), Render(machine.CellsWithRole(Flue)));
     Assert.DoesNotContain(
       Anchor.AddCopy(1, 0, 0), // the `a` cell - air, not flue
       machine.CellsWithRole(Flue)
@@ -82,10 +79,7 @@ public class MultiblockCellRolesManyGlyphsOneCodeTests {
       Render(machine.CellsWithRole(Flue)),
       Render(machine.CellsWithRole(Damper))
     );
-    Assert.NotSame(
-      machine.CellsWithRole(Flue),
-      machine.CellsWithRole(Damper)
-    );
+    Assert.NotSame(machine.CellsWithRole(Flue), machine.CellsWithRole(Damper));
 
     // The overlap is a property of the glyph rather than of its code: the neighbouring `a` cell is the same
     // game:air and carries neither role.

@@ -16,7 +16,8 @@ namespace IronIndustryExpanded.Tests;
 /// roll at. See docs/design/items/stock.md.
 /// </summary>
 public class RolledStockStagesTests {
-  private static string ShapeDir => Path.Combine(RepoPaths.Assets("iiex"), "shapes");
+  private static string ShapeDir =>
+    Path.Combine(RepoPaths.Assets("iiex"), "shapes");
 
   private static string RouteDir =>
     Path.Combine(RepoPaths.Assets("iiex"), "config", "processroutes");

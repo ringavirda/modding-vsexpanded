@@ -4,14 +4,14 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
-using ExpandedLib.Structures;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Heat;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Materials;
 using ExpandedLib.Industry.Pipes;
-using ExpandedLib.Catalogues;
+using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
@@ -454,7 +454,8 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
   /// carries <see cref="FurnaceCellRoles.Pool"/> and <see cref="FurnaceCellRoles.Chargeable"/> at once: burden rests on it
   /// while the furnace runs, metal freezes onto it when the furnace dies.
   /// </summary>
-  public IReadOnlyList<BlockPos> PoolCells => CellsWithRole(FurnaceCellRoles.Pool);
+  public IReadOnlyList<BlockPos> PoolCells =>
+    CellsWithRole(FurnaceCellRoles.Pool);
 
   /// <summary>
   /// Every world cell of this furnace's footprint that its layout marks as a fuel bed, for the placed facing
@@ -1760,8 +1761,16 @@ public abstract class BlockEntityFurnaceCore : BlockEntityMultiblockMachine {
     );
     // Compound entries: each spans several attributes the pair below builds/reads as one unit, so they
     // stay Tree declarations rather than a scatter of typed primitives.
-    state.Tree("heatBalance", WriteHeatBalance, (tree, _) => ReadHeatBalance(tree));
-    state.Tree("shaftColumns", WriteShaftColumns, (tree, _) => ReadShaftColumns(tree));
+    state.Tree(
+      "heatBalance",
+      WriteHeatBalance,
+      (tree, _) => ReadHeatBalance(tree)
+    );
+    state.Tree(
+      "shaftColumns",
+      WriteShaftColumns,
+      (tree, _) => ReadShaftColumns(tree)
+    );
   }
 
   // The whole balance rides the tree, not only its result: GetBlockInfo runs on the client, which never

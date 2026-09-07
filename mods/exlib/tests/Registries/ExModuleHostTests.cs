@@ -50,6 +50,7 @@ public class ExModuleHostTests : IDisposable {
     public string Key => "exmodulehosttestpref";
     public IReadOnlyList<string> Options { get; } = ["a", "b"];
     public string Default => "a";
+
     public void Apply(string value) { }
   }
 
@@ -73,13 +74,18 @@ public class ExModuleHostTests : IDisposable {
       // Proves Start registers this module's classes before running its entry points: a caller
       // domain that is not this module's own still resolves through the domain RegisterAll just
       // recorded, not through the fallback a not-yet-registered assembly would use.
-      ObservedKey = EntityRegistry.KeyFor("not-exlibtest.host", typeof(TestBlock));
+      ObservedKey = EntityRegistry.KeyFor(
+        "not-exlibtest.host",
+        typeof(TestBlock)
+      );
       Phases.Add("Start");
     }
 
-    public void StartServerSide(ICoreServerAPI api) => Phases.Add("StartServerSide");
+    public void StartServerSide(ICoreServerAPI api) =>
+      Phases.Add("StartServerSide");
 
-    public void StartClientSide(ICoreClientAPI api) => Phases.Add("StartClientSide");
+    public void StartClientSide(ICoreClientAPI api) =>
+      Phases.Add("StartClientSide");
 
     public void AssetsLoaded(ICoreAPI api) => Phases.Add("AssetsLoaded");
 
@@ -106,8 +112,16 @@ public class ExModuleHostTests : IDisposable {
 
   private static Mod FakeMod(string modId, ILogger? logger = null) {
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Logger), logger ?? new RecordingLogger());
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Logger),
+      logger ?? new RecordingLogger()
+    );
     return mod;
   }
 
@@ -148,7 +162,9 @@ public class ExModuleHostTests : IDisposable {
       ],
       RecordingModule.Phases
     );
-    Assert.IsType<TestHostPreference>(ExPreferences.Find("exmodulehosttestpref"));
+    Assert.IsType<TestHostPreference>(
+      ExPreferences.Find("exmodulehosttestpref")
+    );
   }
 
   [Fact]
@@ -185,7 +201,8 @@ public class ExModuleHostTests : IDisposable {
     var world = new TestWorld();
     var set = new ExModuleSet(
       [
-        new ExModuleInfo {
+        new ExModuleInfo
+        {
           Id = "registration-only",
           Host = "exlibtest.host",
           Mod = "exlibtest.host",
@@ -225,7 +242,8 @@ public class ExModuleHostTests : IDisposable {
     var world = new TestWorld();
     var set = new ExModuleSet(
       [
-        new ExModuleInfo {
+        new ExModuleInfo
+        {
           Id = "exlibtests",
           Host = "exlibtest.host",
           Mod = "exlibtest.host",
@@ -244,11 +262,17 @@ public class ExModuleHostTests : IDisposable {
 
     try {
       host.Start(world.Api);
-      Assert.Contains("exlibtest.host.exlibtests", Harmony.GetPatchInfo(original)!.Owners);
+      Assert.Contains(
+        "exlibtest.host.exlibtests",
+        Harmony.GetPatchInfo(original)!.Owners
+      );
 
       host.Dispose();
       var info = Harmony.GetPatchInfo(original);
-      Assert.DoesNotContain("exlibtest.host.exlibtests", (IEnumerable<string>?)info?.Owners ?? []);
+      Assert.DoesNotContain(
+        "exlibtest.host.exlibtests",
+        (IEnumerable<string>?)info?.Owners ?? []
+      );
     } finally {
       ExHarmony.UnpatchAll("exlibtest.host.exlibtests");
     }

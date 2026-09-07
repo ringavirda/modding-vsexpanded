@@ -31,7 +31,8 @@ public static class ExMods {
   /// </summary>
   public static bool AtLeast(ICoreAPI api, string modId, string minimumVersion) {
     string? version = Version(api, modId);
-    return version != null && GameVersion.IsAtLeastVersion(version, minimumVersion);
+    return version != null
+      && GameVersion.IsAtLeastVersion(version, minimumVersion);
   }
 
   /// <summary>Runs <paramref name="action"/> immediately when <paramref name="modId"/> is loaded,

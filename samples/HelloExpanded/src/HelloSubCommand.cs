@@ -15,7 +15,10 @@ public sealed class HelloSubCommand : IExSubCommand {
       .WithDescription(Lang.Get("helloexpanded:command-hello-desc"))
       .HandleWith(args =>
         TextCommandResult.Success(
-          Lang.Get("helloexpanded:command-hello-result", HelloValues.TickIntervalMs)
+          Lang.Get(
+            "helloexpanded:command-hello-result",
+            HelloValues.TickIntervalMs
+          )
         )
       )
       .EndSubCommand();

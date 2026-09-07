@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Machines;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
@@ -427,7 +427,9 @@ internal sealed class CupolaRig {
           );
           net.BroadcastUpdate(World.Accessor);
         }
-      Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
+      Furnace
+        .GetBehavior<BEBehaviorProductionMachine>()
+        .DriveProductionTick(1f);
     }
     return this;
   }

@@ -18,7 +18,10 @@ namespace ExpandedLib.Testing;
 public sealed class ModConfigFiles : IDisposable {
   /// <summary>The directory every file below is written to and read from.</summary>
   public string Directory { get; } =
-    Path.Combine(Path.GetTempPath(), "exlib-testconfig-" + Guid.NewGuid().ToString("N"));
+    Path.Combine(
+      Path.GetTempPath(),
+      "exlib-testconfig-" + Guid.NewGuid().ToString("N")
+    );
 
   /// <summary>The file names currently on disk, for a test asserting nothing (or something specific)
   /// was written.</summary>

@@ -44,10 +44,17 @@ public sealed class VerifySubCommand : IExSubCommand {
     IReadOnlyList<CheckResult> results;
 
     if (domain != null) {
-      List<string> loaded = [.. api.ModLoader.Mods.Select(m => m.Info.ModID).OrderBy(d => d)];
+      List<string> loaded =
+      [
+        .. api.ModLoader.Mods.Select(m => m.Info.ModID).OrderBy(d => d),
+      ];
       if (!loaded.Contains(domain))
         return TextCommandResult.Error(
-          Lang.Get("exlib:command-verify-unknown", domain, string.Join(", ", loaded))
+          Lang.Get(
+            "exlib:command-verify-unknown",
+            domain,
+            string.Join(", ", loaded)
+          )
         );
       results = ExlibChecks.For(source, domain);
     } else {
@@ -59,7 +66,8 @@ public sealed class VerifySubCommand : IExSubCommand {
     ExlibChecks.Log(api.Logger, results);
 
     List<string> errors = [.. results.SelectMany(r => r.Errors)];
-    var lines = new List<string> {
+    var lines = new List<string>
+    {
       Lang.Get("exlib:command-verify-summary", results.Count, errors.Count),
     };
     lines.AddRange(errors.Take(10));

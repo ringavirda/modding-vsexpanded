@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Networks;
 using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Networks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

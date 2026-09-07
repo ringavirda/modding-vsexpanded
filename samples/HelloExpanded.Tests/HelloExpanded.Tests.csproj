@@ -56,5 +56,8 @@
        the auto-imported mods/Directory.Build.targets never reaches it either. Source mode only
        ($(ExlibRoot) != ''): in package mode the ExpandedLib PackageReference above pulls the same
        file in automatically, and importing both ways would double it up. -->
-  <Import Project="../../mods/exlib/build/ExpandedLib.targets" Condition="'$(ExlibRoot)' != ''" />
+  <Import
+    Project="../../mods/exlib/build/ExpandedLib.targets"
+    Condition="'$(ExlibRoot)' != ''"
+  />
 </Project>

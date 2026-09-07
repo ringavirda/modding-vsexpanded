@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

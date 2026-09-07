@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Heat;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Materials;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
-using ExpandedLib.Catalogues;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using Vintagestory.API.Client;
@@ -942,7 +942,11 @@ public partial class BlockEntityConverterControl : BlockEntityMultiblockMachine 
     // Compound: the whole balance rides the tree, not just its result - GetBlockInfo runs client-side,
     // where the bath is never blown and the pipes are never read, so anything the HUD prints must
     // arrive here.
-    state.Tree("heatBalance", WriteHeatBalance, (tree, _) => ReadHeatBalance(tree));
+    state.Tree(
+      "heatBalance",
+      WriteHeatBalance,
+      (tree, _) => ReadHeatBalance(tree)
+    );
   }
 
   public override void FromTreeAttributes(

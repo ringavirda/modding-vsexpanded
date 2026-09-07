@@ -1,15 +1,15 @@
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
 using IronIndustryExpanded.BlockStructures.Casting;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
-using NSubstitute;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -154,7 +154,11 @@ public sealed class CastingCellScenes {
       """
     );
     return new ItemStack(
-      PatternItem($"iiex:pattern-{type}-{wood}", attributes, $"iiex:cast-{type}")
+      PatternItem(
+        $"iiex:pattern-{type}-{wood}",
+        attributes,
+        $"iiex:cast-{type}"
+      )
     );
   }
 

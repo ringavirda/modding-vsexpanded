@@ -98,8 +98,10 @@ public static class ReferencedCodes {
           JArray list => list,
           _ => [],
         };
-        IEnumerable<JToken> allIngredients =
-          recipe["ingredient"] is JToken single ? ingredients.Append(single) : ingredients;
+        IEnumerable<JToken> allIngredients = recipe["ingredient"]
+          is JToken single
+          ? ingredients.Append(single)
+          : ingredients;
         foreach (JToken ingredient in allIngredients)
           foreach (
             Reference r in Read(

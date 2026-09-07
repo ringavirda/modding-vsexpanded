@@ -18,14 +18,17 @@ namespace ExpandedLib.Verify;
 public sealed class BlockItemCatalogue {
   /// <summary>domain -> every concrete <c>code-state-state</c> string it registers (no domain
   /// prefix), one set for blocks and one for items.</summary>
-  public Dictionary<string, HashSet<string>> Blocks { get; } = new(StringComparer.Ordinal);
+  public Dictionary<string, HashSet<string>> Blocks { get; } =
+    new(StringComparer.Ordinal);
 
   /// <inheritdoc cref="Blocks"/>
-  public Dictionary<string, HashSet<string>> Items { get; } = new(StringComparer.Ordinal);
+  public Dictionary<string, HashSet<string>> Items { get; } =
+    new(StringComparer.Ordinal);
 
   /// <summary>domain -> every base code whose <c>variantgroups</c> could not be fully expanded, so a
   /// reference under it is never reported as a dangling code.</summary>
-  public Dictionary<string, HashSet<string>> UnresolvedPrefixes { get; } = new(StringComparer.Ordinal);
+  public Dictionary<string, HashSet<string>> UnresolvedPrefixes { get; } =
+    new(StringComparer.Ordinal);
 
   /// <summary>Builds the catalogue for every domain <paramref name="store"/> holds.</summary>
   public static BlockItemCatalogue Build(AssetStore store) {
@@ -72,10 +75,14 @@ public sealed class BlockItemCatalogue {
     }
 
     var skip = new HashSet<string>(
-      ((JArray?)type["skipVariants"])?.Select(v => (string?)v).OfType<string>() ?? [],
+      ((JArray?)type["skipVariants"])?.Select(v => (string?)v).OfType<string>()
+        ?? [],
       StringComparer.Ordinal
     );
-    var allow = ((JArray?)type["allowedVariants"])?.Select(v => (string?)v).OfType<string>().ToList();
+    var allow = ((JArray?)type["allowedVariants"])
+      ?.Select(v => (string?)v)
+      .OfType<string>()
+      .ToList();
 
     foreach (string combo in combos) {
       if (skip.Contains(combo))

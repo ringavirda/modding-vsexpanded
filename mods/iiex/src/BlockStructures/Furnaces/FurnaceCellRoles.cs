@@ -34,12 +34,18 @@ public static class FurnaceCellRoles {
   public static readonly CellRole GasOutlet = CellRole.Of("GasOutlet");
 
   /// <summary>The cell the metal tap occupies, where liquid iron leaves the hearth. One cell.</summary>
-  public static readonly CellRole MetalTap = CellRole.Of("MetalTap", single: true);
+  public static readonly CellRole MetalTap = CellRole.Of(
+    "MetalTap",
+    single: true
+  );
 
   /// <summary>
   /// The cell the slag tap occupies, where slag is skimmed off above the metal tap. One cell.
   /// </summary>
-  public static readonly CellRole SlagTap = CellRole.Of("SlagTap", single: true);
+  public static readonly CellRole SlagTap = CellRole.Of(
+    "SlagTap",
+    single: true
+  );
 
   /// <summary>
   /// A cell holding a liquid pool: the hearth bath, and where metal freezes when it is not tapped. The

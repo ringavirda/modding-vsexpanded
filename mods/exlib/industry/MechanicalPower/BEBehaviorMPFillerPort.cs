@@ -1,5 +1,5 @@
-using ExpandedLib.Structures;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;

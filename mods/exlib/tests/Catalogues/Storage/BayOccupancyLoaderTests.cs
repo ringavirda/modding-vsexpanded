@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Registries;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Xunit;
 

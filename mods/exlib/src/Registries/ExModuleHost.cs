@@ -17,7 +17,10 @@ namespace ExpandedLib.Registries;
 public sealed class ExModuleHost {
   private readonly Mod _mod;
   private readonly ExModuleSet _set;
-  private readonly List<(ExModuleInfo Info, List<IExModule> Instances)> _resolved;
+  private readonly List<(
+    ExModuleInfo Info,
+    List<IExModule> Instances
+  )> _resolved;
 
   /// <summary>Builds the host for <paramref name="mod"/> from its discovered, enabled module set
   /// (see <see cref="ExModules.For"/>) against <paramref name="api"/>'s world, instantiating every
@@ -102,7 +105,10 @@ public sealed class ExModuleHost {
       try {
         instances.Add((IExModule)Activator.CreateInstance(type)!);
       } catch (Exception e) {
-        _mod.Logger.Error("Module entry point {0} could not be constructed; skipped.", type.FullName);
+        _mod.Logger.Error(
+          "Module entry point {0} could not be constructed; skipped.",
+          type.FullName
+        );
         _mod.Logger.Error(e);
       }
     }

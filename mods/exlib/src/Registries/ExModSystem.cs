@@ -34,7 +34,8 @@ public abstract class ExModSystem : ModSystem {
 
   /// <summary>This mod's own modules (see <see cref="ExModules.For"/>), built against whichever
   /// phase's <paramref name="api"/> runs first.</summary>
-  private ExModuleHost Modules(ICoreAPI api) => _modules ??= new ExModuleHost(Mod, api);
+  private ExModuleHost Modules(ICoreAPI api) =>
+    _modules ??= new ExModuleHost(Mod, api);
 
   /// <summary>Runs every own module's <see cref="IExModule.StartPre"/>, then calls
   /// <see cref="OnStartPre"/>. A mod with no modules of its own only gets the hook.</summary>

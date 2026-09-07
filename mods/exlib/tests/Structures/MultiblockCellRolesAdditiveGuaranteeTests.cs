@@ -57,7 +57,18 @@ public class MultiblockCellRolesAdditiveGuaranteeTests {
     var (world, machine) = Stand();
     StructureRig.Around(world, machine, UnroledDef()).Complete();
 
-    foreach (CellRole role in new[] { Chargeable, Firebox, Tuyere, MetalTap, SlagTap, Flue, Damper })
+    foreach (
+      CellRole role in new[]
+      {
+        Chargeable,
+        Firebox,
+        Tuyere,
+        MetalTap,
+        SlagTap,
+        Flue,
+        Damper,
+      }
+    )
       Assert.Empty(machine.CellsWithRole(role));
     // The footprint is non-empty beside it, so this cannot pass by the machine having failed to load a
     // layout at all.

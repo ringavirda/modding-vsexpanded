@@ -23,7 +23,8 @@ namespace SteelIndustryExpanded.Tests;
 public class MegablockDropTierTests {
   private const string Bessemer =
     "mods/siex/assets/siex/blocktypes/converter/bessemer.json";
-  private const string Watt = "mods/iiex/assets/iiex/blocktypes/engine/watt.json";
+  private const string Watt =
+    "mods/iiex/assets/iiex/blocktypes/engine/watt.json";
   private const string BoilerCornish =
     "mods/iiex/assets/iiex/blocktypes/boiler/cornish.json";
 

@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Industry.Materials;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Materials;
 using NSubstitute;
 using Vintagestory.API.Common;
 using Xunit;

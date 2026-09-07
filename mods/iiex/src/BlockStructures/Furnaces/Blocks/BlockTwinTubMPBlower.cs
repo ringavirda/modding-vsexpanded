@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using ExpandedLib.Networks;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;

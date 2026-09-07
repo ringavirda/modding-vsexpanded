@@ -79,7 +79,11 @@ public static class LoopingAnimations {
             continue;
           offenders.Add(
             $"{relative}: clip '{clip.Code}' element '{element}' keyframed at "
-              + (atFirst ? $"{firstFrame} but not {lastFrame}" : $"{lastFrame} but not {firstFrame}")
+              + (
+                atFirst
+                  ? $"{firstFrame} but not {lastFrame}"
+                  : $"{lastFrame} but not {firstFrame}"
+              )
           );
         }
       }

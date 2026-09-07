@@ -46,5 +46,6 @@ public sealed class IndustryModule : IExModule, IExDefinitionContributor {
   /// <c>config/metals</c>. The driver runs below exlib's own mod system, so this lands before the
   /// liquid and material-role loads that read it.
   /// </summary>
-  public void AssetsFinalize(ICoreAPI api) => MetalCatalogueLoader.Load(api).Log(api.Logger);
+  public void AssetsFinalize(ICoreAPI api) =>
+    MetalCatalogueLoader.Load(api).Log(api.Logger);
 }

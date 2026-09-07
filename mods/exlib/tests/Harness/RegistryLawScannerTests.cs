@@ -36,7 +36,10 @@ public class RegistryLawScannerTests {
     var ex = Assert.Throws<InvalidOperationException>(() =>
       RegistryLawScanner.ForEach<Base>(leaf => {
         var instance = (Base)Activator.CreateInstance(leaf)!;
-        Assert.True(instance.Value > 0, $"{leaf.Name} has a non-positive Value");
+        Assert.True(
+          instance.Value > 0,
+          $"{leaf.Name} has a non-positive Value"
+        );
       })
     );
 

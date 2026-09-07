@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using ExpandedLib.Industry.Metals;
 using ExpandedLib.Machines;
 using ExpandedLib.Structures;
-using ExpandedLib.Industry.Metals;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Casting.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Casting.Blocks;
@@ -10,8 +10,8 @@ using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using IronIndustryExpanded.Items;
-using NSubstitute;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -157,13 +157,17 @@ public class CrucibleSteelScenarioTests {
 
     public void Tick(int seconds) {
       for (int i = 0; i < seconds; i++)
-        Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
+        Furnace
+          .GetBehavior<BEBehaviorProductionMachine>()
+          .DriveProductionTick(1f);
     }
 
     /// <summary>Ticks until <paramref name="until"/> holds, up to <paramref name="ceiling"/> seconds.</summary>
     public int RunUntil(System.Func<bool> until, int ceiling) {
       for (int t = 1; t <= ceiling; t++) {
-        Furnace.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
+        Furnace
+          .GetBehavior<BEBehaviorProductionMachine>()
+          .DriveProductionTick(1f);
         if (until())
           return t;
       }

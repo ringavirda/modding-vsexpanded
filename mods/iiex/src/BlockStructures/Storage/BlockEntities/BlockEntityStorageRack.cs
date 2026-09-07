@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Registries;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Storage.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

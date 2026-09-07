@@ -259,16 +259,22 @@ projects and building them at once races on the same intermediate assemblies.
 # The formatter, installed into the checkout's own tool folder when the machine has none - the same
 # bootstrap scripts/exmod.sh does for pwsh, and for the same reason: a contributor should not have to
 # install anything by hand before the format gate will run.
-function Resolve-CSharpier() {
-  $onPath = Get-Command csharpier -ErrorAction SilentlyContinue
-  if ($onPath) { return $onPath.Source }
+# Pinned so every checkout formats identically; a local install of another version is removed
+# from .dotnet/tools and reinstalled at this one.
+$CSharpierVersion = '1.3.0'
 
+function Resolve-CSharpier() {
   $toolsDir = Join-Path $RepoRoot '.dotnet/tools'
   $local = Join-Path $toolsDir "csharpier$ExeSuffix"
-  if (Test-Path $local) { return $local }
-
-  Write-Host 'CSharpier not found - installing it into .dotnet/tools ...'
-  dotnet tool install csharpier --tool-path $toolsDir | Out-Null
+  if (Test-Path $local) {
+    $have = @(& $local --version 2>$null)[0]
+    if ($have -eq $CSharpierVersion) { return $local }
+    Write-Host "CSharpier $have found, $CSharpierVersion pinned - reinstalling into .dotnet/tools ..."
+    dotnet tool uninstall csharpier --tool-path $toolsDir | Out-Null
+  } else {
+    Write-Host 'CSharpier not found - installing it into .dotnet/tools ...'
+  }
+  dotnet tool install csharpier --version $CSharpierVersion --tool-path $toolsDir | Out-Null
   if (-not (Test-Path $local)) { throw 'Could not install CSharpier into .dotnet/tools.' }
   return $local
 }

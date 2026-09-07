@@ -336,7 +336,11 @@ public class BlockEntityPuddlingHearth : BlockEntityFurnacePart {
           _meltedUnits / WroughtBallItemDefinitions.BallUnits
         )
     );
-    state.Int("balls", () => _balls, v => _balls = GameMath.Clamp(v, 0, _ballsMade));
+    state.Int(
+      "balls",
+      () => _balls,
+      v => _balls = GameMath.Clamp(v, 0, _ballsMade)
+    );
     state.Bool("bathFrozen", () => _frozen, v => _frozen = v);
   }
 

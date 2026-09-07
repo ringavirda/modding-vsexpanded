@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -797,7 +797,11 @@ public abstract class BlockEntityMultiblockStructure
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(
+      Api.World,
+      blockIdMapping,
+      itemIdMapping
+    );
   }
 
   public override void OnLoadCollectibleMappings(

@@ -26,7 +26,8 @@ namespace ExpandedLib.Registries;
 public class ExModuleModSystem : ModSystem {
   private ExModuleHost? _host;
 
-  private ExModuleHost Host(ICoreAPI api) => _host ??= new ExModuleHost(Mod, api);
+  private ExModuleHost Host(ICoreAPI api) =>
+    _host ??= new ExModuleHost(Mod, api);
 
   public override double ExecuteOrder() => 0.03;
 
@@ -58,13 +59,17 @@ public class ExModuleModSystem : ModSystem {
     Host(api).Start(api);
   }
 
-  public override void StartServerSide(ICoreServerAPI api) => Host(api).StartServerSide(api);
+  public override void StartServerSide(ICoreServerAPI api) =>
+    Host(api).StartServerSide(api);
 
-  public override void StartClientSide(ICoreClientAPI api) => Host(api).StartClientSide(api);
+  public override void StartClientSide(ICoreClientAPI api) =>
+    Host(api).StartClientSide(api);
 
-  public override void AssetsLoaded(ICoreAPI api) => Host(api).AssetsLoaded(api);
+  public override void AssetsLoaded(ICoreAPI api) =>
+    Host(api).AssetsLoaded(api);
 
-  public override void AssetsFinalize(ICoreAPI api) => Host(api).AssetsFinalize(api);
+  public override void AssetsFinalize(ICoreAPI api) =>
+    Host(api).AssetsFinalize(api);
 
   public override void Dispose() {
     _host?.Dispose();

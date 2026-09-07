@@ -41,7 +41,8 @@ public static class ExOrientation {
     public bool InRange(int index) => index >= 0 && index < Parts.Length;
 
     /// <summary>Rejoins <see cref="Parts"/> (or a caller-modified copy of it) into a dash-separated path.</summary>
-    public static string Join(IReadOnlyList<string> parts) => string.Join('-', parts);
+    public static string Join(IReadOnlyList<string> parts) =>
+      string.Join('-', parts);
 
     /// <summary>Rejoins <see cref="Parts"/> as authored, with no segment replaced.</summary>
     public string Join() => Join(Parts);

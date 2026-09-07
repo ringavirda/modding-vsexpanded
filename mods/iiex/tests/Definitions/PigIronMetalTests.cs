@@ -16,7 +16,12 @@ public class PigIronMetalTests {
   private static MetalDef ShippedDef() {
     MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
-        Path.Combine(RepoPaths.Assets("iiex"), "config", "metals", "pigiron.json")
+        Path.Combine(
+          RepoPaths.Assets("iiex"),
+          "config",
+          "metals",
+          "pigiron.json"
+        )
       )
     );
     Assert.NotNull(def);

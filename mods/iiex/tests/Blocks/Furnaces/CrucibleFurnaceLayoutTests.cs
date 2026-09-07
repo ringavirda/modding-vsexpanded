@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -58,7 +58,10 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_fire_and_the_work_are_one_cell() {
-    Assert.Equal([new Vec3i(-2, 0, 0)], RoleCellsOf(Def, FurnaceCellRoles.Firebox));
+    Assert.Equal(
+      [new Vec3i(-2, 0, 0)],
+      RoleCellsOf(Def, FurnaceCellRoles.Firebox)
+    );
   }
 
   /// <summary>
@@ -68,7 +71,9 @@ public class CrucibleFurnaceLayoutTests {
   /// </summary>
   [Fact]
   public void The_flue_is_a_column_over_the_hearth_ending_at_the_stack_base() {
-    var flue = RoleCellsOf(Def, FurnaceCellRoles.Flue).OrderBy(c => c.Y).ToList();
+    var flue = RoleCellsOf(Def, FurnaceCellRoles.Flue)
+      .OrderBy(c => c.Y)
+      .ToList();
 
     Assert.Equal([new Vec3i(-2, 2, 0), new Vec3i(-2, 3, 0)], flue);
     Assert.All(flue, c => Assert.Equal(new Vec3i(-2, c.Y, 0), c));
@@ -86,7 +91,10 @@ public class CrucibleFurnaceLayoutTests {
 
     Assert.Equal([new Vec3i(-2, 1, 0)], damper);
     Assert.All(flue, c => Assert.True(c.Y > damper[0].Y));
-    Assert.Equal(RoleCellsOf(Def, FurnaceCellRoles.Firebox)[0].Y + 1, damper[0].Y);
+    Assert.Equal(
+      RoleCellsOf(Def, FurnaceCellRoles.Firebox)[0].Y + 1,
+      damper[0].Y
+    );
   }
 
   /// <summary>

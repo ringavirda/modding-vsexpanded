@@ -50,7 +50,12 @@ public sealed class MultiblockConnectors {
   /// </summary>
   public static MultiblockConnectors FromAttributes(JsonObject? attributes) {
     var map = new Dictionary<(int X, int Y, int Z), List<string>>();
-    foreach (var (cell, key) in LayoutAttribute.CellsByKey(attributes, "multiblockConnectors")) {
+    foreach (
+      var (cell, key) in LayoutAttribute.CellsByKey(
+        attributes,
+        "multiblockConnectors"
+      )
+    ) {
       // A key that is not a horizontal side letter would be a face no rotation can resolve, so the cell
       // would demand something unanswerable rather than nothing. Skipped, as a malformed role is.
       if (ExOrientation.FacingFromSide(key) == null)

@@ -48,33 +48,56 @@
     <_ExmodSlnDir0>$(MSBuildProjectDirectory)</_ExmodSlnDir0>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir0)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir0)', '*.sln').Length) != 0">$(_ExmodSlnDir0)</_ExmodRootBySln>
-    <_ExmodSlnDir1 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir0)'))</_ExmodSlnDir1>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir0)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir0)</_ExmodRootBySln>
+    <_ExmodSlnDir1 Condition="'$(_ExmodRootBySln)' == ''"
+      >$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir0)'))</_ExmodSlnDir1>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir1)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir1)', '*.sln').Length) != 0">$(_ExmodSlnDir1)</_ExmodRootBySln>
-    <_ExmodSlnDir2 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir1)'))</_ExmodSlnDir2>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir1)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir1)</_ExmodRootBySln>
+    <_ExmodSlnDir2 Condition="'$(_ExmodRootBySln)' == ''"
+      >$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir1)'))</_ExmodSlnDir2>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir2)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir2)', '*.sln').Length) != 0">$(_ExmodSlnDir2)</_ExmodRootBySln>
-    <_ExmodSlnDir3 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir2)'))</_ExmodSlnDir3>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir2)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir2)</_ExmodRootBySln>
+    <_ExmodSlnDir3 Condition="'$(_ExmodRootBySln)' == ''"
+      >$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir2)'))</_ExmodSlnDir3>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir3)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir3)', '*.sln').Length) != 0">$(_ExmodSlnDir3)</_ExmodRootBySln>
-    <_ExmodSlnDir4 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir3)'))</_ExmodSlnDir4>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir3)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir3)</_ExmodRootBySln>
+    <_ExmodSlnDir4 Condition="'$(_ExmodRootBySln)' == ''"
+      >$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir3)'))</_ExmodSlnDir4>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir4)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir4)', '*.sln').Length) != 0">$(_ExmodSlnDir4)</_ExmodRootBySln>
-    <_ExmodSlnDir5 Condition="'$(_ExmodRootBySln)' == ''">$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir4)'))</_ExmodSlnDir5>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir4)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir4)</_ExmodRootBySln>
+    <_ExmodSlnDir5 Condition="'$(_ExmodRootBySln)' == ''"
+      >$([System.IO.Path]::GetDirectoryName('$(_ExmodSlnDir4)'))</_ExmodSlnDir5>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_ExmodSlnDir5)' != '' and '$(_ExmodRootBySln)' == ''">
-    <_ExmodRootBySln Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir5)', '*.sln').Length) != 0">$(_ExmodSlnDir5)</_ExmodRootBySln>
+    <_ExmodRootBySln
+      Condition="$([System.IO.Directory]::GetFiles('$(_ExmodSlnDir5)', '*.sln').Length) != 0"
+      >$(_ExmodSlnDir5)</_ExmodRootBySln>
   </PropertyGroup>
   <PropertyGroup Condition="'$(ExmodRepoRoot)' == ''">
-    <ExmodRepoRoot Condition="'$(_ExmodRootByManifest)' != ''">$(_ExmodRootByManifest)</ExmodRepoRoot>
-    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootByGit)' != ''">$(_ExmodRootByGit)</ExmodRepoRoot>
-    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootBySln)' != ''">$(_ExmodRootBySln)</ExmodRepoRoot>
-    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == ''">$(MSBuildProjectDirectory)</ExmodRepoRoot>
+    <ExmodRepoRoot Condition="'$(_ExmodRootByManifest)' != ''"
+      >$(_ExmodRootByManifest)</ExmodRepoRoot>
+    <ExmodRepoRoot
+      Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootByGit)' != ''"
+      >$(_ExmodRootByGit)</ExmodRepoRoot>
+    <ExmodRepoRoot
+      Condition="'$(ExmodRepoRoot)' == '' and '$(_ExmodRootBySln)' != ''"
+      >$(_ExmodRootBySln)</ExmodRepoRoot>
+    <ExmodRepoRoot Condition="'$(ExmodRepoRoot)' == ''"
+      >$(MSBuildProjectDirectory)</ExmodRepoRoot>
   </PropertyGroup>
 
   <!-- $(GamePath) = the install for THIS TFM. Priority:
@@ -132,10 +155,13 @@
        found, so _AutoProvisionGame has nothing to call and _CheckGamePath below reports the missing
        install instead of a failed Exec. -->
   <PropertyGroup Condition="'$(ExmodWrapper)' == ''">
-    <_ExmodWrapperName Condition="$([MSBuild]::IsOSPlatform('Windows'))">scripts/exmod.ps1</_ExmodWrapperName>
-    <_ExmodWrapperName Condition="!$([MSBuild]::IsOSPlatform('Windows'))">scripts/exmod.sh</_ExmodWrapperName>
+    <_ExmodWrapperName Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+      >scripts/exmod.ps1</_ExmodWrapperName>
+    <_ExmodWrapperName Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+      >scripts/exmod.sh</_ExmodWrapperName>
     <_ExmodWrapperDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_ExmodWrapperName)'))</_ExmodWrapperDir>
-    <ExmodWrapper Condition="'$(_ExmodWrapperDir)' != ''">$(_ExmodWrapperDir)\$(_ExmodWrapperName)</ExmodWrapper>
+    <ExmodWrapper Condition="'$(_ExmodWrapperDir)' != ''"
+      >$(_ExmodWrapperDir)\$(_ExmodWrapperName)</ExmodWrapper>
   </PropertyGroup>
 
   <!-- Auto-provision the SERVER binaries into .game/<slug> when they're missing and no env override is
@@ -200,7 +226,8 @@
     ============================================================================================
   -->
   <PropertyGroup>
-    <ModAssetsRoot Condition="'$(ModAssetsRoot)' == '' and Exists('$(MSBuildProjectDirectory)\..\assets')"
+    <ModAssetsRoot
+      Condition="'$(ModAssetsRoot)' == '' and Exists('$(MSBuildProjectDirectory)\..\assets')"
       >$(MSBuildProjectDirectory)\..\assets</ModAssetsRoot>
     <ModAssetsRoot Condition="'$(ModAssetsRoot)' == ''"
       >$(MSBuildProjectDirectory)\assets</ModAssetsRoot>
@@ -220,9 +247,7 @@
        and setting it here would ship them twice). On the legacy TFMs it pulls exlib's Legacy
        namespace into scope assembly-wide, and it compiles away on the current TFM. Linked here so
        the projects share one file instead of per-project copies. -->
-  <ItemGroup
-    Condition="'$(AssetDomain)' != '' or '$(MSBuildProjectName)' == 'ExpandedLib.Industry'"
-  >
+  <ItemGroup Condition="'$(AssetDomain)' != '' or '$(MSBuildProjectName)' == 'ExpandedLib.Industry'">
     <Compile Include="$(MSBuildThisFileDirectory)LegacyUsings.cs">
       <Link>LegacyUsings.cs</Link>
     </Compile>

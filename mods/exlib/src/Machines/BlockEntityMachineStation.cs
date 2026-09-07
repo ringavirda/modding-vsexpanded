@@ -87,7 +87,11 @@ public abstract class BlockEntityMachineStation : BlockEntityContainer {
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(
+      Api.World,
+      blockIdMapping,
+      itemIdMapping
+    );
   }
 
   public override void OnLoadCollectibleMappings(

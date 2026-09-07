@@ -1,10 +1,10 @@
 using System;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Machines;
-using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.MechanicalPower;
+using ExpandedLib.Machines;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkEnergy.Blocks;
 using Vintagestory.API.Client;

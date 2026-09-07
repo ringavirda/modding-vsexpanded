@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
 using IronIndustryExpanded.BlockNetworkEnergy.Blocks;

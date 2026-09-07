@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -434,12 +434,11 @@ public abstract class BlockBoiler
     );
 #if !GAME_GE_1_22
     // Legacy lacks the vanilla IInteractableWithHelp path, so surface the construction help here.
-    help =
-      ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
-        world,
-        selection,
-        help
-      );
+    help = ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
+      world,
+      selection,
+      help
+    );
 #endif
     return help;
   }

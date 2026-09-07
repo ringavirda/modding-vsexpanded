@@ -23,20 +23,18 @@ internal static class FakeAssetApi {
   ) {
     var manager = Substitute.For<IAssetManager>();
     List<IAsset> assets =
-      [
-        .. files.Select(f =>
-          ExSyntheticAsset.Create(
-            new AssetLocation(f.Location),
-            Encoding.UTF8.GetBytes(f.Json),
-            new ExDefinitionOrigin()
-          )
-        ),
-      ];
+    [
+      .. files.Select(f =>
+        ExSyntheticAsset.Create(
+          new AssetLocation(f.Location),
+          Encoding.UTF8.GetBytes(f.Json),
+          new ExDefinitionOrigin()
+        )
+      ),
+    ];
     manager
       .GetMany(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>())
-      .Returns(call =>
-        (string)call[0] == path ? assets : new List<IAsset>()
-      );
+      .Returns(call => (string)call[0] == path ? assets : new List<IAsset>());
 
     var api = Substitute.For<ICoreAPI>();
     api.Assets.Returns(manager);

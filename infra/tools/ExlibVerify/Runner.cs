@@ -45,7 +45,10 @@ public static class Runner {
           gamePath = args[++i];
           break;
         case "--mods":
-          while (i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal))
+          while (
+            i + 1 < args.Length
+            && !args[i + 1].StartsWith("--", StringComparison.Ordinal)
+          )
             modsDirs.Add(args[++i]);
           break;
         case "--json":
@@ -61,7 +64,9 @@ public static class Runner {
     }
 
     if (modPath == null) {
-      stderr.WriteLine("usage: exlib-verify <modpath> [--game <install>] [--mods <dir>...] [--json] [--strict]");
+      stderr.WriteLine(
+        "usage: exlib-verify <modpath> [--game <install>] [--mods <dir>...] [--json] [--strict]"
+      );
       return 2;
     }
 
@@ -72,7 +77,12 @@ public static class Runner {
       // references (Private=false - a global tool must never bundle a copy of the game's own
       // assemblies), so they are resolved at runtime from whichever install --game/$VINTAGE_STORY
       // actually named.
-      string[] probeDirs = [game, Path.Combine(game, "Lib"), Path.Combine(game, "Mods")];
+      string[] probeDirs =
+      [
+        game,
+        Path.Combine(game, "Lib"),
+        Path.Combine(game, "Mods"),
+      ];
       ResolveEventHandler resolver = (_, resolveArgs) => {
         string? name = new AssemblyName(resolveArgs.Name).Name;
         if (name == null)
@@ -111,7 +121,11 @@ public static class Runner {
     List<ModSource> extras = [.. modsDirs.Select(ModSource.Load)];
 
     var store = new AssetStore();
-    store.AddRoot(game, remapDomain: folder => folder is "survival" or "creative" ? "game" : folder);
+    store.AddRoot(
+      game,
+      remapDomain: folder =>
+        folder is "survival" or "creative" ? "game" : folder
+    );
     foreach (ModSource extra in extras)
       store.AddRoot(extra.RootDir);
     // Loaded last, and with parse errors reported: the mod under test is what this run is
@@ -131,7 +145,8 @@ public static class Runner {
         )
     );
 
-    var loadedModIds = new HashSet<string>(StringComparer.Ordinal) {
+    var loadedModIds = new HashSet<string>(StringComparer.Ordinal)
+    {
       primary.ModId.ToLowerInvariant(),
       "game",
       "survival",
@@ -144,7 +159,11 @@ public static class Runner {
     // modid - so every check scoped to "the mod under test" runs over every domain its own
     // assets/ folder actually carries, not over ModId as a string.
     string[] primaryDomains = AssetDomains(primary);
-    string[] patchDomains = [.. primaryDomains, .. extras.SelectMany(AssetDomains)];
+    string[] patchDomains =
+    [
+      .. primaryDomains,
+      .. extras.SelectMany(AssetDomains),
+    ];
     // A mod that ships an assembly can register assets that never exist on disk (exlib's code-first
     // definitions inject one per definition), so patches aimed into its domain cannot be resolved
     // here. Naming those domains is what keeps that an informational note rather than a false error.
@@ -154,11 +173,18 @@ public static class Runner {
         foreach (string domain in AssetDomains(mod))
           codeDomains.Add(domain);
 
-    findings.AddRange(PatchChecker.Run(store, patchDomains, loadedModIds, codeDomains));
+    findings.AddRange(
+      PatchChecker.Run(store, patchDomains, loadedModIds, codeDomains)
+    );
 
     BlockItemCatalogue catalogue = BlockItemCatalogue.Build(store);
     foreach (string domain in primaryDomains)
-      foreach (string prefix in catalogue.UnresolvedPrefixes.GetValueOrDefault(domain, []))
+      foreach (
+        string prefix in catalogue.UnresolvedPrefixes.GetValueOrDefault(
+          domain,
+          []
+        )
+      )
         findings.Add(
           new Finding(
             FindingLevel.Info,
@@ -172,12 +198,22 @@ public static class Runner {
 
     foreach (string domain in primaryDomains) {
       findings.AddRange(
-        RecipeCodeChecker.Run(catalogue, domain, OwnFiles(primary, store, domain, "recipes/"))
+        RecipeCodeChecker.Run(
+          catalogue,
+          domain,
+          OwnFiles(primary, store, domain, "recipes/")
+        )
       );
       findings.AddRange(
-        HandbookLangChecker.Run(store, domain, OwnFiles(primary, store, domain, "config/handbook/"))
+        HandbookLangChecker.Run(
+          store,
+          domain,
+          OwnFiles(primary, store, domain, "config/handbook/")
+        )
       );
-      findings.AddRange(LangParityChecker.Run(domain, OwnFiles(primary, store, domain, "lang/")));
+      findings.AddRange(
+        LangParityChecker.Run(domain, OwnFiles(primary, store, domain, "lang/"))
+      );
     }
   }
 
@@ -186,7 +222,13 @@ public static class Runner {
   private static string[] AssetDomains(ModSource mod) {
     string assetsDir = Path.Combine(mod.RootDir, "assets");
     return Directory.Exists(assetsDir)
-      ? [.. Directory.EnumerateDirectories(assetsDir).Select(Path.GetFileName).OfType<string>()]
+      ?
+      [
+        .. Directory
+          .EnumerateDirectories(assetsDir)
+          .Select(Path.GetFileName)
+          .OfType<string>(),
+      ]
       : [mod.ModId];
   }
 
@@ -204,10 +246,13 @@ public static class Runner {
     if (!Directory.Exists(domainDir))
       yield break;
     foreach (
-      string file in Directory.EnumerateFiles(domainDir, "*.json", SearchOption.AllDirectories)
+      string file in Directory.EnumerateFiles(
+        domainDir,
+        "*.json",
+        SearchOption.AllDirectories
+      )
     ) {
-      string relPath = Path
-        .GetRelativePath(domainDir, file)
+      string relPath = Path.GetRelativePath(domainDir, file)
         .Replace(Path.DirectorySeparatorChar, '/')
         .ToLowerInvariant();
       if (!relPath.StartsWith(prefix, StringComparison.Ordinal))
@@ -218,7 +263,11 @@ public static class Runner {
     }
   }
 
-  private static void Report(List<Finding> findings, bool asJson, TextWriter stdout) {
+  private static void Report(
+    List<Finding> findings,
+    bool asJson,
+    TextWriter stdout
+  ) {
     if (asJson) {
       var payload = findings.Select(f => new {
         level = f.Level == FindingLevel.Error ? "error" : "info",
@@ -227,7 +276,9 @@ public static class Runner {
         line = f.Line,
         message = f.Message,
       });
-      stdout.WriteLine(JsonConvert.SerializeObject(payload, Formatting.Indented));
+      stdout.WriteLine(
+        JsonConvert.SerializeObject(payload, Formatting.Indented)
+      );
       return;
     }
 

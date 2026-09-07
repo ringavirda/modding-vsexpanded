@@ -20,7 +20,10 @@ public class ExHarmonyTests {
     public static void Method() { }
   }
 
-  [HarmonyPatch(typeof(UncategorizedTarget), nameof(UncategorizedTarget.Method))]
+  [HarmonyPatch(
+    typeof(UncategorizedTarget),
+    nameof(UncategorizedTarget.Method)
+  )]
   private static class UncategorizedPatch {
     private static void Prefix() { }
   }
@@ -37,7 +40,9 @@ public class ExHarmonyTests {
 
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
-    typeof(Mod).GetProperty("Info")!.SetValue(mod, new ModInfo { ModID = modId });
+    typeof(Mod)
+      .GetProperty("Info")!
+      .SetValue(mod, new ModInfo { ModID = modId });
     return mod;
   }
 

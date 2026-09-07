@@ -1,12 +1,12 @@
 using System;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockNetworkMolten;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -197,7 +197,8 @@ public class BlockEntitySandCastingCell : ExBlockEntity {
   /// single-letter side token, which the north fallback would then swallow. The fallback covers a missing
   /// variant, not a misread one.</summary>
   public BlockFacing LaunderFace =>
-    ExOrientation.FacingFromSide(Block.Variant["side"])?.Opposite ?? BlockFacing.NORTH;
+    ExOrientation.FacingFromSide(Block.Variant["side"])?.Opposite
+    ?? BlockFacing.NORTH;
 
   #endregion
 

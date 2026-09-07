@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
-using ExpandedLib.Registries;
 using ExpandedLib.Config;
+using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 

@@ -31,7 +31,11 @@ public class BlockEntityMultiblock : BlockEntityMultiblockStructure {
 
   /// <inheritdoc/>
   protected override string GetIncompleteMessage(int missingCount) =>
-    Lang.GetWithFallback(DomainKey("incomplete"), FallbackKey("incomplete"), missingCount);
+    Lang.GetWithFallback(
+      DomainKey("incomplete"),
+      FallbackKey("incomplete"),
+      missingCount
+    );
 
   /// <inheritdoc/>
   protected override string GetCompleteMessage() =>
@@ -48,5 +52,6 @@ public class BlockEntityMultiblock : BlockEntityMultiblockStructure {
     $"{Block.Code.Domain}:multiblock-{Block.Code.Path}-{suffix}";
 
   // The exlib default, requested when the domain declares no key of its own.
-  private static string FallbackKey(string suffix) => $"exlib:multiblock-{suffix}";
+  private static string FallbackKey(string suffix) =>
+    $"exlib:multiblock-{suffix}";
 }

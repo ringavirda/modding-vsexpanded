@@ -49,8 +49,8 @@ public class ShippedAssetJsonTests {
   /// including <c>game</c> where a mod's tree carries the shared vanilla lang overlay alongside its own.
   /// </summary>
   private static IEnumerable<string> ShippedDomains() {
-    var domains = ExpandedLib.Testing.RepoPaths
-      .AllAssetTrees()
+    var domains = ExpandedLib
+      .Testing.RepoPaths.AllAssetTrees()
       .Select(d => new DirectoryInfo(d).Name)
       .Distinct()
       .ToList();

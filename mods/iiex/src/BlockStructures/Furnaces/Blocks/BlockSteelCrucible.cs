@@ -50,7 +50,11 @@ public partial class BlockSteelCrucible
         // vanilla registers the bare string in Core.cs, and nothing in the suite checks that a class
         // string resolves. `classByType` also has to be a top-level key, so it goes through RawByType -
         // AttributeByType would file it under `attributes`, where the loader never looks.
-        .RootKeyByType("classByType", "*-burned", nameof(BlockSmeltingContainer))
+        .RootKeyByType(
+          "classByType",
+          "*-burned",
+          nameof(BlockSmeltingContainer)
+        )
         // The smelted class must be OURS and must derive from BlockSmeltedContainer: `DoSmelt` casts the
         // block it resolves without checking, so a class that is not one is an InvalidCastException on
         // the server, mid-tick.

@@ -86,16 +86,24 @@ public abstract class EnginePlant : MachineRig {
   public void Steam(float atm) =>
     Scene
       .NetworkAt<PipeNetwork>(_inlet)!
-      .TryProduceGas(atm * 30f, 150f, "Steam", Scene.World.Accessor, maxOutputPressure: atm);
+      .TryProduceGas(
+        atm * 30f,
+        150f,
+        "Steam",
+        Scene.World.Accessor,
+        maxOutputPressure: atm
+      );
 
   /// <summary>
   /// Holds the inlet at <paramref name="atm"/> for <paramref name="seconds"/> one-second ticks, a
   /// stand-in for a boiler continuously feeding the line. It re-charges before each tick because a
   /// sealed pipe's charge would otherwise deplete as the running engine consumes it.
   /// </summary>
-  public void RunWithSteam(float atm, int seconds) => RunWhile(() => Steam(atm), seconds);
+  public void RunWithSteam(float atm, int seconds) =>
+    RunWhile(() => Steam(atm), seconds);
 
-  public float InletVolume => Scene.NetworkAt<PipeNetwork>(_inlet)!.State?.Volume ?? 0f;
+  public float InletVolume =>
+    Scene.NetworkAt<PipeNetwork>(_inlet)!.State?.Volume ?? 0f;
 }
 
 /// <summary>

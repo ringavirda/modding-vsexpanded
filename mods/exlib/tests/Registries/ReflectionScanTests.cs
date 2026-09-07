@@ -59,7 +59,8 @@ public class ReflectionScanTests {
 
   [Fact]
   public void GetCandidateTypes_is_sorted_and_skips_unloadable() {
-    var assemblies = new[] {
+    var assemblies = new[]
+    {
       typeof(ReflectionScan).Assembly, // exlib
       typeof(ReflectionScanTests).Assembly, // the test assembly itself
     };

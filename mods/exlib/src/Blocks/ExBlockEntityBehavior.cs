@@ -48,7 +48,11 @@ public abstract class ExBlockEntityBehavior(BlockEntity blockentity)
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(
+      Api.World,
+      blockIdMapping,
+      itemIdMapping
+    );
   }
 
   public override void OnLoadCollectibleMappings(

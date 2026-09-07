@@ -67,7 +67,10 @@ public static class RecipeCodeChecker {
     if (recipe["ingredients"] is not JObject ingredients)
       return holes;
     foreach (JProperty slot in ingredients.Properties()) {
-      if (slot.Value["name"] is not { } name || slot.Value["allowedVariants"] is not JArray states)
+      if (
+        slot.Value["name"] is not { } name
+        || slot.Value["allowedVariants"] is not JArray states
+      )
         continue;
       holes[(string)name!] = [.. states.Select(s => (string)s!)];
     }
@@ -89,7 +92,10 @@ public static class RecipeCodeChecker {
       var loc = new AssetLocation(concrete);
       string targetDomain = loc.Domain;
 
-      if (!catalogue.Blocks.ContainsKey(targetDomain) && !catalogue.Items.ContainsKey(targetDomain)) {
+      if (
+        !catalogue.Blocks.ContainsKey(targetDomain)
+        && !catalogue.Items.ContainsKey(targetDomain)
+      ) {
         findings.Add(
           new Finding(
             FindingLevel.Info,
@@ -102,14 +108,17 @@ public static class RecipeCodeChecker {
         continue;
       }
 
-      HashSet<string> declared = type == "block"
-        ? catalogue.Blocks[targetDomain]
-        : catalogue.Items[targetDomain];
+      HashSet<string> declared =
+        type == "block"
+          ? catalogue.Blocks[targetDomain]
+          : catalogue.Items[targetDomain];
       HashSet<string> unresolved = catalogue.UnresolvedPrefixes[targetDomain];
 
       bool resolves =
         declared.Any(c => WildcardMatch(loc.Path, c))
-        || unresolved.Any(prefix => loc.Path.StartsWith(prefix, StringComparison.Ordinal));
+        || unresolved.Any(prefix =>
+          loc.Path.StartsWith(prefix, StringComparison.Ordinal)
+        );
 
       if (!resolves)
         findings.Add(
@@ -130,7 +139,10 @@ public static class RecipeCodeChecker {
     return WildcardUtil.Match(a, b) || WildcardUtil.Match(b, a);
   }
 
-  private static IEnumerable<string> Expand(string code, Dictionary<string, string[]> holes) {
+  private static IEnumerable<string> Expand(
+    string code,
+    Dictionary<string, string[]> holes
+  ) {
     IEnumerable<string> codes = [code];
     foreach (var (name, states) in holes) {
       string hole = "{" + name + "}";

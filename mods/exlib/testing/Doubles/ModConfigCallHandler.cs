@@ -35,9 +35,14 @@ internal sealed class ModConfigCallHandler(ModConfigFiles files) : ICallHandler 
       case nameof(ICoreAPI.LoadModConfig): {
         string file = (string)args[0]!;
         // The generic overload's T; the JsonObject overload isn't generic, so it reads back as one.
-        if (!method.IsGenericMethod || method.GetGenericArguments()[0] == typeof(JsonObject)) {
+        if (
+          !method.IsGenericMethod
+          || method.GetGenericArguments()[0] == typeof(JsonObject)
+        ) {
           object? raw = files.ReadUntyped(file, typeof(JToken));
-          return RouteAction.Return(raw == null ? null : new JsonObject((JToken)raw));
+          return RouteAction.Return(
+            raw == null ? null : new JsonObject((JToken)raw)
+          );
         }
         return RouteAction.Return(
           files.ReadUntyped(file, method.GetGenericArguments()[0])

@@ -38,7 +38,9 @@ public class ExBlockAccessTests {
   public void BlockEntity_finds_a_match_at_the_position() {
     TestWorld world = PlaceMarker(Origin, 5);
 
-    MarkerBlockEntity? be = world.Accessor.BlockEntity<MarkerBlockEntity>(Origin);
+    MarkerBlockEntity? be = world.Accessor.BlockEntity<MarkerBlockEntity>(
+      Origin
+    );
 
     Assert.NotNull(be);
     Assert.Equal(5, be!.Value);
@@ -80,7 +82,10 @@ public class ExBlockAccessTests {
   public void TryGetBlockEntity_reports_a_hit() {
     TestWorld world = PlaceMarker(Origin, 9);
 
-    bool found = world.Accessor.TryGetBlockEntity(Origin, out MarkerBlockEntity? be);
+    bool found = world.Accessor.TryGetBlockEntity(
+      Origin,
+      out MarkerBlockEntity? be
+    );
 
     Assert.True(found);
     Assert.Equal(9, be!.Value);
@@ -145,8 +150,14 @@ public class ExBlockAccessTests {
     var found = world.Accessor.Neighbours<MarkerBlockEntity>(Origin).ToList();
 
     Assert.Equal(2, found.Count);
-    Assert.Contains(found, f => f.Facing == BlockFacing.NORTH && f.Entity.Value == 1);
-    Assert.Contains(found, f => f.Facing == BlockFacing.UP && f.Entity.Value == 2);
+    Assert.Contains(
+      found,
+      f => f.Facing == BlockFacing.NORTH && f.Entity.Value == 1
+    );
+    Assert.Contains(
+      found,
+      f => f.Facing == BlockFacing.UP && f.Entity.Value == 2
+    );
   }
 
   [Fact]

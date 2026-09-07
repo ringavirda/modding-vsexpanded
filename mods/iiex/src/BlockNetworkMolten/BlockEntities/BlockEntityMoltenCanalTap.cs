@@ -496,9 +496,8 @@ public class BlockEntityMoltenCanalTap : BlockEntityMoltenCanal {
         IsBarrel = tree.GetBool("isBarrel");
         // Empty when the save carries no code; ParkedBarrelCode then falls back to plated.
         string savedBarrel = tree.GetString("barrelCode", "");
-        BarrelCode = savedBarrel.Length > 0
-          ? new AssetLocation(savedBarrel)
-          : null;
+        BarrelCode =
+          savedBarrel.Length > 0 ? new AssetLocation(savedBarrel) : null;
         BarrelMetalContent = tree.GetItemstack("barrelContents");
         BarrelMetalContent?.ResolveBlockOrItem(world);
         BarrelCurrentUnits = tree.GetInt("barrelCurrentUnits");

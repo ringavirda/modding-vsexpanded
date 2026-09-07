@@ -34,7 +34,12 @@ public static class MaterialRoleLoader {
 
     var errors = new List<string>(read.Errors);
     errors.AddRange(warnings);
-    return new CatalogueLoadReport("materialroles", read.Files, registered, errors);
+    return new CatalogueLoadReport(
+      "materialroles",
+      read.Files,
+      registered,
+      errors
+    );
   }
 
   /// <summary>

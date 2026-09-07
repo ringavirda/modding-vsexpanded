@@ -29,7 +29,8 @@ public static class EntityRegistry {
     string modId = mod.Info.ModID;
     // A module's own [assembly: ExDomain] outranks its host's mod id: exlib hosting a framework
     // module keys that module's classes under the domain it declares, not under "exlib".
-    string domain = asm.GetCustomAttribute<ExDomainAttribute>()?.Domain ?? modId;
+    string domain =
+      asm.GetCustomAttribute<ExDomainAttribute>()?.Domain ?? modId;
 
     // Recorded before the scan so KeyFor can answer "which domain owns this type" for an assembly that
     // declares no [assembly: ExDomain]. The attribute is preferred because it needs no prior call;

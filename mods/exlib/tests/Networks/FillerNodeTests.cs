@@ -1,7 +1,7 @@
 using System.Reflection;
 using ExpandedLib.Networks;
-using ExpandedLib.Structures;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
 using NSubstitute;

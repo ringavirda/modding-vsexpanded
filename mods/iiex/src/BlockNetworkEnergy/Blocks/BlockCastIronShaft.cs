@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkEnergy.BlockEntities;
 using Vintagestory.API.Common;

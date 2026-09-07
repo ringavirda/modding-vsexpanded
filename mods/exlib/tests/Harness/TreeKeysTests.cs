@@ -56,7 +56,8 @@ public class TreeKeysTests {
     Place(be);
 
     InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
-      () => TreeKeys.AssertDeclaresBaseKeys(be)
+      () =>
+        TreeKeys.AssertDeclaresBaseKeys(be)
     );
 
     Assert.Contains("BaseEntity", ex.Message, StringComparison.Ordinal);

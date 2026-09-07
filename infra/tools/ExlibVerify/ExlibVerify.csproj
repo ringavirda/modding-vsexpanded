@@ -24,8 +24,7 @@
     <ToolCommandName>exlib-verify</ToolCommandName>
     <PackageId>ExpandedLib.Verify</PackageId>
     <_ModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\..\..\mods\exlib\src\modinfo.json'))</_ModinfoJson>
-    <PackageVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
+    <PackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(_ModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</PackageVersion>
     <Authors>fallenstar</Authors>
     <Description>Headless JSON-only mod checker for Vintage Story - patch application, recipe and handbook lang coverage, without the game running.</Description>
     <RepositoryUrl>https://github.com/ringavirda/modding-vsexpanded</RepositoryUrl>

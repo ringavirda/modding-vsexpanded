@@ -20,6 +20,7 @@ public class PreferencesTests {
     public string[] Applied = [];
     public IReadOnlyList<string> Options { get; } = ["a", "b"];
     public string Default => "a";
+
     public void Apply(string value) => Applied = [value];
   }
 
@@ -42,7 +43,11 @@ public class PreferencesTests {
   [Fact]
   public void A_players_choice_persists_across_a_fresh_LoadConfig() {
     var world = new TestWorld();
-    PreferenceRegistry.RegisterAll(world.Api, FakeMod(), typeof(TestPreference).Assembly);
+    PreferenceRegistry.RegisterAll(
+      world.Api,
+      FakeMod(),
+      typeof(TestPreference).Assembly
+    );
 
     ExPreferences.LoadConfig(world.Api);
     ExPreferences.SetForPlayer("player-a", Key, "b");
@@ -57,7 +62,11 @@ public class PreferencesTests {
   [Fact]
   public void An_unset_preference_answers_its_own_default() {
     var world = new TestWorld();
-    PreferenceRegistry.RegisterAll(world.Api, FakeMod(), typeof(TestPreference).Assembly);
+    PreferenceRegistry.RegisterAll(
+      world.Api,
+      FakeMod(),
+      typeof(TestPreference).Assembly
+    );
     ExPreferences.LoadConfig(world.Api);
 
     Assert.Equal("a", ExPreferences.GetForPlayer("nobody-yet", Key));
@@ -68,13 +77,20 @@ public class PreferencesTests {
     var world = new TestWorld();
     ExPreferences.LoadConfig(world.Api);
 
-    Assert.Equal(string.Empty, ExPreferences.GetForPlayer("player-a", "no-such-preference"));
+    Assert.Equal(
+      string.Empty,
+      ExPreferences.GetForPlayer("player-a", "no-such-preference")
+    );
   }
 
   [Fact]
   public void SetForPlayer_applies_the_value_to_the_registered_preference() {
     var world = new TestWorld();
-    PreferenceRegistry.RegisterAll(world.Api, FakeMod(), typeof(TestPreference).Assembly);
+    PreferenceRegistry.RegisterAll(
+      world.Api,
+      FakeMod(),
+      typeof(TestPreference).Assembly
+    );
     ExPreferences.LoadConfig(world.Api);
     var pref = (TestPreference)ExPreferences.Find(Key)!;
 
@@ -86,7 +102,11 @@ public class PreferencesTests {
   [Fact]
   public void ApplyForPlayer_applies_every_registered_preferences_saved_value() {
     var world = new TestWorld();
-    PreferenceRegistry.RegisterAll(world.Api, FakeMod(), typeof(TestPreference).Assembly);
+    PreferenceRegistry.RegisterAll(
+      world.Api,
+      FakeMod(),
+      typeof(TestPreference).Assembly
+    );
     ExPreferences.LoadConfig(world.Api);
     ExPreferences.SetForPlayer("player-c", Key, "b");
     var pref = (TestPreference)ExPreferences.Find(Key)!;
@@ -101,7 +121,9 @@ public class PreferencesTests {
 
   private static Mod FakeMod() {
     var mod = NSubstitute.Substitute.For<Mod>();
-    typeof(Mod).GetProperty("Info")!.SetValue(mod, new ModInfo { ModID = "exlib", Version = "1.0.0" });
+    typeof(Mod)
+      .GetProperty("Info")!
+      .SetValue(mod, new ModInfo { ModID = "exlib", Version = "1.0.0" });
     return mod;
   }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -453,7 +453,10 @@ public class FurnaceRoleCellsTests {
     // accessor, so both are stated: the emitted attribute carries no GasOutlet key, and the drawing has no
     // pipe-outlet cell for one to point at.
     foreach (ExBlockDef def in new[] { ColdDef(), CupolaDef() }) {
-      Assert.DoesNotContain(FurnaceCellRoles.GasOutlet.ToString(), RoleNamesOf(def));
+      Assert.DoesNotContain(
+        FurnaceCellRoles.GasOutlet.ToString(),
+        RoleNamesOf(def)
+      );
       Assert.DoesNotContain(OutletGlyph, LayoutOf(def).Values);
     }
 
@@ -618,14 +621,25 @@ public class FurnaceRoleCellsTests {
   ) {
     (ExBlockDef def, CellRole[] expected) = furnace switch {
       // Sorted by key (ordinal), matching the order MultiblockLayoutBuilder emits them in.
-      "puddling" => (PuddlingDef(), new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }),
-      "heating" => (HeatingDef(), new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }),
+      "puddling" => (
+        PuddlingDef(),
+        new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }
+      ),
+      "heating" => (
+        HeatingDef(),
+        new[] { FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }
+      ),
       // A sealed retort: marking a flue would hand it a draught it must not have.
       "cokeoven" => (CokeOvenDef(), new[] { FurnaceCellRoles.Firebox }),
       // The only drawing in the mod that marks a damper, and the fire and the work are one cell.
       "crucible" => (
         CrucibleDef(),
-        new[] { FurnaceCellRoles.Damper, FurnaceCellRoles.Firebox, FurnaceCellRoles.Flue }
+        new[]
+        {
+          FurnaceCellRoles.Damper,
+          FurnaceCellRoles.Firebox,
+          FurnaceCellRoles.Flue,
+        }
       ),
       _ => throw new KeyNotFoundException(furnace),
     };

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;

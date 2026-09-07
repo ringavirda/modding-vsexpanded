@@ -20,7 +20,8 @@ public static class RepoPaths {
   // domain, plus whatever overlay the manifest states (the shared game-lang overlay lives inside
   // iiex's asset tree, but is not iiex's own domain). Built once from RepoManifest, which exmod.json
   // does not change mid-process.
-  private static readonly Dictionary<string, string> DomainToMod = BuildDomainToMod();
+  private static readonly Dictionary<string, string> DomainToMod =
+    BuildDomainToMod();
 
   private static Dictionary<string, string> BuildDomainToMod() {
     var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -45,7 +46,9 @@ public static class RepoPaths {
   public static string Mod(string id) {
     if (RepoManifest.Mods.TryGetValue(id, out string? modPath))
       return modPath;
-    if (RepoManifest.Samples.TryGetValue(id, out RepoManifest.SampleEntry sample))
+    if (
+      RepoManifest.Samples.TryGetValue(id, out RepoManifest.SampleEntry sample)
+    )
       return sample.Path;
     return Path.Combine(Root, "mods", id);
   }

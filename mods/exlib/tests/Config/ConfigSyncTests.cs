@@ -136,8 +136,14 @@ public class ConfigSyncTests {
 
   [Fact]
   public void PlayerJoin_sends_one_packet_per_registered_section() {
-    var storeA = new ExConfigRegister<FakeConfig>("fake.json", "synctest.join.a");
-    var storeB = new ExConfigRegister<FakeConfig>("fake.json", "synctest.join.b");
+    var storeA = new ExConfigRegister<FakeConfig>(
+      "fake.json",
+      "synctest.join.a"
+    );
+    var storeB = new ExConfigRegister<FakeConfig>(
+      "fake.json",
+      "synctest.join.b"
+    );
     ExConfigProfiles.Register(storeA);
     ExConfigProfiles.Register(storeB);
 

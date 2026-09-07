@@ -16,19 +16,22 @@ namespace ExpandedLib.Tests;
 /// <c>Behaviors</c> against the same tree - so a host and its behaviour share one key space.
 /// </summary>
 public class ExBlockEntityBehaviorTests {
-  private sealed class AttributedBehavior(BlockEntity be) : ExBlockEntityBehavior(be) {
+  private sealed class AttributedBehavior(BlockEntity be)
+    : ExBlockEntityBehavior(be) {
     [Persist("attrValue")]
     public int Value;
   }
 
-  private sealed class DeclaredBehavior(BlockEntity be) : ExBlockEntityBehavior(be) {
+  private sealed class DeclaredBehavior(BlockEntity be)
+    : ExBlockEntityBehavior(be) {
     public float Level;
 
     protected override void DeclareState(ExBlockState state) =>
       state.Float("level", () => Level, v => Level = v);
   }
 
-  private sealed class DuplicateKeyBehavior(BlockEntity be) : ExBlockEntityBehavior(be) {
+  private sealed class DuplicateKeyBehavior(BlockEntity be)
+    : ExBlockEntityBehavior(be) {
     [Persist("shared")]
     public int A;
 
@@ -106,8 +109,8 @@ public class ExBlockEntityBehaviorTests {
     var behavior = new DuplicateKeyBehavior(host);
     host.Behaviors.Add(behavior);
 
-    Assert.Throws<InvalidOperationException>(
-      () => host.ToTreeAttributes(new TreeAttribute())
+    Assert.Throws<InvalidOperationException>(() =>
+      host.ToTreeAttributes(new TreeAttribute())
     );
   }
 }

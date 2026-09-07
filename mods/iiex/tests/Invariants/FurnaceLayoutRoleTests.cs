@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using Newtonsoft.Json.Linq;
@@ -20,8 +20,7 @@ namespace IronIndustryExpanded.Tests;
 /// specific furnace blocks by name, so a new furnace core is covered on arrival.
 /// </summary>
 public class FurnaceLayoutRoleTests {
-  private static readonly Assembly Mod =
-    typeof(FurnaceCellRoles).Assembly;
+  private static readonly Assembly Mod = typeof(FurnaceCellRoles).Assembly;
 
   [Fact]
   public void No_iiex_layout_marks_both_chargeable_and_firebox() {
@@ -51,10 +50,16 @@ public class FurnaceLayoutRoleTests {
   /// </summary>
   [Fact]
   public void Only_the_taps_are_single_cell_roles() {
-    var singleByName = new[] { nameof(FurnaceCellRoles.MetalTap), nameof(FurnaceCellRoles.SlagTap) };
-    foreach (FieldInfo field in typeof(FurnaceCellRoles).GetFields(
-      BindingFlags.Public | BindingFlags.Static
-    )) {
+    var singleByName = new[]
+    {
+      nameof(FurnaceCellRoles.MetalTap),
+      nameof(FurnaceCellRoles.SlagTap),
+    };
+    foreach (
+      FieldInfo field in typeof(FurnaceCellRoles).GetFields(
+        BindingFlags.Public | BindingFlags.Static
+      )
+    ) {
       if (field.FieldType != typeof(CellRole))
         continue;
       var role = (CellRole)field.GetValue(null)!;

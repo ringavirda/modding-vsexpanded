@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;

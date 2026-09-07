@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockStructures.Furnaces;

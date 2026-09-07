@@ -37,6 +37,7 @@ public class ExModSystemTests : IDisposable {
     map.Remove(typeof(ExModSystemTests).Assembly);
     ExDefinitions.Clear();
   }
+
   [BlockRegister]
   private sealed class TestBlock : Block { }
 
@@ -67,6 +68,7 @@ public class ExModSystemTests : IDisposable {
     public string Key => "exmodsystemtestpref";
     public IReadOnlyList<string> Options { get; } = ["a", "b"];
     public string Default => "a";
+
     public void Apply(string value) { }
   }
 
@@ -109,7 +111,10 @@ public class ExModSystemTests : IDisposable {
       Order.Add("OnAssetsFinalize");
   }
 
-  private static RecordingModSystem NewSystem(Mod mod, bool patchHarmony = false) {
+  private static RecordingModSystem NewSystem(
+    Mod mod,
+    bool patchHarmony = false
+  ) {
     var system = new RecordingModSystem(patchHarmony);
     ReflectionHelpers.SetProperty(system, nameof(ModSystem.Mod), mod);
     return system;
@@ -117,11 +122,19 @@ public class ExModSystemTests : IDisposable {
 
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
     // The module host logs through this when an entry point of a hosted module throws (see
     // Hosting_a_module_runs_it_through_the_mods_phases, which shares this test assembly's
     // "exlibtests" module with ExModuleHostTests' own throwing case).
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Logger), new RecordingLogger());
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Logger),
+      new RecordingLogger()
+    );
     return mod;
   }
 
@@ -178,7 +191,9 @@ public class ExModSystemTests : IDisposable {
 
     system.StartClientSide(world.ClientApi);
 
-    Assert.IsType<TestSystemPreference>(ExPreferences.Find("exmodsystemtestpref"));
+    Assert.IsType<TestSystemPreference>(
+      ExPreferences.Find("exmodsystemtestpref")
+    );
     Assert.Equal(["OnStartClientSide"], system.Order);
   }
 

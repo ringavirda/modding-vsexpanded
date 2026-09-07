@@ -63,7 +63,9 @@ public static class MoltenChisel {
     AssetLocation loc = MetalRegistry.SolidDropOf(metalCode);
     Item? item = world.GetItem(loc);
     if (item == null) {
-      if (!slagFallback || MetalRegistry.FallbackOf(metalCode) is not { } fallback)
+      if (
+        !slagFallback || MetalRegistry.FallbackOf(metalCode) is not { } fallback
+      )
         return null;
       Item? slag = world.GetItem(fallback);
       return slag != null ? new ItemStack(slag, count) : null;

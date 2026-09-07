@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -353,7 +353,12 @@ public sealed class MultiblockLayoutBuilder {
     (int X, int Y, int Z)? anchor = null;
 
     if (_layers.Count > 0) {
-      var grid = new CellGrid(GridPlane.Horizontal, _originA, _originB, options);
+      var grid = new CellGrid(
+        GridPlane.Horizontal,
+        _originA,
+        _originB,
+        options
+      );
       foreach ((int y, string g) in _layers)
         grid.Add(y, g);
       cells.AddRange(grid.Cells);

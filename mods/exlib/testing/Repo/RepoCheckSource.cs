@@ -73,7 +73,9 @@ public sealed class RepoCheckSource : ICheckSource {
     if (!Directory.Exists(langDir))
       yield break;
 
-    foreach (string file in Directory.EnumerateFiles(langDir, "*.json").OrderBy(f => f))
+    foreach (
+      string file in Directory.EnumerateFiles(langDir, "*.json").OrderBy(f => f)
+    )
       yield return (
         Path.GetFileNameWithoutExtension(file),
         JObject.Parse(File.ReadAllText(file))
@@ -87,14 +89,17 @@ public sealed class RepoCheckSource : ICheckSource {
   // Resolves each domain to the assembly declaring it, via [assembly: ExDomain(domain)] on whichever
   // already-loaded assembly carries it - normally true simply by referencing that mod's project from
   // the test project this source runs in.
-  private static Dictionary<string, Assembly> ResolveAssemblies(string[] domains) {
+  private static Dictionary<string, Assembly> ResolveAssemblies(
+    string[] domains
+  ) {
     Assembly[] loaded = AppDomain.CurrentDomain.GetAssemblies();
     var map = new Dictionary<string, Assembly>(StringComparer.Ordinal);
     foreach (string domain in domains) {
       Assembly? found = loaded.FirstOrDefault(a =>
         a.GetCustomAttribute<ExDomainAttribute>()?.Domain == domain
       );
-      map[domain] = found
+      map[domain] =
+        found
         ?? throw new InvalidOperationException(
           $"No loaded assembly declares [assembly: ExDomain(\"{domain}\")] - reference that mod's "
             + "project from the test project constructing this RepoCheckSource."

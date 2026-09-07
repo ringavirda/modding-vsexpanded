@@ -1,9 +1,9 @@
 using System;
 using System.Text;
-using ExpandedLib.Networks;
 using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;

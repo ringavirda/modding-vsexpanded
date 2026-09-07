@@ -14,14 +14,18 @@ public class ResourceInvariantTests {
     public int Total = 5;
   }
 
-  private static readonly System.Collections.Generic.IReadOnlyList<Action<Pool>> CorrectMoves =
+  private static readonly System.Collections.Generic.IReadOnlyList<
+    Action<Pool>
+  > CorrectMoves =
   [
     p => p.Total += 10,
     p => p.Total = Math.Max(0, p.Total - 10),
-    p => { } // no-op
+    p => { }, // no-op
   ];
 
-  private static readonly System.Collections.Generic.IReadOnlyList<Action<Pool>> BuggyMoves =
+  private static readonly System.Collections.Generic.IReadOnlyList<
+    Action<Pool>
+  > BuggyMoves =
   [
     p => p.Total += 10,
     p => p.Total -= 10, // the bug: no floor, so the total can go negative
@@ -47,8 +51,8 @@ public class ResourceInvariantTests {
       p => Assert.True(p.Total >= 0, "total went negative")
     );
 
-    var ex = Assert.Throws<InvalidOperationException>(
-      () => invariant.Run(sequences: 20, movesPerSequence: 30, seed: 7)
+    var ex = Assert.Throws<InvalidOperationException>(() =>
+      invariant.Run(sequences: 20, movesPerSequence: 30, seed: 7)
     );
 
     Assert.Contains("sequence", ex.Message);

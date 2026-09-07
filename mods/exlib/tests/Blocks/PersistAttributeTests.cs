@@ -154,7 +154,10 @@ public class PersistAttributeTests {
 
     Assert.True((bool)ReflectionHelpers.GetField(target, "_flag")!);
     Assert.Equal(42, (int)ReflectionHelpers.GetField(target, "_count")!);
-    Assert.Equal(9_000_000_000L, (long)ReflectionHelpers.GetField(target, "_ticks")!);
+    Assert.Equal(
+      9_000_000_000L,
+      (long)ReflectionHelpers.GetField(target, "_ticks")!
+    );
     Assert.Equal(1234.5f, (float)ReflectionHelpers.GetField(target, "_temp")!);
     Assert.Equal(
       0.1234567890123,
@@ -162,7 +165,10 @@ public class PersistAttributeTests {
       12
     );
     Assert.Equal("hot", (string?)ReflectionHelpers.GetField(target, "_label"));
-    Assert.Equal(Mode.Running, (Mode)ReflectionHelpers.GetField(target, "_mode")!);
+    Assert.Equal(
+      Mode.Running,
+      (Mode)ReflectionHelpers.GetField(target, "_mode")!
+    );
     Assert.Equal(
       new BlockPos(3, -4, 5),
       (BlockPos?)ReflectionHelpers.GetField(target, "_anchor")
@@ -170,9 +176,13 @@ public class PersistAttributeTests {
     Assert.Equal(
       item.Code,
       ((ItemStack)ReflectionHelpers.GetField(target, "_stack")!)
-        .Collectible.Code
+        .Collectible
+        .Code
     );
-    Assert.Equal(77, ((Wrapper)ReflectionHelpers.GetField(target, "_wrapper")!).Value);
+    Assert.Equal(
+      77,
+      ((Wrapper)ReflectionHelpers.GetField(target, "_wrapper")!).Value
+    );
   }
 
   [Fact]
@@ -305,8 +315,8 @@ public class PersistAttributeTests {
     var source = new BadEntity();
     Place(source);
 
-    NotSupportedException ex = Assert.Throws<NotSupportedException>(
-      () => source.ToTreeAttributes(new TreeAttribute())
+    NotSupportedException ex = Assert.Throws<NotSupportedException>(() =>
+      source.ToTreeAttributes(new TreeAttribute())
     );
 
     Assert.Contains("_thing", ex.Message, StringComparison.Ordinal);

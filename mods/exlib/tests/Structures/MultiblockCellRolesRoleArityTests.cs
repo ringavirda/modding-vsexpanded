@@ -17,7 +17,16 @@ public class MultiblockCellRolesRoleArityTests {
     // single-cell above, at the point CellRole.Of mints them.
     Assert.Equal(
       new[] { MetalTap, SlagTap },
-      new CellRole[] { Chargeable, Firebox, Tuyere, MetalTap, SlagTap, Flue, Damper }
+      new CellRole[]
+      {
+        Chargeable,
+        Firebox,
+        Tuyere,
+        MetalTap,
+        SlagTap,
+        Flue,
+        Damper,
+      }
         .Where(CellRoles.IsSingleCell)
         .ToArray()
     );

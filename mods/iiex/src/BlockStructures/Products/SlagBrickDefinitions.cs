@@ -107,7 +107,11 @@ public class SlagBrickDefinitions : IExBlockDefProvider {
         new { all = false, down = true }
       )
       .SideAo(true)
-      .RootKeyByType("emitSideAoByType", "*-up-*", new { all = false, up = true })
+      .RootKeyByType(
+        "emitSideAoByType",
+        "*-up-*",
+        new { all = false, up = true }
+      )
       .RootKeyByType(
         "emitSideAoByType",
         "*-down-*",

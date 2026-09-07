@@ -13,8 +13,9 @@ namespace ExpandedLib.Testing;
 /// a scene is meant to read at a glance). <see cref="SceneDiagram"/> is the public surface this backs.
 /// </summary>
 public sealed class SceneGrid {
-  private readonly SymbolLegend<Action<BlockPos>> _legend =
-    new(DuplicatePolicy.Replace);
+  private readonly SymbolLegend<Action<BlockPos>> _legend = new(
+    DuplicatePolicy.Replace
+  );
 
   /// <summary>Maps a glyph to the action that places it at a resolved world position.</summary>
   public SceneGrid On(char glyph, Action<BlockPos> place) {
@@ -28,7 +29,12 @@ public sealed class SceneGrid {
   /// (unmapped, or a gap between cells) is skipped, so labels and gaps cost nothing. Leading and
   /// trailing blank lines are trimmed.
   /// </summary>
-  public SceneGrid Layer(string ascii, int y = 0, int originX = 0, int originZ = 0) {
+  public SceneGrid Layer(
+    string ascii,
+    int y = 0,
+    int originX = 0,
+    int originZ = 0
+  ) {
     // A fresh grid per call: each Layer may declare its own origin, unlike a code-first layout's one
     // Origin for the whole drawing, so the grids cannot be accumulated across calls.
     var grid = new CellGrid(
@@ -50,12 +56,18 @@ public sealed class SceneGrid {
   /// multi-line X/Z plane in the same format as <see cref="Layer"/>. All layers share the
   /// (<paramref name="originX"/>, <paramref name="originZ"/>) origin so the columns line up vertically.
   /// </summary>
-  public SceneGrid Stack(int baseY, int originX, int originZ, params string[] layers) {
+  public SceneGrid Stack(
+    int baseY,
+    int originX,
+    int originZ,
+    params string[] layers
+  ) {
     for (int i = 0; i < layers.Length; i++)
       Layer(layers[i], baseY + i, originX, originZ);
     return this;
   }
 
   /// <summary>Stacks layers from <paramref name="baseY"/> upward at origin (0,0); see the fuller overload.</summary>
-  public SceneGrid Stack(int baseY, params string[] layers) => Stack(baseY, 0, 0, layers);
+  public SceneGrid Stack(int baseY, params string[] layers) =>
+    Stack(baseY, 0, 0, layers);
 }

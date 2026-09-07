@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;

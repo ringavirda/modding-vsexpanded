@@ -49,7 +49,9 @@ public sealed partial class TestWorld {
 
     string modInfoPath = Path.Combine(modPath, "modinfo.json");
     if (!File.Exists(modInfoPath))
-      throw new InvalidOperationException($"No modinfo.json under '{modPath}'.");
+      throw new InvalidOperationException(
+        $"No modinfo.json under '{modPath}'."
+      );
     var modInfoJson = JObject.Parse(File.ReadAllText(modInfoPath));
     string modId =
       (string?)modInfoJson["modid"]
@@ -72,7 +74,10 @@ public sealed partial class TestWorld {
     );
     Lang.Load(Log, mgr, "en");
 
-    ICoreServerAPI loaderApi = BuildLoaderApi(mgr, out ClassRegistry rawClassRegistry);
+    ICoreServerAPI loaderApi = BuildLoaderApi(
+      mgr,
+      out ClassRegistry rawClassRegistry
+    );
 
     Mods.Add(modId, version);
     Mod mod = Mods.GetMod(modId)!;
@@ -97,14 +102,18 @@ public sealed partial class TestWorld {
     foreach (
       Block block in loaderApi
         .ReceivedCalls()
-        .Where(c => c.GetMethodInfo().Name == nameof(ICoreServerAPI.RegisterBlock))
+        .Where(c =>
+          c.GetMethodInfo().Name == nameof(ICoreServerAPI.RegisterBlock)
+        )
         .Select(c => (Block)c.GetArguments()[0]!)
     )
       Register(block);
     foreach (
       Item item in loaderApi
         .ReceivedCalls()
-        .Where(c => c.GetMethodInfo().Name == nameof(ICoreServerAPI.RegisterItem))
+        .Where(c =>
+          c.GetMethodInfo().Name == nameof(ICoreServerAPI.RegisterItem)
+        )
         .Select(c => (Item)c.GetArguments()[0]!)
     )
       Register(item);
@@ -116,7 +125,11 @@ public sealed partial class TestWorld {
   /// into <paramref name="mgr"/>'s live asset dictionary. <c>AssetManager.AddPathOrigin</c> alone
   /// only appends the origin to a list the engine's object loader never re-scans (its <c>GetMany</c>
   /// reads the already-populated dictionary) - assets must be added directly.</summary>
-  private static void MirrorAssets(AssetManager mgr, string fullPath, string domain) {
+  private static void MirrorAssets(
+    AssetManager mgr,
+    string fullPath,
+    string domain
+  ) {
     if (!Directory.Exists(fullPath))
       return;
     var origin = new PathOrigin(domain, fullPath);
@@ -125,7 +138,8 @@ public sealed partial class TestWorld {
         mgr.Add(a.Location, a);
   }
 
-  private static readonly AssetCategory[] KnownCategories = [
+  private static readonly AssetCategory[] KnownCategories =
+  [
     AssetCategory.blocktypes,
     AssetCategory.itemtypes,
     AssetCategory.entities,
@@ -187,20 +201,38 @@ public sealed partial class TestWorld {
     coreApi.ClassRegistry.Returns(new ClassRegistryAPI(World, captured));
     coreApi
       .When(x => x.RegisterBlockClass(Arg.Any<string>(), Arg.Any<Type>()))
-      .Do(ci => captured.RegisterBlockClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1)));
+      .Do(ci =>
+        captured.RegisterBlockClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1))
+      );
     coreApi
       .When(x => x.RegisterBlockEntityClass(Arg.Any<string>(), Arg.Any<Type>()))
-      .Do(ci => captured.RegisterBlockEntityType(ci.ArgAt<string>(0), ci.ArgAt<Type>(1)));
+      .Do(ci =>
+        captured.RegisterBlockEntityType(ci.ArgAt<string>(0), ci.ArgAt<Type>(1))
+      );
     coreApi
       .When(x => x.RegisterItemClass(Arg.Any<string>(), Arg.Any<Type>()))
-      .Do(ci => captured.RegisterItemClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1)));
-    coreApi
-      .When(x => x.RegisterBlockBehaviorClass(Arg.Any<string>(), Arg.Any<Type>()))
-      .Do(ci => captured.RegisterBlockBehaviorClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1)));
-    coreApi
-      .When(x => x.RegisterBlockEntityBehaviorClass(Arg.Any<string>(), Arg.Any<Type>()))
       .Do(ci =>
-        captured.RegisterBlockEntityBehaviorClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1))
+        captured.RegisterItemClass(ci.ArgAt<string>(0), ci.ArgAt<Type>(1))
+      );
+    coreApi
+      .When(x =>
+        x.RegisterBlockBehaviorClass(Arg.Any<string>(), Arg.Any<Type>())
+      )
+      .Do(ci =>
+        captured.RegisterBlockBehaviorClass(
+          ci.ArgAt<string>(0),
+          ci.ArgAt<Type>(1)
+        )
+      );
+    coreApi
+      .When(x =>
+        x.RegisterBlockEntityBehaviorClass(Arg.Any<string>(), Arg.Any<Type>())
+      )
+      .Do(ci =>
+        captured.RegisterBlockEntityBehaviorClass(
+          ci.ArgAt<string>(0),
+          ci.ArgAt<Type>(1)
+        )
       );
 
     // ICoreAPI.CollectibleTagRegistry/EntityTagRegistry (and the loader's PreloadTags that needs
@@ -209,7 +241,9 @@ public sealed partial class TestWorld {
     coreApi.CollectibleTagRegistry.Returns(
       new ConcurrentTagRegistry(Log, "collectible")
     );
-    coreApi.EntityTagRegistry.Returns(new ConcurrentTagRegistryFast(Log, "entity"));
+    coreApi.EntityTagRegistry.Returns(
+      new ConcurrentTagRegistryFast(Log, "entity")
+    );
 #endif
 
     var serverApi = Substitute.For<IServerAPI>();

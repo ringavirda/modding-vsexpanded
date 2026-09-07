@@ -1,4 +1,3 @@
-using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
 using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkPipe;
@@ -8,6 +7,7 @@ using IronIndustryExpanded.BlockStructures.Boiler.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Boiler.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using BoilerState = IronIndustryExpanded.BlockStructures.Boiler.BlockEntityBoiler.BoilerState;
 
 namespace IronIndustryExpanded.Tests;
 

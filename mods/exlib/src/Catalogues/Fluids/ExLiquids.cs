@@ -77,7 +77,8 @@ public static class ExLiquids {
   /// <summary>Obsolete name for <see cref="LiquidCatalogueLoader.Load(ICoreAPI)"/>: a registry does
   /// not read assets under the naming law, a loader does.</summary>
   [Obsolete("Use LiquidCatalogueLoader.Load(api).")]
-  public static CatalogueLoadReport Load(ICoreAPI api) => LiquidCatalogueLoader.Load(api);
+  public static CatalogueLoadReport Load(ICoreAPI api) =>
+    LiquidCatalogueLoader.Load(api);
 
   // The taxonomy over the current registry contents. All comparisons are code-based and route through
   // the registry, so a case mismatch or unknown code degrades to gas / not-liquid rather than throwing.

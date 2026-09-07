@@ -16,7 +16,12 @@ public class CrucibleSteelMetalTests {
   private static MetalDef Def(string code) {
     MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
-        Path.Combine(RepoPaths.Assets("iiex"), "config", "metals", $"{code}.json")
+        Path.Combine(
+          RepoPaths.Assets("iiex"),
+          "config",
+          "metals",
+          $"{code}.json"
+        )
       )
     );
     Assert.NotNull(def);
@@ -92,7 +97,12 @@ public class CrucibleSteelMetalTests {
     MetalToolSpec tools = Def("cruciblesteel").Tools!;
     MetalDef bessemer = JsonConvert.DeserializeObject<MetalDef>(
       File.ReadAllText(
-        Path.Combine(RepoPaths.Assets("siex"), "config", "metals", "bessemersteel.json")
+        Path.Combine(
+          RepoPaths.Assets("siex"),
+          "config",
+          "metals",
+          "bessemersteel.json"
+        )
       )
     )!;
 

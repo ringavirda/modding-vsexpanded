@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Definitions;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Definitions;
 
 namespace IronIndustryExpanded.BlockStructures.Forming;
 

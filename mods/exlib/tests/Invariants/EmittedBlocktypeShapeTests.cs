@@ -191,7 +191,9 @@ public class EmittedBlocktypeShapeTests {
   private static List<string> GoldenBlocktypes() {
     string root = RepoRoot();
     var files = new List<string>();
-    foreach (string mod in Directory.EnumerateDirectories(Path.Combine(root, "mods"))) {
+    foreach (
+      string mod in Directory.EnumerateDirectories(Path.Combine(root, "mods"))
+    ) {
       string tests = Path.Combine(mod, "tests");
       if (!Directory.Exists(tests))
         continue;

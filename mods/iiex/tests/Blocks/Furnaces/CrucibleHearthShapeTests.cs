@@ -22,8 +22,7 @@ public class CrucibleHearthShapeTests {
     "cruciblehearth.json"
   );
 
-  private static JObject Shape() =>
-    JObject.Parse(File.ReadAllText(Path));
+  private static JObject Shape() => JObject.Parse(File.ReadAllText(Path));
 
   /// <summary>Every element in the tree, as <c>Parent/Child</c> for a nested one.</summary>
   private static IEnumerable<string> Names(JToken? elements, string prefix = "") {

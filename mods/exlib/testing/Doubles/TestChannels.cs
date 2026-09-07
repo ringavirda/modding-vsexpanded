@@ -108,17 +108,25 @@ public sealed class TestChannels {
           hub.DeliverToClient(message);
     }
 
-    public void SendPacket<T>(T message, byte[] data, params IServerPlayer[] players) =>
-      SendPacket(message, players);
+    public void SendPacket<T>(
+      T message,
+      byte[] data,
+      params IServerPlayer[] players
+    ) => SendPacket(message, players);
 
-    public void BroadcastPacket<T>(T message, params IServerPlayer[] exceptPlayers) {
+    public void BroadcastPacket<T>(
+      T message,
+      params IServerPlayer[] exceptPlayers
+    ) {
       if (Array.IndexOf(exceptPlayers, hub.Sender) < 0)
         hub.DeliverToClient(message);
     }
 
-    INetworkChannel INetworkChannel.RegisterMessageType(Type type) => RegisterMessageType(type);
+    INetworkChannel INetworkChannel.RegisterMessageType(Type type) =>
+      RegisterMessageType(type);
 
-    INetworkChannel INetworkChannel.RegisterMessageType<T>() => RegisterMessageType<T>();
+    INetworkChannel INetworkChannel.RegisterMessageType<T>() =>
+      RegisterMessageType<T>();
   }
 
   /// <summary>The client side of the pair: sends land in <see cref="SentToServer"/> and dispatch to a
@@ -140,15 +148,19 @@ public sealed class TestChannels {
       return this;
     }
 
-    public IClientNetworkChannel SetMessageHandler<T>(NetworkServerMessageHandler<T> handler) {
+    public IClientNetworkChannel SetMessageHandler<T>(
+      NetworkServerMessageHandler<T> handler
+    ) {
       hub._clientHandlers[typeof(T)] = handler;
       return this;
     }
 
     public void SendPacket<T>(T message) => hub.DeliverToServer(message);
 
-    INetworkChannel INetworkChannel.RegisterMessageType(Type type) => RegisterMessageType(type);
+    INetworkChannel INetworkChannel.RegisterMessageType(Type type) =>
+      RegisterMessageType(type);
 
-    INetworkChannel INetworkChannel.RegisterMessageType<T>() => RegisterMessageType<T>();
+    INetworkChannel INetworkChannel.RegisterMessageType<T>() =>
+      RegisterMessageType<T>();
   }
 }

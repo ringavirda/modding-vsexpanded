@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ExpandedLib.Definitions;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
@@ -137,7 +137,11 @@ public class ShippedCropTableTests {
   #endregion
 
   private static IEnumerable<ProcessRoute> ShippedRoutes() {
-    string dir = Path.Combine(RepoPaths.Assets(Domain), "config", "processroutes");
+    string dir = Path.Combine(
+      RepoPaths.Assets(Domain),
+      "config",
+      "processroutes"
+    );
     foreach (string file in Directory.EnumerateFiles(dir, "*.json")) {
       Assert.True(
         ProcessRoute.TryParse(

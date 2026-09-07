@@ -1,12 +1,12 @@
 using System.Text;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.MechanicalPower;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;

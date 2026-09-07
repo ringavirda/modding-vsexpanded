@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Products.BlockEntities;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;

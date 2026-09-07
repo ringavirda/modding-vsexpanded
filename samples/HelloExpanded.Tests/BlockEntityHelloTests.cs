@@ -12,7 +12,11 @@ public class BlockEntityHelloTests {
   private static (TestWorld world, BlockEntityHello be) PlaceHello() {
     var world = new TestWorld();
     var pos = new BlockPos(0, 0, 0);
-    Block block = TestBlocks.Configure(new BlockHello(), "helloexpanded:hello", 1);
+    Block block = TestBlocks.Configure(
+      new BlockHello(),
+      "helloexpanded:hello",
+      1
+    );
     var be = new BlockEntityHello();
     world.Place(pos, block, be);
     world.Initialize(be);

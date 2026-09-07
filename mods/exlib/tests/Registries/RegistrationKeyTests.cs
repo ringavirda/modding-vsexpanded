@@ -5,11 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ExpandedLib.Definitions;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Industry.Pipes;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using NSubstitute;
 using Vintagestory.API.Common;
@@ -113,11 +113,17 @@ public class RegistrationKeyTests : IDisposable {
   public void RegisterAll_keys_under_the_assemblys_declared_domain_not_the_mod() {
     var world = new TestWorld();
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = "notexlib" });
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = "notexlib" }
+    );
 
     EntityRegistry.RegisterAll(world.Api, mod, typeof(IndustryModule).Assembly);
 
-    world.Api.Received().RegisterBlockClass("exlib.BlockPipe", typeof(BlockPipe));
+    world
+      .Api.Received()
+      .RegisterBlockClass("exlib.BlockPipe", typeof(BlockPipe));
   }
 
   [Fact]

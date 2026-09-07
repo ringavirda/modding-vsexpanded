@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Industry.Materials;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Materials;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;

@@ -28,7 +28,9 @@ public static class DefinitionCatalogueCheck {
     foreach (ExBlockDef def in source.BlockDefinitions(domain)) {
       bool resolves = Patterns(def)
         .Select(p => new AssetLocation(p))
-        .Any(pattern => registered.Any(code => WildcardUtil.Match(pattern, code)));
+        .Any(pattern =>
+          registered.Any(code => WildcardUtil.Match(pattern, code))
+        );
 
       if (!resolves)
         errors.Add(

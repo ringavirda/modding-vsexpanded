@@ -1,6 +1,6 @@
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -123,7 +123,10 @@ public class ExBlockDefTests {
   [Fact]
   public void MineTool_is_a_no_op_since_the_game_never_reads_the_key() {
 #pragma warning disable CS0618 // exercising the obsolete no-op on purpose
-    JObject json = ExBlockDef.Create("d", "c").MineTool(EnumTool.Pickaxe).ToJson();
+    JObject json = ExBlockDef
+      .Create("d", "c")
+      .MineTool(EnumTool.Pickaxe)
+      .ToJson();
 #pragma warning restore CS0618
     Assert.Null(json["mineTool"]);
   }

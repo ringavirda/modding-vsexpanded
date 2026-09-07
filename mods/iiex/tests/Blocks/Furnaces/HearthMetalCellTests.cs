@@ -1,7 +1,7 @@
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
@@ -45,7 +45,9 @@ public class HearthMetalCellTests {
   private static (TestWorld World, BlockEntityBlastFurnaceCold Furnace) Rig() {
     var world = new TestWorld();
     world.RegisterItem(
-      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib
+        .Industry.Metals.MetalRegistry.MoltenItemOf("pigiron")
+        .ToString(),
       1500f
     );
     world.RegisterItem("iiex:slag", 1500f);
@@ -53,7 +55,8 @@ public class HearthMetalCellTests {
     // The chisel recovery resolves through MetalRegistry.SolidDropOf; with no bit item registered it
     // yields null and the chisel case reads as "nothing was frozen" rather than "nothing resolved".
     world.RegisterItem(
-      ExpandedLib.Industry.Metals.MetalRegistry.SolidDropOf(
+      ExpandedLib
+        .Industry.Metals.MetalRegistry.SolidDropOf(
           ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron")
         )
         .ToString()
@@ -240,7 +243,9 @@ public class HearthMetalCellTests {
   public void A_hearth_block_with_no_furnace_above_it_still_cools_and_latches() {
     var world = new TestWorld();
     world.RegisterItem(
-      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib
+        .Industry.Metals.MetalRegistry.MoltenItemOf("pigiron")
+        .ToString(),
       1500f
     );
     Block hearth = TestBlocks.Configure(new Block(), HearthCode, 951);
@@ -251,7 +256,9 @@ public class HearthMetalCellTests {
     BEBehaviorMoltenCell cell = be.MoltenCell(IronCellKey)!;
     cell.PushMetalRaw(
       100,
-      ExpandedLib.Industry.Metals.MetalRegistry.MoltenItemOf("pigiron").ToString(),
+      ExpandedLib
+        .Industry.Metals.MetalRegistry.MoltenItemOf("pigiron")
+        .ToString(),
       1500f,
       world.World
     );

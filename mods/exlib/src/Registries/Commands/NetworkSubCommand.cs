@@ -1,6 +1,6 @@
+using System.ComponentModel;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries;
-using System.ComponentModel;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -40,12 +40,16 @@ public sealed class NetworkSubCommand : IExSubCommand {
   /// <see cref="RegistrySubCommand{T}.Dispatch"/>. Internal rather than private so a test can drive
   /// them without building a fake <see cref="Vintagestory.API.Common.TextCommandCallingArgs"/>.
   /// </summary>
-  internal static TextCommandResult DispatchHi(NetworkHighlightModSystem highlight) {
+  internal static TextCommandResult DispatchHi(
+    NetworkHighlightModSystem highlight
+  ) {
     highlight.SetEnabled(true);
     return TextCommandResult.Success(Lang.Get(ExlibLang.NetworkHiOn));
   }
 
-  internal static TextCommandResult DispatchUnhi(NetworkHighlightModSystem highlight) {
+  internal static TextCommandResult DispatchUnhi(
+    NetworkHighlightModSystem highlight
+  ) {
     highlight.SetEnabled(false);
     return TextCommandResult.Success(Lang.Get(ExlibLang.NetworkHiOff));
   }

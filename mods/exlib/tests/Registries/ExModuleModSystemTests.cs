@@ -19,7 +19,11 @@ namespace ExpandedLib.Tests;
 public class ExModuleModSystemTests {
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
     return mod;
   }
 
@@ -56,7 +60,8 @@ public class ExModuleModSystemTests {
       "_qualifiers",
       BindingFlags.NonPublic | BindingFlags.Static
     )!;
-    var qualifiers = (List<(string Group, string LangPrefix)>)field.GetValue(null)!;
+    var qualifiers =
+      (List<(string Group, string LangPrefix)>)field.GetValue(null)!;
     Assert.Contains(qualifiers, q => q.Group == "refractory");
   }
 }

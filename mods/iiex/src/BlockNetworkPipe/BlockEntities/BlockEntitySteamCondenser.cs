@@ -1,11 +1,11 @@
 using System;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Machines;
 using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockNetworkPipe.Blocks;

@@ -42,4 +42,7 @@ public sealed class ExModuleInfo {
 /// <param name="Modules">The host's modules, dependency order.</param>
 /// <param name="Errors">One line per module (or group of modules) excluded, or per duplicate id
 /// found. Empty when nothing was excluded.</param>
-public sealed record ExModuleSet(IReadOnlyList<ExModuleInfo> Modules, IReadOnlyList<string> Errors);
+public sealed record ExModuleSet(
+  IReadOnlyList<ExModuleInfo> Modules,
+  IReadOnlyList<string> Errors
+);

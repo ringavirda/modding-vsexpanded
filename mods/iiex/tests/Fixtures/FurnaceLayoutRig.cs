@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -653,14 +653,32 @@ public static class FurnaceLayoutRig {
     // Every tuyere cell holds the one wildcarded code, and the drawing states which way each must open.
     // The face set is the caller's, because the three shaft furnaces do not agree on it: the cold and hot
     // furnaces are blown from both walls, the cupola only from the north.
-    AssertRoleGlyphs(def, layout, FurnaceCellRoles.Tuyere, TuyereGlyph, "tuyere");
+    AssertRoleGlyphs(
+      def,
+      layout,
+      FurnaceCellRoles.Tuyere,
+      TuyereGlyph,
+      "tuyere"
+    );
     AssertConnectorFaces(def, FurnaceCellRoles.Tuyere, tuyereFaces);
 
     // Both drains, each its own [SingleCell] role on its own glyph and block - `T` the iron notch, `S` the
     // cinder notch - so a drawing that swaps the two fails here. The pair is the caller's because the
     // cupola drains the opposite hand to the blast furnaces.
-    AssertRoleGlyphs(def, layout, FurnaceCellRoles.MetalTap, taps.Iron, "metal tap");
-    AssertRoleGlyphs(def, layout, FurnaceCellRoles.SlagTap, taps.Slag, "slag tap");
+    AssertRoleGlyphs(
+      def,
+      layout,
+      FurnaceCellRoles.MetalTap,
+      taps.Iron,
+      "metal tap"
+    );
+    AssertRoleGlyphs(
+      def,
+      layout,
+      FurnaceCellRoles.SlagTap,
+      taps.Slag,
+      "slag tap"
+    );
 
     // The shaft centre stands in the burden column proper, a course above the crucible.
     AssertGlyph(layout, Cell(be, "ShaftCentre"), ShaftGlyph, "shaft centre");

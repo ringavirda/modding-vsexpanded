@@ -29,7 +29,8 @@ public static class ReleasedHistory {
     IReadOnlyList<ReleasedCodes.ShippedEntityClass> entityClasses,
     IReadOnlyDictionary<string, string> versions,
     IReadOnlyList<string> debt
-  ) => ByMod[mod] = new ReleasedModHistory(shipped, entityClasses, versions, debt);
+  ) =>
+    ByMod[mod] = new ReleasedModHistory(shipped, entityClasses, versions, debt);
 
   /// <summary><paramref name="mod"/>'s registered history, or null if it has never shipped.</summary>
   public static ReleasedModHistory? For(string mod) =>
@@ -45,8 +46,11 @@ public static class ReleasedHistory {
 
   /// <summary>The highest published version per modid, across every registered mod.</summary>
   public static IReadOnlyDictionary<string, string> AllVersions =>
-    ByMod.Values.SelectMany(h => h.Versions).ToDictionary(kv => kv.Key, kv => kv.Value);
+    ByMod
+      .Values.SelectMany(h => h.Versions)
+      .ToDictionary(kv => kv.Key, kv => kv.Value);
 
   /// <summary>Every recorded migration-debt code across every registered mod.</summary>
-  public static IEnumerable<string> AllDebt => ByMod.Values.SelectMany(h => h.Debt);
+  public static IEnumerable<string> AllDebt =>
+    ByMod.Values.SelectMany(h => h.Debt);
 }

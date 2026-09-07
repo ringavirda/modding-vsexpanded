@@ -1,8 +1,8 @@
 using System.Linq;
-using ExpandedLib.Machines;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.Heat;
+using ExpandedLib.Machines;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;

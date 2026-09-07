@@ -47,7 +47,9 @@ public class HandbookUnitPatchConvertTextTests {
   public void A_single_value_converts_litres_to_gallons() {
     ExMeasure.System = MeasurementSystem.Imperial;
     try {
-      string result = ExMeasure.ConvertMetricText("Holds 30 exlib:unit-litres of water.");
+      string result = ExMeasure.ConvertMetricText(
+        "Holds 30 exlib:unit-litres of water."
+      );
 
       // 30 * 0.219969248 = 6.599... -> "6.6" at format "0.##"
       Assert.Contains("6.6 exlib:unit-gallons", result);
@@ -75,7 +77,9 @@ public class HandbookUnitPatchConvertTextTests {
     try {
       // "exlib:unit-litres" is a literal prefix of "exlib:unit-litres-per-second" under TestLang's
       // echo, the same collision "L" vs "L/s" is a stand-in for with the real symbols.
-      string result = ExMeasure.ConvertMetricText("8 exlib:unit-litres-per-second");
+      string result = ExMeasure.ConvertMetricText(
+        "8 exlib:unit-litres-per-second"
+      );
 
       Assert.Contains("exlib:unit-gallons-per-second", result);
       Assert.DoesNotContain("exlib:unit-gallons ", result);

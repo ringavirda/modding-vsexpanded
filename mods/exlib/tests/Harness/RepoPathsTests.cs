@@ -14,7 +14,13 @@ public class RepoPathsTests {
   public void Assets_of_an_unknown_domain_falls_back_to_a_same_named_mod_folder() {
     string path = RepoPaths.Assets("nosuchdomain");
     Assert.Equal(
-      Path.Combine(RepoPaths.Root, "mods", "nosuchdomain", "assets", "nosuchdomain"),
+      Path.Combine(
+        RepoPaths.Root,
+        "mods",
+        "nosuchdomain",
+        "assets",
+        "nosuchdomain"
+      ),
       path
     );
   }
@@ -24,7 +30,13 @@ public class RepoPathsTests {
     RepoPaths.Register("harnesstest-domain", "harnesstest-mod");
     string path = RepoPaths.Assets("harnesstest-domain");
     Assert.Equal(
-      Path.Combine(RepoPaths.Root, "mods", "harnesstest-mod", "assets", "harnesstest-domain"),
+      Path.Combine(
+        RepoPaths.Root,
+        "mods",
+        "harnesstest-mod",
+        "assets",
+        "harnesstest-domain"
+      ),
       path
     );
   }
@@ -35,7 +47,13 @@ public class RepoPathsTests {
     RepoPaths.Register("harnesstest-replace", "harnesstest-second");
     string path = RepoPaths.Assets("harnesstest-replace");
     Assert.Equal(
-      Path.Combine(RepoPaths.Root, "mods", "harnesstest-second", "assets", "harnesstest-replace"),
+      Path.Combine(
+        RepoPaths.Root,
+        "mods",
+        "harnesstest-second",
+        "assets",
+        "harnesstest-replace"
+      ),
       path
     );
   }

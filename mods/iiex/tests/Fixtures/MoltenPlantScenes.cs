@@ -5,8 +5,8 @@ using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
 using IronIndustryExpanded.BlockNetworkMolten.BlockEntities;
 using IronIndustryExpanded.BlockNetworkMolten.Blocks;
-using NSubstitute;
 using Newtonsoft.Json.Linq;
+using NSubstitute;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -119,12 +119,15 @@ internal sealed class CastingLine : MachineRig {
   /// </summary>
   public CastingLine Run(int ticks) {
     // molten network flow + cooling, then each fitting drains its own cell
-    RunLive(ticks, _ => {
-      if (Pedestal != null)
-        ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
-      if (Tap != null)
-        ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
-    });
+    RunLive(
+      ticks,
+      _ => {
+        if (Pedestal != null)
+          ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
+        if (Tap != null)
+          ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
+      }
+    );
     return this;
   }
 
@@ -276,10 +279,13 @@ internal sealed class CastingYard : MachineRig {
 
   /// <summary>Advances the yard: network flow, then each fitting drains its own cell.</summary>
   public CastingYard Run(int ticks) {
-    RunLive(ticks, _ => {
-      ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
-      ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
-    });
+    RunLive(
+      ticks,
+      _ => {
+        ReflectionHelpers.Invoke(Pedestal, "OnServerTick", 1f);
+        ReflectionHelpers.Invoke(Tap, "OnServerTick", 1f);
+      }
+    );
     return this;
   }
 

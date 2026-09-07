@@ -51,7 +51,12 @@ public class CastIronCatalogueTests {
     foreach (string metal in new[] { "castiron", "pigiron" }) {
       MetalDef? def = JsonConvert.DeserializeObject<MetalDef>(
         File.ReadAllText(
-          Path.Combine(RepoPaths.Assets("iiex"), "config", "metals", $"{metal}.json")
+          Path.Combine(
+            RepoPaths.Assets("iiex"),
+            "config",
+            "metals",
+            $"{metal}.json"
+          )
         )
       );
       Assert.NotNull(def);

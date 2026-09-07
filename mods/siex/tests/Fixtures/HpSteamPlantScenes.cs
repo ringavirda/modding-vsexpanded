@@ -6,12 +6,12 @@ using IronIndustryExpanded.BlockStructures.Engine;
 using IronIndustryExpanded.BlockStructures.Engine.BlockEntities;
 using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using IronIndustryExpanded.Tests;
-using SiexAirBlowerBe = SteelIndustryExpanded.BlockStructures.Engine.BlockEntities.BlockEntityEngineAirBlower;
-using SiexAirBlowerBlock = SteelIndustryExpanded.BlockStructures.Engine.Blocks.BlockEngineAirBlower;
 using SteelIndustryExpanded.BlockStructures.Engine.BlockEntities;
 using SteelIndustryExpanded.BlockStructures.Engine.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using SiexAirBlowerBe = SteelIndustryExpanded.BlockStructures.Engine.BlockEntities.BlockEntityEngineAirBlower;
+using SiexAirBlowerBlock = SteelIndustryExpanded.BlockStructures.Engine.Blocks.BlockEngineAirBlower;
 
 namespace SteelIndustryExpanded.Tests;
 

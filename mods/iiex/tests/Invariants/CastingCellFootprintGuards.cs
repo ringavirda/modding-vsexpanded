@@ -51,16 +51,26 @@ public class CastingCellFootprintGuards {
   [InlineData("east")]
   [InlineData("south")]
   [InlineData("west")]
-  public void The_1x1_cell_pulls_from_the_face_the_spout_is_drawn_on(string side) =>
-    AssertSpoutFacesLaunder(BlockSandCastingCell.Definitions("iiex").First(), side);
+  public void The_1x1_cell_pulls_from_the_face_the_spout_is_drawn_on(
+    string side
+  ) =>
+    AssertSpoutFacesLaunder(
+      BlockSandCastingCell.Definitions("iiex").First(),
+      side
+    );
 
   [Theory]
   [InlineData("north")]
   [InlineData("east")]
   [InlineData("south")]
   [InlineData("west")]
-  public void The_long_cell_pulls_from_the_face_the_spout_is_drawn_on(string side) =>
-    AssertSpoutFacesLaunder(BlockSandCastingLongCell.Definitions("iiex").Single(), side);
+  public void The_long_cell_pulls_from_the_face_the_spout_is_drawn_on(
+    string side
+  ) =>
+    AssertSpoutFacesLaunder(
+      BlockSandCastingLongCell.Definitions("iiex").Single(),
+      side
+    );
 
   /// <summary>
   /// Rotates the spout's drawn centre (Cube8, on the principal cell both shapes share) by the spin the
@@ -83,8 +93,7 @@ public class CastingCellFootprintGuards {
     int spin = (int)shape["rotateYByType"]![$"*-{letter}"]!;
     (double rx, double rz) = ExOrientation.RotateXZ(x - 8, z - 8, spin);
 
-    BlockFacing launderFace =
-      ExOrientation.FacingFromSide(letter)!.Opposite;
+    BlockFacing launderFace = ExOrientation.FacingFromSide(letter)!.Opposite;
 
     double offset = launderFace.Normali.X * rx + launderFace.Normali.Z * rz;
     Assert.True(

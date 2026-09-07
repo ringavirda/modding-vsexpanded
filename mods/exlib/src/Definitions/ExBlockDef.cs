@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -216,7 +216,9 @@ public sealed class ExBlockDef : IExDef {
   /// mining-tool preference from <see cref="Material"/> (the tool's per-material mining-speed table)
   /// and <see cref="MiningTier"/> (the tool tier required at all) - there is no per-block "required
   /// tool" key to emit. Call those two instead.</summary>
-  [Obsolete("mineTool is not a blocktype key the game reads; use Material and MiningTier instead.")]
+  [Obsolete(
+    "mineTool is not a blocktype key the game reads; use Material and MiningTier instead."
+  )]
   public ExBlockDef MineTool(EnumTool tool) => this;
 
   /// <summary>Sets <c>drops</c> to an empty array - the block never drops itself (mega-blocks hand back

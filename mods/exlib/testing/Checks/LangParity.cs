@@ -83,7 +83,8 @@ public static class LangParity {
       yield break;
     foreach (string file in Directory.EnumerateFiles(langTree, "*.json")) {
       if (
-        Path.GetFileName(file).Equals("en.json", StringComparison.OrdinalIgnoreCase)
+        Path.GetFileName(file)
+          .Equals("en.json", StringComparison.OrdinalIgnoreCase)
       )
         continue;
       yield return file;

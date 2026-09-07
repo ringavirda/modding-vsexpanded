@@ -158,7 +158,12 @@ public sealed class FillerLayoutBuilder {
     var drawn = new List<LayoutCell>();
 
     if (_layers.Count > 0) {
-      var grid = new CellGrid(GridPlane.Horizontal, _originA, _originB, options);
+      var grid = new CellGrid(
+        GridPlane.Horizontal,
+        _originA,
+        _originB,
+        options
+      );
       foreach ((int y, string g) in _layers)
         grid.Add(y, FoldAnchorGlyph(g));
       drawn.AddRange(grid.Cells);
@@ -209,5 +214,6 @@ public sealed class FillerLayoutBuilder {
 
   // 'O' is the other spelling of the principal marker; folded to '0' before CellGrid sees the grid, so
   // one anchor glyph answers for both without CellGrid needing to know there ever were two.
-  private static string FoldAnchorGlyph(string grid) => grid.Replace('O', AnchorGlyph);
+  private static string FoldAnchorGlyph(string grid) =>
+    grid.Replace('O', AnchorGlyph);
 }

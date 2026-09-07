@@ -33,7 +33,11 @@ public static class TreeKeys {
     return keys;
   }
 
-  private static void Collect(ITreeAttribute tree, string prefix, List<string> into) {
+  private static void Collect(
+    ITreeAttribute tree,
+    string prefix,
+    List<string> into
+  ) {
     foreach (KeyValuePair<string, IAttribute> entry in tree) {
       string path = prefix + entry.Key;
       if (entry.Value is ITreeAttribute sub)
@@ -47,8 +51,9 @@ public static class TreeKeys {
   // ("temp" from float to double) shows up as a changed golden line rather than a silent pass.
   private static string TypeTag(IAttribute attr) {
     string name = attr.GetType().Name;
-    return (name.EndsWith("Attribute") ? name[..^"Attribute".Length] : name)
-      .ToLowerInvariant();
+    return (
+      name.EndsWith("Attribute") ? name[..^"Attribute".Length] : name
+    ).ToLowerInvariant();
   }
 
   /// <summary>
@@ -99,10 +104,17 @@ public static class TreeKeys {
     ExBlockState real = RealStateOf(be);
     var realKeys = new HashSet<string>(real.Keys, StringComparer.Ordinal);
 
-    for (Type? level = be.GetType(); level != null && level != typeof(object); level = level.BaseType) {
+    for (
+      Type? level = be.GetType();
+      level != null && level != typeof(object);
+      level = level.BaseType
+    ) {
       MethodInfo? method = level.GetMethod(
         "DeclareState",
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly,
+        BindingFlags.Instance
+          | BindingFlags.Public
+          | BindingFlags.NonPublic
+          | BindingFlags.DeclaredOnly,
         null,
         [typeof(ExBlockState)],
         null
@@ -143,7 +155,11 @@ public static class TreeKeys {
   // most-derived override, which would defeat the whole point of isolating one level's contribution.
   // A tiny IL trampoline with an explicit `call` (not `callvirt`) is the only way to reach the level's
   // own body directly.
-  private static void InvokeNonVirtual(MethodInfo method, object instance, ExBlockState state) {
+  private static void InvokeNonVirtual(
+    MethodInfo method,
+    object instance,
+    ExBlockState state
+  ) {
     var trampoline = new DynamicMethod(
       "NonVirtual_" + method.DeclaringType!.Name + "_DeclareState",
       null,
@@ -157,8 +173,9 @@ public static class TreeKeys {
     il.Emit(OpCodes.Ldarg_1);
     il.Emit(OpCodes.Call, method);
     il.Emit(OpCodes.Ret);
-    var call = (Action<object, ExBlockState>)
-      trampoline.CreateDelegate(typeof(Action<object, ExBlockState>));
+    var call =
+      (Action<object, ExBlockState>)
+        trampoline.CreateDelegate(typeof(Action<object, ExBlockState>));
     call(instance, state);
   }
 }

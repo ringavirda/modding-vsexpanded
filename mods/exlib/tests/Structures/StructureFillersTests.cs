@@ -19,7 +19,10 @@ public class StructureFillersTests {
   // it rather than sharing one run's answer with the next.
   private static void ResetLoggedFlag() =>
     typeof(StructureFillers)
-      .GetField("_missingFillerLogged", BindingFlags.NonPublic | BindingFlags.Static)!
+      .GetField(
+        "_missingFillerLogged",
+        BindingFlags.NonPublic | BindingFlags.Static
+      )!
       .SetValue(null, false);
 
   [Fact]

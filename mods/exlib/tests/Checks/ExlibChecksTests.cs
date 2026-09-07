@@ -71,34 +71,35 @@ public class ExlibChecksTests {
 
   // Every registered code gets an English name key except "stubfam" - the one held back to prove
   // LangCoverageCheck.
-  private static readonly JObject EnglishLang =
-    new(
-      RegisteredCodes
-        .Where(c => c.Path != "stubfam")
-        .Select(c => new JProperty("block-" + c.Path, "Stub Block"))
-    );
+  private static readonly JObject EnglishLang = new(
+    RegisteredCodes
+      .Where(c => c.Path != "stubfam")
+      .Select(c => new JProperty("block-" + c.Path, "Stub Block"))
+  );
 
   // One grid recipe whose output names a block nothing registers. A method rather than a static
   // field: a field typed as a tuple of AssetLocation and JObject forces the CLR to lay out that
   // ValueTuple - and so fully resolve both foreign assemblies - the moment this type loads, which
   // races the harness's own assembly resolver and fails test discovery outright.
-  private static (AssetLocation File, JObject Json) DanglingRecipe() => (
-    new AssetLocation("stub", "recipes/grid/stubrecipe.json"),
-    new JObject {
-      ["output"] = new JObject {
-        ["type"] = "block",
-        ["code"] = "stub:missingrecipeoutput",
-      },
-    }
-  );
+  private static (AssetLocation File, JObject Json) DanglingRecipe() =>
+    (
+      new AssetLocation("stub", "recipes/grid/stubrecipe.json"),
+      new JObject {
+        ["output"] = new JObject {
+          ["type"] = "block",
+          ["code"] = "stub:missingrecipeoutput",
+        },
+      }
+    );
 
   private sealed class StubCheckSource : ICheckSource {
     public IEnumerable<string> Domains => [Domain];
     public IEnumerable<AssetLocation> BlockCodes => RegisteredCodes;
     public IEnumerable<AssetLocation> ItemCodes => [];
 
-    public IEnumerable<(AssetLocation File, JObject Json)> Recipes(string domain) =>
-      domain == Domain ? [DanglingRecipe()] : [];
+    public IEnumerable<(AssetLocation File, JObject Json)> Recipes(
+      string domain
+    ) => domain == Domain ? [DanglingRecipe()] : [];
 
     public IEnumerable<(string Locale, JObject Json)> Lang(string domain) =>
       domain == Domain ? [("en", EnglishLang)] : [];

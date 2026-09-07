@@ -12,14 +12,20 @@ namespace ExpandedLib.Catalogues;
 /// it: the registry merges whatever arrives, so two mods may both add jobs to one machine. The sibling of
 /// <see cref="ProcessRouteLoader"/>, and deliberately the same shape.
 /// </summary>
-public sealed class ProcessJobLoader : ContributedCatalogueLoader<ProcessJobSet, ProcessJobRegistry> {
+public sealed class ProcessJobLoader
+  : ContributedCatalogueLoader<ProcessJobSet, ProcessJobRegistry> {
   /// <summary>The asset path every domain's jobs are read from.</summary>
   public const string CataloguePath = "config/processjobs/";
 
   private static readonly ProcessJobLoader _instance = new();
 
   // The root keys ProcessJobSet.TryParse reads, and the keys each job entry reads.
-  private static readonly HashSet<string> RootKeys = ["schema", "machine", "jobs"];
+  private static readonly HashSet<string> RootKeys =
+  [
+    "schema",
+    "machine",
+    "jobs",
+  ];
   private static readonly HashSet<string> JobKeys =
   [
     "input",
@@ -50,7 +56,11 @@ public sealed class ProcessJobLoader : ContributedCatalogueLoader<ProcessJobSet,
     out ProcessJobSet set,
     out string? error
   ) {
-    bool ok = ProcessJobSet.TryParse(root, out ProcessJobSet? parsed, out error);
+    bool ok = ProcessJobSet.TryParse(
+      root,
+      out ProcessJobSet? parsed,
+      out error
+    );
     set = parsed!;
     return ok;
   }
@@ -62,10 +72,12 @@ public sealed class ProcessJobLoader : ContributedCatalogueLoader<ProcessJobSet,
 
   protected override int CountEntries(ProcessJobSet set) => set.Jobs.Length;
 
-  protected override CatalogueContributors Contributors(ProcessJobRegistry registry) =>
-    ProcessJobRegistry.Contributors;
+  protected override CatalogueContributors Contributors(
+    ProcessJobRegistry registry
+  ) => ProcessJobRegistry.Contributors;
 
-  protected override void Clear(ProcessJobRegistry registry) => registry.Clear();
+  protected override void Clear(ProcessJobRegistry registry) =>
+    registry.Clear();
 
   /// <summary>
   /// Parses the catalogue out of already-read files, each a <c>(source, json)</c> pair whose source names

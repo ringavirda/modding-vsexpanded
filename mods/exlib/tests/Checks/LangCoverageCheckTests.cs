@@ -16,12 +16,15 @@ public class LangCoverageCheckTests {
   private const string Domain = "stub";
   private static readonly AssetLocation[] Codes = [new($"{Domain}:stubblock")];
 
-  private sealed class StubSource(params (string Locale, JObject Json)[] lang) : ICheckSource {
+  private sealed class StubSource(params (string Locale, JObject Json)[] lang)
+    : ICheckSource {
     public IEnumerable<string> Domains => [Domain];
     public IEnumerable<AssetLocation> BlockCodes => Codes;
     public IEnumerable<AssetLocation> ItemCodes => [];
 
-    public IEnumerable<(AssetLocation File, JObject Json)> Recipes(string domain) => [];
+    public IEnumerable<(AssetLocation File, JObject Json)> Recipes(
+      string domain
+    ) => [];
 
     public IEnumerable<(string Locale, JObject Json)> Lang(string domain) =>
       domain == Domain ? lang : [];

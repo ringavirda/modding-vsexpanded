@@ -23,7 +23,12 @@ public static class ShippedJson {
   // blocktypes, itemtypes and recipes are all EnumAppSide.Server asset categories. Anything else
   // (shapes, textures, lang) is legitimately client-side or universal, so only the side's presence is
   // required there.
-  private static readonly string[] ServerOnlyCategories = ["blocktypes", "itemtypes", "recipes"];
+  private static readonly string[] ServerOnlyCategories =
+  [
+    "blocktypes",
+    "itemtypes",
+    "recipes",
+  ];
 
   /// <summary>Every JSON asset under <paramref name="assetTree"/>: parses, carries no control character
   /// outside tab/LF/CR (with the offending offsets named - invisible in an editor, survives copy/paste,
@@ -88,7 +93,9 @@ public static class ShippedJson {
   private static bool ServerOnlyCategory(JsonElement entry) =>
     entry.TryGetProperty("file", out JsonElement file)
     && file.GetString() is { } target
-    && ServerOnlyCategories.Contains(target.Split(':').Last().Split('/').First());
+    && ServerOnlyCategories.Contains(
+      target.Split(':').Last().Split('/').First()
+    );
 
   private static JsonDocument Parse(byte[] utf8Json) =>
     JsonDocument.Parse(

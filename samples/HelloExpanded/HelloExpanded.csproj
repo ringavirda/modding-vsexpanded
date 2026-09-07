@@ -13,15 +13,20 @@
          carries the same one-line default rather than importing that whole file, which would also
          pull in the version manifest and test-only settings this project has no use for.
          -p:ExlibRoot= (a global property) wins over this default and forces package mode. -->
-    <ExlibRoot Condition="'$(ExlibRoot)' == ''">$(MSBuildThisFileDirectory)../../mods/exlib/</ExlibRoot>
+    <ExlibRoot Condition="'$(ExlibRoot)' == ''"
+      >$(MSBuildThisFileDirectory)../../mods/exlib/</ExlibRoot>
     <!-- Restore needs $(TargetFramework) (below, reading $(CurrentGameTfm)) before any package is
          present, so in package mode it can't come through ExpandedLib.props - the same reason the
          target framework list always stays in the consumer, never the package. Source mode's
          ExpandedLib.props sets the same default, guarded the same way, so this only ever fires
          first. -->
-    <CurrentGameTfm Condition="'$(CurrentGameTfm)' == ''">net10.0</CurrentGameTfm>
+    <CurrentGameTfm Condition="'$(CurrentGameTfm)' == ''"
+      >net10.0</CurrentGameTfm>
   </PropertyGroup>
-  <Import Project="../../mods/exlib/build/ExpandedLib.props" Condition="'$(ExlibRoot)' != ''" />
+  <Import
+    Project="../../mods/exlib/build/ExpandedLib.props"
+    Condition="'$(ExlibRoot)' != ''"
+  />
 
   <PropertyGroup>
     <!-- Primary build is the current game version, single-target; the legacy lanes buy nothing for
@@ -91,7 +96,10 @@
        constants). This project carries no AssetDomain of its own, so its assets/ (a direct sibling
        of the csproj, not one level up under src/) is still globbed by hand below. Source mode only,
        same reason as the .props import above. -->
-  <Import Project="../../mods/exlib/build/ExpandedLib.targets" Condition="'$(ExlibRoot)' != ''" />
+  <Import
+    Project="../../mods/exlib/build/ExpandedLib.targets"
+    Condition="'$(ExlibRoot)' != ''"
+  />
 
   <ItemGroup>
     <Content Include="assets/**/*">

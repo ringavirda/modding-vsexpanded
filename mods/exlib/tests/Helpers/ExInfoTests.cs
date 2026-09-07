@@ -57,7 +57,9 @@ public class ExInfoTests : IDisposable {
       .Service.Received()
       .Get(
         "iiex:water-volume",
-        Arg.Is<object[]>(a => a.Length == 1 && (string)a[0] == ExMeasure.Volume(800f))
+        Arg.Is<object[]>(a =>
+          a.Length == 1 && (string)a[0] == ExMeasure.Volume(800f)
+        )
       );
   }
 
@@ -72,7 +74,9 @@ public class ExInfoTests : IDisposable {
       .Service.Received()
       .Get(
         "iiex:water-volume",
-        Arg.Is<object[]>(a => a.Length == 1 && (string)a[0] == ExMeasure.Pressure(100f))
+        Arg.Is<object[]>(a =>
+          a.Length == 1 && (string)a[0] == ExMeasure.Pressure(100f)
+        )
       );
   }
 
@@ -96,8 +100,8 @@ public class ExInfoTests : IDisposable {
   public void Measure_throws_naming_an_unrecognised_unit() {
     var dsc = new StringBuilder();
 
-    var ex = Assert.Throws<ArgumentException>(
-      () => dsc.Measure("iiex:some-key", 10f, "bogus")
+    var ex = Assert.Throws<ArgumentException>(() =>
+      dsc.Measure("iiex:some-key", 10f, "bogus")
     );
     Assert.Contains("bogus", ex.Message);
   }

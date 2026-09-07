@@ -25,7 +25,10 @@ public class MachineRigTests {
   public void RunUntil_stops_the_moment_the_condition_holds_and_returns_the_elapsed_seconds() {
     var (rig, machine) = NewRig();
 
-    float elapsed = rig.RunUntil(() => machine.ProductionTicks >= 3, ceilingSeconds: 10);
+    float elapsed = rig.RunUntil(
+      () => machine.ProductionTicks >= 3,
+      ceilingSeconds: 10
+    );
 
     Assert.Equal(3f, elapsed);
     Assert.Equal(3, machine.ProductionTicks);
@@ -35,8 +38,8 @@ public class MachineRigTests {
   public void RunUntil_throws_a_named_timeout_when_the_condition_never_holds() {
     var (rig, _) = NewRig();
 
-    var ex = Assert.Throws<TimeoutException>(
-      () => rig.RunUntil(() => false, ceilingSeconds: 3)
+    var ex = Assert.Throws<TimeoutException>(() =>
+      rig.RunUntil(() => false, ceilingSeconds: 3)
     );
     Assert.Contains("3", ex.Message);
   }
@@ -46,10 +49,13 @@ public class MachineRigTests {
     var (rig, machine) = NewRig();
     int observed = 0;
 
-    rig.RunLive(4, dt => {
-      observed++;
-      Assert.Equal(1f, dt);
-    });
+    rig.RunLive(
+      4,
+      dt => {
+        observed++;
+        Assert.Equal(1f, dt);
+      }
+    );
 
     Assert.Equal(4, observed);
     Assert.Equal(4, machine.ProductionTicks);

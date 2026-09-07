@@ -45,10 +45,13 @@ public class TestChannelsTests {
   [Fact]
   public void An_unregistered_type_throws_naming_it() {
     using var world = new TestWorld();
-    var channels = TestChannels.Create(world, "exlibtest.channels-unregistered");
+    var channels = TestChannels.Create(
+      world,
+      "exlibtest.channels-unregistered"
+    );
 
-    var ex = Assert.Throws<InvalidOperationException>(
-      () => channels.Client.SendPacket(new TestPacket())
+    var ex = Assert.Throws<InvalidOperationException>(() =>
+      channels.Client.SendPacket(new TestPacket())
     );
     Assert.Contains(nameof(TestPacket), ex.Message);
   }

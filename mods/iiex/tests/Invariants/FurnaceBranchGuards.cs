@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Industry.Heat;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -172,7 +172,8 @@ public static class FurnaceBranchGuards {
       );
 
       foreach (ExBlockDef def in layouts) {
-        var be = (BlockEntityMultiblockStructure)Activator.CreateInstance(leaf)!;
+        var be = (BlockEntityMultiblockStructure)
+          Activator.CreateInstance(leaf)!;
         FurnaceLayoutRig.OrientWithLayout(
           be,
           def,
@@ -229,7 +230,8 @@ public static class FurnaceBranchGuards {
       );
 
       foreach (ExBlockDef def in layouts) {
-        var be = (BlockEntityMultiblockStructure)Activator.CreateInstance(leaf)!;
+        var be = (BlockEntityMultiblockStructure)
+          Activator.CreateInstance(leaf)!;
         FurnaceLayoutRig.OrientWithLayout(
           be,
           def,

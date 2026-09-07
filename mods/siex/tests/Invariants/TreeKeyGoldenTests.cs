@@ -18,7 +18,8 @@ namespace SteelIndustryExpanded.Tests;
 /// this is the same check run against siex's own assembly.
 /// </summary>
 public class TreeKeyGoldenTests {
-  private static readonly Assembly Mod = typeof(BlockEntityConverterBessemer).Assembly;
+  private static readonly Assembly Mod =
+    typeof(BlockEntityConverterBessemer).Assembly;
 
   // Types this suite cannot construct headlessly and so are exempt from the tree-key golden. The
   // hand-written pair on each stays as it is.

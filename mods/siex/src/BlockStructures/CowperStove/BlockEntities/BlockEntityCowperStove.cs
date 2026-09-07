@@ -1,13 +1,13 @@
 using System.Text;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Machines;
-using ExpandedLib.Networks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Machines;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded;
 using IronIndustryExpanded.BlockNetworkPipe;
 using IronIndustryExpanded.BlockNetworkPipe.BlockEntities;
@@ -26,6 +26,7 @@ namespace SteelIndustryExpanded.BlockStructures.CowperStove.BlockEntities;
 [BlockEntityRegister]
 public class BlockEntityCowperStove : BlockEntityMultiblockMachine {
   private BlockFacing _connectorFace = BlockFacing.SOUTH;
+
   [Persist("internalTemperature")]
   private float _internalTemperature = ExlibValues.AmbientTemperature;
 

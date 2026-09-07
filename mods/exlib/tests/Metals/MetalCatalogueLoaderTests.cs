@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ExpandedLib.Industry.Metals;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Metals;
 using Newtonsoft.Json;
 using Vintagestory.API.Common;
 using Xunit;

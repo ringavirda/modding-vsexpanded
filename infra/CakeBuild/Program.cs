@@ -18,10 +18,8 @@ using Vintagestory.API.Common;
 
 namespace CakeBuild;
 
-public static class Program
-{
-  public static int Main(string[] args)
-  {
+public static class Program {
+  public static int Main(string[] args) {
     return new CakeHost().UseContext<BuildContext>().Run(args);
   }
 }
@@ -29,7 +27,12 @@ public static class Program
 /// <summary>One buildable mod project in the monorepo. <paramref name="ModFolder"/> is the mod's own
 /// folder under <c>mods/</c> (exlib/iiex/siex); <paramref name="Folder"/> is the project name the
 /// csproj/modinfo file inside <c>mods/&lt;ModFolder&gt;/src/</c> is stamped with.</summary>
-public record ModProject(string ModFolder, string Folder, string ModId, string Version);
+public record ModProject(
+  string ModFolder,
+  string Folder,
+  string ModId,
+  string Version
+);
 
 /// <summary>A supported game version to publish for: its TFM, the game version stamped into the
 /// packaged modinfo, and whether it's the current (non-legacy) target. Keep in sync with the version
@@ -37,8 +40,7 @@ public record ModProject(string ModFolder, string Folder, string ModId, string V
 /// same as the CI workflows).</summary>
 public record GameTarget(string Tfm, string GameVersion, bool IsCurrent);
 
-public class BuildContext : FrostingContext
-{
+public class BuildContext : FrostingContext {
   // Build order matters: exlib first (the shared lib every mod references), then iiex (the iron
   // tier, which owns the base pipe block, the networks and the steam plant), and finally siex (the
   // steel tier and the high-pressure leaves, both built on iiex's bases). ModFolder is the mod's own
@@ -67,13 +69,11 @@ public class BuildContext : FrostingContext
   public List<ModProject> Projects { get; } = [];
 
   public BuildContext(ICakeContext context)
-    : base(context)
-  {
+    : base(context) {
     BuildConfiguration = context.Argument("configuration", "Release");
     SkipJsonValidation = context.Argument("skipJsonValidation", false);
 
-    foreach (var (modFolder, folder) in ProjectFolders)
-    {
+    foreach (var (modFolder, folder) in ProjectFolders) {
       var modInfo = context.DeserializeJsonFromFile<ModInfo>(
         $"../../mods/{modFolder}/src/modinfo.json"
       );
@@ -92,26 +92,19 @@ public class BuildContext : FrostingContext
 }
 
 [TaskName("ValidateJson")]
-public sealed class ValidateJsonTask : FrostingTask<BuildContext>
-{
-  public override void Run(BuildContext context)
-  {
+public sealed class ValidateJsonTask : FrostingTask<BuildContext> {
+  public override void Run(BuildContext context) {
     if (context.SkipJsonValidation)
       return;
 
-    foreach (var project in context.Projects)
-    {
+    foreach (var project in context.Projects) {
       var jsonFiles = context.GetFiles(
         $"../../mods/{project.ModFolder}/assets/**/*.json"
       );
-      foreach (var file in jsonFiles)
-      {
-        try
-        {
+      foreach (var file in jsonFiles) {
+        try {
           JToken.Parse(File.ReadAllText(file.FullPath));
-        }
-        catch (JsonException ex)
-        {
+        } catch (JsonException ex) {
           throw new Exception(
             $"Validation failed for JSON file: {file.FullPath}{Environment.NewLine}{ex.Message}",
             ex
@@ -124,12 +117,9 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext>
 
 [TaskName("Build")]
 [IsDependentOn(typeof(ValidateJsonTask))]
-public sealed class BuildTask : FrostingTask<BuildContext>
-{
-  public override void Run(BuildContext context)
-  {
-    foreach (var project in context.Projects)
-    {
+public sealed class BuildTask : FrostingTask<BuildContext> {
+  public override void Run(BuildContext context) {
+    foreach (var project in context.Projects) {
       string csproj =
         $"../../mods/{project.ModFolder}/src/{project.Folder}.csproj";
       // Wipe the whole bin so stale per-version outputs can't leak into a package.
@@ -138,12 +128,10 @@ public sealed class BuildTask : FrostingTask<BuildContext>
       context.EnsureDirectoryExists(binDir);
       context.CleanDirectory(binDir);
 
-      foreach (var target in BuildContext.GameTargets)
-      {
+      foreach (var target in BuildContext.GameTargets) {
         context.DotNetPublish(
           csproj,
-          new DotNetPublishSettings
-          {
+          new DotNetPublishSettings {
             Configuration = context.BuildConfiguration,
             Framework = target.Tfm,
             // -p:Legacy=true makes the mod multi-target so the legacy TFMs exist; harmless for the
@@ -161,12 +149,10 @@ public sealed class BuildTask : FrostingTask<BuildContext>
         // OutputPath mirrors ExpandedLib.csproj's exactly (same mod-output/publish folder per
         // target), so publishing it here lands exlib.industry.dll right beside exlib.dll with no
         // extra copy step.
-        if (project.ModFolder == "exlib")
-        {
+        if (project.ModFolder == "exlib") {
           context.DotNetPublish(
             "../../mods/exlib/industry/ExpandedLib.Industry.csproj",
-            new DotNetPublishSettings
-            {
+            new DotNetPublishSettings {
               Configuration = context.BuildConfiguration,
               Framework = target.Tfm,
               MSBuildSettings = new DotNetMSBuildSettings().WithProperty(
@@ -183,10 +169,8 @@ public sealed class BuildTask : FrostingTask<BuildContext>
 
 [TaskName("Package")]
 [IsDependentOn(typeof(BuildTask))]
-public sealed class PackageTask : FrostingTask<BuildContext>
-{
-  public override void Run(BuildContext context)
-  {
+public sealed class PackageTask : FrostingTask<BuildContext> {
+  public override void Run(BuildContext context) {
     context.EnsureDirectoryExists("../../dist/Releases");
     context.CleanDirectory("../../dist/Releases");
 
@@ -195,11 +179,10 @@ public sealed class PackageTask : FrostingTask<BuildContext>
     // current version stays unsuffixed:
     //   dist/Releases/<gameVersion>/<modid>_<modVersion>.zip            (current)
     //   dist/Releases/<gameVersion>/<modid>_<modVersion>_<gameVersion>.zip (legacy)
-    foreach (var target in BuildContext.GameTargets)
-    {
-      foreach (var project in context.Projects)
-      {
-        string stageDir = $"../../dist/Releases/{target.GameVersion}/{project.ModId}";
+    foreach (var target in BuildContext.GameTargets) {
+      foreach (var project in context.Projects) {
+        string stageDir =
+          $"../../dist/Releases/{target.GameVersion}/{project.ModId}";
         context.EnsureDirectoryExists(stageDir);
 
         context.CopyFiles($"{context.PublishDir(project, target)}/*", stageDir);
@@ -208,12 +191,18 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         // don't resolve on newer versions), and only the publish output reflects it. Copying source
         // assets here bypassed that and shipped both versions' files into every package, which
         // crashed clients on world-load when the wrong patch referenced a non-existent stack.
-        if (context.DirectoryExists($"{context.PublishDir(project, target)}/assets"))
+        if (
+          context.DirectoryExists(
+            $"{context.PublishDir(project, target)}/assets"
+          )
+        )
           context.CopyDirectory(
             $"{context.PublishDir(project, target)}/assets",
             $"{stageDir}/assets"
           );
-        if (context.FileExists($"../../mods/{project.ModFolder}/src/modicon.png"))
+        if (
+          context.FileExists($"../../mods/{project.ModFolder}/src/modicon.png")
+        )
           context.CopyFile(
             $"../../mods/{project.ModFolder}/src/modicon.png",
             $"{stageDir}/modicon.png"
@@ -261,8 +250,7 @@ public sealed class PackageTask : FrostingTask<BuildContext>
 
 [TaskName("PackageTesting")]
 [IsDependentOn(typeof(PackageTask))]
-public sealed class PackageTestingTask : FrostingTask<BuildContext>
-{
+public sealed class PackageTestingTask : FrostingTask<BuildContext> {
   // The headless test harness (mods/exlib/testing) is a DEVELOPER library, not a game mod, so it is
   // not a mod zip. It ships as the ExpandedLib.Testing NuGet package and, for anyone not consuming
   // packages, as a dev bundle attached to the GitHub release: ExpandedLib.Testing.dll plus the exlib.dll it
@@ -305,16 +293,14 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
     + "\n"
     + "See the wiki: https://github.com/ringavirda/modding-vsexpanded/wiki/Testing-Harness\n";
 
-  public override void Run(BuildContext context)
-  {
+  public override void Run(BuildContext context) {
     var current = Array.Find(BuildContext.GameTargets, t => t.IsCurrent)!;
     var exlib = context.Projects.Find(p => p.Folder == "ExpandedLib")!;
 
     // Build the harness for the current target (single-TFM => flat bin/<config> output).
     context.DotNetBuild(
       "../../mods/exlib/testing/ExpandedLib.Testing.csproj",
-      new DotNetBuildSettings
-      {
+      new DotNetBuildSettings {
         Configuration = context.BuildConfiguration,
         Framework = current.Tfm,
       }
@@ -323,7 +309,8 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext>
     // Hyphen, not a dot, in the basename: GitHub's release-asset uploader sniffs content type from
     // the filename and rejects a dotted name segment (exlib.testing_x.zip) with "we can't process
     // this file". exlib-testing_<version>.zip keeps the _<version> convention and uploads cleanly.
-    string stageDir = $"../../dist/Releases/{current.GameVersion}/exlib-testing";
+    string stageDir =
+      $"../../dist/Releases/{current.GameVersion}/exlib-testing";
     context.EnsureDirectoryExists(stageDir);
 
     context.CopyFile(

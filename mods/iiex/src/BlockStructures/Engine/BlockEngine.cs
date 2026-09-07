@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Networks;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Engine.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -266,12 +266,11 @@ public abstract class BlockEngine
     );
 #if !GAME_GE_1_22
     // Legacy lacks the vanilla IInteractableWithHelp path, so surface the construction help here.
-    help =
-      ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
-        world,
-        selection,
-        help
-      );
+    help = ExpandedLib.Blocks.ExRightClickConstructable.AppendConstructionHelp(
+      world,
+      selection,
+      help
+    );
 #endif
     return help;
   }

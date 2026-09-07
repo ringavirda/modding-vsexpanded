@@ -272,7 +272,10 @@ public class PuddlingYieldTests {
       .. def["variantgroups"]![0]!["states"]!.Values<string>()!,
     ];
 
-    Assert.Equal(Shingling.WorkItemCode, $"iiex:{code}-{Assert.Single(states)}");
+    Assert.Equal(
+      Shingling.WorkItemCode,
+      $"iiex:{code}-{Assert.Single(states)}"
+    );
     Assert.Equal(
       EntityRegistry.KeyFor("iiex", typeof(ItemShingleWorkItem)),
       def["class"]!.Value<string>()

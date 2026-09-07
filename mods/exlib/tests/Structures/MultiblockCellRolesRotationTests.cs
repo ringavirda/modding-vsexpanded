@@ -62,9 +62,7 @@ public class MultiblockCellRolesRotationTests {
         $"the cell under the anchor is below layer 0, so it is not owned at {angle} deg"
       );
       Assert.All(
-        machine
-          .CellsWithRole(Flue)
-          .Concat(machine.CellsWithRole(Tuyere)),
+        machine.CellsWithRole(Flue).Concat(machine.CellsWithRole(Tuyere)),
         cell => Assert.True(machine.OwnsCell(cell), $"{cell} at {angle} deg")
       );
     }
@@ -74,10 +72,7 @@ public class MultiblockCellRolesRotationTests {
   public void Turning_the_structure_moves_the_role_cells_rather_than_answering_out_of_the_old_facing() {
     var (world, machine) = Stand();
     StructureRig.Around(world, machine, RoledDef()).Complete();
-    Assert.Equal(
-      ExpectedAt(FlueCells, 0),
-      Render(machine.CellsWithRole(Flue))
-    );
+    Assert.Equal(ExpectedAt(FlueCells, 0), Render(machine.CellsWithRole(Flue)));
 
     // A wrench turn: the machine re-derives its angle and reloads on the next monitor tick. Cells are cached
     // in world space, so a cache surviving the reload would keep answering north.

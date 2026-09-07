@@ -22,16 +22,28 @@ public static class LangParityChecker {
   ) {
     var findings = new List<Finding>();
     var files = langFiles.ToList();
-    if (files.FirstOrDefault(f => System.IO.Path.GetFileNameWithoutExtension(f.Path) == "en").Json
-      is not JObject en)
+    if (
+      files
+        .FirstOrDefault(f =>
+          System.IO.Path.GetFileNameWithoutExtension(f.Path) == "en"
+        )
+        .Json
+      is not JObject en
+    )
       return findings;
-    var enKeys = new HashSet<string>(en.Properties().Select(p => p.Name), StringComparer.Ordinal);
+    var enKeys = new HashSet<string>(
+      en.Properties().Select(p => p.Name),
+      StringComparer.Ordinal
+    );
 
     foreach ((string path, JToken json) in files) {
       string locale = System.IO.Path.GetFileNameWithoutExtension(path);
       if (locale == "en" || json is not JObject other)
         continue;
-      var otherKeys = new HashSet<string>(other.Properties().Select(p => p.Name), StringComparer.Ordinal);
+      var otherKeys = new HashSet<string>(
+        other.Properties().Select(p => p.Name),
+        StringComparer.Ordinal
+      );
       int missing = enKeys.Count(k => !otherKeys.Contains(k));
       if (missing > 0)
         findings.Add(

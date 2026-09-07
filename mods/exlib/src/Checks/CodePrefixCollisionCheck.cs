@@ -25,7 +25,10 @@ public static class CodePrefixCollisionCheck {
     var errors = new List<string>();
     foreach (string shorter in codes)
       foreach (string longer in codes) {
-        if (shorter == longer || !longer.StartsWith(shorter + "-", StringComparison.Ordinal))
+        if (
+          shorter == longer
+          || !longer.StartsWith(shorter + "-", StringComparison.Ordinal)
+        )
           continue;
 
         errors.Add(

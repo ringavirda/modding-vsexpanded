@@ -38,7 +38,9 @@ public class BlockBehaviorGreeter : BlockBehavior {
 
   private static void Greet(IServerPlayer player) {
     foreach (
-      GreetingDef greeting in Greetings.All.Take(HelloModuleValues.GreetingsPerClick)
+      GreetingDef greeting in Greetings.All.Take(
+        HelloModuleValues.GreetingsPerClick
+      )
     )
       player.SendMessage(
         GlobalConstants.GeneralChatGroup,

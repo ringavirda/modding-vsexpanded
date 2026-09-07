@@ -71,7 +71,8 @@ public class JsonMultiblockTests {
     // one domain key this test cares about to "not declared".
     string domainKey = "exlib:multiblock-testmega-n-incomplete";
     TestLang.Service.HasTranslation(domainKey, Arg.Any<bool>()).Returns(false);
-    TestLang.Service.HasTranslation(domainKey, Arg.Any<bool>(), Arg.Any<bool>())
+    TestLang
+      .Service.HasTranslation(domainKey, Arg.Any<bool>(), Arg.Any<bool>())
       .Returns(false);
 
     var be = new BlockEntityMultiblock {

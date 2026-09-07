@@ -1,9 +1,9 @@
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.Items;
 using Vintagestory.API.Common;

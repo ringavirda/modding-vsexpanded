@@ -1,5 +1,5 @@
-using ExpandedLib.Networks;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces.Blocks;
 using Vintagestory.API.Common;

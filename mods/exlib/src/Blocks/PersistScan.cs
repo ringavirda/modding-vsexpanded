@@ -69,8 +69,8 @@ public static class PersistScan {
     // Compiled lazily: an IPersistable member is read in place and never assigned, so a readonly field
     // holding one (the natural way to declare it) must not force a setter that Expression.Assign would
     // refuse to build.
-    Lazy<Action<object, object?>> setterLazy = new(
-      () => CompileSetter(member, memberType)
+    Lazy<Action<object, object?>> setterLazy = new(() =>
+      CompileSetter(member, memberType)
     );
 
     if (typeof(IPersistable).IsAssignableFrom(memberType))
@@ -85,7 +85,10 @@ public static class PersistScan {
             }
           },
           (t, world) => {
-            if (getter(be) is IPersistable p && t.GetTreeAttribute(key) is { } sub)
+            if (
+              getter(be) is IPersistable p
+              && t.GetTreeAttribute(key) is { } sub
+            )
               p.FromTree(sub, world);
           }
         );
@@ -160,18 +163,10 @@ public static class PersistScan {
       );
     if (memberType == typeof(BlockPos))
       return (be, state) =>
-        state.Pos(
-          key,
-          () => (BlockPos?)getter(be),
-          v => setter(be, v)
-        );
+        state.Pos(key, () => (BlockPos?)getter(be), v => setter(be, v));
     if (memberType == typeof(ItemStack))
       return (be, state) =>
-        state.Stack(
-          key,
-          () => (ItemStack?)getter(be),
-          v => setter(be, v)
-        );
+        state.Stack(key, () => (ItemStack?)getter(be), v => setter(be, v));
     throw new NotSupportedException(
       $"[Persist] on {member.DeclaringType?.Name}.{member.Name} has unsupported type "
         + $"{memberType.Name}."
@@ -256,8 +251,14 @@ public static class PersistScan {
     );
     Expression typedValue = Expression.Convert(value, memberType);
     Expression assign = member switch {
-      FieldInfo f => Expression.Assign(Expression.Field(typedInstance, f), typedValue),
-      PropertyInfo p => Expression.Assign(Expression.Property(typedInstance, p), typedValue),
+      FieldInfo f => Expression.Assign(
+        Expression.Field(typedInstance, f),
+        typedValue
+      ),
+      PropertyInfo p => Expression.Assign(
+        Expression.Property(typedInstance, p),
+        typedValue
+      ),
       _ => throw new NotSupportedException(member.Name),
     };
     return Expression

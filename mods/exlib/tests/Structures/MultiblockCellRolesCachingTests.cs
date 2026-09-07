@@ -13,10 +13,7 @@ public class MultiblockCellRolesCachingTests {
 
     // Consumers read these per state change, so the footprint must not be re-walked per read. The same
     // instance comes back, not merely equal contents.
-    Assert.Same(
-      machine.CellsWithRole(Flue),
-      machine.CellsWithRole(Flue)
-    );
+    Assert.Same(machine.CellsWithRole(Flue), machine.CellsWithRole(Flue));
   }
 
   [Fact]
@@ -30,9 +27,6 @@ public class MultiblockCellRolesCachingTests {
     StructureRig.Around(world, machine, RoledDef()).Complete();
 
     // The early read does not poison the cache: the late-arriving layout is answered in full.
-    Assert.Equal(
-      ExpectedAt(FlueCells, 0),
-      Render(machine.CellsWithRole(Flue))
-    );
+    Assert.Equal(ExpectedAt(FlueCells, 0), Render(machine.CellsWithRole(Flue)));
   }
 }

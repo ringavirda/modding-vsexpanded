@@ -22,7 +22,12 @@ public sealed class BayOccupancyLoader
   // The root keys BayOccupancySet.TryParse reads, and the keys each item entry reads.
   // "schema" is accepted though BayOccupancySet.TryParse does not yet read it, for parity with the
   // route and job catalogues' versioning convention every shipped file already carries.
-  private static readonly HashSet<string> RootKeys = ["schema", "store", "items"];
+  private static readonly HashSet<string> RootKeys =
+  [
+    "schema",
+    "store",
+    "items",
+  ];
   private static readonly HashSet<string> ItemKeys = ["item", "cells"];
 
   private BayOccupancyLoader() { }
@@ -43,7 +48,11 @@ public sealed class BayOccupancyLoader
     out BayOccupancySet set,
     out string? error
   ) {
-    bool ok = BayOccupancySet.TryParse(root, out BayOccupancySet? parsed, out error);
+    bool ok = BayOccupancySet.TryParse(
+      root,
+      out BayOccupancySet? parsed,
+      out error
+    );
     set = parsed!;
     return ok;
   }
@@ -55,10 +64,12 @@ public sealed class BayOccupancyLoader
 
   protected override int CountEntries(BayOccupancySet set) => set.Rules.Count;
 
-  protected override CatalogueContributors Contributors(BayOccupancyRegistry registry) =>
-    BayOccupancyRegistry.Contributors;
+  protected override CatalogueContributors Contributors(
+    BayOccupancyRegistry registry
+  ) => BayOccupancyRegistry.Contributors;
 
-  protected override void Clear(BayOccupancyRegistry registry) => registry.Clear();
+  protected override void Clear(BayOccupancyRegistry registry) =>
+    registry.Clear();
 
   /// <summary>
   /// Parses the catalogue out of already-read files, each a <c>(source, json)</c> pair whose source names

@@ -19,10 +19,8 @@ public static class MetalCatalogueLoader {
   /// contributors. Call from <c>ExpandedLibModSystem.AssetsFinalize</c>.</summary>
   public static CatalogueLoadReport Load(ICoreAPI api) {
     MetalRegistry.Clear();
-    AssetCatalogueLoader.ReadResult<MetalDef> read = AssetCatalogueLoader.Read<MetalDef>(
-      api,
-      "config/metals/"
-    );
+    AssetCatalogueLoader.ReadResult<MetalDef> read =
+      AssetCatalogueLoader.Read<MetalDef>(api, "config/metals/");
     var warnings = new List<string>();
     int registered = Populate(
       WorldPropertyMetalCodes(api),

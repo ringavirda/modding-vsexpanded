@@ -82,7 +82,9 @@ public static class AssetCatalogueLoader {
     where T : class {
     try {
       return asset.ToObject<T>(
-        new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Error }
+        new JsonSerializerSettings {
+          MissingMemberHandling = MissingMemberHandling.Error,
+        }
       );
     } catch (Exception e) {
       errors.Add($"{asset.Location}: {e.Message}");

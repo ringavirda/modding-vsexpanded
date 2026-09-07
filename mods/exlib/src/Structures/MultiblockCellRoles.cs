@@ -50,7 +50,12 @@ public sealed class MultiblockCellRoles {
   /// </summary>
   public static MultiblockCellRoles FromAttributes(JsonObject? attributes) {
     var map = new Dictionary<CellRole, HashSet<(int X, int Y, int Z)>>();
-    foreach (var (cell, key) in LayoutAttribute.CellsByKey(attributes, "multiblockRoles")) {
+    foreach (
+      var (cell, key) in LayoutAttribute.CellsByKey(
+        attributes,
+        "multiblockRoles"
+      )
+    ) {
       // A blank key cannot be a role - Of() would throw - so it is skipped rather than let through to
       // poison the map with a role no caller could ever ask for by the same key.
       if (string.IsNullOrWhiteSpace(key))

@@ -1,6 +1,6 @@
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -17,7 +17,9 @@ namespace IronIndustryExpanded.BlockStructures.Furnaces;
 /// build outline; and a <see cref="ToggleAnimator"/>, since every part has an open/shut pose rather than a
 /// running cycle. Building the animator stays with the subclass, which supplies cache key and rotation.
 /// </summary>
-public abstract class BlockEntityFurnacePart : ExBlockEntity, IMultiblockComponent {
+public abstract class BlockEntityFurnacePart
+  : ExBlockEntity,
+    IMultiblockComponent {
   private MultiblockAnchorLink<BlockEntityFurnaceCore>? _anchor;
   private ToggleAnimator? _toggle;
 

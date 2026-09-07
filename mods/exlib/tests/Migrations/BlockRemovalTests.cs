@@ -19,10 +19,12 @@ public class BlockRemovalTests {
   private sealed class PurgeMigration : IBlockRemoval {
     public string Name => "purge test";
 
-    public IEnumerable<AssetLocation> GetRemovals(ICoreServerAPI api) => [new("stub:gone")];
+    public IEnumerable<AssetLocation> GetRemovals(ICoreServerAPI api) =>
+      [new("stub:gone")];
   }
 
-  private static Block Block(string code, int id) => TestBlocks.Configure(new Block(), code, id);
+  private static Block Block(string code, int id) =>
+    TestBlocks.Configure(new Block(), code, id);
 
   private static BlockMigrationModSystem System(TestWorld world) {
     var sys = new BlockMigrationModSystem();
@@ -36,7 +38,10 @@ public class BlockRemovalTests {
   public void GetRemovals_declares_the_named_code() {
     var removal = new PurgeMigration();
 
-    Assert.Equal([new AssetLocation("stub:gone")], removal.GetRemovals(new TestWorld().Api).ToList());
+    Assert.Equal(
+      [new AssetLocation("stub:gone")],
+      removal.GetRemovals(new TestWorld().Api).ToList()
+    );
   }
 
   [Fact]
@@ -48,15 +53,21 @@ public class BlockRemovalTests {
 
     var sys = System(world);
     foreach (AssetLocation code in new PurgeMigration().GetRemovals(world.Api))
-      sys._remap[code] = new BlockMigrationModSystem.RemapEntry(null, code, null, null);
+      sys._remap[code] = new BlockMigrationModSystem.RemapEntry(
+        null,
+        code,
+        null,
+        null
+      );
 
-    int changed = (int)ReflectionHelpers.Invoke(
-      sys,
-      "VisitCell",
-      world.Accessor,
-      pos,
-      gone.BlockId
-    )!;
+    int changed = (int)
+      ReflectionHelpers.Invoke(
+        sys,
+        "VisitCell",
+        world.Accessor,
+        pos,
+        gone.BlockId
+      )!;
 
     Assert.Equal(1, changed);
     Assert.Same(world.Air, world.GetBlock(pos));
@@ -71,7 +82,14 @@ public class BlockRemovalTests {
     var sys = System(world);
     // Nothing registered in _remap: this removal names only "stub:gone".
 
-    int changed = (int)ReflectionHelpers.Invoke(sys, "VisitCell", world.Accessor, pos, kept.BlockId)!;
+    int changed = (int)
+      ReflectionHelpers.Invoke(
+        sys,
+        "VisitCell",
+        world.Accessor,
+        pos,
+        kept.BlockId
+      )!;
 
     Assert.Equal(0, changed);
     Assert.Same(kept, world.GetBlock(pos));
@@ -84,15 +102,31 @@ public class BlockRemovalTests {
   private sealed class ZDiscoveryOrderMigration : IBlockCodeMigration {
     public string Name => "z discovery order";
 
-    public IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(ICoreServerAPI api) =>
-      [(new AssetLocation("discoverytest:z-old"), new AssetLocation("discoverytest:z-new"))];
+    public IEnumerable<(
+      AssetLocation oldCode,
+      AssetLocation newCode
+    )> GetRemaps(ICoreServerAPI api) =>
+      [
+        (
+          new AssetLocation("discoverytest:z-old"),
+          new AssetLocation("discoverytest:z-new")
+        ),
+      ];
   }
 
   private sealed class ADiscoveryOrderMigration : IBlockCodeMigration {
     public string Name => "a discovery order";
 
-    public IEnumerable<(AssetLocation oldCode, AssetLocation newCode)> GetRemaps(ICoreServerAPI api) =>
-      [(new AssetLocation("discoverytest:a-old"), new AssetLocation("discoverytest:a-new"))];
+    public IEnumerable<(
+      AssetLocation oldCode,
+      AssetLocation newCode
+    )> GetRemaps(ICoreServerAPI api) =>
+      [
+        (
+          new AssetLocation("discoverytest:a-old"),
+          new AssetLocation("discoverytest:a-new")
+        ),
+      ];
   }
 
   // BlockMigrationModSystem.Discover<T> walks ReflectionScan.GetCandidateTypes, ordered by assembly
@@ -112,8 +146,14 @@ public class BlockRemovalTests {
   [Fact]
   public void Discovery_order_is_stable_across_repeated_calls() {
     var api = new TestWorld().Api;
-    var first = BlockMigrationModSystem.DeclaredBlockRemaps(api).Select(r => r.Migration).ToList();
-    var second = BlockMigrationModSystem.DeclaredBlockRemaps(api).Select(r => r.Migration).ToList();
+    var first = BlockMigrationModSystem
+      .DeclaredBlockRemaps(api)
+      .Select(r => r.Migration)
+      .ToList();
+    var second = BlockMigrationModSystem
+      .DeclaredBlockRemaps(api)
+      .Select(r => r.Migration)
+      .ToList();
 
     Assert.Equal(first, second);
   }
@@ -146,7 +186,9 @@ public class BlockRemovalTests {
     var world = new TestWorld();
     world.Register(Block("newdomain:shared-x", 110));
 
-    var pairs = CodeRelocation.Remap(world.Api, "olddomain", "newdomain", "shared").ToList();
+    var pairs = CodeRelocation
+      .Remap(world.Api, "olddomain", "newdomain", "shared")
+      .ToList();
 
     Assert.Equal(new AssetLocation("olddomain:shared-x"), pairs[0].oldCode);
     Assert.Equal(new AssetLocation("newdomain:shared-x"), pairs[0].newCode);

@@ -18,15 +18,24 @@ public static class GameInstall {
   public static string Resolve(string? explicitPath) {
     if (!string.IsNullOrEmpty(explicitPath)) {
       if (!File.Exists(Path.Combine(explicitPath, "VintagestoryAPI.dll")))
-        throw new DirectoryNotFoundException($"--game {explicitPath}: no VintagestoryAPI.dll there");
+        throw new DirectoryNotFoundException(
+          $"--game {explicitPath}: no VintagestoryAPI.dll there"
+        );
       return Path.GetFullPath(explicitPath);
     }
 
     string? env = Environment.GetEnvironmentVariable("VINTAGE_STORY");
-    if (!string.IsNullOrEmpty(env) && File.Exists(Path.Combine(env, "VintagestoryAPI.dll")))
+    if (
+      !string.IsNullOrEmpty(env)
+      && File.Exists(Path.Combine(env, "VintagestoryAPI.dll"))
+    )
       return Path.GetFullPath(env);
 
-    for (DirectoryInfo? dir = new(Directory.GetCurrentDirectory()); dir != null; dir = dir.Parent) {
+    for (
+      DirectoryInfo? dir = new(Directory.GetCurrentDirectory());
+      dir != null;
+      dir = dir.Parent
+    ) {
       foreach (string slug in new[] { "1.22-server", "1.22" }) {
         string candidate = Path.Combine(dir.FullName, ".game", slug);
         if (File.Exists(Path.Combine(candidate, "VintagestoryAPI.dll")))

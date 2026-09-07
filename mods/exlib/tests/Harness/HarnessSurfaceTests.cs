@@ -38,7 +38,9 @@ public class HarnessSurfaceTests {
       .Distinct();
 
   public static IEnumerable<object[]> Types() =>
-    PublicTypeNames().OrderBy(n => n, StringComparer.Ordinal).Select(n => new object[] { n });
+    PublicTypeNames()
+      .OrderBy(n => n, StringComparer.Ordinal)
+      .Select(n => new object[] { n });
 
   [Theory]
   [MemberData(nameof(Types))]
@@ -69,7 +71,9 @@ public class HarnessSurfaceTests {
     // slash.
     var claimed = new List<string>();
     foreach (string line in lines)
-      foreach (Match m in Regex.Matches(line, @"`([A-Za-z][A-Za-z0-9]*)(?:<[^>`]*>)?`"))
+      foreach (
+        Match m in Regex.Matches(line, @"`([A-Za-z][A-Za-z0-9]*)(?:<[^>`]*>)?`")
+      )
         claimed.Add(m.Groups[1].Value);
 
     Assert.NotEmpty(claimed);

@@ -25,7 +25,10 @@ public sealed record Finding(
   /// <summary>One readable line: <c>LEVEL check file:line message</c>, the file/line segment
   /// omitted when either is unknown.</summary>
   public override string ToString() {
-    string location = File == null ? "" : Line == null ? $"{File}: " : $"{File}:{Line}: ";
+    string location =
+      File == null ? ""
+      : Line == null ? $"{File}: "
+      : $"{File}:{Line}: ";
     return $"{Level.ToString().ToUpperInvariant(),-5} [{Check}] {location}{Message}";
   }
 }

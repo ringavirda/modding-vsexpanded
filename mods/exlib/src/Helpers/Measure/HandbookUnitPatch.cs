@@ -1,6 +1,6 @@
+using System.ComponentModel;
 using ExpandedLib.Helpers;
 using HarmonyLib;
-using System.ComponentModel;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;

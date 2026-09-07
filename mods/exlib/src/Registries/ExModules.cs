@@ -28,7 +28,8 @@ public static class ExModules {
   // Entry-point ctor-validation errors, one list per ExModuleInfo instance rather than per id: two
   // assemblies may legally declare the same id until Order's dedup runs, and each keeps its own
   // entry-point errors independent of that.
-  private static Dictionary<ExModuleInfo, List<string>> _entryPointErrors = new();
+  private static Dictionary<ExModuleInfo, List<string>> _entryPointErrors =
+    new();
 
   /// <summary>Every module of every host, discovered once from the assemblies the runtime has
   /// loaded, sorted by assembly full name. Not filtered by whether its mod is enabled; see
@@ -64,7 +65,11 @@ public static class ExModules {
     foreach (ExModuleInfo module in ordered.Modules)
       if (_entryPointErrors.TryGetValue(module, out List<string>? lines))
         errors.AddRange(lines);
-    return errors.Count > ordered.Errors.Count ? ordered with { Errors = errors } : ordered;
+    return errors.Count > ordered.Errors.Count
+      ? ordered with {
+        Errors = errors,
+      }
+      : ordered;
   }
 
   /// <summary>Every module of every host whose shipping mod is enabled on <paramref name="api"/>'s
@@ -75,7 +80,10 @@ public static class ExModules {
 
   /// <summary>Whether an enabled module of the given id was discovered, on any host.</summary>
   public static bool IsLoaded(ICoreAPI api, string moduleId) =>
-    Enabled(api).Any(m => string.Equals(m.Id, moduleId, StringComparison.OrdinalIgnoreCase));
+    Enabled(api)
+      .Any(m =>
+        string.Equals(m.Id, moduleId, StringComparison.OrdinalIgnoreCase)
+      );
 
   /// <summary>The world-config key a module sets to true while it is loaded, for a JSON patch
   /// condition to gate on.</summary>
@@ -93,7 +101,9 @@ public static class ExModules {
   /// </summary>
   internal static ExModuleSet Order(IEnumerable<ExModuleInfo> modules) {
     var errors = new List<string>();
-    var byId = new Dictionary<string, ExModuleInfo>(StringComparer.OrdinalIgnoreCase);
+    var byId = new Dictionary<string, ExModuleInfo>(
+      StringComparer.OrdinalIgnoreCase
+    );
     var input = new List<ExModuleInfo>();
     foreach (ExModuleInfo module in modules) {
       if (byId.TryGetValue(module.Id, out ExModuleInfo? existing)) {
@@ -109,7 +119,10 @@ public static class ExModules {
 
     var survivors = new List<ExModuleInfo>();
     foreach (ExModuleInfo module in input) {
-      List<string> missing = [.. module.Requires.Where(r => !byId.ContainsKey(r))];
+      List<string> missing =
+      [
+        .. module.Requires.Where(r => !byId.ContainsKey(r)),
+      ];
       if (missing.Count > 0) {
         foreach (string other in missing)
           errors.Add(
@@ -124,8 +137,12 @@ public static class ExModules {
       survivors.Select(m => m.Id),
       StringComparer.OrdinalIgnoreCase
     );
-    var indegree = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-    var dependents = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+    var indegree = new Dictionary<string, int>(
+      StringComparer.OrdinalIgnoreCase
+    );
+    var dependents = new Dictionary<string, List<string>>(
+      StringComparer.OrdinalIgnoreCase
+    );
     foreach (ExModuleInfo module in survivors) {
       indegree[module.Id] = module.Requires.Count(survivorIds.Contains);
       foreach (string required in module.Requires) {
@@ -157,7 +174,8 @@ public static class ExModules {
     }
 
     if (orderedIds.Count < survivors.Count) {
-      List<string> cycle = [
+      List<string> cycle =
+      [
         .. survivors
           .Select(m => m.Id)
           .Except(orderedIds, StringComparer.OrdinalIgnoreCase)

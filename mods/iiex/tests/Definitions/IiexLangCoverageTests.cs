@@ -57,7 +57,10 @@ public class IiexLangCoverageTests {
   [Fact]
   public void The_call_site_scan_finds_keys_to_check() {
     Assert.NotEmpty(
-      LangCallSites.Keys(Domain, System.IO.Path.Combine(RepoPaths.Mod(Domain), "src"))
+      LangCallSites.Keys(
+        Domain,
+        System.IO.Path.Combine(RepoPaths.Mod(Domain), "src")
+      )
     );
   }
 

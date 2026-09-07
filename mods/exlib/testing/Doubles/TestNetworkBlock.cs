@@ -94,11 +94,15 @@ public sealed class TestNetworkBlock : BlockNetworkNode {
 public static class NetworkNodeTestHooks {
   /// <summary>Sets <see cref="BlockNetworkNode.Type"/> directly, the shape-family answer normally read
   /// off the block's variant map during load.</summary>
-  public static void SetNetworkTypeForTest(this BlockNetworkNode node, string type) =>
-    node.SetNetworkTypeForTest(type);
+  public static void SetNetworkTypeForTest(
+    this BlockNetworkNode node,
+    string type
+  ) => node.SetNetworkTypeForTest(type);
 
   /// <summary>Sets <see cref="BlockNetworkNode.Orientation"/> directly, the connector-face code
   /// normally resolved from the surrounding network during placement.</summary>
-  public static void ApplyOrientationForTest(this BlockNetworkNode node, string token) =>
-    node.ApplyOrientationForTest(token);
+  public static void ApplyOrientationForTest(
+    this BlockNetworkNode node,
+    string token
+  ) => node.ApplyOrientationForTest(token);
 }

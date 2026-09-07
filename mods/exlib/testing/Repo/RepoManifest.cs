@@ -30,7 +30,8 @@ public static class RepoManifest {
 
   /// <summary>Every sample's id, project path and test project path, in the manifest's declared order.
   /// Empty in the default layout - a sample exists here only once <c>exmod.json</c> names it.</summary>
-  public static IReadOnlyDictionary<string, SampleEntry> Samples => Load().Samples;
+  public static IReadOnlyDictionary<string, SampleEntry> Samples =>
+    Load().Samples;
 
   /// <summary>Test projects belonging to neither a mod nor a sample, as absolute paths. Empty in the
   /// default layout.</summary>
@@ -51,13 +52,17 @@ public static class RepoManifest {
   private static Manifest Load() {
     string root = DefinitionGoldens.RepoRoot();
     string manifestPath = Path.Combine(root, "exmod.json");
-    return File.Exists(manifestPath) ? Parse(root, manifestPath) : Default(root);
+    return File.Exists(manifestPath)
+      ? Parse(root, manifestPath)
+      : Default(root);
   }
 
   private static Manifest Parse(string root, string manifestPath) {
     var doc = JObject.Parse(File.ReadAllText(manifestPath));
     var mods = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-    var overlays = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    var overlays = new Dictionary<string, string>(
+      StringComparer.OrdinalIgnoreCase
+    );
 
     if (doc["mods"] is JObject modsObj) {
       foreach (JProperty entry in modsObj.Properties()) {
@@ -68,7 +73,9 @@ public static class RepoManifest {
       }
     }
 
-    var samples = new Dictionary<string, SampleEntry>(StringComparer.OrdinalIgnoreCase);
+    var samples = new Dictionary<string, SampleEntry>(
+      StringComparer.OrdinalIgnoreCase
+    );
     if (doc["samples"] is JObject samplesObj) {
       foreach (JProperty entry in samplesObj.Properties())
         samples[entry.Name] = new SampleEntry(
@@ -77,10 +84,9 @@ public static class RepoManifest {
         );
     }
 
-    List<string> tests =
-      doc["tests"] is JArray testsArr
-        ? [.. testsArr.Select(t => Resolve(root, (string)t!))]
-        : [];
+    List<string> tests = doc["tests"] is JArray testsArr
+      ? [.. testsArr.Select(t => Resolve(root, (string)t!))]
+      : [];
 
     return new Manifest(mods, samples, tests, overlays);
   }
@@ -92,7 +98,9 @@ public static class RepoManifest {
       foreach (string dir in Directory.EnumerateDirectories(modsRoot))
         mods[new DirectoryInfo(dir).Name] = dir;
 
-    var overlays = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    var overlays = new Dictionary<string, string>(
+      StringComparer.OrdinalIgnoreCase
+    );
     if (
       mods.TryGetValue("iiex", out string? iiexPath)
       && Directory.Exists(Path.Combine(iiexPath, "assets", "game"))
@@ -109,5 +117,8 @@ public static class RepoManifest {
 
   // exmod.json spells every path with '/', repo-relative from its own location at the repo root.
   private static string Resolve(string root, string repoRelativePath) =>
-    Path.Combine(root, repoRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    Path.Combine(
+      root,
+      repoRelativePath.Replace('/', Path.DirectorySeparatorChar)
+    );
 }

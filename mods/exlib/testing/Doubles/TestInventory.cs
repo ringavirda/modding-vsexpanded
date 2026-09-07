@@ -7,6 +7,9 @@ namespace ExpandedLib.Testing;
 public static class TestInventory {
   /// <summary>An <paramref name="slots"/>-slot inventory with no slot-suitability rules of its own,
   /// registered under <paramref name="id"/>.</summary>
-  public static InventoryGeneric Of(TestWorld world, int slots, string id = "test") =>
-    new(slots, id, world.Api);
+  public static InventoryGeneric Of(
+    TestWorld world,
+    int slots,
+    string id = "test"
+  ) => new(slots, id, world.Api);
 }

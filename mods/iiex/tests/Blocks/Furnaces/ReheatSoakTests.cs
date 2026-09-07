@@ -1,6 +1,6 @@
 using System.Linq;
-using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
+using ExpandedLib.Machines;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Forming;
 using IronIndustryExpanded.BlockStructures.Furnaces;

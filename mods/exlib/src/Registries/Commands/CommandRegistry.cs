@@ -37,7 +37,10 @@ public static class CommandRegistry {
       }
     );
 
-    ReflectionScan.ForEachAttributed<SubCommandRegisterAttribute, IExSubCommand>(
+    ReflectionScan.ForEachAttributed<
+      SubCommandRegisterAttribute,
+      IExSubCommand
+    >(
       api,
       modId,
       asm,

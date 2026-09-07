@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Industry.Materials;
 using ExpandedLib.Catalogues;
+using ExpandedLib.Industry.Materials;
 using Newtonsoft.Json;
 using Vintagestory.API.Common;
 using Xunit;

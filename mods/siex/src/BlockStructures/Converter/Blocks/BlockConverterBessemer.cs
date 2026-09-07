@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockNetworkMolten;
 using SteelIndustryExpanded.BlockStructures.Converter.BlockEntities;
 using Vintagestory.API.Client;

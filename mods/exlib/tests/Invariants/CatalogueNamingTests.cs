@@ -21,18 +21,17 @@ public class CatalogueNamingTests {
   private static Type[] CatalogueRegistryTypes() {
     Assembly asm = typeof(ExpandedLibModSystem).Assembly;
     Type[] byNamespace =
-      [
-        .. asm
-          .GetTypes()
-          .Where(t =>
-            t.IsPublic
-            && t.Name.EndsWith("Registry", StringComparison.Ordinal)
-            && (t.Namespace ?? "").StartsWith(
-              "ExpandedLib.Catalogues",
-              StringComparison.Ordinal
-            )
-          ),
-      ];
+    [
+      .. asm.GetTypes()
+        .Where(t =>
+          t.IsPublic
+          && t.Name.EndsWith("Registry", StringComparison.Ordinal)
+          && (t.Namespace ?? "").StartsWith(
+            "ExpandedLib.Catalogues",
+            StringComparison.Ordinal
+          )
+        ),
+    ];
     return [.. byNamespace, typeof(MetalRegistry), typeof(ExLiquids)];
   }
 
@@ -40,8 +39,10 @@ public class CatalogueNamingTests {
   public void Every_catalogue_registry_exposes_Clear_and_Contributors() {
     foreach (Type type in CatalogueRegistryTypes()) {
       Assert.True(
-        type.GetMethod("Clear", BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
-          != null,
+        type.GetMethod(
+          "Clear",
+          BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance
+        ) != null,
         $"{type.Name} has no public Clear()"
       );
       Assert.True(
@@ -59,7 +60,10 @@ public class CatalogueNamingTests {
     foreach (Type type in CatalogueRegistryTypes())
       foreach (
         MemberInfo member in type.GetMembers(
-          BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly
+          BindingFlags.Public
+            | BindingFlags.Static
+            | BindingFlags.Instance
+            | BindingFlags.DeclaredOnly
         )
       ) {
         // Skip the [Obsolete] forwarder itself: the naming law is being enforced by keeping it

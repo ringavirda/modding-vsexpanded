@@ -22,7 +22,10 @@ public class ExInteractionTests {
   }
 
   private static BlockSelection Selection(BlockFacing? face = null) =>
-    new() { Position = new BlockPos(1, 2, 3, 0), Face = face ?? BlockFacing.NORTH };
+    new() {
+      Position = new BlockPos(1, 2, 3, 0),
+      Face = face ?? BlockFacing.NORTH,
+    };
 
   private static Item ToolItem(EnumTool tool, string code = "test:tool") {
     var item = new Item { Code = new AssetLocation(code), Tool = tool };
@@ -31,7 +34,9 @@ public class ExInteractionTests {
 
   [Fact]
   public void Held_reads_the_active_hotbar_stack() {
-    var stack = new ItemStack(new Item { Code = new AssetLocation("game:pick-iron") });
+    var stack = new ItemStack(
+      new Item { Code = new AssetLocation("game:pick-iron") }
+    );
     IPlayer player = PlayerHolding(stack);
 
     Interaction interaction = ExInteraction.Of(
@@ -61,7 +66,9 @@ public class ExInteractionTests {
 
   [Fact]
   public void HeldIs_code_matches_an_exact_code() {
-    var stack = new ItemStack(new Item { Code = new AssetLocation("iiex:wrench-basic") });
+    var stack = new ItemStack(
+      new Item { Code = new AssetLocation("iiex:wrench-basic") }
+    );
     IPlayer player = PlayerHolding(stack);
     Interaction interaction = ExInteraction.Of(
       Substitute.For<IWorldAccessor>(),
@@ -75,7 +82,9 @@ public class ExInteractionTests {
 
   [Fact]
   public void HeldIs_code_matches_a_wildcard() {
-    var stack = new ItemStack(new Item { Code = new AssetLocation("iiex:wrench-fancy") });
+    var stack = new ItemStack(
+      new Item { Code = new AssetLocation("iiex:wrench-fancy") }
+    );
     IPlayer player = PlayerHolding(stack);
     Interaction interaction = ExInteraction.Of(
       Substitute.For<IWorldAccessor>(),

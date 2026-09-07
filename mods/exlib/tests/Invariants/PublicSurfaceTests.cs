@@ -51,17 +51,25 @@ public class PublicSurfaceTests {
   // [CompilerGenerated], but no real identifier contains '<', so the name alone tells them apart from
   // an author-declared type.
   private static bool IsCompilerSynthesized(Type t) =>
-    t.Name.Contains('<') || t.IsDefined(typeof(CompilerGeneratedAttribute), false);
+    t.Name.Contains('<')
+    || t.IsDefined(typeof(CompilerGeneratedAttribute), false);
 
   private static IEnumerable<Type> ContractTypes() =>
-    typeof(ExpandedLibModSystem).Assembly.GetTypes()
+    typeof(ExpandedLibModSystem)
+      .Assembly.GetTypes()
       .Where(IsPubliclyVisible)
-      .Where(t => t.Namespace != null && !t.Namespace.StartsWith("ExpandedLib.Industry"))
+      .Where(t =>
+        t.Namespace != null && !t.Namespace.StartsWith("ExpandedLib.Industry")
+      )
       .Where(t => !IsCompilerSynthesized(t))
-      .Where(t => t.GetCustomAttributesData().All(a => a.AttributeType.Name != "IsByRefLikeAttribute"));
+      .Where(t =>
+        t.GetCustomAttributesData()
+          .All(a => a.AttributeType.Name != "IsByRefLikeAttribute")
+      );
 
   private static bool IsHidden(Type t) =>
-    t.GetCustomAttributesData().Any(a => a.AttributeType == typeof(EditorBrowsableAttribute));
+    t.GetCustomAttributesData()
+      .Any(a => a.AttributeType == typeof(EditorBrowsableAttribute));
 
   // Strips generic arity: List`1 -> List. The page writes ExConfigRegister<T> for the one generic
   // type it lists, so that literal form is also accepted.
@@ -73,7 +81,9 @@ public class PublicSurfaceTests {
   // A nested type is named `Outer.Inner` on the page - its own simple name alone is ambiguous once
   // more than one type nests a member with the same name.
   private static string QualifiedName(Type t) =>
-    t.IsNested ? $"{SimpleName(t.DeclaringType!)}.{SimpleName(t)}" : SimpleName(t);
+    t.IsNested
+      ? $"{SimpleName(t.DeclaringType!)}.{SimpleName(t)}"
+      : SimpleName(t);
 
   private static int Arity(Type t) => t.GetGenericArguments().Length;
 
@@ -154,12 +164,19 @@ public class PublicSurfaceTests {
       (string name, int arity) = ParseRow(raw);
       if (NotATypeName.Contains(name))
         continue;
-      if (resolvable.TryGetValue(name, out var arities) && arities.Contains(arity))
+      if (
+        resolvable.TryGetValue(name, out var arities) && arities.Contains(arity)
+      )
         continue;
       // Fall back to the last dotted segment, for a row that names a type through its namespace
       // rather than its declaring type.
-      string lastSegment = name.Contains('.') ? name[(name.LastIndexOf('.') + 1)..] : name;
-      if (resolvable.TryGetValue(lastSegment, out var lastArities) && lastArities.Contains(arity))
+      string lastSegment = name.Contains('.')
+        ? name[(name.LastIndexOf('.') + 1)..]
+        : name;
+      if (
+        resolvable.TryGetValue(lastSegment, out var lastArities)
+        && lastArities.Contains(arity)
+      )
         continue;
       missing.Add(raw);
     }
@@ -183,28 +200,42 @@ public class PublicSurfaceTests {
   [Fact]
   public void Untested_public_types_are_reported() {
     string testsDir = Path.Combine(RepoPaths.Mod("exlib"), "tests");
-    string invariantsDir = Path.Combine(testsDir, "Invariants") + Path.DirectorySeparatorChar;
+    string invariantsDir =
+      Path.Combine(testsDir, "Invariants") + Path.DirectorySeparatorChar;
 
-    List<string> testText = [
+    List<string> testText =
+    [
       .. Directory
         .EnumerateFiles(testsDir, "*.cs", SearchOption.AllDirectories)
-        .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
-        .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+        .Where(f =>
+          !f.Contains(
+            $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"
+          )
+        )
+        .Where(f =>
+          !f.Contains(
+            $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"
+          )
+        )
         .Where(f => !f.StartsWith(invariantsDir, StringComparison.Ordinal))
         .Select(File.ReadAllText),
     ];
 
-    List<string> untested = [
+    List<string> untested =
+    [
       .. ContractTypes()
         .Select(SimpleName)
         .Distinct()
-        .Where(name => !testText.Any(t => t.Contains(name, StringComparison.Ordinal)))
+        .Where(name =>
+          !testText.Any(t => t.Contains(name, StringComparison.Ordinal))
+        )
         .OrderBy(n => n, StringComparer.Ordinal),
     ];
 
     Assert.True(
       untested.Count < 60,
-      $"{untested.Count} untested public type(s):\n  " + string.Join("\n  ", untested)
+      $"{untested.Count} untested public type(s):\n  "
+        + string.Join("\n  ", untested)
     );
   }
 
@@ -233,7 +264,13 @@ public class PublicSurfaceTests {
 
   private static IEnumerable<string> LegacyOnlyTypeNames() {
     string srcDir = Path.Combine(RepoPaths.Mod("exlib"), "src");
-    foreach (string file in Directory.EnumerateFiles(srcDir, "*.cs", SearchOption.AllDirectories)) {
+    foreach (
+      string file in Directory.EnumerateFiles(
+        srcDir,
+        "*.cs",
+        SearchOption.AllDirectories
+      )
+    ) {
       string text = File.ReadAllText(file);
       if (!LegacyGuard.IsMatch(text))
         continue;

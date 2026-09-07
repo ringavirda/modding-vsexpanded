@@ -38,7 +38,9 @@ public class DefinitionContributorTests : IDisposable {
 
   private sealed class TestContributor : IExDefinitionContributor {
     public void Contribute(ICoreAPI api) =>
-      ExDefinitions.RegisterItem(ExItemDef.Create("exlibtest.contrib", "contributed"));
+      ExDefinitions.RegisterItem(
+        ExItemDef.Create("exlibtest.contrib", "contributed")
+      );
   }
 
   private sealed class ThrowingContributor : IExDefinitionContributor {
@@ -54,7 +56,11 @@ public class DefinitionContributorTests : IDisposable {
 
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
     return mod;
   }
 
@@ -112,6 +118,9 @@ public class DefinitionContributorTests : IDisposable {
     ExDefinitions.DiscoverContributors(typeof(NoCtorContributor).Assembly);
 
     Assert.Contains(logger.Warnings, w => w.Contains("NoCtorContributor"));
-    Assert.DoesNotContain(typeof(NoCtorContributor), ExDefinitions.Contributors);
+    Assert.DoesNotContain(
+      typeof(NoCtorContributor),
+      ExDefinitions.Contributors
+    );
   }
 }

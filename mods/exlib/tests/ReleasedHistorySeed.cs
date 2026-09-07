@@ -14,7 +14,12 @@ public static class ReleasedHistorySeed {
   /// every mega-block footprint, so it carries the same migration contract as a placed block.</summary>
   private static readonly IReadOnlyList<ReleasedCodes.Shipped> Shipped =
   [
-    new("exlib", "structurefiller", "exlib:structurefiller", ["exlib:structurefiller"]),
+    new(
+      "exlib",
+      "structurefiller",
+      "exlib:structurefiller",
+      ["exlib:structurefiller"]
+    ),
   ];
 
   public static void Register() =>

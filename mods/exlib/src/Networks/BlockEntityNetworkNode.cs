@@ -89,7 +89,11 @@ public abstract class BlockEntityNetworkNode : BlockEntity, INetworkNode {
     Dictionary<int, AssetLocation> itemIdMapping
   ) {
     base.OnStoreCollectibleMappings(blockIdMapping, itemIdMapping);
-    Persisted.StoreCollectibleMappings(Api.World, blockIdMapping, itemIdMapping);
+    Persisted.StoreCollectibleMappings(
+      Api.World,
+      blockIdMapping,
+      itemIdMapping
+    );
   }
 
   public override void OnLoadCollectibleMappings(

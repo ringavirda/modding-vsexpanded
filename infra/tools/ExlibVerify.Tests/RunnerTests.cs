@@ -11,9 +11,17 @@ namespace ExpandedLib.Verify.Tests;
 /// differs from <c>clean/</c> in exactly the one way its name says.
 /// </summary>
 public class RunnerTests {
-  private static (int ExitCode, List<Finding> Findings) Verify(string fixture, params string[] extraArgs) {
+  private static (int ExitCode, List<Finding> Findings) Verify(
+    string fixture,
+    params string[] extraArgs
+  ) {
     string[] args = [FixturePath.Of(fixture), .. extraArgs];
-    int exit = Runner.Run(args, TextWriter.Null, TextWriter.Null, out List<Finding> findings);
+    int exit = Runner.Run(
+      args,
+      TextWriter.Null,
+      TextWriter.Null,
+      out List<Finding> findings
+    );
     return (exit, findings);
   }
 

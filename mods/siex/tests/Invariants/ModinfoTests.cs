@@ -108,12 +108,20 @@ public class ModinfoTests {
   private static Dictionary<string, string> ReleasedVersions() {
     var highest = new Dictionary<string, string>(StringComparer.Ordinal);
 
-    foreach ((string id, string ver) in ExpandedLib.Testing.ReleasedVersions.HighestPublished) {
+    foreach (
+      (string id, string ver) in ExpandedLib
+        .Testing
+        .ReleasedVersions
+        .HighestPublished
+    ) {
       string mapped = id switch {
         "ppex" => "iiex", // renamed 2026-07; IiexRenameMigration carries the codes across
         _ => id,
       };
-      if (!highest.TryGetValue(mapped, out string? seen) || Compare(ver, seen) > 0)
+      if (
+        !highest.TryGetValue(mapped, out string? seen)
+        || Compare(ver, seen) > 0
+      )
         highest[mapped] = ver;
     }
 

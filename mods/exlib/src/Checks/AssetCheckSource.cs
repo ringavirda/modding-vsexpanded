@@ -24,8 +24,11 @@ public sealed class AssetCheckSource(ICoreAPI api) : ICheckSource {
   // JSON-only content pack with no exlib dependency) and never vanilla's own "game"/"survival"/
   // "creative", which never declares one.
   public IEnumerable<string> Domains =>
-    api.ModLoader.Mods
-      .Where(m => m.Info.ModID == "exlib" || m.Info.Dependencies.Any(d => d.ModID == "exlib"))
+    api
+      .ModLoader.Mods.Where(m =>
+        m.Info.ModID == "exlib"
+        || m.Info.Dependencies.Any(d => d.ModID == "exlib")
+      )
       .Select(m => m.Info.ModID)
       .Distinct();
 
@@ -48,7 +51,10 @@ public sealed class AssetCheckSource(ICoreAPI api) : ICheckSource {
   public IEnumerable<(string Locale, JObject Json)> Lang(string domain) {
     foreach (IAsset asset in api.Assets.GetMany("lang/", domain)) {
       if (TryParseObject(asset, out JObject json))
-        yield return (Path.GetFileNameWithoutExtension(asset.Location.Path), json);
+        yield return (
+          Path.GetFileNameWithoutExtension(asset.Location.Path),
+          json
+        );
     }
   }
 

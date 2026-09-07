@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
-using ExpandedLib.Testing;
 using ExpandedLib.Helpers;
+using ExpandedLib.Structures;
+using ExpandedLib.Testing;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -23,8 +23,14 @@ internal static class MultiblockCellRolesFixtures {
   public static readonly CellRole Chargeable = CellRole.Of("Chargeable");
   public static readonly CellRole Firebox = CellRole.Of("Firebox");
   public static readonly CellRole Tuyere = CellRole.Of("Tuyere");
-  public static readonly CellRole MetalTap = CellRole.Of("MetalTap", single: true);
-  public static readonly CellRole SlagTap = CellRole.Of("SlagTap", single: true);
+  public static readonly CellRole MetalTap = CellRole.Of(
+    "MetalTap",
+    single: true
+  );
+  public static readonly CellRole SlagTap = CellRole.Of(
+    "SlagTap",
+    single: true
+  );
   public static readonly CellRole Flue = CellRole.Of("Flue");
   public static readonly CellRole Damper = CellRole.Of("Damper");
 

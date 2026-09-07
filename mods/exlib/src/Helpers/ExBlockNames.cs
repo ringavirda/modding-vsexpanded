@@ -15,7 +15,8 @@ namespace ExpandedLib.Helpers;
 public static class ExBlockNames {
   // Ordered so registration order controls the order qualifiers apply in; a duplicate group name
   // replaces the prefix in place rather than moving it to the end (see AddVariantQualifier).
-  private static readonly List<(string Group, string LangPrefix)> _qualifiers = [];
+  private static readonly List<(string Group, string LangPrefix)> _qualifiers =
+  [];
 
   /// <summary>
   /// Registers a variant group so <see cref="Decorate"/> also qualifies on it: a block whose

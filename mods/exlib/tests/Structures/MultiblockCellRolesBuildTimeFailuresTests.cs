@@ -17,9 +17,7 @@ public class MultiblockCellRolesBuildTimeFailuresTests {
       ExBlockDef
         .Create("exlib", "testmega")
         .MultiblockLayout(s =>
-          s.Legend('C', "exlib:testmega*")
-            .Role('q', Flue)
-            .Layer(0, "C")
+          s.Legend('C', "exlib:testmega*").Role('q', Flue).Layer(0, "C")
         )
     );
     Assert.Contains("'q'", ex.Message, StringComparison.Ordinal);

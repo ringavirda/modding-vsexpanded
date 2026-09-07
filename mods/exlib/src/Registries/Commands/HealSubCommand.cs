@@ -1,6 +1,6 @@
+using System.ComponentModel;
 using ExpandedLib.Migrations;
 using ExpandedLib.Registries;
-using System.ComponentModel;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 

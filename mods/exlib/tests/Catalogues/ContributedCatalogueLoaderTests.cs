@@ -33,7 +33,8 @@ public class ContributedCatalogueLoaderTests {
 
   // Counts how many times TryParse actually runs a file through the parser, so the "parsed once" fix
   // can be checked directly rather than inferred from the report.
-  private sealed class TestLoader : ContributedCatalogueLoader<TestEntry, TestRegistry> {
+  private sealed class TestLoader
+    : ContributedCatalogueLoader<TestEntry, TestRegistry> {
     public int ParseCalls;
 
     private static readonly HashSet<string> RootKeys = ["id", "items"];
@@ -44,7 +45,11 @@ public class ContributedCatalogueLoaderTests {
     protected override IReadOnlyList<string> UnknownKeys(JsonObject root) =>
       JsonKeyAudit.UnknownKeys(root, RootKeys);
 
-    protected override bool TryParse(JsonObject root, out TestEntry set, out string? error) {
+    protected override bool TryParse(
+      JsonObject root,
+      out TestEntry set,
+      out string? error
+    ) {
       ParseCalls++;
       string id = root["id"].AsString("");
       if (string.IsNullOrEmpty(id)) {
@@ -60,13 +65,16 @@ public class ContributedCatalogueLoaderTests {
       return true;
     }
 
-    protected override IReadOnlyList<string> Contribute(TestRegistry registry, TestEntry set) =>
-      registry.Contribute(set);
+    protected override IReadOnlyList<string> Contribute(
+      TestRegistry registry,
+      TestEntry set
+    ) => registry.Contribute(set);
 
     protected override int CountEntries(TestEntry set) => set.Items.Count;
 
-    protected override CatalogueContributors Contributors(TestRegistry registry) =>
-      registry.Contributors;
+    protected override CatalogueContributors Contributors(
+      TestRegistry registry
+    ) => registry.Contributors;
 
     protected override void Clear(TestRegistry registry) => registry.Clear();
 
@@ -82,8 +90,10 @@ public class ContributedCatalogueLoaderTests {
       TestRegistry registry
     ) => base.MergeFiles(files, registry);
 
-    public new CatalogueLoadReport LoadCatalogue(ICoreAPI api, TestRegistry registry) =>
-      base.LoadCatalogue(api, registry);
+    public new CatalogueLoadReport LoadCatalogue(
+      ICoreAPI api,
+      TestRegistry registry
+    ) => base.LoadCatalogue(api, registry);
   }
 
   [Fact]
@@ -120,7 +130,9 @@ public class ContributedCatalogueLoaderTests {
     var loader = new TestLoader();
     var registry = new TestRegistry();
     bool sawMergedEntry = false;
-    registry.Contributors.Register(_ => sawMergedEntry = registry.ById.ContainsKey("a"));
+    registry.Contributors.Register(_ =>
+      sawMergedEntry = registry.ById.ContainsKey("a")
+    );
 
     ICoreAPI api = FakeAssetApi.Create(
       "config/test/",

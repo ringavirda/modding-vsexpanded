@@ -1,13 +1,13 @@
 using System.Text;
 using ExpandedLib;
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
-using ExpandedLib.Structures;
 using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockNetworkPipe;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;

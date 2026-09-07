@@ -84,10 +84,14 @@ public class MetalRegistryTests {
   public void FallbackOf_uses_the_registered_default() {
     var previous = MetalRegistry.DefaultRecoveryFallback;
     try {
-      MetalRegistry.DefaultRecoveryFallback = new AssetLocation("test:fallback");
+      MetalRegistry.DefaultRecoveryFallback = new AssetLocation(
+        "test:fallback"
+      );
       Assert.Equal(
         "test:fallback",
-        MetalRegistry.FallbackOf(new AssetLocation("game:ingot-iron"))?.ToString()
+        MetalRegistry
+          .FallbackOf(new AssetLocation("game:ingot-iron"))
+          ?.ToString()
       );
     } finally {
       MetalRegistry.DefaultRecoveryFallback = previous;

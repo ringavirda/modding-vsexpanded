@@ -31,7 +31,12 @@ public static class LangKeys {
   /// <summary>Domains whose lang files are somebody else's to ship: vanilla's, and the compat targets
   /// under <c>.compat/</c>. Anything else a literal names must resolve against the lang tree
   /// <see cref="Check"/> is given.</summary>
-  private static readonly HashSet<string> Foreign = ["game", "creative", "survival"];
+  private static readonly HashSet<string> Foreign =
+  [
+    "game",
+    "creative",
+    "survival",
+  ];
 
   /// <summary>Every literal lang key found under <paramref name="sourceRoots"/> resolves in
   /// <paramref name="langTree"/>'s <c>en.json</c>. Empty means clean.</summary>
@@ -43,7 +48,9 @@ public static class LangKeys {
     HashSet<string> keys = EnglishKeys(langTree);
     var missing = new List<string>();
 
-    foreach ((string litDomain, string key, string file) in LiteralKeys(sourceRoots)) {
+    foreach (
+      (string litDomain, string key, string file) in LiteralKeys(sourceRoots)
+    ) {
       // Vanilla's own keys are not ours to carry.
       if (Foreign.Contains(litDomain))
         continue;
@@ -67,7 +74,9 @@ public static class LangKeys {
   /// <summary>Every literal lang key found under <paramref name="sourceRoots"/> - the premise a caller
   /// asserts is non-empty, since a regex that stops matching would otherwise make <see cref="Check"/>
   /// pass trivially.</summary>
-  public static IReadOnlyList<string> Literals(IEnumerable<string> sourceRoots) =>
+  public static IReadOnlyList<string> Literals(
+    IEnumerable<string> sourceRoots
+  ) =>
     [.. LiteralKeys(sourceRoots).Select(t => $"{t.Domain}:{t.Key} ({t.File})")];
 
   #region Corpus

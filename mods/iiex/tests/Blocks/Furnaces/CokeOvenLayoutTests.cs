@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
+using ExpandedLib.Structures;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockStructures.Furnaces;
 using IronIndustryExpanded.BlockStructures.Furnaces.BlockEntities;
@@ -78,7 +78,10 @@ public class CokeOvenLayoutTests {
   /// </summary>
   [Fact]
   public void The_shared_wall_carries_no_chamber_cell() {
-    Assert.DoesNotContain(RoleCellsOf(Def, FurnaceCellRoles.Firebox), c => c.X == 0);
+    Assert.DoesNotContain(
+      RoleCellsOf(Def, FurnaceCellRoles.Firebox),
+      c => c.X == 0
+    );
   }
 
   /// <summary>

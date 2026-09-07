@@ -827,12 +827,16 @@ public sealed partial class TestWorld : IDisposable {
     // configuration untouched.
     SubstitutionContext
       .Current.GetCallRouterFor(api)
-      .RegisterCustomCallHandlerFactory(_ => new ModConfigCallHandler(ConfigFiles));
+      .RegisterCustomCallHandlerFactory(_ => new ModConfigCallHandler(
+        ConfigFiles
+      ));
 
     // Empty rather than unconfigured, so a content check reading recipes or lang off a TestWorld
     // (which carries neither) gets "nothing shipped" rather than a null-reference.
     var assets = Substitute.For<IAssetManager>();
-    assets.GetMany(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>()).Returns([]);
+    assets
+      .GetMany(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>())
+      .Returns([]);
     api.Assets.Returns(assets);
     coreApi.Assets.Returns(assets);
 

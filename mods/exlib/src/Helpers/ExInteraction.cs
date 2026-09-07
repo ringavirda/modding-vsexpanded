@@ -28,7 +28,8 @@ public readonly struct Interaction {
   }
 
   /// <summary>The active hotbar stack, or <c>null</c> for an empty hand or no player.</summary>
-  public ItemStack? Held => _player?.InventoryManager?.ActiveHotbarSlot?.Itemstack;
+  public ItemStack? Held =>
+    _player?.InventoryManager?.ActiveHotbarSlot?.Itemstack;
 
   /// <summary>The held stack's collectible, or <c>null</c> for an empty hand.</summary>
   public CollectibleObject? HeldCollectible => Held?.Collectible;

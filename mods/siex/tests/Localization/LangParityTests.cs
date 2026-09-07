@@ -8,7 +8,8 @@ namespace SteelIndustryExpanded.Tests;
 /// The lang-parity rule (<see cref="LangParity"/>) over siex's own shipped lang tree.
 /// </summary>
 public class LangParityTests {
-  private static string LangTree => Path.Combine(RepoPaths.Assets("siex"), "lang");
+  private static string LangTree =>
+    Path.Combine(RepoPaths.Assets("siex"), "lang");
 
   [Fact]
   public void Siexs_locales_carry_exactly_the_english_key_set_and_placeholders() {

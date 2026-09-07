@@ -48,8 +48,16 @@
        Content: ExcludeAssetsFromPack below only sets Pack=false on @(Content), so these pack
        untouched. -->
   <ItemGroup>
-    <None Include="../build/ExpandedLib.props" Pack="true" PackagePath="build/" />
-    <None Include="../build/ExpandedLib.targets" Pack="true" PackagePath="build/" />
+    <None
+      Include="../build/ExpandedLib.props"
+      Pack="true"
+      PackagePath="build/"
+    />
+    <None
+      Include="../build/ExpandedLib.targets"
+      Pack="true"
+      PackagePath="build/"
+    />
     <None Include="../build/LegacyUsings.cs" Pack="true" PackagePath="build/" />
   </ItemGroup>
 
@@ -59,7 +67,10 @@
        a compile-time reference, not the mod - only the dll, its xml docs and the readme belong in
        it. A plain ItemGroup runs too early to see those items (Directory.Build.targets is imported
        after this file), so the override happens in a Target instead. -->
-  <Target Name="ExcludeAssetsFromPack" BeforeTargets="_GetPackageFiles;GenerateNuspec">
+  <Target
+    Name="ExcludeAssetsFromPack"
+    BeforeTargets="_GetPackageFiles;GenerateNuspec"
+  >
     <ItemGroup>
       <Content Update="@(Content)" Pack="false" />
     </ItemGroup>
@@ -143,9 +154,15 @@
        interop generators) once the project has built, so filter to the one whose
        ReferenceSourceTarget marks it as ours - resolved by that ProjectReference, which orders the
        generator project's build first (Build always builds its project references before its own). -->
-  <Target Name="PackGeneratorsAsAnalyzers" BeforeTargets="_GetPackageFiles;GenerateNuspec">
+  <Target
+    Name="PackGeneratorsAsAnalyzers"
+    BeforeTargets="_GetPackageFiles;GenerateNuspec"
+  >
     <ItemGroup>
-      <_GeneratorAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <_GeneratorAnalyzer
+        Include="@(Analyzer)"
+        Condition="'%(Analyzer.ReferenceSourceTarget)' == 'ProjectReference'"
+      />
       <None
         Include="@(_GeneratorAnalyzer)"
         Pack="true"

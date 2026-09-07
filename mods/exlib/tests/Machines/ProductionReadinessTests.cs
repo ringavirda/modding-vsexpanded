@@ -1,8 +1,8 @@
 using System.Linq;
 using ExpandedLib.Blocks;
+using ExpandedLib.Definitions;
 using ExpandedLib.Machines;
 using ExpandedLib.Structures;
-using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -241,8 +241,10 @@ public class ProductionReadinessTests {
     ReflectionHelpers.SetField(
       rcc,
       "rcc",
-      new RightClickConstruction {
-        Stages = [
+      new RightClickConstruction
+      {
+        Stages =
+        [
           new Vintagestory.GameContent.ConstructionStage(),
           new Vintagestory.GameContent.ConstructionStage(),
         ],
@@ -265,7 +267,10 @@ public class ProductionReadinessTests {
 
   [Fact]
   public void A_machine_hosting_an_incomplete_construction_is_not_ready_and_stops() {
-    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+    var machine = new TestConstructedMachine {
+      Pos = new BlockPos(0, 0, 0),
+      Block = new Block(),
+    };
     AddIncompleteRcc(machine);
 
     Assert.False(ProductionReadiness.IsReady(machine));
@@ -274,7 +279,10 @@ public class ProductionReadinessTests {
 
   [Fact]
   public void A_machine_hosting_a_completed_construction_is_ready() {
-    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+    var machine = new TestConstructedMachine {
+      Pos = new BlockPos(0, 0, 0),
+      Block = new Block(),
+    };
 
     // RccFake primes the machine's own `_rcc` field; the behaviour it plants there is added to
     // Behaviors afterward so the readiness scan and the fake share the identical instance.
@@ -289,7 +297,10 @@ public class ProductionReadinessTests {
 
   [Fact]
   public void GatesProduction_false_neither_blocks_nor_stops() {
-    var machine = new TestConstructedMachine { Pos = new BlockPos(0, 0, 0), Block = new Block() };
+    var machine = new TestConstructedMachine {
+      Pos = new BlockPos(0, 0, 0),
+      Block = new Block(),
+    };
     ExRightClickConstructable rcc = AddIncompleteRcc(machine);
     ReflectionHelpers.SetProperty(rcc, nameof(rcc.GatesProduction), false);
 

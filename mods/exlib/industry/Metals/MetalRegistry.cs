@@ -114,7 +114,9 @@ public static class MetalRegistry {
   /// <see cref="MetalDef.RecoveryFallback"/> if it declares one, else <see cref="DefaultRecoveryFallback"/>,
   /// else null (no fallback).</summary>
   public static AssetLocation? FallbackOf(AssetLocation moltenItem) {
-    string? code = TryGet(moltenItem, out var def) ? def.RecoveryFallback : null;
+    string? code = TryGet(moltenItem, out var def)
+      ? def.RecoveryFallback
+      : null;
     return code != null ? new AssetLocation(code) : DefaultRecoveryFallback;
   }
 

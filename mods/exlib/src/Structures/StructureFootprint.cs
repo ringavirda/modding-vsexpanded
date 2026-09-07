@@ -34,10 +34,7 @@ public readonly record struct FillerBehaviorSpec(
     new(
       // The type's own assembly supplies the domain, so the fallback is unused for any type whose
       // assembly declares [assembly: ExDomain].
-      ExpandedLib.Registries.EntityRegistry.KeyFor(
-        string.Empty,
-        typeof(T)
-      ),
+      ExpandedLib.Registries.EntityRegistry.KeyFor(string.Empty, typeof(T)),
       face,
       properties
     );

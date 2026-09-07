@@ -33,11 +33,18 @@ public abstract class ContributedCatalogueLoader<TSet, TRegistry> {
   /// <summary>Parses one already key-audited file. False with a human-readable
   /// <paramref name="error"/> on any malformed field, so a bad declaration is reported and skipped
   /// rather than merged half-read.</summary>
-  protected abstract bool TryParse(JsonObject root, out TSet set, out string? error);
+  protected abstract bool TryParse(
+    JsonObject root,
+    out TSet set,
+    out string? error
+  );
 
   /// <summary>Merges <paramref name="set"/> into <paramref name="registry"/>. Returns one message per
   /// clash naming what lost; the caller attaches the file it came from.</summary>
-  protected abstract IReadOnlyList<string> Contribute(TRegistry registry, TSet set);
+  protected abstract IReadOnlyList<string> Contribute(
+    TRegistry registry,
+    TSet set
+  );
 
   /// <summary>How many records <paramref name="set"/> counts as, for the report.</summary>
   protected abstract int CountEntries(TSet set);

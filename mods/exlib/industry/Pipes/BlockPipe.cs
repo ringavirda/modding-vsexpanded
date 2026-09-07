@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ExpandedLib.Networks;
 using ExpandedLib.Definitions;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using Vintagestory.API.Common;
 

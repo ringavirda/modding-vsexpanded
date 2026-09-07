@@ -53,7 +53,8 @@
        string with -p:ExlibRoot= (a global property, so it wins over this default) to take the
        ExpandedLib package instead - see the sample csprojs' dual-mode item groups. -->
   <PropertyGroup>
-    <ExlibRoot Condition="'$(ExlibRoot)' == ''">$(MSBuildThisFileDirectory)exlib\</ExlibRoot>
+    <ExlibRoot Condition="'$(ExlibRoot)' == ''"
+      >$(MSBuildThisFileDirectory)exlib\</ExlibRoot>
   </PropertyGroup>
 
   <!-- The rest of the shared plumbing - GamePath resolution, provisioning, the capability
@@ -62,7 +63,10 @@
        Conditioned on $(ExlibRoot): in package mode a project importing this file also carries a
        PackageReference to ExpandedLib, whose build/ExpandedLib.props NuGet imports automatically,
        and importing both ways would double it up. -->
-  <Import Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.props" Condition="'$(ExlibRoot)' != ''" />
+  <Import
+    Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.props"
+    Condition="'$(ExlibRoot)' != ''"
+  />
 
   <!--
     ============================================================================================

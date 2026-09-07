@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ExpandedLib.Structures;
 using ExpandedLib.Definitions;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Helpers;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using IronIndustryExpanded.BlockStructures.Engine;
 using SteelIndustryExpanded.BlockStructures.Engine.BlockEntities;
 using Vintagestory.API.Client;

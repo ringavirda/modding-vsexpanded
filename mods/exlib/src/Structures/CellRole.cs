@@ -40,7 +40,10 @@ public readonly record struct CellRole(string Key) {
   /// </summary>
   public static CellRole Of(string key, bool single = false) {
     if (string.IsNullOrWhiteSpace(key))
-      throw new ArgumentException("A cell role key cannot be blank.", nameof(key));
+      throw new ArgumentException(
+        "A cell role key cannot be blank.",
+        nameof(key)
+      );
     lock (_single)
       _single[key] = single;
     return new CellRole(key);

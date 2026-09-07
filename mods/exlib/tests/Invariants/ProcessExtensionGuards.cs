@@ -41,7 +41,9 @@ public class ProcessExtensionGuards {
     string root = RepoRoot();
     var files = new List<SourceFile>();
 
-    foreach (string mod in Directory.EnumerateDirectories(Path.Combine(root, "mods"))) {
+    foreach (
+      string mod in Directory.EnumerateDirectories(Path.Combine(root, "mods"))
+    ) {
       string src = Path.Combine(mod, "src");
       if (!Directory.Exists(src))
         continue;

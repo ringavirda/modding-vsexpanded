@@ -68,7 +68,11 @@ public static class ReflectionHelpers {
   /// counterpart of <see cref="SetField"/>, for a process-wide static (e.g. the engine's
   /// <c>GamePaths.AssetsPath</c>) a headless replay must prime before the production code that reads
   /// it runs.</summary>
-  public static void SetStaticField(Type type, string fieldName, object? value) =>
+  public static void SetStaticField(
+    Type type,
+    string fieldName,
+    object? value
+  ) =>
     (
       type.GetField(
         fieldName,

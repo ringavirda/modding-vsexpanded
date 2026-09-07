@@ -39,15 +39,30 @@ public static class PatchChecker {
   ) {
     var findings = new List<Finding>();
 
-    foreach (string domain in patchDomains.OrderBy(d => d, StringComparer.Ordinal)) {
-      foreach ((string path, JToken json) in store.Under(domain, "patches/").OrderBy(f => f.Path, StringComparer.Ordinal)) {
+    foreach (
+      string domain in patchDomains.OrderBy(d => d, StringComparer.Ordinal)
+    ) {
+      foreach (
+        (string path, JToken json) in store
+          .Under(domain, "patches/")
+          .OrderBy(f => f.Path, StringComparer.Ordinal)
+      ) {
         if (json is not JArray patches)
           continue;
 
         for (int i = 0; i < patches.Count; i++) {
           if (patches[i] is not JObject spec)
             continue;
-          ApplyOne(store, domain, path, i, spec, loadedModIds, codeDomains, findings);
+          ApplyOne(
+            store,
+            domain,
+            path,
+            i,
+            spec,
+            loadedModIds,
+            codeDomains,
+            findings
+          );
         }
       }
     }
@@ -127,7 +142,13 @@ public static class PatchChecker {
     string? path = (string?)spec["path"];
     if (op == null || file == null) {
       findings.Add(
-        new Finding(FindingLevel.Error, "PatchOp", source, null, "patch has no 'op' or 'file'")
+        new Finding(
+          FindingLevel.Error,
+          "PatchOp",
+          source,
+          null,
+          "patch has no 'op' or 'file'"
+        )
       );
       return;
     }
@@ -136,8 +157,21 @@ public static class PatchChecker {
 
     if (targetPath.EndsWith('*')) {
       string prefix = targetPath[..^1];
-      foreach ((string foundPath, JToken _) in store.Under(targetDomain, prefix).ToList())
-        ApplyToTarget(store, targetDomain, foundPath, op, path, spec, source, findings);
+      foreach (
+        (string foundPath, JToken _) in store
+          .Under(targetDomain, prefix)
+          .ToList()
+      )
+        ApplyToTarget(
+          store,
+          targetDomain,
+          foundPath,
+          op,
+          path,
+          spec,
+          source,
+          findings
+        );
       // An empty wildcard match is not an error - GetMany simply returns nothing, and the game
       // does not log that as a problem either.
       return;
@@ -160,7 +194,16 @@ public static class PatchChecker {
       return;
     }
 
-    ApplyToTarget(store, targetDomain, targetPath, op, path, spec, source, findings);
+    ApplyToTarget(
+      store,
+      targetDomain,
+      targetPath,
+      op,
+      path,
+      spec,
+      source,
+      findings
+    );
   }
 
   private static void ApplyToTarget(
@@ -221,7 +264,11 @@ public static class PatchChecker {
 
   // Mirrors EnumJsonPatchOp -> Operation exactly the way ModJsonPatchLoader.CreateOperation does.
   // Null return means the op is unknown or is missing the value/from it requires.
-  private static Operation? BuildOperation(string op, string? pointerPath, JObject spec) {
+  private static Operation? BuildOperation(
+    string op,
+    string? pointerPath,
+    JObject spec
+  ) {
     if (pointerPath == null)
       return null;
     var pointer = new JsonPointer(pointerPath);
@@ -229,13 +276,31 @@ public static class PatchChecker {
     string? from = (string?)spec["fromPath"] ?? (string?)spec["from"];
 
     return op.ToLowerInvariant() switch {
-      "add" => value == null ? null : new AddReplaceOperation { Path = pointer, Value = value },
-      "addeach" => value == null ? null : new AddEachOperation { Path = pointer, Value = value },
-      "addmerge" => value == null ? null : new AddMergeOperation { Path = pointer, Value = value },
+      "add" => value == null
+        ? null
+        : new AddReplaceOperation { Path = pointer, Value = value },
+      "addeach" => value == null
+        ? null
+        : new AddEachOperation { Path = pointer, Value = value },
+      "addmerge" => value == null
+        ? null
+        : new AddMergeOperation { Path = pointer, Value = value },
       "remove" => new RemoveOperation { Path = pointer },
-      "replace" => value == null ? null : new ReplaceOperation { Path = pointer, Value = value },
-      "copy" => from == null ? null : new CopyOperation { Path = pointer, FromPath = new JsonPointer(from) },
-      "move" => from == null ? null : new MoveOperation { Path = pointer, FromPath = new JsonPointer(from) },
+      "replace" => value == null
+        ? null
+        : new ReplaceOperation { Path = pointer, Value = value },
+      "copy" => from == null
+        ? null
+        : new CopyOperation {
+          Path = pointer,
+          FromPath = new JsonPointer(from),
+        },
+      "move" => from == null
+        ? null
+        : new MoveOperation {
+          Path = pointer,
+          FromPath = new JsonPointer(from),
+        },
       _ => null,
     };
   }
@@ -246,7 +311,10 @@ public static class PatchChecker {
     int colon = file.IndexOf(':');
     string domain = colon < 0 ? "game" : file[..colon];
     string path = colon < 0 ? file : file[(colon + 1)..];
-    if (!path.EndsWith(".json", StringComparison.OrdinalIgnoreCase) && !path.EndsWith('*'))
+    if (
+      !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+      && !path.EndsWith('*')
+    )
       path += ".json";
     return (domain.ToLowerInvariant(), path.ToLowerInvariant());
   }

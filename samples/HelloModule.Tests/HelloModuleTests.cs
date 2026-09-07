@@ -15,8 +15,16 @@ namespace HelloModule.Tests;
 public class HelloModuleTests {
   private static Mod FakeMod(string modId) {
     var mod = Substitute.For<Mod>();
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Info), new ModInfo { ModID = modId });
-    ReflectionHelpers.SetProperty(mod, nameof(Mod.Logger), new RecordingLogger());
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Info),
+      new ModInfo { ModID = modId }
+    );
+    ReflectionHelpers.SetProperty(
+      mod,
+      nameof(Mod.Logger),
+      new RecordingLogger()
+    );
     return mod;
   }
 
@@ -34,7 +42,8 @@ public class HelloModuleTests {
 
   [Fact]
   public void Emits_one_item_per_greeting() {
-    var greetings = new[] {
+    var greetings = new[]
+    {
       new GreetingDef { Code = "a", Text = "Hi" },
       new GreetingDef { Code = "b", Text = "Yo" },
     };

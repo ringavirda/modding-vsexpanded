@@ -1,8 +1,8 @@
-using ExpandedLib.Structures;
+using System.ComponentModel;
 using ExpandedLib.Catalogues;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using HarmonyLib;
-using System.ComponentModel;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;

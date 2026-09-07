@@ -44,7 +44,11 @@ public class CommentStyleGuards {
     var files = new List<SourceFile>();
     string mods = Path.Combine(root, "mods");
     foreach (
-      string path in Directory.EnumerateFiles(mods, "*.cs", SearchOption.AllDirectories)
+      string path in Directory.EnumerateFiles(
+        mods,
+        "*.cs",
+        SearchOption.AllDirectories
+      )
     ) {
       // Generated sources are not hand-authored, so the style rules do not apply to them.
       if (path.EndsWith(".g.cs", StringComparison.Ordinal))

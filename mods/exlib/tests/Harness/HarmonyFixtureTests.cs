@@ -18,12 +18,18 @@ public class HarmonyFixtureTests {
     public static void Method() { }
   }
 
-  [HarmonyPatch(typeof(UncategorizedTarget), nameof(UncategorizedTarget.Method))]
+  [HarmonyPatch(
+    typeof(UncategorizedTarget),
+    nameof(UncategorizedTarget.Method)
+  )]
   private static class UncategorizedPatch {
     private static void Prefix() { }
   }
 
-  [HarmonyPatch(typeof(CollectibleObject), nameof(CollectibleObject.GetHeldItemName))]
+  [HarmonyPatch(
+    typeof(CollectibleObject),
+    nameof(CollectibleObject.GetHeldItemName)
+  )]
   private static class VanillaPatch {
     private static bool Prefix() => true;
   }
@@ -31,7 +37,10 @@ public class HarmonyFixtureTests {
   private const string TestCategory = "exlibtest.harmonyfixture-category";
 
   [HarmonyPatchCategory(TestCategory)]
-  [HarmonyPatch(typeof(CollectibleObject), nameof(CollectibleObject.GetHeldItemName))]
+  [HarmonyPatch(
+    typeof(CollectibleObject),
+    nameof(CollectibleObject.GetHeldItemName)
+  )]
   private static class CategorizedPatch {
     private static bool Prefix() => true;
   }
@@ -82,8 +91,14 @@ public class HarmonyFixtureTests {
       nameof(UncategorizedTarget.Method)
     )!;
 
-    using var first = new HarmonyFixture(modId, typeof(HarmonyFixtureTests).Assembly);
-    using var second = new HarmonyFixture(modId, typeof(HarmonyFixtureTests).Assembly);
+    using var first = new HarmonyFixture(
+      modId,
+      typeof(HarmonyFixtureTests).Assembly
+    );
+    using var second = new HarmonyFixture(
+      modId,
+      typeof(HarmonyFixtureTests).Assembly
+    );
 
     Assert.Equal(1, Harmony.GetPatchInfo(original)?.Prefixes.Count);
   }

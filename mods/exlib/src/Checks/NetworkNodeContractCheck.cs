@@ -48,14 +48,16 @@ public static class NetworkNodeContractCheck {
   // Runtime AllowedOrientations comes from ExDefinitions.OrientationMap, which contributes nothing
   // for a def carrying no type states, so such a node gets an empty orientation map and TryPlaceBlock
   // refuses - with no exception and no log line.
-  private static IEnumerable<string> TypeGroupViolation(string domain, ExBlockDef def) {
+  private static IEnumerable<string> TypeGroupViolation(
+    string domain,
+    ExBlockDef def
+  ) {
     if (def.VariantStates("type").Length > 0)
       yield break;
 
-    yield return
-      $"{domain}:{def.Code} declares NO `type` variant group - OrientationMap has nothing to "
-        + "contribute, so AllowedOrientations is empty, ComputeValidOrientations returns [] and "
-        + "TryPlaceBlock refuses. The block can never be placed, silently.";
+    yield return $"{domain}:{def.Code} declares NO `type` variant group - OrientationMap has nothing to "
+      + "contribute, so AllowedOrientations is empty, ComputeValidOrientations returns [] and "
+      + "TryPlaceBlock refuses. The block can never be placed, silently.";
   }
 
   // A node's orientation is picked by its neighbours, so the behaviour has to be told both that
@@ -77,10 +79,9 @@ public static class NetworkNodeContractCheck {
         .Where(b => (string?)b["name"] == "ExOrientable"),
     ];
     if (declared.Length != 1) {
-      yield return
-        $"{where} declares {declared.Length} `ExOrientable` behaviour(s), not 1 - a network node "
-          + "takes its orientation from its neighbours, so it needs exactly one to write the "
-          + "`orientation` variant through.";
+      yield return $"{where} declares {declared.Length} `ExOrientable` behaviour(s), not 1 - a network node "
+        + "takes its orientation from its neighbours, so it needs exactly one to write the "
+        + "`orientation` variant through.";
       yield break;
     }
 
@@ -89,18 +90,16 @@ public static class NetworkNodeContractCheck {
     string? scheme = (string?)declared[0]["properties"]?["scheme"];
 
     if (actual == null) {
-      yield return
-        $"{where} declares orientation states [{string.Join(",", states)}], which set-equal no "
-          + "scheme in ExOrientations.All - declare the scheme there rather than naming a near "
-          + "match, whose rotation fallback would map onto a token this block does not have.";
+      yield return $"{where} declares orientation states [{string.Join(",", states)}], which set-equal no "
+        + "scheme in ExOrientations.All - declare the scheme there rather than naming a near "
+        + "match, whose rotation fallback would map onto a token this block does not have.";
       yield break;
     }
 
     if (scheme != actual)
-      yield return
-        $"{where} names scheme '{scheme ?? "<absent>"}' but its `orientation` states are "
-          + $"{actual}'s - an unresolved name falls back to Axis, which rejects every token "
-          + "outside [ns,we,ud] and stops the node re-orienting with no exception and no log line.";
+      yield return $"{where} names scheme '{scheme ?? "<absent>"}' but its `orientation` states are "
+        + $"{actual}'s - an unresolved name falls back to Axis, which rejects every token "
+        + "outside [ns,we,ud] and stops the node re-orienting with no exception and no log line.";
   }
 
   // A membership created from a declaration starts with no network type of its own, and nothing
@@ -111,21 +110,23 @@ public static class NetworkNodeContractCheck {
     ExBlockDef def,
     JObject json
   ) {
-    foreach ((string where, JObject declaration) in MembershipDeclarations(json)) {
+    foreach (
+      (string where, JObject declaration) in MembershipDeclarations(json)
+    ) {
       string? networkType = (string?)declaration["properties"]?["networkType"];
       if (!string.IsNullOrEmpty(networkType))
         continue;
 
-      yield return
-        $"{domain}:{def.Code} declares a network membership in {where} with no `networkType` - "
-          + "the behaviour has no other source for one, so the cell logs an error and joins no "
-          + "graph. Give the declaration a networkType, or drop it.";
+      yield return $"{domain}:{def.Code} declares a network membership in {where} with no `networkType` - "
+        + "the behaviour has no other source for one, so the cell logs an error and joins no "
+        + "graph. Give the declaration a networkType, or drop it.";
     }
   }
 
-  private static IEnumerable<(string Where, JObject Declaration)> MembershipDeclarations(
-    JObject json
-  ) {
+  private static IEnumerable<(
+    string Where,
+    JObject Declaration
+  )> MembershipDeclarations(JObject json) {
     foreach (JObject beh in ArrayAt(json["entityBehaviors"]).OfType<JObject>())
       if (BareKey((string?)beh["name"]) == MembershipKey)
         yield return ("entityBehaviors", beh);

@@ -30,7 +30,11 @@ public class ChunkSweeperTests {
       return HasWork;
     }
 
-    protected override int VisitCell(IBlockAccessor ba, BlockPos pos, int blockId) => 0;
+    protected override int VisitCell(
+      IBlockAccessor ba,
+      BlockPos pos,
+      int blockId
+    ) => 0;
   }
 
   [Fact]

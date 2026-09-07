@@ -32,7 +32,10 @@ public class ItemBlisterWorkItem
         .Class<ItemBlisterWorkItem>()
         // The metal variant drives the vanilla voxel render, via the ingot-pile "blistersteel" texture.
         .VariantGroup("metal", "blistersteel")
-        .RootKey("texture", new { @base = "game:block/metal/ingot/blistersteel" })
+        .RootKey(
+          "texture",
+          new { @base = "game:block/metal/ingot/blistersteel" }
+        )
         .MaxStackSize(1)
         .StorageFlags(5)
         .MaterialDensity(7720)

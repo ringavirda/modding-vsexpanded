@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Machines;
-using ExpandedLib.Networks;
+using ExpandedLib.Catalogues;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.MechanicalPower;
-using ExpandedLib.Catalogues;
+using ExpandedLib.Machines;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using IronIndustryExpanded.BlockStructures.Forming.Blocks;
 using Vintagestory.API.Common;

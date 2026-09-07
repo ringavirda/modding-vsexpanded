@@ -56,7 +56,12 @@ public class SiexLangCoverageTests {
   /// <summary>The premise of the check above: a scan that matched nothing would pass it.</summary>
   [Fact]
   public void The_call_site_scan_finds_keys_to_check() {
-    Assert.NotEmpty(LangCallSites.Keys(Domain, System.IO.Path.Combine(RepoPaths.Mod(Domain), "src")));
+    Assert.NotEmpty(
+      LangCallSites.Keys(
+        Domain,
+        System.IO.Path.Combine(RepoPaths.Mod(Domain), "src")
+      )
+    );
   }
 
   [Fact]

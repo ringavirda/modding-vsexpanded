@@ -16,16 +16,24 @@ namespace ExpandedLib.Testing;
 /// old entry point they still read through.
 /// </para>
 /// </summary>
-public static class ReleasedCodes
-{
+public static class ReleasedCodes {
   /// <summary>One shipped blocktype: where it lived, its base code, and every concrete code it
   /// expanded to. Property-sourced variant groups are sampled rather than enumerated (the game
   /// holds their states), so <see cref="Codes"/> is representative for those, exact otherwise.</summary>
-  public sealed record Shipped(string Domain, string AssetPath, string BaseCode, string[] Codes);
+  public sealed record Shipped(
+    string Domain,
+    string AssetPath,
+    string BaseCode,
+    string[] Codes
+  );
 
   /// <summary>A block-entity class string a released blocktype declared, and the blocktypes that
   /// declared it.</summary>
-  public sealed record ShippedEntityClass(string Domain, string Class, string[] AssetPaths);
+  public sealed record ShippedEntityClass(
+    string Domain,
+    string Class,
+    string[] AssetPaths
+  );
 
   /// <summary>ppex, every release up to and including 0.6.8 - 19 blocktypes, 292 concrete codes.
   /// Registered by iiex's test <c>ModuleInit</c> (ppex became iiex).</summary>

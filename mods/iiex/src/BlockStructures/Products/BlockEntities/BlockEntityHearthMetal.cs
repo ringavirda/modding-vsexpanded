@@ -1,8 +1,8 @@
 using System.Text;
 using ExpandedLib.Blocks;
-using ExpandedLib.Structures;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Registries;
+using ExpandedLib.Structures;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 

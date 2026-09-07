@@ -48,7 +48,9 @@ public class CatalogueContributorsTests {
     var contributors = new CatalogueContributors();
     var logger = Substitute.For<ILogger>();
     int ran = 0;
-    contributors.Register(_ => throw new System.InvalidOperationException("boom"));
+    contributors.Register(_ =>
+      throw new System.InvalidOperationException("boom")
+    );
     contributors.Register(_ => ran++);
 
     contributors.Invoke(Substitute.For<ICoreAPI>(), logger);
@@ -124,11 +126,15 @@ public class CatalogueContributorsTests {
     );
 
     MaterialRoleRegistry.InvokeContributors(Substitute.For<ICoreAPI>());
-    Assert.True(MaterialRoleRegistry.IsRole("fuel", new AssetLocation("test:coal")));
+    Assert.True(
+      MaterialRoleRegistry.IsRole("fuel", new AssetLocation("test:coal"))
+    );
 
     MaterialRoleRegistry.Clear();
     MaterialRoleRegistry.InvokeContributors(Substitute.For<ICoreAPI>());
-    Assert.True(MaterialRoleRegistry.IsRole("fuel", new AssetLocation("test:coal")));
+    Assert.True(
+      MaterialRoleRegistry.IsRole("fuel", new AssetLocation("test:coal"))
+    );
 
     MaterialRoleRegistry.Contributors.Clear();
   }
@@ -139,10 +145,7 @@ public class CatalogueContributorsTests {
     var ex = new ProcessExtensions(registry, new ProcessJobRegistry());
     ProcessRouteRegistry.Contributors.Clear();
     ProcessRouteRegistry.Contributors.Register(_ =>
-      ex.AddStages(
-        "cshargot",
-        [new ProcessStage(2.0f, "Bar", ["flat"], null)]
-      )
+      ex.AddStages("cshargot", [new ProcessStage(2.0f, "Bar", ["flat"], null)])
     );
 
     registry.Clear();
@@ -197,7 +200,10 @@ public class CatalogueContributorsTests {
     BayOccupancyRegistry.Contributors.Clear();
     BayOccupancyRegistry.Contributors.Register(_ =>
       registry.Contribute(
-        new BayOccupancySet("cshargotrack", [new BayOccupancy("test:stock-rod", 1)])
+        new BayOccupancySet(
+          "cshargotrack",
+          [new BayOccupancy("test:stock-rod", 1)]
+        )
       )
     );
 

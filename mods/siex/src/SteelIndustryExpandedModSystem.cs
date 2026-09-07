@@ -1,7 +1,7 @@
 using ExpandedLib.Blocks;
-using ExpandedLib.Networks;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Networks;
 using ExpandedLib.Registries;
 using HarmonyLib;
 using SteelIndustryExpanded.BlockStructures.Boiler.BlockEntities;

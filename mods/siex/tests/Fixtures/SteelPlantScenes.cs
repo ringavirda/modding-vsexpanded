@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using ExpandedLib.Machines;
 using ExpandedLib.Helpers;
 using ExpandedLib.Industry.Metals;
 using ExpandedLib.Industry.Molten;
 using ExpandedLib.Industry.Pipes;
+using ExpandedLib.Machines;
 using ExpandedLib.Networks;
 using ExpandedLib.Testing;
 using IronIndustryExpanded.BlockNetworkMolten;
@@ -218,7 +218,9 @@ internal sealed class ConverterRig {
   /// </summary>
   public ConverterRig ProductionTick(int times = 1) {
     for (int i = 0; i < times; i++)
-      Control.GetBehavior<BEBehaviorProductionMachine>().DriveProductionTick(1f);
+      Control
+        .GetBehavior<BEBehaviorProductionMachine>()
+        .DriveProductionTick(1f);
     return this;
   }
 

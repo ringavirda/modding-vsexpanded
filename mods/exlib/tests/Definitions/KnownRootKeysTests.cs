@@ -51,14 +51,22 @@ public class KnownRootKeysTests {
     string methodName
   ) {
     bool anyObsolete = false;
-    foreach (MethodInfo method in declaringType.GetMethods(
-      BindingFlags.Public | BindingFlags.Instance
-    ))
-      if (method.Name == methodName && method.GetCustomAttribute<System.ObsoleteAttribute>() is { } obsolete) {
+    foreach (
+      MethodInfo method in declaringType.GetMethods(
+        BindingFlags.Public | BindingFlags.Instance
+      )
+    )
+      if (
+        method.Name == methodName
+        && method.GetCustomAttribute<System.ObsoleteAttribute>() is { } obsolete
+      ) {
         anyObsolete = true;
         Assert.Contains("RootKey", obsolete.Message);
       }
 
-    Assert.True(anyObsolete, $"{declaringType.Name}.{methodName} carries no [Obsolete].");
+    Assert.True(
+      anyObsolete,
+      $"{declaringType.Name}.{methodName} carries no [Obsolete]."
+    );
   }
 }

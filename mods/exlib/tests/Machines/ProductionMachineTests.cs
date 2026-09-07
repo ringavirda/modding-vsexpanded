@@ -130,7 +130,10 @@ public class ProductionMachineTests {
 
   [Fact]
   public void DriveProductionTick_still_honours_the_readiness_gate() {
-    var machine = new TestProductionMachine { Pos = new BlockPos(0, 0, 0), Operational = false };
+    var machine = new TestProductionMachine {
+      Pos = new BlockPos(0, 0, 0),
+      Operational = false,
+    };
 
     machine.DriveProductionTick(1f);
 

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ExpandedLib.Definitions;
 using ExpandedLib.Networks;
 using ExpandedLib.Structures;
-using ExpandedLib.Definitions;
 using ExpandedLib.Testing;
 using Vintagestory.API.Common;
 using Xunit;

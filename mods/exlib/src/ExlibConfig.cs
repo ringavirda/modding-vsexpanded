@@ -1,5 +1,5 @@
-using ExpandedLib.Config;
 using System.ComponentModel;
+using ExpandedLib.Config;
 
 namespace ExpandedLib;
 

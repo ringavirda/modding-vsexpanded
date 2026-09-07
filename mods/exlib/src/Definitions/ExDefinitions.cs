@@ -73,7 +73,10 @@ public static class ExDefinitions {
   public static void RegisterRecipe(ExRecipeDef def) =>
     RegisterRecipe(def, Assembly.GetCallingAssembly());
 
-  internal static void RegisterRecipe(ExRecipeDef def, Assembly providerAssembly) {
+  internal static void RegisterRecipe(
+    ExRecipeDef def,
+    Assembly providerAssembly
+  ) {
     TrackProvider(_recipeProviders, def.Location.ToString(), providerAssembly);
     _recipes.Register(def);
   }
@@ -223,15 +226,23 @@ public static class ExDefinitions {
     int ran = 0;
     foreach (Type type in _contributors) {
       try {
-        ((IExDefinitionContributor)Activator.CreateInstance(type)!).Contribute(api);
+        ((IExDefinitionContributor)Activator.CreateInstance(type)!).Contribute(
+          api
+        );
         ran++;
       } catch (Exception e) {
-        api.Logger.Error("[exlib] definition contributor {0} threw; skipped.", type.FullName);
+        api.Logger.Error(
+          "[exlib] definition contributor {0} threw; skipped.",
+          type.FullName
+        );
         api.Logger.Error(e);
       }
     }
     if (ran > 0)
-      api.Logger.Notification("[exlib] Ran {0} definition contributor(s).", ran);
+      api.Logger.Notification(
+        "[exlib] Ran {0} definition contributor(s).",
+        ran
+      );
   }
 
   // Discovers every concrete implementor of `providerInterface` in the assembly and registers each def its

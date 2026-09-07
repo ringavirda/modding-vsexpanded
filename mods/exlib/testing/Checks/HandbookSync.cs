@@ -275,8 +275,7 @@ public static class HandbookSync {
 
   private static SortedDictionary<string, string> SourcesByNumber(
     string domain
-  ) =>
-    ByNumber(Path.Combine(RepoPaths.Docs(domain), "handbook"), "*.html");
+  ) => ByNumber(Path.Combine(RepoPaths.Docs(domain), "handbook"), "*.html");
 
   private static SortedDictionary<string, string> DescriptorsByNumber(
     string domain

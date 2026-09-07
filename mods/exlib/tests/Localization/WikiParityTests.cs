@@ -20,7 +20,8 @@ public class WikiParityTests {
   /// reader is meant to write themselves. Kept short and justified one by one: an entry here is a
   /// symbol this guard will never check again.
   /// </summary>
-  private static readonly string[] KnownAbsent = [
+  private static readonly string[] KnownAbsent =
+  [
     // Real exlib types, but compiled only under the legacy !GAME_GE_1_22 guard (see
     // Blocks/Construction/ExConstruction.cs): absent from the assembly this guard reflects over,
     // which always builds for the current target. PublicSurfaceTests resolves them from source
@@ -28,7 +29,6 @@ public class WikiParityTests {
     "ExConstructionIngredient",
     "ExConstructionStage",
     "ExRightClickConstruction",
-
     // Registered class strings (BlockRegister/BlockEntityRegister's PrefixModId=false code), not the
     // C# class names they name - a JSON blocktype writes these, never a compiled reference.
     "ExFilledMegastructure",
