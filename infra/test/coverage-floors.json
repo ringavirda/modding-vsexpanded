@@ -1,0 +1,7 @@
+{
+  "assemblies": {
+    "iiex": { "display": "iiex", "floor": 55.0 },
+    "siex": { "display": "siex", "floor": 60.0 }
+  },
+  "total_floor": 60.0
+}

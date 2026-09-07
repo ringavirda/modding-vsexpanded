@@ -40,9 +40,9 @@ _ReSharper*/
 
 # Test and coverage output.
 [Tt]est[Rr]esult*/
-coverage*.json
-coverage*.xml
-coverage*.info
+/coverage*.json
+/coverage*.xml
+/coverage*.info
 *.coverage
 *.coveragexml
 
