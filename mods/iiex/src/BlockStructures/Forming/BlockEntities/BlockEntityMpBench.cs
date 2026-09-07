@@ -186,7 +186,5 @@ public abstract class BlockEntityMpBench
   private const string RemainingKey = "benchRemaining";
   private const string LegacyShearKey = "shearRemaining";
 
-  protected override void DeclareState(ExBlockState state) { }
-
   #endregion
 }

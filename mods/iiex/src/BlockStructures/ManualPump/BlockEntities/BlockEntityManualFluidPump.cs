@@ -271,8 +271,6 @@ public class BlockEntityManualFluidPump : ExBlockEntity {
 
   #region Persistence + lifecycle
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void OnBlockRemoved() {
     if (_serverTickId != 0)
       UnregisterGameTickListener(_serverTickId);

@@ -25,6 +25,4 @@ public class BlockEntitySlag : ExBlockEntity {
     base.GetBlockInfo(forPlayer, dsc);
     dsc.AppendLine(Lang.Get("iiex:slag-info-count", SlagCount));
   }
-
-  protected override void DeclareState(ExBlockState state) { }
 }

@@ -39,8 +39,6 @@ public class BlockEntityHeatSink : ExBlockEntity {
   // The shared incandescence scale: canals, barrels and the heat sink glow alike.
   private static byte GetLightLevel(float temp) => MoltenMetal.GlowLevel(temp);
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving

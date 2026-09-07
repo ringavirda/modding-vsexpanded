@@ -135,5 +135,4 @@ public class BlockEntityDesignTable : BlockEntityMachineStation {
   #endregion
 
   // The container base persists the inventory; only the selected diagram is carried here.
-  protected override void DeclareState(ExBlockState state) { }
 }

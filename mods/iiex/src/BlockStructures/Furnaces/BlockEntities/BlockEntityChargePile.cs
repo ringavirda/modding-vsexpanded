@@ -30,8 +30,6 @@ public class BlockEntityChargePile : BlockEntityFurnacePart {
   // List<T> the client clears and refills on every core sync) throws. The mesh therefore reads only the
   // snapshot published in #region Render snapshot.
 
-  protected override void DeclareState(ExBlockState state) { }
-
   #region Reading the column
 
   /// <summary>

@@ -96,8 +96,6 @@ public class BlockEntityEngineFluidPump : BlockEntityEngineSubmachine {
     _waterSound = null;
   }
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void OnBlockRemoved() {
     DisposeSounds();
     base.OnBlockRemoved();

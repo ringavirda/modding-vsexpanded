@@ -262,8 +262,6 @@ public class BlockEntitySteamCondenser : ExBlockEntity {
     base.OnBlockUnloaded();
   }
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void GetBlockInfo(
     IPlayer forPlayer,
     System.Text.StringBuilder dsc

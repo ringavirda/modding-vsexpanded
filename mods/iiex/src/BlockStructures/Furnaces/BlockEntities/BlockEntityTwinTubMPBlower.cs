@@ -144,8 +144,6 @@ public class BlockEntityTwinTubMPBlower : BlockEntityPipe {
     return port is { IsTurning: true } ? port.Speed : 0f;
   }
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) {
     // Pipe readout first (medium, throughput, pressure), then the bellows' own state.
     base.GetBlockInfo(forPlayer, dsc);

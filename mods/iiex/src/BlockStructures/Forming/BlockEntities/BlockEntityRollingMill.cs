@@ -625,7 +625,6 @@ public class BlockEntityRollingMill
 
   // The two stacks are absent from DeclareState on purpose: they are the container's now, written into
   // its "inventory" subtree with their id mappings.
-  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,

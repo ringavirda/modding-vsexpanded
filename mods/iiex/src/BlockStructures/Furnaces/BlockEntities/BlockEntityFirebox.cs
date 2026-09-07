@@ -24,8 +24,6 @@ public class BlockEntityFirebox : BlockEntityFurnacePart {
   /// <summary>The fuel bed. Null only if the blocktype forgot to declare the behaviour.</summary>
   public BEBehaviorFirebox? Bed => GetBehavior<BEBehaviorFirebox>();
 
-  protected override void DeclareState(ExBlockState state) { }
-
   #region Charging
 
   /// <summary>

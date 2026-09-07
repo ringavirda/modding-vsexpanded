@@ -123,6 +123,4 @@ public class BlockEntityFluidIntake : BlockEntityNetworkNode {
     else
       dsc.AppendLine(Lang.Get("iiex:fluidintake-info-active"));
   }
-
-  protected override void DeclareState(ExBlockState state) { }
 }

@@ -595,7 +595,6 @@ public class BlockEntityMoltenCanal
   #endregion
 
   #region Serialization / info
-  protected override void DeclareState(ExBlockState state) { }
 
   public override void FromTreeAttributes(
     ITreeAttribute tree,

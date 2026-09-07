@@ -378,8 +378,6 @@ public class BlockEntityBurdenmaker : ExBlockEntityContainer {
 
   #region Persistence
 
-  protected override void DeclareState(ExBlockState state) { }
-
   #endregion
 
   /// <summary>

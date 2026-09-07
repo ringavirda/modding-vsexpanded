@@ -23,6 +23,4 @@ public class BlockEntityRollingMillAxle : BlockEntityNetworkNode {
   /// <summary>The mill principal that owns this axle cell (<c>null</c> only if orphaned).</summary>
   [Persist("pr")]
   public BlockPos? Principal { get; set; }
-
-  protected override void DeclareState(ExBlockState state) { }
 }

@@ -119,6 +119,4 @@ public class BlockEntityHearthMetal : ExBlockEntity, IChiselableMolten {
       : (true, cell.IsHardened);
 
   #endregion
-
-  protected override void DeclareState(ExBlockState state) { }
 }

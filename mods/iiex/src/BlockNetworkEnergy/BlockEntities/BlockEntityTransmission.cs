@@ -284,8 +284,6 @@ public class BlockEntityTransmission : BlockEntityProductionMachine {
     return true;
   }
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving

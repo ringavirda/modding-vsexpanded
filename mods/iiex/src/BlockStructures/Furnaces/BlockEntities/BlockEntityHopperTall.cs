@@ -201,8 +201,6 @@ public class BlockEntityHopperTall : ExBlockEntity, IMultiblockComponent {
 
   #region Serialization
 
-  protected override void DeclareState(ExBlockState state) { }
-
   public override void FromTreeAttributes(
     ITreeAttribute tree,
     IWorldAccessor worldForResolving
