@@ -88,19 +88,29 @@
     networks, and since the merge it also owns everything iiex used to reference them for, so it has
     no mod dependency of its own. Private=false because the player installs exlib as its own mod, so
     its dll is not bundled into iiex's output.
+
+    Dual mode, same switch as mods/Directory.Build.props: source mode ($(ExlibRoot) != '', set from
+    the workspace when exlib is checked out beside this repository) references exlib straight from
+    the checkout; package mode ($(ExlibRoot) == '', a standalone clone) takes it from NuGet instead.
+    ExcludeAssets="runtime" is PackageReference's equivalent of Private=false - the package's dll
+    still isn't bundled into iiex's output.
   -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
+  <ItemGroup Condition="'$(ExlibRoot)' != ''">
+    <ProjectReference Include="$(ExlibRoot)src\ExpandedLib.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\exlib\industry\ExpandedLib.Industry.csproj">
+    <ProjectReference Include="$(ExlibRoot)industry\ExpandedLib.Industry.csproj">
       <Private>false</Private>
     </ProjectReference>
     <!-- Attribute/config source generators (compile-time only, ship nothing). -->
     <ProjectReference
-      Include="..\..\exlib\generators\ExpandedLib.Generators.csproj"
+      Include="$(ExlibRoot)generators\ExpandedLib.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
     />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' == ''">
+    <PackageReference Include="ExpandedLib" ExcludeAssets="runtime" />
+    <PackageReference Include="ExpandedLib.Industry" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>

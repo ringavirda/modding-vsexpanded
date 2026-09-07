@@ -1,20 +1,13 @@
 <Project>
   <!-- Central package management: every csproj's PackageReference drops its Version attribute and
        the version moves here, one row per package id, so a bump touches one file instead of every
-       consumer. templates/exlib-tests/YourMod.Tests.csproj is the one exception - a dotnet-new
-       template instantiated outside this repo, where no Directory.Packages.props exists, so it
-       keeps its own Version attributes. -->
+       consumer. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- Read once here, the same regex the three packable csprojs use, so their PackageVersion rows
-         below don't repeat the file read three times over. -->
-    <_ExlibModinfoJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)mods\exlib\src\modinfo.json'))</_ExlibModinfoJson>
-    <_ExlibReleaseVersion
-      >$([System.Text.RegularExpressions.Regex]::Match($(_ExlibModinfoJson), '&quot;version&quot;:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</_ExlibReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Shared across the five test projects and the harness. -->
+    <!-- Shared across the four test projects. -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -23,16 +16,13 @@
          off a test assembly - the harness's own dependency, not a test-runner package. -->
     <PackageVersion Include="xunit.extensibility.core" Version="2.9.2" />
 
-    <!-- The config/lang source generators; netstandard2.0 only, ships nothing. -->
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
-
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
 
-    <!-- The three packable exlib projects reference each other's package identity, not a fixed
-         version: the row tracks exlib's own modinfo.json, the same file the csprojs read today, so
-         a release still bumps one number. -->
-    <PackageVersion Include="ExpandedLib" Version="$(_ExlibReleaseVersion)" />
-    <PackageVersion Include="ExpandedLib.Industry" Version="$(_ExlibReleaseVersion)" />
-    <PackageVersion Include="ExpandedLib.Testing" Version="$(_ExlibReleaseVersion)" />
+    <!-- In package mode iiex and siex pull the framework from these rows. Literal, not read off
+         exlib's own modinfo.json (there is no local exlib checkout to read it from any more) - a
+         release of exlib bumps the three rows here by hand. -->
+    <PackageVersion Include="ExpandedLib" Version="0.8.0-preview.1" />
+    <PackageVersion Include="ExpandedLib.Industry" Version="0.8.0-preview.1" />
+    <PackageVersion Include="ExpandedLib.Testing" Version="0.8.0-preview.1" />
   </ItemGroup>
 </Project>

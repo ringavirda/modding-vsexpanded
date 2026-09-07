@@ -28,15 +28,15 @@ conventions live outside it: a page here is never also a task tracker.
 
 ## The tree
 
-[mechanics/](mechanics/) - the shared models. Every machine cites these.
+[mechanics/](mechanics/) - the shared models. Every machine cites these. The framework mechanics -
+molten-network, mp-energy, multiblock, orientation-schemes, pipe-network, process-extension,
+framework-composition - moved with exlib and are documented there now.
 
 [density-rule](mechanics/density-rule.md) · [diagram-crafting](mechanics/diagram-crafting.md) ·
 [gas-system](mechanics/gas-system.md) ·
 [heat-balance](mechanics/heat-balance.md) ·
-[metal-recovery](mechanics/metal-recovery.md) · [molten-network](mechanics/molten-network.md) ·
-[mp-energy](mechanics/mp-energy.md) · [multiblock](mechanics/multiblock.md) ·
+[metal-recovery](mechanics/metal-recovery.md) ·
 [naming](mechanics/naming.md) (home of R10) ·
-[orientation-schemes](mechanics/orientation-schemes.md) · [pipe-network](mechanics/pipe-network.md) ·
 [plant-layout](mechanics/plant-layout.md) · [recipes-config](mechanics/recipes-config.md) ·
 [recoverability](mechanics/recoverability.md) · [tooling-wear](mechanics/tooling-wear.md)
 

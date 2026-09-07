@@ -53,9 +53,20 @@
     <!-- Copy exlib.dll + iiex.dll into the test bin so the runner loads them headlessly; their VS
          deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. iiex is the
          lowest content mod, so this project references NO other mod. -->
-    <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj" />
     <ProjectReference Include="..\src\IronIndustryExpanded.csproj" />
-    <ProjectReference Include="..\..\exlib\testing\ExpandedLib.Testing.csproj" />
+  </ItemGroup>
+
+  <!-- Dual mode, same switch as the mod project above: source mode ProjectReferences exlib and the
+       harness straight from the checkout, package mode takes them from NuGet. Plain (no
+       ExcludeAssets/Private=false) in both branches - a test project loads exlib.dll and
+       ExpandedLib.Testing.dll at test time, unlike the mod project which never ships either. -->
+  <ItemGroup Condition="'$(ExlibRoot)' != ''">
+    <ProjectReference Include="$(ExlibRoot)src\ExpandedLib.csproj" />
+    <ProjectReference Include="$(ExlibRoot)testing\ExpandedLib.Testing.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' == ''">
+    <PackageReference Include="ExpandedLib" />
+    <PackageReference Include="ExpandedLib.Testing" />
   </ItemGroup>
 
   <!-- The base pipe block + BE live in exlib and the shared pipe builders (PipeTestWorld) here.

@@ -20,7 +20,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming.BlockEntities;
 /// length rather than a toggle: the stock is drawn through at roll surface speed (<c>v = ωR</c>), and while it
 /// is under the rolls the mill imposes <see cref="LoadTorque"/>. That load is temperature-driven, so cold stock
 /// drags ω down and can stall the run mid-pass. See docs/design/machines/rolling-mill.md and
-/// docs/design/mechanics/mp-energy.md.
+/// exlib's mp-energy mechanics page.
 /// </summary>
 [BlockEntityRegister]
 public class BlockEntityRollingMill

@@ -18,7 +18,7 @@ namespace IronIndustryExpanded.BlockNetworkEnergy.Blocks;
 /// orientation model. Two sizes share this class: <c>normal</c> (3×3×1) and <c>large</c> (5×5×2), disc
 /// inertia scaling with <c>R⁴·t</c> so the large wheel holds about 15× the energy. Per-size values are
 /// content (<see cref="IiexValues"/>); the simulation lives in <see cref="BlockEntityFlywheel"/> and
-/// <c>ExpandedLib.Networks.MpEnergyNetwork</c>. See docs/design/mechanics/mp-energy.md.
+/// <c>ExpandedLib.Networks.MpEnergyNetwork</c>. See exlib's mp-energy mechanics page.
 /// </summary>
 [BlockRegister]
 public partial class BlockFlywheel

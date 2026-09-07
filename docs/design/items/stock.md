@@ -194,7 +194,7 @@ redraw and the move to the smex domain are queued with the ladder work (§ Open)
 [density rule](../mechanics/density-rule.md)'s.
 
 The editable files reference textures by absolute local path (`item-shingled-bar.json:12` points at
-`F:/repos/modding-vsexpanded/.game/1.22/…/iron5`). That is the editable-source convention; the generator
+`F:/repos/modding-vsex/exmods/.game/1.22/…/iron5`). That is the editable-source convention; the generator
 rewrites every texture to `game:block/metal/sheet-plain/iron5` on export
 (`generate-rolled-stock.py:38`, `:96`).
 
@@ -274,7 +274,7 @@ the item-code remap off the same field.
 | `CastStockItemDefinitions.FormOf` | `mods/iiex/src/Items/CastStockItemDefinitions.cs` | variant to form name - `cast` + variant, never the bare variant |
 | `CastStockFormsTests` | `mods/siex/tests/Blocks/Forming/CastStockFormsTests.cs` | the cross-mod seam: declared form resolves, art matches the section |
 | `ShippedCastCropTableTests` | `mods/siex/tests/Blocks/Forming/ShippedCastCropTableTests.cs` | the five cast crop rows, and that they merge with iiex's four rather than replacing them |
-| `ShapeExtents` | `mods/exlib/testing/ShapeExtents.cs` | composed shape extents, shared by both stock-art guards |
+| `ShapeExtents` | `exlib/testing/ShapeExtents.cs` | composed shape extents, shared by both stock-art guards |
 
 ---
 

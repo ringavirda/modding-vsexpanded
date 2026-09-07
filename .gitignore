@@ -59,17 +59,20 @@ coverage*.info
 # Repo-specific
 #
 
-# Downloaded Vintage Story installs + cached archives.
-/.game/
+# Downloaded Vintage Story installs + cached archives. No trailing slash: in the workspace this is
+# a symlink to the shared install, not a directory, and a directory-only pattern does not match a
+# symlink.
+/.game
 
 # Vintage Story data dir the game generates under the repo via --dataPath.
 /.gamedata/
 
-# Self-contained .NET (SDK + runtimes).
-/.dotnet/
+# Self-contained .NET (SDK + runtimes). Symlinked in the workspace - see /.game above.
+/.dotnet
 
-# Local sources of other mods to maintain compatibility with (reference only).
-/.compat/
+# Local sources of other mods to maintain compatibility with (reference only). Symlinked in the
+# workspace - see /.game above.
+/.compat
 
 # Dependency mods provision resolves and caches: workspace siblings build their own, so this only
 # ever holds a release download.

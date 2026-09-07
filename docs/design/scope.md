@@ -25,7 +25,7 @@ off-spine add-ons.
 | The phase-change / distillation model itself | [conventions.md](conventions.md) § distillation |
 | The fluid tank, and why medium-agnostic is load-bearing | [fluid-tank](machines/fluid-tank.md) |
 | The ferrous crucible furnace (which is not deferred) | [crucible-furnace](machines/crucible-furnace.md) |
-| R3, the ladle-is-the-only-merge rule | [conventions.md](conventions.md), [molten network](mechanics/molten-network.md) |
+| R3, the ladle-is-the-only-merge rule | [conventions.md](conventions.md), exlib's molten-network mechanics page |
 | The ladle as a machine, and the zinc coke cover | [ladle](machines/ladle.md) |
 | elex's grid model, arc furnace and electrode mechanic | [deferred/elex/](deferred/elex/electrical-grid.md) |
 | Current build status and every open decision (the D/N rulings, the blocker list) | [STATE.md](../internal/plans/STATE.md) |
@@ -243,7 +243,7 @@ needs it.
   statement about what the pipe network can carry; misleading as a statement of scope.
 * Nothing on the deferral list exists in code. `grep -rni` over `src/` for
   `coalgas|sprinkler|gasholder|distill|retort|petcoke|graphite|electrolys` returns exactly one hit - a doc
-  comment in `mods/exlib/src/Fluids/IMediumTaxonomy.cs` mentioning distillation fractions - and `copper`
+  comment in `exlib/src/Fluids/IMediumTaxonomy.cs` mentioning distillation fractions - and `copper`
   appears only in vanilla-facing plumbing (the metal catalogue and tool emitter).
 
 ---

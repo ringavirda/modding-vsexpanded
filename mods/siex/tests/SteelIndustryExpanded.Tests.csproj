@@ -40,18 +40,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Copy exlib.dll + iiex.dll + siex.dll into the test bin so the runner loads them headlessly;
-         their VS deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
-    <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj" />
+    <!-- Copy iiex.dll + siex.dll into the test bin so the runner loads them headlessly; their VS
+         deps are resolved by VsAssemblyResolver from the $(VINTAGE_STORY) install. -->
     <ProjectReference Include="..\..\iiex\src\IronIndustryExpanded.csproj" />
     <ProjectReference Include="..\src\SteelIndustryExpanded.csproj" />
-    <ProjectReference Include="..\..\exlib\testing\ExpandedLib.Testing.csproj" />
     <!-- Content-specific fixtures follow the mod chain: the pipe builders come from the iiex suite,
          the boiler/engine plants from the iiex suite. -->
     <ProjectReference Include="..\..\iiex\tests\IronIndustryExpanded.Tests.csproj" />
-    <!-- ReleasedCodeCoverageTests/ReleasedEntityClassTests are the only suite that checks all three
-         mods' shipped history together, so exlib's release-history registration has to load here too. -->
-    <ProjectReference Include="..\..\exlib\tests\ExpandedLib.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Dual mode, same switch as siex's mod project: source mode ProjectReferences exlib and the
+       harness straight from the checkout, package mode takes them from NuGet. exlib's own test
+       project (ExpandedLib.Tests) does not survive the split - it is exlib's, not a dependency this
+       repository can carry a reference to; the one thing this suite took from it, exlib's own
+       release-history seed (one shipped code, one version row), is reproduced locally in
+       ExlibReleasedHistorySeed.cs instead. -->
+  <ItemGroup Condition="'$(ExlibRoot)' != ''">
+    <ProjectReference Include="$(ExlibRoot)src\ExpandedLib.csproj" />
+    <ProjectReference Include="$(ExlibRoot)testing\ExpandedLib.Testing.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' == ''">
+    <PackageReference Include="ExpandedLib" />
+    <PackageReference Include="ExpandedLib.Testing" />
   </ItemGroup>
 
   <!-- The base pipe block + BE live in exlib, and the shared pipe builders in the iiex test project.

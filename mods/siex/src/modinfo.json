@@ -8,7 +8,7 @@
   "version": "0.9.9",
   "dependencies": {
     "game": "1.22.0",
-    "exlib": "0.7.3",
+    "exlib": "0.8.0-preview.1",
     "iiex": "0.7.0"
   }
 }

@@ -245,7 +245,7 @@ A fourth `LiquidDef` has to exist. `ExLiquids.Load` re-seeds the four built-ins 
 |---|---|---|
 | `code` | `"ProducerGas"` | must equal the network `MediumType` string verbatim - `LiquidDef.cs:17-18` |
 | `phase` | `gas` | `LiquidPhase.Gas`; gas and liquid never mix, `ExLiquids.cs:110-113` |
-| `priority` | 30 | merge dominance. Shipped: Air 0, Steam 10, Exhaust 20 (`ExLiquids.cs:46-59`, `mods/exlib/assets/exlib/config/liquids.json`). Above Exhaust so a producer main joined to anything else reads as producer gas rather than silently relabelling to Exhaust |
+| `priority` | 30 | merge dominance. Shipped: Air 0, Steam 10, Exhaust 20 (`ExLiquids.cs:46-59`, `exlib/assets/exlib/config/liquids.json`). Above Exhaust so a producer main joined to anything else reads as producer gas rather than silently relabelling to Exhaust |
 | `condensesTo` / `boilPointC` | none | producer gas has no phase partner in this model |
 
 ### hard-coded — the three medium strings a fourth gas must pass

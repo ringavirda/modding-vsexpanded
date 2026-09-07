@@ -182,7 +182,7 @@ Items, so there is no break behaviour of their own.
 | `GearRecipeDefinitions : IExRecipeDefProvider` | `mods/iiex/src/Recipes/Smithing/GearRecipeDefinitions.cs:14` | the three plans |
 | `IngotMetal` | `:17-24` | the shared ingredient object |
 | `TwoGearRows` | `:27-34` | the 5-row plan; `:55` concatenates it with itself for the 4-gear plan |
-| `ExIngredients.Gear(code, qty)` | `mods/exlib/src/Definitions/ExIngredients.cs:57-58` | the recipe-side helper; no metal capture |
+| `ExIngredients.Gear(code, qty)` | `exlib/src/Definitions/ExIngredients.cs:57-58` | the recipe-side helper; no metal capture |
 | Bessemer gate | `mods/siex/src/.../BlockEntityConverterControl.Peripherals.cs:218-219` | `IsSpawnGear` + `HasSpawnMaterials` |
 
 ---

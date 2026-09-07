@@ -275,7 +275,7 @@ purpose, so a castable-but-brittle metal never leaks an anvil-forgeable `workite
 This is a continuous material→pressure ladder and the shape D3 asks for, but it is keyed on `Mod.Info.ModID`,
 so the rating belongs to the block's mod, not to the metal it was built from: a hadfield pipe on a Bessemer
 base and one on an open-hearth base are the same block and rate identically. D3 needs the key to move onto the
-metal. The pipe base classes live in exlib (`mods/exlib/src/Blocks/Networks`); the burst registry sits with
+metal. The pipe base classes live in exlib (`exlib/src/Blocks/Networks`); the burst registry sits with
 them and stays domain-keyed.
 
 ---

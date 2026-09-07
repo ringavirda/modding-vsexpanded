@@ -1,5 +1,5 @@
 # Steel Industry Expanded (`siex`)
 
-Player wiki source for `siex`: the steel tier - hot blast, Bessemer and open-hearth steelmaking, the
-gas producer, alloy stock and the high-pressure steam machines they gate. Pages are authored here,
-beside the mod's source, tests and assets.
+The framework wiki lives with exlib, at [ringavirda/exlib](https://github.com/ringavirda/exlib).
+`siex`'s own player wiki - the steel tier, hot blast and Bessemer steelmaking, the high-pressure
+steam machines - is not authored yet; this page is a placeholder for it.

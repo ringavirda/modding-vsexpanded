@@ -368,7 +368,7 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
 `mods/iiex/tests/Blocks/Energy/` - six files, 45 methods: `FlywheelTests` (13),
 `CastIronBevelTests` (10), `TransmissionTests` (9), `EnergyAnimTests` (6), `CastIronShaftTests` (4),
 `EnergyMeshesTests` (3). The network model itself is pinned in
-`mods/exlib/tests/Networks/MpEnergyNetworkStateTests.cs` and `…TickTests.cs`.
+`exlib/tests/Networks/MpEnergyNetworkStateTests.cs` and `…TickTests.cs`.
 
 ---
 

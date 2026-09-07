@@ -57,7 +57,7 @@ Referenced by name from the mod docs.
   months.)* A flywheel is a reservoir, not a battery: it stores `E = ½Iω²` in joules and every joule out
   came from a joule in, less friction. Torque balance is `I·dω/dt = τ_drive − τ_load − τ_friction`. No node
   may mint energy, and a run whose total inertia is zero has no speed rather than infinite speed. Owned by
-  [mp-energy](mechanics/mp-energy.md). Two clauses of the original proposal are not implemented -
+  exlib's mp-energy mechanics page. Two clauses of the original proposal are not implemented -
   governor throttling and over-speed burst (`IsOverSpeed` has zero call sites).
 - **R9 - Mass is derived from the shape.** *(Added 2026-07-29.)* 1 voxel³ = 2.5 units. Every mass in the
   suite is the density rule applied to a drawn shape, not a picked number, which is why masses divide exactly
@@ -102,10 +102,10 @@ are not exlib networks - vanilla MP is the engine's own, and elex's grid is defe
 - **Mechanical energy (`mpenergy`)** *(live)* - the flywheel-buffered energy reservoir the heavy machines draw
   from: joules, not torque-at-a-speed. A vanilla waterwheel or windmill is bridged in at the flywheel's hub
   face, and in iiex the player swaps that producer for a steam engine while the network stays identical.
-  Governed by R8. Owned by [mp-energy](mechanics/mp-energy.md); blocks ship in iiex under
+  Governed by R8. Owned by exlib's mp-energy mechanics page; blocks ship in iiex under
   `BlockNetworkEnergy/`.
 - **Molten-canal** *(live)* - per-cell metal, flows cell→cell, end caps recomputed on tesselation. The
-  ladle is the only merge/mix point (R3). Owned by [molten-network](mechanics/molten-network.md).
+  ladle is the only merge/mix point (R3). Owned by exlib's molten-network mechanics page.
 - **Pipe (gas or water)** *(live)* - single medium per network (R1). Used for water, steam, compressed
   air, exhaust, coal gas and the chemistry fractions. Three material tiers of pipe block, ascending
   burst pressure: plated (iiex - hammered from iron plates, 2.5 atm), cast (iiex - from cast
@@ -226,46 +226,16 @@ Line breaks in an authoring file are wrapping, not content - VTML collapses whit
 so does the sync - so re-wrapping a page is a no-op. Attribute quotes are written `\"` because the files
 predate the tooling and were meant to be pasted straight into JSON; the sync un-escapes them.
 
-### How exlib is laid out (ruled 2026-09-05; supersedes the `Blocks/`-vs-top-level rule)
+### How exlib is laid out
 
-A top-level folder under `mods/exlib/src/` is something a modder is doing, and it is one namespace.
-Sub-folders organise files; they never add a namespace segment. A consumer needs one `using` per
-activity, and a machine mod needs about six in total.
+exlib's own tree - the framework namespaces, its `industry/`/`testing`/`build` satellite
+projects, its samples - is documented in exlib's own copy of this file, at
+[ringavirda/exlib](https://github.com/ringavirda/exlib). This repository consumes exlib as a
+dependency (source mode against a sibling checkout, package mode against the published
+`ExpandedLib*` NuGet packages - see the root README) rather than laying it out.
 
-| Folder | Namespace | A modder who is... |
-|---|---|---|
-| `Registries/` | `ExpandedLib.Registries` | registering blocks, items, behaviours, commands, preferences, recipe profiles; asking about other mods; patching with Harmony |
-| `Config/` | `ExpandedLib.Config` | declaring a config class, its ranges, migrations and live editing; syncing it to clients |
-| `Definitions/` | `ExpandedLib.Definitions` | writing block, item, recipe and layout definitions in C# |
-| `Blocks/` | `ExpandedLib.Blocks` | writing a block entity: declared state, orientation, right-click construction |
-| `Migrations/` | `ExpandedLib.Migrations` | renaming or removing codes in old saves, healing lost block entities |
-| `Structures/` | `ExpandedLib.Structures` | building a multiblock or megablock |
-| `Machines/` | `ExpandedLib.Machines` | building a machine that ticks, with ports, readiness and stations |
-| `Networks/` | `ExpandedLib.Networks` | building a connected network: the graph model and the engine-facing nodes together |
-| `Catalogues/` | `ExpandedLib.Catalogues` | shipping or extending data catalogues: processes, materials, liquids, storage, their loaders, reports and contributors |
-| `Checks/` | `ExpandedLib.Checks` | verifying content in the game or in a test |
-| `Helpers/` | `ExpandedLib.Helpers` | everything content-neutral that saves a few lines: orientation, meshes, inventories, units, rendering |
-| `Legacy/` | `ExpandedLib.Legacy` | supporting 1.20 and 1.21 from one source tree |
-| `industry/<Pack>/` | `ExpandedLib.Industry.<Pack>` | reusing the family's content layer: pipes, molten, mechanical power, metals, heat. Its own project beside `src/`, shipping `exlib.industry.dll` inside the same mod folder |
-| `build/` | *(none)* | shipping the MSBuild plumbing itself: `ExpandedLib.props`/`.targets` and `LegacyUsings.cs`, packed under `build/` in the nupkg so `dotnet pack`'s own convention wires them into a consuming project with no manual `<Import>` |
-
-Rules with teeth: a folder that would hold one file is not a folder (the file goes beside its
-subject); a sub-folder appears at four files; a type's folder is decided by the activity that reaches
-for it first, not by its base class - `BlockNetworkNode` sits in `Networks/` beside `BlockNetwork`
-because a modder building a network wants both. The retired rule split each family across a
-model folder and a `Blocks/` shell folder and asked consumers to import both; the split is gone.
-
-`exmod.json` at the repo root names this repo's own mods, samples and test projects; `RepoPaths`
-and `exmod` read it, falling back to the `mods/<id>` convention where the file is absent.
-
-`mods/exlib/testing` is one namespace, `ExpandedLib.Testing`, laid out the same way: `World/` (the
-fake world and its blocks), `Scenes/` (the layout DSL), `Rigs/` (drivers for machines and
-structures), `Doubles/` (stand-ins), `Checks/` (the validators), `Repo/` (this repository's own
-history and paths). `mods/exlib/tests` mirrors `mods/exlib/src` folder for folder.
-
-`samples/` holds two: `HelloExpanded`, a mod built against exlib end to end (a block, a config
-value, a command, two tests), and `HelloModule`, a module shipped as its own mod that `HelloExpanded`
-depends on, proving the third-party module shape (see the wiki's Modules page).
+`exmod.json` at the repo root names this repo's own mods and test projects; `RepoPaths` and
+`exmod` read it, falling back to the `mods/<id>` convention where the file is absent.
 
 ### Catalogue registry verbs (ruled 2026-09-06)
 

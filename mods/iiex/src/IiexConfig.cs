@@ -190,7 +190,7 @@ public class IiexConfig : IExVersionedConfig {
   /// clears every line the iron tier runs (twin-tub blower 45, hot furnace exhaust 48) and refuses the
   /// steam-tier services above it, so a converter's blast main and a cowper's hot-blast run must be built
   /// in cast pipe. The furnace tuyere is exempt, being an intake port rather than a length of main.
-  /// Throughput is derived from tier only, never from bore. See <c>docs/design/mechanics/pipe-network.md</c>.
+  /// Throughput is derived from tier only, never from bore. See exlib's pipe-network mechanics page.
   /// </summary>
   public float PlatedPipeThroughput { get; set; } = 50f;
 
@@ -833,7 +833,7 @@ public class IiexConfig : IExVersionedConfig {
   // The flywheel contributes rotational inertia to the energy MP network; a run's reservoir capacity is
   // 1/2 I omega_max^2 with omega_max = ExlibValues.MpMaxSpeed, and inertia also sets spin-up time. A
   // disc's I scales with R^4 * t, so the large flywheel (5x5x2) holds roughly 15x the energy of the
-  // normal 3x3x1 and takes ~15x as long to charge. See docs/design/mechanics/mp-energy.md.
+  // normal 3x3x1 and takes ~15x as long to charge. See exlib's mp-energy mechanics page.
 
   /// <summary>Rotational inertia of the normal (3x3x1) flywheel, the reference disc. Its capacity is
   /// <c>1/2 x this x MpMaxSpeed^2</c> MP.s.</summary>

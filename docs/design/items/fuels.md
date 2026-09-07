@@ -315,7 +315,7 @@ as charge bands or firebox beds - dripped by a hopper or loaded by hand
 
 | Type / member | file:line | Role |
 |---|---|---|
-| `Roles` (constants) | `mods/exlib/src/Materials/MaterialRoleDef.cs:49` | `Flux` `:52`, `Fuel` `:55`, `IronOre` `:58`, `Scrap` `:61`, `Charge` `:64` - strings, not an enum, so a mod can invent a role by shipping one (`:44-48`) |
+| `Roles` (constants) | `exlib/src/Materials/MaterialRoleDef.cs:49` | `Flux` `:52`, `Fuel` `:55`, `IronOre` `:58`, `Scrap` `:61`, `Charge` `:64` - strings, not an enum, so a mod can invent a role by shipping one (`:44-48`) |
 | `MaterialRoleDef` | `…/MaterialRoleDef.cs:18` | `Role` `:21`, `Code` `:25`, `PathPrefix` `:29`, `Value` `:33` |
 | `MaterialRoleCatalogue` | `…/MaterialRoleDef.cs:38` | the file shape: one `materials` array |
 | `MaterialRoleRegistry` | `…/MaterialRoleRegistry.cs:23` | `Register` `:37`, `Clear` `:52`, `RegisterContributor` `:57`, `IsRole` `:77`/`:89`, `ValueOf` `:94`/`:107`, `OfRole` `:113`, `Matches` `:121` |

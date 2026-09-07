@@ -43,7 +43,7 @@ public class StockItemDefinitions : IExItemDefProvider {
   // The states each form can be worked into are not declared here. They are the stage catalogue, in
   // assets/iiex/config/processroutes/, because items are generated from it and that has to happen before
   // the object loader builds items - a route carried on this itemtype could not be read in time.
-  // See docs/design/mechanics/process-extension.md.
+  // See exlib's process-extension mechanics page.
 
   // The forms this mod pours, not every form registered. StockForm.All is a shared registry any mod may
   // add to - siex puts the three cast forms in it, and a third party may add its own - and each of those

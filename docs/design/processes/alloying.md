@@ -254,7 +254,7 @@ Every pressure ceiling that exists in the suite:
 
 | Rating | Value | file:line | Keyed by |
 |---|---|---|---|
-| `BlockPipe.BurstPressure` | resolved at runtime | `mods/exlib/src/Blocks/Networks/BlockPipe.cs:193-194` | the block's `Code.Domain`, via `_burstByDomain` (`:180`) |
+| `BlockPipe.BurstPressure` | resolved at runtime | `exlib/src/Blocks/Networks/BlockPipe.cs:193-194` | the block's `Code.Domain`, via `_burstByDomain` (`:180`) |
 | default, if a mod registers none | 5 atm | `BlockPipe.cs:182` | — |
 | iiex plated | 2.5 atm | `IiexConfig.cs:163` | domain `iiex` |
 | iiex cast | 5.0 atm | `IiexConfig.cs:50` | domain `iiex` |
@@ -365,7 +365,7 @@ waiting on it.
 
 2. Decide how D3 is expressed, or drop it. As written it needs a per-material grade and a
    material-aware pressure read (Numbers). The cheap version is one scalar on `MetalDef` and one change in
-   `BlockPipe.BurstPressure` (`mods/exlib/src/Blocks/Networks/BlockPipe.cs:193-194`); the expensive version
+   `BlockPipe.BurstPressure` (`exlib/src/Blocks/Networks/BlockPipe.cs:193-194`); the expensive version
    is a grade on every pressure vessel in iiex and hpex. Nothing else in the suite is waiting on this.
 
 3. Size the ladle for base + both additions. ~6800 u, not 6000 (Numbers). This must be settled together

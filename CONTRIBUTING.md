@@ -3,9 +3,10 @@
 How the C# in `mods/*/src/` and `mods/*/tests/` is written and formatted. Domain rules - units, invariants,
 network semantics - live in [conventions.md](docs/design/conventions.md); this file is about the code itself.
 
-The mechanical parts are enforced, not trusted to review: formatting by `exmod format`, comment
-style by `CommentStyleGuards` in `ExpandedLib.Tests`. If a rule below is not enforced, it is a
-convention that a reviewer has to catch.
+The mechanical parts are enforced, not trusted to review: formatting by `exmod format`. Comment
+style is enforced the same way by `CommentStyleGuards` in exlib's own test suite, which does not
+build against this repository's sources - a reviewer here is the guard against the rules below
+until iiex/siex carry the same check locally.
 
 ## Running things
 
@@ -95,18 +96,17 @@ directory beside the repo root whose own `exmod.json` builds that id, used from 
 directly - else a cached or freshly downloaded release, unpacked under `.exmod/mods/<id>/`
 (gitignored).
 
-Every `PackageReference` version in the repo (exlib's own test projects, the harness, the
-generators, both samples) comes from `Directory.Packages.props` at the root - central package
-management, one number per package, no `Version` attribute at the reference site.
-`exlib.slnf` is the solution filter scoped to exlib itself: its projects, the generators, the
-harness, exlib's tests and both samples with their tests, none of `mods/iiex`, `mods/siex` or
-`infra/` - `dotnet build exlib.slnf` is the fast loop for exlib work alone.
+Every `PackageReference` version iiex and siex declare comes from `Directory.Packages.props` at
+the root - central package management, one number per package, no `Version` attribute at the
+reference site. The `ExpandedLib`/`ExpandedLib.Industry`/`ExpandedLib.Testing` rows there are
+literal, bumped by hand on a release of exlib; there is no local exlib checkout in this repo to
+read a version off any more.
 
 A project referencing `ExpandedLib` builds in one of two modes, switched on `$(ExlibRoot)`: source
-mode (inside this repo, or a workspace checkout with `ExlibRoot` set) references the checked-out
-projects directly; package mode (`-p:ExlibRoot=`, the default outside the repo) restores the
-`ExpandedLib` NuGet package, which carries the generators as analyzers and the `build/` plumbing
-alongside the dll.
+mode (a workspace checkout with exlib beside this repository, `ExlibRoot` set by the workspace's
+own `Directory.Build.props`) references the checked-out projects directly; package mode
+(`-p:ExlibRoot=`, the default for a standalone clone) restores the `ExpandedLib` NuGet package,
+which carries the generators as analyzers and the `build/` plumbing alongside the dll.
 
 ### The API patch
 

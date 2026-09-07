@@ -274,7 +274,7 @@ only related constants that ship are the cast part's, and they are the wrong ite
 |---|---|---|---|
 | `CastPartItemDefinitions.HeavyPlateUnits` | 160 | `mods/iiex/src/Items/CastPartItemDefinitions.cs:21` | the cast plate; settled 500, and this is not the rolled 600 |
 | `CastPartItemDefinitions.CastBarrelUnits` | 200 | `:24` | cited for scale only |
-| `ExIngredients.Plate(qty)` | `game:metalplate-*`, metal capture | `mods/exlib/src/Definitions/ExIngredients.cs:28-29` | the consumer side of `game:metalplate` |
+| `ExIngredients.Plate(qty)` | `game:metalplate-*`, metal capture | `exlib/src/Definitions/ExIngredients.cs:28-29` | the consumer side of `game:metalplate` |
 | `ExIngredients.Nails(qty)` | `game:metalnailsandstrips-*` | `:36-37` | what `nailplate` ultimately feeds |
 | `ExIngredients.Rod(qty)` | `game:rod-*` | `:44-45` | what `rolledrod` is a drop-in for |
 

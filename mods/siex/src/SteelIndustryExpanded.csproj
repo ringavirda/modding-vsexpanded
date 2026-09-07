@@ -86,23 +86,33 @@
     refuse to load the mod at all.
     Verify by staging the output and counting ModSystem-bearing dlls, never by reading this file:
     the failure is green in every test run and visible only in game.
+
+    Dual mode, same switch as iiex's mod project: source mode references exlib straight from the
+    checkout, package mode takes it from NuGet. iiex stays a plain ProjectReference in both modes -
+    it is family content, not exlib, and is never packaged.
   -->
   <ItemGroup>
-    <ProjectReference Include="..\..\exlib\src\ExpandedLib.csproj">
-      <Private>false</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\exlib\industry\ExpandedLib.Industry.csproj">
-      <Private>false</Private>
-    </ProjectReference>
     <ProjectReference Include="..\..\iiex\src\IronIndustryExpanded.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' != ''">
+    <ProjectReference Include="$(ExlibRoot)src\ExpandedLib.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="$(ExlibRoot)industry\ExpandedLib.Industry.csproj">
       <Private>false</Private>
     </ProjectReference>
     <!-- Source generator that emits the SiexValues accessor from the [ExConfig] SiexConfig POCO.
          OutputItemType=Analyzer + ReferenceOutputAssembly=false: compile-time only, ships nothing. -->
     <ProjectReference
-      Include="..\..\exlib\generators\ExpandedLib.Generators.csproj"
+      Include="$(ExlibRoot)generators\ExpandedLib.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
     />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ExlibRoot)' == ''">
+    <PackageReference Include="ExpandedLib" ExcludeAssets="runtime" />
+    <PackageReference Include="ExpandedLib.Industry" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>

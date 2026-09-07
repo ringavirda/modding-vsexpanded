@@ -139,7 +139,7 @@ counted-scan approach that page proposes.
 | runtime shape | missing; `mods/siex/assets/siex/shapes/` holds `converter/`, and the cowper/smokestack/engine sets - nothing else |
 | textures | missing. The furnace core's south face carries a two-letter type label (`BlockFurnaceCoreBase.cs:34-68`); the cupola's `cf.png` is the precedent, and an open hearth needs its own so a built one reads apart |
 | metal def | missing - `mods/siex/assets/siex/config/metals/` contains only `bessemersteel.json` |
-| producer-gas medium | missing - `mods/exlib/assets/exlib/config/liquids.json` declares `Air`, `Steam`, `Exhaust`, `Water` and nothing else |
+| producer-gas medium | missing - `exlib/assets/exlib/config/liquids.json` declares `Air`, `Steam`, `Exhaust`, `Water` and nothing else |
 | lang / handbook | no key, no page |
 
 Reusable art: the cowper's regenerator chamber, `game:cokeovendoor*`, the puddling chimney cap, the
@@ -310,7 +310,7 @@ existing systems is small and specific:
 
 | Need | Status |
 |---|---|
-| a `producergas` medium | a new entry in `mods/exlib/assets/exlib/config/liquids.json` (phase `gas`, its own priority), loaded by `ExLiquids.Load` (`ExpandedLib/Fluids/ExLiquids.cs:74`). The shipped file has 4 media |
+| a `producergas` medium | a new entry in `exlib/assets/exlib/config/liquids.json` (phase `gas`, its own priority), loaded by `ExLiquids.Load` (`ExpandedLib/Fluids/ExLiquids.cs:74`). The shipped file has 4 media |
 | a pipe run from producer to hearth | works today - [pipe network](../mechanics/pipe-network.md) |
 | R1: one medium per network | a producer-gas main and an air main are two separate networks; they cannot share a pipe. The open hearth therefore needs two intakes on two runs, exactly as the cowper does |
 | never stored | by design - no gasholder. Producer gas carries about a tenth of town gas's heating value, was fed hot so its sensible heat reached the regenerators, and is largely CO. Direct supply also makes the producer a live dependency: bank it down and the hearth cools |

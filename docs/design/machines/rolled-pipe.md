@@ -66,7 +66,7 @@ its own fittings before it is usable, and it has neither fittings nor a recipe.
 ## Structure
 
 Nothing here is a multiblock. Every block on this page is a single cell and an instance of the shared `BlockPipe` /
-`BlockEntityPipe`, which live in exlib (`mods/exlib/src/Blocks/Networks/`); hpex ships no pipe C# class.
+`BlockEntityPipe`, which live in exlib (`exlib/src/Blocks/Networks/`); hpex ships no pipe C# class.
 
 ```csharp
 public class RolledPipeDefinitions : IExBlockDefProvider
@@ -352,8 +352,8 @@ Salvage is 1:1 and lossless: none of these is a right-click construction, so `Rc
 | `RolledPipeDefinitions : IExBlockDefProvider` | `BlockNetworkPipe/RolledPipeDefinitions.cs:15-18` |
 | burst + throughput + joint registration | `SteelIndustryExpandedModSystem.cs:42-46` |
 | `SiexConfig.RolledPipeBurstPressure` / `.RolledPipeThroughput` | `SiexConfig.cs:115`, `:121` |
-| `BlockPipe` (segments factory, burst/throughput/joint registries) | `mods/exlib/src/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |
-| `BlockEntityPipe` | `mods/exlib/src/Blocks/Networks/BlockEntityPipe.cs` |
+| `BlockPipe` (segments factory, burst/throughput/joint registries) | `exlib/src/Blocks/Networks/BlockPipe.cs:23`, `:49`, `:175-244`, `:246-287` |
+| `BlockEntityPipe` | `exlib/src/Blocks/Networks/BlockEntityPipe.cs` |
 | `HpMachineDomainMigration : IBlockCodeMigration` | `BlockMigrations/HpMachineDomainMigration.cs:34`, `GetRemaps` `:46-59` |
 | the migrator that applies it | `ExpandedLib/Blocks/Migrations/BlockMigrationModSystem.cs` |
 | goldens | `mods/siex/tests/goldens/siex/blocktypes/pipes/{straight,bend,tjunction,xjunction}.json` |

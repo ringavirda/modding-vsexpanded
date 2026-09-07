@@ -9,7 +9,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsexpanded/workbench/textures/materials/cast-iron1",
+		"cast-iron1": "//wsl.localhost/archlinux/home/fallen/src/modding-vsex/exmods/workbench/textures/materials/cast-iron1",
 		"plain": "block/leather/plain",
 		"iron": "block/metal/plate/iron",
 		"iron5": "block/metal/sheet-plain/iron5",

@@ -233,7 +233,7 @@ Neither drawing is the settled geometry. Settled `castplate` is 10 × 2 × 10 (2
 be redrawn even if the split had never been decided.
 
 Textures: all twelve editable cast shapes carry an absolute authoring path
-(`F:/repos/modding-vsexpanded/workbench/textures/cast-iron1`) and all three exported runtime shapes
+(`F:/repos/modding-vsex/exmods/workbench/textures/cast-iron1`) and all three exported runtime shapes
 carry `iiex:block/metal/castiron`. The absolute path is the editable-folder convention and the export
 rewrites it; it is not a per-file defect.
 

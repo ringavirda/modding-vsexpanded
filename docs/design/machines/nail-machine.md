@@ -55,7 +55,7 @@ It is a bench, and the player builds several. The reference photograph is a hall
 |---|---|---|
 | **editable shape** | `workbench/shapes/machines/mpenergy/machine-mp-megablock-nailcutter.json` | drawn and tracked. Exported to `mods/iiex/assets/iiex/shapes/forming/nailcutter.json` (2026-08-21) through `convert-shape.py` |
 | runtime shape | `mods/iiex/assets/iiex/shapes/forming/nailcutter.json` | **shipped** (2026-08-21) |
-| textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsexpanded/workbench/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
+| textures | inside the shape: `iron5 → block/metal/sheet-plain/iron5`, and `cast-iron1 → F:/repos/modding-vsex/exmods/workbench/textures/cast-iron1` | the second is an absolute authoring path and must become an asset code before export |
 | animations | `idle` and `cycle` | both authored and both exported as `Repeat` |
 | reference art | `workbench/refs/rivetsnails/an-old-engraving-of-nail-making-machine-…-jacob-perkins-in-1795-….jpg` and `historic-wire-nail-tack-machine-….webp` | the folder is untracked |
 | lang / handbook | `mods/iiex/assets/iiex/lang/{en,ru,uk}.json`, `mods/iiex/docs/handbook/10-formingshop.html` | **both shipped**; the page covers the whole forming shop rather than this bench alone |

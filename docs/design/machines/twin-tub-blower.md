@@ -99,7 +99,7 @@ any furnace layout, so the layout-ownership resolver finds no anchor and the pro
 Caution: the bellows never move. The block entity has no animator: no `Animatable` entity behaviour in the
 def (`BlockTwinTubMPBlower.cs:44-84`), no `ConstructedAnimator`, no `MPAnim.AdvanceFrame`, no `IRenderer`.
 The shape ships a full `cycle` clip and an `AxleGear` element positioned to be driven, and neither is ever
-posed. The axle phase-lock pattern to copy is `MPAnim.AdvanceFrame` (`mods/exlib/src/Helpers/MPAnim.cs`),
+posed. The axle phase-lock pattern to copy is `MPAnim.AdvanceFrame` (`exlib/src/Helpers/MPAnim.cs`),
 which iiex's engine drives from its render loop (`BlockEntityEngine.cs`). The only feedback a running blower
 gives is the HUD line (`iiex:blower-info-blowing`) and the pipe readout above it.
 
@@ -381,7 +381,7 @@ cell.
 ## Open
 
 - Wire the animation. The clips and the `AxleGear` element already exist; `MPAnim.AdvanceFrame`
-  (`mods/exlib/src/Helpers/MPAnim.cs`, driven as iiex's engine does) is the pattern.
+  (`exlib/src/Helpers/MPAnim.cs`, driven as iiex's engine does) is the pattern.
 - No editable shape. The runtime shape is the only copy.
 - Report accepted, not rated, output. `ProduceAir` already returns the accepted litres; the HUD discards them.
   Fixing this makes the ceiling, the leak cap and a saturated main legible instead of invisible, which is

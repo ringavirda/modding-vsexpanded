@@ -1,5 +1,5 @@
 # Iron Industry Expanded (`iiex`)
 
-Player wiki source for `iiex`: the iron tier, its molten-metal and pipe networks, and the
-low-pressure steam plant that runs them. Pages are authored here, beside the mod's source, tests and
-assets.
+The framework wiki lives with exlib, at [ringavirda/exlib](https://github.com/ringavirda/exlib).
+`iiex`'s own player wiki - the iron tier, its molten-metal and pipe networks, the low-pressure
+steam plant - is not authored yet; this page is a placeholder for it.

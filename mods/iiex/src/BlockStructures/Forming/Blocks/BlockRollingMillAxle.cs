@@ -16,7 +16,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming.Blocks;
 /// <para>
 /// A footprint cell carrying a pass-through <c>BEBehaviorNetworkMember</c> now does the same job, so this
 /// block is redundant. It stays because it is placed in existing worlds and retiring a placed block needs
-/// a migration. See docs/design/mechanics/multiblock.md.
+/// a migration. See exlib's multiblock mechanics page.
 /// </para>
 /// </summary>
 [BlockRegister]

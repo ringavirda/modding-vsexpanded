@@ -311,7 +311,7 @@ Open #2.
 > A code that never escaped needs no migrator, and writing one is worse than useless: it reads like
 > coverage while claiming a code nothing placed.
 
-The shipped set is recorded as data in `mods/exlib/testing/ReleasedCodes.cs`, extracted from
+The shipped set is recorded as data in `exlib/testing/ReleasedCodes.cs`, extracted from
 `dist/Releases/1.22.0` by extools' `tools/gen-released-codes.py` rather than from memory - 501 concrete codes
 across three domains.
 

@@ -8,7 +8,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming;
 /// the bite limit <c>δ_max = μ²R</c>, then spread and elongation - while the load the stand puts on its run
 /// is a declared demand rather than a product of that geometry. Flow stress rises as the stock cools, so
 /// temperature drives both whether a pass bites and whether the run can carry it.
-/// See docs/design/machines/rolling-mill.md and docs/design/mechanics/mp-energy.md.
+/// See docs/design/machines/rolling-mill.md and exlib's mp-energy mechanics page.
 /// </summary>
 public static class RollingPass {
   /// <summary>

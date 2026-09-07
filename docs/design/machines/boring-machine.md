@@ -98,7 +98,7 @@ Texture paths - the same bug the design table had.
 
 | Key | Authored value | Verdict |
 |---|---|---|
-| `cast-iron1` | `F:/repos/modding-vsexpanded/workbench/textures/cast-iron1` | absolute local path, identical to the `paper` bug fixed on the [design table](design-table.md). Ships as `iiex:block/metal/castiron` (`mods/iiex/assets/iiex/textures/block/metal/castiron.png`) |
+| `cast-iron1` | `F:/repos/modding-vsex/exmods/workbench/textures/cast-iron1` | absolute local path, identical to the `paper` bug fixed on the [design table](design-table.md). Ships as `iiex:block/metal/castiron` (`mods/iiex/assets/iiex/textures/block/metal/castiron.png`) |
 | `iron5` | `block/metal/sheet-plain/iron5` | undomained → resolves to `iiex:block/…`, which does not exist. Needs `game:` |
 | `steel1` | `block/metal/sheet-plain/steel1` | undomained |
 | `iron` | `block/metal/tarnished/iron` | undomained |
@@ -232,7 +232,7 @@ Nothing exists. A repo-wide `grep -rni boring src/` returns one hit and it is a 
 | Piece | Where it goes | Model it on |
 |---|---|---|
 | `BlockBoringMachine` | `mods/iiex/src/BlockStructures/Machining/Blocks/` | `BlockDesignTable.cs:24` (`Block` + `IExBlockDefProvider` + `OnBlockInteractStart` → BE) plus `BlockTwinTubMPBlower` / `BlockFlywheel` for the filler footprint |
-| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityContainer` for the window inventory, hosting a `BEBehaviorProductionMachine` (`mods/exlib/src/Blocks/Machines/BEBehaviorProductionMachine.cs:15`) for the timed job + away-catch-up. `BlockEntityRollingMill.cs:28`, `:48` is the worked example of the host pattern |
+| `BlockEntityBoringMachine` | `.../Machining/BlockEntities/` | `BlockEntityContainer` for the window inventory, hosting a `BEBehaviorProductionMachine` (`exlib/src/Blocks/Machines/BEBehaviorProductionMachine.cs:15`) for the timed job + away-catch-up. `BlockEntityRollingMill.cs:28`, `:48` is the worked example of the host pattern |
 | the window | `.../Machining/Gui/GuiDialogBoringMachine.cs` | `GuiDialogDesignTable.cs:23` - `GuiDialogBlockEntity`, `IsDuplicate` guard (`:50`), `Compose()` (`:77`), a dropdown + `AddDynamicText` info panel (`:138-140`), a button that sends one packet (`:173-182`) |
 | packet handshake | on the BE | `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) - the open/close/action protocol, the `Claims.TryAccess` audit (`:115-122`) and the `packetid < 1000 → InvNetworkUtil` route (`:125-129`) |
 | typed slots | inventory class | `InventoryDesignTable` (`:230-247`) + `ItemSlotDesignInput` (`:251`) / `ItemSlotDesignOutput` (`:276`) |

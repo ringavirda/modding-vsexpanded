@@ -71,6 +71,40 @@ public class ModinfoTests {
   }
 
   [Fact]
+  public void Every_mod_s_exlib_floor_matches_the_ExpandedLib_package_row() {
+    // exlib no longer builds in this repository, so the sibling-version guard above (which only
+    // compares a dependency against a mod this repo also builds) never touches this floor any more.
+    // Compare it instead against the version this repository actually restores exlib at: the
+    // ExpandedLib row in Directory.Packages.props, package mode's source of truth and source mode's
+    // ceiling.
+    string packages = File.ReadAllText(
+      Path.Combine(RepoRoot(), "Directory.Packages.props")
+    );
+    Match pm = Regex.Match(
+      packages,
+      @"<PackageVersion\s+Include=""ExpandedLib""\s+Version=""([^""]+)""\s*/>"
+    );
+    Assert.True(
+      pm.Success,
+      "Directory.Packages.props declares no ExpandedLib PackageVersion row"
+    );
+    string expected = pm.Groups[1].Value;
+
+    var wrong = Mods()
+      .Where(m => Dependency(m, "exlib") != expected)
+      .Select(m =>
+        $"{m.Folder} declares exlib {Dependency(m, "exlib") ?? "(none)"}"
+      )
+      .ToList();
+
+    Assert.True(
+      wrong.Count == 0,
+      $"every mods/*/src/modinfo.json must declare \"exlib\": \"{expected}\" (the ExpandedLib row "
+        + $"in Directory.Packages.props): {string.Join("; ", wrong)}"
+    );
+  }
+
+  [Fact]
   public void No_mod_s_source_version_is_at_or_below_a_version_it_has_already_released() {
     // The game compares by modid, and a config file carries the version that wrote it. Cutting a
     // release from a tree stamped at or below what is already published means the player's installed

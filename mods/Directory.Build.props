@@ -47,15 +47,20 @@
   </PropertyGroup>
   <!-- =================== end VERSION MANIFEST =================== -->
 
-  <!-- The source-mode switch: non-empty means "build ExpandedLib from this checkout", which is
-       what every mod under mods/ and the sample's default build both want, so it defaults on here.
-       A standalone clone of the sample or the template has no such checkout and forces the empty
-       string with -p:ExlibRoot= (a global property, so it wins over this default) to take the
-       ExpandedLib package instead - see the sample csprojs' dual-mode item groups. -->
+  <!-- The source-mode switch has no sibling default of its own here: this repository has no
+       exlib/ checkout beside it any more, so $(ExlibRoot) only ever arrives set from above, by the
+       workspace's own Directory.Build.props when both repositories are checked out side by side
+       (imported just below, when it exists). A standalone clone of this repository has nothing
+       above it, so $(ExlibRoot) stays empty and every project falls back to the ExpandedLib
+       package - see the iiex/siex csprojs' dual-mode item groups. -->
   <PropertyGroup>
-    <ExlibRoot Condition="'$(ExlibRoot)' == ''"
-      >$(MSBuildThisFileDirectory)exlib\</ExlibRoot>
+    <_WorkspaceBuildProps
+      >$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</_WorkspaceBuildProps>
   </PropertyGroup>
+  <Import
+    Project="$(_WorkspaceBuildProps)"
+    Condition="Exists('$(_WorkspaceBuildProps)')"
+  />
 
   <!-- The rest of the shared plumbing - GamePath resolution, provisioning, the capability
        constants, the asset globs, LegacyUsings.cs - ships in the ExpandedLib package so a package
@@ -64,7 +69,7 @@
        PackageReference to ExpandedLib, whose build/ExpandedLib.props NuGet imports automatically,
        and importing both ways would double it up. -->
   <Import
-    Project="$(MSBuildThisFileDirectory)exlib\build\ExpandedLib.props"
+    Project="$(ExlibRoot)build\ExpandedLib.props"
     Condition="'$(ExlibRoot)' != ''"
   />
 

@@ -13,7 +13,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming;
 /// wide its barrel is and what torque it needs to turn - and nothing about what the metal becomes. The
 /// states the metal passes through are the stock family's stage route, and the pair of them is a
 /// <see cref="MillSchedule"/>, so a set names no product and a new product needs no set edited. See
-/// docs/design/machines/rolling-mill.md and docs/design/mechanics/process-extension.md.
+/// docs/design/machines/rolling-mill.md and exlib's process-extension mechanics page.
 /// </para>
 /// </summary>
 /// <param name="Schema">Schema version of the declaration, so a parser can read every shipped form.</param>

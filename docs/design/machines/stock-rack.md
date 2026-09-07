@@ -34,8 +34,8 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 >
 > | Piece | Where |
 > |---|---|
-> | `BayRun` / `BayLayout` | `mods/exlib/src/Storage/BayLayout.cs` - pure, world-free capacity |
-> | `BayOccupancy` + registry + loader | `mods/exlib/src/Storage/` - contributed-to, `config/bayoccupancy/*.json` |
+> | `BayRun` / `BayLayout` | `exlib/src/Storage/BayLayout.cs` - pure, world-free capacity |
+> | `BayOccupancy` + registry + loader | `exlib/src/Storage/` - contributed-to, `config/bayoccupancy/*.json` |
 > | `BlockStorageRack` | `mods/iiex/src/BlockStructures/Storage/Blocks/` |
 > | `BlockEntityStorageRack` | `.../Storage/BlockEntities/` |
 > | the shipped catalogue | `mods/iiex/assets/iiex/config/bayoccupancy/storagerack.json` |
@@ -277,7 +277,7 @@ Where it hooks in:
 | `BlockStockRack` | `mods/iiex/src/BlockStructures/Forming/Blocks/` (or a new `Storage/`) | `BlockPuddlingHearth.cs:25-62` - `BlockFilledMegastructure` + `IFillerHost` + `IFillerInteractionTarget` + `IExBlockDefProvider`, with `.FillerOffsets(...)` in the def and `StructureAngle` from the `side` variant |
 | cell → slot routing | `RowAt`-style: rotate the world offset back into the block's frame before reading it | `BlockPuddlingHearth.cs:70-77`, `BlockHeatingHearth.cs` (`ExOrientation.RotateOffset(world, -StructureAngle)`) |
 | `BlockEntityStockRack` | `.../BlockEntities/` | `BlockEntityHeatingHearth.cs:26-174` end to end: the slot array (`:30`), `TryLoad`/`TryTake` (`:57`, `:73`), `Changed()` marking the block dirty client-side (`:86-91`), `OnTesselation` (`:99-126`), per-slot `SetItemstack` persistence with `ResolveBlockOrItem` (`:132-154`), and the block-info readout (`:160-171`) |
-| `StockPile.Place` | `mods/exlib/src/` - not iiex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
+| `StockPile.Place` | `exlib/src/` - not iiex | the hearth composes a pile of stock in a firebox, the rack composes a pile of stock on planks. Same computation, so it gains a second consumer before it is built and stops being a furnace detail |
 | its inputs | `(item shape, stage element, mode, slot index, layer)` → a `Vec3f` offset + yaw | pure, therefore testable headless - the house style (`StockMesh.SideOf`, `StockMesh.cs:36`) |
 | mesh cache | one entry per `(form, stage)`, then `Clone()` → rotate about its own centre → translate to the slot | `StockMesh.CacheKey` (`:67-73`) is the existing key function; `BlockMoltenBarrel.cs:190` is the runtime-texture + cached-base-mesh precedent |
 | def + recipe | `IExBlockDefProvider.Definitions(domain)` + an `ExRecipeDef` grid | `BlockHeatingHearth.cs`, `CraftingStationRecipeDefinitions.cs:23-36` |

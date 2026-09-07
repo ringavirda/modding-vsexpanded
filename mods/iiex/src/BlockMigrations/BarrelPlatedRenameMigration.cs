@@ -9,7 +9,7 @@ namespace IronIndustryExpanded.BlockMigrations;
 /// <summary>
 /// Renames the fabricated molten barrel's construction variant from <c>bolted</c> to <c>plated</c>. Only the
 /// code changed - same class, shape and recipe. The construction naming convention (<c>cast</c>,
-/// <c>rolled</c>, <c>plated</c>) is in docs/design/mechanics/pipe-network.md.
+/// <c>rolled</c>, <c>plated</c>) is in exlib's pipe-network mechanics page.
 /// <para>
 /// <c>iwex:molten-barrel-bolted</c> is a released code and must keep that spelling: a migration whose source
 /// matches nothing does nothing, silently, and orphans every barrel already placed.

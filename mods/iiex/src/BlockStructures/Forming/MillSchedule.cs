@@ -12,7 +12,7 @@ namespace IronIndustryExpanded.BlockStructures.Forming;
 /// <para>
 /// A fork is why the branch and not the route is the unit: the same stock at the same gauge is a rod on
 /// grooved rolls and a beam on flat ones, which a schedule keyed on gap alone could not express. See
-/// docs/design/mechanics/process-extension.md.
+/// exlib's process-extension mechanics page.
 /// </para>
 /// </summary>
 public sealed class MillSchedule {

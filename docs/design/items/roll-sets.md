@@ -252,7 +252,7 @@ says so in the schema.
 | Fact | Detail |
 |---|---|
 | stale in-source comment | `RollSetItemDefinitions.cs:120-121` says *"the item-rollers source holds all the families in one file, so they ship together"*. That file - `workbench/shapes/item-rollers.json` - is deleted (`git status` reports ` D`); it was split into the seven files above |
-| absolute authoring paths | all seven declare `cast-iron1 → F:/repos/modding-vsexpanded/workbench/textures/cast-iron1`. That resolves to nothing in game and fails silently; `editable/` is source-only by convention |
+| absolute authoring paths | all seven declare `cast-iron1 → F:/repos/modding-vsex/exmods/workbench/textures/cast-iron1`. That resolves to nothing in game and fails silently; `editable/` is source-only by convention |
 | an animation on an item shape | `item-rollers-flat.json` and `item-rollers-grooved.json` each carry a 30-frame `cycle` clip with 2 keyframes and `onAnimationEnd: EaseOut`. Nothing plays an item shape's clip, and a looping clip must be `Repeat` or the mesh vanishes - if this art is ever hosted on the mill, both facts bite |
 | runtime shapes | none. `mods/iiex/assets/iiex/shapes/forming/` holds `rollingmill.json` and the ten generated `stock-*.json` only |
 | handbook | none for the roll set in `mods/iiex/docs/handbook/` |

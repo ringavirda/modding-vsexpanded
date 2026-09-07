@@ -104,7 +104,7 @@ Two independent vanilla sources give the same figure, so it is fixed rather than
 | the smelt-back | `smeltedRatio: 4` - four bundles melt to one ingot ⇒ 25 u each | `…/assets/survival/itemtypes/resource/metalnailsandstrips.json:102-107` |
 
 exlib's generated nails copy the second exactly (`smeltedRatio = 4`,
-`mods/exlib/src/Metals/MetalFamilyEmitter.cs:471`), so the anchor holds for mod metals too.
+`exlib/src/Metals/MetalFamilyEmitter.cs:471`), so the anchor holds for mod metals too.
 
 Rod is 100 u on the same two readings: the vanilla plan is 2 layers × 2 × 10 = 40 voxels, inside one ingot
 (`…/smithing/rod.json:3-9`), and the generated rod declares `smeltedRatio = 1` (`MetalFamilyEmitter.cs:395`).
@@ -160,10 +160,10 @@ Representative and largest bills:
 
 | Helper | Resolves to | file:line |
 |---|---|---|
-| `ExIngredients.Nails(qty)` | `game:metalnailsandstrips-*`, metal-captured | `mods/exlib/src/Definitions/ExIngredients.cs:36-37` |
+| `ExIngredients.Nails(qty)` | `game:metalnailsandstrips-*`, metal-captured | `exlib/src/Definitions/ExIngredients.cs:36-37` |
 | `ExIngredients.NailsSteel(qty)` | `game:metalnailsandstrips-steel` | `:40-41` |
 | `ExIngredients.Rod(qty)` / `RodSteel(qty)` | `game:rod-*` / `game:rod-steel` | `:44-45` / `:48-49` |
-| `ConstructionStages.RequireMetalNails(domain, qty)` | `metalnailsandstrips-*`, `storeWildCard: "metal"`, `allowedVariants: ["iron","steel"]` | `mods/exlib/src/Definitions/ConstructionStages.cs:109-110` → `:120-132` |
+| `ConstructionStages.RequireMetalNails(domain, qty)` | `metalnailsandstrips-*`, `storeWildCard: "metal"`, `allowedVariants: ["iron","steel"]` | `exlib/src/Definitions/ConstructionStages.cs:109-110` → `:120-132` |
 | `…RequireMetalRod(domain, qty)` | `rod-*`, same restriction | `ConstructionStages.cs:114-115` |
 
 ---
@@ -181,7 +181,7 @@ is a literal drop-in.
 | runtime exports | `mods/iiex/assets/iiex/shapes/…` | none - neither file has ever been exported |
 | `nailplate` art | - | does not exist anywhere |
 | bolt · rivet · ball art | - | does not exist anywhere |
-| textures | both editable files declare `iron5 → F:/repos/modding-vsexpanded/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5` | the editable-folder convention: an absolute authoring path the export rewrites |
+| textures | both editable files declare `iron5 → F:/repos/modding-vsex/exmods/.game/1.22/assets/survival/textures/block/metal/sheet-plain/iron5` | the editable-folder convention: an absolute authoring path the export rewrites |
 | reference plates | `workbench/refs/rivetsnails/` - the 1867 machine-tool plate (Figs 1–5), the 1795 Perkins cut-nail engraving, a wire-nail machine, Tweddell's portable hydraulic riveter, a cut-nail photograph | the whole `refs/` folder is untracked |
 
 `item-rod-rolled.json` is mass-conserving through the whole schedule, and is the only drawn stock in the
@@ -211,9 +211,9 @@ There is no fastener code. What exists is the demand side.
 
 | Piece | Where | State |
 |---|---|---|
-| `ExIngredients.Nails` / `NailsSteel` / `Rod` / `RodSteel` | `mods/exlib/src/Definitions/ExIngredients.cs:35-49` | live - the shared grid helpers |
-| `ConstructionStages.RequireMetalNails` / `RequireMetalRod` | `mods/exlib/src/Definitions/ConstructionStages.cs:107-115`, shared body `:120-132` | live - the shared RCC helpers |
-| `MetalFamilyEmitter.Nails` / `.Rod` | `mods/exlib/src/Metals/MetalFamilyEmitter.cs:458` / `:384` | live - generates the two unusable variants |
+| `ExIngredients.Nails` / `NailsSteel` / `Rod` / `RodSteel` | `exlib/src/Definitions/ExIngredients.cs:35-49` | live - the shared grid helpers |
+| `ConstructionStages.RequireMetalNails` / `RequireMetalRod` | `exlib/src/Definitions/ConstructionStages.cs:107-115`, shared body `:120-132` | live - the shared RCC helpers |
+| `MetalFamilyEmitter.Nails` / `.Rod` | `exlib/src/Metals/MetalFamilyEmitter.cs:458` / `:384` | live - generates the two unusable variants |
 | `RollSetItemDefinitions.Sets["grooved"]` | `mods/iiex/src/BlockStructures/Forming/RollSetItemDefinitions.cs:86-93` | live def, unreachable - see Gotcha 7 |
 | ~~`RollSetItemDefinitions.Sets["slitting"]`~~ | — | **retired 2026-08-12**, with its three lang rows - see Gotcha 8 |
 | `ItemDie` (the spec), `DieItemDefinitions`, `BlockEntityDieBench` | *(proposed)* `…/BlockStructures/Forming/` | nothing - [heading machine § Code](../machines/heading-machine.md) owns the plan |

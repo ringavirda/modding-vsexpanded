@@ -193,7 +193,7 @@ The only pinned cost numbers anywhere are iiex's doubled cheap pipe outputs - st
 
 | Suite | Goldens | Root |
 |---|---|---|
-| `ExpandedLib.Tests` | 1 | `mods/exlib/tests/goldens/exlib/` |
+| `ExpandedLib.Tests` | 1 | `exlib/tests/goldens/exlib/` |
 | `IronIndustryExpanded.Tests` | 103 | `mods/iiex/tests/goldens/iiex/` |
 | `IronIndustryExpanded.Tests` | 22 | `mods/iiex/tests/goldens/iiex/` |
 | `SteelmakingExpanded.Tests` | 29 | `mods/siex/tests/goldens/siex/` |
@@ -205,7 +205,7 @@ Counts are of committed `*.json` files under each domain root as of 2026-07-29; 
 
 | Type | Where | Key members |
 |---|---|---|
-| `ExBlockDef` | `mods/exlib/src/Definitions/ExBlockDef.cs:32` | `Create` `:50`/`:57` · `Class<T>` `:78` · `Multiblock` `:784` · `MultiblockLayout` `:796` · `FillerOffsets` `:712` · `Construction` `:778` · `VariantStates` `:861` · `ToJson` `:872` |
+| `ExBlockDef` | `exlib/src/Definitions/ExBlockDef.cs:32` | `Create` `:50`/`:57` · `Class<T>` `:78` · `Multiblock` `:784` · `MultiblockLayout` `:796` · `FillerOffsets` `:712` · `Construction` `:778` · `VariantStates` `:861` · `ToJson` `:872` |
 | `ExItemDef` | `ExItemDef.cs:29` | same shape, leaner; `CombustibleProps` `:197` · `GrindingProps` `:202` |
 | `ExRecipeDef` | `ExRecipeDef.cs:31` | `Grid` `:68` · `Add` `:78` · `GridObject` `:87` · `Body` `:96` · `Count` `:107` |
 | `GridRecipeBuilder` / `IngredientBuilder` | `GridRecipeBuilder.cs:13` / `:92` | `Pattern` `:27` · `Size` `:33` · `Ingredient` `:46` · `Output` `:56` · `Metal()` `:123` · `Tagged` `:138` |
@@ -220,8 +220,8 @@ Counts are of committed `*.json` files under each domain root as of 2026-07-29; 
 | `ExConfigRegister<T>` | `Registries/Config/ExConfigRegister.cs:24` | `Load` `:67` · `Save` `:213` · `Sanitize` `:96` · `Set` `:270` |
 | `ExConfigDocument` | `Registries/Config/ExConfigDocument.cs:26` | `ForFile` `:45` · `GetSection` `:64` · `FoldLegacy` `:99` · `Flush` `:90` |
 | `ExConfigRegisterAttribute` | `Registries/Config/ExConfigRegisterAttribute.cs:29` | `AccessorName` `:48` · `LegacyFileNames` `:54` · `Manageable` `:61` |
-| `ExConfigGenerator` | `mods/exlib/generators/ExConfigGenerator.cs:21` | `Emit` `:116` · `DefaultAccessorName` `:227` |
-| `DefinitionGoldens` / `DefinitionParity` / `DefinitionAssets` | `mods/exlib/testing/` | `CheckGolden` · `CheckCompleteness` · `Equal` · `MissingShapes` |
+| `ExConfigGenerator` | `exlib/generators/ExConfigGenerator.cs:21` | `Emit` `:116` · `DefaultAccessorName` `:227` |
+| `DefinitionGoldens` / `DefinitionParity` / `DefinitionAssets` | `exlib/testing/` | `CheckGolden` · `CheckCompleteness` · `Equal` · `MissingShapes` |
 
 Where a caller hooks in. A mod's `ModSystem.Start`, in this order (`IronIndustryExpandedModSystem.cs:40-60` is the canonical example):
 
