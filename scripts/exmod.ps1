@@ -132,6 +132,16 @@ function Find-SingleCsproj([string]$Dir, [string]$Field) {
   return $found[0].FullName
 }
 
+# The directory a mod's project resolves under: <path>/src when that folder holds exactly one
+# .csproj (the layout every real mod uses), otherwise <path> itself - including when src/ exists
+# but holds none, the flat layout the samples and a generated starter use (csproj beside a src/ of
+# .cs files, no csproj of its own).
+function Get-ModProjectDir([string]$Path) {
+  $srcDir = Join-Path $Path 'src'
+  if ((Test-Path $srcDir) -and @(Get-ChildItem $srcDir -Filter '*.csproj' -File).Count -eq 1) { return $srcDir }
+  return $Path
+}
+
 # Reads exmod.json once and applies its defaults - this is the only place they're written down.
 # ConvertFrom-Json keeps a PSCustomObject's property order as the file's order, so `mods` and
 # `samples` are read through .PSObject.Properties everywhere, never Keys/Values, to keep that order.
@@ -142,11 +152,8 @@ function Get-ExmodManifest {
   if (-not (Test-Path $path)) { throw "No exmod.json under $RepoRoot." }
   $m = Get-Content $path -Raw | ConvertFrom-Json
 
-  if (-not $m.PSObject.Properties['solution']) {
-    $sln = @(Get-ChildItem $RepoRoot -Filter '*.sln' -File)
-    if ($sln.Count -ne 1) { throw "exmod.json has no 'solution' and $RepoRoot does not hold exactly one .sln." }
-    $m | Add-Member -NotePropertyName solution -NotePropertyValue $sln[0].Name
-  }
+  # 'solution' is resolved lazily, by Get-ExmodSolution, so a repo with neither a 'solution' field
+  # nor a .sln at its root still loads and runs every command that names no solution.
   if (-not $m.PSObject.Properties['series'] -or -not $m.series) {
     # No series named at all: the first entry of the vendor table above is "the current series".
     $m | Add-Member -NotePropertyName series -NotePropertyValue @(@($GameTfms.Keys)[0]) -Force
@@ -165,8 +172,9 @@ function Get-ExmodManifest {
 # Every mod this repo builds as its own, in manifest order (the build order: exlib before iiex
 # before siex is a real ProjectReference chain, not a discovery accident), id -> @{ Path; Project;
 # Tests; Overlays } (all absolute except Overlays). A mod's project is the single .csproj under
-# <path>/src, or under <path> itself when src/ has none; its test project is the single .csproj
-# under <path>/tests when that folder exists.
+# <path>/src when that folder holds one, or under <path> itself otherwise (including a src/ that
+# holds only sources - the flat layout the samples and a generated starter use); its test project
+# is the single .csproj under <path>/tests when that folder exists.
 function Get-ExmodMods {
   $manifest = Get-ExmodManifest
   $out = [ordered]@{}
@@ -174,9 +182,7 @@ function Get-ExmodMods {
     $id = $prop.Name
     $entry = $prop.Value
     $path = Resolve-ManifestPath "mods.$id.path" $entry.path
-    $srcDir = Join-Path $path 'src'
-    $projectDir = if (Test-Path $srcDir) { $srcDir } else { $path }
-    $project = Find-SingleCsproj $projectDir "mods.$id"
+    $project = Find-SingleCsproj (Get-ModProjectDir $path) "mods.$id"
     $testsDir = Join-Path $path 'tests'
     $tests = if (Test-Path $testsDir) { Find-SingleCsproj $testsDir "mods.$id.tests" } else { $null }
     $out[$id] = [pscustomobject]@{ Path = $path; Project = $project; Tests = $tests; Overlays = $entry.overlays }
@@ -265,7 +271,13 @@ function Get-ExmodPackages {
 
 # The solution: $Manifest.solution, or the single .sln at the repo root when the manifest names none.
 function Get-ExmodSolution {
-  return Resolve-ManifestPath 'solution' (Get-ExmodManifest).solution
+  $manifest = Get-ExmodManifest
+  if ($manifest.PSObject.Properties['solution'] -and $manifest.solution) {
+    return Resolve-ManifestPath 'solution' $manifest.solution
+  }
+  $sln = @(Get-ChildItem $RepoRoot -Filter '*.sln' -File)
+  if ($sln.Count -ne 1) { throw "exmod.json has no 'solution' and $RepoRoot does not hold exactly one .sln." }
+  return $sln[0].FullName
 }
 
 #endregion
@@ -409,9 +421,7 @@ function Get-ExmodDependencySiblingProject([string]$Id) {
     if (-not $entry) { continue }
     $modPath = Join-Path $dir.FullName $entry.Value.path
     if (-not (Test-Path $modPath)) { continue }
-    $srcDir = Join-Path $modPath 'src'
-    $projectDir = if (Test-Path $srcDir) { $srcDir } else { $modPath }
-    return Find-SingleCsproj $projectDir "sibling mods.$Id"
+    return Find-SingleCsproj (Get-ModProjectDir $modPath) "sibling mods.$Id"
   }
   return $null
 }

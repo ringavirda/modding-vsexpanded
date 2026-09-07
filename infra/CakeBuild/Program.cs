@@ -28,8 +28,9 @@ public static class Program {
 /// name="Id"/> is the manifest's own key for it (exlib/iiex/siex); <paramref name="ModFolder"/> is
 /// its own path relative to the repo root; <paramref name="ProjectDir"/> is the directory holding
 /// its csproj, relative to the repo root - the single <c>.csproj</c> under
-/// <c>&lt;ModFolder&gt;/src</c>, or under <c>&lt;ModFolder&gt;</c> itself when <c>src/</c> has
-/// none, the same convention <c>scripts/exmod.ps1</c> resolves a mod's project by. <paramref
+/// <c>&lt;ModFolder&gt;/src</c> when that folder holds one, or under <c>&lt;ModFolder&gt;</c>
+/// itself otherwise (including a <c>src/</c> that holds only sources), the same convention
+/// <c>scripts/exmod.ps1</c> resolves a mod's project by. <paramref
 /// name="Folder"/> is that csproj's file name without extension.</summary>
 public record ModProject(
   string Id,
@@ -80,7 +81,10 @@ public class BuildContext : FrostingContext {
       string modFolder = ((string)prop.Value["path"]!).Replace('\\', '/');
       string modFolderAbs = Repo(modFolder);
       string srcDir = Path.Combine(modFolderAbs, "src");
-      string projectDirAbs = Directory.Exists(srcDir) ? srcDir : modFolderAbs;
+      string projectDirAbs =
+        Directory.Exists(srcDir) && Directory.GetFiles(srcDir, "*.csproj").Length == 1
+          ? srcDir
+          : modFolderAbs;
 
       string[] csprojFiles = Directory.GetFiles(projectDirAbs, "*.csproj");
       if (csprojFiles.Length != 1)

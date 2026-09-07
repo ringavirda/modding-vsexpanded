@@ -332,7 +332,31 @@ mod's block a greeting through a block behaviour it registers under its own doma
 alongside [Modules](Modules) if you are extending exlib itself, or another mod built on it, rather
 than shipping gameplay content of your own.
 
-## 9. Pick the system you need
+## 9. exmod in your repo
+
+The whole toolchain above - build, test, smoke - is one script, not a set of raw `dotnet` commands
+you assemble yourself. Copy `scripts/exmod.sh` and `scripts/exmod.ps1` from this repo into your
+own (the launcher finds `pwsh`, the dispatcher does the rest), and add an `exmod.json` at your
+repo's root naming your mod:
+
+```json
+{
+  "solution": "YourMod.sln",
+  "mods": {
+    "yourmod": { "path": "." }
+  }
+}
+```
+
+`exmod provision game` fetches the dedicated-server archive into `.game/`, no purchase needed to
+build and test headlessly; `exmod build` compiles against it; `exmod test` runs your test project
+the same way `dotnet test` does, but resolved from the manifest rather than named on the command
+line; `exmod smoke` boots the real server with your built mod and fails on a boot timeout or an
+`[Error]`/`[Fatal]` log line. Before the boot, `exmod provision mods` reads `exlib` out of your
+`modinfo.json`'s `dependencies` and fetches it for the smoke to load alongside your own mod - a
+workspace sibling checkout of exlib when there is one, otherwise a published release.
+
+## 10. Pick the system you need
 
 | You want to... | Read |
 | --- | --- |

@@ -51,9 +51,38 @@ machine
 
 ### The manifest, central versions, the solution filter
 
-`exmod.json` at the repo root names this repo's own mods, samples and test projects; `RepoPaths`
-and `exmod` read it and fall back to the `mods/<id>` convention where it is silent. Every
-`PackageReference` version in the repo (exlib's own test projects, the harness, the generators,
+`exmod.json` at the repo root is every command's only source of family knowledge: which mods and
+samples this repo builds, where their projects and tests sit, which solution and game series to
+use. `exmod` (`scripts/exmod.ps1`) and `RepoPaths` (C#, through `RepoManifest`) both read it and
+fall back to the `mods/<id>` convention where a field is silent.
+
+- `tools` - the pinned CLI/tool version.
+- `solution` - the `.sln` at the repo root; defaults to the single one there.
+- `series` - the game series this repo builds for, current first; defaults to the current series
+  alone.
+- `mods` - id -> `{ path, overlays }`, in build order (a mod is also a dependency of every later
+  one in the list). A mod's project is the single `.csproj` under `<path>/src` when that folder
+  holds one, else under `<path>` itself; its test project, when there is one, is the single
+  `.csproj` under `<path>/tests`.
+- `samples` - id -> `{ path, tests }`. A sample's project sits at its own path; `tests` names the
+  folder holding its test project.
+- `tests` - extra test projects (folders holding one `.csproj` each) run alongside the mods' and
+  samples' own.
+- `packages` - the packable project folders `nuget` packs.
+- `depends` - runtime dependency mods this repo does not build itself: id -> `{ github }` or
+  `{ url }` naming where release zips are published; an id with no entry resolves through the
+  ModDB API instead.
+
+`-RepoRoot <path>` points a command at a checkout other than the one holding the script; without
+it, `exmod` finds the nearest `exmod.json` above the current directory.
+
+`exmod provision mods` resolves every dependency named in `depends` or in a mod's or sample's own
+`modinfo.json` (skipping `game` and anything the repo builds itself): a workspace sibling first - a
+directory beside the repo root whose own `exmod.json` builds that id, used from its build output
+directly - else a cached or freshly downloaded release, unpacked under `.exmod/mods/<id>/`
+(gitignored).
+
+Every `PackageReference` version in the repo (exlib's own test projects, the harness, the generators,
 `infra/tools/ExlibVerify*`, both samples) comes from `Directory.Packages.props` at the root -
 central package management, one number per package, no `Version` attribute at the reference site.
 `exlib.slnf` is the solution filter scoped to exlib itself: its projects, the generators, the

@@ -5,7 +5,7 @@
 > one per green task. Do not run `exmod format`. Record each task in Progress at the bottom when
 > its gate is green.
 
-**Status** written 2026-09-06, not started. Step 3 of
+**Status** complete 2026-09-07. Step 3 of
 [2026-09-06-repo-restructure.md](2026-09-06-repo-restructure.md): rulings S3, E3, R2, and the
 workspace-sibling resolution L7 needs. Runs after the package tidy plan, which introduces
 `exmod.json`.
@@ -359,3 +359,45 @@ same manifest hit the cache branch instead (`exlib : cached release 0.7.2 at ...
 `bash scripts/exmod.sh test latest` unaffected as expected, six lanes at 11/1817/4/4/2461/348,
 matching every prior task's baseline; `exmod help`, `exmod help provision` and `exmod help smoke`
 show the new text.
+
+**Task 5 complete 2026-09-07.** The two resolver edges Task 4's gate exposed: `Get-ExmodMods` and
+the workspace-sibling lookup (`Get-ExmodDependencySiblingProject`) both now resolve a mod's project
+through a shared `Get-ModProjectDir` helper - `<path>/src` when that folder holds exactly one
+`.csproj`, `<path>` itself otherwise, so a `src/` that holds only sources (the flat layout the
+samples and a generated starter use) falls back instead of failing on a zero-count `Find-SingleCsproj`;
+`infra/CakeBuild/Program.cs`'s `ProjectFolders` resolution got the identical one-line fix, so the
+dispatcher, `dist.ps1` (which resolves mods only through `Get-ExmodMods`) and Cake agree. `solution`
+is no longer resolved inside `Get-ExmodManifest`: the eager `.sln`-or-error check that used to run on
+every load moved into `Get-ExmodSolution` itself, so a repo with neither a `solution` field nor a
+`.sln` at its root still loads the manifest and runs every command that never names a solution
+(`provision`, `stage`, `smoke`, `client`, `server`, `verify`, `build`); `restore` and `format`'s
+coverage run, the only two callers of `Get-ExmodSolution`, still fail by name when invoked without
+either.
+
+Prose: `CONTRIBUTING.md`'s manifest section grew the field list (`tools`, `solution`, `series`,
+`mods` with `path`/`overlays`, `samples` with `path`/`tests`, `tests`, `packages`, `depends` with
+`github`/`url`), the project/test conventions, `-RepoRoot`, and what `provision mods` resolves and
+where it lands - the existing `RepoPaths`/central-versions/`exlib.slnf` paragraph stays below it,
+lightly reworded to match. `templates/ci/tests.yml` and `smoke.yml` headers now say to copy only the
+two wrapper scripts and add an `exmod.json`, since the whole CLI comes with them; the per-stage file
+list they used to name is gone. `mods/exlib/wiki/Getting-Started.md` gained "9. exmod in your repo"
+(the two wrappers, a minimal `exmod.json` for one mod, `provision game`, `build`, `test`, `smoke`, and
+that `provision mods` fetches exlib for the smoke to load), renumbering "Pick the system you need" to
+10. `docs/internal/testing.md` already carried the manifest paragraph and the codes switch from Task
+2 - nothing to add. `docs/internal/README.md`'s row for this plan reads complete 2026-09-07.
+`docs/internal/worklog/2026-09.md` gained one entry at the top dated 2026-09-07.
+
+Gate: a throwaway `/tmp/hx2` (HelloExpanded's flat layout - `.csproj` and `modinfo.json` at the root,
+sources under `src/`, `hellomodule` dropped from the dependency list as Task 4's own throwaway did),
+`exmod.json` naming `helloexpanded` at `.` with `series: ["1.22"]` and no `solution`/`.sln`: with
+`/tmp/exmods` symlinked to this checkout, `bash <repo>/scripts/exmod.sh -RepoRoot /tmp/hx2 provision
+mods` printed `exlib : workspace sibling, built output at /tmp/exmods/mods/exlib/src/bin/Debug/Mods/mod`
+and the table row for it; `-RepoRoot /tmp/hx2 help` printed the full command list. `/tmp/hx2` and
+`/tmp/exmods` removed after. In this repo: `build latest` warning-free; `test latest` six lanes at
+11/1817/4/4/2461/348, matching every prior task's baseline, both before and after the prose edits;
+`pack` produced the three current-version zips (`1.22.0/exlib_0.7.3.zip`, `iiex_0.7.0.zip`,
+`siex_0.9.9.zip`) alongside the legacy-lane zips it always makes; `dotnet build infra/CakeBuild
+-clp:ErrorsOnly` zero warnings/errors. A relative-link check over every file this task touched found
+no newly-broken link; `mods/exlib/wiki/Getting-Started.md`'s existing bare wiki-page links
+(`[Testing Harness](Testing-Harness)` and the rest) are the pre-existing GitHub-wiki convention, not
+filesystem paths, and the new section adds none.
