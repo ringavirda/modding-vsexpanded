@@ -23,7 +23,7 @@ on:
 # or licence is needed.
 env:
   # Primary tracks the latest patch of the current series (legacy pins .0 - see tests-legacy.yml).
-  VS_VERSION: ${{ github.event.inputs.vs_version || '1.22' }}
+  VS_VERSION: ${{ github.event.inputs.vs_version || '1.22.7' }}
 
 jobs:
   test:
